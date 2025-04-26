@@ -1,6 +1,7 @@
 import type { CLIArguments } from "../cli-utils";
 import { mkdir, writeFile } from "node:fs/promises";
 import path, { dirname, join } from "node:path";
+import { UNICODE_VERSIONS, UNICODE_VERSIONS_WITH_UCD } from "@luxass/unicode-utils";
 import { green, yellow } from "farver/fast";
 import { printHelp } from "../cli-utils";
 
@@ -20,7 +21,7 @@ interface Entry {
 const BASE_URL = "https://unicode-proxy.ucdjs.dev/proxy";
 
 export async function runGenerate({ versions: providedVersions, flags }: CLIGenerateCmdOptions) {
-  if (flags?.help || flags?.h || providedVersions.length === 0) {
+  if (flags?.help || flags?.h) {
     printHelp({
       headline: "Generate Unicode Data Files",
       commandName: "ucd generate",
@@ -32,6 +33,24 @@ export async function runGenerate({ versions: providedVersions, flags }: CLIGene
         ],
       },
     });
+    return;
+  }
+
+  if (providedVersions.length === 0) {
+    console.error("No versions provided. Please provide at least one version.");
+    return;
+  }
+
+  if (providedVersions[0] === "all") {
+    providedVersions = UNICODE_VERSIONS_WITH_UCD;
+  }
+
+  // exit early, if some versions are invalid
+  const invalidVersions = providedVersions.filter((version) => !UNICODE_VERSIONS.includes(version));
+  if (invalidVersions.length > 0) {
+    console.error(
+      `Invalid version(s) provided: ${invalidVersions.join(", ")}. Please provide valid Unicode versions.`,
+    );
     return;
   }
 
