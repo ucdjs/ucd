@@ -32,6 +32,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@luxass/unicode-utils": "catalog:prod",
     "farver": "catalog:prod",
     "yargs-parser": "catalog:prod"
   },
