@@ -59,6 +59,9 @@ catalogs:
       specifier: ^2.4.4
       version: 2.5.2
   prod:
+    '@luxass/unicode-utils':
+      specifier: ^0.0.0
+      version: 0.0.0
     farver:
       specifier: ^0.4.2
       version: 0.4.2
@@ -109,6 +112,9 @@ importers:
 
   packages/cli:
     dependencies:
+      '@luxass/unicode-utils':
+        specifier: catalog:prod
+        version: 0.0.0
       farver:
         specifier: catalog:prod
         version: 0.4.2
@@ -622,6 +628,9 @@ packages:
         optional: true
       prettier-plugin-astro:
         optional: true
+
+  '@luxass/unicode-utils@0.0.0':
+    resolution: {integrity: sha512-d45tMOZwnP/Xs19MZEXZ1OIITJEfMVM314ox8is6ola/WbMd/27LBtwLRhEK+ceGpIqwg5rulnwtU2yhHSNhfQ==}
 
   '@manypkg/find-root@1.1.0':
     resolution: {integrity: sha512-mki5uBvhHzO8kYYix/WRy2WX8S3B5wdVSc9D6KcU5lQNglP2yt58/VfLuAK49glRXChosY8ap2oJ1qgma3GUVA==}
@@ -3654,6 +3663,8 @@ snapshots:
       - supports-color
       - typescript
       - vitest
+
+  '@luxass/unicode-utils@0.0.0': {}
 
   '@manypkg/find-root@1.1.0':
     dependencies:
