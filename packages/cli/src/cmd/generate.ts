@@ -90,7 +90,7 @@ export async function runGenerate({ versions: providedVersions, flags }: CLIGene
     const dirEntriesToProcess = dirEntries.filter((e) => e.type === "directory");
     await Promise.all(
       dirEntriesToProcess.map((dir) =>
-        processDirectory(dir, basePath + entry.path, version, baseOutputDir, downloadedFiles),
+        processDirectory(dir, `${basePath}/${entry.path}`, version, baseOutputDir, downloadedFiles),
       ),
     );
   }
