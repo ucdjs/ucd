@@ -1,6 +1,6 @@
 import type { CLIArguments } from "../cli-utils";
 import { mkdir, writeFile } from "node:fs/promises";
-import path, { dirname, extname, join } from "node:path";
+import path, { dirname, join } from "node:path";
 import { green, yellow } from "farver/fast";
 import { printHelp } from "../cli-utils";
 
