@@ -21,7 +21,7 @@ interface Entry {
 const BASE_URL = "https://unicode-proxy.ucdjs.dev/proxy";
 
 export async function runGenerate({ versions: providedVersions, flags }: CLIGenerateCmdOptions) {
-  if (flags?.help || flags?.h || providedVersions.length === 0) {
+  if (flags?.help || flags?.h) {
     printHelp({
       headline: "Generate Unicode Data Files",
       commandName: "ucd generate",
