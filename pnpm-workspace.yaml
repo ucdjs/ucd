@@ -1,0 +1,37 @@
+packages:
+  - packages/*
+
+catalogs:
+  monorepo:
+    "@changesets/changelog-github": ^0.5.1
+    "@changesets/cli": ^2.28.1
+    turbo: ^2.4.4
+    msw: ^2.7.3
+    "@vitest/coverage-v8": ^3.0.9
+    "@vitest/ui": ^3.0.9
+    "@ark/attest": ^0.46.0
+    tsx: ^4.19.3
+
+  prod:
+    farver: ^0.4.2
+    fs-extra: ^11.3.0
+    yargs-parser: ^21.1.1
+    defu: ^6.1.4
+    arktype: ^2.1.17
+
+  dev:
+    "@luxass/eslint-config": ^4.18.1
+    "@types/fs-extra": ^11.0.4
+    "@types/node": ^22.10.0
+    "@types/yargs-parser": ^21.0.3
+    eslint: ^9.23.0
+    tsdown: v0.9.3
+    typescript: ^5.8.2
+    vitest: ^3.0.9
+    vitest-testdirs: ^3.0.1
+    tsx: ^4.19.3
+    publint: ^0.3.12
+
+onlyBuiltDependencies:
+  - esbuild
+  - rolldown

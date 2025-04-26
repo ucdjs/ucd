@@ -1,0 +1,12 @@
+{
+  "$schema": "http://json.schemastore.org/tsconfig",
+  "extends": "./tsconfig.base.build.json",
+  "compilerOptions": {
+    "baseUrl": "./",
+    "paths": {
+      "#msw-utils": ["./test/msw-utils/msw.ts"],
+      "@ucdjs/cli": ["./packages/cli/src/cli.ts"],
+      "@ucdjs/utils": ["./packages/utils/src/index.ts"],
+    }
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "name": "@ucdjs/monorepo",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.13",
+    "pnpm": "10.x"
+  },
+  "packageManager": "pnpm@10.8.0",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "turbo run build --filter \"./packages/*\" --concurrency=15",
+    "clean": "turbo run clean && git clean -xdf node_modules",
+    "dev": "turbo watch dev --filter \"./packages/*\"",
+    "lint": "turbo run lint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:ui": "vitest --ui",
+    "bench:types": "turbo run bench:types",
+    "typecheck": "turbo run typecheck"
+  },
+  "devDependencies": {
+    "@changesets/changelog-github": "catalog:monorepo",
+    "@changesets/cli": "catalog:monorepo",
+    "@types/node": "catalog:dev",
+    "@vitest/coverage-v8": "catalog:monorepo",
+    "@vitest/ui": "catalog:monorepo",
+    "eslint": "catalog:dev",
+    "msw": "catalog:monorepo",
+    "@ark/attest": "catalog:monorepo",
+    "turbo": "catalog:monorepo",
+    "typescript": "catalog:dev",
+    "vitest": "catalog:dev",
+    "tsx": "catalog:monorepo"
+  }
+}
