@@ -1,5 +1,11 @@
 # @ucdjs/cli
 
+## 0.1.1
+
+### Patch Changes
+
+- [#3](https://github.com/ucdjs/ucd/pull/3) [`290e73d`](https://github.com/ucdjs/ucd/commit/290e73d29439c7102ead994f29b4d5797fb33eca) Thanks [@luxass](https://github.com/luxass)! - feat: enhance generate experience
+
 ## 0.1.0
 
 ### Minor Changes
