@@ -37,3 +37,4 @@ dist
 .vitest-testdirs
 .cache
 tsconfig.test.vitest-temp.json
+data
