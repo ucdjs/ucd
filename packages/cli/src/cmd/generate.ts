@@ -6,7 +6,6 @@ import { printHelp } from "../cli-utils";
 
 export interface CLIGenerateCmdOptions {
   flags: CLIArguments<{
-    force: boolean;
     outputDir: string;
   }>;
   versions: string[];
