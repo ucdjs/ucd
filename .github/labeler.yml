@@ -1,0 +1,10 @@
+# See https://github.com/actions/labeler
+
+"pkg: cli":
+  - changed-files:
+      - any-glob-to-any-file: packages/cli/**
+
+"pkg: utils":
+  - changed-files:
+      - any-glob-to-any-file: packages/schemas/**
+
