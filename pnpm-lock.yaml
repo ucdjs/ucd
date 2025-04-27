@@ -124,6 +124,9 @@ importers:
       '@luxass/unicode-utils':
         specifier: catalog:prod
         version: 0.1.0
+      '@ucdjs/codegen':
+        specifier: workspace:*
+        version: link:../codegen
       farver:
         specifier: catalog:prod
         version: 0.4.2

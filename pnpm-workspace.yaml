@@ -39,3 +39,5 @@ catalogs:
 onlyBuiltDependencies:
   - esbuild
   - rolldown
+catalog:
+  "@ucdjs/codegen": workspac

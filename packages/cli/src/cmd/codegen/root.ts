@@ -38,7 +38,10 @@ export async function runCodegenRoot(subcommand: string, { flags }: CLICodegenCm
 
   if (subcommand === "fields") {
     const { runFieldCodegen } = await import("./fields");
+    const inputPath = flags._.slice(4)?.toString() ?? "";
+
     await runFieldCodegen({
+      inputPath,
       flags: flags as CLICodegenFieldsCmdOptions["flags"],
     });
     return;
