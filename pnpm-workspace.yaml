@@ -13,7 +13,7 @@ catalogs:
     tsx: ^4.19.3
 
   prod:
-    "@luxass/unicode-utils": ^0.0.0
+    "@luxass/unicode-utils": ^0.1.0
     farver: ^0.4.2
     fs-extra: ^11.3.0
     yargs-parser: ^21.1.1
