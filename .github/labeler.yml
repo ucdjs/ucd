@@ -11,3 +11,7 @@
 "pkg: codegen":
   - changed-files:
       - any-glob-to-any-file: packages/codegen/**
+
+"pkg: parsers":
+  - changed-files:
+      - any-glob-to-any-file: packages/parsers/**
