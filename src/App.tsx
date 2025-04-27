@@ -2,8 +2,8 @@ import React from "react";
 
 export function App() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col items-center justify-center p-6">
-      <div className="max-w-2xl w-full bg-white rounded-xl shadow-sm p-8 md:p-12 animate-fadeIn">
+    <div className="min-h-screen flex flex-col items-center justify-center p-6 animate-fade-in">
+      <div className="max-w-2xl w-full bg-white rounded-xl shadow-sm p-8 md:p-12">
         <div className="flex flex-col items-center text-center">
           <h1 className="text-4xl font-bold text-gray-900">UCD.js</h1>
           <p className="mt-3 text-xl text-gray-600">Unicode Character Database for JavaScript</p>
@@ -48,7 +48,7 @@ export function App() {
         </div>
       </div>
 
-      <footer className="mt-8 text-gray-500 text-sm animate-fadeIn animation-delay-300">
+      <footer className="mt-8 text-gray-500 text-sm">
         ©
         {" "}
         {new Date().getFullYear()}
