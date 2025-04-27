@@ -144,6 +144,27 @@ importers:
         specifier: catalog:dev
         version: 3.0.1(vitest@3.1.2)
 
+  packages/codegen:
+    devDependencies:
+      '@luxass/eslint-config':
+        specifier: catalog:dev
+        version: 4.18.1(@typescript-eslint/utils@8.31.0(eslint@9.25.1(jiti@2.4.2))(typescript@5.8.3))(@vue/compiler-sfc@3.5.13)(eslint@9.25.1(jiti@2.4.2))(typescript@5.8.3)(vitest@3.1.2)
+      eslint:
+        specifier: catalog:dev
+        version: 9.25.1(jiti@2.4.2)
+      publint:
+        specifier: catalog:dev
+        version: 0.3.12
+      tsdown:
+        specifier: catalog:dev
+        version: 0.9.3(publint@0.3.12)(typescript@5.8.3)
+      typescript:
+        specifier: catalog:dev
+        version: 5.8.3
+      vitest-testdirs:
+        specifier: catalog:dev
+        version: 3.0.1(vitest@3.1.2)
+
   packages/utils:
     devDependencies:
       '@luxass/eslint-config':
