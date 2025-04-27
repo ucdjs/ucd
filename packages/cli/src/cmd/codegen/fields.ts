@@ -1,6 +1,4 @@
 import type { CLIArguments } from "../../cli-utils";
-import path from "node:path";
-import { green } from "farver/fast";
 import { printHelp } from "../../cli-utils";
 
 export interface CLICodegenFieldsCmdOptions {
@@ -28,5 +26,5 @@ export async function runFieldCodegen({ flags }: CLICodegenFieldsCmdOptions) {
     return;
   }
 
-  const outputMode = flags.outputFile == null ? "stdout" : "file";
+  const _outputMode = flags.outputFile == null ? "stdout" : "file";
 }
