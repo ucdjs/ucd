@@ -14,6 +14,7 @@ catalogs:
 
   prod:
     "@luxass/unicode-utils": ^0.2.0
+    "@luxass/utils": ^1.4.0
     farver: ^0.4.2
     fs-extra: ^11.3.0
     yargs-parser: ^21.1.1

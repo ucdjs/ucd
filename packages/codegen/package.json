@@ -38,6 +38,7 @@
   "dependencies": {
     "@ai-sdk/openai": "catalog:prod",
     "@luxass/unicode-utils": "catalog:prod",
+    "@luxass/utils": "catalog:prod",
     "ai": "catalog:prod",
     "zod": "catalog:prod"
   },
