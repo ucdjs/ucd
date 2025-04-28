@@ -2,7 +2,7 @@ import type { CLIArguments } from "../../cli-utils";
 import { existsSync } from "node:fs";
 import { readdir, readFile, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { getDataFileComments } from "@luxass/unicode-utils/data-files";
+import { RawDataFile } from "@luxass/unicode-utils/data-files";
 import { generateFields } from "@ucdjs/codegen";
 import { printHelp } from "../../cli-utils";
 
@@ -78,8 +78,11 @@ export async function runFieldCodegen({ inputPath, flags }: CLICodegenFieldsCmdO
 
   const promises = files.map(async (file) => {
     const content = await readFile(file, "utf-8");
+
+    const datafile = new RawDataFile(content);
+
     const code = await generateFields({
-      content: getDataFileComments(content),
+      datafile,
       apiKey: openaiKey,
     });
 
