@@ -1,13 +1,13 @@
+import type { RawDataFile } from "@luxass/unicode-utils";
 import { createOpenAI } from "@ai-sdk/openai";
 import { generateObject } from "ai";
 import { z } from "zod";
 
 export interface GenerateFieldsOptions {
   /**
-   * The content to analyze and generate fields for.
-   * This should be a string containing the heading of a data file.
+   * The data file to generate fields for.
    */
-  content: string;
+  datafile: RawDataFile;
 
   /**
    * The OpenAI API key to use for generating fields.
@@ -16,10 +16,14 @@ export interface GenerateFieldsOptions {
 }
 
 export async function generateFields(options: GenerateFieldsOptions): Promise<string | null> {
-  const { content, apiKey } = options;
+  const { datafile, apiKey } = options;
+
+  if (datafile.heading == null) {
+    return null;
+  }
 
   if (!apiKey) {
-    throw new Error("API key is required");
+    return null;
   }
 
   const openai = createOpenAI({
@@ -46,7 +50,7 @@ export async function generateFields(options: GenerateFieldsOptions): Promise<st
 
   Text to analyze:
   \`\`\`
-  ${content}
+  ${datafile.heading}
   \`\`\`
 
   Your response should be a single markdown code block containing the complete TypeScript code with JSDoc comments.
