@@ -7,7 +7,7 @@
     "email": "lucasnrgaard@gmail.com",
     "url": "https://luxass.dev"
   },
-  "packageManager": "pnpm@10.8.0",
+  "packageManager": "pnpm@10.10.0",
   "license": "MIT",
   "homepage": "https://github.com/ucdjs/ucd",
   "repository": {
@@ -37,6 +37,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "catalog:prod",
+    "@luxass/unicode-utils": "catalog:prod",
     "ai": "catalog:prod",
     "zod": "catalog:prod"
   },
