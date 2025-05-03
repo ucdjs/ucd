@@ -33,7 +33,7 @@
   },
   "dependencies": {
     "@luxass/unicode-utils": "catalog:prod",
-    "@ucdjs/codegen": "workspace:*",
+    "@ucdjs/schema-gen": "workspace:*",
     "farver": "catalog:prod",
     "yargs-parser": "catalog:prod"
   },

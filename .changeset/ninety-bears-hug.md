@@ -1,5 +1,5 @@
 ---
-"@ucdjs/codegen": minor
+"@ucdjs/schema-gen": minor
 ---
 
-feat: add codegen package
+feat: add schema-gen package

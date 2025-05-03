@@ -3,7 +3,7 @@ import { existsSync } from "node:fs";
 import { readdir, readFile, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { RawDataFile } from "@luxass/unicode-utils/data-files";
-import { generateFields } from "@ucdjs/codegen";
+import { generateFields } from "@ucdjs/schema-gen";
 import { printHelp } from "../../cli-utils";
 
 export interface CLICodegenFieldsCmdOptions {
