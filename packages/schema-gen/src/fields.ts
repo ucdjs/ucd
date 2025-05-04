@@ -28,6 +28,7 @@ const SYSTEM_PROMOT = dedent`
         </documentation>
 
         <structure>
+          - Use the file name from the first line of the input (ignoring version numbers) as the interface name
           - Single interface named after the input file name without version numbers (e.g., ArabicShaping not ArabicShaping-16.0.0)
           - No additional interfaces or arrays
           - Create ordered keys array named [INTERFACE_NAME]_FIELDS using SCREAMING_SNAKE_CASE
