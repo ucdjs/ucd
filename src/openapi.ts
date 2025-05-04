@@ -22,8 +22,8 @@ export function buildOpenApiConfig(version: string, servers: NonNullable<OpenAPI
     },
     tags: [
       {
-        name: "Versions",
-        description: "Emoji versions related endpoints",
+        name: "Misc",
+        description: "Endpoints that don't fit into other categories.",
       },
     ],
     servers,
