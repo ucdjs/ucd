@@ -1,0 +1,199 @@
+extends: [[spectral:oas, all], [spectral:asyncapi, all]]
+rules:
+  operation-tags: off
+  operation-operationId: off
+  operation-success-response: error
+
+  # ----------------------------#
+  # UCD.js OAS v2.0, v3.0 rules #
+  # ----------------------------#
+
+  ucdjs-paths-kebab-case:
+    description: All YAML/JSON paths MUST follow kebab-case
+    severity: warn
+    recommended: true
+    message: "{{property}} is not kebab-case: {{error}}"
+    given: $.paths[*]~
+    then:
+      function: pattern
+      functionOptions:
+        match: "^\/([a-z0-9]+(-[a-z0-9]+)*)?(\/[a-z0-9]+(-[a-z0-9]+)*|\/{.+})*$" # doesn't allow /asasd{asdas}sadas pattern or not closed braces
+
+  ucdjs-path-parameters-camelCase-alphanumeric:
+    description: Path parameters MUST follow camelCase
+    severity: warn
+    recommended: true
+    message: "{{property}} path parameter is not camelCase: {{error}}"
+    given: $..parameters[?(@.in == 'path')].name
+    then:
+      function: pattern
+      functionOptions:
+        match: "^[a-z][a-zA-Z0-9]+$"
+
+  ucdjs-definitions-camelCase-alphanumeric:
+    description: All YAML/JSON definitions MUST follow fields-camelCase and be ASCII alphanumeric characters or `_` or `$`.
+    severity: error
+    recommended: true
+    message: "{{property}} MUST follow camelCase and be ASCII alphanumeric characters or `_` or `$`."
+    given: $.definitions[*]~
+    then:
+      function: pattern
+      functionOptions:
+        match: "/^[a-z$_]{1}[A-Z09$_]*/"
+
+  ucdjs-properties-camelCase-alphanumeric:
+    description: All JSON Schema properties MUST follow fields-camelCase and be ASCII alphanumeric characters or `_` or `$`.
+    severity: error
+    recommended: true
+    message: "{{property}} MUST follow camelCase and be ASCII alphanumeric characters or `_` or `$`."
+    given: $.definitions..properties[*]~
+    then:
+      function: pattern
+      functionOptions:
+        match: "/^[a-z$_]{1}[A-Z09$_]*/"
+
+  ucdjs-request-GET-no-body:
+    description: "A 'GET' request MUST NOT accept a 'body` parameter"
+    severity: error
+    given: $.paths..get.parameters..in
+    then:
+      function: pattern
+      functionOptions:
+        notMatch: /^body$/
+
+  ucdjs-headers-no-x-headers:
+    description: "All 'HTTP' headers SHOULD NOT include 'X-' headers (https://tools.ietf.org/html/rfc6648)."
+    severity: warn
+    given: "$..parameters[?(@.in == 'header')].name"
+    message: "HTTP headers SHOULD NOT include 'X-' prefix."
+    recommended: true
+    type: style
+    then:
+      function: pattern
+      functionOptions:
+        notMatch: "/^(x|X)-/"
+
+  ucdjs-headers-hyphenated-pascal-case:
+    description: All `HTTP` headers MUST use `Hyphenated-Pascal-Case` notation
+    severity: error
+    given: "$..parameters[?(@.in == 'header')].name"
+    message: "'HTTP' headers MUST follow 'Hyphenated-Pascal-Case' notation"
+    recommended: true
+    type: style
+    then:
+      function: pattern
+      functionOptions:
+        match: "/^([A-Z][a-z0-9]-)*([A-Z][a-z0-9])+/"
+
+  # ----------------------#
+  # UCD.js OAS v2.0 rules #
+  # ----------------------#
+
+  ucdjs-oas2-protocol-https-only:
+    description: ALL requests MUST go through `https` protocol only
+    formats:
+      - oas2
+    recommended: true
+    severity: error
+    type: style
+    message: Schemes MUST be https and no other value is allowed.
+    given: $
+    then:
+      field: schemes
+      function: schema
+      functionOptions:
+        schema:
+          type: array
+          items:
+            type: string
+            enum: [https]
+          maxItems: 1
+
+  ucdjs-oas2-request-support-json:
+    description: Every request SHOULD support `application/json` media type
+    formats:
+      - oas2
+    severity: warn
+    message: "{{description}}: {{error}}"
+    recommended: true
+    given: $..consumes
+    then:
+      function: schema
+      functionOptions:
+        schema:
+          type: array
+          contains:
+            type: string
+            enum:
+              - application/json
+
+  ucdjs-oas2-example-exists-in-parameters:
+    description: All models MUST have a valid example.
+    severity: error
+    recommended: true
+    formats:
+      - oas2
+    message: "{{ property }} MUST have a valid example."
+    given: "$..parameters..[?(@.in == 'body' && (@.example || @.schema.$ref))]"
+    then:
+      function: truthy
+
+  ucdjs-oas2-response-error-problem: # schemas and/or produces
+    description: All error responses MUST be of media type `application/problem+json`
+    severity: error
+    formats:
+      - oas2
+    given: $.paths..responses[?( @property >= 400 && @property < 600 )]
+    recommended: true
+    type: style
+    message: "Error response document MUST follow application/problem+json: {{error}}"
+    then:
+      field: schema.example
+      function: schema
+      functionOptions:
+        schema:
+          title: Problem Details for HTTP APIs
+          description: Definition of [RFC7807](https://tools.ietf.org/html/rfc7807) problem detail
+          type: object
+          properties:
+            type:
+              type: string
+            title:
+              type: string
+            status:
+              type: number
+            detail:
+              type: string
+            instance:
+              type: string
+          required:
+            - title
+            - detail
+
+  # ----------------------#
+  # UCD.js OAS v3.0 rules #
+  # ----------------------#
+
+  ucdjs-oas3-request-support-json:
+    description: Every request MUST support `application/json` media type
+    formats:
+      - oas3
+    recommended: true
+    severity: error
+    message: "{{description}}: {{error}}"
+    given: $.paths.[*].requestBody.content[?(@property.indexOf('json') === -1)]^
+    then:
+      function: falsy
+
+  ucdjs-oas3-protocol-https-only:
+    description: ALL requests MUST go through `https` protocol only
+    formats:
+      - oas3
+    recommended: true
+    severity: error
+    message: Servers MUST be https and no other protocol is allowed.
+    given: $.servers..url
+    then:
+      function: pattern
+      functionOptions:
+        match: "/^https:/"
