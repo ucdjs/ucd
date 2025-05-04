@@ -20,7 +20,7 @@ function isValidSubcommand(subcommand: string): subcommand is Subcommand {
 }
 
 export async function runCodegenRoot(subcommand: string, { flags }: CLICodegenCmdOptions) {
-  if (!isValidSubcommand(subcommand) || flags?.help || flags?.h) {
+  if (!isValidSubcommand(subcommand) || (!isValidSubcommand(subcommand) && (flags?.help || flags?.h))) {
     printHelp({
       commandName: "ucd codegen",
       usage: "[command] [...flags]",
