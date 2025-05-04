@@ -8,3 +8,6 @@
   - changed-files:
       - any-glob-to-any-file: packages/schemas/**
 
+"pkg: codegen":
+  - changed-files:
+      - any-glob-to-any-file: packages/codegen/**

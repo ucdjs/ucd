@@ -1,6 +1,6 @@
 {
-  "name": "@ucdjs/cli",
-  "version": "0.1.1",
+  "name": "@ucdjs/schema-gen",
+  "version": "0.0.0",
   "type": "module",
   "author": {
     "name": "Lucas Nørgård",
@@ -13,34 +13,37 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ucdjs/ucd.git",
-    "directory": "packages/cli"
+    "directory": "packages/schema-gen"
   },
   "bugs": {
     "url": "https://github.com/ucdjs/ucd/issues"
   },
-  "bin": {
-    "ucd": "bin/ucd.js"
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json"
   },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "files": [
-    "bin",
     "dist"
   ],
   "scripts": {
     "build": "tsdown",
+    "dev": "tsdown --watch",
     "clean": "git clean -xdf dist node_modules",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@ai-sdk/openai": "catalog:prod",
     "@luxass/unicode-utils": "catalog:prod",
     "@luxass/utils": "catalog:prod",
-    "@ucdjs/schema-gen": "workspace:*",
-    "farver": "catalog:prod",
-    "yargs-parser": "catalog:prod"
+    "ai": "catalog:prod",
+    "zod": "catalog:prod"
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:dev",
-    "@types/yargs-parser": "catalog:dev",
     "eslint": "catalog:dev",
     "publint": "catalog:dev",
     "tsdown": "catalog:dev",

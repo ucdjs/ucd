@@ -1,4 +1,5 @@
 import type { Arguments } from "yargs-parser";
+import type { CLICodegenCmdOptions } from "./cmd/codegen/root";
 import type { CLIGenerateCmdOptions } from "./cmd/generate";
 import process from "node:process";
 import {
@@ -14,10 +15,12 @@ import pkg from "../package.json" with { type: "json" };
 type CLICommand =
   | "help"
   | "version"
-  | "generate";
+  | "generate"
+  | "codegen";
 
 const SUPPORTED_COMMANDS = new Set<CLICommand>([
   "generate",
+  "codegen",
 ]);
 
 export type CLIArguments<T extends Record<string, unknown>> = Arguments & T;
@@ -159,6 +162,7 @@ export async function runCommand(cmd: CLICommand, flags: Arguments): Promise<voi
         tables: {
           "Commands": [
             ["generate", "Generate UCD data files."],
+            ["codegen", "Generate TypeScript code from UCD data."],
           ],
           "Global Flags": [
             ["--force", "Force the operation to run, even if it's not needed."],
@@ -181,6 +185,14 @@ export async function runCommand(cmd: CLICommand, flags: Arguments): Promise<voi
       });
       break;
     }
+    case "codegen": {
+      const { runCodegenRoot } = await import("./cmd/codegen/root");
+      const subcommand = flags._[3]?.toString() ?? "";
+      await runCodegenRoot(subcommand, {
+        flags: flags as CLICodegenCmdOptions["flags"],
+      });
+      break;
+    }
     default:
       throw new Error(`Error running ${cmd} -- no command found.`);
   }
@@ -191,10 +203,11 @@ export function parseFlags(args: string[]) {
     configuration: {
       "parse-positional-numbers": false,
     },
-    string: ["output-dir"],
-    default: {
-      "output-dir": "./data",
-    },
+    string: [
+      "output-dir",
+      "input-dir",
+      "output-file",
+    ],
   });
 }
 

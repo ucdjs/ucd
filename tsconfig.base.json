@@ -7,6 +7,7 @@
       "#msw-utils": ["./test/msw-utils/msw.ts"],
       "@ucdjs/cli": ["./packages/cli/src/cli.ts"],
       "@ucdjs/utils": ["./packages/utils/src/index.ts"],
+      "@ucdjs/schema-gen": ["./packages/schema-gen/src/index.ts"],
     }
   }
 }
