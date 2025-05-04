@@ -14,7 +14,7 @@ export const LIST_ALL_UNICODE_VERSIONS_ROUTE = createRoute({
           schema: z.array(UnicodeVersionSchema).openapi("UnicodeVersions"),
         },
       },
-      description: "My User",
+      description: "A list of Unicode versions with metadata.",
     },
     404: {
       content: {
