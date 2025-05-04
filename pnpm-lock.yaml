@@ -127,6 +127,9 @@ importers:
       '@luxass/unicode-utils':
         specifier: catalog:prod
         version: 0.4.1
+      '@luxass/utils':
+        specifier: catalog:prod
+        version: 1.4.0
       '@ucdjs/schema-gen':
         specifier: workspace:*
         version: link:../schema-gen
