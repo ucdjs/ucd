@@ -56,7 +56,7 @@ app.doc("/openapi.json", (c) => {
   }
 
   if (c.env.ENVIRONMENT === "preview") {
-    server.url = "https://api.preview.ucdjs.dev";
+    server.url = "https://preview.api.ucdjs.dev";
     server.description = "Preview Environment";
   }
 

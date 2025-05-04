@@ -22,7 +22,7 @@
       },
       "route": {
         "custom_domain": true,
-        "pattern": "api.preview.ucdjs.dev"
+        "pattern": "preview.api.ucdjs.dev"
       }
     },
     "production": {
