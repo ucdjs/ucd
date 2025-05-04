@@ -4,38 +4,41 @@ import { dedent } from "@luxass/utils";
 import { generateObject } from "ai";
 import { z } from "zod";
 
-const SYSTEM_PROMOT = `
-    <system_prompt>
-      <role>Expert TypeScript code generator specializing in interfaces and documentation</role>
+const SYSTEM_PROMOT = dedent`
+      <system_prompt>
+        <role>Expert TypeScript code generator specializing in interfaces and documentation</role>
 
-      <task>
-        <input>Text description: {{INPUT}}</input>
-        <output>TypeScript interface with comprehensive JSDoc comments</output>
-      </task>
+        <task>
+          <input>Text description: {{INPUT}}</input>
+          <output>TypeScript interface with comprehensive JSDoc comments</output>
+        </task>
 
-      <requirements>
-        <field_processing>
-          - Extract all relevant fields from text
-          - Convert field names to snake_case
-          - Preserve original order
-        </field_processing>
+        <requirements>
+          <field_processing>
+            - Extract all relevant fields from text
+            - Convert field names to snake_case
+            - Preserve original order
+          </field_processing>
 
-        <documentation>
-          - JSDoc for interface purpose
-          - JSDoc for each property
-          - Document union types (no enums)
-          - Explain constraints and formats
-        </documentation>
+          <documentation>
+            - JSDoc for each property only
+            - Document union types with double quotes (no enums)
+            - Explain constraints and formats with examples
+            - No JSDoc for the main interface
+          </documentation>
 
-        <structure>
-          - Separate interfaces for reusable structures
-          - Inline simple nested structures
-          - Create ordered keys array with original casing
-        </structure>
-      </requirements>
+          <structure>
+            - Single interface named after the input file name without version numbers (e.g., ArabicShaping not ArabicShaping-16.0.0)
+            - No additional interfaces or arrays
+            - Create ordered keys array named [INTERFACE_NAME]_FIELDS using SCREAMING_SNAKE_CASE
+            - Use double quotes for field names in the keys array
+            - No example data or additional declarations
+            - Export all variables and interfaces
+          </structure>
+        </requirements>
 
-      <format>Single TypeScript code block with complete JSDoc</format>
-    </system_prompt>
+        <format>Single TypeScript code block containing only the interface and fields array, both exported</format>
+      </system_prompt>
 `;
 
 export interface GenerateFieldsOptions {
