@@ -128,7 +128,7 @@ async function writeBundledFile(
 
   for (const result of results) {
     const relativePath = path.relative(process.cwd(), result.fileName);
-    bundledCode += `// #region ${relativePath}\n`;
+    bundledCode += `\n// #region ${relativePath}\n`;
     bundledCode += result.code;
     bundledCode += `\n// #endregion\n`;
   }
