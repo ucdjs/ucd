@@ -1,19 +1,16 @@
 <p align="center">
-<a href="https://ucdjs.dev">
-<img src="https://api.mojis.dev/random-emoji.png" height="150">
-</a>
+<img src="https://ucdjs.dev/favicon.svg?revalidate" height="200">
 </p>
 
 <h1 align="center">
-ucd.js
+UCD.js
 </h1>
 <p align="center">
 Unicode Character Database in a more readable way
 <p>
-
-<p align="center">
- <a href="https://docs.ucdjs.dev">Documentation</a>
-</p>
+<div align="center">
+  <a href="https://ucdjs.dev/">📚 Documentation</a>
+</div>
 <br>
 <br>
 
