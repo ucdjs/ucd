@@ -157,9 +157,9 @@ export async function runFieldCodegen({ inputPath, flags }: CLICodegenFieldsCmdO
       for (const result of generatedCode.filter(Boolean)) {
         if (!result) continue;
         const relativePath = path.relative(process.cwd(), result.fileName);
-        bundledCode += `//#region ${relativePath}\n`;
+        bundledCode += `// #region ${relativePath}\n`;
         bundledCode += result.code;
-        bundledCode += `\n//#endregion\n\n`;
+        bundledCode += `\n// #endregion\n\n`;
       }
 
       const bundleFileName = bundleTemplate.replace("{version}", version);
