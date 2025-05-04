@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@hono/zod-openapi": "^0.19.5",
-    "@luxass/unicode-utils": "^0.3.0",
+    "@luxass/unicode-utils": "https://pkg.pr.new/@luxass/unicode-utils@16",
     "@scalar/hono-api-reference": "^0.8.2",
     "hono": "^4.7.7",
     "zod": "^3.24.3"
