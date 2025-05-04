@@ -1,7 +1,7 @@
 import type { CLIArguments } from "../cli-utils";
 import { mkdir, writeFile } from "node:fs/promises";
 import path, { dirname, join } from "node:path";
-import { UNICODE_VERSIONS, UNICODE_VERSIONS_WITH_UCD } from "@luxass/unicode-utils";
+import { UNICODE_VERSIONS_WITH_UCD } from "@luxass/unicode-utils";
 import { green, yellow } from "farver/fast";
 import { printHelp } from "../cli-utils";
 
@@ -42,11 +42,11 @@ export async function runGenerate({ versions: providedVersions, flags }: CLIGene
   }
 
   if (providedVersions[0] === "all") {
-    providedVersions = UNICODE_VERSIONS_WITH_UCD;
+    providedVersions = UNICODE_VERSIONS_WITH_UCD.map((v) => v.version);
   }
 
   // exit early, if some versions are invalid
-  const invalidVersions = providedVersions.filter((version) => !UNICODE_VERSIONS.includes(version));
+  const invalidVersions = providedVersions.filter((version) => !UNICODE_VERSIONS_WITH_UCD.find((v) => v.version === version));
   if (invalidVersions.length > 0) {
     console.error(
       `Invalid version(s) provided: ${invalidVersions.join(", ")}. Please provide valid Unicode versions.`,
