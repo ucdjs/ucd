@@ -1,21 +1,28 @@
 import { createRoute, z } from "@hono/zod-openapi";
 import { ApiErrorSchema } from "../schemas";
+import { UnicodeVersionSchema } from "./v1_unicode-versions.schemas";
 
-export const FIRST_ROUTE = createRoute({
+export const LIST_ALL_UNICODE_VERSIONS_ROUTE = createRoute({
   method: "get",
   path: "/",
-  tags: ["Versions"],
-  description: "First Route",
+  tags: ["Misc"],
+  description: "List all Unicode Versions available, including metadata.",
   responses: {
     200: {
       content: {
         "application/json": {
-          schema: z.object({
-            name: z.string(),
-          }).openapi("MyUser"),
+          schema: z.array(UnicodeVersionSchema).openapi("UnicodeVersions"),
         },
       },
       description: "My User",
+    },
+    404: {
+      content: {
+        "application/json": {
+          schema: ApiErrorSchema,
+        },
+      },
+      description: "Not Found",
     },
     500: {
       content: {
