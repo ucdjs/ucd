@@ -159,7 +159,7 @@ export async function runFieldCodegen({ inputPath, flags }: CLICodegenFieldsCmdO
         const relativePath = path.relative(process.cwd(), result.fileName);
         bundledCode += `// #region ${relativePath}\n`;
         bundledCode += result.code;
-        bundledCode += `\n// #endregion\n\n`;
+        bundledCode += `\n// #endregion\n`;
       }
 
       const bundleFileName = bundleTemplate.replace("{version}", version);
