@@ -2,6 +2,7 @@ import type { CLIArguments } from "../../cli-utils";
 import { existsSync } from "node:fs";
 import { mkdir, readdir, readFile, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
+import process from "node:process";
 import { RawDataFile } from "@luxass/unicode-utils/data-files";
 import { toKebabCase } from "@luxass/utils";
 import { generateFields } from "@ucdjs/schema-gen";
@@ -16,6 +17,16 @@ export interface CLICodegenFieldsCmdOptions {
   inputPath: string;
 }
 
+function flattenVersion(version: string): string {
+  // split version into parts
+  const parts = version.split(".");
+  // remove trailing zeros
+  while (parts.length > 1 && parts[parts.length - 1] === "0") {
+    parts.pop();
+  }
+  return parts.join(".");
+}
+
 export async function runFieldCodegen({ inputPath, flags }: CLICodegenFieldsCmdOptions) {
   if (flags?.help || flags?.h) {
     printHelp({
@@ -26,7 +37,7 @@ export async function runFieldCodegen({ inputPath, flags }: CLICodegenFieldsCmdO
         Flags: [
           ["--openai-key (-k)", "The OpenAI API key to use. (can also be set using OPENAI_API_KEY env var)"],
           ["--output-dir", "Specify the output directory for generated files (defaults to .codegen)"],
-          ["--bundle <filename>", "Combine all generated files into a single file, if no filename is provided, the default is index.ts"],
+          ["--bundle <filename>", "Combine generated files into a single file per version. Use {version} placeholder for version-specific naming"],
           ["--help (-h)", "See all available flags."],
         ],
       },
@@ -34,7 +45,6 @@ export async function runFieldCodegen({ inputPath, flags }: CLICodegenFieldsCmdO
     return;
   }
 
-  // eslint-disable-next-line node/prefer-global/process
   const openaiKey = flags.openaiKey || process.env.OPENAI_API_KEY;
   if (!openaiKey) {
     console.error("No OpenAI API key provided. Please provide an OpenAI API key.");
@@ -53,17 +63,28 @@ export async function runFieldCodegen({ inputPath, flags }: CLICodegenFieldsCmdO
     return;
   }
 
-  // eslint-disable-next-line node/prefer-global/process
-  const outputDir = flags.outputDir || process.cwd();
-  await mkdir(outputDir, { recursive: true });
-
   const shouldBundle = typeof flags.bundle === "string" || flags.bundle === true;
-  const bundleFileName = typeof flags.bundle === "string" ? flags.bundle : "index.ts";
+  const bundleTemplate = typeof flags.bundle === "string" ? flags.bundle : "index.ts";
+
+  // extract output directory from bundle path if it's relative/absolute
+  let outputDir = flags.outputDir;
+  if (!outputDir) {
+    if (shouldBundle && (path.isAbsolute(bundleTemplate) || bundleTemplate.startsWith("./") || bundleTemplate.startsWith("../"))) {
+      outputDir = path.dirname(bundleTemplate);
+    } else {
+      outputDir = path.join(path.dirname(resolvedInputPath), ".codegen");
+    }
+  }
+
+  if (outputDir) {
+    await mkdir(outputDir, { recursive: true });
+  }
 
   // check whether or not the input path is a directory or a file
   const isDirectory = (await stat(resolvedInputPath)).isDirectory();
 
-  const files = [];
+  // group files by version
+  const filesByVersion = new Map<string, string[]>();
 
   if (isDirectory) {
     const dir = await readdir(resolvedInputPath, {
@@ -72,79 +93,106 @@ export async function runFieldCodegen({ inputPath, flags }: CLICodegenFieldsCmdO
     });
 
     for (const file of dir) {
-      if (file.isFile()) {
-        if (!file.name.endsWith(".txt")) {
-          continue;
-        }
+      if (file.isFile() && file.name.endsWith(".txt")) {
+        const filePath = path.join(file.parentPath, file.name);
+        // extract version from path (e.g., v16.0.0)
+        const versionMatch = filePath.match(/v(\d+\.\d+\.\d+)/);
+        const version = versionMatch ? flattenVersion(versionMatch[1]!) : "unknown";
 
-        files.push(path.join(file.parentPath, file.name));
+        const files = filesByVersion.get(version) ?? [];
+        files.push(filePath);
+        filesByVersion.set(version, files);
       }
     }
   } else {
-    files.push(resolvedInputPath);
+    // single file case - look for version in parent directory name
+    const parentDir = path.dirname(resolvedInputPath);
+    const versionMatch = parentDir.match(/v(\d+\.\d+\.\d+)/);
+    const version = versionMatch ? flattenVersion(versionMatch[1]!) : "unknown";
+    filesByVersion.set(version, [resolvedInputPath]);
   }
 
-  const promises = files.map(async (filePath) => {
-    const content = await readFile(filePath, "utf-8");
-    const datafile = new RawDataFile(content);
+  // process each version separately
+  for (const [version, files] of filesByVersion) {
+    const promises = files.map(async (filePath) => {
+      const content = await readFile(filePath, "utf-8");
+      const datafile = new RawDataFile(content);
 
-    if (datafile.heading == null) {
-      console.error(`heading for file ${filePath} is null. Skipping file.`);
-      return null;
-    }
+      if (datafile.heading == null) {
+        console.error(`heading for file ${filePath} is null. Skipping file.`);
+        return null;
+      }
 
-    const code = await generateFields({
-      datafile,
-      apiKey: openaiKey,
+      const code = await generateFields({
+        datafile,
+        apiKey: openaiKey,
+      });
+
+      if (code == null) {
+        console.error(`Error generating fields for file: ${filePath}`);
+        return null;
+      }
+
+      if (!shouldBundle) {
+        const fileName = toKebabCase(path.basename(filePath).replace(/\.txt$/, "")).toLowerCase();
+        await writeFile(
+          path.join(outputDir, `${fileName}.ts`),
+          code,
+          "utf-8",
+        );
+      }
+
+      return {
+        code,
+        fileName: filePath,
+      };
     });
 
-    if (code == null) {
-      console.error(`Error generating fields for file: ${filePath}`);
-      return null;
-    }
+    const generatedCode = await Promise.all(promises);
 
-    if (!shouldBundle) {
-      const fileName = toKebabCase(path.basename(filePath).replace(/\.txt$/, "")).toLowerCase();
+    if (shouldBundle) {
+      let bundledCode = `// This file is generated by ucd codegen. Do not edit this file directly.\n`;
+      bundledCode += `// Unicode Version: ${version}\n\n`;
+
+      for (const result of generatedCode.filter(Boolean)) {
+        if (!result) continue;
+        const relativePath = path.relative(process.cwd(), result.fileName);
+        bundledCode += `//#region ${relativePath}\n`;
+        bundledCode += result.code;
+        bundledCode += `\n//#endregion\n\n`;
+      }
+
+      const bundleFileName = bundleTemplate.replace("{version}", version);
+      // handle absolute and relative paths differently than bare filenames
+      let bundlePath;
+      if (path.isAbsolute(bundleFileName) || bundleFileName.startsWith("./") || bundleFileName.startsWith("../")) {
+        bundlePath = path.resolve(bundleFileName);
+      } else if (outputDir) {
+        bundlePath = path.resolve(path.join(outputDir, bundleFileName));
+      } else {
+        bundlePath = path.resolve(bundleFileName);
+      }
+
+      // ensure .ts extension
+      if (!bundlePath.endsWith(".ts")) {
+        bundlePath += ".ts";
+      }
+
+      // ensure directory exists
+      await mkdir(path.dirname(bundlePath), { recursive: true });
+
       await writeFile(
-        path.join(outputDir, `${fileName}.ts`),
-        code,
+        bundlePath,
+        bundledCode,
         "utf-8",
       );
+      // eslint-disable-next-line no-console
+      console.log(`Generated bundled fields for Unicode ${version} in ${bundlePath}`);
     }
-
-    return {
-      code,
-      // eslint-disable-next-line node/prefer-global/process
-      fileName: filePath.replace(`${process.cwd()}/`, ""),
-    };
-  });
-
-  const generatedCode = await Promise.all(promises);
+  }
 
   if (!shouldBundle) {
     // eslint-disable-next-line no-console
-    console.log(`Generated fields for ${files.length} files in ${outputDir}`);
-    return;
+    console.log(`Generated fields for ${Array.from(filesByVersion.values()).flat().length} files in ${outputDir}`);
   }
-
-  let bundledCode = `// This file is generated by ucd codegen. Do not edit this file directly.\n\n`;
-  for (const { fileName, code } of generatedCode.filter((obj) => obj != null)) {
-    bundledCode += `//#region ${fileName}\n`;
-    bundledCode += code;
-    bundledCode += `\n//#endregion\n`;
-    bundledCode += "\n\n";
-  }
-
-  let bundlePath = path.resolve(path.join(outputDir, bundleFileName));
-  if (path.extname(bundleFileName) === "") {
-    bundlePath = path.join(outputDir, `${bundleFileName}.ts`);
-  }
-
-  await writeFile(
-    bundlePath,
-    bundledCode,
-    "utf-8",
-  );
-  // eslint-disable-next-line no-console
-  console.log(`Generated bundled fields in ${bundlePath}`);
 }
