@@ -36,6 +36,7 @@
     "@luxass/utils": "catalog:prod",
     "@ucdjs/schema-gen": "workspace:*",
     "farver": "catalog:prod",
+    "p-limit": "catalog:prod",
     "yargs-parser": "catalog:prod"
   },
   "devDependencies": {
