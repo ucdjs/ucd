@@ -1,7 +1,7 @@
 import type { CLIArguments } from "../cli-utils";
 import { mkdir, writeFile } from "node:fs/promises";
 import path, { dirname, join } from "node:path";
-import { UNICODE_VERSIONS, UNICODE_VERSIONS_WITH_UCD } from "@luxass/unicode-utils";
+import { UNICODE_VERSIONS_WITH_UCD } from "@luxass/unicode-utils";
 import { green, yellow } from "farver/fast";
 import { printHelp } from "../cli-utils";
 
