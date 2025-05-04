@@ -22,7 +22,7 @@ export async function runFieldCodegen({ inputPath, flags }: CLICodegenFieldsCmdO
       usage: "<input> [...flags]",
       tables: {
         Flags: [
-          ["--openai-key (-k)", "The OpenAI API key to use."],
+          ["--openai-key (-k)", "The OpenAI API key to use. (can also be set using OPENAI_API_KEY env var)"],
           ["--version", "Show the version number and exit."],
           ["--help (-h)", "See all available flags."],
         ],
