@@ -12,8 +12,8 @@ importers:
         specifier: ^0.19.5
         version: 0.19.5(hono@4.7.7)(zod@3.24.3)
       '@luxass/unicode-utils':
-        specifier: ^0.4.0
-        version: 0.4.0
+        specifier: https://pkg.pr.new/@luxass/unicode-utils@16
+        version: https://pkg.pr.new/@luxass/unicode-utils@16
       '@scalar/hono-api-reference':
         specifier: ^0.8.2
         version: 0.8.2(hono@4.7.7)
@@ -753,8 +753,9 @@ packages:
       prettier-plugin-astro:
         optional: true
 
-  '@luxass/unicode-utils@0.4.0':
-    resolution: {integrity: sha512-E9Oc6H3MbkhiLEAqo7UVyqGjo/CywGoU8g5XadNFxz5nmcIXSDbdKghAc0sUmuvzNW+ASp8m7ajQNZGs13VxDw==}
+  '@luxass/unicode-utils@https://pkg.pr.new/@luxass/unicode-utils@16':
+    resolution: {tarball: https://pkg.pr.new/@luxass/unicode-utils@16}
+    version: 0.4.0
 
   '@luxass/utils@1.5.0':
     resolution: {integrity: sha512-6IV3liWg9moF/S0opdQSx2lXeQ1VFuknXFm6qgrQRmH4DYY/yQvzuuOwwUCtBVa8bPHD9CPGwGuUTuG17ZCfBA==}
@@ -3771,7 +3772,7 @@ snapshots:
       - typescript
       - vitest
 
-  '@luxass/unicode-utils@0.4.0':
+  '@luxass/unicode-utils@https://pkg.pr.new/@luxass/unicode-utils@16':
     dependencies:
       '@luxass/utils': 1.5.0
 
