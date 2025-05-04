@@ -1,5 +1,12 @@
 # @ucdjs/cli
 
+## 0.1.2
+
+### Patch Changes
+
+- Updated dependencies [[`d55695d`](https://github.com/ucdjs/ucd/commit/d55695d16b6ec74953e2f2314500d70590eb5d1a)]:
+  - @ucdjs/schema-gen@0.1.0
+
 ## 0.1.1
 
 ### Patch Changes
