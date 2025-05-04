@@ -18,6 +18,7 @@ const SYSTEM_PROMOT = dedent`
             - Extract all relevant fields from text
             - Convert field names to snake_case
             - Preserve original order
+            - Do not declare duplicate fields
           </field_processing>
 
           <documentation>
@@ -25,6 +26,8 @@ const SYSTEM_PROMOT = dedent`
             - Document union types with double quotes (no enums)
             - Explain constraints and formats with examples
             - No JSDoc for the main interface
+            - Only include examples that are explicitly provided in the source text
+            - Do not create or hallucinate additional examples beyond what's given
           </documentation>
 
           <structure>
@@ -36,6 +39,7 @@ const SYSTEM_PROMOT = dedent`
             - Use double quotes for field names in the keys array
             - No example data or additional declarations
             - Export all variables and interfaces
+            - Each field should only be declared once in the interface
           </structure>
 
           <formatting>
