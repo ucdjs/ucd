@@ -32,7 +32,7 @@ V1_UNICODE_VERSIONS_ROUTER.openapi(LIST_ALL_UNICODE_VERSIONS_ROUTE, async (c) =>
 
   for (const row of rows) {
     // look for Unicode version pattern in the row
-    const versionMatch = row.match(new RegExp(`<a[^>]+href="([^"]+)"[^>]*>(${versionPattern.source})</a>`));
+    const versionMatch = row.match(new RegExp(`<a[^>]+href="([^"]+)"[^>]*>\\s*(${versionPattern.source})\\s*</a>`));
     if (!versionMatch) continue;
 
     const documentationUrl = versionMatch[1];
