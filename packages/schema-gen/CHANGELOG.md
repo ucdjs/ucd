@@ -1,5 +1,11 @@
 # @ucdjs/schema-gen
 
+## 0.2.0
+
+### Minor Changes
+
+- [`99eccc9`](https://github.com/ucdjs/ucd/commit/99eccc9bc76904e2e2b5c2233229857235841091) Thanks [@luxass](https://github.com/luxass)! - improve schemagen
+
 ## 0.1.0
 
 ### Minor Changes
