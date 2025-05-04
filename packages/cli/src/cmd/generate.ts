@@ -46,7 +46,7 @@ export async function runGenerate({ versions: providedVersions, flags }: CLIGene
   }
 
   // exit early, if some versions are invalid
-  const invalidVersions = providedVersions.filter((version) => !UNICODE_VERSIONS.find((v) => v.version === version));
+  const invalidVersions = providedVersions.filter((version) => !UNICODE_VERSIONS_WITH_UCD.find((v) => v.version === version));
   if (invalidVersions.length > 0) {
     console.error(
       `Invalid version(s) provided: ${invalidVersions.join(", ")}. Please provide valid Unicode versions.`,

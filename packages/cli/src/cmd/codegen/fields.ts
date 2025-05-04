@@ -26,8 +26,7 @@ export async function runFieldCodegen({ inputPath, flags }: CLICodegenFieldsCmdO
         Flags: [
           ["--openai-key (-k)", "The OpenAI API key to use. (can also be set using OPENAI_API_KEY env var)"],
           ["--output-dir", "Specify the output directory for generated files (defaults to .codegen)"],
-          ["--bundle", "Combine all generated files into a single file"],
-          ["--bundle-file", "Name of the bundled output file (defaults to index.ts)"],
+          ["--bundle <filename>", "Combine all generated files into a single file, if no filename is provided, the default is index.ts"],
           ["--help (-h)", "See all available flags."],
         ],
       },
