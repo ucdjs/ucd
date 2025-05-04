@@ -81,6 +81,11 @@ export async function runFieldCodegen({ inputPath, flags }: CLICodegenFieldsCmdO
 
     const datafile = new RawDataFile(content);
 
+    if (datafile.heading == null) {
+      console.error(`heading for file ${file} is null. Skipping file.`);
+      return null;
+    }
+
     const code = await generateFields({
       datafile,
       apiKey: openaiKey,
