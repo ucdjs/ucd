@@ -1,8 +1,9 @@
 import type { CLIArguments } from "../../cli-utils";
 import { existsSync } from "node:fs";
-import { readdir, readFile, stat, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { RawDataFile } from "@luxass/unicode-utils/data-files";
+import { toKebabCase } from "@luxass/utils";
 import { generateFields } from "@ucdjs/schema-gen";
 import { printHelp } from "../../cli-utils";
 
@@ -23,6 +24,7 @@ export async function runFieldCodegen({ inputPath, flags }: CLICodegenFieldsCmdO
       tables: {
         Flags: [
           ["--openai-key (-k)", "The OpenAI API key to use. (can also be set using OPENAI_API_KEY env var)"],
+          ["--output-dir", "Specify the output directory for generated files (defaults to .codegen)"],
           ["--version", "Show the version number and exit."],
           ["--help (-h)", "See all available flags."],
         ],
@@ -43,22 +45,23 @@ export async function runFieldCodegen({ inputPath, flags }: CLICodegenFieldsCmdO
     return;
   }
 
-  const resolvedInputFile = path.resolve(inputPath);
+  const resolvedInputPath = path.resolve(inputPath);
 
-  if (!existsSync(resolvedInputFile)) {
+  if (!existsSync(resolvedInputPath)) {
     console.error(`invalid input path: ${inputPath}. Please provide a valid input path.`);
     return;
   }
 
-  const outputDir = flags.outputDir || path.join(path.dirname(resolvedInputFile), ".codegen");
+  const outputDir = flags.outputDir || path.join(path.dirname(resolvedInputPath), ".codegen");
+  await mkdir(outputDir, { recursive: true });
 
   // check whether or not the input path is a directory or a file
-  const isDirectory = (await stat(resolvedInputFile)).isDirectory();
+  const isDirectory = (await stat(resolvedInputPath)).isDirectory();
 
   const files = [];
 
   if (isDirectory) {
-    const dir = await readdir(resolvedInputFile, {
+    const dir = await readdir(resolvedInputPath, {
       withFileTypes: true,
       recursive: true,
     });
@@ -73,7 +76,7 @@ export async function runFieldCodegen({ inputPath, flags }: CLICodegenFieldsCmdO
       }
     }
   } else {
-    files.push(resolvedInputFile);
+    files.push(resolvedInputPath);
   }
 
   const promises = files.map(async (file) => {
@@ -96,10 +99,11 @@ export async function runFieldCodegen({ inputPath, flags }: CLICodegenFieldsCmdO
       return null;
     }
 
-    const fileName = path.basename(file);
+    const fileName = toKebabCase(path.basename(file)
+      .replace(/\.txt$/, "")).toLowerCase();
 
     return writeFile(
-      path.join(outputDir, fileName).replace(/\.txt$/, ".ts"),
+      path.join(outputDir, `${fileName}.ts`),
       code,
       "utf-8",
     );
@@ -107,5 +111,5 @@ export async function runFieldCodegen({ inputPath, flags }: CLICodegenFieldsCmdO
 
   await Promise.all(promises);
   // eslint-disable-next-line no-console
-  console.log(`Generated fields for ${files.length} files.`);
+  console.log(`Generated fields for ${files.length} files in ${outputDir}`);
 }
