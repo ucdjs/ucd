@@ -12,11 +12,6 @@
   "vars": {
     "API_VERSION": "x.y.z"
   },
-  "triggers": {
-    "crons": [
-      "0 */12 * * *"
-    ]
-  },
   "placement": { "mode": "smart" },
   "env": {
     "preview": {
