@@ -208,9 +208,6 @@ export function parseFlags(args: string[]) {
       "input-dir",
       "output-file",
     ],
-    default: {
-      "output-dir": "./data",
-    },
   });
 }
 
