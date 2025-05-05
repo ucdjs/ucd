@@ -4,103 +4,140 @@ import { dedent } from "@luxass/utils";
 import { generateObject } from "ai";
 import { z } from "zod";
 
-const SYSTEM_PROMOT = dedent`
+const SYSTEM_PROMPT = dedent`
 <system_prompt>
-  <role>Expert TypeScript code generator specializing in interfaces and documentation</role>
+  <role>Expert TypeScript field extractor for Unicode data files</role>
 
   <task>
-    <input>Text description: {{INPUT}}</input>
-    <output>Complete TypeScript interface with fields array - BOTH MUST BE GENERATED</output>
+    <input>
+      Text description: {{INPUT}}
+      Type name: {{TYPE_NAME}}
+    </input>
+    <output>JSON array of field objects with name, type, and description</output>
   </task>
 
   <critical_rule>
-    YOU MUST ALWAYS OUTPUT TWO THINGS:
-    1. A complete TypeScript interface starting with "export interface"
-    2. A complete fields array starting with "export const"
+    YOU MUST ALWAYS OUTPUT A VALID JSON ARRAY OF OBJECTS WITH THIS STRUCTURE:
+    [
+      {
+        "name": "actual_field_name",
+        "type": "valid_typescript_type",
+        "description": "Description of the field"
+      }
+    ]
 
-    IF YOU OUTPUT ANYTHING ELSE (like just properties), YOUR OUTPUT IS INVALID!
+    NEVER use generic names like "field_0", "field_1", etc. - extract the ACTUAL field names.
+    NEVER use invalid TypeScript types like "union" - use proper union syntax with pipe symbol.
   </critical_rule>
 
   <field_detection>
-    Look for fields in these patterns:
-    - Lines starting with "# Field" (e.g., "# Field 0: Name")
-    - Lines starting with "Field" without # (e.g., "Field 1: Description")
-    - Lines with "Column" followed by number
-    - Numbered field definitions in comments
+    For Unicode data files, fields are typically described in patterns like:
+    - Lines starting with "# Field 0: Name" - where "Name" is the actual field name
+    - Table headers or column definitions
+    - Property descriptions in documentation
 
-    IGNORE these patterns (they are NOT fields):
-    - Lines with "@missing:" (these are directives, not fields)
-    - Lines with "@deprecated"
-    - General comments without field structure
+    DO NOT use "field_0", "field_1" as field names - extract the REAL field names.
+    DO NOT use "type_name" as a field name unless it's explicitly mentioned as a field.
 
-    If NO fields are found, still create empty interface and array!
+    Example: "# Field 0: Code_Point" should produce a field named "code_point" (NOT "field_0").
   </field_detection>
 
-  <requirements>
-    <field_processing>
-      - Extract all relevant fields from text
-      - Convert field names to snake_case
-      - Preserve original order
-      - Do not declare duplicate fields
-    </field_processing>
+  <type_mapping>
+    ONLY USE THESE VALID TYPESCRIPT TYPES:
+    - string - For text, identifiers, character codes, etc.
+    - number - For numeric values, indices, counts
+    - boolean - For true/false flags
+    - string[] - For arrays of strings
+    - number[] - For arrays of numbers
+    - Array<string> - Alternative syntax for string arrays
+    - Array<number> - Alternative syntax for number arrays
+    - Record<string, string> - For string to string mappings
+    - Record<string, number> - For string to number mappings
+    - Record<string, unknown> - For objects with unknown structure
+    - unknown - When type cannot be determined
+    - any - Only as a last resort when type is truly variable
 
-    <documentation>
-      - JSDoc for each property only
-      - Document union types with double quotes (no enums)
-      - Explain constraints and formats with examples
-      - No JSDoc for the main interface
-      - Only include examples that are explicitly provided in the source text
-      - Do not create or hallucinate additional examples beyond what's given
-    </documentation>
+    For union types with string literals, ALWAYS use double quotes and pipe symbol:
+    - "\"value1\" | \"value2\" | \"value3\""
 
-    <structure>
-      - Use the file name from the first line of the input (ignoring version numbers) as the interface name
-      - Single interface named after the input file name without version numbers (e.g., ArabicShaping not ArabicShaping-16.0.0)
-      - Create ordered keys array named [INTERFACE_NAME]_FIELDS using SCREAMING_SNAKE_CASE
-      - Convert the interface name to SCREAMING_SNAKE_CASE by inserting underscores between camelCase words
-      - Use double quotes for field names in the keys array
-      - Export all variables and interfaces
-      - Each field should only be declared once in the interface
-    </structure>
+    CRITICAL: Special values handling:
+    1. If a value contains angle brackets, like <none>, FIRST remove the angle brackets: "none" (NOT "<none>")
+    2. THEN ALWAYS wrap the value in quotes if it's a string literal: "\"none\""
+    3. For union types of string literals, EACH value MUST be in quotes:
+       - Correct: "\"R\" | \"L\" | \"D\" | \"C\" | \"U\" | \"T\""
+       - Incorrect: "R | L | D | C | U | T" (missing quotes around each value)
+       - Incorrect: "none" (missing quotes if it's a string literal)
 
-    <formatting>
-      - Use 2 space indentation
-      - Use semicolons after each interface property declaration
-      - Use trailing commas in arrays
-      - No trailing commas in interfaces (since using semicolons)
-    </formatting>
-  </requirements>
+    NEVER use these invalid types:
+    - "union" - This is not a valid TypeScript type
+    - "object" - Too generic, use Record<> instead
+    - "array" - Too generic, use proper array syntax instead
+    - "map" - Use Record<> instead
+    - "none" - Use "\"none\"" or never instead
+    - "list" - Use proper array syntax instead
 
-  <mandatory_output_format>
-    export interface [InterfaceName] {
-      /** JSDoc comment */
-      field_name: type;
-      // ... more fields (or empty)
+    ALWAYS wrap the final converted type in double quotes in the JSON output.
+    ALWAYS wrap each value in a union type of string literals in quotes.
+  </type_mapping>
+
+  <examples>
+    Input example:
+    \`\`\`
+    # ArabicShaping.txt
+    # Field 0: Code point
+    # Field 1: Name
+    # Field 2: Joining_Type (R = Right_Joining, L = Left_Joining, D = Dual_Joining, C = Join_Causing, U = Non_Joining, T = Transparent)
+    # Field 3: Joining_Group
+    \`\`\`
+
+    Correct output:
+    [
+      {
+        "name": "code_point",
+        "type": "string",
+        "description": "The code point of a character, in hexadecimal form"
+      },
+      {
+        "name": "name",
+        "type": "string",
+        "description": "A short schematic name for the character"
+      },
+      {
+        "name": "joining_type",
+        "type": "\"R\" | \"L\" | \"D\" | \"C\" | \"U\" | \"T\"",
+        "description": "Defines the joining type (R = Right_Joining, L = Left_Joining, D = Dual_Joining, C = Join_Causing, U = Non_Joining, T = Transparent)"
+      },
+      {
+        "name": "joining_group",
+        "type": "string",
+        "description": "Defines the joining group, based schematically on character names"
+      }
+    ]
+
+    Example with special value:
+    Input: "# Field 4: Value (<none> or specific value)"
+
+    Correct output for this field:
+    {
+      "name": "value",
+      "type": "\"none\" | string",
+      "description": "The value, which can be none or a specific value"
     }
-
-    export const [INTERFACE_NAME]_FIELDS: (keyof [InterfaceName])[] = [
-      "field_name",
-      // ... more fields (or empty)
-    ] as const;
-  </mandatory_output_format>
+  </examples>
 
   <validation>
     Before outputting, verify:
-    - Output starts with "export interface"
-    - Interface has opening and closing braces
-    - Each interface property ends with a semicolon
-    - Output includes "export const" for the array
-    - Array is properly typed with (keyof InterfaceName)[]
-    - Output ends with "] as const;"
+    - Field names are the ACTUAL field names from the documentation, NOT generic "field_0" style names
+    - All field names are in snake_case
+    - All types are valid TypeScript types (string, number, boolean, arrays, or proper union types)
+    - NEVER use the word "union" as a type - use proper TypeScript syntax with the pipe symbol
+    - String literal values in union types are ALWAYS wrapped in quotes (e.g., "\"value1\" | \"value2\"")
+    - Special values like "none" (from <none>) are properly quoted as string literals: "\"none\""
+    - Each field has a clear, specific description
+    - Output is a valid JSON array of objects
   </validation>
 
-  <examples>
-    - Interface: NamedSequences -> Fields array: NAMED_SEQUENCES_FIELDS
-    - Interface: NamedSequencesProv -> Fields array: NAMED_SEQUENCES_PROV_FIELDS
-    - Interface: ArabicShaping -> Fields array: ARABIC_SHAPING_FIELDS
-  </examples>
-
-  <format>Single TypeScript code block containing the complete interface and fields array, both exported. NEVER output partial code!</format>
+  <format>JSON array of field objects</format>
 </system_prompt>
 `;
 
@@ -116,7 +153,8 @@ export interface GenerateFieldsOptions {
   apiKey: string;
 }
 
-export async function generateFields(options: GenerateFieldsOptions): Promise<string | null> {
+// eslint-disable-next-line ts/explicit-function-return-type
+export async function generateFields(options: GenerateFieldsOptions) {
   const { datafile, apiKey } = options;
 
   if (datafile.heading == null) {
@@ -135,14 +173,17 @@ export async function generateFields(options: GenerateFieldsOptions): Promise<st
     const result = await generateObject({
       model: openai("gpt-4o-mini"),
       schema: z.object({
-        code: z.string().describe(
-          "A TypeScript code block containing the JSDoc commented interface definition and the corresponding keys array with original casing.",
-        ),
+        fields: z.array(z.object({
+          name: z.string(),
+          type: z.string(),
+          description: z.string(),
+        })),
       }),
-      prompt: SYSTEM_PROMOT.replace("{{INPUT}}", datafile.heading),
+      prompt: SYSTEM_PROMPT
+        .replace("{{INPUT}}", datafile.heading),
     });
 
-    return result.object.code;
+    return result.object.fields;
   } catch (err) {
     console.error("error generating fields:", err);
     return null;
