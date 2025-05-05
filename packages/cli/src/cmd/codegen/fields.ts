@@ -4,7 +4,7 @@ import { mkdir, readdir, readFile, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 import { RawDataFile } from "@luxass/unicode-utils/data-files";
-import { toKebabCase } from "@luxass/utils";
+import { toPascalCase, toSnakeCase } from "@luxass/utils";
 import { generateFields } from "@ucdjs/schema-gen";
 import pLimit from "p-limit";
 import { printHelp } from "../../cli-utils";
@@ -29,7 +29,11 @@ function flattenVersion(version: string): string {
 }
 
 interface ProcessedFile {
-  code: string;
+  fields: {
+    type: string;
+    name: string;
+    description: string;
+  }[];
   fileName: string;
   version: string;
 }
@@ -57,7 +61,7 @@ async function scanFiles(inputPath: string): Promise<FileWithVersion[]> {
     });
 
     for (const file of dir) {
-      if (!file.isFile() || !file.name.endsWith(".txt")) {
+      if (!file.isFile() || !file.name.endsWith(".txt") || file.name.endsWith("Test.txt")) {
         continue;
       }
 
@@ -78,26 +82,27 @@ async function processFile(filePath: string, openaiKey: string, version: string)
     // eslint-disable-next-line no-console
     console.log(`Processing file: ${filePath}`);
     const content = await readFile(filePath, "utf-8");
-    const datafile = new RawDataFile(content);
+    const fileName = path.basename(filePath).replace(/\.txt$/, "");
+    const datafile = new RawDataFile(content, fileName);
 
     if (datafile.heading == null) {
       console.error(`heading for file ${filePath} is null. Skipping file.`);
       return null;
     }
 
-    const code = await generateFields({
+    const fields = await generateFields({
       datafile,
       apiKey: openaiKey,
     });
 
-    if (code == null) {
+    if (fields == null) {
       console.error(`Error generating fields for file: ${filePath}`);
       return null;
     }
 
     return {
-      code,
-      fileName: filePath,
+      fields,
+      fileName,
       version,
     };
   } catch (error) {
@@ -108,10 +113,29 @@ async function processFile(filePath: string, openaiKey: string, version: string)
 
 // write individual files concurrently
 async function writeIndividualFile(result: ProcessedFile, outputDir: string): Promise<void> {
-  const fileName = toKebabCase(path.basename(result.fileName).replace(/\.txt$/, "")).toLowerCase();
+  const fields = result.fields;
+
+  const isEmpty = fields.length === 0;
+
+  let code = "";
+
+  if (isEmpty) {
+    code += `export type ${toPascalCase(result.fileName)} = unknown;\n`;
+  } else {
+    code += `export interface ${toPascalCase(result.fileName)} {\n${fields
+      .map((field) => `  ${field.name}: ${field.type}; // ${field.description}`)
+      .join("\n")}\n}\n`;
+  }
+
+  code += `\nexport const ${toSnakeCase(result.fileName).toUpperCase()}_FIELDS = ${JSON.stringify(
+    fields.map((f) => f.name),
+    null,
+    2,
+  )};\n`;
+
   await writeFile(
-    path.join(outputDir, `${fileName}.ts`),
-    result.code,
+    path.join(outputDir, `${result.fileName}.ts`),
+    code,
     "utf-8",
   );
 }
@@ -129,7 +153,19 @@ async function writeBundledFile(
   for (const result of results) {
     const relativePath = path.relative(process.cwd(), result.fileName);
     bundledCode += `\n// #region ${relativePath}\n`;
-    bundledCode += result.code;
+    if (result.fields.length === 0) {
+      bundledCode += `export type ${toPascalCase(result.fileName)} = unknown;\n`;
+    } else {
+      bundledCode += `export interface ${toPascalCase(result.fileName)} {\n${result.fields
+        .map((field) => `  ${field.name}: ${field.type}; // ${field.description}`)
+        .join("\n")}\n}\n`;
+    }
+
+    bundledCode += `\nexport const ${toSnakeCase(result.fileName).toUpperCase()}_FIELDS = ${JSON.stringify(
+      result.fields.map((f) => f.name),
+      null,
+      2,
+    )};\n`;
     bundledCode += `\n// #endregion\n`;
   }
 
