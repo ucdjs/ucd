@@ -4,7 +4,7 @@ import { dedent } from "@luxass/utils";
 import { generateObject } from "ai";
 import { z } from "zod";
 
-const SYSTEM_PROMPT = dedent`
+const SYSTEM_PROMPT = dedent/* xml */`
 <system_prompt>
   <role>Expert TypeScript field extractor for Unicode data files</role>
 
