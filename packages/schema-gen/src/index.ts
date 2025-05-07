@@ -92,7 +92,7 @@ async function processFile(filePath: string, openaiKey: string, version: string)
     code += `${genInterface(toPascalCase(fileName), properties, {
       export: true,
     })}\n\n`;
-    code += `export const ${toSnakeCase(fileName).toUpperCase()}_FIELDS = ${genArrayFromRaw(fields.map((f) => f.name))};\n\n`;
+    code += `export const ${toSnakeCase(fileName).toUpperCase()}_FIELDS = ${genArrayFromRaw(fields.map((f) => `"${f.name}"`))};\n`;
 
     return {
       fields,
