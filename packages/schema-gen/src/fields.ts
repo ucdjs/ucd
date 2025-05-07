@@ -11,7 +11,6 @@ const SYSTEM_PROMPT = dedent/* xml */`
   <task>
     <input>
       Text description: {{INPUT}}
-      Type name: {{TYPE_NAME}}
     </input>
     <output>JSON array of field objects with name, type, and description</output>
   </task>
@@ -136,6 +135,24 @@ const SYSTEM_PROMPT = dedent/* xml */`
     - Each field has a clear, specific description
     - Output is a valid JSON array of objects
   </validation>
+
+  <error_handling>
+    If NO fields can be detected in the input:
+    - Return an empty JSON array: []
+    - DO NOT return error messages or explanations in the JSON output
+    - DO NOT attempt to create fields when none are clearly defined
+
+    Example when no fields are detected:
+    Input: "This is some text without any field definitions"
+
+    Correct output:
+    []
+
+    If SOME fields are unclear but others are detectable:
+    - Only include the fields that can be clearly identified
+    - Omit any fields that cannot be confidently extracted
+    - Follow all validation rules for the fields that are included
+  </error_handling>
 
   <format>JSON array of field objects</format>
 </system_prompt>
