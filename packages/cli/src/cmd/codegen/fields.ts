@@ -4,7 +4,6 @@ import { existsSync } from "node:fs";
 import { mkdir, readdir, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
-import { toPascalCase, toSnakeCase } from "@luxass/utils";
 import { runSchemagen } from "@ucdjs/schema-gen";
 import { printHelp } from "../../cli-utils";
 
@@ -178,7 +177,7 @@ export async function runFieldCodegen({ inputPath, flags }: CLICodegenFieldsCmdO
 
   if (!shouldBundle) {
     // write individual files with concurrency limit
-    writePromises.push(results.map((result: ProcessedFile) => writeFile(
+    writePromises.push(...results.map((result: ProcessedFile) => writeFile(
       path.join(outputDir, `${result.fileName}.ts`),
       result.code,
       "utf-8",

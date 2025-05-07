@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { RawDataFile } from "@luxass/unicode-utils";
 import { toPascalCase, toSnakeCase } from "@luxass/utils";
-import { genArrayFromRaw, genInterface, genObjectFromRaw } from "knitwork";
+import { genArrayFromRaw, genInterface } from "knitwork";
 import pLimit from "p-limit";
 import { generateFields } from "./fields";
 
