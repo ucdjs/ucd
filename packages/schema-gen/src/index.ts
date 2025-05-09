@@ -1,3 +1,4 @@
+import type { LanguageModelV1 } from "ai";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { RawDataFile } from "@luxass/unicode-utils";
@@ -38,7 +39,20 @@ export interface SchemaGenOptions {
   /**
    * The OpenAI API key to use for generating the schema.
    */
-  openaiKey: string;
+  openaiKey?: string;
+
+  /**
+   * The OpenAI model to use for generating fields.
+   * NOTE:
+   * This is good for testing purposes, where you
+   * can provide a mock model to test the generation.
+   *
+   * If not provided, it will create a new OpenAI instance
+   * with the default model.
+   *
+   * SEE: https://ai-sdk.dev/docs/ai-sdk-core/testing
+   */
+  model?: LanguageModelV1;
 }
 
 export async function runSchemagen(options: SchemaGenOptions): Promise<ProcessedFile[]> {
@@ -46,15 +60,37 @@ export async function runSchemagen(options: SchemaGenOptions): Promise<Processed
 
   const limit = pLimit(10);
 
+  if (!options.openaiKey && !options.model) {
+    throw new Error("Either openaiKey or model must be provided");
+  }
+
   const processPromises = inputFiles.map(({ filePath, version }) =>
-    limit(() => processFile(filePath, options.openaiKey, version)),
+    limit(() => processFile({
+      filePath,
+      openaiKey: options.openaiKey,
+      version,
+      model: options.model,
+    })),
   );
 
   return Promise.all(processPromises)
     .then((results) => results.filter((result: ProcessedFile | null): result is ProcessedFile => result !== null));
 };
 
-async function processFile(filePath: string, openaiKey: string, version: string): Promise<ProcessedFile | null> {
+interface ProcessFileRequest {
+  filePath: string;
+  openaiKey?: string;
+  version: string;
+  model?: LanguageModelV1;
+}
+
+async function processFile(request: ProcessFileRequest): Promise<ProcessedFile | null> {
+  const {
+    filePath,
+    openaiKey,
+    version,
+    model,
+  } = request;
   try {
     // eslint-disable-next-line no-console
     console.log(`Processing file: ${filePath}`);
@@ -70,6 +106,7 @@ async function processFile(filePath: string, openaiKey: string, version: string)
     const fields = await generateFields({
       datafile,
       apiKey: openaiKey,
+      model,
     });
 
     if (fields == null) {

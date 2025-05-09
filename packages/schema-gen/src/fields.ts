@@ -1,4 +1,5 @@
 import type { RawDataFile } from "@luxass/unicode-utils";
+import type { LanguageModelV1 } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
 import { dedent } from "@luxass/utils";
 import { generateObject } from "ai";
@@ -167,28 +168,47 @@ export interface GenerateFieldsOptions {
   /**
    * The OpenAI API key to use for generating fields.
    */
-  apiKey: string;
+  apiKey?: string;
+
+  /**
+   * The OpenAI model to use for generating fields.
+   * NOTE:
+   * This is good for testing purposes, where you
+   * can provide a mock model to test the generation.
+   *
+   * If not provided, it will create a new OpenAI instance
+   * with the default model.
+   *
+   * SEE: https://ai-sdk.dev/docs/ai-sdk-core/testing
+   */
+  model?: LanguageModelV1;
 }
 
 // eslint-disable-next-line ts/explicit-function-return-type
 export async function generateFields(options: GenerateFieldsOptions) {
-  const { datafile, apiKey } = options;
+  const { datafile, apiKey, model } = options;
 
   if (datafile.heading == null) {
     return null;
   }
 
-  if (!apiKey) {
+  if (!apiKey && !model) {
     return null;
   }
 
-  const openai = createOpenAI({
-    apiKey,
-  });
+  let openai;
+  if (!model) {
+    openai = createOpenAI({
+      apiKey,
+    });
+  }
 
   try {
     const result = await generateObject({
-      model: openai("gpt-4o-mini"),
+      // Even though openai can be null, it will only
+      // be null if the model is provided.
+      // So we can safely use the non-null assertion operator.
+      model: model || openai!("gpt-4o-mini"),
       schema: z.object({
         fields: z.array(z.object({
           name: z.string(),
