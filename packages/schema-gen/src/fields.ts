@@ -196,19 +196,18 @@ export async function generateFields(options: GenerateFieldsOptions) {
     return null;
   }
 
-  let openai;
-  if (!model) {
-    openai = createOpenAI({
-      apiKey,
-    });
-  }
+  const openai = model != null
+    ? null
+    : createOpenAI({
+        apiKey,
+      });
 
   try {
     const result = await generateObject({
       // Even though openai can be null, it will only
       // be null if the model is provided.
       // So we can safely use the non-null assertion operator.
-      model: model || openai!("gpt-4o-mini"),
+      model: model ?? openai!("gpt-4o-mini"),
       schema: z.object({
         fields: z.array(z.object({
           name: z.string(),
