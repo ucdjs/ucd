@@ -30,5 +30,5 @@ community.
 
 ## 📄 License
 
-Published under [MIT License](./LICENSE).
+Published under [MIT License](./LICENSE), with the exception of the Unicode Data Files stored in `./test/ucd-files` which are under the [Unicode License](./LICENSE-UNICODE).
 
