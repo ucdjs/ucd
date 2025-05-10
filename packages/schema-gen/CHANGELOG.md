@@ -1,5 +1,11 @@
 # @ucdjs/schema-gen
 
+## 0.2.1
+
+### Patch Changes
+
+- [#11](https://github.com/ucdjs/ucd/pull/11) [`78f4673`](https://github.com/ucdjs/ucd/commit/78f4673657a210eb374a025dabe7450291712a0a) Thanks [@luxass](https://github.com/luxass)! - feat: allow for providing ai model
+
 ## 0.2.0
 
 ### Minor Changes
