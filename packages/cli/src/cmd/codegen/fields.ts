@@ -1,12 +1,10 @@
+import type { ProcessedFile } from "@ucdjs/schema-gen";
 import type { CLIArguments } from "../../cli-utils";
 import { existsSync } from "node:fs";
-import { mkdir, readdir, readFile, stat, writeFile } from "node:fs/promises";
+import { mkdir, readdir, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
-import { RawDataFile } from "@luxass/unicode-utils/data-files";
-import { toPascalCase, toSnakeCase } from "@luxass/utils";
-import { generateFields } from "@ucdjs/schema-gen";
-import pLimit from "p-limit";
+import { runSchemagen } from "@ucdjs/schema-gen";
 import { printHelp } from "../../cli-utils";
 
 export interface CLICodegenFieldsCmdOptions {
@@ -26,16 +24,6 @@ function flattenVersion(version: string): string {
     parts.pop();
   }
   return parts.join(".");
-}
-
-interface ProcessedFile {
-  fields: {
-    type: string;
-    name: string;
-    description: string;
-  }[];
-  fileName: string;
-  version: string;
 }
 
 interface FileWithVersion {
@@ -76,70 +64,6 @@ async function scanFiles(inputPath: string): Promise<FileWithVersion[]> {
   return filesWithVersion;
 }
 
-// Process a single file concurrently
-async function processFile(filePath: string, openaiKey: string, version: string): Promise<ProcessedFile | null> {
-  try {
-    // eslint-disable-next-line no-console
-    console.log(`Processing file: ${filePath}`);
-    const content = await readFile(filePath, "utf-8");
-    const fileName = path.basename(filePath).replace(/\.txt$/, "");
-    const datafile = new RawDataFile(content, fileName);
-
-    if (datafile.heading == null) {
-      console.error(`heading for file ${filePath} is null. Skipping file.`);
-      return null;
-    }
-
-    const fields = await generateFields({
-      datafile,
-      apiKey: openaiKey,
-    });
-
-    if (fields == null) {
-      console.error(`Error generating fields for file: ${filePath}`);
-      return null;
-    }
-
-    return {
-      fields,
-      fileName,
-      version,
-    };
-  } catch (error) {
-    console.error(`Error processing file ${filePath}:`, error);
-    return null;
-  }
-}
-
-// write individual files concurrently
-async function writeIndividualFile(result: ProcessedFile, outputDir: string): Promise<void> {
-  const fields = result.fields;
-
-  const isEmpty = fields.length === 0;
-
-  let code = "";
-
-  if (isEmpty) {
-    code += `export type ${toPascalCase(result.fileName)} = unknown;\n`;
-  } else {
-    code += `export interface ${toPascalCase(result.fileName)} {\n${fields
-      .map((field) => `  ${field.name}: ${field.type}; // ${field.description}`)
-      .join("\n")}\n}\n`;
-  }
-
-  code += `\nexport const ${toSnakeCase(result.fileName).toUpperCase()}_FIELDS = ${JSON.stringify(
-    fields.map((f) => f.name),
-    null,
-    2,
-  )};\n`;
-
-  await writeFile(
-    path.join(outputDir, `${result.fileName}.ts`),
-    code,
-    "utf-8",
-  );
-}
-
 // write bundled files concurrently
 async function writeBundledFile(
   version: string,
@@ -153,19 +77,7 @@ async function writeBundledFile(
   for (const result of results) {
     const relativePath = path.relative(process.cwd(), result.fileName);
     bundledCode += `\n// #region ${relativePath}\n`;
-    if (result.fields.length === 0) {
-      bundledCode += `export type ${toPascalCase(result.fileName)} = unknown;\n`;
-    } else {
-      bundledCode += `export interface ${toPascalCase(result.fileName)} {\n${result.fields
-        .map((field) => `  ${field.name}: ${field.type}; // ${field.description}`)
-        .join("\n")}\n}\n`;
-    }
-
-    bundledCode += `\nexport const ${toSnakeCase(result.fileName).toUpperCase()}_FIELDS = ${JSON.stringify(
-      result.fields.map((f) => f.name),
-      null,
-      2,
-    )};\n`;
+    bundledCode += result.code;
     bundledCode += `\n// #endregion\n`;
   }
 
@@ -256,41 +168,37 @@ export async function runFieldCodegen({ inputPath, flags }: CLICodegenFieldsCmdO
   // eslint-disable-next-line no-console
   console.log(`Found ${filesWithVersion.length} files to process.`);
 
-  // STEP 2: Process files with concurrency limit
-  const limit = pLimit(10); // Limit concurrency to 10
+  const results = await runSchemagen({
+    files: filesWithVersion,
+    openaiKey,
+  });
 
-  // process all files with concurrency limit
-  const processPromises = filesWithVersion.map(({ filePath, version }) =>
-    limit(() => processFile(filePath, openaiKey, version)),
-  );
-
-  const results = await Promise.all(processPromises);
-  const validResults = results.filter((result: ProcessedFile | null): result is ProcessedFile => result !== null);
+  const writePromises = [];
 
   if (!shouldBundle) {
     // write individual files with concurrency limit
-    const writePromises = validResults.map((result: ProcessedFile) =>
-      limit(() => writeIndividualFile(result, outputDir!)),
-    );
+    writePromises.push(...results.map((result: ProcessedFile) => writeFile(
+      path.join(outputDir, `${result.fileName}.ts`),
+      result.code,
+      "utf-8",
+    )));
 
     await Promise.all(writePromises);
     // eslint-disable-next-line no-console
-    console.log(`Generated fields for ${validResults.length} files in ${outputDir}`);
+    console.log(`Generated fields for ${results.length} files in ${outputDir}`);
     return;
   }
 
   // group results by version
   const resultsByVersion = new Map<string, ProcessedFile[]>();
-  for (const result of validResults) {
+  for (const result of results) {
     const versionResults = resultsByVersion.get(result.version) ?? [];
     versionResults.push(result);
     resultsByVersion.set(result.version, versionResults);
   }
 
   // write bundled files with concurrency limit
-  const bundlePromises = Array.from(resultsByVersion.entries()).map(([version, versionResults]) =>
-    limit(() => writeBundledFile(version, versionResults, bundleTemplate, outputDir)),
-  );
+  const bundlePromises = Array.from(resultsByVersion.entries()).map(([version, versionResults]) => writeBundledFile(version, versionResults, bundleTemplate, outputDir));
 
   await Promise.all(bundlePromises);
 }

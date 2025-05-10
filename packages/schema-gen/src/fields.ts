@@ -1,4 +1,5 @@
 import type { RawDataFile } from "@luxass/unicode-utils";
+import type { LanguageModelV1 } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
 import { dedent } from "@luxass/utils";
 import { generateObject } from "ai";
@@ -11,7 +12,6 @@ const SYSTEM_PROMPT = dedent/* xml */`
   <task>
     <input>
       Text description: {{INPUT}}
-      Type name: {{TYPE_NAME}}
     </input>
     <output>JSON array of field objects with name, type, and description</output>
   </task>
@@ -137,6 +137,24 @@ const SYSTEM_PROMPT = dedent/* xml */`
     - Output is a valid JSON array of objects
   </validation>
 
+  <error_handling>
+    If NO fields can be detected in the input:
+    - Return an empty JSON array: []
+    - DO NOT return error messages or explanations in the JSON output
+    - DO NOT attempt to create fields when none are clearly defined
+
+    Example when no fields are detected:
+    Input: "This is some text without any field definitions"
+
+    Correct output:
+    []
+
+    If SOME fields are unclear but others are detectable:
+    - Only include the fields that can be clearly identified
+    - Omit any fields that cannot be confidently extracted
+    - Follow all validation rules for the fields that are included
+  </error_handling>
+
   <format>JSON array of field objects</format>
 </system_prompt>
 `;
@@ -150,28 +168,46 @@ export interface GenerateFieldsOptions {
   /**
    * The OpenAI API key to use for generating fields.
    */
-  apiKey: string;
+  apiKey?: string;
+
+  /**
+   * The OpenAI model to use for generating fields.
+   * NOTE:
+   * This is good for testing purposes, where you
+   * can provide a mock model to test the generation.
+   *
+   * If not provided, it will create a new OpenAI instance
+   * with the default model.
+   *
+   * SEE: https://ai-sdk.dev/docs/ai-sdk-core/testing
+   */
+  model?: LanguageModelV1;
 }
 
 // eslint-disable-next-line ts/explicit-function-return-type
 export async function generateFields(options: GenerateFieldsOptions) {
-  const { datafile, apiKey } = options;
+  const { datafile, apiKey, model } = options;
 
   if (datafile.heading == null) {
     return null;
   }
 
-  if (!apiKey) {
+  if (!apiKey && !model) {
     return null;
   }
 
-  const openai = createOpenAI({
-    apiKey,
-  });
+  const openai = model != null
+    ? null
+    : createOpenAI({
+        apiKey,
+      });
 
   try {
     const result = await generateObject({
-      model: openai("gpt-4o-mini"),
+      // Even though openai can be null, it will only
+      // be null if the model is provided.
+      // So we can safely use the non-null assertion operator.
+      model: model ?? openai!("gpt-4o-mini"),
       schema: z.object({
         fields: z.array(z.object({
           name: z.string(),

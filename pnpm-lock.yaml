@@ -66,14 +66,17 @@ catalogs:
       specifier: ^0.5.0
       version: 0.5.0
     '@luxass/utils':
-      specifier: ^1.4.0
-      version: 1.4.0
+      specifier: ^1.6.1
+      version: 1.6.1
     ai:
       specifier: ^4.3.10
       version: 4.3.10
     farver:
       specifier: ^0.4.2
       version: 0.4.2
+    knitwork:
+      specifier: ^1.2.0
+      version: 1.2.0
     p-limit:
       specifier: ^6.2.0
       version: 6.2.0
@@ -132,7 +135,7 @@ importers:
         version: 0.5.0
       '@luxass/utils':
         specifier: catalog:prod
-        version: 1.4.0
+        version: 1.6.1
       '@ucdjs/schema-gen':
         specifier: workspace:*
         version: link:../schema-gen
@@ -178,10 +181,16 @@ importers:
         version: 0.5.0
       '@luxass/utils':
         specifier: catalog:prod
-        version: 1.4.0
+        version: 1.6.1
       ai:
         specifier: catalog:prod
         version: 4.3.10(react@19.1.0)(zod@3.24.3)
+      knitwork:
+        specifier: catalog:prod
+        version: 1.2.0
+      p-limit:
+        specifier: catalog:prod
+        version: 6.2.0
       zod:
         specifier: catalog:prod
         version: 3.24.3
@@ -725,12 +734,8 @@ packages:
   '@luxass/unicode-utils@0.5.0':
     resolution: {integrity: sha512-15E3LSeTJN9jTX6G65jVtZLLP2vL3wOQ0EOmzzWgeTZxGcvQqL0Hl2hv/ssOA6xHQcMmO9q13bD8QbAY2/nP1A==}
 
-  '@luxass/utils@1.4.0':
-    resolution: {integrity: sha512-ugZSgDPMMZoGBH5AU+Ab1AwMJJ62e73qMGIuoyQgut1JGpt/8X7xfNSZkH7+rff1geBZnzHoOlIdF7v2H7qJMw==}
-    engines: {node: '>=20'}
-
-  '@luxass/utils@1.5.0':
-    resolution: {integrity: sha512-6IV3liWg9moF/S0opdQSx2lXeQ1VFuknXFm6qgrQRmH4DYY/yQvzuuOwwUCtBVa8bPHD9CPGwGuUTuG17ZCfBA==}
+  '@luxass/utils@1.6.1':
+    resolution: {integrity: sha512-bkapYIovSl0x6UUCqeMTyJzKwvIaP+dLqDrC/qV6w7iAtqPASIUDZ3n+R5aobZhA18W7zVmPf18UBI0NgI4dXA==}
     engines: {node: '>=20'}
 
   '@manypkg/find-root@1.1.0':
@@ -2232,6 +2237,9 @@ packages:
 
   keyv@4.5.4:
     resolution: {integrity: sha512-oxVHkHR/EJf2CNXnWxRLW6mg7JyCCUcG0DtEGmL2ctUo1PNTin1PUil+r/+4r5MpVgC/fn1kjsx7mjSujKqIpw==}
+
+  knitwork@1.2.0:
+    resolution: {integrity: sha512-xYSH7AvuQ6nXkq42x0v5S8/Iry+cfulBz/DJQzhIyESdLD7425jXsPy4vn5cCXU+HhRN2kVw51Vd1K6/By4BQg==}
 
   levn@0.4.1:
     resolution: {integrity: sha512-+bT2uH4E5LGE7h/n3evcS/sQlJXCpIp6ym8OWJ5eV6+67Dsql/LaaT7qJBAt2rzfoa/5QBGBhxDix1dMt2kQKQ==}
@@ -3870,11 +3878,9 @@ snapshots:
 
   '@luxass/unicode-utils@0.5.0':
     dependencies:
-      '@luxass/utils': 1.5.0
+      '@luxass/utils': 1.6.1
 
-  '@luxass/utils@1.4.0': {}
-
-  '@luxass/utils@1.5.0': {}
+  '@luxass/utils@1.6.1': {}
 
   '@manypkg/find-root@1.1.0':
     dependencies:
@@ -5316,6 +5322,8 @@ snapshots:
   keyv@4.5.4:
     dependencies:
       json-buffer: 3.0.1
+
+  knitwork@1.2.0: {}
 
   levn@0.4.1:
     dependencies:

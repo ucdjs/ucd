@@ -48,8 +48,6 @@ export default defineConfig({
           environment: "node",
           mockReset: true,
         },
-        esbuild: { target: "es2020" },
-        resolve: { alias: aliases },
       },
       {
         extends: true,
@@ -59,9 +57,18 @@ export default defineConfig({
           environment: "node",
           mockReset: true,
         },
-        esbuild: { target: "es2020" },
-        resolve: { alias: aliases },
+      },
+      {
+        extends: true,
+        test: {
+          include: ["./packages/schema-gen/**/*.{test,spec}.?(c|m)[jt]s?(x)"],
+          name: "schema-gen",
+          environment: "node",
+          mockReset: true,
+        },
       },
     ]
-  }
+  },
+  esbuild: { target: "es2020" },
+  resolve: { alias: aliases },
 })
