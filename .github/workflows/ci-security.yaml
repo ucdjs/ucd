@@ -7,13 +7,13 @@ on:
   pull_request:
     types: [opened, synchronize]
     paths:
-      - '.github/workflows/**'
+      - ".github/workflows/**"
   push:
     branches:
       - main
-      - 'renovate/**'
+      - "renovate/**"
     paths:
-      - '.github/workflows/**'
+      - ".github/workflows/**"
 
 jobs:
   zizmor:
@@ -26,17 +26,16 @@ jobs:
         with:
           persist-credentials: false
 
-      - uses: taiki-e/install-action@5e434d46449f862cf1aad510c0b87f51110e7334 # v2.49.48
-        with:
-          tool: zizmor
+      - name: install uv
+        uses: astral-sh/setup-uv@6b9c6063abd6010835644d4c2e1bef4cf5cd0fca # v6.0.1
 
       - name: run zizmor
-        run: zizmor --format sarif . > results.sarif
+        run: uvx zizmor --format sarif . > results.sarif
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: upload sarif file
-        uses: github/codeql-action/upload-sarif@45775bd8235c68ba998cffa5171334d58593da47 # v3.28.15
+        uses: github/codeql-action/upload-sarif@6bb031afdd8eb862ea3fc1848194185e076637e5 # v3.28.11
         with:
           sarif_file: results.sarif
           category: zizmor
