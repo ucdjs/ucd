@@ -1,5 +1,16 @@
 # @ucdjs/cli
 
+## 0.2.0
+
+### Minor Changes
+
+- [`381b40d`](https://github.com/ucdjs/ucd/commit/381b40d654c9c10d3c8b4f82bdeab3003b6a79d4) Thanks [@luxass](https://github.com/luxass)! - implement concurrency for codegen
+
+### Patch Changes
+
+- Updated dependencies [[`78f4673`](https://github.com/ucdjs/ucd/commit/78f4673657a210eb374a025dabe7450291712a0a)]:
+  - @ucdjs/schema-gen@0.2.1
+
 ## 0.1.3
 
 ### Patch Changes
