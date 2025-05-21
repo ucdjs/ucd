@@ -6,7 +6,7 @@
     "node": ">=22.13",
     "pnpm": "10.x"
   },
-  "packageManager": "pnpm@10.10.0",
+  "packageManager": "pnpm@10.11.0",
   "workspaces": [
     "packages/*"
   ],
