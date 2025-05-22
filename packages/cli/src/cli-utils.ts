@@ -1,6 +1,5 @@
 import type { Arguments } from "yargs-parser";
 import type { CLICodegenCmdOptions } from "./cmd/codegen/root";
-import type { CLIGenerateCmdOptions } from "./cmd/generate";
 import process from "node:process";
 import {
   bgGreen,
@@ -15,11 +14,9 @@ import pkg from "../package.json" with { type: "json" };
 type CLICommand =
   | "help"
   | "version"
-  | "generate"
   | "codegen";
 
 const SUPPORTED_COMMANDS = new Set<CLICommand>([
-  "generate",
   "codegen",
 ]);
 
@@ -161,7 +158,6 @@ export async function runCommand(cmd: CLICommand, flags: Arguments): Promise<voi
         usage: "[command] [...flags]",
         tables: {
           "Commands": [
-            ["generate", "Generate UCD data files."],
             ["codegen", "Generate TypeScript code from UCD data."],
           ],
           "Global Flags": [
@@ -176,15 +172,6 @@ export async function runCommand(cmd: CLICommand, flags: Arguments): Promise<voi
       // eslint-disable-next-line no-console
       console.log(`  ${bgGreen(black(` ucd `))} ${green(`v${pkg.version ?? "x.y.z"}`)}`);
       break;
-    case "generate": {
-      const { runGenerate } = await import("./cmd/generate");
-      const versions = flags._.slice(3) as string[];
-      await runGenerate({
-        versions,
-        flags: flags as CLIGenerateCmdOptions["flags"],
-      });
-      break;
-    }
     case "codegen": {
       const { runCodegenRoot } = await import("./cmd/codegen/root");
       const subcommand = flags._[3]?.toString() ?? "";
