@@ -122,18 +122,6 @@ export async function runDownload({ versions: providedVersions, flags }: CLIDown
       debug: flags.debug,
     }));
 
-    // Debug logging for test files
-    if (flags.debug && flags.excludeTest) {
-      const testFiles = allPaths.filter((path) => path.toLowerCase().includes("test"));
-      const includedTestFiles = testFiles.filter((path) => matchedPaths.has(path));
-
-      if (includedTestFiles.length > 0) {
-        console.warn(yellow("WARNING: Some test files were not excluded:"));
-        includedTestFiles.forEach((file) => console.warn(yellow(`  - ${file}`)));
-        console.warn(gray(`Patterns used: ${patterns.join(", ")}`));
-      }
-    }
-
     function filterEntries(entryList: FileEntry[], prefix = "") {
       const result: FileEntry[] = [];
       for (const entry of entryList) {
@@ -161,18 +149,20 @@ export async function runDownload({ versions: providedVersions, flags }: CLIDown
     basePath: string,
     versionOutputDir: string,
     downloadedFiles: string[],
+    currentDirPath: string = "",
     errors: string[],
   ) {
     const dirPromises = [];
     const filePromises = [];
 
     for (const entry of entries) {
-      const outputPath = path.join(versionOutputDir, entry.path);
+      const entryOutputPath = currentDirPath ? path.join(currentDirPath, entry.path) : entry.path;
+      const outputPath = path.join(versionOutputDir, entryOutputPath);
 
       if (entry.children) {
         dirPromises.push((async () => {
           await mkdir(outputPath, { recursive: true });
-          await processFileEntries(entry.children || [], `${basePath}/${entry.path}`, versionOutputDir, downloadedFiles, errors);
+          await processFileEntries(entry.children || [], `${basePath}/${entry.path}`, versionOutputDir, downloadedFiles, entryOutputPath, errors);
         })());
       } else {
         filePromises.push((async () => {
@@ -228,7 +218,7 @@ export async function runDownload({ versions: providedVersions, flags }: CLIDown
       const correctVersion = version.mappedVersion ?? version.version;
       const basePath = `/${correctVersion}${hasUCDPath(correctVersion) ? "/ucd" : ""}`;
 
-      await processFileEntries(filteredEntries, basePath, versionOutputDir, downloadedFiles, errors);
+      await processFileEntries(filteredEntries, basePath, versionOutputDir, downloadedFiles, "", errors);
 
       if (downloadedFiles.length === 0 && errors.length === 0) {
         console.warn(yellow(`No files were downloaded for Unicode ${version.version}`));
