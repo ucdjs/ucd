@@ -9,6 +9,9 @@ catalogs:
     '@luxass/eslint-config':
       specifier: ^4.18.1
       version: 4.18.1
+    '@types/micromatch':
+      specifier: ^4.0.9
+      version: 4.0.9
     '@types/node':
       specifier: ^22.10.0
       version: 22.15.2
@@ -63,8 +66,8 @@ catalogs:
       specifier: ^1.3.22
       version: 1.3.22
     '@luxass/unicode-utils':
-      specifier: ^0.8.0
-      version: 0.8.0
+      specifier: ^0.9.0
+      version: 0.9.0
     '@luxass/utils':
       specifier: ^2.2.1
       version: 2.2.1
@@ -77,6 +80,9 @@ catalogs:
     knitwork:
       specifier: ^1.2.0
       version: 1.2.0
+    micromatch:
+      specifier: ^4.0.8
+      version: 4.0.8
     p-limit:
       specifier: ^6.2.0
       version: 6.2.0
@@ -84,8 +90,8 @@ catalogs:
       specifier: ^21.1.1
       version: 21.1.1
     zod:
-      specifier: ^3.25.13
-      version: 3.25.13
+      specifier: ^3.25.17
+      version: 3.25.17
 
 importers:
 
@@ -132,7 +138,7 @@ importers:
     dependencies:
       '@luxass/unicode-utils':
         specifier: catalog:prod
-        version: 0.8.0
+        version: 0.9.0
       '@luxass/utils':
         specifier: catalog:prod
         version: 2.2.1
@@ -142,6 +148,9 @@ importers:
       farver:
         specifier: catalog:prod
         version: 0.4.2
+      micromatch:
+        specifier: catalog:prod
+        version: 4.0.8
       p-limit:
         specifier: catalog:prod
         version: 6.2.0
@@ -152,6 +161,9 @@ importers:
       '@luxass/eslint-config':
         specifier: catalog:dev
         version: 4.18.1(@typescript-eslint/utils@8.31.0(eslint@9.27.0(jiti@2.4.2))(typescript@5.8.3))(@vue/compiler-sfc@3.5.13)(eslint@9.27.0(jiti@2.4.2))(typescript@5.8.3)(vitest@3.1.4)
+      '@types/micromatch':
+        specifier: catalog:dev
+        version: 4.0.9
       '@types/yargs-parser':
         specifier: catalog:dev
         version: 21.0.3
@@ -175,16 +187,16 @@ importers:
     dependencies:
       '@ai-sdk/openai':
         specifier: catalog:prod
-        version: 1.3.22(zod@3.25.13)
+        version: 1.3.22(zod@3.25.17)
       '@luxass/unicode-utils':
         specifier: catalog:prod
-        version: 0.8.0
+        version: 0.9.0
       '@luxass/utils':
         specifier: catalog:prod
         version: 2.2.1
       ai:
         specifier: catalog:prod
-        version: 4.3.16(react@19.1.0)(zod@3.25.13)
+        version: 4.3.16(react@19.1.0)(zod@3.25.17)
       knitwork:
         specifier: catalog:prod
         version: 1.2.0
@@ -193,7 +205,7 @@ importers:
         version: 6.2.0
       zod:
         specifier: catalog:prod
-        version: 3.25.13
+        version: 3.25.17
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:dev
@@ -739,8 +751,8 @@ packages:
       prettier-plugin-astro:
         optional: true
 
-  '@luxass/unicode-utils@0.8.0':
-    resolution: {integrity: sha512-UniG5YOR4PnFg9XQuR/XoicXEwU7ukj73JGHJK4CfvFGYwz892Z2+k+wkx7rH21DhR5zjUXFU9DFiOTzBLPCcQ==}
+  '@luxass/unicode-utils@0.9.0':
+    resolution: {integrity: sha512-RNhEJ2pXiIRhmr/KGtAbl4jy2uwQjXMdRQKHZE1M1IgjkXa4/d8is5HtwxdKKcL0CCO3f4lGAeLOIhR6ACGNfg==}
 
   '@luxass/utils@2.2.1':
     resolution: {integrity: sha512-riQdjsEXmHxaPDcWappVi1YYF/rsveZTvSIsev1m7qYQrRq6aRNYWTVVPhye3Pdf0NCWUNIKIdtrtpHhx+SgYA==}
@@ -1166,6 +1178,9 @@ packages:
   '@tybys/wasm-util@0.9.0':
     resolution: {integrity: sha512-6+7nlbMVX/PVDCwaIQ8nTOPveOcFLSt8GcXdx8hD0bt39uWxYT88uXzqTd4fTvqta7oeUJqudepapKNt2DYJFw==}
 
+  '@types/braces@3.0.5':
+    resolution: {integrity: sha512-SQFof9H+LXeWNz8wDe7oN5zu7ket0qwMu5vZubW4GCJ8Kkeh6nBWUz87+KTz/G3Kqsrp0j/W253XJb3KMEeg3w==}
+
   '@types/cookie@0.6.0':
     resolution: {integrity: sha512-4Kh9a6B2bQciAhf7FSuMRRkUWecJgJu9nPnx3yzpsfXX/c50REIqpHY4C82bXP90qrLtXtkDxTZosYO3UpOwlA==}
 
@@ -1183,6 +1198,9 @@ packages:
 
   '@types/mdast@4.0.4':
     resolution: {integrity: sha512-kGaNbPh1k7AFzgpud/gMdvIm5xuECykRR+JnWKQno9TAXVa6WIVCGTPvYGekIDL4uwCZQSYbUxNBSb1aUo79oA==}
+
+  '@types/micromatch@4.0.9':
+    resolution: {integrity: sha512-7V+8ncr22h4UoYRLnLXSpTxjQrNUXtWHGeMPRJt1nULXI57G9bIcpyrHlmrQ7QK24EyyuXvYcSSWAM8GA9nqCg==}
 
   '@types/ms@2.1.0':
     resolution: {integrity: sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA==}
@@ -3328,47 +3346,47 @@ packages:
     peerDependencies:
       zod: ^3.24.1
 
-  zod@3.25.13:
-    resolution: {integrity: sha512-Q8mvk2iWi7rTDfpQBsu4ziE7A6AxgzJ5hzRyRYQkoV3A3niYsXVwDaP1Kbz3nWav6S+VZ6k2OznFn8ZyDHvIrg==}
+  zod@3.25.17:
+    resolution: {integrity: sha512-8hQzQ/kMOIFbwOgPrm9Sf9rtFHpFUMy4HvN0yEB0spw14aYi0uT5xG5CE2DB9cd51GWNsz+DNO7se1kztHMKnw==}
 
   zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
 
 snapshots:
 
-  '@ai-sdk/openai@1.3.22(zod@3.25.13)':
+  '@ai-sdk/openai@1.3.22(zod@3.25.17)':
     dependencies:
       '@ai-sdk/provider': 1.1.3
-      '@ai-sdk/provider-utils': 2.2.8(zod@3.25.13)
-      zod: 3.25.13
+      '@ai-sdk/provider-utils': 2.2.8(zod@3.25.17)
+      zod: 3.25.17
 
-  '@ai-sdk/provider-utils@2.2.8(zod@3.25.13)':
+  '@ai-sdk/provider-utils@2.2.8(zod@3.25.17)':
     dependencies:
       '@ai-sdk/provider': 1.1.3
       nanoid: 3.3.11
       secure-json-parse: 2.7.0
-      zod: 3.25.13
+      zod: 3.25.17
 
   '@ai-sdk/provider@1.1.3':
     dependencies:
       json-schema: 0.4.0
 
-  '@ai-sdk/react@1.2.12(react@19.1.0)(zod@3.25.13)':
+  '@ai-sdk/react@1.2.12(react@19.1.0)(zod@3.25.17)':
     dependencies:
-      '@ai-sdk/provider-utils': 2.2.8(zod@3.25.13)
-      '@ai-sdk/ui-utils': 1.2.11(zod@3.25.13)
+      '@ai-sdk/provider-utils': 2.2.8(zod@3.25.17)
+      '@ai-sdk/ui-utils': 1.2.11(zod@3.25.17)
       react: 19.1.0
       swr: 2.3.3(react@19.1.0)
       throttleit: 2.1.0
     optionalDependencies:
-      zod: 3.25.13
+      zod: 3.25.17
 
-  '@ai-sdk/ui-utils@1.2.11(zod@3.25.13)':
+  '@ai-sdk/ui-utils@1.2.11(zod@3.25.17)':
     dependencies:
       '@ai-sdk/provider': 1.1.3
-      '@ai-sdk/provider-utils': 2.2.8(zod@3.25.13)
-      zod: 3.25.13
-      zod-to-json-schema: 3.24.5(zod@3.25.13)
+      '@ai-sdk/provider-utils': 2.2.8(zod@3.25.17)
+      zod: 3.25.17
+      zod-to-json-schema: 3.24.5(zod@3.25.17)
 
   '@ampproject/remapping@2.3.0':
     dependencies:
@@ -3893,7 +3911,7 @@ snapshots:
       - typescript
       - vitest
 
-  '@luxass/unicode-utils@0.8.0':
+  '@luxass/unicode-utils@0.9.0':
     dependencies:
       '@luxass/utils': 2.2.1
 
@@ -4196,6 +4214,8 @@ snapshots:
       tslib: 2.8.1
     optional: true
 
+  '@types/braces@3.0.5': {}
+
   '@types/cookie@0.6.0': {}
 
   '@types/debug@4.1.12':
@@ -4211,6 +4231,10 @@ snapshots:
   '@types/mdast@4.0.4':
     dependencies:
       '@types/unist': 3.0.3
+
+  '@types/micromatch@4.0.9':
+    dependencies:
+      '@types/braces': 3.0.5
 
   '@types/ms@2.1.0': {}
 
@@ -4498,15 +4522,15 @@ snapshots:
 
   acorn@8.14.1: {}
 
-  ai@4.3.16(react@19.1.0)(zod@3.25.13):
+  ai@4.3.16(react@19.1.0)(zod@3.25.17):
     dependencies:
       '@ai-sdk/provider': 1.1.3
-      '@ai-sdk/provider-utils': 2.2.8(zod@3.25.13)
-      '@ai-sdk/react': 1.2.12(react@19.1.0)(zod@3.25.13)
-      '@ai-sdk/ui-utils': 1.2.11(zod@3.25.13)
+      '@ai-sdk/provider-utils': 2.2.8(zod@3.25.17)
+      '@ai-sdk/react': 1.2.12(react@19.1.0)(zod@3.25.17)
+      '@ai-sdk/ui-utils': 1.2.11(zod@3.25.17)
       '@opentelemetry/api': 1.9.0
       jsondiffpatch: 0.6.0
-      zod: 3.25.13
+      zod: 3.25.17
     optionalDependencies:
       react: 19.1.0
 
@@ -6641,10 +6665,10 @@ snapshots:
 
   yoctocolors-cjs@2.1.2: {}
 
-  zod-to-json-schema@3.24.5(zod@3.25.13):
+  zod-to-json-schema@3.24.5(zod@3.25.17):
     dependencies:
-      zod: 3.25.13
+      zod: 3.25.17
 
-  zod@3.25.13: {}
+  zod@3.25.17: {}
 
   zwitch@2.0.4: {}
