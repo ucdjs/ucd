@@ -1,14 +1,19 @@
+/* eslint-disable no-console */
 import type { CLIArguments } from "../cli-utils";
 import { mkdir, writeFile } from "node:fs/promises";
-import path, { dirname, join } from "node:path";
-import { hasUCDPath, mapToUCDPathVersion, UNICODE_TO_UCD_PATH_MAPPINGS, UNICODE_VERSION_METADATA } from "@luxass/unicode-utils";
-import { gray, green, yellow } from "farver/fast";
+import path, { dirname } from "node:path";
+import { hasUCDPath, mapToUCDPathVersion, UNICODE_VERSION_METADATA } from "@luxass/unicode-utils";
+import { gray, green, red, yellow } from "farver/fast";
+import micromatch from "micromatch";
 import { printHelp } from "../cli-utils";
 
 export interface CLIDownloadCmdOptions {
   flags: CLIArguments<{
     outputDir?: string;
-    filter?: string;
+    exclude?: string;
+    excludeTest?: boolean;
+    debug?: boolean;
+    force?: boolean;
   }>;
   versions: string[];
 }
@@ -32,8 +37,10 @@ export async function runDownload({ versions: providedVersions, flags }: CLIDown
       tables: {
         Flags: [
           ["--output-dir", "Specify the output directory."],
-          ["--filter", "Filter the files to download."],
+          ["--exclude", "Exclude files matching glob patterns (e.g., '*Test*,ReadMe.txt,*.draft')."],
+          ["--exclude-test", "Exclude all test files (ending with Test.txt)."],
           ["--force", "Force the download, even if the files already exist."],
+          ["--debug", "Enable debug output."],
           ["--help (-h)", "See all available flags."],
         ],
       },
@@ -42,12 +49,12 @@ export async function runDownload({ versions: providedVersions, flags }: CLIDown
   }
 
   if (providedVersions.length === 0) {
-    console.error("No versions provided. Please provide at least one version.");
+    console.error(red("No versions provided. Please provide at least one version."));
     return;
   }
 
-  let versions: { version: string; mappedVersion?: string }[] = [];
-
+  // parse and validate versions
+  let versions = [];
   if (providedVersions[0] === "all") {
     versions = UNICODE_VERSION_METADATA.map((v) => {
       const mappedVersion = mapToUCDPathVersion(v.version);
@@ -66,12 +73,14 @@ export async function runDownload({ versions: providedVersions, flags }: CLIDown
     });
   }
 
-  // exit early, if some versions are invalid
-  const invalidVersions = versions.filter(({ version }) => !UNICODE_VERSION_METADATA.find((v) => v.version === version));
+  const invalidVersions = versions.filter(({ version }) =>
+    !UNICODE_VERSION_METADATA.find((v) => v.version === version),
+  );
+
   if (invalidVersions.length > 0) {
-    console.error(
-      `Invalid version(s) provided: ${invalidVersions.join(", ")}. Please provide valid Unicode versions.`,
-    );
+    console.error(red(
+      `Invalid version(s): ${invalidVersions.map((v) => v.version).join(", ")}. Please provide valid Unicode versions.`,
+    ));
     return;
   }
 
@@ -79,23 +88,91 @@ export async function runDownload({ versions: providedVersions, flags }: CLIDown
   const outputDir = flags.outputDir ?? path.join(process.cwd(), "data");
   await mkdir(outputDir, { recursive: true });
 
+  // Build exclude patterns
+  const excludePatterns = flags.exclude?.split(",").map((p) => p.trim()).filter(Boolean) || [];
+  if (flags.excludeTest) {
+    excludePatterns.push("**/*Test*");
+  }
+
+  function getAllFilePaths(entries: FileEntry[]) {
+    const filePaths: string[] = [];
+    function collectPaths(entryList: FileEntry[], currentPath = "") {
+      for (const entry of entryList) {
+        const fullPath = currentPath ? `${currentPath}/${entry.path}` : entry.path;
+        if (!entry.children) {
+          filePaths.push(fullPath);
+        } else if (entry.children.length > 0) {
+          collectPaths(entry.children, fullPath);
+        }
+      }
+    }
+    collectPaths(entries);
+    return filePaths;
+  }
+
+  function filterEntriesRecursive(entries: FileEntry[]) {
+    if (excludePatterns.length === 0) return entries;
+
+    const allPaths = getAllFilePaths(entries);
+    const patterns = ["**", ...excludePatterns.map((pattern) => `!${pattern}`)];
+
+    const matchedPaths = new Set(micromatch(allPaths, patterns, {
+      dot: true,
+      nocase: true,
+      debug: flags.debug,
+    }));
+
+    // Debug logging for test files
+    if (flags.debug && flags.excludeTest) {
+      const testFiles = allPaths.filter((path) => path.toLowerCase().includes("test"));
+      const includedTestFiles = testFiles.filter((path) => matchedPaths.has(path));
+
+      if (includedTestFiles.length > 0) {
+        console.warn(yellow("WARNING: Some test files were not excluded:"));
+        includedTestFiles.forEach((file) => console.warn(yellow(`  - ${file}`)));
+        console.warn(gray(`Patterns used: ${patterns.join(", ")}`));
+      }
+    }
+
+    function filterEntries(entryList: FileEntry[], prefix = "") {
+      const result: FileEntry[] = [];
+      for (const entry of entryList) {
+        const fullPath = prefix ? `${prefix}/${entry.path}` : entry.path;
+
+        if (!entry.children) {
+          if (matchedPaths.has(fullPath)) {
+            result.push(entry);
+          }
+        } else {
+          const filteredChildren = filterEntries(entry.children, fullPath);
+          if (filteredChildren.length > 0) {
+            result.push({ ...entry, children: filteredChildren });
+          }
+        }
+      }
+      return result;
+    }
+
+    return filterEntries(entries);
+  }
+
   async function processFileEntries(
     entries: FileEntry[],
     basePath: string,
     versionOutputDir: string,
     downloadedFiles: string[],
-  ): Promise<void> {
-    const dirPromises: Promise<void>[] = [];
-    const filePromises: Promise<void>[] = [];
+    errors: string[],
+  ) {
+    const dirPromises = [];
+    const filePromises = [];
 
     for (const entry of entries) {
       const outputPath = path.join(versionOutputDir, entry.path);
 
       if (entry.children) {
-        // create directory and process children
         dirPromises.push((async () => {
           await mkdir(outputPath, { recursive: true });
-          await processFileEntries(entry.children!, `${basePath}/${entry.path}`, versionOutputDir, downloadedFiles);
+          await processFileEntries(entry.children || [], `${basePath}/${entry.path}`, versionOutputDir, downloadedFiles, errors);
         })());
       } else {
         filePromises.push((async () => {
@@ -103,89 +180,110 @@ export async function runDownload({ versions: providedVersions, flags }: CLIDown
             await mkdir(dirname(outputPath), { recursive: true });
             const url = `${UNICODE_PROXY_URL}${basePath}/${entry.path}`;
             const response = await fetch(url);
+
             if (!response.ok) {
-              console.error(`Failed to fetch file: ${entry.path} (${response.status} ${response.statusText})`);
+              errors.push(`Failed to fetch ${entry.path}: ${response.status} ${response.statusText}`);
               return;
             }
+
             const content = await response.text();
             await writeFile(outputPath, content);
             downloadedFiles.push(outputPath);
           } catch (error) {
-            console.error(`Error processing file ${entry.path}:`, error);
+            errors.push(`Error downloading ${entry.path}: ${error?.message}`);
           }
         })());
       }
     }
 
-    // first wait for all directories to be created (and their children processed)
-    await Promise.all(dirPromises);
-
-    // then wait for all file downloads to complete
-    await Promise.all(filePromises);
+    await Promise.all([...dirPromises, ...filePromises]);
   }
 
-  async function processVersion(version: { version: string; mappedVersion?: string }): Promise<void> {
-    // eslint-disable-next-line no-console
-    console.info(`Starting download process for Unicode ${green(version.version)}${version.mappedVersion != null ? gray(` (${green(version.mappedVersion)})`) : ""}`);
-    const downloadedFilesForVersion: string[] = [];
+  async function processVersion(version: { version: string; mappedVersion?: string }) {
+    console.info(`Starting download for Unicode ${green(version.version)}${
+      version.mappedVersion ? gray(` (${green(version.mappedVersion)})`) : ""
+    }`);
 
+    const downloadedFiles: string[] = [];
+    const errors: string[] = [];
     const versionOutputDir = path.join(outputDir, `v${version.version}`);
     await mkdir(versionOutputDir, { recursive: true });
 
     try {
-      // fetch the file list from the new API endpoint
       const filesResponse = await fetch(`${API_URL}/unicode-files/${version.version}`);
 
       if (!filesResponse.ok) {
-        console.error(`Failed to fetch file list for version ${version.version}: ${filesResponse.status} ${filesResponse.statusText}`);
-        return;
+        console.error(red(`Failed to fetch file list for version ${version.version}: ${filesResponse.status} ${filesResponse.statusText}`));
+        return { version: version.version, downloadedFiles, errors: [`Failed to fetch file list: ${filesResponse.statusText}`] };
       }
 
-      const fileEntries = await filesResponse.json() as FileEntry[];
+      const fileEntries = await filesResponse.json();
 
       if (!Array.isArray(fileEntries)) {
-        console.error(`Invalid response format for version ${version.version}`);
-        return;
+        console.error(red(`Invalid response format for version ${version.version}`));
+        return { version: version.version, downloadedFiles, errors: ["Invalid response format"] };
       }
 
-      // filter out any ReadMe.txt files if needed
-      const filteredEntries = fileEntries.filter((entry) =>
-        flags.filter ? entry.path.includes(flags.filter) : true,
-      );
-
-      // create base path for fetching files
+      const filteredEntries = filterEntriesRecursive(fileEntries);
       const correctVersion = version.mappedVersion ?? version.version;
       const basePath = `/${correctVersion}${hasUCDPath(correctVersion) ? "/ucd" : ""}`;
 
-      // process all files and directories
-      await processFileEntries(filteredEntries, basePath, versionOutputDir, downloadedFilesForVersion);
+      await processFileEntries(filteredEntries, basePath, versionOutputDir, downloadedFiles, errors);
 
-      if (downloadedFilesForVersion.length === 0) {
-        console.warn(yellow(`No files were downloaded for Unicode ${version.version}.`));
-        return;
+      if (downloadedFiles.length === 0 && errors.length === 0) {
+        console.warn(yellow(`No files were downloaded for Unicode ${version.version}`));
+      } else if (downloadedFiles.length > 0) {
+        console.info(green(`✓ Downloaded ${downloadedFiles.length} files for Unicode ${version.version}`));
+
+        if (flags.debug) {
+          downloadedFiles.forEach((file) => {
+            const relativePath = path.relative(versionOutputDir, file);
+            console.info(green(`  - ${relativePath}`));
+          });
+        }
       }
 
-      // eslint-disable-next-line no-console
-      console.info(green(`✓ Downloaded ${downloadedFilesForVersion.length} files for Unicode ${version.version}`));
-      for (const file of downloadedFilesForVersion) {
-        const relativePath = path.relative(versionOutputDir, file);
-        // eslint-disable-next-line no-console
-        console.info(green(`  - ${relativePath}`));
+      if (errors.length > 0) {
+        console.warn(yellow(`${errors.length} errors occurred during download of Unicode ${version.version}`));
+        if (flags.debug) {
+          errors.forEach((error) => console.error(red(`  - ${error}`)));
+        }
       }
     } catch (error) {
-      console.error(`Error processing version ${version.version}:`, error);
+      const errorMessage = `Error processing version ${version.version}: ${error?.message}`;
+      errors.push(errorMessage);
+      console.error(red(errorMessage));
     }
+
+    return { version: version.version, downloadedFiles, errors };
   }
 
+  // process versions in batches
+  const results = [];
   const versionGroups = [];
 
-  // group versions into batches of CONCURRENCY_LIMIT
   for (let i = 0; i < versions.length; i += CONCURRENCY_LIMIT) {
     versionGroups.push(versions.slice(i, i + CONCURRENCY_LIMIT));
   }
 
-  // process each batch sequentially, with versions within each batch processed in parallel
   for (const versionGroup of versionGroups) {
-    await Promise.all(versionGroup.map((version) => processVersion(version)));
+    const batchResults = await Promise.all(versionGroup.map(processVersion));
+    results.push(...batchResults);
   }
+
+  // print summary
+  const totalFiles = results.reduce((sum, r) => sum + r.downloadedFiles.length, 0);
+  const totalErrors = results.reduce((sum, r) => sum + r.errors.length, 0);
+  const successfulVersions = results.filter((r) => r.downloadedFiles.length > 0).length;
+
+  console.info(`\n${"=".repeat(50)}`);
+  console.info("Download Summary:");
+  console.info(green(`✓ ${successfulVersions}/${results.length} versions processed successfully`));
+  console.info(green(`✓ ${totalFiles} total files downloaded`));
+
+  if (totalErrors > 0) {
+    console.warn(yellow(`⚠ ${totalErrors} total errors encountered`));
+  }
+
+  console.info("=".repeat(50));
 }
