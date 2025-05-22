@@ -12,8 +12,8 @@ describe("resolveCommand", () => {
   });
 
   it("should return the command from the third positional argument if it is supported", () => {
-    const flags: Arguments = { _: ["", "", "generate"], version: false };
-    expect(resolveCommand(flags)).toBe("generate");
+    const flags: Arguments = { _: ["", "", "download"], version: false };
+    expect(resolveCommand(flags)).toBe("download");
   });
 
   it("should return 'help' when the third positional argument is not a supported command", () => {

@@ -179,8 +179,8 @@ export async function runDownload({ versions: providedVersions, flags }: CLIDown
             const content = await response.text();
             await writeFile(outputPath, content);
             downloadedFiles.push(outputPath);
-          } catch (error) {
-            errors.push(`Error downloading ${entry.path}: ${error?.message}`);
+          } catch (err) {
+            errors.push(`Error downloading ${entry.path}: ${(err as any).message}`);
           }
         })());
       }
@@ -239,8 +239,8 @@ export async function runDownload({ versions: providedVersions, flags }: CLIDown
           errors.forEach((error) => console.error(red(`  - ${error}`)));
         }
       }
-    } catch (error) {
-      const errorMessage = `Error processing version ${version.version}: ${error?.message}`;
+    } catch (err) {
+      const errorMessage = `Error processing version ${version.version}: ${(err as any).message}`;
       errors.push(errorMessage);
       console.error(red(errorMessage));
     }
