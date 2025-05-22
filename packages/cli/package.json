@@ -36,11 +36,13 @@
     "@luxass/utils": "catalog:prod",
     "@ucdjs/schema-gen": "workspace:*",
     "farver": "catalog:prod",
+    "micromatch": "catalog:prod",
     "p-limit": "catalog:prod",
     "yargs-parser": "catalog:prod"
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:dev",
+    "@types/micromatch": "catalog:dev",
     "@types/yargs-parser": "catalog:dev",
     "eslint": "catalog:dev",
     "publint": "catalog:dev",

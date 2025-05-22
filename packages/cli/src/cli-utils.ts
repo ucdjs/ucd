@@ -1,5 +1,7 @@
+import type { Prettify, RemoveIndexSignature } from "@luxass/utils";
 import type { Arguments } from "yargs-parser";
 import type { CLICodegenCmdOptions } from "./cmd/codegen/root";
+import type { CLIDownloadCmdOptions } from "./cmd/download";
 import process from "node:process";
 import {
   bgGreen,
@@ -14,13 +16,24 @@ import pkg from "../package.json" with { type: "json" };
 type CLICommand =
   | "help"
   | "version"
-  | "codegen";
+  | "codegen"
+  | "download";
 
 const SUPPORTED_COMMANDS = new Set<CLICommand>([
   "codegen",
+  "download",
 ]);
 
-export type CLIArguments<T extends Record<string, unknown>> = Arguments & T;
+export interface GlobalCLIFlags {
+  force?: boolean;
+  help?: boolean;
+  // alias for --help
+  h?: boolean;
+}
+
+export type CLIArguments<T extends Record<string, unknown>> = Prettify<RemoveIndexSignature<
+  Arguments & T & GlobalCLIFlags
+>>;
 
 /**
  * Resolves the CLI command based on the provided arguments.
@@ -158,6 +171,7 @@ export async function runCommand(cmd: CLICommand, flags: Arguments): Promise<voi
         usage: "[command] [...flags]",
         tables: {
           "Commands": [
+            ["download", "Download Unicode data files."],
             ["codegen", "Generate TypeScript code from UCD data."],
           ],
           "Global Flags": [
@@ -180,6 +194,15 @@ export async function runCommand(cmd: CLICommand, flags: Arguments): Promise<voi
       });
       break;
     }
+    case "download": {
+      const { runDownload } = await import("./cmd/download");
+      const versions = flags._.slice(3) as string[];
+      await runDownload({
+        versions,
+        flags: flags as CLIDownloadCmdOptions["flags"],
+      });
+      break;
+    }
     default:
       throw new Error(`Error running ${cmd} -- no command found.`);
   }
@@ -190,6 +213,14 @@ export function parseFlags(args: string[]) {
     configuration: {
       "parse-positional-numbers": false,
     },
+    default: {
+      force: false,
+    },
+    boolean: [
+      "force",
+      "help",
+      "h",
+    ],
     string: [
       "output-dir",
       "input-dir",

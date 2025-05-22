@@ -13,22 +13,24 @@ catalogs:
     tsx: ^4.19.4
 
   prod:
-    "@luxass/unicode-utils": ^0.8.0
+    "@luxass/unicode-utils": ^0.9.0
     "@luxass/utils": ^2.2.1
     farver: ^0.4.2
     fs-extra: ^11.3.0
     yargs-parser: ^21.1.1
     defu: ^6.1.4
     arktype: ^2.1.20
-    zod: ^3.25.13
+    zod: ^3.25.17
     "@ai-sdk/openai": ^1.3.22
     ai: ^4.3.16
     p-limit: ^6.2.0
     knitwork: ^1.2.0
+    micromatch: ^4.0.8
 
   dev:
     "@luxass/eslint-config": ^4.18.1
     "@types/fs-extra": ^11.0.4
+    "@types/micromatch": ^4.0.9
     "@types/node": ^22.10.0
     "@types/yargs-parser": ^21.0.3
     eslint: ^9.27.0
