@@ -182,7 +182,9 @@ export async function runDownload({ versions: providedVersions, flags }: CLIDown
 
             const content = await response.text();
             if (flags.createCommentFiles) {
-              await writeFile(`${outputPath.replace(".txt", "")}.comment.txt`, "");
+              const parsed = path.parse(outputPath);
+              const commentPath = path.join(parsed.dir, `${parsed.name}.comments.txt`);
+              await writeFile(commentPath, "");
             }
 
             await writeFile(outputPath, content);
