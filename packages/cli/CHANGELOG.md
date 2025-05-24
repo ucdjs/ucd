@@ -1,5 +1,11 @@
 # @ucdjs/cli
 
+## 0.2.2
+
+### Patch Changes
+
+- [#18](https://github.com/ucdjs/ucd/pull/18) [`24e8218`](https://github.com/ucdjs/ucd/commit/24e821845bf6a7b9c95b0db467b099440976c71c) Thanks [@luxass](https://github.com/luxass)! - feat: create comment files flag
+
 ## 0.2.1
 
 ### Patch Changes
