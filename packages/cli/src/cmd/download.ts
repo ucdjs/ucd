@@ -58,7 +58,7 @@ export async function runDownload({ versions: providedVersions, flags }: CLIDown
   // parse and validate versions
   let versions = [];
   if (providedVersions[0] === "all") {
-    versions = UNICODE_VERSION_METADATA.filter((v) => flags.excludeDraft && v.status === "draft").map((v) => {
+    versions = UNICODE_VERSION_METADATA.filter((v) => !flags.excludeDraft || v.status !== "draft").map((v) => {
       const mappedVersion = mapToUCDPathVersion(v.version);
       return {
         version: v.version,
