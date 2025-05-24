@@ -1,5 +1,11 @@
 # @ucdjs/cli
 
+## 0.2.1
+
+### Patch Changes
+
+- [#16](https://github.com/ucdjs/ucd/pull/16) [`846b18a`](https://github.com/ucdjs/ucd/commit/846b18a4ddf7c97062fc8367121809cd80950ab0) Thanks [@luxass](https://github.com/luxass)! - feat: add support for excluding draft in file download
+
 ## 0.2.0
 
 ### Minor Changes
