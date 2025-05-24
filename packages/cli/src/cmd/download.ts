@@ -12,6 +12,7 @@ export interface CLIDownloadCmdOptions {
     outputDir?: string;
     exclude?: string;
     excludeTest?: boolean;
+    excludeDraft?: boolean;
     debug?: boolean;
     force?: boolean;
   }>;
@@ -39,6 +40,7 @@ export async function runDownload({ versions: providedVersions, flags }: CLIDown
           ["--output-dir", "Specify the output directory."],
           ["--exclude", "Exclude files matching glob patterns (e.g., '*Test*,ReadMe.txt,*.draft')."],
           ["--exclude-test", "Exclude all test files (ending with Test.txt)."],
+          ["--exclude-draft", "Exclude all draft files"],
           ["--force", "Force the download, even if the files already exist."],
           ["--debug", "Enable debug output."],
           ["--help (-h)", "See all available flags."],
@@ -56,7 +58,7 @@ export async function runDownload({ versions: providedVersions, flags }: CLIDown
   // parse and validate versions
   let versions = [];
   if (providedVersions[0] === "all") {
-    versions = UNICODE_VERSION_METADATA.map((v) => {
+    versions = UNICODE_VERSION_METADATA.filter((v) => !flags.excludeDraft || v.status !== "draft").map((v) => {
       const mappedVersion = mapToUCDPathVersion(v.version);
       return {
         version: v.version,
