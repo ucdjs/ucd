@@ -13,6 +13,7 @@ export interface CLIDownloadCmdOptions {
     exclude?: string;
     excludeTest?: boolean;
     excludeDraft?: boolean;
+    createCommentFiles?: boolean;
     debug?: boolean;
     force?: boolean;
   }>;
@@ -41,6 +42,7 @@ export async function runDownload({ versions: providedVersions, flags }: CLIDown
           ["--exclude", "Exclude files matching glob patterns (e.g., '*Test*,ReadMe.txt,*.draft')."],
           ["--exclude-test", "Exclude all test files (ending with Test.txt)."],
           ["--exclude-draft", "Exclude all draft files"],
+          ["--create-comment-files", "Create comment files for each downloaded file."],
           ["--force", "Force the download, even if the files already exist."],
           ["--debug", "Enable debug output."],
           ["--help (-h)", "See all available flags."],
@@ -179,6 +181,10 @@ export async function runDownload({ versions: providedVersions, flags }: CLIDown
             }
 
             const content = await response.text();
+            if (flags.createCommentFiles) {
+              await writeFile(`${outputPath.replace(".txt", "")}.comment.txt`, "");
+            }
+
             await writeFile(outputPath, content);
             downloadedFiles.push(outputPath);
           } catch (err) {
