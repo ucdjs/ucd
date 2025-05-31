@@ -1,5 +1,5 @@
 import { existsSync, readdirSync } from "node:fs";
-import { defineConfig } from "vitest/config";
+import { defineConfig, type TestProjectConfiguration } from "vitest/config";
 
 const root = new URL("./", import.meta.url).pathname;
 
@@ -23,12 +23,27 @@ const hiddenLogs = [
   "[versions]",
 ]
 
+const workspaces = readdirSync(new URL("./packages", import.meta.url).pathname)
+  .filter((dir) => existsSync(pkgRoot(dir) + "/package.json"))
+  .map((dir) => {
+
+    return {
+      extends: true,
+      test: {
+        include: [`./packages/${dir}/**/*.{test,spec}.?(c|m)[jt]s?(x)`],
+        name: dir,
+      }
+    } satisfies TestProjectConfiguration;
+  });
+
 export default defineConfig({
   test: {
     coverage: {
       provider: "v8",
       include: ["**/src/**"],
     },
+    environment: "node",
+    mockReset: true,
     setupFiles: [
       "./test/global-setup/msw.ts",
     ],
@@ -39,44 +54,7 @@ export default defineConfig({
 
       return false;
     },
-    workspace: [
-      {
-        extends: true,
-        test: {
-          include: ["./packages/utils/**/*.{test,spec}.?(c|m)[jt]s?(x)"],
-          name: "utils",
-          environment: "node",
-          mockReset: true,
-        },
-      },
-      {
-        extends: true,
-        test: {
-          include: ["./packages/cli/**/*.{test,spec}.?(c|m)[jt]s?(x)"],
-          name: "cli",
-          environment: "node",
-          mockReset: true,
-        },
-      },
-      {
-        extends: true,
-        test: {
-          include: ["./packages/schema-gen/**/*.{test,spec}.?(c|m)[jt]s?(x)"],
-          name: "schema-gen",
-          environment: "node",
-          mockReset: true,
-        },
-      },
-      {
-        extends: true,
-        test: {
-          include: ["./packages/ucd-store/**/*.{test,spec}.?(c|m)[jt]s?(x)"],
-          name: "ucd-store",
-          environment: "node",
-          mockReset: true,
-        },
-      },
-    ]
+    workspace: workspaces
   },
   esbuild: { target: "es2020" },
   resolve: { alias: aliases },
