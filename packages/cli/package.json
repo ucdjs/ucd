@@ -18,6 +18,13 @@
   "bugs": {
     "url": "https://github.com/ucdjs/ucd/issues"
   },
+  "exports": {
+    ".": "./dist/cli.js",
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/cli.js",
+  "module": "./dist/cli.js",
+  "types": "./dist/cli.d.ts",
   "bin": {
     "ucd": "bin/ucd.js"
   },
