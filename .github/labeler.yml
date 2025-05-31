@@ -11,3 +11,7 @@
 "pkg: schema-gen":
   - changed-files:
       - any-glob-to-any-file: packages/schema-gen/**
+
+"pkg: ucd-store":
+  - changed-files:
+      - any-glob-to-any-file: packages/ucd-store/**
