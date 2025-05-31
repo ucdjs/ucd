@@ -35,8 +35,14 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit"
   },
+  "dependencies": {
+    "@luxass/unicode-utils": "catalog:prod",
+    "defu": "catalog:prod",
+    "micromatch": "catalog:prod"
+  },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:dev",
+    "@types/micromatch": "catalog:dev",
     "eslint": "catalog:dev",
     "publint": "catalog:dev",
     "tsdown": "catalog:dev",

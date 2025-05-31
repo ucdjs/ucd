@@ -74,6 +74,9 @@ catalogs:
     ai:
       specifier: ^4.3.16
       version: 4.3.16
+    defu:
+      specifier: ^6.1.4
+      version: 6.1.4
     farver:
       specifier: ^0.4.2
       version: 0.4.2
@@ -227,10 +230,23 @@ importers:
         version: 4.0.0(vitest@3.1.4)
 
   packages/ucd-store:
+    dependencies:
+      '@luxass/unicode-utils':
+        specifier: catalog:prod
+        version: 0.9.0
+      defu:
+        specifier: catalog:prod
+        version: 6.1.4
+      micromatch:
+        specifier: catalog:prod
+        version: 4.0.8
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:dev
         version: 4.18.1(@typescript-eslint/utils@8.31.0(eslint@9.27.0(jiti@2.4.2))(typescript@5.8.3))(@vue/compiler-sfc@3.5.13)(eslint@9.27.0(jiti@2.4.2))(typescript@5.8.3)(vitest@3.1.4)
+      '@types/micromatch':
+        specifier: catalog:dev
+        version: 4.0.9
       eslint:
         specifier: catalog:dev
         version: 9.27.0(jiti@2.4.2)
