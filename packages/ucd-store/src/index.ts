@@ -1,4 +1,8 @@
-export function hello(): void {
-  // eslint-disable-next-line no-console
-  console.log("Hello from utils!");
+import type { UCDStoreOptions } from "./store";
+import { UCDStore } from "./store";
+
+export function createUCDStore(options: UCDStoreOptions): UCDStore {
+  return new UCDStore(options);
 }
+
+export { UCDStore, type UCDStoreOptions };
