@@ -67,6 +67,15 @@ export default defineConfig({
           mockReset: true,
         },
       },
+      {
+        extends: true,
+        test: {
+          include: ["./packages/ucd-store/**/*.{test,spec}.?(c|m)[jt]s?(x)"],
+          name: "ucd-store",
+          environment: "node",
+          mockReset: true,
+        },
+      },
     ]
   },
   esbuild: { target: "es2020" },
