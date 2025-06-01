@@ -1,8 +1,7 @@
-import type { BaseUCDStoreOptions, UnicodeVersionFile } from "./store";
+import type { BaseUCDStoreOptions } from "./store";
 import path from "node:path";
 import { invariant } from "@luxass/utils";
 import defu from "defu";
-import * as fsx from "fs-extra";
 import { BaseUCDStore } from "./store";
 
 export interface LocalUCDStoreOptions extends BaseUCDStoreOptions {
