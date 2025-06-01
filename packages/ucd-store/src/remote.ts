@@ -1,6 +1,5 @@
 import type { BaseUCDStoreOptions, UnicodeVersionFile } from "./store";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
-import { invariant } from "@luxass/utils";
 import { fetchWithRetry } from "@ucdjs/utils";
 import { BaseUCDStore } from "./store";
 
