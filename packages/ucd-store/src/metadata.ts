@@ -25,7 +25,7 @@ export async function validateUCDRootStore(
   const parsed = UCD_STORE_ROOT_SCHEMA.safeParse(safeJsonParse(content));
   if (!parsed.success) {
     throw new Error(
-      `Invalid UCD store root schema: ${parsed.error.message}`,
+      `[ucd-store]: Invalid UCD store root schema: ${parsed.error.message}`,
     );
   }
 
