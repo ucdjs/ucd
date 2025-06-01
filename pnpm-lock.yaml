@@ -71,6 +71,9 @@ catalogs:
     '@luxass/unicode-utils':
       specifier: ^0.9.0
       version: 0.9.0
+    '@luxass/unicode-utils-new':
+      specifier: npm:@luxass/unicode-utils@0.12.0-beta.5
+      version: 0.12.0-beta.5
     '@luxass/utils':
       specifier: ^2.2.1
       version: 2.2.1
@@ -237,9 +240,9 @@ importers:
 
   packages/ucd-store:
     dependencies:
-      '@luxass/unicode-utils':
+      '@luxass/unicode-utils-new':
         specifier: catalog:prod
-        version: 0.9.0
+        version: '@luxass/unicode-utils@0.12.0-beta.5'
       '@luxass/utils':
         specifier: catalog:prod
         version: 2.2.1
@@ -829,6 +832,9 @@ packages:
         optional: true
       prettier-plugin-astro:
         optional: true
+
+  '@luxass/unicode-utils@0.12.0-beta.5':
+    resolution: {integrity: sha512-yzo+ETfvOOVOB2A4Oir2jX1wiM7f9ZE6KTxivDeTMi8eXo8Vbz8ktr2aiiCuTzwo6VZ7bNwHHtNdHa/XaneY7A==}
 
   '@luxass/unicode-utils@0.9.0':
     resolution: {integrity: sha512-RNhEJ2pXiIRhmr/KGtAbl4jy2uwQjXMdRQKHZE1M1IgjkXa4/d8is5HtwxdKKcL0CCO3f4lGAeLOIhR6ACGNfg==}
@@ -3860,6 +3866,11 @@ snapshots:
       - supports-color
       - typescript
       - vitest
+
+  '@luxass/unicode-utils@0.12.0-beta.5':
+    dependencies:
+      '@luxass/utils': 2.2.1
+      defu: 6.1.4
 
   '@luxass/unicode-utils@0.9.0':
     dependencies:
