@@ -1,3 +1,4 @@
+import type { MaybePromise } from "@luxass/utils";
 import type { LocalUCDStore, LocalUCDStoreOptions } from "./local";
 import type { RemoteUCDStore, RemoteUCDStoreOptions } from "./remote";
 import { invariant } from "@luxass/utils";
@@ -53,6 +54,8 @@ export interface BaseUCDStoreOptions {
    * @default "https://unicode-proxy.ucdjs.dev"
    */
   proxyUrl?: string;
+
+  filters?: string[];
 }
 
 export abstract class BaseUCDStore {
@@ -65,6 +68,11 @@ export abstract class BaseUCDStore {
    * Proxy URL for the Unicode Files
    */
   protected proxyUrl: string;
+
+  /**
+   * Filters to apply to the Unicode Data Files.
+   */
+  private filters: string[] = [];
 
   /**
    * Whether or not the store is populated with data.
@@ -81,7 +89,19 @@ export abstract class BaseUCDStore {
     this.baseUrl = baseUrl;
   }
 
-  abstract bootstrap(): Promise<void>;
+  abstract bootstrap(): MaybePromise<void>;
 
   abstract get versions(): string[];
+
+  abstract getFile(version: string, filePath: string): Promise<string>;
+  abstract hasVersion(version: string): MaybePromise<boolean>;
+  abstract getFilePaths(version: string): Promise<string[]>;
+
+  buildProxyUrl(path: string): string {
+    return `${this.proxyUrl}/${path}`;
+  }
+
+  buildApiUrl(path: string): string {
+    return `${this.baseUrl}/${path}`;
+  }
 }

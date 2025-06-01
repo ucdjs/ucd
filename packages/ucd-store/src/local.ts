@@ -1,3 +1,4 @@
+import type { MaybePromise } from "@luxass/utils";
 import type { BaseUCDStoreOptions } from "./store";
 import path from "node:path";
 import { invariant } from "@luxass/utils";
@@ -41,6 +42,18 @@ export class LocalUCDStore extends BaseUCDStore {
   }
 
   get versions(): string[] {
+    throw new Error("Method not implemented.");
+  }
+
+  getFilePaths(version: string): Promise<string[]> {
+    throw new Error("Method not implemented.");
+  }
+
+  getFile(version: string, filePath: string): Promise<string> {
+    throw new Error("Method not implemented.");
+  }
+
+  hasVersion(version: string): MaybePromise<boolean> {
     throw new Error("Method not implemented.");
   }
 
