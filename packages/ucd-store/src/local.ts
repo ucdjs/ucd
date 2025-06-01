@@ -6,7 +6,19 @@ import * as fsx from "fs-extra";
 import { BaseUCDStore } from "./store";
 
 export interface LocalUCDStoreOptions extends BaseUCDStoreOptions {
+  /**
+   * Base path for the local UCD store
+   */
   basePath?: string;
+
+  /**
+   * Versions to initialize the store with.
+   * If not provided, the store will be initialized with all available versions.
+   *
+   * @default undefined
+   * @example ["15.0.0", "16.0.0"]
+   */
+  versions?: string[];
 }
 
 export class LocalUCDStore extends BaseUCDStore {
@@ -27,6 +39,10 @@ export class LocalUCDStore extends BaseUCDStore {
     invariant(this.basePath, "Base path is required for LocalUCDStore.");
 
     return Promise.resolve();
+  }
+
+  get versions(): string[] {
+    throw new Error("Method not implemented.");
   }
 
   // async #prepareLocalStore(): Promise<void> {

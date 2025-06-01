@@ -1,2 +1,2 @@
 export type { UCDStoreRootSchema, UCDStoreVersionSchema } from "./metadata";
-export { UCDStore } from "./store";
+export { createUCDStore, type CreateUCDStoreOptions } from "./store";
