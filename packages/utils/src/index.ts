@@ -14,3 +14,22 @@ export function safeJsonParse<T>(content: string): T | null {
     return null;
   }
 }
+
+export async function fetchWithRetry(url: string, retries: number = 3): Promise<Response> {
+  for (let i = 0; i <= retries; i++) {
+    try {
+      const response = await fetch(url);
+      if (response.ok) {
+        return response;
+      }
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    } catch (error) {
+      if (i === retries) {
+        throw new Error(`Failed to fetch ${url} after ${retries + 1} attempts: ${error}`);
+      }
+      // Wait before retry (exponential backoff)
+      await new Promise((resolve) => setTimeout(resolve, 2 ** i * 1000));
+    }
+  }
+  throw new Error(`Unexpected error in fetchWithRetry`);
+}

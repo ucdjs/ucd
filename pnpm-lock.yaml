@@ -75,8 +75,8 @@ catalogs:
       specifier: npm:@luxass/unicode-utils@0.12.0-beta.5
       version: 0.12.0-beta.5
     '@luxass/utils':
-      specifier: ^2.2.1
-      version: 2.2.1
+      specifier: ^2.2.2
+      version: 2.2.2
     ai:
       specifier: ^4.3.16
       version: 4.3.16
@@ -153,7 +153,7 @@ importers:
         version: 0.9.0
       '@luxass/utils':
         specifier: catalog:prod
-        version: 2.2.1
+        version: 2.2.2
       '@ucdjs/schema-gen':
         specifier: workspace:*
         version: link:../schema-gen
@@ -205,7 +205,7 @@ importers:
         version: 0.9.0
       '@luxass/utils':
         specifier: catalog:prod
-        version: 2.2.1
+        version: 2.2.2
       ai:
         specifier: catalog:prod
         version: 4.3.16(react@19.1.0)(zod@3.25.42)
@@ -245,7 +245,7 @@ importers:
         version: '@luxass/unicode-utils@0.12.0-beta.5'
       '@luxass/utils':
         specifier: catalog:prod
-        version: 2.2.1
+        version: 2.2.2
       '@ucdjs/utils':
         specifier: workspace:*
         version: link:../utils
@@ -839,8 +839,8 @@ packages:
   '@luxass/unicode-utils@0.9.0':
     resolution: {integrity: sha512-RNhEJ2pXiIRhmr/KGtAbl4jy2uwQjXMdRQKHZE1M1IgjkXa4/d8is5HtwxdKKcL0CCO3f4lGAeLOIhR6ACGNfg==}
 
-  '@luxass/utils@2.2.1':
-    resolution: {integrity: sha512-riQdjsEXmHxaPDcWappVi1YYF/rsveZTvSIsev1m7qYQrRq6aRNYWTVVPhye3Pdf0NCWUNIKIdtrtpHhx+SgYA==}
+  '@luxass/utils@2.2.2':
+    resolution: {integrity: sha512-UZUWJpFFp8bWvKEVkP9D1YCdQMOTcuLd1qLlDu+PndPz2lGnArrFOkAJbAz+RSqtNxpDhwcF2cQQ0aWnBC2XrQ==}
     engines: {node: '>=20'}
 
   '@manypkg/find-root@1.1.0':
@@ -3869,14 +3869,14 @@ snapshots:
 
   '@luxass/unicode-utils@0.12.0-beta.5':
     dependencies:
-      '@luxass/utils': 2.2.1
+      '@luxass/utils': 2.2.2
       defu: 6.1.4
 
   '@luxass/unicode-utils@0.9.0':
     dependencies:
-      '@luxass/utils': 2.2.1
+      '@luxass/utils': 2.2.2
 
-  '@luxass/utils@2.2.1': {}
+  '@luxass/utils@2.2.2': {}
 
   '@manypkg/find-root@1.1.0':
     dependencies:
