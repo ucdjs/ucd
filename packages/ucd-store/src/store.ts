@@ -44,14 +44,19 @@ export class UCDStore {
   public basePath?: string;
   private fileMap: Map<string, boolean>;
   public isPopulated: boolean = false;
-  public versions: ReadonlyArray<string> = [];
+  public readonly versions: ReadonlyArray<string> = [];
+
+  private initializedVersions: ReadonlyArray<string> = [];
 
   constructor(options: UCDStoreOptions) {
-    const { baseUrl, local, proxyUrl } = defu(options, {
+    const { baseUrl, local, versions, proxyUrl } = defu(options, {
       baseUrl: "https://unicode-api.luxass.dev/api/v1",
       proxyUrl: "https://unicode-proxy.ucdjs.dev",
       local: false,
+      versions: [],
     });
+
+    this.initializedVersions = versions;
 
     this.proxyUrl = proxyUrl;
     this.baseUrl = baseUrl;
@@ -70,23 +75,49 @@ export class UCDStore {
     // verify that basePath is set
     invariant(this.basePath, "Base path must be set for local store.");
 
-    // verify that basePath exists,
-    // if it doesn't, create it.
-
-    // if it exists, verify that is has the .ucd-store file.
-    const fs = await import("node:fs/promises");
+    const fsx = await import("fs-extra").then((m) => m.default);
     const path = await import("node:path");
 
-    try {
-      await fs.access(this.basePath);
-    } catch {
-      // Base path does not exist, create it
-      await fs.mkdir(this.basePath, { recursive: true });
+    const basePathExists = await fsx.pathExists(this.basePath);
+
+    if (!basePathExists) {
+      // nothing exists at the path, create the base directory and store file
+      await fsx.mkdir(this.basePath, { recursive: true });
+      const rootStoreFile = path.join(this.basePath, ".ucd-store.json");
+      await fsx.writeJson(rootStoreFile, { root: true, versions: this.initializedVersions }, { spaces: 2 });
       return;
     }
 
-    // the base path exists beforehand, so we need to check for the .ucd-store file
-    const rootStoreFile = path.join(this.basePath, ".ucd-store");
+    // base path exists, check if it's a valid UCD store
+    const rootStoreFile = path.join(this.basePath, ".ucd-store.json");
+    const storeFileExists = await fsx.pathExists(rootStoreFile);
+
+    if (!storeFileExists) {
+      throw new TypeError(`Invalid UCD store: Missing .ucd-store.json file at ${this.basePath}`);
+    }
+
+    try {
+      const storeData = await fsx.readJson(rootStoreFile);
+
+      // validate the store file structure
+      if (typeof storeData !== "object" || storeData === null) {
+        throw new TypeError(`Invalid UCD store: .ucd-store.json is not a valid JSON object`);
+      }
+
+      if (!storeData.root) {
+        throw new TypeError(`Invalid UCD store: .ucd-store.json missing 'root' property`);
+      }
+
+      if (!Array.isArray(storeData.versions)) {
+        throw new TypeError(`Invalid UCD store: .ucd-store.json missing or invalid 'versions' property`);
+      }
+    } catch (error) {
+      if (error instanceof SyntaxError) {
+        throw new TypeError(`Invalid UCD store: .ucd-store.json contains invalid JSON`);
+      }
+
+      throw error;
+    }
   }
 
   async load(): Promise<void> {

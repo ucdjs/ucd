@@ -31,3 +31,16 @@ export async function validateUCDRootStore(
 
   return parsed.data;
 }
+
+export async function validateUCDVersionStore(
+  content: string,
+): Promise<UCDStoreVersionSchema> {
+  const parsed = UCD_STORE_VERSION_SCHEMA.safeParse(safeJsonParse(content));
+  if (!parsed.success) {
+    throw new Error(
+      `[ucd-store]: Invalid UCD store version schema: ${parsed.error.message}`,
+    );
+  }
+
+  return parsed.data;
+}
