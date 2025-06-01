@@ -19,8 +19,7 @@ const aliases = readdirSync(new URL("./packages", import.meta.url).pathname)
     });
 
 const hiddenLogs = [
-  "[shortcodes]",
-  "[versions]",
+  "[safeJsonParse]",
 ]
 
 const workspaces = readdirSync(new URL("./packages", import.meta.url).pathname)
