@@ -1,4 +1,4 @@
-import type { MaybePromise } from "@luxass/utils";
+import type { MaybePromise, Prettify, RemoveIndexSignature } from "@luxass/utils";
 import type { LocalUCDStore, LocalUCDStoreOptions } from "./local";
 import type { RemoteUCDStore, RemoteUCDStoreOptions } from "./remote";
 import { invariant } from "@luxass/utils";
@@ -20,7 +20,7 @@ export async function createUCDStore(mode: "remote", options?: RemoteUCDStoreOpt
 export async function createUCDStore<TMode extends "remote" | "local">(
   mode: TMode,
   options?: RemoteUCDStoreOptions | LocalUCDStoreOptions,
-): Promise<BaseUCDStore> {
+): Promise<UCDStore> {
   invariant(mode === "remote" || mode === "local", `Invalid mode: ${mode}. Expected "remote" or "local".`);
 
   let store = null;
@@ -40,7 +40,7 @@ export async function createUCDStore<TMode extends "remote" | "local">(
   return store;
 }
 
-export interface BaseUCDStoreOptions {
+export interface UCDStoreOptions {
   /**
    * Base URL for the Unicode API
    *
@@ -58,50 +58,77 @@ export interface BaseUCDStoreOptions {
   filters?: string[];
 }
 
-export abstract class BaseUCDStore {
+export interface ValidatedUCDStoreOptions {
+  baseUrl: string;
+  proxyUrl: string;
+  filters: string[];
+}
+
+/**
+ * Resolves and merges the provided options with default options for UCD store.
+ *
+ * This function takes user-provided options and combines them with default values
+ * to ensure all required configuration is present. It also allows for additional
+ * options to be merged via the extras parameter.
+ *
+ * @template T - Type of additional options to be merged
+ * @param {UCDStoreOptions} options - User provided UCD store options
+ * @param {T} extras - Additional options to merge with defaults
+ * @returns {Prettify<ValidatedUCDStoreOptions & RemoveIndexSignature<T>>} A validated options object with all required fields
+ */
+export function resolveUCDStoreOptions<T extends Record<string, unknown>>(
+  options: UCDStoreOptions,
+  extras?: T,
+): Prettify<ValidatedUCDStoreOptions & RemoveIndexSignature<T>> {
+  const defaults = {
+    baseUrl: "https://unicode-api.luxass.dev/api/v1",
+    proxyUrl: "https://unicode-proxy.ucdjs.dev",
+    filters: [],
+    ...extras,
+  };
+
+  return defu(options, defaults) as Prettify<ValidatedUCDStoreOptions & RemoveIndexSignature<T>>;
+}
+
+/**
+ * Builds a proxy URL by combining the proxy base URL with a path
+ * @internal
+ */
+export function buildProxyUrl(proxyBaseUrl: string, path: string): string {
+  return `${proxyBaseUrl}/${path}`;
+}
+
+/**
+ * Builds an API URL by combining the API base URL with a path
+ * @internal
+ */
+export function buildApiUrl(apiBaseUrl: string, path: string): string {
+  return `${apiBaseUrl}/${path}`;
+}
+
+export interface UCDStore {
   /**
    * Base URL for the Unicode API
    */
-  protected baseUrl: string;
+  readonly baseUrl: string;
 
   /**
    * Proxy URL for the Unicode Files
    */
-  protected proxyUrl: string;
+  readonly proxyUrl: string;
 
   /**
    * Filters to apply to the Unicode Data Files.
    */
-  private filters: string[] = [];
+  readonly filters: string[];
 
-  /**
-   * Whether or not the store is populated with data.
-   */
-  public isPopulated: boolean = false;
+  bootstrap: () => MaybePromise<void>;
 
-  constructor(options: BaseUCDStoreOptions = {}) {
-    const { baseUrl, proxyUrl } = defu(options, {
-      baseUrl: "https://unicode-api.luxass.dev/api/v1",
-      proxyUrl: "https://unicode-proxy.ucdjs.dev",
-    });
+  readonly versions: string[];
 
-    this.proxyUrl = proxyUrl;
-    this.baseUrl = baseUrl;
-  }
+  getFile: (version: string, filePath: string) => Promise<string>;
+  hasVersion: (version: string) => MaybePromise<boolean>;
+  getFilePaths: (version: string) => Promise<string[]>;
 
-  abstract bootstrap(): MaybePromise<void>;
-
-  abstract get versions(): string[];
-
-  abstract getFile(version: string, filePath: string): Promise<string>;
-  abstract hasVersion(version: string): MaybePromise<boolean>;
-  abstract getFilePaths(version: string): Promise<string[]>;
-
-  buildProxyUrl(path: string): string {
-    return `${this.proxyUrl}/${path}`;
-  }
-
-  buildApiUrl(path: string): string {
-    return `${this.baseUrl}/${path}`;
-  }
+  getFileTree: (version: string) => Promise<UnicodeVersionFile[]>;
 }

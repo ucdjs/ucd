@@ -16,7 +16,7 @@ catalogs:
     # merge these together when heading inference is implemented better
     "@luxass/unicode-utils": ^0.9.0
     "@luxass/unicode-utils-new": npm:@luxass/unicode-utils@0.12.0-beta.5
-    "@luxass/utils": ^2.2.2
+    "@luxass/utils": ^2.3.0
     farver: ^0.4.2
     fs-extra: ^11.3.0
     yargs-parser: ^21.1.1

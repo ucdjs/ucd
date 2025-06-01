@@ -1,9 +1,9 @@
-import type { BaseUCDStoreOptions, UnicodeVersionFile } from "./store";
+import type { UCDStore, UCDStoreOptions, UnicodeVersionFile } from "./store";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
-import { fetchWithRetry } from "@ucdjs/utils";
-import { BaseUCDStore } from "./store";
+import { promiseRetry } from "@luxass/utils";
+import { buildApiUrl, buildProxyUrl, resolveUCDStoreOptions } from "./store";
 
-export type RemoteUCDStoreOptions = BaseUCDStoreOptions;
+export type RemoteUCDStoreOptions = UCDStoreOptions;
 
 export interface FilterOptions {
   excludePatterns?: string[];
@@ -28,12 +28,20 @@ export interface CacheStats {
   keys: string[];
 }
 
-export class RemoteUCDStore extends BaseUCDStore {
+export class RemoteUCDStore implements UCDStore {
+  public readonly baseUrl: string;
+  public readonly proxyUrl: string;
+  public readonly filters: string[];
+  public isPopulated: boolean = false;
+
   //                      filePath, content
   private FILE_CACHE: Map<string, string> = new Map();
 
   constructor(options: RemoteUCDStoreOptions = {}) {
-    super(options);
+    const resolvedOptions = resolveUCDStoreOptions(options);
+    this.baseUrl = resolvedOptions.baseUrl;
+    this.proxyUrl = resolvedOptions.proxyUrl;
+    this.filters = resolvedOptions.filters;
   }
 
   bootstrap(): void {}
@@ -46,8 +54,8 @@ export class RemoteUCDStore extends BaseUCDStore {
     return this.FILE_CACHE;
   }
 
-  async getFileStructure(version: string): Promise<UnicodeVersionFile[]> {
-    const url = this.buildApiUrl(`unicode-files/${version}`);
+  async getFileTree(version: string): Promise<UnicodeVersionFile[]> {
+    const url = buildApiUrl(this.baseUrl, `unicode-files/${version}`);
     const response = await fetchWithRetry(url);
     const rawStructure = await response.json() as UnicodeVersionFile[];
     return this.processFileStructure(rawStructure);
@@ -60,7 +68,7 @@ export class RemoteUCDStore extends BaseUCDStore {
       return this.FILE_CACHE.get(cacheKey)!;
     }
 
-    const url = this.buildProxyUrl(`${version}/${filePath}`);
+    const url = buildProxyUrl(this.proxyUrl, `${version}/${filePath}`);
     const response = await fetchWithRetry(url);
     const content = await response.text();
 
@@ -73,7 +81,7 @@ export class RemoteUCDStore extends BaseUCDStore {
   }
 
   async getFilePaths(version: string): Promise<string[]> {
-    const fileStructure = await this.getFileStructure(version);
+    const fileStructure = await this.getFileTree(version);
     return this.flattenFilePaths(fileStructure);
   }
 
@@ -104,4 +112,21 @@ export class RemoteUCDStore extends BaseUCDStore {
 
     return paths;
   }
+}
+
+async function fetchWithRetry(url: string, options?: RequestInit): Promise<Response> {
+  return promiseRetry(
+    async () => {
+      const response = await fetch(url, options);
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      return response;
+    },
+    {
+      retries: 3,
+    },
+  );
 }
