@@ -20,6 +20,7 @@ const aliases = readdirSync(new URL("./packages", import.meta.url).pathname)
 
 const hiddenLogs = [
   "[safeJsonParse]",
+  "[ucd-store]"
 ]
 
 const workspaces = readdirSync(new URL("./packages", import.meta.url).pathname)
