@@ -1,11 +1,10 @@
 import type { MaybePromise } from "@luxass/utils";
-import type { BaseUCDStoreOptions } from "./store";
+import type { UCDStore, UCDStoreOptions, UnicodeVersionFile, ValidatedUCDStoreOptions } from "./store";
 import path from "node:path";
 import { invariant } from "@luxass/utils";
-import defu from "defu";
-import { BaseUCDStore } from "./store";
+import { resolveUCDStoreOptions } from "./store";
 
-export interface LocalUCDStoreOptions extends BaseUCDStoreOptions {
+export interface LocalUCDStoreOptions extends UCDStoreOptions {
   /**
    * Base path for the local UCD store
    */
@@ -21,21 +20,29 @@ export interface LocalUCDStoreOptions extends BaseUCDStoreOptions {
   versions?: string[];
 }
 
-export class LocalUCDStore extends BaseUCDStore {
+export class LocalUCDStore implements UCDStore {
+  public readonly baseUrl: string;
+  public readonly proxyUrl: string;
+  public readonly filters: string[];
   public basePath: string;
 
   constructor(options: LocalUCDStoreOptions = {}) {
-    super(options);
-
-    const { basePath } = defu(options, {
+    const {
+      baseUrl,
+      proxyUrl,
+      filters,
+      basePath,
+    } = resolveUCDStoreOptions(options, {
       basePath: path.resolve("./ucd-files"),
     });
 
+    this.baseUrl = baseUrl;
+    this.proxyUrl = proxyUrl;
+    this.filters = filters;
     this.basePath = basePath;
   }
 
   bootstrap(): Promise<void> {
-    invariant(!this.isPopulated, "Store is already populated. Can't bootstrap it again.");
     invariant(this.basePath, "Base path is required for LocalUCDStore.");
 
     return Promise.resolve();
@@ -45,15 +52,19 @@ export class LocalUCDStore extends BaseUCDStore {
     throw new Error("Method not implemented.");
   }
 
-  getFilePaths(version: string): Promise<string[]> {
+  getFilePaths(_version: string): Promise<string[]> {
     throw new Error("Method not implemented.");
   }
 
-  getFile(version: string, filePath: string): Promise<string> {
+  getFile(_version: string, _filePath: string): Promise<string> {
     throw new Error("Method not implemented.");
   }
 
-  hasVersion(version: string): MaybePromise<boolean> {
+  hasVersion(_version: string): MaybePromise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+
+  getFileTree(_version: string): Promise<UnicodeVersionFile[]> {
     throw new Error("Method not implemented.");
   }
 
