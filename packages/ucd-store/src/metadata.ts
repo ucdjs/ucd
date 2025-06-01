@@ -1,4 +1,4 @@
-import { } from "@ucdjs/utils";
+import { safeJsonParse } from "@ucdjs/utils";
 import { z } from "zod/v4";
 
 export const UCD_STORE_ROOT_SCHEMA = z.object({
@@ -22,7 +22,7 @@ export type UCDStoreVersionSchema = z.infer<typeof UCD_STORE_VERSION_SCHEMA>;
 export async function validateUCDRootStore(
   content: string,
 ): Promise<UCDStoreRootSchema> {
-  const parsed = UCD_STORE_ROOT_SCHEMA.safeParse(JSON.parse(content));
+  const parsed = UCD_STORE_ROOT_SCHEMA.safeParse(safeJsonParse(content));
   if (!parsed.success) {
     throw new Error(
       `Invalid UCD store root schema: ${parsed.error.message}`,
