@@ -37,8 +37,11 @@
   },
   "dependencies": {
     "@luxass/unicode-utils": "catalog:prod",
+    "@luxass/utils": "catalog:prod",
+    "@ucdjs/utils": "workspace:*",
     "defu": "catalog:prod",
-    "micromatch": "catalog:prod"
+    "micromatch": "catalog:prod",
+    "zod": "catalog:prod"
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:dev",
