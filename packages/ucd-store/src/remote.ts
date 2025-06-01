@@ -1,5 +1,4 @@
-import type { BaseUCDStoreOptions, UnicodeVersionFile } from "./store";
-import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
+import type { BaseUCDStoreOptions } from "./store";
 import { invariant } from "@luxass/utils";
 import { BaseUCDStore } from "./store";
 
