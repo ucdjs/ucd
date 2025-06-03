@@ -1,5 +1,5 @@
 import type { MaybePromise } from "@luxass/utils";
-import type { UCDStore, UCDStoreOptions, UnicodeVersionFile, ValidatedUCDStoreOptions } from "./store";
+import type { UCDStore, UCDStoreOptions, UnicodeVersionFile } from "./store";
 import path from "node:path";
 import { invariant } from "@luxass/utils";
 import { resolveUCDStoreOptions } from "./store";
