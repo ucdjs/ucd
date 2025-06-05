@@ -1,11 +1,11 @@
 export {
   LocalUCDStore,
   type LocalUCDStoreOptions,
+  UCD_STORE_ROOT_SCHEMA,
+  UCD_STORE_VERSION_SCHEMA,
+  type UCDStoreRootSchema,
+  type UCDStoreVersionSchema,
 } from "./local";
-export type {
-  UCDStoreRootSchema,
-  UCDStoreVersionSchema,
-} from "./metadata";
 export {
   RemoteUCDStore,
   type RemoteUCDStoreOptions,
