@@ -30,7 +30,6 @@ describe("Remote UCD Store", () => {
     expect(store.baseUrl).toBeDefined();
     expect(store.proxyUrl).toBeDefined();
     expect(store.filters).toBeDefined();
-    expect(store.isPopulated).toBe(false);
   });
 
   it("should initialize with custom options", () => {
@@ -152,7 +151,7 @@ describe("Remote UCD Store", () => {
     const mockFileContent = "File content here";
 
     mockFetch([
-      [`GET ${store.proxyUrl}/15.1.0/UnicodeData.txt`, () => {
+      [`GET ${store.proxyUrl}/15.1.0/ucd/UnicodeData.txt`, () => {
         return new HttpResponse(mockFileContent, { status: 200 });
       }],
     ]);
@@ -168,7 +167,7 @@ describe("Remote UCD Store", () => {
 
     // First call - should fetch
     mockFetch([
-      [`GET ${store.proxyUrl}/15.1.0/UnicodeData.txt`, () => {
+      [`GET ${store.proxyUrl}/15.1.0/ucd/UnicodeData.txt`, () => {
         return new HttpResponse(mockFileContent, { status: 200 });
       }],
     ]);
@@ -333,7 +332,7 @@ describe("Remote UCD Store", () => {
 
   it("should handle files with special characters in paths", async () => {
     mockFetch([
-      [`GET ${store.proxyUrl}/15.1.0/special%20file%20name.txt`, () => {
+      [`GET ${store.proxyUrl}/15.1.0/ucd/special%20file%20name.txt`, () => {
         return new HttpResponse("content", { status: 200 });
       }],
     ]);

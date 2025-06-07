@@ -30,6 +30,9 @@ catalogs:
     tsdown:
       specifier: ^0.12.5
       version: 0.12.5
+    tsx:
+      specifier: ^4.19.4
+      version: 4.19.4
     typescript:
       specifier: ^5.8.3
       version: 5.8.3
@@ -280,6 +283,9 @@ importers:
       tsdown:
         specifier: catalog:dev
         version: 0.12.5(publint@0.3.12)(typescript@5.8.3)
+      tsx:
+        specifier: catalog:dev
+        version: 4.19.4
       typescript:
         specifier: catalog:dev
         version: 5.8.3
@@ -1986,9 +1992,6 @@ packages:
   get-caller-file@2.0.5:
     resolution: {integrity: sha512-DyFP3BM/3YHTQOCUL/w0OZHR0lpKeGrxotcHWcqNEdnltqFwXVfhEBQ94eIo34AfQpo0rGki4cyIiftY06h2Fg==}
     engines: {node: 6.* || 8.* || >= 10.*}
-
-  get-tsconfig@4.10.0:
-    resolution: {integrity: sha512-kGzZ3LWWQcGIAmg6iWvXn0ei6WDtV26wzHRMwDSzmAbcXrTEXxHy6IehI6/4eT6VRKyMP1eF1VqwrVUmE/LR7A==}
 
   get-tsconfig@4.10.1:
     resolution: {integrity: sha512-auHyJ4AgMz7vgS8Hp3N6HXSmlMdUyhSUrfBF16w153rxtLIEOE+HGqaBppczZvnHLqQJfiHotCYpNhl0lUROFQ==}
@@ -4735,7 +4738,7 @@ snapshots:
       debug: 4.4.0
       eslint: 9.27.0(jiti@2.4.2)
       eslint-import-resolver-node: 0.3.9
-      get-tsconfig: 4.10.0
+      get-tsconfig: 4.10.1
       is-glob: 4.0.3
       minimatch: 10.0.1
       semver: 7.7.1
@@ -4782,7 +4785,7 @@ snapshots:
       enhanced-resolve: 5.18.1
       eslint: 9.27.0(jiti@2.4.2)
       eslint-plugin-es-x: 7.8.0(eslint@9.27.0(jiti@2.4.2))
-      get-tsconfig: 4.10.0
+      get-tsconfig: 4.10.1
       globals: 15.15.0
       ignore: 5.3.2
       minimatch: 9.0.5
@@ -5070,10 +5073,6 @@ snapshots:
   function-bind@1.1.2: {}
 
   get-caller-file@2.0.5: {}
-
-  get-tsconfig@4.10.0:
-    dependencies:
-      resolve-pkg-maps: 1.0.0
 
   get-tsconfig@4.10.1:
     dependencies:
@@ -6242,7 +6241,7 @@ snapshots:
   tsx@4.19.4:
     dependencies:
       esbuild: 0.25.3
-      get-tsconfig: 4.10.0
+      get-tsconfig: 4.10.1
     optionalDependencies:
       fsevents: 2.3.3
 

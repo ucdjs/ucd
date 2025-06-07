@@ -1,9 +1,13 @@
 /* eslint-disable antfu/no-top-level-await */
 /* eslint-disable no-console */
-// TODO: remove this file when implementation is finalized.
 import assert from "node:assert";
-import { LocalUCDStore } from "./src/local";
-import { createUCDStore } from "./src/store";
+import path from "node:path";
+import { LocalUCDStore } from "../src/local";
+import { createUCDStore } from "../src/store";
+
+const basePath = path.resolve(__dirname, ".local");
+
+console.log(basePath);
 
 const store = await createUCDStore("local", {
   basePath: "./ucd-files",
@@ -12,7 +16,6 @@ const store = await createUCDStore("local", {
 
 assert(store instanceof LocalUCDStore, "store should be an instance of LocalUCDStore");
 
-assert(store.isPopulated, "store should be loaded");
 assert(store.basePath != null, "store basePath should not be null");
 assert(store.versions.length > 0, "store should have versions");
 
