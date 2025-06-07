@@ -1,4 +1,4 @@
-export { setupLocalUCDStore } from "./download";
+export { download } from "./download";
 export {
   LocalUCDStore,
   type LocalUCDStoreOptions,
