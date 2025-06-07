@@ -90,23 +90,6 @@ export async function download(options: DownloadOptions): Promise<DownloadResult
     excludePatterns.push("**/*.html", "**/*.htm");
   }
 
-  function getAllFilePaths(entries: FileEntry[]): string[] {
-    const filePaths: string[] = [];
-    // eslint-disable-next-line ts/explicit-function-return-type
-    function collectPaths(entryList: FileEntry[], currentPath = "") {
-      for (const entry of entryList) {
-        const fullPath = currentPath ? `${currentPath}/${entry.path}` : entry.path;
-        if (!entry.children) {
-          filePaths.push(fullPath);
-        } else if (entry.children.length > 0) {
-          collectPaths(entry.children, fullPath);
-        }
-      }
-    }
-    collectPaths(entries);
-    return filePaths;
-  }
-
   function filterEntriesRecursive(entries: FileEntry[]): FileEntry[] {
     if (excludePatterns.length === 0) return entries;
 
@@ -297,39 +280,6 @@ export async function validateLocalStore(options: {
     return filePaths;
   }
 
-  function filterEntriesRecursive(entries: FileEntry[]): FileEntry[] {
-    if (excludePatterns.length === 0) return entries;
-
-    const allPaths = getAllFilePaths(entries);
-    const patterns = ["**", ...excludePatterns.map((pattern) => `!${pattern}`)];
-
-    const matchedPaths = new Set(micromatch(allPaths, patterns, {
-      dot: true,
-      nocase: true,
-    }));
-
-    function filterEntries(entryList: FileEntry[], prefix = ""): FileEntry[] {
-      const result: FileEntry[] = [];
-      for (const entry of entryList) {
-        const fullPath = prefix ? `${prefix}/${entry.path}` : entry.path;
-
-        if (!entry.children) {
-          if (matchedPaths.has(fullPath)) {
-            result.push(entry);
-          }
-        } else {
-          const filteredChildren = filterEntries(entry.children, fullPath);
-          if (filteredChildren.length > 0) {
-            result.push({ ...entry, children: filteredChildren });
-          }
-        }
-      }
-      return result;
-    }
-
-    return filterEntries(entries);
-  }
-
   for (const version of versions) {
     const versionPath = path.join(basePath, `v${version}`);
 
@@ -354,7 +304,7 @@ export async function validateLocalStore(options: {
         continue;
       }
 
-      const filteredEntries = filterEntriesRecursive(fileEntries);
+      const filteredEntries = filterEntriesRecursive(fileEntries, excludePatterns);
 
       const localFilePaths = getAllFilePaths(filteredEntries);
 
@@ -382,13 +332,62 @@ export async function validateLocalStore(options: {
   };
 }
 
+function getAllFilePaths(entries: FileEntry[]): string[] {
+  const filePaths: string[] = [];
+  // eslint-disable-next-line ts/explicit-function-return-type
+  function collectPaths(entryList: FileEntry[], currentPath = "") {
+    for (const entry of entryList) {
+      const fullPath = currentPath ? `${currentPath}/${entry.path}` : entry.path;
+      if (!entry.children) {
+        filePaths.push(fullPath);
+      } else if (entry.children.length > 0) {
+        collectPaths(entry.children, fullPath);
+      }
+    }
+  }
+  collectPaths(entries);
+  return filePaths;
+}
+
+function filterEntriesRecursive(entries: FileEntry[], excludePatterns: string[]): FileEntry[] {
+  if (excludePatterns.length === 0) return entries;
+
+  const allPaths = getAllFilePaths(entries);
+  const patterns = ["**", ...excludePatterns.map((pattern) => `!${pattern}`)];
+
+  const matchedPaths = new Set(micromatch(allPaths, patterns, {
+    dot: true,
+    nocase: true,
+  }));
+
+  function filterEntries(entryList: FileEntry[], prefix = ""): FileEntry[] {
+    const result: FileEntry[] = [];
+    for (const entry of entryList) {
+      const fullPath = prefix ? `${prefix}/${entry.path}` : entry.path;
+
+      if (!entry.children) {
+        if (matchedPaths.has(fullPath)) {
+          result.push(entry);
+        }
+      } else {
+        const filteredChildren = filterEntries(entry.children, fullPath);
+        if (filteredChildren.length > 0) {
+          result.push({ ...entry, children: filteredChildren });
+        }
+      }
+    }
+    return result;
+  }
+
+  return filterEntries(entries);
+}
+
 export async function repairLocalStore(options: RepairOptions): Promise<RepairResult> {
   const { basePath, versions, excludePatterns } = options;
 
   const repairedFiles: string[] = [];
   const errors: DownloadError[] = [];
 
-  // Build exclude patterns
   const excludePatternsFull = excludePatterns?.map((pattern) => `!${pattern}`) || [];
 
   for (const version of versions) {
@@ -415,7 +414,7 @@ export async function repairLocalStore(options: RepairOptions): Promise<RepairRe
         continue;
       }
 
-      const filteredEntries = filterEntriesRecursive(fileEntries);
+      const filteredEntries = filterEntriesRecursive(fileEntries, excludePatternsFull);
       const basePath = `/${version}`;
 
       for (const entry of filteredEntries) {

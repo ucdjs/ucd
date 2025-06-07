@@ -1,6 +1,5 @@
-import type { MaybePromise } from "@luxass/utils";
 import type { UCDStore, UCDStoreOptions, UnicodeVersionFile } from "./store";
-import path, { join } from "node:path";
+import path from "node:path";
 import { invariant } from "@luxass/utils";
 import fsx from "fs-extra";
 import { z } from "zod/v4";
