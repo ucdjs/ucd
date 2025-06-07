@@ -5,7 +5,7 @@ import { invariant } from "@luxass/utils";
 import fsx from "fs-extra";
 import { z } from "zod/v4";
 
-import { download, downloadSingleFile, validateLocalStore } from "./download";
+import { download, repairStore } from "./download";
 import { resolveUCDStoreOptions } from "./store";
 
 export const UCD_STORE_SCHEMA = z.array(
@@ -138,51 +138,27 @@ export class LocalUCDStore implements UCDStore {
   }
 
   private async _validateAndRepairStore(): Promise<void> {
-    // Validate the local store to find missing files
-    const validationResult = await validateLocalStore({
-      basePath: this.basePath,
-      versions: this._versions,
-    });
+    // Use the repairStore function to validate and repair the store
+    const repairResult = await repairStore(
+      {
+        basePath: this.basePath,
+        versions: this._versions,
+      },
+      {
+        excludePatterns: this.filters,
+        concurrency: 5,
+      },
+    );
 
-    // If there are missing files, download them in parallel
-    if (validationResult.missingFiles.length > 0) {
-      console.warn(`[ucd-store]: Found ${validationResult.missingFiles.length} missing files. Downloading...`);
-
-      const downloadPromises = validationResult.missingFiles.map(async (missingFile) => {
-        try {
-          const result = await downloadSingleFile(
-            missingFile.version,
-            missingFile.filePath,
-            missingFile.localPath,
-          );
-
-          if (!result.success) {
-            console.warn(`[ucd-store]: Failed to download ${missingFile.filePath} for version ${missingFile.version}: ${result.error}`);
-            return { success: false, file: missingFile, error: result.error };
-          }
-          
-          return { success: true, file: missingFile };
-        } catch (error) {
-          console.warn(`[ucd-store]: Error downloading ${missingFile.filePath} for version ${missingFile.version}: ${error instanceof Error ? error.message : String(error)}`);
-          return { success: false, file: missingFile, error: String(error) };
-        }
-      });
-
-      // Wait for all downloads to complete
-      const results = await Promise.all(downloadPromises);
-      
-      // Log summary
-      const failedDownloads = results.filter(result => !result.success);
-      if (failedDownloads.length > 0) {
-        console.warn(`[ucd-store]: ${failedDownloads.length} files failed to download.`);
-      } else {
-        console.log(`[ucd-store]: Successfully downloaded all ${validationResult.missingFiles.length} missing files.`);
+    // Log results
+    if (repairResult.totalMissingFiles > 0) {
+      if (repairResult.repairedFiles.length > 0) {
+        console.warn(`[ucd-store]: Successfully repaired ${repairResult.repairedFiles.length} out of ${repairResult.totalMissingFiles} missing files.`);
       }
-    }
 
-    // Report any validation errors
-    if (validationResult.errors.length > 0) {
-      console.warn(`[ucd-store]: Validation errors:`, validationResult.errors);
+      if (repairResult.errors.length > 0) {
+        console.warn(`[ucd-store]: ${repairResult.errors.length} files failed to repair:`, repairResult.errors);
+      }
     }
   }
 

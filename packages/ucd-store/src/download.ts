@@ -493,3 +493,77 @@ export async function downloadSingleFile(
     };
   }
 }
+
+/**
+ * Repair a store by validating and downloading missing files
+ */
+export async function repairStore(
+  store: { basePath: string; versions: string[] },
+  options: {
+    excludePatterns?: string[];
+    concurrency?: number;
+  } = {},
+): Promise<{
+    repairedFiles: string[];
+    errors: string[];
+    totalMissingFiles: number;
+  }> {
+  const { excludePatterns = [], concurrency = 5 } = options;
+
+  // Validate the local store to find missing files
+  const validationResult = await validateLocalStore({
+    basePath: store.basePath,
+    versions: store.versions,
+    exclude: excludePatterns.join(","),
+  });
+
+  const repairedFiles: string[] = [];
+  const errors: string[] = [];
+
+  // If there are missing files, download them
+  if (validationResult.missingFiles.length > 0) {
+    // Process files in batches to control concurrency
+    const batches = [];
+    for (let i = 0; i < validationResult.missingFiles.length; i += concurrency) {
+      batches.push(validationResult.missingFiles.slice(i, i + concurrency));
+    }
+
+    for (const batch of batches) {
+      const downloadPromises = batch.map(async (missingFile) => {
+        try {
+          const result = await downloadSingleFile(
+            missingFile.version,
+            missingFile.filePath,
+            missingFile.localPath,
+          );
+
+          if (result.success) {
+            repairedFiles.push(missingFile.localPath);
+            return { success: true, file: missingFile };
+          } else {
+            errors.push(`Failed to download ${missingFile.filePath} for version ${missingFile.version}: ${result.error}`);
+            return { success: false, file: missingFile, error: result.error };
+          }
+        } catch (error) {
+          const errorMessage = `Error downloading ${missingFile.filePath} for version ${missingFile.version}: ${error instanceof Error ? error.message : String(error)}`;
+          errors.push(errorMessage);
+          return { success: false, file: missingFile, error: errorMessage };
+        }
+      });
+
+      // Wait for the current batch to complete
+      await Promise.all(downloadPromises);
+    }
+  }
+
+  // Add validation errors to the errors array
+  validationResult.errors.forEach((error) => {
+    errors.push(error.message);
+  });
+
+  return {
+    repairedFiles,
+    errors,
+    totalMissingFiles: validationResult.missingFiles.length,
+  };
+}
