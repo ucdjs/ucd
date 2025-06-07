@@ -1,10 +1,9 @@
+export { setupLocalUCDStore } from "./download";
 export {
   LocalUCDStore,
   type LocalUCDStoreOptions,
-  UCD_STORE_ROOT_SCHEMA,
-  UCD_STORE_VERSION_SCHEMA,
-  type UCDStoreRootSchema,
-  type UCDStoreVersionSchema,
+  UCD_STORE_SCHEMA,
+  type UCDStoreSchema,
 } from "./local";
 export {
   RemoteUCDStore,
