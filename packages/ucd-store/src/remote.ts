@@ -33,7 +33,7 @@ export class RemoteUCDStore implements UCDStore {
   public readonly proxyUrl: string;
   public readonly filters: string[];
 
-  //                      filePath, content
+  //             filePath, content
   #FILE_CACHE: Map<string, string> = new Map();
 
   constructor(options: RemoteUCDStoreOptions = {}) {

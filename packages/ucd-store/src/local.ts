@@ -1,29 +1,21 @@
 import type { MaybePromise } from "@luxass/utils";
 import type { UCDStore, UCDStoreOptions, UnicodeVersionFile } from "./store";
-import path from "node:path";
+import path, { join } from "node:path";
 import { invariant } from "@luxass/utils";
 import fsx from "fs-extra";
 import { z } from "zod/v4";
 
+import { download, downloadSingleFile, validateLocalStore } from "./download";
 import { resolveUCDStoreOptions } from "./store";
 
-export const UCD_STORE_ROOT_SCHEMA = z.object({
-  root: z.boolean(),
-  versions: z.array(
-    z.object({
-      version: z.string(),
-      path: z.string(),
-    }),
-  ),
-});
+export const UCD_STORE_SCHEMA = z.array(
+  z.object({
+    version: z.string(),
+    path: z.string(),
+  }),
+);
 
-export const UCD_STORE_VERSION_SCHEMA = z.object({
-  version: z.string(),
-  files: z.array(z.string()),
-});
-
-export type UCDStoreRootSchema = z.infer<typeof UCD_STORE_ROOT_SCHEMA>;
-export type UCDStoreVersionSchema = z.infer<typeof UCD_STORE_VERSION_SCHEMA>;
+export type UCDStoreSchema = z.infer<typeof UCD_STORE_SCHEMA>;
 
 export interface LocalUCDStoreOptions extends UCDStoreOptions {
   /**
@@ -47,6 +39,7 @@ export class LocalUCDStore implements UCDStore {
   public readonly filters: string[];
   public basePath: string;
   private _versions: string[] = [];
+  private _providedVersions?: string[];
 
   constructor(options: LocalUCDStoreOptions = {}) {
     const {
@@ -62,13 +55,135 @@ export class LocalUCDStore implements UCDStore {
     this.proxyUrl = proxyUrl;
     this.filters = filters;
     this.basePath = path.resolve(basePath);
+    this._providedVersions = options.versions;
   }
 
   async bootstrap(): Promise<void> {
     invariant(this.basePath, "Base path is required for LocalUCDStore.");
 
-    await this.#ensureStoreStructure();
-    await this.#loadVersions();
+    // Check if the store is valid (has manifest file)
+    const storeManifestPath = path.join(this.basePath, ".ucd-store.json");
+    const isValidStore = await fsx.pathExists(this.basePath) && await fsx.pathExists(storeManifestPath);
+
+    if (isValidStore) {
+      // Load versions from existing store
+      await this._loadVersionsFromStore();
+
+      // Validate the store and repair any missing files
+      await this._validateAndRepairStore();
+    } else {
+      // Initialize new store with provided versions
+      if (!this._providedVersions || this._providedVersions.length === 0) {
+        throw new Error(
+          `[ucd-store]: No versions provided for initializing LocalUCDStore. Please provide versions in the constructor options.`,
+        );
+      }
+
+      await this._initializeStore(this._providedVersions);
+    }
+  }
+
+  private async _loadVersionsFromStore(): Promise<void> {
+    const storeManifestPath = path.join(this.basePath, ".ucd-store.json");
+
+    try {
+      const manifestContent = await fsx.readFile(storeManifestPath, "utf-8");
+      const manifestData = JSON.parse(manifestContent);
+
+      // Validate the manifest data against the schema
+      const validatedData = UCD_STORE_SCHEMA.parse(manifestData);
+
+      // Extract versions and populate the _versions array
+      this._versions = validatedData.map((entry) => entry.version);
+    } catch (error) {
+      throw new Error(
+        `[ucd-store]: Failed to load store manifest: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
+
+  private async _initializeStore(versions: string[]): Promise<void> {
+    // Create the base path if it doesn't exist
+    await fsx.ensureDir(this.basePath);
+
+    // Call setupLocalUCDStore to download and initialize the store
+    await download({
+      versions,
+      basePath: this.basePath,
+    });
+
+    // Create the store manifest file
+    await this._createStoreManifest(versions);
+
+    // After successful initialization, populate the _versions array
+    this._versions = [...versions];
+  }
+
+  private async _createStoreManifest(versions: string[]): Promise<void> {
+    const storeManifestPath = path.join(this.basePath, ".ucd-store.json");
+
+    // Create the manifest data according to the UCD_STORE_SCHEMA
+    const manifestData: UCDStoreSchema = versions.map((version) => ({
+      version,
+      path: path.join(this.basePath, version), // Assuming each version has its own directory
+    }));
+
+    try {
+      await fsx.writeFile(storeManifestPath, JSON.stringify(manifestData, null, 2), "utf-8");
+    } catch (error) {
+      throw new Error(
+        `[ucd-store]: Failed to create store manifest: ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+  }
+
+  private async _validateAndRepairStore(): Promise<void> {
+    // Validate the local store to find missing files
+    const validationResult = await validateLocalStore({
+      basePath: this.basePath,
+      versions: this._versions,
+    });
+
+    // If there are missing files, download them in parallel
+    if (validationResult.missingFiles.length > 0) {
+      console.warn(`[ucd-store]: Found ${validationResult.missingFiles.length} missing files. Downloading...`);
+
+      const downloadPromises = validationResult.missingFiles.map(async (missingFile) => {
+        try {
+          const result = await downloadSingleFile(
+            missingFile.version,
+            missingFile.filePath,
+            missingFile.localPath,
+          );
+
+          if (!result.success) {
+            console.warn(`[ucd-store]: Failed to download ${missingFile.filePath} for version ${missingFile.version}: ${result.error}`);
+            return { success: false, file: missingFile, error: result.error };
+          }
+          
+          return { success: true, file: missingFile };
+        } catch (error) {
+          console.warn(`[ucd-store]: Error downloading ${missingFile.filePath} for version ${missingFile.version}: ${error instanceof Error ? error.message : String(error)}`);
+          return { success: false, file: missingFile, error: String(error) };
+        }
+      });
+
+      // Wait for all downloads to complete
+      const results = await Promise.all(downloadPromises);
+      
+      // Log summary
+      const failedDownloads = results.filter(result => !result.success);
+      if (failedDownloads.length > 0) {
+        console.warn(`[ucd-store]: ${failedDownloads.length} files failed to download.`);
+      } else {
+        console.log(`[ucd-store]: Successfully downloaded all ${validationResult.missingFiles.length} missing files.`);
+      }
+    }
+
+    // Report any validation errors
+    if (validationResult.errors.length > 0) {
+      console.warn(`[ucd-store]: Validation errors:`, validationResult.errors);
+    }
   }
 
   get versions(): string[] {
@@ -80,25 +195,15 @@ export class LocalUCDStore implements UCDStore {
       throw new Error(`Version '${version}' not found in store`);
     }
 
-    const versionPath = this.#getVersionPath(version);
-    const manifestPath = path.join(versionPath, ".ucd-version.json");
-    const manifest = await this.#readVersionManifest(manifestPath);
-    return manifest.files;
+    throw new Error("Method not implemented.");
   }
 
-  async getFile(version: string, filePath: string): Promise<string> {
+  async getFile(version: string, _filePath: string): Promise<string> {
     if (!this.hasVersion(version)) {
       throw new Error(`Version '${version}' not found in store`);
     }
 
-    const versionPath = this.#getVersionPath(version);
-    const fullPath = path.join(versionPath, filePath);
-
-    if (!(await fsx.pathExists(fullPath))) {
-      throw new Error(`File '${filePath}' not found in version '${version}'`);
-    }
-
-    return fsx.readFile(fullPath, "utf8");
+    throw new Error("Method not implemented.");
   }
 
   hasVersion(version: string): boolean {
@@ -111,203 +216,5 @@ export class LocalUCDStore implements UCDStore {
       name: path.basename(filePath),
       path: filePath,
     }));
-  }
-
-  async #readStoreManifest(manifestPath: string): Promise<UCDStoreRootSchema> {
-    const data = await fsx.readJson(manifestPath);
-
-    try {
-      return UCD_STORE_ROOT_SCHEMA.parse(data);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        const issues = error.issues.map((issue) => `${issue.path.join(".")}: ${issue.message}`).join(", ");
-        throw new Error(`Invalid UCD store manifest: ${issues}`);
-      }
-      throw new Error("Invalid UCD store: Failed to parse .ucd-store.json");
-    }
-  }
-
-  async #readVersionManifest(manifestPath: string): Promise<UCDStoreVersionSchema> {
-    const data = await fsx.readJson(manifestPath);
-
-    try {
-      return UCD_STORE_VERSION_SCHEMA.parse(data);
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        const issues = error.issues.map((issue) => `${issue.path.join(".")}: ${issue.message}`).join(", ");
-        throw new Error(`Invalid version manifest: ${issues}`);
-      }
-      throw new Error("Invalid version manifest: Failed to parse .ucd-version.json");
-    }
-  }
-
-  /**
-   * Ensures the store directory structure exists and is valid
-   */
-  async #ensureStoreStructure(): Promise<void> {
-    const basePathExists = await fsx.pathExists(this.basePath);
-
-    if (!basePathExists) {
-      await this.#createNewStore();
-      return;
-    }
-
-    await this.#validateExistingStore();
-  }
-
-  /**
-   * Creates a new UCD store with the required structure
-   */
-  async #createNewStore(): Promise<void> {
-    await fsx.mkdir(this.basePath, { recursive: true });
-
-    const manifest: UCDStoreRootSchema = {
-      root: true,
-      versions: [],
-    };
-
-    const manifestPath = path.join(this.basePath, ".ucd-store.json");
-    await fsx.writeJson(manifestPath, manifest, { spaces: 2 });
-  }
-
-  /**
-   * Validates an existing UCD store structure
-   */
-  async #validateExistingStore(): Promise<void> {
-    const manifestPath = path.join(this.basePath, ".ucd-store.json");
-
-    if (!(await fsx.pathExists(manifestPath))) {
-      throw new Error(`Invalid UCD store: Missing .ucd-store.json file at ${this.basePath}`);
-    }
-
-    try {
-      const manifest = await this.#readStoreManifest(manifestPath);
-      await this.#validateVersionDirectories(manifest.versions);
-    } catch (error) {
-      if (error instanceof SyntaxError) {
-        throw new TypeError(`Invalid UCD store: .ucd-store.json contains invalid JSON`);
-      }
-      throw error;
-    }
-  }
-
-  /**
-   * Validates that all version directories exist and are complete
-   */
-  async #validateVersionDirectories(versions: Array<{ version: string; path: string }>): Promise<void> {
-    for (const versionInfo of versions) {
-      await this.#validateVersionDirectory(versionInfo);
-    }
-  }
-
-  /**
-   * Validates a specific version directory and its completeness
-   */
-  async #validateVersionDirectory(versionInfo: { version: string; path: string }): Promise<void> {
-    const versionPath = path.join(this.basePath, versionInfo.path);
-
-    if (!(await fsx.pathExists(versionPath))) {
-      throw new Error(`Invalid UCD store: Version directory '${versionInfo.version}' does not exist at ${versionPath}`);
-    }
-
-    const stats = await fsx.stat(versionPath);
-    if (!stats.isDirectory()) {
-      throw new Error(`Invalid UCD store: Version path '${versionInfo.version}' exists but is not a directory at ${versionPath}`);
-    }
-
-    await this.#validateVersionManifest(versionInfo.version, versionPath);
-  }
-
-  /**
-   * Validates the version-specific manifest file
-   */
-  async #validateVersionManifest(version: string, versionPath: string): Promise<void> {
-    const versionManifestPath = path.join(versionPath, ".ucd-version.json");
-
-    if (!(await fsx.pathExists(versionManifestPath))) {
-      throw new Error(`Invalid UCD store: Version manifest missing for '${version}' at ${versionManifestPath}`);
-    }
-
-    try {
-      const versionManifest = await this.#readVersionManifest(versionManifestPath);
-
-      if (versionManifest.version !== version) {
-        throw new Error(`Invalid version manifest: version mismatch. Expected '${version}', got '${versionManifest.version}'`);
-      }
-
-      await this.#validateVersionFiles(versionPath, versionManifest.files);
-    } catch (error) {
-      if (error instanceof SyntaxError) {
-        throw new TypeError(`Invalid version manifest: .ucd-version.json contains invalid JSON for version '${version}'`);
-      }
-      throw error;
-    }
-  }
-
-  /**
-   * Validates that all files listed in the version manifest actually exist
-   */
-  async #validateVersionFiles(versionPath: string, expectedFiles: string[]): Promise<void> {
-    for (const filePath of expectedFiles) {
-      const fullPath = path.join(versionPath, filePath);
-
-      if (!(await fsx.pathExists(fullPath))) {
-        throw new Error(`Missing file: ${filePath} not found at ${fullPath}`);
-      }
-
-      const stats = await fsx.stat(fullPath);
-      if (!stats.isFile()) {
-        throw new Error(`Invalid file: ${filePath} exists but is not a file`);
-      }
-    }
-  }
-
-  /**
-   * Loads available versions from the store manifest
-   */
-  async #loadVersions(): Promise<void> {
-    const manifestPath = path.join(this.basePath, ".ucd-store.json");
-    const manifest = await this.#readStoreManifest(manifestPath);
-    // Extract just the version strings for the public API
-    this._versions = manifest.versions.map((v) => v.version);
-  }
-
-  /**
-   * Creates a version manifest file for a new version
-   */
-  async #createVersionManifest(version: string, versionPath: string, files: string[]): Promise<void> {
-    const manifest: UCDStoreVersionSchema = {
-      version,
-      files,
-    };
-
-    const manifestPath = path.join(versionPath, ".ucd-version.json");
-    await fsx.writeJson(manifestPath, manifest, { spaces: 2 });
-  }
-
-  /**
-   * Gets the absolute path for a version directory
-   */
-  #getVersionPath(version: string): string {
-    // For now, assume version path equals version name (this is the common case)
-    // In a more robust implementation, we could read the manifest to get the exact path
-    return path.join(this.basePath, version);
-  }
-
-  /**
-   * Updates the main store manifest to include a new version
-   */
-  async #addVersionToStore(version: string, relativePath: string): Promise<void> {
-    const manifestPath = path.join(this.basePath, ".ucd-store.json");
-    const manifest = await this.#readStoreManifest(manifestPath);
-
-    // Check if version already exists
-    const existingVersion = manifest.versions.find((v) => v.version === version);
-    if (existingVersion) {
-      throw new Error(`Version '${version}' already exists in store`);
-    }
-
-    manifest.versions.push({ version, path: relativePath });
-    await fsx.writeJson(manifestPath, manifest, { spaces: 2 });
   }
 }
