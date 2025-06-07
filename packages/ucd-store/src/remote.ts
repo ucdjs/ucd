@@ -1,5 +1,5 @@
 import type { UCDStore, UCDStoreOptions, UnicodeVersionFile } from "./store";
-import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
+import { hasUCDFolderPath, UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { promiseRetry } from "@luxass/utils";
 import { buildApiUrl, buildProxyUrl, resolveUCDStoreOptions } from "./store";
 
@@ -32,10 +32,9 @@ export class RemoteUCDStore implements UCDStore {
   public readonly baseUrl: string;
   public readonly proxyUrl: string;
   public readonly filters: string[];
-  public isPopulated: boolean = false;
 
   //                      filePath, content
-  private FILE_CACHE: Map<string, string> = new Map();
+  #FILE_CACHE: Map<string, string> = new Map();
 
   constructor(options: RemoteUCDStoreOptions = {}) {
     const resolvedOptions = resolveUCDStoreOptions(options);
@@ -51,7 +50,7 @@ export class RemoteUCDStore implements UCDStore {
   }
 
   get fileCache(): Map<string, string> {
-    return this.FILE_CACHE;
+    return this.#FILE_CACHE;
   }
 
   async getFileTree(version: string): Promise<UnicodeVersionFile[]> {
@@ -64,15 +63,15 @@ export class RemoteUCDStore implements UCDStore {
   async getFile(version: string, filePath: string): Promise<string> {
     const cacheKey = `${version}/${filePath}`;
 
-    if (this.FILE_CACHE.has(cacheKey)) {
-      return this.FILE_CACHE.get(cacheKey)!;
+    if (this.#FILE_CACHE.has(cacheKey)) {
+      return this.#FILE_CACHE.get(cacheKey)!;
     }
 
-    const url = buildProxyUrl(this.proxyUrl, `${version}/${filePath}`);
+    const url = buildProxyUrl(this.proxyUrl, `${version}/${hasUCDFolderPath(version) ? "ucd/" : ""}${filePath}`);
     const response = await fetchWithRetry(url);
     const content = await response.text();
 
-    this.FILE_CACHE.set(cacheKey, content);
+    this.#FILE_CACHE.set(cacheKey, content);
     return content;
   }
 
@@ -86,7 +85,7 @@ export class RemoteUCDStore implements UCDStore {
   }
 
   clearCache(): void {
-    this.FILE_CACHE.clear();
+    this.#FILE_CACHE.clear();
   }
 
   private processFileStructure(rawStructure: any[]): UnicodeVersionFile[] {
