@@ -1,5 +1,4 @@
 ---
-"@ucdjs/ucd-store": minor
 "@ucdjs/cli": minor
 ---
 
