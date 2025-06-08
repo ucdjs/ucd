@@ -5,7 +5,6 @@ export {
 } from "./filter";
 export {
   createDefaultFs,
-  FsExtraImplementation,
   type FsInterface,
 } from "./fs-interface";
 export {

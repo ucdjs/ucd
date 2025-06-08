@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createDefaultFs, FsExtraImplementation } from "../src/fs-interface";
+import { createDefaultFs, type FsInterface } from "../src/fs-interface";
 
 describe("fsInterface", () => {
-  describe("fsExtraImplementation", () => {
-    let fs: FsExtraImplementation;
+  describe("createDefaultFs", () => {
+    let fs: FsInterface;
     let mockFsExtra: any;
 
     beforeEach(() => {
@@ -23,7 +23,7 @@ describe("fsInterface", () => {
       // Mock dynamic import of fs-extra
       vi.doMock("fs-extra", () => mockFsExtra);
 
-      fs = new FsExtraImplementation();
+      fs = createDefaultFs();
     });
 
     it("should implement all FsInterface methods", () => {
@@ -132,10 +132,16 @@ describe("fsInterface", () => {
     });
   });
 
-  describe("createDefaultFs", () => {
-    it("should return an FsExtraImplementation instance", () => {
+  describe("createDefaultFs factory", () => {
+    it("should return an object implementing FsInterface", () => {
       const fs = createDefaultFs();
-      expect(fs).toBeInstanceOf(FsExtraImplementation);
+      expect(fs).toBeDefined();
+      expect(typeof fs.ensureDir).toBe("function");
+      expect(typeof fs.writeFile).toBe("function");
+      expect(typeof fs.readFile).toBe("function");
+      expect(typeof fs.pathExists).toBe("function");
+      expect(typeof fs.access).toBe("function");
+      expect(typeof fs.mkdir).toBe("function");
     });
 
     it("should return different instances on multiple calls", () => {
