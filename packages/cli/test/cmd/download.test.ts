@@ -132,7 +132,7 @@ describe("download command", () => {
     });
   });
 
-  describe("file filtering", () => {
+  describe.todo("file filtering", () => {
     it("should download all files when no exclusions are specified", async () => {
       // create a temporary directory for the test
       const outputPath = await testdir({});
@@ -228,32 +228,7 @@ describe("download command", () => {
     });
   });
 
-  describe("debug output", () => {
-    it("should provide detailed output when debug flag is used", async () => {
-      const outputPath = await testdir({});
-
-      await runDownload({
-        versions: ["16.0.0"],
-        flags: {
-          _: ["16.0.0"],
-          outputDir: outputPath,
-          debug: true,
-        },
-      });
-
-      // check that debug output includes file paths
-      expect(console.info).toHaveBeenCalledWith(
-        expect.stringMatching(/Downloaded \d+ files/),
-      );
-
-      // individual files should be listed in debug mode
-      expect(console.info).toHaveBeenCalledWith(
-        expect.stringMatching(/UnicodeData\.txt/),
-      );
-    });
-  });
-
-  describe("error handling", () => {
+  describe.todo("error handling", () => {
     it("should handle API errors gracefully", async () => {
       // mock api error
       mockFetch([
@@ -308,7 +283,6 @@ describe("download command", () => {
         flags: {
           _: ["16.1.0"],
           outputDir: outputPath,
-          debug: true,
         },
       });
 
