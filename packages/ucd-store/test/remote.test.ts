@@ -89,7 +89,7 @@ describe("Remote UCD Store", () => {
     ];
 
     mockFetch([
-      [`GET ${store.baseUrl}/unicode-files/15.1.0`, () => {
+      [`GET ${store.baseUrl}/api/v1/unicode-files/15.1.0`, () => {
         return new HttpResponse(JSON.stringify(mockFileTree), {
           status: 200,
           headers: { "Content-Type": "application/json" },
@@ -105,7 +105,7 @@ describe("Remote UCD Store", () => {
     const store = new RemoteUCDStore();
 
     mockFetch([
-      [`GET ${store.baseUrl}/unicode-files/15.1.0`, () => {
+      [`GET ${store.baseUrl}/api/v1/unicode-files/15.1.0`, () => {
         return new HttpResponse(null, { status: 404 });
       }],
     ]);
@@ -132,7 +132,7 @@ describe("Remote UCD Store", () => {
     ];
 
     mockFetch([
-      [`GET ${store.baseUrl}/unicode-files/15.1.0`, () => {
+      [`GET ${store.baseUrl}/api/v1/unicode-files/15.1.0`, () => {
         return new HttpResponse(JSON.stringify(rawStructure), {
           status: 200,
           headers: { "Content-Type": "application/json" },
@@ -262,7 +262,7 @@ describe("Remote UCD Store", () => {
     ];
 
     mockFetch([
-      [`GET ${store.baseUrl}/unicode-files/15.1.0`, () => {
+      [`GET ${store.baseUrl}/api/v1/unicode-files/15.1.0`, () => {
         return new HttpResponse(JSON.stringify(mockFileTree), {
           status: 200,
           headers: { "Content-Type": "application/json" },
@@ -283,7 +283,7 @@ describe("Remote UCD Store", () => {
     const store = new RemoteUCDStore();
 
     mockFetch([
-      [`GET ${store.baseUrl}/unicode-files/15.1.0`, () => {
+      [`GET ${store.baseUrl}/api/v1/unicode-files/15.1.0`, () => {
         return new HttpResponse(JSON.stringify([]), {
           status: 200,
           headers: { "Content-Type": "application/json" },
@@ -316,7 +316,7 @@ describe("Remote UCD Store", () => {
     const store = new RemoteUCDStore();
 
     mockFetch([
-      [`GET ${store.baseUrl}/unicode-files/15.1.0`, () => {
+      [`GET ${store.baseUrl}/api/v1/unicode-files/15.1.0`, () => {
         return new HttpResponse(JSON.stringify([]), {
           status: 200,
           headers: { "Content-Type": "application/json" },
@@ -345,7 +345,7 @@ describe("Remote UCD Store", () => {
     const store = new RemoteUCDStore();
 
     mockFetch([
-      [`GET ${store.baseUrl}/unicode-files/15.1.0`, () => {
+      [`GET ${store.baseUrl}/api/v1/unicode-files/15.1.0`, () => {
         return new HttpResponse("invalid json", {
           status: 200,
           headers: { "Content-Type": "application/json" },
@@ -359,7 +359,7 @@ describe("Remote UCD Store", () => {
       return response;
     });
 
-    await expect(store.getFileTree("15.1.0")).rejects.toThrow("Invalid JSON");
+    await expect(() => store.getFileTree("15.1.0")).rejects.toThrow("Unexpected token 'i', \"invalid json\" is not valid JSON");
   });
 
   it("should handle files with special characters in paths", async () => {
@@ -394,7 +394,7 @@ describe("Remote UCD Store", () => {
       ];
 
       mockFetch([
-        [`GET ${store.baseUrl}/unicode-files/15.1.0`, () => {
+        [`GET ${store.baseUrl}/api/v1/unicode-files/15.1.0`, () => {
           return new HttpResponse(JSON.stringify(mockFileTree), {
             status: 200,
             headers: { "Content-Type": "application/json" },
