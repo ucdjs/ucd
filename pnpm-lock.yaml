@@ -18,6 +18,9 @@ catalogs:
     '@types/node':
       specifier: ^22.10.0
       version: 22.15.2
+    '@types/picomatch':
+      specifier: ^4.0.0
+      version: 4.0.0
     '@types/yargs-parser':
       specifier: ^21.0.3
       version: 21.0.3
@@ -101,6 +104,9 @@ catalogs:
     p-limit:
       specifier: ^6.2.0
       version: 6.2.0
+    picomatch:
+      specifier: ^4.0.2
+      version: 4.0.2
     yargs-parser:
       specifier: ^21.1.1
       version: 21.1.1
@@ -258,9 +264,9 @@ importers:
       fs-extra:
         specifier: catalog:prod
         version: 11.3.0
-      micromatch:
+      picomatch:
         specifier: catalog:prod
-        version: 4.0.8
+        version: 4.0.2
       zod:
         specifier: catalog:prod
         version: 3.25.42
@@ -271,9 +277,9 @@ importers:
       '@types/fs-extra':
         specifier: catalog:dev
         version: 11.0.4
-      '@types/micromatch':
+      '@types/picomatch':
         specifier: catalog:dev
-        version: 4.0.9
+        version: 4.0.0
       eslint:
         specifier: catalog:dev
         version: 9.27.0(jiti@2.4.2)
@@ -1131,6 +1137,9 @@ packages:
 
   '@types/normalize-package-data@2.4.4':
     resolution: {integrity: sha512-37i+OaWTh9qeK4LSHPsyRC7NahnGotNuZvjLSgcPzblpHB3rrCJxAOgI5gCdKm7coonsaX1Of0ILiTcnZjbfxA==}
+
+  '@types/picomatch@4.0.0':
+    resolution: {integrity: sha512-J1Bng+wlyEERWSgJQU1Pi0HObCLVcr994xT/M+1wcl/yNRTGBupsCxthgkdYG+GCOMaQH7iSVUY3LJVBBqG7MQ==}
 
   '@types/retry@0.12.2':
     resolution: {integrity: sha512-XISRgDJ2Tc5q4TRqvgJtzsRkFYNJzZrhTdtMoGVBttwzzQJkPnS3WWTFc7kuDRoPtPakl+T+OfdEUjYJj7Jbow==}
@@ -4130,6 +4139,8 @@ snapshots:
       undici-types: 6.21.0
 
   '@types/normalize-package-data@2.4.4': {}
+
+  '@types/picomatch@4.0.0': {}
 
   '@types/retry@0.12.2': {}
 

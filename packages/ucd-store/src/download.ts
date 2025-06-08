@@ -2,7 +2,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import path, { dirname } from "node:path";
 import { hasUCDFolderPath } from "@luxass/unicode-utils-new";
 import fsx from "fs-extra";
-import micromatch from "micromatch";
+import picomatch from "picomatch";
 
 interface DownloadOptions {
   versions: string[];
@@ -88,39 +88,6 @@ export async function download(options: DownloadOptions): Promise<DownloadResult
 
   if (!includeHTMLFiles) {
     excludePatterns.push("**/*.html", "**/*.htm");
-  }
-
-  function filterEntriesRecursive(entries: FileEntry[]): FileEntry[] {
-    if (excludePatterns.length === 0) return entries;
-
-    const allPaths = getAllFilePaths(entries);
-    const patterns = ["**", ...excludePatterns.map((pattern) => `!${pattern}`)];
-
-    const matchedPaths = new Set(micromatch(allPaths, patterns, {
-      dot: true,
-      nocase: true,
-    }));
-
-    function filterEntries(entryList: FileEntry[], prefix = ""): FileEntry[] {
-      const result: FileEntry[] = [];
-      for (const entry of entryList) {
-        const fullPath = prefix ? `${prefix}/${entry.path}` : entry.path;
-
-        if (!entry.children) {
-          if (matchedPaths.has(fullPath)) {
-            result.push(entry);
-          }
-        } else {
-          const filteredChildren = filterEntries(entry.children, fullPath);
-          if (filteredChildren.length > 0) {
-            result.push({ ...entry, children: filteredChildren });
-          }
-        }
-      }
-      return result;
-    }
-
-    return filterEntries(entries);
   }
 
   async function processFileEntries(
@@ -215,7 +182,7 @@ export async function download(options: DownloadOptions): Promise<DownloadResult
         };
       }
 
-      const filteredEntries = filterEntriesRecursive(fileEntries);
+      const filteredEntries = filterEntriesRecursive(fileEntries, excludePatterns);
       const basePath = `/${version}`;
 
       await processFileEntries(filteredEntries, basePath, versionOutputDir, downloadedFiles, "", errors, version);
@@ -332,33 +299,15 @@ export async function validateLocalStore(options: {
   };
 }
 
-function getAllFilePaths(entries: FileEntry[]): string[] {
-  const filePaths: string[] = [];
-  // eslint-disable-next-line ts/explicit-function-return-type
-  function collectPaths(entryList: FileEntry[], currentPath = "") {
-    for (const entry of entryList) {
-      const fullPath = currentPath ? `${currentPath}/${entry.path}` : entry.path;
-      if (!entry.children) {
-        filePaths.push(fullPath);
-      } else if (entry.children.length > 0) {
-        collectPaths(entry.children, fullPath);
-      }
-    }
-  }
-  collectPaths(entries);
-  return filePaths;
-}
-
 function filterEntriesRecursive(entries: FileEntry[], excludePatterns: string[]): FileEntry[] {
   if (excludePatterns.length === 0) return entries;
 
-  const allPaths = getAllFilePaths(entries);
   const patterns = ["**", ...excludePatterns.map((pattern) => `!${pattern}`)];
 
-  const matchedPaths = new Set(micromatch(allPaths, patterns, {
+  const isMatch = picomatch(patterns, {
     dot: true,
     nocase: true,
-  }));
+  });
 
   function filterEntries(entryList: FileEntry[], prefix = ""): FileEntry[] {
     const result: FileEntry[] = [];
@@ -366,7 +315,7 @@ function filterEntriesRecursive(entries: FileEntry[], excludePatterns: string[])
       const fullPath = prefix ? `${prefix}/${entry.path}` : entry.path;
 
       if (!entry.children) {
-        if (matchedPaths.has(fullPath)) {
+        if (isMatch(fullPath)) {
           result.push(entry);
         }
       } else {
