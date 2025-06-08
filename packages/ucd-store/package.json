@@ -43,13 +43,13 @@
     "@ucdjs/utils": "workspace:*",
     "defu": "catalog:prod",
     "fs-extra": "catalog:prod",
-    "micromatch": "catalog:prod",
+    "picomatch": "catalog:prod",
     "zod": "catalog:prod"
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:dev",
     "@types/fs-extra": "catalog:dev",
-    "@types/micromatch": "catalog:dev",
+    "@types/picomatch": "catalog:dev",
     "eslint": "catalog:dev",
     "publint": "catalog:dev",
     "tsdown": "catalog:dev",
