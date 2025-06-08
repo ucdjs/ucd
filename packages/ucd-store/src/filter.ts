@@ -1,5 +1,17 @@
 import picomatch from "picomatch";
 
+export const PRECONFIGURED_FILTERS = {
+  EXCLUDE_TESTS: [
+    "!**/*Test*",
+  ],
+  EXCLUDE_README: [
+    "!**/Readme.txt",
+  ],
+  EXCLUDE_HTML: [
+    "!**/*.html",
+  ],
+} as const;
+
 export type FilterFn = (path: string) => boolean;
 
 /**
@@ -11,9 +23,9 @@ export type FilterFn = (path: string) => boolean;
  *
  * @example
  * ```ts
- * const filter = createPathFilter(['*.txt', '!**\/test/**']);
- * filter('data.txt'); // true
- * filter('test/data.txt'); // false
+ * const filter = createPathFilter(['*.txt', '!*Test*']);
+ * filter('Data.txt'); // true
+ * filter('DataTest.txt'); // false
  * ```
  */
 export function createPathFilter(filters: string[]): FilterFn {
@@ -23,7 +35,11 @@ export function createPathFilter(filters: string[]): FilterFn {
 
   // separate include and exclude patterns
   const includePatterns: string[] = [];
-  const excludePatterns: string[] = [];
+  const excludePatterns: string[] = [
+    // exclude .zip & .pdf files by default
+    "**/*.zip",
+    "**/*.pdf",
+  ];
 
   for (const filter of filters) {
     if (filter.startsWith("!")) {
