@@ -54,7 +54,7 @@ export default defineConfig({
 
       return false;
     },
-    workspace: workspaces
+    projects: workspaces
   },
   esbuild: { target: "es2020" },
   resolve: { alias: aliases },
