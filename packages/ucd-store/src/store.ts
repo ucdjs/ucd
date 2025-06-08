@@ -120,7 +120,7 @@ export interface UCDStore {
   /**
    * Filters to apply to the Unicode Data Files.
    */
-  readonly filters: string[];
+  readonly filterPatterns: string[];
 
   bootstrap: () => MaybePromise<void>;
 
