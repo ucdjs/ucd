@@ -377,7 +377,9 @@ export async function repairLocalStore(options: RepairOptions): Promise<RepairRe
         const entryPath = path.join(versionPath, entry.path);
 
         if (entry.children) {
-          await fs.mkdirp(entryPath);
+          await fs.mkdir(entryPath, {
+            recursive: true,
+          });
         } else {
           const url = `${UNICODE_PROXY_URL}${basePath}/${hasUCDFolderPath(version) ? "ucd/" : ""}${entry.path}`;
           const response = await fetch(url);

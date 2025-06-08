@@ -25,11 +25,6 @@ export interface FsInterface {
   access: (path: string) => Promise<void>;
 
   /**
-   * Create a directory path. Like mkdir -p.
-   */
-  mkdirp: (dirPath: string) => Promise<void>;
-
-  /**
    * Create directory with recursive option.
    */
   mkdir: (dirPath: string, options?: { recursive?: boolean }) => Promise<void>;
@@ -71,11 +66,6 @@ export class FsExtraImplementation implements FsInterface {
   async access(path: string): Promise<void> {
     const fsx = await this._getFsExtra();
     return fsx.access(path);
-  }
-
-  async mkdirp(dirPath: string): Promise<void> {
-    const fsx = await this._getFsExtra();
-    return fsx.mkdirp(dirPath);
   }
 
   async mkdir(dirPath: string, options?: { recursive?: boolean }): Promise<void> {
