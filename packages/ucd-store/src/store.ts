@@ -117,11 +117,6 @@ export interface UCDStore {
    */
   readonly proxyUrl: string;
 
-  /**
-   * Filters to apply to the Unicode Data Files.
-   */
-  readonly filterPatterns: string[];
-
   bootstrap: () => MaybePromise<void>;
 
   readonly versions: string[];

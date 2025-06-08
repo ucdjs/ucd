@@ -33,7 +33,6 @@ export interface CacheStats {
 export class RemoteUCDStore implements UCDStore {
   public readonly baseUrl: string;
   public readonly proxyUrl: string;
-  public readonly filterPatterns: string[];
   #filter: FilterFn;
 
   private client;
@@ -42,14 +41,13 @@ export class RemoteUCDStore implements UCDStore {
   #FILE_CACHE: Map<string, string> = new Map();
 
   constructor(options: RemoteUCDStoreOptions = {}) {
-    const resolvedOptions = resolveUCDStoreOptions(options);
-    this.baseUrl = resolvedOptions.baseUrl;
-    this.proxyUrl = resolvedOptions.proxyUrl;
-    this.filterPatterns = resolvedOptions.filters;
+    const { baseUrl, filters, proxyUrl } = resolveUCDStoreOptions(options);
+    this.baseUrl = baseUrl;
+    this.proxyUrl = proxyUrl;
 
     this.client = createClient(this.baseUrl);
 
-    this.#filter = createPathFilter(this.filterPatterns);
+    this.#filter = createPathFilter(filters);
   }
 
   bootstrap(): void { }
