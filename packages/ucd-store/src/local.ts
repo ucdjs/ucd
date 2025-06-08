@@ -4,6 +4,7 @@ import path from "node:path";
 import { invariant } from "@luxass/utils";
 import { z } from "zod/v4";
 import { download, repairStore } from "./download";
+import { createPathFilter, type FilterFn } from "./filter";
 import { createDefaultFs } from "./fs-interface";
 import { resolveUCDStoreOptions } from "./store";
 
@@ -40,11 +41,10 @@ export interface LocalUCDStoreOptions extends UCDStoreOptions {
 export class LocalUCDStore implements UCDStore {
   public readonly baseUrl: string;
   public readonly proxyUrl: string;
-  public readonly filterPatterns: string[];
   public basePath: string;
   private _versions: string[] = [];
   private _providedVersions?: string[];
-
+  #filter: FilterFn;
   #fs: FsInterface;
 
   constructor(options: LocalUCDStoreOptions = {}) {
@@ -59,10 +59,11 @@ export class LocalUCDStore implements UCDStore {
 
     this.baseUrl = baseUrl;
     this.proxyUrl = proxyUrl;
-    this.filterPatterns = filters;
     this.basePath = path.resolve(basePath);
     this._providedVersions = options.versions;
+
     this.#fs = options.fs || createDefaultFs();
+    this.#filter = createPathFilter(filters);
   }
 
   async bootstrap(): Promise<void> {
@@ -118,6 +119,7 @@ export class LocalUCDStore implements UCDStore {
       versions,
       basePath: this.basePath,
       fs: this.#fs,
+      patternMatcher: this.#filter,
     });
 
     // Create the store manifest file
@@ -153,7 +155,7 @@ export class LocalUCDStore implements UCDStore {
         versions: this._versions,
       },
       {
-        excludePatterns: this.filterPatterns,
+        patternMatcher: this.#filter,
         concurrency: 5,
         fs: this.#fs,
       },
