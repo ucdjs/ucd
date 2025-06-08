@@ -124,13 +124,6 @@ export async function download(options: DownloadOptions): Promise<DownloadResult
     };
   }
 
-  if (providedPatternMatcher == null && (!patterns || patterns.length === 0)) {
-    return {
-      errors: [{ message: "No pattern matcher provided. Please provide a pattern matcher or patterns." }],
-      downloadedFiles: [],
-    };
-  }
-
   const allDownloadedFiles: string[] = [];
   const allErrors: DownloadError[] = [];
 
@@ -281,14 +274,6 @@ export async function validateLocalStore(options: {
   const allErrors: DownloadError[] = [];
   const missingFiles: Array<{ version: string; filePath: string; localPath: string }> = [];
 
-  if (providedPatternMatcher == null && (!patterns || patterns.length === 0)) {
-    return {
-      isValid: false,
-      missingFiles: [],
-      errors: [{ message: "No pattern matcher provided. Please provide a pattern matcher or patterns." }],
-    };
-  }
-
   const patternMatcher = providedPatternMatcher || createPathFilter(patterns);
 
   function getAllFilePaths(entries: FileEntry[]): string[] {
@@ -394,13 +379,6 @@ export async function repairLocalStore(options: RepairOptions): Promise<RepairRe
 
   const repairedFiles: string[] = [];
   const errors: DownloadError[] = [];
-
-  if (providedPatternMatcher == null && (!patterns || patterns.length === 0)) {
-    return {
-      repairedFiles: [],
-      errors: [{ message: "No pattern matcher provided. Please provide a pattern matcher or patterns." }],
-    };
-  }
 
   const patternMatcher = providedPatternMatcher || createPathFilter(patterns);
 
