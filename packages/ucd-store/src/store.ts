@@ -81,7 +81,7 @@ export function resolveUCDStoreOptions<T extends Record<string, unknown>>(
   extras?: T,
 ): Prettify<ValidatedUCDStoreOptions & RemoveIndexSignature<T>> {
   const defaults = {
-    baseUrl: "https://unicode-api.luxass.dev/api/v1",
+    baseUrl: "https://unicode-api.luxass.dev",
     proxyUrl: "https://unicode-proxy.ucdjs.dev",
     filters: [],
     ...extras,
@@ -120,7 +120,7 @@ export interface UCDStore {
   /**
    * Filters to apply to the Unicode Data Files.
    */
-  readonly filters: string[];
+  readonly filterPatterns: string[];
 
   bootstrap: () => MaybePromise<void>;
 
