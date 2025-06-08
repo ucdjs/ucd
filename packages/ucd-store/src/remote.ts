@@ -1,4 +1,3 @@
-import type picomatch from "picomatch";
 import type { UCDStore, UCDStoreOptions, UnicodeVersionFile } from "./store";
 import { hasUCDFolderPath, UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { createClient } from "@luxass/unicode-utils-new/fetch";
