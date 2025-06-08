@@ -3,7 +3,7 @@ import type { CLIArguments } from "../cli-utils";
 import { mkdir } from "node:fs/promises";
 import path from "node:path";
 import { mapToUCDPathVersion, UNICODE_VERSION_METADATA } from "@luxass/unicode-utils";
-import { download } from "@ucdjs/ucd-store";
+import { download, PRECONFIGURED_FILTERS } from "@ucdjs/ucd-store";
 import { green, red, yellow } from "farver/fast";
 import { printHelp } from "../cli-utils";
 
@@ -78,6 +78,13 @@ export async function runDownload({ versions: providedVersions, flags }: CLIDown
     return;
   }
 
+  if (flags.excludeDraft) {
+    versions = versions.filter(({ version }) => {
+      const metadata = UNICODE_VERSION_METADATA.find((v) => v.version === version);
+      return metadata && metadata.status !== "draft";
+    });
+  }
+
   // eslint-disable-next-line node/prefer-global/process
   const outputDir = flags.outputDir ?? path.join(process.cwd(), "data");
   await mkdir(outputDir, { recursive: true });
@@ -85,7 +92,11 @@ export async function runDownload({ versions: providedVersions, flags }: CLIDown
   const result = await download({
     versions: versions.map(({ version }) => version),
     basePath: outputDir,
-    exclude: flags.exclude,
+    patterns: [
+      ...(flags.excludeHTMLFiles ? PRECONFIGURED_FILTERS.EXCLUDE_HTML : []),
+      ...(flags.excludeReadmes ? PRECONFIGURED_FILTERS.EXCLUDE_README : []),
+      ...(flags.excludeTest ? PRECONFIGURED_FILTERS.EXCLUDE_TESTS : []),
+    ],
   });
 
   // print summary
