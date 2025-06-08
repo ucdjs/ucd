@@ -90,6 +90,8 @@ export async function download(options: DownloadOptions): Promise<DownloadResult
     excludePatterns.push("**/*.html", "**/*.htm");
   }
 
+  excludePatterns.push("**/*.zip", "**/*.pdf");
+
   async function processFileEntries(
     entries: FileEntry[],
     basePath: string,
@@ -183,7 +185,7 @@ export async function download(options: DownloadOptions): Promise<DownloadResult
       }
 
       const filteredEntries = filterEntriesRecursive(fileEntries, excludePatterns);
-      const basePath = `/${version}`;
+      const basePath = `/${version}${hasUCDFolderPath(version) ? "/ucd" : ""}`;
 
       await processFileEntries(filteredEntries, basePath, versionOutputDir, downloadedFiles, "", errors, version);
     } catch (err) {
@@ -372,7 +374,7 @@ export async function repairLocalStore(options: RepairOptions): Promise<RepairRe
         if (entry.children) {
           await fsx.mkdirp(entryPath);
         } else {
-          const url = `${UNICODE_PROXY_URL}${basePath}/${entry.path}`;
+          const url = `${UNICODE_PROXY_URL}${basePath}/${hasUCDFolderPath(version) ? "ucd/" : ""}${entry.path}`;
           const response = await fetch(url);
 
           if (!response.ok) {

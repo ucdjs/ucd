@@ -101,6 +101,10 @@ export async function runDownload({ versions: providedVersions, flags }: CLIDown
 
   if (totalErrors > 0) {
     console.warn(yellow(`⚠ ${totalErrors} total errors encountered`));
+    console.warn("Errors:");
+    result.errors?.forEach((error) => {
+      console.warn(red(`- ${error.file}: ${error.message} (${error.version})`));
+    });
   }
 
   console.info("=".repeat(50));
