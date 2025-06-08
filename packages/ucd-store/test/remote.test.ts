@@ -14,55 +14,61 @@ const mockPromiseRetry = promiseRetry as Mock;
 
 // eslint-disable-next-line test/prefer-lowercase-title
 describe("Remote UCD Store", () => {
-  let store: RemoteUCDStore;
-
   beforeEach(() => {
     vi.clearAllMocks();
 
     mockPromiseRetry.mockImplementation(async (fn: () => Promise<any>) => {
       return fn();
     });
-
-    store = new RemoteUCDStore();
   });
 
-  it("should initialize with default options", () => {
-    expect(store.baseUrl).toBeDefined();
-    expect(store.proxyUrl).toBeDefined();
-    expect(store.filters).toBeDefined();
-  });
+  describe("initialization", () => {
+    it("should initialize with default options", () => {
+      const store = new RemoteUCDStore();
+      expect(store.baseUrl).toBeDefined();
+      expect(store.proxyUrl).toBeDefined();
+      expect(store.filterPatterns).toBeDefined();
+    });
 
-  it("should initialize with custom options", () => {
-    const customOptions = {
-      baseUrl: "https://luxass.dev",
-      proxyUrl: "https://proxy.luxass.dev",
-      filters: ["*.json"],
-    };
+    it("should initialize with custom options", () => {
+      const customOptions = {
+        baseUrl: "https://luxass.dev",
+        proxyUrl: "https://proxy.luxass.dev",
+        filters: ["**Shaping.txt"],
+      };
 
-    const customStore = new RemoteUCDStore(customOptions);
+      const customStore = new RemoteUCDStore(customOptions);
 
-    expect(customStore.baseUrl).toBe("https://luxass.dev");
-    expect(customStore.proxyUrl).toBe("https://proxy.luxass.dev");
-    expect(customStore.filters).toEqual(["*.json"]);
-  });
+      expect(customStore.baseUrl).toBe("https://luxass.dev");
+      expect(customStore.proxyUrl).toBe("https://proxy.luxass.dev");
+      expect(customStore.filterPatterns).toEqual(["**Shaping.txt"]);
+    });
 
-  it("should return available versions from metadata", () => {
-    const versions = store.versions;
-    expect(Array.isArray(versions)).toBe(true);
-    expect(versions.length).toBeGreaterThan(0);
-  });
+    it("should return available versions from metadata", () => {
+      const store = new RemoteUCDStore();
+      const versions = store.versions;
+      expect(Array.isArray(versions)).toBe(true);
+      expect(versions.length).toBeGreaterThan(0);
+    });
 
-  it("should expose file cache as a Map", () => {
-    const cache = store.fileCache;
-    expect(cache).toBeInstanceOf(Map);
-    expect(cache.size).toBe(0);
-  });
+    it("should expose file cache as a Map", () => {
+      const store = new RemoteUCDStore();
 
-  it("should have bootstrap as no-op function", () => {
-    expect(() => store.bootstrap()).not.toThrow();
+      const cache = store.fileCache;
+      expect(cache).toBeInstanceOf(Map);
+      expect(cache.size).toBe(0);
+    });
+
+    it("should have bootstrap as no-op function", () => {
+      const store = new RemoteUCDStore();
+
+      expect(() => store.bootstrap()).not.toThrow();
+    });
   });
 
   it("should fetch and return file tree for a version", async () => {
+    const store = new RemoteUCDStore();
+
     const mockFileTree: UnicodeVersionFile[] = [
       {
         name: "UnicodeData.txt",
@@ -96,6 +102,8 @@ describe("Remote UCD Store", () => {
   });
 
   it("should handle getFileTree API errors", async () => {
+    const store = new RemoteUCDStore();
+
     mockFetch([
       [`GET ${store.baseUrl}/unicode-files/15.1.0`, () => {
         return new HttpResponse(null, { status: 404 });
@@ -108,6 +116,8 @@ describe("Remote UCD Store", () => {
   });
 
   it("should process nested file structure correctly", async () => {
+    const store = new RemoteUCDStore();
+
     const rawStructure = [
       {
         name: "root.txt",
@@ -148,6 +158,8 @@ describe("Remote UCD Store", () => {
   });
 
   it("should fetch and cache file content", async () => {
+    const store = new RemoteUCDStore();
+
     const mockFileContent = "File content here";
 
     mockFetch([
@@ -163,6 +175,8 @@ describe("Remote UCD Store", () => {
   });
 
   it("should return cached content on subsequent getFile calls", async () => {
+    const store = new RemoteUCDStore();
+
     const mockFileContent = "File content here";
 
     // First call - should fetch
@@ -184,6 +198,8 @@ describe("Remote UCD Store", () => {
   });
 
   it("should handle getFile fetch errors", async () => {
+    const store = new RemoteUCDStore();
+
     mockFetch([
       [`GET ${store.proxyUrl}/15.1.0/NonExistent.txt`, () => {
         return new HttpResponse(null, { status: 404 });
@@ -196,6 +212,8 @@ describe("Remote UCD Store", () => {
   });
 
   it("should return true for existing versions in hasVersion", async () => {
+    const store = new RemoteUCDStore();
+
     const versions = store.versions;
     if (versions.length > 0) {
       const result = await store.hasVersion(versions[0]!);
@@ -204,11 +222,15 @@ describe("Remote UCD Store", () => {
   });
 
   it("should return false for non-existing versions in hasVersion", async () => {
+    const store = new RemoteUCDStore();
+
     const result = await store.hasVersion("99.0.0");
     expect(result).toBe(false);
   });
 
   it("should return flattened file paths from getFilePaths", async () => {
+    const store = new RemoteUCDStore();
+
     const mockFileTree: UnicodeVersionFile[] = [
       {
         name: "UnicodeData.txt",
@@ -258,6 +280,8 @@ describe("Remote UCD Store", () => {
   });
 
   it("should handle empty file tree in getFilePaths", async () => {
+    const store = new RemoteUCDStore();
+
     mockFetch([
       [`GET ${store.baseUrl}/unicode-files/15.1.0`, () => {
         return new HttpResponse(JSON.stringify([]), {
@@ -272,6 +296,8 @@ describe("Remote UCD Store", () => {
   });
 
   it("should clear the file cache when clearCache is called", async () => {
+    const store = new RemoteUCDStore();
+
     // Add something to cache first
     mockFetch([
       [`GET ${store.proxyUrl}/15.1.0/UnicodeData.txt`, () => {
@@ -287,6 +313,8 @@ describe("Remote UCD Store", () => {
   });
 
   it("should use promiseRetry with correct configuration for network requests", async () => {
+    const store = new RemoteUCDStore();
+
     mockFetch([
       [`GET ${store.baseUrl}/unicode-files/15.1.0`, () => {
         return new HttpResponse(JSON.stringify([]), {
@@ -305,6 +333,8 @@ describe("Remote UCD Store", () => {
   });
 
   it("should handle promiseRetry failures", async () => {
+    const store = new RemoteUCDStore();
+
     const error = new Error("Network error");
     mockPromiseRetry.mockRejectedValueOnce(error);
 
@@ -312,6 +342,8 @@ describe("Remote UCD Store", () => {
   });
 
   it("should handle malformed API responses", async () => {
+    const store = new RemoteUCDStore();
+
     mockFetch([
       [`GET ${store.baseUrl}/unicode-files/15.1.0`, () => {
         return new HttpResponse("invalid json", {
@@ -331,6 +363,8 @@ describe("Remote UCD Store", () => {
   });
 
   it("should handle files with special characters in paths", async () => {
+    const store = new RemoteUCDStore();
+
     mockFetch([
       [`GET ${store.proxyUrl}/15.1.0/ucd/special%20file%20name.txt`, () => {
         return new HttpResponse("content", { status: 200 });
@@ -340,5 +374,41 @@ describe("Remote UCD Store", () => {
     const result = await store.getFile("15.1.0", "special file name.txt");
     expect(result).toBe("content");
     expect(store.fileCache.has("15.1.0/special file name.txt")).toBe(true);
+  });
+
+  describe("filtering", () => {
+    it("should apply filters to file paths", async () => {
+      const store = new RemoteUCDStore({
+        filters: ["**Shaping.txt"],
+      });
+
+      const mockFileTree: UnicodeVersionFile[] = [
+        {
+          name: "UnicodeData.txt",
+          path: "UnicodeData.txt",
+        },
+        {
+          name: "ArabicShaping.txt",
+          path: "ArabicShaping.txt",
+        },
+      ];
+
+      mockFetch([
+        [`GET ${store.baseUrl}/unicode-files/15.1.0`, () => {
+          return new HttpResponse(JSON.stringify(mockFileTree), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          });
+        }],
+      ]);
+
+      const result = await store.getFileTree("15.1.0");
+      expect(result).toEqual([
+        {
+          name: "ArabicShaping.txt",
+          path: "ArabicShaping.txt",
+        },
+      ]);
+    });
   });
 });

@@ -40,7 +40,7 @@ export interface LocalUCDStoreOptions extends UCDStoreOptions {
 export class LocalUCDStore implements UCDStore {
   public readonly baseUrl: string;
   public readonly proxyUrl: string;
-  public readonly filters: string[];
+  public readonly filterPatterns: string[];
   public basePath: string;
   private _versions: string[] = [];
   private _providedVersions?: string[];
@@ -59,7 +59,7 @@ export class LocalUCDStore implements UCDStore {
 
     this.baseUrl = baseUrl;
     this.proxyUrl = proxyUrl;
-    this.filters = filters;
+    this.filterPatterns = filters;
     this.basePath = path.resolve(basePath);
     this._providedVersions = options.versions;
     this.#fs = options.fs || createDefaultFs();
@@ -153,7 +153,7 @@ export class LocalUCDStore implements UCDStore {
         versions: this._versions,
       },
       {
-        excludePatterns: this.filters,
+        excludePatterns: this.filterPatterns,
         concurrency: 5,
         fs: this.#fs,
       },

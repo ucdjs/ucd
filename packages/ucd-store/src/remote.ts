@@ -1,7 +1,9 @@
 import type { UCDStore, UCDStoreOptions, UnicodeVersionFile } from "./store";
 import { hasUCDFolderPath, UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
+import { createClient } from "@luxass/unicode-utils-new/fetch";
 import { promiseRetry } from "@luxass/utils";
-import { buildApiUrl, buildProxyUrl, resolveUCDStoreOptions } from "./store";
+import picomatch from "picomatch";
+import { buildProxyUrl, resolveUCDStoreOptions } from "./store";
 
 export type RemoteUCDStoreOptions = UCDStoreOptions;
 
@@ -31,7 +33,11 @@ export interface CacheStats {
 export class RemoteUCDStore implements UCDStore {
   public readonly baseUrl: string;
   public readonly proxyUrl: string;
-  public readonly filters: string[];
+  public readonly filterPatterns: string[];
+
+  private client;
+
+  #FILTER_MATCH: picomatch.Matcher;
 
   //             filePath, content
   #FILE_CACHE: Map<string, string> = new Map();
@@ -40,10 +46,17 @@ export class RemoteUCDStore implements UCDStore {
     const resolvedOptions = resolveUCDStoreOptions(options);
     this.baseUrl = resolvedOptions.baseUrl;
     this.proxyUrl = resolvedOptions.proxyUrl;
-    this.filters = resolvedOptions.filters;
+    this.filterPatterns = resolvedOptions.filters;
+
+    this.client = createClient(this.baseUrl);
+
+    this.#FILTER_MATCH = picomatch(["**", ...this.filterPatterns.map((pattern) => `!${pattern}`)], {
+      dot: true,
+      nocase: true,
+    });
   }
 
-  bootstrap(): void {}
+  bootstrap(): void { }
 
   get versions(): string[] {
     return UNICODE_VERSION_METADATA.map((version) => version.version);
@@ -54,22 +67,46 @@ export class RemoteUCDStore implements UCDStore {
   }
 
   async getFileTree(version: string): Promise<UnicodeVersionFile[]> {
-    const url = buildApiUrl(this.baseUrl, `unicode-files/${version}`);
-    const response = await fetchWithRetry(url);
-    const rawStructure = await response.json() as UnicodeVersionFile[];
-    return this.processFileStructure(rawStructure);
+    const { data, error } = await promiseRetry(async () => {
+      return await this.client.GET("/api/v1/unicode-files/{version}", {
+        params: {
+          path: {
+            version,
+          },
+          query: {
+
+          },
+        },
+      });
+    }, { retries: 3 });
+
+    if (error) {
+      throw new Error(`Failed to fetch file structure for version "${version}": ${error.message}`);
+    }
+
+    return this.processFileStructure(data);
   }
 
   async getFile(version: string, filePath: string): Promise<string> {
+    if (!this.#FILTER_MATCH(filePath)) {
+      throw new Error(`File path "${filePath}" is filtered out by the store's filter patterns.`);
+    }
+
     const cacheKey = `${version}/${filePath}`;
 
     if (this.#FILE_CACHE.has(cacheKey)) {
       return this.#FILE_CACHE.get(cacheKey)!;
     }
 
-    const url = buildProxyUrl(this.proxyUrl, `${version}/${hasUCDFolderPath(version) ? "ucd/" : ""}${filePath}`);
-    const response = await fetchWithRetry(url);
-    const content = await response.text();
+    const content = await promiseRetry(async () => {
+      const res = await fetch(buildProxyUrl(this.proxyUrl, `${version}/${hasUCDFolderPath(version) ? "ucd/" : ""}${filePath}`));
+
+      if (!res.ok) {
+        throw new Error(`Failed to fetch file "${filePath}" for version "${version}": ${res.status} ${res.statusText}`);
+      }
+
+      return res.text();
+    }, { retries: 3 });
 
     this.#FILE_CACHE.set(cacheKey, content);
     return content;
@@ -88,11 +125,11 @@ export class RemoteUCDStore implements UCDStore {
     this.#FILE_CACHE.clear();
   }
 
-  private processFileStructure(rawStructure: any[]): UnicodeVersionFile[] {
+  private processFileStructure(rawStructure: UnicodeVersionFile[]): UnicodeVersionFile[] {
     return rawStructure.map((item) => ({
       name: item.name,
       path: item.path,
-      children: item.children ? this.processFileStructure(item.children) : undefined,
+      ...(item.children ? { children: this.processFileStructure(item.children) } : {}),
     }));
   }
 
@@ -111,21 +148,4 @@ export class RemoteUCDStore implements UCDStore {
 
     return paths;
   }
-}
-
-async function fetchWithRetry(url: string, options?: RequestInit): Promise<Response> {
-  return promiseRetry(
-    async () => {
-      const response = await fetch(url, options);
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-
-      return response;
-    },
-    {
-      retries: 3,
-    },
-  );
 }
