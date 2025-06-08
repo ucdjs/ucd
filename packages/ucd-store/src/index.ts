@@ -1,5 +1,9 @@
 export { download } from "./download";
 export {
+  createPathFilter,
+  PRECONFIGURED_FILTERS,
+} from "./filter";
+export {
   LocalUCDStore,
   type LocalUCDStoreOptions,
   UCD_STORE_SCHEMA,
