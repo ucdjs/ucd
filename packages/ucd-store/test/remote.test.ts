@@ -2,6 +2,7 @@ import type { Mock } from "vitest";
 import type { UnicodeVersionFile } from "../src/store";
 import { mockFetch } from "#msw-utils";
 import { promiseRetry } from "@luxass/utils";
+import { PRECONFIGURED_FILTERS } from "@ucdjs/ucd-store";
 import { HttpResponse } from "msw";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { RemoteUCDStore } from "../src/remote";
@@ -410,5 +411,59 @@ describe("Remote UCD Store", () => {
         },
       ]);
     });
+  });
+
+  it("should use custom filter patterns", async () => {
+    const store = new RemoteUCDStore({
+      filters: [PRECONFIGURED_FILTERS.EXCLUDE_HTML],
+    });
+
+    const mockFileTree: UnicodeVersionFile[] = [
+      {
+        name: "UnicodeData.txt",
+        path: "UnicodeData.txt",
+      },
+      {
+        path: "auxiliary",
+        name: "auxiliary",
+        children: [
+          {
+            name: "WordBreakProperty.txt",
+            path: "auxiliary/WordBreakProperty.txt",
+          },
+          {
+            name: "Data.html",
+            path: "auxiliary/Data.html",
+          },
+        ],
+      },
+    ];
+
+    mockFetch([
+      [`GET ${store.baseUrl}/api/v1/unicode-files/15.1.0`, () => {
+        return new HttpResponse(JSON.stringify(mockFileTree), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }],
+    ]);
+
+    const result = await store.getFileTree("15.1.0");
+    expect(result).toEqual([
+      {
+        name: "UnicodeData.txt",
+        path: "UnicodeData.txt",
+      },
+      {
+        name: "auxiliary",
+        path: "auxiliary",
+        children: [
+          {
+            name: "WordBreakProperty.txt",
+            path: "auxiliary/WordBreakProperty.txt",
+          },
+        ],
+      },
+    ]);
   });
 });
