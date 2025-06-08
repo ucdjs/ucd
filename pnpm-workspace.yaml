@@ -27,7 +27,6 @@ catalogs:
     ai: ^4.3.16
     p-limit: ^6.2.0
     knitwork: ^1.2.0
-    micromatch: ^4.0.8
     picomatch: ^4.0.2
 
   dev:
