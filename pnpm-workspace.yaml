@@ -27,13 +27,11 @@ catalogs:
     ai: ^4.3.16
     p-limit: ^6.2.0
     knitwork: ^1.2.0
-    micromatch: ^4.0.8
     picomatch: ^4.0.2
 
   dev:
     "@luxass/eslint-config": ^4.18.1
     "@types/fs-extra": ^11.0.4
-    "@types/micromatch": ^4.0.9
     "@types/picomatch": ^4.0.0
     "@types/node": ^22.10.0
     "@types/yargs-parser": ^21.0.3
