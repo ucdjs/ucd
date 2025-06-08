@@ -1,5 +1,4 @@
 import type { MaybePromise, Prettify, RemoveIndexSignature } from "@luxass/utils";
-import type { FilterFn } from "./filter";
 import type { LocalUCDStore, LocalUCDStoreOptions } from "./local";
 import type { RemoteUCDStore, RemoteUCDStoreOptions } from "./remote";
 import { invariant } from "@luxass/utils";
