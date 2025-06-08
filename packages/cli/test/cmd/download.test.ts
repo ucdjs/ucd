@@ -135,9 +135,7 @@ describe("download command", () => {
   describe.todo("file filtering", () => {
     it("should download all files when no exclusions are specified", async () => {
       // create a temporary directory for the test
-      const outputPath = await testdir({}, {
-        cleanup: false,
-      });
+      const outputPath = await testdir({});
 
       await runDownload({
         versions: ["16.0.0"],
