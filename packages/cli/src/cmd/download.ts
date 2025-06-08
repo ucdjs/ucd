@@ -86,9 +86,6 @@ export async function runDownload({ versions: providedVersions, flags }: CLIDown
     versions: versions.map(({ version }) => version),
     basePath: outputDir,
     exclude: flags.exclude,
-    includeHTMLFiles: !flags.excludeHTMLFiles,
-    includeReadmes: !flags.excludeReadmes,
-    includeTests: !flags.excludeTest,
   });
 
   // print summary

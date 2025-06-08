@@ -8,9 +8,6 @@ import { createDefaultFs } from "./fs-interface";
 interface DownloadOptions {
   versions: string[];
   exclude?: string;
-  includeTests?: boolean;
-  includeReadmes?: boolean;
-  includeHTMLFiles?: boolean;
   basePath?: string;
   fs?: FsInterface;
 }
@@ -62,9 +59,6 @@ export async function download(options: DownloadOptions): Promise<DownloadResult
   const {
     versions,
     exclude,
-    includeTests = false,
-    includeReadmes = false,
-    includeHTMLFiles = false,
     basePath = path.resolve("./ucd-files"),
     fs = createDefaultFs(),
   } = options;
@@ -82,17 +76,17 @@ export async function download(options: DownloadOptions): Promise<DownloadResult
   // Build exclude patterns
   const excludePatterns = exclude?.split(",").map((p) => p.trim()).filter(Boolean) || [];
 
-  if (!includeTests) {
-    excludePatterns.push("**/*Test*");
-  }
+  // if (!includeTests) {
+  //   excludePatterns.push("**/*Test*");
+  // }
 
-  if (!includeReadmes) {
-    excludePatterns.push("**/ReadMe*", "**/README*", "**/readme*");
-  }
+  // if (!includeReadmes) {
+  //   excludePatterns.push("**/ReadMe*", "**/README*", "**/readme*");
+  // }
 
-  if (!includeHTMLFiles) {
-    excludePatterns.push("**/*.html", "**/*.htm");
-  }
+  // if (!includeHTMLFiles) {
+  //   excludePatterns.push("**/*.html", "**/*.htm");
+  // }
 
   excludePatterns.push("**/*.zip", "**/*.pdf");
 
