@@ -1,4 +1,3 @@
-import type { FsInterface } from "../src/fs-interface";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createDefaultFs, FsExtraImplementation } from "../src/fs-interface";
 
