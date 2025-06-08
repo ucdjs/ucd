@@ -1,7 +1,6 @@
 import type { FsInterface } from "./fs-interface";
 import path, { dirname } from "node:path";
 import { hasUCDFolderPath } from "@luxass/unicode-utils-new";
-import picomatch from "picomatch";
 
 import { createPathFilter, type FilterFn } from "./filter";
 import { createDefaultFs } from "./fs-interface";
