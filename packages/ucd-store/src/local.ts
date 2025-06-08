@@ -1,10 +1,10 @@
+import type { FsInterface } from "./fs-interface";
 import type { UCDStore, UCDStoreOptions, UnicodeVersionFile } from "./store";
 import path from "node:path";
 import { invariant } from "@luxass/utils";
-import fsx from "fs-extra";
 import { z } from "zod/v4";
-
 import { download, repairStore } from "./download";
+import { createDefaultFs } from "./fs-interface";
 import { resolveUCDStoreOptions } from "./store";
 
 export const UCD_STORE_SCHEMA = z.array(
@@ -30,6 +30,11 @@ export interface LocalUCDStoreOptions extends UCDStoreOptions {
    * @example ["15.0.0", "16.0.0"]
    */
   versions?: string[];
+
+  /**
+   * Custom filesystem interface. If not provided, defaults to fs-extra implementation.
+   */
+  fs?: FsInterface;
 }
 
 export class LocalUCDStore implements UCDStore {
@@ -39,6 +44,7 @@ export class LocalUCDStore implements UCDStore {
   public basePath: string;
   private _versions: string[] = [];
   private _providedVersions?: string[];
+  #fs: FsInterface;
 
   constructor(options: LocalUCDStoreOptions = {}) {
     const {
@@ -55,6 +61,7 @@ export class LocalUCDStore implements UCDStore {
     this.filters = filters;
     this.basePath = path.resolve(basePath);
     this._providedVersions = options.versions;
+    this.#fs = options.fs || createDefaultFs();
   }
 
   async bootstrap(): Promise<void> {
@@ -62,7 +69,7 @@ export class LocalUCDStore implements UCDStore {
 
     // Check if the store is valid (has manifest file)
     const storeManifestPath = path.join(this.basePath, ".ucd-store.json");
-    const isValidStore = await fsx.pathExists(this.basePath) && await fsx.pathExists(storeManifestPath);
+    const isValidStore = await this.#fs.pathExists(this.basePath) && await this.#fs.pathExists(storeManifestPath);
 
     if (isValidStore) {
       // Load versions from existing store
@@ -86,7 +93,7 @@ export class LocalUCDStore implements UCDStore {
     const storeManifestPath = path.join(this.basePath, ".ucd-store.json");
 
     try {
-      const manifestContent = await fsx.readFile(storeManifestPath, "utf-8");
+      const manifestContent = await this.#fs.readFile(storeManifestPath, "utf-8");
       const manifestData = JSON.parse(manifestContent);
 
       // Validate the manifest data against the schema
@@ -103,12 +110,13 @@ export class LocalUCDStore implements UCDStore {
 
   private async _initializeStore(versions: string[]): Promise<void> {
     // Create the base path if it doesn't exist
-    await fsx.ensureDir(this.basePath);
+    await this.#fs.ensureDir(this.basePath);
 
     // Call setupLocalUCDStore to download and initialize the store
     await download({
       versions,
       basePath: this.basePath,
+      fs: this.#fs,
     });
 
     // Create the store manifest file
@@ -128,7 +136,7 @@ export class LocalUCDStore implements UCDStore {
     }));
 
     try {
-      await fsx.writeFile(storeManifestPath, JSON.stringify(manifestData, null, 2), "utf-8");
+      await this.#fs.writeFile(storeManifestPath, JSON.stringify(manifestData, null, 2), "utf-8");
     } catch (error) {
       throw new Error(
         `[ucd-store]: Failed to create store manifest: ${error instanceof Error ? error.message : String(error)}`,
@@ -146,6 +154,7 @@ export class LocalUCDStore implements UCDStore {
       {
         excludePatterns: this.filters,
         concurrency: 5,
+        fs: this.#fs,
       },
     );
 

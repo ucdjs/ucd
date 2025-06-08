@@ -1,8 +1,9 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import type { FsInterface } from "./fs-interface";
 import path, { dirname } from "node:path";
 import { hasUCDFolderPath } from "@luxass/unicode-utils-new";
-import fsx from "fs-extra";
 import picomatch from "picomatch";
+
+import { createDefaultFs } from "./fs-interface";
 
 interface DownloadOptions {
   versions: string[];
@@ -11,6 +12,7 @@ interface DownloadOptions {
   includeReadmes?: boolean;
   includeHTMLFiles?: boolean;
   basePath?: string;
+  fs?: FsInterface;
 }
 
 interface DownloadError {
@@ -44,6 +46,7 @@ interface RepairOptions {
   basePath: string;
   versions: string[];
   excludePatterns?: string[];
+  fs?: FsInterface;
 }
 
 interface RepairResult {
@@ -63,6 +66,7 @@ export async function download(options: DownloadOptions): Promise<DownloadResult
     includeReadmes = false,
     includeHTMLFiles = false,
     basePath = path.resolve("./ucd-files"),
+    fs = createDefaultFs(),
   } = options;
 
   if (versions.length === 0) {
@@ -110,13 +114,13 @@ export async function download(options: DownloadOptions): Promise<DownloadResult
 
       if (entry.children) {
         dirPromises.push((async () => {
-          await mkdir(outputPath, { recursive: true });
+          await fs.mkdir(outputPath, { recursive: true });
           await processFileEntries(entry.children || [], `${basePath}/${entry.path}`, versionOutputDir, downloadedFiles, entryOutputPath, errors, version);
         })());
       } else {
         filePromises.push((async () => {
           try {
-            await mkdir(dirname(outputPath), { recursive: true });
+            await fs.ensureDir(dirname(outputPath));
             const url = `${UNICODE_PROXY_URL}${basePath}/${entry.path}`;
             const response = await fetch(url);
 
@@ -130,7 +134,7 @@ export async function download(options: DownloadOptions): Promise<DownloadResult
             }
 
             const content = await response.text();
-            await writeFile(outputPath, content);
+            await fs.writeFile(outputPath, content);
             downloadedFiles.push(outputPath);
           } catch (err) {
             errors.push({
@@ -158,7 +162,7 @@ export async function download(options: DownloadOptions): Promise<DownloadResult
     const versionOutputDir = path.resolve(basePath, `v${version}`);
 
     try {
-      await mkdir(versionOutputDir, { recursive: true });
+      await fs.mkdir(versionOutputDir, { recursive: true });
 
       const filesResponse = await fetch(`${API_URL}/unicode-files/${version}`);
 
@@ -223,8 +227,9 @@ export async function validateLocalStore(options: {
   basePath: string;
   versions: string[];
   exclude?: string;
+  fs?: FsInterface;
 }): Promise<ValidationResult> {
-  const { basePath, versions, exclude } = options;
+  const { basePath, versions, exclude, fs = createDefaultFs() } = options;
 
   const allErrors: DownloadError[] = [];
   const missingFiles: Array<{ version: string; filePath: string; localPath: string }> = [];
@@ -281,7 +286,7 @@ export async function validateLocalStore(options: {
         const localFileFullPath = path.join(versionPath, filePath);
 
         try {
-          await fsx.access(localFileFullPath);
+          await fs.access(localFileFullPath);
         } catch {
           missingFiles.push({ version, filePath, localPath: localFileFullPath });
         }
@@ -334,7 +339,7 @@ function filterEntriesRecursive(entries: FileEntry[], excludePatterns: string[])
 }
 
 export async function repairLocalStore(options: RepairOptions): Promise<RepairResult> {
-  const { basePath, versions, excludePatterns } = options;
+  const { basePath, versions, excludePatterns, fs = createDefaultFs() } = options;
 
   const repairedFiles: string[] = [];
   const errors: DownloadError[] = [];
@@ -372,7 +377,7 @@ export async function repairLocalStore(options: RepairOptions): Promise<RepairRe
         const entryPath = path.join(versionPath, entry.path);
 
         if (entry.children) {
-          await fsx.mkdirp(entryPath);
+          await fs.mkdirp(entryPath);
         } else {
           const url = `${UNICODE_PROXY_URL}${basePath}/${hasUCDFolderPath(version) ? "ucd/" : ""}${entry.path}`;
           const response = await fetch(url);
@@ -387,7 +392,7 @@ export async function repairLocalStore(options: RepairOptions): Promise<RepairRe
           }
 
           const content = await response.text();
-          await writeFile(entryPath, content);
+          await fs.writeFile(entryPath, content);
           repairedFiles.push(entryPath);
         }
       }
@@ -412,10 +417,11 @@ export async function downloadSingleFile(
   version: string,
   filePath: string,
   localPath: string,
+  fs: FsInterface = createDefaultFs(),
 ): Promise<{ success: boolean; error?: string }> {
   try {
     // Ensure the directory exists
-    await fsx.ensureDir(path.dirname(localPath));
+    await fs.ensureDir(path.dirname(localPath));
 
     // Build the URL for the file
     const url = `${UNICODE_PROXY_URL}/${version}/${hasUCDFolderPath(version) ? "ucd/" : ""}${filePath}`;
@@ -433,7 +439,7 @@ export async function downloadSingleFile(
     const content = await response.text();
 
     // Write the file to local storage
-    await fsx.writeFile(localPath, content, "utf-8");
+    await fs.writeFile(localPath, content, "utf-8");
 
     return { success: true };
   } catch (error) {
@@ -452,19 +458,21 @@ export async function repairStore(
   options: {
     excludePatterns?: string[];
     concurrency?: number;
+    fs?: FsInterface;
   } = {},
 ): Promise<{
     repairedFiles: string[];
     errors: string[];
     totalMissingFiles: number;
   }> {
-  const { excludePatterns = [], concurrency = 5 } = options;
+  const { excludePatterns = [], concurrency = 5, fs = createDefaultFs() } = options;
 
   // Validate the local store to find missing files
   const validationResult = await validateLocalStore({
     basePath: store.basePath,
     versions: store.versions,
     exclude: excludePatterns.join(","),
+    fs,
   });
 
   const repairedFiles: string[] = [];
@@ -485,6 +493,7 @@ export async function repairStore(
             missingFile.version,
             missingFile.filePath,
             missingFile.localPath,
+            fs,
           );
 
           if (result.success) {
