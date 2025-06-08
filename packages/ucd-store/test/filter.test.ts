@@ -209,4 +209,20 @@ describe("createPathFilter", () => {
       expect(filter("file1.js")).toBe(true); // Should still work
     });
   });
+
+  describe("disableDefaultExclusions option", () => {
+    it("should not exclude default patterns when disableDefaultExclusions is true", () => {
+      const filter = createPathFilter([], { disableDefaultExclusions: true });
+      expect(filter("file.zip")).toBe(true);
+      expect(filter("file.pdf")).toBe(true);
+      expect(filter("file.txt")).toBe(true);
+    });
+
+    it("should still apply custom filters when disableDefaultExclusions is true", () => {
+      const filter = createPathFilter(["!*.txt"], { disableDefaultExclusions: true });
+      expect(filter("file.txt")).toBe(false);
+      expect(filter("file.zip")).toBe(true);
+      expect(filter("file.pdf")).toBe(true);
+    });
+  });
 });
