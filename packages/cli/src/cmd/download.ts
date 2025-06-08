@@ -35,7 +35,6 @@ export async function runDownload({ versions: providedVersions, flags }: CLIDown
           ["--exclude-html-files", "Exclude HTML files."],
           ["--exclude-readmes", "Exclude README files."],
           ["--force (-f)", "Force the download, even if the files already exist."],
-          ["--force", "Force the download, even if the files already exist."],
           ["--help (-h)", "See all available flags."],
         ],
       },
