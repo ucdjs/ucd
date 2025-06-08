@@ -1,8 +1,9 @@
+import type picomatch from "picomatch";
 import type { UCDStore, UCDStoreOptions, UnicodeVersionFile } from "./store";
 import { hasUCDFolderPath, UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { createClient } from "@luxass/unicode-utils-new/fetch";
 import { promiseRetry } from "@luxass/utils";
-import picomatch from "picomatch";
+import { createPathFilter, type FilterFn } from "./filter";
 import { buildProxyUrl, resolveUCDStoreOptions } from "./store";
 
 export type RemoteUCDStoreOptions = UCDStoreOptions;
@@ -34,10 +35,9 @@ export class RemoteUCDStore implements UCDStore {
   public readonly baseUrl: string;
   public readonly proxyUrl: string;
   public readonly filterPatterns: string[];
+  #filter: FilterFn;
 
   private client;
-
-  #FILTER_MATCH: picomatch.Matcher;
 
   //             filePath, content
   #FILE_CACHE: Map<string, string> = new Map();
@@ -50,10 +50,7 @@ export class RemoteUCDStore implements UCDStore {
 
     this.client = createClient(this.baseUrl);
 
-    this.#FILTER_MATCH = picomatch(["**", ...this.filterPatterns.map((pattern) => `!${pattern}`)], {
-      dot: true,
-      nocase: true,
-    });
+    this.#filter = createPathFilter(this.filterPatterns);
   }
 
   bootstrap(): void { }
@@ -73,9 +70,6 @@ export class RemoteUCDStore implements UCDStore {
           path: {
             version,
           },
-          query: {
-
-          },
         },
       });
     }, { retries: 3 });
@@ -88,7 +82,7 @@ export class RemoteUCDStore implements UCDStore {
   }
 
   async getFile(version: string, filePath: string): Promise<string> {
-    if (!this.#FILTER_MATCH(filePath)) {
+    if (!this.#filter(filePath)) {
       throw new Error(`File path "${filePath}" is filtered out by the store's filter patterns.`);
     }
 
@@ -126,11 +120,16 @@ export class RemoteUCDStore implements UCDStore {
   }
 
   private processFileStructure(rawStructure: UnicodeVersionFile[]): UnicodeVersionFile[] {
-    return rawStructure.map((item) => ({
-      name: item.name,
-      path: item.path,
-      ...(item.children ? { children: this.processFileStructure(item.children) } : {}),
-    }));
+    return rawStructure.map((item) => {
+      if (!this.#filter(item.path)) {
+        return null;
+      }
+      return {
+        name: item.name,
+        path: item.path,
+        ...(item.children ? { children: this.processFileStructure(item.children) } : {}),
+      };
+    }).filter((item) => item != null);
   }
 
   private flattenFilePaths(files: UnicodeVersionFile[], basePath: string = ""): string[] {

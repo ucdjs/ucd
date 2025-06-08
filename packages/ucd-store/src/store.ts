@@ -1,4 +1,5 @@
 import type { MaybePromise, Prettify, RemoveIndexSignature } from "@luxass/utils";
+import type { FilterFn } from "./filter";
 import type { LocalUCDStore, LocalUCDStoreOptions } from "./local";
 import type { RemoteUCDStore, RemoteUCDStoreOptions } from "./remote";
 import { invariant } from "@luxass/utils";
@@ -81,7 +82,7 @@ export function resolveUCDStoreOptions<T extends Record<string, unknown>>(
   extras?: T,
 ): Prettify<ValidatedUCDStoreOptions & RemoveIndexSignature<T>> {
   const defaults = {
-    baseUrl: "https://unicode-api.luxass.dev/api/v1",
+    baseUrl: "https://unicode-api.luxass.dev",
     proxyUrl: "https://unicode-proxy.ucdjs.dev",
     filters: [],
     ...extras,
