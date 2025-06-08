@@ -4,6 +4,11 @@ export {
   PRECONFIGURED_FILTERS,
 } from "./filter";
 export {
+  createDefaultFs,
+  FsExtraImplementation,
+  type FsInterface,
+} from "./fs-interface";
+export {
   LocalUCDStore,
   type LocalUCDStoreOptions,
   UCD_STORE_SCHEMA,
