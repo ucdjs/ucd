@@ -14,6 +14,14 @@ export const PRECONFIGURED_FILTERS = {
 
 export type FilterFn = (path: string) => boolean;
 
+export interface FilterOptions {
+  /**
+   * Whether or not to disable the default exclusions.
+   * By default, the filter excludes certain file types like `.zip` and `.pdf`.
+   */
+  disableDefaultExclusions?: boolean;
+}
+
 /**
  * Creates a filter function that checks if a file path should be included or excluded
  * based on the provided filter patterns.
@@ -28,18 +36,20 @@ export type FilterFn = (path: string) => boolean;
  * filter('DataTest.txt'); // false
  * ```
  */
-export function createPathFilter(filters: string[]): FilterFn {
+export function createPathFilter(filters: string[], options: FilterOptions = {}): FilterFn {
   if (filters.length === 0) {
     return () => true;
   }
 
   // separate include and exclude patterns
   const includePatterns: string[] = [];
-  const excludePatterns: string[] = [
-    // exclude .zip & .pdf files by default
-    "**/*.zip",
-    "**/*.pdf",
-  ];
+  const excludePatterns: string[] = options.disableDefaultExclusions
+    ? []
+    : [
+      // exclude .zip & .pdf files by default
+        "**/*.zip",
+        "**/*.pdf",
+      ];
 
   for (const filter of filters) {
     if (filter.startsWith("!")) {
