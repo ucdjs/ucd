@@ -7,7 +7,7 @@ describe("resolveUCDStoreOptions", () => {
   it("should use default values when no options are provided", () => {
     const options = resolveUCDStoreOptions({});
 
-    expect(options.baseUrl).toBe("https://unicode-api.luxass.dev/api/v1");
+    expect(options.baseUrl).toBe("https://unicode-api.luxass.dev");
     expect(options.proxyUrl).toBe("https://unicode-proxy.ucdjs.dev");
     expect(options.filters).toEqual([]);
   });
@@ -27,7 +27,7 @@ describe("resolveUCDStoreOptions", () => {
   it("should merge extra options", () => {
     const options = resolveUCDStoreOptions({}, { extraOption: "value" });
 
-    expect(options.baseUrl).toBe("https://unicode-api.luxass.dev/api/v1");
+    expect(options.baseUrl).toBe("https://unicode-api.luxass.dev");
     expect(options.proxyUrl).toBe("https://unicode-proxy.ucdjs.dev");
     expect(options.filters).toEqual([]);
     expect(options.extraOption).toBe("value");

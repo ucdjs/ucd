@@ -26,7 +26,7 @@ describe("Local UCD Store", () => {
   it("should initialize with default options", () => {
     expect(store.baseUrl).toBeDefined();
     expect(store.proxyUrl).toBeDefined();
-    expect(store.filters).toBeDefined();
+    expect(store.filterPatterns).toBeDefined();
   });
 
   it("should initialize with custom options", () => {
@@ -40,6 +40,6 @@ describe("Local UCD Store", () => {
 
     expect(customStore.baseUrl).toBe("https://luxass.dev");
     expect(customStore.proxyUrl).toBe("https://proxy.luxass.dev");
-    expect(customStore.filters).toEqual(["*.json"]);
+    expect(customStore.filterPatterns).toEqual(["*.json"]);
   });
 });
