@@ -44,6 +44,7 @@ export class LocalUCDStore implements UCDStore {
   public basePath: string;
   private _versions: string[] = [];
   private _providedVersions?: string[];
+
   #fs: FsInterface;
 
   constructor(options: LocalUCDStoreOptions = {}) {
