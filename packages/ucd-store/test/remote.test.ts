@@ -28,7 +28,6 @@ describe("Remote UCD Store", () => {
       const store = new RemoteUCDStore();
       expect(store.baseUrl).toBeDefined();
       expect(store.proxyUrl).toBeDefined();
-      expect(store.filterPatterns).toBeDefined();
     });
 
     it("should initialize with custom options", () => {
@@ -42,7 +41,6 @@ describe("Remote UCD Store", () => {
 
       expect(customStore.baseUrl).toBe("https://luxass.dev");
       expect(customStore.proxyUrl).toBe("https://proxy.luxass.dev");
-      expect(customStore.filterPatterns).toEqual(["**Shaping.txt"]);
     });
 
     it("should return available versions from metadata", () => {
@@ -415,7 +413,11 @@ describe("Remote UCD Store", () => {
 
   it("should use custom filter patterns", async () => {
     const store = new RemoteUCDStore({
-      filters: [PRECONFIGURED_FILTERS.EXCLUDE_HTML],
+      filters: [
+        PRECONFIGURED_FILTERS.EXCLUDE_HTML_FILES,
+        PRECONFIGURED_FILTERS.EXCLUDE_README_FILES,
+        PRECONFIGURED_FILTERS.EXCLUDE_TEST_FILES,
+      ],
     });
 
     const mockFileTree: UnicodeVersionFile[] = [

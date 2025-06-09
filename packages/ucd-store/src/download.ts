@@ -1,17 +1,40 @@
 import type { FsInterface } from "./fs-interface";
 import path, { dirname } from "node:path";
 import { hasUCDFolderPath } from "@luxass/unicode-utils-new";
-import picomatch from "picomatch";
 
+import { createPathFilter, type FilterFn } from "./filter";
 import { createDefaultFs } from "./fs-interface";
 
 interface DownloadOptions {
+  /**
+   * List of Unicode versions to download files for.
+   * Each version should be a string representing the Unicode version (e.g., "15.0.0", "14.0.0").
+   */
   versions: string[];
-  exclude?: string;
-  includeTests?: boolean;
-  includeReadmes?: boolean;
-  includeHTMLFiles?: boolean;
+
+  /**
+   * A Pattern matcher function to filter files based on their names.
+   * This function should take a file name as input and return true if the file should be included in the download.
+   */
+  patternMatcher?: FilterFn;
+
+  /**
+   * Optional patterns to use for filtering files.
+   * This will only be used if `patternMatcher` is not provided.
+   * Patterns should be in the format understood by `picomatch`.
+   */
+  patterns?: string[];
+
+  /**
+   * Optional base path where files will be downloaded.
+   * Defaults to "./ucd-files" if not provided.
+   */
   basePath?: string;
+
+  /**
+   * Optional filesystem interface to use for file operations.
+   * If not provided, a default implementation using fs-extra will be used.
+   */
   fs?: FsInterface;
 }
 
@@ -43,9 +66,35 @@ interface ValidationResult {
 }
 
 interface RepairOptions {
-  basePath: string;
+  /**
+   * List of Unicode versions to download files for.
+   * Each version should be a string representing the Unicode version (e.g., "15.0.0", "14.0.0").
+   */
   versions: string[];
-  excludePatterns?: string[];
+
+  /**
+   * A Pattern matcher function to filter files based on their names.
+   * This function should take a file name as input and return true if the file should be included in the download.
+   */
+  patternMatcher?: FilterFn;
+
+  /**
+   * Optional patterns to use for filtering files.
+   * This will only be used if `patternMatcher` is not provided.
+   * Patterns should be in the format understood by `picomatch`.
+   */
+  patterns?: string[];
+
+  /**
+   * Optional base path where files will be downloaded.
+   * Defaults to "./ucd-files" if not provided.
+   */
+  basePath: string;
+
+  /**
+   * Optional filesystem interface to use for file operations.
+   * If not provided, a default implementation using fs-extra will be used.
+   */
   fs?: FsInterface;
 }
 
@@ -55,18 +104,17 @@ interface RepairResult {
 }
 
 const CONCURRENCY_LIMIT = 3;
+
 const API_URL = "https://unicode-api.luxass.dev/api/v1";
 const UNICODE_PROXY_URL = "https://unicode-proxy.ucdjs.dev";
 
 export async function download(options: DownloadOptions): Promise<DownloadResult> {
   const {
     versions,
-    exclude,
-    includeTests = false,
-    includeReadmes = false,
-    includeHTMLFiles = false,
     basePath = path.resolve("./ucd-files"),
     fs = createDefaultFs(),
+    patternMatcher: providedPatternMatcher,
+    patterns = [],
   } = options;
 
   if (versions.length === 0) {
@@ -79,22 +127,7 @@ export async function download(options: DownloadOptions): Promise<DownloadResult
   const allDownloadedFiles: string[] = [];
   const allErrors: DownloadError[] = [];
 
-  // Build exclude patterns
-  const excludePatterns = exclude?.split(",").map((p) => p.trim()).filter(Boolean) || [];
-
-  if (!includeTests) {
-    excludePatterns.push("**/*Test*");
-  }
-
-  if (!includeReadmes) {
-    excludePatterns.push("**/ReadMe*", "**/README*", "**/readme*");
-  }
-
-  if (!includeHTMLFiles) {
-    excludePatterns.push("**/*.html", "**/*.htm");
-  }
-
-  excludePatterns.push("**/*.zip", "**/*.pdf");
+  const patternMatcher = providedPatternMatcher || createPathFilter(patterns);
 
   async function processFileEntries(
     entries: FileEntry[],
@@ -188,7 +221,7 @@ export async function download(options: DownloadOptions): Promise<DownloadResult
         };
       }
 
-      const filteredEntries = filterEntriesRecursive(fileEntries, excludePatterns);
+      const filteredEntries = filterEntriesRecursive(fileEntries, patternMatcher);
       const basePath = `/${version}${hasUCDFolderPath(version) ? "/ucd" : ""}`;
 
       await processFileEntries(filteredEntries, basePath, versionOutputDir, downloadedFiles, "", errors, version);
@@ -226,16 +259,22 @@ export async function download(options: DownloadOptions): Promise<DownloadResult
 export async function validateLocalStore(options: {
   basePath: string;
   versions: string[];
-  exclude?: string;
   fs?: FsInterface;
+  patternMatcher?: FilterFn;
+  patterns?: string[];
 }): Promise<ValidationResult> {
-  const { basePath, versions, exclude, fs = createDefaultFs() } = options;
+  const {
+    basePath,
+    versions,
+    fs = createDefaultFs(),
+    patternMatcher: providedPatternMatcher,
+    patterns = [],
+  } = options;
 
   const allErrors: DownloadError[] = [];
   const missingFiles: Array<{ version: string; filePath: string; localPath: string }> = [];
 
-  // Build exclude patterns
-  const excludePatterns = exclude?.split(",").map((p) => p.trim()).filter(Boolean) || [];
+  const patternMatcher = providedPatternMatcher || createPathFilter(patterns);
 
   function getAllFilePaths(entries: FileEntry[]): string[] {
     const filePaths: string[] = [];
@@ -278,7 +317,7 @@ export async function validateLocalStore(options: {
         continue;
       }
 
-      const filteredEntries = filterEntriesRecursive(fileEntries, excludePatterns);
+      const filteredEntries = filterEntriesRecursive(fileEntries, patternMatcher);
 
       const localFilePaths = getAllFilePaths(filteredEntries);
 
@@ -306,23 +345,14 @@ export async function validateLocalStore(options: {
   };
 }
 
-function filterEntriesRecursive(entries: FileEntry[], excludePatterns: string[]): FileEntry[] {
-  if (excludePatterns.length === 0) return entries;
-
-  const patterns = ["**", ...excludePatterns.map((pattern) => `!${pattern}`)];
-
-  const isMatch = picomatch(patterns, {
-    dot: true,
-    nocase: true,
-  });
-
+function filterEntriesRecursive(entries: FileEntry[], patternMatcher: FilterFn): FileEntry[] {
   function filterEntries(entryList: FileEntry[], prefix = ""): FileEntry[] {
     const result: FileEntry[] = [];
     for (const entry of entryList) {
       const fullPath = prefix ? `${prefix}/${entry.path}` : entry.path;
 
       if (!entry.children) {
-        if (isMatch(fullPath)) {
+        if (patternMatcher(fullPath)) {
           result.push(entry);
         }
       } else {
@@ -339,12 +369,18 @@ function filterEntriesRecursive(entries: FileEntry[], excludePatterns: string[])
 }
 
 export async function repairLocalStore(options: RepairOptions): Promise<RepairResult> {
-  const { basePath, versions, excludePatterns, fs = createDefaultFs() } = options;
+  const {
+    basePath,
+    versions,
+    fs = createDefaultFs(),
+    patternMatcher: providedPatternMatcher,
+    patterns = [],
+  } = options;
 
   const repairedFiles: string[] = [];
   const errors: DownloadError[] = [];
 
-  const excludePatternsFull = excludePatterns?.map((pattern) => `!${pattern}`) || [];
+  const patternMatcher = providedPatternMatcher || createPathFilter(patterns);
 
   for (const version of versions) {
     const versionPath = path.join(basePath, `v${version}`);
@@ -370,7 +406,7 @@ export async function repairLocalStore(options: RepairOptions): Promise<RepairRe
         continue;
       }
 
-      const filteredEntries = filterEntriesRecursive(fileEntries, excludePatternsFull);
+      const filteredEntries = filterEntriesRecursive(fileEntries, patternMatcher);
       const basePath = `/${version}`;
 
       for (const entry of filteredEntries) {
@@ -456,24 +492,34 @@ export async function downloadSingleFile(
  * Repair a store by validating and downloading missing files
  */
 export async function repairStore(
-  store: { basePath: string; versions: string[] },
+  store: {
+    basePath: string;
+    versions: string[];
+  },
   options: {
-    excludePatterns?: string[];
     concurrency?: number;
     fs?: FsInterface;
+    patternMatcher?: FilterFn;
+    patterns?: string[];
   } = {},
 ): Promise<{
     repairedFiles: string[];
     errors: string[];
     totalMissingFiles: number;
   }> {
-  const { excludePatterns = [], concurrency = 5, fs = createDefaultFs() } = options;
+  const {
+    concurrency = 5,
+    fs = createDefaultFs(),
+    patternMatcher: providedPatternMatcher,
+    patterns = [],
+  } = options;
 
   // Validate the local store to find missing files
   const validationResult = await validateLocalStore({
     basePath: store.basePath,
     versions: store.versions,
-    exclude: excludePatterns.join(","),
+    patternMatcher: providedPatternMatcher,
+    patterns,
     fs,
   });
 
