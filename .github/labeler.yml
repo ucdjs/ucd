@@ -6,7 +6,7 @@
 
 "pkg: utils":
   - changed-files:
-      - any-glob-to-any-file: packages/schemas/**
+      - any-glob-to-any-file: packages/utils/**
 
 "pkg: schema-gen":
   - changed-files:
