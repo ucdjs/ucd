@@ -1,8 +1,7 @@
 import type { FsInterface } from "./fs-interface";
 import path, { dirname } from "node:path";
 import { hasUCDFolderPath } from "@luxass/unicode-utils-new";
-
-import { createPathFilter, type FilterFn } from "./filter";
+import { createPathFilter, type FilterFn } from "@ucdjs/utils";
 import { createDefaultFs } from "./fs-interface";
 
 interface DownloadOptions {

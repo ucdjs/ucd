@@ -35,8 +35,12 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit"
   },
+  "dependencies": {
+    "picomatch": "catalog:prod"
+  },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:dev",
+    "@types/picomatch": "catalog:dev",
     "@ucdjs/tsconfig": "workspace:*",
     "eslint": "catalog:dev",
     "publint": "catalog:dev",
