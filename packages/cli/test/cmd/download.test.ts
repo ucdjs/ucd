@@ -51,10 +51,6 @@ const mockFileEntries = [
     path: "Data.html",
   },
   {
-    name: "ReadMe.txt",
-    path: "ReadMe.txt",
-  },
-  {
     name: "emoji",
     path: "emoji",
     children: [
@@ -221,13 +217,12 @@ describe("download command", () => {
         flags: {
           _: ["16.0.0"],
           outputDir: outputPath,
-          excludeHTMLFiles: true,
+          excludeReadmes: true,
         },
       });
 
       // regular files should exist
       expect(existsSync(path.join(outputPath, "v16.0.0/UnicodeData.txt"))).toBe(true);
-      expect(existsSync(path.join(outputPath, "v16.0.0/ReadMe.txt"))).toBe(true);
       expect(existsSync(path.join(outputPath, "v16.0.0/emoji/emoji-data.txt"))).toBe(true);
       expect(existsSync(path.join(outputPath, "v16.0.0/NormalizationTest.txt"))).toBe(true);
       expect(existsSync(path.join(outputPath, "v16.0.0/BidiTest.txt"))).toBe(true);
@@ -248,7 +243,7 @@ describe("download command", () => {
         flags: {
           _: ["16.0.0"],
           outputDir: outputPath,
-          exclude: "ReadMe.txt,**/emoji/**", // exclude readme and all files in emoji directory
+          patterns: ["!ReadMe.txt", "!**/emoji/**"], // exclude readme and all files in emoji directory
         },
       }); // regular files should exist
       expect(existsSync(path.join(outputPath, "v16.0.0/UnicodeData.txt"))).toBe(true);
@@ -270,16 +265,18 @@ describe("download command", () => {
         flags: {
           _: ["16.0.0"],
           outputDir: outputPath,
-          exclude: "ReadMe.txt",
           excludeTest: true,
+          excludeHTMLFiles: true,
+          excludeReadmes: true,
+          patterns: ["!**/UnicodeData.txt"],
         },
       });
 
-      // only unicodedata.txt and emoji-data.txt should exist
-      expect(existsSync(path.join(outputPath, "v16.0.0/UnicodeData.txt"))).toBe(true);
+      // only emoji-data.txt should exist
       expect(existsSync(path.join(outputPath, "v16.0.0/emoji/emoji-data.txt"))).toBe(true);
 
-      // all test files and readme.txt should be excluded
+      // excluded files should not exist
+      expect(existsSync(path.join(outputPath, "v16.0.0/UnicodeData.txt"))).toBe(false);
       expect(existsSync(path.join(outputPath, "v16.0.0/ReadMe.txt"))).toBe(false);
       expect(existsSync(path.join(outputPath, "v16.0.0/NormalizationTest.txt"))).toBe(false);
       expect(existsSync(path.join(outputPath, "v16.0.0/BidiTest.txt"))).toBe(false);
