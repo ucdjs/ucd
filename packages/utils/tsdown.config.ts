@@ -1,7 +1,11 @@
 import { defineConfig } from "tsdown";
 
 export default defineConfig({
-  entry: ["./src/index.ts"],
+  entry: [
+    "./src/index.ts",
+    "./src/ucd-files.ts",
+    "./src/types.ts",
+  ],
   exports: true,
   format: ["esm"],
   clean: true,
