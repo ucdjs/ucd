@@ -287,8 +287,8 @@ describe("download command", () => {
     });
   });
 
-  describe.todo("error handling", () => {
-    it("should handle API errors gracefully", async () => {
+  describe("error handling", () => {
+    it.todo("should handle API errors gracefully", async () => {
       // mock api error
       mockFetch([
         ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/17.0.0", () => {
