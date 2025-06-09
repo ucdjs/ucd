@@ -18,10 +18,20 @@ describe("fsInterface", () => {
         access: vi.fn(),
         mkdirp: vi.fn(),
         mkdir: vi.fn(),
+
       };
 
       // Mock dynamic import of fs-extra
-      vi.doMock("fs-extra", () => mockFsExtra);
+      vi.doMock("fs-extra", async (importOriginal) => {
+        const mod = await importOriginal<typeof import("fs-extra")>();
+        return {
+          ...mod,
+          ...mockFsExtra,
+          default: {
+            ...mockFsExtra,
+          },
+        };
+      });
 
       fs = createDefaultFs();
     });
