@@ -1,9 +1,5 @@
 export { download } from "./download";
 export {
-  createPathFilter,
-  PRECONFIGURED_FILTERS,
-} from "./filter";
-export {
   createDefaultFs,
   type FsInterface,
 } from "./fs-interface";

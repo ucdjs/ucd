@@ -2,7 +2,7 @@ import type { UCDStore, UCDStoreOptions } from "./store";
 import { hasUCDFolderPath, UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { createClient, type UnicodeVersionFile } from "@luxass/unicode-utils-new/fetch";
 import { promiseRetry } from "@luxass/utils";
-import { createPathFilter, type FilterFn } from "./filter";
+import { createPathFilter, type FilterFn } from "@ucdjs/utils";
 import { resolveUCDStoreOptions } from "./store";
 
 export type RemoteUCDStoreOptions = UCDStoreOptions;

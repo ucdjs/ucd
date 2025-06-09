@@ -3,7 +3,8 @@ import type { CLIArguments } from "../cli-utils";
 import { mkdir } from "node:fs/promises";
 import path from "node:path";
 import { mapToUCDPathVersion, UNICODE_VERSION_METADATA } from "@luxass/unicode-utils";
-import { download, PRECONFIGURED_FILTERS } from "@ucdjs/ucd-store";
+import { download } from "@ucdjs/ucd-store";
+import { PRECONFIGURED_FILTERS } from "@ucdjs/utils";
 import { green, red, yellow } from "farver/fast";
 import { printHelp } from "../cli-utils";
 

@@ -14,3 +14,6 @@ export function safeJsonParse<T>(content: string): T | null {
     return null;
   }
 }
+
+export { createPathFilter, PRECONFIGURED_FILTERS } from "./filter";
+export type { FilterFn, FilterOptions } from "./filter";
