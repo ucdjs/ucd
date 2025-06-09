@@ -37,6 +37,7 @@
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:dev",
+    "@ucdjs/tsconfig": "workspace:*",
     "eslint": "catalog:dev",
     "publint": "catalog:dev",
     "tsdown": "catalog:dev",

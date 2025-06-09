@@ -179,6 +179,9 @@ importers:
       '@types/yargs-parser':
         specifier: catalog:dev
         version: 21.0.3
+      '@ucdjs/tsconfig':
+        specifier: workspace:*
+        version: link:../../tooling/tsconfig
       eslint:
         specifier: catalog:dev
         version: 9.28.0(jiti@2.4.2)
@@ -222,6 +225,9 @@ importers:
       '@luxass/eslint-config':
         specifier: catalog:dev
         version: 4.19.0(@vue/compiler-sfc@3.5.13)(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)(vitest@3.2.2)
+      '@ucdjs/tsconfig':
+        specifier: workspace:*
+        version: link:../../tooling/tsconfig
       eslint:
         specifier: catalog:dev
         version: 9.28.0(jiti@2.4.2)
@@ -271,6 +277,9 @@ importers:
       '@types/picomatch':
         specifier: catalog:dev
         version: 4.0.0
+      '@ucdjs/tsconfig':
+        specifier: workspace:*
+        version: link:../../tooling/tsconfig
       eslint:
         specifier: catalog:dev
         version: 9.28.0(jiti@2.4.2)
@@ -295,6 +304,9 @@ importers:
       '@luxass/eslint-config':
         specifier: catalog:dev
         version: 4.19.0(@vue/compiler-sfc@3.5.13)(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)(vitest@3.2.2)
+      '@ucdjs/tsconfig':
+        specifier: workspace:*
+        version: link:../../tooling/tsconfig
       eslint:
         specifier: catalog:dev
         version: 9.28.0(jiti@2.4.2)
@@ -310,6 +322,8 @@ importers:
       vitest-testdirs:
         specifier: catalog:dev
         version: 4.0.0(vitest@3.2.2)
+
+  tooling/tsconfig: {}
 
 packages:
 
