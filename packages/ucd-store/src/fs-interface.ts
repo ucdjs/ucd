@@ -38,8 +38,13 @@ export function createDefaultFs(): FsInterface {
 
   const getFsExtra = async (): Promise<typeof import("fs-extra")> => {
     if (!_fsxModule) {
-      _fsxModule = await import("fs-extra");
+      _fsxModule = await import("fs-extra").then((m) => m.default);
     }
+
+    if (!_fsxModule) {
+      throw new Error("failed to load fs-extra module");
+    }
+
     return _fsxModule;
   };
 
