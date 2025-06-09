@@ -3,9 +3,9 @@ import type { FsInterface } from "./fs-interface";
 import type { UCDStore, UCDStoreOptions } from "./store";
 import path from "node:path";
 import { invariant } from "@luxass/utils";
+import { createPathFilter, type FilterFn } from "@ucdjs/utils";
 import { z } from "zod/v4";
 import { download, repairStore } from "./download";
-import { createPathFilter, type FilterFn } from "./filter";
 import { createDefaultFs } from "./fs-interface";
 import { resolveUCDStoreOptions } from "./store";
 
