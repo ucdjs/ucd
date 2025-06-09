@@ -1,15 +1,9 @@
+import type { UnicodeVersionFile } from "@luxass/unicode-utils-new/fetch";
 import type { MaybePromise, Prettify, RemoveIndexSignature } from "@luxass/utils";
 import type { LocalUCDStore, LocalUCDStoreOptions } from "./local";
 import type { RemoteUCDStore, RemoteUCDStoreOptions } from "./remote";
 import { invariant } from "@luxass/utils";
 import defu from "defu";
-
-// TODO: find another place for this interface
-export interface UnicodeVersionFile {
-  name: string;
-  path: string;
-  children?: UnicodeVersionFile[];
-}
 
 export interface CreateUCDStoreOptions {
   mode?: "remote" | "local";

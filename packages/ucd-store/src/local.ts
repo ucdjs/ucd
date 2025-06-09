@@ -1,5 +1,6 @@
+import type { UnicodeVersionFile } from "@luxass/unicode-utils-new/fetch";
 import type { FsInterface } from "./fs-interface";
-import type { UCDStore, UCDStoreOptions, UnicodeVersionFile } from "./store";
+import type { UCDStore, UCDStoreOptions } from "./store";
 import path from "node:path";
 import { invariant } from "@luxass/utils";
 import { z } from "zod/v4";
