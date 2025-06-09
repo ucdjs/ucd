@@ -413,7 +413,11 @@ describe("Remote UCD Store", () => {
 
   it("should use custom filter patterns", async () => {
     const store = new RemoteUCDStore({
-      filters: [PRECONFIGURED_FILTERS.EXCLUDE_HTML],
+      filters: [
+        PRECONFIGURED_FILTERS.EXCLUDE_HTML_FILES,
+        PRECONFIGURED_FILTERS.EXCLUDE_README_FILES,
+        PRECONFIGURED_FILTERS.EXCLUDE_TEST_FILES,
+      ],
     });
 
     const mockFileTree: UnicodeVersionFile[] = [
