@@ -21,5 +21,4 @@ export {
   createUCDStore,
   type CreateUCDStoreOptions,
   type UCDStore,
-  type UnicodeVersionFile,
 } from "./store";
