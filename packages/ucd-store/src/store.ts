@@ -90,22 +90,6 @@ export function resolveUCDStoreOptions<T extends Record<string, unknown>>(
   return defu(options, defaults) as Prettify<ValidatedUCDStoreOptions & RemoveIndexSignature<T>>;
 }
 
-/**
- * Builds a proxy URL by combining the proxy base URL with a path
- * @internal
- */
-export function buildProxyUrl(proxyBaseUrl: string, path: string): string {
-  return `${proxyBaseUrl}/${path}`;
-}
-
-/**
- * Builds an API URL by combining the API base URL with a path
- * @internal
- */
-export function buildApiUrl(apiBaseUrl: string, path: string): string {
-  return `${apiBaseUrl}/${path}`;
-}
-
 export interface UCDStore {
   /**
    * Base URL for the Unicode API
