@@ -3,7 +3,7 @@ import { hasUCDFolderPath, UNICODE_VERSION_METADATA } from "@luxass/unicode-util
 import { createClient } from "@luxass/unicode-utils-new/fetch";
 import { promiseRetry } from "@luxass/utils";
 import { createPathFilter, type FilterFn } from "./filter";
-import { buildProxyUrl, resolveUCDStoreOptions } from "./store";
+import { resolveUCDStoreOptions } from "./store";
 
 export type RemoteUCDStoreOptions = UCDStoreOptions;
 
@@ -33,7 +33,6 @@ export interface CacheStats {
 export class RemoteUCDStore implements UCDStore {
   public readonly baseUrl: string;
   public readonly proxyUrl: string;
-  public readonly filterPatterns: string[];
   #filter: FilterFn;
 
   private client;
@@ -42,14 +41,13 @@ export class RemoteUCDStore implements UCDStore {
   #FILE_CACHE: Map<string, string> = new Map();
 
   constructor(options: RemoteUCDStoreOptions = {}) {
-    const resolvedOptions = resolveUCDStoreOptions(options);
-    this.baseUrl = resolvedOptions.baseUrl;
-    this.proxyUrl = resolvedOptions.proxyUrl;
-    this.filterPatterns = resolvedOptions.filters;
+    const { baseUrl, filters, proxyUrl } = resolveUCDStoreOptions(options);
+    this.baseUrl = baseUrl;
+    this.proxyUrl = proxyUrl;
 
     this.client = createClient(this.baseUrl);
 
-    this.#filter = createPathFilter(this.filterPatterns);
+    this.#filter = createPathFilter(filters);
   }
 
   bootstrap(): void { }
@@ -92,7 +90,7 @@ export class RemoteUCDStore implements UCDStore {
     }
 
     const content = await promiseRetry(async () => {
-      const res = await fetch(buildProxyUrl(this.proxyUrl, `${version}/${hasUCDFolderPath(version) ? "ucd/" : ""}${filePath}`));
+      const res = await fetch(new URL(`${version}/${hasUCDFolderPath(version) ? "ucd/" : ""}${filePath}`, this.proxyUrl));
 
       if (!res.ok) {
         throw new Error(`Failed to fetch file "${filePath}" for version "${version}": ${res.status} ${res.statusText}`);

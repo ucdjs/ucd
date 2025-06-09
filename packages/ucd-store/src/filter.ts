@@ -1,9 +1,10 @@
 import picomatch from "picomatch";
 
 export const PRECONFIGURED_FILTERS = {
-  EXCLUDE_TESTS: "!**/*Test*",
-  EXCLUDE_README: "!**/Readme.txt",
-  EXCLUDE_HTML: "!**/*.html",
+  EXCLUDE_TEST_FILES: "!**/*Test*",
+  // TODO: maybe also exclude README.txt
+  EXCLUDE_README_FILES: "!**/Readme.txt",
+  EXCLUDE_HTML_FILES: "!**/*.html",
 } as const;
 
 export type FilterFn = (path: string) => boolean;
