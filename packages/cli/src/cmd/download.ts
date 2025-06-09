@@ -10,7 +10,7 @@ import { printHelp } from "../cli-utils";
 export interface CLIDownloadCmdOptions {
   flags: CLIArguments<{
     outputDir?: string;
-    exclude?: string;
+    patterns?: string[];
     excludeTest?: boolean;
     excludeDraft?: boolean;
     excludeHTMLFiles?: boolean;
@@ -29,7 +29,7 @@ export async function runDownload({ versions: providedVersions, flags }: CLIDown
       tables: {
         Flags: [
           ["--output-dir", "Specify the output directory."],
-          ["--exclude", "Exclude files matching glob patterns (e.g., '*Test*,ReadMe.txt,*.draft')."],
+          ["--patterns", "Patterns to filter files. Can be used multiple times."],
           ["--exclude-test", "Exclude all test files (ending with Test.txt)."],
           ["--exclude-draft", "Exclude all draft files"],
           ["--exclude-html-files", "Exclude HTML files."],
@@ -89,14 +89,28 @@ export async function runDownload({ versions: providedVersions, flags }: CLIDown
   const outputDir = flags.outputDir ?? path.join(process.cwd(), "data");
   await mkdir(outputDir, { recursive: true });
 
+  const patterns = [];
+  if (flags.excludeHTMLFiles) {
+    patterns.push(PRECONFIGURED_FILTERS.EXCLUDE_HTML_FILES);
+  }
+
+  if (flags.excludeReadmes) {
+    patterns.push(PRECONFIGURED_FILTERS.EXCLUDE_README_FILES);
+  }
+
+  if (flags.excludeTest) {
+    patterns.push(PRECONFIGURED_FILTERS.EXCLUDE_TEST_FILES);
+  }
+
+  if (flags.patterns && flags.patterns.length > 0) {
+    const customFilters = flags.patterns.map((f) => f.trim()).filter(Boolean);
+    patterns.push(...customFilters);
+  }
+
   const result = await download({
     versions: versions.map(({ version }) => version),
     basePath: outputDir,
-    patterns: [
-      ...(flags.excludeHTMLFiles ? PRECONFIGURED_FILTERS.EXCLUDE_HTML_FILES : []),
-      ...(flags.excludeReadmes ? PRECONFIGURED_FILTERS.EXCLUDE_README_FILES : []),
-      ...(flags.excludeTest ? PRECONFIGURED_FILTERS.EXCLUDE_TEST_FILES : []),
-    ],
+    patterns,
   });
 
   // print summary
