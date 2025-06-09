@@ -47,6 +47,14 @@ const mockFileEntries = [
     path: "GraphemeBreakTest.txt",
   },
   {
+    name: "Data.html",
+    path: "Data.html",
+  },
+  {
+    name: "ReadMe.txt",
+    path: "ReadMe.txt",
+  },
+  {
     name: "emoji",
     path: "emoji",
     children: [
@@ -132,7 +140,7 @@ describe("download command", () => {
     });
   });
 
-  describe.todo("file filtering", () => {
+  describe("file filtering", () => {
     it("should download all files when no exclusions are specified", async () => {
       // create a temporary directory for the test
       const outputPath = await testdir({});
@@ -177,6 +185,59 @@ describe("download command", () => {
       expect(existsSync(path.join(outputPath, "v16.0.0/BidiCharacterTest.txt"))).toBe(false);
       expect(existsSync(path.join(outputPath, "v16.0.0/GraphemeBreakTest.txt"))).toBe(false);
       expect(existsSync(path.join(outputPath, "v16.0.0/emoji/emoji-test.txt"))).toBe(false);
+    });
+
+    it("should exclude html files when --exclude-html-files flag is used", async () => {
+      const outputPath = await testdir({});
+
+      await runDownload({
+        versions: ["16.0.0"],
+        flags: {
+          _: ["16.0.0"],
+          outputDir: outputPath,
+          excludeHTMLFiles: true,
+        },
+      });
+
+      // regular files should exist
+      expect(existsSync(path.join(outputPath, "v16.0.0/UnicodeData.txt"))).toBe(true);
+      expect(existsSync(path.join(outputPath, "v16.0.0/ReadMe.txt"))).toBe(true);
+      expect(existsSync(path.join(outputPath, "v16.0.0/emoji/emoji-data.txt"))).toBe(true);
+      expect(existsSync(path.join(outputPath, "v16.0.0/NormalizationTest.txt"))).toBe(true);
+      expect(existsSync(path.join(outputPath, "v16.0.0/BidiTest.txt"))).toBe(true);
+      expect(existsSync(path.join(outputPath, "v16.0.0/BidiCharacterTest.txt"))).toBe(true);
+      expect(existsSync(path.join(outputPath, "v16.0.0/GraphemeBreakTest.txt"))).toBe(true);
+      expect(existsSync(path.join(outputPath, "v16.0.0/emoji/emoji-test.txt"))).toBe(true);
+
+      // html files should not exist
+      expect(existsSync(path.join(outputPath, "v16.0.0/Data.html"))).toBe(false);
+    });
+
+    it("should exclude readme files when --exclude-readmes flag is used", async () => {
+      const outputPath = await testdir({});
+
+      await runDownload({
+        versions: ["16.0.0"],
+        flags: {
+          _: ["16.0.0"],
+          outputDir: outputPath,
+          excludeHTMLFiles: true,
+        },
+      });
+
+      // regular files should exist
+      expect(existsSync(path.join(outputPath, "v16.0.0/UnicodeData.txt"))).toBe(true);
+      expect(existsSync(path.join(outputPath, "v16.0.0/ReadMe.txt"))).toBe(true);
+      expect(existsSync(path.join(outputPath, "v16.0.0/emoji/emoji-data.txt"))).toBe(true);
+      expect(existsSync(path.join(outputPath, "v16.0.0/NormalizationTest.txt"))).toBe(true);
+      expect(existsSync(path.join(outputPath, "v16.0.0/BidiTest.txt"))).toBe(true);
+      expect(existsSync(path.join(outputPath, "v16.0.0/BidiCharacterTest.txt"))).toBe(true);
+      expect(existsSync(path.join(outputPath, "v16.0.0/GraphemeBreakTest.txt"))).toBe(true);
+      expect(existsSync(path.join(outputPath, "v16.0.0/emoji/emoji-test.txt"))).toBe(true);
+      expect(existsSync(path.join(outputPath, "v16.0.0/Data.html"))).toBe(true);
+
+      // readme files should not exist
+      expect(existsSync(path.join(outputPath, "v16.0.0/ReadMe.txt"))).toBe(false);
     });
 
     it("should exclude files matching custom glob patterns with --exclude flag", async () => {
