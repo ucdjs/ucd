@@ -1,5 +1,5 @@
+import type { UnicodeVersionFile } from "@luxass/unicode-utils-new/fetch";
 import type { Mock } from "vitest";
-import type { UnicodeVersionFile } from "../src/store";
 import { mockFetch } from "#msw-utils";
 import { promiseRetry } from "@luxass/utils";
 import { PRECONFIGURED_FILTERS } from "@ucdjs/ucd-store";
