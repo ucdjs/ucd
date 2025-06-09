@@ -1,4 +1,5 @@
 import type { FSAdapter } from "./types";
+import path from "node:path";
 
 export interface MirrorOptions {
   /**
@@ -20,8 +21,16 @@ export interface MirrorOptions {
   fs?: FSAdapter;
 }
 
-export async function mirrorUCDFiles(): Promise<void> {
-  // TODO: Implement the mirroring logic for Unicode files.
+export async function mirrorUCDFiles(options: MirrorOptions): Promise<void> {
+  const {
+    versions,
+    basePath = path.resolve("./ucd-files"),
+    fs = await createDefaultFSAdapter(),
+  } = options;
+
+  if (!Array.isArray(versions) || versions.length === 0) {
+    throw new Error("At least one Unicode version must be provided.");
+  }
 }
 
 /**
