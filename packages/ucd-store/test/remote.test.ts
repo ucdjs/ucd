@@ -2,7 +2,7 @@ import type { UnicodeVersionFile } from "@luxass/unicode-utils-new/fetch";
 import type { Mock } from "vitest";
 import { mockFetch } from "#msw-utils";
 import { promiseRetry } from "@luxass/utils";
-import { PRECONFIGURED_FILTERS } from "@ucdjs/ucd-store";
+import { PRECONFIGURED_FILTERS } from "@ucdjs/utils";
 import { HttpResponse } from "msw";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { RemoteUCDStore } from "../src/remote";
