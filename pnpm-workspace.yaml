@@ -4,7 +4,8 @@ linkWorkspacePackages: true
 engineStrict: true
 
 packages:
-  - packages/*
+  - "packages/*"
+  - "tooling/*"
 
 catalogs:
   monorepo:
