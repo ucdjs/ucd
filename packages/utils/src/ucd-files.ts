@@ -31,27 +31,21 @@ export async function mirrorUCDFiles(): Promise<void> {
  * Currently, it only implements the readFile method, but could be extended with
  * additional functionality as needed.
  *
- * @returns A Promise that resolves to a {@link FSAdapter} implementation
+ * @returns {Promise<FSAdapter>} A Promise that resolves to a {@link FSAdapter} implementation
  * @throws Error if the Node.js fs module cannot be loaded
  */
 export async function createDefaultFSAdapter(): Promise<FSAdapter> {
-  let _fsModule: typeof import("node:fs/promises") = await getFSModule();
+  try {
+    const fsModule = await import("node:fs/promises");
 
-  async function getFSModule(): Promise<typeof import("node:fs/promises")> {
-    if (!_fsModule) {
-      _fsModule = await import("node:fs/promises");
-    }
-
-    if (!_fsModule) {
-      throw new Error("failed to load node:fs module");
-    }
-
-    return _fsModule;
+    return {
+      async readFile(path) {
+        return fsModule.readFile(path, "utf-8");
+      },
+    };
+  } catch (err) {
+    throw new Error("Failed to load file system module", {
+      cause: err,
+    });
   }
-
-  return {
-    async readFile(path) {
-      return _fsModule.readFile(path, "utf-8");
-    },
-  };
 }
