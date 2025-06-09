@@ -74,6 +74,7 @@ const mockFileContents = {
   "BidiTest.txt": "# Bidi Test File",
   "BidiCharacterTest.txt": "# Bidi Character Test File",
   "GraphemeBreakTest.txt": "# Grapheme Break Test File",
+  "Data.html": "<html><body>Unicode Data</body></html>",
   "emoji/emoji-data.txt": "# Emoji Data",
   "emoji/emoji-test.txt": "# Test emoji sequences",
 };
