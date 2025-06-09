@@ -26,6 +26,8 @@ export interface FilterOptions {
  *
  * @example
  * ```ts
+ * import { createPathFilter } from '@ucdjs/utils';
+ *
  * const filter = createPathFilter(['*.txt', '!*Test*']);
  * filter('Data.txt'); // true
  * filter('DataTest.txt'); // false
