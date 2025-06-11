@@ -1,7 +1,7 @@
 import type { FSAdapter } from "./types";
 import path from "node:path";
 import { hasUCDFolderPath } from "@luxass/unicode-utils-new";
-import { createClient } from "@luxass/unicode-utils-new/fetch";
+import { createClient, type UnicodeVersionFile } from "@luxass/unicode-utils-new/fetch";
 import defu from "defu";
 import { createPathFilter, type FilterFn } from "./filter";
 
@@ -104,11 +104,24 @@ export async function mirrorUCDFiles(options: MirrorOptions): Promise<MirrorResu
 
   const allResults = await Promise.all(promises);
 
+  const locatedFiles = allResults.flatMap((result) => result.locatedFiles);
+  const files = allResults.flatMap((result) => result.files);
+  const errors = allResults.flatMap((result) => result.errors);
+  const hasErrors = errors.length > 0;
+  if (hasErrors) {
+    return {
+      success: false,
+      errors,
+      files,
+      locatedFiles,
+    };
+  }
+
   return {
     success: true,
     errors: null,
-    files: [],
-    locatedFiles: [],
+    files,
+    locatedFiles,
   };
 }
 
@@ -116,11 +129,17 @@ type internal__MirrorUnicodeVersionOptions = Required<Omit<MirrorOptions, "versi
   client: ReturnType<typeof createClient>;
 };
 
-async function internal_mirrorUnicodeVersion(version: string, mirrorOptions: internal__MirrorUnicodeVersionOptions): Promise<{ downloadedFiles: string[]; errors: DownloadError[] }> {
+async function internal_mirrorUnicodeVersion(version: string, mirrorOptions: internal__MirrorUnicodeVersionOptions): Promise<{
+  locatedFiles: string[];
+  files: string[];
+  errors: DownloadError[];
+}> {
   const { basePath, fs, patternMatcher, client } = mirrorOptions;
   const versionOutputDir = path.resolve(basePath, `v${version}`);
 
-  const downloadedFiles: string[] = [];
+  const locatedFiles: string[] = [];
+  // downloaded files
+  const files: string[] = [];
   const errors: DownloadError[] = [];
   try {
     await fs.mkdir(versionOutputDir, { recursive: true });
@@ -135,7 +154,8 @@ async function internal_mirrorUnicodeVersion(version: string, mirrorOptions: int
 
     if (error) {
       return {
-        downloadedFiles,
+        locatedFiles,
+        files,
         errors: [{
           message: `Failed to fetch file list for version ${version}: ${response.status} ${response.statusText}`,
           version,
@@ -145,7 +165,8 @@ async function internal_mirrorUnicodeVersion(version: string, mirrorOptions: int
 
     if (!Array.isArray(data)) {
       return {
-        downloadedFiles,
+        locatedFiles,
+        files,
         errors: [{
           message: `Invalid response format for version ${version}`,
           version,
@@ -153,10 +174,11 @@ async function internal_mirrorUnicodeVersion(version: string, mirrorOptions: int
       };
     }
 
-    const filteredEntries = filterEntriesRecursive(data, patternMatcher);
-    const basePath = `/${version}${hasUCDFolderPath(version) ? "/ucd" : ""}`;
+    const filteredEntries = internal__filterEntriesRecursive(data, patternMatcher);
+    const _urlPath = `/${version}${hasUCDFolderPath(version) ? "/ucd" : ""}`;
+    locatedFiles.push(...internal__flattenFilePaths(filteredEntries, `${version}`));
 
-    await processFileEntries(filteredEntries, basePath, versionOutputDir, downloadedFiles, "", errors, version);
+    // await processFileEntries(filteredEntries, basePath, versionOutputDir, downloadedFiles, "", errors, version);
   } catch (err) {
     errors.push({
       message: `Error processing version ${version}: ${(err as any).message}`,
@@ -164,7 +186,50 @@ async function internal_mirrorUnicodeVersion(version: string, mirrorOptions: int
     });
   }
 
-  return { downloadedFiles, errors };
+  return {
+    locatedFiles,
+    files,
+    errors,
+  };
+}
+
+function internal__flattenFilePaths(entries: UnicodeVersionFile[], prefix = ""): string[] {
+  const paths: string[] = [];
+
+  for (const file of entries) {
+    const fullPath = prefix ? `${prefix}/${file.name}` : file.name;
+
+    if (file.children) {
+      paths.push(...internal__flattenFilePaths(file.children, fullPath));
+    } else {
+      paths.push(fullPath);
+    }
+  }
+
+  return paths;
+}
+
+function internal__filterEntriesRecursive(entries: UnicodeVersionFile[], patternMatcher: FilterFn): UnicodeVersionFile[] {
+  function filterEntries(entryList: UnicodeVersionFile[], prefix = ""): UnicodeVersionFile[] {
+    const result: UnicodeVersionFile[] = [];
+    for (const entry of entryList) {
+      const fullPath = prefix ? `${prefix}/${entry.path}` : entry.path;
+
+      if (!entry.children) {
+        if (patternMatcher(fullPath)) {
+          result.push(entry);
+        }
+      } else {
+        const filteredChildren = filterEntries(entry.children, fullPath);
+        if (filteredChildren.length > 0) {
+          result.push({ ...entry, children: filteredChildren });
+        }
+      }
+    }
+    return result;
+  }
+
+  return filterEntries(entries);
 }
 
 /**
@@ -184,6 +249,9 @@ export async function createDefaultFSAdapter(): Promise<FSAdapter> {
     return {
       async readFile(path) {
         return fsModule.readFile(path, "utf-8");
+      },
+      async mkdir(dirPath, options) {
+        return fsModule.mkdir(dirPath, options);
       },
     };
   } catch (err) {
