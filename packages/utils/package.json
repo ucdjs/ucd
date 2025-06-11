@@ -38,6 +38,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@luxass/unicode-utils-new": "catalog:prod",
+    "defu": "catalog:prod",
     "picomatch": "catalog:prod"
   },
   "devDependencies": {
