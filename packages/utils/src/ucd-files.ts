@@ -1,5 +1,9 @@
 import type { FSAdapter } from "./types";
 import path from "node:path";
+import { hasUCDFolderPath } from "@luxass/unicode-utils-new";
+import { createClient } from "@luxass/unicode-utils-new/fetch";
+import defu from "defu";
+import { createPathFilter, type FilterFn } from "./filter";
 
 export interface MirrorOptions {
   /**
@@ -19,18 +23,148 @@ export interface MirrorOptions {
    * If not provided, a default implementation using fs-extra will be used.
    */
   fs?: FSAdapter;
+
+  /**
+   * A Pattern matcher function to filter files based on their names.
+   * This function should take a file name as input and return true if the file should be included in the download.
+   */
+  patternMatcher?: FilterFn;
+
+  /**
+   * Optional patterns to use for filtering files.
+   * This will only be used if `patternMatcher` is not provided.
+   * Patterns should be in the format understood by `picomatch`.
+   */
+  patterns?: string[];
+
+  /**
+   * Optional API URL to use for fetching Unicode files.
+   * If not provided, defaults to "https://unicode-api.luxass.dev".
+   */
+  apiUrl?: string;
 }
 
-export async function mirrorUCDFiles(options: MirrorOptions): Promise<void> {
+interface DownloadError {
+  message: string;
+  version?: string;
+  file?: string;
+}
+
+export type MirrorResult = {
+  success: true;
+  errors: null;
+  files: string[];
+  locatedFiles: string[];
+} | {
+  success: false;
+  errors: DownloadError[];
+  files: string[];
+  locatedFiles: string[];
+};
+
+export async function mirrorUCDFiles(options: MirrorOptions): Promise<MirrorResult> {
   const {
     versions,
-    basePath = path.resolve("./ucd-files"),
-    fs = await createDefaultFSAdapter(),
-  } = options;
+    basePath,
+    fs,
+    patternMatcher: providedPatternMatcher,
+    patterns,
+    apiUrl,
+  } = defu(options, {
+    basePath: "./ucd-files",
+    fs: await createDefaultFSAdapter(),
+    patternMatcher: undefined,
+    patterns: [],
+    apiUrl: "https://unicode-api.luxass.dev",
+    versions: [],
+  } satisfies MirrorOptions);
+
+  const client = createClient(apiUrl);
 
   if (!Array.isArray(versions) || versions.length === 0) {
-    throw new Error("At least one Unicode version must be provided.");
+    return {
+      success: false,
+      errors: [{ message: "No Unicode versions provided" }],
+      files: [],
+      locatedFiles: [],
+    };
   }
+
+  const patternMatcher = providedPatternMatcher || createPathFilter(patterns);
+
+  const promises = versions.map((version) => {
+    return internal_mirrorUnicodeVersion(version, {
+      basePath,
+      fs,
+      patternMatcher,
+      client,
+      apiUrl,
+    });
+  });
+
+  const allResults = await Promise.all(promises);
+
+  return {
+    success: true,
+    errors: null,
+    files: [],
+    locatedFiles: [],
+  };
+}
+
+type internal__MirrorUnicodeVersionOptions = Required<Omit<MirrorOptions, "versions" | "patterns">> & {
+  client: ReturnType<typeof createClient>;
+};
+
+async function internal_mirrorUnicodeVersion(version: string, mirrorOptions: internal__MirrorUnicodeVersionOptions): Promise<{ downloadedFiles: string[]; errors: DownloadError[] }> {
+  const { basePath, fs, patternMatcher, client } = mirrorOptions;
+  const versionOutputDir = path.resolve(basePath, `v${version}`);
+
+  const downloadedFiles: string[] = [];
+  const errors: DownloadError[] = [];
+  try {
+    await fs.mkdir(versionOutputDir, { recursive: true });
+
+    const { data, error, response } = await client.GET("/api/v1/unicode-files/{version}", {
+      params: {
+        path: {
+          version,
+        },
+      },
+    });
+
+    if (error) {
+      return {
+        downloadedFiles,
+        errors: [{
+          message: `Failed to fetch file list for version ${version}: ${response.status} ${response.statusText}`,
+          version,
+        }],
+      };
+    }
+
+    if (!Array.isArray(data)) {
+      return {
+        downloadedFiles,
+        errors: [{
+          message: `Invalid response format for version ${version}`,
+          version,
+        }],
+      };
+    }
+
+    const filteredEntries = filterEntriesRecursive(data, patternMatcher);
+    const basePath = `/${version}${hasUCDFolderPath(version) ? "/ucd" : ""}`;
+
+    await processFileEntries(filteredEntries, basePath, versionOutputDir, downloadedFiles, "", errors, version);
+  } catch (err) {
+    errors.push({
+      message: `Error processing version ${version}: ${(err as any).message}`,
+      version,
+    });
+  }
+
+  return { downloadedFiles, errors };
 }
 
 /**
