@@ -1,9 +1,11 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createDefaultFSAdapter } from "../src/ucd-files";
+import path from "node:path";
+import { mockFetch } from "#msw-utils";
+import { HttpResponse } from "msw";
+import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { testdir } from "vitest-testdirs";
+import { createDefaultFSAdapter, mirrorUCDFiles } from "../src/ucd-files";
 
-const mockReadFile = vi.fn();
-
-vi.mock("node:fs/promises", () => ({ readFile: mockReadFile }));
+vi.mock("node:fs/promises", { spy: true });
 
 // eslint-disable-next-line test/prefer-lowercase-title
 describe("FS Adapter", () => {
@@ -18,28 +20,458 @@ describe("FS Adapter", () => {
   });
 
   it("should read file successfully", async () => {
-    mockReadFile.mockResolvedValue("file content");
+    // Import the module to access the spy
+    const { readFile } = await import("node:fs/promises");
+
+    // Mock the spy's return value for this test
+    vi.mocked(readFile).mockResolvedValue("file content");
 
     const fs = await createDefaultFSAdapter();
     const result = await fs.readFile("/test.txt");
 
     expect(result).toBe("file content");
-    expect(mockReadFile).toHaveBeenCalledWith("/test.txt", "utf-8");
+    expect(readFile).toHaveBeenCalledWith("/test.txt", "utf-8");
   });
+});
 
-  describe("when node:fs/promises is not available", () => {
-    beforeEach(() => {
-      vi.resetModules();
+// eslint-disable-next-line test/prefer-lowercase-title
+describe("FS Adapter - module unavailable", () => {
+  afterAll(() => {
+    vi.resetModules();
+    vi.doMock("node:fs/promises", { spy: true });
+  });
+  it("should throw error when node:fs/promises is not available", async () => {
+    vi.doMock("node:fs/promises", () => {
+      throw new Error("Module not found");
     });
 
-    it("should throw error", async () => {
-      vi.doMock("node:fs/promises", () => {
-        throw new Error("Module not found");
+    await expect(createDefaultFSAdapter()).rejects.toThrow(
+      "Failed to load file system module",
+    );
+  });
+});
+
+describe("mirrorUCDFiles", () => {
+  const mockFileEntries = [
+    {
+      name: "UnicodeData.txt",
+      path: "UnicodeData.txt",
+    },
+    {
+      name: "ReadMe.txt",
+      path: "ReadMe.txt",
+    },
+    {
+      name: "auxiliary",
+      path: "auxiliary",
+      children: [
+        {
+          name: "GraphemeBreakProperty.txt",
+          path: "GraphemeBreakProperty.txt",
+        },
+      ],
+    },
+    {
+      name: "emoji",
+      path: "emoji",
+      children: [
+        {
+          name: "emoji-data.txt",
+          path: "emoji-data.txt",
+        },
+        {
+          name: "emoji-test.txt",
+          path: "emoji-test.txt",
+        },
+      ],
+    },
+  ];
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  describe("basic functionality", () => {
+    it("should return success when everything works correctly", async () => {
+      mockFetch([
+        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
+          return HttpResponse.json(mockFileEntries);
+        }],
+      ]);
+
+      const result = await mirrorUCDFiles({
+        versions: ["16.0.0"],
+        basePath: "./test-output",
       });
 
-      await expect(createDefaultFSAdapter()).rejects.toThrow(
-        "Failed to load file system module",
-      );
+      expect(result.success).toBe(true);
+      expect(result.errors).toBeNull();
+      expect(result.locatedFiles).toContain("16.0.0/UnicodeData.txt");
+      expect(result.locatedFiles).toContain("16.0.0/ReadMe.txt");
+      expect(result.locatedFiles).toContain("16.0.0/auxiliary/GraphemeBreakProperty.txt");
+      expect(result.locatedFiles).toContain("16.0.0/emoji/emoji-data.txt");
+      expect(result.locatedFiles).toContain("16.0.0/emoji/emoji-test.txt");
+    });
+
+    it("should handle multiple versions", async () => {
+      mockFetch([
+        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
+          return HttpResponse.json(mockFileEntries);
+        }],
+        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/15.1.0", () => {
+          return HttpResponse.json([
+            { name: "UnicodeData.txt", path: "UnicodeData.txt" },
+            { name: "Blocks.txt", path: "Blocks.txt" },
+          ]);
+        }],
+      ]);
+
+      const result = await mirrorUCDFiles({
+        versions: ["16.0.0", "15.1.0"],
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.locatedFiles).toContain("16.0.0/UnicodeData.txt");
+      expect(result.locatedFiles).toContain("15.1.0/UnicodeData.txt");
+      expect(result.locatedFiles).toContain("15.1.0/Blocks.txt");
+    });
+
+    it("should use custom API URL when provided", async () => {
+      const customApiUrl = "https://custom-api.example.com";
+
+      mockFetch([
+        [`GET ${customApiUrl}/api/v1/unicode-files/16.0.0`, () => {
+          return HttpResponse.json(mockFileEntries);
+        }],
+      ]);
+
+      const result = await mirrorUCDFiles({
+        versions: ["16.0.0"],
+        apiUrl: customApiUrl,
+      });
+
+      expect(result.success).toBe(true);
+    });
+  });
+
+  describe("filtering functionality", () => {
+    it("should apply pattern filters to exclude files", async () => {
+      mockFetch([
+        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
+          return HttpResponse.json(mockFileEntries);
+        }],
+      ]);
+
+      const result = await mirrorUCDFiles({
+        versions: ["16.0.0"],
+        patterns: ["!**/ReadMe.txt", "!**/emoji-test.txt"],
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.locatedFiles).toContain("16.0.0/UnicodeData.txt");
+      expect(result.locatedFiles).not.toContain("16.0.0/ReadMe.txt");
+      expect(result.locatedFiles).toContain("16.0.0/emoji/emoji-data.txt");
+      expect(result.locatedFiles).not.toContain("16.0.0/emoji/emoji-test.txt");
+    });
+
+    it("should use custom pattern matcher function", async () => {
+      mockFetch([
+        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
+          return HttpResponse.json(mockFileEntries);
+        }],
+      ]);
+
+      // Custom filter that only allows .txt files but excludes ReadMe
+      const customPatternMatcher = (path: string) => {
+        return path.endsWith(".txt") && !path.includes("ReadMe");
+      };
+
+      const result = await mirrorUCDFiles({
+        versions: ["16.0.0"],
+        patternMatcher: customPatternMatcher,
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.locatedFiles).toContain("16.0.0/UnicodeData.txt");
+      expect(result.locatedFiles).not.toContain("16.0.0/ReadMe.txt");
+      expect(result.locatedFiles).toContain("16.0.0/auxiliary/GraphemeBreakProperty.txt");
+      expect(result.locatedFiles).toContain("16.0.0/emoji/emoji-data.txt");
+      expect(result.locatedFiles).toContain("16.0.0/emoji/emoji-test.txt");
+    });
+
+    it("should prioritize patternMatcher over patterns array", async () => {
+      mockFetch([
+        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
+          return HttpResponse.json(mockFileEntries);
+        }],
+      ]);
+
+      // Custom matcher that allows everything
+      const customPatternMatcher = () => true;
+
+      const result = await mirrorUCDFiles({
+        versions: ["16.0.0"],
+        patternMatcher: customPatternMatcher,
+        patterns: ["!**/*"], // This should be ignored
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.locatedFiles.length).toBeGreaterThan(0);
+    });
+  });
+
+  describe("filesystem integration", () => {
+    it("should use custom filesystem adapter", async () => {
+      const mockFs = {
+        readFile: vi.fn().mockResolvedValue("test content"),
+        mkdir: vi.fn().mockResolvedValue(undefined),
+      };
+
+      mockFetch([
+        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
+          return HttpResponse.json(mockFileEntries);
+        }],
+      ]);
+
+      const result = await mirrorUCDFiles({
+        versions: ["16.0.0"],
+        basePath: "/custom/path",
+        fs: mockFs,
+      });
+
+      expect(result.success).toBe(true);
+      expect(mockFs.mkdir).toHaveBeenCalledWith("/custom/path/v16.0.0", { recursive: true });
+    });
+
+    it("should work with real filesystem using testdir", async () => {
+      const outputPath = await testdir({});
+
+      mockFetch([
+        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
+          return HttpResponse.json([
+            { name: "UnicodeData.txt", path: "UnicodeData.txt" },
+          ]);
+        }],
+      ]);
+
+      const result = await mirrorUCDFiles({
+        versions: ["16.0.0"],
+        basePath: outputPath,
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.locatedFiles).toContain("16.0.0/UnicodeData.txt");
+    });
+  });
+
+  describe("error handling", () => {
+    it("should return error when no versions provided", async () => {
+      const result = await mirrorUCDFiles({
+        versions: [],
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.errors).toHaveLength(1);
+      expect(result.errors?.[0]?.message).toBe("No Unicode versions provided");
+    });
+
+    it("should handle API errors gracefully", async () => {
+      mockFetch([
+        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/99.0.0", () => {
+          return new HttpResponse(null, { status: 404, statusText: "Not Found" });
+        }],
+      ]);
+
+      const result = await mirrorUCDFiles({
+        versions: ["99.0.0"],
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.errors).toHaveLength(1);
+      expect(result.errors?.[0]?.message).toContain("Failed to fetch file list for version 99.0.0");
+      expect(result.errors?.[0]?.version).toBe("99.0.0");
+    });
+
+    it("should handle invalid API response format", async () => {
+      mockFetch([
+        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
+          return HttpResponse.json("not an array");
+        }],
+      ]);
+
+      const result = await mirrorUCDFiles({
+        versions: ["16.0.0"],
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.errors).toHaveLength(1);
+      expect(result.errors?.[0]?.message).toContain("Invalid response format for version 16.0.0");
+    });
+
+    it("should handle mixed success and failure scenarios", async () => {
+      mockFetch([
+        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
+          return HttpResponse.json(mockFileEntries);
+        }],
+        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/99.0.0", () => {
+          return new HttpResponse(null, { status: 404 });
+        }],
+      ]);
+
+      const result = await mirrorUCDFiles({
+        versions: ["16.0.0", "99.0.0"],
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.errors).toHaveLength(1);
+      expect(result.locatedFiles).toContain("16.0.0/UnicodeData.txt");
+      expect(result.errors?.[0]?.version).toBe("99.0.0");
+    });
+
+    it("should handle filesystem errors during directory creation", async () => {
+      const mockFs = {
+        readFile: vi.fn().mockResolvedValue("test content"),
+        mkdir: vi.fn().mockRejectedValue(new Error("Permission denied")),
+      };
+
+      mockFetch([
+        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
+          return HttpResponse.json(mockFileEntries);
+        }],
+      ]);
+
+      const result = await mirrorUCDFiles({
+        versions: ["16.0.0"],
+        fs: mockFs,
+      });
+
+      expect(result.success).toBe(false);
+      expect(result.errors).toHaveLength(1);
+      expect(result.errors?.[0]?.message).toContain("Error processing version 16.0.0");
+      expect(result.errors?.[0]?.message).toContain("Permission denied");
+    });
+  });
+
+  describe("configuration options", () => {
+    it("should use default basePath when not provided", async () => {
+      const mockFs = {
+        readFile: vi.fn().mockResolvedValue("test content"),
+        mkdir: vi.fn().mockResolvedValue(undefined),
+      };
+
+      mockFetch([
+        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
+          return HttpResponse.json([{ name: "UnicodeData.txt", path: "UnicodeData.txt" }]);
+        }],
+      ]);
+
+      await mirrorUCDFiles({
+        versions: ["16.0.0"],
+        fs: mockFs,
+      });
+
+      expect(mockFs.mkdir).toHaveBeenCalledWith(path.resolve("./ucd-files/v16.0.0"), { recursive: true });
+    });
+
+    it("should handle empty patterns array", async () => {
+      mockFetch([
+        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
+          return HttpResponse.json(mockFileEntries);
+        }],
+      ]);
+
+      const result = await mirrorUCDFiles({
+        versions: ["16.0.0"],
+        patterns: [],
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.locatedFiles.length).toBeGreaterThan(0);
+    });
+
+    it("should work without any optional parameters", async () => {
+      mockFetch([
+        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
+          return HttpResponse.json([{ name: "UnicodeData.txt", path: "UnicodeData.txt" }]);
+        }],
+      ]);
+
+      const result = await mirrorUCDFiles({
+        versions: ["16.0.0"],
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.locatedFiles).toContain("16.0.0/UnicodeData.txt");
+    });
+  });
+
+  describe("nested file structures", () => {
+    it("should handle deeply nested file structures", async () => {
+      const nestedFileEntries = [
+        {
+          name: "level1",
+          path: "level1",
+          children: [
+            {
+              name: "level2",
+              path: "level2",
+              children: [
+                {
+                  name: "level3",
+                  path: "level3",
+                  children: [
+                    {
+                      name: "deep-file.txt",
+                      path: "deep-file.txt",
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ];
+
+      mockFetch([
+        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
+          return HttpResponse.json(nestedFileEntries);
+        }],
+      ]);
+
+      const result = await mirrorUCDFiles({
+        versions: ["16.0.0"],
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.locatedFiles).toContain("16.0.0/level1/level2/level3/deep-file.txt");
+    });
+
+    it("should handle empty directories correctly", async () => {
+      const entriesWithEmptyDir = [
+        {
+          name: "UnicodeData.txt",
+          path: "UnicodeData.txt",
+        },
+        {
+          name: "empty-dir",
+          path: "empty-dir",
+          children: [],
+        },
+      ];
+
+      mockFetch([
+        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
+          return HttpResponse.json(entriesWithEmptyDir);
+        }],
+      ]);
+
+      const result = await mirrorUCDFiles({
+        versions: ["16.0.0"],
+      });
+
+      expect(result.success).toBe(true);
+      expect(result.locatedFiles).toContain("16.0.0/UnicodeData.txt");
+      expect(result.locatedFiles.some((f) => f.includes("empty-dir"))).toBe(false);
     });
   });
 });
