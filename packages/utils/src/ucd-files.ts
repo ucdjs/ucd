@@ -152,7 +152,7 @@ async function internal_mirrorUnicodeVersion(version: string, mirrorOptions: int
       },
     });
 
-    if (error) {
+    if (error != null || !response.ok) {
       return {
         locatedFiles,
         files,
