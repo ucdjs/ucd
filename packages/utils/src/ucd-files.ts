@@ -211,7 +211,7 @@ interface InternalProcessEntriesOptions {
   basePath: string;
   versionOutputDir: string;
   currentDirPath?: string;
-  fs?: FSAdapter;
+  fs: FSAdapter;
   entries: UnicodeVersionFile[];
   errors: DownloadError[];
   files: string[];
@@ -226,7 +226,7 @@ async function internal__processEntries(
     versionOutputDir,
     version,
     currentDirPath = "",
-    fs = await createDefaultFSAdapter(),
+    fs,
     errors,
     files,
   } = options;
