@@ -186,7 +186,7 @@ async function internal_mirrorUnicodeVersion(version: string, mirrorOptions: int
       versionOutputDir,
       version,
       currentDirPath: "",
-      fs: await createDefaultFSAdapter(),
+      fs,
       // pass the errors array to collect errors during processing
       errors,
       // for tracking downloaded files
