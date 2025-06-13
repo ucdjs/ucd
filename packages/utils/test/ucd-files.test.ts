@@ -1,4 +1,3 @@
-import path from "node:path";
 import { mockFetch } from "#msw-utils";
 import { HttpResponse } from "msw";
 import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
