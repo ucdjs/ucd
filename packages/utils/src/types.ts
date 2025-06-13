@@ -5,4 +5,6 @@ import type { MakeDirectoryOptions, Mode } from "node:fs";
 export interface FSAdapter {
   readFile: (path: string) => Promise<string>;
   mkdir: (path: string, options?: Mode | MakeDirectoryOptions | null) => Promise<string | undefined>;
+  ensureDir: (path: string) => Promise<void>;
+  writeFile: (path: string, data: string) => Promise<void>;
 }

@@ -1,9 +1,11 @@
 import type { FSAdapter } from "./types";
-import path from "node:path";
+import path, { dirname } from "node:path";
 import { hasUCDFolderPath } from "@luxass/unicode-utils-new";
 import { createClient, type UnicodeVersionFile } from "@luxass/unicode-utils-new/fetch";
 import defu from "defu";
 import { createPathFilter, type FilterFn } from "./filter";
+
+const UNICODE_PROXY_URL = "https://unicode-proxy.ucdjs.dev";
 
 export interface MirrorOptions {
   /**
@@ -175,10 +177,21 @@ async function internal_mirrorUnicodeVersion(version: string, mirrorOptions: int
     }
 
     const filteredEntries = internal__filterEntriesRecursive(data, patternMatcher);
-    const _urlPath = `/${version}${hasUCDFolderPath(version) ? "/ucd" : ""}`;
+    const urlPath = `/${version}${hasUCDFolderPath(version) ? "/ucd" : ""}`;
     locatedFiles.push(...internal__flattenFilePaths(filteredEntries, `${version}`));
 
-    // await processFileEntries(filteredEntries, basePath, versionOutputDir, downloadedFiles, "", errors, version);
+    await internal__processEntries({
+      entries: filteredEntries,
+      basePath: urlPath,
+      versionOutputDir,
+      version,
+      currentDirPath: "",
+      fs: await createDefaultFSAdapter(),
+      // pass the errors array to collect errors during processing
+      errors,
+      // for tracking downloaded files
+      files,
+    });
   } catch (err) {
     errors.push({
       message: `Error processing version ${version}: ${(err as any).message}`,
@@ -191,6 +204,85 @@ async function internal_mirrorUnicodeVersion(version: string, mirrorOptions: int
     files,
     errors,
   };
+}
+
+interface InternalProcessEntriesOptions {
+  version: string;
+  basePath: string;
+  versionOutputDir: string;
+  currentDirPath?: string;
+  fs?: FSAdapter;
+  entries: UnicodeVersionFile[];
+  errors: DownloadError[];
+  files: string[];
+}
+
+async function internal__processEntries(
+  options: InternalProcessEntriesOptions,
+): Promise<void> {
+  const {
+    entries,
+    basePath,
+    versionOutputDir,
+    version,
+    currentDirPath = "",
+    fs = await createDefaultFSAdapter(),
+    errors,
+    files,
+  } = options;
+
+  const dirPromises = [];
+  const filePromises = [];
+
+  for (const entry of entries) {
+    const entryOutputPath = currentDirPath ? path.join(currentDirPath, entry.path) : entry.path;
+    const outputPath = path.join(versionOutputDir, entryOutputPath);
+
+    if (entry.children) {
+      dirPromises.push((async () => {
+        await fs.mkdir(outputPath, { recursive: true });
+        await internal__processEntries({
+          entries: entry.children || [],
+          basePath: `${basePath}/${entry.path}`,
+          versionOutputDir,
+          version,
+          currentDirPath: entryOutputPath,
+          fs,
+          errors,
+          files,
+        });
+      })());
+    } else {
+      filePromises.push((async () => {
+        try {
+          await fs.ensureDir(dirname(outputPath));
+          const url = `${UNICODE_PROXY_URL}${basePath}/${entry.path}`;
+          const response = await fetch(url);
+
+          if (!response.ok) {
+            errors.push({
+              message: `Failed to fetch ${entry.path}: ${response.status} ${response.statusText}`,
+              version,
+              file: entry.path,
+            });
+            return;
+          }
+
+          const content = await response.text();
+          await fs.writeFile(outputPath, content);
+          files.push(outputPath);
+        } catch (err) {
+          errors.push({
+            message: `Error downloading ${entry.path}: ${(err as any).message}`,
+            version,
+            file: entry.path,
+          });
+        }
+      })());
+    }
+  }
+
+  await Promise.all([...dirPromises, ...filePromises]);
 }
 
 function internal__flattenFilePaths(entries: UnicodeVersionFile[], prefix = ""): string[] {
@@ -252,6 +344,18 @@ export async function createDefaultFSAdapter(): Promise<FSAdapter> {
       },
       async mkdir(dirPath, options) {
         return fsModule.mkdir(dirPath, options);
+      },
+      async ensureDir(dirPath) {
+        try {
+          await fsModule.mkdir(dirPath, { recursive: true });
+        } catch (err) {
+          if ((err as NodeJS.ErrnoException).code !== "EEXIST") {
+            throw err;
+          }
+        }
+      },
+      async writeFile(filePath, data) {
+        await fsModule.writeFile(filePath, data, "utf-8");
       },
     };
   } catch (err) {
