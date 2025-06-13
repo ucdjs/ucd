@@ -225,6 +225,8 @@ describe("mirrorUCDFiles", () => {
       const mockFs = {
         readFile: vi.fn().mockResolvedValue("test content"),
         mkdir: vi.fn().mockResolvedValue(undefined),
+        ensureDir: vi.fn().mockResolvedValue(undefined),
+        writeFile: vi.fn().mockResolvedValue(undefined),
       };
 
       mockFetch([
