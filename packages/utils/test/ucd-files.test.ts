@@ -137,6 +137,7 @@ describe("mirrorUCDFiles", () => {
     });
 
     it("should use custom API URL when provided", async () => {
+      const testdirPath = await testdir({});
       const customApiUrl = "https://custom-api.example.com";
 
       mockFetch([
@@ -148,6 +149,7 @@ describe("mirrorUCDFiles", () => {
       const result = await mirrorUCDFiles({
         versions: ["16.0.0"],
         apiUrl: customApiUrl,
+        basePath: testdirPath,
       });
 
       expect(result.success).toBe(true);
@@ -156,6 +158,7 @@ describe("mirrorUCDFiles", () => {
 
   describe("filtering functionality", () => {
     it("should apply pattern filters to exclude files", async () => {
+      const testdirPath = await testdir({});
       mockFetch([
         ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
           return HttpResponse.json(mockFileEntries);
@@ -165,6 +168,7 @@ describe("mirrorUCDFiles", () => {
       const result = await mirrorUCDFiles({
         versions: ["16.0.0"],
         patterns: ["!**/ReadMe.txt"],
+        basePath: testdirPath,
       });
 
       expect(result.success).toBe(true);
@@ -174,6 +178,7 @@ describe("mirrorUCDFiles", () => {
     });
 
     it("should use custom pattern matcher function", async () => {
+      const testdirPath = await testdir({});
       mockFetch([
         ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
           return HttpResponse.json(mockFileEntries);
@@ -188,6 +193,7 @@ describe("mirrorUCDFiles", () => {
       const result = await mirrorUCDFiles({
         versions: ["16.0.0"],
         patternMatcher: customPatternMatcher,
+        basePath: testdirPath,
       });
 
       expect(result.success).toBe(true);
@@ -198,6 +204,7 @@ describe("mirrorUCDFiles", () => {
     });
 
     it("should prioritize patternMatcher over patterns array", async () => {
+      const testdirPath = await testdir({});
       mockFetch([
         ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
           return HttpResponse.json(mockFileEntries);
@@ -211,6 +218,7 @@ describe("mirrorUCDFiles", () => {
         versions: ["16.0.0"],
         patternMatcher: customPatternMatcher,
         patterns: ["!**/*"], // This should be ignored
+        basePath: testdirPath,
       });
 
       expect(result.success).toBe(true);
