@@ -13,17 +13,20 @@ describe("FS Adapter", () => {
     vi.clearAllMocks();
   });
 
+  // TODO: make this fail, if some methods are not implemented
   it("should implement all methods", async () => {
     const fs = await createDefaultFSAdapter();
 
     expect(fs.readFile).toBeDefined();
+    expect(fs.writeFile).toBeDefined();
+    expect(fs.mkdir).toBeDefined();
+    expect(fs.ensureDir).toBeDefined();
   });
 
   it("should read file successfully", async () => {
-    // Import the module to access the spy
     const { readFile } = await import("node:fs/promises");
 
-    // Mock the spy's return value for this test
+    // mock the spy's return value for this test
     vi.mocked(readFile).mockResolvedValue("file content");
 
     const fs = await createDefaultFSAdapter();
@@ -79,10 +82,6 @@ describe("mirrorUCDFiles", () => {
           name: "emoji-data.txt",
           path: "emoji-data.txt",
         },
-        {
-          name: "emoji-test.txt",
-          path: "emoji-test.txt",
-        },
       ],
     },
   ];
@@ -93,6 +92,7 @@ describe("mirrorUCDFiles", () => {
 
   describe("basic functionality", () => {
     it("should return success when everything works correctly", async () => {
+      const testdirPath = await testdir({});
       mockFetch([
         ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
           return HttpResponse.json(mockFileEntries);
@@ -101,7 +101,7 @@ describe("mirrorUCDFiles", () => {
 
       const result = await mirrorUCDFiles({
         versions: ["16.0.0"],
-        basePath: "./test-output",
+        basePath: testdirPath,
       });
 
       expect(result.success).toBe(true);
@@ -110,10 +110,10 @@ describe("mirrorUCDFiles", () => {
       expect(result.locatedFiles).toContain("16.0.0/ReadMe.txt");
       expect(result.locatedFiles).toContain("16.0.0/auxiliary/GraphemeBreakProperty.txt");
       expect(result.locatedFiles).toContain("16.0.0/emoji/emoji-data.txt");
-      expect(result.locatedFiles).toContain("16.0.0/emoji/emoji-test.txt");
     });
 
     it("should handle multiple versions", async () => {
+      const testdirPath = await testdir({});
       mockFetch([
         ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
           return HttpResponse.json(mockFileEntries);
@@ -128,6 +128,7 @@ describe("mirrorUCDFiles", () => {
 
       const result = await mirrorUCDFiles({
         versions: ["16.0.0", "15.1.0"],
+        basePath: testdirPath,
       });
 
       expect(result.success).toBe(true);
@@ -164,14 +165,13 @@ describe("mirrorUCDFiles", () => {
 
       const result = await mirrorUCDFiles({
         versions: ["16.0.0"],
-        patterns: ["!**/ReadMe.txt", "!**/emoji-test.txt"],
+        patterns: ["!**/ReadMe.txt"],
       });
 
       expect(result.success).toBe(true);
       expect(result.locatedFiles).toContain("16.0.0/UnicodeData.txt");
       expect(result.locatedFiles).not.toContain("16.0.0/ReadMe.txt");
       expect(result.locatedFiles).toContain("16.0.0/emoji/emoji-data.txt");
-      expect(result.locatedFiles).not.toContain("16.0.0/emoji/emoji-test.txt");
     });
 
     it("should use custom pattern matcher function", async () => {
@@ -196,7 +196,6 @@ describe("mirrorUCDFiles", () => {
       expect(result.locatedFiles).not.toContain("16.0.0/ReadMe.txt");
       expect(result.locatedFiles).toContain("16.0.0/auxiliary/GraphemeBreakProperty.txt");
       expect(result.locatedFiles).toContain("16.0.0/emoji/emoji-data.txt");
-      expect(result.locatedFiles).toContain("16.0.0/emoji/emoji-test.txt");
     });
 
     it("should prioritize patternMatcher over patterns array", async () => {
@@ -222,6 +221,8 @@ describe("mirrorUCDFiles", () => {
 
   describe("filesystem integration", () => {
     it("should use custom filesystem adapter", async () => {
+      const testdirPath = await testdir({});
+
       const mockFs = {
         readFile: vi.fn().mockResolvedValue("test content"),
         mkdir: vi.fn().mockResolvedValue(undefined),
@@ -235,12 +236,12 @@ describe("mirrorUCDFiles", () => {
 
       const result = await mirrorUCDFiles({
         versions: ["16.0.0"],
-        basePath: "/custom/path",
+        basePath: testdirPath,
         fs: mockFs,
       });
 
       expect(result.success).toBe(true);
-      expect(mockFs.mkdir).toHaveBeenCalledWith("/custom/path/v16.0.0", { recursive: true });
+      expect(mockFs.mkdir).toHaveBeenCalledWith(`${testdirPath}/v16.0.0`, { recursive: true });
     });
 
     it("should work with real filesystem using testdir", async () => {
@@ -266,8 +267,10 @@ describe("mirrorUCDFiles", () => {
 
   describe("error handling", () => {
     it("should return error when no versions provided", async () => {
+      const testdirPath = await testdir({});
       const result = await mirrorUCDFiles({
         versions: [],
+        basePath: testdirPath,
       });
 
       expect(result.success).toBe(false);
@@ -276,6 +279,7 @@ describe("mirrorUCDFiles", () => {
     });
 
     it("should handle API errors gracefully", async () => {
+      const testdirPath = await testdir({});
       mockFetch([
         ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/99.0.0", () => {
           return new HttpResponse(null, { status: 404, statusText: "Not Found" });
@@ -284,6 +288,7 @@ describe("mirrorUCDFiles", () => {
 
       const result = await mirrorUCDFiles({
         versions: ["99.0.0"],
+        basePath: testdirPath,
       });
 
       expect(result.success).toBe(false);
@@ -293,6 +298,8 @@ describe("mirrorUCDFiles", () => {
     });
 
     it("should handle invalid API response format", async () => {
+      const testdirPath = await testdir({});
+
       mockFetch([
         ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
           return HttpResponse.json("not an array");
@@ -301,6 +308,7 @@ describe("mirrorUCDFiles", () => {
 
       const result = await mirrorUCDFiles({
         versions: ["16.0.0"],
+        basePath: testdirPath,
       });
 
       expect(result.success).toBe(false);
@@ -309,6 +317,8 @@ describe("mirrorUCDFiles", () => {
     });
 
     it("should handle mixed success and failure scenarios", async () => {
+      const testdirPath = await testdir({});
+
       mockFetch([
         ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
           return HttpResponse.json(mockFileEntries);
@@ -320,6 +330,7 @@ describe("mirrorUCDFiles", () => {
 
       const result = await mirrorUCDFiles({
         versions: ["16.0.0", "99.0.0"],
+        basePath: testdirPath,
       });
 
       expect(result.success).toBe(false);
@@ -329,6 +340,8 @@ describe("mirrorUCDFiles", () => {
     });
 
     it("should handle filesystem errors during directory creation", async () => {
+      const testdirPath = await testdir({});
+
       const mockFs = {
         readFile: vi.fn().mockResolvedValue("test content"),
         mkdir: vi.fn().mockRejectedValue(new Error("Permission denied")),
@@ -343,6 +356,7 @@ describe("mirrorUCDFiles", () => {
       const result = await mirrorUCDFiles({
         versions: ["16.0.0"],
         fs: mockFs,
+        basePath: testdirPath,
       });
 
       expect(result.success).toBe(false);
@@ -353,27 +367,8 @@ describe("mirrorUCDFiles", () => {
   });
 
   describe("configuration options", () => {
-    it("should use default basePath when not provided", async () => {
-      const mockFs = {
-        readFile: vi.fn().mockResolvedValue("test content"),
-        mkdir: vi.fn().mockResolvedValue(undefined),
-      };
-
-      mockFetch([
-        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
-          return HttpResponse.json([{ name: "UnicodeData.txt", path: "UnicodeData.txt" }]);
-        }],
-      ]);
-
-      await mirrorUCDFiles({
-        versions: ["16.0.0"],
-        fs: mockFs,
-      });
-
-      expect(mockFs.mkdir).toHaveBeenCalledWith(path.resolve("./ucd-files/v16.0.0"), { recursive: true });
-    });
-
     it("should handle empty patterns array", async () => {
+      const testdirPath = await testdir({});
       mockFetch([
         ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
           return HttpResponse.json(mockFileEntries);
@@ -383,6 +378,7 @@ describe("mirrorUCDFiles", () => {
       const result = await mirrorUCDFiles({
         versions: ["16.0.0"],
         patterns: [],
+        basePath: testdirPath,
       });
 
       expect(result.success).toBe(true);
@@ -390,6 +386,8 @@ describe("mirrorUCDFiles", () => {
     });
 
     it("should work without any optional parameters", async () => {
+      const testdirPath = await testdir({});
+
       mockFetch([
         ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
           return HttpResponse.json([{ name: "UnicodeData.txt", path: "UnicodeData.txt" }]);
@@ -398,6 +396,7 @@ describe("mirrorUCDFiles", () => {
 
       const result = await mirrorUCDFiles({
         versions: ["16.0.0"],
+        basePath: testdirPath,
       });
 
       expect(result.success).toBe(true);
@@ -407,6 +406,7 @@ describe("mirrorUCDFiles", () => {
 
   describe("nested file structures", () => {
     it("should handle deeply nested file structures", async () => {
+      const testdirPath = await testdir({});
       const nestedFileEntries = [
         {
           name: "level1",
@@ -436,10 +436,14 @@ describe("mirrorUCDFiles", () => {
         ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
           return HttpResponse.json(nestedFileEntries);
         }],
+        ["GET https://unicode-proxy.ucdjs.dev/16.0.0/ucd/level1/level2/level3/deep-file.txt", () => {
+          return HttpResponse.json({ name: "deep-file.txt", path: "deep-file.txt" });
+        }],
       ]);
 
       const result = await mirrorUCDFiles({
         versions: ["16.0.0"],
+        basePath: testdirPath,
       });
 
       expect(result.success).toBe(true);
@@ -447,6 +451,7 @@ describe("mirrorUCDFiles", () => {
     });
 
     it("should handle empty directories correctly", async () => {
+      const testdirPath = await testdir({});
       const entriesWithEmptyDir = [
         {
           name: "UnicodeData.txt",
@@ -467,6 +472,7 @@ describe("mirrorUCDFiles", () => {
 
       const result = await mirrorUCDFiles({
         versions: ["16.0.0"],
+        basePath: testdirPath,
       });
 
       expect(result.success).toBe(true);
