@@ -346,6 +346,8 @@ describe("mirrorUCDFiles", () => {
       const mockFs = {
         readFile: vi.fn().mockResolvedValue("test content"),
         mkdir: vi.fn().mockRejectedValue(new Error("Permission denied")),
+        ensureDir: vi.fn().mockResolvedValue(undefined),
+        writeFile: vi.fn().mockResolvedValue(undefined),
       };
 
       mockFetch([
