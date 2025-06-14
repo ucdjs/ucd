@@ -501,6 +501,27 @@ describe("mirrorUCDFiles", () => {
 });
 
 describe("validateUCDFiles", () => {
+  const MOCK_UCD_FILES = [
+    {
+      name: "UnicodeData.txt",
+      path: "UnicodeData.txt",
+    },
+    {
+      name: "Blocks.txt",
+      path: "Blocks.txt",
+    },
+    {
+      name: "emojis",
+      path: "emojis",
+      children: [
+        {
+          name: "emoji-data.txt",
+          path: "emoji-data.txt",
+        },
+      ],
+    },
+  ];
+
   it("should validate files correctly", async () => {
     const testdirPath = await testdir({
       "v16.0.0": {
@@ -510,26 +531,7 @@ describe("validateUCDFiles", () => {
 
     mockFetch([
       ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
-        return HttpResponse.json([
-          {
-            name: "UnicodeData.txt",
-            path: "UnicodeData.txt",
-          },
-          {
-            name: "Blocks.txt",
-            path: "Blocks.txt",
-          },
-          {
-            name: "emojis",
-            path: "emojis",
-            children: [
-              {
-                name: "emoji-data.txt",
-                path: "emoji-data.txt",
-              },
-            ],
-          },
-        ]);
+        return HttpResponse.json(MOCK_UCD_FILES);
       }],
     ]);
 
@@ -538,7 +540,7 @@ describe("validateUCDFiles", () => {
       basePath: testdirPath,
     });
 
-    expect(result).toEqual([
+    expect(result.missingFiles).toEqual([
       "Blocks.txt",
       "emojis/emoji-data.txt",
     ]);
