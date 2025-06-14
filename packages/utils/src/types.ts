@@ -7,4 +7,6 @@ export interface FSAdapter {
   mkdir: (path: string, options?: Mode | MakeDirectoryOptions | null) => Promise<string | undefined>;
   ensureDir: (path: string) => Promise<void>;
   writeFile: (path: string, data: string) => Promise<void>;
+  exists: (path: string) => Promise<boolean>;
+  readdir: (path: string) => Promise<string[]>;
 }
