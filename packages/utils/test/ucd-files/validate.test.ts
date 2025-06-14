@@ -266,7 +266,7 @@ describe("validateUCDFiles", () => {
         fs: mockFs,
       });
 
-      expect(mockFs.readdir).toHaveBeenCalledWith(`${testdirPath}/v16.0.0`);
+      expect(mockFs.readdir).toHaveBeenCalledWith(`${testdirPath}/v16.0.0`, true);
       expect(result.missingFiles).toEqual([
         "Blocks.txt",
         "emojis/emoji-data.txt",
