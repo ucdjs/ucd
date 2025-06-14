@@ -5,11 +5,12 @@ export interface CLIStoreInitCmdOptions {
   flags: CLIArguments<{
     storeDir?: string;
     patterns?: string[];
+    force?: boolean;
   }>;
-  versions: string;
+  versions: string[];
 }
 
-export async function runInitStore({ flags }: CLIStoreInitCmdOptions) {
+export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) {
   if (flags?.help || flags?.h) {
     printHelp({
       headline: "Initialize an UCD Store",
@@ -19,6 +20,7 @@ export async function runInitStore({ flags }: CLIStoreInitCmdOptions) {
         Flags: [
           ["--patterns", "Glob patterns to match UCD files."],
           ["--store-dir", "Directory to store the UCD files."],
+          ["--force", "Overwrite existing files if they already exist."],
           ["--help (-h)", "See all available flags."],
         ],
       },
@@ -26,6 +28,12 @@ export async function runInitStore({ flags }: CLIStoreInitCmdOptions) {
     return;
   }
 
+  if (!versions || versions.length === 0) {
+    console.error("Error: At least one Unicode version must be specified.");
+    console.error("Usage: ucd store init <versions...>");
+    return;
+  }
+
   // eslint-disable-next-line no-console
-  console.log("Initializing UCD Store...");
+  console.log(`Initializing UCD Store with versions: ${versions.join(", ")}...`);
 }
