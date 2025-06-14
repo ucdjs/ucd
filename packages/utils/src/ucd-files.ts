@@ -431,6 +431,9 @@ export async function validateUCDFiles(options: ValidateUCDFilesOptions): Promis
     return !files.includes(file) || !patternMatcher(filePath);
   });
 
+  // TODO(@luxass): maybe we should also return the files that are present but not required?
+  // This would help in identifying any extra files that might have been added unintentionally.
+
   return missingFiles;
 }
 
