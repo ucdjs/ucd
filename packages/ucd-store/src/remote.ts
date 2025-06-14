@@ -3,6 +3,7 @@ import { hasUCDFolderPath, UNICODE_VERSION_METADATA } from "@luxass/unicode-util
 import { createClient, type UnicodeVersionFile } from "@luxass/unicode-utils-new/fetch";
 import { promiseRetry } from "@luxass/utils";
 import { createPathFilter, type FilterFn } from "@ucdjs/utils";
+import { flattenFilePaths } from "@ucdjs/utils/ucd-files";
 import { resolveUCDStoreOptions } from "./store";
 
 export type RemoteUCDStoreOptions = UCDStoreOptions;
@@ -109,7 +110,7 @@ export class RemoteUCDStore implements UCDStore {
 
   async getFilePaths(version: string): Promise<string[]> {
     const fileStructure = await this.getFileTree(version);
-    return this.flattenFilePaths(fileStructure);
+    return flattenFilePaths(fileStructure);
   }
 
   clearCache(): void {
@@ -127,21 +128,5 @@ export class RemoteUCDStore implements UCDStore {
         ...(item.children ? { children: this.processFileStructure(item.children) } : {}),
       };
     }).filter((item) => item != null);
-  }
-
-  private flattenFilePaths(files: UnicodeVersionFile[], basePath: string = ""): string[] {
-    const paths: string[] = [];
-
-    for (const file of files) {
-      const fullPath = basePath ? `${basePath}/${file.name}` : file.name;
-
-      if (file.children) {
-        paths.push(...this.flattenFilePaths(file.children, fullPath));
-      } else {
-        paths.push(fullPath);
-      }
-    }
-
-    return paths;
   }
 }
