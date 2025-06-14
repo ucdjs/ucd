@@ -111,7 +111,9 @@ export async function validateUCDFiles(version: string, options: ValidateUCDFile
 
     const requiredFiles = internal__flattenFilePaths(data);
 
-    const files = await fs.readdir(versionOutputDir);
+    // TODO: figure out how we can remove directories from the list?
+    // Since the directories is already a part of a file path.
+    const files = (await fs.readdir(versionOutputDir, true));
 
     const missingFiles = requiredFiles.filter((file) => {
       const filePath = path.join(versionOutputDir, file);
