@@ -4,7 +4,7 @@ import { createClient } from "@luxass/unicode-utils-new/fetch";
 import defu from "defu";
 import { createPathFilter, type FilterFn } from "../filter";
 import { createDefaultFSAdapter } from "./fs-adapter";
-import { internal__flattenFilePaths } from "./internal";
+import { flattenFilePaths } from "./helpers";
 
 export interface ValidateUCDFilesOptions {
   /**
@@ -100,7 +100,7 @@ export async function validateUCDFiles(version: string, options: ValidateUCDFile
       throw new TypeError(`Invalid response format for version ${version}`);
     }
 
-    const requiredFiles = internal__flattenFilePaths(data);
+    const requiredFiles = flattenFilePaths(data);
 
     // Get all files, including those in subdirectories
     const allPaths = await fs.readdir(versionOutputDir, true);
