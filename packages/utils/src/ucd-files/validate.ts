@@ -111,10 +111,17 @@ export async function validateUCDFiles(version: string, options: ValidateUCDFile
 
     const requiredFiles = internal__flattenFilePaths(data);
 
-    // TODO: figure out how we can remove directories from the list?
-    // Since the directories is already a part of a file path.
-    // e.g. [ 'Blocks.txt', 'UnicodeData.txt', 'emojis', 'emojis/emoji-data.txt' ]
-    const files = (await fs.readdir(versionOutputDir, true));
+    // Get all files, including those in subdirectories
+    const allPaths = await fs.readdir(versionOutputDir, true);
+
+    // Filter out directories, keeping only actual files
+    const files = allPaths.filter((filePath) => {
+      // A pure directory path would have been included as part of a file path
+      // Check if this path itself is present as a prefix in any other path
+      return !allPaths.some((otherPath) =>
+        otherPath !== filePath && otherPath.startsWith(`${filePath}/`),
+      );
+    });
 
     const missingFiles = requiredFiles.filter((file) => {
       const filePath = path.join(versionOutputDir, file);
