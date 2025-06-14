@@ -75,8 +75,8 @@ catalogs:
       specifier: ^0.9.0
       version: 0.9.0
     '@luxass/unicode-utils-new':
-      specifier: npm:@luxass/unicode-utils@0.12.0-beta.7
-      version: 0.12.0-beta.7
+      specifier: npm:@luxass/unicode-utils@0.12.0-beta.8
+      version: 0.12.0-beta.8
     '@luxass/utils':
       specifier: ^2.3.0
       version: 2.3.0
@@ -248,7 +248,7 @@ importers:
     dependencies:
       '@luxass/unicode-utils-new':
         specifier: catalog:prod
-        version: '@luxass/unicode-utils@0.12.0-beta.7'
+        version: '@luxass/unicode-utils@0.12.0-beta.8'
       '@luxass/utils':
         specifier: catalog:prod
         version: 2.3.0
@@ -297,7 +297,7 @@ importers:
     dependencies:
       '@luxass/unicode-utils-new':
         specifier: catalog:prod
-        version: '@luxass/unicode-utils@0.12.0-beta.7'
+        version: '@luxass/unicode-utils@0.12.0-beta.8'
       defu:
         specifier: catalog:prod
         version: 6.1.4
@@ -832,8 +832,8 @@ packages:
       prettier-plugin-astro:
         optional: true
 
-  '@luxass/unicode-utils@0.12.0-beta.7':
-    resolution: {integrity: sha512-bgBue2gNeXWJTwoXjAqdTpBPsm+SwUL/UEGxPurDHCAcb35zPCzCvhQjtKwx+f94Ip403umJBvPzKW1CQFUAjw==}
+  '@luxass/unicode-utils@0.12.0-beta.8':
+    resolution: {integrity: sha512-2aydH0oGG/I+3tdzcm/yKYtGyuk4TcT7FQmdrMCNC3vfgW/C1+C34ToNBObmYjyrxZjfr4wLVQo5rqf8gcMV3Q==}
 
   '@luxass/unicode-utils@0.9.0':
     resolution: {integrity: sha512-RNhEJ2pXiIRhmr/KGtAbl4jy2uwQjXMdRQKHZE1M1IgjkXa4/d8is5HtwxdKKcL0CCO3f4lGAeLOIhR6ACGNfg==}
@@ -3699,7 +3699,7 @@ snapshots:
       - typescript
       - vitest
 
-  '@luxass/unicode-utils@0.12.0-beta.7':
+  '@luxass/unicode-utils@0.12.0-beta.8':
     dependencies:
       '@luxass/utils': 2.3.0
       defu: 6.1.4

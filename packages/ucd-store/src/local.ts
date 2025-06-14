@@ -1,12 +1,11 @@
 import type { UnicodeVersionFile } from "@luxass/unicode-utils-new/fetch";
-import type { FsInterface } from "./fs-interface";
+import type { FSAdapter } from "@ucdjs/utils/types";
 import type { UCDStore, UCDStoreOptions } from "./store";
 import path from "node:path";
 import { invariant } from "@luxass/utils";
 import { createPathFilter, type FilterFn } from "@ucdjs/utils";
+import { createDefaultFSAdapter, mirrorUCDFiles } from "@ucdjs/utils/ucd-files";
 import { z } from "zod/v4";
-import { download, repairStore } from "./download";
-import { createDefaultFs } from "./fs-interface";
 import { resolveUCDStoreOptions } from "./store";
 
 export const UCD_STORE_SCHEMA = z.array(
@@ -36,7 +35,7 @@ export interface LocalUCDStoreOptions extends UCDStoreOptions {
   /**
    * Custom filesystem interface. If not provided, defaults to fs-extra implementation.
    */
-  fs?: FsInterface;
+  fs?: FSAdapter;
 }
 
 export class LocalUCDStore implements UCDStore {
@@ -46,7 +45,7 @@ export class LocalUCDStore implements UCDStore {
   private _versions: string[] = [];
   private _providedVersions?: string[];
   #filter: FilterFn;
-  #fs: FsInterface;
+  #fs: FSAdapter;
 
   constructor(options: LocalUCDStoreOptions = {}) {
     const {
@@ -63,16 +62,18 @@ export class LocalUCDStore implements UCDStore {
     this.basePath = path.resolve(basePath);
     this._providedVersions = options.versions;
 
-    this.#fs = options.fs || createDefaultFs();
+    // TODO: fix this!
+    this.#fs = options.fs!;
     this.#filter = createPathFilter(filters);
   }
 
   async bootstrap(): Promise<void> {
     invariant(this.basePath, "Base path is required for LocalUCDStore.");
+    this.#fs = this.#fs || (await createDefaultFSAdapter());
 
     // Check if the store is valid (has manifest file)
     const storeManifestPath = path.join(this.basePath, ".ucd-store.json");
-    const isValidStore = await this.#fs.pathExists(this.basePath) && await this.#fs.pathExists(storeManifestPath);
+    const isValidStore = await this.#fs.exists(this.basePath) && await this.#fs.exists(storeManifestPath);
 
     if (isValidStore) {
       // Load versions from existing store
@@ -96,7 +97,7 @@ export class LocalUCDStore implements UCDStore {
     const storeManifestPath = path.join(this.basePath, ".ucd-store.json");
 
     try {
-      const manifestContent = await this.#fs.readFile(storeManifestPath, "utf-8");
+      const manifestContent = await this.#fs.readFile(storeManifestPath);
       const manifestData = JSON.parse(manifestContent);
 
       // Validate the manifest data against the schema
@@ -115,8 +116,7 @@ export class LocalUCDStore implements UCDStore {
     // Create the base path if it doesn't exist
     await this.#fs.ensureDir(this.basePath);
 
-    // Call setupLocalUCDStore to download and initialize the store
-    await download({
+    await mirrorUCDFiles({
       versions,
       basePath: this.basePath,
       fs: this.#fs,
@@ -140,7 +140,7 @@ export class LocalUCDStore implements UCDStore {
     }));
 
     try {
-      await this.#fs.writeFile(storeManifestPath, JSON.stringify(manifestData, null, 2), "utf-8");
+      await this.#fs.writeFile(storeManifestPath, JSON.stringify(manifestData, null, 2));
     } catch (error) {
       throw new Error(
         `[ucd-store]: Failed to create store manifest: ${error instanceof Error ? error.message : String(error)}`,
@@ -149,29 +149,32 @@ export class LocalUCDStore implements UCDStore {
   }
 
   private async _validateAndRepairStore(): Promise<void> {
-    // Use the repairStore function to validate and repair the store
-    const repairResult = await repairStore(
-      {
-        basePath: this.basePath,
-        versions: this._versions,
-      },
-      {
-        patternMatcher: this.#filter,
-        concurrency: 5,
-        fs: this.#fs,
-      },
+    throw new Error(
+      `[ucd-store]: Validation and repair functionality is not implemented yet. Please implement the _validateAndRepairStore method.`,
     );
+    // // Use the repairStore function to validate and repair the store
+    // const repairResult = await repairStore(
+    //   {
+    //     basePath: this.basePath,
+    //     versions: this._versions,
+    //   },
+    //   {
+    //     patternMatcher: this.#filter,
+    //     concurrency: 5,
+    //     fs: this.#fs,
+    //   },
+    // );
 
-    // Log results
-    if (repairResult.totalMissingFiles > 0) {
-      if (repairResult.repairedFiles.length > 0) {
-        console.warn(`[ucd-store]: Successfully repaired ${repairResult.repairedFiles.length} out of ${repairResult.totalMissingFiles} missing files.`);
-      }
+    // // Log results
+    // if (repairResult.totalMissingFiles > 0) {
+    //   if (repairResult.repairedFiles.length > 0) {
+    //     console.warn(`[ucd-store]: Successfully repaired ${repairResult.repairedFiles.length} out of ${repairResult.totalMissingFiles} missing files.`);
+    //   }
 
-      if (repairResult.errors.length > 0) {
-        console.warn(`[ucd-store]: ${repairResult.errors.length} files failed to repair:`, repairResult.errors);
-      }
-    }
+    //   if (repairResult.errors.length > 0) {
+    //     console.warn(`[ucd-store]: ${repairResult.errors.length} files failed to repair:`, repairResult.errors);
+    //   }
+    // }
   }
 
   get versions(): string[] {
