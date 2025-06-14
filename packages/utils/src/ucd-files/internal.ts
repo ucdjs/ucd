@@ -5,8 +5,6 @@ import type { DownloadError, MirrorOptions } from "./mirror";
 import path, { dirname } from "node:path";
 import { hasUCDFolderPath } from "@luxass/unicode-utils-new";
 
-const UNICODE_PROXY_URL = "https://unicode-proxy.ucdjs.dev";
-
 type internal__MirrorUnicodeVersionOptions = Required<Omit<MirrorOptions, "versions" | "patterns">> & {
   client: ReturnType<typeof createClient>;
 };
@@ -95,6 +93,7 @@ interface InternalProcessEntriesOptions {
   entries: UnicodeVersionFile[];
   errors: DownloadError[];
   files: string[];
+  proxyUrl?: string;
 }
 
 export async function internal__processEntries(
@@ -109,6 +108,7 @@ export async function internal__processEntries(
     fs,
     errors,
     files,
+    proxyUrl = "https://unicode-proxy.ucdjs.dev",
   } = options;
 
   const dirPromises = [];
@@ -136,7 +136,7 @@ export async function internal__processEntries(
       filePromises.push((async () => {
         try {
           await fs.ensureDir(dirname(outputPath));
-          const url = `${UNICODE_PROXY_URL}${basePath}/${entry.path}`;
+          const url = `${proxyUrl}${basePath}/${entry.path}`;
           const response = await fetch(url);
 
           if (!response.ok) {
