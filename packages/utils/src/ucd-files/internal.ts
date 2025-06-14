@@ -1,0 +1,205 @@
+import type { createClient, UnicodeVersionFile } from "@luxass/unicode-utils-new/fetch";
+import type { FilterFn } from "../filter";
+import type { FSAdapter } from "../types";
+import type { DownloadError, MirrorOptions } from "./mirror";
+import path, { dirname } from "node:path";
+import { hasUCDFolderPath } from "@luxass/unicode-utils-new";
+
+const UNICODE_PROXY_URL = "https://unicode-proxy.ucdjs.dev";
+
+type internal__MirrorUnicodeVersionOptions = Required<Omit<MirrorOptions, "versions" | "patterns">> & {
+  client: ReturnType<typeof createClient>;
+};
+
+export async function internal_mirrorUnicodeVersion(version: string, mirrorOptions: internal__MirrorUnicodeVersionOptions): Promise<{
+  locatedFiles: string[];
+  files: string[];
+  errors: DownloadError[];
+}> {
+  const { basePath, fs, patternMatcher, client } = mirrorOptions;
+  const versionOutputDir = path.resolve(basePath, `v${version}`);
+
+  const locatedFiles: string[] = [];
+  // downloaded files
+  const files: string[] = [];
+  const errors: DownloadError[] = [];
+  try {
+    await fs.mkdir(versionOutputDir, { recursive: true });
+
+    const { data, error, response } = await client.GET("/api/v1/unicode-files/{version}", {
+      params: {
+        path: {
+          version,
+        },
+      },
+    });
+
+    if (error != null || !response.ok) {
+      return {
+        locatedFiles,
+        files,
+        errors: [{
+          message: `Failed to fetch file list for version ${version}: ${response.status} ${response.statusText}`,
+          version,
+        }],
+      };
+    }
+
+    if (!Array.isArray(data)) {
+      return {
+        locatedFiles,
+        files,
+        errors: [{
+          message: `Invalid response format for version ${version}`,
+          version,
+        }],
+      };
+    }
+
+    const filteredEntries = internal__filterEntriesRecursive(data, patternMatcher);
+    const urlPath = `/${version}${hasUCDFolderPath(version) ? "/ucd" : ""}`;
+    locatedFiles.push(...internal__flattenFilePaths(filteredEntries, `${version}`));
+
+    await internal__processEntries({
+      entries: filteredEntries,
+      basePath: urlPath,
+      versionOutputDir,
+      version,
+      currentDirPath: "",
+      fs,
+      // pass the errors array to collect errors during processing
+      errors,
+      // for tracking downloaded files
+      files,
+    });
+  } catch (err) {
+    errors.push({
+      message: `Error processing version ${version}: ${(err as any).message}`,
+      version,
+    });
+  }
+
+  return {
+    locatedFiles,
+    files,
+    errors,
+  };
+}
+
+interface InternalProcessEntriesOptions {
+  version: string;
+  basePath: string;
+  versionOutputDir: string;
+  currentDirPath?: string;
+  fs: FSAdapter;
+  entries: UnicodeVersionFile[];
+  errors: DownloadError[];
+  files: string[];
+}
+
+export async function internal__processEntries(
+  options: InternalProcessEntriesOptions,
+): Promise<void> {
+  const {
+    entries,
+    basePath,
+    versionOutputDir,
+    version,
+    currentDirPath = "",
+    fs,
+    errors,
+    files,
+  } = options;
+
+  const dirPromises = [];
+  const filePromises = [];
+
+  for (const entry of entries) {
+    const entryOutputPath = currentDirPath ? path.join(currentDirPath, entry.path) : entry.path;
+    const outputPath = path.join(versionOutputDir, entryOutputPath);
+
+    if (entry.children) {
+      dirPromises.push((async () => {
+        await fs.mkdir(outputPath, { recursive: true });
+        await internal__processEntries({
+          entries: entry.children || [],
+          basePath: `${basePath}/${entry.path}`,
+          versionOutputDir,
+          version,
+          currentDirPath: entryOutputPath,
+          fs,
+          errors,
+          files,
+        });
+      })());
+    } else {
+      filePromises.push((async () => {
+        try {
+          await fs.ensureDir(dirname(outputPath));
+          const url = `${UNICODE_PROXY_URL}${basePath}/${entry.path}`;
+          const response = await fetch(url);
+
+          if (!response.ok) {
+            errors.push({
+              message: `Failed to fetch ${entry.path}: ${response.status} ${response.statusText}`,
+              version,
+              file: entry.path,
+            });
+            return;
+          }
+
+          const content = await response.text();
+          await fs.writeFile(outputPath, content);
+          files.push(outputPath);
+        } catch (err) {
+          errors.push({
+            message: `Error downloading ${entry.path}: ${(err as any).message}`,
+            version,
+            file: entry.path,
+          });
+        }
+      })());
+    }
+  }
+
+  await Promise.all([...dirPromises, ...filePromises]);
+}
+
+export function internal__filterEntriesRecursive(entries: UnicodeVersionFile[], patternMatcher: FilterFn): UnicodeVersionFile[] {
+  function filterEntries(entryList: UnicodeVersionFile[], prefix = ""): UnicodeVersionFile[] {
+    const result: UnicodeVersionFile[] = [];
+    for (const entry of entryList) {
+      const fullPath = prefix ? `${prefix}/${entry.path}` : entry.path;
+
+      if (!entry.children) {
+        if (patternMatcher(fullPath)) {
+          result.push(entry);
+        }
+      } else {
+        const filteredChildren = filterEntries(entry.children, fullPath);
+        if (filteredChildren.length > 0) {
+          result.push({ ...entry, children: filteredChildren });
+        }
+      }
+    }
+    return result;
+  }
+
+  return filterEntries(entries);
+}
+
+export function internal__flattenFilePaths(entries: UnicodeVersionFile[], prefix = ""): string[] {
+  const paths: string[] = [];
+
+  for (const file of entries) {
+    const fullPath = prefix ? `${prefix}/${file.name}` : file.name;
+
+    if (file.children) {
+      paths.push(...internal__flattenFilePaths(file.children, fullPath));
+    } else {
+      paths.push(fullPath);
+    }
+  }
+
+  return paths;
+}
