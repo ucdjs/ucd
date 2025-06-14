@@ -1,5 +1,6 @@
 import type { FSAdapter } from "../types";
 import path from "node:path";
+import { buildUCDPath } from "@luxass/unicode-utils-new";
 import { createClient } from "@luxass/unicode-utils-new/fetch";
 import defu from "defu";
 import { createPathFilter, type FilterFn } from "../filter";

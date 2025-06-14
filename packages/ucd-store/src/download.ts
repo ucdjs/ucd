@@ -1,41 +1,6 @@
-import type { FsInterface } from "./fs-interface";
 import path, { dirname } from "node:path";
-import { hasUCDFolderPath } from "@luxass/unicode-utils-new";
+import { buildUCDPath } from "@luxass/unicode-utils-new";
 import { createPathFilter, type FilterFn } from "@ucdjs/utils";
-import { createDefaultFs } from "./fs-interface";
-
-interface DownloadOptions {
-  /**
-   * List of Unicode versions to download files for.
-   * Each version should be a string representing the Unicode version (e.g., "15.0.0", "14.0.0").
-   */
-  versions: string[];
-
-  /**
-   * A Pattern matcher function to filter files based on their names.
-   * This function should take a file name as input and return true if the file should be included in the download.
-   */
-  patternMatcher?: FilterFn;
-
-  /**
-   * Optional patterns to use for filtering files.
-   * This will only be used if `patternMatcher` is not provided.
-   * Patterns should be in the format understood by `picomatch`.
-   */
-  patterns?: string[];
-
-  /**
-   * Optional base path where files will be downloaded.
-   * Defaults to "./ucd-files" if not provided.
-   */
-  basePath?: string;
-
-  /**
-   * Optional filesystem interface to use for file operations.
-   * If not provided, a default implementation using fs-extra will be used.
-   */
-  fs?: FsInterface;
-}
 
 interface DownloadError {
   message: string;
@@ -102,158 +67,8 @@ interface RepairResult {
   errors: DownloadError[];
 }
 
-const CONCURRENCY_LIMIT = 3;
-
 const API_URL = "https://unicode-api.luxass.dev/api/v1";
 const UNICODE_PROXY_URL = "https://unicode-proxy.ucdjs.dev";
-
-export async function download(options: DownloadOptions): Promise<DownloadResult> {
-  const {
-    versions,
-    basePath = path.resolve("./ucd-files"),
-    fs = createDefaultFs(),
-    patternMatcher: providedPatternMatcher,
-    patterns = [],
-  } = options;
-
-  if (versions.length === 0) {
-    return {
-      errors: [{ message: "No versions provided. Please provide at least one version." }],
-      downloadedFiles: [],
-    };
-  }
-
-  const allDownloadedFiles: string[] = [];
-  const allErrors: DownloadError[] = [];
-
-  const patternMatcher = providedPatternMatcher || createPathFilter(patterns);
-
-  async function processFileEntries(
-    entries: FileEntry[],
-    basePath: string,
-    versionOutputDir: string,
-    downloadedFiles: string[],
-    currentDirPath: string = "",
-    errors: DownloadError[],
-    version: string,
-  ): Promise<void> {
-    const dirPromises = [];
-    const filePromises = [];
-
-    for (const entry of entries) {
-      const entryOutputPath = currentDirPath ? path.join(currentDirPath, entry.path) : entry.path;
-      const outputPath = path.join(versionOutputDir, entryOutputPath);
-
-      if (entry.children) {
-        dirPromises.push((async () => {
-          await fs.mkdir(outputPath, { recursive: true });
-          await processFileEntries(entry.children || [], `${basePath}/${entry.path}`, versionOutputDir, downloadedFiles, entryOutputPath, errors, version);
-        })());
-      } else {
-        filePromises.push((async () => {
-          try {
-            await fs.ensureDir(dirname(outputPath));
-            const url = `${UNICODE_PROXY_URL}${basePath}/${entry.path}`;
-            const response = await fetch(url);
-
-            if (!response.ok) {
-              errors.push({
-                message: `Failed to fetch ${entry.path}: ${response.status} ${response.statusText}`,
-                version,
-                file: entry.path,
-              });
-              return;
-            }
-
-            const content = await response.text();
-            await fs.writeFile(outputPath, content);
-            downloadedFiles.push(outputPath);
-          } catch (err) {
-            errors.push({
-              message: `Error downloading ${entry.path}: ${(err as any).message}`,
-              version,
-              file: entry.path,
-            });
-          }
-        })());
-      }
-    }
-
-    await Promise.all([...dirPromises, ...filePromises]);
-  }
-
-  async function processVersion(
-    version: string,
-  ): Promise<{
-      downloadedFiles: string[];
-      errors: DownloadError[];
-    }> {
-    const downloadedFiles: string[] = [];
-    const errors: DownloadError[] = [];
-
-    const versionOutputDir = path.resolve(basePath, `v${version}`);
-
-    try {
-      await fs.mkdir(versionOutputDir, { recursive: true });
-
-      const filesResponse = await fetch(`${API_URL}/unicode-files/${version}`);
-
-      if (!filesResponse.ok) {
-        return {
-          downloadedFiles,
-          errors: [{
-            message: `Failed to fetch file list for version ${version}: ${filesResponse.status} ${filesResponse.statusText}`,
-            version,
-          }],
-        };
-      }
-
-      const fileEntries = await filesResponse.json();
-
-      if (!Array.isArray(fileEntries)) {
-        return {
-          downloadedFiles,
-          errors: [{
-            message: `Invalid response format for version ${version}`,
-            version,
-          }],
-        };
-      }
-
-      const filteredEntries = filterEntriesRecursive(fileEntries, patternMatcher);
-      const basePath = `/${version}${hasUCDFolderPath(version) ? "/ucd" : ""}`;
-
-      await processFileEntries(filteredEntries, basePath, versionOutputDir, downloadedFiles, "", errors, version);
-    } catch (err) {
-      errors.push({
-        message: `Error processing version ${version}: ${(err as any).message}`,
-        version,
-      });
-    }
-
-    return { downloadedFiles, errors };
-  }
-
-  // Process versions in batches
-  const versionGroups = [];
-  for (let i = 0; i < versions.length; i += CONCURRENCY_LIMIT) {
-    versionGroups.push(versions.slice(i, i + CONCURRENCY_LIMIT));
-  }
-
-  for (const versionGroup of versionGroups) {
-    const batchResults = await Promise.all(versionGroup.map(processVersion));
-
-    for (const result of batchResults) {
-      allDownloadedFiles.push(...result.downloadedFiles);
-      allErrors.push(...result.errors);
-    }
-  }
-
-  return {
-    errors: allErrors.length > 0 ? allErrors : null,
-    downloadedFiles: allDownloadedFiles,
-  };
-}
 
 export async function validateLocalStore(options: {
   basePath: string;
@@ -416,7 +231,7 @@ export async function repairLocalStore(options: RepairOptions): Promise<RepairRe
             recursive: true,
           });
         } else {
-          const url = `${UNICODE_PROXY_URL}${basePath}/${hasUCDFolderPath(version) ? "ucd/" : ""}${entry.path}`;
+          const url = `${UNICODE_PROXY_URL}${basePath}/${buildUCDPath(version, entry.path)}`;
           const response = await fetch(url);
 
           if (!response.ok) {
@@ -461,7 +276,7 @@ export async function downloadSingleFile(
     await fs.ensureDir(path.dirname(localPath));
 
     // Build the URL for the file
-    const url = `${UNICODE_PROXY_URL}/${version}/${hasUCDFolderPath(version) ? "ucd/" : ""}${filePath}`;
+    const url = `${UNICODE_PROXY_URL}/${version}/${buildUCDPath(version, filePath)}`;
 
     // Fetch the file content
     const response = await fetch(url);

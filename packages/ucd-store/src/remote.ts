@@ -1,5 +1,5 @@
 import type { UCDStore, UCDStoreOptions } from "./store";
-import { hasUCDFolderPath, UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
+import { buildUCDPath, UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { createClient, type UnicodeVersionFile } from "@luxass/unicode-utils-new/fetch";
 import { promiseRetry } from "@luxass/utils";
 import { createPathFilter, type FilterFn } from "@ucdjs/utils";
@@ -91,7 +91,7 @@ export class RemoteUCDStore implements UCDStore {
     }
 
     const content = await promiseRetry(async () => {
-      const res = await fetch(new URL(`${version}/${hasUCDFolderPath(version) ? "ucd/" : ""}${filePath}`, this.proxyUrl));
+      const res = await fetch(new URL(`${version}/${buildUCDPath(version, filePath)}`, this.proxyUrl));
 
       if (!res.ok) {
         throw new Error(`Failed to fetch file "${filePath}" for version "${version}": ${res.status} ${res.statusText}`);
