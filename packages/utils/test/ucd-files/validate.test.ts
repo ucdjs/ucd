@@ -50,10 +50,10 @@ describe("validateUCDFiles", () => {
         basePath: testdirPath,
       });
 
-      expect(result.missingFiles).toEqual([
-        "Blocks.txt",
-        "emojis/emoji-data.txt",
-      ]);
+      expect(result.missingFiles).toEqual(
+        expect.arrayContaining(["Blocks.txt", "emojis/emoji-data.txt"]),
+      );
+      expect(result.missingFiles).toHaveLength(2);
       expect(result.notRequiredFiles).toEqual([]);
     });
 
