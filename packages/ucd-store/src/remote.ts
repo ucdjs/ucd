@@ -91,7 +91,7 @@ export class RemoteUCDStore implements UCDStore {
     }
 
     const content = await promiseRetry(async () => {
-      const res = await fetch(new URL(`${version}/${buildUCDPath(version, filePath)}`, this.proxyUrl));
+      const res = await fetch(new URL(buildUCDPath(version, filePath), this.proxyUrl));
 
       if (!res.ok) {
         throw new Error(`Failed to fetch file "${filePath}" for version "${version}": ${res.status} ${res.statusText}`);
