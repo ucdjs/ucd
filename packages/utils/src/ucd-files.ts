@@ -324,6 +324,116 @@ function internal__filterEntriesRecursive(entries: UnicodeVersionFile[], pattern
   return filterEntries(entries);
 }
 
+export interface ValidateUCDFilesOptions {
+  version: string;
+
+  /**
+   * Optional base path where files will be downloaded.
+   * Defaults to "./ucd-files" if not provided.
+   */
+  basePath: string;
+
+  /**
+   * Optional filesystem interface to use for file operations.
+   * If not provided, a default implementation using fs-extra will be used.
+   */
+  fs?: FSAdapter;
+
+  /**
+   * A Pattern matcher function to filter files based on their names.
+   * This function should take a file name as input and return true if the file should be included in the download.
+   */
+  patternMatcher?: FilterFn;
+
+  /**
+   * Optional patterns to use for filtering files.
+   * This will only be used if `patternMatcher` is not provided.
+   * Patterns should be in the format understood by `picomatch`.
+   */
+  patterns?: string[];
+
+  /**
+   * Optional API URL to use for fetching Unicode files.
+   * If not provided, defaults to "https://unicode-api.luxass.dev".
+   */
+  apiUrl?: string;
+}
+
+/**
+ * Validates if all required Unicode Character Database (UCD) files for a specific version
+ * are present in the specified directory.
+ *
+ * This function checks if all the files that should be present for a given Unicode version
+ * are actually available in the local file system. It fetches the list of expected files
+ * from the Unicode API and compares it against the local files.
+ *
+ * @param {ValidateUCDFilesOptions} options - Configuration options for file validation
+ * @param options.version - Unicode version to validate files for (e.g., "15.0.0")
+ * @param options.basePath - Base directory where Unicode files are stored
+ * @param options.fs - Optional filesystem adapter for file operations
+ * @param options.patternMatcher - Optional function to filter files based on patterns
+ * @param options.patterns - Optional patterns to filter files if patternMatcher isn't provided
+ * @param options.apiUrl - Optional API URL to fetch Unicode file listings from
+ *
+ * @returns {Promise<string[]>} A promise that resolves to an array of missing file paths relative to the version directory.
+ *          An empty array indicates all required files are present.
+ * @throws Error if version or basePath are not provided
+ * @throws Error if the API request to fetch the file list fails
+ * @throws TypeError if the API response format is invalid
+ */
+export async function validateUCDFiles(options: ValidateUCDFilesOptions): Promise<string[]> {
+  const {
+    version,
+    basePath,
+    fs,
+    patternMatcher: providedPatternMatcher,
+    patterns,
+    apiUrl,
+  } = defu(options, {
+    fs: await createDefaultFSAdapter(),
+    patternMatcher: undefined,
+    patterns: [],
+    apiUrl: "https://unicode-api.luxass.dev",
+  } satisfies Partial<ValidateUCDFilesOptions>);
+
+  if (!version || !basePath) {
+    throw new Error("Version and basePath are required for validation");
+  }
+
+  const client = createClient(apiUrl);
+
+  const versionOutputDir = path.resolve(basePath, `v${version}`);
+
+  const patternMatcher = providedPatternMatcher || createPathFilter(patterns);
+
+  const { data, error, response } = await client.GET("/api/v1/unicode-files/{version}", {
+    params: {
+      path: {
+        version,
+      },
+    },
+  });
+
+  if (error != null || !response.ok) {
+    throw new Error(`Failed to fetch file list for version ${version}: ${response.status} ${response.statusText}`);
+  }
+
+  if (!Array.isArray(data)) {
+    throw new TypeError(`Invalid response format for version ${version}`);
+  }
+
+  const requiredFiles = internal__flattenFilePaths(data);
+
+  const files = await fs.readdir(versionOutputDir);
+
+  const missingFiles = requiredFiles.filter((file) => {
+    const filePath = path.join(versionOutputDir, file);
+    return !files.includes(file) || !patternMatcher(filePath);
+  });
+
+  return missingFiles;
+}
+
 /**
  * Creates a default file system adapter implementation using Node.js fs/promises module.
  *
@@ -356,6 +466,22 @@ export async function createDefaultFSAdapter(): Promise<FSAdapter> {
       },
       async writeFile(filePath, data) {
         await fsModule.writeFile(filePath, data, "utf-8");
+      },
+      async exists(filePath) {
+        try {
+          await fsModule.access(filePath);
+          return true;
+        } catch (err) {
+          if ((err as NodeJS.ErrnoException).code === "ENOENT") {
+            return false;
+          }
+          throw err; // rethrow other errors
+        }
+      },
+      async readdir(dirPath) {
+        return fsModule.readdir(dirPath, {
+          recursive: true,
+        });
       },
     };
   } catch (err) {
