@@ -4,6 +4,7 @@ import type { FSAdapter } from "../types";
 import type { DownloadError, MirrorOptions } from "./mirror";
 import path, { dirname } from "node:path";
 import { hasUCDFolderPath } from "@luxass/unicode-utils-new";
+import { flattenFilePaths } from "./helpers";
 
 type internal__MirrorUnicodeVersionOptions = Required<Omit<MirrorOptions, "versions" | "patterns">> & {
   client: ReturnType<typeof createClient>;
@@ -56,7 +57,7 @@ export async function internal_mirrorUnicodeVersion(version: string, mirrorOptio
 
     const filteredEntries = internal__filterEntriesRecursive(data, patternMatcher);
     const urlPath = `/${version}${hasUCDFolderPath(version) ? "/ucd" : ""}`;
-    locatedFiles.push(...internal__flattenFilePaths(filteredEntries, `${version}`));
+    locatedFiles.push(...flattenFilePaths(filteredEntries, `${version}`));
 
     await internal__processEntries({
       entries: filteredEntries,
@@ -187,20 +188,4 @@ export function internal__filterEntriesRecursive(entries: UnicodeVersionFile[], 
   }
 
   return filterEntries(entries);
-}
-
-export function internal__flattenFilePaths(entries: UnicodeVersionFile[], prefix = ""): string[] {
-  const paths: string[] = [];
-
-  for (const file of entries) {
-    const fullPath = prefix ? `${prefix}/${file.name}` : file.name;
-
-    if (file.children) {
-      paths.push(...internal__flattenFilePaths(file.children, fullPath));
-    } else {
-      paths.push(fullPath);
-    }
-  }
-
-  return paths;
 }
