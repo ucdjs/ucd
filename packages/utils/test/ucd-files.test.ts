@@ -1,8 +1,9 @@
+import type { FSAdapter } from "../src/types";
 import { mockFetch } from "#msw-utils";
 import { HttpResponse } from "msw";
 import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
-import { createDefaultFSAdapter, mirrorUCDFiles } from "../src/ucd-files";
+import { createDefaultFSAdapter, mirrorUCDFiles, validateUCDFiles } from "../src/ucd-files";
 
 vi.mock("node:fs/promises", { spy: true });
 
@@ -20,6 +21,8 @@ describe("FS Adapter", () => {
     expect(fs.writeFile).toBeDefined();
     expect(fs.mkdir).toBeDefined();
     expect(fs.ensureDir).toBeDefined();
+    expect(fs.exists).toBeDefined();
+    expect(fs.readdir).toBeDefined();
   });
 
   it("should read file successfully", async () => {
@@ -235,7 +238,9 @@ describe("mirrorUCDFiles", () => {
         mkdir: vi.fn().mockResolvedValue(undefined),
         ensureDir: vi.fn().mockResolvedValue(undefined),
         writeFile: vi.fn().mockResolvedValue(undefined),
-      };
+        exists: vi.fn().mockResolvedValue(true),
+        readdir: vi.fn().mockResolvedValue([]),
+      } satisfies FSAdapter;
 
       mockFetch([
         ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
@@ -356,7 +361,9 @@ describe("mirrorUCDFiles", () => {
         mkdir: vi.fn().mockRejectedValue(new Error("Permission denied")),
         ensureDir: vi.fn().mockResolvedValue(undefined),
         writeFile: vi.fn().mockResolvedValue(undefined),
-      };
+        exists: vi.fn().mockResolvedValue(true),
+        readdir: vi.fn().mockResolvedValue([]),
+      } satisfies FSAdapter;
 
       mockFetch([
         ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
@@ -490,5 +497,52 @@ describe("mirrorUCDFiles", () => {
       expect(result.locatedFiles).toContain("16.0.0/UnicodeData.txt");
       expect(result.locatedFiles.some((f) => f.includes("empty-dir"))).toBe(false);
     });
+  });
+});
+
+describe("validateUCDFiles", () => {
+  const MOCK_UCD_FILES = [
+    {
+      name: "UnicodeData.txt",
+      path: "UnicodeData.txt",
+    },
+    {
+      name: "Blocks.txt",
+      path: "Blocks.txt",
+    },
+    {
+      name: "emojis",
+      path: "emojis",
+      children: [
+        {
+          name: "emoji-data.txt",
+          path: "emoji-data.txt",
+        },
+      ],
+    },
+  ];
+
+  it("should validate files correctly", async () => {
+    const testdirPath = await testdir({
+      "v16.0.0": {
+        "UnicodeData.txt": "test content",
+      },
+    });
+
+    mockFetch([
+      ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
+        return HttpResponse.json(MOCK_UCD_FILES);
+      }],
+    ]);
+
+    const result = await validateUCDFiles({
+      version: "16.0.0",
+      basePath: testdirPath,
+    });
+
+    expect(result.missingFiles).toEqual([
+      "Blocks.txt",
+      "emojis/emoji-data.txt",
+    ]);
   });
 });
