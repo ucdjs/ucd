@@ -28,7 +28,7 @@ describe("validateUCDFiles", () => {
   ];
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
   });
 
   describe("basic validation functionality", () => {
