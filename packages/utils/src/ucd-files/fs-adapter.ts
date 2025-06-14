@@ -44,9 +44,9 @@ export async function createDefaultFSAdapter(): Promise<FSAdapter> {
           throw err; // rethrow other errors
         }
       },
-      async readdir(dirPath) {
+      async readdir(dirPath, recursive = false) {
         return fsModule.readdir(dirPath, {
-          recursive: true,
+          recursive,
         });
       },
     };
