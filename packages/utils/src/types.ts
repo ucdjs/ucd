@@ -8,5 +8,5 @@ export interface FSAdapter {
   ensureDir: (path: string) => Promise<void>;
   writeFile: (path: string, data: string) => Promise<void>;
   exists: (path: string) => Promise<boolean>;
-  readdir: (path: string) => Promise<string[]>;
+  readdir: (path: string, recursive?: boolean) => Promise<string[]>;
 }
