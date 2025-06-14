@@ -1,8 +1,3 @@
-export { download } from "./download";
-export {
-  createDefaultFs,
-  type FsInterface,
-} from "./fs-interface";
 export {
   LocalUCDStore,
   type LocalUCDStoreOptions,
