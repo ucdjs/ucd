@@ -42,6 +42,12 @@ export interface MirrorOptions {
    * If not provided, defaults to "https://unicode-api.luxass.dev".
    */
   apiUrl?: string;
+
+  /**
+   * Optional proxy URL to use for downloading files.
+   * If not provided, defaults to "https://unicode-proxy.ucdjs.dev".
+   */
+  proxyUrl?: string;
 }
 
 export interface DownloadError {
@@ -70,6 +76,7 @@ export async function mirrorUCDFiles(options: MirrorOptions): Promise<MirrorResu
     patternMatcher: providedPatternMatcher,
     patterns,
     apiUrl,
+    proxyUrl,
   } = defu(options, {
     basePath: "./ucd-files",
     fs: await createDefaultFSAdapter(),
@@ -77,6 +84,7 @@ export async function mirrorUCDFiles(options: MirrorOptions): Promise<MirrorResu
     patterns: [],
     apiUrl: "https://unicode-api.luxass.dev",
     versions: [],
+    proxyUrl: "https://unicode-proxy.ucdjs.dev",
   } satisfies MirrorOptions);
 
   const client = createClient(apiUrl);
@@ -99,6 +107,7 @@ export async function mirrorUCDFiles(options: MirrorOptions): Promise<MirrorResu
       patternMatcher,
       client,
       apiUrl,
+      proxyUrl,
     });
   });
 
