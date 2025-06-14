@@ -113,6 +113,7 @@ export async function validateUCDFiles(version: string, options: ValidateUCDFile
 
     // TODO: figure out how we can remove directories from the list?
     // Since the directories is already a part of a file path.
+    // e.g. [ 'Blocks.txt', 'UnicodeData.txt', 'emojis', 'emojis/emoji-data.txt' ]
     const files = (await fs.readdir(versionOutputDir, true));
 
     const missingFiles = requiredFiles.filter((file) => {
@@ -123,7 +124,7 @@ export async function validateUCDFiles(version: string, options: ValidateUCDFile
 
     const notRequiredFiles = files.filter((file) => {
       const filePath = path.join(versionOutputDir, file);
-      if (patternMatcher(filePath)) return false;
+      if (!patternMatcher(filePath)) return true;
       return !requiredFiles.includes(file);
     });
 
