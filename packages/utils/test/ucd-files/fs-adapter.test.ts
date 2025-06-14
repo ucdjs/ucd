@@ -1,5 +1,4 @@
-import type { FSAdapter } from "@ucdjs/utils/types";
-import { afterAll, beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
+import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { createDefaultFSAdapter } from "../../src/ucd-files";
 
 vi.mock("node:fs/promises", { spy: true });
