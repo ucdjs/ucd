@@ -46,26 +46,17 @@ export interface ValidateUCDFilesResult {
 }
 
 /**
- * Validates if all required Unicode Character Database (UCD) files for a specific version
+ * Validates if all required Unicode Character Database (UCD) files for a specific Unicode version
  * are present in the specified directory.
  *
- * This function checks if all the files that should be present for a given Unicode version
- * are actually available in the local file system. It fetches the list of expected files
- * from the Unicode API and compares it against the local files.
+ * This function performs the following:
+ * 1. Fetches the list of required files for the specified Unicode version
+ * 2. Scans the local directory to find existing files
+ * 3. Compares the two sets to identify missing files and files that are not required
  *
- * @param {ValidateUCDFilesOptions} options - Configuration options for file validation
- * @param options.version - Unicode version to validate files for (e.g., "15.0.0")
- * @param options.basePath - Base directory where Unicode files are stored
- * @param options.fs - Optional filesystem adapter for file operations
- * @param options.patternMatcher - Optional function to filter files based on patterns
- * @param options.patterns - Optional patterns to filter files if patternMatcher isn't provided
- * @param options.apiUrl - Optional API URL to fetch Unicode file listings from
- *
- * @returns {Promise<ValidateUCDFilesResult>} A promise that resolves to an array of missing file paths relative to the version directory.
- *          An empty array indicates all required files are present.
- * @throws Error if version or basePath are not provided
- * @throws Error if the API request to fetch the file list fails
- * @throws TypeError if the API response format is invalid
+ * @param {string} version - The Unicode version number (e.g., "15.0.0")
+ * @param {ValidateUCDFilesOptions} options - Configuration options for the validation process
+ * @returns {Promise<ValidateUCDFilesResult>} A promise that resolves to an object containing lists of missing files and files that are not required
  */
 export async function validateUCDFiles(version: string, options: ValidateUCDFilesOptions): Promise<ValidateUCDFilesResult> {
   try {
@@ -84,7 +75,7 @@ export async function validateUCDFiles(version: string, options: ValidateUCDFile
     } satisfies Partial<ValidateUCDFilesOptions>);
 
     if (!version) {
-      throw new Error("Version and basePath are required for validation");
+      throw new Error("Version is required for validation");
     }
 
     const client = createClient(apiUrl);
