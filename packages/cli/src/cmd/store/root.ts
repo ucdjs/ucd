@@ -20,7 +20,6 @@ function isValidSubcommand(subcommand: string): subcommand is Subcommand {
 }
 
 export async function runStoreRoot(subcommand: string, { flags }: CLIStoreCmdOptions) {
-  console.log(flags, subcommand);
   if (!isValidSubcommand(subcommand) || (!isValidSubcommand(subcommand) && (flags?.help || flags?.h))) {
     printHelp({
       commandName: "ucd store",
