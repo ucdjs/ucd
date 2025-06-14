@@ -1,4 +1,5 @@
 import type { FSAdapter } from "../../src/types";
+import path from "node:path";
 import { mockFetch } from "#msw-utils";
 import { HttpResponse } from "msw";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -266,7 +267,11 @@ describe("validateUCDFiles", () => {
         fs: mockFs,
       });
 
-      expect(mockFs.readdir).toHaveBeenCalledWith(`${testdirPath}/v16.0.0`, true);
+      expect(mockFs.readdir).toHaveBeenCalledWith(
+        path.join(testdirPath, "v16.0.0"),
+        true,
+      );
+
       expect(result.missingFiles).toEqual([
         "Blocks.txt",
         "emojis/emoji-data.txt",
