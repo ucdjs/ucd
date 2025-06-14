@@ -14,7 +14,7 @@ export async function internal_mirrorUnicodeVersion(version: string, mirrorOptio
   files: string[];
   errors: DownloadError[];
 }> {
-  const { basePath, fs, patternMatcher, client } = mirrorOptions;
+  const { basePath, fs, patternMatcher, client, proxyUrl } = mirrorOptions;
   const versionOutputDir = path.resolve(basePath, `v${version}`);
 
   const locatedFiles: string[] = [];
@@ -69,6 +69,7 @@ export async function internal_mirrorUnicodeVersion(version: string, mirrorOptio
       errors,
       // for tracking downloaded files
       files,
+      proxyUrl,
     });
   } catch (err) {
     errors.push({
