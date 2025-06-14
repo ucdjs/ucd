@@ -359,6 +359,12 @@ export interface ValidateUCDFilesOptions {
   apiUrl?: string;
 }
 
+export interface ValidateUCDFilesResult {
+  missingFiles: string[];
+  // TODO: find a better name for this
+  notRequiredFiles: string[];
+}
+
 /**
  * Validates if all required Unicode Character Database (UCD) files for a specific version
  * are present in the specified directory.
@@ -375,66 +381,79 @@ export interface ValidateUCDFilesOptions {
  * @param options.patterns - Optional patterns to filter files if patternMatcher isn't provided
  * @param options.apiUrl - Optional API URL to fetch Unicode file listings from
  *
- * @returns {Promise<string[]>} A promise that resolves to an array of missing file paths relative to the version directory.
+ * @returns {Promise<ValidateUCDFilesResult>} A promise that resolves to an array of missing file paths relative to the version directory.
  *          An empty array indicates all required files are present.
  * @throws Error if version or basePath are not provided
  * @throws Error if the API request to fetch the file list fails
  * @throws TypeError if the API response format is invalid
  */
-export async function validateUCDFiles(options: ValidateUCDFilesOptions): Promise<string[]> {
-  const {
-    version,
-    basePath,
-    fs,
-    patternMatcher: providedPatternMatcher,
-    patterns,
-    apiUrl,
-  } = defu(options, {
-    fs: await createDefaultFSAdapter(),
-    patternMatcher: undefined,
-    patterns: [],
-    apiUrl: "https://unicode-api.luxass.dev",
-  } satisfies Partial<ValidateUCDFilesOptions>);
+export async function validateUCDFiles(options: ValidateUCDFilesOptions): Promise<ValidateUCDFilesResult> {
+  try {
+    const {
+      version,
+      basePath,
+      fs,
+      patternMatcher: providedPatternMatcher,
+      patterns,
+      apiUrl,
+    } = defu(options, {
+      fs: await createDefaultFSAdapter(),
+      patternMatcher: undefined,
+      patterns: [],
+      apiUrl: "https://unicode-api.luxass.dev",
+    } satisfies Partial<ValidateUCDFilesOptions>);
 
-  if (!version || !basePath) {
-    throw new Error("Version and basePath are required for validation");
-  }
+    if (!version || !basePath) {
+      throw new Error("Version and basePath are required for validation");
+    }
 
-  const client = createClient(apiUrl);
+    const client = createClient(apiUrl);
 
-  const versionOutputDir = path.resolve(basePath, `v${version}`);
+    const versionOutputDir = path.resolve(basePath, `v${version}`);
 
-  const patternMatcher = providedPatternMatcher || createPathFilter(patterns);
+    const patternMatcher = providedPatternMatcher || createPathFilter(patterns);
 
-  const { data, error, response } = await client.GET("/api/v1/unicode-files/{version}", {
-    params: {
-      path: {
-        version,
+    const { data, error, response } = await client.GET("/api/v1/unicode-files/{version}", {
+      params: {
+        path: {
+          version,
+        },
       },
-    },
-  });
+    });
 
-  if (error != null || !response.ok) {
-    throw new Error(`Failed to fetch file list for version ${version}: ${response.status} ${response.statusText}`);
+    if (error != null || !response.ok) {
+      throw new Error(`Failed to fetch file list for version ${version}: ${response.status} ${response.statusText}`);
+    }
+
+    if (!Array.isArray(data)) {
+      throw new TypeError(`Invalid response format for version ${version}`);
+    }
+
+    const requiredFiles = internal__flattenFilePaths(data);
+
+    const files = await fs.readdir(versionOutputDir);
+
+    const missingFiles = requiredFiles.filter((file) => {
+      const filePath = path.join(versionOutputDir, file);
+      return !files.includes(file) || !patternMatcher(filePath);
+    });
+
+    const notRequiredFiles = files.filter((file) => {
+      const filePath = path.join(versionOutputDir, file);
+      return !requiredFiles.includes(file) && patternMatcher(filePath);
+    });
+
+    return {
+      missingFiles,
+      notRequiredFiles,
+    };
+  } catch (err) {
+    console.error("[ucd-files] Error validating UCD files:", err);
+    return {
+      missingFiles: [],
+      notRequiredFiles: [],
+    };
   }
-
-  if (!Array.isArray(data)) {
-    throw new TypeError(`Invalid response format for version ${version}`);
-  }
-
-  const requiredFiles = internal__flattenFilePaths(data);
-
-  const files = await fs.readdir(versionOutputDir);
-
-  const missingFiles = requiredFiles.filter((file) => {
-    const filePath = path.join(versionOutputDir, file);
-    return !files.includes(file) || !patternMatcher(filePath);
-  });
-
-  // TODO(@luxass): maybe we should also return the files that are present but not required?
-  // This would help in identifying any extra files that might have been added unintentionally.
-
-  return missingFiles;
 }
 
 /**
