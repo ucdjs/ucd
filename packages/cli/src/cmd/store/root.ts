@@ -38,7 +38,7 @@ export async function runStoreRoot(subcommand: string, { flags }: CLIStoreCmdOpt
 
   if (subcommand === "init") {
     const { runInitStore } = await import("./init");
-    const versions = flags._.slice(4)?.toString() ?? "";
+    const versions = flags._.slice(4) as string[];
 
     await runInitStore({
       versions,
