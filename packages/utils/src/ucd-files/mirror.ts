@@ -2,7 +2,7 @@ import type { FSAdapter } from "../types";
 import { createClient } from "@luxass/unicode-utils-new/fetch";
 import defu from "defu";
 import { createPathFilter, type FilterFn } from "../filter";
-import { createDefaultFSAdapter } from "./fs-adapter";
+import { createDefaultFSAdapter } from "../memfs-node";
 import { internal_mirrorUnicodeVersion } from "./internal";
 
 export interface MirrorOptions {
