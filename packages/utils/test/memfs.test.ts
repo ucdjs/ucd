@@ -87,7 +87,7 @@ describe("memfs utility", () => {
     it("should check if a file exists", async () => {
       await fs.writeFile("/exists.txt", "exists");
 
-      await expect(fs.access("/exists.txt")).resolves.not.toThrow();
+      await expect(fs.access("/exists.txt")).resolves.toBe(undefined);
       await expect(fs.access("/not-exists.txt")).rejects.toThrow();
     });
 
