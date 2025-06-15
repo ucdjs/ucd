@@ -2,7 +2,7 @@ import type { FSAdapter } from "../types";
 import { createClient } from "@luxass/unicode-utils-new/fetch";
 import defu from "defu";
 import { createPathFilter, type FilterFn } from "../filter";
-import { createDefaultFSAdapter } from "../memfs-node";
+import { createFileSystem } from "../memfs";
 import { internal_mirrorUnicodeVersion } from "./internal";
 
 export interface MirrorOptions {
@@ -79,7 +79,7 @@ export async function mirrorUCDFiles(options: MirrorOptions): Promise<MirrorResu
     proxyUrl,
   } = defu(options, {
     basePath: "./ucd-files",
-    fs: await createDefaultFSAdapter(),
+    fs: createFileSystem({ type: "node" }),
     patternMatcher: undefined,
     patterns: [],
     apiUrl: "https://unicode-api.luxass.dev",

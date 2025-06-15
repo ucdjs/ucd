@@ -58,7 +58,7 @@ describe("memfs utility", () => {
     it("should throw an error for unsupported file system types", () => {
       // @ts-expect-error Testing invalid type
       expect(() => createFileSystem({ type: "invalid" }))
-        .toThrow("Unsupported file system type: invalid. Use \"memfs\" or \"custom\"");
+        .toThrow("Unsupported file system type: invalid. Use \"memfs\", \"node\", or \"custom\".");
     });
   });
 
