@@ -104,7 +104,7 @@ export async function validateUCDFiles(version: string, options: ValidateUCDFile
     const requiredFiles = flattenFilePaths(data);
 
     // Get all files, including those in subdirectories
-    const allPaths = await fs.readdir(versionOutputDir, true);
+    const allPaths = await fs.listdir(versionOutputDir, true);
 
     // Filter out directories, keeping only actual files
     const files = allPaths.filter((filePath) => {
@@ -241,7 +241,7 @@ export async function repairUCDFiles(
         }
 
         const content = await response.text();
-        await fs.writeFile(fullOutputPath, content);
+        await fs.write(fullOutputPath, content);
         repairedFiles.push(filePath);
       } catch (err) {
         errors.push({

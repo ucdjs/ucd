@@ -14,31 +14,49 @@ export async function createDefaultFSAdapter(): Promise<FSAdapter> {
   try {
     const fsModule = await import("node:fs/promises");
 
+    async function exists(path: string): ReturnType<FSAdapter["exists"]> {
+      try {
+        await fsModule.access(path);
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
     return {
-      async readFile(path) {
-        return fsModule.readFile(path, "utf-8");
+      async read(path: string) {
+        return await fsModule.readFile(path, "utf-8");
       },
-      async access(path, mode) {
-        return fsModule.access(path, mode);
+      async write(path: string, data: string) {
+        await fsModule.writeFile(path, data, "utf-8");
       },
-      async mkdir(path, options) {
-        fsModule.mkdir(path, options);
-        return void 0;
+      async mkdir(path: string) {
+        await fsModule.mkdir(path, { recursive: true });
       },
-      async readdir(path) {
-        return fsModule.readdir(path);
+      async ensureDir(path: string) {
+        try {
+          if (await exists(path)) {
+            return; // Directory already exists, no need to create
+          }
+
+          await fsModule.mkdir(path, { recursive: true });
+        } catch (err: any) {
+          if (err.code !== "EEXIST") {
+            throw err;
+          }
+        }
       },
-      async rm(path, options) {
-        return fsModule.rm(path, options);
+      async listdir(path: string, recursive: boolean = false) {
+        return await fsModule.readdir(path, {
+          recursive,
+        });
       },
-      async stat(path) {
+      exists,
+      async rm(path: string) {
+        await fsModule.rm(path, { recursive: true, force: true });
+      },
+      async stat(path: string) {
         return fsModule.stat(path);
-      },
-      async unlink(path) {
-        return fsModule.unlink(path);
-      },
-      async writeFile(path, data, encoding) {
-        return fsModule.writeFile(path, data, { encoding });
       },
     };
   } catch (err) {
