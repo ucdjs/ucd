@@ -1,17 +1,6 @@
+import type { FSAdapter } from "./types";
 import { invariant } from "@luxass/utils";
 import { createFsFromVolume, Volume } from "memfs";
-
-export interface FSAdapter {
-  readFile: (path: string) => Promise<string>;
-  writeFile: (path: string, data: string, encoding?: BufferEncoding) => Promise<void>;
-  mkdir: (path: string, options?: { recursive?: boolean; mode?: number }) => Promise<void>;
-  readdir: (path: string) => Promise<string[]>;
-  stat: (path: string) => Promise<{ isFile: () => boolean; isDirectory: () => boolean; mtime: Date; size: number }>;
-  unlink: (path: string) => Promise<void>;
-  access: (path: string, mode?: number) => Promise<void>;
-  rm: (path: string, options?: { recursive?: boolean; force?: boolean }) => Promise<void>;
-  copyFile: (src: string, dest: string, mode?: number) => Promise<void>;
-}
 
 export type CreateFileSystemOptions =
   | {
@@ -50,8 +39,18 @@ export function createFileSystem(options: CreateFileSystemOptions = {}): FSAdapt
     const vol = Volume.fromJSON(options.initialFiles || {});
     const memfs = createFsFromVolume(vol);
 
+    async function exists(path: string): ReturnType<FSAdapter["exists"]> {
+      try {
+        await memfs.promises
+          .access(path);
+        return true;
+      } catch {
+        return false;
+      }
+    }
+
     return {
-      readFile: async (path: string) => {
+      async read(path: string) {
         const result = await memfs.promises.readFile(path, {
           encoding: "utf-8",
         });
@@ -60,17 +59,31 @@ export function createFileSystem(options: CreateFileSystemOptions = {}): FSAdapt
 
         return result;
       },
-      writeFile: async (path: string, data: string, encoding: BufferEncoding = "utf-8") => {
+      async write(path: string, data: string, encoding: BufferEncoding = "utf-8") {
         await memfs.promises.writeFile(path, data, { encoding });
       },
-      mkdir: async (path: string, options?: { recursive?: boolean; mode?: number }) => {
+      async mkdir(path: string, options?: { recursive?: boolean; mode?: number }) {
         await memfs.promises.mkdir(path, options);
       },
-      readdir: async (path: string) => {
-        const result = await memfs.promises.readdir(path);
+      async ensureDir(path: string, options?: { recursive?: boolean; mode?: number }) {
+        try {
+          if (await exists(path)) {
+            return; // Directory already exists, no need to create
+          }
+          await memfs.promises.mkdir(path, options);
+        } catch (err: any) {
+          if (err.code !== "EEXIST") {
+            throw err;
+          }
+        }
+      },
+      async listdir(path: string, recursive: boolean = false) {
+        const result = await memfs.promises.readdir(path, {
+          recursive,
+        });
         return result as string[];
       },
-      stat: async (path: string) => {
+      async stat(path: string) {
         const result = await memfs.promises.stat(path);
         return {
           isFile: () => result.isFile(),
@@ -79,17 +92,11 @@ export function createFileSystem(options: CreateFileSystemOptions = {}): FSAdapt
           size: result.size as number,
         };
       },
-      unlink: async (path: string) => {
-        await memfs.promises.unlink(path);
+      async exists(path: string) {
+        return exists(path);
       },
-      access: async (path: string, mode?: number) => {
-        await memfs.promises.access(path, mode);
-      },
-      rm: async (path: string, options?: { recursive?: boolean; force?: boolean }) => {
+      async rm(path: string, options?: { recursive?: boolean; force?: boolean }) {
         await memfs.promises.rm(path, options);
-      },
-      copyFile: async (src: string, dest: string, mode?: number) => {
-        await memfs.promises.copyFile(src, dest, mode);
       },
     };
   }

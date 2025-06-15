@@ -1,16 +1,17 @@
+import type { FSAdapter } from "../src/types";
 import { access, copyFile, mkdir, readdir, readFile, rm, rmdir, stat, unlink, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
-import { createFileSystem, type FSAdapter } from "../src/memfs";
+import { createFileSystem } from "../src/memfs";
 
 describe("memfs utility", () => {
   describe("createFileSystem", () => {
     it("should create a memfs file system by default", () => {
       const fs = createFileSystem();
       expect(fs).toBeDefined();
-      expect(fs.readFile).toBeInstanceOf(Function);
-      expect(fs.writeFile).toBeInstanceOf(Function);
+      expect(fs.read).toBeInstanceOf(Function);
+      expect(fs.write).toBeInstanceOf(Function);
     });
 
     it("should initialize with provided files", async () => {
@@ -19,27 +20,26 @@ describe("memfs utility", () => {
       };
 
       const fs = createFileSystem({ initialFiles });
-      const content = await fs.readFile("/test.txt");
+      const content = await fs.read("/test.txt");
 
       expect(content).toBe("content");
     });
 
     it("should use a custom file system when specified", () => {
       const customFs: FSAdapter = {
-        readFile: async () => "custom",
-        writeFile: async () => {},
-        mkdir: async () => {},
-        readdir: async () => [],
-        stat: async () => ({
+        read: vi.fn().mockResolvedValue("custom"),
+        write: vi.fn().mockResolvedValue(undefined),
+        mkdir: vi.fn().mockResolvedValue(undefined),
+        listdir: vi.fn().mockResolvedValue([]),
+        stat: vi.fn().mockResolvedValue({
           isFile: () => true,
           isDirectory: () => false,
           mtime: new Date(),
           size: 0,
         }),
-        unlink: async () => {},
-        access: async () => {},
-        rm: async () => {},
-        copyFile: async () => {},
+        rm: vi.fn().mockResolvedValue(undefined),
+        exists: vi.fn().mockResolvedValue(true),
+        ensureDir: vi.fn().mockResolvedValue(undefined),
       };
 
       const fs = createFileSystem({ type: "custom", fs: customFs });
@@ -49,7 +49,8 @@ describe("memfs utility", () => {
     it("should throw an error when type is custom but no fs is provided", () => {
       expect(() => createFileSystem({
         type: "custom",
-        fs: undefined as unknown as FSAdapter,
+        // @ts-expect-error Testing missing fs
+        fs: undefined,
       }))
         .toThrow("fs must be provided when type is \"custom\"");
     });
@@ -69,108 +70,107 @@ describe("memfs utility", () => {
     });
 
     it("should write and read a file", async () => {
-      await fs.writeFile("/file.txt", "Hello World");
-      const content = await fs.readFile("/file.txt");
+      await fs.write("/file.txt", "Hello World");
+      const content = await fs.read("/file.txt");
 
       expect(content).toBe("Hello World");
     });
 
     it("should create and read directories", async () => {
       await fs.mkdir("/test-dir", { recursive: true });
-      await fs.writeFile("/test-dir/file.txt", "Content");
+      await fs.write("/test-dir/file.txt", "Content");
 
-      const files = await fs.readdir("/test-dir");
+      const files = await fs.listdir("/test-dir");
       expect(files).toContain("file.txt");
     });
 
     it("should check if a file exists", async () => {
-      await fs.writeFile("/exists.txt", "exists");
+      await fs.write("/exists.txt", "exists");
 
-      await expect(fs.access("/exists.txt")).resolves.toBe(undefined);
-      await expect(fs.access("/not-exists.txt")).rejects.toThrow();
+      expect(await fs.exists("/exists.txt")).toBe(true);
+      expect(await fs.exists("/not-exists.txt")).toBe(false);
     });
 
     it("should delete files", async () => {
-      await fs.writeFile("/to-delete.txt", "delete me");
-      await fs.unlink("/to-delete.txt");
+      await fs.write("/to-delete.txt", "delete me");
+      await fs.rm("/to-delete.txt");
 
-      await expect(fs.access("/to-delete.txt")).rejects.toThrow();
+      expect(await fs.exists("/to-delete.txt")).toBe(false);
     });
 
     it("should get file stats", async () => {
-      await fs.writeFile("/stat.txt", "stat content");
-      const stat = await fs.stat("/stat.txt");
+      await fs.write("/stat.txt", "stat content");
+      const stats = await fs.stat("/stat.txt");
 
-      expect(stat.isFile()).toBe(true);
-      expect(stat.isDirectory()).toBe(false);
-      expect(stat.size).toBeGreaterThan(0);
-    });
-
-    it("should copy files", async () => {
-      await fs.writeFile("/source.txt", "source content");
-      await fs.copyFile("/source.txt", "/dest.txt");
-
-      const content = await fs.readFile("/dest.txt");
-      expect(content).toBe("source content");
+      expect(stats.isFile()).toBe(true);
+      expect(stats.isDirectory()).toBe(false);
+      expect(stats.size).toBeGreaterThan(0);
     });
 
     it("should remove directories", async () => {
       await fs.mkdir("/dir-to-remove", { recursive: true });
-      await fs.writeFile("/dir-to-remove/file.txt", "content");
+      await fs.write("/dir-to-remove/file.txt", "content");
 
       await fs.rm("/dir-to-remove", { recursive: true });
-      await expect(fs.access("/dir-to-remove")).rejects.toThrow();
+      expect(await fs.exists("/dir-to-remove")).toBe(false);
+    });
+
+    it("should ensure directory exists", async () => {
+      await fs.ensureDir("/ensure-dir", { recursive: true });
+      expect(await fs.exists("/ensure-dir")).toBe(true);
+
+      // Should not throw if directory already exists
+      await fs.ensureDir("/ensure-dir", { recursive: true });
+      expect(await fs.exists("/ensure-dir")).toBe(true);
     });
   });
 
   describe("custom fs with mocks", () => {
     it("should use mocked fs functions", async () => {
-      const mockReadFile = vi.fn().mockResolvedValue("mocked content");
-      const mockWriteFile = vi.fn().mockResolvedValue(undefined);
+      const mockRead = vi.fn().mockResolvedValue("mocked content");
+      const mockWrite = vi.fn().mockResolvedValue(undefined);
       const mockMkdir = vi.fn().mockResolvedValue(undefined);
-      const mockReaddir = vi.fn().mockResolvedValue(["file1.txt", "file2.txt"]);
+      const mockListdir = vi.fn().mockResolvedValue(["file1.txt", "file2.txt"]);
       const mockStat = vi.fn().mockResolvedValue({
         isFile: () => true,
         isDirectory: () => false,
         mtime: new Date("2023-01-01"),
         size: 100,
       });
-      const mockUnlink = vi.fn().mockResolvedValue(undefined);
-      const mockAccess = vi.fn().mockResolvedValue(undefined);
       const mockRm = vi.fn().mockResolvedValue(undefined);
-      const mockCopyFile = vi.fn().mockResolvedValue(undefined);
+      const mockExists = vi.fn().mockResolvedValue(true);
+      const mockEnsureDir = vi.fn().mockResolvedValue(undefined);
 
-      const customFs: FSAdapter = {
-        readFile: mockReadFile,
-        writeFile: mockWriteFile,
+      const customFs = {
+        read: mockRead,
+        write: mockWrite,
         mkdir: mockMkdir,
-        readdir: mockReaddir,
+        listdir: mockListdir,
         stat: mockStat,
-        unlink: mockUnlink,
-        access: mockAccess,
         rm: mockRm,
-        copyFile: mockCopyFile,
-      };
+        exists: mockExists,
+        ensureDir: mockEnsureDir,
+      } satisfies FSAdapter;
 
       const fs = createFileSystem({ type: "custom", fs: customFs });
 
-      // Test readFile
-      const content = await fs.readFile("/test.txt");
+      // Test read
+      const content = await fs.read("/test.txt");
       expect(content).toBe("mocked content");
-      expect(mockReadFile).toHaveBeenCalledWith("/test.txt");
+      expect(mockRead).toHaveBeenCalledWith("/test.txt");
 
-      // Test writeFile
-      await fs.writeFile("/test.txt", "new content");
-      expect(mockWriteFile).toHaveBeenCalledWith("/test.txt", "new content");
+      // Test write
+      await fs.write("/test.txt", "new content");
+      expect(mockWrite).toHaveBeenCalledWith("/test.txt", "new content");
 
       // Test mkdir
       await fs.mkdir("/new-dir", { recursive: true });
       expect(mockMkdir).toHaveBeenCalledWith("/new-dir", { recursive: true });
 
-      // Test readdir
-      const files = await fs.readdir("/dir");
+      // Test listdir
+      const files = await fs.listdir("/dir");
       expect(files).toEqual(["file1.txt", "file2.txt"]);
-      expect(mockReaddir).toHaveBeenCalledWith("/dir");
+      expect(mockListdir).toHaveBeenCalledWith("/dir");
 
       // Test stat
       const stat = await fs.stat("/test.txt");
@@ -178,42 +178,38 @@ describe("memfs utility", () => {
       expect(stat.size).toBe(100);
       expect(mockStat).toHaveBeenCalledWith("/test.txt");
 
-      // Test unlink
-      await fs.unlink("/test.txt");
-      expect(mockUnlink).toHaveBeenCalledWith("/test.txt");
-
-      // Test access
-      await fs.access("/test.txt");
-      expect(mockAccess).toHaveBeenCalledWith("/test.txt");
+      // Test exists
+      const exists = await fs.exists("/test.txt");
+      expect(exists).toBe(true);
+      expect(mockExists).toHaveBeenCalledWith("/test.txt");
 
       // Test rm
       await fs.rm("/dir", { recursive: true });
       expect(mockRm).toHaveBeenCalledWith("/dir", { recursive: true });
 
-      // Test copyFile
-      await fs.copyFile("/src.txt", "/dest.txt");
-      expect(mockCopyFile).toHaveBeenCalledWith("/src.txt", "/dest.txt");
+      // Test ensureDir
+      await fs.ensureDir("/ensure-dir");
+      expect(mockEnsureDir).toHaveBeenCalledWith("/ensure-dir");
     });
 
     it("should handle mocked errors", async () => {
-      const mockReadFile = vi.fn().mockRejectedValue(new Error("File not found"));
+      const mockRead = vi.fn().mockRejectedValue(new Error("File not found"));
 
       const customFs: FSAdapter = {
-        readFile: mockReadFile,
-        writeFile: vi.fn(),
+        read: mockRead,
+        write: vi.fn(),
         mkdir: vi.fn(),
-        readdir: vi.fn(),
+        listdir: vi.fn(),
         stat: vi.fn(),
-        unlink: vi.fn(),
-        access: vi.fn(),
         rm: vi.fn(),
-        copyFile: vi.fn(),
+        exists: vi.fn(),
+        ensureDir: vi.fn(),
       };
 
       const fs = createFileSystem({ type: "custom", fs: customFs });
 
-      await expect(fs.readFile("/nonexistent.txt")).rejects.toThrow("File not found");
-      expect(mockReadFile).toHaveBeenCalledWith("/nonexistent.txt");
+      await expect(fs.read("/nonexistent.txt")).rejects.toThrow("File not found");
+      expect(mockRead).toHaveBeenCalledWith("/nonexistent.txt");
     });
   });
 
@@ -225,17 +221,17 @@ describe("memfs utility", () => {
       });
 
       const nodeFs: FSAdapter = {
-        readFile: async (path: string) => {
+        read: async (path: string) => {
           return readFile(join(testPath, path), "utf-8");
         },
-        writeFile: async (path: string, data: string) => {
+        write: async (path: string, data: string) => {
           await mkdir(join(testPath, path, ".."), { recursive: true });
           return writeFile(join(testPath, path), data, "utf-8");
         },
         mkdir: async (path: string, options?: { recursive?: boolean; mode?: number }) => {
           await mkdir(join(testPath, path), options);
         },
-        readdir: async (path: string) => {
+        listdir: async (path: string) => {
           return readdir(join(testPath, path));
         },
         stat: async (path: string) => {
@@ -247,38 +243,46 @@ describe("memfs utility", () => {
             size: stats.size,
           };
         },
-        unlink: async (path: string) => {
-          return unlink(join(testPath, path));
-        },
-        access: async (path: string, mode?: number) => {
-          return access(join(testPath, path), mode);
+        exists: async (path: string) => {
+          try {
+            await access(join(testPath, path));
+            return true;
+          } catch {
+            return false;
+          }
         },
         rm: async (path: string, options?: { recursive?: boolean; force?: boolean }) => {
           return rm(join(testPath, path), options);
         },
-        copyFile: async (src: string, dest: string, mode?: number) => {
-          return copyFile(join(testPath, src), join(testPath, dest), mode);
+        ensureDir: async (path: string, options?: { recursive?: boolean; mode?: number }) => {
+          try {
+            await mkdir(join(testPath, path), { recursive: true, ...options });
+          } catch (err: any) {
+            if (err.code !== "EEXIST") {
+              throw err;
+            }
+          }
         },
       };
 
       const fs = createFileSystem({ type: "custom", fs: nodeFs });
 
       // Test reading existing files
-      const existingContent = await fs.readFile("/existing-file.txt");
+      const existingContent = await fs.read("/existing-file.txt");
       expect(existingContent).toBe("existing content");
 
-      const nestedContent = await fs.readFile("/subdir/nested-file.txt");
+      const nestedContent = await fs.read("/subdir/nested-file.txt");
       expect(nestedContent).toBe("nested content");
 
       // Test write and read
-      await fs.writeFile("/node-test.txt", "Node.js content");
-      const content = await fs.readFile("/node-test.txt");
+      await fs.write("/node-test.txt", "Node.js content");
+      const content = await fs.read("/node-test.txt");
       expect(content).toBe("Node.js content");
 
-      // Test mkdir and readdir
+      // Test mkdir and listdir
       await fs.mkdir("/node-dir", { recursive: true });
-      await fs.writeFile("/node-dir/file.txt", "directory content");
-      const files = await fs.readdir("/node-dir");
+      await fs.write("/node-dir/file.txt", "directory content");
+      const files = await fs.listdir("/node-dir");
       expect(files).toContain("file.txt");
 
       // Test stat
@@ -287,41 +291,39 @@ describe("memfs utility", () => {
       expect(stats.isDirectory()).toBe(false);
       expect(stats.size).toBeGreaterThan(0);
 
-      // Test copy
-      await fs.copyFile("/node-test.txt", "/node-copy.txt");
-      const copiedContent = await fs.readFile("/node-copy.txt");
-      expect(copiedContent).toBe("Node.js content");
-
-      // Test unlink
-      await fs.unlink("/node-copy.txt");
-      await expect(fs.access("/node-copy.txt")).rejects.toThrow();
+      // Test exists
+      expect(await fs.exists("/node-test.txt")).toBe(true);
+      expect(await fs.exists("/non-existent.txt")).toBe(false);
 
       // Test rm directory
       await fs.rm("/node-dir", { recursive: true });
-      await expect(fs.access("/node-dir")).rejects.toThrow();
+      expect(await fs.exists("/node-dir")).toBe(false);
+
+      // Test ensureDir
+      await fs.ensureDir("/ensure-test");
+      expect(await fs.exists("/ensure-test")).toBe(true);
     });
 
     it("should handle Node.js fs errors appropriately", async () => {
       const testPath = await testdir({});
 
       const nodeFs: FSAdapter = {
-        readFile: async (path: string) => {
+        read: async (path: string) => {
           return readFile(join(testPath, path), "utf-8");
         },
-        writeFile: vi.fn(),
+        write: vi.fn(),
         mkdir: vi.fn(),
-        readdir: vi.fn(),
+        listdir: vi.fn(),
         stat: vi.fn(),
-        unlink: vi.fn(),
-        access: vi.fn(),
+        exists: vi.fn(),
         rm: vi.fn(),
-        copyFile: vi.fn(),
+        ensureDir: vi.fn(),
       };
 
       const fs = createFileSystem({ type: "custom", fs: nodeFs });
 
       // Should throw error for non-existent file
-      await expect(fs.readFile("/does-not-exist.txt")).rejects.toThrow();
+      await expect(fs.read("/does-not-exist.txt")).rejects.toThrow();
     });
 
     it("should work with complex directory structures", async () => {
@@ -334,39 +336,35 @@ describe("memfs utility", () => {
       });
 
       const nodeFs: FSAdapter = {
-        readFile: async (path: string) => {
+        read: async (path: string) => {
           return readFile(join(testPath, path), "utf-8");
         },
-        writeFile: async (path: string, data: string) => {
-          await mkdir(join(testPath, path, ".."), { recursive: true });
-          return writeFile(join(testPath, path), data, "utf-8");
-        },
+        write: vi.fn(),
         mkdir: vi.fn(),
-        readdir: async (path: string) => {
+        listdir: async (path: string) => {
           return readdir(join(testPath, path));
         },
         stat: vi.fn(),
-        unlink: vi.fn(),
-        access: vi.fn(),
+        exists: vi.fn(),
         rm: vi.fn(),
-        copyFile: vi.fn(),
+        ensureDir: vi.fn(),
       };
 
       const fs = createFileSystem({ type: "custom", fs: nodeFs });
 
       // Test reading files from different directories
-      expect(await fs.readFile("/root-file.txt")).toBe("root content");
-      expect(await fs.readFile("/dir1/file1.txt")).toBe("file1 content");
-      expect(await fs.readFile("/dir1/subdir/deep-file.txt")).toBe("deep content");
-      expect(await fs.readFile("/dir2/another-file.txt")).toBe("another content");
+      expect(await fs.read("/root-file.txt")).toBe("root content");
+      expect(await fs.read("/dir1/file1.txt")).toBe("file1 content");
+      expect(await fs.read("/dir1/subdir/deep-file.txt")).toBe("deep content");
+      expect(await fs.read("/dir2/another-file.txt")).toBe("another content");
 
       // Test reading directories
-      const dir1Files = await fs.readdir("/dir1");
+      const dir1Files = await fs.listdir("/dir1");
       expect(dir1Files).toContain("file1.txt");
       expect(dir1Files).toContain("file2.txt");
       expect(dir1Files).toContain("subdir");
 
-      const rootFiles = await fs.readdir("/");
+      const rootFiles = await fs.listdir("/");
       expect(rootFiles).toContain("root-file.txt");
       expect(rootFiles).toContain("dir1");
       expect(rootFiles).toContain("dir2");

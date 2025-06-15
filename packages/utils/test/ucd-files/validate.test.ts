@@ -248,12 +248,19 @@ describe("validateUCDFiles", () => {
       });
 
       const mockFs = {
-        readFile: vi.fn().mockResolvedValue("test content"),
+        read: vi.fn().mockResolvedValue("test content"),
         mkdir: vi.fn().mockResolvedValue(undefined),
         ensureDir: vi.fn().mockResolvedValue(undefined),
-        writeFile: vi.fn().mockResolvedValue(undefined),
+        write: vi.fn().mockResolvedValue(undefined),
         exists: vi.fn().mockResolvedValue(true),
-        readdir: vi.fn().mockResolvedValue(["UnicodeData.txt"]),
+        listdir: vi.fn().mockResolvedValue(["UnicodeData.txt"]),
+        rm: vi.fn().mockResolvedValue(undefined),
+        stat: vi.fn().mockResolvedValue({
+          isFile: () => true,
+          isDirectory: () => false,
+          mtime: new Date(),
+          size: 1234,
+        }),
       } satisfies FSAdapter;
 
       mockFetch([
@@ -267,7 +274,7 @@ describe("validateUCDFiles", () => {
         fs: mockFs,
       });
 
-      expect(mockFs.readdir).toHaveBeenCalledWith(
+      expect(mockFs.listdir).toHaveBeenCalledWith(
         path.join(testdirPath, "v16.0.0"),
         true,
       );
@@ -323,12 +330,19 @@ describe("validateUCDFiles", () => {
       const testdirPath = await testdir({});
 
       const mockFs = {
-        readFile: vi.fn().mockResolvedValue("test content"),
+        read: vi.fn().mockResolvedValue("test content"),
         mkdir: vi.fn().mockResolvedValue(undefined),
         ensureDir: vi.fn().mockResolvedValue(undefined),
-        writeFile: vi.fn().mockResolvedValue(undefined),
+        write: vi.fn().mockResolvedValue(undefined),
         exists: vi.fn().mockResolvedValue(true),
-        readdir: vi.fn().mockRejectedValue(new Error("Permission denied")),
+        listdir: vi.fn().mockRejectedValue(new Error("Permission denied")),
+        stat: vi.fn().mockResolvedValue({
+          isFile: () => true,
+          isDirectory: () => false,
+          mtime: new Date(),
+          size: 1234,
+        }),
+        rm: vi.fn().mockResolvedValue(undefined),
       } satisfies FSAdapter;
 
       mockFetch([

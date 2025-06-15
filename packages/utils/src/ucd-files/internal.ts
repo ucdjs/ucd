@@ -151,7 +151,7 @@ export async function internal__processEntries(
           }
 
           const content = await response.text();
-          await fs.writeFile(outputPath, content);
+          await fs.write(outputPath, content);
           files.push(outputPath);
         } catch (err) {
           errors.push({
