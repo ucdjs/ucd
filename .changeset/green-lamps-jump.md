@@ -2,4 +2,4 @@
 "@ucdjs/utils": minor
 ---
 
-add new vfs function
+feat(utils): introduce `createFileSystem` factory + `FSAdapter` interface providing in-memory and custom VFS support
