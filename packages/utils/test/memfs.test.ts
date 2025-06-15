@@ -1,5 +1,5 @@
 import type { FSAdapter } from "../src/types";
-import { access, copyFile, mkdir, readdir, readFile, rm, rmdir, stat, unlink, writeFile } from "node:fs/promises";
+import { access, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
