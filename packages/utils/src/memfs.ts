@@ -56,7 +56,6 @@ export function createFileSystem(options: CreateFileSystemOptions = {}): FSAdapt
           encoding: "utf-8",
         });
 
-        invariant(result !== null, `File not found: ${path}`);
         invariant(typeof result === "string", `Expected string result from readFile, got ${typeof result}`);
 
         return result;
