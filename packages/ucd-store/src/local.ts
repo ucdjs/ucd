@@ -4,7 +4,9 @@ import type { AnalyzeResult, CleanResult, UCDStore, UCDStoreOptions } from "./st
 import path from "node:path";
 import { invariant } from "@luxass/utils";
 import { createPathFilter, type FilterFn } from "@ucdjs/utils";
-import { createDefaultFSAdapter, mirrorUCDFiles } from "@ucdjs/utils/ucd-files";
+import { createFileSystem } from "@ucdjs/utils/memfs";
+import { mirrorUCDFiles } from "@ucdjs/utils/ucd-files";
+
 import { z } from "zod/v4";
 import { resolveUCDStoreOptions } from "./store";
 
@@ -63,13 +65,14 @@ export class LocalUCDStore implements UCDStore {
     this._providedVersions = options.versions;
 
     // TODO: fix this!
-    this.#fs = options.fs!;
+    this.#fs = options.fs || createFileSystem({
+      type: "node",
+    });
     this.#filter = createPathFilter(filters);
   }
 
   async bootstrap(): Promise<void> {
     invariant(this.basePath, "Base path is required for LocalUCDStore.");
-    this.#fs = this.#fs || (await createDefaultFSAdapter());
 
     // Check if the store is valid (has manifest file)
     const storeManifestPath = path.join(this.basePath, ".ucd-store.json");
@@ -97,7 +100,7 @@ export class LocalUCDStore implements UCDStore {
     const storeManifestPath = path.join(this.basePath, ".ucd-store.json");
 
     try {
-      const manifestContent = await this.#fs.readFile(storeManifestPath);
+      const manifestContent = await this.#fs.read(storeManifestPath);
       const manifestData = JSON.parse(manifestContent);
 
       // Validate the manifest data against the schema
@@ -140,7 +143,7 @@ export class LocalUCDStore implements UCDStore {
     }));
 
     try {
-      await this.#fs.writeFile(storeManifestPath, JSON.stringify(manifestData, null, 2));
+      await this.#fs.write(storeManifestPath, JSON.stringify(manifestData, null, 2));
     } catch (error) {
       throw new Error(
         `[ucd-store]: Failed to create store manifest: ${error instanceof Error ? error.message : String(error)}`,

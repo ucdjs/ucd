@@ -34,6 +34,7 @@ catalogs:
     p-limit: ^6.2.0
     knitwork: ^1.2.0
     picomatch: ^4.0.2
+    memfs: ^4.17.2
 
   dev:
     "@luxass/eslint-config": ^4.19.0
