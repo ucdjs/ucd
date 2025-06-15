@@ -97,7 +97,7 @@ export class LocalUCDStore implements UCDStore {
     const storeManifestPath = path.join(this.basePath, ".ucd-store.json");
 
     try {
-      const manifestContent = await this.#fs.readFile(storeManifestPath);
+      const manifestContent = await this.#fs.read(storeManifestPath);
       const manifestData = JSON.parse(manifestContent);
 
       // Validate the manifest data against the schema
@@ -140,7 +140,7 @@ export class LocalUCDStore implements UCDStore {
     }));
 
     try {
-      await this.#fs.writeFile(storeManifestPath, JSON.stringify(manifestData, null, 2));
+      await this.#fs.write(storeManifestPath, JSON.stringify(manifestData, null, 2));
     } catch (error) {
       throw new Error(
         `[ucd-store]: Failed to create store manifest: ${error instanceof Error ? error.message : String(error)}`,
