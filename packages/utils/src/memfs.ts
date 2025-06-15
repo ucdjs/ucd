@@ -32,7 +32,7 @@ export type CreateFileSystemOptions =
  * @param options - Configuration options for creating the file system
  * @param {("memfs" | "custom")} [options.type] - The type of file system to create: "memfs" (in-memory) or "custom"
  * @param {Record<string, string>} [options.initialFiles] - A record of initial files to populate the file system with, where keys are file paths and values are file contents
- * @param {FSAdapter} [options.fsInstance] - A custom file system instance to use when type is "custom"
+ * @param {FSAdapter} [options.fs] - A custom file system instance to use when type is "custom"
  * @returns {FSAdapter} A file system instance with methods for common file operations
  * @throws {Error} When type is "custom" but no fsInstance is provided
  * @throws {Error} When an unsupported file system type is specified
