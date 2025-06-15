@@ -41,147 +41,149 @@ export function createFileSystem(options: CreateFileSystemOptions = {}): FSAdapt
   }
 
   if (type === "node") {
-    // Lazy loading of Node.js fs module using getter
-    let nodeFs: typeof import("node:fs/promises") | null = null;
-    const getNodeFs = async (): Promise<typeof import("node:fs/promises")> => {
-      if (!nodeFs) {
-        try {
-          nodeFs = await import("node:fs/promises");
-        } catch (err) {
-          throw new Error("Failed to load Node.js fs module. Make sure you're running in a Node.js environment.", {
-            cause: err,
-          });
-        }
-      }
-      return nodeFs;
-    };
-
-    async function exists(path: string): ReturnType<FSAdapter["exists"]> {
-      try {
-        const fs = await getNodeFs();
-        await fs.access(path);
-        return true;
-      } catch {
-        return false;
-      }
-    }
-
-    return {
-      async read(path: string) {
-        const fs = await getNodeFs();
-        return await fs.readFile(path, "utf-8");
-      },
-      async write(path: string, data: string, encoding: BufferEncoding = "utf-8") {
-        const fs = await getNodeFs();
-        await fs.writeFile(path, data, encoding);
-      },
-      async mkdir(path: string, options?: { recursive?: boolean; mode?: number }) {
-        const fs = await getNodeFs();
-        await fs.mkdir(path, options);
-      },
-      async ensureDir(path: string, options?: { recursive?: boolean; mode?: number }) {
-        try {
-          if (await exists(path)) {
-            return; // Directory already exists, no need to create
-          }
-          const fs = await getNodeFs();
-          await fs.mkdir(path, { recursive: true, ...options });
-        } catch (err: any) {
-          if (err.code !== "EEXIST") {
-            throw err;
-          }
-        }
-      },
-      async listdir(path: string, recursive: boolean = false) {
-        const fs = await getNodeFs();
-        const result = await fs.readdir(path, { recursive });
-        return result as string[];
-      },
-      async stat(path: string) {
-        const fs = await getNodeFs();
-        const result = await fs.stat(path);
-        return {
-          isFile: () => result.isFile(),
-          isDirectory: () => result.isDirectory(),
-          mtime: result.mtime as Date,
-          size: result.size as number,
-        };
-      },
-      async exists(path: string) {
-        return exists(path);
-      },
-      async rm(path: string, options?: { recursive?: boolean; force?: boolean }) {
-        const fs = await getNodeFs();
-        await fs.rm(path, { recursive: true, force: true, ...options });
-      },
-    };
+    return createNodeAdapter();
   }
 
   if (type === "memfs") {
-    const vol = Volume.fromJSON(options.initialFiles || {});
-    const memfs = createFsFromVolume(vol);
-
-    async function exists(path: string): ReturnType<FSAdapter["exists"]> {
-      try {
-        await memfs.promises
-          .access(path);
-        return true;
-      } catch {
-        return false;
-      }
-    }
-
-    return {
-      async read(path: string) {
-        const result = await memfs.promises.readFile(path, {
-          encoding: "utf-8",
-        });
-
-        invariant(typeof result === "string", `Expected string result from readFile, got ${typeof result}`);
-
-        return result;
-      },
-      async write(path: string, data: string, encoding: BufferEncoding = "utf-8") {
-        await memfs.promises.writeFile(path, data, { encoding });
-      },
-      async mkdir(path: string, options?: { recursive?: boolean; mode?: number }) {
-        await memfs.promises.mkdir(path, options);
-      },
-      async ensureDir(path: string, options?: { recursive?: boolean; mode?: number }) {
-        try {
-          if (await exists(path)) {
-            return; // Directory already exists, no need to create
-          }
-          await memfs.promises.mkdir(path, options);
-        } catch (err: any) {
-          if (err.code !== "EEXIST") {
-            throw err;
-          }
-        }
-      },
-      async listdir(path: string, recursive: boolean = false) {
-        const result = await memfs.promises.readdir(path, {
-          recursive,
-        });
-        return result as string[];
-      },
-      async stat(path: string) {
-        const result = await memfs.promises.stat(path);
-        return {
-          isFile: () => result.isFile(),
-          isDirectory: () => result.isDirectory(),
-          mtime: result.mtime as Date,
-          size: result.size as number,
-        };
-      },
-      async exists(path: string) {
-        return exists(path);
-      },
-      async rm(path: string, options?: { recursive?: boolean; force?: boolean }) {
-        await memfs.promises.rm(path, options);
-      },
-    };
+    return createMemfsAdapter(options.initialFiles || {});
   }
 
   throw new Error(`Unsupported file system type: ${type}. Use "memfs", "node", or "custom".`);
+}
+
+function createNodeAdapter(): FSAdapter {
+  // Lazy loading of Node.js fs module
+  let nodeFs: typeof import("node:fs/promises") | null = null;
+  const getFs = async (): Promise<typeof import("node:fs/promises")> => {
+    if (!nodeFs) {
+      try {
+        nodeFs = await import("node:fs/promises");
+      } catch (err) {
+        throw new Error("Failed to load Node.js fs module. Make sure you're running in a Node.js environment.", {
+          cause: err,
+        });
+      }
+    }
+    return nodeFs;
+  };
+
+  async function exists(path: string): Promise<boolean> {
+    try {
+      const fs = await getFs();
+      await fs.access(path);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async function ensureDir(path: string, options?: { recursive?: boolean; mode?: number }): Promise<void> {
+    try {
+      if (await exists(path)) {
+        return;
+      }
+      const fs = await getFs();
+      await fs.mkdir(path, { recursive: true, ...options });
+    } catch (err: any) {
+      if (err.code !== "EEXIST") {
+        throw err;
+      }
+    }
+  }
+
+  return {
+    async read(path: string) {
+      const fs = await getFs();
+      return await fs.readFile(path, "utf-8");
+    },
+    async write(path: string, data: string, encoding: BufferEncoding = "utf-8") {
+      const fs = await getFs();
+      await fs.writeFile(path, data, encoding);
+    },
+    async mkdir(path: string, options?: { recursive?: boolean; mode?: number }) {
+      const fs = await getFs();
+      await fs.mkdir(path, options);
+    },
+    ensureDir,
+    async listdir(path: string, recursive: boolean = false) {
+      const fs = await getFs();
+      const result = await fs.readdir(path, { recursive });
+      return result as string[];
+    },
+    async stat(path: string) {
+      const fs = await getFs();
+      const result = await fs.stat(path);
+      return {
+        isFile: () => result.isFile(),
+        isDirectory: () => result.isDirectory(),
+        mtime: result.mtime as Date,
+        size: result.size as number,
+      };
+    },
+    exists,
+    async rm(path: string, options?: { recursive?: boolean; force?: boolean }) {
+      const fs = await getFs();
+      await fs.rm(path, { recursive: true, force: true, ...options });
+    },
+  };
+}
+
+function createMemfsAdapter(initialFiles: Record<string, string>): FSAdapter {
+  const vol = Volume.fromJSON(initialFiles);
+  const memfs = createFsFromVolume(vol);
+  const fs = memfs.promises;
+
+  async function exists(path: string): Promise<boolean> {
+    try {
+      await fs.access(path);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async function ensureDir(path: string, options?: { recursive?: boolean; mode?: number }): Promise<void> {
+    try {
+      if (await exists(path)) {
+        return;
+      }
+      await fs.mkdir(path, { recursive: true, ...options });
+    } catch (err: any) {
+      if (err.code !== "EEXIST") {
+        throw err;
+      }
+    }
+  }
+
+  return {
+    async read(path: string) {
+      const result = await fs.readFile(path, { encoding: "utf-8" });
+      invariant(typeof result === "string", `Expected string result from readFile, got ${typeof result}`);
+      return result;
+    },
+    async write(path: string, data: string, encoding: BufferEncoding = "utf-8") {
+      await fs.writeFile(path, data, { encoding });
+    },
+    async mkdir(path: string, options?: { recursive?: boolean; mode?: number }) {
+      await fs.mkdir(path, options);
+    },
+    ensureDir,
+    async listdir(path: string, recursive: boolean = false) {
+      const result = await fs.readdir(path, { recursive });
+      return result as string[];
+    },
+    async stat(path: string) {
+      const result = await fs.stat(path);
+      return {
+        isFile: () => result.isFile(),
+        isDirectory: () => result.isDirectory(),
+        mtime: result.mtime as Date,
+        size: result.size as number,
+      };
+    },
+    exists,
+    async rm(path: string, options?: { recursive?: boolean; force?: boolean }) {
+      await fs.rm(path, options);
+    },
+  };
 }
