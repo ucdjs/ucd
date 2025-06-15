@@ -5,6 +5,7 @@ export default defineConfig({
     "./src/index.ts",
     "./src/ucd-files.ts",
     "./src/types.ts",
+    "./src/memfs.ts",
   ],
   exports: true,
   format: ["esm"],

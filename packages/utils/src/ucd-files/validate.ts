@@ -4,7 +4,7 @@ import { buildUCDPath } from "@luxass/unicode-utils-new";
 import { createClient } from "@luxass/unicode-utils-new/fetch";
 import defu from "defu";
 import { createPathFilter, type FilterFn } from "../filter";
-import { createDefaultFSAdapter } from "./fs-adapter";
+import { createFileSystem } from "../memfs";
 import { flattenFilePaths } from "./helpers";
 
 export interface ValidateUCDFilesOptions {
@@ -68,7 +68,7 @@ export async function validateUCDFiles(version: string, options: ValidateUCDFile
       patterns,
       apiUrl,
     } = defu(options, {
-      fs: await createDefaultFSAdapter(),
+      fs: createFileSystem({ type: "node" }),
       patternMatcher: undefined,
       patterns: [],
       apiUrl: "https://unicode-api.luxass.dev",
@@ -104,7 +104,7 @@ export async function validateUCDFiles(version: string, options: ValidateUCDFile
     const requiredFiles = flattenFilePaths(data);
 
     // Get all files, including those in subdirectories
-    const allPaths = await fs.readdir(versionOutputDir, true);
+    const allPaths = await fs.listdir(versionOutputDir, true);
 
     // Filter out directories, keeping only actual files
     const files = allPaths.filter((filePath) => {
@@ -190,7 +190,7 @@ export async function repairUCDFiles(
     fs,
     proxyUrl,
   } = defu(options, {
-    fs: await createDefaultFSAdapter(),
+    fs: createFileSystem({ type: "node" }),
     basePath: "./ucd-files",
     proxyUrl: "https://unicode-proxy.ucdjs.dev",
   } satisfies Partial<RepairUCDFilesOptions>);
@@ -241,7 +241,7 @@ export async function repairUCDFiles(
         }
 
         const content = await response.text();
-        await fs.writeFile(fullOutputPath, content);
+        await fs.write(fullOutputPath, content);
         repairedFiles.push(filePath);
       } catch (err) {
         errors.push({

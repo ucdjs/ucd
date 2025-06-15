@@ -183,12 +183,19 @@ describe("mirrorUCDFiles", () => {
       const testdirPath = await testdir({});
 
       const mockFs = {
-        readFile: vi.fn().mockResolvedValue("test content"),
+        read: vi.fn().mockResolvedValue("test content"),
         mkdir: vi.fn().mockResolvedValue(undefined),
         ensureDir: vi.fn().mockResolvedValue(undefined),
-        writeFile: vi.fn().mockResolvedValue(undefined),
+        write: vi.fn().mockResolvedValue(undefined),
         exists: vi.fn().mockResolvedValue(true),
-        readdir: vi.fn().mockResolvedValue([]),
+        listdir: vi.fn().mockResolvedValue([]),
+        rm: vi.fn().mockResolvedValue(undefined),
+        stat: vi.fn().mockResolvedValue({
+          isFile: () => true,
+          isDirectory: () => false,
+          mtime: new Date(),
+          size: 1234,
+        }),
       } satisfies FSAdapter;
 
       mockFetch([
@@ -306,12 +313,19 @@ describe("mirrorUCDFiles", () => {
       const testdirPath = await testdir({});
 
       const mockFs = {
-        readFile: vi.fn().mockResolvedValue("test content"),
+        read: vi.fn().mockResolvedValue("test content"),
         mkdir: vi.fn().mockRejectedValue(new Error("Permission denied")),
         ensureDir: vi.fn().mockResolvedValue(undefined),
-        writeFile: vi.fn().mockResolvedValue(undefined),
+        write: vi.fn().mockResolvedValue(undefined),
         exists: vi.fn().mockResolvedValue(true),
-        readdir: vi.fn().mockResolvedValue([]),
+        listdir: vi.fn().mockResolvedValue([]),
+        rm: vi.fn().mockResolvedValue(undefined),
+        stat: vi.fn().mockResolvedValue({
+          isFile: () => true,
+          isDirectory: () => false,
+          mtime: new Date(),
+          size: 1234,
+        }),
       } satisfies FSAdapter;
 
       mockFetch([

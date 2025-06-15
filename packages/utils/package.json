@@ -20,6 +20,7 @@
   },
   "exports": {
     ".": "./dist/index.js",
+    "./memfs": "./dist/memfs.js",
     "./types": "./dist/types.js",
     "./ucd-files": "./dist/ucd-files.js",
     "./package.json": "./package.json"
@@ -39,7 +40,10 @@
   },
   "dependencies": {
     "@luxass/unicode-utils-new": "catalog:prod",
+    "@luxass/utils": "catalog:prod",
+    "@ucdjs/tsconfig": "workspace:*",
     "defu": "catalog:prod",
+    "memfs": "catalog:prod",
     "picomatch": "catalog:prod"
   },
   "devDependencies": {
