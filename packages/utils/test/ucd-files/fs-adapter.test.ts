@@ -33,6 +33,18 @@ describe("FS Adapter", () => {
     expect(result).toBe("file content");
     expect(readFile).toHaveBeenCalledWith("/test.txt", "utf-8");
   });
+
+  it("should write file successfully", async () => {
+    const { writeFile } = await import("node:fs/promises");
+
+    // mock the spy's return value for this test
+    vi.mocked(writeFile).mockResolvedValue(undefined);
+
+    const fs = await createDefaultFSAdapter();
+    await fs.writeFile("/test.txt", "file content");
+
+    expect(writeFile).toHaveBeenCalledWith("/test.txt", "file content", "utf-8");
+  });
 });
 
 // eslint-disable-next-line test/prefer-lowercase-title

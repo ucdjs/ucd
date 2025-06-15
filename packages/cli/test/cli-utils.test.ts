@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import pkg from "../package.json" with { type: "json" };
 import { parseFlags, resolveCommand, runCommand } from "../src/cli-utils";
 
-const mockRunDownload = vi.fn();
+// const mockRunDownload = vi.fn();
 
 describe("resolveCommand", () => {
   it("should return 'version' when version flag is present", () => {
@@ -11,10 +11,10 @@ describe("resolveCommand", () => {
     expect(resolveCommand(flags)).toBe("version");
   });
 
-  it("should return the command from the third positional argument if it is supported", () => {
-    const flags: Arguments = { _: ["", "", "download"], version: false };
-    expect(resolveCommand(flags)).toBe("download");
-  });
+  // it("should return the command from the third positional argument if it is supported", () => {
+  //   const flags: Arguments = { _: ["", "", "download"], version: false };
+  //   expect(resolveCommand(flags)).toBe("download");
+  // });
 
   it("should return 'help' when the third positional argument is not a supported command", () => {
     const flags: Arguments = { _: ["", "", "unknown"], version: false };
@@ -77,21 +77,22 @@ describe("runCommand", () => {
     );
   });
 
-  it("should handle 'download' command", async () => {
-    vi.mock("../src/cmd/download", () => ({
-      runDownload: mockRunDownload,
-    }));
+  // will migrate this to the new store command
+  // it("should handle 'download' command", async () => {
+  //   vi.mock("../src/cmd/download", () => ({
+  //     runDownload: mockRunDownload,
+  //   }));
 
-    const flags = { _: ["", "", "download"], force: false };
-    await runCommand("download", flags);
+  //   const flags = { _: ["", "", "download"], force: false };
+  //   await runCommand("download", flags);
 
-    expect(mockRunDownload).toHaveBeenCalledWith({
-      flags: expect.objectContaining({
-        force: false,
-      }),
-      versions: [],
-    });
-  });
+  //   expect(mockRunDownload).toHaveBeenCalledWith({
+  //     flags: expect.objectContaining({
+  //       force: false,
+  //     }),
+  //     versions: [],
+  //   });
+  // });
 
   it("should throw error for unknown command", async () => {
     // @ts-expect-error Testing invalid command

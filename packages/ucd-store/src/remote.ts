@@ -1,8 +1,9 @@
 import type { UCDStore, UCDStoreOptions } from "./store";
-import { hasUCDFolderPath, UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
+import { buildUCDPath, UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { createClient, type UnicodeVersionFile } from "@luxass/unicode-utils-new/fetch";
 import { promiseRetry } from "@luxass/utils";
 import { createPathFilter, type FilterFn } from "@ucdjs/utils";
+import { flattenFilePaths } from "@ucdjs/utils/ucd-files";
 import { resolveUCDStoreOptions } from "./store";
 
 export type RemoteUCDStoreOptions = UCDStoreOptions;
@@ -90,7 +91,7 @@ export class RemoteUCDStore implements UCDStore {
     }
 
     const content = await promiseRetry(async () => {
-      const res = await fetch(new URL(`${version}/${hasUCDFolderPath(version) ? "ucd/" : ""}${filePath}`, this.proxyUrl));
+      const res = await fetch(new URL(buildUCDPath(version, filePath), this.proxyUrl));
 
       if (!res.ok) {
         throw new Error(`Failed to fetch file "${filePath}" for version "${version}": ${res.status} ${res.statusText}`);
@@ -109,7 +110,7 @@ export class RemoteUCDStore implements UCDStore {
 
   async getFilePaths(version: string): Promise<string[]> {
     const fileStructure = await this.getFileTree(version);
-    return this.flattenFilePaths(fileStructure);
+    return flattenFilePaths(fileStructure);
   }
 
   clearCache(): void {
@@ -127,21 +128,5 @@ export class RemoteUCDStore implements UCDStore {
         ...(item.children ? { children: this.processFileStructure(item.children) } : {}),
       };
     }).filter((item) => item != null);
-  }
-
-  private flattenFilePaths(files: UnicodeVersionFile[], basePath: string = ""): string[] {
-    const paths: string[] = [];
-
-    for (const file of files) {
-      const fullPath = basePath ? `${basePath}/${file.name}` : file.name;
-
-      if (file.children) {
-        paths.push(...this.flattenFilePaths(file.children, fullPath));
-      } else {
-        paths.push(fullPath);
-      }
-    }
-
-    return paths;
   }
 }
