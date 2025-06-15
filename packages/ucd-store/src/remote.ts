@@ -1,4 +1,4 @@
-import type { UCDStore, UCDStoreOptions } from "./store";
+import type { AnalyzeResult, CleanResult, UCDStore, UCDStoreOptions } from "./store";
 import { buildUCDPath, UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { createClient, type UnicodeVersionFile } from "@luxass/unicode-utils-new/fetch";
 import { promiseRetry } from "@luxass/utils";
@@ -128,5 +128,17 @@ export class RemoteUCDStore implements UCDStore {
         ...(item.children ? { children: this.processFileStructure(item.children) } : {}),
       };
     }).filter((item) => item != null);
+  }
+
+  getAllFiles(): Promise<string[]> {
+    throw new Error("Method not implemented.");
+  }
+
+  clean(): Promise<CleanResult> {
+    throw new Error("Method not implemented.");
+  }
+
+  analyze(): Promise<AnalyzeResult> {
+    throw new Error("Method not implemented.");
   }
 }
