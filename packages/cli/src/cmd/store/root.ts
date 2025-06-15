@@ -12,6 +12,9 @@ export interface CLIStoreCmdOptions {
 
 const CODEGEN_SUBCOMMANDS = [
   "init",
+  "repair",
+  "clean",
+  "status",
 ] as const;
 export type Subcommand = (typeof CODEGEN_SUBCOMMANDS)[number];
 
@@ -27,6 +30,9 @@ export async function runStoreRoot(subcommand: string, { flags }: CLIStoreCmdOpt
       tables: {
         Commands: [
           ["init", "Initialize an UCD Store."],
+          ["repair", "Repair an UCD Store."],
+          ["clean", "Clean an UCD Store."],
+          ["status", "Show the status of an UCD Store."],
         ],
         Flags: [
           ["--help (-h)", "See all available flags."],
@@ -44,6 +50,29 @@ export async function runStoreRoot(subcommand: string, { flags }: CLIStoreCmdOpt
       versions,
       flags: flags as CLIStoreInitCmdOptions["flags"],
     });
+    return;
+  }
+
+  if (subcommand === "clean") {
+    const { runCleanStore } = await import("./clean");
+    await runCleanStore({ flags });
+    return;
+  }
+
+  if (subcommand === "repair") {
+    const { runRepairStore } = await import("./repair");
+    const versions = flags._.slice(4) as string[];
+
+    await runRepairStore({
+      versions,
+      flags: flags as CLIStoreInitCmdOptions["flags"],
+    });
+    return;
+  }
+
+  if (subcommand === "status") {
+    const { runStatusStore } = await import("./status");
+    await runStatusStore({ flags });
     return;
   }
 

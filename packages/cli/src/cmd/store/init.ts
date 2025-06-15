@@ -1,12 +1,14 @@
+import type { Prettify } from "@luxass/utils";
 import type { CLIArguments } from "../../cli-utils";
+import { createUCDStore, type UCDStore } from "@ucdjs/ucd-store";
 import { printHelp } from "../../cli-utils";
+import { type CLIStoreCmdSharedFlags, SHARED_FLAGS } from "./_shared";
 
 export interface CLIStoreInitCmdOptions {
-  flags: CLIArguments<{
-    storeDir?: string;
-    patterns?: string[];
+  flags: CLIArguments<Prettify<CLIStoreCmdSharedFlags & {
+    dryRun?: boolean;
     force?: boolean;
-  }>;
+  }>>;
   versions: string[];
 }
 
@@ -18,8 +20,7 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
       usage: "<versions...> [...flags]",
       tables: {
         Flags: [
-          ["--patterns", "Glob patterns to match UCD files."],
-          ["--store-dir", "Directory to store the UCD files."],
+          ...SHARED_FLAGS,
           ["--force", "Overwrite existing files if they already exist."],
           ["--help (-h)", "See all available flags."],
         ],
@@ -34,6 +35,37 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
     return;
   }
 
+  const {
+    storeDir,
+    dryRun: _dryRun,
+    force: _force,
+    remote,
+    baseUrl,
+    proxyUrl,
+    patterns,
+  } = flags;
+
+  let store: UCDStore | null = null;
+  if (remote) {
+    store = await createUCDStore("remote", {
+      baseUrl,
+      proxyUrl,
+      filters: patterns,
+    });
+  } else {
+    store = await createUCDStore("local", {
+      basePath: storeDir,
+      baseUrl,
+      proxyUrl,
+      filters: patterns,
+    });
+  }
+
+  if (store == null) {
+    console.error("Error: Failed to create UCD store.");
+    return;
+  }
+
   // eslint-disable-next-line no-console
-  console.log(`Initializing UCD Store with versions: ${versions.join(", ")}...`);
+  console.log("Initializing UCD Store...");
 }

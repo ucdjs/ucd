@@ -84,6 +84,32 @@ export function resolveUCDStoreOptions<T extends Record<string, unknown>>(
   return defu(options, defaults) as Prettify<ValidatedUCDStoreOptions & RemoveIndexSignature<T>>;
 }
 
+export type CleanResult = {
+  success: true;
+  deletedCount: number;
+  error: null;
+} | {
+  success: false;
+  deletedCount: 0;
+  error: string;
+};
+
+export type AnalyzeResult = {
+  success: true;
+  totalFiles: number;
+  versions: {
+    [version: string]: {
+      fileCount: number;
+      isComplete: boolean;
+    };
+  };
+} | {
+  success: false;
+  error: string;
+  totalFiles: null;
+  versions: null;
+};
+
 export interface UCDStore {
   /**
    * Base URL for the Unicode API
@@ -104,4 +130,8 @@ export interface UCDStore {
   getFilePaths: (version: string) => Promise<string[]>;
 
   getFileTree: (version: string) => Promise<UnicodeVersionFile[]>;
+
+  getAllFiles: () => Promise<string[]>;
+  clean: () => Promise<CleanResult>;
+  analyze: () => Promise<AnalyzeResult>;
 }
