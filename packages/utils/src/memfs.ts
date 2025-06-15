@@ -9,7 +9,6 @@ export interface FSAdapter {
   stat: (path: string) => Promise<{ isFile: () => boolean; isDirectory: () => boolean; mtime: Date; size: number }>;
   unlink: (path: string) => Promise<void>;
   access: (path: string, mode?: number) => Promise<void>;
-  rmdir: (path: string, options?: { recursive?: boolean }) => Promise<void>;
   rm: (path: string, options?: { recursive?: boolean; force?: boolean }) => Promise<void>;
   copyFile: (src: string, dest: string, mode?: number) => Promise<void>;
 }
@@ -86,9 +85,6 @@ export function createFileSystem(options: CreateFileSystemOptions = {}): FSAdapt
       },
       access: async (path: string, mode?: number) => {
         await memfs.promises.access(path, mode);
-      },
-      rmdir: async (path: string, options?: { recursive?: boolean }) => {
-        await memfs.promises.rmdir(path, options);
       },
       rm: async (path: string, options?: { recursive?: boolean; force?: boolean }) => {
         await memfs.promises.rm(path, options);

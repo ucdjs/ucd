@@ -38,7 +38,6 @@ describe("memfs utility", () => {
         }),
         unlink: async () => {},
         access: async () => {},
-        rmdir: async () => {},
         rm: async () => {},
         copyFile: async () => {},
       };
@@ -138,7 +137,6 @@ describe("memfs utility", () => {
       });
       const mockUnlink = vi.fn().mockResolvedValue(undefined);
       const mockAccess = vi.fn().mockResolvedValue(undefined);
-      const mockRmdir = vi.fn().mockResolvedValue(undefined);
       const mockRm = vi.fn().mockResolvedValue(undefined);
       const mockCopyFile = vi.fn().mockResolvedValue(undefined);
 
@@ -150,7 +148,6 @@ describe("memfs utility", () => {
         stat: mockStat,
         unlink: mockUnlink,
         access: mockAccess,
-        rmdir: mockRmdir,
         rm: mockRm,
         copyFile: mockCopyFile,
       };
@@ -189,10 +186,6 @@ describe("memfs utility", () => {
       await fs.access("/test.txt");
       expect(mockAccess).toHaveBeenCalledWith("/test.txt");
 
-      // Test rmdir
-      await fs.rmdir("/dir");
-      expect(mockRmdir).toHaveBeenCalledWith("/dir");
-
       // Test rm
       await fs.rm("/dir", { recursive: true });
       expect(mockRm).toHaveBeenCalledWith("/dir", { recursive: true });
@@ -213,7 +206,6 @@ describe("memfs utility", () => {
         stat: vi.fn(),
         unlink: vi.fn(),
         access: vi.fn(),
-        rmdir: vi.fn(),
         rm: vi.fn(),
         copyFile: vi.fn(),
       };
@@ -260,9 +252,6 @@ describe("memfs utility", () => {
         },
         access: async (path: string, mode?: number) => {
           return access(join(testPath, path), mode);
-        },
-        rmdir: async (path: string, options?: { recursive?: boolean }) => {
-          return rmdir(join(testPath, path), options);
         },
         rm: async (path: string, options?: { recursive?: boolean; force?: boolean }) => {
           return rm(join(testPath, path), options);
@@ -325,7 +314,6 @@ describe("memfs utility", () => {
         stat: vi.fn(),
         unlink: vi.fn(),
         access: vi.fn(),
-        rmdir: vi.fn(),
         rm: vi.fn(),
         copyFile: vi.fn(),
       };
@@ -360,7 +348,6 @@ describe("memfs utility", () => {
         stat: vi.fn(),
         unlink: vi.fn(),
         access: vi.fn(),
-        rmdir: vi.fn(),
         rm: vi.fn(),
         copyFile: vi.fn(),
       };
