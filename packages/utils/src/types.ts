@@ -1,12 +1,12 @@
 // ONLY STOW TYPES IN HERE WHEN THEY CAN'T BE COLOCATED WITH THE CODE THAT USES THEM
 
-import type { MakeDirectoryOptions, Mode } from "node:fs";
-
 export interface FSAdapter {
   readFile: (path: string) => Promise<string>;
-  mkdir: (path: string, options?: Mode | MakeDirectoryOptions | null) => Promise<string | undefined>;
-  ensureDir: (path: string) => Promise<void>;
-  writeFile: (path: string, data: string) => Promise<void>;
-  exists: (path: string) => Promise<boolean>;
-  readdir: (path: string, recursive?: boolean) => Promise<string[]>;
+  writeFile: (path: string, data: string, encoding?: BufferEncoding) => Promise<void>;
+  mkdir: (path: string, options?: { recursive?: boolean; mode?: number }) => Promise<void>;
+  readdir: (path: string) => Promise<string[]>;
+  stat: (path: string) => Promise<{ isFile: () => boolean; isDirectory: () => boolean; mtime: Date; size: number }>;
+  unlink: (path: string) => Promise<void>;
+  access: (path: string, mode?: number) => Promise<void>;
+  rm: (path: string, options?: { recursive?: boolean; force?: boolean }) => Promise<void>;
 }

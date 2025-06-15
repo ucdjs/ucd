@@ -4,7 +4,7 @@ import { buildUCDPath } from "@luxass/unicode-utils-new";
 import { createClient } from "@luxass/unicode-utils-new/fetch";
 import defu from "defu";
 import { createPathFilter, type FilterFn } from "../filter";
-import { createDefaultFSAdapter } from "./fs-adapter";
+import { createDefaultFSAdapter } from "../memfs-node";
 import { flattenFilePaths } from "./helpers";
 
 export interface ValidateUCDFilesOptions {

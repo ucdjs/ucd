@@ -1,6 +1,6 @@
 export {
   createDefaultFSAdapter,
-} from "./ucd-files/fs-adapter";
+} from "./memfs-node";
 
 export { flattenFilePaths } from "./ucd-files/helpers";
 
