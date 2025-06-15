@@ -1,6 +1,6 @@
 import type { UnicodeVersionFile } from "@luxass/unicode-utils-new/fetch";
 import type { FSAdapter } from "@ucdjs/utils/types";
-import type { UCDStore, UCDStoreOptions } from "./store";
+import type { AnalyzeResult, CleanResult, UCDStore, UCDStoreOptions } from "./store";
 import path from "node:path";
 import { invariant } from "@luxass/utils";
 import { createPathFilter, type FilterFn } from "@ucdjs/utils";
@@ -207,5 +207,17 @@ export class LocalUCDStore implements UCDStore {
       name: path.basename(filePath),
       path: filePath,
     }));
+  }
+
+  getAllFiles(): Promise<string[]> {
+    throw new Error("Method not implemented.");
+  }
+
+  clean(): Promise<CleanResult> {
+    throw new Error("Method not implemented.");
+  }
+
+  analyze(): Promise<AnalyzeResult> {
+    throw new Error("Method not implemented.");
   }
 }

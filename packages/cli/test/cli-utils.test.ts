@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import pkg from "../package.json" with { type: "json" };
 import { parseFlags, resolveCommand, runCommand } from "../src/cli-utils";
 
-// const mockRunDownload = vi.fn();
+const mockRunStore = vi.fn();
 
 describe("resolveCommand", () => {
   it("should return 'version' when version flag is present", () => {
@@ -11,10 +11,10 @@ describe("resolveCommand", () => {
     expect(resolveCommand(flags)).toBe("version");
   });
 
-  // it("should return the command from the third positional argument if it is supported", () => {
-  //   const flags: Arguments = { _: ["", "", "download"], version: false };
-  //   expect(resolveCommand(flags)).toBe("download");
-  // });
+  it("should return the command from the third positional argument if it is supported", () => {
+    const flags: Arguments = { _: ["", "", "store"], version: false };
+    expect(resolveCommand(flags)).toBe("store");
+  });
 
   it("should return 'help' when the third positional argument is not a supported command", () => {
     const flags: Arguments = { _: ["", "", "unknown"], version: false };
@@ -77,22 +77,21 @@ describe("runCommand", () => {
     );
   });
 
-  // will migrate this to the new store command
-  // it("should handle 'download' command", async () => {
-  //   vi.mock("../src/cmd/download", () => ({
-  //     runDownload: mockRunDownload,
-  //   }));
+  it("should handle 'store' command", async () => {
+    vi.mock("../src/cmd/store/root", () => ({
+      runStoreRoot: mockRunStore,
+    }));
 
-  //   const flags = { _: ["", "", "download"], force: false };
-  //   await runCommand("download", flags);
+    const flags = { _: ["", "", "store"], force: false };
+    await runCommand("store", flags);
 
-  //   expect(mockRunDownload).toHaveBeenCalledWith({
-  //     flags: expect.objectContaining({
-  //       force: false,
-  //     }),
-  //     versions: [],
-  //   });
-  // });
+    expect(mockRunStore).toHaveBeenCalledWith("", {
+      flags: expect.objectContaining({
+        _: ["", "", "store"],
+        force: false,
+      }),
+    });
+  });
 
   it("should throw error for unknown command", async () => {
     // @ts-expect-error Testing invalid command

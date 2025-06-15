@@ -1,6 +1,7 @@
 import type { Prettify, RemoveIndexSignature } from "@luxass/utils";
 import type { Arguments } from "yargs-parser";
 import type { CLICodegenCmdOptions } from "./cmd/codegen/root";
+import type { CLIStoreCmdOptions } from "./cmd/store/root";
 import process from "node:process";
 import {
   bgGreen,
@@ -15,10 +16,12 @@ import pkg from "../package.json" with { type: "json" };
 type CLICommand =
   | "help"
   | "version"
-  | "codegen";
+  | "codegen"
+  | "store";
 
 const SUPPORTED_COMMANDS = new Set<CLICommand>([
   "codegen",
+  "store",
 ]);
 
 export interface GlobalCLIFlags {
@@ -188,6 +191,14 @@ export async function runCommand(cmd: CLICommand, flags: Arguments): Promise<voi
       const subcommand = flags._[3]?.toString() ?? "";
       await runCodegenRoot(subcommand, {
         flags: flags as CLICodegenCmdOptions["flags"],
+      });
+      break;
+    }
+    case "store": {
+      const { runStoreRoot } = await import("./cmd/store/root");
+      const subcommand = flags._[3]?.toString() ?? "";
+      await runStoreRoot(subcommand, {
+        flags: flags as CLIStoreCmdOptions["flags"],
       });
       break;
     }
