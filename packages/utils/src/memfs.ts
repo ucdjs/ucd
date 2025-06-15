@@ -1,4 +1,4 @@
-import type { FSAdapter } from "./types";
+import type { FSAdapter, FSStats, MkdirOptions, RmOptions } from "./types";
 import { invariant } from "@luxass/utils";
 import { createFsFromVolume, Volume } from "memfs";
 
@@ -77,7 +77,7 @@ function createNodeAdapter(): FSAdapter {
     }
   }
 
-  async function ensureDir(path: string, options?: { recursive?: boolean; mode?: number }): Promise<void> {
+  async function ensureDir(path: string, options?: MkdirOptions): Promise<void> {
     try {
       if (await exists(path)) {
         return;
@@ -100,7 +100,7 @@ function createNodeAdapter(): FSAdapter {
       const fs = await getFs();
       await fs.writeFile(path, data, encoding);
     },
-    async mkdir(path: string, options?: { recursive?: boolean; mode?: number }) {
+    async mkdir(path: string, options?: MkdirOptions) {
       const fs = await getFs();
       await fs.mkdir(path, options);
     },
@@ -110,7 +110,7 @@ function createNodeAdapter(): FSAdapter {
       const result = await fs.readdir(path, { recursive });
       return result as string[];
     },
-    async stat(path: string) {
+    async stat(path: string): Promise<FSStats> {
       const fs = await getFs();
       const result = await fs.stat(path);
       return {
@@ -121,7 +121,7 @@ function createNodeAdapter(): FSAdapter {
       };
     },
     exists,
-    async rm(path: string, options?: { recursive?: boolean; force?: boolean }) {
+    async rm(path: string, options?: RmOptions) {
       const fs = await getFs();
       await fs.rm(path, { recursive: true, force: true, ...options });
     },
@@ -142,7 +142,7 @@ function createMemfsAdapter(initialFiles: Record<string, string>): FSAdapter {
     }
   }
 
-  async function ensureDir(path: string, options?: { recursive?: boolean; mode?: number }): Promise<void> {
+  async function ensureDir(path: string, options?: MkdirOptions): Promise<void> {
     try {
       if (await exists(path)) {
         return;
@@ -164,7 +164,7 @@ function createMemfsAdapter(initialFiles: Record<string, string>): FSAdapter {
     async write(path: string, data: string, encoding: BufferEncoding = "utf-8") {
       await fs.writeFile(path, data, { encoding });
     },
-    async mkdir(path: string, options?: { recursive?: boolean; mode?: number }) {
+    async mkdir(path: string, options?: MkdirOptions) {
       await fs.mkdir(path, options);
     },
     ensureDir,
@@ -172,7 +172,7 @@ function createMemfsAdapter(initialFiles: Record<string, string>): FSAdapter {
       const result = await fs.readdir(path, { recursive });
       return result as string[];
     },
-    async stat(path: string) {
+    async stat(path: string): Promise<FSStats> {
       const result = await fs.stat(path);
       return {
         isFile: () => result.isFile(),
@@ -182,7 +182,7 @@ function createMemfsAdapter(initialFiles: Record<string, string>): FSAdapter {
       };
     },
     exists,
-    async rm(path: string, options?: { recursive?: boolean; force?: boolean }) {
+    async rm(path: string, options?: RmOptions) {
       await fs.rm(path, options);
     },
   };
