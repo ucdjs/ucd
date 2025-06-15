@@ -9,6 +9,7 @@
       "@ucdjs/utils": ["./packages/utils/src/index.ts"],
       "@ucdjs/utils/ucd-files": ["./packages/utils/src/ucd-files.ts"],
       "@ucdjs/utils/types": ["./packages/utils/src/types.ts"],
+      "@ucdjs/utils/memfs": ["./packages/utils/src/memfs.ts"],
       "@ucdjs/schema-gen": ["./packages/schema-gen/src/index.ts"],
       "@ucdjs/ucd-store": ["./packages/ucd-store/src/index.ts"]
     }
