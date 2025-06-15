@@ -6,7 +6,6 @@ export default defineConfig({
     "./src/ucd-files.ts",
     "./src/types.ts",
     "./src/memfs.ts",
-    "./src/memfs-node.ts",
   ],
   exports: true,
   format: ["esm"],

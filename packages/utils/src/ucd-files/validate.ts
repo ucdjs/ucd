@@ -4,7 +4,7 @@ import { buildUCDPath } from "@luxass/unicode-utils-new";
 import { createClient } from "@luxass/unicode-utils-new/fetch";
 import defu from "defu";
 import { createPathFilter, type FilterFn } from "../filter";
-import { createDefaultFSAdapter } from "../memfs-node";
+import { createFileSystem } from "../memfs";
 import { flattenFilePaths } from "./helpers";
 
 export interface ValidateUCDFilesOptions {
@@ -68,7 +68,7 @@ export async function validateUCDFiles(version: string, options: ValidateUCDFile
       patterns,
       apiUrl,
     } = defu(options, {
-      fs: await createDefaultFSAdapter(),
+      fs: createFileSystem({ type: "node" }),
       patternMatcher: undefined,
       patterns: [],
       apiUrl: "https://unicode-api.luxass.dev",
@@ -190,7 +190,7 @@ export async function repairUCDFiles(
     fs,
     proxyUrl,
   } = defu(options, {
-    fs: await createDefaultFSAdapter(),
+    fs: createFileSystem({ type: "node" }),
     basePath: "./ucd-files",
     proxyUrl: "https://unicode-proxy.ucdjs.dev",
   } satisfies Partial<RepairUCDFilesOptions>);

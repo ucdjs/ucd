@@ -1,7 +1,3 @@
-export {
-  createDefaultFSAdapter,
-} from "./memfs-node";
-
 export { flattenFilePaths } from "./ucd-files/helpers";
 
 export type { DownloadError, MirrorOptions, MirrorResult } from "./ucd-files/mirror";
