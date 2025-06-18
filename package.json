@@ -2,7 +2,7 @@
   "name": "api.ucdjs.dev",
   "type": "module",
   "private": true,
-  "packageManager": "pnpm@10.10.0",
+  "packageManager": "pnpm@10.12.1",
   "scripts": {
     "dev": "wrangler dev",
     "build": "wrangler deploy --dry-run --outdir=dist",
@@ -16,23 +16,23 @@
     "typecheck": "pnpm run cf-typegen && tsc --noEmit"
   },
   "dependencies": {
-    "@hono/zod-openapi": "^0.19.6",
-    "@luxass/unicode-utils": "^0.4.1",
-    "@scalar/hono-api-reference": "^0.8.8",
-    "hono": "^4.7.8",
-    "zod": "^3.24.3"
+    "@hono/zod-openapi": "^0.19.8",
+    "@luxass/unicode-utils": "^0.12.0-beta.8",
+    "@scalar/hono-api-reference": "^0.9.4",
+    "hono": "^4.8.0",
+    "zod": "^3.25.67"
   },
   "devDependencies": {
-    "@cloudflare/vitest-pool-workers": "^0.8.24",
-    "@luxass/eslint-config": "^4.18.1",
+    "@cloudflare/vitest-pool-workers": "^0.8.41",
+    "@luxass/eslint-config": "^4.19.0",
     "@stoplight/spectral-cli": "^6.15.0",
-    "eslint": "^9.26.0",
+    "eslint": "^9.29.0",
     "eslint-plugin-format": "^1.0.1",
     "nanotar": "^0.2.0",
-    "tsx": "^4.19.4",
+    "tsx": "^4.20.3",
     "typescript": "^5.8.3",
-    "vitest": "^3.1.2",
-    "wrangler": "^4.14.1"
+    "vitest": "^3.2.4",
+    "wrangler": "^4.20.3"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

@@ -1,7 +1,7 @@
 import type { HonoEnv } from "../types";
 import type { UnicodeVersion } from "./v1_unicode-versions.schemas";
 import { OpenAPIHono } from "@hono/zod-openapi";
-import { mapUnicodeVersion } from "@luxass/unicode-utils";
+import { resolveUCDVersion } from "@luxass/unicode-utils";
 import { cache } from "hono/cache";
 import { createError } from "../utils";
 import { LIST_ALL_UNICODE_VERSIONS_ROUTE } from "./v1_unicode-versions.openapi";
@@ -47,7 +47,7 @@ V1_UNICODE_VERSIONS_ROUTER.openapi(LIST_ALL_UNICODE_VERSIONS_ROUTE, async (c) =>
     // look for a year pattern anywhere in the row
     const dateMatch = row.match(/<td[^>]*>(\d{4})<\/td>/);
     if (!dateMatch) continue;
-    const ucdVersion = mapUnicodeVersion(version);
+    const ucdVersion = resolveUCDVersion(version);
 
     const ucdUrl = `https://www.unicode.org/Public/${ucdVersion}/${ucdVersion.includes("Update") ? "" : "ucd"}`;
 
