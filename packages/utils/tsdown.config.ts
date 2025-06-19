@@ -5,7 +5,11 @@ export default defineConfig({
     "./src/index.ts",
     "./src/ucd-files.ts",
     "./src/types.ts",
-    "./src/memfs.ts",
+
+    // fs-bridge
+    "./src/fs-bridge.ts",
+    "./src/fs-bridge/node.ts",
+    "./src/fs-bridge/http.ts",
   ],
   exports: true,
   format: ["esm"],
