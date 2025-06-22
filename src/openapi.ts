@@ -25,6 +25,10 @@ export function buildOpenApiConfig(version: string, servers: NonNullable<OpenAPI
         name: "Misc",
         description: "Endpoints that don't fit into other categories.",
       },
+      {
+        name: "Unicode Proxy",
+        description: "Endpoints for proxying requests to unicode-proxy.ucdjs.dev.",
+      },
     ],
     servers,
   } satisfies OpenAPIObjectConfig;
