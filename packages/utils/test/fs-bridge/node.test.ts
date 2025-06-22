@@ -166,13 +166,25 @@ describe("fs-bridge#node", () => {
       expect(exists).toBe(false);
     });
 
-    it("should remove a directory recursively by default", async () => {
+    it("should fail to remove a directory with recursive=false (default)", async () => {
       const testDir = await testdir({
         "dir-to-remove/file.txt": "content",
       });
       const dirPath = join(testDir, "dir-to-remove");
 
-      await NodeFileSystemBridge.rm(dirPath);
+      // Should throw because recursive defaults to false
+      await expect(NodeFileSystemBridge.rm(dirPath)).rejects.toThrow();
+    });
+
+    it("should remove a directory when recursive=true", async () => {
+      const testDir = await testdir({
+        "dir-to-remove": {
+          "file.txt": "content",
+        },
+      });
+      const dirPath = join(testDir, "dir-to-remove");
+
+      await NodeFileSystemBridge.rm(dirPath, { recursive: true });
       const exists = await NodeFileSystemBridge.exists(dirPath);
 
       expect(exists).toBe(false);
@@ -190,12 +202,20 @@ describe("fs-bridge#node", () => {
       expect(exists).toBe(false);
     });
 
+    it("should throw when removing non-existing file with force=false (default)", async () => {
+      const testDir = await testdir({});
+      const filePath = join(testDir, "non-existing.txt");
+
+      // Should throw due to force: false default
+      await expect(NodeFileSystemBridge.rm(filePath)).rejects.toThrow();
+    });
+
     it("should not throw when removing non-existing file with force=true", async () => {
       const testDir = await testdir({});
       const filePath = join(testDir, "non-existing.txt");
 
-      // Should not throw due to force: true default
-      await expect(NodeFileSystemBridge.rm(filePath)).resolves.toBeUndefined();
+      // Should not throw when force is explicitly set to true
+      await expect(NodeFileSystemBridge.rm(filePath, { force: true })).resolves.toBeUndefined();
     });
   });
 
