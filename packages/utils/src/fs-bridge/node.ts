@@ -42,8 +42,8 @@ const NodeFileSystemBridge = defineFileSystemBridge({
   },
   async rm(path, options) {
     return rm(path, {
-      recursive: options?.recursive ?? true,
-      force: options?.force ?? true,
+      recursive: options?.recursive ?? false,
+      force: options?.force ?? false,
     });
   },
   async stat(path) {
