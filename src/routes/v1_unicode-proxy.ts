@@ -59,7 +59,7 @@ V1_UNICODE_PROXY_ROUTER.openapi(UNICODE_PROXY_ROUTE, async (c) => {
       if (response.status === 404) {
         return createError(c, 404, `Resource not found: ${path}`);
       }
-      return createError(c, response.status, `Proxy request failed: ${response.statusText}`);
+      return createError(c, 500, `Proxy request failed: ${response.statusText}`);
     }
 
     const contentType = response.headers.get("content-type") || "application/octet-stream";
@@ -67,7 +67,11 @@ V1_UNICODE_PROXY_ROUTER.openapi(UNICODE_PROXY_ROUTE, async (c) => {
     // If it's JSON, it's likely a directory listing
     if (contentType.includes("application/json")) {
       const data = await response.json();
-      return c.json(data, 200);
+      return c.json(
+        // @ts-expect-error - I will type this later.
+        data,
+        200,
+      );
     }
 
     // For binary/text files, stream the response
