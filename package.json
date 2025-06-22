@@ -18,13 +18,13 @@
   "dependencies": {
     "@hono/zod-openapi": "^0.19.8",
     "@luxass/unicode-utils": "^0.12.0-beta.8",
-    "@scalar/hono-api-reference": "^0.9.4",
-    "hono": "^4.8.0",
+    "@scalar/hono-api-reference": "^0.9.6",
+    "hono": "^4.8.2",
     "zod": "^3.25.67"
   },
   "devDependencies": {
-    "@cloudflare/vitest-pool-workers": "^0.8.41",
-    "@luxass/eslint-config": "^4.19.0",
+    "@cloudflare/vitest-pool-workers": "^0.8.43",
+    "@luxass/eslint-config": "^5.0.0",
     "@stoplight/spectral-cli": "^6.15.0",
     "eslint": "^9.29.0",
     "eslint-plugin-format": "^1.0.1",
@@ -32,7 +32,7 @@
     "tsx": "^4.20.3",
     "typescript": "^5.8.3",
     "vitest": "^3.2.4",
-    "wrangler": "^4.20.3"
+    "wrangler": "^4.20.5"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
