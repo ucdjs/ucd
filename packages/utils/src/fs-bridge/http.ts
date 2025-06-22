@@ -14,7 +14,7 @@ export interface HTTPFileSystemBridgeOptions {
  * @param {string} options.baseUrl - Optional base URL to resolve relative paths against
  * @returns {FileSystemBridge} A file system bridge implementation for HTTP/HTTPS resources
  */
-function HTTPFileSystemBridge(options: HTTPFileSystemBridgeOptions = {}): ReturnType<typeof defineFileSystemBridge> {
+function HTTPFileSystemBridge(options: HTTPFileSystemBridgeOptions = {}): FileSystemBridge {
   return defineFileSystemBridge({
     async read(path) {
       const url = new URL(path, options.baseUrl);
