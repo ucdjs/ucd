@@ -10,7 +10,8 @@
     "enabled": true
   },
   "vars": {
-    "API_VERSION": "x.y.z"
+    "API_VERSION": "x.y.z",
+    "PROXY_ENDPOINT": "https://unicode-proxy.ucdjs.dev"
   },
   "placement": { "mode": "smart" },
   "env": {
@@ -18,7 +19,8 @@
       "name": "ucdjs-api-preview",
       "preview_urls": false,
       "vars": {
-        "ENVIRONMENT": "preview"
+        "ENVIRONMENT": "preview",
+        "PROXY_ENDPOINT": "https://preview.unicode-proxy.ucdjs.dev"
       },
       "route": {
         "custom_domain": true,
@@ -29,7 +31,8 @@
       "name": "ucdjs-api",
       "preview_urls": false,
       "vars": {
-        "ENVIRONMENT": "production"
+        "ENVIRONMENT": "production",
+        "PROXY_ENDPOINT": "https://unicode-proxy.ucdjs.dev"
       },
       "route": {
         "custom_domain": true,
