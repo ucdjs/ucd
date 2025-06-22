@@ -20,7 +20,9 @@
   },
   "exports": {
     ".": "./dist/index.js",
-    "./memfs": "./dist/memfs.js",
+    "./fs-bridge": "./dist/fs-bridge.js",
+    "./fs-bridge/http": "./dist/fs-bridge/http.js",
+    "./fs-bridge/node": "./dist/fs-bridge/node.js",
     "./types": "./dist/types.js",
     "./ucd-files": "./dist/ucd-files.js",
     "./package.json": "./package.json"
