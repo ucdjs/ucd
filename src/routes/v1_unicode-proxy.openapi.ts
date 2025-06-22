@@ -55,13 +55,6 @@ export const UNICODE_PROXY_ROUTE = createRoute({
   path: "/{path}",
   tags: ["Unicode Proxy"],
   description: "Proxy requests to unicode-proxy.ucdjs.dev",
-  parameters: [
-    {
-      in: "path",
-      name: "path",
-      required: true,
-    },
-  ],
   request: {
     params: z.object({
       path: z.string().describe("The path to proxy, e.g., 'latest/ucd.all.json'"),
