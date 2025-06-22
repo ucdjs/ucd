@@ -12,8 +12,8 @@
     "test:watch": "pnpm vitest",
     "lint": "eslint .",
     "lint:openapi": "pnpm run build:openapi && spectral lint ./node_modules/.openapi/openapi.json",
-    "cf-typegen": "wrangler types --env-interface CloudflareBindings",
-    "typecheck": "pnpm run cf-typegen && tsc --noEmit"
+    "generate:types": "wrangler types",
+    "typecheck": "pnpm run generate:types && tsc --noEmit"
   },
   "dependencies": {
     "@hono/zod-openapi": "^0.19.8",
