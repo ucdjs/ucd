@@ -1,8 +1,7 @@
-import type { FSAdapter } from "../types";
+import type { FileSystemBridge } from "../fs-bridge";
 import { createClient } from "@luxass/unicode-utils-new/fetch";
 import defu from "defu";
 import { createPathFilter, type PathFilter } from "../filter";
-import { createFileSystem } from "../memfs";
 import { internal_mirrorUnicodeVersion } from "./internal";
 
 export interface MirrorOptions {
@@ -22,7 +21,7 @@ export interface MirrorOptions {
    * Optional filesystem interface to use for file operations.
    * If not provided, a default implementation using fs-extra will be used.
    */
-  fs?: FSAdapter;
+  fs?: FileSystemBridge;
 
   /**
    * A Pattern matcher function to filter files based on their names.
@@ -79,7 +78,9 @@ export async function mirrorUCDFiles(options: MirrorOptions): Promise<MirrorResu
     proxyUrl,
   } = defu(options, {
     basePath: "./ucd-files",
-    fs: createFileSystem({ type: "node" }),
+    fs: await import("../fs-bridge/node").then((m) => m.default).catch(() => {
+      throw new Error("Failed to import default file system bridge");
+    }),
     patternMatcher: undefined,
     patterns: [],
     apiUrl: "https://unicode-api.luxass.dev",

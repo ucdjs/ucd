@@ -1,7 +1,8 @@
 import type { Mock } from "vitest";
 import { promiseRetry } from "@luxass/utils";
-import { LocalUCDStore } from "@ucdjs/ucd-store";
+import NodeFileSystemBridge from "@ucdjs/utils/fs-bridge/node";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { UCDStore } from "../src/store";
 
 vi.mock("@luxass/utils", () => ({
   promiseRetry: vi.fn(),
@@ -11,7 +12,7 @@ const mockPromiseRetry = promiseRetry as Mock;
 
 // eslint-disable-next-line test/prefer-lowercase-title
 describe("Local UCD Store", () => {
-  let store: LocalUCDStore;
+  let store: UCDStore;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -20,7 +21,10 @@ describe("Local UCD Store", () => {
       return fn();
     });
 
-    store = new LocalUCDStore();
+    store = new UCDStore({
+      mode: "local",
+      fs: NodeFileSystemBridge,
+    });
   });
 
   it("should initialize with default options", () => {
@@ -35,7 +39,11 @@ describe("Local UCD Store", () => {
       filters: ["*.json"],
     };
 
-    const customStore = new LocalUCDStore(customOptions);
+    const customStore = new UCDStore({
+      mode: "local",
+      ...customOptions,
+      fs: NodeFileSystemBridge,
+    });
 
     expect(customStore.baseUrl).toBe("https://luxass.dev");
     expect(customStore.proxyUrl).toBe("https://proxy.luxass.dev");
