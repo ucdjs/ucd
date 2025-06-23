@@ -66,6 +66,9 @@ export interface CleanResult {
   freedSpace: number;
 }
 
+export const DEFAULT_BASE_URL = "https://unicode-api.luxass.dev/api/v1";
+export const DEFAULT_PROXY_URL = "https://unicode-proxy.ucdjs.dev";
+
 export class UCDStore {
   public readonly baseUrl: string;
   public readonly proxyUrl: string;
@@ -74,13 +77,13 @@ export class UCDStore {
   private readonly providedVersions?: string[];
   private loadedVersions: string[] = [];
   private client: ReturnType<typeof createClient>;
-  #filter: FilterFn;
+  private filter: FilterFn;
   #fs: FileSystemBridge;
 
   constructor(options: UCDStoreOptions) {
     const { baseUrl, globalFilters, mode, proxyUrl, fs, basePath, versions } = defu(options, {
-      baseUrl: "https://unicode-api.luxass.dev/api/v1",
-      proxyUrl: "https://unicode-proxy.ucdjs.dev",
+      baseUrl: DEFAULT_BASE_URL,
+      proxyUrl: DEFAULT_PROXY_URL,
       globalFilters: [],
       mode: "remote" as StoreMode,
       basePath: "./ucd-files",
@@ -92,7 +95,7 @@ export class UCDStore {
     this.basePath = basePath;
     this.providedVersions = versions;
     this.client = createClient(this.baseUrl);
-    this.#filter = createPathFilter(globalFilters);
+    this.filter = createPathFilter(globalFilters);
     this.#fs = fs;
   }
 
@@ -216,7 +219,7 @@ export class UCDStore {
       throw new Error(`Version '${version}' not found in store`);
     }
 
-    if (!this.#filter(filePath)) {
+    if (!this.filter(filePath)) {
       throw new Error(`File path "${filePath}" is filtered out by the store's filter patterns.`);
     }
 
@@ -245,7 +248,7 @@ export class UCDStore {
 
   private processFileStructure(rawStructure: UnicodeVersionFile[]): UnicodeVersionFile[] {
     return rawStructure.map((item) => {
-      if (!this.#filter(item.path)) {
+      if (!this.filter(item.path)) {
         return null;
       }
       return {
@@ -286,7 +289,52 @@ export class UCDStore {
  * @returns {Promise<UCDStore>} A fully initialized UCDStore instance
  */
 export async function createUCDStore(options: UCDStoreOptions): Promise<UCDStore> {
-  const store = new UCDStore(options);
-  await store.initialize();
-  return store;
+  return new UCDStore(options);
+}
+
+export type LocalUCDStoreOptions = Omit<UCDStoreOptions, "mode" | "fs"> & {
+  fs?: FileSystemBridge;
+};
+
+/**
+ * Creates a new UCD store instance configured for local file system access.
+ *
+ * This function simplifies the creation of a local UCD store by:
+ * - Setting the mode to "local" automatically
+ * - Loading the Node.js file system bridge if not provided
+ * - Initializing the store with the specified options
+ *
+ * @param {LocalUCDStoreOptions} options - Configuration options for the local UCD store
+ * @returns {Promise<UCDStore>} A fully initialized local UCDStore instance
+ */
+export async function createLocalUCDStore(options: LocalUCDStoreOptions): Promise<UCDStore> {
+  const fs = options.fs || await import("@ucdjs/utils/fs-bridge/node").then((m) => m.default);
+
+  if (!fs) {
+    throw new Error("FileSystemBridge is required for local UCD store");
+  }
+
+  return new UCDStore({
+    mode: "local",
+    fs,
+    ...options,
+  });
+}
+
+export type RemoteUCDStoreOptions = Omit<UCDStoreOptions, "mode" | "fs"> & {
+  fs?: FileSystemBridge;
+};
+
+export async function createRemoteUCDStore(options: RemoteUCDStoreOptions): Promise<UCDStore> {
+  const fs = options.fs || await import("@ucdjs/utils/fs-bridge/node").then((m) => m.default);
+
+  if (!fs) {
+    throw new Error("FileSystemBridge is required for remote UCD store");
+  }
+
+  return new UCDStore({
+    mode: "remote",
+    fs,
+    ...options,
+  });
 }
