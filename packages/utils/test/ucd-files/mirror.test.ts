@@ -209,7 +209,7 @@ describe("mirrorUCDFiles", () => {
       });
 
       expect(result.success).toBe(true);
-      expect(mockFs.mkdir).toHaveBeenCalledWith(`${testdirPath}/v16.0.0`, { recursive: true });
+      expect(mockFs.mkdir).toHaveBeenCalledWith(`${testdirPath}/v16.0.0`);
     });
 
     it("should work with real filesystem using testdir", async () => {
