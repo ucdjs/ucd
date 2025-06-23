@@ -1,10 +1,9 @@
-import type { FSAdapter } from "../types";
+import type { FileSystemBridge } from "../fs-bridge";
 import path from "node:path";
 import { buildUCDPath } from "@luxass/unicode-utils-new";
 import { createClient } from "@luxass/unicode-utils-new/fetch";
 import defu from "defu";
 import { createPathFilter, type PathFilter } from "../filter";
-import { createFileSystem } from "../memfs";
 import { flattenFilePaths } from "./helpers";
 
 export interface ValidateUCDFilesOptions {
@@ -18,7 +17,7 @@ export interface ValidateUCDFilesOptions {
    * Optional filesystem interface to use for file operations.
    * If not provided, a default implementation using fs-extra will be used.
    */
-  fs?: FSAdapter;
+  fs?: FileSystemBridge;
 
   /**
    * A Pattern matcher function to filter files based on their names.
@@ -68,7 +67,9 @@ export async function validateUCDFiles(version: string, options: ValidateUCDFile
       patterns,
       apiUrl,
     } = defu(options, {
-      fs: createFileSystem({ type: "node" }),
+      fs: await import("../fs-bridge/node").then((m) => m.default).catch(() => {
+        throw new Error("Failed to import default file system bridge");
+      }),
       patternMatcher: undefined,
       patterns: [],
       apiUrl: "https://unicode-api.luxass.dev",
@@ -151,7 +152,7 @@ export interface RepairUCDFilesOptions {
    * Optional filesystem interface to use for file operations.
    * If not provided, a default implementation using fs-extra will be used.
    */
-  fs?: FSAdapter;
+  fs?: FileSystemBridge;
 
   /**
    * Optional proxy URL to use for downloading files.
@@ -190,7 +191,9 @@ export async function repairUCDFiles(
     fs,
     proxyUrl,
   } = defu(options, {
-    fs: createFileSystem({ type: "node" }),
+    fs: await import("../fs-bridge/node").then((m) => m.default).catch(() => {
+      throw new Error("Failed to import default file system bridge");
+    }),
     basePath: "./ucd-files",
     proxyUrl: "https://unicode-proxy.ucdjs.dev",
   } satisfies Partial<RepairUCDFilesOptions>);
@@ -217,15 +220,16 @@ export async function repairUCDFiles(
 
   try {
     // ensure the version directory exists
-    await fs.mkdir(versionOutputDir, { recursive: true });
+    await fs.mkdir(versionOutputDir);
 
     // download each missing file
     const downloadPromises = files.map(async (filePath) => {
       try {
         const fullOutputPath = path.join(versionOutputDir, filePath);
 
-        // Ensure the directory for this file exists
-        await fs.ensureDir(path.dirname(fullOutputPath));
+        if (!fs.exists(path.dirname(fullOutputPath))) {
+          await fs.mkdir(path.dirname(fullOutputPath));
+        }
 
         // Construct the download URL
         const url = `${proxyUrl}${buildUCDPath(version, filePath)}`;

@@ -1,5 +1,4 @@
 import type { UnicodeVersionFile } from "@luxass/unicode-utils-new/fetch";
-import type { MaybePromise, Prettify, RemoveIndexSignature } from "@luxass/utils";
 import type { FileSystemBridge } from "@ucdjs/utils/fs-bridge";
 import path from "node:path";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
@@ -284,7 +283,7 @@ export class UCDStore {
  * Creates a new UCD store instance with the specified options.
  *
  * @param {UCDStoreOptions} options - Configuration options for the UCD store
- * @returns {Promise<UCDStore} A fully initialized UCDStore instance
+ * @returns {Promise<UCDStore>} A fully initialized UCDStore instance
  */
 export async function createUCDStore(options: UCDStoreOptions): Promise<UCDStore> {
   const store = new UCDStore(options);

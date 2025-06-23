@@ -1,6 +1,6 @@
 import type { createClient, UnicodeVersionFile } from "@luxass/unicode-utils-new/fetch";
 import type { PathFilter } from "../filter";
-import type { FSAdapter } from "../types";
+import type { FileSystemBridge } from "../fs-bridge";
 import type { DownloadError, MirrorOptions } from "./mirror";
 import path, { dirname } from "node:path";
 import { hasUCDFolderPath } from "@luxass/unicode-utils-new";
@@ -23,7 +23,7 @@ export async function internal_mirrorUnicodeVersion(version: string, mirrorOptio
   const files: string[] = [];
   const errors: DownloadError[] = [];
   try {
-    await fs.mkdir(versionOutputDir, { recursive: true });
+    await fs.mkdir(versionOutputDir);
 
     const { data, error, response } = await client.GET("/api/v1/unicode-files/{version}", {
       params: {
@@ -91,7 +91,7 @@ interface InternalProcessEntriesOptions {
   basePath: string;
   versionOutputDir: string;
   currentDirPath?: string;
-  fs: FSAdapter;
+  fs: FileSystemBridge;
   entries: UnicodeVersionFile[];
   errors: DownloadError[];
   files: string[];
@@ -122,7 +122,7 @@ export async function internal__processEntries(
 
     if (entry.children) {
       dirPromises.push((async () => {
-        await fs.mkdir(outputPath, { recursive: true });
+        await fs.mkdir(outputPath);
         await internal__processEntries({
           entries: entry.children || [],
           basePath: `${basePath}/${entry.path}`,
@@ -137,7 +137,9 @@ export async function internal__processEntries(
     } else {
       filePromises.push((async () => {
         try {
-          await fs.ensureDir(dirname(outputPath));
+          if (!fs.exists(dirname(outputPath))) {
+            await fs.mkdir(dirname(outputPath));
+          }
           const url = `${proxyUrl}${basePath}/${entry.path}`;
           const response = await fetch(url);
 

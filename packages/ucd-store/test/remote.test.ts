@@ -3,9 +3,10 @@ import type { Mock } from "vitest";
 import { mockFetch } from "#msw-utils";
 import { promiseRetry } from "@luxass/utils";
 import { PRECONFIGURED_FILTERS } from "@ucdjs/utils";
+import HTTPFileSystemBridge from "@ucdjs/utils/fs-bridge/http";
 import { HttpResponse } from "msw";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { RemoteUCDStore } from "../src/remote";
+import { UCDStore, type UCDStoreOptions } from "../src/store";
 
 vi.mock("@luxass/utils", () => ({
   promiseRetry: vi.fn(),
@@ -25,7 +26,10 @@ describe("Remote UCD Store", () => {
 
   describe("initialization", () => {
     it("should initialize with default options", () => {
-      const store = new RemoteUCDStore();
+      const store = new UCDStore({
+        mode: "remote",
+        fs: HTTPFileSystemBridge(),
+      });
       expect(store.baseUrl).toBeDefined();
       expect(store.proxyUrl).toBeDefined();
     });
@@ -34,10 +38,12 @@ describe("Remote UCD Store", () => {
       const customOptions = {
         baseUrl: "https://luxass.dev",
         proxyUrl: "https://proxy.luxass.dev",
-        filters: ["**Shaping.txt"],
-      };
+        globalFilters: ["**Shaping.txt"],
+        mode: "remote",
+        fs: HTTPFileSystemBridge(),
+      } satisfies UCDStoreOptions;
 
-      const customStore = new RemoteUCDStore(customOptions);
+      const customStore = new UCDStore(customOptions);
 
       expect(customStore.baseUrl).toBe("https://luxass.dev");
       expect(customStore.proxyUrl).toBe("https://proxy.luxass.dev");
