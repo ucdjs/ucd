@@ -19,7 +19,7 @@ export interface MirrorOptions {
 
   /**
    * Optional filesystem interface to use for file operations.
-   * If not provided, a default implementation using fs-extra will be used.
+   * If not provided, a default implementation NodeJS bridge will be used.
    */
   fs?: FileSystemBridge;
 

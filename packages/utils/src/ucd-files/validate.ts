@@ -15,7 +15,7 @@ export interface ValidateUCDFilesOptions {
 
   /**
    * Optional filesystem interface to use for file operations.
-   * If not provided, a default implementation using fs-extra will be used.
+   * If not provided, a default implementation NodeJS bridge will be used.
    */
   fs?: FileSystemBridge;
 
@@ -150,7 +150,7 @@ export interface RepairUCDFilesOptions {
 
   /**
    * Optional filesystem interface to use for file operations.
-   * If not provided, a default implementation using fs-extra will be used.
+   * If not provided, a default implementation NodeJS bridge will be used.
    */
   fs?: FileSystemBridge;
 
@@ -227,7 +227,7 @@ export async function repairUCDFiles(
       try {
         const fullOutputPath = path.join(versionOutputDir, filePath);
 
-        if (!fs.exists(path.dirname(fullOutputPath))) {
+        if (!await fs.exists(path.dirname(fullOutputPath))) {
           await fs.mkdir(path.dirname(fullOutputPath));
         }
 
