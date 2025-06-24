@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import type { Prettify } from "@luxass/utils";
 import type { CLIArguments } from "../../cli-utils";
-import { createUCDStore, type UCDStore } from "@ucdjs/ucd-store";
+import { createLocalUCDStore, createRemoteUCDStore, type UCDStore } from "@ucdjs/ucd-store";
 import { printHelp } from "../../cli-utils";
 import { type CLIStoreCmdSharedFlags, SHARED_FLAGS } from "./_shared";
 
@@ -39,17 +39,17 @@ export async function runCleanStore({ flags }: CLIStoreCleanCmdOptions) {
 
   let store: UCDStore | null = null;
   if (remote) {
-    store = await createUCDStore("remote", {
+    store = await createRemoteUCDStore({
       baseUrl,
       proxyUrl,
-      filters: patterns,
+      globalFilters: patterns,
     });
   } else {
-    store = await createUCDStore("local", {
+    store = await createLocalUCDStore({
       basePath: storeDir,
       baseUrl,
       proxyUrl,
-      filters: patterns,
+      globalFilters: patterns,
     });
   }
 

@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import type { Prettify } from "@luxass/utils";
 import type { CLIArguments } from "../../cli-utils";
-import { createUCDStore, type UCDStore } from "@ucdjs/ucd-store";
+import { createLocalUCDStore, createRemoteUCDStore, type UCDStore } from "@ucdjs/ucd-store";
 import { printHelp } from "../../cli-utils";
 import { type CLIStoreCmdSharedFlags, SHARED_FLAGS } from "./_shared";
 
@@ -39,17 +39,17 @@ export async function runStatusStore({ flags }: CLIStoreStatusCmdOptions) {
 
   let store: UCDStore | null = null;
   if (remote) {
-    store = await createUCDStore("remote", {
+    store = await createRemoteUCDStore({
       baseUrl,
       proxyUrl,
-      filters: patterns,
+      globalFilters: patterns,
     });
   } else {
-    store = await createUCDStore("local", {
+    store = await createLocalUCDStore({
       basePath: storeDir,
       baseUrl,
       proxyUrl,
-      filters: patterns,
+      globalFilters: patterns,
     });
   }
 
@@ -74,7 +74,7 @@ export async function runStatusStore({ flags }: CLIStoreStatusCmdOptions) {
     for (const [version, info] of Object.entries(result.versions)) {
       console.log(`Version: ${version}`);
       console.log(`  Total files: ${info.fileCount}`);
-      console.log(`  Is Complete: ${info.isComplete} bytes`);
+      console.log(`  Is Complete: ${info.isComplete}`);
     }
   }
 }
