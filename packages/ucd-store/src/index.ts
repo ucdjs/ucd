@@ -1,5 +1,14 @@
 export {
+  createLocalUCDStore,
+  createRemoteUCDStore,
   createUCDStore,
   UCDStore,
-  type UCDStoreOptions,
+} from "./store";
+
+export type {
+  AnalyzeResult,
+  CleanResult,
+  LocalUCDStoreOptions,
+  RemoteUCDStoreOptions,
+  UCDStoreOptions,
 } from "./store";
