@@ -297,7 +297,11 @@ export class UCDStore {
  * @returns {Promise<UCDStore>} A fully initialized UCDStore instance
  */
 export async function createUCDStore(options: UCDStoreOptions): Promise<UCDStore> {
-  return new UCDStore(options);
+  const store = new UCDStore(options);
+
+  await store.initialize();
+
+  return store;
 }
 
 export type LocalUCDStoreOptions = Omit<UCDStoreOptions, "mode" | "fs"> & {
@@ -322,11 +326,15 @@ export async function createLocalUCDStore(options: LocalUCDStoreOptions): Promis
     throw new Error("FileSystemBridge is required for local UCD store");
   }
 
-  return new UCDStore({
+  const store = new UCDStore({
     mode: "local",
     fs,
     ...options,
   });
+
+  await store.initialize();
+
+  return store;
 }
 
 export type RemoteUCDStoreOptions = Omit<UCDStoreOptions, "mode" | "fs"> & {
@@ -340,9 +348,13 @@ export async function createRemoteUCDStore(options: RemoteUCDStoreOptions): Prom
     throw new Error("FileSystemBridge is required for remote UCD store");
   }
 
-  return new UCDStore({
+  const store = new UCDStore({
     mode: "remote",
     fs,
     ...options,
   });
+
+  await store.initialize();
+
+  return store;
 }
