@@ -1,5 +1,5 @@
 import type { createClient, UnicodeVersionFile } from "@luxass/unicode-utils-new/fetch";
-import type { FilterFn } from "../filter";
+import type { PathFilter } from "../filter";
 import type { FSAdapter } from "../types";
 import type { DownloadError, MirrorOptions } from "./mirror";
 import path, { dirname } from "node:path";
@@ -167,7 +167,7 @@ export async function internal__processEntries(
   await Promise.all([...dirPromises, ...filePromises]);
 }
 
-export function internal__filterEntriesRecursive(entries: UnicodeVersionFile[], patternMatcher: FilterFn): UnicodeVersionFile[] {
+export function internal__filterEntriesRecursive(entries: UnicodeVersionFile[], patternMatcher: PathFilter): UnicodeVersionFile[] {
   function filterEntries(entryList: UnicodeVersionFile[], prefix = ""): UnicodeVersionFile[] {
     const result: UnicodeVersionFile[] = [];
     for (const entry of entryList) {
