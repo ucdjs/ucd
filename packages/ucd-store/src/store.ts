@@ -232,11 +232,7 @@ export class UCDStore {
       throw new Error(`Version '${version}' not found in store`);
     }
 
-    const combinedFilter = extraFilters && extraFilters.length > 0
-      ? createPathFilter([...this.filter.getFilters() || [], ...extraFilters])
-      : this.filter;
-
-    if (!combinedFilter(filePath)) {
+    if (!this.filter(filePath, extraFilters)) {
       throw new Error(`File path "${filePath}" is filtered out by the store's filter patterns.`);
     }
 
@@ -264,12 +260,8 @@ export class UCDStore {
   }
 
   private processFileStructure(rawStructure: UnicodeVersionFile[], extraFilters?: string[]): UnicodeVersionFile[] {
-    const combinedFilter = extraFilters && extraFilters.length > 0
-      ? createPathFilter([...this.filter.getFilters() || [], ...extraFilters])
-      : this.filter;
-
     return rawStructure.map((item) => {
-      if (!combinedFilter(item.path)) {
+      if (!this.filter(item.path, extraFilters)) {
         return null;
       }
       return {
