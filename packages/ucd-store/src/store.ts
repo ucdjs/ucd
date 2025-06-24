@@ -232,12 +232,11 @@ export class UCDStore {
       throw new Error(`Version '${version}' not found in store`);
     }
 
-    // Extend the filter with extra filters if provided
-    if (extraFilters && extraFilters.length > 0) {
-      this.filter.extend(extraFilters);
-    }
+    const combinedFilter = extraFilters && extraFilters.length > 0
+      ? createPathFilter([...this.filter.getFilters() || [], ...extraFilters])
+      : this.filter;
 
-    if (!this.filter(filePath)) {
+    if (!combinedFilter(filePath)) {
       throw new Error(`File path "${filePath}" is filtered out by the store's filter patterns.`);
     }
 
@@ -265,13 +264,12 @@ export class UCDStore {
   }
 
   private processFileStructure(rawStructure: UnicodeVersionFile[], extraFilters?: string[]): UnicodeVersionFile[] {
-    // Extend the filter with extra filters if provided
-    if (extraFilters && extraFilters.length > 0) {
-      this.filter.extend(extraFilters);
-    }
+    const combinedFilter = extraFilters && extraFilters.length > 0
+      ? createPathFilter([...this.filter.getFilters() || [], ...extraFilters])
+      : this.filter;
 
     return rawStructure.map((item) => {
-      if (!this.filter(item.path)) {
+      if (!combinedFilter(item.path)) {
         return null;
       }
       return {
@@ -296,16 +294,7 @@ export class UCDStore {
   }
 
   async analyze(): Promise<AnalyzeResult> {
-    const allFiles = await this.getAllFiles();
-    return {
-      success: true,
-      totalFiles: allFiles.length,
-      versions: this.versions.map((version) => ({
-        version,
-        fileCount: 0,
-        isComplete: false,
-      })),
-    };
+    throw new Error("Analyze method not implemented yet");
   }
 }
 
