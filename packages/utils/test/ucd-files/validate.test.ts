@@ -1,6 +1,7 @@
 import type { FSAdapter } from "../../src/types";
 import path from "node:path";
 import { mockFetch } from "#msw-utils";
+import { createPathFilter } from "@ucdjs/utils";
 import { HttpResponse } from "msw";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
@@ -173,9 +174,7 @@ describe("validateUCDFiles", () => {
       ]);
 
       // Custom matcher that only allows UnicodeData.txt
-      const customPatternMatcher = (path: string) => {
-        return path.includes("UnicodeData.txt");
-      };
+      const customPatternMatcher = createPathFilter(["**/UnicodeData.txt"]);
 
       const result = await validateUCDFiles("16.0.0", {
         basePath: testdirPath,
@@ -201,7 +200,7 @@ describe("validateUCDFiles", () => {
       ]);
 
       // Custom matcher that allows everything
-      const customPatternMatcher = () => true;
+      const customPatternMatcher = createPathFilter(["**/*"]);
 
       const result = await validateUCDFiles("16.0.0", {
         basePath: testdirPath,
