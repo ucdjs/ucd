@@ -451,4 +451,170 @@ describe("createPathFilter", () => {
       expect(filter("file.txt")).toBe(false);
     });
   });
+
+  describe("extraFilters parameter", () => {
+    it("should work without extraFilters parameter (default empty array)", () => {
+      const filter = createPathFilter(["*.txt"]);
+
+      expect(filter("file.txt")).toBe(true);
+      expect(filter("file.js")).toBe(false);
+    });
+
+    it("should apply extra filters on top of base filters", () => {
+      const filter = createPathFilter(["*.txt"]);
+
+      // Base behavior
+      expect(filter("file.txt")).toBe(true);
+      expect(filter("file.js")).toBe(false);
+
+      // With extra include filters
+      expect(filter("file.txt", ["*.js"])).toBe(true); // Still matches base
+      expect(filter("file.js", ["*.js"])).toBe(true); // Now matches extra
+      expect(filter("file.css", ["*.js"])).toBe(false); // Matches neither
+    });
+
+    it("should apply extra exclude filters", () => {
+      const filter = createPathFilter(["**/*.txt"]);
+
+      // Base behavior - includes all txt files
+      expect(filter("file.txt")).toBe(true);
+      expect(filter("test.txt")).toBe(true);
+      expect(filter("file.js")).toBe(false);
+
+      // With extra exclude filters
+      expect(filter("file.txt", ["!*test*"])).toBe(true); // Not matching exclude
+      expect(filter("test.txt", ["!*test*"])).toBe(false); // Matching exclude
+      expect(filter("file.js", ["!*test*"])).toBe(false); // Still doesn't match base
+    });
+
+    it("should combine base and extra filters properly", () => {
+      const filter = createPathFilter(["src/**/*.js"]);
+
+      // Base: only js files in src
+      expect(filter("src/index.js")).toBe(true);
+      expect(filter("src/style.css")).toBe(false);
+      expect(filter("lib/index.js")).toBe(false);
+
+      // Extra: add lib directory
+      expect(filter("src/index.js", ["lib/**/*.js"])).toBe(true); // Base still works
+      expect(filter("lib/index.js", ["lib/**/*.js"])).toBe(true); // Extra works
+      expect(filter("src/style.css", ["lib/**/*.js"])).toBe(false); // Still excluded
+      expect(filter("lib/style.css", ["lib/**/*.js"])).toBe(false); // Still excluded
+    });
+
+    it("should handle multiple extra filters", () => {
+      const filter = createPathFilter(["*.txt"]);
+
+      expect(filter("file.txt", ["*.js", "*.md"])).toBe(true); // Matches base
+      expect(filter("file.js", ["*.js", "*.md"])).toBe(true); // Matches extra
+      expect(filter("file.md", ["*.js", "*.md"])).toBe(true); // Matches extra
+      expect(filter("file.css", ["*.js", "*.md"])).toBe(false); // Matches neither
+    });
+
+    it("should handle mixed include and exclude in extra filters", () => {
+      const filter = createPathFilter(["src/**"]);
+
+      // Base: includes all src files
+      expect(filter("src/index.js")).toBe(true);
+      expect(filter("src/test.js")).toBe(true);
+      expect(filter("lib/index.js")).toBe(false);
+
+      // Extra: add lib but exclude test files
+      const extraFilters = ["lib/**", "!**/test.*"];
+      expect(filter("src/index.js", extraFilters)).toBe(true); // Base, not test
+      expect(filter("src/test.js", extraFilters)).toBe(false); // Base but is test
+      expect(filter("lib/index.js", extraFilters)).toBe(true); // Extra, not test
+      expect(filter("lib/test.js", extraFilters)).toBe(false); // Extra but is test
+    });
+
+    it("should not modify the base filter when using extra filters", () => {
+      const filter = createPathFilter(["*.txt"]);
+
+      // Use extra filters
+      expect(filter("file.js", ["*.js"])).toBe(true);
+
+      // Base filter should remain unchanged
+      expect(filter("file.txt")).toBe(true);
+      expect(filter("file.js")).toBe(false); // Should still be false without extra filters
+    });
+
+    it("should work with empty extra filters array", () => {
+      const filter = createPathFilter(["*.txt"]);
+
+      expect(filter("file.txt", [])).toBe(true);
+      expect(filter("file.js", [])).toBe(false);
+
+      // Should behave same as without extra filters parameter
+      expect(filter("file.txt", [])).toBe(filter("file.txt"));
+      expect(filter("file.js", [])).toBe(filter("file.js"));
+    });
+
+    it("should handle complex real-world scenario with extra filters", () => {
+      // Base: TypeScript/JavaScript source files
+      const filter = createPathFilter(["src/**/*.{js,ts,tsx}"]);
+
+      // Base behavior
+      expect(filter("src/index.ts")).toBe(true);
+      expect(filter("src/component.tsx")).toBe(true);
+      expect(filter("src/style.css")).toBe(false);
+      expect(filter("test/spec.ts")).toBe(false);
+
+      // Scenario 1: Temporarily include test files
+      const withTests = ["test/**/*.{js,ts}"];
+      expect(filter("src/index.ts", withTests)).toBe(true); // Still included
+      expect(filter("test/spec.ts", withTests)).toBe(true); // Now included
+      expect(filter("test/style.css", withTests)).toBe(false); // Still excluded
+
+      // Scenario 2: Exclude specific patterns temporarily
+      const excludeGenerated = ["!**/*.generated.*"];
+      expect(filter("src/index.ts", excludeGenerated)).toBe(true); // Not generated
+      expect(filter("src/api.generated.ts", excludeGenerated)).toBe(false); // Is generated
+
+      // Scenario 3: Complex combination
+      const complexExtra = ["test/**/*.ts", "!**/*.generated.*", "!**/*.spec.*"];
+      expect(filter("src/index.ts", complexExtra)).toBe(true); // Source file
+      expect(filter("test/utils.ts", complexExtra)).toBe(true); // Test file (not spec)
+      expect(filter("test/component.spec.ts", complexExtra)).toBe(false); // Test but spec
+      expect(filter("src/api.generated.ts", complexExtra)).toBe(false); // Source but generated
+    });
+
+    it("should handle extra filters with default exclusions", () => {
+      const filter = createPathFilter(["**/*"]); // Include everything
+
+      // Default exclusions should apply (zip, pdf)
+      expect(filter("file.txt")).toBe(true);
+      expect(filter("file.zip")).toBe(false); // Default exclusion
+      expect(filter("file.pdf")).toBe(false); // Default exclusion
+
+      // Extra filters should work with default exclusions
+      expect(filter("file.txt", ["!*.txt"])).toBe(false); // Extra exclusion
+      expect(filter("file.zip", ["!*.txt"])).toBe(false); // Still excluded by default
+      expect(filter("file.js", ["!*.txt"])).toBe(true); // Not excluded by either
+    });
+
+    it("should handle extra filters with disableDefaultExclusions option", () => {
+      const filter = createPathFilter(["**/*"], { disableDefaultExclusions: true });
+
+      // No default exclusions
+      expect(filter("file.zip")).toBe(true);
+      expect(filter("file.pdf")).toBe(true);
+
+      // Extra filters should still work
+      expect(filter("file.zip", ["!*.zip"])).toBe(false); // Extra exclusion
+      expect(filter("file.pdf", ["!*.zip"])).toBe(true); // Not excluded by extra
+    });
+
+    it("should maintain performance with extra filters", () => {
+      const filter = createPathFilter(["src/**/*.js"]);
+
+      // Multiple calls with same extra filters should work efficiently
+      const extraFilters = ["test/**/*.js", "!**/*.min.js"];
+
+      for (let i = 0; i < 10; i++) {
+        expect(filter("src/index.js", extraFilters)).toBe(true);
+        expect(filter("test/spec.js", extraFilters)).toBe(true);
+        expect(filter("src/bundle.min.js", extraFilters)).toBe(false);
+      }
+    });
+  });
 });
