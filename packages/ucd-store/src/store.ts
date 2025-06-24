@@ -4,7 +4,7 @@ import path from "node:path";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { createClient } from "@luxass/unicode-utils-new/fetch";
 import { promiseRetry } from "@luxass/utils";
-import { createPathFilter, type FilterFn } from "@ucdjs/utils";
+import { createPathFilter, type PathFilter } from "@ucdjs/utils";
 import { flattenFilePaths } from "@ucdjs/utils/ucd-files";
 import defu from "defu";
 
@@ -88,7 +88,7 @@ export class UCDStore {
   private readonly providedVersions?: string[];
   private loadedVersions: string[] = [];
   private client: ReturnType<typeof createClient>;
-  private filter: FilterFn;
+  private filter: PathFilter;
   #fs: FileSystemBridge;
 
   constructor(options: UCDStoreOptions) {
@@ -188,7 +188,7 @@ export class UCDStore {
     await this.#fs.write(storeManifestPath, JSON.stringify(manifestData, null, 2));
   }
 
-  async getFileTree(version: string): Promise<UnicodeVersionFile[]> {
+  async getFileTree(version: string, extraFilters?: string[]): Promise<UnicodeVersionFile[]> {
     if (!this.hasVersion(version)) {
       throw new Error(`Version '${version}' not found in store`);
     }
@@ -204,7 +204,7 @@ export class UCDStore {
         throw new Error(`Failed to fetch file structure for version "${version}": ${error.message}`);
       }
 
-      return this.processFileStructure(data);
+      return this.processFileStructure(data, extraFilters);
     } else {
       // For local mode, read directory structure
       if (!this.basePath) {
@@ -214,10 +214,12 @@ export class UCDStore {
       const versionPath = path.join(this.basePath, version);
       const files = await this.#fs.listdir(versionPath, true);
 
-      return files.map((file) => ({
+      const fileStructure = files.map((file) => ({
         name: path.basename(file),
         path: file,
       }));
+
+      return this.processFileStructure(fileStructure, extraFilters);
     }
   }
 
@@ -225,9 +227,14 @@ export class UCDStore {
     return [...this.loadedVersions];
   }
 
-  async getFile(version: string, filePath: string): Promise<string> {
+  async getFile(version: string, filePath: string, extraFilters?: string[]): Promise<string> {
     if (!this.hasVersion(version)) {
       throw new Error(`Version '${version}' not found in store`);
+    }
+
+    // Extend the filter with extra filters if provided
+    if (extraFilters && extraFilters.length > 0) {
+      this.filter.extend(extraFilters);
     }
 
     if (!this.filter(filePath)) {
@@ -252,12 +259,17 @@ export class UCDStore {
     return this.loadedVersions.includes(version);
   }
 
-  async getFilePaths(version: string): Promise<string[]> {
-    const fileStructure = await this.getFileTree(version);
+  async getFilePaths(version: string, extraFilters?: string[]): Promise<string[]> {
+    const fileStructure = await this.getFileTree(version, extraFilters);
     return flattenFilePaths(fileStructure);
   }
 
-  private processFileStructure(rawStructure: UnicodeVersionFile[]): UnicodeVersionFile[] {
+  private processFileStructure(rawStructure: UnicodeVersionFile[], extraFilters?: string[]): UnicodeVersionFile[] {
+    // Extend the filter with extra filters if provided
+    if (extraFilters && extraFilters.length > 0) {
+      this.filter.extend(extraFilters);
+    }
+
     return rawStructure.map((item) => {
       if (!this.filter(item.path)) {
         return null;
@@ -265,15 +277,15 @@ export class UCDStore {
       return {
         name: item.name,
         path: item.path,
-        ...(item.children ? { children: this.processFileStructure(item.children) } : {}),
+        ...(item.children ? { children: this.processFileStructure(item.children, extraFilters) } : {}),
       };
     }).filter((item): item is UnicodeVersionFile => item != null);
   }
 
-  async getAllFiles(): Promise<string[]> {
+  async getAllFiles(extraFilters?: string[]): Promise<string[]> {
     const allFiles: string[] = [];
     for (const version of this.versions) {
-      const files = await this.getFilePaths(version);
+      const files = await this.getFilePaths(version, extraFilters);
       allFiles.push(...files.map((file) => `${version}/${file}`));
     }
     return allFiles;
