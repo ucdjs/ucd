@@ -24,7 +24,6 @@ catalogs:
     "@luxass/unicode-utils-new": npm:@luxass/unicode-utils@0.12.0-beta.8
     "@luxass/utils": ^2.3.0
     farver: ^0.4.2
-    fs-extra: ^11.3.0
     yargs-parser: ^22.0.0
     defu: ^6.1.4
     arktype: ^2.1.20
@@ -38,7 +37,6 @@ catalogs:
 
   dev:
     "@luxass/eslint-config": ^4.19.0
-    "@types/fs-extra": ^11.0.4
     "@types/picomatch": ^4.0.0
     "@types/node": ^22.10.0
     "@types/yargs-parser": ^21.0.3

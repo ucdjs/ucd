@@ -1,4 +1,4 @@
-import type { FSAdapter } from "../../src/types";
+import type { FileSystemBridge } from "@ucdjs/utils/fs-bridge";
 import path from "node:path";
 import { mockFetch } from "#msw-utils";
 import { createPathFilter } from "@ucdjs/utils";
@@ -249,7 +249,6 @@ describe("validateUCDFiles", () => {
       const mockFs = {
         read: vi.fn().mockResolvedValue("test content"),
         mkdir: vi.fn().mockResolvedValue(undefined),
-        ensureDir: vi.fn().mockResolvedValue(undefined),
         write: vi.fn().mockResolvedValue(undefined),
         exists: vi.fn().mockResolvedValue(true),
         listdir: vi.fn().mockResolvedValue(["UnicodeData.txt"]),
@@ -260,7 +259,7 @@ describe("validateUCDFiles", () => {
           mtime: new Date(),
           size: 1234,
         }),
-      } satisfies FSAdapter;
+      } satisfies FileSystemBridge;
 
       mockFetch([
         ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
@@ -331,7 +330,6 @@ describe("validateUCDFiles", () => {
       const mockFs = {
         read: vi.fn().mockResolvedValue("test content"),
         mkdir: vi.fn().mockResolvedValue(undefined),
-        ensureDir: vi.fn().mockResolvedValue(undefined),
         write: vi.fn().mockResolvedValue(undefined),
         exists: vi.fn().mockResolvedValue(true),
         listdir: vi.fn().mockRejectedValue(new Error("Permission denied")),
@@ -342,7 +340,7 @@ describe("validateUCDFiles", () => {
           size: 1234,
         }),
         rm: vi.fn().mockResolvedValue(undefined),
-      } satisfies FSAdapter;
+      } satisfies FileSystemBridge;
 
       mockFetch([
         ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {

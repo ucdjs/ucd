@@ -1,15 +1,14 @@
 export {
-  LocalUCDStore,
-  type LocalUCDStoreOptions,
-  UCD_STORE_SCHEMA,
-  type UCDStoreSchema,
-} from "./local";
-export {
-  RemoteUCDStore,
-  type RemoteUCDStoreOptions,
-} from "./remote";
-export {
+  createLocalUCDStore,
+  createRemoteUCDStore,
   createUCDStore,
-  type CreateUCDStoreOptions,
-  type UCDStore,
+  UCDStore,
+} from "./store";
+
+export type {
+  AnalyzeResult,
+  CleanResult,
+  LocalUCDStoreOptions,
+  RemoteUCDStoreOptions,
+  UCDStoreOptions,
 } from "./store";
