@@ -42,12 +42,10 @@
     "@luxass/utils": "catalog:prod",
     "@ucdjs/utils": "workspace:*",
     "defu": "catalog:prod",
-    "fs-extra": "catalog:prod",
     "zod": "catalog:prod"
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:dev",
-    "@types/fs-extra": "catalog:dev",
     "@ucdjs/tsconfig": "workspace:*",
     "eslint": "catalog:dev",
     "publint": "catalog:dev",

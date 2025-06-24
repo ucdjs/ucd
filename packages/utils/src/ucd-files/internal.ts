@@ -137,7 +137,7 @@ export async function internal__processEntries(
     } else {
       filePromises.push((async () => {
         try {
-          if (!fs.exists(dirname(outputPath))) {
+          if (!await fs.exists(dirname(outputPath))) {
             await fs.mkdir(dirname(outputPath));
           }
           const url = `${proxyUrl}${basePath}/${entry.path}`;
