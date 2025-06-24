@@ -7,7 +7,12 @@ export const PRECONFIGURED_FILTERS = {
   EXCLUDE_HTML_FILES: "!**/*.html",
 } as const;
 
-export type FilterFn = (path: string) => boolean;
+type PathFilterFn = (path: string) => boolean;
+
+export interface PathFilter extends PathFilterFn {
+  extend: (additionalFilters: string[]) => void;
+  getFilters: () => string[];
+}
 
 export interface FilterOptions {
   /**
@@ -22,7 +27,7 @@ export interface FilterOptions {
  * based on the provided filter patterns.
  *
  * @param {string[]} filters - Array of glob patterns to filter against. Patterns starting with '!' are exclusions.
- * @returns {FilterFn} A function that takes a path and returns true if the path should be included, false otherwise.
+ * @returns {PathFilter} A function that takes a path and returns true if the path should be included, false otherwise.
  *
  * @example
  * ```ts
@@ -33,7 +38,27 @@ export interface FilterOptions {
  * filter('DataTest.txt'); // false
  * ```
  */
-export function createPathFilter(filters: string[], options: FilterOptions = {}): FilterFn {
+export function createPathFilter(filters: string[], options: FilterOptions = {}): PathFilter {
+  let currentFilters = [...filters];
+  let currentFilterFn = internal__createFilterFunction(currentFilters, options);
+
+  function filterFn(path: string): boolean {
+    return currentFilterFn(path);
+  }
+
+  filterFn.extend = (additionalFilters: string[]): void => {
+    currentFilters = [...currentFilters, ...additionalFilters];
+    currentFilterFn = internal__createFilterFunction(currentFilters, options);
+  };
+
+  filterFn.getFilters = (): string[] => {
+    return [...currentFilters];
+  };
+
+  return filterFn;
+}
+
+function internal__createFilterFunction(filters: string[], options: FilterOptions): PathFilterFn {
   if (filters.length === 0) {
     return () => true;
   }
@@ -43,7 +68,7 @@ export function createPathFilter(filters: string[], options: FilterOptions = {})
   const excludePatterns: string[] = options.disableDefaultExclusions
     ? []
     : [
-      // exclude .zip & .pdf files by default
+        // exclude .zip & .pdf files by default
         "**/*.zip",
         "**/*.pdf",
       ];
