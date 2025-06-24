@@ -3,7 +3,7 @@ import path from "node:path";
 import { buildUCDPath } from "@luxass/unicode-utils-new";
 import { createClient } from "@luxass/unicode-utils-new/fetch";
 import defu from "defu";
-import { createPathFilter, type FilterFn } from "../filter";
+import { createPathFilter, type PathFilter } from "../filter";
 import { createFileSystem } from "../memfs";
 import { flattenFilePaths } from "./helpers";
 
@@ -24,7 +24,7 @@ export interface ValidateUCDFilesOptions {
    * A Pattern matcher function to filter files based on their names.
    * This function should take a file name as input and return true if the file should be included in the download.
    */
-  patternMatcher?: FilterFn;
+  patternMatcher?: PathFilter;
 
   /**
    * Optional patterns to use for filtering files.

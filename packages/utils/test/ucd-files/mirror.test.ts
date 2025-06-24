@@ -1,5 +1,6 @@
 import type { FSAdapter } from "../../src/types";
 import { mockFetch } from "#msw-utils";
+import { createPathFilter } from "@ucdjs/utils";
 import { HttpResponse } from "msw";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
@@ -138,9 +139,7 @@ describe("mirrorUCDFiles", () => {
       ]);
 
       // Custom filter that only allows .txt files but excludes ReadMe
-      const customPatternMatcher = (path: string) => {
-        return path.endsWith(".txt") && !path.includes("ReadMe");
-      };
+      const customPatternMatcher = createPathFilter(["**/*.txt", "!**/ReadMe.txt"]);
 
       const result = await mirrorUCDFiles({
         versions: ["16.0.0"],
@@ -164,7 +163,7 @@ describe("mirrorUCDFiles", () => {
       ]);
 
       // Custom matcher that allows everything
-      const customPatternMatcher = () => true;
+      const customPatternMatcher = createPathFilter(["**/*"]);
 
       const result = await mirrorUCDFiles({
         versions: ["16.0.0"],
