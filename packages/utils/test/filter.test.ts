@@ -342,31 +342,31 @@ describe("createPathFilter", () => {
     });
   });
 
-  describe("getFilters functionality", () => {
+  describe("patterns functionality", () => {
     it("should return initial filters", () => {
       const initialFilters = ["*.txt", "!*Test*"];
       const filter = createPathFilter(initialFilters);
 
-      expect(filter.getFilters()).toEqual(initialFilters);
+      expect(filter.patterns()).toEqual(initialFilters);
     });
 
     it("should return updated filters after extension", () => {
       const filter = createPathFilter(["*.txt"]);
 
-      expect(filter.getFilters()).toEqual(["*.txt"]);
+      expect(filter.patterns()).toEqual(["*.txt"]);
 
       filter.extend(["*.js", "!*test*"]);
 
-      expect(filter.getFilters()).toEqual(["*.txt", "*.js", "!*test*"]);
+      expect(filter.patterns()).toEqual(["*.txt", "*.js", "!*test*"]);
     });
 
     it("should return a copy of filters (immutable)", () => {
       const filter = createPathFilter(["*.txt"]);
 
-      const filters1 = filter.getFilters();
+      const filters1 = filter.patterns();
       filters1.push("*.js"); // Mutate the returned array
 
-      const filters2 = filter.getFilters();
+      const filters2 = filter.patterns();
       expect(filters2).toEqual(["*.txt"]); // Should not be affected
       expect(filter("file.js")).toBe(false); // Filter behavior should not change
     });
@@ -375,22 +375,22 @@ describe("createPathFilter", () => {
       const filter = createPathFilter(["*.txt"]);
 
       filter.extend(["*.js"]);
-      expect(filter.getFilters()).toEqual(["*.txt", "*.js"]);
+      expect(filter.patterns()).toEqual(["*.txt", "*.js"]);
 
       filter.extend(["!*test*"]);
-      expect(filter.getFilters()).toEqual(["*.txt", "*.js", "!*test*"]);
+      expect(filter.patterns()).toEqual(["*.txt", "*.js", "!*test*"]);
 
       filter.extend(["*.md", "*.css"]);
-      expect(filter.getFilters()).toEqual(["*.txt", "*.js", "!*test*", "*.md", "*.css"]);
+      expect(filter.patterns()).toEqual(["*.txt", "*.js", "!*test*", "*.md", "*.css"]);
     });
 
     it("should handle empty initial filters", () => {
       const filter = createPathFilter([]);
 
-      expect(filter.getFilters()).toEqual([]);
+      expect(filter.patterns()).toEqual([]);
 
       filter.extend(["*.txt"]);
-      expect(filter.getFilters()).toEqual(["*.txt"]);
+      expect(filter.patterns()).toEqual(["*.txt"]);
     });
   });
 
@@ -400,9 +400,9 @@ describe("createPathFilter", () => {
       expect(typeof filter.extend).toBe("function");
     });
 
-    it("should have getFilters method", () => {
+    it("should have patterns method", () => {
       const filter = createPathFilter(["*.txt"]);
-      expect(typeof filter.getFilters).toBe("function");
+      expect(typeof filter.patterns).toBe("function");
     });
 
     it("should maintain function signature after extension", () => {
@@ -412,7 +412,7 @@ describe("createPathFilter", () => {
       expect(typeof filter).toBe("function");
       expect(filter).toHaveLength(1);
       expect(typeof filter.extend).toBe("function");
-      expect(typeof filter.getFilters).toBe("function");
+      expect(typeof filter.patterns).toBe("function");
     });
   });
 
@@ -427,7 +427,7 @@ describe("createPathFilter", () => {
 
       expect(filter("file.txt")).toBe(true);
       expect(filter("test50.txt")).toBe(false);
-      expect(filter.getFilters()).toHaveLength(101); // 1 initial + 100 extensions
+      expect(filter.patterns()).toHaveLength(101); // 1 initial + 100 extensions
     });
 
     it("should handle extending with duplicate patterns", () => {
@@ -436,7 +436,7 @@ describe("createPathFilter", () => {
       filter.extend(["*.txt", "*.js"]); // Duplicate *.txt
       filter.extend(["*.js"]); // Duplicate *.js
 
-      expect(filter.getFilters()).toEqual(["*.txt", "*.txt", "*.js", "*.js"]);
+      expect(filter.patterns()).toEqual(["*.txt", "*.txt", "*.js", "*.js"]);
       expect(filter("file.txt")).toBe(true);
       expect(filter("file.js")).toBe(true);
     });
