@@ -233,7 +233,7 @@ export class UCDStore {
     }
 
     const combinedFilter = extraFilters && extraFilters.length > 0
-      ? createPathFilter([...this.filter.getFilters() || [], ...extraFilters])
+      ? createPathFilter([...this.filter.patterns() || [], ...extraFilters])
       : this.filter;
 
     if (!combinedFilter(filePath)) {
@@ -265,7 +265,7 @@ export class UCDStore {
 
   private processFileStructure(rawStructure: UnicodeVersionFile[], extraFilters?: string[]): UnicodeVersionFile[] {
     const combinedFilter = extraFilters && extraFilters.length > 0
-      ? createPathFilter([...this.filter.getFilters() || [], ...extraFilters])
+      ? createPathFilter([...this.filter.patterns() || [], ...extraFilters])
       : this.filter;
 
     return rawStructure.map((item) => {
