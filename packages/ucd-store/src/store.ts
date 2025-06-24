@@ -55,16 +55,27 @@ export interface UCDStoreOptions {
   fs: FileSystemBridge;
 }
 
-export interface AnalyzeResult {
+export type AnalyzeResult = {
+  success: true;
   totalFiles: number;
-  totalSize: number;
-  versions: string[];
-}
+  versions: {
+    version: string;
+    fileCount: number;
+    isComplete: boolean;
+  }[];
+} | {
+  success: false;
+  error: string;
+};
 
-export interface CleanResult {
-  removedFiles: number;
-  freedSpace: number;
-}
+export type CleanResult = {
+  success: true;
+  removedFiles: string[];
+  deletedCount: number;
+} | {
+  success: false;
+  error: string;
+};
 
 export const DEFAULT_BASE_URL = "https://unicode-api.luxass.dev/api/v1";
 export const DEFAULT_PROXY_URL = "https://unicode-proxy.ucdjs.dev";
@@ -275,9 +286,13 @@ export class UCDStore {
   async analyze(): Promise<AnalyzeResult> {
     const allFiles = await this.getAllFiles();
     return {
+      success: true,
       totalFiles: allFiles.length,
-      totalSize: 0,
-      versions: this.versions,
+      versions: this.versions.map((version) => ({
+        version,
+        fileCount: 0,
+        isComplete: false,
+      })),
     };
   }
 }
