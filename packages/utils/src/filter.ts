@@ -7,7 +7,7 @@ export const PRECONFIGURED_FILTERS = {
   EXCLUDE_HTML_FILES: "!**/*.html",
 } as const;
 
-type PathFilterFn = (path: string) => boolean;
+type PathFilterFn = (path: string, extraFilters?: string[]) => boolean;
 
 export interface PathFilter extends PathFilterFn {
   extend: (additionalFilters: string[]) => void;
@@ -42,8 +42,13 @@ export function createPathFilter(filters: string[], options: FilterOptions = {})
   let currentFilters = [...filters];
   let currentFilterFn = internal__createFilterFunction(currentFilters, options);
 
-  function filterFn(path: string): boolean {
-    return currentFilterFn(path);
+  function filterFn(path: string, extraFilters: string[] = []): boolean {
+    if (extraFilters.length === 0) {
+      return currentFilterFn(path);
+    }
+
+    const combinedFilter = createPathFilter([...currentFilters, ...extraFilters], options);
+    return combinedFilter(path);
   }
 
   filterFn.extend = (additionalFilters: string[]): void => {
