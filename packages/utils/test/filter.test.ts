@@ -225,4 +225,230 @@ describe("createPathFilter", () => {
       expect(filter("file.pdf")).toBe(true);
     });
   });
+
+  describe("extend functionality", () => {
+    it("should extend filters with additional patterns", () => {
+      const filter = createPathFilter(["*.txt", "!*Test*"]);
+
+      // Initial behavior
+      expect(filter("Data.txt")).toBe(true);
+      expect(filter("DataTest.txt")).toBe(false);
+      expect(filter("file.js")).toBe(false);
+
+      // Extend with additional filters
+      filter.extend(["!*.txt"]);
+
+      // New behavior after extension
+      expect(filter("Data.txt")).toBe(false); // Now excluded
+      expect(filter("DataTest.txt")).toBe(false); // Still excluded
+      expect(filter("file.js")).toBe(false); // Still excluded
+    });
+
+    it("should extend with include patterns", () => {
+      const filter = createPathFilter(["*.txt"]);
+
+      expect(filter("file.txt")).toBe(true);
+      expect(filter("file.js")).toBe(false);
+      expect(filter("file.md")).toBe(false);
+
+      filter.extend(["*.js", "*.md"]);
+
+      expect(filter("file.txt")).toBe(true);
+      expect(filter("file.js")).toBe(true); // Now included
+      expect(filter("file.md")).toBe(true); // Now included
+      expect(filter("file.css")).toBe(false); // Still excluded
+    });
+
+    it("should extend with mixed include and exclude patterns", () => {
+      const filter = createPathFilter(["src/**"]);
+
+      expect(filter("src/file.js")).toBe(true);
+      expect(filter("src/test.js")).toBe(true);
+      expect(filter("lib/file.js")).toBe(false);
+
+      filter.extend(["lib/**", "!**/test.*"]);
+
+      expect(filter("src/file.js")).toBe(true);
+      expect(filter("src/test.js")).toBe(false); // Now excluded by new pattern
+      expect(filter("lib/file.js")).toBe(true); // Now included
+      expect(filter("lib/test.js")).toBe(false); // Excluded by new pattern
+    });
+
+    it("should handle multiple extensions", () => {
+      const filter = createPathFilter(["*.txt"]);
+
+      filter.extend(["*.js"]);
+      filter.extend(["!*test*"]);
+      filter.extend(["*.md"]);
+
+      expect(filter("file.txt")).toBe(true);
+      expect(filter("file.js")).toBe(true);
+      expect(filter("file.md")).toBe(true);
+      expect(filter("test.txt")).toBe(false); // Excluded by third extension
+      expect(filter("test.js")).toBe(false); // Excluded by third extension
+      expect(filter("file.css")).toBe(false); // Never included
+    });
+
+    it("should extend empty filter", () => {
+      const filter = createPathFilter([]);
+
+      // Initially allows everything
+      expect(filter("file.txt")).toBe(true);
+      expect(filter("file.js")).toBe(true);
+
+      filter.extend(["*.txt"]);
+
+      // Now only allows txt files
+      expect(filter("file.txt")).toBe(true);
+      expect(filter("file.js")).toBe(false);
+    });
+
+    it("should extend with empty array (no-op)", () => {
+      const filter = createPathFilter(["*.txt"]);
+
+      expect(filter("file.txt")).toBe(true);
+      expect(filter("file.js")).toBe(false);
+
+      filter.extend([]);
+
+      // Behavior should remain the same
+      expect(filter("file.txt")).toBe(true);
+      expect(filter("file.js")).toBe(false);
+    });
+
+    it("should work with complex real-world extension scenario", () => {
+      // Start with basic source files
+      const filter = createPathFilter(["src/**/*.{js,ts}"]);
+
+      expect(filter("src/index.js")).toBe(true);
+      expect(filter("src/utils.ts")).toBe(true);
+      expect(filter("src/style.css")).toBe(false);
+      expect(filter("test/spec.js")).toBe(false);
+
+      // Add test files
+      filter.extend(["test/**/*.{js,ts}"]);
+
+      expect(filter("src/index.js")).toBe(true);
+      expect(filter("test/spec.js")).toBe(true); // Now included
+      expect(filter("test/style.css")).toBe(false); // Still excluded
+
+      // Exclude node_modules and dist
+      filter.extend(["!**/node_modules/**", "!**/dist/**"]);
+
+      expect(filter("src/index.js")).toBe(true);
+      expect(filter("test/spec.js")).toBe(true);
+      expect(filter("node_modules/lib/index.js")).toBe(false); // Now excluded
+      expect(filter("dist/bundle.js")).toBe(false); // Now excluded
+    });
+  });
+
+  describe("getFilters functionality", () => {
+    it("should return initial filters", () => {
+      const initialFilters = ["*.txt", "!*Test*"];
+      const filter = createPathFilter(initialFilters);
+
+      expect(filter.getFilters()).toEqual(initialFilters);
+    });
+
+    it("should return updated filters after extension", () => {
+      const filter = createPathFilter(["*.txt"]);
+
+      expect(filter.getFilters()).toEqual(["*.txt"]);
+
+      filter.extend(["*.js", "!*test*"]);
+
+      expect(filter.getFilters()).toEqual(["*.txt", "*.js", "!*test*"]);
+    });
+
+    it("should return a copy of filters (immutable)", () => {
+      const filter = createPathFilter(["*.txt"]);
+
+      const filters1 = filter.getFilters();
+      filters1.push("*.js"); // Mutate the returned array
+
+      const filters2 = filter.getFilters();
+      expect(filters2).toEqual(["*.txt"]); // Should not be affected
+      expect(filter("file.js")).toBe(false); // Filter behavior should not change
+    });
+
+    it("should track multiple extensions correctly", () => {
+      const filter = createPathFilter(["*.txt"]);
+
+      filter.extend(["*.js"]);
+      expect(filter.getFilters()).toEqual(["*.txt", "*.js"]);
+
+      filter.extend(["!*test*"]);
+      expect(filter.getFilters()).toEqual(["*.txt", "*.js", "!*test*"]);
+
+      filter.extend(["*.md", "*.css"]);
+      expect(filter.getFilters()).toEqual(["*.txt", "*.js", "!*test*", "*.md", "*.css"]);
+    });
+
+    it("should handle empty initial filters", () => {
+      const filter = createPathFilter([]);
+
+      expect(filter.getFilters()).toEqual([]);
+
+      filter.extend(["*.txt"]);
+      expect(filter.getFilters()).toEqual(["*.txt"]);
+    });
+  });
+
+  describe("filter methods type checking", () => {
+    it("should have extend method", () => {
+      const filter = createPathFilter(["*.txt"]);
+      expect(typeof filter.extend).toBe("function");
+    });
+
+    it("should have getFilters method", () => {
+      const filter = createPathFilter(["*.txt"]);
+      expect(typeof filter.getFilters).toBe("function");
+    });
+
+    it("should maintain function signature after extension", () => {
+      const filter = createPathFilter(["*.txt"]);
+      filter.extend(["*.js"]);
+
+      expect(typeof filter).toBe("function");
+      expect(filter).toHaveLength(1);
+      expect(typeof filter.extend).toBe("function");
+      expect(typeof filter.getFilters).toBe("function");
+    });
+  });
+
+  describe("performance and edge cases with extension", () => {
+    it("should handle many extensions efficiently", () => {
+      const filter = createPathFilter(["*.txt"]);
+
+      // Extend many times
+      for (let i = 0; i < 100; i++) {
+        filter.extend([`!*test${i}*`]);
+      }
+
+      expect(filter("file.txt")).toBe(true);
+      expect(filter("test50.txt")).toBe(false);
+      expect(filter.getFilters()).toHaveLength(101); // 1 initial + 100 extensions
+    });
+
+    it("should handle extending with duplicate patterns", () => {
+      const filter = createPathFilter(["*.txt"]);
+
+      filter.extend(["*.txt", "*.js"]); // Duplicate *.txt
+      filter.extend(["*.js"]); // Duplicate *.js
+
+      expect(filter.getFilters()).toEqual(["*.txt", "*.txt", "*.js", "*.js"]);
+      expect(filter("file.txt")).toBe(true);
+      expect(filter("file.js")).toBe(true);
+    });
+
+    it("should handle extending with conflicting patterns", () => {
+      const filter = createPathFilter(["*.txt"]);
+
+      // add conflicting pattern
+      filter.extend(["!*.txt"]);
+
+      // Exclusion should take precedence
+      expect(filter("file.txt")).toBe(false);
+    });
+  });
 });
