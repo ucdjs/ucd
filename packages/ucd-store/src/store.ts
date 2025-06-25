@@ -5,6 +5,7 @@ import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { createClient } from "@luxass/unicode-utils-new/fetch";
 import { promiseRetry } from "@luxass/utils";
 import { createPathFilter, type PathFilter } from "@ucdjs/utils";
+import { UNICODE_API_BASE_URL, UNICODE_PROXY_URL } from "@ucdjs/utils/constants";
 import { flattenFilePaths } from "@ucdjs/utils/ucd-files";
 import defu from "defu";
 
@@ -77,9 +78,6 @@ export type CleanResult = {
   error: string;
 };
 
-export const DEFAULT_BASE_URL = "https://unicode-api.luxass.dev/api/v1";
-export const DEFAULT_PROXY_URL = "https://unicode-proxy.ucdjs.dev";
-
 export class UCDStore {
   public readonly baseUrl: string;
   public readonly proxyUrl: string;
@@ -93,8 +91,8 @@ export class UCDStore {
 
   constructor(options: UCDStoreOptions) {
     const { baseUrl, globalFilters, mode, proxyUrl, fs, basePath, versions } = defu(options, {
-      baseUrl: DEFAULT_BASE_URL,
-      proxyUrl: DEFAULT_PROXY_URL,
+      baseUrl: UNICODE_API_BASE_URL,
+      proxyUrl: UNICODE_PROXY_URL,
       globalFilters: [],
       mode: "remote" as StoreMode,
       basePath: "./ucd-files",
@@ -351,7 +349,7 @@ export async function createRemoteUCDStore(options: RemoteUCDStoreOptions): Prom
     mode: "remote",
     fs: typeof fs === "function"
       ? fs({
-          baseUrl: options.baseUrl || DEFAULT_PROXY_URL,
+          baseUrl: options.baseUrl || UNICODE_PROXY_URL,
         })
       : fs,
     ...options,
