@@ -75,7 +75,7 @@ jobs:
         uses: cloudflare/wrangler-action@392082e81ffbcb9ebdde27400634aa004b35ea37 # v3.14.0
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
-          workingDirectory: .
+          workingDirectory: ./apps/api
           environment: production
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
           vars: API_VERSION
