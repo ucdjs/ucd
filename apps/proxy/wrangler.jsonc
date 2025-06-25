@@ -1,0 +1,76 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "unicode-proxy",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-03-13",
+  "observability": {
+    "logs": {
+      "enabled": true
+    },
+    "enabled": true
+  },
+  "unsafe": {
+    "bindings": [
+      {
+        "name": "RATE_LIMITER",
+        "type": "ratelimit",
+        "namespace_id": "1001",
+        "simple": {
+          "limit": 2000,
+          "period": 60
+        }
+      }
+    ]
+  },
+  "placement": { "mode": "smart" },
+  "env": {
+    "preview": {
+      "name": "unicode-proxy-preview",
+      "preview_urls": false,
+      "vars": {
+        "ENVIRONMENT": "preview"
+      },
+      "route": {
+        "custom_domain": true,
+        "pattern": "preview.unicode-proxy.ucdjs.dev"
+      },
+      "unsafe": {
+        "bindings": [
+          {
+            "name": "RATE_LIMITER",
+            "type": "ratelimit",
+            "namespace_id": "1001",
+            "simple": {
+              "limit": 2000,
+              "period": 60
+            }
+          }
+        ]
+      }
+    },
+    "production": {
+      "name": "unicode-proxy",
+      "preview_urls": false,
+      "vars": {
+        "ENVIRONMENT": "production"
+      },
+      "route": {
+        "custom_domain": true,
+        "pattern": "unicode-proxy.ucdjs.dev"
+      },
+      "unsafe": {
+        "bindings": [
+          {
+            "name": "RATE_LIMITER",
+            "type": "ratelimit",
+            "namespace_id": "1001",
+            "simple": {
+              "limit": 2000,
+              "period": 60
+            }
+          }
+        ]
+      }
+    }
+  }
+}
