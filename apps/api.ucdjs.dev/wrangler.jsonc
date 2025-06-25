@@ -1,0 +1,43 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ucdjs-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-03-13",
+  "observability": {
+    "logs": {
+      "enabled": true
+    },
+    "enabled": true
+  },
+  "vars": {
+    "API_VERSION": "x.y.z",
+    "PROXY_ENDPOINT": "https://unicode-proxy.ucdjs.dev"
+  },
+  "placement": { "mode": "smart" },
+  "env": {
+    "preview": {
+      "name": "ucdjs-api-preview",
+      "preview_urls": false,
+      "vars": {
+        "ENVIRONMENT": "preview",
+        "PROXY_ENDPOINT": "https://preview.unicode-proxy.ucdjs.dev"
+      },
+      "route": {
+        "custom_domain": true,
+        "pattern": "preview.api.ucdjs.dev"
+      }
+    },
+    "production": {
+      "name": "ucdjs-api",
+      "preview_urls": false,
+      "vars": {
+        "ENVIRONMENT": "production",
+        "PROXY_ENDPOINT": "https://unicode-proxy.ucdjs.dev"
+      },
+      "route": {
+        "custom_domain": true,
+        "pattern": "api.ucdjs.dev"
+      }
+    }
+  }
+}
