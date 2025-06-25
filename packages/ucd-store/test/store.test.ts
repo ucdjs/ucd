@@ -1,6 +1,7 @@
 import type { FileSystemBridge } from "@ucdjs/utils/fs-bridge";
+import { UNICODE_API_BASE_URL, UNICODE_PROXY_URL } from "@ucdjs/utils/constants";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { createLocalUCDStore, createUCDStore, DEFAULT_BASE_URL, DEFAULT_PROXY_URL } from "../src/store";
+import { createLocalUCDStore, createUCDStore } from "../src/store";
 
 // eslint-disable-next-line test/prefer-lowercase-title
 describe("UCD Store - Common", () => {
@@ -29,8 +30,8 @@ describe("UCD Store - Common", () => {
       });
 
       expect(store.mode).toBe("local");
-      expect(store.baseUrl).toBe(DEFAULT_BASE_URL);
-      expect(store.proxyUrl).toBe(DEFAULT_PROXY_URL);
+      expect(store.baseUrl).toBe(UNICODE_API_BASE_URL);
+      expect(store.proxyUrl).toBe(UNICODE_PROXY_URL);
     });
 
     it("should create instance with custom options", async () => {
