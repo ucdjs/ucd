@@ -97,6 +97,7 @@ export class UCDStore {
       globalFilters: [],
       mode: "remote" as StoreMode,
       basePath: "./ucd-files",
+      versions: UNICODE_VERSION_METADATA.filter((v) => v.status === "stable").map((v) => v.version),
     });
 
     this.mode = mode;
