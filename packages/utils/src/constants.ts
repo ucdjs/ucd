@@ -1,4 +1,5 @@
-import { env } from "node:process";
+// eslint-disable-next-line node/prefer-global/process
+const env = typeof process === "undefined" ? {} : process.env;
 
 /**
  * Base URL for the Unicode API
