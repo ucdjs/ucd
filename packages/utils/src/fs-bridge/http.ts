@@ -1,6 +1,10 @@
 import type { FileSystemBridge } from "../fs-bridge";
 import { defineFileSystemBridge } from "../fs-bridge";
 
+// MAYBE align this with the UCD Store's default base URL constants?
+const DEFAULT_BASE_URL = "https://unicode-proxy.ucdjs.dev/";
+// const DEFAULT_BASE_URL = "http://localhost:8787/";
+
 export interface HTTPFileSystemBridgeOptions {
   baseUrl?: string;
 }
@@ -16,9 +20,10 @@ export interface HTTPFileSystemBridgeOptions {
  * @returns {FileSystemBridge} A file system bridge implementation for HTTP/HTTPS resources
  */
 function HTTPFileSystemBridge(options: HTTPFileSystemBridgeOptions = {}): FileSystemBridge {
+  const baseUrl = options.baseUrl || DEFAULT_BASE_URL;
   return defineFileSystemBridge({
     async read(path) {
-      const url = new URL(path, options.baseUrl);
+      const url = new URL(path, baseUrl);
       const response = await fetch(url.toString());
       if (!response.ok) {
         throw new Error(`Failed to read remote file: ${response.statusText}`);
@@ -26,7 +31,7 @@ function HTTPFileSystemBridge(options: HTTPFileSystemBridgeOptions = {}): FileSy
       return response.text();
     },
     async listdir(path, _recursive) {
-      const url = new URL(path, options.baseUrl);
+      const url = new URL(path, baseUrl);
       const response = await fetch(url.toString(), {
         method: "GET",
         headers: {
@@ -43,9 +48,11 @@ function HTTPFileSystemBridge(options: HTTPFileSystemBridgeOptions = {}): FileSy
       // should not do anything, as this is a read-only bridge
     },
     async exists(path) {
-      const url = new URL(path, options.baseUrl);
+      const url = new URL(path, baseUrl);
       return fetch(url.toString(), { method: "HEAD" })
-        .then((response) => response.ok)
+        .then((response) => {
+          return response.ok;
+        })
         .catch(() => false);
     },
     async mkdir() {

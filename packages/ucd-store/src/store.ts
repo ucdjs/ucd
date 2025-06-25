@@ -6,6 +6,7 @@ import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { createClient } from "@luxass/unicode-utils-new/fetch";
 import { promiseRetry } from "@luxass/utils";
 import { createPathFilter } from "@ucdjs/utils";
+import { UNICODE_API_BASE_URL, UNICODE_PROXY_URL } from "@ucdjs/utils/constants";
 import { flattenFilePaths } from "@ucdjs/utils/ucd-files";
 import defu from "defu";
 
@@ -78,9 +79,6 @@ export type CleanResult = {
   error: string;
 };
 
-export const DEFAULT_BASE_URL = "https://unicode-api.luxass.dev/api/v1";
-export const DEFAULT_PROXY_URL = "https://unicode-proxy.ucdjs.dev";
-
 export class UCDStore {
   public readonly baseUrl: string;
   public readonly proxyUrl: string;
@@ -94,11 +92,12 @@ export class UCDStore {
 
   constructor(options: UCDStoreOptions) {
     const { baseUrl, globalFilters, mode, proxyUrl, fs, basePath, versions } = defu(options, {
-      baseUrl: DEFAULT_BASE_URL,
-      proxyUrl: DEFAULT_PROXY_URL,
+      baseUrl: UNICODE_API_BASE_URL,
+      proxyUrl: UNICODE_PROXY_URL,
       globalFilters: [],
       mode: "remote" as StoreMode,
       basePath: "./ucd-files",
+      versions: UNICODE_VERSION_METADATA.filter((v) => v.status === "stable").map((v) => v.version),
     });
 
     this.mode = mode;
@@ -115,44 +114,45 @@ export class UCDStore {
    * Initialize the store - loads existing data or creates new structure
    */
   async initialize(): Promise<void> {
-    if (this.mode === "local") {
-      await this.initializeLocalStore();
-    } else {
-      await this.initializeRemoteStore();
-    }
-  }
+    const manifestPath = this.getManifestPath();
 
-  private async initializeLocalStore(): Promise<void> {
-    if (!this.basePath) {
-      throw new Error("Base path is required for local mode");
-    }
-
-    const storeManifestPath = path.join(this.basePath, ".ucd-store.json");
-    const isValidStore = await this.#fs.exists(this.basePath) && await this.#fs.exists(storeManifestPath);
+    // Check if store already exists
+    const isValidStore = this.mode === "local"
+      ? await this.#fs.exists(this.basePath!) && await this.#fs.exists(manifestPath)
+      : await this.#fs.exists(manifestPath);
 
     if (isValidStore) {
       // Load versions from existing store
       await this.loadVersionsFromStore();
     } else {
       // Initialize new store
-      if (!this.providedVersions || this.providedVersions.length === 0) {
-        throw new Error("No versions provided for initializing new local store");
+      if (this.mode === "local") {
+        if (!this.providedVersions || this.providedVersions.length === 0) {
+          throw new Error("No versions provided for initializing new local store");
+        }
+        await this.createNewLocalStore(this.providedVersions);
+      } else {
+        // console.debug("[UCDStore] Initializing remote store, no local files will be created.");
+        // For remote store, just populate available versions
+        this.loadedVersions = UNICODE_VERSION_METADATA.map((v) => v.version);
       }
-      await this.createNewLocalStore(this.providedVersions);
     }
   }
 
-  private async initializeRemoteStore(): Promise<void> {
-    // For remote store, just populate available versions
-    this.loadedVersions = UNICODE_VERSION_METADATA.map((v) => v.version);
+  /**
+   * Get the appropriate manifest path based on store mode
+   */
+  private getManifestPath(): string {
+    return this.mode === "local"
+      ? path.join(this.basePath!, ".ucd-store.json")
+      : ".ucd-store.json";
   }
 
   private async loadVersionsFromStore(): Promise<void> {
-    if (!this.basePath) return;
+    const manifestPath = this.getManifestPath();
 
-    const storeManifestPath = path.join(this.basePath, ".ucd-store.json");
     try {
-      const manifestContent = await this.#fs.read(storeManifestPath);
+      const manifestContent = await this.#fs.read(manifestPath);
       const manifestData = JSON.parse(manifestContent);
       this.loadedVersions = manifestData.map((entry: any) => entry.version);
     } catch (error) {
@@ -178,15 +178,13 @@ export class UCDStore {
   }
 
   private async createStoreManifest(versions: string[]): Promise<void> {
-    if (!this.basePath) return;
-
-    const storeManifestPath = path.join(this.basePath, ".ucd-store.json");
+    const manifestPath = this.getManifestPath();
     const manifestData = versions.map((version) => ({
       version,
-      path: path.join(this.basePath!, version),
+      path: this.mode === "local" ? path.join(this.basePath!, version) : version,
     }));
 
-    await this.#fs.write(storeManifestPath, JSON.stringify(manifestData, null, 2));
+    await this.#fs.write(manifestPath, JSON.stringify(manifestData, null, 2));
   }
 
   async getFileTree(version: string, extraFilters?: string[]): Promise<UnicodeVersionFile[]> {
@@ -343,7 +341,7 @@ export type RemoteUCDStoreOptions = Omit<UCDStoreOptions, "mode" | "fs"> & {
 };
 
 export async function createRemoteUCDStore(options: RemoteUCDStoreOptions): Promise<UCDStore> {
-  const fs = options.fs || await import("@ucdjs/utils/fs-bridge/node").then((m) => m.default);
+  const fs = options.fs || await import("@ucdjs/utils/fs-bridge/http").then((m) => m.default);
 
   if (!fs) {
     throw new Error("FileSystemBridge is required for remote UCD store");
@@ -351,7 +349,11 @@ export async function createRemoteUCDStore(options: RemoteUCDStoreOptions): Prom
 
   const store = new UCDStore({
     mode: "remote",
-    fs,
+    fs: typeof fs === "function"
+      ? fs({
+          baseUrl: options.baseUrl || UNICODE_PROXY_URL,
+        })
+      : fs,
     ...options,
   });
 
