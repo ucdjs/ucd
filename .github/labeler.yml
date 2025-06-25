@@ -15,3 +15,7 @@
 "pkg: ucd-store":
   - changed-files:
       - any-glob-to-any-file: packages/ucd-store/**
+
+"apps: api":
+  - changed-files:
+      - any-glob-to-any-file: apps/api/**

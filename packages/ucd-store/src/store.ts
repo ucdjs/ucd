@@ -1,10 +1,11 @@
 import type { UnicodeVersionFile } from "@luxass/unicode-utils-new/fetch";
+import type { PathFilter } from "@ucdjs/utils";
 import type { FileSystemBridge } from "@ucdjs/utils/fs-bridge";
 import path from "node:path";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { createClient } from "@luxass/unicode-utils-new/fetch";
 import { promiseRetry } from "@luxass/utils";
-import { createPathFilter, type PathFilter } from "@ucdjs/utils";
+import { createPathFilter } from "@ucdjs/utils";
 import { UNICODE_API_BASE_URL, UNICODE_PROXY_URL } from "@ucdjs/utils/constants";
 import { flattenFilePaths } from "@ucdjs/utils/ucd-files";
 import defu from "defu";

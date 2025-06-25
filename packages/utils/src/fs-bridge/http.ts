@@ -1,4 +1,5 @@
-import { defineFileSystemBridge, type FileSystemBridge } from "../fs-bridge";
+import type { FileSystemBridge } from "../fs-bridge";
+import { defineFileSystemBridge } from "../fs-bridge";
 
 // MAYBE align this with the UCD Store's default base URL constants?
 const DEFAULT_BASE_URL = "https://unicode-proxy.ucdjs.dev/";
