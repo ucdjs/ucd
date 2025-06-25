@@ -26,13 +26,13 @@
     "@changesets/changelog-github": "catalog:monorepo",
     "@changesets/cli": "catalog:monorepo",
     "@types/node": "catalog:dev",
-    "@vitest/coverage-v8": "catalog:monorepo",
-    "@vitest/ui": "catalog:monorepo",
-    "eslint": "catalog:dev",
-    "msw": "catalog:monorepo",
+    "@vitest/coverage-v8": "catalog:testing",
+    "@vitest/ui": "catalog:testing",
+    "eslint": "catalog:linting",
+    "msw": "catalog:testing",
     "tsx": "catalog:monorepo",
     "turbo": "catalog:monorepo",
     "typescript": "catalog:dev",
-    "vitest": "catalog:dev"
+    "vitest": "catalog:testing"
   }
 }

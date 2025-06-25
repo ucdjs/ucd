@@ -1,7 +1,7 @@
 import type { HonoEnv } from "../types";
 import type { UnicodeVersion } from "./v1_unicode-versions.schemas";
 import { OpenAPIHono } from "@hono/zod-openapi";
-import { resolveUCDVersion } from "@luxass/unicode-utils";
+import { resolveUCDVersion } from "@luxass/unicode-utils-new";
 import { cache } from "hono/cache";
 import { createError } from "../utils";
 import { LIST_ALL_UNICODE_VERSIONS_ROUTE } from "./v1_unicode-versions.openapi";
