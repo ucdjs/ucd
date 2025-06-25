@@ -1,4 +1,5 @@
-import { defineFileSystemBridge, type FileSystemBridge } from "../fs-bridge";
+import type { FileSystemBridge } from "../fs-bridge";
+import { defineFileSystemBridge } from "../fs-bridge";
 
 export interface HTTPFileSystemBridgeOptions {
   baseUrl?: string;
