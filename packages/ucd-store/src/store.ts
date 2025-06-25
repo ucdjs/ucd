@@ -132,6 +132,7 @@ export class UCDStore {
         }
         await this.createNewLocalStore(this.providedVersions);
       } else {
+        // console.debug("[UCDStore] Initializing remote store, no local files will be created.");
         // For remote store, just populate available versions
         this.loadedVersions = UNICODE_VERSION_METADATA.map((v) => v.version);
       }
@@ -144,7 +145,7 @@ export class UCDStore {
   private getManifestPath(): string {
     return this.mode === "local"
       ? path.join(this.basePath!, ".ucd-store.json")
-      : "__ucd-store";
+      : ".ucd-store.json";
   }
 
   private async loadVersionsFromStore(): Promise<void> {
@@ -350,7 +351,7 @@ export async function createRemoteUCDStore(options: RemoteUCDStoreOptions): Prom
     mode: "remote",
     fs: typeof fs === "function"
       ? fs({
-          baseUrl: options.baseUrl || DEFAULT_BASE_URL,
+          baseUrl: options.baseUrl || DEFAULT_PROXY_URL,
         })
       : fs,
     ...options,
