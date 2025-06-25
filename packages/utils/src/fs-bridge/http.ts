@@ -1,7 +1,8 @@
 import { defineFileSystemBridge, type FileSystemBridge } from "../fs-bridge";
 
 // MAYBE align this with the UCD Store's default base URL constants?
-const DEFAULT_BASE_URL = "https://unicode-api.luxass.dev/api/v1";
+const DEFAULT_BASE_URL = "https://unicode-proxy.ucdjs.dev/";
+// const DEFAULT_BASE_URL = "http://localhost:8787/";
 
 export interface HTTPFileSystemBridgeOptions {
   baseUrl?: string;
@@ -48,7 +49,9 @@ function HTTPFileSystemBridge(options: HTTPFileSystemBridgeOptions = {}): FileSy
     async exists(path) {
       const url = new URL(path, baseUrl);
       return fetch(url.toString(), { method: "HEAD" })
-        .then((response) => response.ok)
+        .then((response) => {
+          return response.ok;
+        })
         .catch(() => false);
     },
     async mkdir() {
