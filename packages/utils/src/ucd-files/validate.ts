@@ -1,9 +1,10 @@
+import type { PathFilter } from "../filter";
 import type { FileSystemBridge } from "../fs-bridge";
 import path from "node:path";
 import { buildUCDPath } from "@luxass/unicode-utils-new";
 import { createClient } from "@luxass/unicode-utils-new/fetch";
 import defu from "defu";
-import { createPathFilter, type PathFilter } from "../filter";
+import { createPathFilter } from "../filter";
 import { flattenFilePaths } from "./helpers";
 
 export interface ValidateUCDFilesOptions {
