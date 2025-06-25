@@ -1,4 +1,4 @@
-name: deploy api to preview
+name: deploy to production
 
 on:
   workflow_dispatch:
@@ -8,6 +8,15 @@ on:
         required: false
         default: false
         type: boolean
+      app:
+        description: App to deploy (api, proxy, or both)
+        required: false
+        default: both
+        type: choice
+        options:
+          - both
+          - api
+          - proxy
   pull_request:
     branches:
       - main
@@ -21,6 +30,16 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     if: github.repository_owner == 'ucdjs'
+    strategy:
+      matrix:
+        app:
+          - ${{ (github.event.inputs.app == 'api' || github.event.inputs.app == 'both' || github.event.inputs.app == null) && 'api' || '' }}
+          - ${{ (github.event.inputs.app == 'proxy' || github.event.inputs.app == 'both' || github.event.inputs.app == null) && 'proxy' || '' }}
+        exclude:
+          - app: ''
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -38,9 +57,10 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: build
-        run: pnpm run build
+        run: pnpm build
 
       - name: validate openapi
+        if: matrix.app == 'api'
         run: pnpm --filter=@ucdjs/api run lint:openapi
 
       - name: lint
@@ -69,14 +89,62 @@ jobs:
           # combine
           echo "version=$CLEAN_BRANCH-$SHORT_SHA" >> "$GITHUB_OUTPUT"
 
-      - name: deploy
+      - name: deploy ${{ matrix.app }}
+        id: deploy
         if: ${{ github.event.inputs.dry-run != 'true' }}
         env:
           API_VERSION: ${{ steps.api-version.outputs.version }}
         uses: cloudflare/wrangler-action@392082e81ffbcb9ebdde27400634aa004b35ea37 # v3.14.0
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
-          workingDirectory: ./apps/api
-          environment: preview
+          workingDirectory: ./apps/${{ matrix.app }}
+          environment: production
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
           vars: API_VERSION
+
+      - name: clean deployment url
+        id: clean-url
+        if: matrix.app == 'proxy'
+        env:
+          DEPLOYMENT_URL: ${{ steps.deploy.outputs.deployment-url }}
+        run: |
+          CLEANED_URL=$(echo "$DEPLOYMENT_URL" | sed 's/ (custom domain)//')
+          echo "deployment-url=https://$CLEANED_URL" >> "$GITHUB_OUTPUT"
+
+      - name: verify deploy
+        if: ${{ matrix.app == 'proxy' && github.event.inputs.dry-run != 'true' && steps.clean-url.outputs.deployment-url != '' }}
+        run: |
+          echo "using worker url: ${{ env.WORKER_URL }}"
+          pnpm --filter=@ucdjs/proxy deploy:verify
+        env:
+          WORKER_URL: ${{ steps.clean-url.outputs.deployment-url }}
+
+      - name: find existing comment
+        id: find-comment
+        uses: peter-evans/find-comment@3eae4d37986fb5a8592848f6a574fdf654e61f9e # v3.1.0
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: "github-actions[bot]"
+          body-includes: <!-- worker-preview -->
+
+      - name: create or update PR comment
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        env:
+          WORKER_URL: ${{ steps.clean-url.outputs.deployment-url }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        with:
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            <!-- worker-preview -->
+            ## Preview of API Worker
+
+            The API Worker has been deployed successfully.
+
+            **Preview URL:** ${{ env.WORKER_URL }}
+
+            This preview was built from commit ${{ env.HEAD_SHA }}
+
+            ---
+            <sub>🤖 This comment will be updated automatically when you push new commits to this PR.</sub>
+          edit-mode: replace
