@@ -1,4 +1,4 @@
-name: deploy api to preview
+name: deploy api to production
 
 on:
   workflow_dispatch:
@@ -8,10 +8,9 @@ on:
         required: false
         default: false
         type: boolean
-  pull_request:
+  push:
     branches:
       - main
-    types: [opened, synchronize]
 
 # remove default permissions of GITHUB_TOKEN for security
 # https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
@@ -41,7 +40,7 @@ jobs:
         run: pnpm build
 
       - name: validate openapi
-        run: pnpm run lint:openapi
+        run: pnpm --filter=@ucdjs/api run lint:openapi
 
       - name: lint
         run: pnpm run lint
@@ -77,6 +76,6 @@ jobs:
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           workingDirectory: .
-          environment: preview
+          environment: production
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
           vars: API_VERSION

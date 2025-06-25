@@ -48,14 +48,14 @@
     "yargs-parser": "catalog:prod"
   },
   "devDependencies": {
-    "@luxass/eslint-config": "catalog:dev",
+    "@luxass/eslint-config": "catalog:linting",
     "@types/yargs-parser": "catalog:dev",
     "@ucdjs/tsconfig": "workspace:*",
-    "eslint": "catalog:dev",
+    "eslint": "catalog:linting",
     "publint": "catalog:dev",
     "tsdown": "catalog:dev",
     "typescript": "catalog:dev",
-    "vitest-testdirs": "catalog:dev"
+    "vitest-testdirs": "catalog:testing"
   },
   "publishConfig": {
     "access": "public"
