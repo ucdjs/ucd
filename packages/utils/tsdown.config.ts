@@ -4,6 +4,7 @@ export default defineConfig({
   entry: [
     "./src/index.ts",
     "./src/ucd-files.ts",
+    "./src/constants.ts",
 
     // fs-bridge
     "./src/fs-bridge.ts",
