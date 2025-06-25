@@ -1,9 +1,11 @@
 /* eslint-disable no-console */
 import type { Prettify } from "@luxass/utils";
+import type { UCDStore } from "@ucdjs/ucd-store";
 import type { CLIArguments } from "../../cli-utils";
-import { createLocalUCDStore, createRemoteUCDStore, type UCDStore } from "@ucdjs/ucd-store";
+import type { CLIStoreCmdSharedFlags } from "./_shared";
+import { createLocalUCDStore, createRemoteUCDStore } from "@ucdjs/ucd-store";
 import { printHelp } from "../../cli-utils";
-import { type CLIStoreCmdSharedFlags, SHARED_FLAGS } from "./_shared";
+import { SHARED_FLAGS } from "./_shared";
 
 export interface CLIStoreStatusCmdOptions {
   flags: CLIArguments<Prettify<CLIStoreCmdSharedFlags & {

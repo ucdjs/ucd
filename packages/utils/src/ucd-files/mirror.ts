@@ -1,7 +1,8 @@
+import type { PathFilter } from "../filter";
 import type { FileSystemBridge } from "../fs-bridge";
 import { createClient } from "@luxass/unicode-utils-new/fetch";
 import defu from "defu";
-import { createPathFilter, type PathFilter } from "../filter";
+import { createPathFilter } from "../filter";
 import { internal_mirrorUnicodeVersion } from "./internal";
 
 export interface MirrorOptions {
