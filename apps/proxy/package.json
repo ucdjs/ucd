@@ -1,5 +1,5 @@
 {
-  "name": "unicode-proxy",
+  "name": "@ucdjs/proxy",
   "type": "module",
   "private": true,
   "packageManager": "pnpm@10.12.1",
@@ -15,22 +15,17 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "apache-autoindex-parse": "^1.0.1",
-    "hono": "^4.8.2"
+    "apache-autoindex-parse": "catalog:prod",
+    "hono": "catalog:workers"
   },
   "devDependencies": {
-    "@cloudflare/vitest-pool-workers": "^0.8.43",
-    "@luxass/eslint-config": "^5.0.0",
-    "eslint": "^9.29.0",
-    "eslint-plugin-format": "^1.0.1",
-    "tsx": "^4.20.3",
-    "typescript": "^5.8.3",
-    "vitest": "^3.2.4",
-    "wrangler": "^4.20.5"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "workerd"
-    ]
+    "@cloudflare/vitest-pool-workers": "catalog:testing",
+    "@luxass/eslint-config": "catalog:linting",
+    "eslint": "catalog:linting",
+    "eslint-plugin-format": "catalog:linting",
+    "tsx": "catalog:monorepo",
+    "typescript": "catalog:dev",
+    "vitest": "catalog:testing",
+    "wrangler": "catalog:workers"
   }
 }
