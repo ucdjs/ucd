@@ -1,7 +1,7 @@
 import type { ApiError, ProxyResponse, UnicodeVersions } from "../src";
 import { mockFetch } from "#msw-utils";
 import { HttpResponse } from "msw";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { client, createClient } from "../src";
 
 describe("unicode API Client", () => {
