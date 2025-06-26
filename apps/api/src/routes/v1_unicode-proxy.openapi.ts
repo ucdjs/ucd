@@ -52,7 +52,7 @@ export const ROOT_UNICODE_PROXY_ROUTE = createRoute({
 
 export const UNICODE_PROXY_ROUTE = createRoute({
   method: "get",
-  path: "/{path}",
+  path: "/{path*}",
   tags: ["Unicode Proxy"],
   description: "Proxy requests to unicode-proxy.ucdjs.dev",
   request: {
