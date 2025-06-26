@@ -18,6 +18,9 @@ catalogs:
     nanotar:
       specifier: ^0.2.0
       version: 0.2.0
+    openapi-typescript:
+      specifier: ^7.8.0
+      version: 7.8.0
     publint:
       specifier: ^0.3.12
       version: 0.3.12
@@ -90,6 +93,9 @@ catalogs:
     memfs:
       specifier: ^4.17.2
       version: 4.17.2
+    openapi-fetch:
+      specifier: ^0.14.0
+      version: 0.14.0
     p-limit:
       specifier: ^6.2.0
       version: 6.2.0
@@ -311,7 +317,7 @@ importers:
   packages/fetch:
     dependencies:
       openapi-fetch:
-        specifier: ^0.14.0
+        specifier: catalog:prod
         version: 0.14.0
     devDependencies:
       '@luxass/eslint-config':
@@ -327,7 +333,7 @@ importers:
         specifier: catalog:linting
         version: 9.28.0(jiti@2.4.2)
       openapi-typescript:
-        specifier: ^7.8.0
+        specifier: catalog:dev
         version: 7.8.0(typescript@5.8.3)
       publint:
         specifier: catalog:dev
