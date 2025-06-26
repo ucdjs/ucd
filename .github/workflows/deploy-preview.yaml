@@ -98,13 +98,12 @@ jobs:
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           workingDirectory: ./apps/${{ matrix.app }}
-          environment: production
+          environment: preview
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
           vars: API_VERSION
 
       - name: clean deployment url
         id: clean-url
-        if: matrix.app == 'proxy'
         env:
           DEPLOYMENT_URL: ${{ steps.deploy.outputs.deployment-url }}
         run: |
@@ -119,6 +118,55 @@ jobs:
         env:
           WORKER_URL: ${{ steps.clean-url.outputs.deployment-url }}
 
+      - name: write deployment url to summary
+        run: |
+          echo "## ${{ matrix.app }} Deployment" >> $GITHUB_STEP_SUMMARY
+          echo "**URL:** ${{ steps.clean-url.outputs.deployment-url }}" >> $GITHUB_STEP_SUMMARY
+
+          # Write to a file for the comment job to read
+          mkdir -p /tmp/deployment-urls
+          echo "${{ steps.clean-url.outputs.deployment-url }}" > /tmp/deployment-urls/${{ matrix.app }}-url.txt
+
+      - name: upload deployment url
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
+        with:
+          name: deployment-url-${{ matrix.app }}
+          path: /tmp/deployment-urls/${{ matrix.app }}-url.txt
+          retention-days: 1
+
+  update-pr-comment:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.number && needs.deploy.result == 'success'
+    needs: deploy
+    permissions:
+      pull-requests: write
+    steps:
+      - name: download api deployment url
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: deployment-url-api
+          path: /tmp/
+        continue-on-error: true
+
+      - name: download proxy deployment url
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          name: deployment-url-proxy
+          path: /tmp/
+        continue-on-error: true
+
+      - name: read deployment urls
+        id: read-urls
+        run: |
+          if [ -f /tmp/api-url.txt ]; then
+            API_URL=$(cat /tmp/api-url.txt)
+            echo "api-url=$API_URL" >> "$GITHUB_OUTPUT"
+          fi
+          if [ -f /tmp/proxy-url.txt ]; then
+            PROXY_URL=$(cat /tmp/proxy-url.txt)
+            echo "proxy-url=$PROXY_URL" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: find existing comment
         id: find-comment
         uses: peter-evans/find-comment@3eae4d37986fb5a8592848f6a574fdf654e61f9e # v3.1.0
@@ -130,18 +178,20 @@ jobs:
       - name: create or update PR comment
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         env:
-          WORKER_URL: ${{ steps.clean-url.outputs.deployment-url }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          API_URL: ${{ steps.read-urls.outputs.api-url }}
+          PROXY_URL: ${{ steps.read-urls.outputs.proxy-url }}
         with:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
           body: |
             <!-- worker-preview -->
-            ## Preview of API Worker
+            ## Preview Deployments
 
-            The API Worker has been deployed successfully.
+            The workers have been deployed successfully.
 
-            **Preview URL:** ${{ env.WORKER_URL }}
+            ${{ env.API_URL && format('**API Preview URL:** {0}', env.API_URL) || '' }}
+            ${{ env.PROXY_URL && format('**Proxy Preview URL:** {0}', env.PROXY_URL) || '' }}
 
             This preview was built from commit ${{ env.HEAD_SHA }}
 
