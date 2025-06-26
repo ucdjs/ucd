@@ -55,7 +55,11 @@ export default defineConfig({
 
       return false;
     },
-    projects: workspaces
+    projects: [
+      ...workspaces,
+      "./apps/proxy",
+      "./apps/api"
+    ]
   },
   esbuild: { target: "es2020" },
   resolve: { alias: aliases },
