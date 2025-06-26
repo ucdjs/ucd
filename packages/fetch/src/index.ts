@@ -14,6 +14,7 @@ export function createClient(baseUrl: string): Client<paths, `${string}/${string
     headers: {
       "Content-Type": "application/json",
     },
+    fetch: (...args) => fetch(...args),
   });
 }
 
@@ -33,6 +34,10 @@ export const client = createClient("https://api.ucdjs.dev");
 
 export type UnicodeVersion = components["schemas"]["UnicodeVersion"];
 export type UnicodeVersions = components["schemas"]["UnicodeVersions"];
+export type ApiError = components["schemas"]["ApiError"];
+export type ProxyResponse = components["schemas"]["ProxyResponse"];
+export type ProxyFileResponse = components["schemas"]["ProxyFileResponse"];
+export type ProxyDirectoryResponse = components["schemas"]["ProxyDirectoryResponse"];
 // export type UnicodeVersionMappings = components["schemas"]["UnicodeVersionMappings"];
 // export type UnicodeVersionFile = components["schemas"]["UnicodeVersionFile"];
 // export type UnicodeVersionFiles = components["schemas"]["UnicodeVersionFiles"];
