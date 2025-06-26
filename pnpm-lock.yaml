@@ -37,6 +37,9 @@ catalogs:
     '@luxass/eslint-config':
       specifier: ^5.0.0
       version: 5.0.0
+    '@luxass/spectral-ruleset':
+      specifier: ^1.0.0
+      version: 1.0.0
     '@stoplight/spectral-cli':
       specifier: ^6.15.0
       version: 6.15.0
@@ -206,6 +209,9 @@ importers:
       '@luxass/eslint-config':
         specifier: catalog:linting
         version: 5.0.0(@vue/compiler-sfc@3.5.13)(eslint-plugin-format@1.0.1(eslint@9.28.0(jiti@2.4.2)))(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)(vitest@3.2.4)
+      '@luxass/spectral-ruleset':
+        specifier: catalog:linting
+        version: 1.0.0
       '@stoplight/spectral-cli':
         specifier: catalog:linting
         version: 6.15.0
@@ -1410,6 +1416,9 @@ packages:
         optional: true
       prettier-plugin-astro:
         optional: true
+
+  '@luxass/spectral-ruleset@1.0.0':
+    resolution: {integrity: sha512-mXC9rcsMXcvHO+aEEmLqf0rgxdeLfiV2hdCxQYwrfAP3ye2+Wh5CIz8CyNaqgMjkX7+WLscnH+E+cCpr9OBe1g==}
 
   '@luxass/unicode-utils@0.12.0-beta.8':
     resolution: {integrity: sha512-2aydH0oGG/I+3tdzcm/yKYtGyuk4TcT7FQmdrMCNC3vfgW/C1+C34ToNBObmYjyrxZjfr4wLVQo5rqf8gcMV3Q==}
@@ -5611,6 +5620,8 @@ snapshots:
       - supports-color
       - typescript
       - vitest
+
+  '@luxass/spectral-ruleset@1.0.0': {}
 
   '@luxass/unicode-utils@0.12.0-beta.8':
     dependencies:

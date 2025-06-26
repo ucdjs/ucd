@@ -29,6 +29,7 @@ catalogs:
     "@stoplight/spectral-cli": ^6.15.0
     eslint: ^9.28.0
     eslint-plugin-format: ^1.0.1
+    "@luxass/spectral-ruleset": ^1.0.0
 
   prod:
     # merge these together when heading inference is implemented better
