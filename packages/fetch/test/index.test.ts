@@ -172,7 +172,7 @@ describe("unicode API Client", () => {
       });
 
       it("should handle binary data responses", async () => {
-        const binaryData = new Uint8Array([1, 2, 3, 4, 5]);
+        const binaryData = new Uint8Array([72, 101, 108, 108, 111, 44, 32, 87, 111, 114, 108, 100, 33]);
 
         mockFetch([
           ["GET https://api.ucdjs.dev/api/v1/unicode-proxy", () => {
@@ -183,10 +183,14 @@ describe("unicode API Client", () => {
           }],
         ]);
 
-        const { response } = await client.GET("/api/v1/unicode-proxy");
+        const { response, data } = await client.GET("/api/v1/unicode-proxy", {
+          parseAs: "arrayBuffer",
+        });
 
         expect(response.status).toBe(200);
         expect(response.headers.get("Content-Type")).toBe("application/octet-stream");
+        // eslint-disable-next-line node/prefer-global/buffer
+        expect(Buffer.from(data!).toString()).toBe("Hello, World!");
       });
     });
 
@@ -242,8 +246,8 @@ describe("unicode API Client", () => {
           },
         });
 
-        expect(data).toEqual(mockFileResponse);
         expect(response.status).toBe(200);
+        expect(data).toEqual(mockFileResponse);
       });
 
       it("should handle directory responses", async () => {
