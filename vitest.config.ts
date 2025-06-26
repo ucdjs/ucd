@@ -40,7 +40,7 @@ const workspaces = readdirSync(new URL("./packages", import.meta.url).pathname)
 export default defineConfig({
   test: {
     coverage: {
-      provider: "v8",
+      provider: "istanbul",
       include: ["**/src/**"],
     },
     environment: "node",
