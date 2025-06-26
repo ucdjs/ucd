@@ -8,6 +8,10 @@
   - changed-files:
       - any-glob-to-any-file: packages/utils/**
 
+"pkg: fetch":
+  - changed-files:
+      - any-glob-to-any-file: packages/fetch/**
+
 "pkg: schema-gen":
   - changed-files:
       - any-glob-to-any-file: packages/schema-gen/**
