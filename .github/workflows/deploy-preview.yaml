@@ -1,4 +1,4 @@
-name: deploy to production
+name: deploy to preview
 
 on:
   workflow_dispatch:
@@ -98,7 +98,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           workingDirectory: ./apps/${{ matrix.app }}
-          environment: production
+          environment: preview
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
           vars: API_VERSION
 
