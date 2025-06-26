@@ -14,7 +14,8 @@
       "@ucdjs/utils/fs-bridge/http": ["./packages/utils/src/fs-bridge/http.ts"],
       "@ucdjs/utils/constants": ["./packages/utils/src/constants.ts"],
       "@ucdjs/schema-gen": ["./packages/schema-gen/src/index.ts"],
-      "@ucdjs/ucd-store": ["./packages/ucd-store/src/index.ts"]
+      "@ucdjs/ucd-store": ["./packages/ucd-store/src/index.ts"],
+      "@ucdjs/fetch": ["./packages/fetch/src/index.ts"],
     }
   }
 }
