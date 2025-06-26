@@ -36,6 +36,7 @@ V1_UNICODE_PROXY_ROUTER.openapi(ROOT_UNICODE_PROXY_ROUTE, async (c) => {
 });
 
 V1_UNICODE_PROXY_ROUTER.openapi(UNICODE_PROXY_ROUTE, async (c) => {
+  // @ts-expect-error blah blah
   const { path } = c.req.valid("param");
   console.warn(`Proxying request for path: ${path}`);
 

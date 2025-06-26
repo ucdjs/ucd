@@ -61,13 +61,19 @@ export const UNICODE_PROXY_ROUTE = createRoute({
       name: "path",
       style: "simple",
       explode: false,
+      description: "The path to proxy, e.g., 'latest/ucd.all.json'",
+      required: true,
+      schema: {
+        type: "string",
+        description: "The path to proxy, e.g., 'latest/ucd.all.json'",
+      },
     },
   ],
-  request: {
-    params: z.object({
-      path: z.string().describe("The path to proxy, e.g., 'latest/ucd.all.json'"),
-    }),
-  },
+  // request: {
+  //   params: z.object({
+  //     path: z.string().describe("The path to proxy, e.g., 'latest/ucd.all.json'"),
+  //   }),
+  // },
   responses: {
     200: {
       description: "Successful proxy response",
