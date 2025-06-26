@@ -1,4 +1,4 @@
-name: deploy to preview
+name: deploy to production
 
 on:
   workflow_dispatch:
@@ -27,13 +27,19 @@ on:
 permissions: {}
 
 jobs:
-  setup:
+  deploy:
     runs-on: ubuntu-latest
     if: github.repository_owner == 'ucdjs'
-    outputs:
-      api-version: ${{ steps.api-version.outputs.version }}
+    strategy:
+      matrix:
+        app:
+          - ${{ (github.event.inputs.app == 'api' || github.event.inputs.app == 'both' || github.event.inputs.app == null) && 'api' || '' }}
+          - ${{ (github.event.inputs.app == 'proxy' || github.event.inputs.app == 'both' || github.event.inputs.app == null) && 'proxy' || '' }}
+        exclude:
+          - app: ''
     permissions:
       contents: read
+      pull-requests: write
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -54,7 +60,7 @@ jobs:
         run: pnpm build
 
       - name: validate openapi
-        if: github.event.inputs.app == 'api' || github.event.inputs.app == 'both' || github.event.inputs.app == null
+        if: matrix.app == 'api'
         run: pnpm --filter=@ucdjs/api run lint:openapi
 
       - name: lint
@@ -83,25 +89,11 @@ jobs:
           # combine
           echo "version=$CLEAN_BRANCH-$SHORT_SHA" >> "$GITHUB_OUTPUT"
 
-  deploy:
-    runs-on: ubuntu-latest
-    if: github.repository_owner == 'ucdjs'
-    needs: setup
-    strategy:
-      matrix:
-        app:
-          - ${{ (github.event.inputs.app == 'api' || github.event.inputs.app == 'both' || github.event.inputs.app == null) && 'api' || '' }}
-          - ${{ (github.event.inputs.app == 'proxy' || github.event.inputs.app == 'both' || github.event.inputs.app == null) && 'proxy' || '' }}
-        exclude:
-          - app: ''
-    permissions:
-      contents: read
-    steps:
       - name: deploy ${{ matrix.app }}
         id: deploy
         if: ${{ github.event.inputs.dry-run != 'true' }}
         env:
-          API_VERSION: ${{ needs.setup.outputs.api-version }}
+          API_VERSION: ${{ steps.api-version.outputs.version }}
         uses: cloudflare/wrangler-action@392082e81ffbcb9ebdde27400634aa004b35ea37 # v3.14.0
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
@@ -131,7 +123,7 @@ jobs:
           echo "## ${{ matrix.app }} Deployment" >> $GITHUB_STEP_SUMMARY
           echo "**URL:** ${{ steps.clean-url.outputs.deployment-url }}" >> $GITHUB_STEP_SUMMARY
 
-          # Also write to a file for the comment job to read
+          # Write to a file for the comment job to read
           mkdir -p /tmp/deployment-urls
           echo "${{ steps.clean-url.outputs.deployment-url }}" > /tmp/deployment-urls/${{ matrix.app }}-url.txt
 
