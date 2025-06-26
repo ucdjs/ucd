@@ -25,6 +25,7 @@
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "catalog:testing",
     "@luxass/eslint-config": "catalog:linting",
+    "@luxass/spectral-ruleset": "catalog:linting",
     "@stoplight/spectral-cli": "catalog:linting",
     "eslint": "catalog:linting",
     "eslint-plugin-format": "catalog:linting",
