@@ -1,6 +1,6 @@
 {
-  "name": "@ucdjs/utils",
-  "version": "0.1.0",
+  "name": "@ucdjs/fetch",
+  "version": "0.0.0",
   "type": "module",
   "author": {
     "name": "Lucas Nørgård",
@@ -13,18 +13,13 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ucdjs/ucd.git",
-    "directory": "packages/utils"
+    "directory": "packages/fetch"
   },
   "bugs": {
     "url": "https://github.com/ucdjs/ucd/issues"
   },
   "exports": {
     ".": "./dist/index.js",
-    "./constants": "./dist/constants.js",
-    "./fs-bridge": "./dist/fs-bridge.js",
-    "./fs-bridge/http": "./dist/fs-bridge/http.js",
-    "./fs-bridge/node": "./dist/fs-bridge/node.js",
-    "./ucd-files": "./dist/ucd-files.js",
     "./package.json": "./package.json"
   },
   "main": "./dist/index.js",
@@ -38,20 +33,18 @@
     "dev": "tsdown --watch",
     "clean": "git clean -xdf dist node_modules",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "generate:client": "npx openapi-typescript https://api.ucdjs.dev/openapi.json -o ./src/.generated/api.d.ts"
   },
   "dependencies": {
-    "@luxass/unicode-utils-new": "catalog:prod",
-    "@luxass/utils": "catalog:prod",
-    "defu": "catalog:prod",
-    "memfs": "catalog:prod",
-    "picomatch": "catalog:prod"
+    "openapi-fetch": "catalog:prod"
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:linting",
     "@types/picomatch": "catalog:dev",
     "@ucdjs/tsconfig": "workspace:*",
     "eslint": "catalog:linting",
+    "openapi-typescript": "catalog:dev",
     "publint": "catalog:dev",
     "tsdown": "catalog:dev",
     "typescript": "catalog:dev",

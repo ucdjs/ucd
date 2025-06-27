@@ -1,0 +1,19 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "outputs": ["dist/**"]
+    },
+    "dev": {
+      "persistent": false
+    },
+    "lint": {
+      "dependsOn": ["lint:openapi"]
+    },
+    "typecheck": {
+      "outputs": [".cache/tsbuildinfo.json"]
+    },
+    "lint:openapi": {}
+  }
+}
