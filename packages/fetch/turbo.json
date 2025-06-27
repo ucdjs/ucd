@@ -3,13 +3,17 @@
   "extends": ["//"],
   "tasks": {
     "build": {
-      "outputs": ["dist/**"]
+      "outputs": ["dist/**"],
+      "dependsOn": [
+        "generate:client"
+      ]
     },
     "dev": {
       "persistent": false
     },
     "typecheck": {
       "outputs": [".cache/tsbuildinfo.json"]
-    }
+    },
+    "generate:client": {}
   }
 }
