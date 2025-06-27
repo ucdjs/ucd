@@ -27,7 +27,6 @@ const hiddenLogs = [
 const workspaces = readdirSync(new URL("./packages", import.meta.url).pathname)
   .filter((dir) => existsSync(pkgRoot(dir) + "/package.json"))
   .map((dir) => {
-
     return {
       extends: true,
       test: {

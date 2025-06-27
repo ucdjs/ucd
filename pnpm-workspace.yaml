@@ -29,6 +29,7 @@ catalogs:
     "@stoplight/spectral-cli": ^6.15.0
     eslint: ^9.28.0
     eslint-plugin-format: ^1.0.1
+    "@luxass/spectral-ruleset": ^1.0.0
 
   prod:
     # merge these together when heading inference is implemented better
@@ -47,6 +48,8 @@ catalogs:
     picomatch: ^4.0.2
     memfs: ^4.17.2
     apache-autoindex-parse: ^1.0.1
+    openapi-fetch: ^0.14.0
+
 
   dev:
     "@types/picomatch": ^4.0.0
@@ -57,6 +60,7 @@ catalogs:
     tsx: ^4.19.4
     publint: ^0.3.12
     nanotar: ^0.2.0
+    openapi-typescript: ^7.8.0
 
   workers:
     wrangler: ^4.20.5

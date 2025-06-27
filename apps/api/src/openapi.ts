@@ -1,4 +1,5 @@
 import type { OpenAPIHono } from "@hono/zod-openapi";
+import { dedent } from "@luxass/utils";
 
 export type OpenAPIObjectConfig = Parameters<OpenAPIHono["getOpenAPI31Document"]>[0];
 
@@ -27,7 +28,12 @@ export function buildOpenApiConfig(version: string, servers: NonNullable<OpenAPI
       },
       {
         name: "Unicode Proxy",
-        description: "Endpoints for proxying requests to unicode-proxy.ucdjs.dev.",
+        description: dedent`
+          Endpoints for proxying requests to unicode-proxy.ucdjs.dev.
+
+          Just call the single endpoint with the path you want to proxy, and don't think about there being any other endpoints.
+          This is a fix for OpenAPI not supporting splat routes.
+        `,
       },
     ],
     servers,

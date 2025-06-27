@@ -18,6 +18,7 @@
   "dependencies": {
     "@hono/zod-openapi": "catalog:workers",
     "@luxass/unicode-utils-new": "catalog:prod",
+    "@luxass/utils": "catalog:prod",
     "@scalar/hono-api-reference": "catalog:workers",
     "hono": "catalog:workers",
     "zod": "catalog:prod"
@@ -25,6 +26,7 @@
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "catalog:testing",
     "@luxass/eslint-config": "catalog:linting",
+    "@luxass/spectral-ruleset": "catalog:linting",
     "@stoplight/spectral-cli": "catalog:linting",
     "eslint": "catalog:linting",
     "eslint-plugin-format": "catalog:linting",
