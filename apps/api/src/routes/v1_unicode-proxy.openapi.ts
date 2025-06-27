@@ -47,7 +47,7 @@ function createProxyRoute(segmentCount = 0) {
     ? ""
     : Array.from({ length: segmentCount }, (_, i) => `/{path${i > 0 ? i + 1 : ""}}`).join("");
 
-  const params: any = {};
+  const params: Record<string, z.ZodString> = {};
   if (segmentCount > 0) {
     for (let i = 0; i < segmentCount; i++) {
       const paramName = i === 0 ? "path" : `path${i + 1}`;
@@ -58,8 +58,13 @@ function createProxyRoute(segmentCount = 0) {
         "category",
         "subcategory",
         "ucd.all.json",
+        "file.json",
+        "resource",
+        "endpoint",
+        "detail",
       ];
-      const description = `The ${["first", "second", "third", "fourth", "fifth", "sixth"][i]} path segment, e.g., '${examples[i]}'`;
+      const ordinals = ["first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth", "tenth"];
+      const description = `The ${ordinals[i] || `${i + 1}th`} path segment, e.g., '${examples[i] || "segment"}'`;
       params[paramName] = z.string().describe(description);
     }
   }
