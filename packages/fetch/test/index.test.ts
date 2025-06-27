@@ -223,7 +223,7 @@ describe("unicode API Client", () => {
 
   describe("/api/v1/unicode-proxy/{path} endpoint", () => {
     describe("successful requests", () => {
-      it.todo("should proxy requests with path parameter successfully", async () => {
+      it("should proxy requests with path parameter successfully", async () => {
         const mockFileResponse: ProxyResponse = {
           type: "file",
           name: "ucd.all.json",
@@ -279,7 +279,7 @@ describe("unicode API Client", () => {
         expect((data as any).type).toBe("directory");
       });
 
-      it.todo.each([
+      it.each([
         ["latest/ucd.all.json"],
         ["15.1.0/ucd/UnicodeData.txt"],
         ["auxiliary/GraphemeBreakProperty.txt"],
@@ -312,7 +312,7 @@ describe("unicode API Client", () => {
     });
 
     describe("error handling", () => {
-      it.todo("should handle 404 errors for non-existent paths", async () => {
+      it("should handle 404 errors for non-existent paths", async () => {
         const errorResponse = {
           message: "Path not found: /non-existent/path",
           status: 404,
