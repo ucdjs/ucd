@@ -50,7 +50,6 @@ catalogs:
     apache-autoindex-parse: ^1.0.1
     openapi-fetch: ^0.14.0
 
-
   dev:
     "@types/picomatch": ^4.0.0
     "@types/node": ^22.10.0
@@ -67,6 +66,22 @@ catalogs:
     "@hono/zod-openapi": ^0.19.8
     "@scalar/hono-api-reference": ^0.9.6
     hono: ^4.8.2
+  conflicts_prod_:
+    "@luxass/utils": ""
+  conflicts_prod_c:
+    "@luxass/utils": c
+  conflicts_prod_ca:
+    "@luxass/utils": ca
+  conflicts_prod_cat:
+    "@luxass/utils": cat
+  conflicts_prod_cata:
+    "@luxass/utils": cata
+  conflicts_prod_catal:
+    "@luxass/utils": catal
+  conflicts_prod_catalo:
+    "@luxass/utils": catalo
+  conflicts_prod_catalog:
+    "@luxass/utils": catalog
 
 onlyBuiltDependencies:
   - esbuild

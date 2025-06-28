@@ -325,6 +325,9 @@ importers:
 
   packages/fetch:
     dependencies:
+      '@ucdjs/utils':
+        specifier: workspace:*
+        version: link:../utils
       openapi-fetch:
         specifier: catalog:prod
         version: 0.14.0
@@ -332,6 +335,9 @@ importers:
       '@luxass/eslint-config':
         specifier: catalog:linting
         version: 5.0.0(@vue/compiler-sfc@3.5.13)(eslint-plugin-format@1.0.1(eslint@9.28.0(jiti@2.4.2)))(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)(vitest@3.2.4)
+      '@luxass/utils':
+        specifier: catalog:prod
+        version: 2.3.0
       '@types/picomatch':
         specifier: catalog:dev
         version: 4.0.0
@@ -411,6 +417,9 @@ importers:
       '@luxass/utils':
         specifier: catalog:prod
         version: 2.3.0
+      '@ucdjs/fetch':
+        specifier: workspace:*
+        version: link:../fetch
       '@ucdjs/utils':
         specifier: workspace:*
         version: link:../utils
