@@ -2,7 +2,7 @@ import { defineWorkersProject } from "@cloudflare/vitest-pool-workers/config";
 
 export default defineWorkersProject({
   test: {
-    name: "api.ucdjs.dev",
+    name: "api",
     poolOptions: {
       workers: {
         singleWorker: true,
