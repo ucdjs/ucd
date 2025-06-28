@@ -70,9 +70,7 @@ jobs:
         run: pnpm run typecheck
 
       - name: test
-        env:
-          PROJECT_NAME: ${{ matrix.app }}
-        run: pnpm run test --project ${PROJECT_NAME}
+        run: pnpm run test
 
       - name: generate api version
         id: api-version
