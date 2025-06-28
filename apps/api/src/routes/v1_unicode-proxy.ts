@@ -17,7 +17,7 @@ export const V1_UNICODE_PROXY_ROUTER = new OpenAPIHono<HonoEnv>().basePath("/api
 V1_UNICODE_PROXY_ROUTER.openAPIRegistry.registerPath(UNICODE_PROXY_ROUTE);
 
 V1_UNICODE_PROXY_ROUTER.get("/:wildcard{.*?}", async (c) => {
-  const path = c.req.param("wildcard") || "";
+  const path = c.req.param("wildcard").trim() || "";
   try {
     const url = path ? `${c.env.PROXY_ENDPOINT}/${path}` : c.env.PROXY_ENDPOINT;
     const res = await fetch(url, {
