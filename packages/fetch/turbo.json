@@ -5,7 +5,8 @@
     "build": {
       "outputs": ["dist/**"],
       "dependsOn": [
-        "generate:client"
+        "generate:client",
+        "generate:components"
       ]
     },
     "dev": {
@@ -13,6 +14,15 @@
     },
     "typecheck": {
       "outputs": [".cache/tsbuildinfo.json"],
+      "dependsOn": [
+        "generate:client"
+      ]
+    },
+    "generate:components": {
+      "cache": false,
+      "outputs": [
+        "src/components.ts"
+      ],
       "dependsOn": [
         "generate:client"
       ]
