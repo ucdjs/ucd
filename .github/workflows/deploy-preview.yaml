@@ -119,19 +119,24 @@ jobs:
           WORKER_URL: ${{ steps.clean-url.outputs.deployment-url }}
 
       - name: write deployment url to summary
+        env:
+          APP: ${{ matrix.app }}
+          DEPLOYMENT_URL: ${{ steps.clean-url.outputs.deployment-url }}
         run: |
-          echo "## ${{ matrix.app }} Deployment" >> $GITHUB_STEP_SUMMARY
-          echo "**URL:** ${{ steps.clean-url.outputs.deployment-url }}" >> $GITHUB_STEP_SUMMARY
+          echo "## $APP Deployment" >> $GITHUB_STEP_SUMMARY
+          echo "**URL:** $DEPLOYMENT_URL" >> $GITHUB_STEP_SUMMARY
 
           # Write to a file for the comment job to read
           mkdir -p /tmp/deployment-urls
-          echo "${{ steps.clean-url.outputs.deployment-url }}" > /tmp/deployment-urls/${{ matrix.app }}-url.txt
+          echo "$DEPLOYMENT_URL" > /tmp/deployment-urls/${APP}-url.txt
 
       - name: upload deployment url
         uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
+        env:
+          APP: ${{ matrix.app }}
         with:
-          name: deployment-url-${{ matrix.app }}
-          path: /tmp/deployment-urls/${{ matrix.app }}-url.txt
+          name: deployment-url-${APP}
+          path: /tmp/deployment-urls/${APP}-url.txt
           retention-days: 1
 
   update-pr-comment:
