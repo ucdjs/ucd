@@ -1,9 +1,6 @@
 import type { FileSystemBridge } from "../fs-bridge";
+import { UNICODE_PROXY_URL } from "../constants";
 import { defineFileSystemBridge } from "../fs-bridge";
-
-// MAYBE align this with the UCD Store's default base URL constants?
-const DEFAULT_BASE_URL = "https://unicode-proxy.ucdjs.dev/";
-// const DEFAULT_BASE_URL = "http://localhost:8787/";
 
 export interface HTTPFileSystemBridgeOptions {
   baseUrl?: string;
@@ -20,7 +17,7 @@ export interface HTTPFileSystemBridgeOptions {
  * @returns {FileSystemBridge} A file system bridge implementation for HTTP/HTTPS resources
  */
 function HTTPFileSystemBridge(options: HTTPFileSystemBridgeOptions = {}): FileSystemBridge {
-  const baseUrl = options.baseUrl || DEFAULT_BASE_URL;
+  const baseUrl = options.baseUrl || UNICODE_PROXY_URL;
   return defineFileSystemBridge({
     async read(path) {
       const url = new URL(path, baseUrl);
