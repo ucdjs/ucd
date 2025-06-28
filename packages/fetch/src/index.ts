@@ -1,5 +1,6 @@
 import type { Client } from "openapi-fetch";
-import type { components, paths } from "./.generated/api";
+import type { paths } from "./.generated/api";
+import { UCDJS_API_BASE_URL } from "@ucdjs/utils/constants";
 import OpenApiCreateClient from "openapi-fetch";
 
 /**
@@ -17,7 +18,7 @@ export function createClient(baseUrl: string): Client<paths, `${string}/${string
 
 /**
  * A pre-configured API client instance for the Unicode API
- * Uses the default base URL: https://api.ucdjs.dev
+ * Uses the default base URL: "https://api.ucdjs.dev"
  *
  * @example
  * ```ts
@@ -27,14 +28,6 @@ export function createClient(baseUrl: string): Client<paths, `${string}/${string
  * const response = await client.GET("/path/to/endpoint");
  * ```
  */
-export const client = createClient("https://api.ucdjs.dev");
+export const client = createClient(UCDJS_API_BASE_URL);
 
-export type UnicodeVersion = components["schemas"]["UnicodeVersion"];
-export type UnicodeVersions = components["schemas"]["UnicodeVersions"];
-export type ApiError = components["schemas"]["ApiError"];
-export type ProxyResponse = components["schemas"]["ProxyResponse"];
-export type ProxyFileResponse = components["schemas"]["ProxyFileResponse"];
-export type ProxyDirectoryResponse = components["schemas"]["ProxyDirectoryResponse"];
-// export type UnicodeVersionMappings = components["schemas"]["UnicodeVersionMappings"];
-// export type UnicodeVersionFile = components["schemas"]["UnicodeVersionFile"];
-// export type UnicodeVersionFiles = components["schemas"]["UnicodeVersionFiles"];
+export type * from "./components";
