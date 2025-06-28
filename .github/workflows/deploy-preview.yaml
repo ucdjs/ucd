@@ -135,8 +135,8 @@ jobs:
         env:
           APP: ${{ matrix.app }}
         with:
-          name: deployment-url-${APP}
-          path: /tmp/deployment-urls/${APP}-url.txt
+          name: deployment-url-${{ env.APP }}
+          path: /tmp/deployment-urls/${{ env.APP }}-url.txt
           retention-days: 1
 
   update-pr-comment:

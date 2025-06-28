@@ -50,7 +50,6 @@ catalogs:
     apache-autoindex-parse: ^1.0.1
     openapi-fetch: ^0.14.0
 
-
   dev:
     "@types/picomatch": ^4.0.0
     "@types/node": ^22.10.0
