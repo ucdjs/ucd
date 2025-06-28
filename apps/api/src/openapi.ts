@@ -31,8 +31,8 @@ export function buildOpenApiConfig(version: string, servers: NonNullable<OpenAPI
         description: dedent`
           Endpoints for proxying requests to unicode-proxy.ucdjs.dev.
 
-          Just call the single endpoint with the path you want to proxy, and don't think about there being any other endpoints.
-          This is a fix for OpenAPI not supporting splat routes.
+          The \`wildcard\` parameter in the path allows you to match any path.
+          For example, if you want to get the \`UnicodeData.txt\` file for Unicode version 15.0.0, you can use the following wildcard path parameter: \`15.0.0/ucd/UnicodeData.txt\`.
         `,
       },
     ],

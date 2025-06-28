@@ -11,9 +11,6 @@ import OpenApiCreateClient from "openapi-fetch";
 export function createClient(baseUrl: string): Client<paths, `${string}/${string}`> {
   return OpenApiCreateClient<paths>({
     baseUrl,
-    headers: {
-      "Content-Type": "application/json",
-    },
     fetch: (...args) => fetch(...args),
   });
 }

@@ -165,7 +165,13 @@ describe("unicode API Client", () => {
           }],
         ]);
 
-        const { response, data } = await client.GET("/api/v1/unicode-proxy");
+        const { response, data } = await client.GET("/api/v1/unicode-proxy/{wildcard}", {
+          params: {
+            path: {
+              wildcard: "",
+            },
+          },
+        });
 
         expect(data).toEqual(mockProxyResponse);
         expect(response.status).toBe(200);
@@ -183,7 +189,12 @@ describe("unicode API Client", () => {
           }],
         ]);
 
-        const { response, data } = await client.GET("/api/v1/unicode-proxy", {
+        const { response, data } = await client.GET("/api/v1/unicode-proxy/{wildcard}", {
+          params: {
+            path: {
+              wildcard: "",
+            },
+          },
           parseAs: "arrayBuffer",
         });
 
@@ -213,7 +224,13 @@ describe("unicode API Client", () => {
           }],
         ]);
 
-        const response = await client.GET("/api/v1/unicode-proxy");
+        const response = await client.GET("/api/v1/unicode-proxy/{wildcard}", {
+          params: {
+            path: {
+              wildcard: "",
+            },
+          },
+        });
 
         expect(response.response.status).toBe(404);
         expect(response.error).toEqual(errorResponse);
@@ -240,11 +257,10 @@ describe("unicode API Client", () => {
           }],
         ]);
 
-        const { response, data } = await client.GET("/api/v1/unicode-proxy/{path}/{path2}", {
+        const { response, data } = await client.GET("/api/v1/unicode-proxy/{wildcard}", {
           params: {
             path: {
-              path: "latest",
-              path2: "ucd.all.json",
+              wildcard: "latest/ucd.all.json",
             },
           },
         });
@@ -270,9 +286,9 @@ describe("unicode API Client", () => {
           }],
         ]);
 
-        const { data } = await client.GET("/api/v1/unicode-proxy/{path}", {
+        const { data } = await client.GET("/api/v1/unicode-proxy/{wildcard}", {
           params: {
-            path: { path: "latest" },
+            path: { wildcard: "latest" },
           },
         });
 
@@ -303,14 +319,10 @@ describe("unicode API Client", () => {
           }],
         ]);
 
-        const segments = path.split("/");
-
-        const { response, data } = await client.GET(segments.length === 3 ? `/api/v1/unicode-proxy/{path}/{path2}/{path3}` : `/api/v1/unicode-proxy/{path}/{path2}`, {
+        const { response, data } = await client.GET("/api/v1/unicode-proxy/{wildcard}", {
           params: {
             path: {
-              path: segments[0]!,
-              path2: segments[1] || "",
-              path3: segments[2] || "",
+              wildcard: path,
             },
           },
         });
@@ -339,9 +351,9 @@ describe("unicode API Client", () => {
           }],
         ]);
 
-        const { response, error } = await client.GET("/api/v1/unicode-proxy/{path}/{path2}", {
+        const { response, error } = await client.GET("/api/v1/unicode-proxy/{wildcard}", {
           params: {
-            path: { path: "non-existent", path2: "path" },
+            path: { wildcard: "non-existent/path" },
           },
         });
 
@@ -386,8 +398,8 @@ describe("unicode API Client", () => {
 
       const [versionsResponse, proxyLatestResponse] = await Promise.all([
         client.GET("/api/v1/unicode-versions"),
-        client.GET("/api/v1/unicode-proxy/{path}", {
-          params: { path: { path: "latest" } },
+        client.GET("/api/v1/unicode-proxy/{wildcard}", {
+          params: { path: { wildcard: "latest" } },
         }),
       ]);
 

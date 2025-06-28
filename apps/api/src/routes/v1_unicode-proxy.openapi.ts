@@ -1,103 +1,72 @@
-import type { RouteConfig } from "@hono/zod-openapi";
 import { createRoute, z } from "@hono/zod-openapi";
+import { ApiErrorSchema } from "../schemas";
 import { ProxyResponseSchema } from "./v1_unicode-proxy.schemas";
 
-const errorResponseSchema = z.object({
-  message: z.string(),
-  status: z.number(),
-  path: z.string(),
-  timestamp: z.string(),
-});
-
-const commonResponses = {
-  200: {
-    description: "Successful proxy response",
-    content: {
-      "application/json": {
-        schema: ProxyResponseSchema,
+export const UNICODE_PROXY_ROUTE = createRoute({
+  method: "get",
+  path: "/{wildcard}",
+  tags: ["Unicode Proxy"],
+  description: "Proxy requests to unicode-proxy.ucdjs.dev",
+  parameters: [
+    {
+      in: "path",
+      name: "wildcard",
+      description: "The path to proxy. Use a wildcard to match any path.",
+      required: true,
+      schema: {
+        type: "string",
+        pattern: ".*",
       },
-      "application/octet-stream": {
-        schema: {
-          type: "string",
-          format: "binary",
+      examples: {
+        "UnicodeData.txt": {
+          summary: "UnicodeData.txt for Unicode 15.0.0",
+          value: "15.0.0/ucd/UnicodeData.txt",
+        },
+        "emoji-data.txt": {
+          summary: "Emoji data file",
+          value: "15.1.0/ucd/emoji/emoji-data.txt",
+        },
+        "root": {
+          summary: "Root path",
+          value: "",
+        },
+        "list-version-dir": {
+          summary: "Versioned path",
+          value: "15.1.0",
+        },
+      },
+    },
+  ],
+  responses: {
+    200: {
+      description: "Successful proxy response",
+      content: {
+        "application/json": {
+          schema: ProxyResponseSchema,
+        },
+        "application/octet-stream": {
+          schema: {
+            type: "string",
+            format: "binary",
+          },
+        },
+      },
+    },
+    404: {
+      description: "Resource not found",
+      content: {
+        "application/json": {
+          schema: ApiErrorSchema,
+        },
+      },
+    },
+    500: {
+      description: "Internal server error",
+      content: {
+        "application/json": {
+          schema: ApiErrorSchema,
         },
       },
     },
   },
-  404: {
-    description: "Resource not found",
-    content: {
-      "application/json": {
-        schema: errorResponseSchema,
-      },
-    },
-  },
-  500: {
-    description: "Internal server error",
-    content: {
-      "application/json": {
-        schema: errorResponseSchema,
-      },
-    },
-  },
-} satisfies RouteConfig["responses"];
-
-function createProxyRoute(segmentCount = 0) {
-  const pathSegments = segmentCount === 0
-    ? ""
-    : Array.from({ length: segmentCount }, (_, i) => `/{path${i > 0 ? i + 1 : ""}}`).join("");
-
-  const params: Record<string, z.ZodString> = {};
-  if (segmentCount > 0) {
-    for (let i = 0; i < segmentCount; i++) {
-      const paramName = i === 0 ? "path" : `path${i + 1}`;
-      const examples = [
-        "latest",
-        "data",
-        "blocks",
-        "category",
-        "subcategory",
-        "ucd.all.json",
-        "file.json",
-        "resource",
-        "endpoint",
-        "detail",
-      ];
-      const ordinals = ["first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth", "tenth"];
-      const description = `The ${ordinals[i] || `${i + 1}th`} path segment, e.g., '${examples[i] || "segment"}'`;
-      params[paramName] = z.string().describe(description);
-    }
-  }
-
-  const description = segmentCount === 0
-    ? "Proxy requests to unicode-proxy.ucdjs.dev"
-    : `Proxy requests to unicode-proxy.ucdjs.dev with ${segmentCount === 1 ? "one path segment" : `${segmentCount} path segments`}`;
-
-  const routeConfig: RouteConfig = {
-    method: "get",
-    path: segmentCount === 0 ? "/" : pathSegments,
-    tags: ["Unicode Proxy"],
-    description,
-    responses: commonResponses,
-  };
-
-  if (segmentCount > 0) {
-    routeConfig.request = {
-      params: z.object(params),
-    } as const;
-  }
-
-  return createRoute(routeConfig);
-}
-
-export const ROOT_UNICODE_PROXY_ROUTE = createProxyRoute(0);
-export const UNICODE_PROXY_ROUTE = createProxyRoute(1);
-export const UNICODE_PROXY_ROUTE_2 = createProxyRoute(2);
-export const UNICODE_PROXY_ROUTE_3 = createProxyRoute(3);
-export const UNICODE_PROXY_ROUTE_4 = createProxyRoute(4);
-export const UNICODE_PROXY_ROUTE_5 = createProxyRoute(5);
-export const UNICODE_PROXY_ROUTE_6 = createProxyRoute(6);
-export const UNICODE_PROXY_ROUTE_7 = createProxyRoute(7);
-export const UNICODE_PROXY_ROUTE_8 = createProxyRoute(8);
-export const UNICODE_PROXY_ROUTE_9 = createProxyRoute(9);
-export const UNICODE_PROXY_ROUTE_10 = createProxyRoute(10);
+});
