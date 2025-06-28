@@ -5,7 +5,7 @@ export type OpenAPIObjectConfig = Parameters<OpenAPIHono["getOpenAPI31Document"]
 
 export function buildOpenApiConfig(version: string, servers: NonNullable<OpenAPIObjectConfig["servers"]>) {
   return {
-    openapi: "3.0.0",
+    openapi: "3.1.0",
     info: {
       title: "UCD.js API",
       description: dedent`
