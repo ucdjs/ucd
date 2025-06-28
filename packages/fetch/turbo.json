@@ -21,6 +21,9 @@
       "cache": false,
       "outputs": [
         "src/.generated/api.d.ts"
+      ],
+      "dependsOn": [
+        "@ucdjs/api#build:openapi"
       ]
     }
   }
