@@ -2,7 +2,6 @@ import type { ApiError, HonoEnv } from "./types";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { Scalar } from "@scalar/hono-api-reference";
 import { env } from "hono/adapter";
-import { getRouterName, showRoutes } from "hono/dev";
 import { HTTPException } from "hono/http-exception";
 import { buildOpenApiConfig } from "./openapi";
 import { V1_UNICODE_PROXY_ROUTER } from "./routes/v1_unicode-proxy";
@@ -100,9 +99,5 @@ app.notFound(async (c) => {
 });
 
 export const getOpenAPIDocument = app.getOpenAPIDocument;
-
-showRoutes(app, {
-  colorize: true,
-});
 
 export default app;
