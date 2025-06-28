@@ -249,7 +249,8 @@ describe("unicode API Client", () => {
         };
 
         mockFetch([
-          ["GET https://api.ucdjs.dev/api/v1/unicode-proxy/latest/ucd.all.json", () => {
+          // TODO: remove the need for encodeURIComponent here when https://github.com/openapi-ts/openapi-typescript/pull/2362 is fixed
+          [`GET https://api.ucdjs.dev/api/v1/unicode-proxy/${encodeURIComponent("latest/ucd.all.json")}`, () => {
             return new HttpResponse(JSON.stringify(mockFileResponse), {
               status: 200,
               headers: { "Content-Type": "application/json" },
@@ -311,7 +312,8 @@ describe("unicode API Client", () => {
         };
 
         mockFetch([
-          [`GET https://api.ucdjs.dev/api/v1/unicode-proxy/${path}`, () => {
+          // TODO: remove the need for encodeURIComponent here when https://github.com/openapi-ts/openapi-typescript/pull/2362 is fixed
+          [`GET https://api.ucdjs.dev/api/v1/unicode-proxy/${encodeURIComponent(path)}`, () => {
             return new HttpResponse(JSON.stringify(mockResponse), {
               status: 200,
               headers: { "Content-Type": "application/json" },
@@ -342,7 +344,8 @@ describe("unicode API Client", () => {
         };
 
         mockFetch([
-          ["GET https://api.ucdjs.dev/api/v1/unicode-proxy/non-existent/path", () => {
+          // TODO: remove the need for encodeURIComponent here when https://github.com/openapi-ts/openapi-typescript/pull/2362 is fixed
+          [`GET https://api.ucdjs.dev/api/v1/unicode-proxy/${encodeURIComponent("non-existent/path")}`, () => {
             return new HttpResponse(JSON.stringify(errorResponse), {
               status: 404,
               statusText: "Not Found",
@@ -448,7 +451,11 @@ describe("unicode API Client", () => {
         }],
       ]);
 
-      await client.GET("/api/v1/unicode-versions");
+      await client.GET("/api/v1/unicode-versions", {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
       expect(capturedRequest?.headers.get("Content-Type")).toBe("application/json");
     });
