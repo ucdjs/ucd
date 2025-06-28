@@ -15,11 +15,11 @@ async function run() {
     },
   ]));
 
-  if (!existsSync(path.join(root.toString(), "./node_modules/.openapi"))) {
-    await mkdir(path.join(root.toString(), "./node_modules/.openapi"), { recursive: true });
+  if (!existsSync(path.join(root.toString(), "./.generated"))) {
+    await mkdir(path.join(root.toString(), "./.generated"), { recursive: true });
   }
 
-  await writeFile(path.join(root.toString(), "./node_modules/.openapi/openapi.json"), JSON.stringify(obj, null, 2));
+  await writeFile(path.join(root.toString(), "./.generated/openapi.json"), JSON.stringify(obj, null, 2));
 }
 
 run().catch((err) => {

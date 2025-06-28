@@ -14,6 +14,12 @@
     "typecheck": {
       "outputs": [".cache/tsbuildinfo.json"]
     },
-    "lint:openapi": {}
+    "lint:openapi": {},
+    "build:openapi": {
+      "cache": false,
+      "outputs": [
+        ".generated/openapi.json"
+      ]
+    }
   }
 }
