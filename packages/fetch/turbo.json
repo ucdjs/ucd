@@ -22,6 +22,9 @@
       "cache": false,
       "outputs": [
         "src/components.ts"
+      ],
+      "dependsOn": [
+        "generate:client"
       ]
     },
     "generate:client": {
