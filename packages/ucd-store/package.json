@@ -40,6 +40,7 @@
   "dependencies": {
     "@luxass/unicode-utils-new": "catalog:prod",
     "@luxass/utils": "catalog:prod",
+    "@ucdjs/fetch": "workspace:*",
     "@ucdjs/utils": "workspace:*",
     "defu": "catalog:prod",
     "zod": "catalog:prod"
