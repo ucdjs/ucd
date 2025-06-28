@@ -113,7 +113,7 @@ jobs:
       - name: verify deploy
         if: ${{ matrix.app == 'proxy' && github.event.inputs.dry-run != 'true' && steps.clean-url.outputs.deployment-url != '' }}
         run: |
-          echo "using worker url: ${{ env.WORKER_URL }}"
+          echo "using worker url: ${WORKER_URL}"
           pnpm --filter=@ucdjs/proxy deploy:verify
         env:
           WORKER_URL: ${{ steps.clean-url.outputs.deployment-url }}
