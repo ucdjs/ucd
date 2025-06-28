@@ -2,13 +2,13 @@ import { existsSync } from "node:fs";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
-import { getOpenAPIDocument } from "../src";
+import { getOpenAPI31Document } from "../src";
 import { buildOpenApiConfig } from "../src/openapi";
 
 const root = path.resolve(import.meta.dirname, "../");
 
 async function run() {
-  const obj = getOpenAPIDocument(buildOpenApiConfig("x.y.z", [
+  const obj = getOpenAPI31Document(buildOpenApiConfig("x.y.z", [
     {
       url: "https://api.ucdjs.dev",
       description: "Production Environment",

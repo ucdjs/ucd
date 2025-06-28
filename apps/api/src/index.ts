@@ -47,7 +47,7 @@ app.get(
   }),
 );
 
-app.doc("/openapi.json", (c) => {
+app.doc31("/openapi.json", (c) => {
   const server = {
     url: "http://localhost:8787",
     description: "Local Environment",
@@ -98,6 +98,6 @@ app.notFound(async (c) => {
   } satisfies ApiError, 404);
 });
 
-export const getOpenAPIDocument = app.getOpenAPIDocument;
+export const getOpenAPI31Document = app.getOpenAPI31Document;
 
 export default app;
