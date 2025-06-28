@@ -12,8 +12,16 @@
       "persistent": false
     },
     "typecheck": {
-      "outputs": [".cache/tsbuildinfo.json"]
+      "outputs": [".cache/tsbuildinfo.json"],
+      "dependsOn": [
+        "generate:client"
+      ]
     },
-    "generate:client": {}
+    "generate:client": {
+      "cache": false,
+      "outputs": [
+        "src/.generated/api.d.ts"
+      ]
+    }
   }
 }
