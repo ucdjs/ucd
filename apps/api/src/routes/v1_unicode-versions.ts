@@ -66,7 +66,7 @@ V1_UNICODE_VERSIONS_ROUTER.openapi(LIST_ALL_UNICODE_VERSIONS_ROUTE, async (c) =>
   if (versions.length === 0) {
     return notFound({
       message: "No Unicode versions found",
-    });
+    }) as any;
   }
 
   // sort versions by date in descending order
