@@ -1,5 +1,6 @@
 import type { Entry } from "apache-autoindex-parse";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
+import type { GetEntryByPathResult } from "./lib";
 import { WorkerEntrypoint } from "cloudflare:workers";
 import { Hono } from "hono";
 import { cache } from "hono/cache";
@@ -168,13 +169,11 @@ export default class UnicodeProxy extends WorkerEntrypoint<CloudflareBindings> {
     return parseUnicodeDirectory(html);
   }
 
-  async getEntryByPath(path: string = ""): Promise<Entry[] | ArrayBuffer> {
-    const entry = await getEntryByPath(path);
-    if (entry.type === "directory") {
-      return entry.files;
-    }
-    return entry.content;
+  async getEntryByPath(path: string = ""): Promise<GetEntryByPathResult> {
+    return getEntryByPath(path);
   }
+
+  ProxyFetchError = ProxyFetchError;
 
   async fetch(request: Request) {
     return app.fetch(request, this.env, this.ctx);
