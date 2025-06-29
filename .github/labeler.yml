@@ -16,6 +16,10 @@
   - changed-files:
       - any-glob-to-any-file: packages/schema-gen/**
 
+"pkg: worker-shared":
+  - changed-files:
+      - any-glob-to-any-file: packages/worker-shared/**
+
 "pkg: ucd-store":
   - changed-files:
       - any-glob-to-any-file: packages/ucd-store/**
@@ -27,7 +31,3 @@
 "apps: proxy":
   - changed-files:
       - any-glob-to-any-file: apps/proxy/**
-
-"apps: worker-shared":
-  - changed-files:
-      - any-glob-to-any-file: packages/worker-shared/**
