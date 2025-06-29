@@ -14,7 +14,7 @@ export default defineWorkersProject({
           compatibilityFlags: ["nodejs_compat"],
           bindings: {
             ENVIRONMENT: "production",
-            USE_SVC_BINDING: false,
+            USE_SVC_BINDING: "false",
           },
         },
         wrangler: {
