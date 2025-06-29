@@ -24,14 +24,14 @@ import { getOwnProperty } from "@luxass/utils";
  * ```
  */
 export function requiredEnv<Env extends object, Keys extends keyof Env>(
-	env: Env,
-	requiredKeys: Keys[]
+  env: Env,
+  requiredKeys: Keys[],
 ): Required<Pick<Env, Keys>> & Partial<Omit<Env, Keys>> {
-	for (const key of requiredKeys) {
-		if (getOwnProperty(env, key as string) == null) {
-			throw new Error(`Missing required env var: ${key as string}`)
-		}
-	}
+  for (const key of requiredKeys) {
+    if (getOwnProperty(env, key as string) == null) {
+      throw new Error(`Missing required env var: ${key as string}`);
+    }
+  }
 
-	return env as any;
+  return env as any;
 }
