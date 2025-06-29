@@ -27,3 +27,7 @@
 "apps: proxy":
   - changed-files:
       - any-glob-to-any-file: apps/proxy/**
+
+"apps: worker-shared":
+  - changed-files:
+      - any-glob-to-any-file: packages/worker-shared/**

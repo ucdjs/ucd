@@ -199,6 +199,9 @@ importers:
       '@scalar/hono-api-reference':
         specifier: catalog:workers
         version: 0.9.7(hono@4.8.3)
+      '@ucdjs/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
       hono:
         specifier: catalog:workers
         version: 4.8.3
@@ -218,6 +221,9 @@ importers:
       '@stoplight/spectral-cli':
         specifier: catalog:linting
         version: 6.15.0
+      '@ucdjs/tsconfig':
+        specifier: workspace:*
+        version: link:../../tooling/tsconfig
       eslint:
         specifier: catalog:linting
         version: 9.28.0(jiti@2.4.2)
@@ -242,6 +248,9 @@ importers:
 
   apps/proxy:
     dependencies:
+      '@ucdjs/utils':
+        specifier: workspace:*
+        version: link:../../packages/utils
       apache-autoindex-parse:
         specifier: catalog:prod
         version: 2.0.0
@@ -255,6 +264,9 @@ importers:
       '@luxass/eslint-config':
         specifier: catalog:linting
         version: 5.0.0(@vue/compiler-sfc@3.5.13)(eslint-plugin-format@1.0.1(eslint@9.28.0(jiti@2.4.2)))(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)(vitest@3.2.4)
+      '@ucdjs/tsconfig':
+        specifier: workspace:*
+        version: link:../../tooling/tsconfig
       eslint:
         specifier: catalog:linting
         version: 9.28.0(jiti@2.4.2)

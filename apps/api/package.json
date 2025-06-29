@@ -20,6 +20,7 @@
     "@luxass/unicode-utils-new": "catalog:prod",
     "@luxass/utils": "catalog:prod",
     "@scalar/hono-api-reference": "catalog:workers",
+    "@ucdjs/utils": "workspace:*",
     "hono": "catalog:workers",
     "zod": "catalog:prod"
   },
@@ -28,6 +29,7 @@
     "@luxass/eslint-config": "catalog:linting",
     "@luxass/spectral-ruleset": "catalog:linting",
     "@stoplight/spectral-cli": "catalog:linting",
+    "@ucdjs/tsconfig": "workspace:*",
     "eslint": "catalog:linting",
     "eslint-plugin-format": "catalog:linting",
     "nanotar": "catalog:dev",
