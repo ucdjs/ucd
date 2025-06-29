@@ -13,7 +13,7 @@
     "API_VERSION": "x.y.z",
     "PROXY_ENDPOINT": "https://unicode-proxy.ucdjs.dev",
     "ENVIRONMENT": "local",
-    "USE_SVC_BINDING": false
+    "USE_SVC_BINDING": "false"
   },
   "services": [
     {
@@ -30,7 +30,7 @@
       "vars": {
         "ENVIRONMENT": "preview",
         "PROXY_ENDPOINT": "https://preview.unicode-proxy.ucdjs.dev",
-        "USE_SVC_BINDING": true
+        "USE_SVC_BINDING": "true"
       },
       "route": {
         "custom_domain": true,
@@ -50,7 +50,7 @@
       "vars": {
         "ENVIRONMENT": "production",
         "PROXY_ENDPOINT": "https://unicode-proxy.ucdjs.dev",
-        "USE_SVC_BINDING": true
+        "USE_SVC_BINDING": "true"
       },
       "route": {
         "custom_domain": true,
@@ -67,10 +67,13 @@
     "testing": {
       "name": "ucdjs-api",
       "preview_urls": false,
+      "build": {
+        "command": "exit 1"
+      },
       "vars": {
-        "ENVIRONMENT": "production",
+        "ENVIRONMENT": "testing",
         "PROXY_ENDPOINT": "https://unicode-proxy.ucdjs.dev",
-        "USE_SVC_BINDING": true
+        "USE_SVC_BINDING": "true"
       }
     }
   }

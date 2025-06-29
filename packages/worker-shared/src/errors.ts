@@ -77,7 +77,7 @@ export function badRequest(options: ResponseOptions = {}): Response {
 export function forbidden(options: ResponseOptions = {}): Response {
   return Response.json({
     path: options.path || "unknown",
-    message: options.message || "Not found",
+    message: options.message || "Forbidden",
     status: 403,
     timestamp: new Date().toISOString(),
   } satisfies ApiError, {
