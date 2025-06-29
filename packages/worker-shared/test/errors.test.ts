@@ -80,7 +80,7 @@ describe("forbidden", () => {
     expect(response.headers.get("Content-Type")).toBe("application/json");
     expect(body).toEqual({
       path: "unknown",
-      message: "Not found", // Note: This seems like a bug in the original code
+      message: "Forbidden",
       status: 403,
       timestamp: "2023-06-15T10:30:00.000Z",
     });
