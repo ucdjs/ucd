@@ -21,6 +21,7 @@
     "@luxass/utils": "catalog:prod",
     "@scalar/hono-api-reference": "catalog:workers",
     "@ucdjs/utils": "workspace:*",
+    "@ucdjs/worker-shared": "workspace:*",
     "hono": "catalog:workers",
     "zod": "catalog:prod"
   },

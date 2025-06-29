@@ -1,5 +1,5 @@
 import { createRoute } from "@hono/zod-openapi";
-import { ApiErrorSchema } from "../schemas";
+import { ApiErrorSchema } from "@ucdjs/worker-shared";
 import { ProxyResponseSchema } from "./v1_unicode-proxy.schemas";
 
 export const UNICODE_PROXY_ROUTE = createRoute({

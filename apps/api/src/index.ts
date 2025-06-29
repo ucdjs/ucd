@@ -1,11 +1,11 @@
-import type { ApiError, HonoEnv } from "./types";
+import type { HonoEnv } from "./types";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { Scalar } from "@scalar/hono-api-reference";
+import { customError, internalServerError, notFound } from "@ucdjs/worker-shared";
 import { env } from "hono/adapter";
 import { HTTPException } from "hono/http-exception";
 import { buildOpenApiConfig } from "./openapi";
 import { V1_UNICODE_PROXY_ROUTER } from "./routes/v1_unicode-proxy";
-
 import { V1_UNICODE_VERSIONS_ROUTER } from "./routes/v1_unicode-versions";
 
 const app = new OpenAPIHono<HonoEnv>();
@@ -72,30 +72,23 @@ app.onError(async (err, c) => {
   console.error(err);
   const url = new URL(c.req.url);
   if (err instanceof HTTPException) {
-    return c.json({
+    return customError({
       path: url.pathname,
       status: err.status,
       message: err.message,
-      timestamp: new Date().toISOString(),
-    } satisfies ApiError, err.status);
+    });
   }
 
-  return c.json({
+  return internalServerError({
     path: url.pathname,
-    status: 500,
-    message: "Internal server error",
-    timestamp: new Date().toISOString(),
-  } satisfies ApiError, 500);
+  });
 });
 
 app.notFound(async (c) => {
   const url = new URL(c.req.url);
-  return c.json({
+  return notFound({
     path: url.pathname,
-    status: 404,
-    message: "Not found",
-    timestamp: new Date().toISOString(),
-  } satisfies ApiError, 404);
+  });
 });
 
 export const getOpenAPI31Document = app.getOpenAPI31Document;

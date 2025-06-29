@@ -1,5 +1,5 @@
 import { createRoute, z } from "@hono/zod-openapi";
-import { ApiErrorSchema } from "../schemas";
+import { ApiErrorSchema } from "@ucdjs/worker-shared";
 import { UnicodeVersionSchema } from "./v1_unicode-versions.schemas";
 
 export const LIST_ALL_UNICODE_VERSIONS_ROUTE = createRoute({

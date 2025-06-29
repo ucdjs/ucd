@@ -42,7 +42,7 @@ V1_UNICODE_VERSIONS_ROUTER.openapi(LIST_ALL_UNICODE_VERSIONS_ROUTE, async (c) =>
     if (!versionMatch) continue;
 
     const documentationUrl = versionMatch[1];
-    const version = versionMatch[2].replace("Unicode ", "");
+    const version = versionMatch[2]!.replace("Unicode ", "");
 
     // look for a year pattern anywhere in the row
     const dateMatch = row.match(/<td[^>]*>(\d{4})<\/td>/);
@@ -53,8 +53,8 @@ V1_UNICODE_VERSIONS_ROUTER.openapi(LIST_ALL_UNICODE_VERSIONS_ROUTE, async (c) =>
 
     versions.push({
       version,
-      documentationUrl,
-      date: dateMatch[1],
+      documentationUrl: documentationUrl!,
+      date: dateMatch[1]!,
       ucdUrl,
     });
   }

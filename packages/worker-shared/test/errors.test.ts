@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { badRequest, forbidden, internalServerError, notFound } from "../src";
+import { badRequest, customError, forbidden, internalServerError, notFound } from "../src";
 
 const mockDate = new Date("2023-06-15T10:30:00.000Z");
 
@@ -230,5 +230,41 @@ describe("response structure validation", () => {
     const response = badRequest({ headers: customHeaders });
 
     expect(response.headers.get("Content-Type")).toBe("application/vnd.api+json");
+  });
+});
+
+describe("custom error handling", () => {
+  it("should allow creating custom errors with specific status codes", async () => {
+    const customErrorOptions = {
+      status: 418,
+      message: "I'm a teapot",
+      path: "/api/teapot",
+      headers: { "X-Teapot": "true" },
+    };
+
+    const response = customError(customErrorOptions);
+    const body = await response.json();
+
+    expect(response.status).toBe(418);
+    expect(body.message).toBe("I'm a teapot");
+    expect(body.path).toBe("/api/teapot");
+    expect(response.headers.get("X-Teapot")).toBe("true");
+  });
+
+  it("should return custom error with correct structure", async () => {
+    const customErrorOptions = {
+      status: 422,
+      message: "Unprocessable Entity",
+      path: "/api/resources/abc123",
+      headers: { "X-Error-Detail": "Invalid input" },
+    };
+
+    const response = customError(customErrorOptions);
+    const body = await response.json();
+
+    expect(response.status).toBe(422);
+    expect(body.message).toBe("Unprocessable Entity");
+    expect(body.path).toBe("/api/resources/abc123");
+    expect(response.headers.get("X-Error-Detail")).toBe("Invalid input");
   });
 });

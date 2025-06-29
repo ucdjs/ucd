@@ -202,6 +202,9 @@ importers:
       '@ucdjs/utils':
         specifier: workspace:*
         version: link:../../packages/utils
+      '@ucdjs/worker-shared':
+        specifier: workspace:*
+        version: link:../../packages/worker-shared
       hono:
         specifier: catalog:workers
         version: 4.8.3
@@ -518,6 +521,9 @@ importers:
       '@luxass/utils':
         specifier: catalog:prod
         version: 2.4.1
+      hono:
+        specifier: catalog:workers
+        version: 4.8.3
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:linting
