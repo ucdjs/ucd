@@ -16,6 +16,7 @@
       "@ucdjs/schema-gen": ["./packages/schema-gen/src/index.ts"],
       "@ucdjs/ucd-store": ["./packages/ucd-store/src/index.ts"],
       "@ucdjs/fetch": ["./packages/fetch/src/index.ts"],
+      "@ucdjs/worker-shared": ["./packages/worker-shared/src/index.ts"]
     }
   }
 }
