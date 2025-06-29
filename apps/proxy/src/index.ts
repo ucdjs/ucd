@@ -1,4 +1,3 @@
-import type { Entry } from "apache-autoindex-parse";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 import type { GetEntryByPathResult } from "./lib";
 import { WorkerEntrypoint } from "cloudflare:workers";

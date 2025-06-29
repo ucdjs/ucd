@@ -11,7 +11,7 @@
     "test": "pnpm vitest --run",
     "test:watch": "pnpm vitest",
     "lint": "eslint .",
-    "lint:openapi": "pnpm run build:openapi && spectral lint ./.generated/openapi.json",
+    "lint:openapi": "spectral lint ./.generated/openapi.json",
     "generate:types": "wrangler types",
     "typecheck": "pnpm run generate:types && tsc --noEmit"
   },
