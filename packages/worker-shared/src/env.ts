@@ -1,34 +1,37 @@
-import { getOwnProperty } from "@luxass/utils/object"
+import { getOwnProperty } from "@luxass/utils";
 
 /**
- * Validates that required environment variables are present and not undefined.
+ * Validates that required environment variables are present and returns a typed environment object.
  *
- * This function takes an environment object and a keys specification object,
- * then ensures all specified keys exist and are not undefined in the environment.
- * If any required key is missing or undefined, it throws an error.
+ * This function ensures that specified environment variables exist in the provided environment object.
+ * If any required keys are missing, it throws an error. Otherwise, it returns the environment object
+ * with proper typing where required keys are guaranteed to be present.
  *
- * @template {object} T - The type of the environment object
- * @param {T} env - The environment object to validate
- * @param {object} keys - An object specifying which keys are required (all values should be `true`)
- * @returns {{ [K in keyof T]-?: NonNullable<T[K]> }} A type-safe version of the environment object where all specified keys are guaranteed to be non-nullable
- * @throws {Error} When a required environment variable is missing or undefined
+ * @template {object} Env - The type of the environment object
+ * @template {keyof Env} Keys - The keys from Env that are required to be present
+ * @param {Env} env - The environment object to validate
+ * @param {Keys[]} requiredKeys - Array of keys that must be present in the environment object
+ * @returns {Required<Pick<Env, Keys>> & Partial<Omit<Env, Keys>>} The environment object with required keys typed as non-nullable and optional keys as partial
+ * @throws {Error} When any of the required environment variables are missing
  *
  * @example
  * ```typescript
- * const env = { API_KEY: "abc123", PORT: "3000", DEBUG: undefined };
- * const validatedEnv = requiredEnv(env, { API_KEY: true, PORT: true });
- * // validatedEnv.API_KEY and validatedEnv.PORT are guaranteed to be non-null
- * // Would throw if DEBUG was specified as required
+ * import { requiredEnv } from "@ucdjs/worker-shared";
+ * const env = { DATABASE_URL: "...", API_KEY: "...", OPTIONAL_VAR: undefined };
+ * const validatedEnv = requiredEnv(env, ["DATABASE_URL", "API_KEY"]);
+ * // validatedEnv.DATABASE_URL and validatedEnv.API_KEY are guaranteed to be present
+ * // validatedEnv.OPTIONAL_VAR remains optional
  * ```
  */
-export function requiredEnv<T extends object>(
-	env: T,
-	keys: { [K in keyof T]: true }
-): { [K in keyof T]-?: NonNullable<T[K]> } {
-	for (const key of Object.keys(keys)) {
-		if (getOwnProperty(env, key) === undefined) {
-			throw new Error(`Missing required env var: ${key}`)
+export function requiredEnv<Env extends object, Keys extends keyof Env>(
+	env: Env,
+	requiredKeys: Keys[]
+): Required<Pick<Env, Keys>> & Partial<Omit<Env, Keys>> {
+	for (const key of requiredKeys) {
+		if (getOwnProperty(env, key as string) == null) {
+			throw new Error(`Missing required env var: ${key as string}`)
 		}
 	}
-	return env as any
+
+	return env as any;
 }
