@@ -1,5 +1,5 @@
 {
-  "name": "@ucdjs/api",
+  "name": "@ucdjs/api-worker",
   "type": "module",
   "private": true,
   "packageManager": "pnpm@10.12.1",
