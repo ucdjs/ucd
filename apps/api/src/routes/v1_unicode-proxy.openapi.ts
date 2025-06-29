@@ -1,5 +1,5 @@
 import { createRoute } from "@hono/zod-openapi";
-import { ApiErrorSchema } from "../schemas";
+import { ApiErrorSchema } from "@ucdjs/worker-shared";
 import { ProxyResponseSchema } from "./v1_unicode-proxy.schemas";
 
 export const UNICODE_PROXY_ROUTE = createRoute({
@@ -52,6 +52,14 @@ export const UNICODE_PROXY_ROUTE = createRoute({
         },
       },
     },
+    400: {
+      description: "Bad request - invalid path",
+      content: {
+        "application/json": {
+          schema: ApiErrorSchema,
+        },
+      },
+    },
     404: {
       description: "Resource not found",
       content: {
@@ -62,6 +70,14 @@ export const UNICODE_PROXY_ROUTE = createRoute({
     },
     500: {
       description: "Internal server error",
+      content: {
+        "application/json": {
+          schema: ApiErrorSchema,
+        },
+      },
+    },
+    502: {
+      description: "Bad gateway - proxy request failed",
       content: {
         "application/json": {
           schema: ApiErrorSchema,

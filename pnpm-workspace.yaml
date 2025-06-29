@@ -14,7 +14,6 @@ catalogs:
     "@changesets/cli": ^2.29.4
     turbo: ^2.5.4
     "@ark/attest": ^0.48.2
-    tsx: ^4.19.4
 
   testing:
     "@vitest/coverage-istanbul": ^3.2.4
@@ -35,7 +34,7 @@ catalogs:
     # merge these together when heading inference is implemented better
     "@luxass/unicode-utils": ^0.9.0
     "@luxass/unicode-utils-new": npm:@luxass/unicode-utils@0.12.0-beta.8
-    "@luxass/utils": ^2.3.0
+    "@luxass/utils": ^2.4.1
     farver: ^0.4.2
     yargs-parser: ^22.0.0
     defu: ^6.1.4
@@ -47,7 +46,7 @@ catalogs:
     knitwork: ^1.2.0
     picomatch: ^4.0.2
     memfs: ^4.17.2
-    apache-autoindex-parse: ^1.0.1
+    apache-autoindex-parse: ^2.0.0
     openapi-fetch: ^0.14.0
 
   dev:
@@ -56,10 +55,10 @@ catalogs:
     "@types/yargs-parser": ^21.0.3
     tsdown: ^0.12.7
     typescript: ^5.8.3
-    tsx: ^4.19.4
     publint: ^0.3.12
     nanotar: ^0.2.0
     openapi-typescript: ^7.8.0
+    tsx: ^4.19.4
 
   workers:
     wrangler: ^4.20.5

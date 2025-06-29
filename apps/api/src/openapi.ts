@@ -71,14 +71,10 @@ export function buildOpenApiConfig(version: string, servers: NonNullable<OpenAPI
           allowing you to access Unicode data files through our API without
           needing to make direct requests to the Unicode servers.
 
-          ## Supported Path Patterns
-          The proxy supports flexible path routing with up to 6 path segments:
-          - \`/{path}\` - Single path segment
-          - \`/{path}/{path2}\` - Two path segments
-          - \`/{path}/{path2}/{path3}\` - Three path segments
-          - \`/{path}/{path2}/{path3}/{path4}\` - Four path segments
-          - \`/{path}/{path2}/{path3}/{path4}/{path5}\` - Five path segments
-          - \`/{path}/{path2}/{path3}/{path4}/{path5}/{path6}\` - Six path segments
+          ## Wildcard Pattern
+          The wildcard parameter allows you to specify any path within the Unicode data structure.
+          This means you can access specific files, directories, or even entire versions of Unicode data.
+          For example, you can see the paths defined below:
 
           ## Common Usage Examples
           - \`/latest/ucd/UnicodeData.txt\` - Get the latest UnicodeData.txt file

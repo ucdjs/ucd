@@ -1,5 +1,5 @@
 {
-  "name": "@ucdjs/proxy",
+  "name": "@ucdjs/proxy-worker",
   "type": "module",
   "private": true,
   "packageManager": "pnpm@10.12.1",
@@ -7,7 +7,7 @@
     "dev": "wrangler dev",
     "build": "wrangler deploy --dry-run --outdir=dist",
     "deploy": "wrangler deploy",
-    "deploy:verify": "tsx ./scripts/verify-deploy.ts",
+    "deploy:verify": "tsx --tsconfig=./tsconfig.json ./scripts/verify-deploy.ts",
     "test": "pnpm vitest --run",
     "test:watch": "pnpm vitest",
     "cf-typegen": "wrangler types --env-interface CloudflareBindings",
@@ -15,15 +15,18 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@ucdjs/utils": "workspace:*",
+    "@ucdjs/worker-shared": "workspace:*",
     "apache-autoindex-parse": "catalog:prod",
     "hono": "catalog:workers"
   },
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "catalog:testing",
     "@luxass/eslint-config": "catalog:linting",
+    "@ucdjs/tsconfig": "workspace:*",
     "eslint": "catalog:linting",
     "eslint-plugin-format": "catalog:linting",
-    "tsx": "catalog:monorepo",
+    "tsx": "catalog:dev",
     "typescript": "catalog:dev",
     "vitest": "catalog:testing",
     "wrangler": "catalog:workers"

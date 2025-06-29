@@ -18,3 +18,5 @@ export const UNICODE_PROXY_URL = env.UNICODE_PROXY_URL || "https://unicode-proxy
  * @default "https://api.ucdjs.dev"
  */
 export const UCDJS_API_BASE_URL = env.UCDJS_API_BASE_URL || "https://api.ucdjs.dev";
+
+export const DEFAULT_USER_AGENT = "ucdjs.dev (https://ucdjs.dev)";
