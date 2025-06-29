@@ -37,6 +37,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@hono/zod-openapi": "catalog:workers",
     "@luxass/utils": "catalog:prod"
   },
   "devDependencies": {

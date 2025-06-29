@@ -512,6 +512,9 @@ importers:
 
   packages/worker-shared:
     dependencies:
+      '@hono/zod-openapi':
+        specifier: catalog:workers
+        version: 0.19.8(hono@4.8.3)(zod@3.25.56)
       '@luxass/utils':
         specifier: catalog:prod
         version: 2.4.1
