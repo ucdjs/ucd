@@ -51,6 +51,7 @@
     "openapi-typescript": "catalog:dev",
     "publint": "catalog:dev",
     "tsdown": "catalog:dev",
+    "tsx": "catalog:dev",
     "typescript": "catalog:dev",
     "vitest-testdirs": "catalog:testing"
   },
