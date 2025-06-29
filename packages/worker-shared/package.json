@@ -36,6 +36,9 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit"
   },
+  "dependencies": {
+    "@luxass/utils": "catalog:prod"
+  },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:linting",
     "@ucdjs/tsconfig": "workspace:*",
