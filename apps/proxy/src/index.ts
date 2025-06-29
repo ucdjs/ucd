@@ -1,10 +1,10 @@
-import type { ContentfulStatusCode, StatusCode } from "hono/utils/http-status";
+import type { Entry } from "apache-autoindex-parse";
+import type { ContentfulStatusCode } from "hono/utils/http-status";
 import { WorkerEntrypoint } from "cloudflare:workers";
 import { Hono } from "hono";
 import { cache } from "hono/cache";
 import { HTTPException } from "hono/http-exception";
-import { proxy } from "hono/proxy";
-import { parseUnicodeDirectory } from "./lib";
+import { getEntryByPath, parseUnicodeDirectory, ProxyFetchError } from "./lib";
 
 export interface ApiError {
   path: string;
@@ -39,30 +39,43 @@ app.get("/favicon.ico", (c) => {
   return c.newResponse(null, 204, {});
 });
 
+// This route is used by the HTTPFileSystemBridge.
+// See https://github.com/ucdjs/ucd/blob/a26f975776218e6db3b64c3e5a3036fd05f75ebd/packages/utils/src/fs-bridge/http.ts
 app.get("/.ucd-store.json", cache({
   cacheName: "unicode-proxy-store",
   cacheControl: "max-age=3600",
 }), async (c) => {
-  const res = await fetch(`https://unicode.org/Public/?F=2`);
-  if (!res.ok) {
-    throw new HTTPException(res.status as ContentfulStatusCode, {
-      message: res.statusText,
+  try {
+    const result = await getEntryByPath();
+
+    if (result.type !== "directory") {
+      throw new HTTPException(500, {
+        message: "Failed to fetch Unicode directory",
+      });
+    }
+
+    const versions = result.files.filter((file) => {
+      const match = file.name.match(/^(\d+)\.(\d+)\.(\d+)$/);
+      return match && match.length === 4;
+    }).map(({ name, path }) => ({
+      version: name,
+      path,
+    }));
+
+    return c.json(versions);
+  } catch (err) {
+    let status: ContentfulStatusCode = 500;
+    let message = "Internal Server Error";
+
+    if (err instanceof ProxyFetchError) {
+      status = err.status || 502;
+      message = err.message || "Failed to fetch Unicode directory";
+    }
+
+    throw new HTTPException(status, {
+      message: err instanceof Error ? err.message : message,
     });
   }
-
-  const text = await res.text();
-  const { files } = await parseUnicodeDirectory(text);
-
-  // filter out the files that isn't a valid semver
-  const versions = files.filter((file) => {
-    const match = file.name.match(/^(\d+)\.(\d+)\.(\d+)$/);
-    return match && match.length === 4;
-  }).map(({ name, path }) => ({
-    version: name,
-    path,
-  }));
-
-  return c.json(versions);
 });
 
 app.get(
@@ -72,29 +85,41 @@ app.get(
     cacheControl: "max-age=604800, stale-while-revalidate=86400",
   }),
   async (c) => {
-    const path = c.req.param("path") || "";
-    const res = await proxy(`https://unicode.org/Public/${path}?F=2`);
+    try {
+      const path = c.req.param("path") || "";
 
-    if (!res.ok) {
-      throw new HTTPException(res.status as ContentfulStatusCode, {
-        message: res.statusText,
+      if (path.startsWith("..") || path.includes("//")) {
+        throw new HTTPException(400, {
+          message: "Invalid path",
+        });
+      }
+
+      const result = await getEntryByPath(path);
+
+      if (result.type === "directory") {
+        c.header("Last-Modified", result.headers.get("Last-Modified") ?? "");
+        return c.json(result.files);
+      }
+
+      return c.newResponse(result.content, 200, {
+        "Last-Modified": result.headers.get("Last-Modified") ?? "",
+        "Content-Type": result.headers.get("Content-Type") ?? "",
+        "Content-Length": result.headers.get("Content-Length") ?? "",
+        "Content-Disposition": result.headers.get("Content-Disposition") ?? "",
+      });
+    } catch (err) {
+      let status: ContentfulStatusCode = 500;
+      let message = "Internal Server Error";
+
+      if (err instanceof ProxyFetchError) {
+        status = err.status || 502;
+        message = err.message || "Failed to fetch Unicode directory";
+      }
+
+      throw new HTTPException(status, {
+        message: err instanceof Error ? err.message : message,
       });
     }
-
-    // if the response is a directory, parse the html and return the files
-    if (res.headers.get("content-type")?.includes("text/html") && !path.endsWith("html")) {
-      const { files } = await parseUnicodeDirectory(await res.text());
-
-      c.header("Last-Modified", res.headers.get("Last-Modified") ?? "");
-      return c.json(files);
-    }
-
-    return c.newResponse(res.body, res.status as StatusCode, {
-      "Last-Modified": res.headers.get("Last-Modified") ?? "",
-      "Content-Type": res.headers.get("Content-Type") ?? "",
-      "Content-Length": res.headers.get("Content-Length") ?? "",
-      "Content-Disposition": res.headers.get("Content-Disposition") ?? "",
-    });
   },
 );
 
@@ -141,6 +166,14 @@ export default class UnicodeProxy extends WorkerEntrypoint<CloudflareBindings> {
     const html = await response.text();
 
     return parseUnicodeDirectory(html);
+  }
+
+  async getEntryByPath(path: string = ""): Promise<Entry[] | ArrayBuffer> {
+    const entry = await getEntryByPath(path);
+    if (entry.type === "directory") {
+      return entry.files;
+    }
+    return entry.content;
   }
 
   async fetch(request: Request) {

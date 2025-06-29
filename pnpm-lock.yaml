@@ -82,8 +82,8 @@ catalogs:
       specifier: ^4.3.16
       version: 4.3.16
     apache-autoindex-parse:
-      specifier: ^1.0.1
-      version: 1.0.1
+      specifier: ^2.0.0
+      version: 2.0.0
     defu:
       specifier: ^6.1.4
       version: 6.1.4
@@ -244,7 +244,7 @@ importers:
     dependencies:
       apache-autoindex-parse:
         specifier: catalog:prod
-        version: 1.0.1
+        version: 2.0.0
       hono:
         specifier: catalog:workers
         version: 4.8.3
@@ -2120,8 +2120,8 @@ packages:
     resolution: {integrity: sha512-BGcItUBWSMRgOCe+SVZJ+S7yTRG0eGt9cXAHev72yuGcY23hnLA7Bky5L/xLyPINoSN95geovfBkqoTlNZYa7w==}
     engines: {node: '>=14'}
 
-  apache-autoindex-parse@1.0.1:
-    resolution: {integrity: sha512-+rXbI977ZiFzOZnvqtB1/9G98q6q+Oru+jDW8Z608TDX5SHb+lWxpvFCWv+haSVrqlld+xcy2Nq0+wyzy14Rcg==}
+  apache-autoindex-parse@2.0.0:
+    resolution: {integrity: sha512-KxFglfJ+RPWSMPF6os0R2XTYFzNJFBQ0xslQN3detZ/duPADUHquRTFAr5+2fVGMl7/xwM3Z9JSPgFLq5YfXXA==}
 
   are-docs-informative@0.0.2:
     resolution: {integrity: sha512-ixiS0nLNNG5jNQzgZJNoUpBKdo9yTYZMGJ+QgT2jmjR7G7+QHRCc4v6LQ3NgE7EBJq+o0ams3waJwkrlBom8Ig==}
@@ -6509,7 +6509,7 @@ snapshots:
 
   ansis@4.1.0: {}
 
-  apache-autoindex-parse@1.0.1: {}
+  apache-autoindex-parse@2.0.0: {}
 
   are-docs-informative@0.0.2: {}
 
