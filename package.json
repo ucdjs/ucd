@@ -14,7 +14,7 @@
     "build": "turbo run build --filter \"./packages/*\" --concurrency=15",
     "clean": "turbo run clean && git clean -xdf node_modules",
     "dev": "turbo watch dev --filter \"./packages/*\"",
-    "dev:api": "turbo run dev --filter \"./apps/api\"",
+    "dev:workers": "turbo run dev --filter \"./apps/api\" --filter \"./apps/proxy\"",
     "lint": "turbo run lint",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -31,7 +31,6 @@
     "@vitest/ui": "catalog:testing",
     "eslint": "catalog:linting",
     "msw": "catalog:testing",
-    "tsx": "catalog:monorepo",
     "turbo": "catalog:monorepo",
     "typescript": "catalog:dev",
     "vitest": "catalog:testing"

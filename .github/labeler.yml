@@ -16,6 +16,10 @@
   - changed-files:
       - any-glob-to-any-file: packages/schema-gen/**
 
+"pkg: worker-shared":
+  - changed-files:
+      - any-glob-to-any-file: packages/worker-shared/**
+
 "pkg: ucd-store":
   - changed-files:
       - any-glob-to-any-file: packages/ucd-store/**

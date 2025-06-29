@@ -1,7 +1,8 @@
 {
-  "name": "@ucdjs/fetch",
+  "name": "@ucdjs/worker-shared",
   "version": "0.0.0",
   "type": "module",
+  "private": true,
   "author": {
     "name": "Lucas Nørgård",
     "email": "lucasnrgaard@gmail.com",
@@ -13,7 +14,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ucdjs/ucd.git",
-    "directory": "packages/fetch"
+    "directory": "packages/worker-shared"
   },
   "bugs": {
     "url": "https://github.com/ucdjs/ucd/issues"
@@ -33,27 +34,20 @@
     "dev": "tsdown --watch",
     "clean": "git clean -xdf dist node_modules",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit",
-    "generate:components": "tsx --tsconfig=./tsconfig.json ./scripts/extract-components.ts",
-    "generate:client": "npx openapi-typescript ../../apps/api/.generated/openapi.json -o ./src/.generated/api.d.ts",
-    "generate:client:local": "npx openapi-typescript http://localhost:8787/openapi.json -o ./src/.generated/api.d.ts"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@ucdjs/utils": "workspace:*",
-    "openapi-fetch": "catalog:prod"
+    "@hono/zod-openapi": "catalog:workers",
+    "@luxass/utils": "catalog:prod",
+    "hono": "catalog:workers"
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:linting",
-    "@luxass/utils": "catalog:prod",
-    "@types/picomatch": "catalog:dev",
     "@ucdjs/tsconfig": "workspace:*",
     "eslint": "catalog:linting",
-    "openapi-typescript": "catalog:dev",
     "publint": "catalog:dev",
     "tsdown": "catalog:dev",
-    "tsx": "catalog:dev",
-    "typescript": "catalog:dev",
-    "vitest-testdirs": "catalog:testing"
+    "typescript": "catalog:dev"
   },
   "publishConfig": {
     "access": "public"

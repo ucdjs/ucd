@@ -1,17 +1,17 @@
 {
-  "name": "@ucdjs/api",
+  "name": "@ucdjs/api-worker",
   "type": "module",
   "private": true,
   "packageManager": "pnpm@10.12.1",
   "scripts": {
     "dev": "wrangler dev",
     "build": "wrangler deploy --dry-run --outdir=dist",
-    "build:openapi": "tsx ./scripts/build-openapi",
+    "build:openapi": "tsx --tsconfig=./tsconfig.json ./scripts/build-openapi",
     "deploy": "wrangler deploy",
     "test": "pnpm vitest --run",
     "test:watch": "pnpm vitest",
     "lint": "eslint .",
-    "lint:openapi": "pnpm run build:openapi && spectral lint ./.generated/openapi.json",
+    "lint:openapi": "spectral lint ./.generated/openapi.json",
     "generate:types": "wrangler types",
     "typecheck": "pnpm run generate:types && tsc --noEmit"
   },
@@ -20,6 +20,8 @@
     "@luxass/unicode-utils-new": "catalog:prod",
     "@luxass/utils": "catalog:prod",
     "@scalar/hono-api-reference": "catalog:workers",
+    "@ucdjs/utils": "workspace:*",
+    "@ucdjs/worker-shared": "workspace:*",
     "hono": "catalog:workers",
     "zod": "catalog:prod"
   },
@@ -28,10 +30,11 @@
     "@luxass/eslint-config": "catalog:linting",
     "@luxass/spectral-ruleset": "catalog:linting",
     "@stoplight/spectral-cli": "catalog:linting",
+    "@ucdjs/tsconfig": "workspace:*",
     "eslint": "catalog:linting",
     "eslint-plugin-format": "catalog:linting",
     "nanotar": "catalog:dev",
-    "tsx": "catalog:monorepo",
+    "tsx": "catalog:dev",
     "typescript": "catalog:dev",
     "vitest": "catalog:testing",
     "wrangler": "catalog:workers"

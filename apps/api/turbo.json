@@ -14,11 +14,18 @@
     "typecheck": {
       "outputs": [".cache/tsbuildinfo.json"]
     },
-    "lint:openapi": {},
+    "lint:openapi": {
+      "dependsOn": [
+        "build:openapi"
+      ]
+    },
     "build:openapi": {
       "cache": false,
       "outputs": [
         ".generated/openapi.json"
+      ],
+      "dependsOn": [
+        "@ucdjs/worker-shared#build"
       ]
     }
   }

@@ -16,3 +16,5 @@ export const ApiErrorSchema = z.object({
 }).openapi("ApiError", {
   description: "An error response",
 });
+
+export type ApiError = z.infer<typeof ApiErrorSchema>;
