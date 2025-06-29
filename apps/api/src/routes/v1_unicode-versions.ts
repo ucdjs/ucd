@@ -2,8 +2,8 @@ import type { HonoEnv } from "../types";
 import type { UnicodeVersion } from "./v1_unicode-versions.schemas";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { resolveUCDVersion } from "@luxass/unicode-utils-new";
+import { internalServerError, notFound } from "@ucdjs/worker-shared";
 import { cache } from "hono/cache";
-import { createError } from "../utils";
 import { LIST_ALL_UNICODE_VERSIONS_ROUTE } from "./v1_unicode-versions.openapi";
 
 export const V1_UNICODE_VERSIONS_ROUTER = new OpenAPIHono<HonoEnv>().basePath("/api/v1/unicode-versions");
@@ -16,7 +16,9 @@ V1_UNICODE_VERSIONS_ROUTER.get("*", cache({
 V1_UNICODE_VERSIONS_ROUTER.openapi(LIST_ALL_UNICODE_VERSIONS_ROUTE, async (c) => {
   const response = await fetch("https://www.unicode.org/versions/enumeratedversions.html");
   if (!response.ok) {
-    return createError(c, 500, "Failed to fetch Unicode versions");
+    return internalServerError({
+      message: `Failed to fetch Unicode versions`,
+    });
   }
 
   const html = await response.text();
@@ -28,7 +30,9 @@ V1_UNICODE_VERSIONS_ROUTER.openapi(LIST_ALL_UNICODE_VERSIONS_ROUTE, async (c) =>
   );
 
   if (!tableMatch) {
-    return createError(c, 404, "Unicode versions table not found");
+    return notFound({
+      message: "Unicode versions table not found",
+    });
   }
 
   const versions: UnicodeVersion[] = [];
@@ -60,7 +64,9 @@ V1_UNICODE_VERSIONS_ROUTER.openapi(LIST_ALL_UNICODE_VERSIONS_ROUTE, async (c) =>
   }
 
   if (versions.length === 0) {
-    return createError(c, 404, "No Unicode versions found");
+    return notFound({
+      message: "No Unicode versions found",
+    });
   }
 
   // sort versions by date in descending order

@@ -1,9 +1,7 @@
 import type { HonoEnv } from "../types";
 import { OpenAPIHono } from "@hono/zod-openapi";
-import { createError } from "../utils";
-import {
-  UNICODE_PROXY_ROUTE,
-} from "./v1_unicode-proxy.openapi";
+import { badRequest, internalServerError, notFound } from "@ucdjs/worker-shared";
+import { UNICODE_PROXY_ROUTE } from "./v1_unicode-proxy.openapi";
 
 export const V1_UNICODE_PROXY_ROUTER = new OpenAPIHono<HonoEnv>().basePath("/api/v1/unicode-proxy");
 
@@ -20,17 +18,28 @@ V1_UNICODE_PROXY_ROUTER.get("/:wildcard{.*}?", async (c) => {
     const path = c.req.param("wildcard")?.trim() || "";
 
     if (path.startsWith("..") || path.includes("//")) {
-      return createError(c, 400, "Invalid path");
+      return badRequest({
+        message: "Invalid path: Path cannot contain '..' or '//' segments.",
+      });
     }
-
-    const req = new Request(path !== "" ? `${c.env.PROXY_ENDPOINT}/${path}` : c.env.PROXY_ENDPOINT);
-    const res = await c.env.UNICODE_PROXY.fetch(req);
+    const url = path !== "" ? `${c.env.PROXY_ENDPOINT}/${path}` : c.env.PROXY_ENDPOINT;
+    let res: Response;
+    if (c.env.USE_SVC_BINDING) {
+      const req = new Request(url);
+      res = await c.env.UNICODE_PROXY.fetch(req);
+    } else {
+      res = await fetch(url);
+    }
 
     if (!res.ok) {
       if (res.status === 404) {
-        return createError(c, 404, path ? `Resource not found: ${path}` : "Resource not found");
+        return notFound({
+          message: `Resource not found at ${path}`,
+        });
       }
-      return createError(c, 500, `Proxy request failed: ${res.statusText}`);
+      return internalServerError({
+        message: `Proxy request failed with reason: ${res.statusText}`,
+      });
     }
 
     return c.newResponse(res.body, 200, {
@@ -40,6 +49,8 @@ V1_UNICODE_PROXY_ROUTER.get("/:wildcard{.*}?", async (c) => {
     });
   } catch (err) {
     console.error("Proxy error:", err);
-    return createError(c, 500, "Failed to proxy request");
+    return internalServerError({
+      message: `Failed to proxy request: ${err instanceof Error ? err.message : "Unknown error"}`,
+    });
   }
 });

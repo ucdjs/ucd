@@ -49,18 +49,18 @@ app.get(
 
 app.doc31("/openapi.json", (c) => {
   const server = {
-    url: "http://localhost:8787",
-    description: "Local Environment",
+    url: "https://api.ucdjs.dev",
+    description: "Production Environment",
   };
-
-  if (c.env.ENVIRONMENT === "production") {
-    server.url = "https://api.ucdjs.dev";
-    server.description = "Production Environment";
-  }
 
   if (c.env.ENVIRONMENT === "preview") {
     server.url = "https://preview.api.ucdjs.dev";
     server.description = "Preview Environment";
+  }
+
+  if (c.env.ENVIRONMENT === "local") {
+    server.url = "http://localhost:8787";
+    server.description = "Local Environment";
   }
 
   return buildOpenApiConfig(env(c).API_VERSION || "x.y.z", [
