@@ -40,12 +40,14 @@ describe("unicode API Client", () => {
         documentationUrl: "https://www.unicode.org/versions/Unicode15.1.0/",
         date: "2023-09-12",
         ucdUrl: "https://www.unicode.org/Public/15.1.0/ucd/",
+        status: "stable",
       },
       {
         version: "15.0.0",
         documentationUrl: "https://www.unicode.org/versions/Unicode15.0.0/",
         date: "2022-09-13",
         ucdUrl: "https://www.unicode.org/Public/15.0.0/ucd/",
+        status: "stable",
       },
     ];
 
@@ -374,6 +376,7 @@ describe("unicode API Client", () => {
           documentationUrl: "https://www.unicode.org/versions/Unicode15.1.0/",
           date: "2023-09-12",
           ucdUrl: "https://www.unicode.org/Public/15.1.0/ucd/",
+          status: "stable",
         },
       ];
 
@@ -420,6 +423,7 @@ describe("unicode API Client", () => {
           documentationUrl: "https://www.unicode.org/versions/Unicode16.0.0/",
           date: "2024-09-10",
           ucdUrl: "https://www.unicode.org/Public/16.0.0/ucd/",
+          status: "stable",
         },
       ];
 
