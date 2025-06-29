@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@ucdjs/utils": "workspace:*",
+    "@ucdjs/worker-shared": "workspace:*",
     "apache-autoindex-parse": "catalog:prod",
     "hono": "catalog:workers"
   },

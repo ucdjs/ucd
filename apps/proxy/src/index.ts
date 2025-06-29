@@ -1,5 +1,6 @@
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 import type { GetEntryByPathResult } from "./lib";
+import { customError, internalServerError, notFound } from "@ucdjs/worker-shared";
 import { WorkerEntrypoint } from "cloudflare:workers";
 import { Hono } from "hono";
 import { cache } from "hono/cache";
@@ -66,14 +67,18 @@ app.get("/.ucd-store.json", cache({
   } catch (err) {
     let status: ContentfulStatusCode = 500;
     let message = "Internal Server Error";
-
     if (err instanceof ProxyFetchError) {
       status = err.status || 502;
-      message = err.message || "Failed to fetch Unicode directory";
+
+      if (err.status === 404) {
+        message = "Not Found";
+      } else {
+        message = err.message || "Failed to fetch Unicode directory";
+      }
     }
 
     throw new HTTPException(status, {
-      message: err instanceof Error ? err.message : message,
+      message,
     });
   }
 });
@@ -113,11 +118,15 @@ app.get(
 
       if (err instanceof ProxyFetchError) {
         status = err.status || 502;
-        message = err.message || "Failed to fetch Unicode directory";
+        if (err.status === 404) {
+          message = "Not Found";
+        } else {
+          message = err.message || "Failed to fetch Unicode directory";
+        }
       }
 
       throw new HTTPException(status, {
-        message: err instanceof Error ? err.message : message,
+        message,
       });
     }
   },
@@ -127,30 +136,23 @@ app.onError(async (err, c) => {
   console.error(err);
   const url = new URL(c.req.url);
   if (err instanceof HTTPException) {
-    return c.json({
-      path: url.pathname + url.search,
+    return customError({
+      path: url.pathname,
       status: err.status,
       message: err.message,
-      timestamp: new Date().toISOString(),
-    } satisfies ApiError, err.status);
+    });
   }
 
-  return c.json({
+  return internalServerError({
     path: url.pathname,
-    status: 500,
-    message: "Internal server error",
-    timestamp: new Date().toISOString(),
-  } satisfies ApiError, 500);
+  });
 });
 
 app.notFound(async (c) => {
   const url = new URL(c.req.url);
-  return c.json({
-    path: url.pathname + url.search,
-    status: 404,
-    message: "Not found",
-    timestamp: new Date().toISOString(),
-  } satisfies ApiError, 404);
+  return notFound({
+    path: url.pathname,
+  });
 });
 
 export default class UnicodeProxy extends WorkerEntrypoint<CloudflareBindings> {
@@ -171,8 +173,6 @@ export default class UnicodeProxy extends WorkerEntrypoint<CloudflareBindings> {
   async getEntryByPath(path: string = ""): Promise<GetEntryByPathResult> {
     return getEntryByPath(path);
   }
-
-  ProxyFetchError = ProxyFetchError;
 
   async fetch(request: Request) {
     return app.fetch(request, this.env, this.ctx);

@@ -16,9 +16,9 @@ export class ProxyFetchError extends Error {
     this.details = details || {};
   }
 
-  get status(): ContentfulStatusCode | undefined {
+  get status(): ContentfulStatusCode {
     if (!("status" in this.details)) {
-      return undefined;
+      throw new Error("ProxyFetchError does not have a status property");
     }
 
     return this.details?.status as ContentfulStatusCode;
@@ -62,7 +62,7 @@ export async function getEntryByPath(path: string = ""): Promise<GetEntryByPathR
   });
 
   if (!response.ok) {
-    throw new ProxyFetchError(`Failed to fetch entry: ${response.status} ${response.statusText}`, {
+    throw new ProxyFetchError(`failed to fetch entry`, {
       status: response.status as ContentfulStatusCode,
     });
   }
