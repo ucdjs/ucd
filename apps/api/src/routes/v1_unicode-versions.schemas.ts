@@ -14,4 +14,5 @@ export const UnicodeVersionSchema = z.object({
     description: "The URL to the Unicode Character Database (UCD) for this version.",
   }),
 }).openapi("UnicodeVersion");
+
 export type UnicodeVersion = z.infer<typeof UnicodeVersionSchema>;

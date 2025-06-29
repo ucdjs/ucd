@@ -1,3 +1,4 @@
+import type { ContentfulStatusCode } from "hono/utils/http-status";
 import type { ApiError } from "./schemas";
 
 export interface ResponseOptions {
@@ -152,6 +153,64 @@ export function internalServerError(options: ResponseOptions = {}): Response {
     timestamp: new Date().toISOString(),
   } satisfies ApiError, {
     status: 500,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+  });
+}
+
+export type CustomResponseOptions = Omit<Required<ResponseOptions>, "headers"> & {
+  /**
+   * Custom headers to include in the response.
+   * This can be used to set headers like `Content-Type`, `Cache-Control`, etc.
+   */
+  headers?: Record<string, string>;
+
+  /**
+   * The HTTP status code to use for the response.
+   * This should be a valid @see {ContentfulStatusCode}.
+   */
+  status: number;
+};
+
+/**
+ * Creates a custom HTTP error response with specified status code and JSON error details.
+ * This function allows for flexible error responses with any valid HTTP status code.
+ *
+ * @param {CustomResponseOptions} options - Configuration options for the custom error response
+ * @returns {Response} A Response object with the specified status and JSON error body
+ *
+ * @example
+ * ```typescript
+ * import { customError } from "@ucdjs/worker-shared";
+ *
+ * // Custom 422 Unprocessable Entity error
+ * return customError({
+ *   status: 422,
+ *   message: "Validation failed",
+ *   path: "/api/users"
+ * });
+ *
+ * // Custom 429 Too Many Requests error with headers
+ * return customError({
+ *   status: 429,
+ *   message: "Rate limit exceeded",
+ *   path: "/api/data",
+ *   headers: {
+ *     "Retry-After": "3600"
+ *   }
+ * });
+ * ```
+ */
+export function customError(options: CustomResponseOptions): Response {
+  return Response.json({
+    path: options.path,
+    message: options.message,
+    status: options.status,
+    timestamp: new Date().toISOString(),
+  } satisfies ApiError, {
+    status: options.status,
     headers: {
       "Content-Type": "application/json",
       ...options.headers,
