@@ -1,4 +1,3 @@
-import type { ContentfulStatusCode } from "hono/utils/http-status";
 import type { ApiError } from "./schemas";
 
 export interface ResponseOptions {
