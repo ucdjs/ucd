@@ -248,6 +248,9 @@ importers:
       '@ucdjs/utils':
         specifier: workspace:*
         version: link:../../packages/utils
+      '@ucdjs/worker-shared':
+        specifier: workspace:*
+        version: link:../../packages/worker-shared
       apache-autoindex-parse:
         specifier: catalog:prod
         version: 2.0.0
@@ -9086,7 +9089,7 @@ snapshots:
   vitest-testdirs@4.0.0(vitest@3.2.4):
     dependencies:
       testdirs: 3.0.0
-      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@22.15.2)(@vitest/ui@3.2.4)(jiti@2.4.2)(msw@2.10.1(@types/node@22.15.2)(typescript@5.8.3))(tsx@4.19.4)(yaml@2.8.0)
+      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@22.15.2)(@vitest/ui@3.2.4)(jiti@2.4.2)(msw@2.10.1(@types/node@22.15.2)(typescript@5.8.3))(tsx@4.20.3)(yaml@2.8.0)
 
   vitest@3.2.4(@types/debug@4.1.12)(@types/node@22.15.2)(@vitest/ui@3.2.4)(jiti@2.4.2)(msw@2.10.1(@types/node@22.15.2)(typescript@5.8.3))(tsx@4.19.4)(yaml@2.8.0):
     dependencies:
