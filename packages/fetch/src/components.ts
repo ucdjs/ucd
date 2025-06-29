@@ -9,6 +9,7 @@ import type { components } from "./.generated/api";
 export type UnicodeVersion = components["schemas"]["UnicodeVersion"];
 export type UnicodeVersions = components["schemas"]["UnicodeVersions"];
 export type ApiError = components["schemas"]["ApiError"];
+export type UnicodeVersionMappings = components["schemas"]["UnicodeVersionMappings"];
 export type ProxyDirectoryResponse = components["schemas"]["ProxyDirectoryResponse"];
 export type ProxyFileResponse = components["schemas"]["ProxyFileResponse"];
 export type ProxyResponse = components["schemas"]["ProxyResponse"];
