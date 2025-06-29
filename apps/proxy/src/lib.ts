@@ -1,5 +1,6 @@
 import type { Entry } from "apache-autoindex-parse";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
+import { DEFAULT_USER_AGENT } from "@ucdjs/utils/constants";
 import { parse } from "apache-autoindex-parse";
 
 function trimTrailingSlash(path: string) {
@@ -7,16 +8,20 @@ function trimTrailingSlash(path: string) {
 }
 
 export class ProxyFetchError extends Error {
-  constructor(message: string, public details?: {
-    status?: ContentfulStatusCode;
-  }) {
+  public details: Record<string, unknown>;
+
+  constructor(message: string, details?: Record<string, unknown>) {
     super(message);
     this.name = "ProxyFetchError";
     this.details = details || {};
   }
 
   get status(): ContentfulStatusCode | undefined {
-    return this.details?.status;
+    if (!("status" in this.details)) {
+      return undefined;
+    }
+
+    return this.details?.status as ContentfulStatusCode;
   }
 }
 
@@ -49,7 +54,12 @@ export type GetEntryByPathResult = {
 export async function getEntryByPath(path: string = ""): Promise<GetEntryByPathResult> {
   const url = path ? `https://unicode.org/Public/${path}?F=2` : "https://unicode.org/Public?F=2";
 
-  const response = await fetch(url);
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      "User-Agent": DEFAULT_USER_AGENT,
+    },
+  });
 
   if (!response.ok) {
     throw new ProxyFetchError(`Failed to fetch entry: ${response.status} ${response.statusText}`, {

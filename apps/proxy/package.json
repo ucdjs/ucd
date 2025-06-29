@@ -15,12 +15,14 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@ucdjs/utils": "workspace:*",
     "apache-autoindex-parse": "catalog:prod",
     "hono": "catalog:workers"
   },
   "devDependencies": {
     "@cloudflare/vitest-pool-workers": "catalog:testing",
     "@luxass/eslint-config": "catalog:linting",
+    "@ucdjs/tsconfig": "workspace:*",
     "eslint": "catalog:linting",
     "eslint-plugin-format": "catalog:linting",
     "tsx": "catalog:monorepo",

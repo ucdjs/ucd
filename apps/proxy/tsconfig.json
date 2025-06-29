@@ -1,4 +1,5 @@
 {
+  "extends": "@ucdjs/tsconfig/base",
   "compilerOptions": {
     "target": "ESNext",
     "lib": ["ESNext"],
@@ -16,5 +17,6 @@
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
     "skipLibCheck": true
-  }
+  },
+  "include": ["src/**/*", "*.ts", "test"]
 }
