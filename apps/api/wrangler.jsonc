@@ -13,6 +13,13 @@
     "API_VERSION": "x.y.z",
     "PROXY_ENDPOINT": "https://unicode-proxy.ucdjs.dev"
   },
+  "services": [
+    {
+      "binding": "UNICODE_PROXY",
+      "entrypoint": "default",
+      "service": "unicode-proxy"
+    }
+  ],
   "placement": { "mode": "smart" },
   "env": {
     "preview": {
@@ -25,7 +32,14 @@
       "route": {
         "custom_domain": true,
         "pattern": "preview.api.ucdjs.dev"
-      }
+      },
+      "services": [
+        {
+          "binding": "UNICODE_PROXY",
+          "entrypoint": "default",
+          "service": "unicode-proxy-preview"
+        }
+      ]
     },
     "production": {
       "name": "ucdjs-api",
@@ -37,7 +51,14 @@
       "route": {
         "custom_domain": true,
         "pattern": "api.ucdjs.dev"
-      }
+      },
+      "services": [
+        {
+          "binding": "UNICODE_PROXY",
+          "entrypoint": "default",
+          "service": "unicode-proxy"
+        }
+      ]
     }
   }
 }

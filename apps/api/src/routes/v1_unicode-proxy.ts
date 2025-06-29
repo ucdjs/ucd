@@ -1,4 +1,3 @@
-import type { StatusCode } from "hono/utils/http-status";
 import type { HonoEnv } from "../types";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { createError } from "../utils";
@@ -16,16 +15,16 @@ export const V1_UNICODE_PROXY_ROUTER = new OpenAPIHono<HonoEnv>().basePath("/api
 
 V1_UNICODE_PROXY_ROUTER.openAPIRegistry.registerPath(UNICODE_PROXY_ROUTE);
 
-V1_UNICODE_PROXY_ROUTER.get("/:wildcard{.*?}", async (c) => {
-  const path = c.req.param("wildcard").trim() || "";
+V1_UNICODE_PROXY_ROUTER.get("/:wildcard{.*}?", async (c) => {
   try {
-    const url = path ? `${c.env.PROXY_ENDPOINT}/${path}` : c.env.PROXY_ENDPOINT;
-    const res = await fetch(url, {
-      method: "GET",
-      headers: {
-        "User-Agent": "api.ucdjs.dev/proxy",
-      },
-    });
+    const path = c.req.param("wildcard")?.trim() || "";
+
+    if (path.startsWith("..") || path.includes("//")) {
+      return createError(c, 400, "Invalid path");
+    }
+
+    const req = new Request(path !== "" ? `${c.env.PROXY_ENDPOINT}/${path}` : c.env.PROXY_ENDPOINT);
+    const res = await c.env.UNICODE_PROXY.fetch(req);
 
     if (!res.ok) {
       if (res.status === 404) {
@@ -34,15 +33,13 @@ V1_UNICODE_PROXY_ROUTER.get("/:wildcard{.*?}", async (c) => {
       return createError(c, 500, `Proxy request failed: ${res.statusText}`);
     }
 
-    const contentType = res.headers.get("content-type") || "application/octet-stream";
-
-    return c.newResponse(res.body, res.status as StatusCode, {
-      "Content-Type": contentType,
+    return c.newResponse(res.body, 200, {
+      "Content-Type": res.headers.get("content-type") || "application/octet-stream",
       "Content-Length": res.headers.get("content-length") || "",
       "Cache-Control": "public, max-age=3600",
     });
-  } catch (error) {
-    console.error("Proxy error:", error);
+  } catch (err) {
+    console.error("Proxy error:", err);
     return createError(c, 500, "Failed to proxy request");
   }
 });

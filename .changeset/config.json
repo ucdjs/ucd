@@ -4,6 +4,10 @@
     "@changesets/changelog-github",
     { "repo": "ucdjs/ucd" }
   ],
+  "ignore": [
+    "apps/**",
+    "packages/worker-shared"
+  ],
   "commit": false,
   "access": "public",
   "baseBranch": "main",
