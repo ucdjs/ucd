@@ -3,7 +3,10 @@
   "extends": ["//"],
   "tasks": {
     "build": {
-      "outputs": ["dist/**"]
+      "outputs": ["dist/**"],
+      "dependsOn": [
+        "@ucdjs/worker-shared#build"
+      ]
     },
     "dev": {
       "persistent": false
