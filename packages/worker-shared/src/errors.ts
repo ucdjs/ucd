@@ -1,3 +1,4 @@
+import type { TypedResponse } from "hono/types";
 import type { ApiError } from "./schemas";
 
 export interface ResponseOptions {
@@ -39,7 +40,7 @@ export interface ResponseOptions {
  * });
  * ```
  */
-export function badRequest(options: ResponseOptions = {}): Response {
+export function badRequest(options: ResponseOptions = {}): Response & TypedResponse<ApiError, 400, "json"> {
   return Response.json({
     path: options.path || "unknown",
     message: options.message || "Bad request",
@@ -51,7 +52,7 @@ export function badRequest(options: ResponseOptions = {}): Response {
       "Content-Type": "application/json",
       ...options.headers,
     },
-  });
+  }) as any;
 }
 
 /**
@@ -74,7 +75,7 @@ export function badRequest(options: ResponseOptions = {}): Response {
  * });
  * ```
  */
-export function forbidden(options: ResponseOptions = {}): Response {
+export function forbidden(options: ResponseOptions = {}): Response & TypedResponse<ApiError, 403, "json"> {
   return Response.json({
     path: options.path || "unknown",
     message: options.message || "Forbidden",
@@ -86,7 +87,7 @@ export function forbidden(options: ResponseOptions = {}): Response {
       "Content-Type": "application/json",
       ...options.headers,
     },
-  });
+  }) as any;
 }
 
 /**
@@ -109,7 +110,7 @@ export function forbidden(options: ResponseOptions = {}): Response {
  * });
  * ```
  */
-export function notFound(options: ResponseOptions = {}): Response {
+export function notFound(options: ResponseOptions = {}): Response & TypedResponse<ApiError, 404, "json"> {
   return Response.json({
     path: options.path || "unknown",
     message: options.message || "Not found",
@@ -121,7 +122,7 @@ export function notFound(options: ResponseOptions = {}): Response {
       "Content-Type": "application/json",
       ...options.headers,
     },
-  });
+  }) as any;
 }
 
 /**
@@ -144,7 +145,7 @@ export function notFound(options: ResponseOptions = {}): Response {
  * });
  * ```
  */
-export function internalServerError(options: ResponseOptions = {}): Response {
+export function internalServerError(options: ResponseOptions = {}): Response & TypedResponse<ApiError, 500, "json"> {
   return Response.json({
     path: options.path || "unknown",
     message: options.message || "Internal server error",
@@ -156,7 +157,7 @@ export function internalServerError(options: ResponseOptions = {}): Response {
       "Content-Type": "application/json",
       ...options.headers,
     },
-  });
+  }) as any;
 }
 
 export type CustomResponseOptions = Omit<Required<ResponseOptions>, "headers"> & {
