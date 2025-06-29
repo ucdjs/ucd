@@ -35,7 +35,7 @@ catalogs:
     # merge these together when heading inference is implemented better
     "@luxass/unicode-utils": ^0.9.0
     "@luxass/unicode-utils-new": npm:@luxass/unicode-utils@0.12.0-beta.8
-    "@luxass/utils": ^2.3.0
+    "@luxass/utils": ^2.4.1
     farver: ^0.4.2
     yargs-parser: ^22.0.0
     defu: ^6.1.4
