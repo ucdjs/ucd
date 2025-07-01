@@ -17,13 +17,6 @@ V1_FILES_ROUTER.openapi(GET_UNICODE_FILES_BY_VERSION_ROUTE, async (c) => {
   try {
     const version = c.req.param("version");
 
-    if (!UNICODE_VERSION_METADATA.map((v) => v.version)
-      .includes(version as typeof UNICODE_VERSION_METADATA[number]["version"])) {
-      return badRequest({
-        message: "Invalid Unicode version",
-      });
-    }
-
     const mappedVersion = resolveUCDVersion(version);
     if (!mappedVersion) {
       return badRequest({
