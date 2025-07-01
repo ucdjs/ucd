@@ -94,7 +94,7 @@ describe("mirrorUCDFiles", () => {
       const customApiUrl = "https://custom-api.example.com";
 
       mockFetch([
-        [`GET ${customApiUrl}/api/v1/unicode-files/16.0.0`, () => {
+        [`GET ${customApiUrl}/api/v1/files/16.0.0`, () => {
           return HttpResponse.json(mockFileEntries);
         }],
       ]);
@@ -414,7 +414,7 @@ describe("mirrorUCDFiles", () => {
         ["GET https://api.ucdjs.dev/api/v1/files/16.0.0", () => {
           return HttpResponse.json(nestedFileEntries);
         }],
-        ["GET https://unicode-proxy.ucdjs.dev/16.0.0/ucd/level1/level2/level3/deep-file.txt", () => {
+        ["GET https://api.ucdjs.dev/api/v1/unicode-proxy/16.0.0/ucd/level1/level2/level3/deep-file.txt", () => {
           return HttpResponse.json({ name: "deep-file.txt", path: "deep-file.txt" });
         }],
       ]);

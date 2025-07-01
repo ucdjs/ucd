@@ -223,7 +223,7 @@ describe("validateUCDFiles", () => {
       const customApiUrl = "https://custom-api.example.com";
 
       mockFetch([
-        [`GET ${customApiUrl}/api/v1/unicode-files/16.0.0`, () => {
+        [`GET ${customApiUrl}/api/v1/files/16.0.0`, () => {
           return HttpResponse.json(MOCK_UCD_FILES);
         }],
       ]);
