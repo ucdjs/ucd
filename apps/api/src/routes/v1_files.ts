@@ -1,6 +1,6 @@
 import type { HonoEnv } from "../types";
 import { OpenAPIHono } from "@hono/zod-openapi";
-import { hasUCDFolderPath, resolveUCDVersion, UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
+import { hasUCDFolderPath, resolveUCDVersion } from "@luxass/unicode-utils-new";
 import { badRequest, internalServerError } from "@ucdjs/worker-shared";
 import { traverse } from "apache-autoindex-parse/traverse";
 import { cache } from "hono/cache";
