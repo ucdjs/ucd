@@ -43,7 +43,6 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
     force: _force,
     remote,
     baseUrl,
-    proxyUrl,
     patterns,
   } = flags;
 
@@ -51,14 +50,12 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
   if (remote) {
     store = await createRemoteUCDStore({
       baseUrl,
-      proxyUrl,
       globalFilters: patterns,
     });
   } else {
     store = await createLocalUCDStore({
       basePath: storeDir,
       baseUrl,
-      proxyUrl,
       globalFilters: patterns,
     });
   }
