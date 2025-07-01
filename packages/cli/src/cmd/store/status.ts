@@ -35,7 +35,6 @@ export async function runStatusStore({ flags }: CLIStoreStatusCmdOptions) {
     json,
     remote,
     baseUrl,
-    proxyUrl,
     patterns,
   } = flags;
 
@@ -43,14 +42,12 @@ export async function runStatusStore({ flags }: CLIStoreStatusCmdOptions) {
   if (remote) {
     store = await createRemoteUCDStore({
       baseUrl,
-      proxyUrl,
       globalFilters: patterns,
     });
   } else {
     store = await createLocalUCDStore({
       basePath: storeDir,
       baseUrl,
-      proxyUrl,
       globalFilters: patterns,
     });
   }
