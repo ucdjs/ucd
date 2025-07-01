@@ -1,5 +1,5 @@
 import type { FileSystemBridge } from "@ucdjs/utils/fs-bridge";
-import { UCDJS_API_BASE_URL, UNICODE_PROXY_URL } from "@ucdjs/utils/constants";
+import { UCDJS_API_BASE_URL } from "@ucdjs/utils/constants";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createLocalUCDStore, createUCDStore } from "../src/store";
 
