@@ -1,4 +1,4 @@
-import type { UnicodeVersionFile } from "@luxass/unicode-utils-new/fetch";
+import type { UnicodeVersionFile } from "@ucdjs/fetch";
 
 export function flattenFilePaths(entries: UnicodeVersionFile[], prefix = ""): string[] {
   const paths: string[] = [];

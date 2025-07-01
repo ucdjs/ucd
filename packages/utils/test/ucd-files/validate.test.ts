@@ -42,7 +42,7 @@ describe("validateUCDFiles", () => {
       });
 
       mockFetch([
-        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
+        ["GET https://api.ucdjs.dev/api/v1/files/16.0.0", () => {
           return HttpResponse.json(MOCK_UCD_FILES);
         }],
       ]);
@@ -70,7 +70,7 @@ describe("validateUCDFiles", () => {
       });
 
       mockFetch([
-        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
+        ["GET https://api.ucdjs.dev/api/v1/files/16.0.0", () => {
           return HttpResponse.json(MOCK_UCD_FILES);
         }],
       ]);
@@ -97,7 +97,7 @@ describe("validateUCDFiles", () => {
       });
 
       mockFetch([
-        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
+        ["GET https://api.ucdjs.dev/api/v1/files/16.0.0", () => {
           return HttpResponse.json(MOCK_UCD_FILES);
         }],
       ]);
@@ -117,7 +117,7 @@ describe("validateUCDFiles", () => {
       });
 
       mockFetch([
-        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
+        ["GET https://api.ucdjs.dev/api/v1/files/16.0.0", () => {
           return HttpResponse.json(MOCK_UCD_FILES);
         }],
       ]);
@@ -145,7 +145,7 @@ describe("validateUCDFiles", () => {
       });
 
       mockFetch([
-        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
+        ["GET https://api.ucdjs.dev/api/v1/files/16.0.0", () => {
           return HttpResponse.json(MOCK_UCD_FILES);
         }],
       ]);
@@ -168,7 +168,7 @@ describe("validateUCDFiles", () => {
       });
 
       mockFetch([
-        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
+        ["GET https://api.ucdjs.dev/api/v1/files/16.0.0", () => {
           return HttpResponse.json(MOCK_UCD_FILES);
         }],
       ]);
@@ -194,7 +194,7 @@ describe("validateUCDFiles", () => {
       });
 
       mockFetch([
-        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
+        ["GET https://api.ucdjs.dev/api/v1/files/16.0.0", () => {
           return HttpResponse.json(MOCK_UCD_FILES);
         }],
       ]);
@@ -262,7 +262,7 @@ describe("validateUCDFiles", () => {
       } satisfies FileSystemBridge;
 
       mockFetch([
-        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
+        ["GET https://api.ucdjs.dev/api/v1/files/16.0.0", () => {
           return HttpResponse.json(MOCK_UCD_FILES);
         }],
       ]);
@@ -291,7 +291,7 @@ describe("validateUCDFiles", () => {
       });
 
       mockFetch([
-        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/99.0.0", () => {
+        ["GET https://api.ucdjs.dev/api/v1/files/99.0.0", () => {
           return new HttpResponse(null, { status: 404, statusText: "Not Found" });
         }],
       ]);
@@ -311,7 +311,7 @@ describe("validateUCDFiles", () => {
       });
 
       mockFetch([
-        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
+        ["GET https://api.ucdjs.dev/api/v1/files/16.0.0", () => {
           return HttpResponse.json("not an array");
         }],
       ]);
@@ -343,7 +343,7 @@ describe("validateUCDFiles", () => {
       } satisfies FileSystemBridge;
 
       mockFetch([
-        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
+        ["GET https://api.ucdjs.dev/api/v1/files/16.0.0", () => {
           return HttpResponse.json(MOCK_UCD_FILES);
         }],
       ]);
@@ -361,7 +361,7 @@ describe("validateUCDFiles", () => {
       const testdirPath = await testdir({});
 
       mockFetch([
-        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
+        ["GET https://api.ucdjs.dev/api/v1/files/16.0.0", () => {
           return HttpResponse.json(MOCK_UCD_FILES);
         }],
       ]);
@@ -413,7 +413,7 @@ describe("validateUCDFiles", () => {
       });
 
       mockFetch([
-        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
+        ["GET https://api.ucdjs.dev/api/v1/files/16.0.0", () => {
           return HttpResponse.json(nestedFileEntries);
         }],
       ]);
@@ -462,7 +462,7 @@ describe("validateUCDFiles", () => {
       });
 
       mockFetch([
-        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
+        ["GET https://api.ucdjs.dev/api/v1/files/16.0.0", () => {
           return HttpResponse.json(nestedFileEntries);
         }],
       ]);
@@ -484,7 +484,7 @@ describe("validateUCDFiles", () => {
       });
 
       mockFetch([
-        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
+        ["GET https://api.ucdjs.dev/api/v1/files/16.0.0", () => {
           return HttpResponse.json([]);
         }],
       ]);
@@ -505,7 +505,7 @@ describe("validateUCDFiles", () => {
       });
 
       mockFetch([
-        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
+        ["GET https://api.ucdjs.dev/api/v1/files/16.0.0", () => {
           return HttpResponse.json(MOCK_UCD_FILES);
         }],
       ]);
