@@ -2,7 +2,7 @@ import type { PathFilter } from "../filter";
 import type { FileSystemBridge } from "../fs-bridge";
 import path from "node:path";
 import { buildUCDPath } from "@luxass/unicode-utils-new";
-import { createClient } from "@luxass/unicode-utils-new/fetch";
+import { createClient } from "@ucdjs/fetch";
 import defu from "defu";
 import { createPathFilter } from "../filter";
 import { flattenFilePaths } from "./helpers";
@@ -35,7 +35,7 @@ export interface ValidateUCDFilesOptions {
 
   /**
    * Optional API URL to use for fetching Unicode files.
-   * If not provided, defaults to "https://unicode-api.luxass.dev".
+   * If not provided, defaults to "https://api.ucdjs.dev".
    */
   apiUrl?: string;
 }
@@ -73,7 +73,7 @@ export async function validateUCDFiles(version: string, options: ValidateUCDFile
       }),
       patternMatcher: undefined,
       patterns: [],
-      apiUrl: "https://unicode-api.luxass.dev",
+      apiUrl: "https://api.ucdjs.dev",
       basePath: "./ucd-files",
     } satisfies Partial<ValidateUCDFilesOptions>);
 
@@ -87,7 +87,7 @@ export async function validateUCDFiles(version: string, options: ValidateUCDFile
 
     const patternMatcher = providedPatternMatcher || createPathFilter(patterns);
 
-    const { data, error, response } = await client.GET("/api/v1/unicode-files/{version}", {
+    const { data, error, response } = await client.GET("/api/v1/files/{version}", {
       params: {
         path: {
           version,

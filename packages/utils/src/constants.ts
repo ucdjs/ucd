@@ -2,12 +2,6 @@
 const env = typeof process === "undefined" ? {} : process.env;
 
 /**
- * Base URL for the Unicode API
- * @default "https://unicode-api.luxass.dev"
- */
-export const UNICODE_API_BASE_URL = env.UNICODE_API_BASE_URL || "https://unicode-api.luxass.dev";
-
-/**
  * Proxy URL for the Unicode API
  * @default "https://unicode-proxy.ucdjs.dev"
  */

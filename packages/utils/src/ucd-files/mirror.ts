@@ -1,6 +1,6 @@
 import type { PathFilter } from "../filter";
 import type { FileSystemBridge } from "../fs-bridge";
-import { createClient } from "@luxass/unicode-utils-new/fetch";
+import { createClient } from "@ucdjs/fetch";
 import defu from "defu";
 import { createPathFilter } from "../filter";
 import { internal_mirrorUnicodeVersion } from "./internal";
@@ -39,15 +39,9 @@ export interface MirrorOptions {
 
   /**
    * Optional API URL to use for fetching Unicode files.
-   * If not provided, defaults to "https://unicode-api.luxass.dev".
+   * If not provided, defaults to "https://api.ucdjs.dev".
    */
   apiUrl?: string;
-
-  /**
-   * Optional proxy URL to use for downloading files.
-   * If not provided, defaults to "https://unicode-proxy.ucdjs.dev".
-   */
-  proxyUrl?: string;
 }
 
 export interface DownloadError {
@@ -76,7 +70,6 @@ export async function mirrorUCDFiles(options: MirrorOptions): Promise<MirrorResu
     patternMatcher: providedPatternMatcher,
     patterns,
     apiUrl,
-    proxyUrl,
   } = defu(options, {
     basePath: "./ucd-files",
     fs: await import("../fs-bridge/node").then((m) => m.default).catch(() => {
@@ -84,9 +77,8 @@ export async function mirrorUCDFiles(options: MirrorOptions): Promise<MirrorResu
     }),
     patternMatcher: undefined,
     patterns: [],
-    apiUrl: "https://unicode-api.luxass.dev",
+    apiUrl: "https://api.ucdjs.dev",
     versions: [],
-    proxyUrl: "https://unicode-proxy.ucdjs.dev",
   } satisfies MirrorOptions);
 
   const client = createClient(apiUrl);
@@ -109,7 +101,6 @@ export async function mirrorUCDFiles(options: MirrorOptions): Promise<MirrorResu
       patternMatcher,
       client,
       apiUrl,
-      proxyUrl,
     });
   });
 
