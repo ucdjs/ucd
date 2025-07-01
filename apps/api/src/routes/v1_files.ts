@@ -33,7 +33,9 @@ V1_FILES_ROUTER.openapi(GET_UNICODE_FILES_BY_VERSION_ROUTE, async (c) => {
 
     const extraPath = hasUCDFolderPath(mappedVersion) ? "/ucd" : "";
 
-    const result = await traverse(`https://unicode.org/Public/${mappedVersion}${extraPath}`);
+    const result = await traverse(`https://unicode.org/Public/${mappedVersion}${extraPath}`, {
+      format: "F2",
+    });
 
     return c.json(result, 200);
   } catch (error) {
