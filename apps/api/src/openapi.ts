@@ -83,6 +83,15 @@ export function buildOpenApiConfig(version: string, servers: NonNullable<OpenAPI
           - \`/14.0.0/ucd/extracted/DerivedCombiningClass.txt\` - Access extracted data files
         `,
       },
+      {
+        name: "Files",
+        description: dedent`
+          Endpoints for accessing Unicode data files directly.
+
+          These endpoints provide a straightforward way to retrieve Unicode data files
+          without any additional processing or transformation.
+        `,
+      },
     ],
     servers,
   } satisfies OpenAPIObjectConfig;
