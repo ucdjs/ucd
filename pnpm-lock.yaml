@@ -199,6 +199,9 @@ importers:
       '@ucdjs/worker-shared':
         specifier: workspace:*
         version: link:../../packages/worker-shared
+      apache-autoindex-parse:
+        specifier: catalog:prod
+        version: 2.0.0
       hono:
         specifier: catalog:workers
         version: 4.8.3
