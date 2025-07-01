@@ -168,7 +168,7 @@ describe("v1_files", () => {
         .intercept({ path: "/Public/3.1-Update1" })
         .reply(200, generateAutoIndexHtml(files, "F2"));
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/files/3.1-Update1");
+      const request = new Request("https://api.ucdjs.dev/api/v1/files/3.1.1");
       const ctx = createExecutionContext();
       const response = await worker.fetch(request, env, ctx);
       await waitOnExecutionContext(ctx);
