@@ -48,7 +48,7 @@ describe("v1_files", () => {
           name: file.name,
           path: file.path,
           type: file.type,
-          ...file.children ? { children: file.children } : {},
+          ...(file.children ? { children: file.children } : {}),
         });
       });
 
