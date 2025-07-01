@@ -163,7 +163,12 @@ describe("v1_files", () => {
     });
 
     it("should handle older Unicode versions", async () => {
-      const request = new Request("https://api.ucdjs.dev/api/v1/files/13.0.0");
+      // Note: Older versions don't have /ucd path
+      fetchMock.get("https://unicode.org")
+        .intercept({ path: "/Public/3.1-Update1" })
+        .reply(200, generateAutoIndexHtml(files, "F2"));
+
+      const request = new Request("https://api.ucdjs.dev/api/v1/files/3.1-Update1");
       const ctx = createExecutionContext();
       const response = await worker.fetch(request, env, ctx);
       await waitOnExecutionContext(ctx);
