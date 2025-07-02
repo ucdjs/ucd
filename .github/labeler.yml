@@ -4,9 +4,9 @@
   - changed-files:
       - any-glob-to-any-file: packages/cli/**
 
-"pkg: utils":
+"pkg: env":
   - changed-files:
-      - any-glob-to-any-file: packages/utils/**
+      - any-glob-to-any-file: packages/env/**
 
 "pkg: fetch":
   - changed-files:
@@ -16,17 +16,17 @@
   - changed-files:
       - any-glob-to-any-file: packages/schema-gen/**
 
-"pkg: worker-shared":
-  - changed-files:
-      - any-glob-to-any-file: packages/worker-shared/**
-
 "pkg: ucd-store":
   - changed-files:
       - any-glob-to-any-file: packages/ucd-store/**
 
-"pkg: env":
+"pkg: utils":
   - changed-files:
-      - any-glob-to-any-file: packages/env/**
+      - any-glob-to-any-file: packages/utils/**
+
+"pkg: worker-shared":
+  - changed-files:
+      - any-glob-to-any-file: packages/worker-shared/**
 
 "apps: api":
   - changed-files:

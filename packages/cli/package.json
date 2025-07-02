@@ -51,6 +51,7 @@
     "@luxass/eslint-config": "catalog:linting",
     "@types/yargs-parser": "catalog:dev",
     "@ucdjs/tsconfig": "workspace:*",
+    "@ucdjs/tsdown-config": "workspace:*",
     "eslint": "catalog:linting",
     "publint": "catalog:dev",
     "tsdown": "catalog:dev",
