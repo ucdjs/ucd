@@ -47,6 +47,7 @@
     "@luxass/utils": "catalog:prod",
     "@types/picomatch": "catalog:dev",
     "@ucdjs/tsconfig": "workspace:*",
+    "@ucdjs/tsdown-config": "workspace:*",
     "eslint": "catalog:linting",
     "openapi-typescript": "catalog:dev",
     "publint": "catalog:dev",
