@@ -1,0 +1,6 @@
+{
+  "extends": "@ucdjs/tsconfig/base",
+  "include": [
+    "*.js"
+  ]
+}

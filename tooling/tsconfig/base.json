@@ -6,17 +6,17 @@
     "paths": {
       "#msw-utils": ["./test/msw-utils/msw.ts"],
       "@ucdjs/cli": ["./packages/cli/src/cli.ts"],
-      "@ucdjs/utils": ["./packages/utils/src/index.ts"],
-      "@ucdjs/utils/ucd-files": ["./packages/utils/src/ucd-files.ts"],
-      "@ucdjs/utils/types": ["./packages/utils/src/types.ts"],
-      "@ucdjs/utils/fs-bridge": ["./packages/utils/src/fs-bridge.ts"],
-      "@ucdjs/utils/fs-bridge/node": ["./packages/utils/src/fs-bridge/node.ts"],
-      "@ucdjs/utils/fs-bridge/http": ["./packages/utils/src/fs-bridge/http.ts"],
+      "@ucdjs/env": ["./packages/env/src/index.ts"],
+      "@ucdjs/fetch": ["./packages/fetch/src/index.ts"],
       "@ucdjs/schema-gen": ["./packages/schema-gen/src/index.ts"],
       "@ucdjs/ucd-store": ["./packages/ucd-store/src/index.ts"],
-      "@ucdjs/fetch": ["./packages/fetch/src/index.ts"],
+      "@ucdjs/utils": ["./packages/utils/src/index.ts"],
+      "@ucdjs/utils/fs-bridge": ["./packages/utils/src/fs-bridge.ts"],
+      "@ucdjs/utils/fs-bridge/http": ["./packages/utils/src/fs-bridge/http.ts"],
+      "@ucdjs/utils/fs-bridge/node": ["./packages/utils/src/fs-bridge/node.ts"],
+      "@ucdjs/utils/types": ["./packages/utils/src/types.ts"],
+      "@ucdjs/utils/ucd-files": ["./packages/utils/src/ucd-files.ts"],
       "@ucdjs/worker-shared": ["./packages/worker-shared/src/index.ts"],
-      "@ucdjs/env": ["./packages/env/src/index.ts"],
     }
   }
 }
