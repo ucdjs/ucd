@@ -5,9 +5,9 @@
   "packageManager": "pnpm@10.12.1",
   "scripts": {
     "dev": "wrangler dev",
-    "build": "wrangler deploy --dry-run --outdir=dist",
+    "build": "wrangler deploy --dry-run --outdir=dist --tsconfig=./tsconfig.build.json",
     "build:openapi": "tsx --tsconfig=./tsconfig.json ./scripts/build-openapi",
-    "deploy": "wrangler deploy",
+    "deploy": "wrangler deploy --tsconfig=./tsconfig.build.json",
     "test": "pnpm vitest --run",
     "test:watch": "pnpm vitest",
     "lint": "eslint .",

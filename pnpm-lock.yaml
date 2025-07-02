@@ -248,6 +248,9 @@ importers:
 
   apps/proxy:
     dependencies:
+      '@ucdjs/env':
+        specifier: workspace:*
+        version: link:../../packages/env
       '@ucdjs/utils':
         specifier: workspace:*
         version: link:../../packages/utils
