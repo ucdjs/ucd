@@ -460,6 +460,9 @@ importers:
       '@luxass/utils':
         specifier: catalog:prod
         version: 2.4.1
+      '@ucdjs/env':
+        specifier: workspace:*
+        version: link:../env
       '@ucdjs/fetch':
         specifier: workspace:*
         version: link:../fetch

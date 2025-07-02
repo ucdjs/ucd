@@ -4,9 +4,9 @@ import type { FileSystemBridge } from "@ucdjs/utils/fs-bridge";
 import path from "node:path";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { promiseRetry } from "@luxass/utils";
+import { UCDJS_API_BASE_URL, UNICODE_PROXY_URL } from "@ucdjs/env";
 import { createClient } from "@ucdjs/fetch";
 import { createPathFilter } from "@ucdjs/utils";
-import { UCDJS_API_BASE_URL, UNICODE_PROXY_URL } from "@ucdjs/utils/constants";
 import { flattenFilePaths } from "@ucdjs/utils/ucd-files";
 import defu from "defu";
 
