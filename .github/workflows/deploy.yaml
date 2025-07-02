@@ -55,6 +55,9 @@ jobs:
       - name: build
         run: pnpm build
 
+      - name: build workers
+        run: pnpm build:workers
+
       - name: validate openapi
         if: matrix.app == 'api'
         run: pnpm --filter=@ucdjs/api run lint:openapi

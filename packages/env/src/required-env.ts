@@ -16,7 +16,7 @@ import { getOwnProperty } from "@luxass/utils";
  *
  * @example
  * ```typescript
- * import { requiredEnv } from "@ucdjs/worker-shared";
+ * import { requiredEnv } from "@ucdjs/env";
  * const env = { DATABASE_URL: "...", API_KEY: "...", OPTIONAL_VAR: undefined };
  * const validatedEnv = requiredEnv(env, ["DATABASE_URL", "API_KEY"]);
  * // validatedEnv.DATABASE_URL and validatedEnv.API_KEY are guaranteed to be present

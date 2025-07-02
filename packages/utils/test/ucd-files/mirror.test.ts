@@ -1,10 +1,10 @@
 import type { FileSystemBridge } from "@ucdjs/utils/fs-bridge";
 import { mockFetch } from "#msw-utils";
+import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { createPathFilter } from "@ucdjs/utils";
 import { HttpResponse } from "msw";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
-import { UCDJS_API_BASE_URL } from "../../src/constants";
 import { mirrorUCDFiles } from "../../src/ucd-files";
 
 describe("mirrorUCDFiles", () => {

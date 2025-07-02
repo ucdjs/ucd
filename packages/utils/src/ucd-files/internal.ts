@@ -4,7 +4,7 @@ import type { FileSystemBridge } from "../fs-bridge";
 import type { DownloadError, MirrorOptions } from "./mirror";
 import path, { dirname } from "node:path";
 import { hasUCDFolderPath } from "@luxass/unicode-utils-new";
-import { UCDJS_API_BASE_URL } from "../constants";
+import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { flattenFilePaths } from "./helpers";
 
 type internal__MirrorUnicodeVersionOptions = Required<Omit<MirrorOptions, "versions" | "patterns">> & {

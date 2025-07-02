@@ -1,6 +1,6 @@
 import type { Entry } from "apache-autoindex-parse";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
-import { DEFAULT_USER_AGENT } from "@ucdjs/utils/constants";
+import { DEFAULT_USER_AGENT } from "@ucdjs/env";
 import { parse } from "apache-autoindex-parse";
 
 function trimTrailingSlash(path: string) {
