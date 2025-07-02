@@ -7,8 +7,8 @@ import { promiseRetry } from "@luxass/utils";
 import { UCDJS_API_BASE_URL, UNICODE_PROXY_URL } from "@ucdjs/env";
 import { createClient } from "@ucdjs/fetch";
 import { createPathFilter } from "@ucdjs/utils";
-import { flattenFilePaths } from "@ucdjs/utils/ucd-files";
 import defu from "defu";
+import { flattenFilePaths } from "./ucd-files/helpers";
 
 type StoreMode = "remote" | "local";
 

@@ -1,6 +1,6 @@
 import type { createClient, UnicodeVersionFile } from "@ucdjs/fetch";
-import type { PathFilter } from "../filter";
-import type { FileSystemBridge } from "../fs-bridge";
+import type { PathFilter } from "@ucdjs/utils";
+import type { FileSystemBridge } from "@ucdjs/utils/fs-bridge";
 import type { DownloadError, MirrorOptions } from "./mirror";
 import path, { dirname } from "node:path";
 import { hasUCDFolderPath } from "@luxass/unicode-utils-new";
