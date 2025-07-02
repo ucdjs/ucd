@@ -20,7 +20,6 @@
   },
   "exports": {
     ".": "./dist/index.js",
-    "./constants": "./dist/constants.js",
     "./fs-bridge": "./dist/fs-bridge.js",
     "./fs-bridge/http": "./dist/fs-bridge/http.js",
     "./fs-bridge/node": "./dist/fs-bridge/node.js",
