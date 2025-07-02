@@ -4,6 +4,7 @@ import { customError, internalServerError, notFound } from "@ucdjs/worker-shared
 import { WorkerEntrypoint } from "cloudflare:workers";
 import { Hono } from "hono";
 import { cache } from "hono/cache";
+import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
 import { getEntryByPath, parseUnicodeDirectory, ProxyFetchError } from "./lib";
 
@@ -19,6 +20,25 @@ const app = new Hono<{
 }>({
   strict: false,
 });
+
+app.use("*", cors({
+  origin: (origin, c) => {
+    const allowedOrigins = ["https://ucdjs.dev", "https://www.ucdjs.dev"];
+
+    if (c.env.ENVIRONMENT === "local") {
+      allowedOrigins.push("http://localhost:3000", "http://localhost:8787");
+    }
+
+    if (c.env.ENVIRONMENT === "preview") {
+      allowedOrigins.push("https://preview.api.ucdjs.dev", "https://preview.unicode-proxy.ucdjs.dev");
+    }
+
+    return allowedOrigins.includes(origin || "") ? origin : null;
+  },
+  allowMethods: ["GET", "HEAD", "OPTIONS", "POST"],
+  allowHeaders: ["Content-Type"],
+  credentials: true,
+}));
 
 app.use("*", async (c, next) => {
   const key

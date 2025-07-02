@@ -3,6 +3,7 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import { Scalar } from "@scalar/hono-api-reference";
 import { customError, internalServerError, notFound } from "@ucdjs/worker-shared";
 import { env } from "hono/adapter";
+import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
 import { buildOpenApiConfig } from "./openapi";
 import { V1_FILES_ROUTER } from "./routes/v1_files";
@@ -10,6 +11,25 @@ import { V1_UNICODE_PROXY_ROUTER } from "./routes/v1_unicode-proxy";
 import { V1_UNICODE_VERSIONS_ROUTER } from "./routes/v1_unicode-versions";
 
 const app = new OpenAPIHono<HonoEnv>();
+
+app.use("*", cors({
+  origin: (origin, c) => {
+    const allowedOrigins = ["https://ucdjs.dev", "https://www.ucdjs.dev"];
+
+    if (c.env.ENVIRONMENT === "local") {
+      allowedOrigins.push("http://localhost:3000", "http://localhost:8787");
+    }
+
+    if (c.env.ENVIRONMENT === "preview") {
+      allowedOrigins.push("https://preview.api.ucdjs.dev", "https://preview.unicode-proxy.ucdjs.dev");
+    }
+
+    return allowedOrigins.includes(origin || "") ? origin : null;
+  },
+  allowMethods: ["GET", "HEAD", "OPTIONS", "POST"],
+  allowHeaders: ["Content-Type"],
+  credentials: true,
+}));
 
 app.route("/", V1_UNICODE_VERSIONS_ROUTER);
 app.route("/", V1_UNICODE_PROXY_ROUTER);
