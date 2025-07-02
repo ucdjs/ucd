@@ -1,9 +1,10 @@
-import type { createClient, UnicodeVersionFile } from "@luxass/unicode-utils-new/fetch";
+import type { createClient, UnicodeVersionFile } from "@ucdjs/fetch";
 import type { PathFilter } from "../filter";
 import type { FileSystemBridge } from "../fs-bridge";
 import type { DownloadError, MirrorOptions } from "./mirror";
 import path, { dirname } from "node:path";
 import { hasUCDFolderPath } from "@luxass/unicode-utils-new";
+import { UCDJS_API_BASE_URL } from "../constants";
 import { flattenFilePaths } from "./helpers";
 
 type internal__MirrorUnicodeVersionOptions = Required<Omit<MirrorOptions, "versions" | "patterns">> & {
@@ -15,7 +16,7 @@ export async function internal_mirrorUnicodeVersion(version: string, mirrorOptio
   files: string[];
   errors: DownloadError[];
 }> {
-  const { basePath, fs, patternMatcher, client, proxyUrl } = mirrorOptions;
+  const { basePath, fs, patternMatcher, client } = mirrorOptions;
   const versionOutputDir = path.resolve(basePath, `v${version}`);
 
   const locatedFiles: string[] = [];
@@ -25,7 +26,7 @@ export async function internal_mirrorUnicodeVersion(version: string, mirrorOptio
   try {
     await fs.mkdir(versionOutputDir);
 
-    const { data, error, response } = await client.GET("/api/v1/unicode-files/{version}", {
+    const { data, error, response } = await client.GET("/api/v1/files/{version}", {
       params: {
         path: {
           version,
@@ -70,7 +71,6 @@ export async function internal_mirrorUnicodeVersion(version: string, mirrorOptio
       errors,
       // for tracking downloaded files
       files,
-      proxyUrl,
     });
   } catch (err) {
     errors.push({
@@ -95,7 +95,7 @@ interface InternalProcessEntriesOptions {
   entries: UnicodeVersionFile[];
   errors: DownloadError[];
   files: string[];
-  proxyUrl?: string;
+  apiUrl?: string;
 }
 
 export async function internal__processEntries(
@@ -110,7 +110,7 @@ export async function internal__processEntries(
     fs,
     errors,
     files,
-    proxyUrl = "https://unicode-proxy.ucdjs.dev",
+    apiUrl = UCDJS_API_BASE_URL,
   } = options;
 
   const dirPromises = [];
@@ -140,7 +140,7 @@ export async function internal__processEntries(
           if (!await fs.exists(dirname(outputPath))) {
             await fs.mkdir(dirname(outputPath));
           }
-          const url = `${proxyUrl}${basePath}/${entry.path}`;
+          const url = `${apiUrl}/api/v1/unicode-proxy${basePath}/${entry.path}`;
           const response = await fetch(url);
 
           if (!response.ok) {

@@ -35,7 +35,6 @@ export async function runCleanStore({ flags }: CLIStoreCleanCmdOptions) {
     dryRun,
     remote,
     baseUrl,
-    proxyUrl,
     patterns,
   } = flags;
 
@@ -43,14 +42,12 @@ export async function runCleanStore({ flags }: CLIStoreCleanCmdOptions) {
   if (remote) {
     store = await createRemoteUCDStore({
       baseUrl,
-      proxyUrl,
       globalFilters: patterns,
     });
   } else {
     store = await createLocalUCDStore({
       basePath: storeDir,
       baseUrl,
-      proxyUrl,
       globalFilters: patterns,
     });
   }
