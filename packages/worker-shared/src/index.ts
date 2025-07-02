@@ -6,3 +6,5 @@ export type { CustomResponseOptions, ResponseOptions } from "./errors";
 
 export type { ApiError } from "./schemas";
 export { ApiErrorSchema } from "./schemas";
+
+export { setupCors } from "./setups";
