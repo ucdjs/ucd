@@ -57,12 +57,12 @@ function HTTPFileSystemBridge(options: HTTPFileSystemBridgeOptions = {}): FileSy
       }
 
       const data = await response.json();
-      
+
       // Validate response data
       const validatedData = z.array(ProxyResponseSchema).parse(data);
 
       if (!recursive) {
-        return validatedData.map(entry => entry.name);
+        return validatedData.map((entry) => entry.name);
       }
 
       // Recursive implementation
@@ -73,7 +73,7 @@ function HTTPFileSystemBridge(options: HTTPFileSystemBridgeOptions = {}): FileSy
           try {
             const subPath = path.endsWith("/") ? `${path}${entry.name}` : `${path}/${entry.name}`;
             const subEntries = await this.listdir(subPath, true);
-            allEntries.push(...subEntries.map(name => ({ type: "file" as const, name, path: `${subPath}/${name}`, lastModified: undefined })));
+            allEntries.push(...subEntries.map((name) => ({ type: "file" as const, name, path: `${subPath}/${name}`, lastModified: undefined })));
           } catch {
             // Skip directories that can't be accessed
             continue;
@@ -81,7 +81,7 @@ function HTTPFileSystemBridge(options: HTTPFileSystemBridgeOptions = {}): FileSy
         }
       }
 
-      return allEntries.map(entry => entry.name);
+      return allEntries.map((entry) => entry.name);
     },
     async write() {
       // should not do anything, as this is a read-only bridge
