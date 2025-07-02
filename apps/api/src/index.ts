@@ -1,7 +1,7 @@
 import type { HonoEnv } from "./types";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { Scalar } from "@scalar/hono-api-reference";
-import { customError, internalServerError, notFound } from "@ucdjs/worker-shared";
+import { customError, internalServerError, notFound, setupCors } from "@ucdjs/worker-shared";
 import { env } from "hono/adapter";
 import { HTTPException } from "hono/http-exception";
 import { buildOpenApiConfig } from "./openapi";
@@ -10,6 +10,8 @@ import { V1_UNICODE_PROXY_ROUTER } from "./routes/v1_unicode-proxy";
 import { V1_UNICODE_VERSIONS_ROUTER } from "./routes/v1_unicode-versions";
 
 const app = new OpenAPIHono<HonoEnv>();
+
+setupCors(app);
 
 app.route("/", V1_UNICODE_VERSIONS_ROUTER);
 app.route("/", V1_UNICODE_PROXY_ROUTER);

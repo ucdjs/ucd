@@ -43,6 +43,7 @@
   "dependencies": {
     "@luxass/unicode-utils-new": "catalog:prod",
     "@luxass/utils": "catalog:prod",
+    "@ucdjs/fetch": "workspace:*",
     "defu": "catalog:prod",
     "memfs": "catalog:prod",
     "picomatch": "catalog:prod"
