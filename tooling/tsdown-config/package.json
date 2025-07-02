@@ -1,0 +1,21 @@
+{
+  "name": "@ucdjs/tsdown-config",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./index.js",
+    "./base": "./base.js"
+  },
+  "files": [
+    "index.js",
+    "base.js"
+  ],
+  "dependencies": {
+    "tsdown": "catalog:dev"
+  },
+  "devDependencies": {
+    "@ucdjs/tsconfig": "workspace:*",
+    "typescript": "catalog:dev"
+  }
+}
