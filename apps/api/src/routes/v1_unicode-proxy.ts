@@ -2,7 +2,6 @@ import type { Context } from "hono";
 import type { HonoEnv } from "../types";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { badRequest, internalServerError, notFound } from "@ucdjs/worker-shared";
-import { createMiddleware } from "hono/factory";
 import { UNICODE_PROXY_STAT_WILDCARD_ROUTE, UNICODE_PROXY_WILDCARD_ROUTE } from "./v1_unicode-proxy.openapi";
 
 export const V1_UNICODE_PROXY_ROUTER = new OpenAPIHono<HonoEnv>().basePath("/api/v1/unicode-proxy");
