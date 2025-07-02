@@ -72,9 +72,11 @@ describe("httpFileSystemBridge", () => {
 
   describe("listdir", () => {
     it("should list directory contents", async () => {
-      const mockFileTree = {
-        files: ["file1.txt", "file2.js", "subdirectory"],
-      };
+      const mockFileTree = [
+        { type: "file", name: "file1.txt", path: "/api/files/file1.txt" },
+        { type: "file", name: "file2.js", path: "/api/files/file2.js" },
+        { type: "directory", name: "subdirectory", path: "/api/files/subdirectory", lastModified: "2023-01-01T00:00:00Z" },
+      ];
       const bridge = HTTPFileSystemBridge({ baseUrl: "https://api.ucdjs.dev" });
 
       mockFetch([
@@ -90,10 +92,15 @@ describe("httpFileSystemBridge", () => {
       expect(result).toEqual(["file1.txt", "file2.js", "subdirectory"]);
     });
 
-    it("should list directory with recursive parameter (ignored)", async () => {
-      const mockFileTree = {
-        files: ["file1.txt", "file2.js"],
-      };
+    it("should list directory with recursive parameter", async () => {
+      const mockFileTree = [
+        { type: "file", name: "file1.txt", path: "/api/files/file1.txt" },
+        { type: "file", name: "file2.js", path: "/api/files/file2.js" },
+        { type: "directory", name: "subdir", path: "/api/files/subdir", lastModified: "2023-01-01T00:00:00Z" },
+      ];
+      const subDirTree = [
+        { type: "file", name: "nested.txt", path: "/api/files/subdir/nested.txt" },
+      ];
       const bridge = HTTPFileSystemBridge({ baseUrl: "https://api.ucdjs.dev" });
 
       mockFetch([
@@ -103,10 +110,16 @@ describe("httpFileSystemBridge", () => {
             headers: { "Content-Type": "application/json" },
           });
         }],
+        ["GET https://api.ucdjs.dev/api/files/subdir", () => {
+          return new HttpResponse(JSON.stringify(subDirTree), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          });
+        }],
       ]);
 
       const result = await bridge.listdir("/api/files", true);
-      expect(result).toEqual(["file1.txt", "file2.js"]);
+      expect(result).toEqual(["file1.txt", "file2.js", "subdir", "nested.txt"]);
     });
 
     it("should throw error when directory listing fails", async () => {
@@ -125,9 +138,7 @@ describe("httpFileSystemBridge", () => {
     });
 
     it("should handle empty directory", async () => {
-      const mockFileTree = {
-        files: [],
-      };
+      const mockFileTree: unknown[] = [];
       const bridge = HTTPFileSystemBridge({ baseUrl: "https://api.ucdjs.dev" });
 
       mockFetch([
@@ -226,10 +237,27 @@ describe("httpFileSystemBridge", () => {
       await expect(bridge.rm("/file.txt")).resolves.toBeUndefined();
     });
 
-    it("should throw error on stat operation", async () => {
-      const bridge = HTTPFileSystemBridge();
+    it("should return stat information", async () => {
+      const bridge = HTTPFileSystemBridge({ baseUrl: "https://api.ucdjs.dev" });
+      const mockStatData = {
+        type: "file",
+        mtime: "2023-01-01T00:00:00Z",
+        size: 1024,
+      };
 
-      await expect(bridge.stat("/file.txt")).rejects.toThrow("Stat operation is not supported in HTTPFileSystemBridge");
+      mockFetch([
+        ["GET https://api.ucdjs.dev/__stat/file.txt", () => {
+          return new HttpResponse(JSON.stringify(mockStatData), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          });
+        }],
+      ]);
+
+      const result = await bridge.stat("/file.txt");
+      expect(result.isFile()).toBe(true);
+      expect(result.isDirectory()).toBe(false);
+      expect(result.size).toBe(1024);
     });
   });
 
@@ -319,20 +347,19 @@ describe("httpFileSystemBridge", () => {
       await expect(bridge.listdir("/api/malformed")).rejects.toThrow();
     });
 
-    it("should handle missing files property in listdir response", async () => {
+    it("should handle invalid schema in listdir response", async () => {
       const bridge = HTTPFileSystemBridge({ baseUrl: "https://api.ucdjs.dev" });
 
       mockFetch([
-        ["GET https://api.ucdjs.dev/api/no-files", () => {
-          return new HttpResponse(JSON.stringify({ data: [] }), {
+        ["GET https://api.ucdjs.dev/api/invalid-schema", () => {
+          return new HttpResponse(JSON.stringify([{ invalid: "data" }]), {
             status: 200,
             headers: { "Content-Type": "application/json" },
           });
         }],
       ]);
 
-      const result = await bridge.listdir("/api/no-files");
-      expect(result).toBeUndefined();
+      await expect(bridge.listdir("/api/invalid-schema")).rejects.toThrow();
     });
   });
 });

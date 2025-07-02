@@ -1,6 +1,22 @@
 import type { FileSystemBridge } from "../fs-bridge";
 import { UNICODE_PROXY_URL } from "@ucdjs/env";
+import { z } from "zod/v4";
 import { defineFileSystemBridge } from "../fs-bridge";
+
+const ProxyResponseSchema = z.union([
+  z.object({
+    type: z.literal("directory"),
+    name: z.string(),
+    path: z.string(),
+    lastModified: z.string(),
+  }),
+  z.object({
+    type: z.literal("file"),
+    name: z.string(),
+    path: z.string(),
+    lastModified: z.string().optional(),
+  }),
+]);
 
 export interface HTTPFileSystemBridgeOptions {
   baseUrl?: string;
@@ -27,7 +43,7 @@ function HTTPFileSystemBridge(options: HTTPFileSystemBridgeOptions = {}): FileSy
       }
       return response.text();
     },
-    async listdir(path, _recursive) {
+    async listdir(path, recursive = false) {
       const url = new URL(path, baseUrl);
       const response = await fetch(url.toString(), {
         method: "GET",
@@ -35,11 +51,37 @@ function HTTPFileSystemBridge(options: HTTPFileSystemBridgeOptions = {}): FileSy
           Accept: "application/json",
         },
       });
+
       if (!response.ok) {
         throw new Error(`Failed to list directory: ${response.statusText}`);
       }
+
       const data = await response.json();
-      return data.files;
+
+      // Validate response data
+      const validatedData = z.array(ProxyResponseSchema).parse(data);
+
+      if (!recursive) {
+        return validatedData.map((entry) => entry.name);
+      }
+
+      // Recursive implementation
+      const allEntries = [...validatedData];
+
+      for (const entry of validatedData) {
+        if (entry.type === "directory") {
+          try {
+            const subPath = path.endsWith("/") ? `${path}${entry.name}` : `${path}/${entry.name}`;
+            const subEntries = await this.listdir(subPath, true);
+            allEntries.push(...subEntries.map((name) => ({ type: "file" as const, name, path: `${subPath}/${name}`, lastModified: undefined })));
+          } catch {
+            // Skip directories that can't be accessed
+            continue;
+          }
+        }
+      }
+
+      return allEntries.map((entry) => entry.name);
     },
     async write() {
       // should not do anything, as this is a read-only bridge
@@ -58,8 +100,23 @@ function HTTPFileSystemBridge(options: HTTPFileSystemBridgeOptions = {}): FileSy
     async rm() {
       // read-only bridge, cannot remove files or directories
     },
-    async stat(_path) {
-      throw new Error("Stat operation is not supported in HTTPFileSystemBridge");
+    async stat(path) {
+      const url = new URL(path.startsWith("/") ? `__stat${path}` : `/__stat/${path}`, baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`);
+      const response = await fetch(url.toString());
+
+      if (!response.ok) {
+        throw new Error(`Failed to stat path: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      const isDirectory = data.type === "directory";
+
+      return {
+        isFile: () => !isDirectory,
+        isDirectory: () => isDirectory,
+        mtime: new Date(data.mtime),
+        size: data.size,
+      };
     },
   });
 }

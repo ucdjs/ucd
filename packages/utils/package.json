@@ -23,7 +23,6 @@
     "./fs-bridge": "./dist/fs-bridge.js",
     "./fs-bridge/http": "./dist/fs-bridge/http.js",
     "./fs-bridge/node": "./dist/fs-bridge/node.js",
-    "./ucd-files": "./dist/ucd-files.js",
     "./package.json": "./package.json"
   },
   "main": "./dist/index.js",
@@ -46,7 +45,8 @@
     "@ucdjs/fetch": "workspace:*",
     "defu": "catalog:prod",
     "memfs": "catalog:prod",
-    "picomatch": "catalog:prod"
+    "picomatch": "catalog:prod",
+    "zod": "catalog:prod"
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:linting",
