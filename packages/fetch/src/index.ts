@@ -1,6 +1,6 @@
 import type { Client } from "openapi-fetch";
 import type { paths } from "./.generated/api";
-import { UCDJS_API_BASE_URL } from "@ucdjs/utils/constants";
+import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import OpenApiCreateClient from "openapi-fetch";
 
 /**
