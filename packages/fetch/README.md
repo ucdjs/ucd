@@ -40,13 +40,13 @@ console.log('File info:', fileInfo);
 ```typescript
 import { createClient } from '@ucdjs/fetch';
 
-// Create client with custom base URL
-const customClient = createClient('https://custom-api.example.com');
+// Create client with custom UCD.js API instance
+const customClient = createClient('https://staging-api.ucdjs.dev');
 
 // Use the custom client
 const { data, error } = await customClient.GET('/api/v1/unicode-versions');
 if (data) {
-  console.log('Unicode versions from custom API:', data);
+  console.log('Unicode versions from staging API:', data);
 }
 ```
 
