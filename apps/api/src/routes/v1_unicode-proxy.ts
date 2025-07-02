@@ -1,7 +1,9 @@
+import type { Context } from "hono";
 import type { HonoEnv } from "../types";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { badRequest, internalServerError, notFound } from "@ucdjs/worker-shared";
-import { UNICODE_PROXY_ROUTE } from "./v1_unicode-proxy.openapi";
+import { createMiddleware } from "hono/factory";
+import { UNICODE_PROXY_STAT_WILDCARD_ROUTE, UNICODE_PROXY_WILDCARD_ROUTE } from "./v1_unicode-proxy.openapi";
 
 export const V1_UNICODE_PROXY_ROUTER = new OpenAPIHono<HonoEnv>().basePath("/api/v1/unicode-proxy");
 
@@ -11,9 +13,13 @@ export const V1_UNICODE_PROXY_ROUTER = new OpenAPIHono<HonoEnv>().basePath("/api
 // This allows us to still describe the route in OpenAPI,
 // while also allowing the actual route to match any path.
 
-V1_UNICODE_PROXY_ROUTER.openAPIRegistry.registerPath(UNICODE_PROXY_ROUTE);
+V1_UNICODE_PROXY_ROUTER.openAPIRegistry.registerPath(UNICODE_PROXY_WILDCARD_ROUTE);
+V1_UNICODE_PROXY_ROUTER.openAPIRegistry.registerPath(UNICODE_PROXY_STAT_WILDCARD_ROUTE);
 
-V1_UNICODE_PROXY_ROUTER.get("/:wildcard{.*}?", async (c) => {
+/**
+ * @internal
+ */
+async function internalProxyRoute(c: Context) {
   try {
     const path = c.req.param("wildcard")?.trim() || "";
 
@@ -53,4 +59,12 @@ V1_UNICODE_PROXY_ROUTER.get("/:wildcard{.*}?", async (c) => {
       message: `Failed to proxy request: ${err instanceof Error ? err.message : "Unknown error"}`,
     });
   }
+}
+
+V1_UNICODE_PROXY_ROUTER.get("/:wildcard{.*}?", async (c) => {
+  return internalProxyRoute(c);
+});
+
+V1_UNICODE_PROXY_ROUTER.get("/__stat/:wildcard{.*}?", async (c) => {
+  return internalProxyRoute(c);
 });
