@@ -1,8 +1,8 @@
-import type { PathFilter } from "../filter";
-import type { FileSystemBridge } from "../fs-bridge";
+import type { PathFilter } from "@ucdjs/utils";
+import type { FileSystemBridge } from "@ucdjs/utils/fs-bridge";
 import { createClient } from "@ucdjs/fetch";
+import { createPathFilter } from "@ucdjs/utils";
 import defu from "defu";
-import { createPathFilter } from "../filter";
 import { internal_mirrorUnicodeVersion } from "./internal";
 
 export interface MirrorOptions {
@@ -72,7 +72,7 @@ export async function mirrorUCDFiles(options: MirrorOptions): Promise<MirrorResu
     apiUrl,
   } = defu(options, {
     basePath: "./ucd-files",
-    fs: await import("../fs-bridge/node").then((m) => m.default).catch(() => {
+    fs: await import("@ucdjs/utils/fs-bridge/node").then((m) => m.default).catch(() => {
       throw new Error("Failed to import default file system bridge");
     }),
     patternMatcher: undefined,

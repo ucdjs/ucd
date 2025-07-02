@@ -1,10 +1,10 @@
-import type { PathFilter } from "../filter";
-import type { FileSystemBridge } from "../fs-bridge";
+import type { PathFilter } from "@ucdjs/utils";
+import type { FileSystemBridge } from "@ucdjs/utils/fs-bridge";
 import path from "node:path";
 import { buildUCDPath } from "@luxass/unicode-utils-new";
 import { createClient } from "@ucdjs/fetch";
+import { createPathFilter } from "@ucdjs/utils";
 import defu from "defu";
-import { createPathFilter } from "../filter";
 import { flattenFilePaths } from "./helpers";
 
 export interface ValidateUCDFilesOptions {
@@ -68,7 +68,7 @@ export async function validateUCDFiles(version: string, options: ValidateUCDFile
       patterns,
       apiUrl,
     } = defu(options, {
-      fs: await import("../fs-bridge/node").then((m) => m.default).catch(() => {
+      fs: await import("@ucdjs/utils/fs-bridge/node").then((m) => m.default).catch(() => {
         throw new Error("Failed to import default file system bridge");
       }),
       patternMatcher: undefined,
@@ -192,7 +192,7 @@ export async function repairUCDFiles(
     fs,
     proxyUrl,
   } = defu(options, {
-    fs: await import("../fs-bridge/node").then((m) => m.default).catch(() => {
+    fs: await import("@ucdjs/utils/fs-bridge/node").then((m) => m.default).catch(() => {
       throw new Error("Failed to import default file system bridge");
     }),
     basePath: "./ucd-files",
