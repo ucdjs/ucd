@@ -338,11 +338,36 @@ importers:
         specifier: catalog:testing
         version: 4.0.0(vitest@3.2.4)
 
+  packages/env:
+    dependencies:
+      '@luxass/utils':
+        specifier: catalog:prod
+        version: 2.4.1
+    devDependencies:
+      '@luxass/eslint-config':
+        specifier: catalog:linting
+        version: 5.0.0(@vue/compiler-sfc@3.5.13)(eslint-plugin-format@1.0.1(eslint@9.28.0(jiti@2.4.2)))(eslint@9.28.0(jiti@2.4.2))(typescript@5.8.3)(vitest@3.2.4)
+      '@ucdjs/tsconfig':
+        specifier: workspace:*
+        version: link:../../tooling/tsconfig
+      eslint:
+        specifier: catalog:linting
+        version: 9.28.0(jiti@2.4.2)
+      publint:
+        specifier: catalog:dev
+        version: 0.3.12
+      tsdown:
+        specifier: catalog:dev
+        version: 0.12.7(publint@0.3.12)(typescript@5.8.3)
+      typescript:
+        specifier: catalog:dev
+        version: 5.8.3
+
   packages/fetch:
     dependencies:
-      '@ucdjs/utils':
+      '@ucdjs/env':
         specifier: workspace:*
-        version: link:../utils
+        version: link:../env
       openapi-fetch:
         specifier: catalog:prod
         version: 0.14.0
@@ -481,6 +506,9 @@ importers:
       '@luxass/utils':
         specifier: catalog:prod
         version: 2.4.1
+      '@ucdjs/env':
+        specifier: workspace:*
+        version: link:../env
       '@ucdjs/fetch':
         specifier: workspace:*
         version: link:../fetch
@@ -9094,7 +9122,7 @@ snapshots:
   vitest-testdirs@4.0.0(vitest@3.2.4):
     dependencies:
       testdirs: 3.0.0
-      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@22.15.2)(@vitest/ui@3.2.4)(jiti@2.4.2)(msw@2.10.1(@types/node@22.15.2)(typescript@5.8.3))(tsx@4.19.4)(yaml@2.8.0)
+      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@22.15.2)(@vitest/ui@3.2.4)(jiti@2.4.2)(msw@2.10.1(@types/node@22.15.2)(typescript@5.8.3))(tsx@4.20.3)(yaml@2.8.0)
 
   vitest@3.2.4(@types/debug@4.1.12)(@types/node@22.15.2)(@vitest/ui@3.2.4)(jiti@2.4.2)(msw@2.10.1(@types/node@22.15.2)(typescript@5.8.3))(tsx@4.19.4)(yaml@2.8.0):
     dependencies:

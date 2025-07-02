@@ -24,6 +24,10 @@
   - changed-files:
       - any-glob-to-any-file: packages/ucd-store/**
 
+"pkg: env":
+  - changed-files:
+      - any-glob-to-any-file: packages/env/**
+
 "apps: api":
   - changed-files:
       - any-glob-to-any-file: apps/api/**
