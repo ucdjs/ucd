@@ -1,5 +1,3 @@
-export { requiredEnv } from "./env";
-
 export { badRequest, customError, forbidden, internalServerError, notFound } from "./errors";
 
 export type { CustomResponseOptions, ResponseOptions } from "./errors";
