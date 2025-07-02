@@ -4,6 +4,7 @@ import { createPathFilter } from "@ucdjs/utils";
 import { HttpResponse } from "msw";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
+import { UCDJS_API_BASE_URL } from "../../src/constants";
 import { mirrorUCDFiles } from "../../src/ucd-files";
 
 describe("mirrorUCDFiles", () => {
@@ -46,7 +47,7 @@ describe("mirrorUCDFiles", () => {
     it("should return success when everything works correctly", async () => {
       const testdirPath = await testdir({});
       mockFetch([
-        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
+        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/16.0.0`, () => {
           return HttpResponse.json(mockFileEntries);
         }],
       ]);
@@ -67,10 +68,10 @@ describe("mirrorUCDFiles", () => {
     it("should handle multiple versions", async () => {
       const testdirPath = await testdir({});
       mockFetch([
-        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
+        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/16.0.0`, () => {
           return HttpResponse.json(mockFileEntries);
         }],
-        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/15.1.0", () => {
+        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.1.0`, () => {
           return HttpResponse.json([
             { name: "UnicodeData.txt", path: "UnicodeData.txt" },
             { name: "Blocks.txt", path: "Blocks.txt" },
@@ -94,7 +95,7 @@ describe("mirrorUCDFiles", () => {
       const customApiUrl = "https://custom-api.example.com";
 
       mockFetch([
-        [`GET ${customApiUrl}/api/v1/unicode-files/16.0.0`, () => {
+        [`GET ${customApiUrl}/api/v1/files/16.0.0`, () => {
           return HttpResponse.json(mockFileEntries);
         }],
       ]);
@@ -113,7 +114,7 @@ describe("mirrorUCDFiles", () => {
     it("should apply pattern filters to exclude files", async () => {
       const testdirPath = await testdir({});
       mockFetch([
-        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
+        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/16.0.0`, () => {
           return HttpResponse.json(mockFileEntries);
         }],
       ]);
@@ -133,7 +134,7 @@ describe("mirrorUCDFiles", () => {
     it("should use custom pattern matcher function", async () => {
       const testdirPath = await testdir({});
       mockFetch([
-        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
+        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/16.0.0`, () => {
           return HttpResponse.json(mockFileEntries);
         }],
       ]);
@@ -157,7 +158,7 @@ describe("mirrorUCDFiles", () => {
     it("should prioritize patternMatcher over patterns array", async () => {
       const testdirPath = await testdir({});
       mockFetch([
-        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
+        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/16.0.0`, () => {
           return HttpResponse.json(mockFileEntries);
         }],
       ]);
@@ -197,7 +198,7 @@ describe("mirrorUCDFiles", () => {
       } satisfies FileSystemBridge;
 
       mockFetch([
-        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
+        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/16.0.0`, () => {
           return HttpResponse.json(mockFileEntries);
         }],
       ]);
@@ -216,7 +217,7 @@ describe("mirrorUCDFiles", () => {
       const outputPath = await testdir({});
 
       mockFetch([
-        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
+        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/16.0.0`, () => {
           return HttpResponse.json([
             { name: "UnicodeData.txt", path: "UnicodeData.txt" },
           ]);
@@ -249,7 +250,7 @@ describe("mirrorUCDFiles", () => {
     it("should handle API errors gracefully", async () => {
       const testdirPath = await testdir({});
       mockFetch([
-        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/99.0.0", () => {
+        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/99.0.0`, () => {
           return new HttpResponse(null, { status: 404, statusText: "Not Found" });
         }],
       ]);
@@ -269,7 +270,7 @@ describe("mirrorUCDFiles", () => {
       const testdirPath = await testdir({});
 
       mockFetch([
-        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
+        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/16.0.0`, () => {
           return HttpResponse.json("not an array");
         }],
       ]);
@@ -288,10 +289,10 @@ describe("mirrorUCDFiles", () => {
       const testdirPath = await testdir({});
 
       mockFetch([
-        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
+        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/16.0.0`, () => {
           return HttpResponse.json(mockFileEntries);
         }],
-        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/99.0.0", () => {
+        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/99.0.0`, () => {
           return new HttpResponse(null, { status: 404 });
         }],
       ]);
@@ -326,7 +327,7 @@ describe("mirrorUCDFiles", () => {
       } satisfies FileSystemBridge;
 
       mockFetch([
-        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
+        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/16.0.0`, () => {
           return HttpResponse.json(mockFileEntries);
         }],
       ]);
@@ -348,7 +349,7 @@ describe("mirrorUCDFiles", () => {
     it("should handle empty patterns array", async () => {
       const testdirPath = await testdir({});
       mockFetch([
-        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
+        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/16.0.0`, () => {
           return HttpResponse.json(mockFileEntries);
         }],
       ]);
@@ -367,7 +368,7 @@ describe("mirrorUCDFiles", () => {
       const testdirPath = await testdir({});
 
       mockFetch([
-        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
+        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/16.0.0`, () => {
           return HttpResponse.json([{ name: "UnicodeData.txt", path: "UnicodeData.txt" }]);
         }],
       ]);
@@ -411,11 +412,11 @@ describe("mirrorUCDFiles", () => {
       ];
 
       mockFetch([
-        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
+        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/16.0.0`, () => {
           return HttpResponse.json(nestedFileEntries);
         }],
-        ["GET https://unicode-proxy.ucdjs.dev/16.0.0/ucd/level1/level2/level3/deep-file.txt", () => {
-          return HttpResponse.json({ name: "deep-file.txt", path: "deep-file.txt" });
+        [`GET ${UCDJS_API_BASE_URL}/api/v1/unicode-proxy/16.0.0/ucd/level1/level2/level3/deep-file.txt`, () => {
+          return new Response("deep-file.txt content");
         }],
       ]);
 
@@ -443,7 +444,7 @@ describe("mirrorUCDFiles", () => {
       ];
 
       mockFetch([
-        ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
+        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/16.0.0`, () => {
           return HttpResponse.json(entriesWithEmptyDir);
         }],
       ]);

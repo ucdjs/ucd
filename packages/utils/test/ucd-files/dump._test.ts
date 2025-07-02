@@ -165,14 +165,14 @@
 
 //     // Mock API response for validation
 //     mockFetch([
-//       ["GET https://unicode-api.luxass.dev/api/v1/unicode-files/16.0.0", () => {
+//       ["GET https://api.ucdjs.dev/api/v1/files/16.0.0", () => {
 //         return HttpResponse.json(MOCK_FILES);
 //       }],
 //       // Mock proxy responses for repair
-//       ["GET https://unicode-proxy.ucdjs.dev/16.0.0/ucd/Blocks.txt", () => {
+//       ["GET https://api.ucdjs.dev/api/v1/unicode-proxy/16.0.0/ucd/Blocks.txt", () => {
 //         return new Response("Blocks.txt content");
 //       }],
-//       ["GET https://unicode-proxy.ucdjs.dev/16.0.0/ucd/emoji/emoji-data.txt", () => {
+//       ["GET https://api.ucdjs.dev/api/v1/unicode-proxy/16.0.0/ucd/emoji/emoji-data.txt", () => {
 //         return new Response("emoji-data.txt content");
 //       }],
 //     ]);

@@ -1,12 +1,12 @@
-import type { UnicodeVersionFile } from "@luxass/unicode-utils-new/fetch";
+import type { UnicodeVersionFile } from "@ucdjs/fetch";
 import type { PathFilter } from "@ucdjs/utils";
 import type { FileSystemBridge } from "@ucdjs/utils/fs-bridge";
 import path from "node:path";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
-import { createClient } from "@luxass/unicode-utils-new/fetch";
 import { promiseRetry } from "@luxass/utils";
+import { createClient } from "@ucdjs/fetch";
 import { createPathFilter } from "@ucdjs/utils";
-import { UNICODE_API_BASE_URL, UNICODE_PROXY_URL } from "@ucdjs/utils/constants";
+import { UCDJS_API_BASE_URL, UNICODE_PROXY_URL } from "@ucdjs/utils/constants";
 import { flattenFilePaths } from "@ucdjs/utils/ucd-files";
 import defu from "defu";
 
@@ -16,16 +16,9 @@ export interface UCDStoreOptions {
   /**
    * Base URL for the Unicode API
    *
-   * @default "https://unicode-api.luxass.dev/api/v1"
+   * @default "https://api.ucdjs.dev/api/v1"
    */
   baseUrl?: string;
-
-  /**
-   * Proxy URL for the Unicode API
-   *
-   * @default "https://unicode-proxy.ucdjs.dev"
-   */
-  proxyUrl?: string;
 
   /**
    * Optional filters to apply when fetching Unicode data.
@@ -81,7 +74,6 @@ export type CleanResult = {
 
 export class UCDStore {
   public readonly baseUrl: string;
-  public readonly proxyUrl: string;
   public readonly mode: StoreMode;
   public readonly basePath?: string;
   private readonly providedVersions?: string[];
@@ -91,9 +83,8 @@ export class UCDStore {
   #fs: FileSystemBridge;
 
   constructor(options: UCDStoreOptions) {
-    const { baseUrl, globalFilters, mode, proxyUrl, fs, basePath, versions } = defu(options, {
-      baseUrl: UNICODE_API_BASE_URL,
-      proxyUrl: UNICODE_PROXY_URL,
+    const { baseUrl, globalFilters, mode, fs, basePath, versions } = defu(options, {
+      baseUrl: UCDJS_API_BASE_URL,
       globalFilters: [],
       mode: "remote" as StoreMode,
       basePath: "./ucd-files",
@@ -102,7 +93,6 @@ export class UCDStore {
 
     this.mode = mode;
     this.baseUrl = baseUrl;
-    this.proxyUrl = proxyUrl;
     this.basePath = basePath;
     this.providedVersions = versions;
     this.client = createClient(this.baseUrl);
@@ -194,7 +184,7 @@ export class UCDStore {
 
     if (this.mode === "remote") {
       const { data, error } = await promiseRetry(async () => {
-        return await this.client.GET("/api/v1/unicode-files/{version}", {
+        return await this.client.GET("/api/v1/files/{version}", {
           params: { path: { version } },
         });
       }, { retries: 3 });

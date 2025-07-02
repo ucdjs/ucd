@@ -1,5 +1,5 @@
 import type { FileSystemBridge } from "@ucdjs/utils/fs-bridge";
-import { UNICODE_API_BASE_URL, UNICODE_PROXY_URL } from "@ucdjs/utils/constants";
+import { UCDJS_API_BASE_URL } from "@ucdjs/utils/constants";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createLocalUCDStore, createUCDStore } from "../src/store";
 
@@ -30,21 +30,17 @@ describe("UCD Store - Common", () => {
       });
 
       expect(store.mode).toBe("local");
-      expect(store.baseUrl).toBe(UNICODE_API_BASE_URL);
-      expect(store.proxyUrl).toBe(UNICODE_PROXY_URL);
+      expect(store.baseUrl).toBe(UCDJS_API_BASE_URL);
     });
 
     it("should create instance with custom options", async () => {
       const customBaseUrl = "https://custom-base-url.com";
-      const customProxyUrl = "https://custom-proxy-url.com";
       const store = await createLocalUCDStore({
         fs: _mockFs,
         baseUrl: customBaseUrl,
-        proxyUrl: customProxyUrl,
       });
 
       expect(store.baseUrl).toBe(customBaseUrl);
-      expect(store.proxyUrl).toBe(customProxyUrl);
     });
 
     it("should set mode correctly", async () => {
