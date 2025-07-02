@@ -18,7 +18,7 @@ V1_UNICODE_PROXY_ROUTER.openAPIRegistry.registerPath(UNICODE_PROXY_STAT_WILDCARD
 /**
  * @internal
  */
-async function internalProxyRoute(c: Context) {
+async function internalProxyRoute(c: Context, extraPath: string = ""): Promise<Response> {
   try {
     const path = c.req.param("wildcard")?.trim() || "";
 
@@ -27,7 +27,7 @@ async function internalProxyRoute(c: Context) {
         message: "Invalid path: Path cannot contain '..' or '//' segments.",
       });
     }
-    const url = path !== "" ? `${c.env.PROXY_ENDPOINT}/${path}` : c.env.PROXY_ENDPOINT;
+    const url = path !== "" ? `${c.env.PROXY_ENDPOINT}/${extraPath}${path}` : c.env.PROXY_ENDPOINT;
     let res: Response;
     if (c.env.USE_SVC_BINDING) {
       const req = new Request(url);
@@ -60,10 +60,10 @@ async function internalProxyRoute(c: Context) {
   }
 }
 
-V1_UNICODE_PROXY_ROUTER.get("/:wildcard{.*}?", async (c) => {
-  return internalProxyRoute(c);
+V1_UNICODE_PROXY_ROUTER.get("/__stat/:wildcard{.*}?", async (c) => {
+  return internalProxyRoute(c, "/__stat/");
 });
 
-V1_UNICODE_PROXY_ROUTER.get("/__stat/:wildcard{.*}?", async (c) => {
+V1_UNICODE_PROXY_ROUTER.get("/:wildcard{.*}?", async (c) => {
   return internalProxyRoute(c);
 });
