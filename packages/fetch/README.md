@@ -41,12 +41,12 @@ console.log('File info:', fileInfo);
 import { createClient } from '@ucdjs/fetch';
 
 // Create client with custom UCD.js API instance
-const customClient = createClient('https://staging-api.ucdjs.dev');
+const customClient = createClient('https://preview.api.ucdjs.dev');
 
 // Use the custom client
 const { data, error } = await customClient.GET('/api/v1/unicode-versions');
 if (data) {
-  console.log('Unicode versions from staging API:', data);
+  console.log('Unicode versions from preview API:', data);
 }
 ```
 
