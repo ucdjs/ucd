@@ -1,6 +1,6 @@
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 import type { GetEntryByPathResult } from "./lib";
-import { customError, internalServerError, notFound } from "@ucdjs/worker-shared";
+import { customError, internalServerError, notFound, setupCors } from "@ucdjs/worker-shared";
 import { WorkerEntrypoint } from "cloudflare:workers";
 import { Hono } from "hono";
 import { cache } from "hono/cache";
@@ -19,6 +19,8 @@ const app = new Hono<{
 }>({
   strict: false,
 });
+
+setupCors(app);
 
 app.use("*", async (c, next) => {
   const key
