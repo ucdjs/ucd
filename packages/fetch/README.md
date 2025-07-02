@@ -3,12 +3,70 @@
 [![npm version][npm-version-src]][npm-version-href]
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
 
-A simple and efficient fetch client for api.ucdjs.dev
+A TypeScript-first HTTP client for interacting with the UCD.js API, providing type-safe methods for fetching Unicode character data.
 
 ## Installation
 
 ```bash
 npm install @ucdjs/fetch
+```
+
+## Usage
+
+### Basic Usage
+
+```typescript
+import { client } from '@ucdjs/fetch';
+
+// Get Unicode versions
+const { data: versions, error } = await client.GET('/api/v1/unicode-versions');
+if (error) {
+  console.error('Error:', error.message);
+} else {
+  console.log('Available versions:', versions);
+}
+
+// Access Unicode data files via proxy
+const { data: fileInfo } = await client.GET('/api/v1/unicode-proxy/{wildcard}', {
+  params: {
+    path: { wildcard: 'latest/ucd.all.json' }
+  }
+});
+console.log('File info:', fileInfo);
+```
+
+### Custom Client Configuration
+
+```typescript
+import { createClient } from '@ucdjs/fetch';
+
+// Create client with custom base URL
+const customClient = createClient('https://custom-api.example.com');
+
+// Use the custom client
+const { data, error } = await customClient.GET('/api/v1/unicode-versions');
+if (data) {
+  console.log('Unicode versions from custom API:', data);
+}
+```
+
+### Working with Binary Data
+
+```typescript
+import { client } from '@ucdjs/fetch';
+
+// Fetch binary Unicode data file
+const { data: binaryData } = await client.GET('/api/v1/unicode-proxy/{wildcard}', {
+  params: {
+    path: { wildcard: 'latest/UnicodeData.txt' }
+  },
+  parseAs: 'arrayBuffer'
+});
+
+if (binaryData) {
+  const text = Buffer.from(binaryData).toString('utf-8');
+  console.log('Unicode data:', text.substring(0, 100) + '...');
+}
 ```
 
 ## 📄 License
