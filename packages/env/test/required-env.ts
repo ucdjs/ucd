@@ -1,5 +1,5 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
-import { requiredEnv } from "../src/env";
+import { requiredEnv } from "../src/required-env";
 
 describe("requiredEnv", () => {
   it("should return validated env when all required keys are present", () => {

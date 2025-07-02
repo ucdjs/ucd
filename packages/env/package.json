@@ -1,6 +1,6 @@
 {
-  "name": "@ucdjs/utils",
-  "version": "0.1.0",
+  "name": "@ucdjs/env",
+  "version": "0.0.0",
   "type": "module",
   "author": {
     "name": "Lucas Nørgård",
@@ -13,17 +13,13 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ucdjs/ucd.git",
-    "directory": "packages/utils"
+    "directory": "packages/env"
   },
   "bugs": {
     "url": "https://github.com/ucdjs/ucd/issues"
   },
   "exports": {
     ".": "./dist/index.js",
-    "./fs-bridge": "./dist/fs-bridge.js",
-    "./fs-bridge/http": "./dist/fs-bridge/http.js",
-    "./fs-bridge/node": "./dist/fs-bridge/node.js",
-    "./ucd-files": "./dist/ucd-files.js",
     "./package.json": "./package.json"
   },
   "main": "./dist/index.js",
@@ -40,23 +36,15 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@luxass/unicode-utils-new": "catalog:prod",
-    "@luxass/utils": "catalog:prod",
-    "@ucdjs/env": "workspace:*",
-    "@ucdjs/fetch": "workspace:*",
-    "defu": "catalog:prod",
-    "memfs": "catalog:prod",
-    "picomatch": "catalog:prod"
+    "@luxass/utils": "catalog:prod"
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:linting",
-    "@types/picomatch": "catalog:dev",
     "@ucdjs/tsconfig": "workspace:*",
     "eslint": "catalog:linting",
     "publint": "catalog:dev",
     "tsdown": "catalog:dev",
-    "typescript": "catalog:dev",
-    "vitest-testdirs": "catalog:testing"
+    "typescript": "catalog:dev"
   },
   "publishConfig": {
     "access": "public"

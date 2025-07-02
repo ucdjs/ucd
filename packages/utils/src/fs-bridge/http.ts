@@ -1,5 +1,5 @@
 import type { FileSystemBridge } from "../fs-bridge";
-import { UNICODE_PROXY_URL } from "../constants";
+import { UNICODE_PROXY_URL } from "@ucdjs/env";
 import { defineFileSystemBridge } from "../fs-bridge";
 
 export interface HTTPFileSystemBridgeOptions {

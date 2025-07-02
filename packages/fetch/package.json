@@ -39,7 +39,7 @@
     "generate:client:local": "npx openapi-typescript http://localhost:8787/openapi.json -o ./src/.generated/api.d.ts"
   },
   "dependencies": {
-    "@ucdjs/utils": "workspace:*",
+    "@ucdjs/env": "workspace:*",
     "openapi-fetch": "catalog:prod"
   },
   "devDependencies": {
