@@ -12,3 +12,5 @@ export type {
   RemoteUCDStoreOptions,
   UCDStoreOptions,
 } from "./store";
+
+export * from "./ucd-files";

@@ -4,6 +4,7 @@ import { customError, internalServerError, notFound, setupCors } from "@ucdjs/wo
 import { WorkerEntrypoint } from "cloudflare:workers";
 import { Hono } from "hono";
 import { cache } from "hono/cache";
+import { createMiddleware } from "hono/factory";
 import { HTTPException } from "hono/http-exception";
 import { getEntryByPath, parseUnicodeDirectory, ProxyFetchError } from "./lib";
 
@@ -16,6 +17,9 @@ export interface ApiError {
 
 const app = new Hono<{
   Bindings: CloudflareBindings;
+  Variables: {
+    entry?: GetEntryByPathResult;
+  };
 }>({
   strict: false,
 });
@@ -44,82 +48,37 @@ app.get("/favicon.ico", (c) => {
 
 // This route is used by the HTTPFileSystemBridge.
 // See https://github.com/ucdjs/ucd/blob/a26f975776218e6db3b64c3e5a3036fd05f75ebd/packages/utils/src/fs-bridge/http.ts
-app.get("/.ucd-store.json", cache({
-  cacheName: "unicode-proxy-store",
-  cacheControl: "max-age=3600",
-}), async (c) => {
-  try {
-    const result = await getEntryByPath();
-
-    if (result.type !== "directory") {
-      throw new HTTPException(500, {
-        message: "Failed to fetch Unicode directory",
-      });
-    }
-
-    const versions = result.files.filter((file) => {
-      const match = file.name.match(/^(\d+)\.(\d+)\.(\d+)$/);
-      return match && match.length === 4;
-    }).map(({ name, path }) => ({
-      version: name,
-      path,
-    }));
-
-    return c.json(versions);
-  } catch (err) {
-    let status: ContentfulStatusCode = 500;
-    let message = "Internal Server Error";
-    if (err instanceof ProxyFetchError) {
-      status = err.status || 502;
-
-      if (err.status === 404) {
-        message = "Not Found";
-      } else {
-        message = err.message || "Failed to fetch Unicode directory";
-      }
-    }
-
-    throw new HTTPException(status, {
-      message,
-    });
-  }
-});
-
 app.get(
-  "/:path{.*}?",
+  "/.ucd-store.json",
   cache({
-    cacheName: "unicode-proxy",
-    cacheControl: "max-age=604800, stale-while-revalidate=86400",
+    cacheName: "unicode-proxy-store",
+    cacheControl: "max-age=3600",
   }),
   async (c) => {
     try {
-      const path = c.req.param("path") || "";
+      const result = await getEntryByPath();
 
-      if (path.startsWith("..") || path.includes("//")) {
-        throw new HTTPException(400, {
-          message: "Invalid path",
+      if (result.type !== "directory") {
+        throw new HTTPException(500, {
+          message: "Failed to fetch Unicode directory",
         });
       }
 
-      const result = await getEntryByPath(path);
+      const versions = result.files.filter((file) => {
+        const match = file.name.match(/^(\d+)\.(\d+)\.(\d+)$/);
+        return match && match.length === 4;
+      }).map(({ name, path }) => ({
+        version: name,
+        path,
+      }));
 
-      if (result.type === "directory") {
-        c.header("Last-Modified", result.headers.get("Last-Modified") ?? "");
-        return c.json(result.files);
-      }
-
-      return c.newResponse(result.content, 200, {
-        "Last-Modified": result.headers.get("Last-Modified") ?? "",
-        "Content-Type": result.headers.get("Content-Type") ?? "",
-        "Content-Length": result.headers.get("Content-Length") ?? "",
-        "Content-Disposition": result.headers.get("Content-Disposition") ?? "",
-      });
+      return c.json(versions);
     } catch (err) {
       let status: ContentfulStatusCode = 500;
       let message = "Internal Server Error";
-
       if (err instanceof ProxyFetchError) {
         status = err.status || 502;
+
         if (err.status === 404) {
           message = "Not Found";
         } else {
@@ -131,6 +90,88 @@ app.get(
         message,
       });
     }
+  },
+);
+
+const entryMiddleware = createMiddleware(async (c, next) => {
+  const path = c.req.param("path") || "";
+
+  if (path.startsWith("..") || path.includes("//")) {
+    throw new HTTPException(400, {
+      message: "Invalid path",
+    });
+  }
+
+  try {
+    const result = await getEntryByPath(path);
+    c.set("entry", result);
+  } catch (err) {
+    let status: ContentfulStatusCode = 500;
+    let message = "Internal Server Error";
+
+    if (err instanceof ProxyFetchError) {
+      status = err.status || 502;
+      if (err.status === 404) {
+        message = "Not Found";
+      } else {
+        message = err.message || "Failed to fetch Unicode directory";
+      }
+    }
+
+    throw new HTTPException(status, {
+      message,
+    });
+  }
+
+  await next();
+});
+
+app.get(
+  "/__stat/:path{.*}?",
+  cache({
+    cacheName: "unicode-proxy-stat",
+    cacheControl: "max-age=604800, stale-while-revalidate=86400",
+  }),
+  entryMiddleware,
+  async (c) => {
+    const result = c.get("entry") as GetEntryByPathResult;
+    if (result.type === "directory") {
+      return c.json({
+        type: "directory",
+        mtime: result.headers.get("Last-Modified") || new Date().toISOString(),
+        size: 0,
+      });
+    }
+
+    return c.json({
+      type: "file",
+      mtime: result.headers.get("Last-Modified") || new Date().toISOString(),
+      size: Number.parseInt(result.headers.get("Content-Length") || "0", 10),
+    });
+  },
+);
+
+app.get(
+  "/:path{.*}?",
+  cache({
+    cacheName: "unicode-proxy",
+    cacheControl: "max-age=604800, stale-while-revalidate=86400",
+  }),
+  entryMiddleware,
+  async (c) => {
+    const result = c.get("entry") as GetEntryByPathResult;
+
+    if (result.type === "directory") {
+      c.header("Last-Modified", result.headers.get("Last-Modified") ?? "");
+      return c.json(result.files);
+    }
+
+    return c.newResponse(result.content, 200, {
+      "Last-Modified": result.headers.get("Last-Modified") ?? "",
+      "Content-Type": result.headers.get("Content-Type") ?? "",
+      "Content-Length": result.headers.get("Content-Length") ?? "",
+      "Content-Disposition": result.headers.get("Content-Disposition") ?? "",
+    });
   },
 );
 

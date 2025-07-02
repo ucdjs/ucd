@@ -1,8 +1,6 @@
 import type { Hono } from "hono";
 
-export function setupCors<TBindings>(app: Hono<{
-  Bindings: TBindings & {};
-}>): void {
+export function setupCors<TEnv extends object>(app: Hono<TEnv>): void {
   app.use("*", (c, next) => {
     // @ts-expect-error Bindings is not defined in the Hono type
     const env = c.env.ENVIRONMENT || "";
