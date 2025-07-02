@@ -1,20 +1,18 @@
 import type { Hono } from "hono";
 
-export function setupCors(app: Hono<{
-  Bindings: object;
+export function setupCors<TBindings>(app: Hono<{
+  Bindings: TBindings & {};
 }>): void {
   app.use("*", (c, next) => {
-    if (!("ENVIRONMENT" in c.env)) {
-      throw new Error("ENVIRONMENT is not defined in the environment variables.");
-    }
-
+    // @ts-expect-error Bindings is not defined in the Hono type
+    const env = c.env.ENVIRONMENT || "";
     const allowedOrigins = ["https://ucdjs.dev", "https://www.ucdjs.dev"];
 
-    if (c.env.ENVIRONMENT === "local") {
+    if (env === "local") {
       allowedOrigins.push("http://localhost:3000", "http://localhost:8787");
     }
 
-    if (c.env.ENVIRONMENT === "preview") {
+    if (env === "preview") {
       allowedOrigins.push("https://preview.api.ucdjs.dev", "https://preview.unicode-proxy.ucdjs.dev");
     }
 
