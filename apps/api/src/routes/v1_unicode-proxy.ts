@@ -18,7 +18,7 @@ V1_UNICODE_PROXY_ROUTER.openAPIRegistry.registerPath(UNICODE_PROXY_STAT_WILDCARD
 /**
  * @internal
  */
-async function internalProxyRoute(c: Context, extraPath: string = ""): Promise<Response> {
+async function internalProxyRoute(c: Context<HonoEnv>, extraPath: string = ""): Promise<Response> {
   try {
     const path = c.req.param("wildcard")?.trim() || "";
 
@@ -29,7 +29,7 @@ async function internalProxyRoute(c: Context, extraPath: string = ""): Promise<R
     }
     const url = path !== "" ? `${c.env.PROXY_ENDPOINT}/${extraPath}${path}` : c.env.PROXY_ENDPOINT;
     let res: Response;
-    if (c.env.USE_SVC_BINDING) {
+    if (c.env.USE_SVC_BINDING === "true") {
       const req = new Request(url);
       res = await c.env.UNICODE_PROXY.fetch(req);
     } else {
@@ -61,7 +61,7 @@ async function internalProxyRoute(c: Context, extraPath: string = ""): Promise<R
 }
 
 V1_UNICODE_PROXY_ROUTER.get("/__stat/:wildcard{.*}?", async (c) => {
-  return internalProxyRoute(c, "/__stat/");
+  return internalProxyRoute(c, "__stat/");
 });
 
 V1_UNICODE_PROXY_ROUTER.get("/:wildcard{.*}?", async (c) => {
