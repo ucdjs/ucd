@@ -45,10 +45,10 @@ export interface ResponseOptions {
  * return badRequest(c, { message: "Invalid request parameters" });
  * ```
  */
-export function badRequest(contextOrOptions: Context | ResponseOptions = {}, options: Omit<ResponseOptions, 'path'> = {}): Response & TypedResponse<ApiError, 400, "json"> {
+export function badRequest(contextOrOptions: Context | ResponseOptions = {}, options: Omit<ResponseOptions, "path"> = {}): Response & TypedResponse<ApiError, 400, "json"> {
   let finalOptions: ResponseOptions;
-  
-  if ('req' in contextOrOptions) {
+
+  if ("req" in contextOrOptions) {
     // It's a Hono context
     const url = new URL(contextOrOptions.req.url);
     finalOptions = {
@@ -98,10 +98,10 @@ export function badRequest(contextOrOptions: Context | ResponseOptions = {}, opt
  * return forbidden(c, { message: "Access denied to this resource" });
  * ```
  */
-export function forbidden(contextOrOptions: Context | ResponseOptions = {}, options: Omit<ResponseOptions, 'path'> = {}): Response & TypedResponse<ApiError, 403, "json"> {
+export function forbidden(contextOrOptions: Context | ResponseOptions = {}, options: Omit<ResponseOptions, "path"> = {}): Response & TypedResponse<ApiError, 403, "json"> {
   let finalOptions: ResponseOptions;
-  
-  if ('req' in contextOrOptions) {
+
+  if ("req" in contextOrOptions) {
     // It's a Hono context
     const url = new URL(contextOrOptions.req.url);
     finalOptions = {
@@ -151,10 +151,10 @@ export function forbidden(contextOrOptions: Context | ResponseOptions = {}, opti
  * return notFound(c, { message: "User not found" });
  * ```
  */
-export function notFound(contextOrOptions: Context | ResponseOptions = {}, options: Omit<ResponseOptions, 'path'> = {}): Response & TypedResponse<ApiError, 404, "json"> {
+export function notFound(contextOrOptions: Context | ResponseOptions = {}, options: Omit<ResponseOptions, "path"> = {}): Response & TypedResponse<ApiError, 404, "json"> {
   let finalOptions: ResponseOptions;
-  
-  if ('req' in contextOrOptions) {
+
+  if ("req" in contextOrOptions) {
     // It's a Hono context
     const url = new URL(contextOrOptions.req.url);
     finalOptions = {
@@ -204,10 +204,10 @@ export function notFound(contextOrOptions: Context | ResponseOptions = {}, optio
  * return internalServerError(c, { message: "Database connection failed" });
  * ```
  */
-export function internalServerError(contextOrOptions: Context | ResponseOptions = {}, options: Omit<ResponseOptions, 'path'> = {}): Response & TypedResponse<ApiError, 500, "json"> {
+export function internalServerError(contextOrOptions: Context | ResponseOptions = {}, options: Omit<ResponseOptions, "path"> = {}): Response & TypedResponse<ApiError, 500, "json"> {
   let finalOptions: ResponseOptions;
-  
-  if ('req' in contextOrOptions) {
+
+  if ("req" in contextOrOptions) {
     // It's a Hono context
     const url = new URL(contextOrOptions.req.url);
     finalOptions = {
@@ -299,8 +299,8 @@ export type CustomResponseOptionsWithContext = Omit<CustomResponseOptions, "path
  */
 export function customError(contextOrOptions: Context | CustomResponseOptions, options?: CustomResponseOptionsWithContext): Response {
   let finalOptions: CustomResponseOptions;
-  
-  if ('req' in contextOrOptions) {
+
+  if ("req" in contextOrOptions) {
     // It's a Hono context
     if (!options) {
       throw new Error("Options parameter is required when using Hono context");
