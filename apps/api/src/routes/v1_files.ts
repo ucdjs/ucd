@@ -19,14 +19,14 @@ V1_FILES_ROUTER.openapi(GET_UNICODE_FILES_BY_VERSION_ROUTE, async (c) => {
     const mappedVersion = resolveUCDVersion(version);
 
     if (!mappedVersion) {
-      return badRequest({
+      return badRequest(c, {
         message: "Invalid Unicode version",
       });
     }
 
     if (!UNICODE_VERSION_METADATA.map((v) => v.version)
       .includes(version as typeof UNICODE_VERSION_METADATA[number]["version"])) {
-      return badRequest({
+      return badRequest(c, {
         message: "Invalid Unicode version",
       });
     }
@@ -40,7 +40,7 @@ V1_FILES_ROUTER.openapi(GET_UNICODE_FILES_BY_VERSION_ROUTE, async (c) => {
     return c.json(result, 200);
   } catch (error) {
     console.error("Error processing directory:", error);
-    return internalServerError({
+    return internalServerError(c, {
       message: "Failed to fetch file mappings",
     });
   }

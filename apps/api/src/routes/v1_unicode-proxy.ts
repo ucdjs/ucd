@@ -23,7 +23,7 @@ async function internalProxyRoute(c: Context<HonoEnv>, extraPath: string = ""): 
     const path = c.req.param("wildcard")?.trim() || "";
 
     if (path.startsWith("..") || path.includes("//")) {
-      return badRequest({
+      return badRequest(c, {
         message: "Invalid path: Path cannot contain '..' or '//' segments.",
       });
     }
@@ -38,11 +38,11 @@ async function internalProxyRoute(c: Context<HonoEnv>, extraPath: string = ""): 
 
     if (!res.ok) {
       if (res.status === 404) {
-        return notFound({
+        return notFound(c, {
           message: `Resource not found at ${path}`,
         });
       }
-      return internalServerError({
+      return internalServerError(c, {
         message: `Proxy request failed with reason: ${res.statusText}`,
       });
     }
@@ -54,7 +54,7 @@ async function internalProxyRoute(c: Context<HonoEnv>, extraPath: string = ""): 
     });
   } catch (err) {
     console.error("Proxy error:", err);
-    return internalServerError({
+    return internalServerError(c, {
       message: `Failed to proxy request: ${err instanceof Error ? err.message : "Unknown error"}`,
     });
   }
