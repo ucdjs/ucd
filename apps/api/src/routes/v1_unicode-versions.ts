@@ -17,7 +17,7 @@ V1_UNICODE_VERSIONS_ROUTER.openapi(LIST_ALL_UNICODE_VERSIONS_ROUTE, async (c) =>
   try {
     const response = await fetch("https://www.unicode.org/versions/enumeratedversions.html");
     if (!response.ok) {
-      return internalServerError({
+      return internalServerError(c, {
         message: "Failed to fetch Unicode versions",
       });
     }
@@ -77,7 +77,7 @@ V1_UNICODE_VERSIONS_ROUTER.openapi(LIST_ALL_UNICODE_VERSIONS_ROUTE, async (c) =>
     }
 
     if (versions.length === 0) {
-      return notFound({
+      return notFound(c, {
         message: "No Unicode versions found",
       });
     }
@@ -95,7 +95,7 @@ V1_UNICODE_VERSIONS_ROUTER.openapi(LIST_ALL_UNICODE_VERSIONS_ROUTE, async (c) =>
     return c.json(versions, 200);
   } catch (error) {
     console.error("Error fetching Unicode versions:", error);
-    return internalServerError();
+    return internalServerError(c);
   }
 });
 
