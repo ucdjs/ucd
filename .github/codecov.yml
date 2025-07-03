@@ -1,0 +1,29 @@
+flags:
+  apps/api:
+    paths:
+      - apps/api/**/*
+    carryforward: false
+  apps/proxy:
+    paths:
+      - apps/proxy/**/*
+    carryforward: true
+  cli:
+    paths:
+      - packages/cli/**/*
+    carryforward: true
+  utils:
+    paths:
+      - packages/utils/**/*
+    carryforward: true
+  ucd-store:
+    paths:
+      - packages/ucd-store/**/*
+    carryforward: true
+  env:
+    paths:
+      - packages/env/**/*
+    carryforward: true
+  worker-shared:
+    paths:
+      - packages/worker-shared/**/*
+    carryforward: true
