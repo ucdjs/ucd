@@ -1,7 +1,16 @@
+import type { Context } from "hono";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { badRequest, customError, forbidden, internalServerError, notFound } from "../src";
 
 const mockDate = new Date("2023-06-15T10:30:00.000Z");
+
+function createMockContext(url: string): Context {
+  return {
+    req: {
+      url,
+    },
+  } as Context;
+}
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -69,6 +78,48 @@ describe("badRequest", () => {
       timestamp: "2023-06-15T10:30:00.000Z",
     });
   });
+
+  it("should return 400 response with Hono context", async () => {
+    const context = createMockContext("https://example.com/api/users");
+    const response = badRequest(context);
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body).toEqual({
+      path: "/api/users",
+      message: "Bad request",
+      status: 400,
+      timestamp: "2023-06-15T10:30:00.000Z",
+    });
+  });
+
+  it("should return 400 response with Hono context and custom message", async () => {
+    const context = createMockContext("https://example.com/api/users/123");
+    const response = badRequest(context, { message: "Invalid user ID" });
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body).toEqual({
+      path: "/api/users/123",
+      message: "Invalid user ID",
+      status: 400,
+      timestamp: "2023-06-15T10:30:00.000Z",
+    });
+  });
+
+  it("should return 400 response with Hono context and custom headers", async () => {
+    const context = createMockContext("https://example.com/api/validate");
+    const response = badRequest(context, {
+      message: "Validation failed",
+      headers: { "X-Request-ID": "abc123" },
+    });
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(response.headers.get("X-Request-ID")).toBe("abc123");
+    expect(body.path).toBe("/api/validate");
+    expect(body.message).toBe("Validation failed");
+  });
 });
 
 describe("forbidden", () => {
@@ -107,6 +158,30 @@ describe("forbidden", () => {
     const response = forbidden({ headers: customHeaders });
 
     expect(response.headers.get("WWW-Authenticate")).toBe("Bearer");
+  });
+
+  it("should return 403 response with Hono context", async () => {
+    const context = createMockContext("https://example.com/api/admin");
+    const response = forbidden(context);
+    const body = await response.json();
+
+    expect(response.status).toBe(403);
+    expect(body).toEqual({
+      path: "/api/admin",
+      message: "Forbidden",
+      status: 403,
+      timestamp: "2023-06-15T10:30:00.000Z",
+    });
+  });
+
+  it("should return 403 response with Hono context and custom message", async () => {
+    const context = createMockContext("https://example.com/api/admin/users");
+    const response = forbidden(context, { message: "Access denied to admin area" });
+    const body = await response.json();
+
+    expect(response.status).toBe(403);
+    expect(body.path).toBe("/api/admin/users");
+    expect(body.message).toBe("Access denied to admin area");
   });
 });
 
@@ -155,6 +230,30 @@ describe("notFound", () => {
     expect(body.message).toBe("Resource not found");
     expect(body.path).toBe("/api/resources/abc123");
   });
+
+  it("should return 404 response with Hono context", async () => {
+    const context = createMockContext("https://example.com/api/users/999");
+    const response = notFound(context);
+    const body = await response.json();
+
+    expect(response.status).toBe(404);
+    expect(body).toEqual({
+      path: "/api/users/999",
+      message: "Not found",
+      status: 404,
+      timestamp: "2023-06-15T10:30:00.000Z",
+    });
+  });
+
+  it("should return 404 response with Hono context and custom message", async () => {
+    const context = createMockContext("https://example.com/api/products/abc123");
+    const response = notFound(context, { message: "Product not found" });
+    const body = await response.json();
+
+    expect(response.status).toBe(404);
+    expect(body.path).toBe("/api/products/abc123");
+    expect(body.message).toBe("Product not found");
+  });
 });
 
 describe("internalServerError", () => {
@@ -193,6 +292,30 @@ describe("internalServerError", () => {
     const response = internalServerError({ headers: customHeaders });
 
     expect(response.headers.get("Retry-After")).toBe("60");
+  });
+
+  it("should return 500 response with Hono context", async () => {
+    const context = createMockContext("https://example.com/api/database");
+    const response = internalServerError(context);
+    const body = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(body).toEqual({
+      path: "/api/database",
+      message: "Internal server error",
+      status: 500,
+      timestamp: "2023-06-15T10:30:00.000Z",
+    });
+  });
+
+  it("should return 500 response with Hono context and custom message", async () => {
+    const context = createMockContext("https://example.com/api/users/sync");
+    const response = internalServerError(context, { message: "Database sync failed" });
+    const body = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(body.path).toBe("/api/users/sync");
+    expect(body.message).toBe("Database sync failed");
   });
 });
 
@@ -266,5 +389,90 @@ describe("custom error handling", () => {
     expect(body.message).toBe("Unprocessable Entity");
     expect(body.path).toBe("/api/resources/abc123");
     expect(response.headers.get("X-Error-Detail")).toBe("Invalid input");
+  });
+
+  it("should return custom error with Hono context", async () => {
+    const context = createMockContext("https://example.com/api/teapot");
+    const response = customError(context, {
+      status: 418,
+      message: "I'm a teapot",
+    });
+    const body = await response.json();
+
+    expect(response.status).toBe(418);
+    expect(body).toEqual({
+      path: "/api/teapot",
+      message: "I'm a teapot",
+      status: 418,
+      timestamp: "2023-06-15T10:30:00.000Z",
+    });
+  });
+
+  it("should return custom error with Hono context and headers", async () => {
+    const context = createMockContext("https://example.com/api/rate-limit");
+    const response = customError(context, {
+      status: 429,
+      message: "Too Many Requests",
+      headers: { "Retry-After": "3600" },
+    });
+    const body = await response.json();
+
+    expect(response.status).toBe(429);
+    expect(body.path).toBe("/api/rate-limit");
+    expect(body.message).toBe("Too Many Requests");
+    expect(response.headers.get("Retry-After")).toBe("3600");
+  });
+
+  it("should throw error when context is provided without options", () => {
+    const context = createMockContext("https://example.com/api/test");
+
+    expect(() => {
+      customError(context);
+    }).toThrow("Options parameter is required when using Hono context");
+  });
+});
+
+describe("hono context integration", () => {
+  it("should handle URLs with query parameters", async () => {
+    const context = createMockContext("https://example.com/api/users?filter=active&page=2");
+    const response = badRequest(context, { message: "Invalid query parameters" });
+    const body = await response.json();
+
+    expect(body.path).toBe("/api/users");
+    expect(body.message).toBe("Invalid query parameters");
+  });
+
+  it("should handle URLs with fragments", async () => {
+    const context = createMockContext("https://example.com/api/docs#section-1");
+    const response = notFound(context);
+    const body = await response.json();
+
+    expect(body.path).toBe("/api/docs");
+  });
+
+  it("should handle complex nested paths", async () => {
+    const context = createMockContext("https://example.com/api/v1/users/123/posts/456/comments");
+    const response = forbidden(context, { message: "Access denied to nested resource" });
+    const body = await response.json();
+
+    expect(body.path).toBe("/api/v1/users/123/posts/456/comments");
+    expect(body.message).toBe("Access denied to nested resource");
+  });
+
+  it("should handle root path", async () => {
+    const context = createMockContext("https://example.com/");
+    const response = internalServerError(context);
+    const body = await response.json();
+
+    expect(body.path).toBe("/");
+  });
+
+  it("should handle paths with special characters", async () => {
+    const context = createMockContext("https://example.com/api/files/my%20file.txt");
+    const response = notFound(context, { message: "File not found" });
+    const body = await response.json();
+
+    expect(body.path).toBe("/api/files/my%20file.txt");
+    expect(body.message).toBe("File not found");
   });
 });
