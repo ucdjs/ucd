@@ -201,38 +201,79 @@ describe("Remote UCD Store", () => {
   });
 
   describe("file tree operations", () => {
-    describe("getFileTree", () => {
-      it("should fetch file tree from remote API", async () => {
-        // Test API call and response processing for file tree
-      });
+    const mockFiles = [
+      {
+        type: "file",
+        name: "ArabicShaping.txt",
+        path: "/ArabicShaping.txt",
+        lastModified: 1644920820000,
+      },
+      {
+        type: "file",
+        name: "BidiBrackets.txt",
+        path: "/BidiBrackets.txt",
+        lastModified: 1651584360000,
+      },
+      {
+        type: "file",
+        name: "BidiCharacterTest.txt",
+        path: "/BidiCharacterTest.txt",
+        lastModified: 1651584300000,
+      },
+      {
+        type: "file",
+        name: "BidiMirroring.txt",
+        path: "/BidiMirroring.txt",
+        lastModified: 1651584300000,
+      },
+    ];
 
-      it("should handle API response with nested file structure", async () => {
-        // Test processing of nested directory structure from API
-      });
+    it("should fetch file tree from remote API", async () => {
+      mockFetch([
+        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
+          return mockResponses.json(mockFiles);
+        }],
+      ]);
 
-      it("should apply filters to remote file tree", async () => {
-        // Test that global filters are applied to file tree from API
-      });
+      const store = await createRemoteUCDStore();
 
-      it("should apply extra filters to remote file tree", async () => {
-        // Test that additional filters are applied correctly
-      });
+      expect(store).toBeDefined();
+      const fileTree = await store.getFileTree("15.0.0");
 
-      it("should handle empty file tree response", async () => {
-        // Test behavior when API returns empty file tree
-      });
+      expect(fileTree).toBeDefined();
+      expect(fileTree.length).toBe(4);
+      expect(fileTree).toEqual(mockFiles.map((file) => ({
+        name: file.name,
+        path: file.path,
+      })));
+    });
 
-      it("should throw error for non-existent version", async () => {
-        // Test error when requesting file tree for invalid version
-      });
+    it("should handle API response with nested file structure", async () => {
 
-      it("should handle API errors with retry logic", async () => {
-        // Test retry mechanism for API failures
-      });
+    });
 
-      it("should handle network timeout errors", async () => {
-        // Test handling of network timeout during API calls
-      });
+    it("should apply filters to remote file tree", async () => {
+      // Test that global filters are applied to file tree from API
+    });
+
+    it("should apply extra filters to remote file tree", async () => {
+      // Test that additional filters are applied correctly
+    });
+
+    it("should handle empty file tree response", async () => {
+      // Test behavior when API returns empty file tree
+    });
+
+    it("should throw error for non-existent version", async () => {
+      // Test error when requesting file tree for invalid version
+    });
+
+    it("should handle API errors with retry logic", async () => {
+      // Test retry mechanism for API failures
+    });
+
+    it("should handle network timeout errors", async () => {
+      // Test handling of network timeout during API calls
     });
   });
 
@@ -303,7 +344,18 @@ describe("Remote UCD Store", () => {
   // eslint-disable-next-line test/prefer-lowercase-title
   describe("HTTP filesystem integration", () => {
     it("should use HTTP filesystem bridge for file operations", async () => {
-      // Test that HTTP filesystem bridge is used for remote operations
+      const store = await createRemoteUCDStore({
+        fs: mockFs,
+      });
+
+      expect(store.fs).toBeDefined();
+      expect(store.fs.exists).toBeDefined();
+      expect(store.fs.read).toBeDefined();
+      expect(store.fs.write).toBeDefined();
+      expect(store.fs.listdir).toBeDefined();
+      expect(store.fs.mkdir).toBeDefined();
+      expect(store.fs.stat).toBeDefined();
+      expect(store.fs.rm).toBeDefined();
     });
 
     it("should handle HTTP caching correctly", async () => {
