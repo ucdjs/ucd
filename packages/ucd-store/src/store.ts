@@ -85,7 +85,7 @@ export class UCDStore {
   public readonly mode: StoreMode;
   public readonly basePath?: string;
   private readonly providedVersions?: string[];
-  private loadedVersions: string[] = [];
+  #versions: string[] = [];
   private client: ReturnType<typeof createClient>;
 
   #filter: PathFilter;
@@ -141,7 +141,7 @@ export class UCDStore {
       } else {
         // console.debug("[UCDStore] Initializing remote store, no local files will be created.");
         // For remote store, just populate available versions
-        this.loadedVersions = UNICODE_VERSION_METADATA.map((v) => v.version);
+        this.#versions = UNICODE_VERSION_METADATA.map((v) => v.version);
       }
     }
   }
@@ -161,7 +161,7 @@ export class UCDStore {
     try {
       const manifestContent = await this.#fs.read(manifestPath);
       const manifestData = JSON.parse(manifestContent);
-      this.loadedVersions = manifestData.map((entry: any) => entry.version);
+      this.#versions = manifestData.map((entry: any) => entry.version);
     } catch (error) {
       throw new Error(`Failed to load store manifest: ${error instanceof Error ? error.message : String(error)}`);
     }
@@ -181,7 +181,7 @@ export class UCDStore {
     // });
 
     await this.createStoreManifest(versions);
-    this.loadedVersions = [...versions];
+    this.#versions = [...versions];
   }
 
   private async createStoreManifest(versions: string[]): Promise<void> {
@@ -229,8 +229,9 @@ export class UCDStore {
     }
   }
 
-  get versions(): string[] {
-    return [...this.loadedVersions];
+  get versions(): readonly string[] {
+    // figure out is this have some performance impact
+    return Object.freeze([...this.#versions]);
   }
 
   async getFile(version: string, filePath: string, extraFilters?: string[]): Promise<string> {
@@ -257,7 +258,7 @@ export class UCDStore {
   }
 
   hasVersion(version: string): boolean {
-    return this.loadedVersions.includes(version);
+    return this.#versions.includes(version);
   }
 
   async getFilePaths(version: string, extraFilters?: string[]): Promise<string[]> {

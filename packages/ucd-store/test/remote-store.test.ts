@@ -167,15 +167,36 @@ describe("Remote UCD Store", () => {
 
   describe("version management", () => {
     it("should return all available versions", async () => {
-      // Test that versions getter returns correct Unicode versions
+      const store = await createRemoteUCDStore({
+        fs: mockFs,
+      });
+
+      expect(store.versions).toBeDefined();
+      expect(store.versions.length).toBeGreaterThan(0);
+      expect(store.versions).toEqual(UNICODE_VERSION_METADATA.map((v) => v.version));
     });
 
     it("should check version existence correctly", async () => {
-      // Test hasVersion method for existing and non-existing versions
+      const store = await createRemoteUCDStore({
+        fs: mockFs,
+      });
+
+      expect(store.hasVersion("15.0.0")).toBe(true);
+      expect(store.hasVersion("99.99.99")).toBe(false);
     });
 
     it("should handle version list immutability", async () => {
-      // Test that versions array cannot be modified externally
+      const store = await createRemoteUCDStore({
+        fs: mockFs,
+      });
+
+      expect(() => {
+        // Attempt to modify the versions array directly
+        (store.versions as string[]).push("99.99.99");
+      }).toThrow("Cannot add property 37, object is not extensible");
+
+      expect(store.hasVersion("99.99.99")).toBe(false);
+      expect(store.versions.length).toBe(UNICODE_VERSION_METADATA.length);
     });
   });
 
