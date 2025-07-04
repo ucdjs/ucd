@@ -4,4 +4,9 @@ export type { DownloadError, MirrorOptions, MirrorResult } from "./ucd-files/mir
 export { mirrorUCDFiles } from "./ucd-files/mirror";
 
 export { repairUCDFiles, validateUCDFiles } from "./ucd-files/validate";
-export type { RepairUCDFilesOptions, RepairUCDFilesResult, ValidateUCDFilesOptions, ValidateUCDFilesResult } from "./ucd-files/validate";
+export type {
+  RepairUCDFilesOptions,
+  RepairUCDFilesResult,
+  ValidateUCDFilesOptions,
+  ValidateUCDFilesResult,
+} from "./ucd-files/validate";
