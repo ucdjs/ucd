@@ -13,11 +13,11 @@ import {
 import yargs from "yargs-parser";
 import pkg from "../package.json" with { type: "json" };
 
-type CLICommand =
-  | "help"
-  | "version"
-  | "codegen"
-  | "store";
+type CLICommand
+  = | "help"
+    | "version"
+    | "codegen"
+    | "store";
 
 const SUPPORTED_COMMANDS = new Set<CLICommand>([
   "codegen",
