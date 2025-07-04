@@ -3,7 +3,7 @@ import type { FileSystemBridge } from "@ucdjs/utils/fs-bridge";
 import { createClient } from "@ucdjs/fetch";
 import { createPathFilter } from "@ucdjs/utils";
 import defu from "defu";
-import { internal_mirrorUnicodeVersion } from "./internal";
+import { internal_mirrorUnicodeVersion } from "./ucd-files/internal";
 
 export interface MirrorOptions {
   /**
@@ -62,6 +62,51 @@ export type MirrorResult = {
   locatedFiles: string[];
 };
 
+/**
+ * Mirrors Unicode Character Database (UCD) files from a remote API to local storage.
+ *
+ * This function downloads UCD files for specified Unicode versions and stores them
+ * locally using the provided filesystem bridge. Files can be filtered using patterns
+ * or a custom pattern matcher function.
+ *
+ * @param {MirrorOptions} options - Configuration options for mirroring UCD files
+ * @returns {Promise<MirrorResult>} A promise that resolves to a MirrorResult indicating success or failure
+ *
+ * @example
+ * ```typescript
+ * // Mirror files for Unicode 15.0.0 and 14.0.0
+ * const result = await mirrorUCDFiles({
+ *   versions: ["15.0.0", "14.0.0"],
+ *   basePath: "./unicode-data",
+ *   patterns: ["*.txt", "*.xml"]
+ * });
+ *
+ * if (result.success) {
+ *   console.log(`Downloaded ${result.files.length} files`);
+ * } else {
+ *   console.error("Download failed:", result.errors);
+ * }
+ * ```
+ *
+ * @example
+ * ```typescript
+ * // Mirror with custom pattern matcher
+ * const result = await mirrorUCDFiles({
+ *   versions: ["15.0.0"],
+ *   patternMatcher: (filename) => filename.includes("PropertyValueAliases")
+ * });
+ * ```
+ *
+ * @remarks
+ * The function will:
+ * - Download files for each specified Unicode version
+ * - Apply pattern filtering if patterns or patternMatcher are provided
+ * - Return aggregated results from all version downloads
+ * - Handle errors gracefully and return them in the result object
+ *
+ * If any errors occur during the download process, the function will return
+ * `success: false` with detailed error information in the `errors` array.
+ */
 export async function mirrorUCDFiles(options: MirrorOptions): Promise<MirrorResult> {
   const {
     versions,

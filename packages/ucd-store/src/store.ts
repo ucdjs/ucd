@@ -12,11 +12,11 @@ import { flattenFilePaths } from "./ucd-files/helpers";
 
 type StoreMode = "remote" | "local";
 
-export interface UCDStoreOptions {
+interface BaseUCDStoreOptions {
   /**
    * Base URL for the Unicode API
    *
-   * @default "https://api.ucdjs.dev/api/v1"
+   * @default "https://api.ucdjs.dev"
    */
   baseUrl?: string;
 
@@ -27,21 +27,6 @@ export interface UCDStoreOptions {
   globalFilters?: string[];
 
   /**
-   * The mode of the UCD store.
-   */
-  mode: StoreMode;
-
-  /**
-   * Base path for local store (only used in local mode)
-   */
-  basePath?: string;
-
-  /**
-   * Versions to initialize with (only used in local mode for new stores)
-   */
-  versions?: string[];
-
-  /**
    * File System Bridge to use for file operations.
    * You can either provide your own implementation or use one of the following:
    * - `@ucdjs/utils/fs-bridge/node` for Node.js environments
@@ -49,6 +34,29 @@ export interface UCDStoreOptions {
    */
   fs: FileSystemBridge;
 }
+
+interface internal_LocalUCDStoreOptions extends BaseUCDStoreOptions {
+  mode: "local";
+
+  /**
+   * Base path for the local store
+   *
+   * @default "./ucd-files"
+   */
+  basePath?: string;
+
+  /**
+   * List of Unicode versions to include in the local store.
+   * If not provided, defaults to all stable versions from UNICODE_VERSION_METADATA.
+   */
+  versions?: string[];
+}
+
+interface internal_RemoteUCDStoreOptions extends BaseUCDStoreOptions {
+  mode: "remote";
+}
+
+export type UCDStoreOptions = internal_LocalUCDStoreOptions | internal_RemoteUCDStoreOptions;
 
 export type AnalyzeResult = {
   success: true;
@@ -293,7 +301,11 @@ export async function createUCDStore(options: UCDStoreOptions): Promise<UCDStore
   return store;
 }
 
-export type LocalUCDStoreOptions = Omit<UCDStoreOptions, "mode" | "fs"> & {
+export type LocalUCDStoreOptions = Omit<internal_LocalUCDStoreOptions, "mode" | "fs"> & {
+  /**
+   * File System Bridge to use for local file operations.
+   * If not provided, the Node.js file system bridge will be used.
+   */
   fs?: FileSystemBridge;
 };
 
@@ -316,9 +328,9 @@ export async function createLocalUCDStore(options: LocalUCDStoreOptions): Promis
   }
 
   const store = new UCDStore({
+    ...options,
     mode: "local",
     fs,
-    ...options,
   });
 
   await store.initialize();
@@ -326,25 +338,43 @@ export async function createLocalUCDStore(options: LocalUCDStoreOptions): Promis
   return store;
 }
 
-export type RemoteUCDStoreOptions = Omit<UCDStoreOptions, "mode" | "fs"> & {
+export type RemoteUCDStoreOptions = Omit<internal_RemoteUCDStoreOptions, "mode" | "fs"> & {
+  /**
+   * File System Bridge to use for remote file operations.
+   * If not provided, the HTTP file system bridge will be used with the default proxy URL.
+   */
   fs?: FileSystemBridge;
 };
 
+/**
+ * Creates a new UCD store instance configured for remote access via HTTP.
+ *
+ * This function simplifies the creation of a remote UCD store by:
+ * - Setting the mode to "remote" automatically
+ * - Loading the HTTP file system bridge if not provided
+ * - Initializing the store with the specified options
+ *
+ * @param {RemoteUCDStoreOptions} options - Configuration options for the remote UCD store
+ * @returns {Promise<UCDStore>} A fully initialized remote UCDStore instance
+ */
 export async function createRemoteUCDStore(options: RemoteUCDStoreOptions): Promise<UCDStore> {
-  const fs = options.fs || await import("@ucdjs/utils/fs-bridge/http").then((m) => m.default);
+  let fsInstance: FileSystemBridge;
 
-  if (!fs) {
-    throw new Error("FileSystemBridge is required for remote UCD store");
+  if (options.fs) {
+    fsInstance = options.fs;
+  } else {
+    const httpFsBridge = await import("@ucdjs/utils/fs-bridge/http").then((m) => m.default);
+    fsInstance = typeof httpFsBridge === "function"
+      ? httpFsBridge({
+          baseUrl: options.baseUrl || UCDJS_API_BASE_URL,
+        })
+      : httpFsBridge;
   }
 
   const store = new UCDStore({
-    mode: "remote",
-    fs: typeof fs === "function"
-      ? fs({
-          baseUrl: options.baseUrl || UNICODE_PROXY_URL,
-        })
-      : fs,
     ...options,
+    mode: "remote",
+    fs: fsInstance,
   });
 
   await store.initialize();
