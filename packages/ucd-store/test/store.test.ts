@@ -59,11 +59,11 @@ describe("UCD Store - Common", () => {
       });
 
       // eslint-disable-next-line dot-notation
-      expect(store["filter"]).toBeDefined();
+      expect(store["#filter"]).toBeDefined();
       // eslint-disable-next-line dot-notation
-      expect(store["filter"]("ArabicShaping.txt")).toBe(true);
+      expect(store["#filter"]("ArabicShaping.txt")).toBe(true);
       // eslint-disable-next-line dot-notation
-      expect(store["filter"]("Other.txt")).toBe(false);
+      expect(store["#filter"]("Other.txt")).toBe(false);
     });
   });
 

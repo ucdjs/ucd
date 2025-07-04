@@ -1,6 +1,8 @@
 import type { FileSystemBridge } from "@ucdjs/utils/fs-bridge";
-import { mockFetch } from "#msw-utils";
+import { mockFetch, mockResponses } from "#msw-utils";
+import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
+import { PRECONFIGURED_FILTERS } from "@ucdjs/utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createRemoteUCDStore, createUCDStore } from "../src/store";
 
@@ -58,14 +60,15 @@ describe("Remote UCD Store", () => {
         stat: vi.fn(),
         rm: vi.fn(),
       };
+
       const store = await createRemoteUCDStore({
         fs: customFs,
       });
 
       expect(store).toBeDefined();
       expect(store.mode).toBe("remote");
-      // eslint-disable-next-line dot-notation
-      expect(store["fs"]).toBe(customFs);
+
+      expect(store.fs).toBe(customFs);
     });
 
     it("should initialize remote store without local files", async () => {
@@ -76,7 +79,6 @@ describe("Remote UCD Store", () => {
       expect(store).toBeDefined();
       expect(store.mode).toBe("remote");
 
-      // Assert that no local files were created
       expect(mockFs.mkdir).not.toHaveBeenCalled();
       expect(mockFs.write).not.toHaveBeenCalled();
       expect(mockFs.read).not.toHaveBeenCalled();
@@ -84,45 +86,82 @@ describe("Remote UCD Store", () => {
     });
 
     it("should apply global filters to remote operations", async () => {
-      // Test that global filters are applied to remote file operations
+      const store = await createRemoteUCDStore({
+        globalFilters: [PRECONFIGURED_FILTERS.EXCLUDE_TEST_FILES],
+        fs: mockFs,
+      });
+
+      expect(store).toBeDefined();
+
+      expect(store.filter.patterns()).toContain(PRECONFIGURED_FILTERS.EXCLUDE_TEST_FILES);
+      expect(store.filter("NormalizationTest.txt")).toBe(false);
+      expect(store.filter("ValidFile.txt")).toBe(true);
     });
 
     it("should handle empty global filters", async () => {
-      // Test behavior when no global filters are provided
+      const store = await createRemoteUCDStore({
+        globalFilters: [],
+        fs: mockFs,
+      });
+
+      expect(store).toBeDefined();
+      expect(store.filter.patterns()).toEqual([]);
+      expect(store.filter("AnyFile.txt")).toBe(true);
     });
 
     it("should load all available Unicode versions from metadata", async () => {
-      // Test that remote store loads UNICODE_VERSION_METADATA versions
+      const store = await createRemoteUCDStore({
+        fs: mockFs,
+      });
+
+      expect(store).toBeDefined();
+      expect(store.versions).toBeDefined();
+      expect(store.versions.length).toBeGreaterThan(0);
+      expect(store.versions).toEqual(UNICODE_VERSION_METADATA.map((v) => v.version));
+
+      // check if specific versions are included
+      expect(store.hasVersion("15.0.0")).toBe(true);
+      expect(store.hasVersion("99.99.99")).toBe(false);
     });
 
     it("should handle remote initialization errors gracefully", async () => {
-      // Test error handling during remote store initialization
-    });
-  });
-
-  describe("factory functions", () => {
-    describe("createRemoteUCDStore", () => {
-      it("should create remote store with default HTTP filesystem", async () => {
-        // Test factory function creates remote store with default HTTP FS
+      const errorStore = createRemoteUCDStore({
+        fs: {
+          ...mockFs,
+          exists: vi.fn().mockRejectedValue(new Error("Failed to initialize remote store")),
+        },
       });
 
-      it("should create remote store with custom filesystem bridge", async () => {
-        // Test factory function with provided filesystem bridge
-      });
-
-      it("should handle factory function errors", async () => {
-        // Test error handling in factory function
-      });
+      await expect(() => errorStore).rejects.toThrow("Failed to initialize remote store");
     });
 
-    describe("createUCDStore with remote mode", () => {
-      it("should create remote store via generic factory", async () => {
-        // Test creating remote store via generic createUCDStore function
+    it("should create remote store with default HTTP filesystem", async () => {
+      mockFetch([
+        [`HEAD ${UCDJS_API_BASE_URL}/api/v1/unicode-proxy/.ucd-store.json`, () => {
+          return mockResponses.head();
+        }],
+        [`GET ${UCDJS_API_BASE_URL}/api/v1/unicode-proxy/.ucd-store.json`, () => {
+          return mockResponses.json([], 200);
+        }],
+      ]);
+
+      const store = await createRemoteUCDStore();
+      expect(store).toBeDefined();
+      expect(store.mode).toBe("remote");
+
+      expect(store.fs).toBeDefined();
+      expect(store.versions).toBeDefined();
+    });
+
+    it("should create remote store via generic factory", async () => {
+      const remoteStore = await createUCDStore({
+        mode: "remote",
+        fs: mockFs,
       });
 
-      it("should pass remote options correctly", async () => {
-        // Test that remote-specific options are forwarded properly
-      });
+      expect(remoteStore).toBeDefined();
+      expect(remoteStore.mode).toBe("remote");
+      expect(remoteStore.fs).toBe(mockFs);
     });
   });
 

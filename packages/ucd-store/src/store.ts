@@ -87,11 +87,9 @@ export class UCDStore {
   private readonly providedVersions?: string[];
   private loadedVersions: string[] = [];
   private client: ReturnType<typeof createClient>;
-  private filter: PathFilter;
-  // TODO: figure out how we somehow can make this properly private
-  // Since we need this available in a test, we can use the # prefix to indicate it's private
-  // but still accessible in the test environment
-  private fs: FileSystemBridge;
+
+  #filter: PathFilter;
+  #fs: FileSystemBridge;
 
   constructor(options: UCDStoreOptions) {
     const { baseUrl, globalFilters, mode, fs, basePath, versions } = defu(options, {
@@ -107,8 +105,16 @@ export class UCDStore {
     this.basePath = basePath;
     this.providedVersions = versions;
     this.client = createClient(this.baseUrl);
-    this.filter = createPathFilter(globalFilters);
-    this.fs = fs;
+    this.#filter = createPathFilter(globalFilters);
+    this.#fs = fs;
+  }
+
+  get fs(): FileSystemBridge {
+    return this.#fs;
+  }
+
+  get filter(): PathFilter {
+    return this.#filter;
   }
 
   /**
@@ -119,8 +125,8 @@ export class UCDStore {
 
     // Check if store already exists
     const isValidStore = this.mode === "local"
-      ? await this.fs.exists(this.basePath!) && await this.fs.exists(manifestPath)
-      : await this.fs.exists(manifestPath);
+      ? await this.#fs.exists(this.basePath!) && await this.#fs.exists(manifestPath)
+      : await this.#fs.exists(manifestPath);
 
     if (isValidStore) {
       // Load versions from existing store
@@ -153,7 +159,7 @@ export class UCDStore {
     const manifestPath = this.getManifestPath();
 
     try {
-      const manifestContent = await this.fs.read(manifestPath);
+      const manifestContent = await this.#fs.read(manifestPath);
       const manifestData = JSON.parse(manifestContent);
       this.loadedVersions = manifestData.map((entry: any) => entry.version);
     } catch (error) {
@@ -185,7 +191,7 @@ export class UCDStore {
       path: this.mode === "local" ? path.join(this.basePath!, version) : version,
     }));
 
-    await this.fs.write(manifestPath, JSON.stringify(manifestData, null, 2));
+    await this.#fs.write(manifestPath, JSON.stringify(manifestData, null, 2));
   }
 
   async getFileTree(version: string, extraFilters?: string[]): Promise<UnicodeVersionFile[]> {
@@ -212,7 +218,7 @@ export class UCDStore {
       }
 
       const versionPath = path.join(this.basePath, version);
-      const files = await this.fs.listdir(versionPath, true);
+      const files = await this.#fs.listdir(versionPath, true);
 
       const fileStructure = files.map((file) => ({
         name: path.basename(file),
@@ -232,13 +238,13 @@ export class UCDStore {
       throw new Error(`Version '${version}' not found in store`);
     }
 
-    if (!this.filter(filePath, extraFilters)) {
+    if (!this.#filter(filePath, extraFilters)) {
       throw new Error(`File path "${filePath}" is filtered out by the store's filter patterns.`);
     }
 
     if (this.mode === "remote") {
       // HTTP filesystem handles the caching and fetching
-      return await this.fs.read(`${version}/${filePath}`);
+      return await this.#fs.read(`${version}/${filePath}`);
     } else {
       // Local filesystem
       if (!this.basePath) {
@@ -246,7 +252,7 @@ export class UCDStore {
       }
 
       const fullPath = path.join(this.basePath, version, filePath);
-      return await this.fs.read(fullPath);
+      return await this.#fs.read(fullPath);
     }
   }
 
@@ -261,7 +267,7 @@ export class UCDStore {
 
   private processFileStructure(rawStructure: UnicodeVersionFile[], extraFilters?: string[]): UnicodeVersionFile[] {
     return rawStructure.map((item) => {
-      if (!this.filter(item.path, extraFilters)) {
+      if (!this.#filter(item.path, extraFilters)) {
         return null;
       }
       return {
@@ -323,7 +329,7 @@ export type LocalUCDStoreOptions = Omit<internal_LocalUCDStoreOptions, "mode" | 
  * @param {LocalUCDStoreOptions} options - Configuration options for the local UCD store
  * @returns {Promise<UCDStore>} A fully initialized local UCDStore instance
  */
-export async function createLocalUCDStore(options: LocalUCDStoreOptions): Promise<UCDStore> {
+export async function createLocalUCDStore(options: LocalUCDStoreOptions = {}): Promise<UCDStore> {
   const fs = options.fs || await import("@ucdjs/utils/fs-bridge/node").then((m) => m.default);
 
   if (!fs) {
@@ -360,7 +366,7 @@ export type RemoteUCDStoreOptions = Omit<internal_RemoteUCDStoreOptions, "mode" 
  * @param {RemoteUCDStoreOptions} options - Configuration options for the remote UCD store
  * @returns {Promise<UCDStore>} A fully initialized remote UCDStore instance
  */
-export async function createRemoteUCDStore(options: RemoteUCDStoreOptions): Promise<UCDStore> {
+export async function createRemoteUCDStore(options: RemoteUCDStoreOptions = {}): Promise<UCDStore> {
   let fsInstance: FileSystemBridge;
 
   if (options.fs) {
@@ -369,7 +375,7 @@ export async function createRemoteUCDStore(options: RemoteUCDStoreOptions): Prom
     const httpFsBridge = await import("@ucdjs/utils/fs-bridge/http").then((m) => m.default);
     fsInstance = typeof httpFsBridge === "function"
       ? httpFsBridge({
-          baseUrl: options.baseUrl || UCDJS_API_BASE_URL,
+          baseUrl: options.baseUrl || `${UCDJS_API_BASE_URL}/api/v1/unicode-proxy/`,
         })
       : httpFsBridge;
   }
