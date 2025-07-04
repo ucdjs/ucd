@@ -1,9 +1,8 @@
-import type { FileSystemBridge } from "@ucdjs/utils/fs-bridge";
 import { mockFetch, mockResponses } from "#msw-utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { flattenFilePaths } from "@ucdjs/ucd-store";
 import { PRECONFIGURED_FILTERS } from "@ucdjs/utils";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { createRemoteUCDStore } from "../../src/store";
 
 // eslint-disable-next-line test/prefer-lowercase-title
@@ -42,26 +41,6 @@ describe("Remote UCD Store - File Tree Operations", () => {
       ],
     },
   ];
-
-  let mockFs: FileSystemBridge;
-
-  beforeEach(() => {
-    // Setup mock filesystem bridge for remote mode
-    mockFs = {
-      exists: vi.fn(),
-      read: vi.fn(),
-      write: vi.fn(),
-      listdir: vi.fn(),
-      mkdir: vi.fn(),
-      stat: vi.fn(),
-      rm: vi.fn(),
-    };
-  });
-
-  afterEach(() => {
-    vi.clearAllMocks();
-    vi.unstubAllEnvs();
-  });
 
   it("should fetch file tree from remote API", async () => {
     mockFetch([

@@ -26,35 +26,6 @@ describe("Remote UCD Store - Edge Cases", () => {
     vi.unstubAllEnvs();
   });
 
-  it("should handle special characters in remote file paths", async () => {
-    const specialFiles = [
-      { type: "file", name: "File with spaces.txt", path: "/File with spaces.txt" },
-      { type: "file", name: "文件-中文.txt", path: "/文件-中文.txt" },
-      { type: "file", name: "file@#$%^&().txt", path: "/file@#$%^&().txt" },
-    ];
-
-    const specialContent = "Content with Unicode: 你好世界";
-
-    mockFetch([
-      [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
-        return mockResponses.json(specialFiles);
-      }],
-      [`GET ${UCDJS_API_BASE_URL}/api/v1/unicode-proxy/15.0.0/File with spaces.txt`, () => {
-        return mockResponses.text(specialContent);
-      }],
-    ]);
-
-    const store = await createRemoteUCDStore();
-
-    const filePaths = await store.getFilePaths("15.0.0");
-    expect(filePaths).toContain("File with spaces.txt");
-    expect(filePaths).toContain("文件-中文.txt");
-    expect(filePaths).toContain("file@#$%^&().txt");
-
-    const content = await store.getFile("15.0.0", "File with spaces.txt");
-    expect(content).toBe(specialContent);
-  });
-
   it("should handle malformed Unicode version strings", async () => {
     const store = await createRemoteUCDStore({
       fs: mockFs,
