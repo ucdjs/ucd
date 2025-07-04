@@ -4,7 +4,7 @@ import type { FileSystemBridge } from "@ucdjs/utils/fs-bridge";
 import path from "node:path";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { promiseRetry } from "@luxass/utils";
-import { UCDJS_API_BASE_URL, UNICODE_PROXY_URL } from "@ucdjs/env";
+import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { createClient } from "@ucdjs/fetch";
 import { createPathFilter } from "@ucdjs/utils";
 import defu from "defu";
@@ -88,7 +88,10 @@ export class UCDStore {
   private loadedVersions: string[] = [];
   private client: ReturnType<typeof createClient>;
   private filter: PathFilter;
-  #fs: FileSystemBridge;
+  // TODO: figure out how we somehow can make this properly private
+  // Since we need this available in a test, we can use the # prefix to indicate it's private
+  // but still accessible in the test environment
+  private fs: FileSystemBridge;
 
   constructor(options: UCDStoreOptions) {
     const { baseUrl, globalFilters, mode, fs, basePath, versions } = defu(options, {
@@ -105,7 +108,7 @@ export class UCDStore {
     this.providedVersions = versions;
     this.client = createClient(this.baseUrl);
     this.filter = createPathFilter(globalFilters);
-    this.#fs = fs;
+    this.fs = fs;
   }
 
   /**
@@ -116,8 +119,8 @@ export class UCDStore {
 
     // Check if store already exists
     const isValidStore = this.mode === "local"
-      ? await this.#fs.exists(this.basePath!) && await this.#fs.exists(manifestPath)
-      : await this.#fs.exists(manifestPath);
+      ? await this.fs.exists(this.basePath!) && await this.fs.exists(manifestPath)
+      : await this.fs.exists(manifestPath);
 
     if (isValidStore) {
       // Load versions from existing store
@@ -150,7 +153,7 @@ export class UCDStore {
     const manifestPath = this.getManifestPath();
 
     try {
-      const manifestContent = await this.#fs.read(manifestPath);
+      const manifestContent = await this.fs.read(manifestPath);
       const manifestData = JSON.parse(manifestContent);
       this.loadedVersions = manifestData.map((entry: any) => entry.version);
     } catch (error) {
@@ -182,7 +185,7 @@ export class UCDStore {
       path: this.mode === "local" ? path.join(this.basePath!, version) : version,
     }));
 
-    await this.#fs.write(manifestPath, JSON.stringify(manifestData, null, 2));
+    await this.fs.write(manifestPath, JSON.stringify(manifestData, null, 2));
   }
 
   async getFileTree(version: string, extraFilters?: string[]): Promise<UnicodeVersionFile[]> {
@@ -209,7 +212,7 @@ export class UCDStore {
       }
 
       const versionPath = path.join(this.basePath, version);
-      const files = await this.#fs.listdir(versionPath, true);
+      const files = await this.fs.listdir(versionPath, true);
 
       const fileStructure = files.map((file) => ({
         name: path.basename(file),
@@ -235,7 +238,7 @@ export class UCDStore {
 
     if (this.mode === "remote") {
       // HTTP filesystem handles the caching and fetching
-      return await this.#fs.read(`${version}/${filePath}`);
+      return await this.fs.read(`${version}/${filePath}`);
     } else {
       // Local filesystem
       if (!this.basePath) {
@@ -243,7 +246,7 @@ export class UCDStore {
       }
 
       const fullPath = path.join(this.basePath, version, filePath);
-      return await this.#fs.read(fullPath);
+      return await this.fs.read(fullPath);
     }
   }
 
