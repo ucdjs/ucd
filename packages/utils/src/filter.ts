@@ -1,9 +1,26 @@
 import picomatch from "picomatch";
 
+/**
+ * Predefined filter patterns for common file exclusions.
+ * These constants can be used with `createPathFilter` to easily exclude common file types.
+ *
+ * @example
+ * ```ts
+ * import { createPathFilter, PRECONFIGURED_FILTERS } from '@ucdjs/utils';
+ *
+ * const filter = createPathFilter([
+ *   '*.txt',
+ *   PRECONFIGURED_FILTERS.EXCLUDE_TEST_FILES,
+ *   PRECONFIGURED_FILTERS.EXCLUDE_README_FILES
+ * ]);
+ * ```
+ */
 export const PRECONFIGURED_FILTERS = {
+  /** Excludes files containing "Test" in their name (e.g., DataTest.txt, TestFile.js) */
   EXCLUDE_TEST_FILES: "!**/*Test*",
-  // TODO: maybe also exclude README.txt
-  EXCLUDE_README_FILES: "!**/Readme.txt",
+  /** Excludes ReadMe.txt files from any directory */
+  EXCLUDE_README_FILES: "!**/ReadMe.txt",
+  /** Excludes all HTML files */
   EXCLUDE_HTML_FILES: "!**/*.html",
 } as const;
 
