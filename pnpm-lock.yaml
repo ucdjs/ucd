@@ -76,8 +76,8 @@ catalogs:
       specifier: ^4.3.16
       version: 4.3.16
     apache-autoindex-parse:
-      specifier: ^2.2.0
-      version: 2.2.0
+      specifier: ^2.3.0
+      version: 2.3.0
     defu:
       specifier: ^6.1.4
       version: 6.1.4
@@ -195,7 +195,7 @@ importers:
         version: link:../../packages/worker-shared
       apache-autoindex-parse:
         specifier: catalog:prod
-        version: 2.2.0
+        version: 2.3.0
       hono:
         specifier: catalog:workers
         version: 4.8.3
@@ -253,7 +253,7 @@ importers:
         version: link:../../packages/worker-shared
       apache-autoindex-parse:
         specifier: catalog:prod
-        version: 2.2.0
+        version: 2.3.0
       hono:
         specifier: catalog:workers
         version: 4.8.3
@@ -2095,8 +2095,8 @@ packages:
     resolution: {integrity: sha512-BGcItUBWSMRgOCe+SVZJ+S7yTRG0eGt9cXAHev72yuGcY23hnLA7Bky5L/xLyPINoSN95geovfBkqoTlNZYa7w==}
     engines: {node: '>=14'}
 
-  apache-autoindex-parse@2.2.0:
-    resolution: {integrity: sha512-EGWQ9+BloFe479OHSupnAmj+c3M8uQOtD4GHLv9a/sFSfkGE6E+u6e3MXmV06Lq5rHBdKkLgoL2Y0dd3b8Jaxg==}
+  apache-autoindex-parse@2.3.0:
+    resolution: {integrity: sha512-rieW7BOPP+4fRadqJhBrkkS3gRqhzUBiMUrL11m2YpITNiE6KPnDxAYm/YvbC0hOfcLsbgErHuvKcEdkU78E1Q==}
 
   are-docs-informative@0.0.2:
     resolution: {integrity: sha512-ixiS0nLNNG5jNQzgZJNoUpBKdo9yTYZMGJ+QgT2jmjR7G7+QHRCc4v6LQ3NgE7EBJq+o0ams3waJwkrlBom8Ig==}
@@ -6348,7 +6348,7 @@ snapshots:
 
   ansis@4.1.0: {}
 
-  apache-autoindex-parse@2.2.0: {}
+  apache-autoindex-parse@2.3.0: {}
 
   are-docs-informative@0.0.2: {}
 
