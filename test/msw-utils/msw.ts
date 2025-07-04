@@ -207,6 +207,16 @@ export const mockResponses = {
       headers: { "Content-Type": "text/plain" },
     });
   },
+
+  redirect: (url: string, status: number = 302) => {
+    return new HttpResponse(null, {
+      status,
+      headers: {
+        Location: url,
+        "Content-Type": "text/plain",
+      },
+    });
+  },
 };
 
 export { http, HttpResponse };
