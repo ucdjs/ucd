@@ -2,6 +2,7 @@ import type { FileSystemBridge } from "@ucdjs/utils/fs-bridge";
 import { mockFetch, mockResponses } from "#msw-utils";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
+import { flattenFilePaths } from "@ucdjs/ucd-store";
 import { PRECONFIGURED_FILTERS } from "@ucdjs/utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createRemoteUCDStore, createUCDStore } from "../src/store";
@@ -221,10 +222,18 @@ describe("Remote UCD Store", () => {
         lastModified: 1651584300000,
       },
       {
-        type: "file",
-        name: "BidiMirroring.txt",
-        path: "/BidiMirroring.txt",
-        lastModified: 1651584300000,
+        type: "directory",
+        name: "extracted",
+        path: "/extracted/",
+        lastModified: 1724676960000,
+        children: [
+          {
+            type: "file",
+            name: "DerivedBidiClass.txt",
+            path: "/DerivedBidiClass.txt",
+            lastModified: 1724609100000,
+          },
+        ],
       },
     ];
 
@@ -242,38 +251,103 @@ describe("Remote UCD Store", () => {
 
       expect(fileTree).toBeDefined();
       expect(fileTree.length).toBe(4);
-      expect(fileTree).toEqual(mockFiles.map((file) => ({
-        name: file.name,
-        path: file.path,
-      })));
-    });
-
-    it("should handle API response with nested file structure", async () => {
-
+      expect(flattenFilePaths(fileTree)).toEqual([
+        "ArabicShaping.txt",
+        "BidiBrackets.txt",
+        "BidiCharacterTest.txt",
+        "extracted/DerivedBidiClass.txt",
+      ]);
     });
 
     it("should apply filters to remote file tree", async () => {
-      // Test that global filters are applied to file tree from API
+      mockFetch([
+        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
+          return mockResponses.json(mockFiles);
+        }],
+      ]);
+
+      const store = await createRemoteUCDStore({
+        globalFilters: [PRECONFIGURED_FILTERS.EXCLUDE_TEST_FILES],
+      });
+      const fileTree = await store.getFileTree("15.0.0");
+
+      expect(fileTree).toBeDefined();
+      expect(fileTree.length).toBeLessThan(mockFiles.length);
     });
 
     it("should apply extra filters to remote file tree", async () => {
-      // Test that additional filters are applied correctly
+      mockFetch([
+        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
+          return mockResponses.json(mockFiles);
+        }],
+      ]);
+
+      const store = await createRemoteUCDStore({});
+
+      const fileTree = await store.getFileTree("15.0.0");
+      const fileTreeWithFilters = await store.getFileTree("15.0.0", [PRECONFIGURED_FILTERS.EXCLUDE_TEST_FILES]);
+
+      expect(fileTreeWithFilters).toBeDefined();
+      expect(fileTreeWithFilters.length).toBeLessThan(fileTree.length);
+      expect(flattenFilePaths(fileTreeWithFilters)).not.toContain("BidiCharacterTest.txt");
     });
 
     it("should handle empty file tree response", async () => {
-      // Test behavior when API returns empty file tree
+      mockFetch([
+        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
+          return mockResponses.json([]);
+        }],
+      ]);
+
+      const store = await createRemoteUCDStore();
+      const fileTree = await store.getFileTree("15.0.0");
+
+      expect(fileTree).toBeDefined();
+      expect(fileTree.length).toBe(0);
     });
 
     it("should throw error for non-existent version", async () => {
-      // Test error when requesting file tree for invalid version
+      mockFetch([
+        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/99.99.99`, () => {
+          return mockResponses.notFound("Version not found");
+        }],
+      ]);
+
+      const store = await createRemoteUCDStore();
+
+      await expect(() => store.getFileTree("99.99.99")).rejects.toThrow("Version '99.99.99' not found in store");
     });
 
     it("should handle API errors with retry logic", async () => {
-      // Test retry mechanism for API failures
+      let retryCount = 0;
+      mockFetch([
+        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
+          console.error("Simulating API error for retry test");
+          retryCount++;
+          if (retryCount < 2) {
+            return mockResponses.serverError("Temporary error, retrying...");
+          }
+          return mockResponses.json(mockFiles);
+        }],
+      ]);
+
+      const store = await createRemoteUCDStore();
+
+      const fileTree = await store.getFileTree("15.0.0");
+      expect(store).toBeDefined();
+      expect(retryCount).toBe(2);
     });
 
     it("should handle network timeout errors", async () => {
-      // Test handling of network timeout during API calls
+      mockFetch([
+        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
+          return mockResponses.timeout("Network timeout");
+        }],
+      ]);
+
+      const store = await createRemoteUCDStore();
+
+      await expect(() => store.getFileTree("15.0.0")).rejects.toThrow("Network timeout");
     });
   });
 

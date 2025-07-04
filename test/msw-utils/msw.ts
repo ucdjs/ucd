@@ -50,14 +50,14 @@ type JsonBody = Record<string, unknown> | unknown[] | string | number | boolean 
 
 /**
  * Pre-configured HTTP response utilities for MSW mocking
- * 
+ *
  * @example
  * ```typescript
  * import { mockFetch, mockResponses } from './msw';
- * 
+ *
  * // Mock a successful API response
  * mockFetch('GET /api/users', () => mockResponses.ok({ users: [] }));
- * 
+ *
  * // Mock an error response
  * mockFetch('POST /api/users', () => mockResponses.badRequest({ error: 'Invalid data' }));
  * ```
@@ -65,10 +65,10 @@ type JsonBody = Record<string, unknown> | unknown[] | string | number | boolean 
 export const mockResponses = {
   /**
    * Returns a successful 200 response with JSON body
-   * 
+   *
    * @param body - The response body (defaults to empty object)
    * @returns HttpResponse with status 200
-   * 
+   *
    * @example
    * ```typescript
    * mockResponses.ok({ id: 1, name: 'John' })
@@ -76,13 +76,13 @@ export const mockResponses = {
    * ```
    */
   ok: <T extends JsonBody>(body: T = {} as T) => HttpResponse.json(body, { status: 200 }),
-  
+
   /**
    * Returns a 400 Bad Request response with JSON body
-   * 
+   *
    * @param body - The error response body (defaults to generic error message)
    * @returns HttpResponse with status 400
-   * 
+   *
    * @example
    * ```typescript
    * mockResponses.badRequest({ error: 'Invalid email format' })
@@ -91,13 +91,13 @@ export const mockResponses = {
    */
   badRequest: (body?: JsonBody) =>
     HttpResponse.json(body || { error: "Bad request" }, { status: 400 }),
-  
+
   /**
    * Returns a 404 Not Found response with JSON body
-   * 
+   *
    * @param body - The error response body (defaults to generic error message)
    * @returns HttpResponse with status 404
-   * 
+   *
    * @example
    * ```typescript
    * mockResponses.notFound({ error: 'User not found' })
@@ -106,13 +106,13 @@ export const mockResponses = {
    */
   notFound: (body?: JsonBody) =>
     HttpResponse.json(body || { error: "Not found" }, { status: 404 }),
-  
+
   /**
    * Returns a 429 Too Many Requests response with JSON body
-   * 
+   *
    * @param body - The error response body (defaults to generic error message)
    * @returns HttpResponse with status 429
-   * 
+   *
    * @example
    * ```typescript
    * mockResponses.tooManyRequests({ error: 'Rate limit exceeded', retryAfter: 60 })
@@ -121,13 +121,13 @@ export const mockResponses = {
    */
   tooManyRequests: (body?: JsonBody) =>
     HttpResponse.json(body || { error: "Too many requests" }, { status: 429 }),
-  
+
   /**
    * Returns a 500 Internal Server Error response with JSON body
-   * 
+   *
    * @param body - The error response body (defaults to generic error message)
    * @returns HttpResponse with status 500
-   * 
+   *
    * @example
    * ```typescript
    * mockResponses.serverError({ error: 'Database connection failed' })
@@ -136,14 +136,14 @@ export const mockResponses = {
    */
   serverError: (body?: JsonBody) =>
     HttpResponse.json(body || { error: "Internal server error" }, { status: 500 }),
-  
+
   /**
    * Returns a JSON response with custom status code
-   * 
+   *
    * @param body - The response body
    * @param status - The HTTP status code (defaults to 200)
    * @returns HttpResponse with custom status
-   * 
+   *
    * @example
    * ```typescript
    * mockResponses.json({ message: 'Created' }, 201)
@@ -152,14 +152,14 @@ export const mockResponses = {
    */
   json: <T extends JsonBody>(body: T, status: number = 200) =>
     HttpResponse.json(body, { status }),
-  
+
   /**
    * Returns a plain text response
-   * 
+   *
    * @param body - The text content
    * @param status - The HTTP status code (defaults to 200)
    * @returns HttpResponse with text/plain content-type
-   * 
+   *
    * @example
    * ```typescript
    * mockResponses.text('Hello World')
@@ -171,13 +171,13 @@ export const mockResponses = {
       status,
       headers: { "Content-Type": "text/plain" },
     }),
-  
+
   /**
    * Returns an empty response (no body)
-   * 
+   *
    * @param status - The HTTP status code (defaults to 204)
    * @returns HttpResponse with no content
-   * 
+   *
    * @example
    * ```typescript
    * mockResponses.empty() // 204 No Content
@@ -185,13 +185,13 @@ export const mockResponses = {
    * ```
    */
   empty: (status: number = 204) => new HttpResponse(null, { status }),
-  
+
   /**
    * Returns a HEAD response with custom headers
-   * 
+   *
    * @param headers - Headers to include in the response
    * @returns HttpResponse with status 200 and no body
-   * 
+   *
    * @example
    * ```typescript
    * mockResponses.head(new Headers({ 'content-length': '1024' }))
@@ -200,6 +200,13 @@ export const mockResponses = {
    */
   head: (headers: HeadersInit = {}) =>
     new HttpResponse(null, { status: 200, headers }),
+
+  timeout: (message: string = "Request timed out") => {
+    return new HttpResponse(message, {
+      status: 408,
+      headers: { "Content-Type": "text/plain" },
+    });
+  },
 };
 
 export { http, HttpResponse };
