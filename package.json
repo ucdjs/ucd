@@ -6,7 +6,7 @@
     "node": ">=22.13",
     "pnpm": "10.x"
   },
-  "packageManager": "pnpm@10.11.1",
+  "packageManager": "pnpm@10.12.4",
   "workspaces": [
     "packages/*"
   ],
@@ -24,7 +24,6 @@
     "typecheck": "turbo run typecheck"
   },
   "devDependencies": {
-    "@ark/attest": "catalog:monorepo",
     "@changesets/changelog-github": "catalog:monorepo",
     "@changesets/cli": "catalog:monorepo",
     "@types/node": "catalog:dev",
