@@ -6,7 +6,7 @@ import type { CleanResult } from "./internal/clean";
 import type { StoreMode, UCDStoreOptions } from "./types";
 import path from "node:path";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
-import { promiseRetry, trimLeadingSlash } from "@luxass/utils";
+import { invariant, promiseRetry, trimLeadingSlash } from "@luxass/utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { ApiResponseError, createClient } from "@ucdjs/fetch";
 import { createPathFilter } from "@ucdjs/utils";
@@ -26,6 +26,7 @@ export class UCDStore {
   #client: UCDClient;
   #filter: PathFilter;
   #fs: FileSystemBridge;
+  #manifestPath: string;
 
   constructor(options: UCDStoreOptions) {
     const { baseUrl, globalFilters, mode, fs, basePath, versions } = defu(options, {
@@ -43,6 +44,7 @@ export class UCDStore {
     this.#client = createClient(this.baseUrl);
     this.#filter = createPathFilter(globalFilters);
     this.#fs = fs;
+    this.#manifestPath = this.mode === "local" ? path.join(this.basePath!, ".ucd-store.json") : ".ucd-store.json";
   }
 
   get fs(): FileSystemBridge {
@@ -61,16 +63,12 @@ export class UCDStore {
    * Initialize the store - loads existing data or creates new structure
    */
   async initialize(): Promise<void> {
-    const manifestPath = this.getManifestPath();
-
-    // check if store already exists
     const isValidStore = this.mode === "local"
-      ? await this.#fs.exists(this.basePath!) && await this.#fs.exists(manifestPath)
-      : await this.#fs.exists(manifestPath);
+      ? await this.#fs.exists(this.basePath!) && await this.#fs.exists(this.#manifestPath!)
+      : await this.#fs.exists(this.#manifestPath!);
 
     if (isValidStore) {
-      // Load versions from existing store
-      await this.loadVersionsFromStore();
+      await this.#loadVersionsFromStore();
     } else {
       // we can't initialize a remote store without existing data.
       // and since the store endpoint isn't valid, we can't fetch the data either.
@@ -83,24 +81,13 @@ export class UCDStore {
         throw new UCDStoreError("No versions provided for initializing new local store");
       }
 
-      await this.createNewLocalStore(this.providedVersions);
+      await this.#createNewLocalStore(this.providedVersions);
     }
   }
 
-  /**
-   * Get the appropriate manifest path based on store mode
-   */
-  private getManifestPath(): string {
-    return this.mode === "local"
-      ? path.join(this.basePath!, ".ucd-store.json")
-      : ".ucd-store.json";
-  }
-
-  private async loadVersionsFromStore(): Promise<void> {
-    const manifestPath = this.getManifestPath();
-
+  async #loadVersionsFromStore(): Promise<void> {
     try {
-      const manifestContent = await this.#fs.read(manifestPath);
+      const manifestContent = await this.#fs.read(this.#manifestPath);
       const manifestData = JSON.parse(manifestContent);
       this.#versions = manifestData.map((entry: any) => entry.version);
     } catch (error) {
@@ -108,10 +95,13 @@ export class UCDStore {
     }
   }
 
-  private async createNewLocalStore(versions: string[]): Promise<void> {
-    if (!this.basePath) return;
+  async #createNewLocalStore(versions: string[]): Promise<void> {
+    invariant(this.mode === "local", "createNewLocalStore can only be called in local mode");
+    invariant(this.basePath, "Base path must be set for local store");
 
-    // await this.#fs.ensureDir(this.basePath);
+    if (!await this.#fs.exists(this.basePath)) {
+      await this.#fs.mkdir(this.basePath);
+    }
 
     // TODO: Implement actual file mirroring
     // await mirrorUCDFiles({
@@ -126,13 +116,12 @@ export class UCDStore {
   }
 
   private async createStoreManifest(versions: string[]): Promise<void> {
-    const manifestPath = this.getManifestPath();
     const manifestData = versions.map((version) => ({
       version,
       path: this.mode === "local" ? path.join(this.basePath!, version) : version,
     }));
 
-    await this.#fs.write(manifestPath, JSON.stringify(manifestData, null, 2));
+    await this.#fs.write(this.#manifestPath, JSON.stringify(manifestData, null, 2));
   }
 
   async getFileTree(version: string, extraFilters?: string[]): Promise<UnicodeVersionFile[]> {
@@ -156,7 +145,7 @@ export class UCDStore {
         minTimeout: 500,
       });
 
-      return this.processFileStructure(data, extraFilters);
+      return this.#processFileStructure(data, extraFilters);
     } else {
       // For local mode, read directory structure
       if (!this.basePath) {
@@ -171,7 +160,7 @@ export class UCDStore {
         path: file,
       }));
 
-      return this.processFileStructure(fileStructure, extraFilters);
+      return this.#processFileStructure(fileStructure, extraFilters);
     }
   }
 
@@ -212,7 +201,7 @@ export class UCDStore {
     return flattenFilePaths(fileStructure);
   }
 
-  private processFileStructure(rawStructure: UnicodeVersionFile[], extraFilters?: string[]): UnicodeVersionFile[] {
+  #processFileStructure(rawStructure: UnicodeVersionFile[], extraFilters?: string[]): UnicodeVersionFile[] {
     return rawStructure.map((item) => {
       if (!this.#filter(trimLeadingSlash(item.path), extraFilters)) {
         return null;
@@ -220,7 +209,7 @@ export class UCDStore {
       return {
         name: item.name,
         path: item.path,
-        ...(item.children ? { children: this.processFileStructure(item.children, extraFilters) } : {}),
+        ...(item.children ? { children: this.#processFileStructure(item.children, extraFilters) } : {}),
       };
     }).filter((item): item is UnicodeVersionFile => item != null);
   }
@@ -236,7 +225,7 @@ export class UCDStore {
 
   async clean(dryRun?: boolean): Promise<CleanResult> {
     // First analyze to get files that need to be removed
-    const analyzeResult = await analyzeStore(this.getManifestPath(), {
+    const analyzeResult = await analyzeStore(this.#manifestPath, {
       calculateSizes: true,
       checkOrphaned: true,
       fs: this.#fs,
@@ -259,8 +248,7 @@ export class UCDStore {
   }
 
   async analyze(options: Omit<AnalyzeOptions, "fs" | "versions"> = {}): Promise<AnalyzeResult> {
-    const manifestPath = this.getManifestPath();
-    return analyzeStore(manifestPath, {
+    return analyzeStore(this.#manifestPath, {
       ...options,
       fs: this.#fs,
       versions: this.#versions,
