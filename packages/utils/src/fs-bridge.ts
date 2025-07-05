@@ -58,9 +58,10 @@ export interface FileSystemBridge {
   state?: Record<string, unknown>;
 
   /**
-   * Optional object that defines which functions are supported by the bridge.
+   * An object defining the features supported by this file system bridge.
+   * If it is not provided, the bridge will assume all features are supported.
    */
-  supportedFunctions?: {
+  features?: {
     read: boolean;
     write: boolean;
     listdir: boolean;

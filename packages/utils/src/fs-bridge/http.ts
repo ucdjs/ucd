@@ -35,7 +35,7 @@ export interface HTTPFileSystemBridgeOptions {
 function HTTPFileSystemBridge(options: HTTPFileSystemBridgeOptions = {}): FileSystemBridge {
   const baseUrl = options.baseUrl || UNICODE_PROXY_URL;
   return defineFileSystemBridge({
-    supportedFunctions: {
+    features: {
       read: true,
       write: false,
       listdir: true,
