@@ -1,7 +1,13 @@
 import type { UCDClient, UnicodeVersionFile } from "@ucdjs/fetch";
 import type { PathFilter } from "@ucdjs/utils";
 import type { FileSystemBridge } from "@ucdjs/utils/fs-bridge";
-import type { AnalyzeResult, CleanResult, StoreMode, UCDStoreOptions, VersionAnalysis } from "./types";
+import type {
+  AnalyzeResult,
+  CleanResult,
+  StoreMode,
+  UCDStoreOptions,
+  VersionAnalysis,
+} from "./types";
 import path from "node:path";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { invariant, promiseRetry, trimLeadingSlash } from "@luxass/utils";
@@ -10,6 +16,7 @@ import { ApiResponseError, createClient } from "@ucdjs/fetch";
 import { createPathFilter, safeJsonParse } from "@ucdjs/utils";
 import defu from "defu";
 import { z } from "zod/v4";
+import { processConcurrently } from "./internal/concurrency";
 import { UCDStoreError } from "./internal/errors";
 import { flattenFilePaths } from "./internal/flatten";
 
@@ -122,7 +129,7 @@ export class UCDStore {
 
       this.#versions = parsedManifest.data.map((entry) => entry.version);
     } catch (error) {
-      throw new Error(`Failed to load store manifest: ${error instanceof Error ? error.message : String(error)}`);
+      throw new UCDStoreError(`Failed to load store manifest: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
@@ -135,7 +142,7 @@ export class UCDStore {
     }
 
     // Mirror UCD files from remote to local
-    await this.mirror({ versions, overwrite: false, dryRun: false });
+    await this.#mirror({ versions, overwrite: false, dryRun: false });
 
     await this.#createStoreManifest(versions);
     this.#versions = [...versions];
@@ -145,17 +152,12 @@ export class UCDStore {
     invariant(this.mode === "local", "createStoreManifest can only be called in local mode");
     invariant(this.basePath, "Base path must be set for local store");
 
-    const manifestData = versions.map((version) => ({
-      version,
-      path: this.mode === "local" ? path.join(this.basePath!, version) : version,
-    }));
-
-    await this.#fs.write(this.#manifestPath, JSON.stringify(manifestData, null, 2));
+    await this.#writeManifest(versions);
   }
 
   async getFileTree(version: string, extraFilters?: string[]): Promise<UnicodeVersionFile[]> {
     if (!this.hasVersion(version)) {
-      throw new Error(`Version '${version}' not found in store`);
+      throw new UCDStoreError(`Version '${version}' not found in store`);
     }
 
     if (this.mode === "remote") {
@@ -178,7 +180,7 @@ export class UCDStore {
     } else {
       // For local mode, read directory structure
       if (!this.basePath) {
-        throw new Error("Base path not set for local mode");
+        throw new UCDStoreError("Base path not set for local mode");
       }
 
       const versionPath = path.join(this.basePath, version);
@@ -200,11 +202,11 @@ export class UCDStore {
 
   async getFile(version: string, filePath: string, extraFilters?: string[]): Promise<string> {
     if (!this.hasVersion(version)) {
-      throw new Error(`Version '${version}' not found in store`);
+      throw new UCDStoreError(`Version '${version}' not found in store`);
     }
 
     if (!this.#filter(trimLeadingSlash(filePath), extraFilters)) {
-      throw new Error(`File path "${filePath}" is filtered out by the store's filter patterns.`);
+      throw new UCDStoreError(`File path "${filePath}" is filtered out by the store's filter patterns.`);
     }
 
     if (this.mode === "remote") {
@@ -213,7 +215,7 @@ export class UCDStore {
     } else {
       // Local filesystem
       if (!this.basePath) {
-        throw new Error("Base path not set for local mode");
+        throw new UCDStoreError("Base path not set for local mode");
       }
 
       const fullPath = path.join(this.basePath, version, filePath);
@@ -311,38 +313,33 @@ export class UCDStore {
     });
 
     // Process files in batches to avoid overwhelming the filesystem
-    const batchSize = 10;
-    for (let i = 0; i < filteredFiles.length; i += batchSize) {
-      const batch = filteredFiles.slice(i, i + batchSize);
+    await processConcurrently(filteredFiles, 10, async (filePath) => {
+      try {
+        const result = await this.#removeFile(filePath, { dryRun, force });
+        const fileResult = {
+          path: filePath,
+          removed: result.removed,
+          size: result.size,
+        };
 
-      await Promise.all(batch.map(async (filePath) => {
-        try {
-          const result = await this.#removeFile(filePath, { dryRun, force });
-          const fileResult = {
-            path: filePath,
-            removed: result.removed,
-            size: result.size,
-          };
+        fileResults.push(fileResult);
 
-          fileResults.push(fileResult);
-
-          if (result.removed) {
-            removedFiles.push(filePath);
-            freedBytes += result.size;
-          }
-        } catch (error) {
-          const errorMsg = error instanceof Error ? error.message : String(error);
-          const fileResult = {
-            path: filePath,
-            removed: false,
-            error: errorMsg,
-          };
-
-          fileResults.push(fileResult);
-          failedRemovals.push(fileResult);
+        if (result.removed) {
+          removedFiles.push(filePath);
+          freedBytes += result.size;
         }
-      }));
-    }
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        const fileResult = {
+          path: filePath,
+          removed: false,
+          error: errorMsg,
+        };
+
+        fileResults.push(fileResult);
+        failedRemovals.push(fileResult);
+      }
+    });
 
     // Update manifest if files were actually removed
     if (!dryRun && removedFiles.length > 0) {
@@ -407,7 +404,7 @@ export class UCDStore {
     if (!force && this.mode === "local" && this.basePath) {
       const relativePath = path.relative(this.basePath, fullPath);
       if (relativePath.startsWith("..") || path.isAbsolute(relativePath)) {
-        throw new Error(`File ${filePath} is outside store directory`);
+        throw new UCDStoreError(`File ${filePath} is outside store directory`);
       }
     }
 
@@ -490,7 +487,14 @@ export class UCDStore {
    * Update the manifest file
    */
   async #updateManifest(): Promise<void> {
-    const manifestData = this.#versions.map((version) => ({
+    await this.#writeManifest(this.#versions);
+  }
+
+  /**
+   * Write manifest data to file
+   */
+  async #writeManifest(versions: string[]): Promise<void> {
+    const manifestData = versions.map((version) => ({
       version,
       path: this.mode === "local" ? path.join(this.basePath!, version) : version,
     }));
@@ -782,7 +786,7 @@ export class UCDStore {
   /**
    * Mirror UCD files from remote to local storage
    */
-  async mirror(options: {
+  async #mirror(options: {
     versions?: string[];
     overwrite?: boolean;
     dryRun?: boolean;
@@ -802,90 +806,41 @@ export class UCDStore {
     }
 
     const { versions = this.#versions, overwrite = false, dryRun = false, concurrency = 5 } = options;
-
-    try {
-      return await this.#performMirror(versions, { overwrite, dryRun, concurrency });
-    } catch (error) {
-      return {
-        success: false,
-        error: `Mirror operation failed: ${error instanceof Error ? error.message : String(error)}`,
-      };
-    }
-  }
-
-  /**
-   * Internal method to perform the actual mirroring
-   */
-  async #performMirror(versions: string[], options: {
-    overwrite: boolean;
-    dryRun: boolean;
-    concurrency: number;
-  }): Promise<{
-    success: boolean;
-    mirrored: string[];
-    skipped: string[];
-    failed: string[];
-  }> {
-    const { overwrite, dryRun, concurrency } = options;
-    const mirrored: string[] = [];
-    const skipped: string[] = [];
-    const failed: string[] = [];
-
-    // Process versions with controlled concurrency
-    await this.#processConcurrently(versions, concurrency, async (version) => {
-      try {
-        const result = await this.#mirrorVersion(version, { overwrite, dryRun });
-        mirrored.push(...result.mirrored);
-        skipped.push(...result.skipped);
-        failed.push(...result.failed);
-      } catch (error) {
-        failed.push(`Version ${version}: ${error instanceof Error ? error.message : String(error)}`);
-      }
-    });
-
-    return {
-      success: failed.length === 0,
-      mirrored,
-      skipped,
-      failed,
-    };
-  }
-
-  /**
-   * Mirror a specific version
-   */
-  async #mirrorVersion(version: string, options: {
-    overwrite: boolean;
-    dryRun: boolean;
-  }): Promise<{
-    mirrored: string[];
-    skipped: string[];
-    failed: string[];
-  }> {
-    const { overwrite, dryRun } = options;
     const mirrored: string[] = [];
     const skipped: string[] = [];
     const failed: string[] = [];
 
     try {
-      const { data, error } = await this.#client.GET("/api/v1/files/{version}", {
-        params: { path: { version } },
-      });
+      // First, collect all version-file pairs that need to be processed
+      const allFiles: Array<{ version: string; filePath: string }> = [];
 
-      if (error) {
-        throw new ApiResponseError(error);
+      for (const version of versions) {
+        try {
+          const { data, error } = await this.#client.GET("/api/v1/files/{version}", {
+            params: { path: { version } },
+          });
+
+          if (error) {
+            throw new ApiResponseError(error);
+          }
+
+          const files = flattenFilePaths(data);
+
+          // Ensure version directory exists
+          const versionPath = path.join(this.basePath!, version);
+          if (!dryRun && !await this.#fs.exists(versionPath)) {
+            await this.#fs.mkdir(versionPath);
+          }
+
+          // Add all files for this version to the processing queue
+          allFiles.push(...files.map((filePath) => ({ version, filePath })));
+        } catch (error) {
+          failed.push(`Version ${version}: ${error instanceof Error ? error.message : String(error)}`);
+        }
       }
 
-      const files = flattenFilePaths(data);
-
-      // Ensure version directory exists
-      const versionPath = path.join(this.basePath!, version);
-      if (!dryRun && !await this.#fs.exists(versionPath)) {
-        await this.#fs.mkdir(versionPath);
-      }
-
-      // Process files with controlled concurrency
-      await this.#processConcurrently(files, 3, async (filePath) => {
+      // Now process all files with a single concurrency control
+      await processConcurrently(allFiles, concurrency, async ({ version, filePath }) => {
         try {
           const result = await this.#mirrorFile(version, filePath, { overwrite, dryRun });
           if (result.mirrored) {
@@ -897,11 +852,19 @@ export class UCDStore {
           failed.push(`${version}/${filePath}: ${error instanceof Error ? error.message : String(error)}`);
         }
       });
-    } catch (error) {
-      throw new Error(`Failed to get file structure for version ${version}: ${error instanceof Error ? error.message : String(error)}`);
-    }
 
-    return { mirrored, skipped, failed };
+      return {
+        success: failed.length === 0,
+        mirrored,
+        skipped,
+        failed,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: `Mirror operation failed: ${error instanceof Error ? error.message : String(error)}`,
+      };
+    }
   }
 
   /**
@@ -936,20 +899,5 @@ export class UCDStore {
     await this.#fs.write(localPath, content);
 
     return { mirrored: true };
-  }
-
-  /**
-   * Generic utility to process items with controlled concurrency
-   */
-  async #processConcurrently<T>(
-    items: T[],
-    concurrency: number,
-    processor: (item: T) => Promise<void>,
-  ): Promise<void> {
-    // Process items in batches to control concurrency
-    for (let i = 0; i < items.length; i += concurrency) {
-      const batch = items.slice(i, i + concurrency);
-      await Promise.all(batch.map(processor));
-    }
   }
 }
