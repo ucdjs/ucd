@@ -1,4 +1,4 @@
-import type { UnicodeVersionFile } from "@ucdjs/fetch";
+import type { UCDClient, UnicodeVersionFile } from "@ucdjs/fetch";
 import type { PathFilter } from "@ucdjs/utils";
 import type { FileSystemBridge } from "@ucdjs/utils/fs-bridge";
 import path from "node:path";
@@ -87,8 +87,8 @@ export class UCDStore {
   public readonly basePath?: string;
   private readonly providedVersions?: string[];
   #versions: string[] = [];
-  private client: ReturnType<typeof createClient>;
 
+  #client: UCDClient;
   #filter: PathFilter;
   #fs: FileSystemBridge;
 
@@ -105,7 +105,7 @@ export class UCDStore {
     this.baseUrl = baseUrl;
     this.basePath = basePath;
     this.providedVersions = versions;
-    this.client = createClient(this.baseUrl);
+    this.#client = createClient(this.baseUrl);
     this.#filter = createPathFilter(globalFilters);
     this.#fs = fs;
   }
@@ -118,13 +118,17 @@ export class UCDStore {
     return this.#filter;
   }
 
+  get client(): UCDClient {
+    return this.#client;
+  }
+
   /**
    * Initialize the store - loads existing data or creates new structure
    */
   async initialize(): Promise<void> {
     const manifestPath = this.getManifestPath();
 
-    // Check if store already exists
+    // check if store already exists
     const isValidStore = this.mode === "local"
       ? await this.#fs.exists(this.basePath!) && await this.#fs.exists(manifestPath)
       : await this.#fs.exists(manifestPath);
@@ -203,7 +207,7 @@ export class UCDStore {
 
     if (this.mode === "remote") {
       const data = await promiseRetry(async () => {
-        const { data, error } = await this.client.GET("/api/v1/files/{version}", {
+        const { data, error } = await this.#client.GET("/api/v1/files/{version}", {
           params: { path: { version } },
         });
 
