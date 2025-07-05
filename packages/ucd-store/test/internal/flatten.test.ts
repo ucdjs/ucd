@@ -1,6 +1,6 @@
 import type { UnicodeVersionFile } from "@ucdjs/fetch";
 import { describe, expect, it } from "vitest";
-import { flattenFilePaths } from "../../src/ucd-files/helpers";
+import { flattenFilePaths } from "../../src/internal/flatten";
 
 describe("flattenFilePaths", () => {
   it("should return empty array for empty input", () => {
@@ -28,6 +28,7 @@ describe("flattenFilePaths", () => {
         ],
       },
     ];
+
     const result = flattenFilePaths(files);
     expect(result).toEqual(["folder1/file1.txt", "folder1/file2.txt"]);
   });
@@ -47,6 +48,7 @@ describe("flattenFilePaths", () => {
       },
       { name: "another-root-file.txt", path: "another-root-file.txt" },
     ];
+
     const result = flattenFilePaths(files);
     expect(result).toEqual([
       "root-file.txt",
@@ -77,6 +79,7 @@ describe("flattenFilePaths", () => {
         ],
       },
     ];
+
     const result = flattenFilePaths(files);
     expect(result).toEqual(["level1/level2/level3/deep-file.txt"]);
   });
@@ -92,6 +95,7 @@ describe("flattenFilePaths", () => {
         ],
       },
     ];
+
     const result = flattenFilePaths(files, "prefix");
     expect(result).toEqual(["prefix/file.txt", "prefix/folder/nested.txt"]);
   });
@@ -103,6 +107,7 @@ describe("flattenFilePaths", () => {
         path: "file.txt",
       },
     ];
+
     const result = flattenFilePaths(files, "");
     expect(result).toEqual(["file.txt"]);
   });
@@ -116,6 +121,7 @@ describe("flattenFilePaths", () => {
       },
       { name: "file.txt", path: "file.txt" },
     ];
+
     const result = flattenFilePaths(files);
     expect(result).toEqual(["file.txt"]);
   });
@@ -153,6 +159,7 @@ describe("flattenFilePaths", () => {
       },
       { name: "package.json", path: "package.json" },
     ];
+
     const result = flattenFilePaths(files);
     expect(result).toEqual([
       "docs/readme.md",

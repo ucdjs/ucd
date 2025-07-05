@@ -1,78 +1,58 @@
 import type { UCDClient, UnicodeVersionFile } from "@ucdjs/fetch";
 import type { PathFilter } from "@ucdjs/utils";
 import type { FileSystemBridge } from "@ucdjs/utils/fs-bridge";
-import type { AnalyzeOptions, AnalyzeResult } from "./analyze";
-import type { CleanResult } from "./clean";
+import type {
+  AnalyzeResult,
+  CleanResult,
+  StoreMode,
+  UCDStoreOptions,
+  VersionAnalysis,
+} from "./types";
 import path from "node:path";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
-import { promiseRetry, trimLeadingSlash } from "@luxass/utils";
+import { invariant, promiseRetry, trimLeadingSlash } from "@luxass/utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { ApiResponseError, createClient } from "@ucdjs/fetch";
-import { createPathFilter } from "@ucdjs/utils";
+import { createPathFilter, safeJsonParse } from "@ucdjs/utils";
 import defu from "defu";
-import { analyzeStore } from "./analyze";
-import { cleanStore } from "./clean";
-import { UCDStoreError } from "./errors";
-import { flattenFilePaths } from "./ucd-files/helpers";
+import { z } from "zod/v4";
+import { processConcurrently } from "./internal/concurrency";
+import { UCDStoreError } from "./internal/errors";
+import { flattenFilePaths } from "./internal/flatten";
 
-type StoreMode = "remote" | "local";
-
-interface BaseUCDStoreOptions {
-  /**
-   * Base URL for the Unicode API
-   *
-   * @default "https://api.ucdjs.dev"
-   */
-  baseUrl?: string;
-
-  /**
-   * Optional filters to apply when fetching Unicode data.
-   * These can be used to limit the data fetched from the API.
-   */
-  globalFilters?: string[];
-
-  /**
-   * File System Bridge to use for file operations.
-   * You can either provide your own implementation or use one of the following:
-   * - `@ucdjs/utils/fs-bridge/node` for Node.js environments
-   * - `@ucdjs/utils/fs-bridge/http` for HTTP-based file systems (e.g., for remote stores)
-   */
-  fs: FileSystemBridge;
-}
-
-interface internal_LocalUCDStoreOptions extends BaseUCDStoreOptions {
-  mode: "local";
-
-  /**
-   * Base path for the local store
-   *
-   * @default "./ucd-files"
-   */
-  basePath?: string;
-
-  /**
-   * List of Unicode versions to include in the local store.
-   * If not provided, defaults to all stable versions from UNICODE_VERSION_METADATA.
-   */
-  versions?: string[];
-}
-
-interface internal_RemoteUCDStoreOptions extends BaseUCDStoreOptions {
-  mode: "remote";
-}
-
-export type UCDStoreOptions = internal_LocalUCDStoreOptions | internal_RemoteUCDStoreOptions;
+const MANIFEST_SCHEMA = z.array(
+  z.object({
+    version: z.string(),
+    path: z.string(),
+  }),
+);
 
 export class UCDStore {
+  /**
+   * Base URL for the UCD store API.
+   */
   public readonly baseUrl: string;
+
+  /**
+   * Store mode, either "local" or "remote".
+   * - "local" means the store is on the local filesystem.
+   * - "remote" means the store is accessed via HTTP.
+   */
   public readonly mode: StoreMode;
+
+  /**
+   * Base path for the local store.
+   * Only used in "local" mode.
+   *
+   * TODO(@luxass): See if we can either remove this, or make it also used in remote mode.
+   */
   public readonly basePath?: string;
-  private readonly providedVersions?: string[];
-  #versions: string[] = [];
 
   #client: UCDClient;
   #filter: PathFilter;
   #fs: FileSystemBridge;
+  #versions: string[] = [];
+  #manifestPath: string;
 
   constructor(options: UCDStoreOptions) {
     const { baseUrl, globalFilters, mode, fs, basePath, versions } = defu(options, {
@@ -86,10 +66,11 @@ export class UCDStore {
     this.mode = mode;
     this.baseUrl = baseUrl;
     this.basePath = basePath;
-    this.providedVersions = versions;
+    this.#versions = versions;
     this.#client = createClient(this.baseUrl);
     this.#filter = createPathFilter(globalFilters);
     this.#fs = fs;
+    this.#manifestPath = this.mode === "local" ? path.join(this.basePath!, ".ucd-store.json") : ".ucd-store.json";
   }
 
   get fs(): FileSystemBridge {
@@ -108,16 +89,12 @@ export class UCDStore {
    * Initialize the store - loads existing data or creates new structure
    */
   async initialize(): Promise<void> {
-    const manifestPath = this.getManifestPath();
-
-    // check if store already exists
     const isValidStore = this.mode === "local"
-      ? await this.#fs.exists(this.basePath!) && await this.#fs.exists(manifestPath)
-      : await this.#fs.exists(manifestPath);
+      ? await this.#fs.exists(this.basePath!) && await this.#fs.exists(this.#manifestPath!)
+      : await this.#fs.exists(this.#manifestPath!);
 
     if (isValidStore) {
-      // Load versions from existing store
-      await this.loadVersionsFromStore();
+      await this.#loadVersionsFromStore();
     } else {
       // we can't initialize a remote store without existing data.
       // and since the store endpoint isn't valid, we can't fetch the data either.
@@ -126,65 +103,61 @@ export class UCDStore {
         throw new UCDStoreError("Remote store cannot be initialized without existing data. Please provide a valid store URL or initialize a local store.");
       }
 
-      if (!this.providedVersions || this.providedVersions.length === 0) {
+      if (!this.#versions || this.#versions.length === 0) {
         throw new UCDStoreError("No versions provided for initializing new local store");
       }
 
-      await this.createNewLocalStore(this.providedVersions);
+      await this.#createNewLocalStore(this.#versions);
     }
   }
 
-  /**
-   * Get the appropriate manifest path based on store mode
-   */
-  private getManifestPath(): string {
-    return this.mode === "local"
-      ? path.join(this.basePath!, ".ucd-store.json")
-      : ".ucd-store.json";
-  }
-
-  private async loadVersionsFromStore(): Promise<void> {
-    const manifestPath = this.getManifestPath();
-
+  async #loadVersionsFromStore(): Promise<void> {
     try {
-      const manifestContent = await this.#fs.read(manifestPath);
-      const manifestData = JSON.parse(manifestContent);
-      this.#versions = manifestData.map((entry: any) => entry.version);
+      const manifestContent = await this.#fs.read(this.#manifestPath);
+
+      // validate the manifest content
+      const jsonData = safeJsonParse(manifestContent);
+      if (!jsonData) {
+        throw new UCDStoreError("Invalid JSON format in store manifest");
+      }
+
+      // verify that is an array of objects with version and path properties
+      const parsedManifest = MANIFEST_SCHEMA.safeParse(jsonData);
+      if (!parsedManifest.success) {
+        throw new UCDStoreError("Invalid store manifest schema");
+      }
+
+      this.#versions = parsedManifest.data.map((entry) => entry.version);
     } catch (error) {
-      throw new Error(`Failed to load store manifest: ${error instanceof Error ? error.message : String(error)}`);
+      throw new UCDStoreError(`Failed to load store manifest: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
-  private async createNewLocalStore(versions: string[]): Promise<void> {
-    if (!this.basePath) return;
+  async #createNewLocalStore(versions: string[]): Promise<void> {
+    invariant(this.mode === "local", "createNewLocalStore can only be called in local mode");
+    invariant(this.basePath, "Base path must be set for local store");
 
-    // await this.#fs.ensureDir(this.basePath);
+    if (!await this.#fs.exists(this.basePath)) {
+      await this.#fs.mkdir(this.basePath);
+    }
 
-    // TODO: Implement actual file mirroring
-    // await mirrorUCDFiles({
-    //   versions,
-    //   basePath: this.basePath,
-    //   fs: this.#fs,
-    //   patternMatcher: this.#filter,
-    // });
+    // Mirror UCD files from remote to local
+    await this.#mirror({ versions, overwrite: false, dryRun: false });
 
-    await this.createStoreManifest(versions);
+    await this.#createStoreManifest(versions);
     this.#versions = [...versions];
   }
 
-  private async createStoreManifest(versions: string[]): Promise<void> {
-    const manifestPath = this.getManifestPath();
-    const manifestData = versions.map((version) => ({
-      version,
-      path: this.mode === "local" ? path.join(this.basePath!, version) : version,
-    }));
+  async #createStoreManifest(versions: string[]): Promise<void> {
+    invariant(this.mode === "local", "createStoreManifest can only be called in local mode");
+    invariant(this.basePath, "Base path must be set for local store");
 
-    await this.#fs.write(manifestPath, JSON.stringify(manifestData, null, 2));
+    await this.#writeManifest(versions);
   }
 
   async getFileTree(version: string, extraFilters?: string[]): Promise<UnicodeVersionFile[]> {
     if (!this.hasVersion(version)) {
-      throw new Error(`Version '${version}' not found in store`);
+      throw new UCDStoreError(`Version '${version}' not found in store`);
     }
 
     if (this.mode === "remote") {
@@ -203,11 +176,11 @@ export class UCDStore {
         minTimeout: 500,
       });
 
-      return this.processFileStructure(data, extraFilters);
+      return this.#processFileStructure(data, extraFilters);
     } else {
       // For local mode, read directory structure
       if (!this.basePath) {
-        throw new Error("Base path not set for local mode");
+        throw new UCDStoreError("Base path not set for local mode");
       }
 
       const versionPath = path.join(this.basePath, version);
@@ -218,7 +191,7 @@ export class UCDStore {
         path: file,
       }));
 
-      return this.processFileStructure(fileStructure, extraFilters);
+      return this.#processFileStructure(fileStructure, extraFilters);
     }
   }
 
@@ -229,11 +202,11 @@ export class UCDStore {
 
   async getFile(version: string, filePath: string, extraFilters?: string[]): Promise<string> {
     if (!this.hasVersion(version)) {
-      throw new Error(`Version '${version}' not found in store`);
+      throw new UCDStoreError(`Version '${version}' not found in store`);
     }
 
     if (!this.#filter(trimLeadingSlash(filePath), extraFilters)) {
-      throw new Error(`File path "${filePath}" is filtered out by the store's filter patterns.`);
+      throw new UCDStoreError(`File path "${filePath}" is filtered out by the store's filter patterns.`);
     }
 
     if (this.mode === "remote") {
@@ -242,7 +215,7 @@ export class UCDStore {
     } else {
       // Local filesystem
       if (!this.basePath) {
-        throw new Error("Base path not set for local mode");
+        throw new UCDStoreError("Base path not set for local mode");
       }
 
       const fullPath = path.join(this.basePath, version, filePath);
@@ -259,7 +232,7 @@ export class UCDStore {
     return flattenFilePaths(fileStructure);
   }
 
-  private processFileStructure(rawStructure: UnicodeVersionFile[], extraFilters?: string[]): UnicodeVersionFile[] {
+  #processFileStructure(rawStructure: UnicodeVersionFile[], extraFilters?: string[]): UnicodeVersionFile[] {
     return rawStructure.map((item) => {
       if (!this.#filter(trimLeadingSlash(item.path), extraFilters)) {
         return null;
@@ -267,7 +240,7 @@ export class UCDStore {
       return {
         name: item.name,
         path: item.path,
-        ...(item.children ? { children: this.processFileStructure(item.children, extraFilters) } : {}),
+        ...(item.children ? { children: this.#processFileStructure(item.children, extraFilters) } : {}),
       };
     }).filter((item): item is UnicodeVersionFile => item != null);
   }
@@ -281,131 +254,650 @@ export class UCDStore {
     return allFiles;
   }
 
-  async clean(dryRun?: boolean): Promise<CleanResult> {
-    // First analyze to get files that need to be removed
-    const analyzeResult = await analyzeStore(this.getManifestPath(), {
-      calculateSizes: true,
-      checkOrphaned: true,
-      fs: this.#fs,
-      versions: this.#versions,
-    });
+  async clean(options: {
+    dryRun?: boolean;
+    versions?: string[];
+    force?: boolean;
+  } = {}): Promise<CleanResult> {
+    const { dryRun = false, versions: targetVersions, force = false } = options;
 
-    if (!analyzeResult.success) {
+    // Use specified versions or all versions
+    const versionsToClean = targetVersions || this.#versions;
+
+    try {
+      // First analyze to get files that need to be removed
+      const analyzeResult = await this.analyze({
+        calculateSizes: true,
+        checkOrphaned: true,
+      });
+
+      if (!analyzeResult.success) {
+        return {
+          success: false,
+          error: `Failed to analyze store before cleaning: ${analyzeResult.error}`,
+        };
+      }
+
+      // Perform the actual cleaning
+      return await this.#performClean(analyzeResult.filesToRemove, {
+        dryRun,
+        versions: versionsToClean,
+        force,
+      });
+    } catch (error) {
       return {
         success: false,
-        error: `Failed to analyze store before cleaning: ${analyzeResult.error}`,
+        error: `Clean operation failed: ${error instanceof Error ? error.message : String(error)}`,
+      };
+    }
+  }
+
+  /**
+   * Internal method to perform the actual cleaning
+   */
+  async #performClean(filesToRemove: string[], options: {
+    dryRun: boolean;
+    versions: string[];
+    force: boolean;
+  }): Promise<CleanResult> {
+    const { dryRun, versions, force } = options;
+    const fileResults: Array<{ path: string; removed: boolean; error?: string; size?: number }> = [];
+    const removedFiles: string[] = [];
+    const failedRemovals: Array<{ path: string; removed: boolean; error?: string; size?: number }> = [];
+    let freedBytes = 0;
+
+    // Filter files to only include those from target versions
+    const filteredFiles = filesToRemove.filter((filePath) => {
+      const version = filePath.split("/")[0];
+      return version && versions.includes(version);
+    });
+
+    // Process files in batches to avoid overwhelming the filesystem
+    await processConcurrently(filteredFiles, 10, async (filePath) => {
+      try {
+        const result = await this.#removeFile(filePath, { dryRun, force });
+        const fileResult = {
+          path: filePath,
+          removed: result.removed,
+          size: result.size,
+        };
+
+        fileResults.push(fileResult);
+
+        if (result.removed) {
+          removedFiles.push(filePath);
+          freedBytes += result.size;
+        }
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        const fileResult = {
+          path: filePath,
+          removed: false,
+          error: errorMsg,
+        };
+
+        fileResults.push(fileResult);
+        failedRemovals.push(fileResult);
+      }
+    });
+
+    // Update manifest if files were actually removed
+    if (!dryRun && removedFiles.length > 0) {
+      await this.#updateManifestAfterClean(removedFiles);
+    }
+
+    if (failedRemovals.length > 0) {
+      return {
+        success: false,
+        error: `Failed to remove ${failedRemovals.length} files`,
+        partialResults: {
+          filesToRemove: filteredFiles,
+          fileResults,
+          removedFiles,
+          failedRemovals,
+          deletedCount: removedFiles.length,
+          freedBytes,
+        },
       };
     }
 
-    // Use the files to remove from analysis
-    return cleanStore(analyzeResult.filesToRemove, {
-      fs: this.#fs,
-      dryRun: dryRun || false,
-      versions: this.versions,
-    });
+    return {
+      success: true,
+      filesToRemove: filteredFiles,
+      fileResults,
+      removedFiles,
+      failedRemovals,
+      deletedCount: removedFiles.length,
+      freedBytes,
+    };
   }
 
-  async analyze(options: Omit<AnalyzeOptions, "fs" | "versions"> = {}): Promise<AnalyzeResult> {
-    const manifestPath = this.getManifestPath();
-    return analyzeStore(manifestPath, {
-      ...options,
-      fs: this.#fs,
-      versions: this.#versions,
-    });
-  }
-}
-
-/**
- * Creates a new UCD store instance with the specified options.
- *
- * @param {UCDStoreOptions} options - Configuration options for the UCD store
- * @returns {Promise<UCDStore>} A fully initialized UCDStore instance
- */
-export async function createUCDStore(options: UCDStoreOptions): Promise<UCDStore> {
-  const store = new UCDStore(options);
-
-  await store.initialize();
-
-  return store;
-}
-
-export type LocalUCDStoreOptions = Omit<internal_LocalUCDStoreOptions, "mode" | "fs"> & {
   /**
-   * File System Bridge to use for local file operations.
-   * If not provided, the Node.js file system bridge will be used.
+   * Remove a single file with size tracking
    */
-  fs?: FileSystemBridge;
-};
+  async #removeFile(filePath: string, options: {
+    dryRun: boolean;
+    force: boolean;
+  }): Promise<{ removed: boolean; size: number }> {
+    const { dryRun, force } = options;
+    const fullPath = this.#getFullPath(filePath);
 
-/**
- * Creates a new UCD store instance configured for local file system access.
- *
- * This function simplifies the creation of a local UCD store by:
- * - Setting the mode to "local" automatically
- * - Loading the Node.js file system bridge if not provided
- * - Initializing the store with the specified options
- *
- * @param {LocalUCDStoreOptions} options - Configuration options for the local UCD store
- * @returns {Promise<UCDStore>} A fully initialized local UCDStore instance
- */
-export async function createLocalUCDStore(options: LocalUCDStoreOptions = {}): Promise<UCDStore> {
-  const fs = options.fs || await import("@ucdjs/utils/fs-bridge/node").then((m) => m.default);
+    // Check if file exists
+    if (!(await this.#fs.exists(fullPath))) {
+      return { removed: false, size: 0 };
+    }
 
-  if (!fs) {
-    throw new Error("FileSystemBridge is required for local UCD store");
+    // Get file size before removal
+    let size = 0;
+    try {
+      const stats = await this.#fs.stat(fullPath);
+      size = stats.size;
+    } catch {
+      // If we can't stat, assume 0 size
+    }
+
+    if (dryRun) {
+      return { removed: true, size };
+    }
+
+    // Safety check - don't remove if not in store directory (unless forced)
+    if (!force && this.mode === "local" && this.basePath) {
+      const relativePath = path.relative(this.basePath, fullPath);
+      if (relativePath.startsWith("..") || path.isAbsolute(relativePath)) {
+        throw new UCDStoreError(`File ${filePath} is outside store directory`);
+      }
+    }
+
+    await this.#fs.rm(fullPath);
+    return { removed: true, size };
   }
 
-  const store = new UCDStore({
-    ...options,
-    mode: "local",
-    fs,
-  });
-
-  await store.initialize();
-
-  return store;
-}
-
-export type RemoteUCDStoreOptions = Omit<internal_RemoteUCDStoreOptions, "mode" | "fs"> & {
   /**
-   * File System Bridge to use for remote file operations.
-   * If not provided, the HTTP file system bridge will be used with the default proxy URL.
+   * Update manifest after cleaning
    */
-  fs?: FileSystemBridge;
-};
+  async #updateManifestAfterClean(removedFiles: string[]): Promise<void> {
+    if (this.mode !== "local") {
+      return; // Only relevant for local mode
+    }
 
-/**
- * Creates a new UCD store instance configured for remote access via HTTP.
- *
- * This function simplifies the creation of a remote UCD store by:
- * - Setting the mode to "remote" automatically
- * - Loading the HTTP file system bridge if not provided
- * - Initializing the store with the specified options
- *
- * @param {RemoteUCDStoreOptions} options - Configuration options for the remote UCD store
- * @returns {Promise<UCDStore>} A fully initialized remote UCDStore instance
- */
-export async function createRemoteUCDStore(options: RemoteUCDStoreOptions = {}): Promise<UCDStore> {
-  let fsInstance: FileSystemBridge;
+    // Group removed files by version
+    const removedByVersion = new Map<string, string[]>();
 
-  if (options.fs) {
-    fsInstance = options.fs;
-  } else {
-    const httpFsBridge = await import("@ucdjs/utils/fs-bridge/http").then((m) => m.default);
-    fsInstance = typeof httpFsBridge === "function"
-      ? httpFsBridge({
-          baseUrl: `${options.baseUrl || UCDJS_API_BASE_URL}/api/v1/unicode-proxy/`,
-        })
-      : httpFsBridge;
+    for (const filePath of removedFiles) {
+      const [version, ...pathParts] = filePath.split("/");
+      if (version && pathParts.length > 0) {
+        if (!removedByVersion.has(version)) {
+          removedByVersion.set(version, []);
+        }
+        removedByVersion.get(version)!.push(pathParts.join("/"));
+      }
+    }
+
+    // Check if any versions are now empty
+    const versionsToRemove: string[] = [];
+
+    for (const [version] of removedByVersion) {
+      if (await this.#isVersionEmpty(version)) {
+        versionsToRemove.push(version);
+        await this.#removeEmptyVersionDirectory(version);
+      }
+    }
+
+    // Update versions array and manifest if needed
+    if (versionsToRemove.length > 0) {
+      this.#versions = this.#versions.filter((v) => !versionsToRemove.includes(v));
+      await this.#updateManifest();
+    }
   }
 
-  const store = new UCDStore({
-    ...options,
-    mode: "remote",
-    fs: fsInstance,
-  });
+  /**
+   * Check if a version directory is empty
+   */
+  async #isVersionEmpty(version: string): Promise<boolean> {
+    if (this.mode !== "local" || !this.basePath) {
+      return false;
+    }
 
-  await store.initialize();
+    try {
+      const versionPath = path.join(this.basePath, version);
+      const files = await this.#fs.listdir(versionPath, true);
+      return files.length === 0;
+    } catch {
+      return true; // If we can't list, assume empty
+    }
+  }
 
-  return store;
+  /**
+   * Remove empty version directory
+   */
+  async #removeEmptyVersionDirectory(version: string): Promise<void> {
+    if (this.mode !== "local" || !this.basePath) {
+      return;
+    }
+
+    try {
+      const versionPath = path.join(this.basePath, version);
+      await this.#fs.rm(versionPath);
+    } catch {
+      // Ignore errors when removing empty directories
+    }
+  }
+
+  /**
+   * Update the manifest file
+   */
+  async #updateManifest(): Promise<void> {
+    await this.#writeManifest(this.#versions);
+  }
+
+  /**
+   * Write manifest data to file
+   */
+  async #writeManifest(versions: string[]): Promise<void> {
+    const manifestData = versions.map((version) => ({
+      version,
+      path: this.mode === "local" ? path.join(this.basePath!, version) : version,
+    }));
+
+    await this.#fs.write(this.#manifestPath, JSON.stringify(manifestData, null, 2));
+  }
+
+  /**
+   * Get the full filesystem path for a file
+   */
+  #getFullPath(filePath: string): string {
+    if (this.mode === "local") {
+      return path.join(this.basePath!, filePath);
+    }
+    return filePath;
+  }
+
+  async analyze(options: {
+    calculateSizes?: boolean;
+    checkOrphaned?: boolean;
+    includeDetails?: boolean;
+  } = {}): Promise<AnalyzeResult> {
+    const { calculateSizes = false, checkOrphaned = false, includeDetails = false } = options;
+
+    try {
+      const analysis = await this.#performAnalysis({
+        calculateSizes,
+        checkOrphaned,
+        includeDetails,
+      });
+
+      return {
+        success: true,
+        totalFiles: analysis.totalFiles,
+        totalSize: analysis.totalSize,
+        versions: analysis.versions,
+        filesToRemove: analysis.filesToRemove,
+        storeHealth: analysis.storeHealth,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: `Analysis failed: ${error instanceof Error ? error.message : String(error)}`,
+      };
+    }
+  }
+
+  /**
+   * Internal method to perform the actual analysis
+   */
+  async #performAnalysis(options: {
+    calculateSizes: boolean;
+    checkOrphaned: boolean;
+    includeDetails: boolean;
+  }): Promise<{
+    totalFiles: number;
+    totalSize: number;
+    versions: VersionAnalysis[];
+    filesToRemove: string[];
+    storeHealth: "healthy" | "needs_cleanup" | "corrupted";
+  }> {
+    const { calculateSizes, checkOrphaned, includeDetails } = options;
+
+    const versionAnalyses: VersionAnalysis[] = [];
+    let totalFiles = 0;
+    let totalSize = 0;
+    const filesToRemove: string[] = [];
+    let hasIssues = false;
+
+    // Analyze each version
+    for (const version of this.#versions) {
+      try {
+        const versionAnalysis = await this.#analyzeVersion(version, {
+          calculateSizes,
+          checkOrphaned,
+          includeDetails,
+        });
+
+        versionAnalyses.push(versionAnalysis);
+        totalFiles += versionAnalysis.fileCount;
+        totalSize += versionAnalysis.totalSize || 0;
+
+        // Check for issues
+        if (!versionAnalysis.isComplete
+          || (versionAnalysis.orphanedFiles && versionAnalysis.orphanedFiles.length > 0)) {
+          hasIssues = true;
+        }
+
+        // Add orphaned files to removal list
+        if (versionAnalysis.orphanedFiles) {
+          filesToRemove.push(...versionAnalysis.orphanedFiles);
+        }
+      } catch (error) {
+        hasIssues = true;
+        // Add a failed version analysis
+        versionAnalyses.push({
+          version,
+          fileCount: 0,
+          isComplete: false,
+          missingFiles: [`Failed to analyze: ${error instanceof Error ? error.message : String(error)}`],
+        });
+      }
+    }
+
+    // Check for orphaned files at store level if requested
+    if (checkOrphaned) {
+      const orphanedFiles = await this.#findOrphanedFiles();
+      filesToRemove.push(...orphanedFiles);
+      if (orphanedFiles.length > 0) {
+        hasIssues = true;
+      }
+    }
+
+    // Determine store health
+    let storeHealth: "healthy" | "needs_cleanup" | "corrupted" = "healthy";
+    if (hasIssues) {
+      storeHealth = filesToRemove.length > 0 ? "needs_cleanup" : "corrupted";
+    }
+
+    return {
+      totalFiles,
+      totalSize,
+      versions: versionAnalyses,
+      filesToRemove,
+      storeHealth,
+    };
+  }
+
+  /**
+   * Analyze a specific version
+   */
+  async #analyzeVersion(version: string, options: {
+    calculateSizes: boolean;
+    checkOrphaned: boolean;
+    includeDetails: boolean;
+  }): Promise<VersionAnalysis> {
+    const { calculateSizes, checkOrphaned } = options;
+
+    try {
+      const files = await this.getFilePaths(version);
+      let totalSize = 0;
+      const orphanedFiles: string[] = [];
+      const missingFiles: string[] = [];
+
+      // Calculate sizes if requested
+      if (calculateSizes) {
+        for (const filePath of files) {
+          try {
+            const size = await this.#getFileSize(version, filePath);
+            totalSize += size;
+          } catch {
+            // Skip files that can't be read
+          }
+        }
+      }
+
+      // Check for orphaned files at version level if requested
+      if (checkOrphaned) {
+        const versionOrphans = await this.#findOrphanedFilesInVersion(version);
+        orphanedFiles.push(...versionOrphans);
+      }
+
+      // For now, assume all files are complete unless we find issues
+      const isComplete = orphanedFiles.length === 0 && missingFiles.length === 0;
+
+      const analysis: VersionAnalysis = {
+        version,
+        fileCount: files.length,
+        isComplete,
+      };
+
+      if (calculateSizes) {
+        analysis.totalSize = totalSize;
+      }
+
+      if (orphanedFiles.length > 0) {
+        analysis.orphanedFiles = orphanedFiles;
+      }
+
+      if (missingFiles.length > 0) {
+        analysis.missingFiles = missingFiles;
+      }
+
+      return analysis;
+    } catch (error) {
+      return {
+        version,
+        fileCount: 0,
+        isComplete: false,
+        missingFiles: [`Failed to analyze version: ${error instanceof Error ? error.message : String(error)}`],
+      };
+    }
+  }
+
+  /**
+   * Get the size of a file
+   */
+  async #getFileSize(version: string, filePath: string): Promise<number> {
+    try {
+      if (this.mode === "remote") {
+        // For remote mode, we can't easily get file sizes without downloading
+        // Return 0 for now, or implement HEAD request if the API supports it
+        return 0;
+      } else {
+        const fullPath = path.join(this.basePath!, version, filePath);
+        const stats = await this.#fs.stat(fullPath);
+        return stats.size;
+      }
+    } catch {
+      return 0;
+    }
+  }
+
+  /**
+   * Find orphaned files (files that exist but aren't tracked in manifest)
+   */
+  async #findOrphanedFiles(): Promise<string[]> {
+    if (this.mode === "remote") {
+      // Remote mode doesn't have orphaned files concept
+      return [];
+    }
+
+    const orphanedFiles: string[] = [];
+
+    try {
+      // Get all files that actually exist in the base path
+      const existingFiles = await this.#fs.listdir(this.basePath!, true);
+
+      // Get all files that should exist according to manifest
+      const expectedFiles = new Set<string>();
+
+      for (const version of this.#versions) {
+        const versionFiles = await this.getFilePaths(version);
+        for (const file of versionFiles) {
+          expectedFiles.add(path.join(version, file));
+        }
+      }
+
+      // Find files that exist but aren't expected
+      for (const file of existingFiles) {
+        const relativePath = path.relative(this.basePath!, file);
+
+        // Skip manifest file and directory entries
+        if (relativePath === ".ucd-store.json" || relativePath.endsWith("/")) {
+          continue;
+        }
+
+        if (!expectedFiles.has(relativePath)) {
+          orphanedFiles.push(relativePath);
+        }
+      }
+    } catch (error) {
+      // If we can't list files, just return empty array
+      console.warn("Failed to find orphaned files:", error);
+    }
+
+    return orphanedFiles;
+  }
+
+  /**
+   * Find orphaned files in a specific version
+   */
+  async #findOrphanedFilesInVersion(version: string): Promise<string[]> {
+    if (this.mode === "remote") {
+      return [];
+    }
+
+    const orphanedFiles: string[] = [];
+
+    try {
+      const versionPath = path.join(this.basePath!, version);
+      const existingFiles = await this.#fs.listdir(versionPath, true);
+      const expectedFiles = await this.getFilePaths(version);
+      const expectedSet = new Set(expectedFiles);
+
+      for (const file of existingFiles) {
+        const relativePath = path.relative(versionPath, file);
+        if (!expectedSet.has(relativePath)) {
+          orphanedFiles.push(`${version}/${relativePath}`);
+        }
+      }
+    } catch {
+      // If we can't analyze this version, skip it
+    }
+
+    return orphanedFiles;
+  }
+
+  /**
+   * Mirror UCD files from remote to local storage
+   */
+  async #mirror(options: {
+    versions?: string[];
+    overwrite?: boolean;
+    dryRun?: boolean;
+    concurrency?: number;
+  } = {}): Promise<{
+    success: boolean;
+    error?: string;
+    mirrored?: string[];
+    skipped?: string[];
+    failed?: string[];
+  }> {
+    if (this.mode !== "local") {
+      return {
+        success: false,
+        error: "Mirror operation is only supported for local stores",
+      };
+    }
+
+    const { versions = this.#versions, overwrite = false, dryRun = false, concurrency = 5 } = options;
+    const mirrored: string[] = [];
+    const skipped: string[] = [];
+    const failed: string[] = [];
+
+    try {
+      // First, collect all version-file pairs that need to be processed
+      const allFiles: Array<{ version: string; filePath: string }> = [];
+
+      for (const version of versions) {
+        try {
+          const { data, error } = await this.#client.GET("/api/v1/files/{version}", {
+            params: { path: { version } },
+          });
+
+          if (error) {
+            throw new ApiResponseError(error);
+          }
+
+          const files = flattenFilePaths(data);
+
+          // Ensure version directory exists
+          const versionPath = path.join(this.basePath!, version);
+          if (!dryRun && !await this.#fs.exists(versionPath)) {
+            await this.#fs.mkdir(versionPath);
+          }
+
+          // Add all files for this version to the processing queue
+          allFiles.push(...files.map((filePath) => ({ version, filePath })));
+        } catch (error) {
+          failed.push(`Version ${version}: ${error instanceof Error ? error.message : String(error)}`);
+        }
+      }
+
+      // Now process all files with a single concurrency control
+      await processConcurrently(allFiles, concurrency, async ({ version, filePath }) => {
+        try {
+          const result = await this.#mirrorFile(version, filePath, { overwrite, dryRun });
+          if (result.mirrored) {
+            mirrored.push(filePath);
+          } else {
+            skipped.push(filePath);
+          }
+        } catch (error) {
+          failed.push(`${version}/${filePath}: ${error instanceof Error ? error.message : String(error)}`);
+        }
+      });
+
+      return {
+        success: failed.length === 0,
+        mirrored,
+        skipped,
+        failed,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: `Mirror operation failed: ${error instanceof Error ? error.message : String(error)}`,
+      };
+    }
+  }
+
+  /**
+   * Mirror a specific file
+   */
+  async #mirrorFile(version: string, filePath: string, options: {
+    overwrite: boolean;
+    dryRun: boolean;
+  }): Promise<{ mirrored: boolean }> {
+    const { overwrite, dryRun } = options;
+    const localPath = path.join(this.basePath!, version, filePath);
+
+    // Check if file already exists
+    if (!overwrite && await this.#fs.exists(localPath)) {
+      return { mirrored: false };
+    }
+
+    if (dryRun) {
+      return { mirrored: true };
+    }
+
+    // Ensure parent directory exists
+    const parentDir = path.dirname(localPath);
+    if (!await this.#fs.exists(parentDir)) {
+      await this.#fs.mkdir(parentDir);
+    }
+
+    // Download file content from HTTP filesystem
+    const content = await this.#fs.read(`${version}/${filePath}`);
+
+    // Write to local filesystem
+    await this.#fs.write(localPath, content);
+
+    return { mirrored: true };
+  }
 }

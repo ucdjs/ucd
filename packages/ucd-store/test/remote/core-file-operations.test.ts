@@ -1,9 +1,9 @@
 import { HttpResponse, mockFetch, mockResponses } from "#msw-utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
-import { flattenFilePaths } from "@ucdjs/ucd-store";
 import { PRECONFIGURED_FILTERS } from "@ucdjs/utils";
 import { describe, expect, it } from "vitest";
-import { createRemoteUCDStore } from "../../src/store";
+import { createRemoteUCDStore } from "../../src/factory";
+import { flattenFilePaths } from "../../src/internal/flatten";
 
 describe("remote ucd store - core file operations", () => {
   const mockFiles = [
