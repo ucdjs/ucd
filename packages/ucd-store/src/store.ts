@@ -13,8 +13,8 @@ import { createPathFilter } from "@ucdjs/utils";
 import defu from "defu";
 import { analyzeStore } from "./analyze";
 import { cleanStore } from "./clean";
-import { UCDStoreError } from "./errors";
-import { flattenFilePaths } from "./helpers";
+import { UCDStoreError } from "./internal/errors";
+import { flattenFilePaths } from "./internal/flatten";
 
 export class UCDStore {
   public readonly baseUrl: string;

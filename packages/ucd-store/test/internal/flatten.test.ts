@@ -1,6 +1,6 @@
 import type { UnicodeVersionFile } from "@ucdjs/fetch";
 import { describe, expect, it } from "vitest";
-import { flattenFilePaths } from "../src/helpers";
+import { flattenFilePaths } from "../../src/internal/flatten";
 
 describe("flattenFilePaths", () => {
   it("should return empty array for empty input", () => {

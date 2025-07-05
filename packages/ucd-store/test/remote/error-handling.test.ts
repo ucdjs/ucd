@@ -10,7 +10,7 @@ import {
   vi,
 } from "vitest";
 import { createRemoteUCDStore } from "../../src/factory";
-import { flattenFilePaths } from "../../src/helpers";
+import { flattenFilePaths } from "../../src/internal/flatten";
 
 describe("remote ucd store - error handling", () => {
   let mockFs: FileSystemBridge;
