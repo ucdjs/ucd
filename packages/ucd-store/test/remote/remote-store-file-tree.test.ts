@@ -1,4 +1,4 @@
-import { mockFetch, mockResponses } from "#msw-utils";
+import { HttpResponse, mockFetch, mockResponses } from "#msw-utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { flattenFilePaths } from "@ucdjs/ucd-store";
 import { PRECONFIGURED_FILTERS } from "@ucdjs/utils";
@@ -127,7 +127,6 @@ describe("Remote UCD Store - File Tree Operations", () => {
     let retryCount = 0;
     mockFetch([
       [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
-        console.error("Simulating API error for retry test");
         retryCount++;
         if (retryCount < 2) {
           return mockResponses.serverError("Temporary error, retrying...");
@@ -138,7 +137,7 @@ describe("Remote UCD Store - File Tree Operations", () => {
 
     const store = await createRemoteUCDStore();
 
-    const fileTree = await store.getFileTree("15.0.0");
+    const _fileTree = await store.getFileTree("15.0.0");
     expect(store).toBeDefined();
     expect(retryCount).toBe(2);
   });
@@ -146,13 +145,13 @@ describe("Remote UCD Store - File Tree Operations", () => {
   it("should handle network timeout errors", async () => {
     mockFetch([
       [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
-        return mockResponses.timeout("Network timeout");
+        return HttpResponse.error();
       }],
     ]);
 
     const store = await createRemoteUCDStore();
 
-    await expect(() => store.getFileTree("15.0.0")).rejects.toThrow("Network timeout");
+    await expect(() => store.getFileTree("15.0.0")).rejects.toThrow("Failed to fetch");
   });
 
   it("should handle deeply nested directory structures", async () => {

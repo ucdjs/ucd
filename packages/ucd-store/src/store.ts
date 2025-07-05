@@ -215,8 +215,6 @@ export class UCDStore {
         minTimeout: 500,
       });
 
-      console.error("[UCDStore] Remote store file tree fetched successfully", data);
-
       return this.processFileStructure(data, extraFilters);
     } else {
       // For local mode, read directory structure

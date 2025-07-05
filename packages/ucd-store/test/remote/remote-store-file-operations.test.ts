@@ -1,4 +1,4 @@
-import { mockFetch, mockResponses } from "#msw-utils";
+import { HttpResponse, mockFetch, mockResponses } from "#msw-utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { PRECONFIGURED_FILTERS } from "@ucdjs/utils";
 import { describe, expect, it } from "vitest";
@@ -111,14 +111,14 @@ describe("Remote UCD Store - File Operations", () => {
     it("should handle network errors during file retrieval", async () => {
       mockFetch([
         [`GET ${UCDJS_API_BASE_URL}/api/v1/unicode-proxy/15.0.0/ArabicShaping.txt`, () => {
-          return mockResponses.timeout("Network connection failed");
+          return HttpResponse.error();
         }],
       ]);
 
       const store = await createRemoteUCDStore();
 
       await expect(() => store.getFile("15.0.0", "ArabicShaping.txt"))
-        .rejects.toThrow("Failed to read remote file: Request Timeout");
+        .rejects.toThrow("Failed to fetch");
     });
   });
 

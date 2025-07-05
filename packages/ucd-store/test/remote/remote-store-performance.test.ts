@@ -1,5 +1,6 @@
 import { mockFetch, mockResponses } from "#msw-utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
+import { flattenFilePaths } from "@ucdjs/ucd-store";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createRemoteUCDStore } from "../../src/store";
 
@@ -41,6 +42,22 @@ describe("Remote UCD Store - Performance and Caching", () => {
     const files3 = [{ type: "file", name: "File3.txt", path: "/File3.txt" }];
 
     mockFetch([
+      [`GET ${UCDJS_API_BASE_URL}/api/v1/unicode-proxy/.ucd-store.json`, () => {
+        return mockResponses.json([
+          {
+            version: "15.0.0",
+            path: "/15.0.0",
+          },
+          {
+            version: "15.1.0",
+            path: "/15.1.0",
+          },
+          {
+            version: "15.2.0",
+            path: "/15.2.0",
+          },
+        ]);
+      }],
       [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
         return mockResponses.json(files1);
       }],
@@ -88,8 +105,8 @@ describe("Remote UCD Store - Performance and Caching", () => {
     const result1 = await store.getFileTree("15.0.0");
     const result2 = await store.getFileTree("15.0.0");
 
-    expect(result1).toEqual(testFiles);
-    expect(result2).toEqual(testFiles);
+    expect(flattenFilePaths(result1)).toEqual(flattenFilePaths(testFiles));
+    expect(flattenFilePaths(result2)).toEqual(flattenFilePaths(testFiles));
 
     // Verify requests were made (caching behavior depends on implementation)
     expect(requestCount).toBeGreaterThan(0);

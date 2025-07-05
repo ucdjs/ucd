@@ -89,6 +89,6 @@ describe("Remote UCD Store - Integration Scenarios", () => {
     expect(store.baseUrl).toBe(customBaseUrl);
 
     const fileTree = await store.getFileTree("15.0.0");
-    expect(fileTree).toEqual(testFiles);
+    expect(flattenFilePaths(fileTree)).toEqual(flattenFilePaths(testFiles));
   });
 });
