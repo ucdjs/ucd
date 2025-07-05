@@ -3,9 +3,9 @@ import type { PathFilter } from "@ucdjs/utils";
 import type { FileSystemBridge } from "@ucdjs/utils/fs-bridge";
 import path from "node:path";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
-import { promiseRetry } from "@luxass/utils";
+import { promiseRetry, trimLeadingSlash } from "@luxass/utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
-import { createClient } from "@ucdjs/fetch";
+import { ApiResponseError, createClient } from "@ucdjs/fetch";
 import { createPathFilter } from "@ucdjs/utils";
 import defu from "defu";
 import { flattenFilePaths } from "./ucd-files/helpers";
@@ -200,15 +200,22 @@ export class UCDStore {
     }
 
     if (this.mode === "remote") {
-      const { data, error } = await promiseRetry(async () => {
-        return await this.client.GET("/api/v1/files/{version}", {
+      const data = await promiseRetry(async () => {
+        const { data, error } = await this.client.GET("/api/v1/files/{version}", {
           params: { path: { version } },
         });
-      }, { retries: 3 });
 
-      if (error) {
-        throw new Error(`Failed to fetch file structure for version "${version}": ${error.message}`);
-      }
+        if (error != null) {
+          throw new ApiResponseError(error);
+        }
+
+        return data;
+      }, {
+        retries: 3,
+        minTimeout: 500,
+      });
+
+      console.error("[UCDStore] Remote store file tree fetched successfully", data);
 
       return this.processFileStructure(data, extraFilters);
     } else {
@@ -239,7 +246,7 @@ export class UCDStore {
       throw new Error(`Version '${version}' not found in store`);
     }
 
-    if (!this.#filter(filePath, extraFilters)) {
+    if (!this.#filter(trimLeadingSlash(filePath), extraFilters)) {
       throw new Error(`File path "${filePath}" is filtered out by the store's filter patterns.`);
     }
 
@@ -268,7 +275,7 @@ export class UCDStore {
 
   private processFileStructure(rawStructure: UnicodeVersionFile[], extraFilters?: string[]): UnicodeVersionFile[] {
     return rawStructure.map((item) => {
-      if (!this.#filter(item.path, extraFilters)) {
+      if (!this.#filter(trimLeadingSlash(item.path), extraFilters)) {
         return null;
       }
       return {

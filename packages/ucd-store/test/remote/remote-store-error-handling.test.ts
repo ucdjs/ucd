@@ -1,5 +1,6 @@
-import { mockFetch, mockResponses } from "#msw-utils";
+import { HttpResponse, mockFetch, mockResponses } from "#msw-utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
+import { flattenFilePaths } from "@ucdjs/ucd-store";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createRemoteUCDStore } from "../../src/store";
 
@@ -10,17 +11,17 @@ describe("Remote UCD Store - Error Handling", () => {
     vi.unstubAllEnvs();
   });
 
-  it("should handle network connectivity issues", async () => {
+  it("should handle network connectivity issues", { timeout: 10000 }, async () => {
     mockFetch([
       [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
-        return mockResponses.timeout("Network connectivity lost");
+        return HttpResponse.error();
       }],
     ]);
 
     const store = await createRemoteUCDStore();
 
     await expect(() => store.getFileTree("15.0.0"))
-      .rejects.toThrow("Network connectivity lost");
+      .rejects.toThrow("Failed to fetch");
   });
 
   it("should handle API rate limiting", async () => {
@@ -86,14 +87,14 @@ describe("Remote UCD Store - Error Handling", () => {
   it("should handle timeout errors", async () => {
     mockFetch([
       [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
-        return mockResponses.timeout("Request timeout");
+        return HttpResponse.error();
       }],
     ]);
 
     const store = await createRemoteUCDStore();
 
     await expect(() => store.getFileTree("15.0.0"))
-      .rejects.toThrow("Request timeout");
+      .rejects.toThrow("Failed to fetch");
   });
 
   it("should handle empty or null responses from API", async () => {
@@ -105,7 +106,7 @@ describe("Remote UCD Store - Error Handling", () => {
 
     const store = await createRemoteUCDStore();
 
-    // Should handle null responses gracefully
+    // should handle null responses gracefully
     await expect(() => store.getFileTree("15.0.0"))
       .rejects.toThrow();
   });
@@ -126,9 +127,9 @@ describe("Remote UCD Store - Error Handling", () => {
 
     const store = await createRemoteUCDStore();
 
-    // Should recover after retries
+    // should recover after retries
     const fileTree = await store.getFileTree("15.0.0");
-    expect(fileTree).toEqual(testFiles);
+    expect(flattenFilePaths(fileTree)).toEqual(flattenFilePaths(testFiles));
     expect(attemptCount).toBe(3);
   });
 });

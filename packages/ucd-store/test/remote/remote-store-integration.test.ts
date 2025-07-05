@@ -1,7 +1,7 @@
 import { mockFetch, mockResponses } from "#msw-utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { flattenFilePaths } from "@ucdjs/ucd-store";
-import { PRECONFIGURED_FILTERS } from "@ucdjs/utils";
+import { createPathFilter, PRECONFIGURED_FILTERS } from "@ucdjs/utils";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createRemoteUCDStore } from "../../src/store";
 
@@ -60,15 +60,12 @@ describe("Remote UCD Store - Integration Scenarios", () => {
       }],
     ]);
 
-    // Create store with multiple filters
     const store = await createRemoteUCDStore({
-      globalFilters: [PRECONFIGURED_FILTERS.EXCLUDE_TEST_FILES, "*.md"],
+      globalFilters: [PRECONFIGURED_FILTERS.EXCLUDE_TEST_FILES, "!*.md"],
     });
 
-    const fileTree = await store.getFileTree("15.0.0");
     const filePaths = await store.getFilePaths("15.0.0");
 
-    // Only UnicodeData.txt should remain after filtering
     expect(filePaths).toEqual(["UnicodeData.txt"]);
     expect(filePaths).not.toContain("NormalizationTest.txt");
     expect(filePaths).not.toContain("BidiTest.txt");

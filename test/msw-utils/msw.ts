@@ -201,13 +201,6 @@ export const mockResponses = {
   head: (headers: HeadersInit = {}) =>
     new HttpResponse(null, { status: 200, headers }),
 
-  timeout: (message: string = "Request timed out") => {
-    return new HttpResponse(message, {
-      status: 408,
-      headers: { "Content-Type": "text/plain" },
-    });
-  },
-
   redirect: (url: string, status: number = 302) => {
     return new HttpResponse(null, {
       status,
