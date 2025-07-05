@@ -1,8 +1,8 @@
 import type { UCDClient, UnicodeVersionFile } from "@ucdjs/fetch";
 import type { PathFilter } from "@ucdjs/utils";
 import type { FileSystemBridge } from "@ucdjs/utils/fs-bridge";
-import type { AnalyzeOptions, AnalyzeResult } from "./analyze";
-import type { CleanResult } from "./clean";
+import type { AnalyzeOptions, AnalyzeResult } from "./internal/analyze";
+import type { CleanResult } from "./internal/clean";
 import type { StoreMode, UCDStoreOptions } from "./types";
 import path from "node:path";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
@@ -11,8 +11,8 @@ import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { ApiResponseError, createClient } from "@ucdjs/fetch";
 import { createPathFilter } from "@ucdjs/utils";
 import defu from "defu";
-import { analyzeStore } from "./analyze";
-import { cleanStore } from "./clean";
+import { analyzeStore } from "./internal/analyze";
+import { cleanStore } from "./internal/clean";
 import { UCDStoreError } from "./internal/errors";
 import { flattenFilePaths } from "./internal/flatten";
 
