@@ -30,4 +30,5 @@ export function createClient(baseUrl: string): Client<paths, `${string}/${string
  */
 export const client = createClient(UCDJS_API_BASE_URL);
 
+export { ApiResponseError } from "./api-error";
 export type * from "./components";
