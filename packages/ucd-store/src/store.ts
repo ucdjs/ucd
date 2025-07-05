@@ -17,15 +17,30 @@ import { UCDStoreError } from "./internal/errors";
 import { flattenFilePaths } from "./internal/flatten";
 
 export class UCDStore {
+  /**
+   * Base URL for the UCD store API.
+   */
   public readonly baseUrl: string;
+
+  /**
+   * Store mode, either "local" or "remote".
+   * - "local" means the store is on the local filesystem.
+   * - "remote" means the store is accessed via HTTP.
+   */
   public readonly mode: StoreMode;
+
+  /**
+   * Base path for the local store.
+   * Only used in "local" mode.
+   *
+   * TODO(@luxass): See if we can either remove this, or make it also used in remote mode.
+   */
   public readonly basePath?: string;
-  private readonly providedVersions?: string[];
-  #versions: string[] = [];
 
   #client: UCDClient;
   #filter: PathFilter;
   #fs: FileSystemBridge;
+  #versions: string[] = [];
   #manifestPath: string;
 
   constructor(options: UCDStoreOptions) {
@@ -40,7 +55,7 @@ export class UCDStore {
     this.mode = mode;
     this.baseUrl = baseUrl;
     this.basePath = basePath;
-    this.providedVersions = versions;
+    this.#versions = versions;
     this.#client = createClient(this.baseUrl);
     this.#filter = createPathFilter(globalFilters);
     this.#fs = fs;
@@ -77,11 +92,11 @@ export class UCDStore {
         throw new UCDStoreError("Remote store cannot be initialized without existing data. Please provide a valid store URL or initialize a local store.");
       }
 
-      if (!this.providedVersions || this.providedVersions.length === 0) {
+      if (!this.#versions || this.#versions.length === 0) {
         throw new UCDStoreError("No versions provided for initializing new local store");
       }
 
-      await this.#createNewLocalStore(this.providedVersions);
+      await this.#createNewLocalStore(this.#versions);
     }
   }
 
