@@ -43,9 +43,25 @@ export function mockFetch(
     const handlers = urlOrList.flatMap(([pattern, handlerResolver]) => {
       const [methods, url] = parseEndpoint(pattern);
       return methods.map(method => {
-        // For HEAD requests, return a default head response if the resolver would return content
+        // For HEAD requests, execute the resolver and return response without body
         if (method === "head") {
-          return http[method](url, () => new HttpResponse(null, { status: 200 }));
+          return http[method](url, async (info) => {
+            const response = await handlerResolver(info);
+
+            if (!response) {
+              return new HttpResponse(null, { status: 200 });
+            }
+
+            if ("type" in response && response.type === "error") {
+              return HttpResponse.error();
+            }
+
+            return new HttpResponse(null, {
+              status: response.status,
+              statusText: response.statusText,
+              headers: response.headers
+            });
+          });
         }
         return http[method](url, handlerResolver);
       });
@@ -55,9 +71,25 @@ export function mockFetch(
   } else if (typeof urlOrList === "string" && resolver) {
     const [methods, url] = parseEndpoint(urlOrList);
     const handlers = methods.map(method => {
-      // For HEAD requests, return a default head response if the resolver would return content
+      // For HEAD requests, execute the resolver and return response without body
       if (method === "head") {
-        return http[method](url, () => new HttpResponse(null, { status: 200 }));
+        return http[method](url, async (info) => {
+          const response = await resolver(info);
+
+          if (!response) {
+            return new HttpResponse(null, { status: 200 });
+          }
+
+          if ("type" in response && response.type === "error") {
+            return HttpResponse.error();
+          }
+
+          return new HttpResponse(null, {
+            status: response.status,
+            statusText: response.statusText,
+            headers: response.headers
+          });
+        });
       }
       return http[method](url, resolver);
     });

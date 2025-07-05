@@ -1,4 +1,4 @@
-import type { FileSystemBridge } from "../fs-bridge";
+import type { FileSystemBridge, FSEntry } from "../fs-bridge";
 import { UNICODE_PROXY_URL } from "@ucdjs/env";
 import { z } from "zod/v4";
 import { defineFileSystemBridge } from "../fs-bridge";
@@ -35,6 +35,16 @@ export interface HTTPFileSystemBridgeOptions {
 function HTTPFileSystemBridge(options: HTTPFileSystemBridgeOptions = {}): FileSystemBridge {
   const baseUrl = options.baseUrl || UNICODE_PROXY_URL;
   return defineFileSystemBridge({
+    supportedFunctions: {
+      read: true,
+      write: false,
+      listdir: true,
+      mkdir: false,
+      stat: true,
+      exists: true,
+      rm: false,
+    },
+
     async read(path) {
       const url = new URL(path, baseUrl);
       const response = await fetch(url.toString());
@@ -62,18 +72,26 @@ function HTTPFileSystemBridge(options: HTTPFileSystemBridgeOptions = {}): FileSy
       const validatedData = z.array(ProxyResponseSchema).parse(data);
 
       if (!recursive) {
-        return validatedData.map((entry) => entry.name);
+        return validatedData.map((entry): FSEntry => ({
+          name: entry.name,
+          path: entry.path,
+          type: entry.type as "file" | "directory",
+        }));
       }
 
       // Recursive implementation
-      const allEntries = [...validatedData];
+      const allEntries: FSEntry[] = [...validatedData.map((entry): FSEntry => ({
+        name: entry.name,
+        path: entry.path,
+        type: entry.type as "file" | "directory",
+      }))];
 
       for (const entry of validatedData) {
         if (entry.type === "directory") {
           try {
             const subPath = path.endsWith("/") ? `${path}${entry.name}` : `${path}/${entry.name}`;
             const subEntries = await this.listdir(subPath, true);
-            allEntries.push(...subEntries.map((name) => ({ type: "file" as const, name, path: `${subPath}/${name}`, lastModified: undefined })));
+            allEntries.push(...subEntries);
           } catch {
             // Skip directories that can't be accessed
             continue;
@@ -81,7 +99,7 @@ function HTTPFileSystemBridge(options: HTTPFileSystemBridgeOptions = {}): FileSy
         }
       }
 
-      return allEntries.map((entry) => entry.name);
+      return allEntries;
     },
     async write() {
       // should not do anything, as this is a read-only bridge

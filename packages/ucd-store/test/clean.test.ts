@@ -257,6 +257,7 @@ describe("clean operations across store types", () => {
     });
 
     const result = await store.clean({ versions: ["15.0.0", "15.2.0"] });
+    console.log(result);
 
     // Should remove ALL files from both specified versions
     expect(result.locatedFiles).toContain("15.0.0/file1.txt");

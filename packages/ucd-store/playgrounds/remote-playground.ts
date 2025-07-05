@@ -2,10 +2,10 @@
 /* eslint-disable no-console */
 import assert from "node:assert";
 import HTTPFileSystemBridge from "@ucdjs/utils/fs-bridge/http";
-import { createUCDStore, UCDStore } from "../src/store";
+import { createRemoteUCDStore } from "../src/factory";
+import { UCDStore } from "../src/store";
 
-const store = await createUCDStore({
-  mode: "remote",
+const store = await createRemoteUCDStore({
   fs: HTTPFileSystemBridge(),
 });
 
@@ -13,7 +13,6 @@ assert(store instanceof UCDStore, "store should be an instance of UCDStore");
 assert(store.mode === "remote", "store mode should be remote");
 
 assert(store.baseUrl != null, "store baseUrl should not be null");
-assert(store.proxyUrl != null, "store proxyUrl should not be null");
 assert(store.versions.length > 0, "store should have versions");
 
 console.log("[remote-store]", store.versions);

@@ -112,9 +112,9 @@ describe("fs-bridge#node", () => {
       const contents = await NodeFileSystemBridge.listdir(testDir, false);
 
       expect(contents).toHaveLength(3);
-      expect(contents).toContain("subdir");
-      expect(contents).toContain("file1.txt");
-      expect(contents).toContain("file2.txt");
+      expect(contents.some((entry) => entry.path === "subdir" && entry.type === "directory")).toBe(true);
+      expect(contents.some((entry) => entry.path === "file1.txt" && entry.type === "file")).toBe(true);
+      expect(contents.some((entry) => entry.path === "file2.txt" && entry.type === "file")).toBe(true);
     });
 
     it("should list directory contents recursively", async () => {
@@ -129,10 +129,10 @@ describe("fs-bridge#node", () => {
       const contents = await NodeFileSystemBridge.listdir(testDir, true);
 
       expect(contents.length).toBeGreaterThan(3);
-      expect(contents).toContain("subdir");
-      expect(contents).toContain("file1.txt");
-      expect(contents).toContain("file2.txt");
-      expect(contents.some((item: string) => item.includes("nested.txt"))).toBe(true);
+      expect(contents.some((entry) => entry.name === "subdir" && entry.type === "directory")).toBe(true);
+      expect(contents.some((entry) => entry.name === "file1.txt" && entry.type === "file")).toBe(true);
+      expect(contents.some((entry) => entry.name === "file2.txt" && entry.type === "file")).toBe(true);
+      expect(contents.some((entry) => entry.name === "nested.txt" && entry.type === "file")).toBe(true);
     });
 
     it("should default to non-recursive when recursive is undefined", async () => {
@@ -147,9 +147,9 @@ describe("fs-bridge#node", () => {
       const contents = await NodeFileSystemBridge.listdir(testDir);
 
       expect(contents).toHaveLength(3);
-      expect(contents).toContain("subdir");
-      expect(contents).toContain("file1.txt");
-      expect(contents).toContain("file2.txt");
+      expect(contents.some((entry) => entry.path === "subdir" && entry.type === "directory")).toBe(true);
+      expect(contents.some((entry) => entry.path === "file1.txt" && entry.type === "file")).toBe(true);
+      expect(contents.some((entry) => entry.path === "file2.txt" && entry.type === "file")).toBe(true);
     });
   });
 

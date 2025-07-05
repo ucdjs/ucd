@@ -16,6 +16,24 @@ export interface FSStats {
   size: number;
 }
 
+export interface FSEntry {
+  /**
+   * The name of the entry
+   * @example "file.txt" or "directory"
+   */
+  name: string;
+
+  /**
+   * The path of the entry
+   */
+  path: string;
+
+  /**
+   *  The type of the entry
+   */
+  type: "file" | "directory";
+}
+
 export interface FileSystemBridge {
   /**
    * Optional state object for the file system bridge.
@@ -40,6 +58,19 @@ export interface FileSystemBridge {
   state?: Record<string, unknown>;
 
   /**
+   * Optional object that defines which functions are supported by the bridge.
+   */
+  supportedFunctions?: {
+    read: boolean;
+    write: boolean;
+    listdir: boolean;
+    mkdir: boolean;
+    stat: boolean;
+    exists: boolean;
+    rm: boolean;
+  };
+
+  /**
    * Reads the contents of a file.
    * @param {string} path - The path to the file to read
    * @returns {Promise<string>} A promise that resolves to the file contents as a string
@@ -59,9 +90,9 @@ export interface FileSystemBridge {
    * Lists the contents of a directory.
    * @param {string} path - The path to the directory to list
    * @param {boolean} [recursive=false] - If true, lists files in subdirectories as well
-   * @returns {Promise<string[]>} A promise that resolves to an array of file and directory names
+   * @returns {Promise<FSEntry[]>} A promise that resolves to an array of file and directory entries
    */
-  listdir: (path: string, recursive?: boolean) => Promise<string[]>;
+  listdir: (path: string, recursive?: boolean) => Promise<FSEntry[]>;
 
   /**
    * Creates a directory.

@@ -10,7 +10,6 @@ import type {
   VersionAnalysis,
 } from "./types";
 import path from "node:path";
-import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { invariant, promiseRetry, trimLeadingSlash } from "@luxass/utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { ApiResponseError, createClient } from "@ucdjs/fetch";
@@ -44,8 +43,6 @@ export class UCDStore {
   /**
    * Base path for the local store.
    * Only used in "local" mode.
-   *
-   * TODO(@luxass): See if we can either remove this, or make it also used in remote mode.
    */
   public readonly basePath?: string;
 
@@ -174,7 +171,7 @@ export class UCDStore {
         retries: 3,
         minTimeout: 500,
       });
-
+      console.error(`DEBUG: Remote file structure for version ${version}:`, data);
       return this.#processFileStructure(data, extraFilters);
     } else {
       // For local mode, read directory structure
@@ -183,10 +180,11 @@ export class UCDStore {
       }
 
       const files = await this.#fs.listdir(path.join(this.basePath, version), true);
-
+      console.error(`DEBUG: Local file structure for version ${version}:`, files);
       const fileStructure = files.map((file) => ({
-        name: path.basename(file),
-        path: file,
+        name: path.basename(file.path),
+        path: file.path,
+        type: file.type === "directory" ? "directory" : "file",
       }));
 
       return this.#processFileStructure(fileStructure, extraFilters);
@@ -227,6 +225,7 @@ export class UCDStore {
 
   async getFilePaths(version: string, extraFilters?: string[]): Promise<string[]> {
     const fileStructure = await this.getFileTree(version, extraFilters);
+    console.error(`DEBUG: File structure for version ${version}:`, fileStructure);
     return flattenFilePaths(fileStructure);
   }
 
@@ -276,6 +275,7 @@ export class UCDStore {
     for (const version of versionsToClean) {
       try {
         const versionFiles = await this.getFilePaths(version);
+        console.error("GET FILE PATHS: ", versionFiles);
         const versionFilePaths = versionFiles.map((file) => `${version}/${file}`);
         locatedFiles.push(...versionFilePaths);
       } catch {
@@ -587,9 +587,9 @@ export class UCDStore {
       // Find files that exist but aren't expected
       for (const file of existingFiles) {
         // Handle both absolute and relative paths from listdir
-        const relativePath = path.isAbsolute(file) ? path.relative(this.basePath!, file) : file;
+        const relativePath = path.isAbsolute(file.path) ? path.relative(this.basePath!, file.path) : file.path;
 
-        console.error(`  Processing file: ${file} -> relativePath: ${relativePath}`);
+        console.error(`  Processing file: ${file.path} -> relativePath: ${relativePath}`);
 
         // Skip files outside the store directory, manifest file, and version directories
         if (relativePath.startsWith("..") || relativePath === ".ucd-store.json" || relativePath.endsWith("/") || this.#versions.includes(relativePath)) {
