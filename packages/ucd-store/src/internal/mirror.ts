@@ -3,7 +3,7 @@ import type { FileSystemBridge } from "@ucdjs/utils/fs-bridge";
 import { createClient } from "@ucdjs/fetch";
 import { createPathFilter } from "@ucdjs/utils";
 import defu from "defu";
-import { internal_mirrorUnicodeVersion } from "../ucd-files/internal";
+import { internal_mirrorUnicodeVersion } from "./internal";
 
 export interface MirrorOptions {
   /**
