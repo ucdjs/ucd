@@ -5,14 +5,13 @@ import { PRECONFIGURED_FILTERS } from "@ucdjs/utils";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createRemoteUCDStore } from "../../src/store";
 
-// eslint-disable-next-line test/prefer-lowercase-title
-describe("Remote UCD Store - Performance and Integration", () => {
+describe("remote ucd store - performance and integration", () => {
   afterEach(() => {
     vi.clearAllMocks();
     vi.unstubAllEnvs();
   });
 
-  describe("performance Tests", () => {
+  describe("performance tests", () => {
     it("should handle large file trees efficiently", async () => {
       const largeFileTree = Array.from({ length: 1000 }, (_, i) => ({
         type: "file",
@@ -99,7 +98,7 @@ describe("Remote UCD Store - Performance and Integration", () => {
     });
   });
 
-  describe("integration Tests", () => {
+  describe("integration tests", () => {
     it("should handle complete remote workflow", async () => {
       const testFiles = [
         { type: "file", name: "WorkflowFile1.txt", path: "/WorkflowFile1.txt" },

@@ -6,8 +6,7 @@ import { PRECONFIGURED_FILTERS } from "@ucdjs/utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createRemoteUCDStore, createUCDStore } from "../../src/store";
 
-// eslint-disable-next-line test/prefer-lowercase-title
-describe("Remote UCD Store - Configuration and Version Management", () => {
+describe("remote ucd store - configuration and version management", () => {
   let mockFs: FileSystemBridge;
 
   beforeEach(() => {
@@ -27,7 +26,7 @@ describe("Remote UCD Store - Configuration and Version Management", () => {
     vi.unstubAllEnvs();
   });
 
-  describe("store Initialization", () => {
+  describe("store initialization", () => {
     it("should create remote store with default options", async () => {
       const store = await createRemoteUCDStore({
         fs: mockFs,
@@ -111,7 +110,7 @@ describe("Remote UCD Store - Configuration and Version Management", () => {
     });
   });
 
-  describe("filter Configuration", () => {
+  describe("filter configuration", () => {
     it("should apply global filters to remote operations", async () => {
       const store = await createRemoteUCDStore({
         globalFilters: [PRECONFIGURED_FILTERS.EXCLUDE_TEST_FILES],
@@ -136,7 +135,7 @@ describe("Remote UCD Store - Configuration and Version Management", () => {
     });
   });
 
-  describe("version Management", () => {
+  describe("version management", () => {
     it("should return all available versions", async () => {
       const store = await createRemoteUCDStore({
         fs: mockFs,

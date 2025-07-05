@@ -1,8 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createRemoteUCDStore } from "../../src/store";
 
-// eslint-disable-next-line test/prefer-lowercase-title
-describe("Remote UCD Store - Analysis Operations", () => {
+describe("remote ucd store - analysis operations", () => {
   afterEach(() => {
     vi.clearAllMocks();
     vi.unstubAllEnvs();

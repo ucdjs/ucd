@@ -4,8 +4,7 @@ import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createRemoteUCDStore } from "../../src/store";
 
-// eslint-disable-next-line test/prefer-lowercase-title
-describe("Remote UCD Store - HTTP Filesystem Integration", () => {
+describe("remote ucd store - http filesystem integration", () => {
   let mockFs: FileSystemBridge;
 
   beforeEach(() => {

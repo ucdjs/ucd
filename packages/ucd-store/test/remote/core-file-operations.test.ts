@@ -5,8 +5,7 @@ import { PRECONFIGURED_FILTERS } from "@ucdjs/utils";
 import { describe, expect, it } from "vitest";
 import { createRemoteUCDStore } from "../../src/store";
 
-// eslint-disable-next-line test/prefer-lowercase-title
-describe("Remote UCD Store - Core File Operations", () => {
+describe("remote ucd store - core file operations", () => {
   const mockFiles = [
     {
       type: "file",
