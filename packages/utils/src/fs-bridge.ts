@@ -137,3 +137,31 @@ export interface FileSystemBridge {
 export function defineFileSystemBridge(fsBridge: FileSystemBridge): FileSystemBridge {
   return fsBridge;
 }
+
+export type FileSystemBridgeFeatureKeys = keyof Omit<FileSystemBridge, "state" | "features">;
+export type FileSystemBridgeFeatures = {
+  [K in FileSystemBridgeFeatureKeys]: boolean;
+};
+
+const DEFAULT_SUPPORTED_FEATURES: FileSystemBridgeFeatures = {
+  exists: true,
+  read: true,
+  write: true,
+  listdir: true,
+  mkdir: true,
+  stat: true,
+  rm: true,
+};
+
+/**
+ * Gets the supported features for a file system bridge.
+ *
+ * If the bridge doesn't specify its features, this function returns
+ * the default set of supported features (all features enabled).
+ *
+ * @param {FileSystemBridge} fsBridge - The file system bridge to get features for
+ * @returns {FileSystemBridgeFeatures} An object indicating which features are supported by the bridge
+ */
+export function getSupportedBridgeFeatures(fsBridge: FileSystemBridge): FileSystemBridgeFeatures {
+  return fsBridge.features || DEFAULT_SUPPORTED_FEATURES;
+}
