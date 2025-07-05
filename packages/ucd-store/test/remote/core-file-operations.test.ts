@@ -47,7 +47,7 @@ describe("remote ucd store - core file operations", () => {
 
       mockFetch([
         [`GET ${UCDJS_API_BASE_URL}/api/v1/unicode-proxy/15.0.0/ArabicShaping.txt`, () => {
-          return mockResponses.text(mockFileContent);
+          return HttpResponse.text(mockFileContent);
         }],
       ]);
 
@@ -63,10 +63,10 @@ describe("remote ucd store - core file operations", () => {
 
       mockFetch([
         [`GET ${UCDJS_API_BASE_URL}/api/v1/unicode-proxy/15.0.0/UTF8File.txt`, () => {
-          return mockResponses.text(utf8Content);
+          return HttpResponse.text(utf8Content);
         }],
         [`GET ${UCDJS_API_BASE_URL}/api/v1/unicode-proxy/15.0.0/ASCIIFile.txt`, () => {
-          return mockResponses.text(asciiContent);
+          return HttpResponse.text(asciiContent);
         }],
       ]);
 
@@ -126,7 +126,7 @@ describe("remote ucd store - core file operations", () => {
     it("should return flattened file paths from API", async () => {
       mockFetch([
         [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
-          return mockResponses.json(mockFiles);
+          return HttpResponse.json(mockFiles);
         }],
       ]);
 
@@ -144,7 +144,7 @@ describe("remote ucd store - core file operations", () => {
     it("should apply filters to flattened paths", async () => {
       mockFetch([
         [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
-          return mockResponses.json(mockFiles);
+          return HttpResponse.json(mockFiles);
         }],
       ]);
 
@@ -162,7 +162,7 @@ describe("remote ucd store - core file operations", () => {
     it("should handle empty remote file trees", async () => {
       mockFetch([
         [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
-          return mockResponses.json([]);
+          return HttpResponse.json([]);
         }],
       ]);
 
@@ -187,10 +187,10 @@ describe("remote ucd store - core file operations", () => {
 
       mockFetch([
         [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
-          return mockResponses.json(version1Files);
+          return HttpResponse.json(version1Files);
         }],
         [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.1.0`, () => {
-          return mockResponses.json(version2Files);
+          return HttpResponse.json(version2Files);
         }],
       ]);
 
@@ -214,7 +214,7 @@ describe("remote ucd store - core file operations", () => {
     it("should prefix files with version paths", async () => {
       mockFetch([
         [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
-          return mockResponses.json([
+          return HttpResponse.json([
             { type: "file", name: "TestFile.txt", path: "/TestFile.txt" },
           ]);
         }],
@@ -241,7 +241,7 @@ describe("remote ucd store - core file operations", () => {
 
       mockFetch([
         [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
-          return mockResponses.json(filesWithTests);
+          return HttpResponse.json(filesWithTests);
         }],
       ]);
 
@@ -263,10 +263,10 @@ describe("remote ucd store - core file operations", () => {
     it("should handle versions with no files", async () => {
       mockFetch([
         [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
-          return mockResponses.json([]);
+          return HttpResponse.json([]);
         }],
         [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.1.0`, () => {
-          return mockResponses.json([
+          return HttpResponse.json([
             { type: "file", name: "OnlyFile.txt", path: "/OnlyFile.txt" },
           ]);
         }],
@@ -289,7 +289,7 @@ describe("remote ucd store - core file operations", () => {
     it("should fetch file tree from remote API", async () => {
       mockFetch([
         [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
-          return mockResponses.json(mockFiles);
+          return HttpResponse.json(mockFiles);
         }],
       ]);
 
@@ -311,7 +311,7 @@ describe("remote ucd store - core file operations", () => {
     it("should apply filters to remote file tree", async () => {
       mockFetch([
         [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
-          return mockResponses.json(mockFiles);
+          return HttpResponse.json(mockFiles);
         }],
       ]);
 
@@ -327,7 +327,7 @@ describe("remote ucd store - core file operations", () => {
     it("should apply extra filters to remote file tree", async () => {
       mockFetch([
         [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
-          return mockResponses.json(mockFiles);
+          return HttpResponse.json(mockFiles);
         }],
       ]);
 
@@ -344,7 +344,7 @@ describe("remote ucd store - core file operations", () => {
     it("should handle empty file tree response", async () => {
       mockFetch([
         [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
-          return mockResponses.json([]);
+          return HttpResponse.json([]);
         }],
       ]);
 
@@ -380,7 +380,7 @@ describe("remote ucd store - core file operations", () => {
 
       mockFetch([
         [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
-          return mockResponses.json(deeplyNestedFiles);
+          return HttpResponse.json(deeplyNestedFiles);
         }],
       ]);
 
@@ -404,7 +404,7 @@ describe("remote ucd store - core file operations", () => {
 
       mockFetch([
         [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
-          return mockResponses.json([largeNestedTree]);
+          return HttpResponse.json([largeNestedTree]);
         }],
       ]);
 
@@ -432,10 +432,10 @@ describe("remote ucd store - core file operations", () => {
 
     mockFetch([
       [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
-        return mockResponses.json(specialFiles);
+        return HttpResponse.json(specialFiles);
       }],
       [`GET ${UCDJS_API_BASE_URL}/api/v1/unicode-proxy/15.0.0/File%20with%20spaces.txt`, () => {
-        return mockResponses.text(specialContent);
+        return HttpResponse.text(specialContent);
       }],
     ]);
 

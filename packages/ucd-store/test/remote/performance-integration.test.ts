@@ -1,4 +1,4 @@
-import { mockFetch, mockResponses } from "#msw-utils";
+import { HttpResponse, mockFetch, mockResponses } from "#msw-utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { PRECONFIGURED_FILTERS } from "@ucdjs/utils";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -22,7 +22,7 @@ describe("remote ucd store - performance and integration", () => {
 
       mockFetch([
         [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
-          return mockResponses.json(largeFileTree);
+          return HttpResponse.json(largeFileTree);
         }],
       ]);
 
@@ -43,20 +43,20 @@ describe("remote ucd store - performance and integration", () => {
 
       mockFetch([
         [`GET ${UCDJS_API_BASE_URL}/api/v1/unicode-proxy/.ucd-store.json`, () => {
-          return mockResponses.json([
+          return HttpResponse.json([
             { version: "15.0.0", path: "/15.0.0" },
             { version: "15.1.0", path: "/15.1.0" },
             { version: "15.2.0", path: "/15.2.0" },
           ]);
         }],
         [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
-          return mockResponses.json(files1);
+          return HttpResponse.json(files1);
         }],
         [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.1.0`, () => {
-          return mockResponses.json(files2);
+          return HttpResponse.json(files2);
         }],
         [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.2.0`, () => {
-          return mockResponses.json(files3);
+          return HttpResponse.json(files3);
         }],
       ]);
 
@@ -83,7 +83,7 @@ describe("remote ucd store - performance and integration", () => {
       mockFetch([
         [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
           requestCount++;
-          return mockResponses.json(testFiles);
+          return HttpResponse.json(testFiles);
         }],
       ]);
 
@@ -109,10 +109,10 @@ describe("remote ucd store - performance and integration", () => {
 
       mockFetch([
         [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
-          return mockResponses.json(testFiles);
+          return HttpResponse.json(testFiles);
         }],
         [`GET ${UCDJS_API_BASE_URL}/api/v1/unicode-proxy/15.0.0/WorkflowFile1.txt`, () => {
-          return mockResponses.text(fileContent);
+          return HttpResponse.text(fileContent);
         }],
       ]);
 
@@ -141,7 +141,7 @@ describe("remote ucd store - performance and integration", () => {
 
       mockFetch([
         [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
-          return mockResponses.json(mixedFiles);
+          return HttpResponse.json(mixedFiles);
         }],
       ]);
 
@@ -166,10 +166,10 @@ describe("remote ucd store - performance and integration", () => {
           return mockResponses.head();
         }],
         [`GET ${customBaseUrl}/api/v1/unicode-proxy/.ucd-store.json`, () => {
-          return mockResponses.json([{ version: "15.0.0", path: "/15.0.0" }]);
+          return HttpResponse.json([{ version: "15.0.0", path: "/15.0.0" }]);
         }],
         [`GET ${customBaseUrl}/api/v1/files/15.0.0`, () => {
-          return mockResponses.json(testFiles);
+          return HttpResponse.json(testFiles);
         }],
       ]);
 

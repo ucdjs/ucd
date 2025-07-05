@@ -1,5 +1,5 @@
 import type { FileSystemBridge } from "@ucdjs/utils/fs-bridge";
-import { mockFetch, mockResponses } from "#msw-utils";
+import { HttpResponse, mockFetch, mockResponses } from "#msw-utils";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { PRECONFIGURED_FILTERS } from "@ucdjs/utils";
@@ -153,7 +153,7 @@ describe("remote ucd store - configuration and version management", () => {
           return mockResponses.head();
         }],
         [`GET ${UCDJS_API_BASE_URL}/api/v1/unicode-proxy/.ucd-store.json`, () => {
-          return mockResponses.json([], 200);
+          return HttpResponse.json([]);
         }],
       ]);
 

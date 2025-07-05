@@ -59,12 +59,14 @@ describe("remote ucd store - error handling", () => {
 
       mockFetch([
         [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
-          return mockResponses.json({
+          return HttpResponse.json({
             path: "/api/v1/files/15.0.0",
             message: "Version not found",
             status: 404,
             timestamp: new Date().toISOString(),
-          }, 404);
+          }, {
+            status: 404,
+          });
         }],
       ]);
 
@@ -84,12 +86,14 @@ describe("remote ucd store - error handling", () => {
 
       mockFetch([
         [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
-          return mockResponses.json({
+          return HttpResponse.json({
             path: "/api/v1/files/15.0.0",
             message: "Internal server error",
             status: 500,
             timestamp: new Date().toISOString(),
-          }, 500);
+          }, {
+            status: 500,
+          });
         }],
       ]);
 
@@ -129,7 +133,7 @@ describe("remote ucd store - error handling", () => {
 
       mockFetch([
         [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
-          return mockResponses.text("Invalid JSON response");
+          return HttpResponse.text("Invalid JSON response");
         }],
       ]);
 
@@ -149,7 +153,7 @@ describe("remote ucd store - error handling", () => {
 
       mockFetch([
         [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
-          return mockResponses.json(null);
+          return HttpResponse.json(null);
         }],
       ]);
 
@@ -177,7 +181,7 @@ describe("remote ucd store - error handling", () => {
           if (retryCount < 3) {
             return mockResponses.tooManyRequests("Rate limit exceeded");
           }
-          return mockResponses.json([]);
+          return HttpResponse.json([]);
         }],
       ]);
 
@@ -205,7 +209,7 @@ describe("remote ucd store - error handling", () => {
           if (attemptCount < 3) {
             return mockResponses.serverError("Temporary server error");
           }
-          return mockResponses.json(testFiles);
+          return HttpResponse.json(testFiles);
         }],
       ]);
 
@@ -272,7 +276,7 @@ describe("remote ucd store - error handling", () => {
     it("should handle empty file tree response", async () => {
       mockFetch([
         [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
-          return mockResponses.json([]);
+          return HttpResponse.json([]);
         }],
       ]);
 

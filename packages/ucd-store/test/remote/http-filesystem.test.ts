@@ -1,4 +1,4 @@
-import { mockFetch, mockResponses } from "#msw-utils";
+import { HttpResponse, mockFetch, mockResponses } from "#msw-utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createRemoteUCDStore } from "../../src/factory";
@@ -15,7 +15,7 @@ describe("remote ucd store - http filesystem integration", () => {
         return mockResponses.head();
       }],
       [`GET ${UCDJS_API_BASE_URL}/api/v1/unicode-proxy/.ucd-store.json`, () => {
-        return mockResponses.json([{ version: "15.0.0", path: "/15.0.0" }]);
+        return HttpResponse.json([{ version: "15.0.0", path: "/15.0.0" }]);
       }],
     ]);
 
@@ -38,7 +38,7 @@ describe("remote ucd store - http filesystem integration", () => {
     mockFetch([
       [`GET ${UCDJS_API_BASE_URL}/api/v1/unicode-proxy/15.0.0/CachedFile.txt`, () => {
         requestCount++;
-        return mockResponses.text(fileContent);
+        return HttpResponse.text(fileContent);
       }],
     ]);
 
@@ -61,7 +61,7 @@ describe("remote ucd store - http filesystem integration", () => {
         return mockResponses.redirect(`${UCDJS_API_BASE_URL}/api/v1/unicode-proxy/15.0.0/FinalFile.txt`);
       }],
       [`GET ${UCDJS_API_BASE_URL}/api/v1/unicode-proxy/15.0.0/FinalFile.txt`, () => {
-        return mockResponses.text(finalContent);
+        return HttpResponse.text(finalContent);
       }],
     ]);
 
@@ -76,7 +76,7 @@ describe("remote ucd store - http filesystem integration", () => {
 
     mockFetch([
       [`GET ${UCDJS_API_BASE_URL}/api/v1/unicode-proxy/15.0.0/LargeFile.txt`, () => {
-        return mockResponses.text(largeFileContent);
+        return HttpResponse.text(largeFileContent);
       }],
     ]);
 

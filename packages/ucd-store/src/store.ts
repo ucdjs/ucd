@@ -55,18 +55,16 @@ export class UCDStore {
   #manifestPath: string;
 
   constructor(options: UCDStoreOptions) {
-    const { baseUrl, globalFilters, mode, fs, basePath, versions } = defu(options, {
+    const { baseUrl, globalFilters, mode, fs, basePath } = defu(options, {
       baseUrl: UCDJS_API_BASE_URL,
       globalFilters: [],
       mode: "remote" as StoreMode,
       basePath: "./ucd-files",
-      versions: UNICODE_VERSION_METADATA.filter((v) => v.status === "stable").map((v) => v.version),
     });
 
     this.mode = mode;
     this.baseUrl = baseUrl;
     this.basePath = basePath;
-    this.#versions = versions;
     this.#client = createClient(this.baseUrl);
     this.#filter = createPathFilter(globalFilters);
     this.#fs = fs;
@@ -267,7 +265,6 @@ export class UCDStore {
     try {
       // First analyze to get files that need to be removed
       const analyzeResult = await this.analyze({
-        calculateSizes: true,
         checkOrphaned: true,
       });
 
@@ -304,7 +301,6 @@ export class UCDStore {
     const fileResults: Array<{ path: string; removed: boolean; error?: string; size?: number }> = [];
     const removedFiles: string[] = [];
     const failedRemovals: Array<{ path: string; removed: boolean; error?: string; size?: number }> = [];
-    let freedBytes = 0;
 
     // Filter files to only include those from target versions
     const filteredFiles = filesToRemove.filter((filePath) => {
@@ -315,18 +311,16 @@ export class UCDStore {
     // Process files in batches to avoid overwhelming the filesystem
     await processConcurrently(filteredFiles, 10, async (filePath) => {
       try {
-        const result = await this.#removeFile(filePath, { dryRun, force });
+        const isRemoved = await this.#removeFile(filePath, { dryRun, force });
         const fileResult = {
           path: filePath,
-          removed: result.removed,
-          size: result.size,
+          removed: isRemoved,
         };
 
         fileResults.push(fileResult);
 
-        if (result.removed) {
+        if (isRemoved) {
           removedFiles.push(filePath);
-          freedBytes += result.size;
         }
       } catch (error) {
         const errorMsg = error instanceof Error ? error.message : String(error);
@@ -356,7 +350,6 @@ export class UCDStore {
           removedFiles,
           failedRemovals,
           deletedCount: removedFiles.length,
-          freedBytes,
         },
       };
     }
@@ -368,7 +361,6 @@ export class UCDStore {
       removedFiles,
       failedRemovals,
       deletedCount: removedFiles.length,
-      freedBytes,
     };
   }
 
@@ -378,26 +370,17 @@ export class UCDStore {
   async #removeFile(filePath: string, options: {
     dryRun: boolean;
     force: boolean;
-  }): Promise<{ removed: boolean; size: number }> {
+  }): Promise<boolean> {
     const { dryRun, force } = options;
     const fullPath = this.#getFullPath(filePath);
 
-    // Check if file exists
+    // check if file exists
     if (!(await this.#fs.exists(fullPath))) {
-      return { removed: false, size: 0 };
-    }
-
-    // Get file size before removal
-    let size = 0;
-    try {
-      const stats = await this.#fs.stat(fullPath);
-      size = stats.size;
-    } catch {
-      // If we can't stat, assume 0 size
+      return false;
     }
 
     if (dryRun) {
-      return { removed: true, size };
+      return false;
     }
 
     // Safety check - don't remove if not in store directory (unless forced)
@@ -409,7 +392,7 @@ export class UCDStore {
     }
 
     await this.#fs.rm(fullPath);
-    return { removed: true, size };
+    return true;
   }
 
   /**
@@ -513,15 +496,13 @@ export class UCDStore {
   }
 
   async analyze(options: {
-    calculateSizes?: boolean;
     checkOrphaned?: boolean;
     includeDetails?: boolean;
   } = {}): Promise<AnalyzeResult> {
-    const { calculateSizes = false, checkOrphaned = false, includeDetails = false } = options;
+    const { checkOrphaned = false, includeDetails = false } = options;
 
     try {
       const analysis = await this.#performAnalysis({
-        calculateSizes,
         checkOrphaned,
         includeDetails,
       });
@@ -529,7 +510,6 @@ export class UCDStore {
       return {
         success: true,
         totalFiles: analysis.totalFiles,
-        totalSize: analysis.totalSize,
         versions: analysis.versions,
         filesToRemove: analysis.filesToRemove,
         storeHealth: analysis.storeHealth,
@@ -546,36 +526,32 @@ export class UCDStore {
    * Internal method to perform the actual analysis
    */
   async #performAnalysis(options: {
-    calculateSizes: boolean;
     checkOrphaned: boolean;
     includeDetails: boolean;
   }): Promise<{
     totalFiles: number;
-    totalSize: number;
     versions: VersionAnalysis[];
     filesToRemove: string[];
     storeHealth: "healthy" | "needs_cleanup" | "corrupted";
   }> {
-    const { calculateSizes, checkOrphaned, includeDetails } = options;
+    const { checkOrphaned, includeDetails } = options;
 
     const versionAnalyses: VersionAnalysis[] = [];
     let totalFiles = 0;
-    let totalSize = 0;
     const filesToRemove: string[] = [];
     let hasIssues = false;
 
     // Analyze each version
     for (const version of this.#versions) {
+      console.error(`Analyzing version: ${version}`);
       try {
         const versionAnalysis = await this.#analyzeVersion(version, {
-          calculateSizes,
           checkOrphaned,
           includeDetails,
         });
 
         versionAnalyses.push(versionAnalysis);
         totalFiles += versionAnalysis.fileCount;
-        totalSize += versionAnalysis.totalSize || 0;
 
         // Check for issues
         if (!versionAnalysis.isComplete
@@ -616,7 +592,6 @@ export class UCDStore {
 
     return {
       totalFiles,
-      totalSize,
       versions: versionAnalyses,
       filesToRemove,
       storeHealth,
@@ -627,29 +602,15 @@ export class UCDStore {
    * Analyze a specific version
    */
   async #analyzeVersion(version: string, options: {
-    calculateSizes: boolean;
     checkOrphaned: boolean;
     includeDetails: boolean;
   }): Promise<VersionAnalysis> {
-    const { calculateSizes, checkOrphaned } = options;
+    const { checkOrphaned } = options;
 
     try {
       const files = await this.getFilePaths(version);
-      let totalSize = 0;
       const orphanedFiles: string[] = [];
       const missingFiles: string[] = [];
-
-      // Calculate sizes if requested
-      if (calculateSizes) {
-        for (const filePath of files) {
-          try {
-            const size = await this.#getFileSize(version, filePath);
-            totalSize += size;
-          } catch {
-            // Skip files that can't be read
-          }
-        }
-      }
 
       // Check for orphaned files at version level if requested
       if (checkOrphaned) {
@@ -665,10 +626,6 @@ export class UCDStore {
         fileCount: files.length,
         isComplete,
       };
-
-      if (calculateSizes) {
-        analysis.totalSize = totalSize;
-      }
 
       if (orphanedFiles.length > 0) {
         analysis.orphanedFiles = orphanedFiles;
@@ -771,8 +728,8 @@ export class UCDStore {
       const expectedSet = new Set(expectedFiles);
 
       for (const file of existingFiles) {
-        const relativePath = path.relative(versionPath, file);
-        if (!expectedSet.has(relativePath)) {
+        const relativePath = path.isAbsolute(file) ? path.relative(versionPath, file) : file;
+        if (!expectedSet.has(relativePath) && !relativePath.startsWith('..')) {
           orphanedFiles.push(`${version}/${relativePath}`);
         }
       }

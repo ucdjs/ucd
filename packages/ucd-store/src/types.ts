@@ -75,16 +75,12 @@ export interface VersionAnalysis {
   missingFiles?: string[];
   /** List of orphaned files (files that exist but shouldn't) */
   orphanedFiles?: string[];
-  /** Total size of files for this version in bytes */
-  totalSize?: number;
 }
 
 export interface AnalyzeResultSuccess {
   success: true;
   /** Total number of files across all versions */
   totalFiles: number;
-  /** Total size of all files in bytes */
-  totalSize: number;
   /** Detailed analysis for each version */
   versions: VersionAnalysis[];
   /** Files that should be removed (orphaned/outdated) */
@@ -100,7 +96,6 @@ export interface AnalyzeResultFailure {
   /** Partial results if some analysis was completed before failure */
   partialResults?: {
     totalFiles: number;
-    totalSize: number;
     versions: VersionAnalysis[];
     filesToRemove: string[];
   };
@@ -153,8 +148,6 @@ export interface CleanResultSuccess {
   failedRemovals: FileRemovalResult[];
   /** Total number of files successfully deleted */
   deletedCount: number;
-  /** Total size freed in bytes */
-  freedBytes: number;
 }
 
 export interface CleanResultFailure {
@@ -168,7 +161,6 @@ export interface CleanResultFailure {
     removedFiles: string[];
     failedRemovals: FileRemovalResult[];
     deletedCount: number;
-    freedBytes: number;
   };
 }
 

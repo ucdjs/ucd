@@ -10,36 +10,58 @@ function normalizeMethod(method: string): Method {
   return method.toLowerCase() as Method;
 }
 
-function parseEndpoint(pattern: `${MethodUpper} ${string}`): [Method, string] {
+function parseEndpoint(pattern: `${MethodUpper} ${string}` | `${MethodUpper},${MethodUpper} ${string}` | `${MethodUpper}, ${MethodUpper} ${string}`): [Method[], string] {
   const [methodStr, ...urlParts] = pattern.split(" ");
-  const method = normalizeMethod(methodStr as string);
   const url = urlParts.join(" ");
-  return [method, url];
+
+  // Handle comma-separated methods like "GET,HEAD /api/files"
+  if (methodStr?.includes(",")) {
+    const methods = methodStr.split(",").map(m => normalizeMethod(m.trim()));
+    return [methods, url];
+  }
+
+  const method = normalizeMethod(methodStr as string);
+  return [[method], url];
 }
 
 export function mockFetch(
-  urlPattern: `${MethodUpper} ${string}`,
-  resolver: HttpResponseResolver<any, any, undefined>,
+  urlPattern: `${MethodUpper} ${string}` | `${MethodUpper},${MethodUpper} ${string}` | `${MethodUpper}, ${MethodUpper} ${string}`,
+  resolver: HttpResponseResolver,
 ): void;
 export function mockFetch(
-  endpoints: [`${MethodUpper} ${string}`, HttpResponseResolver<any, any, undefined>][],
+  endpoints: [`${MethodUpper} ${string}` | `${MethodUpper},${MethodUpper} ${string}` | `${MethodUpper}, ${MethodUpper} ${string}`, HttpResponseResolver][],
 ): void;
 export function mockFetch(
   urlOrList:
     | `${MethodUpper} ${string}`
-    | [`${MethodUpper} ${string}`, HttpResponseResolver<any, any, undefined>][],
+    | `${MethodUpper},${MethodUpper} ${string}`
+    | `${MethodUpper}, ${MethodUpper} ${string}`
+    | [`${MethodUpper} ${string}` | `${MethodUpper},${MethodUpper} ${string}` | `${MethodUpper}, ${MethodUpper} ${string}`, HttpResponseResolver][],
   resolver?: HttpResponseResolver,
 ): void {
   if (Array.isArray(urlOrList)) {
-    const handlers = urlOrList.map(([pattern, handlerResolver]) => {
-      const [method, url] = parseEndpoint(pattern);
-      return http[method](url, handlerResolver);
+    const handlers = urlOrList.flatMap(([pattern, handlerResolver]) => {
+      const [methods, url] = parseEndpoint(pattern);
+      return methods.map(method => {
+        // For HEAD requests, return a default head response if the resolver would return content
+        if (method === "head") {
+          return http[method](url, () => new HttpResponse(null, { status: 200 }));
+        }
+        return http[method](url, handlerResolver);
+      });
     });
     MSW_SERVER.use(...handlers);
     return;
   } else if (typeof urlOrList === "string" && resolver) {
-    const [method, url] = parseEndpoint(urlOrList);
-    MSW_SERVER.use(http[method](url, resolver));
+    const [methods, url] = parseEndpoint(urlOrList);
+    const handlers = methods.map(method => {
+      // For HEAD requests, return a default head response if the resolver would return content
+      if (method === "head") {
+        return http[method](url, () => new HttpResponse(null, { status: 200 }));
+      }
+      return http[method](url, resolver);
+    });
+    MSW_SERVER.use(...handlers);
     return;
   }
 
@@ -49,34 +71,31 @@ export function mockFetch(
 type JsonBody = Record<string, unknown> | unknown[] | string | number | boolean | null;
 
 /**
- * Pre-configured HTTP response utilities for MSW mocking
+ * Enhanced mockFetch utility for MSW that supports multiple HTTP methods.
+ *
+ * Features:
+ * - Single method: 'GET /api/users'
+ * - Multiple methods: 'GET,HEAD /api/files' (automatically handles HEAD requests)
+ * - Batch registration with array of endpoints
  *
  * @example
  * ```typescript
  * import { mockFetch, mockResponses } from './msw';
  *
- * // Mock a successful API response
+ * // Single method
  * mockFetch('GET /api/users', () => mockResponses.ok({ users: [] }));
  *
- * // Mock an error response
- * mockFetch('POST /api/users', () => mockResponses.badRequest({ error: 'Invalid data' }));
+ * // Multiple methods - useful for file operations that check existence with HEAD
+ * mockFetch('GET,HEAD /api/files/data.txt', () => mockResponses.text('file content'));
+ *
+ * // Batch registration
+ * mockFetch([
+ *   ['GET,HEAD /api/files/file1.txt', () => mockResponses.text('content1')],
+ *   ['GET /api/users', () => mockResponses.ok({ users: [] })],
+ * ]);
  * ```
  */
 export const mockResponses = {
-  /**
-   * Returns a successful 200 response with JSON body
-   *
-   * @param body - The response body (defaults to empty object)
-   * @returns HttpResponse with status 200
-   *
-   * @example
-   * ```typescript
-   * mockResponses.ok({ id: 1, name: 'John' })
-   * mockResponses.ok() // Returns {}
-   * ```
-   */
-  ok: <T extends JsonBody>(body: T = {} as T) => HttpResponse.json(body, { status: 200 }),
-
   /**
    * Returns a 400 Bad Request response with JSON body
    *
@@ -136,41 +155,6 @@ export const mockResponses = {
    */
   serverError: (body?: JsonBody) =>
     HttpResponse.json(body || { error: "Internal server error" }, { status: 500 }),
-
-  /**
-   * Returns a JSON response with custom status code
-   *
-   * @param body - The response body
-   * @param status - The HTTP status code (defaults to 200)
-   * @returns HttpResponse with custom status
-   *
-   * @example
-   * ```typescript
-   * mockResponses.json({ message: 'Created' }, 201)
-   * mockResponses.json({ users: [] }) // Defaults to 200
-   * ```
-   */
-  json: <T extends JsonBody>(body: T, status: number = 200) =>
-    HttpResponse.json(body, { status }),
-
-  /**
-   * Returns a plain text response
-   *
-   * @param body - The text content
-   * @param status - The HTTP status code (defaults to 200)
-   * @returns HttpResponse with text/plain content-type
-   *
-   * @example
-   * ```typescript
-   * mockResponses.text('Hello World')
-   * mockResponses.text('Error occurred', 500)
-   * ```
-   */
-  text: (body: string, status: number = 200) =>
-    new HttpResponse(body, {
-      status,
-      headers: { "Content-Type": "text/plain" },
-    }),
 
   /**
    * Returns an empty response (no body)
