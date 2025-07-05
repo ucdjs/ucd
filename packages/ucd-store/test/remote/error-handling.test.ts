@@ -29,7 +29,7 @@ describe("remote ucd store - error handling", () => {
   describe("network and api errors", () => {
     it("should handle network connectivity issues", async () => {
       vi.useFakeTimers();
-      
+
       mockFetch([
         [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
           return HttpResponse.error();
@@ -40,23 +40,23 @@ describe("remote ucd store - error handling", () => {
 
       const promise = expect(() => store.getFileTree("15.0.0"))
         .rejects.toThrow("Failed to fetch");
-      
+
       // Fast-forward through any retry delays
       await vi.runAllTimersAsync();
-      
+
       await promise;
     });
 
     it("should handle HTTP 404 errors", async () => {
       vi.useFakeTimers();
-      
+
       mockFetch([
         [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
           return mockResponses.json({
             path: "/api/v1/files/15.0.0",
             message: "Version not found",
             status: 404,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
           }, 404);
         }],
       ]);
@@ -65,23 +65,23 @@ describe("remote ucd store - error handling", () => {
 
       const promise = expect(() => store.getFileTree("15.0.0"))
         .rejects.toThrow("Version not found");
-      
+
       // Fast-forward through any retry delays
       await vi.runAllTimersAsync();
-      
+
       await promise;
     });
 
     it("should handle HTTP 500 errors", async () => {
       vi.useFakeTimers();
-      
+
       mockFetch([
         [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
           return mockResponses.json({
             path: "/api/v1/files/15.0.0",
             message: "Internal server error",
             status: 500,
-            timestamp: new Date().toISOString()
+            timestamp: new Date().toISOString(),
           }, 500);
         }],
       ]);
@@ -90,16 +90,16 @@ describe("remote ucd store - error handling", () => {
 
       const promise = expect(() => store.getFileTree("15.0.0"))
         .rejects.toThrow("Internal server error");
-      
+
       // Fast-forward through any retry delays
       await vi.runAllTimersAsync();
-      
+
       await promise;
     });
 
     it("should handle timeout errors", async () => {
       vi.useFakeTimers();
-      
+
       mockFetch([
         [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
           return HttpResponse.error();
@@ -110,16 +110,16 @@ describe("remote ucd store - error handling", () => {
 
       const promise = expect(() => store.getFileTree("15.0.0"))
         .rejects.toThrow("Failed to fetch");
-      
+
       // Fast-forward through any retry delays
       await vi.runAllTimersAsync();
-      
+
       await promise;
     });
 
     it("should handle malformed api responses", async () => {
       vi.useFakeTimers();
-      
+
       mockFetch([
         [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
           return mockResponses.text("Invalid JSON response");
@@ -130,16 +130,16 @@ describe("remote ucd store - error handling", () => {
 
       const promise = expect(() => store.getFileTree("15.0.0"))
         .rejects.toThrow();
-      
+
       // Fast-forward through any retry delays
       await vi.runAllTimersAsync();
-      
+
       await promise;
     });
 
     it("should handle empty or null responses from api", async () => {
       vi.useFakeTimers();
-      
+
       mockFetch([
         [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
           return mockResponses.json(null);
@@ -150,10 +150,10 @@ describe("remote ucd store - error handling", () => {
 
       const promise = expect(() => store.getFileTree("15.0.0"))
         .rejects.toThrow();
-      
+
       // Fast-forward through any retry delays
       await vi.runAllTimersAsync();
-      
+
       await promise;
     });
   });
@@ -161,7 +161,7 @@ describe("remote ucd store - error handling", () => {
   describe("rate limiting and retry logic", () => {
     it("should handle API rate limiting with retry logic", async () => {
       vi.useFakeTimers();
-      
+
       let retryCount = 0;
 
       mockFetch([
@@ -177,10 +177,10 @@ describe("remote ucd store - error handling", () => {
       const store = await createRemoteUCDStore();
 
       const promise = store.getFileTree("15.0.0");
-      
+
       // Fast-forward through retry delays
       await vi.runAllTimersAsync();
-      
+
       const result = await promise;
       expect(result).toEqual([]);
       expect(retryCount).toBe(3);
@@ -188,7 +188,7 @@ describe("remote ucd store - error handling", () => {
 
     it("should handle remote store error recovery", async () => {
       vi.useFakeTimers();
-      
+
       let attemptCount = 0;
       const testFiles = [{ type: "file", name: "RecoveryFile.txt", path: "/RecoveryFile.txt" }];
 
@@ -205,10 +205,10 @@ describe("remote ucd store - error handling", () => {
       const store = await createRemoteUCDStore();
 
       const promise = store.getFileTree("15.0.0");
-      
+
       // Fast-forward through retry delays
       await vi.runAllTimersAsync();
-      
+
       const fileTree = await promise;
       expect(flattenFilePaths(fileTree)).toEqual(flattenFilePaths(testFiles));
       expect(attemptCount).toBe(3);
