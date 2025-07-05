@@ -182,13 +182,12 @@ export class UCDStore {
         throw new UCDStoreError("Base path not set for local mode");
       }
 
-      const versionPath = path.join(this.basePath, version);
-      const files = await this.#fs.listdir(versionPath, true);
+      const files = await this.#fs.listdir(path.join(this.basePath, version), true);
 
-      console.error(`DEBUG: listdir returned for ${version}:`, files);
-
-      // Build hierarchical structure from flat file list
-      const fileStructure = this.#buildFileStructure(files, versionPath);
+      const fileStructure = files.map((file) => ({
+        name: path.basename(file),
+        path: file,
+      }));
 
       return this.#processFileStructure(fileStructure, extraFilters);
     }
