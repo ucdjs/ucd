@@ -1,3 +1,4 @@
+import type { FSEntry } from "../fs-bridge";
 import { mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { defineFileSystemBridge } from "../fs-bridge";
 
@@ -27,10 +28,17 @@ const NodeFileSystemBridge = defineFileSystemBridge({
   exists(path) {
     return safeExists(path);
   },
-  async listdir(path, recursive) {
-    return readdir(path, {
+  async listdir(path, recursive): Promise<FSEntry[]> {
+    const entries = await readdir(path, {
       recursive: recursive ?? false,
+      withFileTypes: true,
     });
+
+    return entries.map((entry): FSEntry => ({
+      name: entry.name,
+      path: recursive ? `${entry.parentPath}/${entry.name}` : entry.name,
+      type: entry.isDirectory() ? "directory" : "file",
+    }));
   },
   async write(path, data, encoding = "utf-8") {
     return writeFile(path, data, { encoding });

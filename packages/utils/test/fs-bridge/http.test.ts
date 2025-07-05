@@ -89,7 +89,11 @@ describe("httpFileSystemBridge", () => {
       ]);
 
       const result = await bridge.listdir("/api/files");
-      expect(result).toEqual(["file1.txt", "file2.js", "subdirectory"]);
+      expect(result).toEqual([
+        { name: "file1.txt", path: "/api/files/file1.txt", type: "file" },
+        { name: "file2.js", path: "/api/files/file2.js", type: "file" },
+        { name: "subdirectory", path: "/api/files/subdirectory", type: "directory" },
+      ]);
     });
 
     it("should list directory with recursive parameter", async () => {
@@ -119,7 +123,12 @@ describe("httpFileSystemBridge", () => {
       ]);
 
       const result = await bridge.listdir("/api/files", true);
-      expect(result).toEqual(["file1.txt", "file2.js", "subdir", "nested.txt"]);
+      expect(result).toEqual([
+        { name: "file1.txt", path: "/api/files/file1.txt", type: "file" },
+        { name: "file2.js", path: "/api/files/file2.js", type: "file" },
+        { name: "subdir", path: "/api/files/subdir", type: "directory" },
+        { name: "nested.txt", path: "/api/files/subdir/nested.txt", type: "file" },
+      ]);
     });
 
     it("should throw error when directory listing fails", async () => {
@@ -190,12 +199,12 @@ describe("httpFileSystemBridge", () => {
       const bridge = HTTPFileSystemBridge({ baseUrl: "https://api.ucdjs.dev" });
 
       mockFetch([
-        ["HEAD https://api.ucdjs.dev/network-error.txt", () => {
-          throw new Error("Network error");
+        ["HEAD https://api.ucdjs.dev/network-error", () => {
+          return HttpResponse.error();
         }],
       ]);
 
-      const result = await bridge.exists("/network-error.txt");
+      const result = await bridge.exists("/network-error");
       expect(result).toBe(false);
     });
 

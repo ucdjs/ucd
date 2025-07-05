@@ -16,6 +16,24 @@ export interface FSStats {
   size: number;
 }
 
+export interface FSEntry {
+  /**
+   * The name of the entry
+   * @example "file.txt" or "directory"
+   */
+  name: string;
+
+  /**
+   * The path of the entry
+   */
+  path: string;
+
+  /**
+   *  The type of the entry
+   */
+  type: "file" | "directory";
+}
+
 export interface FileSystemBridge {
   /**
    * Optional state object for the file system bridge.
@@ -40,6 +58,20 @@ export interface FileSystemBridge {
   state?: Record<string, unknown>;
 
   /**
+   * An object defining the features supported by this file system bridge.
+   * If it is not provided, the bridge will assume all features are supported.
+   */
+  features?: {
+    read: boolean;
+    write: boolean;
+    listdir: boolean;
+    mkdir: boolean;
+    stat: boolean;
+    exists: boolean;
+    rm: boolean;
+  };
+
+  /**
    * Reads the contents of a file.
    * @param {string} path - The path to the file to read
    * @returns {Promise<string>} A promise that resolves to the file contents as a string
@@ -59,9 +91,9 @@ export interface FileSystemBridge {
    * Lists the contents of a directory.
    * @param {string} path - The path to the directory to list
    * @param {boolean} [recursive=false] - If true, lists files in subdirectories as well
-   * @returns {Promise<string[]>} A promise that resolves to an array of file and directory names
+   * @returns {Promise<FSEntry[]>} A promise that resolves to an array of file and directory entries
    */
-  listdir: (path: string, recursive?: boolean) => Promise<string[]>;
+  listdir: (path: string, recursive?: boolean) => Promise<FSEntry[]>;
 
   /**
    * Creates a directory.
@@ -104,4 +136,32 @@ export interface FileSystemBridge {
  */
 export function defineFileSystemBridge(fsBridge: FileSystemBridge): FileSystemBridge {
   return fsBridge;
+}
+
+export type FileSystemBridgeFeatureKeys = keyof Omit<FileSystemBridge, "state" | "features">;
+export type FileSystemBridgeFeatures = {
+  [K in FileSystemBridgeFeatureKeys]: boolean;
+};
+
+const DEFAULT_SUPPORTED_FEATURES: FileSystemBridgeFeatures = {
+  exists: true,
+  read: true,
+  write: true,
+  listdir: true,
+  mkdir: true,
+  stat: true,
+  rm: true,
+};
+
+/**
+ * Gets the supported features for a file system bridge.
+ *
+ * If the bridge doesn't specify its features, this function returns
+ * the default set of supported features (all features enabled).
+ *
+ * @param {FileSystemBridge} fsBridge - The file system bridge to get features for
+ * @returns {FileSystemBridgeFeatures} An object indicating which features are supported by the bridge
+ */
+export function getSupportedBridgeFeatures(fsBridge: FileSystemBridge): FileSystemBridgeFeatures {
+  return fsBridge.features || DEFAULT_SUPPORTED_FEATURES;
 }
