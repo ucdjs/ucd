@@ -9,12 +9,20 @@ import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { invariant, promiseRetry, trimLeadingSlash } from "@luxass/utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { ApiResponseError, createClient } from "@ucdjs/fetch";
-import { createPathFilter } from "@ucdjs/utils";
+import { createPathFilter, safeJsonParse } from "@ucdjs/utils";
 import defu from "defu";
+import { z } from "zod/v4";
 import { analyzeStore } from "./internal/analyze";
 import { cleanStore } from "./internal/clean";
 import { UCDStoreError } from "./internal/errors";
 import { flattenFilePaths } from "./internal/flatten";
+
+const MANIFEST_SCHEMA = z.array(
+  z.object({
+    version: z.string(),
+    path: z.string(),
+  }),
+);
 
 export class UCDStore {
   /**
@@ -103,8 +111,20 @@ export class UCDStore {
   async #loadVersionsFromStore(): Promise<void> {
     try {
       const manifestContent = await this.#fs.read(this.#manifestPath);
-      const manifestData = JSON.parse(manifestContent);
-      this.#versions = manifestData.map((entry: any) => entry.version);
+
+      // validate the manifest content
+      const jsonData = safeJsonParse(manifestContent);
+      if (!jsonData) {
+        throw new UCDStoreError("Invalid JSON format in store manifest");
+      }
+
+      // verify that is an array of objects with version and path properties
+      const parsedManifest = MANIFEST_SCHEMA.safeParse(jsonData);
+      if (!parsedManifest.success) {
+        throw new UCDStoreError("Invalid store manifest schema");
+      }
+
+      this.#versions = parsedManifest.data.map((entry) => entry.version);
     } catch (error) {
       throw new Error(`Failed to load store manifest: ${error instanceof Error ? error.message : String(error)}`);
     }
