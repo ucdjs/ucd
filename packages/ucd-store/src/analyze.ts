@@ -2,7 +2,7 @@ import type { UCDClient, UnicodeVersionFile } from "@ucdjs/fetch";
 import type { FileSystemBridge } from "@ucdjs/utils/fs-bridge";
 import { promiseRetry } from "@luxass/utils";
 import { ApiResponseError } from "@ucdjs/fetch";
-import { flattenFilePaths } from "./ucd-files/helpers";
+import { flattenFilePaths } from "./helpers";
 
 export interface VersionAnalysis {
   /** Unicode version */

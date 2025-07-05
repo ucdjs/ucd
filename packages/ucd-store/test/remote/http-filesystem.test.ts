@@ -1,7 +1,7 @@
 import { mockFetch, mockResponses } from "#msw-utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { createRemoteUCDStore } from "../../src/store";
+import { createRemoteUCDStore } from "../../src/factory";
 
 describe("remote ucd store - http filesystem integration", () => {
   afterEach(() => {

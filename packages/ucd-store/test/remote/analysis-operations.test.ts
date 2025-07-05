@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { createRemoteUCDStore } from "../../src/store";
+import { createRemoteUCDStore } from "../../src/factory";
 
 describe("remote ucd store - analysis operations", () => {
   afterEach(() => {

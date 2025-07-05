@@ -5,7 +5,7 @@ import { buildUCDPath } from "@luxass/unicode-utils-new";
 import { createClient } from "@ucdjs/fetch";
 import { createPathFilter } from "@ucdjs/utils";
 import defu from "defu";
-import { flattenFilePaths } from "./helpers";
+import { flattenFilePaths } from "../helpers";
 
 export interface ValidateUCDFilesOptions {
   /**

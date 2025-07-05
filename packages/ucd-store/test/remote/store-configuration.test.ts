@@ -4,7 +4,7 @@ import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { PRECONFIGURED_FILTERS } from "@ucdjs/utils";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { createRemoteUCDStore, createUCDStore } from "../../src/store";
+import { createRemoteUCDStore, createUCDStore } from "../../src/factory";
 
 describe("remote ucd store - configuration and version management", () => {
   let mockFs: FileSystemBridge;

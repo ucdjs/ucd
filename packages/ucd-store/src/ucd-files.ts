@@ -1,4 +1,4 @@
-export { flattenFilePaths } from "./ucd-files/helpers";
+export { flattenFilePaths } from "./helpers";
 
 export { repairUCDFiles, validateUCDFiles } from "./ucd-files/validate";
 export type {
