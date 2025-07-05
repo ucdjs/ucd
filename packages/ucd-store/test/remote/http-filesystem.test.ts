@@ -1,33 +1,25 @@
-import type { FileSystemBridge } from "@ucdjs/utils/fs-bridge";
 import { mockFetch, mockResponses } from "#msw-utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { createRemoteUCDStore } from "../../src/store";
 
 describe("remote ucd store - http filesystem integration", () => {
-  let mockFs: FileSystemBridge;
-
-  beforeEach(() => {
-    mockFs = {
-      exists: vi.fn(),
-      read: vi.fn(),
-      write: vi.fn(),
-      listdir: vi.fn(),
-      mkdir: vi.fn(),
-      stat: vi.fn(),
-      rm: vi.fn(),
-    };
-  });
-
   afterEach(() => {
     vi.clearAllMocks();
     vi.unstubAllEnvs();
   });
 
   it("should use HTTP filesystem bridge for file operations", async () => {
-    const store = await createRemoteUCDStore({
-      fs: mockFs,
-    });
+    mockFetch([
+      [`HEAD ${UCDJS_API_BASE_URL}/api/v1/unicode-proxy/.ucd-store.json`, () => {
+        return mockResponses.head();
+      }],
+      [`GET ${UCDJS_API_BASE_URL}/api/v1/unicode-proxy/.ucd-store.json`, () => {
+        return mockResponses.json([{ version: "15.0.0", path: "/15.0.0" }]);
+      }],
+    ]);
+
+    const store = await createRemoteUCDStore();
 
     expect(store.fs).toBeDefined();
     expect(store.fs.exists).toBeDefined();

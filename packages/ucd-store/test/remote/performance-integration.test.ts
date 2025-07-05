@@ -162,6 +162,12 @@ describe("remote ucd store - performance and integration", () => {
       const testFiles = [{ type: "file", name: "CustomFile.txt", path: "/CustomFile.txt" }];
 
       mockFetch([
+        [`HEAD ${customBaseUrl}/api/v1/unicode-proxy/.ucd-store.json`, () => {
+          return mockResponses.head();
+        }],
+        [`GET ${customBaseUrl}/api/v1/unicode-proxy/.ucd-store.json`, () => {
+          return mockResponses.json([{ version: "15.0.0", path: "/15.0.0" }]);
+        }],
         [`GET ${customBaseUrl}/api/v1/files/15.0.0`, () => {
           return mockResponses.json(testFiles);
         }],

@@ -387,7 +387,7 @@ export async function createRemoteUCDStore(options: RemoteUCDStoreOptions = {}):
     const httpFsBridge = await import("@ucdjs/utils/fs-bridge/http").then((m) => m.default);
     fsInstance = typeof httpFsBridge === "function"
       ? httpFsBridge({
-          baseUrl: options.baseUrl || `${UCDJS_API_BASE_URL}/api/v1/unicode-proxy/`,
+          baseUrl: `${options.baseUrl || UCDJS_API_BASE_URL}/api/v1/unicode-proxy/`,
         })
       : httpFsBridge;
   }

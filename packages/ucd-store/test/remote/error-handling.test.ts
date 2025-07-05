@@ -217,8 +217,27 @@ describe("remote ucd store - error handling", () => {
 
   describe("version validation", () => {
     it("should handle malformed Unicode version strings", async () => {
+      const mockedFs = {
+        ...mockFs,
+        exists: vi.fn().mockImplementation((path) => {
+          if (path === ".ucd-store.json") {
+            return Promise.resolve(true);
+          }
+          return Promise.resolve(false);
+        }),
+        read: vi.fn().mockImplementation((path) => {
+          if (path === ".ucd-store.json") {
+            return Promise.resolve(JSON.stringify([{
+              version: "15.0.0",
+              path: "/15.0.0",
+            }]));
+          }
+          return Promise.resolve("");
+        }),
+      };
+
       const store = await createRemoteUCDStore({
-        fs: mockFs,
+        fs: mockedFs,
       });
 
       expect(store.hasVersion("invalid-version")).toBe(false);
