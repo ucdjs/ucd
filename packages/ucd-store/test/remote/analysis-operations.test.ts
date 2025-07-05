@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { createRemoteUCDStore } from "../../src/store";
 
 // eslint-disable-next-line test/prefer-lowercase-title
-describe("Remote UCD Store - Store Analysis", () => {
+describe("Remote UCD Store - Analysis Operations", () => {
   afterEach(() => {
     vi.clearAllMocks();
     vi.unstubAllEnvs();
@@ -12,7 +12,6 @@ describe("Remote UCD Store - Store Analysis", () => {
     it("should return correct analysis data for remote store", async () => {
       const store = await createRemoteUCDStore();
 
-      // The analyze method is not implemented yet, so it should throw
       await expect(() => store.analyze())
         .rejects.toThrow("Analyze method not implemented yet");
     });
@@ -20,7 +19,6 @@ describe("Remote UCD Store - Store Analysis", () => {
     it("should handle empty remote stores", async () => {
       const store = await createRemoteUCDStore();
 
-      // The analyze method is not implemented yet, so it should throw
       await expect(() => store.analyze())
         .rejects.toThrow("Analyze method not implemented yet");
     });
@@ -28,7 +26,6 @@ describe("Remote UCD Store - Store Analysis", () => {
     it("should calculate file counts accurately", async () => {
       const store = await createRemoteUCDStore();
 
-      // The analyze method is not implemented yet, so it should throw
       await expect(() => store.analyze())
         .rejects.toThrow("Analyze method not implemented yet");
     });
@@ -36,7 +33,6 @@ describe("Remote UCD Store - Store Analysis", () => {
     it("should identify incomplete versions", async () => {
       const store = await createRemoteUCDStore();
 
-      // The analyze method is not implemented yet, so it should throw
       await expect(() => store.analyze())
         .rejects.toThrow("Analyze method not implemented yet");
     });

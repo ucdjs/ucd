@@ -9,7 +9,6 @@ describe("Remote UCD Store - HTTP Filesystem Integration", () => {
   let mockFs: FileSystemBridge;
 
   beforeEach(() => {
-    // Setup mock filesystem bridge for remote mode
     mockFs = {
       exists: vi.fn(),
       read: vi.fn(),
@@ -54,15 +53,12 @@ describe("Remote UCD Store - HTTP Filesystem Integration", () => {
 
     const store = await createRemoteUCDStore();
 
-    // First request
     const content1 = await store.getFile("15.0.0", "CachedFile.txt");
     expect(content1).toBe(fileContent);
 
-    // Second request - should use cache or make new request depending on implementation
     const content2 = await store.getFile("15.0.0", "CachedFile.txt");
     expect(content2).toBe(fileContent);
 
-    // Verify at least one request was made
     expect(requestCount).toBeGreaterThan(0);
   });
 
@@ -85,8 +81,7 @@ describe("Remote UCD Store - HTTP Filesystem Integration", () => {
   });
 
   it("should handle memory usage with large responses", async () => {
-    // Create a response with large file content
-    const largeFileContent = "x".repeat(1024 * 1024); // 1MB of content
+    const largeFileContent = "x".repeat(1024 * 1024);
 
     mockFetch([
       [`GET ${UCDJS_API_BASE_URL}/api/v1/unicode-proxy/15.0.0/LargeFile.txt`, () => {
@@ -102,8 +97,7 @@ describe("Remote UCD Store - HTTP Filesystem Integration", () => {
 
     expect(content).toHaveLength(1024 * 1024);
 
-    // Memory usage should be reasonable (allowing for some overhead)
     const memoryIncrease = endMemory - startMemory;
-    expect(memoryIncrease).toBeLessThan(5 * 1024 * 1024); // Less than 5MB increase
+    expect(memoryIncrease).toBeLessThan(5 * 1024 * 1024);
   });
 });

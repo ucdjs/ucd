@@ -1,11 +1,12 @@
 import { HttpResponse, mockFetch, mockResponses } from "#msw-utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
+import { flattenFilePaths } from "@ucdjs/ucd-store";
 import { PRECONFIGURED_FILTERS } from "@ucdjs/utils";
 import { describe, expect, it } from "vitest";
 import { createRemoteUCDStore } from "../../src/store";
 
 // eslint-disable-next-line test/prefer-lowercase-title
-describe("Remote UCD Store - File Operations", () => {
+describe("Remote UCD Store - Core File Operations", () => {
   const mockFiles = [
     {
       type: "file",
@@ -194,10 +195,8 @@ describe("Remote UCD Store - File Operations", () => {
         }],
       ]);
 
-      // Create a store with only specific versions for testing
       const store = await createRemoteUCDStore();
 
-      // Override the versions to test with only 2 versions
       Object.defineProperty(store, "versions", {
         value: Object.freeze(["15.0.0", "15.1.0"]),
         writable: false,
@@ -224,7 +223,6 @@ describe("Remote UCD Store - File Operations", () => {
 
       const store = await createRemoteUCDStore();
 
-      // Override the versions to test with only 1 version
       Object.defineProperty(store, "versions", {
         value: Object.freeze(["15.0.0"]),
         writable: false,
@@ -233,7 +231,7 @@ describe("Remote UCD Store - File Operations", () => {
       const allFiles = await store.getAllFiles();
 
       expect(allFiles).toEqual(["15.0.0/TestFile.txt"]);
-      expect(allFiles[0]).toMatch(/^15\.0\.0\//); // Starts with version prefix
+      expect(allFiles[0]).toMatch(/^15\.0\.0\//);
     });
 
     it("should apply filters to all files", async () => {
@@ -252,7 +250,6 @@ describe("Remote UCD Store - File Operations", () => {
         globalFilters: [PRECONFIGURED_FILTERS.EXCLUDE_TEST_FILES],
       });
 
-      // Override the versions to test with only 1 version
       Object.defineProperty(store, "versions", {
         value: Object.freeze(["15.0.0"]),
         writable: false,
@@ -278,7 +275,6 @@ describe("Remote UCD Store - File Operations", () => {
 
       const store = await createRemoteUCDStore();
 
-      // Override the versions to test with only 2 versions
       Object.defineProperty(store, "versions", {
         value: Object.freeze(["15.0.0", "15.1.0"]),
         writable: false,
@@ -287,6 +283,142 @@ describe("Remote UCD Store - File Operations", () => {
       const allFiles = await store.getAllFiles();
 
       expect(allFiles).toEqual(["15.1.0/OnlyFile.txt"]);
+    });
+  });
+
+  describe("getFileTree", () => {
+    it("should fetch file tree from remote API", async () => {
+      mockFetch([
+        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
+          return mockResponses.json(mockFiles);
+        }],
+      ]);
+
+      const store = await createRemoteUCDStore();
+
+      expect(store).toBeDefined();
+      const fileTree = await store.getFileTree("15.0.0");
+
+      expect(fileTree).toBeDefined();
+      expect(fileTree.length).toBe(4);
+      expect(flattenFilePaths(fileTree)).toEqual([
+        "ArabicShaping.txt",
+        "BidiBrackets.txt",
+        "BidiCharacterTest.txt",
+        "extracted/DerivedBidiClass.txt",
+      ]);
+    });
+
+    it("should apply filters to remote file tree", async () => {
+      mockFetch([
+        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
+          return mockResponses.json(mockFiles);
+        }],
+      ]);
+
+      const store = await createRemoteUCDStore({
+        globalFilters: [PRECONFIGURED_FILTERS.EXCLUDE_TEST_FILES],
+      });
+      const fileTree = await store.getFileTree("15.0.0");
+
+      expect(fileTree).toBeDefined();
+      expect(fileTree.length).toBeLessThan(mockFiles.length);
+    });
+
+    it("should apply extra filters to remote file tree", async () => {
+      mockFetch([
+        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
+          return mockResponses.json(mockFiles);
+        }],
+      ]);
+
+      const store = await createRemoteUCDStore({});
+
+      const fileTree = await store.getFileTree("15.0.0");
+      const fileTreeWithFilters = await store.getFileTree("15.0.0", [PRECONFIGURED_FILTERS.EXCLUDE_TEST_FILES]);
+
+      expect(fileTreeWithFilters).toBeDefined();
+      expect(fileTreeWithFilters.length).toBeLessThan(fileTree.length);
+      expect(flattenFilePaths(fileTreeWithFilters)).not.toContain("BidiCharacterTest.txt");
+    });
+
+    it("should handle empty file tree response", async () => {
+      mockFetch([
+        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
+          return mockResponses.json([]);
+        }],
+      ]);
+
+      const store = await createRemoteUCDStore();
+      const fileTree = await store.getFileTree("15.0.0");
+
+      expect(fileTree).toBeDefined();
+      expect(fileTree.length).toBe(0);
+    });
+
+    it("should handle deeply nested directory structures", async () => {
+      const deeplyNestedFiles = [
+        {
+          type: "directory",
+          name: "level1",
+          path: "/level1/",
+          children: [
+            {
+              type: "directory",
+              name: "level2",
+              path: "/level2/",
+              children: [
+                {
+                  type: "file",
+                  name: "deep-file.txt",
+                  path: "/deep-file.txt",
+                },
+              ],
+            },
+          ],
+        },
+      ];
+
+      mockFetch([
+        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
+          return mockResponses.json(deeplyNestedFiles);
+        }],
+      ]);
+
+      const store = await createRemoteUCDStore();
+      const filePaths = await store.getFilePaths("15.0.0");
+
+      expect(filePaths).toEqual(["level1/level2/deep-file.txt"]);
+    });
+
+    it("should handle very large remote file trees", async () => {
+      const largeNestedTree = {
+        type: "directory",
+        name: "large-dir",
+        path: "/large-dir/",
+        children: Array.from({ length: 500 }, (_, i) => ({
+          type: "file",
+          name: `large-file-${i}.txt`,
+          path: `/large-file-${i}.txt`,
+        })),
+      };
+
+      mockFetch([
+        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
+          return mockResponses.json([largeNestedTree]);
+        }],
+      ]);
+
+      const store = await createRemoteUCDStore();
+
+      const startTime = Date.now();
+      const filePaths = await store.getFilePaths("15.0.0");
+      const endTime = Date.now();
+
+      expect(filePaths).toHaveLength(500);
+      expect(filePaths[0]).toBe("large-dir/large-file-0.txt");
+      expect(filePaths[499]).toBe("large-dir/large-file-499.txt");
+      expect(endTime - startTime).toBeLessThan(2000);
     });
   });
 
