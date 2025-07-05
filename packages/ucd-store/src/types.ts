@@ -125,46 +125,21 @@ export interface AnalyzeOptions {
   calculateSizes?: boolean;
 }
 
-export interface FileRemovalResult {
-  /** Path of the file */
-  path: string;
-  /** Whether the file was successfully removed */
-  removed: boolean;
-  /** Error message if removal failed */
-  error?: string;
-  /** Size of the file in bytes (if available) */
-  size?: number;
-}
-
-export interface CleanResultSuccess {
-  success: true;
-  /** List of all files that were targeted for removal */
-  filesToRemove: string[];
-  /** Detailed results for each file removal attempt */
-  fileResults: FileRemovalResult[];
-  /** Successfully removed files */
-  removedFiles: string[];
-  /** Files that couldn't be removed */
-  failedRemovals: FileRemovalResult[];
-  /** Total number of files successfully deleted */
-  deletedCount: number;
-}
-
-export interface CleanResultFailure {
-  success: false;
-  /** Global error that caused the entire operation to fail */
+export interface FileRemovalError {
+  /** Path of the file that failed to be removed */
+  filePath: string;
+  /** Error message describing why removal failed */
   error: string;
-  /** Partial results if some files were processed before failure */
-  partialResults?: {
-    filesToRemove: string[];
-    fileResults: FileRemovalResult[];
-    removedFiles: string[];
-    failedRemovals: FileRemovalResult[];
-    deletedCount: number;
-  };
 }
 
-export type CleanResult = CleanResultSuccess | CleanResultFailure;
+export interface CleanResult {
+  /** Array of file paths that were successfully removed */
+  removedFiles: string[];
+  /** Array of files that failed to be removed with error details */
+  failedRemovals: FileRemovalError[];
+  /** Array of files that were located for removal */
+  locatedFiles: string[];
+}
 
 export interface CleanOptions {
   /**

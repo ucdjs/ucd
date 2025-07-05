@@ -4,6 +4,7 @@ import type { FileSystemBridge } from "@ucdjs/utils/fs-bridge";
 import type {
   AnalyzeResult,
   CleanResult,
+  FileRemovalError,
   StoreMode,
   UCDStoreOptions,
   VersionAnalysis,
@@ -184,10 +185,10 @@ export class UCDStore {
       const versionPath = path.join(this.basePath, version);
       const files = await this.#fs.listdir(versionPath, true);
 
-      const fileStructure = files.map((file) => ({
-        name: path.basename(file),
-        path: file,
-      }));
+      console.error(`DEBUG: listdir returned for ${version}:`, files);
+
+      // Build hierarchical structure from flat file list
+      const fileStructure = this.#buildFileStructure(files, versionPath);
 
       return this.#processFileStructure(fileStructure, extraFilters);
     }
@@ -255,221 +256,105 @@ export class UCDStore {
   async clean(options: {
     dryRun?: boolean;
     versions?: string[];
-    force?: boolean;
   } = {}): Promise<CleanResult> {
-    const { dryRun = false, versions: targetVersions, force = false } = options;
+    const { dryRun = false, versions: targetVersions } = options;
 
-    // Use specified versions or all versions
-    const versionsToClean = targetVersions || this.#versions;
-
-    try {
-      // First analyze to get files that need to be removed
-      const analyzeResult = await this.analyze({
-        checkOrphaned: true,
-      });
-
-      if (!analyzeResult.success) {
-        return {
-          success: false,
-          error: `Failed to analyze store before cleaning: ${analyzeResult.error}`,
-        };
-      }
-
-      // Perform the actual cleaning
-      return await this.#performClean(analyzeResult.filesToRemove, {
-        dryRun,
-        versions: versionsToClean,
-        force,
-      });
-    } catch (error) {
-      return {
-        success: false,
-        error: `Clean operation failed: ${error instanceof Error ? error.message : String(error)}`,
-      };
-    }
-  }
-
-  /**
-   * Internal method to perform the actual cleaning
-   */
-  async #performClean(filesToRemove: string[], options: {
-    dryRun: boolean;
-    versions: string[];
-    force: boolean;
-  }): Promise<CleanResult> {
-    const { dryRun, versions, force } = options;
-    const fileResults: Array<{ path: string; removed: boolean; error?: string; size?: number }> = [];
     const removedFiles: string[] = [];
-    const failedRemovals: Array<{ path: string; removed: boolean; error?: string; size?: number }> = [];
+    const failedRemovals: FileRemovalError[] = [];
+    const locatedFiles: string[] = [];
 
-    // Filter files to only include those from target versions
-    const filteredFiles = filesToRemove.filter((filePath) => {
-      const version = filePath.split("/")[0];
-      return version && versions.includes(version);
-    });
+    // Remote stores don't support cleaning
+    if (this.mode === "remote") {
+      return { removedFiles, failedRemovals, locatedFiles };
+    }
 
-    // Process files in batches to avoid overwhelming the filesystem
-    await processConcurrently(filteredFiles, 10, async (filePath) => {
+    // Determine which versions to clean
+    const versionsToClean = targetVersions
+      ? targetVersions.filter((v) => this.#versions.includes(v)) // Only clean existing versions
+      : this.#versions; // Clean all versions if none specified
+
+    // Collect all files to remove
+    for (const version of versionsToClean) {
       try {
-        const isRemoved = await this.#removeFile(filePath, { dryRun, force });
-        const fileResult = {
-          path: filePath,
-          removed: isRemoved,
-        };
+        const versionFiles = await this.getFilePaths(version);
+        const versionFilePaths = versionFiles.map((file) => `${version}/${file}`);
+        locatedFiles.push(...versionFilePaths);
+      } catch {
+        // If we can't get file paths for a version, skip it silently
+        continue;
+      }
+    }
 
-        fileResults.push(fileResult);
+    // Remove files
+    for (const filePath of locatedFiles) {
+      try {
+        const fullPath = this.#getFullPath(filePath);
 
-        if (isRemoved) {
-          removedFiles.push(filePath);
+        if (await this.#fs.exists(fullPath)) {
+          if (!dryRun) {
+            await this.#fs.rm(fullPath, { recursive: true });
+            removedFiles.push(filePath);
+          }
+          // In dry run, don't add to removedFiles since we didn't actually remove anything
         }
       } catch (error) {
-        const errorMsg = error instanceof Error ? error.message : String(error);
-        const fileResult = {
-          path: filePath,
-          removed: false,
-          error: errorMsg,
-        };
-
-        fileResults.push(fileResult);
-        failedRemovals.push(fileResult);
+        failedRemovals.push({
+          filePath,
+          error: error instanceof Error ? error.message : String(error),
+        });
       }
-    });
+    }
 
-    // Update manifest if files were actually removed
+    // update manifest after cleaning
     if (!dryRun && removedFiles.length > 0) {
-      await this.#updateManifestAfterClean(removedFiles);
+      await this.#cleanupAfterRemoval(versionsToClean, targetVersions == null);
     }
 
-    if (failedRemovals.length > 0) {
-      return {
-        success: false,
-        error: `Failed to remove ${failedRemovals.length} files`,
-        partialResults: {
-          filesToRemove: filteredFiles,
-          fileResults,
-          removedFiles,
-          failedRemovals,
-          deletedCount: removedFiles.length,
-        },
-      };
-    }
-
-    return {
-      success: true,
-      filesToRemove: filteredFiles,
-      fileResults,
-      removedFiles,
-      failedRemovals,
-      deletedCount: removedFiles.length,
-    };
+    return { removedFiles, failedRemovals, locatedFiles };
   }
 
   /**
-   * Remove a single file with size tracking
+   * Cleanup after file removal - remove empty directories and update manifest
    */
-  async #removeFile(filePath: string, options: {
-    dryRun: boolean;
-    force: boolean;
-  }): Promise<boolean> {
-    const { dryRun, force } = options;
-    const fullPath = this.#getFullPath(filePath);
+  async #cleanupAfterRemoval(versionsToClean: string[], cleanAllVersions: boolean): Promise<void> {
+    if (this.mode !== "local" || !this.basePath) return;
 
-    // check if file exists
-    if (!(await this.#fs.exists(fullPath))) {
-      return false;
-    }
+    const versionsToRemoveFromManifest: string[] = [];
 
-    if (dryRun) {
-      return false;
-    }
+    // Check if any versions are now empty and remove empty directories
+    for (const version of versionsToClean) {
+      const versionPath = path.join(this.basePath, version);
 
-    // Safety check - don't remove if not in store directory (unless forced)
-    if (!force && this.mode === "local" && this.basePath) {
-      const relativePath = path.relative(this.basePath, fullPath);
-      if (relativePath.startsWith("..") || path.isAbsolute(relativePath)) {
-        throw new UCDStoreError(`File ${filePath} is outside store directory`);
-      }
-    }
-
-    await this.#fs.rm(fullPath);
-    return true;
-  }
-
-  /**
-   * Update manifest after cleaning
-   */
-  async #updateManifestAfterClean(removedFiles: string[]): Promise<void> {
-    if (this.mode !== "local") {
-      return; // Only relevant for local mode
-    }
-
-    // Group removed files by version
-    const removedByVersion = new Map<string, string[]>();
-
-    for (const filePath of removedFiles) {
-      const [version, ...pathParts] = filePath.split("/");
-      if (version && pathParts.length > 0) {
-        if (!removedByVersion.has(version)) {
-          removedByVersion.set(version, []);
+      try {
+        if (!this.#fs.exists(versionPath)) {
+          continue;
         }
-        removedByVersion.get(version)!.push(pathParts.join("/"));
+        const files = await this.#fs.listdir(versionPath, true);
+        if (files.length === 0) {
+          await this.#fs.rm(versionPath, {
+            recursive: true,
+          });
+
+          versionsToRemoveFromManifest.push(version);
+        } else {
+          // Version directory doesn't exist, remove from manifest
+          versionsToRemoveFromManifest.push(version);
+        }
+      } catch {
+        // If we can't check the directory, assume it should be removed from manifest
+        versionsToRemoveFromManifest.push(version);
       }
     }
 
-    // Check if any versions are now empty
-    const versionsToRemove: string[] = [];
-
-    for (const [version] of removedByVersion) {
-      if (await this.#isVersionEmpty(version)) {
-        versionsToRemove.push(version);
-        await this.#removeEmptyVersionDirectory(version);
-      }
+    // update internal manifest
+    if (cleanAllVersions) {
+      // If we cleaned all versions, clear the manifest
+      this.#versions = [];
+    } else {
+      // remove only the versions that were cleaned
+      this.#versions = this.#versions.filter((v) => !versionsToRemoveFromManifest.includes(v));
     }
 
-    // Update versions array and manifest if needed
-    if (versionsToRemove.length > 0) {
-      this.#versions = this.#versions.filter((v) => !versionsToRemove.includes(v));
-      await this.#updateManifest();
-    }
-  }
-
-  /**
-   * Check if a version directory is empty
-   */
-  async #isVersionEmpty(version: string): Promise<boolean> {
-    if (this.mode !== "local" || !this.basePath) {
-      return false;
-    }
-
-    try {
-      const versionPath = path.join(this.basePath, version);
-      const files = await this.#fs.listdir(versionPath, true);
-      return files.length === 0;
-    } catch {
-      return true; // If we can't list, assume empty
-    }
-  }
-
-  /**
-   * Remove empty version directory
-   */
-  async #removeEmptyVersionDirectory(version: string): Promise<void> {
-    if (this.mode !== "local" || !this.basePath) {
-      return;
-    }
-
-    try {
-      const versionPath = path.join(this.basePath, version);
-      await this.#fs.rm(versionPath);
-    } catch {
-      // Ignore errors when removing empty directories
-    }
-  }
-
-  /**
-   * Update the manifest file
-   */
-  async #updateManifest(): Promise<void> {
     await this.#writeManifest(this.#versions);
   }
 
@@ -506,6 +391,8 @@ export class UCDStore {
         checkOrphaned,
         includeDetails,
       });
+
+      console.error(`Analysis completed. Total files to remove: ${analysis.filesToRemove.length}`, analysis.filesToRemove);
 
       return {
         success: true,
@@ -561,6 +448,7 @@ export class UCDStore {
 
         // Add orphaned files to removal list
         if (versionAnalysis.orphanedFiles) {
+          console.error(`Adding ${versionAnalysis.orphanedFiles.length} orphaned files from version ${version} to removal list`);
           filesToRemove.push(...versionAnalysis.orphanedFiles);
         }
       } catch (error) {
@@ -578,6 +466,7 @@ export class UCDStore {
     // Check for orphaned files at store level if requested
     if (checkOrphaned) {
       const orphanedFiles = await this.#findOrphanedFiles();
+      console.error(`Found ${orphanedFiles.length} orphaned files at store level:`, orphanedFiles);
       filesToRemove.push(...orphanedFiles);
       if (orphanedFiles.length > 0) {
         hasIssues = true;
@@ -615,6 +504,7 @@ export class UCDStore {
       // Check for orphaned files at version level if requested
       if (checkOrphaned) {
         const versionOrphans = await this.#findOrphanedFilesInVersion(version);
+        console.error(`Found ${versionOrphans.length} orphaned files in version ${version}:`, versionOrphans);
         orphanedFiles.push(...versionOrphans);
       }
 
@@ -690,22 +580,34 @@ export class UCDStore {
         }
       }
 
+      console.error(`Store-level orphaned files analysis:`);
+      console.error(`  Base path: ${this.basePath}`);
+      console.error(`  Existing files: ${existingFiles.length}`, existingFiles);
+      console.error(`  Expected files: ${expectedFiles.size}`, Array.from(expectedFiles));
+
       // Find files that exist but aren't expected
       for (const file of existingFiles) {
-        const relativePath = path.relative(this.basePath!, file);
+        // Handle both absolute and relative paths from listdir
+        const relativePath = path.isAbsolute(file) ? path.relative(this.basePath!, file) : file;
 
-        // Skip manifest file and directory entries
-        if (relativePath === ".ucd-store.json" || relativePath.endsWith("/")) {
+        console.error(`  Processing file: ${file} -> relativePath: ${relativePath}`);
+
+        // Skip files outside the store directory, manifest file, and version directories
+        if (relativePath.startsWith("..") || relativePath === ".ucd-store.json" || relativePath.endsWith("/") || this.#versions.includes(relativePath)) {
+          console.error(`    Skipping: ${relativePath}`);
           continue;
         }
 
         if (!expectedFiles.has(relativePath)) {
+          console.error(`    Adding as orphaned: ${relativePath}`);
           orphanedFiles.push(relativePath);
+        } else {
+          console.error(`    Expected file: ${relativePath}`);
         }
       }
     } catch (error) {
       // If we can't list files, just return empty array
-      console.warn("Failed to find orphaned files:", error);
+      console.error("Failed to find orphaned files:", error);
     }
 
     return orphanedFiles;
@@ -727,14 +629,32 @@ export class UCDStore {
       const expectedFiles = await this.getFilePaths(version);
       const expectedSet = new Set(expectedFiles);
 
+      console.error(`Version ${version} analysis:`);
+      console.error(`  Version path: ${versionPath}`);
+      console.error(`  Existing files: ${existingFiles.length}`, existingFiles);
+      console.error(`  Expected files: ${expectedFiles.length}`, expectedFiles);
+
       for (const file of existingFiles) {
+        // Only process files that are within the version directory
         const relativePath = path.isAbsolute(file) ? path.relative(versionPath, file) : file;
-        if (!expectedSet.has(relativePath) && !relativePath.startsWith('..')) {
+
+        console.error(`  Processing file: ${file} -> relativePath: ${relativePath}`);
+
+        // Skip files outside the version directory or that start with ..
+        if (relativePath.startsWith("..") || path.isAbsolute(relativePath)) {
+          console.error(`    Skipping (outside directory): ${relativePath}`);
+          continue;
+        }
+
+        if (!expectedSet.has(relativePath)) {
+          console.error(`    Adding as orphaned: ${relativePath}`);
           orphanedFiles.push(`${version}/${relativePath}`);
+        } else {
+          console.error(`    Expected file: ${relativePath}`);
         }
       }
-    } catch {
-      // If we can't analyze this version, skip it
+    } catch (error) {
+      console.error(`Error analyzing version ${version}:`, error);
     }
 
     return orphanedFiles;

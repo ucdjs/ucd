@@ -57,14 +57,9 @@ describe("clean operations across store types", () => {
 
       const result = await store.clean();
 
-      expect(result.success).toBe(true);
-      if (result.success) {
-        expect(result.filesToRemove).toEqual([]);
-        expect(result.removedFiles).toEqual([]);
-        expect(result.deletedCount).toBe(0);
-        expect(result.freedBytes).toBe(0);
-        expect(result.failedRemovals).toEqual([]);
-      }
+      expect(result.locatedFiles).toEqual([]);
+      expect(result.removedFiles).toEqual([]);
+      expect(result.failedRemovals).toEqual([]);
     });
 
     it("should handle remote store clean with dryRun", async () => {
@@ -84,11 +79,9 @@ describe("clean operations across store types", () => {
 
       const result = await store.clean({ dryRun: true });
 
-      expect(result.success).toBe(true);
-      if (result.success) {
-        expect(result.filesToRemove).toEqual([]);
-        expect(result.deletedCount).toBe(0);
-      }
+      expect(result.locatedFiles).toEqual([]);
+      expect(result.removedFiles).toEqual([]);
+      expect(result.failedRemovals).toEqual([]);
     });
 
     it("should handle remote store clean with specific versions", async () => {
@@ -115,47 +108,30 @@ describe("clean operations across store types", () => {
 
       const result = await store.clean({ versions: ["15.0.0"] });
 
-      expect(result.success).toBe(true);
-      if (result.success) {
-        expect(result.filesToRemove).toEqual([]);
-      }
-    });
-
-    it("should handle remote store clean failure during analysis", async () => {
-      const store = await createRemoteUCDStore();
-
-      // mock analyze to fail
-      vi.spyOn(store, "analyze").mockResolvedValue({
-        success: false,
-        error: "Remote analysis failed",
-      });
-
-      const result = await store.clean();
-
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.error).toContain("Failed to analyze store before cleaning");
-        expect(result.error).toContain("Remote analysis failed");
-      }
+      expect(result.locatedFiles).toEqual([]);
+      expect(result.removedFiles).toEqual([]);
+      expect(result.failedRemovals).toEqual([]);
     });
   });
 
   describe("local store clean operations", () => {
-    it("should clean orphaned files in local store", async () => {
+    it("should clean all files from all versions when no versions specified", async () => {
       const storeStructure = {
         "15.0.0": {
           "ArabicShaping.txt": "Arabic shaping data",
           "BidiBrackets.txt": "Bidi brackets data",
         },
-        "orphaned-file.txt": "This shouldn't be here",
+        "15.1.0": {
+          "DerivedBidiClass.txt": "Derived bidi class data",
+        },
+        "orphaned-file.txt": "This will remain untouched",
         ".ucd-store.json": JSON.stringify([
           { version: "15.0.0", path: "15.0.0" },
+          { version: "15.1.0", path: "15.1.0" },
         ]),
       };
 
-      const storeDir = await testdir(storeStructure, {
-        cleanup: false,
-      });
+      const storeDir = await testdir(storeStructure);
 
       const store = await createLocalUCDStore({
         basePath: storeDir,
@@ -163,20 +139,31 @@ describe("clean operations across store types", () => {
 
       const result = await store.clean();
 
-      expect(result.success).toBe(true);
-      if (result.success) {
-        expect(result.filesToRemove.length).toBeGreaterThan(0);
-        expect(result.deletedCount).toBeGreaterThan(0);
-        expect(result.removedFiles).toContain("orphaned-file.txt");
-      }
+      // Should remove ALL files from ALL versions
+      expect(result.locatedFiles).toContain("15.0.0/ArabicShaping.txt");
+      expect(result.locatedFiles).toContain("15.0.0/BidiBrackets.txt");
+      expect(result.locatedFiles).toContain("15.1.0/DerivedBidiClass.txt");
+      expect(result.removedFiles).toContain("15.0.0/ArabicShaping.txt");
+      expect(result.removedFiles).toContain("15.0.0/BidiBrackets.txt");
+      expect(result.removedFiles).toContain("15.1.0/DerivedBidiClass.txt");
+      expect(result.removedFiles).toHaveLength(3);
+
+      // Verify all version files are removed
+      expect(await store.fs.exists(`${storeDir}/15.0.0/ArabicShaping.txt`)).toBe(false);
+      expect(await store.fs.exists(`${storeDir}/15.0.0/BidiBrackets.txt`)).toBe(false);
+      expect(await store.fs.exists(`${storeDir}/15.1.0/DerivedBidiClass.txt`)).toBe(false);
+
+      // Orphaned file should remain (it's not part of any version)
+      expect(await store.fs.exists(`${storeDir}/orphaned-file.txt`)).toBe(true);
     });
 
     it("should perform dry run without actually removing files", async () => {
       const storeStructure = {
         "15.0.0": {
           "ArabicShaping.txt": "Arabic shaping data",
+          "BidiBrackets.txt": "Bidi brackets data",
         },
-        "orphaned-file.txt": "This shouldn't be here",
+        "orphaned-file.txt": "This will remain untouched",
         ".ucd-store.json": JSON.stringify([
           { version: "15.0.0", path: "15.0.0" },
         ]),
@@ -190,13 +177,14 @@ describe("clean operations across store types", () => {
 
       const result = await store.clean({ dryRun: true });
 
-      expect(result.success).toBe(true);
-      if (result.success) {
-        expect(result.filesToRemove.length).toBeGreaterThan(0);
-        expect(result.deletedCount).toBe(0); // No actual deletions in dry run
-      }
+      // should identify files to remove but not actually remove them
+      expect(result.locatedFiles).toContain("15.0.0/ArabicShaping.txt");
+      expect(result.locatedFiles).toContain("15.0.0/BidiBrackets.txt");
+      expect(result.removedFiles).toHaveLength(0); // No actual deletions in dry run
 
-      // Verify files still exist after dry run
+      // verify all files still exist after dry run
+      expect(await store.fs.exists(`${storeDir}/15.0.0/ArabicShaping.txt`)).toBe(true);
+      expect(await store.fs.exists(`${storeDir}/15.0.0/BidiBrackets.txt`)).toBe(true);
       expect(await store.fs.exists(`${storeDir}/orphaned-file.txt`)).toBe(true);
     });
 
@@ -224,99 +212,242 @@ describe("clean operations across store types", () => {
 
       const result = await store.clean({ versions: ["15.0.0"] });
 
-      expect(result.success).toBe(true);
-      if (result.success) {
-        // Should only include orphaned files that would be associated with version filtering
-        expect(result.filesToRemove.length).toBeGreaterThanOrEqual(0);
-      }
-    });
+      // Should remove ALL files from specified version
+      expect(result.locatedFiles).toContain("15.0.0/file1.txt");
+      expect(result.removedFiles).toContain("15.0.0/file1.txt");
+      expect(result.removedFiles.length).toBeGreaterThan(0);
 
-    it("should calculate freed bytes correctly", async () => {
-      const largeContent = "x".repeat(1000); // 1000 bytes
-      const storeStructure = {
-        "15.0.0": {
-          "file.txt": "small file",
+      // Verify that 15.0.0 files are removed but 15.1.0 files remain
+      expect(await store.fs.exists(`${storeDir}/15.0.0/file1.txt`)).toBe(false);
+      expect(await store.fs.exists(`${storeDir}/15.1.0/file2.txt`)).toBe(true);
+      // Orphaned files should still exist (they're not version-specific)
+      expect(await store.fs.exists(`${storeDir}/orphaned-v1.txt`)).toBe(true);
+      expect(await store.fs.exists(`${storeDir}/orphaned-v2.txt`)).toBe(true);
+    });
+  });
+
+  it("should clean multiple specified versions", async () => {
+    const storeStructure = {
+      "15.0.0": {
+        "file1.txt": "Version 15.0.0 file",
+        "subdir": {
+          "nested.txt": "Nested file in 15.0.0",
         },
-        "large-orphaned.txt": largeContent,
-        ".ucd-store.json": JSON.stringify([
-          { version: "15.0.0", path: "15.0.0" },
-        ]),
-      };
+      },
+      "15.1.0": {
+        "file2.txt": "Version 15.1.0 file",
+      },
+      "15.2.0": {
+        "file3.txt": "Version 15.2.0 file",
+      },
+      "orphaned.txt": "Orphaned file",
+      ".ucd-store.json": JSON.stringify([
+        { version: "15.0.0", path: "15.0.0" },
+        { version: "15.1.0", path: "15.1.0" },
+        { version: "15.2.0", path: "15.2.0" },
+      ]),
+    };
 
-      const storeDir = await testdir(storeStructure);
+    const storeDir = await testdir(storeStructure, {
+      cleanup: false,
+    });
 
-      const store = await createLocalUCDStore({
-        basePath: storeDir,
-      });
+    const store = await createLocalUCDStore({
+      basePath: storeDir,
+    });
 
-      const result = await store.clean();
+    const result = await store.clean({ versions: ["15.0.0", "15.2.0"] });
 
-      expect(result.success).toBe(true);
-      if (result.success) {
-        expect(result.freedBytes).toBeGreaterThan(0);
+    // Should remove ALL files from both specified versions
+    expect(result.locatedFiles).toContain("15.0.0/file1.txt");
+    expect(result.locatedFiles).toContain("15.0.0/subdir/nested.txt");
+    expect(result.locatedFiles).toContain("15.2.0/file3.txt");
+    expect(result.locatedFiles).not.toContain("15.1.0/file2.txt");
+    expect(result.removedFiles).toContain("15.0.0/file1.txt");
+    expect(result.removedFiles).toContain("15.0.0/subdir/nested.txt");
+    expect(result.removedFiles).toContain("15.2.0/file3.txt");
+    expect(result.removedFiles).toHaveLength(3); // 3 files removed
+    // Verify correct files are removed
+    expect(await store.fs.exists(`${storeDir}/15.0.0/file1.txt`)).toBe(false);
+    expect(await store.fs.exists(`${storeDir}/15.2.0/file3.txt`)).toBe(false);
+    expect(await store.fs.exists(`${storeDir}/15.1.0/file2.txt`)).toBe(true);
+    expect(await store.fs.exists(`${storeDir}/orphaned.txt`)).toBe(true);
+  });
+
+  it("should differentiate between version-specific cleaning and orphaned file cleaning", async () => {
+    const storeStructure = {
+      "15.0.0": {
+        "ArabicShaping.txt": "Arabic shaping data",
+        "BidiBrackets.txt": "Bidi brackets data",
+      },
+      "orphaned-file.txt": "This shouldn't be here",
+      ".ucd-store.json": JSON.stringify([
+        { version: "15.0.0", path: "15.0.0" },
+      ]),
+    };
+
+    const storeDir = await testdir(storeStructure);
+
+    const store = await createLocalUCDStore({
+      basePath: storeDir,
+    });
+
+    // Test 1: Clean all versions when no versions specified
+    const allVersionsResult = await store.clean();
+
+    // Should clean all files from all versions
+    expect(allVersionsResult.locatedFiles).toContain("15.0.0/ArabicShaping.txt");
+    expect(allVersionsResult.locatedFiles).toContain("15.0.0/BidiBrackets.txt");
+    expect(allVersionsResult.removedFiles).toContain("15.0.0/ArabicShaping.txt");
+    expect(allVersionsResult.removedFiles).toContain("15.0.0/BidiBrackets.txt");
+
+    // Verify that version files are removed, orphaned file remains (not managed by store)
+    expect(await store.fs.exists(`${storeDir}/15.0.0/ArabicShaping.txt`)).toBe(false);
+    expect(await store.fs.exists(`${storeDir}/15.0.0/BidiBrackets.txt`)).toBe(false);
+    expect(await store.fs.exists(`${storeDir}/orphaned-file.txt`)).toBe(true); // Not managed by store
+
+    // Test 2: Re-create files and test specific version cleaning
+    await store.fs.write(`${storeDir}/15.0.0/ArabicShaping.txt`, "Arabic shaping data");
+    await store.fs.write(`${storeDir}/15.0.0/BidiBrackets.txt`, "Bidi brackets data");
+
+    const versionResult = await store.clean({ versions: ["15.0.0"] });
+
+    expect(versionResult.locatedFiles).toContain("15.0.0/ArabicShaping.txt");
+    expect(versionResult.locatedFiles).toContain("15.0.0/BidiBrackets.txt");
+    expect(versionResult.removedFiles).toHaveLength(2);
+
+    // Verify that all version files are removed
+    expect(await store.fs.exists(`${storeDir}/15.0.0/ArabicShaping.txt`)).toBe(false);
+    expect(await store.fs.exists(`${storeDir}/15.0.0/BidiBrackets.txt`)).toBe(false);
+  });
+
+  it("should handle cleaning non-existent versions gracefully", async () => {
+    const storeStructure = {
+      "15.0.0": {
+        "file.txt": "Version 15.0.0 file",
+      },
+      ".ucd-store.json": JSON.stringify([
+        { version: "15.0.0", path: "15.0.0" },
+      ]),
+    };
+
+    const storeDir = await testdir(storeStructure);
+
+    const store = await createLocalUCDStore({
+      basePath: storeDir,
+    });
+
+    const result = await store.clean({ versions: ["nonexistent-version"] });
+
+    expect(result.locatedFiles).toEqual([]);
+    expect(result.removedFiles).toEqual([]);
+    expect(result.failedRemovals).toEqual([]);
+    // Verify existing files are untouched
+    expect(await store.fs.exists(`${storeDir}/15.0.0/file.txt`)).toBe(true);
+  });
+
+  it("should handle mixed orphaned files and version-specific files correctly", async () => {
+    const storeStructure = {
+      "15.0.0": {
+        "ArabicShaping.txt": "Arabic shaping data",
+        "unexpected-file.txt": "This file shouldn't be in the manifest",
+      },
+      "15.1.0": {
+        "BidiBrackets.txt": "Bidi brackets data",
+      },
+      "store-level-orphan.txt": "Store level orphaned file",
+      ".ucd-store.json": JSON.stringify([
+        { version: "15.0.0", path: "15.0.0" },
+        { version: "15.1.0", path: "15.1.0" },
+      ]),
+    };
+
+    const storeDir = await testdir(storeStructure);
+
+    // Mock getFilePaths to only return ArabicShaping.txt for 15.0.0 (making unexpected-file.txt orphaned)
+    const store = await createLocalUCDStore({
+      basePath: storeDir,
+    });
+
+    // Mock to simulate that unexpected-file.txt is not in manifest
+    const originalGetFilePaths = store.getFilePaths.bind(store);
+    store.getFilePaths = vi.fn().mockImplementation(async (version: string) => {
+      if (version === "15.0.0") {
+        return ["ArabicShaping.txt"]; // Don't include unexpected-file.txt
       }
+      return originalGetFilePaths(version);
     });
 
-    it("should handle clean failure with partial results", async () => {
-      const storeStructure = {
-        "15.0.0": {
-          "file.txt": "legitimate file",
-        },
-        "orphaned1.txt": "orphaned file 1",
-        "orphaned2.txt": "orphaned file 2",
-        ".ucd-store.json": JSON.stringify([
-          { version: "15.0.0", path: "15.0.0" },
-        ]),
-      };
+    const result = await store.clean();
 
-      const storeDir = await testdir(storeStructure);
+    // Clean should only remove files that are returned by getFilePaths
+    expect(result.locatedFiles).toContain("15.0.0/ArabicShaping.txt");
+    expect(result.locatedFiles).toContain("15.1.0/BidiBrackets.txt");
+    expect(result.locatedFiles).not.toContain("15.0.0/unexpected-file.txt");
+    expect(result.locatedFiles).not.toContain("store-level-orphan.txt");
+    expect(result.removedFiles).toContain("15.0.0/ArabicShaping.txt");
+    expect(result.removedFiles).toContain("15.1.0/BidiBrackets.txt");
+  });
 
-      const store = await createLocalUCDStore({
-        basePath: storeDir,
-      });
+  it("should handle clean failure with partial results", async () => {
+    const storeStructure = {
+      "15.0.0": {
+        "file.txt": "legitimate file",
+      },
+      "orphaned1.txt": "orphaned file 1",
+      "orphaned2.txt": "orphaned file 2",
+      ".ucd-store.json": JSON.stringify([
+        { version: "15.0.0", path: "15.0.0" },
+      ]),
+    };
 
-      // Mock rm to fail on specific file
-      const originalRM = store.fs.rm;
-      store.fs.rm = vi.fn().mockImplementation(async (path: string) => {
-        if (path.includes("orphaned1.txt")) {
-          throw new Error("Permission denied");
-        }
-        return originalRM.call(store.fs, path);
-      });
+    const storeDir = await testdir(storeStructure);
 
-      const result = await store.clean();
+    const store = await createLocalUCDStore({
+      basePath: storeDir,
+    });
 
-      expect(result.success).toBe(false);
-      if (!result.success) {
-        expect(result.partialResults).toBeDefined();
-        expect(result.partialResults!.failedRemovals.length).toBeGreaterThan(0);
-        expect(result.partialResults!.removedFiles.length).toBeGreaterThanOrEqual(0);
+    // Mock rm to fail on specific file
+    const originalRM = store.fs.rm;
+    store.fs.rm = vi.fn().mockImplementation(async (path: string) => {
+      if (path.includes("file.txt")) {
+        throw new Error("Permission denied");
       }
+      return originalRM.call(store.fs, path);
     });
 
-    it("should update manifest after removing empty version directories", async () => {
-      const storeStructure = {
-        "15.0.0": {
-          "file.txt": "only file in version",
-        },
-        ".ucd-store.json": JSON.stringify([
-          { version: "15.0.0", path: "15.0.0" },
-        ]),
-      };
+    const result = await store.clean();
 
-      const storeDir = await testdir(storeStructure);
+    expect(result.failedRemovals.length).toBeGreaterThan(0);
+    expect(result.failedRemovals[0]?.filePath).toContain("15.0.0/file.txt");
+    expect(result.failedRemovals[0]?.error).toContain("Permission denied");
+  });
 
-      const store = await createLocalUCDStore({
-        basePath: storeDir,
-      });
+  it("should update manifest after removing empty version directories", async () => {
+    const storeStructure = {
+      "15.0.0": {
+        "file.txt": "only file in version",
+      },
+      ".ucd-store.json": JSON.stringify([
+        { version: "15.0.0", path: "15.0.0" },
+      ]),
+    };
 
-      // First remove the file manually to make the version empty
-      await store.fs.rm(`${storeDir}/15.0.0/file.txt`);
+    const storeDir = await testdir(storeStructure);
 
-      const result = await store.clean();
-
-      expect(result.success).toBe(true);
+    const store = await createLocalUCDStore({
+      basePath: storeDir,
     });
+
+    const result = await store.clean();
+
+    expect(result.locatedFiles).toContain("15.0.0/file.txt");
+    expect(result.removedFiles).toContain("15.0.0/file.txt");
+
+    // verify that the version directory and manifest are cleaned up
+    expect(await store.fs.exists(`${storeDir}/15.0.0`)).toBe(false);
+    // check that manifest was updated (versions should be empty)
+    expect(store.versions).toEqual([]);
   });
 
   describe("createUCDStore clean operations", () => {
@@ -341,10 +472,8 @@ describe("clean operations across store types", () => {
 
       const result = await store.clean();
 
-      expect(result.success).toBe(true);
-      if (result.success) {
-        expect(result.filesToRemove.length).toBeGreaterThan(0);
-      }
+      expect(result.locatedFiles.length).toBeGreaterThan(0);
+      expect(result.removedFiles.length).toBeGreaterThan(0);
     });
 
     it("should handle remote store created via createUCDStore", async () => {
@@ -376,49 +505,25 @@ describe("clean operations across store types", () => {
         fs: mockFS,
       });
 
-      Object.defineProperty(store, "versions", {
-        value: Object.freeze(["15.0.0"]),
-        writable: false,
-      });
-
       const result = await store.clean();
 
-      expect(result.success).toBe(true);
-      if (result.success) {
-        expect(result.filesToRemove).toEqual([]);
-        expect(result.deletedCount).toBe(0);
-      }
-    });
-  });
-
-  describe("clean edge cases", () => {
-    it("should handle clean when store has no versions", async () => {
-      const storeStructure = {
-        ".ucd-store.json": JSON.stringify([]),
-      };
-
-      const storeDir = await testdir(storeStructure);
-
-      const store = await createLocalUCDStore({
-        basePath: storeDir,
-      });
-
-      const result = await store.clean();
-
-      expect(result.success).toBe(true);
-      if (result.success) {
-        expect(result.filesToRemove).toEqual([]);
-        expect(result.deletedCount).toBe(0);
-      }
+      expect(result.locatedFiles).toEqual([]);
+      expect(result.removedFiles).toEqual([]);
+      expect(result.failedRemovals).toEqual([]);
     });
 
-    it("should handle clean with force option", async () => {
+    it("should handle version cleaning with dry run", async () => {
       const storeStructure = {
         "15.0.0": {
-          "file.txt": "data",
+          "file1.txt": "Version 15.0.0 file",
+          "file2.txt": "Another file",
+        },
+        "15.1.0": {
+          "file3.txt": "Version 15.1.0 file",
         },
         ".ucd-store.json": JSON.stringify([
           { version: "15.0.0", path: "15.0.0" },
+          { version: "15.1.0", path: "15.1.0" },
         ]),
       };
 
@@ -428,18 +533,27 @@ describe("clean operations across store types", () => {
         basePath: storeDir,
       });
 
-      const result = await store.clean({ force: true });
+      const result = await store.clean({ versions: ["15.0.0"], dryRun: true });
 
-      expect(result.success).toBe(true);
+      expect(result.locatedFiles).toContain("15.0.0/file1.txt");
+      expect(result.locatedFiles).toContain("15.0.0/file2.txt");
+      expect(result.removedFiles).toHaveLength(0); // No actual deletions in dry run
+
+      // verify files still exist after dry run
+      expect(await store.fs.exists(`${storeDir}/15.0.0/file1.txt`)).toBe(true);
+      expect(await store.fs.exists(`${storeDir}/15.0.0/file2.txt`)).toBe(true);
+      expect(await store.fs.exists(`${storeDir}/15.1.0/file3.txt`)).toBe(true);
     });
 
-    it("should handle clean when analysis partially fails", async () => {
+    it("should handle cleaning with empty version directories", async () => {
       const storeStructure = {
-        "15.0.0": {
-          "file.txt": "data",
+        "15.0.0": {}, // Empty version directory
+        "15.1.0": {
+          "file.txt": "Version 15.1.0 file",
         },
         ".ucd-store.json": JSON.stringify([
           { version: "15.0.0", path: "15.0.0" },
+          { version: "15.1.0", path: "15.1.0" },
         ]),
       };
 
@@ -449,27 +563,123 @@ describe("clean operations across store types", () => {
         basePath: storeDir,
       });
 
-      // Mock analyze to return success but with corrupted health
-      vi.spyOn(store, "analyze").mockResolvedValue({
-        success: true,
-        totalFiles: 1,
-        totalSize: 10,
-        versions: [{
-          version: "15.0.0",
-          fileCount: 1,
-          isComplete: false,
-          missingFiles: ["some-missing-file.txt"],
-        }],
-        filesToRemove: [],
-        storeHealth: "corrupted",
+      const result = await store.clean({ versions: ["15.0.0"] });
+
+      expect(result.locatedFiles).toEqual([]); // No files to remove from empty version
+      expect(result.removedFiles).toEqual([]);
+      expect(result.failedRemovals).toEqual([]);
+
+      // Verify 15.1.0 is untouched
+      expect(await store.fs.exists(`${storeDir}/15.1.0/file.txt`)).toBe(true);
+    });
+
+    it("should properly handle concurrent version cleaning", async () => {
+      const storeStructure = {
+        "15.0.0": {
+          "file1.txt": "Version 15.0.0 file",
+        },
+        "15.1.0": {
+          "file2.txt": "Version 15.1.0 file",
+        },
+        "15.2.0": {
+          "file3.txt": "Version 15.2.0 file",
+        },
+        "15.3.0": {
+          "file4.txt": "Version 15.3.0 file",
+        },
+        ".ucd-store.json": JSON.stringify([
+          { version: "15.0.0", path: "15.0.0" },
+          { version: "15.1.0", path: "15.1.0" },
+          { version: "15.2.0", path: "15.2.0" },
+          { version: "15.3.0", path: "15.3.0" },
+        ]),
+      };
+
+      const storeDir = await testdir(storeStructure);
+
+      const store = await createLocalUCDStore({
+        basePath: storeDir,
       });
 
-      const result = await store.clean();
+      // Clean multiple versions to test concurrent processing
+      const result = await store.clean({ versions: ["15.0.0", "15.1.0", "15.3.0"] });
 
-      expect(result.success).toBe(true);
-      if (result.success) {
-        expect(result.filesToRemove).toEqual([]);
-      }
+      expect(result.locatedFiles).toContain("15.0.0/file1.txt");
+      expect(result.locatedFiles).toContain("15.1.0/file2.txt");
+      expect(result.locatedFiles).toContain("15.3.0/file4.txt");
+      expect(result.locatedFiles).not.toContain("15.2.0/file3.txt");
+      expect(result.removedFiles).toHaveLength(3);
+
+      // Verify correct files are removed
+      expect(await store.fs.exists(`${storeDir}/15.0.0/file1.txt`)).toBe(false);
+      expect(await store.fs.exists(`${storeDir}/15.1.0/file2.txt`)).toBe(false);
+      expect(await store.fs.exists(`${storeDir}/15.2.0/file3.txt`)).toBe(true);
+      expect(await store.fs.exists(`${storeDir}/15.3.0/file4.txt`)).toBe(false);
+    });
+
+    describe("clean edge cases", () => {
+      it("should handle clean when store has no versions", async () => {
+        const storeStructure = {
+          ".ucd-store.json": JSON.stringify([]),
+        };
+
+        const storeDir = await testdir(storeStructure);
+
+        const store = await createLocalUCDStore({
+          basePath: storeDir,
+        });
+
+        const result = await store.clean();
+
+        expect(result.locatedFiles).toEqual([]);
+        expect(result.removedFiles).toEqual([]);
+        expect(result.failedRemovals).toEqual([]);
+      });
+
+      it("should handle clean with force option", async () => {
+        const storeStructure = {
+          "15.0.0": {
+            "file.txt": "data",
+          },
+          ".ucd-store.json": JSON.stringify([
+            { version: "15.0.0", path: "15.0.0" },
+          ]),
+        };
+
+        const storeDir = await testdir(storeStructure);
+
+        const store = await createLocalUCDStore({
+          basePath: storeDir,
+        });
+
+        const result = await store.clean();
+
+        expect(result.locatedFiles).toContain("15.0.0/file.txt");
+        expect(result.removedFiles).toContain("15.0.0/file.txt");
+      });
+
+      it("should handle clean when analysis partially fails", async () => {
+        const storeStructure = {
+          "15.0.0": {
+            "file.txt": "data",
+          },
+          ".ucd-store.json": JSON.stringify([
+            { version: "15.0.0", path: "15.0.0" },
+          ]),
+        };
+
+        const storeDir = await testdir(storeStructure);
+
+        const store = await createLocalUCDStore({
+          basePath: storeDir,
+        });
+
+        // Clean method no longer depends on analyze, so just test normal cleaning
+        const result = await store.clean();
+
+        expect(result.locatedFiles).toContain("15.0.0/file.txt");
+        expect(result.removedFiles).toContain("15.0.0/file.txt");
+      });
     });
   });
 });
