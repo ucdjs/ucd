@@ -5,7 +5,7 @@ import { createPathFilter } from "@ucdjs/utils";
 import { HttpResponse } from "msw";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
-import { mirrorUCDFiles } from "../src/ucd-files";
+import { mirrorUCDFiles } from "../src";
 
 describe("mirrorUCDFiles", () => {
   const mockFileEntries = [
