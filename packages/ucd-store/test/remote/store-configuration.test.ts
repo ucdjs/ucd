@@ -28,8 +28,26 @@ describe("remote ucd store - configuration and version management", () => {
 
   describe("store initialization", () => {
     it("should create remote store with default options", async () => {
+      const mockedFs = {
+        ...mockFs,
+        exists: vi.fn().mockImplementation((path) => {
+          if (path === ".ucd-store.json") {
+            return Promise.resolve(true);
+          }
+          return Promise.resolve(false);
+        }),
+        read: vi.fn().mockImplementation((path) => {
+          if (path === ".ucd-store.json") {
+            return Promise.resolve(JSON.stringify([{
+              version: "15.0.0",
+              path: "/15.0.0",
+            }]));
+          }
+          return Promise.resolve("");
+        }),
+      };
       const store = await createRemoteUCDStore({
-        fs: mockFs,
+        fs: mockedFs,
       });
 
       expect(store).toBeDefined();
@@ -39,8 +57,28 @@ describe("remote ucd store - configuration and version management", () => {
 
     it("should create remote store with custom base URL", async () => {
       const customBaseUrl = "https://custom-api.ucdjs.dev";
+
+      const mockedFs = {
+        ...mockFs,
+        exists: vi.fn().mockImplementation((path) => {
+          if (path === ".ucd-store.json") {
+            return Promise.resolve(true);
+          }
+          return Promise.resolve(false);
+        }),
+        read: vi.fn().mockImplementation((path) => {
+          if (path === ".ucd-store.json") {
+            return Promise.resolve(JSON.stringify([{
+              version: "15.0.0",
+              path: "/15.0.0",
+            }]));
+          }
+          return Promise.resolve("");
+        }),
+      };
+
       const store = await createRemoteUCDStore({
-        fs: mockFs,
+        fs: mockedFs,
         baseUrl: customBaseUrl,
       });
 
@@ -49,36 +87,64 @@ describe("remote ucd store - configuration and version management", () => {
     });
 
     it("should create remote store with custom filesystem bridge", async () => {
-      const customFs = {
-        exists: vi.fn(),
-        read: vi.fn(),
-        write: vi.fn(),
-        listdir: vi.fn(),
-        mkdir: vi.fn(),
-        stat: vi.fn(),
-        rm: vi.fn(),
+      const mockedFs = {
+        ...mockFs,
+        exists: vi.fn().mockImplementation((path) => {
+          if (path === ".ucd-store.json") {
+            return Promise.resolve(true);
+          }
+          return Promise.resolve(false);
+        }),
+        read: vi.fn().mockImplementation((path) => {
+          if (path === ".ucd-store.json") {
+            return Promise.resolve(JSON.stringify([{
+              version: "15.0.0",
+              path: "/15.0.0",
+            }]));
+          }
+          return Promise.resolve("");
+        }),
       };
 
       const store = await createRemoteUCDStore({
-        fs: customFs,
+        fs: mockedFs,
       });
 
       expect(store).toBeDefined();
       expect(store.mode).toBe("remote");
-      expect(store.fs).toBe(customFs);
+      expect(store.fs).toBe(mockedFs);
     });
 
     it("should initialize remote store without local files", async () => {
+      const mockedFs = {
+        ...mockFs,
+        exists: vi.fn().mockImplementation((path) => {
+          if (path === ".ucd-store.json") {
+            return Promise.resolve(true);
+          }
+          return Promise.resolve(false);
+        }),
+        read: vi.fn().mockImplementation((path) => {
+          if (path === ".ucd-store.json") {
+            return Promise.resolve(JSON.stringify([{
+              version: "15.0.0",
+              path: "/15.0.0",
+            }]));
+          }
+          return Promise.resolve("");
+        }),
+      };
+
       const store = await createRemoteUCDStore({
-        fs: mockFs,
+        fs: mockedFs,
       });
 
       expect(store).toBeDefined();
       expect(store.mode).toBe("remote");
-      expect(mockFs.mkdir).not.toHaveBeenCalled();
-      expect(mockFs.write).not.toHaveBeenCalled();
-      expect(mockFs.read).not.toHaveBeenCalled();
-      expect(mockFs.exists).toHaveBeenCalledWith(".ucd-store.json");
+      expect(mockedFs.mkdir).not.toHaveBeenCalled();
+      expect(mockedFs.write).not.toHaveBeenCalled();
+      expect(mockedFs.read).toHaveBeenCalledWith(".ucd-store.json");
+      expect(mockedFs.exists).toHaveBeenCalledWith(".ucd-store.json");
     });
 
     it("should create remote store with default HTTP filesystem", async () => {
@@ -99,22 +165,60 @@ describe("remote ucd store - configuration and version management", () => {
     });
 
     it("should create remote store via generic factory", async () => {
+      const mockedFs = {
+        ...mockFs,
+        exists: vi.fn().mockImplementation((path) => {
+          if (path === ".ucd-store.json") {
+            return Promise.resolve(true);
+          }
+          return Promise.resolve(false);
+        }),
+        read: vi.fn().mockImplementation((path) => {
+          if (path === ".ucd-store.json") {
+            return Promise.resolve(JSON.stringify([{
+              version: "15.0.0",
+              path: "/15.0.0",
+            }]));
+          }
+          return Promise.resolve("");
+        }),
+      };
+
       const remoteStore = await createUCDStore({
         mode: "remote",
-        fs: mockFs,
+        fs: mockedFs,
       });
 
       expect(remoteStore).toBeDefined();
       expect(remoteStore.mode).toBe("remote");
-      expect(remoteStore.fs).toBe(mockFs);
+      expect(remoteStore.fs).toBe(mockedFs);
     });
   });
 
   describe("filter configuration", () => {
     it("should apply global filters to remote operations", async () => {
+      const mockedFs = {
+        ...mockFs,
+        exists: vi.fn().mockImplementation((path) => {
+          if (path === ".ucd-store.json") {
+            return Promise.resolve(true);
+          }
+          return Promise.resolve(false);
+        }),
+        read: vi.fn().mockImplementation((path) => {
+          if (path === ".ucd-store.json") {
+            return Promise.resolve(JSON.stringify([{
+              version: "15.0.0",
+              path: "/15.0.0",
+            }]));
+          }
+          return Promise.resolve("");
+        }),
+      };
+
       const store = await createRemoteUCDStore({
         globalFilters: [PRECONFIGURED_FILTERS.EXCLUDE_TEST_FILES],
-        fs: mockFs,
+        fs: mockedFs,
       });
 
       expect(store).toBeDefined();
@@ -124,9 +228,28 @@ describe("remote ucd store - configuration and version management", () => {
     });
 
     it("should handle empty global filters", async () => {
+      const mockedFs = {
+        ...mockFs,
+        exists: vi.fn().mockImplementation((path) => {
+          if (path === ".ucd-store.json") {
+            return Promise.resolve(true);
+          }
+          return Promise.resolve(false);
+        }),
+        read: vi.fn().mockImplementation((path) => {
+          if (path === ".ucd-store.json") {
+            return Promise.resolve(JSON.stringify([{
+              version: "15.0.0",
+              path: "/15.0.0",
+            }]));
+          }
+          return Promise.resolve("");
+        }),
+      };
+
       const store = await createRemoteUCDStore({
         globalFilters: [],
-        fs: mockFs,
+        fs: mockedFs,
       });
 
       expect(store).toBeDefined();
@@ -137,8 +260,27 @@ describe("remote ucd store - configuration and version management", () => {
 
   describe("version management", () => {
     it("should return all available versions", async () => {
+      const mockedFs = {
+        ...mockFs,
+        exists: vi.fn().mockImplementation((path) => {
+          if (path === ".ucd-store.json") {
+            return Promise.resolve(true);
+          }
+          return Promise.resolve(false);
+        }),
+        read: vi.fn().mockImplementation((path) => {
+          if (path === ".ucd-store.json") {
+            return Promise.resolve(JSON.stringify(UNICODE_VERSION_METADATA.map((v) => ({
+              version: v.version,
+              path: `/${v.version}`,
+            }))));
+          }
+          return Promise.resolve("");
+        }),
+      };
+
       const store = await createRemoteUCDStore({
-        fs: mockFs,
+        fs: mockedFs,
       });
 
       expect(store.versions).toBeDefined();
@@ -147,8 +289,27 @@ describe("remote ucd store - configuration and version management", () => {
     });
 
     it("should check version existence correctly", async () => {
+      const mockedFs = {
+        ...mockFs,
+        exists: vi.fn().mockImplementation((path) => {
+          if (path === ".ucd-store.json") {
+            return Promise.resolve(true);
+          }
+          return Promise.resolve(false);
+        }),
+        read: vi.fn().mockImplementation((path) => {
+          if (path === ".ucd-store.json") {
+            return Promise.resolve(JSON.stringify([{
+              version: "15.0.0",
+              path: "/15.0.0",
+            }]));
+          }
+          return Promise.resolve("");
+        }),
+      };
+
       const store = await createRemoteUCDStore({
-        fs: mockFs,
+        fs: mockedFs,
       });
 
       expect(store.hasVersion("15.0.0")).toBe(true);
@@ -156,21 +317,59 @@ describe("remote ucd store - configuration and version management", () => {
     });
 
     it("should handle version list immutability", async () => {
+      const mockedFs = {
+        ...mockFs,
+        exists: vi.fn().mockImplementation((path) => {
+          if (path === ".ucd-store.json") {
+            return Promise.resolve(true);
+          }
+          return Promise.resolve(false);
+        }),
+        read: vi.fn().mockImplementation((path) => {
+          if (path === ".ucd-store.json") {
+            return Promise.resolve(JSON.stringify(UNICODE_VERSION_METADATA.map((v) => ({
+              version: v.version,
+              path: `/${v.version}`,
+            }))));
+          }
+          return Promise.resolve("");
+        }),
+      };
+
       const store = await createRemoteUCDStore({
-        fs: mockFs,
+        fs: mockedFs,
       });
 
       expect(() => {
         (store.versions as string[]).push("99.99.99");
-      }).toThrow("Cannot add property 37, object is not extensible");
+      }).toThrowError(/Cannot add property \d+, object is not extensible/);
 
       expect(store.hasVersion("99.99.99")).toBe(false);
       expect(store.versions.length).toBe(UNICODE_VERSION_METADATA.length);
     });
 
     it("should load all available Unicode versions from metadata", async () => {
+      const mockedFs = {
+        ...mockFs,
+        exists: vi.fn().mockImplementation((path) => {
+          if (path === ".ucd-store.json") {
+            return Promise.resolve(true);
+          }
+          return Promise.resolve(false);
+        }),
+        read: vi.fn().mockImplementation((path) => {
+          if (path === ".ucd-store.json") {
+            return Promise.resolve(JSON.stringify(UNICODE_VERSION_METADATA.map((v) => ({
+              version: v.version,
+              path: `/${v.version}`,
+            }))));
+          }
+          return Promise.resolve("");
+        }),
+      };
+
       const store = await createRemoteUCDStore({
-        fs: mockFs,
+        fs: mockedFs,
       });
 
       expect(store).toBeDefined();
