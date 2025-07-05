@@ -8,6 +8,7 @@ import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { ApiResponseError, createClient } from "@ucdjs/fetch";
 import { createPathFilter } from "@ucdjs/utils";
 import defu from "defu";
+import { UCDStoreError } from "./errors";
 import { flattenFilePaths } from "./ucd-files/helpers";
 
 type StoreMode = "remote" | "local";
@@ -132,17 +133,18 @@ export class UCDStore {
       // Load versions from existing store
       await this.loadVersionsFromStore();
     } else {
-      // Initialize new store
-      if (this.mode === "local") {
-        if (!this.providedVersions || this.providedVersions.length === 0) {
-          throw new Error("No versions provided for initializing new local store");
-        }
-        await this.createNewLocalStore(this.providedVersions);
-      } else {
-        // console.debug("[UCDStore] Initializing remote store, no local files will be created.");
-        // For remote store, just populate available versions
-        this.#versions = UNICODE_VERSION_METADATA.map((v) => v.version);
+      // we can't initialize a remote store without existing data.
+      // and since the store endpoint isn't valid, we can't fetch the data either.
+      // so we throw an error here.
+      if (this.mode === "remote") {
+        throw new UCDStoreError("Remote store cannot be initialized without existing data. Please provide a valid store URL or initialize a local store.");
       }
+
+      if (!this.providedVersions || this.providedVersions.length === 0) {
+        throw new UCDStoreError("No versions provided for initializing new local store");
+      }
+
+      await this.createNewLocalStore(this.providedVersions);
     }
   }
 
