@@ -1,6 +1,8 @@
 import type { UCDClient, UnicodeVersionFile } from "@ucdjs/fetch";
 import type { PathFilter } from "@ucdjs/utils";
 import type { FileSystemBridge } from "@ucdjs/utils/fs-bridge";
+import type { AnalyzeOptions, AnalyzeResult } from "./analyze";
+import type { CleanResult } from "./clean";
 import path from "node:path";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { promiseRetry, trimLeadingSlash } from "@luxass/utils";
@@ -8,6 +10,8 @@ import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { ApiResponseError, createClient } from "@ucdjs/fetch";
 import { createPathFilter } from "@ucdjs/utils";
 import defu from "defu";
+import { analyzeStore } from "./analyze";
+import { cleanStore } from "./clean";
 import { UCDStoreError } from "./errors";
 import { flattenFilePaths } from "./ucd-files/helpers";
 
@@ -58,28 +62,6 @@ interface internal_RemoteUCDStoreOptions extends BaseUCDStoreOptions {
 }
 
 export type UCDStoreOptions = internal_LocalUCDStoreOptions | internal_RemoteUCDStoreOptions;
-
-export type AnalyzeResult = {
-  success: true;
-  totalFiles: number;
-  versions: {
-    version: string;
-    fileCount: number;
-    isComplete: boolean;
-  }[];
-} | {
-  success: false;
-  error: string;
-};
-
-export type CleanResult = {
-  success: true;
-  removedFiles: string[];
-  deletedCount: number;
-} | {
-  success: false;
-  error: string;
-};
 
 export class UCDStore {
   public readonly baseUrl: string;
@@ -299,12 +281,37 @@ export class UCDStore {
     return allFiles;
   }
 
-  async clean(): Promise<CleanResult> {
-    throw new Error("Clean method not implemented yet");
+  async clean(dryRun?: boolean): Promise<CleanResult> {
+    // First analyze to get files that need to be removed
+    const analyzeResult = await analyzeStore(this.getManifestPath(), {
+      calculateSizes: true,
+      checkOrphaned: true,
+      fs: this.#fs,
+      versions: this.#versions,
+    });
+
+    if (!analyzeResult.success) {
+      return {
+        success: false,
+        error: `Failed to analyze store before cleaning: ${analyzeResult.error}`,
+      };
+    }
+
+    // Use the files to remove from analysis
+    return cleanStore(analyzeResult.filesToRemove, {
+      fs: this.#fs,
+      dryRun: dryRun || false,
+      versions: this.versions,
+    });
   }
 
-  async analyze(): Promise<AnalyzeResult> {
-    throw new Error("Analyze method not implemented yet");
+  async analyze(options: Omit<AnalyzeOptions, "fs" | "versions"> = {}): Promise<AnalyzeResult> {
+    const manifestPath = this.getManifestPath();
+    return analyzeStore(manifestPath, {
+      ...options,
+      fs: this.#fs,
+      versions: this.#versions,
+    });
   }
 }
 
