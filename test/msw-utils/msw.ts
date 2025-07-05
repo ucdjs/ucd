@@ -56,11 +56,15 @@ export function mockFetch(
               return HttpResponse.error();
             }
 
-            return new HttpResponse(null, {
-              status: response.status,
-              statusText: response.statusText,
-              headers: response.headers
-            });
+            if (response instanceof HttpResponse) {
+              return new HttpResponse(null, {
+                status: response.status,
+                statusText: response.statusText,
+                headers: response.headers
+              });
+            }
+
+            return new HttpResponse(null, { status: 200 });
           });
         }
         return http[method](url, handlerResolver);
@@ -84,11 +88,17 @@ export function mockFetch(
             return HttpResponse.error();
           }
 
-          return new HttpResponse(null, {
-            status: response.status,
-            statusText: response.statusText,
-            headers: response.headers
-          });
+          // Check if response is an HttpResponse instance
+          if (response instanceof HttpResponse) {
+            return new HttpResponse(null, {
+              status: response.status,
+              statusText: response.statusText,
+              headers: response.headers
+            });
+          }
+
+          // For other response types, return default HEAD response
+          return new HttpResponse(null, { status: 200 });
         });
       }
       return http[method](url, resolver);
