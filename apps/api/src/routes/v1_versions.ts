@@ -4,7 +4,7 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import { getCurrentDraftVersion, hasUCDFolderPath, resolveUCDVersion, UNICODE_TO_UCD_VERSION_MAPPINGS, UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { internalServerError, notFound } from "@ucdjs/worker-shared";
 import { cache } from "hono/cache";
-import { GET_UNICODE_MAPPINGS, GET_UNICODE_VERSION_METADATA, LIST_ALL_UNICODE_VERSIONS_ROUTE } from "./v1_versions.openapi";
+import { GET_SUPPORTED_VERSIONS_ROUTE, GET_UNICODE_MAPPINGS, GET_UNICODE_VERSION_METADATA, LIST_ALL_UNICODE_VERSIONS_ROUTE } from "./v1_versions.openapi";
 
 export const V1_VERSIONS_ROUTER = new OpenAPIHono<HonoEnv>().basePath("/api/v1/versions");
 
@@ -38,9 +38,6 @@ V1_VERSIONS_ROUTER.openapi(LIST_ALL_UNICODE_VERSIONS_ROUTE, async (c) => {
 
     const draft = await getCurrentDraftVersion().catch(() => null);
 
-    // Get supported versions from metadata
-    const supportedVersions = new Set(Object.keys(UNICODE_VERSION_METADATA));
-
     const versions: UnicodeVersion[] = [];
 
     // match any row that contains a cell
@@ -56,26 +53,16 @@ V1_VERSIONS_ROUTER.openapi(LIST_ALL_UNICODE_VERSIONS_ROUTE, async (c) => {
 
       // look for a year pattern anywhere in the row
       const dateMatch = row.match(/<td[^>]*>(\d{4})<\/td>/);
-      if (!dateMatch || !dateMatch[1]) continue;
-      
+      if (!dateMatch) continue;
       const ucdVersion = resolveUCDVersion(version);
-      const ucdPath = hasUCDFolderPath(ucdVersion) ? "ucd" : "";
-      const ucdUrl = `https://www.unicode.org/Public/${ucdVersion}/${ucdPath}`;
-      // Determine status based on draft, supported versions, and current implementation
-      let status: "stable" | "draft" | "unsupported" = "stable";
-      if (draft === version) {
-        status = "draft";
-      } else if (!supportedVersions.has(version)) {
-        status = "unsupported";
-      }
+      const ucdUrl = `https://www.unicode.org/Public/${ucdVersion}/${hasUCDFolderPath(ucdVersion) ? "ucd" : ""}`;
 
-      versions.push({
+      versions.unshift({
         version,
         documentationUrl: documentationUrl!,
         date: dateMatch[1]!,
         ucdUrl,
-        status,
-        supported: supportedVersions.has(version),
+        status: draft === version ? "draft" : "stable",
       });
     }
 
@@ -86,7 +73,6 @@ V1_VERSIONS_ROUTER.openapi(LIST_ALL_UNICODE_VERSIONS_ROUTE, async (c) => {
         date: null,
         ucdUrl: `https://www.unicode.org/Public/${draft}/ucd`,
         status: "draft",
-        supported: supportedVersions.has(draft),
       });
     }
 
@@ -118,5 +104,9 @@ V1_VERSIONS_ROUTER.openapi(GET_UNICODE_MAPPINGS, async (c) => {
 });
 
 V1_VERSIONS_ROUTER.openapi(GET_UNICODE_VERSION_METADATA, async (c) => {
+  return c.json(UNICODE_VERSION_METADATA, 200);
+});
+
+V1_VERSIONS_ROUTER.openapi(GET_SUPPORTED_VERSIONS_ROUTE, async (c) => {
   return c.json(UNICODE_VERSION_METADATA, 200);
 });

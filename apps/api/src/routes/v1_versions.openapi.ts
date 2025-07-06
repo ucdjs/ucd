@@ -92,3 +92,28 @@ export const GET_UNICODE_VERSION_METADATA = createRoute({
     },
   },
 });
+
+export const GET_SUPPORTED_VERSIONS_ROUTE = createRoute({
+  method: "get",
+  path: "/supported",
+  tags: ["Versions"],
+  description: "Get only the Unicode versions that are currently supported by the API",
+  responses: {
+    200: {
+      content: {
+        "application/json": {
+          schema: UnicodeVersionMetadataSchema,
+        },
+      },
+      description: "List of supported Unicode versions from the unicode-utils package",
+    },
+    500: {
+      content: {
+        "application/json": {
+          schema: ApiErrorSchema,
+        },
+      },
+      description: "Internal Server Error",
+    },
+  },
+});
