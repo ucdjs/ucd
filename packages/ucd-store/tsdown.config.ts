@@ -4,4 +4,9 @@ export default createTsdownConfig({
   entry: [
     "./src/index.ts",
   ],
+  inputOptions: {
+    resolve: {
+      tsconfigFilename: "./tsconfig.json",
+    },
+  },
 });

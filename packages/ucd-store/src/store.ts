@@ -15,7 +15,11 @@ import { ApiResponseError, createClient } from "@ucdjs/fetch";
 import { createPathFilter, safeJsonParse } from "@ucdjs/utils";
 import defu from "defu";
 import { z } from "zod/v4";
-import { assertCapabilities, inferStoreCapabilities } from "./internal/capabilities";
+import {
+  assertCapabilities,
+  inferStoreCapabilities,
+  requiresCapabilities,
+} from "./internal/capabilities";
 import { UCDStoreError } from "./internal/errors";
 import { flattenFilePaths } from "./internal/flatten";
 
@@ -155,7 +159,7 @@ export class UCDStore {
     }
 
     // Mirror UCD files from remote to local
-    await this.#mirror({ versions, overwrite: false, dryRun: false });
+    await this.mirror({ versions, overwrite: false, dryRun: false });
 
     await this.#createStoreManifest(versions);
     this.#versions = [...versions];
@@ -268,12 +272,11 @@ export class UCDStore {
     return allFiles;
   }
 
+  @requiresCapabilities("clean")
   async clean(_options: {
     dryRun?: boolean;
     versions?: string[];
   } = {}): Promise<CleanResult> {
-    assertCapabilities("clean", this.#fs);
-
     throw new UCDStoreError("Cleaning is not implemented yet.");
   }
 
@@ -289,16 +292,16 @@ export class UCDStore {
     await this.#fs.write(this.#manifestPath, JSON.stringify(manifestData, null, 2));
   }
 
+  @requiresCapabilities("analyze")
   async analyze(_options: {
     checkOrphaned?: boolean;
     includeDetails?: boolean;
   } = {}): Promise<AnalyzeResult> {
-    assertCapabilities("analyze", this.#fs);
-
     throw new UCDStoreError("Analysis is not implemented yet.");
   }
 
-  async #mirror(_options: {
+  @requiresCapabilities("mirror")
+  async mirror(_options: {
     versions?: string[];
     overwrite?: boolean;
     dryRun?: boolean;
@@ -310,14 +313,11 @@ export class UCDStore {
     skipped?: string[];
     failed?: string[];
   }> {
-    assertCapabilities("mirror", this.#fs);
-
     throw new UCDStoreError("Mirroring is not implemented yet.");
   }
 
+  @requiresCapabilities("repair")
   async repair(): Promise<void> {
-    assertCapabilities("repair", this.#fs);
-
     throw new UCDStoreError("Repairing is not implemented yet.");
   }
 }

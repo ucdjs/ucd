@@ -9,7 +9,7 @@ export function inferStoreCapabilities(fsBridge: FileSystemBridge): StoreCapabil
   return {
     clean: hasRequiredCapabilities(fsCapabilities, ["listdir", "exists", "rm", "write"]),
     analyze: hasRequiredCapabilities(fsCapabilities, ["listdir", "stat", "exists"]),
-    mirror: hasRequiredCapabilities(fsCapabilities, ["listdir", "exists"]),
+    mirror: hasRequiredCapabilities(fsCapabilities, ["read", "write", "listdir", "mkdir", "exists"]),
     repair: hasRequiredCapabilities(fsCapabilities, ["listdir", "exists", "rm", "write"]),
   };
 }
@@ -40,7 +40,28 @@ function getRequiredCapabilities(feature: keyof StoreCapabilities): string[] {
       return ["listdir", "exists", "rm", "write"];
     case "analyze":
       return ["listdir", "stat", "exists"];
+    case "mirror":
+      return ["read", "write", "listdir", "mkdir", "exists"];
+    case "repair":
+      return ["listdir", "exists", "rm", "write"];
     default:
       return [];
   }
+}
+
+export function requiresCapabilities<K extends keyof StoreCapabilities>(capability: K) {
+  return function <T extends Record<K, any>>(
+    target: T,
+    propertyKey: K,
+    descriptor: TypedPropertyDescriptor<(...args: any[]) => Promise<any>>,
+  ): TypedPropertyDescriptor<(...args: any[]) => Promise<any>> {
+    const originalMethod = descriptor.value!;
+
+    descriptor.value = async function (...args: any[]) {
+      assertCapabilities(capability, (this as any).fs);
+      return await originalMethod.apply(this, args);
+    };
+
+    return descriptor;
+  };
 }

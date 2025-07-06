@@ -155,5 +155,5 @@ const DEFAULT_SUPPORTED_CAPABILITIES: FileSystemBridgeCapabilities = {
  * @returns {FileSystemBridgeCapabilities} An object indicating which capabilities are supported by the bridge
  */
 export function getSupportedBridgeCapabilities(fsBridge: FileSystemBridge): FileSystemBridgeCapabilities {
-  return fsBridge.capabilities || DEFAULT_SUPPORTED_CAPABILITIES;
+  return fsBridge?.capabilities || DEFAULT_SUPPORTED_CAPABILITIES;
 }
