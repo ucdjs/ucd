@@ -9,6 +9,8 @@ export function inferStoreCapabilities(fsBridge: FileSystemBridge): StoreCapabil
   return {
     clean: hasRequiredCapabilities(fsCapabilities, ["listdir", "exists", "rm", "write"]),
     analyze: hasRequiredCapabilities(fsCapabilities, ["listdir", "stat", "exists"]),
+    mirror: hasRequiredCapabilities(fsCapabilities, ["listdir", "exists"]),
+    repair: hasRequiredCapabilities(fsCapabilities, ["listdir", "exists", "rm", "write"]),
   };
 }
 

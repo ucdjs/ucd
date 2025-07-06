@@ -160,10 +160,20 @@ export interface StoreCapabilities {
   /**
    * Whether the store supports analyzing its contents.
    */
-  analyze?: boolean;
+  analyze: boolean;
 
   /**
    * Whether the store supports cleaning up orphaned or outdated files.
    */
-  clean?: boolean;
+  clean: boolean;
+
+  /**
+   * Whether the store supports mirroring files from remote to local.
+   */
+  mirror: boolean;
+
+  /**
+   * Whether the store supports repairing files (e.g., fixing corrupted files).
+   */
+  repair: boolean;
 }
