@@ -3,7 +3,7 @@ import { HttpResponse, mockFetch, mockResponses } from "#msw-utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
-import { createLocalUCDStore, createRemoteUCDStore, createUCDStore } from "../src/factory";
+import { createHTTPUCDStore, createNodeUCDStore, createUCDStore } from "../src/factory";
 
 describe("clean operations across store types", () => {
   beforeEach(() => {
@@ -51,7 +51,7 @@ describe("clean operations across store types", () => {
         }],
       ]);
 
-      const store = await createRemoteUCDStore();
+      const store = await createHTTPUCDStore();
 
       console.error(store.versions);
 
@@ -75,7 +75,7 @@ describe("clean operations across store types", () => {
         }],
       ]);
 
-      const store = await createRemoteUCDStore();
+      const store = await createHTTPUCDStore();
 
       const result = await store.clean({ dryRun: true });
 
@@ -104,7 +104,7 @@ describe("clean operations across store types", () => {
         }],
       ]);
 
-      const store = await createRemoteUCDStore();
+      const store = await createHTTPUCDStore();
 
       const result = await store.clean({ versions: ["15.0.0"] });
 
@@ -133,7 +133,7 @@ describe("clean operations across store types", () => {
 
       const storeDir = await testdir(storeStructure);
 
-      const store = await createLocalUCDStore({
+      const store = await createNodeUCDStore({
         basePath: storeDir,
       });
 
@@ -171,7 +171,7 @@ describe("clean operations across store types", () => {
 
       const storeDir = await testdir(storeStructure);
 
-      const store = await createLocalUCDStore({
+      const store = await createNodeUCDStore({
         basePath: storeDir,
       });
 
@@ -206,7 +206,7 @@ describe("clean operations across store types", () => {
 
       const storeDir = await testdir(storeStructure);
 
-      const store = await createLocalUCDStore({
+      const store = await createNodeUCDStore({
         basePath: storeDir,
       });
 
@@ -252,12 +252,11 @@ describe("clean operations across store types", () => {
       cleanup: false,
     });
 
-    const store = await createLocalUCDStore({
+    const store = await createNodeUCDStore({
       basePath: storeDir,
     });
 
     const result = await store.clean({ versions: ["15.0.0", "15.2.0"] });
-    console.log(result);
 
     // Should remove ALL files from both specified versions
     expect(result.locatedFiles).toContain("15.0.0/file1.txt");
@@ -289,7 +288,7 @@ describe("clean operations across store types", () => {
 
     const storeDir = await testdir(storeStructure);
 
-    const store = await createLocalUCDStore({
+    const store = await createNodeUCDStore({
       basePath: storeDir,
     });
 
@@ -334,7 +333,7 @@ describe("clean operations across store types", () => {
 
     const storeDir = await testdir(storeStructure);
 
-    const store = await createLocalUCDStore({
+    const store = await createNodeUCDStore({
       basePath: storeDir,
     });
 
@@ -366,7 +365,7 @@ describe("clean operations across store types", () => {
     const storeDir = await testdir(storeStructure);
 
     // Mock getFilePaths to only return ArabicShaping.txt for 15.0.0 (making unexpected-file.txt orphaned)
-    const store = await createLocalUCDStore({
+    const store = await createNodeUCDStore({
       basePath: storeDir,
     });
 
@@ -404,7 +403,7 @@ describe("clean operations across store types", () => {
 
     const storeDir = await testdir(storeStructure);
 
-    const store = await createLocalUCDStore({
+    const store = await createNodeUCDStore({
       basePath: storeDir,
     });
 
@@ -436,7 +435,7 @@ describe("clean operations across store types", () => {
 
     const storeDir = await testdir(storeStructure);
 
-    const store = await createLocalUCDStore({
+    const store = await createNodeUCDStore({
       basePath: storeDir,
     });
 
@@ -466,7 +465,6 @@ describe("clean operations across store types", () => {
       const storeDir = await testdir(storeStructure);
 
       const store = await createUCDStore({
-        mode: "local",
         basePath: storeDir,
         fs: await import("@ucdjs/utils/fs-bridge/node").then((m) => m.default),
       });
@@ -502,7 +500,6 @@ describe("clean operations across store types", () => {
       };
 
       const store = await createUCDStore({
-        mode: "remote",
         fs: mockFS,
       });
 
@@ -530,7 +527,7 @@ describe("clean operations across store types", () => {
 
       const storeDir = await testdir(storeStructure);
 
-      const store = await createLocalUCDStore({
+      const store = await createNodeUCDStore({
         basePath: storeDir,
       });
 
@@ -560,7 +557,7 @@ describe("clean operations across store types", () => {
 
       const storeDir = await testdir(storeStructure);
 
-      const store = await createLocalUCDStore({
+      const store = await createNodeUCDStore({
         basePath: storeDir,
       });
 
@@ -598,7 +595,7 @@ describe("clean operations across store types", () => {
 
       const storeDir = await testdir(storeStructure);
 
-      const store = await createLocalUCDStore({
+      const store = await createNodeUCDStore({
         basePath: storeDir,
       });
 
@@ -626,7 +623,7 @@ describe("clean operations across store types", () => {
 
         const storeDir = await testdir(storeStructure);
 
-        const store = await createLocalUCDStore({
+        const store = await createNodeUCDStore({
           basePath: storeDir,
         });
 
@@ -649,7 +646,7 @@ describe("clean operations across store types", () => {
 
         const storeDir = await testdir(storeStructure);
 
-        const store = await createLocalUCDStore({
+        const store = await createNodeUCDStore({
           basePath: storeDir,
         });
 
@@ -671,7 +668,7 @@ describe("clean operations across store types", () => {
 
         const storeDir = await testdir(storeStructure);
 
-        const store = await createLocalUCDStore({
+        const store = await createNodeUCDStore({
           basePath: storeDir,
         });
 

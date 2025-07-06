@@ -5,7 +5,6 @@ import type {
   AnalyzeResult,
   CleanResult,
   StoreCapabilities,
-  StoreMode,
   UCDStoreOptions,
 } from "./types";
 import path from "node:path";
@@ -36,16 +35,10 @@ export class UCDStore {
    */
   public readonly baseUrl: string;
 
-  /**
-   * Store mode, either "local" or "remote".
-   * - "local" means the store is on the local filesystem.
-   * - "remote" means the store is accessed via HTTP.
-   */
-  public readonly mode: StoreMode;
 
   /**
    * Base path for the local store.
-   * Only used in "local" mode.
+   * Only used when the filesystem supports write operations.
    */
   public readonly basePath?: string;
 
@@ -63,14 +56,12 @@ export class UCDStore {
   };
 
   constructor(options: UCDStoreOptions) {
-    const { baseUrl, globalFilters, mode, fs, basePath } = defu(options, {
+    const { baseUrl, globalFilters, fs, basePath } = defu(options, {
       baseUrl: UCDJS_API_BASE_URL,
       globalFilters: [],
-      mode: "remote" as StoreMode,
       basePath: "./ucd-files",
     });
 
-    this.mode = mode;
     this.baseUrl = baseUrl;
     this.basePath = basePath;
     this.#client = createClient(this.baseUrl);
@@ -78,7 +69,7 @@ export class UCDStore {
     this.#fs = fs;
     this.#capabilities = inferStoreCapabilities(this.#fs);
 
-    this.#manifestPath = this.mode === "local" ? path.join(this.basePath!, ".ucd-store.json") : ".ucd-store.json";
+    this.#manifestPath = this.basePath ? path.join(this.basePath, ".ucd-store.json") : ".ucd-store.json";
   }
 
   get fs(): FileSystemBridge {
@@ -106,22 +97,21 @@ export class UCDStore {
    * Initialize the store - loads existing data or creates new structure
    */
   async initialize(): Promise<void> {
-    const isValidStore = this.mode === "local"
-      ? await this.#fs.exists(this.basePath!) && await this.#fs.exists(this.#manifestPath!)
-      : await this.#fs.exists(this.#manifestPath!);
+    const isValidStore = this.basePath
+      ? await this.#fs.exists(this.basePath) && await this.#fs.exists(this.#manifestPath)
+      : await this.#fs.exists(this.#manifestPath);
 
     if (isValidStore) {
       await this.#loadVersionsFromStore();
     } else {
-      // we can't initialize a remote store without existing data.
-      // and since the store endpoint isn't valid, we can't fetch the data either.
-      // so we throw an error here.
-      if (this.mode === "remote") {
-        throw new UCDStoreError("Remote store cannot be initialized without existing data. Please provide a valid store URL or initialize a local store.");
+      // If no base path is configured or filesystem doesn't support writing,
+      // we can't initialize without existing data
+      if (!this.basePath || !this.#capabilities.mirror) {
+        throw new UCDStoreError("Store cannot be initialized without existing data. Ensure filesystem supports write operations and base path is configured.");
       }
 
       if (!this.#versions || this.#versions.length === 0) {
-        throw new UCDStoreError("No versions provided for initializing new local store");
+        throw new UCDStoreError("No versions provided for initializing new store");
       }
 
       await this.#createNewLocalStore(this.#versions);
@@ -151,8 +141,8 @@ export class UCDStore {
   }
 
   async #createNewLocalStore(versions: string[]): Promise<void> {
-    invariant(this.mode === "local", "createNewLocalStore can only be called in local mode");
-    invariant(this.basePath, "Base path must be set for local store");
+    invariant(this.#capabilities.mirror, "createNewLocalStore requires mirror capability");
+    invariant(this.basePath, "Base path must be set for store creation");
 
     if (!await this.#fs.exists(this.basePath)) {
       await this.#fs.mkdir(this.basePath);
@@ -166,8 +156,8 @@ export class UCDStore {
   }
 
   async #createStoreManifest(versions: string[]): Promise<void> {
-    invariant(this.mode === "local", "createStoreManifest can only be called in local mode");
-    invariant(this.basePath, "Base path must be set for local store");
+    invariant(this.#capabilities.mirror, "createStoreManifest requires write capability");
+    invariant(this.basePath, "Base path must be set for store creation");
 
     await this.#writeManifest(versions);
   }
@@ -177,7 +167,20 @@ export class UCDStore {
       throw new UCDStoreError(`Version '${version}' not found in store`);
     }
 
-    if (this.mode === "remote") {
+    // If we have a base path and the filesystem supports listing directories,
+    // read from local storage; otherwise fetch from remote API
+    if (this.basePath && this.#capabilities.analyze) {
+      const files = await this.#fs.listdir(path.join(this.basePath, version), true);
+      console.error(`DEBUG: Local file structure for version ${version}:`, files);
+      const fileStructure = files.map((file) => ({
+        name: path.basename(file.path),
+        path: file.path,
+        type: file.type === "directory" ? "directory" : "file",
+      }));
+
+      return this.#processFileStructure(fileStructure, extraFilters);
+    } else {
+      // Fetch from remote API
       const data = await promiseRetry(async () => {
         const { data, error } = await this.#client.GET("/api/v1/files/{version}", {
           params: { path: { version } },
@@ -194,21 +197,6 @@ export class UCDStore {
       });
       console.error(`DEBUG: Remote file structure for version ${version}:`, data);
       return this.#processFileStructure(data, extraFilters);
-    } else {
-      // For local mode, read directory structure
-      if (!this.basePath) {
-        throw new UCDStoreError("Base path not set for local mode");
-      }
-
-      const files = await this.#fs.listdir(path.join(this.basePath, version), true);
-      console.error(`DEBUG: Local file structure for version ${version}:`, files);
-      const fileStructure = files.map((file) => ({
-        name: path.basename(file.path),
-        path: file.path,
-        type: file.type === "directory" ? "directory" : "file",
-      }));
-
-      return this.#processFileStructure(fileStructure, extraFilters);
     }
   }
 
@@ -226,17 +214,13 @@ export class UCDStore {
       throw new UCDStoreError(`File path "${filePath}" is filtered out by the store's filter patterns.`);
     }
 
-    if (this.mode === "remote") {
-      // HTTP filesystem handles the caching and fetching
-      return await this.#fs.read(`${version}/${filePath}`);
-    } else {
-      // Local filesystem
-      if (!this.basePath) {
-        throw new UCDStoreError("Base path not set for local mode");
-      }
-
+    // If we have a base path, try to read from local storage first
+    if (this.basePath) {
       const fullPath = path.join(this.basePath, version, filePath);
       return await this.#fs.read(fullPath);
+    } else {
+      // Read from remote via HTTP filesystem
+      return await this.#fs.read(`${version}/${filePath}`);
     }
   }
 
@@ -286,7 +270,7 @@ export class UCDStore {
   async #writeManifest(versions: string[]): Promise<void> {
     const manifestData = versions.map((version) => ({
       version,
-      path: this.mode === "local" ? path.join(this.basePath!, version) : version,
+      path: this.basePath ? path.join(this.basePath, version) : version,
     }));
 
     await this.#fs.write(this.#manifestPath, JSON.stringify(manifestData, null, 2));

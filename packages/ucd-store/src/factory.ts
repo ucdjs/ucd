@@ -1,5 +1,5 @@
 import type { FileSystemBridge } from "@ucdjs/utils/fs-bridge";
-import type { LocalUCDStoreOptions, RemoteUCDStoreOptions, UCDStoreOptions } from "./types";
+import type { UCDStoreOptions } from "./types";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { UCDStore } from "./store";
 
@@ -18,26 +18,25 @@ export async function createUCDStore(options: UCDStoreOptions): Promise<UCDStore
 }
 
 /**
- * Creates a new UCD store instance configured for local file system access.
+ * Creates a new UCD store instance configured for Node.js file system access.
  *
- * This function simplifies the creation of a local UCD store by:
- * - Setting the mode to "local" automatically
- * - Loading the Node.js file system bridge if not provided
+ * This function simplifies the creation of a Node.js UCD store by:
+ * - Automatically loading the Node.js file system bridge with full capabilities
+ * - Setting up local file storage with write/read capabilities  
  * - Initializing the store with the specified options
  *
- * @param {LocalUCDStoreOptions} options - Configuration options for the local UCD store
- * @returns {Promise<UCDStore>} A fully initialized local UCDStore instance
+ * @param {Omit<UCDStoreOptions, "fs">} options - Configuration options for the Node.js UCD store
+ * @returns {Promise<UCDStore>} A fully initialized UCDStore instance with Node.js filesystem capabilities
  */
-export async function createLocalUCDStore(options: LocalUCDStoreOptions = {}): Promise<UCDStore> {
-  const fs = options.fs || await import("@ucdjs/utils/fs-bridge/node").then((m) => m.default);
+export async function createNodeUCDStore(options: Omit<UCDStoreOptions, "fs"> = {}): Promise<UCDStore> {
+  const fs = await import("@ucdjs/utils/fs-bridge/node").then((m) => m.default);
 
   if (!fs) {
-    throw new Error("FileSystemBridge is required for local UCD store");
+    throw new Error("Node.js FileSystemBridge could not be loaded");
   }
 
   const store = new UCDStore({
     ...options,
-    mode: "local",
     fs,
   });
 
@@ -47,33 +46,27 @@ export async function createLocalUCDStore(options: LocalUCDStoreOptions = {}): P
 }
 
 /**
- * Creates a new UCD store instance configured for remote access via HTTP.
+ * Creates a new UCD store instance configured for HTTP access.
  *
- * This function simplifies the creation of a remote UCD store by:
- * - Setting the mode to "remote" automatically
- * - Loading the HTTP file system bridge if not provided
+ * This function simplifies the creation of an HTTP UCD store by:
+ * - Automatically loading the HTTP file system bridge with read-only capabilities
+ * - Configuring for remote data access via HTTP/HTTPS
  * - Initializing the store with the specified options
  *
- * @param {RemoteUCDStoreOptions} options - Configuration options for the remote UCD store
- * @returns {Promise<UCDStore>} A fully initialized remote UCDStore instance
+ * @param {Omit<UCDStoreOptions, "fs">} options - Configuration options for the HTTP UCD store
+ * @returns {Promise<UCDStore>} A fully initialized UCDStore instance with HTTP filesystem capabilities
  */
-export async function createRemoteUCDStore(options: RemoteUCDStoreOptions = {}): Promise<UCDStore> {
-  let fsInstance: FileSystemBridge;
-
-  if (options.fs) {
-    fsInstance = options.fs;
-  } else {
-    const httpFsBridge = await import("@ucdjs/utils/fs-bridge/http").then((m) => m.default);
-    fsInstance = typeof httpFsBridge === "function"
-      ? httpFsBridge({
-          baseUrl: options.baseUrl || UCDJS_API_BASE_URL,
-        })
-      : httpFsBridge;
-  }
+export async function createHTTPUCDStore(options: Omit<UCDStoreOptions, "fs"> = {}): Promise<UCDStore> {
+  const httpFsBridge = await import("@ucdjs/utils/fs-bridge/http").then((m) => m.default);
+  
+  const fsInstance: FileSystemBridge = typeof httpFsBridge === "function"
+    ? httpFsBridge({
+        baseUrl: options.baseUrl || UCDJS_API_BASE_URL,
+      })
+    : httpFsBridge;
 
   const store = new UCDStore({
     ...options,
-    mode: "remote",
     fs: fsInstance,
   });
 
