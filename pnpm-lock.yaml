@@ -70,8 +70,8 @@ catalogs:
       specifier: npm:@luxass/unicode-utils@0.12.0-beta.9
       version: 0.12.0-beta.9
     '@luxass/utils':
-      specifier: ^2.5.1
-      version: 2.5.1
+      specifier: ^2.6.0
+      version: 2.6.0
     ai:
       specifier: ^4.3.16
       version: 4.3.16
@@ -183,7 +183,7 @@ importers:
         version: '@luxass/unicode-utils@0.12.0-beta.9'
       '@luxass/utils':
         specifier: catalog:prod
-        version: 2.5.1
+        version: 2.6.0
       '@scalar/hono-api-reference':
         specifier: catalog:workers
         version: 0.9.7(hono@4.8.3)
@@ -293,7 +293,7 @@ importers:
         version: 0.9.0
       '@luxass/utils':
         specifier: catalog:prod
-        version: 2.5.1
+        version: 2.6.0
       '@ucdjs/schema-gen':
         specifier: workspace:*
         version: link:../schema-gen
@@ -342,7 +342,7 @@ importers:
     dependencies:
       '@luxass/utils':
         specifier: catalog:prod
-        version: 2.5.1
+        version: 2.6.0
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:linting
@@ -380,7 +380,7 @@ importers:
         version: 5.1.0(@vue/compiler-sfc@3.5.13)(eslint-plugin-format@1.0.1(eslint@9.30.1(jiti@2.4.2)))(eslint-plugin-react-hooks@5.2.0(eslint@9.30.1(jiti@2.4.2)))(eslint@9.30.1(jiti@2.4.2))(typescript@5.8.3)(vitest@3.2.4)
       '@luxass/utils':
         specifier: catalog:prod
-        version: 2.5.1
+        version: 2.6.0
       '@types/picomatch':
         specifier: catalog:dev
         version: 4.0.0
@@ -422,7 +422,7 @@ importers:
         version: 0.9.0
       '@luxass/utils':
         specifier: catalog:prod
-        version: 2.5.1
+        version: 2.6.0
       ai:
         specifier: catalog:prod
         version: 4.3.16(react@19.1.0)(zod@3.25.72)
@@ -468,7 +468,7 @@ importers:
         version: '@luxass/unicode-utils@0.12.0-beta.9'
       '@luxass/utils':
         specifier: catalog:prod
-        version: 2.5.1
+        version: 2.6.0
       '@ucdjs/env':
         specifier: workspace:*
         version: link:../env
@@ -520,7 +520,7 @@ importers:
         version: '@luxass/unicode-utils@0.12.0-beta.9'
       '@luxass/utils':
         specifier: catalog:prod
-        version: 2.5.1
+        version: 2.6.0
       '@ucdjs/env':
         specifier: workspace:*
         version: link:../env
@@ -575,7 +575,7 @@ importers:
         version: 0.19.9(hono@4.8.3)(zod@3.25.72)
       '@luxass/utils':
         specifier: catalog:prod
-        version: 2.5.1
+        version: 2.6.0
       hono:
         specifier: catalog:workers
         version: 4.8.3
@@ -1393,8 +1393,8 @@ packages:
   '@luxass/unicode-utils@0.9.0':
     resolution: {integrity: sha512-RNhEJ2pXiIRhmr/KGtAbl4jy2uwQjXMdRQKHZE1M1IgjkXa4/d8is5HtwxdKKcL0CCO3f4lGAeLOIhR6ACGNfg==}
 
-  '@luxass/utils@2.5.1':
-    resolution: {integrity: sha512-CzRKnnehjo7nQ+n47XkNObA7x3VvmeeNq3l2I9/8pXxXlukGhhxGr2UacG7kHDyuZsv9uVniah0ze5rSQT2Oow==}
+  '@luxass/utils@2.6.0':
+    resolution: {integrity: sha512-POvohIK581crCg1djszSkIUgB6d+laeChq75z3BmwcAXetCf+LjeYjmEf7jE0xGL8tmd8KiZQg27S4/205v1ug==}
     engines: {node: '>=20'}
 
   '@manypkg/find-root@1.1.0':
@@ -5642,14 +5642,14 @@ snapshots:
 
   '@luxass/unicode-utils@0.12.0-beta.9':
     dependencies:
-      '@luxass/utils': 2.5.1
+      '@luxass/utils': 2.6.0
       defu: 6.1.4
 
   '@luxass/unicode-utils@0.9.0':
     dependencies:
-      '@luxass/utils': 2.5.1
+      '@luxass/utils': 2.6.0
 
-  '@luxass/utils@2.5.1':
+  '@luxass/utils@2.6.0':
     dependencies:
       p-retry: 6.2.1
 

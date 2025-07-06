@@ -26,7 +26,7 @@ export interface UCDStoreOptions {
    * Base Path attached to the base URL, when accessing files.
    * This is used to resolve file paths when reading from the store.
    */
-  basePath: string;
+  basePath?: string;
 
   /**
    * List of Unicode versions to include in the store.

@@ -59,3 +59,14 @@ export class ApiResponseError extends Error {
     };
   }
 }
+
+export function isApiError(error: unknown): error is ApiError {
+  return (
+    typeof error === "object"
+    && error !== null
+    && "path" in error
+    && "message" in error
+    && "status" in error
+    && "timestamp" in error
+  );
+}

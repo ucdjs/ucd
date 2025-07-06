@@ -32,5 +32,5 @@ export function createClient(baseUrl: string): UCDClient {
  */
 export const client = createClient(UCDJS_API_BASE_URL);
 
-export { ApiResponseError } from "./api-error";
+export { ApiResponseError, isApiError } from "./api-error";
 export type * from "./components";

@@ -22,7 +22,7 @@ export async function createUCDStore(options: UCDStoreOptions): Promise<UCDStore
  *
  * This function simplifies the creation of a Node.js UCD store by:
  * - Automatically loading the Node.js file system bridge with full capabilities
- * - Setting up local file storage with write/read capabilities  
+ * - Setting up local file storage with write/read capabilities
  * - Initializing the store with the specified options
  *
  * @param {Omit<UCDStoreOptions, "fs">} options - Configuration options for the Node.js UCD store
@@ -58,10 +58,16 @@ export async function createNodeUCDStore(options: Omit<UCDStoreOptions, "fs"> = 
  */
 export async function createHTTPUCDStore(options: Omit<UCDStoreOptions, "fs"> = {}): Promise<UCDStore> {
   const httpFsBridge = await import("@ucdjs/utils/fs-bridge/http").then((m) => m.default);
-  
+
+  let baseUrl = options.baseUrl || UCDJS_API_BASE_URL;
+  if (baseUrl.startsWith("https://api.ucdjs.dev")) {
+    // If the base URL is the default UCD API, we set the basePath to
+    baseUrl += "/api/v1/unicode-proxy";
+  }
+
   const fsInstance: FileSystemBridge = typeof httpFsBridge === "function"
     ? httpFsBridge({
-        baseUrl: options.baseUrl || UCDJS_API_BASE_URL,
+        baseUrl,
       })
     : httpFsBridge;
 

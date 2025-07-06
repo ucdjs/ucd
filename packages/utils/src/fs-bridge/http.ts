@@ -1,4 +1,5 @@
 import type { FileSystemBridge, FSEntry } from "../fs-bridge";
+import { joinURL } from "@luxass/utils/path";
 import { UNICODE_PROXY_URL } from "@ucdjs/env";
 import { z } from "zod/v4";
 import { defineFileSystemBridge } from "../fs-bridge";
@@ -46,16 +47,16 @@ function HTTPFileSystemBridge(options: HTTPFileSystemBridgeOptions = {}): FileSy
     },
 
     async read(path) {
-      const url = new URL(path, baseUrl);
-      const response = await fetch(url.toString());
+      const url = joinURL(baseUrl, path);
+      const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`Failed to read remote file: ${response.statusText}`);
       }
       return response.text();
     },
     async listdir(path, recursive = false) {
-      const url = new URL(path, baseUrl);
-      const response = await fetch(url.toString(), {
+      const url = joinURL(baseUrl, path);
+      const response = await fetch(url, {
         method: "GET",
         headers: {
           Accept: "application/json",
@@ -112,8 +113,8 @@ function HTTPFileSystemBridge(options: HTTPFileSystemBridgeOptions = {}): FileSy
       // should not do anything, as this is a read-only bridge
     },
     async exists(path) {
-      const url = new URL(path, baseUrl);
-      return fetch(url.toString(), { method: "HEAD" })
+      const url = joinURL(baseUrl, path);
+      return fetch(url, { method: "HEAD" })
         .then((response) => {
           return response.ok;
         })
@@ -126,8 +127,8 @@ function HTTPFileSystemBridge(options: HTTPFileSystemBridgeOptions = {}): FileSy
       // read-only bridge, cannot remove files or directories
     },
     async stat(path) {
-      const url = new URL(path.startsWith("/") ? `__stat${path}` : `/__stat/${path}`, baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`);
-      const response = await fetch(url.toString());
+      const url = joinURL(path.startsWith("/") ? `__stat${path}` : `/__stat/${path}`, baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`);
+      const response = await fetch(url);
 
       if (!response.ok) {
         throw new Error(`Failed to stat path: ${response.statusText}`);

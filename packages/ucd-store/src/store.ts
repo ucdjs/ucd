@@ -8,9 +8,10 @@ import type {
   UCDStoreOptions,
 } from "./types";
 import path from "node:path";
+import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { invariant, promiseRetry, trimLeadingSlash } from "@luxass/utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
-import { ApiResponseError, createClient } from "@ucdjs/fetch";
+import { ApiResponseError, createClient, isApiError } from "@ucdjs/fetch";
 import { createPathFilter, safeJsonParse } from "@ucdjs/utils";
 import defu from "defu";
 import { z } from "zod/v4";
@@ -57,6 +58,7 @@ export class UCDStore {
     const { baseUrl, globalFilters, fs, basePath } = defu(options, {
       baseUrl: UCDJS_API_BASE_URL,
       globalFilters: [],
+      basePath: "",
     });
 
     this.baseUrl = baseUrl;
@@ -94,9 +96,7 @@ export class UCDStore {
    * Initialize the store - loads existing data or creates new structure
    */
   async initialize(): Promise<void> {
-    const isValidStore = this.basePath
-      ? await this.#fs.exists(this.basePath) && await this.#fs.exists(this.#manifestPath)
-      : await this.#fs.exists(this.#manifestPath);
+    const isValidStore = await this.#fs.exists(this.#manifestPath);
 
     if (isValidStore) {
       await this.#loadVersionsFromStore();
@@ -108,7 +108,16 @@ export class UCDStore {
       }
 
       if (!this.#versions || this.#versions.length === 0) {
-        throw new UCDStoreError("No versions provided for initializing new store");
+        const { data, error } = await this.#client.GET("/api/v1/unicode-versions");
+        if (isApiError(error)) {
+          throw new UCDStoreError(`Failed to fetch Unicode versions: ${error.message}`);
+        }
+
+        this.#versions = data?.map(({ version }) => version) || [];
+
+        if (this.#versions.length === 0) {
+          throw new UCDStoreError("No versions provided for initializing new store");
+        }
       }
 
       await this.#createNewLocalStore(this.#versions);
@@ -122,7 +131,7 @@ export class UCDStore {
       // validate the manifest content
       const jsonData = safeJsonParse(manifestContent);
       if (!jsonData) {
-        throw new UCDStoreError("Invalid JSON format in store manifest");
+        return;
       }
 
       // verify that is an array of objects with version and path properties
