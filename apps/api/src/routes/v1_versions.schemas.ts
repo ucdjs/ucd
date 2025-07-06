@@ -20,9 +20,6 @@ export const UnicodeVersionSchema = z.object({
   ]).openapi({
     description: "The status of the Unicode version. 'unsupported' means the version exists but is not yet supported by the API.",
   }),
-  supported: z.boolean().openapi({
-    description: "Whether this Unicode version is supported by the current API implementation.",
-  }),
 }).openapi("UnicodeVersion");
 
 export type UnicodeVersion = z.infer<typeof UnicodeVersionSchema>;
