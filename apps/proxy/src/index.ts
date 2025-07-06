@@ -163,15 +163,7 @@ app.get(
 
     if (result.type === "directory") {
       c.header("Last-Modified", result.headers.get("Last-Modified") ?? "");
-      const requestedPath = c.req.param("path") || "";
-      const basePath = requestedPath ? `/${requestedPath}` : "";
-      
-      const filesWithCorrectPaths = result.files.map(file => ({
-        ...file,
-        path: basePath ? `${basePath}/${file.name}` : `/${file.name}`,
-      }));
-      
-      return c.json(filesWithCorrectPaths);
+      return c.json(result.files);
     }
 
     return c.newResponse(result.content, 200, {
