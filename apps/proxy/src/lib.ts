@@ -76,7 +76,10 @@ export async function getEntryByPath(path: string = ""): Promise<GetEntryByPathR
     const text = await response.text();
     return {
       type: "directory",
-      files: await parseUnicodeDirectory(text),
+      files: (await parseUnicodeDirectory(text)).map((file) => ({
+        ...file,
+        path: path ? `/${path}/${file.name}` : file.name,
+      })),
       headers: response.headers,
     };
   }
