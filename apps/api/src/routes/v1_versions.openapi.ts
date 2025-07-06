@@ -1,0 +1,94 @@
+import { createRoute, z } from "@hono/zod-openapi";
+import { ApiErrorSchema } from "@ucdjs/worker-shared";
+import { UnicodeVersionMappingsSchema, UnicodeVersionMetadataSchema, UnicodeVersionSchema } from "./v1_versions.schemas";
+
+export const LIST_ALL_UNICODE_VERSIONS_ROUTE = createRoute({
+  method: "get",
+  path: "/releases",
+  tags: ["Versions"],
+  description: "List all Unicode Versions available, including metadata and support status.",
+  responses: {
+    200: {
+      content: {
+        "application/json": {
+          schema: z.array(UnicodeVersionSchema).openapi("UnicodeVersions"),
+        },
+      },
+      description: "A list of Unicode versions with metadata and support status.",
+    },
+    404: {
+      content: {
+        "application/json": {
+          schema: ApiErrorSchema,
+        },
+      },
+      description: "Not Found",
+    },
+    429: {
+      content: {
+        "application/json": {
+          schema: ApiErrorSchema,
+        },
+      },
+      description: "Rate Limit Exceeded",
+    },
+    500: {
+      content: {
+        "application/json": {
+          schema: ApiErrorSchema,
+        },
+      },
+      description: "Internal Server Error",
+    },
+  },
+});
+
+export const GET_UNICODE_MAPPINGS = createRoute({
+  method: "get",
+  path: "/mappings",
+  tags: ["Versions"],
+  description: "List all Unicode Versions mappings",
+  responses: {
+    200: {
+      content: {
+        "application/json": {
+          schema: UnicodeVersionMappingsSchema,
+        },
+      },
+      description: "A list of Unicode versions mappings",
+    },
+    500: {
+      content: {
+        "application/json": {
+          schema: ApiErrorSchema,
+        },
+      },
+      description: "Internal Server Error",
+    },
+  },
+});
+
+export const GET_UNICODE_VERSION_METADATA = createRoute({
+  method: "get",
+  path: "/metadata",
+  tags: ["Versions"],
+  description: "Get Unicode version metadata for all supported versions",
+  responses: {
+    200: {
+      content: {
+        "application/json": {
+          schema: UnicodeVersionMetadataSchema,
+        },
+      },
+      description: "Unicode version metadata for all supported versions",
+    },
+    500: {
+      content: {
+        "application/json": {
+          schema: ApiErrorSchema,
+        },
+      },
+      description: "Internal Server Error",
+    },
+  },
+});
