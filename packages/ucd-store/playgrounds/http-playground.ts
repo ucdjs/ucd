@@ -51,3 +51,45 @@ log.info("Store versions:", store.versions);
 
 const fileStructure = await store.getFileTree("16.0.0");
 log.info("File structure for version 16.0.0:", fileStructure);
+
+assert(Array.isArray(fileStructure), "file structure should be an array");
+assert(fileStructure.length > 0, "file structure should not be empty");
+
+fileStructure.forEach((file) => {
+  assert(typeof file.name === "string", "file name should be a string");
+  assert(typeof file.path === "string", "file path should be a string");
+});
+
+log.info("File structure validation passed");
+
+// get specific file
+const fileContent = await store.getFile("16.0.0", "ucd/UnicodeData.txt");
+log.info("File content for UnicodeData.txt:", fileContent.slice(0, 100));
+
+assert(typeof fileContent === "string", "file content should be a string");
+assert(fileContent.length > 0, "file content should not be empty");
+
+// require capabilities
+try {
+  await store.clean();
+  assert.fail("store.clean should throw an error");
+} catch (error) {
+  assert(error instanceof Error, "store.clean should throw an Error");
+  log.info("store.clean threw an error as expected:", error.message);
+}
+
+try {
+  await store.repair();
+  assert.fail("store.repair should throw an error");
+} catch (error) {
+  assert(error instanceof Error, "store.repair should throw an Error");
+  log.info("store.repair threw an error as expected:", error.message);
+}
+
+try {
+  await store.mirror({ versions: ["16.0.0"] });
+  assert.fail("store.mirror should throw an error");
+} catch (error) {
+  assert(error instanceof Error, "store.mirror should throw an Error");
+  log.info("store.mirror threw an error as expected:", error.message);
+}

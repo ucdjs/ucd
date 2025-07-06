@@ -68,7 +68,7 @@ function HTTPFileSystemBridge(options: HTTPFileSystemBridgeOptions = {}): FileSy
 
       const data = await response.json();
 
-      // Validate response data
+      // validate response data
       const validatedData = z.array(ListDirResponseSchema).parse(data);
 
       if (!recursive) {
@@ -79,26 +79,31 @@ function HTTPFileSystemBridge(options: HTTPFileSystemBridgeOptions = {}): FileSy
         }));
       }
 
-      // Recursive implementation
+      // recursive implementation
       const allEntries: FSEntry[] = [...validatedData.map((entry): FSEntry => ({
         name: entry.name,
         path: entry.path,
         type: entry.type as "file" | "directory",
       }))];
 
-      for (const entry of validatedData) {
-        if (entry.type === "directory") {
+      // Process all subdirectories in parallel
+      const subdirectoryPromises = validatedData
+        .filter((entry) => entry.type === "directory")
+        .map(async (entry) => {
           try {
             const subPath = path.endsWith("/") ? `${path}${entry.name}` : `${path}/${entry.name}`;
-            const subEntries = await this.listdir(subPath, true);
-            console.error(`DEBUG: Listing subdirectory ${subPath}:`, subEntries);
-
-            allEntries.push(...subEntries);
+            return await this.listdir(subPath, true);
           } catch {
-            // Skip directories that can't be accessed
-            continue;
+            // skip directories that can't be accessed
+            return [];
           }
-        }
+        });
+
+      const subdirectoryResults = await Promise.all(subdirectoryPromises);
+
+      // flatten all subdirectory results into the main entries array
+      for (const subEntries of subdirectoryResults) {
+        allEntries.push(...subEntries);
       }
 
       return allEntries;

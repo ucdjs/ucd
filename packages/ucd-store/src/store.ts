@@ -165,7 +165,6 @@ export class UCDStore {
     }
 
     const files = await this.#fs.listdir(path.join(this.basePath, version), true);
-    console.error(`DEBUG: Local file structure for version ${version}:`, files);
     const fileStructure = files.map((file) => ({
       name: path.basename(file.path),
       path: file.path,
