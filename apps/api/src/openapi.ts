@@ -92,6 +92,18 @@ export function buildOpenApiConfig(version: string, servers: NonNullable<OpenAPI
           without any additional processing or transformation.
         `,
       },
+      {
+        name: "Versions",
+        description: dedent`
+          Endpoints for accessing information about Unicode versions.
+
+          These endpoints allow you to retrieve metadata about different Unicode versions,
+          including version numbers, release dates, and available data files.
+
+          They also contain endpoints for listing all available Unicode versions,
+          retrieving the latest version, and accessing specific version metadata.
+        `,
+      },
     ],
     servers,
   } satisfies OpenAPIObjectConfig;
