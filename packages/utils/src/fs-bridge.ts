@@ -61,15 +61,7 @@ export interface FileSystemBridge {
    * An object defining the features supported by this file system bridge.
    * If it is not provided, the bridge will assume all features are supported.
    */
-  features?: {
-    read: boolean;
-    write: boolean;
-    listdir: boolean;
-    mkdir: boolean;
-    stat: boolean;
-    exists: boolean;
-    rm: boolean;
-  };
+  features?: FileSystemBridgeFeatures;
 
   /**
    * Reads the contents of a file.
