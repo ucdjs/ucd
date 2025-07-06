@@ -4,7 +4,7 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import { getCurrentDraftVersion, hasUCDFolderPath, resolveUCDVersion, UNICODE_TO_UCD_VERSION_MAPPINGS, UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { internalServerError, notFound } from "@ucdjs/worker-shared";
 import { cache } from "hono/cache";
-import { GET_SUPPORTED_VERSIONS_ROUTE, GET_UNICODE_MAPPINGS, GET_UNICODE_VERSION_METADATA, LIST_ALL_UNICODE_VERSIONS_ROUTE } from "./v1_versions.openapi";
+import { GET_UNICODE_MAPPINGS, LIST_ALL_UNICODE_VERSIONS_ROUTE } from "./v1_versions.openapi";
 
 export const V1_VERSIONS_ROUTER = new OpenAPIHono<HonoEnv>().basePath("/api/v1/versions");
 
@@ -103,10 +103,3 @@ V1_VERSIONS_ROUTER.openapi(GET_UNICODE_MAPPINGS, async (c) => {
   return c.json(UNICODE_TO_UCD_VERSION_MAPPINGS, 200);
 });
 
-V1_VERSIONS_ROUTER.openapi(GET_UNICODE_VERSION_METADATA, async (c) => {
-  return c.json(UNICODE_VERSION_METADATA, 200);
-});
-
-V1_VERSIONS_ROUTER.openapi(GET_SUPPORTED_VERSIONS_ROUTE, async (c) => {
-  return c.json(UNICODE_VERSION_METADATA, 200);
-});

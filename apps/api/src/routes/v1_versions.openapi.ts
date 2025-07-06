@@ -1,6 +1,6 @@
 import { createRoute, z } from "@hono/zod-openapi";
 import { ApiErrorSchema } from "@ucdjs/worker-shared";
-import { UnicodeVersionMappingsSchema, UnicodeVersionMetadataSchema, UnicodeVersionSchema } from "./v1_versions.schemas";
+import { UnicodeVersionMappingsSchema, UnicodeVersionSchema } from "./v1_versions.schemas";
 
 export const LIST_ALL_UNICODE_VERSIONS_ROUTE = createRoute({
   method: "get",
@@ -68,52 +68,3 @@ export const GET_UNICODE_MAPPINGS = createRoute({
   },
 });
 
-export const GET_UNICODE_VERSION_METADATA = createRoute({
-  method: "get",
-  path: "/metadata",
-  tags: ["Versions"],
-  description: "Get Unicode version metadata for all supported versions",
-  responses: {
-    200: {
-      content: {
-        "application/json": {
-          schema: UnicodeVersionMetadataSchema,
-        },
-      },
-      description: "Unicode version metadata for all supported versions",
-    },
-    500: {
-      content: {
-        "application/json": {
-          schema: ApiErrorSchema,
-        },
-      },
-      description: "Internal Server Error",
-    },
-  },
-});
-
-export const GET_SUPPORTED_VERSIONS_ROUTE = createRoute({
-  method: "get",
-  path: "/supported",
-  tags: ["Versions"],
-  description: "Get only the Unicode versions that are currently supported by the API",
-  responses: {
-    200: {
-      content: {
-        "application/json": {
-          schema: UnicodeVersionMetadataSchema,
-        },
-      },
-      description: "List of supported Unicode versions from the unicode-utils package",
-    },
-    500: {
-      content: {
-        "application/json": {
-          schema: ApiErrorSchema,
-        },
-      },
-      description: "Internal Server Error",
-    },
-  },
-});
