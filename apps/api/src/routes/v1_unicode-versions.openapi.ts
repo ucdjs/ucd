@@ -6,6 +6,7 @@ export const LIST_ALL_UNICODE_VERSIONS_ROUTE = createRoute({
   method: "get",
   path: "/",
   tags: ["Misc"],
+  deprecated: true,
   description: "List all Unicode Versions available, including metadata.",
   responses: {
     200: {
@@ -47,6 +48,7 @@ export const GET_UNICODE_MAPPINGS = createRoute({
   method: "get",
   path: "/mappings",
   tags: ["Misc"],
+  deprecated: true,
   description: "List all Unicode Versions mappings",
   responses: {
     200: {
