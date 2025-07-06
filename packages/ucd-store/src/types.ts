@@ -153,3 +153,17 @@ export interface CleanOptions {
    */
   versions: readonly string[];
 }
+
+export type StoreCapability = keyof StoreCapabilities;
+
+export interface StoreCapabilities {
+  /**
+   * Whether the store supports analyzing its contents.
+   */
+  analyze?: boolean;
+
+  /**
+   * Whether the store supports cleaning up orphaned or outdated files.
+   */
+  clean?: boolean;
+}

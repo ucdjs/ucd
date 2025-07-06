@@ -5,6 +5,7 @@ import type {
   AnalyzeResult,
   CleanResult,
   FileRemovalError,
+  StoreCapabilities,
   StoreMode,
   UCDStoreOptions,
   VersionAnalysis,
@@ -16,6 +17,7 @@ import { ApiResponseError, createClient } from "@ucdjs/fetch";
 import { createPathFilter, safeJsonParse } from "@ucdjs/utils";
 import defu from "defu";
 import { z } from "zod/v4";
+import { assertCapabilities, inferStoreCapabilities } from "./internal/capabilities";
 import { processConcurrently } from "./internal/concurrency";
 import { UCDStoreError } from "./internal/errors";
 import { flattenFilePaths } from "./internal/flatten";
@@ -52,6 +54,8 @@ export class UCDStore {
   #versions: string[] = [];
   #manifestPath: string;
 
+  #capabilities: StoreCapabilities = {};
+
   constructor(options: UCDStoreOptions) {
     const { baseUrl, globalFilters, mode, fs, basePath } = defu(options, {
       baseUrl: UCDJS_API_BASE_URL,
@@ -66,6 +70,8 @@ export class UCDStore {
     this.#client = createClient(this.baseUrl);
     this.#filter = createPathFilter(globalFilters);
     this.#fs = fs;
+    this.#capabilities = inferStoreCapabilities(this.#fs);
+
     this.#manifestPath = this.mode === "local" ? path.join(this.basePath!, ".ucd-store.json") : ".ucd-store.json";
   }
 
@@ -77,8 +83,17 @@ export class UCDStore {
     return this.#filter;
   }
 
+  /**
+   * Gets the UCD client instance used for making API requests.
+   *
+   * @returns {UCDClient} The UCDClient instance configured with the store's base URL
+   */
   get client(): UCDClient {
     return this.#client;
+  }
+
+  get capabilities(): StoreCapabilities {
+    return Object.freeze({ ...this.#capabilities });
   }
 
   /**
@@ -532,25 +547,6 @@ export class UCDStore {
         isComplete: false,
         missingFiles: [`Failed to analyze version: ${error instanceof Error ? error.message : String(error)}`],
       };
-    }
-  }
-
-  /**
-   * Get the size of a file
-   */
-  async #getFileSize(version: string, filePath: string): Promise<number> {
-    try {
-      if (this.mode === "remote") {
-        // For remote mode, we can't easily get file sizes without downloading
-        // Return 0 for now, or implement HEAD request if the API supports it
-        return 0;
-      } else {
-        const fullPath = path.join(this.basePath!, version, filePath);
-        const stats = await this.#fs.stat(fullPath);
-        return stats.size;
-      }
-    } catch {
-      return 0;
     }
   }
 

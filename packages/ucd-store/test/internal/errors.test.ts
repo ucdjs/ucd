@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { UCDStoreError } from "../../src/internal/errors";
+import { UCDStoreError, UCDStoreUnsupportedFeature } from "../../src/internal/errors";
 
-describe("uCDStoreError", () => {
+describe("error#UCDStoreError", () => {
   it("should create an instance with the correct message", () => {
     const message = "Test error message";
     const error = new UCDStoreError(message);
@@ -27,5 +27,43 @@ describe("uCDStoreError", () => {
 
     expect(error.stack).toBeDefined();
     expect(error.stack).toContain("UCDStoreError");
+  });
+});
+
+describe("error#UCDStoreUnsupportedFeature", () => {
+  it("should create an instance with the correct properties", () => {
+    const feature = "TestFeature";
+    const requiredCapabilities = ["capability1", "capability2"];
+    const availableCapabilities = ["capability1", "capability3"];
+    const error = new UCDStoreUnsupportedFeature(
+      feature,
+      requiredCapabilities,
+      availableCapabilities,
+    );
+
+    expect(error.feature).toBe(feature);
+    expect(error.requiredCapabilities).toEqual(requiredCapabilities);
+    expect(error.availableCapabilities).toEqual(availableCapabilities);
+  });
+
+  it("should extend UCDStoreError class", () => {
+    const error = new UCDStoreUnsupportedFeature(
+      "TestFeature",
+      ["capability1"],
+      ["capability1", "capability2"],
+    );
+
+    expect(error).toBeInstanceOf(UCDStoreError);
+    expect(error).toBeInstanceOf(UCDStoreUnsupportedFeature);
+  });
+
+  it("should have the correct name property", () => {
+    const error = new UCDStoreUnsupportedFeature(
+      "TestFeature",
+      ["capability1"],
+      ["capability1", "capability2"],
+    );
+
+    expect(error.name).toBe("UCDStoreUnsupportedFeature");
   });
 });

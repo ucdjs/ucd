@@ -22,6 +22,15 @@ async function safeExists(path: string): Promise<boolean> {
  * @see defineFileSystemBridge
  */
 const NodeFileSystemBridge = defineFileSystemBridge({
+  capabilities: {
+    read: true,
+    write: true,
+    listdir: true,
+    mkdir: true,
+    stat: true,
+    exists: true,
+    rm: true,
+  },
   read(path) {
     return readFile(path, "utf-8");
   },

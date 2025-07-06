@@ -58,10 +58,10 @@ export interface FileSystemBridge {
   state?: Record<string, unknown>;
 
   /**
-   * An object defining the features supported by this file system bridge.
-   * If it is not provided, the bridge will assume all features are supported.
+   * An object defining the capabilities supported by this file system bridge.
+   * If it is not provided, the bridge will assume all capabilities are supported.
    */
-  features?: FileSystemBridgeFeatures;
+  capabilities?: FileSystemBridgeCapabilities;
 
   /**
    * Reads the contents of a file.
@@ -130,12 +130,12 @@ export function defineFileSystemBridge(fsBridge: FileSystemBridge): FileSystemBr
   return fsBridge;
 }
 
-export type FileSystemBridgeFeatureKeys = keyof Omit<FileSystemBridge, "state" | "features">;
-export type FileSystemBridgeFeatures = {
-  [K in FileSystemBridgeFeatureKeys]: boolean;
+export type FileSystemBridgeMethods = keyof Omit<FileSystemBridge, "state" | "capabilities">;
+export type FileSystemBridgeCapabilities = {
+  [K in FileSystemBridgeMethods]: boolean;
 };
 
-const DEFAULT_SUPPORTED_FEATURES: FileSystemBridgeFeatures = {
+const DEFAULT_SUPPORTED_CAPABILITIES: FileSystemBridgeCapabilities = {
   exists: true,
   read: true,
   write: true,
@@ -146,14 +146,14 @@ const DEFAULT_SUPPORTED_FEATURES: FileSystemBridgeFeatures = {
 };
 
 /**
- * Gets the supported features for a file system bridge.
+ * Gets the supported capabilities for a file system bridge.
  *
- * If the bridge doesn't specify its features, this function returns
- * the default set of supported features (all features enabled).
+ * If the bridge doesn't specify its capabilities, this function returns
+ * the default set of supported capabilities (all capabilities enabled).
  *
- * @param {FileSystemBridge} fsBridge - The file system bridge to get features for
- * @returns {FileSystemBridgeFeatures} An object indicating which features are supported by the bridge
+ * @param {FileSystemBridge} fsBridge - The file system bridge to get capabilities for
+ * @returns {FileSystemBridgeCapabilities} An object indicating which capabilities are supported by the bridge
  */
-export function getSupportedBridgeFeatures(fsBridge: FileSystemBridge): FileSystemBridgeFeatures {
-  return fsBridge.features || DEFAULT_SUPPORTED_FEATURES;
+export function getSupportedBridgeCapabilities(fsBridge: FileSystemBridge): FileSystemBridgeCapabilities {
+  return fsBridge.capabilities || DEFAULT_SUPPORTED_CAPABILITIES;
 }
