@@ -3,18 +3,18 @@ import { UNICODE_PROXY_URL } from "@ucdjs/env";
 import { z } from "zod/v4";
 import { defineFileSystemBridge } from "../fs-bridge";
 
-const ProxyResponseSchema = z.union([
+const ListDirResponseSchema = z.union([
   z.object({
     type: z.literal("directory"),
     name: z.string(),
     path: z.string(),
-    lastModified: z.string(),
+    lastModified: z.number(),
   }),
   z.object({
     type: z.literal("file"),
     name: z.string(),
     path: z.string(),
-    lastModified: z.string().optional(),
+    lastModified: z.number(),
   }),
 ]);
 
@@ -69,7 +69,7 @@ function HTTPFileSystemBridge(options: HTTPFileSystemBridgeOptions = {}): FileSy
       const data = await response.json();
 
       // Validate response data
-      const validatedData = z.array(ProxyResponseSchema).parse(data);
+      const validatedData = z.array(ListDirResponseSchema).parse(data);
 
       if (!recursive) {
         return validatedData.map((entry): FSEntry => ({
@@ -91,6 +91,8 @@ function HTTPFileSystemBridge(options: HTTPFileSystemBridgeOptions = {}): FileSy
           try {
             const subPath = path.endsWith("/") ? `${path}${entry.name}` : `${path}/${entry.name}`;
             const subEntries = await this.listdir(subPath, true);
+            console.error(`DEBUG: Listing subdirectory ${subPath}:`, subEntries);
+
             allEntries.push(...subEntries);
           } catch {
             // Skip directories that can't be accessed

@@ -15,7 +15,6 @@ import { createPathFilter, safeJsonParse } from "@ucdjs/utils";
 import defu from "defu";
 import { z } from "zod/v4";
 import {
-  assertCapabilities,
   inferStoreCapabilities,
   requiresCapabilities,
 } from "./internal/capabilities";
@@ -35,12 +34,11 @@ export class UCDStore {
    */
   public readonly baseUrl: string;
 
-
   /**
-   * Base path for the local store.
-   * Only used when the filesystem supports write operations.
+   * Base Path attached to the base URL, when accessing files.
+   * This is used to resolve file paths when reading from the store.
    */
-  public readonly basePath?: string;
+  public readonly basePath: string;
 
   #client: UCDClient;
   #filter: PathFilter;
@@ -59,7 +57,6 @@ export class UCDStore {
     const { baseUrl, globalFilters, fs, basePath } = defu(options, {
       baseUrl: UCDJS_API_BASE_URL,
       globalFilters: [],
-      basePath: "./ucd-files",
     });
 
     this.baseUrl = baseUrl;
@@ -69,7 +66,7 @@ export class UCDStore {
     this.#fs = fs;
     this.#capabilities = inferStoreCapabilities(this.#fs);
 
-    this.#manifestPath = this.basePath ? path.join(this.basePath, ".ucd-store.json") : ".ucd-store.json";
+    this.#manifestPath = path.join(this.basePath, ".ucd-store.json");
   }
 
   get fs(): FileSystemBridge {
@@ -167,37 +164,15 @@ export class UCDStore {
       throw new UCDStoreError(`Version '${version}' not found in store`);
     }
 
-    // If we have a base path and the filesystem supports listing directories,
-    // read from local storage; otherwise fetch from remote API
-    if (this.basePath && this.#capabilities.analyze) {
-      const files = await this.#fs.listdir(path.join(this.basePath, version), true);
-      console.error(`DEBUG: Local file structure for version ${version}:`, files);
-      const fileStructure = files.map((file) => ({
-        name: path.basename(file.path),
-        path: file.path,
-        type: file.type === "directory" ? "directory" : "file",
-      }));
+    const files = await this.#fs.listdir(path.join(this.basePath, version), true);
+    console.error(`DEBUG: Local file structure for version ${version}:`, files);
+    const fileStructure = files.map((file) => ({
+      name: path.basename(file.path),
+      path: file.path,
+      type: file.type === "directory" ? "directory" : "file",
+    }));
 
-      return this.#processFileStructure(fileStructure, extraFilters);
-    } else {
-      // Fetch from remote API
-      const data = await promiseRetry(async () => {
-        const { data, error } = await this.#client.GET("/api/v1/files/{version}", {
-          params: { path: { version } },
-        });
-
-        if (error != null) {
-          throw new ApiResponseError(error);
-        }
-
-        return data;
-      }, {
-        retries: 3,
-        minTimeout: 500,
-      });
-      console.error(`DEBUG: Remote file structure for version ${version}:`, data);
-      return this.#processFileStructure(data, extraFilters);
-    }
+    return this.#processFileStructure(fileStructure, extraFilters);
   }
 
   get versions(): readonly string[] {

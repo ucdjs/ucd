@@ -23,12 +23,10 @@ export interface UCDStoreOptions {
   fs: FileSystemBridge;
 
   /**
-   * Base path for local file storage.
-   * Only used when the filesystem supports write operations.
-   * 
-   * @default "./ucd-files"
+   * Base Path attached to the base URL, when accessing files.
+   * This is used to resolve file paths when reading from the store.
    */
-  basePath?: string;
+  basePath: string;
 
   /**
    * List of Unicode versions to include in the store.
