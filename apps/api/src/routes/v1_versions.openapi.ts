@@ -1,13 +1,12 @@
 import { createRoute, z } from "@hono/zod-openapi";
 import { ApiErrorSchema } from "@ucdjs/worker-shared";
-import { UnicodeVersionMappingsSchema, UnicodeVersionSchema } from "./v1_unicode-versions.schemas";
+import { UnicodeVersionMappingsSchema, UnicodeVersionSchema } from "./v1_versions.schemas";
 
 export const LIST_ALL_UNICODE_VERSIONS_ROUTE = createRoute({
   method: "get",
-  path: "/",
-  tags: ["Misc"],
-  deprecated: true,
-  description: "List all Unicode Versions available, including metadata.",
+  path: "/releases",
+  tags: ["Versions"],
+  description: "List all Unicode Versions available, including metadata and support status.",
   responses: {
     200: {
       content: {
@@ -15,7 +14,7 @@ export const LIST_ALL_UNICODE_VERSIONS_ROUTE = createRoute({
           schema: z.array(UnicodeVersionSchema).openapi("UnicodeVersions"),
         },
       },
-      description: "A list of Unicode versions with metadata.",
+      description: "A list of Unicode versions with metadata and support status.",
     },
     404: {
       content: {
@@ -47,8 +46,7 @@ export const LIST_ALL_UNICODE_VERSIONS_ROUTE = createRoute({
 export const GET_UNICODE_MAPPINGS = createRoute({
   method: "get",
   path: "/mappings",
-  tags: ["Misc"],
-  deprecated: true,
+  tags: ["Versions"],
   description: "List all Unicode Versions mappings",
   responses: {
     200: {
