@@ -1,7 +1,12 @@
 import type { HonoEnv } from "../types";
 import type { UnicodeVersion } from "./v1_versions.schemas";
 import { OpenAPIHono } from "@hono/zod-openapi";
-import { getCurrentDraftVersion, hasUCDFolderPath, resolveUCDVersion, UNICODE_TO_UCD_VERSION_MAPPINGS, UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
+import {
+  getCurrentDraftVersion,
+  hasUCDFolderPath,
+  resolveUCDVersion,
+  UNICODE_TO_UCD_VERSION_MAPPINGS,
+} from "@luxass/unicode-utils-new";
 import { internalServerError, notFound } from "@ucdjs/worker-shared";
 import { cache } from "hono/cache";
 import { GET_UNICODE_MAPPINGS, LIST_ALL_UNICODE_VERSIONS_ROUTE } from "./v1_versions.openapi";
@@ -102,4 +107,3 @@ V1_VERSIONS_ROUTER.openapi(LIST_ALL_UNICODE_VERSIONS_ROUTE, async (c) => {
 V1_VERSIONS_ROUTER.openapi(GET_UNICODE_MAPPINGS, async (c) => {
   return c.json(UNICODE_TO_UCD_VERSION_MAPPINGS, 200);
 });
-
