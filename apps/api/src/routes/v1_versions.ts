@@ -31,7 +31,7 @@ V1_VERSIONS_ROUTER.openapi(LIST_ALL_UNICODE_VERSIONS_ROUTE, async (c) => {
     );
 
     if (!tableMatch) {
-      return notFound({
+      return notFound(c, {
         message: "Unicode versions table not found",
       });
     }
@@ -68,7 +68,7 @@ V1_VERSIONS_ROUTER.openapi(LIST_ALL_UNICODE_VERSIONS_ROUTE, async (c) => {
         status = "unsupported";
       }
 
-      versions.unshift({
+      versions.push({
         version,
         documentationUrl: documentationUrl!,
         date: dateMatch[1]!,
