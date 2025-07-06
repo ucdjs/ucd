@@ -56,10 +56,11 @@ V1_VERSIONS_ROUTER.openapi(LIST_ALL_UNICODE_VERSIONS_ROUTE, async (c) => {
 
       // look for a year pattern anywhere in the row
       const dateMatch = row.match(/<td[^>]*>(\d{4})<\/td>/);
-      if (!dateMatch) continue;
+      if (!dateMatch || !dateMatch[1]) continue;
+      
       const ucdVersion = resolveUCDVersion(version);
-      const ucdUrl = `https://www.unicode.org/Public/${ucdVersion}/${hasUCDFolderPath(ucdVersion) ? "ucd" : ""}`;
-
+      const ucdPath = hasUCDFolderPath(ucdVersion) ? "ucd" : "";
+      const ucdUrl = `https://www.unicode.org/Public/${ucdVersion}/${ucdPath}`;
       // Determine status based on draft, supported versions, and current implementation
       let status: "stable" | "draft" | "unsupported" = "stable";
       if (draft === version) {
