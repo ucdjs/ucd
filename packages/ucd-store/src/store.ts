@@ -114,10 +114,6 @@ export class UCDStore {
         }
 
         this.#versions = data?.map(({ version }) => version) || [];
-
-        if (this.#versions.length === 0) {
-          throw new UCDStoreError("No versions provided for initializing new store");
-        }
       }
 
       await this.#createNewLocalStore(this.#versions);
@@ -268,7 +264,7 @@ export class UCDStore {
   }
 
   @requiresCapabilities("mirror")
-  async mirror(_options: {
+  async mirror(options: {
     versions?: string[];
     overwrite?: boolean;
     dryRun?: boolean;
@@ -280,6 +276,15 @@ export class UCDStore {
     skipped?: string[];
     failed?: string[];
   }> {
+    const { versions = [], overwrite = false, dryRun = false, concurrency = 5 } = options;
+    if (versions?.length === 0) {
+      return {
+        success: true,
+        mirrored: [],
+        skipped: [],
+        failed: [],
+      };
+    }
     throw new UCDStoreError("Mirroring is not implemented yet.");
   }
 
