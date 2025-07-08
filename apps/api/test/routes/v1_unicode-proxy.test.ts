@@ -1,4 +1,3 @@
-/* eslint-disable test/prefer-lowercase-title */
 import {
   createExecutionContext,
   env,
@@ -24,6 +23,7 @@ describe("v1_unicode-proxy", () => {
     USE_SVC_BINDING: "false",
   };
 
+  // eslint-disable-next-line test/prefer-lowercase-title
   describe("GET /api/v1/unicode-proxy/:wildcard", () => {
     it("should proxy specific file path successfully", async () => {
       const mockFileContent = "# Unicode Character Database\n# Version 15.1.0\n";
@@ -136,6 +136,7 @@ describe("v1_unicode-proxy", () => {
     });
   });
 
+  // eslint-disable-next-line test/prefer-lowercase-title
   describe("GET /api/v1/unicode-proxy/__stat/:wildcard", () => {
     it("should proxy stat requests successfully", async () => {
       const mockStatResponse = JSON.stringify({
@@ -199,7 +200,7 @@ describe("v1_unicode-proxy", () => {
     });
   });
 
-  describe("Service binding mode", () => {
+  describe("service binding mode", () => {
     it("should use service binding when enabled", async () => {
       const mockContent = JSON.stringify([{ name: "binding-test", type: "directory" }]);
       const mockFetchResponse = new Response(mockContent, {
@@ -277,7 +278,7 @@ describe("v1_unicode-proxy", () => {
     });
   });
 
-  describe("Error handling edge cases", () => {
+  describe("error handling edge cases", () => {
     it("should handle non-Error exceptions", async () => {
       const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 

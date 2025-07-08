@@ -1,4 +1,3 @@
-/* eslint-disable test/prefer-lowercase-title */
 import type { EntryWithChildren } from "apache-autoindex-parse/traverse";
 import { generateAutoIndexHtml } from "apache-autoindex-parse/test-utils";
 import {
@@ -18,6 +17,7 @@ beforeAll(() => {
 afterEach(() => fetchMock.assertNoPendingInterceptors());
 
 describe("v1_files", () => {
+  // eslint-disable-next-line test/prefer-lowercase-title
   describe("GET /api/v1/files/{version}", () => {
     const files = [
       { type: "file", name: "file1.txt", path: "/Public/15.1.0/ucd/file1.txt" },
