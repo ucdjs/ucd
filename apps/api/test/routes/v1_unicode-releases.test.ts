@@ -1,4 +1,3 @@
-/* eslint-disable test/prefer-lowercase-title */
 import {
   createExecutionContext,
   env,
@@ -25,6 +24,7 @@ afterEach(() => {
 });
 
 describe("v1_unicode-releases", () => {
+  // eslint-disable-next-line test/prefer-lowercase-title
   describe("GET /api/v1/unicode-releases", () => {
     const mockHtmlResponse = `
       <html>
