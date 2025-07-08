@@ -3,7 +3,6 @@ import type { UnicodeVersion } from "./v1_unicode-releases.schemas";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import {
   getCurrentDraftVersion,
-  hasUCDFolderPath,
   resolveUCDVersion,
 } from "@luxass/unicode-utils-new";
 import { internalServerError, notFound } from "@ucdjs/worker-shared";

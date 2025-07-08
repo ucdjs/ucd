@@ -42,4 +42,3 @@ export const LIST_ALL_UNICODE_VERSIONS_ROUTE = createRoute({
     },
   },
 });
-
