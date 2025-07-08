@@ -4,7 +4,7 @@
   "private": true,
   "packageManager": "pnpm@10.12.4",
   "scripts": {
-    "dev": "wrangler dev",
+    "dev": "wrangler dev --port 8788 --inspector-port 9230",
     "build": "wrangler deploy --dry-run --outdir=dist --tsconfig=./tsconfig.build.json",
     "deploy": "wrangler deploy --tsconfig=./tsconfig.build.json",
     "deploy:verify": "tsx --tsconfig=./tsconfig.json ./scripts/verify-deploy.ts",
