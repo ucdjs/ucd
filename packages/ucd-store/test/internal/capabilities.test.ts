@@ -120,7 +120,7 @@ describe("assertCapabilities", () => {
       disabledFeatures: { rm: false },
       expectedError: {
         feature: "clean",
-        requiredCapabilities: ["listdir", "exists", "rm", "write"],
+        requiredCapabilities: ["listdir", "exists", "rm", "write", "read"],
         availableCapabilities: ["read", "write", "listdir", "mkdir", "stat", "exists"],
       },
     },
@@ -130,7 +130,7 @@ describe("assertCapabilities", () => {
       disabledFeatures: { write: false },
       expectedError: {
         feature: "clean",
-        requiredCapabilities: ["listdir", "exists", "rm", "write"],
+        requiredCapabilities: ["listdir", "exists", "rm", "write", "read"],
         availableCapabilities: ["read", "listdir", "mkdir", "stat", "exists", "rm"],
       },
     },
@@ -140,7 +140,7 @@ describe("assertCapabilities", () => {
       disabledFeatures: { listdir: false },
       expectedError: {
         feature: "clean",
-        requiredCapabilities: ["listdir", "exists", "rm", "write"],
+        requiredCapabilities: ["listdir", "exists", "rm", "write", "read"],
         availableCapabilities: ["read", "write", "mkdir", "stat", "exists", "rm"],
       },
     },
@@ -150,19 +150,29 @@ describe("assertCapabilities", () => {
       disabledFeatures: { exists: false },
       expectedError: {
         feature: "clean",
-        requiredCapabilities: ["listdir", "exists", "rm", "write"],
+        requiredCapabilities: ["listdir", "exists", "rm", "write", "read"],
         availableCapabilities: ["read", "write", "listdir", "mkdir", "stat", "rm"],
       },
     },
+    {
+      description: "throw when clean feature missing read capability",
+      feature: "clean" as const,
+      disabledFeatures: { read: false },
+      expectedError: {
+        feature: "clean",
+        requiredCapabilities: ["listdir", "exists", "rm", "write", "read"],
+        availableCapabilities: ["write", "listdir", "mkdir", "stat", "exists", "rm"],
+      },
+    },
 
-    // Analyze feature failure cases
+    // Analyze
     {
       description: "throw when analyze feature missing stat capability",
       feature: "analyze" as const,
       disabledFeatures: { stat: false },
       expectedError: {
         feature: "analyze",
-        requiredCapabilities: ["listdir", "stat", "exists"],
+        requiredCapabilities: ["listdir", "stat", "exists", "read"],
         availableCapabilities: ["read", "write", "listdir", "mkdir", "exists", "rm"],
       },
     },
@@ -172,7 +182,7 @@ describe("assertCapabilities", () => {
       disabledFeatures: { listdir: false },
       expectedError: {
         feature: "analyze",
-        requiredCapabilities: ["listdir", "stat", "exists"],
+        requiredCapabilities: ["listdir", "stat", "exists", "read"],
         availableCapabilities: ["read", "write", "mkdir", "stat", "exists", "rm"],
       },
     },
@@ -182,19 +192,19 @@ describe("assertCapabilities", () => {
       disabledFeatures: { exists: false },
       expectedError: {
         feature: "analyze",
-        requiredCapabilities: ["listdir", "stat", "exists"],
+        requiredCapabilities: ["listdir", "stat", "exists", "read"],
         availableCapabilities: ["read", "write", "listdir", "mkdir", "stat", "rm"],
       },
     },
 
-    // Multiple missing capabilities
+    // multiple missing capabilities
     {
       description: "throw when clean feature missing multiple capabilities",
       feature: "clean" as const,
       disabledFeatures: { write: false, rm: false },
       expectedError: {
         feature: "clean",
-        requiredCapabilities: ["listdir", "exists", "rm", "write"],
+        requiredCapabilities: ["listdir", "exists", "rm", "write", "read"],
         availableCapabilities: ["read", "listdir", "mkdir", "stat", "exists"],
       },
     },
@@ -204,7 +214,7 @@ describe("assertCapabilities", () => {
       disabledFeatures: { listdir: false, stat: false },
       expectedError: {
         feature: "analyze",
-        requiredCapabilities: ["listdir", "stat", "exists"],
+        requiredCapabilities: ["listdir", "stat", "exists", "read"],
         availableCapabilities: ["read", "write", "mkdir", "exists", "rm"],
       },
     },
@@ -216,7 +226,7 @@ describe("assertCapabilities", () => {
       disabledFeatures: { write: false, mkdir: false, rm: false },
       expectedError: {
         feature: "clean",
-        requiredCapabilities: ["listdir", "exists", "rm", "write"],
+        requiredCapabilities: ["listdir", "exists", "rm", "write", "read"],
         availableCapabilities: ["read", "listdir", "stat", "exists"],
       },
     },
@@ -315,7 +325,7 @@ describe("requiresCapabilities decorator", () => {
       expect(error).toBeInstanceOf(UCDStoreUnsupportedFeature);
       const typedError = error as UCDStoreUnsupportedFeature;
       expect(typedError.feature).toBe("clean");
-      expect(typedError.requiredCapabilities).toEqual(["listdir", "exists", "rm", "write"]);
+      expect(typedError.requiredCapabilities).toEqual(["listdir", "exists", "rm", "write", "read"]);
       expect(typedError.availableCapabilities).toEqual(["read", "listdir", "stat", "exists"]);
     }
   });
