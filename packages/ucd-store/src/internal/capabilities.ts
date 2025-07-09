@@ -35,10 +35,10 @@ export function assertCapabilities(feature: keyof StoreCapabilities, fsBridge: F
 }
 
 const CAPABILITY_REQUIREMENTS: Record<keyof StoreCapabilities, FileSystemBridgeCapabilityKey[]> = {
-  clean: ["listdir", "exists", "rm", "write"],
-  analyze: ["listdir", "stat", "exists"],
+  clean: ["listdir", "exists", "rm", "write", "read"],
+  analyze: ["listdir", "stat", "exists", "read"],
   mirror: ["read", "write", "listdir", "mkdir", "exists"],
-  repair: ["listdir", "exists", "rm", "write"],
+  repair: ["read", "listdir", "exists", "rm", "write"],
 } as const;
 
 function getRequiredCapabilities(feature: keyof StoreCapabilities): FileSystemBridgeCapabilityKey[] {
