@@ -291,7 +291,7 @@ export class UCDStore {
     throw new UCDStoreError("Mirroring is not implemented yet.");
   }
 
-  @requiresCapabilities("repair")
+  @requiresCapabilities()
   async repair(): Promise<void> {
     throw new UCDStoreError("Repairing is not implemented yet.");
   }
