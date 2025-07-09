@@ -61,7 +61,7 @@ export async function createHTTPUCDStore(options: Omit<UCDStoreOptions, "fs"> = 
 
   let baseUrl = options.baseUrl || UCDJS_API_BASE_URL;
   if (baseUrl.startsWith("https://api.ucdjs.dev")) {
-    // If the base URL is the default UCD API, we set the basePath to
+    // If the base URL is the default UCD API, we append the Unicode proxy path
     baseUrl += "/api/v1/unicode-proxy";
   }
 
