@@ -1,7 +1,7 @@
 import type { FileSystemBridge } from "@ucdjs/utils/fs-bridge";
 import { describe, expect, it } from "vitest";
 import { assertCapabilities, inferStoreCapabilities, requiresCapabilities } from "../../src/internal/capabilities";
-import { UCDStoreUnsupportedFeature } from "../../src/internal/errors";
+import { UCDStoreUnsupportedFeature } from "../../src/errors";
 
 function createMockFSBridge(features: Partial<FileSystemBridge["capabilities"]> = {}): FileSystemBridge {
   return {

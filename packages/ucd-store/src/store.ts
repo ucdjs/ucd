@@ -14,11 +14,11 @@ import { createClient, isApiError } from "@ucdjs/fetch";
 import { createPathFilter, safeJsonParse } from "@ucdjs/utils";
 import defu from "defu";
 import { z } from "zod/v4";
+import { UCDStoreError } from "./errors";
 import {
   inferStoreCapabilities,
   requiresCapabilities,
 } from "./internal/capabilities";
-import { UCDStoreError } from "./internal/errors";
 import { flattenFilePaths } from "./internal/flatten";
 
 const MANIFEST_SCHEMA = z.array(

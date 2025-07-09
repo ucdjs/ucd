@@ -2,7 +2,7 @@ import type { Prettify } from "@luxass/utils";
 import type { UCDStore } from "@ucdjs/ucd-store";
 import type { CLIArguments } from "../../cli-utils";
 import type { CLIStoreCmdSharedFlags } from "./_shared";
-import { createLocalUCDStore, createRemoteUCDStore } from "@ucdjs/ucd-store";
+import { createHTTPUCDStore, createNodeUCDStore } from "@ucdjs/ucd-store";
 import { printHelp } from "../../cli-utils";
 import { SHARED_FLAGS } from "./_shared";
 
@@ -48,12 +48,12 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
 
   let store: UCDStore | null = null;
   if (remote) {
-    store = await createRemoteUCDStore({
+    store = await createHTTPUCDStore({
       baseUrl,
       globalFilters: patterns,
     });
   } else {
-    store = await createLocalUCDStore({
+    store = await createNodeUCDStore({
       basePath: storeDir,
       baseUrl,
       globalFilters: patterns,

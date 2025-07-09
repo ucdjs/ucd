@@ -1,7 +1,7 @@
 import type { FileSystemBridge, FileSystemBridgeCapabilities, FileSystemBridgeCapabilityKey } from "@ucdjs/utils/fs-bridge";
 import type { StoreCapabilities } from "../types";
 import { getSupportedBridgeCapabilities } from "@ucdjs/utils/fs-bridge";
-import { UCDStoreUnsupportedFeature } from "./errors";
+import { UCDStoreUnsupportedFeature } from "../errors";
 
 export function inferStoreCapabilities(fsBridge: FileSystemBridge): StoreCapabilities {
   const fsCapabilities = getSupportedBridgeCapabilities(fsBridge);

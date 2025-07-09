@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { UCDStoreError, UCDStoreUnsupportedFeature } from "../../src/internal/errors";
+import { UCDStoreError, UCDStoreUnsupportedFeature } from "../../src/errors";
 
 describe("error#UCDStoreError", () => {
   it("should create an instance with the correct message", () => {
