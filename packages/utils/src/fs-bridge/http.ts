@@ -127,7 +127,8 @@ function HTTPFileSystemBridge(options: HTTPFileSystemBridgeOptions = {}): FileSy
       // read-only bridge, cannot remove files or directories
     },
     async stat(path) {
-      const url = joinURL(path.startsWith("/") ? `__stat${path}` : `/__stat/${path}`, baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`);
+      const statPath = path.startsWith("/") ? `__stat${path}` : `/__stat/${path}`;
+      const url = joinURL(baseUrl, statPath);
       const response = await fetch(url);
 
       if (!response.ok) {
