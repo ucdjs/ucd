@@ -1,7 +1,7 @@
+import type { FileSystemBridge } from "@ucdjs/utils/fs-bridge";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createTestDirs } from "vitest-testdirs";
 import { createLocalUCDStore } from "../../src/factory";
-import type { FileSystemBridge } from "@ucdjs/utils/fs-bridge";
 
 describe("local ucd store - analysis operations", () => {
   let testDirs: Awaited<ReturnType<typeof createTestDirs>>;
@@ -43,7 +43,7 @@ describe("local ucd store - analysis operations", () => {
       },
       async listdir(path: string, recursive = false) {
         const entries: string[] = [];
-        
+
         async function walkDir(dir: string) {
           const items = await testDirs.fs.readdir(dir);
           for (const item of items) {
@@ -58,7 +58,7 @@ describe("local ucd store - analysis operations", () => {
             }
           }
         }
-        
+
         await walkDir(path);
         return entries;
       },
@@ -69,13 +69,13 @@ describe("local ucd store - analysis operations", () => {
     it("should analyze local store with files", async () => {
       const storeDir = testDirs.dir("ucd-store");
       const version = "15.0.0";
-      
+
       // Create test files
       await testDirs.fs.mkdir(`${storeDir}/${version}`, { recursive: true });
       await testDirs.fs.writeFile(`${storeDir}/${version}/ArabicShaping.txt`, "Arabic shaping data");
       await testDirs.fs.writeFile(`${storeDir}/${version}/BidiBrackets.txt`, "Bidi brackets data");
       await testDirs.fs.writeFile(`${storeDir}/${version}/nested/file.txt`, "Nested file");
-      
+
       // Create manifest
       const manifest = [{ version, path: `${storeDir}/${version}` }];
       await testDirs.fs.writeFile(`${storeDir}/.ucd-store.json`, JSON.stringify(manifest));
@@ -101,12 +101,12 @@ describe("local ucd store - analysis operations", () => {
     it("should calculate file sizes when requested", async () => {
       const storeDir = testDirs.dir("ucd-store");
       const version = "15.0.0";
-      
+
       // Create test files with known sizes
       await testDirs.fs.mkdir(`${storeDir}/${version}`, { recursive: true });
       await testDirs.fs.writeFile(`${storeDir}/${version}/file1.txt`, "1234567890"); // 10 bytes
       await testDirs.fs.writeFile(`${storeDir}/${version}/file2.txt`, "12345"); // 5 bytes
-      
+
       const manifest = [{ version, path: `${storeDir}/${version}` }];
       await testDirs.fs.writeFile(`${storeDir}/.ucd-store.json`, JSON.stringify(manifest));
 
@@ -127,15 +127,15 @@ describe("local ucd store - analysis operations", () => {
     it("should detect orphaned files", async () => {
       const storeDir = testDirs.dir("ucd-store");
       const version = "15.0.0";
-      
+
       // Create legitimate files
       await testDirs.fs.mkdir(`${storeDir}/${version}`, { recursive: true });
       await testDirs.fs.writeFile(`${storeDir}/${version}/ArabicShaping.txt`, "Data");
-      
+
       // Create orphaned files
       await testDirs.fs.writeFile(`${storeDir}/orphaned-file.txt`, "Orphaned");
       await testDirs.fs.writeFile(`${storeDir}/${version}/orphaned-in-version.txt`, "Orphaned in version");
-      
+
       const manifest = [{ version, path: `${storeDir}/${version}` }];
       await testDirs.fs.writeFile(`${storeDir}/.ucd-store.json`, JSON.stringify(manifest));
 
@@ -156,10 +156,10 @@ describe("local ucd store - analysis operations", () => {
     it("should handle empty store", async () => {
       const storeDir = testDirs.dir("ucd-store");
       const version = "15.0.0";
-      
+
       // Create empty version directory
       await testDirs.fs.mkdir(`${storeDir}/${version}`, { recursive: true });
-      
+
       const manifest = [{ version, path: `${storeDir}/${version}` }];
       await testDirs.fs.writeFile(`${storeDir}/.ucd-store.json`, JSON.stringify(manifest));
 
@@ -182,16 +182,16 @@ describe("local ucd store - analysis operations", () => {
       const storeDir = testDirs.dir("ucd-store");
       const version1 = "15.0.0";
       const version2 = "15.1.0";
-      
+
       // Create files for version 1
       await testDirs.fs.mkdir(`${storeDir}/${version1}`, { recursive: true });
       await testDirs.fs.writeFile(`${storeDir}/${version1}/file1.txt`, "Data 1");
       await testDirs.fs.writeFile(`${storeDir}/${version1}/file2.txt`, "Data 2");
-      
+
       // Create files for version 2
       await testDirs.fs.mkdir(`${storeDir}/${version2}`, { recursive: true });
       await testDirs.fs.writeFile(`${storeDir}/${version2}/file3.txt`, "Data 3");
-      
+
       const manifest = [
         { version: version1, path: `${storeDir}/${version1}` },
         { version: version2, path: `${storeDir}/${version2}` },
@@ -217,7 +217,7 @@ describe("local ucd store - analysis operations", () => {
     it("should handle analysis failure", async () => {
       const storeDir = testDirs.dir("ucd-store");
       const version = "15.0.0";
-      
+
       const manifest = [{ version, path: `${storeDir}/${version}` }];
       await testDirs.fs.writeFile(`${storeDir}/.ucd-store.json`, JSON.stringify(manifest));
 
@@ -240,7 +240,7 @@ describe("local ucd store - analysis operations", () => {
     it("should handle version analysis failure", async () => {
       const storeDir = testDirs.dir("ucd-store");
       const version = "15.0.0";
-      
+
       const manifest = [{ version, path: `${storeDir}/${version}` }];
       await testDirs.fs.writeFile(`${storeDir}/.ucd-store.json`, JSON.stringify(manifest));
 
@@ -272,14 +272,14 @@ describe("local ucd store - analysis operations", () => {
     it("should clean orphaned files", async () => {
       const storeDir = testDirs.dir("ucd-store");
       const version = "15.0.0";
-      
+
       // Create legitimate files
       await testDirs.fs.mkdir(`${storeDir}/${version}`, { recursive: true });
       await testDirs.fs.writeFile(`${storeDir}/${version}/ArabicShaping.txt`, "Data");
-      
+
       // Create orphaned files
       await testDirs.fs.writeFile(`${storeDir}/orphaned-file.txt`, "Orphaned");
-      
+
       const manifest = [{ version, path: `${storeDir}/${version}` }];
       await testDirs.fs.writeFile(`${storeDir}/.ucd-store.json`, JSON.stringify(manifest));
 
@@ -300,14 +300,14 @@ describe("local ucd store - analysis operations", () => {
     it("should perform dry run without removing files", async () => {
       const storeDir = testDirs.dir("ucd-store");
       const version = "15.0.0";
-      
+
       // Create legitimate files
       await testDirs.fs.mkdir(`${storeDir}/${version}`, { recursive: true });
       await testDirs.fs.writeFile(`${storeDir}/${version}/ArabicShaping.txt`, "Data");
-      
+
       // Create orphaned files
       await testDirs.fs.writeFile(`${storeDir}/orphaned-file.txt`, "Orphaned");
-      
+
       const manifest = [{ version, path: `${storeDir}/${version}` }];
       await testDirs.fs.writeFile(`${storeDir}/.ucd-store.json`, JSON.stringify(manifest));
 
@@ -330,14 +330,14 @@ describe("local ucd store - analysis operations", () => {
       const storeDir = testDirs.dir("ucd-store");
       const version1 = "15.0.0";
       const version2 = "15.1.0";
-      
+
       // Create files for both versions
       await testDirs.fs.mkdir(`${storeDir}/${version1}`, { recursive: true });
       await testDirs.fs.writeFile(`${storeDir}/${version1}/file1.txt`, "Data 1");
-      
+
       await testDirs.fs.mkdir(`${storeDir}/${version2}`, { recursive: true });
       await testDirs.fs.writeFile(`${storeDir}/${version2}/file2.txt`, "Data 2");
-      
+
       const manifest = [
         { version: version1, path: `${storeDir}/${version1}` },
         { version: version2, path: `${storeDir}/${version2}` },
@@ -354,17 +354,17 @@ describe("local ucd store - analysis operations", () => {
       expect(result.success).toBe(true);
       if (result.success) {
         // Should only target version1 files
-        expect(result.filesToRemove.every(f => f.startsWith(version1))).toBe(true);
+        expect(result.filesToRemove.every((f) => f.startsWith(version1))).toBe(true);
       }
     });
 
     it("should handle clean with force option", async () => {
       const storeDir = testDirs.dir("ucd-store");
       const version = "15.0.0";
-      
+
       await testDirs.fs.mkdir(`${storeDir}/${version}`, { recursive: true });
       await testDirs.fs.writeFile(`${storeDir}/${version}/file.txt`, "Data");
-      
+
       const manifest = [{ version, path: `${storeDir}/${version}` }];
       await testDirs.fs.writeFile(`${storeDir}/.ucd-store.json`, JSON.stringify(manifest));
 
@@ -381,7 +381,7 @@ describe("local ucd store - analysis operations", () => {
     it("should handle clean failure during analysis", async () => {
       const storeDir = testDirs.dir("ucd-store");
       const version = "15.0.0";
-      
+
       const manifest = [{ version, path: `${storeDir}/${version}` }];
       await testDirs.fs.writeFile(`${storeDir}/.ucd-store.json`, JSON.stringify(manifest));
 
@@ -407,15 +407,15 @@ describe("local ucd store - analysis operations", () => {
     it("should handle partial clean failures", async () => {
       const storeDir = testDirs.dir("ucd-store");
       const version = "15.0.0";
-      
+
       // Create legitimate files
       await testDirs.fs.mkdir(`${storeDir}/${version}`, { recursive: true });
       await testDirs.fs.writeFile(`${storeDir}/${version}/file.txt`, "Data");
-      
+
       // Create orphaned files
       await testDirs.fs.writeFile(`${storeDir}/orphaned1.txt`, "Orphaned 1");
       await testDirs.fs.writeFile(`${storeDir}/orphaned2.txt`, "Orphaned 2");
-      
+
       const manifest = [{ version, path: `${storeDir}/${version}` }];
       await testDirs.fs.writeFile(`${storeDir}/.ucd-store.json`, JSON.stringify(manifest));
 
@@ -445,14 +445,14 @@ describe("local ucd store - analysis operations", () => {
     it("should update manifest after successful clean", async () => {
       const storeDir = testDirs.dir("ucd-store");
       const version = "15.0.0";
-      
+
       // Create a version with files
       await testDirs.fs.mkdir(`${storeDir}/${version}`, { recursive: true });
       await testDirs.fs.writeFile(`${storeDir}/${version}/file.txt`, "Data");
-      
+
       // Create orphaned files that will be removed
       await testDirs.fs.writeFile(`${storeDir}/orphaned.txt`, "Orphaned");
-      
+
       const manifest = [{ version, path: `${storeDir}/${version}` }];
       await testDirs.fs.writeFile(`${storeDir}/.ucd-store.json`, JSON.stringify(manifest));
 
@@ -464,7 +464,7 @@ describe("local ucd store - analysis operations", () => {
       const result = await store.clean();
 
       expect(result.success).toBe(true);
-      
+
       // Verify manifest still exists and is valid
       const manifestContent = await testDirs.fs.readFile(`${storeDir}/.ucd-store.json`, "utf8");
       const updatedManifest = JSON.parse(manifestContent);
