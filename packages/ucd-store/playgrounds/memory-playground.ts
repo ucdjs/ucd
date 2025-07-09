@@ -2,7 +2,6 @@
 
 import type { FSEntry, FSStats } from "@ucdjs/utils/fs-bridge";
 import assert from "node:assert";
-import { dirname, join } from "node:path";
 import { defineFileSystemBridge } from "@ucdjs/utils/fs-bridge";
 import { createUCDStore } from "../src/factory";
 import { UCDStore } from "../src/store";
@@ -28,7 +27,7 @@ function normalizePath(path: string): string {
 function getParentPath(path: string): string {
   const normalized = normalizePath(path);
   const parts = normalized.split("/").filter(Boolean);
-  return parts.length > 1 ? `/${parts.slice(0, -1).join("/")}` : "/";
+  return parts.length > 1 ? parts.slice(0, -1).join("/") : "";
 }
 
 function getFileName(path: string): string {
@@ -39,7 +38,7 @@ function getFileName(path: string): string {
 
 function ensureParentExists(path: string): void {
   const parentPath = getParentPath(path);
-  if (parentPath !== "/" && !memoryFS.has(parentPath)) {
+  if (parentPath && !memoryFS.has(parentPath)) {
     ensureParentExists(parentPath);
     memoryFS.set(parentPath, {
       type: "directory",

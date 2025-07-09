@@ -3,5 +3,10 @@
   "compilerOptions": {
     "experimentalDecorators": true
   },
-  "include": ["src/**/*", "*.ts", "test"]
+  "include": [
+    "src/**/*",
+    "*.ts",
+    "test",
+    "playgrounds/**/*"
+  ]
 }
