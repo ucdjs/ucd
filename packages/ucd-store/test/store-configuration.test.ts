@@ -1,6 +1,7 @@
 import type { FileSystemBridge } from "@ucdjs/utils/fs-bridge";
 import { HttpResponse, mockFetch } from "#msw-utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
+import { PRECONFIGURED_FILTERS } from "@ucdjs/utils";
 import { defineFileSystemBridge } from "@ucdjs/utils/fs-bridge";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
@@ -295,6 +296,19 @@ describe("store configuration", () => {
       expect(store.filter).toBeDefined();
       expect(store.basePath).toBe("");
     });
+
+    it("should create HTTP store with preconfigured filters", async () => {
+      const filters = ["*.txt", PRECONFIGURED_FILTERS.EXCLUDE_TEST_FILES];
+
+      const store = await createHTTPUCDStore({
+        globalFilters: filters,
+      });
+
+      expect(store.filter).toBeDefined();
+      expect(store.filter.patterns()).toContain(PRECONFIGURED_FILTERS.EXCLUDE_TEST_FILES);
+      expect(store.filter("NormalizationTest.txt")).toBe(false);
+      expect(store.filter("ValidFile.txt")).toBe(true);
+    });
   });
 
   describe("store capabilities configuration", () => {
@@ -492,6 +506,82 @@ describe("store configuration", () => {
 
       expect(store.client).toBeDefined();
       expect(store.baseUrl).toBe(UCDJS_API_BASE_URL);
+    });
+  });
+
+  describe("store version management", () => {
+    it("should check version existence correctly", async () => {
+      const manifest = [
+        { version: "15.0.0", path: "15.0.0" },
+        { version: "15.1.0", path: "15.1.0" },
+      ];
+
+      const storeDir = await testdir({
+        ".ucd-store.json": JSON.stringify(manifest),
+      });
+
+      const store = await createNodeUCDStore({
+        basePath: storeDir,
+      });
+
+      expect(store.hasVersion("15.0.0")).toBe(true);
+      expect(store.hasVersion("15.1.0")).toBe(true);
+      expect(store.hasVersion("99.99.99")).toBe(false);
+    });
+
+    it("should handle version list immutability", async () => {
+      const manifest = [
+        { version: "15.0.0", path: "15.0.0" },
+        { version: "15.1.0", path: "15.1.0" },
+      ];
+
+      const storeDir = await testdir({
+        ".ucd-store.json": JSON.stringify(manifest),
+      });
+
+      const store = await createNodeUCDStore({
+        basePath: storeDir,
+      });
+
+      const originalLength = store.versions.length;
+      expect(() => {
+        (store.versions as string[]).push("99.99.99");
+      }).toThrowError(/Cannot add property \d+, object is not extensible/);
+
+      expect(store.hasVersion("99.99.99")).toBe(false);
+      expect(store.versions.length).toBe(originalLength);
+    });
+  });
+
+  describe("store filter configuration", () => {
+    it("should apply global filters with preconfigured patterns", async () => {
+      const storeDir = await testdir({
+        ".ucd-store.json": "[]",
+      });
+
+      const store = await createNodeUCDStore({
+        basePath: storeDir,
+        globalFilters: ["*.txt", PRECONFIGURED_FILTERS.EXCLUDE_TEST_FILES],
+      });
+
+      expect(store.filter).toBeDefined();
+      expect(store.filter.patterns()).toContain(PRECONFIGURED_FILTERS.EXCLUDE_TEST_FILES);
+      expect(store.filter("NormalizationTest.txt")).toBe(false);
+      expect(store.filter("ValidFile.txt")).toBe(true);
+    });
+
+    it("should handle empty global filters", async () => {
+      const storeDir = await testdir({
+        ".ucd-store.json": "[]",
+      });
+
+      const store = await createNodeUCDStore({
+        basePath: storeDir,
+        globalFilters: [],
+      });
+
+      expect(store.filter).toBeDefined();
+      expect(store.filter("AnyFile.txt")).toBe(true);
     });
   });
 });
