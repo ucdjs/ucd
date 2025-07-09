@@ -60,6 +60,10 @@ export class UCDStore {
       basePath: "",
     });
 
+    if (fs == null) {
+      throw new UCDStoreError("FileSystemBridge instance is required to create a UCDStore.");
+    }
+
     this.baseUrl = baseUrl;
     this.basePath = basePath;
     this.#client = createClient(this.baseUrl);
