@@ -70,10 +70,27 @@ export class UCDStore {
     this.#manifestPath = path.join(this.basePath, ".ucd-store.json");
   }
 
+  /**
+   * Gets the filesystem bridge instance used by this store.
+   *
+   * The filesystem bridge provides an abstraction layer for file system operations,
+   * allowing the store to work with different storage backends (local filesystem,
+   * remote HTTP, in-memory, etc.) through a unified interface.
+   *
+   * @returns {FileSystemBridge} The FileSystemBridge instance configured for this store
+   */
   get fs(): FileSystemBridge {
     return this.#fs;
   }
 
+  /**
+   * Gets the path filter instance used to determine which files should be included or excluded.
+   *
+   * The filter is configured with global filter patterns during store initialization and is used
+   * to filter file paths when retrieving file trees, file paths, and individual files from the store.
+   *
+   * @returns {PathFilter} The PathFilter instance configured with the store's global filter patterns
+   */
   get filter(): PathFilter {
     return this.#filter;
   }
@@ -87,6 +104,16 @@ export class UCDStore {
     return this.#client;
   }
 
+  /**
+   * Gets the capabilities of this store instance.
+   *
+   * Capabilities determine what operations the store can perform based on the
+   * underlying filesystem bridge's features. This includes operations like
+   * mirroring, cleaning, analyzing, and repairing.
+   *
+   * @returns {StoreCapabilities} A frozen copy of the store's capabilities object
+   * to prevent external modification
+   */
   get capabilities(): StoreCapabilities {
     return Object.freeze({ ...this.#capabilities });
   }
