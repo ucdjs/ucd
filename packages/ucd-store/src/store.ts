@@ -114,6 +114,9 @@ export class UCDStore {
         }
 
         this.#versions = data?.map(({ version }) => version) || [];
+
+        // TODO: maybe we should throw an error if no versions are provided?
+        // since it doesn't make sense to create a store without any versions.
       }
 
       await this.#createNewLocalStore(this.#versions);

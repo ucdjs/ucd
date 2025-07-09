@@ -24,19 +24,43 @@ function parseEndpoint(pattern: `${MethodUpper} ${string}` | `${MethodUpper},${M
   return [[method], url];
 }
 
+function createHeadHandler(url: string, resolver: HttpResponseResolver) {
+  return http.head(url, async (info) => {
+    const response = await resolver(info);
+
+    if (!response) {
+      return new HttpResponse(null, { status: 200 });
+    }
+
+    if ("type" in response && response.type === "error") {
+      return HttpResponse.error();
+    }
+
+    if (response instanceof HttpResponse) {
+      return new HttpResponse(null, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: response.headers
+      });
+    }
+
+    return new HttpResponse(null, { status: 200 });
+  });
+}
+
+
 export function mockFetch(
-  urlPattern: `${MethodUpper} ${string}` | `${MethodUpper},${MethodUpper} ${string}` | `${MethodUpper}, ${MethodUpper} ${string}`,
+  urlPattern: `${MethodUpper} ${string}` | `${MethodUpper},${MethodUpper} ${string}`,
   resolver: HttpResponseResolver,
 ): void;
 export function mockFetch(
-  endpoints: [`${MethodUpper} ${string}` | `${MethodUpper},${MethodUpper} ${string}` | `${MethodUpper}, ${MethodUpper} ${string}`, HttpResponseResolver][],
+  endpoints: [`${MethodUpper} ${string}` | `${MethodUpper},${MethodUpper} ${string}`, HttpResponseResolver][],
 ): void;
 export function mockFetch(
   urlOrList:
     | `${MethodUpper} ${string}`
     | `${MethodUpper},${MethodUpper} ${string}`
-    | `${MethodUpper}, ${MethodUpper} ${string}`
-    | [`${MethodUpper} ${string}` | `${MethodUpper},${MethodUpper} ${string}` | `${MethodUpper}, ${MethodUpper} ${string}`, HttpResponseResolver][],
+    | [`${MethodUpper} ${string}` | `${MethodUpper},${MethodUpper} ${string}`, HttpResponseResolver][],
   resolver?: HttpResponseResolver,
 ): void {
   if (Array.isArray(urlOrList)) {
@@ -45,31 +69,12 @@ export function mockFetch(
       return methods.map(method => {
         // For HEAD requests, execute the resolver and return response without body
         if (method === "head") {
-          return http[method](url, async (info) => {
-            const response = await handlerResolver(info);
-
-            if (!response) {
-              return new HttpResponse(null, { status: 200 });
-            }
-
-            if ("type" in response && response.type === "error") {
-              return HttpResponse.error();
-            }
-
-            if (response instanceof HttpResponse) {
-              return new HttpResponse(null, {
-                status: response.status,
-                statusText: response.statusText,
-                headers: response.headers
-              });
-            }
-
-            return new HttpResponse(null, { status: 200 });
-          });
+          return createHeadHandler(url, handlerResolver);
         }
         return http[method](url, handlerResolver);
       });
     });
+
     MSW_SERVER.use(...handlers);
     return;
   } else if (typeof urlOrList === "string" && resolver) {
@@ -77,32 +82,11 @@ export function mockFetch(
     const handlers = methods.map(method => {
       // For HEAD requests, execute the resolver and return response without body
       if (method === "head") {
-        return http[method](url, async (info) => {
-          const response = await resolver(info);
-
-          if (!response) {
-            return new HttpResponse(null, { status: 200 });
-          }
-
-          if ("type" in response && response.type === "error") {
-            return HttpResponse.error();
-          }
-
-          // Check if response is an HttpResponse instance
-          if (response instanceof HttpResponse) {
-            return new HttpResponse(null, {
-              status: response.status,
-              statusText: response.statusText,
-              headers: response.headers
-            });
-          }
-
-          // For other response types, return default HEAD response
-          return new HttpResponse(null, { status: 200 });
-        });
+        return createHeadHandler(url, resolver);
       }
       return http[method](url, resolver);
     });
+
     MSW_SERVER.use(...handlers);
     return;
   }

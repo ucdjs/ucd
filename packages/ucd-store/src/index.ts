@@ -1,6 +1,6 @@
 export {
-  createLocalUCDStore,
-  createRemoteUCDStore,
+  createHTTPUCDStore,
+  createNodeUCDStore,
   createUCDStore,
 } from "./factory";
 
@@ -9,8 +9,5 @@ export {
 } from "./store";
 
 export type {
-  LocalUCDStoreOptions,
-  RemoteUCDStoreOptions,
-  StoreMode,
   UCDStoreOptions,
 } from "./types";
