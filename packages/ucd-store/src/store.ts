@@ -238,7 +238,7 @@ export class UCDStore {
     return allFiles;
   }
 
-  @requiresCapabilities("clean")
+  @requiresCapabilities()
   async clean(_options: {
     dryRun?: boolean;
     versions?: string[];
@@ -258,7 +258,7 @@ export class UCDStore {
     await this.#fs.write(this.#manifestPath, JSON.stringify(manifestData, null, 2));
   }
 
-  @requiresCapabilities("analyze")
+  @requiresCapabilities()
   async analyze(_options: {
     checkOrphaned?: boolean;
     includeDetails?: boolean;
@@ -266,7 +266,7 @@ export class UCDStore {
     throw new UCDStoreError("Analysis is not implemented yet.");
   }
 
-  @requiresCapabilities("mirror")
+  @requiresCapabilities()
   async mirror(options: {
     versions?: string[];
     overwrite?: boolean;

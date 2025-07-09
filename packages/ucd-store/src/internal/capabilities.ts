@@ -1,4 +1,4 @@
-import type { FileSystemBridge, FileSystemBridgeCapabilities } from "@ucdjs/utils/fs-bridge";
+import type { FileSystemBridge, FileSystemBridgeCapabilities, FileSystemBridgeCapabilityKey } from "@ucdjs/utils/fs-bridge";
 import type { StoreCapabilities } from "../types";
 import { getSupportedBridgeCapabilities } from "@ucdjs/utils/fs-bridge";
 import { UCDStoreUnsupportedFeature } from "./errors";
@@ -7,14 +7,14 @@ export function inferStoreCapabilities(fsBridge: FileSystemBridge): StoreCapabil
   const fsCapabilities = getSupportedBridgeCapabilities(fsBridge);
 
   return {
-    clean: hasRequiredCapabilities(fsCapabilities, ["listdir", "exists", "rm", "write"]),
-    analyze: hasRequiredCapabilities(fsCapabilities, ["listdir", "stat", "exists"]),
-    mirror: hasRequiredCapabilities(fsCapabilities, ["read", "write", "listdir", "mkdir", "exists"]),
-    repair: hasRequiredCapabilities(fsCapabilities, ["listdir", "exists", "rm", "write"]),
+    clean: hasRequiredCapabilities(fsCapabilities, getRequiredCapabilities("clean")),
+    analyze: hasRequiredCapabilities(fsCapabilities, getRequiredCapabilities("analyze")),
+    mirror: hasRequiredCapabilities(fsCapabilities, getRequiredCapabilities("mirror")),
+    repair: hasRequiredCapabilities(fsCapabilities, getRequiredCapabilities("repair")),
   };
 }
 
-function hasRequiredCapabilities(fsCapabilities: FileSystemBridgeCapabilities, capabilities: (keyof FileSystemBridgeCapabilities)[]): boolean {
+function hasRequiredCapabilities(fsCapabilities: FileSystemBridgeCapabilities, capabilities: FileSystemBridgeCapabilityKey[]): boolean {
   return capabilities.every((capability) => fsCapabilities[capability] === true);
 }
 
@@ -34,33 +34,45 @@ export function assertCapabilities(feature: keyof StoreCapabilities, fsBridge: F
   }
 }
 
-function getRequiredCapabilities(feature: keyof StoreCapabilities): string[] {
-  switch (feature) {
-    case "clean":
-      return ["listdir", "exists", "rm", "write"];
-    case "analyze":
-      return ["listdir", "stat", "exists"];
-    case "mirror":
-      return ["read", "write", "listdir", "mkdir", "exists"];
-    case "repair":
-      return ["listdir", "exists", "rm", "write"];
-    default:
-      return [];
+const CAPABILITY_REQUIREMENTS: Record<keyof StoreCapabilities, FileSystemBridgeCapabilityKey[]> = {
+  clean: ["listdir", "exists", "rm", "write"],
+  analyze: ["listdir", "stat", "exists"],
+  mirror: ["read", "write", "listdir", "mkdir", "exists"],
+  repair: ["listdir", "exists", "rm", "write"],
+} as const;
+
+function getRequiredCapabilities(feature: keyof StoreCapabilities): FileSystemBridgeCapabilityKey[] {
+  const capabilities = CAPABILITY_REQUIREMENTS[feature];
+  if (!capabilities) {
+    throw new Error(`Unknown store capability: ${feature}`);
   }
+  return capabilities;
 }
 
-export function requiresCapabilities<K extends keyof StoreCapabilities>(capability: K) {
-  return function <T extends Record<K, any>>(
+interface HasFileSystemBridge {
+  fs: FileSystemBridge;
+}
+
+export function requiresCapabilities<K extends keyof StoreCapabilities>(capability?: K) {
+  return function <
+    T extends HasFileSystemBridge,
+    M extends (...args: any[]) => Promise<any>,
+  >(
     target: T,
-    propertyKey: K,
-    descriptor: TypedPropertyDescriptor<(...args: any[]) => Promise<any>>,
-  ): TypedPropertyDescriptor<(...args: any[]) => Promise<any>> {
+    propertyKey: string | symbol,
+    descriptor: TypedPropertyDescriptor<M>,
+  ): TypedPropertyDescriptor<M> {
     const originalMethod = descriptor.value!;
 
-    descriptor.value = async function (...args: any[]) {
-      assertCapabilities(capability, (this as any).fs);
+    const _capability = capability || propertyKey as K;
+    if (!_capability || !CAPABILITY_REQUIREMENTS[_capability]) {
+      throw new Error(`Invalid capability: ${_capability}`);
+    }
+
+    descriptor.value = async function (this: T, ...args: Parameters<M>): Promise<Awaited<ReturnType<M>>> {
+      assertCapabilities(_capability, this.fs);
       return await originalMethod.apply(this, args);
-    };
+    } as M;
 
     return descriptor;
   };

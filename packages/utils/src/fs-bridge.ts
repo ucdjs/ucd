@@ -130,9 +130,9 @@ export function defineFileSystemBridge(fsBridge: FileSystemBridge): FileSystemBr
   return fsBridge;
 }
 
-export type FileSystemBridgeMethods = keyof Omit<FileSystemBridge, "state" | "capabilities">;
+export type FileSystemBridgeCapabilityKey = keyof Omit<FileSystemBridge, "state" | "capabilities">;
 export type FileSystemBridgeCapabilities = {
-  [K in FileSystemBridgeMethods]: boolean;
+  [K in FileSystemBridgeCapabilityKey]: boolean;
 };
 
 const DEFAULT_SUPPORTED_CAPABILITIES: FileSystemBridgeCapabilities = {
