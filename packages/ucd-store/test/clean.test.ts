@@ -43,10 +43,10 @@ describe("clean operations across store types", () => {
   describe("remote store clean operations", () => {
     it("should handle clean on remote store (no actual cleaning)", async () => {
       mockFetch([
-        [`GET,HEAD ${UCDJS_API_BASE_URL}/api/v1/unicode-proxy/.ucd-store.json`, () => {
+        [["GET", "HEAD"], `${UCDJS_API_BASE_URL}/api/v1/unicode-proxy/.ucd-store.json`, () => {
           return HttpResponse.json([{ version: "15.0.0", path: "/15.0.0" }]);
         }],
-        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
+        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
           return HttpResponse.json(mockFiles);
         }],
       ]);
@@ -64,13 +64,13 @@ describe("clean operations across store types", () => {
 
     it("should handle remote store clean with dryRun", async () => {
       mockFetch([
-        [`GET,HEAD ${UCDJS_API_BASE_URL}/api/v1/unicode-proxy/.ucd-store.json`, () => {
+        [["GET", "HEAD"], `${UCDJS_API_BASE_URL}/api/v1/unicode-proxy/.ucd-store.json`, () => {
           return HttpResponse.json([{ version: "15.0.0", path: "/15.0.0" }]);
         }],
-        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
+        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
           return HttpResponse.json(mockFiles);
         }],
-        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
+        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
           return HttpResponse.json(mockFiles);
         }],
       ]);
@@ -87,13 +87,13 @@ describe("clean operations across store types", () => {
     it("should handle remote store clean with specific versions", async () => {
       const versions = ["15.0.0", "15.1.0"];
       mockFetch([
-        [`GET,HEAD ${UCDJS_API_BASE_URL}/api/v1/unicode-proxy/.ucd-store.json`, () => {
+        [["GET", "HEAD"], `${UCDJS_API_BASE_URL}/api/v1/unicode-proxy/.ucd-store.json`, () => {
           return HttpResponse.json(versions.map((version) => ({
             version,
             path: `/${version}`,
           })));
         }],
-        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/:version`, ({ params }) => {
+        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/:version`, ({ params }) => {
           const { version } = params;
 
           if (version === "15.1.0") {
@@ -477,7 +477,7 @@ describe("clean operations across store types", () => {
 
     it("should handle remote store created via createUCDStore", async () => {
       mockFetch([
-        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
+        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
           return HttpResponse.json(mockFiles);
         }],
       ]);

@@ -3,25 +3,22 @@ import { setupServer } from "msw/node";
 
 export const MSW_SERVER = setupServer();
 
-type Method = "get" | "post" | "put" | "delete" | "patch" | "head" | "options";
-type MethodUpper = Uppercase<Method>;
+type Method = "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "HEAD" | "OPTIONS";
 
 function normalizeMethod(method: string): Method {
   return method.toLowerCase() as Method;
 }
 
-function parseEndpoint(pattern: `${MethodUpper} ${string}` | `${MethodUpper},${MethodUpper} ${string}` | `${MethodUpper}, ${MethodUpper} ${string}`): [Method[], string] {
-  const [methodStr, ...urlParts] = pattern.split(" ");
-  const url = urlParts.join(" ");
+type NonEmptyArray<T> = [T, ...T[]];
 
-  // Handle comma-separated methods like "GET,HEAD /api/files"
-  if (methodStr?.includes(",")) {
-    const methods = methodStr.split(",").map(m => normalizeMethod(m.trim()));
-    return [methods, url];
-  }
-
-  const method = normalizeMethod(methodStr as string);
-  return [[method], url];
+function createHandlersFromMethods(methods: readonly Method[], url: string, resolver: HttpResponseResolver) {
+  return methods.map((method) => {
+    // For HEAD requests, execute the resolver and return response without body
+    if (method === "HEAD") {
+      return createHeadHandler(url, resolver);
+    }
+    return http[method.toLowerCase() as Lowercase<Method>](url, resolver);
+  });
 }
 
 function createHeadHandler(url: string, resolver: HttpResponseResolver) {
@@ -50,42 +47,33 @@ function createHeadHandler(url: string, resolver: HttpResponseResolver) {
 
 
 export function mockFetch(
-  urlPattern: `${MethodUpper} ${string}` | `${MethodUpper},${MethodUpper} ${string}`,
+  methods: NonEmptyArray<Method> | Method,
+  url: string,
   resolver: HttpResponseResolver,
 ): void;
 export function mockFetch(
-  endpoints: [`${MethodUpper} ${string}` | `${MethodUpper},${MethodUpper} ${string}`, HttpResponseResolver][],
+  endpoints: [NonEmptyArray<Method> | Method, string, HttpResponseResolver][],
 ): void;
 export function mockFetch(
-  urlOrList:
-    | `${MethodUpper} ${string}`
-    | `${MethodUpper},${MethodUpper} ${string}`
-    | [`${MethodUpper} ${string}` | `${MethodUpper},${MethodUpper} ${string}`, HttpResponseResolver][],
+  methodsOrEndpoints: NonEmptyArray<Method> | Method | [NonEmptyArray<Method> | Method, string, HttpResponseResolver][],
+  url?: string,
   resolver?: HttpResponseResolver,
 ): void {
-  if (Array.isArray(urlOrList)) {
-    const handlers = urlOrList.flatMap(([pattern, handlerResolver]) => {
-      const [methods, url] = parseEndpoint(pattern);
-      return methods.map(method => {
-        // For HEAD requests, execute the resolver and return response without body
-        if (method === "head") {
-          return createHeadHandler(url, handlerResolver);
-        }
-        return http[method](url, handlerResolver);
-      });
+  if (Array.isArray(methodsOrEndpoints) && methodsOrEndpoints.length > 0 && Array.isArray(methodsOrEndpoints[0])) {
+    // handle batch registration
+    const endpoints = methodsOrEndpoints as [NonEmptyArray<Method> | Method, string, HttpResponseResolver][];
+    const handlers = endpoints.flatMap(([methods, endpointUrl, handlerResolver]) => {
+      const methodArray = Array.isArray(methods) ? methods : [methods];
+      return createHandlersFromMethods(methodArray, endpointUrl, handlerResolver);
     });
 
     MSW_SERVER.use(...handlers);
     return;
-  } else if (typeof urlOrList === "string" && resolver) {
-    const [methods, url] = parseEndpoint(urlOrList);
-    const handlers = methods.map(method => {
-      // For HEAD requests, execute the resolver and return response without body
-      if (method === "head") {
-        return createHeadHandler(url, resolver);
-      }
-      return http[method](url, resolver);
-    });
+  } else if (url && resolver) {
+    // handle single registration
+    const methods = methodsOrEndpoints as NonEmptyArray<Method> | Method;
+    const methodArray = Array.isArray(methods) ? methods : [methods];
+    const handlers = createHandlersFromMethods(methodArray, url, resolver);
 
     MSW_SERVER.use(...handlers);
     return;
@@ -100,8 +88,8 @@ type JsonBody = Record<string, unknown> | unknown[] | string | number | boolean 
  * Enhanced mockFetch utility for MSW that supports multiple HTTP methods.
  *
  * Features:
- * - Single method: 'GET /api/users'
- * - Multiple methods: 'GET,HEAD /api/files' (automatically handles HEAD requests)
+ * - Single method: 'GET'
+ * - Multiple methods: ['GET', 'POST', 'PATCH'] (array of methods)
  * - Batch registration with array of endpoints
  *
  * @example
@@ -109,15 +97,19 @@ type JsonBody = Record<string, unknown> | unknown[] | string | number | boolean 
  * import { mockFetch, mockResponses } from './msw';
  *
  * // Single method
- * mockFetch('GET /api/users', () => mockResponses.ok({ users: [] }));
+ * mockFetch('GET', '/api/users', () => mockResponses.ok({ users: [] }));
  *
- * // Multiple methods - useful for file operations that check existence with HEAD
- * mockFetch('GET,HEAD /api/files/data.txt', () => mockResponses.text('file content'));
+ * // Multiple methods - CRUD operations
+ * mockFetch(['GET', 'POST', 'PATCH', 'DELETE'], '/api/users', () => mockResponses.ok({ success: true }));
+ *
+ * // File operations with HEAD check
+ * mockFetch(['GET', 'HEAD'], '/api/files/data.txt', () => mockResponses.text('file content'));
  *
  * // Batch registration
  * mockFetch([
- *   ['GET,HEAD /api/files/file1.txt', () => mockResponses.text('content1')],
- *   ['GET /api/users', () => mockResponses.ok({ users: [] })],
+ *   [['GET', 'POST', 'PATCH'], '/api/users', () => mockResponses.ok({ users: [] })],
+ *   [['GET', 'HEAD'], '/api/files/file1.txt', () => mockResponses.text('content1')],
+ *   ['DELETE', '/api/users/123', () => mockResponses.empty()],
  * ]);
  * ```
  */

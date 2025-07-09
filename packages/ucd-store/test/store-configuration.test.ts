@@ -255,7 +255,7 @@ describe("store configuration", () => {
       const customBaseUrl = "https://custom-http.ucdjs.dev";
 
       mockFetch([
-        [`GET,HEAD ${customBaseUrl}/.ucd-store.json`, () => {
+        [["GET", "HEAD"], `${customBaseUrl}/.ucd-store.json`, () => {
           return HttpResponse.json([]);
         }],
       ]);
@@ -272,7 +272,7 @@ describe("store configuration", () => {
       const customBasePath = "/custom/api/path";
 
       mockFetch([
-        [`GET,HEAD ${UCDJS_API_BASE_URL}/api/v1/unicode-proxy${customBasePath}/.ucd-store.json`, () => {
+        [["GET", "HEAD"], `${UCDJS_API_BASE_URL}/api/v1/unicode-proxy${customBasePath}/.ucd-store.json`, () => {
           return HttpResponse.json([]);
         }],
       ]);
@@ -402,7 +402,7 @@ describe("store configuration", () => {
       const storeDir = await testdir({});
 
       mockFetch([
-        [`GET,HEAD ${UCDJS_API_BASE_URL}/api/v1/unicode-versions`, () => {
+        [["GET", "HEAD"], `${UCDJS_API_BASE_URL}/api/v1/unicode-versions`, () => {
           return HttpResponse.json([]);
         }],
       ]);
