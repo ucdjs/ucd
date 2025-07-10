@@ -7,7 +7,7 @@ import { createHTTPUCDStore, createNodeUCDStore } from "@ucdjs/ucd-store";
 import { UCDStoreUnsupportedFeature } from "@ucdjs/ucd-store/errors";
 import { red } from "farver/fast";
 import { printHelp } from "../../cli-utils";
-import { SHARED_FLAGS } from "./_shared";
+import { assertRemoteOrStoreDir, SHARED_FLAGS } from "./_shared";
 
 export interface CLIStoreCleanCmdOptions {
   flags: CLIArguments<Prettify<CLIStoreCmdSharedFlags & {
@@ -45,32 +45,28 @@ export async function runCleanStore({ flags, versions }: CLIStoreCleanCmdOptions
     patterns,
   } = flags;
 
-  if (!remote && storeDir == null) {
-    console.error("Error: --store-dir must be specified when not using a remote store.");
-    console.error("Usage: ucd store clean [versions...] --store-dir <path>");
-    return;
-  }
-
-  let store: UCDStore | null = null;
-  if (remote) {
-    store = await createHTTPUCDStore({
-      baseUrl,
-      globalFilters: patterns,
-    });
-  } else {
-    store = await createNodeUCDStore({
-      basePath: storeDir,
-      baseUrl,
-      globalFilters: patterns,
-    });
-  }
-
-  if (store == null) {
-    console.error("Error: Failed to create UCD store.");
-    return;
-  }
-
   try {
+    assertRemoteOrStoreDir(flags);
+
+    let store: UCDStore | null = null;
+    if (remote) {
+      store = await createHTTPUCDStore({
+        baseUrl,
+        globalFilters: patterns,
+      });
+    } else {
+      store = await createNodeUCDStore({
+        basePath: storeDir,
+        baseUrl,
+        globalFilters: patterns,
+      });
+    }
+
+    if (store == null) {
+      console.error("Error: Failed to create UCD store.");
+      return;
+    }
+
     const result = await store.clean({
       dryRun: !!dryRun,
       versions,

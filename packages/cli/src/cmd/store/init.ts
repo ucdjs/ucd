@@ -3,8 +3,10 @@ import type { UCDStore } from "@ucdjs/ucd-store";
 import type { CLIArguments } from "../../cli-utils";
 import type { CLIStoreCmdSharedFlags } from "./_shared";
 import { createHTTPUCDStore, createNodeUCDStore } from "@ucdjs/ucd-store";
+import { UCDStoreUnsupportedFeature } from "@ucdjs/ucd-store/errors";
+import { red } from "farver/fast";
 import { printHelp } from "../../cli-utils";
-import { SHARED_FLAGS } from "./_shared";
+import { assertRemoteOrStoreDir, SHARED_FLAGS } from "./_shared";
 
 export interface CLIStoreInitCmdOptions {
   flags: CLIArguments<Prettify<CLIStoreCmdSharedFlags & {
@@ -46,25 +48,51 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
     patterns,
   } = flags;
 
-  let store: UCDStore | null = null;
-  if (remote) {
-    store = await createHTTPUCDStore({
-      baseUrl,
-      globalFilters: patterns,
-    });
-  } else {
-    store = await createNodeUCDStore({
-      basePath: storeDir,
-      baseUrl,
-      globalFilters: patterns,
-    });
-  }
+  try {
+    assertRemoteOrStoreDir(flags);
 
-  if (store == null) {
-    console.error("Error: Failed to create UCD store.");
-    return;
-  }
+    // eslint-disable-next-line no-console
+    console.log("Initializing UCD Store...");
+    let store: UCDStore | null = null;
+    if (remote) {
+      store = await createHTTPUCDStore({
+        baseUrl,
+        globalFilters: patterns,
+      });
+    } else {
+      store = await createNodeUCDStore({
+        basePath: storeDir,
+        baseUrl,
+        globalFilters: patterns,
+      });
+    }
 
-  // eslint-disable-next-line no-console
-  console.log("Initializing UCD Store...");
+    if (store == null) {
+      console.error("Error: Failed to create UCD store.");
+    }
+
+    // TODO: expose a getter to see if the store has been initialized.
+  } catch (err) {
+    if (err instanceof UCDStoreUnsupportedFeature) {
+      console.error(red(`\n❌ Error: Unsupported feature:`));
+      console.error(`  ${err.message}`);
+      console.error("");
+      console.error("This store does not support the clean operation.");
+      console.error("Please check the store capabilities or use a different store type.");
+      return;
+    }
+
+    let message = "Unknown error";
+    if (err instanceof Error) {
+      message = err.message;
+    } else if (typeof err === "string") {
+      message = err;
+    }
+
+    console.error(red(`\n❌ Error cleaning store:`));
+    console.error(`  ${message}`);
+    console.error("Please check the store configuration and try again.");
+    console.error("If the issue persists, consider running with --dry-run to see more details.");
+    console.error("If you believe this is a bug, please report it at https://github.com/ucdjs/ucd/issues");
+  }
 }
