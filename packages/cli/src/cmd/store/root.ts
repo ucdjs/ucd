@@ -32,7 +32,7 @@ export async function runStoreRoot(subcommand: string, { flags }: CLIStoreCmdOpt
           ["init", "Initialize an UCD Store."],
           ["repair", "Repair an UCD Store."],
           ["clean", "Clean an UCD Store."],
-          ["status", "Show the status of an UCD Store."],
+          ["analyze", "Analyze an UCD Store."],
         ],
         Flags: [
           ["--help (-h)", "See all available flags."],
