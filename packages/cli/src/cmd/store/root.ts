@@ -77,9 +77,11 @@ export async function runStoreRoot(subcommand: string, { flags }: CLIStoreCmdOpt
 
   if (subcommand === "analyze") {
     const { runAnalyzeStore } = await import("./analyze");
+    const versions = flags._.slice(4) as string[];
 
     await runAnalyzeStore({
       flags,
+      versions,
     });
     return;
   }
