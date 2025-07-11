@@ -7,9 +7,9 @@ import { createHTTPUCDStore, createNodeUCDStore } from "@ucdjs/ucd-store";
 import { UCDStoreUnsupportedFeature } from "@ucdjs/ucd-store/errors";
 import { green, red } from "farver/fast";
 import { printHelp } from "../../cli-utils";
-import { assertRemoteOrStoreDir, SHARED_FLAGS } from "./_shared";
+import { assertRemoteOrStoreDir, createStoreFromFlags, SHARED_FLAGS } from "./_shared";
 
-export interface CLIStoreStatusCmdOptions {
+export interface CLIStoreAnalyzeCmdOptions {
   flags: CLIArguments<Prettify<CLIStoreCmdSharedFlags & {
     json?: boolean;
     checkOrphaned?: boolean;
@@ -17,17 +17,17 @@ export interface CLIStoreStatusCmdOptions {
   versions?: string[];
 }
 
-export async function runAnalyzeStore({ flags, versions }: CLIStoreStatusCmdOptions) {
+export async function runAnalyzeStore({ flags, versions }: CLIStoreAnalyzeCmdOptions) {
   if (flags?.help || flags?.h) {
     printHelp({
-      headline: "Show UCD Store Status",
-      commandName: "ucd store status",
+      headline: "Analyze UCD Store",
+      commandName: "ucd store analyze",
       usage: "[...versions] [...flags]",
       tables: {
         Flags: [
           ...SHARED_FLAGS,
           ["--check-orphaned", "Check for orphaned files in the store."],
-          ["--json", "Output status information in JSON format."],
+          ["--json", "Output analyze information in JSON format."],
           ["--help (-h)", "See all available flags."],
         ],
       },
@@ -51,19 +51,12 @@ export async function runAnalyzeStore({ flags, versions }: CLIStoreStatusCmdOpti
   try {
     assertRemoteOrStoreDir(flags);
 
-    let store: UCDStore | null = null;
-    if (remote) {
-      store = await createHTTPUCDStore({
-        baseUrl,
-        globalFilters: patterns,
-      });
-    } else {
-      store = await createNodeUCDStore({
-        basePath: storeDir,
-        baseUrl,
-        globalFilters: patterns,
-      });
-    }
+    const store = await createStoreFromFlags({
+      baseUrl,
+      storeDir,
+      remote,
+      patterns,
+    });
 
     if (store == null) {
       console.error("Error: Failed to create UCD store.");
@@ -130,7 +123,6 @@ export async function runAnalyzeStore({ flags, versions }: CLIStoreStatusCmdOpti
     console.error(red(`\n❌ Error analyzing store:`));
     console.error(`  ${message}`);
     console.error("Please check the store configuration and try again.");
-    console.error("If the issue persists, consider running with --dry-run to see more details.");
     console.error("If you believe this is a bug, please report it at https://github.com/ucdjs/ucd/issues");
   }
 }

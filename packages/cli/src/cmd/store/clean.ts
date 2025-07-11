@@ -7,7 +7,7 @@ import { createHTTPUCDStore, createNodeUCDStore } from "@ucdjs/ucd-store";
 import { UCDStoreUnsupportedFeature } from "@ucdjs/ucd-store/errors";
 import { red } from "farver/fast";
 import { printHelp } from "../../cli-utils";
-import { assertRemoteOrStoreDir, SHARED_FLAGS } from "./_shared";
+import { assertRemoteOrStoreDir, createStoreFromFlags, SHARED_FLAGS } from "./_shared";
 
 export interface CLIStoreCleanCmdOptions {
   flags: CLIArguments<Prettify<CLIStoreCmdSharedFlags & {
@@ -48,19 +48,12 @@ export async function runCleanStore({ flags, versions }: CLIStoreCleanCmdOptions
   try {
     assertRemoteOrStoreDir(flags);
 
-    let store: UCDStore | null = null;
-    if (remote) {
-      store = await createHTTPUCDStore({
-        baseUrl,
-        globalFilters: patterns,
-      });
-    } else {
-      store = await createNodeUCDStore({
-        basePath: storeDir,
-        baseUrl,
-        globalFilters: patterns,
-      });
-    }
+    const store = await createStoreFromFlags({
+      baseUrl,
+      storeDir,
+      remote,
+      patterns,
+    });
 
     if (store == null) {
       console.error("Error: Failed to create UCD store.");

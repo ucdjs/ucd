@@ -6,7 +6,7 @@ import { createHTTPUCDStore, createNodeUCDStore } from "@ucdjs/ucd-store";
 import { UCDStoreUnsupportedFeature } from "@ucdjs/ucd-store/errors";
 import { red } from "farver/fast";
 import { printHelp } from "../../cli-utils";
-import { assertRemoteOrStoreDir, SHARED_FLAGS } from "./_shared";
+import { assertRemoteOrStoreDir, createStoreFromFlags, SHARED_FLAGS } from "./_shared";
 
 export interface CLIStoreRepairCmdOptions {
   flags: CLIArguments<Prettify<CLIStoreCmdSharedFlags & {
@@ -34,7 +34,7 @@ export async function runRepairStore({ flags }: CLIStoreRepairCmdOptions) {
 
   const {
     storeDir,
-    dryRun: _dryRun,
+    dryRun,
     force: _force,
     remote,
     baseUrl,
@@ -44,19 +44,12 @@ export async function runRepairStore({ flags }: CLIStoreRepairCmdOptions) {
   try {
     assertRemoteOrStoreDir(flags);
 
-    let store: UCDStore | null = null;
-    if (remote) {
-      store = await createHTTPUCDStore({
-        baseUrl,
-        globalFilters: patterns,
-      });
-    } else {
-      store = await createNodeUCDStore({
-        basePath: storeDir,
-        baseUrl,
-        globalFilters: patterns,
-      });
-    }
+    const store = await createStoreFromFlags({
+      baseUrl,
+      storeDir,
+      remote,
+      patterns,
+    });
 
     if (store == null) {
       console.error("Error: Failed to create UCD store.");
@@ -66,7 +59,9 @@ export async function runRepairStore({ flags }: CLIStoreRepairCmdOptions) {
     // eslint-disable-next-line no-console
     console.log("Repairing UCD Store...");
 
-    await store.repair();
+    await store.repair({
+      dryRun: !!dryRun,
+    });
 
     // eslint-disable-next-line no-console
     console.info("UCD Store repair completed successfully.");
@@ -75,7 +70,7 @@ export async function runRepairStore({ flags }: CLIStoreRepairCmdOptions) {
       console.error(red(`\n❌ Error: Unsupported feature:`));
       console.error(`  ${err.message}`);
       console.error("");
-      console.error("This store does not support the clean operation.");
+      console.error("This store does not support the repair operation.");
       console.error("Please check the store capabilities or use a different store type.");
       return;
     }
@@ -87,7 +82,7 @@ export async function runRepairStore({ flags }: CLIStoreRepairCmdOptions) {
       message = err;
     }
 
-    console.error(red(`\n❌ Error cleaning store:`));
+    console.error(red(`\n❌ Error repairing store:`));
     console.error(`  ${message}`);
     console.error("Please check the store configuration and try again.");
     console.error("If the issue persists, consider running with --dry-run to see more details.");
