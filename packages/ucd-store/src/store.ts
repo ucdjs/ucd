@@ -2,10 +2,13 @@ import type { UCDClient, UnicodeVersionFile } from "@ucdjs/fetch";
 import type { PathFilter } from "@ucdjs/utils";
 import type { FileSystemBridge } from "@ucdjs/utils/fs-bridge";
 import type {
+  AnalyzeOptions,
   AnalyzeResult,
   CleanResult,
+  RepairOptions,
   StoreCapabilities,
   UCDStoreOptions,
+  VersionAnalysis,
 } from "./types";
 import path from "node:path";
 import { invariant, trimLeadingSlash } from "@luxass/utils";
@@ -14,8 +17,9 @@ import { createClient, isApiError } from "@ucdjs/fetch";
 import { createPathFilter, safeJsonParse } from "@ucdjs/utils";
 import defu from "defu";
 import { z } from "zod/v4";
-import { UCDStoreError } from "./errors";
+import { UCDStoreError, UCDStoreVersionNotFoundError } from "./errors";
 import {
+  assertCapabilities,
   inferStoreCapabilities,
   requiresCapabilities,
 } from "./internal/capabilities";
@@ -289,14 +293,6 @@ export class UCDStore {
   }
 
   @requiresCapabilities()
-  async analyze(_options: {
-    checkOrphaned?: boolean;
-    includeDetails?: boolean;
-  } = {}): Promise<AnalyzeResult> {
-    throw new UCDStoreError("Analysis is not implemented yet.");
-  }
-
-  @requiresCapabilities()
   async mirror(options: {
     versions?: string[];
     overwrite?: boolean;
@@ -348,7 +344,122 @@ export class UCDStore {
   }
 
   @requiresCapabilities()
-  async repair(): Promise<void> {
+  async repair(options: RepairOptions): Promise<void> {
+    const { dryRun } = options;
+
+    const result = await this.analyze({
+      checkOrphaned: true,
+    });
+
     throw new UCDStoreError("Repairing is not implemented yet.");
+  }
+
+  @requiresCapabilities()
+  async analyze(options: AnalyzeOptions): Promise<AnalyzeResult> {
+    const {
+      checkOrphaned = false,
+      versions = this.#versions,
+    } = options;
+
+    const versionAnalyses: VersionAnalysis[] = [];
+
+    try {
+      const promises = versions.map(async (version) => {
+        if (!this.hasVersion(version)) {
+          throw new UCDStoreVersionNotFoundError(version);
+        }
+
+        return this.#analyzeVersion(version, {
+          checkOrphaned,
+        });
+      });
+
+      await Promise.all(promises);
+
+      return {
+        storeHealth: "healthy",
+        versions: versionAnalyses,
+        totalFiles: 0,
+      };
+    } catch (err) {
+      console.error(`Error during store analysis: ${err instanceof Error ? err.message : String(err)}`);
+      return {
+        storeHealth: "healthy",
+        versions: versionAnalyses,
+        totalFiles: 0,
+      };
+    }
+  }
+
+  async #analyzeVersion(version: string, options: Omit<AnalyzeOptions, "versions">): Promise<VersionAnalysis> {
+    assertCapabilities("analyze", this.#fs);
+    const { checkOrphaned } = options;
+
+    // get the expected files for this version
+    const expectedFiles = await this.#getExpectedFilePaths(version);
+    console.log("expected files", expectedFiles);
+
+    // get the actual files from the store
+    const actualFiles = await this.getFilePaths(version);
+    console.log("actual files", actualFiles);
+
+    const orphanedFiles: string[] = [];
+    const missingFiles: string[] = [];
+
+    if (checkOrphaned) {
+      for (const file of actualFiles) {
+        console.log(`Checking file: ${file}`);
+        // if file is not in expected files, it's orphaned
+        if (!expectedFiles.includes(file)) {
+          orphanedFiles.push(file);
+        }
+      }
+    }
+
+    const isComplete = orphanedFiles.length === 0 && missingFiles.length === 0;
+
+    return {
+      version,
+      orphanedFiles,
+      missingFiles,
+      totalFileCount: expectedFiles.length,
+      fileCount: actualFiles.length,
+      isComplete,
+    };
+  }
+
+  /**
+   * Retrieves the expected file paths for a specific Unicode version from the API.
+   *
+   * This method fetches the canonical list of files that should exist for a given
+   * Unicode version by making an API call to the UCD service. The returned file
+   * paths represent the complete set of files that should be present in a properly
+   * synchronized store for the specified version.
+   *
+   * @param {string} version - The Unicode version to get expected file paths for
+   * @returns {Promise<string[]>} A promise that resolves to an array of file paths that should exist for the version
+   * @throws {UCDStoreVersionNotFoundError} When the specified version is not found in the store
+   * @throws {UCDStoreError} When the API request fails or returns an error
+   * @private
+   */
+  async #getExpectedFilePaths(version: string): Promise<string[]> {
+    if (!this.hasVersion(version)) {
+      throw new UCDStoreVersionNotFoundError(version);
+    }
+
+    // fetch the expected files for this version from the API
+    const { data, error } = await this.#client.GET("/api/v1/files/{version}", {
+      params: {
+        path: {
+          version,
+        },
+      },
+    });
+
+    if (isApiError(error)) {
+      throw new UCDStoreError(`Failed to fetch expected files for version '${version}': ${error.message}`);
+    }
+
+    return flattenFilePaths(data!);
   }
 }

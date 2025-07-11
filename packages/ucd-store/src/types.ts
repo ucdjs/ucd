@@ -35,44 +35,71 @@ export interface UCDStoreOptions {
   versions?: string[];
 }
 
-export interface VersionAnalysis {
-  /** Unicode version */
-  version: string;
-  /** Number of files found for this version */
-  fileCount: number;
-  /** Whether all expected files are present */
-  isComplete: boolean;
-  /** List of missing files (if any) */
-  missingFiles?: string[];
-  /** List of orphaned files (files that exist but shouldn't) */
-  orphanedFiles?: string[];
+export interface AnalyzeOptions {
+  /**
+   * Whether to check for orphaned files
+   */
+  checkOrphaned?: boolean;
 }
 
-export interface AnalyzeResultSuccess {
-  success: true;
-  /** Total number of files across all versions */
+export interface RepairOptions {
+  /**
+   * Whether to perform a dry run
+   */
+  dryRun?: boolean;
+}
+
+export interface VersionAnalysis {
+  /**
+   * Analyzed Unicode version
+   * This should be in the format "major.minor.patch" (e.g., "15.0.0")
+   */
+  version: string;
+
+  /**
+   * List of orphaned files (files that exist but shouldn't)
+   */
+  orphanedFiles: string[];
+
+  /**
+   * List of missing files (if any)
+   */
+  missingFiles: string[];
+
+  /**
+   * Total number of files expected for this version
+   */
+  totalFileCount: number;
+
+  /**
+   * Number of files found for this version
+   */
+  fileCount: number;
+
+  /**
+   * Whether the version is complete
+   * This means all expected files are present and no orphaned files exist.
+   * If this is false, it indicates that some files are missing or there are orphaned files.
+   */
+  isComplete: boolean;
+}
+
+export interface AnalyzeResult {
+  /**
+   * Total number of files across all versions
+   */
   totalFiles: number;
-  /** Detailed analysis for each version */
+
+  /**
+   * Detailed analysis for each version
+   */
   versions: VersionAnalysis[];
-  /** Files that should be removed (orphaned/outdated) */
-  filesToRemove: string[];
-  /** Overall health status of the store */
+
+  /**
+   * Overall health status of the store
+   */
   storeHealth: "healthy" | "needs_cleanup" | "corrupted";
 }
-
-export interface AnalyzeResultFailure {
-  success: false;
-  /** Global error that caused the analysis to fail */
-  error: string;
-  /** Partial results if some analysis was completed before failure */
-  partialResults?: {
-    totalFiles: number;
-    versions: VersionAnalysis[];
-    filesToRemove: string[];
-  };
-}
-
-export type AnalyzeResult = AnalyzeResultSuccess | AnalyzeResultFailure;
 
 export interface AnalyzeOptions {
   /**
@@ -81,34 +108,37 @@ export interface AnalyzeOptions {
   versions?: string[];
 
   /**
-   * Additional filters to apply during analysis
-   */
-  extraFilters?: string[];
-
-  /**
    * Whether to check for orphaned files
    */
   checkOrphaned?: boolean;
-
-  /**
-   * Whether to calculate file sizes
-   */
-  calculateSizes?: boolean;
 }
 
 export interface FileRemovalError {
-  /** Path of the file that failed to be removed */
+  /**
+   * Path of the file that failed to be removed
+   */
   filePath: string;
-  /** Error message describing why removal failed */
+
+  /**
+   * Error message describing why removal failed
+   */
   error: string;
 }
 
 export interface CleanResult {
-  /** Array of file paths that were successfully removed */
+  /**
+   * Array of file paths that were successfully removed
+   */
   removedFiles: string[];
-  /** Array of files that failed to be removed with error details */
+
+  /**
+   * Array of files that failed to be removed with error details
+   */
   failedRemovals: FileRemovalError[];
-  /** Array of files that were located for removal */
+
+  /**
+   * Array of files that were located for removal
+   */
   locatedFiles: string[];
 }
 
