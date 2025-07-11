@@ -1,16 +1,13 @@
 export {
-  createLocalUCDStore,
-  createRemoteUCDStore,
+  createHTTPUCDStore,
+  createNodeUCDStore,
   createUCDStore,
+} from "./factory";
+
+export {
   UCDStore,
 } from "./store";
 
 export type {
-  AnalyzeResult,
-  CleanResult,
-  LocalUCDStoreOptions,
-  RemoteUCDStoreOptions,
   UCDStoreOptions,
-} from "./store";
-
-export * from "./ucd-files";
+} from "./types";

@@ -32,6 +32,9 @@
     "bin",
     "dist"
   ],
+  "engines": {
+    "node": ">=22.13"
+  },
   "scripts": {
     "build": "tsdown",
     "clean": "git clean -xdf dist node_modules",
