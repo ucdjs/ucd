@@ -5,10 +5,6 @@ export const MSW_SERVER = setupServer();
 
 type Method = "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "HEAD" | "OPTIONS";
 
-function normalizeMethod(method: string): Method {
-  return method.toLowerCase() as Method;
-}
-
 type NonEmptyArray<T> = [T, ...T[]];
 
 function createHandlersFromMethods(methods: readonly Method[], url: string, resolver: HttpResponseResolver) {
