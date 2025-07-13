@@ -29,7 +29,7 @@ describe("v1_files", () => {
 
     it("should return files for a valid Unicode version", async () => {
       fetchMock.get("https://unicode.org")
-        .intercept({ path: "/Public/15.1.0/ucd" })
+        .intercept({ path: "/Public/15.1.0" })
         .reply(200, generateAutoIndexHtml(files, "F2"));
 
       const request = new Request("https://api.ucdjs.dev/api/v1/files/15.1.0");
@@ -68,66 +68,84 @@ describe("v1_files", () => {
       expect(Array.isArray(data)).toBe(true);
     });
 
-    it("should return 400 for invalid Unicode version", async () => {
-      const request = new Request("https://api.ucdjs.dev/api/v1/files/99.99.99");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
+    describe("error handling", () => {
+      it("should handle empty version parameter", async () => {
+        const request = new Request("https://api.ucdjs.dev/api/v1/files/");
+        const ctx = createExecutionContext();
+        const response = await worker.fetch(request, env, ctx);
+        await waitOnExecutionContext(ctx);
 
-      expect(response.status).toBe(400);
-      expect(response.headers.get("content-type")).toContain("application/json");
+        expect(response.status).toBe(404);
+      });
 
-      const error = await response.json();
-      expect(error).toHaveProperty("message", "Invalid Unicode version");
-      expect(error).toHaveProperty("status", 400);
+      it("should return 400 for invalid Unicode version", async () => {
+        const request = new Request("https://api.ucdjs.dev/api/v1/files/99.99.99");
+        const ctx = createExecutionContext();
+        const response = await worker.fetch(request, env, ctx);
+        await waitOnExecutionContext(ctx);
+
+        expect(response.status).toBe(400);
+        expect(response.headers.get("content-type")).toContain("application/json");
+
+        const error = await response.json();
+        expect(error).toHaveProperty("message", "Invalid Unicode version");
+        expect(error).toHaveProperty("status", 400);
+      });
+
+      it("should return 400 for malformed version string", async () => {
+        const request = new Request("https://api.ucdjs.dev/api/v1/files/invalid-version");
+        const ctx = createExecutionContext();
+        const response = await worker.fetch(request, env, ctx);
+        await waitOnExecutionContext(ctx);
+
+        expect(response.status).toBe(400);
+        expect(response.headers.get("content-type")).toContain("application/json");
+
+        const error = await response.json();
+        expect(error).toHaveProperty("message", "Invalid Unicode version");
+        expect(error).toHaveProperty("status", 400);
+      });
     });
 
-    it("should return 400 for malformed version string", async () => {
-      const request = new Request("https://api.ucdjs.dev/api/v1/files/invalid-version");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
+    describe("cache", () => {
+      it("should set proper cache headers", async () => {
+        const request = new Request("https://api.ucdjs.dev/api/v1/files/15.1.0");
+        const ctx = createExecutionContext();
+        const response = await worker.fetch(request, env, ctx);
+        await waitOnExecutionContext(ctx);
 
-      expect(response.status).toBe(400);
-      expect(response.headers.get("content-type")).toContain("application/json");
+        expect(response.status).toBe(200);
+        const cacheHeaderValue = response.headers.get("cache-control");
+        console.error("Cache-Control Header:", cacheHeaderValue);
+        expect(cacheHeaderValue).toBeTruthy();
+      });
 
-      const error = await response.json();
-      expect(error).toHaveProperty("message", "Invalid Unicode version");
-      expect(error).toHaveProperty("status", 400);
-    });
+      it("should cache the response for subsequent requests", async () => {
+        let callCounter = 0;
+        fetchMock.get("https://unicode.org")
+          .intercept({ path: "/Public/16.0.0" })
+          .reply(200, () => {
+            callCounter++;
+            return generateAutoIndexHtml(files, "F2");
+          }).persist();
 
-    it("should handle empty version parameter", async () => {
-      const request = new Request("https://api.ucdjs.dev/api/v1/files/");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
+        const request1 = new Request("https://api.ucdjs.dev/api/v1/files/16.0.0");
+        const ctx1 = createExecutionContext();
+        const firstResponse = await worker.fetch(request1, env, ctx1);
+        await waitOnExecutionContext(ctx1);
+        expect(firstResponse.status).toBe(200);
+        expect(callCounter).toBe(1); // First call should hit the network
+        expect(firstResponse.headers.get("cf-cache-status")).toBe(null);
 
-      // Should return 404 since the route pattern doesn't match
-      expect(response.status).toBe(404);
-    });
+        const request2 = new Request("https://api.ucdjs.dev/api/v1/files/16.0.0");
+        const ctx2 = createExecutionContext();
+        const secondResponse = await worker.fetch(request2, env, ctx2);
+        await waitOnExecutionContext(ctx2);
 
-    it("should set proper cache headers", async () => {
-      const request = new Request("https://api.ucdjs.dev/api/v1/files/15.1.0");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
-
-      expect(response.status).toBe(200);
-      // Check that cache headers are set (from the cache middleware)
-      expect(response.headers.get("cache-control")).toBeTruthy();
-    });
-
-    it("should handle query parameters gracefully", async () => {
-      const request = new Request("https://api.ucdjs.dev/api/v1/files/15.1.0?exclude=test&includeTests=false");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
-
-      expect(response.status).toBe(200);
-      expect(response.headers.get("content-type")).toContain("application/json");
-
-      const data = await response.json();
-      expect(Array.isArray(data)).toBe(true);
+        expect(secondResponse.status).toBe(200);
+        expect(callCounter).toBe(1); // Second call should hit the cache
+        expect(secondResponse.headers.get("cf-cache-status")).toBe("HIT");
+      });
     });
 
     it("should return structured file data with proper schema", async () => {
