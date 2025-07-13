@@ -4,7 +4,7 @@ type ClearCacheFn = (requestOrPath: Request | string) => Promise<void>;
  * Creates a cache clearing function for a specific cache by name.
  *
  * @param {string} name - The name of the cache to clear entries from
- * @returns {Promise<void>} A function that can be called to delete specific cache entries
+ * @returns {Promise<ClearCacheFn>} A function that can be called to delete specific cache entries
  *
  * @example
  * ```typescript
@@ -20,10 +20,14 @@ type ClearCacheFn = (requestOrPath: Request | string) => Promise<void>;
  * individual entries. The returned function accepts either a string path or a Request object.
  */
 export async function clearCacheEntry(name: string): Promise<ClearCacheFn> {
-  // TODO: figure out if this has any negative performance impact
-  // since we will open it, before we actually start deleting entries.
-  const cache = await caches.open(name);
+  let cachePromise: Promise<Cache> | null = null;
   return async (requestOrPath: Request | string) => {
+    if (!cachePromise) {
+      cachePromise = caches.open(name);
+    }
+
+    const cache = await cachePromise;
+
     const request = typeof requestOrPath === "string" ? new Request(requestOrPath) : requestOrPath;
 
     await cache.delete(request);
