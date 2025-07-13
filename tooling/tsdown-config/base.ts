@@ -1,11 +1,5 @@
-/**
- * @typedef {import("tsdown").Options} TsdownOptions
- */
+import type { Options as TSDownOptions } from "tsdown";
 
-/**
- * Base tsdown configuration shared across all packages
- * @type {TsdownOptions}
- */
 export const baseConfig = {
   exports: true,
   format: ["esm"],
@@ -25,4 +19,4 @@ export const baseConfig = {
       return defaultHandler(warning);
     },
   },
-};
+} satisfies TSDownOptions;

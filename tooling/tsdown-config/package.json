@@ -4,12 +4,12 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./index.js",
-    "./base": "./base.js"
+    ".": "./index.ts",
+    "./base": "./base.ts"
   },
   "files": [
-    "index.js",
-    "base.js"
+    "index.ts",
+    "base.ts"
   ],
   "dependencies": {
     "tsdown": "catalog:dev"
