@@ -135,7 +135,7 @@ describe("v1_files", () => {
         await waitOnExecutionContext(ctx1);
         expect(firstResponse.status).toBe(200);
         expect(callCounter).toBe(1); // First call should hit the network
-        expect(firstResponse.headers.get("cf-cache-status")).toBe(null);
+        expect(firstResponse.headers.get("cf-cache-status")).toBeNull();
 
         const request2 = new Request("https://api.ucdjs.dev/api/v1/files/16.0.0");
         const ctx2 = createExecutionContext();
@@ -145,6 +145,16 @@ describe("v1_files", () => {
         expect(secondResponse.status).toBe(200);
         expect(callCounter).toBe(1); // Second call should hit the cache
         expect(secondResponse.headers.get("cf-cache-status")).toBe("HIT");
+      });
+
+      it("should not cache responses for invalid versions", async () => {
+        const request = new Request("https://api.ucdjs.dev/api/v1/files/invalid-version");
+        const ctx = createExecutionContext();
+        const response = await worker.fetch(request, env, ctx);
+        await waitOnExecutionContext(ctx);
+
+        expect(response.status).toBe(400);
+        expect(response.headers.get("cf-cache-status")).toBeNull();
       });
     });
 
