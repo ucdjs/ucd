@@ -18,22 +18,15 @@ V1_FILES_ROUTER.openapi(GET_UNICODE_FILES_BY_VERSION_ROUTE, async (c) => {
     const version = c.req.param("version");
     const mappedVersion = resolveUCDVersion(version);
 
-    if (!mappedVersion) {
+    if (
+      !UNICODE_VERSION_METADATA.map((v) => v.version)
+        .includes(version as typeof UNICODE_VERSION_METADATA[number]["version"])) {
       return badRequest(c, {
         message: "Invalid Unicode version",
       });
     }
 
-    if (!UNICODE_VERSION_METADATA.map((v) => v.version)
-      .includes(version as typeof UNICODE_VERSION_METADATA[number]["version"])) {
-      return badRequest(c, {
-        message: "Invalid Unicode version",
-      });
-    }
-
-    const extraPath = hasUCDFolderPath(mappedVersion) ? "/ucd" : "";
-
-    const result = await traverse(`https://unicode.org/Public/${mappedVersion}${extraPath}`, {
+    const result = await traverse(`https://unicode.org/Public/${mappedVersion}`, {
       format: "F2",
     });
 
