@@ -1,6 +1,6 @@
 import type { HonoEnv } from "../types";
 import { OpenAPIHono } from "@hono/zod-openapi";
-import { hasUCDFolderPath, resolveUCDVersion, UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
+import { resolveUCDVersion, UNICODE_STABLE_VERSION, UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { badRequest, internalServerError } from "@ucdjs/worker-shared";
 import { traverse } from "apache-autoindex-parse/traverse";
 import { cache } from "hono/cache";
@@ -9,31 +9,29 @@ import { GET_UNICODE_FILES_BY_VERSION_ROUTE } from "./v1_files.openapi";
 export const V1_FILES_ROUTER = new OpenAPIHono<HonoEnv>().basePath("/api/v1/files");
 
 V1_FILES_ROUTER.get("*", cache({
-  cacheName: "unicode-api:files",
+  cacheName: "v1_files",
   cacheControl: "max-age=604800",
 }));
 
 V1_FILES_ROUTER.openapi(GET_UNICODE_FILES_BY_VERSION_ROUTE, async (c) => {
   try {
-    const version = c.req.param("version");
+    let version = c.req.param("version");
+
+    if (version === "latest") {
+      version = UNICODE_STABLE_VERSION;
+    }
+
     const mappedVersion = resolveUCDVersion(version);
 
-    if (!mappedVersion) {
+    if (
+      !UNICODE_VERSION_METADATA.map((v) => v.version)
+        .includes(version as typeof UNICODE_VERSION_METADATA[number]["version"])) {
       return badRequest(c, {
         message: "Invalid Unicode version",
       });
     }
 
-    if (!UNICODE_VERSION_METADATA.map((v) => v.version)
-      .includes(version as typeof UNICODE_VERSION_METADATA[number]["version"])) {
-      return badRequest(c, {
-        message: "Invalid Unicode version",
-      });
-    }
-
-    const extraPath = hasUCDFolderPath(mappedVersion) ? "/ucd" : "";
-
-    const result = await traverse(`https://unicode.org/Public/${mappedVersion}${extraPath}`, {
+    const result = await traverse(`https://unicode.org/Public/${mappedVersion}`, {
       format: "F2",
     });
 
