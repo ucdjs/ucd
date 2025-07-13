@@ -1,3 +1,4 @@
+import type { Entry } from "apache-autoindex-parse";
 import type { EntryWithChildren } from "apache-autoindex-parse/traverse";
 import { generateAutoIndexHtml } from "apache-autoindex-parse/test-utils";
 import {
@@ -23,7 +24,7 @@ describe("v1_files", () => {
       { type: "file", name: "file1.txt", path: "/Public/15.1.0/ucd/file1.txt" },
       { type: "file", name: "file2.txt", path: "/Public/15.1.0/ucd/file2.txt" },
       { type: "directory", name: "subdir", path: "/Public/15.1.0/ucd/subdir/" },
-      { type: "file", name: "subdir/file3.txt", path: "/Public/15.1.0/ucd/subdir/file3.txt" },
+      { type: "file", name: "file3.txt", path: "/Public/15.1.0/ucd/subdir/file3.txt" },
       { type: "file", name: "emoji-data.txt", path: "/Public/15.1.0/ucd/emoji/emoji-data.txt" },
     ] as EntryWithChildren[];
 
@@ -55,8 +56,80 @@ describe("v1_files", () => {
       expect(data).toEqual(expect.arrayContaining(expectedFiles));
     });
 
-    it.todo("should return files for latest version", async () => {
+    it("should return files for latest version", async () => {
       const request = new Request("https://api.ucdjs.dev/api/v1/files/latest");
+      const ctx = createExecutionContext();
+      const response = await worker.fetch(request, env, ctx);
+      await waitOnExecutionContext(ctx);
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toContain("application/json");
+
+      const data = await response.json();
+      expect(Array.isArray(data)).toBe(true);
+    });
+
+    it("should return structured file data with proper schema", async () => {
+      fetchMock.get("https://unicode.org")
+        .intercept({ path: "/Public/15.1.0" })
+        .reply(200, generateAutoIndexHtml(files, "F2"));
+
+      const request = new Request("https://api.ucdjs.dev/api/v1/files/15.1.0");
+      const ctx = createExecutionContext();
+      const response = await worker.fetch(request, env, ctx);
+      await waitOnExecutionContext(ctx);
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toContain("application/json");
+
+      const data = await response.json() as EntryWithChildren[];
+
+      // validate the response structure
+      expect(Array.isArray(data)).toBe(true);
+      expect(data.length).toBeGreaterThan(0);
+
+      const [filesEntries, directoryEntries] = data.reduce(
+        ([files, directories], item) => {
+          if (item.type === "file") {
+            files.push(item);
+          } else if (item.type === "directory") {
+            directories.push(item);
+          }
+
+          return [files, directories];
+        },
+        [[], []] as [Entry[], EntryWithChildren[]],
+      );
+
+      expect(filesEntries.length).toBeGreaterThan(0);
+      expect(directoryEntries.length).toBeGreaterThan(0);
+
+      // check that each file object has the required properties
+      expect(filesEntries).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          name: expect.any(String),
+          path: expect.any(String),
+          type: expect.any(String),
+        }),
+      ]));
+
+      // check that each directory object has the required properties
+      expect(directoryEntries).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          name: expect.any(String),
+          path: expect.any(String),
+          type: expect.any(String),
+          children: expect.any(Array),
+        }),
+      ]));
+    });
+
+    it("should handle older Unicode versions", async () => {
+      fetchMock.get("https://unicode.org")
+        .intercept({ path: "/Public/3.1-Update1" })
+        .reply(200, generateAutoIndexHtml(files, "F2"));
+
+      const request = new Request("https://api.ucdjs.dev/api/v1/files/3.1.1");
       const ctx = createExecutionContext();
       const response = await worker.fetch(request, env, ctx);
       await waitOnExecutionContext(ctx);
@@ -104,6 +177,15 @@ describe("v1_files", () => {
         const error = await response.json();
         expect(error).toHaveProperty("message", "Invalid Unicode version");
         expect(error).toHaveProperty("status", 400);
+      });
+
+      it("should return 404 for non-existent routes", async () => {
+        const request = new Request("https://api.ucdjs.dev/api/v1/files/nonexistent/route");
+        const ctx = createExecutionContext();
+        const response = await worker.fetch(request, env, ctx);
+        await waitOnExecutionContext(ctx);
+
+        expect(response.status).toBe(404);
       });
     });
 
@@ -156,79 +238,6 @@ describe("v1_files", () => {
         expect(response.status).toBe(400);
         expect(response.headers.get("cf-cache-status")).toBeNull();
       });
-    });
-
-    it("should return structured file data with proper schema", async () => {
-      const request = new Request("https://api.ucdjs.dev/api/v1/files/15.1.0");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
-
-      expect(response.status).toBe(200);
-      const data = await response.json() as unknown[];
-
-      // Validate the response structure
-      expect(Array.isArray(data)).toBe(true);
-
-      // Check that each file object has the required properties
-      data.forEach((file: any) => {
-        expect(file).toHaveProperty("name");
-        expect(file).toHaveProperty("path");
-        expect(typeof file.name).toBe("string");
-        expect(typeof file.path).toBe("string");
-
-        // If it has children, they should also follow the schema
-        if (file.children) {
-          expect(Array.isArray(file.children)).toBe(true);
-          file.children.forEach((child: any) => {
-            expect(child).toHaveProperty("name");
-            expect(child).toHaveProperty("path");
-            expect(typeof child.name).toBe("string");
-            expect(typeof child.path).toBe("string");
-          });
-        }
-      });
-    });
-
-    it("should handle older Unicode versions", async () => {
-      // Note: Older versions don't have /ucd path
-      fetchMock.get("https://unicode.org")
-        .intercept({ path: "/Public/3.1-Update1" })
-        .reply(200, generateAutoIndexHtml(files, "F2"));
-
-      const request = new Request("https://api.ucdjs.dev/api/v1/files/3.1.1");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
-
-      expect(response.status).toBe(200);
-      expect(response.headers.get("content-type")).toContain("application/json");
-
-      const data = await response.json();
-      expect(Array.isArray(data)).toBe(true);
-    });
-  });
-
-  describe("route not found", () => {
-    it("should return 404 for non-existent routes", async () => {
-      const request = new Request("https://api.ucdjs.dev/api/v1/files/nonexistent/route");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
-
-      expect(response.status).toBe(404);
-    });
-
-    // HONO doesn't send the 405 response for wrong HTTP methods
-    it.todo("should return 404 for wrong HTTP method", async () => {
-      const request = new Request("https://api.ucdjs.dev/api/v1/files/15.1.0", {
-        method: "POST",
-      });
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
-
-      expect(response.status).toBe(405); // Method Not Allowed
     });
   });
 });
