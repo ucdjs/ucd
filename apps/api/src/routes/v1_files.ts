@@ -1,6 +1,6 @@
 import type { HonoEnv } from "../types";
 import { OpenAPIHono } from "@hono/zod-openapi";
-import { hasUCDFolderPath, resolveUCDVersion, UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
+import { resolveUCDVersion, UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { badRequest, internalServerError } from "@ucdjs/worker-shared";
 import { traverse } from "apache-autoindex-parse/traverse";
 import { cache } from "hono/cache";
@@ -9,7 +9,7 @@ import { GET_UNICODE_FILES_BY_VERSION_ROUTE } from "./v1_files.openapi";
 export const V1_FILES_ROUTER = new OpenAPIHono<HonoEnv>().basePath("/api/v1/files");
 
 V1_FILES_ROUTER.get("*", cache({
-  cacheName: "unicode-api:files",
+  cacheName: "v1_files",
   cacheControl: "max-age=604800",
 }));
 
