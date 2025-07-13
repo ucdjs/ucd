@@ -15,10 +15,12 @@ beforeEach(() => {
 
 describe("clearCacheEntry", () => {
   describe("with string parameter", () => {
-    it("should open cache with the provided name", async () => {
+    it("should open cache with the provided name when clear function is called", async () => {
       const cacheName = "v1_files";
+      const path = "https://api.ucdjs.dev/api/v1/files/16.0.0";
 
-      await clearCacheEntry(cacheName);
+      const clearFn = await clearCacheEntry(cacheName);
+      await clearFn(path);
 
       expect(mockOpen).toHaveBeenCalledWith(cacheName);
       expect(mockOpen).toHaveBeenCalledTimes(1);
@@ -126,10 +128,12 @@ describe("clearCacheEntry", () => {
   describe("error handling", () => {
     it("should propagate errors from cache.open", async () => {
       const cacheName = "invalid_cache";
+      const path = "https://api.ucdjs.dev/api/v1/files/16.0.0";
       const error = new Error("Failed to open cache");
       mockOpen.mockRejectedValue(error);
 
-      await expect(clearCacheEntry(cacheName)).rejects.toThrow("Failed to open cache");
+      const clearFn = await clearCacheEntry(cacheName);
+      await expect(clearFn(path)).rejects.toThrow("Failed to open cache");
     });
 
     it("should propagate errors from cache.delete", async () => {
