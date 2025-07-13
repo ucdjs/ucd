@@ -1,6 +1,6 @@
 import type { HonoEnv } from "../types";
 import { OpenAPIHono } from "@hono/zod-openapi";
-import { resolveUCDVersion, UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
+import { resolveUCDVersion, UNICODE_STABLE_VERSION, UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { badRequest, internalServerError } from "@ucdjs/worker-shared";
 import { traverse } from "apache-autoindex-parse/traverse";
 import { cache } from "hono/cache";
@@ -15,7 +15,12 @@ V1_FILES_ROUTER.get("*", cache({
 
 V1_FILES_ROUTER.openapi(GET_UNICODE_FILES_BY_VERSION_ROUTE, async (c) => {
   try {
-    const version = c.req.param("version");
+    let version = c.req.param("version");
+
+    if (version === "latest") {
+      version = UNICODE_STABLE_VERSION;
+    }
+
     const mappedVersion = resolveUCDVersion(version);
 
     if (
