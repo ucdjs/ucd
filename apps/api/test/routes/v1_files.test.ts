@@ -198,7 +198,6 @@ describe("v1_files", () => {
 
         expect(response.status).toBe(200);
         const cacheHeaderValue = response.headers.get("cache-control");
-        console.error("Cache-Control Header:", cacheHeaderValue);
         expect(cacheHeaderValue).toBeTruthy();
       });
 
