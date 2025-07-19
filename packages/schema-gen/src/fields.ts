@@ -219,6 +219,7 @@ export async function generateFields(options: GenerateFieldsOptions) {
         .replace("{{INPUT}}", datafile.heading),
     });
 
+    // @ts-expect-error only ai-sdk v5 works with zod v4
     return result.object.fields;
   } catch (err) {
     console.error("error generating fields:", err);

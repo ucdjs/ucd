@@ -135,7 +135,8 @@ async function processFile(request: ProcessFileRequest): Promise<ProcessedFile |
     })}\n\n`;
     code += `export const ${sanitizeIdentifier(
       toSnakeCase(fileName),
-    ).toUpperCase()}_FIELDS = ${genArrayFromRaw(fields.map((f) => `"${f.name}"`))};\n`;
+      // TODO: fix when ai-sdk v5 works with zod v4
+    ).toUpperCase()}_FIELDS = ${genArrayFromRaw(fields.map((f: { name: any }) => `"${f.name}"`))};\n`;
 
     return {
       fields,
