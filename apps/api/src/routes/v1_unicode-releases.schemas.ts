@@ -4,13 +4,13 @@ export const UnicodeVersionSchema = z.object({
   version: z.string().openapi({
     description: "The version of the Unicode standard.",
   }),
-  documentationUrl: z.string().url().openapi({
+  documentationUrl: z.url().openapi({
     description: "The URL to the Unicode version documentation.",
   }),
   date: z.string().regex(/^\d{4}$/, "Year must be a four-digit number").openapi({
     description: "The year of the Unicode version.",
   }).nullable(),
-  url: z.string().url().openapi({
+  url: z.url().openapi({
     description: "The URL to the Unicode Character Database (UCD) for this version.",
   }),
   mappedUcdVersion: z.string().nullable().openapi({
