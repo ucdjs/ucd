@@ -12,33 +12,33 @@ catalogs:
   monorepo:
     "@changesets/changelog-github": ^0.5.1
     "@changesets/cli": ^2.29.5
-    turbo: ^2.5.4
+    turbo: ^2.5.5
 
   testing:
     "@vitest/coverage-istanbul": ^3.2.4
     "@vitest/ui": ^3.2.4
     vitest: ^3.2.4
     vitest-testdirs: ^4.0.1
-    msw: ^2.10.2
-    "@cloudflare/vitest-pool-workers": ^0.8.49
+    msw: ^2.10.4
+    "@cloudflare/vitest-pool-workers": ^0.8.55
 
   linting:
-    "@luxass/eslint-config": ^5.1.0
+    "@luxass/eslint-config": ^5.1.1
     "@stoplight/spectral-cli": ^6.15.0
-    eslint: ^9.30.1
+    eslint: ^9.31.0
     eslint-plugin-format: ^1.0.1
-    "@luxass/spectral-ruleset": ^1.0.0
+    "@luxass/spectral-ruleset": ^1.1.0
 
   prod:
     # merge these together when heading inference is implemented better
     "@luxass/unicode-utils": ^0.9.0
     "@luxass/unicode-utils-new": npm:@luxass/unicode-utils@0.12.0-beta.9
-    "@luxass/utils": ^2.4.1
+    "@luxass/utils": ^2.6.0
     farver: ^0.4.2
     yargs-parser: ^22.0.0
     defu: ^6.1.4
     arktype: ^2.1.20
-    zod: ^3.25.72
+    zod: ^4.0.5
     "@ai-sdk/openai": ^1.3.22
     ai: ^4.3.16
     p-limit: ^6.2.0
@@ -60,10 +60,10 @@ catalogs:
     tsx: ^4.20.3
 
   workers:
-    wrangler: ^4.23.0
-    "@hono/zod-openapi": ^0.19.9
-    "@scalar/hono-api-reference": ^0.9.7
-    hono: ^4.8.3
+    wrangler: ^4.25.0
+    "@hono/zod-openapi": ^1.0.2
+    "@scalar/hono-api-reference": ^0.9.11
+    hono: ^4.8.5
 
 onlyBuiltDependencies:
   - esbuild
