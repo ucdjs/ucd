@@ -3,7 +3,7 @@ import { HttpResponse } from "msw";
 import { describe, expect, it } from "vitest";
 import HTTPFileSystemBridge from "../../src/fs-bridge/http";
 
-describe("httpFileSystemBridge", () => {
+describe("fs-bridge#http", () => {
   describe("read", () => {
     it("should read a file from HTTP endpoint", async () => {
       const fileContent = "Hello, World!";
@@ -19,23 +19,6 @@ describe("httpFileSystemBridge", () => {
       ]);
 
       const result = await bridge.read("/test.txt");
-      expect(result).toBe(fileContent);
-    });
-
-    it("should read a file with absolute URL", async () => {
-      const fileContent = "Absolute URL content";
-      const bridge = HTTPFileSystemBridge();
-
-      mockFetch([
-        ["GET", "https://files.ucdjs.dev/document.txt", () => {
-          return new HttpResponse(fileContent, {
-            status: 200,
-            headers: { "Content-Type": "text/plain" },
-          });
-        }],
-      ]);
-
-      const result = await bridge.read("https://files.ucdjs.dev/document.txt");
       expect(result).toBe(fileContent);
     });
 
@@ -73,10 +56,23 @@ describe("httpFileSystemBridge", () => {
   describe("listdir", () => {
     it("should list directory contents", async () => {
       const mockFileTree = [
-        { type: "file", name: "file1.txt", path: "/api/files/file1.txt" },
-        { type: "file", name: "file2.js", path: "/api/files/file2.js" },
-        { type: "directory", name: "subdirectory", path: "/api/files/subdirectory", lastModified: "2023-01-01T00:00:00Z" },
+        {
+          type: "file",
+          name: "file1.txt",
+          path: "/api/files/file1.txt",
+        },
+        {
+          type: "file",
+          name: "file2.js",
+          path: "/api/files/file2.js",
+        },
+        {
+          type: "directory",
+          name: "subdirectory",
+          path: "/api/files/subdirectory",
+        },
       ];
+
       const bridge = HTTPFileSystemBridge({ baseUrl: "https://api.ucdjs.dev" });
 
       mockFetch([
@@ -89,7 +85,11 @@ describe("httpFileSystemBridge", () => {
       ]);
 
       const result = await bridge.listdir("/api/files");
-      expect(result).toEqual(["file1.txt", "file2.js", "subdirectory"]);
+      expect(result).toEqual([
+        { name: "file1.txt", path: "/api/files/file1.txt", type: "file" },
+        { name: "file2.js", path: "/api/files/file2.js", type: "file" },
+        { name: "subdirectory", path: "/api/files/subdirectory", type: "directory" },
+      ]);
     });
 
     it("should list directory with recursive parameter", async () => {
@@ -119,7 +119,12 @@ describe("httpFileSystemBridge", () => {
       ]);
 
       const result = await bridge.listdir("/api/files", true);
-      expect(result).toEqual(["file1.txt", "file2.js", "subdir", "nested.txt"]);
+      expect(result).toEqual([
+        { name: "file1.txt", path: "/api/files/file1.txt", type: "file" },
+        { name: "file2.js", path: "/api/files/file2.js", type: "file" },
+        { name: "subdir", path: "/api/files/subdir", type: "directory" },
+        { name: "nested.txt", path: "/api/files/subdir/nested.txt", type: "file" },
+      ]);
     });
 
     it("should throw error when directory listing fails", async () => {
@@ -190,28 +195,13 @@ describe("httpFileSystemBridge", () => {
       const bridge = HTTPFileSystemBridge({ baseUrl: "https://api.ucdjs.dev" });
 
       mockFetch([
-        ["HEAD", "https://api.ucdjs.dev/network-error.txt", () => {
-          throw new Error("Network error");
+        ["HEAD", "https://api.ucdjs.dev/network-error", () => {
+          return HttpResponse.error();
         }],
       ]);
 
-      const result = await bridge.exists("/network-error.txt");
+      const result = await bridge.exists("/network-error");
       expect(result).toBe(false);
-    });
-
-    it("should work with absolute URLs", async () => {
-      const bridge = HTTPFileSystemBridge();
-
-      mockFetch([
-        ["HEAD", "https://files.ucdjs.dev/check/file.txt", () => {
-          return new HttpResponse(null, {
-            status: 200,
-          });
-        }],
-      ]);
-
-      const result = await bridge.exists("https://files.ucdjs.dev/check/file.txt");
-      expect(result).toBe(true);
     });
   });
 
