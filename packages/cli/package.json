@@ -42,12 +42,13 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@clack/core": "catalog:prod",
+    "@clack/prompts": "catalog:prod",
     "@luxass/unicode-utils": "catalog:prod",
     "@luxass/utils": "catalog:prod",
     "@ucdjs/schema-gen": "workspace:*",
     "@ucdjs/ucd-store": "workspace:*",
     "farver": "catalog:prod",
-    "p-limit": "catalog:prod",
     "yargs-parser": "catalog:prod"
   },
   "devDependencies": {

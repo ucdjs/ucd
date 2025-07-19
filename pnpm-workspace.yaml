@@ -2,6 +2,7 @@ preferWorkspacePackages: true
 saveWorkspaceProtocol: false
 linkWorkspacePackages: true
 engineStrict: true
+catalogMode: "strict"
 
 packages:
   - "packages/*"
@@ -47,6 +48,8 @@ catalogs:
     memfs: ^4.17.2
     apache-autoindex-parse: ^2.3.0
     openapi-fetch: ^0.14.0
+    "@clack/core": ^0.5.0
+    "@clack/prompts": ^0.11.0
 
   dev:
     "@types/picomatch": ^4.0.0

@@ -1,5 +1,10 @@
 import type { UCDStore } from "@ucdjs/ucd-store";
+import { isCancel, MultiSelectPrompt, TextPrompt } from "@clack/core";
+
+import { multiselect } from "@clack/prompts";
+import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils";
 import { createHTTPUCDStore, createNodeUCDStore } from "@ucdjs/ucd-store";
+import color from "farver";
 
 export interface CLIStoreCmdSharedFlags {
   storeDir?: string;
@@ -21,6 +26,13 @@ export function assertRemoteOrStoreDir(flags: CLIStoreCmdSharedFlags): asserts f
   }
 }
 
+/**
+ * Creates a UCD store instance based on the provided CLI flags.
+ *
+ * @param {CLIStoreCmdSharedFlags} flags - Configuration flags for creating the store
+ * @returns {Promise<UCDStore | null>} A promise that resolves to a UCDStore instance or null
+ * @throws {Error} When store directory is not specified for local stores
+ */
 export async function createStoreFromFlags(flags: CLIStoreCmdSharedFlags): Promise<UCDStore | null> {
   const { storeDir, remote, baseUrl, patterns } = flags;
 
@@ -29,11 +41,33 @@ export async function createStoreFromFlags(flags: CLIStoreCmdSharedFlags): Promi
       baseUrl,
       globalFilters: patterns,
     });
-  } else {
-    return createNodeUCDStore({
-      basePath: storeDir,
-      baseUrl,
-      globalFilters: patterns,
-    });
   }
+
+  if (!storeDir) {
+    throw new Error("Store directory must be specified when not using remote store.");
+  }
+
+  return createNodeUCDStore({
+    basePath: storeDir,
+    baseUrl,
+    globalFilters: patterns,
+  });
+}
+
+export async function runVersionPrompt() {
+  const a = await multiselect({
+    options: UNICODE_VERSION_METADATA.map(({ version }) => ({
+      value: version,
+      label: version,
+    })),
+    message: "Select Unicode versions to initialize the store with:",
+    required: true,
+  });
+
+  if (isCancel(a)) {
+    console.error("Operation cancelled.");
+    return;
+  }
+
+  return a;
 }

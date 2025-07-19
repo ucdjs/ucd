@@ -12,6 +12,7 @@ import type {
 } from "./types";
 import path from "node:path";
 import { invariant, trimLeadingSlash } from "@luxass/utils";
+import { joinURL } from "@luxass/utils/path";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { createClient, isApiError } from "@ucdjs/fetch";
 import { createPathFilter, safeJsonParse } from "@ucdjs/utils";
@@ -246,7 +247,6 @@ export class UCDStore {
 
   async getFilePaths(version: string, extraFilters?: string[]): Promise<string[]> {
     const fileStructure = await this.getFileTree(version, extraFilters);
-    console.error(`DEBUG: File structure for version ${version}:`, fileStructure);
     return flattenFilePaths(fileStructure);
   }
 
@@ -397,18 +397,15 @@ export class UCDStore {
 
     // get the expected files for this version
     const expectedFiles = await this.#getExpectedFilePaths(version);
-    console.log("expected files", expectedFiles);
 
-    // get the actual files from the store
+    // // get the actual files from the store
     const actualFiles = await this.getFilePaths(version);
-    console.log("actual files", actualFiles);
 
     const orphanedFiles: string[] = [];
     const missingFiles: string[] = [];
 
     if (checkOrphaned) {
       for (const file of actualFiles) {
-        console.log(`Checking file: ${file}`);
         // if file is not in expected files, it's orphaned
         if (!expectedFiles.includes(file)) {
           orphanedFiles.push(file);
@@ -417,7 +414,6 @@ export class UCDStore {
     }
 
     const isComplete = orphanedFiles.length === 0 && missingFiles.length === 0;
-
     return {
       version,
       orphanedFiles,
@@ -460,6 +456,6 @@ export class UCDStore {
       throw new UCDStoreError(`Failed to fetch expected files for version '${version}': ${error.message}`);
     }
 
-    return flattenFilePaths(data!);
+    return flattenFilePaths(data!, `/${version}`);
   }
 }

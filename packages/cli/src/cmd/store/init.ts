@@ -1,12 +1,10 @@
 import type { Prettify } from "@luxass/utils";
-import type { UCDStore } from "@ucdjs/ucd-store";
 import type { CLIArguments } from "../../cli-utils";
 import type { CLIStoreCmdSharedFlags } from "./_shared";
-import { createHTTPUCDStore, createNodeUCDStore } from "@ucdjs/ucd-store";
 import { UCDStoreUnsupportedFeature } from "@ucdjs/ucd-store/errors";
 import { red } from "farver/fast";
 import { printHelp } from "../../cli-utils";
-import { assertRemoteOrStoreDir, createStoreFromFlags, SHARED_FLAGS } from "./_shared";
+import { assertRemoteOrStoreDir, createStoreFromFlags, runVersionPrompt, SHARED_FLAGS } from "./_shared";
 
 export interface CLIStoreInitCmdOptions {
   flags: CLIArguments<Prettify<CLIStoreCmdSharedFlags & {
@@ -21,7 +19,7 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
     printHelp({
       headline: "Initialize an UCD Store",
       commandName: "ucd store init",
-      usage: "<versions...> [...flags]",
+      usage: "[...versions] [...flags]",
       tables: {
         Flags: [
           ...SHARED_FLAGS,
@@ -34,15 +32,14 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
   }
 
   if (!versions || versions.length === 0) {
-    console.error("Error: At least one Unicode version must be specified.");
-    console.error("Usage: ucd store init <versions...>");
+    const pickedVersions = await runVersionPrompt();
+    console.log(`Picked versions: ${pickedVersions.join(", ")}`);
     return;
   }
 
   const {
     storeDir,
-    dryRun: _dryRun,
-    force: _force,
+    force,
     remote,
     baseUrl,
     patterns,
