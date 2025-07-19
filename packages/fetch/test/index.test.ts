@@ -54,7 +54,7 @@ describe("unicode API Client", () => {
     describe("successful requests", () => {
       it("should fetch unicode versions successfully", async () => {
         mockFetch([
-          ["GET https://api.ucdjs.dev/api/v1/unicode-versions", () => {
+          ["GET", "https://api.ucdjs.dev/api/v1/unicode-versions", () => {
             return new HttpResponse(JSON.stringify(mockUnicodeVersions), {
               status: 200,
               headers: { "Content-Type": "application/json" },
@@ -71,7 +71,7 @@ describe("unicode API Client", () => {
 
       it("should return array of unicode versions with correct structure", async () => {
         mockFetch([
-          ["GET https://api.ucdjs.dev/api/v1/unicode-versions", () => {
+          ["GET", "https://api.ucdjs.dev/api/v1/unicode-versions", () => {
             return new HttpResponse(JSON.stringify(mockUnicodeVersions), {
               status: 200,
               headers: { "Content-Type": "application/json" },
@@ -107,7 +107,7 @@ describe("unicode API Client", () => {
         };
 
         mockFetch([
-          ["GET https://api.ucdjs.dev/api/v1/unicode-versions", () => {
+          ["GET", "https://api.ucdjs.dev/api/v1/unicode-versions", () => {
             return new HttpResponse(JSON.stringify(errorResponse), {
               status: 404,
               statusText: "Not Found",
@@ -131,7 +131,7 @@ describe("unicode API Client", () => {
         };
 
         mockFetch([
-          ["GET https://api.ucdjs.dev/api/v1/unicode-versions", () => {
+          ["GET", "https://api.ucdjs.dev/api/v1/unicode-versions", () => {
             return new HttpResponse(JSON.stringify(errorResponse), {
               status: 500,
               statusText: "Internal Server Error",
@@ -159,7 +159,7 @@ describe("unicode API Client", () => {
         };
 
         mockFetch([
-          ["GET https://api.ucdjs.dev/api/v1/unicode-proxy", () => {
+          ["GET", "https://api.ucdjs.dev/api/v1/unicode-proxy", () => {
             return new HttpResponse(JSON.stringify(mockProxyResponse), {
               status: 200,
               headers: { "Content-Type": "application/json" },
@@ -183,7 +183,7 @@ describe("unicode API Client", () => {
         const binaryData = new Uint8Array([72, 101, 108, 108, 111, 44, 32, 87, 111, 114, 108, 100, 33]);
 
         mockFetch([
-          ["GET https://api.ucdjs.dev/api/v1/unicode-proxy", () => {
+          ["GET", "https://api.ucdjs.dev/api/v1/unicode-proxy", () => {
             return new HttpResponse(binaryData, {
               status: 200,
               headers: { "Content-Type": "application/octet-stream" },
@@ -217,7 +217,7 @@ describe("unicode API Client", () => {
         };
 
         mockFetch([
-          ["GET https://api.ucdjs.dev/api/v1/unicode-proxy", () => {
+          ["GET", "https://api.ucdjs.dev/api/v1/unicode-proxy", () => {
             return new HttpResponse(JSON.stringify(errorResponse), {
               status: 404,
               statusText: "Not Found",
@@ -252,7 +252,7 @@ describe("unicode API Client", () => {
 
         mockFetch([
           // TODO: remove the need for encodeURIComponent here when https://github.com/openapi-ts/openapi-typescript/pull/2362 is fixed
-          [`GET https://api.ucdjs.dev/api/v1/unicode-proxy/${encodeURIComponent("latest/ucd.all.json")}`, () => {
+          ["GET", `https://api.ucdjs.dev/api/v1/unicode-proxy/${encodeURIComponent("latest/ucd.all.json")}`, () => {
             return new HttpResponse(JSON.stringify(mockFileResponse), {
               status: 200,
               headers: { "Content-Type": "application/json" },
@@ -281,7 +281,7 @@ describe("unicode API Client", () => {
         };
 
         mockFetch([
-          ["GET https://api.ucdjs.dev/api/v1/unicode-proxy/latest", () => {
+          ["GET", "https://api.ucdjs.dev/api/v1/unicode-proxy/latest", () => {
             return new HttpResponse(JSON.stringify(mockDirectoryResponse), {
               status: 200,
               headers: { "Content-Type": "application/json" },
@@ -315,7 +315,7 @@ describe("unicode API Client", () => {
 
         mockFetch([
           // TODO: remove the need for encodeURIComponent here when https://github.com/openapi-ts/openapi-typescript/pull/2362 is fixed
-          [`GET https://api.ucdjs.dev/api/v1/unicode-proxy/${encodeURIComponent(path)}`, () => {
+          ["GET", `https://api.ucdjs.dev/api/v1/unicode-proxy/${encodeURIComponent(path)}`, () => {
             return new HttpResponse(JSON.stringify(mockResponse), {
               status: 200,
               headers: { "Content-Type": "application/json" },
@@ -347,7 +347,7 @@ describe("unicode API Client", () => {
 
         mockFetch([
           // TODO: remove the need for encodeURIComponent here when https://github.com/openapi-ts/openapi-typescript/pull/2362 is fixed
-          [`GET https://api.ucdjs.dev/api/v1/unicode-proxy/${encodeURIComponent("non-existent/path")}`, () => {
+          ["GET", `https://api.ucdjs.dev/api/v1/unicode-proxy/${encodeURIComponent("non-existent/path")}`, () => {
             return new HttpResponse(JSON.stringify(errorResponse), {
               status: 404,
               statusText: "Not Found",
@@ -388,13 +388,13 @@ describe("unicode API Client", () => {
       };
 
       mockFetch([
-        ["GET https://api.ucdjs.dev/api/v1/unicode-versions", () => {
+        ["GET", "https://api.ucdjs.dev/api/v1/unicode-versions", () => {
           return new HttpResponse(JSON.stringify(unicodeVersions), {
             status: 200,
             headers: { "Content-Type": "application/json" },
           });
         }],
-        ["GET https://api.ucdjs.dev/api/v1/unicode-proxy/latest", () => {
+        ["GET", "https://api.ucdjs.dev/api/v1/unicode-proxy/latest", () => {
           return new HttpResponse(JSON.stringify(proxyResponse), {
             status: 200,
             headers: { "Content-Type": "application/json" },
@@ -428,7 +428,7 @@ describe("unicode API Client", () => {
       ];
 
       mockFetch([
-        ["GET https://custom-unicode-api.example.com/api/v1/unicode-versions", () => {
+        ["GET", "https://custom-unicode-api.example.com/api/v1/unicode-versions", () => {
           return new HttpResponse(JSON.stringify(mockVersions), {
             status: 200,
             headers: { "Content-Type": "application/json" },
@@ -444,7 +444,7 @@ describe("unicode API Client", () => {
       let capturedRequest: Request | undefined;
 
       mockFetch([
-        ["GET https://api.ucdjs.dev/api/v1/unicode-versions", ({
+        ["GET", "https://api.ucdjs.dev/api/v1/unicode-versions", ({
           request,
         }) => {
           capturedRequest = request;
@@ -466,7 +466,7 @@ describe("unicode API Client", () => {
 
     it("should handle network errors gracefully", async () => {
       mockFetch([
-        ["GET https://api.ucdjs.dev/api/v1/unicode-versions", () => {
+        ["GET", "https://api.ucdjs.dev/api/v1/unicode-versions", () => {
           return Response.error();
         }],
       ]);

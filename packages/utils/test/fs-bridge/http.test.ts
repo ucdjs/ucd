@@ -10,7 +10,7 @@ describe("httpFileSystemBridge", () => {
       const bridge = HTTPFileSystemBridge({ baseUrl: "https://api.ucdjs.dev" });
 
       mockFetch([
-        ["GET https://api.ucdjs.dev/test.txt", () => {
+        ["GET", "https://api.ucdjs.dev/test.txt", () => {
           return new HttpResponse(fileContent, {
             status: 200,
             headers: { "Content-Type": "text/plain" },
@@ -27,7 +27,7 @@ describe("httpFileSystemBridge", () => {
       const bridge = HTTPFileSystemBridge();
 
       mockFetch([
-        ["GET https://files.ucdjs.dev/document.txt", () => {
+        ["GET", "https://files.ucdjs.dev/document.txt", () => {
           return new HttpResponse(fileContent, {
             status: 200,
             headers: { "Content-Type": "text/plain" },
@@ -43,7 +43,7 @@ describe("httpFileSystemBridge", () => {
       const bridge = HTTPFileSystemBridge({ baseUrl: "https://api.ucdjs.dev" });
 
       mockFetch([
-        ["GET https://api.ucdjs.dev/not-found.txt", () => {
+        ["GET", "https://api.ucdjs.dev/not-found.txt", () => {
           return new HttpResponse("Not Found", {
             status: 404,
             statusText: "Not Found",
@@ -58,7 +58,7 @@ describe("httpFileSystemBridge", () => {
       const bridge = HTTPFileSystemBridge({ baseUrl: "https://api.ucdjs.dev" });
 
       mockFetch([
-        ["GET https://api.ucdjs.dev/server-error.txt", () => {
+        ["GET", "https://api.ucdjs.dev/server-error.txt", () => {
           return new HttpResponse("Internal Server Error", {
             status: 500,
             statusText: "Internal Server Error",
@@ -80,7 +80,7 @@ describe("httpFileSystemBridge", () => {
       const bridge = HTTPFileSystemBridge({ baseUrl: "https://api.ucdjs.dev" });
 
       mockFetch([
-        ["GET https://api.ucdjs.dev/api/files", () => {
+        ["GET", "https://api.ucdjs.dev/api/files", () => {
           return new HttpResponse(JSON.stringify(mockFileTree), {
             status: 200,
             headers: { "Content-Type": "application/json" },
@@ -104,13 +104,13 @@ describe("httpFileSystemBridge", () => {
       const bridge = HTTPFileSystemBridge({ baseUrl: "https://api.ucdjs.dev" });
 
       mockFetch([
-        ["GET https://api.ucdjs.dev/api/files", () => {
+        ["GET", "https://api.ucdjs.dev/api/files", () => {
           return new HttpResponse(JSON.stringify(mockFileTree), {
             status: 200,
             headers: { "Content-Type": "application/json" },
           });
         }],
-        ["GET https://api.ucdjs.dev/api/files/subdir", () => {
+        ["GET", "https://api.ucdjs.dev/api/files/subdir", () => {
           return new HttpResponse(JSON.stringify(subDirTree), {
             status: 200,
             headers: { "Content-Type": "application/json" },
@@ -126,7 +126,7 @@ describe("httpFileSystemBridge", () => {
       const bridge = HTTPFileSystemBridge({ baseUrl: "https://api.ucdjs.dev" });
 
       mockFetch([
-        ["GET https://api.ucdjs.dev/api/not-found", () => {
+        ["GET", "https://api.ucdjs.dev/api/not-found", () => {
           return new HttpResponse("Not Found", {
             status: 404,
             statusText: "Not Found",
@@ -142,7 +142,7 @@ describe("httpFileSystemBridge", () => {
       const bridge = HTTPFileSystemBridge({ baseUrl: "https://api.ucdjs.dev" });
 
       mockFetch([
-        ["GET https://api.ucdjs.dev/api/empty", () => {
+        ["GET", "https://api.ucdjs.dev/api/empty", () => {
           return new HttpResponse(JSON.stringify(mockFileTree), {
             status: 200,
             headers: { "Content-Type": "application/json" },
@@ -160,7 +160,7 @@ describe("httpFileSystemBridge", () => {
       const bridge = HTTPFileSystemBridge({ baseUrl: "https://api.ucdjs.dev" });
 
       mockFetch([
-        ["HEAD https://api.ucdjs.dev/existing-file.txt", () => {
+        ["HEAD", "https://api.ucdjs.dev/existing-file.txt", () => {
           return new HttpResponse(null, {
             status: 200,
           });
@@ -175,7 +175,7 @@ describe("httpFileSystemBridge", () => {
       const bridge = HTTPFileSystemBridge({ baseUrl: "https://api.ucdjs.dev" });
 
       mockFetch([
-        ["HEAD https://api.ucdjs.dev/non-existing.txt", () => {
+        ["HEAD", "https://api.ucdjs.dev/non-existing.txt", () => {
           return new HttpResponse(null, {
             status: 404,
           });
@@ -190,7 +190,7 @@ describe("httpFileSystemBridge", () => {
       const bridge = HTTPFileSystemBridge({ baseUrl: "https://api.ucdjs.dev" });
 
       mockFetch([
-        ["HEAD https://api.ucdjs.dev/network-error.txt", () => {
+        ["HEAD", "https://api.ucdjs.dev/network-error.txt", () => {
           throw new Error("Network error");
         }],
       ]);
@@ -203,7 +203,7 @@ describe("httpFileSystemBridge", () => {
       const bridge = HTTPFileSystemBridge();
 
       mockFetch([
-        ["HEAD https://files.ucdjs.dev/check/file.txt", () => {
+        ["HEAD", "https://files.ucdjs.dev/check/file.txt", () => {
           return new HttpResponse(null, {
             status: 200,
           });
@@ -246,7 +246,7 @@ describe("httpFileSystemBridge", () => {
       };
 
       mockFetch([
-        ["GET https://api.ucdjs.dev/__stat/file.txt", () => {
+        ["GET", "https://api.ucdjs.dev/__stat/file.txt", () => {
           return new HttpResponse(JSON.stringify(mockStatData), {
             status: 200,
             headers: { "Content-Type": "application/json" },
@@ -267,7 +267,7 @@ describe("httpFileSystemBridge", () => {
       const fileContent = "No base URL content";
 
       mockFetch([
-        ["GET https://cdn.ucdjs.dev/file.txt", () => {
+        ["GET", "https://cdn.ucdjs.dev/file.txt", () => {
           return new HttpResponse(fileContent, {
             status: 200,
             headers: { "Content-Type": "text/plain" },
@@ -284,7 +284,7 @@ describe("httpFileSystemBridge", () => {
       const fileContent = "Relative path content";
 
       mockFetch([
-        ["GET https://api.ucdjs.dev/v1/files/document.txt", () => {
+        ["GET", "https://api.ucdjs.dev/v1/files/document.txt", () => {
           return new HttpResponse(fileContent, {
             status: 200,
             headers: { "Content-Type": "text/plain" },
@@ -301,7 +301,7 @@ describe("httpFileSystemBridge", () => {
       const fileContent = "Trailing slash content";
 
       mockFetch([
-        ["GET https://api.ucdjs.dev/file.txt", () => {
+        ["GET", "https://api.ucdjs.dev/file.txt", () => {
           return new HttpResponse(fileContent, {
             status: 200,
             headers: { "Content-Type": "text/plain" },
@@ -318,7 +318,7 @@ describe("httpFileSystemBridge", () => {
       const fileContent = "No trailing slash content";
 
       mockFetch([
-        ["GET https://api.ucdjs.dev/file.txt", () => {
+        ["GET", "https://api.ucdjs.dev/file.txt", () => {
           return new HttpResponse(fileContent, {
             status: 200,
             headers: { "Content-Type": "text/plain" },
@@ -336,7 +336,7 @@ describe("httpFileSystemBridge", () => {
       const bridge = HTTPFileSystemBridge({ baseUrl: "https://api.ucdjs.dev" });
 
       mockFetch([
-        ["GET https://api.ucdjs.dev/api/malformed", () => {
+        ["GET", "https://api.ucdjs.dev/api/malformed", () => {
           return new HttpResponse("invalid json", {
             status: 200,
             headers: { "Content-Type": "application/json" },
@@ -351,7 +351,7 @@ describe("httpFileSystemBridge", () => {
       const bridge = HTTPFileSystemBridge({ baseUrl: "https://api.ucdjs.dev" });
 
       mockFetch([
-        ["GET https://api.ucdjs.dev/api/invalid-schema", () => {
+        ["GET", "https://api.ucdjs.dev/api/invalid-schema", () => {
           return new HttpResponse(JSON.stringify([{ invalid: "data" }]), {
             status: 200,
             headers: { "Content-Type": "application/json" },
