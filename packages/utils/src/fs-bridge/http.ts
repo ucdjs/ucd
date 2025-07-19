@@ -1,20 +1,21 @@
-import type { FileSystemBridge } from "../fs-bridge";
+import type { FileSystemBridge, FSEntry } from "../fs-bridge";
+import { joinURL } from "@luxass/utils/path";
 import { UNICODE_PROXY_URL } from "@ucdjs/env";
 import { z } from "zod/v4";
 import { defineFileSystemBridge } from "../fs-bridge";
 
-const ProxyResponseSchema = z.union([
+const ListDirResponseSchema = z.union([
   z.object({
     type: z.literal("directory"),
     name: z.string(),
     path: z.string(),
-    lastModified: z.string(),
+    lastModified: z.number(),
   }),
   z.object({
     type: z.literal("file"),
     name: z.string(),
     path: z.string(),
-    lastModified: z.string().optional(),
+    lastModified: z.number(),
   }),
 ]);
 
@@ -35,17 +36,27 @@ export interface HTTPFileSystemBridgeOptions {
 function HTTPFileSystemBridge(options: HTTPFileSystemBridgeOptions = {}): FileSystemBridge {
   const baseUrl = options.baseUrl || UNICODE_PROXY_URL;
   return defineFileSystemBridge({
+    capabilities: {
+      read: true,
+      write: false,
+      listdir: true,
+      mkdir: false,
+      stat: true,
+      exists: true,
+      rm: false,
+    },
+
     async read(path) {
-      const url = new URL(path, baseUrl);
-      const response = await fetch(url.toString());
+      const url = joinURL(baseUrl, path);
+      const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`Failed to read remote file: ${response.statusText}`);
       }
       return response.text();
     },
     async listdir(path, recursive = false) {
-      const url = new URL(path, baseUrl);
-      const response = await fetch(url.toString(), {
+      const url = joinURL(baseUrl, path);
+      const response = await fetch(url, {
         method: "GET",
         headers: {
           Accept: "application/json",
@@ -58,37 +69,52 @@ function HTTPFileSystemBridge(options: HTTPFileSystemBridgeOptions = {}): FileSy
 
       const data = await response.json();
 
-      // Validate response data
-      const validatedData = z.array(ProxyResponseSchema).parse(data);
+      // validate response data
+      const validatedData = z.array(ListDirResponseSchema).parse(data);
 
       if (!recursive) {
-        return validatedData.map((entry) => entry.name);
+        return validatedData.map((entry): FSEntry => ({
+          name: entry.name,
+          path: entry.path,
+          type: entry.type as "file" | "directory",
+        }));
       }
 
-      // Recursive implementation
-      const allEntries = [...validatedData];
+      // recursive implementation
+      const allEntries: FSEntry[] = [...validatedData.map((entry): FSEntry => ({
+        name: entry.name,
+        path: entry.path,
+        type: entry.type as "file" | "directory",
+      }))];
 
-      for (const entry of validatedData) {
-        if (entry.type === "directory") {
+      // Process all subdirectories in parallel
+      const subdirectoryPromises = validatedData
+        .filter((entry) => entry.type === "directory")
+        .map(async (entry) => {
           try {
             const subPath = path.endsWith("/") ? `${path}${entry.name}` : `${path}/${entry.name}`;
-            const subEntries = await this.listdir(subPath, true);
-            allEntries.push(...subEntries.map((name) => ({ type: "file" as const, name, path: `${subPath}/${name}`, lastModified: undefined })));
+            return await this.listdir(subPath, true);
           } catch {
-            // Skip directories that can't be accessed
-            continue;
+            // skip directories that can't be accessed
+            return [];
           }
-        }
+        });
+
+      const subdirectoryResults = await Promise.all(subdirectoryPromises);
+
+      // flatten all subdirectory results into the main entries array
+      for (const subEntries of subdirectoryResults) {
+        allEntries.push(...subEntries);
       }
 
-      return allEntries.map((entry) => entry.name);
+      return allEntries;
     },
     async write() {
       // should not do anything, as this is a read-only bridge
     },
     async exists(path) {
-      const url = new URL(path, baseUrl);
-      return fetch(url.toString(), { method: "HEAD" })
+      const url = joinURL(baseUrl, path);
+      return fetch(url, { method: "HEAD" })
         .then((response) => {
           return response.ok;
         })
@@ -101,8 +127,9 @@ function HTTPFileSystemBridge(options: HTTPFileSystemBridgeOptions = {}): FileSy
       // read-only bridge, cannot remove files or directories
     },
     async stat(path) {
-      const url = new URL(path.startsWith("/") ? `__stat${path}` : `/__stat/${path}`, baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`);
-      const response = await fetch(url.toString());
+      const statPath = path.startsWith("/") ? `__stat${path}` : `/__stat/${path}`;
+      const url = joinURL(baseUrl, statPath);
+      const response = await fetch(url);
 
       if (!response.ok) {
         throw new Error(`Failed to stat path: ${response.statusText}`);

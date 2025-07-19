@@ -1,4 +1,12 @@
 {
   "extends": "@ucdjs/tsconfig/base",
-  "include": ["src/**/*", "*.ts", "test"]
+  "compilerOptions": {
+    "experimentalDecorators": true
+  },
+  "include": [
+    "src/**/*",
+    "*.ts",
+    "test",
+    "playgrounds/**/*"
+  ]
 }

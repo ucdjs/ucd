@@ -2,6 +2,7 @@ preferWorkspacePackages: true
 saveWorkspaceProtocol: false
 linkWorkspacePackages: true
 engineStrict: true
+catalogMode: "strict"
 
 packages:
   - "packages/*"
@@ -33,7 +34,7 @@ catalogs:
     # merge these together when heading inference is implemented better
     "@luxass/unicode-utils": ^0.9.0
     "@luxass/unicode-utils-new": npm:@luxass/unicode-utils@0.12.0-beta.9
-    "@luxass/utils": ^2.4.1
+    "@luxass/utils": ^2.6.0
     farver: ^0.4.2
     yargs-parser: ^22.0.0
     defu: ^6.1.4
@@ -47,6 +48,8 @@ catalogs:
     memfs: ^4.17.2
     apache-autoindex-parse: ^2.3.0
     openapi-fetch: ^0.14.0
+    "@clack/core": ^0.5.0
+    "@clack/prompts": ^0.11.0
 
   dev:
     "@types/picomatch": ^4.0.0

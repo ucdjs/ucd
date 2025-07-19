@@ -53,6 +53,15 @@ export function buildOpenApiConfig(version: string, servers: NonNullable<OpenAPI
     },
     tags: [
       {
+        name: "Files",
+        description: dedent`
+          Endpoints for accessing Unicode data files directly.
+
+          These endpoints provide a straightforward way to retrieve Unicode data files
+          without any additional processing or transformation.
+        `,
+      },
+      {
         name: "Misc",
         description: dedent`
           Miscellaneous endpoints that don't fit into other categories.
@@ -84,16 +93,7 @@ export function buildOpenApiConfig(version: string, servers: NonNullable<OpenAPI
         `,
       },
       {
-        name: "Files",
-        description: dedent`
-          Endpoints for accessing Unicode data files directly.
-
-          These endpoints provide a straightforward way to retrieve Unicode data files
-          without any additional processing or transformation.
-        `,
-      },
-      {
-        name: "Versions",
+        name: "Unicode Releases",
         description: dedent`
           Endpoints for accessing information about Unicode versions.
 
