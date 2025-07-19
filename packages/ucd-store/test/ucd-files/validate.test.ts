@@ -43,7 +43,7 @@ describe("validateUCDFiles", () => {
       });
 
       mockFetch([
-        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/16.0.0`, () => {
+        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/16.0.0`, () => {
           return HttpResponse.json(MOCK_UCD_FILES);
         }],
       ]);
@@ -71,7 +71,7 @@ describe("validateUCDFiles", () => {
       });
 
       mockFetch([
-        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/16.0.0`, () => {
+        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/16.0.0`, () => {
           return HttpResponse.json(MOCK_UCD_FILES);
         }],
       ]);
@@ -98,7 +98,7 @@ describe("validateUCDFiles", () => {
       });
 
       mockFetch([
-        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/16.0.0`, () => {
+        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/16.0.0`, () => {
           return HttpResponse.json(MOCK_UCD_FILES);
         }],
       ]);
@@ -118,7 +118,7 @@ describe("validateUCDFiles", () => {
       });
 
       mockFetch([
-        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/16.0.0`, () => {
+        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/16.0.0`, () => {
           return HttpResponse.json(MOCK_UCD_FILES);
         }],
       ]);
@@ -146,7 +146,7 @@ describe("validateUCDFiles", () => {
       });
 
       mockFetch([
-        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/16.0.0`, () => {
+        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/16.0.0`, () => {
           return HttpResponse.json(MOCK_UCD_FILES);
         }],
       ]);
@@ -169,7 +169,7 @@ describe("validateUCDFiles", () => {
       });
 
       mockFetch([
-        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/16.0.0`, () => {
+        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/16.0.0`, () => {
           return HttpResponse.json(MOCK_UCD_FILES);
         }],
       ]);
@@ -195,7 +195,7 @@ describe("validateUCDFiles", () => {
       });
 
       mockFetch([
-        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/16.0.0`, () => {
+        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/16.0.0`, () => {
           return HttpResponse.json(MOCK_UCD_FILES);
         }],
       ]);
@@ -224,7 +224,7 @@ describe("validateUCDFiles", () => {
       const customApiUrl = "https://custom-api.example.com";
 
       mockFetch([
-        [`GET ${customApiUrl}/api/v1/files/16.0.0`, () => {
+        ["GET", `${customApiUrl}/api/v1/files/16.0.0`, () => {
           return HttpResponse.json(MOCK_UCD_FILES);
         }],
       ]);
@@ -263,7 +263,7 @@ describe("validateUCDFiles", () => {
       } satisfies FileSystemBridge;
 
       mockFetch([
-        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/16.0.0`, () => {
+        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/16.0.0`, () => {
           return HttpResponse.json(MOCK_UCD_FILES);
         }],
       ]);
@@ -292,7 +292,7 @@ describe("validateUCDFiles", () => {
       });
 
       mockFetch([
-        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/99.0.0`, () => {
+        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/99.0.0`, () => {
           return new HttpResponse(null, { status: 404, statusText: "Not Found" });
         }],
       ]);
@@ -312,7 +312,7 @@ describe("validateUCDFiles", () => {
       });
 
       mockFetch([
-        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/16.0.0`, () => {
+        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/16.0.0`, () => {
           return HttpResponse.json("not an array");
         }],
       ]);
@@ -344,7 +344,7 @@ describe("validateUCDFiles", () => {
       } satisfies FileSystemBridge;
 
       mockFetch([
-        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/16.0.0`, () => {
+        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/16.0.0`, () => {
           return HttpResponse.json(MOCK_UCD_FILES);
         }],
       ]);
@@ -362,7 +362,7 @@ describe("validateUCDFiles", () => {
       const testdirPath = await testdir({});
 
       mockFetch([
-        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/16.0.0`, () => {
+        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/16.0.0`, () => {
           return HttpResponse.json(MOCK_UCD_FILES);
         }],
       ]);
@@ -414,7 +414,7 @@ describe("validateUCDFiles", () => {
       });
 
       mockFetch([
-        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/16.0.0`, () => {
+        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/16.0.0`, () => {
           return HttpResponse.json(nestedFileEntries);
         }],
       ]);
@@ -463,7 +463,7 @@ describe("validateUCDFiles", () => {
       });
 
       mockFetch([
-        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/16.0.0`, () => {
+        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/16.0.0`, () => {
           return HttpResponse.json(nestedFileEntries);
         }],
       ]);
@@ -485,7 +485,7 @@ describe("validateUCDFiles", () => {
       });
 
       mockFetch([
-        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/16.0.0`, () => {
+        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/16.0.0`, () => {
           return HttpResponse.json([]);
         }],
       ]);
@@ -506,7 +506,7 @@ describe("validateUCDFiles", () => {
       });
 
       mockFetch([
-        [`GET ${UCDJS_API_BASE_URL}/api/v1/files/16.0.0`, () => {
+        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/16.0.0`, () => {
           return HttpResponse.json(MOCK_UCD_FILES);
         }],
       ]);
