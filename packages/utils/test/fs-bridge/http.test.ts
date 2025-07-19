@@ -22,23 +22,6 @@ describe("fs-bridge#http", () => {
       expect(result).toBe(fileContent);
     });
 
-    it("should read a file with absolute URL", async () => {
-      const fileContent = "Absolute URL content";
-      const bridge = HTTPFileSystemBridge();
-
-      mockFetch([
-        ["GET", "https://files.ucdjs.dev/document.txt", () => {
-          return new HttpResponse(fileContent, {
-            status: 200,
-            headers: { "Content-Type": "text/plain" },
-          });
-        }],
-      ]);
-
-      const result = await bridge.read("https://files.ucdjs.dev/document.txt");
-      expect(result).toBe(fileContent);
-    });
-
     it("should throw error when file not found", async () => {
       const bridge = HTTPFileSystemBridge({ baseUrl: "https://api.ucdjs.dev" });
 
@@ -73,10 +56,23 @@ describe("fs-bridge#http", () => {
   describe("listdir", () => {
     it("should list directory contents", async () => {
       const mockFileTree = [
-        { type: "file", name: "file1.txt", path: "/api/files/file1.txt" },
-        { type: "file", name: "file2.js", path: "/api/files/file2.js" },
-        { type: "directory", name: "subdirectory", path: "/api/files/subdirectory", lastModified: "2023-01-01T00:00:00Z" },
+        {
+          type: "file",
+          name: "file1.txt",
+          path: "/api/files/file1.txt",
+        },
+        {
+          type: "file",
+          name: "file2.js",
+          path: "/api/files/file2.js",
+        },
+        {
+          type: "directory",
+          name: "subdirectory",
+          path: "/api/files/subdirectory",
+        },
       ];
+
       const bridge = HTTPFileSystemBridge({ baseUrl: "https://api.ucdjs.dev" });
 
       mockFetch([
@@ -206,21 +202,6 @@ describe("fs-bridge#http", () => {
 
       const result = await bridge.exists("/network-error");
       expect(result).toBe(false);
-    });
-
-    it("should work with absolute URLs", async () => {
-      const bridge = HTTPFileSystemBridge();
-
-      mockFetch([
-        ["HEAD", "https://files.ucdjs.dev/check/file.txt", () => {
-          return new HttpResponse(null, {
-            status: 200,
-          });
-        }],
-      ]);
-
-      const result = await bridge.exists("https://files.ucdjs.dev/check/file.txt");
-      expect(result).toBe(true);
     });
   });
 

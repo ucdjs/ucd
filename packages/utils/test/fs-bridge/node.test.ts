@@ -7,6 +7,7 @@ describe("fs-bridge#node", () => {
   describe("write and read", () => {
     it("should write and read a file", async () => {
       const testDir = await testdir({});
+
       const filePath = join(testDir, "test.txt");
       const content = "Hello, World!";
 

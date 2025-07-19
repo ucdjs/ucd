@@ -9,13 +9,11 @@ const ListDirResponseSchema = z.union([
     type: z.literal("directory"),
     name: z.string(),
     path: z.string(),
-    lastModified: z.number(),
   }),
   z.object({
     type: z.literal("file"),
     name: z.string(),
     path: z.string(),
-    lastModified: z.number(),
   }),
 ]);
 
@@ -68,7 +66,6 @@ function HTTPFileSystemBridge(options: HTTPFileSystemBridgeOptions = {}): FileSy
       }
 
       const data = await response.json();
-
       // validate response data
       const validatedData = z.array(ListDirResponseSchema).parse(data);
 
