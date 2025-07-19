@@ -1,4 +1,3 @@
-import type { FileSystemBridge } from "@ucdjs/utils/fs-bridge";
 import { HttpResponse, mockFetch } from "#msw-utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { PRECONFIGURED_FILTERS } from "@ucdjs/utils";
@@ -7,96 +6,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
 import { createHTTPUCDStore, createNodeUCDStore, createUCDStore } from "../src/factory";
 import { UCDStore } from "../src/store";
-
-function createReadOnlyMockFS(): FileSystemBridge {
-  return {
-    capabilities: {
-      read: true,
-      write: false,
-      listdir: false,
-      mkdir: false,
-      stat: false,
-      exists: true,
-      rm: false,
-    },
-
-    async read() {
-      return "[]";
-    },
-
-    async exists() {
-      return true;
-    },
-
-    async write(): Promise<never> {
-      throw new Error("write not supported");
-    },
-
-    async listdir(): Promise<never> {
-      throw new Error("listdir not supported");
-    },
-
-    async mkdir(): Promise<never> {
-      throw new Error("mkdir not supported");
-    },
-
-    async stat(): Promise<never> {
-      throw new Error("stat not supported");
-    },
-
-    async rm(): Promise<never> {
-      throw new Error("rm not supported");
-    },
-  };
-}
-
-function createMemoryMockFS(): FileSystemBridge {
-  const memoryFS = new Map<string, string>();
-  
-  return defineFileSystemBridge({
-    capabilities: {
-      read: true,
-      write: true,
-      listdir: false,
-      mkdir: false,
-      stat: false,
-      exists: true,
-      rm: false,
-    },
-
-    async read(path: string): Promise<string> {
-      const content = memoryFS.get(path);
-      if (content === undefined) {
-        throw new Error(`File not found: ${path}`);
-      }
-      return content;
-    },
-
-    async write(path: string, data: string): Promise<void> {
-      memoryFS.set(path, data);
-    },
-
-    async exists(path: string): Promise<boolean> {
-      return memoryFS.has(path);
-    },
-
-    async listdir(): Promise<never> {
-      throw new Error("listdir not supported");
-    },
-
-    async mkdir(): Promise<never> {
-      throw new Error("mkdir not supported");
-    },
-
-    async stat(): Promise<never> {
-      throw new Error("stat not supported");
-    },
-
-    async rm(): Promise<never> {
-      throw new Error("rm not supported");
-    },
-  });
-}
+import { createMemoryMockFS, createReadOnlyMockFS } from "./__shared";
 
 describe("store configuration", () => {
   beforeEach(() => {

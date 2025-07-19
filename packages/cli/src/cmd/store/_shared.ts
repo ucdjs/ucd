@@ -11,6 +11,7 @@ export interface CLIStoreCmdSharedFlags {
   remote?: boolean;
   patterns?: string[];
   baseUrl?: string;
+  versions?: string[];
 }
 
 export const SHARED_FLAGS = [
@@ -51,11 +52,12 @@ export async function createStoreFromFlags(flags: CLIStoreCmdSharedFlags): Promi
     basePath: storeDir,
     baseUrl,
     globalFilters: patterns,
+    versions: flags.versions || [],
   });
 }
 
-export async function runVersionPrompt() {
-  const a = await multiselect({
+export async function runVersionPrompt(): Promise<string[]> {
+  const selectedVersions = await multiselect({
     options: UNICODE_VERSION_METADATA.map(({ version }) => ({
       value: version,
       label: version,
@@ -64,10 +66,9 @@ export async function runVersionPrompt() {
     required: true,
   });
 
-  if (isCancel(a)) {
-    console.error("Operation cancelled.");
-    return;
+  if (isCancel(selectedVersions)) {
+    return [];
   }
 
-  return a;
+  return selectedVersions;
 }

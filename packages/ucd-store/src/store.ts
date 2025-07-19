@@ -361,7 +361,7 @@ export class UCDStore {
       versions = this.#versions,
     } = options;
 
-    const versionAnalyses: VersionAnalysis[] = [];
+    let versionAnalyses: VersionAnalysis[] = [];
 
     try {
       const promises = versions.map(async (version) => {
@@ -374,12 +374,12 @@ export class UCDStore {
         });
       });
 
-      await Promise.all(promises);
+      versionAnalyses = await Promise.all(promises);
 
       return {
         storeHealth: "healthy",
         versions: versionAnalyses,
-        totalFiles: 0,
+        totalFiles: versionAnalyses.reduce((sum, analysis) => sum + analysis.fileCount, 0) || 0,
       };
     } catch (err) {
       console.error(`Error during store analysis: ${err instanceof Error ? err.message : String(err)}`);
@@ -398,7 +398,7 @@ export class UCDStore {
     // get the expected files for this version
     const expectedFiles = await this.#getExpectedFilePaths(version);
 
-    // // get the actual files from the store
+    // get the actual files from the store
     const actualFiles = await this.getFilePaths(version);
 
     const orphanedFiles: string[] = [];

@@ -31,12 +31,6 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
     return;
   }
 
-  if (!versions || versions.length === 0) {
-    const pickedVersions = await runVersionPrompt();
-    console.log(`Picked versions: ${pickedVersions.join(", ")}`);
-    return;
-  }
-
   const {
     storeDir,
     force,
@@ -44,6 +38,17 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
     baseUrl,
     patterns,
   } = flags;
+
+  if (!versions || versions.length === 0) {
+    const pickedVersions = await runVersionPrompt();
+
+    if (pickedVersions.length === 0) {
+      console.error("No versions selected. Operation cancelled.");
+      return;
+    }
+
+    versions = pickedVersions;
+  }
 
   try {
     assertRemoteOrStoreDir(flags);
