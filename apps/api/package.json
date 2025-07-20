@@ -32,6 +32,7 @@
     "@luxass/eslint-config": "catalog:linting",
     "@luxass/spectral-ruleset": "catalog:linting",
     "@stoplight/spectral-cli": "catalog:linting",
+    "@ucdjs/eslint-plugin": "workspace:*",
     "@ucdjs/tsconfig": "workspace:*",
     "eslint": "catalog:linting",
     "eslint-plugin-format": "catalog:linting",
