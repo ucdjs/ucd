@@ -5,7 +5,7 @@ import { UnicodeVersionSchema } from "./v1_unicode-releases.schemas";
 export const LIST_ALL_UNICODE_VERSIONS_ROUTE = createRoute({
   method: "get",
   path: "/",
-  tags: ["Unicode Releases"],
+  tags: ["Releases"],
   description: "List all Unicode Versions available, including metadata and support status.",
   responses: {
     200: {

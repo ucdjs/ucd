@@ -7,7 +7,7 @@ export const OPENAPI_TAGS = {
   MISC: "Misc",
   UNICODE_PROXY: "Unicode Proxy",
   FILES: "Files",
-  VERSIONS: "Versions",
+  RELEASES: "Releases",
 } as const satisfies Record<string, string>;
 
 export type OpenAPITag = typeof OPENAPI_TAGS[keyof typeof OPENAPI_TAGS];
@@ -102,7 +102,7 @@ export function buildOpenApiConfig(version: string, servers: NonNullable<OpenAPI
         `,
       },
       {
-        name: OPENAPI_TAGS.VERSIONS,
+        name: OPENAPI_TAGS.RELEASES,
         description: dedent`
           Endpoints for accessing information about Unicode versions.
 
