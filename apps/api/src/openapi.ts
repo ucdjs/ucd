@@ -2,18 +2,15 @@ import type { OpenAPIHono } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
 
 export type OpenAPIObjectConfig = Parameters<OpenAPIHono["getOpenAPI31Document"]>[0];
-export type OpenAPITag
-  = | "Misc"
-    | "Unicode Proxy"
-    | "Files"
-    | "Versions";
 
 export const OPENAPI_TAGS = {
   MISC: "Misc",
   UNICODE_PROXY: "Unicode Proxy",
   FILES: "Files",
   VERSIONS: "Versions",
-} as const satisfies Record<string, OpenAPITag>;
+} as const satisfies Record<string, string>;
+
+export type OpenAPITag = typeof OPENAPI_TAGS[keyof typeof OPENAPI_TAGS];
 
 export function buildOpenApiConfig(version: string, servers: NonNullable<OpenAPIObjectConfig["servers"]>) {
   return {
@@ -65,7 +62,7 @@ export function buildOpenApiConfig(version: string, servers: NonNullable<OpenAPI
     },
     tags: [
       {
-        name: "Misc",
+        name: OPENAPI_TAGS.MISC,
         description: dedent`
           Miscellaneous endpoints that don't fit into other categories.
 
@@ -74,7 +71,7 @@ export function buildOpenApiConfig(version: string, servers: NonNullable<OpenAPI
         `,
       },
       {
-        name: "Unicode Proxy",
+        name: OPENAPI_TAGS.UNICODE_PROXY,
         description: dedent`
           Proxy endpoints for accessing Unicode data files from unicode-proxy.ucdjs.dev.
 
@@ -96,7 +93,7 @@ export function buildOpenApiConfig(version: string, servers: NonNullable<OpenAPI
         `,
       },
       {
-        name: "Files",
+        name: OPENAPI_TAGS.FILES,
         description: dedent`
           Endpoints for accessing Unicode data files directly.
 
@@ -105,7 +102,7 @@ export function buildOpenApiConfig(version: string, servers: NonNullable<OpenAPI
         `,
       },
       {
-        name: "Versions",
+        name: OPENAPI_TAGS.VERSIONS,
         description: dedent`
           Endpoints for accessing information about Unicode versions.
 
