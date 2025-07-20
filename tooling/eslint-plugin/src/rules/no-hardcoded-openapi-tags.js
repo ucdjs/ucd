@@ -4,7 +4,6 @@ import { ESLintUtils } from "@typescript-eslint/utils";
 export default ESLintUtils.RuleCreator.withoutDocs({
   meta: {
     type: "problem",
-    hasSuggestions: true,
     messages: {
       "no-hardcoded-openapi-tags": "Use OPENAPI_TAGS constant instead of hardcoded string '{{tag}}'.",
     },
