@@ -13,7 +13,8 @@
     "lint": "eslint .",
     "lint:openapi": "spectral lint ./.generated/openapi.json",
     "generate:types": "wrangler types",
-    "typecheck": "pnpm run generate:types && tsc --noEmit"
+    "typecheck": "pnpm run generate:types && tsc --noEmit",
+    "clean": "git clean -xdf node_modules .wrangler dist .generated"
   },
   "dependencies": {
     "@hono/zod-openapi": "catalog:workers",
