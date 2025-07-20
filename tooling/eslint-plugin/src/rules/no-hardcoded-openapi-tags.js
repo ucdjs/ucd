@@ -6,7 +6,7 @@ export default ESLintUtils.RuleCreator.withoutDocs({
     type: "problem",
     hasSuggestions: true,
     messages: {
-      hardcodedOpenApiTags: "Avoid hardcoded OpenAPI tags in the code.",
+      "no-hardcoded-openapi-tags": "Use OPENAPI_TAGS constant instead of hardcoded string '{{tag}}'.",
     },
     fixable: "code",
     schema: [],
@@ -23,12 +23,7 @@ export default ESLintUtils.RuleCreator.withoutDocs({
 
         const firstArg = node.arguments[0];
 
-        if (
-          firstArg == null || firstArg.type !== "ObjectExpression" || !firstArg.properties || firstArg.properties.some((prop) =>
-            prop.type === "Property"
-            && prop.key.type === "Identifier"
-            && prop.key.name === "tags"
-            && prop.value.type === "ArrayExpression")) {
+        if (firstArg?.type !== "ObjectExpression" || !firstArg.properties) {
           return;
         }
 
@@ -39,29 +34,30 @@ export default ESLintUtils.RuleCreator.withoutDocs({
             && prop.key.name === "tags",
         );
 
-        if (tagsProperty == null || tagsProperty.value.type !== "ArrayExpression") {
+        if (!tagsProperty || tagsProperty.type !== "Property" || tagsProperty.value.type !== "ArrayExpression") {
           return;
         }
 
         for (const element of tagsProperty.value.elements) {
-          if (element.type !== "Literal" || typeof element.value !== "string") {
+          if (element?.type !== "Literal" || typeof element.value !== "string") {
             continue;
           }
 
+          const tagValue = element.value;
+          const constantName = tagValue.toUpperCase().replace(/[^A-Z0-9]/g, "_");
+
           context.report({
             node: element,
-            messageId: "hardcodedOpenApiTags",
-            suggest: [
-              {
-                messageId: "hardcodedOpenApiTags",
-                fix(fixer) {
-                  return fixer.replaceText(
-                    element,
-                    `OPENAPI_TAGS.${element.value.toUpperCase()}`,
-                  );
-                },
-              },
-            ],
+            messageId: "no-hardcoded-openapi-tags",
+            data: {
+              tag: tagValue,
+            },
+            fix(fixer) {
+              return fixer.replaceText(
+                element,
+                `OPENAPI_TAGS.${constantName}`,
+              );
+            },
           });
         }
       },
