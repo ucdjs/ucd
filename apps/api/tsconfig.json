@@ -5,9 +5,6 @@
     "lib": ["ESNext"],
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "paths": {
-      "#openapi": ["./apps/api/src/openapi.ts"]
-    },
     "resolveJsonModule": true,
     "types": [
       "./worker-configuration.d.ts",

@@ -1,11 +1,12 @@
 import { createRoute, z } from "@hono/zod-openapi";
 import { ApiErrorSchema } from "@ucdjs/worker-shared";
+import { OPENAPI_TAGS } from "../openapi";
 import { UnicodeVersionSchema } from "./v1_unicode-releases.schemas";
 
 export const LIST_ALL_UNICODE_VERSIONS_ROUTE = createRoute({
   method: "get",
   path: "/",
-  tags: ["Releases"],
+  tags: [OPENAPI_TAGS.RELEASES],
   description: "List all Unicode Versions available, including metadata and support status.",
   responses: {
     200: {
