@@ -43,11 +43,53 @@ const NodeFileSystemBridge = defineFileSystemBridge({
       withFileTypes: true,
     });
 
-    return entries.map((entry): FSEntry => ({
-      name: entry.name,
-      path: recursive ? `${entry.parentPath}/${entry.name}` : entry.name,
-      type: entry.isDirectory() ? "directory" : "file",
-    }));
+    if (!recursive) {
+      return entries.map((entry) => ({
+        name: entry.name,
+        path: entry.name,
+        type: entry.isDirectory() ? "directory" : "file",
+        ...(entry.isDirectory() ? { children: [] } : {}),
+      }));
+    }
+
+    // Build a map of all entries by their full path
+    const entryMap = new Map<string, FSEntry>();
+    const rootEntries: FSEntry[] = [];
+
+    // First pass: create all entries
+    for (const entry of entries) {
+      const fullPath = `${entry.parentPath}/${entry.name}`;
+      const relativePath = fullPath.replace(`${path}/`, "");
+
+      const fsEntry: FSEntry = {
+        name: entry.name,
+        path: relativePath,
+        type: entry.isDirectory() ? "directory" : "file",
+        ...(entry.isDirectory() ? { children: [] } : {}),
+      };
+
+      entryMap.set(fullPath, fsEntry);
+
+      // If this entry is directly under the root path, add to root
+      if (entry.parentPath === path) {
+        rootEntries.push(fsEntry);
+      }
+    }
+
+    // Second pass: establish parent-child relationships
+    for (const entry of entries) {
+      const fullPath = `${entry.parentPath}/${entry.name}`;
+      const fsEntry = entryMap.get(fullPath);
+
+      if (fsEntry && entry.parentPath !== path) {
+        const parent = entryMap.get(entry.parentPath);
+        if (parent && parent.type === "directory" && parent.children) {
+          parent.children.push(fsEntry);
+        }
+      }
+    }
+
+    return rootEntries;
   },
   async write(path, data, encoding = "utf-8") {
     return writeFile(path, data, { encoding });

@@ -16,23 +16,16 @@ export interface FSStats {
   size: number;
 }
 
-export interface FSEntry {
-  /**
-   * The name of the entry
-   * @example "file.txt" or "directory"
-   */
+export type FSEntry = {
+  type: "file";
   name: string;
-
-  /**
-   * The path of the entry
-   */
   path: string;
-
-  /**
-   *  The type of the entry
-   */
-  type: "file" | "directory";
-}
+} | {
+  type: "directory";
+  name: string;
+  path: string;
+  children?: FSEntry[];
+};
 
 export interface FileSystemBridge {
   /**

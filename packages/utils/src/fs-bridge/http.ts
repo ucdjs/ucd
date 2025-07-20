@@ -47,6 +47,7 @@ function HTTPFileSystemBridge(options: HTTPFileSystemBridgeOptions = {}): FileSy
     async read(path) {
       const url = joinURL(baseUrl, path);
       const response = await fetch(url);
+      console.log(url);
       if (!response.ok) {
         throw new Error(`Failed to read remote file: ${response.statusText}`);
       }
