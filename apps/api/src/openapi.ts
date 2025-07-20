@@ -2,6 +2,18 @@ import type { OpenAPIHono } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
 
 export type OpenAPIObjectConfig = Parameters<OpenAPIHono["getOpenAPI31Document"]>[0];
+export type OpenAPITag
+  = | "Misc"
+    | "Unicode Proxy"
+    | "Files"
+    | "Versions";
+
+export const OPENAPI_TAGS = {
+  MISC: "Misc",
+  UNICODE_PROXY: "Unicode Proxy",
+  FILES: "Files",
+  VERSIONS: "Versions",
+} as const satisfies Record<string, OpenAPITag>;
 
 export function buildOpenApiConfig(version: string, servers: NonNullable<OpenAPIObjectConfig["servers"]>) {
   return {
