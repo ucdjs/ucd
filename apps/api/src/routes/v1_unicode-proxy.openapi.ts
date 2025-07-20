@@ -1,5 +1,6 @@
 import { createRoute, z } from "@hono/zod-openapi";
 import { ApiErrorSchema } from "@ucdjs/worker-shared";
+import { OPENAPI_TAGS } from "../openapi";
 import { ProxyResponseSchema } from "./v1_unicode-proxy.schemas";
 
 const WILDCARD_PARAM = {
@@ -34,7 +35,7 @@ const WILDCARD_PARAM = {
 export const UNICODE_PROXY_WILDCARD_ROUTE = createRoute({
   method: "get",
   path: "/{wildcard}",
-  tags: ["Unicode Proxy"],
+  tags: [OPENAPI_TAGS.PROXY],
   description: "Proxy requests to unicode-proxy.ucdjs.dev",
   parameters: [
     WILDCARD_PARAM,
@@ -92,7 +93,7 @@ export const UNICODE_PROXY_WILDCARD_ROUTE = createRoute({
 export const UNICODE_PROXY_STAT_WILDCARD_ROUTE = createRoute({
   method: "get",
   path: "/__stat/{wildcard}",
-  tags: ["Unicode Proxy"],
+  tags: [OPENAPI_TAGS.PROXY],
   description: "Proxy requests to unicode-proxy.ucdjs.dev",
   parameters: [
     WILDCARD_PARAM,

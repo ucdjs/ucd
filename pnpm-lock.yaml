@@ -138,11 +138,6 @@ catalogs:
       specifier: ^4.25.0
       version: 4.25.0
 
-patchedDependencies:
-  '@hono/zod-openapi':
-    hash: 1ba3ae358d56af56dcc7f125155ba50c42c1d1909427729f9487b21aa38e25e2
-    path: patches/@hono__zod-openapi.patch
-
 importers:
 
   .:
@@ -182,7 +177,7 @@ importers:
     dependencies:
       '@hono/zod-openapi':
         specifier: catalog:workers
-        version: 1.0.2(patch_hash=1ba3ae358d56af56dcc7f125155ba50c42c1d1909427729f9487b21aa38e25e2)(hono@4.8.5)(zod@4.0.5)
+        version: 1.0.2(hono@4.8.5)(zod@4.0.5)
       '@luxass/unicode-utils-new':
         specifier: catalog:prod
         version: '@luxass/unicode-utils@0.12.0-beta.9'
@@ -577,7 +572,7 @@ importers:
     dependencies:
       '@hono/zod-openapi':
         specifier: catalog:workers
-        version: 1.0.2(patch_hash=1ba3ae358d56af56dcc7f125155ba50c42c1d1909427729f9487b21aa38e25e2)(hono@4.8.5)(zod@4.0.5)
+        version: 1.0.2(hono@4.8.5)(zod@4.0.5)
       '@luxass/utils':
         specifier: catalog:prod
         version: 2.6.0
@@ -5390,7 +5385,7 @@ snapshots:
       '@eslint/core': 0.14.0
       levn: 0.4.1
 
-  '@hono/zod-openapi@1.0.2(patch_hash=1ba3ae358d56af56dcc7f125155ba50c42c1d1909427729f9487b21aa38e25e2)(hono@4.8.5)(zod@4.0.5)':
+  '@hono/zod-openapi@1.0.2(hono@4.8.5)(zod@4.0.5)':
     dependencies:
       '@asteasolutions/zod-to-openapi': 8.0.0(zod@4.0.5)
       '@hono/zod-validator': 0.7.2(hono@4.8.5)(zod@4.0.5)

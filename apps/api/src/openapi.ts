@@ -5,7 +5,7 @@ export type OpenAPIObjectConfig = Parameters<OpenAPIHono["getOpenAPI31Document"]
 
 export const OPENAPI_TAGS = {
   MISC: "Misc",
-  UNICODE_PROXY: "Unicode Proxy",
+  PROXY: "Proxy",
   FILES: "Files",
   RELEASES: "Releases",
 } as const satisfies Record<string, string>;
@@ -71,7 +71,7 @@ export function buildOpenApiConfig(version: string, servers: NonNullable<OpenAPI
         `,
       },
       {
-        name: OPENAPI_TAGS.UNICODE_PROXY,
+        name: OPENAPI_TAGS.PROXY,
         description: dedent`
           Proxy endpoints for accessing Unicode data files from unicode-proxy.ucdjs.dev.
 

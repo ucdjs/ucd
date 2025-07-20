@@ -2,8 +2,6 @@ preferWorkspacePackages: true
 saveWorkspaceProtocol: false
 linkWorkspacePackages: true
 engineStrict: true
-patchedDependencies:
-  '@hono/zod-openapi': patches/@hono__zod-openapi.patch
 
 packages:
   - "packages/*"
