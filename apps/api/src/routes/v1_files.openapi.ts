@@ -1,11 +1,12 @@
 import { createRoute, z } from "@hono/zod-openapi";
 import { ApiErrorSchema } from "@ucdjs/worker-shared";
+import { OPENAPI_TAGS } from "../openapi";
 import { UnicodeVersionFileSchema } from "./v1_files.schemas";
 
 export const GET_UNICODE_FILES_BY_VERSION_ROUTE = createRoute({
   method: "get",
   path: "/{version}",
-  tags: ["Files"],
+  tags: [OPENAPI_TAGS.FILES],
   parameters: [
     {
       name: "version",
