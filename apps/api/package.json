@@ -27,7 +27,6 @@
     "zod": "catalog:prod"
   },
   "devDependencies": {
-    "@asteasolutions/zod-to-openapi": "catalog:dev",
     "@cloudflare/vitest-pool-workers": "catalog:testing",
     "@luxass/eslint-config": "catalog:linting",
     "@luxass/spectral-ruleset": "catalog:linting",
