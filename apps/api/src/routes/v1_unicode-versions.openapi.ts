@@ -48,7 +48,7 @@ export const LIST_ALL_UNICODE_VERSIONS_ROUTE = createRoute({
 export const GET_UNICODE_MAPPINGS = createRoute({
   method: "get",
   path: "/mappings",
-  tags: ["Misc"],
+  tags: [OPENAPI_TAGS.MISC],
   deprecated: true,
   description: "List all Unicode Versions mappings",
   responses: {
