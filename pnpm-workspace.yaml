@@ -2,6 +2,8 @@ preferWorkspacePackages: true
 saveWorkspaceProtocol: false
 linkWorkspacePackages: true
 engineStrict: true
+patchedDependencies:
+  '@hono/zod-openapi': patches/@hono__zod-openapi.patch
 
 packages:
   - "packages/*"
@@ -58,7 +60,6 @@ catalogs:
     nanotar: ^0.2.0
     openapi-typescript: ^7.8.0
     tsx: ^4.20.3
-    "@asteasolutions/zod-to-openapi": ^8.0.0
 
   workers:
     wrangler: ^4.25.0

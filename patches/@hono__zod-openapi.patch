@@ -1,0 +1,41 @@
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+deleted file mode 100644
+index 749b5775754155d7a07422dc20e43035e6da6fe2..0000000000000000000000000000000000000000
+diff --git a/dist/index.d.cts b/dist/index.d.cts
+index 944303b72ab126993d2dd7da971ce187bc9256ea..a19c13be5c05bb7620bc1da1fcc4051f371f0bf0 100644
+--- a/dist/index.d.cts
++++ b/dist/index.d.cts
+@@ -8,11 +8,13 @@ import { OpenAPIObject } from 'openapi3-ts/oas30';
+ import { OpenAPIObject as OpenAPIObject$1 } from 'openapi3-ts/oas31';
+ import { ZodType, z, ZodError } from 'zod';
+ export { z } from 'zod';
++import { OpenAPITag } from '#openapi'
+ 
+ type MaybePromise<T> = Promise<T> | T;
+-type RouteConfig = RouteConfig$1 & {
++type RouteConfig = Omit<RouteConfig$1, 'tags'> & {
+     middleware?: MiddlewareHandler | MiddlewareHandler[];
+     hide?: boolean;
++    tags?: OpenAPITag[];
+ };
+ type RequestTypes = {
+     body?: ZodRequestBody;
+diff --git a/dist/index.d.ts b/dist/index.d.ts
+index 944303b72ab126993d2dd7da971ce187bc9256ea..a19c13be5c05bb7620bc1da1fcc4051f371f0bf0 100644
+--- a/dist/index.d.ts
++++ b/dist/index.d.ts
+@@ -8,11 +8,13 @@ import { OpenAPIObject } from 'openapi3-ts/oas30';
+ import { OpenAPIObject as OpenAPIObject$1 } from 'openapi3-ts/oas31';
+ import { ZodType, z, ZodError } from 'zod';
+ export { z } from 'zod';
++import { OpenAPITag } from '#openapi'
+ 
+ type MaybePromise<T> = Promise<T> | T;
+-type RouteConfig = RouteConfig$1 & {
++type RouteConfig = Omit<RouteConfig$1, 'tags'> & {
+     middleware?: MiddlewareHandler | MiddlewareHandler[];
+     hide?: boolean;
++    tags?: OpenAPITag[];
+ };
+ type RequestTypes = {
+     body?: ZodRequestBody;
