@@ -1,4 +1,4 @@
-import type { createClient, UnicodeVersionFile } from "@ucdjs/fetch";
+import type { createClient, UnicodeFileTree } from "@ucdjs/fetch";
 import type { PathFilter } from "@ucdjs/utils";
 import type { FileSystemBridge } from "@ucdjs/utils/fs-bridge";
 import type { DownloadError, MirrorOptions } from "./mirror";
@@ -26,7 +26,7 @@ export async function internal_mirrorUnicodeVersion(version: string, mirrorOptio
   try {
     await fs.mkdir(versionOutputDir);
 
-    const { data, error, response } = await client.GET("/api/v1/files/{version}", {
+    const { data, error, response } = await client.GET("/api/v1/versions/{version}/file-tree", {
       params: {
         path: {
           version,
@@ -92,7 +92,7 @@ interface InternalProcessEntriesOptions {
   versionOutputDir: string;
   currentDirPath?: string;
   fs: FileSystemBridge;
-  entries: UnicodeVersionFile[];
+  entries: UnicodeFileTree;
   errors: DownloadError[];
   files: string[];
   apiUrl?: string;
@@ -169,9 +169,9 @@ export async function internal__processEntries(
   await Promise.all([...dirPromises, ...filePromises]);
 }
 
-export function internal__filterEntriesRecursive(entries: UnicodeVersionFile[], patternMatcher: PathFilter): UnicodeVersionFile[] {
-  function filterEntries(entryList: UnicodeVersionFile[], prefix = ""): UnicodeVersionFile[] {
-    const result: UnicodeVersionFile[] = [];
+export function internal__filterEntriesRecursive(entries: UnicodeFileTree, patternMatcher: PathFilter): UnicodeFileTree {
+  function filterEntries(entryList: UnicodeFileTree, prefix = ""): UnicodeFileTree {
+    const result: UnicodeFileTree = [];
     for (const entry of entryList) {
       const fullPath = prefix ? `${prefix}/${entry.path}` : entry.path;
 

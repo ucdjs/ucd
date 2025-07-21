@@ -1,6 +1,6 @@
-import type { UnicodeVersionFile } from "@ucdjs/fetch";
+import type { UnicodeFileTree } from "@ucdjs/fetch";
 
-export function flattenFilePaths(entries: UnicodeVersionFile[], prefix = ""): string[] {
+export function flattenFilePaths(entries: UnicodeFileTree, prefix = ""): string[] {
   const paths: string[] = [];
 
   for (const file of entries) {
