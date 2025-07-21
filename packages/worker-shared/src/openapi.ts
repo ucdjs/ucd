@@ -60,13 +60,17 @@ export interface ResponseComponentBuilder<TCodes extends readonly SupportedStatu
   /**
    * Generates response references for the specified status codes
    */
-  generateReferences: (codes: TCodes) => GenerateReferencesOutput<TCodes>;
+  generateReferences: <TProvidedCodes extends readonly NonNullable<TCodes[number]>[]>(codes: TProvidedCodes) => GenerateReferencesOutput<TProvidedCodes>;
 }
 
 /**
  * Validates that a status code is supported
  */
-function validateStatusCode(statusCode: HonoErrorStatusCode): statusCode is SupportedStatusCode {
+function validateStatusCode(statusCode?: HonoErrorStatusCode): statusCode is SupportedStatusCode {
+  if (statusCode == null) {
+    return false;
+  }
+
   return statusCode in ERROR_DESCRIPTIONS && statusCode in RESPONSE_COMPONENT_NAMES;
 }
 
@@ -139,10 +143,14 @@ export function createResponseComponentBuilder<TCodes extends readonly Supported
       }
     },
 
-    generateReferences(codes: TCodes) {
+    generateReferences(codes) {
       const result = {} as GenerateReferencesOutput<TCodes>;
 
       for (const code of codes) {
+        if (!validateStatusCode(code)) {
+          throw new Error(`Unsupported status code: ${code}`);
+        }
+
         const componentName = RESPONSE_COMPONENT_NAMES[code];
 
         // The "GenerateReferencesOutput" expects a full response object,

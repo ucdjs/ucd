@@ -17,6 +17,7 @@ export const { generateReferences, registerApp } = createResponseComponentBuilde
   429,
   500,
   502,
+  503,
 ]);
 
 export type OpenAPITag = typeof OPENAPI_TAGS[keyof typeof OPENAPI_TAGS];
