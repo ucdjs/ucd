@@ -13,5 +13,6 @@ export type UnicodeVersionMappings = components["schemas"]["UnicodeVersionMappin
 export type ProxyDirectoryResponse = components["schemas"]["ProxyDirectoryResponse"];
 export type ProxyFileResponse = components["schemas"]["ProxyFileResponse"];
 export type ProxyResponse = components["schemas"]["ProxyResponse"];
+export type ProxyMetadata = components["schemas"]["ProxyMetadata"];
 export type UnicodeVersionFile = components["schemas"]["UnicodeVersionFile"];
 export type UnicodeVersionFiles = components["schemas"]["UnicodeVersionFiles"];

@@ -8,7 +8,7 @@ export const V1_UNICODE_PROXY_ROUTER = new OpenAPIHono<HonoEnv>().basePath("/api
 
 // A hack for OpenAPI not supporting splat routes
 // So we register the path with a normal parameter named "wildcard",
-// And then adds a normal route handler that matches any path using the wildcard parameter.
+// and then by adding a normal route handler that matches any path using the wildcard parameter.
 // This allows us to still describe the route in OpenAPI,
 // while also allowing the actual route to match any path.
 

@@ -83,23 +83,11 @@ export function buildOpenApiConfig(version: string, servers: NonNullable<OpenAPI
       {
         name: OPENAPI_TAGS.PROXY,
         description: dedent`
-          Proxy endpoints for accessing Unicode data files from unicode-proxy.ucdjs.dev.
+          Proxy endpoints for accessing Unicode data files and directories.
 
-          ## How it works
-          These endpoints act as a proxy to the official Unicode data repository,
-          allowing you to access Unicode data files through our API without
-          needing to make direct requests to the Unicode servers.
-
-          ## Wildcard Pattern
-          The wildcard parameter allows you to specify any path within the Unicode data structure.
-          This means you can access specific files, directories, or even entire versions of Unicode data.
-          For example, you can see the paths defined below:
-
-          ## Common Usage Examples
-          - \`/latest/ucd/UnicodeData.txt\` - Get the latest UnicodeData.txt file
-          - \`/15.0.0/ucd/UnicodeData.txt\` - Get UnicodeData.txt for Unicode version 15.0.0
-          - \`/latest/ucd/auxiliary/GraphemeBreakProperty.txt\` - Access files in subdirectories
-          - \`/14.0.0/ucd/extracted/DerivedCombiningClass.txt\` - Access extracted data files
+          These endpoints provide secure access to official Unicode data through our API,
+          with built-in caching and path validation. Detailed usage examples and path
+          formats are documented in the individual endpoint specifications.
         `,
       },
       {

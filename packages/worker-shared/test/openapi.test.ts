@@ -34,6 +34,7 @@ function expectComponentRegistration(
       description,
       content: {
         "application/json": {
+          examples: expect.any(Object),
           schema: {
             $ref: "#/components/schemas/ApiError",
           },
