@@ -4,7 +4,6 @@ import { Scalar } from "@scalar/hono-api-reference";
 import { errorHandler, notFoundHandler, setupCors } from "@ucdjs/worker-shared";
 import { env } from "hono/adapter";
 import { buildOpenApiConfig, registerApp } from "./openapi";
-import { V1_FILES_ROUTER } from "./routes/v1_files";
 import { V1_UNICODE_PROXY_ROUTER } from "./routes/v1_unicode-proxy";
 import { V1_VERSIONS_ROUTER } from "./routes/v1_versions";
 
@@ -14,7 +13,6 @@ registerApp(app);
 setupCors(app);
 
 app.route("/", V1_UNICODE_PROXY_ROUTER);
-app.route("/", V1_FILES_ROUTER);
 app.route("/", V1_VERSIONS_ROUTER);
 
 app.get(
