@@ -1,5 +1,4 @@
 import { z } from "@hono/zod-openapi";
-import { UNICODE_TO_UCD_VERSION_MAPPINGS } from "@luxass/unicode-utils-new";
 
 export const UnicodeVersionSchema = z.object({
   version: z.string().openapi({
