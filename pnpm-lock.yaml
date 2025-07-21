@@ -592,18 +592,12 @@ importers:
       '@ucdjs/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/tsconfig
-      '@ucdjs/tsdown-config':
-        specifier: workspace:*
-        version: link:../../tooling/tsdown-config
       eslint:
         specifier: catalog:linting
         version: 9.31.0(jiti@2.4.2)
       publint:
         specifier: catalog:dev
         version: 0.3.12
-      tsdown:
-        specifier: catalog:dev
-        version: 0.12.9(publint@0.3.12)(typescript@5.8.3)
       typescript:
         specifier: catalog:dev
         version: 5.8.3
