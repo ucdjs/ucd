@@ -100,7 +100,6 @@ describe("unicode API Client", () => {
     describe("error handling", () => {
       it("should handle 404 Not Found errors", async () => {
         const errorResponse: ApiError = {
-          path: "/api/v1/unicode-versions",
           message: "Resource not found",
           status: 404,
           timestamp: "2025-06-26T12:00:00Z",
@@ -124,7 +123,6 @@ describe("unicode API Client", () => {
 
       it("should handle 500 Internal Server Error", async () => {
         const errorResponse: ApiError = {
-          path: "/api/v1/unicode-versions",
           message: "Internal server error occurred",
           status: 500,
           timestamp: "2025-06-26T12:00:00Z",

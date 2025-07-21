@@ -1,9 +1,6 @@
 import { z } from "@hono/zod-openapi";
 
 export const ApiErrorSchema = z.object({
-  path: z.string().openapi({
-    description: "The path of the request",
-  }),
   message: z.string().openapi({
     description: "The error message",
   }),
