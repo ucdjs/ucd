@@ -1,4 +1,5 @@
 import type { OpenAPIHono } from "@hono/zod-openapi";
+import type { Env } from "hono";
 import type { ClientErrorStatusCode, ServerErrorStatusCode } from "hono/utils/http-status";
 import { ApiErrorSchema } from "./schemas";
 
@@ -54,7 +55,7 @@ export interface ResponseComponentBuilder<TCodes extends readonly SupportedStatu
   /**
    * Registers error response components with the OpenAPI registry
    */
-  registerApp: (app: OpenAPIHono<any>) => void;
+  registerApp: <TEnv extends Env>(app: OpenAPIHono<TEnv>) => void;
 
   /**
    * Generates response references for the specified status codes
@@ -104,7 +105,7 @@ export function createResponseComponentBuilder<TCodes extends readonly Supported
   }
 
   return {
-    registerApp(app: OpenAPIHono<any>) {
+    registerApp<TEnv extends Env>(app: OpenAPIHono<TEnv>) {
       if (!app.openAPIRegistry) {
         throw new Error("OpenAPI registry is not initialized in the app");
       }
