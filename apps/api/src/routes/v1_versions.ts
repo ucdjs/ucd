@@ -1,19 +1,14 @@
 import type { HonoEnv } from "../types";
-import type { UnicodeVersion } from "./v1_unicode-versions.schemas";
+import type { UnicodeVersion } from "./v1_versions.schemas";
 import { OpenAPIHono } from "@hono/zod-openapi";
-import { getCurrentDraftVersion, hasUCDFolderPath, resolveUCDVersion, UNICODE_TO_UCD_VERSION_MAPPINGS } from "@luxass/unicode-utils-new";
+import { getCurrentDraftVersion, resolveUCDVersion, UNICODE_TO_UCD_VERSION_MAPPINGS } from "@luxass/unicode-utils-new";
 import { internalServerError, notFound } from "@ucdjs/worker-shared";
 import { cache } from "hono/cache";
-import { GET_UNICODE_MAPPINGS, LIST_ALL_UNICODE_VERSIONS_ROUTE } from "./v1_unicode-versions.openapi";
+import { LIST_ALL_UNICODE_VERSIONS_ROUTE, LIST_VERSION_MAPPINGS } from "./v1_versions.openapi";
 
-export const V1_UNICODE_VERSIONS_ROUTER = new OpenAPIHono<HonoEnv>().basePath("/api/v1/unicode-versions");
+export const V1_VERSIONS_ROUTER = new OpenAPIHono<HonoEnv>().basePath("/api/v1/versions");
 
-V1_UNICODE_VERSIONS_ROUTER.get("*", cache({
-  cacheName: "unicode-api:versions",
-  cacheControl: "max-age=172800",
-}));
-
-V1_UNICODE_VERSIONS_ROUTER.openapi(LIST_ALL_UNICODE_VERSIONS_ROUTE, async (c) => {
+V1_VERSIONS_ROUTER.openapi(LIST_ALL_UNICODE_VERSIONS_ROUTE, async (c) => {
   try {
     const response = await fetch("https://www.unicode.org/versions/enumeratedversions.html");
     if (!response.ok) {
@@ -31,7 +26,7 @@ V1_UNICODE_VERSIONS_ROUTER.openapi(LIST_ALL_UNICODE_VERSIONS_ROUTE, async (c) =>
     );
 
     if (!tableMatch) {
-      return notFound({
+      return notFound(c, {
         message: "Unicode versions table not found",
       });
     }
@@ -55,24 +50,27 @@ V1_UNICODE_VERSIONS_ROUTER.openapi(LIST_ALL_UNICODE_VERSIONS_ROUTE, async (c) =>
       const dateMatch = row.match(/<td[^>]*>(\d{4})<\/td>/);
       if (!dateMatch) continue;
       const ucdVersion = resolveUCDVersion(version);
-      const ucdUrl = `https://www.unicode.org/Public/${ucdVersion}/${hasUCDFolderPath(ucdVersion) ? "ucd" : ""}`;
+      const publicUrl = `https://www.unicode.org/Public/${ucdVersion}`;
 
       versions.unshift({
         version,
         documentationUrl: documentationUrl!,
         date: dateMatch[1]!,
-        ucdUrl,
-        status: draft === version ? "draft" : "stable",
+        url: publicUrl,
+        mappedUcdVersion: ucdVersion === version ? null : ucdVersion,
+        type: draft === version ? "draft" : "stable",
       });
     }
 
-    if (draft != null && !versions.some((v) => v.status === "draft")) {
+    if (draft != null && !versions.some((v) => v.type === "draft")) {
+      const draftUcdVersion = resolveUCDVersion(draft);
       versions.push({
         version: draft,
         documentationUrl: `https://www.unicode.org/versions/Unicode${draft}/`,
         date: null,
-        ucdUrl: `https://www.unicode.org/Public/${draft}/ucd`,
-        status: "draft",
+        url: `https://www.unicode.org/Public/${draft}`,
+        mappedUcdVersion: draftUcdVersion === draft ? null : draftUcdVersion,
+        type: "draft",
       });
     }
 
@@ -99,6 +97,6 @@ V1_UNICODE_VERSIONS_ROUTER.openapi(LIST_ALL_UNICODE_VERSIONS_ROUTE, async (c) =>
   }
 });
 
-V1_UNICODE_VERSIONS_ROUTER.openapi(GET_UNICODE_MAPPINGS, async (c) => {
+V1_VERSIONS_ROUTER.openapi(LIST_VERSION_MAPPINGS, (c) => {
   return c.json(UNICODE_TO_UCD_VERSION_MAPPINGS, 200);
 });
