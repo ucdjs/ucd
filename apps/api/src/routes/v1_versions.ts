@@ -5,12 +5,11 @@ import {
   getCurrentDraftVersion,
   resolveUCDVersion,
   UNICODE_STABLE_VERSION,
-  UNICODE_TO_UCD_VERSION_MAPPINGS,
   UNICODE_VERSION_METADATA,
 } from "@luxass/unicode-utils-new";
 import { badRequest, internalServerError, notFound } from "@ucdjs/worker-shared";
 import { traverse } from "apache-autoindex-parse/traverse";
-import { GET_VERSION_FILE_TREE_ROUTE, LIST_ALL_UNICODE_VERSIONS_ROUTE, LIST_VERSION_MAPPINGS_ROUTE } from "./v1_versions.openapi";
+import { GET_VERSION_FILE_TREE_ROUTE, LIST_ALL_UNICODE_VERSIONS_ROUTE } from "./v1_versions.openapi";
 
 export const V1_VERSIONS_ROUTER = new OpenAPIHono<HonoEnv>().basePath("/api/v1/versions");
 
@@ -101,10 +100,6 @@ V1_VERSIONS_ROUTER.openapi(LIST_ALL_UNICODE_VERSIONS_ROUTE, async (c) => {
     console.error("Error fetching Unicode versions:", err);
     return internalServerError(c);
   }
-});
-
-V1_VERSIONS_ROUTER.openapi(LIST_VERSION_MAPPINGS_ROUTE, (c) => {
-  return c.json(UNICODE_TO_UCD_VERSION_MAPPINGS, 200);
 });
 
 V1_VERSIONS_ROUTER.openapi(GET_VERSION_FILE_TREE_ROUTE, async (c) => {

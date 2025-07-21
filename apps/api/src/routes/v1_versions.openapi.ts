@@ -2,7 +2,7 @@ import { createRoute } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
 import { cache } from "hono/cache";
 import { generateReferences, OPENAPI_TAGS } from "../openapi";
-import { UnicodeFileTreeSchema, UnicodeVersionListSchema, UnicodeVersionMappingsSchema } from "./v1_versions.schemas";
+import { UnicodeFileTreeSchema, UnicodeVersionListSchema } from "./v1_versions.schemas";
 
 export const LIST_ALL_UNICODE_VERSIONS_ROUTE = createRoute({
   method: "get",
@@ -29,29 +29,6 @@ export const LIST_ALL_UNICODE_VERSIONS_ROUTE = createRoute({
       429,
       500,
     ])),
-  },
-});
-
-export const LIST_VERSION_MAPPINGS_ROUTE = createRoute({
-  method: "get",
-  path: "/mappings",
-  tags: [OPENAPI_TAGS.VERSIONS],
-  middleware: [
-    cache({
-      cacheName: "ucdjs:v1_versions:mappings",
-      cacheControl: "max-age=604800", // 1 week
-    }),
-  ],
-  description: "List all Unicode version mappings.",
-  responses: {
-    200: {
-      content: {
-        "application/json": {
-          schema: UnicodeVersionMappingsSchema,
-        },
-      },
-      description: "A list of Unicode version mappings.",
-    },
   },
 });
 

@@ -30,16 +30,6 @@ export type UnicodeVersion = z.infer<typeof UnicodeVersionSchema>;
 
 export const UnicodeVersionListSchema = z.array(UnicodeVersionSchema).openapi("UnicodeVersionList");
 
-export const UnicodeVersionMappingsSchema = z.record(
-  z.string(),
-  z.string(),
-).openapi("UnicodeVersionMappings", {
-  description: "A mapping of Unicode versions to their corresponding Unicode Public Directory versions.",
-  examples: [
-    UNICODE_TO_UCD_VERSION_MAPPINGS,
-  ],
-});
-
 export interface FileTreeNode {
   name: string;
   path: string;
