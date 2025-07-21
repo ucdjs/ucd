@@ -3,7 +3,7 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import { Scalar } from "@scalar/hono-api-reference";
 import { errorHandler, notFoundHandler, setupCors } from "@ucdjs/worker-shared";
 import { env } from "hono/adapter";
-import { buildOpenApiConfig } from "./openapi";
+import { buildOpenApiConfig, registerApp } from "./openapi";
 import { V1_FILES_ROUTER } from "./routes/v1_files";
 import { V1_UNICODE_PROXY_ROUTER } from "./routes/v1_unicode-proxy";
 import { V1_UNICODE_RELEASES_ROUTER } from "./routes/v1_unicode-releases";
@@ -11,6 +11,7 @@ import { V1_UNICODE_VERSIONS_ROUTER } from "./routes/v1_unicode-versions";
 
 const app = new OpenAPIHono<HonoEnv>();
 
+registerApp(app);
 setupCors(app);
 
 app.route("/", V1_UNICODE_VERSIONS_ROUTER);
