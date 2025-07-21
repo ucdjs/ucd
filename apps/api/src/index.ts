@@ -1,9 +1,8 @@
 import type { HonoEnv } from "./types";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { Scalar } from "@scalar/hono-api-reference";
-import { customError, internalServerError, notFound, setupCors } from "@ucdjs/worker-shared";
+import { errorHandler, notFoundHandler, setupCors } from "@ucdjs/worker-shared";
 import { env } from "hono/adapter";
-import { HTTPException } from "hono/http-exception";
 import { buildOpenApiConfig } from "./openapi";
 import { V1_FILES_ROUTER } from "./routes/v1_files";
 import { V1_UNICODE_PROXY_ROUTER } from "./routes/v1_unicode-proxy";
@@ -74,23 +73,8 @@ app.doc31("/openapi.json", (c) => {
   ]);
 });
 
-app.onError(async (err, c) => {
-  console.warn("Error processing request:", c.req.path);
-  console.error(err);
-  if (err instanceof HTTPException) {
-    return customError({
-      status: err.status,
-      message: err.message,
-    });
-  }
-
-  return internalServerError();
-});
-
-app.notFound(async (c) => {
-  console.warn("Not Found:", c.req.path);
-  return notFound();
-});
+app.onError(errorHandler);
+app.notFound(notFoundHandler);
 
 export const getOpenAPI31Document = app.getOpenAPI31Document;
 

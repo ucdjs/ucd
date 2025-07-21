@@ -1,6 +1,6 @@
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 import type { GetEntryByPathResult } from "./lib";
-import { customError, internalServerError, notFound, setupCors } from "@ucdjs/worker-shared";
+import { errorHandler, notFoundHandler, setupCors } from "@ucdjs/worker-shared";
 import { WorkerEntrypoint } from "cloudflare:workers";
 import { Hono } from "hono";
 import { cache } from "hono/cache";
@@ -175,23 +175,8 @@ app.get(
   },
 );
 
-app.onError(async (err, c) => {
-  console.warn("Error processing request:", c.req.path);
-  console.error(err);
-  if (err instanceof HTTPException) {
-    return customError({
-      status: err.status,
-      message: err.message,
-    });
-  }
-
-  return internalServerError();
-});
-
-app.notFound(async (c) => {
-  console.warn("Not Found:", c.req.path);
-  return notFound();
-});
+app.onError(errorHandler);
+app.notFound(notFoundHandler);
 
 export default class UnicodeProxy extends WorkerEntrypoint<CloudflareBindings> {
   async getUnicodeDirectory(path: string = ""): ReturnType<typeof parseUnicodeDirectory> {
