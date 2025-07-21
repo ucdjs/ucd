@@ -9,11 +9,6 @@ export interface ResponseOptions {
   message?: string;
 
   /**
-   * The path of the request that resulted in the error.
-   */
-  path?: string;
-
-  /**
    * Additional headers to include in the response.
    * This can be used to set custom headers like `Content-Type`, `Cache-Control`,
    * or any other headers that might be relevant to the response.
@@ -49,19 +44,13 @@ export function badRequest(contextOrOptions: Context | ResponseOptions = {}, opt
   let finalOptions: ResponseOptions;
 
   if ("req" in contextOrOptions) {
-    // It's a Hono context
-    const url = new URL(contextOrOptions.req.url);
-    finalOptions = {
-      path: url.pathname,
-      ...options,
-    };
+    finalOptions = options;
   } else {
     // It's options (legacy usage)
     finalOptions = contextOrOptions;
   }
 
   return Response.json({
-    path: finalOptions.path || "unknown",
     message: finalOptions.message || "Bad request",
     status: 400,
     timestamp: new Date().toISOString(),
@@ -102,19 +91,13 @@ export function forbidden(contextOrOptions: Context | ResponseOptions = {}, opti
   let finalOptions: ResponseOptions;
 
   if ("req" in contextOrOptions) {
-    // It's a Hono context
-    const url = new URL(contextOrOptions.req.url);
-    finalOptions = {
-      path: url.pathname,
-      ...options,
-    };
+    finalOptions = options;
   } else {
     // It's options (legacy usage)
     finalOptions = contextOrOptions;
   }
 
   return Response.json({
-    path: finalOptions.path || "unknown",
     message: finalOptions.message || "Forbidden",
     status: 403,
     timestamp: new Date().toISOString(),
@@ -155,19 +138,13 @@ export function notFound(contextOrOptions: Context | ResponseOptions = {}, optio
   let finalOptions: ResponseOptions;
 
   if ("req" in contextOrOptions) {
-    // It's a Hono context
-    const url = new URL(contextOrOptions.req.url);
-    finalOptions = {
-      path: url.pathname,
-      ...options,
-    };
+    finalOptions = options;
   } else {
     // It's options (legacy usage)
     finalOptions = contextOrOptions;
   }
 
   return Response.json({
-    path: finalOptions.path || "unknown",
     message: finalOptions.message || "Not found",
     status: 404,
     timestamp: new Date().toISOString(),
@@ -208,19 +185,13 @@ export function internalServerError(contextOrOptions: Context | ResponseOptions 
   let finalOptions: ResponseOptions;
 
   if ("req" in contextOrOptions) {
-    // It's a Hono context
-    const url = new URL(contextOrOptions.req.url);
-    finalOptions = {
-      path: url.pathname,
-      ...options,
-    };
+    finalOptions = options;
   } else {
     // It's options (legacy usage)
     finalOptions = contextOrOptions;
   }
 
   return Response.json({
-    path: finalOptions.path || "unknown",
     message: finalOptions.message || "Internal server error",
     status: 500,
     timestamp: new Date().toISOString(),
@@ -305,18 +276,13 @@ export function customError(contextOrOptions: Context | CustomResponseOptions, o
     if (!options) {
       throw new Error("Options parameter is required when using Hono context");
     }
-    const url = new URL(contextOrOptions.req.url);
-    finalOptions = {
-      path: url.pathname,
-      ...options,
-    };
+    finalOptions = options;
   } else {
     // It's options (legacy usage)
     finalOptions = contextOrOptions;
   }
 
   return Response.json({
-    path: finalOptions.path,
     message: finalOptions.message,
     status: finalOptions.status,
     timestamp: new Date().toISOString(),
