@@ -139,7 +139,6 @@ app.get(
       return c.json({
         type: "directory",
         mtime: result.headers.get("Last-Modified") || new Date().toISOString(),
-        size: 0,
       });
     }
 
