@@ -28,6 +28,7 @@ catalogs:
     eslint: ^9.31.0
     eslint-plugin-format: ^1.0.1
     "@luxass/spectral-ruleset": ^1.1.0
+    "@typescript-eslint/utils": ^8.37.0
 
   prod:
     # merge these together when heading inference is implemented better

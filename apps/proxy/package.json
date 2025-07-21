@@ -12,7 +12,8 @@
     "test:watch": "pnpm vitest",
     "cf-typegen": "wrangler types --env-interface CloudflareBindings",
     "typecheck": "pnpm run cf-typegen && tsc --noEmit",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "clean": "git clean -xdf node_modules .wrangler dist"
   },
   "dependencies": {
     "@ucdjs/env": "workspace:*",
