@@ -135,6 +135,16 @@ export function createResponseComponentBuilder<TCodes extends readonly Supported
               schema: {
                 $ref: "#/components/schemas/ApiError",
               },
+              examples: {
+                default: {
+                  summary: ERROR_DESCRIPTIONS[statusCode],
+                  value: {
+                    status: statusCode,
+                    message: description,
+                    timestamp: new Date().toISOString(),
+                  },
+                },
+              },
             },
           },
         } as const;
