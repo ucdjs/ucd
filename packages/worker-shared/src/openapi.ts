@@ -4,21 +4,23 @@ import { ApiErrorSchema } from "./schemas";
 
 type HonoErrorStatusCode = ClientErrorStatusCode | ServerErrorStatusCode;
 
-// Note: This type differs from actual generated references (which only contain $ref).
-// @hono/zod-openapi requires full response objects with content schemas for type inference,
-// so we return the complete structure instead of just references.
-type GenerateReferencesOutput<TCodes extends HonoErrorStatusCode[]> = {
-  [K in TCodes[number]]: {
-    content: {
-      "application/json": {
-        schema: typeof ApiErrorSchema;
+/**
+ * Full response objects with content schemas for type inference.
+ * Note: This differs from actual generated references (which only contain $ref).
+ * @hono/zod-openapi requires full response objects for proper type inference.
+ */
+type GenerateReferencesOutput<TCodes extends readonly HonoErrorStatusCode[]> = {
+  readonly [K in TCodes[number]]: {
+    readonly content: {
+      readonly "application/json": {
+        readonly schema: typeof ApiErrorSchema;
       };
     };
-    description: string;
+    readonly description: string;
   };
 };
 
-const ERROR_DESCRIPTIONS: Partial<Record<HonoErrorStatusCode, string>> = {
+const ERROR_DESCRIPTIONS = {
   400: "Bad request error",
   401: "Unauthorized error",
   403: "Forbidden error",
@@ -30,9 +32,9 @@ const ERROR_DESCRIPTIONS: Partial<Record<HonoErrorStatusCode, string>> = {
   502: "Bad gateway - upstream service failed",
   503: "Service temporarily unavailable",
   504: "Gateway timeout",
-};
+} as const satisfies Partial<Record<HonoErrorStatusCode, string>>;
 
-const RESPONSE_COMPONENT_NAMES: Partial<Record<HonoErrorStatusCode, string>> = {
+const RESPONSE_COMPONENT_NAMES = {
   400: "BadRequestError",
   401: "UnauthorizedError",
   403: "ForbiddenError",
@@ -44,37 +46,82 @@ const RESPONSE_COMPONENT_NAMES: Partial<Record<HonoErrorStatusCode, string>> = {
   502: "BadGatewayError",
   503: "ServiceUnavailableError",
   504: "GatewayTimeoutError",
-};
+} as const satisfies Partial<Record<HonoErrorStatusCode, string>>;
 
-export interface ResponseComponentBuilder<TCodes extends HonoErrorStatusCode[]> {
+type SupportedStatusCode = keyof typeof ERROR_DESCRIPTIONS;
+
+export interface ResponseComponentBuilder<TCodes extends readonly SupportedStatusCode[]> {
+  /**
+   * Registers error response components with the OpenAPI registry
+   */
   registerApp: (app: OpenAPIHono<any>) => void;
+
+  /**
+   * Generates response references for the specified status codes
+   */
   generateReferences: (codes: TCodes) => GenerateReferencesOutput<TCodes>;
 }
 
-export function createResponseComponentBuilder<TCodes extends HonoErrorStatusCode[]>(
+/**
+ * Validates that a status code is supported
+ */
+function validateStatusCode(statusCode: HonoErrorStatusCode): statusCode is SupportedStatusCode {
+  return statusCode in ERROR_DESCRIPTIONS && statusCode in RESPONSE_COMPONENT_NAMES;
+}
+
+/**
+ * Creates a response component builder for managing OpenAPI error response schemas.
+ *
+ * This function provides a type-safe way to register and generate OpenAPI response components
+ * for HTTP error status codes. It validates the provided status codes upfront and returns
+ * a builder object with methods to register components and generate references.
+ *
+ * @template TCodes - Array of supported status codes that extends readonly SupportedStatusCode[]
+ * @param codes - Array of HTTP error status codes to create response components for
+ * @returns A ResponseComponentBuilder instance with registerApp and generateReferences methods
+ *
+ * @throws {Error} When an unsupported status code is provided
+ *
+ * @example
+ * ```typescript
+ * const builder = createResponseComponentBuilder([400, 401, 404] as const);
+ *
+ * // Register components with OpenAPI app
+ * builder.registerApp(app);
+ *
+ * // Generate references for route definitions
+ * const responses = builder.generateReferences([400, 404] as const);
+ * ```
+ */
+export function createResponseComponentBuilder<TCodes extends readonly SupportedStatusCode[]>(
   codes: TCodes,
 ): ResponseComponentBuilder<TCodes> {
+  // validate all codes upfront
+  for (const code of codes) {
+    if (!validateStatusCode(code)) {
+      throw new Error(`Unsupported status code: ${code}`);
+    }
+  }
+
   return {
     registerApp(app: OpenAPIHono<any>) {
       if (!app.openAPIRegistry) {
         throw new Error("OpenAPI registry is not initialized in the app");
       }
 
-      if (!app.openAPIRegistry.definitions.find((d) => d.type === "component" && d.name === "ApiError")) {
+      // register the base ApiError schema if not already registered
+      const hasApiError = app.openAPIRegistry.definitions.some(
+        (d) => d.type === "component" && d.name === "ApiError",
+      );
+
+      if (!hasApiError) {
         app.openAPIRegistry.register("ApiError", ApiErrorSchema);
       }
 
+      // register response components for each status code
       for (const statusCode of codes) {
         const componentName = RESPONSE_COMPONENT_NAMES[statusCode];
         const description = ERROR_DESCRIPTIONS[statusCode];
-
-        if (!componentName) {
-          throw new Error(`No component name defined for status code ${statusCode}`);
-        }
-
-        if (!description) {
-          throw new Error(`No description defined for status code ${statusCode}`);
-        }
 
         const responseConfig = {
           description,
@@ -85,25 +132,28 @@ export function createResponseComponentBuilder<TCodes extends HonoErrorStatusCod
               },
             },
           },
-        };
+        } as const;
 
         app.openAPIRegistry.registerComponent("responses", componentName, responseConfig);
       }
     },
 
     generateReferences(codes: TCodes) {
-      return codes.reduce((acc, code) => {
-        const componentName = RESPONSE_COMPONENT_NAMES[code];
-        if (!componentName) {
-          throw new Error(`No component name defined for status code ${code}`);
-        }
+      const result = {} as GenerateReferencesOutput<TCodes>;
 
-        (acc as any)[code] = {
+      for (const code of codes) {
+        const componentName = RESPONSE_COMPONENT_NAMES[code];
+
+        // The "GenerateReferencesOutput" expects a full response object,
+        // but since we registered them as components, we can reference them directly.
+        // This works great! But if we didn't lie about the type, @hono/zod-openapi
+        // would not be able to infer the responses.
+        (result as any)[code] = {
           $ref: `#/components/responses/${componentName}`,
         };
+      }
 
-        return acc;
-      }, {} as GenerateReferencesOutput<TCodes>);
+      return result;
     },
   };
 }
