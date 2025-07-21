@@ -20,18 +20,16 @@
     "url": "https://github.com/ucdjs/ucd/issues"
   },
   "exports": {
-    ".": "./dist/index.js",
+    ".": "./src/index.ts",
     "./package.json": "./package.json"
   },
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
+  "types": "./src/index.ts",
   "files": [
-    "dist"
+    "src"
   ],
   "scripts": {
-    "build": "tsdown",
-    "dev": "tsdown --watch",
     "clean": "git clean -xdf dist node_modules",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit"
@@ -44,10 +42,8 @@
   "devDependencies": {
     "@luxass/eslint-config": "catalog:linting",
     "@ucdjs/tsconfig": "workspace:*",
-    "@ucdjs/tsdown-config": "workspace:*",
     "eslint": "catalog:linting",
     "publint": "catalog:dev",
-    "tsdown": "catalog:dev",
     "typescript": "catalog:dev"
   },
   "publishConfig": {
