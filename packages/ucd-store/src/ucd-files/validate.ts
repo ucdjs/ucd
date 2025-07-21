@@ -87,7 +87,7 @@ export async function validateUCDFiles(version: string, options: ValidateUCDFile
 
     const patternMatcher = providedPatternMatcher || createPathFilter(patterns);
 
-    const { data, error, response } = await client.GET("/api/v1/files/{version}", {
+    const { data, error, response } = await client.GET("/api/v1/versions/{version}/file-tree", {
       params: {
         path: {
           version,
