@@ -81,7 +81,6 @@ export function createResponseComponentBuilder<TCodes extends HonoErrorStatusCod
           content: {
             "application/json": {
               schema: {
-                type: "object",
                 $ref: "#/components/schemas/ApiError",
               },
             },
