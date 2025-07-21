@@ -1,6 +1,5 @@
 import { createRoute, z } from "@hono/zod-openapi";
-import { ApiErrorSchema } from "@ucdjs/worker-shared";
-import { OPENAPI_TAGS } from "../openapi";
+import { generateReferences, OPENAPI_TAGS } from "../openapi";
 import { UnicodeVersionFileSchema } from "./v1_files.schemas";
 
 export const GET_UNICODE_FILES_BY_VERSION_ROUTE = createRoute({
@@ -28,37 +27,11 @@ export const GET_UNICODE_FILES_BY_VERSION_ROUTE = createRoute({
       },
       description: "A list of UCD files for the specified Unicode version.",
     },
-    400: {
-      content: {
-        "application/json": {
-          schema: ApiErrorSchema,
-        },
-      },
-      description: "Bad Request",
-    },
-    429: {
-      content: {
-        "application/json": {
-          schema: ApiErrorSchema,
-        },
-      },
-      description: "Rate Limit Exceeded",
-    },
-    500: {
-      content: {
-        "application/json": {
-          schema: ApiErrorSchema,
-        },
-      },
-      description: "Internal Server Error",
-    },
-    502: {
-      content: {
-        "application/json": {
-          schema: ApiErrorSchema,
-        },
-      },
-      description: "Bad Gateway",
-    },
+    ...(generateReferences([
+      400,
+      429,
+      500,
+      502,
+    ])),
   },
 });

@@ -1,6 +1,5 @@
 import { createRoute, z } from "@hono/zod-openapi";
-import { ApiErrorSchema } from "@ucdjs/worker-shared";
-import { OPENAPI_TAGS } from "../openapi";
+import { generateReferences, OPENAPI_TAGS } from "../openapi";
 import { UnicodeVersionMappingsSchema, UnicodeVersionSchema } from "./v1_unicode-versions.schemas";
 
 export const LIST_ALL_UNICODE_VERSIONS_ROUTE = createRoute({
@@ -18,30 +17,11 @@ export const LIST_ALL_UNICODE_VERSIONS_ROUTE = createRoute({
       },
       description: "A list of Unicode versions with metadata.",
     },
-    404: {
-      content: {
-        "application/json": {
-          schema: ApiErrorSchema,
-        },
-      },
-      description: "Not Found",
-    },
-    429: {
-      content: {
-        "application/json": {
-          schema: ApiErrorSchema,
-        },
-      },
-      description: "Rate Limit Exceeded",
-    },
-    500: {
-      content: {
-        "application/json": {
-          schema: ApiErrorSchema,
-        },
-      },
-      description: "Internal Server Error",
-    },
+    ...(generateReferences([
+      404,
+      429,
+      500,
+    ])),
   },
 });
 
@@ -60,13 +40,8 @@ export const GET_UNICODE_MAPPINGS = createRoute({
       },
       description: "A list of Unicode versions mappings",
     },
-    500: {
-      content: {
-        "application/json": {
-          schema: ApiErrorSchema,
-        },
-      },
-      description: "Internal Server Error",
-    },
+    ...(generateReferences([
+      500,
+    ])),
   },
 });
