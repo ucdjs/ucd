@@ -1,4 +1,4 @@
-import { createRoute, z } from "@hono/zod-openapi";
+import { createRoute } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
 import { generateReferences, OPENAPI_TAGS } from "../openapi";
 import { ProxyMetadataSchema, ProxyResponseSchema } from "./v1_unicode-proxy.schemas";
