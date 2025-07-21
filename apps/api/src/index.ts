@@ -23,7 +23,7 @@ app.get(
   "/scalar",
   Scalar({
     url: "/openapi.json",
-    layout: "classic",
+    layout: "modern",
     customCss: /* css */`
     .endpoint-label-path {
       display: none !important;
