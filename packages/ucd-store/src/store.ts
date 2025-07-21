@@ -1,4 +1,4 @@
-import type { UnicodeVersionFile } from "@ucdjs/fetch";
+import type { FileTreeNode, UnicodeFileTree } from "@ucdjs/fetch";
 import type { PathFilter } from "@ucdjs/utils";
 import type { FileSystemBridge } from "@ucdjs/utils/fs-bridge";
 import path from "node:path";
@@ -177,14 +177,14 @@ export class UCDStore {
     await this.#fs.write(manifestPath, JSON.stringify(manifestData, null, 2));
   }
 
-  async getFileTree(version: string, extraFilters?: string[]): Promise<UnicodeVersionFile[]> {
+  async getFileTree(version: string, extraFilters?: string[]): Promise<UnicodeFileTree> {
     if (!this.hasVersion(version)) {
       throw new Error(`Version '${version}' not found in store`);
     }
 
     if (this.mode === "remote") {
       const { data, error } = await promiseRetry(async () => {
-        return await this.client.GET("/api/v1/files/{version}", {
+        return await this.client.GET("/api/v1/versions/{version}/file-tree", {
           params: { path: { version } },
         });
       }, { retries: 3 });
@@ -248,7 +248,7 @@ export class UCDStore {
     return flattenFilePaths(fileStructure);
   }
 
-  private processFileStructure(rawStructure: UnicodeVersionFile[], extraFilters?: string[]): UnicodeVersionFile[] {
+  private processFileStructure(rawStructure: UnicodeFileTree, extraFilters?: string[]): UnicodeFileTree {
     return rawStructure.map((item) => {
       if (!this.filter(item.path, extraFilters)) {
         return null;
@@ -258,7 +258,7 @@ export class UCDStore {
         path: item.path,
         ...(item.children ? { children: this.processFileStructure(item.children, extraFilters) } : {}),
       };
-    }).filter((item): item is UnicodeVersionFile => item != null);
+    }).filter((item): item is FileTreeNode => item != null);
   }
 
   async getAllFiles(extraFilters?: string[]): Promise<string[]> {
