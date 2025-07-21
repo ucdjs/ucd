@@ -1,6 +1,5 @@
 // @ts-check
 import noHardcodedOpenApiTags from "./rules/no-hardcoded-openapi-tags.js";
-import noHardcodedUrlsInTest from "./rules/no-hardcoded-urls-in-test.js";
 
 /**
  * @type {import("eslint").ESLint.Plugin}
@@ -11,8 +10,8 @@ const plugin = {
     version: "1.0.0",
   },
   rules: {
+    // @ts-ignore
     "no-hardcoded-openapi-tags": noHardcodedOpenApiTags,
-    "no-hardcoded-urls-in-test": noHardcodedUrlsInTest,
   },
 };
 

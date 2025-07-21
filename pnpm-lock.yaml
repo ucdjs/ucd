@@ -43,6 +43,9 @@ catalogs:
     '@stoplight/spectral-cli':
       specifier: ^6.15.0
       version: 6.15.0
+    '@typescript-eslint/scope-manager':
+      specifier: ^8.37.0
+      version: 8.37.0
     '@typescript-eslint/utils':
       specifier: ^8.37.0
       version: 8.37.0
@@ -552,6 +555,9 @@ importers:
       '@types/picomatch':
         specifier: catalog:dev
         version: 4.0.0
+      '@ucdjs/eslint-plugin':
+        specifier: workspace:*
+        version: link:../../tooling/eslint-plugin
       '@ucdjs/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/tsconfig
@@ -613,6 +619,9 @@ importers:
       '@luxass/eslint-config':
         specifier: catalog:linting
         version: 5.1.1(@vue/compiler-sfc@3.5.13)(eslint-plugin-format@1.0.1(eslint@9.31.0(jiti@2.4.2)))(eslint-plugin-react-hooks@5.2.0(eslint@9.31.0(jiti@2.4.2)))(eslint@9.31.0(jiti@2.4.2))(typescript@5.8.3)(vitest@3.2.4)
+      '@typescript-eslint/scope-manager':
+        specifier: catalog:linting
+        version: 8.37.0
       '@typescript-eslint/utils':
         specifier: catalog:linting
         version: 8.37.0(eslint@9.31.0(jiti@2.4.2))(typescript@5.8.3)
