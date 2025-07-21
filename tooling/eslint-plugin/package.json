@@ -1,0 +1,22 @@
+{
+  "name": "@ucdjs/eslint-plugin",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": "./src/plugin.js"
+  },
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "clean": "git clean -xdf node_modules dist"
+  },
+  "devDependencies": {
+    "@luxass/eslint-config": "catalog:linting",
+    "@typescript-eslint/utils": "catalog:linting",
+    "@ucdjs/tsconfig": "workspace:*",
+    "eslint": "catalog:linting",
+    "typescript": "catalog:dev"
+  }
+}
