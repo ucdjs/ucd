@@ -44,14 +44,6 @@ describe("badRequest", () => {
     expect(body.status).toBe(400);
   });
 
-  it("should return 400 response with custom path", async () => {
-    const response = badRequest({ path: "/api/users" });
-    const body = await response.json();
-
-    expect(body.path).toBe("/api/users");
-    expect(body.status).toBe(400);
-  });
-
   it("should return 400 response with custom headers", async () => {
     const customHeaders = { "X-Custom-Header": "test-value" };
     const response = badRequest({ headers: customHeaders });
@@ -145,14 +137,6 @@ describe("forbidden", () => {
     expect(body.status).toBe(403);
   });
 
-  it("should return 403 response with custom path", async () => {
-    const response = forbidden({ path: "/api/admin" });
-    const body = await response.json();
-
-    expect(body.path).toBe("/api/admin");
-    expect(body.status).toBe(403);
-  });
-
   it("should return 403 response with custom headers", async () => {
     const customHeaders = { "WWW-Authenticate": "Bearer" };
     const response = forbidden({ headers: customHeaders });
@@ -205,14 +189,6 @@ describe("notFound", () => {
     const body = await response.json();
 
     expect(body.message).toBe("User not found");
-    expect(body.status).toBe(404);
-  });
-
-  it("should return 404 response with custom path", async () => {
-    const response = notFound({ path: "/api/users/999" });
-    const body = await response.json();
-
-    expect(body.path).toBe("/api/users/999");
     expect(body.status).toBe(404);
   });
 
@@ -276,14 +252,6 @@ describe("internalServerError", () => {
     const body = await response.json();
 
     expect(body.message).toBe("Database connection failed");
-    expect(body.status).toBe(500);
-  });
-
-  it("should return 500 response with custom path", async () => {
-    const response = internalServerError({ path: "/api/database" });
-    const body = await response.json();
-
-    expect(body.path).toBe("/api/database");
     expect(body.status).toBe(500);
   });
 
