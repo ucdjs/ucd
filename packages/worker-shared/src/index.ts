@@ -9,8 +9,9 @@ export {
 export type { CustomResponseOptions, ResponseOptions } from "./errors";
 
 export { errorHandler, notFoundHandler } from "./handlers";
+export { createResponseComponentBuilder } from "./openapi";
+
 export type { ApiError } from "./schemas";
 
 export { ApiErrorSchema } from "./schemas";
-
 export { setupCors } from "./setups";
