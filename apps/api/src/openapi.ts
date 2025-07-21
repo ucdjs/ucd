@@ -1,5 +1,6 @@
 import type { OpenAPIHono } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
+import { createResponseComponentBuilder } from "@ucdjs/worker-shared";
 
 export type OpenAPIObjectConfig = Parameters<OpenAPIHono["getOpenAPI31Document"]>[0];
 
@@ -9,6 +10,14 @@ export const OPENAPI_TAGS = {
   FILES: "Files",
   RELEASES: "Releases",
 } as const satisfies Record<string, string>;
+
+export const { generateReferences, registerApp } = createResponseComponentBuilder([
+  400,
+  404,
+  429,
+  500,
+  502,
+]);
 
 export type OpenAPITag = typeof OPENAPI_TAGS[keyof typeof OPENAPI_TAGS];
 
