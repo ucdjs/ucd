@@ -44,6 +44,14 @@ export function createResponseComponentBuilder<TCodes extends HonoErrorStatusCod
 ): ResponseComponentBuilder<TCodes> {
   return {
     registerApp(app: OpenAPIHono<any>) {
+      if (!app.openAPIRegistry) {
+        throw new Error("OpenAPI registry is not initialized in the app");
+      }
+
+      if (!app.openAPIRegistry.definitions.find((d) => d.type === "component" && d.name === "ApiError")) {
+        app.openAPIRegistry.register("ApiError", ApiErrorSchema);
+      }
+
       for (const statusCode of codes) {
         const componentName = RESPONSE_COMPONENT_NAMES[statusCode];
         const description = ERROR_DESCRIPTIONS[statusCode];
