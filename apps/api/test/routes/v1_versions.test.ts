@@ -23,9 +23,9 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-describe("v1_unicode-releases", () => {
+describe("v1_versions", () => {
   // eslint-disable-next-line test/prefer-lowercase-title
-  describe("GET /api/v1/unicode-releases", () => {
+  describe("GET /api/v1/versions", () => {
     const mockHtmlResponse = `
       <html>
         <body>
@@ -63,7 +63,7 @@ describe("v1_unicode-releases", () => {
         .intercept({ path: "/versions/enumeratedversions.html" })
         .reply(200, mockHtmlResponse);
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/unicode-releases");
+      const request = new Request("https://api.ucdjs.dev/api/v1/versions");
       const ctx = createExecutionContext();
       const response = await worker.fetch(request, env, ctx);
       await waitOnExecutionContext(ctx);
@@ -107,7 +107,7 @@ describe("v1_unicode-releases", () => {
         .intercept({ path: "/versions/enumeratedversions.html" })
         .reply(200, mockHtmlResponse);
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/unicode-releases");
+      const request = new Request("https://api.ucdjs.dev/api/v1/versions");
       const ctx = createExecutionContext();
       const response = await worker.fetch(request, env, ctx);
       await waitOnExecutionContext(ctx);
@@ -144,7 +144,7 @@ describe("v1_unicode-releases", () => {
         .intercept({ path: "/versions/enumeratedversions.html" })
         .reply(200, mockHtmlResponse);
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/unicode-releases");
+      const request = new Request("https://api.ucdjs.dev/api/v1/versions");
       const ctx = createExecutionContext();
       const response = await worker.fetch(request, env, ctx);
       await waitOnExecutionContext(ctx);
@@ -169,7 +169,7 @@ describe("v1_unicode-releases", () => {
         .intercept({ path: "/versions/enumeratedversions.html" })
         .reply(500, "Internal Server Error");
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/unicode-releases");
+      const request = new Request("https://api.ucdjs.dev/api/v1/versions");
       const ctx = createExecutionContext();
       const response = await worker.fetch(request, env, ctx);
       await waitOnExecutionContext(ctx);
@@ -192,7 +192,7 @@ describe("v1_unicode-releases", () => {
         .intercept({ path: "/versions/enumeratedversions.html" })
         .reply(200, "<html><body><p>No table here</p></body></html>");
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/unicode-releases");
+      const request = new Request("https://api.ucdjs.dev/api/v1/versions");
       const ctx = createExecutionContext();
       const response = await worker.fetch(request, env, ctx);
       await waitOnExecutionContext(ctx);
@@ -226,7 +226,7 @@ describe("v1_unicode-releases", () => {
         .intercept({ path: "/versions/enumeratedversions.html" })
         .reply(200, emptyTableHtml);
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/unicode-releases");
+      const request = new Request("https://api.ucdjs.dev/api/v1/versions");
       const ctx = createExecutionContext();
       const response = await worker.fetch(request, env, ctx);
       await waitOnExecutionContext(ctx);
@@ -249,7 +249,7 @@ describe("v1_unicode-releases", () => {
         .intercept({ path: "/versions/enumeratedversions.html" })
         .reply(200, mockHtmlResponse);
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/unicode-releases");
+      const request = new Request("https://api.ucdjs.dev/api/v1/versions");
       const ctx = createExecutionContext();
       const response = await worker.fetch(request, env, ctx);
       await waitOnExecutionContext(ctx);
@@ -274,7 +274,7 @@ describe("v1_unicode-releases", () => {
         .intercept({ path: "/versions/enumeratedversions.html" })
         .reply(200, mockHtmlResponse);
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/unicode-releases");
+      const request = new Request("https://api.ucdjs.dev/api/v1/versions");
       const ctx = createExecutionContext();
       const response = await worker.fetch(request, env, ctx);
       await waitOnExecutionContext(ctx);
@@ -294,7 +294,7 @@ describe("v1_unicode-releases", () => {
         .intercept({ path: "/versions/enumeratedversions.html" })
         .reply(200, mockHtmlResponse);
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/unicode-releases");
+      const request = new Request("https://api.ucdjs.dev/api/v1/versions");
       const ctx = createExecutionContext();
       const response = await worker.fetch(request, env, ctx);
       await waitOnExecutionContext(ctx);
@@ -336,7 +336,7 @@ describe("v1_unicode-releases", () => {
         .intercept({ path: "/versions/enumeratedversions.html" })
         .reply(200, mixedYearHtml);
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/unicode-releases");
+      const request = new Request("https://api.ucdjs.dev/api/v1/versions");
       const ctx = createExecutionContext();
       const response = await worker.fetch(request, env, ctx);
       await waitOnExecutionContext(ctx);
@@ -356,7 +356,7 @@ describe("v1_unicode-releases", () => {
 
   describe("route not found", () => {
     it("should return 404 for non-existent routes", async () => {
-      const request = new Request("https://api.ucdjs.dev/api/v1/unicode-releases/nonexistent");
+      const request = new Request("https://api.ucdjs.dev/api/v1/versions/nonexistent");
       const ctx = createExecutionContext();
       const response = await worker.fetch(request, env, ctx);
       await waitOnExecutionContext(ctx);
