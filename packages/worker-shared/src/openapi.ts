@@ -1,10 +1,22 @@
-import type { OpenAPIHono, RouteConfig } from "@hono/zod-openapi";
+import type { OpenAPIHono } from "@hono/zod-openapi";
 import type { ClientErrorStatusCode, ServerErrorStatusCode } from "hono/utils/http-status";
 import { ApiErrorSchema } from "./schemas";
 
 type HonoErrorStatusCode = ClientErrorStatusCode | ServerErrorStatusCode;
-type AstreaResponseObject = RouteConfig["responses"];
-type AstreaResponseType = AstreaResponseObject[keyof AstreaResponseObject];
+
+// Note: This type differs from actual generated references (which only contain $ref).
+// @hono/zod-openapi requires full response objects with content schemas for type inference,
+// so we return the complete structure instead of just references.
+type GenerateReferencesOutput<TCodes extends HonoErrorStatusCode[]> = {
+  [K in TCodes[number]]: {
+    content: {
+      "application/json": {
+        schema: typeof ApiErrorSchema;
+      };
+    };
+    description: string;
+  };
+};
 
 const ERROR_DESCRIPTIONS: Partial<Record<HonoErrorStatusCode, string>> = {
   400: "Bad request error",
@@ -36,7 +48,7 @@ const RESPONSE_COMPONENT_NAMES: Partial<Record<HonoErrorStatusCode, string>> = {
 
 export interface ResponseComponentBuilder<TCodes extends HonoErrorStatusCode[]> {
   registerApp: (app: OpenAPIHono<any>) => void;
-  generateReferences: (codes: TCodes) => Record<string, AstreaResponseType>;
+  generateReferences: (codes: TCodes) => GenerateReferencesOutput<TCodes>;
 }
 
 export function createResponseComponentBuilder<TCodes extends HonoErrorStatusCode[]>(
@@ -81,17 +93,18 @@ export function createResponseComponentBuilder<TCodes extends HonoErrorStatusCod
     },
 
     generateReferences(codes: TCodes) {
-      const references: Record<string, AstreaResponseType> = {};
-      for (const statusCode of codes) {
-        const componentName = RESPONSE_COMPONENT_NAMES[statusCode];
-        if (componentName) {
-          references[statusCode] = {
-            $ref: `#/components/responses/${componentName}`,
-          };
+      return codes.reduce((acc, code) => {
+        const componentName = RESPONSE_COMPONENT_NAMES[code];
+        if (!componentName) {
+          throw new Error(`No component name defined for status code ${code}`);
         }
-      }
 
-      return references;
+        (acc as any)[code] = {
+          $ref: `#/components/responses/${componentName}`,
+        };
+
+        return acc;
+      }, {} as GenerateReferencesOutput<TCodes>);
     },
   };
 }
