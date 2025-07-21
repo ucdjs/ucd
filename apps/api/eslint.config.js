@@ -17,6 +17,5 @@ export default luxass({
   ],
   rules: {
     "ucdjs/no-hardcoded-openapi-tags": "error",
-    "ucdjs/no-hardcoded-urls-in-test": "error",
   },
 });
