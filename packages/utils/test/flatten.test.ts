@@ -1,4 +1,4 @@
-import type { UnicodeVersionFile } from "@ucdjs/fetch";
+import type { UnicodeFileTree } from "@ucdjs/fetch";
 import { describe, expect, it } from "vitest";
 import { flattenFilePaths } from "../src/flatten";
 
@@ -9,7 +9,7 @@ describe("flattenFilePaths", () => {
   });
 
   it("should handle files without children", () => {
-    const files: UnicodeVersionFile[] = [
+    const files: UnicodeFileTree = [
       { name: "file1.txt", path: "" },
       { name: "file2.txt", path: "" },
     ];
@@ -18,7 +18,7 @@ describe("flattenFilePaths", () => {
   });
 
   it("should handle folders with children", () => {
-    const files: UnicodeVersionFile[] = [
+    const files: UnicodeFileTree = [
       {
         name: "folder1",
         path: "folder1",
@@ -34,7 +34,7 @@ describe("flattenFilePaths", () => {
   });
 
   it("should handle mixed files and folders", () => {
-    const files: UnicodeVersionFile[] = [
+    const files: UnicodeFileTree = [
       {
         name: "root-file.txt",
         path: "root-file.txt",
@@ -58,7 +58,7 @@ describe("flattenFilePaths", () => {
   });
 
   it("should handle deeply nested structures", () => {
-    const files: UnicodeVersionFile[] = [
+    const files: UnicodeFileTree = [
       {
         name: "level1",
         path: "level1",
@@ -85,7 +85,7 @@ describe("flattenFilePaths", () => {
   });
 
   it("should handle prefix parameter", () => {
-    const files: UnicodeVersionFile[] = [
+    const files: UnicodeFileTree = [
       { name: "file.txt", path: "file.txt" },
       {
         name: "folder",
@@ -101,7 +101,7 @@ describe("flattenFilePaths", () => {
   });
 
   it("should handle empty prefix", () => {
-    const files: UnicodeVersionFile[] = [
+    const files: UnicodeFileTree = [
       {
         name: "file.txt",
         path: "file.txt",
@@ -113,7 +113,7 @@ describe("flattenFilePaths", () => {
   });
 
   it("should handle folders with empty children arrays", () => {
-    const files: UnicodeVersionFile[] = [
+    const files: UnicodeFileTree = [
       {
         name: "empty-folder",
         path: "empty-folder",
@@ -127,7 +127,7 @@ describe("flattenFilePaths", () => {
   });
 
   it("should handle complex nested structure with multiple levels", () => {
-    const files: UnicodeVersionFile[] = [
+    const files: UnicodeFileTree = [
       {
         name: "docs",
         path: "docs",
