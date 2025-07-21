@@ -20,17 +20,24 @@ export const ProxyResponseSchema = z.union([
   FileResponseSchema,
 ]).openapi("ProxyResponse");
 
-export const ProxyMetadataSchema = z.object({
-  type: z.enum(["file", "directory"]).openapi({
-    description: "Type of the resource - either a file or directory",
-  }),
+const ProxyFileMetadataSchema = z.object({
+  type: z.literal("file"),
   mtime: z.string().openapi({
     description: "Last modified time in ISO 8601 format (e.g., '2023-09-15T10:30:00Z')",
   }),
   size: z.number().optional().openapi({
     description: "Size of the file in bytes. Only present for files, not directories.",
   }),
-}).openapi("ProxyMetadata", {
+});
+
+const ProxyDirectoryMetadataSchema = z.object({
+  type: z.literal("directory"),
+  mtime: z.string().openapi({
+    description: "Last modified time in ISO 8601 format (e.g., '2023-09-15T10:30:00Z')",
+  }),
+});
+
+export const ProxyMetadataSchema = z.union([ProxyFileMetadataSchema, ProxyDirectoryMetadataSchema]).openapi("ProxyMetadata", {
   description: dedent`
     Metadata about a file or directory in the Unicode data repository.
 
@@ -38,22 +45,13 @@ export const ProxyMetadataSchema = z.object({
   `,
   examples: [
     {
-      summary: "File Metadata",
-      value: {
-        type: "file",
-        mtime: "2023-09-15T10:30:00Z",
-        size: 1889024,
-      },
-      description: "Example metadata for a file",
+      type: "file",
+      mtime: "2023-09-15T10:30:00Z",
+      size: 1889024,
     },
     {
-      summary: "Directory Metadata",
-      value: {
-        type: "directory",
-        mtime: "2023-09-15T10:30:00Z",
-        size: 0,
-      },
-      description: "Example metadata for a directory",
+      type: "directory",
+      mtime: "2023-09-15T10:30:00Z",
     },
   ],
 });
