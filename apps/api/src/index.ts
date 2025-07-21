@@ -75,26 +75,21 @@ app.doc31("/openapi.json", (c) => {
 });
 
 app.onError(async (err, c) => {
+  console.warn("Error processing request:", c.req.path);
   console.error(err);
-  const url = new URL(c.req.url);
   if (err instanceof HTTPException) {
     return customError({
-      path: url.pathname,
       status: err.status,
       message: err.message,
     });
   }
 
-  return internalServerError({
-    path: url.pathname,
-  });
+  return internalServerError();
 });
 
 app.notFound(async (c) => {
-  const url = new URL(c.req.url);
-  return notFound({
-    path: url.pathname,
-  });
+  console.warn("Not Found:", c.req.path);
+  return notFound();
 });
 
 export const getOpenAPI31Document = app.getOpenAPI31Document;
