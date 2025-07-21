@@ -57,7 +57,7 @@ export const LIST_VERSION_MAPPINGS_ROUTE = createRoute({
 
 export const GET_VERSION_FILE_TREE_ROUTE = createRoute({
   method: "get",
-  path: "/{version}",
+  path: "/{version}/file-tree",
   tags: [OPENAPI_TAGS.VERSIONS, OPENAPI_TAGS.FILES],
   middleware: [
     cache({
