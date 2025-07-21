@@ -1,5 +1,4 @@
 import { createRoute, z } from "@hono/zod-openapi";
-import { ApiErrorSchema } from "@ucdjs/worker-shared";
 import { generateReferences, OPENAPI_TAGS } from "../openapi";
 import { UnicodeVersionMappingsSchema, UnicodeVersionSchema } from "./v1_unicode-versions.schemas";
 
@@ -18,16 +17,9 @@ export const LIST_ALL_UNICODE_VERSIONS_ROUTE = createRoute({
       },
       description: "A list of Unicode versions with metadata.",
     },
-    429: {
-      content: {
-        "application/json": {
-          schema: ApiErrorSchema,
-        },
-      },
-      description: "Rate Limit Exceeded",
-    },
     ...(generateReferences([
       404,
+      429,
       500,
     ])),
   },

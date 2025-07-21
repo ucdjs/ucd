@@ -1,5 +1,4 @@
 import { createRoute, z } from "@hono/zod-openapi";
-import { ApiErrorSchema } from "@ucdjs/worker-shared";
 import { generateReferences, OPENAPI_TAGS } from "../openapi";
 import { UnicodeVersionSchema } from "./v1_unicode-releases.schemas";
 
