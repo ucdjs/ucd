@@ -6,7 +6,7 @@ export type OpenAPIObjectConfig = Parameters<OpenAPIHono["getOpenAPI31Document"]
 
 export const OPENAPI_TAGS = {
   MISC: "Misc",
-  PROXY: "Proxy",
+  RAW: "Raw",
   FILES: "Files",
   VERSIONS: "Versions",
 } as const satisfies Record<string, string>;
@@ -81,7 +81,7 @@ export function buildOpenApiConfig(version: string, servers: NonNullable<OpenAPI
         `,
       },
       {
-        name: OPENAPI_TAGS.PROXY,
+        name: OPENAPI_TAGS.RAW,
         description: dedent`
           Proxy endpoints for accessing Unicode data files and directories.
 

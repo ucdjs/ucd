@@ -3,9 +3,9 @@ import type { HonoEnv } from "../types";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { badRequest, internalServerError, notFound } from "@ucdjs/worker-shared";
 import { cache } from "hono/cache";
-import { UNICODE_PROXY_STAT_WILDCARD_ROUTE, UNICODE_PROXY_WILDCARD_ROUTE } from "./v1_unicode-proxy.openapi";
+import { RAW_STAT_WILDCARD_ROUTE, RAW_WILDCARD_ROUTE } from "./v1_raw.openapi";
 
-export const V1_UNICODE_PROXY_ROUTER = new OpenAPIHono<HonoEnv>().basePath("/api/v1/unicode-proxy");
+export const V1_RAW_ROUTER = new OpenAPIHono<HonoEnv>().basePath("/api/v1/raw");
 
 // A hack for OpenAPI not supporting splat routes
 // So we register the path with a normal parameter named "wildcard",
@@ -13,8 +13,8 @@ export const V1_UNICODE_PROXY_ROUTER = new OpenAPIHono<HonoEnv>().basePath("/api
 // This allows us to still describe the route in OpenAPI,
 // while also allowing the actual route to match any path.
 
-V1_UNICODE_PROXY_ROUTER.openAPIRegistry.registerPath(UNICODE_PROXY_WILDCARD_ROUTE);
-V1_UNICODE_PROXY_ROUTER.openAPIRegistry.registerPath(UNICODE_PROXY_STAT_WILDCARD_ROUTE);
+V1_RAW_ROUTER.openAPIRegistry.registerPath(RAW_WILDCARD_ROUTE);
+V1_RAW_ROUTER.openAPIRegistry.registerPath(RAW_STAT_WILDCARD_ROUTE);
 
 /**
  * @internal
@@ -61,14 +61,14 @@ async function internalProxyRoute(c: Context<HonoEnv>, extraPath: string = ""): 
   }
 }
 
-V1_UNICODE_PROXY_ROUTER.get("/__stat/:wildcard{.*}?", cache({
+V1_RAW_ROUTER.get("/__stat/:wildcard{.*}?", cache({
   cacheName: "ucdjs:v1_unicode-proxy:wildcard:stat",
   cacheControl: "max-age=3600", // 1 hour
 }), async (c) => {
   return internalProxyRoute(c, "__stat/");
 });
 
-V1_UNICODE_PROXY_ROUTER.get("/:wildcard{.*}?", cache({
+V1_RAW_ROUTER.get("/:wildcard{.*}?", cache({
   cacheName: "ucdjs:v1_unicode-proxy:wildcard",
   cacheControl: "max-age=3600", // 1 hour
 }), async (c) => {
