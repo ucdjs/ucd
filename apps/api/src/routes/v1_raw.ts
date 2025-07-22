@@ -40,9 +40,10 @@ async function internalProxyRoute(c: Context<HonoEnv>, extraPath: string = ""): 
     if (!res.ok) {
       if (res.status === 404) {
         return notFound(c, {
-          message: `Resource not found at ${path}`,
+          message: "Resource not found",
         });
       }
+
       return internalServerError(c, {
         message: `Proxy request failed with reason: ${res.statusText}`,
       });
