@@ -93,7 +93,7 @@ describe("unicode API Client", () => {
         expect(data?.[0]).toHaveProperty("version");
         expect(data?.[0]).toHaveProperty("documentationUrl");
         expect(data?.[0]).toHaveProperty("date");
-        expect(data?.[0]).toHaveProperty("ucdUrl");
+        expect(data?.[0]).toHaveProperty("url");
 
         expect(data?.[0]?.documentationUrl).toMatch(/^https?:\/\//);
         expect(data?.[0]?.url).toMatch(/^https?:\/\//);
