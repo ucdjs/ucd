@@ -310,7 +310,7 @@ describe("unicode API Client", () => {
           type: "file" as const,
           name: path.split("/").pop() || "",
           path: `/${path}`,
-          lastModified: "2025-06-26T12:00:00Z",
+          lastModified: 0,
         };
 
         mockFetch([
