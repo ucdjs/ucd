@@ -17,8 +17,12 @@ vi.mock("@luxass/unicode-utils-new", async (importOriginal) => {
 
   return {
     ...original,
-    getCurrentDraftVersion: vi.fn().mockImplementation(original.getCurrentDraftVersion),
-    resolveUCDVersion: vi.fn().mockImplementation(original.resolveUCDVersion),
+    getCurrentDraftVersion: vi.fn(() => {
+      return original.getCurrentDraftVersion();
+    }),
+    resolveUCDVersion: vi.fn((version) => {
+      return original.resolveUCDVersion(version);
+    }),
   };
 });
 
@@ -29,7 +33,7 @@ beforeAll(() => {
 
 afterEach(() => {
   fetchMock.assertNoPendingInterceptors();
-  vi.clearAllMocks();
+  vi.resetAllMocks();
 });
 
 describe("v1_versions", () => {
