@@ -21,7 +21,9 @@ export function flattenFilePaths(entries: FileTreeNode[], prefix: string = ""): 
   const paths: string[] = [];
 
   for (const file of entries) {
-    const fullPath = prefix ? `${prefix}/${file.name}` : file.name;
+    const fullPath = prefix
+      ? `${prefix}/${file.path ?? file.name}`
+      : (file.path ?? file.name);
 
     if (file.children) {
       paths.push(...flattenFilePaths(file.children, fullPath));

@@ -10,8 +10,8 @@ describe("flattenFilePaths", () => {
 
   it("should handle files without children", () => {
     const files: UnicodeFileTree = [
-      { name: "file1.txt", path: "" },
-      { name: "file2.txt", path: "" },
+      { name: "file1.txt", path: "file1.txt" },
+      { name: "file2.txt", path: "file2.txt" },
     ];
     const result = flattenFilePaths(files);
     expect(result).toEqual(["file1.txt", "file2.txt"]);
@@ -23,8 +23,8 @@ describe("flattenFilePaths", () => {
         name: "folder1",
         path: "folder1",
         children: [
-          { name: "file1.txt", path: "folder1/file1.txt" },
-          { name: "file2.txt", path: "folder1/file2.txt" },
+          { name: "file1.txt", path: "file1.txt" },
+          { name: "file2.txt", path: "file2.txt" },
         ],
       },
     ];
@@ -43,7 +43,7 @@ describe("flattenFilePaths", () => {
         name: "folder1",
         path: "folder1",
         children: [
-          { name: "nested-file.txt", path: "folder1/nested-file.txt" },
+          { name: "nested-file.txt", path: "nested-file.txt" },
         ],
       },
       { name: "another-root-file.txt", path: "another-root-file.txt" },
