@@ -1,5 +1,4 @@
 import type { OpenAPIHono } from "@hono/zod-openapi";
-import type { Prettify, RemoveIndexSignature } from "@luxass/utils";
 import { dedent } from "@luxass/utils";
 import { createResponseComponentBuilder } from "@ucdjs/worker-shared";
 
