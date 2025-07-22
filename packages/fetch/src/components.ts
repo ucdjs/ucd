@@ -13,5 +13,5 @@ export type ProxyResponse = components["schemas"]["ProxyResponse"];
 export type ProxyMetadata = components["schemas"]["ProxyMetadata"];
 export type UnicodeVersion = components["schemas"]["UnicodeVersion"];
 export type UnicodeVersionList = components["schemas"]["UnicodeVersionList"];
-export type FileTreeNode = components["schemas"]["FileTreeNode"];
-export type UnicodeFileTree = components["schemas"]["UnicodeFileTree"];
+export type UnicodeTreeNode = components["schemas"]["UnicodeTreeNode"];
+export type UnicodeTree = components["schemas"]["UnicodeTree"];

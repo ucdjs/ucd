@@ -46,7 +46,7 @@ catalogs:
     knitwork: ^1.2.0
     picomatch: ^4.0.2
     memfs: ^4.17.2
-    apache-autoindex-parse: ^2.3.0
+    apache-autoindex-parse: ^2.4.0
     openapi-fetch: ^0.14.0
 
   dev:
