@@ -3,9 +3,8 @@ import type { FileSystemBridge } from "@ucdjs/utils/fs-bridge";
 import path from "node:path";
 import { buildUCDPath } from "@luxass/unicode-utils-new";
 import { createClient } from "@ucdjs/fetch";
-import { createPathFilter } from "@ucdjs/utils";
+import { createPathFilter, flattenFilePaths } from "@ucdjs/utils";
 import defu from "defu";
-import { flattenFilePaths } from "./helpers";
 
 export interface ValidateUCDFilesOptions {
   /**
