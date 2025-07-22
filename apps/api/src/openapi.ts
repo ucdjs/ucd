@@ -6,9 +6,9 @@ export type OpenAPIObjectConfig = Parameters<OpenAPIHono["getOpenAPI31Document"]
 
 export const OPENAPI_TAGS = {
   MISC: "Misc",
-  PROXY: "Proxy",
-  FILES: "Files",
+  RAW: "Raw",
   VERSIONS: "Versions",
+  LIL: "",
 } as const satisfies Record<string, string>;
 
 export const { generateReferences, registerApp } = createResponseComponentBuilder([
@@ -72,31 +72,13 @@ export function buildOpenApiConfig(version: string, servers: NonNullable<OpenAPI
     },
     tags: [
       {
-        name: OPENAPI_TAGS.MISC,
-        description: dedent`
-          Miscellaneous endpoints that don't fit into other categories.
-
-          These endpoints typically provide utility functions, health checks,
-          API information, and other general-purpose functionality.
-        `,
-      },
-      {
-        name: OPENAPI_TAGS.PROXY,
+        name: OPENAPI_TAGS.RAW,
         description: dedent`
           Proxy endpoints for accessing Unicode data files and directories.
 
           These endpoints provide secure access to official Unicode data through our API,
           with built-in caching and path validation. Detailed usage examples and path
           formats are documented in the individual endpoint specifications.
-        `,
-      },
-      {
-        name: OPENAPI_TAGS.FILES,
-        description: dedent`
-          Endpoints for accessing Unicode data files directly.
-
-          These endpoints provide a straightforward way to retrieve Unicode data files
-          without any additional processing or transformation.
         `,
       },
       {
