@@ -92,7 +92,7 @@ describe("v1_raw", () => {
       expect(response.headers.get("content-type")).toContain("application/json");
 
       const error = await response.json();
-      expect(error).toHaveProperty("message", "Resource not found at nonexistent/path");
+      expect(error).toHaveProperty("message", "Resource not found");
       expect(error).toHaveProperty("status", 404);
     });
 
@@ -195,7 +195,7 @@ describe("v1_raw", () => {
       expect(response.headers.get("content-type")).toContain("application/json");
 
       const error = await response.json();
-      expect(error).toHaveProperty("message", "Resource not found at nonexistent/file");
+      expect(error).toHaveProperty("message", "Resource not found");
       expect(error).toHaveProperty("status", 404);
     });
   });
@@ -331,6 +331,10 @@ describe("v1_raw", () => {
 
   describe("route not found", () => {
     it("should return 404 for malformed routes", async () => {
+      fetchMock.get("https://unicode-proxy.ucdjs.dev")
+        .intercept({ path: "/this-is-not-a-valid-file" })
+        .reply(404, "Not Found");
+
       const request = new Request("https://api.ucdjs.dev/api/v1/raw/this-is-not-a-valid-file");
       const ctx = createExecutionContext();
       const response = await worker.fetch(request, mockEnv, ctx);
