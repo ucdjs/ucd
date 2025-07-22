@@ -1,5 +1,3 @@
-export { flattenFilePaths } from "./ucd-files/helpers";
-
 export type { DownloadError, MirrorOptions, MirrorResult } from "./ucd-files/mirror";
 export { mirrorUCDFiles } from "./ucd-files/mirror";
 
