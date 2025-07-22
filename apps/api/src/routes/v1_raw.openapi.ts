@@ -1,7 +1,7 @@
 import { createRoute } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
 import { generateReferences, OPENAPI_TAGS } from "../openapi";
-import { ProxyMetadataSchema, ProxyResponseSchema } from "./v1_raw.schemas";
+import { RawMetadataSchema, RawResponseSchema } from "./v1_raw.schemas";
 
 const WILDCARD_PARAM = {
   in: "path",
@@ -94,7 +94,7 @@ export const RAW_WILDCARD_ROUTE = createRoute({
       `,
       content: {
         "application/json": {
-          schema: ProxyResponseSchema,
+          schema: RawResponseSchema,
         },
         "application/octet-stream": {
           schema: {
@@ -146,7 +146,7 @@ export const RAW_STAT_WILDCARD_ROUTE = createRoute({
       `,
       content: {
         "application/json": {
-          schema: ProxyMetadataSchema,
+          schema: RawMetadataSchema,
         },
       },
     },

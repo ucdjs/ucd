@@ -1,43 +1,49 @@
 import { z } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
 
-const DirectoryResponseSchema = z.object({
+const BaseItemSchema = z.object({
+  name: z.string(),
+  path: z.string(),
+  lastModified: z.number(),
+});
+
+const DirectoryResponseSchema = BaseItemSchema.extend({
   type: z.literal("directory"),
-  name: z.string(),
-  path: z.string(),
-  lastModified: z.string(),
-}).openapi("ProxyDirectoryResponse");
+});
 
-export const FileResponseSchema = z.object({
+const FileResponseSchema = BaseItemSchema.extend({
   type: z.literal("file"),
-  name: z.string(),
-  path: z.string(),
-  lastModified: z.string().optional(),
-}).openapi("ProxyFileResponse");
+});
 
-export const ProxyResponseSchema = z.union([
+export const RawResponseSchema = z.union([
   DirectoryResponseSchema,
   FileResponseSchema,
-]).openapi("ProxyResponse");
+]).openapi("RawResponse", {
+  description: dedent`
+    Response schema for the raw Unicode data proxy endpoint.
 
-const ProxyFileMetadataSchema = z.object({
-  type: z.literal("file"),
+    This schema represents either a directory listing or a file response.
+  `,
+});
+
+const BaseMetadataSchema = z.object({
   mtime: z.string().openapi({
     description: "Last modified time in ISO 8601 format (e.g., '2023-09-15T10:30:00Z')",
   }),
+});
+
+const FileMetadataSchema = BaseMetadataSchema.extend({
+  type: z.literal("file"),
   size: z.number().optional().openapi({
     description: "Size of the file in bytes. Only present for files, not directories.",
   }),
 });
 
-const ProxyDirectoryMetadataSchema = z.object({
+const DirectoryMetadataSchema = BaseMetadataSchema.extend({
   type: z.literal("directory"),
-  mtime: z.string().openapi({
-    description: "Last modified time in ISO 8601 format (e.g., '2023-09-15T10:30:00Z')",
-  }),
 });
 
-export const ProxyMetadataSchema = z.union([ProxyFileMetadataSchema, ProxyDirectoryMetadataSchema]).openapi("ProxyMetadata", {
+export const RawMetadataSchema = z.union([FileMetadataSchema, DirectoryMetadataSchema]).openapi("Metadata", {
   description: dedent`
     Metadata about a file or directory in the Unicode data repository.
 
