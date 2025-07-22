@@ -1,5 +1,5 @@
 import type { Entry } from "apache-autoindex-parse";
-import type { EntryWithChildren } from "apache-autoindex-parse/traverse";
+import type { TraverseEntry } from "apache-autoindex-parse/traverse";
 import type { UnicodeVersion } from "../../src/routes/v1_versions.schemas";
 import { generateAutoIndexHtml } from "apache-autoindex-parse/test-utils";
 import {
@@ -357,13 +357,13 @@ describe("v1_versions", () => {
 
   // eslint-disable-next-line test/prefer-lowercase-title
   describe("GET /api/v1/versions/{version}/file-tree", () => {
-    const files = [
+    const files: TraverseEntry[] = [
       { type: "file", name: "file1.txt", path: "/Public/15.1.0/ucd/file1.txt" },
       { type: "file", name: "file2.txt", path: "/Public/15.1.0/ucd/file2.txt" },
-      { type: "directory", name: "subdir", path: "/Public/15.1.0/ucd/subdir/" },
+      { type: "directory", name: "subdir", path: "/Public/15.1.0/ucd/subdir/", children: [] },
       { type: "file", name: "file3.txt", path: "/Public/15.1.0/ucd/subdir/file3.txt" },
       { type: "file", name: "emoji-data.txt", path: "/Public/15.1.0/ucd/emoji/emoji-data.txt" },
-    ] as EntryWithChildren[];
+    ];
 
     it("should return files for a valid Unicode version", async () => {
       fetchMock.get("https://unicode.org")
@@ -386,7 +386,7 @@ describe("v1_versions", () => {
           name: file.name,
           path: file.path,
           type: file.type,
-          ...(file.children ? { children: file.children } : {}),
+          ...(file.type === "directory" ? { children: file.children } : {}),
         });
       });
 
@@ -419,7 +419,7 @@ describe("v1_versions", () => {
       expect(response.status).toBe(200);
       expect(response.headers.get("content-type")).toContain("application/json");
 
-      const data = await response.json() as EntryWithChildren[];
+      const data = await response.json() as TraverseEntry[];
 
       // validate the response structure
       expect(Array.isArray(data)).toBe(true);
@@ -435,7 +435,7 @@ describe("v1_versions", () => {
 
           return [files, directories];
         },
-        [[], []] as [Entry[], EntryWithChildren[]],
+        [[], []] as [Entry[], TraverseEntry[]],
       );
 
       expect(filesEntries.length).toBeGreaterThan(0);
