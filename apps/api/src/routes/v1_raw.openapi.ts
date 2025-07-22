@@ -1,7 +1,7 @@
 import { createRoute } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
 import { generateReferences, OPENAPI_TAGS } from "../openapi";
-import { ProxyMetadataSchema, ProxyResponseSchema } from "./v1_unicode-proxy.schemas";
+import { ProxyMetadataSchema, ProxyResponseSchema } from "./v1_raw.schemas";
 
 const WILDCARD_PARAM = {
   in: "path",
@@ -43,10 +43,10 @@ const WILDCARD_PARAM = {
   },
 } as const;
 
-export const UNICODE_PROXY_WILDCARD_ROUTE = createRoute({
+export const RAW_WILDCARD_ROUTE = createRoute({
   method: "get",
   path: "/{wildcard}",
-  tags: [OPENAPI_TAGS.PROXY],
+  tags: [OPENAPI_TAGS.RAW],
   description: dedent`
     # Unicode Data Proxy Endpoint
 
@@ -113,10 +113,10 @@ export const UNICODE_PROXY_WILDCARD_ROUTE = createRoute({
   },
 });
 
-export const UNICODE_PROXY_STAT_WILDCARD_ROUTE = createRoute({
+export const RAW_STAT_WILDCARD_ROUTE = createRoute({
   method: "get",
   path: "/__stat/{wildcard}",
-  tags: [OPENAPI_TAGS.PROXY],
+  tags: [OPENAPI_TAGS.RAW],
   description: dedent`
     # Unicode Data Statistics Endpoint
 
