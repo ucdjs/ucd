@@ -35,7 +35,7 @@ export const LIST_ALL_UNICODE_VERSIONS_ROUTE = createRoute({
 export const GET_VERSION_FILE_TREE_ROUTE = createRoute({
   method: "get",
   path: "/{version}/file-tree",
-  tags: [OPENAPI_TAGS.VERSIONS, OPENAPI_TAGS.FILES],
+  tags: [OPENAPI_TAGS.VERSIONS],
   middleware: [
     cache({
       cacheName: "ucdjs:v1_versions:file-tree",
