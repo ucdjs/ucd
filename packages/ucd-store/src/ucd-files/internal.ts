@@ -1,4 +1,4 @@
-import type { createClient, UnicodeFileTree } from "@ucdjs/fetch";
+import type { createClient, UnicodeTree } from "@ucdjs/fetch";
 import type { PathFilter } from "@ucdjs/utils";
 import type { FileSystemBridge } from "@ucdjs/utils/fs-bridge";
 import type { DownloadError, MirrorOptions } from "./mirror";
@@ -92,7 +92,7 @@ interface InternalProcessEntriesOptions {
   versionOutputDir: string;
   currentDirPath?: string;
   fs: FileSystemBridge;
-  entries: UnicodeFileTree;
+  entries: UnicodeTree;
   errors: DownloadError[];
   files: string[];
   apiUrl?: string;
@@ -120,7 +120,7 @@ export async function internal__processEntries(
     const entryOutputPath = currentDirPath ? path.join(currentDirPath, entry.path) : entry.path;
     const outputPath = path.join(versionOutputDir, entryOutputPath);
 
-    if (entry.children) {
+    if (entry.type === "directory") {
       dirPromises.push((async () => {
         await fs.mkdir(outputPath);
         await internal__processEntries({
@@ -169,13 +169,13 @@ export async function internal__processEntries(
   await Promise.all([...dirPromises, ...filePromises]);
 }
 
-export function internal__filterEntriesRecursive(entries: UnicodeFileTree, patternMatcher: PathFilter): UnicodeFileTree {
-  function filterEntries(entryList: UnicodeFileTree, prefix = ""): UnicodeFileTree {
-    const result: UnicodeFileTree = [];
+export function internal__filterEntriesRecursive(entries: UnicodeTree, patternMatcher: PathFilter): UnicodeTree {
+  function filterEntries(entryList: UnicodeTree, prefix = ""): UnicodeTree {
+    const result: UnicodeTree = [];
     for (const entry of entryList) {
       const fullPath = prefix ? `${prefix}/${entry.path}` : entry.path;
 
-      if (!entry.children) {
+      if (entry.type === "file") {
         if (patternMatcher(fullPath)) {
           result.push(entry);
         }

@@ -29,45 +29,72 @@ export type UnicodeVersion = z.infer<typeof UnicodeVersionSchema>;
 
 export const UnicodeVersionListSchema = z.array(UnicodeVersionSchema).openapi("UnicodeVersionList");
 
-export interface FileTreeNode {
+type TreeNode = DirectoryTreeNode | FileTreeNode;
+
+interface DirectoryTreeNode {
+  type: "directory";
   name: string;
   path: string;
-  children?: FileTreeNode[];
+  children: TreeNode[];
+  lastModified?: number; // Unix timestamp
 }
 
-export const FileTreeNodeSchema: z.ZodType<FileTreeNode> = z.object({
+interface FileTreeNode {
+  type: "file";
+  name: string;
+  path: string;
+  lastModified?: number; // Unix timestamp
+}
+
+const BaseTreeNodeSchema = z.object({
   name: z.string().openapi({
     description: "The name of the file or directory.",
   }),
-
   path: z.string().openapi({
     description: "The path to the file or directory.",
   }),
+  lastModified: z.number().optional().openapi({
+    description: "The last modified date of the directory, if available.",
+  }),
+});
 
-  children: z
-    .array(z.lazy(() => FileTreeNodeSchema))
-    .optional()
-    .openapi({
-      description: "The children of the directory, if it is a directory.",
-      type: "array",
-      items: {
-        $ref: "#/components/schemas/FileTreeNode",
-      },
-    }),
-}).openapi("FileTreeNode");
+const DirectoryTreeNodeSchema: z.ZodType<DirectoryTreeNode> = BaseTreeNodeSchema.extend({
+  type: z.literal("directory").openapi({
+    description: "The type of the entry, which is a directory.",
+  }),
 
-export const UnicodeFileTreeSchema = z.array(FileTreeNodeSchema).openapi("UnicodeFileTree", {
+  // eslint-disable-next-line ts/no-use-before-define
+  children: z.array(z.lazy(() => UnicodeTreeNodeSchema)).openapi({
+    description: "The children of the directory.",
+    type: "array",
+    items: {
+      $ref: "#/components/schemas/UnicodeTreeNode",
+    },
+  }),
+});
+
+const FileTreeNodeSchema = BaseTreeNodeSchema.extend({
+  type: z.literal("file").openapi({
+    description: "The type of the entry, which is a file.",
+  }),
+});
+
+export const UnicodeTreeNodeSchema = z.union([DirectoryTreeNodeSchema, FileTreeNodeSchema]).openapi("UnicodeTreeNode");
+
+export const UnicodeTreeSchema = z.array(UnicodeTreeNodeSchema).openapi("UnicodeTree", {
   examples: [
     {
       name: "UnicodeData.txt",
       type: "file",
       path: "/Public/15.1.0/ucd/UnicodeData.txt",
       size: 1889024,
+      lastModified: 1693564800000,
     },
     {
       name: "emoji",
       type: "directory",
       path: "/Public/15.1.0/ucd/emoji/",
+      lastModified: 1693564800000,
       children: [
         {
           name: "emoji-data.txt",

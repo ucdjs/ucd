@@ -1,4 +1,4 @@
-import type { UnicodeFileTree } from "@ucdjs/fetch";
+import type { UnicodeTree } from "@ucdjs/fetch";
 import { describe, expect, it } from "vitest";
 import { flattenFilePaths } from "../src/flatten";
 
@@ -9,16 +9,16 @@ describe("flattenFilePaths", () => {
   });
 
   it("should handle files without children", () => {
-    const files: UnicodeFileTree = [
+    const files = [
       { name: "file1.txt", path: "file1.txt" },
       { name: "file2.txt", path: "file2.txt" },
-    ];
+    ] as UnicodeTree;
     const result = flattenFilePaths(files);
     expect(result).toEqual(["file1.txt", "file2.txt"]);
   });
 
   it("should handle folders with children", () => {
-    const files: UnicodeFileTree = [
+    const files = [
       {
         name: "folder1",
         path: "folder1",
@@ -27,14 +27,14 @@ describe("flattenFilePaths", () => {
           { name: "file2.txt", path: "file2.txt" },
         ],
       },
-    ];
+    ] as UnicodeTree;
 
     const result = flattenFilePaths(files);
     expect(result).toEqual(["folder1/file1.txt", "folder1/file2.txt"]);
   });
 
   it("should handle mixed files and folders", () => {
-    const files: UnicodeFileTree = [
+    const files = [
       {
         name: "root-file.txt",
         path: "root-file.txt",
@@ -47,7 +47,7 @@ describe("flattenFilePaths", () => {
         ],
       },
       { name: "another-root-file.txt", path: "another-root-file.txt" },
-    ];
+    ] as UnicodeTree;
 
     const result = flattenFilePaths(files);
     expect(result).toEqual([
@@ -58,7 +58,7 @@ describe("flattenFilePaths", () => {
   });
 
   it("should handle deeply nested structures", () => {
-    const files: UnicodeFileTree = [
+    const files = [
       {
         name: "level1",
         path: "level1",
@@ -78,14 +78,14 @@ describe("flattenFilePaths", () => {
           },
         ],
       },
-    ];
+    ] as UnicodeTree;
 
     const result = flattenFilePaths(files);
     expect(result).toEqual(["level1/level2/level3/deep-file.txt"]);
   });
 
   it("should handle prefix parameter", () => {
-    const files: UnicodeFileTree = [
+    const files = [
       { name: "file.txt", path: "file.txt" },
       {
         name: "folder",
@@ -94,40 +94,40 @@ describe("flattenFilePaths", () => {
           { name: "nested.txt", path: "nested.txt" },
         ],
       },
-    ];
+    ] as UnicodeTree;
 
     const result = flattenFilePaths(files, "prefix");
     expect(result).toEqual(["prefix/file.txt", "prefix/folder/nested.txt"]);
   });
 
   it("should handle empty prefix", () => {
-    const files: UnicodeFileTree = [
+    const files = [
       {
         name: "file.txt",
         path: "file.txt",
       },
-    ];
+    ] as UnicodeTree;
 
     const result = flattenFilePaths(files, "");
     expect(result).toEqual(["file.txt"]);
   });
 
   it("should handle folders with empty children arrays", () => {
-    const files: UnicodeFileTree = [
+    const files = [
       {
         name: "empty-folder",
         path: "empty-folder",
         children: [],
       },
       { name: "file.txt", path: "file.txt" },
-    ];
+    ] as UnicodeTree;
 
     const result = flattenFilePaths(files);
     expect(result).toEqual(["file.txt"]);
   });
 
   it("should handle complex nested structure with multiple levels", () => {
-    const files: UnicodeFileTree = [
+    const files = [
       {
         name: "docs",
         path: "docs",
@@ -158,7 +158,7 @@ describe("flattenFilePaths", () => {
         ],
       },
       { name: "package.json", path: "package.json" },
-    ];
+    ] as UnicodeTree;
 
     const result = flattenFilePaths(files);
     expect(result).toEqual([
