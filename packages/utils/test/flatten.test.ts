@@ -1,4 +1,4 @@
-import type { UnicodeVersionFile } from "@ucdjs/fetch";
+import type { UnicodeTree } from "@ucdjs/fetch";
 import { describe, expect, it } from "vitest";
 import { flattenFilePaths } from "../src/flatten";
 
@@ -9,22 +9,31 @@ describe("flattenFilePaths", () => {
   });
 
   it("should handle files without children", () => {
-    const files: UnicodeVersionFile[] = [
-      { name: "file1.txt", path: "" },
-      { name: "file2.txt", path: "" },
+    const files: UnicodeTree = [
+      {
+        type: "file",
+        name: "file1.txt",
+        path: "file1.txt",
+      },
+      {
+        type: "file",
+        name: "file2.txt",
+        path: "file2.txt",
+      },
     ];
     const result = flattenFilePaths(files);
     expect(result).toEqual(["file1.txt", "file2.txt"]);
   });
 
   it("should handle folders with children", () => {
-    const files: UnicodeVersionFile[] = [
+    const files: UnicodeTree = [
       {
         name: "folder1",
         path: "folder1",
+        type: "directory",
         children: [
-          { name: "file1.txt", path: "folder1/file1.txt" },
-          { name: "file2.txt", path: "folder1/file2.txt" },
+          { type: "file", name: "file1.txt", path: "file1.txt" },
+          { type: "file", name: "file2.txt", path: "file2.txt" },
         ],
       },
     ];
@@ -34,19 +43,21 @@ describe("flattenFilePaths", () => {
   });
 
   it("should handle mixed files and folders", () => {
-    const files: UnicodeVersionFile[] = [
+    const files: UnicodeTree = [
       {
+        type: "file",
         name: "root-file.txt",
         path: "root-file.txt",
       },
       {
+        type: "directory",
         name: "folder1",
         path: "folder1",
         children: [
-          { name: "nested-file.txt", path: "folder1/nested-file.txt" },
+          { type: "file", name: "nested-file.txt", path: "nested-file.txt" },
         ],
       },
-      { name: "another-root-file.txt", path: "another-root-file.txt" },
+      { type: "file", name: "another-root-file.txt", path: "another-root-file.txt" },
     ];
 
     const result = flattenFilePaths(files);
@@ -58,20 +69,27 @@ describe("flattenFilePaths", () => {
   });
 
   it("should handle deeply nested structures", () => {
-    const files: UnicodeVersionFile[] = [
+    const files: UnicodeTree = [
       {
+        type: "directory",
         name: "level1",
         path: "level1",
         children: [
           {
+            type: "directory",
             name: "level2",
             path: "level2",
             children: [
               {
+                type: "directory",
                 name: "level3",
                 path: "level3",
                 children: [
-                  { name: "deep-file.txt", path: "deep-file.txt" },
+                  {
+                    type: "file",
+                    name: "deep-file.txt",
+                    path: "deep-file.txt",
+                  },
                 ],
               },
             ],
@@ -85,13 +103,18 @@ describe("flattenFilePaths", () => {
   });
 
   it("should handle prefix parameter", () => {
-    const files: UnicodeVersionFile[] = [
-      { name: "file.txt", path: "file.txt" },
+    const files: UnicodeTree = [
       {
+        type: "file",
+        name: "file.txt",
+        path: "file.txt",
+      },
+      {
+        type: "directory",
         name: "folder",
         path: "folder",
         children: [
-          { name: "nested.txt", path: "nested.txt" },
+          { type: "file", name: "nested.txt", path: "nested.txt" },
         ],
       },
     ];
@@ -101,8 +124,9 @@ describe("flattenFilePaths", () => {
   });
 
   it("should handle empty prefix", () => {
-    const files: UnicodeVersionFile[] = [
+    const files: UnicodeTree = [
       {
+        type: "file",
         name: "file.txt",
         path: "file.txt",
       },
@@ -113,13 +137,18 @@ describe("flattenFilePaths", () => {
   });
 
   it("should handle folders with empty children arrays", () => {
-    const files: UnicodeVersionFile[] = [
+    const files: UnicodeTree = [
       {
+        type: "directory",
         name: "empty-folder",
         path: "empty-folder",
         children: [],
       },
-      { name: "file.txt", path: "file.txt" },
+      {
+        type: "file",
+        name: "file.txt",
+        path: "file.txt",
+      },
     ];
 
     const result = flattenFilePaths(files);
@@ -127,37 +156,41 @@ describe("flattenFilePaths", () => {
   });
 
   it("should handle complex nested structure with multiple levels", () => {
-    const files: UnicodeVersionFile[] = [
+    const files: UnicodeTree = [
       {
+        type: "directory",
         name: "docs",
         path: "docs",
         children: [
-          { name: "readme.md", path: "readme.md" },
+          { type: "file", name: "readme.md", path: "readme.md" },
           {
+            type: "directory",
             name: "api",
             path: "api",
             children: [
-              { name: "index.html", path: "index.html" },
-              { name: "methods.html", path: "methods.html" },
+              { type: "file", name: "index.html", path: "index.html" },
+              { type: "file", name: "methods.html", path: "methods.html" },
             ],
           },
         ],
       },
       {
+        type: "directory",
         name: "src",
         path: "src",
         children: [
-          { name: "index.ts", path: "index.ts" },
+          { type: "file", name: "index.ts", path: "index.ts" },
           {
+            type: "directory",
             name: "utils",
             path: "utils",
             children: [
-              { name: "helpers.ts", path: "helpers.ts" },
+              { type: "file", name: "helpers.ts", path: "helpers.ts" },
             ],
           },
         ],
       },
-      { name: "package.json", path: "package.json" },
+      { type: "file", name: "package.json", path: "package.json" },
     ];
 
     const result = flattenFilePaths(files);

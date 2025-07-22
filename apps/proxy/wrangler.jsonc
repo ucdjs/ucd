@@ -2,7 +2,7 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "unicode-proxy",
   "main": "src/index.ts",
-  "compatibility_date": "2025-03-13",
+  "compatibility_date": "2025-07-05",
   "observability": {
     "logs": {
       "enabled": true

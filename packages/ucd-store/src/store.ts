@@ -1,4 +1,4 @@
-import type { UnicodeVersionFile } from "@ucdjs/fetch";
+import type { UnicodeTree, UnicodeTreeNode } from "@ucdjs/fetch";
 import type { PathFilter } from "@ucdjs/utils";
 import type { FileSystemBridge } from "@ucdjs/utils/fs-bridge";
 import path from "node:path";
@@ -6,9 +6,8 @@ import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { promiseRetry } from "@luxass/utils";
 import { UCDJS_API_BASE_URL, UNICODE_PROXY_URL } from "@ucdjs/env";
 import { createClient } from "@ucdjs/fetch";
-import { createPathFilter } from "@ucdjs/utils";
+import { createPathFilter, flattenFilePaths } from "@ucdjs/utils";
 import defu from "defu";
-import { flattenFilePaths } from "./ucd-files/helpers";
 
 type StoreMode = "remote" | "local";
 
@@ -177,14 +176,14 @@ export class UCDStore {
     await this.#fs.write(manifestPath, JSON.stringify(manifestData, null, 2));
   }
 
-  async getFileTree(version: string, extraFilters?: string[]): Promise<UnicodeVersionFile[]> {
+  async getFileTree(version: string, extraFilters?: string[]): Promise<UnicodeTree> {
     if (!this.hasVersion(version)) {
       throw new Error(`Version '${version}' not found in store`);
     }
 
     if (this.mode === "remote") {
       const { data, error } = await promiseRetry(async () => {
-        return await this.client.GET("/api/v1/files/{version}", {
+        return await this.client.GET("/api/v1/versions/{version}/file-tree", {
           params: { path: { version } },
         });
       }, { retries: 3 });
@@ -208,6 +207,8 @@ export class UCDStore {
         path: file,
       }));
 
+      // eslint-disable-next-line ts/ban-ts-comment
+      // @ts-ignore
       return this.processFileStructure(fileStructure, extraFilters);
     }
   }
@@ -248,7 +249,7 @@ export class UCDStore {
     return flattenFilePaths(fileStructure);
   }
 
-  private processFileStructure(rawStructure: UnicodeVersionFile[], extraFilters?: string[]): UnicodeVersionFile[] {
+  private processFileStructure(rawStructure: UnicodeTree, extraFilters?: string[]): UnicodeTree {
     return rawStructure.map((item) => {
       if (!this.filter(item.path, extraFilters)) {
         return null;
@@ -256,9 +257,9 @@ export class UCDStore {
       return {
         name: item.name,
         path: item.path,
-        ...(item.children ? { children: this.processFileStructure(item.children, extraFilters) } : {}),
+        ...(item.type === "directory" ? { children: this.processFileStructure(item.children, extraFilters) } : {}),
       };
-    }).filter((item): item is UnicodeVersionFile => item != null);
+    }).filter((item): item is UnicodeTreeNode => item != null);
   }
 
   async getAllFiles(extraFilters?: string[]): Promise<string[]> {
