@@ -16,7 +16,7 @@ afterEach(() => {
   fetchMock.assertNoPendingInterceptors();
 });
 
-describe("v1_unicode-proxy", () => {
+describe("v1_raw", () => {
   const mockEnv = {
     ...env,
     PROXY_ENDPOINT: "https://unicode-proxy.ucdjs.dev",
@@ -24,7 +24,7 @@ describe("v1_unicode-proxy", () => {
   };
 
   // eslint-disable-next-line test/prefer-lowercase-title
-  describe("GET /api/v1/unicode-proxy/:wildcard", () => {
+  describe("GET /api/v1/raw/:wildcard", () => {
     it("should proxy specific file path successfully", async () => {
       const mockFileContent = "# Unicode Character Database\n# Version 15.1.0\n";
 
@@ -37,7 +37,7 @@ describe("v1_unicode-proxy", () => {
           },
         });
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/unicode-proxy/15.1.0/ucd/UnicodeData.txt");
+      const request = new Request("https://api.ucdjs.dev/api/v1/raw/15.1.0/ucd/UnicodeData.txt");
       const ctx = createExecutionContext();
       const response = await worker.fetch(request, mockEnv, ctx);
       await waitOnExecutionContext(ctx);
@@ -51,7 +51,7 @@ describe("v1_unicode-proxy", () => {
     });
 
     it("should reject paths with '..' segments", async () => {
-      const request = new Request("https://api.ucdjs.dev/api/v1/unicode-proxy/..%2Ftest");
+      const request = new Request("https://api.ucdjs.dev/api/v1/raw/..%2Ftest");
       const ctx = createExecutionContext();
       const response = await worker.fetch(request, mockEnv, ctx);
       await waitOnExecutionContext(ctx);
@@ -65,7 +65,7 @@ describe("v1_unicode-proxy", () => {
     });
 
     it("should reject paths with '//' segments", async () => {
-      const request = new Request("https://api.ucdjs.dev/api/v1/unicode-proxy/path//with//double//slashes");
+      const request = new Request("https://api.ucdjs.dev/api/v1/raw/path//with//double//slashes");
       const ctx = createExecutionContext();
       const response = await worker.fetch(request, mockEnv, ctx);
       await waitOnExecutionContext(ctx);
@@ -78,12 +78,12 @@ describe("v1_unicode-proxy", () => {
       expect(error).toHaveProperty("status", 400);
     });
 
-    it("should handle 404 from proxy endpoint", async () => {
+    it("should handle 404 from raw endpoint", async () => {
       fetchMock.get("https://unicode-proxy.ucdjs.dev")
         .intercept({ path: "/nonexistent/path" })
         .reply(404, "Not Found");
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/unicode-proxy/nonexistent/path");
+      const request = new Request("https://api.ucdjs.dev/api/v1/raw/nonexistent/path");
       const ctx = createExecutionContext();
       const response = await worker.fetch(request, mockEnv, ctx);
       await waitOnExecutionContext(ctx);
@@ -101,7 +101,7 @@ describe("v1_unicode-proxy", () => {
         .intercept({ path: "/error/path" })
         .reply(500, "Internal Server Error");
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/unicode-proxy/error/path");
+      const request = new Request("https://api.ucdjs.dev/api/v1/raw/error/path");
       const ctx = createExecutionContext();
       const response = await worker.fetch(request, mockEnv, ctx);
       await waitOnExecutionContext(ctx);
@@ -125,7 +125,7 @@ describe("v1_unicode-proxy", () => {
           },
         });
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/unicode-proxy/binary/file");
+      const request = new Request("https://api.ucdjs.dev/api/v1/raw/binary/file");
       const ctx = createExecutionContext();
       const response = await worker.fetch(request, mockEnv, ctx);
       await waitOnExecutionContext(ctx);
@@ -137,7 +137,7 @@ describe("v1_unicode-proxy", () => {
   });
 
   // eslint-disable-next-line test/prefer-lowercase-title
-  describe("GET /api/v1/unicode-proxy/__stat/:wildcard", () => {
+  describe("GET /api/v1/raw/__stat/:wildcard", () => {
     it("should proxy stat requests successfully", async () => {
       const mockStatResponse = JSON.stringify({
         type: "file",
@@ -154,7 +154,7 @@ describe("v1_unicode-proxy", () => {
           },
         });
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/unicode-proxy/__stat/15.1.0/ucd/UnicodeData.txt");
+      const request = new Request("https://api.ucdjs.dev/api/v1/raw/__stat/15.1.0/ucd/UnicodeData.txt");
       const ctx = createExecutionContext();
       const response = await worker.fetch(request, mockEnv, ctx);
       await waitOnExecutionContext(ctx);
@@ -168,7 +168,7 @@ describe("v1_unicode-proxy", () => {
     });
 
     it("should handle stat path validation", async () => {
-      const request = new Request("https://api.ucdjs.dev/api/v1/unicode-proxy/__stat/..%2Fsecret");
+      const request = new Request("https://api.ucdjs.dev/api/v1/raw/__stat/..%2Fsecret");
       const ctx = createExecutionContext();
       const response = await worker.fetch(request, mockEnv, ctx);
       await waitOnExecutionContext(ctx);
@@ -186,7 +186,7 @@ describe("v1_unicode-proxy", () => {
         .intercept({ path: "/__stat/nonexistent/file" })
         .reply(404, "Not Found");
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/unicode-proxy/__stat/nonexistent/file");
+      const request = new Request("https://api.ucdjs.dev/api/v1/raw/__stat/nonexistent/file");
       const ctx = createExecutionContext();
       const response = await worker.fetch(request, mockEnv, ctx);
       await waitOnExecutionContext(ctx);
@@ -222,7 +222,7 @@ describe("v1_unicode-proxy", () => {
         UNICODE_PROXY: mockUnicodeProxy,
       };
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/unicode-proxy/binding-test");
+      const request = new Request("https://api.ucdjs.dev/api/v1/raw/binding-test");
       const ctx = createExecutionContext();
       const response = await worker.fetch(request, mockEnvWithBinding, ctx);
       await waitOnExecutionContext(ctx);
@@ -264,7 +264,7 @@ describe("v1_unicode-proxy", () => {
         UNICODE_PROXY: mockUnicodeProxy,
       };
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/unicode-proxy/__stat/stat-binding-test");
+      const request = new Request("https://api.ucdjs.dev/api/v1/raw/__stat/stat-binding-test");
       const ctx = createExecutionContext();
       const response = await worker.fetch(request, mockEnvWithBinding, ctx);
       await waitOnExecutionContext(ctx);
@@ -287,7 +287,7 @@ describe("v1_unicode-proxy", () => {
         // @ts-expect-error // Intentionally reply with a string instead of an Error object
         .replyWithError("String error instead of Error object");
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/unicode-proxy/non-error-test");
+      const request = new Request("https://api.ucdjs.dev/api/v1/raw/non-error-test");
       const ctx = createExecutionContext();
       const response = await worker.fetch(request, mockEnv, ctx);
       await waitOnExecutionContext(ctx);
@@ -311,7 +311,7 @@ describe("v1_unicode-proxy", () => {
         .intercept({ path: "/error-test" })
         .replyWithError(new Error("Custom error message"));
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/unicode-proxy/error-test");
+      const request = new Request("https://api.ucdjs.dev/api/v1/raw/error-test");
       const ctx = createExecutionContext();
       const response = await worker.fetch(request, mockEnv, ctx);
       await waitOnExecutionContext(ctx);
@@ -331,7 +331,7 @@ describe("v1_unicode-proxy", () => {
 
   describe("route not found", () => {
     it("should return 404 for malformed routes", async () => {
-      const request = new Request("https://api.ucdjs.dev/api/v1/unicode-proxy-invalid");
+      const request = new Request("https://api.ucdjs.dev/api/v1/raw/this-is-not-a-valid-file");
       const ctx = createExecutionContext();
       const response = await worker.fetch(request, mockEnv, ctx);
       await waitOnExecutionContext(ctx);
