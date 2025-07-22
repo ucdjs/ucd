@@ -13,7 +13,7 @@ export const LIST_ALL_UNICODE_VERSIONS_ROUTE = createRoute({
       cacheName: "ucdjs:v1_versions:list",
       cacheControl: "max-age=345600", // 4 days
     }),
-  ],
+  ] as const,
   description: "List all Unicode Versions available, including metadata and support status.",
   responses: {
     200: {
@@ -41,7 +41,7 @@ export const GET_VERSION_FILE_TREE_ROUTE = createRoute({
       cacheName: "ucdjs:v1_versions:file-tree",
       cacheControl: "max-age=604800", // 1 week
     }),
-  ],
+  ] as const,
   parameters: [
     {
       name: "version",

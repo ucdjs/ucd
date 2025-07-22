@@ -6,6 +6,7 @@ export default defineWorkersProject({
     poolOptions: {
       workers: {
         singleWorker: true,
+        isolatedStorage: true,
         miniflare: {
           compatibilityFlags: ["nodejs_compat"],
           bindings: {
