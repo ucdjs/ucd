@@ -9,6 +9,8 @@ import type { UnicodeTreeNode } from "@ucdjs/fetch";
  *
  * @example
  * ```typescript
+ * import { flattenFilePaths } from "@ucdjs/utils";
+ *
  * const files = [
  *   { name: "folder1", children: [{ name: "file1.txt" }] },
  *   { name: "file2.txt" }
