@@ -43,7 +43,7 @@ const DirectoryMetadataSchema = BaseMetadataSchema.extend({
   type: z.literal("directory"),
 });
 
-export const RawMetadataSchema = z.union([FileMetadataSchema, DirectoryMetadataSchema]).openapi("Metadata", {
+export const RawMetadataSchema = z.union([FileMetadataSchema, DirectoryMetadataSchema]).openapi("RawMetadata", {
   description: dedent`
     Metadata about a file or directory in the Unicode data repository.
 
