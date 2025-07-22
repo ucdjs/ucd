@@ -16,7 +16,7 @@ app.route("/", V1_UNICODE_PROXY_ROUTER);
 app.route("/", V1_VERSIONS_ROUTER);
 
 app.get(
-  "/scalar",
+  "/",
   Scalar({
     url: "/openapi.json",
     layout: "modern",
