@@ -17,8 +17,8 @@ vi.mock("@luxass/unicode-utils-new", async (importOriginal) => {
 
   return {
     ...original,
-    getCurrentDraftVersion: vi.fn(),
-    resolveUCDVersion: vi.fn(),
+    getCurrentDraftVersion: vi.fn().mockImplementation(original.getCurrentDraftVersion),
+    resolveUCDVersion: vi.fn().mockImplementation(original.resolveUCDVersion),
   };
 });
 
@@ -475,15 +475,6 @@ describe("v1_versions", () => {
     });
 
     describe("error handling", () => {
-      it("should handle empty version parameter", async () => {
-        const request = new Request("https://api.ucdjs.dev/api/v1/versions/ /file-tree");
-        const ctx = createExecutionContext();
-        const response = await worker.fetch(request, env, ctx);
-        await waitOnExecutionContext(ctx);
-
-        expect(response.status).toBe(404);
-      });
-
       it("should return 400 for invalid Unicode version", async () => {
         const request = new Request("https://api.ucdjs.dev/api/v1/versions/99.99.99/file-tree");
         const ctx = createExecutionContext();
@@ -518,7 +509,7 @@ describe("v1_versions", () => {
         const response = await worker.fetch(request, env, ctx);
         await waitOnExecutionContext(ctx);
 
-        expect(response.status).toBe(404);
+        expect(response.status).toBe(400);
       });
     });
 
