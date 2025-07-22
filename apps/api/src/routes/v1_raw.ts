@@ -63,14 +63,14 @@ async function internalProxyRoute(c: Context<HonoEnv>, extraPath: string = ""): 
 }
 
 V1_RAW_ROUTER.get("/__stat/:wildcard{.*}?", cache({
-  cacheName: "ucdjs:v1_unicode-proxy:wildcard:stat",
+  cacheName: "ucdjs:v1_raw:wildcard:stat",
   cacheControl: "max-age=3600", // 1 hour
 }), async (c) => {
   return internalProxyRoute(c, "__stat/");
 });
 
 V1_RAW_ROUTER.get("/:wildcard{.*}?", cache({
-  cacheName: "ucdjs:v1_unicode-proxy:wildcard",
+  cacheName: "ucdjs:v1_raw:wildcard",
   cacheControl: "max-age=3600", // 1 hour
 }), async (c) => {
   return internalProxyRoute(c);
