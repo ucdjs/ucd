@@ -8,7 +8,7 @@ import type { components } from "./.generated/api";
 
 export type ApiError = components["schemas"]["ApiError"];
 export type RawResponse = components["schemas"]["RawResponse"];
-export type Metadata = components["schemas"]["Metadata"];
+export type RawMetadata = components["schemas"]["RawMetadata"];
 export type UnicodeVersion = components["schemas"]["UnicodeVersion"];
 export type UnicodeVersionList = components["schemas"]["UnicodeVersionList"];
 export type UnicodeTreeNode = components["schemas"]["UnicodeTreeNode"];
