@@ -8,7 +8,7 @@ export const OPENAPI_TAGS = {
   MISC: "Misc",
   PROXY: "Proxy",
   FILES: "Files",
-  RELEASES: "Releases",
+  VERSIONS: "Versions",
 } as const satisfies Record<string, string>;
 
 export const { generateReferences, registerApp } = createResponseComponentBuilder([
@@ -100,7 +100,7 @@ export function buildOpenApiConfig(version: string, servers: NonNullable<OpenAPI
         `,
       },
       {
-        name: OPENAPI_TAGS.RELEASES,
+        name: OPENAPI_TAGS.VERSIONS,
         description: dedent`
           Endpoints for accessing information about Unicode versions.
 

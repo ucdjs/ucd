@@ -1,11 +1,11 @@
-import type { createClient, UnicodeVersionFile } from "@ucdjs/fetch";
+import type { createClient, UnicodeTree } from "@ucdjs/fetch";
 import type { PathFilter } from "@ucdjs/utils";
 import type { FileSystemBridge } from "@ucdjs/utils/fs-bridge";
 import type { DownloadError, MirrorOptions } from "./mirror";
 import path, { dirname } from "node:path";
 import { hasUCDFolderPath } from "@luxass/unicode-utils-new";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
-import { flattenFilePaths } from "./helpers";
+import { flattenFilePaths } from "@ucdjs/utils";
 
 type internal__MirrorUnicodeVersionOptions = Required<Omit<MirrorOptions, "versions" | "patterns">> & {
   client: ReturnType<typeof createClient>;
@@ -26,7 +26,7 @@ export async function internal_mirrorUnicodeVersion(version: string, mirrorOptio
   try {
     await fs.mkdir(versionOutputDir);
 
-    const { data, error, response } = await client.GET("/api/v1/files/{version}", {
+    const { data, error, response } = await client.GET("/api/v1/versions/{version}/file-tree", {
       params: {
         path: {
           version,
@@ -92,7 +92,7 @@ interface InternalProcessEntriesOptions {
   versionOutputDir: string;
   currentDirPath?: string;
   fs: FileSystemBridge;
-  entries: UnicodeVersionFile[];
+  entries: UnicodeTree;
   errors: DownloadError[];
   files: string[];
   apiUrl?: string;
@@ -120,7 +120,7 @@ export async function internal__processEntries(
     const entryOutputPath = currentDirPath ? path.join(currentDirPath, entry.path) : entry.path;
     const outputPath = path.join(versionOutputDir, entryOutputPath);
 
-    if (entry.children) {
+    if (entry.type === "directory") {
       dirPromises.push((async () => {
         await fs.mkdir(outputPath);
         await internal__processEntries({
@@ -169,13 +169,13 @@ export async function internal__processEntries(
   await Promise.all([...dirPromises, ...filePromises]);
 }
 
-export function internal__filterEntriesRecursive(entries: UnicodeVersionFile[], patternMatcher: PathFilter): UnicodeVersionFile[] {
-  function filterEntries(entryList: UnicodeVersionFile[], prefix = ""): UnicodeVersionFile[] {
-    const result: UnicodeVersionFile[] = [];
+export function internal__filterEntriesRecursive(entries: UnicodeTree, patternMatcher: PathFilter): UnicodeTree {
+  function filterEntries(entryList: UnicodeTree, prefix = ""): UnicodeTree {
+    const result: UnicodeTree = [];
     for (const entry of entryList) {
       const fullPath = prefix ? `${prefix}/${entry.path}` : entry.path;
 
-      if (!entry.children) {
+      if (entry.type === "file") {
         if (patternMatcher(fullPath)) {
           result.push(entry);
         }

@@ -2,6 +2,7 @@ import type { Context } from "hono";
 import type { HonoEnv } from "../types";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { badRequest, internalServerError, notFound } from "@ucdjs/worker-shared";
+import { cache } from "hono/cache";
 import { UNICODE_PROXY_STAT_WILDCARD_ROUTE, UNICODE_PROXY_WILDCARD_ROUTE } from "./v1_unicode-proxy.openapi";
 
 export const V1_UNICODE_PROXY_ROUTER = new OpenAPIHono<HonoEnv>().basePath("/api/v1/unicode-proxy");
@@ -60,10 +61,16 @@ async function internalProxyRoute(c: Context<HonoEnv>, extraPath: string = ""): 
   }
 }
 
-V1_UNICODE_PROXY_ROUTER.get("/__stat/:wildcard{.*}?", async (c) => {
+V1_UNICODE_PROXY_ROUTER.get("/__stat/:wildcard{.*}?", cache({
+  cacheName: "ucdjs:v1_unicode-proxy:wildcard:stat",
+  cacheControl: "max-age=3600", // 1 hour
+}), async (c) => {
   return internalProxyRoute(c, "__stat/");
 });
 
-V1_UNICODE_PROXY_ROUTER.get("/:wildcard{.*}?", async (c) => {
+V1_UNICODE_PROXY_ROUTER.get("/:wildcard{.*}?", cache({
+  cacheName: "ucdjs:v1_unicode-proxy:wildcard",
+  cacheControl: "max-age=3600", // 1 hour
+}), async (c) => {
   return internalProxyRoute(c);
 });
