@@ -7,8 +7,6 @@
     "dev": "wrangler dev --port 8788 --inspector-port 9230",
     "build": "wrangler deploy --dry-run --outdir=dist --tsconfig=./tsconfig.build.json",
     "deploy": "wrangler deploy --tsconfig=./tsconfig.build.json",
-    "test": "pnpm vitest --run",
-    "test:watch": "pnpm vitest",
     "cf-typegen": "wrangler types --env-interface CloudflareBindings",
     "typecheck": "pnpm run cf-typegen && tsc --noEmit",
     "lint": "eslint .",
