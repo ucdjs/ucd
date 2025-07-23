@@ -1,22 +1,11 @@
-import { defineWorkersProject } from "@cloudflare/vitest-pool-workers/config";
+import { defineProject } from "vitest/config";
 
-export default defineWorkersProject({
+export default defineProject({
   test: {
-    name: "proxy",
-    poolOptions: {
-      workers: {
-        singleWorker: true,
-        isolatedStorage: true,
-        miniflare: {
-          compatibilityFlags: ["nodejs_compat"],
-          bindings: {
-            ENVIRONMENT: "production",
-          },
-        },
-        wrangler: {
-          configPath: "./wrangler.jsonc",
-        },
-      },
-    },
+    name: "proxy:unit",
+    include: ["test/unit/**"],
+    exclude: [
+      "**/*.test.ts",
+    ],
   },
 });

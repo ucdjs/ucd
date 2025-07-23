@@ -4,7 +4,7 @@ import {
   waitOnExecutionContext,
 } from "cloudflare:test";
 import { expect, it } from "vitest";
-import Worker from "../src";
+import Worker from "../../src";
 
 it("respond with a 404", async () => {
   const request = new Request("https://unicode-proxy.ucdjs.dev/not-found");
