@@ -40,10 +40,12 @@ const NodeFileSystemBridge = defineFileSystemBridge({
       exists(path) {
         return safeExists(join(basePath, path));
       },
-      async listdir(path, recursive) {
-        return readdir(join(basePath, path), {
-          recursive: recursive ?? false,
-        });
+      async listdir(_path, _recursive) {
+        // return readdir(join(basePath, path), {
+        //   recursive: recursive ?? false,
+        // });
+
+        return [];
       },
       async write(path, data, encoding = "utf-8") {
         const fullPath = join(basePath, path);
