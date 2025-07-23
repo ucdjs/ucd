@@ -9,7 +9,7 @@ export default defineWorkersProject({
       "test/unit/**",
     ],
     include: [
-      "./test/worker/**/*.{test,spec}.?(c|m)[jt]s?(x)",
+      "./test/**/*.{test,spec}.?(c|m)[jt]s?(x)",
     ],
     poolOptions: {
       workers: {
