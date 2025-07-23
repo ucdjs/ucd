@@ -4,7 +4,7 @@ import {
   waitOnExecutionContext,
 } from "cloudflare:test";
 import { expect, it } from "vitest";
-import worker from "../src";
+import worker from "../../src";
 
 it("respond with a 404", async () => {
   const request = new Request("https://api.ucdjs.dev/not-found");
