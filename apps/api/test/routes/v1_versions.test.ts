@@ -1,6 +1,6 @@
 import type { Entry } from "apache-autoindex-parse";
 import type { TraverseEntry } from "apache-autoindex-parse/traverse";
-import type { UnicodeVersion } from "../../../src/routes/v1_versions.schemas";
+import type { UnicodeVersion } from "../../src/routes/v1_versions.schemas";
 import { generateAutoIndexHtml } from "apache-autoindex-parse/test-utils";
 import {
   createExecutionContext,
@@ -9,7 +9,7 @@ import {
   waitOnExecutionContext,
 } from "cloudflare:test";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import worker from "../../../src";
+import worker from "../../src";
 
 // mock the unicode-utils-new module
 vi.mock("@luxass/unicode-utils-new", async (importOriginal) => {
