@@ -1,7 +1,6 @@
 /* eslint-disable unused-imports/no-unused-vars */
 
 import type { Prettify } from "@luxass/utils";
-import type { UCDStore } from "@ucdjs/ucd-store";
 import type { CLIArguments } from "../../cli-utils";
 import type { CLIStoreCmdSharedFlags } from "./_shared";
 // import { createLocalUCDStore, createRemoteUCDStore } from "@ucdjs/ucd-store";
