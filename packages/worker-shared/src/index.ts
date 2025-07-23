@@ -14,4 +14,4 @@ export { createResponseComponentBuilder } from "./openapi";
 export type { ApiError } from "./schemas";
 
 export { ApiErrorSchema } from "./schemas";
-export { setupCors } from "./setups";
+export { setupCors, setupRatelimit } from "./setups";

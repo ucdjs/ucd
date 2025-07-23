@@ -1,19 +1,12 @@
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 import type { GetEntryByPathResult } from "./lib";
-import { errorHandler, notFoundHandler, setupCors } from "@ucdjs/worker-shared";
+import { errorHandler, notFoundHandler, setupCors, setupRatelimit } from "@ucdjs/worker-shared";
 import { WorkerEntrypoint } from "cloudflare:workers";
 import { Hono } from "hono";
 import { cache } from "hono/cache";
 import { createMiddleware } from "hono/factory";
 import { HTTPException } from "hono/http-exception";
 import { getEntryByPath, parseUnicodeDirectory, ProxyFetchError } from "./lib";
-
-export interface ApiError {
-  path: string;
-  status: number;
-  message: string;
-  timestamp: string;
-}
 
 const app = new Hono<{
   Bindings: CloudflareBindings;
@@ -25,22 +18,7 @@ const app = new Hono<{
 });
 
 setupCors(app);
-
-app.use("*", async (c, next) => {
-  const key
-    = c.req.header("cf-connecting-ip")
-      ?? c.req.raw.headers.get("x-forwarded-for")
-      ?? crypto.randomUUID(); // last-resort unique key
-  const { success } = await c.env.RATE_LIMITER.limit({ key });
-
-  if (!success) {
-    throw new HTTPException(429, {
-      message: "Too Many Requests - Please try again later",
-    });
-  }
-
-  await next();
-});
+setupRatelimit(app);
 
 app.get("/favicon.ico", (c) => {
   return c.newResponse(null, 204, {});
