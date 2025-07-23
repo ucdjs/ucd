@@ -13,6 +13,11 @@ permissions:
   contents: read
   actions: write
 
+env:
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+  FORCE_COLOR: true
+
 jobs:
   preview:
     if: ${{ github.repository_owner == 'ucdjs' && github.event.label.name == 'preview' }}
