@@ -1,4 +1,4 @@
-import type { z } from "zod";
+import { z } from "zod";
 
 export interface FileSystemBridgeRmOptions {
   /**
@@ -74,17 +74,17 @@ const DEFAULT_SUPPORTED_CAPABILITIES: FileSystemBridgeCapabilities = {
   rm: true,
 };
 
-type FileSystemBridgeSetup<TOptions extends z.ZodObject> = (ctx: {
-  options: z.infer<TOptions>;
+type FileSystemBridgeSetupFn<TOptionsSchema extends z.ZodObject> = (ctx: {
+  options: z.infer<TOptionsSchema>;
   state: Record<string, unknown>;
   capabilities: FileSystemBridgeCapabilities;
 }) => FileSystemBridgeOperations;
 
-export interface FileSystemBridge<TOptions extends z.ZodObject = z.ZodObject> {
+export interface FileSystemBridgeObject<TOptionsSchema extends z.ZodObject = z.ZodObject> {
   /**
    * Zod schema for validating bridge options
    */
-  optionsSchema?: TOptions;
+  optionsSchema?: TOptionsSchema;
 
   /**
    * An object defining the capabilities supported by this file system bridge.
@@ -123,22 +123,41 @@ export interface FileSystemBridge<TOptions extends z.ZodObject = z.ZodObject> {
    * Setup function that receives options, state, and capabilities
    * and returns the filesystem operations implementation
    */
-  setup: FileSystemBridgeSetup<TOptions>;
+  setup: FileSystemBridgeSetupFn<TOptionsSchema>;
 }
 
-/**
- * Defines and returns a file system bridge implementation.
- *
- * This function serves as a type-safe way to create a file system bridge
- * that follows the {@link FileSystemBridge} interface.
- *
- * @param {FileSystemBridge<TOptions>} fsBridge - The file system bridge implementation to define
- * @returns {FileSystemBridge<TOptions>} The provided file system bridge implementation
- */
-export function defineFileSystemBridge<TOptions extends z.ZodObject>(
-  fsBridge: FileSystemBridge<TOptions>,
-): FileSystemBridge<TOptions> {
-  return fsBridge;
+type FileSystemBridge<
+  TOptionsSchema extends z.ZodObject,
+> = (
+  ...args: [z.input<TOptionsSchema>] extends [never]
+    ? []
+    : undefined extends z.input<TOptionsSchema>
+      ? [options?: z.input<TOptionsSchema>]
+      : [options: z.input<TOptionsSchema>]
+) => FileSystemBridgeOperations;
+
+export function defineFileSystemBridge<TOptionsSchema extends z.ZodObject>(
+  fsBridge: FileSystemBridgeObject<TOptionsSchema>,
+): FileSystemBridge<TOptionsSchema> {
+  return (...args) => {
+    const parsedOptions = (fsBridge.optionsSchema ?? z.never().optional()).safeParse(args[0]);
+
+    if (!parsedOptions.success) {
+      throw new Error(
+        `Invalid options provided to file system bridge: ${parsedOptions.error.message}`,
+      );
+    }
+
+    const options = parsedOptions.data as z.output<TOptionsSchema>;
+
+    const { capabilities = DEFAULT_SUPPORTED_CAPABILITIES, state = {} } = fsBridge;
+
+    return fsBridge.setup({
+      options,
+      state,
+      capabilities,
+    });
+  };
 }
 
 /**
@@ -147,9 +166,9 @@ export function defineFileSystemBridge<TOptions extends z.ZodObject>(
  * If the bridge doesn't specify its capabilities, this function returns
  * the default set of supported capabilities (all capabilities enabled).
  *
- * @param {FileSystemBridge} fsBridge - The file system bridge to get capabilities for
+ * @param {FileSystemBridgeObject} fsBridge - The file system bridge to get capabilities for
  * @returns {FileSystemBridgeCapabilities} An object indicating which capabilities are supported by the bridge
  */
-export function getSupportedBridgeCapabilities(fsBridge: FileSystemBridge): FileSystemBridgeCapabilities {
+export function getSupportedBridgeCapabilities(fsBridge: FileSystemBridgeObject): FileSystemBridgeCapabilities {
   return fsBridge?.capabilities || DEFAULT_SUPPORTED_CAPABILITIES;
 }
