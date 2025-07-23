@@ -98,8 +98,13 @@ export async function getEntryByPath(path: string = ""): Promise<GetEntryByPathR
 
   const contentType = response.headers.get("content-type") || "";
 
+  const htmlExtensions = [".html", ".htm", ".xhtml"];
+  const isHtmlFile = htmlExtensions.some((ext) =>
+    normalizedPath.toLowerCase().endsWith(ext),
+  );
+
   // check if this is a directory listing (HTML response for non-HTML files)
-  const isDirectoryListing = contentType.includes("text/html") && !normalizedPath.endsWith(".html");
+  const isDirectoryListing = contentType.includes("text/html") && !isHtmlFile;
 
   if (isDirectoryListing) {
     const html = await response.text();
