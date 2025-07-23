@@ -6,7 +6,8 @@ import { getEntryByPath, ProxyFetchError } from "./lib";
 export const entryMiddleware = createMiddleware(async (c, next) => {
   const path = c.req.param("path") || "";
 
-  if (path.startsWith("..") || path.includes("//")) {
+  if (path.startsWith("..") || path.includes("//")
+    || path.startsWith("%2E%2E") || path.includes("%2F%2F")) {
     return badRequest({
       message: "Invalid path",
     });
