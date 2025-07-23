@@ -12,6 +12,17 @@ export interface FileSystemBridgeRmOptions {
   force?: boolean;
 }
 
+export type FSEntry = {
+  type: "file";
+  name: string;
+  path: string;
+} | {
+  type: "directory";
+  name: string;
+  path: string;
+  children: FSEntry[];
+};
+
 export interface FileSystemBridgeOperations {
   /**
    * Reads the contents of a file.
@@ -33,9 +44,9 @@ export interface FileSystemBridgeOperations {
    * Lists the contents of a directory.
    * @param {string} path - The path to the directory to list
    * @param {boolean} [recursive=false] - If true, lists files in subdirectories as well
-   * @returns {Promise<string[]>} A promise that resolves to an array of file and directory names
+   * @returns {Promise<FSEntry[]>} A promise that resolves to an array of file and directory entries
    */
-  listdir: (path: string, recursive?: boolean) => Promise<string[]>;
+  listdir: (path: string, recursive?: boolean) => Promise<FSEntry[]>;
 
   /**
    * Creates a directory.
