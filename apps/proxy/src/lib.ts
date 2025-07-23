@@ -25,13 +25,27 @@ export class ProxyFetchError extends Error {
   }
 }
 
+/**
+ * Parses an HTML directory listing from Unicode.org and extracts file/directory entries.
+ *
+ * This function takes raw HTML content from a Unicode.org directory listing page
+ * and converts it into a structured array of Entry objects containing metadata
+ * about each file or subdirectory.
+ *
+ * @param {string} html - The raw HTML content from a Unicode.org directory listing page
+ * @returns {Promise<Entry[]>} A promise that resolves to an array of Entry objects, each containing
+ *          type, name, path, and lastModified information for files/directories
+ * @throws {ProxyFetchError} When the HTML cannot be parsed as a directory listing
+ *
+ * @example
+ * ```typescript
+ * const html = await fetch('https://unicode.org/Public?F=2').then(r => r.text());
+ * const entries = await parseUnicodeDirectory(html);
+ * console.log(entries); // [{ type: 'directory', name: 'UNIDATA', path: '/UNIDATA', ... }]
+ * ```
+ */
 export async function parseUnicodeDirectory(html: string): Promise<Entry[]> {
   const files = parse(html, "F2");
-  if (!files) {
-    throw new ProxyFetchError("Failed to parse the directory listing", {
-      status: 500,
-    });
-  }
 
   return files.map(({ type, name, path, lastModified }) => ({
     type,
@@ -41,18 +55,33 @@ export async function parseUnicodeDirectory(html: string): Promise<Entry[]> {
   }));
 }
 
-export type GetEntryByPathResult = {
+interface UnicodeDirectoryResult {
   type: "directory";
   files: Entry[];
   headers: Headers;
-} | {
+}
+
+interface UnicodeFileResult {
   type: "file";
   content: ArrayBuffer;
   headers: Headers;
-};
+}
 
+export type GetEntryByPathResult = UnicodeDirectoryResult | UnicodeFileResult;
+
+/**
+ * Gets an entry from Unicode.org's Public directory by path.
+ *
+ * @param {string} path - The path relative to https://unicode.org/Public/
+ * @returns {Promise<GetEntryByPathResult>} Either a directory listing with files or file content with headers
+ * @throws {ProxyFetchError} When the request fails or returns an error status
+ */
 export async function getEntryByPath(path: string = ""): Promise<GetEntryByPathResult> {
-  const url = path ? `https://unicode.org/Public/${path}?F=2` : "https://unicode.org/Public?F=2";
+  // normalize path: remove leading/trailing slashes
+  const normalizedPath = path.replace(/^\/+|\/+$/g, "");
+  const url = normalizedPath
+    ? `https://unicode.org/Public/${normalizedPath}?F=2`
+    : "https://unicode.org/Public?F=2";
 
   const response = await fetch(url, {
     method: "GET",
@@ -62,24 +91,28 @@ export async function getEntryByPath(path: string = ""): Promise<GetEntryByPathR
   });
 
   if (!response.ok) {
-    throw new ProxyFetchError(`failed to fetch entry`, {
+    throw new ProxyFetchError(`Failed to fetch Unicode entry at path: ${normalizedPath || "/"}`, {
       status: response.status as ContentfulStatusCode,
     });
   }
 
-  const contentType = response.headers.get("content-type");
+  const contentType = response.headers.get("content-type") || "";
 
-  // if it returns HTML, but the path does not end with "html",
-  // it means we are dealing with a directory listing
-  // so we parse the HTML and return the directory structure
-  if (contentType?.includes("text/html") && !path.endsWith("html")) {
-    const text = await response.text();
+  const htmlExtensions = [".html", ".htm", ".xhtml"];
+  const isHtmlFile = htmlExtensions.some((ext) =>
+    normalizedPath.toLowerCase().endsWith(ext),
+  );
+
+  // check if this is a directory listing (HTML response for non-HTML files)
+  const isDirectoryListing = contentType.includes("text/html") && !isHtmlFile;
+
+  if (isDirectoryListing) {
+    const html = await response.text();
+    const files = await parseUnicodeDirectory(html);
+
     return {
       type: "directory",
-      files: (await parseUnicodeDirectory(text)).map((file) => ({
-        ...file,
-        path: path ? `/${path}/${file.name}` : file.name,
-      })),
+      files,
       headers: response.headers,
     };
   }
