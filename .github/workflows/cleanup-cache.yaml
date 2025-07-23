@@ -1,0 +1,21 @@
+name: cleanup cache
+
+on:
+  schedule:
+    - cron: "0 11 * * *" # runs every day at 11:00 UTC
+  pull_request:
+    types:
+      - closed
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: cleanup caches older than 5 days
+        uses: luxass/purge-action-cache@ae761ee5cfbd10b9d62d959393555283b6049da5 # v0.1.0
+        with:
+          max-age: 432000
