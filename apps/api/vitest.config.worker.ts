@@ -8,6 +8,9 @@ export default defineWorkersProject({
       ...defaultExclude,
       "test/unit/**",
     ],
+    include: [
+      "./test/worker/**/*.{test,spec}.?(c|m)[jt]s?(x)",
+    ],
     poolOptions: {
       workers: {
         singleWorker: true,
