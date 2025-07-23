@@ -56,8 +56,7 @@ export default defineConfig({
     },
     projects: [
       ...workspaces,
-      "./apps/proxy/vitest.worker.config.ts",
-      "./apps/proxy/vitest.config.ts",
+      "./apps/proxy/vitest.config.{worker,unit}.ts",
       "./apps/api"
     ]
   },
