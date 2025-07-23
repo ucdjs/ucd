@@ -1,5 +1,4 @@
 import type { Hono } from "hono";
-import { HTTPException } from "hono/http-exception";
 import { customError, internalServerError } from "./errors";
 
 /**
