@@ -1,7 +1,7 @@
 import type { HonoEnv } from "./types";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { Scalar } from "@scalar/hono-api-reference";
-import { errorHandler, notFoundHandler, setupCors } from "@ucdjs/worker-shared";
+import { errorHandler, notFoundHandler, setupCors, setupRatelimit } from "@ucdjs/worker-shared";
 import { env } from "hono/adapter";
 import { buildOpenApiConfig, registerApp } from "./openapi";
 import { V1_RAW_ROUTER } from "./routes/v1_raw";
@@ -11,6 +11,7 @@ const app = new OpenAPIHono<HonoEnv>();
 
 registerApp(app);
 setupCors(app);
+setupRatelimit(app);
 
 app.route("/", V1_RAW_ROUTER);
 app.route("/", V1_VERSIONS_ROUTER);
