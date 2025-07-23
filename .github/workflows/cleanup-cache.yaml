@@ -16,6 +16,6 @@ jobs:
           persist-credentials: false
 
       - name: cleanup caches older than 5 days
-        uses: luxass/purge-action-cache@v0.1.0
+        uses: luxass/purge-action-cache@ae761ee5cfbd10b9d62d959393555283b6049da5 # v0.1.0
         with:
           max-age: 432000
