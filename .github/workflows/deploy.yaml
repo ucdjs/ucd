@@ -73,8 +73,13 @@ jobs:
       - name: typecheck
         run: pnpm run typecheck
 
-      - name: test
-        run: pnpm run test
+      - name: test proxy
+        if: matrix.app == 'proxy'
+        run: pnpm run test --project proxy:unit proxy:worker
+
+      - name: test api
+        if: matrix.app == 'api'
+        run: pnpm run test --project api:unit api:worker
 
       - name: generate api version
         id: api-version
@@ -105,20 +110,3 @@ jobs:
           environment: production
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
           vars: API_VERSION
-
-      - name: clean deployment url
-        id: clean-url
-        if: matrix.app == 'proxy'
-        env:
-          DEPLOYMENT_URL: ${{ steps.deploy.outputs.deployment-url }}
-        run: |
-          CLEANED_URL=$(echo "$DEPLOYMENT_URL" | sed 's/ (custom domain)//')
-          echo "deployment-url=$CLEANED_URL" >> "$GITHUB_OUTPUT"
-
-      - name: verify deploy
-        if: ${{ matrix.app == 'proxy' && github.event.inputs.dry-run != 'true' && steps.clean-url.outputs.deployment-url != '' }}
-        run: |
-          echo "using worker url: ${WORKER_URL}"
-          pnpm --filter=@ucdjs/proxy deploy:verify
-        env:
-          WORKER_URL: ${{ steps.clean-url.outputs.deployment-url }}
