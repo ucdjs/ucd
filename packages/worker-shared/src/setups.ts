@@ -85,10 +85,9 @@ export function setupRatelimit<TEnv extends object>(app: Hono<TEnv>): void {
         ?? crypto.randomUUID(); // last-resort unique key
 
     // @ts-expect-error This works, but TypeScript complains.
-    if ("RATE_LIMITER" in c.env) {
-      return internalServerError({
-        message: "Rate limiter is not configured in the environment",
-      });
+    if (!("RATE_LIMITER" in c.env)) {
+      console.warn("RATE_LIMITER is not defined in the environment. Skipping rate limiting.");
+      return next();
     }
 
     // @ts-expect-error RATE_LIMITER is defined in the worker bindings.
