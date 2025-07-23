@@ -1,6 +1,6 @@
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 import type { GetEntryByPathResult } from "./lib";
-import { customError, internalServerError, notFound, setupCors } from "@ucdjs/worker-shared";
+import { errorHandler, notFoundHandler, setupCors } from "@ucdjs/worker-shared";
 import { WorkerEntrypoint } from "cloudflare:workers";
 import { Hono } from "hono";
 import { cache } from "hono/cache";
@@ -139,7 +139,6 @@ app.get(
       return c.json({
         type: "directory",
         mtime: result.headers.get("Last-Modified") || new Date().toISOString(),
-        size: 0,
       });
     }
 
@@ -175,28 +174,8 @@ app.get(
   },
 );
 
-app.onError(async (err, c) => {
-  console.error(err);
-  const url = new URL(c.req.url);
-  if (err instanceof HTTPException) {
-    return customError({
-      path: url.pathname,
-      status: err.status,
-      message: err.message,
-    });
-  }
-
-  return internalServerError({
-    path: url.pathname,
-  });
-});
-
-app.notFound(async (c) => {
-  const url = new URL(c.req.url);
-  return notFound({
-    path: url.pathname,
-  });
-});
+app.onError(errorHandler);
+app.notFound(notFoundHandler);
 
 export default class UnicodeProxy extends WorkerEntrypoint<CloudflareBindings> {
   async getUnicodeDirectory(path: string = ""): ReturnType<typeof parseUnicodeDirectory> {

@@ -3,9 +3,8 @@ import type { FileSystemBridge } from "@ucdjs/utils/fs-bridge";
 import path from "node:path";
 import { buildUCDPath } from "@luxass/unicode-utils-new";
 import { createClient } from "@ucdjs/fetch";
-import { createPathFilter } from "@ucdjs/utils";
+import { createPathFilter, flattenFilePaths } from "@ucdjs/utils";
 import defu from "defu";
-import { flattenFilePaths } from "./helpers";
 
 export interface ValidateUCDFilesOptions {
   /**
@@ -87,7 +86,7 @@ export async function validateUCDFiles(version: string, options: ValidateUCDFile
 
     const patternMatcher = providedPatternMatcher || createPathFilter(patterns);
 
-    const { data, error, response } = await client.GET("/api/v1/files/{version}", {
+    const { data, error, response } = await client.GET("/api/v1/versions/{version}/file-tree", {
       params: {
         path: {
           version,

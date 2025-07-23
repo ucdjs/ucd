@@ -6,12 +6,10 @@
 
 import type { components } from "./.generated/api";
 
-export type UnicodeVersion = components["schemas"]["UnicodeVersion"];
-export type UnicodeVersions = components["schemas"]["UnicodeVersions"];
 export type ApiError = components["schemas"]["ApiError"];
-export type UnicodeVersionMappings = components["schemas"]["UnicodeVersionMappings"];
-export type ProxyDirectoryResponse = components["schemas"]["ProxyDirectoryResponse"];
-export type ProxyFileResponse = components["schemas"]["ProxyFileResponse"];
-export type ProxyResponse = components["schemas"]["ProxyResponse"];
-export type UnicodeVersionFile = components["schemas"]["UnicodeVersionFile"];
-export type UnicodeVersionFiles = components["schemas"]["UnicodeVersionFiles"];
+export type RawResponse = components["schemas"]["RawResponse"];
+export type RawMetadata = components["schemas"]["RawMetadata"];
+export type UnicodeVersion = components["schemas"]["UnicodeVersion"];
+export type UnicodeVersionList = components["schemas"]["UnicodeVersionList"];
+export type UnicodeTreeNode = components["schemas"]["UnicodeTreeNode"];
+export type UnicodeTree = components["schemas"]["UnicodeTree"];

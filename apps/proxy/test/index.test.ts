@@ -16,7 +16,6 @@ it("respond with a 404", async () => {
   expect(await response.json()).toEqual({
     message: "Not Found",
     status: 404,
-    path: "/not-found",
     timestamp: expect.any(String),
   });
 });
@@ -83,7 +82,6 @@ it("should handle 404 for non-existent paths", async () => {
   expect(await response.json()).toEqual({
     message: "Not Found",
     status: 404,
-    path: "/not-a-real-path",
     timestamp: expect.any(String),
   });
 });

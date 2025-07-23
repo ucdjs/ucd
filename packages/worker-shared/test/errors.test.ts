@@ -29,7 +29,6 @@ describe("badRequest", () => {
     expect(response.status).toBe(400);
     expect(response.headers.get("Content-Type")).toBe("application/json");
     expect(body).toEqual({
-      path: "unknown",
       message: "Bad request",
       status: 400,
       timestamp: "2023-06-15T10:30:00.000Z",
@@ -44,14 +43,6 @@ describe("badRequest", () => {
     expect(body.status).toBe(400);
   });
 
-  it("should return 400 response with custom path", async () => {
-    const response = badRequest({ path: "/api/users" });
-    const body = await response.json();
-
-    expect(body.path).toBe("/api/users");
-    expect(body.status).toBe(400);
-  });
-
   it("should return 400 response with custom headers", async () => {
     const customHeaders = { "X-Custom-Header": "test-value" };
     const response = badRequest({ headers: customHeaders });
@@ -63,7 +54,6 @@ describe("badRequest", () => {
   it("should return 400 response with all options", async () => {
     const options = {
       message: "Validation failed",
-      path: "/api/validate",
       headers: { "X-Request-ID": "123456" },
     };
     const response = badRequest(options);
@@ -72,7 +62,6 @@ describe("badRequest", () => {
     expect(response.status).toBe(400);
     expect(response.headers.get("X-Request-ID")).toBe("123456");
     expect(body).toEqual({
-      path: "/api/validate",
       message: "Validation failed",
       status: 400,
       timestamp: "2023-06-15T10:30:00.000Z",
@@ -86,7 +75,6 @@ describe("badRequest", () => {
 
     expect(response.status).toBe(400);
     expect(body).toEqual({
-      path: "/api/users",
       message: "Bad request",
       status: 400,
       timestamp: "2023-06-15T10:30:00.000Z",
@@ -100,7 +88,6 @@ describe("badRequest", () => {
 
     expect(response.status).toBe(400);
     expect(body).toEqual({
-      path: "/api/users/123",
       message: "Invalid user ID",
       status: 400,
       timestamp: "2023-06-15T10:30:00.000Z",
@@ -117,7 +104,6 @@ describe("badRequest", () => {
 
     expect(response.status).toBe(400);
     expect(response.headers.get("X-Request-ID")).toBe("abc123");
-    expect(body.path).toBe("/api/validate");
     expect(body.message).toBe("Validation failed");
   });
 });
@@ -130,7 +116,6 @@ describe("forbidden", () => {
     expect(response.status).toBe(403);
     expect(response.headers.get("Content-Type")).toBe("application/json");
     expect(body).toEqual({
-      path: "unknown",
       message: "Forbidden",
       status: 403,
       timestamp: "2023-06-15T10:30:00.000Z",
@@ -142,14 +127,6 @@ describe("forbidden", () => {
     const body = await response.json();
 
     expect(body.message).toBe("Access denied");
-    expect(body.status).toBe(403);
-  });
-
-  it("should return 403 response with custom path", async () => {
-    const response = forbidden({ path: "/api/admin" });
-    const body = await response.json();
-
-    expect(body.path).toBe("/api/admin");
     expect(body.status).toBe(403);
   });
 
@@ -167,7 +144,6 @@ describe("forbidden", () => {
 
     expect(response.status).toBe(403);
     expect(body).toEqual({
-      path: "/api/admin",
       message: "Forbidden",
       status: 403,
       timestamp: "2023-06-15T10:30:00.000Z",
@@ -180,7 +156,6 @@ describe("forbidden", () => {
     const body = await response.json();
 
     expect(response.status).toBe(403);
-    expect(body.path).toBe("/api/admin/users");
     expect(body.message).toBe("Access denied to admin area");
   });
 });
@@ -193,7 +168,6 @@ describe("notFound", () => {
     expect(response.status).toBe(404);
     expect(response.headers.get("Content-Type")).toBe("application/json");
     expect(body).toEqual({
-      path: "unknown",
       message: "Not found",
       status: 404,
       timestamp: "2023-06-15T10:30:00.000Z",
@@ -208,18 +182,9 @@ describe("notFound", () => {
     expect(body.status).toBe(404);
   });
 
-  it("should return 404 response with custom path", async () => {
-    const response = notFound({ path: "/api/users/999" });
-    const body = await response.json();
-
-    expect(body.path).toBe("/api/users/999");
-    expect(body.status).toBe(404);
-  });
-
   it("should return 404 response with all options", async () => {
     const options = {
       message: "Resource not found",
-      path: "/api/resources/abc123",
       headers: { "Cache-Control": "no-cache" },
     };
     const response = notFound(options);
@@ -228,7 +193,6 @@ describe("notFound", () => {
     expect(response.status).toBe(404);
     expect(response.headers.get("Cache-Control")).toBe("no-cache");
     expect(body.message).toBe("Resource not found");
-    expect(body.path).toBe("/api/resources/abc123");
   });
 
   it("should return 404 response with Hono context", async () => {
@@ -238,7 +202,6 @@ describe("notFound", () => {
 
     expect(response.status).toBe(404);
     expect(body).toEqual({
-      path: "/api/users/999",
       message: "Not found",
       status: 404,
       timestamp: "2023-06-15T10:30:00.000Z",
@@ -251,7 +214,6 @@ describe("notFound", () => {
     const body = await response.json();
 
     expect(response.status).toBe(404);
-    expect(body.path).toBe("/api/products/abc123");
     expect(body.message).toBe("Product not found");
   });
 });
@@ -264,7 +226,6 @@ describe("internalServerError", () => {
     expect(response.status).toBe(500);
     expect(response.headers.get("Content-Type")).toBe("application/json");
     expect(body).toEqual({
-      path: "unknown",
       message: "Internal server error",
       status: 500,
       timestamp: "2023-06-15T10:30:00.000Z",
@@ -276,14 +237,6 @@ describe("internalServerError", () => {
     const body = await response.json();
 
     expect(body.message).toBe("Database connection failed");
-    expect(body.status).toBe(500);
-  });
-
-  it("should return 500 response with custom path", async () => {
-    const response = internalServerError({ path: "/api/database" });
-    const body = await response.json();
-
-    expect(body.path).toBe("/api/database");
     expect(body.status).toBe(500);
   });
 
@@ -301,7 +254,6 @@ describe("internalServerError", () => {
 
     expect(response.status).toBe(500);
     expect(body).toEqual({
-      path: "/api/database",
       message: "Internal server error",
       status: 500,
       timestamp: "2023-06-15T10:30:00.000Z",
@@ -314,7 +266,6 @@ describe("internalServerError", () => {
     const body = await response.json();
 
     expect(response.status).toBe(500);
-    expect(body.path).toBe("/api/users/sync");
     expect(body.message).toBe("Database sync failed");
   });
 });
@@ -361,7 +312,6 @@ describe("custom error handling", () => {
     const customErrorOptions = {
       status: 418,
       message: "I'm a teapot",
-      path: "/api/teapot",
       headers: { "X-Teapot": "true" },
     };
 
@@ -370,7 +320,6 @@ describe("custom error handling", () => {
 
     expect(response.status).toBe(418);
     expect(body.message).toBe("I'm a teapot");
-    expect(body.path).toBe("/api/teapot");
     expect(response.headers.get("X-Teapot")).toBe("true");
   });
 
@@ -378,7 +327,6 @@ describe("custom error handling", () => {
     const customErrorOptions = {
       status: 422,
       message: "Unprocessable Entity",
-      path: "/api/resources/abc123",
       headers: { "X-Error-Detail": "Invalid input" },
     };
 
@@ -387,7 +335,6 @@ describe("custom error handling", () => {
 
     expect(response.status).toBe(422);
     expect(body.message).toBe("Unprocessable Entity");
-    expect(body.path).toBe("/api/resources/abc123");
     expect(response.headers.get("X-Error-Detail")).toBe("Invalid input");
   });
 
@@ -401,7 +348,6 @@ describe("custom error handling", () => {
 
     expect(response.status).toBe(418);
     expect(body).toEqual({
-      path: "/api/teapot",
       message: "I'm a teapot",
       status: 418,
       timestamp: "2023-06-15T10:30:00.000Z",
@@ -418,7 +364,6 @@ describe("custom error handling", () => {
     const body = await response.json();
 
     expect(response.status).toBe(429);
-    expect(body.path).toBe("/api/rate-limit");
     expect(body.message).toBe("Too Many Requests");
     expect(response.headers.get("Retry-After")).toBe("3600");
   });
@@ -438,33 +383,7 @@ describe("hono context integration", () => {
     const response = badRequest(context, { message: "Invalid query parameters" });
     const body = await response.json();
 
-    expect(body.path).toBe("/api/users");
     expect(body.message).toBe("Invalid query parameters");
-  });
-
-  it("should handle URLs with fragments", async () => {
-    const context = createMockContext("https://example.com/api/docs#section-1");
-    const response = notFound(context);
-    const body = await response.json();
-
-    expect(body.path).toBe("/api/docs");
-  });
-
-  it("should handle complex nested paths", async () => {
-    const context = createMockContext("https://example.com/api/v1/users/123/posts/456/comments");
-    const response = forbidden(context, { message: "Access denied to nested resource" });
-    const body = await response.json();
-
-    expect(body.path).toBe("/api/v1/users/123/posts/456/comments");
-    expect(body.message).toBe("Access denied to nested resource");
-  });
-
-  it("should handle root path", async () => {
-    const context = createMockContext("https://example.com/");
-    const response = internalServerError(context);
-    const body = await response.json();
-
-    expect(body.path).toBe("/");
   });
 
   it("should handle paths with special characters", async () => {
@@ -472,7 +391,6 @@ describe("hono context integration", () => {
     const response = notFound(context, { message: "File not found" });
     const body = await response.json();
 
-    expect(body.path).toBe("/api/files/my%20file.txt");
     expect(body.message).toBe("File not found");
   });
 });

@@ -1,29 +1,25 @@
 import type { HonoEnv } from "./types";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { Scalar } from "@scalar/hono-api-reference";
-import { customError, internalServerError, notFound, setupCors } from "@ucdjs/worker-shared";
+import { errorHandler, notFoundHandler, setupCors } from "@ucdjs/worker-shared";
 import { env } from "hono/adapter";
-import { HTTPException } from "hono/http-exception";
-import { buildOpenApiConfig } from "./openapi";
-import { V1_FILES_ROUTER } from "./routes/v1_files";
-import { V1_UNICODE_PROXY_ROUTER } from "./routes/v1_unicode-proxy";
-import { V1_UNICODE_RELEASES_ROUTER } from "./routes/v1_unicode-releases";
-import { V1_UNICODE_VERSIONS_ROUTER } from "./routes/v1_unicode-versions";
+import { buildOpenApiConfig, registerApp } from "./openapi";
+import { V1_RAW_ROUTER } from "./routes/v1_raw";
+import { V1_VERSIONS_ROUTER } from "./routes/v1_versions";
 
 const app = new OpenAPIHono<HonoEnv>();
 
+registerApp(app);
 setupCors(app);
 
-app.route("/", V1_UNICODE_VERSIONS_ROUTER);
-app.route("/", V1_UNICODE_RELEASES_ROUTER);
-app.route("/", V1_UNICODE_PROXY_ROUTER);
-app.route("/", V1_FILES_ROUTER);
+app.route("/", V1_RAW_ROUTER);
+app.route("/", V1_VERSIONS_ROUTER);
 
 app.get(
-  "/scalar",
+  "/",
   Scalar({
     url: "/openapi.json",
-    layout: "classic",
+    layout: "modern",
     customCss: /* css */`
     .endpoint-label-path {
       display: none !important;
@@ -74,28 +70,8 @@ app.doc31("/openapi.json", (c) => {
   ]);
 });
 
-app.onError(async (err, c) => {
-  console.error(err);
-  const url = new URL(c.req.url);
-  if (err instanceof HTTPException) {
-    return customError({
-      path: url.pathname,
-      status: err.status,
-      message: err.message,
-    });
-  }
-
-  return internalServerError({
-    path: url.pathname,
-  });
-});
-
-app.notFound(async (c) => {
-  const url = new URL(c.req.url);
-  return notFound({
-    path: url.pathname,
-  });
-});
+app.onError(errorHandler);
+app.notFound(notFoundHandler);
 
 export const getOpenAPI31Document = app.getOpenAPI31Document;
 

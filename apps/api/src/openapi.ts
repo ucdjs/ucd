@@ -1,7 +1,26 @@
 import type { OpenAPIHono } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
+import { createResponseComponentBuilder } from "@ucdjs/worker-shared";
 
 export type OpenAPIObjectConfig = Parameters<OpenAPIHono["getOpenAPI31Document"]>[0];
+
+export const OPENAPI_TAGS = {
+  MISC: "Misc",
+  RAW: "Raw",
+  VERSIONS: "Versions",
+  LIL: "",
+} as const satisfies Record<string, string>;
+
+export const { generateReferences, registerApp } = createResponseComponentBuilder([
+  400,
+  404,
+  429,
+  500,
+  502,
+  503,
+]);
+
+export type OpenAPITag = typeof OPENAPI_TAGS[keyof typeof OPENAPI_TAGS];
 
 export function buildOpenApiConfig(version: string, servers: NonNullable<OpenAPIObjectConfig["servers"]>) {
   return {
@@ -53,47 +72,17 @@ export function buildOpenApiConfig(version: string, servers: NonNullable<OpenAPI
     },
     tags: [
       {
-        name: "Misc",
+        name: OPENAPI_TAGS.RAW,
         description: dedent`
-          Miscellaneous endpoints that don't fit into other categories.
+          Proxy endpoints for accessing Unicode data files and directories.
 
-          These endpoints typically provide utility functions, health checks,
-          API information, and other general-purpose functionality.
+          These endpoints provide secure access to official Unicode data through our API,
+          with built-in caching and path validation. Detailed usage examples and path
+          formats are documented in the individual endpoint specifications.
         `,
       },
       {
-        name: "Unicode Proxy",
-        description: dedent`
-          Proxy endpoints for accessing Unicode data files from unicode-proxy.ucdjs.dev.
-
-          ## How it works
-          These endpoints act as a proxy to the official Unicode data repository,
-          allowing you to access Unicode data files through our API without
-          needing to make direct requests to the Unicode servers.
-
-          ## Wildcard Pattern
-          The wildcard parameter allows you to specify any path within the Unicode data structure.
-          This means you can access specific files, directories, or even entire versions of Unicode data.
-          For example, you can see the paths defined below:
-
-          ## Common Usage Examples
-          - \`/latest/ucd/UnicodeData.txt\` - Get the latest UnicodeData.txt file
-          - \`/15.0.0/ucd/UnicodeData.txt\` - Get UnicodeData.txt for Unicode version 15.0.0
-          - \`/latest/ucd/auxiliary/GraphemeBreakProperty.txt\` - Access files in subdirectories
-          - \`/14.0.0/ucd/extracted/DerivedCombiningClass.txt\` - Access extracted data files
-        `,
-      },
-      {
-        name: "Files",
-        description: dedent`
-          Endpoints for accessing Unicode data files directly.
-
-          These endpoints provide a straightforward way to retrieve Unicode data files
-          without any additional processing or transformation.
-        `,
-      },
-      {
-        name: "Versions",
+        name: OPENAPI_TAGS.VERSIONS,
         description: dedent`
           Endpoints for accessing information about Unicode versions.
 
