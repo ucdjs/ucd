@@ -1,5 +1,5 @@
 import type { Hono } from "hono";
-import { customError, internalServerError } from "./errors";
+import { customError } from "./errors";
 
 /**
  * Sets up Cross-Origin Resource Sharing (CORS) middleware for a Hono application.
