@@ -1,4 +1,13 @@
-import { mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
+import {
+  mkdir,
+  readdir,
+  readFile,
+  rm,
+  stat,
+  writeFile,
+} from "node:fs/promises";
+import { join } from "node:path";
+import z from "zod";
 import { defineFileSystemBridge } from "../fs-bridge";
 
 async function safeExists(path: string): Promise<boolean> {
@@ -10,44 +19,47 @@ async function safeExists(path: string): Promise<boolean> {
   }
 }
 
-/**
- * Node.js implementation of the file system bridge.
- *
- * This bridge uses Node.js built-in filesystem modules to implement
- * file operations like reading, writing, and managing directories.
- * It provides a consistent interface for interacting with the filesystem
- * in Node.js environments.
- *
- * @see defineFileSystemBridge
- */
 const NodeFileSystemBridge = defineFileSystemBridge({
-  read(path) {
-    return readFile(path, "utf-8");
+  optionsSchema: z.object({
+    basePath: z.string(),
+  }),
+  capabilities: {
+    exists: true,
+    read: true,
+    write: true,
+    listdir: true,
+    mkdir: true,
+    rm: true,
   },
-  exists(path) {
-    return safeExists(path);
-  },
-  async listdir(path, recursive) {
-    return readdir(path, {
-      recursive: recursive ?? false,
-    });
-  },
-  async write(path, data, encoding = "utf-8") {
-    return writeFile(path, data, { encoding });
-  },
-  async mkdir(path) {
-    // mkdir returns the first directory path, when recursive is true
-    await mkdir(path, { recursive: true });
-    return void 0;
-  },
-  async rm(path, options) {
-    return rm(path, {
-      recursive: options?.recursive ?? false,
-      force: options?.force ?? false,
-    });
-  },
-  async stat(path) {
-    return stat(path);
+  setup({ options }) {
+    const basePath = options.basePath;
+    return {
+      read(path) {
+        return readFile(join(basePath, path), "utf-8");
+      },
+      exists(path) {
+        return safeExists(join(basePath, path));
+      },
+      async listdir(path, recursive) {
+        return readdir(join(basePath, path), {
+          recursive: recursive ?? false,
+        });
+      },
+      async write(path, data, encoding = "utf-8") {
+        return writeFile(join(basePath, path), data, { encoding });
+      },
+      async mkdir(path) {
+        // mkdir returns the first directory path, when recursive is true
+        await mkdir(join(basePath, path), { recursive: true });
+        return void 0;
+      },
+      async rm(path, options) {
+        return rm(join(basePath, path), {
+          recursive: options?.recursive ?? false,
+          force: options?.force ?? false,
+        });
+      },
+    };
   },
 });
 
