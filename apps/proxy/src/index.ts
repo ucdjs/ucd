@@ -8,13 +8,6 @@ import { createMiddleware } from "hono/factory";
 import { HTTPException } from "hono/http-exception";
 import { getEntryByPath, parseUnicodeDirectory, ProxyFetchError } from "./lib";
 
-export interface ApiError {
-  path: string;
-  status: number;
-  message: string;
-  timestamp: string;
-}
-
 const app = new Hono<{
   Bindings: CloudflareBindings;
   Variables: {
