@@ -74,13 +74,19 @@ const DEFAULT_SUPPORTED_CAPABILITIES: FileSystemBridgeCapabilities = {
   rm: true,
 };
 
-type FileSystemBridgeSetupFn<TOptionsSchema extends z.ZodObject> = (ctx: {
+type FileSystemBridgeSetupFn<
+  TOptionsSchema extends z.ZodType,
+  TState extends Record<string, unknown> = Record<string, unknown>,
+> = (ctx: {
   options: z.infer<TOptionsSchema>;
-  state: Record<string, unknown>;
+  state: TState;
   capabilities: FileSystemBridgeCapabilities;
 }) => FileSystemBridgeOperations;
 
-export interface FileSystemBridgeObject<TOptionsSchema extends z.ZodObject = z.ZodObject> {
+export interface FileSystemBridgeObject<
+  TOptionsSchema extends z.ZodType = z.ZodNever,
+  TState extends Record<string, unknown> = Record<string, unknown>,
+> {
   /**
    * Zod schema for validating bridge options
    */
@@ -117,17 +123,17 @@ export interface FileSystemBridgeObject<TOptionsSchema extends z.ZodObject = z.Z
    * }
    * ```
    */
-  state?: Record<string, unknown>;
+  state?: TState;
 
   /**
    * Setup function that receives options, state, and capabilities
    * and returns the filesystem operations implementation
    */
-  setup: FileSystemBridgeSetupFn<TOptionsSchema>;
+  setup: FileSystemBridgeSetupFn<TOptionsSchema, TState>;
 }
 
 type FileSystemBridge<
-  TOptionsSchema extends z.ZodObject,
+  TOptionsSchema extends z.ZodType,
 > = (
   ...args: [z.input<TOptionsSchema>] extends [never]
     ? []
@@ -136,8 +142,11 @@ type FileSystemBridge<
       : [options: z.input<TOptionsSchema>]
 ) => FileSystemBridgeOperations;
 
-export function defineFileSystemBridge<TOptionsSchema extends z.ZodObject>(
-  fsBridge: FileSystemBridgeObject<TOptionsSchema>,
+export function defineFileSystemBridge<
+  TOptionsSchema extends z.ZodType,
+  TState extends Record<string, unknown> = Record<string, unknown>,
+>(
+  fsBridge: FileSystemBridgeObject<TOptionsSchema, TState>,
 ): FileSystemBridge<TOptionsSchema> {
   return (...args) => {
     const parsedOptions = (fsBridge.optionsSchema ?? z.never().optional()).safeParse(args[0]);
@@ -150,11 +159,11 @@ export function defineFileSystemBridge<TOptionsSchema extends z.ZodObject>(
 
     const options = parsedOptions.data as z.output<TOptionsSchema>;
 
-    const { capabilities = DEFAULT_SUPPORTED_CAPABILITIES, state = {} } = fsBridge;
+    const { capabilities = DEFAULT_SUPPORTED_CAPABILITIES, state } = fsBridge;
 
     return fsBridge.setup({
       options,
-      state,
+      state: state ?? {} as TState,
       capabilities,
     });
   };
