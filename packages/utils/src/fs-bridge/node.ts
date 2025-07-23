@@ -6,7 +6,7 @@ import {
   stat,
   writeFile,
 } from "node:fs/promises";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import z from "zod";
 import { defineFileSystemBridge } from "../fs-bridge";
 
@@ -46,7 +46,15 @@ const NodeFileSystemBridge = defineFileSystemBridge({
         });
       },
       async write(path, data, encoding = "utf-8") {
-        return writeFile(join(basePath, path), data, { encoding });
+        const fullPath = join(basePath, path);
+        const parentDir = dirname(fullPath);
+
+        if (!(await safeExists(parentDir))) {
+          // create parent directories if they don't exist
+          await mkdir(parentDir, { recursive: true });
+        }
+
+        return writeFile(fullPath, data, { encoding });
       },
       async mkdir(path) {
         // mkdir returns the first directory path, when recursive is true
