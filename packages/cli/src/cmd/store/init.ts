@@ -1,8 +1,9 @@
+/* eslint-disable unused-imports/no-unused-vars */
 import type { Prettify } from "@luxass/utils";
 import type { UCDStore } from "@ucdjs/ucd-store";
 import type { CLIArguments } from "../../cli-utils";
 import type { CLIStoreCmdSharedFlags } from "./_shared";
-import { createLocalUCDStore, createRemoteUCDStore } from "@ucdjs/ucd-store";
+// import { createLocalUCDStore, createRemoteUCDStore } from "@ucdjs/ucd-store";
 import { printHelp } from "../../cli-utils";
 import { SHARED_FLAGS } from "./_shared";
 
@@ -46,24 +47,24 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
     patterns,
   } = flags;
 
-  let store: UCDStore | null = null;
-  if (remote) {
-    store = await createRemoteUCDStore({
-      baseUrl,
-      globalFilters: patterns,
-    });
-  } else {
-    store = await createLocalUCDStore({
-      basePath: storeDir,
-      baseUrl,
-      globalFilters: patterns,
-    });
-  }
+  // let store: UCDStore | null = null;
+  // if (remote) {
+  //   store = await createRemoteUCDStore({
+  //     baseUrl,
+  //     globalFilters: patterns,
+  //   });
+  // } else {
+  //   store = await createLocalUCDStore({
+  //     basePath: storeDir,
+  //     baseUrl,
+  //     globalFilters: patterns,
+  //   });
+  // }
 
-  if (store == null) {
-    console.error("Error: Failed to create UCD store.");
-    return;
-  }
+  // if (store == null) {
+  //   console.error("Error: Failed to create UCD store.");
+  //   return;
+  // }
 
   // eslint-disable-next-line no-console
   console.log("Initializing UCD Store...");
