@@ -79,11 +79,11 @@ jobs:
 
       - name: test proxy
         if: matrix.app == 'proxy'
-        run: pnpm run test --project proxy:unit proxy:worker
+        run: pnpm run test --project "proxy:unit" --project "proxy:worker"
 
       - name: test api
         if: matrix.app == 'api'
-        run: pnpm run test --project api:unit api:worker
+        run: pnpm run test --project "api:unit" --project "api:worker"
 
       - name: generate api version
         id: api-version
