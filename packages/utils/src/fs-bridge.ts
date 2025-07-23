@@ -168,16 +168,3 @@ export function defineFileSystemBridge<
     });
   };
 }
-
-/**
- * Gets the supported capabilities for a file system bridge.
- *
- * If the bridge doesn't specify its capabilities, this function returns
- * the default set of supported capabilities (all capabilities enabled).
- *
- * @param {FileSystemBridgeObject} fsBridge - The file system bridge to get capabilities for
- * @returns {FileSystemBridgeCapabilities} An object indicating which capabilities are supported by the bridge
- */
-export function getSupportedBridgeCapabilities(fsBridge: FileSystemBridgeObject): FileSystemBridgeCapabilities {
-  return fsBridge?.capabilities || DEFAULT_SUPPORTED_CAPABILITIES;
-}
