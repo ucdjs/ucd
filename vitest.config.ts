@@ -24,7 +24,7 @@ const hiddenLogs = [
   "[ucd-files]",
 ]
 
-const workspaces = readdirSync(new URL("./packages", import.meta.url).pathname)
+const packageProjects = readdirSync(new URL("./packages", import.meta.url).pathname)
   .filter((dir) => existsSync(pkgRoot(dir) + "/package.json"))
   .map((dir) => {
     return {
@@ -35,6 +35,17 @@ const workspaces = readdirSync(new URL("./packages", import.meta.url).pathname)
       }
     } satisfies TestProjectConfiguration;
   });
+
+const workerUnitProjects = readdirSync(new URL("./apps", import.meta.url).pathname)
+  .map((dir) => {
+    return {
+      extends: true,
+      test: {
+        include: [`./apps/${dir}/test/unit/**/*.{test,spec}.?(c|m)[jt]s?(x)`],
+        name: `${dir}:unit`,
+      },
+    } satisfies TestProjectConfiguration;
+  })
 
 export default defineConfig({
   test: {
@@ -55,10 +66,9 @@ export default defineConfig({
       return false;
     },
     projects: [
-      ...workspaces,
-      "./apps/proxy/vitest.config.ts",
+      ...packageProjects,
+      ...workerUnitProjects,
       "./apps/proxy/vitest.config.worker.ts",
-      "./apps/api/vitest.config.ts",
       "./apps/api/vitest.config.worker.ts",
     ]
   },
