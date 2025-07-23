@@ -56,8 +56,10 @@ export default defineConfig({
     },
     projects: [
       ...workspaces,
-      "./apps/proxy/vitest.config.{worker,unit}.ts",
-      "./apps/api/vitest.config.{worker,unit}.ts",
+      "./apps/proxy/vitest.config.ts",
+      "./apps/proxy/vitest.config.worker.ts",
+      "./apps/api/vitest.config.ts",
+      "./apps/api/vitest.config.worker.ts",
     ]
   },
   esbuild: { target: "es2020" },
