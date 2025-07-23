@@ -1,11 +1,19 @@
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 import type { GetEntryByPathResult } from "./lib";
-import { errorHandler, notFoundHandler, setupCors, setupRatelimit } from "@ucdjs/worker-shared";
+import {
+  customError,
+  errorHandler,
+  internalServerError,
+  notFoundHandler,
+  setupCors,
+  setupRatelimit,
+} from "@ucdjs/worker-shared";
 import { WorkerEntrypoint } from "cloudflare:workers";
 import { Hono } from "hono";
 import { cache } from "hono/cache";
 import { createMiddleware } from "hono/factory";
 import { HTTPException } from "hono/http-exception";
+import { entryMiddleware } from "./entry-middleware";
 import { getEntryByPath, parseUnicodeDirectory, ProxyFetchError } from "./lib";
 
 const app = new Hono<{
@@ -20,10 +28,6 @@ const app = new Hono<{
 setupCors(app);
 setupRatelimit(app);
 
-app.get("/favicon.ico", (c) => {
-  return c.newResponse(null, 204, {});
-});
-
 // This route is used by the HTTPFileSystemBridge.
 // See https://github.com/ucdjs/ucd/blob/a26f975776218e6db3b64c3e5a3036fd05f75ebd/packages/utils/src/fs-bridge/http.ts
 app.get(
@@ -37,8 +41,8 @@ app.get(
       const result = await getEntryByPath();
 
       if (result.type !== "directory") {
-        throw new HTTPException(500, {
-          message: "Failed to fetch Unicode directory",
+        return internalServerError(c, {
+          message: "Expected a directory for the root entry",
         });
       }
 
@@ -64,45 +68,13 @@ app.get(
         }
       }
 
-      throw new HTTPException(status, {
+      return customError({
+        status,
         message,
       });
     }
   },
 );
-
-const entryMiddleware = createMiddleware(async (c, next) => {
-  const path = c.req.param("path") || "";
-
-  if (path.startsWith("..") || path.includes("//")) {
-    throw new HTTPException(400, {
-      message: "Invalid path",
-    });
-  }
-
-  try {
-    const result = await getEntryByPath(path);
-    c.set("entry", result);
-  } catch (err) {
-    let status: ContentfulStatusCode = 500;
-    let message = "Internal Server Error";
-
-    if (err instanceof ProxyFetchError) {
-      status = err.status || 502;
-      if (err.status === 404) {
-        message = "Not Found";
-      } else {
-        message = err.message || "Failed to fetch Unicode directory";
-      }
-    }
-
-    throw new HTTPException(status, {
-      message,
-    });
-  }
-
-  await next();
-});
 
 app.get(
   "/__stat/:path{.*}?",
