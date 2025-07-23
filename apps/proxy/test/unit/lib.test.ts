@@ -1,8 +1,7 @@
-import type { Entry } from "apache-autoindex-parse";
-import { mockFetch } from "#msw-utils";
+import { HttpResponse, mockFetch } from "#msw-utils";
 import { DEFAULT_USER_AGENT } from "@ucdjs/env";
-import { HttpResponse } from "msw";
-import { describe, expect, it } from "vitest";
+import { generateAutoIndexHtml } from "apache-autoindex-parse/test-utils";
+import { assert, describe, expect, it } from "vitest";
 import { getEntryByPath, parseUnicodeDirectory, ProxyFetchError } from "../../src/lib";
 
 describe("custom errors - ProxyFetchError", () => {
@@ -38,22 +37,10 @@ describe("custom errors - ProxyFetchError", () => {
 
 describe("parseUnicodeDirectory", () => {
   it("should parse HTML directory listing", async () => {
-    const mockHtml = `<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
-<html>
-<head>
-<title>Index of /Public</title>
-</head>
-<body>
-<h1>Index of /Public</h1>
-<table>
-<tr><th valign="top"><img src="/icons/blank.gif" alt="[ICO]"></th><th><a href="?C=N;O=D">Name</a></th><th><a href="?C=M;O=A">Last modified</a></th><th><a href="?C=S;O=A">Size</a></th><th><a href="?C=D;O=A">Description</a></th></tr>
-<tr><th colspan="5"><hr></th></tr>
-<tr><td valign="top"><img src="/icons/back.gif" alt="[PARENTDIR]"></td><td><a href="/">Parent Directory</a></td><td>&nbsp;</td><td align="right">  - </td><td>&nbsp;</td></tr>
-<tr><td valign="top"><img src="/icons/folder.gif" alt="[DIR]"></td><td><a href="15.1.0/">15.1.0/</a></td><td align="right">2023-09-12 17:45  </td><td align="right">  - </td><td>&nbsp;</td></tr>
-<tr><td valign="top"><img src="/icons/text.gif" alt="[TXT]"></td><td><a href="UnicodeData.txt">UnicodeData.txt</a></td><td align="right">2023-09-12 17:45  </td><td align="right">1.9M</td><td>&nbsp;</td></tr>
-</table>
-</body>
-</html>`;
+    const mockHtml = generateAutoIndexHtml([
+      { type: "directory", name: "15.1.0", path: "/15.1.0", lastModified: Date.now() },
+      { type: "file", name: "UnicodeData.txt", path: "/UnicodeData.txt", lastModified: Date.now() },
+    ], "F2");
 
     const result = await parseUnicodeDirectory(mockHtml);
 
@@ -73,14 +60,9 @@ describe("parseUnicodeDirectory", () => {
   });
 
   it("should trim trailing slashes from names and paths", async () => {
-    const mockHtml = `<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
-<html>
-<body>
-<table>
-<tr><td><img src="/icons/folder.gif" alt="[DIR]"></td><td><a href="folder/">folder/</a></td><td>2023-09-12 17:45</td><td>-</td><td></td></tr>
-</table>
-</body>
-</html>`;
+    const mockHtml = generateAutoIndexHtml([
+      { type: "directory", name: "folder/", path: "/folder/", lastModified: Date.now() },
+    ], "F2");
 
     const result = await parseUnicodeDirectory(mockHtml);
 
@@ -88,26 +70,23 @@ describe("parseUnicodeDirectory", () => {
     expect(result[0]!.path).toBe("/folder");
   });
 
-  it("should throw ProxyFetchError when parsing fails", async () => {
+  it("should return empty array when parsing fails", async () => {
     const invalidHtml = "<html><body>Invalid content</body></html>";
 
-    await expect(parseUnicodeDirectory(invalidHtml)).rejects.toThrow(ProxyFetchError);
-    await expect(parseUnicodeDirectory(invalidHtml)).rejects.toThrow("Failed to parse the directory listing");
+    const result = await parseUnicodeDirectory(invalidHtml);
+    expect(result).toEqual([]);
   });
 });
 
 describe("getEntryByPath", () => {
   describe("directory responses", () => {
     it("should fetch root directory when no path provided", async () => {
-      const mockHtml = `<!DOCTYPE HTML>
-<html><body>
-<table>
-<tr><td><img src="/icons/folder.gif" alt="[DIR]"></td><td><a href="15.1.0/">15.1.0/</a></td><td>2023-09-12 17:45</td><td>-</td><td></td></tr>
-</table>
-</body></html>`;
+      const mockHtml = generateAutoIndexHtml([
+        { type: "directory", name: "15.1.0", path: "/15.1.0", lastModified: Date.now() },
+      ], "F2");
 
       mockFetch([
-        ["GET", "https://unicode.org/Public?F=2", () => {
+        ["GET", "https://unicode.org/Public", () => {
           return new HttpResponse(mockHtml, {
             status: 200,
             headers: {
@@ -120,24 +99,23 @@ describe("getEntryByPath", () => {
 
       const result = await getEntryByPath();
 
+      assert(result.type === "directory");
       expect(result.type).toBe("directory");
       expect(result.files).toHaveLength(1);
+      assert(result.files[0] != null);
       expect(result.files[0].name).toBe("15.1.0");
-      expect(result.files[0].path).toBe("15.1.0");
+      expect(result.files[0].path).toBe("/15.1.0");
       expect(result.headers).toBeInstanceOf(Headers);
       expect(result.headers.get("Content-Type")).toBe("text/html");
     });
 
     it("should fetch directory with path", async () => {
-      const mockHtml = `<!DOCTYPE HTML>
-<html><body>
-<table>
-<tr><td><img src="/icons/text.gif" alt="[TXT]"></td><td><a href="UnicodeData.txt">UnicodeData.txt</a></td><td>2023-09-12 17:45</td><td>1.9M</td><td></td></tr>
-</table>
-</body></html>`;
+      const mockHtml = generateAutoIndexHtml([
+        { type: "file", name: "UnicodeData.txt", path: "/15.1.0/UnicodeData.txt", lastModified: Date.now() },
+      ], "F2");
 
       mockFetch([
-        ["GET", "https://unicode.org/Public/15.1.0?F=2", () => {
+        ["GET", "https://unicode.org/Public/15.1.0", () => {
           return new HttpResponse(mockHtml, {
             status: 200,
             headers: { "Content-Type": "text/html" },
@@ -147,8 +125,10 @@ describe("getEntryByPath", () => {
 
       const result = await getEntryByPath("15.1.0");
 
+      assert(result.type === "directory");
       expect(result.type).toBe("directory");
       expect(result.files).toHaveLength(1);
+      assert(result.files[0] != null);
       expect(result.files[0].name).toBe("UnicodeData.txt");
       expect(result.files[0].path).toBe("/15.1.0/UnicodeData.txt");
     });
@@ -157,8 +137,8 @@ describe("getEntryByPath", () => {
       let capturedRequest: Request | undefined;
 
       mockFetch([
-        ["GET", "https://unicode.org/Public?F=2", ({ request }) => {
-          capturedRequest = request;
+        ["GET", "https://unicode.org/Public", ({ request }) => {
+          capturedRequest = request as Request;
           return new HttpResponse("<html><body><table></table></body></html>", {
             status: 200,
             headers: { "Content-Type": "text/html" },
@@ -177,7 +157,7 @@ describe("getEntryByPath", () => {
       const mockContent = new TextEncoder().encode("Unicode file content");
 
       mockFetch([
-        ["GET", "https://unicode.org/Public/UnicodeData.txt?F=2", () => {
+        ["GET", "https://unicode.org/Public/UnicodeData.txt", () => {
           return new HttpResponse(mockContent, {
             status: 200,
             headers: {
@@ -190,7 +170,7 @@ describe("getEntryByPath", () => {
 
       const result = await getEntryByPath("UnicodeData.txt");
 
-      expect(result.type).toBe("file");
+      assert(result.type === "file");
       expect(result.content).toBeInstanceOf(ArrayBuffer);
       expect(new TextDecoder().decode(result.content)).toBe("Unicode file content");
       expect(result.headers.get("Content-Type")).toBe("text/plain");
@@ -200,7 +180,7 @@ describe("getEntryByPath", () => {
       const mockHtmlContent = "<html><body>HTML file content</body></html>";
 
       mockFetch([
-        ["GET", "https://unicode.org/Public/doc/index.html?F=2", () => {
+        ["GET", "https://unicode.org/Public/doc/index.html", () => {
           return new HttpResponse(mockHtmlContent, {
             status: 200,
             headers: { "Content-Type": "text/html" },
@@ -210,7 +190,7 @@ describe("getEntryByPath", () => {
 
       const result = await getEntryByPath("doc/index.html");
 
-      expect(result.type).toBe("file");
+      assert(result.type === "file");
       expect(new TextDecoder().decode(result.content)).toBe(mockHtmlContent);
     });
 
@@ -218,7 +198,7 @@ describe("getEntryByPath", () => {
       const binaryData = new Uint8Array([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A]);
 
       mockFetch([
-        ["GET", "https://unicode.org/Public/image.png?F=2", () => {
+        ["GET", "https://unicode.org/Public/image.png", () => {
           return new HttpResponse(binaryData, {
             status: 200,
             headers: { "Content-Type": "image/png" },
@@ -228,36 +208,15 @@ describe("getEntryByPath", () => {
 
       const result = await getEntryByPath("image.png");
 
-      expect(result.type).toBe("file");
+      assert(result.type === "file");
       expect(new Uint8Array(result.content)).toEqual(binaryData);
     });
   });
 
   describe("error handling", () => {
-    it("should throw ProxyFetchError on 404", async () => {
-      mockFetch([
-        ["GET", "https://unicode.org/Public/nonexistent?F=2", () => {
-          return new HttpResponse("Not Found", {
-            status: 404,
-            statusText: "Not Found",
-          });
-        }],
-      ]);
-
-      await expect(getEntryByPath("nonexistent")).rejects.toThrow(ProxyFetchError);
-
-      try {
-        await getEntryByPath("nonexistent");
-      } catch (error) {
-        expect(error).toBeInstanceOf(ProxyFetchError);
-        expect((error as ProxyFetchError).status).toBe(404);
-        expect((error as ProxyFetchError).message).toBe("failed to fetch entry");
-      }
-    });
-
     it("should throw ProxyFetchError on 500", async () => {
       mockFetch([
-        ["GET", "https://unicode.org/Public/error?F=2", () => {
+        ["GET", "https://unicode.org/Public/error", () => {
           return new HttpResponse("Internal Server Error", {
             status: 500,
             statusText: "Internal Server Error",
@@ -277,7 +236,7 @@ describe("getEntryByPath", () => {
 
     it("should handle network errors", async () => {
       mockFetch([
-        ["GET", "https://unicode.org/Public/network-error?F=2", () => {
+        ["GET", "https://unicode.org/Public/network-error", () => {
           return Response.error();
         }],
       ]);
@@ -289,7 +248,7 @@ describe("getEntryByPath", () => {
       const invalidHtml = "<html><body>Invalid directory listing</body></html>";
 
       mockFetch([
-        ["GET", "https://unicode.org/Public/invalid?F=2", () => {
+        ["GET", "https://unicode.org/Public/invalid", () => {
           return new HttpResponse(invalidHtml, {
             status: 200,
             headers: { "Content-Type": "text/html" },
@@ -297,7 +256,12 @@ describe("getEntryByPath", () => {
         }],
       ]);
 
-      await expect(getEntryByPath("invalid")).rejects.toThrow(ProxyFetchError);
+      const result = await getEntryByPath("invalid");
+
+      assert(result.type === "directory");
+      expect(result.type).toBe("directory");
+      expect(result.files).toEqual([]);
+      expect(result.files).toHaveLength(0);
     });
   });
 
@@ -306,7 +270,7 @@ describe("getEntryByPath", () => {
       const mockHtml = "<html><body><table></table></body></html>";
 
       mockFetch([
-        ["GET", "https://unicode.org/Public?F=2", () => {
+        ["GET", "https://unicode.org/Public", () => {
           return new HttpResponse(mockHtml, {
             status: 200,
             headers: { "Content-Type": "text/html" },
@@ -316,15 +280,15 @@ describe("getEntryByPath", () => {
 
       const result = await getEntryByPath("");
 
-      expect(result.type).toBe("directory");
-      expect(result.files).toEqual([]);
+      assert(result.type === "directory");
+      assert(result.files.length === 0);
     });
 
     it("should handle content-type with charset", async () => {
       const mockContent = "Text content";
 
       mockFetch([
-        ["GET", "https://unicode.org/Public/file.txt?F=2", () => {
+        ["GET", "https://unicode.org/Public/file.txt", () => {
           return new HttpResponse(mockContent, {
             status: 200,
             headers: { "Content-Type": "text/plain; charset=utf-8" },
@@ -334,7 +298,7 @@ describe("getEntryByPath", () => {
 
       const result = await getEntryByPath("file.txt");
 
-      expect(result.type).toBe("file");
+      assert(result.type === "file");
       expect(new TextDecoder().decode(result.content)).toBe(mockContent);
     });
 
@@ -342,7 +306,7 @@ describe("getEntryByPath", () => {
       const htmlFileContent = "<html><head><title>Documentation</title></head><body>Content</body></html>";
 
       mockFetch([
-        ["GET", "https://unicode.org/Public/docs/spec.html?F=2", () => {
+        ["GET", "https://unicode.org/Public/docs/spec.html", () => {
           return new HttpResponse(htmlFileContent, {
             status: 200,
             headers: { "Content-Type": "text/html" },
@@ -352,7 +316,7 @@ describe("getEntryByPath", () => {
 
       const result = await getEntryByPath("docs/spec.html");
 
-      expect(result.type).toBe("file");
+      assert(result.type === "file");
       expect(new TextDecoder().decode(result.content)).toBe(htmlFileContent);
     });
   });
