@@ -22,6 +22,19 @@
       "service": "unicode-proxy"
     }
   ],
+  "unsafe": {
+    "bindings": [
+      {
+        "name": "RATE_LIMITER",
+        "type": "ratelimit",
+        "namespace_id": "1001",
+        "simple": {
+          "limit": 2000,
+          "period": 60
+        }
+      }
+    ]
+  },
   "placement": { "mode": "smart" },
   "env": {
     "preview": {
@@ -42,7 +55,20 @@
           "entrypoint": "default",
           "service": "unicode-proxy-preview"
         }
-      ]
+      ],
+      "unsafe": {
+        "bindings": [
+          {
+            "name": "RATE_LIMITER",
+            "type": "ratelimit",
+            "namespace_id": "1001",
+            "simple": {
+              "limit": 2000,
+              "period": 60
+            }
+          }
+        ]
+      }
     },
     "production": {
       "name": "ucdjs-api",
@@ -62,7 +88,20 @@
           "entrypoint": "default",
           "service": "unicode-proxy"
         }
-      ]
+      ],
+      "unsafe": {
+        "bindings": [
+          {
+            "name": "RATE_LIMITER",
+            "type": "ratelimit",
+            "namespace_id": "1001",
+            "simple": {
+              "limit": 2000,
+              "period": 60
+            }
+          }
+        ]
+      }
     },
     "testing": {
       "name": "ucdjs-api",
@@ -74,6 +113,19 @@
         "ENVIRONMENT": "testing",
         "PROXY_ENDPOINT": "https://unicode-proxy.ucdjs.dev",
         "USE_SVC_BINDING": "true"
+      },
+      "unsafe": {
+        "bindings": [
+          {
+            "name": "RATE_LIMITER",
+            "type": "ratelimit",
+            "namespace_id": "1001",
+            "simple": {
+              "limit": 2000,
+              "period": 60
+            }
+          }
+        ]
       }
     }
   }
