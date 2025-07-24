@@ -1,9 +1,14 @@
 import type { ContentfulStatusCode } from "hono/utils/http-status";
+import type { GetEntryByPathResult } from "./lib";
 import { badRequest, customError } from "@ucdjs/worker-shared";
 import { createMiddleware } from "hono/factory";
 import { getEntryByPath, ProxyFetchError } from "./lib";
 
-export const entryMiddleware = createMiddleware(async (c, next) => {
+export const entryMiddleware = createMiddleware<{
+  Variables: {
+    entry?: GetEntryByPathResult;
+  };
+}>(async (c, next) => {
   const path = c.req.param("path") || "";
 
   if (path.startsWith("..") || path.includes("//")
