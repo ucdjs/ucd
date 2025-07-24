@@ -137,7 +137,7 @@ describe("entry middleware", () => {
   describe("path validation", () => {
     it("should return 400 for invalid paths", async () => {
       mockFetch([
-        ["GET", "https://unicode.org/Public", () => {}],
+        ["GET", "https://unicode.org/Public", () => { }],
       ]);
 
       let executed = false;
