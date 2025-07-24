@@ -248,6 +248,9 @@ importers:
 
   apps/proxy:
     dependencies:
+      '@luxass/utils':
+        specifier: catalog:prod
+        version: 2.6.0
       '@ucdjs/env':
         specifier: workspace:*
         version: link:../../packages/env
