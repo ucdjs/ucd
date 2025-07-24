@@ -94,6 +94,26 @@ describe("entry middleware", () => {
     expect(data).toBe("Emoji data content");
   });
 
+  it("should handle ProxyFetchError", async () => {
+    mockFetch([
+      ["GET", "https://unicode.org/Public/not-valid-path", () => {
+        return HttpResponse.text("Not Found", { status: 404 });
+      }],
+    ]);
+
+    const app = new Hono().get("/test/:path{.*}?", entryMiddleware, (c) => {
+      return c.text("This should not be reached");
+    });
+
+    const response = await app.request("https://ucdjs.dev/test/not-valid-path");
+    expect(response.status).toBe(404);
+    expect(await response.json()).toEqual({
+      message: "Not Found",
+      status: 404,
+      timestamp: expect.any(String),
+    });
+  });
+
   it("should error if `getEntryByPath` fails", async () => {
     mockFetch([
       ["GET", "https://unicode.org/Public", () => {
