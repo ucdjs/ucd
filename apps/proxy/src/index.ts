@@ -1,5 +1,6 @@
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 import type { GetEntryByPathResult } from "./lib";
+import { trimTrailingSlash } from "@luxass/utils";
 import {
   customError,
   errorHandler,
@@ -49,7 +50,7 @@ app.get(
         return match && match.length === 4;
       }).map(({ name, path }) => ({
         version: name,
-        path,
+        path: trimTrailingSlash(path),
       }));
 
       return c.json(versions);
@@ -82,7 +83,14 @@ app.get(
   }),
   entryMiddleware,
   async (c) => {
-    const result = c.get("entry") as GetEntryByPathResult;
+    const result = c.get("entry");
+
+    if (!result) {
+      return internalServerError(c, {
+        message: "Entry not found in context",
+      });
+    }
+
     if (result.type === "directory") {
       return c.json({
         type: "directory",
@@ -106,7 +114,13 @@ app.get(
   }),
   entryMiddleware,
   async (c) => {
-    const result = c.get("entry") as GetEntryByPathResult;
+    const result = c.get("entry");
+
+    if (!result) {
+      return internalServerError(c, {
+        message: "Entry not found in context",
+      });
+    }
 
     if (result.type === "directory") {
       c.header("Last-Modified", result.headers.get("Last-Modified") ?? "");
