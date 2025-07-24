@@ -13,6 +13,7 @@
     "clean": "git clean -xdf node_modules .wrangler dist"
   },
   "dependencies": {
+    "@luxass/utils": "catalog:prod",
     "@ucdjs/env": "workspace:*",
     "@ucdjs/utils": "workspace:*",
     "@ucdjs/worker-shared": "workspace:*",
