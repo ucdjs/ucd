@@ -32,6 +32,6 @@
   - changed-files:
       - any-glob-to-any-file: apps/api/**
 
-"apps: proxy":
+"apps: web":
   - changed-files:
-      - any-glob-to-any-file: apps/proxy/**
+      - any-glob-to-any-file: apps/web/**

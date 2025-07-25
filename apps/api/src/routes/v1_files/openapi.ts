@@ -1,7 +1,9 @@
 import { createRoute } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
-import { generateReferences, OPENAPI_TAGS } from "../openapi";
-import { RawMetadataSchema, RawResponseSchema } from "./v1_raw.schemas";
+import { UCD_FILE_STAT_TYPE_HEADER } from "@ucdjs/env";
+import { cache } from "hono/cache";
+import { generateReferences, OPENAPI_TAGS } from "../../openapi";
+import { FileEntrySchema, UCDStoreSchema } from "./schemas";
 
 const WILDCARD_PARAM = {
   in: "path",
@@ -43,10 +45,39 @@ const WILDCARD_PARAM = {
   },
 } as const;
 
-export const RAW_WILDCARD_ROUTE = createRoute({
+export const GET_UCD_STORE = createRoute({
+  method: "get",
+  path: "/.ucd-store.json",
+  tags: [OPENAPI_TAGS.FILES],
+  middleware: [
+    cache({
+      cacheName: "ucdjs:v1_files:ucd-store",
+      cacheControl: "max-age=604800", // 7 days
+    }),
+  ] as const,
+  description: "Retrieve the UCD store listing all available Unicode versions.",
+  responses: {
+    200: {
+      content: {
+        "application/json": {
+          schema: UCDStoreSchema,
+        },
+      },
+      description: "Successfully retrieved the UCD store contents with all available Unicode versions.",
+    },
+    ...(generateReferences([
+      429,
+      500,
+      502,
+    ])),
+  },
+});
+
+export const WILDCARD_ROUTE = createRoute({
   method: "get",
   path: "/{wildcard}",
-  tags: [OPENAPI_TAGS.RAW],
+  tags: [OPENAPI_TAGS.FILES],
+  parameters: [WILDCARD_PARAM],
   description: dedent`
     # Unicode Data Proxy Endpoint
 
@@ -55,7 +86,7 @@ export const RAW_WILDCARD_ROUTE = createRoute({
     This endpoint provides **direct access** to official Unicode data files hosted at \`unicode.org\`. You can retrieve individual UCD files, browse directory listings, or access specific Unicode versions.
 
     **💡 Pro Tip:**<br/>
-    If you only need file metadata (size, modification time), use the \`/__stat/{wildcard}\` endpoint instead. It's much faster since it doesn't download the full content.
+    If you only need file metadata (size, modification time), use the \`HEAD\` as the request method instead. It's much faster since it doesn't download the full content.
 
     ## Use Cases
 
@@ -66,19 +97,23 @@ export const RAW_WILDCARD_ROUTE = createRoute({
 
     ## Response Types
 
-    | Content Type | Description | Example Files |
-    |--------------|-------------|---------------|
-    | \`application/json\` | Directory listings or structured data | Directory contents |
-    | \`text/plain; charset=utf-8\` | Unicode data files | \`UnicodeData.txt\`, \`PropList.txt\` |
-    | \`application/octet-stream\` | Binary files or unknown types | Compressed files |
+    | Content Type                  | Description                           | Example Files                         |
+    | ----------------------------- | ------------------------------------- | ------------------------------------- |
+    | \`application/json\`          | Directory listings or structured data | Directory contents                    |
+    | \`text/plain; charset=utf-8\` | Unicode data files                    | \`UnicodeData.txt\`, \`PropList.txt\` |
+    | \`application/octet-stream\`  | Binary files or unknown types         | Compressed files                      |
 
-    ## Caching
+    ## Custom Response Headers
 
-    - ⚡ **1-hour cache** for all responses
+    This endpoint includes custom headers that provide additional metadata about the resource:
+
+    | Header                           | Values               | Description                                           |
+    | -------------------------------- | -------------------- | ----------------------------------------------------- |
+    | \`${UCD_FILE_STAT_TYPE_HEADER}\` | \`file \\| directory\` | Indicates whether the resource is a file or directory |
+
+    **📋 Note for HEAD Requests:**<br/>
+    All custom headers are exposed via \`Access-Control-Expose-Headers\` and are accessible in HEAD requests for efficient metadata retrieval without downloading content.
   `,
-  parameters: [
-    WILDCARD_PARAM,
-  ],
   responses: {
     200: {
       description: dedent`
@@ -94,59 +129,13 @@ export const RAW_WILDCARD_ROUTE = createRoute({
       `,
       content: {
         "application/json": {
-          schema: RawResponseSchema,
+          schema: FileEntrySchema,
         },
         "application/octet-stream": {
           schema: {
             type: "string",
             format: "binary",
           },
-        },
-      },
-    },
-    ...(generateReferences([
-      400,
-      404,
-      500,
-      502,
-    ])),
-  },
-});
-
-export const RAW_STAT_WILDCARD_ROUTE = createRoute({
-  method: "get",
-  path: "/__stat/{wildcard}",
-  tags: [OPENAPI_TAGS.RAW],
-  description: dedent`
-    # Unicode Data Statistics Endpoint
-
-    Get **metadata information** about Unicode data files and directories without downloading their content.
-
-    This lightweight endpoint provides file/directory metadata including modification times, sizes, and types.
-  `,
-  parameters: [
-    WILDCARD_PARAM,
-  ],
-  responses: {
-    200: {
-      description: dedent`
-        Returns metadata about the requested Unicode data resource without downloading the full content.
-
-        ### Response Format
-
-        The response provides essential file/directory information in a lightweight JSON format:
-
-        \`\`\`json
-        {
-          "type": "file",
-          "mtime": "2023-09-15T10:30:00Z",
-          "size": 1889024
-        }
-        \`\`\`
-      `,
-      content: {
-        "application/json": {
-          schema: RawMetadataSchema,
         },
       },
     },
