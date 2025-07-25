@@ -13,5 +13,6 @@
   "workbench.editor.customLabels.patterns": {
     // custom labels for api routes
     "**/routes/**/*.ts": "(${dirname}) ${filename}"
-  }
+  },
+  "testing.automaticallyOpenTestResults": "neverOpen"
 }
