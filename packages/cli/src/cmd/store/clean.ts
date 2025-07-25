@@ -1,9 +1,9 @@
-/* eslint-disable no-console */
+/* eslint-disable unused-imports/no-unused-vars */
 import type { Prettify } from "@luxass/utils";
 import type { UCDStore } from "@ucdjs/ucd-store";
 import type { CLIArguments } from "../../cli-utils";
 import type { CLIStoreCmdSharedFlags } from "./_shared";
-import { createLocalUCDStore, createRemoteUCDStore } from "@ucdjs/ucd-store";
+// import { createLocalUCDStore, createRemoteUCDStore } from "@ucdjs/ucd-store";
 import { printHelp } from "../../cli-utils";
 import { SHARED_FLAGS } from "./_shared";
 
@@ -38,43 +38,43 @@ export async function runCleanStore({ flags }: CLIStoreCleanCmdOptions) {
     patterns,
   } = flags;
 
-  let store: UCDStore | null = null;
-  if (remote) {
-    store = await createRemoteUCDStore({
-      baseUrl,
-      globalFilters: patterns,
-    });
-  } else {
-    store = await createLocalUCDStore({
-      basePath: storeDir,
-      baseUrl,
-      globalFilters: patterns,
-    });
-  }
+  const store: UCDStore | null = null;
+  // if (remote) {
+  //   store = await createRemoteUCDStore({
+  //     baseUrl,
+  //     globalFilters: patterns,
+  //   });
+  // } else {
+  //   store = await createLocalUCDStore({
+  //     basePath: storeDir,
+  //     baseUrl,
+  //     globalFilters: patterns,
+  //   });
+  // }
 
-  if (store == null) {
-    console.error("Error: Failed to create UCD store.");
-    return;
-  }
+  // if (store == null) {
+  //   console.error("Error: Failed to create UCD store.");
+  //   return;
+  // }
 
-  if (dryRun) {
-    const filesToDelete = await store.getAllFiles();
-    if (filesToDelete.length === 0) {
-      console.log("No files to delete.");
-    } else {
-      console.log("Files that would be deleted:");
-      filesToDelete.forEach((file) => console.log(`- ${file}`));
-    }
-    return;
-  }
+  // if (dryRun) {
+  //   const filesToDelete = await store.getAllFiles();
+  //   if (filesToDelete.length === 0) {
+  //     console.log("No files to delete.");
+  //   } else {
+  //     console.log("Files that would be deleted:");
+  //     filesToDelete.forEach((file) => console.log(`- ${file}`));
+  //   }
+  //   return;
+  // }
 
-  const result = await store.clean();
+  // const result = await store.clean();
 
-  if (!result.success) {
-    console.error("Error cleaning UCD Store:", result.error);
-    return;
-  }
+  // if (!result.success) {
+  //   console.error("Error cleaning UCD Store:", result.error);
+  //   return;
+  // }
 
-  console.log("UCD Store cleaned successfully.");
-  console.log(`Deleted ${result.deletedCount} files.`);
+  // console.log("UCD Store cleaned successfully.");
+  // console.log(`Deleted ${result.deletedCount} files.`);
 }
