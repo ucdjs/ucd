@@ -1,7 +1,14 @@
 import type { Context } from "hono";
 import type { ApiError } from "../src";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { badRequest, customError, forbidden, internalServerError, notFound } from "../src";
+import {
+  badRequest,
+  customError,
+  forbidden,
+  internalServerError,
+  notFound,
+} from "../src";
+import { badGateway } from "../src/errors";
 
 const mockDate = new Date("2023-06-15T10:30:00.000Z");
 
@@ -271,20 +278,73 @@ describe("internalServerError", () => {
   });
 });
 
-describe("response structure validation", () => {
-  it("should always include timestamp in ISO format", async () => {
-    const responses = [
-      badRequest(),
-      forbidden(),
-      notFound(),
-      internalServerError(),
-    ];
+describe("badGateway", () => {
+  it("should return 502 response with default values", async () => {
+    const response = badGateway();
+    const body = await response.json() as ApiError;
 
-    for (const response of responses) {
-      const body = await response.json() as ApiError;
-      expect(body.timestamp).toBe("2023-06-15T10:30:00.000Z");
-      expect(new Date(body.timestamp).toISOString()).toBe(body.timestamp);
-    }
+    expect(response.status).toBe(500);
+    expect(response.headers.get("Content-Type")).toBe("application/json");
+    expect(body).toEqual({
+      message: "Bad Gateway",
+      status: 502,
+      timestamp: "2023-06-15T10:30:00.000Z",
+    });
+  });
+
+  it("should return 502 response with custom message", async () => {
+    const response = badGateway({ message: "Database connection failed" });
+    const body = await response.json() as ApiError;
+
+    expect(body.message).toBe("Database connection failed");
+    expect(body.status).toBe(502);
+  });
+
+  it("should return 502 response with custom headers", async () => {
+    const customHeaders = { "Retry-After": "60" };
+    const response = badGateway({ headers: customHeaders });
+
+    expect(response.headers.get("Retry-After")).toBe("60");
+  });
+
+  it("should return 502 response with Hono context", async () => {
+    const context = createMockContext("https://example.com/api/database");
+    const response = badGateway(context);
+    const body = await response.json() as ApiError;
+
+    expect(response.status).toBe(502);
+    expect(body).toEqual({
+      message: "Bad Gateway",
+      status: 502,
+      timestamp: "2023-06-15T10:30:00.000Z",
+    });
+  });
+
+  it("should return 502 response with Hono context and custom message", async () => {
+    const context = createMockContext("https://example.com/api/users/sync");
+    const response = badGateway(context, { message: "Database sync failed" });
+    const body = await response.json() as ApiError;
+
+    expect(response.status).toBe(502);
+    expect(body.message).toBe("Database sync failed");
+  });
+});
+
+describe("response structure validation", () => {
+  it.each([
+    badRequest(),
+    forbidden(),
+    notFound(),
+    internalServerError(),
+    badGateway(),
+  ])("should return response with correct structure", async (response) => {
+    const body = await response.json() as ApiError;
+
+    expect(body).toEqual({
+      message: expect.any(String),
+      status: response.status,
+      timestamp: expect.any(String),
+    });
   });
 
   it("should preserve custom headers while keeping Content-Type", async () => {
