@@ -9,14 +9,14 @@ on:
         default: false
         type: boolean
       app:
-        description: App to deploy (api, proxy, or both)
+        description: App to deploy (api, web, or both)
         required: false
         default: both
         type: choice
         options:
           - both
           - api
-          - proxy
+          - web
   pull_request:
     branches:
       - main
@@ -39,7 +39,7 @@ jobs:
       matrix:
         app:
           - ${{ (github.event.inputs.app == 'api' || github.event.inputs.app == 'both' || github.event.inputs.app == null) && 'api' || '' }}
-          - ${{ (github.event.inputs.app == 'proxy' || github.event.inputs.app == 'both' || github.event.inputs.app == null) && 'proxy' || '' }}
+          - ${{ (github.event.inputs.app == 'web' || github.event.inputs.app == 'both' || github.event.inputs.app == null) && 'web' || '' }}
         exclude:
           - app: ''
     permissions:
@@ -64,8 +64,8 @@ jobs:
       - name: build
         run: pnpm build
 
-      - name: build workers
-        run: pnpm build:workers
+      - name: build apps
+        run: pnpm build:apps
 
       - name: validate openapi
         if: matrix.app == 'api'
@@ -77,16 +77,13 @@ jobs:
       - name: typecheck
         run: pnpm run typecheck
 
-      - name: test proxy
-        if: matrix.app == 'proxy'
-        run: pnpm run test --project "proxy:unit" --project "proxy:worker"
-
       - name: test api
         if: matrix.app == 'api'
         run: pnpm run test --project "api:unit" --project "api:worker"
 
       - name: generate api version
         id: api-version
+        if: matrix.app != 'web'
         env:
           HEAD_REF: ${{ github.head_ref }}
           REF_NAME: ${{ github.ref_name }}
@@ -106,7 +103,7 @@ jobs:
         id: deploy
         if: ${{ github.event.inputs.dry-run != 'true' }}
         env:
-          API_VERSION: ${{ steps.api-version.outputs.version }}
+          API_VERSION: ${{ steps.api-version.outputs.version || 'latest' }}
         uses: cloudflare/wrangler-action@392082e81ffbcb9ebdde27400634aa004b35ea37 # v3.14.0
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
@@ -158,10 +155,10 @@ jobs:
           path: /tmp/
         continue-on-error: true
 
-      - name: download proxy deployment url
+      - name: download web deployment url
         uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
         with:
-          name: deployment-url-proxy
+          name: deployment-url-web
           path: /tmp/
         continue-on-error: true
 
@@ -172,9 +169,9 @@ jobs:
             API_URL=$(cat /tmp/api-url.txt)
             echo "api-url=$API_URL" >> "$GITHUB_OUTPUT"
           fi
-          if [ -f /tmp/proxy-url.txt ]; then
-            PROXY_URL=$(cat /tmp/proxy-url.txt)
-            echo "proxy-url=$PROXY_URL" >> "$GITHUB_OUTPUT"
+          if [ -f /tmp/web-url.txt ]; then
+            web_URL=$(cat /tmp/web-url.txt)
+            echo "web-url=$web_URL" >> "$GITHUB_OUTPUT"
           fi
 
       - name: find existing comment
@@ -190,7 +187,7 @@ jobs:
         env:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           API_URL: ${{ steps.read-urls.outputs.api-url }}
-          PROXY_URL: ${{ steps.read-urls.outputs.proxy-url }}
+          WEB_URL: ${{ steps.read-urls.outputs.web-url }}
         with:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
@@ -201,7 +198,7 @@ jobs:
             The workers have been deployed successfully.
 
             ${{ env.API_URL && format('**API Preview URL:** {0}', env.API_URL) || '' }}
-            ${{ env.PROXY_URL && format('**Proxy Preview URL:** {0}', env.PROXY_URL) || '' }}
+            ${{ env.web_URL && format('**WEB Preview URL:** {0}', env.WEB_URL) || '' }}
 
             This preview was built from commit ${{ env.HEAD_SHA }}
 
