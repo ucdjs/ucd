@@ -50,7 +50,8 @@ describe("strictJSONResponse", () => {
 
     const response = await app.request(new Request("http://localhost/"));
     expect(response.status).toBe(400);
-    const errorData = await response.json();
+
+    const errorData = await response.json() as any;
     expect(errorData).toHaveProperty("message");
     expect(errorData.message).toContain("Invalid response data");
   });
