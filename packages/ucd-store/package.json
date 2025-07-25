@@ -20,7 +20,6 @@
   },
   "exports": {
     ".": "./dist/index.js",
-    "./ucd-files": "./dist/ucd-files.js",
     "./package.json": "./package.json"
   },
   "main": "./dist/index.js",
