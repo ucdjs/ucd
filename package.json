@@ -11,10 +11,10 @@
   ],
   "scripts": {
     "build": "turbo run build --filter \"./packages/*\" --concurrency=15",
-    "build:workers": "turbo run build --filter \"./apps/api\" --filter \"./apps/proxy\"",
+    "build:workers": "turbo run build --filter \"./apps/api\"",
     "clean": "turbo run clean && git clean -xdf node_modules",
     "dev": "turbo watch dev --filter \"./packages/*\"",
-    "dev:workers": "turbo run dev --filter \"./apps/api\" --filter \"./apps/proxy\"",
+    "dev:workers": "turbo run dev --filter \"./apps/api\"",
     "lint": "turbo run lint",
     "test": "vitest run",
     "test:watch": "vitest",

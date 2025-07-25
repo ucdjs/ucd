@@ -8,7 +8,7 @@ export const OPENAPI_TAGS = {
   MISC: "Misc",
   RAW: "Raw",
   VERSIONS: "Versions",
-  LIL: "",
+  FILES: "Files",
 } as const satisfies Record<string, string>;
 
 export const { generateReferences, registerApp } = createResponseComponentBuilder([

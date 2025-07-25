@@ -4,8 +4,8 @@ import { Scalar } from "@scalar/hono-api-reference";
 import { errorHandler, notFoundHandler, setupCors, setupRatelimit } from "@ucdjs/worker-shared";
 import { env } from "hono/adapter";
 import { buildOpenApiConfig, registerApp } from "./openapi";
-import { V1_RAW_ROUTER } from "./routes/v1_raw";
-import { V1_VERSIONS_ROUTER } from "./routes/v1_versions";
+import { V1_FILES_ROUTER } from "./routes/v1_files/routes";
+import { V1_VERSIONS_ROUTER } from "./routes/v1_versions/routes";
 
 const app = new OpenAPIHono<HonoEnv>();
 
@@ -13,8 +13,8 @@ registerApp(app);
 setupCors(app);
 setupRatelimit(app);
 
-app.route("/", V1_RAW_ROUTER);
 app.route("/", V1_VERSIONS_ROUTER);
+app.route("/", V1_FILES_ROUTER);
 
 app.get(
   "/",

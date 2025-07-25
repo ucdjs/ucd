@@ -1,8 +1,8 @@
 import { createRoute } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
 import { cache } from "hono/cache";
-import { generateReferences, OPENAPI_TAGS } from "../openapi";
-import { UnicodeTreeSchema, UnicodeVersionListSchema } from "./v1_versions.schemas";
+import { generateReferences, OPENAPI_TAGS } from "../../openapi";
+import { UnicodeTreeSchema, UnicodeVersionListSchema } from "./schemas";
 
 export const LIST_ALL_UNICODE_VERSIONS_ROUTE = createRoute({
   method: "get",

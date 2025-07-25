@@ -9,14 +9,14 @@ on:
         default: false
         type: boolean
       app:
-        description: App to deploy (api, proxy, or both)
+        description: App to deploy (api, web, or both)
         required: false
         default: both
         type: choice
         options:
           - both
           - api
-          - proxy
+          - web
   push:
     branches:
       - main
@@ -38,7 +38,7 @@ jobs:
       matrix:
         app:
           - ${{ (github.event.inputs.app == 'api' || github.event.inputs.app == 'both' || github.event.inputs.app == null) && 'api' || '' }}
-          - ${{ (github.event.inputs.app == 'proxy' || github.event.inputs.app == 'both' || github.event.inputs.app == null) && 'proxy' || '' }}
+          - ${{ (github.event.inputs.app == 'web' || github.event.inputs.app == 'both' || github.event.inputs.app == null) && 'web' || '' }}
         exclude:
           - app: ''
     steps:
@@ -73,16 +73,13 @@ jobs:
       - name: typecheck
         run: pnpm run typecheck
 
-      - name: test proxy
-        if: matrix.app == 'proxy'
-        run: pnpm run test --project "proxy:unit" --project "proxy:worker"
-
       - name: test api
         if: matrix.app == 'api'
         run: pnpm run test --project "api:unit" --project "api:worker"
 
       - name: generate api version
         id: api-version
+        if: matrix.app != 'web'
         env:
           HEAD_REF: ${{ github.head_ref }}
           REF_NAME: ${{ github.ref_name }}
@@ -102,7 +99,7 @@ jobs:
         id: deploy
         if: ${{ github.event.inputs.dry-run != 'true' }}
         env:
-          API_VERSION: ${{ steps.api-version.outputs.version }}
+          API_VERSION: ${{ steps.api-version.outputs.version || 'latest' }}
         uses: cloudflare/wrangler-action@392082e81ffbcb9ebdde27400634aa004b35ea37 # v3.14.0
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
