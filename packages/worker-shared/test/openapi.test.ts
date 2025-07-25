@@ -71,12 +71,12 @@ describe("createResponseComponentBuilder", () => {
       );
     });
 
-    it("should reject all invalid status codes", () => {
-      INVALID_CODES.forEach((invalidCode) => {
-        expect(() => createResponseComponentBuilder([invalidCode] as any)).toThrow(
-          `Unsupported status code: ${invalidCode}`,
-        );
-      });
+    it.each(
+      INVALID_CODES,
+    )("should throw for invalid code %d", (invalidCode) => {
+      expect(() => createResponseComponentBuilder([invalidCode] as any)).toThrow(
+        `Unsupported status code: ${invalidCode}`,
+      );
     });
 
     it("should accept all supported error codes", () => {
@@ -182,29 +182,33 @@ describe("createResponseComponentBuilder", () => {
       expect(references).toEqual({});
     });
 
-    it("should generate references for all error types", () => {
-      const testCases = [
-        { code: 400, component: "BadRequestError" },
-        { code: 401, component: "UnauthorizedError" },
-        { code: 403, component: "ForbiddenError" },
-        { code: 404, component: "NotFoundError" },
-        { code: 409, component: "ConflictError" },
-        { code: 422, component: "ValidationError" },
-        { code: 429, component: "TooManyRequestsError" },
-        { code: 500, component: "InternalServerError" },
-        { code: 502, component: "BadGatewayError" },
-        { code: 503, component: "ServiceUnavailableError" },
-        { code: 504, component: "GatewayTimeoutError" },
-      ] as const;
+    it.each([
+      { code: 400, component: "BadRequestError" },
+      { code: 401, component: "UnauthorizedError" },
+      { code: 403, component: "ForbiddenError" },
+      { code: 404, component: "NotFoundError" },
+      { code: 409, component: "ConflictError" },
+      { code: 422, component: "ValidationError" },
+      { code: 429, component: "TooManyRequestsError" },
+      { code: 500, component: "InternalServerError" },
+      { code: 502, component: "BadGatewayError" },
+      { code: 503, component: "ServiceUnavailableError" },
+      { code: 504, component: "GatewayTimeoutError" },
+    ] as const)("should generate reference for code $code", ({ code, component }) => {
+      const builder = createResponseComponentBuilder([code]);
+      const references = builder.generateReferences([code]);
 
-      testCases.forEach(({ code, component }) => {
-        const builder = createResponseComponentBuilder([code]);
-        const references = builder.generateReferences([code]);
-
-        expect(references[code]).toEqual({
-          $ref: `#/components/responses/${component}`,
-        });
+      expect(references[code]).toEqual({
+        $ref: `#/components/responses/${component}`,
       });
+    });
+
+    it("should throw for unsupported status codes", () => {
+      const builder = createResponseComponentBuilder([400] as any);
+
+      expect(() => builder.generateReferences([999])).toThrow(
+        `Unsupported status code: 999`,
+      );
     });
   });
 
