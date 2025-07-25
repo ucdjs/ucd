@@ -2,8 +2,8 @@ import type { HonoEnv } from "../../types";
 import type { UCDStore } from "./schemas";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { trimTrailingSlash } from "@luxass/utils";
-import { DEFAULT_USER_AGENT } from "@ucdjs/env";
-import { badGateway, badRequest } from "@ucdjs/worker-shared";
+import { DEFAULT_USER_AGENT, UCD_FILE_STAT_TYPE_HEADER } from "@ucdjs/env";
+import { badGateway, badRequest, notFound } from "@ucdjs/worker-shared";
 import { cache } from "hono/cache";
 import { parseUnicodeDirectory } from "../../lib/files";
 import { GET_UCD_STORE, WILDCARD_ROUTE } from "./openapi";
@@ -64,7 +64,17 @@ V1_FILES_ROUTER.get("/:wildcard{.*}?", cache({
     },
   });
 
-  const contentType = response.headers.get("content-type") || "";
+  if (!response.ok) {
+    if (response.status === 404) {
+      return notFound(c, {
+        message: "Resource not found",
+      });
+    }
+
+    return badGateway(c);
+  }
+
+  let contentType = response.headers.get("content-type") || "";
   const sharedHeaders = {
     "Last-Modified": response.headers.get("Last-Modified") || "",
     "Content-Length": response.headers.get("Content-Length") || "",
@@ -86,16 +96,29 @@ V1_FILES_ROUTER.get("/:wildcard{.*}?", cache({
       ...sharedHeaders,
 
       // Custom STAT Headers
-      "UCD-Stat-Type": "directory",
+      [UCD_FILE_STAT_TYPE_HEADER]: "directory",
     });
   }
 
+  const extName = normalizedPath.split(".").pop()?.toLowerCase() || "";
+  if (extName === "json") {
+    contentType ||= "application/json";
+  } else if (extName === "xml") {
+    contentType ||= "application/xml";
+  } else if (extName === "txt") {
+    contentType ||= "text/plain";
+  } else if (extName === "html" || extName === "htm" || extName === "xhtml") {
+    contentType ||= "text/html";
+  } else {
+    contentType ||= "application/octet-stream"; // Default for binary files
+  }
+
   return c.newResponse(await response.arrayBuffer(), 200, {
-    "Content-Type": response.headers.get("Content-Type") ?? "",
+    "Content-Type": contentType,
     "Content-Disposition": response.headers.get("Content-Disposition") ?? "",
     ...sharedHeaders,
 
     // Custom STAT Headers
-    "UCD-Stat-Type": "file",
+    [UCD_FILE_STAT_TYPE_HEADER]: "file",
   });
 });

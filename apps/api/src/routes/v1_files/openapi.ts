@@ -1,5 +1,6 @@
 import { createRoute } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
+import { UCD_FILE_STAT_TYPE_HEADER } from "@ucdjs/env";
 import { cache } from "hono/cache";
 import { generateReferences, OPENAPI_TAGS } from "../../openapi";
 import { FileEntrySchema, UCDStoreSchema } from "./schemas";
@@ -85,7 +86,7 @@ export const WILDCARD_ROUTE = createRoute({
     This endpoint provides **direct access** to official Unicode data files hosted at \`unicode.org\`. You can retrieve individual UCD files, browse directory listings, or access specific Unicode versions.
 
     **💡 Pro Tip:**<br/>
-    If you only need file metadata (size, modification time), use the \`/__stat/{wildcard}\` endpoint instead. It's much faster since it doesn't download the full content.
+    If you only need file metadata (size, modification time), use the \`HEAD\` as the request method instead. It's much faster since it doesn't download the full content.
 
     ## Use Cases
 
@@ -96,15 +97,22 @@ export const WILDCARD_ROUTE = createRoute({
 
     ## Response Types
 
-    | Content Type | Description | Example Files |
-    |--------------|-------------|---------------|
-    | \`application/json\` | Directory listings or structured data | Directory contents |
-    | \`text/plain; charset=utf-8\` | Unicode data files | \`UnicodeData.txt\`, \`PropList.txt\` |
-    | \`application/octet-stream\` | Binary files or unknown types | Compressed files |
+    | Content Type                  | Description                           | Example Files                         |
+    | ----------------------------- | ------------------------------------- | ------------------------------------- |
+    | \`application/json\`          | Directory listings or structured data | Directory contents                    |
+    | \`text/plain; charset=utf-8\` | Unicode data files                    | \`UnicodeData.txt\`, \`PropList.txt\` |
+    | \`application/octet-stream\`  | Binary files or unknown types         | Compressed files                      |
 
-    ## Caching
+    ## Custom Response Headers
 
-    - ⚡ **1-hour cache** for all responses
+    This endpoint includes custom headers that provide additional metadata about the resource:
+
+    | Header                           | Values               | Description                                           |
+    | -------------------------------- | -------------------- | ----------------------------------------------------- |
+    | \`${UCD_FILE_STAT_TYPE_HEADER}\` | \`file \\| directory\` | Indicates whether the resource is a file or directory |
+
+    **📋 Note for HEAD Requests:**<br/>
+    All custom headers are exposed via \`Access-Control-Expose-Headers\` and are accessible in HEAD requests for efficient metadata retrieval without downloading content.
   `,
   responses: {
     200: {
