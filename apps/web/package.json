@@ -14,6 +14,8 @@
     "react-dom": "catalog:web"
   },
   "devDependencies": {
+    "@cloudflare/vite-plugin": "catalog:web",
+    "@cloudflare/workers-types": "catalog:workers",
     "@eslint-react/eslint-plugin": "catalog:linting",
     "@luxass/eslint-config": "catalog:linting",
     "@tailwindcss/vite": "catalog:web",
@@ -25,6 +27,7 @@
     "eslint-plugin-react-refresh": "catalog:linting",
     "tailwindcss": "catalog:web",
     "typescript": "catalog:dev",
-    "vite": "catalog:web"
+    "vite": "catalog:web",
+    "wrangler": "catalog:workers"
   }
 }
