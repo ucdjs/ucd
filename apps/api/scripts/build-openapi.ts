@@ -2,8 +2,8 @@ import { existsSync } from "node:fs";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
-import { getOpenAPI31Document } from "../src";
 import { buildOpenApiConfig } from "../src/openapi";
+import { getOpenAPI31Document } from "../src/worker";
 
 const root = path.resolve(import.meta.dirname, "../");
 

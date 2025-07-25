@@ -4,7 +4,7 @@ import {
   waitOnExecutionContext,
 } from "cloudflare:test";
 import { expect, it } from "vitest";
-import worker from "../src";
+import worker from "../src/worker";
 
 it("respond with a 404", async () => {
   const request = new Request("https://api.ucdjs.dev/not-found");
@@ -14,7 +14,7 @@ it("respond with a 404", async () => {
 
   expect(response.status).toBe(404);
   expect(await response.json()).toEqual({
-    message: "Not found",
+    message: "Not Found",
     status: 404,
     timestamp: expect.any(String),
   });

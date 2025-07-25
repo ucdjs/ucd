@@ -77,23 +77,20 @@ export function setupCors<TEnv extends object>(app: Hono<TEnv>): void {
  * Requires RATE_LIMITER binding to be configured in the Cloudflare Worker environment.
  * The rate limiting rules are defined in the Cloudflare dashboard or wrangler.toml configuration.
  */
-export function setupRatelimit<TEnv extends Env>(
-  app: TEnv["Bindings"] extends { RATE_LIMITER: any } ? Hono<TEnv> : "RATE_LIMITER is not defined in your environment. Please check your worker bindings.",
+export function setupRatelimit<TEnv extends Env & { Bindings: { RATE_LIMITER: RateLimit } }>(
+  app: Hono<TEnv>,
 ): void {
-  // Only here to please TypeScript that app is a Hono instance
-  if (typeof app === "string") throw new TypeError(app);
-
   app.use("*", async (c, next) => {
     const key
       = c.req.header("cf-connecting-ip")
         ?? c.req.raw.headers.get("x-forwarded-for")
         ?? "unknown-ip"; // shared fallback key for anonymous requests
 
-    if (!("RATE_LIMITER" in (c.env as any))) {
+    if (c.env == null || !("RATE_LIMITER" in c.env)) {
       throw new Error("RATE_LIMITER is not defined in your environment. Please check your worker bindings.");
     }
 
-    const { success } = await (c.env as any).RATE_LIMITER.limit({ key });
+    const { success } = await c.env.RATE_LIMITER.limit({ key });
 
     if (!success) {
       return customError(c, {
