@@ -4,7 +4,6 @@ export interface CLIStoreCmdSharedFlags {
   patterns?: string[];
 
   baseUrl?: string;
-  proxyUrl?: string;
 }
 
 export const SHARED_FLAGS = [
@@ -12,5 +11,4 @@ export const SHARED_FLAGS = [
   ["--store-dir", "Directory where the UCD files are stored."],
   ["--patterns", "Patterns to filter files in the store."],
   ["--base-url", "Base URL for the UCD Store."],
-  ["--proxy-url", "Proxy URL for the UCD Store."],
 ] as [string, string][];
