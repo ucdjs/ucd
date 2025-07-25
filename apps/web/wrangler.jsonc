@@ -1,0 +1,8 @@
+{
+  "name": "ucdjs-dev",
+  "compatibility_date": "2025-04-03",
+  "main": "./worker/index.ts",
+  "assets": {
+    "not_found_handling": "single-page-application"
+  }
+}
