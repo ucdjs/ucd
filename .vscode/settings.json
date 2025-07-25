@@ -1,0 +1,11 @@
+{
+  "emeraldwalk.runonsave": {
+    "commands": [
+      {
+        "match": "apps/api/wrangler.jsonc",
+        "cmd": "pnpm --filter ./apps/api run generate:types",
+        "isAsync": true
+      }
+    ]
+  }
+}
