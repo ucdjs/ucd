@@ -5,8 +5,6 @@ import { createResponseComponentBuilder } from "@ucdjs/worker-shared";
 export type OpenAPIObjectConfig = Parameters<OpenAPIHono["getOpenAPI31Document"]>[0];
 
 export const OPENAPI_TAGS = {
-  MISC: "Misc",
-  RAW: "Raw",
   VERSIONS: "Versions",
   FILES: "Files",
 } as const satisfies Record<string, string>;
@@ -72,7 +70,7 @@ export function buildOpenApiConfig(version: string, servers: NonNullable<OpenAPI
     },
     tags: [
       {
-        name: OPENAPI_TAGS.RAW,
+        name: OPENAPI_TAGS.FILES,
         description: dedent`
           Proxy endpoints for accessing Unicode data files and directories.
 
