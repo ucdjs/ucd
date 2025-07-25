@@ -128,6 +128,9 @@ catalogs:
       specifier: ^4.0.1
       version: 4.0.1
   workers:
+    '@cloudflare/workers-types':
+      specifier: ^4.20250725.0
+      version: 4.20250725.0
     '@hono/zod-openapi':
       specifier: ^1.0.2
       version: 1.0.2
@@ -208,7 +211,7 @@ importers:
     devDependencies:
       '@cloudflare/vitest-pool-workers':
         specifier: catalog:testing
-        version: 0.8.55(@vitest/runner@3.2.4)(@vitest/snapshot@3.2.4)(vitest@3.2.4)
+        version: 0.8.55(@cloudflare/workers-types@4.20250725.0)(@vitest/runner@3.2.4)(@vitest/snapshot@3.2.4)(vitest@3.2.4)
       '@luxass/eslint-config':
         specifier: catalog:linting
         version: 5.1.1(@vue/compiler-sfc@3.5.13)(eslint-plugin-format@1.0.1(eslint@9.31.0(jiti@2.4.2)))(eslint-plugin-react-hooks@5.2.0(eslint@9.31.0(jiti@2.4.2)))(eslint@9.31.0(jiti@2.4.2))(typescript@5.8.3)(vitest@3.2.4)
@@ -244,7 +247,7 @@ importers:
         version: 3.2.4(@types/debug@4.1.12)(@types/node@24.0.7)(@vitest/ui@3.2.4)(jiti@2.4.2)(lightningcss@1.30.1)(msw@2.10.4(@types/node@24.0.7)(typescript@5.8.3))(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0)
       wrangler:
         specifier: catalog:workers
-        version: 4.25.0
+        version: 4.25.0(@cloudflare/workers-types@4.20250725.0)
 
   apps/proxy:
     dependencies:
@@ -269,7 +272,7 @@ importers:
     devDependencies:
       '@cloudflare/vitest-pool-workers':
         specifier: catalog:testing
-        version: 0.8.55(@vitest/runner@3.2.4)(@vitest/snapshot@3.2.4)(vitest@3.2.4)
+        version: 0.8.55(@cloudflare/workers-types@4.20250725.0)(@vitest/runner@3.2.4)(@vitest/snapshot@3.2.4)(vitest@3.2.4)
       '@luxass/eslint-config':
         specifier: catalog:linting
         version: 5.1.1(@vue/compiler-sfc@3.5.13)(eslint-plugin-format@1.0.1(eslint@9.31.0(jiti@2.4.2)))(eslint-plugin-react-hooks@5.2.0(eslint@9.31.0(jiti@2.4.2)))(eslint@9.31.0(jiti@2.4.2))(typescript@5.8.3)(vitest@3.2.4)
@@ -293,7 +296,7 @@ importers:
         version: 3.2.4(@types/debug@4.1.12)(@types/node@24.0.7)(@vitest/ui@3.2.4)(jiti@2.4.2)(lightningcss@1.30.1)(msw@2.10.4(@types/node@24.0.7)(typescript@5.8.3))(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0)
       wrangler:
         specifier: catalog:workers
-        version: 4.25.0
+        version: 4.25.0(@cloudflare/workers-types@4.20250725.0)
 
   packages/cli:
     dependencies:
@@ -592,6 +595,9 @@ importers:
         specifier: catalog:prod
         version: 4.0.5
     devDependencies:
+      '@cloudflare/workers-types':
+        specifier: catalog:workers
+        version: 4.20250725.0
       '@luxass/eslint-config':
         specifier: catalog:linting
         version: 5.1.1(@vue/compiler-sfc@3.5.13)(eslint-plugin-format@1.0.1(eslint@9.31.0(jiti@2.4.2)))(eslint-plugin-react-hooks@5.2.0(eslint@9.31.0(jiti@2.4.2)))(eslint@9.31.0(jiti@2.4.2))(typescript@5.8.3)(vitest@3.2.4)
@@ -882,6 +888,9 @@ packages:
     engines: {node: '>=16'}
     cpu: [x64]
     os: [win32]
+
+  '@cloudflare/workers-types@4.20250725.0':
+    resolution: {integrity: sha512-A8x/8yHY6G2xCkz/WVJ3n/iJ2XRRf8lfWsAJJjxPBPyt5CtkPpEIw7w04nrE4A2yLEr3ZOPhm4AJLVdt4NSBjA==}
 
   '@cspotcode/source-map-support@0.8.1':
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
@@ -5151,7 +5160,7 @@ snapshots:
     optionalDependencies:
       workerd: 1.20250712.0
 
-  '@cloudflare/vitest-pool-workers@0.8.55(@vitest/runner@3.2.4)(@vitest/snapshot@3.2.4)(vitest@3.2.4)':
+  '@cloudflare/vitest-pool-workers@0.8.55(@cloudflare/workers-types@4.20250725.0)(@vitest/runner@3.2.4)(@vitest/snapshot@3.2.4)(vitest@3.2.4)':
     dependencies:
       '@vitest/runner': 3.2.4
       '@vitest/snapshot': 3.2.4
@@ -5161,7 +5170,7 @@ snapshots:
       miniflare: 4.20250712.0
       semver: 7.7.2
       vitest: 3.2.4(@types/debug@4.1.12)(@types/node@24.0.7)(@vitest/ui@3.2.4)(jiti@2.4.2)(lightningcss@1.30.1)(msw@2.10.4(@types/node@24.0.7)(typescript@5.8.3))(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0)
-      wrangler: 4.25.0
+      wrangler: 4.25.0(@cloudflare/workers-types@4.20250725.0)
       zod: 3.25.72
     transitivePeerDependencies:
       - '@cloudflare/workers-types'
@@ -5182,6 +5191,8 @@ snapshots:
 
   '@cloudflare/workerd-windows-64@1.20250712.0':
     optional: true
+
+  '@cloudflare/workers-types@4.20250725.0': {}
 
   '@cspotcode/source-map-support@0.8.1':
     dependencies:
@@ -6368,14 +6379,14 @@ snapshots:
       msw: 2.10.4(@types/node@22.15.2)(typescript@5.8.3)
       vite: 6.3.3(@types/node@22.15.2)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0)
 
-  '@vitest/mocker@3.2.4(msw@2.10.4(@types/node@24.0.7)(typescript@5.8.3))(vite@6.3.3(@types/node@22.15.2)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0))':
+  '@vitest/mocker@3.2.4(msw@2.10.4(@types/node@24.0.7)(typescript@5.8.3))(vite@6.3.3(@types/node@24.0.7)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0))':
     dependencies:
       '@vitest/spy': 3.2.4
       estree-walker: 3.0.3
       magic-string: 0.30.17
     optionalDependencies:
       msw: 2.10.4(@types/node@24.0.7)(typescript@5.8.3)
-      vite: 6.3.3(@types/node@22.15.2)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0)
+      vite: 6.3.3(@types/node@24.0.7)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0)
 
   '@vitest/pretty-format@3.2.4':
     dependencies:
@@ -6406,7 +6417,7 @@ snapshots:
       sirv: 3.0.1
       tinyglobby: 0.2.14
       tinyrainbow: 2.0.0
-      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@22.15.2)(@vitest/ui@3.2.4)(jiti@2.4.2)(lightningcss@1.30.1)(msw@2.10.4(@types/node@22.15.2)(typescript@5.8.3))(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0)
+      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@24.0.7)(@vitest/ui@3.2.4)(jiti@2.4.2)(lightningcss@1.30.1)(msw@2.10.4(@types/node@24.0.7)(typescript@5.8.3))(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0)
 
   '@vitest/utils@3.2.4':
     dependencies:
@@ -9459,7 +9470,7 @@ snapshots:
     dependencies:
       '@types/chai': 5.2.2
       '@vitest/expect': 3.2.4
-      '@vitest/mocker': 3.2.4(msw@2.10.4(@types/node@24.0.7)(typescript@5.8.3))(vite@6.3.3(@types/node@22.15.2)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0))
+      '@vitest/mocker': 3.2.4(msw@2.10.4(@types/node@24.0.7)(typescript@5.8.3))(vite@6.3.3(@types/node@24.0.7)(jiti@2.4.2)(lightningcss@1.30.1)(terser@5.43.1)(tsx@4.20.3)(yaml@2.8.0))
       '@vitest/pretty-format': 3.2.4
       '@vitest/runner': 3.2.4
       '@vitest/snapshot': 3.2.4
@@ -9577,7 +9588,7 @@ snapshots:
       '@cloudflare/workerd-linux-arm64': 1.20250712.0
       '@cloudflare/workerd-windows-64': 1.20250712.0
 
-  wrangler@4.25.0:
+  wrangler@4.25.0(@cloudflare/workers-types@4.20250725.0):
     dependencies:
       '@cloudflare/kv-asset-handler': 0.4.0
       '@cloudflare/unenv-preset': 2.3.3(unenv@2.0.0-rc.17)(workerd@1.20250712.0)
@@ -9588,6 +9599,7 @@ snapshots:
       unenv: 2.0.0-rc.17
       workerd: 1.20250712.0
     optionalDependencies:
+      '@cloudflare/workers-types': 4.20250725.0
       fsevents: 2.3.3
     transitivePeerDependencies:
       - bufferutil
