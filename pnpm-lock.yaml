@@ -588,6 +588,9 @@ importers:
       hono:
         specifier: catalog:workers
         version: 4.8.5
+      zod:
+        specifier: catalog:prod
+        version: 4.0.5
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:linting
