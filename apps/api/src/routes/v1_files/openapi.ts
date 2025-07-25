@@ -47,7 +47,7 @@ const WILDCARD_PARAM = {
 
 export const GET_UCD_STORE = createRoute({
   method: "get",
-  path: "/.ucd-store.json",
+  path: "/.ucd-store",
   tags: [OPENAPI_TAGS.FILES],
   middleware: [
     cache({
