@@ -9,7 +9,7 @@ import {
   waitOnExecutionContext,
 } from "cloudflare:test";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import worker from "../../src";
+import worker from "../../src/worker";
 
 // mock the unicode-utils-new module
 vi.mock("@luxass/unicode-utils-new", async (importOriginal) => {
