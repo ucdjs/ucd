@@ -16,6 +16,17 @@ export interface FSStats {
   size: number;
 }
 
+export type FSEntry = {
+  type: "file";
+  name: string;
+  path: string;
+} | {
+  type: "directory";
+  name: string;
+  path: string;
+  children?: FSEntry[];
+};
+
 export interface FileSystemBridge {
   /**
    * Optional state object for the file system bridge.
@@ -40,6 +51,12 @@ export interface FileSystemBridge {
   state?: Record<string, unknown>;
 
   /**
+   * An object defining the capabilities supported by this file system bridge.
+   * If it is not provided, the bridge will assume all capabilities are supported.
+   */
+  capabilities?: FileSystemBridgeCapabilities;
+
+  /**
    * Reads the contents of a file.
    * @param {string} path - The path to the file to read
    * @returns {Promise<string>} A promise that resolves to the file contents as a string
@@ -59,9 +76,9 @@ export interface FileSystemBridge {
    * Lists the contents of a directory.
    * @param {string} path - The path to the directory to list
    * @param {boolean} [recursive=false] - If true, lists files in subdirectories as well
-   * @returns {Promise<string[]>} A promise that resolves to an array of file and directory names
+   * @returns {Promise<FSEntry[]>} A promise that resolves to an array of file and directory entries
    */
-  listdir: (path: string, recursive?: boolean) => Promise<string[]>;
+  listdir: (path: string, recursive?: boolean) => Promise<FSEntry[]>;
 
   /**
    * Creates a directory.
@@ -104,4 +121,32 @@ export interface FileSystemBridge {
  */
 export function defineFileSystemBridge(fsBridge: FileSystemBridge): FileSystemBridge {
   return fsBridge;
+}
+
+export type FileSystemBridgeCapabilityKey = keyof Omit<FileSystemBridge, "state" | "capabilities">;
+export type FileSystemBridgeCapabilities = {
+  [K in FileSystemBridgeCapabilityKey]: boolean;
+};
+
+const DEFAULT_SUPPORTED_CAPABILITIES: FileSystemBridgeCapabilities = {
+  exists: true,
+  read: true,
+  write: true,
+  listdir: true,
+  mkdir: true,
+  stat: true,
+  rm: true,
+};
+
+/**
+ * Gets the supported capabilities for a file system bridge.
+ *
+ * If the bridge doesn't specify its capabilities, this function returns
+ * the default set of supported capabilities (all capabilities enabled).
+ *
+ * @param {FileSystemBridge} fsBridge - The file system bridge to get capabilities for
+ * @returns {FileSystemBridgeCapabilities} An object indicating which capabilities are supported by the bridge
+ */
+export function getSupportedBridgeCapabilities(fsBridge: FileSystemBridge): FileSystemBridgeCapabilities {
+  return fsBridge?.capabilities || DEFAULT_SUPPORTED_CAPABILITIES;
 }
