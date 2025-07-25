@@ -50,7 +50,7 @@ export function badRequest(contextOrOptions: Context | ResponseOptions = {}, opt
   }
 
   return Response.json({
-    message: finalOptions.message || "Bad request",
+    message: finalOptions.message || "Bad Request",
     status: 400,
     timestamp: new Date().toISOString(),
   } satisfies ApiError, {
@@ -142,7 +142,7 @@ export function notFound(contextOrOptions: Context | ResponseOptions = {}, optio
   }
 
   return Response.json({
-    message: finalOptions.message || "Not found",
+    message: finalOptions.message || "Not Found",
     status: 404,
     timestamp: new Date().toISOString(),
   } satisfies ApiError, {
@@ -188,7 +188,7 @@ export function internalServerError(contextOrOptions: Context | ResponseOptions 
   }
 
   return Response.json({
-    message: finalOptions.message || "Internal server error",
+    message: finalOptions.message || "Internal Server Error",
     status: 500,
     timestamp: new Date().toISOString(),
   } satisfies ApiError, {
