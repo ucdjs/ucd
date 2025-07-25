@@ -37,7 +37,8 @@
   "dependencies": {
     "@hono/zod-openapi": "catalog:workers",
     "@luxass/utils": "catalog:prod",
-    "hono": "catalog:workers"
+    "hono": "catalog:workers",
+    "zod": "catalog:prod"
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:linting",
