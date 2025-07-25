@@ -1,5 +1,6 @@
 export { clearCacheEntry } from "./cache";
 export {
+  badGateway,
   badRequest,
   customError,
   forbidden,

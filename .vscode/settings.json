@@ -8,5 +8,10 @@
         "isAsync": true
       }
     ]
+  },
+  "workbench.editor.customLabels.enabled": true,
+  "workbench.editor.customLabels.patterns": {
+    // custom labels for api routes
+    "**/routes/**/*.ts": "(${dirname}) ${filename}"
   }
 }
