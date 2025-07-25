@@ -1,5 +1,4 @@
 import type { FileSystemBridge } from "../fs-bridge";
-import { UNICODE_PROXY_URL } from "@ucdjs/env";
 import { z } from "zod/v4";
 import { defineFileSystemBridge } from "../fs-bridge";
 
@@ -33,7 +32,7 @@ export interface HTTPFileSystemBridgeOptions {
  * @returns {FileSystemBridge} A file system bridge implementation for HTTP/HTTPS resources
  */
 function HTTPFileSystemBridge(options: HTTPFileSystemBridgeOptions = {}): FileSystemBridge {
-  const baseUrl = options.baseUrl || UNICODE_PROXY_URL;
+  const baseUrl = options.baseUrl!;
   return defineFileSystemBridge({
     async read(path) {
       const url = new URL(path, baseUrl);
