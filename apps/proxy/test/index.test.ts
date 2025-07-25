@@ -6,7 +6,7 @@ import {
   waitOnExecutionContext,
 } from "cloudflare:test";
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
-import Worker from "../src";
+import Worker from "../src/worker";
 
 beforeAll(() => {
   fetchMock.activate();

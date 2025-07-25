@@ -41,6 +41,7 @@
     "zod": "catalog:prod"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "catalog:workers",
     "@luxass/eslint-config": "catalog:linting",
     "@ucdjs/tsconfig": "workspace:*",
     "eslint": "catalog:linting",
