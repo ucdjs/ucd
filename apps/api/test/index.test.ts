@@ -14,7 +14,7 @@ it("respond with a 404", async () => {
 
   expect(response.status).toBe(404);
   expect(await response.json()).toEqual({
-    message: "Not found",
+    message: "Not Found",
     status: 404,
     timestamp: expect.any(String),
   });
