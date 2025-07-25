@@ -1,6 +1,6 @@
 import { Hono } from "hono";
-import { describe, expect, it } from "vitest";
-import { setupCors } from "../src/setups";
+import { describe, expect, it, vi } from "vitest";
+import { setupCors, setupRatelimit } from "../src/setups";
 
 describe("setupCors", () => {
   it("should allow requests from production origins", async () => {
@@ -239,5 +239,208 @@ describe("setupCors", () => {
 
     expect(getRes.headers.get("Access-Control-Allow-Origin")).toBe("https://ucdjs.dev");
     expect(postRes.headers.get("Access-Control-Allow-Origin")).toBe("https://ucdjs.dev");
+  });
+});
+
+describe("setupRatelimit", () => {
+  it("should throw 500 if RATE_LIMITER is not configured", async () => {
+    let triggeredError = false;
+    let executed = false;
+
+    const app = new Hono<{
+      Bindings: {
+        RATE_LIMITER: any;
+      };
+    }>().onError((err, c) => {
+      if (err.message.includes("RATE_LIMITER is not defined")) {
+        triggeredError = true;
+      }
+
+      return c.text("Internal Server Error", 500);
+    });
+
+    setupRatelimit(app);
+    app.get("/test", (c) => {
+      executed = true;
+      return c.text("OK");
+    });
+
+    const req = new Request("http://localhost/test");
+    const mockEnv = {};
+
+    const res = await app.request(req, {}, mockEnv);
+    expect(executed).toBe(false);
+    expect(triggeredError).toBe(true);
+    expect(res.status).toBe(500);
+  });
+
+  it("should throw 429 if rate limit is exceeded", async () => {
+    const app = new Hono<{
+      Bindings: {
+        RATE_LIMITER: {
+          // TODO(@luxass): type this correctly with the ratelimit interface.
+          limit: (options: any) => Promise<{ success: boolean }>;
+        };
+      };
+    }>();
+
+    const ratelimitStub = vi.fn(() => {
+      return Promise.resolve({ success: false });
+    });
+
+    const mockEnv = {
+      RATE_LIMITER: {
+        limit: ratelimitStub,
+      },
+    };
+
+    setupRatelimit(app);
+
+    app.get("/test", (c) => c.text("OK"));
+
+    const req = new Request("http://localhost/test");
+    const res = await app.request(req, {}, mockEnv);
+
+    expect(res.status).toBe(429);
+
+    expect(res.headers.get("Content-Type")).toBe("application/json");
+    expect(await res.json()).toEqual({
+      message: "Too Many Requests - Please try again later",
+      status: 429,
+      timestamp: expect.any(String),
+    });
+    expect(ratelimitStub).toHaveBeenCalledWith({
+      key: "unknown-ip",
+    });
+  });
+
+  it("should allow requests within rate limit", async () => {
+    const app = new Hono<{
+      Bindings: {
+        RATE_LIMITER: {
+          limit: (options: any) => Promise<{ success: boolean }>;
+        };
+      };
+    }>();
+
+    const ratelimitStub = vi.fn(() => {
+      return Promise.resolve({ success: true });
+    });
+
+    const mockEnv = {
+      RATE_LIMITER: {
+        limit: ratelimitStub,
+      },
+    };
+
+    setupRatelimit(app);
+
+    app.get("/test", (c) => c.text("OK"));
+
+    const req = new Request("http://localhost/test");
+    const res = await app.request(req, {}, mockEnv);
+
+    expect(res.status).toBe(200);
+    expect(await res.text()).toBe("OK");
+    expect(ratelimitStub).toHaveBeenCalledWith({
+      key: "unknown-ip",
+    });
+  });
+
+  it("should use cf-connecting-ip header for rate limiting", async () => {
+    const app = new Hono<{
+      Bindings: {
+        RATE_LIMITER: {
+          limit: (options: any) => Promise<{ success: boolean }>;
+        };
+      };
+    }>();
+
+    const ratelimitStub = vi.fn(() => {
+      return Promise.resolve({ success: true });
+    });
+
+    const mockEnv = {
+      RATE_LIMITER: {
+        limit: ratelimitStub,
+      },
+    };
+
+    setupRatelimit(app);
+
+    app.get("/test", (c) => c.text("OK"));
+    const req = new Request("http://localhost/test", {
+      headers: { "cf-connecting-ip": "127.0.0.1" },
+    });
+    const res = await app.request(req, {}, mockEnv);
+    expect(res.status).toBe(200);
+    expect(await res.text()).toBe("OK");
+    expect(ratelimitStub).toHaveBeenCalledWith({
+      key: "127.0.0.1",
+    });
+  });
+
+  it("should use x-forwarded-for header if cf-connecting-ip is not present", async () => {
+    const app = new Hono<{
+      Bindings: {
+        RATE_LIMITER: {
+          limit: (options: any) => Promise<{ success: boolean }>;
+        };
+      };
+    }>();
+
+    const ratelimitStub = vi.fn(() => {
+      return Promise.resolve({ success: true });
+    });
+
+    const mockEnv = {
+      RATE_LIMITER: {
+        limit: ratelimitStub,
+      },
+    };
+
+    setupRatelimit(app);
+
+    app.get("/test", (c) => c.text("OK"));
+    const req = new Request("http://localhost/test", {
+      headers: { "x-forwarded-for": "127.0.0.1" },
+    });
+    const res = await app.request(req, {}, mockEnv);
+    expect(res.status).toBe(200);
+    expect(await res.text()).toBe("OK");
+    expect(ratelimitStub).toHaveBeenCalledWith({
+      key: "127.0.0.1",
+    });
+  });
+
+  it("should use a fallback key if no IP headers are present", async () => {
+    const app = new Hono<{
+      Bindings: {
+        RATE_LIMITER: {
+          limit: (options: any) => Promise<{ success: boolean }>;
+        };
+      };
+    }>();
+
+    const ratelimitStub = vi.fn(() => {
+      return Promise.resolve({ success: true });
+    });
+
+    const mockEnv = {
+      RATE_LIMITER: {
+        limit: ratelimitStub,
+      },
+    };
+
+    setupRatelimit(app);
+
+    app.get("/test", (c) => c.text("OK"));
+    const req = new Request("http://localhost/test");
+    const res = await app.request(req, {}, mockEnv);
+    expect(res.status).toBe(200);
+    expect(await res.text()).toBe("OK");
+    expect(ratelimitStub).toHaveBeenCalledWith({
+      key: "unknown-ip",
+    });
   });
 });
