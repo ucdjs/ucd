@@ -29,7 +29,7 @@ describe("badRequest", () => {
     expect(response.status).toBe(400);
     expect(response.headers.get("Content-Type")).toBe("application/json");
     expect(body).toEqual({
-      message: "Bad request",
+      message: "Bad Request",
       status: 400,
       timestamp: "2023-06-15T10:30:00.000Z",
     });
@@ -75,7 +75,7 @@ describe("badRequest", () => {
 
     expect(response.status).toBe(400);
     expect(body).toEqual({
-      message: "Bad request",
+      message: "Bad Request",
       status: 400,
       timestamp: "2023-06-15T10:30:00.000Z",
     });
@@ -168,7 +168,7 @@ describe("notFound", () => {
     expect(response.status).toBe(404);
     expect(response.headers.get("Content-Type")).toBe("application/json");
     expect(body).toEqual({
-      message: "Not found",
+      message: "Not Found",
       status: 404,
       timestamp: "2023-06-15T10:30:00.000Z",
     });
@@ -202,7 +202,7 @@ describe("notFound", () => {
 
     expect(response.status).toBe(404);
     expect(body).toEqual({
-      message: "Not found",
+      message: "Not Found",
       status: 404,
       timestamp: "2023-06-15T10:30:00.000Z",
     });
@@ -226,7 +226,7 @@ describe("internalServerError", () => {
     expect(response.status).toBe(500);
     expect(response.headers.get("Content-Type")).toBe("application/json");
     expect(body).toEqual({
-      message: "Internal server error",
+      message: "Internal Server Error",
       status: 500,
       timestamp: "2023-06-15T10:30:00.000Z",
     });
@@ -254,7 +254,7 @@ describe("internalServerError", () => {
 
     expect(response.status).toBe(500);
     expect(body).toEqual({
-      message: "Internal server error",
+      message: "Internal Server Error",
       status: 500,
       timestamp: "2023-06-15T10:30:00.000Z",
     });

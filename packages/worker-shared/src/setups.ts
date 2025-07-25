@@ -89,6 +89,10 @@ export function setupRatelimit<TEnv extends Env>(
         ?? c.req.raw.headers.get("x-forwarded-for")
         ?? "unknown-ip"; // shared fallback key for anonymous requests
 
+    if (!("RATE_LIMITER" in (c.env as any))) {
+      throw new Error("RATE_LIMITER is not defined in your environment. Please check your worker bindings.");
+    }
+
     const { success } = await (c.env as any).RATE_LIMITER.limit({ key });
 
     if (!success) {

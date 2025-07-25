@@ -22,6 +22,7 @@ const hiddenLogs = [
   "[safeJsonParse]",
   "[ucd-store]",
   "[ucd-files]",
+  "[worker-shared]"
 ]
 
 const packageProjects = readdirSync(new URL("./packages", import.meta.url).pathname)
