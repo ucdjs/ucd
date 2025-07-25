@@ -1,3 +1,12 @@
 {
-  "tailwindCSS.experimental.configFile": "./apps/web/src/globals.css"
+  "tailwindCSS.experimental.configFile": "./apps/web/src/globals.css",
+  "emeraldwalk.runonsave": {
+    "commands": [
+      {
+        "match": "apps/api/wrangler.jsonc",
+        "cmd": "pnpm --filter ./apps/api run generate:types",
+        "isAsync": true
+      }
+    ]
+  }
 }
