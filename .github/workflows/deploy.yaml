@@ -89,15 +89,26 @@ jobs:
           # combine
           echo "version=$CLEAN_BRANCH-$SHORT_SHA" >> "$GITHUB_OUTPUT"
 
-      - name: deploy
-        id: deploy
-        if: ${{ github.event.inputs.dry-run != 'true' }}
+      - name: deploy api
+        id: deploy-api
+        if: ${{ github.event.inputs.dry-run != 'true' && matrix.app == 'api' }}
         env:
           API_VERSION: ${{ steps.api-version.outputs.version || 'latest' }}
         uses: cloudflare/wrangler-action@392082e81ffbcb9ebdde27400634aa004b35ea37 # v3.14.0
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
-          workingDirectory: ./apps/${{ matrix.app }}
-          environment: ${{ matrix.app == 'api' && 'production' || '' }}
+          workingDirectory: ./apps/api
+          environment: production
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
           vars: API_VERSION
+
+      # when using @cloudflare/vite-plugin we can't make use of the `environment` option,
+      # and if we use and empty string it will also fail due to multiple environments being defined
+      - name: deploy web
+        id: deploy-web
+        if: ${{ github.event.inputs.dry-run != 'true' && matrix.app == 'web' }}
+        uses: cloudflare/wrangler-action@392082e81ffbcb9ebdde27400634aa004b35ea37 # v3.14.0
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          workingDirectory: ./apps/web
+          accountId: ${{ secrets.CF_ACCOUNT_ID }}
