@@ -63,8 +63,6 @@ jobs:
       - name: typecheck
         run: pnpm run typecheck
 
-
-
       - name: validate openapi
         if: matrix.app == 'api'
         run: pnpm --filter=@ucdjs/api run lint:openapi
