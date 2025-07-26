@@ -82,6 +82,9 @@ catalogs:
     "@vitejs/plugin-react": ^4.4.1
     vite: ^6.3.3
     "@cloudflare/vite-plugin": ^1.10.1
+    "@tanstack/react-router": ^1.129.8
+    "@tanstack/react-router-devtools": ^1.129.8
+    "@tanstack/router-plugin": ^1.129.8
 
 onlyBuiltDependencies:
   - esbuild

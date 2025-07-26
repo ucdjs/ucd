@@ -1,8 +1,37 @@
 {
+  "$schema": "node_modules/wrangler/config-schema.json",
   "name": "ucdjs-dev",
-  "compatibility_date": "2025-04-03",
+  "compatibility_date": "2025-07-05",
   "main": "./worker/index.ts",
   "assets": {
     "not_found_handling": "single-page-application"
+  },
+  "routes": [
+    {
+      "custom_domain": true,
+      "pattern": "ucdjs.dev"
+    }
+  ],
+  "env": {
+    "production": {
+      "name": "ucdjs-dev-production",
+      "preview_urls": false,
+      "routes": [
+        {
+          "custom_domain": true,
+          "pattern": "ucdjs.dev"
+        }
+      ]
+    },
+    "preview": {
+      "name": "ucdjs-dev-preview",
+      "preview_urls": false,
+      "routes": [
+        {
+          "custom_domain": true,
+          "pattern": "preview.ucdjs.dev"
+        }
+      ]
+    }
   }
 }

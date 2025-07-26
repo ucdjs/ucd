@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@tanstack/react-router": "catalog:web",
+    "@tanstack/react-router-devtools": "catalog:web",
     "react": "catalog:web",
     "react-dom": "catalog:web"
   },
@@ -19,6 +21,7 @@
     "@eslint-react/eslint-plugin": "catalog:linting",
     "@luxass/eslint-config": "catalog:linting",
     "@tailwindcss/vite": "catalog:web",
+    "@tanstack/router-plugin": "catalog:web",
     "@types/react": "catalog:types",
     "@types/react-dom": "catalog:types",
     "@vitejs/plugin-react": "catalog:web",
