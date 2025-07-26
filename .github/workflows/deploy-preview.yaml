@@ -65,7 +65,7 @@ jobs:
         run: pnpm build
 
       - name: build apps
-        run: pnpm build:apps
+        run: CLOUDFLARE_ENV=preview pnpm build:apps
 
       - name: validate openapi
         if: matrix.app == 'api'
