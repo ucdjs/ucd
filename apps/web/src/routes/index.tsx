@@ -1,6 +1,10 @@
-import React from "react";
+import { createFileRoute } from "@tanstack/react-router";
 
-export function App() {
+export const Route = createFileRoute("/")({
+  component: Index,
+});
+
+function Index() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 animate-fade-in">
       <div className="max-w-2xl w-full bg-white rounded-xl shadow-sm p-8 md:p-12">
