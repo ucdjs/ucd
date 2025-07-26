@@ -1,4 +1,3 @@
-import { UNICODE_PROXY_URL } from "@ucdjs/env";
 import { z } from "zod/v4";
 import { defineFileSystemBridge } from "../fs-bridge";
 
@@ -15,7 +14,7 @@ const HTTPFileSystemBridge = defineFileSystemBridge({
     rm: false,
   },
   setup({ options }) {
-    const baseUrl = options.baseUrl || UNICODE_PROXY_URL;
+    const baseUrl = options.baseUrl!;
     return {
       async read(path) {
         const url = new URL(path, baseUrl);
