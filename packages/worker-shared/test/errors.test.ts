@@ -283,7 +283,7 @@ describe("badGateway", () => {
     const response = badGateway();
     const body = await response.json() as ApiError;
 
-    expect(response.status).toBe(500);
+    expect(response.status).toBe(502);
     expect(response.headers.get("Content-Type")).toBe("application/json");
     expect(body).toEqual({
       message: "Bad Gateway",
