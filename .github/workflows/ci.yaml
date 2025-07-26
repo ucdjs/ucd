@@ -45,8 +45,8 @@ jobs:
       - name: build
         run: pnpm build
 
-      - name: build workers
-        run: pnpm build:workers
+      - name: build apps
+        run: pnpm build:apps
 
   lint:
     runs-on: ubuntu-latest

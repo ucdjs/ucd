@@ -1,4 +1,4 @@
-import type { ApiError, RawResponse, UnicodeVersionList } from "../src";
+import type { ApiError, FileEntry, UnicodeVersionList } from "../src";
 import { mockFetch } from "#msw-utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { HttpResponse } from "msw";
@@ -149,10 +149,10 @@ describe("unicode API Client", () => {
     });
   });
 
-  describe("/api/v1/raw endpoint", () => {
+  describe("/api/v1/files endpoint", () => {
     describe("successful requests", () => {
       it("should proxy requests without path successfully", async () => {
-        const mockProxyResponse: RawResponse = {
+        const mockProxyResponse: FileEntry = {
           type: "directory",
           name: "root",
           path: "/",
@@ -160,7 +160,7 @@ describe("unicode API Client", () => {
         };
 
         mockFetch([
-          ["GET", `${UCDJS_API_BASE_URL}/api/v1/raw`, () => {
+          ["GET", `${UCDJS_API_BASE_URL}/api/v1/files`, () => {
             return new HttpResponse(JSON.stringify(mockProxyResponse), {
               status: 200,
               headers: { "Content-Type": "application/json" },
@@ -168,7 +168,7 @@ describe("unicode API Client", () => {
           }],
         ]);
 
-        const { response, data } = await client.GET("/api/v1/raw/{wildcard}", {
+        const { response, data } = await client.GET("/api/v1/files/{wildcard}", {
           params: {
             path: {
               wildcard: "",
@@ -184,7 +184,7 @@ describe("unicode API Client", () => {
         const binaryData = new Uint8Array([72, 101, 108, 108, 111, 44, 32, 87, 111, 114, 108, 100, 33]);
 
         mockFetch([
-          ["GET", `${UCDJS_API_BASE_URL}/api/v1/raw`, () => {
+          ["GET", `${UCDJS_API_BASE_URL}/api/v1/files`, () => {
             return new HttpResponse(binaryData, {
               status: 200,
               headers: { "Content-Type": "application/octet-stream" },
@@ -192,7 +192,7 @@ describe("unicode API Client", () => {
           }],
         ]);
 
-        const { response, data } = await client.GET("/api/v1/raw/{wildcard}", {
+        const { response, data } = await client.GET("/api/v1/files/{wildcard}", {
           params: {
             path: {
               wildcard: "",
@@ -217,7 +217,7 @@ describe("unicode API Client", () => {
         };
 
         mockFetch([
-          ["GET", `${UCDJS_API_BASE_URL}/api/v1/raw`, () => {
+          ["GET", `${UCDJS_API_BASE_URL}/api/v1/files`, () => {
             return new HttpResponse(JSON.stringify(errorResponse), {
               status: 404,
               statusText: "Not Found",
@@ -226,7 +226,7 @@ describe("unicode API Client", () => {
           }],
         ]);
 
-        const response = await client.GET("/api/v1/raw/{wildcard}", {
+        const response = await client.GET("/api/v1/files/{wildcard}", {
           params: {
             path: {
               wildcard: "",
@@ -240,10 +240,10 @@ describe("unicode API Client", () => {
     });
   });
 
-  describe("/api/v1/raw/{path} endpoint", () => {
+  describe("/api/v1/files/{path} endpoint", () => {
     describe("successful requests", () => {
       it("should proxy requests with path parameter successfully", async () => {
-        const mockFileResponse: RawResponse = {
+        const mockFileResponse: FileEntry = {
           type: "file",
           name: "ucd.all.json",
           path: "/latest/ucd.all.json",
@@ -252,7 +252,7 @@ describe("unicode API Client", () => {
 
         mockFetch([
           // TODO: remove the need for encodeURIComponent here when https://github.com/openapi-ts/openapi-typescript/pull/2362 is fixed
-          ["GET", `${UCDJS_API_BASE_URL}/api/v1/raw/${encodeURIComponent("latest/ucd.all.json")}`, () => {
+          ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/${encodeURIComponent("latest/ucd.all.json")}`, () => {
             return new HttpResponse(JSON.stringify(mockFileResponse), {
               status: 200,
               headers: { "Content-Type": "application/json" },
@@ -260,7 +260,7 @@ describe("unicode API Client", () => {
           }],
         ]);
 
-        const { response, data } = await client.GET("/api/v1/raw/{wildcard}", {
+        const { response, data } = await client.GET("/api/v1/files/{wildcard}", {
           params: {
             path: {
               wildcard: "latest/ucd.all.json",
@@ -273,7 +273,7 @@ describe("unicode API Client", () => {
       });
 
       it("should handle directory responses", async () => {
-        const mockDirectoryResponse: RawResponse = {
+        const mockDirectoryResponse: FileEntry = {
           type: "directory",
           name: "latest",
           path: "/latest",
@@ -281,7 +281,7 @@ describe("unicode API Client", () => {
         };
 
         mockFetch([
-          ["GET", `${UCDJS_API_BASE_URL}/api/v1/raw/latest`, () => {
+          ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/latest`, () => {
             return new HttpResponse(JSON.stringify(mockDirectoryResponse), {
               status: 200,
               headers: { "Content-Type": "application/json" },
@@ -289,7 +289,7 @@ describe("unicode API Client", () => {
           }],
         ]);
 
-        const { data } = await client.GET("/api/v1/raw/{wildcard}", {
+        const { data } = await client.GET("/api/v1/files/{wildcard}", {
           params: {
             path: { wildcard: "latest" },
           },
@@ -315,7 +315,7 @@ describe("unicode API Client", () => {
 
         mockFetch([
           // TODO: remove the need for encodeURIComponent here when https://github.com/openapi-ts/openapi-typescript/pull/2362 is fixed
-          ["GET", `${UCDJS_API_BASE_URL}/api/v1/raw/${encodeURIComponent(path)}`, () => {
+          ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/${encodeURIComponent(path)}`, () => {
             return new HttpResponse(JSON.stringify(mockResponse), {
               status: 200,
               headers: { "Content-Type": "application/json" },
@@ -323,7 +323,7 @@ describe("unicode API Client", () => {
           }],
         ]);
 
-        const { response, data } = await client.GET("/api/v1/raw/{wildcard}", {
+        const { response, data } = await client.GET("/api/v1/files/{wildcard}", {
           params: {
             path: {
               wildcard: path,
@@ -346,7 +346,7 @@ describe("unicode API Client", () => {
 
         mockFetch([
           // TODO: remove the need for encodeURIComponent here when https://github.com/openapi-ts/openapi-typescript/pull/2362 is fixed
-          ["GET", `${UCDJS_API_BASE_URL}/api/v1/raw/${encodeURIComponent("non-existent/path")}`, () => {
+          ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/${encodeURIComponent("non-existent/path")}`, () => {
             return new HttpResponse(JSON.stringify(errorResponse), {
               status: 404,
               statusText: "Not Found",
@@ -355,7 +355,7 @@ describe("unicode API Client", () => {
           }],
         ]);
 
-        const { response, error } = await client.GET("/api/v1/raw/{wildcard}", {
+        const { response, error } = await client.GET("/api/v1/files/{wildcard}", {
           params: {
             path: { wildcard: "non-existent/path" },
           },
@@ -380,7 +380,7 @@ describe("unicode API Client", () => {
         },
       ];
 
-      const proxyResponse: RawResponse = {
+      const proxyResponse: FileEntry = {
         type: "directory",
         name: "latest",
         path: "/latest",
@@ -394,7 +394,7 @@ describe("unicode API Client", () => {
             headers: { "Content-Type": "application/json" },
           });
         }],
-        ["GET", `${UCDJS_API_BASE_URL}/api/v1/raw/latest`, () => {
+        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/latest`, () => {
           return new HttpResponse(JSON.stringify(proxyResponse), {
             status: 200,
             headers: { "Content-Type": "application/json" },
@@ -404,7 +404,7 @@ describe("unicode API Client", () => {
 
       const [versionsResponse, proxyLatestResponse] = await Promise.all([
         client.GET("/api/v1/versions"),
-        client.GET("/api/v1/raw/{wildcard}", {
+        client.GET("/api/v1/files/{wildcard}", {
           params: { path: { wildcard: "latest" } },
         }),
       ]);

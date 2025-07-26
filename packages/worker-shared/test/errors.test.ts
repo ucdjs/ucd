@@ -1,6 +1,14 @@
 import type { Context } from "hono";
+import type { ApiError } from "../src";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { badRequest, customError, forbidden, internalServerError, notFound } from "../src";
+import {
+  badRequest,
+  customError,
+  forbidden,
+  internalServerError,
+  notFound,
+} from "../src";
+import { badGateway } from "../src/errors";
 
 const mockDate = new Date("2023-06-15T10:30:00.000Z");
 
@@ -24,7 +32,7 @@ afterEach(() => {
 describe("badRequest", () => {
   it("should return 400 response with default values", async () => {
     const response = badRequest();
-    const body = await response.json();
+    const body = await response.json() as ApiError;
 
     expect(response.status).toBe(400);
     expect(response.headers.get("Content-Type")).toBe("application/json");
@@ -37,7 +45,7 @@ describe("badRequest", () => {
 
   it("should return 400 response with custom message", async () => {
     const response = badRequest({ message: "Invalid input parameters" });
-    const body = await response.json();
+    const body = await response.json() as ApiError;
 
     expect(body.message).toBe("Invalid input parameters");
     expect(body.status).toBe(400);
@@ -57,7 +65,7 @@ describe("badRequest", () => {
       headers: { "X-Request-ID": "123456" },
     };
     const response = badRequest(options);
-    const body = await response.json();
+    const body = await response.json() as ApiError;
 
     expect(response.status).toBe(400);
     expect(response.headers.get("X-Request-ID")).toBe("123456");
@@ -71,7 +79,7 @@ describe("badRequest", () => {
   it("should return 400 response with Hono context", async () => {
     const context = createMockContext("https://example.com/api/users");
     const response = badRequest(context);
-    const body = await response.json();
+    const body = await response.json() as ApiError;
 
     expect(response.status).toBe(400);
     expect(body).toEqual({
@@ -84,7 +92,7 @@ describe("badRequest", () => {
   it("should return 400 response with Hono context and custom message", async () => {
     const context = createMockContext("https://example.com/api/users/123");
     const response = badRequest(context, { message: "Invalid user ID" });
-    const body = await response.json();
+    const body = await response.json() as ApiError;
 
     expect(response.status).toBe(400);
     expect(body).toEqual({
@@ -100,7 +108,7 @@ describe("badRequest", () => {
       message: "Validation failed",
       headers: { "X-Request-ID": "abc123" },
     });
-    const body = await response.json();
+    const body = await response.json() as ApiError;
 
     expect(response.status).toBe(400);
     expect(response.headers.get("X-Request-ID")).toBe("abc123");
@@ -111,7 +119,7 @@ describe("badRequest", () => {
 describe("forbidden", () => {
   it("should return 403 response with default values", async () => {
     const response = forbidden();
-    const body = await response.json();
+    const body = await response.json() as ApiError;
 
     expect(response.status).toBe(403);
     expect(response.headers.get("Content-Type")).toBe("application/json");
@@ -124,7 +132,7 @@ describe("forbidden", () => {
 
   it("should return 403 response with custom message", async () => {
     const response = forbidden({ message: "Access denied" });
-    const body = await response.json();
+    const body = await response.json() as ApiError;
 
     expect(body.message).toBe("Access denied");
     expect(body.status).toBe(403);
@@ -140,7 +148,7 @@ describe("forbidden", () => {
   it("should return 403 response with Hono context", async () => {
     const context = createMockContext("https://example.com/api/admin");
     const response = forbidden(context);
-    const body = await response.json();
+    const body = await response.json() as ApiError;
 
     expect(response.status).toBe(403);
     expect(body).toEqual({
@@ -153,7 +161,7 @@ describe("forbidden", () => {
   it("should return 403 response with Hono context and custom message", async () => {
     const context = createMockContext("https://example.com/api/admin/users");
     const response = forbidden(context, { message: "Access denied to admin area" });
-    const body = await response.json();
+    const body = await response.json() as ApiError;
 
     expect(response.status).toBe(403);
     expect(body.message).toBe("Access denied to admin area");
@@ -163,7 +171,7 @@ describe("forbidden", () => {
 describe("notFound", () => {
   it("should return 404 response with default values", async () => {
     const response = notFound();
-    const body = await response.json();
+    const body = await response.json() as ApiError;
 
     expect(response.status).toBe(404);
     expect(response.headers.get("Content-Type")).toBe("application/json");
@@ -176,7 +184,7 @@ describe("notFound", () => {
 
   it("should return 404 response with custom message", async () => {
     const response = notFound({ message: "User not found" });
-    const body = await response.json();
+    const body = await response.json() as ApiError;
 
     expect(body.message).toBe("User not found");
     expect(body.status).toBe(404);
@@ -188,7 +196,7 @@ describe("notFound", () => {
       headers: { "Cache-Control": "no-cache" },
     };
     const response = notFound(options);
-    const body = await response.json();
+    const body = await response.json() as ApiError;
 
     expect(response.status).toBe(404);
     expect(response.headers.get("Cache-Control")).toBe("no-cache");
@@ -198,7 +206,7 @@ describe("notFound", () => {
   it("should return 404 response with Hono context", async () => {
     const context = createMockContext("https://example.com/api/users/999");
     const response = notFound(context);
-    const body = await response.json();
+    const body = await response.json() as ApiError;
 
     expect(response.status).toBe(404);
     expect(body).toEqual({
@@ -211,7 +219,7 @@ describe("notFound", () => {
   it("should return 404 response with Hono context and custom message", async () => {
     const context = createMockContext("https://example.com/api/products/abc123");
     const response = notFound(context, { message: "Product not found" });
-    const body = await response.json();
+    const body = await response.json() as ApiError;
 
     expect(response.status).toBe(404);
     expect(body.message).toBe("Product not found");
@@ -221,7 +229,7 @@ describe("notFound", () => {
 describe("internalServerError", () => {
   it("should return 500 response with default values", async () => {
     const response = internalServerError();
-    const body = await response.json();
+    const body = await response.json() as ApiError;
 
     expect(response.status).toBe(500);
     expect(response.headers.get("Content-Type")).toBe("application/json");
@@ -234,7 +242,7 @@ describe("internalServerError", () => {
 
   it("should return 500 response with custom message", async () => {
     const response = internalServerError({ message: "Database connection failed" });
-    const body = await response.json();
+    const body = await response.json() as ApiError;
 
     expect(body.message).toBe("Database connection failed");
     expect(body.status).toBe(500);
@@ -250,7 +258,7 @@ describe("internalServerError", () => {
   it("should return 500 response with Hono context", async () => {
     const context = createMockContext("https://example.com/api/database");
     const response = internalServerError(context);
-    const body = await response.json();
+    const body = await response.json() as ApiError;
 
     expect(response.status).toBe(500);
     expect(body).toEqual({
@@ -263,27 +271,80 @@ describe("internalServerError", () => {
   it("should return 500 response with Hono context and custom message", async () => {
     const context = createMockContext("https://example.com/api/users/sync");
     const response = internalServerError(context, { message: "Database sync failed" });
-    const body = await response.json();
+    const body = await response.json() as ApiError;
 
     expect(response.status).toBe(500);
     expect(body.message).toBe("Database sync failed");
   });
 });
 
-describe("response structure validation", () => {
-  it("should always include timestamp in ISO format", async () => {
-    const responses = [
-      badRequest(),
-      forbidden(),
-      notFound(),
-      internalServerError(),
-    ];
+describe("badGateway", () => {
+  it("should return 502 response with default values", async () => {
+    const response = badGateway();
+    const body = await response.json() as ApiError;
 
-    for (const response of responses) {
-      const body = await response.json();
-      expect(body.timestamp).toBe("2023-06-15T10:30:00.000Z");
-      expect(new Date(body.timestamp).toISOString()).toBe(body.timestamp);
-    }
+    expect(response.status).toBe(502);
+    expect(response.headers.get("Content-Type")).toBe("application/json");
+    expect(body).toEqual({
+      message: "Bad Gateway",
+      status: 502,
+      timestamp: "2023-06-15T10:30:00.000Z",
+    });
+  });
+
+  it("should return 502 response with custom message", async () => {
+    const response = badGateway({ message: "Database connection failed" });
+    const body = await response.json() as ApiError;
+
+    expect(body.message).toBe("Database connection failed");
+    expect(body.status).toBe(502);
+  });
+
+  it("should return 502 response with custom headers", async () => {
+    const customHeaders = { "Retry-After": "60" };
+    const response = badGateway({ headers: customHeaders });
+
+    expect(response.headers.get("Retry-After")).toBe("60");
+  });
+
+  it("should return 502 response with Hono context", async () => {
+    const context = createMockContext("https://example.com/api/database");
+    const response = badGateway(context);
+    const body = await response.json() as ApiError;
+
+    expect(response.status).toBe(502);
+    expect(body).toEqual({
+      message: "Bad Gateway",
+      status: 502,
+      timestamp: "2023-06-15T10:30:00.000Z",
+    });
+  });
+
+  it("should return 502 response with Hono context and custom message", async () => {
+    const context = createMockContext("https://example.com/api/users/sync");
+    const response = badGateway(context, { message: "Database sync failed" });
+    const body = await response.json() as ApiError;
+
+    expect(response.status).toBe(502);
+    expect(body.message).toBe("Database sync failed");
+  });
+});
+
+describe("response structure validation", () => {
+  it.each([
+    badRequest(),
+    forbidden(),
+    notFound(),
+    internalServerError(),
+    badGateway(),
+  ])("should return response with correct structure", async (response) => {
+    const body = await response.json() as ApiError;
+
+    expect(body).toEqual({
+      message: expect.any(String),
+      status: response.status,
+      timestamp: expect.any(String),
+    });
   });
 
   it("should preserve custom headers while keeping Content-Type", async () => {
@@ -316,7 +377,7 @@ describe("custom error handling", () => {
     };
 
     const response = customError(customErrorOptions);
-    const body = await response.json();
+    const body = await response.json() as ApiError;
 
     expect(response.status).toBe(418);
     expect(body.message).toBe("I'm a teapot");
@@ -331,7 +392,7 @@ describe("custom error handling", () => {
     };
 
     const response = customError(customErrorOptions);
-    const body = await response.json();
+    const body = await response.json() as ApiError;
 
     expect(response.status).toBe(422);
     expect(body.message).toBe("Unprocessable Entity");
@@ -344,7 +405,7 @@ describe("custom error handling", () => {
       status: 418,
       message: "I'm a teapot",
     });
-    const body = await response.json();
+    const body = await response.json() as ApiError;
 
     expect(response.status).toBe(418);
     expect(body).toEqual({
@@ -361,7 +422,7 @@ describe("custom error handling", () => {
       message: "Too Many Requests",
       headers: { "Retry-After": "3600" },
     });
-    const body = await response.json();
+    const body = await response.json() as ApiError;
 
     expect(response.status).toBe(429);
     expect(body.message).toBe("Too Many Requests");
@@ -381,7 +442,7 @@ describe("hono context integration", () => {
   it("should handle URLs with query parameters", async () => {
     const context = createMockContext("https://example.com/api/users?filter=active&page=2");
     const response = badRequest(context, { message: "Invalid query parameters" });
-    const body = await response.json();
+    const body = await response.json() as ApiError;
 
     expect(body.message).toBe("Invalid query parameters");
   });
@@ -389,7 +450,7 @@ describe("hono context integration", () => {
   it("should handle paths with special characters", async () => {
     const context = createMockContext("https://example.com/api/files/my%20file.txt");
     const response = notFound(context, { message: "File not found" });
-    const body = await response.json();
+    const body = await response.json() as ApiError;
 
     expect(body.message).toBe("File not found");
   });

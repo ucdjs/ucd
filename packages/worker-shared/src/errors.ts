@@ -200,6 +200,29 @@ export function internalServerError(contextOrOptions: Context | ResponseOptions 
   }) as any;
 }
 
+export function badGateway(contextOrOptions: Context | ResponseOptions = {}, options: ResponseOptions = {}): Response & TypedResponse<ApiError, 502, "json"> {
+  let finalOptions: ResponseOptions;
+
+  if ("req" in contextOrOptions) {
+    finalOptions = options;
+  } else {
+    // It's options (legacy usage)
+    finalOptions = contextOrOptions;
+  }
+
+  return Response.json({
+    message: finalOptions.message || "Bad Gateway",
+    status: 502,
+    timestamp: new Date().toISOString(),
+  } satisfies ApiError, {
+    status: 502,
+    headers: {
+      "Content-Type": "application/json",
+      ...finalOptions.headers,
+    },
+  }) as any;
+}
+
 export type CustomResponseOptions = Omit<Required<ResponseOptions>, "headers"> & {
   /**
    * Custom headers to include in the response.
