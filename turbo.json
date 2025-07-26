@@ -4,7 +4,8 @@
   "globalPassThroughEnv": [
     "NODE",
     "NODE_ENV",
-    "CI"
+    "CI",
+    "CLOUDFLARE_ENV"
   ],
   "tasks": {
     "topo": {

@@ -1,0 +1,36 @@
+{
+  "name": "ucdjs.dev",
+  "type": "module",
+  "private": true,
+  "packageManager": "pnpm@10.13.1",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@tanstack/react-router": "catalog:web",
+    "@tanstack/react-router-devtools": "catalog:web",
+    "react": "catalog:web",
+    "react-dom": "catalog:web"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "catalog:web",
+    "@cloudflare/workers-types": "catalog:workers",
+    "@eslint-react/eslint-plugin": "catalog:linting",
+    "@luxass/eslint-config": "catalog:linting",
+    "@tailwindcss/vite": "catalog:web",
+    "@tanstack/router-plugin": "catalog:web",
+    "@types/react": "catalog:types",
+    "@types/react-dom": "catalog:types",
+    "@vitejs/plugin-react": "catalog:web",
+    "eslint": "catalog:linting",
+    "eslint-plugin-react-hooks": "catalog:linting",
+    "eslint-plugin-react-refresh": "catalog:linting",
+    "tailwindcss": "catalog:web",
+    "typescript": "catalog:dev",
+    "vite": "catalog:web",
+    "wrangler": "catalog:workers"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "tailwindCSS.experimental.configFile": "./apps/web/src/globals.css",
+  "emeraldwalk.runonsave": {
+    "commands": [
+      {
+        "match": "apps/api/wrangler.jsonc",
+        "cmd": "pnpm --filter ./apps/api run generate:types",
+        "isAsync": true
+      }
+    ]
+  },
+  "workbench.editor.customLabels.enabled": true,
+  "workbench.editor.customLabels.patterns": {
+    // custom labels for api routes
+    "**/routes/**/*.ts": "(${dirname}) ${filename}"
+  },
+  "testing.automaticallyOpenTestResults": "neverOpen"
+}
