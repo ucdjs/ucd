@@ -98,6 +98,6 @@ jobs:
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           workingDirectory: ./apps/${{ matrix.app }}
-          environment: production
+          environment: ${{ matrix.app == 'api' && 'production' || '' }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
           vars: API_VERSION
