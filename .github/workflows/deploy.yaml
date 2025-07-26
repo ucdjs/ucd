@@ -60,12 +60,14 @@ jobs:
       - name: build apps
         run: CLOUDFLARE_ENV=production pnpm build:apps
 
+      - name: typecheck
+        run: pnpm run typecheck
+
+
+
       - name: validate openapi
         if: matrix.app == 'api'
         run: pnpm --filter=@ucdjs/api run lint:openapi
-
-      - name: typecheck
-        run: pnpm run typecheck
 
       - name: test api
         if: matrix.app == 'api'
@@ -73,7 +75,7 @@ jobs:
 
       - name: generate api version
         id: api-version
-        if: matrix.app != 'web'
+        if: matrix.app == 'api'
         env:
           HEAD_REF: ${{ github.head_ref }}
           REF_NAME: ${{ github.ref_name }}
@@ -89,9 +91,9 @@ jobs:
           # combine
           echo "version=$CLEAN_BRANCH-$SHORT_SHA" >> "$GITHUB_OUTPUT"
 
-      - name: deploy ${{ matrix.app }}
-        id: deploy
-        if: ${{ github.event.inputs.dry-run != 'true' }}
+      - name: deploy api
+        id: deploy-api
+        if: ${{ github.event.inputs.dry-run != 'true' && matrix.app == 'api' }}
         env:
           API_VERSION: ${{ steps.api-version.outputs.version || 'latest' }}
         uses: cloudflare/wrangler-action@392082e81ffbcb9ebdde27400634aa004b35ea37 # v3.14.0
@@ -101,3 +103,12 @@ jobs:
           environment: production
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
           vars: API_VERSION
+
+      - name: deploy web
+        id: deploy-web
+        if: ${{ github.event.inputs.dry-run != 'true' && matrix.app == 'web' }}
+        uses: cloudflare/wrangler-action@392082e81ffbcb9ebdde27400634aa004b35ea37 # v3.14.0
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          workingDirectory: ./apps/${{ matrix.app }}
+          accountId: ${{ secrets.CF_ACCOUNT_ID }}

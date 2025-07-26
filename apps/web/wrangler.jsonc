@@ -6,22 +6,22 @@
   "assets": {
     "not_found_handling": "single-page-application"
   },
-  "routes": [
-    {
-      "custom_domain": true,
-      "pattern": "ucdjs.dev"
-    }
-  ],
+  "vars": {
+    "ENVIRONMENT": "top-level"
+  },
   "env": {
     "production": {
-      "name": "ucdjs-dev-production",
+      "name": "ucdjs-dev",
       "preview_urls": false,
       "routes": [
         {
           "custom_domain": true,
           "pattern": "ucdjs.dev"
         }
-      ]
+      ],
+      "vars": {
+        "ENVIRONMENT": "production"
+      }
     },
     "preview": {
       "name": "ucdjs-dev-preview",
@@ -31,7 +31,10 @@
           "custom_domain": true,
           "pattern": "preview.ucdjs.dev"
         }
-      ]
+      ],
+      "vars": {
+        "ENVIRONMENT": "preview"
+      }
     }
   }
 }
