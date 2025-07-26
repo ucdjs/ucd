@@ -58,7 +58,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: build apps
-        run: pnpm build:apps
+        run: CLOUDFLARE_ENV=production pnpm build:apps
 
       - name: validate openapi
         if: matrix.app == 'api'
