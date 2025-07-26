@@ -1,44 +1,29 @@
+import { z } from "zod";
+
 export interface FileSystemBridgeRmOptions {
-  /** If true, removes directories and their contents recursively */
+  /**
+   * If true, removes directories and their contents recursively
+   */
   recursive?: boolean;
-  /** If true, ignores errors if the path doesn't exist */
+
+  /**
+   * If true, ignores errors if the path doesn't exist
+   */
   force?: boolean;
 }
 
-export interface FSStats {
-  /** Returns true if the path is a file */
-  isFile: () => boolean;
-  /** Returns true if the path is a directory */
-  isDirectory: () => boolean;
-  /** The last modified time */
-  mtime: Date;
-  /** The size in bytes */
-  size: number;
-}
+export type FSEntry = {
+  type: "file";
+  name: string;
+  path: string;
+} | {
+  type: "directory";
+  name: string;
+  path: string;
+  children: FSEntry[];
+};
 
-export interface FileSystemBridge {
-  /**
-   * Optional state object for the file system bridge.
-   * This can be used to store any relevant state information
-   * that the bridge implementation may need.
-   * @type {Record<string, unknown>}
-   * @default {}
-   * @example
-   * ```ts
-   * import { FileSystemBridge } from "@ucdjs/utils/fs-bridge";
-   *
-   * const fsBridge: FileSystemBridge = {
-   *    state: {
-   *     lastReadPath: "",
-   *    },
-   *    async read(path) {
-   *      this.state.lastReadPath = path;
-   *    }
-   * }
-   * ```
-   */
-  state?: Record<string, unknown>;
-
+export interface FileSystemBridgeOperations {
   /**
    * Reads the contents of a file.
    * @param {string} path - The path to the file to read
@@ -59,9 +44,9 @@ export interface FileSystemBridge {
    * Lists the contents of a directory.
    * @param {string} path - The path to the directory to list
    * @param {boolean} [recursive=false] - If true, lists files in subdirectories as well
-   * @returns {Promise<string[]>} A promise that resolves to an array of file and directory names
+   * @returns {Promise<FSEntry[]>} A promise that resolves to an array of file and directory entries
    */
-  listdir: (path: string, recursive?: boolean) => Promise<string[]>;
+  listdir: (path: string, recursive?: boolean) => Promise<FSEntry[]>;
 
   /**
    * Creates a directory.
@@ -69,13 +54,6 @@ export interface FileSystemBridge {
    * @returns {Promise<void>} A promise that resolves when the directory is created
    */
   mkdir: (path: string) => Promise<void>;
-
-  /**
-   * Gets file or directory statistics.
-   * @param {string} path - The path to get statistics for
-   * @returns {Promise<FSStats>} A promise that resolves to an object containing file/directory information
-   */
-  stat: (path: string) => Promise<FSStats>;
 
   /**
    * Checks if a file or directory exists.
@@ -93,15 +71,111 @@ export interface FileSystemBridge {
   rm: (path: string, options?: FileSystemBridgeRmOptions) => Promise<void>;
 }
 
-/**
- * Defines and returns a file system bridge implementation.
- *
- * This function serves as a type-safe way to create a file system bridge
- * that follows the {@link FileSystemBridge} interface.
- *
- * @param {FileSystemBridge} fsBridge - The file system bridge implementation to define
- * @returns {FileSystemBridge} The provided file system bridge implementation
- */
-export function defineFileSystemBridge(fsBridge: FileSystemBridge): FileSystemBridge {
-  return fsBridge;
+export type FileSystemBridgeCapabilityKey = keyof FileSystemBridgeOperations;
+export type FileSystemBridgeCapabilities = {
+  [K in FileSystemBridgeCapabilityKey]: boolean;
+};
+
+const DEFAULT_SUPPORTED_CAPABILITIES: FileSystemBridgeCapabilities = {
+  exists: true,
+  read: true,
+  write: true,
+  listdir: true,
+  mkdir: true,
+  rm: true,
+};
+
+type FileSystemBridgeSetupFn<
+  TOptionsSchema extends z.ZodType,
+  TState extends Record<string, unknown> = Record<string, unknown>,
+> = (ctx: {
+  options: z.infer<TOptionsSchema>;
+  state: TState;
+  capabilities: FileSystemBridgeCapabilities;
+}) => FileSystemBridgeOperations;
+
+export interface FileSystemBridgeObject<
+  TOptionsSchema extends z.ZodType = z.ZodNever,
+  TState extends Record<string, unknown> = Record<string, unknown>,
+> {
+  /**
+   * Zod schema for validating bridge options
+   */
+  optionsSchema?: TOptionsSchema;
+
+  /**
+   * An object defining the capabilities supported by this file system bridge.
+   * If it is not provided, the bridge will assume all capabilities are supported.
+   */
+  capabilities?: FileSystemBridgeCapabilities;
+
+  /**
+   * Optional state object for the file system bridge.
+   * This can be used to store any relevant state information
+   * that the bridge implementation may need.
+   * @type {Record<string, unknown>}
+   * @default {}
+   * @example
+   * ```ts
+   * import { FileSystemBridge } from "@ucdjs/utils/fs-bridge";
+   *
+   * const fsBridge: FileSystemBridge = {
+   *    state: {
+   *     lastReadPath: "",
+   *    },
+   *    setup({ options, state, capabilities }) {
+   *      return {
+   *        async read(path) {
+   *          state.lastReadPath = path;
+   *          // ... implementation
+   *        }
+   *      }
+   *    }
+   * }
+   * ```
+   */
+  state?: TState;
+
+  /**
+   * Setup function that receives options, state, and capabilities
+   * and returns the filesystem operations implementation
+   */
+  setup: FileSystemBridgeSetupFn<TOptionsSchema, TState>;
+}
+
+type FileSystemBridge<
+  TOptionsSchema extends z.ZodType,
+> = (
+  ...args: [z.input<TOptionsSchema>] extends [never]
+    ? []
+    : undefined extends z.input<TOptionsSchema>
+      ? [options?: z.input<TOptionsSchema>]
+      : [options: z.input<TOptionsSchema>]
+) => FileSystemBridgeOperations;
+
+export function defineFileSystemBridge<
+  TOptionsSchema extends z.ZodType,
+  TState extends Record<string, unknown> = Record<string, unknown>,
+>(
+  fsBridge: FileSystemBridgeObject<TOptionsSchema, TState>,
+): FileSystemBridge<TOptionsSchema> {
+  return (...args) => {
+    const parsedOptions = (fsBridge.optionsSchema ?? z.never().optional()).safeParse(args[0]);
+
+    if (!parsedOptions.success) {
+      throw new Error(
+        `Invalid options provided to file system bridge: ${parsedOptions.error.message}`,
+      );
+    }
+
+    const options = parsedOptions.data as z.output<TOptionsSchema>;
+
+    const { capabilities = DEFAULT_SUPPORTED_CAPABILITIES, state } = fsBridge;
+
+    return fsBridge.setup({
+      options,
+      state: state ?? {} as TState,
+      capabilities,
+    });
+  };
 }

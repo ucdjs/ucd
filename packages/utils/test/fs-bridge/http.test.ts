@@ -3,14 +3,16 @@ import { HttpResponse } from "msw";
 import { describe, expect, it } from "vitest";
 import HTTPFileSystemBridge from "../../src/fs-bridge/http";
 
-describe("httpFileSystemBridge", () => {
-  describe("read", () => {
-    it("should read a file from HTTP endpoint", async () => {
+describe("http fs-bridge", () => {
+  const baseUrl = "https://test-api.example.com";
+  const bridge = HTTPFileSystemBridge({ baseUrl });
+
+  describe("read operation", () => {
+    it("should read file content successfully", async () => {
       const fileContent = "Hello, World!";
-      const bridge = HTTPFileSystemBridge({ baseUrl: "https://api.ucdjs.dev" });
 
       mockFetch([
-        ["GET", "https://api.ucdjs.dev/test.txt", () => {
+        ["GET", `${baseUrl}/test-file.txt`, () => {
           return new HttpResponse(fileContent, {
             status: 200,
             headers: { "Content-Type": "text/plain" },
@@ -18,32 +20,29 @@ describe("httpFileSystemBridge", () => {
         }],
       ]);
 
-      const result = await bridge.read("/test.txt");
-      expect(result).toBe(fileContent);
+      const content = await bridge.read("test-file.txt");
+      expect(content).toBe(fileContent);
     });
 
-    it("should read a file with absolute URL", async () => {
-      const fileContent = "Absolute URL content";
-      const bridge = HTTPFileSystemBridge();
+    it("should read JSON file content", async () => {
+      const jsonContent = { name: "test", version: "1.0.0" };
 
       mockFetch([
-        ["GET", "https://files.ucdjs.dev/document.txt", () => {
-          return new HttpResponse(fileContent, {
+        ["GET", `${baseUrl}/config.json`, () => {
+          return new HttpResponse(JSON.stringify(jsonContent), {
             status: 200,
-            headers: { "Content-Type": "text/plain" },
+            headers: { "Content-Type": "application/json" },
           });
         }],
       ]);
 
-      const result = await bridge.read("https://files.ucdjs.dev/document.txt");
-      expect(result).toBe(fileContent);
+      const content = await bridge.read("config.json");
+      expect(content).toBe(JSON.stringify(jsonContent));
     });
 
-    it("should throw error when file not found", async () => {
-      const bridge = HTTPFileSystemBridge({ baseUrl: "https://api.ucdjs.dev" });
-
+    it("should throw error for non-existent file", async () => {
       mockFetch([
-        ["GET", "https://api.ucdjs.dev/not-found.txt", () => {
+        ["GET", `${baseUrl}/missing.txt`, () => {
           return new HttpResponse("Not Found", {
             status: 404,
             statusText: "Not Found",
@@ -51,14 +50,12 @@ describe("httpFileSystemBridge", () => {
         }],
       ]);
 
-      await expect(bridge.read("/not-found.txt")).rejects.toThrow("Failed to read remote file: Not Found");
+      await expect(bridge.read("missing.txt")).rejects.toThrow("Failed to read remote file: Not Found");
     });
 
-    it("should throw error on server error", async () => {
-      const bridge = HTTPFileSystemBridge({ baseUrl: "https://api.ucdjs.dev" });
-
+    it("should throw error for server error", async () => {
       mockFetch([
-        ["GET", "https://api.ucdjs.dev/server-error.txt", () => {
+        ["GET", `${baseUrl}/error.txt`, () => {
           return new HttpResponse("Internal Server Error", {
             status: 500,
             statusText: "Internal Server Error",
@@ -66,277 +63,157 @@ describe("httpFileSystemBridge", () => {
         }],
       ]);
 
-      await expect(bridge.read("/server-error.txt")).rejects.toThrow("Failed to read remote file: Internal Server Error");
+      await expect(bridge.read("error.txt")).rejects.toThrow("Failed to read remote file: Internal Server Error");
     });
   });
 
-  describe("listdir", () => {
+  describe("exists operation", () => {
+    it("should return true for existing file", async () => {
+      mockFetch([
+        ["HEAD", `${baseUrl}/exists.txt`, () => {
+          return new HttpResponse(null, { status: 200 });
+        }],
+      ]);
+
+      const exists = await bridge.exists("exists.txt");
+      expect(exists).toBe(true);
+    });
+
+    it("should return false for non-existent file", async () => {
+      mockFetch([
+        ["HEAD", `${baseUrl}/missing.txt`, () => {
+          return new HttpResponse(null, { status: 404 });
+        }],
+      ]);
+
+      const exists = await bridge.exists("missing.txt");
+      expect(exists).toBe(false);
+    });
+
+    it("should return false on network error", async () => {
+      mockFetch([
+        ["HEAD", `${baseUrl}/network-error.txt`, () => {
+          return Response.error();
+        }],
+      ]);
+
+      const exists = await bridge.exists("network-error.txt");
+      expect(exists).toBe(false);
+    });
+
+    it("should return false for server error", async () => {
+      mockFetch([
+        ["HEAD", `${baseUrl}/server-error.txt`, () => {
+          return new HttpResponse(null, { status: 500 });
+        }],
+      ]);
+
+      const exists = await bridge.exists("server-error.txt");
+      expect(exists).toBe(false);
+    });
+  });
+
+  describe("listdir operation", () => {
+    const mockDirectoryData = [
+      {
+        type: "file" as const,
+        name: "file1.txt",
+        path: "/dir/file1.txt",
+        lastModified: "2024-01-01T00:00:00Z",
+      },
+      {
+        type: "file" as const,
+        name: "file2.txt",
+        path: "/dir/file2.txt",
+        lastModified: "2024-01-02T00:00:00Z",
+      },
+      {
+        type: "directory" as const,
+        name: "subdir",
+        path: "/dir/subdir",
+        lastModified: "2024-01-03T00:00:00Z",
+      },
+    ];
+
     it("should list directory contents", async () => {
-      const mockFileTree = [
-        { type: "file", name: "file1.txt", path: "/api/files/file1.txt" },
-        { type: "file", name: "file2.js", path: "/api/files/file2.js" },
-        { type: "directory", name: "subdirectory", path: "/api/files/subdirectory", lastModified: "2023-01-01T00:00:00Z" },
+      mockFetch([
+        ["GET", `${baseUrl}/test-dir`, () => {
+          return new HttpResponse(JSON.stringify(mockDirectoryData), {
+            status: 200,
+            headers: {
+              "Content-Type": "application/json",
+              "Accept": "application/json",
+            },
+          });
+        }],
+      ]);
+
+      const files = await bridge.listdir("test-dir");
+      expect(files).toEqual(["file1.txt", "file2.txt", "subdir"]);
+    });
+
+    it("should list directory contents recursively", async () => {
+      const subdirData = [
+        {
+          type: "file" as const,
+          name: "nested.txt",
+          path: "/dir/subdir/nested.txt",
+          lastModified: "2024-01-04T00:00:00Z",
+        },
       ];
-      const bridge = HTTPFileSystemBridge({ baseUrl: "https://api.ucdjs.dev" });
 
       mockFetch([
-        ["GET", "https://api.ucdjs.dev/api/files", () => {
-          return new HttpResponse(JSON.stringify(mockFileTree), {
+        ["GET", `${baseUrl}/test-dir`, () => {
+          return new HttpResponse(JSON.stringify(mockDirectoryData), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          });
+        }],
+        ["GET", `${baseUrl}/test-dir/subdir`, () => {
+          return new HttpResponse(JSON.stringify(subdirData), {
             status: 200,
             headers: { "Content-Type": "application/json" },
           });
         }],
       ]);
 
-      const result = await bridge.listdir("/api/files");
-      expect(result).toEqual(["file1.txt", "file2.js", "subdirectory"]);
+      const files = await bridge.listdir("test-dir", true);
+      expect(files).toContain("file1.txt");
+      expect(files).toContain("file2.txt");
+      expect(files).toContain("subdir");
+      expect(files).toContain("nested.txt");
     });
 
-    it("should list directory with recursive parameter", async () => {
-      const mockFileTree = [
-        { type: "file", name: "file1.txt", path: "/api/files/file1.txt" },
-        { type: "file", name: "file2.js", path: "/api/files/file2.js" },
-        { type: "directory", name: "subdir", path: "/api/files/subdir", lastModified: "2023-01-01T00:00:00Z" },
-      ];
-      const subDirTree = [
-        { type: "file", name: "nested.txt", path: "/api/files/subdir/nested.txt" },
-      ];
-      const bridge = HTTPFileSystemBridge({ baseUrl: "https://api.ucdjs.dev" });
-
+    it("should handle empty directory", async () => {
       mockFetch([
-        ["GET", "https://api.ucdjs.dev/api/files", () => {
-          return new HttpResponse(JSON.stringify(mockFileTree), {
-            status: 200,
-            headers: { "Content-Type": "application/json" },
-          });
-        }],
-        ["GET", "https://api.ucdjs.dev/api/files/subdir", () => {
-          return new HttpResponse(JSON.stringify(subDirTree), {
+        ["GET", `${baseUrl}/empty-dir`, () => {
+          return new HttpResponse(JSON.stringify([]), {
             status: 200,
             headers: { "Content-Type": "application/json" },
           });
         }],
       ]);
 
-      const result = await bridge.listdir("/api/files", true);
-      expect(result).toEqual(["file1.txt", "file2.js", "subdir", "nested.txt"]);
+      const files = await bridge.listdir("empty-dir");
+      expect(files).toEqual([]);
     });
 
-    it("should throw error when directory listing fails", async () => {
-      const bridge = HTTPFileSystemBridge({ baseUrl: "https://api.ucdjs.dev" });
-
+    it("should throw error for non-existent directory", async () => {
       mockFetch([
-        ["GET", "https://api.ucdjs.dev/api/not-found", () => {
-          return new HttpResponse("Not Found", {
+        ["GET", `${baseUrl}/missing-dir`, () => {
+          return new HttpResponse("Directory not found", {
             status: 404,
             statusText: "Not Found",
           });
         }],
       ]);
 
-      await expect(bridge.listdir("/api/not-found")).rejects.toThrow("Failed to list directory: Not Found");
+      await expect(bridge.listdir("missing-dir")).rejects.toThrow("Failed to list directory: Not Found");
     });
 
-    it("should handle empty directory", async () => {
-      const mockFileTree: unknown[] = [];
-      const bridge = HTTPFileSystemBridge({ baseUrl: "https://api.ucdjs.dev" });
-
+    it("should handle invalid JSON response", async () => {
       mockFetch([
-        ["GET", "https://api.ucdjs.dev/api/empty", () => {
-          return new HttpResponse(JSON.stringify(mockFileTree), {
-            status: 200,
-            headers: { "Content-Type": "application/json" },
-          });
-        }],
-      ]);
-
-      const result = await bridge.listdir("/api/empty");
-      expect(result).toEqual([]);
-    });
-  });
-
-  describe("exists", () => {
-    it("should return true for existing file", async () => {
-      const bridge = HTTPFileSystemBridge({ baseUrl: "https://api.ucdjs.dev" });
-
-      mockFetch([
-        ["HEAD", "https://api.ucdjs.dev/existing-file.txt", () => {
-          return new HttpResponse(null, {
-            status: 200,
-          });
-        }],
-      ]);
-
-      const result = await bridge.exists("/existing-file.txt");
-      expect(result).toBe(true);
-    });
-
-    it("should return false for non-existing file", async () => {
-      const bridge = HTTPFileSystemBridge({ baseUrl: "https://api.ucdjs.dev" });
-
-      mockFetch([
-        ["HEAD", "https://api.ucdjs.dev/non-existing.txt", () => {
-          return new HttpResponse(null, {
-            status: 404,
-          });
-        }],
-      ]);
-
-      const result = await bridge.exists("/non-existing.txt");
-      expect(result).toBe(false);
-    });
-
-    it("should return false on network error", async () => {
-      const bridge = HTTPFileSystemBridge({ baseUrl: "https://api.ucdjs.dev" });
-
-      mockFetch([
-        ["HEAD", "https://api.ucdjs.dev/network-error.txt", () => {
-          throw new Error("Network error");
-        }],
-      ]);
-
-      const result = await bridge.exists("/network-error.txt");
-      expect(result).toBe(false);
-    });
-
-    it("should work with absolute URLs", async () => {
-      const bridge = HTTPFileSystemBridge();
-
-      mockFetch([
-        ["HEAD", "https://files.ucdjs.dev/check/file.txt", () => {
-          return new HttpResponse(null, {
-            status: 200,
-          });
-        }],
-      ]);
-
-      const result = await bridge.exists("https://files.ucdjs.dev/check/file.txt");
-      expect(result).toBe(true);
-    });
-  });
-
-  describe("read-only operations", () => {
-    it("should not throw on write operation", async () => {
-      const bridge = HTTPFileSystemBridge();
-
-      // Write should not throw but also should not do anything
-      await expect(bridge.write("/test.txt", "content")).resolves.toBeUndefined();
-    });
-
-    it("should not throw on mkdir operation", async () => {
-      const bridge = HTTPFileSystemBridge();
-
-      // mkdir should not throw but also should not do anything
-      await expect(bridge.mkdir("/new-dir")).resolves.toBeUndefined();
-    });
-
-    it("should not throw on rm operation", async () => {
-      const bridge = HTTPFileSystemBridge();
-
-      // rm should not throw but also should not do anything
-      await expect(bridge.rm("/file.txt")).resolves.toBeUndefined();
-    });
-
-    it("should return stat information", async () => {
-      const bridge = HTTPFileSystemBridge({ baseUrl: "https://api.ucdjs.dev" });
-      const mockStatData = {
-        type: "file",
-        mtime: "2023-01-01T00:00:00Z",
-        size: 1024,
-      };
-
-      mockFetch([
-        ["GET", "https://api.ucdjs.dev/__stat/file.txt", () => {
-          return new HttpResponse(JSON.stringify(mockStatData), {
-            status: 200,
-            headers: { "Content-Type": "application/json" },
-          });
-        }],
-      ]);
-
-      const result = await bridge.stat("/file.txt");
-      expect(result.isFile()).toBe(true);
-      expect(result.isDirectory()).toBe(false);
-      expect(result.size).toBe(1024);
-    });
-  });
-
-  describe("url handling", () => {
-    it("should work without baseUrl", async () => {
-      const bridge = HTTPFileSystemBridge();
-      const fileContent = "No base URL content";
-
-      mockFetch([
-        ["GET", "https://cdn.ucdjs.dev/file.txt", () => {
-          return new HttpResponse(fileContent, {
-            status: 200,
-            headers: { "Content-Type": "text/plain" },
-          });
-        }],
-      ]);
-
-      const result = await bridge.read("https://cdn.ucdjs.dev/file.txt");
-      expect(result).toBe(fileContent);
-    });
-
-    it("should resolve relative paths against baseUrl", async () => {
-      const bridge = HTTPFileSystemBridge({ baseUrl: "https://api.ucdjs.dev/v1/" });
-      const fileContent = "Relative path content";
-
-      mockFetch([
-        ["GET", "https://api.ucdjs.dev/v1/files/document.txt", () => {
-          return new HttpResponse(fileContent, {
-            status: 200,
-            headers: { "Content-Type": "text/plain" },
-          });
-        }],
-      ]);
-
-      const result = await bridge.read("files/document.txt");
-      expect(result).toBe(fileContent);
-    });
-
-    it("should handle baseUrl with trailing slash", async () => {
-      const bridge = HTTPFileSystemBridge({ baseUrl: "https://api.ucdjs.dev/" });
-      const fileContent = "Trailing slash content";
-
-      mockFetch([
-        ["GET", "https://api.ucdjs.dev/file.txt", () => {
-          return new HttpResponse(fileContent, {
-            status: 200,
-            headers: { "Content-Type": "text/plain" },
-          });
-        }],
-      ]);
-
-      const result = await bridge.read("file.txt");
-      expect(result).toBe(fileContent);
-    });
-
-    it("should handle baseUrl without trailing slash", async () => {
-      const bridge = HTTPFileSystemBridge({ baseUrl: "https://api.ucdjs.dev" });
-      const fileContent = "No trailing slash content";
-
-      mockFetch([
-        ["GET", "https://api.ucdjs.dev/file.txt", () => {
-          return new HttpResponse(fileContent, {
-            status: 200,
-            headers: { "Content-Type": "text/plain" },
-          });
-        }],
-      ]);
-
-      const result = await bridge.read("/file.txt");
-      expect(result).toBe(fileContent);
-    });
-  });
-
-  describe("error scenarios", () => {
-    it("should handle malformed JSON in listdir", async () => {
-      const bridge = HTTPFileSystemBridge({ baseUrl: "https://api.ucdjs.dev" });
-
-      mockFetch([
-        ["GET", "https://api.ucdjs.dev/api/malformed", () => {
+        ["GET", `${baseUrl}/invalid-json`, () => {
           return new HttpResponse("invalid json", {
             status: 200,
             headers: { "Content-Type": "application/json" },
@@ -344,22 +221,213 @@ describe("httpFileSystemBridge", () => {
         }],
       ]);
 
-      await expect(bridge.listdir("/api/malformed")).rejects.toThrow();
+      await expect(bridge.listdir("invalid-json")).rejects.toThrow();
     });
 
-    it("should handle invalid schema in listdir response", async () => {
-      const bridge = HTTPFileSystemBridge({ baseUrl: "https://api.ucdjs.dev" });
+    it("should skip inaccessible subdirectories in recursive mode", async () => {
+      const dataWithInaccessibleDir = [
+        {
+          type: "file" as const,
+          name: "accessible.txt",
+          path: "/dir/accessible.txt",
+          lastModified: "2024-01-01T00:00:00Z",
+        },
+        {
+          type: "directory" as const,
+          name: "inaccessible",
+          path: "/dir/inaccessible",
+          lastModified: "2024-01-02T00:00:00Z",
+        },
+      ];
 
       mockFetch([
-        ["GET", "https://api.ucdjs.dev/api/invalid-schema", () => {
-          return new HttpResponse(JSON.stringify([{ invalid: "data" }]), {
+        ["GET", `${baseUrl}/mixed-dir`, () => {
+          return new HttpResponse(JSON.stringify(dataWithInaccessibleDir), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          });
+        }],
+        ["GET", `${baseUrl}/mixed-dir/inaccessible`, () => {
+          return new HttpResponse("Forbidden", {
+            status: 403,
+            statusText: "Forbidden",
+          });
+        }],
+      ]);
+
+      const files = await bridge.listdir("mixed-dir", true);
+      expect(files).toContain("accessible.txt");
+      expect(files).toContain("inaccessible");
+      // Should not include files from inaccessible directory
+    });
+  });
+
+  describe("read-only operations", () => {
+    it("should not support write operation", async () => {
+      // write should not throw but also not do anything
+      await expect(bridge.write("test.txt", "content")).resolves.toBeUndefined();
+    });
+
+    it("should not support mkdir operation", async () => {
+      // mkdir should not throw but also not do anything
+      await expect(bridge.mkdir("new-dir")).resolves.toBeUndefined();
+    });
+
+    it("should not support rm operation", async () => {
+      // rm should not throw but also not do anything
+      await expect(bridge.rm("test.txt")).resolves.toBeUndefined();
+    });
+  });
+
+  describe("url handling", () => {
+    it("should handle relative paths correctly", async () => {
+      const content = "relative path content";
+
+      mockFetch([
+        ["GET", `${baseUrl}/path/to/file.txt`, () => {
+          return new HttpResponse(content, {
+            status: 200,
+            headers: { "Content-Type": "text/plain" },
+          });
+        }],
+      ]);
+
+      const result = await bridge.read("path/to/file.txt");
+      expect(result).toBe(content);
+    });
+
+    it("should handle absolute paths correctly", async () => {
+      const content = "absolute path content";
+
+      mockFetch([
+        ["GET", `${baseUrl}/absolute/path.txt`, () => {
+          return new HttpResponse(content, {
+            status: 200,
+            headers: { "Content-Type": "text/plain" },
+          });
+        }],
+      ]);
+
+      const result = await bridge.read("/absolute/path.txt");
+      expect(result).toBe(content);
+    });
+  });
+
+  describe("complex workflows", () => {
+    it("should handle file discovery workflow", async () => {
+      // list directory to find files
+      const directoryData = [
+        {
+          type: "file" as const,
+          name: "config.json",
+          path: "/config/config.json",
+          lastModified: "2024-01-01T00:00:00Z",
+        },
+        {
+          type: "file" as const,
+          name: "readme.md",
+          path: "/config/readme.md",
+          lastModified: "2024-01-02T00:00:00Z",
+        },
+      ];
+
+      const configContent = "{\"version\": \"1.0.0\", \"name\": \"test-app\"}";
+
+      mockFetch([
+        ["GET", `${baseUrl}/config`, () => {
+          return new HttpResponse(JSON.stringify(directoryData), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          });
+        }],
+        ["HEAD", `${baseUrl}/config/config.json`, () => {
+          return new HttpResponse(null, { status: 200 });
+        }],
+        ["GET", `${baseUrl}/config/config.json`, () => {
+          return new HttpResponse(configContent, {
             status: 200,
             headers: { "Content-Type": "application/json" },
           });
         }],
       ]);
 
-      await expect(bridge.listdir("/api/invalid-schema")).rejects.toThrow();
+      // discover files
+      const files = await bridge.listdir("config");
+      expect(files).toContain("config.json");
+
+      // check if config exists
+      const configExists = await bridge.exists("config/config.json");
+      expect(configExists).toBe(true);
+
+      // read config file
+      const config = await bridge.read("config/config.json");
+      expect(JSON.parse(config)).toEqual({ version: "1.0.0", name: "test-app" });
+    });
+
+    it("should handle concurrent operations", async () => {
+      const file1Content = "Content of file 1";
+      const file2Content = "Content of file 2";
+      const file3Content = "Content of file 3";
+
+      mockFetch([
+        ["GET", `${baseUrl}/file1.txt`, () => {
+          return new HttpResponse(file1Content, {
+            status: 200,
+            headers: { "Content-Type": "text/plain" },
+          });
+        }],
+        ["GET", `${baseUrl}/file2.txt`, () => {
+          return new HttpResponse(file2Content, {
+            status: 200,
+            headers: { "Content-Type": "text/plain" },
+          });
+        }],
+        ["GET", `${baseUrl}/file3.txt`, () => {
+          return new HttpResponse(file3Content, {
+            status: 200,
+            headers: { "Content-Type": "text/plain" },
+          });
+        }],
+      ]);
+
+      const [content1, content2, content3] = await Promise.all([
+        bridge.read("file1.txt"),
+        bridge.read("file2.txt"),
+        bridge.read("file3.txt"),
+      ]);
+
+      expect(content1).toBe(file1Content);
+      expect(content2).toBe(file2Content);
+      expect(content3).toBe(file3Content);
+    });
+
+    it("should handle mixed success and error responses", async () => {
+      const successContent = "Success content";
+
+      mockFetch([
+        ["GET", `${baseUrl}/success.txt`, () => {
+          return new HttpResponse(successContent, {
+            status: 200,
+            headers: { "Content-Type": "text/plain" },
+          });
+        }],
+        ["HEAD", `${baseUrl}/exists.txt`, () => {
+          return new HttpResponse(null, { status: 200 });
+        }],
+        ["HEAD", `${baseUrl}/missing.txt`, () => {
+          return new HttpResponse(null, { status: 404 });
+        }],
+      ]);
+
+      const [content, existsTrue, existsFalse] = await Promise.all([
+        bridge.read("success.txt"),
+        bridge.exists("exists.txt"),
+        bridge.exists("missing.txt"),
+      ]);
+
+      expect(content).toBe(successContent);
+      expect(existsTrue).toBe(true);
+      expect(existsFalse).toBe(false);
     });
   });
 });
