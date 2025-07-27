@@ -1,9 +1,11 @@
+import { joinURL } from "@luxass/utils/path";
+import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { z } from "zod/v4";
 import { defineFileSystemBridge } from "../fs-bridge";
 
 const HTTPFileSystemBridge = defineFileSystemBridge({
   optionsSchema: z.object({
-    baseUrl: z.string(),
+    baseUrl: z.string().default(joinURL(UCDJS_API_BASE_URL, "/api/v1/files")),
   }),
   capabilities: {
     exists: true,
@@ -14,19 +16,19 @@ const HTTPFileSystemBridge = defineFileSystemBridge({
     rm: false,
   },
   setup({ options }) {
-    const baseUrl = options.baseUrl!;
+    const baseUrl = options.baseUrl;
     return {
       async read(path) {
-        const url = new URL(path, baseUrl);
-        const response = await fetch(url.toString());
+        const url = joinURL(baseUrl, path);
+        const response = await fetch(url);
         if (!response.ok) {
           throw new Error(`Failed to read remote file: ${response.statusText}`);
         }
         return response.text();
       },
       async listdir(path, _recursive = false) {
-        const url = new URL(path, baseUrl);
-        const response = await fetch(url.toString(), {
+        const url = joinURL(baseUrl, path);
+        const response = await fetch(url, {
           method: "GET",
           headers: {
             Accept: "application/json",
@@ -45,8 +47,8 @@ const HTTPFileSystemBridge = defineFileSystemBridge({
       // should not do anything, as this is a read-only bridge
       },
       async exists(path) {
-        const url = new URL(path, baseUrl);
-        return fetch(url.toString(), { method: "HEAD" })
+        const url = joinURL(baseUrl, path);
+        return fetch(url, { method: "HEAD" })
           .then((response) => {
             return response.ok;
           })
