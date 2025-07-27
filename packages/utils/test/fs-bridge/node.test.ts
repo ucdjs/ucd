@@ -1,4 +1,3 @@
-import { join } from "node:path";
 import { flattenFilePaths } from "@ucdjs/utils";
 import { describe, expect, it } from "vitest";
 import { testdir } from "vitest-testdirs";
