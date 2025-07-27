@@ -1,4 +1,5 @@
 import { join } from "node:path";
+import { flattenFilePaths } from "@ucdjs/utils";
 import { describe, expect, it } from "vitest";
 import { testdir } from "vitest-testdirs";
 import NodeFileSystemBridge from "../../src/fs-bridge/node";
@@ -109,10 +110,13 @@ describe("node fs-bridge", () => {
       });
       const bridge = NodeFileSystemBridge({ basePath: testDir });
 
-      const files = await bridge.listdir(".");
-      expect(files).toContain("file1.txt");
-      expect(files).toContain("file2.txt");
-      expect(files).toContain("subdir");
+      const files = await bridge.listdir("");
+      expect(files).toHaveLength(3);
+      expect(files).toEqual([
+        { type: "file", name: "file1.txt", path: "/file1.txt" },
+        { type: "file", name: "file2.txt", path: "/file2.txt" },
+        { type: "directory", name: "subdir", path: "/subdir", children: [] },
+      ]);
     });
 
     it("should list files recursively", async () => {
@@ -125,14 +129,21 @@ describe("node fs-bridge", () => {
           },
         },
       });
+
       const bridge = NodeFileSystemBridge({ basePath: testDir });
 
-      const files = await bridge.listdir(".", true);
-      expect(files).toContain("root.txt");
-      expect(files).toContain("dir");
-      expect(files).toContain(join("dir", "nested.txt"));
-      expect(files).toContain(join("dir", "deep"));
-      expect(files).toContain(join("dir", "deep", "file.txt"));
+      const files = await bridge.listdir("", true);
+      expect(files).toHaveLength(2);
+
+      const flattened = flattenFilePaths(files);
+
+      expect(flattened).toHaveLength(3);
+      expect(flattened).toEqual([
+        "/dir/deep/file.txt",
+        "/dir/nested.txt",
+        "/root.txt",
+      ]);
+      expect(files.map((f) => f.name)).toContain("root.txt");
     });
 
     it("should return empty array for empty directory", async () => {
@@ -228,11 +239,14 @@ describe("node fs-bridge", () => {
 
       // verify project structure
       const rootFiles = await bridge.listdir(".");
-      expect(rootFiles).toContain("package.json");
-      expect(rootFiles).toContain("README.md");
-      expect(rootFiles).toContain("src");
-      expect(rootFiles).toContain("tests");
-      expect(rootFiles).toContain("docs");
+      expect(rootFiles).toHaveLength(5);
+      expect(rootFiles).toEqual([
+        { type: "file", name: "README.md", path: "/README.md" },
+        { type: "directory", name: "docs", path: "/docs", children: [] },
+        { type: "file", name: "package.json", path: "/package.json" },
+        { type: "directory", name: "src", path: "/src", children: [] },
+        { type: "directory", name: "tests", path: "/tests", children: [] },
+      ]);
 
       // verify file contents
       const packageJson = await bridge.read("package.json");
@@ -267,8 +281,11 @@ describe("node fs-bridge", () => {
 
       // list all published posts
       const posts = await bridge.listdir("posts", true);
-      expect(posts).toContain(join("2024", "first-post.md"));
-      expect(posts).toContain(join("2024", "second-post.md"));
+
+      const flattenedPosts = flattenFilePaths(posts);
+      expect(flattenedPosts).toHaveLength(2);
+      expect(flattenedPosts).toContain("/2024/first-post.md");
+      expect(flattenedPosts).toContain("/2024/second-post.md");
 
       // move draft to published
       const draftContent = await bridge.read("drafts/upcoming.md");

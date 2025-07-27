@@ -1,3 +1,5 @@
+import type { Dirent } from "node:fs";
+import type { FSEntry } from "../fs-bridge";
 import {
   mkdir,
   readdir,
@@ -6,7 +8,8 @@ import {
   stat,
   writeFile,
 } from "node:fs/promises";
-import { dirname, join } from "node:path";
+import { dirname, join, relative } from "node:path";
+import { prependLeadingSlash, trimTrailingSlash } from "@luxass/utils";
 import z from "zod";
 import { defineFileSystemBridge } from "../fs-bridge";
 
@@ -40,12 +43,65 @@ const NodeFileSystemBridge = defineFileSystemBridge({
       exists(path) {
         return safeExists(join(basePath, path));
       },
-      async listdir(_path, _recursive) {
-        // return readdir(join(basePath, path), {
-        //   recursive: recursive ?? false,
-        // });
+      async listdir(path, recursive = false) {
+        const targetPath = join(basePath, path);
 
-        return [];
+        function createFSEntry(entry: Dirent): FSEntry {
+          const pathFromName = prependLeadingSlash(trimTrailingSlash(entry.name));
+          return entry.isDirectory()
+            ? {
+                type: "directory",
+                name: entry.name,
+                path: pathFromName,
+                children: [],
+              }
+            : {
+                type: "file",
+                name: entry.name,
+                path: pathFromName,
+              };
+        }
+
+        if (!recursive) {
+          const entries = await readdir(targetPath, { withFileTypes: true });
+          return entries.map((entry) => createFSEntry(entry));
+        }
+
+        const allEntries = await readdir(targetPath, {
+          withFileTypes: true,
+          recursive: true,
+        });
+
+        const entryMap = new Map<string, FSEntry>();
+        const rootEntries: FSEntry[] = [];
+
+        for (const entry of allEntries) {
+          const entryPath = entry.parentPath || entry.path;
+          const relativeToTarget = relative(targetPath, entryPath);
+          const fsEntry = createFSEntry(entry);
+
+          const entryRelativePath = relativeToTarget
+            ? join(relativeToTarget, entry.name)
+            : entry.name;
+
+          entryMap.set(entryRelativePath, fsEntry);
+
+          if (!relativeToTarget) {
+            rootEntries.push(fsEntry);
+          }
+        }
+
+        for (const [entryPath, entry] of entryMap) {
+          const parentPath = dirname(entryPath);
+          if (parentPath && parentPath !== ".") {
+            const parent = entryMap.get(parentPath);
+            if (parent?.type === "directory") {
+              parent.children!.push(entry);
+            }
+          }
+        }
+
+        return rootEntries;
       },
       async write(path, data, encoding = "utf-8") {
         const fullPath = join(basePath, path);
