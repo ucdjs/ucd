@@ -1,5 +1,6 @@
 import { z } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils/string";
+import { FileEntrySchema as _FileEntrySchema } from "@ucdjs/utils";
 
 export const UCDStoreSchema = z.record(
   z.string(),
@@ -24,24 +25,7 @@ export const UCDStoreSchema = z.record(
 
 export type UCDStore = z.output<typeof UCDStoreSchema>;
 
-const BaseItemSchema = z.object({
-  name: z.string(),
-  path: z.string(),
-  lastModified: z.number(),
-});
-
-const DirectoryResponseSchema = BaseItemSchema.extend({
-  type: z.literal("directory"),
-});
-
-const FileResponseSchema = BaseItemSchema.extend({
-  type: z.literal("file"),
-});
-
-export const FileEntrySchema = z.union([
-  DirectoryResponseSchema,
-  FileResponseSchema,
-]).openapi("FileEntry", {
+export const FileEntrySchema = _FileEntrySchema.openapi("FileEntry", {
   description: dedent`
     Response schema for a file entry in the UCD store.
 

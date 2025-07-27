@@ -119,19 +119,19 @@ describe("http fs-bridge", () => {
         type: "file" as const,
         name: "file1.txt",
         path: "/dir/file1.txt",
-        lastModified: "2024-01-01T00:00:00Z",
+        lastModified: 1_673_728_800_000,
       },
       {
         type: "file" as const,
         name: "file2.txt",
         path: "/dir/file2.txt",
-        lastModified: "2024-01-02T00:00:00Z",
+        lastModified: 1_673_728_800_000,
       },
       {
         type: "directory" as const,
         name: "subdir",
         path: "/dir/subdir",
-        lastModified: "2024-01-03T00:00:00Z",
+        lastModified: 1_673_728_800_000,
       },
     ];
 
@@ -149,7 +149,24 @@ describe("http fs-bridge", () => {
       ]);
 
       const files = await bridge.listdir("test-dir");
-      expect(files).toEqual(["file1.txt", "file2.txt", "subdir"]);
+      expect(files).toEqual([
+        {
+          name: "file1.txt",
+          path: "/dir/file1.txt",
+          type: "file",
+        },
+        {
+          name: "file2.txt",
+          path: "/dir/file2.txt",
+          type: "file",
+        },
+        {
+          name: "subdir",
+          path: "/dir/subdir",
+          type: "directory",
+        },
+
+      ]);
     });
 
     it("should list directory contents recursively", async () => {
