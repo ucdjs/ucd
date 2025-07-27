@@ -1,7 +1,9 @@
+import type { FSEntry } from "../fs-bridge";
 import { joinURL } from "@luxass/utils/path";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { z } from "zod/v4";
 import { defineFileSystemBridge } from "../fs-bridge";
+import { FileEntrySchema } from "../schemas";
 
 const HTTPFileSystemBridge = defineFileSystemBridge({
   optionsSchema: z.object({
@@ -26,7 +28,7 @@ const HTTPFileSystemBridge = defineFileSystemBridge({
         }
         return response.text();
       },
-      async listdir(path, _recursive = false) {
+      async listdir(path, recursive = false) {
         const url = joinURL(baseUrl, path);
         const response = await fetch(url, {
           method: "GET",
@@ -39,9 +41,50 @@ const HTTPFileSystemBridge = defineFileSystemBridge({
           throw new Error(`Failed to list directory: ${response.statusText}`);
         }
 
-        const _data = await response.json();
+        const json = await response.json();
 
-        return [];
+        const result = z.array(FileEntrySchema).safeParse(json);
+        if (!result.success) {
+          throw new Error(
+            `Invalid response schema: ${result.error.message}`,
+          );
+        }
+
+        const data = result.data;
+
+        if (!recursive) {
+          return data.map((entry) => {
+            return {
+              type: entry.type,
+              name: entry.name,
+              path: entry.path,
+            };
+          });
+        }
+
+        // If recursive, we assume the API returns all entries in a flat structure
+        // So we can just loop through the entries,
+        // and if we encounter a directory, we can fetch their children
+        const entries: FSEntry[] = [];
+        for (const entry of data) {
+          if (entry.type === "directory") {
+            const children = await this.listdir(entry.path, true);
+            entries.push({
+              type: "directory",
+              name: entry.name,
+              path: entry.path,
+              children,
+            });
+          } else {
+            entries.push({
+              type: "file",
+              name: entry.name,
+              path: entry.path,
+            });
+          }
+        }
+
+        return entries;
       },
       async write() {
       // should not do anything, as this is a read-only bridge
