@@ -1,5 +1,5 @@
 import { dedent } from "@luxass/utils";
-import z from "zod";
+import { z } from "zod";
 
 const BaseItemSchema = z.object({
   name: z.string(),
@@ -25,3 +25,5 @@ export const FileEntrySchema = z.union([
     This schema represents either a directory listing or a file response.
   `,
 });
+
+export type FileEntry = z.infer<typeof FileEntrySchema>;

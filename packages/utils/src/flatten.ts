@@ -1,4 +1,5 @@
 import type { UnicodeTreeNode } from "@ucdjs/fetch";
+import { prependLeadingSlash } from "@luxass/utils";
 
 /**
  * Recursively flattens a hierarchical file structure into an array of file paths.
@@ -24,7 +25,7 @@ export function flattenFilePaths(entries: UnicodeTreeNode[], prefix: string = ""
 
   for (const file of entries) {
     const fullPath = prefix
-      ? `${prefix}/${file.path ?? file.name}`
+      ? `${prefix}${prependLeadingSlash(file.path ?? file.name)}`
       : (file.path ?? file.name);
 
     if (file.type === "directory") {
