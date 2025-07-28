@@ -3,7 +3,7 @@ import type {
   FileSystemBridgeCapabilities,
   FileSystemBridgeObject,
 } from "./types";
-import z from "zod";
+import { z } from "zod";
 
 const DEFAULT_SUPPORTED_CAPABILITIES: FileSystemBridgeCapabilities = {
   exists: true,

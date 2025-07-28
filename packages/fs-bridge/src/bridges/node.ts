@@ -10,7 +10,7 @@ import {
 } from "node:fs/promises";
 import { dirname, join, relative } from "node:path";
 import { prependLeadingSlash, trimTrailingSlash } from "@luxass/utils/path";
-import z from "zod";
+import { z } from "zod";
 import { defineFileSystemBridge } from "../define";
 
 async function safeExists(path: string): Promise<boolean> {
