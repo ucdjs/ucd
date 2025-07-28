@@ -8,7 +8,7 @@ import { client, createClient } from "../src";
 describe("unicode API Client", () => {
   describe("createClient", () => {
     it("should create a client with the provided base URL", () => {
-      const customBaseUrl = "https://custom-api.example.com";
+      const customBaseUrl = "https://custom-api.ucdjs.dev";
       const customClient = createClient(customBaseUrl);
 
       expect(customClient).toBeDefined();
@@ -16,8 +16,8 @@ describe("unicode API Client", () => {
 
     it("should create clients with different base URLs", () => {
       const baseUrls = [
-        "https://api1.example.com",
-        "https://api2.example.com",
+        "https://api1.ucdjs.dev",
+        "https://api2.ucdjs.dev",
         "http://localhost:3000",
       ];
 
@@ -35,7 +35,7 @@ describe("unicode API Client", () => {
   });
 
   describe("/api/v1/versions endpoint", () => {
-    const mockUnicodeVersions: UnicodeVersionList = [
+    const mockUnicodeVersions = [
       {
         version: "15.1.0",
         documentationUrl: "https://www.unicode.org/versions/Unicode15.1.0/",
@@ -52,7 +52,7 @@ describe("unicode API Client", () => {
         type: "stable",
         mappedUcdVersion: "15.0.0",
       },
-    ];
+    ] satisfies UnicodeVersionList;
 
     describe("successful requests", () => {
       it("should fetch unicode versions successfully", async () => {
@@ -102,11 +102,11 @@ describe("unicode API Client", () => {
 
     describe("error handling", () => {
       it("should handle 404 Not Found errors", async () => {
-        const errorResponse: ApiError = {
+        const errorResponse = {
           message: "Resource not found",
           status: 404,
           timestamp: "2025-06-26T12:00:00Z",
-        };
+        } satisfies ApiError;
 
         mockFetch([
           ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
@@ -125,11 +125,11 @@ describe("unicode API Client", () => {
       });
 
       it("should handle 500 Internal Server Error", async () => {
-        const errorResponse: ApiError = {
+        const errorResponse = {
           message: "Internal server error occurred",
           status: 500,
           timestamp: "2025-06-26T12:00:00Z",
-        };
+        } satisfies ApiError;
 
         mockFetch([
           ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
@@ -152,12 +152,12 @@ describe("unicode API Client", () => {
   describe("/api/v1/files endpoint", () => {
     describe("successful requests", () => {
       it("should proxy requests without path successfully", async () => {
-        const mockProxyResponse: FileEntry = {
+        const mockProxyResponse = {
           type: "directory",
           name: "root",
           path: "/",
-          lastModified: 0,
-        };
+          lastModified: Date.now(),
+        } satisfies FileEntry;
 
         mockFetch([
           ["GET", `${UCDJS_API_BASE_URL}/api/v1/files`, () => {
@@ -214,7 +214,7 @@ describe("unicode API Client", () => {
           message: "Resource not found",
           status: 404,
           timestamp: "2025-06-26T12:00:00Z",
-        };
+        } satisfies ApiError;
 
         mockFetch([
           ["GET", `${UCDJS_API_BASE_URL}/api/v1/files`, () => {
@@ -243,12 +243,12 @@ describe("unicode API Client", () => {
   describe("/api/v1/files/{path} endpoint", () => {
     describe("successful requests", () => {
       it("should proxy requests with path parameter successfully", async () => {
-        const mockFileResponse: FileEntry = {
+        const mockFileResponse = {
           type: "file",
           name: "ucd.all.json",
           path: "/latest/ucd.all.json",
-          lastModified: 0,
-        };
+          lastModified: Date.now(),
+        } satisfies FileEntry;
 
         mockFetch([
           // TODO: remove the need for encodeURIComponent here when https://github.com/openapi-ts/openapi-typescript/pull/2362 is fixed
@@ -273,12 +273,12 @@ describe("unicode API Client", () => {
       });
 
       it("should handle directory responses", async () => {
-        const mockDirectoryResponse: FileEntry = {
+        const mockDirectoryResponse = {
           type: "directory",
           name: "latest",
           path: "/latest",
-          lastModified: 0,
-        };
+          lastModified: Date.now(),
+        } satisfies FileEntry;
 
         mockFetch([
           ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/latest`, () => {
@@ -310,8 +310,8 @@ describe("unicode API Client", () => {
           type: "file" as const,
           name: path.split("/").pop() || "",
           path: `/${path}`,
-          lastModified: 0,
-        };
+          lastModified: Date.now(),
+        } satisfies FileEntry;
 
         mockFetch([
           // TODO: remove the need for encodeURIComponent here when https://github.com/openapi-ts/openapi-typescript/pull/2362 is fixed
@@ -342,7 +342,7 @@ describe("unicode API Client", () => {
           message: "Path not found: /non-existent/path",
           status: 404,
           timestamp: "2025-06-26T12:00:00Z",
-        };
+        } satisfies ApiError;
 
         mockFetch([
           // TODO: remove the need for encodeURIComponent here when https://github.com/openapi-ts/openapi-typescript/pull/2362 is fixed
@@ -369,7 +369,7 @@ describe("unicode API Client", () => {
 
   describe("integration scenarios", () => {
     it("should handle concurrent requests to different endpoints", async () => {
-      const unicodeVersions: UnicodeVersionList = [
+      const unicodeVersions = [
         {
           version: "15.1.0",
           documentationUrl: "https://www.unicode.org/versions/Unicode15.1.0/",
@@ -378,14 +378,14 @@ describe("unicode API Client", () => {
           type: "stable",
           mappedUcdVersion: "15.1.0",
         },
-      ];
+      ] satisfies UnicodeVersionList;
 
-      const proxyResponse: FileEntry = {
+      const proxyResponse = {
         type: "directory",
         name: "latest",
         path: "/latest",
-        lastModified: 0,
-      };
+        lastModified: Date.now(),
+      } satisfies FileEntry;
 
       mockFetch([
         ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
@@ -414,10 +414,10 @@ describe("unicode API Client", () => {
     });
 
     it("should work with custom client instances", async () => {
-      const customBaseUrl = "https://custom-unicode-api.example.com";
+      const customBaseUrl = "https://custom-unicode-api.ucdjs.dev";
       const customClient = createClient(customBaseUrl);
 
-      const mockVersions: UnicodeVersionList = [
+      const mockVersions = [
         {
           version: "16.0.0",
           documentationUrl: "https://www.unicode.org/versions/Unicode16.0.0/",
@@ -426,7 +426,7 @@ describe("unicode API Client", () => {
           type: "stable",
           mappedUcdVersion: "16.0.0",
         },
-      ];
+      ] satisfies UnicodeVersionList;
 
       mockFetch([
         ["GET", `${customBaseUrl}/api/v1/versions`, () => {
@@ -472,11 +472,9 @@ describe("unicode API Client", () => {
         }],
       ]);
 
-      try {
-        await client.GET("/api/v1/versions");
-      } catch (error) {
-        expect(error).toBeDefined();
-      }
+      await expect(client.GET("/api/v1/versions")).rejects.toThrow(
+        "Failed to fetch",
+      );
     });
   });
 });
