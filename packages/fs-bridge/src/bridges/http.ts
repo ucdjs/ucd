@@ -38,7 +38,20 @@ const HTTPFileSystemBridge = defineFileSystemBridge({
         });
 
         if (!response.ok) {
-          throw new Error(`Failed to list directory: ${response.statusText}`);
+          if (response.status === 404) {
+            return [];
+          }
+
+          if (response.status === 403) {
+            console.error(`Access denied to directory: ${path}`);
+            return [];
+          }
+
+          if (response.status === 500) {
+            throw new Error(`Server error while listing directory: ${response.statusText}`);
+          }
+
+          throw new Error(`Failed to list directory: ${response.statusText} (${response.status})`);
         }
 
         const json = await response.json();
@@ -54,6 +67,15 @@ const HTTPFileSystemBridge = defineFileSystemBridge({
 
         if (!recursive) {
           return data.map((entry) => {
+            if (entry.type === "directory") {
+              return {
+                type: "directory",
+                name: entry.name,
+                path: entry.path,
+                children: [],
+              };
+            }
+
             return {
               type: entry.type,
               name: entry.name,
