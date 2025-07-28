@@ -46,6 +46,7 @@
     "@luxass/utils": "catalog:prod",
     "@ucdjs/env": "workspace:*",
     "@ucdjs/fetch": "workspace:*",
+    "@ucdjs/fs-bridge": "workspace:*",
     "@ucdjs/utils": "workspace:*",
     "defu": "catalog:prod",
     "pathe": "catalog:prod",
