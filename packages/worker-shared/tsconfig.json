@@ -5,9 +5,6 @@
       "@cloudflare/workers-types"
     ]
   },
-  "include": [
-    "src/**/*",
-    "*.ts",
-    "test"
-  ]
+  "include": ["src", "test"],
+  "exclude": ["dist"]
 }

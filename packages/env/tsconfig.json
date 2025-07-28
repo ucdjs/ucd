@@ -1,4 +1,5 @@
 {
   "extends": "@ucdjs/tsconfig/base",
-  "include": ["src/**/*", "*.ts"]
+  "include": ["src", "test"],
+  "exclude": ["dist"]
 }
