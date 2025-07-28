@@ -318,9 +318,9 @@ describe("store configuration", () => {
         basePath: storeDir,
       });
 
-      expect(store.versions.has("15.0.0")).toBe(true);
-      expect(store.versions.has("15.1.0")).toBe(true);
-      expect(store.versions.has("99.99.99")).toBe(false);
+      expect(store.versions.includes("15.0.0")).toBe(true);
+      expect(store.versions.includes("15.1.0")).toBe(true);
+      expect(store.versions.includes("99.99.99")).toBe(false);
     });
 
     it("should handle version list immutability", async () => {
@@ -337,13 +337,13 @@ describe("store configuration", () => {
         basePath: storeDir,
       });
 
-      const originalLength = store.versions.size;
+      const originalLength = store.versions.length;
       expect(() => {
-        (store.versions as Set<string>).add("99.99.99");
+        (store.versions as string[]).push("99.99.99");
       }).toThrowError(/Cannot add property \d+, object is not extensible/);
 
-      expect(store.versions.has("99.99.99")).toBe(false);
-      expect(store.versions.size).toBe(originalLength);
+      expect(store.versions.includes("99.99.99")).toBe(false);
+      expect(store.versions.length).toBe(originalLength);
     });
   });
 
