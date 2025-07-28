@@ -17,6 +17,7 @@
       "@ucdjs/utils/types": ["./packages/utils/src/types.ts"],
       "@ucdjs/ucd-store/ucd-files": ["./packages/ucd-store/src/ucd-files.ts"],
       "@ucdjs/worker-shared": ["./packages/worker-shared/src/index.ts"],
+      "@ucdjs/schemas": ["./packages/schemas/src/index.ts"],
     }
   }
 }
