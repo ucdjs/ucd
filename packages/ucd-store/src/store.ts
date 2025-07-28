@@ -104,6 +104,10 @@ export class UCDStore {
     return Object.freeze({ ...this.#capabilities });
   }
 
+  get versions(): ReadonlySet<string> {
+    return Object.freeze(new Set(this.#versions));
+  }
+
   /**
    * Initialize the store - loads existing data or creates new structure
    */
