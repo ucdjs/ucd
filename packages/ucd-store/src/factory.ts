@@ -28,7 +28,7 @@ export async function createUCDStore(options: UCDStoreOptions): Promise<UCDStore
  * @returns {Promise<UCDStore>} A fully initialized UCDStore instance with Node.js filesystem capabilities
  */
 export async function createNodeUCDStore(options: Omit<UCDStoreOptions, "fs"> = {}): Promise<UCDStore> {
-  const fs = await import("@ucdjs/fs-bridge/node").then((m) => m.default);
+  const fs = await import("@ucdjs/fs-bridge/bridges/node").then((m) => m.default);
 
   if (!fs) {
     throw new Error("Node.js FileSystemBridge could not be loaded");

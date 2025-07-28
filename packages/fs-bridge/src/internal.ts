@@ -8,8 +8,7 @@
  * or be removed without notice.
  *
  * @warning
- * The name explicitly indicates this is for internal use only. Using this symbol in
- * external code will likely break your application when the package is updated.
+ * Using this symbol in external code will likely break your application when the package is updated.
  *
  * @example
  * ```typescript

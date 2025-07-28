@@ -17,8 +17,8 @@ export interface UCDStoreOptions {
   /**
    * File System Bridge to use for file operations.
    * You can either provide your own implementation or use one of the following:
-   * - `@ucdjs/fs-bridge/node` for Node.js environments with full capabilities
-   * - `@ucdjs/fs-bridge/http` for HTTP-based file systems (read-only)
+   * - `@ucdjs/fs-bridge/bridges/node` for Node.js environments with full capabilities
+   * - `@ucdjs/fs-bridge/bridges/http` for HTTP-based file systems (read-only)
    */
   fs: FileSystemBridgeOperations;
 
