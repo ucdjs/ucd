@@ -20,8 +20,8 @@
   },
   "exports": {
     ".": "./dist/index.js",
-    "./bridges/http": "./dist/bridges/http.js",
-    "./bridges/node": "./dist/bridges/node.js",
+    "./http": "./dist/http.js",
+    "./node": "./dist/node.js",
     "./package.json": "./package.json"
   },
   "main": "./dist/index.js",
