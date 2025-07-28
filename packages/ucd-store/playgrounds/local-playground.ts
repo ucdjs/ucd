@@ -2,7 +2,7 @@
 /* eslint-disable no-console */
 import assert from "node:assert";
 import path from "node:path";
-import NodeFileSystemBridge from "@ucdjs/fs-bridge/bridges/node";
+import NodeFileSystemBridge from "@ucdjs/fs-bridge/node";
 import { createUCDStore, UCDStore } from "../src/store";
 
 const basePath = path.resolve(import.meta.dirname, ".local");

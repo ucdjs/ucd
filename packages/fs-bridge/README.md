@@ -53,7 +53,7 @@ const MyFileSystemBridge = defineFileSystemBridge({
 #### Node.js File System Bridge
 
 ```typescript
-import NodeFileSystemBridge from '@ucdjs/fs-bridge/bridges/node';
+import NodeFileSystemBridge from '@ucdjs/fs-bridge/node';
 
 // Read a file
 const content = await NodeFileSystemBridge.read('/path/to/file.txt');
@@ -88,7 +88,7 @@ await NodeFileSystemBridge.rm('/path/to/dir', { recursive: true, force: true });
 Read-only filesystem bridge for accessing files over HTTP/HTTPS:
 
 ```typescript
-import HTTPFileSystemBridge from '@ucdjs/fs-bridge/bridges/http';
+import HTTPFileSystemBridge from '@ucdjs/fs-bridge/http';
 
 const httpFS = HTTPFileSystemBridge({
   baseUrl: 'https://example.com/files/'
