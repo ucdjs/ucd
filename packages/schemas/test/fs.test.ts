@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { z } from "zod";
 import { FileEntrySchema } from "../src/fs";
 
 // eslint-disable-next-line test/prefer-lowercase-title
