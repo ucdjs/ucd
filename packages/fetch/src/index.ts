@@ -3,13 +3,15 @@ import type { paths } from "./.generated/api";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import OpenApiCreateClient from "openapi-fetch";
 
+export type UCDClient = Client<paths, `${string}/${string}`>;
+
 /**
  * Creates a configured API client for making requests to Unicode API endpoints
  *
  * @param {string} baseUrl - The base URL for the API server
- * @returns {Client<paths, `${string}/${string}`>} A configured client instance with predefined headers
+ * @returns {UCDClient} A configured client instance with predefined headers
  */
-export function createClient(baseUrl: string): Client<paths, `${string}/${string}`> {
+export function createClient(baseUrl: string): UCDClient {
   return OpenApiCreateClient<paths>({
     baseUrl,
     fetch: (...args) => fetch(...args),
@@ -31,3 +33,4 @@ export function createClient(baseUrl: string): Client<paths, `${string}/${string
 export const client = createClient(UCDJS_API_BASE_URL);
 
 export type * from "./components";
+export * from "./guards";
