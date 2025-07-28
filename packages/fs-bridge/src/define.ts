@@ -2,6 +2,7 @@ import type {
   FileSystemBridge,
   FileSystemBridgeCapabilities,
   FileSystemBridgeObject,
+  FileSystemBridgeOperationsWithSymbol,
 } from "./types";
 import { z } from "zod";
 
@@ -30,10 +31,10 @@ const DEFAULT_SUPPORTED_CAPABILITIES: FileSystemBridgeCapabilities = {
  * @example
  * ```typescript
  * // DON'T DO THIS - Internal use only
- * const capabilities = bridge[__BRIDGE_DEBUG_SYMBOL__DO_NOT_USE_OR_YOU_WILL_BE_FIRED__];
+ * const capabilities = bridge[__INTERNAL_BRIDGE_DEBUG_SYMBOL_DO_NOT_USE_OR_YOU_WILL_BE_FIRED__];
  * ```
  */
-export const __BRIDGE_DEBUG_SYMBOL__DO_NOT_USE_OR_YOU_WILL_BE_FIRED__: unique symbol = Symbol.for("ucdjs.fs-bridge.debug");
+export const __INTERNAL_BRIDGE_DEBUG_SYMBOL_DO_NOT_USE_OR_YOU_WILL_BE_FIRED__: unique symbol = Symbol.for("ucdjs.fs-bridge.debug");
 
 export function defineFileSystemBridge<
   TOptionsSchema extends z.ZodType,
@@ -60,8 +61,8 @@ export function defineFileSystemBridge<
       capabilities,
     });
 
-    (bridge as any)[__BRIDGE_DEBUG_SYMBOL__DO_NOT_USE_OR_YOU_WILL_BE_FIRED__] = capabilities;
-
-    return bridge;
+    return Object.assign(bridge, {
+      [__INTERNAL_BRIDGE_DEBUG_SYMBOL_DO_NOT_USE_OR_YOU_WILL_BE_FIRED__]: capabilities,
+    }) satisfies FileSystemBridgeOperationsWithSymbol;
   };
 }
