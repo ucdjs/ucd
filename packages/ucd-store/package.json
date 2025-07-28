@@ -47,6 +47,7 @@
     "@ucdjs/fetch": "workspace:*",
     "@ucdjs/utils": "workspace:*",
     "defu": "catalog:prod",
+    "pathe": "catalog:prod",
     "zod": "catalog:prod"
   },
   "devDependencies": {
