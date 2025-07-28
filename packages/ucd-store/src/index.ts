@@ -1,9 +1,13 @@
 export {
+  createHTTPUCDStore,
+  createNodeUCDStore,
+  createUCDStore,
+} from "./factory";
+
+export {
   UCDStore,
 } from "./store";
 
 export type {
-  AnalyzeResult,
-  CleanResult,
   UCDStoreOptions,
-} from "./store";
+} from "./types";
