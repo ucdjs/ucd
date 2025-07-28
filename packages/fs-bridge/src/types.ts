@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import type { __INTERNAL_BRIDGE_DEBUG_SYMBOL_DO_NOT_USE_OR_YOU_WILL_BE_FIRED__ } from "./define";
+import type { __INTERNAL_BRIDGE_DEBUG_SYMBOL_DO_NOT_USE_OR_YOU_WILL_BE_FIRED__ } from "./internal";
 
 export interface FileSystemBridgeRmOptions {
   /**

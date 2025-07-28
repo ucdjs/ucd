@@ -1,6 +1,6 @@
 import { HttpResponse, mockFetch } from "#msw-utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
-import { __INTERNAL_BRIDGE_DEBUG_SYMBOL_DO_NOT_USE_OR_YOU_WILL_BE_FIRED__, defineFileSystemBridge } from "@ucdjs/fs-bridge";
+import { __INTERNAL_BRIDGE_DEBUG_SYMBOL_DO_NOT_USE_OR_YOU_WILL_BE_FIRED__ } from "@ucdjs/fs-bridge/internal";
 import { PRECONFIGURED_FILTERS } from "@ucdjs/utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
