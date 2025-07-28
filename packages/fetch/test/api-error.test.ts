@@ -3,11 +3,11 @@ import { assert, describe, expect, it } from "vitest";
 import { ApiResponseError } from "../src/api-error";
 
 describe("api response error handling", () => {
-  const mockApiError: ApiError = {
+  const mockApiError = {
     message: "Resource not found",
     status: 404,
     timestamp: "2023-12-01T10:00:00Z",
-  };
+  } satisfies ApiError;
 
   describe("constructor", () => {
     it("should create an instance with all properties", () => {
@@ -22,11 +22,11 @@ describe("api response error handling", () => {
     });
 
     it("should handle empty message", () => {
-      const apiError: ApiError = {
+      const apiError = {
         message: "",
         status: 500,
         timestamp: "2023-12-01T10:00:00Z",
-      };
+      } satisfies ApiError;
 
       const error = new ApiResponseError(apiError);
       expect(error.message).toBe("");
@@ -41,11 +41,11 @@ describe("api response error handling", () => {
       502,
       503,
     ])("should handle status code %d", (status) => {
-      const apiError: ApiError = {
+      const apiError = {
         message: `Error ${status}`,
         status,
         timestamp: "2023-12-01T10:00:00Z",
-      };
+      } satisfies ApiError;
 
       const error = new ApiResponseError(apiError);
       expect(error.status).toBe(status);
