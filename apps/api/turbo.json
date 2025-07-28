@@ -25,7 +25,9 @@
         ".generated/openapi.json"
       ],
       "dependsOn": [
-        "^build"
+        "@ucdjs/schemas#build",
+        "@ucdjs/env#build",
+        "@ucdjs/worker-shared#build"
       ]
     }
   }
