@@ -20,7 +20,7 @@
       ]
     },
     "build:openapi": {
-      "cache": false,
+      "cache": true,
       "outputs": [
         ".generated/openapi.json"
       ],
