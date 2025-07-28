@@ -1,5 +1,5 @@
+import type { UCDStore } from "@ucdjs/schemas";
 import type { HonoEnv } from "../../types";
-import type { UCDStore } from "./schemas";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { trimTrailingSlash } from "@luxass/utils";
 import { DEFAULT_USER_AGENT, UCD_FILE_STAT_TYPE_HEADER } from "@ucdjs/env";
