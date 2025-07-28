@@ -4,7 +4,7 @@ import type { PathFilter } from "@ucdjs/utils";
 import type { StoreCapabilities, UCDStoreOptions } from "./types";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { createClient } from "@ucdjs/fetch";
-import { createPathFilter } from "@ucdjs/utils";
+import { createPathFilter, safeJsonParse } from "@ucdjs/utils";
 import defu from "defu";
 import { join } from "pathe";
 import { UCDStoreError } from "./errors";
@@ -111,5 +111,38 @@ export class UCDStore {
   /**
    * Initialize the store - loads existing data or creates new structure
    */
-  async initialize(): Promise<void> {}
+  async initialize(): Promise<void> {
+    const isValidStore = await this.#fs.exists(this.#manifestPath);
+
+    if (isValidStore) {
+      await this.#loadVersionsFromStore();
+    } else {
+
+    }
+  }
+
+  // #region Initialization
+
+  async #loadVersionsFromStore(): Promise<void> {
+    try {
+      const manifestContent = await this.#fs.read(this.#manifestPath);
+
+      // validate the manifest content
+      const jsonData = safeJsonParse(manifestContent);
+      if (!jsonData) {
+        return;
+      }
+
+      // verify that is an array of objects with version and path properties
+      const parsedManifest = MANIFEST_SCHEMA.safeParse(jsonData);
+      if (!parsedManifest.success) {
+        throw new UCDStoreError("Invalid store manifest schema");
+      }
+
+      this.#versions = parsedManifest.data.map((entry) => entry.version);
+    } catch (error) {
+      throw new UCDStoreError(`Failed to load store manifest: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+  // #endregion
 }
