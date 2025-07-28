@@ -4,7 +4,7 @@ export const createReadOnlyMockFS = defineFileSystemBridge({
   capabilities: {
     read: true,
     write: false,
-    listdir: false,
+    listdir: true,
     mkdir: false,
     exists: true,
     rm: false,

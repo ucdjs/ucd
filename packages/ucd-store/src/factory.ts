@@ -58,7 +58,7 @@ export async function createNodeUCDStore(options: Omit<UCDStoreOptions, "fs"> = 
  * @returns {Promise<UCDStore>} A fully initialized UCDStore instance with HTTP filesystem capabilities
  */
 export async function createHTTPUCDStore(options: Omit<UCDStoreOptions, "fs"> = {}): Promise<UCDStore> {
-  const httpFsBridge = await import("@ucdjs/fs-bridge/http").then((m) => m.default);
+  const httpFsBridge = await import("@ucdjs/fs-bridge/bridges/http").then((m) => m.default);
 
   const store = new UCDStore({
     ...options,
