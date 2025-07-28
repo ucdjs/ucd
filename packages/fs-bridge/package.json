@@ -21,6 +21,7 @@
   "exports": {
     ".": "./dist/index.js",
     "./http": "./dist/http.js",
+    "./internal": "./dist/internal.js",
     "./node": "./dist/node.js",
     "./package.json": "./package.json"
   },
