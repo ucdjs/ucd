@@ -1,9 +1,9 @@
-import type { FSEntry } from "../fs-bridge";
+import type { FSEntry } from "../types";
 import { joinURL } from "@luxass/utils/path";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
-import { z } from "zod/v4";
-import { defineFileSystemBridge } from "../fs-bridge";
-import { FileEntrySchema } from "../schemas";
+import { FileEntrySchema } from "@ucdjs/schemas";
+import { z } from "zod";
+import { defineFileSystemBridge } from "../define";
 
 const HTTPFileSystemBridge = defineFileSystemBridge({
   optionsSchema: z.object({

@@ -1,7 +1,7 @@
-import type { FileSystemBridgeOperations } from "../src/fs-bridge";
+import type { FileSystemBridgeOperations } from "../src/types";
 import { describe, expect, it, vi } from "vitest";
 import { z } from "zod";
-import { defineFileSystemBridge } from "../src/fs-bridge";
+import { defineFileSystemBridge } from "../src/define";
 
 describe("defineFileSystemBridge", () => {
   it("should create a filesystem bridge with no options", async () => {

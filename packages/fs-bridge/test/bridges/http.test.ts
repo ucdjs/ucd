@@ -1,7 +1,7 @@
 import { mockFetch } from "#msw-utils";
 import { HttpResponse } from "msw";
 import { describe, expect, it } from "vitest";
-import HTTPFileSystemBridge from "../../src/fs-bridge/http";
+import HTTPFileSystemBridge from "../../src/bridges/http";
 
 describe("http fs-bridge", () => {
   const baseUrl = "https://test-api.example.com";
