@@ -1,5 +1,5 @@
 import type { UCDClient } from "@ucdjs/fetch";
-import type { FileSystemBridgeOperations } from "@ucdjs/fs-bridge";
+import type { FileSystemBridgeOperationsWithSymbol } from "@ucdjs/fs-bridge";
 import type { PathFilter } from "@ucdjs/utils";
 import type { StoreCapabilities, UCDStoreOptions } from "./types";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
@@ -24,7 +24,7 @@ export class UCDStore {
 
   #client: UCDClient;
   #filter: PathFilter;
-  #fs: FileSystemBridgeOperations;
+  #fs: FileSystemBridgeOperationsWithSymbol;
   #versions: string[] = [];
   #manifestPath: string;
 
@@ -50,7 +50,7 @@ export class UCDStore {
     this.basePath = basePath;
     this.#client = createClient(this.baseUrl);
     this.#filter = createPathFilter(globalFilters);
-    this.#fs = fs;
+    this.#fs = fs as FileSystemBridgeOperationsWithSymbol;
     this.#capabilities = inferStoreCapabilities(this.#fs);
 
     this.#manifestPath = join(this.basePath, ".ucd-store.json");
@@ -65,7 +65,7 @@ export class UCDStore {
    *
    * @returns {FileSystemBridgeOperations} The FileSystemBridge instance configured for this store
    */
-  get fs(): FileSystemBridgeOperations {
+  get fs(): FileSystemBridgeOperationsWithSymbol {
     return this.#fs;
   }
 
