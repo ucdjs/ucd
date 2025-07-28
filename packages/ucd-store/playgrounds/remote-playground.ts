@@ -1,7 +1,7 @@
 /* eslint-disable antfu/no-top-level-await */
 /* eslint-disable no-console */
 import assert from "node:assert";
-import HTTPFileSystemBridge from "@ucdjs/utils/fs-bridge/http";
+import HTTPFileSystemBridge from "@ucdjs/fs-bridge/bridges/http";
 import { createUCDStore, UCDStore } from "../src/store";
 
 const store = await createUCDStore({

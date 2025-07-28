@@ -1,4 +1,4 @@
-import { z } from "zod";
+import type { z } from "zod";
 
 export interface FileSystemBridgeRmOptions {
   /**
@@ -76,15 +76,6 @@ export type FileSystemBridgeCapabilities = {
   [K in FileSystemBridgeCapabilityKey]: boolean;
 };
 
-const DEFAULT_SUPPORTED_CAPABILITIES: FileSystemBridgeCapabilities = {
-  exists: true,
-  read: true,
-  write: true,
-  listdir: true,
-  mkdir: true,
-  rm: true,
-};
-
 type FileSystemBridgeSetupFn<
   TOptionsSchema extends z.ZodType,
   TState extends Record<string, unknown> = Record<string, unknown>,
@@ -117,7 +108,7 @@ export interface FileSystemBridgeObject<
    * @default {}
    * @example
    * ```ts
-   * import { FileSystemBridge } from "@ucdjs/utils/fs-bridge";
+   * import { FileSystemBridge } from "@ucdjs/fs-bridge";
    *
    * const fsBridge: FileSystemBridge = {
    *    state: {
@@ -143,7 +134,7 @@ export interface FileSystemBridgeObject<
   setup: FileSystemBridgeSetupFn<TOptionsSchema, TState>;
 }
 
-type FileSystemBridge<
+export type FileSystemBridge<
   TOptionsSchema extends z.ZodType,
 > = (
   ...args: [z.input<TOptionsSchema>] extends [never]
@@ -152,30 +143,3 @@ type FileSystemBridge<
       ? [options?: z.input<TOptionsSchema>]
       : [options: z.input<TOptionsSchema>]
 ) => FileSystemBridgeOperations;
-
-export function defineFileSystemBridge<
-  TOptionsSchema extends z.ZodType,
-  TState extends Record<string, unknown> = Record<string, unknown>,
->(
-  fsBridge: FileSystemBridgeObject<TOptionsSchema, TState>,
-): FileSystemBridge<TOptionsSchema> {
-  return (...args) => {
-    const parsedOptions = (fsBridge.optionsSchema ?? z.never().optional()).safeParse(args[0]);
-
-    if (!parsedOptions.success) {
-      throw new Error(
-        `Invalid options provided to file system bridge: ${parsedOptions.error.message}`,
-      );
-    }
-
-    const options = parsedOptions.data as z.output<TOptionsSchema>;
-
-    const { capabilities = DEFAULT_SUPPORTED_CAPABILITIES, state } = fsBridge;
-
-    return fsBridge.setup({
-      options,
-      state: state ?? {} as TState,
-      capabilities,
-    });
-  };
-}

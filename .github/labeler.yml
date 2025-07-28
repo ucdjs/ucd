@@ -16,6 +16,10 @@
   - changed-files:
       - any-glob-to-any-file: packages/schemas/**
 
+"pkg: fs-bridge":
+  - changed-files:
+      - any-glob-to-any-file: packages/fs-bridge/**
+
 "pkg: schema-gen":
   - changed-files:
       - any-glob-to-any-file: packages/schema-gen/**

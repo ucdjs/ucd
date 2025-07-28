@@ -1,7 +1,7 @@
 import { flattenFilePaths } from "@ucdjs/utils";
 import { describe, expect, it } from "vitest";
 import { testdir } from "vitest-testdirs";
-import NodeFileSystemBridge from "../../src/fs-bridge/node";
+import NodeFileSystemBridge from "../../src/bridges/node";
 
 describe("node fs-bridge", () => {
   describe("read operation", () => {

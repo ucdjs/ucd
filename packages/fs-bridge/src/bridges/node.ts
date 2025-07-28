@@ -1,5 +1,5 @@
 import type { Dirent } from "node:fs";
-import type { FSEntry } from "../fs-bridge";
+import type { FSEntry } from "../types";
 import {
   mkdir,
   readdir,
@@ -9,9 +9,9 @@ import {
   writeFile,
 } from "node:fs/promises";
 import { dirname, join, relative } from "node:path";
-import { prependLeadingSlash, trimTrailingSlash } from "@luxass/utils";
+import { prependLeadingSlash, trimTrailingSlash } from "@luxass/utils/path";
 import z from "zod";
-import { defineFileSystemBridge } from "../fs-bridge";
+import { defineFileSystemBridge } from "../define";
 
 async function safeExists(path: string): Promise<boolean> {
   try {
