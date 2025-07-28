@@ -635,6 +635,9 @@ importers:
       '@ucdjs/fetch':
         specifier: workspace:*
         version: link:../fetch
+      '@ucdjs/fs-bridge':
+        specifier: workspace:*
+        version: link:../fs-bridge
       '@ucdjs/utils':
         specifier: workspace:*
         version: link:../utils
