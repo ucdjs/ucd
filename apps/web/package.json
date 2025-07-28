@@ -1,5 +1,5 @@
 {
-  "name": "ucdjs.dev",
+  "name": "@ucdjs/web",
   "type": "module",
   "private": true,
   "packageManager": "pnpm@10.13.1",
