@@ -1,6 +1,6 @@
 import { z } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils/string";
-import { FileEntrySchema as _FileEntrySchema } from "@ucdjs/utils";
+import { FileEntrySchema as _FileEntrySchema } from "@ucdjs/schemas";
 
 export const UCDStoreSchema = z.record(
   z.string(),
@@ -25,10 +25,4 @@ export const UCDStoreSchema = z.record(
 
 export type UCDStore = z.output<typeof UCDStoreSchema>;
 
-export const FileEntrySchema = _FileEntrySchema.openapi("FileEntry", {
-  description: dedent`
-    Response schema for a file entry in the UCD store.
-
-    This schema represents either a directory listing or a file response.
-  `,
-});
+export const FileEntrySchema = _FileEntrySchema.openapi("FileEntry");

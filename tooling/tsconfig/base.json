@@ -15,6 +15,7 @@
       "@ucdjs/utils/fs-bridge/http": ["./packages/utils/src/fs-bridge/http.ts"],
       "@ucdjs/utils/fs-bridge/node": ["./packages/utils/src/fs-bridge/node.ts"],
       "@ucdjs/worker-shared": ["./packages/worker-shared/src/index.ts"],
+      "@ucdjs/schemas": ["./packages/schemas/src/index.ts"],
     }
   }
 }

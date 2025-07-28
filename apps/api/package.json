@@ -22,6 +22,7 @@
     "@luxass/utils": "catalog:prod",
     "@scalar/hono-api-reference": "catalog:workers",
     "@ucdjs/env": "workspace:*",
+    "@ucdjs/schemas": "workspace:*",
     "@ucdjs/utils": "workspace:*",
     "@ucdjs/worker-shared": "workspace:*",
     "apache-autoindex-parse": "catalog:prod",
