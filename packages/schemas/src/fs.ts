@@ -1,5 +1,5 @@
 import { dedent } from "@luxass/utils";
-import z from "zod";
+import { z } from "zod";
 
 const BaseItemSchema = z.object({
   name: z.string(),
