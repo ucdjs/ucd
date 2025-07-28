@@ -19,7 +19,7 @@
       ]
     },
     "generate:components": {
-      "cache": false,
+      "cache": true,
       "outputs": [
         "src/components.ts"
       ],
@@ -28,7 +28,7 @@
       ]
     },
     "generate:client": {
-      "cache": false,
+      "cache": true,
       "outputs": [
         "src/.generated/api.d.ts"
       ],
