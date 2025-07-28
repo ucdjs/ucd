@@ -15,7 +15,7 @@ const aliases = readdirSync(new URL("./packages", import.meta.url).pathname)
       return acc;
     },
     {
-      "#msw-utils": `${root}/test/msw-utils/msw.ts`,
+      "#msw-utils": `${root}test/msw-utils/msw.ts`,
     });
 
 const hiddenLogs = [
@@ -47,6 +47,8 @@ const workerUnitProjects = readdirSync(new URL("./apps", import.meta.url).pathna
       },
     } satisfies TestProjectConfiguration;
   })
+
+console.error(aliases)
 
 export default defineConfig({
   test: {
