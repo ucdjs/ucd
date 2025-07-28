@@ -19,7 +19,6 @@ export const FileEntrySchema = z.union([
   DirectoryResponseSchema,
   FileResponseSchema,
 ]).meta({
-  id: "FileEntry",
   description: dedent`
     Response schema for a file entry in the UCD store.
 
