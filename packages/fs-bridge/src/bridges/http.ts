@@ -109,7 +109,7 @@ const HTTPFileSystemBridge = defineFileSystemBridge({
         return entries;
       },
       async write() {
-      // should not do anything, as this is a read-only bridge
+        // This method is intentionally left unimplemented because this is a read-only bridge.
       },
       async exists(path) {
         const url = joinURL(baseUrl, path);
@@ -120,10 +120,10 @@ const HTTPFileSystemBridge = defineFileSystemBridge({
           .catch(() => false);
       },
       async mkdir() {
-      // read-only bridge, cannot create directories
+        // This method is intentionally left unimplemented because this is a read-only bridge.
       },
       async rm() {
-      // read-only bridge, cannot remove files or directories
+        // This method is intentionally left unimplemented because this is a read-only bridge.
       },
     };
   },
