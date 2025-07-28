@@ -1,9 +1,10 @@
 import { createRoute } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
 import { UCD_FILE_STAT_TYPE_HEADER } from "@ucdjs/env";
+import { FileEntrySchema } from "@ucdjs/schemas";
 import { cache } from "hono/cache";
 import { generateReferences, OPENAPI_TAGS } from "../../openapi";
-import { FileEntrySchema, UCDStoreSchema } from "./schemas";
+import { UCDStoreSchema } from "./schemas";
 
 const WILDCARD_PARAM = {
   in: "path",

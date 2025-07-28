@@ -243,6 +243,9 @@ importers:
       '@ucdjs/env':
         specifier: workspace:*
         version: link:../../packages/env
+      '@ucdjs/schemas':
+        specifier: workspace:*
+        version: link:../../packages/schemas
       '@ucdjs/utils':
         specifier: workspace:*
         version: link:../../packages/utils
