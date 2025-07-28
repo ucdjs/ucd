@@ -12,6 +12,10 @@
   - changed-files:
       - any-glob-to-any-file: packages/fetch/**
 
+"pkg: schemas":
+  - changed-files:
+      - any-glob-to-any-file: packages/schemas/**
+
 "pkg: schema-gen":
   - changed-files:
       - any-glob-to-any-file: packages/schema-gen/**
