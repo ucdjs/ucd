@@ -1,4 +1,6 @@
+import type { FileEntry } from "@ucdjs/schemas";
 import { mockFetch } from "#msw-utils";
+import { flattenFilePaths } from "@ucdjs/utils";
 import { HttpResponse } from "msw";
 import { describe, expect, it } from "vitest";
 import HTTPFileSystemBridge from "../../src/bridges/http";
@@ -119,21 +121,21 @@ describe("http fs-bridge", () => {
         type: "file" as const,
         name: "file1.txt",
         path: "/dir/file1.txt",
-        lastModified: 1_673_728_800_000,
+        lastModified: Date.now(),
       },
       {
         type: "file" as const,
         name: "file2.txt",
         path: "/dir/file2.txt",
-        lastModified: 1_673_728_800_000,
+        lastModified: Date.now(),
       },
       {
         type: "directory" as const,
         name: "subdir",
         path: "/dir/subdir",
-        lastModified: 1_673_728_800_000,
+        lastModified: Date.now(),
       },
-    ];
+    ] satisfies FileEntry[];
 
     it("should list directory contents", async () => {
       mockFetch([
@@ -161,6 +163,7 @@ describe("http fs-bridge", () => {
           type: "file",
         },
         {
+          children: [],
           name: "subdir",
           path: "/dir/subdir",
           type: "directory",
@@ -175,18 +178,18 @@ describe("http fs-bridge", () => {
           type: "file" as const,
           name: "nested.txt",
           path: "/dir/subdir/nested.txt",
-          lastModified: "2024-01-04T00:00:00Z",
+          lastModified: Date.now(),
         },
-      ];
+      ] satisfies FileEntry[];
 
       mockFetch([
-        ["GET", `${baseUrl}/test-dir`, () => {
+        ["GET", `${baseUrl}/dir`, () => {
           return new HttpResponse(JSON.stringify(mockDirectoryData), {
             status: 200,
             headers: { "Content-Type": "application/json" },
           });
         }],
-        ["GET", `${baseUrl}/test-dir/subdir`, () => {
+        ["GET", `${baseUrl}/dir/subdir`, () => {
           return new HttpResponse(JSON.stringify(subdirData), {
             status: 200,
             headers: { "Content-Type": "application/json" },
@@ -194,11 +197,19 @@ describe("http fs-bridge", () => {
         }],
       ]);
 
-      const files = await bridge.listdir("test-dir", true);
-      expect(files).toContain("file1.txt");
-      expect(files).toContain("file2.txt");
-      expect(files).toContain("subdir");
-      expect(files).toContain("nested.txt");
+      const files = await bridge.listdir("dir", true);
+      expect(files).toEqual([
+        { type: "file", name: "file1.txt", path: "/dir/file1.txt" },
+        { type: "file", name: "file2.txt", path: "/dir/file2.txt" },
+        {
+          type: "directory",
+          name: "subdir",
+          path: "/dir/subdir",
+          children: [
+            { type: "file", name: "nested.txt", path: "/dir/subdir/nested.txt" },
+          ],
+        },
+      ]);
     });
 
     it("should handle empty directory", async () => {
@@ -215,7 +226,7 @@ describe("http fs-bridge", () => {
       expect(files).toEqual([]);
     });
 
-    it("should throw error for non-existent directory", async () => {
+    it("should return empty array for non-existent directory", async () => {
       mockFetch([
         ["GET", `${baseUrl}/missing-dir`, () => {
           return new HttpResponse("Directory not found", {
@@ -225,7 +236,8 @@ describe("http fs-bridge", () => {
         }],
       ]);
 
-      await expect(bridge.listdir("missing-dir")).rejects.toThrow("Failed to list directory: Not Found");
+      const files = await bridge.listdir("missing-dir");
+      expect(files).toEqual([]);
     });
 
     it("should handle invalid JSON response", async () => {
@@ -242,40 +254,46 @@ describe("http fs-bridge", () => {
     });
 
     it("should skip inaccessible subdirectories in recursive mode", async () => {
-      const dataWithInaccessibleDir = [
-        {
-          type: "file" as const,
-          name: "accessible.txt",
-          path: "/dir/accessible.txt",
-          lastModified: "2024-01-01T00:00:00Z",
-        },
-        {
-          type: "directory" as const,
-          name: "inaccessible",
-          path: "/dir/inaccessible",
-          lastModified: "2024-01-02T00:00:00Z",
-        },
-      ];
-
       mockFetch([
-        ["GET", `${baseUrl}/mixed-dir`, () => {
-          return new HttpResponse(JSON.stringify(dataWithInaccessibleDir), {
+        ["GET", `${baseUrl}/dir`, () => {
+          return new HttpResponse(JSON.stringify([
+            {
+              type: "file" as const,
+              name: "accessible.txt",
+              path: "/dir/accessible.txt",
+              lastModified: Date.now(),
+            },
+            {
+              type: "directory" as const,
+              name: "inaccessible",
+              path: "/dir/inaccessible",
+              lastModified: Date.now(),
+            },
+          ] satisfies FileEntry[]), {
             status: 200,
             headers: { "Content-Type": "application/json" },
           });
         }],
-        ["GET", `${baseUrl}/mixed-dir/inaccessible`, () => {
+        ["GET", `${baseUrl}/dir/inaccessible`, () => {
           return new HttpResponse("Forbidden", {
             status: 403,
             statusText: "Forbidden",
           });
         }],
+        ["GET", `${baseUrl}/dir/inaccessible/another-file.txt`, () => {
+          return new HttpResponse("This should not be accessible", {
+            status: 200,
+            headers: { "Content-Type": "text/plain" },
+          });
+        }],
       ]);
 
-      const files = await bridge.listdir("mixed-dir", true);
-      expect(files).toContain("accessible.txt");
-      expect(files).toContain("inaccessible");
-      // Should not include files from inaccessible directory
+      const files = await bridge.listdir("dir", true);
+      expect(files).toEqual([
+        { type: "file", name: "accessible.txt", path: "/dir/accessible.txt" },
+        { type: "directory", name: "inaccessible", path: "/dir/inaccessible", children: [] },
+      ]);
+      expect(flattenFilePaths(files)).not.toContain("/dir/inaccessible/another-file.txt");
     });
   });
 
@@ -338,15 +356,15 @@ describe("http fs-bridge", () => {
           type: "file" as const,
           name: "config.json",
           path: "/config/config.json",
-          lastModified: "2024-01-01T00:00:00Z",
+          lastModified: Date.now(),
         },
         {
           type: "file" as const,
           name: "readme.md",
           path: "/config/readme.md",
-          lastModified: "2024-01-02T00:00:00Z",
+          lastModified: Date.now(),
         },
-      ];
+      ] satisfies FileEntry[];
 
       const configContent = "{\"version\": \"1.0.0\", \"name\": \"test-app\"}";
 
@@ -370,7 +388,10 @@ describe("http fs-bridge", () => {
 
       // discover files
       const files = await bridge.listdir("config");
-      expect(files).toContain("config.json");
+      expect(files).toEqual([
+        { type: "file", name: "config.json", path: "/config/config.json" },
+        { type: "file", name: "readme.md", path: "/config/readme.md" },
+      ]);
 
       // check if config exists
       const configExists = await bridge.exists("config/config.json");
