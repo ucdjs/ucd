@@ -1,5 +1,6 @@
 import { z } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils/string";
+import { FileEntrySchema as _FileEntrySchema } from "@ucdjs/schemas";
 
 export const UCDStoreSchema = z.record(
   z.string(),
@@ -23,3 +24,5 @@ export const UCDStoreSchema = z.record(
 });
 
 export type UCDStore = z.output<typeof UCDStoreSchema>;
+
+export const FileEntrySchema = _FileEntrySchema.openapi("FileEntry");
