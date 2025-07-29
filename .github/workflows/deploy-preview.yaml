@@ -34,7 +34,7 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: github.repository == 'ucdjs/ucd'
+    if: github.repository == 'ucdjs/ucd' && github.event.pull_request.user.login == 'luxass'
     strategy:
       matrix:
         app:
