@@ -635,6 +635,43 @@ describe("resolveSafePath", () => {
     expect(result).toMatch(/^\/base\/a(\/a)*\/file\.txt$/);
   });
 
+  describe("absolute paths within base path", () => {
+    it("should handle absolute path that's already within base", () => {
+      const basePath = "/Users/test/project";
+      const inputPath = "/Users/test/project/src/file.txt";
+      const result = resolveSafePath(basePath, inputPath);
+      expect(result).toBe("/Users/test/project/src/file.txt");
+    });
+
+    it("should handle absolute path that equals base path", () => {
+      const basePath = "/Users/test/project";
+      const inputPath = "/Users/test/project";
+      const result = resolveSafePath(basePath, inputPath);
+      expect(result).toBe("/Users/test/project");
+    });
+
+    it("should handle absolute path with nested structure within base", () => {
+      const basePath = "/Users/test/project";
+      const inputPath = "/Users/test/project/deep/nested/file.txt";
+      const result = resolveSafePath(basePath, inputPath);
+      expect(result).toBe("/Users/test/project/deep/nested/file.txt");
+    });
+
+    it("should handle long test directory paths", () => {
+      const basePath = "/tmp/test-project/.vitest-testdirs/test-configuration-long-directory-name";
+      const inputPath = "/tmp/test-project/.vitest-testdirs/test-configuration-long-directory-name/.config.json";
+      const result = resolveSafePath(basePath, inputPath);
+      expect(result).toBe("/tmp/test-project/.vitest-testdirs/test-configuration-long-directory-name/.config.json");
+    });
+
+    it("should still treat absolute paths outside base as relative to base", () => {
+      const basePath = "/Users/test/project";
+      const inputPath = "/etc/passwd";
+      const result = resolveSafePath(basePath, inputPath);
+      expect(result).toBe("/Users/test/project/etc/passwd");
+    });
+  });
+
   describe("root base path behavior", () => {
     it("should allow access to filesystem paths when base is root (expected behavior)", () => {
       // When base path is "/", the user has intentionally given access to entire filesystem
