@@ -136,7 +136,7 @@ jobs:
           CLEANED_URL=$(echo "$DEPLOYMENT_URL" | sed 's/ (custom domain)//')
           echo "deployment-url=https://$CLEANED_URL" >> "$GITHUB_OUTPUT"
 
-          echo "capitalized-app=$(echo "${{ env.APP }}" | awk '{print toupper(substr($0,1,1)) substr($0,2)}')" >> "$GITHUB_OUTPUT"
+          echo "capitalized-app=$(echo "$APP" | awk '{print toupper(substr($0,1,1)) substr($0,2)}')" >> "$GITHUB_OUTPUT"
 
       - name: find existing comment
         id: find-comment
