@@ -33,5 +33,5 @@
     "turbo": "catalog:monorepo",
     "typescript": "catalog:dev",
     "vitest": "catalog:testing"
-  }
+    }
 }

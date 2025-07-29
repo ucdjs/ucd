@@ -54,7 +54,7 @@ catalogs:
 
   dev:
     "@types/picomatch": ^4.0.2
-    "@types/node": ^22.10.0
+    "@types/node": ^22.16.5
     "@types/yargs-parser": ^21.0.3
     tsdown: ^0.13.0
     typescript: ^5.8.3
