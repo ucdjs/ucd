@@ -48,8 +48,6 @@ const workerUnitProjects = readdirSync(new URL("./apps", import.meta.url).pathna
     } satisfies TestProjectConfiguration;
   })
 
-console.error(aliases)
-
 export default defineConfig({
   test: {
     coverage: {
