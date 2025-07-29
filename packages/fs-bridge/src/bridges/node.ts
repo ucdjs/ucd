@@ -52,10 +52,20 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
 
   const resolvedBasePath = nodePath.resolve(basePath);
 
-  // handle absolute paths by treating them as relative to base
-  const cleanPath = nodePath.isAbsolute(decodedPath)
-    ? nodePath.normalize(decodedPath.slice(1))
-    : nodePath.normalize(decodedPath);
+  // handle absolute paths
+  let cleanPath: string;
+  if (nodePath.isAbsolute(decodedPath)) {
+    // if the absolute path is already within the base path, use the relative portion
+    const resolvedInputPath = nodePath.resolve(decodedPath);
+    if (resolvedInputPath.startsWith(resolvedBasePath + nodePath.sep) || resolvedInputPath === resolvedBasePath) {
+      cleanPath = nodePath.relative(resolvedBasePath, resolvedInputPath);
+    } else {
+      // treat absolute paths as relative to base (remove leading slash)
+      cleanPath = nodePath.normalize(decodedPath.slice(1));
+    }
+  } else {
+    cleanPath = nodePath.normalize(decodedPath);
+  }
 
   const resolvedPath = nodePath.resolve(resolvedBasePath, cleanPath);
 
@@ -111,6 +121,7 @@ const NodeFileSystemBridge = defineFileSystemBridge({
         return fsp.readFile(resolvedPath, "utf-8");
       },
       async exists(path) {
+        console.error(`Checking existence of path: ${path}, resolved to: ${resolveSafePath(basePath, path)}`);
         return safeExists(resolveSafePath(basePath, path));
       },
       async listdir(path, recursive = false) {
