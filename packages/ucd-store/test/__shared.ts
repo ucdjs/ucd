@@ -12,7 +12,7 @@ export const createReadOnlyMockFS = defineFileSystemBridge({
   setup() {
     return {
       async read() {
-        return "[]";
+        return "{}";
       },
 
       async exists() {

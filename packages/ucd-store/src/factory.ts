@@ -63,7 +63,7 @@ export async function createHTTPUCDStore(options: Omit<UCDStoreOptions, "fs"> = 
   const store = new UCDStore({
     ...options,
     fs: httpFsBridge({
-      baseUrl: options.baseUrl || UCDJS_API_BASE_URL,
+      baseUrl: options.baseUrl,
     }),
   });
 

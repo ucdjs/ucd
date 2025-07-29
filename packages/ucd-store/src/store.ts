@@ -1,9 +1,12 @@
 import type { UCDClient } from "@ucdjs/fetch";
 import type { FileSystemBridgeOperationsWithSymbol } from "@ucdjs/fs-bridge";
+import type { UCDStoreManifest } from "@ucdjs/schemas";
 import type { PathFilter } from "@ucdjs/utils";
 import type { StoreCapabilities, UCDStoreOptions } from "./types";
+import { invariant, prependLeadingSlash } from "@luxass/utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
-import { createClient } from "@ucdjs/fetch";
+import { createClient, isApiError } from "@ucdjs/fetch";
+import { UCDStoreManifestSchema } from "@ucdjs/schemas";
 import { createPathFilter, safeJsonParse } from "@ucdjs/utils";
 import defu from "defu";
 import { join } from "pathe";
@@ -113,11 +116,29 @@ export class UCDStore {
    */
   async initialize(): Promise<void> {
     const isValidStore = await this.#fs.exists(this.#manifestPath);
-
+    console.error("Manifest Path", this.#manifestPath, isValidStore, await this.#fs.listdir(".", true));
     if (isValidStore) {
       await this.#loadVersionsFromStore();
     } else {
+      // If no base path is configured or filesystem doesn't support writing,
+      // we can't initialize without existing data
+      if (!this.basePath || !this.#capabilities.mirror) {
+        throw new UCDStoreError("Store cannot be initialized without existing data. Ensure filesystem supports write operations and base path is configured.");
+      }
 
+      if (!this.#versions || this.#versions.length === 0) {
+        const { data, error } = await this.#client.GET("/api/v1/versions");
+        if (isApiError(error)) {
+          throw new UCDStoreError(`Failed to fetch Unicode versions: ${error.message}`);
+        }
+
+        this.#versions = data?.map(({ version }) => version) || [];
+
+        // TODO: maybe we should throw an error if no versions are provided?
+        // since it doesn't make sense to create a store without any versions.
+      }
+
+      await this.#createNewLocalStore(this.#versions);
     }
   }
 
@@ -134,15 +155,44 @@ export class UCDStore {
       }
 
       // verify that is an array of objects with version and path properties
-      const parsedManifest = MANIFEST_SCHEMA.safeParse(jsonData);
+      const parsedManifest = UCDStoreManifestSchema.safeParse(jsonData);
       if (!parsedManifest.success) {
         throw new UCDStoreError("Invalid store manifest schema");
       }
 
-      this.#versions = parsedManifest.data.map((entry) => entry.version);
+      this.#versions = Object.keys(parsedManifest.data);
     } catch (error) {
       throw new UCDStoreError(`Failed to load store manifest: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
+
+  async #createNewLocalStore(versions: string[]): Promise<void> {
+    invariant(this.#capabilities.mirror, "createNewLocalStore requires mirror capability");
+    invariant(this.basePath, "Base path must be set for store creation");
+
+    if (!await this.#fs.exists(this.basePath)) {
+      await this.#fs.mkdir(this.basePath);
+    }
+
+    // Mirror UCD files from remote to local
+    // await this.mirror({ versions, overwrite: false, dryRun: false });
+
+    await this.#createStoreManifest(versions);
+    this.#versions = [...versions];
+  }
+
+  async #createStoreManifest(versions: string[]): Promise<void> {
+    invariant(this.#capabilities.mirror, "createStoreManifest requires write capability");
+    invariant(this.basePath, "Base path must be set for store creation");
+
+    const manifestData: UCDStoreManifest = {};
+
+    for (const version of versions) {
+      manifestData[version] = prependLeadingSlash(this.basePath ? join(this.basePath, version) : version);
+    }
+
+    await this.#fs.write(this.#manifestPath, JSON.stringify(manifestData, null, 2));
+  }
+
   // #endregion
 }
