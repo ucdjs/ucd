@@ -8,10 +8,38 @@ import {
   stat,
   writeFile,
 } from "node:fs/promises";
-import { dirname, join, relative } from "node:path";
+import nodePath from "node:path";
+import { invariant } from "@luxass/utils";
 import { prependLeadingSlash, trimTrailingSlash } from "@luxass/utils/path";
 import { z } from "zod";
 import { defineFileSystemBridge } from "../define";
+
+/**
+ * List of dangerous system paths that should never be used as base paths.
+ * These paths represent critical system directories that could cause severe
+ * damage if modified or accessed inappropriately by the file system bridge.
+ *
+ * @internal
+ */
+const DANGEROUS_BASE_PATHS = ["/", "/usr", "/bin", "/sbin", "/etc", "/var", "/sys", "/proc"];
+
+/**
+ * Extended list of critical system paths that are protected from direct access.
+ * This includes all dangerous base paths plus additional system directories
+ * that should never be accessed through the file system bridge for security reasons.
+ *
+ * These paths represent:
+ * - Root filesystem (`/`)
+ * - System binaries (`/usr`, `/bin`, `/sbin`)
+ * - Configuration files (`/etc`)
+ * - System data (`/var`, `/sys`, `/proc`)
+ * - Device files (`/dev`)
+ * - Boot files (`/boot`)
+ *
+ * @internal
+ * @see {@link DANGEROUS_BASE_PATHS} for base path validation
+ */
+const CRITICAL_SYSTEM_PATHS = ["/", "/usr", "/bin", "/sbin", "/etc", "/var", "/sys", "/proc", "/dev", "/boot"];
 
 async function safeExists(path: string): Promise<boolean> {
   try {
@@ -22,9 +50,31 @@ async function safeExists(path: string): Promise<boolean> {
   }
 }
 
+function normalizePath(basePath: string, requestPath: string): string {
+  const resolvedBasePath = nodePath.resolve(basePath);
+  const resolvedPath = nodePath.resolve(resolvedBasePath, requestPath);
+
+  // ensure path stays within basePath
+  invariant(
+    resolvedPath.startsWith(resolvedBasePath + nodePath.sep) || resolvedPath === resolvedBasePath,
+    `Path traversal detected: "${requestPath}" resolves to "${resolvedPath}" which is outside basePath "${resolvedBasePath}"`,
+  );
+
+  // prevent access to critical system paths
+  invariant(
+    !CRITICAL_SYSTEM_PATHS.includes(resolvedPath),
+    `Critical system path access denied: "${resolvedPath}" is protected`,
+  );
+
+  return resolvedPath;
+}
+
 const NodeFileSystemBridge = defineFileSystemBridge({
   optionsSchema: z.object({
-    basePath: z.string(),
+    basePath: z.string().refine((basePath) => !DANGEROUS_BASE_PATHS.includes(nodePath.resolve(basePath)), {
+      message: "Base path cannot resolve to a dangerous system path",
+      path: ["basePath"],
+    }),
   }),
   capabilities: {
     exists: true,
@@ -37,14 +87,14 @@ const NodeFileSystemBridge = defineFileSystemBridge({
   setup({ options }) {
     const basePath = options.basePath;
     return {
-      read(path) {
-        return readFile(join(basePath, path), "utf-8");
+      async read(path) {
+        return readFile(normalizePath(basePath, path), "utf-8");
       },
-      exists(path) {
-        return safeExists(join(basePath, path));
+      async exists(path) {
+        return safeExists(normalizePath(basePath, path));
       },
       async listdir(path, recursive = false) {
-        const targetPath = join(basePath, path);
+        const targetPath = normalizePath(basePath, path);
 
         function createFSEntry(entry: Dirent): FSEntry {
           const pathFromName = prependLeadingSlash(trimTrailingSlash(entry.name));
@@ -77,11 +127,11 @@ const NodeFileSystemBridge = defineFileSystemBridge({
 
         for (const entry of allEntries) {
           const entryPath = entry.parentPath || entry.path;
-          const relativeToTarget = relative(targetPath, entryPath);
+          const relativeToTarget = nodePath.relative(targetPath, entryPath);
           const fsEntry = createFSEntry(entry);
 
           const entryRelativePath = relativeToTarget
-            ? join(relativeToTarget, entry.name)
+            ? nodePath.join(relativeToTarget, entry.name)
             : entry.name;
 
           entryMap.set(entryRelativePath, fsEntry);
@@ -92,7 +142,7 @@ const NodeFileSystemBridge = defineFileSystemBridge({
         }
 
         for (const [entryPath, entry] of entryMap) {
-          const parentPath = dirname(entryPath);
+          const parentPath = nodePath.dirname(entryPath);
           if (parentPath && parentPath !== ".") {
             const parent = entryMap.get(parentPath);
             if (parent?.type === "directory") {
@@ -104,8 +154,8 @@ const NodeFileSystemBridge = defineFileSystemBridge({
         return rootEntries;
       },
       async write(path, data, encoding = "utf-8") {
-        const fullPath = join(basePath, path);
-        const parentDir = dirname(fullPath);
+        const fullPath = normalizePath(basePath, path);
+        const parentDir = nodePath.dirname(fullPath);
 
         if (!(await safeExists(parentDir))) {
           // create parent directories if they don't exist
@@ -116,11 +166,11 @@ const NodeFileSystemBridge = defineFileSystemBridge({
       },
       async mkdir(path) {
         // mkdir returns the first directory path, when recursive is true
-        await mkdir(join(basePath, path), { recursive: true });
+        await mkdir(normalizePath(basePath, path), { recursive: true });
         return void 0;
       },
       async rm(path, options) {
-        return rm(join(basePath, path), {
+        return rm(normalizePath(basePath, path), {
           recursive: options?.recursive ?? false,
           force: options?.force ?? false,
         });
