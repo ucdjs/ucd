@@ -186,7 +186,7 @@ jobs:
           fi
           if [ -f /tmp/web-url.txt ]; then
             web_URL=$(cat /tmp/web-url.txt)
-            echo "web-url=$web_URL" >> "$GITHUB_OUTPUT"
+            echo "web-url=$WEB_URL" >> "$GITHUB_OUTPUT"
           fi
 
       - name: find existing comment
