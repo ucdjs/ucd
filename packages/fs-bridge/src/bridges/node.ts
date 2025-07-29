@@ -15,6 +15,25 @@ async function safeExists(path: string): Promise<boolean> {
   }
 }
 
+/**
+ * Safely resolves a user-provided path relative to a base directory while preventing path traversal attacks.
+ *
+ * This function performs multiple security checks:
+ * - Detects dangerous control characters (null bytes, newlines, carriage returns)
+ * - URL-decodes the input path to catch encoded traversal attempts
+ * - Normalizes and resolves paths to prevent directory traversal
+ * - Validates that the final resolved path stays within the base directory
+ *
+ * @param {string} basePath - The base directory that should contain the resolved path
+ * @param {string} inputPath - The user-provided path to resolve (can be relative or absolute)
+ * @returns {string} The safely resolved absolute path within the base directory
+ * @throws {Error} When path traversal is detected or the resolved path would escape the base directory
+ *
+ * @remarks
+ * - Absolute input paths are treated as relative to the base directory
+ * - URL-encoded characters are decoded once to detect encoded traversal attempts
+ * - The function handles both Unix and Windows path separators correctly
+ */
 export function resolveSafePath(basePath: string, inputPath: string): string {
   // fast check for dangerous control characters
   if (/[\0\n\r]/.test(inputPath)) {
@@ -48,13 +67,26 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
   return resolvedPath;
 }
 
+/**
+ * Checks if a resolved path is within the specified base directory.
+ * This function is used for security validation to prevent path traversal attacks.
+ *
+ * @param {string} resolvedPath - The fully resolved absolute path to validate
+ * @param {string} basePath - The base directory path that should contain the resolved path
+ * @returns {boolean} `true` if the resolved path is within the base directory, `false` otherwise
+ *
+ * @remarks
+ * - For root base path ("/"), any absolute path is considered valid
+ * - For non-root base paths, the resolved path must either equal the base path
+ *   or start with the base path followed by a path separator
+ */
 function isWithinBase(resolvedPath: string, basePath: string): boolean {
-  // Handle root base path case
+  // handle root base path case
   if (basePath === "/") {
     return resolvedPath === "/" || resolvedPath.startsWith("/");
   }
 
-  // For non-root base paths, check if resolved path starts with base + separator or equals base
+  // for non-root base paths, check if resolved path starts with base + separator or equals base
   return resolvedPath.startsWith(basePath + nodePath.sep) || resolvedPath === basePath;
 }
 
