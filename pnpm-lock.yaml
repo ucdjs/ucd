@@ -82,8 +82,8 @@ catalogs:
       specifier: npm:@luxass/unicode-utils@0.12.0-beta.9
       version: 0.12.0-beta.9
     '@luxass/utils':
-      specifier: ^2.6.0
-      version: 2.6.0
+      specifier: ^2.6.2
+      version: 2.6.2
     ai:
       specifier: ^4.3.16
       version: 4.3.16
@@ -236,7 +236,7 @@ importers:
         version: '@luxass/unicode-utils@0.12.0-beta.9'
       '@luxass/utils':
         specifier: catalog:prod
-        version: 2.6.0
+        version: 2.6.2
       '@scalar/hono-api-reference':
         specifier: catalog:workers
         version: 0.9.12(hono@4.8.9)
@@ -373,7 +373,7 @@ importers:
         version: 0.9.0
       '@luxass/utils':
         specifier: catalog:prod
-        version: 2.6.0
+        version: 2.6.2
       '@ucdjs/schema-gen':
         specifier: workspace:*
         version: link:../schema-gen
@@ -422,7 +422,7 @@ importers:
     dependencies:
       '@luxass/utils':
         specifier: catalog:prod
-        version: 2.6.0
+        version: 2.6.2
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:linting
@@ -460,7 +460,7 @@ importers:
         version: 5.1.1(@eslint-react/eslint-plugin@1.52.3(eslint@9.32.0(jiti@2.4.2))(ts-api-utils@2.1.0(typescript@5.8.3))(typescript@5.8.3))(@vue/compiler-sfc@3.5.13)(eslint-plugin-format@1.0.1(eslint@9.32.0(jiti@2.4.2)))(eslint-plugin-react-hooks@5.2.0(eslint@9.32.0(jiti@2.4.2)))(eslint-plugin-react-refresh@0.4.20(eslint@9.32.0(jiti@2.4.2)))(eslint@9.32.0(jiti@2.4.2))(typescript@5.8.3)(vitest@3.2.4)
       '@luxass/utils':
         specifier: catalog:prod
-        version: 2.6.0
+        version: 2.6.2
       '@types/picomatch':
         specifier: catalog:dev
         version: 4.0.0
@@ -496,7 +496,7 @@ importers:
     dependencies:
       '@luxass/utils':
         specifier: catalog:prod
-        version: 2.6.0
+        version: 2.6.2
       '@ucdjs/env':
         specifier: workspace:*
         version: link:../env
@@ -548,7 +548,7 @@ importers:
         version: 0.9.0
       '@luxass/utils':
         specifier: catalog:prod
-        version: 2.6.0
+        version: 2.6.2
       ai:
         specifier: catalog:prod
         version: 4.3.16(react@19.1.0)(zod@4.0.10)
@@ -591,7 +591,7 @@ importers:
     dependencies:
       '@luxass/utils':
         specifier: catalog:prod
-        version: 2.6.0
+        version: 2.6.2
       zod:
         specifier: catalog:prod
         version: 4.0.10
@@ -625,7 +625,7 @@ importers:
         version: '@luxass/unicode-utils@0.12.0-beta.9'
       '@luxass/utils':
         specifier: catalog:prod
-        version: 2.6.0
+        version: 2.6.2
       '@ucdjs/env':
         specifier: workspace:*
         version: link:../env
@@ -677,7 +677,7 @@ importers:
         version: '@luxass/unicode-utils@0.12.0-beta.9'
       '@luxass/utils':
         specifier: catalog:prod
-        version: 2.6.0
+        version: 2.6.2
       '@ucdjs/env':
         specifier: workspace:*
         version: link:../env
@@ -732,7 +732,7 @@ importers:
         version: 1.0.2(hono@4.8.9)(zod@4.0.10)
       '@luxass/utils':
         specifier: catalog:prod
-        version: 2.6.0
+        version: 2.6.2
       hono:
         specifier: catalog:workers
         version: 4.8.9
@@ -1711,8 +1711,8 @@ packages:
   '@luxass/unicode-utils@0.9.0':
     resolution: {integrity: sha512-RNhEJ2pXiIRhmr/KGtAbl4jy2uwQjXMdRQKHZE1M1IgjkXa4/d8is5HtwxdKKcL0CCO3f4lGAeLOIhR6ACGNfg==}
 
-  '@luxass/utils@2.6.0':
-    resolution: {integrity: sha512-POvohIK581crCg1djszSkIUgB6d+laeChq75z3BmwcAXetCf+LjeYjmEf7jE0xGL8tmd8KiZQg27S4/205v1ug==}
+  '@luxass/utils@2.6.2':
+    resolution: {integrity: sha512-SK+bJyuH109psfzpHStTttbTPqKE2Pml9gkFH58PI6ssB2JxVC5Wg1eZLC+Kkw/3UXWCBQRP5RT+yXuaFWWYBg==}
     engines: {node: '>=20'}
 
   '@manypkg/find-root@1.1.0':
@@ -6690,14 +6690,14 @@ snapshots:
 
   '@luxass/unicode-utils@0.12.0-beta.9':
     dependencies:
-      '@luxass/utils': 2.6.0
+      '@luxass/utils': 2.6.2
       defu: 6.1.4
 
   '@luxass/unicode-utils@0.9.0':
     dependencies:
-      '@luxass/utils': 2.6.0
+      '@luxass/utils': 2.6.2
 
-  '@luxass/utils@2.6.0':
+  '@luxass/utils@2.6.2':
     dependencies:
       p-retry: 6.2.1
 
