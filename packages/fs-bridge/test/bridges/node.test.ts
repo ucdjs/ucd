@@ -4,6 +4,46 @@ import { testdir } from "vitest-testdirs";
 import NodeFileSystemBridge from "../../src/bridges/node";
 
 describe("node fs-bridge", () => {
+  describe("initialization and schema validation", () => {
+    it.each([
+      "/",
+      "/usr",
+      "/bin",
+      "/sbin",
+      "/etc",
+      "/var",
+      "/sys",
+      "/proc",
+    ])("should not allow dangerous basePath: %s", async (dangerousBasePath) => {
+      expect(() => NodeFileSystemBridge({ basePath: dangerousBasePath })).toThrow(/Base path cannot resolve to a dangerous system path/);
+    });
+
+    it.each([
+      "/usr/", // trailing slash
+      "/usr/../usr", // self-referencing
+      "//usr", // double slash
+      "/usr/./", // current directory reference
+      "/usr/../bin", // parent directory reference
+      "/usr/../../etc", // multiple parent references
+    ])("should not allow dangerous basePath with normalization edge cases: %s", async (dangerousBasePath) => {
+      expect(() => NodeFileSystemBridge({ basePath: dangerousBasePath })).toThrow(/Base path cannot resolve to a dangerous system path/);
+    });
+
+    it("should allow safe basePath values that contain dangerous names", async () => {
+      const testDir = await testdir({});
+
+      const safePaths = [
+        `${testDir}/usr`, // usr folder within test directory
+        `${testDir}/etc/config`, // etc folder within test directory
+        `${testDir}/my-bin-folder`, // folder with 'bin' in name
+      ];
+
+      for (const basePath of safePaths) {
+        expect(() => NodeFileSystemBridge({ basePath })).not.toThrow();
+      }
+    });
+  });
+
   describe("read operation", () => {
     it("should read existing file", async () => {
       const testDir = await testdir({ "test-file.txt": "file content" });
@@ -338,6 +378,175 @@ describe("node fs-bridge", () => {
       const summaryContent = await bridge.read("summary.txt");
       expect(summaryContent).toContain("Log entry 1");
       expect(summaryContent).toContain("Log entry 10");
+    });
+  });
+
+  it("should handle absolute paths that include basePath", async () => {
+    const testDir = await testdir({ "file.json": JSON.stringify({ test: true }) });
+    const bridge = NodeFileSystemBridge({ basePath: testDir });
+
+    // should work when absolute path includes the basePath
+    const absolutePathWithinBase = `${testDir}/file.json`;
+
+    const absoluteExists = await bridge.exists(absolutePathWithinBase);
+    const absoluteRead = await bridge.read(absolutePathWithinBase);
+
+    const relativeExists = await bridge.exists("file.json");
+    const relativeRead = await bridge.read("file.json");
+
+    expect(absoluteExists).toBe(true);
+    expect(relativeExists).toBe(true);
+    expect(absoluteRead).toBe("{\"test\":true}");
+    expect(relativeRead).toBe("{\"test\":true}");
+
+    // should work for writing to absolute paths within basePath
+    const absoluteNestedPath = `${testDir}/nested/file.txt`;
+
+    await expect(bridge.write(absoluteNestedPath, "nested content")).resolves.not.toThrow();
+    await expect(bridge.read(absoluteNestedPath)).resolves.toBe("nested content");
+
+    // should still block absolute paths outside basePath
+    await expect(bridge.exists("/outside/basepath/file.txt")).rejects.toThrow(/Path traversal detected/);
+  });
+
+  describe("security tests", () => {
+    it("should prevent path traversal attacks", async () => {
+      const testDir = await testdir({
+        "secret.txt": "confidential",
+      });
+      const bridge = NodeFileSystemBridge({ basePath: testDir });
+
+      // test various path traversal attempts
+      const traversalPaths = [
+        "../../../etc/passwd",
+        "../../secret.txt",
+        "../secret.txt",
+        "subdir/../../secret.txt",
+        "../../../../usr/bin/node",
+      ];
+
+      for (const path of traversalPaths) {
+        await expect(bridge.read(path)).rejects.toThrow("Path traversal detected");
+        await expect(bridge.exists(path)).rejects.toThrow("Path traversal detected");
+        await expect(bridge.write(path, "hacked")).rejects.toThrow("Path traversal detected");
+        await expect(bridge.mkdir(path)).rejects.toThrow("Path traversal detected");
+        await expect(bridge.rm(path)).rejects.toThrow("Path traversal detected");
+      }
+    });
+
+    it("should prevent absolute path escapes", async () => {
+      const testDir = await testdir({});
+      const bridge = NodeFileSystemBridge({ basePath: testDir });
+
+      const dangerousPaths = [
+        "/etc/passwd",
+        "/usr/bin/node",
+        "/tmp/hack.txt",
+        `${process.cwd()}/package.json`,
+      ];
+
+      for (const path of dangerousPaths) {
+        await expect(bridge.read(path)).rejects.toThrow(/Path traversal detected/);
+        await expect(bridge.exists(path)).rejects.toThrow(/Path traversal detected/);
+        await expect(bridge.write(path, "hacked")).rejects.toThrow(/Path traversal detected/);
+      }
+    });
+
+    it("should allow valid paths within basePath", async () => {
+      const testDir = await testdir({ "valid.txt": "content" });
+      const bridge = NodeFileSystemBridge({ basePath: testDir });
+
+      // these should work fine
+      await expect(bridge.read("valid.txt")).resolves.toBe("content");
+      await expect(bridge.exists("valid.txt")).resolves.toBe(true);
+      await expect(bridge.write("new.txt", "data")).resolves.not.toThrow();
+      await expect(bridge.mkdir("newdir")).resolves.not.toThrow();
+    });
+
+    it("should allow folders with system path names inside basePath", async () => {
+      const testDir = await testdir({});
+      const bridge = NodeFileSystemBridge({ basePath: testDir });
+
+      // should allow creating folders named after system paths within basePath
+      await expect(bridge.mkdir("usr")).resolves.not.toThrow();
+      await expect(bridge.mkdir("etc")).resolves.not.toThrow();
+      await expect(bridge.mkdir("bin")).resolves.not.toThrow();
+
+      await expect(bridge.write("usr/data.txt", "user data")).resolves.not.toThrow();
+      await expect(bridge.write("etc/config.json", "{}")).resolves.not.toThrow();
+
+      await expect(bridge.exists("usr")).resolves.toBe(true);
+      await expect(bridge.read("usr/data.txt")).resolves.toBe("user data");
+    });
+
+    it("should handle edge cases safely", async () => {
+      const testDir = await testdir({});
+      const bridge = NodeFileSystemBridge({ basePath: testDir });
+
+      // test empty and root paths
+      await expect(bridge.exists("")).resolves.toBe(true); // basePath itself
+      await expect(bridge.exists(".")).resolves.toBe(true); // current dir
+
+      // test paths that try to trick the validation
+      await expect(bridge.read("./../../secret")).rejects.toThrow(/Path traversal detected/);
+      await expect(bridge.read("valid/../../../secret")).rejects.toThrow(/Path traversal detected/);
+    });
+
+    describe("obscure path traversal attempts", async () => {
+      const testDir = await testdir({});
+      const bridge = NodeFileSystemBridge({ basePath: testDir });
+
+      it.each([
+        "..%2F..%2F..%2Fetc%2Fpasswd",
+        "%2e%2e%2f%2e%2e%2f%2e%2e%2fetc%2fpasswd",
+        "%252e%252e%252f%252e%252e%252f%252e%252e%252fetc%252fpasswd",
+        "..\u2215..\u2215..\u2215etc\u2215passwd", // Unicode division slash
+        "..\\..\\..\\etc\\passwd", // Backslashes on Unix
+        "...//...//...//etc//passwd", // Triple dots
+      ])("should treat obscure path as literal filename: %s", async (obscurePath) => {
+        // these paths should be treated as literal filenames (not as path traversal)
+        // since path.resolve will not normalize them to critical paths
+        await expect(bridge.read(obscurePath)).rejects.toThrow(/ENOENT/);
+        await expect(bridge.exists(obscurePath)).resolves.toBe(false);
+      });
+
+      it.each([
+        "..\u002F..\u002F..\u002Fetc\u002Fpasswd", // Unicode forward slash
+        "../..\\../etc/passwd", // Mixed separators
+        "../../../etc/passwd\0.txt", // Null byte
+        `../${"../".repeat(100)}etc/passwd`, // Overlong path
+        "../../../etc/passwd.", // Trailing dot
+        "../../../etc/passwd ", // Trailing space
+        "../../../ETC/PASSWD", // Case variations
+        "../../../Etc/Passwd",
+      ])("should prevent path traversal attack: %s", async (traversalPath) => {
+        await expect(bridge.read(traversalPath)).rejects.toThrow(/Path traversal detected/);
+        await expect(bridge.exists(traversalPath)).rejects.toThrow(/Path traversal detected/);
+      });
+    });
+
+    // Since we are checking for traversal attacks, before critical system paths,
+    // we can't verify that the bridge throws the correct critical system path error,
+    // So i have just disabled these tests for now.
+    describe.todo("critical system paths", () => {
+      it.each([
+        "/",
+        "/usr",
+        "/bin",
+        "/sbin",
+        "/etc",
+        "/var",
+        "/sys",
+        "/proc",
+        "/dev",
+        "/boot",
+      ])("should not allow access to critical system path: %s", async (criticalPath) => {
+        const testDir = await testdir({});
+        const bridge = NodeFileSystemBridge({ basePath: testDir });
+
+        await expect(bridge.exists(criticalPath)).rejects.toThrow(/Critical system path access denied/);
+        await expect(bridge.read(criticalPath)).rejects.toThrow(/Critical system path access denied/);
+      });
     });
   });
 });
