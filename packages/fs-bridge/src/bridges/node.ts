@@ -1,80 +1,66 @@
 import type { Dirent } from "node:fs";
 import type { FSEntry } from "../types";
-import {
-  mkdir,
-  readdir,
-  readFile,
-  rm,
-  stat,
-  writeFile,
-} from "node:fs/promises";
+import fsp from "node:fs/promises";
 import nodePath from "node:path";
-import { invariant } from "@luxass/utils";
 import { prependLeadingSlash, trimTrailingSlash } from "@luxass/utils/path";
 import { z } from "zod";
 import { defineFileSystemBridge } from "../define";
 
-/**
- * List of dangerous system paths that should never be used as base paths.
- * These paths represent critical system directories that could cause severe
- * damage if modified or accessed inappropriately by the file system bridge.
- *
- * @internal
- */
-const DANGEROUS_BASE_PATHS = ["/", "/usr", "/bin", "/sbin", "/etc", "/var", "/sys", "/proc"];
-
-/**
- * Extended list of critical system paths that are protected from direct access.
- * This includes all dangerous base paths plus additional system directories
- * that should never be accessed through the file system bridge for security reasons.
- *
- * These paths represent:
- * - Root filesystem (`/`)
- * - System binaries (`/usr`, `/bin`, `/sbin`)
- * - Configuration files (`/etc`)
- * - System data (`/var`, `/sys`, `/proc`)
- * - Device files (`/dev`)
- * - Boot files (`/boot`)
- *
- * @internal
- * @see {@link DANGEROUS_BASE_PATHS} for base path validation
- */
-const CRITICAL_SYSTEM_PATHS = ["/", "/usr", "/bin", "/sbin", "/etc", "/var", "/sys", "/proc", "/dev", "/boot"];
-
 async function safeExists(path: string): Promise<boolean> {
   try {
-    await stat(path);
+    await fsp.stat(path);
     return true;
   } catch {
     return false;
   }
 }
 
-function normalizePath(basePath: string, requestPath: string): string {
+export function resolveSafePath(basePath: string, inputPath: string): string {
+  // fast check for dangerous control characters
+  if (/[\0\n\r]/.test(inputPath)) {
+    throw new Error(`Path traversal detected: ${inputPath} resolves outside base directory`);
+  }
+
+  // decode URL-encoded characters once to detect encoded traversal attempts
+  let decodedPath = inputPath;
+  if (inputPath.includes("%")) {
+    try {
+      decodedPath = decodeURIComponent(inputPath);
+    } catch {
+      // If decoding fails, use original path
+    }
+  }
+
   const resolvedBasePath = nodePath.resolve(basePath);
-  const resolvedPath = nodePath.resolve(resolvedBasePath, requestPath);
 
-  // ensure path stays within basePath
-  invariant(
-    resolvedPath.startsWith(resolvedBasePath + nodePath.sep) || resolvedPath === resolvedBasePath,
-    `Path traversal detected: "${requestPath}" resolves to "${resolvedPath}" which is outside basePath "${resolvedBasePath}"`,
-  );
+  // handle absolute paths by treating them as relative to base
+  const cleanPath = nodePath.isAbsolute(decodedPath)
+    ? nodePath.normalize(decodedPath.slice(1))
+    : nodePath.normalize(decodedPath);
 
-  // prevent access to critical system paths
-  invariant(
-    !CRITICAL_SYSTEM_PATHS.includes(resolvedPath),
-    `Critical system path access denied: "${resolvedPath}" is protected`,
-  );
+  const resolvedPath = nodePath.resolve(resolvedBasePath, cleanPath);
+
+  // check if resolved path is within the base directory
+  if (!isWithinBase(resolvedPath, resolvedBasePath)) {
+    throw new Error(`Path traversal detected: ${inputPath} resolves outside base directory`);
+  }
 
   return resolvedPath;
 }
 
+function isWithinBase(resolvedPath: string, basePath: string): boolean {
+  // Handle root base path case
+  if (basePath === "/") {
+    return resolvedPath === "/" || resolvedPath.startsWith("/");
+  }
+
+  // For non-root base paths, check if resolved path starts with base + separator or equals base
+  return resolvedPath.startsWith(basePath + nodePath.sep) || resolvedPath === basePath;
+}
+
 const NodeFileSystemBridge = defineFileSystemBridge({
   optionsSchema: z.object({
-    basePath: z.string().refine((basePath) => !DANGEROUS_BASE_PATHS.includes(nodePath.resolve(basePath)), {
-      message: "Base path cannot resolve to a dangerous system path",
-      path: ["basePath"],
-    }),
+    basePath: z.string(),
   }),
   capabilities: {
     exists: true,
@@ -85,16 +71,18 @@ const NodeFileSystemBridge = defineFileSystemBridge({
     rm: true,
   },
   setup({ options }) {
-    const basePath = options.basePath;
+    const basePath = nodePath.resolve(options.basePath);
+
     return {
       async read(path) {
-        return readFile(normalizePath(basePath, path), "utf-8");
+        const resolvedPath = resolveSafePath(basePath, path);
+        return fsp.readFile(resolvedPath, "utf-8");
       },
       async exists(path) {
-        return safeExists(normalizePath(basePath, path));
+        return safeExists(resolveSafePath(basePath, path));
       },
       async listdir(path, recursive = false) {
-        const targetPath = normalizePath(basePath, path);
+        const targetPath = resolveSafePath(basePath, path);
 
         function createFSEntry(entry: Dirent): FSEntry {
           const pathFromName = prependLeadingSlash(trimTrailingSlash(entry.name));
@@ -113,11 +101,11 @@ const NodeFileSystemBridge = defineFileSystemBridge({
         }
 
         if (!recursive) {
-          const entries = await readdir(targetPath, { withFileTypes: true });
+          const entries = await fsp.readdir(targetPath, { withFileTypes: true });
           return entries.map((entry) => createFSEntry(entry));
         }
 
-        const allEntries = await readdir(targetPath, {
+        const allEntries = await fsp.readdir(targetPath, {
           withFileTypes: true,
           recursive: true,
         });
@@ -154,23 +142,23 @@ const NodeFileSystemBridge = defineFileSystemBridge({
         return rootEntries;
       },
       async write(path, data, encoding = "utf-8") {
-        const fullPath = normalizePath(basePath, path);
-        const parentDir = nodePath.dirname(fullPath);
+        const resolvedPath = resolveSafePath(basePath, path);
+        const parentDir = nodePath.dirname(resolvedPath);
 
         if (!(await safeExists(parentDir))) {
           // create parent directories if they don't exist
-          await mkdir(parentDir, { recursive: true });
+          await fsp.mkdir(parentDir, { recursive: true });
         }
 
-        return writeFile(fullPath, data, { encoding });
+        return fsp.writeFile(resolvedPath, data, { encoding });
       },
       async mkdir(path) {
         // mkdir returns the first directory path, when recursive is true
-        await mkdir(normalizePath(basePath, path), { recursive: true });
+        await fsp.mkdir(resolveSafePath(basePath, path), { recursive: true });
         return void 0;
       },
       async rm(path, options) {
-        return rm(normalizePath(basePath, path), {
+        return fsp.rm(resolveSafePath(basePath, path), {
           recursive: options?.recursive ?? false,
           force: options?.force ?? false,
         });
