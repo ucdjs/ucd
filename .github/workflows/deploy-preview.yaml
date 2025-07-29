@@ -34,7 +34,7 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: github.repository_owner == 'ucdjs'
+    if: github.repository == 'ucdjs/ucd'
     strategy:
       matrix:
         app:
@@ -135,85 +135,32 @@ jobs:
           CLEANED_URL=$(echo "$DEPLOYMENT_URL" | sed 's/ (custom domain)//')
           echo "deployment-url=https://$CLEANED_URL" >> "$GITHUB_OUTPUT"
 
-      - name: write deployment url to summary
-        env:
-          APP: ${{ matrix.app }}
-          DEPLOYMENT_URL: ${{ steps.clean-url.outputs.deployment-url }}
-        run: |
-          echo "## $APP Deployment" >> $GITHUB_STEP_SUMMARY
-          echo "**URL:** $DEPLOYMENT_URL" >> $GITHUB_STEP_SUMMARY
-
-          # Write to a file for the comment job to read
-          mkdir -p /tmp/deployment-urls
-          echo "$DEPLOYMENT_URL" > /tmp/deployment-urls/${APP}-url.txt
-
-      - name: upload deployment url
-        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v4.5.0
-        env:
-          APP: ${{ matrix.app }}
-        with:
-          name: deployment-url-${{ env.APP }}
-          path: /tmp/deployment-urls/${{ env.APP }}-url.txt
-          retention-days: 1
-
-  update-pr-comment:
-    runs-on: ubuntu-latest
-    if: github.event.pull_request.number && needs.deploy.result == 'success'
-    needs: deploy
-    permissions:
-      pull-requests: write
-    steps:
-      - name: download api deployment url
-        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
-        with:
-          name: deployment-url-api
-          path: /tmp/
-        continue-on-error: true
-
-      - name: download web deployment url
-        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
-        with:
-          name: deployment-url-web
-          path: /tmp/
-        continue-on-error: true
-
-      - name: read deployment urls
-        id: read-urls
-        run: |
-          if [ -f /tmp/api-url.txt ]; then
-            API_URL=$(cat /tmp/api-url.txt)
-            echo "api-url=$API_URL" >> "$GITHUB_OUTPUT"
-          fi
-          if [ -f /tmp/web-url.txt ]; then
-            web_URL=$(cat /tmp/web-url.txt)
-            echo "web-url=$web_URL" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: find existing comment
         id: find-comment
         uses: peter-evans/find-comment@3eae4d37986fb5a8592848f6a574fdf654e61f9e # v3.1.0
+        env:
+          APP: ${{ matrix.app }}
         with:
           issue-number: ${{ github.event.pull_request.number }}
           comment-author: "github-actions[bot]"
-          body-includes: <!-- worker-preview -->
+          body-includes: <!-- worker-preview:${{ env.APP }} -->
 
       - name: create or update PR comment
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         env:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-          API_URL: ${{ steps.read-urls.outputs.api-url }}
-          WEB_URL: ${{ steps.read-urls.outputs.web-url }}
+          APP: ${{ matrix.app }}
+          DEPLOYMENT_URL: ${{ steps.clean-url.outputs.deployment-url }}
         with:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
           body: |
-            <!-- worker-preview -->
-            ## Preview Deployments
+            <!-- worker-preview:${{ env.APP }} -->
+            ## Preview Deployment for ${{ env.APP}}
 
-            The workers have been deployed successfully.
+            The ${{ env.APP }} worker has been deployed successfully.
 
-            ${{ env.API_URL && format('**API Preview URL:** {0}', env.API_URL) || '' }}
-            ${{ env.web_URL && format('**WEB Preview URL:** {0}', env.WEB_URL) || '' }}
+            ${{ env.DEPLOYMENT_URL && format('**Preview URL:** {0}', env.DEPLOYMENT_URL) || '' }}
 
             This preview was built from commit ${{ env.HEAD_SHA }}
 
