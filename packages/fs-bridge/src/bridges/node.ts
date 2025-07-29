@@ -46,7 +46,7 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
     try {
       decodedPath = decodeURIComponent(inputPath);
     } catch {
-      // If decoding fails, use original path
+      throw new Error(`Invalid URL encoding in path: ${inputPath}`);
     }
   }
 
