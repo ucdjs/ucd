@@ -54,7 +54,7 @@ jobs:
         uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
 
       - name: setup node
-        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: lts/*
 
@@ -101,7 +101,7 @@ jobs:
         if: ${{ github.event.inputs.dry-run != 'true' && matrix.app == 'api' }}
         env:
           API_VERSION: ${{ steps.api-version.outputs.version || 'latest' }}
-        uses: cloudflare/wrangler-action@392082e81ffbcb9ebdde27400634aa004b35ea37 # v3.14.0
+        uses: cloudflare/wrangler-action@da0e0dfe58b7a431659754fdf3f186c529afbe65 # v3.14.1
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           workingDirectory: ./apps/api
@@ -114,7 +114,7 @@ jobs:
       - name: deploy web
         id: deploy-web
         if: ${{ github.event.inputs.dry-run != 'true' && matrix.app == 'web' }}
-        uses: cloudflare/wrangler-action@392082e81ffbcb9ebdde27400634aa004b35ea37 # v3.14.0
+        uses: cloudflare/wrangler-action@da0e0dfe58b7a431659754fdf3f186c529afbe65 # v3.14.1
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           workingDirectory: ./apps/web
@@ -136,7 +136,7 @@ jobs:
           CLEANED_URL=$(echo "$DEPLOYMENT_URL" | sed 's/ (custom domain)//')
           echo "deployment-url=https://$CLEANED_URL" >> "$GITHUB_OUTPUT"
 
-          echo "capitalized-app=$(echo "${{ env.APP }}" | awk '{print toupper(substr($0,1,1)) substr($0,2)}')" >> "$GITHUB_OUTPUT"
+          echo "capitalized-app=$(echo "$APP" | awk '{print toupper(substr($0,1,1)) substr($0,2)}')" >> "$GITHUB_OUTPUT"
 
       - name: find existing comment
         id: find-comment
