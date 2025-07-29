@@ -85,7 +85,7 @@ describe("store configuration", () => {
     it("should create Node.js store with custom base URL", async () => {
       const customBaseUrl = "https://custom.node.ucdjs.dev";
       const storeDir = await testdir({
-        ".ucd-store.json": "[]",
+        ".ucd-store.json": JSON.stringify({}),
       });
 
       const store = await createNodeUCDStore({
@@ -100,7 +100,7 @@ describe("store configuration", () => {
     it("should create Node.js store with global filters", async () => {
       const filters = ["*.txt", "!*backup*"];
       const storeDir = await testdir({
-        ".ucd-store.json": "[]",
+        ".ucd-store.json": JSON.stringify({}),
       });
 
       const store = await createNodeUCDStore({
