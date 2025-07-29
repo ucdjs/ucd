@@ -629,4 +629,42 @@ describe("resolveSafePath", () => {
     const result = resolveSafePath("/base", longPath);
     expect(result).toMatch(/^\/base\/a(\/a)*\/file\.txt$/);
   });
+
+  describe("root base path behavior", () => {
+    it("should allow access to filesystem paths when base is root (expected behavior)", () => {
+      // When base path is "/", the user has intentionally given access to entire filesystem
+      // This is NOT a vulnerability - it's the expected behavior when someone chooses "/" as base
+
+      const systemPaths = [
+        "/etc/passwd",
+        "/var/log/system.log",
+        "/home/user/.ssh/id_rsa",
+        "/tmp/file.txt",
+      ];
+
+      for (const path of systemPaths) {
+        // This should PASS because user chose "/" as base - they want filesystem access
+        const result = resolveSafePath("/", path);
+        expect(result).toBe(path);
+      }
+    });
+
+    it("should handle traversal attempts with root base (resolves within root)", () => {
+      // With root base, "/../outside.txt" actually resolves to "/outside.txt" which is valid
+      // You cannot escape above root directory, so this is safe behavior
+      const result = resolveSafePath("/", "/../outside.txt");
+      expect(result).toBe("/outside.txt");
+    });
+
+    it.each([
+      ["", "/"],
+      [".", "/"],
+      ["/", "/"],
+      ["etc/passwd", "/etc/passwd"],
+      ["/etc/passwd", "/etc/passwd"],
+    ])("should resolve root-relative paths: input='%s' -> expected='%s'", (input, expected) => {
+      const result = resolveSafePath("/", input);
+      expect(result).toBe(expected);
+    });
+  });
 });
