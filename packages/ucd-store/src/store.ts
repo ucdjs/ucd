@@ -6,6 +6,7 @@ import type { StoreCapabilities, UCDStoreOptions } from "./types";
 import { invariant, prependLeadingSlash } from "@luxass/utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { createClient, isApiError } from "@ucdjs/fetch";
+import { __INTERNAL_BRIDGE_DEBUG_SYMBOL_DO_NOT_USE_OR_YOU_WILL_BE_FIRED__ } from "@ucdjs/fs-bridge/internal";
 import { UCDStoreManifestSchema } from "@ucdjs/schemas";
 import { createPathFilter, safeJsonParse } from "@ucdjs/utils";
 import defu from "defu";
@@ -116,7 +117,17 @@ export class UCDStore {
    */
   async initialize(): Promise<void> {
     const isValidStore = await this.#fs.exists(this.#manifestPath);
-    console.error("Manifest Path", this.#manifestPath, isValidStore, await this.#fs.listdir(".", true));
+
+    console.error({
+      isValidStore,
+      basePath: this.basePath,
+      capabilities: this.#capabilities,
+      manifestPath: this.#manifestPath,
+      fsCapabilities: this.#fs[__INTERNAL_BRIDGE_DEBUG_SYMBOL_DO_NOT_USE_OR_YOU_WILL_BE_FIRED__],
+    });
+    if (this.#fs[__INTERNAL_BRIDGE_DEBUG_SYMBOL_DO_NOT_USE_OR_YOU_WILL_BE_FIRED__].listdir) {
+      console.error(await this.#fs.listdir(".", true));
+    }
     if (isValidStore) {
       await this.#loadVersionsFromStore();
     } else {
