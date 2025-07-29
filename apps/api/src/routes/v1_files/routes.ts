@@ -1,4 +1,4 @@
-import type { UCDStore } from "@ucdjs/schemas";
+import type { UCDStoreManifest } from "@ucdjs/schemas";
 import type { HonoEnv } from "../../types";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { trimTrailingSlash } from "@luxass/utils";
@@ -26,7 +26,7 @@ V1_FILES_ROUTER.openapi(GET_UCD_STORE, async (c) => {
 
   const files = await parseUnicodeDirectory(html);
 
-  const store: UCDStore = {};
+  const store: UCDStoreManifest = {};
 
   for (const file of files.filter((file) => {
     const match = file.name.match(/^(\d+)\.(\d+)\.(\d+)$/);

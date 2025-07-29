@@ -220,6 +220,126 @@ describe("node fs-bridge", () => {
     });
   });
 
+  describe("absolute path handling", () => {
+    it("should handle absolute paths for read operation", async () => {
+      const testDir = await testdir({ "absolute-test.txt": "absolute content" });
+      const bridge = NodeFileSystemBridge({ basePath: testDir });
+
+      const content = await bridge.read("/absolute-test.txt");
+      expect(content).toBe("absolute content");
+    });
+
+    it("should handle absolute paths for write operation", async () => {
+      const testDir = await testdir({});
+      const bridge = NodeFileSystemBridge({ basePath: testDir });
+
+      await bridge.write("/absolute-write.txt", "absolute write content");
+      const content = await bridge.read("/absolute-write.txt");
+      expect(content).toBe("absolute write content");
+    });
+
+    it("should handle absolute paths for exists operation", async () => {
+      const testDir = await testdir({ "absolute-exists.txt": "exists" });
+      const bridge = NodeFileSystemBridge({ basePath: testDir });
+
+      const exists = await bridge.exists("/absolute-exists.txt");
+      expect(exists).toBe(true);
+
+      const notExists = await bridge.exists("/absolute-missing.txt");
+      expect(notExists).toBe(false);
+    });
+
+    it("should handle absolute paths for mkdir operation", async () => {
+      const testDir = await testdir({});
+      const bridge = NodeFileSystemBridge({ basePath: testDir });
+
+      await bridge.mkdir("/absolute-dir");
+      const exists = await bridge.exists("/absolute-dir");
+      expect(exists).toBe(true);
+    });
+
+    it("should handle absolute paths for nested directories", async () => {
+      const testDir = await testdir({});
+      const bridge = NodeFileSystemBridge({ basePath: testDir });
+
+      await bridge.mkdir("/absolute/nested/deep");
+      expect(await bridge.exists("/absolute")).toBe(true);
+      expect(await bridge.exists("/absolute/nested")).toBe(true);
+      expect(await bridge.exists("/absolute/nested/deep")).toBe(true);
+    });
+
+    it("should handle absolute paths for listdir operation", async () => {
+      const testDir = await testdir({
+        "root-file.txt": "root",
+        "absolute-dir": {
+          "nested.txt": "nested content",
+        },
+      });
+      const bridge = NodeFileSystemBridge({ basePath: testDir });
+
+      const files = await bridge.listdir("/absolute-dir");
+      expect(files).toHaveLength(1);
+      expect(files[0]).toEqual({
+        type: "file",
+        name: "nested.txt",
+        path: "/nested.txt",
+      });
+    });
+
+    it("should handle absolute paths for rm operation", async () => {
+      const testDir = await testdir({
+        "absolute-remove.txt": "remove me",
+        "absolute-dir": {
+          "nested.txt": "nested",
+        },
+      });
+      const bridge = NodeFileSystemBridge({ basePath: testDir });
+
+      await bridge.rm("/absolute-remove.txt");
+      expect(await bridge.exists("/absolute-remove.txt")).toBe(false);
+
+      await bridge.rm("/absolute-dir", { recursive: true });
+      expect(await bridge.exists("/absolute-dir")).toBe(false);
+    });
+
+    it("should write to absolute nested paths and create parent directories", async () => {
+      const testDir = await testdir({});
+      const bridge = NodeFileSystemBridge({ basePath: testDir });
+
+      await bridge.write("/absolute/deep/nested/file.txt", "deep absolute content");
+      const content = await bridge.read("/absolute/deep/nested/file.txt");
+      expect(content).toBe("deep absolute content");
+
+      // verify parent directories were created
+      expect(await bridge.exists("/absolute")).toBe(true);
+      expect(await bridge.exists("/absolute/deep")).toBe(true);
+      expect(await bridge.exists("/absolute/deep/nested")).toBe(true);
+    });
+
+    it("should handle mixed absolute and relative paths in workflow", async () => {
+      const testDir = await testdir({});
+      const bridge = NodeFileSystemBridge({ basePath: testDir });
+
+      // Create using absolute path
+      await bridge.write("/absolute-config.json", '{"version": "1.0.0"}');
+      
+      // Create using relative path  
+      await bridge.write("relative-readme.md", "# Project");
+      
+      // Read using absolute path
+      const config = await bridge.read("/absolute-config.json");
+      expect(JSON.parse(config).version).toBe("1.0.0");
+      
+      // Read using relative path
+      const readme = await bridge.read("relative-readme.md");
+      expect(readme).toBe("# Project");
+      
+      // Verify both exist using different path styles
+      expect(await bridge.exists("/absolute-config.json")).toBe(true);
+      expect(await bridge.exists("relative-readme.md")).toBe(true);
+    });
+  });
+
   describe("complex workflows", () => {
     it("should manage a project workspace", async () => {
       const testDir = await testdir({});

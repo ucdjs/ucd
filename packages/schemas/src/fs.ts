@@ -1,7 +1,7 @@
 import { dedent } from "@luxass/utils";
 import { z } from "zod";
 
-export const UCDStoreSchema = z.record(
+export const UCDStoreManifestSchema = z.record(
   z.string(),
   z.string(),
 ).meta({
@@ -22,7 +22,7 @@ export const UCDStoreSchema = z.record(
   `,
 });
 
-export type UCDStore = z.output<typeof UCDStoreSchema>;
+export type UCDStoreManifest = z.output<typeof UCDStoreManifestSchema>;
 
 const BaseItemSchema = z.object({
   name: z.string(),

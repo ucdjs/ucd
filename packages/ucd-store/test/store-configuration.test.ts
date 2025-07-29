@@ -19,7 +19,7 @@ describe("store configuration", () => {
       const customFS = createMemoryMockFS();
 
       // Initialize with empty manifest
-      await customFS.write("/test/.ucd-store.json", "[]");
+      await customFS.write("/test/.ucd-store.json", "{}");
 
       const store = await createUCDStore({
         basePath: "/test",
@@ -61,7 +61,7 @@ describe("store configuration", () => {
   describe("createNodeUCDStore configurations", () => {
     it("should create Node.js store with default options", async () => {
       const storeDir = await testdir({
-        ".ucd-store.json": JSON.stringify([]),
+        ".ucd-store.json": JSON.stringify({}),
       });
 
       const store = await createNodeUCDStore({
