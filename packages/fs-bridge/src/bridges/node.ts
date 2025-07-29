@@ -37,7 +37,7 @@ async function safeExists(path: string): Promise<boolean> {
 export function resolveSafePath(basePath: string, inputPath: string): string {
   // fast check for dangerous control characters
   if (/[\0\n\r]/.test(inputPath)) {
-    throw new Error(`Path traversal detected: ${inputPath} resolves outside base directory`);
+    throw new Error(`Path contains dangerous control characters: ${inputPath}`);
   }
 
   // decode URL-encoded characters once to detect encoded traversal attempts

@@ -504,7 +504,7 @@ describe("resolveSafePath", () => {
     "file\x0D.txt",
   ])("should reject dangerous control characters in '%s'", (inputPath) => {
     expect(() => resolveSafePath(basePath, inputPath))
-      .toThrow();
+      .toThrow("Path contains dangerous control characters");
   });
 
   describe("base path variations", () => {
@@ -594,10 +594,15 @@ describe("resolveSafePath", () => {
     ["%2e%2e%2foutside.txt", "URL encoded dot-dot-slash"],
     ["%2e%2e%2f%2e%2e%2foutside.txt", "URL encoded double dot-dot-slash"],
     ["\u002E\u002E/outside.txt", "Unicode encoded traversal"],
-    ["../outside.txt\r\n", "CRLF injection"],
   ])("should reject encoded traversal: %s (%s)", (inputPath) => {
     expect(() => resolveSafePath("/base", inputPath))
       .toThrow("Path traversal detected");
+  });
+
+  it("should reject CRLF injection with control character error", () => {
+    // CRLF injection contains control characters, so it's caught by that check first
+    expect(() => resolveSafePath("/base", "../outside.txt\r\n"))
+      .toThrow("Path contains dangerous control characters");
   });
 
   it.each([
