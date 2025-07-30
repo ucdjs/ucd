@@ -118,7 +118,16 @@ const HTTPFileSystemBridge = defineFileSystemBridge({
           .then((response) => {
             return response.ok;
           })
-          .catch(() => false);
+          .catch((err) => {
+            // if the error is a msw error, we rethrow it
+            // this is useful for testing purposes
+            // as it allows us to catch unhandled requests
+            if (err instanceof Error && err.message.startsWith("[MSW]")) {
+              throw err;
+            }
+
+            return false;
+          });
       },
       async mkdir() {
         // This method is intentionally left unimplemented because this is a read-only bridge.
