@@ -120,7 +120,7 @@ describe("store configuration", () => {
     });
   });
 
-  describe.only("createHTTPUCDStore configurations", () => {
+  describe("createHTTPUCDStore configurations", () => {
     it("should create HTTP store with default options", async () => {
       mockFetch([
         [["GET", "HEAD"], `${UCDJS_API_BASE_URL}/api/v1/files/.ucd-store.json`, () => {
