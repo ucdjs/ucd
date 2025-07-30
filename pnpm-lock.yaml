@@ -91,8 +91,8 @@ catalogs:
       specifier: ^4.3.19
       version: 4.3.19
     apache-autoindex-parse:
-      specifier: ^2.4.0
-      version: 2.4.0
+      specifier: ^3.0.0
+      version: 3.0.0
     defu:
       specifier: ^6.1.4
       version: 6.1.4
@@ -260,7 +260,7 @@ importers:
         version: link:../../packages/worker-shared
       apache-autoindex-parse:
         specifier: catalog:prod
-        version: 2.4.0
+        version: 3.0.0
       hono:
         specifier: catalog:workers
         version: 4.8.10
@@ -2668,8 +2668,8 @@ packages:
     resolution: {integrity: sha512-KMReFUr0B4t+D+OBkjR3KYqvocp2XaSzO55UcB6mgQMd3KbcE+mWTyvVV7D/zsdEbNnV6acZUutkiHQXvTr1Rw==}
     engines: {node: '>= 8'}
 
-  apache-autoindex-parse@2.4.0:
-    resolution: {integrity: sha512-9xSNPP9EIfc4QrzstWizYSGz18zyJkos/kR/YObesfLd/BDjebqeEoLU3ilhfTb51f07N9wUjSyE1Zl2hmfLYw==}
+  apache-autoindex-parse@3.0.0:
+    resolution: {integrity: sha512-mzZvGV9ULHrNSz7rziq5/owaoLzE7IpNNZt/lx0chgFL21b/AG49o0/XJPJbW6u0MtSX/OsewC9arcbPBVlxYQ==}
 
   are-docs-informative@0.0.2:
     resolution: {integrity: sha512-ixiS0nLNNG5jNQzgZJNoUpBKdo9yTYZMGJ+QgT2jmjR7G7+QHRCc4v6LQ3NgE7EBJq+o0ams3waJwkrlBom8Ig==}
@@ -7888,7 +7888,7 @@ snapshots:
       normalize-path: 3.0.0
       picomatch: 2.3.1
 
-  apache-autoindex-parse@2.4.0: {}
+  apache-autoindex-parse@3.0.0: {}
 
   are-docs-informative@0.0.2: {}
 
