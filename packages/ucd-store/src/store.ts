@@ -149,7 +149,7 @@ export class UCDStore {
       // validate the manifest content
       const jsonData = safeJsonParse(manifestContent);
       if (!jsonData) {
-        return;
+        throw new UCDStoreError("store manifest is not a valid JSON");
       }
 
       // verify that is an array of objects with version and path properties
