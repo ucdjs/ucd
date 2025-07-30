@@ -125,9 +125,7 @@ export class UCDStore {
       manifestPath: this.#manifestPath,
       fsCapabilities: this.#fs[__INTERNAL_BRIDGE_DEBUG_SYMBOL_DO_NOT_USE_OR_YOU_WILL_BE_FIRED__],
     });
-    if (this.#fs[__INTERNAL_BRIDGE_DEBUG_SYMBOL_DO_NOT_USE_OR_YOU_WILL_BE_FIRED__].listdir) {
-      console.error(await this.#fs.listdir(".", true));
-    }
+
     if (isValidStore) {
       await this.#loadVersionsFromStore();
     } else {
