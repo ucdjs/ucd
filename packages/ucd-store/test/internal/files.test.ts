@@ -1,4 +1,4 @@
-import type { UnicodeTree } from "@ucdjs/fetch";
+import type { ApiError, UnicodeTree } from "@ucdjs/fetch";
 import { HttpResponse, mockFetch } from "#msw-utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { client } from "@ucdjs/fetch";
@@ -26,7 +26,7 @@ describe("getExpectedFilePaths", () => {
           {
             type: "directory",
             name: "ucd",
-            path: "/ucd/",
+            path: "/ucd",
             lastModified: Date.now(),
             children: [
               {
@@ -50,77 +50,31 @@ describe("getExpectedFilePaths", () => {
     ]);
   });
 
-  // it("should throw UCDStoreVersionNotFoundError for unavailable version", async () => {
-  //   const version = "99.0.0";
-  //   const availableVersions = ["14.0.0", "15.0.0", "16.0.0"];
+  it("should throw UCDStoreError when API returns error", async () => {
+    mockFetch([
+      ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions/:version/file-tree`, () => {
+        return HttpResponse.json({
+          message: "Version not found",
+          status: 404,
+          timestamp: new Date().toISOString(),
+        } satisfies ApiError, { status: 404 });
+      }],
+    ]);
 
-  //   await expect(
-  //     getExpectedFilePaths(mockClient, version, availableVersions),
-  //   ).rejects.toThrow(UCDStoreVersionNotFoundError);
+    await expect(
+      getExpectedFilePaths(client, "15.0.0"),
+    ).rejects.toThrow(UCDStoreError);
+  });
 
-  //   expect(mockClient.GET).not.toHaveBeenCalled();
-  // });
+  it("should handle empty file tree", async () => {
+    mockFetch([
+      ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions/:version/file-tree`, () => {
+        return HttpResponse.json([], { status: 200 });
+      }],
+    ]);
 
-  // it("should throw UCDStoreError when API returns error", async () => {
-  //   const version = "15.0.0";
-  //   const availableVersions = ["14.0.0", "15.0.0", "16.0.0"];
-  //   const mockError = { message: "API endpoint not found" };
+    const result = await getExpectedFilePaths(client, "15.0.0");
 
-  //   mockClient.GET.mockResolvedValue({
-  //     data: null,
-  //     error: mockError,
-  //   });
-  //   vi.mocked(isApiError).mockReturnValue(true);
-
-  //   await expect(
-  //     getExpectedFilePaths(mockClient, version, availableVersions),
-  //   ).rejects.toThrow(UCDStoreError);
-  //   await expect(
-  //     getExpectedFilePaths(mockClient, version, availableVersions),
-  //   ).rejects.toThrow("Failed to fetch expected files for version '15.0.0': API endpoint not found");
-  // });
-
-  // it("should handle empty file tree", async () => {
-  //   const version = "15.0.0";
-  //   const availableVersions = ["15.0.0"];
-  //   const mockFileTree = {};
-  //   const expectedPaths: string[] = [];
-
-  //   mockClient.GET.mockResolvedValue({
-  //     data: mockFileTree,
-  //     error: null,
-  //   });
-  //   vi.mocked(isApiError).mockReturnValue(false);
-  //   vi.mocked(flattenFilePaths).mockReturnValue(expectedPaths);
-
-  //   const result = await getExpectedFilePaths(mockClient, version, availableVersions);
-
-  //   expect(result).toEqual([]);
-  //   expect(flattenFilePaths).toHaveBeenCalledWith(mockFileTree, "/15.0.0");
-  // });
-
-  // it("should handle version with special characters", async () => {
-  //   const version = "15.0.0-beta";
-  //   const availableVersions = ["15.0.0-beta"];
-  //   const mockFileTree = { files: ["test.txt"] };
-  //   const expectedPaths = ["/15.0.0-beta/test.txt"];
-
-  //   mockClient.GET.mockResolvedValue({
-  //     data: mockFileTree,
-  //     error: null,
-  //   });
-  //   vi.mocked(isApiError).mockReturnValue(false);
-  //   vi.mocked(flattenFilePaths).mockReturnValue(expectedPaths);
-
-  //   const result = await getExpectedFilePaths(mockClient, version, availableVersions);
-
-  //   expect(mockClient.GET).toHaveBeenCalledWith("/api/v1/versions/{version}/file-tree", {
-  //     params: {
-  //       path: {
-  //         version: "15.0.0-beta",
-  //       },
-  //     },
-  //   });
-  //   expect(result).toEqual(expectedPaths);
-  // });
+    expect(result).toEqual([]);
+  });
 });
