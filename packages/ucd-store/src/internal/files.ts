@@ -30,8 +30,8 @@ export async function getExpectedFilePaths(
     },
   });
 
-  if (isApiError(error)) {
-    throw new UCDStoreError(`Failed to fetch expected files for version '${version}': ${error.message}`);
+  if (isApiError(error) || error != null || (data == null && error == null)) {
+    throw new UCDStoreError(`Failed to fetch expected files for version '${version}': ${error?.message}`);
   }
 
   return flattenFilePaths(data!, `/${version}`);
