@@ -1,4 +1,11 @@
 export {
+  UCDStoreError,
+  UCDStoreFileNotFoundError,
+  UCDStoreUnsupportedFeature,
+  UCDStoreVersionNotFoundError,
+} from "./errors";
+
+export {
   createHTTPUCDStore,
   createNodeUCDStore,
   createUCDStore,
