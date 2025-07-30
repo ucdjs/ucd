@@ -1,9 +1,10 @@
 import { createTsdownConfig } from "@ucdjs/tsdown-config";
 
 export default createTsdownConfig({
-  entry: {
-    index: "./src/index.ts",
-    node: "./src/bridges/node.ts",
-    http: "./src/bridges/http.ts",
-  },
+  entry: [
+    "./src/index.ts",
+    "./src/internal.ts",
+    "./src/bridges/node.ts",
+    "./src/bridges/http.ts",
+  ],
 });

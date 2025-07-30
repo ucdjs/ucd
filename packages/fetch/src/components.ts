@@ -11,5 +11,5 @@ export type UnicodeVersion = components["schemas"]["UnicodeVersion"];
 export type UnicodeVersionList = components["schemas"]["UnicodeVersionList"];
 export type UnicodeTreeNode = components["schemas"]["UnicodeTreeNode"];
 export type UnicodeTree = components["schemas"]["UnicodeTree"];
-export type UCDStore = components["schemas"]["UCDStore"];
+export type UCDStoreManifest = components["schemas"]["UCDStoreManifest"];
 export type FileEntry = components["schemas"]["FileEntry"];

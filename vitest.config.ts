@@ -15,7 +15,7 @@ const aliases = readdirSync(new URL("./packages", import.meta.url).pathname)
       return acc;
     },
     {
-      "#msw-utils": `${root}/test/msw-utils/msw.ts`,
+      "#msw-utils": `${root}test/msw-utils/msw.ts`,
     });
 
 const hiddenLogs = [

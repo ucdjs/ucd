@@ -1,2 +1,8 @@
 extends:
   - "@luxass/spectral-ruleset"
+
+overrides:
+  - files:
+      - .generated/openapi.json#/paths/~1api~1v1~1files~1.ucd-store.json
+    rules:
+      luxass/no-file-extensions-in-paths: off

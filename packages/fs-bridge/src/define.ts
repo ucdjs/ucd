@@ -2,8 +2,10 @@ import type {
   FileSystemBridge,
   FileSystemBridgeCapabilities,
   FileSystemBridgeObject,
+  FileSystemBridgeOperationsWithSymbol,
 } from "./types";
 import { z } from "zod";
+import { __INTERNAL_BRIDGE_DEBUG_SYMBOL_DO_NOT_USE_OR_YOU_WILL_BE_FIRED__ } from "./internal";
 
 const DEFAULT_SUPPORTED_CAPABILITIES: FileSystemBridgeCapabilities = {
   exists: true,
@@ -33,10 +35,14 @@ export function defineFileSystemBridge<
 
     const { capabilities = DEFAULT_SUPPORTED_CAPABILITIES, state } = fsBridge;
 
-    return fsBridge.setup({
+    const bridge = fsBridge.setup({
       options,
       state: state ?? {} as TState,
       capabilities,
     });
+
+    return Object.assign(bridge, {
+      [__INTERNAL_BRIDGE_DEBUG_SYMBOL_DO_NOT_USE_OR_YOU_WILL_BE_FIRED__]: capabilities,
+    }) satisfies FileSystemBridgeOperationsWithSymbol;
   };
 }

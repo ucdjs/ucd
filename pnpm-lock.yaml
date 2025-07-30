@@ -108,6 +108,9 @@ catalogs:
     p-limit:
       specifier: ^6.2.0
       version: 6.2.0
+    pathe:
+      specifier: ^2.0.3
+      version: 2.0.3
     picomatch:
       specifier: ^4.0.3
       version: 4.0.3
@@ -632,12 +635,21 @@ importers:
       '@ucdjs/fetch':
         specifier: workspace:*
         version: link:../fetch
+      '@ucdjs/fs-bridge':
+        specifier: workspace:*
+        version: link:../fs-bridge
+      '@ucdjs/schemas':
+        specifier: workspace:*
+        version: link:../schemas
       '@ucdjs/utils':
         specifier: workspace:*
         version: link:../utils
       defu:
         specifier: catalog:prod
         version: 6.1.4
+      pathe:
+        specifier: catalog:prod
+        version: 2.0.3
       zod:
         specifier: catalog:prod
         version: 4.0.13
