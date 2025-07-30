@@ -303,16 +303,14 @@ describe("store configuration", () => {
       expect(store.versions).toEqual([]);
     });
 
-    it("should handle malformed manifest gracefully", async () => {
+    it("should handle malformed manifest", async () => {
       const storeDir = await testdir({
         ".ucd-store.json": "invalid json",
       });
 
-      const store = await createNodeUCDStore({
+      await expect(createNodeUCDStore({
         basePath: storeDir,
-      });
-
-      expect(store.versions).toEqual([]);
+      })).rejects.toThrow("store manifest is not a valid JSON");
     });
   });
 
