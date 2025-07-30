@@ -2,7 +2,7 @@ import type { UCDClient } from "@ucdjs/fetch";
 import type { FileSystemBridgeOperationsWithSymbol } from "@ucdjs/fs-bridge";
 import type { UCDStoreManifest } from "@ucdjs/schemas";
 import type { PathFilter } from "@ucdjs/utils";
-import type { StoreCapabilities, UCDStoreOptions } from "./types";
+import type { AnalyzeOptions, StoreCapabilities, UCDStoreOptions, VersionAnalysis } from "./types";
 import { invariant, prependLeadingSlash } from "@luxass/utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { createClient, isApiError } from "@ucdjs/fetch";
@@ -10,8 +10,8 @@ import { UCDStoreManifestSchema } from "@ucdjs/schemas";
 import { createPathFilter, safeJsonParse } from "@ucdjs/utils";
 import defu from "defu";
 import { join } from "pathe";
-import { UCDStoreError } from "./errors";
-import { inferStoreCapabilities } from "./internal/capabilities";
+import { UCDStoreError, UCDStoreVersionNotFoundError } from "./errors";
+import { assertCapabilities, inferStoreCapabilities, requiresCapabilities } from "./internal/capabilities";
 
 export class UCDStore {
   /**
@@ -66,7 +66,7 @@ export class UCDStore {
    * allowing the store to work with different storage backends (local filesystem,
    * remote HTTP, in-memory, etc.) through a unified interface.
    *
-   * @returns {FileSystemBridgeOperations} The FileSystemBridge instance configured for this store
+   * @returns {FileSystemBridgeOperationsWithSymbol} The FileSystemBridge instance configured for this store
    */
   get fs(): FileSystemBridgeOperationsWithSymbol {
     return this.#fs;
@@ -140,6 +140,40 @@ export class UCDStore {
 
       await this.#createNewLocalStore(this.#versions);
     }
+  }
+
+  @requiresCapabilities("analyze")
+  async analyze(options: AnalyzeOptions): Promise<VersionAnalysis[]> {
+    const {
+      checkOrphaned = false,
+      versions = this.#versions,
+    } = options;
+
+    let versionAnalyses: VersionAnalysis[] = [];
+
+    try {
+      const promises = versions.map(async (version) => {
+        if (!this.versions.includes(version)) {
+          throw new UCDStoreVersionNotFoundError(version);
+        }
+
+        return this.#analyzeVersion(version, {
+          checkOrphaned,
+        });
+      });
+
+      versionAnalyses = await Promise.all(promises);
+
+      return versionAnalyses;
+    } catch (err) {
+      console.error(`Error during store analysis: ${err instanceof Error ? err.message : String(err)}`);
+      return versionAnalyses;
+    }
+  }
+
+  async #analyzeVersion(version: string, options: AnalyzeOptions): Promise<VersionAnalysis> {
+    assertCapabilities("analyze", this.#fs);
+    throw new UCDStoreError("Method not implemented: #analyzeVersion");
   }
 
   async #loadVersionsFromStore(): Promise<void> {
