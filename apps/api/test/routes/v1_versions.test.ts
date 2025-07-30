@@ -360,7 +360,7 @@ describe("v1_versions", () => {
     const files: TraverseEntry[] = [
       { type: "file", name: "file1.txt", path: "/Public/15.1.0/ucd/file1.txt" },
       { type: "file", name: "file2.txt", path: "/Public/15.1.0/ucd/file2.txt" },
-      { type: "directory", name: "subdir", path: "/Public/15.1.0/ucd/subdir/", children: [] },
+      { type: "directory", name: "subdir", path: "/Public/15.1.0/ucd/subdir", children: [] },
       { type: "file", name: "file3.txt", path: "/Public/15.1.0/ucd/subdir/file3.txt" },
       { type: "file", name: "emoji-data.txt", path: "/Public/15.1.0/ucd/emoji/emoji-data.txt" },
     ];
