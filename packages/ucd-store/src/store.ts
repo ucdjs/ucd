@@ -12,6 +12,7 @@ import defu from "defu";
 import { join } from "pathe";
 import { UCDStoreError, UCDStoreVersionNotFoundError } from "./errors";
 import { assertCapabilities, inferStoreCapabilities, requiresCapabilities } from "./internal/capabilities";
+import { getExpectedFilePaths } from "./internal/files";
 
 export class UCDStore {
   /**
@@ -173,7 +174,39 @@ export class UCDStore {
 
   async #analyzeVersion(version: string, options: AnalyzeOptions): Promise<VersionAnalysis> {
     assertCapabilities("analyze", this.#fs);
-    throw new UCDStoreError("Method not implemented: #analyzeVersion");
+    const { checkOrphaned } = options;
+
+    if (!this.#versions.includes(version)) {
+      throw new UCDStoreVersionNotFoundError(version);
+    }
+
+    // get the expected files for this version
+    const expectedFiles = await getExpectedFilePaths(this.#client, version);
+
+    // get the actual files from the store
+    const actualFiles = await this.getFilePaths(version);
+
+    const orphanedFiles: string[] = [];
+    const missingFiles: string[] = [];
+
+    if (checkOrphaned) {
+      for (const file of actualFiles) {
+        // if file is not in expected files, it's orphaned
+        if (!expectedFiles.includes(file)) {
+          orphanedFiles.push(file);
+        }
+      }
+    }
+
+    const isComplete = orphanedFiles.length === 0 && missingFiles.length === 0;
+    return {
+      version,
+      orphanedFiles,
+      missingFiles,
+      totalFileCount: expectedFiles.length,
+      fileCount: actualFiles.length,
+      isComplete,
+    };
   }
 
   async #loadVersionsFromStore(): Promise<void> {
