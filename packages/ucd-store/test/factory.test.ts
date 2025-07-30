@@ -240,7 +240,7 @@ describe("store configuration", () => {
 
     it("should infer full capabilities from Node.js filesystem", async () => {
       const storeDir = await testdir({
-        ".ucd-store.json": "[]",
+        ".ucd-store.json": JSON.stringify(DEFAULT_VERSIONS),
       });
 
       const store = await createNodeUCDStore({
@@ -254,6 +254,12 @@ describe("store configuration", () => {
     });
 
     it("should infer limited capabilities from HTTP filesystem", async () => {
+      mockFetch([
+        [["GET", "HEAD"], `${UCDJS_API_BASE_URL}/api/v1/files/.ucd-store.json`, () => {
+          return HttpResponse.json(DEFAULT_VERSIONS);
+        }],
+      ]);
+
       const store = await createHTTPUCDStore();
 
       expect(store.capabilities.analyze).toBe(true);
@@ -265,10 +271,10 @@ describe("store configuration", () => {
 
   describe("store initialization", () => {
     it("should initialize with existing manifest", async () => {
-      const manifest = [
-        { version: "15.0.0", path: "15.0.0" },
-        { version: "15.1.0", path: "15.1.0" },
-      ];
+      const manifest = {
+        "15.1.0": "/15.1.0",
+        "15.0.0": "/15.0.0",
+      } satisfies UCDStoreManifest;
 
       const storeDir = await testdir({
         ".ucd-store.json": JSON.stringify(manifest),
@@ -278,14 +284,14 @@ describe("store configuration", () => {
         basePath: storeDir,
       });
 
-      expect(store.versions).toEqual(["15.0.0", "15.1.0"]);
+      expect(store.versions).toEqual(["15.1.0", "15.0.0"]);
     });
 
     it("should initialize with empty manifest for new store", async () => {
       const storeDir = await testdir({});
 
       mockFetch([
-        [["GET", "HEAD"], `${UCDJS_API_BASE_URL}/api/v1/unicode-versions`, () => {
+        [["GET", "HEAD"], `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
           return HttpResponse.json([]);
         }],
       ]);
@@ -326,7 +332,7 @@ describe("store configuration", () => {
 
     it("should use default base URL when not specified", async () => {
       const storeDir = await testdir({
-        ".ucd-store.json": "[]",
+        ".ucd-store.json": JSON.stringify(DEFAULT_VERSIONS),
       });
 
       const store = await createNodeUCDStore({
@@ -340,13 +346,8 @@ describe("store configuration", () => {
 
   describe("store version management", () => {
     it("should check version existence correctly", async () => {
-      const manifest = [
-        { version: "15.0.0", path: "15.0.0" },
-        { version: "15.1.0", path: "15.1.0" },
-      ];
-
       const storeDir = await testdir({
-        ".ucd-store.json": JSON.stringify(manifest),
+        ".ucd-store.json": JSON.stringify(DEFAULT_VERSIONS),
       });
 
       const store = await createNodeUCDStore({
@@ -359,13 +360,8 @@ describe("store configuration", () => {
     });
 
     it("should handle version list immutability", async () => {
-      const manifest = [
-        { version: "15.0.0", path: "15.0.0" },
-        { version: "15.1.0", path: "15.1.0" },
-      ];
-
       const storeDir = await testdir({
-        ".ucd-store.json": JSON.stringify(manifest),
+        ".ucd-store.json": JSON.stringify(DEFAULT_VERSIONS),
       });
 
       const store = await createNodeUCDStore({
@@ -385,7 +381,7 @@ describe("store configuration", () => {
   describe("store filter configuration", () => {
     it("should apply global filters with preconfigured patterns", async () => {
       const storeDir = await testdir({
-        ".ucd-store.json": "[]",
+        ".ucd-store.json": JSON.stringify(DEFAULT_VERSIONS),
       });
 
       const store = await createNodeUCDStore({
@@ -401,7 +397,7 @@ describe("store configuration", () => {
 
     it("should handle empty global filters", async () => {
       const storeDir = await testdir({
-        ".ucd-store.json": "[]",
+        ".ucd-store.json": JSON.stringify(DEFAULT_VERSIONS),
       });
 
       const store = await createNodeUCDStore({
