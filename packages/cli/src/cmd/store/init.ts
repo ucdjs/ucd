@@ -1,10 +1,10 @@
-/* eslint-disable unused-imports/no-unused-vars */
 import type { Prettify } from "@luxass/utils";
 import type { CLIArguments } from "../../cli-utils";
 import type { CLIStoreCmdSharedFlags } from "./_shared";
-// import { createLocalUCDStore, createRemoteUCDStore } from "@ucdjs/ucd-store";
+import { UCDStoreUnsupportedFeature } from "@ucdjs/ucd-store";
+import { red } from "farver/fast";
 import { printHelp } from "../../cli-utils";
-import { SHARED_FLAGS } from "./_shared";
+import { assertRemoteOrStoreDir, createStoreFromFlags, runVersionPrompt, SHARED_FLAGS } from "./_shared";
 
 export interface CLIStoreInitCmdOptions {
   flags: CLIArguments<Prettify<CLIStoreCmdSharedFlags & {
@@ -19,7 +19,7 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
     printHelp({
       headline: "Initialize an UCD Store",
       commandName: "ucd store init",
-      usage: "<versions...> [...flags]",
+      usage: "[...versions] [...flags]",
       tables: {
         Flags: [
           ...SHARED_FLAGS,
@@ -31,40 +31,62 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
     return;
   }
 
-  if (!versions || versions.length === 0) {
-    console.error("Error: At least one Unicode version must be specified.");
-    console.error("Usage: ucd store init <versions...>");
-    return;
-  }
-
   const {
     storeDir,
-    dryRun: _dryRun,
+    // TODO: handle force flag
     force: _force,
     remote,
     baseUrl,
     patterns,
   } = flags;
 
-  // let store: UCDStore | null = null;
-  // if (remote) {
-  //   store = await createRemoteUCDStore({
-  //     baseUrl,
-  //     globalFilters: patterns,
-  //   });
-  // } else {
-  //   store = await createLocalUCDStore({
-  //     basePath: storeDir,
-  //     baseUrl,
-  //     globalFilters: patterns,
-  //   });
-  // }
+  if (!versions || versions.length === 0) {
+    const pickedVersions = await runVersionPrompt();
 
-  // if (store == null) {
-  //   console.error("Error: Failed to create UCD store.");
-  //   return;
-  // }
+    if (pickedVersions.length === 0) {
+      console.error("No versions selected. Operation cancelled.");
+      return;
+    }
 
-  // eslint-disable-next-line no-console
-  console.log("Initializing UCD Store...");
+    versions = pickedVersions;
+  }
+
+  try {
+    assertRemoteOrStoreDir(flags);
+
+    const store = await createStoreFromFlags({
+      baseUrl,
+      storeDir,
+      remote,
+      patterns,
+    });
+
+    if (store == null) {
+      console.error("Error: Failed to create UCD store.");
+    }
+
+    // TODO: expose a getter to see if the store has been initialized.
+  } catch (err) {
+    if (err instanceof UCDStoreUnsupportedFeature) {
+      console.error(red(`\n❌ Error: Unsupported feature:`));
+      console.error(`  ${err.message}`);
+      console.error("");
+      console.error("This store does not support the clean operation.");
+      console.error("Please check the store capabilities or use a different store type.");
+      return;
+    }
+
+    let message = "Unknown error";
+    if (err instanceof Error) {
+      message = err.message;
+    } else if (typeof err === "string") {
+      message = err;
+    }
+
+    console.error(red(`\n❌ Error cleaning store:`));
+    console.error(`  ${message}`);
+    console.error("Please check the store configuration and try again.");
+    console.error("If the issue persists, consider running with --dry-run to see more details.");
+    console.error("If you believe this is a bug, please report it at https://github.com/ucdjs/ucd/issues");
+  }
 }
