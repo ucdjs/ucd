@@ -143,8 +143,6 @@ export class UCDStore {
     }
   }
 
-  // #region Initialization
-
   async #loadVersionsFromStore(): Promise<void> {
     try {
       const manifestContent = await this.#fs.read(this.#manifestPath);
@@ -194,6 +192,4 @@ export class UCDStore {
 
     await this.#fs.write(this.#manifestPath, JSON.stringify(manifestData, null, 2));
   }
-
-  // #endregion
 }
