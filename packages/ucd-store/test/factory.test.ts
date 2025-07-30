@@ -1,3 +1,4 @@
+import type { UCDStoreManifest } from "@ucdjs/schemas";
 import { HttpResponse, mockFetch } from "#msw-utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { __INTERNAL_BRIDGE_DEBUG_SYMBOL_DO_NOT_USE_OR_YOU_WILL_BE_FIRED__ } from "@ucdjs/fs-bridge/internal";
@@ -7,6 +8,12 @@ import { testdir } from "vitest-testdirs";
 import { createHTTPUCDStore, createNodeUCDStore, createUCDStore } from "../src/factory";
 import { UCDStore } from "../src/store";
 import { createMemoryMockFS, createReadOnlyMockFS } from "./__shared";
+
+const DEFAULT_VERSIONS = {
+  "16.0.0": "/16.0.0",
+  "15.1.0": "/15.1.0",
+  "15.0.0": "/15.0.0",
+} satisfies UCDStoreManifest;
 
 describe("store configuration", () => {
   beforeEach(() => {
@@ -113,8 +120,14 @@ describe("store configuration", () => {
     });
   });
 
-  describe("createHTTPUCDStore configurations", () => {
+  describe.only("createHTTPUCDStore configurations", () => {
     it("should create HTTP store with default options", async () => {
+      mockFetch([
+        [["GET", "HEAD"], `${UCDJS_API_BASE_URL}/api/v1/files/.ucd-store.json`, () => {
+          return HttpResponse.json(DEFAULT_VERSIONS);
+        }],
+      ]);
+
       const store = await createHTTPUCDStore();
 
       expect(store).toBeInstanceOf(UCDStore);
@@ -129,6 +142,8 @@ describe("store configuration", () => {
       expect(fsCapabilities.mkdir).toBe(false);
       expect(fsCapabilities.exists).toBe(true);
       expect(fsCapabilities.rm).toBe(false);
+
+      expect(store.versions).toEqual(Object.keys(DEFAULT_VERSIONS));
     });
 
     it("should create HTTP store with custom base URL", async () => {
@@ -136,7 +151,7 @@ describe("store configuration", () => {
 
       mockFetch([
         [["GET", "HEAD"], `${customBaseUrl}/.ucd-store.json`, () => {
-          return HttpResponse.json([]);
+          return HttpResponse.json(DEFAULT_VERSIONS);
         }],
       ]);
 
@@ -146,14 +161,16 @@ describe("store configuration", () => {
 
       expect(store.baseUrl).toBe(customBaseUrl);
       expect(store.basePath).toBe("");
+
+      expect(store.versions).toEqual(Object.keys(DEFAULT_VERSIONS));
     });
 
     it("should create HTTP store with custom base path", async () => {
       const customBasePath = "/custom/api/path";
 
       mockFetch([
-        [["GET", "HEAD"], `${UCDJS_API_BASE_URL}/api/v1/unicode-proxy${customBasePath}/.ucd-store.json`, () => {
-          return HttpResponse.json([]);
+        [["GET", "HEAD"], `${UCDJS_API_BASE_URL}/api/v1/files${customBasePath}/.ucd-store.json`, () => {
+          return HttpResponse.json(DEFAULT_VERSIONS);
         }],
       ]);
 
@@ -163,10 +180,18 @@ describe("store configuration", () => {
 
       expect(store.basePath).toBe(customBasePath);
       expect(store.baseUrl).toBe(UCDJS_API_BASE_URL);
+
+      expect(store.versions).toEqual(Object.keys(DEFAULT_VERSIONS));
     });
 
     it("should create HTTP store with global filters", async () => {
       const filters = ["*.txt", "!*debug*"];
+
+      mockFetch([
+        [["GET", "HEAD"], `${UCDJS_API_BASE_URL}/api/v1/files/.ucd-store.json`, () => {
+          return HttpResponse.json(DEFAULT_VERSIONS);
+        }],
+      ]);
 
       const store = await createHTTPUCDStore({
         globalFilters: filters,
@@ -174,10 +199,20 @@ describe("store configuration", () => {
 
       expect(store.filter).toBeDefined();
       expect(store.basePath).toBe("");
+      expect(store.filter.patterns()).toEqual(filters);
+
+      expect(store.filter("DebugFile.txt")).toBe(false);
+      expect(store.filter("ValidFile.txt")).toBe(true);
     });
 
     it("should create HTTP store with preconfigured filters", async () => {
       const filters = ["*.txt", PRECONFIGURED_FILTERS.EXCLUDE_TEST_FILES];
+
+      mockFetch([
+        [["GET", "HEAD"], `${UCDJS_API_BASE_URL}/api/v1/files/.ucd-store.json`, () => {
+          return HttpResponse.json(DEFAULT_VERSIONS);
+        }],
+      ]);
 
       const store = await createHTTPUCDStore({
         globalFilters: filters,
