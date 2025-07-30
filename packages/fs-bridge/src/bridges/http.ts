@@ -30,7 +30,6 @@ const HTTPFileSystemBridge = defineFileSystemBridge({
       },
       async listdir(path, recursive = false) {
         const url = joinURL(baseUrl, path);
-        console.error("Listing directory at URL:", url, baseUrl, path);
         const response = await fetch(url, {
           method: "GET",
           headers: {

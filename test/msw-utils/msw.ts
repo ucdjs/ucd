@@ -2,6 +2,30 @@ import { http, type HttpResponseResolver, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 
 export const MSW_SERVER = setupServer();
+MSW_SERVER.events.on('request:start', ({ request, requestId }) => {
+  console.log('Outgoing request:', request.method, request.url, requestId);
+})
+
+MSW_SERVER.events.on("response:mocked", ({ response, requestId }) => {
+  console.log('Mocked response:', response.status, response.body)
+});
+
+MSW_SERVER.events.on("request:match", ({ request, requestId }) => {
+  console.log('Matched request:', request.method, request.url)
+});
+
+MSW_SERVER.events.on("response:bypass", ({ response, requestId, request }) => {
+  console.log('Bypassed response:', response.status, response.body, 'for request:', request.method, request.url, requestId);
+});
+
+MSW_SERVER.events.on('unhandledException', ({ request, requestId, error }) => {
+  console.log('%s %s errored! See details below.', request.method, request.url)
+  console.error(error)
+})
+
+MSW_SERVER.events.on("newListener", (event, listener) => {
+  console.log(`New listener added for event: ${event}`);
+})
 
 type Method = "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "HEAD" | "OPTIONS";
 

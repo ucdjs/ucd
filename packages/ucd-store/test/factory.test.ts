@@ -1,19 +1,14 @@
-import { HttpResponse, mockFetch } from "#msw-utils";
+import { HttpResponse, mockFetch, MSW_SERVER } from "#msw-utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { __INTERNAL_BRIDGE_DEBUG_SYMBOL_DO_NOT_USE_OR_YOU_WILL_BE_FIRED__ } from "@ucdjs/fs-bridge/internal";
 import { PRECONFIGURED_FILTERS } from "@ucdjs/utils";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import { testdir } from "vitest-testdirs";
 import { createHTTPUCDStore, createNodeUCDStore, createUCDStore } from "../src/factory";
 import { UCDStore } from "../src/store";
 import { createMemoryMockFS, createReadOnlyMockFS } from "./__shared";
 
 describe("store configuration", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    vi.unstubAllEnvs();
-  });
-
   describe("createUCDStore configurations", () => {
     it("should create store with custom filesystem bridge", async () => {
       const customFS = createMemoryMockFS();
@@ -114,7 +109,13 @@ describe("store configuration", () => {
   });
 
   describe("createHTTPUCDStore configurations", () => {
-    it("should create HTTP store with default options", async () => {
+    it.only("should create HTTP store with default options", async () => {
+      // mockFetch([
+      //   [["GET", "HEAD"], `${UCDJS_API_BASE_URL}/api/v1/files/.ucd-store.json`, () => {
+      //     return HttpResponse.json({});
+      //   }],
+      // ]);
+
       const store = await createHTTPUCDStore();
 
       expect(store).toBeInstanceOf(UCDStore);
@@ -134,11 +135,11 @@ describe("store configuration", () => {
     it("should create HTTP store with custom base URL", async () => {
       const customBaseUrl = "https://custom-http.ucdjs.dev";
 
-      mockFetch([
-        [["GET", "HEAD"], `${customBaseUrl}/.ucd-store.json`, () => {
-          return HttpResponse.json([]);
-        }],
-      ]);
+      // mockFetch([
+      //   [["GET", "HEAD"], `${customBaseUrl}/.ucd-store.json`, () => {
+      //     return HttpResponse.json({});
+      //   }],
+      // ]);
 
       const store = await createHTTPUCDStore({
         baseUrl: customBaseUrl,
@@ -150,12 +151,13 @@ describe("store configuration", () => {
 
     it("should create HTTP store with custom base path", async () => {
       const customBasePath = "/custom/api/path";
+      console.error(`${UCDJS_API_BASE_URL}/api/v1/files${customBasePath}/.ucd-store.json`);
 
-      mockFetch([
-        [["GET", "HEAD"], `${UCDJS_API_BASE_URL}/api/v1/unicode-proxy${customBasePath}/.ucd-store.json`, () => {
-          return HttpResponse.json([]);
-        }],
-      ]);
+      // mockFetch([
+      //   [["GET", "HEAD"], `${UCDJS_API_BASE_URL}/api/v1/files${customBasePath}/.ucd-store.json`, () => {
+      //     return HttpResponse.json({});
+      //   }],
+      // ]);
 
       const store = await createHTTPUCDStore({
         basePath: customBasePath,

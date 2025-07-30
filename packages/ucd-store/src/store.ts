@@ -117,17 +117,13 @@ export class UCDStore {
    */
   async initialize(): Promise<void> {
     const isValidStore = await this.#fs.exists(this.#manifestPath);
-
     console.error({
       isValidStore,
-      basePath: this.basePath,
-      capabilities: this.#capabilities,
       manifestPath: this.#manifestPath,
-      fsCapabilities: this.#fs[__INTERNAL_BRIDGE_DEBUG_SYMBOL_DO_NOT_USE_OR_YOU_WILL_BE_FIRED__],
+      basePath: this.basePath,
+      baseUrl: this.baseUrl,
     });
-    if (this.#fs[__INTERNAL_BRIDGE_DEBUG_SYMBOL_DO_NOT_USE_OR_YOU_WILL_BE_FIRED__].listdir) {
-      console.error(await this.#fs.listdir(".", true));
-    }
+
     if (isValidStore) {
       await this.#loadVersionsFromStore();
     } else {

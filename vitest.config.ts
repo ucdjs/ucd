@@ -33,7 +33,7 @@ const packageProjects = readdirSync(new URL("./packages", import.meta.url).pathn
       test: {
         include: [`./packages/${dir}/**/*.{test,spec}.?(c|m)[jt]s?(x)`],
         name: dir,
-      }
+      },
     } satisfies TestProjectConfiguration;
   });
 

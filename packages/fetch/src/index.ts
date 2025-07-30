@@ -14,7 +14,7 @@ export type UCDClient = Client<paths, `${string}/${string}`>;
 export function createClient(baseUrl: string): UCDClient {
   return OpenApiCreateClient<paths>({
     baseUrl,
-    fetch: (...args) => fetch(...args),
+    fetch: (...args) => globalThis.fetch(...args),
   });
 }
 

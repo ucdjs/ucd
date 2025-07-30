@@ -121,7 +121,6 @@ const NodeFileSystemBridge = defineFileSystemBridge({
         return fsp.readFile(resolvedPath, "utf-8");
       },
       async exists(path) {
-        console.error(`Checking existence of path: ${path}, resolved to: ${resolveSafePath(basePath, path)}`);
         return safeExists(resolveSafePath(basePath, path));
       },
       async listdir(path, recursive = false) {
