@@ -1,6 +1,7 @@
-import { z } from "@hono/zod-openapi";
-import { dedent } from "@luxass/utils/string";
-import { FileEntrySchema as _FileEntrySchema, UCDStoreManifestSchema as _UCDStoreManifestSchema } from "@ucdjs/schemas";
+import {
+  FileEntrySchema as _FileEntrySchema,
+  UCDStoreManifestSchema as _UCDStoreManifestSchema,
+} from "@ucdjs/schemas";
 
 export const UCDStoreManifestSchema = _UCDStoreManifestSchema.openapi("UCDStoreManifest");
 export const FileEntrySchema = _FileEntrySchema.openapi("FileEntry");
