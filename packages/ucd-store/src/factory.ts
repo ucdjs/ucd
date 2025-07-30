@@ -1,5 +1,4 @@
 import type { UCDStoreOptions } from "./types";
-import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { UCDStore } from "./store";
 
 /**
