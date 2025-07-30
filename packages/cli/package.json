@@ -42,6 +42,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@clack/prompts": "catalog:prod",
     "@luxass/unicode-utils": "catalog:prod",
     "@luxass/utils": "catalog:prod",
     "@ucdjs/schema-gen": "workspace:*",
