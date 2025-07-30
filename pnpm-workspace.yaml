@@ -51,6 +51,7 @@ catalogs:
     memfs: ^4.23.0
     apache-autoindex-parse: ^2.4.0
     openapi-fetch: ^0.14.0
+    pathe: ^2.0.3
 
   dev:
     "@types/picomatch": ^4.0.2

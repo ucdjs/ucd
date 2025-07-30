@@ -3,7 +3,7 @@ import { dedent } from "@luxass/utils";
 import { UCD_FILE_STAT_TYPE_HEADER } from "@ucdjs/env";
 import { cache } from "hono/cache";
 import { generateReferences, OPENAPI_TAGS } from "../../openapi";
-import { FileEntrySchema, UCDStoreSchema } from "./schemas";
+import { FileEntrySchema, UCDStoreManifestSchema } from "./schemas";
 
 const WILDCARD_PARAM = {
   in: "path",
@@ -47,7 +47,7 @@ const WILDCARD_PARAM = {
 
 export const GET_UCD_STORE = createRoute({
   method: "get",
-  path: "/.ucd-store",
+  path: "/.ucd-store.json",
   tags: [OPENAPI_TAGS.FILES],
   middleware: [
     cache({
@@ -60,7 +60,7 @@ export const GET_UCD_STORE = createRoute({
     200: {
       content: {
         "application/json": {
-          schema: UCDStoreSchema,
+          schema: UCDStoreManifestSchema,
         },
       },
       description: "Successfully retrieved the UCD store contents with all available Unicode versions.",

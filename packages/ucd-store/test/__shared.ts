@@ -4,25 +4,15 @@ export const createReadOnlyMockFS = defineFileSystemBridge({
   capabilities: {
     read: true,
     write: false,
-    listdir: false,
+    listdir: true,
     mkdir: false,
     exists: true,
     rm: false,
   },
   setup() {
     return {
-      capabilities: {
-        read: true,
-        write: false,
-        listdir: false,
-        mkdir: false,
-        stat: false,
-        exists: true,
-        rm: false,
-      },
-
       async read() {
-        return "[]";
+        return "{}";
       },
 
       async exists() {
@@ -34,7 +24,7 @@ export const createReadOnlyMockFS = defineFileSystemBridge({
       },
 
       async listdir() {
-        throw new Error("listdir not supported");
+        return [];
       },
 
       async mkdir() {
