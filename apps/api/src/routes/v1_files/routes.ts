@@ -111,6 +111,8 @@ V1_FILES_ROUTER.get("/:wildcard{.*}?", cache({
     contentType ||= "text/plain";
   } else if (extName === "html" || extName === "htm" || extName === "xhtml") {
     contentType ||= "text/html";
+  } else if (extName === "pdf") {
+    contentType ||= "application/pdf";
   } else {
     contentType ||= "application/octet-stream"; // Default for binary files
   }
