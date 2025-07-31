@@ -121,6 +121,7 @@ export class UCDStore {
 
     const files = await this.#fs.listdir(join(this.basePath, version), true);
 
+    // TODO: handle the cases where we wanna filter child files.
     return files.filter(({ path }) => this.#filter(trimLeadingSlash(path), extraFilters));
   }
 
