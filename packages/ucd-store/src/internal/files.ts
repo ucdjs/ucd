@@ -34,5 +34,5 @@ export async function getExpectedFilePaths(
     throw new UCDStoreError(`Failed to fetch expected files for version '${version}': ${error?.message}`);
   }
 
-  return flattenFilePaths(data!, `/${version}`);
+  return flattenFilePaths(data!);
 }

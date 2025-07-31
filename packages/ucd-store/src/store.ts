@@ -121,7 +121,7 @@ export class UCDStore {
 
     const files = await this.#fs.listdir(join(this.basePath, version), true);
 
-    return files.filter(({ path }) => !this.#filter(trimLeadingSlash(path), extraFilters));
+    return files.filter(({ path }) => this.#filter(trimLeadingSlash(path), extraFilters));
   }
 
   async getFilePaths(version: string, extraFilters?: string[]): Promise<string[]> {
@@ -211,12 +211,16 @@ export class UCDStore {
     const orphanedFiles: string[] = [];
     const missingFiles: string[] = [];
 
-    if (checkOrphaned) {
-      for (const file of actualFiles) {
-        // if file is not in expected files, it's orphaned
-        if (!expectedFiles.includes(file)) {
-          orphanedFiles.push(file);
-        }
+    for (const expectedFile of expectedFiles) {
+      if (!actualFiles.includes(expectedFile)) {
+        missingFiles.push(expectedFile);
+      }
+    }
+
+    for (const actualFile of actualFiles) {
+      // if file is not in expected files, it's orphaned
+      if (checkOrphaned && !expectedFiles.includes(actualFile)) {
+        orphanedFiles.push(actualFile);
       }
     }
 

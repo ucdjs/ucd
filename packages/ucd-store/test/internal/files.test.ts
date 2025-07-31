@@ -44,9 +44,9 @@ describe("getExpectedFilePaths", () => {
     const result = await getExpectedFilePaths(client, "15.0.0");
 
     expect(result).toEqual([
-      "/15.0.0/ReadMe.txt",
-      "/15.0.0/UnicodeData.txt",
-      "/15.0.0/ucd/emoji-data.txt",
+      "/ReadMe.txt",
+      "/UnicodeData.txt",
+      "/ucd/emoji-data.txt",
     ]);
   });
 
