@@ -1,7 +1,8 @@
+import { z } from "@hono/zod-openapi";
 import {
-  FileEntrySchema as _FileEntrySchema,
   UCDStoreManifestSchema as _UCDStoreManifestSchema,
+  FileEntrySchema,
 } from "@ucdjs/schemas";
 
 export const UCDStoreManifestSchema = _UCDStoreManifestSchema.openapi("UCDStoreManifest");
-export const FileEntrySchema = _FileEntrySchema.openapi("FileEntry");
+export const FileEntryListSchema = z.array(FileEntrySchema).openapi("FileEntryList");
