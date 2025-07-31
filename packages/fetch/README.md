@@ -17,56 +17,57 @@ npm install @ucdjs/fetch
 ### Basic Usage
 
 ```typescript
-import { client } from '@ucdjs/fetch';
+import { client } from "@ucdjs/fetch";
 
 // Get Unicode versions
-const { data: versions, error } = await client.GET('/api/v1/unicode-versions');
+const { data: versions, error } = await client.GET("/api/v1/unicode-versions");
 if (error) {
-  console.error('Error:', error.message);
+  console.error("Error:", error.message);
 } else {
-  console.log('Available versions:', versions);
+  console.log("Available versions:", versions);
 }
 
 // Access Unicode data files via proxy
-const { data: fileInfo } = await client.GET('/api/v1/unicode-proxy/{wildcard}', {
+const { data: fileInfo } = await client.GET("/api/v1/unicode-proxy/{wildcard}", {
   params: {
-    path: { wildcard: 'latest/ucd.all.json' }
+    path: { wildcard: "latest/ucd.all.json" }
   }
 });
-console.log('File info:', fileInfo);
+console.log("File info:", fileInfo);
 ```
 
 ### Custom Client Configuration
 
 ```typescript
-import { createClient } from '@ucdjs/fetch';
+import { createClient } from "@ucdjs/fetch";
 
 // Create client with custom UCD.js API instance
-const customClient = createClient('https://preview.api.ucdjs.dev');
+const customClient = createClient("https://preview.api.ucdjs.dev");
 
 // Use the custom client
-const { data, error } = await customClient.GET('/api/v1/unicode-versions');
+const { data, error } = await customClient.GET("/api/v1/unicode-versions");
 if (data) {
-  console.log('Unicode versions from preview API:', data);
+  console.log("Unicode versions from preview API:", data);
 }
 ```
 
 ### Working with Binary Data
 
 ```typescript
-import { client } from '@ucdjs/fetch';
+import { client } from "@ucdjs/fetch";
 
 // Fetch binary Unicode data file
-const { data: binaryData } = await client.GET('/api/v1/unicode-proxy/{wildcard}', {
+const { data: binaryData } = await client.GET("/api/v1/unicode-proxy/{wildcard}", {
   params: {
-    path: { wildcard: 'latest/UnicodeData.txt' }
+    path: { wildcard: "latest/UnicodeData.txt" }
   },
-  parseAs: 'arrayBuffer'
+  parseAs: "arrayBuffer"
 });
 
 if (binaryData) {
-  const text = Buffer.from(binaryData).toString('utf-8');
-  console.log('Unicode data:', text.substring(0, 100) + '...');
+  // eslint-disable-next-line node/prefer-global/buffer
+  const text = Buffer.from(binaryData).toString("utf-8");
+  console.log("Unicode data:", `${text.substring(0, 100)}...`);
 }
 ```
 
