@@ -48,7 +48,6 @@ catalogs:
     p-limit: ^6.2.0
     knitwork: ^1.2.0
     picomatch: ^4.0.3
-    memfs: ^4.23.0
     apache-autoindex-parse: ^3.0.0
     openapi-fetch: ^0.14.0
     pathe: ^2.0.3
@@ -64,6 +63,7 @@ catalogs:
     nanotar: ^0.2.0
     openapi-typescript: ^7.8.0
     tsx: ^4.20.3
+    memfs: ^4.23.0
 
   workers:
     wrangler: ^4.26.1

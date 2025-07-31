@@ -1,4 +1,9 @@
+import type { FSEntry } from "@ucdjs/fs-bridge";
+import type Dirent from "memfs/lib/Dirent";
+import { dirname, join, relative } from "node:path";
+import { prependLeadingSlash, trimTrailingSlash } from "@luxass/utils";
 import { defineFileSystemBridge } from "@ucdjs/fs-bridge";
+import { memfs } from "memfs";
 
 export const createReadOnlyMockFS = defineFileSystemBridge({
   capabilities: {
@@ -46,37 +51,96 @@ export const createMemoryMockFS = defineFileSystemBridge({
   capabilities: {
     read: true,
     write: true,
-    listdir: false,
+    listdir: true,
     mkdir: false,
     exists: true,
     rm: false,
   },
   state: {
-    map: new Map<string, string>(),
+    fs: memfs().fs,
   },
   setup({ state }) {
     return {
       async read(path) {
-        const content = state.map.get(path);
-        if (content === undefined) {
-          throw new Error(`File not found: ${path}`);
-        }
-        return content;
+        return state.fs.readFileSync(path, "utf8");
       },
       async exists(path) {
-        return state.map.has(path);
+        return state.fs.existsSync(path);
       },
-      async listdir() {
-        throw new Error("listdir not supported");
+      async listdir(path, recursive = false) {
+        function createFSEntry(entry: Dirent): FSEntry {
+          const pathFromName = prependLeadingSlash(trimTrailingSlash(entry.name));
+          return entry.isDirectory()
+            ? {
+                type: "directory",
+                name: entry.name,
+                path: pathFromName,
+                children: [],
+              }
+            : {
+                type: "file",
+                name: entry.name,
+                path: pathFromName,
+              };
+        }
+
+        if (!recursive) {
+          const entries = state.fs.readdirSync(path, { withFileTypes: true }) as Dirent[];
+          return entries.map((entry) => createFSEntry(entry));
+        }
+
+        const allEntries = state.fs.readdirSync(path, {
+          withFileTypes: true,
+          recursive: true,
+        }) as Dirent[];
+
+        const entryMap = new Map<string, FSEntry>();
+        const rootEntries: FSEntry[] = [];
+
+        for (const entry of allEntries) {
+          const entryPath = entry.parentPath || entry.path;
+          const relativeToTarget = relative(path, entryPath);
+          const fsEntry = createFSEntry(entry);
+
+          const entryRelativePath = relativeToTarget
+            ? join(relativeToTarget, entry.name)
+            : entry.name;
+
+          entryMap.set(entryRelativePath, fsEntry);
+
+          if (!relativeToTarget) {
+            rootEntries.push(fsEntry);
+          }
+        }
+
+        for (const [entryPath, entry] of entryMap) {
+          const parentPath = dirname(entryPath);
+          if (parentPath && parentPath !== ".") {
+            const parent = entryMap.get(parentPath);
+            if (parent?.type === "directory") {
+              parent.children!.push(entry);
+            }
+          }
+        }
+
+        return rootEntries;
       },
       async mkdir(path) {
-        state.map.set(path, "");
+        state.fs.mkdirSync(path);
       },
       async rm(path) {
-        state.map.delete(path);
+        state.fs.rmSync(path);
       },
-      async write(path, data) {
-        state.map.set(path, data);
+      async write(path, data, encoding = "utf8") {
+        // ensure the directory exists
+        const dir = dirname(path);
+        if (!state.fs.existsSync(dir)) {
+          state.fs.mkdirSync(dir, { recursive: true });
+        }
+
+        state.fs.writeFileSync(path, data, {
+          encoding,
+        });
       },
     };
   },
