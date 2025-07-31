@@ -6,4 +6,12 @@ export default luxass({
   pnpm: true,
 }, {
   ignores: ["**/*.md"],
+}, {
+  rules: {
+    "no-restricted-imports": ["error", {
+      patterns: [
+        "node:*",
+      ],
+    }],
+  },
 });
