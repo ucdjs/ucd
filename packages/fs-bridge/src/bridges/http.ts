@@ -90,7 +90,7 @@ const HTTPFileSystemBridge = defineFileSystemBridge({
         const entries: FSEntry[] = [];
         for (const entry of data) {
           if (entry.type === "directory") {
-            const children = await this.listdir(entry.path, true);
+            const children = await this.listdir(joinURL(path, entry.path), true);
             entries.push({
               type: "directory",
               name: entry.name,

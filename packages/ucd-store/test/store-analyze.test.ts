@@ -3,7 +3,7 @@ import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
 import { createHTTPUCDStore, createNodeUCDStore, createUCDStore } from "../src/factory";
-import { createMemoryMockFS } from "./__shared";
+import { createMemoryMockFS, stripChildrenFromEntries } from "./__shared";
 
 describe("analyze operations", () => {
   beforeEach(() => {
@@ -27,13 +27,13 @@ describe("analyze operations", () => {
     {
       type: "directory",
       name: "extracted",
-      path: "/extracted/",
+      path: "/extracted",
       lastModified: 1724676960000,
       children: [
         {
           type: "file",
           name: "DerivedBidiClass.txt",
-          path: "/extracted/DerivedBidiClass.txt",
+          path: "/DerivedBidiClass.txt",
           lastModified: 1724609100000,
         },
       ],
@@ -50,15 +50,15 @@ describe("analyze operations", () => {
             "DerivedBidiClass.txt": "Derived bidi class data",
           },
         },
-        ".ucd-store.json": JSON.stringify([
-          { version: "15.0.0", path: "15.0.0" },
-        ]),
+        ".ucd-store.json": JSON.stringify({
+          "15.0.0": "/15.0.0",
+        }),
       };
 
       const storeDir = await testdir(storeStructure);
 
       mockFetch([
-        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
+        ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions/15.0.0/file-tree`, () => {
           return HttpResponse.json(mockFiles);
         }],
       ]);
@@ -67,15 +67,14 @@ describe("analyze operations", () => {
         basePath: storeDir,
       });
 
-      const result = await store.analyze({ checkOrphaned: false });
+      const analyzeResult = await store.analyze({ checkOrphaned: false });
 
-      expect(result.storeHealth).toBe("healthy");
-      expect(result.versions).toHaveLength(1);
-      expect(result.versions[0]?.version).toBe("15.0.0");
-      expect(result.versions[0]?.isComplete).toBe(true);
-      expect(result.versions[0]?.fileCount).toBe(3);
-      expect(result.versions[0]?.orphanedFiles).toEqual([]);
-      expect(result.versions[0]?.missingFiles).toEqual([]);
+      expect(analyzeResult).toHaveLength(1);
+      expect(analyzeResult[0]?.version).toBe("15.0.0");
+      expect(analyzeResult[0]?.isComplete).toBe(true);
+      expect(analyzeResult[0]?.fileCount).toBe(3);
+      expect(analyzeResult[0]?.orphanedFiles).toEqual([]);
+      expect(analyzeResult[0]?.missingFiles).toEqual([]);
     });
 
     it("should analyze local store with orphaned files", async () => {
@@ -88,15 +87,15 @@ describe("analyze operations", () => {
           },
           "OrphanedFile.txt": "This shouldn't be here",
         },
-        ".ucd-store.json": JSON.stringify([
-          { version: "15.0.0", path: "15.0.0" },
-        ]),
+        ".ucd-store.json": JSON.stringify({
+          "15.0.0": "/15.0.0",
+        }),
       };
 
       const storeDir = await testdir(storeStructure);
 
       mockFetch([
-        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
+        ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions/15.0.0/file-tree`, () => {
           return HttpResponse.json(mockFiles);
         }],
       ]);
@@ -105,15 +104,14 @@ describe("analyze operations", () => {
         basePath: storeDir,
       });
 
-      const result = await store.analyze({ checkOrphaned: true });
+      const analysisResult = await store.analyze({ checkOrphaned: true });
 
-      expect(result.storeHealth).toBe("healthy");
-      expect(result.versions).toHaveLength(1);
-      expect(result.versions[0]?.version).toBe("15.0.0");
-      expect(result.versions[0]?.isComplete).toBe(false);
-      expect(result.versions[0]?.fileCount).toBe(4);
-      expect(result.versions[0]?.orphanedFiles).toContain("OrphanedFile.txt");
-      expect(result.versions[0]?.missingFiles).toEqual([]);
+      expect(analysisResult).toHaveLength(1);
+      expect(analysisResult[0]?.version).toBe("15.0.0");
+      expect(analysisResult[0]?.isComplete).toBe(false);
+      expect(analysisResult[0]?.fileCount).toBe(4);
+      expect(analysisResult[0]?.orphanedFiles).toContain("/OrphanedFile.txt");
+      expect(analysisResult[0]?.missingFiles).toEqual([]);
     });
 
     it("should analyze multiple versions", async () => {
@@ -124,16 +122,16 @@ describe("analyze operations", () => {
         "15.1.0": {
           "BidiBrackets.txt": "Bidi brackets data v15.1.0",
         },
-        ".ucd-store.json": JSON.stringify([
-          { version: "15.0.0", path: "15.0.0" },
-          { version: "15.1.0", path: "15.1.0" },
-        ]),
+        ".ucd-store.json": JSON.stringify({
+          "15.0.0": "/15.0.0",
+          "15.1.0": "/15.1.0",
+        }),
       };
 
       const storeDir = await testdir(storeStructure);
 
       mockFetch([
-        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/:version`, ({ params }) => {
+        ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions/:version/file-tree`, ({ params }) => {
           const { version } = params;
           if (version === "15.0.0") {
             return HttpResponse.json([mockFiles[0]]);
@@ -149,13 +147,12 @@ describe("analyze operations", () => {
         basePath: storeDir,
       });
 
-      const result = await store.analyze({ checkOrphaned: false });
+      const analysisResult = await store.analyze({ checkOrphaned: false });
 
-      expect(result.storeHealth).toBe("healthy");
-      expect(result.versions).toHaveLength(2);
+      expect(analysisResult).toHaveLength(2);
 
-      const v15_0_0 = result.versions.find((v) => v.version === "15.0.0");
-      const v15_1_0 = result.versions.find((v) => v.version === "15.1.0");
+      const v15_0_0 = analysisResult.find((v) => v.version === "15.0.0");
+      const v15_1_0 = analysisResult.find((v) => v.version === "15.1.0");
 
       expect(v15_0_0?.isComplete).toBe(true);
       expect(v15_0_0?.fileCount).toBe(1);
@@ -171,16 +168,16 @@ describe("analyze operations", () => {
         "15.1.0": {
           "BidiBrackets.txt": "Bidi brackets data",
         },
-        ".ucd-store.json": JSON.stringify([
-          { version: "15.0.0", path: "15.0.0" },
-          { version: "15.1.0", path: "15.1.0" },
-        ]),
+        ".ucd-store.json": JSON.stringify({
+          "15.0.0": "/15.0.0",
+          "15.1.0": "/15.1.0",
+        }),
       };
 
       const storeDir = await testdir(storeStructure);
 
       mockFetch([
-        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
+        ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions/15.0.0/file-tree`, () => {
           return HttpResponse.json([mockFiles[0]]);
         }],
       ]);
@@ -189,13 +186,13 @@ describe("analyze operations", () => {
         basePath: storeDir,
       });
 
-      const result = await store.analyze({
+      const analysisResult = await store.analyze({
         versions: ["15.0.0"],
         checkOrphaned: false,
       });
 
-      expect(result.versions).toHaveLength(1);
-      expect(result.versions[0]?.version).toBe("15.0.0");
+      expect(analysisResult).toHaveLength(1);
+      expect(analysisResult[0]?.version).toBe("15.0.0");
     });
 
     it("should handle version not found error", async () => {
@@ -203,9 +200,9 @@ describe("analyze operations", () => {
         "15.0.0": {
           "ArabicShaping.txt": "Arabic shaping data",
         },
-        ".ucd-store.json": JSON.stringify([
-          { version: "15.0.0", path: "15.0.0" },
-        ]),
+        ".ucd-store.json": JSON.stringify({
+          "15.0.0": "/15.0.0",
+        }),
       };
 
       const storeDir = await testdir(storeStructure);
@@ -214,13 +211,12 @@ describe("analyze operations", () => {
         basePath: storeDir,
       });
 
-      const result = await store.analyze({
+      const analysisResult = await store.analyze({
         versions: ["99.99.99"],
         checkOrphaned: false,
       });
 
-      expect(result.storeHealth).toBe("healthy");
-      expect(result.versions).toEqual([]);
+      expect(analysisResult).toEqual([]);
     });
 
     it("should handle API errors gracefully", async () => {
@@ -228,15 +224,15 @@ describe("analyze operations", () => {
         "15.0.0": {
           "ArabicShaping.txt": "Arabic shaping data",
         },
-        ".ucd-store.json": JSON.stringify([
-          { version: "15.0.0", path: "15.0.0" },
-        ]),
+        ".ucd-store.json": JSON.stringify({
+          "15.0.0": "/15.0.0",
+        }),
       };
 
       const storeDir = await testdir(storeStructure);
 
       mockFetch([
-        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
+        ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions/15.0.0/file-tree`, () => {
           return new Response(null, { status: 500 });
         }],
       ]);
@@ -245,58 +241,68 @@ describe("analyze operations", () => {
         basePath: storeDir,
       });
 
-      const result = await store.analyze({ checkOrphaned: false });
+      const analysisResult = await store.analyze({ checkOrphaned: false });
 
-      expect(result.storeHealth).toBe("healthy");
-      expect(result.versions).toEqual([]);
+      expect(analysisResult).toEqual([]);
     });
   });
 
   describe("remote store analyze operations", () => {
     it("should analyze remote store with complete files", async () => {
       mockFetch([
-        [["GET", "HEAD"], `${UCDJS_API_BASE_URL}/api/v1/unicode-proxy/.ucd-store.json`, () => {
-          return HttpResponse.json([{ version: "15.0.0", path: "/15.0.0" }]);
+        [["GET", "HEAD"], `${UCDJS_API_BASE_URL}/api/v1/files/.ucd-store.json`, () => {
+          return HttpResponse.json({
+            "15.0.0": "/15.0.0",
+          });
         }],
-        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
+        ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions/15.0.0/file-tree`, () => {
           return HttpResponse.json(mockFiles);
+        }],
+        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/15.0.0/:file?`, ({ params }) => {
+          const file = params.file;
+
+          if (file === "extracted") {
+            return HttpResponse.json(mockFiles[2]?.children);
+          }
+
+          return HttpResponse.json(stripChildrenFromEntries(mockFiles));
         }],
       ]);
 
       const store = await createHTTPUCDStore();
 
-      const result = await store.analyze({ checkOrphaned: false });
+      const analysisResult = await store.analyze({ checkOrphaned: false });
 
-      expect(result.storeHealth).toBe("healthy");
-      expect(result.versions).toHaveLength(1);
-      expect(result.versions[0]?.version).toBe("15.0.0");
-      expect(result.versions[0]?.isComplete).toBe(true);
-      expect(result.versions[0]?.fileCount).toBe(3);
+      expect(analysisResult).toHaveLength(1);
+      expect(analysisResult[0]?.version).toBe("15.0.0");
+      expect(analysisResult[0]?.isComplete).toBe(true);
+      expect(analysisResult[0]?.fileCount).toBe(3);
     });
 
     it("should handle remote store with no versions", async () => {
       mockFetch([
-        [["GET", "HEAD"], `${UCDJS_API_BASE_URL}/api/v1/unicode-proxy/.ucd-store.json`, () => {
-          return HttpResponse.json([]);
+        [["GET", "HEAD"], `${UCDJS_API_BASE_URL}/api/v1/files/.ucd-store.json`, () => {
+          return HttpResponse.json({});
         }],
       ]);
 
       const store = await createHTTPUCDStore();
 
-      const result = await store.analyze({ checkOrphaned: false });
+      const analysisResult = await store.analyze({ checkOrphaned: false });
 
-      expect(result.storeHealth).toBe("healthy");
-      expect(result.versions).toEqual([]);
-      expect(result.totalFiles).toBe(0);
+      expect(analysisResult).toEqual([]);
+
+      const totalFileCount = analysisResult.reduce((sum, { fileCount }) => sum + fileCount, 0);
+      expect(totalFileCount).toBe(0);
     });
   });
 
   describe("custom store analyze operations", () => {
     it("should analyze store with custom filesystem bridge", async () => {
       const customFS = createMemoryMockFS();
-      await customFS.write("/.ucd-store.json", JSON.stringify([
-        { version: "15.0.0", path: "15.0.0" },
-      ]));
+      await customFS.write("/.ucd-store.json", JSON.stringify({
+        "15.0.0": "/15.0.0",
+      }));
       await customFS.write("/15.0.0/ArabicShaping.txt", "Arabic shaping data");
 
       mockFetch([
