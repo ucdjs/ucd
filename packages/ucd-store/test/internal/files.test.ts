@@ -3,7 +3,7 @@ import { HttpResponse, mockFetch } from "#msw-utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { client } from "@ucdjs/fetch";
 import { describe, expect, it, vi } from "vitest";
-import { UCDStoreError, UCDStoreVersionNotFoundError } from "../../src/errors";
+import { UCDStoreError } from "../../src/errors";
 import { getExpectedFilePaths } from "../../src/internal/files";
 
 describe("getExpectedFilePaths", () => {
