@@ -6,6 +6,7 @@ export const VERSION_ROUTE_PARAM = {
     type: "string",
     pattern: "^(latest|\\d+\\.\\d+\\.\\d+)$",
   },
+  description: "A Unicode Version",
   examples: {
     latest: {
       summary: "Latest stable version",

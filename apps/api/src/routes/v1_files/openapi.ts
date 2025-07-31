@@ -3,23 +3,13 @@ import { dedent } from "@luxass/utils";
 import { UCD_FILE_STAT_TYPE_HEADER } from "@ucdjs/env";
 import { cache } from "hono/cache";
 import { generateReferences, OPENAPI_TAGS } from "../../openapi";
-import { FileEntrySchema, UCDStoreManifestSchema } from "./schemas";
+import { WILDCARD_HEAD_ROUTE_DOCS, WILDCARD_PARAM_DOCS, WILDCARD_ROUTE_DOCS } from "./docs";
+import { FileEntryListSchema, UCDStoreManifestSchema } from "./schemas";
 
 const WILDCARD_PARAM = {
   in: "path",
   name: "wildcard",
-  description: dedent`
-    The path to the Unicode data resource you want to access. This can be any valid path from the official Unicode Public directory structure.
-
-    ## Path Format Options
-
-    | Pattern | Description | Example |
-    |---------|-------------|---------|
-    | \`{version}/ucd/{filename}\` | UCD files for specific version | \`15.1.0/ucd/UnicodeData.txt\` |
-    | \`{version}/ucd/{sub}/{file}\` | Files in subdirectories | \`15.1.0/ucd/emoji/emoji-data.txt\` |
-    | \`{version}\` | List files for version | \`15.1.0\` |
-    | \`latest/ucd/{filename}\` | Latest version of file | \`latest/ucd/PropList.txt\` |
-  `,
+  description: WILDCARD_PARAM_DOCS,
   required: true,
   schema: {
     type: "string",
@@ -55,15 +45,25 @@ export const GET_UCD_STORE = createRoute({
       cacheControl: "max-age=604800", // 7 days
     }),
   ] as const,
-  description: "Retrieve the UCD store listing all available Unicode versions.",
+  description: "Retrieve the UCD Store manifest",
   responses: {
     200: {
       content: {
         "application/json": {
           schema: UCDStoreManifestSchema,
+          examples: {
+            "ucd-store": {
+              summary: "UCD Store Manifest",
+              value: {
+                "15.1.0": "/15.1.0",
+                "16.0.0": "/16.0.0",
+                "17.0.0": "/17.0.0",
+              },
+            },
+          },
         },
       },
-      description: "Successfully retrieved the UCD store contents with all available Unicode versions.",
+      description: "The UCD Store manifest",
     },
     ...(generateReferences([
       429,
@@ -78,62 +78,83 @@ export const WILDCARD_ROUTE = createRoute({
   path: "/{wildcard}",
   tags: [OPENAPI_TAGS.FILES],
   parameters: [WILDCARD_PARAM],
-  description: dedent`
-    # Unicode Data Proxy Endpoint
-
-    Access Unicode Character Database files and directories through a secure proxy with built-in caching and security measures.
-
-    This endpoint provides **direct access** to official Unicode data files hosted at \`unicode.org\`. You can retrieve individual UCD files, browse directory listings, or access specific Unicode versions.
-
-    **💡 Pro Tip:**<br/>
-    If you only need file metadata (size, modification time), use the \`HEAD\` as the request method instead. It's much faster since it doesn't download the full content.
-
-    ## Use Cases
-
-    - 📄 **Download Unicode data files** - UnicodeData.txt, PropList.txt, Scripts.txt, etc.
-    - 😀 **Access emoji data** - emoji-data.txt, emoji-sequences.txt
-    - 📁 **Browse directory structure** - List available files and subdirectories
-    - 🔢 **Version-specific access** - Get data for specific Unicode versions
-
-    ## Response Types
-
-    | Content Type                  | Description                           | Example Files                         |
-    | ----------------------------- | ------------------------------------- | ------------------------------------- |
-    | \`application/json\`          | Directory listings or structured data | Directory contents                    |
-    | \`text/plain; charset=utf-8\` | Unicode data files                    | \`UnicodeData.txt\`, \`PropList.txt\` |
-    | \`application/octet-stream\`  | Binary files or unknown types         | Compressed files                      |
-
-    ## Custom Response Headers
-
-    This endpoint includes custom headers that provide additional metadata about the resource:
-
-    | Header                           | Values               | Description                                           |
-    | -------------------------------- | -------------------- | ----------------------------------------------------- |
-    | \`${UCD_FILE_STAT_TYPE_HEADER}\` | \`file \\| directory\` | Indicates whether the resource is a file or directory |
-
-    **📋 Note for HEAD Requests:**<br/>
-    All custom headers are exposed via \`Access-Control-Expose-Headers\` and are accessible in HEAD requests for efficient metadata retrieval without downloading content.
-  `,
+  description: WILDCARD_ROUTE_DOCS,
   responses: {
     200: {
-      description: dedent`
-        Successfully retrieved Unicode data resource. Content type varies based on the requested resource:
-
-        ### Response Content Types
-
-        | Content Type | When Used | Description |
-        |-------------|-----------|-------------|
-        | \`application/json\` | Directory listings | Structured data showing files and subdirectories |
-        | \`text/plain; charset=utf-8\` | Unicode data files | Raw text files like \`.txt\` files |
-        | \`application/octet-stream\` | Binary/unknown files | Default for unrecognized content types |
-      `,
+      description: "Response from Unicode.org",
+      headers: {
+        [UCD_FILE_STAT_TYPE_HEADER]: {
+          description: "The type of the file or directory",
+          schema: {
+            type: "string",
+            enum: ["file", "directory"],
+          },
+          required: true,
+        },
+      },
       content: {
         "application/json": {
-          schema: FileEntrySchema,
+          schema: FileEntryListSchema,
+          examples: {
+            default: {
+              summary: "A directory with entries",
+              value: [
+                {
+                  type: "file",
+                  name: "ReadMe.txt",
+                  path: "/ReadMe.txt",
+                  lastModified: 1693213740000,
+                },
+                {
+                  type: "directory",
+                  name: "charts",
+                  path: "/charts",
+                  lastModified: 1697495340000,
+                },
+              ],
+            },
+          },
+        },
+        "application/xml": {
+          schema: {
+            type: "string",
+          },
+        },
+        "text/plain": {
+          schema: {
+            type: "string",
+          },
+          examples: {
+            "15.0.0/ucd/UnicodeData.txt": {
+              summary: "UnicodeData.txt for Unicode 15.0.0",
+              value: dedent`
+                0000;<control>;Cc;0;BN;;;;;N;NULL;;;;
+                0001;<control>;Cc;0;BN;;;;;N;START OF HEADING;;;;
+                0002;<control>;Cc;0;BN;;;;;N;START OF TEXT;;;;
+                0003;<control>;Cc;0;BN;;;;;N;END OF TEXT;;;;
+                0004;<control>;Cc;0;BN;;;;;N;END OF TRANSMISSION;;;;
+                0005;<control>;Cc;0;BN;;;;;N;ENQUIRY;;;;
+                0006;<control>;Cc;0;BN;;;;;N;ACKNOWLEDGE;;;;
+              `,
+            },
+            "15.1.0/ucd/emoji/emoji-data.txt": {
+              summary: "Emoji data file for Unicode 15.1.0",
+              value: dedent`
+                265F          ; Emoji                # E11.0  [1] (♟️)       chess pawn
+                2660          ; Emoji                # E0.6   [1] (♠️)       spade suit
+                2663          ; Emoji                # E0.6   [1] (♣️)       club suit
+                2665..2666    ; Emoji                # E0.6   [2] (♥️..♦️)    heart suit..diamond suit
+              `,
+            },
+          },
+        },
+        "text/html": {
+          schema: {
+            type: "string",
+          },
         },
         "application/octet-stream": {
           schema: {
-            type: "string",
             format: "binary",
           },
         },
@@ -145,5 +166,35 @@ export const WILDCARD_ROUTE = createRoute({
       500,
       502,
     ])),
+  },
+});
+
+export const METADATA_WILDCARD_ROUTE = createRoute({
+  method: "head",
+  path: "/{wildcard}",
+  tags: [OPENAPI_TAGS.FILES],
+  parameters: [WILDCARD_PARAM],
+  description: WILDCARD_HEAD_ROUTE_DOCS,
+  responses: {
+    200: {
+      description: "Response from Unicode.org",
+      headers: {
+        [UCD_FILE_STAT_TYPE_HEADER]: {
+          description: "The type of the file or directory",
+          schema: {
+            type: "string",
+            enum: ["file", "directory"],
+          },
+          required: true,
+        },
+        "Content-Type": {
+          description: "The content type of the file",
+          schema: {
+            type: "string",
+          },
+          required: true,
+        },
+      },
+    },
   },
 });
