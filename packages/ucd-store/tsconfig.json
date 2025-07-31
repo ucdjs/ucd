@@ -1,8 +1,5 @@
 {
   "extends": "@ucdjs/tsconfig/base",
-  "compilerOptions": {
-    "experimentalDecorators": true
-  },
   "include": [
     "src",
     "test",

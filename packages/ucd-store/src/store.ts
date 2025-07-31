@@ -11,7 +11,7 @@ import { createPathFilter, flattenFilePaths, safeJsonParse } from "@ucdjs/utils"
 import defu from "defu";
 import { join } from "pathe";
 import { UCDStoreError, UCDStoreVersionNotFoundError } from "./errors";
-import { assertCapabilities, inferStoreCapabilities, requiresCapabilities } from "./internal/capabilities";
+import { assertCapabilities, inferStoreCapabilities } from "./internal/capabilities";
 import { getExpectedFilePaths } from "./internal/files";
 
 export class UCDStore {
@@ -165,8 +165,8 @@ export class UCDStore {
     }
   }
 
-  @requiresCapabilities("analyze")
   async analyze(options: AnalyzeOptions): Promise<VersionAnalysis[]> {
+    assertCapabilities("analyze", this.#fs);
     const {
       checkOrphaned = false,
       versions = this.#versions,

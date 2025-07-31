@@ -32,7 +32,7 @@
     "node": ">=22.17"
   },
   "scripts": {
-    "build": "tsdown",
+    "build": "tsdown --tsconfig=./tsconfig.build.json",
     "dev": "tsdown --watch",
     "clean": "git clean -xdf dist node_modules",
     "lint": "eslint .",
