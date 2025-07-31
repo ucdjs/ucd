@@ -25,26 +25,20 @@ export function buildOpenApiConfig(version: string, servers: NonNullable<OpenAPI
     info: {
       title: "UCD.js API",
       description: dedent`
-        # UCD.js API Documentation
-
         Welcome to the UCD.js API - your comprehensive gateway to Unicode character data and related information.
 
         ## What is UCD.js?
-        UCD.js provides programmatic access to Unicode Character Database (UCD) information through a modern, RESTful API.
+        UCD.js provides programmatic access to Unicode Character Database (UCD) information through a modern API.
         Whether you're building applications that need Unicode character properties, text processing tools, or
         internationalization features, this API has you covered.
 
-        ## Key Features
-        - **Unicode Character Data**: Access detailed information about Unicode characters
-        - **Proxy Endpoints**: Direct access to official Unicode data files
-        - **Multiple Formats**: JSON responses for structured data, raw files for direct access
-        - **Version Support**: Access current and historical Unicode versions
-        - **RESTful Design**: Clean, predictable URL patterns and HTTP methods
-        - **OpenAPI Specification**: Full API documentation with examples
+        > [!NOTE]
+        > Some endpoints are specific to the internals of UCD.js, and may not be relevant for general use.
 
-        ## Getting Started
-        All endpoints are accessible via HTTPS and return JSON data unless specified otherwise.
-        No authentication is required for basic usage.
+        ## Caching
+        This API caches responses to improve performance and reduce load on the Unicode data sources.
+
+        Some endpoints may have longer cache durations than others to optimize performance
 
         ## Rate Limiting & Fair Use
         This API is provided as a public service. Please be respectful with your usage:
@@ -54,7 +48,7 @@ export function buildOpenApiConfig(version: string, servers: NonNullable<OpenAPI
 
         ## Support & Feedback
         Found an issue or have suggestions? We'd love to hear from you!
-        Visit our GitHub repository or contact us directly.
+        Visit our [GitHub repository](https://github.com/ucdjs/ucd) or contact us directly.
       `,
       version,
       license: {
