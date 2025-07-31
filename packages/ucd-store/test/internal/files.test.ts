@@ -2,7 +2,7 @@ import type { ApiError, UnicodeTree } from "@ucdjs/fetch";
 import { HttpResponse, mockFetch } from "#msw-utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { client } from "@ucdjs/fetch";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { UCDStoreError } from "../../src/errors";
 import { getExpectedFilePaths } from "../../src/internal/files";
 
