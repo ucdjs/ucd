@@ -19,11 +19,11 @@ npm install @ucdjs/utils
 Creates a filter function that checks if a file path should be included or excluded based on glob patterns.
 
 ```typescript
-import { createPathFilter } from '@ucdjs/utils';
+import { createPathFilter } from "@ucdjs/utils";
 
-const filter = createPathFilter(['*.txt', '!*Test*']);
-filter('Data.txt'); // true
-filter('DataTest.txt'); // false
+const filter = createPathFilter(["*.txt", "!*Test*"]);
+filter("Data.txt"); // true
+filter("DataTest.txt"); // false
 ```
 
 #### PathFilter Methods
@@ -31,16 +31,16 @@ filter('DataTest.txt'); // false
 The `PathFilter` object provides additional methods:
 
 ```typescript
-const filter = createPathFilter(['*.js']);
+const filter = createPathFilter(["*.js"]);
 
 // Extend with additional patterns
-filter.extend(['*.ts', '!*.test.*']);
+filter.extend(["*.ts", "!*.test.*"]);
 
 // Get current patterns
 const patterns = filter.patterns(); // ['*.js', '*.ts', '!*.test.*']
 
 // Use with extra filters temporarily
-filter('app.js', ['!src/**']); // Apply extra exclusions
+filter("app.js", ["!src/**"]); // Apply extra exclusions
 ```
 
 ### Preconfigured Filters
@@ -48,10 +48,10 @@ filter('app.js', ['!src/**']); // Apply extra exclusions
 Pre-defined filter patterns for common exclusions:
 
 ```typescript
-import { createPathFilter, PRECONFIGURED_FILTERS } from '@ucdjs/utils';
+import { createPathFilter, PRECONFIGURED_FILTERS } from "@ucdjs/utils";
 
 const filter = createPathFilter([
-  '*.txt',
+  "*.txt",
   PRECONFIGURED_FILTERS.EXCLUDE_TEST_FILES,
   PRECONFIGURED_FILTERS.EXCLUDE_README_FILES,
   PRECONFIGURED_FILTERS.EXCLUDE_HTML_FILES

@@ -21,7 +21,7 @@ You can create your own filesystem bridge or use the preconfigured ones provided
 You can define a custom filesystem bridge using the `defineFileSystemBridge` function. This allows you to implement your own file system operations.
 
 ```typescript
-import { defineFileSystemBridge } from '@ucdjs/fs-bridge';
+import { defineFileSystemBridge } from "@ucdjs/fs-bridge";
 
 const MyFileSystemBridge = defineFileSystemBridge({
   read: async (path) => {
@@ -53,34 +53,34 @@ const MyFileSystemBridge = defineFileSystemBridge({
 #### Node.js File System Bridge
 
 ```typescript
-import NodeFileSystemBridge from '@ucdjs/fs-bridge/bridges/node';
+import NodeFileSystemBridge from "@ucdjs/fs-bridge/bridges/node";
 
 // Read a file
-const content = await NodeFileSystemBridge.read('/path/to/file.txt');
+const content = await NodeFileSystemBridge.read("/path/to/file.txt");
 
 // Write a file
-await NodeFileSystemBridge.write('/path/to/file.txt', 'Hello World');
+await NodeFileSystemBridge.write("/path/to/file.txt", "Hello World");
 
 // List directory contents
-const files = await NodeFileSystemBridge.listdir('/path/to/dir');
-const allFiles = await NodeFileSystemBridge.listdir('/path/to/dir', true); // recursive
+const files = await NodeFileSystemBridge.listdir("/path/to/dir");
+const allFiles = await NodeFileSystemBridge.listdir("/path/to/dir", true); // recursive
 
 // Create directory
-await NodeFileSystemBridge.mkdir('/path/to/new/dir');
+await NodeFileSystemBridge.mkdir("/path/to/new/dir");
 
 // Check if file exists
-const exists = await NodeFileSystemBridge.exists('/path/to/file.txt');
+const exists = await NodeFileSystemBridge.exists("/path/to/file.txt");
 
 // Get file stats
-const stats = await NodeFileSystemBridge.stat('/path/to/file.txt');
+const stats = await NodeFileSystemBridge.stat("/path/to/file.txt");
 console.log(stats.isFile()); // true/false
 console.log(stats.isDirectory()); // true/false
 console.log(stats.size); // file size in bytes
 console.log(stats.mtime); // last modified date
 
 // Remove file/directory
-await NodeFileSystemBridge.rm('/path/to/file.txt');
-await NodeFileSystemBridge.rm('/path/to/dir', { recursive: true, force: true });
+await NodeFileSystemBridge.rm("/path/to/file.txt");
+await NodeFileSystemBridge.rm("/path/to/dir", { recursive: true, force: true });
 ```
 
 #### HTTP File System Bridge
@@ -88,25 +88,24 @@ await NodeFileSystemBridge.rm('/path/to/dir', { recursive: true, force: true });
 Read-only filesystem bridge for accessing files over HTTP/HTTPS:
 
 ```typescript
-import HTTPFileSystemBridge from '@ucdjs/fs-bridge/bridges/http';
+import HTTPFileSystemBridge from "@ucdjs/fs-bridge/bridges/http";
 
 const httpFS = HTTPFileSystemBridge({
-  baseUrl: 'https://example.com/files/'
+  baseUrl: "https://example.com/files/"
 });
 
 // Read remote file
-const content = await httpFS.read('/data/file.txt');
+const content = await httpFS.read("/data/file.txt");
 
 // List remote directory
-const files = await httpFS.listdir('/data/');
+const files = await httpFS.listdir("/data/");
 
 // Check if remote file exists
-const exists = await httpFS.exists('/data/file.txt');
+const exists = await httpFS.exists("/data/file.txt");
 
 // Get remote file stats
-const stats = await httpFS.stat('/data/file.txt');
+const stats = await httpFS.stat("/data/file.txt");
 ```
-
 
 ## 📄 License
 

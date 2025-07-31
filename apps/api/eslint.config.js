@@ -4,18 +4,20 @@ import ucdjsPlugin from "@ucdjs/eslint-plugin";
 
 export default luxass({
   formatters: true,
-}, {
-  ignores: [
-    "worker-configuration.d.ts",
-  ],
-}).append({
-  plugins: {
-    ucdjs: ucdjsPlugin,
-  },
-  files: [
-    "**/*.openapi.ts",
-  ],
-  rules: {
-    "ucdjs/no-hardcoded-openapi-tags": "error",
-  },
-});
+})
+  .append({
+    ignores: [
+      "worker-configuration.d.ts",
+    ],
+  })
+  .append({
+    plugins: {
+      ucdjs: ucdjsPlugin,
+    },
+    files: [
+      "**/*.openapi.ts",
+    ],
+    rules: {
+      "ucdjs/no-hardcoded-openapi-tags": "error",
+    },
+  });
