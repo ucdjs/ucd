@@ -1,4 +1,4 @@
-import { createRoute } from "@hono/zod-openapi";
+import { createRoute, z } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
 import { UCD_FILE_STAT_TYPE_HEADER } from "@ucdjs/env";
 import { cache } from "hono/cache";
@@ -116,14 +116,10 @@ export const WILDCARD_ROUTE = createRoute({
           },
         },
         "application/xml": {
-          schema: {
-            type: "string",
-          },
+          schema: z.string(),
         },
         "text/plain": {
-          schema: {
-            type: "string",
-          },
+          schema: z.string(),
           examples: {
             "15.0.0/ucd/UnicodeData.txt": {
               summary: "UnicodeData.txt for Unicode 15.0.0",
@@ -149,13 +145,18 @@ export const WILDCARD_ROUTE = createRoute({
           },
         },
         "text/html": {
+          schema: z.string(),
+        },
+        "application/pdf": {
           schema: {
+            format: "binary",
             type: "string",
           },
         },
         "application/octet-stream": {
           schema: {
             format: "binary",
+            type: "string",
           },
         },
       },

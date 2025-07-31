@@ -1,8 +1,8 @@
-import type { ApiError, FileEntry, UnicodeVersionList } from "../src";
+import type { ApiError, FileEntryList, UnicodeVersionList } from "../src";
 import { mockFetch } from "#msw-utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { HttpResponse } from "msw";
-import { describe, expect, it } from "vitest";
+import { assert, describe, expect, it } from "vitest";
 import { client, createClient } from "../src";
 
 describe("unicode API Client", () => {
@@ -152,12 +152,14 @@ describe("unicode API Client", () => {
   describe("/api/v1/files endpoint", () => {
     describe("successful requests", () => {
       it("should proxy requests without path successfully", async () => {
-        const mockProxyResponse = {
-          type: "directory",
-          name: "root",
-          path: "/",
-          lastModified: Date.now(),
-        } satisfies FileEntry;
+        const mockProxyResponse = [
+          {
+            type: "directory",
+            name: "root",
+            path: "/",
+            lastModified: Date.now(),
+          },
+        ] satisfies FileEntryList;
 
         mockFetch([
           ["GET", `${UCDJS_API_BASE_URL}/api/v1/files`, () => {
@@ -243,12 +245,14 @@ describe("unicode API Client", () => {
   describe("/api/v1/files/{path} endpoint", () => {
     describe("successful requests", () => {
       it("should proxy requests with path parameter successfully", async () => {
-        const mockFileResponse = {
-          type: "file",
-          name: "ucd.all.json",
-          path: "/latest/ucd.all.json",
-          lastModified: Date.now(),
-        } satisfies FileEntry;
+        const mockFileResponse = [
+          {
+            type: "file",
+            name: "ucd.all.json",
+            path: "/latest/ucd.all.json",
+            lastModified: Date.now(),
+          },
+        ] satisfies FileEntryList;
 
         mockFetch([
           // TODO: remove the need for encodeURIComponent here when https://github.com/openapi-ts/openapi-typescript/pull/2362 is fixed
@@ -273,12 +277,14 @@ describe("unicode API Client", () => {
       });
 
       it("should handle directory responses", async () => {
-        const mockDirectoryResponse = {
-          type: "directory",
-          name: "latest",
-          path: "/latest",
-          lastModified: Date.now(),
-        } satisfies FileEntry;
+        const mockDirectoryResponse = [
+          {
+            type: "directory",
+            name: "latest",
+            path: "/latest",
+            lastModified: Date.now(),
+          },
+        ] satisfies FileEntryList;
 
         mockFetch([
           ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/latest`, () => {
@@ -295,10 +301,13 @@ describe("unicode API Client", () => {
           },
         });
 
+        assert(typeof data === "object");
         expect(data).toEqual(mockDirectoryResponse);
         expect(data).toBeDefined();
         expect(data).toBeTypeOf("object");
-        expect((data as any).type).toBe("directory");
+
+        assert(data[0] != null);
+        expect(data[0].type).toBe("directory");
       });
 
       it.each([
@@ -306,12 +315,14 @@ describe("unicode API Client", () => {
         ["15.1.0/ucd/UnicodeData.txt"],
         ["auxiliary/GraphemeBreakProperty.txt"],
       ])("should handle path parameter: %s", async (path) => {
-        const mockResponse = {
-          type: "file" as const,
-          name: path.split("/").pop() || "",
-          path: `/${path}`,
-          lastModified: Date.now(),
-        } satisfies FileEntry;
+        const mockResponse = [
+          {
+            type: "file" as const,
+            name: path.split("/").pop() || "",
+            path: `/${path}`,
+            lastModified: Date.now(),
+          },
+        ] satisfies FileEntryList;
 
         mockFetch([
           // TODO: remove the need for encodeURIComponent here when https://github.com/openapi-ts/openapi-typescript/pull/2362 is fixed
@@ -380,12 +391,14 @@ describe("unicode API Client", () => {
         },
       ] satisfies UnicodeVersionList;
 
-      const proxyResponse = {
-        type: "directory",
-        name: "latest",
-        path: "/latest",
-        lastModified: Date.now(),
-      } satisfies FileEntry;
+      const proxyResponse = [
+        {
+          type: "directory",
+          name: "latest",
+          path: "/latest",
+          lastModified: Date.now(),
+        },
+      ] satisfies FileEntryList;
 
       mockFetch([
         ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
