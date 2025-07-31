@@ -367,7 +367,7 @@ describe("v1_versions", () => {
 
     it("should return files for a valid Unicode version", async () => {
       fetchMock.get("https://unicode.org")
-        .intercept({ path: "/Public/15.1.0" })
+        .intercept({ path: "/Public/15.1.0/ucd" })
         .reply(200, generateAutoIndexHtml(files, "F2"));
 
       const request = new Request("https://api.ucdjs.dev/api/v1/versions/15.1.0/file-tree");
@@ -408,7 +408,7 @@ describe("v1_versions", () => {
 
     it("should return structured file data with proper schema", async () => {
       fetchMock.get("https://unicode.org")
-        .intercept({ path: "/Public/15.1.0" })
+        .intercept({ path: "/Public/15.1.0/ucd" })
         .reply(200, generateAutoIndexHtml(files, "F2"));
 
       const request = new Request("https://api.ucdjs.dev/api/v1/versions/15.1.0/file-tree");
@@ -532,7 +532,7 @@ describe("v1_versions", () => {
       it("should cache the response for subsequent requests", async () => {
         let callCounter = 0;
         fetchMock.get("https://unicode.org")
-          .intercept({ path: "/Public/16.0.0" })
+          .intercept({ path: "/Public/16.0.0/ucd" })
           .reply(200, () => {
             callCounter++;
             return generateAutoIndexHtml(files, "F2");
