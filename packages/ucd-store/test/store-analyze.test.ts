@@ -344,7 +344,7 @@ describe("analyze operations", () => {
     expect(analysisResult.length).toBe(0);
   });
 
-  it("should analyse store with no files", async () => {
+  it("should analyze store with no files", async () => {
     const storeDir = await testdir({
       "15.0.0": {},
       ".ucd-store.json": JSON.stringify({
