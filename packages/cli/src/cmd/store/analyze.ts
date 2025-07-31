@@ -34,7 +34,7 @@ export async function runAnalyzeStore({ flags, versions }: CLIStoreAnalyzeCmdOpt
   }
 
   if (!versions || versions.length === 0) {
-    console.info("No specific versions provided. Cleaning all versions in the store.");
+    console.info("No specific versions provided. Analyzing all versions in the store.");
   }
 
   const {
