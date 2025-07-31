@@ -62,24 +62,25 @@ export const createMemoryMockFS = defineFileSystemBridge({
   setup({ state }) {
     return {
       async read(path) {
-        return state.fs.readFileSync(path, "utf8");
+        return state.fs.readFileSync(path, "utf8") as string;
       },
       async exists(path) {
         return state.fs.existsSync(path);
       },
       async listdir(path, recursive = false) {
         function createFSEntry(entry: Dirent): FSEntry {
-          const pathFromName = prependLeadingSlash(trimTrailingSlash(entry.name));
+          const name = entry.name.toString();
+          const pathFromName = prependLeadingSlash(trimTrailingSlash(name));
           return entry.isDirectory()
             ? {
                 type: "directory",
-                name: entry.name,
+                name,
                 path: pathFromName,
                 children: [],
               }
             : {
                 type: "file",
-                name: entry.name,
+                name,
                 path: pathFromName,
               };
         }
@@ -103,8 +104,8 @@ export const createMemoryMockFS = defineFileSystemBridge({
           const fsEntry = createFSEntry(entry);
 
           const entryRelativePath = relativeToTarget
-            ? join(relativeToTarget, entry.name)
-            : entry.name;
+            ? join(relativeToTarget, entry.name.toString())
+            : entry.name.toString();
 
           entryMap.set(entryRelativePath, fsEntry);
 
