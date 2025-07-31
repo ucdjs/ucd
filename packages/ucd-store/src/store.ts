@@ -9,7 +9,7 @@ import { createClient, isApiError } from "@ucdjs/fetch";
 import { UCDStoreManifestSchema } from "@ucdjs/schemas";
 import { createPathFilter, flattenFilePaths, safeJsonParse } from "@ucdjs/utils";
 import defu from "defu";
-import { basename, join } from "pathe";
+import { join } from "pathe";
 import { UCDStoreError, UCDStoreVersionNotFoundError } from "./errors";
 import { assertCapabilities, inferStoreCapabilities, requiresCapabilities } from "./internal/capabilities";
 import { getExpectedFilePaths } from "./internal/files";
@@ -40,10 +40,11 @@ export class UCDStore {
   };
 
   constructor(options: UCDStoreOptions) {
-    const { baseUrl, globalFilters, fs, basePath } = defu(options, {
+    const { baseUrl, globalFilters, fs, basePath, versions } = defu(options, {
       baseUrl: UCDJS_API_BASE_URL,
       globalFilters: [],
       basePath: "",
+      versions: [],
     });
 
     if (fs == null) {
@@ -56,6 +57,7 @@ export class UCDStore {
     this.#filter = createPathFilter(globalFilters);
     this.#fs = fs as FileSystemBridgeOperationsWithSymbol;
     this.#capabilities = inferStoreCapabilities(this.#fs);
+    this.#versions = versions;
 
     this.#manifestPath = join(this.basePath, ".ucd-store.json");
   }
