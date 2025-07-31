@@ -3,6 +3,7 @@ import type { UnicodeVersion } from "./schemas";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import {
   getCurrentDraftVersion,
+  hasUCDFolderPath,
   resolveUCDVersion,
   UNICODE_STABLE_VERSION,
   UNICODE_VERSION_METADATA,
@@ -120,7 +121,7 @@ V1_VERSIONS_ROUTER.openapi(GET_VERSION_FILE_TREE_ROUTE, async (c) => {
       });
     }
 
-    const result = await traverse(`https://unicode.org/Public/${mappedVersion}`, {
+    const result = await traverse(`https://unicode.org/Public/${mappedVersion}${hasUCDFolderPath(mappedVersion) ? "/ucd" : ""}`, {
       format: "F2",
     });
 

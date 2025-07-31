@@ -16,14 +16,38 @@ export const UnicodeVersionSchema = z.object({
   mappedUcdVersion: z.string().nullable().openapi({
     description: "The corresponding UCD version mapping for this Unicode version. Null if same as version.",
   }),
-  type: z.union([
-    z.literal("stable"),
-    z.literal("draft"),
-    z.literal("unsupported"),
-  ]).openapi({
+  type: z.enum(["draft", "stable", "unsupported"]).openapi({
     description: "The status of the Unicode version. 'unsupported' means the version exists but is not yet supported by the API.",
   }),
-}).openapi("UnicodeVersion");
+}).openapi("UnicodeVersion", {
+  description: "Represents a Unicode version with its metadata and support status.",
+  examples: [
+    {
+      version: "17.0.0",
+      documentationUrl: "https://www.unicode.org/versions/Unicode17.0.0/",
+      date: null,
+      url: "https://www.unicode.org/Public/17.0.0",
+      mappedUcdVersion: null,
+      type: "draft",
+    },
+    {
+      version: "16.0.0",
+      documentationUrl: "https://www.unicode.org/versions/Unicode16.0.0/",
+      date: "2024",
+      url: "https://www.unicode.org/Public/16.0.0",
+      mappedUcdVersion: null,
+      type: "stable",
+    },
+    {
+      version: "15.1.0",
+      documentationUrl: "https://www.unicode.org/versions/Unicode15.1.0/",
+      date: "2023",
+      url: "https://www.unicode.org/Public/15.1.0",
+      mappedUcdVersion: null,
+      type: "stable",
+    },
+  ],
+});
 
 export type UnicodeVersion = z.infer<typeof UnicodeVersionSchema>;
 
@@ -81,28 +105,4 @@ const FileTreeNodeSchema = BaseTreeNodeSchema.extend({
 
 export const UnicodeTreeNodeSchema = z.union([DirectoryTreeNodeSchema, FileTreeNodeSchema]).openapi("UnicodeTreeNode");
 
-export const UnicodeTreeSchema = z.array(UnicodeTreeNodeSchema).openapi("UnicodeTree", {
-  examples: [
-    {
-      name: "UnicodeData.txt",
-      type: "file",
-      path: "/Public/15.1.0/ucd/UnicodeData.txt",
-      size: 1889024,
-      lastModified: 1693564800000,
-    },
-    {
-      name: "emoji",
-      type: "directory",
-      path: "/Public/15.1.0/ucd/emoji/",
-      lastModified: 1693564800000,
-      children: [
-        {
-          name: "emoji-data.txt",
-          type: "file",
-          path: "/Public/15.1.0/ucd/emoji/emoji-data.txt",
-          size: 156789,
-        },
-      ],
-    },
-  ],
-});
+export const UnicodeTreeSchema = z.array(UnicodeTreeNodeSchema).openapi("UnicodeTree");
