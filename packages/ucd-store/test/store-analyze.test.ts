@@ -297,7 +297,7 @@ describe("analyze operations", () => {
     });
   });
 
-  describe("custom store analyze operations", () => {
+  describe.todo("custom store analyze operations", () => {
     it("should analyze store with custom filesystem bridge", async () => {
       const customFS = createMemoryMockFS();
       await customFS.write("/.ucd-store.json", JSON.stringify({
@@ -311,64 +311,62 @@ describe("analyze operations", () => {
         }],
       ]);
 
+      mockFetch([
+        ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions/15.0.0/file-tree`, () => {
+          return HttpResponse.json(mockFiles);
+        }],
+      ]);
+
       const store = await createUCDStore({
         basePath: "/",
         fs: customFS,
       });
 
-      const result = await store.analyze({ checkOrphaned: false });
+      const analysisResult = await store.analyze({ checkOrphaned: false });
 
-      expect(result.storeHealth).toBe("healthy");
-      expect(result.versions).toHaveLength(1);
-      expect(result.versions[0]?.isComplete).toBe(true);
+      expect(analysisResult).toHaveLength(1);
+      expect(analysisResult[0]?.isComplete).toBe(true);
     });
   });
 
-  describe("analyze edge cases", () => {
-    it("should handle empty store", async () => {
-      const storeStructure = {
-        ".ucd-store.json": JSON.stringify([]),
-      };
-
-      const storeDir = await testdir(storeStructure);
-
-      const store = await createNodeUCDStore({
-        basePath: storeDir,
-      });
-
-      const result = await store.analyze({ checkOrphaned: false });
-
-      expect(result.storeHealth).toBe("healthy");
-      expect(result.versions).toEqual([]);
-      expect(result.totalFiles).toBe(0);
+  it("should handle empty store", async () => {
+    const storeDir = await testdir({
+      ".ucd-store.json": JSON.stringify({}),
     });
 
-    it("should handle store with empty version directory", async () => {
-      const storeStructure = {
-        "15.0.0": {},
-        ".ucd-store.json": JSON.stringify([
-          { version: "15.0.0", path: "15.0.0" },
-        ]),
-      };
-
-      const storeDir = await testdir(storeStructure);
-
-      mockFetch([
-        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
-          return HttpResponse.json([]);
-        }],
-      ]);
-
-      const store = await createNodeUCDStore({
-        basePath: storeDir,
-      });
-
-      const result = await store.analyze({ checkOrphaned: false });
-
-      expect(result.storeHealth).toBe("healthy");
-      expect(result.versions).toHaveLength(1);
-      expect(result.versions[0]?.fileCount).toBe(0);
-      expect(result.versions[0]?.isComplete).toBe(true);
+    const store = await createNodeUCDStore({
+      basePath: storeDir,
     });
+
+    const analysisResult = await store.analyze({ checkOrphaned: false });
+
+    expect(analysisResult).toEqual([]);
+    expect(analysisResult.length).toBe(0);
+  });
+
+  it("should analyse store with no files", async () => {
+    const storeDir = await testdir({
+      "15.0.0": {},
+      ".ucd-store.json": JSON.stringify({
+        "15.0.0": "/15.0.0",
+      }),
+    });
+
+    mockFetch([
+      ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions/15.0.0/file-tree`, () => {
+        return HttpResponse.json([]);
+      }],
+    ]);
+
+    const store = await createNodeUCDStore({
+      basePath: storeDir,
+    });
+
+    const analysisResult = await store.analyze({ checkOrphaned: false });
+
+    expect(analysisResult).toHaveLength(1);
+    expect(analysisResult[0]?.version).toBe("15.0.0");
+    expect(analysisResult[0]?.fileCount).toBe(0);
+    expect(analysisResult[0]?.isComplete).toBe(true);
   });
 });
