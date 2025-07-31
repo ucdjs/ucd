@@ -58,6 +58,7 @@
     "@ucdjs/tsconfig": "workspace:*",
     "@ucdjs/tsdown-config": "workspace:*",
     "eslint": "catalog:linting",
+    "memfs": "catalog:dev",
     "publint": "catalog:dev",
     "tsdown": "catalog:dev",
     "tsx": "catalog:dev",

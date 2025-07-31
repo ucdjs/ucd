@@ -297,7 +297,7 @@ describe("analyze operations", () => {
     });
   });
 
-  describe.todo("custom store analyze operations", () => {
+  describe("custom store analyze operations", () => {
     it("should analyze store with custom filesystem bridge", async () => {
       const customFS = createMemoryMockFS();
       await customFS.write("/.ucd-store.json", JSON.stringify({
@@ -313,7 +313,7 @@ describe("analyze operations", () => {
 
       mockFetch([
         ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions/15.0.0/file-tree`, () => {
-          return HttpResponse.json(mockFiles);
+          return HttpResponse.json([mockFiles[0]]);
         }],
       ]);
 

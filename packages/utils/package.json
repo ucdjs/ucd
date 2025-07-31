@@ -44,7 +44,6 @@
     "@ucdjs/env": "workspace:*",
     "@ucdjs/fetch": "workspace:*",
     "defu": "catalog:prod",
-    "memfs": "catalog:prod",
     "picomatch": "catalog:prod",
     "zod": "catalog:prod"
   },
