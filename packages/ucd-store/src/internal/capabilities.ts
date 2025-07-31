@@ -85,32 +85,3 @@ function getRequiredCapabilities(feature: keyof StoreCapabilities): FileSystemBr
   }
   return capabilities;
 }
-
-interface HasFileSystemBridge {
-  fs: FileSystemBridgeOperationsWithSymbol;
-}
-
-export function requiresCapabilities<K extends keyof StoreCapabilities>(capability?: K) {
-  return function <
-    T extends HasFileSystemBridge,
-    M extends (...args: any[]) => Promise<any>,
-  >(
-    target: T,
-    propertyKey: string | symbol,
-    descriptor: TypedPropertyDescriptor<M>,
-  ): TypedPropertyDescriptor<M> {
-    const originalMethod = descriptor.value!;
-
-    const _capability = capability || propertyKey as K;
-    if (!_capability || !CAPABILITY_REQUIREMENTS[_capability]) {
-      throw new Error(`Invalid capability: ${_capability}`);
-    }
-
-    descriptor.value = async function (this: T, ...args: Parameters<M>): Promise<Awaited<ReturnType<M>>> {
-      assertCapabilities(_capability, this.fs);
-      return await originalMethod.apply(this, args);
-    } as M;
-
-    return descriptor;
-  };
-}

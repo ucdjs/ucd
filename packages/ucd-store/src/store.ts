@@ -1,17 +1,18 @@
-import type { UCDClient } from "@ucdjs/fetch";
+import type { UCDClient, UnicodeTreeNode } from "@ucdjs/fetch";
 import type { FileSystemBridgeOperationsWithSymbol } from "@ucdjs/fs-bridge";
 import type { UCDStoreManifest } from "@ucdjs/schemas";
 import type { PathFilter } from "@ucdjs/utils";
-import type { StoreCapabilities, UCDStoreOptions } from "./types";
-import { invariant, prependLeadingSlash } from "@luxass/utils";
+import type { AnalyzeOptions, StoreCapabilities, UCDStoreOptions, VersionAnalysis } from "./types";
+import { invariant, prependLeadingSlash, trimLeadingSlash } from "@luxass/utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { createClient, isApiError } from "@ucdjs/fetch";
 import { UCDStoreManifestSchema } from "@ucdjs/schemas";
-import { createPathFilter, safeJsonParse } from "@ucdjs/utils";
+import { createPathFilter, flattenFilePaths, safeJsonParse } from "@ucdjs/utils";
 import defu from "defu";
 import { join } from "pathe";
-import { UCDStoreError } from "./errors";
-import { inferStoreCapabilities } from "./internal/capabilities";
+import { UCDStoreError, UCDStoreVersionNotFoundError } from "./errors";
+import { assertCapabilities, inferStoreCapabilities } from "./internal/capabilities";
+import { getExpectedFilePaths } from "./internal/files";
 
 export class UCDStore {
   /**
@@ -39,10 +40,11 @@ export class UCDStore {
   };
 
   constructor(options: UCDStoreOptions) {
-    const { baseUrl, globalFilters, fs, basePath } = defu(options, {
+    const { baseUrl, globalFilters, fs, basePath, versions } = defu(options, {
       baseUrl: UCDJS_API_BASE_URL,
       globalFilters: [],
       basePath: "",
+      versions: [],
     });
 
     if (fs == null) {
@@ -55,6 +57,7 @@ export class UCDStore {
     this.#filter = createPathFilter(globalFilters);
     this.#fs = fs as FileSystemBridgeOperationsWithSymbol;
     this.#capabilities = inferStoreCapabilities(this.#fs);
+    this.#versions = versions;
 
     this.#manifestPath = join(this.basePath, ".ucd-store.json");
   }
@@ -66,7 +69,7 @@ export class UCDStore {
    * allowing the store to work with different storage backends (local filesystem,
    * remote HTTP, in-memory, etc.) through a unified interface.
    *
-   * @returns {FileSystemBridgeOperations} The FileSystemBridge instance configured for this store
+   * @returns {FileSystemBridgeOperationsWithSymbol} The FileSystemBridge instance configured for this store
    */
   get fs(): FileSystemBridgeOperationsWithSymbol {
     return this.#fs;
@@ -111,6 +114,27 @@ export class UCDStore {
     return Object.freeze([...this.#versions]);
   }
 
+  async getFileTree(version: string, extraFilters?: string[]): Promise<UnicodeTreeNode[]> {
+    if (!this.#versions.includes(version)) {
+      throw new UCDStoreVersionNotFoundError(version);
+    }
+
+    const files = await this.#fs.listdir(join(this.basePath, version), true);
+
+    // TODO: handle the cases where we wanna filter child files.
+    return files.filter(({ path }) => this.#filter(trimLeadingSlash(path), extraFilters));
+  }
+
+  async getFilePaths(version: string, extraFilters?: string[]): Promise<string[]> {
+    if (!this.#versions.includes(version)) {
+      throw new UCDStoreVersionNotFoundError(version);
+    }
+
+    const tree = await this.getFileTree(version, extraFilters);
+
+    return flattenFilePaths(tree);
+  }
+
   /**
    * Initialize the store - loads existing data or creates new structure
    */
@@ -140,6 +164,76 @@ export class UCDStore {
 
       await this.#createNewLocalStore(this.#versions);
     }
+  }
+
+  async analyze(options: AnalyzeOptions): Promise<VersionAnalysis[]> {
+    assertCapabilities("analyze", this.#fs);
+    const {
+      checkOrphaned = false,
+      versions = this.#versions,
+    } = options;
+
+    let versionAnalyses: VersionAnalysis[] = [];
+
+    try {
+      const promises = versions.map(async (version) => {
+        if (!this.versions.includes(version)) {
+          throw new UCDStoreVersionNotFoundError(version);
+        }
+
+        return this.#analyzeVersion(version, {
+          checkOrphaned,
+        });
+      });
+
+      versionAnalyses = await Promise.all(promises);
+
+      return versionAnalyses;
+    } catch (err) {
+      console.error(`Error during store analysis: ${err instanceof Error ? err.message : String(err)}`);
+      return versionAnalyses;
+    }
+  }
+
+  async #analyzeVersion(version: string, options: AnalyzeOptions): Promise<VersionAnalysis> {
+    assertCapabilities("analyze", this.#fs);
+    const { checkOrphaned } = options;
+
+    if (!this.#versions.includes(version)) {
+      throw new UCDStoreVersionNotFoundError(version);
+    }
+
+    // get the expected files for this version
+    const expectedFiles = await getExpectedFilePaths(this.#client, version);
+
+    // get the actual files from the store
+    const actualFiles = await this.getFilePaths(version);
+
+    const orphanedFiles: string[] = [];
+    const missingFiles: string[] = [];
+
+    for (const expectedFile of expectedFiles) {
+      if (!actualFiles.includes(expectedFile)) {
+        missingFiles.push(expectedFile);
+      }
+    }
+
+    for (const actualFile of actualFiles) {
+      // if file is not in expected files, it's orphaned
+      if (checkOrphaned && !expectedFiles.includes(actualFile)) {
+        orphanedFiles.push(actualFile);
+      }
+    }
+
+    const isComplete = orphanedFiles.length === 0 && missingFiles.length === 0;
+    return {
+      version,
+      orphanedFiles,
+      missingFiles,
+      totalFileCount: expectedFiles.length,
+      fileCount: actualFiles.length,
+      isComplete,
+    };
   }
 
   async #loadVersionsFromStore(): Promise<void> {

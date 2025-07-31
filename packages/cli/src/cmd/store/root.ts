@@ -14,7 +14,7 @@ const CODEGEN_SUBCOMMANDS = [
   "init",
   "repair",
   "clean",
-  "status",
+  "analyze",
 ] as const;
 export type Subcommand = (typeof CODEGEN_SUBCOMMANDS)[number];
 
@@ -70,9 +70,9 @@ export async function runStoreRoot(subcommand: string, { flags }: CLIStoreCmdOpt
     return;
   }
 
-  if (subcommand === "status") {
-    const { runStatusStore } = await import("./status");
-    await runStatusStore({ flags });
+  if (subcommand === "analyze") {
+    const { runAnalyzeStore } = await import("./analyze");
+    await runAnalyzeStore({ flags });
     return;
   }
 
