@@ -36,7 +36,7 @@ export async function createNodeUCDStore(options: Omit<UCDStoreOptions, "fs"> = 
   const store = new UCDStore({
     ...options,
     fs: fs({
-      basePath: options.basePath || "",
+      basePath: "./",
     }),
   });
 
