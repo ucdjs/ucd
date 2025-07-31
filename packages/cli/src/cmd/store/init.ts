@@ -40,25 +40,26 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
     patterns,
   } = flags;
 
-  if (!versions || versions.length === 0) {
-    const pickedVersions = await runVersionPrompt();
-
-    if (pickedVersions.length === 0) {
-      console.error("No versions selected. Operation cancelled.");
-      return;
-    }
-
-    versions = pickedVersions;
-  }
-
   try {
     assertRemoteOrStoreDir(flags);
+
+    if (!versions || versions.length === 0) {
+      const pickedVersions = await runVersionPrompt();
+
+      if (pickedVersions.length === 0) {
+        console.error("No versions selected. Operation cancelled.");
+        return;
+      }
+
+      versions = pickedVersions;
+    }
 
     const store = await createStoreFromFlags({
       baseUrl,
       storeDir,
       remote,
       patterns,
+      versions,
     });
 
     if (store == null) {
