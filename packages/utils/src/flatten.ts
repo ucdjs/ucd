@@ -23,6 +23,10 @@ import { prependLeadingSlash } from "@luxass/utils";
 export function flattenFilePaths(entries: UnicodeTreeNode[], prefix: string = ""): string[] {
   const paths: string[] = [];
 
+  if (!Array.isArray(entries)) {
+    throw new TypeError("Expected 'entries' to be an array of UnicodeTreeNode");
+  }
+
   for (const file of entries) {
     const fullPath = prefix
       ? `${prefix}${prependLeadingSlash(file.path ?? file.name)}`
