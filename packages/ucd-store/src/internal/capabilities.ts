@@ -8,7 +8,7 @@ import { UCDStoreUnsupportedFeature } from "../errors";
 export const STORE_CAPABILITY_REQUIREMENTS = {
   analyze: ["listdir", "exists", "read"],
   clean: ["listdir", "exists", "rm", "write", "read"],
-  mirror: ["read", "write", "listdir", "mkdir", "exists", "mkdir"],
+  mirror: ["read", "write", "listdir", "mkdir", "exists"],
   repair: ["read", "listdir", "exists", "rm", "write", "mkdir"],
 } satisfies Record<keyof StoreCapabilities, FileSystemBridgeCapabilityKey[]>;
 
