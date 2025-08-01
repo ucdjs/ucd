@@ -135,6 +135,20 @@ export class UCDStore {
     return flattenFilePaths(tree);
   }
 
+  async getFile(version: string, filePath: string, extraFilters?: string[]): Promise<string> {
+    if (!this.#versions.includes(version)) {
+      throw new UCDStoreVersionNotFoundError(version);
+    }
+
+    // assertFSCapabilities("read", this.#fs);
+
+    if (!this.#filter(trimLeadingSlash(filePath), extraFilters)) {
+      throw new UCDStoreError(`File path "${filePath}" is filtered out by the store's filter patterns.`);
+    }
+
+    return await this.#fs.read(join(version, filePath));
+  }
+
   /**
    * Initialize the store - loads existing data or creates new structure
    */
