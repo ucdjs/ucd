@@ -141,7 +141,6 @@ describe("inferStoreCapabilitiesFromFSBridge", () => {
         exists: true,
         mkdir: false,
         rm: false,
-        stat: true,
       },
       expectedResult: {
         analyze: true, // only needs read, listdir, exists
@@ -159,7 +158,6 @@ describe("inferStoreCapabilitiesFromFSBridge", () => {
         exists: false,
         mkdir: true,
         rm: true,
-        stat: false,
       },
       expectedResult: {
         analyze: false, // needs read, listdir, exists
@@ -177,7 +175,6 @@ describe("inferStoreCapabilitiesFromFSBridge", () => {
         exists: true,
         mkdir: false,
         rm: true,
-        stat: true,
       },
       expectedResult: {
         analyze: false, // needs listdir
