@@ -15,6 +15,14 @@ describe("defineFileSystemBridge", () => {
     };
 
     const bridge = defineFileSystemBridge({
+      capabilities: {
+        exists: true,
+        read: true,
+        write: true,
+        listdir: true,
+        mkdir: true,
+        rm: true,
+      },
       setup: ({ options, state, capabilities }) => {
         expect(options).toBeUndefined();
         expect(state).toEqual({});
@@ -37,6 +45,14 @@ describe("defineFileSystemBridge", () => {
 
     const bridge = defineFileSystemBridge({
       optionsSchema,
+      capabilities: {
+        exists: true,
+        read: true,
+        write: true,
+        listdir: true,
+        mkdir: true,
+        rm: true,
+      },
       setup: ({ options }) => {
         expect(options.basePath).toBe("/test/path");
         expect(options.encoding).toBe("utf-8");
@@ -67,6 +83,14 @@ describe("defineFileSystemBridge", () => {
 
     const bridge = defineFileSystemBridge({
       optionsSchema,
+      capabilities: {
+        exists: true,
+        read: true,
+        write: true,
+        listdir: true,
+        mkdir: true,
+        rm: true,
+      },
       setup: () => ({
         read: vi.fn().mockResolvedValue(""),
         write: vi.fn().mockResolvedValue(undefined),
@@ -94,6 +118,14 @@ describe("defineFileSystemBridge", () => {
     };
 
     const bridge = defineFileSystemBridge({
+      capabilities: {
+        exists: true,
+        read: true,
+        write: true,
+        listdir: true,
+        mkdir: true,
+        rm: true,
+      },
       setup: () => mockOperations,
     });
 
@@ -118,6 +150,14 @@ describe("defineFileSystemBridge", () => {
     const initialState = { callCount: 0 };
 
     const bridge = defineFileSystemBridge({
+      capabilities: {
+        exists: true,
+        read: true,
+        write: true,
+        listdir: true,
+        mkdir: true,
+        rm: true,
+      },
       state: initialState,
       setup: ({ state }) => {
         expect(state).toBe(initialState);
@@ -183,6 +223,14 @@ describe("defineFileSystemBridge", () => {
       });
 
       const bridge = defineFileSystemBridge({
+        capabilities: {
+          exists: true,
+          read: true,
+          write: true,
+          listdir: true,
+          mkdir: true,
+          rm: true,
+        },
         optionsSchema,
         setup: ({ options, state, capabilities }) => {
           // options should be an empty object when no arguments passed
@@ -211,6 +259,14 @@ describe("defineFileSystemBridge", () => {
       });
 
       const bridge = defineFileSystemBridge({
+        capabilities: {
+          exists: true,
+          read: true,
+          write: true,
+          listdir: true,
+          mkdir: true,
+          rm: true,
+        },
         optionsSchema,
         setup: () => ({
           read: vi.fn().mockResolvedValue(""),
@@ -230,6 +286,14 @@ describe("defineFileSystemBridge", () => {
 
     it("should handle accessing state properties when state is undefined", async () => {
       const bridge = defineFileSystemBridge({
+        capabilities: {
+          exists: true,
+          read: true,
+          write: true,
+          listdir: true,
+          mkdir: true,
+          rm: true,
+        },
         setup: ({ state }) => {
           // state should be an empty object, not undefined
           expect(state).toEqual({});
