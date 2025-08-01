@@ -1,17 +1,18 @@
 import type { UCDClient, UnicodeTreeNode } from "@ucdjs/fetch";
-import type { FileSystemBridgeOperationsWithSymbol } from "@ucdjs/fs-bridge";
+import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 import type { UCDStoreManifest } from "@ucdjs/schemas";
 import type { PathFilter } from "@ucdjs/utils";
 import type { AnalyzeOptions, StoreCapabilities, UCDStoreOptions, VersionAnalysis } from "./types";
 import { invariant, prependLeadingSlash, trimLeadingSlash } from "@luxass/utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { createClient, isApiError } from "@ucdjs/fetch";
+import { assertFSCapability } from "@ucdjs/fs-bridge";
 import { UCDStoreManifestSchema } from "@ucdjs/schemas";
 import { createPathFilter, flattenFilePaths, safeJsonParse } from "@ucdjs/utils";
 import defu from "defu";
 import { join } from "pathe";
 import { UCDStoreError, UCDStoreVersionNotFoundError } from "./errors";
-import { assertCapabilities, inferStoreCapabilities } from "./internal/capabilities";
+import { assertCapabilities, inferStoreCapabilitiesFromFSBridge } from "./internal/capabilities";
 import { getExpectedFilePaths } from "./internal/files";
 
 export class UCDStore {
@@ -28,7 +29,7 @@ export class UCDStore {
 
   #client: UCDClient;
   #filter: PathFilter;
-  #fs: FileSystemBridgeOperationsWithSymbol;
+  #fs: FileSystemBridge;
   #versions: string[] = [];
   #manifestPath: string;
 
@@ -55,8 +56,8 @@ export class UCDStore {
     this.basePath = basePath;
     this.#client = createClient(this.baseUrl);
     this.#filter = createPathFilter(globalFilters);
-    this.#fs = fs as FileSystemBridgeOperationsWithSymbol;
-    this.#capabilities = inferStoreCapabilities(this.#fs);
+    this.#fs = fs;
+    this.#capabilities = inferStoreCapabilitiesFromFSBridge(this.#fs);
     this.#versions = versions;
 
     this.#manifestPath = join(this.basePath, ".ucd-store.json");
@@ -69,9 +70,9 @@ export class UCDStore {
    * allowing the store to work with different storage backends (local filesystem,
    * remote HTTP, in-memory, etc.) through a unified interface.
    *
-   * @returns {FileSystemBridgeOperationsWithSymbol} The FileSystemBridge instance configured for this store
+   * @returns {FileSystemBridge} The FileSystemBridge instance configured for this store
    */
-  get fs(): FileSystemBridgeOperationsWithSymbol {
+  get fs(): FileSystemBridge {
     return this.#fs;
   }
 
@@ -119,6 +120,8 @@ export class UCDStore {
       throw new UCDStoreVersionNotFoundError(version);
     }
 
+    assertFSCapability(this.#fs.capabilities, "listdir");
+
     const files = await this.#fs.listdir(join(this.basePath, version), true);
 
     // TODO: handle the cases where we wanna filter child files.
@@ -129,6 +132,8 @@ export class UCDStore {
     if (!this.#versions.includes(version)) {
       throw new UCDStoreVersionNotFoundError(version);
     }
+
+    assertFSCapability(this.#fs.capabilities, "listdir");
 
     const tree = await this.getFileTree(version, extraFilters);
 

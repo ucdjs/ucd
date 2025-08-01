@@ -1,5 +1,4 @@
 import type { z } from "zod";
-import type { __INTERNAL_BRIDGE_DEBUG_SYMBOL_DO_NOT_USE_OR_YOU_WILL_BE_FIRED__ } from "./internal";
 
 export interface FileSystemBridgeRmOptions {
   /**
@@ -77,13 +76,6 @@ export type FileSystemBridgeCapabilities = {
   [K in FileSystemBridgeCapabilityKey]: boolean;
 };
 
-export interface FileSystemBridgeOperationsWithSymbol extends FileSystemBridgeOperations {
-  /**
-   * @internal
-   */
-  [__INTERNAL_BRIDGE_DEBUG_SYMBOL_DO_NOT_USE_OR_YOU_WILL_BE_FIRED__]: FileSystemBridgeCapabilities;
-}
-
 type FileSystemBridgeSetupFn<
   TOptionsSchema extends z.ZodType,
   TState extends Record<string, unknown> = Record<string, unknown>,
@@ -104,9 +96,8 @@ export interface FileSystemBridgeObject<
 
   /**
    * An object defining the capabilities supported by this file system bridge.
-   * If it is not provided, the bridge will assume all capabilities are supported.
    */
-  capabilities?: FileSystemBridgeCapabilities;
+  capabilities: FileSystemBridgeCapabilities;
 
   /**
    * Optional state object for the file system bridge.
@@ -142,7 +133,14 @@ export interface FileSystemBridgeObject<
   setup: FileSystemBridgeSetupFn<TOptionsSchema, TState>;
 }
 
-export type FileSystemBridge<
+export interface FileSystemBridge extends FileSystemBridgeOperations {
+  /**
+   * The capabilities of this file system bridge.
+   */
+  capabilities: FileSystemBridgeCapabilities;
+}
+
+export type FileSystemBridgeFactory<
   TOptionsSchema extends z.ZodType,
 > = (
   ...args: [z.input<TOptionsSchema>] extends [never]
@@ -150,4 +148,4 @@ export type FileSystemBridge<
     : undefined extends z.input<TOptionsSchema>
       ? [options?: z.input<TOptionsSchema>]
       : [options: z.input<TOptionsSchema>]
-) => FileSystemBridgeOperationsWithSymbol;
+) => FileSystemBridge;

@@ -1,7 +1,6 @@
 import type { UCDStoreManifest } from "@ucdjs/schemas";
 import { HttpResponse, mockFetch } from "#msw-utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
-import { __INTERNAL_BRIDGE_DEBUG_SYMBOL_DO_NOT_USE_OR_YOU_WILL_BE_FIRED__ } from "@ucdjs/fs-bridge/internal";
 import { PRECONFIGURED_FILTERS } from "@ucdjs/utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
@@ -79,7 +78,7 @@ describe("store configuration", () => {
       expect(store.basePath).toBe(storeDir);
       expect(store.baseUrl).toBe(UCDJS_API_BASE_URL);
 
-      const fsCapabilities = store.fs[__INTERNAL_BRIDGE_DEBUG_SYMBOL_DO_NOT_USE_OR_YOU_WILL_BE_FIRED__];
+      const fsCapabilities = store.fs.capabilities;
       expect(fsCapabilities).toBeDefined();
       expect(fsCapabilities.read).toBe(true);
       expect(fsCapabilities.write).toBe(true);
@@ -134,7 +133,7 @@ describe("store configuration", () => {
       expect(store.baseUrl).toBe(UCDJS_API_BASE_URL);
       expect(store.basePath).toBe("");
 
-      const fsCapabilities = store.fs[__INTERNAL_BRIDGE_DEBUG_SYMBOL_DO_NOT_USE_OR_YOU_WILL_BE_FIRED__];
+      const fsCapabilities = store.fs.capabilities;
       expect(fsCapabilities).toBeDefined();
       expect(fsCapabilities.read).toBe(true);
       expect(fsCapabilities.write).toBe(false);

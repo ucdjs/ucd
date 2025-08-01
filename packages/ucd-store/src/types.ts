@@ -1,4 +1,4 @@
-import type { FileSystemBridgeOperations } from "@ucdjs/fs-bridge";
+import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 
 export interface UCDStoreOptions {
   /**
@@ -20,7 +20,7 @@ export interface UCDStoreOptions {
    * - `@ucdjs/fs-bridge/bridges/node` for Node.js environments with full capabilities
    * - `@ucdjs/fs-bridge/bridges/http` for HTTP-based file systems (read-only)
    */
-  fs: FileSystemBridgeOperations;
+  fs: FileSystemBridge;
 
   /**
    * Base Path attached to the base URL, when accessing files.
