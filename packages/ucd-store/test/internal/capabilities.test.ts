@@ -1,7 +1,8 @@
 import type { FileSystemBridge, FileSystemBridgeCapabilityKey } from "@ucdjs/fs-bridge";
 import type { StoreCapabilities } from "../../src/types";
 import { describe, expect, it } from "vitest";
-import { inferStoreCapabilitiesFromFSBridge, STORE_CAPABILITY_REQUIREMENTS } from "../../src/internal/capabilities";
+import { UCDStoreUnsupportedFeature } from "../../src/errors";
+import { assertCapabilities, inferStoreCapabilitiesFromFSBridge, STORE_CAPABILITY_REQUIREMENTS } from "../../src/internal/capabilities";
 
 describe("inferStoreCapabilitiesFromFSBridge", () => {
   it("should throw error when capabilities are null", () => {
@@ -109,8 +110,8 @@ describe("inferStoreCapabilitiesFromFSBridge", () => {
     ...Object.entries(STORE_CAPABILITY_REQUIREMENTS).flatMap(([capability, requiredCaps]) =>
       requiredCaps.map((missingCap) => ({
         capability: capability as keyof StoreCapabilities,
-        requiredCaps: requiredCaps as FileSystemBridgeCapabilityKey[],
-        missingCap: missingCap as FileSystemBridgeCapabilityKey,
+        requiredCaps,
+        missingCap,
         description: `${capability} should be disabled when missing ${missingCap}`,
       })),
     ),
@@ -233,5 +234,154 @@ describe("inferStoreCapabilitiesFromFSBridge", () => {
 
     // verify no extra properties
     expect(Object.keys(result)).toEqual(["analyze", "clean", "mirror", "repair"]);
+  });
+});
+
+describe("assertCapabilities", () => {
+  it("should throw error when capabilities are null", () => {
+    const fs = {
+      capabilities: null,
+    } as unknown as FileSystemBridge;
+
+    expect(() => assertCapabilities("analyze", fs)).toThrow(
+      "FileSystemBridge capabilities are not defined.",
+    );
+  });
+
+  it("should throw error when capabilities are undefined", () => {
+    const fs = {
+      capabilities: undefined,
+    } as unknown as FileSystemBridge;
+
+    expect(() => assertCapabilities("mirror", fs)).toThrow(
+      "FileSystemBridge capabilities are not defined.",
+    );
+  });
+
+  it.each([
+    "analyze" as keyof StoreCapabilities,
+    "clean" as keyof StoreCapabilities,
+    "mirror" as keyof StoreCapabilities,
+    "repair" as keyof StoreCapabilities,
+  ])("should not throw when all required capabilities are present for %s", (feature) => {
+    const requiredCaps = STORE_CAPABILITY_REQUIREMENTS[feature];
+    const fs = {
+      capabilities: {
+        read: requiredCaps.includes("read"),
+        write: requiredCaps.includes("write"),
+        listdir: requiredCaps.includes("listdir"),
+        exists: requiredCaps.includes("exists"),
+        mkdir: requiredCaps.includes("mkdir"),
+        rm: requiredCaps.includes("rm"),
+      },
+    } as FileSystemBridge;
+
+    expect(() => assertCapabilities(feature, fs)).not.toThrow();
+  });
+
+  it.each([
+    ...Object.entries(STORE_CAPABILITY_REQUIREMENTS).flatMap(([capability, requiredCaps]) =>
+      requiredCaps.map((missingCap) => ({
+        capability: capability as keyof StoreCapabilities,
+        requiredCaps: requiredCaps as FileSystemBridgeCapabilityKey[],
+        missingCap: missingCap as FileSystemBridgeCapabilityKey,
+      })),
+    ),
+  ])("should throw UCDStoreUnsupportedFeature when $capability is missing $missingCap", ({ capability, requiredCaps, missingCap }) => {
+    const fs = {
+      capabilities: {
+        read: requiredCaps.includes("read") && missingCap !== "read",
+        write: requiredCaps.includes("write") && missingCap !== "write",
+        listdir: requiredCaps.includes("listdir") && missingCap !== "listdir",
+        exists: requiredCaps.includes("exists") && missingCap !== "exists",
+        mkdir: requiredCaps.includes("mkdir") && missingCap !== "mkdir",
+        rm: requiredCaps.includes("rm") && missingCap !== "rm",
+      },
+    } as FileSystemBridge;
+
+    expect(() => assertCapabilities(capability, fs)).toThrow(UCDStoreUnsupportedFeature);
+  });
+
+  it("should throw UCDStoreUnsupportedFeature with correct parameters", () => {
+    const fs = {
+      capabilities: {
+        read: false,
+        write: false,
+        listdir: false,
+        exists: false,
+        mkdir: false,
+        rm: false,
+      },
+    } as FileSystemBridge;
+
+    expect(() => assertCapabilities("analyze", fs)).toThrow(
+      expect.objectContaining({
+        feature: "analyze",
+        requiredCapabilities: STORE_CAPABILITY_REQUIREMENTS.analyze,
+        availableCapabilities: [],
+      }),
+    );
+  });
+
+  it("should include available capabilities in error when some capabilities are present", () => {
+    const fs = {
+      capabilities: {
+        read: true,
+        write: false,
+        listdir: true,
+        exists: false,
+        mkdir: false,
+        rm: false,
+      },
+    } as FileSystemBridge;
+
+    expect(() => assertCapabilities("clean", fs)).toThrow(
+      expect.objectContaining({
+        feature: "clean",
+        requiredCapabilities: STORE_CAPABILITY_REQUIREMENTS.clean,
+        availableCapabilities: ["read", "listdir"],
+      }),
+    );
+  });
+
+  it.each([
+    {
+      scenario: "analyze with partial capabilities",
+      feature: "analyze" as keyof StoreCapabilities,
+      fsCapabilities: {
+        read: true,
+        write: false,
+        listdir: false, // missing
+        exists: true,
+        mkdir: false,
+        rm: false,
+      },
+      expectedAvailable: ["read", "exists"],
+    },
+    {
+      scenario: "mirror with write-only capabilities",
+      feature: "mirror" as keyof StoreCapabilities,
+      fsCapabilities: {
+        read: false, // missing
+        write: true,
+        listdir: false, // missing
+        exists: false, // missing
+        mkdir: true,
+        rm: false,
+      },
+      expectedAvailable: ["write", "mkdir"],
+    },
+  ])("should handle $scenario correctly", ({ feature, fsCapabilities, expectedAvailable }) => {
+    const fs = {
+      capabilities: fsCapabilities,
+    } as FileSystemBridge;
+
+    expect(() => assertCapabilities(feature, fs)).toThrow(
+      expect.objectContaining({
+        feature,
+        requiredCapabilities: STORE_CAPABILITY_REQUIREMENTS[feature],
+        availableCapabilities: expectedAvailable,
+      }),
+    );
   });
 });
