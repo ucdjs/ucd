@@ -22,7 +22,6 @@
     ".": "./dist/index.js",
     "./bridges/http": "./dist/bridges/http.js",
     "./bridges/node": "./dist/bridges/node.js",
-    "./internal": "./dist/internal.js",
     "./package.json": "./package.json"
   },
   "main": "./dist/index.js",
