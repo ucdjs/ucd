@@ -78,7 +78,7 @@ describe("store configuration", () => {
       expect(store.basePath).toBe(storeDir);
       expect(store.baseUrl).toBe(UCDJS_API_BASE_URL);
 
-      const fsCapabilities = store.fs;
+      const fsCapabilities = store.fs.capabilities;
       expect(fsCapabilities).toBeDefined();
       expect(fsCapabilities.read).toBe(true);
       expect(fsCapabilities.write).toBe(true);
@@ -133,7 +133,7 @@ describe("store configuration", () => {
       expect(store.baseUrl).toBe(UCDJS_API_BASE_URL);
       expect(store.basePath).toBe("");
 
-      const fsCapabilities = store.fs;
+      const fsCapabilities = store.fs.capabilities;
       expect(fsCapabilities).toBeDefined();
       expect(fsCapabilities.read).toBe(true);
       expect(fsCapabilities.write).toBe(false);
