@@ -1,5 +1,4 @@
 import type {
-  FileSystemBridgeCapabilities,
   FileSystemBridgeFactory,
   FileSystemBridgeObject,
 } from "./types";
