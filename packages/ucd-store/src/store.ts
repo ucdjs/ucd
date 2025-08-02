@@ -232,10 +232,8 @@ export class UCDStore {
           }
           const filePaths = await getExpectedFilePaths(this.#client, version);
           return filePaths.map((filePath): [string, string] => [version, filePath]);
-        })
-      ).then(results => results.flat());
-
-
+        }),
+      ).then((results) => results.flat());
     } catch (err) {
       return {
         success: false,
@@ -281,12 +279,6 @@ export class UCDStore {
 
     for (const version of versions) {
       manifestData[version] = prependLeadingSlash(this.basePath ? join(this.basePath, version) : version);
-    }
-
-    await this.#fs.write(this.#manifestPath, JSON.stringify(manifestData, null, 2));
-    this.#versions = [...versions];
-  }
-}
     }
 
     await this.#fs.write(this.#manifestPath, JSON.stringify(manifestData, null, 2));
