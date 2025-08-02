@@ -58,6 +58,9 @@ export function defineFileSystemBridge<
   };
 }
 
+/**
+ * @internal
+ */
 function inferCapabilitiesFromOperations(ops: Partial<FileSystemBridgeOperations>): FileSystemBridgeCapabilities {
   return {
     read: "read" in ops,
