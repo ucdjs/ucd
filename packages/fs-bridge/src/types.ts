@@ -34,11 +34,11 @@ export interface FileSystemBridgeOperations {
   /**
    * Writes data to a file.
    * @param {string} path - The path to the file to write
-   * @param {string} data - The data to write to the file
+   * @param {string | Uint8Array} data - The data to write to the file
    * @param {BufferEncoding} [encoding] - Optional encoding for the data (defaults to 'utf8')
    * @returns {Promise<void>} A promise that resolves when the write operation is complete
    */
-  write?: (path: string, data: string, encoding?: BufferEncoding) => Promise<void>;
+  write?: (path: string, data: string | Uint8Array, encoding?: BufferEncoding) => Promise<void>;
 
   /**
    * Lists the contents of a directory.
