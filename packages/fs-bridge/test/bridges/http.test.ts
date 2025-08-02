@@ -3,6 +3,7 @@ import { mockFetch } from "#msw-utils";
 import { flattenFilePaths } from "@ucdjs/utils";
 import { HttpResponse } from "msw";
 import { describe, expect, it } from "vitest";
+import { assertCapability } from "../../src";
 import HTTPFileSystemBridge from "../../src/bridges/http";
 
 describe("http fs-bridge", () => {
@@ -22,6 +23,7 @@ describe("http fs-bridge", () => {
         }],
       ]);
 
+      assertCapability(bridge, "read");
       const content = await bridge.read("test-file.txt");
       expect(content).toBe(fileContent);
     });
@@ -38,6 +40,7 @@ describe("http fs-bridge", () => {
         }],
       ]);
 
+      assertCapability(bridge, "read");
       const content = await bridge.read("config.json");
       expect(content).toBe(JSON.stringify(jsonContent));
     });
@@ -52,6 +55,7 @@ describe("http fs-bridge", () => {
         }],
       ]);
 
+      assertCapability(bridge, "read");
       await expect(bridge.read("missing.txt")).rejects.toThrow("Failed to read remote file: Not Found");
     });
 
@@ -65,6 +69,7 @@ describe("http fs-bridge", () => {
         }],
       ]);
 
+      assertCapability(bridge, "read");
       await expect(bridge.read("error.txt")).rejects.toThrow("Failed to read remote file: Internal Server Error");
     });
   });
@@ -77,6 +82,7 @@ describe("http fs-bridge", () => {
         }],
       ]);
 
+      assertCapability(bridge, "exists");
       const exists = await bridge.exists("exists.txt");
       expect(exists).toBe(true);
     });
@@ -88,6 +94,7 @@ describe("http fs-bridge", () => {
         }],
       ]);
 
+      assertCapability(bridge, "exists");
       const exists = await bridge.exists("missing.txt");
       expect(exists).toBe(false);
     });
@@ -99,6 +106,7 @@ describe("http fs-bridge", () => {
         }],
       ]);
 
+      assertCapability(bridge, "exists");
       const exists = await bridge.exists("network-error.txt");
       expect(exists).toBe(false);
     });
@@ -110,6 +118,7 @@ describe("http fs-bridge", () => {
         }],
       ]);
 
+      assertCapability(bridge, "exists");
       const exists = await bridge.exists("server-error.txt");
       expect(exists).toBe(false);
     });
@@ -150,6 +159,7 @@ describe("http fs-bridge", () => {
         }],
       ]);
 
+      assertCapability(bridge, "listdir");
       const files = await bridge.listdir("test-dir");
       expect(files).toEqual([
         {
@@ -197,6 +207,7 @@ describe("http fs-bridge", () => {
         }],
       ]);
 
+      assertCapability(bridge, "listdir");
       const files = await bridge.listdir("dir", true);
       expect(files).toEqual([
         { type: "file", name: "file1.txt", path: "/file1.txt" },
@@ -222,6 +233,7 @@ describe("http fs-bridge", () => {
         }],
       ]);
 
+      assertCapability(bridge, "listdir");
       const files = await bridge.listdir("empty-dir");
       expect(files).toEqual([]);
     });
@@ -236,6 +248,7 @@ describe("http fs-bridge", () => {
         }],
       ]);
 
+      assertCapability(bridge, "listdir");
       const files = await bridge.listdir("missing-dir");
       expect(files).toEqual([]);
     });
@@ -250,6 +263,7 @@ describe("http fs-bridge", () => {
         }],
       ]);
 
+      assertCapability(bridge, "listdir");
       await expect(bridge.listdir("invalid-json")).rejects.toThrow();
     });
 
@@ -288,6 +302,7 @@ describe("http fs-bridge", () => {
         }],
       ]);
 
+      assertCapability(bridge, "listdir");
       const files = await bridge.listdir("dir", true);
       expect(files).toEqual([
         { type: "file", name: "accessible.txt", path: "/accessible.txt" },
@@ -297,20 +312,144 @@ describe("http fs-bridge", () => {
     });
   });
 
-  describe("read-only operations", () => {
-    it("should not support write operation", async () => {
-      // write should not throw but also not do anything
-      await expect(bridge.write("test.txt", "content")).resolves.toBeUndefined();
+  describe("capability system", () => {
+    it("should correctly infer read-only capabilities", () => {
+      expect(bridge.capabilities).toEqual({
+        read: true,
+        exists: true,
+        listdir: true,
+        write: false,
+        mkdir: false,
+        rm: false,
+      });
     });
 
-    it("should not support mkdir operation", async () => {
-      // mkdir should not throw but also not do anything
-      await expect(bridge.mkdir("new-dir")).resolves.toBeUndefined();
+    it("should pass read-only capability assertions", () => {
+      expect(() => assertCapability(bridge, "read")).not.toThrow();
+      expect(() => assertCapability(bridge, "exists")).not.toThrow();
+      expect(() => assertCapability(bridge, "listdir")).not.toThrow();
+      expect(() => assertCapability(bridge, ["read", "exists"])).not.toThrow();
+      expect(() => assertCapability(bridge, ["read", "exists", "listdir"])).not.toThrow();
     });
 
-    it("should not support rm operation", async () => {
-      // rm should not throw but also not do anything
-      await expect(bridge.rm("test.txt")).resolves.toBeUndefined();
+    it("should fail write capability assertions", () => {
+      expect(() => assertCapability(bridge, "write")).toThrow("File system bridge does not support the 'write' capability.");
+      expect(() => assertCapability(bridge, "mkdir")).toThrow("File system bridge does not support the 'mkdir' capability.");
+      expect(() => assertCapability(bridge, "rm")).toThrow("File system bridge does not support the 'rm' capability.");
+
+      expect(() => assertCapability(bridge, ["read", "write"])).toThrow("File system bridge does not support the 'write' capability.");
+      expect(() => assertCapability(bridge, ["exists", "mkdir"])).toThrow("File system bridge does not support the 'mkdir' capability.");
+    });
+
+    it("should allow read operations without optional chaining after assertion", async () => {
+      const content = "test content";
+
+      mockFetch([
+        ["GET", `${baseUrl}/test.txt`, () => {
+          return new HttpResponse(content, {
+            status: 200,
+            headers: { "Content-Type": "text/plain" },
+          });
+        }],
+        ["HEAD", `${baseUrl}/test.txt`, () => {
+          return new HttpResponse(null, { status: 200 });
+        }],
+        ["GET", `${baseUrl}/dir`, () => {
+          return new HttpResponse(JSON.stringify([]), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          });
+        }],
+      ]);
+
+      // assert read capabilities
+      assertCapability(bridge, ["read", "exists", "listdir"]);
+
+      // now we can call methods directly without ?.
+      await expect(bridge.read("test.txt")).resolves.toBe(content);
+      await expect(bridge.exists("test.txt")).resolves.toBe(true);
+      await expect(bridge.listdir("dir")).resolves.toEqual([]);
+    });
+
+    it("should work with optional chaining for supported operations", async () => {
+      const content = "test content";
+
+      mockFetch([
+        ["GET", `${baseUrl}/test.txt`, () => {
+          return new HttpResponse(content, {
+            status: 200,
+            headers: { "Content-Type": "text/plain" },
+          });
+        }],
+        ["HEAD", `${baseUrl}/test.txt`, () => {
+          return new HttpResponse(null, { status: 200 });
+        }],
+        ["GET", `${baseUrl}/dir`, () => {
+          return new HttpResponse(JSON.stringify([]), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          });
+        }],
+      ]);
+
+      await expect(bridge.read?.("test.txt")).resolves.toBe(content);
+      await expect(bridge.exists?.("test.txt")).resolves.toBe(true);
+      await expect(bridge.listdir?.("dir")).resolves.toEqual([]);
+    });
+  });
+
+  describe("unsupported operations", () => {
+    it("should throw error for unsupported write operation with optional chaining", () => {
+      expect(() => bridge.write?.("test.txt", "content")).toThrowError(
+        "File system bridge does not support the 'write' capability.",
+      );
+    });
+
+    it("should throw error for unsupported mkdir operation with optional chaining", () => {
+      expect(() => bridge.mkdir?.("new-dir")).toThrowError(
+        "File system bridge does not support the 'mkdir' capability.",
+      );
+    });
+
+    it("should throw error for unsupported rm operation with optional chaining", () => {
+      expect(() => bridge.rm?.("test.txt")).toThrowError(
+        "File system bridge does not support the 'rm' capability.",
+      );
+    });
+
+    it("should throw error when calling unsupported operations directly without optional chaining", () => {
+      // Direct calls (without ?) should also throw due to proxy
+      expect(() => (bridge as any).write("test.txt", "content")).toThrow(
+        "File system bridge does not support the 'write' capability.",
+      );
+      expect(() => (bridge as any).mkdir("new-dir")).toThrow(
+        "File system bridge does not support the 'mkdir' capability.",
+      );
+      expect(() => (bridge as any).rm("test.txt")).toThrow(
+        "File system bridge does not support the 'rm' capability.",
+      );
+    });
+
+    it("should distinguish between capability assertion and proxy errors", () => {
+      // Capability assertion error
+      try {
+        assertCapability(bridge, "write");
+        expect.fail("Should have thrown");
+      } catch (error: any) {
+        expect(error.name).toBe("BridgeUnsupportedOperation");
+        expect(error.message).toBe("File system bridge does not support the 'write' capability.");
+        expect(error.capability).toBe("write");
+      }
+
+      // Proxy error (same message but different error type)
+      try {
+        bridge.write?.("test.txt", "content");
+        expect.fail("Should have thrown");
+      } catch (error: any) {
+        expect(error.name).toBe("BridgeUnsupportedOperation");
+        expect(error.message).toBe("File system bridge does not support the 'write' capability.");
+        expect(error.capability).toBe("write");
+      }
     });
   });
 
@@ -326,6 +465,7 @@ describe("http fs-bridge", () => {
           });
         }],
       ]);
+      assertCapability(bridge, "read");
 
       const result = await bridge.read("path/to/file.txt");
       expect(result).toBe(content);
@@ -342,6 +482,8 @@ describe("http fs-bridge", () => {
           });
         }],
       ]);
+
+      assertCapability(bridge, "read");
 
       const result = await bridge.read("/absolute/path.txt");
       expect(result).toBe(content);
@@ -386,6 +528,12 @@ describe("http fs-bridge", () => {
         }],
       ]);
 
+      assertCapability(bridge, [
+        "read",
+        "exists",
+        "listdir",
+      ]);
+
       // discover files
       const files = await bridge.listdir("config");
       expect(files).toEqual([
@@ -428,6 +576,10 @@ describe("http fs-bridge", () => {
         }],
       ]);
 
+      assertCapability(bridge, [
+        "read",
+      ]);
+
       const [content1, content2, content3] = await Promise.all([
         bridge.read("file1.txt"),
         bridge.read("file2.txt"),
@@ -455,6 +607,11 @@ describe("http fs-bridge", () => {
         ["HEAD", `${baseUrl}/missing.txt`, () => {
           return new HttpResponse(null, { status: 404 });
         }],
+      ]);
+
+      assertCapability(bridge, [
+        "read",
+        "exists",
       ]);
 
       const [content, existsTrue, existsFalse] = await Promise.all([

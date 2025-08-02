@@ -104,14 +104,6 @@ const NodeFileSystemBridge = defineFileSystemBridge({
   optionsSchema: z.object({
     basePath: z.string(),
   }),
-  capabilities: {
-    exists: true,
-    read: true,
-    write: true,
-    listdir: true,
-    mkdir: true,
-    rm: true,
-  },
   setup({ options }) {
     const basePath = nodePath.resolve(options.basePath);
 

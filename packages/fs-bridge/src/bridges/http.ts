@@ -9,14 +9,6 @@ const HTTPFileSystemBridge = defineFileSystemBridge({
   optionsSchema: z.object({
     baseUrl: z.string().default(joinURL(UCDJS_API_BASE_URL, "/api/v1/files")),
   }),
-  capabilities: {
-    exists: true,
-    read: true,
-    write: false,
-    listdir: true,
-    mkdir: false,
-    rm: false,
-  },
   setup({ options }) {
     const baseUrl = options.baseUrl;
     return {
@@ -43,7 +35,6 @@ const HTTPFileSystemBridge = defineFileSystemBridge({
           }
 
           if (response.status === 403) {
-            console.error(`Access denied to directory: ${path}`);
             return [];
           }
 
@@ -90,7 +81,7 @@ const HTTPFileSystemBridge = defineFileSystemBridge({
         const entries: FSEntry[] = [];
         for (const entry of data) {
           if (entry.type === "directory") {
-            const children = await this.listdir(joinURL(path, entry.path), true);
+            const children = await this.listdir!(joinURL(path, entry.path), true);
             entries.push({
               type: "directory",
               name: entry.name,
@@ -108,9 +99,6 @@ const HTTPFileSystemBridge = defineFileSystemBridge({
 
         return entries;
       },
-      async write() {
-        // This method is intentionally left unimplemented because this is a read-only bridge.
-      },
       async exists(path) {
         const url = joinURL(baseUrl, path);
         return fetch(url, { method: "HEAD" })
@@ -127,12 +115,6 @@ const HTTPFileSystemBridge = defineFileSystemBridge({
 
             return false;
           });
-      },
-      async mkdir() {
-        // This method is intentionally left unimplemented because this is a read-only bridge.
-      },
-      async rm() {
-        // This method is intentionally left unimplemented because this is a read-only bridge.
       },
     };
   },
