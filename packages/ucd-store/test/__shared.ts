@@ -1,61 +1,27 @@
 import type { FSEntry } from "@ucdjs/fs-bridge";
-import type Dirent from "memfs/lib/node/Dirent";
+import type Dirent from "memfs/lib/Dirent";
 import { dirname, join, relative } from "node:path";
 import { prependLeadingSlash, trimTrailingSlash } from "@luxass/utils";
 import { defineFileSystemBridge } from "@ucdjs/fs-bridge";
 import { memfs } from "memfs";
 
 export const createReadOnlyMockFS = defineFileSystemBridge({
-  capabilities: {
-    read: true,
-    write: false,
-    listdir: true,
-    mkdir: false,
-    exists: true,
-    rm: false,
-  },
   setup() {
     return {
       async read() {
         return "{}";
       },
-
       async exists() {
         return true;
       },
-
-      async write() {
-        throw new Error("write not supported");
-      },
-
       async listdir() {
         return [];
-      },
-
-      async mkdir() {
-        throw new Error("mkdir not supported");
-      },
-
-      async stat() {
-        throw new Error("stat not supported");
-      },
-
-      async rm() {
-        throw new Error("rm not supported");
       },
     };
   },
 });
 
 export const createMemoryMockFS = defineFileSystemBridge({
-  capabilities: {
-    read: true,
-    write: true,
-    listdir: true,
-    mkdir: false,
-    exists: true,
-    rm: false,
-  },
   state: {
     fs: memfs().fs,
   },
