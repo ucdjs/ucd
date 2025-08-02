@@ -2,7 +2,7 @@ import type { UCDClient, UnicodeTreeNode } from "@ucdjs/fetch";
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 import type { UCDStoreManifest } from "@ucdjs/schemas";
 import type { PathFilter } from "@ucdjs/utils";
-import type { AnalyzeOptions, UCDStoreOptions, VersionAnalysis } from "./types";
+import type { AnalyzeOptions, MirrorOptions, UCDStoreOptions, VersionAnalysis } from "./types";
 import { prependLeadingSlash, trimLeadingSlash } from "@luxass/utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { createClient, isApiError } from "@ucdjs/fetch";
@@ -210,6 +210,40 @@ export class UCDStore {
     }
   }
 
+  async mirror(options: MirrorOptions): Promise<{
+    success: boolean;
+    error?: string;
+    mirrored?: string[];
+    skipped?: string[];
+    failed?: string[];
+  }> {
+    assertCapability(this.#fs, ["exists", "mkdir"]);
+    const { versions = this.#versions, concurrency = 5, dryRun = false } = options;
+
+    const mirrored: string[] = [];
+    const skipped: string[] = [];
+    const failed: string[] = [];
+
+    try {
+      const filesQueue = await Promise.all(
+        versions.map(async (version) => {
+          if (!this.#versions.includes(version)) {
+            throw new UCDStoreVersionNotFoundError(version);
+          }
+          const filePaths = await getExpectedFilePaths(this.#client, version);
+          return filePaths.map((filePath): [string, string] => [version, filePath]);
+        })
+      ).then(results => results.flat());
+
+
+    } catch (err) {
+      return {
+        success: false,
+        error: `Failed to prepare files for mirroring: ${err instanceof Error ? err.message : String(err)}`,
+      };
+    }
+  }
+
   async #loadVersionsFromStore(): Promise<void> {
     assertCapability(this.#fs, "read");
     try {
@@ -247,6 +281,12 @@ export class UCDStore {
 
     for (const version of versions) {
       manifestData[version] = prependLeadingSlash(this.basePath ? join(this.basePath, version) : version);
+    }
+
+    await this.#fs.write(this.#manifestPath, JSON.stringify(manifestData, null, 2));
+    this.#versions = [...versions];
+  }
+}
     }
 
     await this.#fs.write(this.#manifestPath, JSON.stringify(manifestData, null, 2));
