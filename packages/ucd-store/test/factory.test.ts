@@ -1,6 +1,7 @@
 import type { UCDStoreManifest } from "@ucdjs/schemas";
 import { HttpResponse, mockFetch } from "#msw-utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
+import { assertCapability } from "@ucdjs/fs-bridge";
 import { PRECONFIGURED_FILTERS } from "@ucdjs/utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
@@ -24,7 +25,8 @@ describe("store configuration", () => {
     it("should create store with custom filesystem bridge", async () => {
       const customFS = createMemoryMockFS();
 
-      // Initialize with empty manifest
+      assertCapability(customFS, "write");
+      // initialize with empty manifest
       await customFS.write("/test/.ucd-store.json", "{}");
 
       const store = await createUCDStore({
@@ -221,50 +223,6 @@ describe("store configuration", () => {
       expect(store.filter.patterns()).toContain(PRECONFIGURED_FILTERS.EXCLUDE_TEST_FILES);
       expect(store.filter("NormalizationTest.txt")).toBe(false);
       expect(store.filter("ValidFile.txt")).toBe(true);
-    });
-  });
-
-  describe("store capabilities configuration", () => {
-    it("should infer capabilities from filesystem bridge", async () => {
-      const store = await createUCDStore({
-        basePath: "/test",
-        fs: createReadOnlyMockFS(),
-      });
-
-      expect(store.capabilities.analyze).toBe(true);
-      expect(store.capabilities.clean).toBe(false);
-      expect(store.capabilities.mirror).toBe(false);
-      expect(store.capabilities.repair).toBe(false);
-    });
-
-    it("should infer full capabilities from Node.js filesystem", async () => {
-      const storeDir = await testdir({
-        ".ucd-store.json": JSON.stringify(DEFAULT_VERSIONS),
-      });
-
-      const store = await createNodeUCDStore({
-        basePath: storeDir,
-      });
-
-      expect(store.capabilities.analyze).toBe(true);
-      expect(store.capabilities.clean).toBe(true);
-      expect(store.capabilities.mirror).toBe(true);
-      expect(store.capabilities.repair).toBe(true);
-    });
-
-    it("should infer limited capabilities from HTTP filesystem", async () => {
-      mockFetch([
-        [["GET", "HEAD"], `${UCDJS_API_BASE_URL}/api/v1/files/.ucd-store.json`, () => {
-          return HttpResponse.json(DEFAULT_VERSIONS);
-        }],
-      ]);
-
-      const store = await createHTTPUCDStore();
-
-      expect(store.capabilities.analyze).toBe(true);
-      expect(store.capabilities.clean).toBe(false);
-      expect(store.capabilities.mirror).toBe(false);
-      expect(store.capabilities.repair).toBe(false);
     });
   });
 

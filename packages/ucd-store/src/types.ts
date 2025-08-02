@@ -35,30 +35,6 @@ export interface UCDStoreOptions {
   versions?: string[];
 }
 
-export type StoreCapability = keyof StoreCapabilities;
-
-export interface StoreCapabilities {
-  /**
-   * Whether the store supports analyzing its contents.
-   */
-  analyze: boolean;
-
-  /**
-   * Whether the store supports cleaning up orphaned or outdated files.
-   */
-  clean: boolean;
-
-  /**
-   * Whether the store supports mirroring files from remote to local.
-   */
-  mirror: boolean;
-
-  /**
-   * Whether the store supports repairing files (e.g., fixing corrupted files).
-   */
-  repair: boolean;
-}
-
 export interface AnalyzeOptions {
   /**
    * Whether to check for orphaned files in the store.

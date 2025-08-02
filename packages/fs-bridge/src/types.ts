@@ -29,7 +29,7 @@ export interface FileSystemBridgeOperations {
    * @param {string} path - The path to the file to read
    * @returns {Promise<string>} A promise that resolves to the file contents as a string
    */
-  read: (path: string) => Promise<string>;
+  read?: (path: string) => Promise<string>;
 
   /**
    * Writes data to a file.
@@ -38,7 +38,7 @@ export interface FileSystemBridgeOperations {
    * @param {BufferEncoding} [encoding] - Optional encoding for the data (defaults to 'utf8')
    * @returns {Promise<void>} A promise that resolves when the write operation is complete
    */
-  write: (path: string, data: string, encoding?: BufferEncoding) => Promise<void>;
+  write?: (path: string, data: string, encoding?: BufferEncoding) => Promise<void>;
 
   /**
    * Lists the contents of a directory.
@@ -46,21 +46,21 @@ export interface FileSystemBridgeOperations {
    * @param {boolean} [recursive=false] - If true, lists files in subdirectories as well
    * @returns {Promise<FSEntry[]>} A promise that resolves to an array of file and directory entries
    */
-  listdir: (path: string, recursive?: boolean) => Promise<FSEntry[]>;
+  listdir?: (path: string, recursive?: boolean) => Promise<FSEntry[]>;
 
   /**
    * Creates a directory.
    * @param {string} path - The path of the directory to create
    * @returns {Promise<void>} A promise that resolves when the directory is created
    */
-  mkdir: (path: string) => Promise<void>;
+  mkdir?: (path: string) => Promise<void>;
 
   /**
    * Checks if a file or directory exists.
    * @param {string} path - The path to check for existence
    * @returns {Promise<boolean>} A promise that resolves to true if the path exists, false otherwise
    */
-  exists: (path: string) => Promise<boolean>;
+  exists?: (path: string) => Promise<boolean>;
 
   /**
    * Removes a file or directory.
@@ -68,7 +68,7 @@ export interface FileSystemBridgeOperations {
    * @param {FileSystemBridgeRmOptions} [options] - Optional configuration for removal
    * @returns {Promise<void>} A promise that resolves when the removal is complete
    */
-  rm: (path: string, options?: FileSystemBridgeRmOptions) => Promise<void>;
+  rm?: (path: string, options?: FileSystemBridgeRmOptions) => Promise<void>;
 }
 
 export type FileSystemBridgeCapabilityKey = keyof FileSystemBridgeOperations;
@@ -82,7 +82,6 @@ type FileSystemBridgeSetupFn<
 > = (ctx: {
   options: z.infer<TOptionsSchema>;
   state: TState;
-  capabilities: FileSystemBridgeCapabilities;
 }) => FileSystemBridgeOperations;
 
 export interface FileSystemBridgeObject<
@@ -93,11 +92,6 @@ export interface FileSystemBridgeObject<
    * Zod schema for validating bridge options
    */
   optionsSchema?: TOptionsSchema;
-
-  /**
-   * An object defining the capabilities supported by this file system bridge.
-   */
-  capabilities: FileSystemBridgeCapabilities;
 
   /**
    * Optional state object for the file system bridge.
@@ -113,7 +107,7 @@ export interface FileSystemBridgeObject<
    *    state: {
    *     lastReadPath: "",
    *    },
-   *    setup({ options, state, capabilities }) {
+   *    setup({ options, state }) {
    *      return {
    *        async read(path) {
    *          state.lastReadPath = path;
@@ -127,7 +121,7 @@ export interface FileSystemBridgeObject<
   state?: TState;
 
   /**
-   * Setup function that receives options, state, and capabilities
+   * Setup function that receives options, and state
    * and returns the filesystem operations implementation
    */
   setup: FileSystemBridgeSetupFn<TOptionsSchema, TState>;
