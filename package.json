@@ -5,7 +5,7 @@
   "engines": {
     "node": ">=22.17"
   },
-  "packageManager": "pnpm@10.13.1",
+  "packageManager": "pnpm@10.14.0",
   "workspaces": [
     "packages/*",
     "apps/*"
@@ -33,5 +33,5 @@
     "turbo": "catalog:monorepo",
     "typescript": "catalog:dev",
     "vitest": "catalog:testing"
-    }
+  }
 }
