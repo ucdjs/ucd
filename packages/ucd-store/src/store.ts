@@ -302,7 +302,7 @@ export class UCDStore {
     }
 
     // download file content from the api
-    const { data: body, error, response } = await this.#client.GET("/api/v1/files/{wildcard}", {
+    const { error, response } = await this.#client.GET("/api/v1/files/{wildcard}", {
       params: {
         path: {
           // We are only returning files from inside the ucd folder.
@@ -313,25 +313,28 @@ export class UCDStore {
           wildcard: join(version, hasUCDFolderPath(version) ? "ucd" : "", filePath),
         },
       },
-      parseAs: "arrayBuffer",
+      parseAs: "stream",
     });
 
     if (isApiError(error)) {
       throw new UCDStoreError(`Failed to fetch file '${filePath}': ${error?.message}`);
     }
 
-    if (body == null) {
-      throw new UCDStoreError(`Failed to fetch file '${filePath}': No content received.`);
-    }
-
     let content;
+
+    const binaryContentTypes = ["application/octet-stream", "application/pdf", "image/png", "image/jpeg", "application/zip"];
 
     const contentType = response.headers.get("content-type");
     if (contentType?.startsWith("application/json")) {
       // if the content is JSON, parse it
-      content = await body.json();
+      content = await response.json();
     } else if (contentType?.startsWith("text/")) {
-      content = await body.text();
+      content = await response.text();
+    } else if (binaryContentTypes.includes(contentType!)) {
+      // if the content is binary, read it as a buffer
+      content = await response.arrayBuffer();
+    } else {
+      throw new UCDStoreError(`Unsupported content type '${contentType}' for file '${filePath}'`);
     }
 
     if (content == null) {
