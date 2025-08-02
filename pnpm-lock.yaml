@@ -197,6 +197,11 @@ catalogs:
       specifier: ^4.27.0
       version: 4.27.0
 
+patchedDependencies:
+  openapi-fetch:
+    hash: 88932717e69b5c764e7f1dc23ead745d41284d9a1eef3d42ad80fa6836548762
+    path: patches/openapi-fetch.patch
+
 importers:
 
   .:
@@ -462,7 +467,7 @@ importers:
         version: link:../env
       openapi-fetch:
         specifier: catalog:prod
-        version: 0.14.0
+        version: 0.14.0(patch_hash=88932717e69b5c764e7f1dc23ead745d41284d9a1eef3d42ad80fa6836548762)
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:linting
@@ -9994,7 +9999,7 @@ snapshots:
     dependencies:
       wrappy: 1.0.2
 
-  openapi-fetch@0.14.0:
+  openapi-fetch@0.14.0(patch_hash=88932717e69b5c764e7f1dc23ead745d41284d9a1eef3d42ad80fa6836548762):
     dependencies:
       openapi-typescript-helpers: 0.0.15
 
