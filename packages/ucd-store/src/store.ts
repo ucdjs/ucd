@@ -3,7 +3,7 @@ import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 import type { UCDStoreManifest } from "@ucdjs/schemas";
 import type { PathFilter } from "@ucdjs/utils";
 import type { AnalyzeOptions, MirrorOptions, UCDStoreOptions, VersionAnalysis } from "./types";
-import { hasUCDFolderPath } from "@luxass/unicode-utils-new";
+import { hasUCDFolderPath, resolveUCDVersion } from "@luxass/unicode-utils-new";
 import { prependLeadingSlash, trimLeadingSlash } from "@luxass/utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { createClient, isApiError } from "@ucdjs/fetch";
@@ -310,7 +310,7 @@ export class UCDStore {
           // `ucd` folder.
           // So by adding the `ucd` folder here, we ensure that the file paths
           // we download are correct.
-          wildcard: join(version, hasUCDFolderPath(version) ? "ucd" : "", filePath),
+          wildcard: join(resolveUCDVersion(version), hasUCDFolderPath(version) ? "ucd" : "", filePath),
         },
       },
       parseAs: "stream",
@@ -320,19 +320,36 @@ export class UCDStore {
       throw new UCDStoreError(`Failed to fetch file '${filePath}': ${error?.message}`);
     }
 
-    let content;
+    let content: string | Uint8Array | null = null;
 
-    const binaryContentTypes = ["application/octet-stream", "application/pdf", "image/png", "image/jpeg", "application/zip"];
+    const binaryContentTypes = [
+      "application/octet-stream",
+      "application/pdf",
+      "image/png",
+      "image/jpeg",
+      "image/gif",
+      "application/zip",
+      "application/x-gzip",
+    ];
 
-    const contentType = response.headers.get("content-type");
+    const contentTypeHeader = response.headers.get("content-type");
+
+    if (!contentTypeHeader) {
+      throw new UCDStoreError(`Failed to fetch file '${filePath}': No content type header received.`);
+    }
+
+    const semiColonIndex = contentTypeHeader.indexOf(";");
+    const contentType = semiColonIndex !== -1
+      ? contentTypeHeader.slice(0, semiColonIndex).trim()
+      : contentTypeHeader.trim();
+
     if (contentType?.startsWith("application/json")) {
-      // if the content is JSON, parse it
       content = await response.json();
     } else if (contentType?.startsWith("text/")) {
       content = await response.text();
     } else if (binaryContentTypes.includes(contentType!)) {
       // if the content is binary, read it as a buffer
-      content = await response.arrayBuffer();
+      content = new Uint8Array(await response.arrayBuffer());
     } else {
       throw new UCDStoreError(`Unsupported content type '${contentType}' for file '${filePath}'`);
     }
