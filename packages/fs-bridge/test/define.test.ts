@@ -1,6 +1,7 @@
 import type { FileSystemBridgeOperations } from "../src/types";
 import { describe, expect, it, vi } from "vitest";
 import { z } from "zod";
+import { assertCapability } from "../src";
 import { defineFileSystemBridge } from "../src/define";
 
 describe("defineFileSystemBridge", () => {
@@ -15,24 +16,16 @@ describe("defineFileSystemBridge", () => {
     };
 
     const bridge = defineFileSystemBridge({
-      capabilities: {
-        exists: true,
-        read: true,
-        write: true,
-        listdir: true,
-        mkdir: true,
-        rm: true,
-      },
-      setup: ({ options, state, capabilities }) => {
+      setup: ({ options, state }) => {
         expect(options).toBeUndefined();
         expect(state).toEqual({});
-        expect(capabilities).toBeDefined();
         return mockOperations;
       },
     });
 
     const operations = bridge();
 
+    assertCapability(operations, "read");
     await operations.read("test.txt");
     expect(mockOperations.read).toHaveBeenCalledWith("test.txt");
   });
@@ -45,14 +38,6 @@ describe("defineFileSystemBridge", () => {
 
     const bridge = defineFileSystemBridge({
       optionsSchema,
-      capabilities: {
-        exists: true,
-        read: true,
-        write: true,
-        listdir: true,
-        mkdir: true,
-        rm: true,
-      },
       setup: ({ options }) => {
         expect(options.basePath).toBe("/test/path");
         expect(options.encoding).toBe("utf-8");
@@ -83,14 +68,6 @@ describe("defineFileSystemBridge", () => {
 
     const bridge = defineFileSystemBridge({
       optionsSchema,
-      capabilities: {
-        exists: true,
-        read: true,
-        write: true,
-        listdir: true,
-        mkdir: true,
-        rm: true,
-      },
       setup: () => ({
         read: vi.fn().mockResolvedValue(""),
         write: vi.fn().mockResolvedValue(undefined),
@@ -118,18 +95,18 @@ describe("defineFileSystemBridge", () => {
     };
 
     const bridge = defineFileSystemBridge({
-      capabilities: {
-        exists: true,
-        read: true,
-        write: true,
-        listdir: true,
-        mkdir: true,
-        rm: true,
-      },
       setup: () => mockOperations,
     });
 
     const operations = bridge();
+    assertCapability(operations, [
+      "read",
+      "write",
+      "exists",
+      "listdir",
+      "mkdir",
+      "rm",
+    ]);
 
     await operations.read("test.txt");
     await operations.write("test.txt", "content");
@@ -150,14 +127,6 @@ describe("defineFileSystemBridge", () => {
     const initialState = { callCount: 0 };
 
     const bridge = defineFileSystemBridge({
-      capabilities: {
-        exists: true,
-        read: true,
-        write: true,
-        listdir: true,
-        mkdir: true,
-        rm: true,
-      },
       state: initialState,
       setup: ({ state }) => {
         expect(state).toBe(initialState);
@@ -177,6 +146,7 @@ describe("defineFileSystemBridge", () => {
     });
 
     const operations = bridge();
+    assertCapability(operations, ["read"]);
 
     const result1 = await operations.read("test1.txt");
     const result2 = await operations.read("test2.txt");
@@ -186,36 +156,6 @@ describe("defineFileSystemBridge", () => {
     expect(initialState.callCount).toBe(2);
   });
 
-  it("should work with custom capabilities", () => {
-    const customCapabilities = {
-      read: true,
-      write: false,
-      exists: true,
-      listdir: false,
-      mkdir: false,
-      rm: false,
-    };
-
-    const bridge = defineFileSystemBridge({
-      capabilities: customCapabilities,
-      setup: ({ capabilities }) => {
-        expect(capabilities).toEqual(customCapabilities);
-
-        return {
-          read: vi.fn().mockResolvedValue("content"),
-          write: vi.fn().mockResolvedValue(undefined),
-          exists: vi.fn().mockResolvedValue(true),
-          listdir: vi.fn().mockResolvedValue([]),
-          mkdir: vi.fn().mockResolvedValue(undefined),
-          rm: vi.fn().mockResolvedValue(undefined),
-        };
-      },
-    });
-
-    const operations = bridge();
-    expect(operations).toBeDefined();
-  });
-
   describe("undefined options and state handling", () => {
     it("should handle bridge with optionsSchema but no options passed", () => {
       const optionsSchema = z.object({
@@ -223,20 +163,11 @@ describe("defineFileSystemBridge", () => {
       });
 
       const bridge = defineFileSystemBridge({
-        capabilities: {
-          exists: true,
-          read: true,
-          write: true,
-          listdir: true,
-          mkdir: true,
-          rm: true,
-        },
         optionsSchema,
-        setup: ({ options, state, capabilities }) => {
+        setup: ({ options, state }) => {
           // options should be an empty object when no arguments passed
           expect(options).toEqual({});
           expect(state).toEqual({});
-          expect(capabilities).toBeDefined();
 
           return {
             read: vi.fn().mockResolvedValue("content"),
@@ -259,14 +190,6 @@ describe("defineFileSystemBridge", () => {
       });
 
       const bridge = defineFileSystemBridge({
-        capabilities: {
-          exists: true,
-          read: true,
-          write: true,
-          listdir: true,
-          mkdir: true,
-          rm: true,
-        },
         optionsSchema,
         setup: () => ({
           read: vi.fn().mockResolvedValue(""),
@@ -286,14 +209,6 @@ describe("defineFileSystemBridge", () => {
 
     it("should handle accessing state properties when state is undefined", async () => {
       const bridge = defineFileSystemBridge({
-        capabilities: {
-          exists: true,
-          read: true,
-          write: true,
-          listdir: true,
-          mkdir: true,
-          rm: true,
-        },
         setup: ({ state }) => {
           // state should be an empty object, not undefined
           expect(state).toEqual({});
@@ -315,6 +230,8 @@ describe("defineFileSystemBridge", () => {
       });
 
       const operations = bridge();
+      assertCapability(operations, ["read"]);
+
       await expect(operations.read("test")).resolves.toBe("content");
     });
   });

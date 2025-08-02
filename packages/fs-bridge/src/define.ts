@@ -1,6 +1,8 @@
 import type {
+  FileSystemBridgeCapabilities,
   FileSystemBridgeFactory,
   FileSystemBridgeObject,
+  FileSystemBridgeOperations,
 } from "./types";
 import { z } from "zod";
 
@@ -21,16 +23,48 @@ export function defineFileSystemBridge<
 
     const options = parsedOptions.data as z.output<TOptionsSchema>;
 
-    const { capabilities, state } = fsBridge;
+    const { state } = fsBridge;
 
     const bridge = fsBridge.setup({
       options,
       state: state ?? {} as TState,
-      capabilities,
     });
 
-    return Object.assign(bridge, {
+    const capabilities = inferCapabilitiesFromOperations(bridge);
+
+    // create a proxy that throws for unsupported operations
+    const proxiedBridge = new Proxy(bridge, {
+      get(target, prop) {
+        if (prop === "capabilities") {
+          return capabilities;
+        }
+
+        // If it's an operation method and not implemented, throw
+        if (typeof prop === "string" && prop in capabilities) {
+          if (!target[prop as keyof typeof target]) {
+            return () => {
+              throw new Error(`Operation '${prop}' is not supported by this filesystem bridge`);
+            };
+          }
+        }
+
+        return target[prop as keyof typeof target];
+      },
+    });
+
+    return Object.assign(proxiedBridge, {
       capabilities,
     });
+  };
+}
+
+function inferCapabilitiesFromOperations(ops: Partial<FileSystemBridgeOperations>): FileSystemBridgeCapabilities {
+  return {
+    read: "read" in ops,
+    write: "write" in ops,
+    listdir: "listdir" in ops,
+    exists: "exists" in ops,
+    mkdir: "mkdir" in ops,
+    rm: "rm" in ops,
   };
 }
