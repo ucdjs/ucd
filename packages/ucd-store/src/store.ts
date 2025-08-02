@@ -3,7 +3,7 @@ import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 import type { UCDStoreManifest } from "@ucdjs/schemas";
 import type { PathFilter } from "@ucdjs/utils";
 import type { AnalyzeOptions, UCDStoreOptions, VersionAnalysis } from "./types";
-import { invariant, prependLeadingSlash, trimLeadingSlash } from "@luxass/utils";
+import { prependLeadingSlash, trimLeadingSlash } from "@luxass/utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { createClient, isApiError } from "@ucdjs/fetch";
 import { assertCapability } from "@ucdjs/fs-bridge";
