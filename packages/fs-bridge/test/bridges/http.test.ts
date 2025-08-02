@@ -312,23 +312,144 @@ describe("http fs-bridge", () => {
     });
   });
 
+  describe("capability system", () => {
+    it("should correctly infer read-only capabilities", () => {
+      expect(bridge.capabilities).toEqual({
+        read: true,
+        exists: true,
+        listdir: true,
+        write: false,
+        mkdir: false,
+        rm: false,
+      });
+    });
+
+    it("should pass read-only capability assertions", () => {
+      expect(() => assertCapability(bridge, "read")).not.toThrow();
+      expect(() => assertCapability(bridge, "exists")).not.toThrow();
+      expect(() => assertCapability(bridge, "listdir")).not.toThrow();
+      expect(() => assertCapability(bridge, ["read", "exists"])).not.toThrow();
+      expect(() => assertCapability(bridge, ["read", "exists", "listdir"])).not.toThrow();
+    });
+
+    it("should fail write capability assertions", () => {
+      expect(() => assertCapability(bridge, "write")).toThrow("File system bridge does not support the 'write' capability.");
+      expect(() => assertCapability(bridge, "mkdir")).toThrow("File system bridge does not support the 'mkdir' capability.");
+      expect(() => assertCapability(bridge, "rm")).toThrow("File system bridge does not support the 'rm' capability.");
+
+      expect(() => assertCapability(bridge, ["read", "write"])).toThrow("File system bridge does not support the 'write' capability.");
+      expect(() => assertCapability(bridge, ["exists", "mkdir"])).toThrow("File system bridge does not support the 'mkdir' capability.");
+    });
+
+    it("should allow read operations without optional chaining after assertion", async () => {
+      const content = "test content";
+
+      mockFetch([
+        ["GET", `${baseUrl}/test.txt`, () => {
+          return new HttpResponse(content, {
+            status: 200,
+            headers: { "Content-Type": "text/plain" },
+          });
+        }],
+        ["HEAD", `${baseUrl}/test.txt`, () => {
+          return new HttpResponse(null, { status: 200 });
+        }],
+        ["GET", `${baseUrl}/dir`, () => {
+          return new HttpResponse(JSON.stringify([]), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          });
+        }],
+      ]);
+
+      // assert read capabilities
+      assertCapability(bridge, ["read", "exists", "listdir"]);
+
+      // now we can call methods directly without ?.
+      await expect(bridge.read("test.txt")).resolves.toBe(content);
+      await expect(bridge.exists("test.txt")).resolves.toBe(true);
+      await expect(bridge.listdir("dir")).resolves.toEqual([]);
+    });
+
+    it("should work with optional chaining for supported operations", async () => {
+      const content = "test content";
+
+      mockFetch([
+        ["GET", `${baseUrl}/test.txt`, () => {
+          return new HttpResponse(content, {
+            status: 200,
+            headers: { "Content-Type": "text/plain" },
+          });
+        }],
+        ["HEAD", `${baseUrl}/test.txt`, () => {
+          return new HttpResponse(null, { status: 200 });
+        }],
+        ["GET", `${baseUrl}/dir`, () => {
+          return new HttpResponse(JSON.stringify([]), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          });
+        }],
+      ]);
+
+      await expect(bridge.read?.("test.txt")).resolves.toBe(content);
+      await expect(bridge.exists?.("test.txt")).resolves.toBe(true);
+      await expect(bridge.listdir?.("dir")).resolves.toEqual([]);
+    });
+  });
+
   describe("unsupported operations", () => {
-    it("should throw error for unsupported write operation", () => {
+    it("should throw error for unsupported write operation with optional chaining", () => {
       expect(() => bridge.write?.("test.txt", "content")).toThrowError(
-        "Operation 'write' is not supported by this filesystem bridge",
+        "File system bridge does not support the 'write' capability.",
       );
     });
 
-    it("should throw error for unsupported mkdir operation", () => {
+    it("should throw error for unsupported mkdir operation with optional chaining", () => {
       expect(() => bridge.mkdir?.("new-dir")).toThrowError(
-        "Operation 'mkdir' is not supported by this filesystem bridge",
+        "File system bridge does not support the 'mkdir' capability.",
       );
     });
 
-    it("should throw error for unsupported rm operation", () => {
+    it("should throw error for unsupported rm operation with optional chaining", () => {
       expect(() => bridge.rm?.("test.txt")).toThrowError(
-        "Operation 'rm' is not supported by this filesystem bridge",
+        "File system bridge does not support the 'rm' capability.",
       );
+    });
+
+    it("should throw error when calling unsupported operations directly without optional chaining", () => {
+      // Direct calls (without ?) should also throw due to proxy
+      expect(() => (bridge as any).write("test.txt", "content")).toThrow(
+        "File system bridge does not support the 'write' capability.",
+      );
+      expect(() => (bridge as any).mkdir("new-dir")).toThrow(
+        "File system bridge does not support the 'mkdir' capability.",
+      );
+      expect(() => (bridge as any).rm("test.txt")).toThrow(
+        "File system bridge does not support the 'rm' capability.",
+      );
+    });
+
+    it("should distinguish between capability assertion and proxy errors", () => {
+      // Capability assertion error
+      try {
+        assertCapability(bridge, "write");
+        expect.fail("Should have thrown");
+      } catch (error: any) {
+        expect(error.name).toBe("BridgeUnsupportedOperation");
+        expect(error.message).toBe("File system bridge does not support the 'write' capability.");
+        expect(error.capability).toBe("write");
+      }
+
+      // Proxy error (same message but different error type)
+      try {
+        bridge.write?.("test.txt", "content");
+        expect.fail("Should have thrown");
+      } catch (error: any) {
+        expect(error.name).toBe("BridgeUnsupportedOperation");
+        expect(error.message).toBe("File system bridge does not support the 'write' capability.");
+        expect(error.capability).toBe("write");
+      }
     });
   });
 

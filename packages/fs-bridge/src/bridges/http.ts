@@ -35,7 +35,6 @@ const HTTPFileSystemBridge = defineFileSystemBridge({
           }
 
           if (response.status === 403) {
-            console.error(`Access denied to directory: ${path}`);
             return [];
           }
 

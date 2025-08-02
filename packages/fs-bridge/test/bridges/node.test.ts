@@ -373,6 +373,64 @@ describe("node fs-bridge", () => {
     });
   });
 
+  describe("capability system", () => {
+    it("should correctly infer all capabilities", () => {
+      const testDir = "/tmp/test";
+      const bridge = NodeFileSystemBridge({ basePath: testDir });
+
+      expect(bridge.capabilities).toEqual({
+        read: true,
+        write: true,
+        exists: true,
+        listdir: true,
+        mkdir: true,
+        rm: true,
+      });
+    });
+
+    it("should pass all capability assertions", () => {
+      const testDir = "/tmp/test";
+      const bridge = NodeFileSystemBridge({ basePath: testDir });
+
+      expect(() => assertCapability(bridge, "read")).not.toThrow();
+      expect(() => assertCapability(bridge, "write")).not.toThrow();
+      expect(() => assertCapability(bridge, "exists")).not.toThrow();
+      expect(() => assertCapability(bridge, "listdir")).not.toThrow();
+      expect(() => assertCapability(bridge, "mkdir")).not.toThrow();
+      expect(() => assertCapability(bridge, "rm")).not.toThrow();
+
+      expect(() => assertCapability(bridge, ["read", "write"])).not.toThrow();
+      expect(() => assertCapability(bridge, ["exists", "listdir", "mkdir"])).not.toThrow();
+      expect(() => assertCapability(bridge, ["read", "write", "exists", "listdir", "mkdir", "rm"])).not.toThrow();
+    });
+
+    it("should allow direct method calls without optional chaining after assertion", async () => {
+      const testDir = await testdir({ "test.txt": "content" });
+      const bridge = NodeFileSystemBridge({ basePath: testDir });
+
+      assertCapability(bridge, ["read", "write", "exists", "listdir", "mkdir", "rm"]);
+
+      await expect(bridge.read("test.txt")).resolves.toBe("content");
+      await expect(bridge.write("new.txt", "new content")).resolves.toBeUndefined();
+      await expect(bridge.exists("test.txt")).resolves.toBe(true);
+      await expect(bridge.listdir(".")).resolves.toBeDefined();
+      await expect(bridge.mkdir("newdir")).resolves.toBeUndefined();
+      await expect(bridge.rm("new.txt")).resolves.toBeUndefined();
+    });
+
+    it("should work with optional chaining when not using assertions", async () => {
+      const testDir = await testdir({ "test.txt": "content" });
+      const bridge = NodeFileSystemBridge({ basePath: testDir });
+
+      await expect(bridge.read?.("test.txt")).resolves.toBe("content");
+      await expect(bridge.write?.("new.txt", "new content")).resolves.toBeUndefined();
+      await expect(bridge.exists?.("test.txt")).resolves.toBe(true);
+      await expect(bridge.listdir?.(".")).resolves.toBeDefined();
+      await expect(bridge.mkdir?.("newdir")).resolves.toBeUndefined();
+      await expect(bridge.rm?.("new.txt")).resolves.toBeUndefined();
+    });
+  });
+
   describe("complex workflows", () => {
     it("should manage a project workspace", async () => {
       const testDir = await testdir({});
