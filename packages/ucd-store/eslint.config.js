@@ -5,7 +5,7 @@ export default luxass({
   type: "lib",
   pnpm: true,
 }).append({
-  ignores: ["playgrounds/node-playground.ts", ...GLOB_TESTS],
+  ignores: ["playgrounds/*", ...GLOB_TESTS],
   rules: {
     "no-restricted-imports": ["error", {
       patterns: [
