@@ -1,5 +1,5 @@
 import type { FSEntry } from "@ucdjs/fs-bridge";
-import type Dirent from "memfs/lib/Dirent";
+import type Dirent from "memfs/lib/node/Dirent";
 import { dirname, join, relative } from "node:path";
 import { prependLeadingSlash, trimTrailingSlash } from "@luxass/utils";
 import { defineFileSystemBridge } from "@ucdjs/fs-bridge";
