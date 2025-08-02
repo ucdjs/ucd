@@ -1,10 +1,12 @@
 import type {
   FileSystemBridgeCapabilities,
+  FileSystemBridgeCapabilityKey,
   FileSystemBridgeFactory,
   FileSystemBridgeObject,
   FileSystemBridgeOperations,
 } from "./types";
 import { z } from "zod";
+import { BridgeUnsupportedOperation } from "./assertions";
 
 export function defineFileSystemBridge<
   TOptionsSchema extends z.ZodType,
@@ -43,7 +45,7 @@ export function defineFileSystemBridge<
         if (typeof prop === "string" && prop in capabilities) {
           if (!target[prop as keyof typeof target]) {
             return () => {
-              throw new Error(`Operation '${prop}' is not supported by this filesystem bridge`);
+              throw new BridgeUnsupportedOperation(prop as FileSystemBridgeCapabilityKey);
             };
           }
         }
@@ -63,11 +65,11 @@ export function defineFileSystemBridge<
  */
 function inferCapabilitiesFromOperations(ops: Partial<FileSystemBridgeOperations>): FileSystemBridgeCapabilities {
   return {
-    read: "read" in ops,
-    write: "write" in ops,
-    listdir: "listdir" in ops,
-    exists: "exists" in ops,
-    mkdir: "mkdir" in ops,
-    rm: "rm" in ops,
+    read: "read" in ops && typeof ops.read === "function",
+    write: "write" in ops && typeof ops.write === "function",
+    listdir: "listdir" in ops && typeof ops.listdir === "function",
+    exists: "exists" in ops && typeof ops.exists === "function",
+    mkdir: "mkdir" in ops && typeof ops.mkdir === "function",
+    rm: "rm" in ops && typeof ops.rm === "function",
   };
 }
