@@ -83,3 +83,9 @@ export interface VersionAnalysis {
    */
   isComplete: boolean;
 }
+
+export interface MirrorOptions {
+  versions?: string[];
+  concurrency?: number;
+  dryRun?: boolean;
+}

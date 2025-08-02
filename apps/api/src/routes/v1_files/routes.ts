@@ -1,6 +1,7 @@
 import type { UCDStoreManifest } from "@ucdjs/schemas";
 import type { HonoEnv } from "../../types";
 import { OpenAPIHono } from "@hono/zod-openapi";
+import { resolveUCDVersion } from "@luxass/unicode-utils-new";
 import { trimTrailingSlash } from "@luxass/utils";
 import { DEFAULT_USER_AGENT, UCD_FILE_STAT_TYPE_HEADER } from "@ucdjs/env";
 import { badGateway, badRequest, notFound } from "@ucdjs/worker-shared";
@@ -58,6 +59,9 @@ V1_FILES_ROUTER.get("/:wildcard{.*}?", cache({
   const url = normalizedPath
     ? `https://unicode.org/Public/${normalizedPath}?F=2`
     : "https://unicode.org/Public?F=2";
+
+  // eslint-disable-next-line no-console
+  console.info(`[v1_files]: fetching file at ${url}`);
 
   const response = await fetch(url, {
     method: "GET",

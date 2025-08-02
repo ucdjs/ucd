@@ -2,7 +2,8 @@ import type { UCDClient, UnicodeTreeNode } from "@ucdjs/fetch";
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 import type { UCDStoreManifest } from "@ucdjs/schemas";
 import type { PathFilter } from "@ucdjs/utils";
-import type { AnalyzeOptions, UCDStoreOptions, VersionAnalysis } from "./types";
+import type { AnalyzeOptions, MirrorOptions, UCDStoreOptions, VersionAnalysis } from "./types";
+import { hasUCDFolderPath, resolveUCDVersion } from "@luxass/unicode-utils-new";
 import { prependLeadingSlash, trimLeadingSlash } from "@luxass/utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { createClient, isApiError } from "@ucdjs/fetch";
@@ -10,7 +11,8 @@ import { assertCapability } from "@ucdjs/fs-bridge";
 import { UCDStoreManifestSchema } from "@ucdjs/schemas";
 import { createPathFilter, flattenFilePaths, safeJsonParse } from "@ucdjs/utils";
 import defu from "defu";
-import { join } from "pathe";
+import pLimit from "p-limit";
+import { dirname, join } from "pathe";
 import { UCDStoreError, UCDStoreVersionNotFoundError } from "./errors";
 import { getExpectedFilePaths } from "./internal/files";
 
@@ -210,6 +212,158 @@ export class UCDStore {
     }
   }
 
+  async mirror(options: MirrorOptions): Promise<{
+    success: boolean;
+    error?: string;
+    mirrored?: string[];
+    skipped?: string[];
+    failed?: string[];
+  }> {
+    assertCapability(this.#fs, ["exists", "mkdir"]);
+    const { versions = this.#versions, concurrency = 5, dryRun = false } = options;
+
+    const mirrored: string[] = [];
+    const skipped: string[] = [];
+    const failed: string[] = [];
+
+    if (concurrency < 1) {
+      throw new UCDStoreError("Concurrency must be at least 1");
+    }
+
+    // create the limit function to control concurrency
+    const limit = pLimit(concurrency);
+
+    try {
+      const filesQueue = await Promise.all(
+        versions.map(async (version) => {
+          if (!this.#versions.includes(version)) {
+            throw new UCDStoreVersionNotFoundError(version);
+          }
+          const filePaths = await getExpectedFilePaths(this.#client, version);
+          return filePaths.map((filePath): [string, string] => [version, filePath]);
+        }),
+      ).then((results) => results.flat());
+
+      await Promise.all(filesQueue.map(async ([version, filePath]) => {
+        return limit(async () => {
+          try {
+            const { mirrored: isMirrored } = await this.#mirrorFile(version, filePath, {
+              // overwrite: options.overwrite ?? false,
+              dryRun,
+            });
+
+            if (isMirrored) {
+              mirrored.push(filePath);
+            } else {
+              skipped.push(filePath);
+            }
+          } catch (err) {
+            failed.push(filePath);
+            console.error(`Failed to mirror file ${filePath}: ${err instanceof Error ? err.message : String(err)}`);
+          }
+        });
+      }));
+
+      return {
+        success: true,
+        mirrored,
+        skipped,
+        failed,
+      };
+    } catch (err) {
+      return {
+        success: false,
+        error: `Failed to prepare files for mirroring: ${err instanceof Error ? err.message : String(err)}`,
+      };
+    }
+  }
+
+  async #mirrorFile(version: string, filePath: string, options: {
+    overwrite?: boolean;
+    dryRun: boolean;
+  }): Promise<{ mirrored: boolean }> {
+    assertCapability(this.#fs, ["exists", "read", "write", "mkdir"]);
+    const { overwrite, dryRun } = options;
+    const localPath = join(this.basePath!, version, filePath);
+
+    // check if file already exists
+    if (!overwrite && await this.#fs.exists(localPath)) {
+      return { mirrored: false };
+    }
+
+    if (dryRun) {
+      return { mirrored: true };
+    }
+
+    // ensure parent directory exists
+    const parentDir = dirname(localPath);
+    if (!await this.#fs.exists(parentDir)) {
+      await this.#fs.mkdir(parentDir);
+    }
+
+    // download file content from the api
+    const { error, response } = await this.#client.GET("/api/v1/files/{wildcard}", {
+      params: {
+        path: {
+          // We are only returning files from inside the ucd folder.
+          // But the file paths are relative from the request path, and therefore doesn't contain the
+          // `ucd` folder.
+          // So by adding the `ucd` folder here, we ensure that the file paths
+          // we download are correct.
+          wildcard: join(resolveUCDVersion(version), hasUCDFolderPath(version) ? "ucd" : "", filePath),
+        },
+      },
+      parseAs: "stream",
+    });
+
+    if (isApiError(error)) {
+      throw new UCDStoreError(`Failed to fetch file '${filePath}': ${error?.message}`);
+    }
+
+    let content: string | Uint8Array | null = null;
+
+    const binaryContentTypes = [
+      "application/octet-stream",
+      "application/pdf",
+      "image/png",
+      "image/jpeg",
+      "image/gif",
+      "application/zip",
+      "application/x-gzip",
+    ];
+
+    const contentTypeHeader = response.headers.get("content-type");
+
+    if (!contentTypeHeader) {
+      throw new UCDStoreError(`Failed to fetch file '${filePath}': No content type header received.`);
+    }
+
+    const semiColonIndex = contentTypeHeader.indexOf(";");
+    const contentType = semiColonIndex !== -1
+      ? contentTypeHeader.slice(0, semiColonIndex).trim()
+      : contentTypeHeader.trim();
+
+    if (contentType?.startsWith("application/json")) {
+      content = await response.json();
+    } else if (contentType?.startsWith("text/")) {
+      content = await response.text();
+    } else if (binaryContentTypes.includes(contentType!)) {
+      // if the content is binary, read it as a buffer
+      content = new Uint8Array(await response.arrayBuffer());
+    } else {
+      throw new UCDStoreError(`Unsupported content type '${contentType}' for file '${filePath}'`);
+    }
+
+    if (content == null) {
+      throw new UCDStoreError(`Failed to fetch file '${filePath}': No content received.`);
+    }
+
+    // write to local filesystem
+    await this.#fs.write(prependLeadingSlash(localPath), content);
+
+    return { mirrored: true };
+  }
+
   async #loadVersionsFromStore(): Promise<void> {
     assertCapability(this.#fs, "read");
     try {
@@ -241,12 +395,12 @@ export class UCDStore {
     }
 
     // Mirror UCD files from remote to local
-    // await this.mirror({ versions, overwrite: false, dryRun: false });
+    await this.mirror({ versions, dryRun: false });
 
     const manifestData: UCDStoreManifest = {};
 
     for (const version of versions) {
-      manifestData[version] = prependLeadingSlash(this.basePath ? join(this.basePath, version) : version);
+      manifestData[version] = prependLeadingSlash(version);
     }
 
     await this.#fs.write(this.#manifestPath, JSON.stringify(manifestData, null, 2));

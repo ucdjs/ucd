@@ -50,6 +50,7 @@
     "@ucdjs/schemas": "workspace:*",
     "@ucdjs/utils": "workspace:*",
     "defu": "catalog:prod",
+    "p-limit": "catalog:prod",
     "pathe": "catalog:prod",
     "zod": "catalog:prod"
   },

@@ -38,4 +38,4 @@ dist
 .cache
 tsconfig.test.vitest-temp.json
 data
-packages/ucd-store/ucd-files
+**/.ucd-files
