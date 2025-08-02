@@ -1,5 +1,6 @@
 import { HttpResponse, mockFetch } from "#msw-utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
+import { assertCapability } from "@ucdjs/fs-bridge";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
 import { createHTTPUCDStore, createNodeUCDStore, createUCDStore } from "../src/factory";
@@ -300,6 +301,7 @@ describe("analyze operations", () => {
   describe("custom store analyze operations", () => {
     it("should analyze store with custom filesystem bridge", async () => {
       const customFS = createMemoryMockFS();
+      assertCapability(customFS, "write");
       await customFS.write("/.ucd-store.json", JSON.stringify({
         "15.0.0": "/15.0.0",
       }));
