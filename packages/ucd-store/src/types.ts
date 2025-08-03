@@ -85,7 +85,28 @@ export interface VersionAnalysis {
 }
 
 export interface MirrorOptions {
+  /**
+   * List of Unicode versions to include in the store.
+   * Only used when initializing a new store that supports mirroring.
+   */
   versions?: string[];
+
+  /**
+   * Whether to overwrite existing files in the store.
+   * If true, existing files will be replaced with the new content.
+   */
+  overwrite?: boolean;
+
+  /**
+   * Concurrency level for file operations.
+   * This controls how many files can be processed in parallel.
+   * Higher values may speed up the mirroring process but can also increase resource usage.
+   */
   concurrency?: number;
+
+  /**
+   * Whether to perform a dry run without actually writing files.
+   * This is useful for testing and debugging the mirroring process.
+   */
   dryRun?: boolean;
 }

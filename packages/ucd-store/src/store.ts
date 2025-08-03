@@ -33,6 +33,7 @@ export class UCDStore {
   #fs: FileSystemBridge;
   #versions: string[] = [];
   #manifestPath: string;
+  #initialized = false;
 
   constructor(options: UCDStoreOptions) {
     const { baseUrl, globalFilters, fs, basePath, versions } = defu(options, {
@@ -134,6 +135,9 @@ export class UCDStore {
    * Initialize the store - loads existing data or creates new structure
    */
   async initialize(): Promise<void> {
+    if (this.#initialized) {
+      return;
+    }
     assertCapability(this.#fs, "exists");
     const isValidStore = await this.#fs.exists(this.#manifestPath);
 
@@ -154,6 +158,8 @@ export class UCDStore {
 
       await this.#createNewLocalStore(this.#versions);
     }
+
+    this.#initialized = true;
   }
 
   async analyze(options: AnalyzeOptions): Promise<VersionAnalysis[]> {
@@ -266,7 +272,7 @@ export class UCDStore {
         return limit(async () => {
           try {
             const { mirrored: isMirrored } = await this.#mirrorFile(version, filePath, {
-              // overwrite: options.overwrite ?? false,
+              overwrite: options.overwrite ?? false,
               dryRun,
             });
 
