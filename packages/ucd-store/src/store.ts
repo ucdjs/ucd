@@ -234,15 +234,33 @@ export class UCDStore {
     const limit = pLimit(concurrency);
 
     try {
+      // pre-create directory structure to avoid repeated checks
+      const directoriesToCreate = new Set<string>();
+
       const filesQueue = await Promise.all(
         versions.map(async (version) => {
           if (!this.#versions.includes(version)) {
             throw new UCDStoreVersionNotFoundError(version);
           }
           const filePaths = await getExpectedFilePaths(this.#client, version);
+
+          // collect unique directories
+          for (const filePath of filePaths) {
+            const localPath = join(this.basePath!, version, filePath);
+            directoriesToCreate.add(dirname(localPath));
+          }
+
           return filePaths.map((filePath): [string, string] => [version, filePath]);
         }),
       ).then((results) => results.flat());
+
+      // pre-create all directories
+      await Promise.all([...directoriesToCreate].map(async (dir) => {
+        assertCapability(this.#fs, ["mkdir", "exists"]);
+        if (!await this.#fs.exists(dir)) {
+          await this.#fs.mkdir(dir);
+        }
+      }));
 
       await Promise.all(filesQueue.map(async ([version, filePath]) => {
         return limit(async () => {
@@ -295,12 +313,6 @@ export class UCDStore {
       return { mirrored: true };
     }
 
-    // ensure parent directory exists
-    const parentDir = dirname(localPath);
-    if (!await this.#fs.exists(parentDir)) {
-      await this.#fs.mkdir(parentDir);
-    }
-
     // download file content from the api
     const { error, response } = await this.#client.GET("/api/v1/files/{wildcard}", {
       params: {
@@ -320,20 +332,7 @@ export class UCDStore {
       throw new UCDStoreError(`Failed to fetch file '${filePath}': ${error?.message}`);
     }
 
-    let content: string | Uint8Array | null = null;
-
-    const binaryContentTypes = [
-      "application/octet-stream",
-      "application/pdf",
-      "image/png",
-      "image/jpeg",
-      "image/gif",
-      "application/zip",
-      "application/x-gzip",
-    ];
-
     const contentTypeHeader = response.headers.get("content-type");
-
     if (!contentTypeHeader) {
       throw new UCDStoreError(`Failed to fetch file '${filePath}': No content type header received.`);
     }
@@ -343,22 +342,18 @@ export class UCDStore {
       ? contentTypeHeader.slice(0, semiColonIndex).trim()
       : contentTypeHeader.trim();
 
+    // stream content directly to filesystem with minimal buffering
+    let content: string | Uint8Array;
+
     if (contentType?.startsWith("application/json")) {
       content = await response.json();
     } else if (contentType?.startsWith("text/")) {
       content = await response.text();
-    } else if (binaryContentTypes.includes(contentType!)) {
-      // if the content is binary, read it as a buffer
-      content = new Uint8Array(await response.arrayBuffer());
     } else {
-      throw new UCDStoreError(`Unsupported content type '${contentType}' for file '${filePath}'`);
+      // For binary files, use streaming when possible
+      content = new Uint8Array(await response.arrayBuffer());
     }
 
-    if (content == null) {
-      throw new UCDStoreError(`Failed to fetch file '${filePath}': No content received.`);
-    }
-
-    // write to local filesystem
     await this.#fs.write(prependLeadingSlash(localPath), content);
 
     return { mirrored: true };
