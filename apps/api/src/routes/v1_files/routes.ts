@@ -1,7 +1,6 @@
 import type { UCDStoreManifest } from "@ucdjs/schemas";
 import type { HonoEnv } from "../../types";
 import { OpenAPIHono } from "@hono/zod-openapi";
-import { resolveUCDVersion } from "@luxass/unicode-utils-new";
 import { trimTrailingSlash } from "@luxass/utils";
 import { DEFAULT_USER_AGENT, UCD_FILE_STAT_TYPE_HEADER } from "@ucdjs/env";
 import { badGateway, badRequest, notFound } from "@ucdjs/worker-shared";
@@ -121,7 +120,7 @@ V1_FILES_ROUTER.get("/:wildcard{.*}?", cache({
     contentType ||= "application/octet-stream"; // Default for binary files
   }
 
-  return c.newResponse(await response.arrayBuffer(), 200, {
+  return c.newResponse(response.body!, 200, {
     "Content-Type": contentType,
     "Content-Disposition": response.headers.get("Content-Disposition") ?? "",
     ...sharedHeaders,
