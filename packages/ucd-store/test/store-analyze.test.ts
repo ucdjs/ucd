@@ -67,6 +67,7 @@ describe("analyze operations", () => {
       const store = await createNodeUCDStore({
         basePath: storeDir,
       });
+      await store.init();
 
       const analyzeResult = await store.analyze({ checkOrphaned: false });
 
@@ -104,6 +105,7 @@ describe("analyze operations", () => {
       const store = await createNodeUCDStore({
         basePath: storeDir,
       });
+      await store.init();
 
       const analysisResult = await store.analyze({ checkOrphaned: true });
 
@@ -147,6 +149,7 @@ describe("analyze operations", () => {
       const store = await createNodeUCDStore({
         basePath: storeDir,
       });
+      await store.init();
 
       const analysisResult = await store.analyze({ checkOrphaned: false });
 
@@ -186,6 +189,7 @@ describe("analyze operations", () => {
       const store = await createNodeUCDStore({
         basePath: storeDir,
       });
+      await store.init();
 
       const analysisResult = await store.analyze({
         versions: ["15.0.0"],
@@ -211,6 +215,7 @@ describe("analyze operations", () => {
       const store = await createNodeUCDStore({
         basePath: storeDir,
       });
+      await store.init();
 
       const analysisResult = await store.analyze({
         versions: ["99.99.99"],
@@ -241,6 +246,7 @@ describe("analyze operations", () => {
       const store = await createNodeUCDStore({
         basePath: storeDir,
       });
+      await store.init();
 
       const analysisResult = await store.analyze({ checkOrphaned: false });
 
@@ -271,6 +277,7 @@ describe("analyze operations", () => {
       ]);
 
       const store = await createHTTPUCDStore();
+      await store.init();
 
       const analysisResult = await store.analyze({ checkOrphaned: false });
 
@@ -288,6 +295,7 @@ describe("analyze operations", () => {
       ]);
 
       const store = await createHTTPUCDStore();
+      await store.init();
 
       const analysisResult = await store.analyze({ checkOrphaned: false });
 
@@ -323,6 +331,7 @@ describe("analyze operations", () => {
         basePath: "/",
         fs: customFS,
       });
+      await store.init();
 
       const analysisResult = await store.analyze({ checkOrphaned: false });
 
@@ -339,6 +348,7 @@ describe("analyze operations", () => {
     const store = await createNodeUCDStore({
       basePath: storeDir,
     });
+    await store.init();
 
     const analysisResult = await store.analyze({ checkOrphaned: false });
 
@@ -363,6 +373,7 @@ describe("analyze operations", () => {
     const store = await createNodeUCDStore({
       basePath: storeDir,
     });
+    await store.init();
 
     const analysisResult = await store.analyze({ checkOrphaned: false });
 

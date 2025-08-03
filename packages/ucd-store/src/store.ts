@@ -128,10 +128,7 @@ export class UCDStore {
     return flattenFilePaths(tree);
   }
 
-  /**
-   * Initialize the store - loads existing data or creates new structure
-   */
-  async initialize(): Promise<void> {
+  async init(): Promise<void> {
     assertCapability(this.#fs, "exists");
     const isValidStore = await this.#fs.exists(this.#manifestPath);
 
