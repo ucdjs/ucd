@@ -138,6 +138,7 @@ export class UCDStore {
     if (this.#initialized) {
       return;
     }
+
     assertCapability(this.#fs, "exists");
     const isValidStore = await this.#fs.exists(this.#manifestPath);
 
