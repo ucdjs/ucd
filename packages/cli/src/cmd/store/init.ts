@@ -33,8 +33,7 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
 
   const {
     storeDir,
-    // TODO: handle force flag
-    force: _force,
+    force,
     remote,
     baseUrl,
     patterns,
@@ -64,9 +63,16 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
 
     if (store == null) {
       console.error("Error: Failed to create UCD store.");
+      return;
     }
 
-    // TODO: expose a getter to see if the store has been initialized.
+    if (!store.isInitialized) {
+      console.error("Error: UCD store is not initialized.");
+      throw new Error("Store is not initialized");
+    }
+
+    // eslint-disable-next-line no-console
+    console.log(`Initializing UCD store at ${store.basePath}...`);
   } catch (err) {
     if (err instanceof UCDStoreUnsupportedFeature) {
       console.error(red(`\n❌ Error: Unsupported feature:`));

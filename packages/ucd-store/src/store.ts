@@ -2,7 +2,7 @@ import type { UCDClient, UnicodeTreeNode } from "@ucdjs/fetch";
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 import type { UCDStoreManifest } from "@ucdjs/schemas";
 import type { PathFilter } from "@ucdjs/utils";
-import type { AnalyzeOptions, MirrorOptions, UCDStoreOptions, VersionAnalysis } from "./types";
+import type { AnalyzeOptions, MirrorOptions, MirrorResult, UCDStoreOptions, VersionAnalysis } from "./types";
 import { hasUCDFolderPath, resolveUCDVersion } from "@luxass/unicode-utils-new";
 import { prependLeadingSlash, trimLeadingSlash } from "@luxass/utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
@@ -95,6 +95,10 @@ export class UCDStore {
     return Object.freeze([...this.#versions]);
   }
 
+  get isInitialized(): boolean {
+    return this.#initialized;
+  }
+
   /**
    * Retrieves the file tree structure for a specific Unicode version.
    *
@@ -132,7 +136,10 @@ export class UCDStore {
   }
 
   /**
-   * Initialize the store - loads existing data or creates new structure
+   * Initialize the store
+   *
+   * This function will only be called by the `createUCDStore` and its variants.
+   * It may be called by users directly, if they create a store using the constructor.
    */
   async initialize(): Promise<void> {
     if (this.#initialized) {
@@ -219,19 +226,10 @@ export class UCDStore {
     }
   }
 
-  async mirror(options: MirrorOptions): Promise<{
-    success: boolean;
-    error?: string;
-    mirrored?: string[];
-    skipped?: string[];
-    failed?: string[];
-  }> {
+  async mirror(options: MirrorOptions): Promise<MirrorResult[]> {
     assertCapability(this.#fs, ["exists", "mkdir"]);
     const { versions = this.#versions, concurrency = 5, dryRun = false } = options;
-
-    const mirrored: string[] = [];
-    const skipped: string[] = [];
-    const failed: string[] = [];
+    const result: MirrorResult[] = [];
 
     if (concurrency < 1) {
       throw new UCDStoreError("Concurrency must be at least 1");
@@ -271,53 +269,55 @@ export class UCDStore {
 
       await Promise.all(filesQueue.map(async ([version, filePath]) => {
         return limit(async () => {
+          let versionResult = result.find((r) => r.version === version);
+          if (!versionResult) {
+            const idx = result.push({
+              version,
+              mirrored: [],
+              skipped: [],
+              failed: [],
+            });
+
+            versionResult = result.at(idx - 1);
+          }
+
           try {
-            const { mirrored: isMirrored } = await this.#mirrorFile(version, filePath, {
+            const isMirrored = await this.#mirrorFile(version, filePath, {
               overwrite: options.overwrite ?? false,
               dryRun,
             });
 
             if (isMirrored) {
-              mirrored.push(filePath);
+              versionResult!.mirrored.push(filePath);
             } else {
-              skipped.push(filePath);
+              versionResult!.skipped.push(filePath);
             }
           } catch (err) {
-            failed.push(filePath);
             console.error(`Failed to mirror file ${filePath}: ${err instanceof Error ? err.message : String(err)}`);
+            versionResult!.failed.push(filePath);
           }
         });
       }));
 
-      return {
-        success: true,
-        mirrored,
-        skipped,
-        failed,
-      };
+      return result;
     } catch (err) {
-      return {
-        success: false,
-        error: `Failed to prepare files for mirroring: ${err instanceof Error ? err.message : String(err)}`,
-      };
+      console.error(`Error during mirroring: ${err instanceof Error ? err.message : String(err)}`);
+      return [];
     }
   }
 
-  async #mirrorFile(version: string, filePath: string, options: {
-    overwrite?: boolean;
-    dryRun: boolean;
-  }): Promise<{ mirrored: boolean }> {
+  async #mirrorFile(version: string, filePath: string, options: Pick<MirrorOptions, "overwrite" | "dryRun">): Promise<boolean> {
     assertCapability(this.#fs, ["exists", "read", "write", "mkdir"]);
     const { overwrite, dryRun } = options;
     const localPath = join(this.basePath!, version, filePath);
 
     // check if file already exists
     if (!overwrite && await this.#fs.exists(localPath)) {
-      return { mirrored: false };
+      return false;
     }
 
     if (dryRun) {
-      return { mirrored: true };
+      return true;
     }
 
     // download file content from the api
@@ -363,7 +363,7 @@ export class UCDStore {
 
     await this.#fs.write(prependLeadingSlash(localPath), content);
 
-    return { mirrored: true };
+    return true;
   }
 
   async #loadVersionsFromStore(): Promise<void> {

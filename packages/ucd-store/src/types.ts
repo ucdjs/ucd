@@ -110,3 +110,27 @@ export interface MirrorOptions {
    */
   dryRun?: boolean;
 }
+
+export interface MirrorResult {
+  /**
+   * Analyzed Unicode version
+   * This should be in the format "major.minor.patch" (e.g., "15.0.0")
+   */
+  version: string;
+
+  /**
+   * List of orphaned files (files that exist but shouldn't)
+   */
+  mirrored: string[];
+
+  /**
+   * List of files that were skipped during mirroring (if any)
+   */
+  skipped: string[];
+
+  /**
+   * List of files that failed to mirror (if any)
+   */
+  failed: string[];
+
+}
