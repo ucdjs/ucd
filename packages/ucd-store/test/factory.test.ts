@@ -33,6 +33,7 @@ describe("store configuration", () => {
         basePath: "/test",
         fs: customFS,
       });
+      await store.init();
 
       expect(store).toBeInstanceOf(UCDStore);
       expect(store.basePath).toBe("/test");
@@ -47,6 +48,7 @@ describe("store configuration", () => {
         basePath: "/test",
         fs: createReadOnlyMockFS(),
       });
+      await store.init();
 
       expect(store.baseUrl).toBe(customBaseUrl);
       expect(store.basePath).toBe("/test");
@@ -60,6 +62,7 @@ describe("store configuration", () => {
         globalFilters: filters,
         fs: createReadOnlyMockFS(),
       });
+      await store.init();
 
       expect(store.filter).toBeDefined();
       expect(store.basePath).toBe("/test");
@@ -100,6 +103,7 @@ describe("store configuration", () => {
         basePath: storeDir,
         baseUrl: customBaseUrl,
       });
+      await store.init();
 
       expect(store.baseUrl).toBe(customBaseUrl);
       expect(store.basePath).toBe(storeDir);
@@ -115,6 +119,7 @@ describe("store configuration", () => {
         basePath: storeDir,
         globalFilters: filters,
       });
+      await store.init();
 
       expect(store.filter).toBeDefined();
       expect(store.basePath).toBe(storeDir);
@@ -130,6 +135,7 @@ describe("store configuration", () => {
       ]);
 
       const store = await createHTTPUCDStore();
+      await store.init();
 
       expect(store).toBeInstanceOf(UCDStore);
       expect(store.baseUrl).toBe(UCDJS_API_BASE_URL);
@@ -159,6 +165,7 @@ describe("store configuration", () => {
       const store = await createHTTPUCDStore({
         baseUrl: customBaseUrl,
       });
+      await store.init();
 
       expect(store.baseUrl).toBe(customBaseUrl);
       expect(store.basePath).toBe("");
@@ -178,6 +185,7 @@ describe("store configuration", () => {
       const store = await createHTTPUCDStore({
         basePath: customBasePath,
       });
+      await store.init();
 
       expect(store.basePath).toBe(customBasePath);
       expect(store.baseUrl).toBe(UCDJS_API_BASE_URL);
@@ -197,6 +205,7 @@ describe("store configuration", () => {
       const store = await createHTTPUCDStore({
         globalFilters: filters,
       });
+      await store.init();
 
       expect(store.filter).toBeDefined();
       expect(store.basePath).toBe("");
@@ -218,6 +227,7 @@ describe("store configuration", () => {
       const store = await createHTTPUCDStore({
         globalFilters: filters,
       });
+      await store.init();
 
       expect(store.filter).toBeDefined();
       expect(store.filter.patterns()).toContain(PRECONFIGURED_FILTERS.EXCLUDE_TEST_FILES);
@@ -240,6 +250,7 @@ describe("store configuration", () => {
       const store = await createNodeUCDStore({
         basePath: storeDir,
       });
+      await store.init();
 
       expect(store.versions).toEqual(["15.1.0", "15.0.0"]);
     });
@@ -256,6 +267,7 @@ describe("store configuration", () => {
       const store = await createNodeUCDStore({
         basePath: storeDir,
       });
+      await store.init();
 
       expect(store.versions).toEqual([]);
     });
@@ -265,9 +277,9 @@ describe("store configuration", () => {
         ".ucd-store.json": "invalid json",
       });
 
-      await expect(createNodeUCDStore({
+      await expect((await createNodeUCDStore({
         basePath: storeDir,
-      })).rejects.toThrow("store manifest is not a valid JSON");
+      })).init()).rejects.toThrow("store manifest is not a valid JSON");
     });
   });
 
@@ -280,6 +292,7 @@ describe("store configuration", () => {
         basePath: "/test",
         fs: createReadOnlyMockFS(),
       });
+      await store.init();
 
       expect(store.client).toBeDefined();
       expect(store.baseUrl).toBe(customBaseUrl);
@@ -293,6 +306,7 @@ describe("store configuration", () => {
       const store = await createNodeUCDStore({
         basePath: storeDir,
       });
+      await store.init();
 
       expect(store.client).toBeDefined();
       expect(store.baseUrl).toBe(UCDJS_API_BASE_URL);
@@ -308,6 +322,7 @@ describe("store configuration", () => {
       const store = await createNodeUCDStore({
         basePath: storeDir,
       });
+      await store.init();
 
       expect(store.versions.includes("15.0.0")).toBe(true);
       expect(store.versions.includes("15.1.0")).toBe(true);
@@ -322,6 +337,7 @@ describe("store configuration", () => {
       const store = await createNodeUCDStore({
         basePath: storeDir,
       });
+      await store.init();
 
       const originalLength = store.versions.length;
       expect(() => {
@@ -343,6 +359,7 @@ describe("store configuration", () => {
         basePath: storeDir,
         globalFilters: ["*.txt", PRECONFIGURED_FILTERS.EXCLUDE_TEST_FILES],
       });
+      await store.init();
 
       expect(store.filter).toBeDefined();
       expect(store.filter.patterns()).toContain(PRECONFIGURED_FILTERS.EXCLUDE_TEST_FILES);
@@ -359,6 +376,7 @@ describe("store configuration", () => {
         basePath: storeDir,
         globalFilters: [],
       });
+      await store.init();
 
       expect(store.filter).toBeDefined();
       expect(store.filter("AnyFile.txt")).toBe(true);

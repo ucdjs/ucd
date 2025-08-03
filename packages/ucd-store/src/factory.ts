@@ -10,8 +10,6 @@ import { UCDStore } from "./store";
 export async function createUCDStore(options: UCDStoreOptions): Promise<UCDStore> {
   const store = new UCDStore(options);
 
-  await store.initialize();
-
   return store;
 }
 
@@ -40,8 +38,6 @@ export async function createNodeUCDStore(options: Omit<UCDStoreOptions, "fs"> = 
     }),
   });
 
-  await store.initialize();
-
   return store;
 }
 
@@ -65,8 +61,6 @@ export async function createHTTPUCDStore(options: Omit<UCDStoreOptions, "fs"> = 
       baseUrl: options.baseUrl,
     }),
   });
-
-  await store.initialize();
 
   return store;
 }
