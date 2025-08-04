@@ -48,8 +48,7 @@ export type CLIArguments<T extends Record<string, unknown>> = Prettify<RemoveInd
  */
 export function resolveCommand(flags: Arguments): CLICommand {
   if (flags.version) return "version";
-
-  const cmd = flags._[2] as string;
+  const cmd = flags._[0] as string;
 
   if (SUPPORTED_COMMANDS.has(cmd as CLICommand)) {
     return cmd as CLICommand;
@@ -188,7 +187,7 @@ export async function runCommand(cmd: CLICommand, flags: Arguments): Promise<voi
       break;
     case "codegen": {
       const { runCodegenRoot } = await import("./cmd/codegen/root");
-      const subcommand = flags._[3]?.toString() ?? "";
+      const subcommand = flags._[1]?.toString() ?? "";
       await runCodegenRoot(subcommand, {
         flags: flags as CLICodegenCmdOptions["flags"],
       });
@@ -196,7 +195,7 @@ export async function runCommand(cmd: CLICommand, flags: Arguments): Promise<voi
     }
     case "store": {
       const { runStoreRoot } = await import("./cmd/store/root");
-      const subcommand = flags._[3]?.toString() ?? "";
+      const subcommand = flags._[1]?.toString() ?? "";
       await runStoreRoot(subcommand, {
         flags: flags as CLIStoreCmdOptions["flags"],
       });

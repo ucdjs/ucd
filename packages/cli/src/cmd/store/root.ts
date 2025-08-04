@@ -44,8 +44,7 @@ export async function runStoreRoot(subcommand: string, { flags }: CLIStoreCmdOpt
 
   if (subcommand === "init") {
     const { runInitStore } = await import("./init");
-    const versions = flags._.slice(4) as string[];
-
+    const versions = flags._.slice(2) as string[];
     await runInitStore({
       versions,
       flags: flags as CLIStoreInitCmdOptions["flags"],
@@ -61,7 +60,7 @@ export async function runStoreRoot(subcommand: string, { flags }: CLIStoreCmdOpt
 
   if (subcommand === "repair") {
     const { runRepairStore } = await import("./repair");
-    const versions = flags._.slice(4) as string[];
+    const versions = flags._.slice(2) as string[];
 
     await runRepairStore({
       versions,
@@ -72,7 +71,9 @@ export async function runStoreRoot(subcommand: string, { flags }: CLIStoreCmdOpt
 
   if (subcommand === "analyze") {
     const { runAnalyzeStore } = await import("./analyze");
-    await runAnalyzeStore({ flags });
+    const versions = flags._.slice(2) as string[];
+
+    await runAnalyzeStore({ flags, versions });
     return;
   }
 

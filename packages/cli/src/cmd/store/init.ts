@@ -33,11 +33,11 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
 
   const {
     storeDir,
-    // TODO: handle force flag
-    force: _force,
+    force,
     remote,
     baseUrl,
     patterns,
+    dryRun,
   } = flags;
 
   try {
@@ -62,9 +62,10 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
       versions,
     });
 
-    if (store == null) {
-      console.error("Error: Failed to create UCD store.");
-    }
+    await store.init({
+      force,
+      dryRun,
+    });
 
     // TODO: expose a getter to see if the store has been initialized.
   } catch (err) {
