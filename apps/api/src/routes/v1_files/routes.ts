@@ -59,6 +59,9 @@ V1_FILES_ROUTER.get("/:wildcard{.*}?", cache({
     ? `https://unicode.org/Public/${normalizedPath}?F=2`
     : "https://unicode.org/Public?F=2";
 
+  // eslint-disable-next-line no-console
+  console.info(`[v1_files]: fetching file at ${url}`);
+
   const response = await fetch(url, {
     method: "GET",
     headers: {
@@ -117,7 +120,7 @@ V1_FILES_ROUTER.get("/:wildcard{.*}?", cache({
     contentType ||= "application/octet-stream"; // Default for binary files
   }
 
-  return c.newResponse(await response.arrayBuffer(), 200, {
+  return c.newResponse(response.body!, 200, {
     "Content-Type": contentType,
     "Content-Disposition": response.headers.get("Content-Disposition") ?? "",
     ...sharedHeaders,
