@@ -19,8 +19,19 @@ const log = createLogger("ucd:api:v1_versions");
 
 V1_VERSIONS_ROUTER.openapi(LIST_ALL_UNICODE_VERSIONS_ROUTE, async (c) => {
   try {
-    const response = await fetch("https://www.unicode.org/versions/enumeratedversions.html");
+    const controller = new AbortController();
+
+    const response = await fetch("https://www.unicode.org/versions/enumeratedversions.html", {
+      signal: controller.signal,
+    });
+
     log.info("Fetching unicode html versions page");
+
+    setTimeout(() => {
+      controller.abort();
+      log.warn("Fetching unicode versions page timed out");
+    }, 5000);
+
     if (!response.ok) {
       log.error("Failed to fetch Unicode versions page", { status: response.status, statusText: response.statusText });
       return internalServerError(c, {
