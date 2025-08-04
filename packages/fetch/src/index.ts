@@ -15,6 +15,13 @@ export function createClient(baseUrl: string): UCDClient {
   return OpenApiCreateClient<paths>({
     baseUrl,
     fetch: (...args) => fetch(...args),
+    pathSerializer(pathname, pathParams) {
+      let result = pathname;
+      for (const [key, value] of Object.entries(pathParams)) {
+        result = result.replace(`{${key}}`, `${value}`);
+      }
+      return result;
+    },
   });
 }
 
