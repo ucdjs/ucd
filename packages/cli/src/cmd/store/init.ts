@@ -85,7 +85,7 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
       message = err;
     }
 
-    console.error(red(`\n❌ Error cleaning store:`));
+    console.error(red(`\n❌ Error initializing store:`));
     console.error(`  ${message}`);
     console.error("Please check the store configuration and try again.");
     console.error("If the issue persists, consider running with --dry-run to see more details.");

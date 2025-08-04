@@ -218,6 +218,7 @@ export function parseFlags(args: string[]) {
       "force",
       "help",
       "h",
+      "dry-run",
     ],
     string: [
       "output-dir",
