@@ -92,3 +92,6 @@ onlyBuiltDependencies:
   - esbuild
   - rolldown
   - workerd
+
+patchedDependencies:
+  openapi-fetch: patches/openapi-fetch.patch
