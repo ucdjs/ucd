@@ -168,7 +168,7 @@ export class UCDStore {
       const parsedManifest = UCDStoreManifestSchema.safeParse(jsonData);
       if (!parsedManifest.success) {
         // TODO: throw different error
-        throw new UCDStoreError("Invalid store manifest schema");
+        throw new UCDStoreError("store manifest is not a valid JSON");
       }
 
       const storeVersions = Object.keys(parsedManifest.data);
@@ -181,11 +181,12 @@ export class UCDStore {
 
       // There is no versions provided, or in the store.
       if (this.#versions.length === 0 && storeVersions.length === 0) {
+        this.#initialized = true;
         return;
       }
 
       // If the versions provided are the same as the store versions,
-      // we don't need to re-initialize the store.
+      // we don't need to re-initialize the store with new files.
       if (this.#versions.length === storeVersions.length && this.#versions.every((v) => storeVersions.includes(v))) {
         this.#versions = storeVersions;
         this.#initialized = true;
@@ -206,6 +207,7 @@ export class UCDStore {
         }
       }
 
+      // same versions, no need to re-initialize with new files.
       if (diffSet.size === 0) {
         this.#versions = storeVersions;
         this.#initialized = true;
@@ -213,16 +215,23 @@ export class UCDStore {
       }
 
       // If the diff set is not empty, it means that the provided versions are different from the store versions.
-      // We need to re-initialize the store with the new versions.
+      // We need to re-initialize the store with the new versions and their files.
       if (diffSet.size > 0) {
+        await this.mirror({
+          versions: Array.from(diffSet),
+          force,
+          dryRun,
+          concurrency: 10,
+        });
         this.#versions = Array.from(new Set([...this.#versions, ...storeVersions]));
+        await this.#writeManifest(this.#versions);
         this.#initialized = true;
       }
       return;
     }
 
+    // TODO: handle
     if (existingStore && force) {
-      // If the store already exists and force is set, we need to re-initialize it
       throw new UCDStoreError("NOT IMPLEMENTED: The store already exists, but the force option is set. Please use a different method to re-initialize the store with new versions.");
     }
 
@@ -259,14 +268,19 @@ export class UCDStore {
       concurrency: 10,
     });
 
+    await this.#writeManifest(this.#versions);
+    this.#initialized = true;
+  }
+
+  async #writeManifest(versions: string[]): Promise<void> {
+    assertCapability(this.#fs, "write");
     const manifestData: UCDStoreManifest = {};
 
-    for (const version of this.#versions) {
+    for (const version of versions) {
       manifestData[version] = prependLeadingSlash(version);
     }
 
     await this.#fs.write(this.#manifestPath, JSON.stringify(manifestData, null, 2));
-    this.#initialized = true;
   }
 
   async analyze(options: AnalyzeOptions): Promise<VersionAnalysis[]> {
