@@ -10,19 +10,25 @@ import {
 } from "@luxass/unicode-utils-new";
 import { badRequest, internalServerError, notFound } from "@ucdjs/worker-shared";
 import { traverse } from "apache-autoindex-parse/traverse";
+import { createLogger } from "../../lib/logger";
 import { GET_VERSION_FILE_TREE_ROUTE, LIST_ALL_UNICODE_VERSIONS_ROUTE } from "./openapi";
 
 export const V1_VERSIONS_ROUTER = new OpenAPIHono<HonoEnv>().basePath("/api/v1/versions");
 
+const log = createLogger("ucd:api:v1_versions");
+
 V1_VERSIONS_ROUTER.openapi(LIST_ALL_UNICODE_VERSIONS_ROUTE, async (c) => {
   try {
     const response = await fetch("https://www.unicode.org/versions/enumeratedversions.html");
+    log.info("Fetching unicode html versions page");
     if (!response.ok) {
+      log.error("Failed to fetch Unicode versions page", { status: response.status, statusText: response.statusText });
       return internalServerError(c, {
         message: "Failed to fetch Unicode versions",
       });
     }
 
+    log.info("Successfully fetched Unicode versions page", { status: response.status });
     const html = await response.text();
 
     // find any table that contains Unicode version information
@@ -30,6 +36,8 @@ V1_VERSIONS_ROUTER.openapi(LIST_ALL_UNICODE_VERSIONS_ROUTE, async (c) => {
     const tableMatch = html.match(/<table[^>]*>[\s\S]*?<\/table>/g)?.find((table) =>
       versionPattern.test(table),
     );
+
+    log.debug("Table Match", !!tableMatch);
 
     if (!tableMatch) {
       return notFound(c, {
@@ -43,11 +51,15 @@ V1_VERSIONS_ROUTER.openapi(LIST_ALL_UNICODE_VERSIONS_ROUTE, async (c) => {
 
     // match any row that contains a cell
     const rows = tableMatch.match(/<tr>[\s\S]*?<\/tr>/g) || [];
+    log.debug("Found rows in table", rows.length);
 
     for (const row of rows) {
       // look for Unicode version pattern in the row
       const versionMatch = row.match(new RegExp(`<a[^>]+href="([^"]+)"[^>]*>\\s*(${versionPattern.source})\\s*</a>`));
-      if (!versionMatch) continue;
+      if (!versionMatch) {
+        log.debug("No version match in row", row);
+        continue;
+      }
 
       const documentationUrl = versionMatch[1];
       const version = versionMatch[2]!.replace("Unicode ", "");

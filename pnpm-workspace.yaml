@@ -18,7 +18,7 @@ catalogs:
     "@vitest/coverage-istanbul": ^3.2.4
     "@vitest/ui": ^3.2.4
     vitest: ^3.2.4
-    vitest-testdirs: ^4.0.1
+    vitest-testdirs: ^4.0.2
     msw: ^2.10.4
     "@cloudflare/vitest-pool-workers": ^0.8.59
 
