@@ -2,7 +2,10 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "ucdjs-api",
   "main": "src/worker.ts",
-  "compatibility_date": "2025-07-05",
+  "compatibility_date": "2025-08-03",
+  "compatibility_flags": [
+    "enable_request_signal"
+  ],
   "observability": {
     "logs": {
       "enabled": true
@@ -28,15 +31,16 @@
   },
   "placement": { "mode": "smart" },
   "env": {
-    "preview": {
-      "name": "ucdjs-api-preview",
+    "production": {
+      "name": "ucdjs-api",
       "preview_urls": false,
       "vars": {
-        "ENVIRONMENT": "preview"
+        "API_VERSION": "x.y.z",
+        "ENVIRONMENT": "production"
       },
       "route": {
         "custom_domain": true,
-        "pattern": "preview.api.ucdjs.dev"
+        "pattern": "api.ucdjs.dev"
       },
       "unsafe": {
         "bindings": [
@@ -52,15 +56,16 @@
         ]
       }
     },
-    "production": {
-      "name": "ucdjs-api",
+    "preview": {
+      "name": "ucdjs-api-preview",
       "preview_urls": false,
       "vars": {
-        "ENVIRONMENT": "production"
+        "API_VERSION": "x.y.z",
+        "ENVIRONMENT": "preview"
       },
       "route": {
         "custom_domain": true,
-        "pattern": "api.ucdjs.dev"
+        "pattern": "preview.api.ucdjs.dev"
       },
       "unsafe": {
         "bindings": [
