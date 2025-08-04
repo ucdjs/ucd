@@ -33,11 +33,11 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
 
   const {
     storeDir,
-    // TODO: handle force flag
-    force: _force,
+    force,
     remote,
     baseUrl,
     patterns,
+    dryRun,
   } = flags;
 
   try {
@@ -62,11 +62,23 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
       versions,
     });
 
-    if (store == null) {
-      console.error("Error: Failed to create UCD store.");
+    await store.init({
+      force,
+      dryRun,
+    });
+
+    if (!store.initialized) {
+      console.error(red(`\n❌ Error: Store initialization failed.`));
+      console.error("Please check the store configuration and try again.");
+      console.error("This output may help you debug the issue:");
+
+      // TODO: utilize store status with a pretty printer.
+
+      return;
     }
 
-    // TODO: expose a getter to see if the store has been initialized.
+    // eslint-disable-next-line no-console
+    console.info("Store initialized successfully.");
   } catch (err) {
     if (err instanceof UCDStoreUnsupportedFeature) {
       console.error(red(`\n❌ Error: Unsupported feature:`));
@@ -84,7 +96,7 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
       message = err;
     }
 
-    console.error(red(`\n❌ Error cleaning store:`));
+    console.error(red(`\n❌ Error initializing store:`));
     console.error(`  ${message}`);
     console.error("Please check the store configuration and try again.");
     console.error("If the issue persists, consider running with --dry-run to see more details.");

@@ -31,6 +31,7 @@ export class UCDStore {
   #fs: FileSystemBridge;
   #versions: string[] = [];
   #manifestPath: string;
+  #initialized: boolean = false;
 
   constructor(options: UCDStoreOptions) {
     const { baseUrl, globalFilters, fs, basePath, versions } = defu(options, {
@@ -90,6 +91,10 @@ export class UCDStore {
 
   get versions(): readonly string[] {
     return Object.freeze([...this.#versions]);
+  }
+
+  get initialized(): boolean {
+    return this.#initialized;
   }
 
   /**
