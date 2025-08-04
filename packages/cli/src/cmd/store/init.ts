@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import type { Prettify } from "@luxass/utils";
 import type { CLIArguments } from "../../cli-utils";
 import type { CLIStoreCmdSharedFlags } from "./_shared";
@@ -77,7 +78,11 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
       return;
     }
 
-    // eslint-disable-next-line no-console
+    if (dryRun) {
+      console.info("The store has been initialized in dry-run mode.");
+      console.info("No files have been written to disk.");
+    }
+
     console.info("Store initialized successfully.");
   } catch (err) {
     if (err instanceof UCDStoreUnsupportedFeature) {
