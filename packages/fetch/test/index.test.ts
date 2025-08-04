@@ -5,7 +5,7 @@ import { HttpResponse } from "msw";
 import { assert, describe, expect, it } from "vitest";
 import { client, createClient } from "../src";
 
-describe("unicode API Client", () => {
+describe("unicode api client", () => {
   describe("createClient", () => {
     it("should create a client with the provided base URL", () => {
       const customBaseUrl = "https://custom-api.ucdjs.dev";
@@ -255,8 +255,7 @@ describe("unicode API Client", () => {
         ] satisfies FileEntryList;
 
         mockFetch([
-          // TODO: remove the need for encodeURIComponent here when https://github.com/openapi-ts/openapi-typescript/pull/2362 is fixed
-          ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/${encodeURIComponent("latest/ucd.all.json")}`, () => {
+          ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/latest/ucd.all.json`, () => {
             return new HttpResponse(JSON.stringify(mockFileResponse), {
               status: 200,
               headers: { "Content-Type": "application/json" },
@@ -325,8 +324,7 @@ describe("unicode API Client", () => {
         ] satisfies FileEntryList;
 
         mockFetch([
-          // TODO: remove the need for encodeURIComponent here when https://github.com/openapi-ts/openapi-typescript/pull/2362 is fixed
-          ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/${encodeURIComponent(path)}`, () => {
+          ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/${path}`, () => {
             return new HttpResponse(JSON.stringify(mockResponse), {
               status: 200,
               headers: { "Content-Type": "application/json" },
@@ -356,8 +354,7 @@ describe("unicode API Client", () => {
         } satisfies ApiError;
 
         mockFetch([
-          // TODO: remove the need for encodeURIComponent here when https://github.com/openapi-ts/openapi-typescript/pull/2362 is fixed
-          ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/${encodeURIComponent("non-existent/path")}`, () => {
+          ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/non-existent/path`, () => {
             return new HttpResponse(JSON.stringify(errorResponse), {
               status: 404,
               statusText: "Not Found",
