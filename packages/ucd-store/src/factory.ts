@@ -5,12 +5,10 @@ import { UCDStore } from "./store";
  * Creates a new UCD store instance with the specified options.
  *
  * @param {UCDStoreOptions} options - Configuration options for the UCD store
- * @returns {Promise<UCDStore>} A fully initialized UCDStore instance
+ * @returns {UCDStore} A fully initialized UCDStore instance
  */
-export async function createUCDStore(options: UCDStoreOptions): Promise<UCDStore> {
-  const store = new UCDStore(options);
-
-  return store;
+export function createUCDStore(options: UCDStoreOptions): UCDStore {
+  return new UCDStore(options);
 }
 
 /**
@@ -31,14 +29,12 @@ export async function createNodeUCDStore(options: Omit<UCDStoreOptions, "fs"> = 
     throw new Error("Node.js FileSystemBridge could not be loaded");
   }
 
-  const store = new UCDStore({
+  return new UCDStore({
     ...options,
     fs: fs({
       basePath: "./",
     }),
   });
-
-  return store;
 }
 
 /**
@@ -55,12 +51,10 @@ export async function createNodeUCDStore(options: Omit<UCDStoreOptions, "fs"> = 
 export async function createHTTPUCDStore(options: Omit<UCDStoreOptions, "fs"> = {}): Promise<UCDStore> {
   const httpFsBridge = await import("@ucdjs/fs-bridge/bridges/http").then((m) => m.default);
 
-  const store = new UCDStore({
+  return new UCDStore({
     ...options,
     fs: httpFsBridge({
       baseUrl: options.baseUrl,
     }),
   });
-
-  return store;
 }
