@@ -2,7 +2,8 @@ import type { UCDClient, UnicodeTreeNode } from "@ucdjs/fetch";
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 import type { UCDStoreManifest } from "@ucdjs/schemas";
 import type { PathFilter } from "@ucdjs/utils";
-import type { AnalyzeOptions, UCDStoreOptions, VersionAnalysis } from "./types";
+import type { AnalyzeOptions, MirrorOptions, MirrorResult, StoreInitOptions, UCDStoreOptions, VersionAnalysis } from "./types";
+import { hasUCDFolderPath, resolveUCDVersion } from "@luxass/unicode-utils-new";
 import { prependLeadingSlash, trimLeadingSlash } from "@luxass/utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { createClient, isApiError } from "@ucdjs/fetch";
@@ -10,7 +11,8 @@ import { assertCapability } from "@ucdjs/fs-bridge";
 import { UCDStoreManifestSchema } from "@ucdjs/schemas";
 import { createPathFilter, flattenFilePaths, safeJsonParse } from "@ucdjs/utils";
 import defu from "defu";
-import { join } from "pathe";
+import pLimit from "p-limit";
+import { dirname, join } from "pathe";
 import { UCDStoreError, UCDStoreVersionNotFoundError } from "./errors";
 import { getExpectedFilePaths } from "./internal/files";
 
@@ -133,27 +135,138 @@ export class UCDStore {
     return flattenFilePaths(tree);
   }
 
-  async init(): Promise<void> {
-    assertCapability(this.#fs, "exists");
-    const isValidStore = await this.#fs.exists(this.#manifestPath);
+  async init(options: StoreInitOptions = {}): Promise<void> {
+    assertCapability(this.#fs, ["exists", "read"]);
 
-    if (isValidStore) {
-      await this.#loadVersionsFromStore();
-    } else {
-      if (!this.#versions || this.#versions.length === 0) {
-        const { data, error } = await this.#client.GET("/api/v1/versions");
-        if (isApiError(error)) {
-          throw new UCDStoreError(`Failed to fetch Unicode versions: ${error.message}`);
-        }
+    const {
+      dryRun = false,
+      force = false,
+    } = options;
 
-        this.#versions = data?.map(({ version }) => version) || [];
+    const existingStore = await this.#fs.exists(this.#manifestPath);
 
-        // TODO: maybe we should throw an error if no versions are provided?
-        // since it doesn't make sense to create a store without any versions.
+    const { data, error } = await this.#client.GET("/api/v1/versions");
+
+    if (isApiError(error)) {
+      throw new UCDStoreError(`Failed to fetch Unicode versions: ${error.message}`);
+    }
+
+    const fetchedVersions = data?.map(({ version }) => version) || [];
+
+    // If the store already exists, and force is not set,
+    // we don't need to re-initialize it.
+    // Only if the provided versions from the options are different
+    // than the existing store versions, we will re-initialize it.
+    if (existingStore && !force) {
+      const storeData = await this.#fs.read(this.#manifestPath);
+      const jsonData = safeJsonParse(storeData);
+      if (!jsonData) {
+        // TODO: throw different error
+        throw new UCDStoreError("store manifest is not a valid JSON");
       }
 
-      await this.#createNewLocalStore(this.#versions);
+      const parsedManifest = UCDStoreManifestSchema.safeParse(jsonData);
+      if (!parsedManifest.success) {
+        // TODO: throw different error
+        throw new UCDStoreError("Invalid store manifest schema");
+      }
+
+      const storeVersions = Object.keys(parsedManifest.data);
+
+      // check if the versions provided in the store is "valid" based on the fetched versions
+      if (!storeVersions.every((v) => fetchedVersions.includes(v))) {
+        // TODO: throw different error
+        throw new UCDStoreError("Store manifest contains invalid versions that are not present in the fetched versions.");
+      }
+
+      // There is no versions provided, or in the store.
+      if (this.#versions.length === 0 && storeVersions.length === 0) {
+        return;
+      }
+
+      // If the versions provided are the same as the store versions,
+      // we don't need to re-initialize the store.
+      if (this.#versions.length === storeVersions.length && this.#versions.every((v) => storeVersions.includes(v))) {
+        this.#versions = storeVersions;
+        this.#initialized = true;
+        return;
+      }
+
+      const diffSet = new Set<string>();
+
+      for (const version of this.#versions) {
+        if (!storeVersions.includes(version)) {
+          diffSet.add(version);
+        }
+      }
+
+      for (const version of storeVersions) {
+        if (!this.#versions.includes(version)) {
+          diffSet.add(version);
+        }
+      }
+
+      if (diffSet.size === 0) {
+        this.#versions = storeVersions;
+        this.#initialized = true;
+        return;
+      }
+
+      // If the diff set is not empty, it means that the provided versions are different from the store versions.
+      // We need to re-initialize the store with the new versions.
+      if (diffSet.size > 0) {
+        this.#versions = Array.from(new Set([...this.#versions, ...storeVersions]));
+        this.#initialized = true;
+      }
+      return;
     }
+
+    if (existingStore && force) {
+      // If the store already exists and force is set, we need to re-initialize it
+      throw new UCDStoreError("NOT IMPLEMENTED: The store already exists, but the force option is set. Please use a different method to re-initialize the store with new versions.");
+    }
+
+    // check if the versions provided in the store is "valid" based on the fetched versions
+    if (!this.#versions.every((v) => fetchedVersions.includes(v))) {
+      // TODO: throw different error
+      throw new UCDStoreError("Store manifest contains invalid versions that are not present in the fetched versions.");
+    }
+
+    // If there isn't any versions provided, we will set the versions to the ones we fetched.
+    if (!this.#versions || this.#versions.length === 0) {
+      this.#versions = fetchedVersions;
+    }
+
+    if (dryRun) {
+      // If dry run is set, we don't need to create the store,
+      // just return the versions.
+      this.#initialized = true;
+      return;
+    }
+
+    assertCapability(this.#fs, ["mkdir", "write"]);
+
+    const basePathExists = await this.#fs.exists(this.basePath);
+    if (!basePathExists) {
+      await this.#fs.mkdir(this.basePath);
+    }
+
+    // Mirror UCD files from remote to local
+    await this.mirror({
+      versions: this.#versions,
+      force,
+      dryRun,
+      concurrency: 10,
+    });
+
+    const manifestData: UCDStoreManifest = {};
+
+    for (const version of this.#versions) {
+      manifestData[version] = prependLeadingSlash(version);
+    }
+
+    await this.#fs.write(this.#manifestPath, JSON.stringify(manifestData, null, 2));
+    this.#initialized = true;
   }
 
   async analyze(options: AnalyzeOptions): Promise<VersionAnalysis[]> {
@@ -212,46 +325,148 @@ export class UCDStore {
     }
   }
 
-  async #loadVersionsFromStore(): Promise<void> {
-    assertCapability(this.#fs, "read");
+  async mirror(options: MirrorOptions): Promise<MirrorResult[]> {
+    assertCapability(this.#fs, ["exists", "mkdir"]);
+    const {
+      versions = this.#versions,
+      concurrency = 5,
+      dryRun = false,
+      force = false,
+    } = options;
+    const result: MirrorResult[] = [];
+
+    if (concurrency < 1) {
+      throw new UCDStoreError("Concurrency must be at least 1");
+    }
+
+    // create the limit function to control concurrency
+    const limit = pLimit(concurrency);
+
     try {
-      const manifestContent = await this.#fs.read(this.#manifestPath);
+      // pre-create directory structure to avoid repeated checks
+      const directoriesToCreate = new Set<string>();
 
-      // validate the manifest content
-      const jsonData = safeJsonParse(manifestContent);
-      if (!jsonData) {
-        throw new UCDStoreError("store manifest is not a valid JSON");
-      }
+      const filesQueue = await Promise.all(
+        versions.map(async (version) => {
+          if (!this.#versions.includes(version)) {
+            throw new UCDStoreVersionNotFoundError(version);
+          }
+          const filePaths = await getExpectedFilePaths(this.#client, version);
 
-      // verify that is an array of objects with version and path properties
-      const parsedManifest = UCDStoreManifestSchema.safeParse(jsonData);
-      if (!parsedManifest.success) {
-        throw new UCDStoreError("Invalid store manifest schema");
-      }
+          // collect unique directories
+          for (const filePath of filePaths) {
+            const localPath = join(this.basePath!, version, filePath);
+            directoriesToCreate.add(dirname(localPath));
+          }
 
-      this.#versions = Object.keys(parsedManifest.data);
-    } catch (error) {
-      throw new UCDStoreError(`Failed to load store manifest: ${error instanceof Error ? error.message : String(error)}`);
+          return filePaths.map((filePath): [string, string] => [version, filePath]);
+        }),
+      ).then((results) => results.flat());
+
+      // pre-create all directories
+      await Promise.all([...directoriesToCreate].map(async (dir) => {
+        assertCapability(this.#fs, ["mkdir", "exists"]);
+        if (!await this.#fs.exists(dir)) {
+          await this.#fs.mkdir(dir);
+        }
+      }));
+
+      await Promise.all(filesQueue.map(async ([version, filePath]) => {
+        return limit(async () => {
+          let versionResult = result.find((r) => r.version === version);
+          if (!versionResult) {
+            const idx = result.push({
+              version,
+              mirrored: [],
+              skipped: [],
+              failed: [],
+            });
+
+            versionResult = result.at(idx - 1);
+          }
+
+          try {
+            const isMirrored = await this.#mirrorFile(version, filePath, {
+              force,
+              dryRun,
+            });
+
+            if (isMirrored) {
+              versionResult!.mirrored.push(filePath);
+            } else {
+              versionResult!.skipped.push(filePath);
+            }
+          } catch (err) {
+            console.error(`Failed to mirror file ${filePath}: ${err instanceof Error ? err.message : String(err)}`);
+            versionResult!.failed.push(filePath);
+          }
+        });
+      }));
+
+      return result;
+    } catch (err) {
+      console.error(`Error during mirroring: ${err instanceof Error ? err.message : String(err)}`);
+      return [];
     }
   }
 
-  async #createNewLocalStore(versions: string[]): Promise<void> {
-    assertCapability(this.#fs, ["exists", "mkdir", "write"]);
+  async #mirrorFile(version: string, filePath: string, options: Pick<MirrorOptions, "force" | "dryRun">): Promise<boolean> {
+    assertCapability(this.#fs, ["exists", "read", "write", "mkdir"]);
+    const { force = false, dryRun = false } = options;
+    const localPath = join(this.basePath!, version, filePath);
 
-    if (!await this.#fs.exists(this.basePath)) {
-      await this.#fs.mkdir(this.basePath);
+    // check if file already exists
+    if (!force && await this.#fs.exists(localPath)) {
+      return false;
     }
 
-    // Mirror UCD files from remote to local
-    // await this.mirror({ versions, overwrite: false, dryRun: false });
-
-    const manifestData: UCDStoreManifest = {};
-
-    for (const version of versions) {
-      manifestData[version] = prependLeadingSlash(version);
+    if (dryRun) {
+      return true;
     }
 
-    await this.#fs.write(this.#manifestPath, JSON.stringify(manifestData, null, 2));
-    this.#versions = [...versions];
+    // download file content from the api
+    const { error, response } = await this.#client.GET("/api/v1/files/{wildcard}", {
+      params: {
+        path: {
+          // We are only returning files from inside the ucd folder.
+          // But the file paths are relative from the request path, and therefore doesn't contain the
+          // `ucd` folder.
+          // So by adding the `ucd` folder here, we ensure that the file paths
+          // we download are correct.
+          wildcard: join(resolveUCDVersion(version), hasUCDFolderPath(version) ? "ucd" : "", filePath),
+        },
+      },
+      parseAs: "stream",
+    });
+
+    if (isApiError(error)) {
+      throw new UCDStoreError(`Failed to fetch file '${filePath}': ${error?.message}`);
+    }
+
+    const contentTypeHeader = response.headers.get("content-type");
+    if (!contentTypeHeader) {
+      throw new UCDStoreError(`Failed to fetch file '${filePath}': No content type header received.`);
+    }
+
+    const semiColonIndex = contentTypeHeader.indexOf(";");
+    const contentType = semiColonIndex !== -1
+      ? contentTypeHeader.slice(0, semiColonIndex).trim()
+      : contentTypeHeader.trim();
+
+    // stream content directly to filesystem with minimal buffering
+    let content: string | Uint8Array;
+
+    if (contentType?.startsWith("application/json")) {
+      content = await response.json();
+    } else if (contentType?.startsWith("text/")) {
+      content = await response.text();
+    } else {
+      // For binary files, use streaming when possible
+      content = new Uint8Array(await response.arrayBuffer());
+    }
+
+    await this.#fs.write(prependLeadingSlash(localPath), content);
+
+    return true;
   }
 }
