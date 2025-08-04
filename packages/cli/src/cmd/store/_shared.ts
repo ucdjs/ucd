@@ -1,4 +1,5 @@
 import type { UCDStore } from "@ucdjs/ucd-store";
+import type { Readable, Writable } from "node:stream";
 import { isCancel, multiselect } from "@clack/prompts";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils";
 import { createHTTPUCDStore, createNodeUCDStore } from "@ucdjs/ucd-store";
@@ -31,7 +32,7 @@ export function assertRemoteOrStoreDir(flags: CLIStoreCmdSharedFlags): asserts f
  * @returns {Promise<UCDStore | null>} A promise that resolves to a UCDStore instance or null
  * @throws {Error} When store directory is not specified for local stores
  */
-export async function createStoreFromFlags(flags: CLIStoreCmdSharedFlags): Promise<UCDStore | null> {
+export async function createStoreFromFlags(flags: CLIStoreCmdSharedFlags): Promise<UCDStore> {
   const { storeDir, remote, baseUrl, patterns } = flags;
 
   if (remote) {
@@ -53,7 +54,15 @@ export async function createStoreFromFlags(flags: CLIStoreCmdSharedFlags): Promi
   });
 }
 
-export async function runVersionPrompt(): Promise<string[]> {
+export interface RunVersionPromptOptions {
+  input?: Readable;
+  output?: Writable;
+}
+
+export async function runVersionPrompt({
+  input,
+  output,
+}: RunVersionPromptOptions = {}): Promise<string[]> {
   const selectedVersions = await multiselect({
     options: UNICODE_VERSION_METADATA.map(({ version }) => ({
       value: version,
@@ -61,6 +70,8 @@ export async function runVersionPrompt(): Promise<string[]> {
     })),
     message: "Select Unicode versions to initialize the store with:",
     required: true,
+    input,
+    output,
   });
 
   if (isCancel(selectedVersions)) {

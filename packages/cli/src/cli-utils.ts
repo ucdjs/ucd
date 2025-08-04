@@ -48,8 +48,7 @@ export type CLIArguments<T extends Record<string, unknown>> = Prettify<RemoveInd
  */
 export function resolveCommand(flags: Arguments): CLICommand {
   if (flags.version) return "version";
-
-  const cmd = flags._[2] as string;
+  const cmd = flags._[0] as string;
 
   if (SUPPORTED_COMMANDS.has(cmd as CLICommand)) {
     return cmd as CLICommand;
@@ -188,7 +187,7 @@ export async function runCommand(cmd: CLICommand, flags: Arguments): Promise<voi
       break;
     case "codegen": {
       const { runCodegenRoot } = await import("./cmd/codegen/root");
-      const subcommand = flags._[3]?.toString() ?? "";
+      const subcommand = flags._[1]?.toString() ?? "";
       await runCodegenRoot(subcommand, {
         flags: flags as CLICodegenCmdOptions["flags"],
       });
@@ -196,7 +195,7 @@ export async function runCommand(cmd: CLICommand, flags: Arguments): Promise<voi
     }
     case "store": {
       const { runStoreRoot } = await import("./cmd/store/root");
-      const subcommand = flags._[3]?.toString() ?? "";
+      const subcommand = flags._[1]?.toString() ?? "";
       await runStoreRoot(subcommand, {
         flags: flags as CLIStoreCmdOptions["flags"],
       });
@@ -219,6 +218,7 @@ export function parseFlags(args: string[]) {
       "force",
       "help",
       "h",
+      "dry-run",
     ],
     string: [
       "output-dir",
@@ -231,6 +231,9 @@ export function parseFlags(args: string[]) {
 export async function runCLI(args: string[]): Promise<void> {
   try {
     const flags = parseFlags(args);
+
+    // makes it easier to identify the process via activity monitor or other tools
+    process.title = "ucd-cli";
 
     const cmd = resolveCommand(flags);
     await runCommand(cmd, flags);

@@ -79,14 +79,14 @@ catalogs:
       specifier: ^1.3.23
       version: 1.3.23
     '@clack/prompts':
-      specifier: ^0.11.0
-      version: 0.11.0
+      specifier: ^1.0.0-alpha.1
+      version: 1.0.0-alpha.1
     '@luxass/unicode-utils':
       specifier: ^0.9.0
       version: 0.9.0
     '@luxass/unicode-utils-new':
-      specifier: npm:@luxass/unicode-utils@0.12.0-beta.9
-      version: 0.12.0-beta.9
+      specifier: npm:@luxass/unicode-utils@0.12.0-beta.11
+      version: 0.12.0-beta.11
     '@luxass/utils':
       specifier: ^2.6.2
       version: 2.6.2
@@ -244,7 +244,7 @@ importers:
         version: 1.0.2(hono@4.8.12)(zod@4.0.14)
       '@luxass/unicode-utils-new':
         specifier: catalog:prod
-        version: '@luxass/unicode-utils@0.12.0-beta.9'
+        version: '@luxass/unicode-utils@0.12.0-beta.11'
       '@luxass/utils':
         specifier: catalog:prod
         version: 2.6.2
@@ -381,7 +381,7 @@ importers:
     dependencies:
       '@clack/prompts':
         specifier: catalog:prod
-        version: 0.11.0
+        version: 1.0.0-alpha.1
       '@luxass/unicode-utils':
         specifier: catalog:prod
         version: 0.9.0
@@ -636,7 +636,7 @@ importers:
     dependencies:
       '@luxass/unicode-utils-new':
         specifier: catalog:prod
-        version: '@luxass/unicode-utils@0.12.0-beta.9'
+        version: '@luxass/unicode-utils@0.12.0-beta.11'
       '@luxass/utils':
         specifier: catalog:prod
         version: 2.6.2
@@ -658,6 +658,9 @@ importers:
       defu:
         specifier: catalog:prod
         version: 6.1.4
+      p-limit:
+        specifier: catalog:prod
+        version: 6.2.0
       pathe:
         specifier: catalog:prod
         version: 2.0.3
@@ -700,7 +703,7 @@ importers:
     dependencies:
       '@luxass/unicode-utils-new':
         specifier: catalog:prod
-        version: '@luxass/unicode-utils@0.12.0-beta.9'
+        version: '@luxass/unicode-utils@0.12.0-beta.11'
       '@luxass/utils':
         specifier: catalog:prod
         version: 2.6.2
@@ -1103,8 +1106,14 @@ packages:
   '@clack/core@0.5.0':
     resolution: {integrity: sha512-p3y0FIOwaYRUPRcMO7+dlmLh8PSRcrjuTndsiA0WAFbWES0mLZlrjVoBRZ9DzkPFJZG6KGkJmoEAY0ZcVWTkow==}
 
+  '@clack/core@1.0.0-alpha.1':
+    resolution: {integrity: sha512-rFbCU83JnN7l3W1nfgCqqme4ZZvTTgsiKQ6FM0l+r0P+o2eJpExcocBUWUIwnDzL76Aca9VhUdWmB2MbUv+Qyg==}
+
   '@clack/prompts@0.11.0':
     resolution: {integrity: sha512-pMN5FcrEw9hUkZA4f+zLlzivQSeQf5dRGJjSUbvVYDLvpKCdQx5OaknvKzgbtXOizhP+SJJJjqEbOe55uKKfAw==}
+
+  '@clack/prompts@1.0.0-alpha.1':
+    resolution: {integrity: sha512-07MNT0OsxjKOcyVfX8KhXBhJiyUbDP1vuIAcHc+nx5v93MJO23pX3X/k3bWz6T3rpM9dgWPq90i4Jq7gZAyMbw==}
 
   '@cloudflare/kv-asset-handler@0.4.0':
     resolution: {integrity: sha512-+tv3z+SPp+gqTIcImN9o0hqE9xyfQjI1XD9pL6NuKjua9B1y7mNYv0S9cP+QEbA4ppVgGZEmKOvHX5G5Ei1CVA==}
@@ -1716,8 +1725,8 @@ packages:
   '@luxass/spectral-ruleset@1.1.0':
     resolution: {integrity: sha512-Dm4n7LuyI3nInZ9kzytOF3bTIIw2zFdBKDhOvPP2QCzNXLX2iL6BhlZX1XFcflMIARQG2h2WwP+UaFcV+0/9aQ==}
 
-  '@luxass/unicode-utils@0.12.0-beta.9':
-    resolution: {integrity: sha512-KX++zXKY1vGVoxT6VQNXz1OdKPSWZ/4p+ahiYGPPd+brDnjRaoAP3odaMKL7J+CRFM8RjKJk8yU9Qg9udmM1jQ==}
+  '@luxass/unicode-utils@0.12.0-beta.11':
+    resolution: {integrity: sha512-wA5OUCMYL49JlXRfTkS4uaVCU/s/Ub23qf9vi2RS9fh/mGHJIdRgJBfnTO7sSpdQLpL/6+Ikv8glzUYMNDvmzg==}
 
   '@luxass/unicode-utils@0.9.0':
     resolution: {integrity: sha512-RNhEJ2pXiIRhmr/KGtAbl4jy2uwQjXMdRQKHZE1M1IgjkXa4/d8is5HtwxdKKcL0CCO3f4lGAeLOIhR6ACGNfg==}
@@ -6093,9 +6102,20 @@ snapshots:
       picocolors: 1.1.1
       sisteransi: 1.0.5
 
+  '@clack/core@1.0.0-alpha.1':
+    dependencies:
+      picocolors: 1.1.1
+      sisteransi: 1.0.5
+
   '@clack/prompts@0.11.0':
     dependencies:
       '@clack/core': 0.5.0
+      picocolors: 1.1.1
+      sisteransi: 1.0.5
+
+  '@clack/prompts@1.0.0-alpha.1':
+    dependencies:
+      '@clack/core': 1.0.0-alpha.1
       picocolors: 1.1.1
       sisteransi: 1.0.5
 
@@ -6714,7 +6734,7 @@ snapshots:
 
   '@luxass/spectral-ruleset@1.1.0': {}
 
-  '@luxass/unicode-utils@0.12.0-beta.9':
+  '@luxass/unicode-utils@0.12.0-beta.11':
     dependencies:
       '@luxass/utils': 2.6.2
       defu: 6.1.4

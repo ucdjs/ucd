@@ -36,7 +36,7 @@ catalogs:
   prod:
     # merge these together when heading inference is implemented better
     "@luxass/unicode-utils": ^0.9.0
-    "@luxass/unicode-utils-new": npm:@luxass/unicode-utils@0.12.0-beta.9
+    "@luxass/unicode-utils-new": npm:@luxass/unicode-utils@0.12.0-beta.11
     "@luxass/utils": ^2.6.2
     farver: ^0.4.2
     yargs-parser: ^22.0.0
@@ -51,7 +51,7 @@ catalogs:
     apache-autoindex-parse: ^3.0.2
     openapi-fetch: ^0.14.0
     pathe: ^2.0.3
-    "@clack/prompts": ^0.11.0
+    "@clack/prompts": ^1.0.0-alpha.1
 
   dev:
     "@types/picomatch": ^4.0.2
