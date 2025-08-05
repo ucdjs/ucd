@@ -64,7 +64,7 @@ describe("custom errors", () => {
       expect(error).toBeInstanceOf(UCDStoreError);
       expect(error).toBeInstanceOf(UCDStoreVersionNotFoundError);
       expect(error.name).toBe("UCDStoreVersionNotFoundError");
-      expect(error.message).toBe(`Version not found: ${version}`);
+      expect(error.message).toBe(`Version '${version}' does not exist in the store.`);
       expect(error.version).toBe(version);
     });
 
@@ -77,7 +77,7 @@ describe("custom errors", () => {
       "4.0.0-alpha.1",
     ])("should format message correctly for version %s", (version) => {
       const error = new UCDStoreVersionNotFoundError(version);
-      expect(error.message).toBe(`Version not found: ${version}`);
+      expect(error.message).toBe(`Version '${version}' does not exist in the store.`);
       expect(error.version).toBe(version);
     });
   });
