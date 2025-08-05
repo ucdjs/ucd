@@ -12,7 +12,7 @@ import { UCDStoreManifestSchema } from "@ucdjs/schemas";
 import { createPathFilter, flattenFilePaths, safeJsonParse } from "@ucdjs/utils";
 import defu from "defu";
 import pLimit from "p-limit";
-import { dirname, join } from "pathe";
+import { dirname, isAbsolute, join } from "pathe";
 import { UCDStoreError, UCDStoreInvalidManifestError, UCDStoreVersionNotFoundError } from "./errors";
 import { getExpectedFilePaths } from "./internal/files";
 
@@ -562,6 +562,10 @@ export class UCDStore {
     }
 
     try {
+      if (isAbsolute(filePath)) {
+        return await this.#fs.read(filePath);
+      }
+
       return await this.#fs.read(join(version, filePath));
     } catch (err) {
       if (err instanceof Error && err.message.includes("ENOENT")) {
