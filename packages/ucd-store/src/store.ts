@@ -486,4 +486,17 @@ export class UCDStore {
 
     return true;
   }
+
+  async getFile(version: string, filePath: string, extraFilters?: string[]): Promise<string> {
+    assertCapability(this.#fs, "read");
+    if (!this.#versions.includes(version)) {
+      throw new UCDStoreVersionNotFoundError(version);
+    }
+
+    if (!this.#filter(trimLeadingSlash(filePath), extraFilters)) {
+      throw new UCDStoreError(`File path "${filePath}" is filtered out by the store's filter patterns.`);
+    }
+
+    return await this.#fs.read(join(version, filePath));
+  }
 }
