@@ -1,7 +1,8 @@
 import { HttpResponse, mockFetch } from "#msw-utils";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
-import { createNodeUCDStore } from "@ucdjs/ucd-store";
+import { BridgeUnsupportedOperation, defineFileSystemBridge } from "@ucdjs/fs-bridge";
+import { createNodeUCDStore, UCDStore } from "@ucdjs/ucd-store";
 import { flattenFilePaths } from "@ucdjs/utils";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
@@ -505,6 +506,125 @@ describe("file operations", () => {
       await expect(store.getFilePaths("16.0.0")).rejects.toThrow(
         "Version '16.0.0' does not exist in the store.",
       );
+    });
+  });
+
+  describe("capability requirements", () => {
+    it("should throw BridgeUnsupportedOperation when getFileTree is called without listdir capability", async () => {
+      const readSpy = vi.fn().mockResolvedValue("content");
+      const writeSpy = vi.fn().mockResolvedValue(undefined);
+      const existsSpy = vi.fn().mockResolvedValue(true);
+      const mkdirSpy = vi.fn().mockResolvedValue(undefined);
+
+      // create a bridge without listdir capability
+      const bridgeWithoutListdir = defineFileSystemBridge({
+        setup: () => ({
+          read: readSpy,
+          write: writeSpy,
+          exists: existsSpy,
+          mkdir: mkdirSpy,
+          // no listdir capability
+        }),
+      });
+
+      const store = new UCDStore({
+        fs: bridgeWithoutListdir(),
+        versions: ["15.0.0"],
+      });
+
+      await expect(store.getFileTree("15.0.0")).rejects.toThrow(BridgeUnsupportedOperation);
+      await expect(store.getFileTree("15.0.0")).rejects.toThrow(
+        "File system bridge does not support the 'listdir' capability.",
+      );
+
+      // verify that no other methods were called since listdir fails first
+      expect(readSpy).not.toHaveBeenCalled();
+      expect(writeSpy).not.toHaveBeenCalled();
+      expect(existsSpy).not.toHaveBeenCalled();
+      expect(mkdirSpy).not.toHaveBeenCalled();
+    });
+
+    it("should throw BridgeUnsupportedOperation when getFilePaths is called without listdir capability", async () => {
+      const readSpy = vi.fn().mockResolvedValue("content");
+      const writeSpy = vi.fn().mockResolvedValue(undefined);
+      const existsSpy = vi.fn().mockResolvedValue(true);
+      const mkdirSpy = vi.fn().mockResolvedValue(undefined);
+
+      // create a bridge without listdir capability
+      const bridgeWithoutListdir = defineFileSystemBridge({
+        setup: () => ({
+          read: readSpy,
+          write: writeSpy,
+          exists: existsSpy,
+          mkdir: mkdirSpy,
+          // no listdir capability
+        }),
+      });
+
+      const store = new UCDStore({
+        fs: bridgeWithoutListdir(),
+        versions: ["15.0.0"],
+      });
+
+      // getFilePaths internally calls getFileTree, so it should also fail
+      await expect(store.getFilePaths("15.0.0")).rejects.toThrow(BridgeUnsupportedOperation);
+      await expect(store.getFilePaths("15.0.0")).rejects.toThrow(
+        "File system bridge does not support the 'listdir' capability.",
+      );
+
+      // verify that no other methods were called since listdir fails first
+      expect(readSpy).not.toHaveBeenCalled();
+      expect(writeSpy).not.toHaveBeenCalled();
+      expect(existsSpy).not.toHaveBeenCalled();
+      expect(mkdirSpy).not.toHaveBeenCalled();
+    });
+
+    it("should work correctly when bridge has required capabilities", async () => {
+      const readSpy = vi.fn().mockResolvedValue("content");
+      const writeSpy = vi.fn().mockResolvedValue(undefined);
+      const existsSpy = vi.fn().mockResolvedValue(true);
+      const mkdirSpy = vi.fn().mockResolvedValue(undefined);
+      const listdirSpy = vi.fn().mockResolvedValue([
+        {
+          name: "test.txt",
+          path: "/test.txt",
+          type: "file" as const,
+        },
+      ]);
+
+      // create a bridge with all necessary capabilities
+      const bridgeWithCapabilities = defineFileSystemBridge({
+        setup: () => ({
+          read: readSpy,
+          write: writeSpy,
+          exists: existsSpy,
+          listdir: listdirSpy,
+          mkdir: mkdirSpy,
+        }),
+      });
+
+      const store = new UCDStore({
+        fs: bridgeWithCapabilities(),
+        versions: ["15.0.0"],
+      });
+
+      // these should not throw
+      await expect(store.getFileTree("15.0.0")).resolves.toEqual([
+        {
+          name: "test.txt",
+          path: "/test.txt",
+          type: "file",
+        },
+      ]);
+
+      await expect(store.getFilePaths("15.0.0")).resolves.toEqual(["/test.txt"]);
+
+      // verify that only listdir was called for these operations
+      expect(listdirSpy).toHaveBeenCalledTimes(2); // once for getFileTree, once for getFilePaths
+      expect(readSpy).not.toHaveBeenCalled();
+      expect(writeSpy).not.toHaveBeenCalled();
+      expect(existsSpy).not.toHaveBeenCalled();
+      expect(mkdirSpy).not.toHaveBeenCalled();
     });
   });
 });
