@@ -3,6 +3,7 @@ import { join } from "node:path";
 import { HttpResponse, mockFetch } from "#msw-utils";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
+import { red } from "farver";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
 import { runCLI } from "../../../src/cli-utils";
@@ -86,7 +87,7 @@ describe("store init command", () => {
     await runCLI(["store", "init"]);
 
     expect(consoleErrorSpy).toHaveBeenCalledTimes(5);
-    expect(consoleErrorSpy).toHaveBeenCalledWith("\n❌ Error initializing store:");
+    expect(consoleErrorSpy).toHaveBeenCalledWith(red("\n❌ Error initializing store:"));
     expect(consoleErrorSpy).toHaveBeenCalledWith("  Either --remote or --store-dir must be specified.");
     expect(consoleErrorSpy).toHaveBeenCalledWith("Please check the store configuration and try again.");
     expect(consoleErrorSpy).toHaveBeenCalledWith("If the issue persists, consider running with --dry-run to see more details.");
