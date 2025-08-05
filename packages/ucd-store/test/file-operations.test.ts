@@ -627,4 +627,95 @@ describe("file operations", () => {
       expect(mkdirSpy).not.toHaveBeenCalled();
     });
   });
+
+  describe("get file", () => {
+    it.each([
+      {
+        name: "relative path to root file",
+        structure: { "file.txt": "File content" },
+        path: "./file.txt",
+        expected: "File content",
+      },
+      {
+        name: "relative path to nested file",
+        structure: { nested: { "file.txt": "Nested file content" } },
+        path: "./nested/file.txt",
+        expected: "Nested file content",
+      },
+    ])("should get file content using $name", async ({ structure, path, expected }) => {
+      const storePath = await testdir({
+        "15.0.0": structure,
+        ".ucd-store.json": JSON.stringify({
+          "15.0.0": "15.0.0/",
+        }),
+      });
+
+      const store = await createNodeUCDStore({
+        basePath: storePath,
+      });
+
+      await store.init();
+      const content = await store.getFile("15.0.0", path);
+      expect(content).toBe(expected);
+    });
+
+    it("should be able to get file using full system path", async () => {
+      const storePath = await testdir({
+        "15.0.0": {
+          "file.txt": "Full path content",
+        },
+        ".ucd-store.json": JSON.stringify({
+          "15.0.0": "15.0.0/",
+        }),
+      });
+
+      const store = await createNodeUCDStore({
+        basePath: storePath,
+      });
+
+      await store.init();
+      const content = await store.getFile("15.0.0", `${storePath}/15.0.0/file.txt`);
+      expect(content).toBe("Full path content");
+    });
+
+    it("should throw error for invalid file", async () => {
+      const storePath = await testdir({
+        "15.0.0": {
+          "file.txt": "File content",
+        },
+        ".ucd-store.json": JSON.stringify({
+          "15.0.0": "15.0.0/",
+        }),
+      });
+
+      const store = await createNodeUCDStore({
+        basePath: storePath,
+      });
+
+      await store.init();
+      await expect(store.getFile("15.0.0", "./nonexistent.txt")).rejects.toThrow(
+        "File './nonexistent.txt' does not exist in version '15.0.0'.",
+      );
+    });
+
+    it("should disallow reading files outside the store", async () => {
+      const storePath = await testdir({
+        "15.0.0": {
+          "file.txt": "Store file content",
+        },
+        ".ucd-store.json": JSON.stringify({
+          "15.0.0": "15.0.0/",
+        }),
+      });
+
+      const store = await createNodeUCDStore({
+        basePath: storePath,
+      });
+
+      await store.init();
+      await expect(store.getFile("15.0.0", "../../outside.txt")).rejects.toThrow(
+        "Path traversal detected: ../outside.txt resolves outside base directory",
+      );
+    });
+  });
 });
