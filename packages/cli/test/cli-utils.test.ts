@@ -12,12 +12,12 @@ describe("resolveCommand", () => {
   });
 
   it("should return the command from the third positional argument if it is supported", () => {
-    const flags: Arguments = { _: ["", "", "store"], version: false };
+    const flags: Arguments = { _: ["store"], version: false };
     expect(resolveCommand(flags)).toBe("store");
   });
 
   it("should return 'help' when the third positional argument is not a supported command", () => {
-    const flags: Arguments = { _: ["", "", "unknown"], version: false };
+    const flags: Arguments = { _: ["unknown"], version: false };
     expect(resolveCommand(flags)).toBe("help");
   });
 
@@ -82,12 +82,12 @@ describe("runCommand", () => {
       runStoreRoot: mockRunStore,
     }));
 
-    const flags = { _: ["", "", "store"], force: false };
+    const flags = { _: ["store"], force: false };
     await runCommand("store", flags);
 
     expect(mockRunStore).toHaveBeenCalledWith("", {
       flags: expect.objectContaining({
-        _: ["", "", "store"],
+        _: ["store"],
         force: false,
       }),
     });

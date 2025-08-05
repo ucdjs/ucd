@@ -13,7 +13,7 @@
     "test:watch": "pnpm vitest",
     "lint": "eslint .",
     "lint:openapi": "spectral lint ./.generated/openapi.json",
-    "generate:types": "wrangler types",
+    "generate:types": "wrangler types ./wrangler-types.d.ts",
     "typecheck": "pnpm run generate:types && tsc --noEmit",
     "clean": "git clean -xdf node_modules .wrangler dist .generated"
   },

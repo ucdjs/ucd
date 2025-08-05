@@ -7,7 +7,7 @@ export default luxass({
 })
   .append({
     ignores: [
-      "worker-configuration.d.ts",
+      "wrangler-types.d.ts",
     ],
   })
   .append({

@@ -1,4 +1,5 @@
 import { HttpResponse, mockFetch } from "#msw-utils";
+import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { assertCapability } from "@ucdjs/fs-bridge";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -8,6 +9,12 @@ import { createMemoryMockFS, stripChildrenFromEntries } from "./__shared";
 
 describe("analyze operations", () => {
   beforeEach(() => {
+    mockFetch([
+      [["GET", "HEAD"], `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
+        return HttpResponse.json(UNICODE_VERSION_METADATA);
+      }],
+    ]);
+
     vi.clearAllMocks();
     vi.unstubAllEnvs();
   });
@@ -67,6 +74,7 @@ describe("analyze operations", () => {
       const store = await createNodeUCDStore({
         basePath: storeDir,
       });
+
       await store.init();
 
       const analyzeResult = await store.analyze({ checkOrphaned: false });

@@ -18,25 +18,23 @@ const DEFAULT_VERSIONS = {
   "15.0.0": "/15.0.0",
 } satisfies UCDStoreManifest;
 
-beforeEach(() => {
-  mockFetch([
-    [["GET", "HEAD"], `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
-      return HttpResponse.json(UNICODE_VERSION_METADATA);
-    }],
-    ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions/:version/file-tree`, () => {
-      return HttpResponse.json([{
-        type: "file",
-        name: "ArabicShaping.txt",
-      }]);
-    }],
-    ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/*`, () => {
-      return HttpResponse.text(`Null Content`);
-    }],
-  ]);
-});
-
 describe("store init", () => {
   beforeEach(() => {
+    mockFetch([
+      [["GET", "HEAD"], `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
+        return HttpResponse.json(UNICODE_VERSION_METADATA);
+      }],
+      ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions/:version/file-tree`, () => {
+        return HttpResponse.json([{
+          type: "file",
+          name: "ArabicShaping.txt",
+        }]);
+      }],
+      ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/*`, () => {
+        return HttpResponse.text(`Null Content`);
+      }],
+    ]);
+
     vi.clearAllMocks();
     vi.unstubAllEnvs();
   });

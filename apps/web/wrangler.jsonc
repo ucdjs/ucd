@@ -1,13 +1,13 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "ucdjs-dev",
-  "compatibility_date": "2025-07-05",
+  "compatibility_date": "2025-07-30",
   "main": "./worker/index.ts",
   "assets": {
     "not_found_handling": "single-page-application"
   },
   "vars": {
-    "ENVIRONMENT": "top-level"
+    "ENVIRONMENT": "local"
   },
   "env": {
     "production": {

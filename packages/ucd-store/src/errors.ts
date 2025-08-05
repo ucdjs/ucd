@@ -44,3 +44,13 @@ export class UCDStoreUnsupportedFeature extends UCDStoreError {
     this.availableCapabilities = availableCapabilities;
   }
 }
+
+export class UCDStoreInvalidManifestError extends UCDStoreError {
+  public readonly manifestPath: string;
+
+  constructor(manifestPath: string, message: string) {
+    super(`invalid manifest at ${manifestPath}: ${message}`);
+    this.name = "UCDStoreInvalidManifestError";
+    this.manifestPath = manifestPath;
+  }
+}
