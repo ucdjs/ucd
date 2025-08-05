@@ -123,70 +123,33 @@ export class UCDStore {
 
     const entries = await this.#fs.listdir(join(this.basePath, version), true);
 
-    // get all file paths from the tree structure
-    const allPaths = flattenFilePaths(entries);
-
-    // filter the paths using the path filter
-    const filteredPaths = allPaths.filter((path) => this.#filter(trimLeadingSlash(path), extraFilters));
-
-    // also collect all directory paths that should be included
-    const allDirectoryPaths = new Set<string>();
-    const collectDirPaths = (nodes: UnicodeTreeNode[], parentPath = ""): void => {
-      for (const node of nodes) {
-        const fullPath = parentPath ? `${parentPath}${node.path ?? node.name}` : (node.path ?? node.name);
-        if (node.type === "directory") {
-          allDirectoryPaths.add(fullPath);
-          if (node.children) {
-            collectDirPaths(node.children, fullPath);
-          }
-        }
-      }
-    };
-    collectDirPaths(entries);
-
-    // filter directory paths as well
-    const filteredDirPaths = Array.from(allDirectoryPaths).filter((path) => this.#filter(trimLeadingSlash(path), extraFilters));
-
-    // build the filtered tree by including only nodes that have filtered descendants or are files themselves
-    const shouldIncludeNode = (node: UnicodeTreeNode, currentPath: string): boolean => {
-      if (node.type === "file") {
-        return filteredPaths.includes(currentPath);
-      }
-
-      // for directories, only include if the directory itself passes the filter AND has filtered children
-      const dirPassesFilter = filteredDirPaths.includes(currentPath);
-      const hasFilteredChildren = filteredPaths.some((path) => path.startsWith(`${currentPath}/`));
-
-      return dirPassesFilter && hasFilteredChildren;
-    };
-
-    const buildFilteredTree = (nodes: UnicodeTreeNode[], parentPath = ""): UnicodeTreeNode[] => {
+    const filterDirectoryChildren = (children: UnicodeTreeNode[], parentPath: string): UnicodeTreeNode[] => {
       const result: UnicodeTreeNode[] = [];
 
-      for (const node of nodes) {
-        const fullPath = parentPath ? `${parentPath}${node.path ?? node.name}` : (node.path ?? node.name);
+      for (const child of children) {
+        const childPath = `${parentPath}${child.path ?? child.name}`;
+        const isFiltered = this.#filter(trimLeadingSlash(childPath), extraFilters);
 
-        if (shouldIncludeNode(node, fullPath)) {
-          if (node.type === "directory" && node.children) {
-            const filteredChildren = buildFilteredTree(node.children, fullPath);
-            if (filteredChildren.length > 0) {
-              const newNode: UnicodeTreeNode = {
-                name: node.name,
-                path: node.path,
-                type: "directory",
-                children: filteredChildren,
-                ...(node.lastModified && { lastModified: node.lastModified }),
-              };
-              result.push(newNode);
-            }
-          } else if (node.type === "file") {
-            const newNode: UnicodeTreeNode = {
-              name: node.name,
-              path: node.path,
-              type: "file",
-              ...(node.lastModified && { lastModified: node.lastModified }),
-            };
-            result.push(newNode);
+        // fast path for files and empty directories
+        if (child.type === "file" || (child.type === "directory" && (!child.children || child.children.length === 0))) {
+          if (isFiltered) {
+            result.push(child);
+          }
+
+          continue;
+        }
+
+        // handle directories with children
+        if (child.type === "directory" && child.children) {
+          const filteredGrandChildren = filterDirectoryChildren(child.children, childPath);
+
+          if (isFiltered && filteredGrandChildren.length > 0) {
+            result.push({
+              name: child.name,
+              path: child.path,
+              type: "directory",
+              children: filteredGrandChildren,
+            });
           }
         }
       }
@@ -194,7 +157,36 @@ export class UCDStore {
       return result;
     };
 
-    return buildFilteredTree(entries);
+    const result: UnicodeTreeNode[] = [];
+
+    for (const entry of entries) {
+      const isFiltered = this.#filter(trimLeadingSlash(entry.path), extraFilters);
+
+      // fast path for files and empty directories
+      if (entry.type === "file" || (entry.type === "directory" && (!entry.children || entry.children.length === 0))) {
+        if (isFiltered) {
+          result.push(entry);
+        }
+
+        continue;
+      }
+
+      // handle directories with children
+      if (entry.type === "directory" && entry.children) {
+        const filteredChildren = filterDirectoryChildren(entry.children, entry.path);
+
+        if (isFiltered && filteredChildren.length > 0) {
+          result.push({
+            name: entry.name,
+            path: entry.path,
+            type: "directory",
+            children: filteredChildren,
+          });
+        }
+      }
+    }
+
+    return result;
   }
 
   async getFilePaths(version: string, extraFilters?: string[]): Promise<string[]> {
