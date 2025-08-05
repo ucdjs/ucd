@@ -1,7 +1,6 @@
 {
   "extends": "./tsconfig.node.json",
   "compilerOptions": {
-    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.worker.tsbuildinfo",
     "types": [
       "vite/client",
       "./worker/wrangler-types.d.ts"

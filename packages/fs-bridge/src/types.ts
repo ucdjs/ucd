@@ -27,9 +27,9 @@ export interface FileSystemBridgeOperations {
   /**
    * Reads the contents of a file.
    * @param {string} path - The path to the file to read
-   * @returns {Promise<string | null>} A promise that resolves to the file contents as a string
+   * @returns {Promise<string>} A promise that resolves to the file contents as a string
    */
-  read?: (path: string) => Promise<string | null>;
+  read?: (path: string) => Promise<string>;
 
   /**
    * Writes data to a file.
