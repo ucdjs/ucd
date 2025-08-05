@@ -43,16 +43,44 @@ export interface FilterOptions {
  * Creates a filter function that checks if a file path should be included or excluded
  * based on the provided filter patterns.
  *
- * @param {string[]} filters - Array of glob patterns to filter against. Patterns starting with '!' are exclusions.
- * @returns {PathFilter} A function that takes a path and returns true if the path should be included, false otherwise.
+ * @param {string[]} filters - Array of glob patterns to filter against
+ * @param {FilterOptions} options - Configuration options
+ * @returns {PathFilter} A function that takes a path and returns true if the path should be included, false otherwise
+ *
+ *  NOTE:
+ * - **Include patterns**: Patterns WITHOUT `!` prefix specify which files to INCLUDE
+ * - **Exclude patterns**: Patterns WITH `!` prefix specify which files to EXCLUDE
+ * - **Default behavior**: If no include patterns are provided, ALL files are included by default
+ * - **Precedence**: Exclude patterns override include patterns
+ * - **Default exclusions**: `.zip` and `.pdf` files are excluded by default (unless disabled)
  *
  * @example
  * ```ts
  * import { createPathFilter } from '@ucdjs/utils';
  *
+ * // Include only .txt files, exclude any with "Test" in the name
  * const filter = createPathFilter(['*.txt', '!*Test*']);
- * filter('Data.txt'); // true
- * filter('DataTest.txt'); // false
+ * filter('Data.txt');     // true  - matches *.txt, doesn't match !*Test*
+ * filter('DataTest.txt'); // false - matches *.txt but also matches !*Test*
+ * filter('Data.js');      // false - doesn't match *.txt
+ *
+ * // Include everything in src/, exclude test files
+ * const srcFilter = createPathFilter(['src/**', '!**\/*.test.*']);
+ * srcFilter('src/index.js');      // true  - in src/, not a test file
+ * srcFilter('src/utils.test.js'); // false - in src/ but is a test file
+ * srcFilter('lib/index.js');      // false - not in src/
+ *
+ * // Exclude specific directories (no include patterns = include everything else)
+ * const excludeFilter = createPathFilter(['!**\/node_modules/**', '!**\/dist/**']);
+ * excludeFilter('src/index.js');           // true  - not in excluded dirs
+ * excludeFilter('node_modules/lib/a.js');  // false - in excluded dir
+ * excludeFilter('dist/bundle.js');         // false - in excluded dir
+ *
+ * // Include only extracted files
+ * const extractedOnly = createPathFilter(['**\/extracted/**']);
+ * extractedOnly('extracted/data.txt');         // true  - matches pattern
+ * extractedOnly('src/extracted/data.txt');     // true  - matches pattern
+ * extractedOnly('src/data.txt');               // false - doesn't match pattern
  * ```
  */
 export function createPathFilter(filters: string[], options: FilterOptions = {}): PathFilter {
