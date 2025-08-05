@@ -561,6 +561,14 @@ export class UCDStore {
       throw new UCDStoreError(`File path "${filePath}" is filtered out by the store's filter patterns.`);
     }
 
-    return await this.#fs.read(join(version, filePath));
+    try {
+      return await this.#fs.read(join(version, filePath));
+    } catch (err) {
+      if (err instanceof Error && err.message.includes("ENOENT")) {
+        throw new UCDStoreError(`File '${filePath}' does not exist in version '${version}'.`);
+      }
+
+      throw err;
+    }
   }
 }
