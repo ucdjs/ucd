@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "generate:types": "wrangler types ./worker/wrangler-types.d.ts",
+    "typecheck": "pnpm run generate:types && tsc --noEmit"
   },
   "dependencies": {
     "@tanstack/react-router": "catalog:web",

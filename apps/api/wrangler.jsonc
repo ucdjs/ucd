@@ -2,7 +2,7 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "ucdjs-api",
   "main": "src/worker.ts",
-  "compatibility_date": "2025-08-03",
+  "compatibility_date": "2025-07-30",
   "compatibility_flags": [
     "enable_request_signal"
   ],
@@ -88,7 +88,8 @@
         "command": "echo 'The testing environment can\\'t be built' && exit 0"
       },
       "vars": {
-        "ENVIRONMENT": "testing"
+        "ENVIRONMENT": "testing",
+        "API_VERSION": "x.y.z"
       },
       "unsafe": {
         "bindings": [

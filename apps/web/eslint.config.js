@@ -8,5 +8,6 @@ export default luxass({
 }).append({
   ignores: [
     "src/routeTree.gen.ts",
+    "worker/wrangler-types.d.ts",
   ],
 });

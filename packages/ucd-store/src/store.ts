@@ -13,7 +13,7 @@ import { createPathFilter, flattenFilePaths, safeJsonParse } from "@ucdjs/utils"
 import defu from "defu";
 import pLimit from "p-limit";
 import { dirname, join } from "pathe";
-import { UCDStoreError, UCDStoreVersionNotFoundError } from "./errors";
+import { UCDStoreError, UCDStoreInvalidManifestError, UCDStoreVersionNotFoundError } from "./errors";
 import { getExpectedFilePaths } from "./internal/files";
 
 export class UCDStore {
@@ -159,16 +159,19 @@ export class UCDStore {
     // than the existing store versions, we will re-initialize it.
     if (existingStore && !force) {
       const storeData = await this.#fs.read(this.#manifestPath);
+
+      if (!storeData) {
+        throw new UCDStoreError(`Store manifest not found at ${this.#manifestPath}`);
+      }
+
       const jsonData = safeJsonParse(storeData);
       if (!jsonData) {
-        // TODO: throw different error
-        throw new UCDStoreError("store manifest is not a valid JSON");
+        throw new UCDStoreInvalidManifestError(this.#manifestPath, "store manifest is not a valid JSON");
       }
 
       const parsedManifest = UCDStoreManifestSchema.safeParse(jsonData);
       if (!parsedManifest.success) {
-        // TODO: throw different error
-        throw new UCDStoreError("store manifest is not a valid JSON");
+        throw new UCDStoreInvalidManifestError(this.#manifestPath, `store manifest is not a valid JSON: ${parsedManifest.error.message}`);
       }
 
       const storeVersions = Object.keys(parsedManifest.data);
@@ -201,11 +204,11 @@ export class UCDStore {
         }
       }
 
-      for (const version of storeVersions) {
-        if (!this.#versions.includes(version)) {
-          diffSet.add(version);
-        }
-      }
+      // for (const version of storeVersions) {
+      //   if (!this.#versions.includes(version)) {
+      //     diffSet.add(version);
+      //   }
+      // }
 
       // same versions, no need to re-initialize with new files.
       if (diffSet.size === 0) {
@@ -230,7 +233,7 @@ export class UCDStore {
       return;
     }
 
-    // TODO: handle
+    // TODO: handle force flag
     if (existingStore && force) {
       throw new UCDStoreError("NOT IMPLEMENTED: The store already exists, but the force option is set. Please use a different method to re-initialize the store with new versions.");
     }
