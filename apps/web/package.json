@@ -26,6 +26,7 @@
     "@tanstack/router-plugin": "catalog:web",
     "@types/react": "catalog:types",
     "@types/react-dom": "catalog:types",
+    "@ucdjs/tsconfig": "workspace:*",
     "@vitejs/plugin-react": "catalog:web",
     "eslint": "catalog:linting",
     "eslint-plugin-react-hooks": "catalog:linting",
