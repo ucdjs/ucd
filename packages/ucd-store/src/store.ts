@@ -119,10 +119,82 @@ export class UCDStore {
       throw new UCDStoreVersionNotFoundError(version);
     }
 
-    const files = await this.#fs.listdir(join(this.basePath, version), true);
+    // TODO: utilize the store.status when available
 
-    // TODO: handle the cases where we wanna filter child files.
-    return files.filter(({ path }) => this.#filter(trimLeadingSlash(path), extraFilters));
+    const entries = await this.#fs.listdir(join(this.basePath, version), true);
+
+    // get all file paths from the tree structure
+    const allPaths = flattenFilePaths(entries);
+
+    // filter the paths using the path filter
+    const filteredPaths = allPaths.filter((path) => this.#filter(trimLeadingSlash(path), extraFilters));
+
+    // also collect all directory paths that should be included
+    const allDirectoryPaths = new Set<string>();
+    const collectDirPaths = (nodes: UnicodeTreeNode[], parentPath = ""): void => {
+      for (const node of nodes) {
+        const fullPath = parentPath ? `${parentPath}${node.path ?? node.name}` : (node.path ?? node.name);
+        if (node.type === "directory") {
+          allDirectoryPaths.add(fullPath);
+          if (node.children) {
+            collectDirPaths(node.children, fullPath);
+          }
+        }
+      }
+    };
+    collectDirPaths(entries);
+
+    // filter directory paths as well
+    const filteredDirPaths = Array.from(allDirectoryPaths).filter((path) => this.#filter(trimLeadingSlash(path), extraFilters));
+
+    // build the filtered tree by including only nodes that have filtered descendants or are files themselves
+    const shouldIncludeNode = (node: UnicodeTreeNode, currentPath: string): boolean => {
+      if (node.type === "file") {
+        return filteredPaths.includes(currentPath);
+      }
+
+      // for directories, only include if the directory itself passes the filter AND has filtered children
+      const dirPassesFilter = filteredDirPaths.includes(currentPath);
+      const hasFilteredChildren = filteredPaths.some((path) => path.startsWith(`${currentPath}/`));
+
+      return dirPassesFilter && hasFilteredChildren;
+    };
+
+    const buildFilteredTree = (nodes: UnicodeTreeNode[], parentPath = ""): UnicodeTreeNode[] => {
+      const result: UnicodeTreeNode[] = [];
+
+      for (const node of nodes) {
+        const fullPath = parentPath ? `${parentPath}${node.path ?? node.name}` : (node.path ?? node.name);
+
+        if (shouldIncludeNode(node, fullPath)) {
+          if (node.type === "directory" && node.children) {
+            const filteredChildren = buildFilteredTree(node.children, fullPath);
+            if (filteredChildren.length > 0) {
+              const newNode: UnicodeTreeNode = {
+                name: node.name,
+                path: node.path,
+                type: "directory",
+                children: filteredChildren,
+                ...(node.lastModified && { lastModified: node.lastModified }),
+              };
+              result.push(newNode);
+            }
+          } else if (node.type === "file") {
+            const newNode: UnicodeTreeNode = {
+              name: node.name,
+              path: node.path,
+              type: "file",
+              ...(node.lastModified && { lastModified: node.lastModified }),
+            };
+            result.push(newNode);
+          }
+        }
+      }
+
+      return result;
+    };
+
+    return buildFilteredTree(entries);
   }
 
   async getFilePaths(version: string, extraFilters?: string[]): Promise<string[]> {
