@@ -21,7 +21,7 @@ export class UCDStoreVersionNotFoundError extends UCDStoreError {
   public readonly version: string;
 
   constructor(version: string) {
-    super(`Version not found: ${version}`);
+    super(`Version '${version}' does not exist in the store.`);
     this.name = "UCDStoreVersionNotFoundError";
     this.version = version;
   }
