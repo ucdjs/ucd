@@ -53,6 +53,9 @@ export default defineConfig({
     coverage: {
       provider: "istanbul",
       include: ["**/src/**"],
+      exclude: [
+        "tooling/*"
+      ]
     },
     environment: "node",
     mockReset: true,
