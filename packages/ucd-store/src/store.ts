@@ -332,7 +332,7 @@ export class UCDStore {
     const manifestData: UCDStoreManifest = {};
 
     for (const version of versions) {
-      manifestData[version] = prependLeadingSlash(version);
+      manifestData[version] = version;
     }
 
     await this.#fs.write(this.#manifestPath, JSON.stringify(manifestData, null, 2));

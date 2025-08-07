@@ -13,9 +13,9 @@ import { testdir } from "vitest-testdirs";
 import { createNodeUCDStore, createUCDStore } from "../src/factory";
 
 const DEFAULT_VERSIONS = {
-  "16.0.0": "/16.0.0",
-  "15.1.0": "/15.1.0",
-  "15.0.0": "/15.0.0",
+  "16.0.0": "16.0.0",
+  "15.1.0": "15.1.0",
+  "15.0.0": "15.0.0",
 } satisfies UCDStoreManifest;
 
 describe("store init", () => {
@@ -28,6 +28,8 @@ describe("store init", () => {
         return HttpResponse.json([{
           type: "file",
           name: "ArabicShaping.txt",
+          path: "ArabicShaping.txt",
+          lastModified: 1724601900000,
         }]);
       }],
       ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/*`, () => {
@@ -262,7 +264,7 @@ describe("store init", () => {
     it("should handle constructor versions not in existing store", async () => {
       const storePath = await testdir({
         ".ucd-store.json": JSON.stringify({
-          "15.0.0": "/15.0.0",
+          "15.0.0": "15.0.0",
         }),
       });
 
@@ -279,16 +281,16 @@ describe("store init", () => {
       expect(existsSync(join(storePath, ".ucd-store.json"))).toBe(true);
       const manifest = JSON.parse(await readFile(join(storePath, ".ucd-store.json"), "utf-8"));
       expect(manifest).toEqual({
-        "15.0.0": "/15.0.0",
-        "15.1.0": "/15.1.0",
+        "15.0.0": "15.0.0",
+        "15.1.0": "15.1.0",
       });
     });
 
     it("should handle existing store versions not in constructor", async () => {
       const storePath = await testdir({
         ".ucd-store.json": JSON.stringify({
-          "15.0.0": "/15.0.0",
-          "15.1.0": "/15.1.0",
+          "15.0.0": "15.0.0",
+          "15.1.0": "15.1.0",
         }),
       });
 
@@ -308,15 +310,15 @@ describe("store init", () => {
       expect(existsSync(join(storePath, ".ucd-store.json"))).toBe(true);
       const manifest = JSON.parse(await readFile(join(storePath, ".ucd-store.json"), "utf-8"));
       expect(manifest).toEqual({
-        "15.0.0": "/15.0.0",
-        "15.1.0": "/15.1.0",
+        "15.0.0": "15.0.0",
+        "15.1.0": "15.1.0",
       });
     });
 
     it("should handle completely different version sets", async () => {
       const storePath = await testdir({
         ".ucd-store.json": JSON.stringify({
-          "15.0.0": "/15.0.0",
+          "15.0.0": "15.0.0",
         }),
       });
 
@@ -333,17 +335,17 @@ describe("store init", () => {
       expect(existsSync(join(storePath, ".ucd-store.json"))).toBe(true);
       const manifest = JSON.parse(await readFile(join(storePath, ".ucd-store.json"), "utf-8"));
       expect(manifest).toEqual({
-        "15.0.0": "/15.0.0",
-        "15.1.0": "/15.1.0",
-        "16.0.0": "/16.0.0",
+        "15.0.0": "15.0.0",
+        "15.1.0": "15.1.0",
+        "16.0.0": "16.0.0",
       });
     });
 
     it("should merge versions correctly when there are differences", async () => {
       const storePath = await testdir({
         ".ucd-store.json": JSON.stringify({
-          "15.0.0": "/15.0.0",
-          "15.1.0": "/15.1.0",
+          "15.0.0": "15.0.0",
+          "15.1.0": "15.1.0",
         }),
       });
 
@@ -360,9 +362,9 @@ describe("store init", () => {
       expect(existsSync(join(storePath, ".ucd-store.json"))).toBe(true);
       const manifest = JSON.parse(await readFile(join(storePath, ".ucd-store.json"), "utf-8"));
       expect(manifest).toEqual({
-        "15.0.0": "/15.0.0",
-        "15.1.0": "/15.1.0",
-        "16.0.0": "/16.0.0",
+        "15.0.0": "15.0.0",
+        "15.1.0": "15.1.0",
+        "16.0.0": "16.0.0",
       });
     });
   });

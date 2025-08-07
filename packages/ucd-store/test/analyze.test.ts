@@ -23,25 +23,25 @@ describe("analyze operations", () => {
     {
       type: "file",
       name: "ArabicShaping.txt",
-      path: "/ArabicShaping.txt",
+      path: "ArabicShaping.txt",
       lastModified: 1644920820000,
     },
     {
       type: "file",
       name: "BidiBrackets.txt",
-      path: "/BidiBrackets.txt",
+      path: "BidiBrackets.txt",
       lastModified: 1651584360000,
     },
     {
       type: "directory",
       name: "extracted",
-      path: "/extracted",
+      path: "extracted",
       lastModified: 1724676960000,
       children: [
         {
           type: "file",
           name: "DerivedBidiClass.txt",
-          path: "/DerivedBidiClass.txt",
+          path: "DerivedBidiClass.txt",
           lastModified: 1724609100000,
         },
       ],
@@ -59,7 +59,7 @@ describe("analyze operations", () => {
           },
         },
         ".ucd-store.json": JSON.stringify({
-          "15.0.0": "/15.0.0",
+          "15.0.0": "15.0.0",
         }),
       };
 
@@ -98,7 +98,7 @@ describe("analyze operations", () => {
           "OrphanedFile.txt": "This shouldn't be here",
         },
         ".ucd-store.json": JSON.stringify({
-          "15.0.0": "/15.0.0",
+          "15.0.0": "15.0.0",
         }),
       };
 
@@ -134,8 +134,8 @@ describe("analyze operations", () => {
           "BidiBrackets.txt": "Bidi brackets data v15.1.0",
         },
         ".ucd-store.json": JSON.stringify({
-          "15.0.0": "/15.0.0",
-          "15.1.0": "/15.1.0",
+          "15.0.0": "15.0.0",
+          "15.1.0": "15.1.0",
         }),
       };
 
@@ -181,8 +181,8 @@ describe("analyze operations", () => {
           "BidiBrackets.txt": "Bidi brackets data",
         },
         ".ucd-store.json": JSON.stringify({
-          "15.0.0": "/15.0.0",
-          "15.1.0": "/15.1.0",
+          "15.0.0": "15.0.0",
+          "15.1.0": "15.1.0",
         }),
       };
 
@@ -214,7 +214,7 @@ describe("analyze operations", () => {
           "ArabicShaping.txt": "Arabic shaping data",
         },
         ".ucd-store.json": JSON.stringify({
-          "15.0.0": "/15.0.0",
+          "15.0.0": "15.0.0",
         }),
       };
 
@@ -239,7 +239,7 @@ describe("analyze operations", () => {
           "ArabicShaping.txt": "Arabic shaping data",
         },
         ".ucd-store.json": JSON.stringify({
-          "15.0.0": "/15.0.0",
+          "15.0.0": "15.0.0",
         }),
       };
 
@@ -267,7 +267,7 @@ describe("analyze operations", () => {
       mockFetch([
         [["GET", "HEAD"], `${UCDJS_API_BASE_URL}/api/v1/files/.ucd-store.json`, () => {
           return HttpResponse.json({
-            "15.0.0": "/15.0.0",
+            "15.0.0": "15.0.0",
           });
         }],
         ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions/15.0.0/file-tree`, () => {
@@ -319,7 +319,7 @@ describe("analyze operations", () => {
       const customFS = createMemoryMockFS();
       assertCapability(customFS, "write");
       await customFS.write("/.ucd-store.json", JSON.stringify({
-        "15.0.0": "/15.0.0",
+        "15.0.0": "15.0.0",
       }));
       await customFS.write("/15.0.0/ArabicShaping.txt", "Arabic shaping data");
 
@@ -335,7 +335,7 @@ describe("analyze operations", () => {
         }],
       ]);
 
-      const store = await createUCDStore({
+      const store = createUCDStore({
         basePath: "/",
         fs: customFS,
       });
@@ -368,7 +368,7 @@ describe("analyze operations", () => {
     const storeDir = await testdir({
       "15.0.0": {},
       ".ucd-store.json": JSON.stringify({
-        "15.0.0": "/15.0.0",
+        "15.0.0": "15.0.0",
       }),
     });
 
@@ -398,7 +398,7 @@ describe("analyze operations", () => {
         "BidiBrackets.txt": "Bidi brackets data",
       },
       ".ucd-store.json": JSON.stringify({
-        "15.0.0": "/15.0.0",
+        "15.0.0": "15.0.0",
       }),
     });
 
@@ -408,19 +408,19 @@ describe("analyze operations", () => {
           {
             type: "file",
             name: "ArabicShaping.txt",
-            path: "/ArabicShaping.txt",
+            path: "ArabicShaping.txt",
             lastModified: 1644920820000,
           },
           {
             type: "file",
             name: "BidiBrackets.txt",
-            path: "/BidiBrackets.txt",
+            path: "BidiBrackets.txt",
             lastModified: 1644920820000,
           },
           {
             type: "file",
             name: "DerivedBidiClass.txt",
-            path: "/DerivedBidiClass.txt",
+            path: "DerivedBidiClass.txt",
             lastModified: 1644920820000,
           },
         ]);
