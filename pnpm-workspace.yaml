@@ -20,7 +20,7 @@ catalogs:
     vitest: ^3.2.4
     vitest-testdirs: ^4.0.2
     msw: ^2.10.4
-    "@cloudflare/vitest-pool-workers": ^0.8.59
+    "@cloudflare/vitest-pool-workers": ^0.8.60
 
   linting:
     "@luxass/eslint-config": ^5.2.5
@@ -28,7 +28,7 @@ catalogs:
     eslint: ^9.32.0
     eslint-plugin-format: ^1.0.1
     "@luxass/spectral-ruleset": ^1.1.0
-    "@typescript-eslint/utils": ^8.38.0
+    "@typescript-eslint/utils": ^8.39.0
     "@eslint-react/eslint-plugin": ^1.52.3
     eslint-plugin-react-hooks: ^5.2.0
     eslint-plugin-react-refresh: ^0.4.20
@@ -37,18 +37,18 @@ catalogs:
     # merge these together when heading inference is implemented better
     "@luxass/unicode-utils": ^0.9.0
     "@luxass/unicode-utils-new": npm:@luxass/unicode-utils@0.12.0-beta.11
-    "@luxass/utils": ^2.6.2
+    "@luxass/utils": ^2.7.0
     farver: ^0.4.2
     yargs-parser: ^22.0.0
     defu: ^6.1.4
     arktype: ^2.1.20
-    zod: ^4.0.14
+    zod: ^4.0.15
     "@ai-sdk/openai": ^1.3.23
     ai: ^4.3.19
     p-limit: ^6.2.0
     knitwork: ^1.2.0
     picomatch: ^4.0.3
-    apache-autoindex-parse: ^3.0.2
+    apache-autoindex-parse: ^3.0.3
     openapi-fetch: ^0.14.0
     pathe: ^2.0.3
     "@clack/prompts": ^1.0.0-alpha.1
@@ -57,20 +57,20 @@ catalogs:
     "@types/picomatch": ^4.0.2
     "@types/node": ^22.16.5
     "@types/yargs-parser": ^21.0.3
-    tsdown: ^0.13.1
+    tsdown: ^0.13.3
     typescript: 5.8.3
     publint: ^0.3.12
     nanotar: ^0.2.0
     openapi-typescript: ^7.8.0
     tsx: ^4.20.3
-    memfs: ^4.34.0
+    memfs: ^4.36.0
 
   workers:
-    wrangler: ^4.27.0
-    "@hono/zod-openapi": ^1.0.2
+    wrangler: ^4.28.0
+    "@hono/zod-openapi": ^1.1.0
     "@scalar/hono-api-reference": ^0.9.13
     hono: ^4.8.12
-    "@cloudflare/workers-types": ^4.20250802.0
+    "@cloudflare/workers-types": ^4.20250807.0
 
   types:
     "@types/react": ^19.1.9
@@ -81,9 +81,9 @@ catalogs:
     react-dom: ^19.1.1
     tailwindcss: ^4.1.11
     "@tailwindcss/vite": ^4.1.11
-    "@vitejs/plugin-react": ^4.7.0
-    vite: ^7.0.6
-    "@cloudflare/vite-plugin": ^1.11.0
+    "@vitejs/plugin-react": ^5.0.0
+    vite: ^7.1.0
+    "@cloudflare/vite-plugin": ^1.11.1
     "@tanstack/react-router": ^1.130.12
     "@tanstack/react-router-devtools": ^1.130.13
     "@tanstack/router-plugin": ^1.130.15
