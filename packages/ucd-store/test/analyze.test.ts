@@ -121,7 +121,9 @@ describe("analyze operations", () => {
       expect(analysisResult[0]?.version).toBe("15.0.0");
       expect(analysisResult[0]?.isComplete).toBe(false);
       expect(analysisResult[0]?.fileCount).toBe(4);
-      expect(analysisResult[0]?.orphanedFiles).toContain("OrphanedFile.txt");
+      expect(analysisResult[0]?.orphanedFiles).toBe([
+        "OrphanedFile.txt",
+      ]);
       expect(analysisResult[0]?.missingFiles).toEqual([]);
     });
 
