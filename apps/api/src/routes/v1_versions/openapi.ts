@@ -90,31 +90,31 @@ export const GET_VERSION_FILE_TREE_ROUTE = createRoute({
                 {
                   type: "file",
                   name: "ArabicShaping.txt",
-                  path: "/ArabicShaping.txt",
+                  path: "ArabicShaping.txt",
                   lastModified: 1724601900000,
                 },
                 {
                   type: "file",
                   name: "BidiBrackets.txt",
-                  path: "/BidiBrackets.txt",
+                  path: "BidiBrackets.txt",
                   lastModified: 1724601900000,
                 },
                 {
                   type: "directory",
                   name: "emoji",
-                  path: "/emoji",
+                  path: "emoji",
                   lastModified: 1724669760000,
                   children: [
                     {
                       type: "file",
                       name: "ReadMe.txt",
-                      path: "/ReadMe.txt",
+                      path: "ReadMe.txt",
                       lastModified: 1724601900000,
                     },
                     {
                       type: "file",
                       name: "emoji-data.txt",
-                      path: "/emoji-data.txt",
+                      path: "emoji-data.txt",
                       lastModified: 1724601900000,
                     },
                   ],
