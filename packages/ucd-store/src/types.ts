@@ -68,7 +68,9 @@ export interface VersionAnalysis {
 
   /**
    * List of files that were found in the store for this version
-   * This includes orphaned files
+   *
+   * NOTE:
+   * This does not include orphaned files. It only includes files that are expected to be present for the version.
    */
   files: string[];
 

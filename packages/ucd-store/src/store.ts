@@ -381,6 +381,7 @@ export class UCDStore {
 
         const orphanedFiles: string[] = [];
         const missingFiles: string[] = [];
+        const files: string[] = [];
 
         for (const expectedFile of expectedFiles) {
           if (!actualFiles.includes(expectedFile)) {
@@ -392,7 +393,10 @@ export class UCDStore {
           // if file is not in expected files, it's orphaned
           if (checkOrphaned && !expectedFiles.includes(actualFile)) {
             orphanedFiles.push(actualFile);
+            continue;
           }
+
+          files.push(actualFile);
         }
 
         const isComplete = orphanedFiles.length === 0 && missingFiles.length === 0;
@@ -403,7 +407,7 @@ export class UCDStore {
           fileCount: actualFiles.length,
           expectedFileCount: expectedFiles.length,
           isComplete,
-          files: actualFiles,
+          files,
         } satisfies VersionAnalysis;
       });
 
@@ -628,8 +632,9 @@ export class UCDStore {
         versionResult = result.at(idx - 1);
       }
 
-      for (const missingFile of analysis.files) {
-        const filePath = join(this.basePath, analysis.version, missingFile);
+      const joinedFiles = [...analysis.orphanedFiles, ...analysis.files];
+      for (const file of joinedFiles) {
+        const filePath = join(this.basePath, analysis.version, file);
 
         // track parent directories for cleanup
         directoriesToCheck.add(dirname(filePath));
@@ -641,18 +646,18 @@ export class UCDStore {
             const exists = await this.#fs.exists(filePath);
             if (!exists) {
               console.error("File does not exist, skipping deletion:", filePath);
-              versionResult!.skipped.push(missingFile);
+              versionResult!.skipped.push(file);
               return;
             }
 
             if (!dryRun) {
               await this.#fs.rm(filePath);
-              versionResult!.deleted.push(missingFile);
+              versionResult!.deleted.push(file);
             } else {
-              versionResult!.deleted.push(missingFile);
+              versionResult!.deleted.push(file);
             }
           } catch {
-            versionResult!.failed.push(missingFile);
+            versionResult!.failed.push(file);
           }
         }));
       }

@@ -2,7 +2,7 @@ import { HttpResponse, mockFetch } from "#msw-utils";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { assertCapability } from "@ucdjs/fs-bridge";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { assert, beforeEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
 import { createHTTPUCDStore, createNodeUCDStore, createUCDStore } from "../src/factory";
 import { createMemoryMockFS, stripChildrenFromEntries } from "./__shared";
@@ -435,23 +435,81 @@ describe("analyze operations", () => {
     await store.init();
 
     const [analysisResult] = await store.analyze({ checkOrphaned: true });
-    console.error("Analysis Result:", analysisResult);
-    expect(analysisResult?.version).toBe("15.0.0");
-    expect(analysisResult?.isComplete).toBe(false);
+    assert(analysisResult);
 
-    // Test case where expected files from API are missing from the local store
-    // Should have:
-    // - missingFiles: non-empty array
-    // - isComplete: false
-    // - fileCount: less than expectedFileCount
+    expect(analysisResult.version).toBe("15.0.0");
+    expect(analysisResult.isComplete).toBe(false);
+
+    expect(analysisResult.fileCount).toBeLessThan(analysisResult.expectedFileCount);
+    expect(analysisResult.fileCount).toBe(2); // only 2 files present in the store
+    expect(analysisResult.expectedFileCount).toBe(3);
+
+    expect(analysisResult.missingFiles).toEqual(["DerivedBidiClass.txt"]);
+    expect(analysisResult.orphanedFiles).toEqual([]);
+    expect(analysisResult.files).toEqual([
+      "ArabicShaping.txt",
+      "BidiBrackets.txt",
+    ]);
   });
 
-  it.todo("should analyze store with both missing and orphaned files", async () => {
-    // Test case where store has some expected files missing AND some extra files
-    // Should have:
-    // - missingFiles: non-empty array
-    // - orphanedFiles: non-empty array (when checkOrphaned: true)
-    // - isComplete: false
+  it("should analyze store with both missing and orphaned files", async () => {
+    const storePath = await testdir({
+      "15.0.0": {
+        "ArabicShaping.txt": "Arabic shaping data",
+        "BidiBrackets.txt": "Bidi brackets data",
+        "test.txt": "This is an orphaned file",
+      },
+      ".ucd-store.json": JSON.stringify({
+        "15.0.0": "15.0.0",
+      }),
+    });
+
+    mockFetch([
+      ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions/15.0.0/file-tree`, () => {
+        return HttpResponse.json([
+          {
+            type: "file",
+            name: "ArabicShaping.txt",
+            path: "ArabicShaping.txt",
+            lastModified: 1644920820000,
+          },
+          {
+            type: "file",
+            name: "BidiBrackets.txt",
+            path: "BidiBrackets.txt",
+            lastModified: 1644920820000,
+          },
+          {
+            type: "file",
+            name: "DerivedBidiClass.txt",
+            path: "DerivedBidiClass.txt",
+            lastModified: 1644920820000,
+          },
+        ]);
+      }],
+    ]);
+
+    const store = await createNodeUCDStore({
+      basePath: storePath,
+    });
+
+    await store.init();
+
+    const [analysisResult] = await store.analyze({ checkOrphaned: true });
+    assert(analysisResult);
+
+    expect(analysisResult.version).toBe("15.0.0");
+    expect(analysisResult.isComplete).toBe(false);
+
+    expect(analysisResult.fileCount).toBe(3); // only 2 files present in the store (2 expected, 1 orphaned)
+    expect(analysisResult.expectedFileCount).toBe(3);
+
+    expect(analysisResult.missingFiles).toEqual(["DerivedBidiClass.txt"]);
+    expect(analysisResult.orphanedFiles).toEqual(["test.txt"]);
+    expect(analysisResult.files).toEqual([
+      "ArabicShaping.txt",
+      "BidiBrackets.txt",
+    ]);
   });
 
   it.todo("should analyze store with partially missing directory structures", async () => {
