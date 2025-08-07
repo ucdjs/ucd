@@ -10,25 +10,25 @@ const MOCK_FILES = [
   {
     type: "file",
     name: "ArabicShaping.txt",
-    path: "/ArabicShaping.txt",
+    path: "ArabicShaping.txt",
     lastModified: 1644920820000,
   },
   {
     type: "file",
     name: "BidiBrackets.txt",
-    path: "/BidiBrackets.txt",
+    path: "BidiBrackets.txt",
     lastModified: 1651584360000,
   },
   {
     type: "directory",
     name: "extracted",
-    path: "/extracted",
+    path: "extracted",
     lastModified: 1724676960000,
     children: [
       {
         type: "file",
         name: "DerivedBidiClass.txt",
-        path: "/DerivedBidiClass.txt",
+        path: "DerivedBidiClass.txt",
         lastModified: 1724609100000,
       },
     ],
@@ -161,8 +161,8 @@ describe("store clean", () => {
 
     expect(existsSync(`${storePath}/.ucd-store.json`)).toBe(true);
     expect(readFileSync(`${storePath}/.ucd-store.json`, "utf-8")).toBe(JSON.stringify({
-      "15.0.0": "/15.0.0",
-      "16.0.0": "/16.0.0",
+      "15.0.0": "15.0.0",
+      "16.0.0": "16.0.0",
     }, null, 2));
 
     const [clean15Result, clean16Result] = await store.clean();
@@ -205,8 +205,8 @@ describe("store clean", () => {
 
     expect(existsSync(`${storePath}/.ucd-store.json`)).toBe(true);
     expect(readFileSync(`${storePath}/.ucd-store.json`, "utf-8")).toBe(JSON.stringify({
-      "15.0.0": "/15.0.0",
-      "16.0.0": "/16.0.0",
+      "15.0.0": "15.0.0",
+      "16.0.0": "16.0.0",
     }, null, 2));
 
     const [clean15Result] = await store.clean({
@@ -225,7 +225,7 @@ describe("store clean", () => {
 
     expect(existsSync(`${storePath}/.ucd-store.json`)).toBe(true);
     expect(readFileSync(`${storePath}/.ucd-store.json`, "utf-8")).toBe(JSON.stringify({
-      "16.0.0": "/16.0.0",
+      "16.0.0": "16.0.0",
     }, null, 2));
   });
 
