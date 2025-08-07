@@ -36,7 +36,7 @@ export const createMemoryMockFS = defineFileSystemBridge({
       async listdir(path, recursive = false) {
         function createFSEntry(entry: Dirent): FSEntry {
           const name = entry.name.toString();
-          const pathFromName = prependLeadingSlash(trimTrailingSlash(name));
+          const pathFromName = trimTrailingSlash(name);
           return entry.isDirectory()
             ? {
                 type: "directory",

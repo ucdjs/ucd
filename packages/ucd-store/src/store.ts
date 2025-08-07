@@ -129,8 +129,8 @@ export class UCDStore {
       const result: UnicodeTreeNode[] = [];
 
       for (const child of children) {
-        const childPath = `${parentPath}${child.path ?? child.name}`;
-        const isFiltered = this.#filter(trimLeadingSlash(childPath), extraFilters);
+        const childPath = join(parentPath, child.path ?? child.name);
+        const isFiltered = this.#filter(childPath, extraFilters);
 
         // fast path for files and empty directories
         if (child.type === "file" || (child.type === "directory" && (!child.children || child.children.length === 0))) {
@@ -162,7 +162,7 @@ export class UCDStore {
     const result: UnicodeTreeNode[] = [];
 
     for (const entry of entries) {
-      const isFiltered = this.#filter(trimLeadingSlash(entry.path), extraFilters);
+      const isFiltered = this.#filter(entry.path, extraFilters);
 
       // fast path for files and empty directories
       if (entry.type === "file" || (entry.type === "directory" && (!entry.children || entry.children.length === 0))) {
@@ -567,7 +567,7 @@ export class UCDStore {
       throw new UCDStoreVersionNotFoundError(version);
     }
 
-    if (!this.#filter(trimLeadingSlash(filePath), extraFilters)) {
+    if (!this.#filter(filePath, extraFilters)) {
       throw new UCDStoreError(`File path "${filePath}" is filtered out by the store's filter patterns.`);
     }
 
