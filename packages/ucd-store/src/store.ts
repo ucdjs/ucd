@@ -4,7 +4,7 @@ import type { UCDStoreManifest } from "@ucdjs/schemas";
 import type { PathFilter } from "@ucdjs/utils";
 import type { AnalyzeOptions, CleanOptions, CleanResult, MirrorOptions, MirrorResult, StoreInitOptions, UCDStoreOptions, VersionAnalysis } from "./types";
 import { hasUCDFolderPath, resolveUCDVersion } from "@luxass/unicode-utils-new";
-import { prependLeadingSlash, trimLeadingSlash } from "@luxass/utils";
+import { prependLeadingSlash } from "@luxass/utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { createClient, isApiError } from "@ucdjs/fetch";
 import { assertCapability } from "@ucdjs/fs-bridge";

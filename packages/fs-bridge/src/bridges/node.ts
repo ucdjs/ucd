@@ -2,7 +2,7 @@ import type { Dirent } from "node:fs";
 import type { FSEntry } from "../types";
 import fsp from "node:fs/promises";
 import nodePath from "node:path";
-import { prependLeadingSlash, trimTrailingSlash } from "@luxass/utils/path";
+import { trimTrailingSlash } from "@luxass/utils/path";
 import { z } from "zod";
 import { defineFileSystemBridge } from "../define";
 
