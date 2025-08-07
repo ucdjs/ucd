@@ -12,13 +12,13 @@ export const UCDStoreManifestSchema = z.record(
     ## Example
     \`\`\`json
     {
-      "15.1.0": "/15.1.0",
-      "14.0.0": "/14.0.0",
-      "13.0.0": "/13.0.0"
+      "15.1.0": "15.1.0",
+      "14.0.0": "14.0.0",
+      "13.0.0": "13.0.0"
     }
     \`\`\`
 
-    The path is relative to the root of the UCD Api Server, typically \`https://api.ucdjs.dev/api/v1/files\`. E.g. \`/15.1.0\` would resolve to \`https://api.ucdjs.dev/api/v1/files/15.1.0\`.
+    The path is relative to the root of the UCD Api Server, typically \`https://api.ucdjs.dev/api/v1/files\`. E.g. \`15.1.0\` would resolve to \`https://api.ucdjs.dev/api/v1/files/15.1.0\`.
   `,
 });
 

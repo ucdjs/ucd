@@ -55,9 +55,9 @@ export const GET_UCD_STORE = createRoute({
             "ucd-store": {
               summary: "UCD Store Manifest",
               value: {
-                "15.1.0": "/15.1.0",
-                "16.0.0": "/16.0.0",
-                "17.0.0": "/17.0.0",
+                "15.1.0": "15.1.0",
+                "16.0.0": "16.0.0",
+                "17.0.0": "17.0.0",
               },
             },
           },
@@ -102,13 +102,13 @@ export const WILDCARD_ROUTE = createRoute({
                 {
                   type: "file",
                   name: "ReadMe.txt",
-                  path: "/ReadMe.txt",
+                  path: "ReadMe.txt",
                   lastModified: 1693213740000,
                 },
                 {
                   type: "directory",
                   name: "charts",
-                  path: "/charts",
+                  path: "charts",
                   lastModified: 1697495340000,
                 },
               ],
