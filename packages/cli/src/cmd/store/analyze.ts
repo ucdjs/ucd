@@ -71,7 +71,7 @@ export async function runAnalyzeStore({ flags, versions }: CLIStoreAnalyzeCmdOpt
       return;
     }
 
-    for (const { version, fileCount, isComplete, missingFiles, orphanedFiles, totalFileCount } of result) {
+    for (const { version, fileCount, isComplete, missingFiles, orphanedFiles, expectedFileCount } of result) {
       console.info(`Version: ${version}`);
       if (isComplete) {
         console.info(`  Status: ${green("complete")}`);
@@ -86,8 +86,8 @@ export async function runAnalyzeStore({ flags, versions }: CLIStoreAnalyzeCmdOpt
         console.warn(`  Orphaned files: ${orphanedFiles.length}`);
       }
 
-      if (totalFileCount) {
-        console.info(`  Total files expected: ${totalFileCount}`);
+      if (expectedFileCount) {
+        console.info(`  Total files expected: ${expectedFileCount}`);
       }
     }
   } catch (err) {
