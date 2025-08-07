@@ -44,7 +44,9 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
   try {
     assertRemoteOrStoreDir(flags);
 
-    if (!versions || versions.length === 0) {
+    let selectedVersions = versions;
+
+    if (!selectedVersions || selectedVersions.length === 0) {
       const pickedVersions = await runVersionPrompt();
 
       if (pickedVersions.length === 0) {
@@ -52,7 +54,7 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
         return;
       }
 
-      versions = pickedVersions;
+      selectedVersions = pickedVersions;
     }
 
     const store = await createStoreFromFlags({
@@ -60,7 +62,7 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
       storeDir,
       remote,
       patterns,
-      versions,
+      versions: selectedVersions,
     });
 
     await store.init({
@@ -79,17 +81,17 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
     }
 
     if (dryRun) {
-      console.info("The store has been initialized in dry-run mode.");
+      console.info("Store initialized successfully in dry-run mode.");
       console.info("No files have been written to disk.");
+    } else {
+      console.info("Store initialized successfully.");
     }
-
-    console.info("Store initialized successfully.");
   } catch (err) {
     if (err instanceof UCDStoreUnsupportedFeature) {
       console.error(red(`\n❌ Error: Unsupported feature:`));
       console.error(`  ${err.message}`);
       console.error("");
-      console.error("This store does not support the clean operation.");
+      console.error("This store does not support the init operation.");
       console.error("Please check the store capabilities or use a different store type.");
       return;
     }
