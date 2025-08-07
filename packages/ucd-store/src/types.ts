@@ -67,9 +67,15 @@ export interface VersionAnalysis {
   missingFiles: string[];
 
   /**
+   * List of files that were found in the store for this version
+   * This includes orphaned files
+   */
+  files: string[];
+
+  /**
    * Total number of files expected for this version
    */
-  totalFileCount: number;
+  expectedFileCount: number;
 
   /**
    * Number of files found for this version
@@ -138,4 +144,39 @@ export interface MirrorResult {
    */
   failed: string[];
 
+}
+
+export interface CleanOptions {
+  /**
+   * The versions to clean from the store, if not provided it will clean all versions.
+   * This is useful for removing specific versions from the store.
+   */
+  versions?: string[];
+
+  concurrency?: number;
+
+  dryRun?: boolean;
+}
+
+export interface CleanResult {
+  /**
+   * Cleaned Unicode version
+   * This should be in the format "major.minor.patch" (e.g., "15.0.0")
+   */
+  version: string;
+
+  /**
+   * List of files that were successfully deleted
+   */
+  deleted: string[];
+
+  /**
+   * List of files that were skipped during cleaning (e.g., already deleted)
+   */
+  skipped: string[];
+
+  /**
+   * List of files that failed to delete (if any)
+   */
+  failed: string[];
 }
