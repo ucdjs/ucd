@@ -390,4 +390,82 @@ describe("analyze operations", () => {
     expect(analysisResult[0]?.fileCount).toBe(0);
     expect(analysisResult[0]?.isComplete).toBe(true);
   });
+
+  it("should analyze store with missing files", async () => {
+    const storePath = await testdir({
+      "15.0.0": {
+        "ArabicShaping.txt": "Arabic shaping data",
+        "BidiBrackets.txt": "Bidi brackets data",
+      },
+      ".ucd-store.json": JSON.stringify({
+        "15.0.0": "/15.0.0",
+      }),
+    });
+
+    mockFetch([
+      ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions/15.0.0/file-tree`, () => {
+        return HttpResponse.json([
+          {
+            type: "file",
+            name: "ArabicShaping.txt",
+            path: "/ArabicShaping.txt",
+            lastModified: 1644920820000,
+          },
+          {
+            type: "file",
+            name: "BidiBrackets.txt",
+            path: "/BidiBrackets.txt",
+            lastModified: 1644920820000,
+          },
+          {
+            type: "file",
+            name: "DerivedBidiClass.txt",
+            path: "/DerivedBidiClass.txt",
+            lastModified: 1644920820000,
+          },
+        ]);
+      }],
+    ]);
+
+    const store = await createNodeUCDStore({
+      basePath: storePath,
+    });
+
+    await store.init();
+
+    const [analysisResult] = await store.analyze({ checkOrphaned: true });
+    console.error("Analysis Result:", analysisResult);
+    expect(analysisResult?.version).toBe("15.0.0");
+    expect(analysisResult?.isComplete).toBe(false);
+
+    // Test case where expected files from API are missing from the local store
+    // Should have:
+    // - missingFiles: non-empty array
+    // - isComplete: false
+    // - fileCount: less than expectedFileCount
+  });
+
+  it.todo("should analyze store with both missing and orphaned files", async () => {
+    // Test case where store has some expected files missing AND some extra files
+    // Should have:
+    // - missingFiles: non-empty array
+    // - orphanedFiles: non-empty array (when checkOrphaned: true)
+    // - isComplete: false
+  });
+
+  it.todo("should analyze store with partially missing directory structures", async () => {
+    // Test case where directory exists but some files within it are missing
+    // E.g., "extracted/" directory exists but "DerivedBidiClass.txt" inside is missing
+  });
+
+  it.todo("should handle file system errors during analysis", async () => {
+    // Test case where filesystem operations fail during analysis
+    // E.g., permission errors, corrupted files, etc.
+    // Should return empty array or handle gracefully
+  });
+
+  it.todo("should analyze empty version directory", async () => {
+    // Test case where version directory exists but is completely empty
+    // Different from "no files" test - this has an empty directory vs no directory
+  });
 });
