@@ -119,7 +119,7 @@ const NodeFileSystemBridge = defineFileSystemBridge({
         const targetPath = resolveSafePath(basePath, path);
 
         function createFSEntry(entry: Dirent): FSEntry {
-          const pathFromName = prependLeadingSlash(trimTrailingSlash(entry.name));
+          const pathFromName = trimTrailingSlash(entry.name);
           return entry.isDirectory()
             ? {
                 type: "directory",

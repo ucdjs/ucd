@@ -78,9 +78,9 @@ describe("store clean", () => {
 
     expect(clean15Result?.deleted).toHaveLength(3);
     expect(clean15Result?.deleted).toEqual(expect.arrayContaining([
-      "/ArabicShaping.txt",
-      "/extracted/DerivedBidiClass.txt",
-      "/BidiBrackets.txt",
+      "ArabicShaping.txt",
+      "extracted/DerivedBidiClass.txt",
+      "BidiBrackets.txt",
     ]));
 
     expect(existsSync(`${storePath}/.ucd-store.json`)).toBe(true);
@@ -115,10 +115,10 @@ describe("store clean", () => {
 
     expect(clean15Result?.deleted).toHaveLength(4);
     expect(clean15Result?.deleted).toEqual(expect.arrayContaining([
-      "/ArabicShaping.txt",
-      "/extracted/DerivedBidiClass.txt",
-      "/BidiBrackets.txt",
-      "/orphaned.txt",
+      "ArabicShaping.txt",
+      "extracted/DerivedBidiClass.txt",
+      "BidiBrackets.txt",
+      "orphaned.txt",
     ]));
 
     expect(existsSync(`${storePath}/15.0.0/orphaned.txt`)).toBe(false);
@@ -177,16 +177,16 @@ describe("store clean", () => {
 
     expect(clean15Result?.deleted).toHaveLength(3);
     expect(clean15Result?.deleted).toEqual(expect.arrayContaining([
-      "/ArabicShaping.txt",
-      "/extracted/DerivedBidiClass.txt",
-      "/BidiBrackets.txt",
+      "ArabicShaping.txt",
+      "extracted/DerivedBidiClass.txt",
+      "BidiBrackets.txt",
     ]));
 
     expect(clean16Result?.deleted).toHaveLength(3);
     expect(clean16Result?.deleted).toEqual(expect.arrayContaining([
-      "/ArabicShaping.txt",
-      "/extracted/DerivedBidiClass.txt",
-      "/BidiBrackets.txt",
+      "ArabicShaping.txt",
+      "extracted/DerivedBidiClass.txt",
+      "BidiBrackets.txt",
     ]));
   });
 
@@ -218,9 +218,9 @@ describe("store clean", () => {
     expect(clean15Result?.failed).toEqual([]);
     expect(clean15Result?.deleted).toHaveLength(3);
     expect(clean15Result?.deleted).toEqual(expect.arrayContaining([
-      "/ArabicShaping.txt",
-      "/extracted/DerivedBidiClass.txt",
-      "/BidiBrackets.txt",
+      "ArabicShaping.txt",
+      "extracted/DerivedBidiClass.txt",
+      "BidiBrackets.txt",
     ]));
 
     expect(existsSync(`${storePath}/.ucd-store.json`)).toBe(true);

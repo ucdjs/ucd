@@ -33,7 +33,7 @@ describe("file operations", () => {
           },
         },
         ".ucd-store.json": JSON.stringify({
-          "15.0.0": "15.0.0/",
+          "15.0.0": "15.0.0",
         }),
       });
 
@@ -50,46 +50,46 @@ describe("file operations", () => {
       expect(fileTree).toEqual([
         {
           name: "ArabicShaping.txt",
-          path: "/ArabicShaping.txt",
+          path: "ArabicShaping.txt",
           type: "file",
         },
         {
           name: "BidiBrackets.txt",
-          path: "/BidiBrackets.txt",
+          path: "BidiBrackets.txt",
           type: "file",
         },
         {
           children: [
             {
               name: "DerivedBidiClass.txt",
-              path: "/DerivedBidiClass.txt",
+              path: "DerivedBidiClass.txt",
               type: "file",
             },
             {
               children: [
                 {
                   name: "DeepFile.txt",
-                  path: "/DeepFile.txt",
+                  path: "DeepFile.txt",
                   type: "file",
                 },
               ],
               name: "nested",
-              path: "/nested",
+              path: "nested",
               type: "directory",
             },
           ],
           name: "extracted",
-          path: "/extracted",
+          path: "extracted",
           type: "directory",
         },
       ]);
 
       const flattenedTree = flattenFilePaths(fileTree);
       expect(flattenedTree).toEqual([
-        "/ArabicShaping.txt",
-        "/BidiBrackets.txt",
-        "/extracted/DerivedBidiClass.txt",
-        "/extracted/nested/DeepFile.txt",
+        "ArabicShaping.txt",
+        "BidiBrackets.txt",
+        "extracted/DerivedBidiClass.txt",
+        "extracted/nested/DeepFile.txt",
       ]);
     });
 
@@ -99,7 +99,7 @@ describe("file operations", () => {
           "ArabicShaping.txt": "Arabic shaping data",
         },
         ".ucd-store.json": JSON.stringify({
-          "15.0.0": "15.0.0/",
+          "15.0.0": "15.0.0",
         }),
       });
 
@@ -120,7 +120,7 @@ describe("file operations", () => {
       const storePath = await testdir({
         "15.0.0": {},
         ".ucd-store.json": JSON.stringify({
-          "15.0.0": "15.0.0/",
+          "15.0.0": "15.0.0",
         }),
       });
 
@@ -149,7 +149,7 @@ describe("file operations", () => {
           },
         },
         ".ucd-store.json": JSON.stringify({
-          "15.0.0": "15.0.0/",
+          "15.0.0": "15.0.0",
         }),
       });
 
@@ -168,12 +168,12 @@ describe("file operations", () => {
       expect(fileTree1).toEqual([
         {
           name: "ArabicShaping.txt",
-          path: "/ArabicShaping.txt",
+          path: "ArabicShaping.txt",
           type: "file",
         },
         {
           name: "BidiBrackets.txt",
-          path: "/BidiBrackets.txt",
+          path: "BidiBrackets.txt",
           type: "file",
         },
       ]);
@@ -190,7 +190,7 @@ describe("file operations", () => {
           },
         },
         ".ucd-store.json": JSON.stringify({
-          "15.0.0": "15.0.0/",
+          "15.0.0": "15.0.0",
         }),
       });
 
@@ -202,10 +202,10 @@ describe("file operations", () => {
       expect(store.initialized).toBe(true);
       expect(store.versions).toEqual(["15.0.0"]);
 
-      const fileTree1 = await store.getFileTree("15.0.0", ["!**/extracted/nested/**"]);
+      const fileTree1 = await store.getFileTree("15.0.0", ["!extracted/nested/**"]);
       const fileTree2 = await store.getFileTree("15.0.0", ["!**/DeepFile.txt"]);
-      const fileTree3 = await store.getFileTree("15.0.0", ["!**/extracted/nested"]);
-      const fileTree4 = await store.getFileTree("15.0.0", ["!**/extracted/nested/DeepFile.txt"]);
+      const fileTree3 = await store.getFileTree("15.0.0", ["!extracted/nested"]);
+      const fileTree4 = await store.getFileTree("15.0.0", ["!extracted/nested/DeepFile.txt"]);
 
       expect(fileTree1).toEqual(fileTree2);
       expect(fileTree1).toEqual(fileTree3);
@@ -214,12 +214,12 @@ describe("file operations", () => {
       expect(fileTree1).toEqual([
         {
           name: "extracted",
-          path: "/extracted",
+          path: "extracted",
           type: "directory",
           children: [
             {
               name: "DerivedBidiClass.txt",
-              path: "/DerivedBidiClass.txt",
+              path: "DerivedBidiClass.txt",
               type: "file",
             },
           ],
@@ -234,7 +234,7 @@ describe("file operations", () => {
         expected: [
           {
             name: "ArabicShaping.txt",
-            path: "/ArabicShaping.txt",
+            path: "ArabicShaping.txt",
             type: "file",
           },
         ],
@@ -245,22 +245,22 @@ describe("file operations", () => {
         expected: [
           {
             name: "extracted",
-            path: "/extracted",
+            path: "extracted",
             type: "directory",
             children: [
               {
                 name: "DerivedBidiClass.txt",
-                path: "/DerivedBidiClass.txt",
+                path: "DerivedBidiClass.txt",
                 type: "file",
               },
               {
                 name: "nested",
-                path: "/nested",
+                path: "nested",
                 type: "directory",
                 children: [
                   {
                     name: "DeepFile.txt",
-                    path: "/DeepFile.txt",
+                    path: "DeepFile.txt",
                     type: "file",
                   },
                 ],
@@ -275,12 +275,12 @@ describe("file operations", () => {
         expected: [
           {
             name: "ArabicShaping.txt",
-            path: "/ArabicShaping.txt",
+            path: "ArabicShaping.txt",
             type: "file",
           },
           {
             name: "BidiBrackets.txt",
-            path: "/BidiBrackets.txt",
+            path: "BidiBrackets.txt",
             type: "file",
           },
         ],
@@ -291,17 +291,17 @@ describe("file operations", () => {
         expected: [
           {
             name: "BidiBrackets.txt",
-            path: "/BidiBrackets.txt",
+            path: "BidiBrackets.txt",
             type: "file",
           },
           {
             name: "extracted",
-            path: "/extracted",
+            path: "extracted",
             type: "directory",
             children: [
               {
                 name: "DerivedBidiClass.txt",
-                path: "/DerivedBidiClass.txt",
+                path: "DerivedBidiClass.txt",
                 type: "file",
               },
             ],
@@ -321,7 +321,7 @@ describe("file operations", () => {
           },
         },
         ".ucd-store.json": JSON.stringify({
-          "15.0.0": "15.0.0/",
+          "15.0.0": "15.0.0",
         }),
       });
 
@@ -340,7 +340,7 @@ describe("file operations", () => {
           "ArabicShaping.txt": "Arabic shaping data",
         },
         ".ucd-store.json": JSON.stringify({
-          "15.0.0": "15.0.0/",
+          "15.0.0": "15.0.0",
         }),
       });
 
@@ -361,7 +361,7 @@ describe("file operations", () => {
           "file3.txt": "content3",
         },
         ".ucd-store.json": JSON.stringify({
-          "15.0.0": "15.0.0/",
+          "15.0.0": "15.0.0",
         }),
       });
 
@@ -374,17 +374,17 @@ describe("file operations", () => {
       expect(fileTree).toEqual([
         {
           name: "file1.txt",
-          path: "/file1.txt",
+          path: "file1.txt",
           type: "file",
         },
         {
           name: "file2.txt",
-          path: "/file2.txt",
+          path: "file2.txt",
           type: "file",
         },
         {
           name: "file3.txt",
-          path: "/file3.txt",
+          path: "file3.txt",
           type: "file",
         },
       ]);
@@ -400,7 +400,7 @@ describe("file operations", () => {
           },
         },
         ".ucd-store.json": JSON.stringify({
-          "15.0.0": "15.0.0/",
+          "15.0.0": "15.0.0",
         }),
       });
 
@@ -414,12 +414,12 @@ describe("file operations", () => {
         {
           children: [],
           name: "emptyDir",
-          path: "/emptyDir",
+          path: "emptyDir",
           type: "directory",
         },
         {
           name: "file.txt",
-          path: "/file.txt",
+          path: "file.txt",
           type: "file",
         },
       ]);
@@ -440,7 +440,7 @@ describe("file operations", () => {
           },
         },
         ".ucd-store.json": JSON.stringify({
-          "15.0.0": "15.0.0/",
+          "15.0.0": "15.0.0",
         }),
       });
 
@@ -451,10 +451,10 @@ describe("file operations", () => {
       await store.init();
       const filePaths = await store.getFilePaths("15.0.0");
       expect(filePaths).toEqual([
-        "/ArabicShaping.txt",
-        "/BidiBrackets.txt",
-        "/extracted/DerivedBidiClass.txt",
-        "/extracted/nested/DeepFile.txt",
+        "ArabicShaping.txt",
+        "BidiBrackets.txt",
+        "extracted/DerivedBidiClass.txt",
+        "extracted/nested/DeepFile.txt",
       ]);
     });
 
@@ -471,7 +471,7 @@ describe("file operations", () => {
           },
         },
         ".ucd-store.json": JSON.stringify({
-          "15.0.0": "15.0.0/",
+          "15.0.0": "15.0.0",
         }),
       });
 
@@ -482,9 +482,9 @@ describe("file operations", () => {
       await store.init();
       const filePaths = await store.getFilePaths("15.0.0", ["!**/nested/**"]);
       expect(filePaths).toEqual([
-        "/ArabicShaping.txt",
-        "/BidiBrackets.txt",
-        "/extracted/DerivedBidiClass.txt",
+        "ArabicShaping.txt",
+        "BidiBrackets.txt",
+        "extracted/DerivedBidiClass.txt",
       ]);
     });
 
@@ -494,7 +494,7 @@ describe("file operations", () => {
           "ArabicShaping.txt": "Arabic shaping data",
         },
         ".ucd-store.json": JSON.stringify({
-          "15.0.0": "15.0.0/",
+          "15.0.0": "15.0.0",
         }),
       });
 
@@ -587,7 +587,7 @@ describe("file operations", () => {
       const listdirSpy = vi.fn().mockResolvedValue([
         {
           name: "test.txt",
-          path: "/test.txt",
+          path: "test.txt",
           type: "file" as const,
         },
       ]);
@@ -612,12 +612,12 @@ describe("file operations", () => {
       await expect(store.getFileTree("15.0.0")).resolves.toEqual([
         {
           name: "test.txt",
-          path: "/test.txt",
+          path: "test.txt",
           type: "file",
         },
       ]);
 
-      await expect(store.getFilePaths("15.0.0")).resolves.toEqual(["/test.txt"]);
+      await expect(store.getFilePaths("15.0.0")).resolves.toEqual(["test.txt"]);
 
       // verify that only listdir was called for these operations
       expect(listdirSpy).toHaveBeenCalledTimes(2); // once for getFileTree, once for getFilePaths
@@ -646,7 +646,7 @@ describe("file operations", () => {
       const storePath = await testdir({
         "15.0.0": structure,
         ".ucd-store.json": JSON.stringify({
-          "15.0.0": "15.0.0/",
+          "15.0.0": "15.0.0",
         }),
       });
 
@@ -665,7 +665,7 @@ describe("file operations", () => {
           "file.txt": "Full path content",
         },
         ".ucd-store.json": JSON.stringify({
-          "15.0.0": "15.0.0/",
+          "15.0.0": "15.0.0",
         }),
       });
 
@@ -684,7 +684,7 @@ describe("file operations", () => {
           "file.txt": "File content",
         },
         ".ucd-store.json": JSON.stringify({
-          "15.0.0": "15.0.0/",
+          "15.0.0": "15.0.0",
         }),
       });
 
@@ -704,7 +704,7 @@ describe("file operations", () => {
           "file.txt": "Store file content",
         },
         ".ucd-store.json": JSON.stringify({
-          "15.0.0": "15.0.0/",
+          "15.0.0": "15.0.0",
         }),
       });
 

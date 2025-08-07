@@ -121,7 +121,7 @@ describe("analyze operations", () => {
       expect(analysisResult[0]?.version).toBe("15.0.0");
       expect(analysisResult[0]?.isComplete).toBe(false);
       expect(analysisResult[0]?.fileCount).toBe(4);
-      expect(analysisResult[0]?.orphanedFiles).toContain("/OrphanedFile.txt");
+      expect(analysisResult[0]?.orphanedFiles).toContain("OrphanedFile.txt");
       expect(analysisResult[0]?.missingFiles).toEqual([]);
     });
 
@@ -317,6 +317,7 @@ describe("analyze operations", () => {
   describe("custom store analyze operations", () => {
     it("should analyze store with custom filesystem bridge", async () => {
       const customFS = createMemoryMockFS();
+
       assertCapability(customFS, "write");
       await customFS.write("/.ucd-store.json", JSON.stringify({
         "15.0.0": "15.0.0",
