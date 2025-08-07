@@ -1,4 +1,3 @@
-import type { MaybeArray } from "@luxass/utils";
 import type { FileSystemBridge, FileSystemBridgeCapabilityKey } from "./types";
 
 /**
@@ -9,12 +8,12 @@ import type { FileSystemBridge, FileSystemBridgeCapabilityKey } from "./types";
  *
  * @template {FileSystemBridgeCapabilityKey} T - The capability key(s) to check for, extending FileSystemBridgeCapabilityKey
  * @param {FileSystemBridge} bridge - The file system bridge to check capabilities for
- * @param {MaybeArray<T>} capabilityOrCapabilities - A single capability or array of capabilities to verify
+ * @param {T | T[]} capabilityOrCapabilities - A single capability or array of capabilities to verify
  * @throws {BridgeUnsupportedOperation} When the bridge doesn't support one or more of the specified capabilities
  */
 export function assertCapability<T extends FileSystemBridgeCapabilityKey = never>(
   bridge: FileSystemBridge,
-  capabilityOrCapabilities: MaybeArray<T>,
+  capabilityOrCapabilities: T | T[],
 ): asserts bridge is FileSystemBridge & Required<Pick<FileSystemBridge, T>> {
   const capabilitiesToCheck = Array.isArray(capabilityOrCapabilities)
     ? capabilityOrCapabilities
