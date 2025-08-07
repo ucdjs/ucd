@@ -155,7 +155,7 @@ describe("store init command", () => {
     ]);
 
     expect(existsSync(join(storePath, ".ucd-store.json"))).toBe(false);
-    expect(consoleInfoSpy).toHaveBeenCalledWith(expect.stringContaining("The store has been initialized in dry-run mode."));
+    expect(consoleInfoSpy).toHaveBeenCalledWith(expect.stringContaining("Store initialized successfully in dry-run mode."));
     expect(consoleInfoSpy).toHaveBeenCalledWith(expect.stringContaining("No files have been written to disk."));
   });
 
