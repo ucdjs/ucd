@@ -1,5 +1,5 @@
 import type { FileEntry } from "@ucdjs/schemas";
-import { mockFetch } from "#msw-utils";
+import { mockFetch } from "#test-utils";
 import { flattenFilePaths } from "@ucdjs/utils";
 import { HttpResponse } from "msw";
 import { describe, expect, it } from "vitest";

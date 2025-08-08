@@ -1,4 +1,4 @@
-import { HttpResponse, mockFetch } from "#msw-utils";
+import { HttpResponse, mockFetch } from "#test-utils";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { BridgeUnsupportedOperation, defineFileSystemBridge } from "@ucdjs/fs-bridge";

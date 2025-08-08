@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { HttpResponse, mockFetch } from "#msw-utils";
+import { HttpResponse, mockFetch } from "#test-utils";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { red } from "farver";
