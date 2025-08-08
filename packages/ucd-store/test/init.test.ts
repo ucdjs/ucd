@@ -3,7 +3,7 @@ import type { UCDStoreManifest } from "@ucdjs/schemas";
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { HttpResponse, mockFetch } from "#msw-utils";
+import { HttpResponse, mockFetch } from "#test-utils";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { defineFileSystemBridge } from "@ucdjs/fs-bridge";
