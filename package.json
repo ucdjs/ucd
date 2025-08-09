@@ -26,10 +26,10 @@
     "@changesets/changelog-github": "catalog:monorepo",
     "@changesets/cli": "catalog:monorepo",
     "@types/node": "catalog:dev",
+    "@ucdjs/test-utils-internal": "workspace:*",
     "@vitest/coverage-istanbul": "catalog:testing",
     "@vitest/ui": "catalog:testing",
     "eslint": "catalog:linting",
-    "msw": "catalog:testing",
     "turbo": "catalog:monorepo",
     "typescript": "catalog:dev",
     "vitest": "catalog:testing"
