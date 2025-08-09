@@ -16,7 +16,6 @@ export default createTsdownConfig({
 });
 ```
 
-
 ## 📄 License
 
 Published under [MIT License](./LICENSE).
