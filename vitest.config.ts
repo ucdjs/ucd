@@ -13,7 +13,13 @@ const aliases = readdirSync(new URL("./packages", import.meta.url).pathname)
     (acc, pkg) => {
       acc[`@ucdjs/${pkg}`] = alias(pkg);
       return acc;
-    }, {});
+    }, {
+    "#internal/test-utils": `${root}tooling/test-utils/src/index.ts`,
+    "#internal/test-utils/msw": `${root}tooling/test-utils/src/msw/msw.ts`,
+    "#internal/test-utils/vitest": `${root}tooling/test-utils/src/vitest/vitest.ts`,
+  });
+
+  console.log(aliases)
 
 const hiddenLogs = [
   "[safeJsonParse]",

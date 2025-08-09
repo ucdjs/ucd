@@ -1,5 +1,5 @@
 import type { FileEntry } from "@ucdjs/schemas";
-import { HttpResponse, mockFetch } from "@ucdjs/test-utils-internal/msw";
+import { HttpResponse, mockFetch } from "#internal/test-utils/msw";
 import { flattenFilePaths } from "@ucdjs/utils";
 import { describe, expect, it } from "vitest";
 import { assertCapability } from "../../src";

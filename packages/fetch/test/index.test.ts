@@ -1,6 +1,6 @@
 import type { ApiError, FileEntryList, UnicodeVersionList } from "../src";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
-import { HttpResponse, mockFetch } from "@ucdjs/test-utils-internal/msw";
+import { HttpResponse, mockFetch } from "#internal/test-utils/msw";
 import { assert, describe, expect, it } from "vitest";
 import { client, createClient } from "../src";
 

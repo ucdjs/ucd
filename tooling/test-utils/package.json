@@ -23,6 +23,7 @@
     ".": "./src/index.ts",
     "./msw": "./src/msw/msw.ts",
     "./msw/global-setup": "./src/msw/global-setup.ts",
+    "./vitest": "./src/vitest/vitest.ts",
     "./package.json": "./package.json"
   },
   "main": "./src/index.ts",
@@ -40,6 +41,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@ucdjs/ucd-store": "workspace:*",
     "msw": "catalog:testing"
   },
   "devDependencies": {
