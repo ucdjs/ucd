@@ -1,4 +1,4 @@
-import type { LanguageModelV1 } from "ai";
+import type { LanguageModel } from "ai";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { RawDataFile } from "@luxass/unicode-utils";
@@ -52,7 +52,7 @@ export interface SchemaGenOptions {
    *
    * SEE: https://ai-sdk.dev/docs/ai-sdk-core/testing
    */
-  model?: LanguageModelV1;
+  model?: LanguageModel;
 }
 
 export async function runSchemagen(options: SchemaGenOptions): Promise<ProcessedFile[]> {
@@ -81,7 +81,7 @@ interface ProcessFileRequest {
   filePath: string;
   openaiKey?: string;
   version: string;
-  model?: LanguageModelV1;
+  model?: LanguageModel;
 }
 
 async function processFile(request: ProcessFileRequest): Promise<ProcessedFile | null> {
