@@ -10,7 +10,9 @@
     "src"
   ],
   "scripts": {
-    "clean": "git clean -xdf node_modules dist"
+    "clean": "git clean -xdf node_modules dist",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:linting",
