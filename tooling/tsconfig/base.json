@@ -4,18 +4,25 @@
   "compilerOptions": {
     "baseUrl": "../..",
     "paths": {
-      "#test-utils": ["./test/utils/index.ts"],
       "@ucdjs/cli": ["./packages/cli/src/cli.ts"],
       "@ucdjs/env": ["./packages/env/src/index.ts"],
       "@ucdjs/fetch": ["./packages/fetch/src/index.ts"],
       "@ucdjs/schema-gen": ["./packages/schema-gen/src/index.ts"],
-      "@ucdjs/ucd-store": ["./packages/ucd-store/src/index.ts"],
       "@ucdjs/utils": ["./packages/utils/src/index.ts"],
+      "@ucdjs/schemas": ["./packages/schemas/src/index.ts"],
+      "@ucdjs/ucd-store": ["./packages/ucd-store/src/index.ts"],
+
+      // fs bridge
       "@ucdjs/fs-bridge": ["./packages/fs-bridge/src/index.ts"],
       "@ucdjs/fs-bridge/bridges/http": ["./packages/fs-bridge/src/bridges/http.ts"],
       "@ucdjs/fs-bridge/bridges/node": ["./packages/fs-bridge/src/bridges/node.ts"],
+
+      // misc
       "@ucdjs/worker-shared": ["./packages/worker-shared/src/index.ts"],
-      "@ucdjs/schemas": ["./packages/schemas/src/index.ts"],
+
+      // Test utils
+      "@ucdjs/test-utils-internal": ["./test/utils/src/index.ts"]
+
     }
   }
 }
