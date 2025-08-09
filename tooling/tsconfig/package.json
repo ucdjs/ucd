@@ -1,8 +1,35 @@
 {
   "name": "@ucdjs/tsconfig",
   "version": "1.0.0",
+  "type": "module",
   "private": true,
+  "author": {
+    "name": "Lucas Nørgård",
+    "email": "lucasnrgaard@gmail.com",
+    "url": "https://luxass.dev"
+  },
+  "packageManager": "pnpm@10.14.0",
+  "license": "MIT",
+  "homepage": "https://github.com/ucdjs/ucd",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ucdjs/ucd.git",
+    "directory": "tooling/tsconfig"
+  },
+  "bugs": {
+    "url": "https://github.com/ucdjs/ucd/issues"
+  },
   "files": [
+    "base.build.json",
     "base.json"
-  ]
+  ],
+  "scripts": {
+    "clean": "git clean -xdf dist node_modules",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@luxass/eslint-config": "catalog:linting",
+    "eslint": "catalog:linting",
+    "typescript": "catalog:dev"
+  }
 }

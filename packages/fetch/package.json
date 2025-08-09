@@ -49,6 +49,7 @@
     "@luxass/eslint-config": "catalog:linting",
     "@luxass/utils": "catalog:prod",
     "@types/picomatch": "catalog:dev",
+    "@ucdjs/test-utils-internal": "workspace:*",
     "@ucdjs/tsconfig": "workspace:*",
     "@ucdjs/tsdown-config": "workspace:*",
     "eslint": "catalog:linting",
