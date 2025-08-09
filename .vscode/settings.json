@@ -19,5 +19,11 @@
     // custom labels for api routes
     "**/routes/**/*.ts": "(${dirname}) ${filename}"
   },
-  "testing.automaticallyOpenTestResults": "neverOpen"
+  "testing.automaticallyOpenTestResults": "neverOpen",
+  "files.associations": {
+    "tsconfig.json": "jsonc",
+    "tsconfig.*.json": "jsonc",
+    "**/tooling/tsconfig/base.json": "jsonc",
+    "**/tooling/tsconfig/base.*.json": "jsonc"
+  }
 }

@@ -1,5 +1,5 @@
 import type { RawDataFile } from "@luxass/unicode-utils";
-import type { LanguageModelV1 } from "ai";
+import type { LanguageModel } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
 import { dedent } from "@luxass/utils";
 import { generateObject } from "ai";
@@ -181,7 +181,7 @@ export interface GenerateFieldsOptions {
    *
    * SEE: https://ai-sdk.dev/docs/ai-sdk-core/testing
    */
-  model?: LanguageModelV1;
+  model?: LanguageModel;
 }
 
 // eslint-disable-next-line ts/explicit-function-return-type
@@ -219,7 +219,6 @@ export async function generateFields(options: GenerateFieldsOptions) {
         .replace("{{INPUT}}", datafile.heading),
     });
 
-    // @ts-expect-error only ai-sdk v5 works with zod v4
     return result.object.fields;
   } catch (err) {
     console.error("error generating fields:", err);
