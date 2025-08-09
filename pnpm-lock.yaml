@@ -217,7 +217,7 @@ importers:
         version: 22.16.5
       '@ucdjs/test-utils-internal':
         specifier: workspace:*
-        version: link:test/utils
+        version: link:tooling/test-utils
       '@vitest/coverage-istanbul':
         specifier: catalog:testing
         version: 3.2.4(vitest@3.2.4)
@@ -415,7 +415,7 @@ importers:
         version: 21.0.3
       '@ucdjs/test-utils-internal':
         specifier: workspace:*
-        version: link:../../test/utils
+        version: link:../../tooling/test-utils
       '@ucdjs/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/tsconfig
@@ -486,7 +486,7 @@ importers:
         version: 4.0.2
       '@ucdjs/test-utils-internal':
         specifier: workspace:*
-        version: link:../../test/utils
+        version: link:../../tooling/test-utils
       '@ucdjs/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/tsconfig
@@ -538,7 +538,7 @@ importers:
         version: 5.3.0(@eslint-react/eslint-plugin@1.52.3(eslint@9.33.0(jiti@2.4.2))(ts-api-utils@2.1.0(typescript@5.9.2))(typescript@5.9.2))(@vue/compiler-sfc@3.5.13)(eslint-plugin-format@1.0.1(eslint@9.33.0(jiti@2.4.2)))(eslint-plugin-react-hooks@5.2.0(eslint@9.33.0(jiti@2.4.2)))(eslint-plugin-react-refresh@0.4.20(eslint@9.33.0(jiti@2.4.2)))(eslint@9.33.0(jiti@2.4.2))(typescript@5.9.2)(vitest@3.2.4)
       '@ucdjs/test-utils-internal':
         specifier: workspace:*
-        version: link:../../test/utils
+        version: link:../../tooling/test-utils
       '@ucdjs/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/tsconfig
@@ -685,7 +685,7 @@ importers:
         version: 5.3.0(@eslint-react/eslint-plugin@1.52.3(eslint@9.33.0(jiti@2.4.2))(ts-api-utils@2.1.0(typescript@5.9.2))(typescript@5.9.2))(@vue/compiler-sfc@3.5.13)(eslint-plugin-format@1.0.1(eslint@9.33.0(jiti@2.4.2)))(eslint-plugin-react-hooks@5.2.0(eslint@9.33.0(jiti@2.4.2)))(eslint-plugin-react-refresh@0.4.20(eslint@9.33.0(jiti@2.4.2)))(eslint@9.33.0(jiti@2.4.2))(typescript@5.9.2)(vitest@3.2.4)
       '@ucdjs/test-utils-internal':
         specifier: workspace:*
-        version: link:../../test/utils
+        version: link:../../tooling/test-utils
       '@ucdjs/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/tsconfig
@@ -800,28 +800,6 @@ importers:
         specifier: catalog:dev
         version: 5.9.2
 
-  test/utils:
-    dependencies:
-      msw:
-        specifier: catalog:testing
-        version: 2.10.4(@types/node@24.0.7)(typescript@5.9.2)
-    devDependencies:
-      '@luxass/eslint-config':
-        specifier: catalog:linting
-        version: 5.3.0(@eslint-react/eslint-plugin@1.52.3(eslint@9.33.0(jiti@2.4.2))(ts-api-utils@2.1.0(typescript@5.9.2))(typescript@5.9.2))(@vue/compiler-sfc@3.5.13)(eslint-plugin-format@1.0.1(eslint@9.33.0(jiti@2.4.2)))(eslint-plugin-react-hooks@5.2.0(eslint@9.33.0(jiti@2.4.2)))(eslint-plugin-react-refresh@0.4.20(eslint@9.33.0(jiti@2.4.2)))(eslint@9.33.0(jiti@2.4.2))(typescript@5.9.2)(vitest@3.2.4)
-      '@ucdjs/tsconfig':
-        specifier: workspace:*
-        version: link:../../tooling/tsconfig
-      '@ucdjs/tsdown-config':
-        specifier: workspace:*
-        version: link:../../tooling/tsdown-config
-      eslint:
-        specifier: catalog:linting
-        version: 9.33.0(jiti@2.4.2)
-      typescript:
-        specifier: catalog:dev
-        version: 5.9.2
-
   tooling/eslint-plugin:
     devDependencies:
       '@luxass/eslint-config':
@@ -833,6 +811,28 @@ importers:
       '@ucdjs/tsconfig':
         specifier: workspace:*
         version: link:../tsconfig
+      eslint:
+        specifier: catalog:linting
+        version: 9.33.0(jiti@2.4.2)
+      typescript:
+        specifier: catalog:dev
+        version: 5.9.2
+
+  tooling/test-utils:
+    dependencies:
+      msw:
+        specifier: catalog:testing
+        version: 2.10.4(@types/node@24.0.7)(typescript@5.9.2)
+    devDependencies:
+      '@luxass/eslint-config':
+        specifier: catalog:linting
+        version: 5.3.0(@eslint-react/eslint-plugin@1.52.3(eslint@9.33.0(jiti@2.4.2))(ts-api-utils@2.1.0(typescript@5.9.2))(typescript@5.9.2))(@vue/compiler-sfc@3.5.13)(eslint-plugin-format@1.0.1(eslint@9.33.0(jiti@2.4.2)))(eslint-plugin-react-hooks@5.2.0(eslint@9.33.0(jiti@2.4.2)))(eslint-plugin-react-refresh@0.4.20(eslint@9.33.0(jiti@2.4.2)))(eslint@9.33.0(jiti@2.4.2))(typescript@5.9.2)(vitest@3.2.4)
+      '@ucdjs/tsconfig':
+        specifier: workspace:*
+        version: link:../tsconfig
+      '@ucdjs/tsdown-config':
+        specifier: workspace:*
+        version: link:../tsdown-config
       eslint:
         specifier: catalog:linting
         version: 9.33.0(jiti@2.4.2)
