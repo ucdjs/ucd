@@ -1,7 +1,7 @@
-import { HttpResponse, mockFetch } from "#test-utils";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { assertCapability } from "@ucdjs/fs-bridge";
+import { HttpResponse, mockFetch } from "@ucdjs/test-utils-internal/msw";
 import { assert, beforeEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
 import { createHTTPUCDStore, createNodeUCDStore, createUCDStore } from "../src/factory";

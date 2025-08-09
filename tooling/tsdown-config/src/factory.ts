@@ -1,4 +1,5 @@
 import type { Options as TSDownOptions } from "tsdown";
+import { defineConfig } from "tsdown";
 
 export const baseConfig = {
   exports: true,
@@ -20,3 +21,11 @@ export const baseConfig = {
     },
   },
 } satisfies TSDownOptions;
+
+export function createTsdownConfig(overrides: Partial<TSDownOptions> = {}) {
+  return defineConfig({
+    ...baseConfig,
+    ...overrides,
+    entry: overrides.entry || ["./src/index.ts"],
+  });
+}

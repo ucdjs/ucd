@@ -1,7 +1,8 @@
 {
-  "name": "@ucdjs/fs-bridge",
-  "version": "0.0.0",
+  "name": "@ucdjs/test-utils-internal",
+  "version": "1.0.0",
   "type": "module",
+  "private": true,
   "author": {
     "name": "Lucas Nørgård",
     "email": "lucasnrgaard@gmail.com",
@@ -13,20 +14,20 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ucdjs/ucd.git",
-    "directory": "packages/fs-bridge"
+    "directory": "tooling/test-utils"
   },
   "bugs": {
     "url": "https://github.com/ucdjs/ucd/issues"
   },
   "exports": {
-    ".": "./dist/index.js",
-    "./bridges/http": "./dist/bridges/http.js",
-    "./bridges/node": "./dist/bridges/node.js",
+    ".": "./src/index.ts",
+    "./msw": "./src/msw/msw.ts",
+    "./msw/global-setup": "./src/msw/global-setup.ts",
     "./package.json": "./package.json"
   },
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
+  "types": "./src/index.ts",
   "files": [
     "dist"
   ],
@@ -34,32 +35,18 @@
     "node": ">=22.17"
   },
   "scripts": {
-    "build": "tsdown --tsconfig=./tsconfig.build.json",
-    "dev": "tsdown --watch",
     "clean": "git clean -xdf dist node_modules",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@luxass/utils": "catalog:prod",
-    "@ucdjs/env": "workspace:*",
-    "@ucdjs/schemas": "workspace:*",
-    "defu": "catalog:prod",
-    "zod": "catalog:prod"
+    "msw": "catalog:testing"
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:linting",
-    "@ucdjs/test-utils-internal": "workspace:*",
     "@ucdjs/tsconfig": "workspace:*",
     "@ucdjs/tsdown-config": "workspace:*",
     "eslint": "catalog:linting",
-    "publint": "catalog:dev",
-    "tsdown": "catalog:dev",
-    "tsx": "catalog:dev",
-    "typescript": "catalog:dev",
-    "vitest-testdirs": "catalog:testing"
-  },
-  "publishConfig": {
-    "access": "public"
+    "typescript": "catalog:dev"
   }
 }

@@ -1,4 +1,5 @@
-import { http, type HttpResponseResolver, HttpResponse } from "msw";
+import type { HttpResponseResolver } from "msw";
+import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 
 export const MSW_SERVER = setupServer();
@@ -33,14 +34,13 @@ function createHeadHandler(url: string, resolver: HttpResponseResolver) {
       return new HttpResponse(null, {
         status: response.status,
         statusText: response.statusText,
-        headers: response.headers
+        headers: response.headers,
       });
     }
 
     return new HttpResponse(null, { status: 200 });
   });
 }
-
 
 export function mockFetch(
   methods: NonEmptyArray<Method> | Method,
@@ -203,7 +203,7 @@ export const mockResponses = {
     return new HttpResponse(null, {
       status,
       headers: {
-        Location: url,
+        "Location": url,
         "Content-Type": "text/plain",
       },
     });

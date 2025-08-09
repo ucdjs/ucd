@@ -13,10 +13,7 @@ const aliases = readdirSync(new URL("./packages", import.meta.url).pathname)
     (acc, pkg) => {
       acc[`@ucdjs/${pkg}`] = alias(pkg);
       return acc;
-    },
-    {
-      "#test-utils": `${root}test/utils/index.ts`,
-    });
+    }, {});
 
 const hiddenLogs = [
   "[safeJsonParse]",
@@ -60,7 +57,7 @@ export default defineConfig({
     environment: "node",
     mockReset: true,
     setupFiles: [
-      "./test/global-setup/msw.ts",
+      "@ucdjs/test-utils-internal/msw/global-setup",
     ],
     onConsoleLog(log, type) {
       if (type === "stderr") {

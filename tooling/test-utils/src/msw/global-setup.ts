@@ -1,5 +1,5 @@
 import { afterAll, afterEach, beforeAll } from "vitest";
-import { MSW_SERVER } from "../utils/msw";
+import { MSW_SERVER } from "./msw";
 
 beforeAll(() => MSW_SERVER.listen({
   onUnhandledRequest: (_, print) => {
@@ -7,8 +7,8 @@ beforeAll(() => MSW_SERVER.listen({
     // but we are currently using routes that look like static assets.
     // This will print an error for any unhandled request.
 
-    print.error()
-  }
+    print.error();
+  },
 }));
 afterAll(() => MSW_SERVER.close());
 afterEach(() => MSW_SERVER.resetHandlers());
