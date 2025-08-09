@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { RawDataFile } from "@luxass/unicode-utils";
-import { MockLanguageModelV1 } from "ai/test";
+import { MockLanguageModelV2 } from "ai/test";
 import { describe, expect, it } from "vitest";
 import { generateFields } from "../src/fields";
 
@@ -12,13 +12,12 @@ describe("generateFields", () => {
   it("should return null when datafile has no heading", async () => {
     const result = await generateFields({
       datafile: new RawDataFile("TEST", "TEST"),
-      model: new MockLanguageModelV1({
-        defaultObjectGenerationMode: "json",
+      model: new MockLanguageModelV2({
         doGenerate: async () => ({
-          rawCall: { rawPrompt: null, rawSettings: {} },
           finishReason: "stop",
-          usage: { promptTokens: 5000, completionTokens: 20 },
-          text: `{"fields": []}`,
+          usage: { inputTokens: 5000, outputTokens: 20, totalTokens: 5020 },
+          warnings: [],
+          content: [{ type: "text", text: `{"fields": []}` }],
         }),
       }),
     });
@@ -39,36 +38,40 @@ describe("generateFields", () => {
 
     const result = await generateFields({
       datafile: new RawDataFile(arabicShapingContent, "ArabicShaping"),
-      model: new MockLanguageModelV1({
-        defaultObjectGenerationMode: "json",
+      model: new MockLanguageModelV2({
         doGenerate: async () => ({
-          rawCall: { rawPrompt: null, rawSettings: {} },
           finishReason: "stop",
-          usage: { promptTokens: 5000, completionTokens: 20 },
-          text: `{
-            "fields": [
-              {
-                "name": "code_point",
-                "type": "string",
-                "description": "The code point of a character, in hexadecimal form"
-              },
-              {
-                "name": "name",
-                "type": "string",
-                "description": "A short schematic name for the character"
-              },
-              {
-                "name": "joining_type",
-                "type": "string",
-                "description": "The joining type of the character"
-              },
-              {
-                "name": "joining_group",
-                "type": "string",
-                "description": "The joining group of the character"
-              }
-            ]
-          }`,
+          usage: { inputTokens: 5000, outputTokens: 20, totalTokens: 5020 },
+          warnings: [],
+          content: [
+            {
+              type: "text",
+              text: `{
+                       "fields": [
+                         {
+                           "name": "code_point",
+                           "type": "string",
+                           "description": "The code point of a character, in hexadecimal form"
+                         },
+                         {
+                           "name": "name",
+                           "type": "string",
+                           "description": "A short schematic name for the character"
+                         },
+                         {
+                           "name": "joining_type",
+                           "type": "string",
+                           "description": "The joining type of the character"
+                         },
+                         {
+                           "name": "joining_group",
+                           "type": "string",
+                           "description": "The joining group of the character"
+                         }
+                       ]
+                     }`,
+            },
+          ],
         }),
       }),
     });
