@@ -79,14 +79,19 @@ export function setupMockStore(config?: MockStoreConfig) {
     return path in mergedResponses && mergedResponses[path] !== false;
   }
 
-  function excludeFalse<T>(obj: T): Exclude<T, false> {
-    return obj as Exclude<T, false>;
+  function getResponse<K extends StoreEndpoints>(key: K): StoreEndpointConfig[K] {
+    const response = mergedResponses[key];
+    if (response === false) {
+      throw new Error(`Response for ${key} is disabled`);
+    }
+
+    return response as StoreEndpointConfig[K];
   }
 
   if (isResponseEnabled("/api/v1/versions")) {
     versionsMockHandler({
       baseUrl: normalizedBaseUrl,
-      response: excludeFalse(mergedResponses["/api/v1/versions"]),
+      response: getResponse("/api/v1/versions"),
       versions,
     });
   }
@@ -94,7 +99,7 @@ export function setupMockStore(config?: MockStoreConfig) {
   if (isResponseEnabled("/api/v1/versions/:version/file-tree")) {
     fileTreeMockHandler({
       baseUrl: normalizedBaseUrl,
-      response: excludeFalse(mergedResponses["/api/v1/versions/:version/file-tree"]),
+      response: getResponse("/api/v1/versions/:version/file-tree"),
       versions,
     });
   }
@@ -102,7 +107,7 @@ export function setupMockStore(config?: MockStoreConfig) {
   if (isResponseEnabled("/api/v1/files/:wildcard")) {
     filesMockHandler({
       baseUrl: normalizedBaseUrl,
-      response: excludeFalse(mergedResponses["/api/v1/files/:wildcard"]),
+      response: getResponse("/api/v1/files/:wildcard"),
       versions,
     });
   }
@@ -110,7 +115,7 @@ export function setupMockStore(config?: MockStoreConfig) {
   if (isResponseEnabled("/api/v1/files/.ucd-store.json")) {
     filesStoreMockHandler({
       baseUrl: normalizedBaseUrl,
-      response: excludeFalse(mergedResponses["/api/v1/files/.ucd-store.json"]),
+      response: getResponse("/api/v1/files/.ucd-store.json"),
       versions,
     });
   }
