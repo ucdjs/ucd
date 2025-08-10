@@ -1,20 +1,17 @@
 import type { HttpResponseResolver } from "msw";
+import type { HTTPMethod, NonEmptyArray } from "./types";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 
 export const MSW_SERVER = setupServer();
 
-type Method = "GET" | "POST" | "PUT" | "DELETE" | "PATCH" | "HEAD" | "OPTIONS";
-
-type NonEmptyArray<T> = [T, ...T[]];
-
-function createHandlersFromMethods(methods: readonly Method[], url: string, resolver: HttpResponseResolver) {
+function createHandlersFromMethods(methods: readonly HTTPMethod[], url: string, resolver: HttpResponseResolver) {
   return methods.map((method) => {
     // For HEAD requests, execute the resolver and return response without body
     if (method === "HEAD") {
       return createHeadHandler(url, resolver);
     }
-    return http[method.toLowerCase() as Lowercase<Method>](url, resolver);
+    return http[method.toLowerCase() as Lowercase<HTTPMethod>](url, resolver);
   });
 }
 
@@ -43,21 +40,21 @@ function createHeadHandler(url: string, resolver: HttpResponseResolver) {
 }
 
 export function mockFetch(
-  methods: NonEmptyArray<Method> | Method,
+  methods: NonEmptyArray<HTTPMethod> | HTTPMethod,
   url: string,
   resolver: HttpResponseResolver,
 ): void;
 export function mockFetch(
-  endpoints: [NonEmptyArray<Method> | Method, string, HttpResponseResolver][],
+  endpoints: [NonEmptyArray<HTTPMethod> | HTTPMethod, string, HttpResponseResolver][],
 ): void;
 export function mockFetch(
-  methodsOrEndpoints: NonEmptyArray<Method> | Method | [NonEmptyArray<Method> | Method, string, HttpResponseResolver][],
+  methodsOrEndpoints: NonEmptyArray<HTTPMethod> | HTTPMethod | [NonEmptyArray<HTTPMethod> | HTTPMethod, string, HttpResponseResolver][],
   url?: string,
   resolver?: HttpResponseResolver,
 ): void {
   if (Array.isArray(methodsOrEndpoints) && methodsOrEndpoints.length > 0 && Array.isArray(methodsOrEndpoints[0])) {
     // handle batch registration
-    const endpoints = methodsOrEndpoints as [NonEmptyArray<Method> | Method, string, HttpResponseResolver][];
+    const endpoints = methodsOrEndpoints as [NonEmptyArray<HTTPMethod> | HTTPMethod, string, HttpResponseResolver][];
     const handlers = endpoints.flatMap(([methods, endpointUrl, handlerResolver]) => {
       const methodArray = Array.isArray(methods) ? methods : [methods];
       return createHandlersFromMethods(methodArray, endpointUrl, handlerResolver);
@@ -67,7 +64,7 @@ export function mockFetch(
     return;
   } else if (url && resolver) {
     // handle single registration
-    const methods = methodsOrEndpoints as NonEmptyArray<Method> | Method;
+    const methods = methodsOrEndpoints as NonEmptyArray<HTTPMethod> | HTTPMethod;
     const methodArray = Array.isArray(methods) ? methods : [methods];
     const handlers = createHandlersFromMethods(methodArray, url, resolver);
 
@@ -210,4 +207,4 @@ export const mockResponses = {
   },
 };
 
-export { http, HttpResponse };
+export { http, HttpResponse, type NonEmptyArray };
