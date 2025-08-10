@@ -1,7 +1,8 @@
+import type { UCDStoreManifest } from "@ucdjs/fetch";
 import { HttpResponse } from "../msw";
 import { defineMockFetchHandler } from "./__define";
 
-export default defineMockFetchHandler("/api/v1/files/:wildcard", ({ baseUrl, response }) => {
+export const filesMockHandler = defineMockFetchHandler("/api/v1/files/:wildcard", ({ baseUrl, response }) => {
   if (typeof response === "function") {
     return [
       ["GET", `${baseUrl}/api/v1/files/*`, response],
@@ -30,6 +31,30 @@ export default defineMockFetchHandler("/api/v1/files/:wildcard", ({ baseUrl, res
       }
 
       // For FileEntryList or other objects
+      return HttpResponse.json(response);
+    }],
+  ];
+});
+
+export const filesStoreMockHandler = defineMockFetchHandler("/api/v1/files/.ucd-store.json", ({
+  baseUrl,
+  response,
+  versions,
+}) => {
+  if (typeof response === "function") {
+    return [
+      ["GET", `${baseUrl}/api/v1/files/.ucd-store.json`, response],
+    ];
+  }
+
+  return [
+    ["GET", `${baseUrl}/api/v1/files/.ucd-store.json`, () => {
+      if (response === true || response == null) {
+        return HttpResponse.json(Object.fromEntries(
+          versions.map((version) => [version, version]),
+        ) satisfies UCDStoreManifest);
+      }
+
       return HttpResponse.json(response);
     }],
   ];

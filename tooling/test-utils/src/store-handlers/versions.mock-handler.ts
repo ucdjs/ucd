@@ -1,7 +1,7 @@
 import { HttpResponse } from "../msw";
 import { defineMockFetchHandler } from "./__define";
 
-export default defineMockFetchHandler("/api/v1/versions", ({ baseUrl, response }) => {
+export const versionsMockHandler = defineMockFetchHandler("/api/v1/versions", ({ baseUrl, response }) => {
   if (typeof response === "function") {
     return [
       ["GET", `${baseUrl}/api/v1/versions`, response],

@@ -1,7 +1,7 @@
 import { HttpResponse } from "../msw";
 import { defineMockFetchHandler } from "./__define";
 
-export default defineMockFetchHandler("/api/v1/versions/:version/file-tree", ({ baseUrl, response }) => {
+export const fileTreeMockHandler = defineMockFetchHandler("/api/v1/versions/:version/file-tree", ({ baseUrl, response }) => {
   const parsedBaseUrl = `${baseUrl.replace(/\/$/, "")}/api/v1/versions/:version/file-tree`;
 
   if (typeof response === "function") {
