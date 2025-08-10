@@ -47,7 +47,7 @@ describe("store init", () => {
       let expectCalled = false;
 
       mockFetch([
-        [["GET", "HEAD"], `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
+        ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
           expectCalled = true;
           return HttpResponse.json(UNICODE_VERSION_METADATA);
         }],
@@ -103,7 +103,7 @@ describe("store init", () => {
       const storePath = await testdir();
 
       mockFetch([
-        [["GET", "HEAD"], `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
+        ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
           return HttpResponse.error();
         }],
       ]);
@@ -375,23 +375,6 @@ describe("store init", () => {
 
   describe("capability validation", async () => {
     const storePath = await testdir();
-
-    beforeEach(() => {
-      mockFetch([
-        [["GET", "HEAD"], `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
-          return HttpResponse.json(UNICODE_VERSION_METADATA);
-        }],
-        ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions/:version/file-tree`, () => {
-          return HttpResponse.json([{
-            type: "file",
-            name: "ArabicShaping.txt",
-          }]);
-        }],
-        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/:version/ucd/:file`, ({ params }) => {
-          return HttpResponse.text(`Content of ${params.file}`);
-        }],
-      ]);
-    });
 
     it.each([
       {

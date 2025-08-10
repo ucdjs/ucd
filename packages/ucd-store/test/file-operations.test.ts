@@ -10,7 +10,7 @@ import { testdir } from "vitest-testdirs";
 describe("file operations", () => {
   beforeEach(() => {
     mockFetch([
-      [["GET", "HEAD"], `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
+      ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
         return HttpResponse.json(UNICODE_VERSION_METADATA);
       }],
     ]);
