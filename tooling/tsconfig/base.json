@@ -21,8 +21,7 @@
       "@ucdjs/worker-shared": ["./packages/worker-shared/src/index.ts"],
 
       // Test utils
-      "@ucdjs/test-utils-internal": ["./tooling/test-utils/src/index.ts"],
-      "@ucdjs/test-utils-internal/msw": ["./tooling/test-utils/src/msw/msw.ts"]
+      "#internal/test-utils/msw": ["./tooling/test-utils/src/msw.ts"]
     }
   }
 }

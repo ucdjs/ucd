@@ -55,7 +55,6 @@
   "devDependencies": {
     "@luxass/eslint-config": "catalog:linting",
     "@types/yargs-parser": "catalog:dev",
-    "@ucdjs/test-utils-internal": "workspace:*",
     "@ucdjs/tsconfig": "workspace:*",
     "@ucdjs/tsdown-config": "workspace:*",
     "eslint": "catalog:linting",

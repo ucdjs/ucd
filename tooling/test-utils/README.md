@@ -12,7 +12,7 @@ This package provides utilities for working with [MSW (Mock Service Worker)](htt
 > By default, MSW is enabled for all tests, except for those in marked with worker.
 
 ```typescript
-import { HttpResponse, mockFetch } from "@ucdjs/test-utils-internal/msw";
+import { HttpResponse, mockFetch } from "#internal/test-utils/msw";
 
 mockFetch([
   // register the handler for a single method.

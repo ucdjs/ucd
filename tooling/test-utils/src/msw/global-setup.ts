@@ -1,5 +1,5 @@
 import { afterAll, afterEach, beforeAll } from "vitest";
-import { MSW_SERVER } from "./msw";
+import { MSW_SERVER } from "../msw";
 
 beforeAll(() => MSW_SERVER.listen({
   onUnhandledRequest: (_, print) => {

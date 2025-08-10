@@ -21,7 +21,7 @@
   },
   "exports": {
     ".": "./src/index.ts",
-    "./msw": "./src/msw/msw.ts",
+    "./msw": "./src/msw.ts",
     "./msw/global-setup": "./src/msw/global-setup.ts",
     "./package.json": "./package.json"
   },
