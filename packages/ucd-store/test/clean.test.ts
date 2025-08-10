@@ -7,42 +7,40 @@ import { createNodeUCDStore } from "@ucdjs/ucd-store";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
 
-const MOCK_FILES = [
-  {
-    type: "file",
-    name: "ArabicShaping.txt",
-    path: "ArabicShaping.txt",
-    lastModified: 1644920820000,
-  },
-  {
-    type: "file",
-    name: "BidiBrackets.txt",
-    path: "BidiBrackets.txt",
-    lastModified: 1651584360000,
-  },
-  {
-    type: "directory",
-    name: "extracted",
-    path: "extracted",
-    lastModified: 1724676960000,
-    children: [
-      {
-        type: "file",
-        name: "DerivedBidiClass.txt",
-        path: "DerivedBidiClass.txt",
-        lastModified: 1724609100000,
-      },
-    ],
-  },
-];
-
 describe("store clean", () => {
   beforeEach(() => {
     setupMockStore({
       baseUrl: UCDJS_API_BASE_URL,
       responses: {
         "/api/v1/versions": [...UNICODE_VERSION_METADATA],
-        "/api/v1/versions/:version/file-tree": MOCK_FILES,
+        "/api/v1/versions/:version/file-tree": [
+          {
+            type: "file",
+            name: "ArabicShaping.txt",
+            path: "ArabicShaping.txt",
+            lastModified: 1644920820000,
+          },
+          {
+            type: "file",
+            name: "BidiBrackets.txt",
+            path: "BidiBrackets.txt",
+            lastModified: 1651584360000,
+          },
+          {
+            type: "directory",
+            name: "extracted",
+            path: "extracted",
+            lastModified: 1724676960000,
+            children: [
+              {
+                type: "file",
+                name: "DerivedBidiClass.txt",
+                path: "DerivedBidiClass.txt",
+                lastModified: 1724609100000,
+              },
+            ],
+          },
+        ],
         "/api/v1/files/:wildcard": () => {
           return HttpResponse.text("File content");
         },
