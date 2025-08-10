@@ -23,7 +23,7 @@
       // Internal Test Utils
       "#internal/test-utils": ["./tooling/test-utils/src/index.ts"],
       "#internal/test-utils/msw": ["./tooling/test-utils/src/msw/msw.ts"],
-      "#internal/test-utils/vitest": ["./tooling/test-utils/src/vitest/vitest.ts"]
+      "#internal/test-utils/store": ["./tooling/test-utils/src/store/store.ts"]
     }
   }
 }

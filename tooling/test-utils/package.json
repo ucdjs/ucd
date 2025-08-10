@@ -42,7 +42,8 @@
   },
   "dependencies": {
     "@ucdjs/ucd-store": "workspace:*",
-    "msw": "catalog:testing"
+    "msw": "catalog:testing",
+    "vitest-testdirs": "catalog:testing"
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:linting",

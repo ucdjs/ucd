@@ -814,6 +814,9 @@ importers:
       msw:
         specifier: catalog:testing
         version: 2.10.4(@types/node@24.0.7)(typescript@5.9.2)
+      vitest-testdirs:
+        specifier: catalog:testing
+        version: 4.1.1(vitest@3.2.4)
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:linting
