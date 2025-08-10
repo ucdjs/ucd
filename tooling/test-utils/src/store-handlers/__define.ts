@@ -14,8 +14,6 @@ type SetupFn<Key extends StoreEndpoints> = ({ baseUrl, response, versions }: Con
 export function defineMockFetchHandler<Key extends StoreEndpoints>(_key: Key, fn: SetupFn<Key>) {
   return ({ baseUrl, response, versions }: Context<Key>) => {
     const endpoints = fn({ baseUrl, response, versions });
-    for (const [methods, url, resolver] of endpoints) {
-      mockFetch(methods, url, resolver);
-    }
+    mockFetch(endpoints);
   };
 }
