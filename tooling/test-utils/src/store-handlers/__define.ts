@@ -6,13 +6,14 @@ import { mockFetch } from "../msw";
 interface Context<Key extends StoreEndpoints> {
   baseUrl: string;
   response: StoreEndpointConfig[Key];
+  versions: string[];
 }
 
-type SetupFn<Key extends StoreEndpoints> = ({ baseUrl, response }: Context<Key>) => [NonEmptyArray<HTTPMethod> | HTTPMethod, string, HttpResponseResolver<any, any, any>][];
+type SetupFn<Key extends StoreEndpoints> = ({ baseUrl, response, versions }: Context<Key>) => [NonEmptyArray<HTTPMethod> | HTTPMethod, string, HttpResponseResolver<any, any, any>][];
 
-export function defineMockFetchHandler<Key extends StoreEndpoints>(key: Key, fn: SetupFn<Key>) {
-  return ({ baseUrl, response }: Context<Key>) => {
-    const endpoints = fn({ baseUrl, response });
+export function defineMockFetchHandler<Key extends StoreEndpoints>(_key: Key, fn: SetupFn<Key>) {
+  return ({ baseUrl, response, versions }: Context<Key>) => {
+    const endpoints = fn({ baseUrl, response, versions });
     for (const [methods, url, resolver] of endpoints) {
       mockFetch(methods, url, resolver);
     }

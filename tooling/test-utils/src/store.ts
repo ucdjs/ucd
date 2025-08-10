@@ -1,12 +1,12 @@
 // TODO: change this to schemas, when schemas export codegen models
-import type { FileEntryList, UnicodeTree, UnicodeVersionList } from "@ucdjs/fetch";
+import type { FileEntryList, UCDStoreManifest, UnicodeTree, UnicodeVersionList } from "@ucdjs/fetch";
 
 import type { DefaultBodyType, HttpResponseResolver, PathParams } from "msw";
 import type { EmptyObject } from "./types";
 
-import fileTreeHandler from "./store-handlers/file-tree";
-import filesHandler from "./store-handlers/files";
-import versionsHandler from "./store-handlers/versions";
+import { fileTreeMockHandler } from "./store-handlers/file-tree.mock-handler";
+import { filesMockHandler, filesStoreMockHandler } from "./store-handlers/files.mock-handler";
+import { versionsMockHandler } from "./store-handlers/versions.mock-handler";
 
 type FileEndpointResponse = ArrayBuffer | Uint8Array | string | Blob | File | FileEntryList;
 type TypedResponseResolver<
@@ -15,11 +15,12 @@ type TypedResponseResolver<
 > = HttpResponseResolver<Params, DefaultBodyType, Response>;
 
 interface StoreEndpointConfig {
-  "/api/v1/versions": boolean | UnicodeVersionList | TypedResponseResolver<EmptyObject, UnicodeVersionList>;
-  "/api/v1/versions/:version/file-tree": boolean | UnicodeTree | TypedResponseResolver<{
+  "/api/v1/versions": true | UnicodeVersionList | TypedResponseResolver<EmptyObject, UnicodeVersionList>;
+  "/api/v1/versions/:version/file-tree": true | UnicodeTree | TypedResponseResolver<{
     version: string;
   }, UnicodeTree>;
-  "/api/v1/files/:wildcard": (boolean | FileEndpointResponse) | TypedResponseResolver<{
+  "/api/v1/files/.ucd-store.json": (true | UCDStoreManifest) | TypedResponseResolver<EmptyObject, UCDStoreManifest>;
+  "/api/v1/files/:wildcard": (true | FileEndpointResponse) | TypedResponseResolver<{
     wildcard: string;
   }, FileEndpointResponse>;
 }
@@ -42,7 +43,7 @@ interface MockStoreConfig {
    * If the value is `false`, then no handler will be used.
    * If the value provided is a specific response, then that response will be used.
    */
-  responses: StoreEndpointConfig;
+  responses?: Partial<StoreEndpointConfig>;
 
   /**
    * The versions to use for placeholders
@@ -51,31 +52,54 @@ interface MockStoreConfig {
   versions?: string[];
 }
 
+const DEFAULT_RESPONSES = {
+  "/api/v1/versions": true,
+  "/api/v1/versions/:version/file-tree": true,
+  "/api/v1/files/.ucd-store.json": true,
+  "/api/v1/files/:wildcard": true,
+} satisfies StoreEndpointConfig;
+
 export function setupMockStore(config: MockStoreConfig) {
-  const { baseUrl, responses } = config;
+  const { baseUrl, responses, versions = ["16.0.0", "15.1.0", "15.0.0"] } = config;
+
+  const mergedResponses = {
+    ...DEFAULT_RESPONSES,
+    ...responses,
+  };
 
   function isResponseEnabled(path: StoreEndpoints): boolean {
-    return path in responses && responses[path] !== false;
+    return mergedResponses != null && path in mergedResponses && mergedResponses[path] !== void 0;
   }
 
   if (isResponseEnabled("/api/v1/versions")) {
-    versionsHandler({
+    versionsMockHandler({
       baseUrl,
-      response: responses["/api/v1/versions"],
+      response: mergedResponses["/api/v1/versions"],
+      versions,
     });
   }
 
   if (isResponseEnabled("/api/v1/versions/:version/file-tree")) {
-    fileTreeHandler({
+    fileTreeMockHandler({
       baseUrl,
-      response: responses["/api/v1/versions/:version/file-tree"],
+      response: mergedResponses["/api/v1/versions/:version/file-tree"],
+      versions,
     });
   }
 
   if (isResponseEnabled("/api/v1/files/:wildcard")) {
-    filesHandler({
+    filesMockHandler({
       baseUrl,
-      response: responses["/api/v1/files/:wildcard"],
+      response: mergedResponses["/api/v1/files/:wildcard"],
+      versions,
+    });
+  }
+
+  if (isResponseEnabled("/api/v1/files/.ucd-store.json")) {
+    filesStoreMockHandler({
+      baseUrl,
+      response: mergedResponses["/api/v1/files/.ucd-store.json"],
+      versions,
     });
   }
 }
