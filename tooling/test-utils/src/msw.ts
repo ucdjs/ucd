@@ -27,7 +27,7 @@ function createHeadHandler(url: string, resolver: HttpResponseResolver) {
       return HttpResponse.error();
     }
 
-    if (response instanceof HttpResponse) {
+    if (response instanceof HttpResponse || response instanceof Response) {
       return new HttpResponse(null, {
         status: response.status,
         statusText: response.statusText,
