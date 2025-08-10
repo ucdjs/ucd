@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { HttpResponse, mockFetch } from "#internal/test-utils/msw";
+import { setupMockStore } from "#internal/test-utils/store";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { createNodeUCDStore } from "@ucdjs/ucd-store";
@@ -37,17 +38,16 @@ const MOCK_FILES = [
 
 describe("store clean", () => {
   beforeEach(() => {
-    mockFetch([
-      ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
-        return HttpResponse.json(UNICODE_VERSION_METADATA);
-      }],
-      ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions/:version/file-tree`, () => {
-        return HttpResponse.json(MOCK_FILES);
-      }],
-      ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/*`, () => {
-        return HttpResponse.text("File content");
-      }],
-    ]);
+    setupMockStore({
+      baseUrl: UCDJS_API_BASE_URL,
+      responses: {
+        "/api/v1/versions": [...UNICODE_VERSION_METADATA],
+        "/api/v1/versions/:version/file-tree": MOCK_FILES,
+        "/api/v1/files/:wildcard": () => {
+          return HttpResponse.text("File content");
+        },
+      },
+    });
 
     vi.clearAllMocks();
     vi.unstubAllEnvs();
