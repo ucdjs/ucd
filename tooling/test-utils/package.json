@@ -20,7 +20,7 @@
     "url": "https://github.com/ucdjs/ucd/issues"
   },
   "exports": {
-    ".": "./src/index.ts",
+    "./store": "./src/store.ts",
     "./msw": "./src/msw.ts",
     "./msw/global-setup": "./src/msw/global-setup.ts",
     "./package.json": "./package.json"
