@@ -1,3 +1,4 @@
+import type { UnicodeTree } from "@ucdjs/fetch";
 import { HttpResponse, mockFetch } from "#internal/test-utils/msw";
 import { setupMockStore } from "#internal/test-utils/store";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
@@ -8,47 +9,58 @@ import { testdir } from "vitest-testdirs";
 import { createHTTPUCDStore, createNodeUCDStore, createUCDStore } from "../src/factory";
 import { createMemoryMockFS, stripChildrenFromEntries } from "./__shared";
 
+const MOCK_FILES = [
+  {
+    type: "file",
+    name: "ArabicShaping.txt",
+    path: "ArabicShaping.txt",
+    lastModified: 1644920820000,
+  },
+  {
+    type: "file",
+    name: "BidiBrackets.txt",
+    path: "BidiBrackets.txt",
+    lastModified: 1651584360000,
+  },
+  {
+    type: "directory",
+    name: "extracted",
+    path: "extracted",
+    lastModified: 1724676960000,
+    children: [
+      {
+        type: "file",
+        name: "DerivedBidiClass.txt",
+        path: "DerivedBidiClass.txt",
+        lastModified: 1724609100000,
+      },
+    ],
+  },
+] satisfies UnicodeTree;
+
 describe("analyze operations", () => {
   beforeEach(() => {
     setupMockStore({
       baseUrl: UCDJS_API_BASE_URL,
       responses: {
         "/api/v1/versions": [...UNICODE_VERSION_METADATA],
+        "/api/v1/versions/:version/file-tree": ({ params }) => {
+          if (params.version === "15.0.0") {
+            return HttpResponse.json([MOCK_FILES[0]!]);
+          }
+
+          if (params.version === "15.1.0") {
+            return HttpResponse.json([MOCK_FILES[1]!]);
+          }
+
+          return HttpResponse.json([]);
+        },
       },
     });
 
     vi.clearAllMocks();
     vi.unstubAllEnvs();
   });
-
-  const mockFiles = [
-    {
-      type: "file",
-      name: "ArabicShaping.txt",
-      path: "ArabicShaping.txt",
-      lastModified: 1644920820000,
-    },
-    {
-      type: "file",
-      name: "BidiBrackets.txt",
-      path: "BidiBrackets.txt",
-      lastModified: 1651584360000,
-    },
-    {
-      type: "directory",
-      name: "extracted",
-      path: "extracted",
-      lastModified: 1724676960000,
-      children: [
-        {
-          type: "file",
-          name: "DerivedBidiClass.txt",
-          path: "DerivedBidiClass.txt",
-          lastModified: 1724609100000,
-        },
-      ],
-    },
-  ];
 
   describe("local store analyze operations", () => {
     it("should analyze local store with complete files", async () => {
@@ -69,7 +81,7 @@ describe("analyze operations", () => {
 
       mockFetch([
         ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions/15.0.0/file-tree`, () => {
-          return HttpResponse.json(mockFiles);
+          return HttpResponse.json(MOCK_FILES);
         }],
       ]);
 
@@ -108,7 +120,7 @@ describe("analyze operations", () => {
 
       mockFetch([
         ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions/15.0.0/file-tree`, () => {
-          return HttpResponse.json(mockFiles);
+          return HttpResponse.json(MOCK_FILES);
         }],
       ]);
 
@@ -144,19 +156,6 @@ describe("analyze operations", () => {
       };
 
       const storeDir = await testdir(storeStructure);
-
-      mockFetch([
-        ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions/:version/file-tree`, ({ params }) => {
-          const { version } = params;
-          if (version === "15.0.0") {
-            return HttpResponse.json([mockFiles[0]]);
-          }
-          if (version === "15.1.0") {
-            return HttpResponse.json([mockFiles[1]]);
-          }
-          return HttpResponse.json([]);
-        }],
-      ]);
 
       const store = await createNodeUCDStore({
         basePath: storeDir,
@@ -194,7 +193,7 @@ describe("analyze operations", () => {
 
       mockFetch([
         ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions/15.0.0/file-tree`, () => {
-          return HttpResponse.json([mockFiles[0]]);
+          return HttpResponse.json([MOCK_FILES[0]]);
         }],
       ]);
 
@@ -275,16 +274,16 @@ describe("analyze operations", () => {
           });
         }],
         ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions/15.0.0/file-tree`, () => {
-          return HttpResponse.json(mockFiles);
+          return HttpResponse.json(MOCK_FILES);
         }],
         ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/15.0.0/:file?`, ({ params }) => {
           const file = params.file;
 
           if (file === "extracted") {
-            return HttpResponse.json(mockFiles[2]?.children);
+            return HttpResponse.json(MOCK_FILES[2]?.children);
           }
 
-          return HttpResponse.json(stripChildrenFromEntries(mockFiles));
+          return HttpResponse.json(stripChildrenFromEntries(MOCK_FILES));
         }],
       ]);
 
@@ -330,13 +329,13 @@ describe("analyze operations", () => {
 
       mockFetch([
         ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
-          return HttpResponse.json([mockFiles[0]]);
+          return HttpResponse.json([MOCK_FILES[0]]);
         }],
       ]);
 
       mockFetch([
         ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions/15.0.0/file-tree`, () => {
-          return HttpResponse.json([mockFiles[0]]);
+          return HttpResponse.json([MOCK_FILES[0]]);
         }],
       ]);
 
