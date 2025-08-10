@@ -4,6 +4,7 @@ import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { HttpResponse, mockFetch } from "#internal/test-utils/msw";
+import { setupMockStore } from "#internal/test-utils/store";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { defineFileSystemBridge } from "@ucdjs/fs-bridge";
@@ -20,22 +21,21 @@ const DEFAULT_VERSIONS = {
 
 describe("store init", () => {
   beforeEach(() => {
-    mockFetch([
-      [["GET", "HEAD"], `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
-        return HttpResponse.json(UNICODE_VERSION_METADATA);
-      }],
-      ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions/:version/file-tree`, () => {
-        return HttpResponse.json([{
+    setupMockStore({
+      baseUrl: UCDJS_API_BASE_URL,
+      responses: {
+        "/api/v1/versions": [...UNICODE_VERSION_METADATA],
+        "/api/v1/versions/:version/file-tree": [{
           type: "file",
           name: "ArabicShaping.txt",
           path: "ArabicShaping.txt",
           lastModified: 1724601900000,
-        }]);
-      }],
-      ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/*`, () => {
-        return HttpResponse.text(`Null Content`);
-      }],
-    ]);
+        }],
+        "/api/v1/files/:wildcard": ({ params }) => {
+          return HttpResponse.text(`Content of ${params.wildcard}`);
+        },
+      },
+    });
 
     vi.clearAllMocks();
     vi.unstubAllEnvs();
