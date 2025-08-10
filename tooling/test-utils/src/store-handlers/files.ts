@@ -1,34 +1,36 @@
 import { HttpResponse } from "../msw";
 import { defineMockFetchHandler } from "./__define";
 
-export default defineMockFetchHandler(({ baseUrl, response }) => {
-  const fileResponse = response === true || response == null
-    ? "Default file content"
-    : response;
+export default defineMockFetchHandler("/api/v1/files/:wildcard", ({ baseUrl, response }) => {
+  if (typeof response === "function") {
+    return [
+      ["GET", `${baseUrl}/api/v1/files/*`, response],
+    ];
+  }
 
   return [
-    [
-      "GET",
-      `${baseUrl}/api/v1/files/*`,
-      () => {
-        if (fileResponse instanceof ArrayBuffer || fileResponse instanceof Uint8Array) {
-          return new HttpResponse(fileResponse, { headers: { "Content-Type": "application/octet-stream" } });
-        }
+    ["GET", `${baseUrl}/api/v1/files/*`, () => {
+      if (response === true || response == null) {
+        return HttpResponse.text("Default file content");
+      }
 
-        if (
-          (typeof Blob !== "undefined" && fileResponse instanceof Blob)
-          || (typeof File !== "undefined" && fileResponse instanceof File)
-        ) {
-          return new HttpResponse(fileResponse, { headers: { "Content-Type": "application/octet-stream" } });
-        }
+      if (response instanceof ArrayBuffer || response instanceof Uint8Array) {
+        return new HttpResponse(response, { headers: { "Content-Type": "application/octet-stream" } });
+      }
 
-        if (typeof fileResponse === "string") {
-          return HttpResponse.text(fileResponse);
-        }
+      if (
+        (typeof Blob !== "undefined" && response instanceof Blob)
+        || (typeof File !== "undefined" && response instanceof File)
+      ) {
+        return new HttpResponse(response, { headers: { "Content-Type": "application/octet-stream" } });
+      }
 
-        // For FileEntryList or other objects
-        return HttpResponse.json(fileResponse);
-      },
-    ],
+      if (typeof response === "string") {
+        return HttpResponse.text(response);
+      }
+
+      // For FileEntryList or other objects
+      return HttpResponse.json(response);
+    }],
   ];
 });

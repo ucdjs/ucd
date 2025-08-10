@@ -1,16 +1,27 @@
 // TODO: change this to schemas, when schemas export codegen models
 import type { FileEntryList, UnicodeTree, UnicodeVersionList } from "@ucdjs/fetch";
 
+import type { DefaultBodyType, HttpResponseResolver, PathParams } from "msw";
+import type { EmptyObject } from "./types";
+
 import fileTreeHandler from "./store-handlers/file-tree";
 import filesHandler from "./store-handlers/files";
 import versionsHandler from "./store-handlers/versions";
 
 type FileEndpointResponse = ArrayBuffer | Uint8Array | string | Blob | File | FileEntryList;
+type TypedResponseResolver<
+  Params extends PathParams<keyof Params> = PathParams,
+  Response extends DefaultBodyType = DefaultBodyType,
+> = HttpResponseResolver<Params, DefaultBodyType, Response>;
 
 interface StoreEndpointConfig {
-  "/api/v1/versions": boolean | UnicodeVersionList;
-  "/api/v1/versions/:version/file-tree": boolean | UnicodeTree;
-  "/api/v1/files/:wildcard": boolean | FileEndpointResponse;
+  "/api/v1/versions": boolean | UnicodeVersionList | TypedResponseResolver<EmptyObject, UnicodeVersionList>;
+  "/api/v1/versions/:version/file-tree": boolean | UnicodeTree | TypedResponseResolver<{
+    version: string;
+  }, UnicodeTree>;
+  "/api/v1/files/:wildcard": (boolean | FileEndpointResponse) | TypedResponseResolver<{
+    wildcard: string;
+  }, FileEndpointResponse>;
 }
 
 type StoreEndpoints = keyof StoreEndpointConfig;

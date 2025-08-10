@@ -3,15 +3,15 @@ import type { StoreEndpointConfig, StoreEndpoints } from "../store";
 import type { HTTPMethod, NonEmptyArray } from "../types";
 import { mockFetch } from "../msw";
 
-interface Context {
+interface Context<Key extends StoreEndpoints> {
   baseUrl: string;
-  response: StoreEndpointConfig[StoreEndpoints];
+  response: StoreEndpointConfig[Key];
 }
 
-type SetupFn = ({ baseUrl, response }: Context) => [NonEmptyArray<HTTPMethod> | HTTPMethod, string, HttpResponseResolver][];
+type SetupFn<Key extends StoreEndpoints> = ({ baseUrl, response }: Context<Key>) => [NonEmptyArray<HTTPMethod> | HTTPMethod, string, HttpResponseResolver][];
 
-export function defineMockFetchHandler(fn: SetupFn) {
-  return ({ baseUrl, response }: Context) => {
+export function defineMockFetchHandler<Key extends StoreEndpoints>(key: Key, fn: SetupFn<Key>) {
+  return ({ baseUrl, response }: Context<Key>) => {
     const endpoints = fn({ baseUrl, response });
     for (const [methods, url, resolver] of endpoints) {
       mockFetch(methods, url, resolver);
