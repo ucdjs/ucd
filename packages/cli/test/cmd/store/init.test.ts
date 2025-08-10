@@ -34,7 +34,7 @@ describe("store init command", () => {
     const storePath = await testdir();
 
     mockFetch([
-      [["GET", "HEAD"], `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
+      ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
         return HttpResponse.json(UNICODE_VERSION_METADATA);
       }],
       ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions/17.0.0/file-tree`, () => {
@@ -79,7 +79,7 @@ describe("store init command", () => {
   it("should fail if neither --remote nor --store-dir is specified", async () => {
     const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     mockFetch([
-      [["GET", "HEAD"], `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
+      ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
         return HttpResponse.json(UNICODE_VERSION_METADATA);
       }],
     ]);
@@ -97,7 +97,7 @@ describe("store init command", () => {
   it("should initialize with specific versions", async () => {
     const storePath = await testdir();
     mockFetch([
-      [["GET", "HEAD"], `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
+      ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
         return HttpResponse.json(UNICODE_VERSION_METADATA);
       }],
       ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions/:version/file-tree`, () => {
@@ -140,7 +140,7 @@ describe("store init command", () => {
     const consoleInfoSpy = vi.spyOn(console, "info").mockImplementation(() => {});
 
     mockFetch([
-      [["GET", "HEAD"], `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
+      ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
         return HttpResponse.json(UNICODE_VERSION_METADATA);
       }],
     ]);
@@ -171,7 +171,7 @@ describe("store init command", () => {
     });
 
     mockFetch([
-      [["GET", "HEAD"], `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
+      ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
         return HttpResponse.json(UNICODE_VERSION_METADATA);
       }],
       ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions/:version/file-tree`, () => {

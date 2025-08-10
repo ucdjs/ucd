@@ -454,9 +454,7 @@ describe("unicode api client", () => {
       let capturedRequest: Request | undefined;
 
       mockFetch([
-        ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, ({
-          request,
-        }) => {
+        ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, ({ request }) => {
           capturedRequest = request;
           return new HttpResponse(JSON.stringify([]), {
             status: 200,
