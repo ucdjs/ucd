@@ -22,7 +22,6 @@ const DEFAULT_VERSIONS = {
 describe("store init", () => {
   beforeEach(() => {
     setupMockStore({
-      baseUrl: UCDJS_API_BASE_URL,
       responses: {
         "/api/v1/versions": [...UNICODE_VERSION_METADATA],
         "/api/v1/versions/:version/file-tree": [{

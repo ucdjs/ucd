@@ -25,6 +25,9 @@ interface StoreEndpointConfig {
   }, FileEndpointResponse>;
 }
 
+type StoreResponseOverrides = Partial<{
+  [K in StoreEndpoints]: false | StoreEndpointConfig[K]
+}>;
 type StoreEndpoints = keyof StoreEndpointConfig;
 
 interface MockStoreConfig {
@@ -33,7 +36,7 @@ interface MockStoreConfig {
    *
    * @default "https://api.ucdjs.dev"
    */
-  baseUrl: string;
+  baseUrl?: string;
 
   /**
    * The responses to mock for the store endpoints.
@@ -43,7 +46,7 @@ interface MockStoreConfig {
    * If the value is `false`, then no handler will be used.
    * If the value provided is a specific response, then that response will be used.
    */
-  responses?: Partial<StoreEndpointConfig>;
+  responses?: StoreResponseOverrides;
 
   /**
    * The versions to use for placeholders
@@ -57,10 +60,15 @@ const DEFAULT_RESPONSES = {
   "/api/v1/versions/:version/file-tree": true,
   "/api/v1/files/.ucd-store.json": true,
   "/api/v1/files/:wildcard": true,
-} satisfies StoreEndpointConfig;
+} as const satisfies StoreResponseOverrides;
 
-export function setupMockStore(config: MockStoreConfig) {
-  const { baseUrl, responses, versions = ["16.0.0", "15.1.0", "15.0.0"] } = config;
+export function setupMockStore(config?: MockStoreConfig) {
+  const {
+    baseUrl = "https://api.ucdjs.dev",
+    responses,
+    versions = ["16.0.0", "15.1.0", "15.0.0"],
+  } = config || {};
+  const normalizedBaseUrl = baseUrl.replace(/\/+$/, "");
 
   const mergedResponses = {
     ...DEFAULT_RESPONSES,
@@ -68,37 +76,41 @@ export function setupMockStore(config: MockStoreConfig) {
   };
 
   function isResponseEnabled(path: StoreEndpoints): boolean {
-    return mergedResponses != null && path in mergedResponses && mergedResponses[path] !== void 0;
+    return path in mergedResponses && mergedResponses[path] !== false;
+  }
+
+  function excludeFalse<T>(obj: T): Exclude<T, false> {
+    return obj as Exclude<T, false>;
   }
 
   if (isResponseEnabled("/api/v1/versions")) {
     versionsMockHandler({
-      baseUrl,
-      response: mergedResponses["/api/v1/versions"],
+      baseUrl: normalizedBaseUrl,
+      response: excludeFalse(mergedResponses["/api/v1/versions"]),
       versions,
     });
   }
 
   if (isResponseEnabled("/api/v1/versions/:version/file-tree")) {
     fileTreeMockHandler({
-      baseUrl,
-      response: mergedResponses["/api/v1/versions/:version/file-tree"],
+      baseUrl: normalizedBaseUrl,
+      response: excludeFalse(mergedResponses["/api/v1/versions/:version/file-tree"]),
       versions,
     });
   }
 
   if (isResponseEnabled("/api/v1/files/:wildcard")) {
     filesMockHandler({
-      baseUrl,
-      response: mergedResponses["/api/v1/files/:wildcard"],
+      baseUrl: normalizedBaseUrl,
+      response: excludeFalse(mergedResponses["/api/v1/files/:wildcard"]),
       versions,
     });
   }
 
   if (isResponseEnabled("/api/v1/files/.ucd-store.json")) {
     filesStoreMockHandler({
-      baseUrl,
-      response: mergedResponses["/api/v1/files/.ucd-store.json"],
+      baseUrl: normalizedBaseUrl,
+      response: excludeFalse(mergedResponses["/api/v1/files/.ucd-store.json"]),
       versions,
     });
   }
