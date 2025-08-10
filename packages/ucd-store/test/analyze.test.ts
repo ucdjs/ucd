@@ -1,4 +1,5 @@
 import { HttpResponse, mockFetch } from "#internal/test-utils/msw";
+import { setupMockStore } from "#internal/test-utils/store";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { assertCapability } from "@ucdjs/fs-bridge";
@@ -9,11 +10,12 @@ import { createMemoryMockFS, stripChildrenFromEntries } from "./__shared";
 
 describe("analyze operations", () => {
   beforeEach(() => {
-    mockFetch([
-      ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
-        return HttpResponse.json(UNICODE_VERSION_METADATA);
-      }],
-    ]);
+    setupMockStore({
+      baseUrl: UCDJS_API_BASE_URL,
+      responses: {
+        "/api/v1/versions": [...UNICODE_VERSION_METADATA],
+      },
+    });
 
     vi.clearAllMocks();
     vi.unstubAllEnvs();
