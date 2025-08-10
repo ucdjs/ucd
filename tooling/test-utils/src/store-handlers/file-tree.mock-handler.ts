@@ -11,7 +11,7 @@ export const fileTreeMockHandler = defineMockFetchHandler("/api/v1/versions/:ver
   }
 
   return [
-    ["GET", `${baseUrl.replace(/\/$/, "")}/api/v1/versions/:version/file-tree`, () => {
+    ["GET", parsedBaseUrl, () => {
       if (response === true || response == null) {
         return HttpResponse.json([
           {
