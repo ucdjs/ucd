@@ -8,7 +8,7 @@ interface Context<Key extends StoreEndpoints> {
   response: StoreEndpointConfig[Key];
 }
 
-type SetupFn<Key extends StoreEndpoints> = ({ baseUrl, response }: Context<Key>) => [NonEmptyArray<HTTPMethod> | HTTPMethod, string, HttpResponseResolver][];
+type SetupFn<Key extends StoreEndpoints> = ({ baseUrl, response }: Context<Key>) => [NonEmptyArray<HTTPMethod> | HTTPMethod, string, HttpResponseResolver<any, any, any>][];
 
 export function defineMockFetchHandler<Key extends StoreEndpoints>(key: Key, fn: SetupFn<Key>) {
   return ({ baseUrl, response }: Context<Key>) => {
