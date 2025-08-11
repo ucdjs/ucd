@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { clearCacheEntry } from "../src/cache";
+import { clearCacheEntry } from "../../../src/lib/worker-shared/cache";
 
 const mockDelete = vi.fn();
 const mockOpen = vi.fn();

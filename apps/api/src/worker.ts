@@ -1,7 +1,7 @@
 import type { HonoEnv } from "./types";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { Scalar } from "@scalar/hono-api-reference";
-import { errorHandler, notFoundHandler, setupCors, setupRatelimit } from "@ucdjs/worker-shared";
+import { errorHandler, notFoundHandler, setupCors, setupRatelimit } from "./lib/worker-shared";
 import { env } from "hono/adapter";
 import { buildOpenApiConfig, registerApp } from "./openapi";
 import { V1_FILES_ROUTER } from "./routes/v1_files/routes";

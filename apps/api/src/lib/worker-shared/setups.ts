@@ -16,7 +16,7 @@ import { customError } from "./errors";
  * @example
  * ```typescript
  * import { Hono } from "hono";
- * import { setupCors } from "@ucdjs/worker-shared";
+ * import { setupCors } from "../../lib/worker-shared";
  *
  * const app = new Hono();
  * setupCors(app);
@@ -67,7 +67,7 @@ export function setupCors<TEnv extends object>(app: Hono<TEnv>): void {
  * @example
  * ```typescript
  * import { Hono } from "hono";
- * import { setupRatelimit } from "@ucdjs/worker-shared";
+ * import { setupRatelimit } from "../../lib/worker-shared";
  *
  * const app = new Hono();
  * setupRatelimit(app);
