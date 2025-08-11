@@ -121,6 +121,7 @@ V1_VERSIONS_ROUTER.openapi(LIST_ALL_UNICODE_VERSIONS_ROUTE, async (c) => {
 
     return c.json(versions, 200);
   } catch (err) {
+    // eslint-disable-next-line no-console
     console.error("Error fetching Unicode versions:", err);
     return internalServerError(c);
   }
@@ -150,6 +151,7 @@ V1_VERSIONS_ROUTER.openapi(GET_VERSION_FILE_TREE_ROUTE, async (c) => {
 
     return c.json(result, 200);
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error("Error processing directory:", error);
     return internalServerError(c, {
       message: "Failed to fetch file mappings",
