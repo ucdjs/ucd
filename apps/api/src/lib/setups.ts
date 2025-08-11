@@ -24,7 +24,6 @@ import { customError } from "./errors";
  */
 export function setupCors<TEnv extends object>(app: Hono<TEnv>): void {
   app.use("*", (c, next) => {
-    // @ts-expect-error Bindings is not defined in the Hono type
     const env = c.env.ENVIRONMENT || "";
     const allowedOrigins = ["https://ucdjs.dev", "https://www.ucdjs.dev"];
 
