@@ -4,21 +4,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   badRequest,
   customError,
-  forbidden,
   internalServerError,
   notFound,
 } from "../../../src/lib";
 import { badGateway } from "../../../src/lib/errors";
 
 const mockDate = new Date("2023-06-15T10:30:00.000Z");
-
-function createMockContext(url: string): Context {
-  return {
-    req: {
-      url,
-    },
-  } as Context;
-}
 
 beforeEach(() => {
   vi.useFakeTimers();

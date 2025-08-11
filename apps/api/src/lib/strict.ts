@@ -3,7 +3,6 @@ import type { ContentfulStatusCode } from "hono/utils/http-status";
 import type { z, ZodType } from "zod";
 import { customError } from "./errors";
 
-// eslint-disable-next-line ts/explicit-function-return-type
 export function strictJSONResponse<
   C extends Context,
   S extends ZodType,

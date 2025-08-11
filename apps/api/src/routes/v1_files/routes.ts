@@ -3,8 +3,8 @@ import type { HonoEnv } from "../../types";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { trimTrailingSlash } from "@luxass/utils";
 import { DEFAULT_USER_AGENT, UCD_FILE_STAT_TYPE_HEADER } from "@ucdjs/env";
-import { badGateway, badRequest, notFound } from "../../lib";
 import { cache } from "hono/cache";
+import { badGateway, badRequest, notFound } from "../../lib";
 import { parseUnicodeDirectory } from "../../lib/files";
 import { GET_UCD_STORE, METADATA_WILDCARD_ROUTE, WILDCARD_ROUTE } from "./openapi";
 
