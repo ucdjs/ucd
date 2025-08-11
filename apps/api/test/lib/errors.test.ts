@@ -1,5 +1,5 @@
 import type { Context } from "hono";
-import type { ApiError } from "../../../src/lib/worker-shared";
+import type { ApiError } from "../../../src/lib";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   badRequest,
@@ -7,8 +7,8 @@ import {
   forbidden,
   internalServerError,
   notFound,
-} from "../../../src/lib/worker-shared";
-import { badGateway } from "../../../src/lib/worker-shared/errors";
+} from "../../../src/lib";
+import { badGateway } from "../../../src/lib/errors";
 
 const mockDate = new Date("2023-06-15T10:30:00.000Z");
 
