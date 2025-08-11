@@ -25,7 +25,7 @@ export interface ResponseOptions {
  *
  * @example
  * ```typescript
- * import { badRequest } from "../../lib/worker-shared";
+ * import { badRequest } from "../../lib";
  *
  * // Basic usage (legacy)
  * return badRequest();
@@ -71,7 +71,7 @@ export function badRequest(contextOrOptions: Context | ResponseOptions = {}, opt
  *
  * @example
  * ```typescript
- * import { forbidden } from "../../lib/worker-shared";
+ * import { forbidden } from "../../lib";
  *
  * // Basic usage (legacy)
  * return forbidden();
@@ -117,7 +117,7 @@ export function forbidden(contextOrOptions: Context | ResponseOptions = {}, opti
  *
  * @example
  * ```typescript
- * import { notFound } from "../../lib/worker-shared";
+ * import { notFound } from "../../lib";
  *
  * // Basic usage (legacy)
  * return notFound();
@@ -163,7 +163,7 @@ export function notFound(contextOrOptions: Context | ResponseOptions = {}, optio
  *
  * @example
  * ```typescript
- * import { internalServerError } from "../../lib/worker-shared";
+ * import { internalServerError } from "../../lib";
  *
  * // Basic usage (legacy)
  * return internalServerError();
@@ -261,7 +261,7 @@ export type CustomResponseOptionsWithContext = CustomResponseOptions & {
  *
  * @example
  * ```typescript
- * import { customError } from "../../lib/worker-shared";
+ * import { customError } from "../../lib";
  *
  * // Custom 422 Unprocessable Entity error (legacy)
  * return customError({

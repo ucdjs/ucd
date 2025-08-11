@@ -8,7 +8,7 @@ type ClearCacheFn = (requestOrPath: Request | string) => Promise<void>;
  *
  * @example
  * ```typescript
- * import { clearCacheEntry } from "../../lib/worker-shared";
+ * import { clearCacheEntry } from "../../lib";
  *
  * const clearMyCache = await clearCacheEntry("v1_files");
  * await clearMyCache("https://api.ucdjs.dev/api/v1/files/16.0.0"); // Clear entry by path
