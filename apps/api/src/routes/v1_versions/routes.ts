@@ -8,8 +8,8 @@ import {
   UNICODE_STABLE_VERSION,
   UNICODE_VERSION_METADATA,
 } from "@luxass/unicode-utils-new";
-import { badRequest, internalServerError, notFound } from "@ucdjs/worker-shared";
 import { traverse } from "apache-autoindex-parse/traverse";
+import { badRequest, internalServerError, notFound } from "../../lib";
 import { createLogger } from "../../lib/logger";
 import { GET_VERSION_FILE_TREE_ROUTE, LIST_ALL_UNICODE_VERSIONS_ROUTE } from "./openapi";
 

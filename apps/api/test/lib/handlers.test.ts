@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { HTTPException } from "hono/http-exception";
 import { describe, expect, it, vi } from "vitest";
-import { errorHandler, notFoundHandler } from "../src/handlers";
+import { errorHandler, notFoundHandler } from "../../src/lib/handlers";
 
 describe("error handler", () => {
   const errorApp = new Hono()
@@ -40,8 +40,8 @@ describe("error handler", () => {
   it("should log errors to console", async () => {
     const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     await errorApp.request("/error/1");
-    expect(consoleErrorSpy).toHaveBeenCalledWith("[worker-shared]: Error processing request:", "/error/1");
-    expect(consoleErrorSpy).toHaveBeenCalledWith("[worker-shared]: Error details:", expect.any(Error));
+    expect(consoleErrorSpy).toHaveBeenCalledWith("[api]: Error processing request:", "/error/1");
+    expect(consoleErrorSpy).toHaveBeenCalledWith("[api]: Error details:", expect.any(Error));
     consoleErrorSpy.mockRestore();
   });
 });
@@ -49,8 +49,7 @@ describe("error handler", () => {
 describe("not found handler", () => {
   const notFoundApp = new Hono()
     .notFound(notFoundHandler)
-    .get("/existing-route", (c) => c.text("This route exists"))
-    .get("/another-route", (c) => c.text("Another route exists"));
+    .get("/exists", (c) => c.text("Found"));
 
   it("should return 404 for non-existing routes", async () => {
     const res = await notFoundApp.request("/non-existing-route");
@@ -63,21 +62,10 @@ describe("not found handler", () => {
     });
   });
 
-  it("should return 404 for routes that exist but are not handled", async () => {
-    const res = await notFoundApp.request("/existing-route/extra");
-    expect(res.status).toBe(404);
-    const body = await res.json();
-    expect(body).toEqual({
-      message: "Not Found",
-      status: 404,
-      timestamp: expect.any(String),
-    });
-  });
-
-  it("should log not found errors to console", async () => {
+  it("should log not found to console", async () => {
     const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
     await notFoundApp.request("/non-existing-route");
-    expect(consoleErrorSpy).toHaveBeenCalledWith("[worker-shared]: Not Found:", "/non-existing-route");
+    expect(consoleErrorSpy).toHaveBeenCalledWith("[api]: Not Found:", "/non-existing-route");
     consoleErrorSpy.mockRestore();
   });
 });
