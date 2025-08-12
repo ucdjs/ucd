@@ -1,4 +1,5 @@
 import type { Env, Hono } from "hono";
+import type { HonoEnv } from "../types";
 import { customError } from "./errors";
 
 /**
@@ -22,7 +23,7 @@ import { customError } from "./errors";
  * setupCors(app);
  * ```
  */
-export function setupCors<TEnv extends object>(app: Hono<TEnv>): void {
+export function setupCors(app: Hono<HonoEnv>): void {
   app.use("*", (c, next) => {
     const env = c.env.ENVIRONMENT || "";
     const allowedOrigins = ["https://ucdjs.dev", "https://www.ucdjs.dev"];

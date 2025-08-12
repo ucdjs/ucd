@@ -1,4 +1,3 @@
-import type { Context } from "hono";
 import type { ApiError } from "../../src/lib";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
