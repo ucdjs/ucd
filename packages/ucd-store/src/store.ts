@@ -14,6 +14,7 @@ import defu from "defu";
 import pLimit from "p-limit";
 import { dirname, isAbsolute, join } from "pathe";
 import { UCDStoreError, UCDStoreInvalidManifestError, UCDStoreVersionNotFoundError } from "./errors";
+import { internal__clean } from "./internal/clean";
 import { getExpectedFilePaths } from "./internal/files";
 
 const DEFAULT_CONCURRENCY = 5;
@@ -99,6 +100,10 @@ export class UCDStore {
 
   get initialized(): boolean {
     return this.#initialized;
+  }
+
+  get manifestPath(): string {
+    return this.#manifestPath;
   }
 
   /**
@@ -224,7 +229,7 @@ export class UCDStore {
     // Only if the provided versions from the options are different
     // than the existing store versions, we will re-initialize it.
     if (existingStore && !force) {
-      const manifest = await this.#readManifest();
+      const manifest = await this["~readManifest"]();
 
       const storeVersions = Object.keys(manifest);
 
@@ -279,7 +284,7 @@ export class UCDStore {
           concurrency: DEFAULT_CONCURRENCY,
         });
         this.#versions = Array.from(new Set([...this.#versions, ...storeVersions]));
-        await this.#writeManifest(this.#versions);
+        await this["~writeManifest"](this.#versions);
         this.#initialized = true;
       }
       return;
@@ -323,11 +328,11 @@ export class UCDStore {
       concurrency: DEFAULT_CONCURRENCY,
     });
 
-    await this.#writeManifest(this.#versions);
+    await this["~writeManifest"](this.#versions);
     this.#initialized = true;
   }
 
-  async #writeManifest(versions: string[]): Promise<void> {
+  async "~writeManifest"(versions: string[]): Promise<void> {
     assertCapability(this.#fs, "write");
     const manifestData: UCDStoreManifest = {};
 
@@ -338,7 +343,7 @@ export class UCDStore {
     await this.#fs.write(this.#manifestPath, JSON.stringify(manifestData, null, 2));
   }
 
-  async #readManifest(): Promise<UCDStoreManifest> {
+  async "~readManifest"(): Promise<UCDStoreManifest> {
     assertCapability(this.#fs, "read");
     const manifestData = await this.#fs.read(this.#manifestPath);
 
@@ -601,104 +606,10 @@ export class UCDStore {
       versions = this.#versions;
     }
 
-    const analysisResult = await this.analyze({
-      checkOrphaned: true,
+    return internal__clean(this, {
       versions,
+      concurrency,
+      dryRun,
     });
-
-    const result: CleanResult[] = [];
-    const directoriesToCheck = new Set<string>();
-
-    // create the limit function to control concurrency
-    if (concurrency < 1) {
-      throw new UCDStoreError("Concurrency must be at least 1");
-    }
-
-    const promises = [];
-
-    // create the limit function to control concurrency
-    const limit = pLimit(concurrency);
-
-    for (const analysis of analysisResult) {
-      // initialize result for this version
-      let versionResult = result.find((r) => r.version === analysis.version);
-      if (!versionResult) {
-        const idx = result.push({
-          version: analysis.version,
-          deleted: [],
-          skipped: [],
-          failed: [],
-        });
-        versionResult = result.at(idx - 1);
-      }
-
-      const joinedFiles = [...analysis.orphanedFiles, ...analysis.files];
-      for (const file of joinedFiles) {
-        const filePath = join(this.basePath, analysis.version, file);
-
-        // track parent directories for cleanup
-        directoriesToCheck.add(dirname(filePath));
-
-        promises.push(limit(async () => {
-          assertCapability(this.#fs, ["exists", "rm"]);
-
-          try {
-            const exists = await this.#fs.exists(filePath);
-            if (!exists) {
-              console.error("File does not exist, skipping deletion:", filePath);
-              versionResult!.skipped.push(file);
-              return;
-            }
-
-            if (!dryRun) {
-              await this.#fs.rm(filePath);
-              versionResult!.deleted.push(file);
-            } else {
-              versionResult!.deleted.push(file);
-            }
-          } catch {
-            versionResult!.failed.push(file);
-          }
-        }));
-      }
-
-      // also add version directory to check for cleanup
-      directoriesToCheck.add(join(this.basePath, analysis.version));
-    }
-
-    await Promise.all(promises);
-
-    // clean up empty directories (bottom-up approach)
-    if (!dryRun) {
-      assertCapability(this.#fs, ["exists", "rm"]);
-
-      // sort directories by depth (deepest first) for bottom-up cleanup
-      const sortedDirectories = Array.from(directoriesToCheck).sort((a, b) => b.split("/").length - a.split("/").length);
-
-      for (const dirPath of sortedDirectories) {
-        try {
-          const exists = await this.#fs.exists(dirPath);
-          if (!exists) continue;
-
-          await this.#fs.rm(dirPath, { recursive: true });
-        } catch {
-          // silently ignore directory deletion failures
-        }
-      }
-    }
-
-    // update the manifest after cleaning
-    const manifest = await this.#readManifest();
-
-    // remove the versions that were cleaned
-    for (const version of versions) {
-      if (manifest && manifest[version]) {
-        delete manifest[version];
-      }
-    }
-
-    await this.#writeManifest(Object.keys(manifest));
-
-    return result;
   }
 }
