@@ -16,7 +16,7 @@ export interface AnalyzeOptions {
   versions?: string[];
 }
 
-export interface VersionAnalysis {
+export interface AnalyzeResult {
   /**
    * Analyzed Unicode version
    * This should be in the format "major.minor.patch" (e.g., "15.0.0")
@@ -59,60 +59,51 @@ export interface VersionAnalysis {
   isComplete: boolean;
 }
 
-export async function internal__analyze(store: UCDStore, options: Required<AnalyzeOptions>): Promise<VersionAnalysis[]> {
+export async function internal__analyze(store: UCDStore, options: Required<AnalyzeOptions>): Promise<AnalyzeResult[]> {
   const { checkOrphaned, versions } = options;
 
-  let versionAnalyses: VersionAnalysis[] = [];
+  const promises = versions.map(async (version) => {
+    if (!store.versions.includes(version)) {
+      throw new UCDStoreVersionNotFoundError(version);
+    }
 
-  try {
-    const promises = versions.map(async (version) => {
-      if (!store.versions.includes(version)) {
-        throw new UCDStoreVersionNotFoundError(version);
+    // get the expected files for this version
+    const expectedFiles = await getExpectedFilePaths(store.client, version);
+
+    // get the actual files from the store
+    const actualFiles = await store.getFilePaths(version);
+
+    const orphanedFiles: string[] = [];
+    const missingFiles: string[] = [];
+    const files: string[] = [];
+
+    for (const expectedFile of expectedFiles) {
+      if (!actualFiles.includes(expectedFile)) {
+        missingFiles.push(expectedFile);
+      }
+    }
+
+    for (const actualFile of actualFiles) {
+      // if file is not in expected files, it's orphaned
+      if (checkOrphaned && !expectedFiles.includes(actualFile)) {
+        orphanedFiles.push(actualFile);
+        continue;
       }
 
-      // get the expected files for this version
-      const expectedFiles = await getExpectedFilePaths(store.client, version);
+      files.push(actualFile);
+    }
 
-      // get the actual files from the store
-      const actualFiles = await store.getFilePaths(version);
+    const isComplete = orphanedFiles.length === 0 && missingFiles.length === 0;
+    return {
+      version,
+      orphanedFiles,
+      missingFiles,
+      fileCount: actualFiles.length,
+      expectedFileCount: expectedFiles.length,
+      isComplete,
+      files,
+    } satisfies AnalyzeResult;
+  });
 
-      const orphanedFiles: string[] = [];
-      const missingFiles: string[] = [];
-      const files: string[] = [];
-
-      for (const expectedFile of expectedFiles) {
-        if (!actualFiles.includes(expectedFile)) {
-          missingFiles.push(expectedFile);
-        }
-      }
-
-      for (const actualFile of actualFiles) {
-        // if file is not in expected files, it's orphaned
-        if (checkOrphaned && !expectedFiles.includes(actualFile)) {
-          orphanedFiles.push(actualFile);
-          continue;
-        }
-
-        files.push(actualFile);
-      }
-
-      const isComplete = orphanedFiles.length === 0 && missingFiles.length === 0;
-      return {
-        version,
-        orphanedFiles,
-        missingFiles,
-        fileCount: actualFiles.length,
-        expectedFileCount: expectedFiles.length,
-        isComplete,
-        files,
-      } satisfies VersionAnalysis;
-    });
-
-    versionAnalyses = await Promise.all(promises);
-
-    return versionAnalyses;
-  } catch (err) {
-    console.error(`Error during store analysis: ${err instanceof Error ? err.message : String(err)}`);
-    return versionAnalyses;
-  }
+  return Promise.all(promises);
 }

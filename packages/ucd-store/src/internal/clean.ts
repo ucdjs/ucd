@@ -30,11 +30,16 @@ export interface CleanResult {
   failed: string[];
 }
 
-export async function internal__clean(store: UCDStore, options: Required<CleanOptions>): Promise<CleanResult[]> {
+export interface internal_CleanOptions extends Required<CleanOptions> {
+  directories?: string[];
+}
+
+export async function internal__clean(store: UCDStore, options: internal_CleanOptions): Promise<CleanResult[]> {
   const {
     versions,
     dryRun,
     concurrency,
+    directories,
   } = options;
 
   const analysisResult = await store.analyze({
@@ -43,7 +48,7 @@ export async function internal__clean(store: UCDStore, options: Required<CleanOp
   });
 
   const result: CleanResult[] = [];
-  const directoriesToCheck = new Set<string>();
+  const directoriesToCheck = new Set<string>(directories);
 
   // create the limit function to control concurrency
   if (concurrency < 1) {
