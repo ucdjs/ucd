@@ -21,6 +21,11 @@ export type {
   CleanResult,
 } from "./internal/clean";
 
+export type {
+  MirrorOptions,
+  MirrorResult,
+} from "./internal/mirror";
+
 export {
   UCDStore,
 } from "./store";
