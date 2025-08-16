@@ -2,14 +2,13 @@ import type { UCDClient, UnicodeTreeNode } from "@ucdjs/fetch";
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 import type { UCDStoreManifest } from "@ucdjs/schemas";
 import type { PathFilter } from "@ucdjs/utils";
+import type { AnalyzeOptions, VersionAnalysis } from "./internal/analyze";
 import type { CleanOptions, CleanResult } from "./internal/clean";
 import type {
-  AnalyzeOptions,
   MirrorOptions,
   MirrorResult,
   StoreInitOptions,
   UCDStoreOptions,
-  VersionAnalysis,
 } from "./types";
 import { hasUCDFolderPath, resolveUCDVersion } from "@luxass/unicode-utils-new";
 import { prependLeadingSlash } from "@luxass/utils";
@@ -21,7 +20,12 @@ import { createPathFilter, flattenFilePaths, safeJsonParse } from "@ucdjs/utils"
 import defu from "defu";
 import pLimit from "p-limit";
 import { dirname, isAbsolute, join } from "pathe";
-import { UCDStoreError, UCDStoreInvalidManifestError, UCDStoreVersionNotFoundError } from "./errors";
+import {
+  UCDStoreError,
+  UCDStoreInvalidManifestError,
+  UCDStoreVersionNotFoundError,
+} from "./errors";
+import { internal__analyze } from "./internal/analyze";
 import { internal__clean } from "./internal/clean";
 import { getExpectedFilePaths } from "./internal/files";
 
@@ -372,65 +376,31 @@ export class UCDStore {
     return parsedManifest.data;
   }
 
+  /**
+   * Analyzes the store to identify potential issues and inconsistencies.
+   *
+   * This method performs a comprehensive analysis of the specified Unicode versions
+   * in the store, checking for missing files, orphaned files (if enabled), and other
+   * integrity issues. The analysis helps maintain store health and identify problems
+   * that may need attention.
+   *
+   * @param {AnalyzeOptions} options - Configuration options for the analysis operation
+   * @returns {Promise<VersionAnalysis[]>} A promise that resolves to an array of VersionAnalysis objects, one for each analyzed version
+   *
+   * @throws {UCDStoreVersionNotFoundError} When a specified version is not available in the store
+   * @throws {BridgeUnsupportedOperation} When the filesystem doesn't support required capabilities
+   * @throws {UCDStoreError} When other operational errors occur during analysis
+   */
   async analyze(options: AnalyzeOptions): Promise<VersionAnalysis[]> {
     const {
       checkOrphaned = false,
       versions = this.#versions,
     } = options;
 
-    let versionAnalyses: VersionAnalysis[] = [];
-
-    try {
-      const promises = versions.map(async (version) => {
-        if (!this.versions.includes(version)) {
-          throw new UCDStoreVersionNotFoundError(version);
-        }
-
-        // get the expected files for this version
-        const expectedFiles = await getExpectedFilePaths(this.#client, version);
-
-        // get the actual files from the store
-        const actualFiles = await this.getFilePaths(version);
-
-        const orphanedFiles: string[] = [];
-        const missingFiles: string[] = [];
-        const files: string[] = [];
-
-        for (const expectedFile of expectedFiles) {
-          if (!actualFiles.includes(expectedFile)) {
-            missingFiles.push(expectedFile);
-          }
-        }
-
-        for (const actualFile of actualFiles) {
-          // if file is not in expected files, it's orphaned
-          if (checkOrphaned && !expectedFiles.includes(actualFile)) {
-            orphanedFiles.push(actualFile);
-            continue;
-          }
-
-          files.push(actualFile);
-        }
-
-        const isComplete = orphanedFiles.length === 0 && missingFiles.length === 0;
-        return {
-          version,
-          orphanedFiles,
-          missingFiles,
-          fileCount: actualFiles.length,
-          expectedFileCount: expectedFiles.length,
-          isComplete,
-          files,
-        } satisfies VersionAnalysis;
-      });
-
-      versionAnalyses = await Promise.all(promises);
-
-      return versionAnalyses;
-    } catch (err) {
-      console.error(`Error during store analysis: ${err instanceof Error ? err.message : String(err)}`);
-      return versionAnalyses;
-    }
+    return internal__analyze(this, {
+      checkOrphaned,
+      versions,
+    });
   }
 
   async mirror(options: MirrorOptions): Promise<MirrorResult[]> {

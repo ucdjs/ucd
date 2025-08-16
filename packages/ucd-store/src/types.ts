@@ -56,63 +56,6 @@ export interface SharedStoreOperationOptions {
   concurrency?: number;
 }
 
-export interface AnalyzeOptions {
-  /**
-   * Whether to check for orphaned files in the store.
-   * Orphaned files are those that are not referenced by any Unicode version or data.
-   * This can help identify files that are no longer needed.
-   */
-  checkOrphaned?: boolean;
-
-  /**
-   * Specific versions to analyze (if not provided, analyzes all)
-   */
-  versions?: string[];
-}
-
-export interface VersionAnalysis {
-  /**
-   * Analyzed Unicode version
-   * This should be in the format "major.minor.patch" (e.g., "15.0.0")
-   */
-  version: string;
-
-  /**
-   * List of orphaned files (files that exist but shouldn't)
-   */
-  orphanedFiles: string[];
-
-  /**
-   * List of missing files (if any)
-   */
-  missingFiles: string[];
-
-  /**
-   * List of files that were found in the store for this version
-   *
-   * NOTE:
-   * This does not include orphaned files. It only includes files that are expected to be present for the version.
-   */
-  files: string[];
-
-  /**
-   * Total number of files expected for this version
-   */
-  expectedFileCount: number;
-
-  /**
-   * Number of files found for this version
-   */
-  fileCount: number;
-
-  /**
-   * Whether the version is complete
-   * This means all expected files are present and no orphaned files exist.
-   * If this is false, it indicates that some files are missing or there are orphaned files.
-   */
-  isComplete: boolean;
-}
-
 export interface StoreInitOptions {
   dryRun?: boolean;
   force?: boolean;
