@@ -52,9 +52,7 @@ describe("store clean", () => {
   });
 
   it("should clean a valid store", async () => {
-    const storePath = await testdir({}, {
-      cleanup: false,
-    });
+    const storePath = await testdir();
 
     const store = await createNodeUCDStore({
       basePath: storePath,
@@ -62,6 +60,7 @@ describe("store clean", () => {
     });
 
     await store.init();
+    await store.mirror();
 
     expect(existsSync(`${storePath}/.ucd-store.json`)).toBe(true);
     expect(existsSync(`${storePath}/15.0.0/ArabicShaping.txt`)).toBe(true);
@@ -104,6 +103,7 @@ describe("store clean", () => {
     });
 
     await store.init();
+    await store.mirror();
 
     const [clean15Result] = await store.clean();
 
@@ -156,6 +156,7 @@ describe("store clean", () => {
     });
 
     await store.init();
+    await store.mirror();
 
     expect(existsSync(`${storePath}/.ucd-store.json`)).toBe(true);
     expect(readFileSync(`${storePath}/.ucd-store.json`, "utf-8")).toBe(JSON.stringify({
@@ -200,6 +201,7 @@ describe("store clean", () => {
     });
 
     await store.init();
+    await store.mirror();
 
     expect(existsSync(`${storePath}/.ucd-store.json`)).toBe(true);
     expect(readFileSync(`${storePath}/.ucd-store.json`, "utf-8")).toBe(JSON.stringify({

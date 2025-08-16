@@ -56,9 +56,16 @@ export interface SharedStoreOperationOptions {
   concurrency?: number;
 }
 
-export type StoreInitOptions = Pick<SharedStoreOperationOptions, "dryRun"> & {
+export interface StoreInitOptions {
   /**
-   * Whether to force the initialization even if the store is not empty.
+   * Whether to force overwrite existing store manifest and directories.
+   * When true, existing manifest will be recreated even if it already exists.
    */
   force?: boolean;
-};
+
+  /**
+   * Whether to perform a dry run without actually creating files or directories.
+   * This is useful for testing and debugging the initialization process.
+   */
+  dryRun?: boolean;
+}

@@ -13,7 +13,7 @@ export {
 
 export type {
   AnalyzeOptions,
-  VersionAnalysis,
+  AnalyzeResult,
 } from "./internal/analyze";
 
 export type {
