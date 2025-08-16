@@ -32,10 +32,6 @@
   - changed-files:
       - any-glob-to-any-file: packages/utils/**
 
-"pkg: worker-shared":
-  - changed-files:
-      - any-glob-to-any-file: packages/worker-shared/**
-
 "apps: api":
   - changed-files:
       - any-glob-to-any-file: apps/api/**
