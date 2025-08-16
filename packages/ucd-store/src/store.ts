@@ -214,6 +214,31 @@ export class UCDStore {
     return flattenFilePaths(tree);
   }
 
+  async getFile(version: string, filePath: string, extraFilters?: string[]): Promise<string> {
+    assertCapability(this.#fs, "read");
+    if (!this.#versions.includes(version)) {
+      throw new UCDStoreVersionNotFoundError(version);
+    }
+
+    if (!this.#filter(filePath, extraFilters)) {
+      throw new UCDStoreError(`File path "${filePath}" is filtered out by the store's filter patterns.`);
+    }
+
+    try {
+      if (isAbsolute(filePath)) {
+        return await this.#fs.read(filePath);
+      }
+
+      return await this.#fs.read(join(version, filePath));
+    } catch (err) {
+      if (err instanceof Error && err.message.includes("ENOENT")) {
+        throw new UCDStoreError(`File '${filePath}' does not exist in version '${version}'.`);
+      }
+
+      throw err;
+    }
+  }
+
   async init(options: StoreInitOptions = {}): Promise<void> {
     assertCapability(this.#fs, ["exists", "read"]);
 
@@ -367,6 +392,22 @@ export class UCDStore {
     });
   }
 
+  /**
+   * Mirrors Unicode data files from the remote UCD API to the local store.
+   *
+   * This method downloads and synchronizes Unicode data files for the specified versions
+   * from the remote UCD API to the local filesystem. It handles concurrent downloads,
+   * supports dry-run mode for testing, and can force re-download of existing files.
+   * The mirroring process ensures that the local store contains all necessary files
+   * for the specified Unicode versions.
+   *
+   * @param {MirrorOptions} options - Configuration options for the mirroring operation
+   * @returns {Promise<MirrorResult[]>} A promise that resolves to an array of MirrorResult objects, one for each mirrored version
+   *
+   * @throws {UCDStoreVersionNotFoundError} When a specified version is not available in the remote API
+   * @throws {BridgeUnsupportedOperation} When the filesystem doesn't support required capabilities (mkdir, write)
+   * @throws {UCDStoreError} When the concurrency parameter is less than 1 or other operational errors occur
+   */
   async mirror(options: MirrorOptions): Promise<MirrorResult[]> {
     const {
       versions = this.#versions,
@@ -381,31 +422,6 @@ export class UCDStore {
       dryRun,
       force,
     });
-  }
-
-  async getFile(version: string, filePath: string, extraFilters?: string[]): Promise<string> {
-    assertCapability(this.#fs, "read");
-    if (!this.#versions.includes(version)) {
-      throw new UCDStoreVersionNotFoundError(version);
-    }
-
-    if (!this.#filter(filePath, extraFilters)) {
-      throw new UCDStoreError(`File path "${filePath}" is filtered out by the store's filter patterns.`);
-    }
-
-    try {
-      if (isAbsolute(filePath)) {
-        return await this.#fs.read(filePath);
-      }
-
-      return await this.#fs.read(join(version, filePath));
-    } catch (err) {
-      if (err instanceof Error && err.message.includes("ENOENT")) {
-        throw new UCDStoreError(`File '${filePath}' does not exist in version '${version}'.`);
-      }
-
-      throw err;
-    }
   }
 
   /**
