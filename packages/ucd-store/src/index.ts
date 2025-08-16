@@ -12,6 +12,11 @@ export {
 } from "./factory";
 
 export type {
+  AnalyzeOptions,
+  VersionAnalysis,
+} from "./internal/analyze";
+
+export type {
   CleanOptions,
   CleanResult,
 } from "./internal/clean";
