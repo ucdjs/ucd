@@ -56,7 +56,9 @@ export interface SharedStoreOperationOptions {
   concurrency?: number;
 }
 
-export interface StoreInitOptions {
-  dryRun?: boolean;
+export type StoreInitOptions = Pick<SharedStoreOperationOptions, "dryRun"> & {
+  /**
+   * Whether to force the initialization even if the store is not empty.
+   */
   force?: boolean;
-}
+};
