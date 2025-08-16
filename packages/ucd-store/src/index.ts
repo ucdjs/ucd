@@ -11,6 +11,11 @@ export {
   createUCDStore,
 } from "./factory";
 
+export type {
+  CleanOptions,
+  CleanResult,
+} from "./internal/clean";
+
 export {
   UCDStore,
 } from "./store";

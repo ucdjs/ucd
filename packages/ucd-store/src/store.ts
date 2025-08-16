@@ -2,7 +2,15 @@ import type { UCDClient, UnicodeTreeNode } from "@ucdjs/fetch";
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 import type { UCDStoreManifest } from "@ucdjs/schemas";
 import type { PathFilter } from "@ucdjs/utils";
-import type { AnalyzeOptions, CleanOptions, CleanResult, MirrorOptions, MirrorResult, StoreInitOptions, UCDStoreOptions, VersionAnalysis } from "./types";
+import type { CleanOptions, CleanResult } from "./internal/clean";
+import type {
+  AnalyzeOptions,
+  MirrorOptions,
+  MirrorResult,
+  StoreInitOptions,
+  UCDStoreOptions,
+  VersionAnalysis,
+} from "./types";
 import { hasUCDFolderPath, resolveUCDVersion } from "@luxass/unicode-utils-new";
 import { prependLeadingSlash } from "@luxass/utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
@@ -595,6 +603,20 @@ export class UCDStore {
     }
   }
 
+  /**
+   * Cleans orphaned and invalid files from the store.
+   *
+   * This method analyzes the store to identify files that should not exist (orphaned files)
+   * or are corrupted/invalid, and removes them from the filesystem. This helps maintain
+   * store integrity and free up disk space.
+   *
+   * @param {CleanOptions} options - Configuration options for the cleaning operation
+   * @returns {Promise<CleanResult[]>} A promise that resolves to an array of CleanResult objects, one for each version cleaned
+   *
+   * @throws {UCDStoreVersionNotFoundError} When a specified version is not available in the store
+   * @throws {BridgeUnsupportedOperation} When the filesystem doesn't support required capabilities
+   * @throws {UCDStoreError} When the concurrency parameter is less than 1 or other operational errors occur
+   */
   async clean(options: CleanOptions = {}): Promise<CleanResult[]> {
     let {
       versions = [],
