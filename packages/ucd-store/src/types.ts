@@ -35,6 +35,27 @@ export interface UCDStoreOptions {
   versions?: string[];
 }
 
+export interface SharedStoreOperationOptions {
+  /**
+   * List of Unicode versions to include in the operation.
+   * If not provided, the operation will include all available versions.
+   */
+  versions?: string[];
+
+  /**
+   * Whether to perform a dry run without actually writing files.
+   * This is useful for testing and debugging the store actions.
+   */
+  dryRun?: boolean;
+
+  /**
+   * Concurrency level for file operations.
+   * This controls how many files can be processed in parallel.
+   * Higher values may speed up the process but can also increase resource usage.
+   */
+  concurrency?: number;
+}
+
 export interface AnalyzeOptions {
   /**
    * Whether to check for orphaned files in the store.
@@ -155,8 +176,17 @@ export interface CleanOptions {
    */
   versions?: string[];
 
+  /**
+   * Concurrency level for file operations.
+   * This controls how many files can be processed in parallel.
+   * Higher values may speed up the cleaning process but can also increase resource usage.
+   */
   concurrency?: number;
 
+  /**
+   * Whether to perform a dry run without actually deleting files.
+   * This is useful for testing and debugging the cleaning process.
+   */
   dryRun?: boolean;
 }
 
