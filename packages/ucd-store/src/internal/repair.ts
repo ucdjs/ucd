@@ -128,7 +128,13 @@ async function handleOrphanedFiles(
 
           const exists = await store.fs.exists(filePath);
           if (!exists) {
-            // TODO: should we throw here?
+            versionResult.failed.push({
+              filePath: orphanedFile,
+              error: "File does not exist",
+              operation: "remove",
+            });
+
+            versionResult.status = "failure";
             return;
           }
 
@@ -189,12 +195,13 @@ async function handleMissingFiles(
       const mirrorResult = mirrorResults.find((r) => r.version === analysis.version);
 
       if (mirrorResult) {
+        const failedSet = new Set(mirrorResult.failed);
         const restoredFiles = mirrorResult.mirrored.filter((file) =>
           analysis.missingFiles.includes(file),
         );
         versionResult.restored.push(...restoredFiles);
 
-        for (const failedFile of mirrorResult.failed) {
+        for (const failedFile of failedSet) {
           if (analysis.missingFiles.includes(failedFile)) {
             versionResult.failed.push({
               filePath: failedFile,
@@ -204,6 +211,28 @@ async function handleMissingFiles(
             versionResult.status = "failure";
           }
         }
+
+        // any remaining missing files are still unresolved => mark as failure
+        for (const missingFile of analysis.missingFiles) {
+          if (!restoredFiles.includes(missingFile) && !failedSet.has(missingFile)) {
+            versionResult.failed.push({
+              filePath: missingFile,
+              error: "File not restored",
+              operation: "download",
+            });
+            versionResult.status = "failure";
+          }
+        }
+      } else {
+        // mirror produced no result for this version; mark all missing as failed
+        for (const missingFile of analysis.missingFiles) {
+          versionResult.failed.push({
+            filePath: missingFile,
+            error: "Mirroring returned no result",
+            operation: "download",
+          });
+        }
+        versionResult.status = "failure";
       }
     }
   } catch (err) {

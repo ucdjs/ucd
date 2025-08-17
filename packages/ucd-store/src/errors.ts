@@ -57,7 +57,7 @@ export class UCDStoreInvalidManifestError extends UCDStoreError {
 
 export class UCDStoreNotInitializedError extends UCDStoreError {
   constructor() {
-    super("Store is not initialized. Please initialize the store before repairing.");
+    super("Store is not initialized. Please initialize the store before performing operations.");
     this.name = "UCDStoreNotInitializedError";
   }
 }

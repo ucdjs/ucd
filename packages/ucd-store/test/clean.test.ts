@@ -284,12 +284,20 @@ describe("store clean", () => {
     assertCapability(store.fs, ["rm", "exists"]);
     expect(await store.fs.exists(`./15.0.0/ArabicShaping.txt`)).toBe(true);
 
-    const cleanPromise = store.clean({ concurrency: 1 });
+    vi.spyOn(store, "analyze").mockResolvedValue([{
+      version: "15.0.0",
+      files: ["BidiBrackets.txt", "extracted/DerivedBidiClass.txt"],
+      missingFiles: [],
+      orphanedFiles: ["ArabicShaping.txt"],
+      fileCount: 2,
+      expectedFileCount: 3,
+      isComplete: false,
+    }]);
 
     await store.fs.rm(`./15.0.0/ArabicShaping.txt`);
     expect(await store.fs.exists(`./15.0.0/ArabicShaping.txt`)).toBe(false);
 
-    const [clean15Result] = await cleanPromise;
+    const [clean15Result] = await store.clean({ concurrency: 1 });
 
     expect(clean15Result?.version).toBe("15.0.0");
     expect(clean15Result?.skipped).toEqual(["ArabicShaping.txt"]);
@@ -312,16 +320,21 @@ describe("store clean", () => {
     await store.mirror();
 
     assertCapability(store.fs, ["rm", "exists"]);
-    expect(await store.fs.exists(`./15.0.0/ArabicShaping.txt`)).toBe(true);
-
-    // make fs.exists always return true, to let the fs removal process fail
-    vi.spyOn(store.fs, "exists").mockResolvedValue(true);
-
-    const cleaningPromise = store.clean({ concurrency: 1 });
-
     await store.fs.rm(`./15.0.0/ArabicShaping.txt`);
 
-    const [clean15Result] = await cleaningPromise;
+    vi.spyOn(store.fs, "exists").mockResolvedValue(true);
+
+    vi.spyOn(store, "analyze").mockResolvedValue([{
+      version: "15.0.0",
+      files: ["BidiBrackets.txt", "extracted/DerivedBidiClass.txt"],
+      missingFiles: [],
+      orphanedFiles: ["ArabicShaping.txt"],
+      fileCount: 2,
+      expectedFileCount: 3,
+      isComplete: false,
+    }]);
+
+    const [clean15Result] = await store.clean({ concurrency: 1 });
 
     expect(clean15Result?.version).toBe("15.0.0");
     expect(clean15Result?.skipped).toEqual([]);

@@ -77,7 +77,9 @@ describe("store mirror", () => {
     });
 
     await store.init();
-    const [mirror15Result, mirror16Result] = await store.mirror();
+    const mirrorResults = await store.mirror();
+
+    const [mirror15Result, mirror16Result] = mirrorResults;
 
     expect(mirror15Result?.version).toBe("15.0.0");
     expect(mirror16Result?.version).toBe("16.0.0");
