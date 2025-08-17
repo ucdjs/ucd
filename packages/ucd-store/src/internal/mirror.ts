@@ -111,8 +111,7 @@ export async function internal__mirror(store: UCDStore, options: Required<Mirror
         } else {
           versionResult!.skipped.push(filePath);
         }
-      } catch (err) {
-        console.error(`Failed to mirror file ${filePath}: ${err instanceof Error ? err.message : String(err)}`);
+      } catch {
         versionResult!.failed.push(filePath);
       }
     });
@@ -168,7 +167,12 @@ async function internal__mirrorFile(store: UCDStore, version: string, filePath: 
   let content: string | Uint8Array;
 
   if (contentType?.startsWith("application/json")) {
-    content = await response.json();
+    // we can't write an object to a file directly, only strings or buffers
+    // but instead of JSON parsing it, and then stringifying it again,
+    // we can just use the raw text response.
+
+    // This will also prevent errors on invalid json, since we are not parsing it.
+    content = await response.text();
   } else if (contentType?.startsWith("text/")) {
     content = await response.text();
   } else {
