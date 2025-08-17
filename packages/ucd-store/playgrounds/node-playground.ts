@@ -72,27 +72,35 @@ try {
 await store.init();
 
 // analyze the store
-const [analysis] = await store.analyze({
+const analysisResult = await store.analyze({
   versions: ["15.1.0"],
   checkOrphaned: true,
 });
 
+assert(analysisResult.success, "store analysis should succeed");
+assert(analysisResult.data[0], "analysis should contain data");
+
+const [analysis] = analysisResult.data;
 log.info("Store analysis results:", analysis);
 
-assert(analysis?.version === "15.1.0", "analysis should contain the correct version");
-assert(analysis?.orphanedFiles.length === 0, "there should be no orphaned files");
+assert(analysis.version === "15.1.0", "analysis should contain the correct version");
+assert(analysis.orphanedFiles.length === 0, "there should be no orphaned files");
 log.info("Store initialized and analyzed successfully");
 
 // write orphaned files to the store
 await store.fs.write("./15.1.0/orphaned.txt", "This is an orphaned file");
 log.info("Orphaned file written to the store");
 
-const [newAnalysis] = await store.analyze({
+const newAnalysisResult = await store.analyze({
   versions: ["15.1.0"],
   checkOrphaned: true,
 });
 
+assert(newAnalysisResult.success, "new store analysis should succeed");
+assert(newAnalysisResult.data[0], "new analysis should contain data");
+
+const [newAnalysis] = newAnalysisResult.data;
 log.info("New store analysis results after writing orphaned file:", newAnalysis);
-assert(newAnalysis?.orphanedFiles.length === 1, "there should be one orphaned file");
+assert(newAnalysis.orphanedFiles.length === 1, "there should be one orphaned file");
 
 log.info("Node playground completed successfully");
