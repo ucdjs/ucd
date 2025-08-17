@@ -48,7 +48,6 @@ export class UCDStore {
   #versions: string[] = [];
   #manifestPath: string;
   #initialized: boolean = false;
-  #computedStatus: string = "uninitialized";
 
   constructor(options: UCDStoreOptions) {
     const { baseUrl, globalFilters, fs, basePath, versions } = defu(options, {
@@ -118,22 +117,16 @@ export class UCDStore {
     return this.#manifestPath;
   }
 
-  get status(): string {
+  async getFileTree(version: string, extraFilters?: string[]): Promise<UnicodeTreeNode[]> {
     if (!this.#initialized) {
-      return "uninitialized";
+      throw new UCDStoreNotInitializedError();
     }
 
-    return this.#computedStatus;
-  }
-
-  async getFileTree(version: string, extraFilters?: string[]): Promise<UnicodeTreeNode[]> {
-    assertCapability(this.#fs, "listdir");
     if (!this.#versions.includes(version)) {
       throw new UCDStoreVersionNotFoundError(version);
     }
 
-    // TODO: utilize the store.status when available
-
+    assertCapability(this.#fs, "listdir");
     const entries = await this.#fs.listdir(join(this.basePath, version), true);
 
     const filterDirectoryChildren = (children: UnicodeTreeNode[], parentPath: string): UnicodeTreeNode[] => {
@@ -203,6 +196,10 @@ export class UCDStore {
   }
 
   async getFilePaths(version: string, extraFilters?: string[]): Promise<string[]> {
+    if (!this.#initialized) {
+      throw new UCDStoreNotInitializedError();
+    }
+
     if (!this.#versions.includes(version)) {
       throw new UCDStoreVersionNotFoundError(version);
     }
@@ -213,7 +210,10 @@ export class UCDStore {
   }
 
   async getFile(version: string, filePath: string, extraFilters?: string[]): Promise<string> {
-    assertCapability(this.#fs, "read");
+    if (!this.#initialized) {
+      throw new UCDStoreNotInitializedError();
+    }
+
     if (!this.#versions.includes(version)) {
       throw new UCDStoreVersionNotFoundError(version);
     }
@@ -222,6 +222,7 @@ export class UCDStore {
       throw new UCDStoreError(`File path "${filePath}" is filtered out by the store's filter patterns.`);
     }
 
+    assertCapability(this.#fs, "read");
     try {
       if (isAbsolute(filePath)) {
         return await this.#fs.read(filePath);
