@@ -68,7 +68,7 @@ export async function internal__repair(store: UCDStore, options: Required<Repair
     status: "success" as const,
     restored: [],
     removed: [],
-    skipped: analysis.isComplete ? analysis.files : [...analysis.files],
+    skipped: analysis.isComplete ? analysis.files : [],
     failed: [],
   }));
 
