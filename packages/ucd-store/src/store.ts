@@ -7,7 +7,7 @@ import type { CleanOptions, CleanResult } from "./internal/clean";
 import type { MirrorOptions, MirrorResult } from "./internal/mirror";
 import type { RepairOptions, RepairResult } from "./internal/repair";
 import type {
-  StoreInitOptions,
+  InitOptions,
   UCDStoreOptions,
 } from "./types";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
@@ -238,7 +238,7 @@ export class UCDStore {
     }
   }
 
-  async init(options: StoreInitOptions = {}): Promise<void> {
+  async init(options: InitOptions = {}): Promise<void> {
     const { force = false, dryRun = false } = options;
 
     assertCapability(this.#fs, ["exists"]);
