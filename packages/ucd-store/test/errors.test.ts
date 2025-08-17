@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   UCDStoreError,
   UCDStoreFileNotFoundError,
-  UCDStoreUnsupportedFeature,
+  UCDStoreBridgeUnsupportedOperation,
   UCDStoreVersionNotFoundError,
 } from "../src/errors";
 
@@ -87,11 +87,11 @@ describe("custom errors", () => {
       const feature = "advanced-search";
       const requiredCapabilities = ["indexing", "full-text-search"];
       const availableCapabilities = ["basic-search"];
-      const error = new UCDStoreUnsupportedFeature(feature, requiredCapabilities, availableCapabilities);
+      const error = new UCDStoreBridgeUnsupportedOperation(feature, requiredCapabilities, availableCapabilities);
 
       expect(error).toBeInstanceOf(Error);
       expect(error).toBeInstanceOf(UCDStoreError);
-      expect(error).toBeInstanceOf(UCDStoreUnsupportedFeature);
+      expect(error).toBeInstanceOf(UCDStoreBridgeUnsupportedOperation);
       expect(error.name).toBe("UCDStoreUnsupportedFeature");
       expect(error.feature).toBe(feature);
       expect(error.requiredCapabilities).toEqual(requiredCapabilities);
@@ -102,7 +102,7 @@ describe("custom errors", () => {
       const feature = "unicode-normalization";
       const requiredCapabilities = ["nfc", "nfd", "nfkc", "nfkd"];
       const availableCapabilities = ["nfc", "nfd"];
-      const error = new UCDStoreUnsupportedFeature(feature, requiredCapabilities, availableCapabilities);
+      const error = new UCDStoreBridgeUnsupportedOperation(feature, requiredCapabilities, availableCapabilities);
 
       const expectedMessage = `Feature "unicode-normalization" is not supported. Required capabilities: nfc, nfd, nfkc, nfkd. Available capabilities: nfc, nfd`;
       expect(error.message).toBe(expectedMessage);
@@ -112,7 +112,7 @@ describe("custom errors", () => {
       const feature = "compression";
       const requiredCapabilities = ["gzip"];
       const availableCapabilities = ["deflate"];
-      const error = new UCDStoreUnsupportedFeature(feature, requiredCapabilities, availableCapabilities);
+      const error = new UCDStoreBridgeUnsupportedOperation(feature, requiredCapabilities, availableCapabilities);
 
       const expectedMessage = `Feature "compression" is not supported. Required capabilities: gzip. Available capabilities: deflate`;
       expect(error.message).toBe(expectedMessage);
@@ -122,7 +122,7 @@ describe("custom errors", () => {
       const feature = "experimental-feature";
       const requiredCapabilities: string[] = [];
       const availableCapabilities: string[] = [];
-      const error = new UCDStoreUnsupportedFeature(feature, requiredCapabilities, availableCapabilities);
+      const error = new UCDStoreBridgeUnsupportedOperation(feature, requiredCapabilities, availableCapabilities);
 
       const expectedMessage = `Feature "experimental-feature" is not supported. Required capabilities: . Available capabilities: `;
       expect(error.message).toBe(expectedMessage);
@@ -135,7 +135,7 @@ describe("custom errors", () => {
       const originalRequired = [...requiredCapabilities];
       const originalAvailable = [...availableCapabilities];
 
-      const error = new UCDStoreUnsupportedFeature(feature, requiredCapabilities, availableCapabilities);
+      const error = new UCDStoreBridgeUnsupportedOperation(feature, requiredCapabilities, availableCapabilities);
 
       expect(error.requiredCapabilities).toEqual(originalRequired);
       expect(error.availableCapabilities).toEqual(originalAvailable);

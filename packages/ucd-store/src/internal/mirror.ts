@@ -57,72 +57,68 @@ export async function internal__mirror(store: UCDStore, options: Required<Mirror
   // create the limit function to control concurrency
   const limit = pLimit(concurrency);
 
-  try {
-    // pre-create directory structure to avoid repeated checks
-    const directoriesToCreate = new Set<string>();
+  // pre-create directory structure to avoid repeated checks
+  const directoriesToCreate = new Set<string>();
 
-    const filesQueue = await Promise.all(
-      versions.map(async (version) => {
-        if (!store.versions.includes(version)) {
-          throw new UCDStoreVersionNotFoundError(version);
-        }
-        const filePaths = await getExpectedFilePaths(store.client, version);
-
-        // collect unique directories
-        for (const filePath of filePaths) {
-          const localPath = join(store.basePath!, version, filePath);
-          directoriesToCreate.add(dirname(localPath));
-        }
-
-        return filePaths.map((filePath): [string, string] => [version, filePath]);
-      }),
-    ).then((results) => results.flat());
-
-    // pre-create all directories
-    await Promise.all([...directoriesToCreate].map(async (dir) => {
-      assertCapability(store.fs, ["mkdir", "exists"]);
-      if (!await store.fs.exists(dir)) {
-        await store.fs.mkdir(dir);
+  const filesQueue = await Promise.all(
+    versions.map(async (version) => {
+      if (!store.versions.includes(version)) {
+        throw new UCDStoreVersionNotFoundError(version);
       }
-    }));
 
-    await Promise.all(filesQueue.map(async ([version, filePath]) => {
-      return limit(async () => {
-        let versionResult = result.find((r) => r.version === version);
-        if (!versionResult) {
-          const idx = result.push({
-            version,
-            mirrored: [],
-            skipped: [],
-            failed: [],
-          });
+      const filePaths = await getExpectedFilePaths(store.client, version);
 
-          versionResult = result.at(idx - 1);
+      // collect unique directories
+      for (const filePath of filePaths) {
+        const localPath = join(store.basePath!, version, filePath);
+        directoriesToCreate.add(dirname(localPath));
+      }
+
+      return filePaths.map((filePath): [string, string] => [version, filePath]);
+    }),
+  ).then((results) => results.flat());
+
+  // pre-create all directories
+  await Promise.all([...directoriesToCreate].map(async (dir) => {
+    assertCapability(store.fs, ["mkdir", "exists"]);
+    if (!await store.fs.exists(dir)) {
+      await store.fs.mkdir(dir);
+    }
+  }));
+
+  await Promise.all(filesQueue.map(async ([version, filePath]) => {
+    return limit(async () => {
+      let versionResult = result.find((r) => r.version === version);
+      if (!versionResult) {
+        const idx = result.push({
+          version,
+          mirrored: [],
+          skipped: [],
+          failed: [],
+        });
+
+        versionResult = result.at(idx - 1);
+      }
+
+      try {
+        const isMirrored = await internal__mirrorFile(store, version, filePath, {
+          force,
+          dryRun,
+        });
+
+        if (isMirrored) {
+          versionResult!.mirrored.push(filePath);
+        } else {
+          versionResult!.skipped.push(filePath);
         }
+      } catch (err) {
+        console.error(`Failed to mirror file ${filePath}: ${err instanceof Error ? err.message : String(err)}`);
+        versionResult!.failed.push(filePath);
+      }
+    });
+  }));
 
-        try {
-          const isMirrored = await internal__mirrorFile(store, version, filePath, {
-            force,
-            dryRun,
-          });
-
-          if (isMirrored) {
-            versionResult!.mirrored.push(filePath);
-          } else {
-            versionResult!.skipped.push(filePath);
-          }
-        } catch (err) {
-          console.error(`Failed to mirror file ${filePath}: ${err instanceof Error ? err.message : String(err)}`);
-          versionResult!.failed.push(filePath);
-        }
-      });
-    }));
-
-    return result;
-  } catch (err) {
-    console.error(`Error during mirroring: ${err instanceof Error ? err.message : String(err)}`);
-    return [];
-  }
+  return result;
 }
 
 async function internal__mirrorFile(store: UCDStore, version: string, filePath: string, options: Pick<MirrorOptions, "force" | "dryRun">): Promise<boolean> {

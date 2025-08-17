@@ -8,6 +8,7 @@ import type { MirrorOptions, MirrorResult } from "./internal/mirror";
 import type { RepairOptions, RepairResult } from "./internal/repair";
 import type {
   InitOptions,
+  StoreOperationResult,
   UCDStoreOptions,
 } from "./types";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
@@ -360,9 +361,15 @@ export class UCDStore {
    * @throws {BridgeUnsupportedOperation} When the filesystem doesn't support required capabilities (mkdir, write)
    * @throws {UCDStoreError} When the concurrency parameter is less than 1 or other operational errors occur
    */
-  async mirror(options: MirrorOptions = {}): Promise<MirrorResult[]> {
+  async mirror(options: MirrorOptions = {}): Promise<StoreOperationResult<MirrorResult[]>> {
     if (!this.#initialized) {
-      throw new UCDStoreNotInitializedError();
+      return {
+        success: false,
+        errors: [{
+          message: "Store is not initialized. Please initialize the store before performing operations.",
+          type: "NOT_INITIALIZED",
+        }],
+      };
     }
 
     let {
@@ -376,12 +383,42 @@ export class UCDStore {
       versions = this.#versions;
     }
 
-    return internal__mirror(this, {
-      versions,
-      concurrency,
-      dryRun,
-      force,
-    });
+    try {
+      const result = await internal__mirror(this, {
+        versions,
+        concurrency,
+        dryRun,
+        force,
+      });
+
+      // check if any files failed to mirror
+      const hasFailures = result.some((r) => r.failed.length > 0);
+
+      return {
+        success: !hasFailures,
+        data: result,
+        errors: [],
+      };
+    } catch (err) {
+      if (!(err instanceof UCDStoreError)) {
+        return {
+          success: false,
+          errors: [
+            {
+              message: err instanceof Error ? err.message : String(err),
+              type: "GENERIC",
+            },
+          ],
+        };
+      }
+
+      return {
+        success: false,
+        errors: [
+          err["~toStoreError"](),
+        ],
+      };
+    }
   }
 
   /**
