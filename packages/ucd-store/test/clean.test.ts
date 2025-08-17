@@ -300,8 +300,7 @@ describe("store clean", () => {
     ]));
   });
 
-  // TODO: find a better name for test
-  it("should fail on file deletion", async () => {
+  it("should report failure when deletion rejects", async () => {
     const storePath = await testdir();
 
     const store = await createNodeUCDStore({
