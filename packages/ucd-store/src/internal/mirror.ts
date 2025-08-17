@@ -44,6 +44,10 @@ export async function internal__mirror(store: UCDStore, options: Required<Mirror
   const { concurrency, dryRun, force, versions } = options;
   const result: MirrorResult[] = [];
 
+  if (versions.length === 0) {
+    return result;
+  }
+
   if (concurrency < 1) {
     throw new UCDStoreError("Concurrency must be at least 1");
   }

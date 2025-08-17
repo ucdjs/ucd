@@ -2,9 +2,10 @@ import type { UCDClient, UnicodeTreeNode } from "@ucdjs/fetch";
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 import type { UCDStoreManifest } from "@ucdjs/schemas";
 import type { PathFilter } from "@ucdjs/utils";
-import type { AnalyzeOptions, VersionAnalysis } from "./internal/analyze";
+import type { AnalyzeOptions, AnalyzeResult } from "./internal/analyze";
 import type { CleanOptions, CleanResult } from "./internal/clean";
 import type { MirrorOptions, MirrorResult } from "./internal/mirror";
+import type { RepairOptions, RepairResult } from "./internal/repair";
 import type {
   StoreInitOptions,
   UCDStoreOptions,
@@ -19,11 +20,13 @@ import { isAbsolute, join } from "pathe";
 import {
   UCDStoreError,
   UCDStoreInvalidManifestError,
+  UCDStoreNotInitializedError,
   UCDStoreVersionNotFoundError,
 } from "./errors";
 import { internal__analyze } from "./internal/analyze";
 import { internal__clean } from "./internal/clean";
 import { internal__mirror } from "./internal/mirror";
+import { internal__repair } from "./internal/repair";
 
 const DEFAULT_CONCURRENCY = 5;
 
@@ -114,28 +117,16 @@ export class UCDStore {
     return this.#manifestPath;
   }
 
-  /**
-   * Retrieves the file tree structure for a specific Unicode version.
-   *
-   * This method returns a hierarchical representation of all files available in the store
-   * for the specified version. The files are filtered using the store's global filters
-   * and any additional filters provided.
-   *
-   * @param version - The Unicode version to retrieve the file tree for (e.g., "15.1.0")
-   * @param extraFilters - Optional additional filter patterns to apply alongside global filters
-   * @returns A promise that resolves to an array of UnicodeTreeNode objects representing the file structure
-   *
-   * @throws {UCDStoreVersionNotFoundError} When the specified version is not available in the store
-   * @throws {BridgeUnsupportedOperation} When the filesystem doesn't support the required 'listdir' capability
-   */
   async getFileTree(version: string, extraFilters?: string[]): Promise<UnicodeTreeNode[]> {
-    assertCapability(this.#fs, "listdir");
+    if (!this.#initialized) {
+      throw new UCDStoreNotInitializedError();
+    }
+
     if (!this.#versions.includes(version)) {
       throw new UCDStoreVersionNotFoundError(version);
     }
 
-    // TODO: utilize the store.status when available
-
+    assertCapability(this.#fs, "listdir");
     const entries = await this.#fs.listdir(join(this.basePath, version), true);
 
     const filterDirectoryChildren = (children: UnicodeTreeNode[], parentPath: string): UnicodeTreeNode[] => {
@@ -205,6 +196,10 @@ export class UCDStore {
   }
 
   async getFilePaths(version: string, extraFilters?: string[]): Promise<string[]> {
+    if (!this.#initialized) {
+      throw new UCDStoreNotInitializedError();
+    }
+
     if (!this.#versions.includes(version)) {
       throw new UCDStoreVersionNotFoundError(version);
     }
@@ -215,7 +210,10 @@ export class UCDStore {
   }
 
   async getFile(version: string, filePath: string, extraFilters?: string[]): Promise<string> {
-    assertCapability(this.#fs, "read");
+    if (!this.#initialized) {
+      throw new UCDStoreNotInitializedError();
+    }
+
     if (!this.#versions.includes(version)) {
       throw new UCDStoreVersionNotFoundError(version);
     }
@@ -224,6 +222,7 @@ export class UCDStore {
       throw new UCDStoreError(`File path "${filePath}" is filtered out by the store's filter patterns.`);
     }
 
+    assertCapability(this.#fs, "read");
     try {
       if (isAbsolute(filePath)) {
         return await this.#fs.read(filePath);
@@ -240,128 +239,68 @@ export class UCDStore {
   }
 
   async init(options: StoreInitOptions = {}): Promise<void> {
-    assertCapability(this.#fs, ["exists", "read"]);
+    const { force = false, dryRun = false } = options;
 
-    const {
-      dryRun = false,
-      force = false,
-    } = options;
+    assertCapability(this.#fs, ["exists"]);
 
-    const existingStore = await this.#fs.exists(this.#manifestPath);
-
+    // fetch available versions from API to validate
     const { data, error } = await this.#client.GET("/api/v1/versions");
-
     if (isApiError(error)) {
       throw new UCDStoreError(`Failed to fetch Unicode versions: ${error.message}`);
     }
 
-    const fetchedVersions = data?.map(({ version }) => version) || [];
+    let hasVersionManifestChanged = false;
 
-    // If the store already exists, and force is not set,
-    // we don't need to re-initialize it.
-    // Only if the provided versions from the options are different
-    // than the existing store versions, we will re-initialize it.
-    if (existingStore && !force) {
+    const availableVersions = data?.map(({ version }) => version) || [];
+
+    // read existing manifest if it exists
+    let manifestVersions: string[] = [];
+    const manifestExists = await this.#fs.exists(this.#manifestPath);
+    if (manifestExists && !force) {
       const manifest = await this["~readManifest"]();
+      manifestVersions = Object.keys(manifest);
+    }
 
-      const storeVersions = Object.keys(manifest);
+    // use api versions if no constructor versions, no versions in manifest & manifest doesn't exist
+    if (this.#versions.length === 0 && (manifestVersions.length === 0 && (!manifestExists || force))) {
+      // No versions specified anywhere, use all available
+      this.#versions = availableVersions;
+      hasVersionManifestChanged = true;
+    }
 
-      // check if the versions provided in the store is "valid" based on the fetched versions
-      if (!storeVersions.every((v) => fetchedVersions.includes(v))) {
-        // TODO: throw different error
-        throw new UCDStoreError("Store manifest contains invalid versions that are not present in the fetched versions.");
-      }
+    // if there is both constructor and manifest versions, merge them
+    if (this.#versions.length > 0 && manifestVersions.length > 0) {
+      this.#versions = Array.from(new Set([...this.#versions, ...manifestVersions]));
+      hasVersionManifestChanged = true;
+    }
 
-      // There is no versions provided, or in the store.
-      if (this.#versions.length === 0 && storeVersions.length === 0) {
-        this.#initialized = true;
-        return;
-      }
+    // if no constructor versions, but manifest versions exist
+    // use manifest versions.
+    if (this.#versions.length === 0 && manifestVersions.length > 0) {
+      this.#versions = manifestVersions;
+    }
 
-      // If the versions provided are the same as the store versions,
-      // we don't need to re-initialize the store with new files.
-      if (this.#versions.length === storeVersions.length && this.#versions.every((v) => storeVersions.includes(v))) {
-        this.#versions = storeVersions;
-        this.#initialized = true;
-        return;
-      }
+    // validate all versions exist in API
+    if (!this.#versions.every((v) => availableVersions.includes(v))) {
+      throw new UCDStoreError("Some requested versions are not available in the API");
+    }
 
-      const diffSet = new Set<string>();
-
-      for (const version of this.#versions) {
-        if (!storeVersions.includes(version)) {
-          diffSet.add(version);
+    if (!dryRun) {
+      // only create base directory if it doesn't exist or if forced
+      if (!manifestExists || force) {
+        const basePathExists = await this.#fs.exists(this.basePath);
+        if (!basePathExists) {
+          assertCapability(this.#fs, ["mkdir"]);
+          await this.#fs.mkdir(this.basePath);
         }
       }
 
-      // for (const version of storeVersions) {
-      //   if (!this.#versions.includes(version)) {
-      //     diffSet.add(version);
-      //   }
-      // }
-
-      // same versions, no need to re-initialize with new files.
-      if (diffSet.size === 0) {
-        this.#versions = storeVersions;
-        this.#initialized = true;
-        return;
-      }
-
-      // If the diff set is not empty, it means that the provided versions are different from the store versions.
-      // We need to re-initialize the store with the new versions and their files.
-      if (diffSet.size > 0) {
-        await this.mirror({
-          versions: Array.from(diffSet),
-          force,
-          dryRun,
-          concurrency: DEFAULT_CONCURRENCY,
-        });
-        this.#versions = Array.from(new Set([...this.#versions, ...storeVersions]));
+      // write manifest if versions have changed, doesn't exist, or forced
+      if (hasVersionManifestChanged || !manifestExists || force) {
         await this["~writeManifest"](this.#versions);
-        this.#initialized = true;
       }
-      return;
     }
 
-    // TODO: handle force flag
-    if (existingStore && force) {
-      throw new UCDStoreError("NOT IMPLEMENTED: The store already exists, but the force option is set. Please use a different method to re-initialize the store with new versions.");
-    }
-
-    // check if the versions provided in the store is "valid" based on the fetched versions
-    if (!this.#versions.every((v) => fetchedVersions.includes(v))) {
-      // TODO: throw different error
-      throw new UCDStoreError("Store manifest contains invalid versions that are not present in the fetched versions.");
-    }
-
-    // If there isn't any versions provided, we will set the versions to the ones we fetched.
-    if (!this.#versions || this.#versions.length === 0) {
-      this.#versions = fetchedVersions;
-    }
-
-    if (dryRun) {
-      // If dry run is set, we don't need to create the store,
-      // just return the versions.
-      this.#initialized = true;
-      return;
-    }
-
-    assertCapability(this.#fs, ["mkdir", "write"]);
-
-    const basePathExists = await this.#fs.exists(this.basePath);
-    if (!basePathExists) {
-      await this.#fs.mkdir(this.basePath);
-    }
-
-    // Mirror UCD files from remote to local
-    await this.mirror({
-      versions: this.#versions,
-      force,
-      dryRun,
-      concurrency: DEFAULT_CONCURRENCY,
-    });
-
-    await this["~writeManifest"](this.#versions);
     this.#initialized = true;
   }
 
@@ -374,22 +313,35 @@ export class UCDStore {
    * that may need attention.
    *
    * @param {AnalyzeOptions} options - Configuration options for the analysis operation
-   * @returns {Promise<VersionAnalysis[]>} A promise that resolves to an array of VersionAnalysis objects, one for each analyzed version
+   * @returns {Promise<AnalyzeResult[]>} A promise that resolves to an array of VersionAnalysis objects, one for each analyzed version
    *
    * @throws {UCDStoreVersionNotFoundError} When a specified version is not available in the store
    * @throws {BridgeUnsupportedOperation} When the filesystem doesn't support required capabilities
    * @throws {UCDStoreError} When other operational errors occur during analysis
    */
-  async analyze(options: AnalyzeOptions): Promise<VersionAnalysis[]> {
-    const {
+  async analyze(options: AnalyzeOptions): Promise<AnalyzeResult[]> {
+    if (!this.#initialized) {
+      throw new UCDStoreNotInitializedError();
+    }
+
+    let {
       checkOrphaned = false,
-      versions = this.#versions,
+      versions = [],
     } = options;
 
-    return internal__analyze(this, {
-      checkOrphaned,
-      versions,
-    });
+    if (versions.length === 0) {
+      versions = this.#versions;
+    }
+
+    try {
+      return await internal__analyze(this, {
+        checkOrphaned,
+        versions,
+      });
+    } catch (err) {
+      console.error(`Error during store analysis: ${err instanceof Error ? err.message : String(err)}`);
+      return [];
+    }
   }
 
   /**
@@ -408,13 +360,21 @@ export class UCDStore {
    * @throws {BridgeUnsupportedOperation} When the filesystem doesn't support required capabilities (mkdir, write)
    * @throws {UCDStoreError} When the concurrency parameter is less than 1 or other operational errors occur
    */
-  async mirror(options: MirrorOptions): Promise<MirrorResult[]> {
-    const {
-      versions = this.#versions,
+  async mirror(options: MirrorOptions = {}): Promise<MirrorResult[]> {
+    if (!this.#initialized) {
+      throw new UCDStoreNotInitializedError();
+    }
+
+    let {
+      versions = [],
       concurrency = DEFAULT_CONCURRENCY,
       dryRun = false,
       force = false,
     } = options;
+
+    if (versions.length === 0) {
+      versions = this.#versions;
+    }
 
     return internal__mirror(this, {
       versions,
@@ -439,6 +399,10 @@ export class UCDStore {
    * @throws {UCDStoreError} When the concurrency parameter is less than 1 or other operational errors occur
    */
   async clean(options: CleanOptions = {}): Promise<CleanResult[]> {
+    if (!this.#initialized) {
+      throw new UCDStoreNotInitializedError();
+    }
+
     let {
       versions = [],
       concurrency = DEFAULT_CONCURRENCY,
@@ -450,6 +414,28 @@ export class UCDStore {
     }
 
     return internal__clean(this, {
+      versions,
+      concurrency,
+      dryRun,
+    });
+  }
+
+  async repair(options: RepairOptions = {}): Promise<RepairResult[]> {
+    if (!this.#initialized) {
+      throw new UCDStoreNotInitializedError();
+    }
+
+    let {
+      versions = [],
+      concurrency = DEFAULT_CONCURRENCY,
+      dryRun = false,
+    } = options;
+
+    if (versions.length === 0) {
+      versions = this.#versions;
+    }
+
+    return internal__repair(this, {
       versions,
       concurrency,
       dryRun,

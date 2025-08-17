@@ -30,11 +30,16 @@ export interface CleanResult {
   failed: string[];
 }
 
-export async function internal__clean(store: UCDStore, options: Required<CleanOptions>): Promise<CleanResult[]> {
+export interface internal_CleanOptions extends Required<CleanOptions> {
+  directories?: string[];
+}
+
+export async function internal__clean(store: UCDStore, options: internal_CleanOptions): Promise<CleanResult[]> {
   const {
     versions,
     dryRun,
     concurrency,
+    directories,
   } = options;
 
   const analysisResult = await store.analyze({
@@ -43,9 +48,9 @@ export async function internal__clean(store: UCDStore, options: Required<CleanOp
   });
 
   const result: CleanResult[] = [];
-  const directoriesToCheck = new Set<string>();
+  const directoriesToCheck = new Set<string>(directories);
 
-  // create the limit function to control concurrency
+  // throw if concurrency is less than 1
   if (concurrency < 1) {
     throw new UCDStoreError("Concurrency must be at least 1");
   }
@@ -57,16 +62,12 @@ export async function internal__clean(store: UCDStore, options: Required<CleanOp
 
   for (const analysis of analysisResult) {
     // initialize result for this version
-    let versionResult = result.find((r) => r.version === analysis.version);
-    if (!versionResult) {
-      const idx = result.push({
-        version: analysis.version,
-        deleted: [],
-        skipped: [],
-        failed: [],
-      });
-      versionResult = result.at(idx - 1);
-    }
+    const versionResult: CleanResult = {
+      version: analysis.version,
+      deleted: [],
+      skipped: [],
+      failed: [],
+    };
 
     const joinedFiles = [...analysis.orphanedFiles, ...analysis.files];
     for (const file of joinedFiles) {
@@ -88,15 +89,16 @@ export async function internal__clean(store: UCDStore, options: Required<CleanOp
 
           if (!dryRun) {
             await store.fs.rm(filePath);
-            versionResult!.deleted.push(file);
-          } else {
-            versionResult!.deleted.push(file);
           }
+
+          versionResult!.deleted.push(file);
         } catch {
           versionResult!.failed.push(file);
         }
       }));
     }
+
+    result.push(versionResult);
 
     // also add version directory to check for cleanup
     directoriesToCheck.add(join(store.basePath, analysis.version));
