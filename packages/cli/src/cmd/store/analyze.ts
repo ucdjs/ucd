@@ -66,12 +66,20 @@ export async function runAnalyzeStore({ flags, versions }: CLIStoreAnalyzeCmdOpt
       versions: versions || [],
     });
 
+    if (!result.success) {
+      console.error(red(`\n❌ Error analyzing store:`));
+      for (const error of result.errors) {
+        console.error(`  ${error.message}`);
+      }
+      return;
+    }
+
     if (json) {
       console.info(JSON.stringify(result, null, 2));
       return;
     }
 
-    for (const { version, fileCount, isComplete, missingFiles, orphanedFiles, expectedFileCount } of result) {
+    for (const { version, fileCount, isComplete, missingFiles, orphanedFiles, expectedFileCount } of result.data) {
       console.info(`Version: ${version}`);
       if (isComplete) {
         console.info(`  Status: ${green("complete")}`);
