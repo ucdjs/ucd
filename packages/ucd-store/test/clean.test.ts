@@ -2,10 +2,12 @@ import { existsSync, readFileSync } from "node:fs";
 import { HttpResponse, mockFetch } from "#internal/test-utils/msw";
 import { setupMockStore } from "#internal/test-utils/store";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
+import { dedent } from "@luxass/utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
+import { assertCapability } from "@ucdjs/fs-bridge";
 import { createNodeUCDStore } from "@ucdjs/ucd-store";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { testdir } from "vitest-testdirs";
+import { captureSnapshot, testdir } from "vitest-testdirs";
 
 describe("store clean", () => {
   beforeEach(() => {
@@ -52,9 +54,7 @@ describe("store clean", () => {
   });
 
   it("should clean a valid store", async () => {
-    const storePath = await testdir({}, {
-      cleanup: false,
-    });
+    const storePath = await testdir();
 
     const store = await createNodeUCDStore({
       basePath: storePath,
@@ -62,6 +62,7 @@ describe("store clean", () => {
     });
 
     await store.init();
+    await store.mirror();
 
     expect(existsSync(`${storePath}/.ucd-store.json`)).toBe(true);
     expect(existsSync(`${storePath}/15.0.0/ArabicShaping.txt`)).toBe(true);
@@ -104,6 +105,7 @@ describe("store clean", () => {
     });
 
     await store.init();
+    await store.mirror();
 
     const [clean15Result] = await store.clean();
 
@@ -156,6 +158,7 @@ describe("store clean", () => {
     });
 
     await store.init();
+    await store.mirror();
 
     expect(existsSync(`${storePath}/.ucd-store.json`)).toBe(true);
     expect(readFileSync(`${storePath}/.ucd-store.json`, "utf-8")).toBe(JSON.stringify({
@@ -200,6 +203,7 @@ describe("store clean", () => {
     });
 
     await store.init();
+    await store.mirror();
 
     expect(existsSync(`${storePath}/.ucd-store.json`)).toBe(true);
     expect(readFileSync(`${storePath}/.ucd-store.json`, "utf-8")).toBe(JSON.stringify({
@@ -249,5 +253,129 @@ describe("store clean", () => {
     expect(clean15Result?.skipped).toEqual([]);
     expect(clean15Result?.failed).toEqual([]);
     expect(clean15Result?.deleted).toHaveLength(0);
+  });
+
+  it("should throw if concurrency is less than 1", async () => {
+    const storePath = await testdir();
+
+    const store = await createNodeUCDStore({
+      basePath: storePath,
+      versions: ["15.0.0"],
+    });
+
+    await store.init();
+
+    await expect(store.clean({ concurrency: 0 })).rejects.toThrow(
+      "Concurrency must be at least 1",
+    );
+  });
+
+  it("should skip file deletion if it doesn't exist", async () => {
+    const storePath = await testdir();
+
+    const store = await createNodeUCDStore({
+      basePath: storePath,
+      versions: ["15.0.0"],
+    });
+
+    await store.init();
+    await store.mirror();
+
+    assertCapability(store.fs, ["rm", "exists"]);
+    expect(await store.fs.exists(`./15.0.0/ArabicShaping.txt`)).toBe(true);
+
+    vi.spyOn(store, "analyze").mockResolvedValue([{
+      version: "15.0.0",
+      files: ["BidiBrackets.txt", "extracted/DerivedBidiClass.txt"],
+      missingFiles: [],
+      orphanedFiles: ["ArabicShaping.txt"],
+      fileCount: 2,
+      expectedFileCount: 3,
+      isComplete: false,
+    }]);
+
+    await store.fs.rm(`./15.0.0/ArabicShaping.txt`);
+    expect(await store.fs.exists(`./15.0.0/ArabicShaping.txt`)).toBe(false);
+
+    const [clean15Result] = await store.clean({ concurrency: 1 });
+
+    expect(clean15Result?.version).toBe("15.0.0");
+    expect(clean15Result?.skipped).toEqual(["ArabicShaping.txt"]);
+    expect(clean15Result?.failed).toEqual([]);
+    expect(clean15Result?.deleted).toEqual(expect.arrayContaining([
+      "extracted/DerivedBidiClass.txt",
+      "BidiBrackets.txt",
+    ]));
+  });
+
+  it("should report failure when deletion rejects", async () => {
+    const storePath = await testdir();
+
+    const store = await createNodeUCDStore({
+      basePath: storePath,
+      versions: ["15.0.0"],
+    });
+
+    await store.init();
+    await store.mirror();
+
+    assertCapability(store.fs, ["rm", "exists"]);
+    await store.fs.rm(`./15.0.0/ArabicShaping.txt`);
+
+    vi.spyOn(store.fs, "exists").mockResolvedValue(true);
+
+    vi.spyOn(store, "analyze").mockResolvedValue([{
+      version: "15.0.0",
+      files: ["BidiBrackets.txt", "extracted/DerivedBidiClass.txt"],
+      missingFiles: [],
+      orphanedFiles: ["ArabicShaping.txt"],
+      fileCount: 2,
+      expectedFileCount: 3,
+      isComplete: false,
+    }]);
+
+    const [clean15Result] = await store.clean({ concurrency: 1 });
+
+    expect(clean15Result?.version).toBe("15.0.0");
+    expect(clean15Result?.skipped).toEqual([]);
+    expect(clean15Result?.failed).toEqual(["ArabicShaping.txt"]);
+    expect(clean15Result?.deleted).toEqual(expect.arrayContaining([
+      "extracted/DerivedBidiClass.txt",
+      "BidiBrackets.txt",
+    ]));
+  });
+
+  it("should not remove any files when using dryRun", async () => {
+    const storePath = await testdir();
+
+    const store = await createNodeUCDStore({
+      basePath: storePath,
+      versions: ["15.0.0"],
+    });
+
+    await store.init();
+    await store.mirror();
+
+    const beforeCleanSnapshot = await captureSnapshot(storePath);
+
+    const [clean15Result] = await store.clean({ dryRun: true });
+
+    expect(clean15Result?.version).toBe("15.0.0");
+    expect(clean15Result?.skipped).toEqual([]);
+    expect(clean15Result?.failed).toEqual([]);
+    expect(clean15Result?.deleted).toHaveLength(3);
+
+    const afterCleanSnapshot = await captureSnapshot(storePath);
+
+    expect(beforeCleanSnapshot).toEqual(dedent`
+      vitest-clean-store-clean-should-not-remove-any-files-when-using-dryRun/
+      ├── 15.0.0/
+      │   ├── extracted/
+      │   │   └── DerivedBidiClass.txt
+      │   ├── ArabicShaping.txt
+      │   └── BidiBrackets.txt
+      └── .ucd-store.json
+    `);
+    expect(beforeCleanSnapshot).toEqual(afterCleanSnapshot);
   });
 });

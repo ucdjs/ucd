@@ -55,6 +55,7 @@ describe("analyze operations", () => {
 
           return HttpResponse.json([]);
         },
+        "/api/v1/files/:wildcard": true,
       },
     });
 
@@ -226,7 +227,9 @@ describe("analyze operations", () => {
       const store = await createNodeUCDStore({
         basePath: storeDir,
       });
+
       await store.init();
+      await store.mirror();
 
       const analysisResult = await store.analyze({
         versions: ["99.99.99"],
@@ -257,7 +260,9 @@ describe("analyze operations", () => {
       const store = await createNodeUCDStore({
         basePath: storeDir,
       });
+
       await store.init();
+      await store.mirror();
 
       const analysisResult = await store.analyze({ checkOrphaned: false });
 
@@ -307,6 +312,7 @@ describe("analyze operations", () => {
 
       const store = await createHTTPUCDStore();
       await store.init();
+      await store.mirror();
 
       const analysisResult = await store.analyze({ checkOrphaned: false });
 

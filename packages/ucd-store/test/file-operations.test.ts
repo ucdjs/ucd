@@ -512,7 +512,7 @@ describe("file operations", () => {
 
   describe("capability requirements", () => {
     it("should throw BridgeUnsupportedOperation when getFileTree is called without listdir capability", async () => {
-      const readSpy = vi.fn().mockResolvedValue("content");
+      const readSpy = vi.fn().mockResolvedValueOnce(JSON.stringify({}));
       const writeSpy = vi.fn().mockResolvedValue(undefined);
       const existsSpy = vi.fn().mockResolvedValue(true);
       const mkdirSpy = vi.fn().mockResolvedValue(undefined);
@@ -532,6 +532,8 @@ describe("file operations", () => {
         fs: bridgeWithoutListdir(),
         versions: ["15.0.0"],
       });
+
+      await store.init();
 
       await expect(store.getFileTree("15.0.0")).rejects.toThrow(BridgeUnsupportedOperation);
       await expect(store.getFileTree("15.0.0")).rejects.toThrow(
@@ -539,14 +541,12 @@ describe("file operations", () => {
       );
 
       // verify that no other methods were called since listdir fails first
-      expect(readSpy).not.toHaveBeenCalled();
       expect(writeSpy).not.toHaveBeenCalled();
-      expect(existsSpy).not.toHaveBeenCalled();
       expect(mkdirSpy).not.toHaveBeenCalled();
     });
 
     it("should throw BridgeUnsupportedOperation when getFilePaths is called without listdir capability", async () => {
-      const readSpy = vi.fn().mockResolvedValue("content");
+      const readSpy = vi.fn().mockResolvedValueOnce(JSON.stringify({}));
       const writeSpy = vi.fn().mockResolvedValue(undefined);
       const existsSpy = vi.fn().mockResolvedValue(true);
       const mkdirSpy = vi.fn().mockResolvedValue(undefined);
@@ -566,6 +566,8 @@ describe("file operations", () => {
         fs: bridgeWithoutListdir(),
         versions: ["15.0.0"],
       });
+
+      await store.init();
 
       // getFilePaths internally calls getFileTree, so it should also fail
       await expect(store.getFilePaths("15.0.0")).rejects.toThrow(BridgeUnsupportedOperation);
@@ -574,14 +576,12 @@ describe("file operations", () => {
       );
 
       // verify that no other methods were called since listdir fails first
-      expect(readSpy).not.toHaveBeenCalled();
       expect(writeSpy).not.toHaveBeenCalled();
-      expect(existsSpy).not.toHaveBeenCalled();
       expect(mkdirSpy).not.toHaveBeenCalled();
     });
 
     it("should work correctly when bridge has required capabilities", async () => {
-      const readSpy = vi.fn().mockResolvedValue("content");
+      const readSpy = vi.fn().mockResolvedValueOnce(JSON.stringify({}));
       const writeSpy = vi.fn().mockResolvedValue(undefined);
       const existsSpy = vi.fn().mockResolvedValue(true);
       const mkdirSpy = vi.fn().mockResolvedValue(undefined);
@@ -609,6 +609,12 @@ describe("file operations", () => {
         versions: ["15.0.0"],
       });
 
+      await store.init();
+
+      // verify that read & exists has been called once for the init process
+      expect(readSpy).toHaveBeenCalledTimes(1);
+      expect(existsSpy).toHaveBeenCalledTimes(1);
+
       // these should not throw
       await expect(store.getFileTree("15.0.0")).resolves.toEqual([
         {
@@ -622,9 +628,9 @@ describe("file operations", () => {
 
       // verify that only listdir was called for these operations
       expect(listdirSpy).toHaveBeenCalledTimes(2); // once for getFileTree, once for getFilePaths
-      expect(readSpy).not.toHaveBeenCalled();
+      expect(readSpy).not.toHaveBeenCalledAfter(listdirSpy);
+      expect(existsSpy).not.toHaveBeenCalledAfter(listdirSpy);
       expect(writeSpy).not.toHaveBeenCalled();
-      expect(existsSpy).not.toHaveBeenCalled();
       expect(mkdirSpy).not.toHaveBeenCalled();
     });
   });

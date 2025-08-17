@@ -94,7 +94,7 @@ describe("store init", () => {
         versions: ["16.0.0", "15.1.0", "15.0.0", "99.9.9"],
       });
 
-      await expect(store.init()).rejects.toThrow("Store manifest contains invalid versions that are not present in the fetched versions.");
+      await expect(store.init()).rejects.toThrow("Some requested versions are not available in the API");
       expect(store.initialized).toBe(false);
     });
 
@@ -368,10 +368,6 @@ describe("store init", () => {
     });
   });
 
-  it.todo("handle force", () => {
-    // handle force flag
-  });
-
   describe("capability validation", async () => {
     const storePath = await testdir();
 
@@ -381,40 +377,12 @@ describe("store init", () => {
         setup: () => ({}),
       },
       {
-        capability: "read",
-        setup: () => ({
-          exists: () => true,
-        }),
-      },
-    ])("should require $capability capability", async ({ capability, setup }) => {
-      const store = createUCDStore({
-        basePath: storePath,
-        fs: defineFileSystemBridge({
-          setup,
-        })(),
-      });
-
-      await expect(store.init()).rejects.toThrow(`File system bridge does not support the '${capability}' capability.`);
-    });
-
-    it.each([
-      {
         capability: "mkdir",
         setup: () => ({
           exists: async () => false,
-          read: async () => "{}",
-          write: async () => { },
         } satisfies FileSystemBridgeOperations),
       },
-      {
-        capability: "write",
-        setup: () => ({
-          exists: async () => false,
-          read: async () => "{}",
-          mkdir: async () => { },
-        } satisfies FileSystemBridgeOperations),
-      },
-    ])("should require $capability capability for new stores", async ({ capability, setup }) => {
+    ])("should require $capability capability", async ({ capability, setup }) => {
       const store = createUCDStore({
         basePath: storePath,
         fs: defineFileSystemBridge({
