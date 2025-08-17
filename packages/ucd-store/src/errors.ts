@@ -1,46 +1,11 @@
 /* eslint-disable ts/explicit-function-return-type */
-export type StoreError
-  = | {
-    message: string;
-    type: "UNSUPPORTED_VERSION";
-    version: string;
-  }
-  | {
-    message: string;
-    type: "BRIDGE_UNSUPPORTED_OPERATION";
-    operation: string;
-  }
-  | {
-    message: string;
-    type: "FILE_NOT_FOUND";
-    filePath: string;
-    version?: string;
-  }
-  | {
-    message: string;
-    type: "INVALID_MANIFEST";
-    manifestPath: string;
-  }
-  | {
-    message: string;
-    type: "NOT_INITIALIZED";
-  }
-  | {
-    message: string;
-    type: "GENERIC";
-    data?: Record<string, unknown>;
-  };
 
-abstract class BaseUCDStoreError<T extends StoreError> extends Error {
-  abstract "~toStoreError"(): T;
+export abstract class UCDStoreBaseError extends Error {
+  abstract "~toStoreError"(): any;
 }
 
-export class UCDStoreError extends BaseUCDStoreError<{
-  message: string;
-  type: "GENERIC";
-  data?: Record<string, unknown>;
-}> {
-  private readonly data?: Record<string, unknown>;
+export class UCDStoreError extends UCDStoreBaseError {
+  private data?: Record<string, unknown>;
 
   constructor(message: string, data?: Record<string, unknown>) {
     super(message);
@@ -57,19 +22,11 @@ export class UCDStoreError extends BaseUCDStoreError<{
   }
 }
 
-export class UCDStoreFileNotFoundError extends BaseUCDStoreError<{
-  message: string;
-  type: "FILE_NOT_FOUND";
-  filePath: string;
-  version?: string;
-}> {
-  private readonly filePath: string;
-  private readonly version?: string;
+export class UCDStoreFileNotFoundError extends UCDStoreBaseError {
+  public readonly filePath: string;
+  public readonly version?: string;
 
-  constructor(
-    filePath: string,
-    version?: string,
-  ) {
+  constructor(filePath: string, version?: string) {
     super(`File not found: ${filePath}${version ? ` in version ${version}` : ""}`);
     this.name = "UCDStoreFileNotFoundError";
     this.filePath = filePath;
@@ -79,19 +36,15 @@ export class UCDStoreFileNotFoundError extends BaseUCDStoreError<{
   "~toStoreError"() {
     return {
       type: "FILE_NOT_FOUND" as const,
-      filePath: this.filePath,
       message: this.message,
+      filePath: this.filePath,
       ...(this.version && { version: this.version }),
     };
   }
 }
 
-export class UCDStoreVersionNotFoundError extends BaseUCDStoreError<{
-  message: string;
-  type: "UNSUPPORTED_VERSION";
-  version: string;
-}> {
-  private readonly version: string;
+export class UCDStoreVersionNotFoundError extends UCDStoreBaseError {
+  public readonly version: string;
 
   constructor(version: string) {
     super(`Version '${version}' does not exist in the store.`);
@@ -108,23 +61,21 @@ export class UCDStoreVersionNotFoundError extends BaseUCDStoreError<{
   }
 }
 
-export class UCDStoreBridgeUnsupportedOperation extends BaseUCDStoreError<{
-  message: string;
-  type: "BRIDGE_UNSUPPORTED_OPERATION";
-  operation: string;
-}> {
-  private readonly feature: string;
-  private readonly requiredCapabilities: string[];
-  private readonly availableCapabilities: string[];
+export class UCDStoreBridgeUnsupportedOperation extends UCDStoreBaseError {
+  public readonly operation: string;
+  public readonly requiredCapabilities: string[];
+  public readonly availableCapabilities: string[];
 
-  constructor(
-    feature: string,
-    requiredCapabilities: string[],
-    availableCapabilities: string[],
-  ) {
-    super(`Feature "${feature}" is not supported. Required capabilities: ${requiredCapabilities.join(", ")}. Available capabilities: ${availableCapabilities.join(", ")}`);
-    this.name = "UCDStoreUnsupportedFeature";
-    this.feature = feature;
+  constructor(operation: string, requiredCapabilities: string[], availableCapabilities: string[]) {
+    let message = `Operation "${operation}" is not supported.`;
+
+    if (requiredCapabilities.length > 0 || availableCapabilities.length > 0) {
+      message += ` Required capabilities: ${requiredCapabilities.join(", ")}. Available capabilities: ${availableCapabilities.join(", ")}`;
+    }
+
+    super(message);
+    this.name = "UCDStoreBridgeUnsupportedOperation";
+    this.operation = operation;
     this.requiredCapabilities = requiredCapabilities;
     this.availableCapabilities = availableCapabilities;
   }
@@ -132,18 +83,16 @@ export class UCDStoreBridgeUnsupportedOperation extends BaseUCDStoreError<{
   "~toStoreError"() {
     return {
       type: "BRIDGE_UNSUPPORTED_OPERATION" as const,
-      operation: this.feature,
+      operation: this.operation,
       message: this.message,
+      requiredCapabilities: this.requiredCapabilities,
+      availableCapabilities: this.availableCapabilities,
     };
   }
 }
 
-export class UCDStoreInvalidManifestError extends BaseUCDStoreError<{
-  message: string;
-  type: "INVALID_MANIFEST";
-  manifestPath: string;
-}> {
-  private readonly manifestPath: string;
+export class UCDStoreInvalidManifestError extends UCDStoreBaseError {
+  private manifestPath: string;
 
   constructor(manifestPath: string, message: string) {
     super(`invalid manifest at ${manifestPath}: ${message}`);
@@ -160,10 +109,7 @@ export class UCDStoreInvalidManifestError extends BaseUCDStoreError<{
   }
 }
 
-export class UCDStoreNotInitializedError extends BaseUCDStoreError<{
-  message: string;
-  type: "NOT_INITIALIZED";
-}> {
+export class UCDStoreNotInitializedError extends UCDStoreBaseError {
   constructor() {
     super("Store is not initialized. Please initialize the store before performing operations.");
     this.name = "UCDStoreNotInitializedError";
@@ -176,3 +122,18 @@ export class UCDStoreNotInitializedError extends BaseUCDStoreError<{
     };
   }
 }
+
+export type GenericError = ReturnType<UCDStoreError["~toStoreError"]>;
+export type FileNotFoundError = ReturnType<UCDStoreFileNotFoundError["~toStoreError"]>;
+export type UnsupportedVersionError = ReturnType<UCDStoreVersionNotFoundError["~toStoreError"]>;
+export type BridgeUnsupportedOperationError = ReturnType<UCDStoreBridgeUnsupportedOperation["~toStoreError"]>;
+export type InvalidManifestError = ReturnType<UCDStoreInvalidManifestError["~toStoreError"]>;
+export type StoreNotInitializedError = ReturnType<UCDStoreNotInitializedError["~toStoreError"]>;
+
+export type StoreError
+  = | GenericError
+    | FileNotFoundError
+    | UnsupportedVersionError
+    | BridgeUnsupportedOperationError
+    | InvalidManifestError
+    | StoreNotInitializedError;

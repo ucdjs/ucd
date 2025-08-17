@@ -19,6 +19,7 @@ import { createPathFilter, flattenFilePaths, safeJsonParse } from "@ucdjs/utils"
 import defu from "defu";
 import { isAbsolute, join } from "pathe";
 import {
+  UCDStoreBaseError,
   UCDStoreError,
   UCDStoreInvalidManifestError,
   UCDStoreNotInitializedError,
@@ -400,7 +401,7 @@ export class UCDStore {
         errors: [],
       };
     } catch (err) {
-      if (!(err instanceof UCDStoreError)) {
+      if (!(err instanceof UCDStoreBaseError)) {
         return {
           success: false,
           errors: [
