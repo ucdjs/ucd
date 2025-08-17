@@ -62,16 +62,12 @@ export async function internal__clean(store: UCDStore, options: internal_CleanOp
 
   for (const analysis of analysisResult) {
     // initialize result for this version
-    let versionResult = result.find((r) => r.version === analysis.version);
-    if (!versionResult) {
-      const idx = result.push({
-        version: analysis.version,
-        deleted: [],
-        skipped: [],
-        failed: [],
-      });
-      versionResult = result.at(idx - 1);
-    }
+    const versionResult: CleanResult = {
+      version: analysis.version,
+      deleted: [],
+      skipped: [],
+      failed: [],
+    };
 
     const joinedFiles = [...analysis.orphanedFiles, ...analysis.files];
     for (const file of joinedFiles) {
@@ -101,6 +97,8 @@ export async function internal__clean(store: UCDStore, options: internal_CleanOp
         }
       }));
     }
+
+    result.push(versionResult);
 
     // also add version directory to check for cleanup
     directoriesToCheck.add(join(store.basePath, analysis.version));
