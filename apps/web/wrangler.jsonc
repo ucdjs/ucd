@@ -13,12 +13,10 @@
     "production": {
       "name": "ucdjs-dev",
       "preview_urls": false,
-      "routes": [
-        {
-          "custom_domain": true,
-          "pattern": "ucdjs.dev"
-        }
-      ],
+      "route": {
+        "custom_domain": true,
+        "pattern": "ucdjs.dev"
+      },
       "vars": {
         "ENVIRONMENT": "production"
       }
@@ -26,12 +24,10 @@
     "preview": {
       "name": "ucdjs-dev-preview",
       "preview_urls": false,
-      "routes": [
-        {
-          "custom_domain": true,
-          "pattern": "preview.ucdjs.dev"
-        }
-      ],
+      "route": {
+        "custom_domain": true,
+        "pattern": "preview.ucdjs.dev"
+      },
       "vars": {
         "ENVIRONMENT": "preview"
       }
