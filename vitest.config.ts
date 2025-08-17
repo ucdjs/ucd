@@ -73,6 +73,13 @@ export default defineConfig({
       ...packageProjects,
       ...workerUnitProjects,
       "./apps/api/vitest.config.worker.ts",
+      {
+        extends: true,
+        test: {
+          include: ["./tooling/test-utils/test/**/*.{test,spec}.?(c|m)[jt]s?(x)"],
+          name: "tooling:contract-tests",
+        }
+      } satisfies TestProjectConfiguration,
     ]
   },
   esbuild: { target: "es2020" },
