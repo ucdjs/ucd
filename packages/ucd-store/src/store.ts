@@ -436,9 +436,16 @@ export class UCDStore {
    * @throws {BridgeUnsupportedOperation} When the filesystem doesn't support required capabilities
    * @throws {UCDStoreError} When the concurrency parameter is less than 1 or other operational errors occur
    */
-  async clean(options: CleanOptions = {}): Promise<CleanResult[]> {
+  async clean(options: CleanOptions = {}): Promise<StoreOperationResult<CleanResult[]>> {
     if (!this.#initialized) {
-      throw new UCDStoreNotInitializedError();
+      return {
+        success: false,
+        data: [],
+        errors: [{
+          message: "Store is not initialized. Please initialize the store before performing operations.",
+          type: "NOT_INITIALIZED",
+        }],
+      };
     }
 
     let {
@@ -451,11 +458,43 @@ export class UCDStore {
       versions = this.#versions;
     }
 
-    return internal__clean(this, {
-      versions,
-      concurrency,
-      dryRun,
-    });
+    try {
+      const result = await internal__clean(this, {
+        versions,
+        concurrency,
+        dryRun,
+      });
+
+      // check if any files failed to clean
+      const hasFailures = result.some((r) => r.failed.length > 0);
+
+      return {
+        success: !hasFailures,
+        data: result,
+        errors: [], // No errors since exceptions would be caught below
+      };
+    } catch (err) {
+      if (!(err instanceof UCDStoreBaseError)) {
+        return {
+          success: false,
+          data: [],
+          errors: [
+            {
+              message: err instanceof Error ? err.message : String(err),
+              type: "GENERIC",
+            },
+          ],
+        };
+      }
+
+      return {
+        success: false,
+        data: [],
+        errors: [
+          err["~toStoreError"](),
+        ],
+      };
+    }
   }
 
   async repair(options: RepairOptions = {}): Promise<StoreOperationResult<RepairResult[]>> {
@@ -488,7 +527,7 @@ export class UCDStore {
       });
 
       // check if any repairs failed
-      const hasFailures = result.some(r => r.status === "failure");
+      const hasFailures = result.some((r) => r.status === "failure");
 
       return {
         success: !hasFailures,
