@@ -1,5 +1,7 @@
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 
+import type { StoreError } from "./errors";
+
 export interface UCDStoreOptions {
   /**
    * Base URL for the Unicode API
@@ -70,63 +72,23 @@ export interface InitOptions {
   dryRun?: boolean;
 }
 
-export type StoreError
-  = | {
-    message: string;
-    type: "UNSUPPORTED_VERSION";
-    version: string;
-  }
-  | {
-    message: string;
-    type: "BRIDGE_UNSUPPORTED_OPERATION";
-    operation: string;
-  }
-  | {
-    message: string;
-    type: "FILE_NOT_FOUND";
-    filePath: string;
-    version?: string;
-  }
-  | {
-    message: string;
-    type: "INVALID_MANIFEST";
-    manifestPath: string;
-  }
-  | {
-    message: string;
-    type: "NOT_INITIALIZED";
-  }
-  | {
-    message: string;
-    type: "GENERIC";
-    data?: Record<string, unknown>;
-  };
-
 export type StoreOperationResult<TData = unknown> = {
   /**
    * Whether the operation completed successfully.
    */
-  success: true;
+  success: false;
 
   /**
    * The result data from the operation (when successful).
    */
-  data: TData;
+  data?: TData;
 
   /**
    * Array of errors that occurred during the operation.
    */
   errors: StoreError[];
 } | {
-  success: false;
-
-  /**
-   * The result data from the operation (when successful).
-   */
-  data: never;
-
-  /**
-   * Array of errors that occurred during the operation.
-   */
-  errors: StoreError[];
+  success: true;
+  data: TData;
+  errors: never[];
 };

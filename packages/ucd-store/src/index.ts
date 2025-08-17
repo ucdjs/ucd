@@ -1,7 +1,7 @@
 export {
   UCDStoreError,
   UCDStoreFileNotFoundError,
-  UCDStoreUnsupportedFeature,
+  UCDStoreBridgeUnsupportedOperation as UCDStoreUnsupportedFeature,
   UCDStoreVersionNotFoundError,
 } from "./errors";
 

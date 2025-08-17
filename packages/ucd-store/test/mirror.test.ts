@@ -4,7 +4,7 @@ import { setupMockStore } from "#internal/test-utils/store";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { createNodeUCDStore } from "@ucdjs/ucd-store";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { assert, beforeEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
 
 describe("store mirror", () => {
@@ -60,7 +60,17 @@ describe("store mirror", () => {
     });
 
     await store.init();
-    await store.mirror();
+    const mirrorResult = await store.mirror();
+
+    expect(mirrorResult.errors).toHaveLength(0);
+
+    assert(mirrorResult.success === true, "Expected mirror operation to be successful");
+    assert(mirrorResult.data[0] != null, "Expected at least one version to be mirrored");
+
+    expect(mirrorResult.data[0].failed).toHaveLength(0);
+    expect(mirrorResult.data[0].mirrored).toHaveLength(3);
+    expect(mirrorResult.data[0].skipped).toHaveLength(0);
+    expect(mirrorResult.data[0].version).toBe("15.0.0");
 
     expect(existsSync(`${storePath}/.ucd-store.json`)).toBe(true);
     expect(existsSync(`${storePath}/15.0.0/ArabicShaping.txt`)).toBe(true);
@@ -79,10 +89,14 @@ describe("store mirror", () => {
     await store.init();
     const mirrorResults = await store.mirror();
 
-    const [mirror15Result, mirror16Result] = mirrorResults;
+    assert(mirrorResults.success === true, "Expected mirror operation to be successful");
 
-    expect(mirror15Result?.version).toBe("15.0.0");
-    expect(mirror16Result?.version).toBe("16.0.0");
+    const [mirror15Result, mirror16Result] = mirrorResults.data;
+    assert(mirror15Result != null, "Expected mirror result for version 15.0.0");
+    assert(mirror16Result != null, "Expected mirror result for version 16.0.0");
+
+    expect(mirror15Result.version).toBe("15.0.0");
+    expect(mirror16Result.version).toBe("16.0.0");
 
     expect(existsSync(`${storePath}/15.0.0/ArabicShaping.txt`)).toBe(true);
     expect(existsSync(`${storePath}/16.0.0/ArabicShaping.txt`)).toBe(true);
@@ -97,7 +111,14 @@ describe("store mirror", () => {
     });
 
     await store.init();
-    await store.mirror({ dryRun: true });
+    const mirrorResult = await store.mirror({ dryRun: true });
+
+    assert(mirrorResult.success === true, "Expected mirror operation to be successful");
+    assert(mirrorResult.data[0] != null, "Expected at least one version to be mirrored");
+
+    expect(mirrorResult.data[0].mirrored).toHaveLength(3);
+    expect(mirrorResult.data[0].skipped).toHaveLength(0);
+    expect(mirrorResult.data[0].version).toBe("15.0.0");
 
     expect(existsSync(`${storePath}/.ucd-store.json`)).toBe(true);
     expect(existsSync(`${storePath}/15.0.0/ArabicShaping.txt`)).toBe(false);
@@ -118,7 +139,14 @@ describe("store mirror", () => {
     });
 
     await store.init();
-    await store.mirror({ force: true });
+    const mirrorResult = await store.mirror({ force: true });
+
+    assert(mirrorResult.success === true, "Expected mirror operation to be successful");
+    assert(mirrorResult.data[0] != null, "Expected at least one version to be mirrored");
+
+    expect(mirrorResult.data[0].mirrored).toHaveLength(3);
+    expect(mirrorResult.data[0].skipped).toHaveLength(0);
+    expect(mirrorResult.data[0].version).toBe("15.0.0");
 
     expect(existsSync(`${storePath}/15.0.0/ArabicShaping.txt`)).toBe(true);
 
@@ -135,6 +163,16 @@ describe("store mirror", () => {
       versions: ["15.0.0"],
     });
 
-    await expect(store.mirror()).rejects.toThrow("Store is not initialized");
+    const mirrorResult = await store.mirror();
+
+    assert(mirrorResult.success === false, "Expected mirror operation to be unsuccessful");
+    assert(mirrorResult.data == null, "Expected no versions to be mirrored");
+
+    expect(mirrorResult.data).toBeUndefined();
+    expect(mirrorResult.errors).toHaveLength(1);
+
+    assert(mirrorResult.errors[0] != null, "Expected error to be present");
+    expect(mirrorResult.errors[0].type).toBe("NOT_INITIALIZED");
+    expect(mirrorResult.errors[0].message).toBe("Store is not initialized. Please initialize the store before performing operations.");
   });
 });
