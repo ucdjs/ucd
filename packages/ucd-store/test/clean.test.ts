@@ -284,7 +284,7 @@ describe("store clean", () => {
     assertCapability(store.fs, ["rm", "exists"]);
     expect(await store.fs.exists(`./15.0.0/ArabicShaping.txt`)).toBe(true);
 
-    const cleanPromise = store.clean();
+    const cleanPromise = store.clean({ concurrency: 1 });
 
     await store.fs.rm(`./15.0.0/ArabicShaping.txt`);
     expect(await store.fs.exists(`./15.0.0/ArabicShaping.txt`)).toBe(false);
@@ -318,11 +318,11 @@ describe("store clean", () => {
     // make fs.exists always return true, to let the fs removal process fail
     vi.spyOn(store.fs, "exists").mockResolvedValue(true);
 
-    const cleanPromise = store.clean();
+    const cleaningPromise = store.clean({ concurrency: 1 });
 
     await store.fs.rm(`./15.0.0/ArabicShaping.txt`);
 
-    const [clean15Result] = await cleanPromise;
+    const [clean15Result] = await cleaningPromise;
 
     expect(clean15Result?.version).toBe("15.0.0");
     expect(clean15Result?.skipped).toEqual([]);

@@ -77,20 +77,24 @@ export async function internal__analyze(store: UCDStore, options: Required<Analy
     const missingFiles: string[] = [];
     const files: string[] = [];
 
-    for (const expectedFile of expectedFiles) {
-      if (!actualFiles.includes(expectedFile)) {
+    const expectedSet = new Set(expectedFiles);
+    const actualSet = new Set(actualFiles);
+    for (const expectedFile of expectedSet) {
+      if (!actualSet.has(expectedFile)) {
         missingFiles.push(expectedFile);
       }
     }
 
-    for (const actualFile of actualFiles) {
-      // if file is not in expected files, it's orphaned
-      if (checkOrphaned && !expectedFiles.includes(actualFile)) {
+    for (const actualFile of actualSet) {
+      const isExpected = expectedSet.has(actualFile);
+      if (checkOrphaned && !isExpected) {
         orphanedFiles.push(actualFile);
         continue;
       }
 
-      files.push(actualFile);
+      if (isExpected) {
+        files.push(actualFile);
+      }
     }
 
     const isComplete = orphanedFiles.length === 0 && missingFiles.length === 0;
