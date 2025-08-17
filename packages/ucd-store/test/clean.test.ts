@@ -3,6 +3,7 @@ import { HttpResponse, mockFetch } from "#internal/test-utils/msw";
 import { setupMockStore } from "#internal/test-utils/store";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
+import { assertCapability } from "@ucdjs/fs-bridge";
 import { createNodeUCDStore } from "@ucdjs/ucd-store";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
@@ -251,5 +252,83 @@ describe("store clean", () => {
     expect(clean15Result?.skipped).toEqual([]);
     expect(clean15Result?.failed).toEqual([]);
     expect(clean15Result?.deleted).toHaveLength(0);
+  });
+
+  it("should throw if concurrency is less than 1", async () => {
+    const storePath = await testdir();
+
+    const store = await createNodeUCDStore({
+      basePath: storePath,
+      versions: ["15.0.0"],
+    });
+
+    await store.init();
+
+    await expect(store.clean({ concurrency: 0 })).rejects.toThrow(
+      "Concurrency must be at least 1",
+    );
+  });
+
+  it("should skip file deletion if it doesn't exist", async () => {
+    const storePath = await testdir();
+
+    const store = await createNodeUCDStore({
+      basePath: storePath,
+      versions: ["15.0.0"],
+    });
+
+    await store.init();
+    await store.mirror();
+
+    assertCapability(store.fs, ["rm", "exists"]);
+    expect(await store.fs.exists(`./15.0.0/ArabicShaping.txt`)).toBe(true);
+
+    const cleanPromise = store.clean();
+
+    await store.fs.rm(`./15.0.0/ArabicShaping.txt`);
+    expect(await store.fs.exists(`./15.0.0/ArabicShaping.txt`)).toBe(false);
+
+    const [clean15Result] = await cleanPromise;
+
+    expect(clean15Result?.version).toBe("15.0.0");
+    expect(clean15Result?.skipped).toEqual(["ArabicShaping.txt"]);
+    expect(clean15Result?.failed).toEqual([]);
+    expect(clean15Result?.deleted).toEqual(expect.arrayContaining([
+      "extracted/DerivedBidiClass.txt",
+      "BidiBrackets.txt",
+    ]));
+  });
+
+  // TODO: find a better name for test
+  it("should fail on file deletion", async () => {
+    const storePath = await testdir();
+
+    const store = await createNodeUCDStore({
+      basePath: storePath,
+      versions: ["15.0.0"],
+    });
+
+    await store.init();
+    await store.mirror();
+
+    assertCapability(store.fs, ["rm", "exists"]);
+    expect(await store.fs.exists(`./15.0.0/ArabicShaping.txt`)).toBe(true);
+
+    // make fs.exists always return true, to let the fs removal process fail
+    vi.spyOn(store.fs, "exists").mockResolvedValue(true);
+
+    const cleanPromise = store.clean();
+
+    await store.fs.rm(`./15.0.0/ArabicShaping.txt`);
+
+    const [clean15Result] = await cleanPromise;
+
+    expect(clean15Result?.version).toBe("15.0.0");
+    expect(clean15Result?.skipped).toEqual([]);
+    expect(clean15Result?.failed).toEqual(["ArabicShaping.txt"]);
+    expect(clean15Result?.deleted).toEqual(expect.arrayContaining([
+      "extracted/DerivedBidiClass.txt",
+      "BidiBrackets.txt",
+    ]));
   });
 });

@@ -50,7 +50,7 @@ export async function internal__clean(store: UCDStore, options: internal_CleanOp
   const result: CleanResult[] = [];
   const directoriesToCheck = new Set<string>(directories);
 
-  // create the limit function to control concurrency
+  // throw if concurrency is less than 1
   if (concurrency < 1) {
     throw new UCDStoreError("Concurrency must be at least 1");
   }
@@ -93,10 +93,9 @@ export async function internal__clean(store: UCDStore, options: internal_CleanOp
 
           if (!dryRun) {
             await store.fs.rm(filePath);
-            versionResult!.deleted.push(file);
-          } else {
-            versionResult!.deleted.push(file);
           }
+
+          versionResult!.deleted.push(file);
         } catch {
           versionResult!.failed.push(file);
         }
