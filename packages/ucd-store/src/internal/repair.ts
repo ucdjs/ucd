@@ -68,7 +68,8 @@ export async function internal__repair(store: UCDStore, options: Required<Repair
     status: "success" as const,
     restored: [],
     removed: [],
-    skipped: analysis.isComplete ? analysis.files : [],
+    // skipped contains files that were not processed.
+    skipped: analysis.files.length === 0 ? [] : [...analysis.files],
     failed: [],
   }));
 
