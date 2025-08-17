@@ -315,15 +315,22 @@ export class UCDStore {
    * that may need attention.
    *
    * @param {AnalyzeOptions} options - Configuration options for the analysis operation
-   * @returns {Promise<AnalyzeResult[]>} A promise that resolves to an array of VersionAnalysis objects, one for each analyzed version
+   * @returns {Promise<StoreOperationResult<AnalyzeResult[]>>} A promise that resolves to a StoreOperationResult containing an array of VersionAnalysis objects, one for each analyzed version
    *
    * @throws {UCDStoreVersionNotFoundError} When a specified version is not available in the store
    * @throws {BridgeUnsupportedOperation} When the filesystem doesn't support required capabilities
    * @throws {UCDStoreError} When other operational errors occur during analysis
    */
-  async analyze(options: AnalyzeOptions): Promise<AnalyzeResult[]> {
+  async analyze(options: AnalyzeOptions): Promise<StoreOperationResult<AnalyzeResult[]>> {
     if (!this.#initialized) {
-      throw new UCDStoreNotInitializedError();
+      return {
+        success: false,
+        data: [],
+        errors: [{
+          message: "Store is not initialized. Please initialize the store before performing operations.",
+          type: "NOT_INITIALIZED",
+        }],
+      };
     }
 
     let {
@@ -336,13 +343,37 @@ export class UCDStore {
     }
 
     try {
-      return await internal__analyze(this, {
+      const result = await internal__analyze(this, {
         checkOrphaned,
         versions,
       });
+
+      return {
+        success: true,
+        data: result,
+        errors: [],
+      };
     } catch (err) {
-      console.error(`Error during store analysis: ${err instanceof Error ? err.message : String(err)}`);
-      return [];
+      if (!(err instanceof UCDStoreBaseError)) {
+        return {
+          success: false,
+          data: [],
+          errors: [
+            {
+              message: err instanceof Error ? err.message : String(err),
+              type: "GENERIC",
+            },
+          ],
+        };
+      }
+
+      return {
+        success: false,
+        data: [],
+        errors: [
+          err["~toStoreError"](),
+        ],
+      };
     }
   }
 

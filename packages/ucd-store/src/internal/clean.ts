@@ -42,25 +42,29 @@ export async function internal__clean(store: UCDStore, options: internal_CleanOp
     directories,
   } = options;
 
+  // throw if concurrency is less than 1
+  if (concurrency < 1) {
+    throw new UCDStoreError("Concurrency must be at least 1");
+  }
+
   const analysisResult = await store.analyze({
     checkOrphaned: true,
     versions,
   });
 
+  if (!analysisResult.success) {
+    throw new UCDStoreError("Failed to analyze store");
+  }
+
   const result: CleanResult[] = [];
   const directoriesToCheck = new Set<string>(directories);
-
-  // throw if concurrency is less than 1
-  if (concurrency < 1) {
-    throw new UCDStoreError("Concurrency must be at least 1");
-  }
 
   const promises = [];
 
   // create the limit function to control concurrency
   const limit = pLimit(concurrency);
 
-  for (const analysis of analysisResult) {
+  for (const analysis of analysisResult.data) {
     // initialize result for this version
     const versionResult: CleanResult = {
       version: analysis.version,

@@ -313,15 +313,19 @@ describe("store clean", () => {
     assertCapability(store.fs, ["rm", "exists"]);
     expect(await store.fs.exists(`./15.0.0/ArabicShaping.txt`)).toBe(true);
 
-    vi.spyOn(store, "analyze").mockResolvedValue([{
-      version: "15.0.0",
-      files: ["BidiBrackets.txt", "extracted/DerivedBidiClass.txt"],
-      missingFiles: [],
-      orphanedFiles: ["ArabicShaping.txt"],
-      fileCount: 2,
-      expectedFileCount: 3,
-      isComplete: false,
-    }]);
+    vi.spyOn(store, "analyze").mockResolvedValue({
+      success: true,
+      data: [{
+        version: "15.0.0",
+        files: ["BidiBrackets.txt", "extracted/DerivedBidiClass.txt"],
+        missingFiles: [],
+        orphanedFiles: ["ArabicShaping.txt"],
+        fileCount: 2,
+        expectedFileCount: 3,
+        isComplete: false,
+      }],
+      errors: [],
+    });
 
     await store.fs.rm(`./15.0.0/ArabicShaping.txt`);
     expect(await store.fs.exists(`./15.0.0/ArabicShaping.txt`)).toBe(false);
@@ -356,15 +360,19 @@ describe("store clean", () => {
 
     vi.spyOn(store.fs, "exists").mockResolvedValue(true);
 
-    vi.spyOn(store, "analyze").mockResolvedValue([{
-      version: "15.0.0",
-      files: ["BidiBrackets.txt", "extracted/DerivedBidiClass.txt"],
-      missingFiles: [],
-      orphanedFiles: ["ArabicShaping.txt"],
-      fileCount: 2,
-      expectedFileCount: 3,
-      isComplete: false,
-    }]);
+    vi.spyOn(store, "analyze").mockResolvedValue({
+      success: true,
+      data: [{
+        version: "15.0.0",
+        files: ["BidiBrackets.txt", "extracted/DerivedBidiClass.txt"],
+        missingFiles: [],
+        orphanedFiles: ["ArabicShaping.txt"],
+        fileCount: 2,
+        expectedFileCount: 3,
+        isComplete: false,
+      }],
+      errors: [],
+    });
 
     const cleanResult = await store.clean({ concurrency: 1 });
 

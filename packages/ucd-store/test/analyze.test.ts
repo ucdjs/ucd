@@ -94,12 +94,15 @@ describe("analyze operations", () => {
 
       const analyzeResult = await store.analyze({ checkOrphaned: false });
 
-      expect(analyzeResult).toHaveLength(1);
-      expect(analyzeResult[0]?.version).toBe("15.0.0");
-      expect(analyzeResult[0]?.isComplete).toBe(true);
-      expect(analyzeResult[0]?.fileCount).toBe(3);
-      expect(analyzeResult[0]?.orphanedFiles).toEqual([]);
-      expect(analyzeResult[0]?.missingFiles).toEqual([]);
+      assert(analyzeResult.success === true, "Expected analyze to succeed");
+      assert(analyzeResult.data[0] != null, "Expected first analyze result to be non-null");
+
+      expect(analyzeResult.data).toHaveLength(1);
+      expect(analyzeResult.data[0].version).toBe("15.0.0");
+      expect(analyzeResult.data[0].isComplete).toBe(true);
+      expect(analyzeResult.data[0].fileCount).toBe(3);
+      expect(analyzeResult.data[0].orphanedFiles).toEqual([]);
+      expect(analyzeResult.data[0].missingFiles).toEqual([]);
     });
 
     it("should analyze local store with orphaned files", async () => {
@@ -132,14 +135,17 @@ describe("analyze operations", () => {
 
       const analysisResult = await store.analyze({ checkOrphaned: true });
 
-      expect(analysisResult).toHaveLength(1);
-      expect(analysisResult[0]?.version).toBe("15.0.0");
-      expect(analysisResult[0]?.isComplete).toBe(false);
-      expect(analysisResult[0]?.fileCount).toBe(4);
-      expect(analysisResult[0]?.orphanedFiles).toEqual([
+      assert(analysisResult.success === true, "Expected analyze to succeed");
+      assert(analysisResult.data[0] != null, "Expected first analyze result to be non-null");
+
+      expect(analysisResult.data).toHaveLength(1);
+      expect(analysisResult.data[0].version).toBe("15.0.0");
+      expect(analysisResult.data[0].isComplete).toBe(false);
+      expect(analysisResult.data[0].fileCount).toBe(4);
+      expect(analysisResult.data[0].orphanedFiles).toEqual([
         "OrphanedFile.txt",
       ]);
-      expect(analysisResult[0]?.missingFiles).toEqual([]);
+      expect(analysisResult.data[0].missingFiles).toEqual([]);
     });
 
     it("should analyze multiple versions", async () => {
@@ -165,10 +171,11 @@ describe("analyze operations", () => {
 
       const analysisResult = await store.analyze({ checkOrphaned: false });
 
-      expect(analysisResult).toHaveLength(2);
+      assert(analysisResult.success === true, "Expected analyze to succeed");
+      expect(analysisResult.data).toHaveLength(2);
 
-      const v15_0_0 = analysisResult.find((v) => v.version === "15.0.0");
-      const v15_1_0 = analysisResult.find((v) => v.version === "15.1.0");
+      const v15_0_0 = analysisResult.data.find((v) => v.version === "15.0.0");
+      const v15_1_0 = analysisResult.data.find((v) => v.version === "15.1.0");
 
       expect(v15_0_0?.isComplete).toBe(true);
       expect(v15_0_0?.fileCount).toBe(1);
@@ -208,8 +215,11 @@ describe("analyze operations", () => {
         checkOrphaned: false,
       });
 
-      expect(analysisResult).toHaveLength(1);
-      expect(analysisResult[0]?.version).toBe("15.0.0");
+      assert(analysisResult.success === true, "Expected analyze to succeed");
+      assert(analysisResult.data[0] != null, "Expected first analyze result to be non-null");
+
+      expect(analysisResult.data).toHaveLength(1);
+      expect(analysisResult.data[0].version).toBe("15.0.0");
     });
 
     it("should handle version not found error", async () => {
@@ -236,7 +246,14 @@ describe("analyze operations", () => {
         checkOrphaned: false,
       });
 
-      expect(analysisResult).toEqual([]);
+      expect(analysisResult.success).toBe(false);
+      expect(analysisResult.data).toEqual([]);
+      expect(analysisResult.errors).toHaveLength(1);
+      expect(analysisResult.errors[0]).toEqual({
+        message: "Version '99.99.99' does not exist in the store.",
+        type: "UNSUPPORTED_VERSION",
+        version: "99.99.99",
+      });
     });
 
     it("should handle API errors gracefully", async () => {
@@ -266,7 +283,10 @@ describe("analyze operations", () => {
 
       const analysisResult = await store.analyze({ checkOrphaned: false });
 
-      expect(analysisResult).toEqual([]);
+      expect(analysisResult.success).toBe(false);
+      expect(analysisResult.data).toEqual([]);
+      assert(analysisResult.errors[0] != null, "Expected first error to be non-null");
+      expect(analysisResult.errors[0].type).toBe("GENERIC");
     });
   });
 
@@ -297,10 +317,13 @@ describe("analyze operations", () => {
 
       const analysisResult = await store.analyze({ checkOrphaned: false });
 
-      expect(analysisResult).toHaveLength(1);
-      expect(analysisResult[0]?.version).toBe("15.0.0");
-      expect(analysisResult[0]?.isComplete).toBe(true);
-      expect(analysisResult[0]?.fileCount).toBe(3);
+      assert(analysisResult.success === true, "Expected analyze to succeed");
+      assert(analysisResult.data[0] != null, "Expected first analyze result to be non-null");
+
+      expect(analysisResult.data).toHaveLength(1);
+      expect(analysisResult.data[0].version).toBe("15.0.0");
+      expect(analysisResult.data[0].isComplete).toBe(true);
+      expect(analysisResult.data[0].fileCount).toBe(3);
     });
 
     it("should handle remote store with no versions", async () => {
@@ -316,9 +339,10 @@ describe("analyze operations", () => {
 
       const analysisResult = await store.analyze({ checkOrphaned: false });
 
-      expect(analysisResult).toEqual([]);
+      assert(analysisResult.success === true, "Expected analyze to succeed");
+      expect(analysisResult.data).toEqual([]);
 
-      const totalFileCount = analysisResult.reduce((sum, { fileCount }) => sum + fileCount, 0);
+      const totalFileCount = analysisResult.data.reduce((sum, { fileCount }) => sum + fileCount, 0);
       expect(totalFileCount).toBe(0);
     });
   });
@@ -353,8 +377,11 @@ describe("analyze operations", () => {
 
       const analysisResult = await store.analyze({ checkOrphaned: false });
 
-      expect(analysisResult).toHaveLength(1);
-      expect(analysisResult[0]?.isComplete).toBe(true);
+      assert(analysisResult.success === true, "Expected analyze to succeed");
+      assert(analysisResult.data[0] != null, "Expected first analyze result to be non-null");
+
+      expect(analysisResult.data).toHaveLength(1);
+      expect(analysisResult.data[0].isComplete).toBe(true);
     });
   });
 
@@ -370,8 +397,9 @@ describe("analyze operations", () => {
 
     const analysisResult = await store.analyze({ checkOrphaned: false });
 
-    expect(analysisResult).toEqual([]);
-    expect(analysisResult.length).toBe(0);
+    assert(analysisResult.success === true, "Expected analyze to succeed");
+    expect(analysisResult.data).toEqual([]);
+    expect(analysisResult.data.length).toBe(0);
   });
 
   it("should analyze store with no files", async () => {
@@ -395,10 +423,13 @@ describe("analyze operations", () => {
 
     const analysisResult = await store.analyze({ checkOrphaned: false });
 
-    expect(analysisResult).toHaveLength(1);
-    expect(analysisResult[0]?.version).toBe("15.0.0");
-    expect(analysisResult[0]?.fileCount).toBe(0);
-    expect(analysisResult[0]?.isComplete).toBe(true);
+    assert(analysisResult.success === true, "Expected analyze to succeed");
+    assert(analysisResult.data[0] != null, "Expected first analyze result to be non-null");
+
+    expect(analysisResult.data).toHaveLength(1);
+    expect(analysisResult.data[0].version).toBe("15.0.0");
+    expect(analysisResult.data[0].fileCount).toBe(0);
+    expect(analysisResult.data[0].isComplete).toBe(true);
   });
 
   it("should analyze store with missing files", async () => {
@@ -443,8 +474,12 @@ describe("analyze operations", () => {
 
     await store.init();
 
-    const [analysisResult] = await store.analyze({ checkOrphaned: true });
-    assert(analysisResult);
+    const analyzeResult = await store.analyze({ checkOrphaned: true });
+
+    assert(analyzeResult.success === true, "Expected analyze to succeed");
+    assert(analyzeResult.data[0] != null, "Expected first analyze result to be non-null");
+
+    const analysisResult = analyzeResult.data[0];
 
     expect(analysisResult.version).toBe("15.0.0");
     expect(analysisResult.isComplete).toBe(false);
@@ -504,8 +539,12 @@ describe("analyze operations", () => {
 
     await store.init();
 
-    const [analysisResult] = await store.analyze({ checkOrphaned: true });
-    assert(analysisResult);
+    const analyzeResult = await store.analyze({ checkOrphaned: true });
+
+    assert(analyzeResult.success === true, "Expected analyze to succeed");
+    assert(analyzeResult.data[0] != null, "Expected first analyze result to be non-null");
+
+    const analysisResult = analyzeResult.data[0];
 
     expect(analysisResult.version).toBe("15.0.0");
     expect(analysisResult.isComplete).toBe(false);
