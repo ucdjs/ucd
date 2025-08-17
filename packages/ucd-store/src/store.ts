@@ -458,9 +458,16 @@ export class UCDStore {
     });
   }
 
-  async repair(options: RepairOptions = {}): Promise<RepairResult[]> {
+  async repair(options: RepairOptions = {}): Promise<StoreOperationResult<RepairResult[]>> {
     if (!this.#initialized) {
-      throw new UCDStoreNotInitializedError();
+      return {
+        success: false,
+        data: [],
+        errors: [{
+          message: "Store is not initialized. Please initialize the store before performing operations.",
+          type: "NOT_INITIALIZED",
+        }],
+      };
     }
 
     let {
@@ -473,11 +480,43 @@ export class UCDStore {
       versions = this.#versions;
     }
 
-    return internal__repair(this, {
-      versions,
-      concurrency,
-      dryRun,
-    });
+    try {
+      const result = await internal__repair(this, {
+        versions,
+        concurrency,
+        dryRun,
+      });
+
+      // check if any repairs failed
+      const hasFailures = result.some(r => r.status === "failure");
+
+      return {
+        success: !hasFailures,
+        data: result,
+        errors: [], // No errors since exceptions would be caught below
+      };
+    } catch (err) {
+      if (!(err instanceof UCDStoreBaseError)) {
+        return {
+          success: false,
+          data: [],
+          errors: [
+            {
+              message: err instanceof Error ? err.message : String(err),
+              type: "GENERIC",
+            },
+          ],
+        };
+      }
+
+      return {
+        success: false,
+        data: [],
+        errors: [
+          err["~toStoreError"](),
+        ],
+      };
+    }
   }
 
   async "~writeManifest"(versions: string[]): Promise<void> {
