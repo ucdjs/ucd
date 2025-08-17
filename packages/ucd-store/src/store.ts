@@ -260,7 +260,7 @@ export class UCDStore {
       manifestVersions = Object.keys(manifest);
     }
 
-    // use api versions if no constructor versions, no versions in manifest & manifest doens't exist
+    // use api versions if no constructor versions, no versions in manifest & manifest doesn't exist
     if (this.#versions.length === 0 && (manifestVersions.length === 0 && (!manifestExists || force))) {
       // No versions specified anywhere, use all available
       this.#versions = availableVersions;
