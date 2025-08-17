@@ -4,6 +4,16 @@ This package provides internal test utils used across the repository.
 
 ## Usage
 
+### Contract Tests
+
+Contract tests ensure that `setupMockStore` accurately mimics the real API behavior. These tests are located in the `test/` directory and can be run with:
+
+```bash
+pnpm test --run --project=tooling:contract-tests
+```
+
+See [test/README.md](./test/README.md) for detailed information about the contract tests.
+
 ### MSW
 
 This package provides utilities for working with [MSW (Mock Service Worker)](https://mswjs.io/).
