@@ -2,11 +2,12 @@ import { existsSync, readFileSync } from "node:fs";
 import { HttpResponse, mockFetch } from "#internal/test-utils/msw";
 import { setupMockStore } from "#internal/test-utils/store";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
+import { dedent } from "@luxass/utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { assertCapability } from "@ucdjs/fs-bridge";
 import { createNodeUCDStore } from "@ucdjs/ucd-store";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { testdir } from "vitest-testdirs";
+import { captureSnapshot, testdir } from "vitest-testdirs";
 
 describe("store clean", () => {
   beforeEach(() => {
@@ -330,5 +331,39 @@ describe("store clean", () => {
       "extracted/DerivedBidiClass.txt",
       "BidiBrackets.txt",
     ]));
+  });
+
+  it("should not remove any files when using dryRun", async () => {
+    const storePath = await testdir();
+
+    const store = await createNodeUCDStore({
+      basePath: storePath,
+      versions: ["15.0.0"],
+    });
+
+    await store.init();
+    await store.mirror();
+
+    const beforeCleanSnapshot = await captureSnapshot(storePath);
+
+    const [clean15Result] = await store.clean({ dryRun: true });
+
+    expect(clean15Result?.version).toBe("15.0.0");
+    expect(clean15Result?.skipped).toEqual([]);
+    expect(clean15Result?.failed).toEqual([]);
+    expect(clean15Result?.deleted).toHaveLength(3);
+
+    const afterCleanSnapshot = await captureSnapshot(storePath);
+
+    expect(beforeCleanSnapshot).toEqual(dedent`
+      vitest-clean-store-clean-should-not-remove-any-files-when-using-dryRun/
+      ├── 15.0.0/
+      │   ├── extracted/
+      │   │   └── DerivedBidiClass.txt
+      │   ├── ArabicShaping.txt
+      │   └── BidiBrackets.txt
+      └── .ucd-store.json
+    `);
+    expect(beforeCleanSnapshot).toEqual(afterCleanSnapshot);
   });
 });
