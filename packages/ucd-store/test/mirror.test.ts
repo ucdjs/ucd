@@ -178,7 +178,7 @@ describe("store mirror", () => {
     expect(mirrorResult.errors[0].message).toBe("Store is not initialized. Please initialize the store before performing operations.");
   });
 
-  it("should require concurrency to be higher than 0", async () => {
+  it("should return failure when concurrency is less than 1", async () => {
     const storePath = await testdir();
 
     const store = await createNodeUCDStore({

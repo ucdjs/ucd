@@ -86,30 +86,28 @@ export async function internal__mirror(store: UCDStore, options: Required<Mirror
     }
   }));
 
-  await Promise.all(filesQueue.map(async ([version, filePath]) => {
-    return limit(async () => {
-      let versionResult = resultsByVersion.get(version);
-      if (!versionResult) {
-        versionResult = { version, mirrored: [], skipped: [], failed: [] };
-        resultsByVersion.set(version, versionResult);
-      }
+  await Promise.all(filesQueue.map(([version, filePath]) => limit(async () => {
+    let versionResult = resultsByVersion.get(version);
+    if (!versionResult) {
+      versionResult = { version, mirrored: [], skipped: [], failed: [] };
+      resultsByVersion.set(version, versionResult);
+    }
 
-      try {
-        const isMirrored = await internal__mirrorFile(store, version, filePath, {
-          force,
-          dryRun,
-        });
+    try {
+      const isMirrored = await internal__mirrorFile(store, version, filePath, {
+        force,
+        dryRun,
+      });
 
-        if (isMirrored) {
-          versionResult!.mirrored.push(filePath);
-        } else {
-          versionResult!.skipped.push(filePath);
-        }
-      } catch {
-        versionResult!.failed.push(filePath);
+      if (isMirrored) {
+        versionResult!.mirrored.push(filePath);
+      } else {
+        versionResult!.skipped.push(filePath);
       }
-    });
-  }));
+    } catch {
+      versionResult!.failed.push(filePath);
+    }
+  })));
 
   return Array.from(resultsByVersion.values());
 }
