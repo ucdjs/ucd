@@ -351,4 +351,26 @@ describe("store repair", () => {
       type: "NOT_INITIALIZED",
     });
   });
+
+  it("should return failure when concurrency is less than 1", async () => {
+    const storePath = await testdir();
+
+    const store = await createNodeUCDStore({
+      basePath: storePath,
+      versions: ["15.0.0"],
+    });
+
+    await store.init();
+    const repairResult = await store.repair({ concurrency: 0 });
+
+    assert(repairResult.success === false, "Expected mirror operation to be unsuccessful");
+    assert(repairResult.data === undefined, "Expected no versions to be mirrored");
+
+    expect(repairResult.data).toBeUndefined();
+    expect(repairResult.errors).toHaveLength(1);
+
+    assert(repairResult.errors[0] != null, "Expected error to be present");
+    expect(repairResult.errors[0].type).toBe("GENERIC");
+    expect(repairResult.errors[0].message).toBe("Concurrency must be at least 1");
+  });
 });
