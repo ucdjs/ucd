@@ -75,7 +75,7 @@ export async function runAnalyzeStore({ flags, versions }: CLIStoreAnalyzeCmdOpt
     }
 
     if (json) {
-      console.info(JSON.stringify(result, null, 2));
+      console.info(JSON.stringify(result.data, null, 2));
       return;
     }
 
