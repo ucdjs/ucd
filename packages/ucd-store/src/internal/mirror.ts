@@ -166,6 +166,9 @@ async function internal__mirrorFile(store: UCDStore, version: string, filePath: 
     // we can just use the raw text response.
 
     // This will also prevent errors on invalid json, since we are not parsing it.
+    // Note: response.text() decodes the response according to the charset specified in the
+    // Content-Type header (defaults to UTF-8 if unspecified). If the server sends JSON in a
+    // non-UTF-8 encoding, this may result in incorrect decoding and corrupted data.
     content = await response.text();
   } else if (contentType?.startsWith("text/")) {
     content = await response.text();
