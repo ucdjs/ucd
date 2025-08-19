@@ -168,9 +168,9 @@ describe("store mirror", () => {
     const mirrorResult = await store.mirror();
 
     assert(mirrorResult.success === false, "Expected mirror operation to be unsuccessful");
-    assert(mirrorResult.data == null, "Expected no versions to be mirrored");
+    assert(mirrorResult.data === undefined, "Expected no versions to be mirrored");
 
-    expect(mirrorResult.data).toBeNull();
+    expect(mirrorResult.data).toBeUndefined();
     expect(mirrorResult.errors).toHaveLength(1);
 
     assert(mirrorResult.errors[0] != null, "Expected error to be present");
@@ -190,9 +190,9 @@ describe("store mirror", () => {
     const mirrorResult = await store.mirror({ concurrency: 0 });
 
     assert(mirrorResult.success === false, "Expected mirror operation to be unsuccessful");
-    assert(mirrorResult.data == null, "Expected no versions to be mirrored");
+    assert(mirrorResult.data === undefined, "Expected no versions to be mirrored");
 
-    expect(mirrorResult.data).toBeNull();
+    expect(mirrorResult.data).toBeUndefined();
     expect(mirrorResult.errors).toHaveLength(1);
 
     assert(mirrorResult.errors[0] != null, "Expected error to be present");
@@ -213,9 +213,9 @@ describe("store mirror", () => {
     const mirrorResult = await store.mirror({ versions: ["99.99.99"] });
 
     assert(mirrorResult.success === false, "Expected mirror operation to be unsuccessful");
-    assert(mirrorResult.data == null, "Expected no versions to be mirrored");
+    assert(mirrorResult.data === undefined, "Expected no versions to be mirrored");
 
-    expect(mirrorResult.data).toBeNull();
+    expect(mirrorResult.data).toBeUndefined();
     expect(mirrorResult.errors).toHaveLength(1);
 
     assert(mirrorResult.errors[0] != null, "Expected error to be present");
@@ -246,9 +246,9 @@ describe("store mirror", () => {
     const mirrorResult = await store.mirror();
 
     assert(mirrorResult.success === false, "Expected mirror operation to be unsuccessful");
-    assert(mirrorResult.data == null, "Expected no versions to be mirrored");
+    assert(mirrorResult.data === undefined, "Expected no versions to be mirrored");
 
-    expect(mirrorResult.data).toBeNull();
+    expect(mirrorResult.data).toBeUndefined();
     expect(mirrorResult.errors).toHaveLength(1);
 
     assert(mirrorResult.errors[0] != null, "Expected error to be present");
@@ -359,7 +359,7 @@ describe("store mirror", () => {
     const mirrorResult = await store.mirror();
 
     assert(mirrorResult.success === false, "Expected mirror operation to be unsuccessful");
-    expect(mirrorResult.data).toBeNull();
+    expect(mirrorResult.data).toBeUndefined();
     expect(mirrorResult.errors).toHaveLength(1);
 
     assert(mirrorResult.errors[0] != null, "Expected error to be present");
