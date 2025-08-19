@@ -278,7 +278,7 @@ describe("store clean", () => {
     expect(cleanResult.data[0].deleted).toHaveLength(0);
   });
 
-  it("should throw if concurrency is less than 1", async () => {
+  it("should return failure when concurrency is less than 1", async () => {
     const storePath = await testdir();
 
     const store = await createNodeUCDStore({
