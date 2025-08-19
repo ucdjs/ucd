@@ -350,7 +350,6 @@ export class UCDStore {
       if (!(err instanceof UCDStoreBaseError)) {
         return {
           success: false,
-          data: [],
           errors: [
             {
               message: err instanceof Error ? err.message : String(err),
@@ -362,7 +361,6 @@ export class UCDStore {
 
       return {
         success: false,
-        data: [],
         errors: [
           err["~toStoreError"](),
         ],
@@ -488,7 +486,6 @@ export class UCDStore {
       if (!(err instanceof UCDStoreBaseError)) {
         return {
           success: false,
-          data: [],
           errors: [
             {
               message: err instanceof Error ? err.message : String(err),
@@ -500,7 +497,6 @@ export class UCDStore {
 
       return {
         success: false,
-        data: [],
         errors: [
           err["~toStoreError"](),
         ],
@@ -542,7 +538,6 @@ export class UCDStore {
       if (!(err instanceof UCDStoreBaseError)) {
         return {
           success: false,
-          data: [],
           errors: [
             {
               message: err instanceof Error ? err.message : String(err),
@@ -554,7 +549,6 @@ export class UCDStore {
 
       return {
         success: false,
-        data: [],
         errors: [
           err["~toStoreError"](),
         ],
