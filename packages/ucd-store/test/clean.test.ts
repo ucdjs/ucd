@@ -291,7 +291,7 @@ describe("store clean", () => {
     const cleanResult = await store.clean({ concurrency: 0 });
 
     expect(cleanResult.success).toBe(false);
-    expect(cleanResult.data).toEqual([]);
+    expect(cleanResult.data).toBeUndefined();
     expect(cleanResult.errors).toHaveLength(1);
     expect(cleanResult.errors[0]).toEqual({
       message: "Concurrency must be at least 1",

@@ -247,7 +247,7 @@ describe("analyze operations", () => {
       });
 
       expect(analysisResult.success).toBe(false);
-      expect(analysisResult.data).toEqual([]);
+      expect(analysisResult.data).toBeUndefined();
       expect(analysisResult.errors).toHaveLength(1);
       expect(analysisResult.errors[0]).toEqual({
         message: "Version '99.99.99' does not exist in the store.",
@@ -284,7 +284,7 @@ describe("analyze operations", () => {
       const analysisResult = await store.analyze({ checkOrphaned: false });
 
       expect(analysisResult.success).toBe(false);
-      expect(analysisResult.data).toEqual([]);
+      expect(analysisResult.data).toBeUndefined();
       assert(analysisResult.errors[0] != null, "Expected first error to be non-null");
       expect(analysisResult.errors[0].type).toBe("GENERIC");
     });
