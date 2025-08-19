@@ -77,7 +77,7 @@ export default defineConfig({
         extends: true,
         test: {
           include: ["./tooling/test-utils/test/**/*.{test,spec}.?(c|m)[jt]s?(x)"],
-          name: "tooling:contract-tests",
+          name: "tooling:contract",
         }
       } satisfies TestProjectConfiguration,
     ]
