@@ -344,7 +344,7 @@ describe("store repair", () => {
     const repairResult = await store.repair();
 
     expect(repairResult.success).toBe(false);
-    expect(repairResult.data).toEqual([]);
+    expect(repairResult.data).toBeUndefined();
     expect(repairResult.errors).toHaveLength(1);
     expect(repairResult.errors[0]).toEqual({
       message: "Store is not initialized. Please initialize the store before performing operations.",
