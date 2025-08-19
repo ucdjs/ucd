@@ -1,7 +1,6 @@
 import type { UCDStore } from "../store";
 import type { SharedStoreOperationOptions } from "../types";
 import { hasUCDFolderPath, resolveUCDVersion } from "@luxass/unicode-utils-new";
-import { prependLeadingSlash } from "@luxass/utils";
 import { isApiError } from "@ucdjs/fetch";
 import { assertCapability } from "@ucdjs/fs-bridge";
 import pLimit from "p-limit";
@@ -42,10 +41,9 @@ export interface MirrorResult {
 
 export async function internal__mirror(store: UCDStore, options: Required<MirrorOptions>): Promise<MirrorResult[]> {
   const { concurrency, dryRun, force, versions } = options;
-  const result: MirrorResult[] = [];
 
   if (versions.length === 0) {
-    return result;
+    return [];
   }
 
   if (concurrency < 1) {
@@ -59,6 +57,8 @@ export async function internal__mirror(store: UCDStore, options: Required<Mirror
 
   // pre-create directory structure to avoid repeated checks
   const directoriesToCreate = new Set<string>();
+
+  const resultsByVersion = new Map<string, MirrorResult>();
 
   const filesQueue = await Promise.all(
     versions.map(async (version) => {
@@ -88,16 +88,10 @@ export async function internal__mirror(store: UCDStore, options: Required<Mirror
 
   await Promise.all(filesQueue.map(async ([version, filePath]) => {
     return limit(async () => {
-      let versionResult = result.find((r) => r.version === version);
+      let versionResult = resultsByVersion.get(version);
       if (!versionResult) {
-        const idx = result.push({
-          version,
-          mirrored: [],
-          skipped: [],
-          failed: [],
-        });
-
-        versionResult = result.at(idx - 1);
+        versionResult = { version, mirrored: [], skipped: [], failed: [] };
+        resultsByVersion.set(version, versionResult);
       }
 
       try {
@@ -117,7 +111,7 @@ export async function internal__mirror(store: UCDStore, options: Required<Mirror
     });
   }));
 
-  return result;
+  return Array.from(resultsByVersion.values());
 }
 
 async function internal__mirrorFile(store: UCDStore, version: string, filePath: string, options: Pick<MirrorOptions, "force" | "dryRun">): Promise<boolean> {
@@ -180,7 +174,7 @@ async function internal__mirrorFile(store: UCDStore, version: string, filePath: 
     content = new Uint8Array(await response.arrayBuffer());
   }
 
-  await store.fs.write(prependLeadingSlash(localPath), content);
+  await store.fs.write(localPath, content);
 
   return true;
 }
