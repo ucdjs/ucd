@@ -322,27 +322,20 @@ export class UCDStore {
    * @throws {UCDStoreError} When other operational errors occur during analysis
    */
   async analyze(options: AnalyzeOptions): Promise<StoreOperationResult<AnalyzeResult[]>> {
-    if (!this.#initialized) {
-      return {
-        success: false,
-        data: [],
-        errors: [{
-          message: "Store is not initialized. Please initialize the store before performing operations.",
-          type: "NOT_INITIALIZED",
-        }],
-      };
-    }
-
-    let {
-      checkOrphaned = false,
-      versions = [],
-    } = options;
-
-    if (versions.length === 0) {
-      versions = this.#versions;
-    }
-
     try {
+      if (!this.#initialized) {
+        throw new UCDStoreNotInitializedError();
+      }
+
+      let {
+        checkOrphaned = false,
+        versions = [],
+      } = options;
+
+      if (versions.length === 0) {
+        versions = this.#versions;
+      }
+
       const result = await internal__analyze(this, {
         checkOrphaned,
         versions,
@@ -394,28 +387,22 @@ export class UCDStore {
    * @throws {UCDStoreError} When the concurrency parameter is less than 1 or other operational errors occur
    */
   async mirror(options: MirrorOptions = {}): Promise<StoreOperationResult<MirrorResult[]>> {
-    if (!this.#initialized) {
-      return {
-        success: false,
-        errors: [{
-          message: "Store is not initialized. Please initialize the store before performing operations.",
-          type: "NOT_INITIALIZED",
-        }],
-      };
-    }
-
-    let {
-      versions = [],
-      concurrency = DEFAULT_CONCURRENCY,
-      dryRun = false,
-      force = false,
-    } = options;
-
-    if (versions.length === 0) {
-      versions = this.#versions;
-    }
-
     try {
+      if (!this.#initialized) {
+        throw new UCDStoreNotInitializedError();
+      }
+
+      let {
+        versions = [],
+        concurrency = DEFAULT_CONCURRENCY,
+        dryRun = false,
+        force = false,
+      } = options;
+
+      if (versions.length === 0) {
+        versions = this.#versions;
+      }
+
       const result = await internal__mirror(this, {
         versions,
         concurrency,
@@ -468,28 +455,21 @@ export class UCDStore {
    * @throws {UCDStoreError} When the concurrency parameter is less than 1 or other operational errors occur
    */
   async clean(options: CleanOptions = {}): Promise<StoreOperationResult<CleanResult[]>> {
-    if (!this.#initialized) {
-      return {
-        success: false,
-        data: [],
-        errors: [{
-          message: "Store is not initialized. Please initialize the store before performing operations.",
-          type: "NOT_INITIALIZED",
-        }],
-      };
-    }
-
-    let {
-      versions = [],
-      concurrency = DEFAULT_CONCURRENCY,
-      dryRun = false,
-    } = options;
-
-    if (versions.length === 0) {
-      versions = this.#versions;
-    }
-
     try {
+      if (!this.#initialized) {
+        throw new UCDStoreNotInitializedError();
+      }
+
+      let {
+        versions = [],
+        concurrency = DEFAULT_CONCURRENCY,
+        dryRun = false,
+      } = options;
+
+      if (versions.length === 0) {
+        versions = this.#versions;
+      }
+
       const result = await internal__clean(this, {
         versions,
         concurrency,
@@ -529,28 +509,21 @@ export class UCDStore {
   }
 
   async repair(options: RepairOptions = {}): Promise<StoreOperationResult<RepairResult[]>> {
-    if (!this.#initialized) {
-      return {
-        success: false,
-        data: [],
-        errors: [{
-          message: "Store is not initialized. Please initialize the store before performing operations.",
-          type: "NOT_INITIALIZED",
-        }],
-      };
-    }
-
-    let {
-      versions = [],
-      concurrency = DEFAULT_CONCURRENCY,
-      dryRun = false,
-    } = options;
-
-    if (versions.length === 0) {
-      versions = this.#versions;
-    }
-
     try {
+      if (!this.#initialized) {
+        throw new UCDStoreNotInitializedError();
+      }
+
+      let {
+        versions = [],
+        concurrency = DEFAULT_CONCURRENCY,
+        dryRun = false,
+      } = options;
+
+      if (versions.length === 0) {
+        versions = this.#versions;
+      }
+
       const result = await internal__repair(this, {
         versions,
         concurrency,
