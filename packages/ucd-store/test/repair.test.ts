@@ -363,8 +363,8 @@ describe("store repair", () => {
     await store.init();
     const repairResult = await store.repair({ concurrency: 0 });
 
-    assert(repairResult.success === false, "Expected mirror operation to be unsuccessful");
-    assert(repairResult.data === undefined, "Expected no versions to be mirrored");
+    assert(repairResult.success === false, "Expected repair operation to be unsuccessful");
+    assert(repairResult.data === undefined, "Expected no versions to be repaired");
 
     expect(repairResult.data).toBeUndefined();
     expect(repairResult.errors).toHaveLength(1);
