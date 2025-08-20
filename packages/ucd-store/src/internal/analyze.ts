@@ -1,5 +1,5 @@
 import type { UCDStore } from "../store";
-import { UCDStoreVersionNotFoundError } from "../errors";
+import { UCDStoreError, UCDStoreVersionNotFoundError } from "../errors";
 import { getExpectedFilePaths } from "./files";
 
 export interface AnalyzeOptions {
@@ -71,7 +71,14 @@ export async function internal__analyze(store: UCDStore, options: Required<Analy
     const expectedFiles = await getExpectedFilePaths(store.client, version);
 
     // get the actual files from the store
-    const actualFiles = await store.getFilePaths(version);
+    const actualFilesResult = await store.getFilePaths(version);
+
+    if (!actualFilesResult.success) {
+      // TODO: make the error context chainable
+      throw new UCDStoreError(`Failed to get file paths for version '${version}': ${actualFilesResult.errors.join(", ")}`);
+    }
+
+    const actualFiles = actualFilesResult.data;
 
     const orphanedFiles: string[] = [];
     const missingFiles: string[] = [];

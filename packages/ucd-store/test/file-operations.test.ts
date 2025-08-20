@@ -4,7 +4,7 @@ import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { BridgeUnsupportedOperation, defineFileSystemBridge } from "@ucdjs/fs-bridge";
 import { createNodeUCDStore, UCDStore } from "@ucdjs/ucd-store";
 import { flattenFilePaths } from "@ucdjs/utils";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { assert, beforeEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
 
 describe("file operations", () => {
@@ -46,7 +46,10 @@ describe("file operations", () => {
       expect(store.initialized).toBe(true);
       expect(store.versions).toEqual(["15.0.0"]);
 
-      const fileTree = await store.getFileTree("15.0.0");
+      const fileTreeResult = await store.getFileTree("15.0.0");
+      assert(fileTreeResult.success, "Failed to get file tree");
+
+      const fileTree = fileTreeResult.data;
 
       expect(fileTree).toEqual([
         {
