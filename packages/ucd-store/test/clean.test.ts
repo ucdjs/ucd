@@ -130,10 +130,15 @@ describe("store clean", () => {
     expect(existsSync(`${storePath}/15.0.0/orphaned.txt`)).toBe(false);
   });
 
-  it.todo("should skip files that are not in the store", async () => {
+  it("should skip files that are not in the store", async () => {
     const storePath = await testdir({
       "15.0.0": {
         "not-in-store.txt": "This file is not in the store",
+        "ArabicShaping.txt": "content",
+        "BidiBrackets.txt": "content",
+        "extracted": {
+          "DerivedBidiClass.txt": "content",
+        },
       },
     });
 
@@ -144,13 +149,33 @@ describe("store clean", () => {
 
     await store.init();
 
-    const cleanResult = await store.clean();
+    assertCapability(store.fs, ["rm", "exists"]);
+    expect(await store.fs.exists(`./15.0.0/ArabicShaping.txt`)).toBe(true);
+
+    vi.spyOn(store, "analyze").mockResolvedValue({
+      success: true,
+      data: [{
+        version: "15.0.0",
+        files: ["ArabicShaping.txt", "BidiBrackets.txt", "extracted/DerivedBidiClass.txt"],
+        missingFiles: [],
+        orphanedFiles: ["not-in-store.txt"],
+        fileCount: 4,
+        expectedFileCount: 3,
+        isComplete: false,
+      }],
+      errors: [],
+    });
+
+    await store.fs.rm(`./15.0.0/not-in-store.txt`);
+    expect(await store.fs.exists(`./15.0.0/not-in-store.txt`)).toBe(false);
+
+    const cleanResult = await store.clean({ concurrency: 1 });
 
     assert(cleanResult.success === true, "Expected clean to succeed");
     assert(cleanResult.data[0] != null, "Expected first clean result to be non-null");
 
     expect(cleanResult.data[0].version).toBe("15.0.0");
-    expect(cleanResult.data[0].skipped).toEqual(["/not-in-store.txt"]);
+    expect(cleanResult.data[0].skipped).toEqual(["not-in-store.txt"]);
     expect(cleanResult.data[0].failed).toEqual([]);
     expect(cleanResult.data[0].deleted).toHaveLength(3);
   });
@@ -266,6 +291,7 @@ describe("store clean", () => {
     });
 
     await store.init();
+    await store.mirror();
 
     const cleanResult = await store.clean();
 
