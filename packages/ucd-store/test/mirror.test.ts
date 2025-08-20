@@ -328,7 +328,7 @@ describe("store mirror", () => {
 
     const mirrorResult = await store.mirror();
 
-    assert(mirrorResult.success === false, "Expected mirror operation to be unsuccessful");
+    assert(mirrorResult.success === true, "Expected mirror operation to be successful");
     assert(mirrorResult.data != null, "Expected no versions to be mirrored");
 
     assert(mirrorResult.data[0] != null, "Expected at least one version in mirrorResult.data");

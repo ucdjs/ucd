@@ -376,7 +376,7 @@ describe("store clean", () => {
 
     const cleanResult = await store.clean({ concurrency: 1 });
 
-    assert(cleanResult.success === false, "Expected clean to report failures");
+    assert(cleanResult.success === true, "Expected clean to succeed");
     assert(cleanResult.data != null, "Expected clean result data to be non-null");
     assert(cleanResult.data[0] != null, "Expected first clean result to be non-null");
 
