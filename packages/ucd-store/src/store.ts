@@ -408,11 +408,8 @@ export class UCDStore {
         force,
       });
 
-      // check if any files failed to mirror
-      const hasFailures = result.some((r) => r.failed.length > 0);
-
       return {
-        success: !hasFailures,
+        success: true,
         data: result,
         errors: [],
       };
@@ -474,13 +471,10 @@ export class UCDStore {
         dryRun,
       });
 
-      // check if any files failed to clean
-      const hasFailures = result.some((r) => r.failed.length > 0);
-
       return {
-        success: !hasFailures,
+        success: true,
         data: result,
-        errors: [], // No errors since exceptions would be caught below
+        errors: [],
       };
     } catch (err) {
       if (!(err instanceof UCDStoreBaseError)) {
@@ -526,13 +520,10 @@ export class UCDStore {
         dryRun,
       });
 
-      // check if any repairs failed
-      const hasFailures = result.some((r) => r.status === "failure");
-
       return {
-        success: !hasFailures,
+        success: true,
         data: result,
-        errors: [], // No errors since exceptions would be caught below
+        errors: [],
       };
     } catch (err) {
       if (!(err instanceof UCDStoreBaseError)) {
