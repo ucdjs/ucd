@@ -72,7 +72,7 @@ export interface InitOptions {
   dryRun?: boolean;
 }
 
-export type StoreOperationResult<TData = unknown> = {
+export type StoreResult<TData = unknown> = {
   /**
    * Whether the operation completed successfully.
    */

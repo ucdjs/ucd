@@ -8,7 +8,7 @@ import type { MirrorOptions, MirrorResult } from "./internal/mirror";
 import type { RepairOptions, RepairResult } from "./internal/repair";
 import type {
   InitOptions,
-  StoreOperationResult,
+  StoreResult,
   UCDStoreOptions,
 } from "./types";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
@@ -119,128 +119,213 @@ export class UCDStore {
     return this.#manifestPath;
   }
 
-  async getFileTree(version: string, extraFilters?: string[]): Promise<UnicodeTreeNode[]> {
-    if (!this.#initialized) {
-      throw new UCDStoreNotInitializedError();
-    }
+  async getFileTree(version: string, extraFilters?: string[]): Promise<StoreResult<UnicodeTreeNode[]>> {
+    try {
+      if (!this.#initialized) {
+        throw new UCDStoreNotInitializedError();
+      }
 
-    if (!this.#versions.includes(version)) {
-      throw new UCDStoreVersionNotFoundError(version);
-    }
+      if (!this.#versions.includes(version)) {
+        throw new UCDStoreVersionNotFoundError(version);
+      }
 
-    assertCapability(this.#fs, ["listdir", "exists"]);
-    if (!await this.#fs.exists(join(this.basePath, version))) {
-      throw new UCDStoreVersionNotFoundError(version);
-    }
+      assertCapability(this.#fs, ["listdir", "exists"]);
+      if (!await this.#fs.exists(join(this.basePath, version))) {
+        throw new UCDStoreVersionNotFoundError(version);
+      }
 
-    const entries = await this.#fs.listdir(join(this.basePath, version), true);
+      const entries = await this.#fs.listdir(join(this.basePath, version), true);
 
-    const filterDirectoryChildren = (children: UnicodeTreeNode[], parentPath: string): UnicodeTreeNode[] => {
+      const filterDirectoryChildren = (children: UnicodeTreeNode[], parentPath: string): UnicodeTreeNode[] => {
+        const result: UnicodeTreeNode[] = [];
+
+        for (const child of children) {
+          const childPath = join(parentPath, child.path ?? child.name);
+          const isFiltered = this.#filter(childPath, extraFilters);
+
+          // fast path for files and empty directories
+          if (child.type === "file" || (child.type === "directory" && (!child.children || child.children.length === 0))) {
+            if (isFiltered) {
+              result.push(child);
+            }
+
+            continue;
+          }
+
+          // handle directories with children
+          if (child.type === "directory" && child.children) {
+            const filteredGrandChildren = filterDirectoryChildren(child.children, childPath);
+
+            if (isFiltered && filteredGrandChildren.length > 0) {
+              result.push({
+                name: child.name,
+                path: child.path,
+                type: "directory",
+                children: filteredGrandChildren,
+              });
+            }
+          }
+        }
+
+        return result;
+      };
+
       const result: UnicodeTreeNode[] = [];
 
-      for (const child of children) {
-        const childPath = join(parentPath, child.path ?? child.name);
-        const isFiltered = this.#filter(childPath, extraFilters);
+      for (const entry of entries) {
+        const isFiltered = this.#filter(entry.path, extraFilters);
 
         // fast path for files and empty directories
-        if (child.type === "file" || (child.type === "directory" && (!child.children || child.children.length === 0))) {
+        if (entry.type === "file" || (entry.type === "directory" && (!entry.children || entry.children.length === 0))) {
           if (isFiltered) {
-            result.push(child);
+            result.push(entry);
           }
 
           continue;
         }
 
         // handle directories with children
-        if (child.type === "directory" && child.children) {
-          const filteredGrandChildren = filterDirectoryChildren(child.children, childPath);
+        if (entry.type === "directory" && entry.children) {
+          const filteredChildren = filterDirectoryChildren(entry.children, entry.path);
 
-          if (isFiltered && filteredGrandChildren.length > 0) {
+          if (isFiltered && filteredChildren.length > 0) {
             result.push({
-              name: child.name,
-              path: child.path,
+              name: entry.name,
+              path: entry.path,
               type: "directory",
-              children: filteredGrandChildren,
+              children: filteredChildren,
             });
           }
         }
       }
 
-      return result;
-    };
-
-    const result: UnicodeTreeNode[] = [];
-
-    for (const entry of entries) {
-      const isFiltered = this.#filter(entry.path, extraFilters);
-
-      // fast path for files and empty directories
-      if (entry.type === "file" || (entry.type === "directory" && (!entry.children || entry.children.length === 0))) {
-        if (isFiltered) {
-          result.push(entry);
-        }
-
-        continue;
-      }
-
-      // handle directories with children
-      if (entry.type === "directory" && entry.children) {
-        const filteredChildren = filterDirectoryChildren(entry.children, entry.path);
-
-        if (isFiltered && filteredChildren.length > 0) {
-          result.push({
-            name: entry.name,
-            path: entry.path,
-            type: "directory",
-            children: filteredChildren,
-          });
-        }
-      }
-    }
-
-    return result;
-  }
-
-  async getFilePaths(version: string, extraFilters?: string[]): Promise<string[]> {
-    if (!this.#initialized) {
-      throw new UCDStoreNotInitializedError();
-    }
-
-    if (!this.#versions.includes(version)) {
-      throw new UCDStoreVersionNotFoundError(version);
-    }
-
-    const tree = await this.getFileTree(version, extraFilters);
-
-    return flattenFilePaths(tree);
-  }
-
-  async getFile(version: string, filePath: string, extraFilters?: string[]): Promise<string> {
-    if (!this.#initialized) {
-      throw new UCDStoreNotInitializedError();
-    }
-
-    if (!this.#versions.includes(version)) {
-      throw new UCDStoreVersionNotFoundError(version);
-    }
-
-    if (!this.#filter(filePath, extraFilters)) {
-      throw new UCDStoreError(`File path "${filePath}" is filtered out by the store's filter patterns.`);
-    }
-
-    assertCapability(this.#fs, "read");
-    try {
-      if (isAbsolute(filePath)) {
-        return await this.#fs.read(filePath);
-      }
-
-      return await this.#fs.read(join(version, filePath));
+      return {
+        success: true,
+        data: result,
+        errors: [],
+      };
     } catch (err) {
-      if (err instanceof Error && err.message.includes("ENOENT")) {
-        throw new UCDStoreError(`File '${filePath}' does not exist in version '${version}'.`);
+      if (!(err instanceof UCDStoreBaseError)) {
+        return {
+          success: false,
+          errors: [
+            {
+              message: err instanceof Error ? err.message : String(err),
+              type: "GENERIC",
+            },
+          ],
+        };
       }
 
-      throw err;
+      return {
+        success: false,
+        errors: [
+          err["~toStoreError"](),
+        ],
+      };
+    }
+  }
+
+  async getFilePaths(version: string, extraFilters?: string[]): Promise<StoreResult<string[]>> {
+    try {
+      if (!this.#initialized) {
+        throw new UCDStoreNotInitializedError();
+      }
+
+      if (!this.#versions.includes(version)) {
+        throw new UCDStoreVersionNotFoundError(version);
+      }
+
+      const treeResult = await this.getFileTree(version, extraFilters);
+
+      if (!treeResult.success) {
+        return {
+          success: false,
+          errors: treeResult.errors,
+        };
+      }
+
+      return {
+        success: true,
+        data: flattenFilePaths(treeResult.data),
+        errors: [],
+      };
+    } catch (err) {
+      if (!(err instanceof UCDStoreBaseError)) {
+        return {
+          success: false,
+          errors: [
+            {
+              message: err instanceof Error ? err.message : String(err),
+              type: "GENERIC",
+            },
+          ],
+        };
+      }
+
+      return {
+        success: false,
+        errors: [
+          err["~toStoreError"](),
+        ],
+      };
+    }
+  }
+
+  async getFile(version: string, filePath: string, extraFilters?: string[]): Promise<StoreResult<string>> {
+    try {
+      if (!this.#initialized) {
+        throw new UCDStoreNotInitializedError();
+      }
+
+      if (!this.#versions.includes(version)) {
+        throw new UCDStoreVersionNotFoundError(version);
+      }
+
+      if (!this.#filter(filePath, extraFilters)) {
+        throw new UCDStoreError(`File path "${filePath}" is filtered out by the store's filter patterns.`);
+      }
+
+      assertCapability(this.#fs, "read");
+      try {
+        let content = "";
+        if (isAbsolute(filePath)) {
+          content = await this.#fs.read(filePath);
+        } else {
+          content = await this.#fs.read(join(version, filePath));
+        }
+
+        return {
+          success: true,
+          data: content,
+          errors: [],
+        };
+      } catch (err) {
+        if (err instanceof Error && err.message.includes("ENOENT")) {
+          throw new UCDStoreError(`File '${filePath}' does not exist in version '${version}'.`);
+        }
+
+        throw err;
+      }
+    } catch (err) {
+      if (!(err instanceof UCDStoreBaseError)) {
+        return {
+          success: false,
+          errors: [
+            {
+              message: err instanceof Error ? err.message : String(err),
+              type: "GENERIC",
+            },
+          ],
+        };
+      }
+
+      return {
+        success: false,
+        errors: [
+          err["~toStoreError"](),
+        ],
+      };
     }
   }
 
@@ -319,13 +404,13 @@ export class UCDStore {
    * that may need attention.
    *
    * @param {AnalyzeOptions} options - Configuration options for the analysis operation
-   * @returns {Promise<StoreOperationResult<AnalyzeResult[]>>} A promise that resolves to a StoreOperationResult containing an array of VersionAnalysis objects, one for each analyzed version
+   * @returns {Promise<StoreResult<AnalyzeResult[]>>} A promise that resolves to a StoreOperationResult containing an array of VersionAnalysis objects, one for each analyzed version
    *
    * @throws {UCDStoreVersionNotFoundError} When a specified version is not available in the store
    * @throws {BridgeUnsupportedOperation} When the filesystem doesn't support required capabilities
    * @throws {UCDStoreError} When other operational errors occur during analysis
    */
-  async analyze(options: AnalyzeOptions): Promise<StoreOperationResult<AnalyzeResult[]>> {
+  async analyze(options: AnalyzeOptions): Promise<StoreResult<AnalyzeResult[]>> {
     try {
       if (!this.#initialized) {
         throw new UCDStoreNotInitializedError();
@@ -388,7 +473,7 @@ export class UCDStore {
    * @throws {BridgeUnsupportedOperation} When the filesystem doesn't support required capabilities (mkdir, write)
    * @throws {UCDStoreError} When the concurrency parameter is less than 1 or other operational errors occur
    */
-  async mirror(options: MirrorOptions = {}): Promise<StoreOperationResult<MirrorResult[]>> {
+  async mirror(options: MirrorOptions = {}): Promise<StoreResult<MirrorResult[]>> {
     try {
       if (!this.#initialized) {
         throw new UCDStoreNotInitializedError();
@@ -453,7 +538,7 @@ export class UCDStore {
    * @throws {BridgeUnsupportedOperation} When the filesystem doesn't support required capabilities
    * @throws {UCDStoreError} When the concurrency parameter is less than 1 or other operational errors occur
    */
-  async clean(options: CleanOptions = {}): Promise<StoreOperationResult<CleanResult[]>> {
+  async clean(options: CleanOptions = {}): Promise<StoreResult<CleanResult[]>> {
     try {
       if (!this.#initialized) {
         throw new UCDStoreNotInitializedError();
@@ -502,7 +587,7 @@ export class UCDStore {
     }
   }
 
-  async repair(options: RepairOptions = {}): Promise<StoreOperationResult<RepairResult[]>> {
+  async repair(options: RepairOptions = {}): Promise<StoreResult<RepairResult[]>> {
     try {
       if (!this.#initialized) {
         throw new UCDStoreNotInitializedError();
