@@ -128,7 +128,11 @@ export class UCDStore {
       throw new UCDStoreVersionNotFoundError(version);
     }
 
-    assertCapability(this.#fs, "listdir");
+    assertCapability(this.#fs, ["listdir", "exists"]);
+    if (!await this.#fs.exists(join(this.basePath, version))) {
+      throw new UCDStoreVersionNotFoundError(version);
+    }
+
     const entries = await this.#fs.listdir(join(this.basePath, version), true);
 
     const filterDirectoryChildren = (children: UnicodeTreeNode[], parentPath: string): UnicodeTreeNode[] => {
