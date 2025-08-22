@@ -39,6 +39,9 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit"
   },
+  "peerDependencies": {
+    "vitest": "catalog:testing"
+  },
   "dependencies": {
     "msw": "catalog:testing"
   },

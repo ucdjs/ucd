@@ -1,14 +1,8 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "extends": ["//"],
-  "tags": ["public"],
+  "tags": ["tooling"],
   "tasks": {
-    "build": {
-      "outputs": ["dist/**"]
-    },
-    "dev": {
-      "persistent": false
-    },
     "typecheck": {
       "outputs": [".cache/tsbuildinfo.json"]
     }

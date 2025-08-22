@@ -3,9 +3,9 @@ import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { BridgeUnsupportedOperation, defineFileSystemBridge } from "@ucdjs/fs-bridge";
 import { flattenFilePaths } from "@ucdjs/shared";
-import { createNodeUCDStore, UCDStore } from "@ucdjs/ucd-store";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
+import { createNodeUCDStore, UCDStore } from "../src";
 
 describe("file operations", () => {
   beforeEach(() => {
