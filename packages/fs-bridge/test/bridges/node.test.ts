@@ -1,4 +1,4 @@
-import { flattenFilePaths } from "@ucdjs/utils";
+import { flattenFilePaths } from "@ucdjs/shared";
 import { describe, expect, it } from "vitest";
 import { testdir } from "vitest-testdirs";
 import { assertCapability } from "../../src";
