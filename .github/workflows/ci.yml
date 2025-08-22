@@ -74,6 +74,9 @@ jobs:
       - name: lint
         run: pnpm lint
 
+      - name: boundary check
+        run: pnpm turbo boundaries
+
   typecheck:
     runs-on: ubuntu-latest
     needs: build

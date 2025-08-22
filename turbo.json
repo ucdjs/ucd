@@ -1,6 +1,38 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "globalDependencies": ["**/.env.*local"],
+  "boundaries": {
+    "tags": {
+      "public": {
+        "dependencies": {
+          "deny": ["internal"],
+          "allow": ["public", "shared-internal", "tooling"]
+        }
+      },
+      "internal": {
+        "dependencies": {
+          "allow": ["public", "shared-internal", "tooling"]
+        },
+        "dependents": {
+          "deny": ["public"]
+        }
+      },
+      "shared-internal": {
+        "dependencies": {
+          "allow": ["public", "tooling"]
+        }
+      },
+      "app": {
+        "dependencies": {
+          "allow": ["public", "internal", "shared-internal", "tooling"]
+        }
+      },
+      "tooling": {
+        "dependencies": {
+        }
+      }
+    }
+  },
   "globalPassThroughEnv": [
     "NODE",
     "NODE_ENV",
