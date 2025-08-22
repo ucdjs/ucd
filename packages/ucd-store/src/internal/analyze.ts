@@ -1,5 +1,5 @@
 import type { UCDStore } from "../store";
-import { UCDStoreError, UCDStoreVersionNotFoundError } from "../errors";
+import { UCDStoreVersionNotFoundError } from "../errors";
 import { getExpectedFilePaths } from "./files";
 
 export interface AnalyzeOptions {

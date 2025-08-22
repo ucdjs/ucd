@@ -19,8 +19,6 @@ import { createPathFilter, flattenFilePaths, safeJsonParse, tryCatch } from "@uc
 import defu from "defu";
 import { isAbsolute, join } from "pathe";
 import {
-
-  UCDStoreBaseError,
   UCDStoreError,
   UCDStoreInvalidManifestError,
   UCDStoreNotInitializedError,
