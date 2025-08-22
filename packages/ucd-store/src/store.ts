@@ -1,7 +1,7 @@
 import type { UCDClient, UnicodeTreeNode } from "@ucdjs/fetch";
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 import type { UCDStoreManifest } from "@ucdjs/schemas";
-import type { PathFilter } from "@ucdjs/utils";
+import type { PathFilter } from "@ucdjs/shared";
 import type { AnalyzeOptions, AnalyzeResult } from "./internal/analyze";
 import type { CleanOptions, CleanResult } from "./internal/clean";
 import type { MirrorOptions, MirrorResult } from "./internal/mirror";

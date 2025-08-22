@@ -56,7 +56,7 @@ export interface FilterOptions {
  *
  * @example
  * ```ts
- * import { createPathFilter } from '@ucdjs/utils';
+ * import { createPathFilter } from '@ucdjs/shared';
  *
  * // Include only .txt files, exclude any with "Test" in the name
  * const filter = createPathFilter(['*.txt', '!*Test*']);
