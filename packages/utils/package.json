@@ -49,6 +49,7 @@
     "publint": "catalog:dev",
     "tsdown": "catalog:dev",
     "typescript": "catalog:dev",
+    "vitest": "catalog:testing",
     "vitest-testdirs": "catalog:testing"
   },
   "publishConfig": {

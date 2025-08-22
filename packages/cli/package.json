@@ -46,6 +46,7 @@
     "@clack/prompts": "catalog:prod",
     "@luxass/unicode-utils": "catalog:prod",
     "@luxass/utils": "catalog:prod",
+    "@ucdjs/env": "workspace:*",
     "@ucdjs/schema-gen": "workspace:*",
     "@ucdjs/ucd-store": "workspace:*",
     "farver": "catalog:prod",
@@ -61,6 +62,7 @@
     "publint": "catalog:dev",
     "tsdown": "catalog:dev",
     "typescript": "catalog:dev",
+    "vitest": "catalog:testing",
     "vitest-testdirs": "catalog:testing"
   },
   "publishConfig": {
