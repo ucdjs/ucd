@@ -1,24 +1,25 @@
 import type { UCDClient, UnicodeTreeNode } from "@ucdjs/fetch";
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 import type { UCDStoreManifest } from "@ucdjs/schemas";
-import type { PathFilter } from "@ucdjs/shared";
+import type { OperationResult, PathFilter } from "@ucdjs/shared";
+import type { StoreError } from "./errors";
 import type { AnalyzeOptions, AnalyzeResult } from "./internal/analyze";
 import type { CleanOptions, CleanResult } from "./internal/clean";
 import type { MirrorOptions, MirrorResult } from "./internal/mirror";
 import type { RepairOptions, RepairResult } from "./internal/repair";
 import type {
   InitOptions,
-  StoreResult,
   UCDStoreOptions,
 } from "./types";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { createClient, isApiError } from "@ucdjs/fetch";
 import { assertCapability } from "@ucdjs/fs-bridge";
 import { UCDStoreManifestSchema } from "@ucdjs/schemas";
-import { createPathFilter, flattenFilePaths, safeJsonParse } from "@ucdjs/shared";
+import { createPathFilter, flattenFilePaths, safeJsonParse, tryCatch } from "@ucdjs/shared";
 import defu from "defu";
 import { isAbsolute, join } from "pathe";
 import {
+
   UCDStoreBaseError,
   UCDStoreError,
   UCDStoreInvalidManifestError,
@@ -119,8 +120,8 @@ export class UCDStore {
     return this.#manifestPath;
   }
 
-  async getFileTree(version: string, extraFilters?: string[]): Promise<StoreResult<UnicodeTreeNode[]>> {
-    try {
+  async getFileTree(version: string, extraFilters?: string[]): Promise<OperationResult<UnicodeTreeNode[], StoreError>> {
+    return tryCatch(async () => {
       if (!this.#initialized) {
         throw new UCDStoreNotInitializedError();
       }
@@ -199,35 +200,12 @@ export class UCDStore {
         }
       }
 
-      return {
-        success: true,
-        data: result,
-        errors: [],
-      };
-    } catch (err) {
-      if (!(err instanceof UCDStoreBaseError)) {
-        return {
-          success: false,
-          errors: [
-            {
-              message: err instanceof Error ? err.message : String(err),
-              type: "GENERIC",
-            },
-          ],
-        };
-      }
-
-      return {
-        success: false,
-        errors: [
-          err["~toStoreError"](),
-        ],
-      };
-    }
+      return result;
+    });
   }
 
-  async getFilePaths(version: string, extraFilters?: string[]): Promise<StoreResult<string[]>> {
-    try {
+  async getFilePaths(version: string, extraFilters?: string[]): Promise<OperationResult<string[], StoreError>> {
+    return tryCatch(async () => {
       if (!this.#initialized) {
         throw new UCDStoreNotInitializedError();
       }
@@ -236,44 +214,18 @@ export class UCDStore {
         throw new UCDStoreVersionNotFoundError(version);
       }
 
-      const treeResult = await this.getFileTree(version, extraFilters);
+      const [data, error] = await this.getFileTree(version, extraFilters);
 
-      if (!treeResult.success) {
-        return {
-          success: false,
-          errors: treeResult.errors,
-        };
+      if (error != null) {
+        throw error;
       }
 
-      return {
-        success: true,
-        data: flattenFilePaths(treeResult.data),
-        errors: [],
-      };
-    } catch (err) {
-      if (!(err instanceof UCDStoreBaseError)) {
-        return {
-          success: false,
-          errors: [
-            {
-              message: err instanceof Error ? err.message : String(err),
-              type: "GENERIC",
-            },
-          ],
-        };
-      }
-
-      return {
-        success: false,
-        errors: [
-          err["~toStoreError"](),
-        ],
-      };
-    }
+      return flattenFilePaths(data);
+    });
   }
 
-  async getFile(version: string, filePath: string, extraFilters?: string[]): Promise<StoreResult<string>> {
-    try {
+  async getFile(version: string, filePath: string, extraFilters?: string[]): Promise<OperationResult<string, StoreError>> {
+    return tryCatch(async () => {
       if (!this.#initialized) {
         throw new UCDStoreNotInitializedError();
       }
@@ -295,11 +247,7 @@ export class UCDStore {
           content = await this.#fs.read(join(version, filePath));
         }
 
-        return {
-          success: true,
-          data: content,
-          errors: [],
-        };
+        return content;
       } catch (err) {
         if (err instanceof Error && err.message.includes("ENOENT")) {
           throw new UCDStoreError(`File '${filePath}' does not exist in version '${version}'.`);
@@ -307,26 +255,7 @@ export class UCDStore {
 
         throw err;
       }
-    } catch (err) {
-      if (!(err instanceof UCDStoreBaseError)) {
-        return {
-          success: false,
-          errors: [
-            {
-              message: err instanceof Error ? err.message : String(err),
-              type: "GENERIC",
-            },
-          ],
-        };
-      }
-
-      return {
-        success: false,
-        errors: [
-          err["~toStoreError"](),
-        ],
-      };
-    }
+    });
   }
 
   async init(options: InitOptions = {}): Promise<void> {
@@ -404,14 +333,10 @@ export class UCDStore {
    * that may need attention.
    *
    * @param {AnalyzeOptions} options - Configuration options for the analysis operation
-   * @returns {Promise<StoreResult<AnalyzeResult[]>>} A promise that resolves to a StoreOperationResult containing an array of VersionAnalysis objects, one for each analyzed version
-   *
-   * @throws {UCDStoreVersionNotFoundError} When a specified version is not available in the store
-   * @throws {BridgeUnsupportedOperation} When the filesystem doesn't support required capabilities
-   * @throws {UCDStoreError} When other operational errors occur during analysis
+   * @returns {Promise<OperationResult<AnalyzeResult[], StoreError>>} A promise that resolves to a StoreOperationResult containing an array of VersionAnalysis objects, one for each analyzed version
    */
-  async analyze(options: AnalyzeOptions): Promise<StoreResult<AnalyzeResult[]>> {
-    try {
+  async analyze(options: AnalyzeOptions): Promise<OperationResult<AnalyzeResult[], StoreError>> {
+    return tryCatch(async () => {
       if (!this.#initialized) {
         throw new UCDStoreNotInitializedError();
       }
@@ -430,31 +355,8 @@ export class UCDStore {
         versions,
       });
 
-      return {
-        success: true,
-        data: result,
-        errors: [],
-      };
-    } catch (err) {
-      if (!(err instanceof UCDStoreBaseError)) {
-        return {
-          success: false,
-          errors: [
-            {
-              message: err instanceof Error ? err.message : String(err),
-              type: "GENERIC",
-            },
-          ],
-        };
-      }
-
-      return {
-        success: false,
-        errors: [
-          err["~toStoreError"](),
-        ],
-      };
-    }
+      return result;
+    });
   }
 
   /**
@@ -467,14 +369,10 @@ export class UCDStore {
    * for the specified Unicode versions.
    *
    * @param {MirrorOptions} options - Configuration options for the mirroring operation
-   * @returns {Promise<MirrorResult[]>} A promise that resolves to an array of MirrorResult objects, one for each mirrored version
-   *
-   * @throws {UCDStoreVersionNotFoundError} When a specified version is not available in the remote API
-   * @throws {BridgeUnsupportedOperation} When the filesystem doesn't support required capabilities (mkdir, write)
-   * @throws {UCDStoreError} When the concurrency parameter is less than 1 or other operational errors occur
+   * @returns {Promise<OperationResult<MirrorResult[], StoreError>>} A promise that resolves to an array of MirrorResult objects, one for each mirrored version
    */
-  async mirror(options: MirrorOptions = {}): Promise<StoreResult<MirrorResult[]>> {
-    try {
+  async mirror(options: MirrorOptions = {}): Promise<OperationResult<MirrorResult[], StoreError>> {
+    return tryCatch(async () => {
       if (!this.#initialized) {
         throw new UCDStoreNotInitializedError();
       }
@@ -497,31 +395,8 @@ export class UCDStore {
         force,
       });
 
-      return {
-        success: true,
-        data: result,
-        errors: [],
-      };
-    } catch (err) {
-      if (!(err instanceof UCDStoreBaseError)) {
-        return {
-          success: false,
-          errors: [
-            {
-              message: err instanceof Error ? err.message : String(err),
-              type: "GENERIC",
-            },
-          ],
-        };
-      }
-
-      return {
-        success: false,
-        errors: [
-          err["~toStoreError"](),
-        ],
-      };
-    }
+      return result;
+    });
   }
 
   /**
@@ -532,14 +407,10 @@ export class UCDStore {
    * store integrity and free up disk space.
    *
    * @param {CleanOptions} options - Configuration options for the cleaning operation
-   * @returns {Promise<CleanResult[]>} A promise that resolves to an array of CleanResult objects, one for each version cleaned
-   *
-   * @throws {UCDStoreVersionNotFoundError} When a specified version is not available in the store
-   * @throws {BridgeUnsupportedOperation} When the filesystem doesn't support required capabilities
-   * @throws {UCDStoreError} When the concurrency parameter is less than 1 or other operational errors occur
+   * @return {Promise<OperationResult<CleanResult[], StoreError>>} A promise that resolves to an array of CleanResult objects, one for each version cleaned
    */
-  async clean(options: CleanOptions = {}): Promise<StoreResult<CleanResult[]>> {
-    try {
+  async clean(options: CleanOptions = {}): Promise<OperationResult<CleanResult[], StoreError>> {
+    return tryCatch(async () => {
       if (!this.#initialized) {
         throw new UCDStoreNotInitializedError();
       }
@@ -560,35 +431,12 @@ export class UCDStore {
         dryRun,
       });
 
-      return {
-        success: true,
-        data: result,
-        errors: [],
-      };
-    } catch (err) {
-      if (!(err instanceof UCDStoreBaseError)) {
-        return {
-          success: false,
-          errors: [
-            {
-              message: err instanceof Error ? err.message : String(err),
-              type: "GENERIC",
-            },
-          ],
-        };
-      }
-
-      return {
-        success: false,
-        errors: [
-          err["~toStoreError"](),
-        ],
-      };
-    }
+      return result;
+    });
   }
 
-  async repair(options: RepairOptions = {}): Promise<StoreResult<RepairResult[]>> {
-    try {
+  async repair(options: RepairOptions = {}): Promise<OperationResult<RepairResult[], StoreError>> {
+    return tryCatch(async () => {
       if (!this.#initialized) {
         throw new UCDStoreNotInitializedError();
       }
@@ -609,31 +457,8 @@ export class UCDStore {
         dryRun,
       });
 
-      return {
-        success: true,
-        data: result,
-        errors: [],
-      };
-    } catch (err) {
-      if (!(err instanceof UCDStoreBaseError)) {
-        return {
-          success: false,
-          errors: [
-            {
-              message: err instanceof Error ? err.message : String(err),
-              type: "GENERIC",
-            },
-          ],
-        };
-      }
-
-      return {
-        success: false,
-        errors: [
-          err["~toStoreError"](),
-        ],
-      };
-    }
+      return result;
+    });
   }
 
   async "~writeManifest"(versions: string[]): Promise<void> {

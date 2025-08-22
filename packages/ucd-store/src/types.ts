@@ -71,24 +71,3 @@ export interface InitOptions {
    */
   dryRun?: boolean;
 }
-
-export type StoreResult<TData = unknown> = {
-  /**
-   * Whether the operation completed successfully.
-   */
-  success: false;
-
-  /**
-   * The result data from the operation (when successful).
-   */
-  data?: TData;
-
-  /**
-   * Array of errors that occurred during the operation.
-   */
-  errors: StoreError[];
-} | {
-  success: true;
-  data: TData;
-  errors: never[];
-};
