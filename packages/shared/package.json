@@ -1,6 +1,6 @@
 {
-  "name": "@ucdjs/utils",
-  "version": "0.1.0",
+  "name": "@ucdjs/shared",
+  "version": "0.0.0",
   "type": "module",
   "author": {
     "name": "Lucas Nørgård",
@@ -13,7 +13,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ucdjs/ucd.git",
-    "directory": "packages/utils"
+    "directory": "packages/shared"
   },
   "bugs": {
     "url": "https://github.com/ucdjs/ucd/issues"
@@ -39,10 +39,17 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@ucdjs/shared": "workspace:*"
+    "@luxass/unicode-utils-new": "catalog:prod",
+    "@luxass/utils": "catalog:prod",
+    "@ucdjs/env": "workspace:*",
+    "@ucdjs/fetch": "workspace:*",
+    "defu": "catalog:prod",
+    "picomatch": "catalog:prod",
+    "zod": "catalog:prod"
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:linting",
+    "@types/picomatch": "catalog:dev",
     "@ucdjs/tsconfig": "workspace:*",
     "@ucdjs/tsdown-config": "workspace:*",
     "eslint": "catalog:linting",

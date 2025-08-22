@@ -32,6 +32,10 @@
   - changed-files:
       - any-glob-to-any-file: packages/utils/**
 
+"pkg: shared":
+  - changed-files:
+      - any-glob-to-any-file: packages/shared/**
+
 "apps: api":
   - changed-files:
       - any-glob-to-any-file: apps/api/**
