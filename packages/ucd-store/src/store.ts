@@ -1,7 +1,7 @@
 import type { UCDClient, UnicodeTreeNode } from "@ucdjs/fetch";
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 import type { UCDStoreManifest } from "@ucdjs/schemas";
-import type { PathFilter } from "@ucdjs/utils";
+import type { PathFilter } from "@ucdjs/shared";
 import type { AnalyzeOptions, AnalyzeResult } from "./internal/analyze";
 import type { CleanOptions, CleanResult } from "./internal/clean";
 import type { MirrorOptions, MirrorResult } from "./internal/mirror";
@@ -15,7 +15,7 @@ import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { createClient, isApiError } from "@ucdjs/fetch";
 import { assertCapability } from "@ucdjs/fs-bridge";
 import { UCDStoreManifestSchema } from "@ucdjs/schemas";
-import { createPathFilter, flattenFilePaths, safeJsonParse } from "@ucdjs/utils";
+import { createPathFilter, flattenFilePaths, safeJsonParse } from "@ucdjs/shared";
 import defu from "defu";
 import { isAbsolute, join } from "pathe";
 import {

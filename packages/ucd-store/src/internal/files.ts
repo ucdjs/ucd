@@ -1,6 +1,6 @@
 import type { UCDClient } from "@ucdjs/fetch";
 import { isApiError } from "@ucdjs/fetch";
-import { flattenFilePaths } from "@ucdjs/utils";
+import { flattenFilePaths } from "@ucdjs/shared";
 import { UCDStoreError } from "../errors";
 
 /**

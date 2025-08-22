@@ -1,6 +1,6 @@
 import type { FileEntry } from "@ucdjs/schemas";
 import { HttpResponse, mockFetch } from "#internal/test-utils/msw";
-import { flattenFilePaths } from "@ucdjs/utils";
+import { flattenFilePaths } from "@ucdjs/shared";
 import { describe, expect, it } from "vitest";
 import { assertCapability } from "../../src";
 import HTTPFileSystemBridge from "../../src/bridges/http";
