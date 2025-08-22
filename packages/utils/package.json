@@ -39,17 +39,10 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@luxass/unicode-utils-new": "catalog:prod",
-    "@luxass/utils": "catalog:prod",
-    "@ucdjs/env": "workspace:*",
-    "@ucdjs/fetch": "workspace:*",
-    "defu": "catalog:prod",
-    "picomatch": "catalog:prod",
-    "zod": "catalog:prod"
+    "@ucdjs/shared": "workspace:*"
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:linting",
-    "@types/picomatch": "catalog:dev",
     "@ucdjs/tsconfig": "workspace:*",
     "@ucdjs/tsdown-config": "workspace:*",
     "eslint": "catalog:linting",
