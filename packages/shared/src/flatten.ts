@@ -10,7 +10,7 @@ import { prependLeadingSlash } from "@luxass/utils";
  *
  * @example
  * ```typescript
- * import { flattenFilePaths } from "@ucdjs/utils";
+ * import { flattenFilePaths } from "@ucdjs/shared";
  *
  * const files = [
  *   { name: "folder1", children: [{ name: "file1.txt" }] },

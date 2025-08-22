@@ -8,9 +8,13 @@
       "@ucdjs/env": ["./packages/env/src/index.ts"],
       "@ucdjs/fetch": ["./packages/fetch/src/index.ts"],
       "@ucdjs/schema-gen": ["./packages/schema-gen/src/index.ts"],
-      "@ucdjs/utils": ["./packages/utils/src/index.ts"],
+
       "@ucdjs/schemas": ["./packages/schemas/src/index.ts"],
       "@ucdjs/ucd-store": ["./packages/ucd-store/src/index.ts"],
+
+      // utility packages
+      "@ucdjs/shared": ["./packages/shared/src/index.ts"],
+      "@ucdjs/utils": ["./packages/utils/src/index.ts"],
 
       // fs bridge
       "@ucdjs/fs-bridge": ["./packages/fs-bridge/src/index.ts"],
