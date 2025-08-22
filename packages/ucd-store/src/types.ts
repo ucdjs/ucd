@@ -1,7 +1,5 @@
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 
-import type { StoreError } from "./errors";
-
 export interface UCDStoreOptions {
   /**
    * Base URL for the Unicode API
