@@ -1,7 +1,7 @@
 import type { UCDStore } from "../store";
 import type { SharedStoreOperationOptions } from "../types";
 import { assertCapability } from "@ucdjs/fs-bridge";
-import { createConcurrencyLimiter } from "@ucdjs/shared";
+import { createConcurrencyLimiter, ensureIsPositiveConcurrency } from "@ucdjs/shared";
 import { dirname, join } from "pathe";
 import { UCDStoreError } from "../errors";
 
@@ -42,10 +42,7 @@ export async function internal__clean(store: UCDStore, options: internal_CleanOp
     directories,
   } = options;
 
-  // throw if concurrency is less than 1
-  if (concurrency < 1) {
-    throw new UCDStoreError("Concurrency must be at least 1");
-  }
+  ensureIsPositiveConcurrency(concurrency, UCDStoreError);
 
   const [analyses, error] = await store.analyze({
     checkOrphaned: true,
