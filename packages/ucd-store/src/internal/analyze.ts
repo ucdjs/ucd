@@ -71,7 +71,11 @@ export async function internal__analyze(store: UCDStore, options: Required<Analy
     const expectedFiles = await getExpectedFilePaths(store.client, version);
 
     // get the actual files from the store
-    const actualFiles = await store.getFilePaths(version);
+    const [actualFiles, error] = await store.getFilePaths(version);
+
+    if (error != null) {
+      throw error;
+    }
 
     const orphanedFiles: string[] = [];
     const missingFiles: string[] = [];

@@ -56,7 +56,7 @@ export interface SharedStoreOperationOptions {
   concurrency?: number;
 }
 
-export interface StoreInitOptions {
+export interface InitOptions {
   /**
    * Whether to force overwrite existing store manifest and directories.
    * When true, existing manifest will be recreated even if it already exists.

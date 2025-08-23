@@ -6,7 +6,7 @@ import { dedent } from "@luxass/utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { assertCapability } from "@ucdjs/fs-bridge";
 import { createNodeUCDStore } from "@ucdjs/ucd-store";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { assert, beforeEach, describe, expect, it, vi } from "vitest";
 import { captureSnapshot, testdir } from "vitest-testdirs";
 
 describe("store clean", () => {
@@ -69,14 +69,18 @@ describe("store clean", () => {
     expect(existsSync(`${storePath}/15.0.0/BidiBrackets.txt`)).toBe(true);
     expect(existsSync(`${storePath}/15.0.0/extracted/DerivedBidiClass.txt`)).toBe(true);
 
-    const [clean15Result] = await store.clean();
+    const [cleanData, cleanError] = await store.clean();
 
-    expect(clean15Result?.version).toBe("15.0.0");
-    expect(clean15Result?.skipped).toEqual([]);
-    expect(clean15Result?.failed).toEqual([]);
+    assert(cleanError === null, "Expected clean to succeed");
+    assert(cleanData != null, "Expected clean data to be non-null");
+    assert(cleanData[0] != null, "Expected first clean result to be non-null");
 
-    expect(clean15Result?.deleted).toHaveLength(3);
-    expect(clean15Result?.deleted).toEqual(expect.arrayContaining([
+    expect(cleanData[0].version).toBe("15.0.0");
+    expect(cleanData[0].skipped).toEqual([]);
+    expect(cleanData[0].failed).toEqual([]);
+
+    expect(cleanData[0].deleted).toHaveLength(3);
+    expect(cleanData[0].deleted).toEqual(expect.arrayContaining([
       "ArabicShaping.txt",
       "extracted/DerivedBidiClass.txt",
       "BidiBrackets.txt",
@@ -107,14 +111,18 @@ describe("store clean", () => {
     await store.init();
     await store.mirror();
 
-    const [clean15Result] = await store.clean();
+    const [cleanData, cleanError] = await store.clean();
 
-    expect(clean15Result?.version).toBe("15.0.0");
-    expect(clean15Result?.skipped).toEqual([]);
-    expect(clean15Result?.failed).toEqual([]);
+    assert(cleanError === null, "Expected clean to succeed");
+    assert(cleanData != null, "Expected clean data to be non-null");
+    assert(cleanData[0] != null, "Expected first clean result to be non-null");
 
-    expect(clean15Result?.deleted).toHaveLength(4);
-    expect(clean15Result?.deleted).toEqual(expect.arrayContaining([
+    expect(cleanData[0].version).toBe("15.0.0");
+    expect(cleanData[0].skipped).toEqual([]);
+    expect(cleanData[0].failed).toEqual([]);
+
+    expect(cleanData[0].deleted).toHaveLength(4);
+    expect(cleanData[0].deleted).toEqual(expect.arrayContaining([
       "ArabicShaping.txt",
       "extracted/DerivedBidiClass.txt",
       "BidiBrackets.txt",
@@ -124,10 +132,15 @@ describe("store clean", () => {
     expect(existsSync(`${storePath}/15.0.0/orphaned.txt`)).toBe(false);
   });
 
-  it.todo("should skip files that are not in the store", async () => {
+  it("should skip files that are not in the store", async () => {
     const storePath = await testdir({
       "15.0.0": {
         "not-in-store.txt": "This file is not in the store",
+        "ArabicShaping.txt": "content",
+        "BidiBrackets.txt": "content",
+        "extracted": {
+          "DerivedBidiClass.txt": "content",
+        },
       },
     });
 
@@ -138,12 +151,35 @@ describe("store clean", () => {
 
     await store.init();
 
-    const [clean15Result] = await store.clean();
+    assertCapability(store.fs, ["rm", "exists"]);
+    expect(await store.fs.exists(`./15.0.0/ArabicShaping.txt`)).toBe(true);
 
-    expect(clean15Result?.version).toBe("15.0.0");
-    expect(clean15Result?.skipped).toEqual(["/not-in-store.txt"]);
-    expect(clean15Result?.failed).toEqual([]);
-    expect(clean15Result?.deleted).toHaveLength(3);
+    vi.spyOn(store, "analyze").mockResolvedValue([
+      [{
+        version: "15.0.0",
+        files: ["ArabicShaping.txt", "BidiBrackets.txt", "extracted/DerivedBidiClass.txt"],
+        missingFiles: [],
+        orphanedFiles: ["not-in-store.txt"],
+        fileCount: 4,
+        expectedFileCount: 3,
+        isComplete: false,
+      }],
+      null,
+    ]);
+
+    await store.fs.rm(`./15.0.0/not-in-store.txt`);
+    expect(await store.fs.exists(`./15.0.0/not-in-store.txt`)).toBe(false);
+
+    const [cleanData, cleanError] = await store.clean({ concurrency: 1 });
+
+    assert(cleanError === null, "Expected clean to succeed");
+    assert(cleanData != null, "Expected clean data to be non-null");
+    assert(cleanData[0] != null, "Expected first clean result to be non-null");
+
+    expect(cleanData[0].version).toBe("15.0.0");
+    expect(cleanData[0].skipped).toEqual(["not-in-store.txt"]);
+    expect(cleanData[0].failed).toEqual([]);
+    expect(cleanData[0].deleted).toHaveLength(3);
   });
 
   it("should clean multiple versions", async () => {
@@ -166,25 +202,34 @@ describe("store clean", () => {
       "16.0.0": "16.0.0",
     }, null, 2));
 
-    const [clean15Result, clean16Result] = await store.clean();
-    expect(clean15Result?.version).toBe("15.0.0");
-    expect(clean16Result?.version).toBe("16.0.0");
+    const [cleanData, cleanError] = await store.clean();
 
-    expect(clean15Result?.skipped).toEqual([]);
-    expect(clean16Result?.skipped).toEqual([]);
+    assert(cleanError === null, "Expected clean to succeed");
+    assert(cleanData != null, "Expected clean data to be non-null");
+    assert(cleanData[0] != null, "Expected clean results for 15.0.0");
+    assert(cleanData[1] != null, "Expected clean results for 16.0.0");
 
-    expect(clean15Result?.failed).toEqual([]);
-    expect(clean16Result?.failed).toEqual([]);
+    const clean15Result = cleanData[0];
+    const clean16Result = cleanData[1];
 
-    expect(clean15Result?.deleted).toHaveLength(3);
-    expect(clean15Result?.deleted).toEqual(expect.arrayContaining([
+    expect(clean15Result.version).toBe("15.0.0");
+    expect(clean16Result.version).toBe("16.0.0");
+
+    expect(clean15Result.skipped).toEqual([]);
+    expect(clean16Result.skipped).toEqual([]);
+
+    expect(clean15Result.failed).toEqual([]);
+    expect(clean16Result.failed).toEqual([]);
+
+    expect(clean15Result.deleted).toHaveLength(3);
+    expect(clean15Result.deleted).toEqual(expect.arrayContaining([
       "ArabicShaping.txt",
       "extracted/DerivedBidiClass.txt",
       "BidiBrackets.txt",
     ]));
 
-    expect(clean16Result?.deleted).toHaveLength(3);
-    expect(clean16Result?.deleted).toEqual(expect.arrayContaining([
+    expect(clean16Result.deleted).toHaveLength(3);
+    expect(clean16Result.deleted).toEqual(expect.arrayContaining([
       "ArabicShaping.txt",
       "extracted/DerivedBidiClass.txt",
       "BidiBrackets.txt",
@@ -211,15 +256,19 @@ describe("store clean", () => {
       "16.0.0": "16.0.0",
     }, null, 2));
 
-    const [clean15Result] = await store.clean({
+    const [cleanData, cleanError] = await store.clean({
       versions: ["15.0.0"],
     });
 
-    expect(clean15Result?.version).toBe("15.0.0");
-    expect(clean15Result?.skipped).toEqual([]);
-    expect(clean15Result?.failed).toEqual([]);
-    expect(clean15Result?.deleted).toHaveLength(3);
-    expect(clean15Result?.deleted).toEqual(expect.arrayContaining([
+    assert(cleanError === null, "Expected clean to succeed");
+    assert(cleanData != null, "Expected clean data to be non-null");
+    assert(cleanData[0] != null, "Expected first clean result to be non-null");
+
+    expect(cleanData[0].version).toBe("15.0.0");
+    expect(cleanData[0].skipped).toEqual([]);
+    expect(cleanData[0].failed).toEqual([]);
+    expect(cleanData[0].deleted).toHaveLength(3);
+    expect(cleanData[0].deleted).toEqual(expect.arrayContaining([
       "ArabicShaping.txt",
       "extracted/DerivedBidiClass.txt",
       "BidiBrackets.txt",
@@ -246,16 +295,21 @@ describe("store clean", () => {
     });
 
     await store.init();
+    await store.mirror();
 
-    const [clean15Result] = await store.clean();
+    const [cleanData, cleanError] = await store.clean();
 
-    expect(clean15Result?.version).toBe("15.0.0");
-    expect(clean15Result?.skipped).toEqual([]);
-    expect(clean15Result?.failed).toEqual([]);
-    expect(clean15Result?.deleted).toHaveLength(0);
+    assert(cleanError === null, "Expected clean to succeed");
+    assert(cleanData != null, "Expected clean data to be non-null");
+    assert(cleanData[0] != null, "Expected first clean result to be non-null");
+
+    expect(cleanData[0].version).toBe("15.0.0");
+    expect(cleanData[0].skipped).toEqual([]);
+    expect(cleanData[0].failed).toEqual([]);
+    expect(cleanData[0].deleted).toHaveLength(0);
   });
 
-  it("should throw if concurrency is less than 1", async () => {
+  it("should return failure when concurrency is less than 1", async () => {
     const storePath = await testdir();
 
     const store = await createNodeUCDStore({
@@ -265,9 +319,11 @@ describe("store clean", () => {
 
     await store.init();
 
-    await expect(store.clean({ concurrency: 0 })).rejects.toThrow(
-      "Concurrency must be at least 1",
-    );
+    const [cleanData, cleanError] = await store.clean({ concurrency: 0 });
+
+    expect(cleanData).toBe(null);
+    expect(cleanError).toBeTruthy();
+    expect(cleanError?.message).toBe("Concurrency must be at least 1");
   });
 
   it("should skip file deletion if it doesn't exist", async () => {
@@ -284,25 +340,32 @@ describe("store clean", () => {
     assertCapability(store.fs, ["rm", "exists"]);
     expect(await store.fs.exists(`./15.0.0/ArabicShaping.txt`)).toBe(true);
 
-    vi.spyOn(store, "analyze").mockResolvedValue([{
-      version: "15.0.0",
-      files: ["BidiBrackets.txt", "extracted/DerivedBidiClass.txt"],
-      missingFiles: [],
-      orphanedFiles: ["ArabicShaping.txt"],
-      fileCount: 2,
-      expectedFileCount: 3,
-      isComplete: false,
-    }]);
+    vi.spyOn(store, "analyze").mockResolvedValue([
+      [{
+        version: "15.0.0",
+        files: ["BidiBrackets.txt", "extracted/DerivedBidiClass.txt"],
+        missingFiles: [],
+        orphanedFiles: ["ArabicShaping.txt"],
+        fileCount: 2,
+        expectedFileCount: 3,
+        isComplete: false,
+      }],
+      null,
+    ]);
 
     await store.fs.rm(`./15.0.0/ArabicShaping.txt`);
     expect(await store.fs.exists(`./15.0.0/ArabicShaping.txt`)).toBe(false);
 
-    const [clean15Result] = await store.clean({ concurrency: 1 });
+    const [cleanData, cleanError] = await store.clean({ concurrency: 1 });
 
-    expect(clean15Result?.version).toBe("15.0.0");
-    expect(clean15Result?.skipped).toEqual(["ArabicShaping.txt"]);
-    expect(clean15Result?.failed).toEqual([]);
-    expect(clean15Result?.deleted).toEqual(expect.arrayContaining([
+    assert(cleanError === null, "Expected clean to succeed");
+    assert(cleanData != null, "Expected clean data to be non-null");
+    assert(cleanData[0] != null, "Expected first clean result to be non-null");
+
+    expect(cleanData[0].version).toBe("15.0.0");
+    expect(cleanData[0].skipped).toEqual(["ArabicShaping.txt"]);
+    expect(cleanData[0].failed).toEqual([]);
+    expect(cleanData[0].deleted).toEqual(expect.arrayContaining([
       "extracted/DerivedBidiClass.txt",
       "BidiBrackets.txt",
     ]));
@@ -324,22 +387,29 @@ describe("store clean", () => {
 
     vi.spyOn(store.fs, "exists").mockResolvedValue(true);
 
-    vi.spyOn(store, "analyze").mockResolvedValue([{
-      version: "15.0.0",
-      files: ["BidiBrackets.txt", "extracted/DerivedBidiClass.txt"],
-      missingFiles: [],
-      orphanedFiles: ["ArabicShaping.txt"],
-      fileCount: 2,
-      expectedFileCount: 3,
-      isComplete: false,
-    }]);
+    vi.spyOn(store, "analyze").mockResolvedValue([
+      [{
+        version: "15.0.0",
+        files: ["BidiBrackets.txt", "extracted/DerivedBidiClass.txt"],
+        missingFiles: [],
+        orphanedFiles: ["ArabicShaping.txt"],
+        fileCount: 2,
+        expectedFileCount: 3,
+        isComplete: false,
+      }],
+      null,
+    ]);
 
-    const [clean15Result] = await store.clean({ concurrency: 1 });
+    const [cleanData, cleanError] = await store.clean({ concurrency: 1 });
 
-    expect(clean15Result?.version).toBe("15.0.0");
-    expect(clean15Result?.skipped).toEqual([]);
-    expect(clean15Result?.failed).toEqual(["ArabicShaping.txt"]);
-    expect(clean15Result?.deleted).toEqual(expect.arrayContaining([
+    assert(cleanError === null, "Expected clean to succeed");
+    assert(cleanData != null, "Expected clean data to be non-null");
+    assert(cleanData[0] != null, "Expected first clean result to be non-null");
+
+    expect(cleanData[0].version).toBe("15.0.0");
+    expect(cleanData[0].skipped).toEqual([]);
+    expect(cleanData[0].failed).toEqual(["ArabicShaping.txt"]);
+    expect(cleanData[0].deleted).toEqual(expect.arrayContaining([
       "extracted/DerivedBidiClass.txt",
       "BidiBrackets.txt",
     ]));
@@ -358,12 +428,16 @@ describe("store clean", () => {
 
     const beforeCleanSnapshot = await captureSnapshot(storePath);
 
-    const [clean15Result] = await store.clean({ dryRun: true });
+    const [cleanData, cleanError] = await store.clean({ dryRun: true });
 
-    expect(clean15Result?.version).toBe("15.0.0");
-    expect(clean15Result?.skipped).toEqual([]);
-    expect(clean15Result?.failed).toEqual([]);
-    expect(clean15Result?.deleted).toHaveLength(3);
+    assert(cleanError === null, "Expected clean to succeed");
+    assert(cleanData != null, "Expected clean data to be non-null");
+    assert(cleanData[0] != null, "Expected first clean result to be non-null");
+
+    expect(cleanData[0].version).toBe("15.0.0");
+    expect(cleanData[0].skipped).toEqual([]);
+    expect(cleanData[0].failed).toEqual([]);
+    expect(cleanData[0].deleted).toHaveLength(3);
 
     const afterCleanSnapshot = await captureSnapshot(storePath);
 
