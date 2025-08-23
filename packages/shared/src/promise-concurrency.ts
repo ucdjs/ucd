@@ -30,8 +30,8 @@ export type ConcurrencyLimitFn = <Args extends unknown[], T>(
 export function createConcurrencyLimiter(
   concurrency: number,
 ): ConcurrencyLimitFn {
-  if (!Number.isInteger(concurrency) || concurrency < 1) {
-    throw new Error("Concurrency must be a positive integer");
+  if ((concurrency !== Number.POSITIVE_INFINITY && !Number.isInteger(concurrency)) || concurrency < 1) {
+    throw new Error(`Concurrency must be a positive integer${concurrency === Number.POSITIVE_INFINITY ? " or Infinity" : ""}`);
   }
 
   let activeTasks = 0;
