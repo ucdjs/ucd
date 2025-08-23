@@ -41,7 +41,7 @@ export function createConcurrencyLimiter(
   function finish(): void {
     activeTasks--;
 
-    // check if there are anymore pending tasks
+    // check if there are any more pending tasks
     if (head) {
       // allow next task to run
       head[0]();
