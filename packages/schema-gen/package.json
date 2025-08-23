@@ -44,7 +44,6 @@
     "@luxass/utils": "catalog:prod",
     "ai": "catalog:prod",
     "knitwork": "catalog:prod",
-    "p-limit": "catalog:prod",
     "zod": "catalog:prod"
   },
   "devDependencies": {

@@ -3,8 +3,8 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { RawDataFile } from "@luxass/unicode-utils";
 import { sanitizeIdentifier, toPascalCase, toSnakeCase } from "@luxass/utils";
+import { createConcurrencyLimiter } from "@ucdjs/shared";
 import { genArrayFromRaw, genInterface } from "knitwork";
-import pLimit from "p-limit";
 import { generateFields } from "./fields";
 
 export interface SchemaGenFile {
@@ -58,7 +58,7 @@ export interface SchemaGenOptions {
 export async function runSchemagen(options: SchemaGenOptions): Promise<ProcessedFile[]> {
   const inputFiles = options.files;
 
-  const limit = pLimit(10);
+  const limit = createConcurrencyLimiter(10);
 
   if (!options.openaiKey && !options.model) {
     throw new Error("Either openaiKey or model must be provided");
