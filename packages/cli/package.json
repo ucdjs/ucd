@@ -49,7 +49,6 @@
     "@ucdjs/schema-gen": "workspace:*",
     "@ucdjs/ucd-store": "workspace:*",
     "farver": "catalog:prod",
-    "p-limit": "catalog:prod",
     "yargs-parser": "catalog:prod"
   },
   "devDependencies": {

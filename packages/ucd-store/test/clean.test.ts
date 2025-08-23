@@ -323,7 +323,7 @@ describe("store clean", () => {
 
     expect(cleanData).toBe(null);
     expect(cleanError).toBeTruthy();
-    expect(cleanError?.message).toBe("Concurrency must be at least 1");
+    expect(cleanError?.message).toBe("Concurrency must be a positive integer");
   });
 
   it("should skip file deletion if it doesn't exist", async () => {
