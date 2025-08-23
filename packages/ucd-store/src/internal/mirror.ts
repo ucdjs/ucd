@@ -3,7 +3,7 @@ import type { SharedStoreOperationOptions } from "../types";
 import { hasUCDFolderPath, resolveUCDVersion } from "@luxass/unicode-utils-new";
 import { isApiError } from "@ucdjs/fetch";
 import { assertCapability } from "@ucdjs/fs-bridge";
-import pLimit from "p-limit";
+import { createConcurrencyLimiter, ensureIsPositiveConcurrency } from "@ucdjs/shared";
 import { dirname, join } from "pathe";
 import { UCDStoreError, UCDStoreVersionNotFoundError } from "../errors";
 import { getExpectedFilePaths } from "./files";
@@ -46,14 +46,12 @@ export async function internal__mirror(store: UCDStore, options: Required<Mirror
     return [];
   }
 
-  if (concurrency < 1) {
-    throw new UCDStoreError("Concurrency must be at least 1");
-  }
+  ensureIsPositiveConcurrency(concurrency, UCDStoreError);
 
   assertCapability(store.fs, ["exists", "mkdir"]);
 
   // create the limit function to control concurrency
-  const limit = pLimit(concurrency);
+  const limit = createConcurrencyLimiter(concurrency);
 
   // pre-create directory structure to avoid repeated checks
   const directoriesToCreate = new Set<string>();

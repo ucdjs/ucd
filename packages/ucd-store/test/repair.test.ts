@@ -368,6 +368,6 @@ describe("store repair", () => {
 
     expect(repairData).toBe(null);
     assert(repairError != null, "Expected error to be present");
-    expect(repairError.message).toBe("Concurrency must be at least 1");
+    expect(repairError.message).toBe("Concurrency must be a positive integer");
   });
 });

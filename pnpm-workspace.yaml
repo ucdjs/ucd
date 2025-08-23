@@ -45,7 +45,6 @@ catalogs:
     zod: ^4.0.16
     "@ai-sdk/openai": ^2.0.7
     ai: ^5.0.8
-    p-limit: ^6.2.0
     knitwork: ^1.2.0
     picomatch: ^4.0.3
     apache-autoindex-parse: ^3.0.3

@@ -2,7 +2,7 @@ import type { UCDStore } from "../store";
 import type { SharedStoreOperationOptions } from "../types";
 import type { AnalyzeResult } from "./analyze";
 import { assertCapability } from "@ucdjs/fs-bridge";
-import pLimit from "p-limit";
+import { createConcurrencyLimiter, ensureIsPositiveConcurrency } from "@ucdjs/shared";
 import { dirname, join } from "pathe";
 import { UCDStoreError } from "../errors";
 import { internal__analyze } from "./analyze";
@@ -52,9 +52,7 @@ export async function internal__repair(store: UCDStore, options: Required<Repair
     return [];
   }
 
-  if (concurrency < 1) {
-    throw new UCDStoreError("Concurrency must be at least 1");
-  }
+  ensureIsPositiveConcurrency(concurrency, UCDStoreError);
 
   // analyze store to find what needs repairing
   const analyzeResults = await internal__analyze(store, {
@@ -104,7 +102,8 @@ async function handleOrphanedFiles(
   repairResults: RepairResult[],
   options: { dryRun: boolean; concurrency: number },
 ): Promise<string[]> {
-  const limit = pLimit(options.concurrency);
+  const limit = createConcurrencyLimiter(options.concurrency);
+
   const parentDirectoriesUnique = new Set<string>();
   const allOperations: Promise<void>[] = [];
 
