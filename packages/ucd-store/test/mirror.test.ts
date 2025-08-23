@@ -93,7 +93,8 @@ describe("store mirror", () => {
     assert(mirrorError === null, "Expected mirror operation to be successful");
     assert(mirrorData != null, "Expected mirror data to be non-null");
 
-    const [mirror15Result, mirror16Result] = mirrorData;
+    const mirror15Result = mirrorData.find((r) => r.version === "15.0.0");
+    const mirror16Result = mirrorData.find((r) => r.version === "16.0.0");
     assert(mirror15Result != null, "Expected mirror result for version 15.0.0");
     assert(mirror16Result != null, "Expected mirror result for version 16.0.0");
 
