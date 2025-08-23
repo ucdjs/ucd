@@ -153,4 +153,18 @@ describe("createConcurrencyLimiter", () => {
 
     expect(results).toEqual([4, 5]);
   });
+
+  it("starts queued tasks FIFO with concurrency=2", async () => {
+    const limiter = createConcurrencyLimiter(2);
+    const starts: number[] = [];
+    const mk = (id: number, delay: number) => limiter(async () => {
+      starts.push(id);
+      await new Promise((r) => setTimeout(r, delay));
+      return id;
+    });
+
+    await Promise.all([mk(1, 30), mk(2, 30), mk(3, 0), mk(4, 0)]);
+    // first two start immediately (1,2), then 3, then 4.
+    expect(starts).toEqual([1, 2, 3, 4]);
+  });
 });
