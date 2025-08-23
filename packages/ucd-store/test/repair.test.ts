@@ -4,7 +4,7 @@ import { setupMockStore } from "#internal/test-utils/store";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { createNodeUCDStore } from "@ucdjs/ucd-store";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { assert, beforeEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
 
 describe("store repair", () => {
@@ -73,21 +73,25 @@ describe("store repair", () => {
     expect(existsSync(`${storePath}/15.0.0/BidiBrackets.txt`)).toBe(false);
     expect(existsSync(`${storePath}/15.0.0/extracted/DerivedBidiClass.txt`)).toBe(false);
 
-    const [repairResult] = await store.repair();
+    const [repairData, repairError] = await store.repair();
 
-    expect(repairResult?.version).toBe("15.0.0");
-    expect(repairResult?.status).toBe("success");
-    expect(repairResult?.failed).toEqual([]);
-    expect(repairResult?.removed).toEqual([]);
+    assert(repairError === null, "Expected repair to succeed");
+    assert(repairData != null, "Expected repair data to be non-null");
+    assert(repairData[0] != null, "Expected first repair result to be non-null");
 
-    expect(repairResult?.restored).toHaveLength(2);
-    expect(repairResult?.restored).toEqual(expect.arrayContaining([
+    expect(repairData[0].version).toBe("15.0.0");
+    expect(repairData[0].status).toBe("success");
+    expect(repairData[0].failed).toEqual([]);
+    expect(repairData[0].removed).toEqual([]);
+
+    expect(repairData[0].restored).toHaveLength(2);
+    expect(repairData[0].restored).toEqual(expect.arrayContaining([
       "BidiBrackets.txt",
       "extracted/DerivedBidiClass.txt",
     ]));
 
-    expect(repairResult?.skipped).toHaveLength(1);
-    expect(repairResult?.skipped).toEqual(["ArabicShaping.txt"]);
+    expect(repairData[0].skipped).toHaveLength(1);
+    expect(repairData[0].skipped).toEqual(["ArabicShaping.txt"]);
 
     // verify files were actually restored
     expect(existsSync(`${storePath}/15.0.0/BidiBrackets.txt`)).toBe(true);
@@ -117,21 +121,25 @@ describe("store repair", () => {
     expect(existsSync(`${storePath}/15.0.0/orphaned.txt`)).toBe(true);
     expect(existsSync(`${storePath}/15.0.0/extracted/orphaned-nested.txt`)).toBe(true);
 
-    const [repairResult] = await store.repair();
+    const [repairData, repairError] = await store.repair();
 
-    expect(repairResult?.version).toBe("15.0.0");
-    expect(repairResult?.status).toBe("success");
-    expect(repairResult?.failed).toEqual([]);
-    expect(repairResult?.restored).toEqual([]);
+    assert(repairError === null, "Expected repair to succeed");
+    assert(repairData != null, "Expected repair data to be non-null");
+    assert(repairData[0] != null, "Expected first repair result to be non-null");
 
-    expect(repairResult?.removed).toHaveLength(2);
-    expect(repairResult?.removed).toEqual(expect.arrayContaining([
+    expect(repairData[0].version).toBe("15.0.0");
+    expect(repairData[0].status).toBe("success");
+    expect(repairData[0].failed).toEqual([]);
+    expect(repairData[0].restored).toEqual([]);
+
+    expect(repairData[0].removed).toHaveLength(2);
+    expect(repairData[0].removed).toEqual(expect.arrayContaining([
       "orphaned.txt",
       "extracted/orphaned-nested.txt",
     ]));
 
-    expect(repairResult?.skipped).toHaveLength(3);
-    expect(repairResult?.skipped).toEqual(expect.arrayContaining([
+    expect(repairData[0].skipped).toHaveLength(3);
+    expect(repairData[0].skipped).toEqual(expect.arrayContaining([
       "ArabicShaping.txt",
       "BidiBrackets.txt",
       "extracted/DerivedBidiClass.txt",
@@ -163,23 +171,27 @@ describe("store repair", () => {
 
     await store.init();
 
-    const [repairResult] = await store.repair();
+    const [repairData, repairError] = await store.repair();
 
-    expect(repairResult?.version).toBe("15.0.0");
-    expect(repairResult?.status).toBe("success");
-    expect(repairResult?.failed).toEqual([]);
+    assert(repairError === null, "Expected repair to succeed");
+    assert(repairData != null, "Expected repair data to be non-null");
+    assert(repairData[0] != null, "Expected first repair result to be non-null");
 
-    expect(repairResult?.restored).toHaveLength(2);
-    expect(repairResult?.restored).toEqual(expect.arrayContaining([
+    expect(repairData[0].version).toBe("15.0.0");
+    expect(repairData[0].status).toBe("success");
+    expect(repairData[0].failed).toEqual([]);
+
+    expect(repairData[0].restored).toHaveLength(2);
+    expect(repairData[0].restored).toEqual(expect.arrayContaining([
       "BidiBrackets.txt",
       "extracted/DerivedBidiClass.txt",
     ]));
 
-    expect(repairResult?.removed).toHaveLength(1);
-    expect(repairResult?.removed).toEqual(["orphaned.txt"]);
+    expect(repairData[0].removed).toHaveLength(1);
+    expect(repairData[0].removed).toEqual(["orphaned.txt"]);
 
-    expect(repairResult?.skipped).toHaveLength(1);
-    expect(repairResult?.skipped).toEqual(["ArabicShaping.txt"]);
+    expect(repairData[0].skipped).toHaveLength(1);
+    expect(repairData[0].skipped).toEqual(["ArabicShaping.txt"]);
   });
 
   it("should repair multiple versions", async () => {
@@ -201,7 +213,15 @@ describe("store repair", () => {
 
     await store.init();
 
-    const [repair15Result, repair16Result] = await store.repair();
+    const [repairData, repairError] = await store.repair();
+
+    assert(repairError === null, "Expected repair to succeed");
+    assert(repairData != null, "Expected repair data to be non-null");
+    assert(repairData[0] != null, "Expected repair results for 15.0.0");
+    assert(repairData[1] != null, "Expected repair results for 16.0.0");
+
+    const repair15Result = repairData[0];
+    const repair16Result = repairData[1];
 
     expect(repair15Result?.version).toBe("15.0.0");
     expect(repair15Result?.status).toBe("success");
@@ -230,16 +250,20 @@ describe("store repair", () => {
     await store.init();
     await store.mirror();
 
-    const [repairResult] = await store.repair();
+    const [repairData, repairError] = await store.repair();
 
-    expect(repairResult?.version).toBe("15.0.0");
-    expect(repairResult?.status).toBe("success");
-    expect(repairResult?.restored).toEqual([]);
-    expect(repairResult?.removed).toEqual([]);
-    expect(repairResult?.failed).toEqual([]);
+    assert(repairError === null, "Expected repair to succeed");
+    assert(repairData != null, "Expected repair data to be non-null");
+    assert(repairData[0] != null, "Expected first repair result to be non-null");
 
-    expect(repairResult?.skipped).toHaveLength(3);
-    expect(repairResult?.skipped).toEqual(expect.arrayContaining([
+    expect(repairData[0].version).toBe("15.0.0");
+    expect(repairData[0].status).toBe("success");
+    expect(repairData[0].restored).toEqual([]);
+    expect(repairData[0].removed).toEqual([]);
+    expect(repairData[0].failed).toEqual([]);
+
+    expect(repairData[0].skipped).toHaveLength(3);
+    expect(repairData[0].skipped).toEqual(expect.arrayContaining([
       "ArabicShaping.txt",
       "BidiBrackets.txt",
       "extracted/DerivedBidiClass.txt",
@@ -261,16 +285,20 @@ describe("store repair", () => {
 
     await store.init();
 
-    const [repairResult] = await store.repair({ dryRun: true });
+    const [repairData, repairError] = await store.repair({ dryRun: true });
 
-    expect(repairResult?.version).toBe("15.0.0");
-    expect(repairResult?.status).toBe("success");
+    assert(repairError === null, "Expected repair to succeed");
+    assert(repairData != null, "Expected repair data to be non-null");
+    assert(repairData[0] != null, "Expected first repair result to be non-null");
 
-    // In dry run, operations should be identified but not executed
-    expect(repairResult?.restored).toHaveLength(2);
-    expect(repairResult?.removed).toHaveLength(1);
+    expect(repairData[0].version).toBe("15.0.0");
+    expect(repairData[0].status).toBe("success");
 
-    // Verify no actual changes were made
+    // in dry run, operations should be identified but not executed
+    expect(repairData[0].restored).toHaveLength(2);
+    expect(repairData[0].removed).toHaveLength(1);
+
+    // verify no actual changes were made
     expect(existsSync(`${storePath}/15.0.0/orphaned.txt`)).toBe(true);
     expect(existsSync(`${storePath}/15.0.0/BidiBrackets.txt`)).toBe(false);
     expect(existsSync(`${storePath}/15.0.0/extracted/DerivedBidiClass.txt`)).toBe(false);
@@ -295,16 +323,20 @@ describe("store repair", () => {
 
     await store.init();
 
-    // Repair only 15.0.0
-    const [repair15Result] = await store.repair({ versions: ["15.0.0"] });
+    // repair only 15.0.0
+    const [repairData, repairError] = await store.repair({ versions: ["15.0.0"] });
 
-    expect(repair15Result?.version).toBe("15.0.0");
-    expect(repair15Result?.status).toBe("success");
+    assert(repairError === null, "Expected repair to succeed");
+    assert(repairData != null, "Expected repair data to be non-null");
+    assert(repairData[0] != null, "Expected first repair result to be non-null");
 
-    // Verify 15.0.0 was repaired
+    expect(repairData[0].version).toBe("15.0.0");
+    expect(repairData[0].status).toBe("success");
+
+    // verify 15.0.0 was repaired
     expect(existsSync(`${storePath}/15.0.0/orphaned.txt`)).toBe(false);
 
-    // Verify 16.0.0 was not touched
+    // verify 16.0.0 was not touched
     expect(existsSync(`${storePath}/16.0.0/orphaned.txt`)).toBe(true);
   });
 
@@ -316,7 +348,26 @@ describe("store repair", () => {
       versions: ["15.0.0"],
     });
 
-    // Don't initialize the store
-    await expect(store.repair()).rejects.toThrow("Store is not initialized");
+    const [repairData, repairError] = await store.repair();
+
+    expect(repairData).toBe(null);
+    assert(repairError != null, "Expected error to be present");
+    expect(repairError.message).toBe("Store is not initialized. Please initialize the store before performing operations.");
+  });
+
+  it("should return failure when concurrency is less than 1", async () => {
+    const storePath = await testdir();
+
+    const store = await createNodeUCDStore({
+      basePath: storePath,
+      versions: ["15.0.0"],
+    });
+
+    await store.init();
+    const [repairData, repairError] = await store.repair({ concurrency: 0 });
+
+    expect(repairData).toBe(null);
+    assert(repairError != null, "Expected error to be present");
+    expect(repairError.message).toBe("Concurrency must be at least 1");
   });
 });
