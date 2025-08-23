@@ -1,6 +1,9 @@
 type QueueNode<T> = [value: T, next?: QueueNode<T>];
 
-type ConcurrencyLimitFn = <Args extends unknown[], T>(fn: (...args: Args) => PromiseLike<T> | T, ...args: Args) => Promise<T>;
+export type ConcurrencyLimitFn = <Args extends unknown[], T>(
+  fn: (...args: Args) => PromiseLike<T> | T,
+  ...args: Args
+) => Promise<T>;
 
 /**
  * Creates a concurrency limiter that restricts the number of concurrent executions.
