@@ -61,25 +61,23 @@ export async function runAnalyzeStore({ flags, versions }: CLIStoreAnalyzeCmdOpt
       return;
     }
 
-    const result = await store.analyze({
+    const [analyzeData, analyzeError] = await store.analyze({
       checkOrphaned: !!checkOrphaned,
       versions: versions || [],
     });
 
-    if (!result.success) {
+    if (analyzeError != null) {
       console.error(red(`\n❌ Error analyzing store:`));
-      for (const error of result.errors) {
-        console.error(`  ${error.message}`);
-      }
+      console.error(`  ${analyzeError.message}`);
       return;
     }
 
     if (json) {
-      console.info(JSON.stringify(result.data, null, 2));
+      console.info(JSON.stringify(analyzeData, null, 2));
       return;
     }
 
-    for (const { version, fileCount, isComplete, missingFiles, orphanedFiles, expectedFileCount } of result.data) {
+    for (const { version, fileCount, isComplete, missingFiles, orphanedFiles, expectedFileCount } of analyzeData) {
       console.info(`Version: ${version}`);
       if (isComplete) {
         console.info(`  Status: ${green("complete")}`);
