@@ -4,7 +4,7 @@ import type { AnalyzeResult } from "./analyze";
 import { assertCapability } from "@ucdjs/fs-bridge";
 import { createConcurrencyLimiter } from "@ucdjs/shared";
 import { dirname, join } from "pathe";
-import { UCDStoreError } from "../errors";
+import { UCDStoreGenericError } from "../errors";
 import { internal__analyze } from "./analyze";
 import { internal__clean } from "./clean";
 import { internal__mirror } from "./mirror";
@@ -53,7 +53,7 @@ export async function internal__repair(store: UCDStore, options: Required<Repair
   }
 
   if (concurrency < 1) {
-    throw new UCDStoreError("Concurrency must be at least 1");
+    throw new UCDStoreGenericError("Concurrency must be at least 1");
   }
 
   // analyze store to find what needs repairing

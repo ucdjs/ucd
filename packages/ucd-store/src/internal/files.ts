@@ -1,7 +1,7 @@
 import type { UCDClient } from "@ucdjs/fetch";
 import { isApiError } from "@ucdjs/fetch";
 import { flattenFilePaths } from "@ucdjs/shared";
-import { UCDStoreError } from "../errors";
+import { UCDStoreGenericError } from "../errors";
 
 /**
  * Retrieves the expected file paths for a specific Unicode version from the API.
@@ -15,7 +15,7 @@ import { UCDStoreError } from "../errors";
  * @param {string} version - The Unicode version to get expected file paths for
  * @returns {Promise<string[]>} A promise that resolves to an array of file paths that should exist for the version
  *
- * @throws {UCDStoreError} When the API request fails or returns an error
+ * @throws {UCDStoreGenericError} When the API request fails or returns an error
  */
 export async function getExpectedFilePaths(
   client: UCDClient,
@@ -31,7 +31,7 @@ export async function getExpectedFilePaths(
   });
 
   if (isApiError(error) || error != null || (data == null && error == null)) {
-    throw new UCDStoreError(`Failed to fetch expected files for version '${version}': ${error?.message}`);
+    throw new UCDStoreGenericError(`Failed to fetch expected files for version '${version}': ${error?.message}`);
   }
 
   return flattenFilePaths(data!);
