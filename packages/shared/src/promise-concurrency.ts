@@ -5,6 +5,12 @@ export type ConcurrencyLimitFn = <Args extends unknown[], T>(
   ...args: Args
 ) => Promise<T>;
 
+export function ensureIsPositiveConcurrency(concurrency: unknown, ErrorClazz: new (message: string) => Error): void {
+  if ((concurrency !== Number.POSITIVE_INFINITY && !Number.isInteger(concurrency)) || typeof concurrency !== "number" || concurrency < 1) {
+    throw new ErrorClazz("Concurrency must be a positive integer");
+  }
+}
+
 /**
  * Creates a concurrency limiter that restricts the number of concurrent executions.
  *
@@ -30,9 +36,7 @@ export type ConcurrencyLimitFn = <Args extends unknown[], T>(
 export function createConcurrencyLimiter(
   concurrency: number,
 ): ConcurrencyLimitFn {
-  if ((concurrency !== Number.POSITIVE_INFINITY && !Number.isInteger(concurrency)) || concurrency < 1) {
-    throw new Error(`Concurrency must be a positive integer${concurrency === Number.POSITIVE_INFINITY ? " or Infinity" : ""}`);
-  }
+  ensureIsPositiveConcurrency(concurrency, Error);
 
   let activeTasks = 0;
   let head: undefined | QueueNode<() => void>;
