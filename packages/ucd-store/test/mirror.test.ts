@@ -62,17 +62,16 @@ describe("store mirror", () => {
     });
 
     await store.init();
-    const mirrorResult = await store.mirror();
+    const [mirrorData, mirrorError] = await store.mirror();
 
-    expect(mirrorResult.errors).toHaveLength(0);
+    assert(mirrorError === null, "Expected mirror operation to be successful");
+    assert(mirrorData != null, "Expected mirror data to be non-null");
+    assert(mirrorData[0] != null, "Expected at least one version to be mirrored");
 
-    assert(mirrorResult.success === true, "Expected mirror operation to be successful");
-    assert(mirrorResult.data[0] != null, "Expected at least one version to be mirrored");
-
-    expect(mirrorResult.data[0].failed).toHaveLength(0);
-    expect(mirrorResult.data[0].mirrored).toHaveLength(3);
-    expect(mirrorResult.data[0].skipped).toHaveLength(0);
-    expect(mirrorResult.data[0].version).toBe("15.0.0");
+    expect(mirrorData[0].failed).toHaveLength(0);
+    expect(mirrorData[0].mirrored).toHaveLength(3);
+    expect(mirrorData[0].skipped).toHaveLength(0);
+    expect(mirrorData[0].version).toBe("15.0.0");
 
     expect(existsSync(`${storePath}/.ucd-store.json`)).toBe(true);
     expect(existsSync(`${storePath}/15.0.0/ArabicShaping.txt`)).toBe(true);
@@ -89,11 +88,12 @@ describe("store mirror", () => {
     });
 
     await store.init();
-    const mirrorResults = await store.mirror();
+    const [mirrorData, mirrorError] = await store.mirror();
 
-    assert(mirrorResults.success === true, "Expected mirror operation to be successful");
+    assert(mirrorError === null, "Expected mirror operation to be successful");
+    assert(mirrorData != null, "Expected mirror data to be non-null");
 
-    const [mirror15Result, mirror16Result] = mirrorResults.data;
+    const [mirror15Result, mirror16Result] = mirrorData;
     assert(mirror15Result != null, "Expected mirror result for version 15.0.0");
     assert(mirror16Result != null, "Expected mirror result for version 16.0.0");
 
@@ -113,14 +113,15 @@ describe("store mirror", () => {
     });
 
     await store.init();
-    const mirrorResult = await store.mirror({ dryRun: true });
+    const [mirrorData, mirrorError] = await store.mirror({ dryRun: true });
 
-    assert(mirrorResult.success === true, "Expected mirror operation to be successful");
-    assert(mirrorResult.data[0] != null, "Expected at least one version to be mirrored");
+    assert(mirrorError === null, "Expected mirror operation to be successful");
+    assert(mirrorData != null, "Expected mirror data to be non-null");
+    assert(mirrorData[0] != null, "Expected at least one version to be mirrored");
 
-    expect(mirrorResult.data[0].mirrored).toHaveLength(3);
-    expect(mirrorResult.data[0].skipped).toHaveLength(0);
-    expect(mirrorResult.data[0].version).toBe("15.0.0");
+    expect(mirrorData[0].mirrored).toHaveLength(3);
+    expect(mirrorData[0].skipped).toHaveLength(0);
+    expect(mirrorData[0].version).toBe("15.0.0");
 
     expect(existsSync(`${storePath}/.ucd-store.json`)).toBe(true);
     expect(existsSync(`${storePath}/15.0.0/ArabicShaping.txt`)).toBe(false);
@@ -141,20 +142,22 @@ describe("store mirror", () => {
     });
 
     await store.init();
-    const mirrorResult = await store.mirror({ force: true });
+    const [mirrorData, mirrorError] = await store.mirror({ force: true });
 
-    assert(mirrorResult.success === true, "Expected mirror operation to be successful");
-    assert(mirrorResult.data[0] != null, "Expected at least one version to be mirrored");
+    assert(mirrorError === null, "Expected mirror operation to be successful");
+    assert(mirrorData != null, "Expected mirror data to be non-null");
+    assert(mirrorData[0] != null, "Expected at least one version to be mirrored");
 
-    expect(mirrorResult.data[0].mirrored).toHaveLength(3);
-    expect(mirrorResult.data[0].skipped).toHaveLength(0);
-    expect(mirrorResult.data[0].version).toBe("15.0.0");
+    expect(mirrorData[0].mirrored).toHaveLength(3);
+    expect(mirrorData[0].skipped).toHaveLength(0);
+    expect(mirrorData[0].version).toBe("15.0.0");
 
     expect(existsSync(`${storePath}/15.0.0/ArabicShaping.txt`)).toBe(true);
 
-    const newContent = await store.getFile("15.0.0", "ArabicShaping.txt");
+    const [fileData, fileError] = await store.getFile("15.0.0", "ArabicShaping.txt");
 
-    expect(newContent).toBe("File content");
+    assert(fileError === null, "Expected getFile to succeed");
+    expect(fileData).toBe("File content");
   });
 
   it("should require store to be initialized", async () => {
@@ -165,17 +168,11 @@ describe("store mirror", () => {
       versions: ["15.0.0"],
     });
 
-    const mirrorResult = await store.mirror();
+    const [mirrorData, mirrorError] = await store.mirror();
 
-    assert(mirrorResult.success === false, "Expected mirror operation to be unsuccessful");
-    assert(mirrorResult.data === undefined, "Expected no versions to be mirrored");
-
-    expect(mirrorResult.data).toBeUndefined();
-    expect(mirrorResult.errors).toHaveLength(1);
-
-    assert(mirrorResult.errors[0] != null, "Expected error to be present");
-    expect(mirrorResult.errors[0].type).toBe("NOT_INITIALIZED");
-    expect(mirrorResult.errors[0].message).toBe("Store is not initialized. Please initialize the store before performing operations.");
+    expect(mirrorData).toBe(null);
+    assert(mirrorError != null, "Expected error to be present");
+    expect(mirrorError.message).toBe("Store is not initialized. Please initialize the store before performing operations.");
   });
 
   it("should return failure when concurrency is less than 1", async () => {
@@ -187,17 +184,11 @@ describe("store mirror", () => {
     });
 
     await store.init();
-    const mirrorResult = await store.mirror({ concurrency: 0 });
+    const [mirrorData, mirrorError] = await store.mirror({ concurrency: 0 });
 
-    assert(mirrorResult.success === false, "Expected mirror operation to be unsuccessful");
-    assert(mirrorResult.data === undefined, "Expected no versions to be mirrored");
-
-    expect(mirrorResult.data).toBeUndefined();
-    expect(mirrorResult.errors).toHaveLength(1);
-
-    assert(mirrorResult.errors[0] != null, "Expected error to be present");
-    expect(mirrorResult.errors[0].type).toBe("GENERIC");
-    expect(mirrorResult.errors[0].message).toBe("Concurrency must be at least 1");
+    expect(mirrorData).toBe(null);
+    assert(mirrorError != null, "Expected error to be present");
+    expect(mirrorError.message).toBe("Concurrency must be at least 1");
   });
 
   it("should handle version not found error", async () => {
@@ -210,17 +201,11 @@ describe("store mirror", () => {
 
     await store.init();
 
-    const mirrorResult = await store.mirror({ versions: ["99.99.99"] });
+    const [mirrorData, mirrorError] = await store.mirror({ versions: ["99.99.99"] });
 
-    assert(mirrorResult.success === false, "Expected mirror operation to be unsuccessful");
-    assert(mirrorResult.data === undefined, "Expected no versions to be mirrored");
-
-    expect(mirrorResult.data).toBeUndefined();
-    expect(mirrorResult.errors).toHaveLength(1);
-
-    assert(mirrorResult.errors[0] != null, "Expected error to be present");
-    expect(mirrorResult.errors[0].type).toBe("UNSUPPORTED_VERSION");
-    expect(mirrorResult.errors[0].message).toBe("Version '99.99.99' does not exist in the store.");
+    expect(mirrorData).toBe(null);
+    assert(mirrorError != null, "Expected error to be present");
+    expect(mirrorError.message).toBe("Version '99.99.99' does not exist in the store.");
   });
 
   it("should handle API errors during file fetching", async () => {
@@ -243,17 +228,11 @@ describe("store mirror", () => {
 
     await store.init();
 
-    const mirrorResult = await store.mirror();
+    const [mirrorData, mirrorError] = await store.mirror();
 
-    assert(mirrorResult.success === false, "Expected mirror operation to be unsuccessful");
-    assert(mirrorResult.data === undefined, "Expected no versions to be mirrored");
-
-    expect(mirrorResult.data).toBeUndefined();
-    expect(mirrorResult.errors).toHaveLength(1);
-
-    assert(mirrorResult.errors[0] != null, "Expected error to be present");
-    expect(mirrorResult.errors[0].type).toBe("GENERIC");
-    expect(mirrorResult.errors[0].message).toBe("Failed to fetch expected files for version '15.0.0': Internal Server Error");
+    expect(mirrorData).toBe(null);
+    assert(mirrorError != null, "Expected error to be present");
+    expect(mirrorError.message).toBe("Failed to fetch expected files for version '15.0.0': Internal Server Error");
   });
 
   it("should handle different content types during file download", async () => {
@@ -300,15 +279,16 @@ describe("store mirror", () => {
 
     await store.init();
 
-    const mirrorResult = await store.mirror();
+    const [mirrorData, mirrorError] = await store.mirror();
     expect(callCount).toBe(3);
 
-    assert(mirrorResult.success === true, "Expected mirror operation to be successful");
-    assert(mirrorResult.data[0] != null, "Expected at least one version to be mirrored");
+    assert(mirrorError === null, "Expected mirror operation to be successful");
+    assert(mirrorData != null, "Expected mirror data to be non-null");
+    assert(mirrorData[0] != null, "Expected at least one version to be mirrored");
 
-    expect(mirrorResult.data[0].mirrored).toHaveLength(3);
-    expect(mirrorResult.data[0].skipped).toHaveLength(0);
-    expect(mirrorResult.data[0].version).toBe("15.0.0");
+    expect(mirrorData[0].mirrored).toHaveLength(3);
+    expect(mirrorData[0].skipped).toHaveLength(0);
+    expect(mirrorData[0].version).toBe("15.0.0");
   });
 
   it("should handle file operation errors during mirroring", async () => {
@@ -326,18 +306,16 @@ describe("store mirror", () => {
       throw new Error("Disk full");
     });
 
-    const mirrorResult = await store.mirror();
+    const [mirrorData, mirrorError] = await store.mirror();
 
-    assert(mirrorResult.success === true, "Expected mirror operation to be successful");
-    assert(mirrorResult.data != null, "Expected mirror result data to be non-null");
+    assert(mirrorError === null, "Expected mirror operation to be successful");
+    assert(mirrorData != null, "Expected mirror result data to be non-null");
+    assert(mirrorData[0] != null, "Expected at least one version in mirror data");
 
-    assert(mirrorResult.data[0] != null, "Expected at least one version in mirrorResult.data");
-    expect(mirrorResult.errors).toHaveLength(0);
-
-    expect(mirrorResult.data[0].failed).toHaveLength(3);
-    expect(mirrorResult.data[0].skipped).toHaveLength(0);
-    expect(mirrorResult.data[0].mirrored).toHaveLength(0);
-    expect(mirrorResult.data[0].version).toBe("15.0.0");
+    expect(mirrorData[0].failed).toHaveLength(3);
+    expect(mirrorData[0].skipped).toHaveLength(0);
+    expect(mirrorData[0].mirrored).toHaveLength(0);
+    expect(mirrorData[0].version).toBe("15.0.0");
   });
 
   it("should return empty result on catastrophic error", async () => {
@@ -356,14 +334,10 @@ describe("store mirror", () => {
 
     await store.init();
 
-    const mirrorResult = await store.mirror();
+    const [mirrorData, mirrorError] = await store.mirror();
 
-    assert(mirrorResult.success === false, "Expected mirror operation to be unsuccessful");
-    expect(mirrorResult.data).toBeUndefined();
-    expect(mirrorResult.errors).toHaveLength(1);
-
-    assert(mirrorResult.errors[0] != null, "Expected error to be present");
-    expect(mirrorResult.errors[0].type).toBe("GENERIC");
-    expect(mirrorResult.errors[0].message).toBe("Failed to fetch");
+    expect(mirrorData).toBe(null);
+    assert(mirrorError != null, "Expected error to be present");
+    expect(mirrorError.message).toBe("Failed to fetch");
   });
 });
