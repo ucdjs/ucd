@@ -46,10 +46,9 @@ describe("file operations", () => {
       expect(store.initialized).toBe(true);
       expect(store.versions).toEqual(["15.0.0"]);
 
-      const fileTreeResult = await store.getFileTree("15.0.0");
-      assert(fileTreeResult.success, "Failed to get file tree");
-
-      const fileTree = fileTreeResult.data;
+      const [fileTree, fileTreeError] = await store.getFileTree("15.0.0");
+      assert(fileTreeError === null, "Failed to get file tree");
+      assert(fileTree != null, "Expected file tree data to be non-null");
 
       expect(fileTree).toEqual([
         {
@@ -115,9 +114,10 @@ describe("file operations", () => {
       expect(store.initialized).toBe(true);
       expect(store.versions).toEqual(["15.0.0"]);
 
-      await expect(store.getFileTree("16.0.0")).rejects.toThrow(
-        "Version '16.0.0' does not exist in the store.",
-      );
+      const [fileTreeData, fileTreeError] = await store.getFileTree("16.0.0");
+      expect(fileTreeData).toBe(null);
+      assert(fileTreeError != null, "Expected error for invalid version");
+      expect(fileTreeError.message).toBe("Version '16.0.0' does not exist in the store.");
     });
 
     it("should handle empty file tree", async () => {
@@ -136,7 +136,8 @@ describe("file operations", () => {
       expect(store.initialized).toBe(true);
       expect(store.versions).toEqual(["15.0.0"]);
 
-      const fileTree = await store.getFileTree("15.0.0");
+      const [fileTree, fileTreeError] = await store.getFileTree("15.0.0");
+      assert(fileTreeError === null, "Expected getFileTree to succeed");
       expect(fileTree).toEqual([]);
     });
 
@@ -165,8 +166,10 @@ describe("file operations", () => {
       expect(store.initialized).toBe(true);
       expect(store.versions).toEqual(["15.0.0"]);
 
-      const fileTree1 = await store.getFileTree("15.0.0", ["!**/extracted"]);
-      const fileTree2 = await store.getFileTree("15.0.0", ["!**/extracted/**"]);
+      const [fileTree1, error1] = await store.getFileTree("15.0.0", ["!**/extracted"]);
+      const [fileTree2, error2] = await store.getFileTree("15.0.0", ["!**/extracted/**"]);
+      
+      assert(error1 === null && error2 === null, "Expected getFileTree calls to succeed");
 
       expect(fileTree1).toMatchObject(fileTree2);
       expect(fileTree1).toEqual([
@@ -206,10 +209,12 @@ describe("file operations", () => {
       expect(store.initialized).toBe(true);
       expect(store.versions).toEqual(["15.0.0"]);
 
-      const fileTree1 = await store.getFileTree("15.0.0", ["!extracted/nested/**"]);
-      const fileTree2 = await store.getFileTree("15.0.0", ["!**/DeepFile.txt"]);
-      const fileTree3 = await store.getFileTree("15.0.0", ["!extracted/nested"]);
-      const fileTree4 = await store.getFileTree("15.0.0", ["!extracted/nested/DeepFile.txt"]);
+      const [fileTree1, error1] = await store.getFileTree("15.0.0", ["!extracted/nested/**"]);
+      const [fileTree2, error2] = await store.getFileTree("15.0.0", ["!**/DeepFile.txt"]);
+      const [fileTree3, error3] = await store.getFileTree("15.0.0", ["!extracted/nested"]);
+      const [fileTree4, error4] = await store.getFileTree("15.0.0", ["!extracted/nested/DeepFile.txt"]);
+      
+      assert(error1 === null && error2 === null && error3 === null && error4 === null, "Expected all getFileTree calls to succeed");
 
       expect(fileTree1).toEqual(fileTree2);
       expect(fileTree1).toEqual(fileTree3);
@@ -334,7 +339,8 @@ describe("file operations", () => {
       });
 
       await store.init();
-      const fileTree = await store.getFileTree("15.0.0", filters);
+      const [fileTree, fileTreeError] = await store.getFileTree("15.0.0", filters);
+      assert(fileTreeError === null, "Expected getFileTree to succeed");
       expect(fileTree).toEqual(expected);
     });
 
@@ -353,7 +359,8 @@ describe("file operations", () => {
       });
 
       await store.init();
-      const fileTree = await store.getFileTree("15.0.0", ["!**/*"]);
+      const [fileTree, fileTreeError] = await store.getFileTree("15.0.0", ["!**/*"]);
+      assert(fileTreeError === null, "Expected getFileTree to succeed");
       expect(fileTree).toEqual([]);
     });
 
@@ -374,7 +381,8 @@ describe("file operations", () => {
       });
 
       await store.init();
-      const fileTree = await store.getFileTree("15.0.0");
+      const [fileTree, fileTreeError] = await store.getFileTree("15.0.0");
+      assert(fileTreeError === null, "Expected getFileTree to succeed");
       expect(fileTree).toEqual([
         {
           name: "file1.txt",
@@ -413,7 +421,8 @@ describe("file operations", () => {
       });
 
       await store.init();
-      const fileTree = await store.getFileTree("15.0.0", ["!**/filtered.txt"]);
+      const [fileTree, fileTreeError] = await store.getFileTree("15.0.0", ["!**/filtered.txt"]);
+      assert(fileTreeError === null, "Expected getFileTree to succeed");
       expect(fileTree).toEqual([
         {
           children: [],
@@ -453,7 +462,8 @@ describe("file operations", () => {
       });
 
       await store.init();
-      const filePaths = await store.getFilePaths("15.0.0");
+      const [filePaths, filePathsError] = await store.getFilePaths("15.0.0");
+      assert(filePathsError === null, "Expected getFilePaths to succeed");
       expect(filePaths).toEqual([
         "ArabicShaping.txt",
         "BidiBrackets.txt",
@@ -484,7 +494,8 @@ describe("file operations", () => {
       });
 
       await store.init();
-      const filePaths = await store.getFilePaths("15.0.0", ["!**/nested/**"]);
+      const [filePaths, filePathsError] = await store.getFilePaths("15.0.0", ["!**/nested/**"]);
+      assert(filePathsError === null, "Expected getFilePaths to succeed");
       expect(filePaths).toEqual([
         "ArabicShaping.txt",
         "BidiBrackets.txt",
@@ -507,9 +518,10 @@ describe("file operations", () => {
       });
 
       await store.init();
-      await expect(store.getFilePaths("16.0.0")).rejects.toThrow(
-        "Version '16.0.0' does not exist in the store.",
-      );
+      const [filePathsData, filePathsError] = await store.getFilePaths("16.0.0");
+      expect(filePathsData).toBe(null);
+      assert(filePathsError != null, "Expected error for invalid version");
+      expect(filePathsError.message).toBe("Version '16.0.0' does not exist in the store.");
     });
   });
 
@@ -538,10 +550,11 @@ describe("file operations", () => {
 
       await store.init();
 
-      await expect(store.getFileTree("15.0.0")).rejects.toThrow(BridgeUnsupportedOperation);
-      await expect(store.getFileTree("15.0.0")).rejects.toThrow(
-        "File system bridge does not support the 'listdir' capability.",
-      );
+      const [fileTreeData, fileTreeError] = await store.getFileTree("15.0.0");
+      expect(fileTreeData).toBe(null);
+      assert(fileTreeError != null, "Expected error for unsupported operation");
+      expect(fileTreeError).toBeInstanceOf(BridgeUnsupportedOperation);
+      expect(fileTreeError.message).toBe("File system bridge does not support the 'listdir' capability.");
 
       // verify that no other methods were called since listdir fails first
       expect(writeSpy).not.toHaveBeenCalled();
@@ -573,10 +586,11 @@ describe("file operations", () => {
       await store.init();
 
       // getFilePaths internally calls getFileTree, so it should also fail
-      await expect(store.getFilePaths("15.0.0")).rejects.toThrow(BridgeUnsupportedOperation);
-      await expect(store.getFilePaths("15.0.0")).rejects.toThrow(
-        "File system bridge does not support the 'listdir' capability.",
-      );
+      const [filePathsData, filePathsError] = await store.getFilePaths("15.0.0");
+      expect(filePathsData).toBe(null);
+      assert(filePathsError != null, "Expected error for unsupported operation");
+      expect(filePathsError).toBeInstanceOf(BridgeUnsupportedOperation);
+      expect(filePathsError.message).toBe("File system bridge does not support the 'listdir' capability.");
 
       // verify that no other methods were called since listdir fails first
       expect(writeSpy).not.toHaveBeenCalled();
@@ -619,7 +633,9 @@ describe("file operations", () => {
       expect(existsSpy).toHaveBeenCalledTimes(1);
 
       // these should not throw
-      await expect(store.getFileTree("15.0.0")).resolves.toEqual([
+      const [fileTreeData, fileTreeError] = await store.getFileTree("15.0.0");
+      assert(fileTreeError === null, "Expected getFileTree to succeed");
+      expect(fileTreeData).toEqual([
         {
           name: "test.txt",
           path: "test.txt",
@@ -627,7 +643,9 @@ describe("file operations", () => {
         },
       ]);
 
-      await expect(store.getFilePaths("15.0.0")).resolves.toEqual(["test.txt"]);
+      const [filePathsData, filePathsError] = await store.getFilePaths("15.0.0");
+      assert(filePathsError === null, "Expected getFilePaths to succeed");
+      expect(filePathsData).toEqual(["test.txt"]);
 
       // verify that only listdir was called for these operations
       expect(listdirSpy).toHaveBeenCalledTimes(2); // once for getFileTree, once for getFilePaths
@@ -665,7 +683,8 @@ describe("file operations", () => {
       });
 
       await store.init();
-      const content = await store.getFile("15.0.0", path);
+      const [content, contentError] = await store.getFile("15.0.0", path);
+      assert(contentError === null, "Expected getFile to succeed");
       expect(content).toBe(expected);
     });
 
@@ -684,7 +703,8 @@ describe("file operations", () => {
       });
 
       await store.init();
-      const content = await store.getFile("15.0.0", `${storePath}/15.0.0/file.txt`);
+      const [content, contentError] = await store.getFile("15.0.0", `${storePath}/15.0.0/file.txt`);
+      assert(contentError === null, "Expected getFile to succeed");
       expect(content).toBe("Full path content");
     });
 
@@ -703,9 +723,10 @@ describe("file operations", () => {
       });
 
       await store.init();
-      await expect(store.getFile("15.0.0", "./nonexistent.txt")).rejects.toThrow(
-        "File './nonexistent.txt' does not exist in version '15.0.0'.",
-      );
+      const [fileData, fileError] = await store.getFile("15.0.0", "./nonexistent.txt");
+      expect(fileData).toBe(null);
+      assert(fileError != null, "Expected error for nonexistent file");
+      expect(fileError.message).toBe("File './nonexistent.txt' does not exist in version '15.0.0'.");
     });
 
     it("should disallow reading files outside the store", async () => {
@@ -723,9 +744,10 @@ describe("file operations", () => {
       });
 
       await store.init();
-      await expect(store.getFile("15.0.0", "../../outside.txt")).rejects.toThrow(
-        "Path traversal detected: ../outside.txt resolves outside base directory",
-      );
+      const [fileData, fileError] = await store.getFile("15.0.0", "../../outside.txt");
+      expect(fileData).toBe(null);
+      assert(fileError != null, "Expected error for path traversal");
+      expect(fileError.message).toBe("Path traversal detected: ../outside.txt resolves outside base directory");
     });
   });
 });
