@@ -42,6 +42,7 @@
     "@ai-sdk/openai": "catalog:prod",
     "@luxass/unicode-utils": "catalog:prod",
     "@luxass/utils": "catalog:prod",
+    "@ucdjs/shared": "workspace:*",
     "ai": "catalog:prod",
     "knitwork": "catalog:prod",
     "zod": "catalog:prod"
