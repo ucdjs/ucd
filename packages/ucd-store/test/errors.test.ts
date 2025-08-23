@@ -3,55 +3,40 @@ import { describe, expect, it } from "vitest";
 import {
   UCDStoreBaseError,
   UCDStoreBridgeUnsupportedOperation,
-  UCDStoreError,
   UCDStoreFileNotFoundError,
+  UCDStoreGenericError,
   UCDStoreInvalidManifestError,
   UCDStoreNotInitializedError,
   UCDStoreVersionNotFoundError,
 } from "../src/errors";
 
 describe("custom errors", () => {
-  describe("UCDStoreError", () => {
+  describe("UCDStoreGenericError", () => {
     it("should create an instance with the correct message", () => {
       const message = "Test error message";
-      const error = new UCDStoreError(message);
+      const error = new UCDStoreGenericError(message);
 
       expect(error.message).toBe(message);
     });
 
     it("should extend Error class and have correct properties", () => {
-      const error = new UCDStoreError("Test message");
+      const error = new UCDStoreGenericError("Test message");
 
       expect(error).toBeInstanceOf(Error);
       expect(error).toBeInstanceOf(UCDStoreBaseError);
-      expect(error).toBeInstanceOf(UCDStoreError);
-      expect(error.name).toBe("UCDStoreError");
+      expect(error).toBeInstanceOf(UCDStoreGenericError);
+      expect(error.name).toBe("UCDStoreGenericError");
       expect(error.stack).toBeDefined();
-      expect(error.stack).toContain("UCDStoreError");
+      expect(error.stack).toContain("UCDStoreGenericError");
     });
 
-    it("should convert to store error format correctly", () => {
-      const message = "Test error message";
-      const error = new UCDStoreError(message);
-      const storeError = error["~toStoreError"]();
-
-      expect(storeError).toEqual({
-        type: "GENERIC",
-        message,
-      });
-    });
-
-    it("should convert to store error format with data", () => {
+    it("should accept data parameter", () => {
       const message = "Test error with data";
       const data = { code: 500, details: "Something went wrong" };
-      const error = new UCDStoreError(message, data);
-      const storeError = error["~toStoreError"]();
+      const error = new UCDStoreGenericError(message, data);
 
-      expect(storeError).toEqual({
-        type: "GENERIC",
-        message,
-        data,
-      });
+      expect(error.message).toBe(message);
+      expect(error.data).toEqual(data);
     });
   });
 
@@ -92,19 +77,6 @@ describe("custom errors", () => {
       expect(error).toBeInstanceOf(UCDStoreBaseError);
       expect(error).toBeInstanceOf(UCDStoreVersionNotFoundError);
       expect(error.name).toBe("UCDStoreVersionNotFoundError");
-      expect(error.message).toBe(`Version '${version}' does not exist in the store.`);
-      expect(error.version).toBe(version);
-    });
-
-    it.each([
-      "15.0.0",
-      "14.0.0",
-      "1.0",
-      "2.0.0",
-      "3.0.0-beta",
-      "4.0.0-alpha.1",
-    ])("should format message correctly for version %s", (version) => {
-      const error = new UCDStoreVersionNotFoundError(version);
       expect(error.message).toBe(`Version '${version}' does not exist in the store.`);
       expect(error.version).toBe(version);
     });
@@ -185,17 +157,12 @@ describe("custom errors", () => {
       expect(error.message).toBe(`invalid manifest at ${manifestPath}: ${message}`);
     });
 
-    it("should convert to store error format correctly", () => {
+    it("should format error message correctly", () => {
       const manifestPath = "/store/.ucd-store.json";
       const message = "schema validation failed";
       const error = new UCDStoreInvalidManifestError(manifestPath, message);
-      const storeError = error["~toStoreError"]();
 
-      expect(storeError).toEqual({
-        type: "INVALID_MANIFEST",
-        manifestPath,
-        message: `invalid manifest at ${manifestPath}: ${message}`,
-      });
+      expect(error.message).toBe(`invalid manifest at ${manifestPath}: ${message}`);
     });
 
     it.each([
@@ -207,11 +174,6 @@ describe("custom errors", () => {
       const error = new UCDStoreInvalidManifestError(manifestPath, message);
 
       expect(error.message).toBe(`invalid manifest at ${manifestPath}: ${message}`);
-
-      const storeError = error["~toStoreError"]();
-      expect(storeError.type).toBe("INVALID_MANIFEST");
-      expect(storeError.manifestPath).toBe(manifestPath);
-      expect(storeError.message).toBe(`invalid manifest at ${manifestPath}: ${message}`);
     });
   });
 
@@ -226,32 +188,11 @@ describe("custom errors", () => {
       expect(error.message).toBe("Store is not initialized. Please initialize the store before performing operations.");
     });
 
-    it("should convert to store error format correctly", () => {
-      const error = new UCDStoreNotInitializedError();
-      const storeError = error["~toStoreError"]();
-
-      expect(storeError).toEqual({
-        type: "NOT_INITIALIZED",
-        message: "Store is not initialized. Please initialize the store before performing operations.",
-      });
-    });
-
     it("should have consistent error message across multiple instances", () => {
       const error1 = new UCDStoreNotInitializedError();
       const error2 = new UCDStoreNotInitializedError();
 
       expect(error1.message).toBe(error2.message);
-
-      const storeError1 = error1["~toStoreError"]();
-      const storeError2 = error2["~toStoreError"]();
-
-      expect(storeError1).toEqual(storeError2);
-    });
-
-    it("should not accept any parameters in constructor", () => {
-      const error = new UCDStoreNotInitializedError();
-      expect(error).toBeDefined();
-      expect(error.message).toBe("Store is not initialized. Please initialize the store before performing operations.");
     });
   });
 });

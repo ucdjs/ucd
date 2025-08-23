@@ -5,7 +5,7 @@ import { isApiError } from "@ucdjs/fetch";
 import { assertCapability } from "@ucdjs/fs-bridge";
 import { createConcurrencyLimiter } from "@ucdjs/shared";
 import { dirname, join } from "pathe";
-import { UCDStoreError, UCDStoreVersionNotFoundError } from "../errors";
+import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../errors";
 import { getExpectedFilePaths } from "./files";
 
 export interface MirrorOptions extends SharedStoreOperationOptions {
@@ -47,7 +47,7 @@ export async function internal__mirror(store: UCDStore, options: Required<Mirror
   }
 
   if (concurrency < 1) {
-    throw new UCDStoreError("Concurrency must be at least 1");
+    throw new UCDStoreGenericError("Concurrency must be at least 1");
   }
 
   assertCapability(store.fs, ["exists", "mkdir"]);
@@ -142,12 +142,12 @@ async function internal__mirrorFile(store: UCDStore, version: string, filePath: 
   });
 
   if (isApiError(error)) {
-    throw new UCDStoreError(`Failed to fetch file '${filePath}': ${error?.message}`);
+    throw new UCDStoreGenericError(`Failed to fetch file '${filePath}': ${error?.message}`);
   }
 
   const contentTypeHeader = response.headers.get("content-type");
   if (!contentTypeHeader) {
-    throw new UCDStoreError(`Failed to fetch file '${filePath}': No content type header received.`);
+    throw new UCDStoreGenericError(`Failed to fetch file '${filePath}': No content type header received.`);
   }
 
   const semiColonIndex = contentTypeHeader.indexOf(";");
