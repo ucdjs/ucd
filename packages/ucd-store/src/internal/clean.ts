@@ -47,13 +47,13 @@ export async function internal__clean(store: UCDStore, options: internal_CleanOp
     throw new UCDStoreError("Concurrency must be at least 1");
   }
 
-  const analysisResult = await store.analyze({
+  const [analyses, error] = await store.analyze({
     checkOrphaned: true,
     versions,
   });
 
-  if (!analysisResult.success) {
-    throw new UCDStoreError("Failed to analyze store");
+  if (error != null) {
+    throw error;
   }
 
   const result: CleanResult[] = [];
@@ -64,7 +64,7 @@ export async function internal__clean(store: UCDStore, options: internal_CleanOp
   // create the limit function to control concurrency
   const limit = pLimit(concurrency);
 
-  for (const analysis of analysisResult.data) {
+  for (const analysis of analyses) {
     // initialize result for this version
     const versionResult: CleanResult = {
       version: analysis.version,
