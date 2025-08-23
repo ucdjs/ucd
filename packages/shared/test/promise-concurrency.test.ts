@@ -13,6 +13,7 @@ describe("createConcurrencyLimiter", () => {
     expect(() => createConcurrencyLimiter(1)).not.toThrow();
     expect(() => createConcurrencyLimiter(5)).not.toThrow();
     expect(() => createConcurrencyLimiter(100)).not.toThrow();
+    expect(() => createConcurrencyLimiter(Number.POSITIVE_INFINITY)).not.toThrow();
   });
 
   it("should limit concurrent executions", async () => {
