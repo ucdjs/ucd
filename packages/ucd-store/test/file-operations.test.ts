@@ -168,7 +168,7 @@ describe("file operations", () => {
 
       const [fileTree1, error1] = await store.getFileTree("15.0.0", ["!**/extracted"]);
       const [fileTree2, error2] = await store.getFileTree("15.0.0", ["!**/extracted/**"]);
-      
+
       assert(error1 === null && error2 === null, "Expected getFileTree calls to succeed");
 
       expect(fileTree1).toMatchObject(fileTree2);
@@ -213,7 +213,7 @@ describe("file operations", () => {
       const [fileTree2, error2] = await store.getFileTree("15.0.0", ["!**/DeepFile.txt"]);
       const [fileTree3, error3] = await store.getFileTree("15.0.0", ["!extracted/nested"]);
       const [fileTree4, error4] = await store.getFileTree("15.0.0", ["!extracted/nested/DeepFile.txt"]);
-      
+
       assert(error1 === null && error2 === null && error3 === null && error4 === null, "Expected all getFileTree calls to succeed");
 
       expect(fileTree1).toEqual(fileTree2);
