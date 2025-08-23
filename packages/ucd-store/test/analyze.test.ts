@@ -311,6 +311,9 @@ describe("analyze operations", () => {
 
           return HttpResponse.json(stripChildrenFromEntries(MOCK_FILES));
         }],
+        ["HEAD", `${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
+          return HttpResponse.json(stripChildrenFromEntries(MOCK_FILES));
+        }],
       ]);
 
       const store = await createHTTPUCDStore();
