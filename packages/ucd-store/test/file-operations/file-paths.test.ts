@@ -1,9 +1,9 @@
 import { setupMockStore } from "#internal/test-utils/store";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
-import { createNodeUCDStore } from "@ucdjs/ucd-store";
 import { assert, beforeEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
+import { createNodeUCDStore } from "../../src/factory";
 
 describe("file paths", () => {
   beforeEach(() => {

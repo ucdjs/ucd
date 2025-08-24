@@ -2,8 +2,8 @@ import { setupMockStore } from "#internal/test-utils/store";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { BridgeUnsupportedOperation, defineFileSystemBridge } from "@ucdjs/fs-bridge";
-import { UCDStore } from "@ucdjs/ucd-store";
 import { assert, beforeEach, describe, expect, it, vi } from "vitest";
+import { UCDStore } from "../../src/store";
 
 describe("capability requirements", () => {
   beforeEach(() => {
