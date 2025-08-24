@@ -234,7 +234,11 @@ export class UCDStore {
       }
 
       if (!this.#filter(filePath, extraFilters)) {
-        throw new UCDStoreGenericError(`File path "${filePath}" is filtered out by the store's filter patterns.`);
+        throw new UCDStoreGenericError(
+          `File path "${filePath}" is excluded by the store's filter patterns${
+            extraFilters?.length ? ` (extra filters: ${extraFilters.join(", ")})` : ""
+          }.`,
+        );
       }
 
       assertCapability(this.#fs, "read");
@@ -248,8 +252,11 @@ export class UCDStore {
 
         return content;
       } catch (err) {
-        if (err instanceof Error && err.message.includes("ENOENT")) {
-          throw new UCDStoreFileNotFoundError(filePath, version);
+        if (err instanceof Error) {
+          const code = (err as any)?.code;
+          if (code === "ENOENT" || err.message.includes("ENOENT")) {
+            throw new UCDStoreFileNotFoundError(filePath, version);
+          }
         }
 
         throw err;
@@ -265,7 +272,10 @@ export class UCDStore {
     // fetch available versions from API to validate
     const { data, error } = await this.#client.GET("/api/v1/versions");
     if (isApiError(error)) {
-      throw new UCDStoreGenericError(`Failed to fetch Unicode versions: ${error.message}`);
+      throw new UCDStoreGenericError(
+        `Failed to fetch Unicode versions: ${error.message}${
+          error.status ? ` (status ${error.status})` : ""}`,
+      );
     }
 
     let hasVersionManifestChanged = false;
@@ -300,8 +310,11 @@ export class UCDStore {
     }
 
     // validate all versions exist in API
-    if (!this.#versions.every((v) => availableVersions.includes(v))) {
-      throw new UCDStoreGenericError("Some requested versions are not available in the API");
+    const missingVersions = this.#versions.filter((v) => !availableVersions.includes(v));
+    if (missingVersions.length > 0) {
+      throw new UCDStoreGenericError(
+        `Some requested versions are not available in the API: ${missingVersions.join(", ")}`,
+      );
     }
 
     if (!dryRun) {
@@ -476,7 +489,7 @@ export class UCDStore {
     const manifestData = await this.#fs.read(this.#manifestPath);
 
     if (!manifestData) {
-      throw new UCDStoreGenericError(`Store manifest not found at ${this.#manifestPath}`);
+      throw new UCDStoreInvalidManifestError(this.#manifestPath, "store manifest is empty");
     }
 
     const jsonData = safeJsonParse(manifestData);
