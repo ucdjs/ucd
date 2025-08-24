@@ -50,7 +50,7 @@ describe("getExpectedFilePaths", () => {
     ]);
   });
 
-  it("should throw UCDStoreError when API returns error", async () => {
+  it("should throw UCDStoreGenericError when API returns error", async () => {
     mockFetch([
       ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions/:version/file-tree`, () => {
         return HttpResponse.json({
