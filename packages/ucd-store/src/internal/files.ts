@@ -52,6 +52,4 @@ export async function getExpectedFilePaths(
   }
 
   return flattenFilePaths(data);
-
-  return flattenFilePaths(data!);
 }
