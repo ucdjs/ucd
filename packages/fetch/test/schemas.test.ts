@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   UCDStoreManifestSchema,
   FileEntrySchema,
+  FileEntryListSchema,
   UnicodeVersionSchema,
   UnicodeTreeNodeSchema,
 } from "../src";
@@ -10,6 +11,7 @@ describe("schema re-exports from @ucdjs/fetch", () => {
   it("should export schemas from @ucdjs/schemas", () => {
     expect(UCDStoreManifestSchema).toBeDefined();
     expect(FileEntrySchema).toBeDefined();
+    expect(FileEntryListSchema).toBeDefined();
     expect(UnicodeVersionSchema).toBeDefined();
     expect(UnicodeTreeNodeSchema).toBeDefined();
   });
@@ -22,6 +24,19 @@ describe("schema re-exports from @ucdjs/fetch", () => {
       type: "file",
     };
     const result = FileEntrySchema.safeParse(validFileEntry);
+    expect(result.success).toBe(true);
+  });
+
+  it("should be able to use file entry list schema", () => {
+    const validEntries = [
+      {
+        name: "test.txt",
+        path: "/test.txt",
+        lastModified: Date.now(),
+        type: "file",
+      },
+    ];
+    const result = FileEntryListSchema.safeParse(validEntries);
     expect(result.success).toBe(true);
   });
 
