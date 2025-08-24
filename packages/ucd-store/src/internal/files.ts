@@ -30,9 +30,28 @@ export async function getExpectedFilePaths(
     },
   });
 
-  if (isApiError(error) || error != null || (data == null && error == null)) {
-    throw new UCDStoreGenericError(`Failed to fetch expected files for version '${version}': ${error?.message}`);
+  if (error != null) {
+    if (!isApiError(error)) {
+      throw new UCDStoreGenericError(
+        `Failed to fetch expected files for version '${version}': ${error}`,
+        { version },
+      );
+    }
+
+    throw new UCDStoreGenericError(
+      `Failed to fetch expected files for version '${version}': ${error.message}`,
+      { version, status: error.status },
+    );
   }
+
+  if (data == null) {
+    throw new UCDStoreGenericError(
+      `Failed to fetch expected files for version '${version}': empty response`,
+      { version },
+    );
+  }
+
+  return flattenFilePaths(data);
 
   return flattenFilePaths(data!);
 }
