@@ -1,8 +1,10 @@
 import type { HonoEnv } from "./types";
+import { StreamableHTTPTransport } from "@hono/mcp";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { Scalar } from "@scalar/hono-api-reference";
 import { env } from "hono/adapter";
 import { errorHandler, notFoundHandler, setupCors, setupRatelimit } from "./lib";
+import { MCP_SERVER } from "./mcp/mcp";
 import { buildOpenApiConfig, registerApp } from "./openapi";
 import { V1_FILES_ROUTER } from "./routes/v1_files/routes";
 import { V1_VERSIONS_ROUTER } from "./routes/v1_versions/routes";
@@ -69,6 +71,12 @@ app.doc31("/openapi.json", (c) => {
   return buildOpenApiConfig(env(c).API_VERSION || "x.y.z", [
     server,
   ]);
+});
+
+app.get("/mcp", async (c) => {
+  const transport = new StreamableHTTPTransport();
+  await MCP_SERVER.connect(transport);
+  return transport.handleRequest(c);
 });
 
 app.onError(errorHandler);
