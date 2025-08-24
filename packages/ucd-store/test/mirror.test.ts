@@ -189,7 +189,7 @@ describe("store mirror", () => {
 
     expect(mirrorData).toBe(null);
     assert(mirrorError != null, "Expected error to be present");
-    expect(mirrorError.message).toBe("Concurrency must be at least 1");
+    expect(mirrorError.message).toBe("Concurrency must be a positive integer");
   });
 
   it("should handle version not found error", async () => {
