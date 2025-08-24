@@ -437,6 +437,83 @@ describe("file operations", () => {
         },
       ]);
     });
+
+    it("should include directories that don't match filter but contain matching children (GitHub Issue #215)", async () => {
+      const storePath = await testdir({
+        "15.0.0": {
+          "root-file.txt": "root content",
+          "nonMatching": {
+            "matching.txt": "should be included",
+            "also-matching.txt": "should also be included",
+            "nested": {
+              "deep-matching.txt": "should be included too",
+              "non-matching.log": "should be excluded",
+            },
+          },
+          "alsoNonMatching": {
+            "exclude.log": "should be excluded",
+          },
+        },
+        ".ucd-store.json": JSON.stringify({
+          "15.0.0": "15.0.0",
+        }),
+      });
+
+      const store = await createNodeUCDStore({
+        basePath: storePath,
+      });
+
+      await store.init();
+      // Filter to only include .txt files - this should include directories 
+      // even if their names don't match the pattern but they contain .txt files
+      const [fileTree, fileTreeError] = await store.getFileTree("15.0.0", ["**/*.txt"]);
+      assert(fileTreeError === null, "Expected getFileTree to succeed");
+      
+      // Expected behavior: directories should be included if they contain matching files,
+      // regardless of whether the directory name matches the filter
+      const expected = [
+        {
+          name: "root-file.txt",
+          path: "root-file.txt",
+          type: "file",
+        },
+        {
+          name: "nonMatching",
+          path: "nonMatching", 
+          type: "directory",
+          children: [
+            {
+              name: "also-matching.txt",
+              path: "also-matching.txt",
+              type: "file",
+            },
+            {
+              name: "matching.txt",
+              path: "matching.txt",
+              type: "file",
+            },
+            {
+              name: "nested",
+              path: "nested",
+              type: "directory",
+              children: [
+                {
+                  name: "deep-matching.txt",
+                  path: "deep-matching.txt",
+                  type: "file",
+                },
+              ],
+            },
+          ],
+        },
+      ];
+
+      // This test will currently fail due to the bug described in issue #215
+      // The current implementation incorrectly excludes 'nonMatching' and 'nested' 
+      // directories because their paths don't match '**/*.txt', even though
+      // they contain files that do match
+      expect(fileTree).toEqual(expected);
+    });
   });
 
   describe("file paths", () => {
