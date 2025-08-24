@@ -1,6 +1,15 @@
 type QueueNode<T> = [value: T, next?: QueueNode<T>];
 
-type ConcurrencyLimitFn = <Args extends unknown[], T>(fn: (...args: Args) => PromiseLike<T> | T, ...args: Args) => Promise<T>;
+export type ConcurrencyLimitFn = <Args extends unknown[], T>(
+  fn: (...args: Args) => PromiseLike<T> | T,
+  ...args: Args
+) => Promise<T>;
+
+export function ensureIsPositiveConcurrency(concurrency: unknown, ErrorClazz: new (message: string) => Error): void {
+  if ((concurrency !== Number.POSITIVE_INFINITY && !Number.isInteger(concurrency)) || typeof concurrency !== "number" || concurrency < 1) {
+    throw new ErrorClazz("Concurrency must be a positive integer");
+  }
+}
 
 /**
  * Creates a concurrency limiter that restricts the number of concurrent executions.
@@ -27,9 +36,7 @@ type ConcurrencyLimitFn = <Args extends unknown[], T>(fn: (...args: Args) => Pro
 export function createConcurrencyLimiter(
   concurrency: number,
 ): ConcurrencyLimitFn {
-  if (!Number.isInteger(concurrency) || concurrency < 1) {
-    throw new Error("Concurrency must be a positive integer");
-  }
+  ensureIsPositiveConcurrency(concurrency, Error);
 
   let activeTasks = 0;
   let head: undefined | QueueNode<() => void>;
@@ -38,7 +45,7 @@ export function createConcurrencyLimiter(
   function finish(): void {
     activeTasks--;
 
-    // check if there are anymore pending tasks
+    // check if there are any more pending tasks
     if (head) {
       // allow next task to run
       head[0]();
