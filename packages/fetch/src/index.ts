@@ -41,3 +41,6 @@ export const client = createClient(UCDJS_API_BASE_URL);
 
 export type * from "./components";
 export * from "./guards";
+
+// Re-export all schemas from @ucdjs/schemas
+export * from "@ucdjs/schemas";

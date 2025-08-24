@@ -43,6 +43,7 @@
   },
   "dependencies": {
     "@ucdjs/env": "workspace:*",
+    "@ucdjs/schemas": "workspace:*",
     "openapi-fetch": "catalog:prod"
   },
   "devDependencies": {

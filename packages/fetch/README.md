@@ -71,6 +71,28 @@ if (binaryData) {
 }
 ```
 
+### Working with Schemas
+
+This package re-exports all schemas from `@ucdjs/schemas`, providing convenient access to validation schemas for API responses:
+
+```typescript
+import { 
+  client, 
+  FileEntrySchema, 
+  UnicodeVersionSchema 
+} from "@ucdjs/fetch";
+
+// Use schemas to validate responses
+const { data } = await client.GET("/api/v1/unicode-versions");
+if (data) {
+  // data is already typed, but you can validate if needed
+  const validationResult = UnicodeVersionSchema.array().safeParse(data);
+  if (validationResult.success) {
+    console.log("Valid data:", validationResult.data);
+  }
+}
+```
+
 ## 📄 License
 
 Published under [MIT License](./LICENSE).

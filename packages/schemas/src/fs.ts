@@ -50,3 +50,9 @@ export const FileEntrySchema = z.union([
 });
 
 export type FileEntry = z.infer<typeof FileEntrySchema>;
+
+export const FileEntryListSchema = z.array(FileEntrySchema).meta({
+  description: "A list of file entries in the UCD store.",
+});
+
+export type FileEntryList = z.infer<typeof FileEntryListSchema>;

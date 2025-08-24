@@ -1,25 +1,13 @@
 import { z } from "@hono/zod-openapi";
+import {
+  UnicodeVersionSchema as _UnicodeVersionSchema,
+  UnicodeVersionListSchema as _UnicodeVersionListSchema,
+  UnicodeTreeNodeSchema as _UnicodeTreeNodeSchema,
+  UnicodeTreeSchema as _UnicodeTreeSchema,
+} from "@ucdjs/schemas";
 
-export const UnicodeVersionSchema = z.object({
-  version: z.string().openapi({
-    description: "The version of the Unicode standard.",
-  }),
-  documentationUrl: z.url().openapi({
-    description: "The URL to the Unicode version documentation.",
-  }),
-  date: z.string().regex(/^\d{4}$/, "Year must be a four-digit number").openapi({
-    description: "The year of the Unicode version.",
-  }).nullable(),
-  url: z.url().openapi({
-    description: "The URL to the Unicode Character Database (UCD) for this version.",
-  }),
-  mappedUcdVersion: z.string().nullable().openapi({
-    description: "The corresponding UCD version mapping for this Unicode version. Null if same as version.",
-  }),
-  type: z.enum(["draft", "stable", "unsupported"]).openapi({
-    description: "The status of the Unicode version. 'unsupported' means the version exists but is not yet supported by the API.",
-  }),
-}).openapi("UnicodeVersion", {
+// Re-export schemas with OpenAPI metadata
+export const UnicodeVersionSchema = _UnicodeVersionSchema.openapi("UnicodeVersion", {
   description: "Represents a Unicode version with its metadata and support status.",
   examples: [
     {
@@ -51,25 +39,9 @@ export const UnicodeVersionSchema = z.object({
 
 export type UnicodeVersion = z.infer<typeof UnicodeVersionSchema>;
 
-export const UnicodeVersionListSchema = z.array(UnicodeVersionSchema).openapi("UnicodeVersionList");
+export const UnicodeVersionListSchema = _UnicodeVersionListSchema.openapi("UnicodeVersionList");
 
-type TreeNode = DirectoryTreeNode | FileTreeNode;
-
-interface DirectoryTreeNode {
-  type: "directory";
-  name: string;
-  path: string;
-  children: TreeNode[];
-  lastModified?: number; // Unix timestamp
-}
-
-interface FileTreeNode {
-  type: "file";
-  name: string;
-  path: string;
-  lastModified?: number; // Unix timestamp
-}
-
+// For OpenAPI, we need to handle the recursive reference specially
 const BaseTreeNodeSchema = z.object({
   name: z.string().openapi({
     description: "The name of the file or directory.",
@@ -82,12 +54,10 @@ const BaseTreeNodeSchema = z.object({
   }),
 });
 
-const DirectoryTreeNodeSchema: z.ZodType<DirectoryTreeNode> = BaseTreeNodeSchema.extend({
+const DirectoryTreeNodeSchema = BaseTreeNodeSchema.extend({
   type: z.literal("directory").openapi({
     description: "The type of the entry, which is a directory.",
   }),
-
-  // eslint-disable-next-line ts/no-use-before-define
   children: z.array(z.lazy(() => UnicodeTreeNodeSchema)).openapi({
     description: "The children of the directory.",
     type: "array",
@@ -105,4 +75,4 @@ const FileTreeNodeSchema = BaseTreeNodeSchema.extend({
 
 export const UnicodeTreeNodeSchema = z.union([DirectoryTreeNodeSchema, FileTreeNodeSchema]).openapi("UnicodeTreeNode");
 
-export const UnicodeTreeSchema = z.array(UnicodeTreeNodeSchema).openapi("UnicodeTree");
+export const UnicodeTreeSchema = _UnicodeTreeSchema.openapi("UnicodeTree");
