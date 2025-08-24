@@ -166,13 +166,54 @@ describe("file operations", () => {
       expect(store.initialized).toBe(true);
       expect(store.versions).toEqual(["15.0.0"]);
 
+      // Test !**/extracted vs !**/extracted/** - these should behave differently
       const [fileTree1, error1] = await store.getFileTree("15.0.0", ["!**/extracted"]);
       const [fileTree2, error2] = await store.getFileTree("15.0.0", ["!**/extracted/**"]);
 
       assert(error1 === null && error2 === null, "Expected getFileTree calls to succeed");
 
-      expect(fileTree1).toMatchObject(fileTree2);
+      // !**/extracted excludes the directory name but not its contents,
+      // so the directory should be included to show the contents
       expect(fileTree1).toEqual([
+        {
+          name: "ArabicShaping.txt",
+          path: "ArabicShaping.txt",
+          type: "file",
+        },
+        {
+          name: "BidiBrackets.txt",
+          path: "BidiBrackets.txt",
+          type: "file",
+        },
+        {
+          name: "extracted",
+          path: "extracted",
+          type: "directory",
+          children: [
+            {
+              name: "DerivedBidiClass.txt",
+              path: "DerivedBidiClass.txt",
+              type: "file",
+            },
+            {
+              name: "nested",
+              path: "nested",
+              type: "directory",
+              children: [
+                {
+                  name: "DeepFile.txt",
+                  path: "DeepFile.txt",
+                  type: "file",
+                },
+              ],
+            },
+          ],
+        },
+      ]);
+
+      // !**/extracted/** excludes everything under extracted directories,
+      // so the directory should not be included
+      expect(fileTree2).toEqual([
         {
           name: "ArabicShaping.txt",
           path: "ArabicShaping.txt",
@@ -209,18 +250,14 @@ describe("file operations", () => {
       expect(store.initialized).toBe(true);
       expect(store.versions).toEqual(["15.0.0"]);
 
+      // These filters should all result in the same output: only DerivedBidiClass.txt is included
       const [fileTree1, error1] = await store.getFileTree("15.0.0", ["!extracted/nested/**"]);
       const [fileTree2, error2] = await store.getFileTree("15.0.0", ["!**/DeepFile.txt"]);
-      const [fileTree3, error3] = await store.getFileTree("15.0.0", ["!extracted/nested"]);
       const [fileTree4, error4] = await store.getFileTree("15.0.0", ["!extracted/nested/DeepFile.txt"]);
 
-      assert(error1 === null && error2 === null && error3 === null && error4 === null, "Expected all getFileTree calls to succeed");
+      assert(error1 === null && error2 === null && error4 === null, "Expected getFileTree calls to succeed");
 
-      expect(fileTree1).toEqual(fileTree2);
-      expect(fileTree1).toEqual(fileTree3);
-      expect(fileTree1).toEqual(fileTree4);
-
-      expect(fileTree1).toEqual([
+      const expectedResult = [
         {
           name: "extracted",
           path: "extracted",
@@ -232,6 +269,108 @@ describe("file operations", () => {
               type: "file",
             },
           ],
+        },
+      ];
+
+      expect(fileTree1).toEqual(expectedResult);
+      expect(fileTree2).toEqual(expectedResult);
+      expect(fileTree4).toEqual(expectedResult);
+
+      // !extracted/nested excludes the directory name "extracted/nested" but not its contents.
+      // Since DeepFile.txt is not excluded by this filter, the nested directory is included.
+      const [fileTree3, error3] = await store.getFileTree("15.0.0", ["!extracted/nested"]);
+      assert(error3 === null, "Expected getFileTree call to succeed");
+      
+      // This should include the nested directory because DeepFile.txt is not excluded
+      expect(fileTree3).toEqual([
+        {
+          name: "extracted",
+          path: "extracted",
+          type: "directory",
+          children: [
+            {
+              name: "DerivedBidiClass.txt",
+              path: "DerivedBidiClass.txt",
+              type: "file",
+            },
+            {
+              name: "nested",
+              path: "nested",
+              type: "directory",
+              children: [
+                {
+                  name: "DeepFile.txt",
+                  path: "DeepFile.txt",
+                  type: "file",
+                },
+              ],
+            },
+          ],
+        },
+      ]);
+    });
+
+    it("should include directories when children match filter, even if directory path doesn't match", async () => {
+      // This test demonstrates the bug: when a directory path doesn't match the filter
+      // but some of its children do, the directory should still be included
+      const storePath = await testdir({
+        "15.0.0": {
+          "docs": {  // This directory name doesn't match "*.txt" pattern
+            "readme.txt": "Documentation",
+            "config.json": "Configuration that should be filtered out",
+            "subfolder": {  // This also doesn't match "*.txt" pattern  
+              "guide.txt": "User guide",
+              "schema.xml": "Schema that should be filtered out",
+            },
+          },
+          "other.txt": "Other file",
+        },
+        ".ucd-store.json": JSON.stringify({
+          "15.0.0": "15.0.0",
+        }),
+      });
+
+      const store = await createNodeUCDStore({
+        basePath: storePath,
+      });
+
+      await store.init();
+      
+      // Filter to only include .txt files
+      const [fileTree, error] = await store.getFileTree("15.0.0", ["**/*.txt"]);
+      assert(error === null, "Expected getFileTree to succeed");
+
+      // The expected behavior: directories should be included if they contain matching files
+      // even if the directory names themselves don't match the filter
+      expect(fileTree).toEqual([
+        {
+          name: "docs",
+          path: "docs", 
+          type: "directory",
+          children: [
+            {
+              name: "readme.txt",
+              path: "readme.txt",
+              type: "file",
+            },
+            {
+              name: "subfolder",
+              path: "subfolder",
+              type: "directory", 
+              children: [
+                {
+                  name: "guide.txt",
+                  path: "guide.txt",
+                  type: "file",
+                },
+              ],
+            },
+          ],
+        },
+        {
+          name: "other.txt",
+          path: "other.txt",
+          type: "file",
         },
       ]);
     });

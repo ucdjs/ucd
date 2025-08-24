@@ -156,7 +156,7 @@ export class UCDStore {
           if (child.type === "directory" && child.children) {
             const filteredGrandChildren = filterDirectoryChildren(child.children, childPath);
 
-            if (isFiltered && filteredGrandChildren.length > 0) {
+            if (filteredGrandChildren.length > 0) {
               result.push({
                 name: child.name,
                 path: child.path,
@@ -188,7 +188,7 @@ export class UCDStore {
         if (entry.type === "directory" && entry.children) {
           const filteredChildren = filterDirectoryChildren(entry.children, entry.path);
 
-          if (isFiltered && filteredChildren.length > 0) {
+          if (filteredChildren.length > 0) {
             result.push({
               name: entry.name,
               path: entry.path,
