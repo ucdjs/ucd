@@ -19,7 +19,8 @@ import { createPathFilter, flattenFilePaths, safeJsonParse, tryCatch } from "@uc
 import defu from "defu";
 import { isAbsolute, join } from "pathe";
 import {
-  UCDStoreError,
+  UCDStoreFileNotFoundError,
+  UCDStoreGenericError,
   UCDStoreInvalidManifestError,
   UCDStoreNotInitializedError,
   UCDStoreVersionNotFoundError,
@@ -59,7 +60,7 @@ export class UCDStore {
     });
 
     if (fs == null) {
-      throw new UCDStoreError("FileSystemBridge instance is required to create a UCDStore.");
+      throw new UCDStoreGenericError("FileSystemBridge instance is required to create a UCDStore.");
     }
 
     this.baseUrl = baseUrl;
@@ -233,7 +234,7 @@ export class UCDStore {
       }
 
       if (!this.#filter(filePath, extraFilters)) {
-        throw new UCDStoreError(`File path "${filePath}" is filtered out by the store's filter patterns.`);
+        throw new UCDStoreGenericError(`File path "${filePath}" is filtered out by the store's filter patterns.`);
       }
 
       assertCapability(this.#fs, "read");
@@ -248,7 +249,7 @@ export class UCDStore {
         return content;
       } catch (err) {
         if (err instanceof Error && err.message.includes("ENOENT")) {
-          throw new UCDStoreError(`File '${filePath}' does not exist in version '${version}'.`);
+          throw new UCDStoreFileNotFoundError(filePath, version);
         }
 
         throw err;
@@ -264,7 +265,7 @@ export class UCDStore {
     // fetch available versions from API to validate
     const { data, error } = await this.#client.GET("/api/v1/versions");
     if (isApiError(error)) {
-      throw new UCDStoreError(`Failed to fetch Unicode versions: ${error.message}`);
+      throw new UCDStoreGenericError(`Failed to fetch Unicode versions: ${error.message}`);
     }
 
     let hasVersionManifestChanged = false;
@@ -300,7 +301,7 @@ export class UCDStore {
 
     // validate all versions exist in API
     if (!this.#versions.every((v) => availableVersions.includes(v))) {
-      throw new UCDStoreError("Some requested versions are not available in the API");
+      throw new UCDStoreGenericError("Some requested versions are not available in the API");
     }
 
     if (!dryRun) {
@@ -475,7 +476,7 @@ export class UCDStore {
     const manifestData = await this.#fs.read(this.#manifestPath);
 
     if (!manifestData) {
-      throw new UCDStoreError(`Store manifest not found at ${this.#manifestPath}`);
+      throw new UCDStoreGenericError(`Store manifest not found at ${this.#manifestPath}`);
     }
 
     const jsonData = safeJsonParse(manifestData);

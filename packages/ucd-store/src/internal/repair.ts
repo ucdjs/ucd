@@ -4,7 +4,7 @@ import type { AnalyzeResult } from "./analyze";
 import { assertCapability } from "@ucdjs/fs-bridge";
 import { createConcurrencyLimiter, ensureIsPositiveConcurrency } from "@ucdjs/shared";
 import { dirname, join } from "pathe";
-import { UCDStoreError } from "../errors";
+import { UCDStoreGenericError } from "../errors";
 import { internal__analyze } from "./analyze";
 import { internal__clean } from "./clean";
 import { internal__mirror } from "./mirror";
@@ -52,7 +52,7 @@ export async function internal__repair(store: UCDStore, options: Required<Repair
     return [];
   }
 
-  ensureIsPositiveConcurrency(concurrency, UCDStoreError);
+  ensureIsPositiveConcurrency(concurrency, UCDStoreGenericError);
 
   // analyze store to find what needs repairing
   const analyzeResults = await internal__analyze(store, {
