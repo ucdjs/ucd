@@ -3,7 +3,7 @@ import { HttpResponse, mockFetch } from "#internal/test-utils/msw";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { client } from "@ucdjs/fetch";
 import { describe, expect, it } from "vitest";
-import { UCDStoreError } from "../../src/errors";
+import { UCDStoreGenericError } from "../../src/errors";
 import { getExpectedFilePaths } from "../../src/internal/files";
 
 describe("getExpectedFilePaths", () => {
@@ -50,7 +50,7 @@ describe("getExpectedFilePaths", () => {
     ]);
   });
 
-  it("should throw UCDStoreError when API returns error", async () => {
+  it("should throw UCDStoreGenericError when API returns error", async () => {
     mockFetch([
       ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions/:version/file-tree`, () => {
         return HttpResponse.json({
@@ -63,7 +63,7 @@ describe("getExpectedFilePaths", () => {
 
     await expect(
       getExpectedFilePaths(client, "15.0.0"),
-    ).rejects.toThrow(UCDStoreError);
+    ).rejects.toThrow(UCDStoreGenericError);
   });
 
   it("should handle empty file tree", async () => {

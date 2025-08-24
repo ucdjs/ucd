@@ -4,7 +4,7 @@ import { setupMockStore } from "#internal/test-utils/store";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { assertCapability } from "@ucdjs/fs-bridge";
-import { UCDStoreError, UCDStoreVersionNotFoundError } from "@ucdjs/ucd-store";
+import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "@ucdjs/ucd-store";
 import { assert, beforeEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
 import { createHTTPUCDStore, createNodeUCDStore, createUCDStore } from "../src/factory";
@@ -287,7 +287,7 @@ describe("analyze operations", () => {
 
       expect(analyses).toBeNull();
       assert(error != null, "Expected error to be non-null");
-      expect(error).toBeInstanceOf(UCDStoreError);
+      expect(error).toBeInstanceOf(UCDStoreGenericError);
     });
   });
 

@@ -3,7 +3,7 @@ import type { SharedStoreOperationOptions } from "../types";
 import { assertCapability } from "@ucdjs/fs-bridge";
 import { createConcurrencyLimiter, ensureIsPositiveConcurrency } from "@ucdjs/shared";
 import { dirname, join } from "pathe";
-import { UCDStoreError } from "../errors";
+import { UCDStoreGenericError } from "../errors";
 
 export type CleanOptions = SharedStoreOperationOptions;
 
@@ -42,7 +42,7 @@ export async function internal__clean(store: UCDStore, options: internal_CleanOp
     directories,
   } = options;
 
-  ensureIsPositiveConcurrency(concurrency, UCDStoreError);
+  ensureIsPositiveConcurrency(concurrency, UCDStoreGenericError);
 
   const [analyses, error] = await store.analyze({
     checkOrphaned: true,
