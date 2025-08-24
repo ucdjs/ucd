@@ -19,6 +19,7 @@ import { createPathFilter, flattenFilePaths, safeJsonParse, tryCatch } from "@uc
 import defu from "defu";
 import { isAbsolute, join } from "pathe";
 import {
+  UCDStoreFileNotFoundError,
   UCDStoreGenericError,
   UCDStoreInvalidManifestError,
   UCDStoreNotInitializedError,
@@ -248,7 +249,7 @@ export class UCDStore {
         return content;
       } catch (err) {
         if (err instanceof Error && err.message.includes("ENOENT")) {
-          throw new UCDStoreGenericError(`File '${filePath}' does not exist in version '${version}'.`);
+          throw new UCDStoreFileNotFoundError(filePath, version);
         }
 
         throw err;
