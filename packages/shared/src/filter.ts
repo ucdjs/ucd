@@ -24,6 +24,12 @@ export const PRECONFIGURED_FILTERS = {
   EXCLUDE_HTML_FILES: "!**/*.html",
 } as const;
 
+export const DEFAULT_EXCLUSIONS: readonly string[] = [
+  "**/*.zip",
+  "**/*.pdf",
+  "**/.DS_Store",
+] as const;
+
 type PathFilterFn = (path: string, extraFilters?: string[]) => boolean;
 
 export interface PathFilter extends PathFilterFn {
@@ -83,77 +89,89 @@ export interface FilterOptions {
  * extractedOnly('src/data.txt');               // false - doesn't match pattern
  * ```
  */
-export function createPathFilter(filters: string[], options: FilterOptions = {}): PathFilter {
-  let currentFilters = [...filters];
-  let currentFilterFn = internal__createFilterFunction(currentFilters, options);
+export function createPathFilter(filters: string[] = [], options: FilterOptions = {}): PathFilter {
+  const { disableDefaultExclusions = false } = options;
 
-  function filterFn(path: string, extraFilters: string[] = []): boolean {
-    if (extraFilters.length === 0) {
-      return currentFilterFn(path);
-    }
-
-    const combinedFilter = createPathFilter([...currentFilters, ...extraFilters], options);
-    return combinedFilter(path);
+  // Start with initial filters, add defaults if not disabled
+  const allPatterns: string[] = [...filters];
+  if (!disableDefaultExclusions) {
+    // Append default exclusions so they have highest priority (always win)
+    allPatterns.push(...DEFAULT_EXCLUSIONS.map((pattern) => `!${pattern}`));
   }
 
+  // Create the filter function
+  const filterFn = ((path: string, extraFilters: string[] = []): boolean => {
+    const combinedPatterns = [...allPatterns, ...extraFilters];
+
+    // If no patterns are provided, include everything
+    if (combinedPatterns.length === 0) {
+      return true;
+    }
+
+    return matchesPatterns(path, combinedPatterns);
+  }) as PathFilter;
+
+  // Add the extend method
   filterFn.extend = (additionalFilters: string[]): void => {
-    currentFilters = [...currentFilters, ...additionalFilters];
-    currentFilterFn = internal__createFilterFunction(currentFilters, options);
+    allPatterns.push(...additionalFilters);
   };
 
+  // Add the patterns getter
   filterFn.patterns = (): readonly string[] => {
-    return [...currentFilters];
+    return Object.freeze([...allPatterns]);
   };
 
   return filterFn;
 }
 
-function internal__createFilterFunction(filters: string[], options: FilterOptions): PathFilterFn {
-  if (filters.length === 0) {
-    return () => true;
+function matchesPatterns(path: string, patterns: readonly string[]): boolean {
+  // If no patterns, include everything
+  if (patterns.length === 0) {
+    return true;
   }
 
-  // separate include and exclude patterns
-  const includePatterns: string[] = [];
-  const excludePatterns: string[] = options.disableDefaultExclusions
-    ? []
-    : [
-        // exclude .zip & .pdf files by default
-        "**/*.zip",
-        "**/*.pdf",
-      ];
+  // Check if we have any inclusion patterns (non-negated)
+  const hasInclusionPatterns = patterns.some((pattern) => !pattern.startsWith("!"));
 
-  for (const filter of filters) {
-    if (filter.startsWith("!")) {
-      excludePatterns.push(filter.slice(1));
-    } else {
-      includePatterns.push(filter);
+  // Default: if we have inclusion patterns, start with false (exclude by default)
+  // If only exclusion patterns, start with true (include by default)
+  let result = !hasInclusionPatterns;
+
+  // Process patterns in order - later patterns override earlier ones
+  for (const pattern of patterns) {
+    const isNegated = pattern.startsWith("!");
+    const cleanPattern = isNegated ? pattern.slice(1) : pattern;
+
+    // Create matcher on-demand
+    const matcher = picomatch(cleanPattern, {
+      dot: true,
+      nocase: true,
+    });
+
+    if (matcher(path)) {
+      // If pattern matches, set result based on whether it's negated
+      // This is where the "later patterns win" behavior happens
+      result = !isNegated;
     }
   }
 
-  // if no include patterns are specified, include everything by default
-  const hasIncludePatterns = includePatterns.length > 0;
-  const includeMatch = hasIncludePatterns
-    ? picomatch(includePatterns, {
-        dot: true,
-        nocase: true,
-      })
-    : () => true;
+  return result;
+}
 
-  const excludeMatch = excludePatterns.length > 0
-    ? picomatch(excludePatterns, {
-        dot: true,
-        nocase: true,
-      })
-    : () => false;
+export type TreeEntry = {
+  type: "file";
+  name: string;
+  path: string;
+} | {
+  type: "directory";
+  name: string;
+  path: string;
+  children: TreeEntry[];
+};
 
-  return (path: string): boolean => {
-    // first check if path matches include patterns (if any)
-    if (!includeMatch(path)) {
-      return false;
-    }
-
-    // then check if path matches exclude patterns
-    return !excludeMatch(path);
-  };
+export function filterTreeStructure(
+  _pathFilter: PathFilter,
+  _entries: TreeEntry[],
+): TreeEntry[] {
+  return [];
 }
