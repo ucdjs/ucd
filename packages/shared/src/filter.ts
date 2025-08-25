@@ -28,7 +28,7 @@ type PathFilterFn = (path: string, extraFilters?: string[]) => boolean;
 
 export interface PathFilter extends PathFilterFn {
   extend: (additionalFilters: string[]) => void;
-  patterns: () => string[];
+  patterns: () => readonly string[];
 }
 
 export interface FilterOptions {
@@ -101,7 +101,7 @@ export function createPathFilter(filters: string[], options: FilterOptions = {})
     currentFilterFn = internal__createFilterFunction(currentFilters, options);
   };
 
-  filterFn.patterns = (): string[] => {
+  filterFn.patterns = (): readonly string[] => {
     return [...currentFilters];
   };
 
