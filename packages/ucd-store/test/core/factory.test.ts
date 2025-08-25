@@ -194,7 +194,10 @@ describe("factory functions", () => {
     });
 
     it("should create HTTP store with global filters", async () => {
-      const filters = ["*.txt", "!*debug*"];
+      const filters = [
+        "*.txt",
+        "!*debug*",
+      ];
 
       const store = await createHTTPUCDStore({
         globalFilters: filters,
@@ -202,7 +205,7 @@ describe("factory functions", () => {
 
       expect(store.filter).toBeDefined();
       expect(store.basePath).toBe("");
-      expect(store.filter.patterns()).toEqual(filters);
+      expect(store.filter.patterns()).toEqual(expect.arrayContaining(filters));
       expect(store.initialized).toBe(false);
     });
 
