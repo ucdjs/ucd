@@ -125,11 +125,6 @@ export function createPathFilter(filters: string[] = [], options: FilterOptions 
 }
 
 function matchesPatterns(path: string, patterns: readonly string[]): boolean {
-  // If no patterns, include everything
-  if (patterns.length === 0) {
-    return true;
-  }
-
   // Check if we have any inclusion patterns (non-negated)
   const hasInclusionPatterns = patterns.some((pattern) => !pattern.startsWith("!"));
 
