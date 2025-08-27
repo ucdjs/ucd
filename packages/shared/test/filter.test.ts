@@ -1,6 +1,6 @@
 import type { TreeEntry } from "../src/filter";
 import { describe, expect, it } from "vitest";
-import { createPathFilter, DEFAULT_EXCLUSIONS, filterTreeStructure } from "../src/filter";
+import { createPathFilter, filterTreeStructure } from "../src/filter";
 import { flattenFilePaths } from "../src/flatten";
 
 describe("createPathFilter", () => {
@@ -124,10 +124,10 @@ describe("createPathFilter", () => {
 
   describe("edge cases and special patterns", () => {
     it.each([
-      // case insensitive matching (nocase: true option)
-      [["*.TXT"], "file.txt", true, "matches different case"],
-      [["*.txt"], "FILE.TXT", true, "matches different case reverse"],
-      [["SRC/**"], "src/file.js", true, "matches directory different case"],
+      // case should always match
+      [["*.TXT"], "file.txt", false, "matches different case"],
+      [["*.txt"], "FILE.TXT", false, "matches different case reverse"],
+      [["SRC/**"], "src/file.js", false, "matches directory different case"],
 
       // dot files (dot: true option)
       [[".*"], ".gitignore", true, "matches dot files"],
@@ -391,7 +391,7 @@ describe("createPathFilter", () => {
       expect(() => {
         // @ts-expect-error typescript gives type-errors since we are using readonly.
         patterns.push("*.js"); // try to mutate the returned array
-      }).toThrow("Cannot add property 4, object is not extensible");
+      }).toThrow("Cannot add property 1, object is not extensible");
 
       expect(filter.patterns()).toEqual(expect.arrayContaining([
         "*.txt",
@@ -410,7 +410,6 @@ describe("createPathFilter", () => {
 
       filter.extend(["!*test*"]);
       expect(filter.patterns()).toEqual(expect.arrayContaining([
-        ...DEFAULT_EXCLUSIONS.map((pattern) => `!${pattern}`),
         "*.txt",
         "*.js",
         "!*test*",
@@ -418,7 +417,6 @@ describe("createPathFilter", () => {
 
       filter.extend(["*.md", "*.css"]);
       expect(filter.patterns()).toEqual(expect.arrayContaining([
-        ...DEFAULT_EXCLUSIONS.map((pattern) => `!${pattern}`),
         "*.txt",
         "*.js",
         "!*test*",
@@ -430,11 +428,10 @@ describe("createPathFilter", () => {
     it("should handle empty initial filters", () => {
       const filter = createPathFilter([]);
 
-      expect(filter.patterns()).toEqual(DEFAULT_EXCLUSIONS.map((pattern) => `!${pattern}`));
+      expect(filter.patterns()).toEqual([]);
 
       filter.extend(["*.txt"]);
       expect(filter.patterns()).toEqual([
-        ...DEFAULT_EXCLUSIONS.map((pattern) => `!${pattern}`),
         "*.txt",
       ]);
     });
@@ -528,7 +525,7 @@ describe("createPathFilter", () => {
   });
 });
 
-describe.todo("filter tree structure", () => {
+describe("filter tree structure", () => {
   describe("basic filtering", () => {
     const tree: TreeEntry[] = [
       {
@@ -661,7 +658,6 @@ describe.todo("filter tree structure", () => {
       expect(flattened).toEqual([
         "root-file.txt",
         "root-config.json",
-        "extracted",
       ]);
     });
 
