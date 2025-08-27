@@ -40,8 +40,9 @@ const GLOB_TOKEN_PATTERN = /[*?[\]{}()]/;
 type PathFilterFn = (path: string, extraFilters?: string[]) => boolean;
 
 export interface PathFilter extends PathFilterFn {
-  extend: (additionalFilters: string[]) => void;
-  patterns: () => readonly string[];
+  "extend": (additionalFilters: string[]) => void;
+  "patterns": () => readonly string[];
+  "~__internal__rules": () => InternalPathFilterRuleSet;
 }
 
 export interface FilterOptions {
@@ -170,6 +171,9 @@ export function createPathFilter(
   // add patterns method to get current base patterns
   filter.patterns = () => Object.freeze([...basePatterns]);
 
+  // add internal ruleset debug
+  filter["~__internal__rules"] = () => baseRules;
+
   return filter;
 }
 
@@ -236,28 +240,25 @@ function expandDirectoryPattern(pattern: string): string {
   return `${(isNegated ? "!" : "") + cleanPattern}${DIRECTORY_EXPANSION_SUFFIX}`;
 }
 
-interface Rule {
+export interface InternalPathFilterRule {
   test: (path: string) => boolean;
   positive: boolean;
   cleanPattern: string;
 }
 
-interface RuleSet {
-  ordered: Rule[];
+export interface InternalPathFilterRuleSet {
+  ordered: InternalPathFilterRule[];
   hasAnyPositive: boolean;
 }
 
-/**
- * Build an ordered rule set from patterns
- */
-function buildRules(patterns: string[]): RuleSet {
-  const ordered: Rule[] = [];
+function buildRules(patterns: string[]): InternalPathFilterRuleSet {
+  const ordered: InternalPathFilterRule[] = [];
   let hasAnyPositive = false;
 
-  // Collect user patterns (defaults are handled separately in the filter function now)
+  // collect user patterns
   const userPatterns = patterns.filter((p) => p).map((p) => expandDirectoryPattern(p));
 
-  // Add user patterns in order
+  // add user patterns in order
   for (const pattern of userPatterns) {
     const isNegated = pattern.startsWith("!");
     const cleanPattern = isNegated ? pattern.slice(1) : pattern;
