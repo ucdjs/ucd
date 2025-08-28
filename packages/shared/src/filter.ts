@@ -1,5 +1,5 @@
 import type { PicomatchOptions } from "picomatch";
-import picomatch, { isMatch } from "picomatch";
+import { isMatch } from "picomatch";
 
 /**
  * Predefined filter patterns for common file exclusions.
