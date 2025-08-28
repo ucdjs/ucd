@@ -25,8 +25,6 @@ export const PRECONFIGURED_FILTERS = {
   README_FILES: ["**/ReadMe.txt"],
   /** Excludes all HTML files */
   HTML_FILES: ["**/*.html"],
-  /** Excludes common build/dependency directories */
-  BUILD_DIRS: ["**/node_modules/**", "**/dist/**", "**/build/**"],
   /** Excludes test-related files */
   TEST_RELATED: ["**/*.test.*", "**/*.spec.*", "**/__tests__/**"],
 } as const;
@@ -169,17 +167,17 @@ export function filterTreeStructure(pathFilter: PathFilter, entries: TreeEntry[]
     } else if (entry.type === "directory") {
       // For directories, recursively filter children first
       const filteredChildren = filterTreeStructure(pathFilter, entry.children, fullPath);
-      
+
       // Include directory if:
       // 1. The directory itself matches the filter, OR
       // 2. It has children that match (even if directory doesn't match)
       const directoryMatches = pathFilter(fullPath);
       const hasMatchingChildren = filteredChildren.length > 0;
-      
+
       if (directoryMatches || hasMatchingChildren) {
         filteredEntries.push({
           ...entry,
-          children: filteredChildren
+          children: filteredChildren,
         });
       }
     }
