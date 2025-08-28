@@ -7,8 +7,8 @@ import { assertCapability } from "@ucdjs/fs-bridge";
 import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "@ucdjs/ucd-store";
 import { assert, beforeEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
-import { createHTTPUCDStore, createNodeUCDStore, createUCDStore } from "../src/factory";
-import { createMemoryMockFS, stripChildrenFromEntries } from "./__shared";
+import { createHTTPUCDStore, createNodeUCDStore, createUCDStore } from "../../src/factory";
+import { createMemoryMockFS, stripChildrenFromEntries } from "../__shared";
 
 const MOCK_FILES = [
   {
