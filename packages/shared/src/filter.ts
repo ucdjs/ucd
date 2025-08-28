@@ -93,11 +93,14 @@ export function createPathFilter(options: PathFilterOptions = {}): PathFilter {
     }
 
     const combinedOptions: PathFilterOptions = {
-      include: [...(currentConfig.include || []), ...(extraOptions.include || [])],
+      include: [...(currentConfig.include || ["**"]), ...(extraOptions.include || ["**"])],
       exclude: [...(currentConfig.exclude || []), ...(extraOptions.exclude || [])],
       disableDefaultExclusions: currentConfig.disableDefaultExclusions,
     };
-    const combinedFilter = internal__createFilterFunction(combinedOptions);
+    const combinedFilter = internal__createFilterFunction({
+      include: Array.from(new Set(combinedOptions.include)),
+      exclude: Array.from(new Set(combinedOptions.exclude)),
+    });
     return combinedFilter(path);
   }
 
