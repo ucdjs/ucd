@@ -57,7 +57,7 @@ export interface PathFilterOptions {
  * Creates a filter function that checks if a file path should be included or excluded
  * based on the provided filter configuration.
  *
- * @param options - Configuration object with include/exclude patterns
+ * @param {PathFilterOptions} options - Configuration object with include/exclude patterns
  * @returns {PathFilter} A function that takes a path and returns true if the path should be included, false otherwise
  *
  * @example
