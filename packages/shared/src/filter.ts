@@ -152,7 +152,20 @@ export type TreeEntry = {
   children: TreeEntry[];
 };
 
-export function filterTreeStructure(pathFilter: PathFilter, entries: TreeEntry[], parentPath = ""): TreeEntry[] {
+export function filterTreeStructure(
+  pathFilter: PathFilter,
+  entries: TreeEntry[],
+  extraOptions: Pick<PathFilterOptions, "include" | "exclude"> = {},
+): TreeEntry[] {
+  return internal__filterTreeStructure(pathFilter, entries, "", extraOptions);
+}
+
+function internal__filterTreeStructure(
+  pathFilter: PathFilter,
+  entries: TreeEntry[],
+  parentPath: string,
+  extraOptions: Pick<PathFilterOptions, "include" | "exclude">,
+): TreeEntry[] {
   const filteredEntries: TreeEntry[] = [];
 
   for (const entry of entries) {
@@ -161,17 +174,17 @@ export function filterTreeStructure(pathFilter: PathFilter, entries: TreeEntry[]
 
     if (entry.type === "file") {
       // For files, simply check if the full path matches the filter
-      if (pathFilter(fullPath)) {
+      if (pathFilter(fullPath, extraOptions)) {
         filteredEntries.push(entry);
       }
     } else if (entry.type === "directory") {
       // For directories, recursively filter children first
-      const filteredChildren = filterTreeStructure(pathFilter, entry.children, fullPath);
+      const filteredChildren = internal__filterTreeStructure(pathFilter, entry.children, fullPath, extraOptions);
 
       // Include directory if:
       // 1. The directory itself matches the filter, OR
       // 2. It has children that match (even if directory doesn't match)
-      const directoryMatches = pathFilter(fullPath);
+      const directoryMatches = pathFilter(fullPath, extraOptions);
       const hasMatchingChildren = filteredChildren.length > 0;
 
       if (directoryMatches || hasMatchingChildren) {
