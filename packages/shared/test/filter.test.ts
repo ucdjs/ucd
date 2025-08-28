@@ -125,8 +125,8 @@ describe("createPathFilter", () => {
   describe("edge cases and special patterns", () => {
     it.each([
       // case should always match
-      [["*.TXT"], "file.txt", false, "matches different case"],
-      [["*.txt"], "FILE.TXT", false, "matches different case reverse"],
+      [["*.TXT"], "file.txt", false, "doesn't match different case"],
+      [["*.txt"], "FILE.TXT", false, "doesn't match different case reverse"],
       [["SRC/**"], "src/file.js", false, "matches directory different case"],
 
       // dot files (dot: true option)
@@ -161,7 +161,7 @@ describe("createPathFilter", () => {
       expect(filter1("index.js")).toBe(true);
       expect(filter1("test.js")).toBe(false);
 
-      // same patterns in different order should work the same
+      // same patterns in different order should not work the same
       const filter2 = createPathFilter(["!test.js", "*.js"]);
       expect(filter2("index.js")).toBe(true);
       expect(filter2("test.js")).toBe(true);
