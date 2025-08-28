@@ -164,8 +164,12 @@ describe("file tree", () => {
     expect(store.initialized).toBe(true);
     expect(store.versions).toEqual(["15.0.0"]);
 
-    const [fileTree1, error1] = await store.getFileTree("15.0.0", ["!**/extracted"]);
-    const [fileTree2, error2] = await store.getFileTree("15.0.0", ["!**/extracted/**"]);
+    const [fileTree1, error1] = await store.getFileTree("15.0.0", {
+      exclude: ["**/extracted"],
+    });
+    const [fileTree2, error2] = await store.getFileTree("15.0.0", {
+      exclude: ["**/extracted/**"],
+    });
 
     assert(error1 === null && error2 === null, "Expected getFileTree calls to succeed");
 
@@ -207,10 +211,18 @@ describe("file tree", () => {
     expect(store.initialized).toBe(true);
     expect(store.versions).toEqual(["15.0.0"]);
 
-    const [fileTree1, error1] = await store.getFileTree("15.0.0", ["!extracted/nested/**"]);
-    const [fileTree2, error2] = await store.getFileTree("15.0.0", ["!**/DeepFile.txt"]);
-    const [fileTree3, error3] = await store.getFileTree("15.0.0", ["!extracted/nested"]);
-    const [fileTree4, error4] = await store.getFileTree("15.0.0", ["!extracted/nested/DeepFile.txt"]);
+    const [fileTree1, error1] = await store.getFileTree("15.0.0", {
+      exclude: ["extracted/nested/**"],
+    });
+    const [fileTree2, error2] = await store.getFileTree("15.0.0", {
+      exclude: ["**/DeepFile.txt"],
+    });
+    const [fileTree3, error3] = await store.getFileTree("15.0.0", {
+      exclude: ["extracted/nested"],
+    });
+    const [fileTree4, error4] = await store.getFileTree("15.0.0", {
+      exclude: ["extracted/nested/DeepFile.txt"],
+    });
 
     assert(error1 === null && error2 === null && error3 === null && error4 === null, "Expected all getFileTree calls to succeed");
 
@@ -237,7 +249,9 @@ describe("file tree", () => {
   it.each([
     {
       name: "include specific files",
-      filters: ["**/ArabicShaping.txt"],
+      filters: {
+        include: ["**/ArabicShaping.txt"],
+      },
       expected: [
         {
           name: "ArabicShaping.txt",
@@ -248,7 +262,9 @@ describe("file tree", () => {
     },
     {
       name: "include directory contents",
-      filters: ["**/extracted/**"],
+      filters: {
+        include: ["**/extracted/**"],
+      },
       expected: [
         {
           name: "extracted",
@@ -278,7 +294,10 @@ describe("file tree", () => {
     },
     {
       name: "exclude then include specific pattern",
-      filters: ["!**/extracted/**", "**/*.txt"],
+      filters: {
+        exclude: ["**/extracted/**"],
+        include: ["**/*.txt"],
+      },
       expected: [
         {
           name: "ArabicShaping.txt",
@@ -294,7 +313,9 @@ describe("file tree", () => {
     },
     {
       name: "multiple exclude patterns",
-      filters: ["!**/ArabicShaping.txt", "!**/nested/**"],
+      filters: {
+        exclude: ["**/ArabicShaping.txt", "**/nested/**"],
+      },
       expected: [
         {
           name: "BidiBrackets.txt",
@@ -357,7 +378,9 @@ describe("file tree", () => {
     });
 
     await store.init();
-    const [fileTree, fileTreeError] = await store.getFileTree("15.0.0", ["!**/*"]);
+    const [fileTree, fileTreeError] = await store.getFileTree("15.0.0", {
+      exclude: ["**/*"],
+    });
     assert(fileTreeError === null, "Expected getFileTree to succeed");
     expect(fileTree).toEqual([]);
   });
@@ -419,7 +442,9 @@ describe("file tree", () => {
     });
 
     await store.init();
-    const [fileTree, fileTreeError] = await store.getFileTree("15.0.0", ["!**/filtered.txt"]);
+    const [fileTree, fileTreeError] = await store.getFileTree("15.0.0", {
+      exclude: ["**/filtered.txt"],
+    });
     assert(fileTreeError === null, "Expected getFileTree to succeed");
     expect(fileTree).toEqual([
       {
@@ -462,7 +487,9 @@ describe("file tree", () => {
     });
 
     await store.init();
-    const [fileTree, fileTreeError] = await store.getFileTree("15.0.0", ["**/*.txt"]);
+    const [fileTree, fileTreeError] = await store.getFileTree("15.0.0", {
+      include: ["**/*.txt"],
+    });
     assert(fileTreeError === null, "Expected getFileTree to succeed");
 
     const expected = [

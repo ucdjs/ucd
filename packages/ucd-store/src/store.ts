@@ -1,7 +1,7 @@
 import type { UCDClient, UnicodeTreeNode } from "@ucdjs/fetch";
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 import type { UCDStoreManifest } from "@ucdjs/schemas";
-import type { OperationResult, PathFilter } from "@ucdjs/shared";
+import type { OperationResult, PathFilter, PathFilterOptions } from "@ucdjs/shared";
 import type { StoreError } from "./errors";
 import type { AnalyzeOptions, AnalyzeResult } from "./internal/analyze";
 import type { CleanOptions, CleanResult } from "./internal/clean";
@@ -15,7 +15,7 @@ import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { createClient, isApiError } from "@ucdjs/fetch";
 import { assertCapability } from "@ucdjs/fs-bridge";
 import { UCDStoreManifestSchema } from "@ucdjs/schemas";
-import { createPathFilter, flattenFilePaths, safeJsonParse, tryCatch } from "@ucdjs/shared";
+import { createPathFilter, filterTreeStructure, flattenFilePaths, safeJsonParse, tryCatch } from "@ucdjs/shared";
 import defu from "defu";
 import { isAbsolute, join } from "pathe";
 import {
@@ -54,7 +54,7 @@ export class UCDStore {
   constructor(options: UCDStoreOptions) {
     const { baseUrl, globalFilters, fs, basePath, versions } = defu(options, {
       baseUrl: UCDJS_API_BASE_URL,
-      globalFilters: [],
+      globalFilters: {},
       basePath: "",
       versions: [],
     });
@@ -119,7 +119,7 @@ export class UCDStore {
     return this.#manifestPath;
   }
 
-  async getFileTree(version: string, extraFilters?: string[]): Promise<OperationResult<UnicodeTreeNode[], StoreError>> {
+  async getFileTree(version: string, extraFilters?: Pick<PathFilterOptions, "include" | "exclude">): Promise<OperationResult<UnicodeTreeNode[], StoreError>> {
     return tryCatch(async () => {
       if (!this.#initialized) {
         throw new UCDStoreNotInitializedError();
@@ -136,74 +136,11 @@ export class UCDStore {
 
       const entries = await this.#fs.listdir(join(this.basePath, version), true);
 
-      const filterDirectoryChildren = (children: UnicodeTreeNode[], parentPath: string): UnicodeTreeNode[] => {
-        const result: UnicodeTreeNode[] = [];
-
-        for (const child of children) {
-          const childPath = join(parentPath, child.path ?? child.name);
-          const isFiltered = this.#filter(childPath, extraFilters);
-
-          // fast path for files and empty directories
-          if (child.type === "file" || (child.type === "directory" && (!child.children || child.children.length === 0))) {
-            if (isFiltered) {
-              result.push(child);
-            }
-
-            continue;
-          }
-
-          // handle directories with children
-          if (child.type === "directory" && child.children) {
-            const filteredGrandChildren = filterDirectoryChildren(child.children, childPath);
-
-            if (isFiltered && filteredGrandChildren.length > 0) {
-              result.push({
-                name: child.name,
-                path: child.path,
-                type: "directory",
-                children: filteredGrandChildren,
-              });
-            }
-          }
-        }
-
-        return result;
-      };
-
-      const result: UnicodeTreeNode[] = [];
-
-      for (const entry of entries) {
-        const isFiltered = this.#filter(entry.path, extraFilters);
-
-        // fast path for files and empty directories
-        if (entry.type === "file" || (entry.type === "directory" && (!entry.children || entry.children.length === 0))) {
-          if (isFiltered) {
-            result.push(entry);
-          }
-
-          continue;
-        }
-
-        // handle directories with children
-        if (entry.type === "directory" && entry.children) {
-          const filteredChildren = filterDirectoryChildren(entry.children, entry.path);
-
-          if (isFiltered && filteredChildren.length > 0) {
-            result.push({
-              name: entry.name,
-              path: entry.path,
-              type: "directory",
-              children: filteredChildren,
-            });
-          }
-        }
-      }
-
-      return result;
+      return filterTreeStructure(this.#filter, entries, extraFilters);
     });
   }
 
-  async getFilePaths(version: string, extraFilters?: string[]): Promise<OperationResult<string[], StoreError>> {
+  async getFilePaths(version: string, extraFilters?: Pick<PathFilterOptions, "include" | "exclude">): Promise<OperationResult<string[], StoreError>> {
     return tryCatch(async () => {
       if (!this.#initialized) {
         throw new UCDStoreNotInitializedError();
@@ -223,7 +160,7 @@ export class UCDStore {
     });
   }
 
-  async getFile(version: string, filePath: string, extraFilters?: string[]): Promise<OperationResult<string, StoreError>> {
+  async getFile(version: string, filePath: string, extraFilters?: Pick<PathFilterOptions, "include" | "exclude">): Promise<OperationResult<string, StoreError>> {
     return tryCatch(async () => {
       if (!this.#initialized) {
         throw new UCDStoreNotInitializedError();
@@ -234,9 +171,16 @@ export class UCDStore {
       }
 
       if (!this.#filter(filePath, extraFilters)) {
+        const extraFiltersInfo = extraFilters
+          ? Object.entries(extraFilters)
+              .filter(([, value]) => value != null)
+              .map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(", ") : value}`)
+              .join("; ")
+          : "";
+
         throw new UCDStoreGenericError(
           `File path "${filePath}" is excluded by the store's filter patterns${
-            extraFilters?.length ? ` (extra filters: ${extraFilters.join(", ")})` : ""
+            extraFiltersInfo ? ` (extra filters: ${extraFiltersInfo})` : ""
           }.`,
         );
       }
