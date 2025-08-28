@@ -203,4 +203,60 @@ describe("flattenFilePaths", () => {
       "package.json",
     ]);
   });
+
+  it("should handle directory paths when includeDirectories is true", () => {
+    const files: UnicodeTree = [
+      {
+        type: "directory",
+        name: "folder1",
+        path: "folder1",
+        children: [
+          { type: "file", name: "file1.txt", path: "file1.txt" },
+        ],
+      },
+      {
+        type: "file",
+        name: "file2.txt",
+        path: "file2.txt",
+      },
+    ];
+
+    const result = flattenFilePaths(files, "", { includeDirectories: true });
+    expect(result).toEqual([
+      "folder1",
+      "folder1/file1.txt",
+      "file2.txt",
+    ]);
+  });
+
+  it("should not include directory paths when includeDirectories is false", () => {
+    const files: UnicodeTree = [
+      {
+        type: "directory",
+        name: "folder1",
+        path: "folder1",
+        children: [
+          { type: "file", name: "file1.txt", path: "file1.txt" },
+        ],
+      },
+      {
+        type: "file",
+        name: "file2.txt",
+        path: "file2.txt",
+      },
+    ];
+
+    const result = flattenFilePaths(files, "", { includeDirectories: false });
+    expect(result).toEqual([
+      "folder1/file1.txt",
+      "file2.txt",
+    ]);
+  });
+
+  it("should throw TypeError for invalid input", () => {
+    expect(() => flattenFilePaths(null as unknown as UnicodeTree)).toThrow(TypeError);
+    expect(() => flattenFilePaths(undefined as unknown as UnicodeTree)).toThrow(TypeError);
+    expect(() => flattenFilePaths({} as unknown as UnicodeTree)).toThrow(TypeError);
+    expect(() => flattenFilePaths("invalid" as unknown as UnicodeTree)).toThrow(TypeError);
+  });
 });
