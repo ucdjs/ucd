@@ -11,7 +11,7 @@ import { defineFileSystemBridge } from "@ucdjs/fs-bridge";
 import NodeFileSystemBridge from "@ucdjs/fs-bridge/bridges/node";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
-import { createNodeUCDStore, createUCDStore } from "../src/factory";
+import { createNodeUCDStore, createUCDStore } from "../../src/factory";
 
 const DEFAULT_VERSIONS = {
   "16.0.0": "16.0.0",

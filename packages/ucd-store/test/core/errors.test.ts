@@ -8,7 +8,7 @@ import {
   UCDStoreInvalidManifestError,
   UCDStoreNotInitializedError,
   UCDStoreVersionNotFoundError,
-} from "../src/errors";
+} from "../../src/errors";
 
 describe("custom errors", () => {
   describe("UCDStoreGenericError", () => {
