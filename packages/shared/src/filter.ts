@@ -97,6 +97,7 @@ export function createPathFilter(options: PathFilterOptions = {}): PathFilter {
     const combinedOptions: PathFilterOptions = {
       include: [...(currentConfig.include || []), ...(extraOptions.include || [])],
       exclude: [...(currentConfig.exclude || []), ...(extraOptions.exclude || [])],
+      disableDefaultExclusions: currentConfig.disableDefaultExclusions,
     };
     const combinedFilter = internal__createFilterFunction(combinedOptions);
     return combinedFilter(path);
