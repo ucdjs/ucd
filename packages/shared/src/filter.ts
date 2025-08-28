@@ -141,3 +141,49 @@ function internal__createFilterFunction(config: PathFilterOptions): PathFilterFn
     } satisfies PicomatchOptions);
   };
 }
+
+// TODO: Combine all "tree" related entries
+export type TreeEntry = {
+  type: "file";
+  name: string;
+  path: string;
+} | {
+  type: "directory";
+  name: string;
+  path: string;
+  children: TreeEntry[];
+};
+
+export function filterTreeStructure(pathFilter: PathFilter, entries: TreeEntry[], parentPath = ""): TreeEntry[] {
+  const filteredEntries: TreeEntry[] = [];
+
+  for (const entry of entries) {
+    // Construct the full path by combining parent path with entry path
+    const fullPath = parentPath ? `${parentPath}/${entry.path}` : entry.path;
+
+    if (entry.type === "file") {
+      // For files, simply check if the full path matches the filter
+      if (pathFilter(fullPath)) {
+        filteredEntries.push(entry);
+      }
+    } else if (entry.type === "directory") {
+      // For directories, recursively filter children first
+      const filteredChildren = filterTreeStructure(pathFilter, entry.children, fullPath);
+      
+      // Include directory if:
+      // 1. The directory itself matches the filter, OR
+      // 2. It has children that match (even if directory doesn't match)
+      const directoryMatches = pathFilter(fullPath);
+      const hasMatchingChildren = filteredChildren.length > 0;
+      
+      if (directoryMatches || hasMatchingChildren) {
+        filteredEntries.push({
+          ...entry,
+          children: filteredChildren
+        });
+      }
+    }
+  }
+
+  return filteredEntries;
+}

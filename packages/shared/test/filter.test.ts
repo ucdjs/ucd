@@ -1,5 +1,6 @@
+import type { TreeEntry } from "../src/filter";
 import { describe, expect, it } from "vitest";
-import { createPathFilter } from "../src/filter";
+import { createPathFilter, filterTreeStructure } from "../src/filter";
 
 describe("createPathFilter", () => {
   it("should allow all paths when no patterns are provided", () => {
@@ -664,6 +665,372 @@ describe("createPathFilter", () => {
     it("should have patterns method", () => {
       const filter = createPathFilter({ include: ["*.txt"] });
       expect(typeof filter.patterns).toBe("function");
+    });
+  });
+});
+
+describe("filterTreeStructure", () => {
+  const tree: TreeEntry[] = [
+    {
+      type: "file",
+      name: "root-file.txt",
+      path: "root-file.txt",
+    },
+    {
+      type: "file",
+      name: "root-config.json",
+      path: "root-config.json",
+    },
+    {
+      type: "directory",
+      name: "extracted",
+      path: "extracted",
+      children: [
+        {
+          type: "file",
+          name: "DerivedBidiClass.txt",
+          path: "DerivedBidiClass.txt",
+        },
+        {
+          type: "file",
+          name: "config.json",
+          path: "config.json",
+        },
+        {
+          type: "directory",
+          name: "nested",
+          path: "nested",
+          children: [
+            {
+              type: "file",
+              name: "DeepFile.txt",
+              path: "DeepFile.txt",
+            },
+            {
+              type: "file",
+              name: "debug.log",
+              path: "debug.log",
+            },
+          ],
+        },
+      ],
+    },
+  ];
+
+  describe("basic filtering", () => {
+    it("should filter files based on extension", () => {
+      const filter = createPathFilter({ include: ["**/*.json"] });
+      const result = filterTreeStructure(filter, tree);
+
+      expect(result).toEqual([
+        {
+          type: "file",
+          name: "root-config.json",
+          path: "root-config.json",
+        },
+        {
+          type: "directory",
+          name: "extracted",
+          path: "extracted",
+          children: [
+            {
+              type: "file",
+              name: "config.json",
+              path: "config.json",
+            },
+          ],
+        },
+      ]);
+    });
+
+    it("should include all items when no filters are applied", () => {
+      const filter = createPathFilter();
+      const result = filterTreeStructure(filter, tree);
+
+      expect(result).toEqual(tree);
+    });
+
+    it("should filter out files that don't match include pattern", () => {
+      const filter = createPathFilter({
+        include: ["**/*.txt"],
+      });
+      const result = filterTreeStructure(filter, tree);
+
+      expect(result).toEqual([
+        {
+          type: "file",
+          name: "root-file.txt",
+          path: "root-file.txt",
+        },
+        {
+          type: "directory",
+          name: "extracted",
+          path: "extracted",
+          children: [
+            {
+              type: "file",
+              name: "DerivedBidiClass.txt",
+              path: "DerivedBidiClass.txt",
+            },
+            {
+              type: "directory",
+              name: "nested",
+              path: "nested",
+              children: [
+                {
+                  type: "file",
+                  name: "DeepFile.txt",
+                  path: "DeepFile.txt",
+                },
+              ],
+            },
+          ],
+        },
+      ]);
+    });
+  });
+
+  describe("directory inclusion logic", () => {
+    it("should include directories that contain matching files", () => {
+      const filter = createPathFilter({ include: ["**/DeepFile.txt"] });
+      const result = filterTreeStructure(filter, tree);
+
+      expect(result).toEqual([
+        {
+          type: "directory",
+          name: "extracted",
+          path: "extracted",
+          children: [
+            {
+              type: "directory",
+              name: "nested",
+              path: "nested",
+              children: [
+                {
+                  type: "file",
+                  name: "DeepFile.txt",
+                  path: "DeepFile.txt",
+                },
+              ],
+            },
+          ],
+        },
+      ]);
+    });
+
+    it("should exclude directories with no matching children", () => {
+      const filter = createPathFilter({ include: ["**/*.nonexistent"] });
+      const result = filterTreeStructure(filter, tree);
+
+      expect(result).toEqual([]);
+    });
+
+    it("should include directory if directory path itself matches", () => {
+      const filter = createPathFilter({ include: ["extracted/**"] });
+      const result = filterTreeStructure(filter, tree);
+
+      expect(result).toEqual([
+        {
+          type: "directory",
+          name: "extracted",
+          path: "extracted",
+          children: [
+            {
+              type: "file",
+              name: "DerivedBidiClass.txt",
+              path: "DerivedBidiClass.txt",
+            },
+            {
+              type: "file",
+              name: "config.json",
+              path: "config.json",
+            },
+            {
+              type: "directory",
+              name: "nested",
+              path: "nested",
+              children: [
+                {
+                  type: "file",
+                  name: "DeepFile.txt",
+                  path: "DeepFile.txt",
+                },
+                {
+                  type: "file",
+                  name: "debug.log",
+                  path: "debug.log",
+                },
+              ],
+            },
+          ],
+        },
+      ]);
+    });
+  });
+
+  describe("edge cases", () => {
+    it("should handle empty tree", () => {
+      const filter = createPathFilter({ include: ["**/*"] });
+      const result = filterTreeStructure(filter, []);
+
+      expect(result).toHaveLength(0);
+    });
+
+    it("should handle tree with only files", () => {
+      const tree: TreeEntry[] = [
+        { type: "file", name: "file1.txt", path: "file1.txt" },
+        { type: "file", name: "file2.pdf", path: "file2.pdf" },
+        { type: "file", name: "file3.md", path: "file3.md" },
+      ];
+
+      const filter = createPathFilter({ include: ["*.txt"] });
+      const result = filterTreeStructure(filter, tree);
+
+      expect(result).toEqual([
+        { type: "file", name: "file1.txt", path: "file1.txt" },
+      ]);
+    });
+
+    it("should handle deeply nested structure", () => {
+      const nestedTree: TreeEntry[] = [
+        {
+          type: "directory",
+          name: "a",
+          path: "a",
+          children: [
+            {
+              type: "directory",
+              name: "b",
+              path: "b",
+              children: [
+                {
+                  type: "directory",
+                  name: "c",
+                  path: "c",
+                  children: [
+                    { type: "file", name: "deep.txt", path: "deep.txt" },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ];
+
+      const filter = createPathFilter({ include: ["**/deep.txt"] });
+      const result = filterTreeStructure(filter, nestedTree);
+
+      expect(result).toEqual([
+        {
+          type: "directory",
+          name: "a",
+          path: "a",
+          children: [
+            {
+              type: "directory",
+              name: "b",
+              path: "b",
+              children: [
+                {
+                  type: "directory",
+                  name: "c",
+                  path: "c",
+                  children: [
+                    { type: "file", name: "deep.txt", path: "deep.txt" },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ]);
+    });
+
+    it("should handle filter that matches nothing", () => {
+      const filter = createPathFilter({ include: ["**/*.nonexistent"] });
+      const result = filterTreeStructure(filter, tree);
+
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe("path construction", () => {
+    it("should correctly construct full paths for filtering", () => {
+      const filter = createPathFilter({ include: ["extracted/nested/DeepFile.txt"] });
+      const result = filterTreeStructure(filter, tree);
+
+      expect(result).toEqual([
+        {
+          type: "directory",
+          name: "extracted",
+          path: "extracted",
+          children: [
+            {
+              type: "directory",
+              name: "nested",
+              path: "nested",
+              children: [
+                {
+                  type: "file",
+                  name: "DeepFile.txt",
+                  path: "DeepFile.txt",
+                },
+              ],
+            },
+          ],
+        },
+      ]);
+    });
+
+    it("should handle exclude patterns correctly", () => {
+      const filter = createPathFilter({
+        include: ["**/*"],
+        exclude: ["extracted/nested/debug.log"],
+      });
+      const result = filterTreeStructure(filter, tree);
+
+      expect(result).toEqual([
+        {
+          type: "file",
+          name: "root-file.txt",
+          path: "root-file.txt",
+        },
+        {
+          type: "file",
+          name: "root-config.json",
+          path: "root-config.json",
+        },
+        {
+          type: "directory",
+          name: "extracted",
+          path: "extracted",
+          children: [
+            {
+              type: "file",
+              name: "DerivedBidiClass.txt",
+              path: "DerivedBidiClass.txt",
+            },
+            {
+              type: "file",
+              name: "config.json",
+              path: "config.json",
+            },
+            {
+              type: "directory",
+              name: "nested",
+              path: "nested",
+              children: [
+                {
+                  type: "file",
+                  name: "DeepFile.txt",
+                  path: "DeepFile.txt",
+                },
+                // debug.log should be excluded
+              ],
+            },
+          ],
+        },
+      ]);
     });
   });
 });
