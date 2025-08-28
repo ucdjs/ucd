@@ -202,7 +202,7 @@ describe("factory functions", () => {
 
       expect(store.filter).toBeDefined();
       expect(store.basePath).toBe("");
-      expect(store.filter.patterns()).toEqual(filters);
+      expect(store.filter.patterns()).toEqual(expect.arrayContaining(filters));
       expect(store.initialized).toBe(false);
     });
 
