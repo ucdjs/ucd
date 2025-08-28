@@ -15,7 +15,7 @@ import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { createClient, isApiError } from "@ucdjs/fetch";
 import { assertCapability } from "@ucdjs/fs-bridge";
 import { UCDStoreManifestSchema } from "@ucdjs/schemas";
-import { createPathFilter, flattenFilePaths, safeJsonParse, tryCatch } from "@ucdjs/shared";
+import { createPathFilter, filterTreeStructure, flattenFilePaths, safeJsonParse, tryCatch } from "@ucdjs/shared";
 import defu from "defu";
 import { isAbsolute, join } from "pathe";
 import {
@@ -136,70 +136,7 @@ export class UCDStore {
 
       const entries = await this.#fs.listdir(join(this.basePath, version), true);
 
-      const filterDirectoryChildren = (children: UnicodeTreeNode[], parentPath: string): UnicodeTreeNode[] => {
-        const result: UnicodeTreeNode[] = [];
-
-        for (const child of children) {
-          const childPath = join(parentPath, child.path ?? child.name);
-          const isFiltered = this.#filter(childPath, extraFilters);
-
-          // fast path for files and empty directories
-          if (child.type === "file" || (child.type === "directory" && (!child.children || child.children.length === 0))) {
-            if (isFiltered) {
-              result.push(child);
-            }
-
-            continue;
-          }
-
-          // handle directories with children
-          if (child.type === "directory" && child.children) {
-            const filteredGrandChildren = filterDirectoryChildren(child.children, childPath);
-
-            if (isFiltered && filteredGrandChildren.length > 0) {
-              result.push({
-                name: child.name,
-                path: child.path,
-                type: "directory",
-                children: filteredGrandChildren,
-              });
-            }
-          }
-        }
-
-        return result;
-      };
-
-      const result: UnicodeTreeNode[] = [];
-
-      for (const entry of entries) {
-        const isFiltered = this.#filter(entry.path, extraFilters);
-
-        // fast path for files and empty directories
-        if (entry.type === "file" || (entry.type === "directory" && (!entry.children || entry.children.length === 0))) {
-          if (isFiltered) {
-            result.push(entry);
-          }
-
-          continue;
-        }
-
-        // handle directories with children
-        if (entry.type === "directory" && entry.children) {
-          const filteredChildren = filterDirectoryChildren(entry.children, entry.path);
-
-          if (isFiltered && filteredChildren.length > 0) {
-            result.push({
-              name: entry.name,
-              path: entry.path,
-              type: "directory",
-              children: filteredChildren,
-            });
-          }
-        }
-      }
-
-      return result;
+      return filterTreeStructure(this.#filter, entries, extraFilters);
     });
   }
 
