@@ -356,6 +356,7 @@ export type TreeEntry = {
 export function filterTreeStructure(
   pathFilter: PathFilter,
   entries: TreeEntry[],
+  extraFilters?: string[],
 ): TreeEntry[] {
   const filtered: TreeEntry[] = [];
 
@@ -364,7 +365,7 @@ export function filterTreeStructure(
   const matches = [];
 
   for (const filePath of flattened) {
-    if (pathFilter(filePath)) {
+    if (pathFilter(filePath, extraFilters)) {
       matches.push(filePath);
     }
   }
@@ -414,7 +415,7 @@ export function filterTreeStructure(
         throw new Error(`Cannot append children to file entry: ${parent.path}`);
       }
 
-      let child = parent.children.find((entry: TreeEntry) => entry.name === next);
+      let child = parent.children.find((entry) => entry.name === next);
 
       if (!child) {
         child = remaining.length > 0
