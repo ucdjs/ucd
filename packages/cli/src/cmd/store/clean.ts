@@ -35,7 +35,7 @@ export async function runCleanStore({ flags }: CLIStoreCleanCmdOptions) {
     dryRun,
     remote,
     baseUrl,
-    patterns,
+    include: patterns,
   } = flags;
 
   const store: UCDStore | null = null;

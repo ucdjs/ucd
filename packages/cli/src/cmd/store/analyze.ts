@@ -42,7 +42,7 @@ export async function runAnalyzeStore({ flags, versions }: CLIStoreAnalyzeCmdOpt
     json,
     remote,
     baseUrl,
-    patterns,
+    include: patterns,
     checkOrphaned,
   } = flags;
 
@@ -53,7 +53,7 @@ export async function runAnalyzeStore({ flags, versions }: CLIStoreAnalyzeCmdOpt
       baseUrl,
       storeDir,
       remote,
-      patterns,
+      include: patterns,
     });
 
     if (store == null) {
