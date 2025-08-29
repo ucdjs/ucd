@@ -136,9 +136,9 @@ export class UCDStore {
 
       const entries = await this.#fs.listdir(join(this.basePath, version), true);
 
-      const a = filterTreeStructure(this.#filter, entries, extraFilters);
+      const filtered = filterTreeStructure(this.#filter, entries, extraFilters);
 
-      return a;
+      return filtered;
     });
   }
 
