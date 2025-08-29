@@ -36,7 +36,7 @@ export async function runRepairStore({ flags }: CLIStoreRepairCmdOptions) {
     force: _force,
     remote,
     baseUrl,
-    patterns,
+    include: patterns,
   } = flags;
 
   // let store: UCDStore | null = null;
