@@ -9,6 +9,8 @@ describe("createPathFilter", () => {
     expect(filter("any/path.txt")).toBe(true);
     expect(filter("another/file.js")).toBe(true);
     expect(filter(".hidden")).toBe(true);
+    expect(filter("./hidden")).toBe(true);
+    expect(filter("subdir/../../test.directory/file.js")).toBe(false);
   });
 
   describe("include patterns only", () => {
@@ -666,15 +668,6 @@ describe("createPathFilter", () => {
       const filter = createPathFilter({ include: ["*.txt"] });
       expect(typeof filter.patterns).toBe("function");
     });
-  });
-
-  it("test", () => {
-    const filter = createPathFilter({});
-
-    expect(filter("any/path.txt")).toBe(true);
-    expect(filter("another/file.js")).toBe(true);
-    expect(filter(".hidden")).toBe(true);
-    expect(filter("./hidden")).toBe(true);
   });
 });
 
