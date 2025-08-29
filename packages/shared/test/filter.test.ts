@@ -667,6 +667,15 @@ describe("createPathFilter", () => {
       expect(typeof filter.patterns).toBe("function");
     });
   });
+
+  it("test", () => {
+    const filter = createPathFilter({});
+
+    expect(filter("any/path.txt")).toBe(true);
+    expect(filter("another/file.js")).toBe(true);
+    expect(filter(".hidden")).toBe(true);
+    expect(filter("./hidden")).toBe(true);
+  });
 });
 
 describe("filterTreeStructure", () => {

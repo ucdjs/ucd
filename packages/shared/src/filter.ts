@@ -93,14 +93,11 @@ export function createPathFilter(options: PathFilterOptions = {}): PathFilter {
     }
 
     const combinedOptions: PathFilterOptions = {
-      include: [...(currentConfig.include || ["**"]), ...(extraOptions.include || ["**"])],
-      exclude: [...(currentConfig.exclude || []), ...(extraOptions.exclude || [])],
+      include: Array.from(new Set([...(currentConfig.include || []), ...(extraOptions.include || [])])),
+      exclude: Array.from(new Set([...(currentConfig.exclude || []), ...(extraOptions.exclude || [])])),
       disableDefaultExclusions: currentConfig.disableDefaultExclusions,
     };
-    const combinedFilter = internal__createFilterFunction({
-      include: Array.from(new Set(combinedOptions.include)),
-      exclude: Array.from(new Set(combinedOptions.exclude)),
-    });
+    const combinedFilter = internal__createFilterFunction(combinedOptions);
     return combinedFilter(path);
   }
 
@@ -135,7 +132,9 @@ function internal__createFilterFunction(config: PathFilterOptions): PathFilterFn
       ];
 
   return (path: string): boolean => {
-    return isMatch(path, includePatterns, {
+    const normalizedPath = path.startsWith("./") ? path.slice(2) : path;
+
+    return isMatch(normalizedPath, includePatterns, {
       dot: true,
       nocase: true,
       ignore: excludePatterns,
