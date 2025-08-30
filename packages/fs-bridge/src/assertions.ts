@@ -1,4 +1,5 @@
 import type { FileSystemBridge, FileSystemBridgeCapabilityKey } from "./types";
+import { BridgeUnsupportedOperation } from "./errors";
 
 /**
  * Asserts that a file system bridge supports the specified capability or capabilities.
@@ -23,17 +24,5 @@ export function assertCapability<T extends FileSystemBridgeCapabilityKey = never
     if (!bridge.capabilities[capability]) {
       throw new BridgeUnsupportedOperation(capability);
     }
-  }
-}
-
-export class BridgeUnsupportedOperation extends Error {
-  public readonly capability: FileSystemBridgeCapabilityKey;
-
-  constructor(
-    capability: FileSystemBridgeCapabilityKey,
-  ) {
-    super(`File system bridge does not support the '${capability}' capability.`);
-    this.name = "BridgeUnsupportedOperation";
-    this.capability = capability;
   }
 }
