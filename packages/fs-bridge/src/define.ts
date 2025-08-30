@@ -6,7 +6,7 @@ import type {
   FileSystemBridgeOperations,
 } from "./types";
 import { z } from "zod";
-import { BridgeUnsupportedOperation } from "./assertions";
+import { BridgeUnsupportedOperation } from "./errors";
 
 export function defineFileSystemBridge<
   TOptionsSchema extends z.ZodType,
