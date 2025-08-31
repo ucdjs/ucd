@@ -38,42 +38,42 @@ export function defineFileSystemBridge<
 
     // create a proxy that throws for unsupported operations and wraps methods in try-catch
     const proxiedBridge = new Proxy(bridge, {
-      get(target, prop) {
-        if (prop === "capabilities") {
+      get(target, property) {
+        if (property === "capabilities") {
           return capabilities;
         }
 
         // if it's an operation method and not implemented, throw
-        if (typeof prop === "string" && prop in capabilities) {
-          if (!target[prop as keyof typeof target]) {
+        if (typeof property === "string" && property in capabilities) {
+          if (!target[property as keyof typeof target]) {
             return () => {
-              throw new BridgeUnsupportedOperation(prop as FileSystemBridgeCapabilityKey);
+              throw new BridgeUnsupportedOperation(property as FileSystemBridgeCapabilityKey);
             };
           }
 
           // eslint-disable-next-line ts/no-unsafe-function-type
-          const originalMethod = target[prop as keyof typeof target] as Function;
+          const originalMethod = target[property as keyof typeof target] as Function;
 
           if (typeof originalMethod === "function") {
             return (...args: any[]) => {
-              return originalMethod.apply(target, args)
-                .catch((error: unknown) => {
-                  // re-throw custom bridge errors directly
-                  if (error instanceof BridgeBaseError) {
-                    throw error;
-                  }
+              try {
+                const result = originalMethod.apply(target, args);
 
-                  // wrap unexpected errors in BridgeGenericError
-                  throw new BridgeGenericError(
-                    `Unexpected error in ${prop} operation: ${error instanceof Error ? error.message : String(error)}`,
-                    error instanceof Error ? error : undefined,
-                  );
-                });
+                // check if result is a promise
+                if (result && typeof result.then === "function") {
+                  return result.catch((err: unknown) => handleError(property, err));
+                }
+
+                // sync result, return as-is
+                return result;
+              } catch (error: unknown) {
+                handleError(property, error);
+              }
             };
           }
         }
 
-        return target[prop as keyof typeof target];
+        return target[property as keyof typeof target];
       },
     });
 
@@ -95,4 +95,17 @@ function inferCapabilitiesFromOperations(ops: Partial<FileSystemBridgeOperations
     mkdir: "mkdir" in ops && typeof ops.mkdir === "function",
     rm: "rm" in ops && typeof ops.rm === "function",
   };
+}
+
+function handleError(operation: string, error: unknown): void {
+  // re-throw custom bridge errors directly
+  if (error instanceof BridgeBaseError) {
+    throw error;
+  }
+
+  // wrap unexpected errors in BridgeGenericError
+  throw new BridgeGenericError(
+    `Unexpected error in ${operation} operation: ${error instanceof Error ? error.message : String(error)}`,
+    error instanceof Error ? error : undefined,
+  );
 }
