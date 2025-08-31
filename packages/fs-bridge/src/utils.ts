@@ -1,4 +1,5 @@
 import pathe from "pathe";
+import { BridgePathTraversal } from "./errors";
 
 const DANGEROUS_CONTROL_CHARACTER_REGEX = /[\0\n\r]/;
 
@@ -58,7 +59,7 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
 
   // check if resolved path is within the base directory
   if (!isWithinBase(resolvedPath, resolvedBasePath)) {
-    throw new Error(`Path traversal detected: ${inputPath} resolves outside base directory`);
+    throw new BridgePathTraversal(inputPath);
   }
 
   return resolvedPath;
