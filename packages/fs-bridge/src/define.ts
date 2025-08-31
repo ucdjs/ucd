@@ -6,7 +6,11 @@ import type {
   FileSystemBridgeOperations,
 } from "./types";
 import { z } from "zod";
-import { BridgeBaseError, BridgeGenericError, BridgeUnsupportedOperation } from "./errors";
+import {
+  BridgeBaseError,
+  BridgeGenericError,
+  BridgeUnsupportedOperation,
+} from "./errors";
 import { resolveSafePath } from "./utils";
 
 export function defineFileSystemBridge<
@@ -36,22 +40,23 @@ export function defineFileSystemBridge<
 
     const capabilities = inferCapabilitiesFromOperations(bridge);
 
-    // create a proxy that throws for unsupported operations and wraps methods in try-catch
     const proxiedBridge = new Proxy(bridge, {
       get(target, property) {
         if (property === "capabilities") {
           return capabilities;
         }
 
+        const val = target[property as keyof typeof target];
+
         // if it's an operation method and not implemented, throw
         if (typeof property === "string" && property in capabilities) {
-          if (!target[property as keyof typeof target]) {
+          if (val == null || typeof val !== "function") {
             return () => {
               throw new BridgeUnsupportedOperation(property as FileSystemBridgeCapabilityKey);
             };
           }
 
-          const originalMethod = target[property as keyof typeof target] as (...args: unknown[]) => unknown;
+          const originalMethod = val as (...args: unknown[]) => unknown;
 
           if (typeof originalMethod === "function") {
             return (...args: unknown[]) => {
@@ -78,7 +83,7 @@ export function defineFileSystemBridge<
           }
         }
 
-        return target[property as keyof typeof target];
+        return val;
       },
     });
 
