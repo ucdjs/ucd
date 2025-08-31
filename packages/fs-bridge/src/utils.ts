@@ -83,8 +83,8 @@ export function decodePathSafely(encodedPath: string): string {
  * that the final path remains within base directory bounds.
  */
 export function resolveSafePath(basePath: string, inputPath: string): string {
-  if (!basePath || !inputPath) {
-    throw new Error("Base path and input path are required");
+  if (!basePath) {
+    throw new Error("Base path is required");
   }
 
   if (typeof basePath !== "string" || typeof inputPath !== "string") {
@@ -121,7 +121,7 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
   }
 
   if (!isWithinBase(resolvedPath, normalizedBasePath)) {
-    throw new BridgePathTraversal("Path traversal detected");
+    throw new BridgePathTraversal(decodedPath);
   }
 
   return resolvedPath;

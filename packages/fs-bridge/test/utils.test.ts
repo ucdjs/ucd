@@ -349,41 +349,40 @@ describe("decodePathSafely", () => {
 describe("resolveSafePath", () => {
   describe("input validation", () => {
     it("should throw error when base path is missing or empty", () => {
-      expect(() => resolveSafePath("", "file.txt")).toThrow("Base path and input path are required");
+      expect.soft(() => resolveSafePath("", "file.txt")).toThrow("Base path is required");
       // @ts-expect-error for testing only
-      expect(() => resolveSafePath(null, "file.txt")).toThrow("Base path and input path are required");
+      expect.soft(() => resolveSafePath(null, "file.txt")).toThrow("Base path is required");
       // @ts-expect-error for testing only
-      expect(() => resolveSafePath(undefined, "file.txt")).toThrow("Base path and input path are required");
+      expect.soft(() => resolveSafePath(undefined, "file.txt")).toThrow("Base path is required");
     });
 
     it("should throw error when input path is missing or empty", () => {
-      expect(() => resolveSafePath("/base", "")).toThrow("Base path and input path are required");
       // @ts-expect-error for testing only
-      expect(() => resolveSafePath("/base", null)).toThrow("Base path and input path are required");
+      expect.soft(() => resolveSafePath("/base", null)).toThrow("Base path and input path must be strings");
       // @ts-expect-error for testing only
-      expect(() => resolveSafePath("/base", undefined)).toThrow("Base path and input path are required");
+      expect.soft(() => resolveSafePath("/base", undefined)).toThrow("Base path and input path must be strings");
     });
 
     it("should throw TypeError when base path is not a string", () => {
       // @ts-expect-error for testing only
-      expect(() => resolveSafePath(123, "file.txt")).toThrow("Base path and input path must be strings");
+      expect.soft(() => resolveSafePath(123, "file.txt")).toThrow("Base path and input path must be strings");
       // @ts-expect-error for testing only
-      expect(() => resolveSafePath({}, "file.txt")).toThrow("Base path and input path must be strings");
+      expect.soft(() => resolveSafePath({}, "file.txt")).toThrow("Base path and input path must be strings");
       // @ts-expect-error for testing only
-      expect(() => resolveSafePath([], "file.txt")).toThrow("Base path and input path must be strings");
+      expect.soft(() => resolveSafePath([], "file.txt")).toThrow("Base path and input path must be strings");
       // @ts-expect-error for testing only
-      expect(() => resolveSafePath(true, "file.txt")).toThrow("Base path and input path must be strings");
+      expect.soft(() => resolveSafePath(true, "file.txt")).toThrow("Base path and input path must be strings");
     });
 
     it("should throw TypeError when input path is not a string", () => {
       // @ts-expect-error for testing only
-      expect(() => resolveSafePath("/base", 123)).toThrow("Base path and input path must be strings");
+      expect.soft(() => resolveSafePath("/base", 123)).toThrow("Base path and input path must be strings");
       // @ts-expect-error for testing only
-      expect(() => resolveSafePath("/base", {})).toThrow("Base path and input path must be strings");
+      expect.soft(() => resolveSafePath("/base", {})).toThrow("Base path and input path must be strings");
       // @ts-expect-error for testing only
-      expect(() => resolveSafePath("/base", [])).toThrow("Base path and input path must be strings");
+      expect.soft(() => resolveSafePath("/base", [])).toThrow("Base path and input path must be strings");
       // @ts-expect-error for testing only
-      expect(() => resolveSafePath("/base", true)).toThrow("Base path and input path must be strings");
+      expect.soft(() => resolveSafePath("/base", true)).toThrow("Base path and input path must be strings");
     });
   });
 
@@ -509,8 +508,8 @@ describe("resolveSafePath", () => {
       expect.soft(resolveSafePath(uploadDir, "documents/report.pdf")).toBe("/var/uploads/documents/report.pdf");
 
       // Invalid attempts
-      expect(() => resolveSafePath(uploadDir, "../config/database.yml")).toThrow(BridgePathTraversal);
-      expect(() => resolveSafePath(uploadDir, "../../etc/passwd")).toThrow(BridgePathTraversal);
+      expect.soft(() => resolveSafePath(uploadDir, "../config/database.yml")).toThrow(BridgePathTraversal);
+      expect.soft(() => resolveSafePath(uploadDir, "../../etc/passwd")).toThrow(BridgePathTraversal);
     });
 
     it("should protect template includes from directory traversal", () => {
@@ -533,8 +532,8 @@ describe("resolveSafePath", () => {
       expect.soft(resolveSafePath(webRoot, "assets%2Fstyle.css")).toBe("/var/www/html/assets/style.css");
 
       // attack attempts
-      expect(() => resolveSafePath(webRoot, "%2e%2e%2f%2e%2e%2fetc%2fpasswd")).toThrow(BridgePathTraversal);
-      expect(() => resolveSafePath(webRoot, "..%252f..%252fetc%252fpasswd")).toThrow(BridgePathTraversal);
+      expect.soft(() => resolveSafePath(webRoot, "%2e%2e%2f%2e%2e%2fetc%2fpasswd")).toThrow(BridgePathTraversal);
+      expect.soft(() => resolveSafePath(webRoot, "..%252f..%252fetc%252fpasswd")).toThrow(BridgePathTraversal);
     });
   });
 
