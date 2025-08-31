@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { decodePathSafely, isWithinBase } from "../src/utils";
+import { BridgePathTraversal } from "../src/errors";
+import { decodePathSafely, isWithinBase, resolveSafePath } from "../src/utils";
 
 describe("isWithinBase", () => {
   describe("input validation", () => {
@@ -341,6 +342,257 @@ describe("decodePathSafely", () => {
       const longPath = `${"a".repeat(1000)}%20${"b".repeat(1000)}`;
       const expected = `${"a".repeat(1000)} ${"b".repeat(1000)}`;
       expect(decodePathSafely(longPath)).toBe(expected);
+    });
+  });
+});
+
+describe("resolveSafePath", () => {
+  describe("input validation", () => {
+    it("should throw error when base path is missing or empty", () => {
+      expect(() => resolveSafePath("", "file.txt")).toThrow("Base path and input path are required");
+      // @ts-expect-error for testing only
+      expect(() => resolveSafePath(null, "file.txt")).toThrow("Base path and input path are required");
+      // @ts-expect-error for testing only
+      expect(() => resolveSafePath(undefined, "file.txt")).toThrow("Base path and input path are required");
+    });
+
+    it("should throw error when input path is missing or empty", () => {
+      expect(() => resolveSafePath("/base", "")).toThrow("Base path and input path are required");
+      // @ts-expect-error for testing only
+      expect(() => resolveSafePath("/base", null)).toThrow("Base path and input path are required");
+      // @ts-expect-error for testing only
+      expect(() => resolveSafePath("/base", undefined)).toThrow("Base path and input path are required");
+    });
+
+    it("should throw TypeError when base path is not a string", () => {
+      // @ts-expect-error for testing only
+      expect(() => resolveSafePath(123, "file.txt")).toThrow("Base path and input path must be strings");
+      // @ts-expect-error for testing only
+      expect(() => resolveSafePath({}, "file.txt")).toThrow("Base path and input path must be strings");
+      // @ts-expect-error for testing only
+      expect(() => resolveSafePath([], "file.txt")).toThrow("Base path and input path must be strings");
+      // @ts-expect-error for testing only
+      expect(() => resolveSafePath(true, "file.txt")).toThrow("Base path and input path must be strings");
+    });
+
+    it("should throw TypeError when input path is not a string", () => {
+      // @ts-expect-error for testing only
+      expect(() => resolveSafePath("/base", 123)).toThrow("Base path and input path must be strings");
+      // @ts-expect-error for testing only
+      expect(() => resolveSafePath("/base", {})).toThrow("Base path and input path must be strings");
+      // @ts-expect-error for testing only
+      expect(() => resolveSafePath("/base", [])).toThrow("Base path and input path must be strings");
+      // @ts-expect-error for testing only
+      expect(() => resolveSafePath("/base", true)).toThrow("Base path and input path must be strings");
+    });
+  });
+
+  describe("basic path resolution", () => {
+    it("should resolve simple relative paths", () => {
+      expect.soft(resolveSafePath("/home/user", "documents")).toBe("/home/user/documents");
+      expect.soft(resolveSafePath("/var/www", "index.html")).toBe("/var/www/index.html");
+      expect.soft(resolveSafePath("relative/base", "file.txt")).toBe(`${process.cwd()}/relative/base/file.txt`);
+    });
+
+    it("should resolve nested relative paths", () => {
+      expect.soft(resolveSafePath("/home/user", "docs/file.txt")).toBe("/home/user/docs/file.txt");
+      expect.soft(resolveSafePath("/app", "src/components/Button.tsx")).toBe("/app/src/components/Button.tsx");
+    });
+
+    it("should handle paths with dots", () => {
+      expect.soft(resolveSafePath("/home/user", "./documents")).toBe("/home/user/documents");
+      expect.soft(resolveSafePath("/home/user", "docs/./file.txt")).toBe("/home/user/docs/file.txt");
+    });
+
+    it("should resolve paths that go up then down safely", () => {
+      expect.soft(resolveSafePath("/home/user", "temp/../documents/file.txt")).toBe("/home/user/documents/file.txt");
+      expect.soft(resolveSafePath("/app/public", "assets/../images/logo.png")).toBe("/app/public/images/logo.png");
+    });
+  });
+
+  describe("absolute path handling", () => {
+    it("should treat absolute input paths as relative to base", () => {
+      expect.soft(resolveSafePath("/home/user", "/documents/file.txt")).toBe("/home/user/documents/file.txt");
+      expect.soft(resolveSafePath("/var/www", "/html/index.html")).toBe("/var/www/html/index.html");
+    });
+
+    it("should handle absolute paths with complex structures", () => {
+      expect.soft(resolveSafePath("/app", "/api/v1/users.json")).toBe("/app/api/v1/users.json");
+      expect.soft(resolveSafePath("/home/user/project", "/src/index.ts")).toBe("/home/user/project/src/index.ts");
+    });
+  });
+
+  describe("url decoding integration", () => {
+    it("should decode URL-encoded paths", () => {
+      expect.soft(resolveSafePath("/home/user", "My%20Documents")).toBe("/home/user/My Documents");
+      expect.soft(resolveSafePath("/var/www", "file%2Etxt")).toBe("/var/www/file.txt");
+      expect.soft(resolveSafePath("/app", "folder%2Ffile%2Etxt")).toBe("/app/folder/file.txt");
+    });
+
+    it("should handle multiple levels of URL encoding", () => {
+      expect.soft(resolveSafePath("/home/user", "%252520file")).toBe("/home/user/ file");
+      expect.soft(resolveSafePath("/app", "%252Fapi%252Fusers")).toBe("/app/api/users");
+    });
+
+    it("should decode common manual encodings", () => {
+      expect.soft(resolveSafePath("/base", "file%2etxt")).toBe("/base/file.txt");
+      expect.soft(resolveSafePath("/base", "path%2fto%2ffile")).toBe("/base/path/to/file");
+      expect.soft(resolveSafePath("/base", "path%5cto%5cfile")).toBe("/base/path/to/file");
+    });
+
+    it("should handle invalid URL encoding gracefully", () => {
+      expect.soft(() => resolveSafePath("/base", "%GG%2efile")).not.toThrow();
+      expect.soft(resolveSafePath("/base", "%GG%2efile")).toBe("/base/%GG.file");
+    });
+  });
+
+  describe("path traversal protection", () => {
+    it("should throw BridgePathTraversal for simple traversal attempts", () => {
+      expect.soft(() => resolveSafePath("/home/user", "../config")).toThrow(BridgePathTraversal);
+      expect.soft(() => resolveSafePath("/var/www", "../../etc/passwd")).toThrow(BridgePathTraversal);
+      expect.soft(() => resolveSafePath("/app", "../../../root")).toThrow(BridgePathTraversal);
+    });
+
+    it("should throw BridgePathTraversal for encoded traversal attempts", () => {
+      expect.soft(() => resolveSafePath("/home/user", "%2e%2e%2fconfig")).toThrow(BridgePathTraversal);
+      expect.soft(() => resolveSafePath("/var/www", "%2e%2e%2f%2e%2e%2fetc%2fpasswd")).toThrow(BridgePathTraversal);
+      expect.soft(() => resolveSafePath("/app", "..%2f..%2f..%2froot")).toThrow(BridgePathTraversal);
+    });
+
+    it("should throw BridgePathTraversal for complex traversal patterns", () => {
+      expect.soft(() => resolveSafePath("/home/user", "docs/../../config")).toThrow(BridgePathTraversal);
+      expect.soft(() => resolveSafePath("/app/public", "assets/../../../private")).toThrow(BridgePathTraversal);
+      expect.soft(() => resolveSafePath("/var/www", "html/uploads/../../../etc")).toThrow(BridgePathTraversal);
+    });
+
+    it.todo("should throw BridgePathTraversal with absolute paths that resolve outside", () => {
+      expect.soft(() => resolveSafePath("/home/user", "/etc/passwd")).toThrow(BridgePathTraversal);
+      expect.soft(() => resolveSafePath("/app", "/var/log/system.log")).toThrow(BridgePathTraversal);
+    });
+
+    it("should handle mixed encoding and traversal attempts", () => {
+      expect.soft(() => resolveSafePath("/secure", "%2e%2e%2f%2e%2e%2fpasswd")).toThrow(BridgePathTraversal);
+      expect.soft(() => resolveSafePath("/app", "folder%2f%2e%2e%2f%2e%2e%2fconfig")).toThrow(BridgePathTraversal);
+    });
+  });
+
+  describe("path normalization and formatting", () => {
+    it("should handle base paths with trailing slashes", () => {
+      expect.soft(resolveSafePath("/home/user/", "documents")).toBe("/home/user/documents");
+      expect.soft(resolveSafePath("/var/www/", "html/index.html")).toBe("/var/www/html/index.html");
+    });
+
+    it("should handle paths with redundant separators", () => {
+      expect.soft(resolveSafePath("/home//user", "docs//file.txt")).toBe("/home/user/docs/file.txt");
+      expect.soft(resolveSafePath("/app", "src///components//Button.tsx")).toBe("/app/src/components/Button.tsx");
+    });
+
+    it("should handle very long paths", () => {
+      const longPath = `${"a".repeat(100)}/${"b".repeat(100)}.txt`;
+      const result = resolveSafePath("/base", longPath);
+
+      expect(result).toBe(`/base/${longPath}`);
+    });
+
+    it("should handle paths with special characters", () => {
+      expect.soft(resolveSafePath("/home/user", "café.txt")).toBe("/home/user/café.txt");
+      expect.soft(resolveSafePath("/app", "file!@#$%^&*().txt")).toBe("/app/file!@#$%^&*().txt");
+    });
+  });
+
+  describe("directory traversal attack prevention", () => {
+    it("should protect upload directories from traversal", () => {
+      const uploadDir = "/var/uploads";
+
+      // Valid uploads
+      expect.soft(resolveSafePath(uploadDir, "user123/avatar.jpg")).toBe("/var/uploads/user123/avatar.jpg");
+      expect.soft(resolveSafePath(uploadDir, "documents/report.pdf")).toBe("/var/uploads/documents/report.pdf");
+
+      // Invalid attempts
+      expect(() => resolveSafePath(uploadDir, "../config/database.yml")).toThrow(BridgePathTraversal);
+      expect(() => resolveSafePath(uploadDir, "../../etc/passwd")).toThrow(BridgePathTraversal);
+    });
+
+    it("should protect template includes from directory traversal", () => {
+      const templateDir = "/app/templates";
+
+      // valid includes
+      expect.soft(resolveSafePath(templateDir, "layout.html")).toBe("/app/templates/layout.html");
+      expect.soft(resolveSafePath(templateDir, "partials/header.html")).toBe("/app/templates/partials/header.html");
+
+      // invalid attempts
+      expect.soft(() => resolveSafePath(templateDir, "../config/secrets.json")).toThrow(BridgePathTraversal);
+      expect.soft(() => resolveSafePath(templateDir, "../../app.py")).toThrow(BridgePathTraversal);
+    });
+
+    it("should protect against encoded path traversal attacks", () => {
+      const webRoot = "/var/www/html";
+
+      // valid requests
+      expect.soft(resolveSafePath(webRoot, "index.html")).toBe("/var/www/html/index.html");
+      expect.soft(resolveSafePath(webRoot, "assets%2Fstyle.css")).toBe("/var/www/html/assets/style.css");
+
+      // attack attempts
+      expect(() => resolveSafePath(webRoot, "%2e%2e%2f%2e%2e%2fetc%2fpasswd")).toThrow(BridgePathTraversal);
+      expect(() => resolveSafePath(webRoot, "..%252f..%252fetc%252fpasswd")).toThrow(BridgePathTraversal);
+    });
+  });
+
+  describe("decoding error handling", () => {
+    it("should throw error when path decoding fails due to malicious input", () => {
+      // Create a deeply nested encoded string that exceeds max iterations
+      let maliciousPath = "%";
+      for (let i = 0; i < 15; i++) {
+        maliciousPath = encodeURIComponent(maliciousPath);
+      }
+
+      expect(() => resolveSafePath("/base", maliciousPath)).toThrow("Failed to decode path safely");
+    });
+
+    it("should provide helpful error messages for decoding failures", () => {
+      let maliciousPath = "%";
+      for (let i = 0; i < 15; i++) {
+        maliciousPath = encodeURIComponent(maliciousPath);
+      }
+
+      expect(() => resolveSafePath("/base", maliciousPath)).toThrow(/Failed to decode path safely.*possible malicious input/);
+    });
+  });
+
+  describe("path resolution with URL decoding", () => {
+    it("should resolve nested paths with URL-encoded components", () => {
+      expect.soft(resolveSafePath("/app/public", "css/style.css")).toBe("/app/public/css/style.css");
+      expect.soft(resolveSafePath("/app/public", "js%2Fapp.js")).toBe("/app/public/js/app.js");
+      expect.soft(resolveSafePath("/app/public", "images/logo%20(1).png")).toBe("/app/public/images/logo (1).png");
+    });
+
+    it("should resolve complex nested structures", () => {
+      expect.soft(resolveSafePath("/app/data", "users/123.json")).toBe("/app/data/users/123.json");
+      expect.soft(resolveSafePath("/app/data", "reports%2F2023%2Fq1.pdf")).toBe("/app/data/reports/2023/q1.pdf");
+      expect.soft(resolveSafePath("/base/path", "deep/nested/file.txt")).toBe("/base/path/deep/nested/file.txt");
+    });
+
+    it("should handle mixed encoding in nested paths", () => {
+      expect.soft(resolveSafePath("/base/path", "projects/website/index.html")).toBe("/base/path/projects/website/index.html");
+      expect.soft(resolveSafePath("/base/path", "photos%2Fvacation%2Fbeach.jpg")).toBe("/base/path/photos/vacation/beach.jpg");
+      expect.soft(resolveSafePath("/base/path", "docs%2Ffile%20name.pdf")).toBe("/base/path/docs/file name.pdf");
+    });
+  });
+
+  describe("traversal prevention from various base directories", () => {
+    it("should prevent traversal from public directories", () => {
+      expect.soft(() => resolveSafePath("/app/public", "../config/database.yml")).toThrow(BridgePathTraversal);
+      expect.soft(() => resolveSafePath("/var/www", "../../etc/passwd")).toThrow(BridgePathTraversal);
+    });
+
+    it("should prevent traversal from data directories", () => {
+      expect(() => resolveSafePath("/app/data", "../logs/error.log")).toThrow(BridgePathTraversal);
+    });
+
+    it("should prevent traversal from any base directory", () => {
+      expect.soft(() => resolveSafePath("/base/path", "../.ssh/id_rsa")).toThrow(BridgePathTraversal);
+      expect.soft(() => resolveSafePath("/base/path", "../../other/private.txt")).toThrow(BridgePathTraversal);
+      expect.soft(() => resolveSafePath("/secure/dir", "../../../root/secret")).toThrow(BridgePathTraversal);
     });
   });
 });

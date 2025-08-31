@@ -84,11 +84,11 @@ export function decodePathSafely(encodedPath: string): string {
  */
 export function resolveSafePath(basePath: string, inputPath: string): string {
   if (!basePath || !inputPath) {
-    throw new Error("Base path and user path are required");
+    throw new Error("Base path and input path are required");
   }
 
   if (typeof basePath !== "string" || typeof inputPath !== "string") {
-    throw new TypeError("Base path and user path must be strings");
+    throw new TypeError("Base path and input path must be strings");
   }
 
   // normalize the base path to absolute form
@@ -102,14 +102,23 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
     throw new Error(`Failed to decode path safely: ${err instanceof Error ? err.message : "Unknown error"}`);
   }
 
-  // TODO:
-  // should we treat absolute paths as relative?
+  let resolvedPath: string;
 
   if (pathe.isAbsolute(decodedPath)) {
-    decodedPath = pathe.relative(normalizedBasePath, decodedPath);
-  }
+    // First check if the absolute path is within the base directory
+    const absoluteResolved = pathe.resolve(decodedPath);
 
-  const resolvedPath = pathe.resolve(normalizedBasePath, decodedPath);
+    if (absoluteResolved === normalizedBasePath || absoluteResolved.startsWith(normalizedBasePath + pathe.sep)) {
+      resolvedPath = absoluteResolved;
+    } else {
+      // Otherwise, strip the leading slash and treat as relative to base
+      const relativePath = decodedPath.replace(/^\/+/, "");
+      resolvedPath = pathe.resolve(normalizedBasePath, relativePath);
+    }
+  } else {
+    // It's relative, resolve it relative to the base
+    resolvedPath = pathe.resolve(normalizedBasePath, decodedPath);
+  }
 
   if (!isWithinBase(resolvedPath, normalizedBasePath)) {
     throw new BridgePathTraversal("Path traversal detected");
