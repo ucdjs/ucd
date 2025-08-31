@@ -1,13 +1,15 @@
 import { existsSync, readdirSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { defineConfig, type TestProjectConfiguration } from "vitest/config";
 
-const root = new URL("./", import.meta.url).pathname;
+const root = fileURLToPath(new URL("./", import.meta.url));
 
 const pkgRoot = (pkg: string) =>
-  new URL(`./packages/${pkg}`, import.meta.url).pathname;
+  fileURLToPath(new URL(`./packages/${pkg}`, import.meta.url));
+
 const alias = (pkg: string) => `${pkgRoot(pkg)}/src`;
 
-const aliases = readdirSync(new URL("./packages", import.meta.url).pathname)
+const aliases = readdirSync(fileURLToPath(new URL("./packages", import.meta.url)))
   .filter((dir) => existsSync(pkgRoot(dir) + "/package.json"))
   .reduce<Record<string, string>>(
     (acc, pkg) => {
@@ -25,7 +27,7 @@ const hiddenLogs = [
   "[api]"
 ]
 
-const packageProjects = readdirSync(new URL("./packages", import.meta.url).pathname)
+const packageProjects = readdirSync(fileURLToPath(new URL("./packages", import.meta.url)))
   .filter((dir) => existsSync(pkgRoot(dir) + "/package.json"))
   .map((dir) => {
     return {
@@ -37,7 +39,7 @@ const packageProjects = readdirSync(new URL("./packages", import.meta.url).pathn
     } satisfies TestProjectConfiguration;
   });
 
-const workerUnitProjects = readdirSync(new URL("./apps", import.meta.url).pathname)
+const workerUnitProjects = readdirSync(fileURLToPath(new URL("./apps", import.meta.url)))
   .map((dir) => {
     return {
       extends: true,
