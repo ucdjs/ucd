@@ -153,8 +153,8 @@ describe("resolveSafePath", () => {
 
   it.each([
     ["/", "file.txt", "/file.txt"],
-    ["/base", "folder\\file.txt", "/base/folder\\file.txt"],
-    ["/base", "folder/sub\\file.txt", "/base/folder/sub\\file.txt"],
+    ["/base", "folder\\file.txt", "/base/folder/file.txt"],
+    ["/base", "folder/sub\\file.txt", "/base/folder/sub/file.txt"],
   ])("should handle edge cases: base='%s', path='%s' -> '%s'", (base, inputPath, expected) => {
     const result = resolveSafePath(base, inputPath);
     expect(result).toBe(expected);
