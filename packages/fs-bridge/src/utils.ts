@@ -41,6 +41,47 @@ export function decodePathSafely(encodedPath: string): string {
   return decodedPath;
 }
 
+/**
+ * Safely resolves a user-provided path relative to a base directory with path traversal protection.
+ *
+ * This function takes a base directory path and a user-provided input path, then safely resolves
+ * them together while preventing path traversal attacks. It performs URL decoding, path normalization,
+ * and validates that the final resolved path remains within the bounds of the base directory.
+ *
+ * @param {string} basePath - The base directory path that serves as the root for resolution
+ * @param {string} inputPath - The user-provided path to resolve (can be relative or absolute)
+ * @returns {string} The safely resolved absolute path within the base directory
+ *
+ * @throws {Error} When base path or input path are missing or not strings
+ * @throws {TypeError} When parameters are not of string type
+ * @throws {Error} When path decoding fails due to malicious input
+ * @throws {BridgePathTraversal} When the resolved path would escape the base directory (path traversal detected)
+ *
+ * @example
+ * ```typescript
+ * // Basic usage with relative path
+ * resolveSafePath('/home/user/docs', 'file.txt')
+ * // Returns: '/home/user/docs/file.txt'
+ *
+ * // Handles URL-encoded paths
+ * resolveSafePath('/home/user/docs', 'folder%2Ffile.txt')
+ * // Returns: '/home/user/docs/folder/file.txt'
+ *
+ * // Prevents path traversal attacks
+ * resolveSafePath('/home/user/docs', '../../../etc/passwd')
+ * // Throws: BridgePathTraversal
+ * ```
+ *
+ * @remarks
+ * - Automatically normalizes the base path to absolute form
+ * - Performs iterative URL decoding to handle multiple encoding layers
+ * - Treats absolute input paths as relative to the base path
+ * - Uses path traversal detection to ensure security
+ *
+ * @security
+ * This function is designed to prevent directory traversal attacks by validating
+ * that the final path remains within base directory bounds.
+ */
 export function resolveSafePath(basePath: string, inputPath: string): string {
   if (!basePath || !inputPath) {
     throw new Error("Base path and user path are required");
