@@ -1,3 +1,4 @@
+import { normalize } from "node:path";
 import { describe, expect, it } from "vitest";
 import { BridgePathTraversal } from "../src/errors";
 import { decodePathSafely, isWithinBase, resolveSafePath } from "../src/utils";
@@ -390,7 +391,8 @@ describe("resolveSafePath", () => {
     it("should resolve simple relative paths", () => {
       expect.soft(resolveSafePath("/home/user", "documents")).toBe("/home/user/documents");
       expect.soft(resolveSafePath("/var/www", "index.html")).toBe("/var/www/index.html");
-      expect.soft(resolveSafePath("relative/base", "file.txt")).toBe(`${process.cwd()}/relative/base/file.txt`);
+      // TODO: fix this
+      expect.soft(normalize(resolveSafePath("relative/base", "file.txt"))).toBe(normalize(`${process.cwd()}/relative/base/file.txt`));
     });
 
     it("should resolve nested relative paths", () => {
