@@ -76,12 +76,15 @@ export type FileSystemBridgeCapabilities = {
   [K in FileSystemBridgeCapabilityKey]: boolean;
 };
 
+type ResolveSafePathFn = (basePath: string, inputPath: string) => string;
+
 type FileSystemBridgeSetupFn<
   TOptionsSchema extends z.ZodType,
   TState extends Record<string, unknown> = Record<string, unknown>,
 > = (ctx: {
   options: z.infer<TOptionsSchema>;
   state: TState;
+  resolveSafePath: ResolveSafePathFn;
 }) => FileSystemBridgeOperations;
 
 export interface FileSystemBridgeObject<

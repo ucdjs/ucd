@@ -5,23 +5,38 @@ import { FileEntrySchema } from "@ucdjs/schemas";
 import { z } from "zod";
 import { defineFileSystemBridge } from "../define";
 
+const API_BASE_URL_SCHEMA = z.codec(z.httpUrl(), z.instanceof(URL), {
+  decode: (urlString) => new URL(urlString),
+  encode: (url) => url.href,
+}).default(new URL("/api/v1/files", UCDJS_API_BASE_URL));
+
 const HTTPFileSystemBridge = defineFileSystemBridge({
   optionsSchema: z.object({
-    baseUrl: z.string().default(joinURL(UCDJS_API_BASE_URL, "/api/v1/files")),
+    baseUrl: API_BASE_URL_SCHEMA,
   }),
-  setup({ options }) {
+  setup({ options, resolveSafePath }) {
     const baseUrl = options.baseUrl;
+
     return {
       async read(path) {
-        const url = joinURL(baseUrl, path);
+        const url = joinURL(
+          baseUrl.origin,
+          resolveSafePath(baseUrl.pathname, path),
+        );
+
         const response = await fetch(url);
+
         if (!response.ok) {
           throw new Error(`Failed to read remote file: ${response.statusText}`);
         }
         return response.text();
       },
       async listdir(path, recursive = false) {
-        const url = joinURL(baseUrl, path);
+        const url = joinURL(
+          baseUrl.origin,
+          resolveSafePath(baseUrl.pathname, path),
+        );
+
         const response = await fetch(url, {
           method: "GET",
           headers: {
@@ -81,7 +96,11 @@ const HTTPFileSystemBridge = defineFileSystemBridge({
         const entries: FSEntry[] = [];
         for (const entry of data) {
           if (entry.type === "directory") {
-            const children = await this.listdir!(joinURL(path, entry.path), true);
+            const children = await this.listdir!(
+              joinURL(path, entry.path),
+              true,
+            );
+
             entries.push({
               type: "directory",
               name: entry.name,
@@ -100,7 +119,11 @@ const HTTPFileSystemBridge = defineFileSystemBridge({
         return entries;
       },
       async exists(path) {
-        const url = joinURL(baseUrl, path);
+        const url = joinURL(
+          baseUrl.origin,
+          resolveSafePath(baseUrl.pathname, path),
+        );
+
         return fetch(url, { method: "HEAD" })
           .then((response) => {
             return response.ok;
