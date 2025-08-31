@@ -6,7 +6,7 @@ import type {
   FileSystemBridgeOperations,
 } from "./types";
 import { z } from "zod";
-import { BridgeUnsupportedOperation } from "./errors";
+import { BridgeBaseError, BridgeGenericError, BridgeUnsupportedOperation } from "./errors";
 import { resolveSafePath } from "./utils";
 
 export function defineFileSystemBridge<
@@ -30,29 +30,55 @@ export function defineFileSystemBridge<
 
     const bridge = fsBridge.setup({
       options,
-      state: state ?? {} as TState,
+      state: (state ?? {}) as TState,
       resolveSafePath,
     });
 
     const capabilities = inferCapabilitiesFromOperations(bridge);
 
-    // create a proxy that throws for unsupported operations
+    // create a proxy that throws for unsupported operations and wraps methods in try-catch
     const proxiedBridge = new Proxy(bridge, {
-      get(target, prop) {
-        if (prop === "capabilities") {
+      get(target, property) {
+        if (property === "capabilities") {
           return capabilities;
         }
 
-        // If it's an operation method and not implemented, throw
-        if (typeof prop === "string" && prop in capabilities) {
-          if (!target[prop as keyof typeof target]) {
+        // if it's an operation method and not implemented, throw
+        if (typeof property === "string" && property in capabilities) {
+          if (!target[property as keyof typeof target]) {
             return () => {
-              throw new BridgeUnsupportedOperation(prop as FileSystemBridgeCapabilityKey);
+              throw new BridgeUnsupportedOperation(property as FileSystemBridgeCapabilityKey);
+            };
+          }
+
+          const originalMethod = target[property as keyof typeof target] as (...args: unknown[]) => unknown;
+
+          if (typeof originalMethod === "function") {
+            return (...args: any[]) => {
+              try {
+                const result = originalMethod.apply(target, args);
+
+                // check if result is a promise
+                if (result && typeof (result as PromiseLike<unknown>)?.then === "function") {
+                  if (!("catch" in (result as Promise<unknown>))) {
+                    throw new BridgeGenericError(
+                      `The promise returned by ${String(property)} operation does not support .catch()`,
+                    );
+                  }
+
+                  return (result as Promise<unknown>)?.catch((err: unknown) => handleError(property, err));
+                }
+
+                // sync result, return as-is
+                return result;
+              } catch (error: unknown) {
+                return handleError(property, error);
+              }
             };
           }
         }
 
-        return target[prop as keyof typeof target];
+        return target[property as keyof typeof target];
       },
     });
 
@@ -74,4 +100,17 @@ function inferCapabilitiesFromOperations(ops: Partial<FileSystemBridgeOperations
     mkdir: "mkdir" in ops && typeof ops.mkdir === "function",
     rm: "rm" in ops && typeof ops.rm === "function",
   };
+}
+
+function handleError(operation: PropertyKey, error: unknown): void {
+  // re-throw custom bridge errors directly
+  if (error instanceof BridgeBaseError) {
+    throw error;
+  }
+
+  // wrap unexpected errors in BridgeGenericError
+  throw new BridgeGenericError(
+    `Unexpected error in ${String(operation)} operation: ${error instanceof Error ? error.message : String(error)}`,
+    error instanceof Error ? error : undefined,
+  );
 }
