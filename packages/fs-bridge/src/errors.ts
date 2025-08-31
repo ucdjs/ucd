@@ -1,9 +1,21 @@
 import type { FileSystemBridgeCapabilityKey } from "./types";
 
 export abstract class BridgeBaseError extends Error {
-  constructor(message: string) {
-    super(message);
+  constructor(message: string, options?: ErrorOptions) {
+    super(message, options);
     this.name = "BridgeBaseError";
+  }
+}
+
+export class BridgeGenericError extends BridgeBaseError {
+  public readonly originalError?: Error;
+
+  constructor(message: string, originalError?: Error) {
+    super(message, {
+      cause: originalError,
+    });
+    this.name = "BridgeGenericError";
+    this.originalError = originalError;
   }
 }
 
@@ -16,16 +28,6 @@ export class BridgeUnsupportedOperation extends BridgeBaseError {
     super(`File system bridge does not support the '${capability}' capability.`);
     this.name = "BridgeUnsupportedOperation";
     this.capability = capability;
-  }
-}
-
-export class BridgeGenericError extends BridgeBaseError {
-  public readonly originalError?: Error;
-
-  constructor(message: string, originalError?: Error) {
-    super(message);
-    this.name = "BridgeGenericError";
-    this.originalError = originalError;
   }
 }
 
