@@ -1,7 +1,6 @@
 export { assertCapability } from "./assertions";
 
 export { defineFileSystemBridge } from "./define";
-
 export * from "./errors";
 
 export type {
@@ -10,3 +9,5 @@ export type {
   FileSystemBridgeRmOptions,
   FSEntry,
 } from "./types";
+
+export { isWithinBase, resolveSafePath } from "./utils";
