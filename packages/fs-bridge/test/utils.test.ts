@@ -1,7 +1,7 @@
 import { normalize } from "node:path";
 import { describe, expect, it } from "vitest";
 import { BridgePathTraversal } from "../src/errors";
-import { decodePathSafely, isWithinBase, resolveSafePath } from "../src/utils";
+import { isWithinBase, resolveSafePath } from "../src/utils";
 
 describe("isWithinBase", () => {
   describe("input validation", () => {
