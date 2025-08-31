@@ -514,6 +514,9 @@ importers:
       defu:
         specifier: catalog:prod
         version: 6.1.4
+      pathe:
+        specifier: catalog:prod
+        version: 2.0.3
       zod:
         specifier: catalog:prod
         version: 4.0.16
