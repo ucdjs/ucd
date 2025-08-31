@@ -30,7 +30,7 @@ V1_VERSIONS_ROUTER.openapi(LIST_ALL_UNICODE_VERSIONS_ROUTE, async (c) => {
     setTimeout(() => {
       controller.abort();
       log.warn("Fetching unicode versions page timed out");
-    }, 5000);
+    }, 7000);
 
     if (!response.ok) {
       log.error("Failed to fetch Unicode versions page", { status: response.status, statusText: response.statusText });
