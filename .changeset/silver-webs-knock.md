@@ -14,7 +14,7 @@ Wraps all fs-bridge operation methods with automatic error handling to improve e
 ```typescript
 import { defineFileSystemBridge, BridgeFileNotFound, BridgeGenericError } from '@ucdjs/fs-bridge';
 
-const bridge = defineFileSystemBridge({
+const bridgeCreator = defineFileSystemBridge({
   setup() {
     return {
       async read(path) {
@@ -30,6 +30,8 @@ const bridge = defineFileSystemBridge({
     };
   }
 });
+
+const bridge = bridgeCreator();
 
 // Usage - all errors are now consistently handled
 try {
