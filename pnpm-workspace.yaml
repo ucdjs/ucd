@@ -70,6 +70,8 @@ catalogs:
     "@scalar/hono-api-reference": ^0.9.13
     hono: ^4.9.0
     "@cloudflare/workers-types": ^4.20250809.0
+    "@hono/mcp": ^0.1.1
+    "@modelcontextprotocol/sdk": ^1.17.4
 
   types:
     "@types/react": ^19.1.9
