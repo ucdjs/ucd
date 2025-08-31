@@ -42,7 +42,7 @@ catalogs:
     yargs-parser: ^22.0.0
     defu: ^6.1.4
     arktype: ^2.1.20
-    zod: ^4.0.16
+    zod: ^4.1.5
     "@ai-sdk/openai": ^2.0.7
     ai: ^5.0.8
     knitwork: ^1.2.0
