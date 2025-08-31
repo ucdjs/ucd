@@ -10,4 +10,4 @@ export type {
   FSEntry,
 } from "./types";
 
-export { isWithinBase, resolveSafePath } from "./utils";
+export { resolveSafePath } from "./utils";

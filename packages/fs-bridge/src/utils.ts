@@ -1,89 +1,125 @@
 import pathe from "pathe";
 import { BridgePathTraversal } from "./errors";
 
-const DANGEROUS_CONTROL_CHARACTER_REGEX = /[\0\n\r]/;
+const MAX_DECODING_ITERATIONS = 10;
 
 /**
- * Safely resolves a user-provided path relative to a base directory while preventing path traversal attacks.
- *
- * This function performs multiple security checks:
- * - Detects dangerous control characters (null bytes, newlines, carriage returns)
- * - URL-decodes the input path to catch encoded traversal attempts
- * - Normalizes and resolves paths to prevent directory traversal
- * - Validates that the final resolved path stays within the base directory
- *
- * @param {string} basePath - The base directory that should contain the resolved path
- * @param {string} inputPath - The user-provided path to resolve (can be relative or absolute)
- * @returns {string} The safely resolved absolute path within the base directory
- * @throws {Error} When path traversal is detected or the resolved path would escape the base directory
- *
- * @remarks
- * - Absolute input paths are treated as relative to the base directory
- * - URL-encoded characters are decoded once to detect encoded traversal attempts
- * - The function handles both Unix and Windows path separators correctly
+ * @internal
  */
-export function resolveSafePath(basePath: string, inputPath: string): string {
-  // fast check for dangerous control characters
-  if (DANGEROUS_CONTROL_CHARACTER_REGEX.test(inputPath)) {
-    throw new Error(`Path contains dangerous control characters: ${inputPath}`);
+export function decodePathSafely(encodedPath: string): string {
+  if (typeof encodedPath !== "string") {
+    throw new TypeError("Encoded path must be a string");
   }
 
-  // decode URL-encoded characters once to detect encoded traversal attempts
-  let decodedPath = inputPath;
-  if (inputPath.includes("%")) {
+  let decodedPath = encodedPath;
+  let previousPath: string;
+  let iterations = 0;
+
+  do {
+    previousPath = decodedPath;
+
     try {
-      decodedPath = decodeURIComponent(inputPath);
+      // try to url decode
+      decodedPath = decodeURIComponent(decodedPath);
     } catch {
-      throw new Error(`Invalid URL encoding in path: ${inputPath}`);
+      // we continue even though decoding failed
     }
+
+    // handle common manual encodings
+    decodedPath = decodedPath
+      .replace(/%2e/gi, ".") // encoded dots
+      .replace(/%2f/gi, "/") // encoded forward slashes
+      .replace(/%5c/gi, "\\"); // encoded backslashes
+
+    iterations++;
+  } while (decodedPath !== previousPath && iterations < MAX_DECODING_ITERATIONS);
+
+  if (iterations >= MAX_DECODING_ITERATIONS) {
+    throw new Error("Maximum decoding iterations exceeded - possible malicious input");
   }
 
-  const resolvedBasePath = pathe.resolve(basePath);
+  return decodedPath;
+}
 
-  // handle absolute paths
-  let cleanPath: string;
+export function resolveSafePath(basePath: string, inputPath: string): string {
+  if (!basePath || !inputPath) {
+    throw new Error("Base path and user path are required");
+  }
+
+  if (typeof basePath !== "string" || typeof inputPath !== "string") {
+    throw new TypeError("Base path and user path must be strings");
+  }
+
+  // normalize the base path to absolute form
+  const normalizedBasePath = pathe.resolve(basePath);
+
+  // decode the input path until there are no more encoded segments
+  let decodedPath: string;
+  try {
+    decodedPath = decodePathSafely(inputPath);
+  } catch (err) {
+    throw new Error(`Failed to decode path safely: ${err instanceof Error ? err.message : "Unknown error"}`);
+  }
+
+  // TODO:
+  // should we treat absolute paths as relative?
+
   if (pathe.isAbsolute(decodedPath)) {
-    // if the absolute path is already within the base path, use the relative portion
-    const resolvedInputPath = pathe.resolve(decodedPath);
-    if (resolvedInputPath.startsWith(resolvedBasePath + pathe.sep) || resolvedInputPath === resolvedBasePath) {
-      cleanPath = pathe.relative(resolvedBasePath, resolvedInputPath);
-    } else {
-      // treat absolute paths as relative to base (remove leading slash)
-      cleanPath = pathe.normalize(decodedPath.slice(1));
-    }
-  } else {
-    cleanPath = pathe.normalize(decodedPath);
+    decodedPath = pathe.relative(normalizedBasePath, decodedPath);
   }
 
-  const resolvedPath = pathe.resolve(resolvedBasePath, cleanPath);
+  const resolvedPath = pathe.resolve(normalizedBasePath, decodedPath);
 
-  // check if resolved path is within the base directory
-  if (!isWithinBase(resolvedPath, resolvedBasePath)) {
-    throw new BridgePathTraversal(inputPath);
+  if (!isWithinBase(resolvedPath, normalizedBasePath)) {
+    throw new BridgePathTraversal("Path traversal detected");
   }
 
   return resolvedPath;
 }
 
 /**
- * Checks if a resolved path is within the specified base directory.
- * This function is used for security validation to prevent path traversal attacks.
+ * Checks if a resolved path is within the bounds of a base directory path.
  *
- * @param {string} resolvedPath - The fully resolved absolute path to validate
- * @param {string} basePath - The base directory path that should contain the resolved path
- * @returns {boolean} `true` if the resolved path is within the base directory, `false` otherwise
+ * This function performs a normalized string comparison to determine if the resolved path
+ * is equal to or a subdirectory of the base path. It handles path normalization and
+ * ensures proper separator handling to prevent partial path matches.
+ *
+ * @param {string} resolvedPath - The resolved absolute path to check
+ * @param {string} basePath - The base directory path to check against
+ * @returns {boolean} `true` if the resolved path is within the base path bounds, `false` otherwise
+ *
+ * @example
+ * ```typescript
+ * isWithinBase('/home/user/docs/file.txt', '/home/user') // true
+ * isWithinBase('/home/user2/file.txt', '/home/user') // false
+ * isWithinBase('/home/user', '/home/user') // true (same path)
+ * ```
  *
  * @remarks
- * - For root base path ("/"), any absolute path is considered valid
- * - For non-root base paths, the resolved path must either equal the base path
- *   or start with the base path followed by a path separator
+ * Returns `false` if either parameter is not a string.
+ * Normalizes both paths before comparison.
+ * Uses path separators to prevent partial matches (e.g., '/root' vs '/root2').
  */
 export function isWithinBase(resolvedPath: string, basePath: string): boolean {
-  // handle root base path case
-  if (basePath === "/") {
-    return resolvedPath === "/" || resolvedPath.startsWith("/");
+  if (typeof resolvedPath !== "string" || typeof basePath !== "string") {
+    return false;
   }
 
-  // for non-root base paths, check if resolved path starts with base + separator or equals base
-  return resolvedPath.startsWith(basePath + pathe.sep) || resolvedPath === basePath;
+  if (resolvedPath.trim() === "" || basePath.trim() === "") {
+    return false;
+  }
+
+  const normalizedResolved = pathe.normalize(resolvedPath);
+  const normalizedBase = pathe.normalize(basePath);
+
+  // TODO: handle windows case insensitivity
+
+  const resolved = normalizedResolved;
+  const base = normalizedBase;
+
+  // check if the resolved path starts with the base path. To prevent partial matches
+  // like /root vs /root2, we append a separator unless the base path already ends
+  // with one (such as the root directory "/").
+  const baseWithSeparator = base.endsWith(pathe.sep) ? base : base + pathe.sep;
+  return resolved === base || resolved.startsWith(baseWithSeparator);
 }
