@@ -1,7 +1,7 @@
 import type { FileSystemBridgeOperations } from "../src/types";
 import { describe, expect, it, vi } from "vitest";
 import { z } from "zod";
-import { assertCapability } from "../src";
+import { assertCapability, BridgeGenericError, BridgeSetupError, BridgeUnsupportedOperation } from "../src";
 import { defineFileSystemBridge } from "../src/define";
 
 describe("defineFileSystemBridge", () => {
@@ -233,6 +233,87 @@ describe("defineFileSystemBridge", () => {
       assertCapability(operations, ["read"]);
 
       await expect(operations.read("test")).resolves.toBe("content");
+    });
+  });
+
+  it("should throw when accessing unsupported operation", () => {
+    const bridge = defineFileSystemBridge({
+      setup: () => ({}),
+    });
+
+    const operations = bridge();
+
+    expect(() => operations.read!("undefined")).toThrowError(new BridgeUnsupportedOperation("read"));
+  });
+
+  it("should throw if method doesn't have catch", () => {
+    const p = Promise.resolve("value");
+
+    const bridge = defineFileSystemBridge({
+      setup: () => ({
+        read: vi.fn().mockImplementation(() => {
+          return { then: p.then.bind(p) };
+        }),
+      }),
+    });
+
+    const operations = bridge();
+
+    expect(() => operations.read!("undefined")).toThrowError(new BridgeGenericError("The promise returned by 'read' operation does not support .catch()"));
+  });
+
+  describe("error handling", () => {
+    it("should throw if an error occurs in the setup function", () => {
+      const bridge = defineFileSystemBridge({
+        setup: () => {
+          throw new Error("Setup error");
+        },
+      });
+
+      let error: BridgeSetupError | null = null;
+
+      try {
+        bridge();
+
+        expect.fail("Expected BridgeSetupError to be thrown");
+      } catch (err: any) {
+        error = err;
+      }
+
+      expect(error).toBeInstanceOf(BridgeSetupError);
+      expect(error?.message).toBe("Failed to setup file system bridge");
+      expect(error?.originalError).toBeInstanceOf(Error);
+      expect(error?.originalError?.message).toBe("Setup error");
+    });
+
+    it("should catch and rethrow errors from async operations", async () => {
+      const bridge = defineFileSystemBridge({
+        setup: () => ({
+          read: vi.fn().mockRejectedValue(new Error("Async error")),
+        }),
+      });
+
+      const operations = bridge();
+
+      await expect(operations.read!("undefined")).rejects.toThrow(
+        "Unexpected error in 'read' operation: Async error",
+      );
+    });
+
+    it("should catch and rethrow errors from sync operations", () => {
+      const bridge = defineFileSystemBridge({
+        setup: () => ({
+          read: vi.fn().mockImplementation(() => {
+            throw new Error("Sync error");
+          }),
+        }),
+      });
+
+      const operations = bridge();
+
+      expect(() => operations.read!("undefined")).toThrow(
+        "Unexpected error in 'read' operation: Sync error",
+      );
     });
   });
 });
