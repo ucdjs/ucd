@@ -1,6 +1,4 @@
-export {
-  assertCapability,
-} from "./assertions";
+export { assertCapability } from "./assertions";
 
 export { defineFileSystemBridge } from "./define";
 

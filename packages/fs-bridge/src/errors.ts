@@ -1,6 +1,25 @@
 import type { FileSystemBridgeCapabilityKey } from "./types";
 
-export class BridgeUnsupportedOperation extends Error {
+export abstract class BridgeBaseError extends Error {
+  constructor(message: string, options?: ErrorOptions) {
+    super(message, options);
+    this.name = "BridgeBaseError";
+  }
+}
+
+export class BridgeGenericError extends BridgeBaseError {
+  public readonly originalError?: Error;
+
+  constructor(message: string, originalError?: Error) {
+    super(message, {
+      cause: originalError,
+    });
+    this.name = "BridgeGenericError";
+    this.originalError = originalError;
+  }
+}
+
+export class BridgeUnsupportedOperation extends BridgeBaseError {
   public readonly capability: FileSystemBridgeCapabilityKey;
 
   constructor(
@@ -12,17 +31,7 @@ export class BridgeUnsupportedOperation extends Error {
   }
 }
 
-export class BridgeGenericError extends Error {
-  public readonly originalError?: Error;
-
-  constructor(message: string, originalError?: Error) {
-    super(message);
-    this.name = "BridgeGenericError";
-    this.originalError = originalError;
-  }
-}
-
-export class BridgePathTraversal extends Error {
+export class BridgePathTraversal extends BridgeBaseError {
   public readonly accessedPath: string;
 
   constructor(path: string) {
@@ -32,7 +41,7 @@ export class BridgePathTraversal extends Error {
   }
 }
 
-export class BridgeFileNotFound extends Error {
+export class BridgeFileNotFound extends BridgeBaseError {
   public readonly path: string;
 
   constructor(path: string) {
@@ -42,7 +51,7 @@ export class BridgeFileNotFound extends Error {
   }
 }
 
-export class BridgeEntryIsDir extends Error {
+export class BridgeEntryIsDir extends BridgeBaseError {
   public readonly path: string;
 
   constructor(path: string) {
