@@ -30,7 +30,7 @@ export function defineFileSystemBridge<
 
     const bridge = fsBridge.setup({
       options,
-      state: state ?? {} as TState,
+      state: (state ?? {}) as TState,
       resolveSafePath,
     });
 
