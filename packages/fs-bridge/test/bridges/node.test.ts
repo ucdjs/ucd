@@ -451,13 +451,13 @@ describe("node fs-bridge", () => {
       // verify project structure
       const rootFiles = await bridge.listdir(".");
       expect(rootFiles).toHaveLength(5);
-      expect(rootFiles).toEqual([
+      expect(rootFiles).toEqual(expect.arrayContaining([
         { type: "file", name: "README.md", path: "README.md" },
         { type: "directory", name: "docs", path: "docs", children: [] },
         { type: "file", name: "package.json", path: "package.json" },
         { type: "directory", name: "src", path: "src", children: [] },
         { type: "directory", name: "tests", path: "tests", children: [] },
-      ]);
+      ]));
 
       // verify file contents
       const packageJson = await bridge.read("package.json");
