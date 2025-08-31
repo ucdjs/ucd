@@ -60,13 +60,19 @@ export function defineFileSystemBridge<
 
                 // check if result is a promise
                 if (result && typeof (result as PromiseLike<unknown>)?.then === "function") {
+                  if (!("catch" in (result as Promise<unknown>))) {
+                    throw new BridgeGenericError(
+                      `The promise returned by ${String(property)} operation does not support .catch()`,
+                    );
+                  }
+
                   return (result as Promise<unknown>)?.catch((err: unknown) => handleError(property, err));
                 }
 
                 // sync result, return as-is
                 return result;
               } catch (error: unknown) {
-                handleError(property, error);
+                return handleError(property, error);
               }
             };
           }
@@ -96,7 +102,7 @@ function inferCapabilitiesFromOperations(ops: Partial<FileSystemBridgeOperations
   };
 }
 
-function handleError(operation: string, error: unknown): void {
+function handleError(operation: PropertyKey, error: unknown): void {
   // re-throw custom bridge errors directly
   if (error instanceof BridgeBaseError) {
     throw error;
@@ -104,7 +110,7 @@ function handleError(operation: string, error: unknown): void {
 
   // wrap unexpected errors in BridgeGenericError
   throw new BridgeGenericError(
-    `Unexpected error in ${operation} operation: ${error instanceof Error ? error.message : String(error)}`,
+    `Unexpected error in ${String(operation)} operation: ${error instanceof Error ? error.message : String(error)}`,
     error instanceof Error ? error : undefined,
   );
 }
