@@ -51,7 +51,7 @@ export function defineFileSystemBridge<
             };
           }
 
-          const originalMethod = target[property as keyof typeof target] as (...args: any[]) => any;
+          const originalMethod = target[property as keyof typeof target] as (...args: unknown[]) => unknown;
 
           if (typeof originalMethod === "function") {
             return (...args: any[]) => {
@@ -59,8 +59,8 @@ export function defineFileSystemBridge<
                 const result = originalMethod.apply(target, args);
 
                 // check if result is a promise
-                if (result && typeof result.then === "function") {
-                  return result.catch((err: unknown) => handleError(property, err));
+                if (result && typeof (result as PromiseLike<unknown>)?.then === "function") {
+                  return (result as Promise<unknown>)?.catch((err: unknown) => handleError(property, err));
                 }
 
                 // sync result, return as-is
