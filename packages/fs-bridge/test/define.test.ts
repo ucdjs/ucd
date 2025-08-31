@@ -5,158 +5,162 @@ import { assertCapability, BridgeGenericError, BridgeSetupError, BridgeUnsupport
 import { defineFileSystemBridge } from "../src/define";
 
 describe("defineFileSystemBridge", () => {
-  it("should create a filesystem bridge with no options", async () => {
-    const mockOperations: FileSystemBridgeOperations = {
-      read: vi.fn().mockResolvedValue("file content"),
-      write: vi.fn().mockResolvedValue(undefined),
-      exists: vi.fn().mockResolvedValue(true),
-      listdir: vi.fn().mockResolvedValue(["file1.txt", "file2.txt"]),
-      mkdir: vi.fn().mockResolvedValue(undefined),
-      rm: vi.fn().mockResolvedValue(undefined),
-    };
-
-    const bridge = defineFileSystemBridge({
-      setup: ({ options, state }) => {
-        expect(options).toBeUndefined();
-        expect(state).toEqual({});
-        return mockOperations;
-      },
-    });
-
-    const operations = bridge();
-
-    assertCapability(operations, "read");
-    await operations.read("test.txt");
-    expect(mockOperations.read).toHaveBeenCalledWith("test.txt");
-  });
-
-  it("should infer options from Zod schema", async () => {
-    const optionsSchema = z.object({
-      basePath: z.string(),
-      encoding: z.string().optional(),
-    });
-
-    const bridge = defineFileSystemBridge({
-      optionsSchema,
-      setup: ({ options }) => {
-        expect(options.basePath).toBe("/test/path");
-        expect(options.encoding).toBe("utf-8");
-
-        return {
-          read: vi.fn().mockResolvedValue("content"),
-          write: vi.fn().mockResolvedValue(undefined),
-          exists: vi.fn().mockResolvedValue(true),
-          listdir: vi.fn().mockResolvedValue([]),
-          mkdir: vi.fn().mockResolvedValue(undefined),
-          rm: vi.fn().mockResolvedValue(undefined),
-        };
-      },
-    });
-
-    const operations = bridge({
-      basePath: "/test/path",
-      encoding: "utf-8",
-    });
-
-    expect(operations).toBeDefined();
-  });
-
-  it("should validate options and throw on invalid input", () => {
-    const optionsSchema = z.object({
-      requiredField: z.string(),
-    });
-
-    const bridge = defineFileSystemBridge({
-      optionsSchema,
-      setup: () => ({
-        read: vi.fn().mockResolvedValue(""),
+  describe("basic bridge creation", () => {
+    it("should create a filesystem bridge with no options", async () => {
+      const mockOperations: FileSystemBridgeOperations = {
+        read: vi.fn().mockResolvedValue("file content"),
         write: vi.fn().mockResolvedValue(undefined),
         exists: vi.fn().mockResolvedValue(true),
-        listdir: vi.fn().mockResolvedValue([]),
+        listdir: vi.fn().mockResolvedValue(["file1.txt", "file2.txt"]),
         mkdir: vi.fn().mockResolvedValue(undefined),
         rm: vi.fn().mockResolvedValue(undefined),
-      }),
+      };
+
+      const bridge = defineFileSystemBridge({
+        setup: ({ options, state }) => {
+          expect(options).toBeUndefined();
+          expect(state).toEqual({});
+          return mockOperations;
+        },
+      });
+
+      const operations = bridge();
+
+      assertCapability(operations, "read");
+      await operations.read("test.txt");
+      expect(mockOperations.read).toHaveBeenCalledWith("test.txt");
     });
 
-    expect(() => {
-      // @ts-expect-error - intentionally passing invalid options
-      bridge({ invalidField: "value" });
-    }).toThrow("Invalid options provided to file system bridge");
+    it("should allow all filesystem operations to be called", async () => {
+      const mockOperations = {
+        read: vi.fn().mockResolvedValue("file content"),
+        write: vi.fn().mockResolvedValue(undefined),
+        exists: vi.fn().mockResolvedValue(true),
+        listdir: vi.fn().mockResolvedValue(["file1.txt"]),
+        mkdir: vi.fn().mockResolvedValue(undefined),
+        rm: vi.fn().mockResolvedValue(undefined),
+      };
+
+      const bridge = defineFileSystemBridge({
+        setup: () => mockOperations,
+      });
+
+      const operations = bridge();
+      assertCapability(operations, [
+        "read",
+        "write",
+        "exists",
+        "listdir",
+        "mkdir",
+        "rm",
+      ]);
+
+      await operations.read("test.txt");
+      await operations.write("test.txt", "content");
+      await operations.exists("test.txt");
+      await operations.listdir("/", true);
+      await operations.mkdir("newdir");
+      await operations.rm("oldfile", { recursive: true, force: false });
+
+      expect(mockOperations.read).toHaveBeenCalledWith("test.txt");
+      expect(mockOperations.write).toHaveBeenCalledWith("test.txt", "content");
+      expect(mockOperations.exists).toHaveBeenCalledWith("test.txt");
+      expect(mockOperations.listdir).toHaveBeenCalledWith("/", true);
+      expect(mockOperations.mkdir).toHaveBeenCalledWith("newdir");
+      expect(mockOperations.rm).toHaveBeenCalledWith("oldfile", { recursive: true, force: false });
+    });
   });
 
-  it("should allow all filesystem operations to be called", async () => {
-    const mockOperations = {
-      read: vi.fn().mockResolvedValue("file content"),
-      write: vi.fn().mockResolvedValue(undefined),
-      exists: vi.fn().mockResolvedValue(true),
-      listdir: vi.fn().mockResolvedValue(["file1.txt"]),
-      mkdir: vi.fn().mockResolvedValue(undefined),
-      rm: vi.fn().mockResolvedValue(undefined),
-    };
+  describe("options and configuration", () => {
+    it("should infer options from Zod schema", async () => {
+      const optionsSchema = z.object({
+        basePath: z.string(),
+        encoding: z.string().optional(),
+      });
 
-    const bridge = defineFileSystemBridge({
-      setup: () => mockOperations,
+      const bridge = defineFileSystemBridge({
+        optionsSchema,
+        setup: ({ options }) => {
+          expect(options.basePath).toBe("/test/path");
+          expect(options.encoding).toBe("utf-8");
+
+          return {
+            read: vi.fn().mockResolvedValue("content"),
+            write: vi.fn().mockResolvedValue(undefined),
+            exists: vi.fn().mockResolvedValue(true),
+            listdir: vi.fn().mockResolvedValue([]),
+            mkdir: vi.fn().mockResolvedValue(undefined),
+            rm: vi.fn().mockResolvedValue(undefined),
+          };
+        },
+      });
+
+      const operations = bridge({
+        basePath: "/test/path",
+        encoding: "utf-8",
+      });
+
+      expect(operations).toBeDefined();
     });
 
-    const operations = bridge();
-    assertCapability(operations, [
-      "read",
-      "write",
-      "exists",
-      "listdir",
-      "mkdir",
-      "rm",
-    ]);
+    it("should validate options and throw on invalid input", () => {
+      const optionsSchema = z.object({
+        requiredField: z.string(),
+      });
 
-    await operations.read("test.txt");
-    await operations.write("test.txt", "content");
-    await operations.exists("test.txt");
-    await operations.listdir("/", true);
-    await operations.mkdir("newdir");
-    await operations.rm("oldfile", { recursive: true, force: false });
-
-    expect(mockOperations.read).toHaveBeenCalledWith("test.txt");
-    expect(mockOperations.write).toHaveBeenCalledWith("test.txt", "content");
-    expect(mockOperations.exists).toHaveBeenCalledWith("test.txt");
-    expect(mockOperations.listdir).toHaveBeenCalledWith("/", true);
-    expect(mockOperations.mkdir).toHaveBeenCalledWith("newdir");
-    expect(mockOperations.rm).toHaveBeenCalledWith("oldfile", { recursive: true, force: false });
-  });
-
-  it("should work with state", async () => {
-    const initialState = { callCount: 0 };
-
-    const bridge = defineFileSystemBridge({
-      state: initialState,
-      setup: ({ state }) => {
-        expect(state).toBe(initialState);
-
-        return {
-          read: vi.fn().mockImplementation(() => {
-            state.callCount += 1;
-            return Promise.resolve(`content-${state.callCount}`);
-          }),
+      const bridge = defineFileSystemBridge({
+        optionsSchema,
+        setup: () => ({
+          read: vi.fn().mockResolvedValue(""),
           write: vi.fn().mockResolvedValue(undefined),
           exists: vi.fn().mockResolvedValue(true),
           listdir: vi.fn().mockResolvedValue([]),
           mkdir: vi.fn().mockResolvedValue(undefined),
           rm: vi.fn().mockResolvedValue(undefined),
-        };
-      },
+        }),
+      });
+
+      expect(() => {
+        // @ts-expect-error - intentionally passing invalid options
+        bridge({ invalidField: "value" });
+      }).toThrow("Invalid options provided to file system bridge");
     });
-
-    const operations = bridge();
-    assertCapability(operations, ["read"]);
-
-    const result1 = await operations.read("test1.txt");
-    const result2 = await operations.read("test2.txt");
-
-    expect(result1).toBe("content-1");
-    expect(result2).toBe("content-2");
-    expect(initialState.callCount).toBe(2);
   });
 
-  describe("undefined options and state handling", () => {
+  describe("state management", () => {
+    it("should work with state", async () => {
+      const initialState = { callCount: 0 };
+
+      const bridge = defineFileSystemBridge({
+        state: initialState,
+        setup: ({ state }) => {
+          expect(state).toBe(initialState);
+
+          return {
+            read: vi.fn().mockImplementation(() => {
+              state.callCount += 1;
+              return Promise.resolve(`content-${state.callCount}`);
+            }),
+            write: vi.fn().mockResolvedValue(undefined),
+            exists: vi.fn().mockResolvedValue(true),
+            listdir: vi.fn().mockResolvedValue([]),
+            mkdir: vi.fn().mockResolvedValue(undefined),
+            rm: vi.fn().mockResolvedValue(undefined),
+          };
+        },
+      });
+
+      const operations = bridge();
+      assertCapability(operations, ["read"]);
+
+      const result1 = await operations.read("test1.txt");
+      const result2 = await operations.read("test2.txt");
+
+      expect(result1).toBe("content-1");
+      expect(result2).toBe("content-2");
+      expect(initialState.callCount).toBe(2);
+    });
+
     it("should handle bridge with optionsSchema but no options passed", () => {
       const optionsSchema = z.object({
         optional: z.string().optional(),
@@ -236,30 +240,32 @@ describe("defineFileSystemBridge", () => {
     });
   });
 
-  it("should throw when accessing unsupported operation", () => {
-    const bridge = defineFileSystemBridge({
-      setup: () => ({}),
+  describe("unsupported operations", () => {
+    it("should throw when accessing unsupported operation", () => {
+      const bridge = defineFileSystemBridge({
+        setup: () => ({}),
+      });
+
+      const operations = bridge();
+
+      expect(() => operations.read!("undefined")).toThrowError(new BridgeUnsupportedOperation("read"));
     });
 
-    const operations = bridge();
+    it("should throw if method doesn't have catch", () => {
+      const p = Promise.resolve("value");
 
-    expect(() => operations.read!("undefined")).toThrowError(new BridgeUnsupportedOperation("read"));
-  });
-
-  it("should throw if method doesn't have catch", () => {
-    const p = Promise.resolve("value");
-
-    const bridge = defineFileSystemBridge({
-      setup: () => ({
-        read: vi.fn().mockImplementation(() => {
-          return { then: p.then.bind(p) };
+      const bridge = defineFileSystemBridge({
+        setup: () => ({
+          read: vi.fn().mockImplementation(() => {
+            return { then: p.then.bind(p) };
+          }),
         }),
-      }),
+      });
+
+      const operations = bridge();
+
+      expect(() => operations.read!("undefined")).toThrowError(new BridgeGenericError("The promise returned by 'read' operation does not support .catch()"));
     });
-
-    const operations = bridge();
-
-    expect(() => operations.read!("undefined")).toThrowError(new BridgeGenericError("The promise returned by 'read' operation does not support .catch()"));
   });
 
   describe("error handling", () => {
