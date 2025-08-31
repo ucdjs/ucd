@@ -5,10 +5,10 @@ import { FileEntrySchema } from "@ucdjs/schemas";
 import { z } from "zod";
 import { defineFileSystemBridge } from "../define";
 
-const API_BASE_URL_SCHEMA = z.url({
-  protocol: /^https?$/,
-  hostname: z.regexes.domain,
-}).default(joinURL(UCDJS_API_BASE_URL, "/api/v1/files"));
+const API_BASE_URL_SCHEMA = z.codec(z.httpUrl(), z.instanceof(URL), {
+  decode: (urlString) => new URL(urlString),
+  encode: (url) => url.href,
+}).default(new URL("/api/v1/files", UCDJS_API_BASE_URL));
 
 const HTTPFileSystemBridge = defineFileSystemBridge({
   optionsSchema: z.object({
@@ -16,13 +16,12 @@ const HTTPFileSystemBridge = defineFileSystemBridge({
   }),
   setup({ options, resolveSafePath }) {
     const baseUrl = options.baseUrl;
-    const urlPath = new URL(baseUrl).pathname;
 
     return {
       async read(path) {
         const url = joinURL(
-          baseUrl,
-          resolveSafePath(urlPath, path),
+          baseUrl.origin,
+          resolveSafePath(baseUrl.pathname, path),
         );
 
         const response = await fetch(url);
@@ -34,8 +33,8 @@ const HTTPFileSystemBridge = defineFileSystemBridge({
       },
       async listdir(path, recursive = false) {
         const url = joinURL(
-          baseUrl,
-          resolveSafePath(urlPath, path),
+          baseUrl.origin,
+          resolveSafePath(baseUrl.pathname, path),
         );
 
         const response = await fetch(url, {
@@ -121,8 +120,8 @@ const HTTPFileSystemBridge = defineFileSystemBridge({
       },
       async exists(path) {
         const url = joinURL(
-          baseUrl,
-          resolveSafePath(urlPath, path),
+          baseUrl.origin,
+          resolveSafePath(baseUrl.pathname, path),
         );
 
         return fetch(url, { method: "HEAD" })
