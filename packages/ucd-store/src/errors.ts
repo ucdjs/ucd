@@ -6,8 +6,6 @@ export abstract class UCDStoreBaseError extends Error {
     super(message);
     this.name = "UCDStoreBaseError";
   }
-
-  // prevents throwing this
 }
 
 export class UCDStoreGenericError extends UCDStoreBaseError {
