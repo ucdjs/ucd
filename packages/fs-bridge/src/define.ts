@@ -51,8 +51,7 @@ export function defineFileSystemBridge<
             };
           }
 
-          // eslint-disable-next-line ts/no-unsafe-function-type
-          const originalMethod = target[property as keyof typeof target] as Function;
+          const originalMethod = target[property as keyof typeof target] as (...args: any[]) => any;
 
           if (typeof originalMethod === "function") {
             return (...args: any[]) => {
