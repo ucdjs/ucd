@@ -108,6 +108,6 @@ describe("get file", () => {
     const [fileData, fileError] = await store.getFile("15.0.0", "../../outside.txt");
     expect(fileData).toBe(null);
     assert(fileError != null, "Expected error for path traversal");
-    expect(fileError.message).toBe("Path traversal detected: ../outside.txt resolves outside base directory");
+    expect(fileError.message).toBe("Path traversal detected: attempted to access path outside of allowed scope: ../outside.txt");
   });
 });

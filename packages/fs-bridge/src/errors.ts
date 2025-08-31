@@ -23,12 +23,12 @@ export class BridgeGenericError extends Error {
 }
 
 export class BridgePathTraversal extends Error {
-  public readonly path: string;
+  public readonly accessedPath: string;
 
   constructor(path: string) {
     super(`Path traversal detected: attempted to access path outside of allowed scope: ${path}`);
     this.name = "BridgePathTraversal";
-    this.path = path;
+    this.accessedPath = path;
   }
 }
 
