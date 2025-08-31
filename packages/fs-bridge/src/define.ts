@@ -56,7 +56,7 @@ export function defineFileSystemBridge<
 
           if (typeof originalMethod === "function") {
             return (...args: any[]) => {
-              return originalMethod(...args)
+              return originalMethod.apply(target, args)
                 .catch((error: unknown) => {
                   // re-throw custom bridge errors directly
                   if (error instanceof BridgeBaseError) {
