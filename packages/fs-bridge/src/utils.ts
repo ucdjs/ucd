@@ -2,44 +2,10 @@ import pathe from "pathe";
 import { BridgePathTraversal } from "./errors";
 
 const MAX_DECODING_ITERATIONS = 10;
-
-/**
- * @internal
- */
-export function decodePathSafely(encodedPath: string): string {
-  if (typeof encodedPath !== "string") {
-    throw new TypeError("Encoded path must be a string");
-  }
-
-  let decodedPath = encodedPath;
-  let previousPath: string;
-  let iterations = 0;
-
-  do {
-    previousPath = decodedPath;
-
-    try {
-      // try to url decode
-      decodedPath = decodeURIComponent(decodedPath);
-    } catch {
-      // we continue even though decoding failed
-    }
-
-    // handle common manual encodings
-    decodedPath = decodedPath
-      .replace(/%2e/gi, ".") // encoded dots
-      .replace(/%2f/gi, "/") // encoded forward slashes
-      .replace(/%5c/gi, "\\"); // encoded backslashes
-
-    iterations++;
-  } while (decodedPath !== previousPath && iterations < MAX_DECODING_ITERATIONS);
-
-  if (iterations >= MAX_DECODING_ITERATIONS) {
-    throw new Error("Maximum decoding iterations exceeded - possible malicious input");
-  }
-
-  return decodedPath;
-}
+const WINDOWS_DRIVE_LETTER_REGEX = /^[A-Z]:/i;
+const WINDOWS_DRIVE_REGEX = new RegExp(`${WINDOWS_DRIVE_LETTER_REGEX.source}[/\\\\]`, "i");
+// eslint-disable-next-line no-control-regex
+const CONTROL_CHARACTER_REGEX = /[\u0000-\u001F\u007F-\u009F]/u;
 
 /**
  * Safely resolves a user-provided path relative to a base directory with path traversal protection.
@@ -102,29 +68,55 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
     throw new Error(`Failed to decode path safely: ${err instanceof Error ? err.message : "Unknown error"}`);
   }
 
+  if (decodedPath.includes("\0") || CONTROL_CHARACTER_REGEX.test(decodedPath)) {
+    throw new Error("Invalid path format or contains illegal characters");
+  }
+
   let resolvedPath: string;
 
-  if (pathe.isAbsolute(decodedPath)) {
-    // First check if the absolute path is within the base directory
-    const absoluteResolved = pathe.resolve(decodedPath);
+  // if we are running windows
+  if (WINDOWS_DRIVE_REGEX.test(decodedPath)) {
+    const windowsAbsolutePath = pathe.resolve(decodedPath);
 
-    if (absoluteResolved === normalizedBasePath || absoluteResolved.startsWith(normalizedBasePath + pathe.sep)) {
-      resolvedPath = absoluteResolved;
+    if (isWithinBase(windowsAbsolutePath, normalizedBasePath)) {
+      // Windows absolute path is within boundary - allow it
+      resolvedPath = windowsAbsolutePath;
     } else {
-      // Otherwise, strip the leading slash and treat as relative to base
-      const relativePath = decodedPath.replace(/^\/+/, "");
+      // Windows absolute path is outside boundary - strip drive letter and treat as relative
+      const relativePath = decodedPath.replace(WINDOWS_DRIVE_REGEX, "").replace(/\\/g, "/");
       resolvedPath = pathe.resolve(normalizedBasePath, relativePath);
     }
   } else {
-    // It's relative, resolve it relative to the base
-    resolvedPath = pathe.resolve(normalizedBasePath, decodedPath);
+    // Handle Unix-style paths
+    const unixPath = toUnixFormat(decodedPath);
+
+    if (pathe.isAbsolute(unixPath)) {
+      // Virtual filesystem boundary model: absolute paths are relative to boundary root
+      if (unixPath === "/") {
+        // Root reference points to boundary root
+        resolvedPath = normalizedBasePath;
+      } else {
+        // Strip leading slash and resolve relative to boundary root
+        const relativePath = unixPath.replace(/^\/+/, "");
+        resolvedPath = pathe.resolve(normalizedBasePath, relativePath);
+      }
+    } else {
+      // Handle relative paths
+      if (unixPath === "." || unixPath === "./") {
+        resolvedPath = normalizedBasePath;
+      } else {
+        resolvedPath = pathe.resolve(normalizedBasePath, unixPath);
+      }
+    }
   }
 
+  // final boundary validation
   if (!isWithinBase(resolvedPath, normalizedBasePath)) {
-    throw new BridgePathTraversal(decodedPath);
+    throw new BridgePathTraversal(resolvedPath);
   }
 
-  return resolvedPath;
+  // normalize to platform-native format for final output
+  return pathe.normalize(resolvedPath);
 }
 
 /**
@@ -172,4 +164,66 @@ export function isWithinBase(resolvedPath: string, basePath: string): boolean {
   // with one (such as the root directory "/").
   const baseWithSeparator = base.endsWith(pathe.sep) ? base : base + pathe.sep;
   return resolved === base || resolved.startsWith(baseWithSeparator);
+}
+
+/**
+ * @internal
+ */
+export function decodePathSafely(encodedPath: string): string {
+  if (typeof encodedPath !== "string") {
+    throw new TypeError("Encoded path must be a string");
+  }
+
+  let decodedPath = encodedPath;
+  let previousPath: string;
+  let iterations = 0;
+
+  do {
+    previousPath = decodedPath;
+
+    try {
+      // try to url decode
+      decodedPath = decodeURIComponent(decodedPath);
+    } catch {
+      // we continue even though decoding failed
+    }
+
+    // handle common manual encodings
+    decodedPath = decodedPath
+      .replace(/%2e/gi, ".") // encoded dots
+      .replace(/%2f/gi, "/") // encoded forward slashes
+      .replace(/%5c/gi, "\\"); // encoded backslashes
+
+    iterations++;
+  } while (decodedPath !== previousPath && iterations < MAX_DECODING_ITERATIONS);
+
+  if (iterations >= MAX_DECODING_ITERATIONS) {
+    throw new Error("Maximum decoding iterations exceeded - possible malicious input");
+  }
+
+  return decodedPath;
+}
+
+/**
+ * @internal
+ */
+export function toUnixFormat(inputPath: string): string {
+  if (typeof inputPath !== "string") {
+    return inputPath;
+  }
+
+  // Convert Windows-style paths to Unix-style
+  let normalized = inputPath.replace(/\\/g, "/");
+
+  // Handle Windows drive letters (C:\path -> /C:/path)
+  if (WINDOWS_DRIVE_LETTER_REGEX.test(normalized)) {
+    normalized = `/${normalized}`;
+  }
+
+  // Handle paths starting with backslash (\path -> /path)
+  if (inputPath.startsWith("\\") && !inputPath.startsWith("\\\\")) {
+    normalized = normalized.replace(/^\/+/, "/");
+  }
+
+  return normalized;
 }
