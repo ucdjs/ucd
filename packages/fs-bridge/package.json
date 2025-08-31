@@ -45,6 +45,7 @@
     "@ucdjs/env": "workspace:*",
     "@ucdjs/schemas": "workspace:*",
     "defu": "catalog:prod",
+    "pathe": "catalog:prod",
     "zod": "catalog:prod"
   },
   "devDependencies": {
