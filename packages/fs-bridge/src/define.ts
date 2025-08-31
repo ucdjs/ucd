@@ -54,7 +54,7 @@ export function defineFileSystemBridge<
           const originalMethod = target[property as keyof typeof target] as (...args: unknown[]) => unknown;
 
           if (typeof originalMethod === "function") {
-            return (...args: any[]) => {
+            return (...args: unknown[]) => {
               try {
                 const result = originalMethod.apply(target, args);
 
@@ -66,7 +66,7 @@ export function defineFileSystemBridge<
                     );
                   }
 
-                  return (result as Promise<unknown>)?.catch((err: unknown) => handleError(property, err));
+                  return (result as Promise<unknown>).catch((err: unknown) => handleError(property, err));
                 }
 
                 // sync result, return as-is
@@ -102,7 +102,7 @@ function inferCapabilitiesFromOperations(ops: Partial<FileSystemBridgeOperations
   };
 }
 
-function handleError(operation: PropertyKey, error: unknown): void {
+function handleError(operation: PropertyKey, error: unknown): never {
   // re-throw custom bridge errors directly
   if (error instanceof BridgeBaseError) {
     throw error;
