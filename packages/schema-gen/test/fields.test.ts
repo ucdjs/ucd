@@ -1,12 +1,13 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { RawDataFile } from "@luxass/unicode-utils";
 import { MockLanguageModelV2 } from "ai/test";
 import { describe, expect, it } from "vitest";
 import { generateFields } from "../src/fields";
 
 // TODO: make this a vitest global
-const ROOT_UCD_FILES_PATH = new URL("../../../test/ucd-files", import.meta.url).pathname;
+const ROOT_UCD_FILES_PATH = fileURLToPath(new URL("../../../test/ucd-files", import.meta.url));
 
 describe("generateFields", () => {
   it("should return null when datafile has no heading", async () => {

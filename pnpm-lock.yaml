@@ -118,8 +118,8 @@ catalogs:
       specifier: ^22.0.0
       version: 22.0.0
     zod:
-      specifier: ^4.0.16
-      version: 4.0.16
+      specifier: ^4.1.5
+      version: 4.1.5
   testing:
     '@cloudflare/vitest-pool-workers':
       specifier: ^0.8.61
@@ -238,7 +238,7 @@ importers:
     dependencies:
       '@hono/zod-openapi':
         specifier: catalog:workers
-        version: 1.1.0(hono@4.9.0)(zod@4.0.16)
+        version: 1.1.0(hono@4.9.0)(zod@4.1.5)
       '@luxass/unicode-utils-new':
         specifier: catalog:prod
         version: '@luxass/unicode-utils@0.12.0-beta.11'
@@ -265,7 +265,7 @@ importers:
         version: 4.9.0
       zod:
         specifier: catalog:prod
-        version: 4.0.16
+        version: 4.1.5
     devDependencies:
       '@cloudflare/vitest-pool-workers':
         specifier: catalog:testing
@@ -514,9 +514,12 @@ importers:
       defu:
         specifier: catalog:prod
         version: 6.1.4
+      pathe:
+        specifier: catalog:prod
+        version: 2.0.3
       zod:
         specifier: catalog:prod
-        version: 4.0.16
+        version: 4.1.5
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:linting
@@ -553,7 +556,7 @@ importers:
     dependencies:
       '@ai-sdk/openai':
         specifier: catalog:prod
-        version: 2.0.7(zod@4.0.16)
+        version: 2.0.7(zod@4.1.5)
       '@luxass/unicode-utils':
         specifier: catalog:prod
         version: 0.11.0
@@ -565,13 +568,13 @@ importers:
         version: link:../shared
       ai:
         specifier: catalog:prod
-        version: 5.0.8(zod@4.0.16)
+        version: 5.0.8(zod@4.1.5)
       knitwork:
         specifier: catalog:prod
         version: 1.2.0
       zod:
         specifier: catalog:prod
-        version: 4.0.16
+        version: 4.1.5
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:linting
@@ -605,7 +608,7 @@ importers:
         version: 2.7.0
       zod:
         specifier: catalog:prod
-        version: 4.0.16
+        version: 4.1.5
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:linting
@@ -651,7 +654,7 @@ importers:
         version: 4.0.3
       zod:
         specifier: catalog:prod
-        version: 4.0.16
+        version: 4.1.5
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:linting
@@ -712,7 +715,7 @@ importers:
         version: 2.0.3
       zod:
         specifier: catalog:prod
-        version: 4.0.16
+        version: 4.1.5
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:linting
@@ -5786,30 +5789,33 @@ packages:
   zod@4.0.16:
     resolution: {integrity: sha512-Djo/cM339grjI7/HmN+ixYO2FzEMcWr/On50UlQ/RjrWK1I/hPpWhpC76heCptnRFpH0LMwrEbUY50HDc0V8wg==}
 
+  zod@4.1.5:
+    resolution: {integrity: sha512-rcUUZqlLJgBC33IT3PNMgsCq6TzLQEG/Ei/KTCU0PedSWRMAXoOUN+4t/0H+Q8bdnLPdqUYnvboJT0bn/229qg==}
+
   zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
 
 snapshots:
 
-  '@ai-sdk/gateway@1.0.4(zod@4.0.16)':
+  '@ai-sdk/gateway@1.0.4(zod@4.1.5)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.1(zod@4.0.16)
-      zod: 4.0.16
+      '@ai-sdk/provider-utils': 3.0.1(zod@4.1.5)
+      zod: 4.1.5
 
-  '@ai-sdk/openai@2.0.7(zod@4.0.16)':
+  '@ai-sdk/openai@2.0.7(zod@4.1.5)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.1(zod@4.0.16)
-      zod: 4.0.16
+      '@ai-sdk/provider-utils': 3.0.1(zod@4.1.5)
+      zod: 4.1.5
 
-  '@ai-sdk/provider-utils@3.0.1(zod@4.0.16)':
+  '@ai-sdk/provider-utils@3.0.1(zod@4.1.5)':
     dependencies:
       '@ai-sdk/provider': 2.0.0
       '@standard-schema/spec': 1.0.0
       eventsource-parser: 3.0.3
-      zod: 4.0.16
-      zod-to-json-schema: 3.24.5(zod@4.0.16)
+      zod: 4.1.5
+      zod-to-json-schema: 3.24.5(zod@4.1.5)
 
   '@ai-sdk/provider@2.0.0':
     dependencies:
@@ -5825,10 +5831,10 @@ snapshots:
       package-manager-detector: 1.3.0
       tinyexec: 1.0.1
 
-  '@asteasolutions/zod-to-openapi@8.1.0(zod@4.0.16)':
+  '@asteasolutions/zod-to-openapi@8.1.0(zod@4.1.5)':
     dependencies:
       openapi3-ts: 4.5.0
-      zod: 4.0.16
+      zod: 4.1.5
 
   '@asyncapi/specs@6.8.1':
     dependencies:
@@ -6623,18 +6629,18 @@ snapshots:
       '@eslint/core': 0.15.2
       levn: 0.4.1
 
-  '@hono/zod-openapi@1.1.0(hono@4.9.0)(zod@4.0.16)':
+  '@hono/zod-openapi@1.1.0(hono@4.9.0)(zod@4.1.5)':
     dependencies:
-      '@asteasolutions/zod-to-openapi': 8.1.0(zod@4.0.16)
-      '@hono/zod-validator': 0.7.2(hono@4.9.0)(zod@4.0.16)
+      '@asteasolutions/zod-to-openapi': 8.1.0(zod@4.1.5)
+      '@hono/zod-validator': 0.7.2(hono@4.9.0)(zod@4.1.5)
       hono: 4.9.0
       openapi3-ts: 4.5.0
-      zod: 4.0.16
+      zod: 4.1.5
 
-  '@hono/zod-validator@0.7.2(hono@4.9.0)(zod@4.0.16)':
+  '@hono/zod-validator@0.7.2(hono@4.9.0)(zod@4.1.5)':
     dependencies:
       hono: 4.9.0
-      zod: 4.0.16
+      zod: 4.1.5
 
   '@humanfs/core@0.19.1': {}
 
@@ -8139,13 +8145,13 @@ snapshots:
 
   agent-base@7.1.3: {}
 
-  ai@5.0.8(zod@4.0.16):
+  ai@5.0.8(zod@4.1.5):
     dependencies:
-      '@ai-sdk/gateway': 1.0.4(zod@4.0.16)
+      '@ai-sdk/gateway': 1.0.4(zod@4.1.5)
       '@ai-sdk/provider': 2.0.0
-      '@ai-sdk/provider-utils': 3.0.1(zod@4.0.16)
+      '@ai-sdk/provider-utils': 3.0.1(zod@4.1.5)
       '@opentelemetry/api': 1.9.0
-      zod: 4.0.16
+      zod: 4.1.5
 
   ajv-draft-04@1.0.0(ajv@8.17.1):
     optionalDependencies:
@@ -11644,9 +11650,9 @@ snapshots:
       cookie: 1.0.2
       youch-core: 0.3.3
 
-  zod-to-json-schema@3.24.5(zod@4.0.16):
+  zod-to-json-schema@3.24.5(zod@4.1.5):
     dependencies:
-      zod: 4.0.16
+      zod: 4.1.5
 
   zod@3.22.3: {}
 
@@ -11655,5 +11661,7 @@ snapshots:
   zod@3.25.72: {}
 
   zod@4.0.16: {}
+
+  zod@4.1.5: {}
 
   zwitch@2.0.4: {}
