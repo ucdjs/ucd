@@ -1,7 +1,5 @@
-import { sep } from "pathe";
 import { describe, expect, it } from "vitest";
-import { BridgePathTraversal } from "../src/errors";
-import { decodePathSafely, isWithinBase, resolveSafePath } from "../src/utils";
+import { decodePathSafely, isWithinBase } from "../src/utils";
 
 describe("isWithinBase", () => {
   describe("input validation", () => {
@@ -121,7 +119,7 @@ describe("isWithinBase", () => {
     it("should handle paths with double dot segments", () => {
       expect.soft(isWithinBase("/home/user/docs/../file", "/home/user")).toBe(true);
       expect.soft(isWithinBase("/home/user/temp/../docs/file", "/home/user")).toBe(true);
-      // Path that goes outside then back in
+      // path that goes outside then back in
       expect.soft(isWithinBase("/home/user/../user/docs", "/home/user")).toBe(true);
     });
 
@@ -176,7 +174,7 @@ describe("isWithinBase", () => {
   describe("separator handling", () => {
     it("should properly use path separators to prevent partial matches", () => {
       const basePath = "/home/user";
-      const validPath = `${basePath + sep}docs`;
+      const validPath = `${`${basePath}/`}docs`;
       const invalidPath = `${basePath}extra`;
 
       expect.soft(isWithinBase(validPath, basePath)).toBe(true);
@@ -184,7 +182,6 @@ describe("isWithinBase", () => {
     });
 
     it("should handle mixed separators in paths", () => {
-      // Note: pathe.normalize should handle this, but testing edge cases
       expect.soft(isWithinBase("/home/user\\docs", "/home/user")).toBe(true);
       expect.soft(isWithinBase("base\\nested/file", "base")).toBe(true);
     });
