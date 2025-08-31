@@ -6,7 +6,8 @@ import type {
   FileSystemBridgeOperations,
 } from "./types";
 import { z } from "zod";
-import { BridgeUnsupportedOperation } from "./assertions";
+import { BridgeUnsupportedOperation } from "./errors";
+import { resolveSafePath } from "./utils";
 
 export function defineFileSystemBridge<
   TOptionsSchema extends z.ZodType,
@@ -30,6 +31,7 @@ export function defineFileSystemBridge<
     const bridge = fsBridge.setup({
       options,
       state: state ?? {} as TState,
+      resolveSafePath,
     });
 
     const capabilities = inferCapabilitiesFromOperations(bridge);
