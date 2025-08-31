@@ -12,7 +12,7 @@ Wraps all fs-bridge operation methods with automatic error handling to improve e
 - **Transparent to implementations**: Bridge implementations don't need to change - error handling is applied automatically
 
 ```typescript
-import { defineFileSystemBridge, BridgeFileNotFound } from '@ucdjs/fs-bridge';
+import { defineFileSystemBridge, BridgeFileNotFound, BridgeGenericError } from '@ucdjs/fs-bridge';
 
 const bridge = defineFileSystemBridge({
   setup() {
