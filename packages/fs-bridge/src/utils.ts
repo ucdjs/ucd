@@ -128,7 +128,7 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
 
   // final boundary validation
   if (!isWithinBase(resolvedPath, normalizedBasePath)) {
-    throw new BridgePathTraversal(inputPath);
+    throw new BridgePathTraversal(normalizedBasePath, resolvedPath);
   }
 
   // normalize to platform-native format for final output

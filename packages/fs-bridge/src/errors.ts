@@ -45,11 +45,13 @@ export class BridgeUnsupportedOperation extends BridgeBaseError {
 
 export class BridgePathTraversal extends BridgeBaseError {
   public readonly accessedPath: string;
+  public readonly basePath: string;
 
-  constructor(path: string) {
-    super(`Path traversal detected: attempted to access path outside of allowed scope: ${path}`);
+  constructor(basePath: string, accessedPath: string) {
+    super(`Path traversal detected: attempted to access '${accessedPath}' which is outside the allowed base path '${basePath}'`);
     this.name = "BridgePathTraversal";
-    this.accessedPath = path;
+    this.basePath = basePath;
+    this.accessedPath = accessedPath;
   }
 }
 
