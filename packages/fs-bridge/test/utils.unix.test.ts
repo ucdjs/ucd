@@ -2,7 +2,7 @@ import { platform } from "node:os";
 import { describe, expect, it } from "vitest";
 import { isWithinBase, resolveSafePath } from "../src/utils";
 
-describe.runIf(platform() === "darwin" || platform() === "linux")("utils - Unix specific", () => {
+describe.runIf(platform() === "darwin" || platform() === "linux")("utils - unix", () => {
   describe("isWithinBase", () => {
     it("should handle Unix absolute paths correctly", () => {
       expect(isWithinBase("/home/user/documents/file.txt", "/home/user")).toBe(true);
@@ -62,19 +62,46 @@ describe.runIf(platform() === "darwin" || platform() === "linux")("utils - Unix 
 
     describe("relative paths", () => {
       it("should handle relative paths correctly", () => {
-        expect.soft(resolveSafePath("/home/user", "documents/projects/file.txt")).toBe("/home/user/documents/projects/file.txt");
-        expect.soft(resolveSafePath("/var/www", "html/assets/images/logo.png")).toBe("/var/www/html/assets/images/logo.png");
+        expect.soft(
+          resolveSafePath("/home/user", "documents/projects/file.txt"),
+        ).toBe("/home/user/documents/projects/file.txt");
+        expect.soft(
+          resolveSafePath("/var/www", "html/assets/images/logo.png"),
+        ).toBe("/var/www/html/assets/images/logo.png");
       });
 
       it("should handle path normalization", () => {
-        expect.soft(resolveSafePath("/home/user", "documents/../documents/file.txt")).toBe("/home/user/documents/file.txt");
-        expect.soft(resolveSafePath("/var/www", "html/./assets/../assets/css/style.css")).toBe("/var/www/html/assets/css/style.css");
+        expect.soft(
+          resolveSafePath("/home/user", "documents/../documents/file.txt"),
+        ).toBe("/home/user/documents/file.txt");
+        expect.soft(
+          resolveSafePath("/var/www", "html/./assets/../assets/css/style.css"),
+        ).toBe("/var/www/html/assets/css/style.css");
       });
     });
 
     describe("encoded paths", () => {
       it("should decode and resolve encoded paths", () => {
         expect(resolveSafePath("/home/user", "documents%2Ffile.txt")).toBe("/home/user/documents/file.txt");
+      });
+    });
+
+    describe("absolute paths within boundary", () => {
+      it("should use absolute paths when they are within base path", () => {
+        const basePath = "/home/user/projects/app/.test-dirs/long-test-directory-name-for-filtering";
+        const inputPath = "/home/user/projects/app/.test-dirs/long-test-directory-name-for-filtering/.config-store.json";
+
+        expect.soft(resolveSafePath(basePath, inputPath)).toBe(inputPath);
+      });
+
+      it("should handle nested absolute paths within base", () => {
+        expect.soft(resolveSafePath("/home/user", "/home/user/documents/file.txt")).toBe("/home/user/documents/file.txt");
+        expect.soft(resolveSafePath("/var/www/html", "/var/www/html/assets/style.css")).toBe("/var/www/html/assets/style.css");
+      });
+
+      it("should handle exact base path match", () => {
+        expect.soft(resolveSafePath("/home/user", "/home/user")).toBe("/home/user");
+        expect.soft(resolveSafePath("/var/www", "/var/www")).toBe("/var/www");
       });
     });
 
@@ -87,15 +114,27 @@ describe.runIf(platform() === "darwin" || platform() === "linux")("utils - Unix 
 
     describe("path traversal prevention", () => {
       it("should prevent directory traversal attacks", () => {
-        expect.soft(() => resolveSafePath("/home/user/documents", "../../etc/passwd")).toThrow("Path traversal detected: attempted to access path outside of allowed scope: /home/etc/passwd");
-        expect.soft(() => resolveSafePath("/var/www/html", "../../../etc/shadow")).toThrow("Path traversal detected: attempted to access path outside of allowed scope: /etc/shadow");
-        expect.soft(() => resolveSafePath("/home/user", "../../../root/.ssh/id_rsa")).toThrow("Path traversal detected: attempted to access path outside of allowed scope: /root/.ssh/id_rsa");
+        expect.soft(
+          () => resolveSafePath("/home/user/documents", "../../etc/passwd"),
+        ).toThrow("Path traversal detected: attempted to access path outside of allowed scope: /home/etc/passwd");
+        expect.soft(
+          () => resolveSafePath("/var/www/html", "../../../etc/shadow"),
+        ).toThrow("Path traversal detected: attempted to access path outside of allowed scope: /etc/shadow");
+        expect.soft(
+          () => resolveSafePath("/home/user", "../../../root/.ssh/id_rsa"),
+        ).toThrow("Path traversal detected: attempted to access path outside of allowed scope: /root/.ssh/id_rsa");
       });
 
       it("should prevent encoded traversal attacks", () => {
-        expect.soft(() => resolveSafePath("/home/user/documents", "%2e%2e%2f%2e%2e%2fetc%2fpasswd")).toThrow("Path traversal detected: attempted to access path outside of allowed scope: /home/etc/passwd");
-        expect.soft(() => resolveSafePath("/home/user", "%252e%252e%252f%252e%252e%252fetc")).toThrow("Path traversal detected: attempted to access path outside of allowed scope: /etc");
-        expect.soft(() => resolveSafePath("/home/user/docs", "\u002E\u002E/\u002E\u002E/etc/passwd")).toThrow("Path traversal detected: attempted to access path outside of allowed scope: /home/etc/passwd");
+        expect.soft(
+          () => resolveSafePath("/home/user/documents", "%2e%2e%2f%2e%2e%2fetc%2fpasswd"),
+        ).toThrow("Path traversal detected: attempted to access path outside of allowed scope: /home/etc/passwd");
+        expect.soft(
+          () => resolveSafePath("/home/user", "%252e%252e%252f%252e%252e%252fetc"),
+        ).toThrow("Path traversal detected: attempted to access path outside of allowed scope: /etc");
+        expect.soft(
+          () => resolveSafePath("/home/user/docs", "\u002E\u002E/\u002E\u002E/etc/passwd"),
+        ).toThrow("Path traversal detected: attempted to access path outside of allowed scope: /home/etc/passwd");
       });
     });
 
