@@ -4,7 +4,7 @@ import { BridgePathTraversal } from "./errors";
 
 const MAX_DECODING_ITERATIONS = 10;
 const WINDOWS_DRIVE_LETTER_REGEX = /^[A-Z]:/i;
-const WINDOWS_DRIVE_REGEX = new RegExp(`${WINDOWS_DRIVE_LETTER_REGEX.source}[/\\\\]`, "i");
+const WINDOWS_DRIVE_REGEX = /^[A-Z]:[/\\]/i;
 const WINDOWS_UNC_REGEX = /^\\\\[^\\]+\\[^\\]+/;
 
 // we can't use node's process directly in the browser
