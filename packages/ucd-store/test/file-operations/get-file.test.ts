@@ -112,7 +112,7 @@ describe("get file", () => {
     assert(fileError != null, "Expected error for path traversal");
     expect(fileError).toBeInstanceOf(BridgePathTraversal);
     expect((fileError as BridgePathTraversal).accessedPath).toBe(
-      path.normalize(join(storePath, "15.0.0", "../../outside.txt")),
+      path.posix.normalize(join(storePath, "15.0.0", "../../outside.txt")),
     );
     expect((fileError as BridgePathTraversal).basePath).toBe(storePath);
   });
