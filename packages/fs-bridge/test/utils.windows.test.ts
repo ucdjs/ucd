@@ -32,6 +32,12 @@ describe.runIf(platform() === "win32")("utils - Windows specific", () => {
       expect(isWithinBase("C:\\Users\\John", "C:\\Users\\John")).toBe(true);
       expect(isWithinBase("\\\\server\\share", "\\\\server\\share")).toBe(true);
     });
+
+    it("should be case insensitive on Windows systems", () => {
+      expect(isWithinBase("C:\\Users\\JOHN\\file.txt", "C:\\Users\\john")).toBe(true);
+      expect(isWithinBase("C:\\USERS\\John\\file.txt", "C:\\users\\john")).toBe(true);
+      expect(isWithinBase("D:\\Projects\\MyApp\\file.txt", "D:\\projects\\myapp")).toBe(true);
+    });
   });
 
   describe("resolveSafePath", () => {
