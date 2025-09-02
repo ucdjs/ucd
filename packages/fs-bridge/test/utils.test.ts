@@ -1,4 +1,5 @@
 import { normalize } from "node:path";
+import { isUnix, isWindows } from "#internal/test-utils";
 import { describe, expect, it } from "vitest";
 import { BridgePathTraversal } from "../src/errors";
 import { isWithinBase, resolveSafePath } from "../src/utils";
@@ -166,10 +167,16 @@ describe("isWithinBase", () => {
   });
 
   describe("case sensitivity", () => {
-    it("should be case sensitive on unix-like systems", () => {
+    it.runIf(isUnix)("should be case sensitive on unix-like systems", () => {
       expect.soft(isWithinBase("/Home/User", "/home/user")).toBe(false);
       expect.soft(isWithinBase("/home/User/docs", "/home/user")).toBe(false);
       expect.soft(isWithinBase("Base/file", "base")).toBe(false);
+    });
+
+    it.runIf(isWindows)("should be case insensitive on windows", () => {
+      expect.soft(isWithinBase("/Home/User", "/home/user")).toBe(true);
+      expect.soft(isWithinBase("/home/User/docs", "/home/user")).toBe(true);
+      expect.soft(isWithinBase("Base/file", "base")).toBe(true);
     });
   });
 
