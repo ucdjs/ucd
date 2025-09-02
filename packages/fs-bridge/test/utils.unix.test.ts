@@ -1,4 +1,5 @@
 import { platform } from "node:os";
+import { BridgePathTraversal } from "@ucdjs/fs-bridge";
 import { describe, expect, it } from "vitest";
 import { isWithinBase, resolveSafePath } from "../src/utils";
 
@@ -116,25 +117,25 @@ describe.runIf(platform() === "darwin" || platform() === "linux")("utils - unix"
       it("should prevent directory traversal attacks", () => {
         expect.soft(
           () => resolveSafePath("/home/user/documents", "../../etc/passwd"),
-        ).toThrow("Path traversal detected: attempted to access path outside of allowed scope: /home/etc/passwd");
+        ).toThrowError(new BridgePathTraversal("/home/user/documents", "/home/etc/passwd"));
         expect.soft(
           () => resolveSafePath("/var/www/html", "../../../etc/shadow"),
-        ).toThrow("Path traversal detected: attempted to access path outside of allowed scope: /etc/shadow");
+        ).toThrowError(new BridgePathTraversal("/var/www/html", "/etc/shadow"));
         expect.soft(
           () => resolveSafePath("/home/user", "../../../root/.ssh/id_rsa"),
-        ).toThrow("Path traversal detected: attempted to access path outside of allowed scope: /root/.ssh/id_rsa");
+        ).toThrowError(new BridgePathTraversal("/home/user", "/root/.ssh/id_rsa"));
       });
 
       it("should prevent encoded traversal attacks", () => {
         expect.soft(
           () => resolveSafePath("/home/user/documents", "%2e%2e%2f%2e%2e%2fetc%2fpasswd"),
-        ).toThrow("Path traversal detected: attempted to access path outside of allowed scope: /home/etc/passwd");
+        ).toThrowError(new BridgePathTraversal("/home/user/documents", "/home/etc/passwd"));
         expect.soft(
           () => resolveSafePath("/home/user", "%252e%252e%252f%252e%252e%252fetc"),
-        ).toThrow("Path traversal detected: attempted to access path outside of allowed scope: /etc");
+        ).toThrowError(new BridgePathTraversal("/home/user", "/etc"));
         expect.soft(
           () => resolveSafePath("/home/user/docs", "\u002E\u002E/\u002E\u002E/etc/passwd"),
-        ).toThrow("Path traversal detected: attempted to access path outside of allowed scope: /home/etc/passwd");
+        ).toThrowError(new BridgePathTraversal("/home/user/docs", "/home/etc/passwd"));
       });
     });
 
@@ -209,13 +210,13 @@ describe.runIf(platform() === "darwin" || platform() === "linux")("utils - unix"
       });
 
       it("should prevent access to sensitive system files", () => {
-        expect(() => {
+        expect.soft(() => {
           resolveSafePath("/home/user/public", "../../etc/passwd");
-        }).toThrow("Path traversal detected: attempted to access path outside of allowed scope: /home/etc/passwd");
+        }).toThrowError(new BridgePathTraversal("/home/user/public", "/home/etc/passwd"));
 
-        expect(() => {
+        expect.soft(() => {
           resolveSafePath("/var/www/html", "../../../root/.bashrc");
-        }).toThrow("Path traversal detected: attempted to access path outside of allowed scope: /root/.bashrc");
+        }).toThrowError(new BridgePathTraversal("/var/www/html", "/root/.bashrc"));
       });
     });
   });
