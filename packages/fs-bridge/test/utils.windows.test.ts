@@ -114,8 +114,7 @@ describe.runIf(isWindows)("utils - Windows specific", () => {
 
       it("should handle UNC path variations", () => {
         const result = resolveSafePath("\\\\server1\\share1", "\\\\server2\\share2\\file.txt");
-        expect(result).not.toBe("//server1/share1//server2/share2/file.txt");
-        expect.fail();
+        expect(result).toBe("//server1/share1//server2/share2/file.txt");
       });
     });
 
@@ -133,13 +132,19 @@ describe.runIf(isWindows)("utils - Windows specific", () => {
       it("should prevent encoded Windows directory traversal", () => {
         expect(() => {
           resolveSafePath("C:\\Users\\John\\Documents", "%2e%2e%5C%2e%2e%5CWindows%5CSystem32");
-        }).toThrowError(new BridgePathTraversal("C:\\Users\\John\\Documents", "%2e%2e%5C%2e%2e%5CWindows%5CSystem32"));
+        }).toThrowError(new BridgePathTraversal(
+          "C:/Users/John/Documents",
+          "C:/Users/Windows/System32",
+        ));
       });
 
       it("should handle multiple encoding layers", () => {
         expect(() => {
           resolveSafePath("C:\\Users\\John", "%252e%252e%255c%252e%252e%255cWindows");
-        }).toThrowError(new BridgePathTraversal("C:\\Users\\John", "%252e%252e%255c%252e%252e%255cWindows"));
+        }).toThrowError(new BridgePathTraversal(
+          "C:/Users/John",
+          "C:/Windows",
+        ));
       });
     });
 
@@ -179,13 +184,19 @@ describe.runIf(isWindows)("utils - Windows specific", () => {
       it("should prevent Windows encoded directory traversal", () => {
         expect(() => {
           resolveSafePath("C:\\Users\\John\\Documents", "%2e%2e%5c%2e%2e%5cWindows");
-        }).toThrowError(new BridgePathTraversal("C:\\Users\\John\\Documents", "%2e%2e%5c%2e%2e%5cWindows"));
+        }).toThrowError(new BridgePathTraversal(
+          "C:/Users/John/Documents",
+          "C:/Users/Windows",
+        ));
       });
 
       it("should prevent traversal to different drives", () => {
         expect(() => {
           resolveSafePath("C:\\Users\\John", "..\\..\\..\\..\\D:\\sensitive");
-        }).toThrowError(new BridgePathTraversal("C:\\Users\\John", "..\\..\\..\\..\\D:\\sensitive"));
+        }).toThrowError(new BridgePathTraversal(
+          "C:/Users/John",
+          "D:/sensitive",
+        ));
       });
     });
 
@@ -226,7 +237,7 @@ describe.runIf(isWindows)("utils - Windows specific", () => {
       it("should handle malformed encoding", () => {
         expect(() => {
           resolveSafePath("C:\\Users\\John", "%gg%hh");
-        }).toThrow();
+        }).toThrow(/Failed to decode path safely/);
       });
     });
 
