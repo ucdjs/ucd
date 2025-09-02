@@ -22,6 +22,7 @@
       "@ucdjs/fs-bridge/bridges/node": ["./packages/fs-bridge/src/bridges/node.ts"],
 
       // Test utils
+      "#internal/test-utils": ["./tooling/test-utils/src/index.ts"],
       "#internal/test-utils/store": ["./tooling/test-utils/src/store.ts"],
       "#internal/test-utils/msw": ["./tooling/test-utils/src/msw.ts"]
     }
