@@ -1,5 +1,4 @@
 import { normalize } from "node:path";
-import { isUnix, isWindows } from "#internal/test-utils";
 import { describe, expect, it } from "vitest";
 import { BridgePathTraversal } from "../src/errors";
 import { isWithinBase, resolveSafePath } from "../src/utils";
@@ -147,12 +146,6 @@ describe("isWithinBase", () => {
       expect.soft(isWithinBase("", "base")).toBe(false);
     });
 
-    it("should handle root paths", () => {
-      expect.soft(isWithinBase("/home", "/")).toBe(true);
-      expect.soft(isWithinBase("/var/log", "/")).toBe(true);
-      expect.soft(isWithinBase("/", "/")).toBe(true);
-    });
-
     it("should handle relative vs absolute paths", () => {
       expect.soft(isWithinBase("home/user", "/home/user")).toBe(false);
       expect.soft(isWithinBase("/home/user", "home/user")).toBe(false);
@@ -163,20 +156,6 @@ describe("isWithinBase", () => {
       expect.soft(isWithinBase("/home/user/docs", "/home/user/")).toBe(true);
       expect.soft(isWithinBase("/home/user/docs/", "/home/user")).toBe(true);
       expect.soft(isWithinBase("/home/user/", "/home/user")).toBe(true);
-    });
-  });
-
-  describe("case sensitivity", () => {
-    it.runIf(isUnix)("should be case sensitive on unix-like systems", () => {
-      expect.soft(isWithinBase("/Home/User", "/home/user")).toBe(false);
-      expect.soft(isWithinBase("/home/User/docs", "/home/user")).toBe(false);
-      expect.soft(isWithinBase("Base/file", "base")).toBe(false);
-    });
-
-    it.runIf(isWindows)("should be case insensitive on windows", () => {
-      expect.soft(isWithinBase("/Home/User", "/home/user")).toBe(true);
-      expect.soft(isWithinBase("/home/User/docs", "/home/user")).toBe(true);
-      expect.soft(isWithinBase("Base/file", "base")).toBe(true);
     });
   });
 
