@@ -172,13 +172,19 @@ describe.runIf(isWindows)("utils - Windows specific", () => {
       it("should prevent Windows directory traversal with backslashes", () => {
         expect(() => {
           resolveSafePath("C:\\Users\\John\\Documents", "..\\..\\Windows\\System32");
-        }).toThrowError(new BridgePathTraversal("C:\\Users\\John\\Documents", "..\\..\\Windows\\System32"));
+        }).toThrowError(new BridgePathTraversal(
+          "C:/Users/John/Documents",
+          "C:/Users/Windows/System32",
+        ));
       });
 
       it("should prevent Windows directory traversal with mixed separators", () => {
         expect(() => {
           resolveSafePath("C:\\Users\\John\\Documents", "../..\\Windows/System32");
-        }).toThrowError(new BridgePathTraversal("C:\\Users\\John\\Documents", "../..\\Windows/System32"));
+        }).toThrowError(new BridgePathTraversal(
+          "C:/Users/John/Documents",
+          "C:/Users/Windows/System32",
+        ));
       });
 
       it("should prevent Windows encoded directory traversal", () => {
