@@ -84,44 +84,45 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
 
   let resolvedPath: string;
 
-  // if we are running windows
-  if (WINDOWS_DRIVE_REGEX.test(decodedPath) || WINDOWS_UNC_REGEX.test(decodedPath)) {
-    const windowsAbsolutePath = pathe.resolve(decodedPath);
+  const absoluteInputPath = pathe.resolve(decodedPath);
 
-    if (isWithinBase(windowsAbsolutePath, normalizedBasePath)) {
-      // Windows absolute path is within boundary - allow it
-      resolvedPath = windowsAbsolutePath;
-    } else {
-      // Outside boundary:
-      // - Drive: strip "C:\" prefix
-      // - UNC: strip leading "\\" to treat as relative "server\share\..."
-      const withoutPrefix = WINDOWS_DRIVE_REGEX.test(decodedPath)
-        ? decodedPath.replace(WINDOWS_DRIVE_REGEX, "")
-        : decodedPath.replace(/^\\{2,}/, "");
-      const relativePath = withoutPrefix.replace(/\\/g, "/");
-      resolvedPath = pathe.resolve(normalizedBasePath, relativePath);
-    }
+  // If the input path is "within" the base path, we can just return as-is.
+  // This is to ensure that something like "C:\Users\John\Documents\Projects\file.txt"
+  // is treated as a valid path without unnecessary modifications.
+
+  // Examples:
+  // Windows
+  // Base Path: C:\Users\John
+  // Input Path: C:\Users\John\Documents\Projects\file.txt
+  // Output Path: C:\Users\John\Documents\Projects\file.txt
+  // -----
+  // Unix
+  // Base Path: /home/user
+  // Input Path: /home/user/docs/file.txt
+  // Output Path: /home/user/docs/file.txt
+
+  if (isWithinBase(absoluteInputPath, normalizedBasePath) && decodedPath === absoluteInputPath) {
+    return pathe.normalize(absoluteInputPath);
+  }
+
+  // If the input path is a Windows absolute path, we need to handle it specially.
+  if (WINDOWS_DRIVE_REGEX.test(decodedPath) || WINDOWS_UNC_REGEX.test(decodedPath)) {
+    // Handle Windows absolute paths that are outside the base
+    // Outside boundary:
+    // - Drive: strip "C:\" prefix
+    // - UNC: strip leading "\\" to treat as relative "server\share\..."
+    const withoutPrefix = WINDOWS_DRIVE_REGEX.test(decodedPath)
+      ? decodedPath.replace(WINDOWS_DRIVE_REGEX, "")
+      : decodedPath.replace(/^\\{2,}/, "");
+    const relativePath = withoutPrefix.replace(/\\/g, "/");
+    resolvedPath = pathe.resolve(normalizedBasePath, relativePath);
   } else {
-    // Handle Unix-style paths
     const unixPath = toUnixFormat(decodedPath);
 
     if (pathe.isAbsolute(unixPath)) {
-      // Virtual filesystem boundary model: absolute paths are relative to boundary root
-      if (unixPath === "/") {
-        // Root reference points to boundary root
-        resolvedPath = normalizedBasePath;
-      } else {
-        // Strip leading slash and resolve relative to boundary root
-        const relativePath = unixPath.replace(/^\/+/, "");
-        resolvedPath = pathe.resolve(normalizedBasePath, relativePath);
-      }
+      resolvedPath = handleAbsolutePath(unixPath, normalizedBasePath);
     } else {
-      // Handle relative paths
-      if (unixPath === "." || unixPath === "./") {
-        resolvedPath = normalizedBasePath;
-      } else {
-        resolvedPath = pathe.resolve(normalizedBasePath, unixPath);
-      }
+      resolvedPath = handleRelativePath(unixPath, normalizedBasePath);
     }
   }
 
@@ -239,4 +240,33 @@ export function toUnixFormat(inputPath: string): string {
   }
 
   return normalized;
+}
+
+/**
+ * Handles absolute Unix-style paths by treating them as relative to the base path boundary.
+ * @internal
+ */
+function handleAbsolutePath(absoluteUnixPath: string, basePath: string): string {
+  // Virtual filesystem boundary model: absolute paths are relative to boundary root
+  if (absoluteUnixPath === "/") {
+    // Root reference points to boundary root
+    return basePath;
+  }
+
+  // Strip leading slash and resolve relative to boundary root
+  const pathWithoutLeadingSlash = absoluteUnixPath.replace(/^\/+/, "");
+  return pathe.resolve(basePath, pathWithoutLeadingSlash);
+}
+
+/**
+ * Handles relative Unix-style paths by resolving them against the base path.
+ * @internal
+ */
+function handleRelativePath(relativeUnixPath: string, basePath: string): string {
+  // Current directory references point to base path
+  if (relativeUnixPath === "." || relativeUnixPath === "./") {
+    return basePath;
+  }
+
+  return pathe.resolve(basePath, relativeUnixPath);
 }
