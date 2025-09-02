@@ -101,7 +101,11 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
   // Input Path: /home/user/docs/file.txt
   // Output Path: /home/user/docs/file.txt
 
-  if (isWithinBase(absoluteInputPath, normalizedBasePath) && decodedPath === absoluteInputPath) {
+  const isAbsoluteInput
+    = WINDOWS_DRIVE_REGEX.test(decodedPath)
+      || WINDOWS_UNC_REGEX.test(decodedPath)
+      || pathe.isAbsolute(toUnixFormat(decodedPath));
+  if (isAbsoluteInput && isWithinBase(absoluteInputPath, normalizedBasePath)) {
     return pathe.normalize(absoluteInputPath);
   }
 
