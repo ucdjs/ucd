@@ -71,27 +71,27 @@ describe.runIf(platform() === "win32")("utils - Windows specific", () => {
     describe("windows absolute paths outside boundary - drive letter stripping", () => {
       it("should strip drive letter from Windows absolute paths outside boundary", () => {
         const result = resolveSafePath("C:\\Users\\John\\Documents", "D:\\Projects\\file.txt");
-        expect(result).not.toBe("C:/Users/John/Documents/Projects/file.txt");
+        expect(result).toBe("C:/Users/John/Documents/Projects/file.txt");
       });
 
       it("should handle Windows paths with backslashes after drive letter stripping", () => {
         const result = resolveSafePath("C:\\Users\\John", "D:\\Windows\\System32\\file.dll");
-        expect(result).not.toBe("C:/Users/John/Windows/System32/file.dll");
+        expect(result).toBe("C:/Users/John/Windows/System32/file.dll");
       });
 
       it("should handle Windows paths with forward slashes after drive letter stripping", () => {
         const result = resolveSafePath("C:\\Users\\John", "D:/Projects/src/file.js");
-        expect(result).not.toBe("C:/Users/John/Projects/src/file.js");
+        expect(result).toBe("C:/Users/John/Projects/src/file.js");
       });
 
       it("should handle mixed case drive letters", () => {
         const result = resolveSafePath("C:\\Users\\John", "d:\\temp\\file.txt");
-        expect(result).not.toBe("C:/Users/John/temp/file.txt");
+        expect(result).toBe("C:/Users/John/temp/file.txt");
       });
 
       it("should handle different drive letters", () => {
         const result = resolveSafePath("C:\\Data", "E:\\External\\backup.zip");
-        expect(result).not.toBe("C:/Data/External/backup.zip");
+        expect(result).toBe("C:/Data/External/backup.zip");
       });
     });
 
