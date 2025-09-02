@@ -1,9 +1,9 @@
-import { platform } from "node:os";
+import { isUnix } from "#internal/test-utils";
 import { BridgePathTraversal } from "@ucdjs/fs-bridge";
 import { describe, expect, it } from "vitest";
 import { isWithinBase, resolveSafePath } from "../src/utils";
 
-describe.runIf(platform() === "darwin" || platform() === "linux")("utils - unix", () => {
+describe.runIf(isUnix)("utils - unix", () => {
   describe("isWithinBase", () => {
     it("should handle Unix absolute paths correctly", () => {
       expect(isWithinBase("/home/user/documents/file.txt", "/home/user")).toBe(true);

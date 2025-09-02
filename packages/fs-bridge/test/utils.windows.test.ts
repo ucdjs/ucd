@@ -1,9 +1,9 @@
-import { platform } from "node:os";
+import { isWindows } from "#internal/test-utils";
 import { BridgePathTraversal } from "@ucdjs/fs-bridge";
 import { describe, expect, it } from "vitest";
 import { isWithinBase, resolveSafePath } from "../src/utils";
 
-describe.runIf(platform() === "win32")("utils - Windows specific", () => {
+describe.runIf(isWindows)("utils - Windows specific", () => {
   describe("isWithinBase", () => {
     it("should handle Windows drive letters correctly", () => {
       expect(isWithinBase("C:\\Users\\John\\Documents\\file.txt", "C:\\Users\\John")).toBe(true);
