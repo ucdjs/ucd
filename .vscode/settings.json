@@ -26,6 +26,7 @@
     "**/tooling/tsconfig/base.json": "jsonc",
     "**/tooling/tsconfig/base.*.json": "jsonc"
   },
+  "explorer.fileNesting.enabled": true,
   "explorer.fileNesting.patterns": {
     // group test files e.g.
     // utils.windows.test.ts, utils.unix.test.ts, utils.test.ts
