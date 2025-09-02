@@ -1,9 +1,19 @@
+/* eslint-disable node/prefer-global/process */
 import pathe from "pathe";
 import { BridgePathTraversal } from "./errors";
 
 const MAX_DECODING_ITERATIONS = 10;
 const WINDOWS_DRIVE_LETTER_REGEX = /^[A-Z]:/i;
 const WINDOWS_DRIVE_REGEX = new RegExp(`${WINDOWS_DRIVE_LETTER_REGEX.source}[/\\\\]`, "i");
+const WINDOWS_UNC_REGEX = /^\\\\[^\\]+\\[^\\]+/;
+
+// we can't use node's process directly in the browser
+const isWindows = "process" in globalThis
+  && typeof globalThis.process === "object"
+  && "platform" in globalThis.process
+  && typeof globalThis.process.platform === "string"
+  && globalThis.process.platform === "win32";
+
 // eslint-disable-next-line no-control-regex
 const CONTROL_CHARACTER_REGEX = /[\u0000-\u001F\u007F-\u009F]/u;
 
@@ -53,8 +63,8 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
     throw new Error("Base path is required");
   }
 
-  if (typeof basePath !== "string" || typeof inputPath !== "string") {
-    throw new TypeError("Base path and input path must be strings");
+  if (typeof basePath !== "string") {
+    throw new TypeError("Base path must be a string");
   }
 
   // normalize the base path to absolute form
@@ -75,15 +85,20 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
   let resolvedPath: string;
 
   // if we are running windows
-  if (WINDOWS_DRIVE_REGEX.test(decodedPath)) {
+  if (WINDOWS_DRIVE_REGEX.test(decodedPath) || WINDOWS_UNC_REGEX.test(decodedPath)) {
     const windowsAbsolutePath = pathe.resolve(decodedPath);
 
     if (isWithinBase(windowsAbsolutePath, normalizedBasePath)) {
       // Windows absolute path is within boundary - allow it
       resolvedPath = windowsAbsolutePath;
     } else {
-      // Windows absolute path is outside boundary - strip drive letter and treat as relative
-      const relativePath = decodedPath.replace(WINDOWS_DRIVE_REGEX, "").replace(/\\/g, "/");
+      // Outside boundary:
+      // - Drive: strip "C:\" prefix
+      // - UNC: strip leading "\\" to treat as relative "server\share\..."
+      const withoutPrefix = WINDOWS_DRIVE_REGEX.test(decodedPath)
+        ? decodedPath.replace(WINDOWS_DRIVE_REGEX, "")
+        : decodedPath.replace(/^\\{2,}/, "");
+      const relativePath = withoutPrefix.replace(/\\/g, "/");
       resolvedPath = pathe.resolve(normalizedBasePath, relativePath);
     }
   } else {
@@ -151,13 +166,11 @@ export function isWithinBase(resolvedPath: string, basePath: string): boolean {
     return false;
   }
 
-  const normalizedResolved = pathe.normalize(resolvedPath);
-  const normalizedBase = pathe.normalize(basePath);
+  const normalizedResolved = isWindows ? pathe.win32.normalize(resolvedPath) : pathe.normalize(resolvedPath);
+  const normalizedBase = isWindows ? pathe.win32.normalize(basePath) : pathe.normalize(basePath);
 
-  // TODO: handle windows case insensitivity
-
-  const resolved = normalizedResolved;
-  const base = normalizedBase;
+  const resolved = isWindows ? normalizedResolved.toLowerCase() : normalizedResolved;
+  const base = isWindows ? normalizedBase.toLowerCase() : normalizedBase;
 
   // check if the resolved path starts with the base path. To prevent partial matches
   // like /root vs /root2, we append a separator unless the base path already ends
@@ -209,7 +222,7 @@ export function decodePathSafely(encodedPath: string): string {
  */
 export function toUnixFormat(inputPath: string): string {
   if (typeof inputPath !== "string") {
-    return inputPath;
+    return String(inputPath);
   }
 
   // Convert Windows-style paths to Unix-style
