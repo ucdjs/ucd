@@ -15,6 +15,8 @@ describe.runIf(platform() === "darwin" || platform() === "linux")("utils - unix"
       expect(isWithinBase("/var/log/file.txt", "/var")).toBe(true);
       expect(isWithinBase("/etc/config", "/var")).toBe(false);
       expect(isWithinBase("/", "/")).toBe(true);
+      expect(isWithinBase("/home", "/")).toBe(true);
+      expect(isWithinBase("/var/log", "/")).toBe(true);
     });
 
     it("should prevent partial Unix path matches", () => {
