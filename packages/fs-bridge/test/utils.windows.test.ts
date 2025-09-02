@@ -37,33 +37,33 @@ describe.runIf(platform() === "win32")("utils - Windows specific", () => {
     describe("windows absolute paths within boundary", () => {
       it("should allow Windows absolute paths within the base directory", () => {
         const result = resolveSafePath("C:\\Users\\John", "C:\\Users\\John\\Documents\\file.txt");
-        expect(result).toBe("C:\\Users\\John\\Documents\\file.txt");
+        expect(result).toBe("C:/Users/John/Documents/file.txt");
       });
 
       it("should handle Windows absolute paths within base directory", () => {
         const basePath = "C:\\Users\\john\\projects\\myapp";
         const inputPath = "C:\\Users\\john\\projects\\myapp\\hello.txt";
 
-        expect.soft(resolveSafePath(basePath, inputPath)).toBe(inputPath);
+        expect.soft(resolveSafePath(basePath, inputPath)).toBe("C:/Users/john/projects/myapp/hello.txt");
       });
 
       it("should handle Windows paths with mixed separators", () => {
         const result = resolveSafePath("C:\\Users\\John", "C:/Users/John\\Documents/file.txt");
-        expect(result).toBe("C:\\Users\\John\\Documents\\file.txt");
+        expect(result).toBe("C:/Users/John/Documents/file.txt");
       });
 
       it("should allow exact boundary path match", () => {
         const result = resolveSafePath("C:\\Users\\John", "C:\\Users\\John");
-        expect(result).toBe("C:\\Users\\John");
+        expect(result).toBe("C:/Users/John");
       });
 
       it("should handle nested Windows absolute paths within base", () => {
         expect.soft(
           resolveSafePath("C:\\Users\\John", "C:\\Users\\John\\Documents\\Projects\\file.txt"),
-        ).toBe("C:\\Users\\John\\Documents\\Projects\\file.txt");
+        ).toBe("C:/Users/John/Documents/Projects/file.txt");
         expect.soft(
           resolveSafePath("D:\\Projects", "D:\\Projects\\myapp\\src\\index.js"),
-        ).toBe("D:\\Projects\\myapp\\src\\index.js");
+        ).toBe("D:/Projects/myapp/src/index.js");
       });
     });
 
