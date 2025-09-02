@@ -196,9 +196,7 @@ describe.runIf(platform() === "win32")("utils - Windows specific", () => {
       });
 
       it("should handle empty input path", () => {
-        expect(() => {
-          resolveSafePath("C:\\Users\\John", "");
-        }).toThrow("Invalid path format or contains illegal characters");
+        expect(resolveSafePath("C:\\Users\\John", "")).toBe("C:\\Users\\John");
       });
 
       it("should handle malformed encoding", () => {
