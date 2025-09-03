@@ -107,7 +107,7 @@ describe.runIf(isWindows)("utils - windows", () => {
           resolveSafePath("C:\\Users\\John", "d:\\temp\\file.txt");
         }).toThrowError(new BridgeWindowsDriveDifference(
           "C",
-          "d",
+          "D",
         ));
       });
 
@@ -132,9 +132,13 @@ describe.runIf(isWindows)("utils - windows", () => {
         expect(result).toBe("C:/Users/John/server/share/file.txt");
       });
 
-      it("should handle UNC path variations", () => {
-        const result = resolveSafePath("\\\\server1\\share1", "\\\\server2\\share2\\file.txt");
-        expect(result).toBe("//server1/share1//server2/share2/file.txt");
+      it("should throw error for UNC path difference", () => {
+        expect(() => {
+          resolveSafePath("\\\\server1\\share1", "\\\\server2\\share2\\file.txt");
+        }).toThrowError(new BridgePathTraversal(
+          "//server1/share1",
+          "//server2/share2/file.txt",
+        ));
       });
     });
 
