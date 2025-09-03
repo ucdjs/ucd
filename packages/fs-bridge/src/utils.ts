@@ -1,7 +1,7 @@
 /* eslint-disable node/prefer-global/process */
 import { trimLeadingSlash } from "@luxass/utils";
 import pathe from "pathe";
-import { BridgePathTraversal, BridgeWindowsDriveDifference } from "./errors";
+import { BridgePathTraversal, BridgeWindowsDriveDifference, BridgeWindowsPathMismatch, BridgeWindowsUNCShareMismatch } from "./errors";
 
 const MAX_DECODING_ITERATIONS = 10;
 const WINDOWS_DRIVE_LETTER_REGEX = /^[A-Z]:/i;
@@ -127,7 +127,7 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
     }
     if (isWindows && baseIsUNCAbs) {
       // Mixing absolute drive with UNC base → reject on Windows
-      throw new Error("Cannot combine drive-letter absolute path with a UNC base on Windows.");
+      throw new BridgeWindowsPathMismatch("UNC", "drive-letter absolute");
     }
 
     // Sandbox: strip drive root and append to base
@@ -144,12 +144,12 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
       const sameShare = baseUNCRoot && inputUNCRoot
         && baseUNCRoot.toLowerCase() === inputUNCRoot.toLowerCase();
       if (!sameShare) {
-        throw new Error(`Different UNC shares not allowed: base=${String(baseUNCRoot)} input=${String(inputUNCRoot)}`);
+        throw new BridgeWindowsUNCShareMismatch(String(baseUNCRoot), String(inputUNCRoot));
       }
     }
     if (isWindows && baseIsDriveAbs) {
       // Mixing absolute UNC with drive base → reject on Windows
-      throw new Error("Cannot combine UNC absolute path with a drive-letter base on Windows.");
+      throw new BridgeWindowsPathMismatch("drive-letter", "UNC absolute");
     }
 
     // Sandbox: strip the *matching* UNC root (if present) and append the tail to base
@@ -174,7 +174,11 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
   }
 
   // normalize to platform-native format for final output
-  return pathe.normalize(resolvedPath);
+  const normalized = pathe.normalize(resolvedPath);
+  if (isUNCish(basePath) || isUNCish(inputPath) || isUNCish(normalized)) {
+    return toUNCPosix(normalized);
+  }
+  return normalized;
 }
 
 /**
@@ -324,10 +328,22 @@ export function getWindowsDriveLetter(str: string): string | null {
   return match[0]?.[0]?.toUpperCase() || null;
 }
 
+/**
+ * @internal
+ */
 export function getWindowsUNCRoot(str: string): string | null {
   const match = str.match(WINDOWS_UNC_ROOT_REGEX);
 
   if (match == null) return null;
 
   return match[0] || null;
+}
+
+function isUNCish(p: string): boolean {
+  return WINDOWS_UNC_ROOT_REGEX.test(p) || /^\/\/[^/]+\/[^/]+/.test(p);
+}
+function toUNCPosix(p: string): string {
+  // convert backslashes and ensure exactly two leading slashes.
+  const body = p.replace(/\\/g, "/").replace(/^\/+/, "");
+  return `//${body}`;
 }

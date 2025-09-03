@@ -1,5 +1,5 @@
 import { isWindows } from "#internal/test-utils";
-import { BridgePathTraversal, BridgeWindowsDriveDifference } from "@ucdjs/fs-bridge";
+import { BridgePathTraversal, BridgeWindowsDriveDifference, BridgeWindowsPathMismatch } from "@ucdjs/fs-bridge";
 import { describe, expect, it } from "vitest";
 import { getWindowsDriveLetter, getWindowsUNCRoot, isWithinBase, resolveSafePath } from "../src/utils";
 
@@ -127,9 +127,10 @@ describe.runIf(isWindows)("utils - windows", () => {
         expect(result).toBe("//server/share/folder/file.txt");
       });
 
-      it("should treat external UNC paths as relative after path conversion", () => {
-        const result = resolveSafePath("C:\\Users\\John", "\\\\server\\share\\file.txt");
-        expect(result).toBe("C:/Users/John/server/share/file.txt");
+      it("should throw error when mixing UNC paths with drive-letter base", () => {
+        expect(() => {
+          resolveSafePath("C:\\Users\\John", "\\\\server\\share\\file.txt");
+        }).toThrowError(new BridgeWindowsPathMismatch("drive-letter", "UNC absolute"));
       });
 
       it("should throw error for UNC path difference", () => {

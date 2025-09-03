@@ -86,3 +86,27 @@ export class BridgeEntryIsDir extends BridgeBaseError {
     this.path = path;
   }
 }
+
+export class BridgeWindowsPathMismatch extends BridgeBaseError {
+  public readonly basePathType: string;
+  public readonly inputPathType: string;
+
+  constructor(basePathType: string, inputPathType: string) {
+    super(`Cannot combine ${inputPathType} path with ${basePathType} base path on Windows`);
+    this.name = "BridgeWindowsPathMismatch";
+    this.basePathType = basePathType;
+    this.inputPathType = inputPathType;
+  }
+}
+
+export class BridgeWindowsUNCShareMismatch extends BridgeBaseError {
+  public readonly baseShare: string;
+  public readonly inputShare: string;
+
+  constructor(baseShare: string, inputShare: string) {
+    super(`Different UNC shares not allowed: base share '${baseShare}' differs from input share '${inputShare}'`);
+    this.name = "BridgeWindowsUNCShareMismatch";
+    this.baseShare = baseShare;
+    this.inputShare = inputShare;
+  }
+}
