@@ -1,5 +1,5 @@
 import { isWindows } from "#internal/test-utils";
-import { BridgePathTraversal } from "@ucdjs/fs-bridge";
+import { BridgePathTraversal, BridgeWindowsDriveDifference } from "@ucdjs/fs-bridge";
 import { describe, expect, it } from "vitest";
 import { getWindowsDriveLetter, getWindowsUNCRoot, isWithinBase, resolveSafePath } from "../src/utils";
 
@@ -74,30 +74,50 @@ describe.runIf(isWindows)("utils - windows", () => {
       });
     });
 
-    describe("windows absolute paths outside boundary - drive letter stripping", () => {
-      it("should strip drive letter from Windows absolute paths outside boundary", () => {
-        const result = resolveSafePath("C:\\Users\\John\\Documents", "D:\\Projects\\file.txt");
-        expect(result).toBe("C:/Users/John/Documents/Projects/file.txt");
+    describe("windows absolute paths outside boundary - drive letter mismatch", () => {
+      it("should throw error for Windows absolute paths with different drive letters", () => {
+        expect(() => {
+          resolveSafePath("C:\\Users\\John\\Documents", "D:\\Projects\\file.txt");
+        }).toThrowError(new BridgeWindowsDriveDifference(
+          "C",
+          "D",
+        ));
       });
 
-      it("should handle Windows paths with backslashes after drive letter stripping", () => {
-        const result = resolveSafePath("C:\\Users\\John", "D:\\Windows\\System32\\file.dll");
-        expect(result).toBe("C:/Users/John/Windows/System32/file.dll");
+      it("should throw error for Windows paths with backslashes when drive letters differ", () => {
+        expect(() => {
+          resolveSafePath("C:\\Users\\John", "D:\\Windows\\System32\\file.dll");
+        }).toThrowError(new BridgeWindowsDriveDifference(
+          "C",
+          "D",
+        ));
       });
 
-      it("should handle Windows paths with forward slashes after drive letter stripping", () => {
-        const result = resolveSafePath("C:\\Users\\John", "D:/Projects/src/file.js");
-        expect(result).toBe("C:/Users/John/Projects/src/file.js");
+      it("should throw error for Windows paths with forward slashes when drive letters differ", () => {
+        expect(() => {
+          resolveSafePath("C:\\Users\\John", "D:/Projects/src/file.js");
+        }).toThrowError(new BridgeWindowsDriveDifference(
+          "C",
+          "D",
+        ));
       });
 
-      it("should handle mixed case drive letters", () => {
-        const result = resolveSafePath("C:\\Users\\John", "d:\\temp\\file.txt");
-        expect(result).toBe("C:/Users/John/temp/file.txt");
+      it("should throw error for mixed case drive letters when they differ", () => {
+        expect(() => {
+          resolveSafePath("C:\\Users\\John", "d:\\temp\\file.txt");
+        }).toThrowError(new BridgeWindowsDriveDifference(
+          "C",
+          "d",
+        ));
       });
 
-      it("should handle different drive letters", () => {
-        const result = resolveSafePath("C:\\Data", "E:\\External\\backup.zip");
-        expect(result).toBe("C:/Data/External/backup.zip");
+      it("should throw error for different drive letters", () => {
+        expect(() => {
+          resolveSafePath("C:\\Data", "E:\\External\\backup.zip");
+        }).toThrowError(new BridgeWindowsDriveDifference(
+          "C",
+          "E",
+        ));
       });
     });
 

@@ -1,7 +1,7 @@
 /* eslint-disable node/prefer-global/process */
 import { trimLeadingSlash } from "@luxass/utils";
 import pathe from "pathe";
-import { BridgePathTraversal } from "./errors";
+import { BridgePathTraversal, BridgeWindowsDriveDifference } from "./errors";
 
 const MAX_DECODING_ITERATIONS = 10;
 const WINDOWS_DRIVE_LETTER_REGEX = /^[A-Z]:/i;
@@ -122,7 +122,7 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
     if (isWindows && baseIsDriveAbs) {
       const baseDrive = getWindowsDriveLetter(normalizedBasePath);
       if (baseDrive && inputDrive && baseDrive !== inputDrive) {
-        throw new Error(`Different Windows drive roots not allowed: base=${baseDrive}:\\, input=${inputDrive}:\\`);
+        throw new BridgeWindowsDriveDifference(baseDrive, inputDrive);
       }
     }
     if (isWindows && baseIsUNCAbs) {

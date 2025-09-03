@@ -55,6 +55,18 @@ export class BridgePathTraversal extends BridgeBaseError {
   }
 }
 
+export class BridgeWindowsDriveDifference extends BridgeBaseError {
+  public readonly accessedDrive: string;
+  public readonly baseDrive: string;
+
+  constructor(baseDrive: string, accessedDrive: string) {
+    super(`Drive letter mismatch detected: attempted to access '${accessedDrive}' which is on a different drive than the allowed base drive '${baseDrive}'`);
+    this.name = "BridgeWindowsDriveDifference";
+    this.baseDrive = baseDrive;
+    this.accessedDrive = accessedDrive;
+  }
+}
+
 export class BridgeFileNotFound extends BridgeBaseError {
   public readonly path: string;
 
