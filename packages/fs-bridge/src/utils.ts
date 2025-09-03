@@ -1,4 +1,5 @@
 /* eslint-disable node/prefer-global/process */
+import { trimLeadingSlash } from "@luxass/utils";
 import pathe from "pathe";
 import { BridgePathTraversal } from "./errors";
 
@@ -105,20 +106,57 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
     = WINDOWS_DRIVE_REGEX.test(decodedPath)
       || WINDOWS_UNC_ROOT_REGEX.test(decodedPath)
       || pathe.isAbsolute(toUnixFormat(decodedPath));
+
   if (isAbsoluteInput && isWithinBase(absoluteInputPath, normalizedBasePath)) {
     return pathe.normalize(absoluteInputPath);
   }
 
+  // Windows-specific handling for absolute Windows forms
+  const baseIsDriveAbs = WINDOWS_DRIVE_REGEX.test(normalizedBasePath);
+  const baseIsUNCAbs = WINDOWS_UNC_ROOT_REGEX.test(normalizedBasePath);
+
   // If the input path is a Windows absolute path, we need to handle it specially.
-  if (WINDOWS_DRIVE_REGEX.test(decodedPath) || WINDOWS_UNC_ROOT_REGEX.test(decodedPath)) {
-    // Handle Windows absolute paths that are outside the base
-    // Outside boundary:
-    // - Drive: strip "C:\" prefix
-    // - UNC: strip leading "\\" to treat as relative "server\share\..."
-    const withoutPrefix = WINDOWS_DRIVE_REGEX.test(decodedPath)
-      ? decodedPath.replace(WINDOWS_DRIVE_REGEX, "")
-      : decodedPath.replace(/^\\{2,}/, "");
-    const relativePath = withoutPrefix.replace(/\\/g, "/");
+  if (WINDOWS_DRIVE_REGEX.test(decodedPath)) {
+    // Input = absolute drive path like "C:\foo"
+    const inputDrive = getWindowsDriveLetter(decodedPath);
+    if (isWindows && baseIsDriveAbs) {
+      const baseDrive = getWindowsDriveLetter(normalizedBasePath);
+      if (baseDrive && inputDrive && baseDrive !== inputDrive) {
+        throw new Error(`Different Windows drive roots not allowed: base=${baseDrive}:\\, input=${inputDrive}:\\`);
+      }
+    }
+    if (isWindows && baseIsUNCAbs) {
+      // Mixing absolute drive with UNC base → reject on Windows
+      throw new Error("Cannot combine drive-letter absolute path with a UNC base on Windows.");
+    }
+
+    // Sandbox: strip drive root and append to base
+    const withoutPrefix = decodedPath.replace(WINDOWS_DRIVE_REGEX, "");
+    const relativePath = trimLeadingSlash(withoutPrefix).replace(/\\/g, "/");
+    resolvedPath = pathe.resolve(normalizedBasePath, relativePath);
+  } else if (WINDOWS_UNC_ROOT_REGEX.test(decodedPath)) {
+    // Input = absolute UNC like "\\server\share\..."
+    const inputUNCRoot = getWindowsUNCRoot(decodedPath);
+    const baseUNCRoot = getWindowsUNCRoot(normalizedBasePath);
+
+    if (isWindows && baseIsUNCAbs) {
+      // On Windows, enforce same-share for double-absolute UNC
+      const sameShare = baseUNCRoot && inputUNCRoot
+        && baseUNCRoot.toLowerCase() === inputUNCRoot.toLowerCase();
+      if (!sameShare) {
+        throw new Error(`Different UNC shares not allowed: base=${String(baseUNCRoot)} input=${String(inputUNCRoot)}`);
+      }
+    }
+    if (isWindows && baseIsDriveAbs) {
+      // Mixing absolute UNC with drive base → reject on Windows
+      throw new Error("Cannot combine UNC absolute path with a drive-letter base on Windows.");
+    }
+
+    // Sandbox: strip the *matching* UNC root (if present) and append the tail to base
+    const tail = inputUNCRoot
+      ? trimLeadingSlash(decodedPath.slice(inputUNCRoot.length))
+      : decodedPath.replace(/^\\+/, "");
+    const relativePath = tail.replace(/\\/g, "/");
     resolvedPath = pathe.resolve(normalizedBasePath, relativePath);
   } else {
     const unixPath = toUnixFormat(decodedPath);
