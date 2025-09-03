@@ -5,7 +5,7 @@ import { BridgePathTraversal } from "./errors";
 const MAX_DECODING_ITERATIONS = 10;
 const WINDOWS_DRIVE_LETTER_REGEX = /^[A-Z]:/i;
 const WINDOWS_DRIVE_REGEX = /^[A-Z]:[/\\]/i;
-const WINDOWS_UNC_REGEX = /^\\\\[^\\]+\\[^\\]+/;
+const WINDOWS_UNC_ROOT_REGEX = /^\\\\[^\\]+\\[^\\]+/;
 
 // we can't use node's process directly in the browser
 const isWindows = "process" in globalThis
@@ -103,14 +103,14 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
 
   const isAbsoluteInput
     = WINDOWS_DRIVE_REGEX.test(decodedPath)
-      || WINDOWS_UNC_REGEX.test(decodedPath)
+      || WINDOWS_UNC_ROOT_REGEX.test(decodedPath)
       || pathe.isAbsolute(toUnixFormat(decodedPath));
   if (isAbsoluteInput && isWithinBase(absoluteInputPath, normalizedBasePath)) {
     return pathe.normalize(absoluteInputPath);
   }
 
   // If the input path is a Windows absolute path, we need to handle it specially.
-  if (WINDOWS_DRIVE_REGEX.test(decodedPath) || WINDOWS_UNC_REGEX.test(decodedPath)) {
+  if (WINDOWS_DRIVE_REGEX.test(decodedPath) || WINDOWS_UNC_ROOT_REGEX.test(decodedPath)) {
     // Handle Windows absolute paths that are outside the base
     // Outside boundary:
     // - Drive: strip "C:\" prefix
@@ -251,13 +251,13 @@ export function toUnixFormat(inputPath: string): string {
  * @internal
  */
 function handleAbsolutePath(absoluteUnixPath: string, basePath: string): string {
-  // Virtual filesystem boundary model: absolute paths are relative to boundary root
+  // virtual filesystem boundary model: absolute paths are relative to boundary root
   if (absoluteUnixPath === "/") {
-    // Root reference points to boundary root
+    // root reference points to boundary root
     return basePath;
   }
 
-  // Strip leading slash and resolve relative to boundary root
+  // strip leading slash and resolve relative to boundary root
   const pathWithoutLeadingSlash = absoluteUnixPath.replace(/^\/+/, "");
   return pathe.resolve(basePath, pathWithoutLeadingSlash);
 }
@@ -267,10 +267,29 @@ function handleAbsolutePath(absoluteUnixPath: string, basePath: string): string 
  * @internal
  */
 function handleRelativePath(relativeUnixPath: string, basePath: string): string {
-  // Current directory references point to base path
+  // current directory references point to base path
   if (relativeUnixPath === "." || relativeUnixPath === "./") {
     return basePath;
   }
 
   return pathe.resolve(basePath, relativeUnixPath);
+}
+
+/**
+ * @internal
+ */
+export function getWindowsDriveLetter(str: string): string | null {
+  const match = str.match(WINDOWS_DRIVE_LETTER_REGEX);
+
+  if (match == null) return null;
+
+  return match[0]?.[0]?.toUpperCase() || null;
+}
+
+export function getWindowsUNCRoot(str: string): string | null {
+  const match = str.match(WINDOWS_UNC_ROOT_REGEX);
+
+  if (match == null) return null;
+
+  return match[0] || null;
 }

@@ -1,9 +1,9 @@
 import { isWindows } from "#internal/test-utils";
 import { BridgePathTraversal } from "@ucdjs/fs-bridge";
 import { describe, expect, it } from "vitest";
-import { isWithinBase, resolveSafePath } from "../src/utils";
+import { getWindowsDriveLetter, getWindowsUNCRoot, isWithinBase, resolveSafePath } from "../src/utils";
 
-describe.runIf(isWindows)("utils - Windows specific", () => {
+describe.runIf(isWindows)("utils - windows", () => {
   describe("isWithinBase", () => {
     it("should handle Windows drive letters correctly", () => {
       expect(isWithinBase("C:\\Users\\John\\Documents\\file.txt", "C:\\Users\\John")).toBe(true);
@@ -263,6 +263,48 @@ describe.runIf(isWindows)("utils - Windows specific", () => {
         const result = resolveSafePath("C:\\Users\\John", "Documents\\\\\\Projects\\\\file.txt");
         expect(result).toBe("C:/Users/John/Documents/Projects/file.txt");
       });
+    });
+  });
+
+  describe("getWindowsDriveLetter", () => {
+    it.each([
+      { input: "C:\\path\\to\\file.txt", expected: "C" },
+      { input: "D:\\another\\path\\to\\file.txt", expected: "D" },
+      { input: "E:\\yet\\another\\path\\to\\file.txt", expected: "E" },
+      { input: "C:\\path\\to\\another\\file.txt", expected: "C" },
+      { input: "C:\\path\\to\\file.txt\\..\\..", expected: "C" },
+      { input: "C:/path/to/file.txt", expected: "C" },
+    ])("should extract drive letter from '$input'", ({ input, expected }) => {
+      const result = getWindowsDriveLetter(input);
+      expect(result).toBe(expected);
+    });
+
+    it.each([
+      { input: "/path/to/file.txt", expected: null },
+      { input: "relative\\path\\to\\file.txt", expected: null },
+      { input: "\\\\server\\share\\path\\to\\file.txt", expected: null },
+    ])("should not extract drive letter from '$input'", ({ input, expected }) => {
+      const result = getWindowsDriveLetter(input);
+      expect(result).toBe(expected);
+    });
+  });
+
+  describe("getWindowsUNCRoot", () => {
+    it.each([
+      { input: "\\\\server\\share\\path\\to\\file.txt", expected: "\\\\server\\share" },
+      { input: "\\\\another\\share\\path\\to\\file.txt", expected: "\\\\another\\share" },
+      { input: "\\\\server\\share", expected: "\\\\server\\share" },
+    ])("should extract UNC root from '$input'", ({ input, expected }) => {
+      const result = getWindowsUNCRoot(input);
+      expect(result).toBe(expected);
+    });
+
+    it.each([
+      { input: "C:\\path\\to\\file.txt", expected: null },
+      { input: "/path/to/file.txt", expected: null },
+    ])("should not extract UNC root from '$input'", ({ input, expected }) => {
+      const result = getWindowsUNCRoot(input);
+      expect(result).toBe(expected);
     });
   });
 });
