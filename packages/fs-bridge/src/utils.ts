@@ -83,6 +83,21 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
     throw new Error("Invalid path format or contains illegal characters");
   }
 
+  const baseUNCRootAny = getAnyUNCRoot(basePath);
+  const inputUNCRootAny = getAnyUNCRoot(decodedPath);
+
+  // early return, if both paths are UNC and differ, throw
+  if (
+    baseUNCRootAny
+    && inputUNCRootAny
+    && baseUNCRootAny.toLowerCase() !== inputUNCRootAny.toLowerCase()
+  ) {
+    throw new BridgePathTraversal(
+      toUNCPosix(baseUNCRootAny),
+      toUNCPosix(decodedPath),
+    );
+  }
+
   let resolvedPath: string;
 
   const absoluteInputPath = pathe.resolve(decodedPath);
@@ -349,4 +364,19 @@ function toUNCPosix(p: string): string {
   // convert backslashes and ensure exactly two leading slashes.
   const body = p.replace(/\\/g, "/").replace(/^\/+/, "");
   return `//${body}`;
+}
+
+/**
+ * @internal
+ */
+function getAnyUNCRoot(str: string): string | null {
+  if (!str) return null;
+
+  const win = str.match(/^\\\\([^\\]+)\\([^\\]+)/);
+
+  if (win) return `//${win[1]}/${win[2]}`;
+
+  const posix = str.match(/^\/\/([^/]+)\/([^/]+)/);
+  if (posix) return `//${posix[1]}/${posix[2]}`;
+  return null;
 }
