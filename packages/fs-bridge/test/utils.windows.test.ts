@@ -1,7 +1,16 @@
 import { isWindows } from "#internal/test-utils";
-import { BridgePathTraversal, BridgeWindowsDriveDifference, BridgeWindowsPathMismatch } from "@ucdjs/fs-bridge";
+import {
+  BridgePathTraversal,
+  BridgeWindowsDriveDifference,
+  BridgeWindowsPathMismatch,
+} from "@ucdjs/fs-bridge";
 import { describe, expect, it } from "vitest";
-import { getWindowsDriveLetter, getWindowsUNCRoot, isWithinBase, resolveSafePath } from "../src/utils";
+import {
+  getWindowsDriveLetter,
+  getWindowsUNCRoot,
+  isWithinBase,
+  resolveSafePath,
+} from "../src/utils";
 
 describe.runIf(isWindows)("utils - windows", () => {
   describe("isWithinBase", () => {
@@ -150,8 +159,12 @@ describe.runIf(isWindows)("utils - windows", () => {
       });
 
       it("should handle encoded Windows absolute paths outside boundary", () => {
-        const result = resolveSafePath("C:\\Users\\John", "D%3A%5CProjects%5Cfile.txt");
-        expect(result).toBe("C:/Users/John/Projects/file.txt");
+        expect(() => {
+          resolveSafePath("C:\\Users\\John", "D%3A%5CProjects%5Cfile.txt");
+        }).toThrowError(new BridgeWindowsDriveDifference(
+          "C",
+          "D",
+        ));
       });
 
       it("should prevent encoded Windows directory traversal", () => {
