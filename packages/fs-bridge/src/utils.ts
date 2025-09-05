@@ -175,9 +175,11 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
 
   // normalize to platform-native format for final output
   const normalized = pathe.normalize(resolvedPath);
+
   if (isUNCish(basePath) || isUNCish(inputPath) || isUNCish(normalized)) {
     return toUNCPosix(normalized);
   }
+
   return normalized;
 }
 
@@ -342,6 +344,7 @@ export function getWindowsUNCRoot(str: string): string | null {
 function isUNCish(p: string): boolean {
   return WINDOWS_UNC_ROOT_REGEX.test(p) || /^\/\/[^/]+\/[^/]+/.test(p);
 }
+
 function toUNCPosix(p: string): string {
   // convert backslashes and ensure exactly two leading slashes.
   const body = p.replace(/\\/g, "/").replace(/^\/+/, "");
