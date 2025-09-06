@@ -12,7 +12,7 @@ A collection of path utility functions for the UCD project.
 npm install @ucdjs/path-utils
 ```
 
-  ## 📄 License
+## 📄 License
 
 Published under [MIT License](./LICENSE).
 
