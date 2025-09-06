@@ -4,7 +4,7 @@
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
 [![codecov][codecov-src]][codecov-href]
 
-A collection of utility functions and filesystem bridge implementations for the UCD project.
+A collection of path utility functions for the UCD project.
 
 ## Installation
 
