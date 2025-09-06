@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { decodePathSafely, isWithinBase } from "../src/utils";
+import { decodePathSafely, isWithinBase, MAX_DECODING_ITERATIONS } from "../src/utils";
 
 describe("isWithinBase", () => {
   it("input validation", () => {
@@ -190,5 +190,76 @@ describe("isWithinBase", () => {
       expect.soft(isWithinBase("/home/user\\docs", "/home/user")).toBe(true);
       expect.soft(isWithinBase("base\\nested/file", "base")).toBe(true);
     });
+  });
+});
+
+describe("decodePathSafely", () => {
+  it("should decode standard URL encoded characters", () => {
+    expect.soft(decodePathSafely("file%20name")).toBe("file name");
+    expect.soft(decodePathSafely("user%40domain")).toBe("user@domain");
+    expect.soft(decodePathSafely("already/decoded")).toBe("already/decoded");
+  });
+
+  it("should decode path characters case-insensitively", () => {
+    expect.soft(decodePathSafely("%2e%2e%2f")).toBe("../");
+    expect.soft(decodePathSafely("%2E%2E%2F")).toBe("../");
+    expect.soft(decodePathSafely("%5c%5C")).toBe("\\\\");
+    expect.soft(decodePathSafely("file%2etxt")).toBe("file.txt");
+  });
+
+  it("should handle malformed encoding with manual fallback", () => {
+    expect.soft(decodePathSafely("invalid%")).toBe("invalid%");
+    expect.soft(decodePathSafely("invalid%G")).toBe("invalid%G");
+    expect.soft(decodePathSafely("partial%2fpath")).toBe("partial/path");
+  });
+
+  it("should handle Windows drive paths", () => {
+    expect.soft(decodePathSafely("C%3A%5CUsers%5CJohn%20Doe")).toBe("C:\\Users\\John Doe");
+    expect.soft(decodePathSafely("D%3A%5CProgram%20Files%5CApp")).toBe("D:\\Program Files\\App");
+  });
+
+  it("should handle Windows UNC paths", () => {
+    expect.soft(decodePathSafely("%5C%5Cserver%5Cshare%5Cfolder")).toBe("\\\\server\\share\\folder");
+    expect.soft(decodePathSafely("%5C%5C192%2E168%2E1%2E100%5Cshared")).toBe("\\\\192.168.1.100\\shared");
+  });
+
+  it("should handle Windows mixed encodings", () => {
+    expect(decodePathSafely("C%3A%5CUsers%5C%2E%2E%5CPublic")).toBe("C:\\Users\\..\\Public");
+  });
+
+  it("should handle Unix absolute paths", () => {
+    expect.soft(decodePathSafely("%2Fhome%2Fuser%2Fdocuments")).toBe("/home/user/documents");
+    expect.soft(decodePathSafely("%2Fusr%2Flocal%2Fbin%2Fapp")).toBe("/usr/local/bin/app");
+  });
+
+  it("should handle Unix relative paths", () => {
+    expect.soft(decodePathSafely("%2E%2E%2Fparent%2Ffolder")).toBe("../parent/folder");
+    expect.soft(decodePathSafely("%2E%2Fconfig%2Ffile%2Etxt")).toBe("./config/file.txt");
+  });
+
+  it("should handle Unix paths with spaces and special chars", () => {
+    expect(decodePathSafely("%2Fhome%2Fuser%2FMy%20Documents%2Ffile%2Etxt")).toBe("/home/user/My Documents/file.txt");
+  });
+
+  it("should handle double and triple encoding", () => {
+    // %252E = %2E encoded = . decoded
+    expect.soft(decodePathSafely("%252E%252E%252F")).toBe("../");
+    // %25252E = %252E encoded = %2E encoded = . decoded
+    expect.soft(decodePathSafely("%25252E")).toBe(".");
+  });
+
+  it("should prevent infinite loops with max iterations", () => {
+    const createDeeplyEncodedString = (depth: number): string => {
+      let result = ".";
+      for (let i = 0; i < depth; i++) {
+        result = encodeURIComponent(result);
+      }
+      return result;
+    };
+
+    const deeplyEncoded = createDeeplyEncodedString(MAX_DECODING_ITERATIONS + 2);
+    expect(() => decodePathSafely(deeplyEncoded)).toThrow(
+      "Maximum decoding iterations exceeded - possible malicious input",
+    );
   });
 });

@@ -3,7 +3,7 @@ import { prependLeadingSlash, trimLeadingSlash } from "@luxass/utils";
 import pathe from "pathe";
 import { BridgePathTraversal, BridgeWindowsDriveDifference, BridgeWindowsPathMismatch, BridgeWindowsUNCShareMismatch } from "./errors";
 
-const MAX_DECODING_ITERATIONS = 10;
+export const MAX_DECODING_ITERATIONS = 10;
 const WINDOWS_DRIVE_LETTER_REGEX = /^[A-Z]:/i;
 const WINDOWS_DRIVE_REGEX = /^[A-Z]:[/\\]/i;
 const WINDOWS_UNC_ROOT_REGEX = /^\\\\[^\\]+\\[^\\]+/;
