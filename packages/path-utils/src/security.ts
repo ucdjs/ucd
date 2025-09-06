@@ -1,6 +1,9 @@
 import { prependLeadingSlash } from "@luxass/utils";
 import pathe from "pathe";
+import { MaximumDecodingIterationsExceededError } from "./errors";
 import { isCaseSensitive } from "./utils";
+
+export const MAX_DECODING_ITERATIONS = 10;
 
 /**
  * Checks if the resolved path is within the specified base path, considering case sensitivity.
@@ -34,4 +37,39 @@ export function isWithinBase(resolvedPath: string, basePath: string): boolean {
   // with one (such as the root directory "/").
   const baseWithSeparator = base.endsWith(pathe.sep) ? base : base + pathe.sep;
   return resolved === base || resolved.startsWith(baseWithSeparator);
+}
+
+export function decodePathSafely(encodedPath: string): string {
+  if (typeof encodedPath !== "string") {
+    throw new TypeError("Encoded path must be a string");
+  }
+
+  let decodedPath = encodedPath;
+  let previousPath: string;
+  let iterations = 0;
+
+  do {
+    previousPath = decodedPath;
+
+    try {
+      // try to url decode
+      decodedPath = decodeURIComponent(decodedPath);
+    } catch {
+      // we continue even though decoding failed
+    }
+
+    // handle common manual encodings
+    decodedPath = decodedPath
+      .replace(/%2e/gi, ".") // encoded dots
+      .replace(/%2f/gi, "/") // encoded forward slashes
+      .replace(/%5c/gi, "\\"); // encoded backslashes
+
+    iterations++;
+  } while (decodedPath !== previousPath && iterations < MAX_DECODING_ITERATIONS);
+
+  if (iterations >= MAX_DECODING_ITERATIONS) {
+    throw new MaximumDecodingIterationsExceededError();
+  }
+
+  return decodedPath;
 }
