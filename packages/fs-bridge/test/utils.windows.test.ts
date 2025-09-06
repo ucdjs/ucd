@@ -279,9 +279,9 @@ describe.runIf(isWindows)("utils - windows", () => {
       });
 
       it("should handle malformed encoding", () => {
-        expect(() => {
-          resolveSafePath("C:\\Users\\John", "%gg%hh");
-        }).toThrow(/Failed to decode path safely/);
+        expect.soft(resolveSafePath("C:\\Users\\John", "%E3%80%80")).toBe("C:/Users/John/　");
+        expect.soft(resolveSafePath("C:\\Users\\John", "%ZZ")).toBe("C:/Users/John/%ZZ");
+        expect.soft(resolveSafePath("C:\\Users\\John", "%gg%hh")).toBe("C:/Users/John/%gg%hh");
       });
     });
 
