@@ -37,7 +37,7 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
     force,
     remote,
     baseUrl,
-    patterns,
+    include: patterns,
     dryRun,
   } = flags;
 
@@ -61,7 +61,7 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
       baseUrl,
       storeDir,
       remote,
-      patterns,
+      include: patterns,
       versions: selectedVersions,
     });
 
