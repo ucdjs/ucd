@@ -16,6 +16,10 @@
   - changed-files:
       - any-glob-to-any-file: packages/schemas/**
 
+"pkg: path-utils":
+  - changed-files:
+      - any-glob-to-any-file: packages/path-utils/**
+
 "pkg: fs-bridge":
   - changed-files:
       - any-glob-to-any-file: packages/fs-bridge/**
