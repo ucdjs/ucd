@@ -8,4 +8,6 @@ export {
   isUNCPath,
 } from "./platform";
 
-export { isWithinBase } from "./security";
+export { decodePathSafely, isWithinBase } from "./security";
+
+export { isCaseSensitive } from "./utils";
