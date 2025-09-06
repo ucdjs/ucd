@@ -1,4 +1,9 @@
 export {
+  MaximumDecodingIterationsExceededError,
+  PathUtilsBaseError,
+} from "./errors";
+
+export {
   getWindowsDriveLetter,
   isUNCPath,
 } from "./platform";
