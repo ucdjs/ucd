@@ -1,5 +1,5 @@
 /* eslint-disable node/prefer-global/process */
-import { trimLeadingSlash } from "@luxass/utils";
+import { prependLeadingSlash, trimLeadingSlash } from "@luxass/utils";
 import pathe from "pathe";
 import { BridgePathTraversal, BridgeWindowsDriveDifference, BridgeWindowsPathMismatch, BridgeWindowsUNCShareMismatch } from "./errors";
 
@@ -229,6 +229,10 @@ export function isWithinBase(resolvedPath: string, basePath: string): boolean {
   if (resolvedPath.trim() === "" || basePath.trim() === "") {
     return false;
   }
+
+  // We apply leading slashes after we have verified that the inputs isn't empty.
+  basePath = prependLeadingSlash(basePath);
+  resolvedPath = prependLeadingSlash(resolvedPath);
 
   const normalizedResolved = isWindows ? pathe.win32.normalize(resolvedPath) : pathe.normalize(resolvedPath);
   const normalizedBase = isWindows ? pathe.win32.normalize(basePath) : pathe.normalize(basePath);
