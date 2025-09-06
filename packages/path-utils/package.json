@@ -39,6 +39,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@luxass/utils": "catalog:prod",
     "pathe": "catalog:prod"
   },
   "devDependencies": {
