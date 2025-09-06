@@ -5,41 +5,41 @@ import { isWithinBase, resolveSafePath } from "../src/utils";
 
 describe.runIf(isUnix)("utils - unix", () => {
   describe("isWithinBase", () => {
-    it("should handle Unix absolute paths correctly", () => {
-      expect(isWithinBase("/home/user/documents/file.txt", "/home/user")).toBe(true);
-      expect(isWithinBase("/home/other/documents/file.txt", "/home/user")).toBe(false);
-      expect(isWithinBase("/var/log/system.log", "/home/user")).toBe(false);
+    it("should handle absolute paths correctly", () => {
+      expect.soft(isWithinBase("/home/user/documents/file.txt", "/home/user")).toBe(true);
+      expect.soft(isWithinBase("/home/other/documents/file.txt", "/home/user")).toBe(false);
+      expect.soft(isWithinBase("/var/log/system.log", "/home/user")).toBe(false);
     });
 
-    it("should handle Unix root paths", () => {
-      expect(isWithinBase("/var/log/file.txt", "/var")).toBe(true);
-      expect(isWithinBase("/etc/config", "/var")).toBe(false);
-      expect(isWithinBase("/", "/")).toBe(true);
-      expect(isWithinBase("/home", "/")).toBe(true);
-      expect(isWithinBase("/var/log", "/")).toBe(true);
+    it("should handle root paths", () => {
+      expect.soft(isWithinBase("/var/log/file.txt", "/var")).toBe(true);
+      expect.soft(isWithinBase("/etc/config", "/var")).toBe(false);
+      expect.soft(isWithinBase("/", "/")).toBe(true);
+      expect.soft(isWithinBase("/home", "/")).toBe(true);
+      expect.soft(isWithinBase("/var/log", "/")).toBe(true);
     });
 
-    it("should prevent partial Unix path matches", () => {
-      expect(isWithinBase("/home/user2/file.txt", "/home/user")).toBe(false);
-      expect(isWithinBase("/home/username/file.txt", "/home/user")).toBe(false);
-      expect(isWithinBase("/var/log2/file.txt", "/var/log")).toBe(false);
+    it("should prevent partial path matches", () => {
+      expect.soft(isWithinBase("/home/user2/file.txt", "/home/user")).toBe(false);
+      expect.soft(isWithinBase("/home/username/file.txt", "/home/user")).toBe(false);
+      expect.soft(isWithinBase("/var/log2/file.txt", "/var/log")).toBe(false);
     });
 
-    it("should handle Unix path normalization edge cases", () => {
-      expect(isWithinBase("/home/user/../user/documents/file.txt", "/home/user")).toBe(true);
-      expect(isWithinBase("/home/user/./documents/file.txt", "/home/user")).toBe(true);
-      expect(isWithinBase("/home/user/documents/../../other/file.txt", "/home/user")).toBe(false);
+    it("should handle path normalization edge cases", () => {
+      expect.soft(isWithinBase("/home/user/../user/documents/file.txt", "/home/user")).toBe(true);
+      expect.soft(isWithinBase("/home/user/./documents/file.txt", "/home/user")).toBe(true);
+      expect.soft(isWithinBase("/home/user/documents/../../other/file.txt", "/home/user")).toBe(false);
     });
 
     it("should handle same path comparison", () => {
-      expect(isWithinBase("/home/user", "/home/user")).toBe(true);
-      expect(isWithinBase("/var/www/html", "/var/www/html")).toBe(true);
+      expect.soft(isWithinBase("/home/user", "/home/user")).toBe(true);
+      expect.soft(isWithinBase("/var/www/html", "/var/www/html")).toBe(true);
     });
 
-    it("should be case-sensitive on Unix systems", () => {
-      expect(isWithinBase("/home/User/file.txt", "/home/user")).toBe(false);
-      expect(isWithinBase("/Home/user/file.txt", "/home/user")).toBe(false);
-      expect(isWithinBase("/var/Log/file.txt", "/var/log")).toBe(false);
+    it("should be case-sensitive on systems", () => {
+      expect.soft(isWithinBase("/home/User/file.txt", "/home/user")).toBe(false);
+      expect.soft(isWithinBase("/Home/user/file.txt", "/home/user")).toBe(false);
+      expect.soft(isWithinBase("/var/Log/file.txt", "/var/log")).toBe(false);
     });
   });
 

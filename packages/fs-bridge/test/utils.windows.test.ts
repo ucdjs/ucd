@@ -8,10 +8,47 @@ import { describe, expect, it } from "vitest";
 import {
   getWindowsDriveLetter,
   getWindowsUNCRoot,
+  isWithinBase,
   resolveSafePath,
 } from "../src/utils";
 
 describe.runIf(isWindows)("utils - windows", () => {
+  describe("isWithinBase", () => {
+    it("should handle Windows drive letters correctly", () => {
+      expect.soft(isWithinBase("C:\\Users\\John\\Documents\\file.txt", "C:\\Users\\John")).toBe(true);
+      expect.soft(isWithinBase("C:\\Users\\Jane\\Documents\\file.txt", "C:\\Users\\John")).toBe(false);
+      expect.soft(isWithinBase("D:\\Files\\document.txt", "C:\\Users\\John")).toBe(false);
+    });
+
+    it("should handle windows unc paths", () => {
+      expect.soft(isWithinBase("\\\\server\\share\\folder\\file.txt", "\\\\server\\share")).toBe(true);
+      expect.soft(isWithinBase("\\\\server\\share2\\file.txt", "\\\\server\\share")).toBe(false);
+      expect.soft(isWithinBase("\\\\server2\\share\\file.txt", "\\\\server\\share")).toBe(false);
+    });
+
+    it("should prevent partial path matches", () => {
+      expect.soft(isWithinBase("C:\\Users\\John2\\file.txt", "C:\\Users\\John")).toBe(false);
+      expect.soft(isWithinBase("C:\\Users\\Johnathan\\file.txt", "C:\\Users\\John")).toBe(false);
+    });
+
+    it("should handle same path comparison", () => {
+      expect.soft(isWithinBase("C:\\Users\\John", "C:\\Users\\John")).toBe(true);
+      expect.soft(isWithinBase("\\\\server\\share", "\\\\server\\share")).toBe(true);
+    });
+
+    it("should be case insensitive on Windows systems", () => {
+      expect.soft(isWithinBase("C:\\Users\\JOHN\\file.txt", "C:\\Users\\john")).toBe(true);
+      expect.soft(isWithinBase("C:\\USERS\\John\\file.txt", "C:\\users\\john")).toBe(true);
+      expect.soft(isWithinBase("D:\\Projects\\MyApp\\file.txt", "D:\\projects\\myapp")).toBe(true);
+    });
+
+    it("should handle Windows path normalization edge cases", () => {
+      expect.soft(isWithinBase("C:\\Users\\John\\..\\John\\Documents\\file.txt", "C:\\Users\\John")).toBe(true);
+      expect.soft(isWithinBase("C:\\Users\\John\\.\\Documents\\file.txt", "C:\\Users\\John")).toBe(true);
+      expect.soft(isWithinBase("C:\\Users\\John\\Documents\\..\\..\\Jane\\file.txt", "C:\\Users\\John")).toBe(false);
+    });
+  });
+
   describe("resolveSafePath", () => {
     describe("windows absolute paths within boundary", () => {
       it("should allow Windows absolute paths within the base directory", () => {

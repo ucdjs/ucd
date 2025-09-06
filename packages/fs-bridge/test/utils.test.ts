@@ -1,6 +1,5 @@
-import { isUnix, isWindows } from "#internal/test-utils";
 import { describe, expect, it } from "vitest";
-import { isWithinBase } from "../src/utils";
+import { decodePathSafely, isWithinBase } from "../src/utils";
 
 describe("isWithinBase", () => {
   it("input validation", () => {
@@ -190,81 +189,6 @@ describe("isWithinBase", () => {
     it("should handle mixed separators in paths", () => {
       expect.soft(isWithinBase("/home/user\\docs", "/home/user")).toBe(true);
       expect.soft(isWithinBase("base\\nested/file", "base")).toBe(true);
-    });
-  });
-
-  describe.runIf(isUnix)("unix specific", () => {
-    it("should handle absolute paths correctly", () => {
-      expect.soft(isWithinBase("/home/user/documents/file.txt", "/home/user")).toBe(true);
-      expect.soft(isWithinBase("/home/other/documents/file.txt", "/home/user")).toBe(false);
-      expect.soft(isWithinBase("/var/log/system.log", "/home/user")).toBe(false);
-    });
-
-    it("should handle root paths", () => {
-      expect.soft(isWithinBase("/var/log/file.txt", "/var")).toBe(true);
-      expect.soft(isWithinBase("/etc/config", "/var")).toBe(false);
-      expect.soft(isWithinBase("/", "/")).toBe(true);
-      expect.soft(isWithinBase("/home", "/")).toBe(true);
-      expect.soft(isWithinBase("/var/log", "/")).toBe(true);
-    });
-
-    it("should prevent partial path matches", () => {
-      expect.soft(isWithinBase("/home/user2/file.txt", "/home/user")).toBe(false);
-      expect.soft(isWithinBase("/home/username/file.txt", "/home/user")).toBe(false);
-      expect.soft(isWithinBase("/var/log2/file.txt", "/var/log")).toBe(false);
-    });
-
-    it("should handle path normalization edge cases", () => {
-      expect.soft(isWithinBase("/home/user/../user/documents/file.txt", "/home/user")).toBe(true);
-      expect.soft(isWithinBase("/home/user/./documents/file.txt", "/home/user")).toBe(true);
-      expect.soft(isWithinBase("/home/user/documents/../../other/file.txt", "/home/user")).toBe(false);
-    });
-
-    it("should handle same path comparison", () => {
-      expect.soft(isWithinBase("/home/user", "/home/user")).toBe(true);
-      expect.soft(isWithinBase("/var/www/html", "/var/www/html")).toBe(true);
-    });
-
-    it("should be case-sensitive on systems", () => {
-      expect.soft(isWithinBase("/home/User/file.txt", "/home/user")).toBe(false);
-      expect.soft(isWithinBase("/Home/user/file.txt", "/home/user")).toBe(false);
-      expect.soft(isWithinBase("/var/Log/file.txt", "/var/log")).toBe(false);
-    });
-  });
-
-  describe.runIf(isWindows)("windows specific", () => {
-    it("should handle Windows drive letters correctly", () => {
-      expect.soft(isWithinBase("C:\\Users\\John\\Documents\\file.txt", "C:\\Users\\John")).toBe(true);
-      expect.soft(isWithinBase("C:\\Users\\Jane\\Documents\\file.txt", "C:\\Users\\John")).toBe(false);
-      expect.soft(isWithinBase("D:\\Files\\document.txt", "C:\\Users\\John")).toBe(false);
-    });
-
-    it("should handle windows unc paths", () => {
-      expect.soft(isWithinBase("\\\\server\\share\\folder\\file.txt", "\\\\server\\share")).toBe(true);
-      expect.soft(isWithinBase("\\\\server\\share2\\file.txt", "\\\\server\\share")).toBe(false);
-      expect.soft(isWithinBase("\\\\server2\\share\\file.txt", "\\\\server\\share")).toBe(false);
-    });
-
-    it("should prevent partial path matches", () => {
-      expect.soft(isWithinBase("C:\\Users\\John2\\file.txt", "C:\\Users\\John")).toBe(false);
-      expect.soft(isWithinBase("C:\\Users\\Johnathan\\file.txt", "C:\\Users\\John")).toBe(false);
-    });
-
-    it("should handle same path comparison", () => {
-      expect.soft(isWithinBase("C:\\Users\\John", "C:\\Users\\John")).toBe(true);
-      expect.soft(isWithinBase("\\\\server\\share", "\\\\server\\share")).toBe(true);
-    });
-
-    it("should be case insensitive on Windows systems", () => {
-      expect.soft(isWithinBase("C:\\Users\\JOHN\\file.txt", "C:\\Users\\john")).toBe(true);
-      expect.soft(isWithinBase("C:\\USERS\\John\\file.txt", "C:\\users\\john")).toBe(true);
-      expect.soft(isWithinBase("D:\\Projects\\MyApp\\file.txt", "D:\\projects\\myapp")).toBe(true);
-    });
-
-    it("should handle Windows path normalization edge cases", () => {
-      expect.soft(isWithinBase("C:\\Users\\John\\..\\John\\Documents\\file.txt", "C:\\Users\\John")).toBe(true);
-      expect.soft(isWithinBase("C:\\Users\\John\\.\\Documents\\file.txt", "C:\\Users\\John")).toBe(true);
-      expect.soft(isWithinBase("C:\\Users\\John\\Documents\\..\\..\\Jane\\file.txt", "C:\\Users\\John")).toBe(false);
     });
   });
 });
