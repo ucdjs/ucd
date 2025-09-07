@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getWindowsDriveLetter, isUNCPath, toUnixFormat } from "../src/platform";
+import { getAnyUNCRoot, getWindowsDriveLetter, isUNCPath, toUnixFormat } from "../src/platform";
 
 describe("getWindowsDriveLetter", () => {
   it("should return the uppercase drive letter for valid Windows paths", () => {
@@ -168,5 +168,115 @@ describe("toUnixFormat", () => {
     expect.soft(toUnixFormat("\\\\192.168.1.100\\share\\file")).toBe("//192.168.1.100/share/file");
     expect.soft(toUnixFormat("\\\\server\\c$\\windows")).toBe("//server/c$/windows");
     expect.soft(toUnixFormat("\\\\server-name.domain.com\\share")).toBe("//server-name.domain.com/share");
+  });
+});
+
+describe("getAnyUNCRoot", () => {
+  it("should extract root from Windows UNC paths", () => {
+    expect.soft(getAnyUNCRoot("\\\\server\\share")).toBe("//server/share");
+    expect.soft(getAnyUNCRoot("\\\\server\\share\\")).toBe("//server/share");
+    expect.soft(getAnyUNCRoot("\\\\server\\share\\path")).toBe("//server/share");
+    expect.soft(getAnyUNCRoot("\\\\server\\share\\deep\\nested\\path")).toBe("//server/share");
+    expect.soft(getAnyUNCRoot("\\\\fileserver\\documents\\folder\\file.txt")).toBe("//fileserver/documents");
+  });
+
+  it("should extract root from Unix UNC paths", () => {
+    expect.soft(getAnyUNCRoot("//server/share")).toBe("//server/share");
+    expect.soft(getAnyUNCRoot("//server/share/")).toBe("//server/share");
+    expect.soft(getAnyUNCRoot("//server/share/path")).toBe("//server/share");
+    expect.soft(getAnyUNCRoot("//server/share/deep/nested/path")).toBe("//server/share");
+    expect.soft(getAnyUNCRoot("//fileserver/documents/folder/file.txt")).toBe("//fileserver/documents");
+  });
+
+  it("should handle mixed separators", () => {
+    expect.soft(getAnyUNCRoot("\\\\server\\share/path")).toBe("//server/share");
+    expect.soft(getAnyUNCRoot("\\\\server/share\\path")).toBe("//server/share");
+    expect.soft(getAnyUNCRoot("//server\\share/path")).toBe("//server/share");
+    expect.soft(getAnyUNCRoot("//server/share\\path")).toBe("//server/share");
+  });
+
+  it("should handle IP addresses as server names", () => {
+    expect.soft(getAnyUNCRoot("\\\\192.168.1.100\\backup")).toBe("//192.168.1.100/backup");
+    expect.soft(getAnyUNCRoot("//10.0.0.5/shared")).toBe("//10.0.0.5/shared");
+    expect.soft(getAnyUNCRoot("\\\\127.0.0.1\\temp\\file.txt")).toBe("//127.0.0.1/temp");
+  });
+
+  it("should handle domain names and special characters", () => {
+    expect.soft(getAnyUNCRoot("\\\\server.domain.com\\share")).toBe("//server.domain.com/share");
+    expect.soft(getAnyUNCRoot("//file-server.company.org/public")).toBe("//file-server.company.org/public");
+    expect.soft(getAnyUNCRoot("\\\\server_01\\share_name")).toBe("//server_01/share_name");
+    expect.soft(getAnyUNCRoot("//server-2022/backup$")).toBe("//server-2022/backup$");
+  });
+
+  it("should return null for invalid inputs", () => {
+    expect.soft(getAnyUNCRoot(null as any)).toBe(null);
+    expect.soft(getAnyUNCRoot(undefined as any)).toBe(null);
+    expect.soft(getAnyUNCRoot("")).toBe(null);
+    expect.soft(getAnyUNCRoot("   ")).toBe(null);
+  });
+
+  it("should return null for strings that are too short", () => {
+    expect.soft(getAnyUNCRoot("//")).toBe(null);
+    expect.soft(getAnyUNCRoot("\\\\")).toBe(null);
+    expect.soft(getAnyUNCRoot("//a")).toBe(null);
+    expect.soft(getAnyUNCRoot("\\\\a")).toBe(null);
+    expect.soft(getAnyUNCRoot("//a/")).toBe(null);
+  });
+
+  it("should return null for non-UNC paths", () => {
+    expect.soft(getAnyUNCRoot("C:\\Windows\\System32")).toBe(null);
+    expect.soft(getAnyUNCRoot("/usr/local/bin")).toBe(null);
+    expect.soft(getAnyUNCRoot("relative/path")).toBe(null);
+    expect.soft(getAnyUNCRoot("\\single\\backslash")).toBe(null);
+    expect.soft(getAnyUNCRoot("/single/slash")).toBe(null);
+    expect.soft(getAnyUNCRoot("file.txt")).toBe(null);
+  });
+
+  it("should return null for incomplete UNC paths", () => {
+    expect.soft(getAnyUNCRoot("\\\\server")).toBe(null);
+    expect.soft(getAnyUNCRoot("//server")).toBe(null);
+    expect.soft(getAnyUNCRoot("\\\\server\\")).toBe(null);
+    expect.soft(getAnyUNCRoot("//server/")).toBe(null);
+    expect.soft(getAnyUNCRoot("\\\\\\share")).toBe(null);
+    expect.soft(getAnyUNCRoot("///share")).toBe(null);
+  });
+
+  it("should handle minimum valid UNC paths", () => {
+    expect.soft(getAnyUNCRoot("\\\\a\\b")).toBe("//a/b");
+    expect.soft(getAnyUNCRoot("//a/b")).toBe("//a/b");
+    expect.soft(getAnyUNCRoot("\\\\x\\y\\")).toBe("//x/y");
+    expect.soft(getAnyUNCRoot("//x/y/")).toBe("//x/y");
+  });
+
+  it("should handle special characters in server and share names", () => {
+    expect.soft(getAnyUNCRoot("\\\\server-01\\my_share")).toBe("//server-01/my_share");
+    expect.soft(getAnyUNCRoot("//server.local/share$")).toBe("//server.local/share$");
+    expect.soft(getAnyUNCRoot("\\\\file_server\\backup-2024")).toBe("//file_server/backup-2024");
+  });
+
+  it("should handle very long paths", () => {
+    const longPath = "\\\\very-long-server-name.domain.company.com\\extremely-long-share-name\\very\\deep\\nested\\folder\\structure\\with\\many\\levels\\file.txt";
+    expect(
+      getAnyUNCRoot(longPath),
+    ).toBe("//very-long-server-name.domain.company.com/extremely-long-share-name");
+  });
+
+  it("should return null for malformed UNC-like paths", () => {
+    expect.soft(getAnyUNCRoot("\\\\server\\\\share")).toBe(null);
+    expect.soft(getAnyUNCRoot("//server//share")).toBe(null);
+    expect.soft(getAnyUNCRoot("\\\\server/\\share")).toBe(null);
+    expect.soft(getAnyUNCRoot("\\\\\\server\\share")).toBe(null);
+    expect.soft(getAnyUNCRoot("///server/share")).toBe(null);
+  });
+
+  it("should preserve case in server and share names", () => {
+    expect.soft(getAnyUNCRoot("\\\\SERVER\\Share")).toBe("//SERVER/Share");
+    expect.soft(getAnyUNCRoot("//FileServer/PublicShare")).toBe("//FileServer/PublicShare");
+  });
+
+  it("should handle paths with special suffixes", () => {
+    expect.soft(getAnyUNCRoot("\\\\server\\share?param=value")).toBe("//server/share?param=value");
+    expect.soft(getAnyUNCRoot("//server/share#anchor")).toBe("//server/share#anchor");
+    expect.soft(getAnyUNCRoot("\\\\server\\share@version")).toBe("//server/share@version");
   });
 });
