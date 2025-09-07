@@ -218,9 +218,7 @@ export function internal_resolveWindowsPath(normalizedBasePath: string, decodedP
       throw new PathTraversalError(normalizedBasePath, normalizedDecodedPath);
     }
 
-    const withoutPrefix = stripDriveLetter(normalizedDecodedPath);
-    const relativePath = trimLeadingSlash(withoutPrefix).replace(/\\/g, "/");
-    return pathe.resolve(normalizedBasePath, relativePath);
+    return pathe.normalize(normalizedDecodedPath);
   }
 
   if (isUNCPath(decodedPath) && isUNCPath(normalizedBasePath)) {
