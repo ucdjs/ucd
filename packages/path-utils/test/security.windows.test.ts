@@ -3,9 +3,11 @@ import { describe, expect, it } from "vitest";
 import {
   PathTraversalError,
   WindowsDriveMismatchError,
+  WindowsPathBehaviorNotImplementedError,
   WindowsPathTypeMismatchError,
+  WindowsUNCShareMismatchError,
 } from "../src/errors";
-import { isWithinBase, resolveSafePath } from "../src/security";
+import { internal_resolveWindowsPath, isWithinBase, resolveSafePath } from "../src/security";
 
 describe.runIf(isWindows)("utils - windows", () => {
   describe("isWithinBase", () => {
@@ -319,6 +321,105 @@ describe.runIf(isWindows)("utils - windows", () => {
       it("should normalize redundant separators", () => {
         const result = resolveSafePath("C:\\Users\\John", "Documents\\\\\\Projects\\\\file.txt");
         expect(result).toBe("C:/Users/John/Documents/Projects/file.txt");
+      });
+    });
+  });
+
+  describe("internal_resolveWindowsPath", () => {
+    describe("drive letter paths", () => {
+      it("should resolve Windows drive paths with same drive letter", () => {
+        const result = internal_resolveWindowsPath("C:\\Users\\John", "C:\\Users\\John\\Documents\\file.txt");
+        expect(result).toBe("C:/Users/John/Documents/file.txt");
+      });
+
+      it("should handle drive paths with normalization", () => {
+        const result = internal_resolveWindowsPath("C:\\Users\\John", "C:\\Users\\John\\Documents\\..\\Projects\\file.txt");
+        expect(result).toBe("C:/Users/John/Projects/file.txt");
+      });
+
+      it("should throw WindowsDriveMismatchError for different drive letters", () => {
+        expect(() => {
+          internal_resolveWindowsPath("C:\\Users\\John", "D:\\Projects\\file.txt");
+        }).toThrow(new WindowsDriveMismatchError("C", "D"));
+      });
+
+      it("should throw PathTraversalError for paths escaping base", () => {
+        expect(() => {
+          internal_resolveWindowsPath("C:\\Users\\John\\Documents", "C:\\Users\\Jane\\file.txt");
+        }).toThrow(new PathTraversalError("C:/Users/John/Documents", "C:/Users/Jane/file.txt"));
+      });
+
+      it("should handle mixed case drive letters", () => {
+        expect(() => {
+          internal_resolveWindowsPath("C:\\Users\\John", "d:\\temp\\file.txt");
+        }).toThrow(new WindowsDriveMismatchError("C", "D"));
+      });
+    });
+
+    // eslint-disable-next-line test/prefer-lowercase-title
+    describe("UNC paths", () => {
+      it("should resolve UNC paths with same share", () => {
+        const result = internal_resolveWindowsPath("\\\\server\\share", "\\\\server\\share\\folder\\file.txt");
+        expect(result).toBe("//server/share/folder/file.txt");
+      });
+
+      it("should throw WindowsUNCShareMismatchError for different shares", () => {
+        expect(() => {
+          internal_resolveWindowsPath("\\\\server1\\share1", "\\\\server2\\share2\\file.txt");
+        }).toThrow(new WindowsUNCShareMismatchError("//server1/share1", "//server2/share2"));
+      });
+
+      it("should throw WindowsUNCShareMismatchError for different servers", () => {
+        expect(() => {
+          internal_resolveWindowsPath("\\\\server1\\share", "\\\\server2\\share\\file.txt");
+        }).toThrow(new WindowsUNCShareMismatchError("//server1/share", "//server2/share"));
+      });
+
+      it("should handle UNC paths with different shares on same server", () => {
+        expect(() => {
+          internal_resolveWindowsPath("\\\\server\\share1", "\\\\server\\share2\\file.txt");
+        }).toThrow(new WindowsUNCShareMismatchError("//server/share1", "//server/share2"));
+      });
+    });
+
+    describe("mixed path types", () => {
+      it("should throw WindowsPathTypeMismatchError when mixing UNC base with drive input", () => {
+        expect(() => {
+          internal_resolveWindowsPath("\\\\server\\share", "C:\\Users\\John\\file.txt");
+        }).toThrow(new WindowsPathTypeMismatchError("UNC", "drive-letter absolute"));
+      });
+
+      it("should throw WindowsPathTypeMismatchError when mixing drive base with UNC input", () => {
+        expect(() => {
+          internal_resolveWindowsPath("C:\\Users\\John", "\\\\server\\share\\file.txt");
+        }).toThrow(new WindowsPathTypeMismatchError("drive-letter", "UNC absolute"));
+      });
+    });
+
+    describe("unsupported scenarios", () => {
+      it("should throw WindowsPathBehaviorNotImplementedError for unsupported combinations", () => {
+        // Test with a scenario that doesn't match any of the implemented cases
+        // This might be tricky to trigger, but let's try with malformed paths
+        expect(() => {
+          internal_resolveWindowsPath("/unix/path", "relative/path");
+        }).toThrow(new WindowsPathBehaviorNotImplementedError());
+      });
+    });
+
+    describe("edge cases", () => {
+      it("should handle empty UNC tail paths", () => {
+        const result = internal_resolveWindowsPath("\\\\server\\share", "\\\\server\\share");
+        expect(result).toBe("//server/share");
+      });
+
+      it("should normalize backslashes to forward slashes in output", () => {
+        const result = internal_resolveWindowsPath("C:\\Users\\John", "C:\\Users\\John\\Documents\\Projects\\file.txt");
+        expect(result).toBe("C:/Users/John/Documents/Projects/file.txt");
+      });
+
+      it("should handle case insensitive UNC share comparison", () => {
+        const result = internal_resolveWindowsPath("\\\\SERVER\\SHARE", "\\\\server\\share\\file.txt");
+        expect(result).toBe("//SERVER/SHARE/file.txt");
       });
     });
   });
