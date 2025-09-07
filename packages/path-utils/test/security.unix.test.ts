@@ -155,13 +155,14 @@ describe.runIf(isUnix)("security - unix", () => {
       it("should handle Unix paths with null bytes", () => {
         expect(() => {
           resolveSafePath("/home/user", "file.txt\0");
-        }).toThrow("Invalid path format or contains illegal characters");
+        }).toThrow(/Illegal character detected in path: '\0'/);
       });
 
       it("should handle Unix paths with control characters", () => {
         expect(() => {
           resolveSafePath("/home/user", "file\x01.txt");
-        }).toThrow("Invalid path format or contains illegal characters");
+        // eslint-disable-next-line no-control-regex
+        }).toThrow(/Illegal character detected in path: ''/);
       });
 
       it("should handle empty input path", () => {
