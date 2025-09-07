@@ -1,4 +1,6 @@
 export {
+  FailedToDecodePathError,
+  IllegalCharacterInPathError,
   MaximumDecodingIterationsExceededError,
   PathTraversalError,
   PathUtilsBaseError,
