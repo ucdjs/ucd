@@ -93,4 +93,3 @@ export function toUnixFormat(inputPath: string): string {
 
   return trimTrailingSlash(pathe.normalize(normalized));
 }
-

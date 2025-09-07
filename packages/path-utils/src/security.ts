@@ -33,6 +33,10 @@ export function isWithinBase(resolvedPath: string, basePath: string): boolean {
     return false;
   }
 
+  // Check for UNC paths and reject them early
+  assertNotUNCPath(resolvedPath.trim());
+  assertNotUNCPath(basePath.trim());
+
   // we apply leading slashes after we have verified that the inputs isn't empty.
   basePath = prependLeadingSlash(basePath.trim());
   resolvedPath = prependLeadingSlash(resolvedPath.trim());
@@ -128,7 +132,6 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
     throw new IllegalCharacterInPathError(illegalChar);
   }
 
-
   let resolvedPath: string;
 
   const absoluteInputPath = pathe.resolve(decodedPath);
@@ -165,14 +168,6 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
 
   // If either the process.platform is win32, or we are a case insensitive platform, that isn't darwin.
   const isWindows = osPlatform === "win32" || (!isCaseSensitive && osPlatform !== "darwin");
-
-  console.error({
-    basePath,
-    decodedPath,
-    normalizedBasePath,
-    isWindows,
-    "WINDOWS_DRIVE_RE.test": WINDOWS_DRIVE_RE.test(decodedPath),
-  });
 
   if (isWindows && isWindowsDrivePath(decodedPath)) {
     return internal_resolveWindowsPath(basePath, decodedPath);
