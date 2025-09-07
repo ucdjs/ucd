@@ -59,3 +59,17 @@ export class WindowsUNCShareMismatchError extends PathUtilsBaseError {
     this.inputShare = inputShare;
   }
 }
+
+export class FailedToDecodePathError extends PathUtilsBaseError {
+  constructor() {
+    super("Failed to decode path");
+    this.name = "FailedToDecodePathError";
+  }
+}
+
+export class IllegalCharacterInPathError extends PathUtilsBaseError {
+  constructor(character: string) {
+    super(`Illegal character detected in path: '${character}'`);
+    this.name = "IllegalCharacterInPathError";
+  }
+}

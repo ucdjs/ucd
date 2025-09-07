@@ -6,7 +6,7 @@ import {
   WINDOWS_DRIVE_RE,
   WINDOWS_UNC_ROOT_RE,
 } from "./constants";
-import { MaximumDecodingIterationsExceededError, PathTraversalError, WindowsDriveMismatchError, WindowsPathTypeMismatchError, WindowsUNCShareMismatchError } from "./errors";
+import { FailedToDecodePathError, IllegalCharacterInPathError, MaximumDecodingIterationsExceededError, PathTraversalError, WindowsDriveMismatchError, WindowsPathTypeMismatchError, WindowsUNCShareMismatchError } from "./errors";
 import { getAnyUNCRoot, getWindowsDriveLetter, toUNCPosix, toUnixFormat } from "./platform";
 import { isCaseSensitive, isWindows } from "./utils";
 
@@ -80,42 +80,48 @@ export function decodePathSafely(encodedPath: string): string {
 }
 
 export function resolveSafePath(basePath: string, inputPath: string): string {
-  if (!basePath) {
-    throw new Error("Base path is required");
-  }
-
   if (typeof basePath !== "string") {
     throw new TypeError("Base path must be a string");
   }
 
+  basePath = basePath.trim();
+  inputPath = inputPath.trim();
+
+  if (basePath === "") {
+    throw new Error("Base path cannot be empty");
+  }
+
+  basePath = prependLeadingSlash(basePath);
+  inputPath = prependLeadingSlash(inputPath);
+
   // normalize the base path to absolute form
-  const normalizedBasePath = pathe.resolve(basePath);
+  const normalizedBasePath = pathe.normalize(basePath);
 
   // decode the input path until there are no more encoded segments
   let decodedPath: string;
   try {
     decodedPath = decodePathSafely(inputPath);
-  } catch (err) {
-    throw new Error(`Failed to decode path safely: ${err instanceof Error ? err.message : "Unknown error"}`);
+  } catch {
+    throw new FailedToDecodePathError();
   }
 
-  if (decodedPath.includes("\0") || CONTROL_CHARACTER_RE.test(decodedPath)) {
-    throw new Error("Invalid path format or contains illegal characters");
+  const illegalMatch = decodedPath.match(CONTROL_CHARACTER_RE);
+  if (decodedPath.includes("\0") || illegalMatch != null) {
+    const illegalChar = decodedPath.includes("\0") ? "\0" : (illegalMatch?.[0] ?? "[unknown]");
+    throw new IllegalCharacterInPathError(illegalChar);
   }
 
   const baseUNCRootAny = getAnyUNCRoot(basePath);
   const inputUNCRootAny = getAnyUNCRoot(decodedPath);
 
-  // early return, if both paths are UNC and differ, throw
+  // If both paths are UNC, and they are using different shares.
+  // We can just early throw, since there isn't any reason to continue.
   if (
     baseUNCRootAny
     && inputUNCRootAny
     && baseUNCRootAny.toLowerCase() !== inputUNCRootAny.toLowerCase()
   ) {
-    throw new PathTraversalError(
-      toUNCPosix(baseUNCRootAny) ?? "[conversion error]",
-      toUNCPosix(decodedPath) ?? "[conversion error]",
-    );
+    throw new WindowsUNCShareMismatchError(baseUNCRootAny, inputUNCRootAny);
   }
 
   let resolvedPath: string;
