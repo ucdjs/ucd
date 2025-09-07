@@ -73,3 +73,10 @@ export class IllegalCharacterInPathError extends PathUtilsBaseError {
     this.name = "IllegalCharacterInPathError";
   }
 }
+
+export class WindowsPathBehaviorNotImplementedError extends PathUtilsBaseError {
+  constructor() {
+    super("Windows path behavior not implemented");
+    this.name = "WindowsPathBehaviorNotImplementedError";
+  }
+}
