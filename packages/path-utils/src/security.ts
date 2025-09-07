@@ -100,8 +100,12 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
     throw new Error("Base path cannot be empty");
   }
 
-  basePath = isWindowsDrivePath(basePath) ? basePath : prependLeadingSlash(basePath);
-  inputPath = isWindowsDrivePath(inputPath) ? inputPath : prependLeadingSlash(inputPath);
+  basePath = (isWindowsDrivePath(basePath) || isUNCPath(basePath))
+    ? basePath
+    : prependLeadingSlash(basePath);
+  inputPath = (isWindowsDrivePath(inputPath) || isUNCPath(inputPath))
+    ? inputPath
+    : prependLeadingSlash(inputPath);
 
   // normalize the base path to absolute form
   const normalizedBasePath = pathe.normalize(basePath);
