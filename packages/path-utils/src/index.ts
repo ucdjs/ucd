@@ -15,6 +15,10 @@ export {
   toUnixFormat,
 } from "./platform";
 
-export { decodePathSafely, isWithinBase } from "./security";
+export {
+  decodePathSafely,
+  isWithinBase,
+  resolveSafePath,
+} from "./security";
 
 export { isCaseSensitive } from "./utils";
