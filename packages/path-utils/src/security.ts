@@ -6,9 +6,9 @@ import {
   WINDOWS_DRIVE_RE,
   WINDOWS_UNC_ROOT_RE,
 } from "./constants";
-import { FailedToDecodePathError, IllegalCharacterInPathError, MaximumDecodingIterationsExceededError, PathTraversalError, WindowsDriveMismatchError, WindowsPathTypeMismatchError, WindowsUNCShareMismatchError } from "./errors";
-import { getAnyUNCRoot, getWindowsDriveLetter, toUNCPosix, toUnixFormat } from "./platform";
-import { isCaseSensitive, isWindows } from "./utils";
+import { FailedToDecodePathError, IllegalCharacterInPathError, MaximumDecodingIterationsExceededError, PathTraversalError, WindowsDriveMismatchError, WindowsPathBehaviorNotImplementedError, WindowsPathTypeMismatchError, WindowsUNCShareMismatchError } from "./errors";
+import { getAnyUNCRoot, getWindowsDriveLetter, isUNCPath, isWindowsDrivePath, stripDriveLetter, toUnixFormat } from "./platform";
+import { isCaseSensitive, osPlatform } from "./utils";
 
 /**
  * Checks if the resolved path is within the specified base path, considering case sensitivity.
@@ -150,61 +150,20 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
     return pathe.normalize(absoluteInputPath);
   }
 
-  // Windows-specific handling for absolute Windows forms
-  const baseIsDriveAbs = WINDOWS_DRIVE_RE.test(normalizedBasePath);
-  const baseIsUNCAbs = WINDOWS_UNC_ROOT_RE.test(normalizedBasePath);
+  // If either the process.platform is win32, or we are a case insensitive platform, that isn't darwin.
+  const isWindows = osPlatform === "win32" || (!isCaseSensitive && osPlatform !== "darwin");
 
-  // If the input path is a Windows absolute path, we need to handle it specially.
-  if (WINDOWS_DRIVE_RE.test(decodedPath)) {
-    // Input = absolute drive path like "C:\foo"
-    const inputDrive = getWindowsDriveLetter(decodedPath);
-    if (isWindows && baseIsDriveAbs) {
-      const baseDrive = getWindowsDriveLetter(normalizedBasePath);
-      if (baseDrive && inputDrive && baseDrive !== inputDrive) {
-        throw new WindowsDriveMismatchError(baseDrive, inputDrive);
-      }
-    }
-    if (isWindows && baseIsUNCAbs) {
-      // Mixing absolute drive with UNC base → reject on Windows
-      throw new WindowsPathTypeMismatchError("UNC", "drive-letter absolute");
-    }
+  if (isWindows && (WINDOWS_DRIVE_RE.test(decodedPath)
+    || WINDOWS_UNC_ROOT_RE.test(decodedPath))) {
+    return internal_resolveWindowsPath(normalizedBasePath, decodedPath);
+  }
 
-    // Sandbox: strip drive root and append to base
-    const withoutPrefix = decodedPath.replace(WINDOWS_DRIVE_RE, "");
-    const relativePath = trimLeadingSlash(withoutPrefix).replace(/\\/g, "/");
-    resolvedPath = pathe.resolve(normalizedBasePath, relativePath);
-  } else if (WINDOWS_UNC_ROOT_RE.test(decodedPath)) {
-    // Input = absolute UNC like "\\server\share\..."
-    const inputUNCRoot = getAnyUNCRoot(decodedPath);
-    const baseUNCRoot = getAnyUNCRoot(normalizedBasePath);
+  const unixPath = toUnixFormat(decodedPath);
 
-    if (isWindows && baseIsUNCAbs) {
-      // On Windows, enforce same-share for double-absolute UNC
-      const sameShare = baseUNCRoot && inputUNCRoot
-        && baseUNCRoot.toLowerCase() === inputUNCRoot.toLowerCase();
-      if (!sameShare) {
-        throw new WindowsUNCShareMismatchError(String(baseUNCRoot), String(inputUNCRoot));
-      }
-    }
-    if (isWindows && baseIsDriveAbs) {
-      // Mixing absolute UNC with drive base → reject on Windows
-      throw new WindowsPathTypeMismatchError("drive-letter", "UNC absolute");
-    }
-
-    // Sandbox: strip the *matching* UNC root (if present) and append the tail to base
-    const tail = inputUNCRoot
-      ? trimLeadingSlash(decodedPath.slice(inputUNCRoot.length))
-      : decodedPath.replace(/^\\+/, "");
-    const relativePath = tail.replace(/\\/g, "/");
-    resolvedPath = pathe.resolve(normalizedBasePath, relativePath);
+  if (pathe.isAbsolute(unixPath)) {
+    resolvedPath = handleAbsolutePath(unixPath, normalizedBasePath);
   } else {
-    const unixPath = toUnixFormat(decodedPath);
-
-    if (pathe.isAbsolute(unixPath)) {
-      resolvedPath = handleAbsolutePath(unixPath, normalizedBasePath);
-    } else {
-      resolvedPath = handleRelativePath(unixPath, normalizedBasePath);
-    }
+    resolvedPath = handleRelativePath(unixPath, normalizedBasePath);
   }
 
   // final boundary validation
@@ -215,12 +174,75 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
   // normalize to platform-native format for final output
   const normalized = pathe.normalize(resolvedPath);
 
-  if (isUNCish(basePath) || isUNCish(inputPath) || isUNCish(normalized)) {
-    throw new Error("UNC paths are not supported in this environment");
-    return toUNCPosix(normalized);
-  }
+  // if (isUNCish(basePath) || isUNCish(inputPath) || isUNCish(normalized)) {
+  //   throw new Error("UNC paths are not supported in this environment");
+  //   return toUNCPosix(normalized);
+  // }
 
   return normalized;
+}
+
+export function internal_resolveWindowsPath(normalizedBasePath: string, decodedPath: string): string {
+  // If the decoded path is a Windows drive path and the base path is a UNC path
+  if (isWindowsDrivePath(decodedPath) && isUNCPath(normalizedBasePath)) {
+    throw new WindowsPathTypeMismatchError("UNC", "drive-letter absolute");
+  }
+
+  // If the decoded path is a UNC path and the base path is a Windows drive path
+  if (isUNCPath(decodedPath) && isWindowsDrivePath(normalizedBasePath)) {
+    throw new WindowsPathTypeMismatchError("drive-letter", "UNC absolute");
+  }
+
+  // Both base path and input path is Windows drive paths
+  if (isWindowsDrivePath(decodedPath) && isWindowsDrivePath(normalizedBasePath)) {
+    // 1. First verify that the paths use the same drive letter
+    // 2. If they use different drive letters, throw a drive mismatch error
+    // 3. If they use the same drive letter, verify the path isn't escaping the base path
+    // 4. If the path is escaping, throw a path traversal error
+    // 5. If the path stays within bounds, proceed with path resolution
+
+    // Get the drive letters from both input and base path.
+    const baseDriveLetter = getWindowsDriveLetter(normalizedBasePath);
+    const inputDriveLetter = getWindowsDriveLetter(decodedPath);
+
+    // If either the drive letters is null, or they are not equal, throw a drive mismatch error
+    if (baseDriveLetter != null && inputDriveLetter != null && baseDriveLetter !== inputDriveLetter) {
+      throw new WindowsDriveMismatchError(baseDriveLetter, inputDriveLetter);
+    }
+
+    // We start by normalizing the decoded path, to ensure that all ../ is resolved.
+    const normalizedDecodedPath = pathe.normalize(decodedPath);
+
+    // If the decoded path is outside the base path, then we throw an error.
+    if (!isWithinBase(normalizedDecodedPath, normalizedBasePath)) {
+      throw new PathTraversalError(normalizedBasePath, normalizedDecodedPath);
+    }
+
+    const withoutPrefix = stripDriveLetter(normalizedDecodedPath);
+    const relativePath = trimLeadingSlash(withoutPrefix).replace(/\\/g, "/");
+    return pathe.resolve(normalizedBasePath, relativePath);
+  }
+
+  if (isUNCPath(decodedPath) && isUNCPath(normalizedBasePath)) {
+    const inputUNCRoot = getAnyUNCRoot(decodedPath);
+    const baseUNCRoot = getAnyUNCRoot(normalizedBasePath);
+
+    const isSameShare = baseUNCRoot != null && inputUNCRoot != null
+      && baseUNCRoot.toLowerCase() === inputUNCRoot.toLowerCase();
+
+    if (!isSameShare) {
+      throw new WindowsUNCShareMismatchError(String(baseUNCRoot), String(inputUNCRoot));
+    }
+
+    const tail = inputUNCRoot != null
+      ? trimLeadingSlash(decodedPath.slice(inputUNCRoot.length))
+      : decodedPath.replace(/^\\+/, "");
+
+    const relativePath = pathe.normalize(tail);
+    return pathe.resolve(normalizedBasePath, relativePath);
+  }
+
+  throw new WindowsPathBehaviorNotImplementedError();
 }
 
 /**
@@ -250,8 +272,4 @@ function handleRelativePath(relativeUnixPath: string, basePath: string): string 
   }
 
   return pathe.resolve(basePath, relativeUnixPath);
-}
-
-function isUNCish(p: string): boolean {
-  return WINDOWS_UNC_ROOT_RE.test(p) || /^\/\/[^/]+\/[^/]+/.test(p);
 }
