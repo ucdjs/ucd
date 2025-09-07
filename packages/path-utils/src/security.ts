@@ -175,6 +175,15 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
   // If either the process.platform is win32, or we are a case insensitive platform, that isn't darwin.
   const isWindows = osPlatform === "win32" || (!isCaseSensitive && osPlatform !== "darwin");
 
+  console.error({
+    basePath,
+    decodedPath,
+    normalizedBasePath,
+    isWindows,
+    "WINDOWS_DRIVE_RE.test": WINDOWS_DRIVE_RE.test(decodedPath),
+    "WINDOWS_UNC_ROOT_RE.test": WINDOWS_UNC_ROOT_RE.test(decodedPath),
+  });
+
   if (isWindows && (WINDOWS_DRIVE_RE.test(decodedPath)
     || WINDOWS_UNC_ROOT_RE.test(decodedPath))) {
     return internal_resolveWindowsPath(basePath, decodedPath);
