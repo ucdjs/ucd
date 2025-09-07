@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getWindowsDriveLetter, isUNCPath } from "../src/platform";
+import { getWindowsDriveLetter, isUNCPath, toUnixFormat } from "../src/platform";
 
 describe("getWindowsDriveLetter", () => {
   it("should return the uppercase drive letter for valid Windows paths", () => {
@@ -70,5 +70,103 @@ describe("isUNCPath", () => {
     expect.soft(isUNCPath("\\\\.\\pipe\\mypipe")).toBe(false); // device namespace
     expect.soft(isUNCPath("\\\\?\\C:\\path")).toBe(false); // extended-length device path
     expect.soft(isUNCPath("\\\\?\\UNC\\server\\share\\file.txt")).toBe(false); // extended-length UNC form
+  });
+});
+
+describe("toUnixFormat", () => {
+  it("should convert Windows paths with backslashes to Unix format", () => {
+    expect.soft(toUnixFormat("C:\\Windows\\System32")).toBe("/Windows/System32");
+    expect.soft(toUnixFormat("D:\\path\\to\\file.txt")).toBe("/path/to/file.txt");
+    expect.soft(toUnixFormat("\\server\\share\\file")).toBe("/server/share/file");
+    expect.soft(toUnixFormat("\\\\server\\\\share\\\\file")).toBe("//server/share/file");
+  });
+
+  it("should handle mixed separators in Windows paths", () => {
+    expect.soft(toUnixFormat("C:\\Windows/System32\\file.txt")).toBe("/Windows/System32/file.txt");
+    expect.soft(toUnixFormat("D:/path\\to\\file")).toBe("/path/to/file");
+    expect.soft(toUnixFormat("\\server/share\\file")).toBe("/server/share/file");
+    expect.soft(toUnixFormat("\\\\server\\share//file")).toBe("//server/share/file");
+  });
+
+  it("should strip Windows drive letters", () => {
+    expect.soft(toUnixFormat("C:")).toBe("/");
+    expect.soft(toUnixFormat("C:file.txt")).toBe("/file.txt");
+    expect.soft(toUnixFormat("Z:\\deep\\nested\\path")).toBe("/deep/nested/path");
+  });
+
+  it("should handle Unix paths correctly", () => {
+    expect.soft(toUnixFormat("/usr/bin/node")).toBe("/usr/bin/node");
+    expect.soft(toUnixFormat("usr/bin/node")).toBe("/usr/bin/node");
+    expect.soft(toUnixFormat("/home/user/.config")).toBe("/home/user/.config");
+  });
+
+  it("should handle relative paths", () => {
+    expect.soft(toUnixFormat("relative/path")).toBe("/relative/path");
+    expect.soft(toUnixFormat("file.txt")).toBe("/file.txt");
+    expect.soft(toUnixFormat("./current/dir")).toBe("/current/dir");
+  });
+
+  it("should handle UNC paths", () => {
+    expect.soft(toUnixFormat("\\\\server\\share")).toBe("//server/share");
+    expect.soft(toUnixFormat("\\\\server\\share\\path")).toBe("//server/share/path");
+    expect.soft(toUnixFormat("//server/share/path")).toBe("//server/share/path");
+  });
+
+  it("should handle empty strings and whitespace", () => {
+    expect.soft(toUnixFormat("")).toBe("/");
+    expect.soft(toUnixFormat("   ")).toBe("/");
+  });
+
+  it("should handle non-string inputs", () => {
+    expect.soft(() => toUnixFormat(null as any)).toThrow(TypeError);
+    expect.soft(() => toUnixFormat(undefined as any)).toThrow(TypeError);
+    expect.soft(() => toUnixFormat(123 as any)).toThrow(TypeError);
+    expect.soft(() => toUnixFormat({} as any)).toThrow(TypeError);
+  });
+
+  it("should handle paths with multiple consecutive separators", () => {
+    expect.soft(toUnixFormat("C:\\\\path\\\\to\\\\file")).toBe("/path/to/file");
+    expect.soft(toUnixFormat("//server//share//file")).toBe("//server/share/file");
+    expect.soft(toUnixFormat("path//to//file")).toBe("/path/to/file");
+  });
+
+  it("should handle special characters and Unicode", () => {
+    expect.soft(toUnixFormat("C:\\Users\\José\\file.txt")).toBe("/Users/José/file.txt");
+    expect.soft(toUnixFormat("path/with/特殊字符")).toBe("/path/with/特殊字符");
+  });
+
+  it("should handle drive letters in the middle of paths", () => {
+    expect.soft(toUnixFormat("prefixC:suffix")).toBe("/prefixsuffix");
+    expect.soft(toUnixFormat("someC:\\path")).toBe("/some/path");
+  });
+
+  it("should handle trailing separators", () => {
+    expect.soft(toUnixFormat("C:\\folder\\")).toBe("/folder/");
+    expect.soft(toUnixFormat("\\\\server\\share\\")).toBe("//server/share/");
+    expect.soft(toUnixFormat("relative/path/")).toBe("/relative/path/");
+  });
+
+  it("should handle root paths", () => {
+    expect.soft(toUnixFormat("C:\\")).toBe("/");
+    expect.soft(toUnixFormat("\\")).toBe("/");
+    expect.soft(toUnixFormat("/")).toBe("/");
+  });
+
+  it("should handle lowercase drive letters and spaces", () => {
+    expect.soft(toUnixFormat("c:\\Program Files\\app")).toBe("/Program Files/app");
+    expect.soft(toUnixFormat("D:\\My Documents\\file.txt")).toBe("/My Documents/file.txt");
+  });
+
+  it("should handle path traversal sequences", () => {
+    expect.soft(toUnixFormat("C:\\folder\\..\\other")).toBe("/other");
+    expect.soft(toUnixFormat("C:\\folder\\.\\file.txt")).toBe("/folder/file.txt");
+    expect.soft(toUnixFormat("..\\parent\\file")).toBe("/parent/file");
+    expect.soft(toUnixFormat(".\\current\\file")).toBe("/current/file");
+  });
+
+  it("should handle UNC edge cases", () => {
+    expect.soft(toUnixFormat("\\\\192.168.1.100\\share\\file")).toBe("//192.168.1.100/share/file");
+    expect.soft(toUnixFormat("\\\\server\\c$\\windows")).toBe("//server/c$/windows");
+    expect.soft(toUnixFormat("\\\\server-name.domain.com\\share")).toBe("//server-name.domain.com/share");
   });
 });
