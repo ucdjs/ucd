@@ -124,7 +124,10 @@ describe("stripDriveLetter", () => {
 
   it("should throw UNCPathNotSupportedError for UNC paths", () => {
     expect.soft(() => stripDriveLetter("\\\\server\\share")).toThrow(UNCPathNotSupportedError);
-    expect.soft(() => stripDriveLetter("//server/share")).toThrow(UNCPathNotSupportedError);
+  });
+
+  it("should handle forward slash paths that are not UNC", () => {
+    expect.soft(stripDriveLetter("//server/share")).toBe("//server/share");
   });
 
   it("should not strip drive-like patterns without separators", () => {
@@ -199,8 +202,8 @@ describe("isUNCPath", () => {
 
   it("should return false for Unix paths", () => {
     expect.soft(isUNCPath("/path/to/file")).toBe(false);
-    // Note: //server/share is now considered a valid UNC path (forward-slash format)
-    expect.soft(isUNCPath("//server/share")).toBe(true);
+    // Note: //server/share with forward slashes is NOT a Windows UNC path
+    expect.soft(isUNCPath("//server/share")).toBe(false);
   });
 
   it("should return false for incomplete UNC paths", () => {
@@ -254,7 +257,10 @@ describe("toUnixFormat", () => {
   it("should throw UNCPathNotSupportedError for UNC paths", () => {
     expect.soft(() => toUnixFormat("\\\\server\\share")).toThrow(UNCPathNotSupportedError);
     expect.soft(() => toUnixFormat("\\\\server\\share\\path")).toThrow(UNCPathNotSupportedError);
-    expect.soft(() => toUnixFormat("//server/share/path")).toThrow(UNCPathNotSupportedError);
+  });
+
+  it("should handle forward slash paths that are not Windows UNC paths", () => {
+    expect.soft(toUnixFormat("//server/share/path")).toBe("//server/share/path");
   });
 
   it("should handle empty strings and whitespace", () => {
@@ -319,7 +325,10 @@ describe("assertNotUNCPath", () => {
 
   it("should throw UNCPathNotSupportedError for UNC paths", () => {
     expect(() => assertNotUNCPath("\\\\server\\share")).toThrow(UNCPathNotSupportedError);
-    expect(() => assertNotUNCPath("//server/share")).toThrow(UNCPathNotSupportedError);
     expect(() => assertNotUNCPath("\\\\192.168.1.100\\backup")).toThrow(UNCPathNotSupportedError);
+  });
+
+  it("should not throw for forward slash paths that are not Windows UNC paths", () => {
+    expect(() => assertNotUNCPath("//server/share")).not.toThrow();
   });
 });
