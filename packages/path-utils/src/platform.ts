@@ -1,6 +1,10 @@
 import { prependLeadingSlash } from "@luxass/utils";
 import pathe from "pathe";
-import { WINDOWS_DRIVE_LETTER_EVERYWHERE_RE, WINDOWS_DRIVE_LETTER_START_RE, WINDOWS_UNC_ROOT_RE } from "./constants";
+import {
+  WINDOWS_DRIVE_LETTER_EVERYWHERE_RE,
+  WINDOWS_DRIVE_LETTER_START_RE,
+  WINDOWS_UNC_ROOT_RE,
+} from "./constants";
 
 /**
  * Extracts the Windows drive letter from a given string, if present.
@@ -54,4 +58,17 @@ export function toUnixFormat(inputPath: string): string {
   normalized = prependLeadingSlash(normalized);
 
   return pathe.normalize(normalized);
+}
+
+/**
+ * Extracts the UNC (Universal Naming Convention) root from a given string, if present.
+ * @param {string} str - The input string to check for a UNC root.
+ * @returns {string | null} The UNC root in the format "//server/share" if found, otherwise null.
+ */
+export function getAnyUNCRoot(str: string): string | null {
+  if (!str || str.length < 5) return null;
+  if (!str.startsWith("\\\\") && !str.startsWith("//")) return null;
+
+  const match = str.match(/^(\\\\|\/\/)([^\\/]+)[\\/]([^\\/]+)/);
+  return match ? `//${match[2]}/${match[3]}` : null;
 }
