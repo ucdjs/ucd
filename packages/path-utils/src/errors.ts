@@ -80,3 +80,13 @@ export class WindowsPathBehaviorNotImplementedError extends PathUtilsBaseError {
     this.name = "WindowsPathBehaviorNotImplementedError";
   }
 }
+
+export class UNCPathNotSupportedError extends PathUtilsBaseError {
+  public readonly path: string;
+
+  constructor(path: string) {
+    super(`UNC paths are not supported: '${path}'`);
+    this.name = "UNCPathNotSupportedError";
+    this.path = path;
+  }
+}
