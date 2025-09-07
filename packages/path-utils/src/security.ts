@@ -183,7 +183,9 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
 }
 
 export function internal_resolveWindowsPath(normalizedBasePath: string, decodedPath: string): string {
+  console.error("BEFORE", { normalizedBasePath, decodedPath });
   normalizedBasePath = pathe.normalize(normalizedBasePath);
+  console.error("AFTER", { normalizedBasePath, decodedPath });
   // If the decoded path is a Windows drive path and the base path is a UNC path
   if (isWindowsDrivePath(decodedPath) && isUNCPath(normalizedBasePath)) {
     throw new WindowsPathTypeMismatchError("UNC", "drive-letter absolute");
