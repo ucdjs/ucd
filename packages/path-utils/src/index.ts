@@ -4,19 +4,17 @@ export {
   MaximumDecodingIterationsExceededError,
   PathTraversalError,
   PathUtilsBaseError,
+  UNCPathNotSupportedError,
   WindowsDriveMismatchError,
   WindowsPathBehaviorNotImplementedError,
-  WindowsPathTypeMismatchError,
-  WindowsUNCShareMismatchError,
 } from "./errors";
 
 export {
-  getAnyUNCRoot,
+  assertNotUNCPath,
   getWindowsDriveLetter,
   isUNCPath,
   isWindowsDrivePath,
   stripDriveLetter,
-  toUNCPosix,
   toUnixFormat,
 } from "./platform";
 

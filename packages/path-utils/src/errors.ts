@@ -36,30 +36,6 @@ export class WindowsDriveMismatchError extends PathUtilsBaseError {
   }
 }
 
-export class WindowsPathTypeMismatchError extends PathUtilsBaseError {
-  public readonly basePathType: string;
-  public readonly inputPathType: string;
-
-  constructor(basePathType: string, inputPathType: string) {
-    super(`Cannot combine ${inputPathType} path with ${basePathType} base path on Windows`);
-    this.name = "WindowsPathTypeMismatchError";
-    this.basePathType = basePathType;
-    this.inputPathType = inputPathType;
-  }
-}
-
-export class WindowsUNCShareMismatchError extends PathUtilsBaseError {
-  public readonly baseShare: string;
-  public readonly inputShare: string;
-
-  constructor(baseShare: string, inputShare: string) {
-    super(`Different UNC shares not allowed: base share '${baseShare}' differs from input share '${inputShare}'`);
-    this.name = "WindowsUNCShareMismatchError";
-    this.baseShare = baseShare;
-    this.inputShare = inputShare;
-  }
-}
-
 export class FailedToDecodePathError extends PathUtilsBaseError {
   constructor() {
     super("Failed to decode path");
@@ -78,5 +54,15 @@ export class WindowsPathBehaviorNotImplementedError extends PathUtilsBaseError {
   constructor() {
     super("Windows path behavior not implemented");
     this.name = "WindowsPathBehaviorNotImplementedError";
+  }
+}
+
+export class UNCPathNotSupportedError extends PathUtilsBaseError {
+  public readonly path: string;
+
+  constructor(path: string) {
+    super(`UNC paths are not supported: '${path}'`);
+    this.name = "UNCPathNotSupportedError";
+    this.path = path;
   }
 }
