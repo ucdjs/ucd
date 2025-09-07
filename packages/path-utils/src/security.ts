@@ -180,7 +180,7 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
     return internal_resolveWindowsPath(basePath, decodedPath);
   }
 
-  // Convert to unix format but don't normalize yet to preserve traversal sequences
+  // convert to unix format but don't normalize yet to preserve traversal sequences
   const unixPath = decodedPath.replace(/\\/g, "/");
 
   if (pathe.isAbsolute(unixPath)) {
@@ -196,11 +196,6 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
 
   // normalize to platform-native format for final output
   const normalized = pathe.normalize(resolvedPath);
-
-  // if (isUNCish(basePath) || isUNCish(inputPath) || isUNCish(normalized)) {
-  //   throw new Error("UNC paths are not supported in this environment");
-  //   return toUNCPosix(normalized);
-  // }
 
   return normalized;
 }
