@@ -11,14 +11,14 @@ This release introduces a new path utilities package with cross-platform path ha
 ### Security Functions
 - **`resolveSafePath(basePath, inputPath)`** - Resolves paths within secure boundaries, preventing traversal attacks
 - **`decodePathSafely(encodedPath)`** - Safely decodes URL-encoded paths with infinite loop protection  
-- **`isWithinBase(resolvedPath, basePath)`** - Checks if a resolved path stays within a base directory
+- **`isWithinBase(basePath, resolvedPath)`** - Checks if a resolved path stays within a base directory
 
 ### Platform Functions
 - **`getWindowsDriveLetter(path)`** - Extracts drive letter from Windows paths
-- **`getAnyUNCRoot(path)`** - Gets UNC root from network paths
 - **`isWindowsDrivePath(path)`** / **`isUNCPath(path)`** - Path type detection
 - **`stripDriveLetter(path)`** - Removes drive letter from paths
-- **`toUnixFormat(path)`** / **`toUNCPosix(path)`** - Path format conversion
+- **`toUnixFormat(path)`** - Path format conversion
+- **`assertNotUNCPath(path)`** - Asserts that a path is not a UNC path, throws error if it is
 
 ### Utility Functions
 - **`isCaseSensitive`** - Detects filesystem case sensitivity
@@ -27,6 +27,7 @@ This release introduces a new path utilities package with cross-platform path ha
 ## Security Features
 
 - **Path traversal prevention** - Blocks `../` and encoded traversal attempts
+- **UNC path rejection** - Rejects Windows UNC network paths for security
 - **Multi-layer encoding protection** - Handles nested URL encoding safely
 - **Control character filtering** - Rejects null bytes and illegal characters
 - **Cross-platform boundary enforcement** - Consistent security across OS platforms
@@ -56,8 +57,9 @@ resolveSafePath(boundary, '%2e%2e/secrets')       // ❌ PathTraversalError
 resolveSafePath('C:\\Projects\\MyApp', 'data\\users.db')     // → 'C:/Projects/MyApp/data/users.db'
 resolveSafePath('C:\\Projects\\MyApp', 'D:\\external.txt')   // ❌ WindowsDriveMismatchError
 
-// UNC network paths
-resolveSafePath('\\\\server\\share', 'documents\\file.txt') // → '//server/share/documents/file.txt'
+// UNC network paths are rejected for security
+resolveSafePath('C:\\Projects\\MyApp', '\\\\server\\share\\file.txt') // ❌ UNCPathNotSupportedError
+toUnixFormat('\\\\server\\share\\documents')                          // ❌ UNCPathNotSupportedError
 ```
 
 ### Encoding Attack Protection  

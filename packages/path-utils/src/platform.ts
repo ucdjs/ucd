@@ -54,7 +54,7 @@ export function stripDriveLetter(path: string): string {
  * @returns {boolean} True if the path is a UNC path, false otherwise.
  */
 export function isUNCPath(path: string): boolean {
-  return WINDOWS_UNC_ROOT_RE.test(path) || path.startsWith("//");
+  return WINDOWS_UNC_ROOT_RE.test(path);
 }
 
 /**
