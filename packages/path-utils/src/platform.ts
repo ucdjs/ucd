@@ -3,6 +3,7 @@ import pathe from "pathe";
 import {
   WINDOWS_DRIVE_LETTER_EVERYWHERE_RE,
   WINDOWS_DRIVE_LETTER_START_RE,
+  WINDOWS_DRIVE_RE,
   WINDOWS_UNC_ROOT_RE,
 } from "./constants";
 
@@ -17,6 +18,30 @@ export function getWindowsDriveLetter(str: string): string | null {
   if (match == null) return null;
 
   return match[0]?.[0]?.toUpperCase() || null;
+}
+
+/**
+ * Checks if the given path is a Windows drive path (e.g., "C:", "D:\").
+ * @param {string} path - The path to check.
+ * @returns {boolean} True if the path is a Windows drive path, false otherwise.
+ */
+export function isWindowsDrivePath(path: string): boolean {
+  return WINDOWS_DRIVE_RE.test(path);
+}
+
+/**
+ * Removes the Windows drive letter from a path string.
+ * @param {string} path - The path to strip the drive letter from.
+ * @returns {string} The path without the Windows drive letter.
+ * @throws {TypeError} If the provided path is not a string.
+ */
+export function stripDriveLetter(path: string): string {
+  if (typeof path !== "string") {
+    throw new TypeError("Path must be a string");
+  }
+
+  // remove the Windows drive letter (e.g., "C:") from the start of the path
+  return path.replace(WINDOWS_DRIVE_RE, "");
 }
 
 /**

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getAnyUNCRoot, getWindowsDriveLetter, isUNCPath, toUNCPosix, toUnixFormat } from "../src/platform";
+import { getAnyUNCRoot, getWindowsDriveLetter, isUNCPath, isWindowsDrivePath, stripDriveLetter, toUNCPosix, toUnixFormat } from "../src/platform";
 
 describe("getWindowsDriveLetter", () => {
   it("should return the uppercase drive letter for valid Windows paths", () => {
@@ -29,6 +29,140 @@ describe("getWindowsDriveLetter", () => {
   it("should not handle drive letters in the middle of the string", () => {
     expect.soft(getWindowsDriveLetter("prefixC:suffix")).toBe(null);
     expect.soft(getWindowsDriveLetter("someC:\\path")).toBe(null);
+  });
+});
+
+describe("isWindowsDrivePath", () => {
+  it("should return true for valid Windows drive paths", () => {
+    expect.soft(isWindowsDrivePath("C:/")).toBe(true);
+    expect.soft(isWindowsDrivePath("C:\\")).toBe(true);
+    expect.soft(isWindowsDrivePath("D:/path/to/file")).toBe(true);
+    expect.soft(isWindowsDrivePath("D:\\path\\to\\file")).toBe(true);
+    expect.soft(isWindowsDrivePath("Z:/")).toBe(true);
+    expect.soft(isWindowsDrivePath("Z:\\")).toBe(true);
+  });
+
+  it("should handle case insensitivity", () => {
+    expect.soft(isWindowsDrivePath("c:/")).toBe(true);
+    expect.soft(isWindowsDrivePath("c:\\")).toBe(true);
+    expect.soft(isWindowsDrivePath("d:/file.txt")).toBe(true);
+    expect.soft(isWindowsDrivePath("z:\\folder\\")).toBe(true);
+  });
+
+  it("should return false for paths without drive separators", () => {
+    expect.soft(isWindowsDrivePath("C:")).toBe(false);
+    expect.soft(isWindowsDrivePath("C:file.txt")).toBe(false);
+    expect.soft(isWindowsDrivePath("D:folder")).toBe(false);
+  });
+
+  it("should return false for non-drive paths", () => {
+    expect.soft(isWindowsDrivePath("/unix/path")).toBe(false);
+    expect.soft(isWindowsDrivePath("relative/path")).toBe(false);
+    expect.soft(isWindowsDrivePath("\\\\server\\share")).toBe(false);
+    expect.soft(isWindowsDrivePath("file.txt")).toBe(false);
+    expect.soft(isWindowsDrivePath("./current/dir")).toBe(false);
+    expect.soft(isWindowsDrivePath("../parent/dir")).toBe(false);
+  });
+
+  it("should return false for invalid drive letters", () => {
+    expect.soft(isWindowsDrivePath("1:/")).toBe(false);
+    expect.soft(isWindowsDrivePath("1:\\")).toBe(false);
+    expect.soft(isWindowsDrivePath(":/")).toBe(false);
+    expect.soft(isWindowsDrivePath(":\\")).toBe(false);
+    expect.soft(isWindowsDrivePath("123:/path")).toBe(false);
+  });
+
+  it("should return false for empty string", () => {
+    expect(isWindowsDrivePath("")).toBe(false);
+  });
+
+  it("should return false for paths with drive letters not at the start", () => {
+    expect.soft(isWindowsDrivePath("prefixC:/suffix")).toBe(false);
+    expect.soft(isWindowsDrivePath("someC:\\path")).toBe(false);
+    expect.soft(isWindowsDrivePath("/pathC:/file")).toBe(false);
+  });
+
+  it("should handle special characters and spaces", () => {
+    expect.soft(isWindowsDrivePath("C:/Program Files/")).toBe(true);
+    expect.soft(isWindowsDrivePath("D:\\My Documents\\")).toBe(true);
+    expect.soft(isWindowsDrivePath("E:/path with spaces/file.txt")).toBe(true);
+  });
+});
+
+describe("stripDriveLetter", () => {
+  it("should strip drive letters from Windows paths", () => {
+    expect.soft(stripDriveLetter("C:/")).toBe("");
+    expect.soft(stripDriveLetter("C:\\")).toBe("");
+    expect.soft(stripDriveLetter("D:/path/to/file")).toBe("path/to/file");
+    expect.soft(stripDriveLetter("D:\\path\\to\\file")).toBe("path\\to\\file");
+    expect.soft(stripDriveLetter("Z:/folder/")).toBe("folder/");
+    expect.soft(stripDriveLetter("Z:\\folder\\")).toBe("folder\\");
+  });
+
+  it("should handle case insensitivity", () => {
+    expect.soft(stripDriveLetter("c:/")).toBe("");
+    expect.soft(stripDriveLetter("c:\\")).toBe("");
+    expect.soft(stripDriveLetter("d:/file.txt")).toBe("file.txt");
+    expect.soft(stripDriveLetter("z:\\folder\\file")).toBe("folder\\file");
+  });
+
+  it("should return the original string for paths without drive letters", () => {
+    expect.soft(stripDriveLetter("/unix/path")).toBe("/unix/path");
+    expect.soft(stripDriveLetter("relative/path")).toBe("relative/path");
+    expect.soft(stripDriveLetter("\\\\server\\share")).toBe("\\\\server\\share");
+    expect.soft(stripDriveLetter("file.txt")).toBe("file.txt");
+    expect.soft(stripDriveLetter("./current/dir")).toBe("./current/dir");
+    expect.soft(stripDriveLetter("../parent/dir")).toBe("../parent/dir");
+  });
+
+  it("should not strip drive-like patterns without separators", () => {
+    expect.soft(stripDriveLetter("C:")).toBe("C:");
+    expect.soft(stripDriveLetter("C:file.txt")).toBe("C:file.txt");
+    expect.soft(stripDriveLetter("D:folder")).toBe("D:folder");
+  });
+
+  it("should not strip invalid drive letters", () => {
+    expect.soft(stripDriveLetter("1:/")).toBe("1:/");
+    expect.soft(stripDriveLetter("1:\\")).toBe("1:\\");
+    expect.soft(stripDriveLetter(":/")).toBe(":/");
+    expect.soft(stripDriveLetter(":\\")).toBe(":\\");
+    expect.soft(stripDriveLetter("123:/path")).toBe("123:/path");
+  });
+
+  it("should return empty string for empty input", () => {
+    expect(stripDriveLetter("")).toBe("");
+  });
+
+  it("should not strip drive letters not at the start", () => {
+    expect.soft(stripDriveLetter("prefixC:/suffix")).toBe("prefixC:/suffix");
+    expect.soft(stripDriveLetter("someC:\\path")).toBe("someC:\\path");
+    expect.soft(stripDriveLetter("/pathC:/file")).toBe("/pathC:/file");
+  });
+
+  it("should handle paths with special characters and spaces", () => {
+    expect.soft(stripDriveLetter("C:/Program Files/")).toBe("Program Files/");
+    expect.soft(stripDriveLetter("D:\\My Documents\\")).toBe("My Documents\\");
+    expect.soft(stripDriveLetter("E:/path with spaces/file.txt")).toBe("path with spaces/file.txt");
+  });
+
+  it("should handle mixed separators after drive letter", () => {
+    expect.soft(stripDriveLetter("C:/path\\mixed")).toBe("path\\mixed");
+    expect.soft(stripDriveLetter("D:\\path/mixed")).toBe("path/mixed");
+  });
+
+  it("should throw TypeError for non-string inputs", () => {
+    expect.soft(() => stripDriveLetter(null as any)).toThrow(TypeError);
+    expect.soft(() => stripDriveLetter(undefined as any)).toThrow(TypeError);
+    expect.soft(() => stripDriveLetter(123 as any)).toThrow(TypeError);
+    expect.soft(() => stripDriveLetter({} as any)).toThrow(TypeError);
+    expect.soft(() => stripDriveLetter([] as any)).toThrow(TypeError);
+    expect.soft(() => stripDriveLetter(true as any)).toThrow(TypeError);
+  });
+
+  it("should throw TypeError with correct message", () => {
+    expect.soft(() => stripDriveLetter(null as any)).toThrow("Path must be a string");
+    expect.soft(() => stripDriveLetter(undefined as any)).toThrow("Path must be a string");
+    expect.soft(() => stripDriveLetter(123 as any)).toThrow("Path must be a string");
   });
 });
 
