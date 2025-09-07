@@ -181,6 +181,7 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
     isCaseSensitive,
     decodedPath,
     normalizedBasePath,
+    basePath,
     "WINDOWS_DRIVE_RE.test": WINDOWS_DRIVE_RE.test(decodedPath),
     "WINDOWS_UNC_ROOT_RE.test": WINDOWS_UNC_ROOT_RE.test(decodedPath),
   });
