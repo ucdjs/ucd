@@ -187,7 +187,7 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
 
   if (isWindows && (WINDOWS_DRIVE_RE.test(decodedPath)
     || WINDOWS_UNC_ROOT_RE.test(decodedPath))) {
-    return internal_resolveWindowsPath(normalizedBasePath, decodedPath);
+    return internal_resolveWindowsPath(basePath, decodedPath);
   }
 
   // Convert to unix format but don't normalize yet to preserve traversal sequences
