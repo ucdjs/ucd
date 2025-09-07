@@ -20,11 +20,11 @@ import { isCaseSensitive, osPlatform } from "./utils";
  * Checks if the resolved path is within the specified base path, considering case sensitivity.
  * This function normalizes paths, applies leading slashes, and ensures the resolved path starts with the base path
  * followed by a separator to prevent partial matches.
- * @param {string} resolvedPath - The path to check, must be a non-empty string.
  * @param {string} basePath - The base path to check against, must be a non-empty string.
+ * @param {string} resolvedPath - The path to check, must be a non-empty string.
  * @returns {boolean} True if the resolved path is within the base path, false otherwise.
  */
-export function isWithinBase(resolvedPath: string, basePath: string): boolean {
+export function isWithinBase(basePath: string, resolvedPath: string): boolean {
   if (typeof resolvedPath !== "string" || typeof basePath !== "string") {
     return false;
   }
@@ -153,7 +153,7 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
   // Base Path: /home/user
   // Input Path: /home/user/docs/file.txt
   // Output Path: /home/user/docs/file.txt
-  if (isAbsoluteInput && isWithinBase(absoluteInputPath, normalizedBasePath)) {
+  if (isAbsoluteInput && isWithinBase(normalizedBasePath, absoluteInputPath)) {
     // Preserve base path casing by extracting tail and combining with original base
     const normalizedBase = pathe.normalize(basePath);
     const normalizedInput = pathe.normalize(absoluteInputPath);
@@ -183,7 +183,7 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
   }
 
   // final boundary validation
-  if (!isWithinBase(resolvedPath, normalizedBasePath)) {
+  if (!isWithinBase(normalizedBasePath, resolvedPath)) {
     throw new PathTraversalError(normalizedBasePath, resolvedPath);
   }
 
@@ -220,7 +220,7 @@ export function internal_resolveWindowsPath(basePath: string, decodedPath: strin
     const normalizedDecodedPath = pathe.normalize(decodedPath);
 
     // If the decoded path is outside the base path, then we throw an error.
-    if (!isWithinBase(normalizedDecodedPath, normalizedBasePath)) {
+    if (!isWithinBase(normalizedBasePath, normalizedDecodedPath)) {
       throw new PathTraversalError(normalizedBasePath, normalizedDecodedPath);
     }
 

@@ -11,20 +11,20 @@ import { internal_resolveWindowsPath, isWithinBase, resolveSafePath } from "../s
 describe.runIf(isWindows)("utils - windows", () => {
   describe("isWithinBase", () => {
     it("should handle Windows drive letters correctly", () => {
-      expect.soft(isWithinBase("C:\\Users\\John\\Documents\\file.txt", "C:\\Users\\John")).toBe(true);
-      expect.soft(isWithinBase("C:\\Users\\Jane\\Documents\\file.txt", "C:\\Users\\John")).toBe(false);
-      expect.soft(isWithinBase("D:\\Files\\document.txt", "C:\\Users\\John")).toBe(false);
+      expect.soft(isWithinBase("C:\\Users\\John", "C:\\Users\\John\\Documents\\file.txt")).toBe(true);
+      expect.soft(isWithinBase("C:\\Users\\John", "C:\\Users\\Jane\\Documents\\file.txt")).toBe(false);
+      expect.soft(isWithinBase("C:\\Users\\John", "D:\\Files\\document.txt")).toBe(false);
     });
 
     it("should throw UNCPathNotSupportedError for UNC paths", () => {
-      expect(() => isWithinBase("\\\\server\\share\\folder\\file.txt", "\\\\server\\share")).toThrow(UNCPathNotSupportedError);
-      expect(() => isWithinBase("\\\\server\\share2\\file.txt", "\\\\server\\share")).toThrow(UNCPathNotSupportedError);
-      expect(() => isWithinBase("\\\\server2\\share\\file.txt", "\\\\server\\share")).toThrow(UNCPathNotSupportedError);
+      expect(() => isWithinBase("\\\\server\\share", "\\\\server\\share\\folder\\file.txt")).toThrow(UNCPathNotSupportedError);
+      expect(() => isWithinBase("\\\\server\\share", "\\\\server\\share2\\file.txt")).toThrow(UNCPathNotSupportedError);
+      expect(() => isWithinBase("\\\\server\\share", "\\\\server2\\share\\file.txt")).toThrow(UNCPathNotSupportedError);
     });
 
     it("should prevent partial path matches", () => {
-      expect.soft(isWithinBase("C:\\Users\\John2\\file.txt", "C:\\Users\\John")).toBe(false);
-      expect.soft(isWithinBase("C:\\Users\\Johnathan\\file.txt", "C:\\Users\\John")).toBe(false);
+      expect.soft(isWithinBase("C:\\Users\\John", "C:\\Users\\John2\\file.txt")).toBe(false);
+      expect.soft(isWithinBase("C:\\Users\\John", "C:\\Users\\Johnathan\\file.txt")).toBe(false);
     });
 
     it("should handle same path comparison", () => {
@@ -36,9 +36,9 @@ describe.runIf(isWindows)("utils - windows", () => {
     });
 
     it("should handle windows path normalization edge cases", () => {
-      expect.soft(isWithinBase("C:\\Users\\John\\..\\John\\Documents\\file.txt", "C:\\Users\\John")).toBe(true);
-      expect.soft(isWithinBase("C:\\Users\\John\\.\\Documents\\file.txt", "C:\\Users\\John")).toBe(true);
-      expect.soft(isWithinBase("C:\\Users\\John\\Documents\\..\\..\\Jane\\file.txt", "C:\\Users\\John")).toBe(false);
+      expect.soft(isWithinBase("C:\\Users\\John", "C:\\Users\\John\\..\\John\\Documents\\file.txt")).toBe(true);
+      expect.soft(isWithinBase("C:\\Users\\John", "C:\\Users\\John\\.\\Documents\\file.txt")).toBe(true);
+      expect.soft(isWithinBase("C:\\Users\\John", "C:\\Users\\John\\Documents\\..\\..\\Jane\\file.txt")).toBe(false);
     });
   });
 
@@ -160,7 +160,7 @@ describe.runIf(isWindows)("utils - windows", () => {
 
       it("should prevent encoded Windows directory traversal", () => {
         expect(() => {
-          resolveSafePath("C:\\Users\\John\\Documents", "%2e%2e%5C%2e%2e%5CWindows%5CSystem32");
+          resolveSafePath("C:\\Users\\John\\Documents", "%2e%2e%5c%2e%2e%5cWindows%5CSystem32");
         }).toThrowError(new PathTraversalError(
           "C:/Users/John/Documents",
           "C:/Users/Windows/System32",

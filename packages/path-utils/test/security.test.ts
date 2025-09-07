@@ -35,63 +35,63 @@ describe("isWithinBase", () => {
   });
 
   it("should return true when resolved path is within base path", () => {
-    expect.soft(isWithinBase("/base/subdir", "/base")).toBe(true);
-    expect.soft(isWithinBase("/base/subdir/file.txt", "/base")).toBe(true);
-    expect.soft(isWithinBase("/root/path/to/file", "/root")).toBe(true);
+    expect.soft(isWithinBase("/base", "/base/subdir")).toBe(true);
+    expect.soft(isWithinBase("/base", "/base/subdir/file.txt")).toBe(true);
+    expect.soft(isWithinBase("/root", "/root/path/to/file")).toBe(true);
   });
 
   it("should return false when resolved path is outside base path", () => {
     expect.soft(isWithinBase("/other/path", "/base")).toBe(false);
-    expect.soft(isWithinBase("/base2/file", "/base")).toBe(false);
-    expect.soft(isWithinBase("/bas/file", "/base")).toBe(false); // partial match prevention
+    expect.soft(isWithinBase("/base", "/base2/file")).toBe(false);
+    expect.soft(isWithinBase("/base", "/bas/file")).toBe(false); // partial match prevention
   });
 
   it("should handle root paths correctly", () => {
     expect.soft(isWithinBase("/", "/")).toBe(true);
-    expect.soft(isWithinBase("/subdir", "/")).toBe(true);
-    expect.soft(isWithinBase("/path", "/other")).toBe(false);
+    expect.soft(isWithinBase("/", "/subdir")).toBe(true);
+    expect.soft(isWithinBase("/other", "/path")).toBe(false);
   });
 
   it("should normalize paths before comparison", () => {
-    expect.soft(isWithinBase("/base/./subdir", "/base")).toBe(true);
-    expect.soft(isWithinBase("/base/../base/subdir", "/base")).toBe(true);
-    expect.soft(isWithinBase("/base//subdir", "/base")).toBe(true);
+    expect.soft(isWithinBase("/base", "/base/./subdir")).toBe(true);
+    expect.soft(isWithinBase("/base", "/base/../base/subdir")).toBe(true);
+    expect.soft(isWithinBase("/base", "/base//subdir")).toBe(true);
   });
 
   it("should prepend leading slashes when missing", () => {
-    expect.soft(isWithinBase("base/subdir", "base")).toBe(true);
-    expect.soft(isWithinBase("path/to/file", "path")).toBe(true);
+    expect.soft(isWithinBase("base", "base/subdir")).toBe(true);
+    expect.soft(isWithinBase("path", "path/to/file")).toBe(true);
   });
 
   describe("case sensitivity", () => {
     it.runIf(isCaseSensitive)("should be case-sensitive on case-sensitive platforms", () => {
-      expect.soft(isWithinBase("/Base/subdir", "/base")).toBe(false);
-      expect.soft(isWithinBase("/base/SubDir", "/base")).toBe(true);
-      expect.soft(isWithinBase("/BASE/SUBDIR", "/base")).toBe(false);
+      expect.soft(isWithinBase("/base", "/Base/subdir")).toBe(false);
+      expect.soft(isWithinBase("/base", "/base/SubDir")).toBe(true);
+      expect.soft(isWithinBase("/base", "/BASE/SUBDIR")).toBe(false);
     });
 
     it.runIf(!isCaseSensitive)("should be case-insensitive on case-insensitive platforms", () => {
-      expect.soft(isWithinBase("/Base/subdir", "/base")).toBe(true);
-      expect.soft(isWithinBase("/base/SubDir", "/base")).toBe(true);
-      expect.soft(isWithinBase("/BASE/SUBDIR", "/base")).toBe(true);
+      expect.soft(isWithinBase("/base", "/Base/subdir")).toBe(true);
+      expect.soft(isWithinBase("/base", "/base/SubDir")).toBe(true);
+      expect.soft(isWithinBase("/base", "/BASE/SUBDIR")).toBe(true);
     });
   });
 
   it("should handle Windows-style paths", () => {
-    expect.soft(isWithinBase("\\base\\subdir", "\\base")).toBe(true);
-    expect.soft(isWithinBase("C:\\base\\subdir", "C:\\base")).toBe(true);
+    expect.soft(isWithinBase("\\base", "\\base\\subdir")).toBe(true);
+    expect.soft(isWithinBase("C:\\base", "C:\\base\\subdir")).toBe(true);
   });
 
   it("should prevent partial directory name matches", () => {
-    expect.soft(isWithinBase("/root2/file", "/root")).toBe(false);
-    expect.soft(isWithinBase("/basepath/file", "/base")).toBe(false);
-    expect.soft(isWithinBase("/based/file", "/base")).toBe(false);
+    expect.soft(isWithinBase("/root", "/root2/file")).toBe(false);
+    expect.soft(isWithinBase("/base", "/basepath/file")).toBe(false);
+    expect.soft(isWithinBase("/base", "/based/file")).toBe(false);
   });
 
   it("should handle paths with trailing separators", () => {
-    expect.soft(isWithinBase("/base/subdir/", "/base/")).toBe(true);
-    expect.soft(isWithinBase("/base/subdir", "/base/")).toBe(true);
-    expect.soft(isWithinBase("/base/", "/base")).toBe(true);
+    expect.soft(isWithinBase("/base/", "/base/subdir/")).toBe(true);
+    expect.soft(isWithinBase("/base/", "/base/subdir")).toBe(true);
+    expect.soft(isWithinBase("/base", "/base/")).toBe(true);
   });
 });
 
