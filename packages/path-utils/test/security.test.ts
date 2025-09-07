@@ -1,7 +1,19 @@
 import { describe, expect, it } from "vitest";
-import { MaximumDecodingIterationsExceededError } from "../src/errors";
-import { decodePathSafely, isWithinBase } from "../src/security";
+import {
+  FailedToDecodePathError,
+  IllegalCharacterInPathError,
+  MaximumDecodingIterationsExceededError,
+} from "../src/errors";
+import { decodePathSafely, isWithinBase, resolveSafePath } from "../src/security";
 import { isCaseSensitive } from "../src/utils";
+
+const MALICIOUS_INPUT = (() => {
+  let str = "æøå";
+  for (let i = 0; i < 15; i++) {
+    str = encodeURIComponent(str);
+  }
+  return str;
+})();
 
 describe("isWithinBase", () => {
   it("should return false for non-string inputs", () => {
@@ -129,15 +141,7 @@ describe("decodePathSafely", () => {
   });
 
   it("should throw MaximumDecodingIterationsExceededError for infinite loops", () => {
-    const maliciousInput = (() => {
-      let str = "æøå";
-      for (let i = 0; i < 15; i++) {
-        str = encodeURIComponent(str);
-      }
-      return str;
-    })();
-
-    expect.soft(() => decodePathSafely(maliciousInput)).toThrow(MaximumDecodingIterationsExceededError);
+    expect(() => decodePathSafely(MALICIOUS_INPUT)).toThrow(MaximumDecodingIterationsExceededError);
   });
 
   it("should handle decodeURIComponent failures gracefully", () => {
@@ -148,5 +152,87 @@ describe("decodePathSafely", () => {
 
   it("should decode until no more changes", () => {
     expect(decodePathSafely("file%252Ename")).toBe("file.name"); // %252E becomes %2E, then becomes .
+  });
+});
+
+describe("resolveSafePath", () => {
+  it("should throw TypeError for non-string base path inputs", () => {
+    expect.soft(() => resolveSafePath(null as any, "input")).toThrow(TypeError);
+    expect.soft(() => resolveSafePath(undefined as any, "input")).toThrow(TypeError);
+    expect.soft(() => resolveSafePath(123 as any, "input")).toThrow(TypeError);
+    expect.soft(() => resolveSafePath({} as any, "input")).toThrow(TypeError);
+    expect.soft(() => resolveSafePath([] as any, "input")).toThrow(TypeError);
+  });
+
+  it("should throw when basePath is empty string", () => {
+    expect(() => resolveSafePath("", "input")).toThrow(Error);
+  });
+
+  it("should handle empty input paths", () => {
+    expect.soft(resolveSafePath("/base", "")).toBe("/base");
+    expect.soft(resolveSafePath("/home/user", "")).toBe("/home/user");
+    expect.soft(resolveSafePath("base", "")).toBe("/base");
+  });
+
+  it("should handle whitespace-only input paths", () => {
+    expect.soft(resolveSafePath("/base", "   ")).toBe("/base");
+    expect.soft(resolveSafePath("/base", "\t")).toBe("/base");
+    expect.soft(resolveSafePath("/base", "\n")).toBe("/base");
+  });
+
+  describe("illegal characters handling", () => {
+    it("should throw IllegalCharacterInPathError for null bytes", () => {
+      expect.soft(() => resolveSafePath("/base", "file\0.txt")).toThrow(new IllegalCharacterInPathError("\0"));
+      expect.soft(() => resolveSafePath("/base", "\0malicious")).toThrow(new IllegalCharacterInPathError("\0"));
+      expect.soft(() => resolveSafePath("/base", "path/with\0null")).toThrow(new IllegalCharacterInPathError("\0"));
+    });
+
+    it("should throw IllegalCharacterInPathError for control characters", () => {
+      expect.soft(() => resolveSafePath("/base", "file\u0001.txt")).toThrow(new IllegalCharacterInPathError("\u0001"));
+      expect.soft(() => resolveSafePath("/base", "file\u0002.txt")).toThrow(new IllegalCharacterInPathError("\u0002"));
+      expect.soft(() => resolveSafePath("/base", "file\u001F.txt")).toThrow(new IllegalCharacterInPathError("\u001F"));
+    });
+  });
+
+  it("should throw FailedToDecodePathError for excessive encoding", () => {
+    expect.soft(() => resolveSafePath("/base", MALICIOUS_INPUT)).toThrow(FailedToDecodePathError);
+    expect.soft(() => resolveSafePath("/base", `path/${MALICIOUS_INPUT}`)).toThrow(FailedToDecodePathError);
+  });
+
+  it("should handle basic relative paths", () => {
+    expect.soft(resolveSafePath("/base", "file.txt")).toBe("/base/file.txt");
+    expect.soft(resolveSafePath("/base", "folder/file.txt")).toBe("/base/folder/file.txt");
+    expect.soft(resolveSafePath("base", "file.txt")).toBe("/base/file.txt");
+  });
+
+  it("should handle current directory references", () => {
+    expect.soft(resolveSafePath("/base", ".")).toBe("/base");
+    expect.soft(resolveSafePath("/base", "./")).toBe("/base");
+    expect.soft(resolveSafePath("/base", "./file.txt")).toBe("/base/file.txt");
+  });
+
+  it("should handle basic path normalization", () => {
+    expect.soft(resolveSafePath("/base", "folder/../file.txt")).toBe("/base/file.txt");
+    expect.soft(resolveSafePath("/base", "folder/./file.txt")).toBe("/base/folder/file.txt");
+    expect.soft(resolveSafePath("/base", "folder//file.txt")).toBe("/base/folder/file.txt");
+  });
+
+  it("should handle basic URL decoding", () => {
+    expect.soft(resolveSafePath("/base", "file%20name.txt")).toBe("/base/file name.txt");
+    expect.soft(resolveSafePath("/base", "folder%2Ffile.txt")).toBe("/base/folder/file.txt");
+    expect.soft(resolveSafePath("/base", "file%2Ename")).toBe("/base/file.name");
+  });
+
+  it("should handle malformed encoding gracefully", () => {
+    expect.soft(resolveSafePath("/base", "%")).toBe("/base/%");
+    expect.soft(resolveSafePath("/base", "%1")).toBe("/base/%1");
+    expect.soft(resolveSafePath("/base", "%XY")).toBe("/base/%XY");
+    expect.soft(resolveSafePath("/base", "%gg%hh")).toBe("/base/%gg%hh");
+  });
+
+  it("should return exact base path when resolving to boundary root", () => {
+    expect.soft(resolveSafePath("/home/user", "/")).toBe("/home/user");
+    expect.soft(resolveSafePath("/var/www", "/")).toBe("/var/www");
+    expect.soft(resolveSafePath("base", "/")).toBe("/base");
   });
 });

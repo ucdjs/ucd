@@ -139,6 +139,36 @@ describe.runIf(isWindows)("utils - windows", () => {
           "//server2/share2/file.txt",
         ));
       });
+
+      it("should throw when UNC base and input are on different servers", () => {
+        expect(() => {
+          resolveSafePath("\\\\server1\\share", "\\\\server2\\share\\file.txt");
+        }).toThrow(new PathTraversalError("//server1/share", "//server2/share"));
+      });
+
+      it("should resolve path within same UNC share without throwing", () => {
+        expect(() => {
+          resolveSafePath("\\\\server\\share", "\\\\server\\share\\dir\\file.txt");
+        }).not.toThrow();
+      });
+
+      it("should prevent traversal outside UNC share using dot segments", () => {
+        expect(() => {
+          resolveSafePath("\\\\server\\share", "\\\\server\\share\\dir\\..\\..\\other\\file.txt");
+        }).toThrow(PathTraversalError);
+      });
+
+      it("should normalize mixed slashes in UNC paths", () => {
+        expect(() => {
+          resolveSafePath("\\\\server\\share", "//server/share/dir\\sub\\file.txt");
+        }).not.toThrow();
+      });
+
+      it("should treat different shares on same server as traversal", () => {
+        expect(() => {
+          resolveSafePath("\\\\server\\share1", "\\\\server\\share2\\file.txt");
+        }).toThrow(new PathTraversalError("//server/share1", "//server/share2"));
+      });
     });
 
     describe("windows encoded paths", () => {
