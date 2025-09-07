@@ -260,8 +260,14 @@ export function internal_resolveWindowsPath(basePath: string, decodedPath: strin
       throw new PathTraversalError(normalizedBase, normalizedInput);
     }
 
-    const tailAfterRoot = inputUNCRoot ? decodedPath.slice(inputUNCRoot.length) : decodedPath;
-    return pathe.normalize(basePath + tailAfterRoot.replace(/\\/g, "/"));
+    // extract the tail part after the UNC root, removing leading separators
+    const tailAfterRoot = inputUNCRoot
+      ? decodedPath.slice(inputUNCRoot.length).replace(/^[/\\]+/, "")
+      : decodedPath.replace(/^\\+/, "");
+
+    // combine base path with tail, ensuring proper separator
+    const separator = tailAfterRoot ? "/" : "";
+    return pathe.normalize(basePath + separator + tailAfterRoot.replace(/\\/g, "/"));
   }
 
   throw new WindowsPathBehaviorNotImplementedError();
