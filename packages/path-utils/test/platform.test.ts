@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { getAnyUNCRoot, getWindowsDriveLetter, isUNCPath, isWindowsDrivePath, stripDriveLetter, toUNCPosix, toUnixFormat } from "../src/platform";
+import {
+  getAnyUNCRoot,
+  getWindowsDriveLetter,
+  isUNCPath,
+  isWindowsDrivePath,
+  stripDriveLetter,
+  toUNCPosix,
+  toUnixFormat,
+} from "../src/platform";
 
 describe("getWindowsDriveLetter", () => {
   it("should return the uppercase drive letter for valid Windows paths", () => {

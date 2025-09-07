@@ -156,6 +156,15 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
   // Input Path: /home/user/docs/file.txt
   // Output Path: /home/user/docs/file.txt
   if (isAbsoluteInput && isWithinBase(absoluteInputPath, normalizedBasePath)) {
+    // Preserve base path casing by extracting tail and combining with original base
+    const normalizedBase = pathe.normalize(basePath);
+    const normalizedInput = pathe.normalize(absoluteInputPath);
+    
+    if (normalizedInput.toLowerCase().startsWith(normalizedBase.toLowerCase())) {
+      const tailAfterBase = normalizedInput.slice(normalizedBase.length);
+      return pathe.normalize(normalizedBase + tailAfterBase);
+    }
+    
     return pathe.normalize(absoluteInputPath);
   }
 

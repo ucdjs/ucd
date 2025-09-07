@@ -1,7 +1,8 @@
 import { isUnix } from "#internal/test-utils";
-import { PathTraversalError } from "@ucdjs/path-utils";
 import { describe, expect, it } from "vitest";
+import { PathTraversalError } from "../src/errors";
 import { isWithinBase, resolveSafePath } from "../src/security";
+import { isCaseSensitive } from "../src/utils";
 
 describe.runIf(isUnix)("security - unix", () => {
   describe("isWithinBase", () => {
@@ -135,11 +136,21 @@ describe.runIf(isUnix)("security - unix", () => {
       });
     });
 
+    // TODO: figure out if we wanna handle this
+    // It seems very problematic that the case sensitivity of paths is not consistent across different filesystems.
     describe("case sensitivity", () => {
-      it("should be case-sensitive", () => {
+      // linux
+      it.runIf(isCaseSensitive)("should be case-sensitive on case-sensitive filesystems", () => {
         expect.soft(resolveSafePath("/home/user", "File.txt")).toBe("/home/user/File.txt");
         expect.soft(resolveSafePath("/home/user", "file.txt")).toBe("/home/user/file.txt");
         expect.soft(resolveSafePath("/home/user", "/Home/user/file.txt")).toBe("/home/user/Home/user/file.txt");
+      });
+
+      it.runIf(!isCaseSensitive)("should handle case-insensitive behavior on case-insensitive filesystems", () => {
+        expect.soft(resolveSafePath("/home/user", "File.txt")).toBe("/home/user/File.txt");
+        expect.soft(resolveSafePath("/home/user", "file.txt")).toBe("/home/user/file.txt");
+        // On case-insensitive systems, /Home/user matches /home/user, so it's treated as within boundary
+        expect.soft(resolveSafePath("/home/user", "/Home/user/file.txt")).toBe("/home/user/file.txt");
       });
     });
 
