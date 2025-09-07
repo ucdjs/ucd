@@ -252,22 +252,22 @@ export function internal_resolveWindowsPath(basePath: string, decodedPath: strin
       throw new WindowsUNCShareMismatchError(String(baseUNCRoot), String(inputUNCRoot));
     }
 
-    // check if the normalized paths are within boundary
-    const normalizedBase = pathe.normalize(basePath);
-    const normalizedInput = pathe.normalize(decodedPath);
-
-    if (!isWithinBase(normalizedInput, normalizedBase)) {
-      throw new PathTraversalError(normalizedBase, normalizedInput);
-    }
-
     // extract the tail part after the UNC root, removing leading separators
     const tailAfterRoot = inputUNCRoot
       ? decodedPath.slice(inputUNCRoot.length).replace(/^[/\\]+/, "")
       : decodedPath.replace(/^\\+/, "");
 
-    // combine base path with tail, ensuring proper separator
-    const separator = tailAfterRoot ? "/" : "";
-    return pathe.normalize(basePath + separator + tailAfterRoot.replace(/\\/g, "/"));
+    const constructedPath = tailAfterRoot
+      ? pathe.join(basePath, tailAfterRoot)
+      : pathe.normalize(basePath);
+
+    // check if the constructed path is within boundary
+    const normalizedBase = pathe.normalize(basePath);
+    if (!isWithinBase(constructedPath, normalizedBase)) {
+      throw new PathTraversalError(normalizedBase, constructedPath);
+    }
+
+    return constructedPath;
   }
 
   throw new WindowsPathBehaviorNotImplementedError();
