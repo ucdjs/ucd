@@ -184,8 +184,8 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
     "WINDOWS_UNC_ROOT_RE.test": WINDOWS_UNC_ROOT_RE.test(decodedPath),
   });
 
-  if (isWindows && (WINDOWS_DRIVE_RE.test(decodedPath)
-    || WINDOWS_UNC_ROOT_RE.test(decodedPath))) {
+  if (isWindows && (isWindowsDrivePath(decodedPath)
+    || isUNCPath(decodedPath))) {
     return internal_resolveWindowsPath(basePath, decodedPath);
   }
 
