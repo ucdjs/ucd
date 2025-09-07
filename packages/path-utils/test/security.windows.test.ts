@@ -136,16 +136,16 @@ describe.runIf(isWindows)("utils - windows", () => {
       it("should throw error for UNC path difference", () => {
         expect(() => {
           resolveSafePath("\\\\server1\\share1", "\\\\server2\\share2\\file.txt");
-        }).toThrowError(new PathTraversalError(
+        }).toThrowError(new WindowsUNCShareMismatchError(
           "//server1/share1",
-          "//server2/share2/file.txt",
+          "//server2/share2",
         ));
       });
 
       it("should throw when UNC base and input are on different servers", () => {
         expect(() => {
           resolveSafePath("\\\\server1\\share", "\\\\server2\\share\\file.txt");
-        }).toThrow(new PathTraversalError("//server1/share", "//server2/share"));
+        }).toThrow(new WindowsUNCShareMismatchError("//server1/share", "//server2/share"));
       });
 
       it("should resolve path within same UNC share without throwing", () => {
