@@ -180,6 +180,7 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
     osPlatform,
     isCaseSensitive,
     decodedPath,
+    normalizedBasePath,
     "WINDOWS_DRIVE_RE.test": WINDOWS_DRIVE_RE.test(decodedPath),
     "WINDOWS_UNC_ROOT_RE.test": WINDOWS_UNC_ROOT_RE.test(decodedPath),
   });
