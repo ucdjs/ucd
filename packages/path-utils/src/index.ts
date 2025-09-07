@@ -1,6 +1,10 @@
 export {
   MaximumDecodingIterationsExceededError,
+  PathTraversalError,
   PathUtilsBaseError,
+  WindowsDriveMismatchError,
+  WindowsPathTypeMismatchError,
+  WindowsUNCShareMismatchError,
 } from "./errors";
 
 export {
