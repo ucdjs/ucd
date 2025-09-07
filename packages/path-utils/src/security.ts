@@ -6,7 +6,16 @@ import {
   WINDOWS_DRIVE_RE,
   WINDOWS_UNC_ROOT_RE,
 } from "./constants";
-import { FailedToDecodePathError, IllegalCharacterInPathError, MaximumDecodingIterationsExceededError, PathTraversalError, WindowsDriveMismatchError, WindowsPathBehaviorNotImplementedError, WindowsPathTypeMismatchError, WindowsUNCShareMismatchError } from "./errors";
+import {
+  FailedToDecodePathError,
+  IllegalCharacterInPathError,
+  MaximumDecodingIterationsExceededError,
+  PathTraversalError,
+  WindowsDriveMismatchError,
+  WindowsPathBehaviorNotImplementedError,
+  WindowsPathTypeMismatchError,
+  WindowsUNCShareMismatchError,
+} from "./errors";
 import { getAnyUNCRoot, getWindowsDriveLetter, isUNCPath, isWindowsDrivePath, toUnixFormat } from "./platform";
 import { isCaseSensitive, osPlatform } from "./utils";
 
@@ -158,7 +167,8 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
     return internal_resolveWindowsPath(normalizedBasePath, decodedPath);
   }
 
-  const unixPath = toUnixFormat(decodedPath);
+  // Convert to unix format but don't normalize yet to preserve traversal sequences
+  const unixPath = decodedPath.replace(/\\/g, "/");
 
   if (pathe.isAbsolute(unixPath)) {
     resolvedPath = handleAbsolutePath(unixPath, normalizedBasePath);
