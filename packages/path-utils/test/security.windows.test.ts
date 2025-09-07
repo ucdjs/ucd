@@ -169,7 +169,7 @@ describe.runIf(isWindows)("utils - windows", () => {
       it("should treat different shares on same server as traversal", () => {
         expect(() => {
           resolveSafePath("\\\\server\\share1", "\\\\server\\share2\\file.txt");
-        }).toThrow(new PathTraversalError("//server/share1", "//server/share2"));
+        }).toThrow(new WindowsUNCShareMismatchError("//server/share1", "//server/share2"));
       });
     });
 
