@@ -1,4 +1,4 @@
-import { prependLeadingSlash, trimLeadingSlash } from "@luxass/utils";
+import { prependLeadingSlash } from "@luxass/utils";
 import pathe from "pathe";
 import {
   CONTROL_CHARACTER_RE,
@@ -100,8 +100,8 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
     throw new Error("Base path cannot be empty");
   }
 
-  basePath = prependLeadingSlash(basePath);
-  inputPath = prependLeadingSlash(inputPath);
+  basePath = isWindowsDrivePath(basePath) ? basePath : prependLeadingSlash(basePath);
+  inputPath = isWindowsDrivePath(inputPath) ? inputPath : prependLeadingSlash(inputPath);
 
   // normalize the base path to absolute form
   const normalizedBasePath = pathe.normalize(basePath);
