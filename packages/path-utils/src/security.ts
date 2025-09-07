@@ -100,6 +100,14 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
     throw new Error("Base path cannot be empty");
   }
 
+  // decode the input path until there are no more encoded segments
+  let decodedPath: string;
+  try {
+    decodedPath = decodePathSafely(inputPath);
+  } catch {
+    throw new FailedToDecodePathError();
+  }
+
   basePath = (isWindowsDrivePath(basePath) || isUNCPath(basePath))
     ? basePath
     : prependLeadingSlash(basePath);
@@ -109,14 +117,6 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
 
   // normalize the base path to absolute form
   const normalizedBasePath = pathe.normalize(basePath);
-
-  // decode the input path until there are no more encoded segments
-  let decodedPath: string;
-  try {
-    decodedPath = decodePathSafely(inputPath);
-  } catch {
-    throw new FailedToDecodePathError();
-  }
 
   const illegalMatch = decodedPath.match(CONTROL_CHARACTER_RE);
   if (decodedPath.includes("\0") || illegalMatch != null) {
