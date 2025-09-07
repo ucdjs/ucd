@@ -4,7 +4,6 @@ import {
   CONTROL_CHARACTER_RE,
   MAX_DECODING_ITERATIONS,
   WINDOWS_DRIVE_RE,
-  WINDOWS_UNC_ROOT_RE,
 } from "./constants";
 import {
   FailedToDecodePathError,
@@ -13,10 +12,8 @@ import {
   PathTraversalError,
   WindowsDriveMismatchError,
   WindowsPathBehaviorNotImplementedError,
-  WindowsPathTypeMismatchError,
-  WindowsUNCShareMismatchError,
 } from "./errors";
-import { getAnyUNCRoot, getWindowsDriveLetter, isUNCPath, isWindowsDrivePath, toUnixFormat } from "./platform";
+import { assertNotUNCPath, getWindowsDriveLetter, isWindowsDrivePath, toUnixFormat } from "./platform";
 import { isCaseSensitive, osPlatform } from "./utils";
 
 /**
@@ -100,6 +97,10 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
     throw new Error("Base path cannot be empty");
   }
 
+  // Check for UNC paths and reject them early
+  assertNotUNCPath(basePath);
+  assertNotUNCPath(inputPath);
+
   // decode the input path until there are no more encoded segments
   let decodedPath: string;
   try {
@@ -108,10 +109,13 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
     throw new FailedToDecodePathError();
   }
 
-  basePath = (isWindowsDrivePath(basePath) || isUNCPath(basePath))
+  // Check decoded path as well in case UNC was encoded
+  assertNotUNCPath(decodedPath);
+
+  basePath = isWindowsDrivePath(basePath)
     ? basePath
     : prependLeadingSlash(basePath);
-  inputPath = (isWindowsDrivePath(inputPath) || isUNCPath(inputPath))
+  inputPath = isWindowsDrivePath(inputPath)
     ? inputPath
     : prependLeadingSlash(inputPath);
 
@@ -124,25 +128,12 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
     throw new IllegalCharacterInPathError(illegalChar);
   }
 
-  const baseUNCRootAny = getAnyUNCRoot(basePath);
-  const inputUNCRootAny = getAnyUNCRoot(decodedPath);
-
-  // If both paths are UNC, and they are using different shares.
-  // We can just early throw, since there isn't any reason to continue.
-  if (
-    baseUNCRootAny
-    && inputUNCRootAny
-    && baseUNCRootAny.toLowerCase() !== inputUNCRootAny.toLowerCase()
-  ) {
-    throw new WindowsUNCShareMismatchError(baseUNCRootAny, inputUNCRootAny);
-  }
 
   let resolvedPath: string;
 
   const absoluteInputPath = pathe.resolve(decodedPath);
   const isAbsoluteInput
     = WINDOWS_DRIVE_RE.test(decodedPath)
-      || WINDOWS_UNC_ROOT_RE.test(decodedPath)
       || pathe.isAbsolute(toUnixFormat(decodedPath));
 
   // If the input path is "within" the base path, we can just return as-is.
@@ -181,11 +172,9 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
     normalizedBasePath,
     isWindows,
     "WINDOWS_DRIVE_RE.test": WINDOWS_DRIVE_RE.test(decodedPath),
-    "WINDOWS_UNC_ROOT_RE.test": WINDOWS_UNC_ROOT_RE.test(decodedPath),
   });
 
-  if (isWindows && (isWindowsDrivePath(decodedPath)
-    || isUNCPath(decodedPath))) {
+  if (isWindows && isWindowsDrivePath(decodedPath)) {
     return internal_resolveWindowsPath(basePath, decodedPath);
   }
 
@@ -210,17 +199,7 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
 }
 
 export function internal_resolveWindowsPath(basePath: string, decodedPath: string): string {
-  // If the decoded path is a Windows drive path and the base path is a UNC path
-  if (isWindowsDrivePath(decodedPath) && isUNCPath(basePath)) {
-    throw new WindowsPathTypeMismatchError("UNC", "drive-letter absolute");
-  }
-
-  // If the decoded path is a UNC path and the base path is a Windows drive path
-  if (isUNCPath(decodedPath) && isWindowsDrivePath(basePath)) {
-    throw new WindowsPathTypeMismatchError("drive-letter", "UNC absolute");
-  }
-
-  // Both base path and input path is Windows drive paths
+  // Both base path and input path are Windows drive paths
   if (isWindowsDrivePath(decodedPath) && isWindowsDrivePath(basePath)) {
     const normalizedBasePath = pathe.normalize(basePath);
 
@@ -248,36 +227,6 @@ export function internal_resolveWindowsPath(basePath: string, decodedPath: strin
     }
 
     return pathe.normalize(normalizedDecodedPath);
-  }
-
-  if (isUNCPath(decodedPath) && isUNCPath(basePath)) {
-    const inputUNCRoot = getAnyUNCRoot(decodedPath);
-    const baseUNCRoot = getAnyUNCRoot(basePath);
-
-    const isSameShare = baseUNCRoot != null && inputUNCRoot != null
-      && baseUNCRoot.toLowerCase() === inputUNCRoot.toLowerCase();
-
-    if (!isSameShare) {
-      throw new WindowsUNCShareMismatchError(String(baseUNCRoot), String(inputUNCRoot));
-    }
-
-    // extract the tail part after the UNC root, removing leading separators
-    const tailAfterRoot = inputUNCRoot
-      ? decodedPath.slice(inputUNCRoot.length).replace(/^[/\\]+/, "")
-      : decodedPath.replace(/^\\+/, "");
-
-    const constructedPath = tailAfterRoot
-      ? pathe.join(basePath, tailAfterRoot)
-      : pathe.normalize(basePath);
-
-    // check if the constructed path is within boundary
-    const normalizedBase = pathe.normalize(basePath);
-    if (!isWithinBase(constructedPath, normalizedBase)) {
-      console.error("Path traversal detected in internal_resolveWindowsPath");
-      throw new PathTraversalError(normalizedBase, constructedPath);
-    }
-
-    return constructedPath;
   }
 
   throw new WindowsPathBehaviorNotImplementedError();
