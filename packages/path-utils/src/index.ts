@@ -11,6 +11,7 @@ export {
   getAnyUNCRoot,
   getWindowsDriveLetter,
   isUNCPath,
+  toUNCPosix,
   toUnixFormat,
 } from "./platform";
 
