@@ -72,3 +72,41 @@ export function getAnyUNCRoot(str: string): string | null {
   const match = str.match(/^(\\\\|\/\/)([^\\/]+)[\\/]([^\\/]+)/);
   return match ? `//${match[2]}/${match[3]}` : null;
 }
+
+/**
+ * Converts Windows UNC paths to Unix-style (POSIX) UNC paths
+ * @param {string} inputPath - The UNC path to convert
+ * @returns {string | null} Unix-style UNC path or null if not a valid UNC path
+ */
+export function toUNCPosix(inputPath: string): string | null {
+  if (typeof inputPath !== "string") {
+    throw new TypeError("Input path must be a string");
+  }
+
+  if (!inputPath || inputPath.trim() === "") {
+    return null;
+  }
+
+  const trimmed = inputPath.trim();
+
+  // check if it's a UNC path (starts with \\ or //)
+  if (!trimmed.startsWith("\\\\") && !trimmed.startsWith("//")) {
+    return null;
+  }
+
+  const normalized = pathe.normalize(trimmed);
+
+  // pathe converts \\server\share to //server/share
+  // but we need to ensure it starts with exactly //
+  if (!normalized.startsWith("//")) {
+    return null;
+  }
+
+  // validate that we have at least server and share
+  const parts = normalized.split("/").filter((part) => part !== "");
+  if (parts.length < 2) {
+    return null;
+  }
+
+  return trimTrailingSlash(normalized);
+}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getAnyUNCRoot, getWindowsDriveLetter, isUNCPath, toUnixFormat } from "../src/platform";
+import { getAnyUNCRoot, getWindowsDriveLetter, isUNCPath, toUNCPosix, toUnixFormat } from "../src/platform";
 
 describe("getWindowsDriveLetter", () => {
   it("should return the uppercase drive letter for valid Windows paths", () => {
@@ -278,5 +278,114 @@ describe("getAnyUNCRoot", () => {
     expect.soft(getAnyUNCRoot("\\\\server\\share?param=value")).toBe("//server/share?param=value");
     expect.soft(getAnyUNCRoot("//server/share#anchor")).toBe("//server/share#anchor");
     expect.soft(getAnyUNCRoot("\\\\server\\share@version")).toBe("//server/share@version");
+  });
+});
+
+describe("toUNCPosix", () => {
+  it("should convert Windows UNC paths to POSIX format", () => {
+    expect.soft(toUNCPosix("\\\\server\\share")).toBe("//server/share");
+    expect.soft(toUNCPosix("\\\\server\\share\\")).toBe("//server/share");
+    expect.soft(toUNCPosix("\\\\server\\share\\file")).toBe("//server/share/file");
+    expect.soft(toUNCPosix("\\\\server\\share\\deep\\nested\\path")).toBe("//server/share/deep/nested/path");
+    expect.soft(toUNCPosix("\\\\fileserver\\documents\\folder\\file.txt")).toBe("//fileserver/documents/folder/file.txt");
+  });
+
+  it("should pass through valid POSIX UNC paths", () => {
+    expect.soft(toUNCPosix("//server/share")).toBe("//server/share");
+    expect.soft(toUNCPosix("//server/share/")).toBe("//server/share");
+    expect.soft(toUNCPosix("//server/share/file")).toBe("//server/share/file");
+    expect.soft(toUNCPosix("//server/share/deep/nested/path")).toBe("//server/share/deep/nested/path");
+    expect.soft(toUNCPosix("//fileserver/documents/folder/file.txt")).toBe("//fileserver/documents/folder/file.txt");
+  });
+
+  it("should handle mixed separators", () => {
+    expect.soft(toUNCPosix("\\\\server\\share/path")).toBe("//server/share/path");
+    expect.soft(toUNCPosix("\\\\server/share\\path")).toBe("//server/share/path");
+    expect.soft(toUNCPosix("//server\\share/path")).toBe("//server/share/path");
+    expect.soft(toUNCPosix("//server/share\\path")).toBe("//server/share/path");
+  });
+
+  it("should normalize malformed UNC paths", () => {
+    expect.soft(toUNCPosix("\\\\\\server\\share")).toBe("//server/share");
+    expect.soft(toUNCPosix("\\\\server\\\\share")).toBe("//server/share");
+    expect.soft(toUNCPosix("///server/share")).toBe("//server/share");
+    expect.soft(toUNCPosix("//server//share")).toBe("//server/share");
+    expect.soft(toUNCPosix("\\\\server\\\\\\share\\\\file")).toBe("//server/share/file");
+  });
+
+  it("should handle IP addresses and special server names", () => {
+    expect.soft(toUNCPosix("\\\\192.168.1.100\\backup")).toBe("//192.168.1.100/backup");
+    expect.soft(toUNCPosix("//10.0.0.5/shared")).toBe("//10.0.0.5/shared");
+    expect.soft(toUNCPosix("\\\\server.domain.com\\share")).toBe("//server.domain.com/share");
+    expect.soft(toUNCPosix("\\\\file-server\\my_share")).toBe("//file-server/my_share");
+    expect.soft(toUNCPosix("\\\\server01\\share$")).toBe("//server01/share$");
+  });
+
+  it("should return null for invalid inputs", () => {
+    expect.soft(() => toUNCPosix(null as any)).toThrow(TypeError);
+    expect.soft(() => toUNCPosix(undefined as any)).toThrow(TypeError);
+    expect.soft(toUNCPosix("")).toBe(null);
+    expect.soft(toUNCPosix("   ")).toBe(null);
+  });
+
+  it("should return null for non-UNC paths", () => {
+    expect.soft(toUNCPosix("C:\\Windows\\System32")).toBe(null);
+    expect.soft(toUNCPosix("D:\\path\\to\\file")).toBe(null);
+    expect.soft(toUNCPosix("/usr/local/bin")).toBe(null);
+    expect.soft(toUNCPosix("relative/path")).toBe(null);
+    expect.soft(toUNCPosix("\\single\\backslash")).toBe(null);
+    expect.soft(toUNCPosix("/single/slash")).toBe(null);
+    expect.soft(toUNCPosix("file.txt")).toBe(null);
+  });
+
+  it("should return null for incomplete UNC paths", () => {
+    expect.soft(toUNCPosix("\\\\")).toBe(null);
+    expect.soft(toUNCPosix("//")).toBe(null);
+    expect.soft(toUNCPosix("\\\\server")).toBe(null);
+    expect.soft(toUNCPosix("//server")).toBe(null);
+    expect.soft(toUNCPosix("\\\\server\\")).toBe(null);
+    expect.soft(toUNCPosix("//server/")).toBe(null);
+    expect.soft(toUNCPosix("\\\\\\share")).toBe(null);
+    expect.soft(toUNCPosix("///share")).toBe(null);
+  });
+
+  it("should handle minimum valid UNC paths", () => {
+    expect.soft(toUNCPosix("\\\\a\\b")).toBe("//a/b");
+    expect.soft(toUNCPosix("//a/b")).toBe("//a/b");
+    expect.soft(toUNCPosix("\\\\x\\y\\")).toBe("//x/y");
+    expect.soft(toUNCPosix("//x/y/")).toBe("//x/y");
+  });
+
+  it("should handle whitespace correctly", () => {
+    expect.soft(toUNCPosix("  \\\\server\\share  ")).toBe("//server/share");
+    expect.soft(toUNCPosix("  //server/share  ")).toBe("//server/share");
+    expect.soft(toUNCPosix("\\\\server name\\share name")).toBe("//server name/share name");
+  });
+
+  it("should preserve special characters", () => {
+    expect.soft(toUNCPosix("\\\\server\\share with spaces")).toBe("//server/share with spaces");
+    expect.soft(toUNCPosix("\\\\server\\share-with-dashes")).toBe("//server/share-with-dashes");
+    expect.soft(toUNCPosix("\\\\server\\share_with_underscores")).toBe("//server/share_with_underscores");
+    expect.soft(toUNCPosix("\\\\server\\share$")).toBe("//server/share$");
+    expect.soft(toUNCPosix("\\\\server\\c$\\windows")).toBe("//server/c$/windows");
+  });
+
+  it("should handle very long paths", () => {
+    const longPath = "\\\\very-long-server-name.domain.company.com\\extremely-long-share-name\\very\\deep\\nested\\folder\\structure\\with\\many\\levels\\and\\a\\very\\long\\filename.txt";
+    const expected = "//very-long-server-name.domain.company.com/extremely-long-share-name/very/deep/nested/folder/structure/with/many/levels/and/a/very/long/filename.txt";
+    expect(toUNCPosix(longPath)).toBe(expected);
+  });
+
+  it("should preserve case in server and share names", () => {
+    expect.soft(toUNCPosix("\\\\SERVER\\Share")).toBe("//SERVER/Share");
+    expect.soft(toUNCPosix("\\\\FileServer\\PublicShare")).toBe("//FileServer/PublicShare");
+    expect.soft(toUNCPosix("//MixedCase/ShareName")).toBe("//MixedCase/ShareName");
+  });
+
+  it("should handle trailing separators consistently", () => {
+    expect.soft(toUNCPosix("\\\\server\\share\\")).toBe("//server/share");
+    expect.soft(toUNCPosix("\\\\server\\share\\\\")).toBe("//server/share");
+    expect.soft(toUNCPosix("//server/share/")).toBe("//server/share");
+    expect.soft(toUNCPosix("//server/share//")).toBe("//server/share");
   });
 });
