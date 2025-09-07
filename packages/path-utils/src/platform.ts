@@ -1,4 +1,4 @@
-import { prependLeadingSlash } from "@luxass/utils";
+import { prependLeadingSlash, trimTrailingSlash } from "@luxass/utils";
 import pathe from "pathe";
 import {
   WINDOWS_DRIVE_LETTER_EVERYWHERE_RE,
@@ -50,14 +50,14 @@ export function toUnixFormat(inputPath: string): string {
 
   // check if this is a UNC path (starts with //)
   if (isUNCPath(inputPath)) {
-    return normalized;
+    return trimTrailingSlash(normalized);
   }
 
   // strip driver letters from the normalized string
   normalized = normalized.replace(WINDOWS_DRIVE_LETTER_EVERYWHERE_RE, "");
   normalized = prependLeadingSlash(normalized);
 
-  return pathe.normalize(normalized);
+  return trimTrailingSlash(pathe.normalize(normalized));
 }
 
 /**
