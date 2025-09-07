@@ -8,8 +8,10 @@ export {
 } from "./errors";
 
 export {
+  getAnyUNCRoot,
   getWindowsDriveLetter,
   isUNCPath,
+  toUnixFormat,
 } from "./platform";
 
 export { decodePathSafely, isWithinBase } from "./security";
