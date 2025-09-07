@@ -7,7 +7,6 @@ export {
   UNCPathNotSupportedError,
   WindowsDriveMismatchError,
   WindowsPathBehaviorNotImplementedError,
-  WindowsPathTypeMismatchError,
 } from "./errors";
 
 export {
