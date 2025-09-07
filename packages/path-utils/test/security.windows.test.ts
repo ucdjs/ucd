@@ -286,13 +286,14 @@ describe.runIf(isWindows)("utils - windows", () => {
       it("should handle Windows paths with null bytes", () => {
         expect(() => {
           resolveSafePath("C:\\Users\\John", "file.txt\0.exe");
-        }).toThrow("Invalid path format or contains illegal characters");
+        }).toThrow(/Illegal character detected in path: '\0'/);
       });
 
       it("should handle Windows paths with control characters", () => {
         expect(() => {
           resolveSafePath("C:\\Users\\John", "file\x01.txt");
-        }).toThrow("Invalid path format or contains illegal characters");
+        // eslint-disable-next-line no-control-regex
+        }).toThrow(/Illegal character detected in path: '\x01'/);
       });
 
       it("should handle empty input path", () => {
