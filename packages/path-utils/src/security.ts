@@ -1,5 +1,9 @@
 import { prependLeadingSlash } from "@luxass/utils";
 import pathe from "pathe";
+import {
+  CONTROL_CHARACTER_RE,
+  WINDOWS_UNC_ROOT_RE,
+} from "./constants";
 import { MaximumDecodingIterationsExceededError } from "./errors";
 import { isCaseSensitive } from "./utils";
 

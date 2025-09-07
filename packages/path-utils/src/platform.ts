@@ -1,7 +1,6 @@
+import { prependLeadingSlash } from "@luxass/utils";
 import pathe from "pathe";
-
-const WINDOWS_DRIVE_LETTER_REGEX = /^[A-Z]:/i;
-const WINDOWS_UNC_ROOT_REGEX = /^\\\\(?![.?]\\)[^\\]+\\[^\\]+/;
+import { WINDOWS_DRIVE_LETTER_EVERYWHERE_RE, WINDOWS_DRIVE_LETTER_START_RE, WINDOWS_UNC_ROOT_RE } from "./constants";
 
 /**
  * Extracts the Windows drive letter from a given string, if present.
@@ -9,7 +8,7 @@ const WINDOWS_UNC_ROOT_REGEX = /^\\\\(?![.?]\\)[^\\]+\\[^\\]+/;
  * @returns {string | null} The uppercase drive letter (e.g., "C") if found, otherwise null.
  */
 export function getWindowsDriveLetter(str: string): string | null {
-  const match = str.match(WINDOWS_DRIVE_LETTER_REGEX);
+  const match = str.match(WINDOWS_DRIVE_LETTER_START_RE);
 
   if (match == null) return null;
 
@@ -22,5 +21,37 @@ export function getWindowsDriveLetter(str: string): string | null {
  * @returns {boolean} True if the path is a UNC path, false otherwise.
  */
 export function isUNCPath(path: string): boolean {
-  return pathe.isAbsolute(path) && WINDOWS_UNC_ROOT_REGEX.test(path);
+  return pathe.isAbsolute(path) && WINDOWS_UNC_ROOT_RE.test(path);
+}
+
+/**
+ * Converts a path to Unix format by normalizing separators, stripping Windows drive letters, and ensuring a leading slash.
+ * @param {string} inputPath - The input path to convert.
+ * @returns {string} The path in Unix format.
+ */
+export function toUnixFormat(inputPath: string): string {
+  if (typeof inputPath !== "string") {
+    throw new TypeError("Input path must be a string");
+  }
+
+  if (inputPath.trim() === "") {
+    return "/";
+  }
+
+  let normalized = pathe.normalize(inputPath.trim());
+
+  // pathe already converts to forward slashes, so we mainly need to handle:
+  // 1. UNC paths (already become //server/share/path)
+  // 2. Drive letters that pathe might preserve
+
+  // check if this is a UNC path (starts with //)
+  if (isUNCPath(inputPath)) {
+    return normalized;
+  }
+
+  // strip driver letters from the normalized string
+  normalized = normalized.replace(WINDOWS_DRIVE_LETTER_EVERYWHERE_RE, "");
+  normalized = prependLeadingSlash(normalized);
+
+  return pathe.normalize(normalized);
 }
