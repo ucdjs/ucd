@@ -36,7 +36,6 @@ export class WindowsDriveMismatchError extends PathUtilsBaseError {
   }
 }
 
-
 export class FailedToDecodePathError extends PathUtilsBaseError {
   constructor() {
     super("Failed to decode path");

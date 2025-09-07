@@ -327,8 +327,6 @@ describe.runIf(isWindows)("utils - windows", () => {
       });
     });
 
-
-
     describe("unsupported scenarios", () => {
       it("should throw WindowsPathBehaviorNotImplementedError for unsupported combinations", () => {
         // Test with a scenario that doesn't match any of the implemented cases
