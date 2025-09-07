@@ -306,7 +306,6 @@ describe("toUnixFormat", () => {
     expect.soft(toUnixFormat("..\\parent\\file")).toBe("/parent/file");
     expect.soft(toUnixFormat(".\\current\\file")).toBe("/current/file");
   });
-
 });
 
 describe("assertNotUNCPath", () => {
