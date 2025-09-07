@@ -5,6 +5,7 @@ export {
   PathTraversalError,
   PathUtilsBaseError,
   WindowsDriveMismatchError,
+  WindowsPathBehaviorNotImplementedError,
   WindowsPathTypeMismatchError,
   WindowsUNCShareMismatchError,
 } from "./errors";
