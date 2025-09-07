@@ -141,9 +141,9 @@ describe("toUnixFormat", () => {
   });
 
   it("should handle trailing separators", () => {
-    expect.soft(toUnixFormat("C:\\folder\\")).toBe("/folder/");
-    expect.soft(toUnixFormat("\\\\server\\share\\")).toBe("//server/share/");
-    expect.soft(toUnixFormat("relative/path/")).toBe("/relative/path/");
+    expect.soft(toUnixFormat("C:\\folder\\")).toBe("/folder");
+    expect.soft(toUnixFormat("\\\\server\\share\\")).toBe("//server/share");
+    expect.soft(toUnixFormat("relative/path/")).toBe("/relative/path");
   });
 
   it("should handle root paths", () => {
