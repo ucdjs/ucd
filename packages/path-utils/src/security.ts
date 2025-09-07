@@ -252,6 +252,14 @@ export function internal_resolveWindowsPath(basePath: string, decodedPath: strin
       throw new WindowsUNCShareMismatchError(String(baseUNCRoot), String(inputUNCRoot));
     }
 
+    // check if the normalized paths are within boundary
+    const normalizedBase = pathe.normalize(basePath);
+    const normalizedInput = pathe.normalize(decodedPath);
+
+    if (!isWithinBase(normalizedInput, normalizedBase)) {
+      throw new PathTraversalError(normalizedBase, normalizedInput);
+    }
+
     const tailAfterRoot = inputUNCRoot ? decodedPath.slice(inputUNCRoot.length) : decodedPath;
     return pathe.normalize(basePath + tailAfterRoot.replace(/\\/g, "/"));
   }
