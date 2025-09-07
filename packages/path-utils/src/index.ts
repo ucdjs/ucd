@@ -26,4 +26,4 @@ export {
   resolveSafePath,
 } from "./security";
 
-export { isCaseSensitive } from "./utils";
+export { isCaseSensitive, osPlatform } from "./utils";
