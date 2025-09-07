@@ -7,7 +7,7 @@ import {
   WINDOWS_UNC_ROOT_RE,
 } from "./constants";
 import { FailedToDecodePathError, IllegalCharacterInPathError, MaximumDecodingIterationsExceededError, PathTraversalError, WindowsDriveMismatchError, WindowsPathBehaviorNotImplementedError, WindowsPathTypeMismatchError, WindowsUNCShareMismatchError } from "./errors";
-import { getAnyUNCRoot, getWindowsDriveLetter, isUNCPath, isWindowsDrivePath, stripDriveLetter, toUnixFormat } from "./platform";
+import { getAnyUNCRoot, getWindowsDriveLetter, isUNCPath, isWindowsDrivePath, toUnixFormat } from "./platform";
 import { isCaseSensitive, osPlatform } from "./utils";
 
 /**
