@@ -195,7 +195,8 @@ describe("isUNCPath", () => {
 
   it("should return false for Unix paths", () => {
     expect.soft(isUNCPath("/path/to/file")).toBe(false);
-    expect.soft(isUNCPath("//server/share")).toBe(false);
+    // Note: //server/share is now considered a valid UNC path (forward-slash format)
+    expect.soft(isUNCPath("//server/share")).toBe(true);
   });
 
   it("should return false for incomplete UNC paths", () => {
