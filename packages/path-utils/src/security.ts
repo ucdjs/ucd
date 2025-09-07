@@ -264,7 +264,8 @@ export function internal_resolveWindowsPath(basePath: string, decodedPath: strin
     // check if the constructed path is within boundary
     const normalizedBase = pathe.normalize(basePath);
     if (!isWithinBase(constructedPath, normalizedBase)) {
-      throw new PathTraversalError(`${normalizedBase}blahblah`, `${constructedPath}blahblah`);
+      console.error("Path traversal detected in internal_resolveWindowsPath");
+      throw new PathTraversalError(normalizedBase, constructedPath);
     }
 
     return constructedPath;
