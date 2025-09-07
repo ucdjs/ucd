@@ -253,12 +253,7 @@ export function internal_resolveWindowsPath(basePath: string, decodedPath: strin
       throw new WindowsUNCShareMismatchError(String(baseUNCRoot), String(inputUNCRoot));
     }
 
-    const tail = inputUNCRoot != null
-      ? trimLeadingSlash(decodedPath.slice(inputUNCRoot.length))
-      : decodedPath.replace(/^\\+/, "");
-
-    const relativePath = pathe.normalize(tail);
-    return pathe.resolve(basePath, relativePath);
+    return pathe.normalize(decodedPath);
   }
 
   throw new WindowsPathBehaviorNotImplementedError();
