@@ -177,9 +177,9 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
   const unixPath = decodedPath.replace(/\\/g, "/");
 
   if (pathe.isAbsolute(unixPath)) {
-    resolvedPath = handleAbsolutePath(unixPath, normalizedBasePath);
+    resolvedPath = internal_handleAbsolutePath(unixPath, normalizedBasePath);
   } else {
-    resolvedPath = handleRelativePath(unixPath, normalizedBasePath);
+    resolvedPath = internal_handleRelativePath(unixPath, normalizedBasePath);
   }
 
   // final boundary validation
@@ -193,6 +193,9 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
   return normalized;
 }
 
+/**
+ * @internal
+ */
 export function internal_resolveWindowsPath(basePath: string, decodedPath: string): string {
   // Both base path and input path are Windows drive paths
   if (isWindowsDrivePath(decodedPath) && isWindowsDrivePath(basePath)) {
@@ -231,7 +234,7 @@ export function internal_resolveWindowsPath(basePath: string, decodedPath: strin
  * Handles absolute Unix-style paths by treating them as relative to the base path boundary.
  * @internal
  */
-function handleAbsolutePath(absoluteUnixPath: string, basePath: string): string {
+function internal_handleAbsolutePath(absoluteUnixPath: string, basePath: string): string {
   // virtual filesystem boundary model: absolute paths are relative to boundary root
   if (absoluteUnixPath === "/") {
     // root reference points to boundary root
@@ -247,7 +250,7 @@ function handleAbsolutePath(absoluteUnixPath: string, basePath: string): string 
  * Handles relative Unix-style paths by resolving them against the base path.
  * @internal
  */
-function handleRelativePath(relativeUnixPath: string, basePath: string): string {
+function internal_handleRelativePath(relativeUnixPath: string, basePath: string): string {
   // current directory references point to base path
   if (relativeUnixPath === "." || relativeUnixPath === "./") {
     return basePath;
