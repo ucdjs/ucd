@@ -182,22 +182,21 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
   return normalized;
 }
 
-export function internal_resolveWindowsPath(normalizedBasePath: string, decodedPath: string): string {
-  console.error("BEFORE", { normalizedBasePath, decodedPath });
-  normalizedBasePath = pathe.normalize(normalizedBasePath);
-  console.error("AFTER", { normalizedBasePath, decodedPath });
+export function internal_resolveWindowsPath(basePath: string, decodedPath: string): string {
   // If the decoded path is a Windows drive path and the base path is a UNC path
-  if (isWindowsDrivePath(decodedPath) && isUNCPath(normalizedBasePath)) {
+  if (isWindowsDrivePath(decodedPath) && isUNCPath(basePath)) {
     throw new WindowsPathTypeMismatchError("UNC", "drive-letter absolute");
   }
 
   // If the decoded path is a UNC path and the base path is a Windows drive path
-  if (isUNCPath(decodedPath) && isWindowsDrivePath(normalizedBasePath)) {
+  if (isUNCPath(decodedPath) && isWindowsDrivePath(basePath)) {
     throw new WindowsPathTypeMismatchError("drive-letter", "UNC absolute");
   }
 
   // Both base path and input path is Windows drive paths
-  if (isWindowsDrivePath(decodedPath) && isWindowsDrivePath(normalizedBasePath)) {
+  if (isWindowsDrivePath(decodedPath) && isWindowsDrivePath(basePath)) {
+    const normalizedBasePath = pathe.normalize(basePath);
+
     // 1. First verify that the paths use the same drive letter
     // 2. If they use different drive letters, throw a drive mismatch error
     // 3. If they use the same drive letter, verify the path isn't escaping the base path
@@ -205,7 +204,7 @@ export function internal_resolveWindowsPath(normalizedBasePath: string, decodedP
     // 5. If the path stays within bounds, proceed with path resolution
 
     // Get the drive letters from both input and base path.
-    const baseDriveLetter = getWindowsDriveLetter(normalizedBasePath);
+    const baseDriveLetter = getWindowsDriveLetter(basePath);
     const inputDriveLetter = getWindowsDriveLetter(decodedPath);
 
     // If either the drive letters is null, or they are not equal, throw a drive mismatch error
@@ -224,9 +223,9 @@ export function internal_resolveWindowsPath(normalizedBasePath: string, decodedP
     return pathe.normalize(normalizedDecodedPath);
   }
 
-  if (isUNCPath(decodedPath) && isUNCPath(normalizedBasePath)) {
+  if (isUNCPath(decodedPath) && isUNCPath(basePath)) {
     const inputUNCRoot = getAnyUNCRoot(decodedPath);
-    const baseUNCRoot = getAnyUNCRoot(normalizedBasePath);
+    const baseUNCRoot = getAnyUNCRoot(basePath);
 
     const isSameShare = baseUNCRoot != null && inputUNCRoot != null
       && baseUNCRoot.toLowerCase() === inputUNCRoot.toLowerCase();
@@ -240,7 +239,7 @@ export function internal_resolveWindowsPath(normalizedBasePath: string, decodedP
       : decodedPath.replace(/^\\+/, "");
 
     const relativePath = pathe.normalize(tail);
-    return pathe.resolve(normalizedBasePath, relativePath);
+    return pathe.resolve(basePath, relativePath);
   }
 
   throw new WindowsPathBehaviorNotImplementedError();
