@@ -141,7 +141,7 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
 
   let resolvedPath: string;
 
-  const absoluteInputPath = pathe.resolve(decodedPath);
+  const absoluteInputPath = pathe.normalize(decodedPath);
   const isAbsoluteInput
     = WINDOWS_DRIVE_RE.test(decodedPath)
       || pathe.isAbsolute(toUnixFormat(decodedPath));

@@ -19,6 +19,18 @@ export class BridgeGenericError extends BridgeBaseError {
   }
 }
 
+export class BridgeSetupError extends BridgeBaseError {
+  public readonly originalError?: Error;
+
+  constructor(message: string, originalError?: Error) {
+    super(message, {
+      cause: originalError,
+    });
+    this.name = "BridgeSetupError";
+    this.originalError = originalError;
+  }
+}
+
 export class BridgeUnsupportedOperation extends BridgeBaseError {
   public readonly capability: FileSystemBridgeCapabilityKey;
 
@@ -28,16 +40,6 @@ export class BridgeUnsupportedOperation extends BridgeBaseError {
     super(`File system bridge does not support the '${capability}' capability.`);
     this.name = "BridgeUnsupportedOperation";
     this.capability = capability;
-  }
-}
-
-export class BridgePathTraversal extends BridgeBaseError {
-  public readonly accessedPath: string;
-
-  constructor(path: string) {
-    super(`Path traversal detected: attempted to access path outside of allowed scope: ${path}`);
-    this.name = "BridgePathTraversal";
-    this.accessedPath = path;
   }
 }
 
