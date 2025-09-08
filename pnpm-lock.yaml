@@ -566,6 +566,9 @@ importers:
       '@luxass/utils':
         specifier: catalog:prod
         version: 2.7.0
+      '@ucdjs/shared':
+        specifier: workspace:*
+        version: link:../shared
       pathe:
         specifier: catalog:prod
         version: 2.0.3
