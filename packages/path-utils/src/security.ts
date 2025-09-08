@@ -29,17 +29,24 @@ export function isWithinBase(basePath: string, resolvedPath: string): boolean {
     return false;
   }
 
-  if (resolvedPath.trim() === "" || basePath.trim() === "") {
+  resolvedPath = resolvedPath.trim();
+  basePath = basePath.trim();
+
+  if (resolvedPath === "" || basePath === "") {
     return false;
   }
 
-  // Check for UNC paths and reject them early
-  assertNotUNCPath(resolvedPath.trim());
-  assertNotUNCPath(basePath.trim());
+  // check for UNC paths and reject them early
+  assertNotUNCPath(resolvedPath);
+  assertNotUNCPath(basePath);
 
   // we apply leading slashes after we have verified that the inputs isn't empty.
-  basePath = prependLeadingSlash(basePath.trim());
-  resolvedPath = prependLeadingSlash(resolvedPath.trim());
+  basePath = isWindowsDrivePath(basePath)
+    ? basePath
+    : prependLeadingSlash(basePath);
+  resolvedPath = isWindowsDrivePath(resolvedPath)
+    ? resolvedPath
+    : prependLeadingSlash(resolvedPath);
 
   const normalizedResolved = pathe.normalize(resolvedPath);
   const normalizedBase = pathe.normalize(basePath);
