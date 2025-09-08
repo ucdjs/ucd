@@ -5,7 +5,7 @@ import type {
   FileSystemBridgeObject,
   FileSystemBridgeOperations,
 } from "./types";
-import { resolveSafePath } from "@ucdjs/path-utils";
+import { PathUtilsBaseError, resolveSafePath } from "@ucdjs/path-utils";
 import { z } from "zod";
 import {
   BridgeBaseError,
@@ -112,15 +112,19 @@ function inferCapabilitiesFromOperations(ops: Partial<FileSystemBridgeOperations
   };
 }
 
-function handleError(operation: PropertyKey, error: unknown): never {
+function handleError(operation: PropertyKey, err: unknown): never {
   // re-throw custom bridge errors directly
-  if (error instanceof BridgeBaseError) {
-    throw error;
+  if (err instanceof BridgeBaseError) {
+    throw err;
+  }
+
+  if (err instanceof PathUtilsBaseError) {
+    throw err;
   }
 
   // wrap unexpected errors in BridgeGenericError
   throw new BridgeGenericError(
-    `Unexpected error in '${String(operation)}' operation: ${error instanceof Error ? error.message : String(error)}`,
-    error instanceof Error ? error : undefined,
+    `Unexpected error in '${String(operation)}' operation: ${err instanceof Error ? err.message : String(err)}`,
+    err instanceof Error ? err : undefined,
   );
 }

@@ -2,7 +2,7 @@ import path, { join } from "node:path";
 import { setupMockStore } from "#internal/test-utils/store";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
-import { BridgePathTraversal } from "@ucdjs/fs-bridge";
+import { PathTraversalError } from "@ucdjs/path-utils";
 import { assert, beforeEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
 import { createNodeUCDStore } from "../../src/factory";
@@ -110,10 +110,10 @@ describe("get file", () => {
     const [fileData, fileError] = await store.getFile("15.0.0", "../../outside.txt");
     expect(fileData).toBe(null);
     assert(fileError != null, "Expected error for path traversal");
-    expect(fileError).toBeInstanceOf(BridgePathTraversal);
-    expect((fileError as BridgePathTraversal).accessedPath).toBe(
+    expect(fileError).toBeInstanceOf(PathTraversalError);
+    expect((fileError as PathTraversalError).accessedPath).toBe(
       path.normalize(join(storePath, "15.0.0", "../../outside.txt")),
     );
-    expect((fileError as BridgePathTraversal).basePath).toBe(storePath);
+    expect((fileError as PathTraversalError).basePath).toBe(storePath);
   });
 });
