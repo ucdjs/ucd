@@ -43,30 +43,6 @@ export class BridgeUnsupportedOperation extends BridgeBaseError {
   }
 }
 
-export class BridgePathTraversal extends BridgeBaseError {
-  public readonly accessedPath: string;
-  public readonly basePath: string;
-
-  constructor(basePath: string, accessedPath: string) {
-    super(`Path traversal detected: attempted to access '${accessedPath}' which is outside the allowed base path '${basePath}'`);
-    this.name = "BridgePathTraversal";
-    this.basePath = basePath;
-    this.accessedPath = accessedPath;
-  }
-}
-
-export class BridgeWindowsDriveDifference extends BridgeBaseError {
-  public readonly accessedDrive: string;
-  public readonly baseDrive: string;
-
-  constructor(baseDrive: string, accessedDrive: string) {
-    super(`Drive letter mismatch detected: attempted to access '${accessedDrive}' which is on a different drive than the allowed base drive '${baseDrive}'`);
-    this.name = "BridgeWindowsDriveDifference";
-    this.baseDrive = baseDrive;
-    this.accessedDrive = accessedDrive;
-  }
-}
-
 export class BridgeFileNotFound extends BridgeBaseError {
   public readonly path: string;
 
@@ -84,29 +60,5 @@ export class BridgeEntryIsDir extends BridgeBaseError {
     super(`Expected file but found directory: ${path}`);
     this.name = "BridgeEntryIsDir";
     this.path = path;
-  }
-}
-
-export class BridgeWindowsPathMismatch extends BridgeBaseError {
-  public readonly basePathType: string;
-  public readonly inputPathType: string;
-
-  constructor(basePathType: string, inputPathType: string) {
-    super(`Cannot combine ${inputPathType} path with ${basePathType} base path on Windows`);
-    this.name = "BridgeWindowsPathMismatch";
-    this.basePathType = basePathType;
-    this.inputPathType = inputPathType;
-  }
-}
-
-export class BridgeWindowsUNCShareMismatch extends BridgeBaseError {
-  public readonly baseShare: string;
-  public readonly inputShare: string;
-
-  constructor(baseShare: string, inputShare: string) {
-    super(`Different UNC shares not allowed: base share '${baseShare}' differs from input share '${inputShare}'`);
-    this.name = "BridgeWindowsUNCShareMismatch";
-    this.baseShare = baseShare;
-    this.inputShare = inputShare;
   }
 }
