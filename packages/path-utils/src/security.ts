@@ -191,6 +191,10 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
 
   // final boundary validation
   if (!isWithinBase(normalizedBasePath, resolvedPath)) {
+    console.error("[resolveSafePath] Path traversal detected:", {
+      basePath: normalizedBasePath,
+      accessedPath: resolvedPath,
+    });
     throw new PathTraversalError(normalizedBasePath, resolvedPath);
   }
 
@@ -228,6 +232,10 @@ export function internal_resolveWindowsPath(basePath: string, decodedPath: strin
 
     // If the decoded path is outside the base path, then we throw an error.
     if (!isWithinBase(normalizedBasePath, normalizedDecodedPath)) {
+      console.error("[resolveSafePath#windows] Path traversal detected:", {
+        basePath: normalizedBasePath,
+        accessedPath: normalizedDecodedPath,
+      });
       throw new PathTraversalError(normalizedBasePath, normalizedDecodedPath);
     }
 
