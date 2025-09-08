@@ -5,13 +5,14 @@ import type {
   FileSystemBridgeObject,
   FileSystemBridgeOperations,
 } from "./types";
+import { PathUtilsBaseError, resolveSafePath } from "@ucdjs/path-utils";
 import { z } from "zod";
 import {
   BridgeBaseError,
   BridgeGenericError,
+  BridgeSetupError,
   BridgeUnsupportedOperation,
 } from "./errors";
-import { resolveSafePath } from "./utils";
 
 export function defineFileSystemBridge<
   TOptionsSchema extends z.ZodType,
@@ -32,20 +33,24 @@ export function defineFileSystemBridge<
 
     const { state } = fsBridge;
 
-    const bridge = fsBridge.setup({
-      options,
-      state: (state ?? {}) as TState,
-      resolveSafePath,
-    });
+    let bridge = null;
+    try {
+      bridge = fsBridge.setup({
+        options,
+        state: (state ?? {}) as TState,
+        resolveSafePath,
+      });
+    } catch (err) {
+      throw new BridgeSetupError(
+        "Failed to setup file system bridge",
+        err instanceof Error ? err : undefined,
+      );
+    }
 
     const capabilities = inferCapabilitiesFromOperations(bridge);
 
     const proxiedBridge = new Proxy(bridge, {
       get(target, property) {
-        if (property === "capabilities") {
-          return capabilities;
-        }
-
         const val = target[property as keyof typeof target];
 
         // if it's an operation method and not implemented, throw
@@ -67,7 +72,7 @@ export function defineFileSystemBridge<
                 if (result && typeof (result as PromiseLike<unknown>)?.then === "function") {
                   if (!("catch" in (result as Promise<unknown>))) {
                     throw new BridgeGenericError(
-                      `The promise returned by ${String(property)} operation does not support .catch()`,
+                      `The promise returned by '${String(property)}' operation does not support .catch()`,
                     );
                   }
 
@@ -107,15 +112,19 @@ function inferCapabilitiesFromOperations(ops: Partial<FileSystemBridgeOperations
   };
 }
 
-function handleError(operation: PropertyKey, error: unknown): never {
+function handleError(operation: PropertyKey, err: unknown): never {
   // re-throw custom bridge errors directly
-  if (error instanceof BridgeBaseError) {
-    throw error;
+  if (err instanceof BridgeBaseError) {
+    throw err;
+  }
+
+  if (err instanceof PathUtilsBaseError) {
+    throw err;
   }
 
   // wrap unexpected errors in BridgeGenericError
   throw new BridgeGenericError(
-    `Unexpected error in ${String(operation)} operation: ${error instanceof Error ? error.message : String(error)}`,
-    error instanceof Error ? error : undefined,
+    `Unexpected error in '${String(operation)}' operation: ${err instanceof Error ? err.message : String(err)}`,
+    err instanceof Error ? err : undefined,
   );
 }

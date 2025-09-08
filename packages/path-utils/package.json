@@ -1,5 +1,5 @@
 {
-  "name": "@ucdjs/fs-bridge",
+  "name": "@ucdjs/path-utils",
   "version": "0.0.0",
   "type": "module",
   "author": {
@@ -13,15 +13,14 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ucdjs/ucd.git",
-    "directory": "packages/fs-bridge"
+    "directory": "packages/path-utils"
   },
   "bugs": {
     "url": "https://github.com/ucdjs/ucd/issues"
   },
+  "sideEffects": false,
   "exports": {
     ".": "./dist/index.js",
-    "./bridges/http": "./dist/bridges/http.js",
-    "./bridges/node": "./dist/bridges/node.js",
     "./package.json": "./package.json"
   },
   "main": "./dist/index.js",
@@ -42,22 +41,15 @@
   },
   "dependencies": {
     "@luxass/utils": "catalog:prod",
-    "@ucdjs/env": "workspace:*",
-    "@ucdjs/path-utils": "workspace:*",
-    "@ucdjs/schemas": "workspace:*",
-    "defu": "catalog:prod",
-    "pathe": "catalog:prod",
-    "zod": "catalog:prod"
+    "pathe": "catalog:prod"
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:linting",
-    "@ucdjs/shared": "workspace:*",
     "@ucdjs/tsconfig": "workspace:*",
     "@ucdjs/tsdown-config": "workspace:*",
     "eslint": "catalog:linting",
     "publint": "catalog:dev",
     "tsdown": "catalog:dev",
-    "tsx": "catalog:dev",
     "typescript": "catalog:dev",
     "vitest-testdirs": "catalog:testing"
   },
