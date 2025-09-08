@@ -102,8 +102,6 @@ describe("get file", () => {
       }),
     });
 
-    console.error("STORE PATH:", storePath);
-
     const store = await createNodeUCDStore({
       basePath: storePath,
     });
@@ -113,7 +111,8 @@ describe("get file", () => {
     expect(fileData).toBe(null);
     assert(fileError != null, "Expected error for path traversal");
     expect(fileError).toBeInstanceOf(PathTraversalError);
+    // todo: FIX
     expect((fileError as PathTraversalError).accessedPath).toBe(pathe.normalize(pathe.join(storePath, "15.0.0", "../../outside.txt")));
-    expect((fileError as PathTraversalError).basePath).toBe(storePath);
+    expect((fileError as PathTraversalError).basePath).toBe(pathe.normalize(storePath));
   });
 });
