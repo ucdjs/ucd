@@ -47,6 +47,7 @@
     "@ucdjs/env": "workspace:*",
     "@ucdjs/fetch": "workspace:*",
     "@ucdjs/fs-bridge": "workspace:*",
+    "@ucdjs/path-utils": "workspace:*",
     "@ucdjs/schemas": "workspace:*",
     "@ucdjs/shared": "workspace:*",
     "defu": "catalog:prod",

@@ -738,6 +738,9 @@ importers:
       '@ucdjs/fs-bridge':
         specifier: workspace:*
         version: link:../fs-bridge
+      '@ucdjs/path-utils':
+        specifier: workspace:*
+        version: link:../path-utils
       '@ucdjs/schemas':
         specifier: workspace:*
         version: link:../schemas
