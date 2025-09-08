@@ -9,5 +9,3 @@ export type {
   FileSystemBridgeRmOptions,
   FSEntry,
 } from "./types";
-
-export { resolveSafePath } from "./utils";
