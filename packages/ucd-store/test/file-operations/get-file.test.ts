@@ -1,6 +1,8 @@
 import { setupMockStore } from "#internal/test-utils/store";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
+import { PathTraversalError } from "@ucdjs/path-utils";
+import pathe from "pathe";
 import { assert, beforeEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
 import { createNodeUCDStore } from "../../src/factory";
@@ -108,6 +110,9 @@ describe("get file", () => {
     const [fileData, fileError] = await store.getFile("15.0.0", "../../outside.txt");
     expect(fileData).toBe(null);
     assert(fileError != null, "Expected error for path traversal");
-    expect(fileError.message).toBe("Path traversal detected: attempted to access path outside of allowed scope: ../outside.txt");
+    expect(fileError).toBeInstanceOf(PathTraversalError);
+    // todo: FIX
+    expect((fileError as PathTraversalError).accessedPath).toBe(pathe.normalize(pathe.join(storePath, "15.0.0", "../../outside.txt")));
+    expect((fileError as PathTraversalError).basePath).toBe(pathe.normalize(storePath));
   });
 });

@@ -15,6 +15,7 @@
       // utility packages
       "@ucdjs/shared": ["./packages/shared/src/index.ts"],
       "@ucdjs/utils": ["./packages/utils/src/index.ts"],
+      "@ucdjs/path-utils": ["./packages/path-utils/src/index.ts"],
 
       // fs bridge
       "@ucdjs/fs-bridge": ["./packages/fs-bridge/src/index.ts"],
