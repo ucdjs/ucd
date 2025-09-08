@@ -262,8 +262,7 @@ describe.runIf(isWindows)("utils - windows", () => {
       it("should handle Windows paths with control characters", () => {
         expect(() => {
           resolveSafePath("C:\\Users\\John", "file\x01.txt");
-        // eslint-disable-next-line no-control-regex
-        }).toThrow(/Illegal character detected in path: '\x01'/);
+        }).toThrow(/Illegal character detected in path: '\\x01'/);
       });
 
       it("should handle empty input path", () => {
