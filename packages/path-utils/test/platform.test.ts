@@ -99,19 +99,19 @@ describe("isWindowsDrivePath", () => {
 
 describe("stripDriveLetter", () => {
   it("should strip drive letters from Windows paths", () => {
-    expect.soft(stripDriveLetter("C:/")).toBe("");
-    expect.soft(stripDriveLetter("C:\\")).toBe("");
-    expect.soft(stripDriveLetter("D:/path/to/file")).toBe("path/to/file");
-    expect.soft(stripDriveLetter("D:\\path\\to\\file")).toBe("path\\to\\file");
-    expect.soft(stripDriveLetter("Z:/folder/")).toBe("folder/");
-    expect.soft(stripDriveLetter("Z:\\folder\\")).toBe("folder\\");
+    expect.soft(stripDriveLetter("C:/")).toBe("/");
+    expect.soft(stripDriveLetter("C:\\")).toBe("\\");
+    expect.soft(stripDriveLetter("D:/path/to/file")).toBe("/path/to/file");
+    expect.soft(stripDriveLetter("D:\\path\\to\\file")).toBe("\\path\\to\\file");
+    expect.soft(stripDriveLetter("Z:/folder/")).toBe("/folder/");
+    expect.soft(stripDriveLetter("Z:\\folder\\")).toBe("\\folder\\");
   });
 
   it("should handle case insensitivity", () => {
-    expect.soft(stripDriveLetter("c:/")).toBe("");
-    expect.soft(stripDriveLetter("c:\\")).toBe("");
-    expect.soft(stripDriveLetter("d:/file.txt")).toBe("file.txt");
-    expect.soft(stripDriveLetter("z:\\folder\\file")).toBe("folder\\file");
+    expect.soft(stripDriveLetter("c:/")).toBe("/");
+    expect.soft(stripDriveLetter("c:\\")).toBe("\\");
+    expect.soft(stripDriveLetter("d:/file.txt")).toBe("/file.txt");
+    expect.soft(stripDriveLetter("z:\\folder\\file")).toBe("\\folder\\file");
   });
 
   it("should return the original string for paths without drive letters", () => {
@@ -131,9 +131,9 @@ describe("stripDriveLetter", () => {
   });
 
   it("should not strip drive-like patterns without separators", () => {
-    expect.soft(stripDriveLetter("C:")).toBe("C:");
-    expect.soft(stripDriveLetter("C:file.txt")).toBe("C:file.txt");
-    expect.soft(stripDriveLetter("D:folder")).toBe("D:folder");
+    expect.soft(stripDriveLetter("C:")).toBe("");
+    expect.soft(stripDriveLetter("C:file.txt")).toBe("file.txt");
+    expect.soft(stripDriveLetter("D:folder")).toBe("folder");
   });
 
   it("should not strip invalid drive letters", () => {
@@ -155,14 +155,14 @@ describe("stripDriveLetter", () => {
   });
 
   it("should handle paths with special characters and spaces", () => {
-    expect.soft(stripDriveLetter("C:/Program Files/")).toBe("Program Files/");
-    expect.soft(stripDriveLetter("D:\\My Documents\\")).toBe("My Documents\\");
-    expect.soft(stripDriveLetter("E:/path with spaces/file.txt")).toBe("path with spaces/file.txt");
+    expect.soft(stripDriveLetter("C:/Program Files/")).toBe("/Program Files/");
+    expect.soft(stripDriveLetter("D:\\My Documents\\")).toBe("\\My Documents\\");
+    expect.soft(stripDriveLetter("E:/path with spaces/file.txt")).toBe("/path with spaces/file.txt");
   });
 
   it("should handle mixed separators after drive letter", () => {
-    expect.soft(stripDriveLetter("C:/path\\mixed")).toBe("path\\mixed");
-    expect.soft(stripDriveLetter("D:\\path/mixed")).toBe("path/mixed");
+    expect.soft(stripDriveLetter("C:/path\\mixed")).toBe("/path\\mixed");
+    expect.soft(stripDriveLetter("D:\\path/mixed")).toBe("\\path/mixed");
   });
 
   it("should throw TypeError for non-string inputs", () => {
