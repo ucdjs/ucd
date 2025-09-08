@@ -2,8 +2,11 @@ import type { FSEntry } from "../types";
 import { joinURL } from "@luxass/utils/path";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { FileEntrySchema } from "@ucdjs/schemas";
+import { createDebugger } from "@ucdjs/shared";
 import { z } from "zod";
 import { defineFileSystemBridge } from "../define";
+
+const debug = createDebugger("ucdjs:fs-bridge:http");
 
 const API_BASE_URL_SCHEMA = z.codec(z.httpUrl(), z.instanceof(URL), {
   decode: (urlString) => new URL(urlString),
@@ -27,6 +30,7 @@ const HTTPFileSystemBridge = defineFileSystemBridge({
         const response = await fetch(url);
 
         if (!response.ok) {
+          debug?.("Failed to read remote file", { url, status: response.status, statusText: response.statusText });
           throw new Error(`Failed to read remote file: ${response.statusText}`);
         }
         return response.text();
@@ -64,6 +68,7 @@ const HTTPFileSystemBridge = defineFileSystemBridge({
 
         const result = z.array(FileEntrySchema).safeParse(json);
         if (!result.success) {
+          debug?.("Invalid response schema from directory listing", { url, error: result.error.message });
           throw new Error(
             `Invalid response schema: ${result.error.message}`,
           );
@@ -136,6 +141,7 @@ const HTTPFileSystemBridge = defineFileSystemBridge({
               throw err;
             }
 
+            debug?.("Error checking file existence", { url, error: err instanceof Error ? err.message : String(err) });
             return false;
           });
       },
