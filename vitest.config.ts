@@ -24,7 +24,6 @@ const aliases = readdirSync(fileURLToPath(new URL("./packages", import.meta.url)
 const hiddenLogs = [
   "[ucd-store]",
   "[ucd-files]",
-  "[api]"
 ]
 
 const packageProjects = readdirSync(fileURLToPath(new URL("./packages", import.meta.url)))
