@@ -19,6 +19,18 @@ export class BridgeGenericError extends BridgeBaseError {
   }
 }
 
+export class BridgeSetupError extends BridgeBaseError {
+  public readonly originalError?: Error;
+
+  constructor(message: string, originalError?: Error) {
+    super(message, {
+      cause: originalError,
+    });
+    this.name = "BridgeSetupError";
+    this.originalError = originalError;
+  }
+}
+
 export class BridgeUnsupportedOperation extends BridgeBaseError {
   public readonly capability: FileSystemBridgeCapabilityKey;
 
