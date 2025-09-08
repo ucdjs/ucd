@@ -10,6 +10,7 @@ import { z } from "zod";
 import {
   BridgeBaseError,
   BridgeGenericError,
+  BridgeSetupError,
   BridgeUnsupportedOperation,
 } from "./errors";
 
@@ -32,20 +33,24 @@ export function defineFileSystemBridge<
 
     const { state } = fsBridge;
 
-    const bridge = fsBridge.setup({
-      options,
-      state: (state ?? {}) as TState,
-      resolveSafePath,
-    });
+    let bridge = null;
+    try {
+      bridge = fsBridge.setup({
+        options,
+        state: (state ?? {}) as TState,
+        resolveSafePath,
+      });
+    } catch (err) {
+      throw new BridgeSetupError(
+        "Failed to setup file system bridge",
+        err instanceof Error ? err : undefined,
+      );
+    }
 
     const capabilities = inferCapabilitiesFromOperations(bridge);
 
     const proxiedBridge = new Proxy(bridge, {
       get(target, property) {
-        if (property === "capabilities") {
-          return capabilities;
-        }
-
         const val = target[property as keyof typeof target];
 
         // if it's an operation method and not implemented, throw
@@ -67,7 +72,7 @@ export function defineFileSystemBridge<
                 if (result && typeof (result as PromiseLike<unknown>)?.then === "function") {
                   if (!("catch" in (result as Promise<unknown>))) {
                     throw new BridgeGenericError(
-                      `The promise returned by ${String(property)} operation does not support .catch()`,
+                      `The promise returned by '${String(property)}' operation does not support .catch()`,
                     );
                   }
 
@@ -119,7 +124,7 @@ function handleError(operation: PropertyKey, err: unknown): never {
 
   // wrap unexpected errors in BridgeGenericError
   throw new BridgeGenericError(
-    `Unexpected error in ${String(operation)} operation: ${err instanceof Error ? err.message : String(err)}`,
+    `Unexpected error in '${String(operation)}' operation: ${err instanceof Error ? err.message : String(err)}`,
     err instanceof Error ? err : undefined,
   );
 }
