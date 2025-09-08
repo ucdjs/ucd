@@ -18,6 +18,7 @@
   "bugs": {
     "url": "https://github.com/ucdjs/ucd/issues"
   },
+  "sideEffects": false,
   "exports": {
     ".": "./dist/index.js",
     "./package.json": "./package.json"
