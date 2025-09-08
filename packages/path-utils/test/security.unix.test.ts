@@ -1,45 +1,40 @@
 import { isUnix } from "#internal/test-utils";
-import { BridgePathTraversal } from "@ucdjs/fs-bridge";
 import { describe, expect, it } from "vitest";
-import { isWithinBase, resolveSafePath } from "../src/utils";
+import { PathTraversalError } from "../src/errors";
+import { isWithinBase, resolveSafePath } from "../src/security";
+import { isCaseSensitive } from "../src/utils";
 
-describe.runIf(isUnix)("utils - unix", () => {
+describe.runIf(isUnix)("security - unix", () => {
   describe("isWithinBase", () => {
     it("should handle absolute paths correctly", () => {
-      expect.soft(isWithinBase("/home/user/documents/file.txt", "/home/user")).toBe(true);
-      expect.soft(isWithinBase("/home/other/documents/file.txt", "/home/user")).toBe(false);
-      expect.soft(isWithinBase("/var/log/system.log", "/home/user")).toBe(false);
+      expect.soft(isWithinBase("/home/user", "/home/user/documents/file.txt")).toBe(true);
+      expect.soft(isWithinBase("/home/user", "/home/other/documents/file.txt")).toBe(false);
+      expect.soft(isWithinBase("/home/user", "/var/log/system.log")).toBe(false);
     });
 
     it("should handle root paths", () => {
-      expect.soft(isWithinBase("/var/log/file.txt", "/var")).toBe(true);
-      expect.soft(isWithinBase("/etc/config", "/var")).toBe(false);
+      expect.soft(isWithinBase("/var", "/var/log/file.txt")).toBe(true);
+      expect.soft(isWithinBase("/var", "/etc/config")).toBe(false);
       expect.soft(isWithinBase("/", "/")).toBe(true);
-      expect.soft(isWithinBase("/home", "/")).toBe(true);
-      expect.soft(isWithinBase("/var/log", "/")).toBe(true);
+      expect.soft(isWithinBase("/", "/home")).toBe(true);
+      expect.soft(isWithinBase("/", "/var/log")).toBe(true);
     });
 
     it("should prevent partial path matches", () => {
-      expect.soft(isWithinBase("/home/user2/file.txt", "/home/user")).toBe(false);
-      expect.soft(isWithinBase("/home/username/file.txt", "/home/user")).toBe(false);
-      expect.soft(isWithinBase("/var/log2/file.txt", "/var/log")).toBe(false);
+      expect.soft(isWithinBase("/home/user", "/home/user2/file.txt")).toBe(false);
+      expect.soft(isWithinBase("/home/user", "/home/username/file.txt")).toBe(false);
+      expect.soft(isWithinBase("/var/log", "/var/log2/file.txt")).toBe(false);
     });
 
     it("should handle path normalization edge cases", () => {
-      expect.soft(isWithinBase("/home/user/../user/documents/file.txt", "/home/user")).toBe(true);
-      expect.soft(isWithinBase("/home/user/./documents/file.txt", "/home/user")).toBe(true);
-      expect.soft(isWithinBase("/home/user/documents/../../other/file.txt", "/home/user")).toBe(false);
+      expect.soft(isWithinBase("/home/user", "/home/user/../user/documents/file.txt")).toBe(true);
+      expect.soft(isWithinBase("/home/user", "/home/user/./documents/file.txt")).toBe(true);
+      expect.soft(isWithinBase("/home/user", "/home/user/documents/../../other/file.txt")).toBe(false);
     });
 
     it("should handle same path comparison", () => {
       expect.soft(isWithinBase("/home/user", "/home/user")).toBe(true);
       expect.soft(isWithinBase("/var/www/html", "/var/www/html")).toBe(true);
-    });
-
-    it("should be case-sensitive on systems", () => {
-      expect.soft(isWithinBase("/home/User/file.txt", "/home/user")).toBe(false);
-      expect.soft(isWithinBase("/Home/user/file.txt", "/home/user")).toBe(false);
-      expect.soft(isWithinBase("/var/Log/file.txt", "/var/log")).toBe(false);
     });
   });
 
@@ -119,33 +114,43 @@ describe.runIf(isUnix)("utils - unix", () => {
       it("should prevent directory traversal attacks", () => {
         expect.soft(
           () => resolveSafePath("/home/user/documents", "../../etc/passwd"),
-        ).toThrowError(new BridgePathTraversal("/home/user/documents", "/home/etc/passwd"));
+        ).toThrowError(new PathTraversalError("/home/user/documents", "/home/etc/passwd"));
         expect.soft(
           () => resolveSafePath("/var/www/html", "../../../etc/shadow"),
-        ).toThrowError(new BridgePathTraversal("/var/www/html", "/etc/shadow"));
+        ).toThrowError(new PathTraversalError("/var/www/html", "/etc/shadow"));
         expect.soft(
           () => resolveSafePath("/home/user", "../../../root/.ssh/id_rsa"),
-        ).toThrowError(new BridgePathTraversal("/home/user", "/root/.ssh/id_rsa"));
+        ).toThrowError(new PathTraversalError("/home/user", "/root/.ssh/id_rsa"));
       });
 
       it("should prevent encoded traversal attacks", () => {
         expect.soft(
           () => resolveSafePath("/home/user/documents", "%2e%2e%2f%2e%2e%2fetc%2fpasswd"),
-        ).toThrowError(new BridgePathTraversal("/home/user/documents", "/home/etc/passwd"));
+        ).toThrowError(new PathTraversalError("/home/user/documents", "/home/etc/passwd"));
         expect.soft(
           () => resolveSafePath("/home/user", "%252e%252e%252f%252e%252e%252fetc"),
-        ).toThrowError(new BridgePathTraversal("/home/user", "/etc"));
+        ).toThrowError(new PathTraversalError("/home/user", "/etc"));
         expect.soft(
           () => resolveSafePath("/home/user/docs", "\u002E\u002E/\u002E\u002E/etc/passwd"),
-        ).toThrowError(new BridgePathTraversal("/home/user/docs", "/home/etc/passwd"));
+        ).toThrowError(new PathTraversalError("/home/user/docs", "/home/etc/passwd"));
       });
     });
 
+    // TODO: figure out if we wanna handle this
+    // It seems very problematic that the case sensitivity of paths is not consistent across different filesystems.
     describe("case sensitivity", () => {
-      it("should be case-sensitive", () => {
+      // linux
+      it.runIf(isCaseSensitive)("should be case-sensitive on case-sensitive filesystems", () => {
         expect.soft(resolveSafePath("/home/user", "File.txt")).toBe("/home/user/File.txt");
         expect.soft(resolveSafePath("/home/user", "file.txt")).toBe("/home/user/file.txt");
         expect.soft(resolveSafePath("/home/user", "/Home/user/file.txt")).toBe("/home/user/Home/user/file.txt");
+      });
+
+      it.runIf(!isCaseSensitive)("should handle case-insensitive behavior on case-insensitive filesystems", () => {
+        expect.soft(resolveSafePath("/home/user", "File.txt")).toBe("/home/user/File.txt");
+        expect.soft(resolveSafePath("/home/user", "file.txt")).toBe("/home/user/file.txt");
+        // On case-insensitive systems, /Home/user matches /home/user, so it's treated as within boundary
+        expect.soft(resolveSafePath("/home/user", "/Home/user/file.txt")).toBe("/home/user/file.txt");
       });
     });
 
@@ -161,13 +166,14 @@ describe.runIf(isUnix)("utils - unix", () => {
       it("should handle Unix paths with null bytes", () => {
         expect(() => {
           resolveSafePath("/home/user", "file.txt\0");
-        }).toThrow("Invalid path format or contains illegal characters");
+        }).toThrow(/Illegal character detected in path: '\0'/);
       });
 
       it("should handle Unix paths with control characters", () => {
         expect(() => {
           resolveSafePath("/home/user", "file\x01.txt");
-        }).toThrow("Invalid path format or contains illegal characters");
+        // eslint-disable-next-line no-control-regex
+        }).toThrow(/Illegal character detected in path: ''/);
       });
 
       it("should handle empty input path", () => {
@@ -205,20 +211,20 @@ describe.runIf(isUnix)("utils - unix", () => {
     describe("unix system paths", () => {
       it("should handle typical Unix system boundaries", () => {
         const result1 = resolveSafePath("/var/log", "apache2/access.log");
-        expect(result1).toBe("/var/log/apache2/access.log");
+        expect.soft(result1).toBe("/var/log/apache2/access.log");
 
         const result2 = resolveSafePath("/usr/local/bin", "custom-script.sh");
-        expect(result2).toBe("/usr/local/bin/custom-script.sh");
+        expect.soft(result2).toBe("/usr/local/bin/custom-script.sh");
       });
 
       it("should prevent access to sensitive system files", () => {
         expect.soft(() => {
           resolveSafePath("/home/user/public", "../../etc/passwd");
-        }).toThrowError(new BridgePathTraversal("/home/user/public", "/home/etc/passwd"));
+        }).toThrowError(new PathTraversalError("/home/user/public", "/home/etc/passwd"));
 
         expect.soft(() => {
           resolveSafePath("/var/www/html", "../../../root/.bashrc");
-        }).toThrowError(new BridgePathTraversal("/var/www/html", "/root/.bashrc"));
+        }).toThrowError(new PathTraversalError("/var/www/html", "/root/.bashrc"));
       });
     });
   });

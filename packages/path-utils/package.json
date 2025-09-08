@@ -1,0 +1,59 @@
+{
+  "name": "@ucdjs/path-utils",
+  "version": "0.0.0",
+  "type": "module",
+  "author": {
+    "name": "Lucas Nørgård",
+    "email": "lucasnrgaard@gmail.com",
+    "url": "https://luxass.dev"
+  },
+  "packageManager": "pnpm@10.14.0",
+  "license": "MIT",
+  "homepage": "https://github.com/ucdjs/ucd",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ucdjs/ucd.git",
+    "directory": "packages/path-utils"
+  },
+  "bugs": {
+    "url": "https://github.com/ucdjs/ucd/issues"
+  },
+  "sideEffects": false,
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=22.17"
+  },
+  "scripts": {
+    "build": "tsdown --tsconfig=./tsconfig.build.json",
+    "dev": "tsdown --watch",
+    "clean": "git clean -xdf dist node_modules",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@luxass/utils": "catalog:prod",
+    "pathe": "catalog:prod"
+  },
+  "devDependencies": {
+    "@luxass/eslint-config": "catalog:linting",
+    "@ucdjs/tsconfig": "workspace:*",
+    "@ucdjs/tsdown-config": "workspace:*",
+    "eslint": "catalog:linting",
+    "publint": "catalog:dev",
+    "tsdown": "catalog:dev",
+    "typescript": "catalog:dev",
+    "vitest-testdirs": "catalog:testing"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
