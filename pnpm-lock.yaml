@@ -260,6 +260,9 @@ importers:
       '@ucdjs/schemas':
         specifier: workspace:*
         version: link:../../packages/schemas
+      '@ucdjs/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@ucdjs/utils':
         specifier: workspace:*
         version: link:../../packages/utils
