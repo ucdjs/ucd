@@ -43,6 +43,7 @@
   "dependencies": {
     "@luxass/utils": "catalog:prod",
     "@ucdjs/env": "workspace:*",
+    "@ucdjs/path-utils": "workspace:*",
     "@ucdjs/schemas": "workspace:*",
     "defu": "catalog:prod",
     "pathe": "catalog:prod",
