@@ -44,7 +44,9 @@ const workerUnitProjects = readdirSync(fileURLToPath(new URL("./apps", import.me
         name: `${dir}:unit`,
       },
     } satisfies TestProjectConfiguration;
-  })
+  });
+
+console.error("ALIASES", aliases)
 
 export default defineConfig({
   test: {
