@@ -468,6 +468,9 @@ importers:
       '@ucdjs/env':
         specifier: workspace:*
         version: link:../env
+      '@ucdjs/shared':
+        specifier: workspace:*
+        version: link:../shared
       openapi-fetch:
         specifier: catalog:prod
         version: 0.14.0(patch_hash=6b65c61dccaf4351409f767132092e087e01965b7cdada31678895eb02e6f945)
@@ -692,9 +695,6 @@ importers:
       '@ucdjs/env':
         specifier: workspace:*
         version: link:../env
-      '@ucdjs/fetch':
-        specifier: workspace:*
-        version: link:../fetch
       debug:
         specifier: catalog:prod
         version: 4.4.1(supports-color@10.0.0)
