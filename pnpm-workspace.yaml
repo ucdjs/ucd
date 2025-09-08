@@ -51,8 +51,10 @@ catalogs:
     openapi-fetch: ^0.14.0
     pathe: ^2.0.3
     "@clack/prompts": ^1.0.0-alpha.1
+    debug: ^4.4.1
 
   dev:
+    "@types/debug": ^0.0.0
     "@types/picomatch": ^4.0.2
     "@types/node": ^22.16.5
     "@types/yargs-parser": ^21.0.3
@@ -74,6 +76,7 @@ catalogs:
   types:
     "@types/react": ^19.1.9
     "@types/react-dom": ^19.1.7
+    "@types/debug": ^4.1.12
 
   web:
     react: ^19.1.1
