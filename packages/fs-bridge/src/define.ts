@@ -5,14 +5,13 @@ import type {
   FileSystemBridgeObject,
   FileSystemBridgeOperations,
 } from "./types";
-import { PathUtilsBaseError } from "@ucdjs/path-utils";
+import { PathUtilsBaseError, resolveSafePath } from "@ucdjs/path-utils";
 import { z } from "zod";
 import {
   BridgeBaseError,
   BridgeGenericError,
   BridgeUnsupportedOperation,
 } from "./errors";
-import { resolveSafePath } from "./utils";
 
 export function defineFileSystemBridge<
   TOptionsSchema extends z.ZodType,
