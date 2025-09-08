@@ -1,3 +1,7 @@
+import { createDebugger } from "./debugger";
+
+const debug = createDebugger("ucdjs:shared:json");
+
 /**
  * Safely parses a JSON string into an object of type T.
  * Returns null if the parsing fails.
@@ -10,7 +14,7 @@ export function safeJsonParse<T>(content: string): T | null {
   try {
     return JSON.parse(content) as T;
   } catch (err) {
-    console.error("[safeJsonParse] Failed to parse JSON:", err);
+    debug?.("Failed to parse JSON", { content, error: err instanceof Error ? err.message : String(err) });
     return null;
   }
 }
