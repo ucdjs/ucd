@@ -21,10 +21,7 @@ const aliases = readdirSync(fileURLToPath(new URL("./packages", import.meta.url)
     "#internal/test-utils": `${root}tooling/test-utils/src/index.ts`,
   });
 
-const hiddenLogs = [
-  "[ucd-store]",
-  "[ucd-files]",
-]
+const hiddenLogs = [];
 
 const packageProjects = readdirSync(fileURLToPath(new URL("./packages", import.meta.url)))
   .filter((dir) => existsSync(pkgRoot(dir) + "/package.json"))
