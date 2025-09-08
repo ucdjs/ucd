@@ -102,6 +102,8 @@ describe("get file", () => {
       }),
     });
 
+    console.error("STORE PATH:", storePath);
+
     const store = await createNodeUCDStore({
       basePath: storePath,
     });
