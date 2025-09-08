@@ -1,4 +1,5 @@
 import { prependLeadingSlash, trimTrailingSlash } from "@luxass/utils";
+import { createDebugger } from "@ucdjs/shared";
 import pathe from "pathe";
 import {
   WINDOWS_DRIVE_LETTER_EVERYWHERE_RE,
@@ -7,6 +8,8 @@ import {
   WINDOWS_UNC_ROOT_RE,
 } from "./constants";
 import { UNCPathNotSupportedError } from "./errors";
+
+const debug = createDebugger("ucdjs:path-utils:platform");
 
 /**
  * Extracts the Windows drive letter from a given string, if present.
@@ -64,6 +67,7 @@ export function isUNCPath(path: string): boolean {
  */
 export function assertNotUNCPath(path: string): void {
   if (isUNCPath(path)) {
+    debug?.("UNC path detected and rejected", { path });
     throw new UNCPathNotSupportedError(path);
   }
 }
