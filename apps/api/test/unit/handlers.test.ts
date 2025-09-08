@@ -38,11 +38,10 @@ describe("error handler", () => {
   });
 
   it("should log errors to console", async () => {
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+    using consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
     await errorApp.request("/error/1");
-    expect(consoleErrorSpy).toHaveBeenCalledWith("[api]: Error processing request:", "/error/1");
-    expect(consoleErrorSpy).toHaveBeenCalledWith("[api]: Error details:", expect.any(Error));
-    consoleErrorSpy.mockRestore();
+    expect(consoleSpy).toHaveBeenCalledWith("[api]: Error processing request:", "/error/1");
+    expect(consoleSpy).toHaveBeenCalledWith("[api]: Error details:", expect.any(Error));
   });
 });
 
