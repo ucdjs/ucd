@@ -22,7 +22,6 @@ const aliases = readdirSync(fileURLToPath(new URL("./packages", import.meta.url)
   });
 
 const hiddenLogs = [
-  "[safeJsonParse]",
   "[ucd-store]",
   "[ucd-files]",
   "[api]"
