@@ -18,6 +18,7 @@
   "bugs": {
     "url": "https://github.com/ucdjs/ucd/issues"
   },
+  "sideEffects": false,
   "exports": {
     ".": "./dist/index.js",
     "./package.json": "./package.json"
@@ -39,6 +40,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@luxass/utils": "catalog:prod",
     "pathe": "catalog:prod"
   },
   "devDependencies": {

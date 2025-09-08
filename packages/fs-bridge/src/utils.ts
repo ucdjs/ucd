@@ -58,7 +58,7 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
   const resolvedPath = pathe.resolve(resolvedBasePath, cleanPath);
 
   // check if resolved path is within the base directory
-  if (!isWithinBase(resolvedPath, resolvedBasePath)) {
+  if (!isWithinBase(resolvedBasePath, resolvedPath)) {
     throw new BridgePathTraversal(inputPath);
   }
 
@@ -69,8 +69,8 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
  * Checks if a resolved path is within the specified base directory.
  * This function is used for security validation to prevent path traversal attacks.
  *
- * @param {string} resolvedPath - The fully resolved absolute path to validate
  * @param {string} basePath - The base directory path that should contain the resolved path
+ * @param {string} resolvedPath - The fully resolved absolute path to validate
  * @returns {boolean} `true` if the resolved path is within the base directory, `false` otherwise
  *
  * @remarks
@@ -78,7 +78,7 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
  * - For non-root base paths, the resolved path must either equal the base path
  *   or start with the base path followed by a path separator
  */
-export function isWithinBase(resolvedPath: string, basePath: string): boolean {
+export function isWithinBase(basePath: string, resolvedPath: string): boolean {
   // handle root base path case
   if (basePath === "/") {
     return resolvedPath === "/" || resolvedPath.startsWith("/");
