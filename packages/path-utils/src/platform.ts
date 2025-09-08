@@ -45,7 +45,7 @@ export function stripDriveLetter(path: string): string {
   assertNotUNCPath(path);
 
   // remove the Windows drive letter (e.g., "C:") from the start of the path
-  return path.replace(WINDOWS_DRIVE_RE, "");
+  return path.replace(WINDOWS_DRIVE_LETTER_START_RE, "");
 }
 
 /**
@@ -87,7 +87,7 @@ export function toUnixFormat(inputPath: string): string {
 
   let normalized = pathe.normalize(inputPath.trim());
 
-  // strip driver letters from the normalized string
+  // strip drive letters from the normalized string
   normalized = normalized.replace(WINDOWS_DRIVE_LETTER_EVERYWHERE_RE, "");
   normalized = prependLeadingSlash(normalized);
 
