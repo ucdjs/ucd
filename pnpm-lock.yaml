@@ -96,6 +96,9 @@ catalogs:
     apache-autoindex-parse:
       specifier: ^3.0.3
       version: 3.0.3
+    debug:
+      specifier: ^4.4.1
+      version: 4.4.1
     defu:
       specifier: ^6.1.4
       version: 6.1.4
@@ -140,6 +143,9 @@ catalogs:
       specifier: ^4.2.0
       version: 4.2.0
   types:
+    '@types/debug':
+      specifier: ^4.1.12
+      version: 4.1.12
     '@types/react':
       specifier: ^19.1.9
       version: 19.1.9
@@ -254,6 +260,9 @@ importers:
       '@ucdjs/schemas':
         specifier: workspace:*
         version: link:../../packages/schemas
+      '@ucdjs/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       '@ucdjs/utils':
         specifier: workspace:*
         version: link:../../packages/utils
@@ -459,6 +468,9 @@ importers:
       '@ucdjs/env':
         specifier: workspace:*
         version: link:../env
+      '@ucdjs/shared':
+        specifier: workspace:*
+        version: link:../shared
       openapi-fetch:
         specifier: catalog:prod
         version: 0.14.0(patch_hash=6b65c61dccaf4351409f767132092e087e01965b7cdada31678895eb02e6f945)
@@ -514,6 +526,9 @@ importers:
       '@ucdjs/schemas':
         specifier: workspace:*
         version: link:../schemas
+      '@ucdjs/shared':
+        specifier: workspace:*
+        version: link:../shared
       defu:
         specifier: catalog:prod
         version: 6.1.4
@@ -527,9 +542,6 @@ importers:
       '@luxass/eslint-config':
         specifier: catalog:linting
         version: 5.3.0(@eslint-react/eslint-plugin@1.52.3(eslint@9.33.0(jiti@2.4.2))(ts-api-utils@2.1.0(typescript@5.9.2))(typescript@5.9.2))(@vue/compiler-sfc@3.5.13)(eslint-plugin-format@1.0.1(eslint@9.33.0(jiti@2.4.2)))(eslint-plugin-react-hooks@5.2.0(eslint@9.33.0(jiti@2.4.2)))(eslint-plugin-react-refresh@0.4.20(eslint@9.33.0(jiti@2.4.2)))(eslint@9.33.0(jiti@2.4.2))(typescript@5.9.2)(vitest@3.2.4)
-      '@ucdjs/shared':
-        specifier: workspace:*
-        version: link:../shared
       '@ucdjs/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/tsconfig
@@ -560,6 +572,9 @@ importers:
       '@luxass/utils':
         specifier: catalog:prod
         version: 2.7.0
+      '@ucdjs/shared':
+        specifier: workspace:*
+        version: link:../shared
       pathe:
         specifier: catalog:prod
         version: 2.0.3
@@ -680,9 +695,9 @@ importers:
       '@ucdjs/env':
         specifier: workspace:*
         version: link:../env
-      '@ucdjs/fetch':
-        specifier: workspace:*
-        version: link:../fetch
+      debug:
+        specifier: catalog:prod
+        version: 4.4.1(supports-color@10.0.0)
       defu:
         specifier: catalog:prod
         version: 6.1.4
@@ -696,6 +711,9 @@ importers:
       '@luxass/eslint-config':
         specifier: catalog:linting
         version: 5.3.0(@eslint-react/eslint-plugin@1.52.3(eslint@9.33.0(jiti@2.4.2))(ts-api-utils@2.1.0(typescript@5.9.2))(typescript@5.9.2))(@vue/compiler-sfc@3.5.13)(eslint-plugin-format@1.0.1(eslint@9.33.0(jiti@2.4.2)))(eslint-plugin-react-hooks@5.2.0(eslint@9.33.0(jiti@2.4.2)))(eslint-plugin-react-refresh@0.4.20(eslint@9.33.0(jiti@2.4.2)))(eslint@9.33.0(jiti@2.4.2))(typescript@5.9.2)(vitest@3.2.4)
+      '@types/debug':
+        specifier: catalog:types
+        version: 4.1.12
       '@types/picomatch':
         specifier: catalog:dev
         version: 4.0.2
