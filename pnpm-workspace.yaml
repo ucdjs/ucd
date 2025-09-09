@@ -54,7 +54,6 @@ catalogs:
     debug: ^4.4.1
 
   dev:
-    "@types/debug": ^0.0.0
     "@types/picomatch": ^4.0.2
     "@types/node": ^22.16.5
     "@types/yargs-parser": ^21.0.3
