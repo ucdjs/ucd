@@ -66,7 +66,6 @@ describe("flattenFilePaths", () => {
   });
 
   it("should handle deeply nested structures", () => {
-    ;
     const result = flattenFilePaths([
       {
         type: "directory",
