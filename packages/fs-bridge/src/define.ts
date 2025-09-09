@@ -6,6 +6,7 @@ import type {
   FileSystemBridgeOperations,
 } from "./types";
 import { PathUtilsBaseError, resolveSafePath } from "@ucdjs/path-utils";
+import { createDebugger } from "@ucdjs/shared";
 import { z } from "zod";
 import {
   BridgeBaseError,
@@ -13,6 +14,8 @@ import {
   BridgeSetupError,
   BridgeUnsupportedOperation,
 } from "./errors";
+
+const debug = createDebugger("ucdjs:fs-bridge:define");
 
 export function defineFileSystemBridge<
   TOptionsSchema extends z.ZodType,
@@ -24,6 +27,7 @@ export function defineFileSystemBridge<
     const parsedOptions = (fsBridge.optionsSchema ?? z.never().optional()).safeParse(args[0]);
 
     if (!parsedOptions.success) {
+      debug?.("Invalid options provided to file system bridge", { error: parsedOptions.error.message });
       throw new Error(
         `Invalid options provided to file system bridge: ${parsedOptions.error.message}`,
       );
@@ -41,6 +45,7 @@ export function defineFileSystemBridge<
         resolveSafePath,
       });
     } catch (err) {
+      debug?.("Failed to setup file system bridge", { error: err instanceof Error ? err.message : String(err) });
       throw new BridgeSetupError(
         "Failed to setup file system bridge",
         err instanceof Error ? err : undefined,
@@ -57,6 +62,7 @@ export function defineFileSystemBridge<
         if (typeof property === "string" && property in capabilities) {
           if (val == null || typeof val !== "function") {
             return () => {
+              debug?.("Attempted to call unsupported operation", { operation: property });
               throw new BridgeUnsupportedOperation(property as FileSystemBridgeCapabilityKey);
             };
           }
@@ -123,6 +129,10 @@ function handleError(operation: PropertyKey, err: unknown): never {
   }
 
   // wrap unexpected errors in BridgeGenericError
+  debug?.("Unexpected error in bridge operation", {
+    operation: String(operation),
+    error: err instanceof Error ? err.message : String(err),
+  });
   throw new BridgeGenericError(
     `Unexpected error in '${String(operation)}' operation: ${err instanceof Error ? err.message : String(err)}`,
     err instanceof Error ? err : undefined,

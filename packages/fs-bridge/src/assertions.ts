@@ -1,5 +1,8 @@
 import type { FileSystemBridge, FileSystemBridgeCapabilityKey } from "./types";
+import { createDebugger } from "@ucdjs/shared";
 import { BridgeUnsupportedOperation } from "./errors";
+
+const debug = createDebugger("ucdjs:fs-bridge:assertions");
 
 /**
  * Asserts that a file system bridge supports the specified capability or capabilities.
@@ -22,6 +25,7 @@ export function assertCapability<T extends FileSystemBridgeCapabilityKey = never
 
   for (const capability of capabilitiesToCheck) {
     if (!bridge.capabilities[capability]) {
+      debug?.("Bridge capability check failed", { capability, availableCapabilities: Object.keys(bridge.capabilities).filter((k) => bridge.capabilities[k as FileSystemBridgeCapabilityKey]) });
       throw new BridgeUnsupportedOperation(capability);
     }
   }

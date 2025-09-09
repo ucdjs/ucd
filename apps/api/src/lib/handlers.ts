@@ -1,11 +1,12 @@
 import type { ErrorHandler, NotFoundHandler } from "hono";
+import { createDebugger } from "@ucdjs/shared";
 import { HTTPException } from "hono/http-exception";
 import { customError, internalServerError, notFound } from "./errors";
 
-export const errorHandler: ErrorHandler<any> = async (err, c) => {
-  console.error("[api]: Error processing request:", c.req.path);
+const debug = createDebugger("ucdjs:api");
 
-  console.error("[api]: Error details:", err);
+export const errorHandler: ErrorHandler<any> = async (err, c) => {
+  debug?.("Error processing request", { path: c.req.path, error: err });
   if (err instanceof HTTPException) {
     return customError({
       status: err.status,
@@ -17,6 +18,6 @@ export const errorHandler: ErrorHandler<any> = async (err, c) => {
 };
 
 export const notFoundHandler: NotFoundHandler<any> = (c) => {
-  console.error("[api]: Not Found:", c.req.path);
+  debug?.("Not Found", { path: c.req.path });
   return notFound();
 };
