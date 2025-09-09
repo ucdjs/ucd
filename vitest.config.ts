@@ -21,12 +21,7 @@ const aliases = readdirSync(fileURLToPath(new URL("./packages", import.meta.url)
     "#internal/test-utils": `${root}tooling/test-utils/src/index.ts`,
   });
 
-const hiddenLogs = [
-  "[safeJsonParse]",
-  "[ucd-store]",
-  "[ucd-files]",
-  "[api]"
-]
+const hiddenLogs = [];
 
 const packageProjects = readdirSync(fileURLToPath(new URL("./packages", import.meta.url)))
   .filter((dir) => existsSync(pkgRoot(dir) + "/package.json"))
@@ -49,7 +44,7 @@ const workerUnitProjects = readdirSync(fileURLToPath(new URL("./apps", import.me
         name: `${dir}:unit`,
       },
     } satisfies TestProjectConfiguration;
-  })
+  });
 
 export default defineConfig({
   test: {

@@ -1,4 +1,5 @@
 import { prependLeadingSlash } from "@luxass/utils";
+import { createDebugger } from "@ucdjs/shared";
 import pathe from "pathe";
 import {
   CONTROL_CHARACTER_RE,
@@ -15,6 +16,8 @@ import {
 } from "./errors";
 import { assertNotUNCPath, getWindowsDriveLetter, isWindowsDrivePath, toUnixFormat } from "./platform";
 import { isCaseSensitive, osPlatform } from "./utils";
+
+const debug = createDebugger("ucdjs:path-utils:security");
 
 /**
  * Checks if the resolved path is within the specified base path, considering case sensitivity.
@@ -90,6 +93,7 @@ export function decodePathSafely(encodedPath: string): string {
   } while (decodedPath !== previousPath && iterations < MAX_DECODING_ITERATIONS);
 
   if (iterations >= MAX_DECODING_ITERATIONS) {
+    debug?.("Maximum decoding iterations exceeded", { iterations, originalPath: encodedPath, finalPath: decodedPath });
     throw new MaximumDecodingIterationsExceededError();
   }
 
@@ -117,6 +121,7 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
   try {
     decodedPath = decodePathSafely(inputPath);
   } catch {
+    debug?.("Failed to decode input path", { inputPath });
     throw new FailedToDecodePathError();
   }
 
@@ -136,6 +141,7 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
   const illegalMatch = decodedPath.match(CONTROL_CHARACTER_RE);
   if (decodedPath.includes("\0") || illegalMatch != null) {
     const illegalChar = decodedPath.includes("\0") ? "\0" : (illegalMatch?.[0] ?? "[unknown]");
+    debug?.("Illegal character detected in path", { decodedPath, illegalChar });
     throw new IllegalCharacterInPathError(illegalChar);
   }
 
@@ -189,9 +195,8 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
     resolvedPath = internal_handleRelativePath(unixPath, normalizedBasePath);
   }
 
-  // final boundary validation
   if (!isWithinBase(normalizedBasePath, resolvedPath)) {
-    console.error("[resolveSafePath] Path traversal detected:", {
+    debug?.("Path traversal detected", {
       basePath: normalizedBasePath,
       accessedPath: resolvedPath,
     });
@@ -224,6 +229,7 @@ export function internal_resolveWindowsPath(basePath: string, decodedPath: strin
 
     // If either the drive letters is null, or they are not equal, throw a drive mismatch error
     if (baseDriveLetter != null && inputDriveLetter != null && baseDriveLetter !== inputDriveLetter) {
+      debug?.("Drive letter mismatch detected", { baseDriveLetter, inputDriveLetter });
       throw new WindowsDriveMismatchError(baseDriveLetter, inputDriveLetter);
     }
 
@@ -232,7 +238,7 @@ export function internal_resolveWindowsPath(basePath: string, decodedPath: strin
 
     // If the decoded path is outside the base path, then we throw an error.
     if (!isWithinBase(normalizedBasePath, normalizedDecodedPath)) {
-      console.error("[resolveSafePath#windows] Path traversal detected:", {
+      debug?.("Windows path traversal detected", {
         basePath: normalizedBasePath,
         accessedPath: normalizedDecodedPath,
       });
