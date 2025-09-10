@@ -72,7 +72,9 @@ describe("file paths", () => {
     });
 
     await store.init();
-    const [filePaths, filePathsError] = await store.getFilePaths("15.0.0", ["!**/nested/**"]);
+    const [filePaths, filePathsError] = await store.getFilePaths("15.0.0", {
+      exclude: ["**/nested/**"],
+    });
     assert(filePathsError === null, "Expected getFilePaths to succeed");
     expect(filePaths).toEqual([
       "ArabicShaping.txt",
