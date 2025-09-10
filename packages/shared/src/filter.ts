@@ -1,5 +1,5 @@
 import type { PicomatchOptions } from "picomatch";
-import { isMatch } from "picomatch";
+import picomatch from "picomatch";
 
 /**
  * Predefined filter patterns for common file exclusions.
@@ -138,7 +138,7 @@ function internal__createFilterFunction(config: PathFilterOptions): PathFilterFn
   return (path: string): boolean => {
     const normalizedPath = path.startsWith("./") ? path.slice(2) : path;
 
-    return isMatch(normalizedPath, includePatterns, {
+    return picomatch.isMatch(normalizedPath, includePatterns, {
       dot: true,
       nocase: true,
       ignore: excludePatterns,
@@ -148,16 +148,16 @@ function internal__createFilterFunction(config: PathFilterOptions): PathFilterFn
 
 function expandDirectoryPatterns(patterns: string[]): string[] {
   const expanded: string[] = [];
-  
+
   for (const pattern of patterns) {
     expanded.push(pattern);
-    
+
     // If pattern looks like a directory-only pattern, add the contents pattern too
     if (isDirectoryOnlyPattern(pattern)) {
       expanded.push(`${pattern}/**`);
     }
   }
-  
+
   return expanded;
 }
 
@@ -166,14 +166,14 @@ function isDirectoryOnlyPattern(pattern: string): boolean {
   // 1. Doesn't end with /** or /*
   // 2. Doesn't contain a file extension
   // 3. Doesn't end with a trailing slash
-  return !pattern.endsWith('/**') && 
-         !pattern.endsWith('/*') && 
-         !pattern.endsWith('/') &&
-         !pattern.includes('.') &&
-         // Avoid expanding patterns that are clearly file patterns
-         !pattern.includes('*.') &&
-         // Only expand if it looks like a directory path
-         (pattern.includes('/') || !pattern.includes('*'));
+  return !pattern.endsWith("/**")
+    && !pattern.endsWith("/*")
+    && !pattern.endsWith("/")
+    && !pattern.includes(".")
+  // Avoid expanding patterns that are clearly file patterns
+    && !pattern.includes("*.")
+  // Only expand if it looks like a directory path
+    && (pattern.includes("/") || !pattern.includes("*"));
 }
 
 // TODO: Combine all "tree" related entries
