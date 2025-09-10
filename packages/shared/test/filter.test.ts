@@ -1038,13 +1038,13 @@ describe("filterTreeStructure", () => {
     it("should handle directory pattern matching file without extension", () => {
       const treeWithFileNoExt: TreeEntry[] = [
         {
-          type: "file", 
+          type: "file",
           name: "entry",
           path: "entry",
         },
         {
           type: "file",
-          name: "entry.txt", 
+          name: "entry.txt",
           path: "entry.txt",
         },
         {
@@ -1077,7 +1077,7 @@ describe("filterTreeStructure", () => {
       const result = filterTreeStructure(filter, treeWithFileNoExt);
 
       // The pattern "**/entry" should exclude:
-      // - The file named "entry" (no extension)  
+      // - The file named "entry" (no extension)
       // - The nested file "other/entry"
       // But should NOT exclude:
       // - "entry.txt" (has extension)
@@ -1089,13 +1089,13 @@ describe("filterTreeStructure", () => {
           path: "entry.txt",
         },
         {
-          type: "directory", 
+          type: "directory",
           name: "entryDir",
           path: "entryDir",
           children: [
             {
               type: "file",
-              name: "content.txt", 
+              name: "content.txt",
               path: "content.txt",
             },
           ],
@@ -1103,7 +1103,7 @@ describe("filterTreeStructure", () => {
         {
           type: "directory",
           name: "other",
-          path: "other", 
+          path: "other",
           children: [],
         },
       ]);
