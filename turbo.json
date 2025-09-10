@@ -12,7 +12,10 @@
       "dependsOn": ["^topo"]
     },
     "build": {
-      "dependsOn": ["^build"],
+      "dependsOn": [
+        "@ucdjs/api-worker#build:openapi",
+        "^build"
+      ],
       "outputs": [
         "dist/**"
       ]
