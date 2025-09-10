@@ -11,6 +11,7 @@
       // for `cloudflare:test` types
       "@cloudflare/vitest-pool-workers"
     ],
+    "allowImportingTsExtensions": true,
     "strict": true,
     "noEmit": true,
     "allowSyntheticDefaultImports": true,
