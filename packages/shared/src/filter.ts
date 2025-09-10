@@ -133,7 +133,7 @@ function internal__createFilterFunction(config: PathFilterOptions): PathFilterFn
   const excludePatterns = expandDirectoryPatterns(rawExcludePatterns);
 
   return (path: string): boolean => {
-    const normalizedPath = path.startsWith("./") ? path.slice(2) : path;
+    const normalizedPath = path.replace(/\\/g, "/").replace(/^\.\//, "");
 
     return picomatch.isMatch(normalizedPath, includePatterns, {
       dot: true,
