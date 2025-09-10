@@ -449,6 +449,12 @@ describe("file tree", () => {
     expect(fileTree).toEqual([
       {
         children: [],
+        name: "dirWithFilteredContent",
+        path: "dirWithFilteredContent",
+        type: "directory",
+      },
+      {
+        children: [],
         name: "emptyDir",
         path: "emptyDir",
         type: "directory",
