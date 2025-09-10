@@ -25,8 +25,6 @@ export const PRECONFIGURED_FILTERS = {
   README_FILES: ["**/ReadMe.txt"],
   /** Excludes all HTML files */
   HTML_FILES: ["**/*.html"],
-  /** Excludes test-related files */
-  TEST_RELATED: ["**/*.test.*", "**/*.spec.*", "**/__tests__/**"],
 } as const;
 
 type PathFilterFn = (path: string, extraOptions?: Pick<PathFilterOptions, "include" | "exclude">) => boolean;
@@ -75,10 +73,9 @@ export interface PathFilterOptions {
  *
  * // Using preconfigured filters
  * const withPresets = createPathFilter({
- *   include: ['src/**\/*.ts'],
+ *   include: ['src/**\/*.txt'],
  *   exclude: [
- *     ...PRECONFIGURED_FILTERS.TEST_RELATED,
- *     ...PRECONFIGURED_FILTERS.BUILD_DIRS
+ *     ...PRECONFIGURED_FILTERS.TEST_FILES,
  *   ]
  * });
  * ```
