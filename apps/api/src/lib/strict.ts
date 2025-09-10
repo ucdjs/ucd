@@ -1,7 +1,7 @@
 import type { Context } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 import type { z, ZodType } from "zod";
-import { customError } from "./errors.ts";
+import { customError } from "./errors";
 
 export function strictJSONResponse<
   C extends Context,

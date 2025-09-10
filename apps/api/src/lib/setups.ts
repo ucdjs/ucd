@@ -1,6 +1,6 @@
 import type { Env, Hono } from "hono";
-import type { HonoEnv } from "../types.ts";
-import { customError } from "./errors.ts";
+import type { HonoEnv } from "../types";
+import { customError } from "./errors";
 
 /**
  * Sets up Cross-Origin Resource Sharing (CORS) middleware for a Hono application.

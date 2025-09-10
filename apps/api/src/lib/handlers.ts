@@ -1,7 +1,7 @@
 import type { ErrorHandler, NotFoundHandler } from "hono";
 import { createDebugger } from "@ucdjs/shared";
 import { HTTPException } from "hono/http-exception";
-import { customError, internalServerError, notFound } from "./errors.ts";
+import { customError, internalServerError, notFound } from "./errors";
 
 const debug = createDebugger("ucdjs:api");
 

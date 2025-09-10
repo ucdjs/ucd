@@ -1,5 +1,5 @@
-import type { HonoEnv } from "../../types.ts";
-import type { UnicodeVersion } from "./schemas.ts";
+import type { HonoEnv } from "../../types";
+import type { UnicodeVersion } from "./schemas";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import {
   getCurrentDraftVersion,
@@ -9,9 +9,9 @@ import {
   UNICODE_VERSION_METADATA,
 } from "@luxass/unicode-utils-new";
 import { traverse } from "apache-autoindex-parse/traverse";
-import { badRequest, internalServerError, notFound } from "../../lib/index.ts";
-import { createLogger } from "../../lib/logger.ts";
-import { GET_VERSION_FILE_TREE_ROUTE, LIST_ALL_UNICODE_VERSIONS_ROUTE } from "./openapi.ts";
+import { badRequest, internalServerError, notFound } from "../../lib";
+import { createLogger } from "../../lib/logger";
+import { GET_VERSION_FILE_TREE_ROUTE, LIST_ALL_UNICODE_VERSIONS_ROUTE } from "./openapi";
 
 export const V1_VERSIONS_ROUTER = new OpenAPIHono<HonoEnv>().basePath("/api/v1/versions");
 
