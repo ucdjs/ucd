@@ -1,4 +1,5 @@
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
+import type { PathFilterOptions } from "@ucdjs/shared";
 
 export interface UCDStoreOptions {
   /**
@@ -12,7 +13,7 @@ export interface UCDStoreOptions {
    * Optional filters to apply when fetching Unicode data.
    * These can be used to limit the data fetched from the API.
    */
-  globalFilters?: string[];
+  globalFilters?: PathFilterOptions;
 
   /**
    * File System Bridge to use for file operations.

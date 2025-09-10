@@ -7,7 +7,8 @@ import { createHTTPUCDStore, createNodeUCDStore } from "@ucdjs/ucd-store";
 export interface CLIStoreCmdSharedFlags {
   storeDir?: string;
   remote?: boolean;
-  patterns?: string[];
+  include?: string[];
+  exclude?: string[];
   baseUrl?: string;
   versions?: string[];
 }
@@ -15,7 +16,8 @@ export interface CLIStoreCmdSharedFlags {
 export const SHARED_FLAGS = [
   ["--remote", "Use a Remote UCD Store."],
   ["--store-dir", "Directory where the UCD files are stored."],
-  ["--patterns", "Patterns to filter files in the store."],
+  ["--include", "Patterns to include files in the store."],
+  ["--exclude", "Patterns to exclude files from the store."],
   ["--base-url", "Base URL for the UCD Store."],
 ] as [string, string][];
 
@@ -33,12 +35,15 @@ export function assertRemoteOrStoreDir(flags: CLIStoreCmdSharedFlags): asserts f
  * @throws {Error} When store directory is not specified for local stores
  */
 export async function createStoreFromFlags(flags: CLIStoreCmdSharedFlags): Promise<UCDStore> {
-  const { storeDir, remote, baseUrl, patterns } = flags;
+  const { storeDir, remote, baseUrl, include, exclude } = flags;
 
   if (remote) {
     return createHTTPUCDStore({
       baseUrl,
-      globalFilters: patterns,
+      globalFilters: {
+        include,
+        exclude,
+      },
     });
   }
 
@@ -49,7 +54,10 @@ export async function createStoreFromFlags(flags: CLIStoreCmdSharedFlags): Promi
   return createNodeUCDStore({
     basePath: storeDir,
     baseUrl,
-    globalFilters: patterns,
+    globalFilters: {
+      include,
+      exclude,
+    },
     versions: flags.versions || [],
   });
 }

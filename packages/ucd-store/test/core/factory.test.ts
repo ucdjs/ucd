@@ -41,11 +41,12 @@ describe("factory functions", () => {
     });
 
     it("should create store with global filters", () => {
-      const filters = ["*.txt", "!*test*"];
-
       const store = createUCDStore({
         basePath: "/test",
-        globalFilters: filters,
+        globalFilters: {
+          exclude: ["*test*"],
+          include: ["*.txt"],
+        },
         fs: createReadOnlyMockFS(),
       });
 
@@ -113,12 +114,14 @@ describe("factory functions", () => {
     });
 
     it("should create Node.js store with global filters", async () => {
-      const filters = ["*.txt", "!*backup*"];
       const storeDir = await testdir();
 
       const store = await createNodeUCDStore({
         basePath: storeDir,
-        globalFilters: filters,
+        globalFilters: {
+          include: ["*.txt"],
+          exclude: ["*backup*"],
+        },
       });
 
       expect(store.filter).toBeDefined();
@@ -194,15 +197,19 @@ describe("factory functions", () => {
     });
 
     it("should create HTTP store with global filters", async () => {
-      const filters = ["*.txt", "!*debug*"];
-
       const store = await createHTTPUCDStore({
-        globalFilters: filters,
+        globalFilters: {
+          include: ["*.txt"],
+          exclude: ["*debug*"],
+        },
       });
 
       expect(store.filter).toBeDefined();
       expect(store.basePath).toBe("");
-      expect(store.filter.patterns()).toEqual(expect.arrayContaining(filters));
+      expect(store.filter.patterns()).toEqual(expect.objectContaining({
+        include: ["*.txt"],
+        exclude: ["*debug*"],
+      }));
       expect(store.initialized).toBe(false);
     });
 
