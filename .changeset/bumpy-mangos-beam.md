@@ -10,7 +10,7 @@ Added a new utility function for filtering tree structures using PathFilter:
 export function filterTreeStructure(
   pathFilter: PathFilter, 
   entries: TreeEntry[], 
-  parentPath?: string
+  extraOptions?: Pick<PathFilterOptions, "include" | "exclude">
 ): TreeEntry[]
 ```
 
