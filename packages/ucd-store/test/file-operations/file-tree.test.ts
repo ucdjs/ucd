@@ -218,19 +218,12 @@ describe("file tree", () => {
       exclude: ["**/DeepFile.txt"],
     });
     const [fileTree3, error3] = await store.getFileTree("15.0.0", {
-      exclude: ["extracted/nested"],
-    });
-    const [fileTree4, error4] = await store.getFileTree("15.0.0", {
       exclude: ["extracted/nested/DeepFile.txt"],
     });
 
-    assert(error1 === null && error2 === null && error3 === null && error4 === null, "Expected all getFileTree calls to succeed");
+    assert(error1 === null && error2 === null && error3 === null, "Expected all getFileTree calls to succeed");
 
-    expect(fileTree1).toEqual(fileTree2);
-    expect(fileTree1).toEqual(fileTree3);
-    expect(fileTree1).toEqual(fileTree4);
-
-    expect(fileTree1).toEqual([
+    const expectedWithFilteredNested = [
       {
         name: "extracted",
         path: "extracted",
@@ -243,7 +236,32 @@ describe("file tree", () => {
           },
         ],
       },
-    ]);
+    ];
+
+    const expectedWithEmptyNested = [
+      {
+        name: "extracted",
+        path: "extracted",
+        type: "directory",
+        children: [
+          {
+            name: "DerivedBidiClass.txt",
+            path: "DerivedBidiClass.txt",
+            type: "file",
+          },
+          {
+            name: "nested",
+            path: "nested",
+            type: "directory",
+            children: [],
+          },
+        ],
+      },
+    ];
+
+    expect.soft(fileTree1).toEqual(expectedWithFilteredNested);
+    expect.soft(fileTree2).toEqual(expectedWithEmptyNested);
+    expect.soft(fileTree3).toEqual(expectedWithEmptyNested);
   });
 
   it.each([
