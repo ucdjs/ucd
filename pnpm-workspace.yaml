@@ -1,93 +1,84 @@
-preferWorkspacePackages: true
-saveWorkspaceProtocol: false
-linkWorkspacePackages: true
-engineStrict: true
-
 packages:
-  - "packages/*"
-  - "apps/*"
-  - "tooling/*"
+  - packages/*
+  - apps/*
+  - tooling/*
 
 catalogs:
-  monorepo:
-    "@changesets/changelog-github": ^0.5.1
-    "@changesets/cli": ^2.29.5
-    turbo: ^2.5.5
-
-  testing:
-    "@vitest/coverage-istanbul": ^3.2.4
-    "@vitest/ui": ^3.2.4
-    vitest: ^3.2.4
-    vitest-testdirs: ^4.2.0
-    msw: ^2.10.4
-    "@cloudflare/vitest-pool-workers": ^0.8.61
-
-  linting:
-    "@luxass/eslint-config": ^5.3.0
-    "@stoplight/spectral-cli": ^6.15.0
-    eslint: ^9.33.0
-    eslint-plugin-format: ^1.0.1
-    "@luxass/spectral-ruleset": ^1.1.0
-    "@typescript-eslint/utils": ^8.39.0
-    "@eslint-react/eslint-plugin": ^1.52.3
-    eslint-plugin-react-hooks: ^5.2.0
-    eslint-plugin-react-refresh: ^0.4.20
-
-  prod:
-    # merge these together when heading inference is implemented better
-    "@luxass/unicode-utils": ^0.11.0
-    "@luxass/unicode-utils-new": npm:@luxass/unicode-utils@0.12.0-beta.11
-    "@luxass/utils": ^2.7.0
-    farver: ^0.4.2
-    yargs-parser: ^22.0.0
-    defu: ^6.1.4
-    arktype: ^2.1.20
-    zod: ^4.1.5
-    "@ai-sdk/openai": ^2.0.7
-    ai: ^5.0.8
-    knitwork: ^1.2.0
-    picomatch: ^4.0.3
-    apache-autoindex-parse: ^3.0.3
-    openapi-fetch: ^0.14.0
-    pathe: ^2.0.3
-    "@clack/prompts": ^1.0.0-alpha.1
-    debug: ^4.4.1
-
   dev:
-    "@types/picomatch": ^4.0.2
-    "@types/node": ^22.16.5
-    "@types/yargs-parser": ^21.0.3
-    tsdown: ^0.13.4
-    typescript: 5.9.2
-    publint: ^0.3.12
+    '@types/node': ^22.16.5
+    '@types/picomatch': ^4.0.2
+    '@types/yargs-parser': ^21.0.3
+    memfs: ^4.36.0
     nanotar: ^0.2.0
     openapi-typescript: ^7.8.0
+    publint: ^0.3.12
+    tsdown: ^0.13.4
     tsx: ^4.20.3
-    memfs: ^4.36.0
-
-  workers:
-    wrangler: ^4.28.1
-    "@hono/zod-openapi": ^1.1.0
-    "@scalar/hono-api-reference": ^0.9.13
-    hono: ^4.9.0
-    "@cloudflare/workers-types": ^4.20250809.0
-
+    typescript: 5.9.2
+  linting:
+    '@eslint-react/eslint-plugin': ^1.52.3
+    '@luxass/eslint-config': ^5.3.0
+    '@luxass/spectral-ruleset': ^1.1.0
+    '@stoplight/spectral-cli': ^6.15.0
+    '@typescript-eslint/utils': ^8.39.0
+    eslint: ^9.33.0
+    eslint-plugin-format: ^1.0.1
+    eslint-plugin-react-hooks: ^5.2.0
+    eslint-plugin-react-refresh: ^0.4.20
+  monorepo:
+    '@changesets/changelog-github': ^0.5.1
+    '@changesets/cli': ^2.29.5
+    turbo: ^2.5.5
+  prod:
+    '@ai-sdk/openai': ^2.0.7
+    '@clack/prompts': ^1.0.0-alpha.1
+    '@luxass/unicode-utils': ^0.11.0
+    '@luxass/unicode-utils-new': npm:@luxass/unicode-utils@0.12.0-beta.11
+    '@luxass/utils': ^2.7.0
+    ai: ^5.0.8
+    apache-autoindex-parse: ^3.0.3
+    arktype: ^2.1.20
+    debug: ^4.4.1
+    defu: ^6.1.4
+    farver: ^0.4.2
+    knitwork: ^1.2.0
+    openapi-fetch: ^0.14.0
+    pathe: ^2.0.3
+    picomatch: ^4.0.3
+    yargs-parser: ^22.0.0
+    zod: ^4.1.5
+  testing:
+    '@cloudflare/vitest-pool-workers': ^0.8.61
+    '@vitest/coverage-istanbul': ^3.2.4
+    '@vitest/ui': ^3.2.4
+    msw: ^2.10.4
+    vitest: ^3.2.4
+    vitest-testdirs: ^4.2.0
   types:
-    "@types/react": ^19.1.9
-    "@types/react-dom": ^19.1.7
-    "@types/debug": ^4.1.12
-
+    '@types/debug': ^4.1.12
+    '@types/react': ^19.1.9
+    '@types/react-dom': ^19.1.7
   web:
+    '@cloudflare/vite-plugin': ^1.11.2
+    '@tailwindcss/vite': ^4.1.11
+    '@tanstack/react-router': ^1.131.2
+    '@tanstack/react-router-devtools': ^1.131.2
+    '@tanstack/router-plugin': ^1.131.2
+    '@vitejs/plugin-react': ^5.0.0
     react: ^19.1.1
     react-dom: ^19.1.1
     tailwindcss: ^4.1.11
-    "@tailwindcss/vite": ^4.1.11
-    "@vitejs/plugin-react": ^5.0.0
     vite: ^7.1.1
-    "@cloudflare/vite-plugin": ^1.11.2
-    "@tanstack/react-router": ^1.131.2
-    "@tanstack/react-router-devtools": ^1.131.2
-    "@tanstack/router-plugin": ^1.131.2
+  workers:
+    '@cloudflare/workers-types': ^4.20250809.0
+    '@hono/zod-openapi': ^1.1.0
+    '@scalar/hono-api-reference': ^0.9.13
+    hono: ^4.9.0
+    wrangler: ^4.28.1
+
+engineStrict: true
+
+linkWorkspacePackages: true
 
 onlyBuiltDependencies:
   - esbuild
@@ -95,4 +86,9 @@ onlyBuiltDependencies:
   - workerd
 
 patchedDependencies:
+  '@changesets/get-github-info@0.6.0': patches/@changesets__get-github-info@0.6.0.patch
   openapi-fetch: patches/openapi-fetch.patch
+
+preferWorkspacePackages: true
+
+saveWorkspaceProtocol: false

@@ -201,6 +201,9 @@ catalogs:
       version: 4.28.1
 
 patchedDependencies:
+  '@changesets/get-github-info@0.6.0':
+    hash: b379d7852d58463c3558e8db3f821317dff5ea18479a7f7ef4f6357fe7197faf
+    path: patches/@changesets__get-github-info@0.6.0.patch
   openapi-fetch:
     hash: 6b65c61dccaf4351409f767132092e087e01965b7cdada31678895eb02e6f945
     path: patches/openapi-fetch.patch
@@ -6197,7 +6200,7 @@ snapshots:
 
   '@changesets/changelog-github@0.5.1':
     dependencies:
-      '@changesets/get-github-info': 0.6.0
+      '@changesets/get-github-info': 0.6.0(patch_hash=b379d7852d58463c3558e8db3f821317dff5ea18479a7f7ef4f6357fe7197faf)
       '@changesets/types': 6.1.0
       dotenv: 8.6.0
     transitivePeerDependencies:
@@ -6255,7 +6258,7 @@ snapshots:
       picocolors: 1.1.1
       semver: 7.7.2
 
-  '@changesets/get-github-info@0.6.0':
+  '@changesets/get-github-info@0.6.0(patch_hash=b379d7852d58463c3558e8db3f821317dff5ea18479a7f7ef4f6357fe7197faf)':
     dependencies:
       dataloader: 1.4.0
       node-fetch: 2.7.0
