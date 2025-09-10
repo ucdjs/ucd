@@ -1,7 +1,7 @@
 import type { OpenAPIHono } from "@hono/zod-openapi";
 import type { Env } from "hono";
 import type { ClientErrorStatusCode, ServerErrorStatusCode } from "hono/utils/http-status";
-import { ApiErrorSchema } from "./schemas.ts";
+import { ApiErrorSchema } from "./schemas";
 
 type HonoErrorStatusCode = ClientErrorStatusCode | ServerErrorStatusCode;
 

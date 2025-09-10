@@ -1,5 +1,4 @@
-export { clearCacheEntry } from "./cache.ts";
-export type { CustomResponseOptions, ResponseOptions } from "./errors";
+export { clearCacheEntry } from "./cache";
 export {
   badGateway,
   badRequest,
@@ -7,13 +6,14 @@ export {
   forbidden,
   internalServerError,
   notFound,
-} from "./errors.ts";
+} from "./errors";
+export type { CustomResponseOptions, ResponseOptions } from "./errors";
 
-export { errorHandler, notFoundHandler } from "./handlers.ts";
-export { createResponseComponentBuilder } from "./openapi.ts";
+export { errorHandler, notFoundHandler } from "./handlers";
+export { createResponseComponentBuilder } from "./openapi";
 
-export { ApiErrorSchema } from "./schemas.ts";
+export type { ApiError } from "./schemas";
 
-export type { ApiError } from "./schemas.ts";
-export { setupCors, setupRatelimit } from "./setups.ts";
-export { strictJSONResponse } from "./strict.ts";
+export { ApiErrorSchema } from "./schemas";
+export { setupCors, setupRatelimit } from "./setups";
+export { strictJSONResponse } from "./strict";
