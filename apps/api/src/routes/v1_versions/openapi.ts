@@ -1,9 +1,9 @@
 import { createRoute } from "@hono/zod-openapi";
 import { cache } from "hono/cache";
-import { VERSION_ROUTE_PARAM } from "../../lib/shared-parameters";
-import { generateReferences, OPENAPI_TAGS } from "../../openapi";
-import { GET_VERSION_FILE_TREE_ROUTE_DOCS, LIST_ALL_UNICODE_VERSIONS_ROUTE_DOCS } from "./docs";
-import { UnicodeTreeSchema, UnicodeVersionListSchema } from "./schemas";
+import { VERSION_ROUTE_PARAM } from "../../lib/shared-parameters.ts";
+import { generateReferences, OPENAPI_TAGS } from "../../openapi.ts";
+import { GET_VERSION_FILE_TREE_ROUTE_DOCS, LIST_ALL_UNICODE_VERSIONS_ROUTE_DOCS } from "./docs.ts";
+import { UnicodeTreeSchema, UnicodeVersionListSchema } from "./schemas.ts";
 
 export const LIST_ALL_UNICODE_VERSIONS_ROUTE = createRoute({
   method: "get",
