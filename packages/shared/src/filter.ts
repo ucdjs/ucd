@@ -120,7 +120,7 @@ export function createPathFilter(options: PathFilterOptions = {}): PathFilter {
 
 function internal__createFilterFunction(config: PathFilterOptions): PathFilterFn {
   // If include is empty or not set, include everything using "**" pattern
-  const includePatterns = config.include || "**";
+  const includePatterns = config.include && config.include.length > 0 ? config.include : ["**"];
 
   const excludePatterns: string[] = config.disableDefaultExclusions
     ? [...(config.exclude || [])]
