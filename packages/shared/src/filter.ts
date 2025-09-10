@@ -1,3 +1,4 @@
+import type { PicomatchOptions } from "picomatch";
 import picomatch from "picomatch";
 
 /**
@@ -8,152 +9,225 @@ import picomatch from "picomatch";
  * ```ts
  * import { createPathFilter, PRECONFIGURED_FILTERS } from '@ucdjs/shared';
  *
- * const filter = createPathFilter([
- *   '*.txt',
- *   PRECONFIGURED_FILTERS.EXCLUDE_TEST_FILES,
- *   PRECONFIGURED_FILTERS.EXCLUDE_README_FILES
- * ]);
+ * const filter = createPathFilter({
+ *   include: ['*.txt'],
+ *   exclude: [
+ *     ...PRECONFIGURED_FILTERS.TEST_FILES,
+ *     ...PRECONFIGURED_FILTERS.README_FILES
+ *   ]
+ * });
  * ```
  */
 export const PRECONFIGURED_FILTERS = {
   /** Excludes files containing "Test" in their name (e.g., DataTest.txt, TestFile.js) */
-  EXCLUDE_TEST_FILES: "!**/*Test*",
+  TEST_FILES: ["**/*Test*"],
   /** Excludes ReadMe.txt files from any directory */
-  EXCLUDE_README_FILES: "!**/ReadMe.txt",
+  README_FILES: ["**/ReadMe.txt"],
   /** Excludes all HTML files */
-  EXCLUDE_HTML_FILES: "!**/*.html",
+  HTML_FILES: ["**/*.html"],
 } as const;
 
-type PathFilterFn = (path: string, extraFilters?: string[]) => boolean;
+type PathFilterFn = (path: string, extraOptions?: Pick<PathFilterOptions, "include" | "exclude">) => boolean;
 
 export interface PathFilter extends PathFilterFn {
-  extend: (additionalFilters: string[]) => void;
-  patterns: () => string[];
+  extend: (additionalOptions: Pick<PathFilterOptions, "include" | "exclude">) => void;
+  patterns: () => Readonly<PathFilterOptions>;
 }
 
-export interface FilterOptions {
+export interface PathFilterOptions {
   /**
-   * Whether or not to disable the default exclusions.
-   * By default, the filter excludes certain file types like `.zip` and `.pdf`.
+   * Glob patterns for files to include.
+   * If empty or not set, includes everything using "**" pattern
    */
+  include?: string[];
+  /**
+   * Glob patterns for files to exclude.
+   * These override include patterns
+   */
+  exclude?: string[];
+
   disableDefaultExclusions?: boolean;
 }
 
 /**
  * Creates a filter function that checks if a file path should be included or excluded
- * based on the provided filter patterns.
+ * based on the provided filter configuration.
  *
- * @param {string[]} filters - Array of glob patterns to filter against
- * @param {FilterOptions} options - Configuration options
+ * @param {PathFilterOptions} options - Configuration object with include/exclude patterns
  * @returns {PathFilter} A function that takes a path and returns true if the path should be included, false otherwise
- *
- *  NOTE:
- * - **Include patterns**: Patterns WITHOUT `!` prefix specify which files to INCLUDE
- * - **Exclude patterns**: Patterns WITH `!` prefix specify which files to EXCLUDE
- * - **Default behavior**: If no include patterns are provided, ALL files are included by default
- * - **Precedence**: Exclude patterns override include patterns
- * - **Default exclusions**: `.zip` and `.pdf` files are excluded by default (unless disabled)
  *
  * @example
  * ```ts
- * import { createPathFilter } from '@ucdjs/shared';
+ * import { createPathFilter, PRECONFIGURED_FILTERS } from '@ucdjs/shared';
  *
- * // Include only .txt files, exclude any with "Test" in the name
- * const filter = createPathFilter(['*.txt', '!*Test*']);
- * filter('Data.txt');     // true  - matches *.txt, doesn't match !*Test*
- * filter('DataTest.txt'); // false - matches *.txt but also matches !*Test*
- * filter('Data.js');      // false - doesn't match *.txt
+ * // Include specific files, exclude others
+ * const filter = createPathFilter({
+ *   include: ['src/**\/*.{js,ts}', 'test/**\/*.{test.js}'],
+ *   exclude: ['**\/node_modules/**', '**\/*.generated.*']
+ * });
  *
- * // Include everything in src/, exclude test files
- * const srcFilter = createPathFilter(['src/**', '!**\/*.test.*']);
- * srcFilter('src/index.js');      // true  - in src/, not a test file
- * srcFilter('src/utils.test.js'); // false - in src/ but is a test file
- * srcFilter('lib/index.js');      // false - not in src/
+ * // If include is empty/not set, includes everything
+ * const excludeOnly = createPathFilter({
+ *   exclude: ['**\/node_modules/**', '**\/dist/**']
+ * });
  *
- * // Exclude specific directories (no include patterns = include everything else)
- * const excludeFilter = createPathFilter(['!**\/node_modules/**', '!**\/dist/**']);
- * excludeFilter('src/index.js');           // true  - not in excluded dirs
- * excludeFilter('node_modules/lib/a.js');  // false - in excluded dir
- * excludeFilter('dist/bundle.js');         // false - in excluded dir
- *
- * // Include only extracted files
- * const extractedOnly = createPathFilter(['**\/extracted/**']);
- * extractedOnly('extracted/data.txt');         // true  - matches pattern
- * extractedOnly('src/extracted/data.txt');     // true  - matches pattern
- * extractedOnly('src/data.txt');               // false - doesn't match pattern
+ * // Using preconfigured filters
+ * const withPresets = createPathFilter({
+ *   include: ['src/**\/*.txt'],
+ *   exclude: [
+ *     ...PRECONFIGURED_FILTERS.TEST_FILES,
+ *   ]
+ * });
  * ```
  */
-export function createPathFilter(filters: string[], options: FilterOptions = {}): PathFilter {
-  let currentFilters = [...filters];
-  let currentFilterFn = internal__createFilterFunction(currentFilters, options);
+export function createPathFilter(options: PathFilterOptions = {}): PathFilter {
+  let currentConfig = { ...options };
+  let currentFilterFn = internal__createFilterFunction(currentConfig);
 
-  function filterFn(path: string, extraFilters: string[] = []): boolean {
-    if (extraFilters.length === 0) {
+  function filterFn(path: string, extraOptions: Pick<PathFilterOptions, "include" | "exclude"> = {}): boolean {
+    if (!extraOptions.include && !extraOptions.exclude) {
       return currentFilterFn(path);
     }
 
-    const combinedFilter = createPathFilter([...currentFilters, ...extraFilters], options);
+    const combinedOptions: PathFilterOptions = {
+      include: Array.from(new Set([...(currentConfig.include || []), ...(extraOptions.include || [])])),
+      exclude: Array.from(new Set([...(currentConfig.exclude || []), ...(extraOptions.exclude || [])])),
+      disableDefaultExclusions: currentConfig.disableDefaultExclusions,
+    };
+    const combinedFilter = internal__createFilterFunction(combinedOptions);
     return combinedFilter(path);
   }
 
-  filterFn.extend = (additionalFilters: string[]): void => {
-    currentFilters = [...currentFilters, ...additionalFilters];
-    currentFilterFn = internal__createFilterFunction(currentFilters, options);
+  filterFn.extend = (additionalOptions: Pick<PathFilterOptions, "include" | "exclude">): void => {
+    currentConfig = {
+      ...currentConfig,
+      include: [...(currentConfig.include || []), ...(additionalOptions.include || [])],
+      exclude: [...(currentConfig.exclude || []), ...(additionalOptions.exclude || [])],
+    };
+
+    currentFilterFn = internal__createFilterFunction(currentConfig);
   };
 
-  filterFn.patterns = (): string[] => {
-    return [...currentFilters];
+  filterFn.patterns = (): Readonly<PathFilterOptions> => {
+    return Object.freeze(structuredClone(currentConfig));
   };
 
   return filterFn;
 }
 
-function internal__createFilterFunction(filters: string[], options: FilterOptions): PathFilterFn {
-  if (filters.length === 0) {
-    return () => true;
-  }
+function internal__createFilterFunction(config: PathFilterOptions): PathFilterFn {
+  // If include is empty or not set, include everything using "**" pattern
+  const includePatterns = config.include && config.include.length > 0 ? config.include : ["**"];
 
-  // separate include and exclude patterns
-  const includePatterns: string[] = [];
-  const excludePatterns: string[] = options.disableDefaultExclusions
-    ? []
+  const rawExcludePatterns: string[] = config.disableDefaultExclusions
+    ? [...(config.exclude || [])]
     : [
         // exclude .zip & .pdf files by default
         "**/*.zip",
         "**/*.pdf",
+        ...(config.exclude || []),
       ];
 
-  for (const filter of filters) {
-    if (filter.startsWith("!")) {
-      excludePatterns.push(filter.slice(1));
-    } else {
-      includePatterns.push(filter);
+  // Transform directory-only patterns to include their contents
+  // e.g., "**/extracted" becomes both "**/extracted" and "**/extracted/**"
+  const excludePatterns = expandDirectoryPatterns(rawExcludePatterns);
+
+  return (path: string): boolean => {
+    const normalizedPath = path.replace(/\\/g, "/").replace(/^\.\//, "");
+
+    return picomatch.isMatch(normalizedPath, includePatterns, {
+      dot: true,
+      nocase: true,
+      ignore: excludePatterns,
+    } satisfies PicomatchOptions);
+  };
+}
+
+function expandDirectoryPatterns(patterns: string[]): string[] {
+  const expanded: string[] = [];
+
+  for (const pattern of patterns) {
+    expanded.push(pattern);
+
+    // If pattern looks like a directory-only pattern, add the contents pattern too
+    if (isDirectoryOnlyPattern(pattern)) {
+      expanded.push(`${pattern}/**`);
     }
   }
 
-  // if no include patterns are specified, include everything by default
-  const hasIncludePatterns = includePatterns.length > 0;
-  const includeMatch = hasIncludePatterns
-    ? picomatch(includePatterns, {
-        dot: true,
-        nocase: true,
-      })
-    : () => true;
+  return expanded;
+}
 
-  const excludeMatch = excludePatterns.length > 0
-    ? picomatch(excludePatterns, {
-        dot: true,
-        nocase: true,
-      })
-    : () => false;
+function isDirectoryOnlyPattern(pattern: string): boolean {
+  // A pattern is considered directory-only if it:
+  // 1. Doesn't end with /** or /*
+  // 2. Doesn't contain a file extension
+  // 3. Doesn't end with a trailing slash
+  return !pattern.endsWith("/**")
+    && !pattern.endsWith("/*")
+    && !pattern.endsWith("/")
+    && !pattern.includes(".")
+  // Avoid expanding patterns that are clearly file patterns
+    && !pattern.includes("*.")
+  // Only expand if it looks like a directory path
+    && (pattern.includes("/") || !pattern.includes("*"));
+}
 
-  return (path: string): boolean => {
-    // first check if path matches include patterns (if any)
-    if (!includeMatch(path)) {
-      return false;
+// TODO: Combine all "tree" related entries
+export type TreeEntry = {
+  type: "file";
+  name: string;
+  path: string;
+} | {
+  type: "directory";
+  name: string;
+  path: string;
+  children: TreeEntry[];
+};
+
+export function filterTreeStructure(
+  pathFilter: PathFilter,
+  entries: TreeEntry[],
+  extraOptions: Pick<PathFilterOptions, "include" | "exclude"> = {},
+): TreeEntry[] {
+  return internal__filterTreeStructure(pathFilter, entries, "", extraOptions);
+}
+
+function internal__filterTreeStructure(
+  pathFilter: PathFilter,
+  entries: TreeEntry[],
+  parentPath: string,
+  extraOptions: Pick<PathFilterOptions, "include" | "exclude">,
+): TreeEntry[] {
+  const filteredEntries: TreeEntry[] = [];
+
+  for (const entry of entries) {
+    // Construct the full path by combining parent path with entry path
+    const fullPath = parentPath ? `${parentPath}/${entry.path}` : entry.path;
+
+    if (entry.type === "file") {
+      // For files, simply check if the full path matches the filter
+      if (pathFilter(fullPath, extraOptions)) {
+        filteredEntries.push(entry);
+      }
+    } else if (entry.type === "directory") {
+      // For directories, recursively filter children first
+      const filteredChildren = internal__filterTreeStructure(pathFilter, entry.children, fullPath, extraOptions);
+
+      // Include directory if:
+      // 1. The directory itself matches the filter, OR
+      // 2. It has children that match (even if directory doesn't match)
+      const directoryMatches = pathFilter(fullPath, extraOptions);
+      const hasMatchingChildren = filteredChildren.length > 0;
+
+      if (directoryMatches || hasMatchingChildren) {
+        filteredEntries.push({
+          ...entry,
+          children: filteredChildren,
+        });
+      }
     }
+  }
 
-    // then check if path matches exclude patterns
-    return !excludeMatch(path);
-  };
+  return filteredEntries;
 }
