@@ -122,7 +122,7 @@ function internal__createFilterFunction(config: PathFilterOptions): PathFilterFn
   // If include is empty or not set, include everything using "**" pattern
   const includePatterns = config.include && config.include.length > 0 ? config.include : ["**"];
 
-  const excludePatterns: string[] = config.disableDefaultExclusions
+  const rawExcludePatterns: string[] = config.disableDefaultExclusions
     ? [...(config.exclude || [])]
     : [
         // exclude .zip & .pdf files by default
@@ -130,6 +130,10 @@ function internal__createFilterFunction(config: PathFilterOptions): PathFilterFn
         "**/*.pdf",
         ...(config.exclude || []),
       ];
+
+  // Transform directory-only patterns to include their contents
+  // e.g., "**/extracted" becomes both "**/extracted" and "**/extracted/**"
+  const excludePatterns = expandDirectoryPatterns(rawExcludePatterns);
 
   return (path: string): boolean => {
     const normalizedPath = path.startsWith("./") ? path.slice(2) : path;
@@ -140,6 +144,36 @@ function internal__createFilterFunction(config: PathFilterOptions): PathFilterFn
       ignore: excludePatterns,
     } satisfies PicomatchOptions);
   };
+}
+
+function expandDirectoryPatterns(patterns: string[]): string[] {
+  const expanded: string[] = [];
+  
+  for (const pattern of patterns) {
+    expanded.push(pattern);
+    
+    // If pattern looks like a directory-only pattern, add the contents pattern too
+    if (isDirectoryOnlyPattern(pattern)) {
+      expanded.push(`${pattern}/**`);
+    }
+  }
+  
+  return expanded;
+}
+
+function isDirectoryOnlyPattern(pattern: string): boolean {
+  // A pattern is considered directory-only if it:
+  // 1. Doesn't end with /** or /*
+  // 2. Doesn't contain a file extension
+  // 3. Doesn't end with a trailing slash
+  return !pattern.endsWith('/**') && 
+         !pattern.endsWith('/*') && 
+         !pattern.endsWith('/') &&
+         !pattern.includes('.') &&
+         // Avoid expanding patterns that are clearly file patterns
+         !pattern.includes('*.') &&
+         // Only expand if it looks like a directory path
+         (pattern.includes('/') || !pattern.includes('*'));
 }
 
 // TODO: Combine all "tree" related entries

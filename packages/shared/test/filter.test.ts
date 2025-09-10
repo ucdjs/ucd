@@ -1034,5 +1034,79 @@ describe("filterTreeStructure", () => {
         },
       ]);
     });
+
+    it("should handle directory pattern matching file without extension", () => {
+      const treeWithFileNoExt: TreeEntry[] = [
+        {
+          type: "file", 
+          name: "entry",
+          path: "entry",
+        },
+        {
+          type: "file",
+          name: "entry.txt", 
+          path: "entry.txt",
+        },
+        {
+          type: "directory",
+          name: "entryDir",
+          path: "entryDir",
+          children: [
+            {
+              type: "file",
+              name: "content.txt",
+              path: "content.txt",
+            },
+          ],
+        },
+        {
+          type: "directory",
+          name: "other",
+          path: "other",
+          children: [
+            {
+              type: "file",
+              name: "entry",
+              path: "entry",
+            },
+          ],
+        },
+      ];
+
+      const filter = createPathFilter({ exclude: ["**/entry"] });
+      const result = filterTreeStructure(filter, treeWithFileNoExt);
+
+      // The pattern "**/entry" should exclude:
+      // - The file named "entry" (no extension)  
+      // - The nested file "other/entry"
+      // But should NOT exclude:
+      // - "entry.txt" (has extension)
+      // - "entryDir" (different name)
+      expect(result).toEqual([
+        {
+          type: "file",
+          name: "entry.txt",
+          path: "entry.txt",
+        },
+        {
+          type: "directory", 
+          name: "entryDir",
+          path: "entryDir",
+          children: [
+            {
+              type: "file",
+              name: "content.txt", 
+              path: "content.txt",
+            },
+          ],
+        },
+        {
+          type: "directory",
+          name: "other",
+          path: "other", 
+          children: [],
+        },
+      ]);
+    });
   });
 });
