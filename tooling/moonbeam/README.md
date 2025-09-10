@@ -49,7 +49,7 @@ Moonbeam automatically finds your workspace root by looking for:
 ## Perfect for
 
 - 🔧 Build scripts that need workspace dependencies
-- 🧪 Testing across workspace packages  
+- 🧪 Testing across workspace packages
 - 🏗️ Development tools and CLIs
 - 📜 Scripts that import workspace packages
 

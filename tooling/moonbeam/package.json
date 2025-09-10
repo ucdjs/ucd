@@ -21,7 +21,6 @@
   },
   "exports": {
     "./esm": "./src/esm-loader.mjs",
-    "./cjs": "./src/cjs-loader.cjs",
     "./register": "./src/register.mjs",
     "./package.json": "./package.json"
   },

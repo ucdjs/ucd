@@ -1,9 +1,5 @@
-/**
- * Convenience register script that can be used with --import
- * Usage: node --import @ucdjs/moonbeam/register your-script.ts
- */
+// @ts-check
 
-import { register } from 'node:module';
+import { register } from "node:module";
 
-// Register our custom loader
-register('./esm-loader.mjs', import.meta.url);
+register("./esm-loader.mjs", import.meta.url);
