@@ -23,11 +23,6 @@
       "cache": false,
       "outputs": [
         ".generated/openapi.json"
-      ],
-      "dependsOn": [
-        "@ucdjs/schemas#build",
-        "@ucdjs/shared#build",
-        "@ucdjs/env#build"
       ]
     }
   }

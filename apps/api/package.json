@@ -41,7 +41,6 @@
     "eslint": "catalog:linting",
     "eslint-plugin-format": "catalog:linting",
     "nanotar": "catalog:dev",
-    "tsconfig-paths": "catalog:dev",
     "tsx": "catalog:dev",
     "typescript": "catalog:dev",
     "vitest": "catalog:testing",
