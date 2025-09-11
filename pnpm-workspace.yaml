@@ -55,9 +55,9 @@ catalogs:
 
   dev:
     "@types/picomatch": 4.0.2
-    "@types/node": 22.16.5
+    "@types/node": 22.18.1
     "@types/yargs-parser": 21.0.3
-    tsdown: 0.13.4
+    tsdown: 0.15.0
     typescript: 5.9.2
     publint: 0.3.12
     nanotar: 0.2.0
@@ -66,11 +66,11 @@ catalogs:
     memfs: 4.36.0
 
   workers:
-    wrangler: 4.28.1
+    wrangler: 4.35.0
     "@hono/zod-openapi": 1.1.0
-    "@scalar/hono-api-reference": 0.9.13
-    hono: 4.9.0
-    "@cloudflare/workers-types": 4.20250809.0
+    "@scalar/hono-api-reference": 0.9.18
+    hono: 4.9.6
+    "@cloudflare/workers-types": 4.20250910.0
 
   types:
     "@types/react": 19.1.9
