@@ -71,6 +71,29 @@ if (binaryData) {
 }
 ```
 
+### Schema Validation
+
+This package re-exports all schemas from `@ucdjs/schemas` for convenience:
+
+```typescript
+import { FileEntrySchema, UCDStoreManifestSchema } from "@ucdjs/fetch";
+
+// Validate API responses
+const fileEntry = { name: "test.txt", path: "/test", lastModified: Date.now(), type: "file" };
+const result = FileEntrySchema.safeParse(fileEntry);
+
+if (result.success) {
+  console.log("Valid file entry:", result.data);
+}
+```
+
+### Type Exports
+
+This package exports both API-specific types and shared schemas:
+
+- **API-specific types**: `ApiError`, `UnicodeVersion`, `UnicodeVersionList`, etc.
+- **Shared schemas**: All schemas from `@ucdjs/schemas` are re-exported for convenience
+
 ## 📄 License
 
 Published under [MIT License](./LICENSE).
