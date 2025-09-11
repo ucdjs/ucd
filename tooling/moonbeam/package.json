@@ -1,0 +1,38 @@
+{
+  "name": "@ucdjs/moonbeam",
+  "version": "0.0.0",
+  "type": "module",
+  "private": true,
+  "author": {
+    "name": "Lucas Nørgård",
+    "email": "lucasnrgaard@gmail.com",
+    "url": "https://luxass.dev"
+  },
+  "packageManager": "pnpm@10.14.0",
+  "license": "MIT",
+  "homepage": "https://github.com/ucdjs/ucd",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ucdjs/ucd.git",
+    "directory": "tooling/moonbeam"
+  },
+  "bugs": {
+    "url": "https://github.com/ucdjs/ucd/issues"
+  },
+  "exports": {
+    "./esm": "./src/esm-loader.mjs",
+    "./register": "./src/register.mjs",
+    "./package.json": "./package.json"
+  },
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "clean": "git clean -xdf node_modules",
+    "lint": "eslint ."
+  },
+  "devDependencies": {
+    "@luxass/eslint-config": "catalog:linting",
+    "eslint": "catalog:linting"
+  }
+}
