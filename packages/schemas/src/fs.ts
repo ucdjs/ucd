@@ -50,3 +50,6 @@ export const FileEntrySchema = z.union([
 });
 
 export type FileEntry = z.infer<typeof FileEntrySchema>;
+
+// Array type for API responses containing multiple file entries
+export type FileEntryList = FileEntry[];
