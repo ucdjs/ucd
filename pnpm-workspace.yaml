@@ -11,8 +11,8 @@ packages:
 catalogs:
   monorepo:
     "@changesets/changelog-github": 0.5.1
-    "@changesets/cli": 2.29.5
-    turbo: 2.5.5
+    "@changesets/cli": 2.29.7
+    turbo: 2.5.6
 
   testing:
     "@vitest/coverage-istanbul": 3.2.4
@@ -41,15 +41,15 @@ catalogs:
     farver: 0.4.2
     yargs-parser: 22.0.0
     defu: 6.1.4
-    zod: 4.1.5
-    "@ai-sdk/openai": 2.0.7
-    ai: 5.0.8
+    zod: 4.1.6
+    "@ai-sdk/openai": 2.0.28
+    ai: 5.0.39
     knitwork: 1.2.0
     picomatch: 4.0.3
     apache-autoindex-parse: 3.0.3
     openapi-fetch: 0.14.0
     pathe: 2.0.3
-    "@clack/prompts": 1.0.0-alpha.1
+    "@clack/prompts": 1.0.0-alpha.4
     debug: 4.4.1
 
   dev:
@@ -61,8 +61,8 @@ catalogs:
     publint: 0.3.12
     nanotar: 0.2.0
     openapi-typescript: 7.8.0
-    tsx: 4.20.3
-    memfs: 4.36.0
+    tsx: 4.20.5
+    memfs: 4.39.0
 
   workers:
     wrangler: 4.35.0
@@ -72,8 +72,8 @@ catalogs:
     "@cloudflare/workers-types": 4.20250910.0
 
   types:
-    "@types/react": 19.1.9
-    "@types/react-dom": 19.1.7
+    "@types/react": 19.1.12
+    "@types/react-dom": 19.1.9
     "@types/debug": 4.1.12
 
   web:
