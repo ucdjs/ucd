@@ -3,7 +3,9 @@ import { luxass } from "@luxass/eslint-config";
 import ucdjsPlugin from "@ucdjs/eslint-plugin";
 
 export default luxass({
+  type: "app",
   formatters: true,
+  pnpm: true,
 })
   .append({
     ignores: [
