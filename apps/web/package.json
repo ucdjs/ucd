@@ -2,7 +2,7 @@
   "name": "@ucdjs/web",
   "type": "module",
   "private": true,
-  "packageManager": "pnpm@10.14.0",
+  "packageManager": "pnpm@10.15.1",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
