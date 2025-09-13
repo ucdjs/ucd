@@ -3,9 +3,49 @@ import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 import { dedent } from "@luxass/utils";
-import * as ts from "typescript";
+import ts from "typescript";
 
 const root = path.resolve(import.meta.dirname, "../");
+
+async function getSchemasPackageTypes(): Promise<Set<string>> {
+  const schemasPackagePath = path.resolve(root, "../schemas/src/index.ts");
+
+  if (!existsSync(schemasPackagePath)) {
+    console.warn("@ucdjs/schemas index file not found, no types will be excluded");
+    return new Set();
+  }
+
+  const schemasContent = await readFile(schemasPackagePath, "utf-8");
+  const sourceFile = ts.createSourceFile(
+    schemasPackagePath,
+    schemasContent,
+    ts.ScriptTarget.Latest,
+    true,
+  );
+
+  const exportedTypes = new Set<string>();
+
+  function visit(node: ts.Node) {
+    // Handle: export type { TypeName } from "./module" (only type exports)
+    if (ts.isExportDeclaration(node) && node.exportClause && ts.isNamedExports(node.exportClause) && node.isTypeOnly) {
+      node.exportClause.elements.forEach((element) => {
+        if (ts.isExportSpecifier(element) && element.name) {
+          exportedTypes.add(element.name.text);
+        }
+      });
+    }
+
+    // Handle: export type TypeName = ... (type alias declarations)
+    if (ts.isTypeAliasDeclaration(node) && node.modifiers?.some((mod) => mod.kind === ts.SyntaxKind.ExportKeyword)) {
+      exportedTypes.add(node.name.text);
+    }
+
+    ts.forEachChild(node, visit);
+  }
+
+  visit(sourceFile);
+  return exportedTypes;
+}
 
 async function run() {
   console.log("extracting components from api.d.ts...");
@@ -16,6 +56,9 @@ async function run() {
   }
 
   const apiDefinition = await readFile(apiDefinitionPath, "utf-8");
+
+  const schemasTypes = await getSchemasPackageTypes();
+  console.log(`Found ${schemasTypes.size} types in @ucdjs/schemas:`, Array.from(schemasTypes).join(", "));
 
   const sourceFile = ts.createSourceFile(
     apiDefinitionPath,
@@ -46,6 +89,12 @@ async function run() {
           if (member.type && ts.isTypeLiteralNode(member.type)) {
             member.type.members.forEach((schemaMember) => {
               if (!ts.isPropertySignature(schemaMember) || !ts.isIdentifier(schemaMember.name)) {
+                return;
+              }
+
+              // Skip schemas that are already exported from @ucdjs/schemas
+              if (schemasTypes.has(schemaMember.name.text)) {
+                console.log(`Skipping ${schemaMember.name.text} (already exported from @ucdjs/schemas)`);
                 return;
               }
 

@@ -1,4 +1,4 @@
-import type { UCDStoreManifest } from "@ucdjs/fetch";
+import type { UCDStoreManifest } from "@ucdjs/schemas";
 import { HttpResponse } from "../msw";
 import { defineMockFetchHandler } from "./__define";
 

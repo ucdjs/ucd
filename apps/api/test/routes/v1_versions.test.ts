@@ -1,6 +1,6 @@
+import type { UnicodeVersion } from "@ucdjs/schemas";
 import type { Entry } from "apache-autoindex-parse";
 import type { TraverseEntry } from "apache-autoindex-parse/traverse";
-import type { UnicodeVersion } from "../../src/routes/v1_versions/schemas";
 import { generateAutoIndexHtml } from "apache-autoindex-parse/test-utils";
 import {
   createExecutionContext,
