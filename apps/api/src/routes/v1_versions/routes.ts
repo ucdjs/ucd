@@ -1,5 +1,5 @@
+import type { UnicodeVersion } from "@ucdjs/schemas";
 import type { HonoEnv } from "../../types";
-import type { UnicodeVersion } from "./schemas";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import {
   getCurrentDraftVersion,
