@@ -135,10 +135,10 @@ jobs:
               owner: context.repo.owner,
               repo: context.repo.repo,
               comment_id: commentId,
-              content: 'white_check_mark'
+              content: '+1'
             });
 
-            console.log('Added white_check_mark reaction for breaking changes approval');
+            console.log('Added +1 reaction for breaking changes approval');
 
       - name: create status check based on changes
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
