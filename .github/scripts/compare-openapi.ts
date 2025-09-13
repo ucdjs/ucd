@@ -142,16 +142,36 @@ function generateSummaryGrid(changes: Changes, addedComponents: string[], remove
 
   let content = "";
 
-  content += "| Change Type | Count | Details |\n";
-  content += "|-------------|-------|---------|\n";
-  content += `| 🟢 Added Endpoints | ${changes.added.length} | New API endpoints |\n`;
-  content += `| 🔴 Removed Endpoints | ${changes.removed.length} | ${changes.removed.length > 0 ? "⚠️ **Breaking**" : ""} |\n`;
-  content += `| 🟡 Modified Endpoints | ${totalModified} | Endpoints with method changes |\n`;
-  content += `| 📊 Total Method Changes | +${totalAdded} / -${totalRemoved} | Added/Removed HTTP methods |\n`;
-  content += `| 🟢 Added Schemas | ${addedComponents.length} | New schema components |\n`;
-  content += `| 🔴 Removed Schemas | ${removedComponents.length} | ${removedComponents.length > 0 ? "⚠️ **Breaking**" : ""} |\n`;
-  content += `| 🟡 Modified Schemas | ${modifiedComponents.length} | Changed schema definitions |\n`;
-  content += `| ⚠️ Breaking Changes | ${isBreaking ? "Yes" : "No"} | ${isBreaking ? "This PR contains breaking changes" : "No breaking changes detected"} |\n`;
+  // api endpoints
+  const hasPathChanges = changes.added.length > 0 || changes.removed.length > 0 || changes.modified.length > 0;
+  if (hasPathChanges) {
+    content += "#### API Endpoints\n";
+    content += "| Change Type | Count | Details |\n";
+    content += "|-------------|-------|---------|\n";
+    content += `| 🟢 Added | ${changes.added.length} | New API endpoints |\n`;
+    content += `| 🔴 Removed | ${changes.removed.length} | ${changes.removed.length > 0 ? "⚠️ **Breaking**" : ""} |\n`;
+    content += `| 🟡 Modified | ${totalModified} | Endpoints with method changes |\n`;
+    content += `| 📊 Method Changes | +${totalAdded} / -${totalRemoved} | Added/Removed HTTP methods |\n`;
+    content += "\n";
+  }
+
+  // components table
+  const hasComponentChanges = addedComponents.length > 0 || removedComponents.length > 0 || modifiedComponents.length > 0;
+  if (hasComponentChanges) {
+    content += "#### Schema Components\n";
+    content += "| Change Type | Count | Details |\n";
+    content += "|-------------|-------|---------|\n";
+    content += `| 🟢 Added | ${addedComponents.length} | New schema components |\n`;
+    content += `| 🔴 Removed | ${removedComponents.length} | ${removedComponents.length > 0 ? "⚠️ **Breaking**" : ""} |\n`;
+    content += `| 🟡 Modified | ${modifiedComponents.length} | Changed schema definitions |\n`;
+    content += "\n";
+  }
+
+  // breaking changes status
+  content += "#### Overall Status\n";
+  content += "| Status | Result |\n";
+  content += "|--------|---------|\n";
+  content += `| ⚠️ Breaking Changes | ${isBreaking ? "**Yes** - This PR contains breaking changes" : "No - No breaking changes detected"} |\n`;
 
   return content;
 }
