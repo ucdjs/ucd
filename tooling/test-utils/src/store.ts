@@ -1,9 +1,9 @@
 // TODO: change this to schemas, when schemas export codegen models
-import type { FileEntryList, UCDStoreManifest, UnicodeTree, UnicodeVersionList } from "@ucdjs/fetch";
-
+import type { FileEntryList, UnicodeTree, UnicodeVersionList } from "@ucdjs/fetch";
+import type { UCDStoreManifest } from "@ucdjs/schemas";
 import type { DefaultBodyType, HttpResponseResolver, PathParams } from "msw";
-import type { EmptyObject } from "./types";
 
+import type { EmptyObject } from "./types";
 import { fileTreeMockHandler } from "./store-handlers/file-tree.mock-handler";
 import { filesMockHandler, filesStoreMockHandler } from "./store-handlers/files.mock-handler";
 import { versionsMockHandler } from "./store-handlers/versions.mock-handler";

@@ -7,9 +7,7 @@
 import type { components } from "./.generated/api";
 
 export type ApiError = components["schemas"]["ApiError"];
-export type UnicodeVersion = components["schemas"]["UnicodeVersion"];
 export type UnicodeVersionList = components["schemas"]["UnicodeVersionList"];
 export type UnicodeTreeNode = components["schemas"]["UnicodeTreeNode"];
 export type UnicodeTree = components["schemas"]["UnicodeTree"];
-export type UCDStoreManifest = components["schemas"]["UCDStoreManifest"];
 export type FileEntryList = components["schemas"]["FileEntryList"];
