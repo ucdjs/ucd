@@ -93,8 +93,12 @@ jobs:
 
       - name: compare openapi schemas
         id: compare
+        env:
+          MAIN_SCHEMA_PATH: openapi-artifacts/main.json/openapi.json
+          PR_SCHEMA_PATH: openapi-artifacts/pull-request.json/openapi.json
+          OUTPUT_PATH: openapi-diff.md
         run: |
-          node .github/scripts/compare-openapi.ts openapi-artifacts/main.json/openapi.json openapi-artifacts/pull-request.json/openapi.json openapi-diff.md || echo "schemas_differ=true" >> $GITHUB_OUTPUT
+          node .github/scripts/compare-openapi.ts
 
       - name: find existing comment
         id: find-comment

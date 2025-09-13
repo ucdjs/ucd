@@ -1,4 +1,4 @@
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from "node:fs";
 
 interface OpenAPISchema {
   paths?: Record<string, Record<string, any>>;
@@ -26,37 +26,80 @@ interface Changes {
   unchanged: PathInfo[];
 }
 
+const MAIN_SCHEMA_PATH = process.env.MAIN_SCHEMA_PATH;
+const PR_SCHEMA_PATH = process.env.PR_SCHEMA_PATH;
+const OUTPUT_PATH = process.env.OUTPUT_PATH;
+
+const HTTP_METHODS = [
+  "get",
+  "post",
+  "put",
+  "patch",
+  "delete",
+  "head",
+  "options",
+];
+
+const BASE_TEMPLATE_HEADER = `<!-- ucdjs:openapi-artifacts -->
+## 📋 OpenAPI Schema Analysis
+`;
+
+const BASE_TEMPLATE_FOOTER = `
+---
+<sub>🤖 This comment is automatically updated when you push new commits.</sub>
+`;
+
 function loadSchema(filePath: string): OpenAPISchema {
   try {
-    const content = readFileSync(filePath, 'utf8');
-    return JSON.parse(content);
-  } catch (error) {
-    console.error(`Error loading schema from ${filePath}:`, error instanceof Error ? error.message : error);
+    const content = readFileSync(filePath, "utf8");
+    const schema = JSON.parse(content);
+    if (
+      typeof schema !== "object" ||
+      schema === null ||
+      (!schema.paths && !schema.components)
+    ) {
+      throw new Error(
+        'File does not appear to be a valid OpenAPI schema (missing "paths" or "components").',
+      );
+    }
+    return schema;
+  } catch (err) {
+    console.error(`error loading schema from ${filePath}:`, err);
     process.exit(1);
   }
 }
 
 function extractPaths(schema: OpenAPISchema): Record<string, string[]> {
   const paths: Record<string, string[]> = {};
-  if (schema.paths) {
-    for (const [path, methods] of Object.entries(schema.paths)) {
-      paths[path] = Object.keys(methods).filter(method =>
-        ['get', 'post', 'put', 'patch', 'delete', 'head', 'options'].includes(method.toLowerCase())
-      );
-    }
+
+  if (!("paths" in schema) || typeof schema.paths !== "object") {
+    return paths;
   }
+
+  for (const [path, methods] of Object.entries(schema.paths)) {
+    paths[path] = Object.keys(methods).filter((method) =>
+      HTTP_METHODS.includes(method.toLowerCase()),
+    );
+  }
+
   return paths;
 }
 
-function categorizeChanges(oldPaths: Record<string, string[]>, newPaths: Record<string, string[]>): Changes {
+function categorizeChanges(
+  oldPaths: Record<string, string[]>,
+  newPaths: Record<string, string[]>,
+): Changes {
   const changes: Changes = {
     added: [],
     removed: [],
     modified: [],
-    unchanged: []
+    unchanged: [],
   };
 
-  const allPaths = new Set([...Object.keys(oldPaths), ...Object.keys(newPaths)]);
+  const allPaths = new Set([
+    ...Object.keys(oldPaths),
+    ...Object.keys(newPaths),
+  ]);
 
   for (const path of allPaths) {
     const oldMethods = oldPaths[path] || [];
@@ -67,19 +110,20 @@ function categorizeChanges(oldPaths: Record<string, string[]>, newPaths: Record<
     } else if (oldMethods.length && !newMethods.length) {
       changes.removed.push({ path, methods: oldMethods });
     } else {
-      const addedMethods = newMethods.filter(m => !oldMethods.includes(m));
-      const removedMethods = oldMethods.filter(m => !newMethods.includes(m));
+      const addedMethods = newMethods.filter((m) => !oldMethods.includes(m));
+      const removedMethods = oldMethods.filter((m) => !newMethods.includes(m));
 
-      if (addedMethods.length || removedMethods.length) {
-        changes.modified.push({
-          path,
-          added: addedMethods,
-          removed: removedMethods,
-          existing: newMethods.filter(m => oldMethods.includes(m))
-        });
-      } else {
+      if (!addedMethods.length && !removedMethods.length) {
         changes.unchanged.push({ path, methods: newMethods });
+        continue;
       }
+
+      changes.modified.push({
+        path,
+        added: addedMethods,
+        removed: removedMethods,
+        existing: newMethods.filter((m) => oldMethods.includes(m)),
+      });
     }
   }
 
@@ -87,24 +131,34 @@ function categorizeChanges(oldPaths: Record<string, string[]>, newPaths: Record<
 }
 
 function generateSummaryGrid(changes: Changes): string {
-  const totalAdded = changes.added.length + changes.modified.reduce((sum, m) => sum + m.added.length, 0);
-  const totalRemoved = changes.removed.length + changes.modified.reduce((sum, m) => sum + m.removed.length, 0);
+  const totalAdded =
+    changes.added.length +
+    changes.modified.reduce((sum, m) => sum + m.added.length, 0);
+  const totalRemoved =
+    changes.removed.length +
+    changes.modified.reduce((sum, m) => sum + m.removed.length, 0);
   const totalModified = changes.modified.length;
   const isBreaking = totalRemoved > 0 || changes.removed.length > 0;
 
-  return `
-| Change Type | Count | Details |
-|-------------|-------|---------|
-| 🟢 Added Endpoints | ${changes.added.length} | New API endpoints |
-| 🔴 Removed Endpoints | ${changes.removed.length} | ${isBreaking ? '⚠️ **Breaking**' : ''} |
-| 🟡 Modified Endpoints | ${totalModified} | Endpoints with method changes |
-| 📊 Total Method Changes | +${totalAdded} / -${totalRemoved} | Added/Removed HTTP methods |
-| ⚠️ Breaking Changes | ${isBreaking ? 'Yes' : 'No'} | ${isBreaking ? 'This PR contains breaking changes' : 'No breaking changes detected'} |
-`;
+  let content = "";
+
+  content += "| Change Type | Count | Details |\n";
+  content += "|-------------|-------|---------|\n";
+  content += `| 🟢 Added Endpoints | ${changes.added.length} | New API endpoints |\n`;
+  content += `| 🔴 Removed Endpoints | ${changes.removed.length} | ${isBreaking ? "⚠️ **Breaking**" : ""} |\n`;
+  content += `| 🟡 Modified Endpoints | ${totalModified} | Endpoints with method changes |\n`;
+  content += `| 📊 Total Method Changes | +${totalAdded} / -${totalRemoved} | Added/Removed HTTP methods |\n`;
+  content += `| ⚠️ Breaking Changes | ${isBreaking ? "Yes" : "No"} | ${isBreaking ? "This PR contains breaking changes" : "No breaking changes detected"} |\n`;
+
+  return content;
 }
 
-function generateDetailedDiff(oldSchema: OpenAPISchema, newSchema: OpenAPISchema, changes: Changes): string {
-  let diff = '';
+function generateDetailedDiff(
+  oldSchema: OpenAPISchema,
+  newSchema: OpenAPISchema,
+  changes: Changes,
+): string {
+  let diff = "";
 
   if (changes.added.length > 0) {
     diff += `
@@ -115,12 +169,13 @@ function generateDetailedDiff(oldSchema: OpenAPISchema, newSchema: OpenAPISchema
 |------|---------|-------------|
 `;
     changes.added.forEach(({ path, methods }) => {
-      const description = newSchema.paths?.[path]?.get?.summary ||
+      const description =
+        newSchema.paths?.[path]?.get?.summary ||
         newSchema.paths?.[path]?.[methods[0]]?.summary ||
-        'No description';
-      diff += `| \`${path}\` | ${methods.map(m => `\`${m.toUpperCase()}\``).join(', ')} | ${description} |\n`;
+        "No description";
+      diff += `| \`${path}\` | ${methods.map((m) => `\`${m.toUpperCase()}\``).join(", ")} | ${description} |\n`;
     });
-    diff += '\n</details>\n';
+    diff += "\n</details>\n";
   }
 
   if (changes.removed.length > 0) {
@@ -132,12 +187,13 @@ function generateDetailedDiff(oldSchema: OpenAPISchema, newSchema: OpenAPISchema
 |------|---------|-------------|
 `;
     changes.removed.forEach(({ path, methods }) => {
-      const description = oldSchema.paths?.[path]?.get?.summary ||
+      const description =
+        oldSchema.paths?.[path]?.get?.summary ||
         oldSchema.paths?.[path]?.[methods[0]]?.summary ||
-        'No description';
-      diff += `| \`${path}\` | ${methods.map(m => `\`${m.toUpperCase()}\``).join(', ')} | ${description} |\n`;
+        "No description";
+      diff += `| \`${path}\` | ${methods.map((m) => `\`${m.toUpperCase()}\``).join(", ")} | ${description} |\n`;
     });
-    diff += '\n</details>\n';
+    diff += "\n</details>\n";
   }
 
   if (changes.modified.length > 0) {
@@ -151,24 +207,28 @@ function generateDetailedDiff(oldSchema: OpenAPISchema, newSchema: OpenAPISchema
 **\`${path}\`**
 `;
       if (added.length > 0) {
-        diff += `- ✅ Added: ${added.map(m => `\`${m.toUpperCase()}\``).join(', ')}\n`;
+        diff += `- ✅ Added: ${added.map((m) => `\`${m.toUpperCase()}\``).join(", ")}\n`;
       }
       if (removed.length > 0) {
-        diff += `- ❌ Removed: ${removed.map(m => `\`${m.toUpperCase()}\``).join(', ')} ⚠️\n`;
+        diff += `- ❌ Removed: ${removed.map((m) => `\`${m.toUpperCase()}\``).join(", ")} ⚠️\n`;
       }
       if (existing.length > 0) {
-        diff += `- ➡️ Unchanged: ${existing.map(m => `\`${m.toUpperCase()}\``).join(', ')}\n`;
+        diff += `- ➡️ Unchanged: ${existing.map((m) => `\`${m.toUpperCase()}\``).join(", ")}\n`;
       }
-      diff += '\n';
+      diff += "\n";
     });
-    diff += '</details>\n';
+    diff += "</details>\n";
   }
 
   // Schema components diff
   const oldComponents = Object.keys(oldSchema.components?.schemas || {});
   const newComponents = Object.keys(newSchema.components?.schemas || {});
-  const addedComponents = newComponents.filter(c => !oldComponents.includes(c));
-  const removedComponents = oldComponents.filter(c => !newComponents.includes(c));
+  const addedComponents = newComponents.filter(
+    (c) => !oldComponents.includes(c),
+  );
+  const removedComponents = oldComponents.filter(
+    (c) => !newComponents.includes(c),
+  );
 
   if (addedComponents.length > 0 || removedComponents.length > 0) {
     diff += `
@@ -178,82 +238,76 @@ function generateDetailedDiff(oldSchema: OpenAPISchema, newSchema: OpenAPISchema
 `;
     if (addedComponents.length > 0) {
       diff += `**Added Schemas (${addedComponents.length}):**\n`;
-      addedComponents.forEach(comp => {
+      addedComponents.forEach((comp) => {
         diff += `- \`${comp}\`\n`;
       });
-      diff += '\n';
+      diff += "\n";
     }
 
     if (removedComponents.length > 0) {
       diff += `**Removed Schemas (${removedComponents.length}):** ⚠️\n`;
-      removedComponents.forEach(comp => {
+      removedComponents.forEach((comp) => {
         diff += `- \`${comp}\`\n`;
       });
-      diff += '\n';
+      diff += "\n";
     }
-    diff += '</details>\n';
+    diff += "</details>\n";
   }
 
   return diff;
 }
 
-function main(): void {
-  const [, , oldSchemaPath, newSchemaPath, outputPath] = process.argv;
-
-  if (!oldSchemaPath || !newSchemaPath) {
-    console.error('Usage: tsx compare-openapi.ts <old-schema.json> <new-schema.json> [output.md]');
+async function run(): Promise<void> {
+  if (!MAIN_SCHEMA_PATH || !PR_SCHEMA_PATH || !OUTPUT_PATH) {
+    console.error(
+      "MAIN_SCHEMA_PATH, PR_SCHEMA_PATH, and OUTPUT_PATH environment variables must be set.",
+    );
     process.exit(1);
   }
 
-  const oldSchema = loadSchema(oldSchemaPath);
-  const newSchema = loadSchema(newSchemaPath);
+  const oldSchema = loadSchema(MAIN_SCHEMA_PATH);
+  const newSchema = loadSchema(PR_SCHEMA_PATH);
 
   const oldPaths = extractPaths(oldSchema);
   const newPaths = extractPaths(newSchema);
 
   const changes = categorizeChanges(oldPaths, newPaths);
 
-  // Check if there are any changes
-  const hasChanges = changes.added.length > 0 || changes.removed.length > 0 || changes.modified.length > 0;
+  const hasChanges =
+    changes.added.length > 0 ||
+    changes.removed.length > 0 ||
+    changes.modified.length > 0;
 
-  let output = '';
+  let output = BASE_TEMPLATE_HEADER;
 
   if (!hasChanges) {
-    output = `<!-- ucdjs:openapi-artifacts -->
-## 📋 OpenAPI Schema Analysis
-
-✅ **No changes detected** - The OpenAPI schema is identical to the main branch.
-
----
-<sub>🤖 This comment is automatically updated when you push new commits.</sub>
-`;
+    output +=
+      "✅ **No changes detected** - The OpenAPI schema is identical to the main branch.";
   } else {
     const summaryGrid = generateSummaryGrid(changes);
     const detailedDiff = generateDetailedDiff(oldSchema, newSchema, changes);
 
-    output = `<!-- ucdjs:openapi-artifacts -->
-## 📋 OpenAPI Schema Analysis
-
-### Summary
-${summaryGrid}
-
-### Detailed Changes
-${detailedDiff}
-
----
-<sub>🤖 This comment is automatically updated when you push new commits.</sub>
-`;
+    output += "### Summary\n";
+    output += summaryGrid;
+    output += "\n\n";
+    output += "### Detailed Changes\n";
+    output += detailedDiff;
   }
 
-  if (outputPath) {
-    writeFileSync(outputPath, output);
-    console.log(`OpenAPI diff written to ${outputPath}`);
+  output += BASE_TEMPLATE_FOOTER;
+
+  writeFileSync(OUTPUT_PATH, output);
+  console.log(`OpenAPI diff written to ${OUTPUT_PATH}`);
+
+  if (hasChanges) {
+    console.log("OpenAPI schemas differ.");
+    process.exit(1);
   } else {
-    console.log(output);
+    console.log("No differences in OpenAPI schemas.");
   }
-
-  // Exit with code 1 if there are changes (for CI detection)
-  process.exit(hasChanges ? 1 : 0);
 }
 
-main();
+run().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});
