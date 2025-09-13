@@ -2,7 +2,7 @@ name: openapi approve breaking changes
 
 on:
   issue_comment:
-    types: [created]
+    types: [edited]
 
 permissions:
   statuses: write
