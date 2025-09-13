@@ -118,3 +118,41 @@ jobs:
           issue-number: ${{ github.event.pull_request.number }}
           body-path: openapi-diff.md
           edit-mode: replace
+
+      - name: create status check based on changes
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          HAS_CHANGES: ${{ steps.compare.outputs.has_changes }}
+          HAS_BREAKING_CHANGES: ${{ steps.compare.outputs.has_breaking_changes }}
+          ADDED_ENDPOINTS: ${{ steps.compare.outputs.added_endpoints }}
+          REMOVED_ENDPOINTS: ${{ steps.compare.outputs.removed_endpoints }}
+        with:
+          script: |
+            const hasChanges = process.env.HAS_CHANGES === 'true';
+            const hasBreakingChanges = process.env.HAS_BREAKING_CHANGES === 'true';
+            const addedEndpoints = process.env.ADDED_ENDPOINTS;
+            const removedEndpoints = process.env.REMOVED_ENDPOINTS;
+
+            let state, description;
+
+            if (!hasChanges) {
+              state = 'success';
+              description = 'No OpenAPI schema changes detected';
+            } else if (hasBreakingChanges) {
+              state = 'failure';
+              description = `Breaking changes detected: ${removedEndpoints} removed endpoint(s)`;
+            } else {
+              state = 'success';
+              description = `Non-breaking changes: +${addedEndpoints} endpoint(s)`;
+            }
+
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: process.env.HEAD_SHA,
+              state: state,
+              target_url: `${context.payload.pull_request.html_url}`,
+              description: description,
+              context: 'openapi-schema-check'
+            });
