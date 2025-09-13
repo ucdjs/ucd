@@ -11,6 +11,10 @@ export const ApiErrorSchema = z.object({
   timestamp: z.string().openapi({
     description: "ISO 8601 timestamp when the error occurred",
   }),
+
+  hello: z.string().optional().openapi({
+    description: "Just a test field to trigger re-generation",
+  }),
 }).openapi("ApiError", {
   description: dedent`
     Standard error response format used consistently across all API endpoints.
