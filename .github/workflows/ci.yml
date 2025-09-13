@@ -10,7 +10,7 @@ on:
       - "**/*.md"
       - ".github/ISSUE_TEMPLATE/**"
 
-# Automatically cancel older in-progress jobs on the same branch
+# automatically cancel older in-progress jobs on the same branch
 concurrency:
   group: ${{ github.workflow }}-${{ github.event_name == 'pull_request_target' && github.head_ref || github.ref }}
   cancel-in-progress: true
