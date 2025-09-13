@@ -86,13 +86,15 @@ jobs:
           name: openapi-main
           path: openapi-artifacts/main.json
 
+      - name: setup node
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: lts/*
 
       - name: compare openapi schemas
         id: compare
         run: |
-          if ! diff -q openapi-artifacts/pull-request.json openapi-artifacts/main.json; then
-            echo "OpenAPI schemas differ"
-          fi
+          node .github/scripts/compare-openapi.ts openapi-artifacts/main.json/openapi.json openapi-artifacts/pull-request.json/openapi.json openapi-diff.md || echo "schemas_differ=true" >> $GITHUB_OUTPUT
 
       - name: find existing comment
         id: find-comment
@@ -110,12 +112,5 @@ jobs:
         with:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
-          body: |
-            <!-- ucdjs:openapi-artifacts -->
-            ## OpenAPI Artifacts
-
-            The OpenAPI schemas generated from the latest changes differ from the `main` branch.
-
-            ---
-            <sub>🤖 This comment will be updated automatically when you push new commits to this PR.</sub>
+          body-path: openapi-diff.md
           edit-mode: replace
