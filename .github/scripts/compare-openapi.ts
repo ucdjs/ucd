@@ -376,7 +376,7 @@ async function run(): Promise<void> {
       output += "> **⚠️ Breaking Changes Detected**\n";
       output += "> \n";
       output += "> This PR contains breaking changes that require maintainer approval.\n";
-      output += "> Any maintainer can approve these changes by reacting with a ✅ to this comment.\n";
+      output += "> **Maintainers:** Add the `approve-breaking-openapi` label to approve these changes.\n";
     }
   }
 
