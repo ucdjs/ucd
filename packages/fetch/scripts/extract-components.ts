@@ -7,6 +7,10 @@ import * as ts from "typescript";
 
 const root = path.resolve(import.meta.dirname, "../");
 
+// List of schemas that exist in @ucdjs/schemas and should NOT be generated
+// These are re-exported from @ucdjs/schemas via the main index.ts
+const SKIP_SCHEMAS = new Set(["UCDStoreManifest", "FileEntryList"]);
+
 async function run() {
   console.log("extracting components from api.d.ts...");
 
@@ -32,9 +36,11 @@ async function run() {
            */
 
           import type { components } from "./.generated/api";
+
   `;
 
-  let index = 0;
+  const generatedSchemas: string[] = [];
+  const skippedSchemas: string[] = [];
 
   function visit(node: ts.Node) {
     if (ts.isInterfaceDeclaration(node) && node.name.text === "components") {
@@ -49,8 +55,17 @@ async function run() {
                 return;
               }
 
-              content += `${index === 0 ? "\n\n" : ""}export type ${schemaMember.name.text} = components["schemas"]["${schemaMember.name.text}"];\n`;
-              index++;
+              const schemaName = schemaMember.name.text;
+              
+              // Skip schemas that should be imported from @ucdjs/schemas
+              if (SKIP_SCHEMAS.has(schemaName)) {
+                skippedSchemas.push(schemaName);
+                return;
+              }
+
+              // Generate normal type from OpenAPI
+              content += `export type ${schemaName} = components["schemas"]["${schemaName}"];\n`;
+              generatedSchemas.push(schemaName);
             });
           }
         }
@@ -62,7 +77,15 @@ async function run() {
 
   visit(sourceFile);
 
+  // Add comment about skipped schemas
+  if (skippedSchemas.length > 0) {
+    content += `\n// ${skippedSchemas.join(", ")} are now re-exported from @ucdjs/schemas via the main index.ts`;
+  }
+
   await writeFile(path.join(root, "src", "components.ts"), content);
+  
+  console.log(`Generated ${generatedSchemas.length} schema types: ${generatedSchemas.join(", ")}`);
+  console.log(`Skipped ${skippedSchemas.length} schema types (available from @ucdjs/schemas): ${skippedSchemas.join(", ")}`);
 }
 
 run().catch((err) => {
