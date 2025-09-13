@@ -130,7 +130,7 @@ function categorizeChanges(
   return changes;
 }
 
-function generateSummaryGrid(changes: Changes): string {
+function generateSummaryGrid(changes: Changes, addedComponents: string[], removedComponents: string[], modifiedComponents: string[]): string {
   const totalAdded =
     changes.added.length +
     changes.modified.reduce((sum, m) => sum + m.added.length, 0);
@@ -138,16 +138,19 @@ function generateSummaryGrid(changes: Changes): string {
     changes.removed.length +
     changes.modified.reduce((sum, m) => sum + m.removed.length, 0);
   const totalModified = changes.modified.length;
-  const isBreaking = totalRemoved > 0 || changes.removed.length > 0;
+  const isBreaking = totalRemoved > 0 || changes.removed.length > 0 || removedComponents.length > 0;
 
   let content = "";
 
   content += "| Change Type | Count | Details |\n";
   content += "|-------------|-------|---------|\n";
   content += `| 🟢 Added Endpoints | ${changes.added.length} | New API endpoints |\n`;
-  content += `| 🔴 Removed Endpoints | ${changes.removed.length} | ${isBreaking ? "⚠️ **Breaking**" : ""} |\n`;
+  content += `| 🔴 Removed Endpoints | ${changes.removed.length} | ${changes.removed.length > 0 ? "⚠️ **Breaking**" : ""} |\n`;
   content += `| 🟡 Modified Endpoints | ${totalModified} | Endpoints with method changes |\n`;
   content += `| 📊 Total Method Changes | +${totalAdded} / -${totalRemoved} | Added/Removed HTTP methods |\n`;
+  content += `| 🟢 Added Schemas | ${addedComponents.length} | New schema components |\n`;
+  content += `| 🔴 Removed Schemas | ${removedComponents.length} | ${removedComponents.length > 0 ? "⚠️ **Breaking**" : ""} |\n`;
+  content += `| 🟡 Modified Schemas | ${modifiedComponents.length} | Changed schema definitions |\n`;
   content += `| ⚠️ Breaking Changes | ${isBreaking ? "Yes" : "No"} | ${isBreaking ? "This PR contains breaking changes" : "No breaking changes detected"} |\n`;
 
   return content;
@@ -225,7 +228,7 @@ function generateDetailedDiff(
     diff += "</details>\n";
   }
 
-  // Schema components diff
+  // schema components diff
   const oldComponents = Object.keys(oldSchema.components?.schemas || {});
   const newComponents = Object.keys(newSchema.components?.schemas || {});
   const addedComponents = newComponents.filter(
@@ -234,8 +237,12 @@ function generateDetailedDiff(
   const removedComponents = oldComponents.filter(
     (c) => !newComponents.includes(c),
   );
+  const modifiedComponents = newComponents.filter(c =>
+    oldComponents.includes(c) &&
+    JSON.stringify(oldSchema.components?.schemas?.[c]) !== JSON.stringify(newSchema.components?.schemas?.[c])
+  );
 
-  if (addedComponents.length > 0 || removedComponents.length > 0) {
+  if (addedComponents.length > 0 || removedComponents.length > 0 || modifiedComponents.length > 0) {
     diff += "\n";
     diff += "<details>\n";
     diff += "<summary>📋 Schema Components Changes</summary>\n";
@@ -252,6 +259,14 @@ function generateDetailedDiff(
     if (removedComponents.length > 0) {
       diff += `**Removed Schemas (${removedComponents.length}):** ⚠️\n`;
       removedComponents.forEach((comp) => {
+        diff += `- \`${comp}\`\n`;
+      });
+      diff += "\n";
+    }
+
+    if (modifiedComponents.length > 0) {
+      diff += `**Modified Schemas (${modifiedComponents.length}):**\n`;
+      modifiedComponents.forEach((comp) => {
         diff += `- \`${comp}\`\n`;
       });
       diff += "\n";
@@ -279,14 +294,28 @@ async function run(): Promise<void> {
 
   const changes = categorizeChanges(oldPaths, newPaths);
 
+  // also check for component changes
+  const oldComponents = Object.keys(oldSchema.components?.schemas || {});
+  const newComponents = Object.keys(newSchema.components?.schemas || {});
+  const addedComponents = newComponents.filter(c => !oldComponents.includes(c));
+  const removedComponents = oldComponents.filter(c => !newComponents.includes(c));
+  const modifiedComponents = newComponents.filter(c =>
+    oldComponents.includes(c) &&
+    JSON.stringify(oldSchema.components?.schemas?.[c]) !== JSON.stringify(newSchema.components?.schemas?.[c])
+  );
+
   const hasChanges =
     changes.added.length > 0 ||
     changes.removed.length > 0 ||
-    changes.modified.length > 0;
+    changes.modified.length > 0 ||
+    addedComponents.length > 0 ||
+    removedComponents.length > 0 ||
+    modifiedComponents.length > 0;
 
-  // calculate breaking changes
+  // calculate breaking changes (including component removals)
   const hasBreakingChanges = changes.removed.length > 0 ||
-    changes.modified.some(m => m.removed.length > 0);
+    changes.modified.some(m => m.removed.length > 0) ||
+    removedComponents.length > 0;
 
   // set outputs
   const githubOutput = process.env.GITHUB_OUTPUT;
@@ -296,7 +325,10 @@ async function run(): Promise<void> {
       `has_breaking_changes=${hasBreakingChanges}`,
       `added_endpoints=${changes.added.length}`,
       `removed_endpoints=${changes.removed.length}`,
-      `modified_endpoints=${changes.modified.length}`
+      `modified_endpoints=${changes.modified.length}`,
+      `added_components=${addedComponents.length}`,
+      `removed_components=${removedComponents.length}`,
+      `modified_components=${modifiedComponents.length}`
     ];
 
     writeFileSync(githubOutput, outputs.join('\n') + '\n', { flag: 'a' });
@@ -308,7 +340,7 @@ async function run(): Promise<void> {
     output +=
       "✅ **No changes detected** - The OpenAPI schema is identical to the main branch.";
   } else {
-    const summaryGrid = generateSummaryGrid(changes);
+    const summaryGrid = generateSummaryGrid(changes, addedComponents, removedComponents, modifiedComponents);
     const detailedDiff = generateDetailedDiff(oldSchema, newSchema, changes);
 
     output += "### Summary\n";

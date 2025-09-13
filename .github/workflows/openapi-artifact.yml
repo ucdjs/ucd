@@ -148,12 +148,20 @@ jobs:
           HAS_BREAKING_CHANGES: ${{ steps.compare.outputs.has_breaking_changes }}
           ADDED_ENDPOINTS: ${{ steps.compare.outputs.added_endpoints }}
           REMOVED_ENDPOINTS: ${{ steps.compare.outputs.removed_endpoints }}
+          MODIFIED_ENDPOINTS: ${{ steps.compare.outputs.modified_endpoints }}
+          ADDED_COMPONENTS: ${{ steps.compare.outputs.added_components }}
+          REMOVED_COMPONENTS: ${{ steps.compare.outputs.removed_components }}
+          MODIFIED_COMPONENTS: ${{ steps.compare.outputs.modified_components }}
         with:
           script: |
             const hasChanges = process.env.HAS_CHANGES === 'true';
             const hasBreakingChanges = process.env.HAS_BREAKING_CHANGES === 'true';
-            const addedEndpoints = process.env.ADDED_ENDPOINTS;
-            const removedEndpoints = process.env.REMOVED_ENDPOINTS;
+            const addedEndpoints = parseInt(process.env.ADDED_ENDPOINTS);
+            const removedEndpoints = parseInt(process.env.REMOVED_ENDPOINTS);
+            const modifiedEndpoints = parseInt(process.env.MODIFIED_ENDPOINTS);
+            const addedComponents = parseInt(process.env.ADDED_COMPONENTS);
+            const removedComponents = parseInt(process.env.REMOVED_COMPONENTS);
+            const modifiedComponents = parseInt(process.env.MODIFIED_COMPONENTS);
 
             let state, description;
 
@@ -162,10 +170,18 @@ jobs:
               description = 'No OpenAPI schema changes detected';
             } else if (hasBreakingChanges) {
               state = 'failure';
-              description = `Breaking changes detected: ${removedEndpoints} removed endpoint(s)`;
+              const breakingItems = [];
+              if (removedEndpoints > 0) breakingItems.push(`${removedEndpoints} endpoint(s)`);
+              if (removedComponents > 0) breakingItems.push(`${removedComponents} schema(s)`);
+              description = `Breaking changes: removed ${breakingItems.join(' and ')}`;
             } else {
               state = 'success';
-              description = `Non-breaking changes: +${addedEndpoints} endpoint(s)`;
+              const changes = [];
+              if (addedEndpoints > 0) changes.push(`+${addedEndpoints} endpoint(s)`);
+              if (addedComponents > 0) changes.push(`+${addedComponents} schema(s)`);
+              if (modifiedEndpoints > 0) changes.push(`~${modifiedEndpoints} endpoint(s)`);
+              if (modifiedComponents > 0) changes.push(`~${modifiedComponents} schema(s)`);
+              description = `Non-breaking changes: ${changes.join(', ')}`;
             }
 
             await github.rest.repos.createCommitStatus({
