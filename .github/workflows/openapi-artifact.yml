@@ -124,7 +124,6 @@ jobs:
 
       - name: add openapi diff to job summary
         run: |
-          echo "## OpenAPI Schema Analysis" >> $GITHUB_STEP_SUMMARY
           cat openapi-diff.md >> $GITHUB_STEP_SUMMARY
 
 
