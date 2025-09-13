@@ -1,0 +1,72 @@
+name: openapi approve breaking changes
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  statuses: write
+  pull-requests: read
+
+jobs:
+  approve-breaking-changes:
+    if: github.event.issue.pull_request && github.actor == 'luxass'
+    runs-on: ubuntu-latest
+    steps:
+      - name: check for approval reaction on openapi comment
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          script: |
+            // Check if the comment contains the bot identifier
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.issue.number
+            });
+
+            // Find the OpenAPI artifacts comment
+            const openapiComment = comments.data.find(comment =>
+              comment.body.includes('<!-- ucdjs:openapi-artifacts -->')
+            );
+
+            if (!openapiComment) {
+              console.log('No OpenAPI artifacts comment found');
+              return;
+            }
+
+            // Get reactions on the OpenAPI comment
+            const reactions = await github.rest.reactions.listForIssueComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: openapiComment.id
+            });
+
+            // Check for white_check_mark reactions from luxass
+            const approvalReactions = reactions.data.filter(reaction =>
+              reaction.content === 'white_check_mark' && reaction.user.login === 'luxass'
+            );
+
+            if (approvalReactions.length === 0) {
+              console.log('No approval reaction from luxass found on OpenAPI comment');
+              return;
+            }
+
+            // Get PR details
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.issue.number
+            });
+
+            // Override the status check to success
+            await github.rest.repos.createCommitStatus({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              sha: pr.data.head.sha,
+              state: 'success',
+              target_url: `${pr.data.html_url}#issuecomment-${openapiComment.id}`,
+              description: 'Breaking changes approved by luxass',
+              context: 'openapi-schema-check'
+            });
+
+            console.log('Status check overridden to success due to approval from luxass');
