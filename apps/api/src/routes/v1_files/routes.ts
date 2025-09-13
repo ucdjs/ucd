@@ -6,7 +6,7 @@ import { DEFAULT_USER_AGENT, UCD_FILE_STAT_TYPE_HEADER } from "@ucdjs/env";
 import { cache } from "hono/cache";
 import { badGateway, badRequest, notFound } from "../../lib";
 import { parseUnicodeDirectory } from "../../lib/files";
-import { GET_UCD_STORE, METADATA_WILDCARD_ROUTE, WILDCARD_ROUTE } from "./openapi";
+import { GET_UCD_STORE, METADATA_WILDCARD_ROUTE, METADATA_WILDCARD_ROUTE2, WILDCARD_ROUTE } from "./openapi";
 
 export const V1_FILES_ROUTER = new OpenAPIHono<HonoEnv>().basePath("/api/v1/files");
 
@@ -40,6 +40,8 @@ V1_FILES_ROUTER.openapi(GET_UCD_STORE, async (c) => {
 
 V1_FILES_ROUTER.openAPIRegistry.registerPath(WILDCARD_ROUTE);
 V1_FILES_ROUTER.openAPIRegistry.registerPath(METADATA_WILDCARD_ROUTE);
+// RMEOVE
+V1_FILES_ROUTER.openAPIRegistry.registerPath(METADATA_WILDCARD_ROUTE2);
 
 V1_FILES_ROUTER.get("/:wildcard{.*}?", cache({
   cacheName: "ucdjs:v1_files:files",

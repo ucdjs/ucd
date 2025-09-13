@@ -199,3 +199,33 @@ export const METADATA_WILDCARD_ROUTE = createRoute({
     },
   },
 });
+
+export const METADATA_WILDCARD_ROUTE2 = createRoute({
+  method: "post",
+  path: "/{wildcard}",
+  tags: [OPENAPI_TAGS.FILES],
+  parameters: [WILDCARD_PARAM],
+  description: WILDCARD_HEAD_ROUTE_DOCS,
+  responses: {
+    200: {
+      description: "Response from Unicode.org",
+      headers: {
+        [UCD_FILE_STAT_TYPE_HEADER]: {
+          description: "The type of the file or directory",
+          schema: {
+            type: "string",
+            enum: ["file", "directory"],
+          },
+          required: true,
+        },
+        "Content-Type": {
+          description: "The content type of the file",
+          schema: {
+            type: "string",
+          },
+          required: true,
+        },
+      },
+    },
+  },
+});
