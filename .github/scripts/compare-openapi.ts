@@ -316,6 +316,15 @@ async function run(): Promise<void> {
     output += "\n\n";
     output += "### Detailed Changes\n";
     output += detailedDiff;
+
+    // Add approval instructions for breaking changes
+    if (hasBreakingChanges) {
+      output += "\n\n";
+      output += "> [!IMPORTANT] **⚠️ Breaking Changes Detected**\n";
+      output += "> \n";
+      output += "> This PR contains breaking changes that require maintainer approval.\n";
+      output += "> Any maintainer can approve these changes by reacting with a ✅ to this comment.\n";
+    }
   }
 
   output += BASE_TEMPLATE_FOOTER;
