@@ -39,8 +39,8 @@ V1_FILES_ROUTER.openapi(GET_UCD_STORE, async (c) => {
 });
 
 V1_FILES_ROUTER.openAPIRegistry.registerPath(WILDCARD_ROUTE);
-V1_FILES_ROUTER.openAPIRegistry.registerPath(METADATA_WILDCARD_ROUTE);
 // RMEOVE
+// V1_FILES_ROUTER.openAPIRegistry.registerPath(METADATA_WILDCARD_ROUTE);
 V1_FILES_ROUTER.openAPIRegistry.registerPath(METADATA_WILDCARD_ROUTE2);
 
 V1_FILES_ROUTER.get("/:wildcard{.*}?", cache({
