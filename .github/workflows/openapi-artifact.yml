@@ -172,7 +172,7 @@ jobs:
               repo: context.repo.repo,
               sha: process.env.HEAD_SHA,
               state: state,
-              target_url: `${context.payload.pull_request.html_url}`,
+              target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
               description: description,
               context: 'openapi-schema-check'
             });

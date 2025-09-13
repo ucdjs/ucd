@@ -28,7 +28,7 @@ jobs:
               repo: context.repo.repo,
               sha: headSha,
               state: 'success',
-              target_url: context.payload.pull_request.html_url,
+              target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
               description: 'Breaking changes approved via label',
               context: 'openapi-schema-check'
             });
