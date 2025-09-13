@@ -67,7 +67,7 @@ jobs:
   report-changes:
     needs: upload-openapi
     runs-on: ubuntu-latest
-    if: github.event.repository == 'ucdjs/ucd'
+    if: github.repository == 'ucdjs/ucd'
     permissions:
       pull-requests: write
       statuses: write
