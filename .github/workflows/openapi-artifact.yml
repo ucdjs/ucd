@@ -1,4 +1,4 @@
-name: OpenAPI
+name: openapi artifacts
 
 on:
   pull_request:
@@ -20,7 +20,7 @@ env:
 permissions: {}
 
 jobs:
-  build:
+  upload-openapi:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -63,3 +63,57 @@ jobs:
           if-no-files-found: error
           # TODO: maybe we should move the openapi.json to a non hidden location?
           include-hidden-files: true
+
+  report-changes:
+    needs: upload-openapi
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: download openapi artifacts (pull-request)
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+        with:
+          name: openapi-pull-request
+          path: openapi-artifacts/pull-request.json
+
+      - name: download openapi artifacts (main)
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+        with:
+          name: openapi-main
+          path: openapi-artifacts/main.json
+
+
+      - name: compare openapi schemas
+        id: compare
+        run: |
+          if ! diff -q openapi-artifacts/pull-request.json openapi-artifacts/main.json; then
+            echo "OpenAPI schemas differ"
+          fi
+
+      - name: find existing comment
+        id: find-comment
+        uses: peter-evans/find-comment@3eae4d37986fb5a8592848f6a574fdf654e61f9e # v3.1.0
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: "github-actions[bot]"
+          body-includes: <!-- ucdjs:openapi-artifacts -->
+
+
+      - name: create or update comment
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        with:
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            <!-- ucdjs:openapi-artifacts -->
+            ## OpenAPI Artifacts
+
+            The OpenAPI schemas generated from the latest changes differ from the `main` branch.
+
+            ---
+            <sub>🤖 This comment will be updated automatically when you push new commits to this PR.</sub>
+          edit-mode: replace
