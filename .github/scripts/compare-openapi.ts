@@ -372,7 +372,7 @@ async function run(): Promise<void> {
     // Add approval instructions for breaking changes
     if (hasBreakingChanges) {
       output += "\n\n";
-      output += "> [!IMPORTANT]";
+      output += "> [!IMPORTANT]\n";
       output += "> **⚠️ Breaking Changes Detected**\n";
       output += "> \n";
       output += "> This PR contains breaking changes that require maintainer approval.\n";
