@@ -122,6 +122,11 @@ jobs:
           body-path: openapi-diff.md
           edit-mode: replace
 
+      - name: add openapi diff to job summary
+        run: |
+          echo "## OpenAPI Schema Analysis" >> $GITHUB_STEP_SUMMARY
+          cat openapi-diff.md >> $GITHUB_STEP_SUMMARY
+
 
       - name: create status check based on changes
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
