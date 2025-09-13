@@ -284,6 +284,24 @@ async function run(): Promise<void> {
     changes.removed.length > 0 ||
     changes.modified.length > 0;
 
+  // calculate breaking changes
+  const hasBreakingChanges = changes.removed.length > 0 ||
+    changes.modified.some(m => m.removed.length > 0);
+
+  // set outputs
+  const githubOutput = process.env.GITHUB_OUTPUT;
+  if (githubOutput) {
+    const outputs = [
+      `has_changes=${hasChanges}`,
+      `has_breaking_changes=${hasBreakingChanges}`,
+      `added_endpoints=${changes.added.length}`,
+      `removed_endpoints=${changes.removed.length}`,
+      `modified_endpoints=${changes.modified.length}`
+    ];
+
+    writeFileSync(githubOutput, outputs.join('\n') + '\n', { flag: 'a' });
+  }
+
   let output = BASE_TEMPLATE_HEADER;
 
   if (!hasChanges) {
