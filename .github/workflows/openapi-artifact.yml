@@ -80,13 +80,13 @@ jobs:
         uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
           name: openapi-pull-request
-          path: openapi-artifacts/pull-request.json
+          path: openapi-artifacts/pull-request
 
       - name: download openapi artifacts (main)
         uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
           name: openapi-main
-          path: openapi-artifacts/main.json
+          path: openapi-artifacts/main
 
       - name: setup node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
@@ -96,8 +96,8 @@ jobs:
       - name: compare openapi schemas
         id: compare
         env:
-          MAIN_SCHEMA_PATH: openapi-artifacts/main.json/openapi.json
-          PR_SCHEMA_PATH: openapi-artifacts/pull-request.json/openapi.json
+          MAIN_SCHEMA_PATH: openapi-artifacts/main/openapi.json
+          PR_SCHEMA_PATH: openapi-artifacts/pull-request/openapi.json
           OUTPUT_PATH: openapi-diff.md
         run: |
           node .github/scripts/compare-openapi.ts
