@@ -9,28 +9,43 @@ permissions:
   pull-requests: read
 
 jobs:
-  approve-breaking-changes:
+  handle-approval-label:
     if: ${{ github.repository == 'ucdjs/ucd' && github.event.label.name == 'approve-breaking-openapi' }}
     runs-on: ubuntu-latest
     steps:
-      - name: approve openapi breaking changes
+      - name: handle openapi approval status
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         with:
           script: |
             const prNumber = context.payload.pull_request.number;
             const headSha = context.payload.pull_request.head.sha;
-
-            console.log(`Approving OpenAPI breaking changes for PR #${prNumber}`);
-
-            // Override the status check to success
+            const action = context.payload.action;
+            
+            let state, description, actionText;
+            
+            if (action === 'labeled') {
+              state = 'success';
+              description = 'Breaking changes approved via label';
+              actionText = 'Approving';
+            } else if (action === 'unlabeled') {
+              state = 'failure';
+              description = 'Breaking changes need approval via label';
+              actionText = 'Reverting approval for';
+            } else {
+              console.log(`Unknown action: ${action}`);
+              return;
+            }
+            
+            console.log(`${actionText} OpenAPI breaking changes for PR #${prNumber}`);
+            
             await github.rest.repos.createCommitStatus({
               owner: context.repo.owner,
               repo: context.repo.repo,
               sha: headSha,
-              state: 'success',
+              state: state,
               target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
-              description: 'Breaking changes approved via label',
+              description: description,
               context: 'openapi-schema-check'
             });
-
-            console.log('Status check overridden to success via approve-breaking-openapi label');
+            
+            console.log(`Status check updated to ${state} via approve-breaking-openapi label ${action}`);
