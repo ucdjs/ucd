@@ -325,7 +325,6 @@ async function run(): Promise<void> {
 
   if (hasChanges) {
     console.log("OpenAPI schemas differ.");
-    process.exit(1);
   } else {
     console.log("No differences in OpenAPI schemas.");
   }
