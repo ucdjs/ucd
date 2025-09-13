@@ -161,13 +161,13 @@ function generateDetailedDiff(
   let diff = "";
 
   if (changes.added.length > 0) {
-    diff += `
-<details>
-<summary>🟢 Added Endpoints (${changes.added.length})</summary>
+    diff += "\n";
+    diff += "<details>\n";
+    diff += `<summary>🟢 Added Endpoints (${changes.added.length})</summary>\n`;
+    diff += "\n";
+    diff += "| Path | Methods | Description |\n";
+    diff += "|------|---------|-------------|\n";
 
-| Path | Methods | Description |
-|------|---------|-------------|
-`;
     changes.added.forEach(({ path, methods }) => {
       const description =
         newSchema.paths?.[path]?.get?.summary ||
@@ -175,17 +175,19 @@ function generateDetailedDiff(
         "No description";
       diff += `| \`${path}\` | ${methods.map((m) => `\`${m.toUpperCase()}\``).join(", ")} | ${description} |\n`;
     });
-    diff += "\n</details>\n";
+
+    diff += "\n";
+    diff += "</details>\n";
   }
 
   if (changes.removed.length > 0) {
-    diff += `
-<details>
-<summary>🔴 Removed Endpoints (${changes.removed.length}) ⚠️ Breaking</summary>
+    diff += "\n";
+    diff += "<details>\n";
+    diff += `<summary>🔴 Removed Endpoints (${changes.removed.length}) ⚠️ Breaking</summary>\n`;
+    diff += "\n";
+    diff += "| Path | Methods | Description |\n";
+    diff += "|------|---------|-------------|\n";
 
-| Path | Methods | Description |
-|------|---------|-------------|
-`;
     changes.removed.forEach(({ path, methods }) => {
       const description =
         oldSchema.paths?.[path]?.get?.summary ||
@@ -193,19 +195,21 @@ function generateDetailedDiff(
         "No description";
       diff += `| \`${path}\` | ${methods.map((m) => `\`${m.toUpperCase()}\``).join(", ")} | ${description} |\n`;
     });
-    diff += "\n</details>\n";
+
+    diff += "\n";
+    diff += "</details>\n";
   }
 
   if (changes.modified.length > 0) {
-    diff += `
-<details>
-<summary>🟡 Modified Endpoints (${changes.modified.length})</summary>
+    diff += "\n";
+    diff += "<details>\n";
+    diff += `<summary>🟡 Modified Endpoints (${changes.modified.length})</summary>\n`;
+    diff += "\n";
 
-`;
     changes.modified.forEach(({ path, added, removed, existing }) => {
-      diff += `
-**\`${path}\`**
-`;
+      diff += "\n";
+      diff += `**\`${path}\`**\n`;
+
       if (added.length > 0) {
         diff += `- ✅ Added: ${added.map((m) => `\`${m.toUpperCase()}\``).join(", ")}\n`;
       }
@@ -217,6 +221,7 @@ function generateDetailedDiff(
       }
       diff += "\n";
     });
+
     diff += "</details>\n";
   }
 
@@ -231,11 +236,11 @@ function generateDetailedDiff(
   );
 
   if (addedComponents.length > 0 || removedComponents.length > 0) {
-    diff += `
-<details>
-<summary>📋 Schema Components Changes</summary>
+    diff += "\n";
+    diff += "<details>\n";
+    diff += "<summary>📋 Schema Components Changes</summary>\n";
+    diff += "\n";
 
-`;
     if (addedComponents.length > 0) {
       diff += `**Added Schemas (${addedComponents.length}):**\n`;
       addedComponents.forEach((comp) => {
@@ -251,6 +256,7 @@ function generateDetailedDiff(
       });
       diff += "\n";
     }
+
     diff += "</details>\n";
   }
 
