@@ -16,6 +16,7 @@
     "clean": "turbo run clean && git clean -xdf node_modules",
     "dev": "turbo watch dev --filter \"./packages/*\"",
     "dev:apps": "turbo run dev --filter \"./apps/*\"",
+    "dev:vscode": "pnpm --filter \"./vscode\" run dev",
     "lint": "turbo run lint",
     "test": "vitest run",
     "test:watch": "vitest",

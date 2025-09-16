@@ -5,7 +5,7 @@
   "tasks": [
     {
       "type": "npm",
-      "script": "dev",
+      "script": "dev:vscode",
       "isBackground": true,
       "presentation": {
         "reveal": "never"

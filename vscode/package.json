@@ -167,5 +167,9 @@
     "tsdown": "catalog:dev",
     "typescript": "catalog:dev",
     "vscode-ext-gen": "catalog:vscode"
+  },
+  "exports": {
+    ".": "./dist/extension.js",
+    "./package.json": "./package.json"
   }
 }
