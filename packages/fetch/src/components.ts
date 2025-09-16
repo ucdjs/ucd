@@ -6,7 +6,5 @@
 
 import type { components } from "./.generated/api";
 
-export type UnicodeVersionList = components["schemas"]["UnicodeVersionList"];
 export type UnicodeTreeNode = components["schemas"]["UnicodeTreeNode"];
 export type UnicodeTree = components["schemas"]["UnicodeTree"];
-export type FileEntryList = components["schemas"]["FileEntryList"];
