@@ -1,17 +1,17 @@
-import { z } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
+import { z } from "zod";
 
 export const ApiErrorSchema = z.object({
-  message: z.string().openapi({
+  message: z.string().meta({
     description: "Human-readable error message describing what went wrong",
   }),
-  status: z.number().openapi({
+  status: z.number().meta({
     description: "HTTP status code matching the response status",
   }),
-  timestamp: z.string().openapi({
+  timestamp: z.string().meta({
     description: "ISO 8601 timestamp when the error occurred",
   }),
-}).openapi("ApiError", {
+}).meta({
   description: dedent`
     Standard error response format used consistently across all API endpoints.
 

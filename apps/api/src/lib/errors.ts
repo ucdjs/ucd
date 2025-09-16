@@ -1,6 +1,6 @@
+import type { ApiError } from "@ucdjs/schemas";
 import type { Context } from "hono";
 import type { TypedResponse } from "hono/types";
-import type { ApiError } from "./schemas";
 
 export interface ResponseOptions {
   /**

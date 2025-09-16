@@ -5,6 +5,7 @@ export const UCDStoreManifestSchema = z.record(
   z.string(),
   z.string(),
 ).meta({
+  id: "UCDStoreManifest",
   description: dedent`
     A record of key-value pairs representing the UCD store.
     Each key is a string representing the version, and each value is the path where the version's files are stored.
@@ -50,3 +51,10 @@ export const FileEntrySchema = z.union([
 });
 
 export type FileEntry = z.infer<typeof FileEntrySchema>;
+
+export const FileEntryListSchema = z.array(FileEntrySchema).meta({
+  id: "FileEntryList",
+  description: "An array of file entries, each representing either a file or a directory.",
+});
+
+export type FileEntryList = z.infer<typeof FileEntryListSchema>;
