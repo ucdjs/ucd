@@ -1,11 +1,4 @@
 import { z } from "@hono/zod-openapi";
-import {
-  UnicodeVersionSchema as _UnicodeVersionSchema,
-} from "@ucdjs/schemas";
-
-export const UnicodeVersionSchema = _UnicodeVersionSchema.openapi("UnicodeVersion");
-
-export const UnicodeVersionListSchema = z.array(UnicodeVersionSchema).openapi("UnicodeVersionList");
 
 type TreeNode = DirectoryTreeNode | FileTreeNode;
 
