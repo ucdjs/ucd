@@ -94,6 +94,10 @@ onlyBuiltDependencies:
   - rolldown
   - workerd
 
+overrides:
+  "@asteasolutions/zod-to-openapi": 8.1.0
+  openapi-fetch: 0.14.0
+
 patchedDependencies:
   '@asteasolutions/zod-to-openapi@8.1.0': patches/@asteasolutions__zod-to-openapi@8.1.0.patch
   openapi-fetch: patches/openapi-fetch.patch
