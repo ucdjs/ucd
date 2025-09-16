@@ -20,6 +20,7 @@ export const UnicodeVersionSchema = z.object({
     description: "The status of the Unicode version. 'unsupported' means the version exists but is not yet supported by the API.",
   }),
 }).meta({
+  id: "UnicodeVersion",
   description: "Represents a Unicode version with its metadata and support status.",
   examples: [
     {
@@ -50,3 +51,10 @@ export const UnicodeVersionSchema = z.object({
 });
 
 export type UnicodeVersion = z.output<typeof UnicodeVersionSchema>;
+
+export const UnicodeVersionListSchema = z.array(UnicodeVersionSchema).meta({
+  id: "UnicodeVersionList",
+  description: "A list of Unicode versions with their metadata and support status.",
+});
+
+export type UnicodeVersionList = z.output<typeof UnicodeVersionListSchema>;

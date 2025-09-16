@@ -4,7 +4,7 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import { trimTrailingSlash } from "@luxass/utils";
 import { DEFAULT_USER_AGENT, UCD_FILE_STAT_TYPE_HEADER } from "@ucdjs/env";
 import { cache } from "hono/cache";
-import { badGateway, badRequest, notFound } from "../../lib";
+import { badGateway, badRequest, notFound } from "../../lib/errors";
 import { parseUnicodeDirectory } from "../../lib/files";
 import { GET_UCD_STORE, METADATA_WILDCARD_ROUTE, WILDCARD_ROUTE } from "./openapi";
 

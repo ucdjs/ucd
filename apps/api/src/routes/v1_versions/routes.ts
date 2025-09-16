@@ -9,9 +9,12 @@ import {
   UNICODE_VERSION_METADATA,
 } from "@luxass/unicode-utils-new";
 import { traverse } from "apache-autoindex-parse/traverse";
-import { badRequest, internalServerError, notFound } from "../../lib";
+import { badRequest, internalServerError, notFound } from "../../lib/errors";
 import { createLogger } from "../../lib/logger";
-import { GET_VERSION_FILE_TREE_ROUTE, LIST_ALL_UNICODE_VERSIONS_ROUTE } from "./openapi";
+import {
+  GET_VERSION_FILE_TREE_ROUTE,
+  LIST_ALL_UNICODE_VERSIONS_ROUTE,
+} from "./openapi";
 
 export const V1_VERSIONS_ROUTER = new OpenAPIHono<HonoEnv>().basePath("/api/v1/versions");
 

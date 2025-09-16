@@ -1,4 +1,4 @@
-import type { ApiError } from "./components";
+import type { ApiError } from "@ucdjs/schemas";
 
 /**
  * Type guard function that checks if an unknown value is an ApiError object.
