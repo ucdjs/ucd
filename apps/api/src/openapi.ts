@@ -1,6 +1,6 @@
 import type { OpenAPIHono } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
-import { createResponseComponentBuilder } from "./lib";
+import { createResponseComponentBuilder } from "./lib/openapi";
 
 export type OpenAPIObjectConfig = Parameters<OpenAPIHono["getOpenAPI31Document"]>[0];
 

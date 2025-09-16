@@ -2,6 +2,7 @@ preferWorkspacePackages: true
 saveWorkspaceProtocol: false
 linkWorkspacePackages: true
 engineStrict: true
+minimumReleaseAge: 1440 # 1 day
 
 packages:
   - "packages/*"
@@ -94,4 +95,5 @@ onlyBuiltDependencies:
   - workerd
 
 patchedDependencies:
+  '@asteasolutions/zod-to-openapi@8.1.0': patches/@asteasolutions__zod-to-openapi@8.1.0.patch
   openapi-fetch: patches/openapi-fetch.patch

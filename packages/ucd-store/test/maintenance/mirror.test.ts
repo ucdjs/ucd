@@ -1,4 +1,4 @@
-import type { ApiError } from "@ucdjs/fetch";
+import type { ApiError } from "@ucdjs/schemas";
 import { existsSync } from "node:fs";
 import { HttpResponse, mockFetch } from "#internal/test-utils/msw";
 import { setupMockStore } from "#internal/test-utils/store";
