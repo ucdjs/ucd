@@ -25,7 +25,7 @@
   "devDependencies": {
     "@changesets/changelog-github": "catalog:monorepo",
     "@changesets/cli": "catalog:monorepo",
-    "@types/node": "catalog:dev",
+    "@types/node": "catalog:types",
     "@ucdjs/test-utils-internal": "workspace:*",
     "@vitest/coverage-istanbul": "catalog:testing",
     "@vitest/ui": "catalog:testing",

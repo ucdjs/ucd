@@ -8,6 +8,7 @@ packages:
   - "packages/*"
   - "apps/*"
   - "tooling/*"
+  - "vscode"
 
 catalogs:
   monorepo:
@@ -54,9 +55,6 @@ catalogs:
     debug: 4.4.1
 
   dev:
-    "@types/picomatch": 4.0.2
-    "@types/node": 22.18.1
-    "@types/yargs-parser": 21.0.3
     tsdown: 0.15.0
     typescript: 5.9.2
     publint: 0.3.12
@@ -76,6 +74,10 @@ catalogs:
     "@types/react": 19.1.12
     "@types/react-dom": 19.1.9
     "@types/debug": 4.1.12
+    "@types/vscode": 1.100.0
+    "@types/picomatch": 4.0.2
+    "@types/node": 22.18.1
+    "@types/yargs-parser": 21.0.3
 
   web:
     react: 19.1.1
@@ -88,6 +90,12 @@ catalogs:
     "@tanstack/react-router": 1.131.36
     "@tanstack/react-router-devtools": 1.131.36
     "@tanstack/router-plugin": 1.131.36
+
+  vscode:
+    vscode-ext-gen: 1.0.2
+    reactive-vscode: 0.3.2
+    "@reactive-vscode/vueuse": 0.3.2
+    "@vscode/vsce": 3.6.0
 
 onlyBuiltDependencies:
   - esbuild

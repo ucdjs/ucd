@@ -1,0 +1,171 @@
+{
+  "name": "vscode-ucd",
+  "displayName": "UCD",
+  "version": "0.0.0",
+  "description": "Visualize and find information about UCD files.",
+  "author": {
+    "name": "Lucas Nørgård",
+    "email": "lucasnrgaard@gmail.com"
+  },
+  "publisher": "luxass",
+  "packageManager": "pnpm@10.16.1",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ucdjs/ucd.git",
+    "directory": "vscode"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./dist/extension.js",
+  "icon": "media/icon.png",
+  "engines": {
+    "vscode": "^1.100.0"
+  },
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "ucd.browse-ucd-files",
+        "title": "Browse UCD Files",
+        "category": "UCD"
+      },
+      {
+        "command": "ucd.visualize-file",
+        "title": "Visualize UCD File",
+        "category": "UCD",
+        "icon": "$(eye)",
+        "enablement": "resourceScheme == ucd"
+      },
+      {
+        "command": "ucd.refresh-explorer",
+        "title": "Refresh UCD Explorer",
+        "category": "UCD",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "ucd.open-entry",
+        "title": "Open UCD Entry",
+        "category": "UCD",
+        "icon": "$(file-text)"
+      }
+    ],
+    "configuration": {
+      "title": "UCD",
+      "properties": {
+        "ucd.local-store-path": {
+          "type": "string",
+          "description": "Path to local UCD data file store",
+          "default": ""
+        },
+        "ucd.store-filters": {
+          "type": "array",
+          "description": "Filters to apply on UCD Explorer",
+          "default": [],
+          "items": {
+            "type": "string"
+          }
+        },
+        "ucd.data-files-api": {
+          "type": "string",
+          "description": "API URL to fetch UCD data files from",
+          "default": "https://unicode-api.luxass.dev",
+          "enum": [
+            "https://unicode-api.luxass.dev",
+            "https://preview.unicode-api.luxass.dev"
+          ]
+        }
+      }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "ucd-explorer",
+          "title": "UCD Explorer",
+          "icon": "$(file-code)"
+        }
+      ]
+    },
+    "views": {
+      "ucd-explorer": [
+        {
+          "id": "ucd:explorer",
+          "name": "All Files",
+          "icon": "$(git-pull-request)"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "ucd.refresh-explorer",
+          "when": "view == ucd:explorer",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "ucd.visualize-file",
+          "when": "viewItem == ucd:explorer-file",
+          "group": "navigation"
+        },
+        {
+          "command": "ucd.open-entry",
+          "when": "viewItem == ucd:explorer-file || viewItem == ucd:explorer-folder || viewItem == ucd:version-folder",
+          "group": "navigation"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "ucd.visualize-file",
+          "group": "navigation",
+          "when": "editorLangId == ucd"
+        }
+      ]
+    },
+    "languages": [
+      {
+        "id": "ucd",
+        "aliases": [
+          "Unicode Character Database",
+          "UCD"
+        ],
+        "extensions": [
+          ".ucd"
+        ]
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "tsdown --minify",
+    "prebuild": "pnpm run ext:gen",
+    "build": "tsdown --tsconfig=./tsconfig.build.json --minify",
+    "dev": "tsdown --watch --tsconfig=./tsconfig.json",
+    "ext:gen": "vscode-ext-gen --output src/generated/meta.ts --scope ucd",
+    "package": "pnpm vsce package --no-dependencies",
+    "release": "pnpm vsce publish --no-dependencies",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "preinstall": "npx only-allow pnpm"
+  },
+  "devDependencies": {
+    "@luxass/eslint-config": "catalog:linting",
+    "@luxass/unicode-utils-new": "catalog:prod",
+    "@reactive-vscode/vueuse": "catalog:vscode",
+    "@types/node": "catalog:types",
+    "@types/vscode": "catalog:types",
+    "@ucdjs/tsconfig": "workspace:*",
+    "@ucdjs/tsdown-config": "workspace:*",
+    "@ucdjs/ucd-store": "workspace:*",
+    "@vscode/vsce": "catalog:vscode",
+    "eslint": "catalog:linting",
+    "eslint-plugin-format": "catalog:linting",
+    "reactive-vscode": "catalog:vscode",
+    "tsdown": "catalog:dev",
+    "typescript": "catalog:dev",
+    "vscode-ext-gen": "catalog:vscode"
+  }
+}
