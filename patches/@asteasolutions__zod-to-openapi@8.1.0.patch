@@ -1,0 +1,64 @@
+diff --git a/dist/index.cjs b/dist/index.cjs
+index 482ebdf198a496230e6357ff7cb71e5de280ce92..4bfc2fa3c3a8062dd9ff321eee27cf9b083447a7 100644
+--- a/dist/index.cjs
++++ b/dist/index.cjs
+@@ -329,7 +329,7 @@ class Metadata {
+     }
+     static getParamMetadata(zodSchema) {
+         const metadata = this.collectMetadata(zodSchema);
+-        return Object.assign(Object.assign({}, metadata), { 
++        return Object.assign(Object.assign({}, metadata), {
+             // A description provided from .openapi() should be taken with higher precedence
+             param: Object.assign(Object.assign({}, ((metadata === null || metadata === void 0 ? void 0 : metadata.description) ? { description: metadata.description } : {})), metadata === null || metadata === void 0 ? void 0 : metadata.param) });
+     }
+@@ -577,6 +577,9 @@ class OpenAPIRegistry {
+         };
+     }
+     schemaWithRefId(refId, zodSchema) {
++        if (!("openapi" in zodSchema)) {
++            return zodSchema.meta({ id: refId });
++        }
+         return zodSchema.openapi(refId);
+     }
+ }
+@@ -865,7 +868,7 @@ class StringTransformer {
+         const minLength = Number.isFinite(zodSchema.maxLength)
+             ? (_d = zodSchema.maxLength) !== null && _d !== void 0 ? _d : undefined
+             : undefined;
+-        return Object.assign(Object.assign({}, mapNullableType('string')), { 
++        return Object.assign(Object.assign({}, mapNullableType('string')), {
+             // FIXME: https://github.com/colinhacks/zod/commit/d78047e9f44596a96d637abb0ce209cd2732d88c
+             minLength: length !== null && length !== void 0 ? length : maxLength, maxLength: length !== null && length !== void 0 ? length : minLength, format: this.mapStringFormat(zodSchema), pattern });
+     }
+diff --git a/dist/index.mjs b/dist/index.mjs
+index 64dc09f231e37c2640d9e89414ae127f8fccb7b6..bfbd9e61bffa6010e5bd1ea5702ad99736de2975 100644
+--- a/dist/index.mjs
++++ b/dist/index.mjs
+@@ -327,7 +327,7 @@ class Metadata {
+     }
+     static getParamMetadata(zodSchema) {
+         const metadata = this.collectMetadata(zodSchema);
+-        return Object.assign(Object.assign({}, metadata), { 
++        return Object.assign(Object.assign({}, metadata), {
+             // A description provided from .openapi() should be taken with higher precedence
+             param: Object.assign(Object.assign({}, ((metadata === null || metadata === void 0 ? void 0 : metadata.description) ? { description: metadata.description } : {})), metadata === null || metadata === void 0 ? void 0 : metadata.param) });
+     }
+@@ -575,6 +575,9 @@ class OpenAPIRegistry {
+         };
+     }
+     schemaWithRefId(refId, zodSchema) {
++        if (!("openapi" in zodSchema)) {
++            return zodSchema.meta({ id: refId });
++        }
+         return zodSchema.openapi(refId);
+     }
+ }
+@@ -863,7 +866,7 @@ class StringTransformer {
+         const minLength = Number.isFinite(zodSchema.maxLength)
+             ? (_d = zodSchema.maxLength) !== null && _d !== void 0 ? _d : undefined
+             : undefined;
+-        return Object.assign(Object.assign({}, mapNullableType('string')), { 
++        return Object.assign(Object.assign({}, mapNullableType('string')), {
+             // FIXME: https://github.com/colinhacks/zod/commit/d78047e9f44596a96d637abb0ce209cd2732d88c
+             minLength: length !== null && length !== void 0 ? length : maxLength, maxLength: length !== null && length !== void 0 ? length : minLength, format: this.mapStringFormat(zodSchema), pattern });
+     }
