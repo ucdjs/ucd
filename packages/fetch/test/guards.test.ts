@@ -1,4 +1,4 @@
-import type { ApiError } from "../src/components";
+import type { ApiError } from "@ucdjs/schemas";
 import { assert, describe, expect, it } from "vitest";
 import { isApiError } from "../src/guards";
 
