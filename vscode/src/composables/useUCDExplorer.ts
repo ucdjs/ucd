@@ -9,7 +9,7 @@ import { useUCDStore } from "./useUCDStore";
 
 export interface UCDTreeItem extends TreeItem {
   __ucd?: {
-    ucdUrl: string;
+    url: string;
     version: string;
   };
 }
@@ -63,9 +63,9 @@ export const useUCDExplorer = createSingletonComposable(() => {
       return {
         treeItem: {
           iconPath: new ThemeIcon("folder"),
-          label: metadata.version + (metadata.status === "draft" ? " (Draft)" : ""),
+          label: metadata.version + (metadata.type === "draft" ? " (Draft)" : ""),
           description: metadata.date ? `Released in ${metadata.date}` : "",
-          tooltip: `Documentation: ${metadata.documentationUrl}\nUCD URL: ${metadata.ucdUrl}`,
+          tooltip: `Documentation: ${metadata.documentationUrl}\nUCD URL: ${metadata.url}`,
           collapsibleState: TreeItemCollapsibleState.Collapsed,
           contextValue: "ucd:version-folder",
           __ucd: metadata,

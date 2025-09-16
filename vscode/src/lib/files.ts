@@ -1,4 +1,5 @@
-import type { UCDStore, UnicodeVersionFile } from "@ucdjs/ucd-store";
+import type { UnicodeTreeNode } from "@ucdjs/fetch";
+import type { UCDStore } from "@ucdjs/ucd-store";
 import type { TreeViewNode } from "reactive-vscode";
 import type { UCDTreeItem } from "../composables/useUCDExplorer";
 import { hasUCDFolderPath } from "@luxass/unicode-utils-new";
@@ -6,8 +7,8 @@ import { ThemeIcon, TreeItemCollapsibleState } from "vscode";
 import * as Meta from "../generated/meta";
 import { logger } from "../logger";
 
-function mapEntryToTreeNode(version: string, entry: UnicodeVersionFile, parentPath?: string): TreeViewNode {
-  const hasChildren = entry.children && entry.children.length > 0;
+function mapEntryToTreeNode(version: string, entry: UnicodeTreeNode, parentPath?: string): TreeViewNode {
+  const hasChildren = ("children" in entry) && entry.children.length > 0;
   const currentPath = parentPath ? `${parentPath}/${entry.name}` : entry.name;
   const filePathForCommand = parentPath ? currentPath : entry.name;
 
@@ -32,7 +33,7 @@ function mapEntryToTreeNode(version: string, entry: UnicodeVersionFile, parentPa
         : {}),
       __ucd: {
         version,
-        ucdUrl: `https://unicode.org/Public/${version}/${hasUCDFolderPath(version) ? "ucd/" : ""}${filePathForCommand}`,
+        url: `https://unicode.org/Public/${version}/${hasUCDFolderPath(version) ? "ucd/" : ""}${filePathForCommand}`,
       },
     } as UCDTreeItem,
     children: hasChildren ? entry.children?.map((child) => mapEntryToTreeNode(version, child, currentPath)) : [],
