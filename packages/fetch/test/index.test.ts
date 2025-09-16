@@ -1,4 +1,4 @@
-import type { ApiError, FileEntryList, UnicodeVersionList } from "../src";
+import type { ApiError, FileEntryList, UnicodeVersionList } from "@ucdjs/schemas";
 import { HttpResponse, mockFetch } from "#internal/test-utils/msw";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { assert, describe, expect, it } from "vitest";
