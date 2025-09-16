@@ -27,12 +27,12 @@ export function useOpenEntryCommand() {
         return;
       }
 
-      if (!ucdItem?.ucdUrl) {
+      if (!ucdItem?.url) {
         logger.error("UCD item does not have a valid URL.");
         return;
       }
 
-      executeCommand("vscode.open", Uri.parse(ucdItem.ucdUrl));
+      executeCommand("vscode.open", Uri.parse(ucdItem.url));
       return;
     }
 

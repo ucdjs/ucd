@@ -43,7 +43,11 @@ function mapEntryToTreeNode(version: string, entry: UnicodeTreeNode, parentPath?
 export async function getFilesByVersion(store: UCDStore, version: string): Promise<TreeViewNode[]> {
   try {
     const data = await store.getFileTree(version);
-    return data.map((entry) => mapEntryToTreeNode(version, entry));
+    return data.map((entry) => mapEntryToTreeNode(
+      version,
+      // @ts-expect-error - entry is definitely a UnicodeTreeNode
+      entry,
+    ));
   } catch (err) {
     logger.error(`Error fetching files for version ${version}:`, err);
     return [];
