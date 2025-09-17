@@ -20,7 +20,7 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
 
-      - name: Check provenance downgrades
+      - name: check provenance downgrades
         uses: danielroe/provenance-action@a5a718233ca12eff67651fcf29a030bbbd5b3ca1 # v0.1.0
         with:
           fail-on-provenance-change: true
