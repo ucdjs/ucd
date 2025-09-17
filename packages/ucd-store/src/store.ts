@@ -134,6 +134,8 @@ export class UCDStore {
         throw new UCDStoreVersionNotFoundError(version);
       }
 
+      console.log("Listing directory for version:", join(this.basePath, version));
+
       const entries = await this.#fs.listdir(join(this.basePath, version), true);
 
       const filtered = filterTreeStructure(this.#filter, entries, extraFilters);

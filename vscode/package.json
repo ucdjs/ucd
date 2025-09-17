@@ -18,6 +18,10 @@
   "categories": [
     "Other"
   ],
+  "exports": {
+    ".": "./dist/extension.js",
+    "./package.json": "./package.json"
+  },
   "main": "./dist/extension.js",
   "icon": "media/icon.png",
   "engines": {
@@ -154,9 +158,12 @@
   "devDependencies": {
     "@luxass/eslint-config": "catalog:linting",
     "@luxass/unicode-utils-new": "catalog:prod",
+    "@luxass/utils": "catalog:prod",
     "@reactive-vscode/vueuse": "catalog:vscode",
     "@types/node": "catalog:types",
     "@types/vscode": "catalog:types",
+    "@ucdjs/fetch": "workspace:*",
+    "@ucdjs/fs-bridge": "workspace:*",
     "@ucdjs/tsconfig": "workspace:*",
     "@ucdjs/tsdown-config": "workspace:*",
     "@ucdjs/ucd-store": "workspace:*",
@@ -166,10 +173,7 @@
     "reactive-vscode": "catalog:vscode",
     "tsdown": "catalog:dev",
     "typescript": "catalog:dev",
-    "vscode-ext-gen": "catalog:vscode"
-  },
-  "exports": {
-    ".": "./dist/extension.js",
-    "./package.json": "./package.json"
+    "vscode-ext-gen": "catalog:vscode",
+    "zod": "catalog:prod"
   }
 }
