@@ -1,0 +1,199 @@
+name: deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Environment to deploy to
+        required: true
+        type: choice
+        options:
+          - preview
+          - production
+      dry-run:
+        description: Run the workflow without creating a deployment
+        required: false
+        default: false
+        type: boolean
+      app:
+        description: App to deploy (api, web, or both)
+        required: false
+        default: both
+        type: choice
+        options:
+          - both
+          - api
+          - web
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize]
+
+# automatically cancel older in-progress jobs on the same branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request_target' && github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+# remove default permissions of GITHUB_TOKEN for security
+# https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
+permissions: {}
+
+env:
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+  FORCE_COLOR: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || (github.event_name == 'pull_request' && 'preview') || 'production' }}
+    if: (github.event_name == 'workflow_dispatch') || (github.event_name == 'push' && github.repository_owner == 'ucdjs') || (github.event_name == 'pull_request' && github.repository == 'ucdjs/ucd' && github.event.pull_request.user.login == 'luxass')
+    strategy:
+      matrix:
+        app:
+          - ${{ (github.event.inputs.app == 'api' || github.event.inputs.app == 'both' || github.event.inputs.app == null) && 'api' || '' }}
+          - ${{ (github.event.inputs.app == 'web' || github.event.inputs.app == 'both' || github.event.inputs.app == null) && 'web' || '' }}
+        exclude:
+          - app: ''
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+
+      - name: setup pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+
+      - name: setup node
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: lts/*
+
+      - name: install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: build packages
+        run: pnpm build
+
+      - name: build apps
+        run: |
+          if [[ "${{ github.event.inputs.environment }}" == "preview" ]] || [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            CLOUDFLARE_ENV=preview pnpm build:apps
+          else
+            CLOUDFLARE_ENV=production pnpm build:apps
+          fi
+
+      - name: typecheck
+        run: pnpm run typecheck
+
+      - name: validate openapi
+        if: matrix.app == 'api'
+        run: pnpm --filter=@ucdjs/api run lint:openapi
+
+      - name: test api
+        if: matrix.app == 'api'
+        run: pnpm run test --project "api:unit" --project "api:worker"
+
+      - name: generate api version
+        id: api-version
+        if: matrix.app == 'api'
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          REF_NAME: ${{ github.ref_name }}
+          SHA: ${{ github.sha }}
+        run: |
+          BRANCH_NAME="${HEAD_REF:-$REF_NAME}"
+
+          # replace forward slashes and special characters with hyphens
+          CLEAN_BRANCH=$(echo "$BRANCH_NAME" | sed 's/[^a-zA-Z0-9]/-/g')
+
+          # get short SHA (first 7 characters)
+          SHORT_SHA=$(echo "$SHA" | cut -c1-7)
+
+          # combine
+          echo "version=$CLEAN_BRANCH-$SHORT_SHA" >> "$GITHUB_OUTPUT"
+
+      - name: deploy api
+        id: deploy-api
+        if: ${{ github.event.inputs.dry-run != 'true' && matrix.app == 'api' }}
+        env:
+          API_VERSION: ${{ steps.api-version.outputs.version || 'latest' }}
+        uses: cloudflare/wrangler-action@da0e0dfe58b7a431659754fdf3f186c529afbe65 # v3.14.1
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          workingDirectory: ./apps/api
+          environment: ${{ github.event.inputs.environment || (github.event_name == 'pull_request' && 'preview') || 'production' }}
+          accountId: ${{ secrets.CF_ACCOUNT_ID }}
+          vars: API_VERSION
+
+      # when using @cloudflare/vite-plugin we can't make use of the `environment` option,
+      # and if we use and empty string it will also fail due to multiple environments being defined
+      - name: deploy web
+        id: deploy-web
+        if: ${{ github.event.inputs.dry-run != 'true' && matrix.app == 'web' }}
+        uses: cloudflare/wrangler-action@da0e0dfe58b7a431659754fdf3f186c529afbe65 # v3.14.1
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          workingDirectory: ./apps/web
+          accountId: ${{ secrets.CF_ACCOUNT_ID }}
+
+      # Only run PR comment steps for preview deployments
+      - name: extract values
+        id: extract-values
+        if: github.event_name == 'pull_request'
+        env:
+          API_DEPLOYMENT_URL: ${{ steps.deploy-api.outputs.deployment-url }}
+          WEB_DEPLOYMENT_URL: ${{ steps.deploy-web.outputs.deployment-url }}
+          APP: ${{ matrix.app }}
+        run: |
+          DEPLOYMENT_URL="${API_DEPLOYMENT_URL:-${WEB_DEPLOYMENT_URL}}"
+          if [ -z "$DEPLOYMENT_URL" ]; then
+            echo "No deployment URL found."
+            exit 1
+          fi
+
+          CLEANED_URL=$(echo "$DEPLOYMENT_URL" | sed 's/ (custom domain)//')
+          echo "deployment-url=https://$CLEANED_URL" >> "$GITHUB_OUTPUT"
+
+          echo "capitalized-app=$(echo "$APP" | awk '{print toupper(substr($0,1)) substr($0,2)}')" >> "$GITHUB_OUTPUT"
+
+      - name: find existing comment
+        id: find-comment
+        if: github.event_name == 'pull_request'
+        uses: peter-evans/find-comment@3eae4d37986fb5a8592848f6a574fdf654e61f9e # v3.1.0
+        env:
+          APP: ${{ matrix.app }}
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: "github-actions[bot]"
+          body-includes: <!-- worker-preview:${{ env.APP }} -->
+
+      - name: create or update pr comment
+        if: github.event_name == 'pull_request'
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          APP: ${{ matrix.app }}
+          DEPLOYMENT_URL: ${{ steps.extract-values.outputs.deployment-url }}
+          CAPITALIZED_APP: ${{ steps.extract-values.outputs.capitalized-app }}
+        with:
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            <!-- worker-preview:${{ env.APP }} -->
+            ## Preview Deployment for ${{ env.CAPITALIZED_APP }}
+
+            The ${{ env.CAPITALIZED_APP }} worker has been deployed successfully.
+
+            ${{ env.DEPLOYMENT_URL && format('**Preview URL:** {0}', env.DEPLOYMENT_URL) || '' }}
+
+            This preview was built from commit ${{ env.HEAD_SHA }}
+
+            ---
+            <sub>🤖 This comment will be updated automatically when you push new commits to this PR.</sub>
+          edit-mode: replace
