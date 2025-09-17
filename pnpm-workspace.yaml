@@ -20,18 +20,18 @@ catalogs:
     "@vitest/coverage-istanbul": 3.2.4
     "@vitest/ui": 3.2.4
     vitest: 3.2.4
-    vitest-testdirs: 4.2.0
+    vitest-testdirs: 4.2.1
     msw: 2.11.2
-    "@cloudflare/vitest-pool-workers": 0.8.71
+    "@cloudflare/vitest-pool-workers": 0.9.2
 
   linting:
-    "@luxass/eslint-config": 5.3.1
+    "@luxass/eslint-config": 5.3.2
     "@stoplight/spectral-cli": 6.15.0
     eslint: 9.35.0
     eslint-plugin-format: 1.0.1
     "@luxass/spectral-ruleset": 1.1.0
-    "@typescript-eslint/utils": 8.43.0
-    "@eslint-react/eslint-plugin": 1.53.0
+    "@typescript-eslint/utils": 8.44.0
+    "@eslint-react/eslint-plugin": 1.53.1
     eslint-plugin-react-hooks: 5.2.0
     eslint-plugin-react-refresh: 0.4.20
 
@@ -39,42 +39,42 @@ catalogs:
     # merge these together when heading inference is implemented better
     "@luxass/unicode-utils": 0.11.0
     "@luxass/unicode-utils-new": npm:@luxass/unicode-utils@0.12.0-beta.11
-    "@luxass/utils": 2.7.0
+    "@luxass/utils": 2.7.2
     farver: 0.4.2
     yargs-parser: 22.0.0
     defu: 6.1.4
-    zod: 4.1.6
-    "@ai-sdk/openai": 2.0.28
-    ai: 5.0.39
+    zod: 4.1.9
+    "@ai-sdk/openai": 2.0.30
+    ai: 5.0.44
     knitwork: 1.2.0
     picomatch: 4.0.3
     apache-autoindex-parse: 3.0.3
     openapi-fetch: 0.14.0
     pathe: 2.0.3
     "@clack/prompts": 1.0.0-alpha.4
-    debug: 4.4.1
+    debug: 4.4.3
 
   dev:
-    tsdown: 0.15.0
+    tsdown: 0.15.2
     typescript: 5.9.2
     publint: 0.3.12
     nanotar: 0.2.0
     openapi-typescript: 7.8.0
     tsx: 4.20.5
-    memfs: 4.39.0
+    memfs: 4.42.0
 
   workers:
-    wrangler: 4.35.0
+    wrangler: 4.37.1
     "@hono/zod-openapi": 1.1.0
     "@scalar/hono-api-reference": 0.9.18
-    hono: 4.9.6
-    "@cloudflare/workers-types": 4.20250910.0
+    hono: 4.9.7
+    "@cloudflare/workers-types": 4.20250917.0
 
   types:
-    "@types/react": 19.1.12
+    "@types/react": 19.1.13
     "@types/react-dom": 19.1.9
     "@types/debug": 4.1.12
-    "@types/vscode": 1.100.0
+    "@types/vscode": 1.104.0
     "@types/picomatch": 4.0.2
     "@types/node": 22.18.1
     "@types/yargs-parser": 21.0.3
@@ -86,13 +86,13 @@ catalogs:
     "@tailwindcss/vite": 4.1.13
     "@vitejs/plugin-react": 5.0.2
     vite: 7.1.5
-    "@cloudflare/vite-plugin": 1.12.4
-    "@tanstack/react-router": 1.131.36
-    "@tanstack/react-router-devtools": 1.131.36
-    "@tanstack/router-plugin": 1.131.36
+    "@cloudflare/vite-plugin": 1.13.2
+    "@tanstack/react-router": 1.131.44
+    "@tanstack/react-router-devtools": 1.131.44
+    "@tanstack/router-plugin": 1.131.44
 
   vscode:
-    vscode-ext-gen: 1.0.2
+    vscode-ext-gen: 1.1.0
     reactive-vscode: 0.3.2
     "@reactive-vscode/vueuse": 0.3.2
     "@vscode/vsce": 3.6.0
