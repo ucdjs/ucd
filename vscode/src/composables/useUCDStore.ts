@@ -7,50 +7,7 @@ import { createSingletonComposable, ref, watch } from "reactive-vscode";
 import { Uri, workspace } from "vscode";
 import { z } from "zod";
 import { config } from "../config";
-
-export const useUCDStore = createSingletonComposable(() => {
-  const store = ref<UCDStore | null>(null);
-
-  const createStoreFromConfig = async (localDataFilesStore: string | null): Promise<UCDStore> => {
-    // TODO: fix this later
-    // by either implementing a "string array to filter patterns (extracts exclude and include from strings)",
-    // or making use of both include and exclude in the config
-    const globalFilters = /* config["store-filters"] || */ {};
-    console.log("Creating UCD store with config:", { localDataFilesStore, globalFilters });
-    if (localDataFilesStore == null || localDataFilesStore.trim() === "") {
-      return createHTTPUCDStore({
-        globalFilters,
-      });
-    } else {
-      return createUCDStore({
-        globalFilters,
-        fs: vscodeFSBridge({
-          basePath: localDataFilesStore,
-        }),
-        basePath: localDataFilesStore,
-      });
-    }
-  };
-
-  watch(
-    () => config["local-store-path"],
-    async (newVal, oldVal) => {
-      if (newVal === oldVal) {
-        return;
-      }
-
-      try {
-        store.value = await createStoreFromConfig(newVal);
-      } catch (error) {
-        console.error("Failed to create UCD store:", error);
-        store.value = null;
-      }
-    },
-    { immediate: true },
-  );
-
-  return store;
-});
+import { logger } from "../logger";
 
 const vscodeFSBridge = defineFileSystemBridge({
   optionsSchema: z.object({
@@ -156,12 +113,12 @@ const vscodeFSBridge = defineFileSystemBridge({
 
         return rootEntries;
       },
-      async write(path, data, encoding = "utf-8") {
+      async write(path, data) {
         const resolvedPath = resolveSafePath(baseUri.fsPath, path);
         const resolvedUri = Uri.file(resolvedPath);
         const parentUri = Uri.joinPath(resolvedUri, "..");
 
-        // Check if parent directory exists, create if not
+        // check if parent directory exists, create if not
         try {
           await workspace.fs.stat(parentUri);
         } catch {
@@ -189,4 +146,48 @@ const vscodeFSBridge = defineFileSystemBridge({
       },
     };
   },
+});
+
+export const useUCDStore = createSingletonComposable(() => {
+  const store = ref<UCDStore | null>(null);
+
+  const createStoreFromConfig = async (localDataFilesStore: string | null): Promise<UCDStore> => {
+    // TODO: fix this later
+    // by either implementing a "string array to filter patterns (extracts exclude and include from strings)",
+    // or making use of both include and exclude in the config
+    const globalFilters = /* config["store-filters"] || */ {};
+    logger.info("Creating UCD store with config:", { localDataFilesStore, globalFilters });
+    if (localDataFilesStore == null || localDataFilesStore.trim() === "") {
+      return createHTTPUCDStore({
+        globalFilters,
+      });
+    } else {
+      return createUCDStore({
+        globalFilters,
+        fs: vscodeFSBridge({
+          basePath: localDataFilesStore,
+        }),
+        basePath: localDataFilesStore,
+      });
+    }
+  };
+
+  watch(
+    () => config["local-store-path"],
+    async (newVal, oldVal) => {
+      if (newVal === oldVal) {
+        return;
+      }
+
+      try {
+        store.value = await createStoreFromConfig(newVal);
+      } catch (error) {
+        console.error("Failed to create UCD store:", error);
+        store.value = null;
+      }
+    },
+    { immediate: true },
+  );
+
+  return store;
 });
