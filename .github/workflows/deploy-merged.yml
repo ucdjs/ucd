@@ -81,8 +81,11 @@ jobs:
         run: pnpm build
 
       - name: build apps
+        env:
+          ENVIRONMENT: ${{ github.event.inputs.environment }}
+          EVENT_NAME: ${{ github.event_name }}
         run: |
-          if [[ "${{ github.event.inputs.environment }}" == "preview" ]] || [[ "${{ github.event_name }}" == "pull_request" ]]; then
+          if [[ "$ENVIRONMENT" == "preview" ]] || [[ "$EVENT_NAME" == "pull_request" ]]; then
             CLOUDFLARE_ENV=preview pnpm build:apps
           else
             CLOUDFLARE_ENV=production pnpm build:apps
