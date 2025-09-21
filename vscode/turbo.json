@@ -3,6 +3,9 @@
   "extends": ["//"],
   "tasks": {
     "build": {
+      "dependsOn": [
+        "ext:gen"
+      ],
       "outputs": [
         "dist/**",
         "src/generated/**"

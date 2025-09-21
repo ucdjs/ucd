@@ -142,7 +142,6 @@
   },
   "scripts": {
     "vscode:prepublish": "pnpm run build",
-    "prebuild": "pnpm run ext:gen",
     "build": "tsdown --tsconfig=./tsconfig.build.json --minify",
     "dev": "tsdown --watch --tsconfig=./tsconfig.json",
     "ext:gen": "vscode-ext-gen --output src/generated/meta.ts --scope ucd",
