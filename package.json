@@ -8,7 +8,8 @@
   "packageManager": "pnpm@10.16.1",
   "workspaces": [
     "packages/*",
-    "apps/*"
+    "apps/*",
+    "vscode"
   ],
   "scripts": {
     "build": "turbo run build --filter \"./packages/*\" --concurrency=15",
@@ -16,7 +17,7 @@
     "clean": "turbo run clean && git clean -xdf node_modules",
     "dev": "turbo watch dev --filter \"./packages/*\"",
     "dev:apps": "turbo run dev --filter \"./apps/*\"",
-    "dev:vscode": "pnpm --filter \"./vscode\" run dev",
+    "dev:vscode": "turbo run dev --filter \"./vscode\"",
     "lint": "turbo run lint",
     "test": "vitest run",
     "test:watch": "vitest",

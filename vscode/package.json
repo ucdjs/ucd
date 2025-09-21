@@ -3,6 +3,7 @@
   "displayName": "UCD",
   "version": "0.0.0",
   "description": "Visualize and find information about UCD files.",
+  "type": "module",
   "author": {
     "name": "Lucas Nørgård",
     "email": "lucasnrgaard@gmail.com"
@@ -18,11 +19,7 @@
   "categories": [
     "Other"
   ],
-  "exports": {
-    ".": "./dist/extension.js",
-    "./package.json": "./package.json"
-  },
-  "main": "./dist/extension.js",
+  "main": "./dist/extension.cjs",
   "icon": "media/icon.png",
   "engines": {
     "vscode": "^1.100.0"
