@@ -141,7 +141,7 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "tsdown --minify",
+    "vscode:prepublish": "pnpm run build",
     "prebuild": "pnpm run ext:gen",
     "build": "tsdown --tsconfig=./tsconfig.build.json --minify",
     "dev": "tsdown --watch --tsconfig=./tsconfig.json",
@@ -149,8 +149,7 @@
     "package": "pnpm vsce package --no-dependencies",
     "release": "pnpm vsce publish --no-dependencies",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit",
-    "preinstall": "npx only-allow pnpm"
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:linting",

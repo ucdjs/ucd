@@ -9,6 +9,9 @@
       ]
     },
     "dev": {
+      "dependsOn": [
+        "^build"
+      ],
       "persistent": false
     },
     "typecheck": {

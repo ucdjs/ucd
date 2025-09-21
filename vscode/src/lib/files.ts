@@ -1,6 +1,6 @@
 import type { UnicodeTreeNode } from "@ucdjs/fetch";
 import type { UCDStore } from "@ucdjs/ucd-store";
-import type { TreeViewNode } from "reactive-vscode";
+import type { Ref, TreeViewNode } from "reactive-vscode";
 import type { UCDTreeItem } from "../composables/useUCDExplorer";
 import { hasUCDFolderPath } from "@luxass/unicode-utils-new";
 import { ThemeIcon, TreeItemCollapsibleState } from "vscode";
@@ -8,6 +8,9 @@ import * as Meta from "../generated/meta";
 import { logger } from "../logger";
 
 function mapEntryToTreeNode(version: string, entry: UnicodeTreeNode, parentPath?: string): TreeViewNode {
+  if (entry == null) {
+    throw new Error("Entry is null or undefined");
+  }
   const hasChildren = ("children" in entry) && entry.children.length > 0;
   const currentPath = parentPath ? `${parentPath}/${entry.name}` : entry.name;
   const filePathForCommand = parentPath ? currentPath : entry.name;
@@ -42,10 +45,14 @@ function mapEntryToTreeNode(version: string, entry: UnicodeTreeNode, parentPath?
 
 export async function getFilesByVersion(store: UCDStore, version: string): Promise<TreeViewNode[]> {
   try {
-    const data = await store.getFileTree(version);
+    const [data, err] = await store.getFileTree(version);
+
+    if (err) {
+      throw err;
+    }
+
     return data.map((entry) => mapEntryToTreeNode(
       version,
-      // @ts-expect-error - entry is definitely a UnicodeTreeNode
       entry,
     ));
   } catch (err) {

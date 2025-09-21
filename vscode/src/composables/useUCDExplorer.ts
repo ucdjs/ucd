@@ -1,7 +1,7 @@
 import type { TreeViewNode } from "reactive-vscode";
 import type { TreeItem } from "vscode";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
-import { computed, createSingletonComposable, ref } from "reactive-vscode";
+import { computed, createSingletonComposable, ref, toRaw } from "reactive-vscode";
 import { ThemeIcon, TreeItemCollapsibleState } from "vscode";
 import { getFilesByVersion } from "../lib/files";
 import { logger } from "../logger";
@@ -41,10 +41,10 @@ export const useUCDExplorer = createSingletonComposable(() => {
     const loadingPromise = (async () => {
       try {
         const files = await getFilesByVersion(
-          // @ts-expect-error - we know it's initialized if we're here
-          store.value!,
+          toRaw(store.value!),
           version,
         );
+
         childrenCache.value.set(version, files);
         return files;
       } catch (error) {
