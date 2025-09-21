@@ -59,8 +59,6 @@ export class UCDStore {
       versions: [],
     });
 
-    console.error("HELLO!");
-
     if (fs == null) {
       throw new UCDStoreGenericError("FileSystemBridge instance is required to create a UCDStore.");
     }
