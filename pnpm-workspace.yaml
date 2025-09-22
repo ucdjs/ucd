@@ -109,3 +109,4 @@ overrides:
 patchedDependencies:
   "@asteasolutions/zod-to-openapi@8.1.0": patches/@asteasolutions__zod-to-openapi@8.1.0.patch
   openapi-fetch: patches/openapi-fetch.patch
+  vscode-ext-gen@1.1.0: patches/vscode-ext-gen@1.1.0.patch

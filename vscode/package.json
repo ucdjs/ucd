@@ -63,11 +63,26 @@
           "default": ""
         },
         "ucd.store-filters": {
-          "type": "array",
+          "type": "object",
           "description": "Filters to apply on UCD Explorer",
-          "default": [],
-          "items": {
-            "type": "string"
+          "default": {},
+          "properties": {
+            "include": {
+              "type": "array",
+              "description": "Glob patterns for files to include",
+              "default": [],
+              "items": {
+                "type": "string"
+              }
+            },
+            "exclude": {
+              "type": "array",
+              "description": "Glob patterns for files to exclude",
+              "default": [],
+              "items": {
+                "type": "string"
+              }
+            }
           }
         },
         "ucd.data-files-api": {

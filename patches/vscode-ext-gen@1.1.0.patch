@@ -1,0 +1,58 @@
+diff --git a/dist/index.mjs b/dist/index.mjs
+index 10857c94fff2c3adfbe06179a21672a94127ead3..dbf6d0f4d468f444000719afd2938cdffefd7b1a 100644
+--- a/dist/index.mjs
++++ b/dist/index.mjs
+@@ -86,7 +86,7 @@ function generateMarkdown(packageJson) {
+     ["Key", "Description", "Type", "Default"]
+   ];
+   let languagesTable = [
+-    ["Language", "Extension", "Grammars", "Snippets"]
++    ["Language", "Extensions", "Grammars", "Snippets"]
+   ];
+   let customEditorsTable = [
+     ["Custom Editor", "priority", "filenamePattern"]
+@@ -123,19 +123,33 @@ function generateMarkdown(packageJson) {
+     configsTable = [];
+   }
+   if (packageJson.contributes?.languages?.length) {
+-    const snippets = packageJson.contributes.snippets.reduce((acc, snippet) => {
+-      acc[snippet.language] = snippet.language && snippet.path;
+-      return acc;
+-    }, {});
+-    const grammars = packageJson.contributes.grammars.reduce((acc, grammar) => {
+-      acc[grammar.language] = grammar.language && grammar.path && grammar.scopeName;
+-      return acc;
+-    }, {});
++    const snippets = (packageJson.contributes.snippets || []).reduce((acc, snippet) => {
++      if (snippet.language) {
++        acc[snippet.language] ||= []
++        acc[snippet.language].push(snippet.path)
++      }
++      return acc
++    }, {})
++    const grammars = (packageJson.contributes.grammars || []).reduce((acc, grammar) => {
++      if (grammar.language) {
++        acc[grammar.language] ||= []
++        acc[grammar.language].push(grammar.scopeName || grammar.path)
++      }
++      return acc
++    }, {})
+     languagesTable.push(
+       ...packageJson.contributes.languages.map((l) => {
+-        return [l.id, l.label, grammars[l.id], snippets[l.id]];
+-      })
+-    );
++        const grammarList = grammars[l.id] ? grammars[l.id].join(', ') : '-'
++        const snippetList = snippets[l.id] ? snippets[l.id].join(', ') : '-'
++        const extensions = l.extensions ? l.extensions.join(', ') : '-'
++        return [
++          `\`${l.id}\``,
++          extensions,
++          grammarList,
++          snippetList,
++        ]
++      }),
++    )
+   } else {
+     languagesTable = [];
+   }
