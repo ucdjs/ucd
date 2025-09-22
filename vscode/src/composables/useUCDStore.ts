@@ -9,10 +9,7 @@ export const useUCDStore = createSingletonComposable(() => {
   const store = ref<UCDStore | null>(null);
 
   const createStoreFromConfig = async (localDataFilesStore: string | null): Promise<UCDStore> => {
-    // TODO: fix this later
-    // by either implementing a "string array to filter patterns (extracts exclude and include from strings)",
-    // or making use of both include and exclude in the config
-    const globalFilters = /* config["store-filters"] || */ {};
+    const globalFilters = config["store-filters"];
     logger.info("Creating UCD store with config:", JSON.stringify({ localDataFilesStore, globalFilters }));
 
     let _store: UCDStore | null = null;
