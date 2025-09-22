@@ -11,6 +11,11 @@
         "src/generated/**"
       ]
     },
+    "ext:gen": {
+      "outputs": [
+        "src/generated/meta.ts"
+      ]
+    },
     "dev": {
       "dependsOn": [
         "^build"
