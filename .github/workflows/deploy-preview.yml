@@ -67,10 +67,9 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: build
-        run: pnpm build
-
-      - name: build apps
-        run: CLOUDFLARE_ENV=preview pnpm build:apps
+        run: pnpm run build
+        env:
+          CLOUDFLARE_ENV: preview
 
       - name: typecheck
         run: pnpm run typecheck

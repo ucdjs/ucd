@@ -62,8 +62,10 @@ jobs:
       - name: install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: build apps
-        run: CLOUDFLARE_ENV=production pnpm build:apps
+      - name: build
+        run: pnpm run build
+        env:
+          CLOUDFLARE_ENV: production
 
       - name: typecheck
         run: pnpm run typecheck

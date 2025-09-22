@@ -12,7 +12,8 @@
     "vscode"
   ],
   "scripts": {
-    "build": "turbo run build --filter \"./packages/*\" --concurrency=15",
+    "build": "turbo run build --concurrency=15",
+    "build:packages": "turbo run build --filter \"./packages/*\" --concurrency=15",
     "build:apps": "turbo run build --filter \"./apps/*\"",
     "build:vscode": "turbo run build --filter \"./vscode\"",
     "clean": "turbo run clean && git clean -xdf node_modules",
