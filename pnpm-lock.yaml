@@ -941,6 +941,16 @@ importers:
         version: 5.9.2
 
   vscode:
+    dependencies:
+      '@ucdjs/fetch':
+        specifier: workspace:*
+        version: link:../packages/fetch
+      '@ucdjs/fs-bridge':
+        specifier: workspace:*
+        version: link:../packages/fs-bridge
+      '@ucdjs/ucd-store':
+        specifier: workspace:*
+        version: link:../packages/ucd-store
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:linting
@@ -960,21 +970,12 @@ importers:
       '@types/vscode':
         specifier: catalog:types
         version: 1.104.0
-      '@ucdjs/fetch':
-        specifier: workspace:*
-        version: link:../packages/fetch
-      '@ucdjs/fs-bridge':
-        specifier: workspace:*
-        version: link:../packages/fs-bridge
       '@ucdjs/tsconfig':
         specifier: workspace:*
         version: link:../tooling/tsconfig
       '@ucdjs/tsdown-config':
         specifier: workspace:*
         version: link:../tooling/tsdown-config
-      '@ucdjs/ucd-store':
-        specifier: workspace:*
-        version: link:../packages/ucd-store
       '@vscode/vsce':
         specifier: catalog:vscode
         version: 3.6.0

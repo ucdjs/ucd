@@ -165,6 +165,11 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit"
   },
+  "dependencies": {
+    "@ucdjs/fetch": "workspace:*",
+    "@ucdjs/fs-bridge": "workspace:*",
+    "@ucdjs/ucd-store": "workspace:*"
+  },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:linting",
     "@luxass/unicode-utils-new": "catalog:prod",
@@ -172,11 +177,8 @@
     "@reactive-vscode/vueuse": "catalog:vscode",
     "@types/node": "catalog:types",
     "@types/vscode": "catalog:types",
-    "@ucdjs/fetch": "workspace:*",
-    "@ucdjs/fs-bridge": "workspace:*",
     "@ucdjs/tsconfig": "workspace:*",
     "@ucdjs/tsdown-config": "workspace:*",
-    "@ucdjs/ucd-store": "workspace:*",
     "@vscode/vsce": "catalog:vscode",
     "eslint": "catalog:linting",
     "eslint-plugin-format": "catalog:linting",
