@@ -14,6 +14,7 @@
   "scripts": {
     "build": "turbo run build --filter \"./packages/*\" --concurrency=15",
     "build:apps": "turbo run build --filter \"./apps/*\"",
+    "build:vscode": "turbo run build --filter \"./vscode\"",
     "clean": "turbo run clean && git clean -xdf node_modules",
     "dev": "turbo watch dev --filter \"./packages/*\"",
     "dev:apps": "turbo watch dev --filter \"./apps/*\"",
