@@ -92,7 +92,7 @@ catalogs:
     "@tanstack/router-plugin": 1.131.44
 
   vscode:
-    vscode-ext-gen: 1.1.0
+    vscode-ext-gen: 1.2.1
     reactive-vscode: 0.3.2
     "@reactive-vscode/vueuse": 0.3.2
     "@vscode/vsce": 3.6.0
@@ -109,4 +109,3 @@ overrides:
 patchedDependencies:
   "@asteasolutions/zod-to-openapi@8.1.0": patches/@asteasolutions__zod-to-openapi@8.1.0.patch
   openapi-fetch: patches/openapi-fetch.patch
-  vscode-ext-gen@1.1.0: patches/vscode-ext-gen@1.1.0.patch

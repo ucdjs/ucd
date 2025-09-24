@@ -163,8 +163,8 @@ catalogs:
       specifier: 0.3.2
       version: 0.3.2
     vscode-ext-gen:
-      specifier: 1.1.0
-      version: 1.1.0
+      specifier: 1.2.1
+      version: 1.2.1
   web:
     '@cloudflare/vite-plugin':
       specifier: 1.13.2
@@ -224,9 +224,6 @@ patchedDependencies:
   openapi-fetch:
     hash: 6b65c61dccaf4351409f767132092e087e01965b7cdada31678895eb02e6f945
     path: patches/openapi-fetch.patch
-  vscode-ext-gen@1.1.0:
-    hash: bbfa1a4421510032616ba87931ec678682b4478b22bbc92ddbeffb45ded0362d
-    path: patches/vscode-ext-gen@1.1.0.patch
 
 importers:
 
@@ -996,7 +993,7 @@ importers:
         version: 5.9.2
       vscode-ext-gen:
         specifier: catalog:vscode
-        version: 1.1.0(patch_hash=bbfa1a4421510032616ba87931ec678682b4478b22bbc92ddbeffb45ded0362d)
+        version: 1.2.1
       zod:
         specifier: catalog:prod
         version: 4.1.9
@@ -6367,8 +6364,8 @@ packages:
       jsdom:
         optional: true
 
-  vscode-ext-gen@1.1.0:
-    resolution: {integrity: sha512-xJ239JqH1ID5B105oCCu9tcpzB1u+KjtjopHeHQX4Gf6Oca66nxd3NFvUl4A7E+kbJsBLK9qZjkEA01zGGG7Jg==}
+  vscode-ext-gen@1.2.1:
+    resolution: {integrity: sha512-Mbw+ibiigVK4AaCRTdMMLvaKlhZ3fYGnzE8eJZiSFVf6y3FkWecfyXn0CklhXDr7NOCWp0yABkYbV7sEehtEkw==}
     hasBin: true
 
   vue-eslint-parser@10.2.0:
@@ -12913,7 +12910,7 @@ snapshots:
       - tsx
       - yaml
 
-  vscode-ext-gen@1.1.0(patch_hash=bbfa1a4421510032616ba87931ec678682b4478b22bbc92ddbeffb45ded0362d):
+  vscode-ext-gen@1.2.1:
     dependencies:
       cac: 6.7.14
 
