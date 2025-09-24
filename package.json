@@ -8,14 +8,18 @@
   "packageManager": "pnpm@10.16.1",
   "workspaces": [
     "packages/*",
-    "apps/*"
+    "apps/*",
+    "vscode"
   ],
   "scripts": {
-    "build": "turbo run build --filter \"./packages/*\" --concurrency=15",
+    "build": "turbo run build --concurrency=15",
+    "build:packages": "turbo run build --filter \"./packages/*\" --concurrency=15",
     "build:apps": "turbo run build --filter \"./apps/*\"",
+    "build:vscode": "turbo run build --filter \"./vscode\"",
     "clean": "turbo run clean && git clean -xdf node_modules",
     "dev": "turbo watch dev --filter \"./packages/*\"",
-    "dev:apps": "turbo run dev --filter \"./apps/*\"",
+    "dev:apps": "turbo watch dev --filter \"./apps/*\"",
+    "dev:vscode": "turbo watch dev --filter \"./vscode\"",
     "lint": "turbo run lint",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -25,7 +29,7 @@
   "devDependencies": {
     "@changesets/changelog-github": "catalog:monorepo",
     "@changesets/cli": "catalog:monorepo",
-    "@types/node": "catalog:dev",
+    "@types/node": "catalog:types",
     "@ucdjs/test-utils-internal": "workspace:*",
     "@vitest/coverage-istanbul": "catalog:testing",
     "@vitest/ui": "catalog:testing",

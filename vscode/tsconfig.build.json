@@ -1,0 +1,5 @@
+{
+  "extends": "@ucdjs/tsconfig/base.build",
+  "include": ["src"],
+  "exclude": ["dist"]
+}
