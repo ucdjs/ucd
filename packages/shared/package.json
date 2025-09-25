@@ -50,7 +50,7 @@
   "devDependencies": {
     "@luxass/eslint-config": "catalog:linting",
     "@types/debug": "catalog:types",
-    "@types/picomatch": "catalog:dev",
+    "@types/picomatch": "catalog:types",
     "@ucdjs/tsconfig": "workspace:*",
     "@ucdjs/tsdown-config": "workspace:*",
     "eslint": "catalog:linting",
