@@ -57,9 +57,9 @@ catalogs:
     "@types/picomatch": 4.0.2
     "@types/node": 22.18.1
     "@types/yargs-parser": 21.0.3
-    tsdown: 0.15.2
+    tsdown: 0.15.4
     typescript: 5.9.2
-    publint: 0.3.12
+    publint: 0.3.13
     nanotar: 0.2.0
     openapi-typescript: 7.8.0
     tsx: 4.20.5
