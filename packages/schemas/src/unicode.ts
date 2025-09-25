@@ -58,3 +58,45 @@ export const UnicodeVersionListSchema = z.array(UnicodeVersionSchema).meta({
 });
 
 export type UnicodeVersionList = z.output<typeof UnicodeVersionListSchema>;
+
+const BaseTreeNodeSchema = z.object({
+  name: z.string().meta({
+    description: "The name of the file or directory.",
+  }),
+  path: z.string().meta({
+    description: "The path to the file or directory.",
+  }),
+  lastModified: z.number().optional().meta({
+    description: "The last modified date of the directory, if available.",
+  }),
+});
+
+export const UnicodeTreeNodeSchema = z
+  .union([
+    BaseTreeNodeSchema.extend({
+      type: z.literal("directory").meta({
+        description: "The type of the entry, which is a directory.",
+      }),
+      get children(): z.ZodArray<typeof UnicodeTreeNodeSchema> {
+        return z.array(UnicodeTreeNodeSchema);
+      },
+    }),
+    BaseTreeNodeSchema.extend({
+      type: z.literal("file").meta({
+        description: "The type of the entry, which is a file.",
+      }),
+    }),
+  ])
+  .meta({
+    id: "UnicodeTreeNode",
+    description: "Represents a file or directory node within a Unicode data tree.",
+  });
+
+export type UnicodeTreeNode = z.output<typeof UnicodeTreeNodeSchema>;
+
+export const UnicodeTreeSchema = z.array(UnicodeTreeNodeSchema).meta({
+  id: "UnicodeTree",
+  description: "A tree structure representing files and directories in a Unicode version.",
+});
+
+export type UnicodeTree = z.output<typeof UnicodeTreeSchema>;
