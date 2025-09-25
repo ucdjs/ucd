@@ -222,6 +222,9 @@ importers:
       '@types/node':
         specifier: catalog:types
         version: 22.18.6
+      '@ucdjs/test-utils-internal':
+        specifier: workspace:*
+        version: link:tooling/test-utils
       '@vitest/coverage-istanbul':
         specifier: catalog:testing
         version: 3.2.4(vitest@3.2.4)
