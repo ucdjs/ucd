@@ -1,4 +1,4 @@
-import type { UnicodeTree } from "@ucdjs/fetch";
+import type { UnicodeTree } from "@ucdjs/schemas";
 import { HttpResponse, mockFetch } from "#internal/test-utils/msw";
 import { setupMockStore } from "#internal/test-utils/store";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
