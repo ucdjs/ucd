@@ -475,6 +475,9 @@ importers:
       '@ucdjs/env':
         specifier: workspace:*
         version: link:../env
+      '@ucdjs/schemas':
+        specifier: workspace:*
+        version: link:../schemas
       '@ucdjs/shared':
         specifier: workspace:*
         version: link:../shared

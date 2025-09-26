@@ -58,3 +58,68 @@ export const UnicodeVersionListSchema = z.array(UnicodeVersionSchema).meta({
 });
 
 export type UnicodeVersionList = z.output<typeof UnicodeVersionListSchema>;
+
+// WE CAN'T USE RECURSIVE TYPES IN HONO ZOD OPENAPI, SO WE HAVE TO DEFINE THE INTERFACES MANUALLY
+type TreeNode = DirectoryTreeNode | FileTreeNode;
+
+interface DirectoryTreeNode {
+  type: "directory";
+  name: string;
+  path: string;
+  children: TreeNode[];
+  lastModified?: number; // Unix timestamp
+}
+
+interface FileTreeNode {
+  type: "file";
+  name: string;
+  path: string;
+  lastModified?: number; // Unix timestamp
+}
+
+const BaseTreeNodeSchema = z.object({
+  name: z.string().meta({
+    description: "The name of the file or directory.",
+  }),
+  path: z.string().meta({
+    description: "The path to the file or directory.",
+  }),
+  lastModified: z.number().optional().meta({
+    description: "The last modified date of the directory, if available.",
+  }),
+});
+
+const DirectoryTreeNodeSchema: z.ZodType<DirectoryTreeNode> = BaseTreeNodeSchema.extend({
+  type: z.literal("directory").meta({
+    description: "The type of the entry, which is a directory.",
+  }),
+
+  // eslint-disable-next-line ts/no-use-before-define
+  children: z.array(z.lazy(() => UnicodeTreeNodeSchema)).meta({
+    description: "The children of the directory.",
+    type: "array",
+    items: {
+      $ref: "#/components/schemas/UnicodeTreeNode",
+    },
+  }),
+});
+
+const FileTreeNodeSchema = BaseTreeNodeSchema.extend({
+  type: z.literal("file").meta({
+    description: "The type of the entry, which is a file.",
+  }),
+});
+
+export const UnicodeTreeNodeSchema = z.union([DirectoryTreeNodeSchema, FileTreeNodeSchema]).meta({
+  id: "UnicodeTreeNode",
+  description: "A node in the Unicode file tree.",
+});
+
+export type UnicodeTreeNode = z.output<typeof UnicodeTreeNodeSchema>;
+
+export const UnicodeTreeSchema = z.array(UnicodeTreeNodeSchema).meta({
+  id: "UnicodeTree",
+  description: "A tree structure representing files and directories in a Unicode version.",
+});
+
+export type UnicodeTree = z.output<typeof UnicodeTreeSchema>;
