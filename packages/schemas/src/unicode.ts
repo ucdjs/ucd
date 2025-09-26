@@ -59,6 +59,24 @@ export const UnicodeVersionListSchema = z.array(UnicodeVersionSchema).meta({
 
 export type UnicodeVersionList = z.output<typeof UnicodeVersionListSchema>;
 
+// WE CAN'T USE RECURSIVE TYPES IN HONO ZOD OPENAPI, SO WE HAVE TO DEFINE THE INTERFACES MANUALLY
+type TreeNode = DirectoryTreeNode | FileTreeNode;
+
+interface DirectoryTreeNode {
+  type: "directory";
+  name: string;
+  path: string;
+  children: TreeNode[];
+  lastModified?: number; // Unix timestamp
+}
+
+interface FileTreeNode {
+  type: "file";
+  name: string;
+  path: string;
+  lastModified?: number; // Unix timestamp
+}
+
 const BaseTreeNodeSchema = z.object({
   name: z.string().meta({
     description: "The name of the file or directory.",
@@ -71,26 +89,31 @@ const BaseTreeNodeSchema = z.object({
   }),
 });
 
-export const UnicodeTreeNodeSchema = z
-  .union([
-    BaseTreeNodeSchema.extend({
-      type: z.literal("directory").meta({
-        description: "The type of the entry, which is a directory.",
-      }),
-      get children(): z.ZodArray<typeof UnicodeTreeNodeSchema> {
-        return z.array(UnicodeTreeNodeSchema);
-      },
-    }),
-    BaseTreeNodeSchema.extend({
-      type: z.literal("file").meta({
-        description: "The type of the entry, which is a file.",
-      }),
-    }),
-  ])
-  .meta({
-    id: "UnicodeTreeNode",
-    description: "Represents a file or directory node within a Unicode data tree.",
-  });
+const DirectoryTreeNodeSchema: z.ZodType<DirectoryTreeNode> = BaseTreeNodeSchema.extend({
+  type: z.literal("directory").meta({
+    description: "The type of the entry, which is a directory.",
+  }),
+
+  // eslint-disable-next-line ts/no-use-before-define
+  children: z.array(z.lazy(() => UnicodeTreeNodeSchema)).meta({
+    description: "The children of the directory.",
+    type: "array",
+    items: {
+      $ref: "#/components/schemas/UnicodeTreeNode",
+    },
+  }),
+});
+
+const FileTreeNodeSchema = BaseTreeNodeSchema.extend({
+  type: z.literal("file").meta({
+    description: "The type of the entry, which is a file.",
+  }),
+});
+
+export const UnicodeTreeNodeSchema = z.union([DirectoryTreeNodeSchema, FileTreeNodeSchema]).meta({
+  id: "UnicodeTreeNode",
+  description: "A node in the Unicode file tree.",
+});
 
 export type UnicodeTreeNode = z.output<typeof UnicodeTreeNodeSchema>;
 
