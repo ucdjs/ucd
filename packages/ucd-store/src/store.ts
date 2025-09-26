@@ -1,6 +1,6 @@
-import type { UCDClient, UnicodeTreeNode } from "@ucdjs/fetch";
+import type { UCDClient } from "@ucdjs/fetch";
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
-import type { UCDStoreManifest } from "@ucdjs/schemas";
+import type { UCDStoreManifest, UnicodeTreeNode } from "@ucdjs/schemas";
 import type { OperationResult, PathFilter, PathFilterOptions } from "@ucdjs/shared";
 import type { StoreError } from "./errors";
 import type { AnalyzeOptions, AnalyzeResult } from "./internal/analyze";
