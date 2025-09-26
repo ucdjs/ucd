@@ -1,5 +1,4 @@
-import type { UnicodeTree } from "@ucdjs/fetch";
-import type { ApiError } from "@ucdjs/schemas";
+import type { ApiError, UnicodeTree } from "@ucdjs/schemas";
 import { HttpResponse, mockFetch } from "#internal/test-utils/msw";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { client } from "@ucdjs/fetch";
