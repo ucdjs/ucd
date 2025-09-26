@@ -5,6 +5,3 @@
  */
 
 import type { components } from "./.generated/api";
-
-export type UnicodeTreeNode = components["schemas"]["UnicodeTreeNode"];
-export type UnicodeTree = components["schemas"]["UnicodeTree"];
