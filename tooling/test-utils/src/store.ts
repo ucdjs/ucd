@@ -1,5 +1,4 @@
-import type { UnicodeTree } from "@ucdjs/fetch";
-import type { FileEntryList, UCDStoreManifest, UnicodeVersionList } from "@ucdjs/schemas";
+import type { FileEntryList, UCDStoreManifest, UnicodeTree, UnicodeVersionList } from "@ucdjs/schemas";
 import type { DefaultBodyType, HttpResponseResolver, PathParams } from "msw";
 
 import type { EmptyObject } from "./types";
