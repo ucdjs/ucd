@@ -115,6 +115,9 @@ catalogs:
     '@cloudflare/vitest-pool-workers':
       specifier: 0.9.3
       version: 0.9.3
+    '@luxass/msw-utils':
+      specifier: 0.1.1
+      version: 0.1.1
     '@vitest/coverage-istanbul':
       specifier: 3.2.4
       version: 3.2.4
@@ -222,9 +225,6 @@ importers:
       '@types/node':
         specifier: catalog:types
         version: 22.18.6
-      '@ucdjs/test-utils-internal':
-        specifier: workspace:*
-        version: link:tooling/test-utils
       '@vitest/coverage-istanbul':
         specifier: catalog:testing
         version: 3.2.4(vitest@3.2.4)
@@ -870,6 +870,9 @@ importers:
 
   tooling/test-utils:
     dependencies:
+      '@luxass/msw-utils':
+        specifier: catalog:testing
+        version: 0.1.1(msw@2.11.3(@types/node@24.3.1)(typescript@5.9.2))
       msw:
         specifier: catalog:testing
         version: 2.11.3(@types/node@24.3.1)(typescript@5.9.2)
@@ -1970,6 +1973,11 @@ packages:
         optional: true
       prettier-plugin-astro:
         optional: true
+
+  '@luxass/msw-utils@0.1.1':
+    resolution: {integrity: sha512-mpLcWibiydRwaWP2c4CaLduN3/6xBOkTV2aVFc0SuqKdNR5x6k4bh9EyKf9hMRNQr8Yz3UiLPg4s+swzE05WcQ==}
+    peerDependencies:
+      msw: '>=2.11.0 <3.0.0'
 
   '@luxass/spectral-ruleset@1.1.0':
     resolution: {integrity: sha512-Dm4n7LuyI3nInZ9kzytOF3bTIIw2zFdBKDhOvPP2QCzNXLX2iL6BhlZX1XFcflMIARQG2h2WwP+UaFcV+0/9aQ==}
@@ -6999,6 +7007,10 @@ snapshots:
       - supports-color
       - typescript
       - vitest
+
+  '@luxass/msw-utils@0.1.1(msw@2.11.3(@types/node@24.3.1)(typescript@5.9.2))':
+    dependencies:
+      msw: 2.11.3(@types/node@24.3.1)(typescript@5.9.2)
 
   '@luxass/spectral-ruleset@1.1.0': {}
 

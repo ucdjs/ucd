@@ -1,6 +1,6 @@
 {
-  "name": "@ucdjs/test-utils-internal",
-  "version": "1.0.0",
+  "name": "@ucdjs-internal/test-utils",
+  "version": "0.0.0",
   "type": "module",
   "private": true,
   "author": {
@@ -41,6 +41,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@luxass/msw-utils": "catalog:testing",
     "msw": "catalog:testing"
   },
   "devDependencies": {
