@@ -33,6 +33,9 @@ function findWorkspaceRoot(startDir = __dirname) {
   throw new Error("Could not find workspace root. Make sure you have pnpm-workspace.yaml or package.json with workspaces field.");
 }
 
+/**
+ * @param {string} workspaceRoot
+ */
 function discoverWorkspacePackages(workspaceRoot) {
   const packages = new Map();
   const packagesDir = path.join(workspaceRoot, "packages");
@@ -69,6 +72,11 @@ for (const [name, path] of workspacePackages) {
   console.info(`  📦 ${name} -> ${path}`);
 }
 
+/**
+ * @param {string} specifier
+ * @param {import("node:module").ResolveHookContext} context
+ * @param {Parameters<import('module').ResolveHook>["2"]} nextResolve
+ */
 export async function resolve(specifier, context, nextResolve) {
   if (workspacePackages.has(specifier)) {
     const packagePath = workspacePackages.get(specifier);
