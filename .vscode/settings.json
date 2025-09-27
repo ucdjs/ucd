@@ -11,6 +11,11 @@
         "match": "apps/web/wrangler.jsonc",
         "cmd": "pnpm --filter ./apps/web run generate:types",
         "isAsync": true
+      },
+      {
+        "match": "vscode/package.json",
+        "cmd": "pnpm --filter ./vscode run ext:gen",
+        "isAsync": true
       }
     ]
   },

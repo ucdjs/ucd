@@ -1,6 +1,7 @@
 {
   "recommendations": [
     "emeraldwalk.RunOnSave",
-    "dbaeumer.vscode-eslint"
+    "dbaeumer.vscode-eslint",
+    "amodio.tsl-problem-matcher"
   ]
 }

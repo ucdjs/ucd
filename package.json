@@ -8,7 +8,8 @@
   "packageManager": "pnpm@10.17.1",
   "workspaces": [
     "packages/*",
-    "apps/*"
+    "apps/*",
+    "vscode"
   ],
   "scripts": {
     "build": "turbo run build --filter \"./packages/*\" --concurrency=15",
