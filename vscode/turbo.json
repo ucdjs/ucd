@@ -20,6 +20,7 @@
       "persistent": false
     },
     "typecheck": {
+      "dependsOn": ["ext:gen"],
       "outputs": [".cache/tsbuildinfo.json"]
     }
   }
