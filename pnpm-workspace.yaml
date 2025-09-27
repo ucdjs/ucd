@@ -94,6 +94,12 @@ catalogs:
     "@tanstack/react-router-devtools": 1.131.50
     "@tanstack/router-plugin": 1.131.50
 
+  vscode:
+    vscode-ext-gen: 1.2.1
+    reactive-vscode: 0.3.2
+    "@reactive-vscode/vueuse": 0.3.2
+    "@vscode/vsce": 3.6.0
+
 onlyBuiltDependencies:
   - esbuild
   - rolldown
