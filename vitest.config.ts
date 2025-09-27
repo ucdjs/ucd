@@ -58,7 +58,7 @@ export default defineConfig({
     environment: "node",
     mockReset: true,
     setupFiles: [
-      "@ucdjs/test-utils-internal/msw/global-setup",
+      "./tooling/test-utils/src/msw/global-setup.ts",
     ],
     onConsoleLog(log, type) {
       if (type === "stderr") {
