@@ -1,0 +1,26 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "build": {
+      "dependsOn": [
+        "ext:gen"
+      ],
+      "outputs": [
+        "dist/**",
+        "src/generated/**"
+      ]
+    },
+    "ext:gen": {
+      "outputs": [
+        "src/generated/meta.ts"
+      ]
+    },
+    "dev": {
+      "persistent": false
+    },
+    "typecheck": {
+      "outputs": [".cache/tsbuildinfo.json"]
+    }
+  }
+}
