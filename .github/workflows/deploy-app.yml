@@ -87,7 +87,7 @@ jobs:
             echo "apps=$ALL_APPS" >> "$GITHUB_OUTPUT"
           else
             # filter to include only the specified app if it exists in the deployable apps list
-            filtered_apps=$(echo "$ALL_APPS" | jq --arg app "$INPUT_APP" 'map(select(. == $app))')
+            filtered_apps=$(echo "$ALL_APPS" | jq -c --arg app "$INPUT_APP" 'map(select(. == $app))')
             echo "apps=$filtered_apps" >> "$GITHUB_OUTPUT"
           fi
 
