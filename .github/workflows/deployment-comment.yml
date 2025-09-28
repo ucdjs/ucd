@@ -1,0 +1,236 @@
+name: deployment comment
+
+on:
+  workflow_run:
+    workflows: ["deploy to preview"]
+    types:
+      - requested
+      - completed
+
+permissions: {}
+
+# This workflow handles PR comments for deployments. It's triggered by workflow_run
+# events from deploy-preview.yml. workflow_run gives us write permissions to comment
+# on fork PRs without the security risks of pull_request_target.
+jobs:
+  comment:
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.name == 'deploy to preview'
+    permissions:
+      pull-requests: write
+      actions: read
+    steps:
+      - name: download pr info artifact
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          script: |
+            const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.payload.workflow_run.id,
+            });
+
+            const prInfoArtifact = artifacts.data.artifacts.find(artifact =>
+              artifact.name === 'pr-info'
+            );
+
+            if (prInfoArtifact) {
+              const download = await github.rest.actions.downloadArtifact({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                artifact_id: prInfoArtifact.id,
+                archive_format: 'zip',
+              });
+
+              const fs = require('fs');
+              const buffer = Buffer.from(download.data);
+
+              if (buffer.length > 1024) {
+                throw new Error('Artifact too large');
+              }
+
+              fs.writeFileSync('/tmp/pr-info.zip', buffer);
+            }
+
+      - name: extract and validate pr info
+        id: extract-pr-info
+        run: |
+          if [ -f /tmp/pr-info.zip ]; then
+            cd /tmp
+            unzip -q pr-info.zip
+            if [ -f pr-data.json ]; then
+              cat pr-data.json
+
+              # extract values
+              PR_NUM=$(jq -r '.pr_number' pr-data.json)
+              HEAD_SHA=$(jq -r '.head_sha' pr-data.json)
+              DRY_RUN=$(jq -r '.dry_run' pr-data.json)
+
+              # verify pr number is actually a number
+              if ! [[ "$PR_NUM" =~ ^[0-9]+$ ]]; then
+                echo "Invalid PR number: $PR_NUM" >&2
+                exit 1
+              fi
+
+              # verify sha format (40 char hex)
+              if ! [[ "$HEAD_SHA" =~ ^[a-f0-9]{40}$ ]]; then
+                echo "Invalid SHA format: $HEAD_SHA" >&2
+                exit 1
+              fi
+
+              # verify dry-run is boolean
+              if [[ "$DRY_RUN" != "true" && "$DRY_RUN" != "false" ]]; then
+                echo "Invalid dry-run value: $DRY_RUN" >&2
+                exit 1
+              fi
+
+              echo "pr-number=$PR_NUM" >> $GITHUB_OUTPUT
+              echo "head-sha=$HEAD_SHA" >> $GITHUB_OUTPUT
+              echo "dry-run=$DRY_RUN" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+      - name: verify pr exists
+        if: steps.extract-pr-info.outputs.pr-number
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          script: |
+            try {
+              const pr = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: ${{ steps.extract-pr-info.outputs.pr-number }}
+              });
+              console.log('PR verified:', pr.data.title);
+            } catch (error) {
+              throw new Error('PR does not exist or is not accessible');
+            }
+
+      - name: find existing comment
+        id: find-comment
+        if: steps.extract-pr-info.outputs.pr-number
+        uses: peter-evans/find-comment@3eae4d37986fb5a8592848f6a574fdf654e61f9e # v3.1.0
+        env:
+          PR_NUMBER: ${{ steps.extract-pr-info.outputs.pr-number }}
+        with:
+          issue-number: ${{ env.PR_NUMBER }}
+          comment-author: "github-actions[bot]"
+          body-includes: <!-- ucdjs:deployment:preview -->
+
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        if: github.event.action == 'requested' && steps.extract-pr-info.outputs.pr-number
+        with:
+          persist-credentials: false
+
+      - name: generate pending comment table
+        id: generate-pending-table
+        if: github.event.action == 'requested' && steps.extract-pr-info.outputs.pr-number
+        uses: ./.github/actions/manage-apps
+        env:
+          DRY_RUN: ${{ steps.extract-pr-info.outputs.dry-run }}
+        with:
+          command: generate-comment-table
+          dry-run: ${{ env.DRY_RUN }}
+
+      - name: create pending comment
+        if: github.event.action == 'requested' && steps.extract-pr-info.outputs.pr-number
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        env:
+          PR_NUMBER: ${{ steps.extract-pr-info.outputs.pr-number }}
+          COMMENT_ID: ${{ steps.find-comment.outputs.comment-id }}
+          HEAD_SHA: ${{ steps.extract-pr-info.outputs.head-sha }}
+          DRY_RUN: ${{ steps.extract-pr-info.outputs.dry-run }}
+        with:
+          comment-id: ${{ env.COMMENT_ID }}
+          issue-number: ${{ env.PR_NUMBER }}
+          body: |
+            <!-- ucdjs:deployment:preview -->
+            ## 🌏 Preview Deployments
+
+            ${{ env.DRY_RUN == 'true' && '**Note: This is a dry run - no actual deployments will be created.**' || '' }}
+
+            ${{ steps.generate-pending-table.outputs.comment-table }}
+
+            **Built from commit:** `${{ env.HEAD_SHA }}`
+
+            ---
+            <sub>🤖 This comment will be updated when deployment completes.</sub>
+          edit-mode: replace
+
+      - name: download deployment results
+        if: github.event.workflow_run.conclusion && steps.extract-pr-info.outputs.pr-number
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        with:
+          script: |
+            const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.payload.workflow_run.id,
+            });
+
+            const deploymentArtifacts = artifacts.data.artifacts.filter(artifact =>
+              artifact.name.startsWith('deployment-result-')
+            );
+
+            const fs = require('fs');
+            const path = require('path');
+
+            // Create deployment results directory
+            fs.mkdirSync('/tmp/deployment-results', { recursive: true });
+
+            for (const artifact of deploymentArtifacts) {
+              const download = await github.rest.actions.downloadArtifact({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                artifact_id: artifact.id,
+                archive_format: 'zip',
+              });
+
+              const zipPath = `/tmp/${artifact.name}.zip`;
+              fs.writeFileSync(zipPath, Buffer.from(download.data));
+
+              // Extract to deployment results directory
+              const { execSync } = require('child_process');
+              execSync(`cd /tmp && unzip -q "${artifact.name}.zip" -d "deployment-results/${artifact.name}"`);
+            }
+
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        if: github.event.workflow_run.conclusion && steps.extract-pr-info.outputs.pr-number
+        with:
+          persist-credentials: false
+
+      - name: process deployment results
+        id: process-results
+        if: github.event.workflow_run.conclusion && steps.extract-pr-info.outputs.pr-number
+        uses: ./.github/actions/manage-apps
+        env:
+          DRY_RUN: ${{ steps.extract-pr-info.outputs.dry-run }}
+        with:
+          command: process-deployment-results
+          deployment-results-path: /tmp/deployment-results
+          dry-run: ${{ env.DRY_RUN }}
+
+      - name: update final comment
+        if: github.event.workflow_run.conclusion && steps.extract-pr-info.outputs.pr-number
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        env:
+          COMMENT_ID: ${{ steps.find-comment.outputs.comment-id }}
+          PR_NUMBER: ${{ steps.extract-pr-info.outputs.pr-number }}
+          HEAD_SHA: ${{ steps.extract-pr-info.outputs.head-sha }}
+          DRY_RUN: ${{ steps.extract-pr-info.outputs.dry-run }}
+        with:
+          comment-id: ${{ env.COMMENT_ID }}
+          issue-number: ${{ env.PR_NUMBER }}
+          body: |
+            <!-- ucdjs:deployment:preview -->
+            ## 🌏 Preview Deployments
+
+            ${{ env.DRY_RUN == 'true' && '**Note: This was a dry run - no actual deployments were created.**' || '' }}
+
+            ${{ steps.process-results.outputs.comment-table }}
+
+            **Built from commit:** `${{ env.HEAD_SHA }}`
+
+            ---
+            <sub>🤖 This comment was updated automatically when deployment completed.</sub>
+          edit-mode: replace

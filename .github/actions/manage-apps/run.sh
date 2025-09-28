@@ -12,6 +12,8 @@ read_apps_config() {
     cat "$CONFIG_FILE"
 }
 
+echo "Hello, World!"
+
 list_apps() {
     local apps_json
     apps_json=$(read_apps_config)
