@@ -128,30 +128,25 @@ jobs:
       - name: extract values and create deployment result
         id: extract-values
         env:
-          API_DEPLOYMENT_URL: ${{ steps.deploy-api.outputs.deployment-url }}
-          WEB_DEPLOYMENT_URL: ${{ steps.deploy-web.outputs.deployment-url }}
+          DEPLOYMENT_URL: ${{ steps.deploy-api.outputs.deployment-url || steps.deploy-web.outputs.deployment-url }}
           APP: ${{ matrix.app }}
           DRY_RUN: ${{ github.event.inputs.dry-run }}
         run: |
           # Create deployment result JSON
           if [ "$DRY_RUN" = "true" ]; then
-            deployment_result=$(jq -n --arg app "$APP" --arg status "dry-run" --arg url "" \
-              '{app: $app, status: $status, url: $url}')
-          elif [ "$APP" = "api" ] && [ -n "$API_DEPLOYMENT_URL" ]; then
-            CLEANED_URL=$(echo "$API_DEPLOYMENT_URL" | sed 's/ (custom domain)//')
-            deployment_result=$(jq -n --arg app "$APP" --arg status "deployed" --arg url "https://$CLEANED_URL" \
-              '{app: $app, status: $status, url: $url}')
-          elif [ "$APP" = "web" ] && [ -n "$WEB_DEPLOYMENT_URL" ]; then
-            CLEANED_URL=$(echo "$WEB_DEPLOYMENT_URL" | sed 's/ (custom domain)//')
-            deployment_result=$(jq -n --arg app "$APP" --arg status "deployed" --arg url "https://$CLEANED_URL" \
-              '{app: $app, status: $status, url: $url}')
+            cat > deployment-result << EOF
+          {"app":"$APP","status":"dry-run","url":""}
+          EOF
+          elif [ -n "$DEPLOYMENT_URL" ]; then
+            CLEANED_URL=$(echo "$DEPLOYMENT_URL" | sed 's/ (custom domain)//')
+            cat > deployment-result << EOF
+          {"app":"$APP","status":"deployed","url":"https://$CLEANED_URL"}
+          EOF
           else
-            deployment_result=$(jq -n --arg app "$APP" --arg status "failed" --arg url "" \
-              '{app: $app, status: $status, url: $url}')
+            cat > deployment-result << EOF
+          {"app":"$APP","status":"failed","url":""}
+          EOF
           fi
-
-          echo "$deployment_result" > deployment-result
-          echo "result=$deployment_result" >> "$GITHUB_OUTPUT"
 
       - name: upload deployment result
         uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
