@@ -1,0 +1,67 @@
+{
+  "name": "@ucdjs/test-utils",
+  "version": "0.0.0",
+  "type": "module",
+  "author": {
+    "name": "Lucas Nørgård",
+    "email": "lucasnrgaard@gmail.com",
+    "url": "https://luxass.dev"
+  },
+  "packageManager": "pnpm@10.17.1",
+  "license": "MIT",
+  "homepage": "https://github.com/ucdjs/ucd",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ucdjs/ucd.git",
+    "directory": "packages/test-utils"
+  },
+  "bugs": {
+    "url": "https://github.com/ucdjs/ucd/issues"
+  },
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "build": "tsdown --tsconfig=./tsconfig.build.json",
+    "dev": "tsdown --watch",
+    "clean": "git clean -xdf dist node_modules",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "playground:http": "tsx --tsconfig=./tsconfig.json ./playgrounds/http-playground.ts",
+    "playground:node": "tsx --tsconfig=./tsconfig.json ./playgrounds/node-playground.ts",
+    "playground:memory": "tsx --tsconfig=./tsconfig.json ./playgrounds/memory-playground.ts"
+  },
+  "peerDependencies": {
+    "@ucdjs/ucd-store": "workspace:*",
+    "vitest-testdirs": "catalog:testing"
+  },
+  "dependencies": {
+    "@ucdjs/schemas": "workspace:*",
+    "zod": "catalog:prod"
+  },
+  "devDependencies": {
+    "@luxass/eslint-config": "catalog:linting",
+    "@ucdjs-tooling/tsconfig": "workspace:*",
+    "@ucdjs-tooling/tsdown-config": "workspace:*",
+    "@ucdjs/ucd-store": "workspace:*",
+    "eslint": "catalog:linting",
+    "publint": "catalog:dev",
+    "tsdown": "catalog:dev",
+    "tsx": "catalog:dev",
+    "typescript": "catalog:dev",
+    "vitest-testdirs": "catalog:testing"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
