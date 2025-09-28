@@ -1,0 +1,44 @@
+name: Manage UCD Apps
+description: Utility action for managing UCD apps configuration
+
+inputs:
+  command:
+    description: "Command to run: list-apps, generate-comment-table, process-deployment-results"
+    required: true
+
+  deployment-results-path:
+    description: "Path to deployment results directory (for process-deployment-results)"
+    required: false
+    default: "."
+
+  dry-run:
+    description: "Whether this is a dry run (for process-deployment-results)"
+    required: false
+    default: "false"
+
+outputs:
+  apps:
+    description: "JSON array of apps (for list-apps)"
+    value: ${{ steps.manage-ucd-apps.outputs.apps }}
+
+  comment-table:
+    description: "Markdown table for PR comment (for generate-comment-table)"
+    value: ${{ steps.manage-ucd-apps.outputs.comment-table }}
+
+  deployment-results:
+    description: "Processed deployment results JSON (for process-deployment-results)"
+    value: ${{ steps.manage-ucd-apps.outputs.deployment-results }}
+
+# - inputs.* should be manually mapped to INPUT_* due to https://github.com/actions/runner/issues/665
+# - Use GITHUB_*/RUNNER_* instead of github.*/runner.* due to https://github.com/actions/runner/issues/2185
+runs:
+  using: composite
+  steps:
+    - name: UCD Apps Management
+      id: manage-ucd-apps
+      env:
+        INPUT_COMMAND: ${{ inputs.command }}
+        INPUT_DEPLOYMENT_RESULTS_PATH: ${{ inputs.deployment-results-path }}
+        INPUT_DRY_RUN: ${{ inputs.dry-run }}
+      run: bash --noprofile --norc "${GITHUB_ACTION_PATH:?}/run.sh"
+      shell: bash

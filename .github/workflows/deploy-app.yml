@@ -1,0 +1,217 @@
+name: deploy app
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: Deployment environment (production or preview)
+        required: true
+        type: string
+      cloudflare-env:
+        description: Cloudflare environment variable value
+        required: true
+        type: string
+      dry-run:
+        description: Run without creating deployment
+        required: false
+        default: false
+        type: boolean
+      app:
+        description: App to deploy (api, web, or both)
+        required: false
+        default: both
+        type: string
+      include-pr-comment:
+        description: Include PR comment functionality
+        required: false
+        default: false
+        type: boolean
+      repository-condition:
+        description: Repository condition to check
+        required: true
+        type: boolean
+      extra-build-step:
+        description: Include extra build step (pnpm build)
+        required: false
+        default: false
+        type: boolean
+
+    secrets:
+      TURBO_TOKEN:
+        description: Turbo token
+        required: true
+      TURBO_TEAM:
+        description: Turbo team
+        required: true
+      CF_API_TOKEN:
+        description: Cloudflare API token
+        required: true
+      CF_ACCOUNT_ID:
+        description: Cloudflare account ID
+        required: true
+
+# remove default permissions of GITHUB_TOKEN for security
+# https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
+permissions: {}
+
+env:
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+  FORCE_COLOR: true
+
+jobs:
+  get-apps:
+    runs-on: ubuntu-latest
+    if: inputs.repository-condition
+    outputs:
+      apps: ${{ steps.filter-apps.outputs.apps }}
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+
+      - name: get deployable apps
+        id: get-apps
+        uses: ./.github/actions/manage-apps
+        with:
+          command: list-apps
+
+      - name: filter apps based on input
+        id: filter-apps
+        env:
+          ALL_APPS: ${{ steps.get-apps.outputs.apps }}
+          INPUT_APP: ${{ inputs.app }}
+        run: |
+          # parse the input and filter apps accordingly
+          if [ "$INPUT_APP" = "both" ]; then
+            APPS_TO_DEPLOY=$ALL_APPS
+          else
+            # filter to include only the specified app if it exists in the deployable apps list
+            APPS_TO_DEPLOY=$(echo "$ALL_APPS" | jq -c --arg app "$INPUT_APP" 'map(select(. == $app))')
+          fi
+
+          echo "Apps to deploy: $APPS_TO_DEPLOY"
+          echo "apps=$APPS_TO_DEPLOY" >> "$GITHUB_OUTPUT"
+
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: get-apps
+    if: ${{ inputs.repository-condition && fromJson(needs.get-apps.outputs.apps)[0] != null }}
+    strategy:
+      fail-fast: ${{ inputs.environment == 'production' }}
+      matrix:
+        app: ${{ fromJson(needs.get-apps.outputs.apps) }}
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+
+      - name: setup pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+
+      - name: setup node
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: lts/*
+          package-manager-cache: false
+
+      - name: install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: build
+        if: ${{ inputs.extra-build-step }}
+        run: pnpm build
+
+      - name: build apps
+        env:
+          CLOUDFLARE_ENV: ${{ inputs.cloudflare-env }}
+        run: pnpm build:apps
+
+      - name: typecheck
+        run: pnpm run typecheck
+
+      - name: validate openapi
+        if: matrix.app == 'api'
+        run: pnpm --filter=@ucdjs/api run lint:openapi
+
+      - name: test api
+        if: matrix.app == 'api'
+        run: pnpm run test --project "api:unit" --project "api:worker"
+
+      - name: generate api version
+        id: api-version
+        if: matrix.app == 'api'
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          REF_NAME: ${{ github.ref_name }}
+          SHA: ${{ github.sha }}
+        run: |
+          BRANCH_NAME="${HEAD_REF:-$REF_NAME}"
+
+          # replace forward slashes and special characters with hyphens
+          CLEAN_BRANCH=$(echo "$BRANCH_NAME" | sed 's/[^a-zA-Z0-9]/-/g')
+
+          # get short SHA (first 7 characters)
+          SHORT_SHA=$(echo "$SHA" | cut -c1-7)
+
+          # combine
+          echo "version=$CLEAN_BRANCH-$SHORT_SHA" >> "$GITHUB_OUTPUT"
+
+      - name: deploy api
+        id: deploy-api
+        if: ${{ !inputs.dry-run && matrix.app == 'api' }}
+        env:
+          API_VERSION: ${{ steps.api-version.outputs.version || 'latest' }}
+        uses: cloudflare/wrangler-action@da0e0dfe58b7a431659754fdf3f186c529afbe65 # v3.14.1
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          workingDirectory: ./apps/api
+          environment: ${{ inputs.environment }}
+          accountId: ${{ secrets.CF_ACCOUNT_ID }}
+          vars: API_VERSION
+
+      # when using @cloudflare/vite-plugin we can't make use of the `environment` option,
+      # and if we use and empty string it will also fail due to multiple environments being defined
+      - name: deploy web
+        id: deploy-web
+        if: ${{ !inputs.dry-run && matrix.app == 'web' }}
+        uses: cloudflare/wrangler-action@da0e0dfe58b7a431659754fdf3f186c529afbe65 # v3.14.1
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          workingDirectory: ./apps/web
+          accountId: ${{ secrets.CF_ACCOUNT_ID }}
+
+      - name: extract values and create deployment result
+        id: extract-values
+        if: ${{ inputs.include-pr-comment }}
+        env:
+          DEPLOYMENT_URL: ${{ steps.deploy-api.outputs.deployment-url || steps.deploy-web.outputs.deployment-url }}
+          APP: ${{ matrix.app }}
+          DRY_RUN: ${{ inputs.dry-run }}
+        run: |
+          # Create deployment result JSON
+          if [ "$DRY_RUN" = "true" ]; then
+            cat > deployment-result << EOF
+          {"app":"$APP","status":"dry-run","url":""}
+          EOF
+          elif [ -n "$DEPLOYMENT_URL" ]; then
+            CLEANED_URL=$(echo "$DEPLOYMENT_URL" | sed 's/ (custom domain)//')
+            cat > deployment-result << EOF
+          {"app":"$APP","status":"deployed","url":"https://$CLEANED_URL"}
+          EOF
+          else
+            cat > deployment-result << EOF
+          {"app":"$APP","status":"failed","url":""}
+          EOF
+          fi
+
+      - name: upload deployment result
+        if: ${{ inputs.include-pr-comment }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: deployment-result-${{ matrix.app }}
+          path: deployment-result
+          retention-days: 1
