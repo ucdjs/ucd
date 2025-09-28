@@ -38,6 +38,9 @@ env:
 
 jobs:
   deploy:
+    permissions:
+      contents: read
+      pull-requests: write
     uses: ./.github/workflows/deploy-app.yml
     with:
       environment: preview
