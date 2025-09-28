@@ -49,7 +49,6 @@ jobs:
           - app: ''
     permissions:
       contents: read
-      pull-requests: write
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
@@ -126,53 +125,143 @@ jobs:
           workingDirectory: ./apps/web
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
 
-      - name: extract values
+      - name: extract values and create deployment result
         id: extract-values
         env:
           API_DEPLOYMENT_URL: ${{ steps.deploy-api.outputs.deployment-url }}
           WEB_DEPLOYMENT_URL: ${{ steps.deploy-web.outputs.deployment-url }}
           APP: ${{ matrix.app }}
+          DRY_RUN: ${{ github.event.inputs.dry-run }}
         run: |
-          DEPLOYMENT_URL="${API_DEPLOYMENT_URL:-${WEB_DEPLOYMENT_URL}}"
-          if [ -z "$DEPLOYMENT_URL" ]; then
-            echo "No deployment URL found."
-            exit 1
+          # Create deployment result JSON
+          if [ "$DRY_RUN" = "true" ]; then
+            deployment_result=$(jq -n --arg app "$APP" --arg status "dry-run" --arg url "" \
+              '{app: $app, status: $status, url: $url}')
+          elif [ "$APP" = "api" ] && [ -n "$API_DEPLOYMENT_URL" ]; then
+            CLEANED_URL=$(echo "$API_DEPLOYMENT_URL" | sed 's/ (custom domain)//')
+            deployment_result=$(jq -n --arg app "$APP" --arg status "deployed" --arg url "https://$CLEANED_URL" \
+              '{app: $app, status: $status, url: $url}')
+          elif [ "$APP" = "web" ] && [ -n "$WEB_DEPLOYMENT_URL" ]; then
+            CLEANED_URL=$(echo "$WEB_DEPLOYMENT_URL" | sed 's/ (custom domain)//')
+            deployment_result=$(jq -n --arg app "$APP" --arg status "deployed" --arg url "https://$CLEANED_URL" \
+              '{app: $app, status: $status, url: $url}')
+          else
+            deployment_result=$(jq -n --arg app "$APP" --arg status "failed" --arg url "" \
+              '{app: $app, status: $status, url: $url}')
           fi
 
-          CLEANED_URL=$(echo "$DEPLOYMENT_URL" | sed 's/ (custom domain)//')
-          echo "deployment-url=https://$CLEANED_URL" >> "$GITHUB_OUTPUT"
+          echo "$deployment_result" > deployment-result
+          echo "result=$deployment_result" >> "$GITHUB_OUTPUT"
 
-          echo "capitalized-app=$(echo "$APP" | awk '{print toupper(substr($0,1,1)) substr($0,2)}')" >> "$GITHUB_OUTPUT"
+      - name: upload deployment result
+        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
+        with:
+          name: deployment-result-${{ matrix.app }}
+          path: deployment-result
+          retention-days: 1
+
+  comment-preview:
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: always() && github.repository == 'ucdjs/ucd' && github.event.pull_request.user.login == 'luxass'
+    permissions:
+      pull-requests: write
+    steps:
+      - name: download deployment results
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        with:
+          pattern: deployment-result-*
+          merge-multiple: true
+
+      - name: process deployment results
+        id: process-results
+        env:
+          DRY_RUN: ${{ github.event.inputs.dry-run }}
+        run: |
+          # Initialize variables
+          api_status="⏭️ Skipped"
+          web_status="⏭️ Skipped"
+          api_url="N/A"
+          web_url="N/A"
+
+          # Process API deployment result if it exists
+          if [ -f "deployment-result-api" ]; then
+            api_result=$(cat deployment-result-api)
+            api_app_status=$(echo "$api_result" | jq -r '.status')
+            api_app_url=$(echo "$api_result" | jq -r '.url')
+
+            case "$api_app_status" in
+              "deployed")
+                api_status="✅ Deployed"
+                api_url="[View Preview]($api_app_url)"
+                ;;
+              "dry-run")
+                api_status="⏸️ Dry Run"
+                ;;
+              "failed")
+                api_status="❌ Failed"
+                ;;
+            esac
+          fi
+
+          # Process Web deployment result if it exists
+          if [ -f "deployment-result-web" ]; then
+            web_result=$(cat deployment-result-web)
+            web_app_status=$(echo "$web_result" | jq -r '.status')
+            web_app_url=$(echo "$web_result" | jq -r '.url')
+
+            case "$web_app_status" in
+              "deployed")
+                web_status="✅ Deployed"
+                web_url="[View Preview]($web_app_url)"
+                ;;
+              "dry-run")
+                web_status="⏸️ Dry Run"
+                ;;
+              "failed")
+                web_status="❌ Failed"
+                ;;
+            esac
+          fi
+
+          # Set outputs
+          echo "api-status=$api_status" >> "$GITHUB_OUTPUT"
+          echo "web-status=$web_status" >> "$GITHUB_OUTPUT"
+          echo "api-url=$api_url" >> "$GITHUB_OUTPUT"
+          echo "web-url=$web_url" >> "$GITHUB_OUTPUT"
 
       - name: find existing comment
         id: find-comment
         uses: peter-evans/find-comment@3eae4d37986fb5a8592848f6a574fdf654e61f9e # v3.1.0
-        env:
-          APP: ${{ matrix.app }}
         with:
           issue-number: ${{ github.event.pull_request.number }}
           comment-author: "github-actions[bot]"
-          body-includes: <!-- worker-preview:${{ env.APP }} -->
+          body-includes: <!-- ucdjs:deployment:preview -->
 
-      - name: create or update pr comment
+      - name: create consolidated pr comment
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         env:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-          APP: ${{ matrix.app }}
-          DEPLOYMENT_URL: ${{ steps.extract-values.outputs.deployment-url }}
-          CAPITALIZED_APP: ${{ steps.extract-values.outputs.capitalized-app }}
+          DRY_RUN: ${{ github.event.inputs.dry-run }}
+          API_STATUS: ${{ steps.process-results.outputs.api-status }}
+          WEB_STATUS: ${{ steps.process-results.outputs.web-status }}
+          API_URL: ${{ steps.process-results.outputs.api-url }}
+          WEB_URL: ${{ steps.process-results.outputs.web-url }}
         with:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
           body: |
-            <!-- worker-preview:${{ env.APP }} -->
-            ## Preview Deployment for ${{ env.CAPITALIZED_APP }}
+            <!-- ucdjs:deployment:preview -->
+            ## 🚀 Preview Deployments
 
-            The ${{ env.CAPITALIZED_APP }} worker has been deployed successfully.
+            ${{ env.DRY_RUN == 'true' && '**Note: This was a dry run - no actual deployments were created.**' || '' }}
 
-            ${{ env.DEPLOYMENT_URL && format('**Preview URL:** {0}', env.DEPLOYMENT_URL) || '' }}
+            | App | Status | Preview URL |
+            |-----|--------|-------------|
+            | API | $API_STATUS | $API_URL |
+            | Web | $WEB_STATUS | $WEB_URL |
 
-            This preview was built from commit ${{ env.HEAD_SHA }}
+            **Built from commit:** `$HEAD_SHA`
 
             ---
             <sub>🤖 This comment will be updated automatically when you push new commits to this PR.</sub>
