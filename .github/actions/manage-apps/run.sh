@@ -78,7 +78,7 @@ process_deployment_results() {
         fi
 
         # add to results
-        results=$(echo "$results" | jq --arg app "$app_name" --arg status "$status" --arg url "$url" '
+        results=$(echo "$results" | jq -c --arg app "$app_name" --arg status "$status" --arg url "$url" '
             .[$app] = {"status": $status, "url": $url}
         ')
 
@@ -111,7 +111,7 @@ process_deployment_results() {
 
 case "$INPUT_COMMAND" in
     "list-apps")
-        apps_list=$(list_apps | jq -R . | jq -s .)
+        apps_list=$(list_apps | jq -R -s -c .)
         echo "apps=$apps_list" >> "$GITHUB_OUTPUT"
         ;;
     "generate-comment-table")
