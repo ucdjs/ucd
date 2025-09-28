@@ -84,12 +84,15 @@ jobs:
         run: |
           # parse the input and filter apps accordingly
           if [ "$INPUT_APP" = "both" ]; then
-            echo "apps=$ALL_APPS" >> "$GITHUB_OUTPUT"
+            APPS_TO_DEPLOY=$ALL_APPS
           else
             # filter to include only the specified app if it exists in the deployable apps list
-            filtered_apps=$(echo "$ALL_APPS" | jq -c --arg app "$INPUT_APP" 'map(select(. == $app))')
-            echo "apps=$filtered_apps" >> "$GITHUB_OUTPUT"
+            APPS_TO_DEPLOY=$(echo "$ALL_APPS" | jq -c --arg app "$INPUT_APP" 'map(select(. == $app))')
           fi
+
+          echo "Apps to deploy: $APPS_TO_DEPLOY"
+          echo "apps=$APPS_TO_DEPLOY" >> "$GITHUB_OUTPUT"
+
 
   deploy:
     runs-on: ubuntu-latest
