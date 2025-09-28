@@ -1,40 +1,69 @@
-name: GitHub Actions Security Analysis
-
-permissions: {}
+name: Security Analysis
 
 on:
-  workflow_dispatch:
-  pull_request:
-    types: [opened, synchronize]
-    paths:
-      - ".github/workflows/**"
   push:
     branches:
       - main
       - "renovate/**"
-    paths:
-      - ".github/workflows/**"
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize]
+  workflow_dispatch:
+
+# remove default permissions of GITHUB_TOKEN for security
+# https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
+permissions: {}
 
 jobs:
-  zizmor:
-    name: zizmor
+  provenance:
+    name: check package provenance
     runs-on: ubuntu-latest
     permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: check provenance downgrades
+        uses: danielroe/provenance-action@41bcc969e579d9e29af08ba44fcbfdf95cee6e6c # v0.1.1
+        with:
+          fail-on-provenance-change: true
+          fail-on-downgrade: true
+
+  workflow-security:
+    name: workflow security analysis
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
       security-events: write
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           persist-credentials: false
 
+      - name: check for workflow changes
+        uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+        id: changes
+        with:
+          filters: |
+            workflows:
+              - '.github/workflows/**'
+
       - name: install uv
+        if: steps.changes.outputs.workflows == 'true'
         uses: astral-sh/setup-uv@b75a909f75acd358c2196fb9a5f1299a9a8868a4 # v6.7.0
 
       - name: run zizmor
+        if: steps.changes.outputs.workflows == 'true'
         run: uvx zizmor --format sarif . > results.sarif
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: upload sarif file
+        if: steps.changes.outputs.workflows == 'true'
         uses: github/codeql-action/upload-sarif@573acd9552f33577783abde4acb66a1058e762e5 # codeql-bundle-v2.23.1
         with:
           sarif_file: results.sarif
