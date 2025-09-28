@@ -150,34 +150,34 @@ jobs:
           workingDirectory: ./apps/web
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
 
-      # - name: extract values and create deployment result
-      #   id: extract-values
-      #   if: ${{ inputs.include-pr-comment }}
-      #   env:
-      #     DEPLOYMENT_URL: ${{ steps.deploy-api.outputs.deployment-url || steps.deploy-web.outputs.deployment-url }}
-      #     APP: ${{ matrix.app }}
-      #     DRY_RUN: ${{ inputs.dry-run }}
-      #   run: |
-      #     # Create deployment result JSON
-      #     if [ "$DRY_RUN" = "true" ]; then
-      #       cat > deployment-result << EOF
-      #     {"app":"$APP","status":"dry-run","url":""}
-      #     EOF
-      #     elif [ -n "$DEPLOYMENT_URL" ]; then
-      #       CLEANED_URL=$(echo "$DEPLOYMENT_URL" | sed 's/ (custom domain)//')
-      #       cat > deployment-result << EOF
-      #     {"app":"$APP","status":"deployed","url":"https://$CLEANED_URL"}
-      #     EOF
-      #     else
-      #       cat > deployment-result << EOF
-      #     {"app":"$APP","status":"failed","url":""}
-      #     EOF
-      #     fi
+      - name: extract values and create deployment result
+        id: extract-values
+        if: ${{ inputs.include-pr-comment }}
+        env:
+          DEPLOYMENT_URL: ${{ steps.deploy-api.outputs.deployment-url || steps.deploy-web.outputs.deployment-url }}
+          APP: ${{ matrix.app }}
+          DRY_RUN: ${{ inputs.dry-run }}
+        run: |
+          # Create deployment result JSON
+          if [ "$DRY_RUN" = "true" ]; then
+            cat > deployment-result << EOF
+          {"app":"$APP","status":"dry-run","url":""}
+          EOF
+          elif [ -n "$DEPLOYMENT_URL" ]; then
+            CLEANED_URL=$(echo "$DEPLOYMENT_URL" | sed 's/ (custom domain)//')
+            cat > deployment-result << EOF
+          {"app":"$APP","status":"deployed","url":"https://$CLEANED_URL"}
+          EOF
+          else
+            cat > deployment-result << EOF
+          {"app":"$APP","status":"failed","url":""}
+          EOF
+          fi
 
-      # - name: upload deployment result
-      #   if: ${{ inputs.include-pr-comment }}
-      #   uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-      #   with:
-      #     name: deployment-result-${{ matrix.app }}
-      #     path: deployment-result
-      #     retention-days: 1
+      - name: upload deployment result
+        if: ${{ inputs.include-pr-comment }}
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: deployment-result-${{ matrix.app }}
+          path: deployment-result
+          retention-days: 1
