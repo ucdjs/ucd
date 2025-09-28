@@ -181,6 +181,7 @@ jobs:
           web_url="N/A"
 
           ls -la
+          ls -la deployment-result
 
           # Process API deployment result if it exists
           if [ -f "deployment-result-api" ]; then
