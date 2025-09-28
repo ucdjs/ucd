@@ -33,6 +33,14 @@ env:
   FORCE_COLOR: true
 
 jobs:
+  debug:
+    name: debug info
+    runs-on: ubuntu-latest
+    if: ${{ github.event.inputs.dry-run == 'true' }}
+    steps:
+      - name: print head sha
+        run: echo "${{ github.event.pull_request.head.sha }}"
+
   upsert-deployment-comment:
     name: upsert deployment comment
     runs-on: ubuntu-latest
