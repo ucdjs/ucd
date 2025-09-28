@@ -49,8 +49,8 @@
   "devDependencies": {
     "@luxass/eslint-config": "catalog:linting",
     "@types/picomatch": "catalog:types",
-    "@ucdjs/tsconfig": "workspace:*",
-    "@ucdjs/tsdown-config": "workspace:*",
+    "@ucdjs-tooling/tsconfig": "workspace:*",
+    "@ucdjs-tooling/tsdown-config": "workspace:*",
     "eslint": "catalog:linting",
     "openapi-typescript": "catalog:dev",
     "publint": "catalog:dev",

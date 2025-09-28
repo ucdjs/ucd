@@ -1,5 +1,5 @@
 {
-  "name": "@ucdjs/tsdown-config",
+  "name": "@ucdjs-tooling/tsdown-config",
   "version": "1.0.0",
   "type": "module",
   "private": true,
@@ -19,7 +19,7 @@
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:linting",
-    "@ucdjs/tsconfig": "workspace:*",
+    "@ucdjs-tooling/tsconfig": "workspace:*",
     "eslint": "catalog:linting",
     "typescript": "catalog:dev"
   }

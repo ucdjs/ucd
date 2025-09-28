@@ -1,6 +1,6 @@
 // @ts-check
 import { luxass } from "@luxass/eslint-config";
-import ucdjsPlugin from "@ucdjs/eslint-plugin";
+import ucdjsPlugin from "@ucdjs-tooling/eslint-plugin";
 
 export default luxass({
   type: "app",

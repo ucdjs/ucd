@@ -6,7 +6,7 @@ import noHardcodedOpenApiTags from "./rules/no-hardcoded-openapi-tags.js";
  */
 const plugin = {
   meta: {
-    name: "@ucdjs/eslint-plugin",
+    name: "@ucdjs-tooling/eslint-plugin",
     version: "1.0.0",
   },
   rules: {

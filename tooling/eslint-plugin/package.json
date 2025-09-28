@@ -1,5 +1,5 @@
 {
-  "name": "@ucdjs/eslint-plugin",
+  "name": "@ucdjs-tooling/eslint-plugin",
   "version": "1.0.0",
   "type": "module",
   "private": true,
@@ -17,7 +17,7 @@
   "devDependencies": {
     "@luxass/eslint-config": "catalog:linting",
     "@typescript-eslint/utils": "catalog:linting",
-    "@ucdjs/tsconfig": "workspace:*",
+    "@ucdjs-tooling/tsconfig": "workspace:*",
     "eslint": "catalog:linting",
     "typescript": "catalog:dev"
   }
