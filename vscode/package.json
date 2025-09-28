@@ -178,7 +178,7 @@
     "@types/node": "catalog:types",
     "@types/vscode": "catalog:types",
     "@ucdjs-tooling/tsconfig": "workspace:*",
-    "@ucdjs/tsdown-config": "workspace:*",
+    "@ucdjs-tooling/tsdown-config": "workspace:*",
     "@vscode/vsce": "catalog:vscode",
     "eslint": "catalog:linting",
     "eslint-plugin-format": "catalog:linting",
