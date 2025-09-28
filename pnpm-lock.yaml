@@ -308,7 +308,7 @@ importers:
       '@stoplight/spectral-cli':
         specifier: catalog:linting
         version: 6.15.0
-      '@ucdjs/eslint-plugin':
+      '@ucdjs-tooling/eslint-plugin':
         specifier: workspace:*
         version: link:../../tooling/eslint-plugin
       '@ucdjs/moonbeam':
