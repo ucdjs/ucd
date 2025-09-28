@@ -52,13 +52,19 @@ jobs:
           comment-author: "github-actions[bot]"
           body-includes: <!-- ucdjs:deployment:preview -->
 
+      - name: generate initial comment table
+        id: generate-table
+        uses: ./.github/actions/manage-apps
+        with:
+          command: generate-comment-table
+          dry-run: ${{ github.event.inputs.dry-run }}
+
       - name: create initial pr comment
         if: steps.find-comment.outputs.comment-id == ''
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         env:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           DRY_RUN: ${{ github.event.inputs.dry-run }}
-          STATUS: ${{ github.event.inputs.dry-run == 'true' && '⏸️ Dry Run' || '⏳ In Progress' }}
         with:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
@@ -68,10 +74,7 @@ jobs:
 
             ${{ env.DRY_RUN == 'true' && '**Note: This was a dry run - no actual deployments were created.**' || '' }}
 
-            | Application | Status            | Preview URL |
-            | ----------- | ----------------- | ----------- |
-            | Website     | ${{ env.STATUS }} | N/A         |
-            | API         | ${{ env.STATUS }} | N/A         |
+            ${{ steps.generate-table.outputs.comment-table }}
 
             **Built from commit:** `${{ env.HEAD_SHA }}`
 
@@ -116,60 +119,11 @@ jobs:
 
       - name: process deployment results
         id: process-results
-        env:
-          DRY_RUN: ${{ github.event.inputs.dry-run }}
-        run: |
-          # Initialize variables
-          api_status="⏭️ Skipped"
-          web_status="⏭️ Skipped"
-          api_url="N/A"
-          web_url="N/A"
-
-          # Process API deployment result if it exists
-          if [ -f "deployment-result-api/deployment-result" ]; then
-            api_result=$(cat deployment-result-api/deployment-result)
-            api_app_status=$(echo "$api_result" | jq -r '.status')
-            api_app_url=$(echo "$api_result" | jq -r '.url')
-
-            case "$api_app_status" in
-              "deployed")
-                api_status="✅ Deployed"
-                api_url="[View Preview]($api_app_url)"
-                ;;
-              "dry-run")
-                api_status="⏸️ Dry Run"
-                ;;
-              "failed")
-                api_status="❌ Failed"
-                ;;
-            esac
-          fi
-
-          # Process Web deployment result if it exists
-          if [ -f "deployment-result-web/deployment-result" ]; then
-            web_result=$(cat deployment-result-web/deployment-result)
-            web_app_status=$(echo "$web_result" | jq -r '.status')
-            web_app_url=$(echo "$web_result" | jq -r '.url')
-
-            case "$web_app_status" in
-              "deployed")
-                web_status="✅ Deployed"
-                web_url="[View Preview]($web_app_url)"
-                ;;
-              "dry-run")
-                web_status="⏸️ Dry Run"
-                ;;
-              "failed")
-                web_status="❌ Failed"
-                ;;
-            esac
-          fi
-
-          # Set outputs
-          echo "api-status=$api_status" >> "$GITHUB_OUTPUT"
-          echo "web-status=$web_status" >> "$GITHUB_OUTPUT"
-          echo "api-url=$api_url" >> "$GITHUB_OUTPUT"
-          echo "web-url=$web_url" >> "$GITHUB_OUTPUT"
+        uses: ./.github/actions/manage-apps
+        with:
+          command: process-deployment-results
+          deployment-results-path: .
+          dry-run: ${{ github.event.inputs.dry-run }}
 
       - name: find existing comment
         id: find-comment
@@ -184,10 +138,6 @@ jobs:
         env:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           DRY_RUN: ${{ github.event.inputs.dry-run }}
-          API_STATUS: ${{ steps.process-results.outputs.api-status }}
-          WEB_STATUS: ${{ steps.process-results.outputs.web-status }}
-          API_URL: ${{ steps.process-results.outputs.api-url }}
-          WEB_URL: ${{ steps.process-results.outputs.web-url }}
         with:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
@@ -197,10 +147,7 @@ jobs:
 
             ${{ env.DRY_RUN == 'true' && '**Note: This was a dry run - no actual deployments were created.**' || '' }}
 
-            | Application | Status                | Preview URL        |
-            | ----------- | --------------------- | ------------------ |
-            | Website     | ${{ env.WEB_STATUS }} | ${{ env.WEB_URL }} |
-            | API         | ${{ env.API_STATUS }} | ${{ env.API_URL }} |
+            ${{ steps.process-results.outputs.comment-table }}
 
             **Built from commit:** `${{ env.HEAD_SHA }}`
 

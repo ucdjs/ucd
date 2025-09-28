@@ -1,0 +1,14 @@
+{
+  "apps": [
+    {
+      "name": "api",
+      "display_name": "API",
+      "deployable": true
+    },
+    {
+      "name": "web",
+      "display_name": "Website",
+      "deployable": true
+    }
+  ]
+}
