@@ -36,6 +36,10 @@
   - changed-files:
       - any-glob-to-any-file: packages/utils/**
 
+"pkg: test-utils":
+  - changed-files:
+      - any-glob-to-any-file: packages/test-utils/**
+
 "pkg: shared":
   - changed-files:
       - any-glob-to-any-file: packages/shared/**
