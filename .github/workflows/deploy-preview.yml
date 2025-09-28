@@ -253,10 +253,10 @@ jobs:
 
             | App | Status | Preview URL |
             |-----|--------|-------------|
-            | API | $API_STATUS | $API_URL |
-            | Web | $WEB_STATUS | $WEB_URL |
+            | API | ${{ env.API_STATUS }} | ${{ env.API_URL }} |
+            | Web | ${{ env.WEB_STATUS }} | ${{ env.WEB_URL }} |
 
-            **Built from commit:** `$HEAD_SHA`
+            **Built from commit:** `${{ env.HEAD_SHA }}`
 
             ---
             <sub>🤖 This comment will be updated automatically when you push new commits to this PR.</sub>
