@@ -180,6 +180,8 @@ jobs:
           api_url="N/A"
           web_url="N/A"
 
+          ls -la
+
           # Process API deployment result if it exists
           if [ -f "deployment-result-api" ]; then
             api_result=$(cat deployment-result-api)
