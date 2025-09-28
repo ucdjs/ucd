@@ -41,6 +41,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.repository == 'ucdjs/ucd' && github.event.pull_request.user.login == 'luxass'
     strategy:
+      fail-fast: false
       matrix:
         app:
           - ${{ (github.event.inputs.app == 'api' || github.event.inputs.app == 'both' || github.event.inputs.app == null) && 'api' || '' }}
