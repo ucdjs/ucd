@@ -179,10 +179,6 @@ jobs:
           api_url="N/A"
           web_url="N/A"
 
-          ls -la
-          ls -la deployment-result-api
-          ls -la deployment-result-web
-
           # Process API deployment result if it exists
           if [ -f "deployment-result-api/deployment-result" ]; then
             api_result=$(cat deployment-result-api/deployment-result)
