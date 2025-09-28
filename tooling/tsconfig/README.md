@@ -22,7 +22,7 @@ To use this package, setup your tsconfig by extending one of the base configurat
 ```jsonc
 // tsconfig.build.json
 {
-  "extends": "@ucdjs-tooling/tsconfig/build",
+  "extends": "@ucdjs-tooling/tsconfig/base.build",
   "include": ["src"],
   "exclude": ["dist"]
 }
