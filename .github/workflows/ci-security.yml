@@ -35,7 +35,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: upload sarif file
-        uses: github/codeql-action/upload-sarif@16df4fbc19aea13d921737861d6c622bf3cefe23 # codeql-bundle-v2.23.0
+        uses: github/codeql-action/upload-sarif@573acd9552f33577783abde4acb66a1058e762e5 # codeql-bundle-v2.23.1
         with:
           sarif_file: results.sarif
           category: zizmor

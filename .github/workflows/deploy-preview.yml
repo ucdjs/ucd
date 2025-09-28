@@ -150,7 +150,7 @@ jobs:
           fi
 
       - name: upload deployment result
-        uses: actions/upload-artifact@50769540e7f4bd5e21e526ee35c689e35e0d6874 # v4.4.0
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: deployment-result-${{ matrix.app }}
           path: deployment-result
@@ -164,10 +164,9 @@ jobs:
       pull-requests: write
     steps:
       - name: download deployment results
-        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
           pattern: deployment-result-*
-          merge-multiple: true
 
       - name: process deployment results
         id: process-results
@@ -181,11 +180,12 @@ jobs:
           web_url="N/A"
 
           ls -la
-          ls -la deployment-result
+          ls -la deployment-result-api
+          ls -la deployment-result-web
 
           # Process API deployment result if it exists
-          if [ -f "deployment-result-api" ]; then
-            api_result=$(cat deployment-result-api)
+          if [ -f "deployment-result-api/deployment-result" ]; then
+            api_result=$(cat deployment-result-api/deployment-result)
             api_app_status=$(echo "$api_result" | jq -r '.status')
             api_app_url=$(echo "$api_result" | jq -r '.url')
 
@@ -204,8 +204,8 @@ jobs:
           fi
 
           # Process Web deployment result if it exists
-          if [ -f "deployment-result-web" ]; then
-            web_result=$(cat deployment-result-web)
+          if [ -f "deployment-result-web/deployment-result" ]; then
+            web_result=$(cat deployment-result-web/deployment-result)
             web_app_status=$(echo "$web_result" | jq -r '.status')
             web_app_url=$(echo "$web_result" | jq -r '.url')
 
