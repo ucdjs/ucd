@@ -1,5 +1,5 @@
 {
-  "extends": "@ucdjs/tsconfig/base",
+  "extends": "@ucdjs-tooling/tsconfig/base",
   "references": [
     { "path": "./tsconfig.app.json" },
     { "path": "./tsconfig.node.json" },

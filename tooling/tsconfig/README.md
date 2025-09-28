@@ -1,4 +1,4 @@
-# @ucdjs/tsdown-config
+# @ucdjs-tooling/tsdown-config
 
 This package provides a set of tsconfig's which all other tsconfig's can inherit from
 
@@ -11,7 +11,7 @@ To use this package, setup your tsconfig by extending one of the base configurat
 ```jsonc
 // tsconfig.json
 {
-  "extends": "@ucdjs/tsconfig/base",
+  "extends": "@ucdjs-tooling/tsconfig/base",
   "include": ["src", "test"],
   "exclude": ["dist"]
 }
@@ -22,7 +22,7 @@ To use this package, setup your tsconfig by extending one of the base configurat
 ```jsonc
 // tsconfig.build.json
 {
-  "extends": "@ucdjs/tsconfig/build",
+  "extends": "@ucdjs-tooling/tsconfig/base.build",
   "include": ["src"],
   "exclude": ["dist"]
 }
