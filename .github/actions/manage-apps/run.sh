@@ -2,10 +2,6 @@
 
 set -euo pipefail
 
-COMMAND="$1"
-DEPLOYMENT_RESULTS_PATH="${2:-.}"
-DRY_RUN="${3:-false}"
-
 CONFIG_FILE=".github/ucdjs-apps.json"
 
 read_apps_config() {
@@ -29,7 +25,7 @@ generate_comment_table() {
     apps_json=$(read_apps_config)
 
     local status
-    if [[ "$DRY_RUN" == "true" ]]; then
+    if [[ "$INPUT_DRY_RUN" == "true" ]]; then
         status="⏸️ Dry Run"
     else
         status="⏳ In Progress"
@@ -57,7 +53,7 @@ process_deployment_results() {
     while IFS= read -r app_name; do
         local status="⏭️ Skipped"
         local url="N/A"
-        local result_file="$DEPLOYMENT_RESULTS_PATH/deployment-result-$app_name/deployment-result"
+        local result_file="$INPUT_DEPLOYMENT_RESULTS_PATH/deployment-result-$app_name/deployment-result"
 
         if [[ -f "$result_file" ]]; then
             local app_result
@@ -113,7 +109,7 @@ process_deployment_results() {
     } >> "$GITHUB_OUTPUT"
 }
 
-case "$COMMAND" in
+case "$INPUT_COMMAND" in
     "list-apps")
         apps_list=$(list_apps | jq -R . | jq -s .)
         echo "apps=$apps_list" >> "$GITHUB_OUTPUT"
@@ -130,7 +126,7 @@ case "$COMMAND" in
         process_deployment_results
         ;;
     *)
-        echo "Error: Unknown command '$COMMAND'" >&2
+        echo "Error: Unknown command '$INPUT_COMMAND'" >&2
         echo "Available commands: list-apps, generate-comment-table, process-deployment-results" >&2
         exit 1
         ;;
