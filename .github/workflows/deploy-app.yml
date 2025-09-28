@@ -94,7 +94,9 @@ jobs:
         run: pnpm build
 
       - name: build apps
-        run: CLOUDFLARE_ENV=${{ inputs.cloudflare-env }} pnpm build:apps
+        env:
+          CLOUDFLARE_ENV: ${{ inputs.cloudflare-env }}
+        run: pnpm build:apps
 
       - name: typecheck
         run: pnpm run typecheck
