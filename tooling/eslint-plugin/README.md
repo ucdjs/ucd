@@ -1,4 +1,4 @@
-# @ucdjs/eslint-plugin
+# @ucdjs-tooling/eslint-plugin
 
 This package provides a set of [eslint rules](https://eslint.org/) specific to this repository.
 
@@ -10,7 +10,7 @@ To use this package, import the ucdjs plugin:
 // eslint.config.js
 // @ts-check
 import { luxass } from "@luxass/eslint-config";
-import ucdjsPlugin from "@ucdjs/eslint-plugin";
+import ucdjsPlugin from "@ucdjs-tooling/eslint-plugin";
 
 export default luxass({
   formatters: true,
