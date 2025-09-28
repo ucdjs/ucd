@@ -111,7 +111,7 @@ process_deployment_results() {
 
 case "$INPUT_COMMAND" in
     "list-apps")
-        apps_list=$(list_apps | jq -R -s -c .)
+        apps_list=$(list_apps | jq -R -s -c 'split("\n") | map(select(. != ""))')
         echo "apps=$apps_list" >> "$GITHUB_OUTPUT"
         ;;
     "generate-comment-table")
