@@ -60,17 +60,45 @@ env:
   FORCE_COLOR: true
 
 jobs:
-  deploy:
+  get-apps:
     runs-on: ubuntu-latest
     if: ${{ inputs.repository-condition }}
+    outputs:
+      apps: ${{ steps.filter-apps.outputs.apps }}
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+
+      - name: get deployable apps
+        id: get-apps
+        uses: ./.github/actions/manage-apps
+        with:
+          command: list-apps
+
+      - name: filter apps based on input
+        id: filter-apps
+        env:
+          ALL_APPS: ${{ steps.get-apps.outputs.apps }}
+          INPUT_APP: ${{ inputs.app }}
+        run: |
+          # parse the input and filter apps accordingly
+          if [ "$INPUT_APP" = "both" ]; then
+            echo "apps=$ALL_APPS" >> "$GITHUB_OUTPUT"
+          else
+            # filter to include only the specified app if it exists in the deployable apps list
+            filtered_apps=$(echo "$ALL_APPS" | jq --arg app "$INPUT_APP" 'map(select(. == $app))')
+            echo "apps=$filtered_apps" >> "$GITHUB_OUTPUT"
+          fi
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: get-apps
+    if: ${{ inputs.repository-condition && fromJson(needs.get-apps.outputs.apps)[0] != null }}
     strategy:
       fail-fast: ${{ inputs.environment == 'production' }}
       matrix:
-        app:
-          - ${{ (inputs.app == 'api' || inputs.app == 'both') && 'api' || '' }}
-          - ${{ (inputs.app == 'web' || inputs.app == 'both') && 'web' || '' }}
-        exclude:
-          - app: ''
+        app: ${{ fromJson(needs.get-apps.outputs.apps) }}
     permissions:
       contents: read
     steps:
