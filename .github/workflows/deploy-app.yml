@@ -29,7 +29,7 @@ on:
       repository-condition:
         description: Repository condition to check
         required: true
-        type: string
+        type: boolean
       extra-build-step:
         description: Include extra build step (pnpm build)
         required: false
@@ -62,7 +62,7 @@ env:
 jobs:
   get-apps:
     runs-on: ubuntu-latest
-    if: ${{ inputs.repository-condition }}
+    if: inputs.repository-condition
     outputs:
       apps: ${{ steps.filter-apps.outputs.apps }}
     steps:

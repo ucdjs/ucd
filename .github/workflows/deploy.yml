@@ -46,7 +46,7 @@ jobs:
       dry-run: ${{ github.event.inputs.dry-run == 'true' }}
       app: ${{ github.event.inputs.app || 'both' }}
       include-pr-comment: false
-      repository-condition: github.repository_owner == 'ucdjs'
+      repository-condition: ${{ github.repository_owner == 'ucdjs/ucd' }}
       extra-build-step: false
     secrets:
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
