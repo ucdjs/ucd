@@ -36,7 +36,7 @@ jobs:
   upsert-deployment-comment:
     name: upsert deployment comment
     runs-on: ubuntu-latest
-    if: github.repository == 'ucdjs/ucd' && github.event.pull_request.user.login == 'luxass'
+    if: github.repository == 'ucdjs/ucd'
     permissions:
       pull-requests: write
     steps:
@@ -94,7 +94,7 @@ jobs:
       dry-run: ${{ github.event.inputs.dry-run == 'true' }}
       app: ${{ github.event.inputs.app || 'both' }}
       include-pr-comment: true
-      repository-condition: ${{ github.repository == 'ucdjs/ucd' && github.event.pull_request.user.login == 'luxass' }}
+      repository-condition: ${{ github.repository == 'ucdjs/ucd' }}
       extra-build-step: true
     secrets:
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
@@ -107,7 +107,7 @@ jobs:
     needs:
       - upsert-deployment-comment
       - deploy
-    if: always() && github.repository == 'ucdjs/ucd' && github.event.pull_request.user.login == 'luxass'
+    if: always() && github.repository == 'ucdjs/ucd'
     permissions:
       pull-requests: write
     steps:
