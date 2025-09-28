@@ -43,7 +43,7 @@
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:linting",
-    "@ucdjs/tsconfig": "workspace:*",
+    "@ucdjs-tooling/tsconfig": "workspace:*",
     "@ucdjs/tsdown-config": "workspace:*",
     "eslint": "catalog:linting",
     "publint": "catalog:dev",
