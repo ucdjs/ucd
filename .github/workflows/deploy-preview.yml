@@ -37,7 +37,51 @@ env:
   FORCE_COLOR: true
 
 jobs:
+  create-deployment-comment:
+    name: create deployment comment
+    runs-on: ubuntu-latest
+    if: github.repository == 'ucdjs/ucd' && github.event.pull_request.user.login == 'luxass'
+    permissions:
+      pull-requests: write
+    steps:
+      - name: find existing comment
+        id: find-comment
+        uses: peter-evans/find-comment@3eae4d37986fb5a8592848f6a574fdf654e61f9e # v3.1.0
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: "github-actions[bot]"
+          body-includes: <!-- ucdjs:deployment:preview -->
+
+      - name: create initial pr comment
+        if: steps.find-comment.outputs.comment-id == ''
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          DRY_RUN: ${{ github.event.inputs.dry-run }}
+          STATUS: ${{ github.event.inputs.dry-run == 'true' && '⏸️ Dry Run' || '⏳ In Progress' }}
+        with:
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            <!-- ucdjs:deployment:preview -->
+            ## 🌏 Preview Deployments
+
+            ${{ env.DRY_RUN == 'true' && '**Note: This was a dry run - no actual deployments were created.**' || '' }}
+
+            | Application | Status            | Preview URL |
+            | ----------- | ----------------- | ----------- |
+            | Website     | ${{ env.STATUS }} | N/A         |
+            | API         | ${{ env.STATUS }} | N/A         |
+
+            **Built from commit:** `${{ env.HEAD_SHA }}`
+
+            ---
+            <sub>🤖 This comment will be updated automatically when you push new commits to this PR.</sub>
+          edit-mode: replace
+
   deploy:
+    needs:
+      - create-deployment-comment
     permissions:
       contents: read
       pull-requests: write
@@ -56,9 +100,11 @@ jobs:
       CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
       CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
 
-  comment-preview:
+  update-deployment-comment:
     runs-on: ubuntu-latest
-    needs: deploy
+    needs:
+      - create-deployment-comment
+      - deploy
     if: always() && github.repository == 'ucdjs/ucd' && github.event.pull_request.user.login == 'luxass'
     permissions:
       pull-requests: write
@@ -147,14 +193,14 @@ jobs:
           issue-number: ${{ github.event.pull_request.number }}
           body: |
             <!-- ucdjs:deployment:preview -->
-            ## 🚀 Preview Deployments
+            ## 🌏 Preview Deployments
 
             ${{ env.DRY_RUN == 'true' && '**Note: This was a dry run - no actual deployments were created.**' || '' }}
 
-            | App | Status | Preview URL |
-            |-----|--------|-------------|
-            | API | ${{ env.API_STATUS }} | ${{ env.API_URL }} |
-            | Web | ${{ env.WEB_STATUS }} | ${{ env.WEB_URL }} |
+            | Application | Status                | Preview URL        |
+            | ----------- | --------------------- | ------------------ |
+            | Website     | ${{ env.WEB_STATUS }} | ${{ env.WEB_URL }} |
+            | API         | ${{ env.API_STATUS }} | ${{ env.API_URL }} |
 
             **Built from commit:** `${{ env.HEAD_SHA }}`
 
