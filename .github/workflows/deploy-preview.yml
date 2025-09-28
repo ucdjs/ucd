@@ -68,6 +68,8 @@ jobs:
   deploy:
     permissions:
       contents: read
+    needs:
+      - save-pr-info
     uses: ./.github/workflows/deploy-app.yml
     with:
       environment: preview
