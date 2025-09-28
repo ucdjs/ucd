@@ -89,16 +89,17 @@ process_deployment_results() {
     done < <(list_apps)
 
     # generate final comment table
-    echo "| Application | Status | Preview URL |"
-    echo "| ----------- | ------ | ----------- |"
-
-    echo "$apps_json" | jq -r --argjson results "$results" '
-        .apps[] |
-        select(.deployable == true) |
-        . as $app |
-        $results[$app.name] as $result |
-        "| \($app.display_name) | \($result.status) | \($result.url) |"
-    ' | tee /tmp/comment_table
+    {
+        echo "| Application | Status | Preview URL |"
+        echo "| ----------- | ------ | ----------- |"
+        echo "$apps_json" | jq -r --argjson results "$results" '
+            .apps[] |
+            select(.deployable == true) |
+            . as $app |
+            $results[$app.name] as $result |
+            "| \($app.display_name) | \($result.status) | \($result.url) |"
+        '
+    } > /tmp/comment_table
 
     # set outputs
     echo "deployment-results=$results" >> "$GITHUB_OUTPUT"
