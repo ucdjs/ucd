@@ -8,6 +8,8 @@ DRY_RUN="${3:-false}"
 
 CONFIG_FILE=".github/ucdjs-apps.json"
 
+echo "Hello World!"
+
 read_apps_config() {
     if [[ ! -f "$CONFIG_FILE" ]]; then
         echo "Error: $CONFIG_FILE not found" >&2
