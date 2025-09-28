@@ -47,3 +47,7 @@
 "apps: web":
   - changed-files:
       - any-glob-to-any-file: apps/web/**
+
+"🚨 ci":
+  - changed-files:
+      - any-glob-to-any-file: .github/workflows/**
