@@ -119,6 +119,7 @@ jobs:
 
       - name: create or update comment
         id: create-comment
+        if: steps.compare.outputs.has_changes == 'true' || steps.find-comment.outputs.comment-id != ''
         uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         env:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
