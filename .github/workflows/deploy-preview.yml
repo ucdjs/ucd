@@ -9,14 +9,10 @@ on:
         default: false
         type: boolean
       app:
-        description: App to deploy (api, web, or both)
+        description: App to deploy (check ucdjs-apps.json for available apps, or use 'both' for all)
         required: false
         default: both
-        type: choice
-        options:
-          - both
-          - api
-          - web
+        type: string
   pull_request:
     branches:
       - main
@@ -37,132 +33,88 @@ env:
   FORCE_COLOR: true
 
 jobs:
-  deploy:
+  upsert-deployment-comment:
+    name: upsert deployment comment
     runs-on: ubuntu-latest
     if: github.repository == 'ucdjs/ucd' && github.event.pull_request.user.login == 'luxass'
-    strategy:
-      fail-fast: false
-      matrix:
-        app:
-          - ${{ (github.event.inputs.app == 'api' || github.event.inputs.app == 'both' || github.event.inputs.app == null) && 'api' || '' }}
-          - ${{ (github.event.inputs.app == 'web' || github.event.inputs.app == 'both' || github.event.inputs.app == null) && 'web' || '' }}
-        exclude:
-          - app: ''
     permissions:
-      contents: read
+      pull-requests: write
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           persist-credentials: false
 
-      - name: setup pnpm
-        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
-
-      - name: setup node
-        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+      - name: find existing comment
+        id: find-comment
+        uses: peter-evans/find-comment@3eae4d37986fb5a8592848f6a574fdf654e61f9e # v3.1.0
         with:
-          node-version: lts/*
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: "github-actions[bot]"
+          body-includes: <!-- ucdjs:deployment:preview -->
 
-      - name: install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: build
-        run: pnpm build
-
-      - name: build apps
-        run: CLOUDFLARE_ENV=preview pnpm build:apps
-
-      - name: typecheck
-        run: pnpm run typecheck
-
-      - name: validate openapi
-        if: matrix.app == 'api'
-        run: pnpm --filter=@ucdjs/api run lint:openapi
-
-      - name: test api
-        if: matrix.app == 'api'
-        run: pnpm run test --project "api:unit" --project "api:worker"
-
-      - name: generate api version
-        id: api-version
-        if: matrix.app == 'api'
-        env:
-          HEAD_REF: ${{ github.head_ref }}
-          REF_NAME: ${{ github.ref_name }}
-          SHA: ${{ github.sha }}
-        run: |
-          BRANCH_NAME="${HEAD_REF:-$REF_NAME}"
-
-          # replace forward slashes and special characters with hyphens
-          CLEAN_BRANCH=$(echo "$BRANCH_NAME" | sed 's/[^a-zA-Z0-9]/-/g')
-
-          # get short SHA (first 7 characters)
-          SHORT_SHA=$(echo "$SHA" | cut -c1-7)
-
-          # combine
-          echo "version=$CLEAN_BRANCH-$SHORT_SHA" >> "$GITHUB_OUTPUT"
-
-      - name: deploy api
-        id: deploy-api
-        if: ${{ github.event.inputs.dry-run != 'true' && matrix.app == 'api' }}
-        env:
-          API_VERSION: ${{ steps.api-version.outputs.version || 'latest' }}
-        uses: cloudflare/wrangler-action@da0e0dfe58b7a431659754fdf3f186c529afbe65 # v3.14.1
+      - name: generate initial comment table
+        id: generate-table
+        uses: ./.github/actions/manage-apps
         with:
-          apiToken: ${{ secrets.CF_API_TOKEN }}
-          workingDirectory: ./apps/api
-          environment: preview
-          accountId: ${{ secrets.CF_ACCOUNT_ID }}
-          vars: API_VERSION
+          command: generate-comment-table
+          dry-run: ${{ github.event.inputs.dry-run }}
 
-      # when using @cloudflare/vite-plugin we can't make use of the `environment` option,
-      # and if we use and empty string it will also fail due to multiple environments being defined
-      - name: deploy web
-        id: deploy-web
-        if: ${{ github.event.inputs.dry-run != 'true' && matrix.app == 'web' }}
-        uses: cloudflare/wrangler-action@da0e0dfe58b7a431659754fdf3f186c529afbe65 # v3.14.1
-        with:
-          apiToken: ${{ secrets.CF_API_TOKEN }}
-          workingDirectory: ./apps/web
-          accountId: ${{ secrets.CF_ACCOUNT_ID }}
-
-      - name: extract values and create deployment result
-        id: extract-values
+      - name: create initial pr comment
+        uses: peter-evans/create-or-update-comment@71345be0265236311c031f5c7866368bd1eff043 # v4.0.0
         env:
-          DEPLOYMENT_URL: ${{ steps.deploy-api.outputs.deployment-url || steps.deploy-web.outputs.deployment-url }}
-          APP: ${{ matrix.app }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           DRY_RUN: ${{ github.event.inputs.dry-run }}
-        run: |
-          # Create deployment result JSON
-          if [ "$DRY_RUN" = "true" ]; then
-            cat > deployment-result << EOF
-          {"app":"$APP","status":"dry-run","url":""}
-          EOF
-          elif [ -n "$DEPLOYMENT_URL" ]; then
-            CLEANED_URL=$(echo "$DEPLOYMENT_URL" | sed 's/ (custom domain)//')
-            cat > deployment-result << EOF
-          {"app":"$APP","status":"deployed","url":"https://$CLEANED_URL"}
-          EOF
-          else
-            cat > deployment-result << EOF
-          {"app":"$APP","status":"failed","url":""}
-          EOF
-          fi
-
-      - name: upload deployment result
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: deployment-result-${{ matrix.app }}
-          path: deployment-result
-          retention-days: 1
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            <!-- ucdjs:deployment:preview -->
+            ## 🌏 Preview Deployments
 
-  comment-preview:
+            ${{ env.DRY_RUN == 'true' && '**Note: This was a dry run - no actual deployments were created.**' || '' }}
+
+            ${{ steps.generate-table.outputs.comment-table }}
+
+            **Built from commit:** `${{ env.HEAD_SHA }}`
+
+            ---
+            <sub>🤖 This comment will be updated automatically when you push new commits to this PR.</sub>
+          edit-mode: replace
+
+  deploy:
+    needs:
+      - upsert-deployment-comment
+    permissions:
+      contents: read
+      pull-requests: write
+    uses: ./.github/workflows/deploy-app.yml
+    with:
+      environment: preview
+      cloudflare-env: preview
+      dry-run: ${{ github.event.inputs.dry-run == 'true' }}
+      app: ${{ github.event.inputs.app || 'both' }}
+      include-pr-comment: true
+      repository-condition: ${{ github.repository == 'ucdjs/ucd' && github.event.pull_request.user.login == 'luxass' }}
+      extra-build-step: true
+    secrets:
+      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+      TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+      CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+      CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+
+  update-deployment-comment:
     runs-on: ubuntu-latest
-    needs: deploy
+    needs:
+      - upsert-deployment-comment
+      - deploy
     if: always() && github.repository == 'ucdjs/ucd' && github.event.pull_request.user.login == 'luxass'
     permissions:
       pull-requests: write
     steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          persist-credentials: false
+
       - name: download deployment results
         uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
@@ -170,60 +122,11 @@ jobs:
 
       - name: process deployment results
         id: process-results
-        env:
-          DRY_RUN: ${{ github.event.inputs.dry-run }}
-        run: |
-          # Initialize variables
-          api_status="⏭️ Skipped"
-          web_status="⏭️ Skipped"
-          api_url="N/A"
-          web_url="N/A"
-
-          # Process API deployment result if it exists
-          if [ -f "deployment-result-api/deployment-result" ]; then
-            api_result=$(cat deployment-result-api/deployment-result)
-            api_app_status=$(echo "$api_result" | jq -r '.status')
-            api_app_url=$(echo "$api_result" | jq -r '.url')
-
-            case "$api_app_status" in
-              "deployed")
-                api_status="✅ Deployed"
-                api_url="[View Preview]($api_app_url)"
-                ;;
-              "dry-run")
-                api_status="⏸️ Dry Run"
-                ;;
-              "failed")
-                api_status="❌ Failed"
-                ;;
-            esac
-          fi
-
-          # Process Web deployment result if it exists
-          if [ -f "deployment-result-web/deployment-result" ]; then
-            web_result=$(cat deployment-result-web/deployment-result)
-            web_app_status=$(echo "$web_result" | jq -r '.status')
-            web_app_url=$(echo "$web_result" | jq -r '.url')
-
-            case "$web_app_status" in
-              "deployed")
-                web_status="✅ Deployed"
-                web_url="[View Preview]($web_app_url)"
-                ;;
-              "dry-run")
-                web_status="⏸️ Dry Run"
-                ;;
-              "failed")
-                web_status="❌ Failed"
-                ;;
-            esac
-          fi
-
-          # Set outputs
-          echo "api-status=$api_status" >> "$GITHUB_OUTPUT"
-          echo "web-status=$web_status" >> "$GITHUB_OUTPUT"
-          echo "api-url=$api_url" >> "$GITHUB_OUTPUT"
-          echo "web-url=$web_url" >> "$GITHUB_OUTPUT"
+        uses: ./.github/actions/manage-apps
+        with:
+          command: process-deployment-results
+          deployment-results-path: .
+          dry-run: ${{ github.event.inputs.dry-run }}
 
       - name: find existing comment
         id: find-comment
@@ -238,23 +141,16 @@ jobs:
         env:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           DRY_RUN: ${{ github.event.inputs.dry-run }}
-          API_STATUS: ${{ steps.process-results.outputs.api-status }}
-          WEB_STATUS: ${{ steps.process-results.outputs.web-status }}
-          API_URL: ${{ steps.process-results.outputs.api-url }}
-          WEB_URL: ${{ steps.process-results.outputs.web-url }}
         with:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
           body: |
             <!-- ucdjs:deployment:preview -->
-            ## 🚀 Preview Deployments
+            ## 🌏 Preview Deployments
 
             ${{ env.DRY_RUN == 'true' && '**Note: This was a dry run - no actual deployments were created.**' || '' }}
 
-            | App | Status | Preview URL |
-            |-----|--------|-------------|
-            | API | ${{ env.API_STATUS }} | ${{ env.API_URL }} |
-            | Web | ${{ env.WEB_STATUS }} | ${{ env.WEB_URL }} |
+            ${{ steps.process-results.outputs.comment-table }}
 
             **Built from commit:** `${{ env.HEAD_SHA }}`
 
