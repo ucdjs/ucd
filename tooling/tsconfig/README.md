@@ -1,4 +1,4 @@
-# @ucdjs-tooling/tsdown-config
+# @ucdjs-tooling/tsconfig
 
 This package provides a set of tsconfig's which all other tsconfig's can inherit from
 
