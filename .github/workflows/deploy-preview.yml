@@ -56,7 +56,7 @@ jobs:
 
       - name: generate initial comment table
         id: generate-table
-        uses: ./.github/actions/manage-apps
+        uses: ./.github/actions/manage-apps@ab73d3b0b9464581e286863734cad57d90206a98
         with:
           command: generate-comment-table
           dry-run: ${{ github.event.inputs.dry-run }}
@@ -124,7 +124,7 @@ jobs:
 
       - name: process deployment results
         id: process-results
-        uses: ./.github/actions/manage-apps
+        uses: ./.github/actions/manage-apps@ab73d3b0b9464581e286863734cad57d90206a98
         with:
           command: process-deployment-results
           deployment-results-path: .
