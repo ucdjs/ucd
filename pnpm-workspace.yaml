@@ -102,10 +102,20 @@ catalogs:
     "@reactive-vscode/vueuse": 0.3.2
     "@vscode/vsce": 3.6.0
 
+  docs:
+    docus: 5.0.0
+    nuxt: 4.1.2
+    better-sqlite3: 12.2.0
+    "@nuxt/content": 3.7.1
+    "@nuxt/eslint": 1.9.0
+    "@nuxt/test-utils": 3.19.2
+    "@nuxt/ui": 4.0.0
+
 onlyBuiltDependencies:
   - esbuild
   - rolldown
   - workerd
+  - better-sqlite3
 
 overrides:
   "@asteasolutions/zod-to-openapi": 8.1.0
