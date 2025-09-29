@@ -16,6 +16,7 @@
     "docus": "catalog:docs",
     "eslint": "catalog:linting",
     "nuxt": "catalog:docs",
+    "vue-tsc": "catalog:docs",
     "typescript": "catalog:dev"
   }
 }

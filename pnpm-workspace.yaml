@@ -110,6 +110,7 @@ catalogs:
     "@nuxt/eslint": 1.9.0
     "@nuxt/test-utils": 3.19.2
     "@nuxt/ui": 4.0.0
+    vue-tsc: 3.1.0
 
 onlyBuiltDependencies:
   - esbuild
