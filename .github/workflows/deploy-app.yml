@@ -74,7 +74,7 @@ jobs:
 
       - name: get deployable apps
         id: get-apps
-        uses: ./.github/actions/manage-apps
+        uses: ./.github/actions/manage-apps@ab73d3b0b9464581e286863734cad57d90206a98
         with:
           command: list-apps
 
