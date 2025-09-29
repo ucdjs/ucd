@@ -2,7 +2,10 @@
   "name": "@ucdjs/docs",
   "scripts": {
     "dev": "nuxt dev --extends docus",
-    "build": "nuxt build --extends docus"
+    "build": "nuxt build --extends docus",
+    "postinstall": "nuxt prepare --extends docus",
+    "lint": "eslint .",
+    "typecheck": "vue-tsc --noEmit"
   },
   "dependencies": {
     "@nuxt/content": "catalog:docs",

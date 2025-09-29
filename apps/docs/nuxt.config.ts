@@ -5,5 +5,5 @@ export default defineNuxtConfig({
     "@nuxt/content",
     "@nuxt/ui",
     "@nuxt/test-utils"
-  ]
+  ],
 })
