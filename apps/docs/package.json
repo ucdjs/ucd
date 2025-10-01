@@ -1,0 +1,23 @@
+{
+  "name": "@ucdjs/docs",
+  "scripts": {
+    "dev": "nuxt dev --extends docus",
+    "build": "nuxt build --extends docus",
+    "postinstall": "nuxt prepare --extends docus",
+    "lint": "eslint .",
+    "typecheck": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "@nuxt/content": "catalog:docs",
+    "@nuxt/eslint": "catalog:docs",
+    "@nuxt/test-utils": "catalog:docs",
+    "@nuxt/ui": "catalog:docs",
+    "better-sqlite3": "catalog:docs",
+    "docus": "catalog:docs",
+    "eslint": "catalog:linting",
+    "nuxt": "catalog:docs",
+    "vue-tsc": "catalog:docs",
+    "typescript": "catalog:dev",
+    "wrangler": "catalog:workers"
+  }
+}

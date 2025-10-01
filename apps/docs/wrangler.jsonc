@@ -1,0 +1,54 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ucdjs-docs",
+  "main": ".output/server/index.mjs",
+  "compatibility_date": "2025-07-30",
+  "assets": {
+    "binding": "ASSETS",
+    "directory": ".output/public"
+  },
+  "compatibility_flags": [
+    "nodejs_compat",
+    "no_nodejs_compat_v2"
+  ],
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1,
+    "logs": {
+      "enabled": true
+    }
+  },
+  "vars": {
+    "API_VERSION": "x.y.z",
+    "ENVIRONMENT": "local"
+  },
+  "placement": {
+    "mode": "smart"
+  },
+  "env": {
+    "production": {
+      "name": "ucdjs-docs",
+      "preview_urls": false,
+      "vars": {
+        "API_VERSION": "x.y.z",
+        "ENVIRONMENT": "production"
+      },
+      "route": {
+        "custom_domain": true,
+        "pattern": "docs.ucdjs.dev"
+      }
+    },
+    "preview": {
+      "name": "ucdjs-docs-preview",
+      "preview_urls": false,
+      "vars": {
+        "API_VERSION": "x.y.z",
+        "ENVIRONMENT": "preview"
+      },
+      "route": {
+        "custom_domain": true,
+        "pattern": "preview.docs.ucdjs.dev"
+      }
+    }
+  }
+}
