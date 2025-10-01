@@ -85,7 +85,7 @@ jobs:
           INPUT_APP: ${{ inputs.app }}
         run: |
           # parse the input and filter apps accordingly
-          if [ "$INPUT_APP" = "both" ]; then
+          if [ "$INPUT_APP" = "all" ]; then
             APPS_TO_DEPLOY=$ALL_APPS
           else
             # filter to include only the specified app if it exists in the deployable apps list
