@@ -1,12 +1,22 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "ucdjs-docs",
+  "main": ".output/server/index.mjs",
   "compatibility_date": "2025-07-30",
+  "assets": {
+    "binding": "ASSETS",
+    "directory": ".output/public"
+  },
+  "compatibility_flags": [
+    "nodejs_compat",
+    "no_nodejs_compat_v2"
+  ],
   "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1,
     "logs": {
       "enabled": true
-    },
-    "enabled": true
+    }
   },
   "vars": {
     "API_VERSION": "x.y.z",
@@ -25,7 +35,9 @@
       }
     ]
   },
-  "placement": { "mode": "smart" },
+  "placement": {
+    "mode": "smart"
+  },
   "env": {
     "production": {
       "name": "ucdjs-docs",
