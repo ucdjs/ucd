@@ -9,7 +9,7 @@ UCD.js
 Unicode Character Database in a more readable way
 <p>
 <div align="center">
-  <a href="https://ucdjs.dev/">📚 Documentation</a>
+  <a href="https://docs.ucdjs.dev/">📚 Documentation</a>
 </div>
 <br>
 <br>
