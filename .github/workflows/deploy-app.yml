@@ -194,6 +194,7 @@ jobs:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           workingDirectory: ./apps/docs
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
+          environment: ${{ inputs.environment }}
 
       - name: extract values and create deployment result
         id: extract-values
