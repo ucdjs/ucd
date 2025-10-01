@@ -6,4 +6,11 @@ export default defineNuxtConfig({
     "@nuxt/ui",
     "@nuxt/test-utils"
   ],
+  nitro: {
+    preset: "cloudflare_module",
+    cloudflare: {
+      deployConfig: true,
+      nodeCompat: true,
+    },
+  }
 })
