@@ -9,9 +9,9 @@ on:
         default: false
         type: boolean
       app:
-        description: App to deploy (check ucdjs-apps.json for available apps, or use 'both' for all)
+        description: App to deploy (check ucdjs-apps.json for available apps, or use 'all' for all)
         required: false
-        default: both
+        default: all
         type: string
   push:
     branches:
@@ -42,9 +42,9 @@ jobs:
       environment: production
       cloudflare-env: production
       dry-run: ${{ github.event.inputs.dry-run == 'true' }}
-      app: ${{ github.event.inputs.app || 'both' }}
+      app: ${{ github.event.inputs.app || 'all' }}
       include-pr-comment: false
-      repository-condition: ${{ github.repository_owner == 'ucdjs/ucd' }}
+      repository-condition: ${{ github.repository == 'ucdjs/ucd' }}
       extra-build-step: false
     secrets:
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
