@@ -1,0 +1,24 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "extends": [
+    "//"
+  ],
+  "tasks": {
+    "build": {
+      "outputs": [
+        "dist/**",
+        ".wrangler/deploy/**",
+        ".output/**",
+        ".nuxt/**"
+      ]
+    },
+    "dev": {
+      "persistent": false
+    },
+    "typecheck": {
+      "outputs": [
+        ".cache/tsbuildinfo.json"
+      ]
+    }
+  }
+}
