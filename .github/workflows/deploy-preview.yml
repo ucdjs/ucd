@@ -9,9 +9,9 @@ on:
         default: false
         type: boolean
       app:
-        description: App to deploy (check ucdjs-apps.json for available apps, or use 'both' for all)
+        description: App to deploy (check ucdjs-apps.json for available apps, or use 'all' for all)
         required: false
-        default: both
+        default: all
         type: string
   pull_request:
     branches:
@@ -94,7 +94,7 @@ jobs:
       environment: preview
       cloudflare-env: preview
       dry-run: ${{ github.event.inputs.dry-run == 'true' }}
-      app: ${{ github.event.inputs.app || 'both' }}
+      app: ${{ github.event.inputs.app || 'all' }}
       include-pr-comment: true
       repository-condition: ${{ github.repository == 'ucdjs/ucd' && github.event.pull_request.user.login == 'luxass' }}
       extra-build-step: true
