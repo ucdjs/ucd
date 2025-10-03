@@ -23,6 +23,7 @@ permissions: {}
 
 jobs:
   upload-openapi:
+    name: upload openapi artifacts
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -67,6 +68,7 @@ jobs:
           include-hidden-files: true
 
   report-changes:
+    name: report openapi schema changes
     needs: upload-openapi
     runs-on: ubuntu-latest
     if: github.repository == 'ucdjs/ucd'

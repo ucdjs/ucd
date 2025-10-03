@@ -10,6 +10,7 @@ permissions:
 
 jobs:
   handle-approval-label:
+    name: handle openapi approval label
     if: ${{ github.repository == 'ucdjs/ucd' && github.event.label.name == 'approve-breaking-openapi' }}
     runs-on: ubuntu-latest
     steps:
@@ -20,9 +21,9 @@ jobs:
             const prNumber = context.payload.pull_request.number;
             const headSha = context.payload.pull_request.head.sha;
             const action = context.payload.action;
-            
+
             let state, description, actionText;
-            
+
             if (action === 'labeled') {
               state = 'success';
               description = 'Breaking changes approved via label';
@@ -35,9 +36,9 @@ jobs:
               console.log(`Unknown action: ${action}`);
               return;
             }
-            
+
             console.log(`${actionText} OpenAPI breaking changes for PR #${prNumber}`);
-            
+
             await github.rest.repos.createCommitStatus({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -47,5 +48,5 @@ jobs:
               description: description,
               context: 'openapi-schema-check'
             });
-            
+
             console.log(`Status check updated to ${state} via approve-breaking-openapi label ${action}`);
