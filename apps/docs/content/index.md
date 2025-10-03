@@ -1,28 +1,24 @@
 ---
 seo:
-  title: Write beautiful docs with Markdown
-  description: Ship fast, flexible, and SEO-optimized documentation with beautiful
-    design out of the box. Docus brings together the best of the Nuxt ecosystem.
-    Powered by Nuxt UI.
+  title: UCD.js - Unicode Character Database
+  description: Unicode Character Database in a more readable way. Tools and utilities for working with Unicode data.
 ---
 
 ::u-page-hero
 #title
-Write beautiful docs with Markdown
-
-HELLO!!!!
+UCD.js
 
 #description
-Ship fast, flexible, and SEO-optimized documentation with beautiful design out of the box.
+Unicode Character Database in a more readable way.
 
-Docus brings the best of the Nuxt ecosystem into one CLI.
+A collection of tools and utilities for working with Unicode data in JavaScript.
 
 #links
   :::u-button
   ---
   color: neutral
   size: xl
-  to: /getting-started/installation
+  to: /getting-started/introduction
   trailing-icon: i-lucide-arrow-right
   ---
   Get started
@@ -33,7 +29,7 @@ Docus brings the best of the Nuxt ecosystem into one CLI.
   color: neutral
   icon: simple-icons-github
   size: xl
-  to: https://github.com/nuxt-content/docus
+  to: https://github.com/ucdjs/ucd
   variant: outline
   ---
   Star on GitHub
@@ -42,84 +38,72 @@ Docus brings the best of the Nuxt ecosystem into one CLI.
 
 ::u-page-section
 #title
-Shipped with many features
+Core Features
 
 #features
   :::u-page-feature
   ---
-  icon: i-simple-icons-nuxt
-  target: _blank
-  to: https://nuxt.com
+  icon: i-lucide-database
   ---
   #title
-  Built with [Nuxt 4]{.text-primary}
-  
+  [Unicode Data Access]{.text-primary}
+
   #description
-  Optimized by the most famous Vue framework. Docus gives you everything you need to build fast, performant, and SEO-friendly websites.
+  Easy access to Unicode Character Database with a clean, modern API. Query character properties, blocks, scripts, and more.
   :::
 
   :::u-page-feature
   ---
-  icon: i-simple-icons-nuxt
-  target: _blank
-  to: https://ui.nuxt.com/
+  icon: i-lucide-type
   ---
   #title
-  Powered by [Nuxt UI]{.text-primary}
-  
+  [Type-Safe]{.text-primary}
+
   #description
-  Beautiful out of the box, minimal by design but highly customizable. Docus leverages Nuxt UI to give you the best docs writing experience with zero boilerplate, just focus on your content.
+  Built with TypeScript for excellent developer experience. Full type safety and IntelliSense support for all Unicode properties.
   :::
 
   :::u-page-feature
   ---
-  icon: i-simple-icons-nuxt
-  target: _blank
-  to: https://content.nuxt.com
+  icon: i-lucide-zap
   ---
   #title
-  Enhanced Markdown syntax by [Nuxt Content]{.text-primary}
-  
+  [Performance Optimized]{.text-primary}
+
   #description
-  The only thing you need to take care about is writing your content. Write your pages in Markdown and extend with MDC syntax to embed Nuxt UI or custom Vue components. Structure, routing, and rendering are handled for you.
+  Efficient data structures and algorithms for fast Unicode lookups and processing. Tree-shakable for minimal bundle size.
   :::
 
   :::u-page-feature
   ---
-  icon: i-simple-icons-nuxt
-  target: _blank
-  to: https://nuxt.com/docs/guide/directory-structure/app-config
+  icon: i-lucide-puzzle
   ---
   #title
-  Customize with [Nuxt App Config]{.text-primary}
-  
+  [Modular Design]{.text-primary}
+
   #description
-  Update colors, social links, header logos and component styles globally using the `app.config.ts`, no direct code modifications required.
+  Use only what you need with our modular package structure. Each Unicode data category is available as a separate package.
   :::
 
   :::u-page-feature
   ---
-  icon: i-simple-icons-nuxt
-  target: _blank
-  to: https://content.nuxt.com/studio
+  icon: i-lucide-terminal
   ---
   #title
-  Collaborate on [Nuxt Studio]{.text-primary}
-  
+  [CLI Tools]{.text-primary}
+
   #description
-  Write and manage your content visually, with zero Markdown knowledge required. Let your non technical colleagues collaborate on the documentation and integrate Vue components without code skills.
+  Command-line utilities for Unicode data exploration and analysis. Perfect for development workflows and automation.
   :::
 
   :::u-page-feature
   ---
-  icon: i-simple-icons-nuxt
-  target: _blank
-  to: https://ui.nuxt.com/components/content-search
+  icon: i-lucide-code-2
   ---
   #title
-  Built-in navigation and [full-text search]{.text-primary}
-  
+  [Modern JavaScript]{.text-primary}
+
   #description
-  Only focus on ordering your content, Docus handles the search modal and auto-generates the side navigation for you.
+  ES modules with support for Node.js and browsers. Works seamlessly in modern JavaScript environments.
   :::
 ::
