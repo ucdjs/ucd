@@ -84,6 +84,7 @@ jobs:
           edit-mode: replace
 
   deploy:
+    name: deploy apps
     needs:
       - upsert-deployment-comment
     permissions:
@@ -105,6 +106,7 @@ jobs:
       CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
 
   update-deployment-comment:
+    name: update deployment comment
     runs-on: ubuntu-latest
     needs:
       - upsert-deployment-comment
