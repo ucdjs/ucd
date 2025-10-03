@@ -202,7 +202,7 @@ jobs:
         id: extract-values
         if: ${{ inputs.include-pr-comment }}
         env:
-          DEPLOYMENT_URL: ${{ steps.deploy-api.outputs.deployment-url || steps.deploy-web.outputs.deployment-url }}
+          DEPLOYMENT_URL: ${{ steps.deploy-api.outputs.deployment-url || steps.deploy-web.outputs.deployment-url || steps.deploy-docs.outputs.deployment-url }}
           APP: ${{ matrix.app }}
           DRY_RUN: ${{ inputs.dry-run }}
         run: |
