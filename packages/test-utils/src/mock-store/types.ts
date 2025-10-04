@@ -10,9 +10,6 @@ import type {
   HttpResponseResolver,
   PathParams,
 } from "msw";
-import type {
-  SetupServerApi,
-} from "msw/node";
 
 export type FileEndpointResponse = ArrayBuffer | Uint8Array | string | Blob | File | FileEntryList;
 
@@ -64,8 +61,6 @@ export interface MockStoreConfig {
    * @default ["16.0.0","15.1.0","15.0.0"]
    */
   versions?: string[];
-
-  mswServer?: SetupServerApi;
 }
 
 export interface HandlerContext<Key extends StoreEndpoints> {
