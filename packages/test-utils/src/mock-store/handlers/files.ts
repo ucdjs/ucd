@@ -1,15 +1,19 @@
 import type { UCDStoreManifest } from "@ucdjs/schemas";
-import { HttpResponse } from "../msw";
-import { defineMockFetchHandler } from "./__define";
+import type { HandlerContext } from "../types";
+import { HttpResponse, mockFetch } from "../../msw";
 
-export const filesMockHandler = defineMockFetchHandler("/api/v1/files/:wildcard", ({ baseUrl, response }) => {
+export function setupFilesHandler({
+  baseUrl,
+  response,
+}: HandlerContext<"/api/v1/files/:wildcard">): void {
   if (typeof response === "function") {
-    return [
+    mockFetch([
       ["GET", `${baseUrl}/api/v1/files/*`, response],
-    ];
+    ]);
+    return;
   }
 
-  return [
+  mockFetch([
     ["GET", `${baseUrl}/api/v1/files/*`, () => {
       if (response === true || response == null) {
         return HttpResponse.text("Default file content");
@@ -33,21 +37,22 @@ export const filesMockHandler = defineMockFetchHandler("/api/v1/files/:wildcard"
       // For FileEntryList or other objects
       return HttpResponse.json(response);
     }],
-  ];
-});
+  ]);
+}
 
-export const filesStoreMockHandler = defineMockFetchHandler("/api/v1/files/.ucd-store.json", ({
+export function setupStoreManifestHandler({
   baseUrl,
   response,
   versions,
-}) => {
+}: HandlerContext<"/api/v1/files/.ucd-store.json">): void {
   if (typeof response === "function") {
-    return [
+    mockFetch([
       ["GET", `${baseUrl}/api/v1/files/.ucd-store.json`, response],
-    ];
+    ]);
+    return;
   }
 
-  return [
+  mockFetch([
     ["GET", `${baseUrl}/api/v1/files/.ucd-store.json`, () => {
       if (response === true || response == null) {
         return HttpResponse.json(Object.fromEntries(
@@ -57,5 +62,5 @@ export const filesStoreMockHandler = defineMockFetchHandler("/api/v1/files/.ucd-
 
       return HttpResponse.json(response);
     }],
-  ];
-});
+  ]);
+}

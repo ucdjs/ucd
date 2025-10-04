@@ -1,18 +1,19 @@
-import { HttpResponse } from "../msw";
-import { defineMockFetchHandler } from "./__define";
+import type { HandlerContext } from "../types";
+import { HttpResponse, mockFetch } from "../../msw";
 
-export const versionsMockHandler = defineMockFetchHandler("/api/v1/versions", ({
+export function setupVersionsHandler({
   versions,
   baseUrl,
   response,
-}) => {
+}: HandlerContext<"/api/v1/versions">): void {
   if (typeof response === "function") {
-    return [
+    mockFetch([
       ["GET", `${baseUrl}/api/v1/versions`, response],
-    ];
+    ]);
+    return;
   }
 
-  return [
+  mockFetch([
     ["GET", `${baseUrl}/api/v1/versions`, () => {
       if (response === true || response == null) {
         const derived = (versions ?? []).map((v, i) => ({
@@ -21,7 +22,6 @@ export const versionsMockHandler = defineMockFetchHandler("/api/v1/versions", ({
           date: null,
           url: `https://www.unicode.org/Public/${v}`,
           mappedUcdVersion: null,
-
           // treat the first as "stable" by default
           type: i === 0 ? "stable" : "stable",
         }));
@@ -29,5 +29,5 @@ export const versionsMockHandler = defineMockFetchHandler("/api/v1/versions", ({
       }
       return HttpResponse.json(response);
     }],
-  ];
-});
+  ]);
+}
