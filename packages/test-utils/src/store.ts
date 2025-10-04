@@ -60,7 +60,7 @@ const DEFAULT_RESPONSES = {
   "/api/v1/files/:wildcard": true,
 } as const satisfies StoreResponseOverrides;
 
-export function setupMockStore(config?: MockStoreConfig) {
+export function setupMockStore(config?: MockStoreConfig): void {
   const {
     baseUrl = "https://api.ucdjs.dev",
     responses,
