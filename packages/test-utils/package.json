@@ -20,6 +20,9 @@
   },
   "exports": {
     ".": "./dist/index.js",
+    "./msw": "./dist/msw.js",
+    "./store": "./dist/store.js",
+    "./vitest-setup": "./dist/msw/global-setup.js",
     "./package.json": "./package.json"
   },
   "main": "./dist/index.js",
@@ -46,7 +49,9 @@
     "vitest-testdirs": "catalog:testing"
   },
   "dependencies": {
+    "@luxass/msw-utils": "catalog:testing",
     "@ucdjs/schemas": "workspace:*",
+    "msw": "catalog:testing",
     "zod": "catalog:prod"
   },
   "devDependencies": {
