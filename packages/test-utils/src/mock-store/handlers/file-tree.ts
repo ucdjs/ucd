@@ -1,16 +1,22 @@
-import { HttpResponse } from "../msw";
-import { defineMockFetchHandler } from "./__define";
+import type { HttpResponseResolver } from "msw";
+import type { HandlerContext } from "../types";
+import { HttpResponse } from "../../msw";
 
-export const fileTreeMockHandler = defineMockFetchHandler("/api/v1/versions/:version/file-tree", ({ baseUrl, response }) => {
+export function setupFileTreeHandler({
+  baseUrl,
+  response,
+  mockFetch,
+}: HandlerContext<"/api/v1/versions/:version/file-tree">): void {
   const url = `${baseUrl}/api/v1/versions/:version/file-tree`;
 
   if (typeof response === "function") {
-    return [
-      ["GET", url, response],
-    ];
+    mockFetch([
+      ["GET", url, response as HttpResponseResolver],
+    ]);
+    return;
   }
 
-  return [
+  mockFetch([
     ["GET", url, () => {
       if (response === true || response == null) {
         return HttpResponse.json([
@@ -45,5 +51,5 @@ export const fileTreeMockHandler = defineMockFetchHandler("/api/v1/versions/:ver
 
       return HttpResponse.json(response);
     }],
-  ];
-});
+  ]);
+}

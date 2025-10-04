@@ -20,9 +20,9 @@
   },
   "exports": {
     ".": "./dist/index.js",
+    "./mock-store": "./dist/mock-store.js",
     "./msw": "./dist/msw.js",
-    "./store": "./dist/store.js",
-    "./vitest-setup": "./dist/vitest-setup.js",
+    "./msw/vitest-setup": "./dist/msw/vitest-setup.js",
     "./package.json": "./package.json"
   },
   "main": "./dist/index.js",
