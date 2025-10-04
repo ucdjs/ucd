@@ -9,6 +9,7 @@ on:
       - ".vscode/**"
       - "**/*.md"
       - ".github/ISSUE_TEMPLATE/**"
+      - "!apps/docs/**/*.md"
 
 # automatically cancel older in-progress jobs on the same branch
 concurrency:
