@@ -27,7 +27,7 @@ catalogs:
     vitest-testdirs: 4.2.1
     msw: 2.11.3
     "@cloudflare/vitest-pool-workers": 0.9.3
-    "@luxass/msw-utils": 0.1.1
+    "@luxass/msw-utils": 0.2.0
 
   linting:
     "@luxass/eslint-config": 5.3.2
