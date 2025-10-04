@@ -3,7 +3,7 @@ import type { UCDStoreManifest } from "@ucdjs/schemas";
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { setupMockStore } from "#internal/test-utils/mock-store";
+import { mockStoreApi } from "#internal/test-utils/mock-store";
 import { HttpResponse, mockFetch } from "#internal/test-utils/msw";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
@@ -21,7 +21,7 @@ const DEFAULT_VERSIONS = {
 
 describe("store init", () => {
   beforeEach(() => {
-    setupMockStore({
+    mockStoreApi({
       responses: {
         "/api/v1/versions": [...UNICODE_VERSION_METADATA],
         "/api/v1/versions/:version/file-tree": [{
