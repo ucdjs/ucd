@@ -1,10 +1,7 @@
-import { setupServer } from "msw/node";
 import { afterAll, afterEach, beforeAll } from "vitest";
+import { mswServer } from "../msw";
 
-const MSW_SERVER = setupServer();
-globalThis.__ucd_msw_server = MSW_SERVER;
-
-beforeAll(() => MSW_SERVER.listen({
+beforeAll(() => mswServer.listen({
   onUnhandledRequest: (_, print) => {
     // MSW will skip static assets by default,
     // but we are currently using routes that look like static assets.
@@ -13,5 +10,5 @@ beforeAll(() => MSW_SERVER.listen({
     print.error();
   },
 }));
-afterAll(() => MSW_SERVER.close());
-afterEach(() => MSW_SERVER.resetHandlers());
+afterAll(() => mswServer.close());
+afterEach(() => mswServer.resetHandlers());
