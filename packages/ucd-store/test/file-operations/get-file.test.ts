@@ -1,4 +1,4 @@
-import { setupMockStore } from "#internal/test-utils/store";
+import { setupMockStore } from "#internal/test-utils/mock-store";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { PathTraversalError } from "@ucdjs/path-utils";

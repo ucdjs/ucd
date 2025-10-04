@@ -17,7 +17,7 @@ const aliases = readdirSync(fileURLToPath(new URL("./packages", import.meta.url)
       return acc;
     }, {
     "#internal/test-utils/msw": alias("test-utils") + "/msw.ts",
-    "#internal/test-utils/store": alias("test-utils") + "/mock-store/index.ts",
+    "#internal/test-utils/mock-store": alias("test-utils") + "/mock-store/index.ts",
     "#internal/test-utils": alias("test-utils") + "/index.ts",
   });
 
