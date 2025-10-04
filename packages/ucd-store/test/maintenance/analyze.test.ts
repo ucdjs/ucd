@@ -1,5 +1,5 @@
 import type { UnicodeTree } from "@ucdjs/schemas";
-import { setupMockStore } from "#internal/test-utils/mock-store";
+import { mockStoreApi } from "#internal/test-utils/mock-store";
 import { HttpResponse, mockFetch } from "#internal/test-utils/msw";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
@@ -41,7 +41,7 @@ const MOCK_FILES = [
 
 describe("analyze operations", () => {
   beforeEach(() => {
-    setupMockStore({
+    mockStoreApi({
       baseUrl: UCDJS_API_BASE_URL,
       responses: {
         "/api/v1/versions": [...UNICODE_VERSION_METADATA],
