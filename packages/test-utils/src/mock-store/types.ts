@@ -1,5 +1,17 @@
-import type { FileEntryList, UCDStoreManifest, UnicodeTree, UnicodeVersionList } from "@ucdjs/schemas";
-import type { DefaultBodyType, HttpResponseResolver, PathParams } from "msw";
+import type {
+  FileEntryList,
+  UCDStoreManifest,
+  UnicodeTree,
+  UnicodeVersionList,
+} from "@ucdjs/schemas";
+import type {
+  DefaultBodyType,
+  HttpResponseResolver,
+  PathParams,
+} from "msw";
+import type {
+  SetupServerApi,
+} from "msw/node";
 
 export type FileEndpointResponse = ArrayBuffer | Uint8Array | string | Blob | File | FileEntryList;
 
@@ -51,10 +63,13 @@ export interface MockStoreConfig {
    * @default ["16.0.0","15.1.0","15.0.0"]
    */
   versions?: string[];
+
+  mswServer?: SetupServerApi;
 }
 
 export interface HandlerContext<Key extends StoreEndpoints> {
   baseUrl: string;
   response: StoreEndpointConfig[Key];
   versions: string[];
+  mockFetch: ReturnType<typeof import("@luxass/msw-utils").createMockFetch>;
 }

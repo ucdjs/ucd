@@ -1,10 +1,11 @@
 import type { HandlerContext } from "../types";
-import { HttpResponse, mockFetch } from "../../msw";
+import { HttpResponse } from "../../msw";
 
 export function setupVersionsHandler({
   versions,
   baseUrl,
   response,
+  mockFetch,
 }: HandlerContext<"/api/v1/versions">): void {
   if (typeof response === "function") {
     mockFetch([
