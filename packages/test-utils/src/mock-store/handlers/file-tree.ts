@@ -1,9 +1,10 @@
 import type { HandlerContext } from "../types";
-import { HttpResponse, mockFetch } from "../../msw";
+import { HttpResponse } from "../../msw";
 
 export function setupFileTreeHandler({
   baseUrl,
-  response
+  response,
+  mockFetch,
 }: HandlerContext<"/api/v1/versions/:version/file-tree">): void {
   const url = `${baseUrl}/api/v1/versions/:version/file-tree`;
 

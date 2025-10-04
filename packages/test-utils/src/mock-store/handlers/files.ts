@@ -1,10 +1,11 @@
 import type { UCDStoreManifest } from "@ucdjs/schemas";
 import type { HandlerContext } from "../types";
-import { HttpResponse, mockFetch } from "../../msw";
+import { HttpResponse } from "../../msw";
 
 export function setupFilesHandler({
   baseUrl,
   response,
+  mockFetch,
 }: HandlerContext<"/api/v1/files/:wildcard">): void {
   if (typeof response === "function") {
     mockFetch([
@@ -44,6 +45,7 @@ export function setupStoreManifestHandler({
   baseUrl,
   response,
   versions,
+  mockFetch,
 }: HandlerContext<"/api/v1/files/.ucd-store.json">): void {
   if (typeof response === "function") {
     mockFetch([

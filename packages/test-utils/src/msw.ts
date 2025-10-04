@@ -1,11 +1,9 @@
-import { createMockFetch } from "@luxass/msw-utils";
-import { http, HttpResponse } from "msw";
-import { setupServer } from "msw/node";
+import type { SetupServerApi } from "msw/node";
 
-export const MSW_SERVER = setupServer();
+declare global {
+  // eslint-disable-next-line vars-on-top
+  var __ucd_msw_server: SetupServerApi | undefined;
+}
 
-export const mockFetch = createMockFetch({
-  mswServer: MSW_SERVER,
-});
-
-export { http, HttpResponse };
+export { createMockFetch } from "@luxass/msw-utils";
+export { http, HttpResponse } from "msw";
