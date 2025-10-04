@@ -1,265 +1,276 @@
-# Codebase Rules
+# CLAUDE.md
 
-This file provides guidance to AI agents and contributors working with the UCD.js codebase.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
 
-UCD.js is a TypeScript monorepo for working with the Unicode Character Database in a more readable way. It provides libraries, CLI tools, and web applications for Unicode data processing and analysis.
+UCD.js is a monorepo project that provides tools and APIs for working with Unicode Character Database (UCD) files in a more readable way. The project uses pnpm workspaces with Turbo for build orchestration and Vitest for testing.
 
-- **Package Manager**: pnpm with workspace support
-- **Build System**: Turbo for orchestration, tsdown for packages, Vite for apps
-- **Node Version**: >= 22.17
-- **TypeScript**: 5.9.2
+## Monorepo Structure
 
-## Project Structure
+The repository is organized into three main workspace categories:
 
-This is a pnpm monorepo with TypeScript packages and applications.
-
-### Core Directories
-
-- `packages/` - Core functionality (start here when exploring)
-- `apps/` - Applications (API server, web frontend)
-- `tooling/` - Development tools and configurations
+- **packages/**: Core library packages published to npm
+- **apps/**: Applications (API worker, docs, web)
+- **tooling/**: Internal development tools (eslint-plugin, tsconfig, tsdown-config, moonbeam)
+- **vscode/**: VS Code extension
 
 ### Key Packages
 
-#### Unicode Data Management
-- `ucd-store/` - Core Unicode data store and management (primary package)
-- `fetch/` - HTTP client with Unicode data fetching capabilities
-- `schemas/` - Schema definitions for Unicode data structures
+- **@ucdjs/ucd-store**: Store for managing Unicode Character Database files. Supports multiple file system bridges (Node.js, HTTP, in-memory). Core operations include mirror, analyze, and clean.
+- **@ucdjs/schema-gen**: Uses AI (OpenAI) to generate TypeScript schemas from Unicode data files
+- **@ucdjs/cli**: Command-line interface for UCD operations (binary: `ucd`)
+- **@ucdjs/fetch**: OpenAPI-based API client for the UCD API
+- **@ucdjs/fs-bridge**: File system abstraction layer that allows different storage backends
+- **@ucdjs/schemas**: Zod schemas for Unicode data files
+- **@ucdjs/shared**: Shared utilities across packages
+- **@ucdjs/utils**: General utilities
+- **@ucdjs/env**: Environment configuration
+- **@ucdjs/path-utils**: Path manipulation utilities
 
-#### CLI and Tools
-- `cli/` - Command-line interface for Unicode operations
-- `schema-gen/` - Schema generation for Unicode field definitions
+### Key Apps
 
-#### Infrastructure
-- `fs-bridge/` - File system abstraction layer (HTTP + Node.js)
-- `path-utils/` - Secure path manipulation utilities
-- `shared/` - Common utilities (filtering, debugging, JSON handling)
-- `utils/` - General utility functions
-- `env/` - Environment variable management
+- **apps/api**: Cloudflare Workers API using Hono and OpenAPI (serves at api.ucdjs.dev)
+- **apps/docs**: Documentation site using Nuxt/Docus
+- **apps/web**: Web application using React and Vite
 
-### Applications
+## Common Commands
 
-#### Production Apps
-- `apps/api/` - Hono-based API server (Cloudflare Workers deployment)
-- `apps/web/` - React frontend with TanStack Router (Cloudflare Pages)
-
-### Development Tooling
-
-#### Internal Tools
-- `tooling/test-utils/` - Shared testing utilities and MSW setup
-- `tooling/eslint-plugin/` - Custom ESLint rules for the project
-- `tooling/tsconfig/` - Shared TypeScript configurations
-- `tooling/tsdown-config/` - Build configuration utilities
-
-### Key Locations
-
-When exploring the codebase:
-1. **Start with `packages/ucd-store/`** - The core package that manages Unicode data
-2. **Check `apps/api/src/routes/`** - API endpoint implementations
-3. **Review `tooling/test-utils/src/store-handlers/`** - Mock handlers for testing
-4. **Examine `packages/fs-bridge/src/bridges/`** - File system abstraction implementations
-
-## Setup and Development
-
-### Installation
+### Setup
 ```bash
-pnpm install
+pnpm install                    # Install all dependencies
 ```
 
-### Development Commands
-- `pnpm dev` - Start development mode for packages (watch mode)
-- `pnpm dev:apps` - Start development mode for applications
-- `pnpm build` - Build all packages
-- `pnpm build:apps` - Build applications
+### Building
+```bash
+pnpm build                      # Build all packages (in packages/*)
+pnpm build:apps                 # Build all apps (in apps/*)
+turbo run build --filter "@ucdjs/cli"  # Build a specific package
+```
 
-## Testing
+### Development
+```bash
+pnpm dev                        # Watch mode for all packages
+pnpm dev:apps                   # Watch mode for all apps
+cd packages/cli && pnpm dev     # Watch mode for specific package
+```
 
-The project uses a sophisticated multi-project vitest setup with advanced mocking capabilities:
+### Testing
+```bash
+pnpm test                       # Run all tests
+pnpm test:watch                 # Run tests in watch mode
+pnpm test:ui                    # Run tests with Vitest UI
+vitest run --project=ucd-store  # Run tests for specific package
+```
 
-### Test Commands
-- `pnpm test` - Run all tests across all projects
-- `pnpm test:watch` - Run tests in watch mode
-- `pnpm test:ui` - Run tests with interactive UI
+### Linting & Type Checking
+```bash
+pnpm lint                       # Lint all packages/apps
+pnpm typecheck                  # Type-check all packages/apps
+```
 
-### Test Architecture
+### API Worker (apps/api)
+```bash
+cd apps/api
+pnpm dev                        # Start local dev server on :8787
+pnpm build:openapi             # Generate OpenAPI spec
+pnpm lint:openapi              # Lint OpenAPI spec with Spectral
+pnpm deploy                    # Deploy to Cloudflare Workers
+```
 
-#### Multi-Project Configuration
-The root `vitest.config.ts` automatically discovers and configures test projects:
-- **Package projects**: Each package in `./packages/*` gets its own test project
-- **Worker unit tests**: App unit tests under `./apps/*/test/unit/**/*.test.ts`
-- **Cloudflare Workers**: Dedicated worker test configuration for API integration tests
+### Changesets (for versioning)
+```bash
+pnpm changeset                  # Create a changeset for changes
+```
 
-#### Test Types by Environment
+### Clean
+```bash
+pnpm clean                      # Clean build artifacts and node_modules
+```
 
-1. **Package Tests** (`./packages/*/test/**/*.test.ts`)
-   - Unit tests for individual packages
-   - Uses Node.js environment with MSW for HTTP mocking
-   - Examples: `ucd-store`, `path-utils`, `fs-bridge`, `cli`
+## Architecture Notes
 
-2. **Worker Integration Tests** (`./apps/api/test/**/*.test.ts`)
-   - Uses `@cloudflare/vitest-pool-workers` for Cloudflare Workers environment
-   - Includes `fetchMock` for external API mocking
-   - Tests actual worker behavior with Miniflare runtime
-   - Configuration: `apps/api/vitest.config.worker.ts`
+### Build System
+- Uses **tsdown** for building TypeScript packages (configured via tsdown.config.ts)
+- Uses **Turbo** for task orchestration and caching
+- Build dependencies are topologically sorted (see turbo.json)
+- Packages output to `dist/` directories
 
-3. **Unit Tests** (`./apps/*/test/unit/**/*.test.ts`)
-   - Isolated unit tests for app-specific logic
-   - Node.js environment with standard vitest features
+### Testing Strategy
+- **Vitest** for all tests with workspace-aware configuration
+- Test projects are auto-generated for each package in `packages/`
+- API app has both unit tests and worker tests (using @cloudflare/vitest-pool-workers)
+- MSW (Mock Service Worker) is set up globally via test-utils for HTTP mocking
+- Test file pattern: `**/*.{test,spec}.?(c|m)[jt]s?(x)`
+- Internal test utilities available via path aliases (defined in vitest.config.ts):
+  - `#internal/test-utils/msw`
+  - `#internal/test-utils/mock-store`
+  - `#internal/test-utils`
 
-### Advanced Test Utilities
+  These aliases point directly to the source files (`packages/test-utils/src/`) instead of using the built package (`@ucdjs/test-utils`). This approach:
+  - Eliminates the build step requirement for test-utils during development
+  - Prevents cyclic dependency issues when packages import test-utils in their test files
+  - Allows tests to run without requiring test-utils to be built first
 
-#### MSW (Mock Service Worker) Setup
-Centralized HTTP mocking via `@ucdjs/test-utils-internal`:
+#### Testing Patterns
+
+**Using setupMockStore():**
+The `setupMockStore()` utility from `#internal/test-utils/mock-store` provides MSW-based mocking for the UCD API:
 
 ```typescript
-// Setup in test files
 import { setupMockStore } from "#internal/test-utils/mock-store";
+import { HttpResponse } from "#internal/test-utils/msw";
 
-setupMockStore({
-  baseUrl: "https://api.ucdjs.dev",
-  responses: {
-    "/api/v1/versions": [...UNICODE_VERSION_METADATA],
-    "/api/v1/files/:wildcard": mockFileContent,
-  },
+beforeEach(() => {
+  setupMockStore({
+    baseUrl: "https://api.ucdjs.dev",
+    responses: {
+      "/api/v1/versions": ["16.0.0", "15.1.0"],
+      "/api/v1/files/:wildcard": () => HttpResponse.text("File content"),
+    },
+  });
 });
 ```
 
-**Key Features:**
-- **Multi-method support**: Handles GET, POST, HEAD, etc. for single endpoints
-- **Batch registration**: Configure multiple endpoints at once
-- **Smart HEAD handling**: Automatically converts GET responses to HEAD responses
-- **Pre-built responses**: `mockResponses.ok()`, `badRequest()`, `notFound()`, etc.
-- **Store endpoint mocking**: Specialized handlers for Unicode data API endpoints
-
-#### Test Directory Management
-Uses `vitest-testdirs` for file system testing:
+**Filesystem Testing:**
+Use `testdir()` from `vitest-testdirs` to create temporary test directories:
 
 ```typescript
 import { testdir } from "vitest-testdirs";
 
-const storePath = await testdir({
-  "15.0.0": {
-    "UnicodeData.txt": "Unicode data content",
-    "extracted/DerivedBidiClass.txt": "Derived data",
-  },
+it("should work with filesystem", async () => {
+  const storePath = await testdir();
+  // storePath is automatically cleaned up after the test
 });
 ```
 
-### Coverage Configuration
-- **Provider**: Istanbul for code coverage
-- **Include**: All `**/src/**` files
-- **Exclude**: `tooling/*` directory
-- **Reports**: HTML coverage reports in `./coverage/`
+**Worker Testing:**
+The API app uses a separate Vitest project configuration (`vitest.config.worker.ts`) with:
+- `@cloudflare/vitest-pool-workers` for Cloudflare Workers environment
+- `singleWorker: true` and `isolatedStorage: true` for test isolation
+- Miniflare bindings for rate limiting and environment variables
+- Tests in `apps/api/test/**` (excluding `test/unit/**` which uses standard Node environment)
 
-### Test Patterns and Best Practices
+### Package Dependencies
+- Uses pnpm **catalogs** for centralized dependency version management
+- Catalogs are organized by purpose: monorepo, testing, linting, prod, dev, workers, types, web, vscode, docs
+- Workspace packages use `workspace:*` protocol
 
-#### File System Bridge Testing
-Tests for `@ucdjs/fs-bridge` cover multiple environments:
-- HTTP bridge tests with mock servers
-- Node.js bridge tests with real file system
-- Capability requirement validation
+### File System Bridge Pattern
+The `@ucdjs/fs-bridge` package provides an abstraction layer for file system operations. This allows `@ucdjs/ucd-store` to work with different storage backends:
+- Node.js file system (for CLI and Node.js environments)
+- HTTP (for browser/worker environments accessing remote files)
+- In-memory (for testing and ephemeral storage)
 
-#### Security Testing
-Path manipulation security tests in `@ucdjs/path-utils`:
-- Platform-specific tests (Unix/Windows)
-- Path traversal attack prevention
-- Sanitization validation
+### API Architecture
+The API (apps/api) is a Cloudflare Worker built with:
+- **Hono** web framework with OpenAPI plugin (@hono/zod-openapi)
+- Routes organized by version (v1_files, v1_versions)
+- OpenAPI spec auto-generated from Zod schemas
+- Scalar API documentation served at root (`/`)
+- Environment-aware (local, preview, production)
 
-#### Store Operations Testing
-Unicode store tests with realistic scenarios:
-- File tree operations with nested directories
-- Version management and validation
-- Mock API responses for external Unicode.org data
+### Schema Generation Workflow
+The `@ucdjs/schema-gen` package uses OpenAI to generate TypeScript type definitions from Unicode data files:
+1. Reads raw Unicode data files
+2. Uses AI to infer field types and descriptions
+3. Generates TypeScript interfaces using knitwork
 
-### Environment-Specific Testing
+### Internal Development Tools
 
-#### Cloudflare Workers (API)
-```typescript
-// Worker environment testing
-import { createExecutionContext, env, fetchMock } from "cloudflare:test";
+#### Moonbeam (@ucdjs/moonbeam)
+Moonbeam is a critical internal ESM loader that resolves workspace packages to their source files instead of built versions. This is essential because tsx doesn't handle tsconfig paths in referenced projects.
 
-const response = await worker.fetch(request, env, ctx);
+**When to use:**
+- Running build scripts that import workspace packages
+- Executing scripts during development without building dependencies first
+
+**Usage:**
+```bash
+# With tsx (recommended)
+tsx --import @ucdjs/moonbeam/register ./your-script.ts
+
+# With Node.js 22.18+
+node --import @ucdjs/moonbeam/register ./your-script.ts
 ```
 
-#### Node.js (Packages)
-Standard vitest configuration with MSW global setup for HTTP mocking.
+**How it works:**
+1. Auto-discovers workspace packages by scanning pnpm-workspace.yaml
+2. Resolves imports to `packages/*/src/` first, falls back to `packages/*/dist/`
+3. Handles subpath imports like `@ucdjs/package/submodule`
 
-### Test Aliases and Imports
-Automatic alias resolution for internal dependencies:
-- `@ucdjs/*` packages map to source files
-- `#internal/test-utils/*` for test utilities
-- Enables testing against source rather than built files
+**Example:** The API's `build:openapi` script uses Moonbeam to import workspace packages without requiring them to be built first.
 
-## Code Style and Conventions
+## Development Guidelines
 
-### Linting and Type Checking
-- `pnpm lint` - Run ESLint across all projects
-- `pnpm typecheck` - Run TypeScript type checking
+### Running Individual Package Tests
+Since the test configuration uses workspace aliases, tests must be run from the repository root:
+```bash
+vitest run --project=cli        # NOT: cd packages/cli && pnpm test
+```
 
-### Code Standards
-- ESLint with `@luxass/eslint-config`
-- All packages publish under `@ucdjs/` scope
-- Prefer existing patterns and libraries in the codebase
-- Follow security best practices (no secrets in code/commits)
+### Working with the API
+- OpenAPI spec generation is a build dependency (see turbo.json)
+- Always run `pnpm build:openapi` after changing API routes/schemas
+- The `@ucdjs/fetch` package types are auto-generated from the OpenAPI spec
 
-## Common Workflows
+### Wrangler Deployment Environments
 
-### Adding New Features
-1. Understand existing code conventions in the relevant package
-2. Check dependencies are already available in the codebase
-3. Write tests for new functionality
-4. Run `pnpm lint` and `pnpm typecheck` before committing
-5. Create changeset with `pnpm changeset`
+The API worker (apps/api) has multiple deployment environments configured in `wrangler.jsonc`:
 
-### Working with Packages
-- Each package has its own `tsdown.config.ts` for building
-- Shared dependencies managed via pnpm catalogs
-- Internal packages use workspace protocol (`workspace:*`)
+- **local**: Development environment
+  - Runs on `localhost:8787`
+  - Started with `pnpm dev`
+  - `ENVIRONMENT=local`
 
-### Deployment
-- **API**: Cloudflare Workers via Wrangler
-- **Web**: Cloudflare Pages via Vite
+- **preview**: Preview deployments
+  - URL: `preview.api.ucdjs.dev`
+  - Build with `pnpm build:preview`
+  - `ENVIRONMENT=preview`
 
-## Dependencies and Tools
+- **production**: Live production environment
+  - URL: `api.ucdjs.dev`
+  - Deploy with `pnpm deploy` (from apps/api)
+  - `ENVIRONMENT=production`
 
-### Key Dependencies
-- **Build**: turbo, tsdown, vite
-- **Testing**: vitest, msw, @vitest/ui
-- **Linting**: eslint, @luxass/eslint-config
-- **Runtime**: hono (API), react (web), yargs-parser (CLI)
+- **testing**: Used by worker tests
+  - Configured in `vitest.config.worker.ts`
+  - Uses miniflare bindings for isolated testing
 
-### Development Tools
-- **TypeScript**: Strict configuration across all packages
-- **ESM**: ES modules throughout the codebase
-- **Catalogs**: Centralized dependency management in `pnpm-workspace.yaml`
+### Common Gotchas & Debugging
 
-## Maintenance
+1. **Tests must run from repository root**
+   - ❌ `cd packages/cli && pnpm test`
+   - ✅ `vitest run --project=cli`
+   - Reason: Workspace aliases in vitest.config.ts are relative to root
 
-### Cleanup
-- `pnpm clean` - Clean all build artifacts and node_modules
+2. **OpenAPI spec regeneration**
+   - After changing API routes or Zod schemas, always run `cd apps/api && pnpm build:openapi`
+   - This regenerates `.generated/openapi.json` which is used by `@ucdjs/fetch`
+   - It's a build dependency in turbo.json, so full builds will regenerate it
 
-### File Patterns to Understand
-- `tsdown.config.ts` - Package build configuration
-- `eslint.config.js` - Per-package linting rules
-- `vitest.config.ts` - Test configuration with aliases
-- `turbo.json` - Build orchestration and caching
+3. **Using #internal/test-utils in tests**
+   - Import from `#internal/test-utils/*`, not `@ucdjs/test-utils`
+   - This avoids needing to build test-utils before running tests
+   - Prevents cyclic dependency issues
 
-## Performance Considerations
+4. **Running scripts with workspace imports**
+   - Use `tsx --import @ucdjs/moonbeam/register` for scripts that import workspace packages
+   - Without Moonbeam, imports resolve to node_modules instead of source files
 
-- Unicode data processing can be memory-intensive
-- File system operations use abstraction layer (`fs-bridge`)
-- HTTP requests use `openapi-fetch` with patched dependency
-- Build system optimized with Turbo caching
+5. **Worker tests vs unit tests**
+   - Worker tests: `apps/api/test/**` (exclude `test/unit/**`) - run in Cloudflare Workers environment
+   - Unit tests: `apps/api/test/unit/**` - run in Node.js environment
+   - Use the correct test location based on what you're testing
 
-## NEVER Edit These Files
+### Adding New Packages
+1. Create package directory under `packages/`
+2. Add to pnpm-workspace.yaml if needed (already has `packages/*` glob)
+3. Use shared tooling configs:
+   - `@ucdjs-tooling/tsconfig` for TypeScript
+   - `@ucdjs-tooling/tsdown-config` for builds
+   - `@luxass/eslint-config` for linting
 
-### Auto-generated Files
-- `packages/*/dist/**` - Build outputs
-- `coverage/**` - Test coverage reports
-- `node_modules/**` - Package dependencies
-
-### Managed Files
-- `pnpm-lock.yaml` - Dependency lock file (managed by pnpm)
-- `apps/web/src/routeTree.gen.ts` - Auto-generated by TanStack Router
+### Node Version
+- Requires Node.js >= 22.18
+- pnpm 10.17.1 (enforced via packageManager field)
