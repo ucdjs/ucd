@@ -16,9 +16,9 @@ const aliases = readdirSync(fileURLToPath(new URL("./packages", import.meta.url)
       acc[`@ucdjs/${pkg}`] = alias(pkg);
       return acc;
     }, {
-    "#internal/test-utils/msw": `${root}tooling/test-utils/src/msw.ts`,
-    "#internal/test-utils/store": `${root}tooling/test-utils/src/store.ts`,
-    "#internal/test-utils": `${root}tooling/test-utils/src/index.ts`,
+    "#internal/test-utils/msw": alias("test-utils") + "/msw.ts",
+    "#internal/test-utils/store": alias("test-utils") + "/mock-store/index.ts",
+    "#internal/test-utils": alias("test-utils") + "/index.ts",
   });
 
 const hiddenLogs: string[] = [];
@@ -58,7 +58,7 @@ export default defineConfig({
     environment: "node",
     mockReset: true,
     setupFiles: [
-      "./tooling/test-utils/src/msw/global-setup.ts",
+      "./packages/test-utils/src/msw/vitest-setup.ts",
     ],
     onConsoleLog(log, type) {
       if (type === "stderr") {
