@@ -1,4 +1,3 @@
-import type { SetupServer } from "msw/node";
 import type { MockStoreConfig, StoreEndpointConfig, StoreEndpoints, StoreResponseOverrides } from "./types";
 import { createMockFetch } from "@luxass/msw-utils";
 import { setupFileTreeHandler } from "./handlers/file-tree";
