@@ -1,3 +1,4 @@
+import type { HttpResponseResolver } from "msw";
 import type { HandlerContext } from "../types";
 import { HttpResponse } from "../../msw";
 
@@ -10,7 +11,7 @@ export function setupFileTreeHandler({
 
   if (typeof response === "function") {
     mockFetch([
-      ["GET", url, response],
+      ["GET", url, response as HttpResponseResolver],
     ]);
     return;
   }
