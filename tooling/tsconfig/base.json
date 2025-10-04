@@ -26,7 +26,7 @@
       "@ucdjs/test-utils": ["./packages/test-utils/src/index.ts"],
 
       // We use internal aliases to avoid issues with cyclic dependencies in packages
-      "#internal/test-utils/store": ["./packages/test-utils/src/mock-store/index.ts"],
+      "#internal/test-utils/mock-store": ["./packages/test-utils/src/mock-store/index.ts"],
       "#internal/test-utils/msw": ["./packages/test-utils/src/msw.ts"],
       "#internal/test-utils": ["./packages/test-utils/src/index.ts"]
     }

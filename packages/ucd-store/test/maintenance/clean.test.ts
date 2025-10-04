@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { HttpResponse, mockFetch } from "#internal/test-utils/msw";
-import { setupMockStore } from "#internal/test-utils/store";
+import { setupMockStore } from "#internal/test-utils/mock-store";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { dedent } from "@luxass/utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
