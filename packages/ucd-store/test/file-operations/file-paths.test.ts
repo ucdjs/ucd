@@ -1,4 +1,4 @@
-import { setupMockStore } from "#internal/test-utils/mock-store";
+import { mockStoreApi } from "#internal/test-utils/mock-store";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { assert, beforeEach, describe, expect, it, vi } from "vitest";
@@ -7,7 +7,7 @@ import { createNodeUCDStore } from "../../src/factory";
 
 describe("file paths", () => {
   beforeEach(() => {
-    setupMockStore({
+    mockStoreApi({
       baseUrl: UCDJS_API_BASE_URL,
       responses: {
         "/api/v1/versions": [...UNICODE_VERSION_METADATA],
