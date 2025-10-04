@@ -1,5 +1,5 @@
 import { existsSync, readFileSync } from "node:fs";
-import { setupMockStore } from "#internal/test-utils/mock-store";
+import { mockStoreApi } from "#internal/test-utils/mock-store";
 import { HttpResponse, mockFetch } from "#internal/test-utils/msw";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { dedent } from "@luxass/utils";
@@ -11,7 +11,7 @@ import { captureSnapshot, testdir } from "vitest-testdirs";
 
 describe("store clean", () => {
   beforeEach(() => {
-    setupMockStore({
+    mockStoreApi({
       baseUrl: UCDJS_API_BASE_URL,
       responses: {
         "/api/v1/versions": [...UNICODE_VERSION_METADATA],
