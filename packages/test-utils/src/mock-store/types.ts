@@ -1,3 +1,4 @@
+import type { MockFetchFn } from "@luxass/msw-utils";
 import type {
   FileEntryList,
   UCDStoreManifest,
@@ -71,5 +72,5 @@ export interface HandlerContext<Key extends StoreEndpoints> {
   baseUrl: string;
   response: StoreEndpointConfig[Key];
   versions: string[];
-  mockFetch: ReturnType<typeof import("@luxass/msw-utils").createMockFetch>;
+  mockFetch: MockFetchFn;
 }
