@@ -31,7 +31,7 @@ export function setupMockStore(config?: MockStoreConfig): void {
   }
 
   const mockFetch = createMockFetch({ mswServer });
-  const normalizedBaseUrl = baseUrl.replace(/\/+$/, "");
+  const normalizedBaseUrl = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
 
   const mergedResponses = {
     ...DEFAULT_RESPONSES,
