@@ -22,7 +22,7 @@
     ".": "./dist/index.js",
     "./msw": "./dist/msw.js",
     "./store": "./dist/store.js",
-    "./vitest-setup": "./dist/msw/global-setup.js",
+    "./vitest-setup": "./dist/vitest-setup.js",
     "./package.json": "./package.json"
   },
   "main": "./dist/index.js",
