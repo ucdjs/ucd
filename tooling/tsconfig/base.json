@@ -22,12 +22,13 @@
       "@ucdjs/fs-bridge/bridges/http": ["./packages/fs-bridge/src/bridges/http.ts"],
       "@ucdjs/fs-bridge/bridges/node": ["./packages/fs-bridge/src/bridges/node.ts"],
 
+      // Test utils
       "@ucdjs/test-utils": ["./packages/test-utils/src/index.ts"],
 
-      // Test utils
-      "#internal/test-utils": ["./tooling/test-utils/src/index.ts"],
-      "#internal/test-utils/store": ["./tooling/test-utils/src/store.ts"],
-      "#internal/test-utils/msw": ["./tooling/test-utils/src/msw.ts"]
+      // We use internal aliases to avoid issues with cyclic dependencies in packages
+      "#internal/test-utils/store": ["./packages/test-utils/src/mock-store/index.ts"],
+      "#internal/test-utils/msw": ["./packages/test-utils/src/msw.ts"],
+      "#internal/test-utils": ["./packages/test-utils/src/index.ts"]
     }
   }
 }
