@@ -39,10 +39,7 @@
     "dev": "tsdown --watch",
     "clean": "git clean -xdf dist node_modules",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit",
-    "playground:http": "tsx --tsconfig=./tsconfig.json ./playgrounds/http-playground.ts",
-    "playground:node": "tsx --tsconfig=./tsconfig.json ./playgrounds/node-playground.ts",
-    "playground:memory": "tsx --tsconfig=./tsconfig.json ./playgrounds/memory-playground.ts"
+    "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
     "@ucdjs/ucd-store": "workspace:*",

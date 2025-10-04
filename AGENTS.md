@@ -115,7 +115,7 @@ Centralized HTTP mocking via `@ucdjs/test-utils-internal`:
 
 ```typescript
 // Setup in test files
-import { setupMockStore } from "#internal/test-utils/store";
+import { setupMockStore } from "#internal/test-utils/mock-store";
 
 setupMockStore({
   baseUrl: "https://api.ucdjs.dev",

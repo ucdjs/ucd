@@ -1,6 +1,6 @@
 import type { UnicodeTree } from "@ucdjs/schemas";
+import { setupMockStore } from "#internal/test-utils/mock-store";
 import { HttpResponse, mockFetch } from "#internal/test-utils/msw";
-import { setupMockStore } from "#internal/test-utils/store";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { assertCapability } from "@ucdjs/fs-bridge";
