@@ -1,3 +1,3 @@
 export { isLinux, isMac, isUnix, isWindows } from "./conditions";
-export { setupMockStore } from "./store";
-export type { StoreEndpointConfig, StoreEndpoints } from "./store";
+export { setupMockStore } from "./mock-store";
+export type { MockStoreConfig, StoreEndpointConfig, StoreEndpoints } from "./mock-store";
