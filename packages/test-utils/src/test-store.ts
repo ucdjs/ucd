@@ -4,6 +4,7 @@ import type { PathFilterOptions } from "@ucdjs/shared";
 import type { UCDStore } from "@ucdjs/ucd-store";
 import type { DirectoryJSON, TestdirOptions } from "vitest-testdirs";
 import type { MockStoreConfig } from "./mock-store";
+import { createUCDStore } from "@ucdjs/ucd-store";
 import { testdir } from "vitest-testdirs";
 import { mockStoreApi } from "./mock-store";
 
@@ -150,7 +151,7 @@ export async function createTestStore(
     if (options.manifest) {
       mockConfig.responses = {
         ...mockConfig.responses,
-        "/api/v1/files/.ucd-store.json": options.manifest,
+        "/api/v1/files/.ucd-store.json": mockConfig.responses?.["/api/v1/files/.ucd-store.json"] ?? options.manifest,
       };
     }
 
@@ -172,7 +173,6 @@ export async function createTestStore(
 
   const fs = options.fs || await loadNodeBridge(storePath);
 
-  const { createUCDStore } = await import("@ucdjs/ucd-store");
   const store = createUCDStore({
     fs,
     basePath: storePath || "",
