@@ -2,7 +2,7 @@ import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 import type { UCDStoreManifest } from "@ucdjs/schemas";
 import type { PathFilterOptions } from "@ucdjs/shared";
 import type { UCDStore } from "@ucdjs/ucd-store";
-import type { DirectoryJSON } from "vitest-testdirs";
+import type { DirectoryJSON, TestdirOptions } from "vitest-testdirs";
 import type { MockStoreConfig } from "./mock-store";
 import { testdir } from "vitest-testdirs";
 import { mockStoreApi } from "./mock-store";
@@ -69,8 +69,16 @@ export interface CreateTestStoreOptions {
    * - `true`: Use default mockStoreApi configuration
    * - `MockStoreConfig`: Custom mockStoreApi configuration
    * - `undefined`/`false`: Don't setup API mocking (useful when mocking is done in beforeEach)
+   *
+   * @default true
    */
   mockApi?: boolean | Omit<MockStoreConfig, "versions" | "baseUrl">;
+
+  /**
+   * Options to pass to testdir when creating the test directory
+   * Only used when structure or manifest are provided and no custom fs is given
+   */
+  testdirsOptions?: TestdirOptions;
 }
 
 export interface CreateTestStoreResult {
@@ -87,9 +95,11 @@ export interface CreateTestStoreResult {
 
 async function loadNodeBridge(basePath: string): Promise<FileSystemBridge> {
   const NodeFileSystemBridge = await import("@ucdjs/fs-bridge/bridges/node").then((m) => m.default);
+
   if (!NodeFileSystemBridge) {
     throw new Error("Node.js FileSystemBridge could not be loaded");
   }
+
   return NodeFileSystemBridge({ basePath });
 }
 
@@ -120,14 +130,20 @@ async function loadNodeBridge(basePath: string): Promise<FileSystemBridge> {
 export async function createTestStore(
   options: CreateTestStoreOptions = {},
 ): Promise<CreateTestStoreResult> {
-  const versions = options.versions ?? ["16.0.0", "15.1.0", "15.0.0"];
+  // Infer versions from manifest if provided, otherwise use explicit versions or defaults
+  const versions = options.versions ?? (
+    options.manifest
+      ? Object.keys(options.manifest)
+      : ["16.0.0", "15.1.0", "15.0.0"]
+  );
   const baseUrl = options.baseUrl ?? "https://api.ucdjs.dev";
+  const mockApi = options.mockApi ?? true;
 
-  if (options.mockApi) {
+  if (mockApi) {
     const mockConfig: MockStoreConfig = {
       baseUrl,
       versions,
-      responses: options.mockApi === true ? undefined : options.mockApi.responses,
+      responses: mockApi === true ? undefined : mockApi.responses,
     };
 
     // Include manifest in mocked responses so the store can read it
@@ -142,23 +158,19 @@ export async function createTestStore(
   }
 
   let storePath: string | undefined;
-  let fs: FileSystemBridge;
 
-  if (options.fs) {
-    fs = options.fs;
-    storePath = options.basePath;
-  } else if (options.structure || options.manifest) {
-    const structure: DirectoryJSON = { ...options.structure };
-    if (options.manifest) {
-      structure[".ucd-store.json"] = JSON.stringify(options.manifest);
-    }
-
-    storePath = await testdir(structure);
-    fs = await loadNodeBridge(storePath);
-  } else {
-    storePath = options.basePath || "";
-    fs = await loadNodeBridge(storePath);
+  const structure: DirectoryJSON = { ...options.structure };
+  if (options.manifest) {
+    structure[".ucd-store.json"] = JSON.stringify(options.manifest);
   }
+
+  if (options.basePath) {
+    storePath = options.basePath;
+  } else {
+    storePath = await testdir(structure, options.testdirsOptions);
+  }
+
+  const fs = options.fs || await loadNodeBridge(storePath);
 
   const { createUCDStore } = await import("@ucdjs/ucd-store");
   const store = createUCDStore({
