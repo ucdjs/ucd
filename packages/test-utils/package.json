@@ -42,6 +42,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
+    "@ucdjs/fs-bridge": "workspace:*",
     "@ucdjs/ucd-store": "workspace:*",
     "vitest-testdirs": "catalog:testing"
   },
@@ -55,6 +56,7 @@
     "@luxass/eslint-config": "catalog:linting",
     "@ucdjs-tooling/tsconfig": "workspace:*",
     "@ucdjs-tooling/tsdown-config": "workspace:*",
+    "@ucdjs/fs-bridge": "workspace:*",
     "@ucdjs/ucd-store": "workspace:*",
     "eslint": "catalog:linting",
     "publint": "catalog:dev",

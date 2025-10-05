@@ -847,6 +847,9 @@ importers:
       '@ucdjs-tooling/tsdown-config':
         specifier: workspace:*
         version: link:../../tooling/tsdown-config
+      '@ucdjs/fs-bridge':
+        specifier: workspace:*
+        version: link:../fs-bridge
       '@ucdjs/ucd-store':
         specifier: workspace:*
         version: link:../ucd-store
