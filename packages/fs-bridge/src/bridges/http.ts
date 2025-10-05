@@ -21,10 +21,11 @@ const HTTPFileSystemBridge = defineFileSystemBridge({
     const baseUrl = options.baseUrl;
 
     return {
-      async read(path) {
+      async read(basePath, path) {
+        const fullPath = basePath ? joinURL(basePath, path) : path;
         const url = joinURL(
           baseUrl.origin,
-          resolveSafePath(baseUrl.pathname, path),
+          resolveSafePath(baseUrl.pathname, fullPath),
         );
 
         const response = await fetch(url);
@@ -35,10 +36,11 @@ const HTTPFileSystemBridge = defineFileSystemBridge({
         }
         return response.text();
       },
-      async listdir(path, recursive = false) {
+      async listdir(basePath, path, recursive = false) {
+        const fullPath = basePath ? joinURL(basePath, path) : path;
         const url = joinURL(
           baseUrl.origin,
-          resolveSafePath(baseUrl.pathname, path),
+          resolveSafePath(baseUrl.pathname, fullPath),
         );
 
         const response = await fetch(url, {
@@ -102,6 +104,7 @@ const HTTPFileSystemBridge = defineFileSystemBridge({
         for (const entry of data) {
           if (entry.type === "directory") {
             const children = await this.listdir!(
+              basePath,
               joinURL(path, entry.path),
               true,
             );
@@ -123,10 +126,11 @@ const HTTPFileSystemBridge = defineFileSystemBridge({
 
         return entries;
       },
-      async exists(path) {
+      async exists(basePath, path) {
+        const fullPath = basePath ? joinURL(basePath, path) : path;
         const url = joinURL(
           baseUrl.origin,
-          resolveSafePath(baseUrl.pathname, path),
+          resolveSafePath(baseUrl.pathname, fullPath),
         );
 
         return fetch(url, { method: "HEAD" })

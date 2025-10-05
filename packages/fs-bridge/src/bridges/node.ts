@@ -20,21 +20,16 @@ async function safeExists(path: string): Promise<boolean> {
 }
 
 const NodeFileSystemBridge = defineFileSystemBridge({
-  optionsSchema: z.object({
-    basePath: z.string(),
-  }),
-  setup({ options, resolveSafePath }) {
-    const basePath = nodePath.resolve(options.basePath);
-
+  setup({ resolveSafePath }) {
     return {
-      async read(path) {
+      async read(basePath, path) {
         const resolvedPath = resolveSafePath(basePath, path);
         return fsp.readFile(resolvedPath, "utf-8");
       },
-      async exists(path) {
+      async exists(basePath, path) {
         return safeExists(resolveSafePath(basePath, path));
       },
-      async listdir(path, recursive = false) {
+      async listdir(basePath, path, recursive = false) {
         const targetPath = resolveSafePath(basePath, path);
 
         function createFSEntry(entry: Dirent): FSEntry {
@@ -94,7 +89,7 @@ const NodeFileSystemBridge = defineFileSystemBridge({
 
         return rootEntries;
       },
-      async write(path, data, encoding = "utf-8") {
+      async write(basePath, path, data, encoding = "utf-8") {
         const resolvedPath = resolveSafePath(basePath, path);
         const parentDir = nodePath.dirname(resolvedPath);
 
@@ -105,12 +100,12 @@ const NodeFileSystemBridge = defineFileSystemBridge({
 
         return fsp.writeFile(resolvedPath, data, { encoding });
       },
-      async mkdir(path) {
+      async mkdir(basePath, path) {
         // mkdir returns the first directory path, when recursive is true
         await fsp.mkdir(resolveSafePath(basePath, path), { recursive: true });
         return void 0;
       },
-      async rm(path, options) {
+      async rm(basePath, path, options) {
         return fsp.rm(resolveSafePath(basePath, path), {
           recursive: options?.recursive ?? false,
           force: options?.force ?? false,
