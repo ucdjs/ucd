@@ -1,5 +1,5 @@
 import { defineFileSystemBridge } from "@ucdjs/fs-bridge";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { createTestStore } from "../src/test-store";
 
 describe("createTestStore", () => {
