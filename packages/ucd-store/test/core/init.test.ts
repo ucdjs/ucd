@@ -54,9 +54,7 @@ describe("store init", () => {
 
       const store = createUCDStore({
         basePath: storePath,
-        fs: NodeFileSystemBridge({
-          basePath: storePath,
-        }),
+        fs: NodeFileSystemBridge(),
       });
 
       await store.init();
@@ -71,9 +69,7 @@ describe("store init", () => {
 
       const store = createUCDStore({
         basePath: storePath,
-        fs: NodeFileSystemBridge({
-          basePath: storePath,
-        }),
+        fs: NodeFileSystemBridge(),
         versions: ["16.0.0", "15.1.0", "15.0.0"],
       });
 
@@ -88,9 +84,7 @@ describe("store init", () => {
 
       const store = createUCDStore({
         basePath: storePath,
-        fs: NodeFileSystemBridge({
-          basePath: storePath,
-        }),
+        fs: NodeFileSystemBridge(),
         versions: ["16.0.0", "15.1.0", "15.0.0", "99.9.9"],
       });
 
@@ -109,9 +103,7 @@ describe("store init", () => {
 
       const store = createUCDStore({
         basePath: storePath,
-        fs: NodeFileSystemBridge({
-          basePath: storePath,
-        }),
+        fs: NodeFileSystemBridge(),
       });
 
       await expect(store.init()).rejects.toThrow("Failed to fetch");
@@ -123,9 +115,7 @@ describe("store init", () => {
 
       const store = createUCDStore({
         basePath: storePath,
-        fs: NodeFileSystemBridge({
-          basePath: storePath,
-        }),
+        fs: NodeFileSystemBridge(),
       });
 
       await store.init({ dryRun: true });
@@ -140,9 +130,7 @@ describe("store init", () => {
 
       const store = createUCDStore({
         basePath,
-        fs: NodeFileSystemBridge({
-          basePath,
-        }),
+        fs: NodeFileSystemBridge(),
       });
 
       await store.init();
@@ -162,9 +150,7 @@ describe("store init", () => {
 
       const store = createUCDStore({
         basePath: storePath,
-        fs: NodeFileSystemBridge({
-          basePath: storePath,
-        }),
+        fs: NodeFileSystemBridge(),
         versions: Object.keys(DEFAULT_VERSIONS),
       });
 
@@ -185,9 +171,7 @@ describe("store init", () => {
 
       const store = createUCDStore({
         basePath: storePath,
-        fs: NodeFileSystemBridge({
-          basePath: storePath,
-        }),
+        fs: NodeFileSystemBridge(),
       });
 
       await store.init();
@@ -207,9 +191,7 @@ describe("store init", () => {
 
       const store = createUCDStore({
         basePath: storePath,
-        fs: NodeFileSystemBridge({
-          basePath: storePath,
-        }),
+        fs: NodeFileSystemBridge(),
       });
 
       await expect(store.init()).rejects.toThrow("store manifest is not a valid JSON");
@@ -227,9 +209,7 @@ describe("store init", () => {
 
       const store = createUCDStore({
         basePath: storePath,
-        fs: NodeFileSystemBridge({
-          basePath: storePath,
-        }),
+        fs: NodeFileSystemBridge(),
       });
 
       await expect(store.init()).rejects.toThrow("store manifest is not a valid JSON");
@@ -243,9 +223,7 @@ describe("store init", () => {
 
       const store = createUCDStore({
         basePath: storePath,
-        fs: NodeFileSystemBridge({
-          basePath: storePath,
-        }),
+        fs: NodeFileSystemBridge(),
       });
 
       await store.init();

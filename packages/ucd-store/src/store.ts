@@ -130,11 +130,11 @@ export class UCDStore {
       }
 
       assertCapability(this.#fs, ["listdir", "exists"]);
-      if (!await this.#fs.exists(join(this.basePath, version))) {
+      if (!await this.#fs.exists(this.basePath, version)) {
         throw new UCDStoreVersionNotFoundError(version);
       }
 
-      const entries = await this.#fs.listdir(join(this.basePath, version), true);
+      const entries = await this.#fs.listdir(this.basePath, version, true);
 
       const filtered = filterTreeStructure(this.#filter, entries, extraFilters);
 
@@ -191,9 +191,9 @@ export class UCDStore {
       try {
         let content = "";
         if (isAbsolute(filePath)) {
-          content = await this.#fs.read(filePath);
+          content = await this.#fs.read(this.basePath, filePath);
         } else {
-          content = await this.#fs.read(join(version, filePath));
+          content = await this.#fs.read(this.basePath, join(version, filePath));
         }
 
         return content;
@@ -230,7 +230,7 @@ export class UCDStore {
 
     // read existing manifest if it exists
     let manifestVersions: string[] = [];
-    const manifestExists = await this.#fs.exists(this.#manifestPath);
+    const manifestExists = await this.#fs.exists(this.basePath, this.#manifestPath);
     if (manifestExists && !force) {
       const manifest = await this["~readManifest"]();
       manifestVersions = Object.keys(manifest);
@@ -266,10 +266,10 @@ export class UCDStore {
     if (!dryRun) {
       // only create base directory if it doesn't exist or if forced
       if (!manifestExists || force) {
-        const basePathExists = await this.#fs.exists(this.basePath);
+        const basePathExists = await this.#fs.exists(this.basePath, "");
         if (!basePathExists) {
           assertCapability(this.#fs, ["mkdir"]);
-          await this.#fs.mkdir(this.basePath);
+          await this.#fs.mkdir(this.basePath, "");
         }
       }
 
@@ -427,12 +427,12 @@ export class UCDStore {
       manifestData[version] = version;
     }
 
-    await this.#fs.write(this.#manifestPath, JSON.stringify(manifestData, null, 2));
+    await this.#fs.write(this.basePath, this.#manifestPath, JSON.stringify(manifestData, null, 2));
   }
 
   async "~readManifest"(): Promise<UCDStoreManifest> {
     assertCapability(this.#fs, "read");
-    const manifestData = await this.#fs.read(this.#manifestPath);
+    const manifestData = await this.#fs.read(this.basePath, this.#manifestPath);
 
     if (!manifestData) {
       throw new UCDStoreInvalidManifestError(this.#manifestPath, "store manifest is empty");

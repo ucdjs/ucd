@@ -354,12 +354,13 @@ describe("analyze operations", () => {
   describe("custom store analyze operations", () => {
     it("should analyze store with custom filesystem bridge", async () => {
       const customFS = createMemoryMockFS();
+      const basePath = "/my/custom/store";
 
       assertCapability(customFS, "write");
-      await customFS.write("/.ucd-store.json", JSON.stringify({
+      await customFS.write(basePath, ".ucd-store.json", JSON.stringify({
         "15.0.0": "15.0.0",
       }));
-      await customFS.write("/15.0.0/ArabicShaping.txt", "Arabic shaping data");
+      await customFS.write(basePath, "15.0.0/ArabicShaping.txt", "Arabic shaping data");
 
       mockFetch([
         ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/15.0.0`, () => {
@@ -374,7 +375,7 @@ describe("analyze operations", () => {
       ]);
 
       const store = createUCDStore({
-        basePath: "/",
+        basePath,
         fs: customFS,
       });
       await store.init();

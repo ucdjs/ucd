@@ -68,7 +68,7 @@ export async function internal__mirror(store: UCDStore, options: Required<Mirror
 
       // collect unique directories
       for (const filePath of filePaths) {
-        const localPath = join(store.basePath!, version, filePath);
+        const localPath = join(version, filePath);
         directoriesToCreate.add(dirname(localPath));
       }
 
@@ -79,8 +79,8 @@ export async function internal__mirror(store: UCDStore, options: Required<Mirror
   // pre-create all directories
   await Promise.all([...directoriesToCreate].map(async (dir) => {
     assertCapability(store.fs, ["mkdir", "exists"]);
-    if (!await store.fs.exists(dir)) {
-      await store.fs.mkdir(dir);
+    if (!await store.fs.exists(store.basePath, dir)) {
+      await store.fs.mkdir(store.basePath, dir);
     }
   }));
 
@@ -113,10 +113,10 @@ export async function internal__mirror(store: UCDStore, options: Required<Mirror
 async function internal__mirrorFile(store: UCDStore, version: string, filePath: string, options: Pick<MirrorOptions, "force" | "dryRun">): Promise<boolean> {
   assertCapability(store.fs, ["exists", "read", "write", "mkdir"]);
   const { force = false, dryRun = false } = options;
-  const localPath = join(store.basePath!, version, filePath);
+  const localPath = join(version, filePath);
 
   // check if file already exists
-  if (!force && await store.fs.exists(localPath)) {
+  if (!force && await store.fs.exists(store.basePath, localPath)) {
     return false;
   }
 
@@ -173,7 +173,7 @@ async function internal__mirrorFile(store: UCDStore, version: string, filePath: 
     content = new Uint8Array(await response.arrayBuffer());
   }
 
-  await store.fs.write(localPath, content);
+  await store.fs.write(store.basePath, localPath, content);
 
   return true;
 }

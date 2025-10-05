@@ -72,7 +72,7 @@ export async function internal__clean(store: UCDStore, options: internal_CleanOp
 
     const joinedFiles = [...analysis.orphanedFiles, ...analysis.files];
     for (const file of joinedFiles) {
-      const filePath = join(store.basePath, analysis.version, file);
+      const filePath = join(analysis.version, file);
 
       // track parent directories for cleanup
       directoriesToCheck.add(dirname(filePath));
@@ -81,7 +81,7 @@ export async function internal__clean(store: UCDStore, options: internal_CleanOp
         assertCapability(store.fs, ["exists", "rm"]);
 
         try {
-          const exists = await store.fs.exists(filePath);
+          const exists = await store.fs.exists(store.basePath, filePath);
           if (!exists) {
             console.error("File does not exist, skipping deletion:", filePath);
             versionResult!.skipped.push(file);
@@ -89,7 +89,7 @@ export async function internal__clean(store: UCDStore, options: internal_CleanOp
           }
 
           if (!dryRun) {
-            await store.fs.rm(filePath);
+            await store.fs.rm(store.basePath, filePath);
           }
 
           versionResult!.deleted.push(file);
@@ -102,7 +102,7 @@ export async function internal__clean(store: UCDStore, options: internal_CleanOp
     result.push(versionResult);
 
     // also add version directory to check for cleanup
-    directoriesToCheck.add(join(store.basePath, analysis.version));
+    directoriesToCheck.add(analysis.version);
   }
 
   await Promise.all(promises);
@@ -116,10 +116,10 @@ export async function internal__clean(store: UCDStore, options: internal_CleanOp
 
     for (const dirPath of sortedDirectories) {
       try {
-        const exists = await store.fs.exists(dirPath);
+        const exists = await store.fs.exists(store.basePath, dirPath);
         if (!exists) continue;
 
-        await store.fs.rm(dirPath, { recursive: true });
+        await store.fs.rm(store.basePath, dirPath, { recursive: true });
       } catch {
         // silently ignore directory deletion failures
       }

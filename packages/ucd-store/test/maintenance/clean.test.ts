@@ -152,7 +152,7 @@ describe("store clean", () => {
     await store.init();
 
     assertCapability(store.fs, ["rm", "exists"]);
-    expect(await store.fs.exists(`./15.0.0/ArabicShaping.txt`)).toBe(true);
+    expect(await store.fs.exists(storePath, `./15.0.0/ArabicShaping.txt`)).toBe(true);
 
     vi.spyOn(store, "analyze").mockResolvedValue([
       [{
@@ -167,8 +167,8 @@ describe("store clean", () => {
       null,
     ]);
 
-    await store.fs.rm(`./15.0.0/not-in-store.txt`);
-    expect(await store.fs.exists(`./15.0.0/not-in-store.txt`)).toBe(false);
+    await store.fs.rm(storePath, `./15.0.0/not-in-store.txt`);
+    expect(await store.fs.exists(storePath, `./15.0.0/not-in-store.txt`)).toBe(false);
 
     const [cleanData, cleanError] = await store.clean({ concurrency: 1 });
 
@@ -338,7 +338,7 @@ describe("store clean", () => {
     await store.mirror();
 
     assertCapability(store.fs, ["rm", "exists"]);
-    expect(await store.fs.exists(`./15.0.0/ArabicShaping.txt`)).toBe(true);
+    expect(await store.fs.exists(storePath, `./15.0.0/ArabicShaping.txt`)).toBe(true);
 
     vi.spyOn(store, "analyze").mockResolvedValue([
       [{
@@ -353,8 +353,8 @@ describe("store clean", () => {
       null,
     ]);
 
-    await store.fs.rm(`./15.0.0/ArabicShaping.txt`);
-    expect(await store.fs.exists(`./15.0.0/ArabicShaping.txt`)).toBe(false);
+    await store.fs.rm(storePath, `./15.0.0/ArabicShaping.txt`);
+    expect(await store.fs.exists(storePath, `./15.0.0/ArabicShaping.txt`)).toBe(false);
 
     const [cleanData, cleanError] = await store.clean({ concurrency: 1 });
 
@@ -383,7 +383,7 @@ describe("store clean", () => {
     await store.mirror();
 
     assertCapability(store.fs, ["rm", "exists"]);
-    await store.fs.rm(`./15.0.0/ArabicShaping.txt`);
+    await store.fs.rm(storePath, `./15.0.0/ArabicShaping.txt`);
 
     vi.spyOn(store.fs, "exists").mockResolvedValue(true);
 
