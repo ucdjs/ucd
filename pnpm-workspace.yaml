@@ -103,7 +103,7 @@ catalogs:
     "@vscode/vsce": 3.6.0
 
   docs:
-    docus: 5.0.0
+    docus: 5.1.0
     nuxt: 4.1.2
     better-sqlite3: 12.2.0
     "@nuxt/content": 3.7.1
