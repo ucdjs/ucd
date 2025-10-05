@@ -1,6 +1,8 @@
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
+import type { UCDStoreManifest } from "@ucdjs/schemas";
 import type { PathFilterOptions } from "@ucdjs/shared";
 import type { UCDStore } from "@ucdjs/ucd-store";
+import type { DirectoryJSON } from "vitest-testdirs";
 import type { MockStoreConfig } from "./mock-store";
 import { testdir } from "vitest-testdirs";
 import { mockStoreApi } from "./mock-store";
@@ -15,7 +17,7 @@ export interface CreateTestStoreOptions {
    *   }
    * }
    */
-  structure?: Record<string, any>;
+  structure?: DirectoryJSON;
 
   /**
    * Store manifest content (only used when no custom fs is provided)
@@ -25,7 +27,7 @@ export interface CreateTestStoreOptions {
    *   "15.0.0": "15.0.0"
    * }
    */
-  manifest?: Record<string, string>;
+  manifest?: UCDStoreManifest;
 
   /**
    * Unicode versions to use in the store
@@ -68,7 +70,7 @@ export interface CreateTestStoreOptions {
    * - `MockStoreConfig`: Custom mockStoreApi configuration
    * - `undefined`/`false`: Don't setup API mocking (useful when mocking is done in beforeEach)
    */
-  mockApi?: boolean | MockStoreConfig;
+  mockApi?: boolean | Omit<MockStoreConfig, "versions" | "baseUrl">;
 }
 
 export interface CreateTestStoreResult {
@@ -81,6 +83,14 @@ export interface CreateTestStoreResult {
    * Path to the test directory (only present when using structure/manifest or basePath)
    */
   storePath?: string;
+}
+
+async function loadNodeBridge(basePath: string): Promise<FileSystemBridge> {
+  const NodeFileSystemBridge = await import("@ucdjs/fs-bridge/bridges/node").then((m) => m.default);
+  if (!NodeFileSystemBridge) {
+    throw new Error("Node.js FileSystemBridge could not be loaded");
+  }
+  return NodeFileSystemBridge({ basePath });
 }
 
 /**
@@ -110,70 +120,58 @@ export interface CreateTestStoreResult {
 export async function createTestStore(
   options: CreateTestStoreOptions = {},
 ): Promise<CreateTestStoreResult> {
-  // Setup API mocking if requested
+  const versions = options.versions ?? ["16.0.0", "15.1.0", "15.0.0"];
+  const baseUrl = options.baseUrl ?? "https://api.ucdjs.dev";
+
   if (options.mockApi) {
-    if (options.mockApi === true) {
-      mockStoreApi();
-    } else {
-      mockStoreApi(options.mockApi);
+    const mockConfig: MockStoreConfig = {
+      baseUrl,
+      versions,
+      responses: options.mockApi === true ? undefined : options.mockApi.responses,
+    };
+
+    // Include manifest in mocked responses so the store can read it
+    if (options.manifest) {
+      mockConfig.responses = {
+        ...mockConfig.responses,
+        "/api/v1/files/.ucd-store.json": options.manifest,
+      };
     }
+
+    mockStoreApi(mockConfig);
   }
 
   let storePath: string | undefined;
   let fs: FileSystemBridge;
 
   if (options.fs) {
-    // Custom bridge provided - use as-is
     fs = options.fs;
     storePath = options.basePath;
   } else if (options.structure || options.manifest) {
-    // Auto-create testdir + Node bridge
-    const testdirStructure: Record<string, any> = {
-      ...options.structure,
-    };
-
+    const structure: DirectoryJSON = { ...options.structure };
     if (options.manifest) {
-      testdirStructure[".ucd-store.json"] = JSON.stringify(options.manifest);
+      structure[".ucd-store.json"] = JSON.stringify(options.manifest);
     }
 
-    storePath = await testdir(testdirStructure);
-
-    // Dynamically import Node bridge
-    const NodeFileSystemBridge = await import("@ucdjs/fs-bridge/bridges/node").then((m) => m.default);
-    if (!NodeFileSystemBridge) {
-      throw new Error("Node.js FileSystemBridge could not be loaded");
-    }
-
-    fs = NodeFileSystemBridge({ basePath: storePath });
+    storePath = await testdir(structure);
+    fs = await loadNodeBridge(storePath);
   } else {
-    // Default Node bridge with optional basePath
-    const NodeFileSystemBridge = await import("@ucdjs/fs-bridge/bridges/node").then((m) => m.default);
-    if (!NodeFileSystemBridge) {
-      throw new Error("Node.js FileSystemBridge could not be loaded");
-    }
-
     storePath = options.basePath || "";
-    fs = NodeFileSystemBridge({ basePath: storePath });
+    fs = await loadNodeBridge(storePath);
   }
 
-  // Create the store using the generic factory
   const { createUCDStore } = await import("@ucdjs/ucd-store");
-
   const store = createUCDStore({
     fs,
     basePath: storePath || "",
-    baseUrl: options.baseUrl,
-    versions: options.versions,
+    baseUrl,
+    versions,
     globalFilters: options.globalFilters,
   });
 
-  // Auto-initialize unless explicitly disabled
   if (options.autoInit !== false) {
     await store.init();
   }
 
-  return {
-    store,
-    storePath,
-  };
+  return { store, storePath };
 }
