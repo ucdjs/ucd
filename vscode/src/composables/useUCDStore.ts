@@ -20,9 +20,7 @@ export const useUCDStore = createSingletonComposable(() => {
     } else {
       _store = createUCDStore({
         globalFilters,
-        fs: vscodeFSBridge({
-          basePath: localDataFilesStore,
-        }),
+        fs: vscodeFSBridge(),
         basePath: localDataFilesStore,
       });
     }

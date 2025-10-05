@@ -2,25 +2,19 @@ import type { FSEntry } from "@ucdjs/fs-bridge";
 import { trimTrailingSlash } from "@luxass/utils";
 import { defineFileSystemBridge } from "@ucdjs/fs-bridge";
 import { Uri, workspace } from "vscode";
-import { z } from "zod";
 
 export const vscodeFSBridge = defineFileSystemBridge({
-  optionsSchema: z.object({
-    basePath: z.string(),
-  }),
-  setup({ options, resolveSafePath }) {
-    const baseUri = Uri.file(options.basePath);
-
+  setup({ resolveSafePath }) {
     return {
-      async read(path) {
-        const resolvedPath = resolveSafePath(baseUri.fsPath, path);
+      async read(basePath, path) {
+        const resolvedPath = resolveSafePath(Uri.file(basePath).fsPath, path);
         const resolvedUri = Uri.file(resolvedPath);
         const uint8Array = await workspace.fs.readFile(resolvedUri);
         return new TextDecoder().decode(uint8Array);
       },
-      async exists(path) {
+      async exists(basePath, path) {
         try {
-          const resolvedPath = resolveSafePath(baseUri.fsPath, path);
+          const resolvedPath = resolveSafePath(Uri.file(basePath).fsPath, path);
           const resolvedUri = Uri.file(resolvedPath);
           await workspace.fs.stat(resolvedUri);
           return true;
@@ -28,8 +22,8 @@ export const vscodeFSBridge = defineFileSystemBridge({
           return false;
         }
       },
-      async listdir(path, recursive = false) {
-        const resolvedPath = resolveSafePath(baseUri.fsPath, path);
+      async listdir(basePath, path, recursive = false) {
+        const resolvedPath = resolveSafePath(Uri.file(basePath).fsPath, path);
         const targetUri = Uri.file(resolvedPath);
 
         function createFSEntry(name: string, type: number, relativePath: string): FSEntry {
@@ -108,8 +102,8 @@ export const vscodeFSBridge = defineFileSystemBridge({
 
         return rootEntries;
       },
-      async write(path, data) {
-        const resolvedPath = resolveSafePath(baseUri.fsPath, path);
+      async write(basePath, path, data) {
+        const resolvedPath = resolveSafePath(Uri.file(basePath).fsPath, path);
         const resolvedUri = Uri.file(resolvedPath);
         const parentUri = Uri.joinPath(resolvedUri, "..");
 
@@ -125,14 +119,14 @@ export const vscodeFSBridge = defineFileSystemBridge({
           : data;
         await workspace.fs.writeFile(resolvedUri, uint8Array);
       },
-      async mkdir(path) {
-        const resolvedPath = resolveSafePath(baseUri.fsPath, path);
+      async mkdir(basePath, path) {
+        const resolvedPath = resolveSafePath(Uri.file(basePath).fsPath, path);
         const resolvedUri = Uri.file(resolvedPath);
         await workspace.fs.createDirectory(resolvedUri);
         return void 0;
       },
-      async rm(path, options) {
-        const resolvedPath = resolveSafePath(baseUri.fsPath, path);
+      async rm(basePath, path, options) {
+        const resolvedPath = resolveSafePath(Uri.file(basePath).fsPath, path);
         const resolvedUri = Uri.file(resolvedPath);
         await workspace.fs.delete(resolvedUri, {
           recursive: options?.recursive ?? false,
