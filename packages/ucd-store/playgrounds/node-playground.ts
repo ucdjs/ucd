@@ -15,9 +15,7 @@ log.info("Base path for UCD Store:", basePath);
 log.info("Starting Node Playground for UCD Store");
 const store = createUCDStore({
   basePath,
-  fs: NodeFileSystemBridge({
-    basePath,
-  }),
+  fs: NodeFileSystemBridge(),
   versions: [
     "15.1.0",
   ],
@@ -44,25 +42,25 @@ assertCapability(store.fs, ["read", "write", "listdir", "mkdir", "exists", "rm"]
 log.info("All capability assertions passed");
 
 // check if local directory exists
-const localDirExists = await store.fs.exists("./ucd-data");
+const localDirExists = await store.fs.exists(basePath, "./ucd-data");
 log.info("Local UCD data directory exists:", localDirExists);
 
 if (!localDirExists) {
   log.info("Creating local UCD data directory...");
-  await store.fs.mkdir("./ucd-data");
+  await store.fs.mkdir(basePath, "./ucd-data");
   log.info("Local UCD data directory created");
 }
 
 // test basic file operations
 try {
   const testFile = "./ucd-data/test.txt";
-  await store.fs.write(testFile, "Hello, UCD Store!");
-  const content = await store.fs.read(testFile);
+  await store.fs.write(basePath, testFile, "Hello, UCD Store!");
+  const content = await store.fs.read(basePath, testFile);
   assert(content === "Hello, UCD Store!", "file content should match");
   log.info("File write/read test passed");
 
   // Clean up test file
-  await store.fs.rm(testFile);
+  await store.fs.rm(basePath, testFile);
   log.info("Test file cleaned up");
 } catch (error) {
   log.error("File operation test failed:", error);
@@ -89,7 +87,7 @@ assert(analysis.orphanedFiles.length === 0, "there should be no orphaned files")
 log.info("Store initialized and analyzed successfully");
 
 // write orphaned files to the store
-await store.fs.write("./15.1.0/orphaned.txt", "This is an orphaned file");
+await store.fs.write(basePath, "./15.1.0/orphaned.txt", "This is an orphaned file");
 log.info("Orphaned file written to the store");
 
 const [newAnalyzes, newError] = await store.analyze({
