@@ -19,6 +19,7 @@ const aliases = readdirSync(fileURLToPath(new URL("./packages", import.meta.url)
     "#internal/test-utils/msw": alias("test-utils") + "/msw.ts",
     "#internal/test-utils/mock-store": alias("test-utils") + "/mock-store/index.ts",
     "#internal/test-utils": alias("test-utils") + "/index.ts",
+    "#internal/test-conditions": fileURLToPath(new URL("./test/utils/conditions.ts", import.meta.url)),
   });
 
 const hiddenLogs: string[] = [];

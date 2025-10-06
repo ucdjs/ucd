@@ -1,4 +1,4 @@
-import { isUnix } from "#internal/test-utils";
+import { isUnix } from "#internal/test-conditions";
 import { describe, expect, it } from "vitest";
 import { PathTraversalError } from "../src/errors";
 import { isWithinBase, resolveSafePath } from "../src/security";
