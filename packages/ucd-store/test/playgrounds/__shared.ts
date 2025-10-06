@@ -1,5 +1,5 @@
 import { assertCapability } from "@ucdjs/fs-bridge";
-import { assert, expect, it } from "vitest";
+import { expect, it } from "vitest";
 import { UCDStore } from "../../src/store";
 
 export interface PlaygroundTestOptions {
