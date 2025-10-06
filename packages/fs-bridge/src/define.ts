@@ -18,7 +18,7 @@ import {
 const debug = createDebugger("ucdjs:fs-bridge:define");
 
 export function defineFileSystemBridge<
-  TOptionsSchema extends z.ZodType,
+  TOptionsSchema extends z.ZodType = z.ZodNever,
   TState extends Record<string, unknown> = Record<string, unknown>,
 >(
   fsBridge: FileSystemBridgeObject<TOptionsSchema, TState>,
