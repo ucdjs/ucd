@@ -1,8 +1,24 @@
-import { describe } from "vitest";
+import { mockStoreApi } from "#internal/test-utils/mock-store";
+import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
+import { beforeEach, describe } from "vitest";
 import { createHTTPUCDStore } from "../../src/factory";
 import { runPlaygroundTests } from "./__shared";
 
 describe("http playground", async () => {
+  beforeEach(() => {
+    mockStoreApi({
+      responses: {
+        "/api/v1/versions": [...UNICODE_VERSION_METADATA],
+        "/api/v1/versions/:version/file-tree": [{
+          type: "file",
+          name: "ArabicShaping.txt",
+          path: "ArabicShaping.txt",
+          lastModified: 1724601900000,
+        }],
+      },
+    });
+  });
+
   const store = await createHTTPUCDStore({
     baseUrl: "https://api.ucdjs.dev",
     basePath: "/ucd-data",
@@ -11,7 +27,10 @@ describe("http playground", async () => {
 
   runPlaygroundTests({
     store,
-    testVersion: "15.1.0",
-    skipOrphanedTest: true, // HTTP is read-only
+    requiredCapabilities: [
+      "read",
+      "exists",
+      "listdir",
+    ],
   });
 });
