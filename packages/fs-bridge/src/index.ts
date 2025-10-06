@@ -11,6 +11,7 @@ export {
 
 export type {
   FileSystemBridge,
+  FileSystemBridgeCapabilities,
   FileSystemBridgeOperations,
   FileSystemBridgeRmOptions,
   FSEntry,
