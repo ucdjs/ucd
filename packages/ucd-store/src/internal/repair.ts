@@ -117,7 +117,7 @@ async function handleOrphanedFiles(
       allOperations.push(limit(async () => {
         try {
           assertCapability(store.fs, ["exists", "rm"]);
-          const filePath = join(store.basePath, analysis.version, orphanedFile);
+          const filePath = join(analysis.version, orphanedFile);
           parentDirectoriesUnique.add(dirname(filePath));
 
           if (options.dryRun) {
@@ -125,7 +125,7 @@ async function handleOrphanedFiles(
             return;
           }
 
-          const exists = await store.fs.exists(filePath);
+          const exists = await store.fs.exists(store.basePath, filePath);
           if (!exists) {
             versionResult.failed.push({
               filePath: orphanedFile,
@@ -137,7 +137,7 @@ async function handleOrphanedFiles(
             return;
           }
 
-          await store.fs.rm(filePath);
+          await store.fs.rm(store.basePath, filePath);
 
           versionResult.removed.push(orphanedFile);
         } catch (err) {
@@ -161,7 +161,7 @@ async function handleOrphanedFiles(
   for (const dir of parentDirectoriesUnique) {
     assertCapability(store.fs, ["listdir"]);
 
-    const files = await store.fs.listdir(dir);
+    const files = await store.fs.listdir(store.basePath, dir);
     if (files.length === 0) {
       parentDirectories.push(dir);
     }

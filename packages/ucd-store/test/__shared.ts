@@ -25,15 +25,15 @@ export const createMemoryMockFS = defineFileSystemBridge({
   state: {
     fs: memfs().fs,
   },
-  setup({ state }) {
+  setup({ state, resolveSafePath }) {
     return {
-      async read(path) {
-        return state.fs.readFileSync(path, "utf8") as string;
+      async read(basePath, path) {
+        return state.fs.readFileSync(resolveSafePath(basePath, path), "utf8") as string;
       },
-      async exists(path) {
-        return state.fs.existsSync(path);
+      async exists(basePath, path) {
+        return state.fs.existsSync(resolveSafePath(basePath, path));
       },
-      async listdir(path, recursive = false) {
+      async listdir(basePath, path, recursive = false) {
         function createFSEntry(entry: Dirent): FSEntry {
           const name = entry.name.toString();
           const pathFromName = trimTrailingSlash(name);
@@ -52,11 +52,11 @@ export const createMemoryMockFS = defineFileSystemBridge({
         }
 
         if (!recursive) {
-          const entries = state.fs.readdirSync(path, { withFileTypes: true }) as Dirent[];
+          const entries = state.fs.readdirSync(resolveSafePath(basePath, path), { withFileTypes: true }) as Dirent[];
           return entries.map((entry) => createFSEntry(entry));
         }
 
-        const allEntries = state.fs.readdirSync(path, {
+        const allEntries = state.fs.readdirSync(resolveSafePath(basePath, path), {
           withFileTypes: true,
           recursive: true,
         }) as Dirent[];
@@ -92,20 +92,25 @@ export const createMemoryMockFS = defineFileSystemBridge({
 
         return rootEntries;
       },
-      async mkdir(path) {
-        state.fs.mkdirSync(path);
+      async mkdir(basePath, path) {
+        state.fs.mkdirSync(resolveSafePath(basePath, path));
       },
-      async rm(path) {
-        state.fs.rmSync(path);
-      },
-      async write(path, data, encoding = "utf8") {
-        // ensure the directory exists
-        const dir = dirname(path);
-        if (!state.fs.existsSync(dir)) {
-          state.fs.mkdirSync(dir, { recursive: true });
+      async rm(basePath, path) {
+        const safePath = resolveSafePath(basePath, path);
+        if (safePath === "/" || safePath === "") {
+          throw new Error("Cannot remove root directory");
         }
 
-        state.fs.writeFileSync(path, data, {
+        state.fs.rmSync(safePath);
+      },
+      async write(basePath, path, data, encoding = "utf8") {
+        // ensure the directory exists
+        const dir = dirname(path);
+        if (!state.fs.existsSync(resolveSafePath(basePath, dir))) {
+          state.fs.mkdirSync(resolveSafePath(basePath, dir), { recursive: true });
+        }
+
+        state.fs.writeFileSync(resolveSafePath(basePath, path), data, {
           encoding,
         });
       },
