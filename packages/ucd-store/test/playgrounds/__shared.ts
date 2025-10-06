@@ -1,4 +1,5 @@
-import { expect, it } from "vitest";
+import { assertCapability } from "@ucdjs/fs-bridge";
+import { assert, expect, it } from "vitest";
 import { UCDStore } from "../../src/store";
 
 export interface PlaygroundTestOptions {
@@ -35,6 +36,7 @@ export function runPlaygroundTests(options: PlaygroundTestOptions): void {
     it("should support basic file write and read operations", async () => {
       // check if data directory exists, create if needed
       const dataDirPath = "./ucd-data";
+      assertCapability(store.fs, ["exists", "mkdir", "write", "read", "rm"]);
       const dataDirExists = await store.fs.exists(dataDirPath);
 
       if (!dataDirExists && store.fs.capabilities.mkdir) {
@@ -65,14 +67,15 @@ export function runPlaygroundTests(options: PlaygroundTestOptions): void {
 
       expect(analyses).toBeDefined();
       expect(error).toBeNull();
-      expect(analyses[0]).toBeDefined();
+      expect(analyses![0]).toBeDefined();
 
-      const [analysis] = analyses;
-      expect(analysis.version).toBe(testVersion);
+      const [analysis] = analyses!;
+      expect(analysis?.version).toBe(testVersion);
     });
 
     if (!skipOrphanedTest) {
       it("should detect orphaned files correctly", async () => {
+        assertCapability(store.fs, "write");
         // write an orphaned file
         await store.fs.write(`./${testVersion}/orphaned.txt`, "This is an orphaned file");
 
@@ -83,10 +86,10 @@ export function runPlaygroundTests(options: PlaygroundTestOptions): void {
 
         expect(newAnalyses).toBeDefined();
         expect(newError).toBeNull();
-        expect(newAnalyses[0]).toBeDefined();
+        expect(newAnalyses![0]).toBeDefined();
 
-        const [newAnalysis] = newAnalyses;
-        expect(newAnalysis.orphanedFiles.length).toBe(1);
+        const [newAnalysis] = newAnalyses!;
+        expect(newAnalysis?.orphanedFiles.length).toBe(1);
       });
     }
   } else {
