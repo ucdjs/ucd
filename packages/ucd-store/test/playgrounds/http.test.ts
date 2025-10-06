@@ -21,7 +21,6 @@ describe("http playground", async () => {
 
   const store = await createHTTPUCDStore({
     baseUrl: "https://api.ucdjs.dev",
-    basePath: "/ucd-data",
     versions: ["15.1.0"],
   });
 
@@ -32,5 +31,9 @@ describe("http playground", async () => {
       "exists",
       "listdir",
     ],
+    repair: false,
+    mirror: false,
+    write: false,
+    clean: false,
   });
 });

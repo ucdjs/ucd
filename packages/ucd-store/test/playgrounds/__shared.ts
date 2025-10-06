@@ -81,7 +81,11 @@ export function runPlaygroundTests(options: PlaygroundTestOptions): void {
   });
 
   it("should initialize the store", async () => {
-    expect.fail("Initialization test not implemented yet");
+    expect(store.initialized).toBe(false);
+
+    await expect(store.init()).resolves.not.toThrowError();
+
+    expect(store.initialized).toBe(true);
   });
 
   it.runIf(store.initialized && shouldRunReadTests)("should support read operations", async () => {
