@@ -11,6 +11,7 @@ export {
 
 export type {
   FileSystemBridge,
+  FileSystemBridgeMetadata,
   FileSystemBridgeOperations,
   FileSystemBridgeRmOptions,
   FSEntry,
