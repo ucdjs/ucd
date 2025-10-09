@@ -100,6 +100,32 @@ export interface FileSystemBridgeMetadata {
 
   /**
    * Additional metadata about the file system bridge
+   *
+   * NOTE:
+   * This can include any custom properties that may be relevant to users of the bridge.
+   * For example, a bridge that uses a specific storage backend might include
+   * a `customMode` property to indicate the type of storage used.
+   *
+   * Or a bridge that has specific performance characteristics might include
+   * properties like `maxFileSize` or `supportsStreaming`.
+   *
+   * This field is intentionally flexible to allow for a wide range of metadata
+   * that may be useful in different contexts.
+   *
+   * Just note, that only the predefined properties are guaranteed to be recognized.
+   * Custom properties are for informational purposes only and may not be used
+   *
+   * @example
+   * ```ts
+   * import { FileSystemBridge } from "@ucdjs/fs-bridge";
+   *
+   * const fsBridge: FileSystemBridge = {
+   *    metadata: {
+   *      persistent: true,
+   *      customMode: "in-memory"
+   *    }
+   * }
+   * ```
    */
   [key: string]: unknown;
 }
