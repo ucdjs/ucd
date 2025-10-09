@@ -17,6 +17,8 @@ describe("defineFileSystemBridge", () => {
       };
 
       const bridge = defineFileSystemBridge({
+        name: "Mock Bridge",
+        description: "A mock file system bridge for testing",
         setup: ({ options, state }) => {
           expect(options).toBeUndefined();
           expect(state).toEqual({});
@@ -42,6 +44,8 @@ describe("defineFileSystemBridge", () => {
       };
 
       const bridge = defineFileSystemBridge({
+        name: "Full Mock Bridge",
+        description: "A mock file system bridge supporting all operations",
         setup: () => mockOperations,
       });
 
@@ -79,6 +83,8 @@ describe("defineFileSystemBridge", () => {
       });
 
       const bridge = defineFileSystemBridge({
+        name: "Configurable Mock Bridge",
+        description: "A mock file system bridge with configurable options",
         optionsSchema,
         setup: ({ options }) => {
           expect(options.basePath).toBe("/test/path");
@@ -109,6 +115,8 @@ describe("defineFileSystemBridge", () => {
       });
 
       const bridge = defineFileSystemBridge({
+        name: "Invalid Options Bridge",
+        description: "A mock file system bridge to test invalid options",
         optionsSchema,
         setup: () => ({
           read: vi.fn().mockResolvedValue(""),
@@ -132,6 +140,8 @@ describe("defineFileSystemBridge", () => {
       const initialState = { callCount: 0 };
 
       const bridge = defineFileSystemBridge({
+        name: "Stateful Mock Bridge",
+        description: "A mock file system bridge that maintains state",
         state: initialState,
         setup: ({ state }) => {
           expect(state).toBe(initialState);
@@ -167,6 +177,8 @@ describe("defineFileSystemBridge", () => {
       });
 
       const bridge = defineFileSystemBridge({
+        name: "Optional Options Bridge",
+        description: "A mock file system bridge with optional options",
         optionsSchema,
         setup: ({ options, state }) => {
           // options should be an empty object when no arguments passed
@@ -194,6 +206,8 @@ describe("defineFileSystemBridge", () => {
       });
 
       const bridge = defineFileSystemBridge({
+        name: "Required Options Bridge",
+        description: "A mock file system bridge with required options",
         optionsSchema,
         setup: () => ({
           read: vi.fn().mockResolvedValue(""),
@@ -213,6 +227,8 @@ describe("defineFileSystemBridge", () => {
 
     it("should handle accessing state properties when state is undefined", async () => {
       const bridge = defineFileSystemBridge({
+        name: "State Access Bridge",
+        description: "A mock file system bridge to test state access",
         setup: ({ state }) => {
           // state should be an empty object, not undefined
           expect(state).toEqual({});
@@ -243,6 +259,8 @@ describe("defineFileSystemBridge", () => {
   describe("unsupported operations", () => {
     it("should throw when accessing unsupported operation", () => {
       const bridge = defineFileSystemBridge({
+        name: "Unsupported Operation Bridge",
+        description: "A mock file system bridge with no operations",
         setup: () => ({}),
       });
 
@@ -255,6 +273,8 @@ describe("defineFileSystemBridge", () => {
       const p = Promise.resolve("value");
 
       const bridge = defineFileSystemBridge({
+        name: "No Catch Bridge",
+        description: "A mock file system bridge to test promise without catch",
         setup: () => ({
           read: vi.fn().mockImplementation(() => {
             return { then: p.then.bind(p) };
@@ -271,6 +291,8 @@ describe("defineFileSystemBridge", () => {
   describe("error handling", () => {
     it("should throw if an error occurs in the setup function", () => {
       const bridge = defineFileSystemBridge({
+        name: "Setup Error Bridge",
+        description: "A mock file system bridge that throws in setup",
         setup: () => {
           throw new Error("Setup error");
         },
@@ -294,6 +316,8 @@ describe("defineFileSystemBridge", () => {
 
     it("should catch and rethrow errors from async operations", async () => {
       const bridge = defineFileSystemBridge({
+        name: "Async Error Bridge",
+        description: "A mock file system bridge that throws in async operation",
         setup: () => ({
           read: vi.fn().mockRejectedValue(new Error("Async error")),
         }),
@@ -308,6 +332,8 @@ describe("defineFileSystemBridge", () => {
 
     it("should catch and rethrow errors from sync operations", () => {
       const bridge = defineFileSystemBridge({
+        name: "Sync Error Bridge",
+        description: "A mock file system bridge that throws in sync operation",
         setup: () => ({
           read: vi.fn().mockImplementation(() => {
             throw new Error("Sync error");
