@@ -25,6 +25,8 @@ describe("capability requirements", () => {
     const mkdirSpy = vi.fn().mockResolvedValue(undefined);
 
     const bridgeWithoutListdir = defineFileSystemBridge({
+      name: "No Listdir Bridge",
+      description: "A mock file system bridge without listdir capability",
       setup: () => ({
         read: readSpy,
         write: writeSpy,
@@ -57,6 +59,8 @@ describe("capability requirements", () => {
     const mkdirSpy = vi.fn().mockResolvedValue(undefined);
 
     const bridgeWithoutListdir = defineFileSystemBridge({
+      name: "No Listdir Bridge",
+      description: "A mock file system bridge without listdir capability",
       setup: () => ({
         read: readSpy,
         write: writeSpy,
@@ -96,6 +100,8 @@ describe("capability requirements", () => {
     ]);
 
     const bridgeWithCapabilities = defineFileSystemBridge({
+      name: "Full Capabilities Bridge",
+      description: "A mock file system bridge with all required capabilities",
       setup: () => ({
         read: readSpy,
         write: writeSpy,
