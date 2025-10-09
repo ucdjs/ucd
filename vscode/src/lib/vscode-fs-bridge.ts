@@ -5,6 +5,8 @@ import { Uri, workspace } from "vscode";
 import { z } from "zod";
 
 export const vscodeFSBridge = defineFileSystemBridge({
+  name: "VSCode File System Bridge",
+  description: "A file system bridge that uses VSCode's workspace.fs API to interact with the local file system.",
   optionsSchema: z.object({
     basePath: z.string(),
   }),
