@@ -93,8 +93,8 @@ export interface FileSystemBridgeMetadata {
    *
    * - `true`: Write operations modify the underlying storage and persist across sessions.
    * - `false`: Write operations are ephemeral and do not persist across sessions (e.g., in-memory storage).
+   * - `undefined`: Behavior not specified by the bridge.
    *
-   * @default false
    */
   persistent?: boolean;
 
