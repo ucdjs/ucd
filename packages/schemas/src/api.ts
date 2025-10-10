@@ -13,6 +13,7 @@ export const ApiErrorSchema = z.object({
     description: "ISO 8601 timestamp when the error occurred",
   }),
 }).meta({
+  id: "ApiError",
   description: dedent`
     Standard error response format used consistently across all API endpoints.
 
