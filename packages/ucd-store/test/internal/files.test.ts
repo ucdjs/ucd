@@ -1,5 +1,5 @@
 import type { ApiError, UnicodeTree } from "@ucdjs/schemas";
-import { HttpResponse, mockFetch } from "#internal/test-utils/msw";
+import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { client } from "@ucdjs/fetch";
 import { describe, expect, it } from "vitest";

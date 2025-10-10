@@ -102,10 +102,11 @@ pnpm clean                      # Clean build artifacts and node_modules
 - API app has both unit tests and worker tests (using @cloudflare/vitest-pool-workers)
 - MSW (Mock Service Worker) is set up globally via test-utils for HTTP mocking
 - Test file pattern: `**/*.{test,spec}.?(c|m)[jt]s?(x)`
-- Internal test utilities available via path aliases (defined in vitest.config.ts):
-  - `#internal/test-utils/msw`
-  - `#internal/test-utils/mock-store`
-  - `#internal/test-utils`
+- Test utilities available via path aliases (defined in vitest.config.ts):
+  - `#test-utils/msw`
+  - `#test-utils/mock-store`
+  - `#test-utils`
+- Internal test utilities (e.g. OS condition checks) are in `test/utils/` and imported via `#internal/test-utils/conditions`
 
   These aliases point directly to the source files (`packages/test-utils/src/`) instead of using the built package (`@ucdjs/test-utils`). This approach:
   - Eliminates the build step requirement for test-utils during development
@@ -115,11 +116,11 @@ pnpm clean                      # Clean build artifacts and node_modules
 #### Testing Patterns
 
 **Using setupMockStore():**
-The `setupMockStore()` utility from `#internal/test-utils/mock-store` provides MSW-based mocking for the UCD API:
+The `setupMockStore()` utility from `#test-utils/mock-store` provides MSW-based mocking for the UCD API:
 
 ```typescript
-import { setupMockStore } from "#internal/test-utils/mock-store";
-import { HttpResponse } from "#internal/test-utils/msw";
+import { setupMockStore } from "#test-utils/mock-store";
+import { HttpResponse } from "#test-utils/msw";
 
 beforeEach(() => {
   setupMockStore({
@@ -249,8 +250,8 @@ The API worker (apps/api) has multiple deployment environments configured in `wr
    - This regenerates `<repository-root>/ucd-generated/api/openapi.json` which is used by `@ucdjs/fetch`
    - It's a build dependency in turbo.json, so full builds will regenerate it
 
-3. **Using #internal/test-utils in tests**
-   - Import from `#internal/test-utils/*`, not `@ucdjs/test-utils`
+3. **Using #test-utils in tests**
+   - Import from `#test-utils/*`, not `@ucdjs/test-utils`
    - This avoids needing to build test-utils before running tests
    - Prevents cyclic dependency issues
 
