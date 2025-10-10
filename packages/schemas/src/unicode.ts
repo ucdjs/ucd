@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ucdRegistry } from "./zod-registry";
 
 export const UnicodeVersionSchema = z.object({
   version: z.string().meta({
@@ -19,7 +20,7 @@ export const UnicodeVersionSchema = z.object({
   type: z.enum(["draft", "stable", "unsupported"]).meta({
     description: "The status of the Unicode version. 'unsupported' means the version exists but is not yet supported by the API.",
   }),
-}).meta({
+}).register(ucdRegistry, {
   id: "UnicodeVersion",
   description: "Represents a Unicode version with its metadata and support status.",
   examples: [
@@ -52,7 +53,7 @@ export const UnicodeVersionSchema = z.object({
 
 export type UnicodeVersion = z.output<typeof UnicodeVersionSchema>;
 
-export const UnicodeVersionListSchema = z.array(UnicodeVersionSchema).meta({
+export const UnicodeVersionListSchema = z.array(UnicodeVersionSchema).register(ucdRegistry, {
   id: "UnicodeVersionList",
   description: "A list of Unicode versions with their metadata and support status.",
 });
@@ -110,14 +111,14 @@ const FileTreeNodeSchema = BaseTreeNodeSchema.extend({
   }),
 });
 
-export const UnicodeTreeNodeSchema = z.union([DirectoryTreeNodeSchema, FileTreeNodeSchema]).meta({
+export const UnicodeTreeNodeSchema = z.union([DirectoryTreeNodeSchema, FileTreeNodeSchema]).register(ucdRegistry, {
   id: "UnicodeTreeNode",
   description: "A node in the Unicode file tree.",
 });
 
 export type UnicodeTreeNode = z.output<typeof UnicodeTreeNodeSchema>;
 
-export const UnicodeTreeSchema = z.array(UnicodeTreeNodeSchema).meta({
+export const UnicodeTreeSchema = z.array(UnicodeTreeNodeSchema).register(ucdRegistry, {
   id: "UnicodeTree",
   description: "A tree structure representing files and directories in a Unicode version.",
 });

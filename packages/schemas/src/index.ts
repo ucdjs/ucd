@@ -6,21 +6,24 @@ export {
   FileEntrySchema,
   UCDStoreManifestSchema,
 } from "./fs";
+
 export type {
   FileEntry,
   FileEntryList,
   UCDStoreManifest,
 } from "./fs";
-
 export {
   UnicodeTreeNodeSchema,
   UnicodeTreeSchema,
   UnicodeVersionListSchema,
   UnicodeVersionSchema,
 } from "./unicode";
+
 export type {
   UnicodeTree,
   UnicodeTreeNode,
   UnicodeVersion,
   UnicodeVersionList,
 } from "./unicode";
+
+export { ucdRegistry } from "./zod-registry";
