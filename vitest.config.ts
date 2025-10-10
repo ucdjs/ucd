@@ -1,28 +1,10 @@
 import { existsSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { defineConfig, type TestProjectConfiguration } from "vitest/config";
-
-const root = fileURLToPath(new URL("./", import.meta.url));
+import { aliases } from "./vitest.aliases";
 
 const pkgRoot = (pkg: string) =>
   fileURLToPath(new URL(`./packages/${pkg}`, import.meta.url));
-
-const alias = (pkg: string) => `${pkgRoot(pkg)}/src`;
-
-const aliases = readdirSync(fileURLToPath(new URL("./packages", import.meta.url)))
-  .filter((dir) => existsSync(pkgRoot(dir) + "/package.json"))
-  .reduce<Record<string, string>>(
-    (acc, pkg) => {
-      acc[`@ucdjs/${pkg}`] = alias(pkg);
-      return acc;
-    }, {
-    "#test-utils/msw": alias("test-utils") + "/msw.ts",
-    "#test-utils/mock-store": alias("test-utils") + "/mock-store/index.ts",
-    "#test-utils": alias("test-utils") + "/index.ts",
-    "#internal/test-utils/conditions": fileURLToPath(new URL("./test/utils/conditions.ts", import.meta.url)),
-  });
-
-const hiddenLogs: string[] = [];
 
 const packageProjects = readdirSync(fileURLToPath(new URL("./packages", import.meta.url)))
   .filter((dir) => existsSync(pkgRoot(dir) + "/package.json"))
@@ -46,6 +28,8 @@ const workerUnitProjects = readdirSync(fileURLToPath(new URL("./apps", import.me
       },
     } satisfies TestProjectConfiguration;
   });
+
+const hiddenLogs: string[] = [];
 
 export default defineConfig({
   test: {
