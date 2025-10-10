@@ -102,10 +102,11 @@ pnpm clean                      # Clean build artifacts and node_modules
 - API app has both unit tests and worker tests (using @cloudflare/vitest-pool-workers)
 - MSW (Mock Service Worker) is set up globally via test-utils for HTTP mocking
 - Test file pattern: `**/*.{test,spec}.?(c|m)[jt]s?(x)`
-- Internal test utilities available via path aliases (defined in vitest.config.ts):
+- Test utilities available via path aliases (defined in vitest.config.ts):
   - `#test-utils/msw`
   - `#test-utils/mock-store`
   - `#test-utils`
+- Internal test utilities (e.g. OS condition checks) are in `test/utils/` and imported via `#internal/test-utils/conditions`
 
   These aliases point directly to the source files (`packages/test-utils/src/`) instead of using the built package (`@ucdjs/test-utils`). This approach:
   - Eliminates the build step requirement for test-utils during development
