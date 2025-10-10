@@ -99,6 +99,15 @@ export interface FileSystemBridgeMetadata {
   persistent?: boolean;
 
   /**
+   * Does the bridge support mirroring data to a secondary location?
+   *
+   * - `true`: The bridge supports mirroring data to a secondary location.
+   * - `false`: The bridge does not support mirroring data.
+   * - `undefined`: Behavior not specified by the bridge.
+   */
+  mirror?: boolean;
+
+  /**
    * Additional metadata about the file system bridge
    *
    * NOTE:
