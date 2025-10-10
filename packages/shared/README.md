@@ -1,15 +1,18 @@
-# @ucdjs/shared
+# @ucdjs-internal/shared
 
 [![npm version][npm-version-src]][npm-version-href]
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
 [![codecov][codecov-src]][codecov-href]
+
+> [!IMPORTANT]
+> This is an internal package. It may change without warning and is not subject to semantic versioning. Use at your own risk.
 
 A collection of utility functions and filesystem bridge implementations for the UCD project.
 
 ## Installation
 
 ```bash
-npm install @ucdjs/shared
+npm install @ucdjs-internal/shared
 ```
 
 ## Usage
@@ -19,7 +22,7 @@ npm install @ucdjs/shared
 Creates a filter function that checks if a file path should be included or excluded based on glob patterns.
 
 ```typescript
-import { createPathFilter } from "@ucdjs/shared";
+import { createPathFilter } from "@ucdjs-internal/shared";
 
 const filter = createPathFilter(["*.txt", "!*Test*"]);
 filter("Data.txt"); // true
@@ -48,7 +51,7 @@ filter("app.js", ["!src/**"]); // Apply extra exclusions
 Pre-defined filter patterns for common exclusions:
 
 ```typescript
-import { createPathFilter, PRECONFIGURED_FILTERS } from "@ucdjs/shared";
+import { createPathFilter, PRECONFIGURED_FILTERS } from "@ucdjs-internal/shared";
 
 const filter = createPathFilter([
   "*.txt",
@@ -67,9 +70,9 @@ Available filters:
 
 Published under [MIT License](./LICENSE).
 
-[npm-version-src]: https://img.shields.io/npm/v/@ucdjs/shared?style=flat&colorA=18181B&colorB=4169E1
-[npm-version-href]: https://npmjs.com/package/@ucdjs/shared
-[npm-downloads-src]: https://img.shields.io/npm/dm/@ucdjs/shared?style=flat&colorA=18181B&colorB=4169E1
-[npm-downloads-href]: https://npmjs.com/package/@ucdjs/shared
+[npm-version-src]: https://img.shields.io/npm/v/@ucdjs-internal/shared?style=flat&colorA=18181B&colorB=4169E1
+[npm-version-href]: https://npmjs.com/package/@ucdjs-internal/shared
+[npm-downloads-src]: https://img.shields.io/npm/dm/@ucdjs-internal/shared?style=flat&colorA=18181B&colorB=4169E1
+[npm-downloads-href]: https://npmjs.com/package/@ucdjs-internal/shared
 [codecov-src]: https://img.shields.io/codecov/c/gh/ucdjs/ucd?style=flat&colorA=18181B&colorB=4169E1
 [codecov-href]: https://codecov.io/gh/ucdjs/ucd

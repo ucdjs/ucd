@@ -45,7 +45,7 @@
     "@ucdjs/env": "workspace:*",
     "@ucdjs/path-utils": "workspace:*",
     "@ucdjs/schemas": "workspace:*",
-    "@ucdjs/shared": "workspace:*",
+    "@ucdjs-internal/shared": "workspace:*",
     "defu": "catalog:prod",
     "pathe": "catalog:prod",
     "zod": "catalog:prod"
@@ -54,7 +54,7 @@
     "@luxass/eslint-config": "catalog:linting",
     "@ucdjs-tooling/tsconfig": "workspace:*",
     "@ucdjs-tooling/tsdown-config": "workspace:*",
-    "@ucdjs/shared": "workspace:*",
+    "@ucdjs-internal/shared": "workspace:*",
     "eslint": "catalog:linting",
     "publint": "catalog:dev",
     "tsdown": "catalog:dev",

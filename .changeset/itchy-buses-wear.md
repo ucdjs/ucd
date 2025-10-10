@@ -1,5 +1,5 @@
 ---
-"@ucdjs/shared": minor
+"@ucdjs-internal/shared": minor
 ---
 
 feat: add tryCatch utility function

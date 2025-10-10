@@ -7,7 +7,7 @@ import picomatch from "picomatch";
  *
  * @example
  * ```ts
- * import { createPathFilter, PRECONFIGURED_FILTERS } from '@ucdjs/shared';
+ * import { createPathFilter, PRECONFIGURED_FILTERS } from '@ucdjs-internal/shared';
  *
  * const filter = createPathFilter({
  *   include: ['*.txt'],
@@ -58,7 +58,7 @@ export interface PathFilterOptions {
  *
  * @example
  * ```ts
- * import { createPathFilter, PRECONFIGURED_FILTERS } from '@ucdjs/shared';
+ * import { createPathFilter, PRECONFIGURED_FILTERS } from '@ucdjs-internal/shared';
  *
  * // Include specific files, exclude others
  * const filter = createPathFilter({

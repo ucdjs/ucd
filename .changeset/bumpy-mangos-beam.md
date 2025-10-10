@@ -1,5 +1,5 @@
 ---
-"@ucdjs/shared": minor
+"@ucdjs-internal/shared": minor
 ---
 
 ## New filterTreeStructure Function
@@ -8,8 +8,8 @@ Added a new utility function for filtering tree structures using PathFilter:
 
 ```ts
 export function filterTreeStructure(
-  pathFilter: PathFilter, 
-  entries: TreeEntry[], 
+  pathFilter: PathFilter,
+  entries: TreeEntry[],
   extraOptions?: Pick<PathFilterOptions, "include" | "exclude">
 ): TreeEntry[]
 ```

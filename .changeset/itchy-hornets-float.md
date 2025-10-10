@@ -1,5 +1,5 @@
 ---
-"@ucdjs/shared": minor
+"@ucdjs-internal/shared": minor
 ---
 
 ## PathFilter API Changes
@@ -46,6 +46,6 @@ PRECONFIGURED_FILTERS.TEST_FILES // ["**/*Test*"]
 
 Available filters:
 - `TEST_FILES`: `["**/*Test*"]`
-- `README_FILES`: `["**/ReadMe.txt"]` 
+- `README_FILES`: `["**/ReadMe.txt"]`
 - `HTML_FILES`: `["**/*.html"]`
 - `TEST_RELATED`: `["**/*.test.*", "**/*.spec.*", "**/__tests__/**"]`

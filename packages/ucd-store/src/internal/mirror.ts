@@ -3,7 +3,7 @@ import type { SharedStoreOperationOptions } from "../types";
 import { hasUCDFolderPath, resolveUCDVersion } from "@luxass/unicode-utils-new";
 import { isApiError } from "@ucdjs/fetch";
 import { assertCapability } from "@ucdjs/fs-bridge";
-import { createConcurrencyLimiter, ensureIsPositiveConcurrency } from "@ucdjs/shared";
+import { createConcurrencyLimiter, ensureIsPositiveConcurrency } from "@ucdjs-internal/shared";
 import { dirname, join } from "pathe";
 import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../errors";
 import { getExpectedFilePaths } from "./files";

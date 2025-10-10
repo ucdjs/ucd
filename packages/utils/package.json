@@ -39,7 +39,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@ucdjs/shared": "workspace:*"
+    "@ucdjs-internal/shared": "workspace:*"
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:linting",
