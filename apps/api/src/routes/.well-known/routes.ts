@@ -11,7 +11,7 @@ export const WELL_KNOWN_ROUTER = new OpenAPIHono<HonoEnv>().basePath(WELL_KNOWN_
 
 WELL_KNOWN_ROUTER.openapi(UCD_CONFIG_ROUTE, (c) => {
   return c.json({
-    version: "1.0",
+    version: "0.1",
     endpoints: {
       files: V1_FILES_ROUTER_BASE_PATH,
       manifest: `${V1_FILES_ROUTER_BASE_PATH}/.ucd-store.json`,
