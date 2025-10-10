@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { RawDataFile } from "@luxass/unicode-utils";
 import { sanitizeIdentifier, toPascalCase, toSnakeCase } from "@luxass/utils";
-import { createConcurrencyLimiter } from "@ucdjs/shared";
+import { createConcurrencyLimiter } from "@ucdjs-internal/shared";
 import { genArrayFromRaw, genInterface } from "knitwork";
 import { generateFields } from "./fields";
 

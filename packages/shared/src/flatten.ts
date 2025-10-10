@@ -24,7 +24,7 @@ export interface TreeNode {
  *
  * @example
  * ```typescript
- * import { flattenFilePaths } from "@ucdjs/shared";
+ * import { flattenFilePaths } from "@ucdjs-internal/shared";
  *
  * const files = [
  *   { name: "folder1", type: "directory", children: [{ name: "file1.txt", type: "file" }] },

@@ -6,7 +6,7 @@ import type {
   FileSystemBridgeOperations,
 } from "./types";
 import { PathUtilsBaseError, resolveSafePath } from "@ucdjs/path-utils";
-import { createDebugger } from "@ucdjs/shared";
+import { createDebugger } from "@ucdjs-internal/shared";
 import { z } from "zod";
 import {
   BridgeBaseError,

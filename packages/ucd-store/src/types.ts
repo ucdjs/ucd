@@ -1,5 +1,5 @@
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
-import type { PathFilterOptions } from "@ucdjs/shared";
+import type { PathFilterOptions } from "@ucdjs-internal/shared";
 
 export interface UCDStoreOptions {
   /**

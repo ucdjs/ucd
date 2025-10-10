@@ -3,7 +3,7 @@ import type { FSEntry } from "../types";
 import fsp from "node:fs/promises";
 import nodePath from "node:path";
 import { trimTrailingSlash } from "@luxass/utils/path";
-import { createDebugger } from "@ucdjs/shared";
+import { createDebugger } from "@ucdjs-internal/shared";
 import { z } from "zod";
 import { defineFileSystemBridge } from "../define";
 

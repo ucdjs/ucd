@@ -1,8 +1,8 @@
 ---
-"@ucdjs/shared": minor
+"@ucdjs-internal/shared": minor
 ---
 
-feat: add new @ucdjs/shared package for internal utilities
+feat: add new @ucdjs-internal/shared package for internal utilities
 
 This new package contains internal utilities and patterns used across the UCD monorepo, including:
 - `safeJsonParse` utility for safe JSON parsing

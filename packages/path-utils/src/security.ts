@@ -1,5 +1,5 @@
 import { prependLeadingSlash } from "@luxass/utils";
-import { createDebugger } from "@ucdjs/shared";
+import { createDebugger } from "@ucdjs-internal/shared";
 import pathe from "pathe";
 import {
   CONTROL_CHARACTER_RE,

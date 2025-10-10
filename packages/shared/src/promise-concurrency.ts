@@ -20,7 +20,7 @@ export function ensureIsPositiveConcurrency(concurrency: unknown, ErrorClazz: ne
  *
  * @example
  * ```typescript
- * import { createConcurrencyLimiter } from "@ucdjs/shared";
+ * import { createConcurrencyLimiter } from "@ucdjs-internal/shared";
  *
  * const limiter = createConcurrencyLimiter(2);
  *

@@ -55,13 +55,13 @@ Most users working with Unicode data should start with the core packages like `@
 Install utility packages individually:
 
 ```bash [npm]
-npm install @ucdjs/shared @ucdjs/path-utils @ucdjs/env
+npm install @ucdjs-internal/shared @ucdjs/path-utils @ucdjs/env
 ```
 
 ```bash [pnpm]
-pnpm add @ucdjs/shared @ucdjs/path-utils @ucdjs/env
+pnpm add @ucdjs-internal/shared @ucdjs/path-utils @ucdjs/env
 ```
 
 ```bash [yarn]
-yarn add @ucdjs/shared @ucdjs/path-utils @ucdjs/env
+yarn add @ucdjs-internal/shared @ucdjs/path-utils @ucdjs/env
 ```
