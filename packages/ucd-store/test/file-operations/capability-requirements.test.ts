@@ -1,4 +1,4 @@
-import { mockStoreApi } from "#internal/test-utils/mock-store";
+import { mockStoreApi } from "#test-utils/mock-store";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { BridgeUnsupportedOperation, defineFileSystemBridge } from "@ucdjs/fs-bridge";
