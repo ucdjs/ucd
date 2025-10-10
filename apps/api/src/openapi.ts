@@ -7,6 +7,7 @@ export type OpenAPIObjectConfig = Parameters<OpenAPIHono["getOpenAPI31Document"]
 export const OPENAPI_TAGS = {
   VERSIONS: "Versions",
   FILES: "Files",
+  WELL_KNOWN: "Well-Known",
 } as const satisfies Record<string, string>;
 
 export const { generateReferences, registerApp } = createResponseComponentBuilder([
@@ -82,6 +83,16 @@ export function buildOpenApiConfig(version: string, servers: NonNullable<OpenAPI
 
           They also contain endpoints for listing all available Unicode versions,
           retrieving the latest version, and accessing specific version metadata.
+        `,
+      },
+      {
+        name: OPENAPI_TAGS.WELL_KNOWN,
+        description: dedent`
+          Endpoints for accessing well-known configuration files.
+
+          These endpoints provide access to standard configuration files used by UCD.js
+          and related tools. They include metadata about the API endpoints and
+          configuration details for integrating with UCD.js services.
         `,
       },
     ],

@@ -4,11 +4,12 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import { trimTrailingSlash } from "@luxass/utils";
 import { DEFAULT_USER_AGENT, UCD_FILE_STAT_TYPE_HEADER } from "@ucdjs/env";
 import { cache } from "hono/cache";
+import { V1_FILES_ROUTER_BASE_PATH } from "../../constants";
 import { badGateway, badRequest, notFound } from "../../lib/errors";
 import { parseUnicodeDirectory } from "../../lib/files";
 import { GET_UCD_STORE, METADATA_WILDCARD_ROUTE, WILDCARD_ROUTE } from "./openapi";
 
-export const V1_FILES_ROUTER = new OpenAPIHono<HonoEnv>().basePath("/api/v1/files");
+export const V1_FILES_ROUTER = new OpenAPIHono<HonoEnv>().basePath(V1_FILES_ROUTER_BASE_PATH);
 
 V1_FILES_ROUTER.openapi(GET_UCD_STORE, async (c) => {
   const response = await fetch("https://unicode.org/Public?F=2", {
