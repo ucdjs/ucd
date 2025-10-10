@@ -44,11 +44,11 @@
   "dependencies": {
     "@luxass/unicode-utils-new": "catalog:prod",
     "@luxass/utils": "catalog:prod",
+    "@ucdjs-internal/shared": "workspace:*",
     "@ucdjs/env": "workspace:*",
     "@ucdjs/fetch": "workspace:*",
     "@ucdjs/fs-bridge": "workspace:*",
     "@ucdjs/schemas": "workspace:*",
-    "@ucdjs-internal/shared": "workspace:*",
     "defu": "catalog:prod",
     "pathe": "catalog:prod",
     "zod": "catalog:prod"
