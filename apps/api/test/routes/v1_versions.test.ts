@@ -8,8 +8,7 @@ import {
   fetchMock,
   waitOnExecutionContext,
 } from "cloudflare:test";
-import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import z from "zod";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import worker from "../../src/worker";
 
 // mock the unicode-utils-new module
@@ -30,10 +29,6 @@ vi.mock("@luxass/unicode-utils-new", async (importOriginal) => {
 beforeAll(() => {
   fetchMock.activate();
   fetchMock.disableNetConnect();
-});
-
-beforeEach(() => {
-  z.globalRegistry.clear();
 });
 
 afterEach(() => {
