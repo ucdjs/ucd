@@ -1,5 +1,6 @@
 import { dedent } from "@luxass/utils";
 import { z } from "zod";
+import { ucdRegistry } from "./zod-registry";
 
 export const ApiErrorSchema = z.object({
   message: z.string().meta({
@@ -52,7 +53,7 @@ export const UCDWellKnownConfigSchema = z.object({
      */
     versions: z.string(),
   }),
-}).meta({
+}).register(ucdRegistry, {
   id: "UCDWellKnownConfig",
   description: dedent`
     Configuration schema for the .well-known/ucd-config.json endpoint.
