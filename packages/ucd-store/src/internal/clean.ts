@@ -1,7 +1,7 @@
 import type { UCDStore } from "../store";
 import type { SharedStoreOperationOptions } from "../types";
-import { assertCapability } from "@ucdjs/fs-bridge";
 import { createConcurrencyLimiter, ensureIsPositiveConcurrency } from "@ucdjs-internal/shared";
+import { assertCapability } from "@ucdjs/fs-bridge";
 import { dirname, join } from "pathe";
 import { UCDStoreGenericError } from "../errors";
 

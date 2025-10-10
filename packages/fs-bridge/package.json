@@ -42,19 +42,19 @@
   },
   "dependencies": {
     "@luxass/utils": "catalog:prod",
+    "@ucdjs-internal/shared": "workspace:*",
     "@ucdjs/env": "workspace:*",
     "@ucdjs/path-utils": "workspace:*",
     "@ucdjs/schemas": "workspace:*",
-    "@ucdjs-internal/shared": "workspace:*",
     "defu": "catalog:prod",
     "pathe": "catalog:prod",
     "zod": "catalog:prod"
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:linting",
+    "@ucdjs-internal/shared": "workspace:*",
     "@ucdjs-tooling/tsconfig": "workspace:*",
     "@ucdjs-tooling/tsdown-config": "workspace:*",
-    "@ucdjs-internal/shared": "workspace:*",
     "eslint": "catalog:linting",
     "publint": "catalog:dev",
     "tsdown": "catalog:dev",

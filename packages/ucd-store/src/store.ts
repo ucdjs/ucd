@@ -1,7 +1,7 @@
+import type { OperationResult, PathFilter, PathFilterOptions } from "@ucdjs-internal/shared";
 import type { UCDClient } from "@ucdjs/fetch";
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 import type { UCDStoreManifest, UnicodeTreeNode } from "@ucdjs/schemas";
-import type { OperationResult, PathFilter, PathFilterOptions } from "@ucdjs-internal/shared";
 import type { StoreError } from "./errors";
 import type { AnalyzeOptions, AnalyzeResult } from "./internal/analyze";
 import type { CleanOptions, CleanResult } from "./internal/clean";
@@ -11,11 +11,11 @@ import type {
   InitOptions,
   UCDStoreOptions,
 } from "./types";
+import { createPathFilter, filterTreeStructure, flattenFilePaths, safeJsonParse, tryCatch } from "@ucdjs-internal/shared";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { createClient, isApiError } from "@ucdjs/fetch";
 import { assertCapability } from "@ucdjs/fs-bridge";
 import { UCDStoreManifestSchema } from "@ucdjs/schemas";
-import { createPathFilter, filterTreeStructure, flattenFilePaths, safeJsonParse, tryCatch } from "@ucdjs-internal/shared";
 import defu from "defu";
 import { isAbsolute, join } from "pathe";
 import {
