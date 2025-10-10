@@ -22,7 +22,7 @@
     "build:openapi": {
       "cache": false,
       "outputs": [
-        ".generated/openapi.json"
+        "../../ucd-generated/api/openapi.json"
       ]
     }
   }

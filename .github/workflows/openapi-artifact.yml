@@ -62,10 +62,8 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: openapi-${{ matrix.artifact }}
-          path: ./apps/api/.generated/openapi.json
+          path: ./ucd-generated/api/openapi.json
           if-no-files-found: error
-          # TODO: maybe we should move the openapi.json to a non hidden location?
-          include-hidden-files: true
 
   report-changes:
     name: report openapi schema changes
