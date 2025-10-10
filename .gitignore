@@ -39,3 +39,4 @@ dist
 tsconfig.test.vitest-temp.json
 data
 **/.ucd-files
+ucd-generated
