@@ -16,9 +16,9 @@ const aliases = readdirSync(fileURLToPath(new URL("./packages", import.meta.url)
       acc[`@ucdjs/${pkg}`] = alias(pkg);
       return acc;
     }, {
-    "#internal/test-utils/msw": alias("test-utils") + "/msw.ts",
-    "#internal/test-utils/mock-store": alias("test-utils") + "/mock-store/index.ts",
-    "#internal/test-utils": alias("test-utils") + "/index.ts",
+    "#test-utils/msw": alias("test-utils") + "/msw.ts",
+    "#test-utils/mock-store": alias("test-utils") + "/mock-store/index.ts",
+    "#test-utils": alias("test-utils") + "/index.ts",
   });
 
 const hiddenLogs: string[] = [];

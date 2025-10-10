@@ -1,4 +1,4 @@
-import { isWindows } from "#internal/test-utils";
+import { isWindows } from "#test-utils";
 import { describe, expect, it } from "vitest";
 import {
   PathTraversalError,
