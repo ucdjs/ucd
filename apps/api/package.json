@@ -12,10 +12,10 @@
     "test": "pnpm vitest --run",
     "test:watch": "pnpm vitest",
     "lint": "eslint .",
-    "lint:openapi": "spectral lint ./.generated/openapi.json",
+    "lint:openapi": "spectral lint ../../ucd-generated/api/openapi.json",
     "generate:types": "wrangler types ./wrangler-types.d.ts",
     "typecheck": "pnpm run generate:types && tsc --noEmit",
-    "clean": "git clean -xdf node_modules .wrangler dist .generated"
+    "clean": "git clean -xdf node_modules .wrangler dist ../../ucd-generated/api"
   },
   "dependencies": {
     "@hono/zod-openapi": "catalog:workers",

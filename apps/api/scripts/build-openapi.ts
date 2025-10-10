@@ -5,7 +5,7 @@ import process from "node:process";
 import { buildOpenApiConfig } from "../src/openapi";
 import { getOpenAPI31Document } from "../src/worker";
 
-const root = path.resolve(import.meta.dirname, "../");
+const root = path.resolve(import.meta.dirname, "../../../");
 
 async function run() {
   const obj = getOpenAPI31Document(buildOpenApiConfig("x.y.z", [
@@ -15,11 +15,12 @@ async function run() {
     },
   ]));
 
-  if (!existsSync(path.join(root.toString(), "./.generated"))) {
-    await mkdir(path.join(root.toString(), "./.generated"), { recursive: true });
+  const outputPath = path.join(root, "ucd-generated/api");
+  if (!existsSync(outputPath)) {
+    await mkdir(outputPath, { recursive: true });
   }
 
-  await writeFile(path.join(root.toString(), "./.generated/openapi.json"), JSON.stringify(obj, null, 2));
+  await writeFile(path.join(outputPath, "openapi.json"), JSON.stringify(obj, null, 2));
 }
 
 run().catch((err) => {
