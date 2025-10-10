@@ -246,7 +246,7 @@ The API worker (apps/api) has multiple deployment environments configured in `wr
 
 2. **OpenAPI spec regeneration**
    - After changing API routes or Zod schemas, always run `cd apps/api && pnpm build:openapi`
-   - This regenerates `.generated/openapi.json` which is used by `@ucdjs/fetch`
+   - This regenerates `<repository-root>/ucd-generated/api/openapi.json` which is used by `@ucdjs/fetch`
    - It's a build dependency in turbo.json, so full builds will regenerate it
 
 3. **Using #internal/test-utils in tests**

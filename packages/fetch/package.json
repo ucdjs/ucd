@@ -37,7 +37,7 @@
     "clean": "git clean -xdf dist node_modules",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "generate:client": "npx openapi-typescript ../../apps/api/.generated/openapi.json -o ./src/.generated/api.d.ts",
+    "generate:client": "npx openapi-typescript ../../ucd-generated/api/openapi.json -o ./src/.generated/api.d.ts",
     "generate:client:local": "npx openapi-typescript http://localhost:8787/openapi.json -o ./src/.generated/api.d.ts"
   },
   "dependencies": {
