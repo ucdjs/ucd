@@ -119,7 +119,10 @@ export class UCDStore {
     return this.#manifestPath;
   }
 
-  async getFileTree(version: string, extraFilters?: Pick<PathFilterOptions, "include" | "exclude">): Promise<OperationResult<UnicodeTreeNode[], StoreError>> {
+  async getFileTree(
+    version: string,
+    extraFilters?: Pick<PathFilterOptions, "include" | "exclude">,
+  ): Promise<OperationResult<UnicodeTreeNode[], StoreError>> {
     return tryCatch(async () => {
       if (!this.#initialized) {
         throw new UCDStoreNotInitializedError();
@@ -142,7 +145,10 @@ export class UCDStore {
     });
   }
 
-  async getFilePaths(version: string, extraFilters?: Pick<PathFilterOptions, "include" | "exclude">): Promise<OperationResult<string[], StoreError>> {
+  async getFilePaths(
+    version: string,
+    extraFilters?: Pick<PathFilterOptions, "include" | "exclude">,
+  ): Promise<OperationResult<string[], StoreError>> {
     return tryCatch(async () => {
       if (!this.#initialized) {
         throw new UCDStoreNotInitializedError();
@@ -162,7 +168,11 @@ export class UCDStore {
     });
   }
 
-  async getFile(version: string, filePath: string, extraFilters?: Pick<PathFilterOptions, "include" | "exclude">): Promise<OperationResult<string, StoreError>> {
+  async getFile(
+    version: string,
+    filePath: string,
+    extraFilters?: Pick<PathFilterOptions, "include" | "exclude">,
+  ): Promise<OperationResult<string, StoreError>> {
     return tryCatch(async () => {
       if (!this.#initialized) {
         throw new UCDStoreNotInitializedError();
@@ -435,17 +445,26 @@ export class UCDStore {
     const manifestData = await this.#fs.read(this.#manifestPath);
 
     if (!manifestData) {
-      throw new UCDStoreInvalidManifestError(this.#manifestPath, "store manifest is empty");
+      throw new UCDStoreInvalidManifestError(
+        this.#manifestPath,
+        "store manifest is empty",
+      );
     }
 
     const jsonData = safeJsonParse(manifestData);
     if (!jsonData) {
-      throw new UCDStoreInvalidManifestError(this.#manifestPath, "store manifest is not a valid JSON");
+      throw new UCDStoreInvalidManifestError(
+        this.#manifestPath,
+        "store manifest is not a valid JSON",
+      );
     }
 
     const parsedManifest = UCDStoreManifestSchema.safeParse(jsonData);
     if (!parsedManifest.success) {
-      throw new UCDStoreInvalidManifestError(this.#manifestPath, `store manifest is not a valid JSON: ${parsedManifest.error.message}`);
+      throw new UCDStoreInvalidManifestError(
+        this.#manifestPath,
+        `store manifest is not a valid JSON: ${parsedManifest.error.message}`,
+      );
     }
 
     return parsedManifest.data;
