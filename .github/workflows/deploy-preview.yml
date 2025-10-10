@@ -35,10 +35,23 @@ env:
   FORCE_COLOR: true
 
 jobs:
+  preview-approval:
+    runs-on: ubuntu-latest
+    if: github.repository == 'ucdjs/ucd'
+    environment: apps-preview
+    steps:
+      - name: Approve preview deployment
+        run: echo "Preview deployment approved"
+
   upsert-deployment-comment:
     name: upsert deployment comment
     runs-on: ubuntu-latest
-    if: github.repository == 'ucdjs/ucd' && github.event.pull_request.user.login == 'luxass'
+    needs: [preview-approval]
+    if: >
+      always() && (
+        needs.preview-approval.result == 'success' &&
+        github.repository == 'ucdjs/ucd'
+      )
     permissions:
       pull-requests: write
     steps:
@@ -86,7 +99,14 @@ jobs:
   deploy:
     name: deploy apps
     needs:
+      - preview-approval
       - upsert-deployment-comment
+    if: >
+      always() && (
+        needs.preview-approval.result == 'success' &&
+        github.repository == 'ucdjs/ucd' &&
+        needs.upsert-deployment-comment.result == 'success'
+      )
     permissions:
       contents: read
       pull-requests: write
@@ -109,9 +129,15 @@ jobs:
     name: update deployment comment
     runs-on: ubuntu-latest
     needs:
+      - preview-approval
       - upsert-deployment-comment
       - deploy
-    if: always() && github.repository == 'ucdjs/ucd' && github.event.pull_request.user.login == 'luxass'
+    if: >
+      always() && (
+        needs.preview-approval.result == 'success' &&
+        github.repository == 'ucdjs/ucd' &&
+        needs.upsert-deployment-comment.result == 'success'
+      )
     permissions:
       pull-requests: write
     steps:
