@@ -38,6 +38,9 @@ describe("well-known", () => {
 
       const json = await response.json();
 
+      // TODO: make use of custom matcher
+      // expect(json).toMatchSchema(UCDWellKnownConfigSchema);
+
       const result = UCDWellKnownConfigSchema.safeParse(json);
 
       if (!result.success) {
