@@ -1,5 +1,5 @@
 import type { ErrorHandler, NotFoundHandler } from "hono";
-import { createDebugger } from "@ucdjs/shared";
+import { createDebugger } from "@ucdjs-internal/shared";
 import { HTTPException } from "hono/http-exception";
 import { customError, internalServerError, notFound } from "./errors";
 
