@@ -9,6 +9,7 @@ import {
   UNICODE_VERSION_METADATA,
 } from "@luxass/unicode-utils-new";
 import { traverse } from "apache-autoindex-parse/traverse";
+import { V1_VERSIONS_ROUTER_BASE_PATH } from "../../constants";
 import { badRequest, internalServerError, notFound } from "../../lib/errors";
 import { createLogger } from "../../lib/logger";
 import {
@@ -16,7 +17,7 @@ import {
   LIST_ALL_UNICODE_VERSIONS_ROUTE,
 } from "./openapi";
 
-export const V1_VERSIONS_ROUTER = new OpenAPIHono<HonoEnv>().basePath("/api/v1/versions");
+export const V1_VERSIONS_ROUTER = new OpenAPIHono<HonoEnv>().basePath(V1_VERSIONS_ROUTER_BASE_PATH);
 
 const log = createLogger("ucd:api:v1_versions");
 
