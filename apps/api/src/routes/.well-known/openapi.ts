@@ -25,7 +25,7 @@ export const UCD_CONFIG_ROUTE = createRoute({
             default: {
               summary: "UCD Configuration",
               value: {
-                version: "1.0",
+                version: "0.1",
                 endpoints: {
                   files: V1_FILES_ROUTER_BASE_PATH,
                   manifest: `${V1_FILES_ROUTER_BASE_PATH}/.ucd-store.json`,
