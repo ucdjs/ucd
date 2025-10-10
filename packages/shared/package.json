@@ -1,5 +1,5 @@
 {
-  "name": "@ucdjs/shared",
+  "name": "@ucdjs-internal/shared",
   "version": "0.0.0",
   "type": "module",
   "author": {

@@ -1,5 +1,5 @@
 import { prependLeadingSlash, trimTrailingSlash } from "@luxass/utils";
-import { createDebugger } from "@ucdjs/shared";
+import { createDebugger } from "@ucdjs-internal/shared";
 import pathe from "pathe";
 import {
   WINDOWS_DRIVE_LETTER_EVERYWHERE_RE,

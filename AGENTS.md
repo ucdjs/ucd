@@ -23,7 +23,9 @@ The repository is organized into three main workspace categories:
 - **@ucdjs/fetch**: OpenAPI-based API client for the UCD API
 - **@ucdjs/fs-bridge**: File system abstraction layer that allows different storage backends
 - **@ucdjs/schemas**: Zod schemas for Unicode data files
-- **@ucdjs/shared**: Shared utilities across packages
+- **@ucdjs-internal/shared**: Internal Shared utilities across packages
+  > NOTE: This package may not follow semantic versioning, as it's only for internal use
+  > Changes here may require coordinated updates in other packages
 - **@ucdjs/utils**: General utilities
 - **@ucdjs/env**: Environment configuration
 - **@ucdjs/path-utils**: Path manipulation utilities

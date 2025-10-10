@@ -41,7 +41,7 @@
   },
   "dependencies": {
     "@luxass/utils": "catalog:prod",
-    "@ucdjs/shared": "workspace:*",
+    "@ucdjs-internal/shared": "workspace:*",
     "pathe": "catalog:prod"
   },
   "devDependencies": {

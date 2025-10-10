@@ -2,7 +2,7 @@ import type { UCDStore } from "../store";
 import type { SharedStoreOperationOptions } from "../types";
 import type { AnalyzeResult } from "./analyze";
 import { assertCapability } from "@ucdjs/fs-bridge";
-import { createConcurrencyLimiter, ensureIsPositiveConcurrency } from "@ucdjs/shared";
+import { createConcurrencyLimiter, ensureIsPositiveConcurrency } from "@ucdjs-internal/shared";
 import { dirname, join } from "pathe";
 import { UCDStoreGenericError } from "../errors";
 import { internal__analyze } from "./analyze";
