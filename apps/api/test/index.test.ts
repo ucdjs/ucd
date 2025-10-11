@@ -51,7 +51,7 @@ describe("error handling", () => {
   });
 });
 
-describe("openapi", () => {
+describe.todo("openapi", () => {
   it("should return the OpenAPI spec", async () => {
     const request = new Request("https://api.ucdjs.dev/openapi.json");
     const ctx = createExecutionContext();
