@@ -5,7 +5,6 @@ import { fileURLToPath, URL as NodeURL } from "node:url";
 const pkgRoot = (pkg: string) =>
   fileURLToPath(new NodeURL(`./packages/${pkg}`, import.meta.url));
 
-
 const alias = (pkg: string) => `${pkgRoot(pkg)}/src`;
 
 export const aliases = readdirSync(fileURLToPath(new NodeURL("./packages", import.meta.url)))
