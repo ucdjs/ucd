@@ -1,11 +1,10 @@
 import { dedent } from "@luxass/utils";
 import { z } from "zod";
-import { ucdRegistry } from "./zod-registry";
 
 export const UCDStoreManifestSchema = z.record(
   z.string(),
   z.string(),
-).register(ucdRegistry, {
+).meta({
   id: "UCDStoreManifest",
   description: dedent`
     A record of key-value pairs representing the UCD store.
@@ -43,7 +42,7 @@ const FileResponseSchema = BaseItemSchema.extend({
 export const FileEntrySchema = z.union([
   DirectoryResponseSchema,
   FileResponseSchema,
-]).register(ucdRegistry, {
+]).meta({
   description: dedent`
     Response schema for a file entry in the UCD store.
 
@@ -53,7 +52,7 @@ export const FileEntrySchema = z.union([
 
 export type FileEntry = z.infer<typeof FileEntrySchema>;
 
-export const FileEntryListSchema = z.array(FileEntrySchema).register(ucdRegistry, {
+export const FileEntryListSchema = z.array(FileEntrySchema).meta({
   id: "FileEntryList",
   description: "An array of file entries, each representing either a file or a directory.",
 });

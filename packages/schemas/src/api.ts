@@ -1,6 +1,5 @@
 import { dedent } from "@luxass/utils";
 import { z } from "zod";
-import { ucdRegistry } from "./zod-registry";
 
 export const ApiErrorSchema = z.object({
   message: z.string().meta({
@@ -13,7 +12,6 @@ export const ApiErrorSchema = z.object({
     description: "ISO 8601 timestamp when the error occurred",
   }),
 }).meta({
-  id: "ApiError",
   description: dedent`
     Standard error response format used consistently across all API endpoints.
 
@@ -54,7 +52,7 @@ export const UCDWellKnownConfigSchema = z.object({
      */
     versions: z.string(),
   }),
-}).register(ucdRegistry, {
+}).meta({
   id: "UCDWellKnownConfig",
   description: dedent`
     Configuration schema for the .well-known/ucd-config.json endpoint.
