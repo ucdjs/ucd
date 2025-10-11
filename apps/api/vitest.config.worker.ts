@@ -1,9 +1,11 @@
 import { defineWorkersProject } from "@cloudflare/vitest-pool-workers/config";
 import { defaultExclude } from "vitest/config";
+import { aliases } from "../../vitest.aliases";
 
 export default defineWorkersProject({
   test: {
     name: "api:worker",
+    setupFiles: ["./test/__setup.ts"],
     exclude: [
       ...defaultExclude,
       "test/unit/**",
@@ -28,5 +30,8 @@ export default defineWorkersProject({
         },
       },
     },
+  },
+  resolve: {
+    alias: aliases,
   },
 });

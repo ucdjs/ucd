@@ -6,17 +6,12 @@ import {
   waitOnExecutionContext,
 } from "cloudflare:test";
 
-import { afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
-import z from "zod";
+import { afterEach, beforeAll, describe, expect, it } from "vitest";
 import worker from "../../src/worker";
 
 beforeAll(() => {
   fetchMock.activate();
   fetchMock.disableNetConnect();
-});
-
-beforeEach(() => {
-  z.globalRegistry.clear();
 });
 
 afterEach(() => {
