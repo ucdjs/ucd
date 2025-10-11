@@ -5,6 +5,7 @@ import { aliases } from "../../vitest.aliases";
 export default defineWorkersProject({
   test: {
     name: "api:worker",
+    setupFiles: ["./test/__setup.ts"],
     exclude: [
       ...defaultExclude,
       "test/unit/**",
