@@ -43,7 +43,7 @@ const FileResponseSchema = BaseItemSchema.extend({
 export const FileEntrySchema = z.union([
   DirectoryResponseSchema,
   FileResponseSchema,
-]).meta({
+]).register(ucdRegistry, {
   description: dedent`
     Response schema for a file entry in the UCD store.
 
