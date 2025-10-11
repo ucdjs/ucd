@@ -25,5 +25,3 @@ export type {
   UnicodeVersion,
   UnicodeVersionList,
 } from "./unicode";
-
-export { ucdRegistry } from "./zod-registry";
