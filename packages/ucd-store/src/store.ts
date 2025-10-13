@@ -68,7 +68,7 @@ export class UCDStore {
     this.#filter = createPathFilter(globalFilters);
     this.#fs = fs;
     this.#versions = versions;
-    this.#client = client ?? null;
+    this.#client = client || null;
 
     this.#manifestPath = join(this.basePath, ".ucd-store.json");
   }
