@@ -1,5 +1,5 @@
 {
-  "name": "@ucdjs/fetch",
+  "name": "@ucdjs/client",
   "version": "0.0.0",
   "type": "module",
   "author": {
@@ -13,7 +13,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ucdjs/ucd.git",
-    "directory": "packages/fetch"
+    "directory": "packages/client"
   },
   "bugs": {
     "url": "https://github.com/ucdjs/ucd/issues"
@@ -43,8 +43,7 @@
   "dependencies": {
     "@ucdjs-internal/shared": "workspace:*",
     "@ucdjs/env": "workspace:*",
-    "@ucdjs/schemas": "workspace:*",
-    "openapi-fetch": "catalog:prod"
+    "@ucdjs/schemas": "workspace:*"
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:linting",

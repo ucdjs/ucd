@@ -2,7 +2,7 @@ import type { UCDStore } from "../store";
 import type { SharedStoreOperationOptions } from "../types";
 import { hasUCDFolderPath, resolveUCDVersion } from "@luxass/unicode-utils-new";
 import { createConcurrencyLimiter, ensureIsPositiveConcurrency } from "@ucdjs-internal/shared";
-import { isApiError } from "@ucdjs/fetch";
+import { isApiError } from "@ucdjs/client";
 import { assertCapability } from "@ucdjs/fs-bridge";
 import { dirname, join } from "pathe";
 import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../errors";

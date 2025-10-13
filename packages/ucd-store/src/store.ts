@@ -1,5 +1,5 @@
 import type { OperationResult, PathFilter, PathFilterOptions } from "@ucdjs-internal/shared";
-import type { UCDClient } from "@ucdjs/fetch";
+import type { UCDClient } from "@ucdjs/client";
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 import type { UCDStoreManifest, UnicodeTreeNode } from "@ucdjs/schemas";
 import type { StoreError } from "./errors";
@@ -13,7 +13,7 @@ import type {
 } from "./types";
 import { createPathFilter, filterTreeStructure, flattenFilePaths, safeJsonParse, tryCatch } from "@ucdjs-internal/shared";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
-import { createClient, isApiError } from "@ucdjs/fetch";
+import { createClient, isApiError } from "@ucdjs/client";
 import { assertCapability } from "@ucdjs/fs-bridge";
 import { UCDStoreManifestSchema } from "@ucdjs/schemas";
 import defu from "defu";

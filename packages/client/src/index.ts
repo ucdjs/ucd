@@ -31,7 +31,7 @@ export function createClient(baseUrl: string): UCDClient {
  *
  * @example
  * ```ts
- * import { client } from "@ucdjs/fetch";
+ * import { client } from "@ucdjs/client";
  *
  * // Make a request using the pre-configured client
  * const response = await client.GET("/path/to/endpoint");
