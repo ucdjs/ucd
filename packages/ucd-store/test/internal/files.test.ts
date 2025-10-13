@@ -1,12 +1,14 @@
 import type { ApiError, UnicodeTree } from "@ucdjs/schemas";
 import { HttpResponse, mockFetch } from "#test-utils/msw";
-import { client } from "@ucdjs/client";
+import { createUCDClient } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { describe, expect, it } from "vitest";
 import { UCDStoreGenericError } from "../../src/errors";
 import { getExpectedFilePaths } from "../../src/internal/files";
 
-describe("getExpectedFilePaths", () => {
+describe("getExpectedFilePaths", async () => {
+  const client = await createUCDClient(UCDJS_API_BASE_URL);
+
   it("should return flattened file paths for valid version", async () => {
     mockFetch([
       ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions/:version/file-tree`, () => {
