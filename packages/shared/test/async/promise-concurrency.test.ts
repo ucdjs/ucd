@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { createConcurrencyLimiter } from "../src/async/promise-concurrency";
+import { createConcurrencyLimiter } from "../../src/async/promise-concurrency";
 
 describe("createConcurrencyLimiter", () => {
   it("should throw error for invalid concurrency values", () => {
