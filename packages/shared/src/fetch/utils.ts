@@ -54,7 +54,7 @@ const TEXT_TYPES = new Set([
   "application/html",
 ]);
 
-const JSON_RE = /^application\/(?:[\w!#$%&*.^`~-]*\+)?json(;.+)?$/i;
+const JSON_RE = /^application\/(?:[\w!#$%&*.^`~-]*\+)?json(?:;.+)?$/i;
 
 // This provides reasonable defaults for the correct parser based on Content-Type header.
 export function detectResponseType(_contentType = ""): ResponseType {
