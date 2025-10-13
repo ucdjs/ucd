@@ -14,24 +14,19 @@ export function isPayloadMethod(method?: string): boolean {
 }
 
 export function isJSONSerializable(value: any): boolean {
-  if (value === undefined) {
-    return false;
-  }
+  if (value === undefined) return false;
+  if (value === null) return true;
 
   const t = typeof value;
-  if (t === "string" || t === "number" || t === "boolean" || t === null) {
-    return true;
-  }
+  if (t === "string" || t === "number" || t === "boolean") return true;
 
   if (t !== "object") {
-    return false; // bigint, function, symbol, undefined
+    return false; // bigint, function, symbol
   }
 
-  if (Array.isArray(value)) {
-    return true;
-  }
+  if (Array.isArray(value)) return true;
 
-  if (value.buffer) {
+  if (value && (value as any).buffer) {
     return false;
   }
 
@@ -42,8 +37,8 @@ export function isJSONSerializable(value: any): boolean {
   }
 
   return (
-    (value.constructor && value.constructor.name === "Object")
-    || typeof value.toJSON === "function"
+    (!!value && value.constructor && value.constructor.name === "Object")
+    || typeof (value as any).toJSON === "function"
   );
 }
 
