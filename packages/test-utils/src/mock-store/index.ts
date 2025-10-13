@@ -8,8 +8,10 @@ import { mockFetch } from "../msw";
 import { setupFileTreeHandler } from "./handlers/file-tree";
 import { setupFilesHandler, setupStoreManifestHandler } from "./handlers/files";
 import { setupVersionsHandler } from "./handlers/versions";
+import { setupWellKnownHandler } from "./handlers/well-known";
 
 const DEFAULT_RESPONSES = {
+  "/.well-known/ucd-config.json": true,
   "/api/v1/versions": true,
   "/api/v1/versions/:version/file-tree": true,
   "/api/v1/files/.ucd-store.json": true,
@@ -41,6 +43,15 @@ export function mockStoreApi(config?: MockStoreConfig): void {
     }
 
     return response as StoreEndpointConfig[K];
+  }
+
+  if (isResponseEnabled("/.well-known/ucd-config.json")) {
+    setupWellKnownHandler({
+      baseUrl: normalizedBaseUrl,
+      response: getResponse("/.well-known/ucd-config.json"),
+      versions,
+      mockFetch,
+    });
   }
 
   if (isResponseEnabled("/api/v1/versions")) {

@@ -2,6 +2,7 @@ import type { MockFetchFn } from "@luxass/msw-utils";
 import type {
   FileEntryList,
   UCDStoreManifest,
+  UCDWellKnownConfig,
   UnicodeTree,
   UnicodeVersionList,
 } from "@ucdjs/schemas";
@@ -22,6 +23,7 @@ export type TypedResponseResolver<
 export interface EmptyObject {}
 
 export interface StoreEndpointConfig {
+  "/.well-known/ucd-config.json": true | UCDWellKnownConfig | TypedResponseResolver<EmptyObject, UCDWellKnownConfig>;
   "/api/v1/versions": true | UnicodeVersionList | TypedResponseResolver<EmptyObject, UnicodeVersionList>;
   "/api/v1/versions/:version/file-tree": true | UnicodeTree | TypedResponseResolver<{
     version: string;
