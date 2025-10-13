@@ -1,5 +1,5 @@
 import { assert, describe, expect, expectTypeOf, it } from "vitest";
-import { tryCatch } from "../src/try-catch";
+import { tryCatch } from "../src/async/try-catch";
 
 describe("tryCatch", () => {
   describe("synchronous operations", () => {
