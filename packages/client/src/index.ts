@@ -1,7 +1,6 @@
 import type { UCDWellKnownConfig } from "@ucdjs/schemas";
 import type { FilesResource } from "./resources/files";
 import type { VersionsResource } from "./resources/versions";
-import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { discoverEndpointsFromConfig } from "./core/well-known";
 import { createFilesResource } from "./resources/files";
 import { createVersionsResource } from "./resources/versions";
@@ -55,24 +54,6 @@ export async function createUCDClient(baseUrl: string, endpointConfig?: UCDWellK
     versions,
   };
 }
-
-/**
- * A pre-configured API client instance for the Unicode API
- * Uses the default base URL: "https://api.ucdjs.dev"
- *
- * @example
- * ```ts
- * import { client } from "@ucdjs/client";
- *
- * // Make a request using the pre-configured client
- * const versions = await client.versions.list();
- * ```
- */
-// We are using top-level await here to simplify usage of the client
-// in applications without needing to handle async initialization.
-// This is acceptable in modern environments that support ES modules.
-// eslint-disable-next-line antfu/no-top-level-await
-export const client = await createUCDClient(UCDJS_API_BASE_URL);
 
 export * from "./core/guards";
 export { discoverEndpointsFromConfig };
