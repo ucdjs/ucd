@@ -3,6 +3,7 @@ export * from "./async/try-catch";
 export * from "./debugger";
 
 export { customFetch } from "./fetch/fetch";
+export type { FetchOptions, FetchResponse, SafeFetchResponse } from "./fetch/types";
 
 export {
   createPathFilter,
