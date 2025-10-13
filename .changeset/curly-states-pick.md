@@ -1,6 +1,6 @@
 ---
 "@ucdjs/ucd-store": patch
-"@ucdjs/fetch": patch
+"@ucdjs/client": patch
 "@ucdjs/utils": patch
 ---
 

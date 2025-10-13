@@ -1,4 +1,4 @@
-# @ucdjs/fetch
+# @ucdjs/client
 
 [![npm version][npm-version-src]][npm-version-href]
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
@@ -9,7 +9,7 @@ A TypeScript-first HTTP client for interacting with the UCD.js API, providing ty
 ## Installation
 
 ```bash
-npm install @ucdjs/fetch
+npm install @ucdjs/client
 ```
 
 ## Usage
@@ -17,7 +17,7 @@ npm install @ucdjs/fetch
 ### Basic Usage
 
 ```typescript
-import { client } from "@ucdjs/fetch";
+import { client } from "@ucdjs/client";
 
 // Get Unicode versions
 const { data: versions, error } = await client.GET("/api/v1/unicode-versions");
@@ -39,7 +39,7 @@ console.log("File info:", fileInfo);
 ### Custom Client Configuration
 
 ```typescript
-import { createClient } from "@ucdjs/fetch";
+import { createClient } from "@ucdjs/client";
 
 // Create client with custom UCD.js API instance
 const customClient = createClient("https://preview.api.ucdjs.dev");
@@ -54,7 +54,7 @@ if (data) {
 ### Working with Binary Data
 
 ```typescript
-import { client } from "@ucdjs/fetch";
+import { client } from "@ucdjs/client";
 
 // Fetch binary Unicode data file
 const { data: binaryData } = await client.GET("/api/v1/unicode-proxy/{wildcard}", {
@@ -75,9 +75,9 @@ if (binaryData) {
 
 Published under [MIT License](./LICENSE).
 
-[npm-version-src]: https://img.shields.io/npm/v/@ucdjs/fetch?style=flat&colorA=18181B&colorB=4169E1
-[npm-version-href]: https://npmjs.com/package/@ucdjs/fetch
-[npm-downloads-src]: https://img.shields.io/npm/dm/@ucdjs/fetch?style=flat&colorA=18181B&colorB=4169E1
-[npm-downloads-href]: https://npmjs.com/package/@ucdjs/fetch
+[npm-version-src]: https://img.shields.io/npm/v/@ucdjs/client?style=flat&colorA=18181B&colorB=4169E1
+[npm-version-href]: https://npmjs.com/package/@ucdjs/client
+[npm-downloads-src]: https://img.shields.io/npm/dm/@ucdjs/client?style=flat&colorA=18181B&colorB=4169E1
+[npm-downloads-href]: https://npmjs.com/package/@ucdjs/client
 [codecov-src]: https://img.shields.io/codecov/c/gh/ucdjs/ucd?style=flat&colorA=18181B&colorB=4169E1
 [codecov-href]: https://codecov.io/gh/ucdjs/ucd
