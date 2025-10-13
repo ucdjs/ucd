@@ -12,8 +12,8 @@ import type {
   UCDStoreOptions,
 } from "./types";
 import { createPathFilter, filterTreeStructure, flattenFilePaths, safeJsonParse, tryCatch } from "@ucdjs-internal/shared";
+import { createUCDClient } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
-import { createClient, isApiError } from "@ucdjs/client";
 import { assertCapability } from "@ucdjs/fs-bridge";
 import { UCDStoreManifestSchema } from "@ucdjs/schemas";
 import defu from "defu";
@@ -44,7 +44,7 @@ export class UCDStore {
    */
   public readonly basePath: string;
 
-  #client: UCDClient;
+  #client: UCDClient | null = null;
   #filter: PathFilter;
   #fs: FileSystemBridge;
   #versions: string[] = [];
@@ -52,7 +52,7 @@ export class UCDStore {
   #initialized: boolean = false;
 
   constructor(options: UCDStoreOptions) {
-    const { baseUrl, globalFilters, fs, basePath, versions } = defu(options, {
+    const { baseUrl, globalFilters, fs, basePath, versions, client } = defu(options, {
       baseUrl: UCDJS_API_BASE_URL,
       globalFilters: {},
       basePath: "",
@@ -65,12 +65,26 @@ export class UCDStore {
 
     this.baseUrl = baseUrl;
     this.basePath = basePath;
-    this.#client = createClient(this.baseUrl);
     this.#filter = createPathFilter(globalFilters);
     this.#fs = fs;
     this.#versions = versions;
+    this.#client = client ?? null;
 
     this.#manifestPath = join(this.basePath, ".ucd-store.json");
+  }
+
+  /**
+   * Ensures the client is initialized before use.
+   * Lazily creates the client on first access.
+   *
+   * @private
+   * @returns {Promise<UCDClient>} The initialized UCD client
+   */
+  async #ensureClient(): Promise<UCDClient> {
+    if (this.#client === null) {
+      this.#client = await createUCDClient(this.baseUrl);
+    }
+    return this.#client;
   }
 
   /**
@@ -100,10 +114,16 @@ export class UCDStore {
 
   /**
    * Gets the UCD client instance used for making API requests.
+   * Note: The client must be initialized via init() before accessing this getter.
    *
    * @returns {UCDClient} The UCDClient instance configured with the store's base URL
+   * @throws {UCDStoreNotInitializedError} If the client hasn't been initialized
    */
   get client(): UCDClient {
+    if (this.#client === null) {
+      throw new UCDStoreNotInitializedError();
+    }
+
     return this.#client;
   }
 
@@ -121,6 +141,8 @@ export class UCDStore {
 
   async getFileTree(version: string, extraFilters?: Pick<PathFilterOptions, "include" | "exclude">): Promise<OperationResult<UnicodeTreeNode[], StoreError>> {
     return tryCatch(async () => {
+      await this.#ensureClient();
+
       if (!this.#initialized) {
         throw new UCDStoreNotInitializedError();
       }
@@ -144,6 +166,8 @@ export class UCDStore {
 
   async getFilePaths(version: string, extraFilters?: Pick<PathFilterOptions, "include" | "exclude">): Promise<OperationResult<string[], StoreError>> {
     return tryCatch(async () => {
+      await this.#ensureClient();
+
       if (!this.#initialized) {
         throw new UCDStoreNotInitializedError();
       }
@@ -164,6 +188,8 @@ export class UCDStore {
 
   async getFile(version: string, filePath: string, extraFilters?: Pick<PathFilterOptions, "include" | "exclude">): Promise<OperationResult<string, StoreError>> {
     return tryCatch(async () => {
+      await this.#ensureClient();
+
       if (!this.#initialized) {
         throw new UCDStoreNotInitializedError();
       }
@@ -216,17 +242,25 @@ export class UCDStore {
     assertCapability(this.#fs, ["exists"]);
 
     // fetch available versions from API to validate
-    const { data, error } = await this.#client.GET("/api/v1/versions");
-    if (isApiError(error)) {
+    const client = await this.#ensureClient();
+    const result = await client.versions.list();
+
+    if (result.error) {
       throw new UCDStoreGenericError(
-        `Failed to fetch Unicode versions: ${error.message}${
-          error.status ? ` (status ${error.status})` : ""}`,
+        `Failed to fetch Unicode versions: ${result.error.message}${
+          result.error.status ? ` (status ${result.error.status})` : ""}`,
       );
     }
 
+    if (!result.data) {
+      throw new UCDStoreGenericError("Failed to fetch Unicode versions: no data returned");
+    }
+
+    const data = result.data;
+
     let hasVersionManifestChanged = false;
 
-    const availableVersions = data?.map(({ version }) => version) || [];
+    const availableVersions = data.map(({ version }) => version);
 
     // read existing manifest if it exists
     let manifestVersions: string[] = [];
@@ -295,6 +329,8 @@ export class UCDStore {
    */
   async analyze(options: AnalyzeOptions): Promise<OperationResult<AnalyzeResult[], StoreError>> {
     return tryCatch(async () => {
+      await this.#ensureClient();
+
       if (!this.#initialized) {
         throw new UCDStoreNotInitializedError();
       }
@@ -331,6 +367,8 @@ export class UCDStore {
    */
   async mirror(options: MirrorOptions = {}): Promise<OperationResult<MirrorResult[], StoreError>> {
     return tryCatch(async () => {
+      await this.#ensureClient();
+
       if (!this.#initialized) {
         throw new UCDStoreNotInitializedError();
       }
@@ -369,6 +407,8 @@ export class UCDStore {
    */
   async clean(options: CleanOptions = {}): Promise<OperationResult<CleanResult[], StoreError>> {
     return tryCatch(async () => {
+      await this.#ensureClient();
+
       if (!this.#initialized) {
         throw new UCDStoreNotInitializedError();
       }
@@ -395,6 +435,8 @@ export class UCDStore {
 
   async repair(options: RepairOptions = {}): Promise<OperationResult<RepairResult[], StoreError>> {
     return tryCatch(async () => {
+      await this.#ensureClient();
+
       if (!this.#initialized) {
         throw new UCDStoreNotInitializedError();
       }

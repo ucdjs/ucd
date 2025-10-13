@@ -2,7 +2,6 @@ import type { UCDStore } from "../store";
 import type { SharedStoreOperationOptions } from "../types";
 import { hasUCDFolderPath, resolveUCDVersion } from "@luxass/unicode-utils-new";
 import { createConcurrencyLimiter, ensureIsPositiveConcurrency } from "@ucdjs-internal/shared";
-import { isApiError } from "@ucdjs/client";
 import { assertCapability } from "@ucdjs/fs-bridge";
 import { dirname, join } from "pathe";
 import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../errors";
@@ -125,52 +124,31 @@ async function internal__mirrorFile(store: UCDStore, version: string, filePath: 
   }
 
   // download file content from the api
-  const { error, response } = await store.client.GET("/api/v1/files/{wildcard}", {
-    params: {
-      path: {
-        // We are only returning files from inside the ucd folder.
-        // But the file paths are relative from the request path, and therefore doesn't contain the
-        // `ucd` folder.
-        // So by adding the `ucd` folder here, we ensure that the file paths
-        // we download are correct.
-        wildcard: join(resolveUCDVersion(version), hasUCDFolderPath(version) ? "ucd" : "", filePath),
-      },
-    },
-    parseAs: "stream",
-  });
+  // We are only returning files from inside the ucd folder.
+  // But the file paths are relative from the request path, and therefore doesn't contain the
+  // `ucd` folder.
+  // So by adding the `ucd` folder here, we ensure that the file paths
+  // we download are correct.
+  const remotePath = join(resolveUCDVersion(version), hasUCDFolderPath(version) ? "ucd" : "", filePath);
 
-  if (isApiError(error)) {
-    throw new UCDStoreGenericError(`Failed to fetch file '${filePath}': ${error?.message}`);
+  const result = await store.client.files.get(remotePath);
+
+  if (result.error) {
+    throw new UCDStoreGenericError(`Failed to fetch file '${filePath}': ${result.error.message}`);
   }
 
-  const contentTypeHeader = response.headers.get("content-type");
-  if (!contentTypeHeader) {
-    throw new UCDStoreGenericError(`Failed to fetch file '${filePath}': No content type header received.`);
+  if (!result.data) {
+    throw new UCDStoreGenericError(`Failed to fetch file '${filePath}': no data returned`);
   }
 
-  const semiColonIndex = contentTypeHeader.indexOf(";");
-  const contentType = semiColonIndex !== -1
-    ? contentTypeHeader.slice(0, semiColonIndex).trim()
-    : contentTypeHeader.trim();
-
-  // stream content directly to filesystem with minimal buffering
+  // Handle both string and JSON responses
   let content: string | Uint8Array;
 
-  if (contentType?.startsWith("application/json")) {
-    // we can't write an object to a file directly, only strings or buffers
-    // but instead of JSON parsing it, and then stringifying it again,
-    // we can just use the raw text response.
-
-    // This will also prevent errors on invalid json, since we are not parsing it.
-    // Note: response.text() decodes the response according to the charset specified in the
-    // Content-Type header (defaults to UTF-8 if unspecified). If the server sends JSON in a
-    // non-UTF-8 encoding, this may result in incorrect decoding and corrupted data.
-    content = await response.text();
-  } else if (contentType?.startsWith("text/")) {
-    content = await response.text();
+  if (typeof result.data === "string") {
+    content = result.data;
   } else {
-    // For binary files, use streaming when possible
-    content = new Uint8Array(await response.arrayBuffer());
+    // For JSON responses, stringify them
+    content = JSON.stringify(result.data, null, 2);
   }
 
   await store.fs.write(localPath, content);
