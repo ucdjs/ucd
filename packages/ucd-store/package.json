@@ -46,7 +46,7 @@
     "@luxass/utils": "catalog:prod",
     "@ucdjs-internal/shared": "workspace:*",
     "@ucdjs/env": "workspace:*",
-    "@ucdjs/fetch": "workspace:*",
+    "@ucdjs/client": "workspace:*",
     "@ucdjs/fs-bridge": "workspace:*",
     "@ucdjs/schemas": "workspace:*",
     "defu": "catalog:prod",

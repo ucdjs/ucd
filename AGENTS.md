@@ -20,7 +20,7 @@ The repository is organized into three main workspace categories:
 - **@ucdjs/ucd-store**: Store for managing Unicode Character Database files. Supports multiple file system bridges (Node.js, HTTP, in-memory). Core operations include mirror, analyze, and clean.
 - **@ucdjs/schema-gen**: Uses AI (OpenAI) to generate TypeScript schemas from Unicode data files
 - **@ucdjs/cli**: Command-line interface for UCD operations (binary: `ucd`)
-- **@ucdjs/fetch**: OpenAPI-based API client for the UCD API
+- **@ucdjs/client**: OpenAPI-based API client for the UCD API
 - **@ucdjs/fs-bridge**: File system abstraction layer that allows different storage backends
 - **@ucdjs/schemas**: Zod schemas for Unicode data files
 - **@ucdjs-internal/shared**: Internal Shared utilities across packages
@@ -215,7 +215,7 @@ vitest run --project=cli        # NOT: cd packages/cli && pnpm test
 ### Working with the API
 - OpenAPI spec generation is a build dependency (see turbo.json)
 - Always run `pnpm build:openapi` after changing API routes/schemas
-- The `@ucdjs/fetch` package types are auto-generated from the OpenAPI spec
+- The `@ucdjs/client` package types are auto-generated from the OpenAPI spec
 
 ### Wrangler Deployment Environments
 
@@ -249,7 +249,7 @@ The API worker (apps/api) has multiple deployment environments configured in `wr
 
 2. **OpenAPI spec regeneration**
    - After changing API routes or Zod schemas, always run `cd apps/api && pnpm build:openapi`
-   - This regenerates `<repository-root>/ucd-generated/api/openapi.json` which is used by `@ucdjs/fetch`
+   - This regenerates `<repository-root>/ucd-generated/api/openapi.json` which is used by `@ucdjs/client`
    - It's a build dependency in turbo.json, so full builds will regenerate it
 
 3. **Using #test-utils in tests**
