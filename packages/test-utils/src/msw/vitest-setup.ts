@@ -1,14 +1,17 @@
 import { afterAll, afterEach, beforeAll } from "vitest";
 import { mswServer } from "../msw";
 
-beforeAll(() => mswServer.listen({
-  onUnhandledRequest: (_, print) => {
+beforeAll(() => {
+  mswServer.listen({
+    onUnhandledRequest: (_, print) => {
     // MSW will skip static assets by default,
     // but we are currently using routes that look like static assets.
     // This will print an error for any unhandled request.
 
-    print.error();
-  },
-}));
-afterAll(() => mswServer.close());
+      print.error();
+    },
+  });
+});
+
 afterEach(() => mswServer.resetHandlers());
+afterAll(() => mswServer.close());

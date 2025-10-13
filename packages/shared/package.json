@@ -44,6 +44,7 @@
     "@ucdjs/env": "workspace:*",
     "debug": "catalog:prod",
     "defu": "catalog:prod",
+    "destr": "catalog:prod",
     "picomatch": "catalog:prod",
     "zod": "catalog:prod"
   },
