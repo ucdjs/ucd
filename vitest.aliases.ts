@@ -2,6 +2,10 @@ import { readdirSync, existsSync } from "node:fs";
 // We use NodeURL to avoid issues with types when, worker tests files are open.
 import { fileURLToPath, URL as NodeURL } from "node:url";
 
+const SCOPE_OVERRIDES: Record<string, string> = {
+  "shared": "@ucdjs-internal"
+}
+
 const pkgRoot = (pkg: string) =>
   fileURLToPath(new NodeURL(`./packages/${pkg}`, import.meta.url));
 
@@ -11,7 +15,13 @@ export const aliases = readdirSync(fileURLToPath(new NodeURL("./packages", impor
   .filter((dir) => existsSync(pkgRoot(dir) + "/package.json"))
   .reduce<Record<string, string>>(
     (acc, pkg) => {
-      acc[`@ucdjs/${pkg}`] = alias(pkg);
+      let scope = "@ucdjs";
+
+      if (SCOPE_OVERRIDES[pkg]) {
+        scope = SCOPE_OVERRIDES[pkg];
+      }
+
+      acc[`${scope}/${pkg}`] = alias(pkg);
       return acc;
     }, {
     "#test-utils/msw": alias("test-utils") + "/msw.ts",
