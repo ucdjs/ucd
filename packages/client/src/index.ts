@@ -1,3 +1,4 @@
+import type { UCDWellKnownConfig } from "@ucdjs/schemas";
 import type { FilesResource } from "./resources/files";
 import type { VersionsResource } from "./resources/versions";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
@@ -34,10 +35,10 @@ export interface UCDClient {
  * const file = await client.files.get('16.0.0/ucd/UnicodeData.txt');
  * ```
  */
-export async function createUCDClient(baseUrl: string): Promise<UCDClient> {
-  const config = await discoverEndpointsFromConfig(baseUrl);
+export async function createUCDClient(baseUrl: string, endpointConfig?: UCDWellKnownConfig): Promise<UCDClient> {
+  const config = endpointConfig ?? await discoverEndpointsFromConfig(baseUrl);
 
-  // Create resource instances with discovered paths
+  // create resource instances with discovered paths
   const files = createFilesResource({
     baseUrl,
     filesPath: config.endpoints.files,
@@ -64,10 +65,14 @@ export async function createUCDClient(baseUrl: string): Promise<UCDClient> {
  * import { client } from "@ucdjs/client";
  *
  * // Make a request using the pre-configured client
- * const response = await client.GET("/path/to/endpoint");
+ * const versions = await client.versions.list();
  * ```
  */
-export const client = createUCDClient(UCDJS_API_BASE_URL);
+// We are using top-level await here to simplify usage of the client
+// in applications without needing to handle async initialization.
+// This is acceptable in modern environments that support ES modules.
+// eslint-disable-next-line antfu/no-top-level-await
+export const client = await createUCDClient(UCDJS_API_BASE_URL);
 
 export * from "./core/guards";
 export { discoverEndpointsFromConfig };
