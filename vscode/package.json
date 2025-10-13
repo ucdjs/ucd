@@ -166,7 +166,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@ucdjs/fetch": "workspace:*",
+    "@ucdjs/client": "workspace:*",
     "@ucdjs/fs-bridge": "workspace:*",
     "@ucdjs/ucd-store": "workspace:*"
   },

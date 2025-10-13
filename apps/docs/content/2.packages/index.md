@@ -34,8 +34,8 @@ UCD.js is organized as a monorepo with multiple packages, each serving a specifi
   :::card
   ---
   icon: i-lucide-network
-  title: Fetch
-  to: /packages/fetch
+  title: Client
+  to: /packages/client
   ---
   OpenAPI-based API client for the UCD API at api.ucdjs.dev.
   :::

@@ -47,6 +47,7 @@ catalogs:
     "@luxass/utils": 2.7.2
     destr: 2.0.5
     farver: 0.4.2
+    openapi-fetch: ^0.0.0
     yargs-parser: 22.0.0
     defu: 6.1.4
     zod: 4.1.11
@@ -55,7 +56,6 @@ catalogs:
     knitwork: 1.2.0
     picomatch: 4.0.3
     apache-autoindex-parse: 3.0.3
-    openapi-fetch: 0.14.0
     pathe: 2.0.3
     "@clack/prompts": 1.0.0-alpha.5
     debug: 4.4.3
@@ -121,9 +121,6 @@ onlyBuiltDependencies:
 
 overrides:
   "@asteasolutions/zod-to-openapi": 8.1.0
-  openapi-fetch: 0.14.0
 
 patchedDependencies:
   "@asteasolutions/zod-to-openapi@8.1.0": patches/@asteasolutions__zod-to-openapi@8.1.0.patch
-  openapi-fetch: patches/openapi-fetch.patch
-

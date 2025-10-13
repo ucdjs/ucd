@@ -12,8 +12,8 @@ import type { ApiError } from "@ucdjs/schemas";
  *
  * @example
  * ```typescript
- * import { isApiError } from "@ucdjs/fetch";
- * import { client } from "@ucdjs/fetch";
+ * import { isApiError } from "@ucdjs/client";
+ * import { client } from "@ucdjs/client";
  *
  * const { error, data } = await client.GET("/api/v1/versions");
  * if (isApiError(error)) {
