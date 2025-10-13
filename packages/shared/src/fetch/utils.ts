@@ -35,7 +35,7 @@ export function isJSONSerializable(value: any): boolean {
     return false;
   }
 
-  // `FormData` and `URLSearchParams` should't have a `toJSON` method,
+  // `FormData` and `URLSearchParams` shouldn't have a `toJSON` method,
   // but Bun adds it, which is non-standard.
   if (value instanceof FormData || value instanceof URLSearchParams) {
     return false;
