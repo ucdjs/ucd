@@ -28,7 +28,7 @@ export type MappedResponseType<
 export interface SafeFetchResponse<T = any> {
   data: T | null;
   error: FetchError<T> | null;
-  response: FetchResponse<T>;
+  response?: FetchResponse<T>;
 }
 
 export interface FetchResponse<T> extends Response {

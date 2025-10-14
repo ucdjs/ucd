@@ -223,11 +223,27 @@ function createCustomFetch(): CustomFetch {
         response,
         error: null,
       };
-    } catch (error) {
+    } catch (err) {
+      if (!(err instanceof FetchError)) {
+        return {
+          data: null,
+          error: FetchError.from({
+            request,
+            options: {
+              ...options,
+              headers: new Headers(options?.headers || {}),
+            },
+            response: undefined,
+            error: err as any,
+          }),
+          response: undefined,
+        };
+      }
+
       return {
         data: null,
-        error: error as any,
-        response: (error as any).response,
+        error: err,
+        response: err.response,
       };
     }
   }

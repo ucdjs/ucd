@@ -234,7 +234,7 @@ describe("custom fetch - basic functionality", () => {
         error: null,
         response: expect.any(Object),
       });
-      expect(result.response.status).toBe(200);
+      expect(result.response?.status).toBe(200);
     });
 
     it("should return error and response for failed requests", async () => {
@@ -245,7 +245,7 @@ describe("custom fetch - basic functionality", () => {
         error: expect.any(Object),
         response: expect.any(Object),
       });
-      expect(result.response.status).toBe(404);
+      expect(result.response?.status).toBe(404);
     });
   });
 
