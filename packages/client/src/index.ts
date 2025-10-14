@@ -1,7 +1,7 @@
 import type { UCDWellKnownConfig } from "@ucdjs/schemas";
 import type { FilesResource } from "./resources/files";
 import type { VersionsResource } from "./resources/versions";
-import { discoverEndpointsFromConfig } from "./core/well-known";
+import { discoverEndpointsFromConfig } from "@ucdjs-internal/shared";
 import { createFilesResource } from "./resources/files";
 import { createVersionsResource } from "./resources/versions";
 
