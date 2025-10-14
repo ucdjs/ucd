@@ -219,7 +219,7 @@ function createCustomFetch(): CustomFetch {
       const response = await executeFetch<T, R>(request, options);
 
       return {
-        data: response.data || null,
+        data: response.data ?? null,
         response,
         error: null,
       };
