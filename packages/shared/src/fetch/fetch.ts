@@ -217,12 +217,15 @@ function createCustomFetch(): CustomFetch {
   ): Promise<SafeFetchResponse<MappedResponseType<R, T>>> {
     try {
       const response = await executeFetch<T, R>(request, options);
+
       return {
-        data: response.data,
+        data: response.data || null,
         response,
+        error: null,
       };
     } catch (error) {
       return {
+        data: null,
         error: error as any,
         response: (error as any).response,
       };
