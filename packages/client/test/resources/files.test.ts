@@ -5,6 +5,12 @@ import { createFilesResource } from "../../src/resources/files";
 
 describe("createFilesResource", () => {
   const baseUrl = UCDJS_API_BASE_URL;
+  const endpoints = {
+    files: "/api/v1/files",
+    manifest: "/api/v1/files/.ucd-store.json",
+    versions: "/api/v1/versions",
+  };
+
   const filesPath = "/api/v1/files";
   const manifestPath = "/api/v1/files/.ucd-store.json";
 
@@ -26,7 +32,7 @@ describe("createFilesResource", () => {
         }],
       ]);
 
-      const filesResource = createFilesResource({ baseUrl, filesPath, manifestPath });
+      const filesResource = createFilesResource({ baseUrl, endpoints });
       const result = await filesResource.get("16.0.0/ucd/UnicodeData.txt");
 
       expect(result.error).toBeUndefined();
@@ -45,7 +51,7 @@ describe("createFilesResource", () => {
         }],
       ]);
 
-      const filesResource = createFilesResource({ baseUrl, filesPath, manifestPath });
+      const filesResource = createFilesResource({ baseUrl, endpoints });
       const result = await filesResource.get("16.0.0/ucd");
 
       expect(result.error).toBeUndefined();
@@ -68,7 +74,7 @@ describe("createFilesResource", () => {
         ]);
       }
 
-      const filesResource = createFilesResource({ baseUrl, filesPath, manifestPath });
+      const filesResource = createFilesResource({ baseUrl, endpoints });
 
       for (const path of paths) {
         const result = await filesResource.get(path);
@@ -84,7 +90,7 @@ describe("createFilesResource", () => {
         }],
       ]);
 
-      const filesResource = createFilesResource({ baseUrl, filesPath, manifestPath });
+      const filesResource = createFilesResource({ baseUrl, endpoints });
       const result = await filesResource.get("99.0.0/ucd/NonExistent.txt");
 
       expect(result.data).toBeUndefined();
@@ -99,7 +105,7 @@ describe("createFilesResource", () => {
         }],
       ]);
 
-      const filesResource = createFilesResource({ baseUrl, filesPath, manifestPath });
+      const filesResource = createFilesResource({ baseUrl, endpoints });
       const result = await filesResource.get("16.0.0/ucd/UnicodeData.txt");
 
       expect(result.data).toBeUndefined();
@@ -114,7 +120,7 @@ describe("createFilesResource", () => {
         }],
       ]);
 
-      const filesResource = createFilesResource({ baseUrl, filesPath, manifestPath });
+      const filesResource = createFilesResource({ baseUrl, endpoints });
       const result = await filesResource.get("16.0.0/ucd/UnicodeData.txt");
 
       expect(result.data).toBeUndefined();
@@ -130,7 +136,7 @@ describe("createFilesResource", () => {
         }],
       ]);
 
-      const filesResource = createFilesResource({ baseUrl, filesPath, manifestPath });
+      const filesResource = createFilesResource({ baseUrl, endpoints });
       const result = await filesResource.getManifest();
 
       expect(result.error).toBeUndefined();
@@ -144,7 +150,7 @@ describe("createFilesResource", () => {
         }],
       ]);
 
-      const filesResource = createFilesResource({ baseUrl, filesPath, manifestPath });
+      const filesResource = createFilesResource({ baseUrl, endpoints });
       const result = await filesResource.getManifest();
 
       expect(result.error).toBeUndefined();
@@ -160,7 +166,7 @@ describe("createFilesResource", () => {
         }],
       ]);
 
-      const filesResource = createFilesResource({ baseUrl, filesPath, manifestPath });
+      const filesResource = createFilesResource({ baseUrl, endpoints });
       const result = await filesResource.getManifest();
 
       expect(result.data).toBeUndefined();
@@ -175,7 +181,7 @@ describe("createFilesResource", () => {
         }],
       ]);
 
-      const filesResource = createFilesResource({ baseUrl, filesPath, manifestPath });
+      const filesResource = createFilesResource({ baseUrl, endpoints });
       const result = await filesResource.getManifest();
 
       expect(result.data).toBeUndefined();
@@ -197,8 +203,7 @@ describe("createFilesResource", () => {
 
       const filesResource = createFilesResource({
         baseUrl: customBaseUrl,
-        filesPath,
-        manifestPath,
+        endpoints,
       });
       const result = await filesResource.get("16.0.0/ucd/UnicodeData.txt");
 
@@ -218,8 +223,10 @@ describe("createFilesResource", () => {
 
       const filesResource = createFilesResource({
         baseUrl,
-        filesPath: customFilesPath,
-        manifestPath,
+        endpoints: {
+          ...endpoints,
+          files: customFilesPath,
+        },
       });
       const result = await filesResource.get("16.0.0/ucd/UnicodeData.txt");
 
@@ -238,9 +245,12 @@ describe("createFilesResource", () => {
 
       const filesResource = createFilesResource({
         baseUrl,
-        filesPath,
-        manifestPath: customManifestPath,
+        endpoints: {
+          ...endpoints,
+          manifest: customManifestPath,
+        },
       });
+
       const result = await filesResource.getManifest();
 
       expect(result.error).toBeUndefined();

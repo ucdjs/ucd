@@ -40,8 +40,7 @@ export async function createUCDClient(baseUrl: string, endpointConfig?: UCDWellK
   // create resource instances with discovered paths
   const files = createFilesResource({
     baseUrl,
-    filesPath: config.endpoints.files,
-    manifestPath: config.endpoints.manifest,
+    endpoints: config.endpoints,
   });
 
   const versions = createVersionsResource({
