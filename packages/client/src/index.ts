@@ -68,17 +68,19 @@ export async function createUCDClient(baseUrl: string): Promise<UCDClient> {
  * @example
  * ```ts
  * const client = createUCDClientWithConfig('https://api.ucdjs.dev', {
+ *   version: '1.0',
  *   endpoints: {
  *     files: '/files',
+ *     manifest: '/files/.ucd-store.json',
  *     versions: '/versions',
  *   },
  * });
  *
  * // List all versions
- * const versions = client.versions.list();
+ * const versions = await client.versions.list();
  *
  * // Get a file
- * const file = client.files.get('16.0.0/ucd/UnicodeData.txt');
+ * const file = await client.files.get('16.0.0/ucd/UnicodeData.txt');
  * ```
  */
 export function createUCDClientWithConfig(baseUrl: string, endpointConfig: UCDWellKnownConfig): UCDClient {
