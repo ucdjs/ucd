@@ -1,8 +1,13 @@
 import type { OperationResult, PathFilter, PathFilterOptions } from "@ucdjs-internal/shared";
 import type { UCDClient } from "@ucdjs/client";
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
-import type { UnicodeTreeNode } from "@ucdjs/schemas";
+import type { UCDWellKnownConfig, UnicodeTreeNode } from "@ucdjs/schemas";
 import type { StoreError } from "../errors";
+
+/**
+ * Strategy for handling version conflicts when manifest exists and versions are provided.
+ */
+export type VersionConflictStrategy = "strict" | "merge" | "overwrite";
 
 export interface UCDStoreOptions {
   /**
@@ -15,9 +20,15 @@ export interface UCDStoreOptions {
   /**
    * Optional pre-initialized UCD client instance.
    * If provided, this client will be used instead of creating a new one.
-   * The baseUrl option will be ignored if a client is provided.
+   * The baseUrl and endpointConfig options will be ignored if a client is provided.
    */
   client?: UCDClient;
+
+  /**
+   * Optional endpoint configuration for the UCD API.
+   * If not provided, will use default configuration or discover from API in bootstrap mode.
+   */
+  endpointConfig?: UCDWellKnownConfig;
 
   /**
    * Optional filters to apply when fetching Unicode data.
@@ -44,18 +55,83 @@ export interface UCDStoreOptions {
    * Only used when initializing a new store that supports mirroring.
    */
   versions?: string[];
+
+  /**
+   * Whether to enable bootstrap mode when no manifest exists.
+   * If false, store creation will fail if no manifest is found.
+   *
+   * @default true
+   */
+  bootstrap?: boolean;
+
+  /**
+   * Whether to verify manifest versions against the API.
+   * If true, will check that all versions in the manifest are still available.
+   * Only applies when a manifest already exists.
+   *
+   * @default false
+   */
+  verify?: boolean;
+
+  /**
+   * Strategy for handling version conflicts when manifest exists and versions are provided.
+   * - "strict": Throw error if provided versions differ from manifest (default)
+   * - "merge": Combine manifest and provided versions, update manifest
+   * - "overwrite": Replace manifest versions with provided versions, update manifest
+   *
+   * Only applies when manifest exists and versions are provided.
+   *
+   * @default "strict"
+   */
+  versionStrategy?: VersionConflictStrategy;
 }
 
-export interface UCDStoreContext {
+/**
+ * Internal store context to be passed
+ *
+ * @internal
+ */
+export interface InternalUCDStoreContext {
+  /**
+   * UCD API client instance.
+   */
   client: UCDClient;
+
+  /**
+   * Path filter to apply when fetching files.
+   */
   filter: PathFilter;
+
+  /**
+   * File system bridge for file operations.
+   */
   fs: FileSystemBridge;
+
+  /**
+   * Base path where store files are located.
+   */
   basePath: string;
+
+  /**
+   * List of Unicode versions available in the store.
+   */
   versions: string[];
+
+  /**
+   * Path to the store manifest file.
+   */
   manifestPath: string;
 }
 
-export interface UCDStoreV2 extends UCDStoreContext, UCDStoreMethods, UCDStoreOperations {}
+export type UCDStoreContext = Readonly<Pick<InternalUCDStoreContext, "basePath" | "fs">> & {
+  /**
+   * List of Unicode versions available in the store.
+   */
+  versions: readonly string[];
+};
+
+export interface UCDStoreV2 extends UCDStoreContext, UCDStoreMethods, UCDStoreOperations {
+}
 
 export interface UCDStoreMethods {
   getFileTree: (version: string, extraFilters?: Pick<PathFilterOptions, "include" | "exclude">) => Promise<OperationResult<UnicodeTreeNode[], StoreError>>;
