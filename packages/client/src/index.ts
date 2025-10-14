@@ -1,42 +1,59 @@
-import type { Client } from "openapi-fetch";
-import type { paths } from "./.generated/api";
-import { UCDJS_API_BASE_URL } from "@ucdjs/env";
-import OpenApiCreateClient from "openapi-fetch";
+import type { UCDWellKnownConfig } from "@ucdjs/schemas";
+import type { FilesResource } from "./resources/files";
+import type { VersionsResource } from "./resources/versions";
+import { discoverEndpointsFromConfig } from "./core/well-known";
+import { createFilesResource } from "./resources/files";
+import { createVersionsResource } from "./resources/versions";
 
-export type UCDClient = Client<paths, `${string}/${string}`>;
+export interface UCDClient {
+  /**
+   * Access file-related endpoints
+   */
+  files: FilesResource;
 
-/**
- * Creates a configured API client for making requests to Unicode API endpoints
- *
- * @param {string} baseUrl - The base URL for the API server
- * @returns {UCDClient} A configured client instance with predefined headers
- */
-export function createClient(baseUrl: string): UCDClient {
-  return OpenApiCreateClient<paths>({
-    baseUrl,
-    fetch: (...args) => fetch(...args),
-    pathSerializer(pathname, pathParams) {
-      let result = pathname;
-      for (const [key, value] of Object.entries(pathParams)) {
-        result = result.replace(`{${key}}`, `${value}`);
-      }
-      return result;
-    },
-  });
+  /**
+   * Access version-related endpoints
+   */
+  versions: VersionsResource;
 }
-
 /**
- * A pre-configured API client instance for the Unicode API
- * Uses the default base URL: "https://api.ucdjs.dev"
+ * Creates a UCD client that automatically discovers endpoint paths
+ * via the well-known configuration endpoint
+ *
+ * @param {string} baseUrl - The base URL of the UCD API server (e.g., "https://api.ucdjs.dev")
+ * @returns {Promise<UCDClient>} A configured UCD client with resource namespaces
  *
  * @example
  * ```ts
- * import { client } from "@ucdjs/client";
+ * const client = await createUCDClient('https://api.ucdjs.dev');
  *
- * // Make a request using the pre-configured client
- * const response = await client.GET("/path/to/endpoint");
+ * // List all versions
+ * const versions = await client.versions.list();
+ *
+ * // Get a file
+ * const file = await client.files.get('16.0.0/ucd/UnicodeData.txt');
  * ```
  */
-export const client = createClient(UCDJS_API_BASE_URL);
+export async function createUCDClient(baseUrl: string, endpointConfig?: UCDWellKnownConfig): Promise<UCDClient> {
+  const config = endpointConfig ?? await discoverEndpointsFromConfig(baseUrl);
 
-export * from "./guards";
+  // create resource instances with discovered paths
+  const files = createFilesResource({
+    baseUrl,
+    filesPath: config.endpoints.files,
+    manifestPath: config.endpoints.manifest,
+  });
+
+  const versions = createVersionsResource({
+    baseUrl,
+    versionsPath: config.endpoints.versions,
+  });
+
+  return {
+    files,
+    versions,
+  };
+}
+
+export * from "./core/guards";
+export { discoverEndpointsFromConfig };

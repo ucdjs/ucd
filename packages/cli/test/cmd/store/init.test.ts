@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { mockStoreApi } from "#test-utils/mock-store";
 import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
@@ -33,12 +34,11 @@ describe("store init command", () => {
   it("should initialize store with basic options", async () => {
     const storePath = await testdir();
 
-    mockFetch([
-      ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
-        return HttpResponse.json(UNICODE_VERSION_METADATA);
-      }],
-      ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions/17.0.0/file-tree`, () => {
-        return HttpResponse.json([{
+    mockStoreApi({
+      responses: {
+        // @ts-expect-error fix later
+        "/api/v1/versions": [...UNICODE_VERSION_METADATA],
+        "/api/v1/versions/:version/file-tree": [{
           type: "file",
           name: "ArabicShaping.txt",
           path: "/ArabicShaping.txt",
@@ -48,12 +48,12 @@ describe("store init command", () => {
           name: "BidiBrackets.txt",
           path: "/BidiBrackets.txt",
           lastModified: 1752862620000,
-        }]);
-      }],
-      ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/17.0.0/ucd/:file`, ({ params }) => {
-        return HttpResponse.text(`Content of ${params.file}`);
-      }],
-    ]);
+        }],
+        "/api/v1/files/:wildcard": ({ params }) => {
+          return HttpResponse.text(`Content of ${params.wildcard}`);
+        },
+      },
+    });
 
     await runCLI([
       "store",
@@ -96,12 +96,11 @@ describe("store init command", () => {
 
   it("should initialize with specific versions", async () => {
     const storePath = await testdir();
-    mockFetch([
-      ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
-        return HttpResponse.json(UNICODE_VERSION_METADATA);
-      }],
-      ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions/:version/file-tree`, () => {
-        return HttpResponse.json([{
+    mockStoreApi({
+      responses: {
+        // @ts-expect-error fix later
+        "/api/v1/versions": [...UNICODE_VERSION_METADATA],
+        "/api/v1/versions/:version/file-tree": [{
           type: "file",
           name: "ArabicShaping.txt",
           path: "/ArabicShaping.txt",
@@ -111,12 +110,12 @@ describe("store init command", () => {
           name: "BidiBrackets.txt",
           path: "/BidiBrackets.txt",
           lastModified: 1752862620000,
-        }]);
-      }],
-      ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/:version/ucd/:file`, ({ params }) => {
-        return HttpResponse.text(`Content of ${params.file}`);
-      }],
-    ]);
+        }],
+        "/api/v1/files/:wildcard": ({ params }) => {
+          return HttpResponse.text(`Content of ${params.wildcard}`);
+        },
+      },
+    });
 
     await runCLI([
       "store",
@@ -139,11 +138,26 @@ describe("store init command", () => {
     const storePath = await testdir();
     const consoleInfoSpy = vi.spyOn(console, "info").mockImplementation(() => {});
 
-    mockFetch([
-      ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
-        return HttpResponse.json(UNICODE_VERSION_METADATA);
-      }],
-    ]);
+    mockStoreApi({
+      responses: {
+        // @ts-expect-error fix later
+        "/api/v1/versions": [...UNICODE_VERSION_METADATA],
+        "/api/v1/versions/:version/file-tree": [{
+          type: "file",
+          name: "ArabicShaping.txt",
+          path: "/ArabicShaping.txt",
+          lastModified: 1752862620000,
+        }, {
+          type: "file",
+          name: "BidiBrackets.txt",
+          path: "/BidiBrackets.txt",
+          lastModified: 1752862620000,
+        }],
+        "/api/v1/files/:wildcard": ({ params }) => {
+          return HttpResponse.text(`Content of ${params.wildcard}`);
+        },
+      },
+    });
 
     await runCLI([
       "store",
@@ -170,12 +184,11 @@ describe("store init command", () => {
       });
     });
 
-    mockFetch([
-      ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
-        return HttpResponse.json(UNICODE_VERSION_METADATA);
-      }],
-      ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions/:version/file-tree`, () => {
-        return HttpResponse.json([{
+    mockStoreApi({
+      responses: {
+        // @ts-expect-error fix later
+        "/api/v1/versions": [...UNICODE_VERSION_METADATA],
+        "/api/v1/versions/:version/file-tree": [{
           type: "file",
           name: "ArabicShaping.txt",
           path: "/ArabicShaping.txt",
@@ -185,12 +198,12 @@ describe("store init command", () => {
           name: "BidiBrackets.txt",
           path: "/BidiBrackets.txt",
           lastModified: 1752862620000,
-        }]);
-      }],
-      ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/:version/ucd/:file`, ({ params }) => {
-        return HttpResponse.text(`Content of ${params.file}`);
-      }],
-    ]);
+        }],
+        "/api/v1/files/:wildcard": ({ params }) => {
+          return HttpResponse.text(`Content of ${params.wildcard}`);
+        },
+      },
+    });
 
     const cliPromise = runCLI([
       "store",
