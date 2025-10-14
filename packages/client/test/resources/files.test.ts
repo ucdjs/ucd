@@ -30,10 +30,10 @@ describe("createFilesResource", () => {
       ]);
 
       const filesResource = createFilesResource({ baseUrl, endpoints });
-      const result = await filesResource.get("16.0.0/ucd/UnicodeData.txt");
+      const { data, error } = await filesResource.get("16.0.0/ucd/UnicodeData.txt");
 
-      expect(result.error).toBeUndefined();
-      expect(result.data).toBe(fileContent);
+      expect(error).toBeNull();
+      expect(data).toBe(fileContent);
     });
 
     it("should fetch directory listing as JSON successfully", async () => {
@@ -49,35 +49,31 @@ describe("createFilesResource", () => {
       ]);
 
       const filesResource = createFilesResource({ baseUrl, endpoints });
-      const result = await filesResource.get("16.0.0/ucd");
+      const { data, error } = await filesResource.get("16.0.0/ucd");
 
-      expect(result.error).toBeUndefined();
-      expect(result.data).toEqual(directoryListing);
-      expect(Array.isArray(result.data)).toBe(true);
+      expect(error).toBeNull();
+      expect(data).toEqual(directoryListing);
+      expect(Array.isArray(data)).toBe(true);
     });
 
-    it("should handle different file paths", async () => {
-      const paths = [
-        "16.0.0/ucd/UnicodeData.txt",
-        "15.1.0/ucd/emoji/emoji-data.txt",
-        "latest/ucd/PropList.txt",
-      ];
-
-      for (const path of paths) {
-        mockFetch([
-          ["GET", `${baseUrl}${endpoints.files}/${path}`, () => {
-            return HttpResponse.text(`Content of ${path}`);
-          }],
-        ]);
-      }
+    it.each([
+      "16.0.0/ucd/UnicodeData.txt",
+      "15.1.0/ucd/emoji/emoji-data.txt",
+      "latest/ucd/PropList.txt",
+    ])("should handle file fetching for path %s", async (path) => {
+      mockFetch([
+        [
+          "GET",
+          `${baseUrl}${endpoints.files}/${path}`,
+          () => HttpResponse.text(`Content of ${path}`),
+        ],
+      ]);
 
       const filesResource = createFilesResource({ baseUrl, endpoints });
+      const { data, error } = await filesResource.get(path);
 
-      for (const path of paths) {
-        const result = await filesResource.get(path);
-        expect(result.error).toBeUndefined();
-        expect(result.data).toBe(`Content of ${path}`);
-      }
+      expect(error).toBeNull();
+      expect(data).toBe(`Content of ${path}`);
     });
 
     it("should handle 404 errors for non-existent files", async () => {
@@ -88,11 +84,11 @@ describe("createFilesResource", () => {
       ]);
 
       const filesResource = createFilesResource({ baseUrl, endpoints });
-      const result = await filesResource.get("99.0.0/ucd/NonExistent.txt");
+      const { data, error } = await filesResource.get("99.0.0/ucd/NonExistent.txt");
 
-      expect(result.data).toBeUndefined();
-      expect(result.error).toBeDefined();
-      expect(result.error).toHaveProperty("status", 404);
+      expect(data).toBeNull();
+      expect(error).toBeDefined();
+      expect(error).toHaveProperty("status", 404);
     });
 
     it("should handle server errors", async () => {
@@ -103,11 +99,11 @@ describe("createFilesResource", () => {
       ]);
 
       const filesResource = createFilesResource({ baseUrl, endpoints });
-      const result = await filesResource.get("16.0.0/ucd/UnicodeData.txt");
+      const { data, error } = await filesResource.get("16.0.0/ucd/UnicodeData.txt");
 
-      expect(result.data).toBeUndefined();
-      expect(result.error).toBeDefined();
-      expect(result.error).toHaveProperty("status", 500);
+      expect(data).toBeNull();
+      expect(error).toBeDefined();
+      expect(error).toHaveProperty("status", 500);
     });
 
     it("should handle network errors", async () => {
@@ -118,10 +114,10 @@ describe("createFilesResource", () => {
       ]);
 
       const filesResource = createFilesResource({ baseUrl, endpoints });
-      const result = await filesResource.get("16.0.0/ucd/UnicodeData.txt");
+      const { data, error } = await filesResource.get("16.0.0/ucd/UnicodeData.txt");
 
-      expect(result.data).toBeUndefined();
-      expect(result.error).toBeDefined();
+      expect(data).toBeNull();
+      expect(error).toBeDefined();
     });
   });
 
@@ -134,10 +130,10 @@ describe("createFilesResource", () => {
       ]);
 
       const filesResource = createFilesResource({ baseUrl, endpoints });
-      const result = await filesResource.getManifest();
+      const { data, error } = await filesResource.getManifest();
 
-      expect(result.error).toBeUndefined();
-      expect(result.data).toEqual(mockManifest);
+      expect(error).toBeNull();
+      expect(data).toEqual(mockManifest);
     });
 
     it("should return manifest with correct structure", async () => {
@@ -148,12 +144,12 @@ describe("createFilesResource", () => {
       ]);
 
       const filesResource = createFilesResource({ baseUrl, endpoints });
-      const result = await filesResource.getManifest();
+      const { data, error } = await filesResource.getManifest();
 
-      expect(result.error).toBeUndefined();
-      expect(result.data).toHaveProperty("version");
-      expect(result.data).toHaveProperty("files");
-      expect(Array.isArray(result.data!.files)).toBe(true);
+      expect(error).toBeNull();
+      expect(data).toHaveProperty("version");
+      expect(data).toHaveProperty("files");
+      expect(Array.isArray(data!.files)).toBe(true);
     });
 
     it("should handle 404 errors for missing manifest", async () => {
@@ -164,11 +160,11 @@ describe("createFilesResource", () => {
       ]);
 
       const filesResource = createFilesResource({ baseUrl, endpoints });
-      const result = await filesResource.getManifest();
+      const { data, error } = await filesResource.getManifest();
 
-      expect(result.data).toBeUndefined();
-      expect(result.error).toBeDefined();
-      expect(result.error).toHaveProperty("status", 404);
+      expect(data).toBeNull();
+      expect(error).toBeDefined();
+      expect(error).toHaveProperty("status", 404);
     });
 
     it("should handle server errors", async () => {
@@ -179,11 +175,11 @@ describe("createFilesResource", () => {
       ]);
 
       const filesResource = createFilesResource({ baseUrl, endpoints });
-      const result = await filesResource.getManifest();
+      const { data, error } = await filesResource.getManifest();
 
-      expect(result.data).toBeUndefined();
-      expect(result.error).toBeDefined();
-      expect(result.error).toHaveProperty("status", 500);
+      expect(data).toBeNull();
+      expect(error).toBeDefined();
+      expect(error).toHaveProperty("status", 500);
     });
   });
 
@@ -202,10 +198,10 @@ describe("createFilesResource", () => {
         baseUrl: customBaseUrl,
         endpoints,
       });
-      const result = await filesResource.get("16.0.0/ucd/UnicodeData.txt");
+      const { data, error } = await filesResource.get("16.0.0/ucd/UnicodeData.txt");
 
-      expect(result.error).toBeUndefined();
-      expect(result.data).toBe(fileContent);
+      expect(error).toBeNull();
+      expect(data).toBe(fileContent);
     });
 
     it("should work with custom files paths", async () => {
@@ -225,10 +221,10 @@ describe("createFilesResource", () => {
           files: customFilesPath,
         },
       });
-      const result = await filesResource.get("16.0.0/ucd/UnicodeData.txt");
+      const { data, error } = await filesResource.get("16.0.0/ucd/UnicodeData.txt");
 
-      expect(result.error).toBeUndefined();
-      expect(result.data).toBe(fileContent);
+      expect(error).toBeNull();
+      expect(data).toBe(fileContent);
     });
 
     it("should work with custom manifest paths", async () => {
@@ -248,10 +244,10 @@ describe("createFilesResource", () => {
         },
       });
 
-      const result = await filesResource.getManifest();
+      const { data, error } = await filesResource.getManifest();
 
-      expect(result.error).toBeUndefined();
-      expect(result.data).toEqual(mockManifest);
+      expect(error).toBeNull();
+      expect(data).toEqual(mockManifest);
     });
   });
 });

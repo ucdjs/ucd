@@ -231,6 +231,7 @@ describe("custom fetch - basic functionality", () => {
 
       expect(result).toEqual({
         data: { success: true },
+        error: null,
         response: expect.any(Object),
       });
       expect(result.response.status).toBe(200);
@@ -240,6 +241,7 @@ describe("custom fetch - basic functionality", () => {
       const result = await customFetch.safe(`${UCDJS_API_BASE_URL}/error`);
 
       expect(result).toEqual({
+        data: null,
         error: expect.any(Object),
         response: expect.any(Object),
       });
