@@ -1,6 +1,6 @@
 import type { ApiError } from "@ucdjs/schemas";
 import { assert, describe, expect, it } from "vitest";
-import { isApiError } from "../../src/core/guards";
+import { isApiError } from "../src/guards";
 
 describe("isApiError", () => {
   it("should return true for valid ApiError object", () => {

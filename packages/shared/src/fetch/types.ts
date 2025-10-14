@@ -1,3 +1,5 @@
+import type { FetchError } from "./error";
+
 export interface CustomFetch {
   <T = any, R extends ResponseType = "json">(
     request: RequestInfo,
@@ -24,9 +26,9 @@ export type MappedResponseType<
 > = R extends keyof ResponseMap ? ResponseMap[R] : JsonType;
 
 export interface SafeFetchResponse<T = any> {
-  data?: T;
-  error?: import("./error").FetchError<T>;
-  response: FetchResponse<T>;
+  data: T | null;
+  error: FetchError<T> | null;
+  response?: FetchResponse<T>;
 }
 
 export interface FetchResponse<T> extends Response {

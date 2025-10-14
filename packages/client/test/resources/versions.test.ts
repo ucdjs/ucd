@@ -49,12 +49,12 @@ describe("createVersionsResource", () => {
       ]);
 
       const versionsResource = createVersionsResource({ baseUrl, endpoints });
-      const result = await versionsResource.list();
+      const { data, error } = await versionsResource.list();
 
-      expect(result.error).toBeUndefined();
-      expect(result.data).toEqual(mockVersionsList);
-      expect(Array.isArray(result.data)).toBe(true);
-      expect(result.data).toHaveLength(2);
+      expect(error).toBeNull();
+      expect(data).toEqual(mockVersionsList);
+      expect(Array.isArray(data)).toBe(true);
+      expect(data).toHaveLength(2);
     });
 
     it("should return versions with correct structure", async () => {
@@ -65,14 +65,14 @@ describe("createVersionsResource", () => {
       ]);
 
       const versionsResource = createVersionsResource({ baseUrl, endpoints });
-      const result = await versionsResource.list();
+      const { data, error } = await versionsResource.list();
 
-      expect(result.error).toBeUndefined();
-      expect(result.data![0]).toHaveProperty("version");
-      expect(result.data![0]).toHaveProperty("documentationUrl");
-      expect(result.data![0]).toHaveProperty("date");
-      expect(result.data![0]).toHaveProperty("url");
-      expect(result.data![0]).toHaveProperty("type");
+      expect(error).toBeNull();
+      expect(data![0]).toHaveProperty("version");
+      expect(data![0]).toHaveProperty("documentationUrl");
+      expect(data![0]).toHaveProperty("date");
+      expect(data![0]).toHaveProperty("url");
+      expect(data![0]).toHaveProperty("type");
     });
 
     it("should handle errors gracefully", async () => {
@@ -83,11 +83,11 @@ describe("createVersionsResource", () => {
       ]);
 
       const versionsResource = createVersionsResource({ baseUrl, endpoints });
-      const result = await versionsResource.list();
+      const { data, error } = await versionsResource.list();
 
-      expect(result.data).toBeUndefined();
-      expect(result.error).toBeDefined();
-      expect(result.error).toHaveProperty("status", 500);
+      expect(data).toBeNull();
+      expect(error).toBeDefined();
+      expect(error).toHaveProperty("status", 500);
     });
 
     it("should handle network errors", async () => {
@@ -98,10 +98,10 @@ describe("createVersionsResource", () => {
       ]);
 
       const versionsResource = createVersionsResource({ baseUrl, endpoints });
-      const result = await versionsResource.list();
+      const { data, error } = await versionsResource.list();
 
-      expect(result.data).toBeUndefined();
-      expect(result.error).toBeDefined();
+      expect(data).toBeNull();
+      expect(error).toBeDefined();
     });
   });
 
@@ -114,30 +114,28 @@ describe("createVersionsResource", () => {
       ]);
 
       const versionsResource = createVersionsResource({ baseUrl, endpoints });
-      const result = await versionsResource.getFileTree("16.0.0");
+      const { data, error } = await versionsResource.getFileTree("16.0.0");
 
-      expect(result.error).toBeUndefined();
-      expect(result.data).toEqual(mockFileTree);
+      expect(error).toBeNull();
+      expect(data).toEqual(mockFileTree);
     });
 
-    it("should handle different version numbers", async () => {
-      const versions = ["15.1.0", "15.0.0", "14.0.0"];
-
-      for (const version of versions) {
-        mockFetch([
-          ["GET", `${baseUrl}${endpoints.versions}/${version}/file-tree`, () => {
-            return HttpResponse.json({ ...mockFileTree, version });
-          }],
-        ]);
-      }
+    it.each(
+      ["15.1.0", "15.0.0", "14.0.0"],
+    )("should handle file tree fetching for version %s", async (version) => {
+      mockFetch([
+        [
+          "GET",
+          `${baseUrl}${endpoints.versions}/${version}/file-tree`,
+          () => HttpResponse.json({ ...mockFileTree, version }),
+        ],
+      ]);
 
       const versionsResource = createVersionsResource({ baseUrl, endpoints });
+      const { data, error } = await versionsResource.getFileTree(version);
 
-      for (const version of versions) {
-        const result = await versionsResource.getFileTree(version);
-        expect(result.error).toBeUndefined();
-        expect(result.data).toHaveProperty("version", version);
-      }
+      expect(error).toBeNull();
+      expect(data).toHaveProperty("version", version);
     });
 
     it("should handle 404 errors for non-existent versions", async () => {
@@ -148,11 +146,11 @@ describe("createVersionsResource", () => {
       ]);
 
       const versionsResource = createVersionsResource({ baseUrl, endpoints });
-      const result = await versionsResource.getFileTree("99.0.0");
+      const { data, error } = await versionsResource.getFileTree("99.0.0");
 
-      expect(result.data).toBeUndefined();
-      expect(result.error).toBeDefined();
-      expect(result.error).toHaveProperty("status", 404);
+      expect(data).toBeNull();
+      expect(error).toBeDefined();
+      expect(error).toHaveProperty("status", 404);
     });
 
     it("should handle server errors", async () => {
@@ -163,11 +161,11 @@ describe("createVersionsResource", () => {
       ]);
 
       const versionsResource = createVersionsResource({ baseUrl, endpoints });
-      const result = await versionsResource.getFileTree("16.0.0");
+      const { data, error } = await versionsResource.getFileTree("16.0.0");
 
-      expect(result.data).toBeUndefined();
-      expect(result.error).toBeDefined();
-      expect(result.error).toHaveProperty("status", 500);
+      expect(data).toBeNull();
+      expect(error).toBeDefined();
+      expect(error).toHaveProperty("status", 500);
     });
   });
 
@@ -185,10 +183,10 @@ describe("createVersionsResource", () => {
         baseUrl: customBaseUrl,
         endpoints,
       });
-      const result = await versionsResource.list();
+      const { data, error } = await versionsResource.list();
 
-      expect(result.error).toBeUndefined();
-      expect(result.data).toEqual(mockVersionsList);
+      expect(error).toBeNull();
+      expect(data).toEqual(mockVersionsList);
     });
 
     it("should work with custom versions paths", async () => {
@@ -207,10 +205,10 @@ describe("createVersionsResource", () => {
           versions: customVersionsPath,
         },
       });
-      const result = await versionsResource.list();
+      const { data, error } = await versionsResource.list();
 
-      expect(result.error).toBeUndefined();
-      expect(result.data).toEqual(mockVersionsList);
+      expect(error).toBeNull();
+      expect(data).toEqual(mockVersionsList);
     });
   });
 });
