@@ -1,94 +1,203 @@
-// const store = await createUCDStore({
-//   fs: nodeFS,
-//   basePath: "./data",
-//   baseUrl: "https://api.ucdjs.dev",
-//   versions: ["16.0.0"],
-// });
-
-import type { PathFilter } from "@ucdjs-internal/shared";
 import type { UCDClient } from "@ucdjs/client";
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
-import type { UCDStoreContext, UCDStoreMethods, UCDStoreOperations, UCDStoreOptions, UCDStoreV2 } from "./types";
-import { createDebugger, createPathFilter } from "@ucdjs-internal/shared";
-import { createUCDClient } from "@ucdjs/client";
+import type { UCDWellKnownConfig } from "@ucdjs/schemas";
+import type {
+  InternalUCDStoreContext,
+  UCDStoreMethods,
+  UCDStoreOperations,
+  UCDStoreOptions,
+  UCDStoreV2,
+  VersionConflictStrategy,
+} from "./types";
+import {
+  createDebugger,
+  createPathFilter,
+  discoverEndpointsFromConfig,
+  getDefaultUCDEndpointConfig,
+} from "@ucdjs-internal/shared";
+import { createUCDClientWithConfig } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import defu from "defu";
 import { join } from "pathe";
-import { readManifest } from "./manifest";
+import { UCDStoreGenericError } from "../errors";
+import { bootstrap } from "./bootstrap";
+import { createInternalContext, createPublicContext } from "./context";
+import { readManifest, writeManifest } from "./manifest";
+import { verify } from "./verify";
 
 const debug = createDebugger("ucdjs:ucd-store:v2");
 
 export async function createUCDStore(options: UCDStoreOptions): Promise<UCDStoreV2> {
   debug?.("Creating UCD Store with options", options);
-  const { baseUrl, globalFilters, fs, basePath, versions } = defu(options, {
+  const {
+    baseUrl,
+    globalFilters,
+    fs,
+    basePath,
+    versions,
+    endpointConfig,
+    bootstrap: shouldBootstrap,
+    verify: shouldVerify,
+    versionStrategy,
+  } = defu(options, {
     baseUrl: UCDJS_API_BASE_URL,
     globalFilters: {},
     basePath: "",
     versions: [],
+    bootstrap: true,
+    verify: false,
+    versionStrategy: "strict" as const,
   });
 
   const filter = createPathFilter(globalFilters);
   const manifestPath = join(basePath, ".ucd-store.json");
 
-  // check for existing manifest
-  const manifestExists = await fs.exists(manifestPath);
-  let storeVersions = versions;
-  let client: UCDClient | null = options.client ?? null;
-
-  if (manifestExists) {
-    // Offline mode - read from manifest
-    const manifest = await readManifest(fs, manifestPath);
-    storeVersions = Object.keys(manifest);
-  } else {
-    // bootstrap mode (utilize the api client)
-    if (client === null) {
-      client = await createUCDClient(baseUrl);
-    }
-
-    // validate versions, create manifest, etc.
-    await bootstrap({ client, fs, basePath, versions: storeVersions });
+  // resolve the endpoints config
+  let resolvedEndpointConfig = endpointConfig;
+  if (!resolvedEndpointConfig) {
+    resolvedEndpointConfig = await retrieveEndpointConfiguration(baseUrl);
+    debug?.("Discovered endpoint config:", resolvedEndpointConfig);
   }
 
-  const storeContext = {
-    get client(): UCDClient {
-      if (client == null) {
-        throw new Error("UCD Client is not initialized.");
+  const client: UCDClient = options.client ?? createUCDClientWithConfig(baseUrl, resolvedEndpointConfig);
+
+  // check for existing manifest
+  // TODO: fix the non-null assertion
+  const manifestExists = await fs.exists!(manifestPath);
+  debug?.("Manifest exists:", manifestExists, "at path:", manifestPath);
+
+  let storeVersions = versions;
+
+  // create the internal context
+  const internalContext = createInternalContext({
+    client,
+    filter,
+    fs,
+    basePath,
+    versions: storeVersions,
+    manifestPath,
+  });
+
+  // if there is a manifest, we can skip the bootstrap process
+  // and just use the versions from the manifest
+  if (manifestExists) {
+    const manifest = await readManifest(fs, manifestPath);
+    const manifestVersions = Object.keys(manifest);
+    debug?.("Manifest versions:", manifestVersions);
+
+    // If user provided versions, handle according to strategy
+    if (versions.length > 0) {
+      storeVersions = await handleVersionConflict(
+        versionStrategy,
+        versions,
+        manifestVersions,
+        fs,
+        manifestPath,
+      );
+    } else {
+      // No versions provided, use manifest
+      storeVersions = manifestVersions;
+      debug?.("Using versions from manifest:", storeVersions);
+    }
+
+    internalContext.versions = storeVersions;
+
+    if (shouldVerify) {
+      const verifyResult = await verify(internalContext);
+
+      if (!verifyResult.valid) {
+        throw new UCDStoreGenericError(
+          `Manifest verification failed: ${verifyResult.missingVersions.length} version(s) in manifest are not available in API: ${verifyResult.missingVersions.join(", ")}`,
+        );
       }
+    }
+  } else {
+    // If there isn't a manifest, and bootstrap is disabled, throw an error
+    // because we can't proceed without a manifest. SINCE there is no data!
+    if (!shouldBootstrap) {
+      throw new UCDStoreGenericError(
+        `Store manifest not found at ${manifestPath} and bootstrap is disabled. `
+        + `Enable bootstrap or create manifest manually.`,
+      );
+    }
 
-      return client;
-    },
-    get filter(): PathFilter {
-      return filter;
-    },
-    get fs(): FileSystemBridge {
-      return fs;
-    },
-    get basePath(): string {
-      return basePath;
-    },
-    get versions(): string[] {
-      return storeVersions ?? [];
-    },
-    get manifestPath(): string {
-      return manifestPath;
-    },
-  } satisfies UCDStoreContext;
+    await bootstrap(internalContext);
+  }
 
-  return {
-    ...storeContext,
-    ...createUCDStoreMethods(storeContext),
-    ...createUCDStoreOperations(storeContext),
-  };
+  const publicContext = createPublicContext(internalContext);
+
+  return Object.assign(
+    publicContext,
+    createUCDStoreMethods(internalContext),
+    createUCDStoreOperations(internalContext),
+  );
 }
 
-function createUCDStoreMethods(context: UCDStoreContext): UCDStoreMethods {
+function createUCDStoreMethods(_context: InternalUCDStoreContext): UCDStoreMethods {
   return {
-
-  };
+  } as UCDStoreMethods;
 }
 
-function createUCDStoreOperations(context: UCDStoreContext): UCDStoreOperations {
+function createUCDStoreOperations(_context: InternalUCDStoreContext): UCDStoreOperations {
   return {
 
-  };
+  } as UCDStoreOperations;
+}
+
+async function retrieveEndpointConfiguration(baseUrl: string = UCDJS_API_BASE_URL): Promise<UCDWellKnownConfig> {
+  debug?.("Attempting to discover endpoint configuration from", baseUrl);
+  return discoverEndpointsFromConfig(baseUrl).catch((err) => {
+    debug?.("Failed to discover endpoint config, using default:", err);
+    return getDefaultUCDEndpointConfig();
+  });
+}
+
+async function handleVersionConflict(
+  strategy: VersionConflictStrategy,
+  providedVersions: string[],
+  manifestVersions: string[],
+  fs: FileSystemBridge,
+  manifestPath: string,
+): Promise<string[]> {
+  switch (strategy) {
+    case "merge": {
+      const mergedVersions = Array.from(new Set([...manifestVersions, ...providedVersions]));
+      await writeManifest(fs, manifestPath, mergedVersions);
+      debug?.("Merge mode: combined versions", mergedVersions);
+      return mergedVersions;
+    }
+    case "overwrite": {
+      await writeManifest(fs, manifestPath, providedVersions);
+      debug?.("Overwrite mode: replaced manifest with provided versions", providedVersions);
+      return providedVersions;
+    }
+    case "strict":
+    default: {
+      if (!arraysEqual(providedVersions, manifestVersions)) {
+        throw new UCDStoreGenericError(
+          `Version mismatch: manifest has [${manifestVersions.join(", ")}], provided [${providedVersions.join(", ")}]. `
+          + `Use versionStrategy: "merge" or "overwrite" to resolve.`,
+        );
+      }
+      debug?.("Strict mode: versions match manifest");
+      return manifestVersions;
+    }
+  }
+}
+
+function arraysEqual(a: string[], b: string[]): boolean {
+  if (a.length !== b.length) return false;
+
+  const setA = new Set(a);
+  const setB = new Set(b);
+
+  // If sets have different sizes, there were duplicates or different elements
+  if (setA.size !== setB.size) return false;
+
+  // Check if all elements in setA exist in setB
+  for (const val of setA) {
+    if (!setB.has(val)) return false;
+  }
+
+  return true;
 }
