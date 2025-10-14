@@ -1,487 +1,109 @@
-import type { ApiError, FileEntryList, UnicodeVersionList } from "@ucdjs/schemas";
 import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
-import { assert, describe, expect, it } from "vitest";
-import { client, createClient } from "../src";
+import { describe, expect, it } from "vitest";
+import { createUCDClient } from "../src";
 
-describe("unicode api client", () => {
-  describe("createClient", () => {
-    it("should create a client with the provided base URL", () => {
-      const customBaseUrl = "https://custom-api.ucdjs.dev";
-      const customClient = createClient(customBaseUrl);
+describe("createUCDClient", () => {
+  const mockWellKnownConfig = {
+    version: "1.0",
+    endpoints: {
+      files: "/api/v1/files",
+      manifest: "/api/v1/files/.ucd-store.json",
+      versions: "/api/v1/versions",
+    },
+  };
 
-      expect(customClient).toBeDefined();
-    });
+  describe("client initialization", () => {
+    it("should create a client instance", async () => {
+      mockFetch([
+        ["GET", `${UCDJS_API_BASE_URL}/.well-known/ucd-config.json`, () => {
+          return HttpResponse.json(mockWellKnownConfig);
+        }],
+      ]);
 
-    it("should create clients with different base URLs", () => {
-      const baseUrls = [
-        "https://api1.ucdjs.dev",
-        "https://api2.ucdjs.dev",
-        "http://localhost:3000",
-      ];
+      const client = await createUCDClient(UCDJS_API_BASE_URL);
 
-      baseUrls.forEach((baseUrl) => {
-        const testClient = createClient(baseUrl);
-        expect(testClient).toBeDefined();
-      });
-    });
-  });
-
-  describe("default client", () => {
-    it("should be created with the default base URL", () => {
       expect(client).toBeDefined();
+      expect(client.files).toBeDefined();
+      expect(client.versions).toBeDefined();
+    });
+
+    it("should discover endpoints from well-known config", async () => {
+      mockFetch([
+        ["GET", `${UCDJS_API_BASE_URL}/.well-known/ucd-config.json`, () => {
+          return HttpResponse.json(mockWellKnownConfig);
+        }],
+      ]);
+
+      const client = await createUCDClient(UCDJS_API_BASE_URL);
+
+      expect(client.versions).toHaveProperty("list");
+      expect(client.versions).toHaveProperty("getFileTree");
+      expect(client.files).toHaveProperty("get");
+      expect(client.files).toHaveProperty("getManifest");
+    });
+
+    it("should work with custom base URLs", async () => {
+      const customBaseUrl = "https://custom-ucd-server.com";
+
+      mockFetch([
+        ["GET", `${customBaseUrl}/.well-known/ucd-config.json`, () => {
+          return HttpResponse.json(mockWellKnownConfig);
+        }],
+      ]);
+
+      const client = await createUCDClient(customBaseUrl);
+
+      expect(client).toBeDefined();
+      expect(client.files).toBeDefined();
+      expect(client.versions).toBeDefined();
     });
   });
 
-  describe("/api/v1/versions endpoint", () => {
-    const mockUnicodeVersions = [
-      {
-        version: "15.1.0",
-        documentationUrl: "https://www.unicode.org/versions/Unicode15.1.0/",
-        date: "2023-09-12",
-        url: "https://www.unicode.org/Public/15.1.0/ucd/",
-        type: "stable",
-        mappedUcdVersion: "15.1.0",
-      },
-      {
-        version: "15.0.0",
-        documentationUrl: "https://www.unicode.org/versions/Unicode15.0.0/",
-        date: "2022-09-13",
-        url: "https://www.unicode.org/Public/15.0.0/ucd/",
-        type: "stable",
-        mappedUcdVersion: "15.0.0",
-      },
-    ] satisfies UnicodeVersionList;
+  describe("error handling", () => {
+    it("should throw error when well-known config is not found", async () => {
+      mockFetch([
+        ["GET", `${UCDJS_API_BASE_URL}/.well-known/ucd-config.json`, () => {
+          return new HttpResponse(null, { status: 404 });
+        }],
+      ]);
 
-    describe("successful requests", () => {
-      it("should fetch unicode versions successfully", async () => {
-        mockFetch([
-          ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
-            return new HttpResponse(JSON.stringify(mockUnicodeVersions), {
-              status: 200,
-              headers: { "Content-Type": "application/json" },
-            });
-          }],
-        ]);
-
-        const { response, data, error } = await client.GET("/api/v1/versions");
-
-        expect(data).toEqual(mockUnicodeVersions);
-        expect(response.status).toBe(200);
-        expect(error).toBeUndefined();
-      });
-
-      it("should return array of unicode versions with correct structure", async () => {
-        mockFetch([
-          ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
-            return new HttpResponse(JSON.stringify(mockUnicodeVersions), {
-              status: 200,
-              headers: { "Content-Type": "application/json" },
-            });
-          }],
-        ]);
-
-        const { data, response, error } = await client.GET("/api/v1/versions");
-        expect(response.status).toBe(200);
-        expect(error).toBeUndefined();
-        expect(data).toBeDefined();
-
-        expect(Array.isArray(data)).toBe(true);
-        expect(data?.length).toBe(2);
-
-        expect(data?.[0]).toHaveProperty("version");
-        expect(data?.[0]).toHaveProperty("documentationUrl");
-        expect(data?.[0]).toHaveProperty("date");
-        expect(data?.[0]).toHaveProperty("url");
-
-        expect(data?.[0]?.documentationUrl).toMatch(/^https?:\/\//);
-        expect(data?.[0]?.url).toMatch(/^https?:\/\//);
-      });
+      await expect(createUCDClient(UCDJS_API_BASE_URL)).rejects.toThrow();
     });
 
-    describe("error handling", () => {
-      it("should handle 404 Not Found errors", async () => {
-        const errorResponse = {
-          message: "Resource not found",
-          status: 404,
-          timestamp: "2025-06-26T12:00:00Z",
-        } satisfies ApiError;
+    it("should throw error on invalid well-known config", async () => {
+      mockFetch([
+        ["GET", `${UCDJS_API_BASE_URL}/.well-known/ucd-config.json`, () => {
+          return HttpResponse.json({ invalid: "config" });
+        }],
+      ]);
 
-        mockFetch([
-          ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
-            return new HttpResponse(JSON.stringify(errorResponse), {
-              status: 404,
-              statusText: "Not Found",
-              headers: { "Content-Type": "application/json" },
-            });
-          }],
-        ]);
-
-        const { response, error } = await client.GET("/api/v1/versions");
-
-        expect(response.status).toBe(404);
-        expect(error).toEqual(errorResponse);
-      });
-
-      it("should handle 500 Internal Server Error", async () => {
-        const errorResponse = {
-          message: "Internal server error occurred",
-          status: 500,
-          timestamp: "2025-06-26T12:00:00Z",
-        } satisfies ApiError;
-
-        mockFetch([
-          ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
-            return new HttpResponse(JSON.stringify(errorResponse), {
-              status: 500,
-              statusText: "Internal Server Error",
-              headers: { "Content-Type": "application/json" },
-            });
-          }],
-        ]);
-
-        const { response, error } = await client.GET("/api/v1/versions");
-
-        expect(response.status).toBe(500);
-        expect(error).toEqual(errorResponse);
-      });
+      await expect(createUCDClient(UCDJS_API_BASE_URL)).rejects.toThrow("Invalid well-known config");
     });
   });
 
-  describe("/api/v1/files endpoint", () => {
-    describe("successful requests", () => {
-      it("should proxy requests without path successfully", async () => {
-        const mockProxyResponse = [
-          {
-            type: "directory",
-            name: "root",
-            path: "/",
-            lastModified: Date.now(),
-          },
-        ] satisfies FileEntryList;
-
-        mockFetch([
-          ["GET", `${UCDJS_API_BASE_URL}/api/v1/files`, () => {
-            return new HttpResponse(JSON.stringify(mockProxyResponse), {
-              status: 200,
-              headers: { "Content-Type": "application/json" },
-            });
-          }],
-        ]);
-
-        const { response, data } = await client.GET("/api/v1/files/{wildcard}", {
-          params: {
-            path: {
-              wildcard: "",
-            },
-          },
-        });
-
-        expect(data).toEqual(mockProxyResponse);
-        expect(response.status).toBe(200);
-      });
-
-      it("should handle binary data responses", async () => {
-        const binaryData = new Uint8Array([72, 101, 108, 108, 111, 44, 32, 87, 111, 114, 108, 100, 33]);
-
-        mockFetch([
-          ["GET", `${UCDJS_API_BASE_URL}/api/v1/files`, () => {
-            return new HttpResponse(binaryData, {
-              status: 200,
-              headers: { "Content-Type": "application/octet-stream" },
-            });
-          }],
-        ]);
-
-        const { response, data } = await client.GET("/api/v1/files/{wildcard}", {
-          params: {
-            path: {
-              wildcard: "",
-            },
-          },
-          parseAs: "arrayBuffer",
-        });
-
-        expect(response.status).toBe(200);
-        expect(response.headers.get("Content-Type")).toBe("application/octet-stream");
-        // eslint-disable-next-line node/prefer-global/buffer
-        expect(Buffer.from(data!).toString()).toBe("Hello, World!");
-      });
-    });
-
-    describe("error handling", () => {
-      it("should handle 404 errors with proper structure", async () => {
-        const errorResponse = {
-          message: "Resource not found",
-          status: 404,
-          timestamp: "2025-06-26T12:00:00Z",
-        } satisfies ApiError;
-
-        mockFetch([
-          ["GET", `${UCDJS_API_BASE_URL}/api/v1/files`, () => {
-            return new HttpResponse(JSON.stringify(errorResponse), {
-              status: 404,
-              statusText: "Not Found",
-              headers: { "Content-Type": "application/json" },
-            });
-          }],
-        ]);
-
-        const response = await client.GET("/api/v1/files/{wildcard}", {
-          params: {
-            path: {
-              wildcard: "",
-            },
-          },
-        });
-
-        expect(response.response.status).toBe(404);
-        expect(response.error).toEqual(errorResponse);
-      });
-    });
-  });
-
-  describe("/api/v1/files/{path} endpoint", () => {
-    describe("successful requests", () => {
-      it("should proxy requests with path parameter successfully", async () => {
-        const mockFileResponse = [
-          {
-            type: "file",
-            name: "ucd.all.json",
-            path: "/latest/ucd.all.json",
-            lastModified: Date.now(),
-          },
-        ] satisfies FileEntryList;
-
-        mockFetch([
-          ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/latest/ucd.all.json`, () => {
-            return new HttpResponse(JSON.stringify(mockFileResponse), {
-              status: 200,
-              headers: { "Content-Type": "application/json" },
-            });
-          }],
-        ]);
-
-        const { response, data } = await client.GET("/api/v1/files/{wildcard}", {
-          params: {
-            path: {
-              wildcard: "latest/ucd.all.json",
-            },
-          },
-        });
-
-        expect(response.status).toBe(200);
-        expect(data).toEqual(mockFileResponse);
-      });
-
-      it("should handle directory responses", async () => {
-        const mockDirectoryResponse = [
-          {
-            type: "directory",
-            name: "latest",
-            path: "/latest",
-            lastModified: Date.now(),
-          },
-        ] satisfies FileEntryList;
-
-        mockFetch([
-          ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/latest`, () => {
-            return new HttpResponse(JSON.stringify(mockDirectoryResponse), {
-              status: 200,
-              headers: { "Content-Type": "application/json" },
-            });
-          }],
-        ]);
-
-        const { data } = await client.GET("/api/v1/files/{wildcard}", {
-          params: {
-            path: { wildcard: "latest" },
-          },
-        });
-
-        assert(typeof data === "object");
-        expect(data).toEqual(mockDirectoryResponse);
-        expect(data).toBeDefined();
-        expect(data).toBeTypeOf("object");
-
-        assert(data[0] != null);
-        expect(data[0].type).toBe("directory");
-      });
-
-      it.each([
-        ["latest/ucd.all.json"],
-        ["15.1.0/ucd/UnicodeData.txt"],
-        ["auxiliary/GraphemeBreakProperty.txt"],
-      ])("should handle path parameter: %s", async (path) => {
-        const mockResponse = [
-          {
-            type: "file" as const,
-            name: path.split("/").pop() || "",
-            path: `/${path}`,
-            lastModified: Date.now(),
-          },
-        ] satisfies FileEntryList;
-
-        mockFetch([
-          ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/${path}`, () => {
-            return new HttpResponse(JSON.stringify(mockResponse), {
-              status: 200,
-              headers: { "Content-Type": "application/json" },
-            });
-          }],
-        ]);
-
-        const { response, data } = await client.GET("/api/v1/files/{wildcard}", {
-          params: {
-            path: {
-              wildcard: path,
-            },
-          },
-        });
-
-        expect(data).toEqual(mockResponse);
-        expect(response.status).toBe(200);
-      });
-    });
-
-    describe("error handling", () => {
-      it("should handle 404 errors for non-existent paths", async () => {
-        const errorResponse = {
-          message: "Path not found: /non-existent/path",
-          status: 404,
-          timestamp: "2025-06-26T12:00:00Z",
-        } satisfies ApiError;
-
-        mockFetch([
-          ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/non-existent/path`, () => {
-            return new HttpResponse(JSON.stringify(errorResponse), {
-              status: 404,
-              statusText: "Not Found",
-              headers: { "Content-Type": "application/json" },
-            });
-          }],
-        ]);
-
-        const { response, error } = await client.GET("/api/v1/files/{wildcard}", {
-          params: {
-            path: { wildcard: "non-existent/path" },
-          },
-        });
-
-        expect(response.status).toBe(404);
-        expect(error).toEqual(errorResponse);
-      });
-    });
-  });
-
-  describe("integration scenarios", () => {
-    it("should handle concurrent requests to different endpoints", async () => {
-      const unicodeVersions = [
-        {
-          version: "15.1.0",
-          documentationUrl: "https://www.unicode.org/versions/Unicode15.1.0/",
-          date: "2023-09-12",
-          url: "https://www.unicode.org/Public/15.1.0/ucd/",
-          type: "stable",
-          mappedUcdVersion: "15.1.0",
+  describe("custom server configurations", () => {
+    it("should work with custom endpoint paths", async () => {
+      const customConfig = {
+        version: "1.0",
+        endpoints: {
+          files: "/v2/files",
+          manifest: "/v2/files/manifest.json",
+          versions: "/v2/versions",
         },
-      ] satisfies UnicodeVersionList;
-
-      const proxyResponse = [
-        {
-          type: "directory",
-          name: "latest",
-          path: "/latest",
-          lastModified: Date.now(),
-        },
-      ] satisfies FileEntryList;
+      };
 
       mockFetch([
-        ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
-          return new HttpResponse(JSON.stringify(unicodeVersions), {
-            status: 200,
-            headers: { "Content-Type": "application/json" },
-          });
-        }],
-        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/latest`, () => {
-          return new HttpResponse(JSON.stringify(proxyResponse), {
-            status: 200,
-            headers: { "Content-Type": "application/json" },
-          });
+        ["GET", `${UCDJS_API_BASE_URL}/.well-known/ucd-config.json`, () => {
+          return HttpResponse.json(customConfig);
         }],
       ]);
 
-      const [versionsResponse, proxyLatestResponse] = await Promise.all([
-        client.GET("/api/v1/versions"),
-        client.GET("/api/v1/files/{wildcard}", {
-          params: { path: { wildcard: "latest" } },
-        }),
-      ]);
+      const client = await createUCDClient(UCDJS_API_BASE_URL);
 
-      expect(versionsResponse.data).toEqual(unicodeVersions);
-      expect(proxyLatestResponse.data).toEqual(proxyResponse);
-    });
-
-    it("should work with custom client instances", async () => {
-      const customBaseUrl = "https://custom-unicode-api.ucdjs.dev";
-      const customClient = createClient(customBaseUrl);
-
-      const mockVersions = [
-        {
-          version: "16.0.0",
-          documentationUrl: "https://www.unicode.org/versions/Unicode16.0.0/",
-          date: "2024-09-10",
-          url: "https://www.unicode.org/Public/16.0.0/ucd/",
-          type: "stable",
-          mappedUcdVersion: "16.0.0",
-        },
-      ] satisfies UnicodeVersionList;
-
-      mockFetch([
-        ["GET", `${customBaseUrl}/api/v1/versions`, () => {
-          return new HttpResponse(JSON.stringify(mockVersions), {
-            status: 200,
-            headers: { "Content-Type": "application/json" },
-          });
-        }],
-      ]);
-
-      const { data } = await customClient.GET("/api/v1/versions");
-      expect(data).toEqual(mockVersions);
-    });
-
-    it("should handle request headers correctly", async () => {
-      let capturedRequest: Request | undefined;
-
-      mockFetch([
-        ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, ({ request }) => {
-          capturedRequest = request;
-          return new HttpResponse(JSON.stringify([]), {
-            status: 200,
-            headers: { "Content-Type": "application/json" },
-          });
-        }],
-      ]);
-
-      await client.GET("/api/v1/versions", {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      expect(capturedRequest?.headers.get("Content-Type")).toBe("application/json");
-    });
-
-    it("should handle network errors gracefully", async () => {
-      mockFetch([
-        ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
-          return Response.error();
-        }],
-      ]);
-
-      await expect(client.GET("/api/v1/versions")).rejects.toThrow(
-        "Failed to fetch",
-      );
+      expect(client).toBeDefined();
+      expect(client.versions).toHaveProperty("list");
+      expect(client.files).toHaveProperty("get");
     });
   });
 });

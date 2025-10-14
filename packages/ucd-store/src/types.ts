@@ -1,4 +1,5 @@
 import type { PathFilterOptions } from "@ucdjs-internal/shared";
+import type { UCDClient } from "@ucdjs/client";
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 
 export interface UCDStoreOptions {
@@ -8,6 +9,13 @@ export interface UCDStoreOptions {
    * @default "https://api.ucdjs.dev"
    */
   baseUrl?: string;
+
+  /**
+   * Optional pre-initialized UCD client instance.
+   * If provided, this client will be used instead of creating a new one.
+   * The baseUrl option will be ignored if a client is provided.
+   */
+  client?: UCDClient;
 
   /**
    * Optional filters to apply when fetching Unicode data.

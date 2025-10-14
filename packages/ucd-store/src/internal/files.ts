@@ -1,6 +1,5 @@
 import type { UCDClient } from "@ucdjs/client";
 import { flattenFilePaths } from "@ucdjs-internal/shared";
-import { isApiError } from "@ucdjs/client";
 import { UCDStoreGenericError } from "../errors";
 
 /**
@@ -22,34 +21,21 @@ export async function getExpectedFilePaths(
   version: string,
 ): Promise<string[]> {
   // fetch the expected files for this version from the API
-  const { data, error } = await client.GET("/api/v1/versions/{version}/file-tree", {
-    params: {
-      path: {
-        version,
-      },
-    },
-  });
+  const result = await client.versions.getFileTree(version);
 
-  if (error != null) {
-    if (!isApiError(error)) {
-      throw new UCDStoreGenericError(
-        `Failed to fetch expected files for version '${version}': ${error}`,
-        { version },
-      );
-    }
-
+  if (result.error) {
     throw new UCDStoreGenericError(
-      `Failed to fetch expected files for version '${version}': ${error.message}`,
-      { version, status: error.status },
+      `Failed to fetch expected files for version '${version}': ${result.error.message}`,
+      { version, status: result.error.status },
     );
   }
 
-  if (data == null) {
+  if (!result.data) {
     throw new UCDStoreGenericError(
       `Failed to fetch expected files for version '${version}': empty response`,
       { version },
     );
   }
 
-  return flattenFilePaths(data);
+  return flattenFilePaths(result.data);
 }
