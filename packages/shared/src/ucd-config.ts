@@ -30,3 +30,29 @@ export async function discoverEndpointsFromConfig(baseUrl: string): Promise<UCDW
 
   return result.data;
 }
+
+declare const __UCD_ENDPOINT_DEFAULT_CONFIG__: UCDWellKnownConfig;
+
+/**
+ * Return the default UCD well-known configuration used by the library.
+ *
+ * This function returns the build-time injected __UCD_ENDPOINT_DEFAULT_CONFIG__ if present;
+ * otherwise it falls back to a hard-coded default object containing a version and
+ * the common API endpoint paths for files, manifest and versions.
+ *
+ * The returned value conforms to the UCDWellKnownConfig schema and is used when
+ * discovery via discoverEndpointsFromConfig() is not possible or a local default
+ * is required.
+ *
+ * @returns {UCDWellKnownConfig} The default well-known configuration.
+ */
+export function getDefaultUCDEndpointConfig(): UCDWellKnownConfig {
+  return __UCD_ENDPOINT_DEFAULT_CONFIG__ ?? {
+    version: "0.1",
+    endpoints: {
+      files: "/api/v1/files",
+      manifest: "/api/v1/files/.ucd-store.json",
+      versions: "/api/v1/versions",
+    },
+  };
+}
