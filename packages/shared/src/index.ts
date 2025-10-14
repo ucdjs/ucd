@@ -20,4 +20,4 @@ export type {
 export { flattenFilePaths } from "./flatten";
 export { safeJsonParse } from "./json";
 
-export { discoverEndpointsFromConfig } from "./ucd-config";
+export { discoverEndpointsFromConfig, getDefaultUCDEndpointConfig } from "./ucd-config";
