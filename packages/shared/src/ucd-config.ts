@@ -50,8 +50,8 @@ export function getDefaultUCDEndpointConfig(): UCDWellKnownConfig {
   return __UCD_ENDPOINT_DEFAULT_CONFIG__ ?? {
     version: "0.1",
     endpoints: {
-      files: "/api/v1/files222",
-      manifest: "/api/v1/files/.2ucd-store.json",
+      files: "/api/v1/files",
+      manifest: "/api/v1/files/.ucd-store.json",
       versions: "/api/v1/versions",
     },
   };
