@@ -6,7 +6,11 @@ import { createVersionsResource } from "../../src/resources/versions";
 
 describe("createVersionsResource", () => {
   const baseUrl = UCDJS_API_BASE_URL;
-  const versionsPath = "/api/v1/versions";
+  const endpoints = {
+    files: "/api/v1/files",
+    manifest: "/api/v1/files/.ucd-store.json",
+    versions: "/api/v1/versions",
+  };
 
   const mockVersionsList = [
     {
@@ -39,12 +43,12 @@ describe("createVersionsResource", () => {
   describe("list()", () => {
     it("should fetch all Unicode versions successfully", async () => {
       mockFetch([
-        ["GET", `${baseUrl}${versionsPath}`, () => {
+        ["GET", `${baseUrl}${endpoints.versions}`, () => {
           return HttpResponse.json(mockVersionsList);
         }],
       ]);
 
-      const versionsResource = createVersionsResource({ baseUrl, versionsPath });
+      const versionsResource = createVersionsResource({ baseUrl, endpoints });
       const result = await versionsResource.list();
 
       expect(result.error).toBeUndefined();
@@ -55,12 +59,12 @@ describe("createVersionsResource", () => {
 
     it("should return versions with correct structure", async () => {
       mockFetch([
-        ["GET", `${baseUrl}${versionsPath}`, () => {
+        ["GET", `${baseUrl}${endpoints.versions}`, () => {
           return HttpResponse.json(mockVersionsList);
         }],
       ]);
 
-      const versionsResource = createVersionsResource({ baseUrl, versionsPath });
+      const versionsResource = createVersionsResource({ baseUrl, endpoints });
       const result = await versionsResource.list();
 
       expect(result.error).toBeUndefined();
@@ -73,12 +77,12 @@ describe("createVersionsResource", () => {
 
     it("should handle errors gracefully", async () => {
       mockFetch([
-        ["GET", `${baseUrl}${versionsPath}`, () => {
+        ["GET", `${baseUrl}${endpoints.versions}`, () => {
           return new HttpResponse(null, { status: 500 });
         }],
       ]);
 
-      const versionsResource = createVersionsResource({ baseUrl, versionsPath });
+      const versionsResource = createVersionsResource({ baseUrl, endpoints });
       const result = await versionsResource.list();
 
       expect(result.data).toBeUndefined();
@@ -88,12 +92,12 @@ describe("createVersionsResource", () => {
 
     it("should handle network errors", async () => {
       mockFetch([
-        ["GET", `${baseUrl}${versionsPath}`, () => {
+        ["GET", `${baseUrl}${endpoints.versions}`, () => {
           return HttpResponse.error();
         }],
       ]);
 
-      const versionsResource = createVersionsResource({ baseUrl, versionsPath });
+      const versionsResource = createVersionsResource({ baseUrl, endpoints });
       const result = await versionsResource.list();
 
       expect(result.data).toBeUndefined();
@@ -104,12 +108,12 @@ describe("createVersionsResource", () => {
   describe("getFileTree()", () => {
     it("should fetch file tree for a version successfully", async () => {
       mockFetch([
-        ["GET", `${baseUrl}${versionsPath}/16.0.0/file-tree`, () => {
+        ["GET", `${baseUrl}${endpoints.versions}/16.0.0/file-tree`, () => {
           return HttpResponse.json(mockFileTree);
         }],
       ]);
 
-      const versionsResource = createVersionsResource({ baseUrl, versionsPath });
+      const versionsResource = createVersionsResource({ baseUrl, endpoints });
       const result = await versionsResource.getFileTree("16.0.0");
 
       expect(result.error).toBeUndefined();
@@ -121,13 +125,13 @@ describe("createVersionsResource", () => {
 
       for (const version of versions) {
         mockFetch([
-          ["GET", `${baseUrl}${versionsPath}/${version}/file-tree`, () => {
+          ["GET", `${baseUrl}${endpoints.versions}/${version}/file-tree`, () => {
             return HttpResponse.json({ ...mockFileTree, version });
           }],
         ]);
       }
 
-      const versionsResource = createVersionsResource({ baseUrl, versionsPath });
+      const versionsResource = createVersionsResource({ baseUrl, endpoints });
 
       for (const version of versions) {
         const result = await versionsResource.getFileTree(version);
@@ -138,12 +142,12 @@ describe("createVersionsResource", () => {
 
     it("should handle 404 errors for non-existent versions", async () => {
       mockFetch([
-        ["GET", `${baseUrl}${versionsPath}/99.0.0/file-tree`, () => {
+        ["GET", `${baseUrl}${endpoints.versions}/99.0.0/file-tree`, () => {
           return new HttpResponse(null, { status: 404 });
         }],
       ]);
 
-      const versionsResource = createVersionsResource({ baseUrl, versionsPath });
+      const versionsResource = createVersionsResource({ baseUrl, endpoints });
       const result = await versionsResource.getFileTree("99.0.0");
 
       expect(result.data).toBeUndefined();
@@ -153,12 +157,12 @@ describe("createVersionsResource", () => {
 
     it("should handle server errors", async () => {
       mockFetch([
-        ["GET", `${baseUrl}${versionsPath}/16.0.0/file-tree`, () => {
+        ["GET", `${baseUrl}${endpoints.versions}/16.0.0/file-tree`, () => {
           return new HttpResponse(null, { status: 500 });
         }],
       ]);
 
-      const versionsResource = createVersionsResource({ baseUrl, versionsPath });
+      const versionsResource = createVersionsResource({ baseUrl, endpoints });
       const result = await versionsResource.getFileTree("16.0.0");
 
       expect(result.data).toBeUndefined();
@@ -172,14 +176,14 @@ describe("createVersionsResource", () => {
       const customBaseUrl = "https://custom-ucd-server.com";
 
       mockFetch([
-        ["GET", `${customBaseUrl}${versionsPath}`, () => {
+        ["GET", `${customBaseUrl}${endpoints.versions}`, () => {
           return HttpResponse.json(mockVersionsList);
         }],
       ]);
 
       const versionsResource = createVersionsResource({
         baseUrl: customBaseUrl,
-        versionsPath,
+        endpoints,
       });
       const result = await versionsResource.list();
 
@@ -198,7 +202,10 @@ describe("createVersionsResource", () => {
 
       const versionsResource = createVersionsResource({
         baseUrl,
-        versionsPath: customVersionsPath,
+        endpoints: {
+          ...endpoints,
+          versions: customVersionsPath,
+        },
       });
       const result = await versionsResource.list();
 
