@@ -233,7 +233,7 @@ describe("store mirror", () => {
 
     expect(mirrorData).toBe(null);
     assert(mirrorError != null, "Expected error to be present");
-    expect(mirrorError.message).toBe("Failed to fetch expected files for version '15.0.0': Internal Server Error");
+    expect(mirrorError.message).toBe("Failed to fetch expected files for version '15.0.0': [GET] \"https://api.ucdjs.dev/api/v1/versions/15.0.0/file-tree\": 500 Internal Server Error");
   });
 
   it("should handle different content types during file download", async () => {
@@ -339,6 +339,6 @@ describe("store mirror", () => {
 
     expect(mirrorData).toBe(null);
     assert(mirrorError != null, "Expected error to be present");
-    expect(mirrorError.message).toBe("Failed to fetch");
+    expect(mirrorError.message).toBe("Failed to fetch expected files for version '15.0.0': [GET] \"https://api.ucdjs.dev/api/v1/versions/15.0.0/file-tree\": <no response> Failed to fetch");
   });
 });
