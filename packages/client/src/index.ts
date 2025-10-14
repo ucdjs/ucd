@@ -55,4 +55,3 @@ export async function createUCDClient(baseUrl: string, endpointConfig?: UCDWellK
 }
 
 export * from "./core/guards";
-export { discoverEndpointsFromConfig };
