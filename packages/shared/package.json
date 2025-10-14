@@ -42,6 +42,7 @@
     "@luxass/unicode-utils-new": "catalog:prod",
     "@luxass/utils": "catalog:prod",
     "@ucdjs/env": "workspace:*",
+    "@ucdjs/schemas": "workspace:*",
     "debug": "catalog:prod",
     "defu": "catalog:prod",
     "destr": "catalog:prod",

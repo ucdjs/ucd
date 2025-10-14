@@ -775,6 +775,9 @@ importers:
       '@ucdjs/env':
         specifier: workspace:*
         version: link:../env
+      '@ucdjs/schemas':
+        specifier: workspace:*
+        version: link:../schemas
       debug:
         specifier: catalog:prod
         version: 4.4.3(supports-color@10.2.2)
