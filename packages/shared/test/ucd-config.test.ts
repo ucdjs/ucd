@@ -2,7 +2,7 @@ import type { UCDWellKnownConfig } from "@ucdjs/schemas";
 import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { beforeEach, describe, expect, it } from "vitest";
-import { discoverEndpointsFromConfig } from "../../src/core/well-known";
+import { discoverEndpointsFromConfig } from "../src/ucd-config";
 
 describe("discoverEndpointsFromConfig", () => {
   describe("successful discovery", () => {
@@ -10,7 +10,7 @@ describe("discoverEndpointsFromConfig", () => {
       mockFetch([
         ["GET", `${UCDJS_API_BASE_URL}/.well-known/ucd-config.json`, () => {
           return HttpResponse.json({
-            version: "1.0",
+            version: "0.1",
             endpoints: {
               files: "/api/v1/files",
               manifest: "/api/v1/files/.ucd-store.json",
@@ -25,7 +25,7 @@ describe("discoverEndpointsFromConfig", () => {
       const config = await discoverEndpointsFromConfig(UCDJS_API_BASE_URL);
 
       expect(config).toEqual({
-        version: "1.0",
+        version: "0.1",
         endpoints: {
           files: "/api/v1/files",
           manifest: "/api/v1/files/.ucd-store.json",
@@ -78,7 +78,7 @@ describe("discoverEndpointsFromConfig", () => {
       mockFetch([
         ["GET", `${UCDJS_API_BASE_URL}/.well-known/ucd-config.json`, () => {
           return HttpResponse.json({
-            version: "1.0",
+            version: "0.1",
           });
         }],
       ]);
@@ -92,7 +92,7 @@ describe("discoverEndpointsFromConfig", () => {
       mockFetch([
         ["GET", `${UCDJS_API_BASE_URL}/.well-known/ucd-config.json`, () => {
           return HttpResponse.json({
-            version: "1.0",
+            version: "0.1",
             endpoints: {
               files: "/api/v1/files",
             },
@@ -109,7 +109,7 @@ describe("discoverEndpointsFromConfig", () => {
       mockFetch([
         ["GET", `${UCDJS_API_BASE_URL}/.well-known/ucd-config.json`, () => {
           return HttpResponse.json({
-            version: "1.0",
+            version: "0.1",
             endpoints: {
               files: 123,
               manifest: "/api/v1/files/.ucd-store.json",
@@ -130,7 +130,7 @@ describe("discoverEndpointsFromConfig", () => {
       mockFetch([
         ["GET", `${UCDJS_API_BASE_URL}/.well-known/ucd-config.json`, () => {
           return HttpResponse.json({
-            version: "1.0",
+            version: "0.1",
             endpoints: {
               files: "/v2/files",
               manifest: "/v2/files/manifest.json",
@@ -155,7 +155,7 @@ describe("discoverEndpointsFromConfig", () => {
       mockFetch([
         ["GET", `${customBaseUrl}/.well-known/ucd-config.json`, () => {
           return HttpResponse.json({
-            version: "1.0",
+            version: "0.1",
             endpoints: {
               files: "/api/files",
               manifest: "/api/manifest",

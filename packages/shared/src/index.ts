@@ -16,6 +16,8 @@ export type {
   PathFilterOptions,
   TreeEntry,
 } from "./filter";
-export { flattenFilePaths } from "./flatten";
 
+export { flattenFilePaths } from "./flatten";
 export { safeJsonParse } from "./json";
+
+export { discoverEndpointsFromConfig } from "./ucd-config";
