@@ -3,7 +3,7 @@ import type Dirent from "memfs/lib/node/Dirent";
 import { dirname, join, relative } from "node:path";
 import { trimTrailingSlash } from "@luxass/utils";
 import { defineFileSystemBridge } from "@ucdjs/fs-bridge";
-import { memfs } from "memfs";
+import { vol } from "memfs";
 
 export const createReadOnlyMockFS = defineFileSystemBridge({
   name: "Read-Only Mock File System Bridge",
@@ -27,7 +27,7 @@ export const createMemoryMockFS = defineFileSystemBridge({
   name: "In-Memory Mock File System Bridge",
   description: "A mock file system bridge that uses an in-memory file system for testing purposes.",
   state: {
-    fs: memfs().fs,
+    fs: vol,
   },
   setup({ state }) {
     return {
@@ -112,6 +112,10 @@ export const createMemoryMockFS = defineFileSystemBridge({
         state.fs.writeFileSync(path, data, {
           encoding,
         });
+      },
+      // TODO: fix this type later.
+      __debug_memfs() {
+        return state.fs.toJSON();
       },
     };
   },
