@@ -121,6 +121,7 @@ onlyBuiltDependencies:
 
 overrides:
   "@asteasolutions/zod-to-openapi": 8.1.0
+  rolldown: 1.0.0-beta.42
 
 patchedDependencies:
   "@asteasolutions/zod-to-openapi@8.1.0": patches/@asteasolutions__zod-to-openapi@8.1.0.patch
