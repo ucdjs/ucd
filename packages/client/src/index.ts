@@ -45,7 +45,7 @@ export async function createUCDClient(baseUrl: string, endpointConfig?: UCDWellK
 
   const versions = createVersionsResource({
     baseUrl,
-    versionsPath: config.endpoints.versions,
+    endpoints: config.endpoints,
   });
 
   return {
