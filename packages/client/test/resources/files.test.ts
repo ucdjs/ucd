@@ -11,9 +11,6 @@ describe("createFilesResource", () => {
     versions: "/api/v1/versions",
   };
 
-  const filesPath = "/api/v1/files";
-  const manifestPath = "/api/v1/files/.ucd-store.json";
-
   const mockManifest = {
     version: "1.0",
     files: [
@@ -27,7 +24,7 @@ describe("createFilesResource", () => {
       const fileContent = "# Unicode Data File\n0000;NULL;...";
 
       mockFetch([
-        ["GET", `${baseUrl}${filesPath}/16.0.0/ucd/UnicodeData.txt`, () => {
+        ["GET", `${baseUrl}${endpoints.files}/16.0.0/ucd/UnicodeData.txt`, () => {
           return HttpResponse.text(fileContent);
         }],
       ]);
@@ -46,7 +43,7 @@ describe("createFilesResource", () => {
       ];
 
       mockFetch([
-        ["GET", `${baseUrl}${filesPath}/16.0.0/ucd`, () => {
+        ["GET", `${baseUrl}${endpoints.files}/16.0.0/ucd`, () => {
           return HttpResponse.json(directoryListing);
         }],
       ]);
@@ -68,7 +65,7 @@ describe("createFilesResource", () => {
 
       for (const path of paths) {
         mockFetch([
-          ["GET", `${baseUrl}${filesPath}/${path}`, () => {
+          ["GET", `${baseUrl}${endpoints.files}/${path}`, () => {
             return HttpResponse.text(`Content of ${path}`);
           }],
         ]);
@@ -85,7 +82,7 @@ describe("createFilesResource", () => {
 
     it("should handle 404 errors for non-existent files", async () => {
       mockFetch([
-        ["GET", `${baseUrl}${filesPath}/99.0.0/ucd/NonExistent.txt`, () => {
+        ["GET", `${baseUrl}${endpoints.files}/99.0.0/ucd/NonExistent.txt`, () => {
           return new HttpResponse(null, { status: 404 });
         }],
       ]);
@@ -100,7 +97,7 @@ describe("createFilesResource", () => {
 
     it("should handle server errors", async () => {
       mockFetch([
-        ["GET", `${baseUrl}${filesPath}/16.0.0/ucd/UnicodeData.txt`, () => {
+        ["GET", `${baseUrl}${endpoints.files}/16.0.0/ucd/UnicodeData.txt`, () => {
           return new HttpResponse(null, { status: 500 });
         }],
       ]);
@@ -115,7 +112,7 @@ describe("createFilesResource", () => {
 
     it("should handle network errors", async () => {
       mockFetch([
-        ["GET", `${baseUrl}${filesPath}/16.0.0/ucd/UnicodeData.txt`, () => {
+        ["GET", `${baseUrl}${endpoints.files}/16.0.0/ucd/UnicodeData.txt`, () => {
           return HttpResponse.error();
         }],
       ]);
@@ -131,7 +128,7 @@ describe("createFilesResource", () => {
   describe("getManifest()", () => {
     it("should fetch the UCD manifest successfully", async () => {
       mockFetch([
-        ["GET", `${baseUrl}${manifestPath}`, () => {
+        ["GET", `${baseUrl}${endpoints.manifest}`, () => {
           return HttpResponse.json(mockManifest);
         }],
       ]);
@@ -145,7 +142,7 @@ describe("createFilesResource", () => {
 
     it("should return manifest with correct structure", async () => {
       mockFetch([
-        ["GET", `${baseUrl}${manifestPath}`, () => {
+        ["GET", `${baseUrl}${endpoints.manifest}`, () => {
           return HttpResponse.json(mockManifest);
         }],
       ]);
@@ -161,7 +158,7 @@ describe("createFilesResource", () => {
 
     it("should handle 404 errors for missing manifest", async () => {
       mockFetch([
-        ["GET", `${baseUrl}${manifestPath}`, () => {
+        ["GET", `${baseUrl}${endpoints.manifest}`, () => {
           return new HttpResponse(null, { status: 404 });
         }],
       ]);
@@ -176,7 +173,7 @@ describe("createFilesResource", () => {
 
     it("should handle server errors", async () => {
       mockFetch([
-        ["GET", `${baseUrl}${manifestPath}`, () => {
+        ["GET", `${baseUrl}${endpoints.manifest}`, () => {
           return new HttpResponse(null, { status: 500 });
         }],
       ]);
@@ -196,7 +193,7 @@ describe("createFilesResource", () => {
       const fileContent = "Custom server content";
 
       mockFetch([
-        ["GET", `${customBaseUrl}${filesPath}/16.0.0/ucd/UnicodeData.txt`, () => {
+        ["GET", `${customBaseUrl}${endpoints.files}/16.0.0/ucd/UnicodeData.txt`, () => {
           return HttpResponse.text(fileContent);
         }],
       ]);
