@@ -46,7 +46,7 @@
     "vitest-testdirs": "catalog:testing"
   },
   "dependencies": {
-    "@luxass/msw-utils": "catalog:testing",
+    "@luxass/msw-utils": "catalog:prod",
     "@ucdjs/schemas": "workspace:*",
     "msw": "catalog:testing",
     "zod": "catalog:prod"

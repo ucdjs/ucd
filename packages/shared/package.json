@@ -39,6 +39,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@luxass/msw-utils": "catalog:prod",
     "@luxass/unicode-utils-new": "catalog:prod",
     "@luxass/utils": "catalog:prod",
     "@ucdjs/env": "workspace:*",
