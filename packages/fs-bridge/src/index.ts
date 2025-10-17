@@ -11,8 +11,14 @@ export {
 
 export type {
   FileSystemBridge,
-  FileSystemBridgeMetadata,
+  FileSystemBridgeFactory,
+  FileSystemBridgeObject,
   FileSystemBridgeOperations,
   FileSystemBridgeRmOptions,
   FSEntry,
+  HasOptionalCapabilityMap,
+  OptionalCapabilityKey,
+  OptionalFileSystemBridgeOperations,
+  RequiredCapabilityKey,
+  RequiredFileSystemBridgeOperations,
 } from "./types";

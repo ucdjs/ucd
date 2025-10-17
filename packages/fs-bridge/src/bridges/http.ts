@@ -16,9 +16,6 @@ const API_BASE_URL_SCHEMA = z.codec(z.httpUrl(), z.instanceof(URL), {
 const HTTPFileSystemBridge = defineFileSystemBridge({
   name: "HTTP File System Bridge",
   description: "A file system bridge that interacts with a remote HTTP API to perform file system operations.",
-  metadata: {
-    persistent: false,
-  },
   optionsSchema: z.object({
     baseUrl: API_BASE_URL_SCHEMA,
   }),
