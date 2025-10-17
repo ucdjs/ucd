@@ -54,12 +54,13 @@ export async function createUCDStore(options: UCDStoreOptions): Promise<UCDStore
 
   // resolve the endpoints config
   let resolvedEndpointConfig = endpointConfig;
-  if (!resolvedEndpointConfig) {
+  let client = options.client;
+  if ((!resolvedEndpointConfig && !client) || !client) {
     resolvedEndpointConfig = await retrieveEndpointConfiguration(baseUrl);
     debug?.("Discovered endpoint config:", resolvedEndpointConfig);
-  }
 
-  const client: UCDClient = options.client ?? createUCDClientWithConfig(baseUrl, resolvedEndpointConfig);
+    client = createUCDClientWithConfig(baseUrl, resolvedEndpointConfig);
+  }
 
   // check for existing manifest
   const manifestExists = await fs.exists(manifestPath);
