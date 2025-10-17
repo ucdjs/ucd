@@ -20,6 +20,7 @@
   },
   "exports": {
     ".": "./dist/index.js",
+    "./fs-bridges": "./dist/fs-bridges/index.js",
     "./mock-store": "./dist/mock-store.js",
     "./msw": "./dist/msw.js",
     "./msw/vitest-setup": "./dist/msw/vitest-setup.js",
@@ -42,6 +43,7 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
+    "@ucdjs/fs-bridge": "workspace:*",
     "@ucdjs/ucd-store": "workspace:*",
     "vitest-testdirs": "catalog:testing"
   },
@@ -55,6 +57,7 @@
     "@luxass/eslint-config": "catalog:linting",
     "@ucdjs-tooling/tsconfig": "workspace:*",
     "@ucdjs-tooling/tsdown-config": "workspace:*",
+    "@ucdjs/fs-bridge": "workspace:*",
     "@ucdjs/ucd-store": "workspace:*",
     "eslint": "catalog:linting",
     "publint": "catalog:dev",

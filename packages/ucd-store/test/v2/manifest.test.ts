@@ -1,10 +1,10 @@
 import { join } from "node:path";
+import { createMemoryMockFS } from "#test-utils/fs-bridges";
 import { defineFileSystemBridge } from "@ucdjs/fs-bridge";
 import { describe, expect, it } from "vitest";
 import { testdir } from "vitest-testdirs";
 import { UCDStoreInvalidManifestError } from "../../src/errors";
 import { readManifest, writeManifest } from "../../src/v2/manifest";
-import { createMemoryMockFS } from "../__shared";
 
 describe("writeManifest", () => {
   it("should write manifest with multiple versions", async () => {
@@ -93,6 +93,12 @@ describe("writeManifest", () => {
         return {
           async read() {
             return "";
+          },
+          async exists() {
+            return false;
+          },
+          async listdir() {
+            return [];
           },
         };
       },
@@ -204,6 +210,15 @@ describe("readManifest", () => {
       description: "A bridge without read capability",
       setup() {
         return {
+          async read() {
+            return "";
+          },
+          async exists() {
+            return false;
+          },
+          async listdir() {
+            return [];
+          },
           async write() {
             // no-op
           },

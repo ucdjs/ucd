@@ -27,5 +27,6 @@ export const aliases = readdirSync(fileURLToPath(new NodeURL("./packages", impor
     "#test-utils/msw": alias("test-utils") + "/msw.ts",
     "#test-utils/mock-store": alias("test-utils") + "/mock-store/index.ts",
     "#test-utils": alias("test-utils") + "/index.ts",
+    "#test-utils/fs-bridges": alias("test-utils") + "/fs-bridges/index.ts",
     "#internal/test-utils/conditions": fileURLToPath(new NodeURL("./test/utils/conditions.ts", import.meta.url)),
   });
