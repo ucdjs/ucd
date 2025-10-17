@@ -204,35 +204,6 @@ describe("readManifest", () => {
     );
   });
 
-  it("should throw error when file system bridge lacks read capability", async () => {
-    const fs = defineFileSystemBridge({
-      name: "Write-Only Bridge",
-      description: "A bridge without read capability",
-      setup() {
-        return {
-          async read() {
-            return "";
-          },
-          async exists() {
-            return false;
-          },
-          async listdir() {
-            return [];
-          },
-          async write() {
-            // no-op
-          },
-        };
-      },
-    })();
-
-    const manifestPath = "/test/.ucd-store.json";
-
-    await expect(readManifest(fs, manifestPath)).rejects.toThrow(
-      "File system bridge does not support the 'read' capability.",
-    );
-  });
-
   it("should handle manifest with empty object", async () => {
     const fs = createMemoryMockFS();
     const manifestPath = "/test/.ucd-store.json";
