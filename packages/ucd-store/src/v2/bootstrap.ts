@@ -45,7 +45,6 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
     );
   }
 
-  assertCapability(fs, "exists");
   const basePathExists = await fs.exists(basePath);
   if (!basePathExists) {
     assertCapability(fs, "mkdir");

@@ -62,8 +62,7 @@ export async function createUCDStore(options: UCDStoreOptions): Promise<UCDStore
   const client: UCDClient = options.client ?? createUCDClientWithConfig(baseUrl, resolvedEndpointConfig);
 
   // check for existing manifest
-  // TODO: fix the non-null assertion
-  const manifestExists = await fs.exists!(manifestPath);
+  const manifestExists = await fs.exists(manifestPath);
   debug?.("Manifest exists:", manifestExists, "at path:", manifestPath);
 
   let storeVersions = versions;

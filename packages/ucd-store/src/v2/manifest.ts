@@ -55,7 +55,6 @@ export async function readManifest(
   fs: FileSystemBridge,
   manifestPath: string,
 ): Promise<UCDStoreManifest> {
-  assertCapability(fs, "read");
   const manifestData = await fs.read(manifestPath);
   debug?.("Read manifest", { manifestPath, manifestData });
 
