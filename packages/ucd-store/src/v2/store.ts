@@ -151,7 +151,7 @@ async function retrieveEndpointConfiguration(baseUrl: string = UCDJS_API_BASE_UR
   });
 }
 
-async function handleVersionConflict(
+export async function handleVersionConflict(
   strategy: VersionConflictStrategy,
   providedVersions: string[],
   manifestVersions: string[],
