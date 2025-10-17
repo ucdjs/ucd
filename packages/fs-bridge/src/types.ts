@@ -23,14 +23,31 @@ export type FSEntry = {
   children: FSEntry[];
 };
 
-export interface FileSystemBridgeOperations {
+export interface RequiredFileSystemBridgeOperations {
   /**
    * Reads the contents of a file.
    * @param {string} path - The path to the file to read
    * @returns {Promise<string>} A promise that resolves to the file contents as a string
    */
-  read?: (path: string) => Promise<string>;
+  read: (path: string) => Promise<string>;
 
+  /**
+   * Lists the contents of a directory.
+   * @param {string} path - The path to the directory to list
+   * @param {boolean} [recursive=false] - If true, lists files in subdirectories as well
+   * @returns {Promise<FSEntry[]>} A promise that resolves to an array of file and directory entries
+   */
+  listdir: (path: string, recursive?: boolean) => Promise<FSEntry[]>;
+
+  /**
+   * Checks if a file or directory exists.
+   * @param {string} path - The path to check for existence
+   * @returns {Promise<boolean>} A promise that resolves to true if the path exists, false otherwise
+   */
+  exists: (path: string) => Promise<boolean>;
+}
+
+export interface OptionalFileSystemBridgeOperations {
   /**
    * Writes data to a file.
    * @param {string} path - The path to the file to write
@@ -41,26 +58,11 @@ export interface FileSystemBridgeOperations {
   write?: (path: string, data: string | Uint8Array, encoding?: BufferEncoding) => Promise<void>;
 
   /**
-   * Lists the contents of a directory.
-   * @param {string} path - The path to the directory to list
-   * @param {boolean} [recursive=false] - If true, lists files in subdirectories as well
-   * @returns {Promise<FSEntry[]>} A promise that resolves to an array of file and directory entries
-   */
-  listdir?: (path: string, recursive?: boolean) => Promise<FSEntry[]>;
-
-  /**
    * Creates a directory.
    * @param {string} path - The path of the directory to create
    * @returns {Promise<void>} A promise that resolves when the directory is created
    */
   mkdir?: (path: string) => Promise<void>;
-
-  /**
-   * Checks if a file or directory exists.
-   * @param {string} path - The path to check for existence
-   * @returns {Promise<boolean>} A promise that resolves to true if the path exists, false otherwise
-   */
-  exists?: (path: string) => Promise<boolean>;
 
   /**
    * Removes a file or directory.
@@ -71,9 +73,13 @@ export interface FileSystemBridgeOperations {
   rm?: (path: string, options?: FileSystemBridgeRmOptions) => Promise<void>;
 }
 
-export type FileSystemBridgeCapabilityKey = keyof FileSystemBridgeOperations;
-export type FileSystemBridgeCapabilities = {
-  [K in FileSystemBridgeCapabilityKey]: boolean;
+export type FileSystemBridgeOperations = OptionalFileSystemBridgeOperations & RequiredFileSystemBridgeOperations;
+
+export type RequiredCapabilityKey = keyof RequiredFileSystemBridgeOperations;
+export type OptionalCapabilityKey = keyof OptionalFileSystemBridgeOperations;
+
+export type HasOptionalCapabilityMap = {
+  [K in OptionalCapabilityKey]: boolean;
 };
 
 type ResolveSafePathFn = (basePath: string, inputPath: string) => string;
@@ -86,58 +92,6 @@ type FileSystemBridgeSetupFn<
   state: TState;
   resolveSafePath: ResolveSafePathFn;
 }) => FileSystemBridgeOperations;
-
-export interface FileSystemBridgeMetadata {
-  /**
-   * Are `write` operations persistent (i.e., do they modify underlying storage)?
-   *
-   * - `true`: Write operations modify the underlying storage and persist across sessions.
-   * - `false`: Write operations are ephemeral and do not persist across sessions (e.g., in-memory storage).
-   * - `undefined`: Behavior not specified by the bridge.
-   *
-   */
-  persistent?: boolean;
-
-  /**
-   * Does the bridge support mirroring data to a secondary location?
-   *
-   * - `true`: The bridge supports mirroring data to a secondary location.
-   * - `false`: The bridge does not support mirroring data.
-   * - `undefined`: Behavior not specified by the bridge.
-   */
-  mirror?: boolean;
-
-  /**
-   * Additional metadata about the file system bridge
-   *
-   * NOTE:
-   * This can include any custom properties that may be relevant to users of the bridge.
-   * For example, a bridge that uses a specific storage backend might include
-   * a `customMode` property to indicate the type of storage used.
-   *
-   * Or a bridge that has specific performance characteristics might include
-   * properties like `maxFileSize` or `supportsStreaming`.
-   *
-   * This field is intentionally flexible to allow for a wide range of metadata
-   * that may be useful in different contexts.
-   *
-   * Just note, that only the predefined properties are guaranteed to be recognized.
-   * Custom properties are for informational purposes only and may not be used
-   *
-   * @example
-   * ```ts
-   * import { FileSystemBridge } from "@ucdjs/fs-bridge";
-   *
-   * const fsBridge: FileSystemBridge = {
-   *    metadata: {
-   *      persistent: true,
-   *      customMode: "in-memory"
-   *    }
-   * }
-   * ```
-   */
-  [key: string]: unknown;
-}
 
 export interface FileSystemBridgeObject<
   TOptionsSchema extends z.ZodType = z.ZodNever,
@@ -152,11 +106,6 @@ export interface FileSystemBridgeObject<
    * A brief description of the file system bridge
    */
   description: string;
-
-  /**
-   * Metadata about the file system bridge
-   */
-  metadata?: FileSystemBridgeMetadata;
 
   /**
    * Zod schema for validating bridge options
@@ -209,14 +158,9 @@ export interface FileSystemBridge extends FileSystemBridgeOperations {
   description: string;
 
   /**
-   * The capabilities of this file system bridge.
+   * A map indicating which optional capabilities are supported by the bridge
    */
-  capabilities: FileSystemBridgeCapabilities;
-
-  /**
-   * Metadata about this file system bridge.
-   */
-  metadata?: FileSystemBridgeMetadata;
+  optionalCapabilities: HasOptionalCapabilityMap;
 }
 
 export type FileSystemBridgeFactory<

@@ -1,4 +1,4 @@
-import type { FileSystemBridge, FileSystemBridgeCapabilityKey } from "./types";
+import type { FileSystemBridge, OptionalCapabilityKey } from "./types";
 import { createDebugger } from "@ucdjs-internal/shared";
 import { BridgeUnsupportedOperation } from "./errors";
 
@@ -15,7 +15,7 @@ const debug = createDebugger("ucdjs:fs-bridge:assertions");
  * @param {T | T[]} capabilityOrCapabilities - A single capability or array of capabilities to verify
  * @throws {BridgeUnsupportedOperation} When the bridge doesn't support one or more of the specified capabilities
  */
-export function assertCapability<T extends FileSystemBridgeCapabilityKey = never>(
+export function assertCapability<T extends OptionalCapabilityKey = never>(
   bridge: FileSystemBridge,
   capabilityOrCapabilities: T | T[],
 ): asserts bridge is FileSystemBridge & Required<Pick<FileSystemBridge, T>> {
@@ -24,8 +24,13 @@ export function assertCapability<T extends FileSystemBridgeCapabilityKey = never
     : [capabilityOrCapabilities];
 
   for (const capability of capabilitiesToCheck) {
-    if (!bridge.capabilities[capability]) {
-      debug?.("Bridge capability check failed", { capability, availableCapabilities: Object.keys(bridge.capabilities).filter((k) => bridge.capabilities[k as FileSystemBridgeCapabilityKey]) });
+    if (!bridge.optionalCapabilities[capability]) {
+      debug?.("Bridge capability check failed", {
+        capability,
+        availableCapabilities: Object.keys(bridge.optionalCapabilities).filter(
+          (k) => bridge.optionalCapabilities[k as OptionalCapabilityKey],
+        ),
+      });
       throw new BridgeUnsupportedOperation(capability);
     }
   }

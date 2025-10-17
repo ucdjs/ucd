@@ -1,9 +1,9 @@
 import type {
-  FileSystemBridgeCapabilities,
-  FileSystemBridgeCapabilityKey,
   FileSystemBridgeFactory,
   FileSystemBridgeObject,
-  FileSystemBridgeOperations,
+  HasOptionalCapabilityMap,
+  OptionalCapabilityKey,
+  OptionalFileSystemBridgeOperations,
 } from "./types";
 import { createDebugger } from "@ucdjs-internal/shared";
 import { PathUtilsBaseError, resolveSafePath } from "@ucdjs/path-utils";
@@ -52,18 +52,18 @@ export function defineFileSystemBridge<
       );
     }
 
-    const capabilities = inferCapabilitiesFromOperations(bridge);
+    const optionalCapabilities = inferOptionalCapabilitiesFromOperations(bridge);
 
     const proxiedBridge = new Proxy(bridge, {
       get(target, property) {
         const val = target[property as keyof typeof target];
 
         // if it's an operation method and not implemented, throw
-        if (typeof property === "string" && property in capabilities) {
+        if (typeof property === "string" && property in optionalCapabilities) {
           if (val == null || typeof val !== "function") {
             return () => {
               debug?.("Attempted to call unsupported operation", { operation: property });
-              throw new BridgeUnsupportedOperation(property as FileSystemBridgeCapabilityKey);
+              throw new BridgeUnsupportedOperation(property as OptionalCapabilityKey);
             };
           }
 
@@ -101,8 +101,7 @@ export function defineFileSystemBridge<
     return Object.assign(proxiedBridge, {
       name: fsBridge.name,
       description: fsBridge.description,
-      capabilities,
-      metadata: fsBridge.metadata,
+      optionalCapabilities,
     });
   };
 }
@@ -110,12 +109,9 @@ export function defineFileSystemBridge<
 /**
  * @internal
  */
-function inferCapabilitiesFromOperations(ops: Partial<FileSystemBridgeOperations>): FileSystemBridgeCapabilities {
+function inferOptionalCapabilitiesFromOperations(ops: OptionalFileSystemBridgeOperations): HasOptionalCapabilityMap {
   return {
-    read: "read" in ops && typeof ops.read === "function",
     write: "write" in ops && typeof ops.write === "function",
-    listdir: "listdir" in ops && typeof ops.listdir === "function",
-    exists: "exists" in ops && typeof ops.exists === "function",
     mkdir: "mkdir" in ops && typeof ops.mkdir === "function",
     rm: "rm" in ops && typeof ops.rm === "function",
   };

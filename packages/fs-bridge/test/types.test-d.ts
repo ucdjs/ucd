@@ -1,4 +1,4 @@
-import type { FileSystemBridgeFactory } from "../src/types";
+import type { FileSystemBridgeFactory, FSEntry } from "../src/types";
 import { defineFileSystemBridge } from "@ucdjs/fs-bridge";
 import { describe, expectTypeOf, it } from "vitest";
 import z from "zod";
@@ -24,7 +24,17 @@ describe("defineFileSystemBridge", () => {
           initialized: boolean;
         }>();
 
-        return {};
+        return {
+          async exists(_path) {
+            return true;
+          },
+          async listdir(_path, _recursive) {
+            return [] as FSEntry[];
+          },
+          async read(_path) {
+            return "";
+          },
+        };
       },
     });
 
@@ -38,6 +48,7 @@ describe("defineFileSystemBridge", () => {
     const SimpleBridge = defineFileSystemBridge({
       name: "Simple Bridge",
       description: "A simple file system bridge",
+      // @ts-expect-error We haven't implemented the required operations
       setup() {
         return {};
       },
@@ -53,6 +64,7 @@ describe("defineFileSystemBridge", () => {
       state: {
         count: 0,
       },
+      // @ts-expect-error We haven't implemented the required operations
       setup({ state }) {
         expectTypeOf(state).toEqualTypeOf<{
           count: number;
