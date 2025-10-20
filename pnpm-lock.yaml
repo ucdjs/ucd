@@ -97,6 +97,9 @@ catalogs:
     '@clack/prompts':
       specifier: 1.0.0-alpha.5
       version: 1.0.0-alpha.5
+    '@luxass/msw-utils':
+      specifier: 0.3.0
+      version: 0.3.0
     '@luxass/unicode-utils':
       specifier: 0.11.0
       version: 0.11.0
@@ -143,9 +146,6 @@ catalogs:
     '@cloudflare/vitest-pool-workers':
       specifier: 0.9.3
       version: 0.9.3
-    '@luxass/msw-utils':
-      specifier: 0.2.0
-      version: 0.2.0
     '@vitest/coverage-istanbul':
       specifier: 3.2.4
       version: 3.2.4
@@ -829,8 +829,11 @@ importers:
   packages/test-utils:
     dependencies:
       '@luxass/msw-utils':
-        specifier: catalog:testing
-        version: 0.2.0(msw@2.11.3(@types/node@24.3.1)(typescript@5.9.2))
+        specifier: catalog:prod
+        version: 0.3.0(msw@2.11.3(@types/node@24.3.1)(typescript@5.9.2))
+      '@ucdjs/fs-bridge':
+        specifier: workspace:*
+        version: link:../fs-bridge
       '@ucdjs/schemas':
         specifier: workspace:*
         version: link:../schemas
@@ -2445,8 +2448,8 @@ packages:
       prettier-plugin-astro:
         optional: true
 
-  '@luxass/msw-utils@0.2.0':
-    resolution: {integrity: sha512-yT5eeZunFlwUuTokuYwTTVr7iJbsQPKS2YbRR6jBfCb3Vm8kFZa3+0uJKfiyMWrDOv8EwPWBPPPhzb/LdM8flQ==}
+  '@luxass/msw-utils@0.3.0':
+    resolution: {integrity: sha512-3yKyjHiLB7gPTxCnmbW/hgZ9JM9u5tpgbJqtMTAxNUG6SePHPhArZNK062UT8CslID2WMuGNpzNg6A0x9P43/Q==}
     peerDependencies:
       msw: '>=2.11.0 <3.0.0'
 
@@ -11754,7 +11757,7 @@ snapshots:
       - typescript
       - vitest
 
-  '@luxass/msw-utils@0.2.0(msw@2.11.3(@types/node@24.3.1)(typescript@5.9.2))':
+  '@luxass/msw-utils@0.3.0(msw@2.11.3(@types/node@24.3.1)(typescript@5.9.2))':
     dependencies:
       msw: 2.11.3(@types/node@24.3.1)(typescript@5.9.2)
 
