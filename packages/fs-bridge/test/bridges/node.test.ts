@@ -10,7 +10,6 @@ describe("node fs-bridge", () => {
       const testDir = await testdir({ "test-file.txt": "file content" });
       const bridge = NodeFileSystemBridge({ basePath: testDir });
 
-      assertCapability(bridge, "read");
       const content = await bridge.read("test-file.txt");
       expect(content).toBe("file content");
     });
@@ -21,7 +20,6 @@ describe("node fs-bridge", () => {
       });
       const bridge = NodeFileSystemBridge({ basePath: testDir });
 
-      assertCapability(bridge, "read");
       const content = await bridge.read("nested/file.txt");
       expect(content).toBe("nested content");
     });
@@ -30,7 +28,6 @@ describe("node fs-bridge", () => {
       const testDir = await testdir({});
       const bridge = NodeFileSystemBridge({ basePath: testDir });
 
-      assertCapability(bridge, "read");
       await expect(bridge.read("non-existent.txt")).rejects.toThrow();
     });
   });
@@ -40,7 +37,7 @@ describe("node fs-bridge", () => {
       const testDir = await testdir({});
       const bridge = NodeFileSystemBridge({ basePath: testDir });
 
-      assertCapability(bridge, ["write", "read"]);
+      assertCapability(bridge, ["write"]);
 
       await bridge.write("new-file.txt", "new content");
       const content = await bridge.read("new-file.txt");
@@ -51,7 +48,7 @@ describe("node fs-bridge", () => {
       const testDir = await testdir({ "existing.txt": "old content" });
       const bridge = NodeFileSystemBridge({ basePath: testDir });
 
-      assertCapability(bridge, ["write", "read"]);
+      assertCapability(bridge, ["write"]);
 
       await bridge.write("existing.txt", "updated content");
       const content = await bridge.read("existing.txt");
@@ -62,7 +59,7 @@ describe("node fs-bridge", () => {
       const testDir = await testdir({});
       const bridge = NodeFileSystemBridge({ basePath: testDir });
 
-      assertCapability(bridge, ["write", "read"]);
+      assertCapability(bridge, ["write"]);
 
       await bridge.write("encoded.txt", "encoded content", "utf8");
       const content = await bridge.read("encoded.txt");
@@ -72,7 +69,7 @@ describe("node fs-bridge", () => {
     it("should create parent directories when writing to nested path", async () => {
       const testDir = await testdir({});
       const bridge = NodeFileSystemBridge({ basePath: testDir });
-      assertCapability(bridge, ["write", "read", "exists"]);
+      assertCapability(bridge, ["write"]);
 
       await bridge.write("deep/nested/path/file.txt", "auto-created content");
       const content = await bridge.read("deep/nested/path/file.txt");
@@ -89,7 +86,6 @@ describe("node fs-bridge", () => {
     it("should return true for existing file", async () => {
       const testDir = await testdir({ "exists.txt": "content" });
       const bridge = NodeFileSystemBridge({ basePath: testDir });
-      assertCapability(bridge, "exists");
 
       const exists = await bridge.exists("exists.txt");
       expect(exists).toBe(true);
@@ -98,7 +94,6 @@ describe("node fs-bridge", () => {
     it("should return true for existing directory", async () => {
       const testDir = await testdir({ dir: {} });
       const bridge = NodeFileSystemBridge({ basePath: testDir });
-      assertCapability(bridge, "exists");
 
       const exists = await bridge.exists("dir");
       expect(exists).toBe(true);
@@ -107,7 +102,6 @@ describe("node fs-bridge", () => {
     it("should return false for non-existent file", async () => {
       const testDir = await testdir({});
       const bridge = NodeFileSystemBridge({ basePath: testDir });
-      assertCapability(bridge, "exists");
 
       const exists = await bridge.exists("missing.txt");
       expect(exists).toBe(false);
@@ -122,7 +116,6 @@ describe("node fs-bridge", () => {
         "subdir": {},
       });
       const bridge = NodeFileSystemBridge({ basePath: testDir });
-      assertCapability(bridge, "listdir");
 
       const files = await bridge.listdir("");
       expect(files).toHaveLength(3);
@@ -145,7 +138,6 @@ describe("node fs-bridge", () => {
       });
 
       const bridge = NodeFileSystemBridge({ basePath: testDir });
-      assertCapability(bridge, "listdir");
 
       const files = await bridge.listdir("", true);
       expect(files).toHaveLength(2);
@@ -164,7 +156,6 @@ describe("node fs-bridge", () => {
     it("should return empty array for empty directory", async () => {
       const testDir = await testdir({ empty: {} });
       const bridge = NodeFileSystemBridge({ basePath: testDir });
-      assertCapability(bridge, "listdir");
 
       const files = await bridge.listdir("empty");
       expect(files).toEqual([]);
@@ -175,7 +166,7 @@ describe("node fs-bridge", () => {
     it("should create new directory", async () => {
       const testDir = await testdir({});
       const bridge = NodeFileSystemBridge({ basePath: testDir });
-      assertCapability(bridge, ["mkdir", "exists"]);
+      assertCapability(bridge, ["mkdir"]);
 
       await bridge.mkdir("new-dir");
       const exists = await bridge.exists("new-dir");
@@ -185,7 +176,7 @@ describe("node fs-bridge", () => {
     it("should create nested directories", async () => {
       const testDir = await testdir({});
       const bridge = NodeFileSystemBridge({ basePath: testDir });
-      assertCapability(bridge, ["exists", "mkdir"]);
+      assertCapability(bridge, ["mkdir"]);
 
       await bridge.mkdir("deep/nested/dirs");
       const exists = await bridge.exists("deep/nested/dirs");
@@ -205,7 +196,7 @@ describe("node fs-bridge", () => {
     it("should remove file", async () => {
       const testDir = await testdir({ "remove-me.txt": "content" });
       const bridge = NodeFileSystemBridge({ basePath: testDir });
-      assertCapability(bridge, ["rm", "exists"]);
+      assertCapability(bridge, ["rm"]);
 
       await bridge.rm("remove-me.txt");
       const exists = await bridge.exists("remove-me.txt");
@@ -220,7 +211,7 @@ describe("node fs-bridge", () => {
         },
       });
       const bridge = NodeFileSystemBridge({ basePath: testDir });
-      assertCapability(bridge, ["rm", "exists"]);
+      assertCapability(bridge, ["rm"]);
 
       await bridge.rm("remove-dir", { recursive: true });
       const exists = await bridge.exists("remove-dir");
@@ -248,7 +239,6 @@ describe("node fs-bridge", () => {
     it("should handle absolute paths for read operation", async () => {
       const testDir = await testdir({ "absolute-test.txt": "absolute content" });
       const bridge = NodeFileSystemBridge({ basePath: testDir });
-      assertCapability(bridge, ["read"]);
 
       const content = await bridge.read("/absolute-test.txt");
       expect(content).toBe("absolute content");
@@ -257,7 +247,7 @@ describe("node fs-bridge", () => {
     it("should handle absolute paths for write operation", async () => {
       const testDir = await testdir({});
       const bridge = NodeFileSystemBridge({ basePath: testDir });
-      assertCapability(bridge, ["read", "write"]);
+      assertCapability(bridge, ["write"]);
 
       await bridge.write("/absolute-write.txt", "absolute write content");
       const content = await bridge.read("/absolute-write.txt");
@@ -267,7 +257,6 @@ describe("node fs-bridge", () => {
     it("should handle absolute paths for exists operation", async () => {
       const testDir = await testdir({ "absolute-exists.txt": "exists" });
       const bridge = NodeFileSystemBridge({ basePath: testDir });
-      assertCapability(bridge, "exists");
 
       const exists = await bridge.exists("/absolute-exists.txt");
       expect(exists).toBe(true);
@@ -279,7 +268,7 @@ describe("node fs-bridge", () => {
     it("should handle absolute paths for mkdir operation", async () => {
       const testDir = await testdir({});
       const bridge = NodeFileSystemBridge({ basePath: testDir });
-      assertCapability(bridge, ["mkdir", "exists"]);
+      assertCapability(bridge, ["mkdir"]);
 
       await bridge.mkdir("/absolute-dir");
       const exists = await bridge.exists("/absolute-dir");
@@ -289,7 +278,7 @@ describe("node fs-bridge", () => {
     it("should handle absolute paths for nested directories", async () => {
       const testDir = await testdir({});
       const bridge = NodeFileSystemBridge({ basePath: testDir });
-      assertCapability(bridge, ["mkdir", "exists"]);
+      assertCapability(bridge, ["mkdir"]);
 
       await bridge.mkdir("/absolute/nested/deep");
       expect(await bridge.exists("/absolute")).toBe(true);
@@ -305,7 +294,6 @@ describe("node fs-bridge", () => {
         },
       });
       const bridge = NodeFileSystemBridge({ basePath: testDir });
-      assertCapability(bridge, "listdir");
 
       const files = await bridge.listdir("/absolute-dir");
       expect(files).toHaveLength(1);
@@ -324,7 +312,7 @@ describe("node fs-bridge", () => {
         },
       });
       const bridge = NodeFileSystemBridge({ basePath: testDir });
-      assertCapability(bridge, ["exists", "rm"]);
+      assertCapability(bridge, ["rm"]);
 
       await bridge.rm("/absolute-remove.txt");
       expect(await bridge.exists("/absolute-remove.txt")).toBe(false);
@@ -336,7 +324,7 @@ describe("node fs-bridge", () => {
     it("should write to absolute nested paths and create parent directories", async () => {
       const testDir = await testdir({});
       const bridge = NodeFileSystemBridge({ basePath: testDir });
-      assertCapability(bridge, ["exists", "write", "read"]);
+      assertCapability(bridge, ["write"]);
 
       await bridge.write("/absolute/deep/nested/file.txt", "deep absolute content");
       const content = await bridge.read("/absolute/deep/nested/file.txt");
@@ -351,7 +339,7 @@ describe("node fs-bridge", () => {
     it("should handle mixed absolute and relative paths in workflow", async () => {
       const testDir = await testdir({});
       const bridge = NodeFileSystemBridge({ basePath: testDir });
-      assertCapability(bridge, ["exists", "write", "read"]);
+      assertCapability(bridge, ["write"]);
 
       // Create using absolute path
       await bridge.write("/absolute-config.json", "{\"version\": \"1.0.0\"}");
@@ -378,11 +366,8 @@ describe("node fs-bridge", () => {
       const testDir = "/tmp/test";
       const bridge = NodeFileSystemBridge({ basePath: testDir });
 
-      expect(bridge.capabilities).toEqual({
-        read: true,
+      expect(bridge.optionalCapabilities).toEqual({
         write: true,
-        exists: true,
-        listdir: true,
         mkdir: true,
         rm: true,
       });
@@ -392,23 +377,19 @@ describe("node fs-bridge", () => {
       const testDir = "/tmp/test";
       const bridge = NodeFileSystemBridge({ basePath: testDir });
 
-      expect(() => assertCapability(bridge, "read")).not.toThrow();
       expect(() => assertCapability(bridge, "write")).not.toThrow();
-      expect(() => assertCapability(bridge, "exists")).not.toThrow();
-      expect(() => assertCapability(bridge, "listdir")).not.toThrow();
       expect(() => assertCapability(bridge, "mkdir")).not.toThrow();
       expect(() => assertCapability(bridge, "rm")).not.toThrow();
 
-      expect(() => assertCapability(bridge, ["read", "write"])).not.toThrow();
-      expect(() => assertCapability(bridge, ["exists", "listdir", "mkdir"])).not.toThrow();
-      expect(() => assertCapability(bridge, ["read", "write", "exists", "listdir", "mkdir", "rm"])).not.toThrow();
+      expect(() => assertCapability(bridge, ["write", "mkdir"])).not.toThrow();
+      expect(() => assertCapability(bridge, ["write", "mkdir", "rm"])).not.toThrow();
     });
 
     it("should allow direct method calls without optional chaining after assertion", async () => {
       const testDir = await testdir({ "test.txt": "content" });
       const bridge = NodeFileSystemBridge({ basePath: testDir });
 
-      assertCapability(bridge, ["read", "write", "exists", "listdir", "mkdir", "rm"]);
+      assertCapability(bridge, ["write", "mkdir", "rm"]);
 
       await expect(bridge.read("test.txt")).resolves.toBe("content");
       await expect(bridge.write("new.txt", "new content")).resolves.toBeUndefined();
@@ -435,7 +416,7 @@ describe("node fs-bridge", () => {
     it("should manage a project workspace", async () => {
       const testDir = await testdir({});
       const bridge = NodeFileSystemBridge({ basePath: testDir });
-      assertCapability(bridge, ["exists", "mkdir", "write", "listdir", "read", "rm"]);
+      assertCapability(bridge, ["mkdir", "write", "rm"]);
 
       // create project structure
       await bridge.mkdir("src");
@@ -479,7 +460,7 @@ describe("node fs-bridge", () => {
     it("should handle blog content management", async () => {
       const testDir = await testdir({});
       const bridge = NodeFileSystemBridge({ basePath: testDir });
-      assertCapability(bridge, ["exists", "mkdir", "write", "listdir", "read", "rm"]);
+      assertCapability(bridge, ["mkdir", "write", "rm"]);
 
       // create blog structure
       await bridge.mkdir("posts/2024");
@@ -521,7 +502,7 @@ describe("node fs-bridge", () => {
     it("should process multiple files concurrently", async () => {
       const testDir = await testdir({});
       const bridge = NodeFileSystemBridge({ basePath: testDir });
-      assertCapability(bridge, ["write", "read"]);
+      assertCapability(bridge, ["write"]);
 
       // create multiple log files concurrently
       const logEntries = Array.from({ length: 10 }, (_, i) => ({

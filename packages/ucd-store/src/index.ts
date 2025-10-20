@@ -8,28 +8,16 @@ export {
 export {
   createHTTPUCDStore,
   createNodeUCDStore,
-  createUCDStore,
 } from "./factory";
 
-export type {
-  AnalyzeOptions,
-  AnalyzeResult,
-} from "./internal/analyze";
+export { createUCDStore } from "./store";
 
 export type {
-  CleanOptions,
-  CleanResult,
-} from "./internal/clean";
-
-export type {
-  MirrorOptions,
-  MirrorResult,
-} from "./internal/mirror";
-
-export {
+  InternalUCDStoreContext,
+  SharedOperationOptions,
   UCDStore,
-} from "./store";
-
-export type {
+  UCDStoreContext,
+  UCDStoreOperations,
   UCDStoreOptions,
+  VersionConflictStrategy,
 } from "./types";

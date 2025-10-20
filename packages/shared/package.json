@@ -39,6 +39,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@luxass/msw-utils": "catalog:prod",
     "@luxass/unicode-utils-new": "catalog:prod",
     "@luxass/utils": "catalog:prod",
     "@ucdjs/env": "workspace:*",
@@ -57,6 +58,7 @@
     "@ucdjs-tooling/tsdown-config": "workspace:*",
     "eslint": "catalog:linting",
     "publint": "catalog:dev",
+    "rolldown": "catalog:dev",
     "tsdown": "catalog:dev",
     "typescript": "catalog:dev",
     "vitest-testdirs": "catalog:testing"

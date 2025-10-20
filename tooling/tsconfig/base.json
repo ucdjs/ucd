@@ -28,6 +28,7 @@
       "#test-utils/mock-store": ["./packages/test-utils/src/mock-store/index.ts"],
       "#test-utils/msw": ["./packages/test-utils/src/msw.ts"],
       "#test-utils": ["./packages/test-utils/src/index.ts"],
+      "#test-utils/fs-bridges": ["./packages/test-utils/src/fs-bridges/index.ts"],
 
       // Internal Test Utils
       "#internal/test-utils/conditions": ["./test/utils/conditions.ts"]

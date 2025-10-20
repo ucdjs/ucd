@@ -1,4 +1,4 @@
-import type { FileSystemBridgeOperations } from "../src/types";
+import type { FileSystemBridgeOperations, HasOptionalCapabilityMap } from "../src/types";
 import { assert, describe, expect, it, vi } from "vitest";
 import { assertCapability, BridgeUnsupportedOperation } from "../src";
 import { defineFileSystemBridge } from "../src/define";
@@ -11,16 +11,14 @@ describe("capability inference", () => {
       setup: () => ({
         read: vi.fn().mockResolvedValue("content"),
         exists: vi.fn().mockResolvedValue(true),
-        // write, listdir, mkdir, rm not returned
+        listdir: vi.fn().mockResolvedValue([]),
+        // write, mkdir, rm not returned
       }),
     });
 
     const fs = bridge();
-    expect(fs.capabilities).toEqual({
-      read: true,
-      exists: true,
+    expect(fs.optionalCapabilities).toEqual({
       write: false,
-      listdir: false,
       mkdir: false,
       rm: false,
     });
@@ -43,11 +41,8 @@ describe("capability inference", () => {
     });
 
     const fs = bridge();
-    expect(fs.capabilities).toEqual({
-      read: true,
+    expect(fs.optionalCapabilities).toEqual({
       write: true,
-      exists: true,
-      listdir: true,
       mkdir: true,
       rm: true,
     });
@@ -57,6 +52,7 @@ describe("capability inference", () => {
     const bridge = defineFileSystemBridge({
       name: "Partial Capability Bridge",
       description: "A mock file system bridge with partial operations",
+      // @ts-expect-error We haven't implemented the required operations
       setup: () => ({
         read: vi.fn().mockResolvedValue("content"),
         write: vi.fn().mockResolvedValue(undefined),
@@ -65,11 +61,8 @@ describe("capability inference", () => {
     });
 
     const fs = bridge();
-    expect(fs.capabilities).toEqual({
-      read: true,
+    expect(fs.optionalCapabilities).toEqual({
       write: true,
-      exists: false,
-      listdir: false,
       mkdir: false,
       rm: false,
     });
@@ -79,15 +72,13 @@ describe("capability inference", () => {
     const bridge = defineFileSystemBridge({
       name: "Empty Operations Bridge",
       description: "A mock file system bridge with no operations",
+      // @ts-expect-error We haven't implemented the required operations
       setup: () => ({}), // no operations
     });
 
     const fs = bridge();
-    expect(fs.capabilities).toEqual({
-      read: false,
+    expect(fs.optionalCapabilities).toEqual({
       write: false,
-      exists: false,
-      listdir: false,
       mkdir: false,
       rm: false,
     });
@@ -97,6 +88,7 @@ describe("capability inference", () => {
     const bridge = defineFileSystemBridge({
       name: "Null Undefined Operations Bridge",
       description: "A mock file system bridge with null/undefined operations",
+      // @ts-expect-error We haven't implemented the required operations
       setup: () => ({
         read: undefined as any,
         write: null as any,
@@ -105,11 +97,8 @@ describe("capability inference", () => {
     });
 
     const fs = bridge();
-    expect(fs.capabilities).toEqual({
-      read: false,
+    expect(fs.optionalCapabilities).toEqual({
       write: false,
-      exists: true,
-      listdir: false,
       mkdir: false,
       rm: false,
     });
@@ -128,10 +117,7 @@ describe("capability inference", () => {
     });
 
     const fs = bridge();
-    expect(fs.capabilities).toEqual({
-      read: true,
-      exists: true,
-      listdir: true,
+    expect(fs.optionalCapabilities).toEqual({
       write: false,
       mkdir: false,
       rm: false,
@@ -142,6 +128,7 @@ describe("capability inference", () => {
     const bridge = defineFileSystemBridge({
       name: "Write-Only Bridge",
       description: "A mock file system bridge with write-only operations",
+      // @ts-expect-error We haven't implemented the required operations
       setup: () => ({
         write: vi.fn().mockResolvedValue(undefined),
         mkdir: vi.fn().mockResolvedValue(undefined),
@@ -151,11 +138,8 @@ describe("capability inference", () => {
     });
 
     const fs = bridge();
-    expect(fs.capabilities).toEqual({
-      read: false,
+    expect(fs.optionalCapabilities).toEqual({
       write: true,
-      exists: true,
-      listdir: false,
       mkdir: true,
       rm: false,
     });
@@ -163,14 +147,15 @@ describe("capability inference", () => {
 });
 
 describe("assertCapability function", () => {
-  const createMockBridge = (capabilities: Record<string, boolean>) => {
-    const operations: Partial<FileSystemBridgeOperations> = {};
+  const createMockBridge = (capabilities: Partial<HasOptionalCapabilityMap>) => {
+    const operations: FileSystemBridgeOperations = {
+      read: vi.fn().mockResolvedValue("content"),
+      exists: vi.fn().mockResolvedValue(true),
+      listdir: vi.fn().mockResolvedValue([]),
+    };
 
     // Add mock operations based on capabilities
-    if (capabilities.read) operations.read = vi.fn().mockResolvedValue("content");
     if (capabilities.write) operations.write = vi.fn().mockResolvedValue(undefined);
-    if (capabilities.exists) operations.exists = vi.fn().mockResolvedValue(true);
-    if (capabilities.listdir) operations.listdir = vi.fn().mockResolvedValue([]);
     if (capabilities.mkdir) operations.mkdir = vi.fn().mockResolvedValue(undefined);
     if (capabilities.rm) operations.rm = vi.fn().mockResolvedValue(undefined);
 
@@ -184,23 +169,23 @@ describe("assertCapability function", () => {
   };
 
   it("should pass when single capability is available", () => {
-    const bridge = createMockBridge({ read: true });
-    expect(() => assertCapability(bridge, "read")).not.toThrow();
+    const bridge = createMockBridge({ write: true });
+    expect(() => assertCapability(bridge, "write")).not.toThrow();
   });
 
   it("should throw when single capability is missing", () => {
-    const bridge = createMockBridge({ read: false });
-    expect(() => assertCapability(bridge, "read")).toThrow(BridgeUnsupportedOperation);
+    const bridge = createMockBridge({ write: false });
+    expect(() => assertCapability(bridge, "write")).toThrow(BridgeUnsupportedOperation);
   });
 
   it("should pass when all capabilities in array are available", () => {
-    const bridge = createMockBridge({ read: true, write: true, exists: true });
-    expect(() => assertCapability(bridge, ["read", "write", "exists"])).not.toThrow();
+    const bridge = createMockBridge({ write: true, mkdir: true, rm: true });
+    expect(() => assertCapability(bridge, ["write", "mkdir", "rm"])).not.toThrow();
   });
 
   it("should throw when any capability in array is missing", () => {
-    const bridge = createMockBridge({ read: true, write: false });
-    expect(() => assertCapability(bridge, ["read", "write"])).toThrow(BridgeUnsupportedOperation);
+    const bridge = createMockBridge({ write: false, mkdir: true });
+    expect(() => assertCapability(bridge, ["mkdir", "write"])).toThrow(BridgeUnsupportedOperation);
   });
 
   it("should throw descriptive error with capability name", () => {
@@ -217,10 +202,10 @@ describe("assertCapability function", () => {
   });
 
   it("should throw for first missing capability in array", () => {
-    const bridge = createMockBridge({ read: true, write: false, exists: false });
+    const bridge = createMockBridge({ write: false, mkdir: true, rm: false });
 
     try {
-      assertCapability(bridge, ["read", "write", "exists"]);
+      assertCapability(bridge, ["mkdir", "write", "rm"]);
       expect.fail("Should have thrown");
     } catch (error) {
       expect(error).toBeInstanceOf(BridgeUnsupportedOperation);
@@ -230,24 +215,18 @@ describe("assertCapability function", () => {
 
   it("should work with all capability types", () => {
     const bridge = createMockBridge({
-      read: true,
       write: true,
-      exists: true,
-      listdir: true,
       mkdir: true,
       rm: true,
     });
 
-    expect(() => assertCapability(bridge, "read")).not.toThrow();
     expect(() => assertCapability(bridge, "write")).not.toThrow();
-    expect(() => assertCapability(bridge, "exists")).not.toThrow();
-    expect(() => assertCapability(bridge, "listdir")).not.toThrow();
     expect(() => assertCapability(bridge, "mkdir")).not.toThrow();
     expect(() => assertCapability(bridge, "rm")).not.toThrow();
   });
 
   it("should handle empty capability array", () => {
-    const bridge = createMockBridge({ read: true });
+    const bridge = createMockBridge({ write: true });
     expect(() => assertCapability(bridge, [])).not.toThrow();
   });
 });
@@ -257,6 +236,7 @@ describe("proxy error handling", () => {
     const bridge = defineFileSystemBridge({
       name: "Write Error Bridge",
       description: "A mock file system bridge that throws in write operation",
+      // @ts-expect-error We haven't implemented all required operations
       setup: () => ({
         read: vi.fn().mockResolvedValue("content"),
         // no write operation
@@ -273,6 +253,7 @@ describe("proxy error handling", () => {
     const bridge = defineFileSystemBridge({
       name: "Mkdir Error Bridge",
       description: "A mock file system bridge that throws in mkdir operation",
+      // @ts-expect-error We haven't implemented all required operations
       setup: () => ({
         read: vi.fn().mockResolvedValue("content"),
         // no mkdir operation
@@ -289,6 +270,7 @@ describe("proxy error handling", () => {
     const bridge = defineFileSystemBridge({
       name: "RM Error Bridge",
       description: "A mock file system bridge that throws in rm operation",
+      // @ts-expect-error We haven't implemented all required operations
       setup: () => ({
         read: vi.fn().mockResolvedValue("content"),
         // no rm operation
@@ -301,50 +283,18 @@ describe("proxy error handling", () => {
     );
   });
 
-  it("should throw descriptive error for unsupported listdir operation", () => {
-    const bridge = defineFileSystemBridge({
-      name: "Listdir Error Bridge",
-      description: "A mock file system bridge that throws in listdir operation",
-      setup: () => ({
-        read: vi.fn().mockResolvedValue("content"),
-        // no listdir operation
-      }),
-    });
-
-    const fs = bridge();
-    expect(() => fs.listdir?.("dir")).toThrow(
-      "File system bridge does not support the 'listdir' capability.",
-    );
-  });
-
-  it("should throw descriptive error for unsupported exists operation", () => {
-    const bridge = defineFileSystemBridge({
-      name: "Exists Error Bridge",
-      description: "A mock file system bridge that throws in exists operation",
-      setup: () => ({
-        read: vi.fn().mockResolvedValue("content"),
-        // no exists operation
-      }),
-    });
-
-    const fs = bridge();
-    expect(() => fs.exists?.("test.txt")).toThrow(
-      "File system bridge does not support the 'exists' capability.",
-    );
-  });
-
   it("should allow supported operations to work normally", async () => {
     const mockRead = vi.fn().mockResolvedValue("test content");
     const bridge = defineFileSystemBridge({
       name: "Read Operation Bridge",
       description: "A mock file system bridge with read operation",
+      // @ts-expect-error We haven't implemented all required operations
       setup: () => ({
         read: mockRead,
       }),
     });
 
     const fs = bridge();
-    assertCapability(fs, "read");
     const result = await fs.read("test.txt");
 
     expect(result).toBe("test content");
@@ -358,6 +308,7 @@ describe("proxy error handling", () => {
     const bridge = defineFileSystemBridge({
       name: "Mixed Operations Bridge",
       description: "A mock file system bridge with mixed operations",
+      // @ts-expect-error We haven't implemented all required operations
       setup: () => ({
         read: mockRead,
         exists: mockExists,
@@ -367,14 +318,12 @@ describe("proxy error handling", () => {
 
     const fs = bridge();
 
-    assertCapability(fs, ["read", "exists"]);
     // supported operations should work
     await expect(fs.read("test.txt")).resolves.toBe("content");
     await expect(fs.exists("test.txt")).resolves.toBe(true);
 
     // unsupported operations should throw
     expect(() => fs.write?.("test.txt", "content")).toThrow();
-    expect(() => fs.listdir?.("dir")).toThrow();
     expect(() => fs.mkdir?.("dir")).toThrow();
     expect(() => fs.rm?.("test.txt")).toThrow();
   });
@@ -383,6 +332,7 @@ describe("proxy error handling", () => {
     const bridge = defineFileSystemBridge({
       name: "Capabilities Access Bridge",
       description: "A mock file system bridge to test capabilities access",
+      // @ts-expect-error We haven't implemented all required operations
       setup: () => ({
         read: vi.fn().mockResolvedValue("content"),
       }),
@@ -390,11 +340,8 @@ describe("proxy error handling", () => {
 
     const fs = bridge();
 
-    expect(fs.capabilities).toEqual({
-      read: true,
+    expect(fs.optionalCapabilities).toEqual({
       write: false,
-      exists: false,
-      listdir: false,
       mkdir: false,
       rm: false,
     });
@@ -404,6 +351,7 @@ describe("proxy error handling", () => {
     const bridge = defineFileSystemBridge({
       name: "Concurrent Unsupported Bridge",
       description: "A mock file system bridge to test concurrent unsupported operations",
+      // @ts-expect-error We haven't implemented all required operations
       setup: () => ({
         read: vi.fn().mockResolvedValue("content"),
         // no write operation
@@ -432,11 +380,8 @@ describe("edge cases", () => {
     });
 
     const fs = bridge();
-    expect(fs.capabilities).toEqual({
-      read: true,
+    expect(fs.optionalCapabilities).toEqual({
       write: true,
-      exists: true,
-      listdir: true,
       mkdir: false,
       rm: false,
     });
@@ -446,6 +391,7 @@ describe("edge cases", () => {
     const bridge = defineFileSystemBridge({
       name: "Method Signatures Bridge",
       description: "A mock file system bridge to test different method signatures",
+      // @ts-expect-error We haven't implemented all required operations
       setup: () => ({
         read: vi.fn().mockResolvedValue("content"),
         write: vi.fn().mockImplementation(() => {
@@ -461,13 +407,15 @@ describe("edge cases", () => {
     });
 
     const fs = bridge();
-    assertCapability(fs, ["read", "write", "listdir", "rm"]);
-    // should be able to call with various signatures
+
     await expect(fs.read("test.txt")).resolves.toBe("content");
-    await expect(fs.write("test.txt", "data")).resolves.toBeUndefined();
-    await expect(fs.write("test.txt", "data", "utf8")).resolves.toBeUndefined();
     await expect(fs.listdir("dir")).resolves.toEqual([]);
     await expect(fs.listdir("dir", true)).resolves.toEqual([]);
+
+    assertCapability(fs, ["write", "rm"]);
+    // should be able to call with various signatures
+    await expect(fs.write("test.txt", "data")).resolves.toBeUndefined();
+    await expect(fs.write("test.txt", "data", "utf8")).resolves.toBeUndefined();
     await expect(fs.rm("file.txt")).resolves.toBeUndefined();
     await expect(fs.rm("file.txt", { force: true })).resolves.toBeUndefined();
   });
@@ -477,6 +425,7 @@ describe("edge cases", () => {
       name: "State Interaction Bridge",
       description: "A mock file system bridge to test state and operations interaction",
       state: { callCount: 0 },
+      // @ts-expect-error We haven't implemented all required operations
       setup: ({ state }) => ({
         read: vi.fn().mockImplementation(() => {
           state.callCount++;
@@ -488,10 +437,7 @@ describe("edge cases", () => {
 
     const fs = bridge();
 
-    expect(fs.capabilities.read).toBe(true);
-    expect(fs.capabilities.exists).toBe(true);
-    expect(fs.capabilities.write).toBe(false);
-    assertCapability(fs, "read");
+    expect(fs.optionalCapabilities.write).toBe(false);
 
     await expect(fs.read("file1.txt")).resolves.toBe("content-1");
     await expect(fs.read("file2.txt")).resolves.toBe("content-2");
@@ -501,6 +447,7 @@ describe("edge cases", () => {
     const bridgeFactory = defineFileSystemBridge({
       name: "Multiple Instances Bridge",
       description: "A mock file system bridge to test multiple instances",
+      // @ts-expect-error We haven't implemented all required operations
       setup: () => ({
         read: vi.fn().mockResolvedValue("content"),
         exists: vi.fn().mockResolvedValue(true),
@@ -510,72 +457,11 @@ describe("edge cases", () => {
     const fs1 = bridgeFactory();
     const fs2 = bridgeFactory();
 
-    expect(fs1.capabilities).toEqual(fs2.capabilities);
-    expect(fs1.capabilities).toEqual({
-      read: true,
-      exists: true,
+    expect(fs1.optionalCapabilities).toEqual(fs2.optionalCapabilities);
+    expect(fs1.optionalCapabilities).toEqual({
       write: false,
-      listdir: false,
       mkdir: false,
       rm: false,
     });
-  });
-});
-
-describe("type safety validation", () => {
-  it("should allow calling methods after capability assertion", () => {
-    const bridge = defineFileSystemBridge({
-      name: "Type Safety Bridge",
-      description: "A mock file system bridge to test type safety",
-      setup: () => ({
-        read: vi.fn().mockResolvedValue("content"),
-        write: vi.fn().mockResolvedValue(undefined),
-      }),
-    });
-
-    const fs = bridge();
-
-    // Assert capabilities
-    assertCapability(fs, ["read", "write"]);
-
-    // TypeScript should know these methods are defined
-    expect(typeof fs.read).toBe("function");
-    expect(typeof fs.write).toBe("function");
-  });
-
-  it("should work with single capability assertion", () => {
-    const bridge = defineFileSystemBridge({
-      name: "Single Capability Bridge",
-      description: "A mock file system bridge to test single capability assertion",
-      setup: () => ({
-        exists: vi.fn().mockResolvedValue(true),
-      }),
-    });
-
-    const fs = bridge();
-
-    assertCapability(fs, "exists");
-    expect(typeof fs.exists).toBe("function");
-  });
-
-  it("should work with different capability combinations", () => {
-    const bridge = defineFileSystemBridge({
-      name: "Different Combinations Bridge",
-      description: "A mock file system bridge to test different capability combinations",
-      setup: () => ({
-        read: vi.fn().mockResolvedValue("content"),
-        listdir: vi.fn().mockResolvedValue([]),
-        mkdir: vi.fn().mockResolvedValue(undefined),
-      }),
-    });
-
-    const fs = bridge();
-
-    assertCapability(fs, ["read", "listdir"]);
-    expect(typeof fs.read).toBe("function");
-    expect(typeof fs.listdir).toBe("function");
-
-    assertCapability(fs, "mkdir");
-    expect(typeof fs.mkdir).toBe("function");
   });
 });

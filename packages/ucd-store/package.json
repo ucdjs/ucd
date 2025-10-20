@@ -37,9 +37,7 @@
     "clean": "git clean -xdf dist node_modules",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "playground:http": "tsx --tsconfig=./tsconfig.json ./playgrounds/http-playground.ts",
-    "playground:node": "tsx --tsconfig=./tsconfig.json ./playgrounds/node-playground.ts",
-    "playground:memory": "tsx --tsconfig=./tsconfig.json ./playgrounds/memory-playground.ts"
+    "playground:http": "tsx --tsconfig=./tsconfig.json ./playgrounds/http-playground.ts"
   },
   "dependencies": {
     "@luxass/unicode-utils-new": "catalog:prod",

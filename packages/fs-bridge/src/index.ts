@@ -9,10 +9,18 @@ export {
   BridgeUnsupportedOperation,
 } from "./errors";
 
+export { hasCapability } from "./guards";
+
 export type {
   FileSystemBridge,
-  FileSystemBridgeMetadata,
+  FileSystemBridgeFactory,
+  FileSystemBridgeObject,
   FileSystemBridgeOperations,
   FileSystemBridgeRmOptions,
   FSEntry,
+  HasOptionalCapabilityMap,
+  OptionalCapabilityKey,
+  OptionalFileSystemBridgeOperations,
+  RequiredCapabilityKey,
+  RequiredFileSystemBridgeOperations,
 } from "./types";
