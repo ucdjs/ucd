@@ -130,7 +130,7 @@ export type UCDStoreContext = Readonly<Pick<InternalUCDStoreContext, "basePath" 
   versions: readonly string[];
 };
 
-export interface UCDStoreV2 extends UCDStoreContext, UCDStoreMethods, UCDStoreOperations {
+export interface UCDStore extends UCDStoreContext, UCDStoreMethods, UCDStoreOperations {
 }
 
 /**

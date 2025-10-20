@@ -3,9 +3,9 @@ import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 import type { UCDWellKnownConfig } from "@ucdjs/schemas";
 import type {
   InternalUCDStoreContext,
+  UCDStore,
   UCDStoreOperations,
   UCDStoreOptions,
-  UCDStoreV2,
   VersionConflictStrategy,
 } from "./types";
 import {
@@ -27,7 +27,7 @@ import { verify } from "./verify";
 
 const debug = createDebugger("ucdjs:ucd-store:v2");
 
-export async function createUCDStore(options: UCDStoreOptions): Promise<UCDStoreV2> {
+export async function createUCDStore(options: UCDStoreOptions): Promise<UCDStore> {
   debug?.("Creating UCD Store with options", options);
   const {
     baseUrl,

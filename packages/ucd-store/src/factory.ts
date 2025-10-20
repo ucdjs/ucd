@@ -1,4 +1,4 @@
-import type { UCDStoreOptions, UCDStoreV2 } from "./types";
+import type { UCDStore, UCDStoreOptions } from "./types";
 import { createUCDStore } from "./store";
 
 /**
@@ -12,7 +12,7 @@ import { createUCDStore } from "./store";
  * @param {Omit<UCDStoreOptions, "fs">} options - Configuration options for the Node.js UCD store
  * @returns {Promise<UCDStore>} A fully initialized UCDStore instance with Node.js filesystem capabilities
  */
-export async function createNodeUCDStore(options: Omit<UCDStoreOptions, "fs"> = {}): Promise<UCDStoreV2> {
+export async function createNodeUCDStore(options: Omit<UCDStoreOptions, "fs"> = {}): Promise<UCDStore> {
   const fs = await import("@ucdjs/fs-bridge/bridges/node").then((m) => m.default);
 
   if (!fs) {
@@ -38,7 +38,7 @@ export async function createNodeUCDStore(options: Omit<UCDStoreOptions, "fs"> = 
  * @param {Omit<UCDStoreOptions, "fs">} options - Configuration options for the HTTP UCD store
  * @returns {Promise<UCDStore>} A fully initialized UCDStore instance with HTTP filesystem capabilities
  */
-export async function createHTTPUCDStore(options: Omit<UCDStoreOptions, "fs"> = {}): Promise<UCDStoreV2> {
+export async function createHTTPUCDStore(options: Omit<UCDStoreOptions, "fs"> = {}): Promise<UCDStore> {
   const httpFsBridge = await import("@ucdjs/fs-bridge/bridges/http").then((m) => m.default);
 
   return createUCDStore({
