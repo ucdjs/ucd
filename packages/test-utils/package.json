@@ -20,6 +20,7 @@
   },
   "exports": {
     ".": "./dist/index.js",
+    "./fs-bridges": "./dist/fs-bridges/index.js",
     "./mock-store": "./dist/mock-store.js",
     "./msw": "./dist/msw.js",
     "./msw/vitest-setup": "./dist/msw/vitest-setup.js",
@@ -46,7 +47,8 @@
     "vitest-testdirs": "catalog:testing"
   },
   "dependencies": {
-    "@luxass/msw-utils": "catalog:testing",
+    "@luxass/msw-utils": "catalog:prod",
+    "@ucdjs/fs-bridge": "workspace:*",
     "@ucdjs/schemas": "workspace:*",
     "msw": "catalog:testing",
     "zod": "catalog:prod"
