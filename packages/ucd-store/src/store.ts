@@ -18,11 +18,11 @@ import { createUCDClientWithConfig } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import defu from "defu";
 import { join } from "pathe";
-import { createInternalContext, createPublicContext } from "./context";
+import { createInternalContext, createPublicContext } from "./core/context";
 import { UCDStoreGenericError } from "./errors";
-import { readManifest, writeManifest } from "./manifest";
-import { bootstrap } from "./operations/bootstrap";
-import { verify } from "./operations/verify";
+import { readManifest, writeManifest } from "./core/manifest";
+import { bootstrap } from "./setup/bootstrap";
+import { verify } from "./setup/verify";
 import { createStoreMethods } from "./retrieval";
 
 const debug = createDebugger("ucdjs:ucd-store:v2");

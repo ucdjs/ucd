@@ -4,7 +4,7 @@ import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 import type {
   InternalUCDStoreContext,
   UCDStoreContext,
-} from "./types";
+} from "../types";
 
 /**
  * Creates an internal store context object.

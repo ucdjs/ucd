@@ -1,7 +1,7 @@
 import { createMemoryMockFS } from "#test-utils/fs-bridges";
 import { describe, expect, it } from "vitest";
+import { readManifest } from "../src/core/manifest";
 import { UCDStoreGenericError } from "../src/errors";
-import { readManifest } from "../src/manifest";
 import { handleVersionConflict } from "../src/store";
 
 describe("strict strategy", () => {

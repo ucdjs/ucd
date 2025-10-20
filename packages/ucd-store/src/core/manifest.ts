@@ -3,7 +3,7 @@ import type { UCDStoreManifest } from "@ucdjs/schemas";
 import { createDebugger, safeJsonParse } from "@ucdjs-internal/shared";
 import { assertCapability } from "@ucdjs/fs-bridge";
 import { UCDStoreManifestSchema } from "@ucdjs/schemas";
-import { UCDStoreInvalidManifestError } from "./errors";
+import { UCDStoreInvalidManifestError } from "../errors";
 
 const debug = createDebugger("ucdjs:ucd-store:manifest");
 

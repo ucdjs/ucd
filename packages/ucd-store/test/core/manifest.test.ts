@@ -3,8 +3,8 @@ import { createMemoryMockFS } from "#test-utils/fs-bridges";
 import { defineFileSystemBridge } from "@ucdjs/fs-bridge";
 import { describe, expect, it } from "vitest";
 import { testdir } from "vitest-testdirs";
-import { UCDStoreInvalidManifestError } from "../src/errors";
-import { readManifest, writeManifest } from "../src/manifest";
+import { readManifest, writeManifest } from "../../src/core/manifest";
+import { UCDStoreInvalidManifestError } from "../../src/errors";
 
 describe("writeManifest", () => {
   it("should write manifest with multiple versions", async () => {

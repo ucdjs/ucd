@@ -3,7 +3,7 @@ import { createPathFilter } from "@ucdjs-internal/shared";
 import { createUCDClientWithConfig } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { describe, expect, it } from "vitest";
-import { createInternalContext, createPublicContext } from "../src/context";
+import { createInternalContext, createPublicContext } from "../../src/core/context";
 
 describe("createInternalContext", async () => {
   const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, {

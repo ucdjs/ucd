@@ -2,7 +2,7 @@ import type { UCDClient } from "@ucdjs/client";
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 import { assertCapability } from "@ucdjs/fs-bridge";
 import { UCDStoreGenericError } from "../errors";
-import { writeManifest } from "../manifest";
+import { writeManifest } from "../core/manifest";
 
 export interface BootstrapOptions {
   client: UCDClient;

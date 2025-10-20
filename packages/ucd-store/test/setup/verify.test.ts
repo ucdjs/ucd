@@ -4,7 +4,7 @@ import { createUCDClientWithConfig } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { describe, expect, it } from "vitest";
 import { UCDStoreGenericError } from "../../src/errors";
-import { verify } from "../../src/operations/verify";
+import { verify } from "../../src/setup/verify";
 
 const MOCK_CONFIG = {
   version: "1.0",

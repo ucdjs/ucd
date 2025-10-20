@@ -1,7 +1,7 @@
 import type { UCDClient } from "@ucdjs/client";
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
+import { readManifest } from "../core/manifest";
 import { UCDStoreGenericError } from "../errors";
-import { readManifest } from "../manifest";
 
 export interface VerifyOptions {
   client: UCDClient;

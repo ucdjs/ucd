@@ -5,8 +5,8 @@ import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { defineFileSystemBridge } from "@ucdjs/fs-bridge";
 import { describe, expect, it } from "vitest";
 import { UCDStoreGenericError } from "../../src/errors";
-import { readManifest } from "../../src/manifest";
-import { bootstrap } from "../../src/operations/bootstrap";
+import { readManifest } from "../../src/core/manifest";
+import { bootstrap } from "../../src/setup/bootstrap";
 
 const MOCK_CONFIG = {
   version: "1.0",
