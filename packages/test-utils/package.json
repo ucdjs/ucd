@@ -42,11 +42,12 @@
     "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
+    "@ucdjs/fs-bridge": "workspace:*",
     "@ucdjs/ucd-store": "workspace:*",
     "vitest-testdirs": "catalog:testing"
   },
   "dependencies": {
-    "@luxass/msw-utils": "catalog:testing",
+    "@luxass/msw-utils": "catalog:prod",
     "@ucdjs/schemas": "workspace:*",
     "msw": "catalog:testing",
     "zod": "catalog:prod"
@@ -55,6 +56,7 @@
     "@luxass/eslint-config": "catalog:linting",
     "@ucdjs-tooling/tsconfig": "workspace:*",
     "@ucdjs-tooling/tsdown-config": "workspace:*",
+    "@ucdjs/fs-bridge": "workspace:*",
     "@ucdjs/ucd-store": "workspace:*",
     "eslint": "catalog:linting",
     "publint": "catalog:dev",
