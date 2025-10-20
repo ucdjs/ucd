@@ -3,6 +3,14 @@ import { Buffer } from "node:buffer";
 import { defineFileSystemBridge } from "@ucdjs/fs-bridge";
 import { z } from "zod";
 
+/**
+ * Normalizes root path inputs to an empty string.
+ * Treats "", ".", "/" and undefined as the empty root.
+ */
+function normalizeRootPath(path: string | undefined): string {
+  return (!path || path === "." || path === "/") ? "" : path;
+}
+
 export const createMemoryMockFS = defineFileSystemBridge({
   name: "In-Memory File System Bridge",
   description: "A simple in-memory file system bridge using a flat Map for storage, perfect for testing.",
@@ -33,7 +41,8 @@ export const createMemoryMockFS = defineFileSystemBridge({
         }
 
         // slower path for checking directory existence (implicit - if any file starts with path/)
-        const pathWithSlash = path.endsWith("/") ? path : `${path}/`;
+        const normalizedPath = normalizeRootPath(path);
+        const pathWithSlash = normalizedPath === "" ? "" : (normalizedPath.endsWith("/") ? normalizedPath : `${normalizedPath}/`);
         for (const filePath of state.files.keys()) {
           if (filePath.startsWith(pathWithSlash)) {
             return true;
@@ -44,7 +53,8 @@ export const createMemoryMockFS = defineFileSystemBridge({
       },
       listdir: async (path, recursive = false) => {
         const entries: FSEntry[] = [];
-        const pathPrefix = path.endsWith("/") ? path : `${path}/`;
+        const normalizedPath = normalizeRootPath(path);
+        const pathPrefix = normalizedPath === "" ? "" : (normalizedPath.endsWith("/") ? normalizedPath : `${normalizedPath}/`);
         const seenDirs = new Set<string>();
 
         for (const filePath of state.files.keys()) {
@@ -139,7 +149,8 @@ export const createMemoryMockFS = defineFileSystemBridge({
 
         // remove directory (recursive)
         if (options?.recursive) {
-          const pathPrefix = path.endsWith("/") ? path : `${path}/`;
+          const normalizedPath = normalizeRootPath(path);
+          const pathPrefix = normalizedPath === "" ? "" : (normalizedPath.endsWith("/") ? normalizedPath : `${normalizedPath}/`);
           const keysToDelete: string[] = [];
 
           for (const filePath of state.files.keys()) {
