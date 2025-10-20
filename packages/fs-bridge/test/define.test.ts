@@ -140,18 +140,22 @@ describe("defineFileSystemBridge", () => {
 
   describe("state management", () => {
     it("should work with state", async () => {
-      const initialState = { callCount: 0 };
+      let callCount = 0;
 
       const bridge = defineFileSystemBridge({
         name: "Stateful Mock Bridge",
         description: "A mock file system bridge that maintains state",
-        state: initialState,
+        state: { callCount },
         setup: ({ state }) => {
-          expect(state).toBe(initialState);
+          expect(state.callCount).toEqual(callCount);
 
           return {
             read: vi.fn().mockImplementation(() => {
+              // The state.callCount will not update the outer `callCount` variable,
+              // since we wan't to prevent side-effects with state, when multiple of the same bridges
+              // are created and used.
               state.callCount += 1;
+              callCount += 1;
               return Promise.resolve(`content-${state.callCount}`);
             }),
             write: vi.fn().mockResolvedValue(undefined),
@@ -170,7 +174,7 @@ describe("defineFileSystemBridge", () => {
 
       expect(result1).toBe("content-1");
       expect(result2).toBe("content-2");
-      expect(initialState.callCount).toBe(2);
+      expect(callCount).toBe(2);
     });
 
     it("should handle bridge with optionsSchema but no options passed", () => {
