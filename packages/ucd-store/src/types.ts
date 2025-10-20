@@ -162,6 +162,28 @@ export interface UCDStoreMethods {
 
 export interface UCDStoreOperations {
   /**
+   * Synchronizes the store manifest with available versions from the API.
+   * This is a metadata-level operation that updates which versions the store knows about.
+   *
+   * Example: Fetches the list of available Unicode versions from the API and updates the manifest.
+   *
+   * @deprecated This needs to be implemented properly
+   */
+  sync: (options: never) => Promise<OperationResult<never, StoreError>>;
+
+  /**
+   * Mirrors Unicode data files from the API to local storage.
+   * This is a file-level operation that downloads actual Unicode data for specified versions.
+   *
+   * Example: Downloads all .txt files for version 16.0.0 to local storage.
+   *
+   * @deprecated This needs to be implemented properly
+   */
+  mirror: (options: never) => Promise<OperationResult<never, StoreError>>;
+
+  /**
+   * Analyzes Unicode data in the store.
+   *
    * @deprecated This needs to be implemented properly
    */
   analyze: (options: never) => Promise<OperationResult<never[], StoreError>>;
