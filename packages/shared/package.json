@@ -58,6 +58,7 @@
     "@ucdjs-tooling/tsdown-config": "workspace:*",
     "eslint": "catalog:linting",
     "publint": "catalog:dev",
+    "rolldown": "catalog:dev",
     "tsdown": "catalog:dev",
     "typescript": "catalog:dev",
     "vitest-testdirs": "catalog:testing"
