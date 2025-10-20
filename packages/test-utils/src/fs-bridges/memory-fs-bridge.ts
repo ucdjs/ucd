@@ -79,16 +79,40 @@ export const createMemoryMockFS = defineFileSystemBridge({
               }
             }
           } else {
-            // Recursive: build tree structure
-            // For now, just return flat list of files
-            // TODO: build proper tree if needed
-            const fileName = parts[parts.length - 1];
-            if (fileName) {
-              entries.push({
-                type: "file" as const,
-                name: fileName,
-                path: relativePath,
-              });
+            let currentLevel = entries;
+
+            for (let i = 0; i < parts.length; i++) {
+              const part = parts[i];
+              if (!part) continue;
+
+              const isLastPart = i === parts.length - 1;
+              const partPath = parts.slice(0, i + 1).join("/");
+
+              if (isLastPart) {
+                // It's a file
+                currentLevel.push({
+                  type: "file" as const,
+                  name: part,
+                  path: partPath,
+                });
+              } else {
+                // It's a directory - find or create it
+                let dirEntry = currentLevel.find(
+                  (e) => e.type === "directory" && e.name === part,
+                ) as Extract<FSEntry, { type: "directory" }> | undefined;
+
+                if (!dirEntry) {
+                  dirEntry = {
+                    type: "directory" as const,
+                    name: part,
+                    path: partPath,
+                    children: [],
+                  };
+                  currentLevel.push(dirEntry);
+                }
+
+                currentLevel = dirEntry.children!;
+              }
             }
           }
         }
@@ -105,6 +129,8 @@ export const createMemoryMockFS = defineFileSystemBridge({
         // no-op: directories are implicit in flat Map storage
       },
       rm: async (path, options) => {
+        // TODO(luxass): should we align this with real node:fs behavior and throw if file/dir doesn't exist?
+
         // remove file, if the path matches explicitly
         if (state.files.has(path)) {
           state.files.delete(path);
