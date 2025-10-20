@@ -1,5 +1,5 @@
-import { createLogger } from "./__utils";
+import { createDebugger } from "@ucdjs-internal/shared";
 
-const log = createLogger("http-playground");
+const debug = createDebugger("ucdjs:ucd-store:http-playground");
 
-log.info("Starting HTTP Playground for UCD Store");
+debug?.("Starting HTTP Playground for UCD Store");
