@@ -3,6 +3,10 @@ import type { UCDClient } from "@ucdjs/client";
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 import type { UCDWellKnownConfig, UnicodeTreeNode } from "@ucdjs/schemas";
 import type { StoreError } from "./errors";
+import type { AnalyzeOptions, VersionAnalysis } from "./operations/analyze";
+import type { GetFileOptions } from "./operations/files/get";
+import type { MirrorOptions, MirrorResult } from "./operations/mirror";
+import type { SyncOptions, SyncResult } from "./operations/sync";
 
 /**
  * Strategy for handling version conflicts when manifest exists and versions are provided.
@@ -130,13 +134,13 @@ export type UCDStoreContext = Readonly<Pick<InternalUCDStoreContext, "basePath" 
   versions: readonly string[];
 };
 
-export interface UCDStore extends UCDStoreContext, UCDStoreMethods, UCDStoreOperations {
+export interface UCDStore extends UCDStoreContext, UCDStoreOperations {
 }
 
 /**
  * Options for store methods that support filtering
  */
-export interface StoreMethodOptions {
+export interface SharedOperationOptions {
   /**
    * Additional filters to apply on top of global filters
    */
@@ -144,20 +148,27 @@ export interface StoreMethodOptions {
 }
 
 /**
- * Options for the getFile method
+ * File operations namespace for the store.
+ * Provides methods for accessing and manipulating Unicode data files.
  */
-export interface GetFileOptions extends StoreMethodOptions {
+export interface UCDStoreFileOperations {
   /**
-   * Whether to cache the file to local FS if available
-   * @default true
+   * Get a specific file for a Unicode version.
+   * Tries local FS first, then falls back to API.
    */
-  cache?: boolean;
-}
+  get: (version: string, path: string, options?: GetFileOptions) => Promise<OperationResult<string, StoreError>>;
 
-export interface UCDStoreMethods {
-  getFileTree: (version: string, options?: StoreMethodOptions) => Promise<OperationResult<UnicodeTreeNode[], StoreError>>;
-  getFilePaths: (version: string, options?: StoreMethodOptions) => Promise<OperationResult<string[], StoreError>>;
-  getFile: (version: string, filePath: string, options?: GetFileOptions) => Promise<OperationResult<string, StoreError>>;
+  /**
+   * List all file paths for a Unicode version.
+   * Returns a flat array of file paths.
+   */
+  list: (version: string, options?: SharedOperationOptions) => Promise<OperationResult<string[], StoreError>>;
+
+  /**
+   * Get the file tree structure for a Unicode version.
+   * Returns a hierarchical tree of files and directories.
+   */
+  tree: (version: string, options?: SharedOperationOptions) => Promise<OperationResult<UnicodeTreeNode[], StoreError>>;
 }
 
 export interface UCDStoreOperations {
@@ -169,7 +180,7 @@ export interface UCDStoreOperations {
    *
    * @deprecated This needs to be implemented properly
    */
-  sync: (options: never) => Promise<OperationResult<never, StoreError>>;
+  sync: (options?: SyncOptions) => Promise<OperationResult<SyncResult, StoreError>>;
 
   /**
    * Mirrors Unicode data files from the API to local storage.
@@ -179,13 +190,17 @@ export interface UCDStoreOperations {
    *
    * @deprecated This needs to be implemented properly
    */
-  mirror: (options: never) => Promise<OperationResult<never, StoreError>>;
+  mirror: (options?: MirrorOptions) => Promise<OperationResult<MirrorResult, StoreError>>;
 
   /**
    * Analyzes Unicode data in the store.
    *
    * @deprecated This needs to be implemented properly
    */
-  analyze: (options: never) => Promise<OperationResult<never[], StoreError>>;
+  analyze: (options?: AnalyzeOptions) => Promise<OperationResult<VersionAnalysis[], StoreError>>;
 
+  /**
+   * File operations namespace
+   */
+  files: UCDStoreFileOperations;
 }

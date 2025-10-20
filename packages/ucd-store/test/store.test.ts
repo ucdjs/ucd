@@ -459,9 +459,10 @@ describe("createUCDStore", () => {
         endpointConfig: MOCK_CONFIG,
       });
 
-      expect(store.getFileTree).toBeDefined();
-      expect(store.getFilePaths).toBeDefined();
-      expect(store.getFile).toBeDefined();
+      expect(store.files).toBeDefined();
+      expect(store.files.tree).toBeDefined();
+      expect(store.files.list).toBeDefined();
+      expect(store.files.get).toBeDefined();
     });
 
     it("should return store with operations", async () => {

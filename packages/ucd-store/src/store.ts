@@ -21,7 +21,10 @@ import { join } from "pathe";
 import { createInternalContext, createPublicContext } from "./core/context";
 import { readManifest, writeManifest } from "./core/manifest";
 import { UCDStoreGenericError } from "./errors";
-import { createStoreMethods } from "./retrieval";
+import { analyze } from "./operations/analyze";
+import { createFilesNamespace } from "./operations/files";
+import { mirror } from "./operations/mirror";
+import { sync } from "./operations/sync";
 import { bootstrap } from "./setup/bootstrap";
 import { verify } from "./setup/verify";
 
@@ -130,17 +133,12 @@ export async function createUCDStore(options: UCDStoreOptions): Promise<UCDStore
 
   const publicContext = createPublicContext(internalContext);
 
-  return Object.assign(
-    publicContext,
-    createStoreMethods(internalContext),
-    createUCDStoreOperations(internalContext),
-  );
-}
-
-function createUCDStoreOperations(_context: InternalUCDStoreContext): UCDStoreOperations {
-  return {
-
-  } as UCDStoreOperations;
+  return Object.assign(publicContext, {
+    files: createFilesNamespace(internalContext),
+    mirror: (options?) => mirror(internalContext, options),
+    sync: (options?) => sync(internalContext, options),
+    analyze: (options?) => analyze(internalContext, options),
+  } satisfies UCDStoreOperations);
 }
 
 async function retrieveEndpointConfiguration(baseUrl: string = UCDJS_API_BASE_URL): Promise<UCDWellKnownConfig> {

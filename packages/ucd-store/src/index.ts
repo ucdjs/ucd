@@ -13,12 +13,10 @@ export {
 export { createUCDStore } from "./store";
 
 export type {
-  GetFileOptions,
   InternalUCDStoreContext,
-  StoreMethodOptions,
+  SharedOperationOptions,
   UCDStore,
   UCDStoreContext,
-  UCDStoreMethods,
   UCDStoreOperations,
   UCDStoreOptions,
   VersionConflictStrategy,

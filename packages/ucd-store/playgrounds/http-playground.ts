@@ -31,9 +31,9 @@ const store = await createUCDStore({
 debug?.("Store created successfully!");
 debug?.("Available versions:", store.versions);
 
-// Test getFilePaths
-debug?.("\n--- Testing getFilePaths for version 16.0.0 ---");
-const [paths, pathsError] = await store.getFilePaths("16.0.0");
+// Test files.list
+debug?.("\n--- Testing files.list for version 16.0.0 ---");
+const [paths, pathsError] = await store.files.list("16.0.0");
 
 if (pathsError) {
   debug?.("Failed to get file paths:", pathsError.message);
@@ -42,9 +42,9 @@ if (pathsError) {
   debug?.("First 10 files:", paths.slice(0, 10));
 }
 
-// Test getFilePaths with additional filters
-debug?.("\n--- Testing getFilePaths with extra filters (only UnicodeData.txt) ---");
-const [filteredPaths, filteredPathsError] = await store.getFilePaths("16.0.0", {
+// Test files.list with additional filters
+debug?.("\n--- Testing files.list with extra filters (only UnicodeData.txt) ---");
+const [filteredPaths, filteredPathsError] = await store.files.list("16.0.0", {
   filters: {
     include: ["**/UnicodeData.txt"],
   },
@@ -56,9 +56,9 @@ if (filteredPathsError) {
   debug?.(`Found ${filteredPaths.length} matching files:`, filteredPaths);
 }
 
-// Test getFileTree
-debug?.("\n--- Testing getFileTree for version 16.0.0 ---");
-const [tree, treeError] = await store.getFileTree("16.0.0");
+// Test files.tree
+debug?.("\n--- Testing files.tree for version 16.0.0 ---");
+const [tree, treeError] = await store.files.tree("16.0.0");
 
 if (treeError) {
   debug?.("Failed to get file tree:", treeError.message);
@@ -67,9 +67,9 @@ if (treeError) {
   debug?.("Top-level entries:", tree.map((entry) => ({ name: entry.name, type: entry.type })));
 }
 
-// Test getFile
-debug?.("\n--- Testing getFile for UnicodeData.txt ---");
-const [fileContent, fileError] = await store.getFile("16.0.0", "UnicodeData.txt");
+// Test files.get
+debug?.("\n--- Testing files.get for UnicodeData.txt ---");
+const [fileContent, fileError] = await store.files.get("16.0.0", "UnicodeData.txt");
 
 if (fileError) {
   debug?.("Failed to get file:", fileError.message);
@@ -80,9 +80,9 @@ if (fileError) {
   lines.slice(0, 3).forEach((line, i) => debug?.(`  ${i + 1}: ${line}`));
 }
 
-// Test getFile with cache disabled (HTTP bridge doesn't support write anyway)
-debug?.("\n--- Testing getFile with cache disabled ---");
-const [fileContent2, fileError2] = await store.getFile("16.0.0", "UnicodeData.txt", {
+// Test files.get with cache disabled (HTTP bridge doesn't support write anyway)
+debug?.("\n--- Testing files.get with cache disabled ---");
+const [fileContent2, fileError2] = await store.files.get("16.0.0", "UnicodeData.txt", {
   cache: false,
 });
 
@@ -94,7 +94,7 @@ if (fileError2) {
 
 // Test error handling - invalid version
 debug?.("\n--- Testing error handling (invalid version) ---");
-const [, invalidVersionError] = await store.getFilePaths("99.0.0");
+const [, invalidVersionError] = await store.files.list("99.0.0");
 
 if (invalidVersionError) {
   debug?.("Expected error caught:", invalidVersionError.message);
@@ -102,7 +102,7 @@ if (invalidVersionError) {
 
 // Test error handling - file doesn't pass filter
 debug?.("\n--- Testing error handling (file filtered out) ---");
-const [, filteredFileError] = await store.getFile("16.0.0", "SomeFile.html", {
+const [, filteredFileError] = await store.files.get("16.0.0", "SomeFile.html", {
   filters: {
     exclude: ["**/*.html"],
   },
