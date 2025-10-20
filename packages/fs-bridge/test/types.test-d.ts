@@ -6,8 +6,10 @@ import z from "zod";
 describe("defineFileSystemBridge", () => {
   it("should infer the correct types for options and state", () => {
     const MyBridge = defineFileSystemBridge({
-      name: "My Bridge",
-      description: "A test file system bridge",
+      metadata: {
+        name: "My Bridge",
+        description: "A test file system bridge",
+      },
       optionsSchema: z.object({
         basePath: z.string(),
         recursive: z.boolean().optional(),
@@ -36,8 +38,10 @@ describe("defineFileSystemBridge", () => {
 
   it("should work with no optionsSchema and no state", () => {
     const SimpleBridge = defineFileSystemBridge({
-      name: "Simple Bridge",
-      description: "A simple file system bridge",
+      metadata: {
+        name: "Simple Bridge",
+        description: "A simple file system bridge",
+      },
       setup() {
         return {};
       },
@@ -48,8 +52,10 @@ describe("defineFileSystemBridge", () => {
 
   it("should work with no optionsSchema but with state", () => {
     const StateBridge = defineFileSystemBridge({
-      name: "State Bridge",
-      description: "A stateful file system bridge",
+      metadata: {
+        name: "State Bridge",
+        description: "A stateful file system bridge",
+      },
       state: {
         count: 0,
       },
