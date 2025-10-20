@@ -42,7 +42,7 @@ export function defineFileSystemBridge<
     try {
       bridge = fsBridge.setup({
         options,
-        state: (state ?? {}) as TState,
+        state: (structuredClone(state) ?? {}) as TState,
         resolveSafePath,
       });
     } catch (err) {
