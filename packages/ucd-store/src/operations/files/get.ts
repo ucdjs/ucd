@@ -98,9 +98,9 @@ export async function getFile(
       try {
         await context.fs.write(localPath, content);
         debug?.("Cached file to local FS:", localPath);
-      } catch (error) {
+      } catch (err) {
         // cache failure is not critical, just log it
-        debug?.("Failed to cache file:", error);
+        debug?.("Failed to cache file:", err);
       }
     }
 
