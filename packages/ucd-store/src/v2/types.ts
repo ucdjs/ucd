@@ -133,10 +133,31 @@ export type UCDStoreContext = Readonly<Pick<InternalUCDStoreContext, "basePath" 
 export interface UCDStoreV2 extends UCDStoreContext, UCDStoreMethods, UCDStoreOperations {
 }
 
+/**
+ * Options for store methods that support filtering
+ */
+export interface StoreMethodOptions {
+  /**
+   * Additional filters to apply on top of global filters
+   */
+  filters?: Pick<PathFilterOptions, "include" | "exclude">;
+}
+
+/**
+ * Options for the getFile method
+ */
+export interface GetFileOptions extends StoreMethodOptions {
+  /**
+   * Whether to cache the file to local FS if available
+   * @default true
+   */
+  cache?: boolean;
+}
+
 export interface UCDStoreMethods {
-  getFileTree: (version: string, extraFilters?: Pick<PathFilterOptions, "include" | "exclude">) => Promise<OperationResult<UnicodeTreeNode[], StoreError>>;
-  getFilePaths: (version: string, extraFilters?: Pick<PathFilterOptions, "include" | "exclude">) => Promise<OperationResult<string[], StoreError>>;
-  getFile: (version: string, filePath: string, extraFilters?: Pick<PathFilterOptions, "include" | "exclude">) => Promise<OperationResult<string, StoreError>>;
+  getFileTree: (version: string, options?: StoreMethodOptions) => Promise<OperationResult<UnicodeTreeNode[], StoreError>>;
+  getFilePaths: (version: string, options?: StoreMethodOptions) => Promise<OperationResult<string[], StoreError>>;
+  getFile: (version: string, filePath: string, options?: GetFileOptions) => Promise<OperationResult<string, StoreError>>;
 }
 
 export interface UCDStoreOperations {

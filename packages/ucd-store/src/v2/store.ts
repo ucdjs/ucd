@@ -3,7 +3,6 @@ import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 import type { UCDWellKnownConfig } from "@ucdjs/schemas";
 import type {
   InternalUCDStoreContext,
-  UCDStoreMethods,
   UCDStoreOperations,
   UCDStoreOptions,
   UCDStoreV2,
@@ -23,6 +22,7 @@ import { UCDStoreGenericError } from "../errors";
 import { bootstrap } from "./bootstrap";
 import { createInternalContext, createPublicContext } from "./context";
 import { readManifest, writeManifest } from "./manifest";
+import { createStoreMethods } from "./retrieval";
 import { verify } from "./verify";
 
 const debug = createDebugger("ucdjs:ucd-store:v2");
@@ -132,14 +132,9 @@ export async function createUCDStore(options: UCDStoreOptions): Promise<UCDStore
 
   return Object.assign(
     publicContext,
-    createUCDStoreMethods(internalContext),
+    createStoreMethods(internalContext),
     createUCDStoreOperations(internalContext),
   );
-}
-
-function createUCDStoreMethods(_context: InternalUCDStoreContext): UCDStoreMethods {
-  return {
-  } as UCDStoreMethods;
 }
 
 function createUCDStoreOperations(_context: InternalUCDStoreContext): UCDStoreOperations {
