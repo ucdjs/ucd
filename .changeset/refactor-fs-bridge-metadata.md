@@ -6,9 +6,10 @@ Refactored file system bridge metadata structure to simplify the API and improve
 
 **Breaking Changes:**
 
-- Moved `name` and `description` from top-level properties into the `metadata` object
-- The `metadata` property is now required instead of optional
-- Removed `persistent` and `mirror` properties from metadata
+- Renamed `metadata` property to `meta`
+- Moved `name` and `description` from top-level properties into the `meta` object
+- The `meta` property is now required instead of optional
+- Removed `persistent` and `mirror` properties from old `metadata` object
 - Removed support for custom metadata fields
 
 **Before:**
@@ -28,7 +29,7 @@ const MyBridge = defineFileSystemBridge({
 
 ```ts
 const MyBridge = defineFileSystemBridge({
-  metadata: {
+  meta: {
     name: "My Bridge",
     description: "A file system bridge",
   },
@@ -36,4 +37,4 @@ const MyBridge = defineFileSystemBridge({
 });
 ```
 
-This change consolidates all descriptive information into the metadata object, making the bridge definition cleaner and more predictable.
+This change consolidates all descriptive information into the `meta` object, making the bridge definition cleaner and more predictable.
