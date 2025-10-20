@@ -5,4 +5,5 @@ export default createTsdownConfig({
     "./src/index.ts",
     "./src/ucd-files.ts",
   ],
+  unbundle: true,
 });
