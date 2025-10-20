@@ -8,7 +8,6 @@ export const createMemoryMockFS = defineFileSystemBridge({
   description: "A simple in-memory file system bridge using a flat Map for storage, perfect for testing.",
   optionsSchema: z.object({
     initialFiles: z.record(z.string(), z.string()).optional(),
-    debug: z.boolean().optional(),
   }).optional(),
   state: {
     files: new Map<string, string>(),
@@ -19,7 +18,6 @@ export const createMemoryMockFS = defineFileSystemBridge({
         state.files.set(path, content);
       }
     }
-
     return {
       read: async (path) => {
         const content = state.files.get(path);
@@ -29,12 +27,12 @@ export const createMemoryMockFS = defineFileSystemBridge({
         return content;
       },
       exists: async (path) => {
-        // Fast path for checking direct entry existence
+        // fast path for checking direct entry existence
         if (state.files.has(path)) {
           return true;
         }
 
-        // Slower path for checking directory existence (implicit - if any file starts with path/)
+        // slower path for checking directory existence (implicit - if any file starts with path/)
         const pathWithSlash = path.endsWith("/") ? path : `${path}/`;
         for (const filePath of state.files.keys()) {
           if (filePath.startsWith(pathWithSlash)) {
@@ -44,14 +42,13 @@ export const createMemoryMockFS = defineFileSystemBridge({
 
         return false;
       },
-
       listdir: async (path, recursive = false) => {
         const entries: FSEntry[] = [];
         const pathPrefix = path.endsWith("/") ? path : `${path}/`;
         const seenDirs = new Set<string>();
 
         for (const filePath of state.files.keys()) {
-          // Skip files not in this directory
+          // skip files not in this directory
           if (!filePath.startsWith(pathPrefix)) {
             continue;
           }
@@ -98,18 +95,15 @@ export const createMemoryMockFS = defineFileSystemBridge({
 
         return entries;
       },
-
       write: async (path, data, encoding = "utf8") => {
         const content = typeof data === "string"
           ? data
           : Buffer.from(data).toString(encoding);
         state.files.set(path, content);
       },
-
       mkdir: async (_path) => {
         // No-op: directories are implicit in flat Map storage
       },
-
       rm: async (path, options) => {
         // Remove file
         if (state.files.has(path)) {
@@ -133,13 +127,6 @@ export const createMemoryMockFS = defineFileSystemBridge({
           }
         }
       },
-
-      // Debug helper (custom method, not part of standard operations)
-      __debug_memfs: () => {
-        return Object.fromEntries(state.files);
-      },
-    } as FileSystemBridgeOperations & {
-      __debug_memfs: () => Record<string, string>;
     };
   },
 });
