@@ -386,7 +386,7 @@ describe("store init", () => {
       const store = createUCDStore({
         basePath: storePath,
         fs: defineFileSystemBridge({
-          metadata: {
+          meta: {
             name: "Insufficient Capabilities Bridge",
             description: "A mock file system bridge with insufficient capabilities",
           },

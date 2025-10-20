@@ -14,7 +14,7 @@ const API_BASE_URL_SCHEMA = z.codec(z.httpUrl(), z.instanceof(URL), {
 }).default(new URL("/api/v1/files", UCDJS_API_BASE_URL));
 
 const HTTPFileSystemBridge = defineFileSystemBridge({
-  metadata: {
+  meta: {
     name: "HTTP File System Bridge",
     description: "A file system bridge that interacts with a remote HTTP API to perform file system operations.",
   },

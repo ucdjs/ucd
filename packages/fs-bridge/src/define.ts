@@ -1,4 +1,5 @@
 import type {
+  FileSystemBridge,
   FileSystemBridgeCapabilities,
   FileSystemBridgeCapabilityKey,
   FileSystemBridgeFactory,
@@ -100,12 +101,12 @@ export function defineFileSystemBridge<
 
     return Object.assign(proxiedBridge, {
       capabilities,
-      metadata: {
-        ...fsBridge.metadata,
-        name: fsBridge.metadata.name,
-        description: fsBridge.metadata.description,
+      meta: {
+        ...fsBridge.meta,
+        name: fsBridge.meta.name,
+        description: fsBridge.meta.description,
       },
-    });
+    } satisfies FileSystemBridge);
   };
 }
 

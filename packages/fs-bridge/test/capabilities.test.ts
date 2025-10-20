@@ -6,7 +6,7 @@ import { defineFileSystemBridge } from "../src/define";
 describe("capability inference", () => {
   it("should infer capabilities from returned operations", () => {
     const bridge = defineFileSystemBridge({
-      metadata: {
+      meta: {
         name: "Capability Inference Bridge",
         description: "A mock file system bridge to test capability inference",
       },
@@ -39,7 +39,7 @@ describe("capability inference", () => {
     };
 
     const bridge = defineFileSystemBridge({
-      metadata: {
+      meta: {
         name: "Full Capability Bridge",
         description: "A mock file system bridge with all operations",
       },
@@ -59,7 +59,7 @@ describe("capability inference", () => {
 
   it("should handle partial capability sets", () => {
     const bridge = defineFileSystemBridge({
-      metadata: {
+      meta: {
         name: "Partial Capability Bridge",
         description: "A mock file system bridge with partial operations",
       },
@@ -83,7 +83,7 @@ describe("capability inference", () => {
 
   it("should handle empty operation set", () => {
     const bridge = defineFileSystemBridge({
-      metadata: {
+      meta: {
         name: "Empty Operations Bridge",
         description: "A mock file system bridge with no operations",
       },
@@ -103,7 +103,7 @@ describe("capability inference", () => {
 
   it("should handle operations that are null or undefined", () => {
     const bridge = defineFileSystemBridge({
-      metadata: {
+      meta: {
         name: "Null Undefined Operations Bridge",
         description: "A mock file system bridge with null/undefined operations",
       },
@@ -127,7 +127,7 @@ describe("capability inference", () => {
 
   it("should handle read-only filesystem pattern", () => {
     const bridge = defineFileSystemBridge({
-      metadata: {
+      meta: {
         name: "Read-Only Bridge",
         description: "A mock file system bridge with read-only operations",
       },
@@ -152,7 +152,7 @@ describe("capability inference", () => {
 
   it("should handle write-only filesystem pattern", () => {
     const bridge = defineFileSystemBridge({
-      metadata: {
+      meta: {
         name: "Write-Only Bridge",
         description: "A mock file system bridge with write-only operations",
       },
@@ -189,7 +189,7 @@ describe("assertCapability function", () => {
     if (capabilities.rm) operations.rm = vi.fn().mockResolvedValue(undefined);
 
     const bridge = defineFileSystemBridge({
-      metadata: {
+      meta: {
         name: "Mock Bridge",
         description: "A mock file system bridge for testing assertCapability",
       },
@@ -271,7 +271,7 @@ describe("assertCapability function", () => {
 describe("proxy error handling", () => {
   it("should throw descriptive error for unsupported write operation", () => {
     const bridge = defineFileSystemBridge({
-      metadata: {
+      meta: {
         name: "Write Error Bridge",
         description: "A mock file system bridge that throws in write operation",
       },
@@ -289,7 +289,7 @@ describe("proxy error handling", () => {
 
   it("should throw descriptive error for unsupported mkdir operation", () => {
     const bridge = defineFileSystemBridge({
-      metadata: {
+      meta: {
         name: "Mkdir Error Bridge",
         description: "A mock file system bridge that throws in mkdir operation",
       },
@@ -307,7 +307,7 @@ describe("proxy error handling", () => {
 
   it("should throw descriptive error for unsupported rm operation", () => {
     const bridge = defineFileSystemBridge({
-      metadata: {
+      meta: {
         name: "RM Error Bridge",
         description: "A mock file system bridge that throws in rm operation",
       },
@@ -325,7 +325,7 @@ describe("proxy error handling", () => {
 
   it("should throw descriptive error for unsupported listdir operation", () => {
     const bridge = defineFileSystemBridge({
-      metadata: {
+      meta: {
         name: "Listdir Error Bridge",
         description: "A mock file system bridge that throws in listdir operation",
       },
@@ -343,7 +343,7 @@ describe("proxy error handling", () => {
 
   it("should throw descriptive error for unsupported exists operation", () => {
     const bridge = defineFileSystemBridge({
-      metadata: {
+      meta: {
         name: "Exists Error Bridge",
         description: "A mock file system bridge that throws in exists operation",
       },
@@ -362,7 +362,7 @@ describe("proxy error handling", () => {
   it("should allow supported operations to work normally", async () => {
     const mockRead = vi.fn().mockResolvedValue("test content");
     const bridge = defineFileSystemBridge({
-      metadata: {
+      meta: {
         name: "Read Operation Bridge",
         description: "A mock file system bridge with read operation",
       },
@@ -384,7 +384,7 @@ describe("proxy error handling", () => {
     const mockExists = vi.fn().mockResolvedValue(true);
 
     const bridge = defineFileSystemBridge({
-      metadata: {
+      meta: {
         name: "Mixed Operations Bridge",
         description: "A mock file system bridge with mixed operations",
       },
@@ -411,7 +411,7 @@ describe("proxy error handling", () => {
 
   it("should not interfere with capabilities property access", () => {
     const bridge = defineFileSystemBridge({
-      metadata: {
+      meta: {
         name: "Capabilities Access Bridge",
         description: "A mock file system bridge to test capabilities access",
       },
@@ -434,7 +434,7 @@ describe("proxy error handling", () => {
 
   it("should handle concurrent unsupported operation calls", () => {
     const bridge = defineFileSystemBridge({
-      metadata: {
+      meta: {
         name: "Concurrent Unsupported Bridge",
         description: "A mock file system bridge to test concurrent unsupported operations",
       },
@@ -455,7 +455,7 @@ describe("proxy error handling", () => {
 describe("edge cases", () => {
   it("should handle operations returning different function types", () => {
     const bridge = defineFileSystemBridge({
-      metadata: {
+      meta: {
         name: "Function Types Bridge",
         description: "A mock file system bridge to test different function types",
       },
@@ -480,7 +480,7 @@ describe("edge cases", () => {
 
   it("should handle operations with different method signatures", async () => {
     const bridge = defineFileSystemBridge({
-      metadata: {
+      meta: {
         name: "Method Signatures Bridge",
         description: "A mock file system bridge to test different method signatures",
       },
@@ -512,7 +512,7 @@ describe("edge cases", () => {
 
   it("should handle bridge state and operations interaction", async () => {
     const bridge = defineFileSystemBridge({
-      metadata: {
+      meta: {
         name: "State Interaction Bridge",
         description: "A mock file system bridge to test state and operations interaction",
       },
@@ -539,7 +539,7 @@ describe("edge cases", () => {
 
   it("should maintain capability consistency across multiple bridge instances", () => {
     const bridgeFactory = defineFileSystemBridge({
-      metadata: {
+      meta: {
         name: "Multiple Instances Bridge",
         description: "A mock file system bridge to test multiple instances",
       },
@@ -567,7 +567,7 @@ describe("edge cases", () => {
 describe("type safety validation", () => {
   it("should allow calling methods after capability assertion", () => {
     const bridge = defineFileSystemBridge({
-      metadata: {
+      meta: {
         name: "Type Safety Bridge",
         description: "A mock file system bridge to test type safety",
       },
@@ -589,7 +589,7 @@ describe("type safety validation", () => {
 
   it("should work with single capability assertion", () => {
     const bridge = defineFileSystemBridge({
-      metadata: {
+      meta: {
         name: "Single Capability Bridge",
         description: "A mock file system bridge to test single capability assertion",
       },
@@ -606,7 +606,7 @@ describe("type safety validation", () => {
 
   it("should work with different capability combinations", () => {
     const bridge = defineFileSystemBridge({
-      metadata: {
+      meta: {
         name: "Different Combinations Bridge",
         description: "A mock file system bridge to test different capability combinations",
       },

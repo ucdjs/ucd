@@ -6,7 +6,7 @@ import { defineFileSystemBridge } from "@ucdjs/fs-bridge";
 import { memfs } from "memfs";
 
 export const createReadOnlyMockFS = defineFileSystemBridge({
-  metadata: {
+  meta: {
     name: "Read-Only Mock File System Bridge",
     description: "A read-only mock file system bridge that simulates a file system with no files.",
   },
@@ -26,7 +26,7 @@ export const createReadOnlyMockFS = defineFileSystemBridge({
 });
 
 export const createMemoryMockFS = defineFileSystemBridge({
-  metadata: {
+  meta: {
     name: "In-Memory Mock File System Bridge",
     description: "A mock file system bridge that uses an in-memory file system for testing purposes.",
   },
