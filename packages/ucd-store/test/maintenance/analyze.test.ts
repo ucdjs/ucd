@@ -1,4 +1,5 @@
 import type { UnicodeTree } from "@ucdjs/schemas";
+import { createMemoryMockFS } from "#test-utils/fs-bridges";
 import { mockStoreApi } from "#test-utils/mock-store";
 import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
@@ -8,7 +9,7 @@ import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "@ucdjs/ucd-s
 import { assert, beforeEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
 import { createHTTPUCDStore, createNodeUCDStore, createUCDStore } from "../../src/factory";
-import { createMemoryMockFS, stripChildrenFromEntries } from "../__shared";
+import { stripChildrenFromEntries } from "../__shared";
 
 const MOCK_FILES = [
   {

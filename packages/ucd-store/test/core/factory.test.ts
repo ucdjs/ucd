@@ -1,9 +1,10 @@
+import { createMemoryMockFS } from "#test-utils/fs-bridges";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
 import { createHTTPUCDStore, createNodeUCDStore, createUCDStore } from "../../src/factory";
 import { UCDStore } from "../../src/store";
-import { createMemoryMockFS, createReadOnlyMockFS } from "../__shared";
+import { createReadOnlyMockFS } from "../__shared";
 
 describe("factory functions", () => {
   beforeEach(() => {
