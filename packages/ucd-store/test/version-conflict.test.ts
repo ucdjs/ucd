@@ -1,8 +1,8 @@
 import { createMemoryMockFS } from "#test-utils/fs-bridges";
 import { describe, expect, it } from "vitest";
-import { UCDStoreGenericError } from "../../src/errors";
-import { readManifest } from "../../src/v2/manifest";
-import { handleVersionConflict } from "../../src/v2/store";
+import { UCDStoreGenericError } from "../src/errors";
+import { readManifest } from "../src/manifest";
+import { handleVersionConflict } from "../src/store";
 
 describe("strict strategy", () => {
   it("should return manifest versions when they match provided versions", async () => {

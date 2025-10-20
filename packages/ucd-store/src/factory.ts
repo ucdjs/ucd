@@ -1,15 +1,5 @@
-import type { UCDStoreOptions } from "./types";
-import { UCDStore } from "./store";
-
-/**
- * Creates a new UCD store instance with the specified options.
- *
- * @param {UCDStoreOptions} options - Configuration options for the UCD store
- * @returns {UCDStore} A fully initialized UCDStore instance
- */
-export function createUCDStore(options: UCDStoreOptions): UCDStore {
-  return new UCDStore(options);
-}
+import type { UCDStoreOptions, UCDStoreV2 } from "./types";
+import { createUCDStore } from "./store";
 
 /**
  * Creates a new UCD store instance configured for Node.js file system access.
@@ -22,14 +12,14 @@ export function createUCDStore(options: UCDStoreOptions): UCDStore {
  * @param {Omit<UCDStoreOptions, "fs">} options - Configuration options for the Node.js UCD store
  * @returns {Promise<UCDStore>} A fully initialized UCDStore instance with Node.js filesystem capabilities
  */
-export async function createNodeUCDStore(options: Omit<UCDStoreOptions, "fs"> = {}): Promise<UCDStore> {
+export async function createNodeUCDStore(options: Omit<UCDStoreOptions, "fs"> = {}): Promise<UCDStoreV2> {
   const fs = await import("@ucdjs/fs-bridge/bridges/node").then((m) => m.default);
 
   if (!fs) {
     throw new Error("Node.js FileSystemBridge could not be loaded");
   }
 
-  return new UCDStore({
+  return createUCDStore({
     ...options,
     fs: fs({
       basePath: options.basePath || "./",
@@ -48,10 +38,10 @@ export async function createNodeUCDStore(options: Omit<UCDStoreOptions, "fs"> = 
  * @param {Omit<UCDStoreOptions, "fs">} options - Configuration options for the HTTP UCD store
  * @returns {Promise<UCDStore>} A fully initialized UCDStore instance with HTTP filesystem capabilities
  */
-export async function createHTTPUCDStore(options: Omit<UCDStoreOptions, "fs"> = {}): Promise<UCDStore> {
+export async function createHTTPUCDStore(options: Omit<UCDStoreOptions, "fs"> = {}): Promise<UCDStoreV2> {
   const httpFsBridge = await import("@ucdjs/fs-bridge/bridges/http").then((m) => m.default);
 
-  return new UCDStore({
+  return createUCDStore({
     ...options,
     fs: httpFsBridge({
       baseUrl: options.baseUrl,

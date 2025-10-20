@@ -3,8 +3,8 @@ import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { createUCDClientWithConfig } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { describe, expect, it } from "vitest";
-import { UCDStoreGenericError } from "../../src/errors";
-import { createUCDStore } from "../../src/v2/store";
+import { UCDStoreGenericError } from "../src/errors";
+import { createUCDStore } from "../src/store";
 
 const MOCK_CONFIG = {
   version: "1.0",
