@@ -1,7 +1,10 @@
 import type { UCDClient } from "@ucdjs/client";
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
+import { createDebugger } from "@ucdjs-internal/shared";
 import { readManifest } from "../core/manifest";
 import { UCDStoreGenericError } from "../errors";
+
+const debug = createDebugger("ucdjs:ucd-store:verify");
 
 export interface VerifyOptions {
   client: UCDClient;
@@ -29,8 +32,11 @@ export interface VerifyResult {
 export async function verify(options: VerifyOptions): Promise<VerifyResult> {
   const { client, manifestPath, fs } = options;
 
+  debug?.("Starting manifest verification");
+
   const manifest = await readManifest(fs, manifestPath);
   const manifestVersions = Object.keys(manifest);
+  debug?.(`Found ${manifestVersions.length} versions in manifest:`, manifestVersions);
 
   const result = await client.versions.list();
 
@@ -47,12 +53,25 @@ export async function verify(options: VerifyOptions): Promise<VerifyResult> {
   }
 
   const availableVersions = result.data.map(({ version }) => version);
+  debug?.(`Fetched ${availableVersions.length} available versions from API`);
 
   const missingVersions = manifestVersions.filter((v) => !availableVersions.includes(v));
   const extraVersions = availableVersions.filter((v) => !manifestVersions.includes(v));
 
+  const valid = missingVersions.length === 0;
+  debug?.(
+    valid ? "✓ Verification passed" : "✗ Verification failed",
+    {
+      missing: missingVersions.length,
+      extra: extraVersions.length,
+    },
+  );
+
+  debug?.("Missing versions:", missingVersions);
+  debug?.("Extra versions available:", extraVersions);
+
   return {
-    valid: missingVersions.length === 0,
+    valid,
     manifestVersions,
     availableVersions,
     missingVersions,

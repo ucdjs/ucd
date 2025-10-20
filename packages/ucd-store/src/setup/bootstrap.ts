@@ -1,8 +1,11 @@
 import type { UCDClient } from "@ucdjs/client";
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
+import { createDebugger } from "@ucdjs-internal/shared";
 import { assertCapability } from "@ucdjs/fs-bridge";
-import { UCDStoreGenericError } from "../errors";
 import { writeManifest } from "../core/manifest";
+import { UCDStoreGenericError } from "../errors";
+
+const debug = createDebugger("ucdjs:ucd-store:bootstrap");
 
 export interface BootstrapOptions {
   client: UCDClient;
@@ -22,6 +25,8 @@ export interface BootstrapOptions {
 export async function bootstrap(options: BootstrapOptions): Promise<void> {
   const { client, fs, basePath, versions, manifestPath } = options;
 
+  debug?.("Starting bootstrap for versions:", versions);
+
   const result = await client.versions.list();
 
   if (result.error) {
@@ -37,19 +42,29 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
   }
 
   const availableVersions = result.data.map(({ version }) => version);
+  debug?.(`Fetched ${availableVersions.length} available versions from API`);
 
   const missingVersions = versions.filter((v) => !availableVersions.includes(v));
   if (missingVersions.length > 0) {
+    debug?.("✗ Validation failed - missing versions:", missingVersions);
     throw new UCDStoreGenericError(
       `Some requested versions are not available in the API: ${missingVersions.join(", ")}`,
     );
   }
 
+  debug?.("✓ All requested versions are available");
+
   const basePathExists = await fs.exists(basePath);
   if (!basePathExists) {
+    debug?.(`Creating base directory: ${basePath}`);
     assertCapability(fs, "mkdir");
     await fs.mkdir(basePath);
+  } else {
+    debug?.("Base directory already exists");
   }
 
+  debug?.(`Writing manifest to: ${manifestPath}`);
   await writeManifest(fs, manifestPath, versions);
+
+  debug?.("✓ Bootstrap completed successfully");
 }
