@@ -25,7 +25,7 @@ describe("capability requirements", () => {
     const mkdirSpy = vi.fn().mockResolvedValue(undefined);
 
     const bridgeWithoutListdir = defineFileSystemBridge({
-      metadata: {
+      meta: {
         name: "No Listdir Bridge",
         description: "A mock file system bridge without listdir capability",
       },
@@ -61,7 +61,7 @@ describe("capability requirements", () => {
     const mkdirSpy = vi.fn().mockResolvedValue(undefined);
 
     const bridgeWithoutListdir = defineFileSystemBridge({
-      metadata: {
+      meta: {
         name: "No Listdir Bridge",
         description: "A mock file system bridge without listdir capability",
       },
@@ -104,7 +104,7 @@ describe("capability requirements", () => {
     ]);
 
     const bridgeWithCapabilities = defineFileSystemBridge({
-      metadata: {
+      meta: {
         name: "Full Capabilities Bridge",
         description: "A mock file system bridge with all required capabilities",
       },

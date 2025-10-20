@@ -20,7 +20,7 @@ async function safeExists(path: string): Promise<boolean> {
 }
 
 const NodeFileSystemBridge = defineFileSystemBridge({
-  metadata: {
+  meta: {
     name: "Node.js File System Bridge",
     description: "A file system bridge that uses Node.js fs module to interact with the local file system.",
   },

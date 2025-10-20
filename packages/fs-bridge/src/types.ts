@@ -106,7 +106,7 @@ export interface FileSystemBridgeObject<
   /**
    * Metadata about the file system bridge
    */
-  metadata: FileSystemBridgeMetadata;
+  meta: FileSystemBridgeMetadata;
 
   /**
    * Zod schema for validating bridge options
@@ -156,7 +156,7 @@ export interface FileSystemBridge extends FileSystemBridgeOperations {
   /**
    * Metadata about this file system bridge.
    */
-  metadata: FileSystemBridgeMetadata;
+  meta: FileSystemBridgeMetadata;
 }
 
 export type FileSystemBridgeFactory<

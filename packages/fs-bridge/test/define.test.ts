@@ -17,7 +17,7 @@ describe("defineFileSystemBridge", () => {
       };
 
       const bridge = defineFileSystemBridge({
-        metadata: {
+        meta: {
           name: "Mock Bridge",
           description: "A mock file system bridge for testing",
         },
@@ -46,7 +46,7 @@ describe("defineFileSystemBridge", () => {
       };
 
       const bridge = defineFileSystemBridge({
-        metadata: {
+        meta: {
           name: "Full Mock Bridge",
           description: "A mock file system bridge supporting all operations",
         },
@@ -87,7 +87,7 @@ describe("defineFileSystemBridge", () => {
       });
 
       const bridge = defineFileSystemBridge({
-        metadata: {
+        meta: {
           name: "Configurable Mock Bridge",
           description: "A mock file system bridge with configurable options",
         },
@@ -121,7 +121,7 @@ describe("defineFileSystemBridge", () => {
       });
 
       const bridge = defineFileSystemBridge({
-        metadata: {
+        meta: {
           name: "Invalid Options Bridge",
           description: "A mock file system bridge to test invalid options",
         },
@@ -148,7 +148,7 @@ describe("defineFileSystemBridge", () => {
       const initialState = { callCount: 0 };
 
       const bridge = defineFileSystemBridge({
-        metadata: {
+        meta: {
           name: "Stateful Mock Bridge",
           description: "A mock file system bridge that maintains state",
         },
@@ -187,7 +187,7 @@ describe("defineFileSystemBridge", () => {
       });
 
       const bridge = defineFileSystemBridge({
-        metadata: {
+        meta: {
           name: "Optional Options Bridge",
           description: "A mock file system bridge with optional options",
         },
@@ -218,7 +218,7 @@ describe("defineFileSystemBridge", () => {
       });
 
       const bridge = defineFileSystemBridge({
-        metadata: {
+        meta: {
           name: "Required Options Bridge",
           description: "A mock file system bridge with required options",
         },
@@ -241,7 +241,7 @@ describe("defineFileSystemBridge", () => {
 
     it("should handle accessing state properties when state is undefined", async () => {
       const bridge = defineFileSystemBridge({
-        metadata: {
+        meta: {
           name: "State Access Bridge",
           description: "A mock file system bridge to test state access",
         },
@@ -275,7 +275,7 @@ describe("defineFileSystemBridge", () => {
   describe("unsupported operations", () => {
     it("should throw when accessing unsupported operation", () => {
       const bridge = defineFileSystemBridge({
-        metadata: {
+        meta: {
           name: "Unsupported Operation Bridge",
           description: "A mock file system bridge with no operations",
         },
@@ -291,7 +291,7 @@ describe("defineFileSystemBridge", () => {
       const p = Promise.resolve("value");
 
       const bridge = defineFileSystemBridge({
-        metadata: {
+        meta: {
           name: "No Catch Bridge",
           description: "A mock file system bridge to test promise without catch",
         },
@@ -311,7 +311,7 @@ describe("defineFileSystemBridge", () => {
   describe("error handling", () => {
     it("should throw if an error occurs in the setup function", () => {
       const bridge = defineFileSystemBridge({
-        metadata: {
+        meta: {
           name: "Setup Error Bridge",
           description: "A mock file system bridge that throws in setup",
         },
@@ -338,7 +338,7 @@ describe("defineFileSystemBridge", () => {
 
     it("should catch and rethrow errors from async operations", async () => {
       const bridge = defineFileSystemBridge({
-        metadata: {
+        meta: {
           name: "Async Error Bridge",
           description: "A mock file system bridge that throws in async operation",
         },
@@ -356,7 +356,7 @@ describe("defineFileSystemBridge", () => {
 
     it("should catch and rethrow errors from sync operations", () => {
       const bridge = defineFileSystemBridge({
-        metadata: {
+        meta: {
           name: "Sync Error Bridge",
           description: "A mock file system bridge that throws in sync operation",
         },
