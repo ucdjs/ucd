@@ -19,13 +19,13 @@ import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import defu from "defu";
 import { join } from "pathe";
 import { createInternalContext, createPublicContext } from "./core/context";
-import { UCDStoreGenericError } from "./errors";
 import { readManifest, writeManifest } from "./core/manifest";
+import { UCDStoreGenericError } from "./errors";
+import { createStoreMethods } from "./retrieval";
 import { bootstrap } from "./setup/bootstrap";
 import { verify } from "./setup/verify";
-import { createStoreMethods } from "./retrieval";
 
-const debug = createDebugger("ucdjs:ucd-store:v2");
+const debug = createDebugger("ucdjs:ucd-store");
 
 export async function createUCDStore(options: UCDStoreOptions): Promise<UCDStore> {
   debug?.("Creating UCD Store with options", options);

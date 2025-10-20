@@ -1,7 +1,7 @@
 import type { OperationResult } from "@ucdjs-internal/shared";
 import type { FileSystemBridge, OptionalCapabilityKey } from "@ucdjs/fs-bridge";
 import type { UnicodeTreeNode } from "@ucdjs/schemas";
-import type { StoreError } from "../errors";
+import type { StoreError } from "./errors";
 import type { GetFileOptions, InternalUCDStoreContext, StoreMethodOptions, UCDStoreMethods } from "./types";
 import {
   createDebugger,
@@ -10,7 +10,7 @@ import {
 } from "@ucdjs-internal/shared";
 import { hasCapability } from "@ucdjs/fs-bridge";
 import { join } from "pathe";
-import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../errors";
+import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "./errors";
 
 const debug = createDebugger("ucdjs:ucd-store:v2:retrieval");
 
