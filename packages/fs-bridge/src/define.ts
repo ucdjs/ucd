@@ -99,10 +99,12 @@ export function defineFileSystemBridge<
     });
 
     return Object.assign(proxiedBridge, {
-      name: fsBridge.name,
-      description: fsBridge.description,
       capabilities,
-      metadata: fsBridge.metadata,
+      metadata: {
+        ...fsBridge.metadata,
+        name: fsBridge.metadata.name,
+        description: fsBridge.metadata.description,
+      },
     });
   };
 }

@@ -89,61 +89,6 @@ type FileSystemBridgeSetupFn<
 
 export interface FileSystemBridgeMetadata {
   /**
-   * Are `write` operations persistent (i.e., do they modify underlying storage)?
-   *
-   * - `true`: Write operations modify the underlying storage and persist across sessions.
-   * - `false`: Write operations are ephemeral and do not persist across sessions (e.g., in-memory storage).
-   * - `undefined`: Behavior not specified by the bridge.
-   *
-   */
-  persistent?: boolean;
-
-  /**
-   * Does the bridge support mirroring data to a secondary location?
-   *
-   * - `true`: The bridge supports mirroring data to a secondary location.
-   * - `false`: The bridge does not support mirroring data.
-   * - `undefined`: Behavior not specified by the bridge.
-   */
-  mirror?: boolean;
-
-  /**
-   * Additional metadata about the file system bridge
-   *
-   * NOTE:
-   * This can include any custom properties that may be relevant to users of the bridge.
-   * For example, a bridge that uses a specific storage backend might include
-   * a `customMode` property to indicate the type of storage used.
-   *
-   * Or a bridge that has specific performance characteristics might include
-   * properties like `maxFileSize` or `supportsStreaming`.
-   *
-   * This field is intentionally flexible to allow for a wide range of metadata
-   * that may be useful in different contexts.
-   *
-   * Just note, that only the predefined properties are guaranteed to be recognized.
-   * Custom properties are for informational purposes only and may not be used
-   *
-   * @example
-   * ```ts
-   * import { FileSystemBridge } from "@ucdjs/fs-bridge";
-   *
-   * const fsBridge: FileSystemBridge = {
-   *    metadata: {
-   *      persistent: true,
-   *      customMode: "in-memory"
-   *    }
-   * }
-   * ```
-   */
-  [key: string]: unknown;
-}
-
-export interface FileSystemBridgeObject<
-  TOptionsSchema extends z.ZodType = z.ZodNever,
-  TState extends Record<string, unknown> = Record<string, unknown>,
-> {
-  /**
    * A unique name for the file system bridge
    */
   name: string;
@@ -152,11 +97,16 @@ export interface FileSystemBridgeObject<
    * A brief description of the file system bridge
    */
   description: string;
+}
 
+export interface FileSystemBridgeObject<
+  TOptionsSchema extends z.ZodType = z.ZodNever,
+  TState extends Record<string, unknown> = Record<string, unknown>,
+> {
   /**
    * Metadata about the file system bridge
    */
-  metadata?: FileSystemBridgeMetadata;
+  metadata: FileSystemBridgeMetadata;
 
   /**
    * Zod schema for validating bridge options
@@ -199,16 +149,6 @@ export interface FileSystemBridgeObject<
 
 export interface FileSystemBridge extends FileSystemBridgeOperations {
   /**
-   * A unique name for the file system bridge
-   */
-  name: string;
-
-  /**
-   * A brief description of the file system bridge
-   */
-  description: string;
-
-  /**
    * The capabilities of this file system bridge.
    */
   capabilities: FileSystemBridgeCapabilities;
@@ -216,7 +156,7 @@ export interface FileSystemBridge extends FileSystemBridgeOperations {
   /**
    * Metadata about this file system bridge.
    */
-  metadata?: FileSystemBridgeMetadata;
+  metadata: FileSystemBridgeMetadata;
 }
 
 export type FileSystemBridgeFactory<
