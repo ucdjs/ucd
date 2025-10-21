@@ -46,9 +46,10 @@ export async function discoverEndpointsFromConfig(baseUrl: string): Promise<UCDW
  */
 export function getDefaultUCDEndpointConfig(): UCDWellKnownConfig {
   // @ts-expect-error We haven't typed the globalThis injection yet
-  // This is mostly because, if we let's say, wrap the globalThis in
+  // This is because wrapping globalThis in a type assertion like
   // `(globalThis as typeof globalThis & { __UCD_ENDPOINT_DEFAULT_CONFIG__?: UCDWellKnownConfig })`
-  // The `replacePlugin` will not collapse the condition, and the resulting code looks ugly.
+  // prevents `replacePlugin` from collapsing the condition, resulting in code that looks like:
+  // `return <object> ?? { ...fallbackObject }` instead of just returning the object directly.
   return globalThis.__UCD_ENDPOINT_DEFAULT_CONFIG__ ?? {
     version: "0.1",
     endpoints: {
