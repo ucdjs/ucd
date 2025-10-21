@@ -128,6 +128,7 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           DRY_RUN: ${{ github.event.inputs.dry-run }}
           HAS_CHANGES: ${{ needs.detect-changes.outputs.has-changes }}
+          COMMENT_TABLE: ${{ steps.generate-table.outputs.comment-table }}
         with:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
@@ -138,7 +139,7 @@ jobs:
             ${{ env.HAS_CHANGES == 'false' && '**No deployable apps affected by changes in this PR.**' || '' }}
             ${{ env.DRY_RUN == 'true' && '**Note: This was a dry run - no actual deployments were created.**' || '' }}
 
-            ${{ env.HAS_CHANGES == 'false' && '' || steps.generate-table.outputs.comment-table }}
+            ${{ env.HAS_CHANGES == 'false' && '' || env.COMMENT_TABLE }}
 
             **Built from commit:** `${{ env.HEAD_SHA }}`
 
