@@ -91,17 +91,19 @@ jobs:
           INPUT_APP: ${{ inputs.app }}
           CHANGED_APPS: ${{ inputs.changed-apps }}
         run: |
-          # Priority: manual selection > changed apps > all apps
+          # Manual > Changed Apps > All Apps
+
+          # Manual
           if [ "$INPUT_APP" != "all" ]; then
-            # Manual app selection (highest priority)
             APPS_TO_DEPLOY=$(echo "$ALL_APPS" | jq -c --arg app "$INPUT_APP" 'map(select(. == $app))')
             echo "Using manual app selection: $INPUT_APP"
-          elif [ "$CHANGED_APPS" != "[]" ] && [ -n "$CHANGED_APPS" ]; then
-            # Changed apps from turbo (middle priority)
+
+          # Changed Apps
+          elif [ "$CHANGED_APPS" != "[]" ] && [ -n "$CHANGED_APPS" ] && echo "$CHANGED_APPS" | jq empty >/dev/null 2>&1; then
             APPS_TO_DEPLOY=$CHANGED_APPS
             echo "Using changed apps from detection: $CHANGED_APPS"
+          # All Apps
           else
-            # All apps (default/lowest priority)
             APPS_TO_DEPLOY=$ALL_APPS
             echo "Using all apps (no filter applied)"
           fi
