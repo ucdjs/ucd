@@ -1,9 +1,9 @@
 import type {
-  FileSystemBridgeCapabilities,
-  FileSystemBridgeCapabilityKey,
   FileSystemBridgeFactory,
   FileSystemBridgeObject,
-  FileSystemBridgeOperations,
+  HasOptionalCapabilityMap,
+  OptionalCapabilityKey,
+  OptionalFileSystemBridgeOperations,
 } from "./types";
 import { createDebugger } from "@ucdjs-internal/shared";
 import { PathUtilsBaseError, resolveSafePath } from "@ucdjs/path-utils";
@@ -52,7 +52,7 @@ export function defineFileSystemBridge<
       );
     }
 
-    const optionalCapabilities = inferCapabilitiesFromOperations(bridge);
+    const optionalCapabilities = inferOptionalCapabilitiesFromOperations(bridge);
 
     const newBridge = {
       ...bridge,
@@ -69,7 +69,7 @@ export function defineFileSystemBridge<
           if (val == null || typeof val !== "function") {
             return () => {
               debug?.("Attempted to call unsupported operation", { operation: property });
-              throw new BridgeUnsupportedOperation(property as FileSystemBridgeCapabilityKey);
+              throw new BridgeUnsupportedOperation(property as OptionalCapabilityKey);
             };
           }
 
@@ -111,12 +111,9 @@ export function defineFileSystemBridge<
 /**
  * @internal
  */
-function inferCapabilitiesFromOperations(ops: Partial<FileSystemBridgeOperations>): FileSystemBridgeCapabilities {
+function inferOptionalCapabilitiesFromOperations(ops: OptionalFileSystemBridgeOperations): HasOptionalCapabilityMap {
   return {
-    read: "read" in ops && typeof ops.read === "function",
     write: "write" in ops && typeof ops.write === "function",
-    listdir: "listdir" in ops && typeof ops.listdir === "function",
-    exists: "exists" in ops && typeof ops.exists === "function",
     mkdir: "mkdir" in ops && typeof ops.mkdir === "function",
     rm: "rm" in ops && typeof ops.rm === "function",
   };
