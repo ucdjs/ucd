@@ -53,14 +53,20 @@ export function defineFileSystemBridge<
       );
     }
 
-    const capabilities = inferCapabilitiesFromOperations(bridge);
+    const optionalCapabilities = inferCapabilitiesFromOperations(bridge);
 
-    const proxiedBridge = new Proxy(bridge, {
+    const newBridge = {
+      ...bridge,
+      optionalCapabilities,
+      meta: fsBridge.meta,
+    };
+
+    const bridgeOperationsProxy = new Proxy(newBridge, {
       get(target, property) {
         const val = target[property as keyof typeof target];
 
         // if it's an operation method and not implemented, throw
-        if (typeof property === "string" && property in capabilities) {
+        if (typeof property === "string" && property in optionalCapabilities) {
           if (val == null || typeof val !== "function") {
             return () => {
               debug?.("Attempted to call unsupported operation", { operation: property });
@@ -99,14 +105,7 @@ export function defineFileSystemBridge<
       },
     });
 
-    return Object.assign(proxiedBridge, {
-      optionalCapabilities: capabilities,
-      meta: {
-        ...fsBridge.meta,
-        name: fsBridge.meta.name,
-        description: fsBridge.meta.description,
-      },
-    } satisfies FileSystemBridge);
+    return bridgeOperationsProxy;
   };
 }
 
