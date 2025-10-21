@@ -159,7 +159,7 @@ describe("defineFileSystemBridge", () => {
           return {
             read: vi.fn().mockImplementation(() => {
               // The state.callCount will not update the outer `callCount` variable,
-              // since we wan't to prevent side-effects with state, when multiple of the same bridges
+              // since we want to prevent side-effects with state, when multiple of the same bridges
               // are created and used.
               state.callCount += 1;
               callCount += 1;
