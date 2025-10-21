@@ -58,7 +58,7 @@ catalogs:
     pathe: 2.0.3
     "@clack/prompts": 1.0.0-alpha.5
     debug: 4.4.3
-    "@luxass/msw-utils": 0.3.0
+    "@luxass/msw-utils": 0.4.0
 
   dev:
     tsdown: 0.15.4

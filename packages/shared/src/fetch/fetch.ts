@@ -8,7 +8,7 @@ import type {
   ResponseType,
   SafeFetchResponse,
 } from "./types";
-import { isMSWError } from "@luxass/msw-utils";
+import { isMSWError } from "@luxass/msw-utils/runtime-guards";
 import destr from "destr";
 import { FetchError } from "./error";
 import {
