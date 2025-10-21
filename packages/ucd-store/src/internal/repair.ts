@@ -116,7 +116,7 @@ async function handleOrphanedFiles(
     for (const orphanedFile of analysis.orphanedFiles) {
       allOperations.push(limit(async () => {
         try {
-          assertCapability(store.fs, ["exists", "rm"]);
+          assertCapability(store.fs, "rm");
           const filePath = join(store.basePath, analysis.version, orphanedFile);
           parentDirectoriesUnique.add(dirname(filePath));
 
@@ -159,8 +159,6 @@ async function handleOrphanedFiles(
   // for each parent directory, check if it is empty..
   // If it is, keep it in the list.
   for (const dir of parentDirectoriesUnique) {
-    assertCapability(store.fs, ["listdir"]);
-
     const files = await store.fs.listdir(dir);
     if (files.length === 0) {
       parentDirectories.push(dir);

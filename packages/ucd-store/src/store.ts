@@ -151,7 +151,6 @@ export class UCDStore {
         throw new UCDStoreVersionNotFoundError(version);
       }
 
-      assertCapability(this.#fs, ["listdir", "exists"]);
       if (!await this.#fs.exists(join(this.basePath, version))) {
         throw new UCDStoreVersionNotFoundError(version);
       }
@@ -213,7 +212,6 @@ export class UCDStore {
         );
       }
 
-      assertCapability(this.#fs, "read");
       try {
         let content = "";
         if (isAbsolute(filePath)) {
@@ -238,8 +236,6 @@ export class UCDStore {
 
   async init(options: InitOptions = {}): Promise<void> {
     const { force = false, dryRun = false } = options;
-
-    assertCapability(this.#fs, ["exists"]);
 
     // fetch available versions from API to validate
     const client = await this.#ensureClient();
@@ -473,7 +469,6 @@ export class UCDStore {
   }
 
   async "~readManifest"(): Promise<UCDStoreManifest> {
-    assertCapability(this.#fs, "read");
     const manifestData = await this.#fs.read(this.#manifestPath);
 
     if (!manifestData) {

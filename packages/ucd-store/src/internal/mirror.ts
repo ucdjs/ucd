@@ -47,7 +47,7 @@ export async function internal__mirror(store: UCDStore, options: Required<Mirror
 
   ensureIsPositiveConcurrency(concurrency, UCDStoreGenericError);
 
-  assertCapability(store.fs, ["exists", "mkdir"]);
+  assertCapability(store.fs, "mkdir");
 
   // create the limit function to control concurrency
   const limit = createConcurrencyLimiter(concurrency);
@@ -77,7 +77,7 @@ export async function internal__mirror(store: UCDStore, options: Required<Mirror
 
   // pre-create all directories
   await Promise.all([...directoriesToCreate].map(async (dir) => {
-    assertCapability(store.fs, ["mkdir", "exists"]);
+    assertCapability(store.fs, "mkdir");
     if (!await store.fs.exists(dir)) {
       await store.fs.mkdir(dir);
     }
@@ -110,7 +110,7 @@ export async function internal__mirror(store: UCDStore, options: Required<Mirror
 }
 
 async function internal__mirrorFile(store: UCDStore, version: string, filePath: string, options: Pick<MirrorOptions, "force" | "dryRun">): Promise<boolean> {
-  assertCapability(store.fs, ["exists", "read", "write", "mkdir"]);
+  assertCapability(store.fs, ["write", "mkdir"]);
   const { force = false, dryRun = false } = options;
   const localPath = join(store.basePath!, version, filePath);
 

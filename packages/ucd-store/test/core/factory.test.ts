@@ -92,11 +92,8 @@ describe("factory functions", () => {
 
       const fsCapabilities = store.fs.optionalCapabilities;
       expect(fsCapabilities).toBeDefined();
-      expect(fsCapabilities.read).toBe(true);
       expect(fsCapabilities.write).toBe(true);
-      expect(fsCapabilities.listdir).toBe(true);
       expect(fsCapabilities.mkdir).toBe(true);
-      expect(fsCapabilities.exists).toBe(true);
       expect(fsCapabilities.rm).toBe(true);
     });
 
@@ -165,11 +162,8 @@ describe("factory functions", () => {
 
       const fsCapabilities = store.fs.optionalCapabilities;
       expect(fsCapabilities).toBeDefined();
-      expect(fsCapabilities.read).toBe(true);
       expect(fsCapabilities.write).toBe(false);
-      expect(fsCapabilities.listdir).toBe(true);
       expect(fsCapabilities.mkdir).toBe(false);
-      expect(fsCapabilities.exists).toBe(true);
       expect(fsCapabilities.rm).toBe(false);
     });
 
@@ -235,7 +229,6 @@ describe("factory functions", () => {
       // HTTP bridge should be configured with the same baseUrl
       expect(store.baseUrl).toBe(baseUrl);
       expect(store.fs.optionalCapabilities.write).toBe(false);
-      expect(store.fs.optionalCapabilities.read).toBe(true);
     });
   });
 });

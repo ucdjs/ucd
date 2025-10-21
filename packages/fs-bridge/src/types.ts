@@ -23,14 +23,31 @@ export type FSEntry = {
   children: FSEntry[];
 };
 
-export interface FileSystemBridgeOperations {
+export interface RequiredFileSystemBridgeOperations {
   /**
    * Reads the contents of a file.
    * @param {string} path - The path to the file to read
    * @returns {Promise<string>} A promise that resolves to the file contents as a string
    */
-  read?: (path: string) => Promise<string>;
+  read: (path: string) => Promise<string>;
 
+  /**
+   * Lists the contents of a directory.
+   * @param {string} path - The path to the directory to list
+   * @param {boolean} [recursive=false] - If true, lists files in subdirectories as well
+   * @returns {Promise<FSEntry[]>} A promise that resolves to an array of file and directory entries
+   */
+  listdir: (path: string, recursive?: boolean) => Promise<FSEntry[]>;
+
+  /**
+   * Checks if a file or directory exists.
+   * @param {string} path - The path to check for existence
+   * @returns {Promise<boolean>} A promise that resolves to true if the path exists, false otherwise
+   */
+  exists: (path: string) => Promise<boolean>;
+}
+
+export interface OptionalFileSystemBridgeOperations {
   /**
    * Writes data to a file.
    * @param {string} path - The path to the file to write
@@ -41,26 +58,11 @@ export interface FileSystemBridgeOperations {
   write?: (path: string, data: string | Uint8Array, encoding?: BufferEncoding) => Promise<void>;
 
   /**
-   * Lists the contents of a directory.
-   * @param {string} path - The path to the directory to list
-   * @param {boolean} [recursive=false] - If true, lists files in subdirectories as well
-   * @returns {Promise<FSEntry[]>} A promise that resolves to an array of file and directory entries
-   */
-  listdir?: (path: string, recursive?: boolean) => Promise<FSEntry[]>;
-
-  /**
    * Creates a directory.
    * @param {string} path - The path of the directory to create
    * @returns {Promise<void>} A promise that resolves when the directory is created
    */
   mkdir?: (path: string) => Promise<void>;
-
-  /**
-   * Checks if a file or directory exists.
-   * @param {string} path - The path to check for existence
-   * @returns {Promise<boolean>} A promise that resolves to true if the path exists, false otherwise
-   */
-  exists?: (path: string) => Promise<boolean>;
 
   /**
    * Removes a file or directory.
@@ -71,10 +73,12 @@ export interface FileSystemBridgeOperations {
   rm?: (path: string, options?: FileSystemBridgeRmOptions) => Promise<void>;
 }
 
-export type FileSystemBridgeCapabilityKey = keyof FileSystemBridgeOperations;
-export type FileSystemBridgeCapabilities = {
-  [K in FileSystemBridgeCapabilityKey]: boolean;
-};
+export type FileSystemBridgeOperations = OptionalFileSystemBridgeOperations & RequiredFileSystemBridgeOperations;
+
+export type RequiredCapabilityKey = keyof RequiredFileSystemBridgeOperations;
+export type OptionalCapabilityKey = keyof OptionalFileSystemBridgeOperations;
+
+export type HasOptionalCapabilityMap = Record<OptionalCapabilityKey, boolean>;
 
 type ResolveSafePathFn = (basePath: string, inputPath: string) => string;
 
@@ -151,7 +155,7 @@ export interface FileSystemBridge extends FileSystemBridgeOperations {
   /**
    * The capabilities of this file system bridge.
    */
-  optionalCapabilities: FileSystemBridgeCapabilities;
+  optionalCapabilities: HasOptionalCapabilityMap;
 
   /**
    * Metadata about this file system bridge.
