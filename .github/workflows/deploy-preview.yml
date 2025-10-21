@@ -127,8 +127,8 @@ jobs:
         env:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           DRY_RUN: ${{ github.event.inputs.dry-run }}
-          HAS_CHANGES: ${{ needs.detect-changes.outputs.has-changes }}
           COMMENT_TABLE: ${{ steps.generate-table.outputs.comment-table }}
+          HAS_CHANGES: ${{ github.event_name == 'pull_request' && needs.detect-changes.outputs.has-changes || 'true' }}
         with:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
@@ -180,7 +180,7 @@ jobs:
       cloudflare-env: preview
       dry-run: ${{ github.event.inputs.dry-run == 'true' }}
       app: ${{ github.event.inputs.app || 'all' }}
-      changed-apps: ${{ needs.detect-changes.outputs.changed-apps || '[]' }}
+      changed-apps: ${{ github.event_name == 'pull_request' && needs.detect-changes.outputs.changed-apps || '[]' }}
       include-pr-comment: true
       repository-condition: ${{ github.repository == 'ucdjs/ucd' && github.event.pull_request.user.login == 'luxass' }}
       extra-build-step: true
