@@ -61,6 +61,8 @@ jobs:
 
       - name: detect changed apps
         id: detect
+        env:
+          TURBO_SCM_BASE: origin/main
         run: |
           # Get affected packages using turbo (suppress version banner to stderr)
           AFFECTED=$(pnpm turbo ls --affected --output=json 2>/dev/null)
