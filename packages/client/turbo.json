@@ -22,7 +22,7 @@
         "src/.generated/api.d.ts"
       ],
       "dependsOn": [
-        "@ucdjs/api-worker#build:openapi"
+        "@ucdjs/api#build:openapi"
       ]
     }
   }

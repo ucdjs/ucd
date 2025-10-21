@@ -13,7 +13,7 @@
     },
     "build": {
       "dependsOn": [
-        "@ucdjs/api-worker#build:openapi",
+        "@ucdjs/api#build:openapi",
         "^build"
       ],
       "outputs": [
