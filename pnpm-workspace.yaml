@@ -67,6 +67,7 @@ catalogs:
     nanotar: 0.2.0
     openapi-typescript: 7.9.1
     tsx: 4.20.5
+    rolldown: 1.0.0-beta.42
 
   workers:
     wrangler: 4.38.0
@@ -120,7 +121,7 @@ onlyBuiltDependencies:
 
 overrides:
   "@asteasolutions/zod-to-openapi": 8.1.0
-  rolldown: 1.0.0-beta.42
+  rolldown: catalog:dev
 
 patchedDependencies:
   "@asteasolutions/zod-to-openapi@8.1.0": patches/@asteasolutions__zod-to-openapi@8.1.0.patch
