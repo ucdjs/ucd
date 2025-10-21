@@ -90,7 +90,7 @@ describe("factory functions", () => {
       expect(store.baseUrl).toBe(UCDJS_API_BASE_URL);
       expect(store.initialized).toBe(false);
 
-      const fsCapabilities = store.fs.capabilities;
+      const fsCapabilities = store.fs.optionalCapabilities;
       expect(fsCapabilities).toBeDefined();
       expect(fsCapabilities.read).toBe(true);
       expect(fsCapabilities.write).toBe(true);
@@ -163,7 +163,7 @@ describe("factory functions", () => {
       expect(store.basePath).toBe("");
       expect(store.initialized).toBe(false);
 
-      const fsCapabilities = store.fs.capabilities;
+      const fsCapabilities = store.fs.optionalCapabilities;
       expect(fsCapabilities).toBeDefined();
       expect(fsCapabilities.read).toBe(true);
       expect(fsCapabilities.write).toBe(false);
@@ -234,8 +234,8 @@ describe("factory functions", () => {
 
       // HTTP bridge should be configured with the same baseUrl
       expect(store.baseUrl).toBe(baseUrl);
-      expect(store.fs.capabilities.write).toBe(false);
-      expect(store.fs.capabilities.read).toBe(true);
+      expect(store.fs.optionalCapabilities.write).toBe(false);
+      expect(store.fs.optionalCapabilities.read).toBe(true);
     });
   });
 });

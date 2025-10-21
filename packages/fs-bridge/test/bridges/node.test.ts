@@ -378,7 +378,7 @@ describe("node fs-bridge", () => {
       const testDir = "/tmp/test";
       const bridge = NodeFileSystemBridge({ basePath: testDir });
 
-      expect(bridge.capabilities).toEqual({
+      expect(bridge.optionalCapabilities).toEqual({
         read: true,
         write: true,
         exists: true,
