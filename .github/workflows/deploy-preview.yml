@@ -64,14 +64,21 @@ jobs:
         env:
           TURBO_SCM_BASE: origin/main
         run: |
-          # Get affected packages using turbo (suppress version banner to stderr)
-          AFFECTED=$(pnpm turbo ls --affected --output=json 2>/dev/null)
+          # Get affected packages using turbo
+          AFFECTED=$(pnpm turbo ls --affected --output=json)
 
           echo "Affected packages:"
           echo "$AFFECTED"
 
-          # Extract deployable app names (api, web, docs)
-          CHANGED_APPS=$(echo "$AFFECTED" | jq -r '.packages.items[].name' | grep -E '^@ucdjs/(api|web|docs)$' | sed 's/@ucdjs\///' | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          PACKAGE_NAMES=$(echo "$AFFECTED" | jq -r '.packages.items[].name')
+          echo "Affected package names:"
+          echo "$PACKAGE_NAMES"
+
+          FILTERED_PACKAGE_NAMES=$(echo "$PACKAGE_NAMES" | grep -E '^@ucdjs/(api|web|docs)$' | sed 's/@ucdjs\///')
+          echo "Filtered deployable package names:"
+          echo "$FILTERED_PACKAGE_NAMES"
+
+          CHANGED_APPS=$(echo "$FILTERED_PACKAGE_NAMES" | jq -R -s -c 'split("\n") | map(select(length > 0))')
 
           # Check if any deployable apps changed
           if [ "$CHANGED_APPS" = "[]" ] || [ -z "$CHANGED_APPS" ]; then
