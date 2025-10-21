@@ -56,7 +56,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: generate openapi artifact
-        run: pnpm --filter=@ucdjs/api-worker build:openapi
+        run: pnpm --filter=@ucdjs/api build:openapi
 
       - name: upload openapi schema to artifact
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
