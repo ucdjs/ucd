@@ -31,8 +31,6 @@ export async function discoverEndpointsFromConfig(baseUrl: string): Promise<UCDW
   return result.data;
 }
 
-declare const __UCD_ENDPOINT_DEFAULT_CONFIG__: UCDWellKnownConfig;
-
 /**
  * Return the default UCD well-known configuration used by the library.
  *
@@ -47,7 +45,12 @@ declare const __UCD_ENDPOINT_DEFAULT_CONFIG__: UCDWellKnownConfig;
  * @returns {UCDWellKnownConfig} The default well-known configuration.
  */
 export function getDefaultUCDEndpointConfig(): UCDWellKnownConfig {
-  return __UCD_ENDPOINT_DEFAULT_CONFIG__ ?? {
+  // @ts-expect-error We haven't typed the globalThis injection yet
+  // This is because wrapping globalThis in a type assertion like
+  // `(globalThis as typeof globalThis & { __UCD_ENDPOINT_DEFAULT_CONFIG__?: UCDWellKnownConfig })`
+  // prevents `replacePlugin` from collapsing the condition, resulting in code that looks like:
+  // `return <object> ?? { ...fallbackObject }` instead of just returning the object directly.
+  return globalThis.__UCD_ENDPOINT_DEFAULT_CONFIG__ ?? {
     version: "0.1",
     endpoints: {
       files: "/api/v1/files",
