@@ -48,8 +48,10 @@ describe("defineFileSystemBridge", () => {
 
   it("should work with no optionsSchema and no state", () => {
     const SimpleBridge = defineFileSystemBridge({
-      name: "Simple Bridge",
-      description: "A simple file system bridge",
+      meta: {
+        name: "Simple Bridge",
+        description: "A simple file system bridge",
+      },
       // @ts-expect-error We haven't implemented the required operations
       setup() {
         return {};
