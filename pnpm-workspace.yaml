@@ -30,7 +30,7 @@ catalogs:
     "@cloudflare/vitest-pool-workers": 0.9.13
 
   linting:
-    "@luxass/eslint-config": 6.0.0
+    "@luxass/eslint-config": 6.0.1
     "@stoplight/spectral-cli": 6.15.0
     eslint: 9.38.0
     eslint-plugin-format: 1.0.2
