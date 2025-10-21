@@ -1,4 +1,5 @@
 import { createTsdownConfig } from "@ucdjs-tooling/tsdown-config";
+import { replacePlugin } from "rolldown/experimental";
 
 const __UCD_ENDPOINT_DEFAULT_CONFIG__ = await fetch("https://api.ucdjs.dev/.well-known/ucd-config.json").then((res) => {
   if (!res.ok) {
@@ -18,7 +19,9 @@ export default createTsdownConfig({
   entry: [
     "./src/index.ts",
   ],
-  define: {
-    __UCD_ENDPOINT_DEFAULT_CONFIG__: JSON.stringify(__UCD_ENDPOINT_DEFAULT_CONFIG__),
-  },
+  plugins: [
+    replacePlugin({
+      "globalThis.__UCD_ENDPOINT_DEFAULT_CONFIG__": JSON.stringify(__UCD_ENDPOINT_DEFAULT_CONFIG__),
+    }),
+  ],
 });
