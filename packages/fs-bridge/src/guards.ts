@@ -1,4 +1,4 @@
-import type { FileSystemBridge, FileSystemBridgeCapabilityKey } from "./types";
+import type { FileSystemBridge, OptionalCapabilityKey } from "./types";
 import { createDebugger } from "@ucdjs-internal/shared";
 
 const debug = createDebugger("ucdjs:fs-bridge:guards");
@@ -9,11 +9,11 @@ const debug = createDebugger("ucdjs:fs-bridge:guards");
  * Performs a runtime check and acts as a type guard to narrow the bridge type
  * when all required capabilities are present.
  *
- * @template {FileSystemBridgeCapabilityKey} T - The capability key(s) to check for, extending FileSystemBridgeCapabilityKey
+ * @template {OptionalCapabilityKey} T - The capability key(s) to check for, extending OptionalCapabilityKey
  * @param {FileSystemBridge} bridge - The file system bridge to check capabilities for
  * @param {T | T[]} capabilityOrCapabilities - A single capability or array of capabilities to verify
  */
-export function hasCapability<T extends FileSystemBridgeCapabilityKey = never>(
+export function hasCapability<T extends OptionalCapabilityKey = never>(
   bridge: FileSystemBridge,
   capabilityOrCapabilities: T | T[],
 ): bridge is FileSystemBridge & Required<Pick<FileSystemBridge, T>> {
@@ -23,7 +23,10 @@ export function hasCapability<T extends FileSystemBridgeCapabilityKey = never>(
 
   for (const capability of capabilitiesToCheck) {
     if (!bridge.optionalCapabilities[capability]) {
-      debug?.("Bridge capability check failed", { capability, availableCapabilities: Object.keys(bridge.optionalCapabilities).filter((k) => bridge.optionalCapabilities[k as FileSystemBridgeCapabilityKey]) });
+      debug?.("Bridge capability check failed", {
+        capability,
+        availableCapabilities: Object.keys(bridge.optionalCapabilities).filter((k) => bridge.optionalCapabilities[k as OptionalCapabilityKey]),
+      });
       return false;
     }
   }

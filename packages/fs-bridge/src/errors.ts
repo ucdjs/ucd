@@ -1,4 +1,4 @@
-import type { FileSystemBridgeCapabilityKey } from "./types";
+import type { OptionalCapabilityKey } from "./types";
 
 export abstract class BridgeBaseError extends Error {
   constructor(message: string, options?: ErrorOptions) {
@@ -32,10 +32,10 @@ export class BridgeSetupError extends BridgeBaseError {
 }
 
 export class BridgeUnsupportedOperation extends BridgeBaseError {
-  public readonly capability: FileSystemBridgeCapabilityKey;
+  public readonly capability: OptionalCapabilityKey;
 
   constructor(
-    capability: FileSystemBridgeCapabilityKey,
+    capability: OptionalCapabilityKey,
   ) {
     super(`File system bridge does not support the '${capability}' capability.`);
     this.name = "BridgeUnsupportedOperation";
