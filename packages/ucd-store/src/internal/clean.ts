@@ -78,7 +78,7 @@ export async function internal__clean(store: UCDStore, options: internal_CleanOp
       directoriesToCheck.add(dirname(filePath));
 
       promises.push(limit(async () => {
-        assertCapability(store.fs, ["exists", "rm"]);
+        assertCapability(store.fs, "rm");
 
         try {
           const exists = await store.fs.exists(filePath);
@@ -109,7 +109,7 @@ export async function internal__clean(store: UCDStore, options: internal_CleanOp
 
   // clean up empty directories (bottom-up approach)
   if (!dryRun) {
-    assertCapability(store.fs, ["exists", "rm"]);
+    assertCapability(store.fs, "rm");
 
     // sort directories by depth (deepest first) for bottom-up cleanup
     const sortedDirectories = Array.from(directoriesToCheck).sort((a, b) => b.split("/").length - a.split("/").length);
