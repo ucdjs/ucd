@@ -12,8 +12,10 @@ function normalizeRootPath(path: string | undefined): string {
 }
 
 export const createMemoryMockFS = defineFileSystemBridge({
-  name: "In-Memory File System Bridge",
-  description: "A simple in-memory file system bridge using a flat Map for storage, perfect for testing.",
+  meta: {
+    name: "In-Memory File System Bridge",
+    description: "A simple in-memory file system bridge using a flat Map for storage, perfect for testing.",
+  },
   optionsSchema: z.object({
     initialFiles: z.record(z.string(), z.string()).optional(),
   }).optional(),

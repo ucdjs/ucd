@@ -9,6 +9,8 @@ export {
   BridgeUnsupportedOperation,
 } from "./errors";
 
+export { hasCapability } from "./guards";
+
 export type {
   FileSystemBridge,
   FileSystemBridgeFactory,
