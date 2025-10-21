@@ -1,8 +1,7 @@
 import type { FileSystemBridge, FileSystemBridgeCapabilityKey } from "./types";
 import { createDebugger } from "@ucdjs-internal/shared";
-import { BridgeUnsupportedOperation } from "./errors";
 
-const debug = createDebugger("ucdjs:fs-bridge:assertions");
+const debug = createDebugger("ucdjs:fs-bridge:guards");
 
 /**
  * Asserts that a file system bridge supports the specified capability or capabilities.
