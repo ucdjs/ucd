@@ -86,16 +86,16 @@ catalogs:
     "@types/vscode": 1.104.0
 
   web:
-    react: 19.1.1
-    react-dom: 19.1.1
-    tailwindcss: 4.1.13
-    "@tailwindcss/vite": 4.1.13
-    "@vitejs/plugin-react": 5.0.3
-    vite: 7.1.7
-    "@cloudflare/vite-plugin": 1.13.3
-    "@tanstack/react-router": 1.131.50
-    "@tanstack/react-router-devtools": 1.131.50
-    "@tanstack/router-plugin": 1.131.50
+    react: 19.2.0
+    react-dom: 19.2.0
+    tailwindcss: 4.1.15
+    "@tailwindcss/vite": 4.1.15
+    "@vitejs/plugin-react": 5.0.4
+    vite: 7.1.11
+    "@cloudflare/vite-plugin": 1.13.13
+    "@tanstack/react-router": 1.133.20
+    "@tanstack/react-router-devtools": 1.133.20
+    "@tanstack/router-plugin": 1.133.20
 
   vscode:
     vscode-ext-gen: 1.2.1
