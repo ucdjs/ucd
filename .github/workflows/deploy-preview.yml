@@ -136,9 +136,13 @@ jobs:
             <!-- ucdjs:deployment:preview -->
             ## 🌏 Preview Deployments
 
-            ${{ env.HAS_CHANGES == 'false' && '> [!NOTE]\n> No deployable apps affected by changes in this PR.' || '' }}
-            ${{ env.DRY_RUN == 'true' && '> [!NOTE]\n> This was a dry run - no actual deployments were created.' || '' }}
-
+            ${{ env.HAS_CHANGES == 'false' && '
+            > [!NOTE]
+            > No deployable apps affected by changes in this PR.
+            ' || '' }}${{ env.DRY_RUN == 'true' && '
+            > [!NOTE]
+            > This was a dry run - no actual deployments were created.
+            ' || '' }}
             ${{ env.HAS_CHANGES != 'false' && env.COMMENT_TABLE || '' }}
 
             **Built from commit:** `${{ env.HEAD_SHA }}`
@@ -242,8 +246,10 @@ jobs:
             <!-- ucdjs:deployment:preview -->
             ## 🌏 Preview Deployments
 
-            ${{ env.DRY_RUN == 'true' && '> [!NOTE]\n> This was a dry run - no actual deployments were created.' || '' }}
-
+            ${{ env.DRY_RUN == 'true' && '
+            > [!NOTE]
+            > This was a dry run - no actual deployments were created.
+            ' || '' }}
             ${{ env.COMMENT_TABLE }}
 
             **Built from commit:** `${{ env.HEAD_SHA }}`
