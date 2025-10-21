@@ -1,8 +1,6 @@
-import type { UCDClient } from "@ucdjs/client";
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 import type { UCDWellKnownConfig } from "@ucdjs/schemas";
 import type {
-  InternalUCDStoreContext,
   UCDStore,
   UCDStoreOperations,
   UCDStoreOptions,
