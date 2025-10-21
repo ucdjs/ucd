@@ -5,6 +5,7 @@ engineStrict: true
 minimumReleaseAge: 1440 # 1 day
 
 minimumReleaseAgeExclude:
+  - "@luxass/eslint-config"
   - "@luxass/unicode-utils"
   - "@luxass/msw-utils"
 
@@ -29,7 +30,7 @@ catalogs:
     "@cloudflare/vitest-pool-workers": 0.9.3
 
   linting:
-    "@luxass/eslint-config": 5.3.2
+    "@luxass/eslint-config": 6.0.0
     "@stoplight/spectral-cli": 6.15.0
     eslint: 9.36.0
     eslint-plugin-format: 1.0.2
@@ -46,7 +47,6 @@ catalogs:
     "@luxass/utils": 2.7.2
     destr: 2.0.5
     farver: 0.4.2
-    openapi-fetch: ^0.0.0
     yargs-parser: 22.0.0
     defu: 6.1.4
     zod: 4.1.11
