@@ -7,7 +7,7 @@ export interface CustomFetch {
   ): Promise<FetchResponse<MappedResponseType<R, T>>>;
   safe: <T = any, R extends ResponseType = "json">(
     request: RequestInfo,
-    options?: FetchOptions<R>
+    options?: FetchOptions<R>,
   ) => Promise<SafeFetchResponse<MappedResponseType<R, T>>>;
 }
 
