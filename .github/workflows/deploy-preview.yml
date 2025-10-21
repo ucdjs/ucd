@@ -136,10 +136,10 @@ jobs:
             <!-- ucdjs:deployment:preview -->
             ## 🌏 Preview Deployments
 
-            ${{ env.HAS_CHANGES == 'false' && '**No deployable apps affected by changes in this PR.**' || '' }}
-            ${{ env.DRY_RUN == 'true' && '**Note: This was a dry run - no actual deployments were created.**' || '' }}
+            ${{ env.HAS_CHANGES == 'false' && '> [!NOTE]\n> No deployable apps affected by changes in this PR.' || '' }}
+            ${{ env.DRY_RUN == 'true' && '> [!NOTE]\n> This was a dry run - no actual deployments were created.' || '' }}
 
-            ${{ env.HAS_CHANGES == 'false' && '' || env.COMMENT_TABLE }}
+            ${{ env.HAS_CHANGES != 'false' && env.COMMENT_TABLE || '' }}
 
             **Built from commit:** `${{ env.HEAD_SHA }}`
 
@@ -234,6 +234,7 @@ jobs:
         env:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           DRY_RUN: ${{ github.event.inputs.dry-run }}
+          COMMENT_TABLE: ${{ steps.process-results.outputs.comment-table }}
         with:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
@@ -241,9 +242,9 @@ jobs:
             <!-- ucdjs:deployment:preview -->
             ## 🌏 Preview Deployments
 
-            ${{ env.DRY_RUN == 'true' && '**Note: This was a dry run - no actual deployments were created.**' || '' }}
+            ${{ env.DRY_RUN == 'true' && '> [!NOTE]\n> This was a dry run - no actual deployments were created.' || '' }}
 
-            ${{ steps.process-results.outputs.comment-table }}
+            ${{ env.COMMENT_TABLE }}
 
             **Built from commit:** `${{ env.HEAD_SHA }}`
 
