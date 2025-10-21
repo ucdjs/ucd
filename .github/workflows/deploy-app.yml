@@ -99,7 +99,7 @@ jobs:
             echo "Using manual app selection: $INPUT_APP"
 
           # Changed Apps
-          elif [ "$CHANGED_APPS" != "[]" ] && [ -n "$CHANGED_APPS" ] && echo "$CHANGED_APPS" | jq empty >/dev/null 2>&1; then
+          elif [ "$CHANGED_APPS" != "[]" ] && [ -n "$CHANGED_APPS" ] && echo "$CHANGED_APPS" | jq -e 'type == "array" and length > 0' >/dev/null 2>&1; then
             APPS_TO_DEPLOY=$CHANGED_APPS
             echo "Using changed apps from detection: $CHANGED_APPS"
           # All Apps
