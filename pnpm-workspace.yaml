@@ -5,6 +5,7 @@ engineStrict: true
 minimumReleaseAge: 1440 # 1 day
 
 minimumReleaseAgeExclude:
+  - "@luxass/eslint-config"
   - "@luxass/unicode-utils"
   - "@luxass/msw-utils"
 
@@ -25,19 +26,19 @@ catalogs:
     "@vitest/ui": 3.2.4
     vitest: 3.2.4
     vitest-testdirs: 4.2.1
-    msw: 2.11.3
-    "@cloudflare/vitest-pool-workers": 0.9.3
+    msw: 2.11.6
+    "@cloudflare/vitest-pool-workers": 0.9.13
 
   linting:
-    "@luxass/eslint-config": 5.3.2
+    "@luxass/eslint-config": 6.0.1
     "@stoplight/spectral-cli": 6.15.0
-    eslint: 9.36.0
+    eslint: 9.38.0
     eslint-plugin-format: 1.0.2
     "@luxass/spectral-ruleset": 1.1.0
-    "@typescript-eslint/utils": 8.44.1
-    "@eslint-react/eslint-plugin": 1.53.1
-    eslint-plugin-react-hooks: 5.2.0
-    eslint-plugin-react-refresh: 0.4.21
+    "@typescript-eslint/utils": 8.46.2
+    "@eslint-react/eslint-plugin": 2.2.2
+    eslint-plugin-react-hooks: 7.0.0
+    eslint-plugin-react-refresh: 0.4.24
 
   prod:
     # merge these together when heading inference is implemented better
@@ -46,7 +47,6 @@ catalogs:
     "@luxass/utils": 2.7.2
     destr: 2.0.5
     farver: 0.4.2
-    openapi-fetch: ^0.0.0
     yargs-parser: 22.0.0
     defu: 6.1.4
     zod: 4.1.11
@@ -61,41 +61,41 @@ catalogs:
     "@luxass/msw-utils": 0.4.0
 
   dev:
-    tsdown: 0.15.4
-    typescript: 5.9.2
-    publint: 0.3.13
+    tsdown: 0.15.9
+    typescript: 5.9.3
+    publint: 0.3.15
     nanotar: 0.2.0
-    openapi-typescript: 7.9.1
-    tsx: 4.20.5
-    rolldown: 1.0.0-beta.42
+    openapi-typescript: 7.10.1
+    tsx: 4.20.6
+    rolldown: 1.0.0-beta.44
 
   workers:
-    wrangler: 4.38.0
-    "@hono/zod-openapi": 1.1.3
-    "@scalar/hono-api-reference": 0.9.19
-    hono: 4.9.8
-    "@cloudflare/workers-types": 4.20250922.0
+    wrangler: 4.43.0
+    "@hono/zod-openapi": 1.1.4
+    "@scalar/hono-api-reference": 0.9.22
+    hono: 4.10.1
+    "@cloudflare/workers-types": 4.20251014.0
 
   types:
     "@types/picomatch": 4.0.2
-    "@types/node": 22.18.6
+    "@types/node": 22.18.12
     "@types/yargs-parser": 21.0.3
-    "@types/react": 19.1.13
-    "@types/react-dom": 19.1.9
+    "@types/react": 19.2.2
+    "@types/react-dom": 19.2.2
     "@types/debug": 4.1.12
     "@types/vscode": 1.104.0
 
   web:
-    react: 19.1.1
-    react-dom: 19.1.1
-    tailwindcss: 4.1.13
-    "@tailwindcss/vite": 4.1.13
-    "@vitejs/plugin-react": 5.0.3
-    vite: 7.1.7
-    "@cloudflare/vite-plugin": 1.13.3
-    "@tanstack/react-router": 1.131.50
-    "@tanstack/react-router-devtools": 1.131.50
-    "@tanstack/router-plugin": 1.131.50
+    react: 19.2.0
+    react-dom: 19.2.0
+    tailwindcss: 4.1.15
+    "@tailwindcss/vite": 4.1.15
+    "@vitejs/plugin-react": 5.0.4
+    vite: 7.1.11
+    "@cloudflare/vite-plugin": 1.13.13
+    "@tanstack/react-router": 1.133.20
+    "@tanstack/react-router-devtools": 1.133.20
+    "@tanstack/router-plugin": 1.133.20
 
   vscode:
     vscode-ext-gen: 1.2.1
