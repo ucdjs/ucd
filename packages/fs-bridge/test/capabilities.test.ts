@@ -18,7 +18,7 @@ describe("capability inference", () => {
     });
 
     const fs = bridge();
-    expect(fs.capabilities).toEqual({
+    expect(fs.optionalCapabilities).toEqual({
       read: true,
       exists: true,
       write: false,
@@ -47,7 +47,7 @@ describe("capability inference", () => {
     });
 
     const fs = bridge();
-    expect(fs.capabilities).toEqual({
+    expect(fs.optionalCapabilities).toEqual({
       read: true,
       write: true,
       exists: true,
@@ -71,7 +71,7 @@ describe("capability inference", () => {
     });
 
     const fs = bridge();
-    expect(fs.capabilities).toEqual({
+    expect(fs.optionalCapabilities).toEqual({
       read: true,
       write: true,
       exists: false,
@@ -91,7 +91,7 @@ describe("capability inference", () => {
     });
 
     const fs = bridge();
-    expect(fs.capabilities).toEqual({
+    expect(fs.optionalCapabilities).toEqual({
       read: false,
       write: false,
       exists: false,
@@ -115,7 +115,7 @@ describe("capability inference", () => {
     });
 
     const fs = bridge();
-    expect(fs.capabilities).toEqual({
+    expect(fs.optionalCapabilities).toEqual({
       read: false,
       write: false,
       exists: true,
@@ -140,7 +140,7 @@ describe("capability inference", () => {
     });
 
     const fs = bridge();
-    expect(fs.capabilities).toEqual({
+    expect(fs.optionalCapabilities).toEqual({
       read: true,
       exists: true,
       listdir: true,
@@ -165,7 +165,7 @@ describe("capability inference", () => {
     });
 
     const fs = bridge();
-    expect(fs.capabilities).toEqual({
+    expect(fs.optionalCapabilities).toEqual({
       read: false,
       write: true,
       exists: true,
@@ -422,7 +422,7 @@ describe("proxy error handling", () => {
 
     const fs = bridge();
 
-    expect(fs.capabilities).toEqual({
+    expect(fs.optionalCapabilities).toEqual({
       read: true,
       write: false,
       exists: false,
@@ -468,7 +468,7 @@ describe("edge cases", () => {
     });
 
     const fs = bridge();
-    expect(fs.capabilities).toEqual({
+    expect(fs.optionalCapabilities).toEqual({
       read: true,
       write: true,
       exists: true,
@@ -528,9 +528,9 @@ describe("edge cases", () => {
 
     const fs = bridge();
 
-    expect(fs.capabilities.read).toBe(true);
-    expect(fs.capabilities.exists).toBe(true);
-    expect(fs.capabilities.write).toBe(false);
+    expect(fs.optionalCapabilities.read).toBe(true);
+    expect(fs.optionalCapabilities.exists).toBe(true);
+    expect(fs.optionalCapabilities.write).toBe(false);
     assertCapability(fs, "read");
 
     await expect(fs.read("file1.txt")).resolves.toBe("content-1");
@@ -552,8 +552,8 @@ describe("edge cases", () => {
     const fs1 = bridgeFactory();
     const fs2 = bridgeFactory();
 
-    expect(fs1.capabilities).toEqual(fs2.capabilities);
-    expect(fs1.capabilities).toEqual({
+    expect(fs1.optionalCapabilities).toEqual(fs2.optionalCapabilities);
+    expect(fs1.optionalCapabilities).toEqual({
       read: true,
       exists: true,
       write: false,

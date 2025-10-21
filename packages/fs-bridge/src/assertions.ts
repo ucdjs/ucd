@@ -24,8 +24,8 @@ export function assertCapability<T extends FileSystemBridgeCapabilityKey = never
     : [capabilityOrCapabilities];
 
   for (const capability of capabilitiesToCheck) {
-    if (!bridge.capabilities[capability]) {
-      debug?.("Bridge capability check failed", { capability, availableCapabilities: Object.keys(bridge.capabilities).filter((k) => bridge.capabilities[k as FileSystemBridgeCapabilityKey]) });
+    if (!bridge.optionalCapabilities[capability]) {
+      debug?.("Bridge capability check failed", { capability, availableCapabilities: Object.keys(bridge.optionalCapabilities).filter((k) => bridge.optionalCapabilities[k as FileSystemBridgeCapabilityKey]) });
       throw new BridgeUnsupportedOperation(capability);
     }
   }

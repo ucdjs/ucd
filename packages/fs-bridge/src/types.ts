@@ -151,7 +151,7 @@ export interface FileSystemBridge extends FileSystemBridgeOperations {
   /**
    * The capabilities of this file system bridge.
    */
-  capabilities: FileSystemBridgeCapabilities;
+  optionalCapabilities: FileSystemBridgeCapabilities;
 
   /**
    * Metadata about this file system bridge.

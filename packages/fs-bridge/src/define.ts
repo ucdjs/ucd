@@ -100,7 +100,7 @@ export function defineFileSystemBridge<
     });
 
     return Object.assign(proxiedBridge, {
-      capabilities,
+      optionalCapabilities: capabilities,
       meta: {
         ...fsBridge.meta,
         name: fsBridge.meta.name,
