@@ -65,6 +65,9 @@ jobs:
           # Get affected packages using turbo (suppress version banner to stderr)
           AFFECTED=$(pnpm turbo ls --affected --output=json 2>/dev/null)
 
+          echo "Affected packages:"
+          echo "$AFFECTED"
+
           # Extract deployable app names (api, web, docs)
           CHANGED_APPS=$(echo "$AFFECTED" | jq -r '.packages.items[].name' | grep -E '^@ucdjs/(api|web|docs)$' | sed 's/@ucdjs\///' | jq -R -s -c 'split("\n") | map(select(length > 0))')
 
