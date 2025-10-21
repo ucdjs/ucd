@@ -151,7 +151,7 @@ describe("store clean", () => {
 
     await store.init();
 
-    assertCapability(store.fs, ["rm", "exists"]);
+    assertCapability(store.fs, "rm");
     expect(await store.fs.exists(`./15.0.0/ArabicShaping.txt`)).toBe(true);
 
     vi.spyOn(store, "analyze").mockResolvedValue([
@@ -337,7 +337,7 @@ describe("store clean", () => {
     await store.init();
     await store.mirror();
 
-    assertCapability(store.fs, ["rm", "exists"]);
+    assertCapability(store.fs, "rm");
     expect(await store.fs.exists(`./15.0.0/ArabicShaping.txt`)).toBe(true);
 
     vi.spyOn(store, "analyze").mockResolvedValue([
@@ -382,7 +382,7 @@ describe("store clean", () => {
     await store.init();
     await store.mirror();
 
-    assertCapability(store.fs, ["rm", "exists"]);
+    assertCapability(store.fs, "rm");
     await store.fs.rm(`./15.0.0/ArabicShaping.txt`);
 
     vi.spyOn(store.fs, "exists").mockResolvedValue(true);
