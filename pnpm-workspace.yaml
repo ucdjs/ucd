@@ -67,7 +67,6 @@ catalogs:
     nanotar: 0.2.0
     openapi-typescript: 7.9.1
     tsx: 4.20.5
-    memfs: 4.43.0
 
   workers:
     wrangler: 4.38.0

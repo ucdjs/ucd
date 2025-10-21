@@ -313,7 +313,7 @@ describe("http fs-bridge", () => {
 
   describe("capability system", () => {
     it("should correctly infer read-only capabilities", () => {
-      expect(bridge.capabilities).toEqual({
+      expect(bridge.optionalCapabilities).toEqual({
         read: true,
         exists: true,
         listdir: true,

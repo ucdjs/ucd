@@ -31,13 +31,13 @@ log.info("Store basePath:", store.basePath);
 assert(store.basePath === basePath, "store basePath should be set correctly");
 
 // fs capabilities
-assert(store.fs.capabilities != null, "store should have file system capabilities");
-assert(store.fs.capabilities.read, "store should support reading files");
-assert(store.fs.capabilities.write, "store should support writing files");
-assert(store.fs.capabilities.listdir, "store should support listing directories");
-assert(store.fs.capabilities.mkdir, "store should support creating directories");
-assert(store.fs.capabilities.exists, "store should support checking file existence");
-assert(store.fs.capabilities.rm, "store should support removing files");
+assert(store.fs.optionalCapabilities != null, "store should have file system capabilities");
+assert(store.fs.optionalCapabilities.read, "store should support reading files");
+assert(store.fs.optionalCapabilities.write, "store should support writing files");
+assert(store.fs.optionalCapabilities.listdir, "store should support listing directories");
+assert(store.fs.optionalCapabilities.mkdir, "store should support creating directories");
+assert(store.fs.optionalCapabilities.exists, "store should support checking file existence");
+assert(store.fs.optionalCapabilities.rm, "store should support removing files");
 
 assertCapability(store.fs, ["read", "write", "listdir", "mkdir", "exists", "rm"]);
 
