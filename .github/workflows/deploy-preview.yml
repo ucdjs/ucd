@@ -84,26 +84,14 @@ jobs:
             echo "Affected deployable apps: $CHANGED_APPS"
           fi
 
-  preview-approval:
-    runs-on: ubuntu-latest
-    needs: [detect-changes]
-    if: |
-      always() &&
-      github.repository == 'ucdjs/ucd' &&
-      (github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.has-changes == 'true')
-    environment: apps-preview
-    steps:
-      - name: Approve preview deployment
-        run: echo "Preview deployment approved"
-
   upsert-deployment-comment:
     name: upsert deployment comment
     runs-on: ubuntu-latest
-    needs: [detect-changes, preview-approval]
+    needs: [detect-changes]
     if: >
       always() && (
         github.repository == 'ucdjs/ucd' &&
-        (needs.preview-approval.result == 'success' || (needs.detect-changes.result == 'success' && needs.detect-changes.outputs.has-changes == 'false'))
+        (github.event_name == 'workflow_dispatch' || needs.detect-changes.result == 'success')
       )
     permissions:
       pull-requests: write
@@ -122,7 +110,6 @@ jobs:
 
       - name: generate initial comment table
         id: generate-table
-        if: needs.preview-approval.result == 'success'
         uses: ./.github/actions/manage-apps
         with:
           command: generate-comment-table
@@ -152,17 +139,29 @@ jobs:
             <sub>🤖 This comment will be updated automatically when you push new commits to this PR.</sub>
           edit-mode: replace
 
+  preview-approval:
+    runs-on: ubuntu-latest
+    needs: [detect-changes, upsert-deployment-comment]
+    if: |
+      always() && (
+        github.repository == 'ucdjs/ucd' &&
+        needs.upsert-deployment-comment.result == 'success' &&
+        (github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.has-changes == 'true')
+      )
+    environment: apps-preview
+    steps:
+      - name: Approve preview deployment
+        run: echo "Preview deployment approved"
+
   deploy:
     name: deploy apps
     needs:
       - detect-changes
       - preview-approval
-      - upsert-deployment-comment
     if: >
       always() && (
         needs.preview-approval.result == 'success' &&
-        github.repository == 'ucdjs/ucd' &&
-        needs.upsert-deployment-comment.result == 'success'
+        github.repository == 'ucdjs/ucd'
       )
     permissions:
       contents: read
@@ -188,13 +187,11 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - preview-approval
-      - upsert-deployment-comment
       - deploy
     if: >
       always() && (
         needs.preview-approval.result == 'success' &&
-        github.repository == 'ucdjs/ucd' &&
-        needs.upsert-deployment-comment.result == 'success'
+        github.repository == 'ucdjs/ucd'
       )
     permissions:
       pull-requests: write
