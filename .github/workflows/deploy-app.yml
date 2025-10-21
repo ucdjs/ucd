@@ -21,6 +21,11 @@ on:
         required: false
         default: both
         type: string
+      changed-apps:
+        description: JSON array of apps affected by changes (from turbo)
+        required: false
+        default: '[]'
+        type: string
       include-pr-comment:
         description: Include PR comment functionality
         required: false
@@ -84,13 +89,23 @@ jobs:
         env:
           ALL_APPS: ${{ steps.get-apps.outputs.apps }}
           INPUT_APP: ${{ inputs.app }}
+          CHANGED_APPS: ${{ inputs.changed-apps }}
         run: |
-          # parse the input and filter apps accordingly
-          if [ "$INPUT_APP" = "all" ]; then
-            APPS_TO_DEPLOY=$ALL_APPS
-          else
-            # filter to include only the specified app if it exists in the deployable apps list
+          # Manual > Changed Apps > All Apps
+
+          # Manual
+          if [ "$INPUT_APP" != "all" ]; then
             APPS_TO_DEPLOY=$(echo "$ALL_APPS" | jq -c --arg app "$INPUT_APP" 'map(select(. == $app))')
+            echo "Using manual app selection: $INPUT_APP"
+
+          # Changed Apps
+          elif [ "$CHANGED_APPS" != "[]" ] && [ -n "$CHANGED_APPS" ] && echo "$CHANGED_APPS" | jq -e 'type == "array" and length > 0' >/dev/null 2>&1; then
+            APPS_TO_DEPLOY=$CHANGED_APPS
+            echo "Using changed apps from detection: $CHANGED_APPS"
+          # All Apps
+          else
+            APPS_TO_DEPLOY=$ALL_APPS
+            echo "Using all apps (no filter applied)"
           fi
 
           echo "Apps to deploy: $APPS_TO_DEPLOY"
