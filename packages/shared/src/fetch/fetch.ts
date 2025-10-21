@@ -8,6 +8,7 @@ import type {
   ResponseType,
   SafeFetchResponse,
 } from "./types";
+import { isMSWError } from "@luxass/msw-utils/runtime-guards";
 import destr from "destr";
 import { FetchError } from "./error";
 import {
@@ -43,8 +44,12 @@ function createCustomFetch(): CustomFetch {
         && context.error.name === "AbortError"
         && !context.options.timeout)
       || false;
-    // Retry
-    if (context.options.retry !== false && !isAbort) {
+
+    // check if this is an MSW error (shouldn't retry)
+    const isMSW = context.error && isMSWError(context.error);
+
+    // retry
+    if (context.options.retry !== false && !isAbort && !isMSW) {
       let retries;
       if (typeof context.options.retry === "number") {
         retries = context.options.retry;
