@@ -35,22 +35,70 @@ env:
   FORCE_COLOR: true
 
 jobs:
-  preview-approval:
+  detect-changes:
     runs-on: ubuntu-latest
-    if: github.repository == 'ucdjs/ucd'
-    environment: apps-preview
+    if: github.repository == 'ucdjs/ucd' && github.event_name == 'pull_request'
+    outputs:
+      has-changes: ${{ steps.detect.outputs.has-changes }}
+      changed-apps: ${{ steps.detect.outputs.changed-apps }}
     steps:
-      - name: Approve preview deployment
-        run: echo "Preview deployment approved"
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: setup pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+
+      - name: setup node
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: lts/*
+          cache: pnpm
+
+      - name: install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: detect changed apps
+        id: detect
+        env:
+          TURBO_SCM_BASE: origin/main
+        run: |
+          # Get affected packages using turbo
+          AFFECTED=$(pnpm turbo ls --affected --output=json)
+
+          echo "Affected packages:"
+          echo "$AFFECTED"
+
+          PACKAGE_NAMES=$(echo "$AFFECTED" | jq -r '.packages.items[].name')
+          echo "Affected package names:"
+          echo "$PACKAGE_NAMES"
+
+          FILTERED_PACKAGE_NAMES=$(echo "$PACKAGE_NAMES" | grep -E '^@ucdjs/(api|web|docs)$' | sed 's/@ucdjs\///')
+          echo "Filtered deployable package names:"
+          echo "$FILTERED_PACKAGE_NAMES"
+
+          CHANGED_APPS=$(echo "$FILTERED_PACKAGE_NAMES" | jq -R -s -c 'split("\n") | map(select(length > 0))')
+
+          # Check if any deployable apps changed
+          if [ "$CHANGED_APPS" = "[]" ] || [ -z "$CHANGED_APPS" ]; then
+            echo "has-changes=false" >> "$GITHUB_OUTPUT"
+            echo "changed-apps=[]" >> "$GITHUB_OUTPUT"
+            echo "No deployable apps affected by changes"
+          else
+            echo "has-changes=true" >> "$GITHUB_OUTPUT"
+            echo "changed-apps=$CHANGED_APPS" >> "$GITHUB_OUTPUT"
+            echo "Affected deployable apps: $CHANGED_APPS"
+          fi
 
   upsert-deployment-comment:
     name: upsert deployment comment
     runs-on: ubuntu-latest
-    needs: [preview-approval]
+    needs: [detect-changes]
     if: >
       always() && (
-        needs.preview-approval.result == 'success' &&
-        github.repository == 'ucdjs/ucd'
+        github.repository == 'ucdjs/ucd' &&
+        (github.event_name == 'workflow_dispatch' || needs.detect-changes.result == 'success')
       )
     permissions:
       pull-requests: write
@@ -79,6 +127,8 @@ jobs:
         env:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           DRY_RUN: ${{ github.event.inputs.dry-run }}
+          COMMENT_TABLE: ${{ steps.generate-table.outputs.comment-table }}
+          HAS_CHANGES: ${{ (github.event_name == 'pull_request' && needs.detect-changes.outputs.has-changes) || 'true' }}
         with:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
@@ -86,9 +136,14 @@ jobs:
             <!-- ucdjs:deployment:preview -->
             ## 🌏 Preview Deployments
 
-            ${{ env.DRY_RUN == 'true' && '**Note: This was a dry run - no actual deployments were created.**' || '' }}
-
-            ${{ steps.generate-table.outputs.comment-table }}
+            ${{ env.HAS_CHANGES == 'false' && '
+            > [!NOTE]
+            > No deployable apps affected by changes in this PR.
+            ' || '' }}${{ env.DRY_RUN == 'true' && '
+            > [!NOTE]
+            > This was a dry run - no actual deployments were created.
+            ' || '' }}
+            ${{ env.HAS_CHANGES != 'false' && env.COMMENT_TABLE || '' }}
 
             **Built from commit:** `${{ env.HEAD_SHA }}`
 
@@ -96,16 +151,29 @@ jobs:
             <sub>🤖 This comment will be updated automatically when you push new commits to this PR.</sub>
           edit-mode: replace
 
+  preview-approval:
+    runs-on: ubuntu-latest
+    needs: [detect-changes, upsert-deployment-comment]
+    if: |
+      always() && (
+        github.repository == 'ucdjs/ucd' &&
+        needs.upsert-deployment-comment.result == 'success' &&
+        (github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.has-changes == 'true')
+      )
+    environment: apps-preview
+    steps:
+      - name: Approve preview deployment
+        run: echo "Preview deployment approved"
+
   deploy:
     name: deploy apps
     needs:
+      - detect-changes
       - preview-approval
-      - upsert-deployment-comment
     if: >
       always() && (
         needs.preview-approval.result == 'success' &&
-        github.repository == 'ucdjs/ucd' &&
-        needs.upsert-deployment-comment.result == 'success'
+        github.repository == 'ucdjs/ucd'
       )
     permissions:
       contents: read
@@ -116,6 +184,7 @@ jobs:
       cloudflare-env: preview
       dry-run: ${{ github.event.inputs.dry-run == 'true' }}
       app: ${{ github.event.inputs.app || 'all' }}
+      changed-apps: ${{ github.event_name == 'pull_request' && needs.detect-changes.outputs.changed-apps || '[]' }}
       include-pr-comment: true
       repository-condition: ${{ github.repository == 'ucdjs/ucd' && github.event.pull_request.user.login == 'luxass' }}
       extra-build-step: true
@@ -130,13 +199,11 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - preview-approval
-      - upsert-deployment-comment
       - deploy
     if: >
       always() && (
         needs.preview-approval.result == 'success' &&
-        github.repository == 'ucdjs/ucd' &&
-        needs.upsert-deployment-comment.result == 'success'
+        github.repository == 'ucdjs/ucd'
       )
     permissions:
       pull-requests: write
@@ -171,6 +238,7 @@ jobs:
         env:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           DRY_RUN: ${{ github.event.inputs.dry-run }}
+          COMMENT_TABLE: ${{ steps.process-results.outputs.comment-table }}
         with:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
@@ -178,9 +246,11 @@ jobs:
             <!-- ucdjs:deployment:preview -->
             ## 🌏 Preview Deployments
 
-            ${{ env.DRY_RUN == 'true' && '**Note: This was a dry run - no actual deployments were created.**' || '' }}
-
-            ${{ steps.process-results.outputs.comment-table }}
+            ${{ env.DRY_RUN == 'true' && '
+            > [!NOTE]
+            > This was a dry run - no actual deployments were created.
+            ' || '' }}
+            ${{ env.COMMENT_TABLE }}
 
             **Built from commit:** `${{ env.HEAD_SHA }}`
 
