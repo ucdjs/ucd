@@ -128,7 +128,7 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           DRY_RUN: ${{ github.event.inputs.dry-run }}
           COMMENT_TABLE: ${{ steps.generate-table.outputs.comment-table }}
-          HAS_CHANGES: ${{ github.event_name == 'pull_request' && needs.detect-changes.outputs.has-changes || 'true' }}
+          HAS_CHANGES: ${{ (github.event_name == 'pull_request' && needs.detect-changes.outputs.has-changes) || 'true' }}
         with:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
