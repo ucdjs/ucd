@@ -1,6 +1,7 @@
-import type { FSEntry } from "@ucdjs/fs-bridge";
+import type { FileSystemBridgeRmOptions, FSEntry } from "@ucdjs/fs-bridge";
 import { Buffer } from "node:buffer";
 import { defineFileSystemBridge } from "@ucdjs/fs-bridge";
+import { createHooks } from "hooxs";
 import { z } from "zod";
 
 /**
@@ -11,6 +12,98 @@ function normalizeRootPath(path: string | undefined): string {
   return (!path || path === "." || path === "/") ? "" : path;
 }
 
+const stateSchema = z.object({
+  files: z.custom<Map<string, string>>(),
+});
+
+const errorContextSchema = z.object({
+  method: z.enum(["read", "exists", "listdir", "write", "rm", "mkdir"]),
+  path: z.string(),
+  error: z.instanceof(Error),
+  args: z.array(z.unknown()).optional(),
+});
+
+// Helper to create a hook with input + state structure
+function createHook<TInput extends z.ZodTypeAny, TOutput extends z.ZodTypeAny>(
+  inputSchema: TInput,
+  outputSchema: TOutput,
+): z.ZodFunction<z.ZodTuple<[z.ZodObject<{ input: TInput; state: typeof stateSchema }>], null>, TOutput> {
+  return z.function({
+    input: [z.object({
+      input: inputSchema,
+      state: stateSchema,
+    })],
+    output: outputSchema,
+  });
+}
+
+// Helper for void or promise<void> output - all hooks are fire-and-forget
+const voidOutput = z.union([z.void(), z.promise(z.void())]);
+
+const hooksSchema = z.object({
+  // Global error hook
+  "on:error": createHook(
+    errorContextSchema,
+    voidOutput,
+  ),
+
+  // Read hooks
+  "read:before": createHook(
+    z.object({ path: z.string() }),
+    voidOutput,
+  ),
+  "read:after": createHook(
+    z.object({ path: z.string(), content: z.string() }),
+    voidOutput,
+  ),
+  "read:error": createHook(
+    errorContextSchema,
+    voidOutput,
+  ),
+
+  // Exists hooks
+  "exists:before": createHook(
+    z.object({ path: z.string() }),
+    voidOutput,
+  ),
+  "exists:after": createHook(
+    z.object({ path: z.string(), exists: z.boolean() }),
+    voidOutput,
+  ),
+
+  // Listdir hooks
+  "listdir:before": createHook(
+    z.object({ path: z.string(), recursive: z.boolean().optional() }),
+    voidOutput,
+  ),
+  "listdir:after": createHook(
+    z.object({ path: z.string(), recursive: z.boolean().optional(), entries: z.array(z.custom<FSEntry>()) }),
+    voidOutput,
+  ),
+
+  // Write hooks
+  "write:before": createHook(
+    z.object({ path: z.string(), data: z.union([z.string(), z.custom<Uint8Array>()]), encoding: z.string().optional() }),
+    voidOutput,
+  ),
+  "write:after": createHook(
+    z.object({ path: z.string(), data: z.union([z.string(), z.custom<Uint8Array>()]), encoding: z.string().optional() }),
+    voidOutput,
+  ),
+
+  // Remove hooks
+  "rm:before": createHook(
+    z.object({ path: z.string(), options: z.custom<FileSystemBridgeRmOptions>().optional() }),
+    voidOutput,
+  ),
+  "rm:after": createHook(
+    z.object({ path: z.string(), options: z.custom<FileSystemBridgeRmOptions>().optional() }),
+    voidOutput,
+  ),
+}).partial();
+
+export type MemoryFSHooks = z.output<typeof hooksSchema>;
+
 export const createMemoryMockFS = defineFileSystemBridge({
   meta: {
     name: "In-Memory File System Bridge",
@@ -18,6 +111,7 @@ export const createMemoryMockFS = defineFileSystemBridge({
   },
   optionsSchema: z.object({
     initialFiles: z.record(z.string(), z.string()).optional(),
+    hooks: hooksSchema.optional(),
   }).optional(),
   state: {
     files: new Map<string, string>(),
@@ -28,17 +122,62 @@ export const createMemoryMockFS = defineFileSystemBridge({
         state.files.set(path, content);
       }
     }
+
+    const hooks = createHooks<MemoryFSHooks>(options?.hooks || {});
+
     return {
       read: async (path) => {
-        const content = state.files.get(path);
-        if (content === undefined) {
-          throw new Error(`ENOENT: no such file or directory, open '${path}'`);
+        hooks.call("read:before", { input: { path }, state });
+
+        try {
+          const content = state.files.get(path);
+          if (content === undefined) {
+            const error = new Error(`ENOENT: no such file or directory, open '${path}'`);
+
+            hooks.call("read:error", {
+              input: {
+                method: "read" as const,
+                path,
+                error,
+              },
+              state,
+            });
+
+            hooks.call("on:error", {
+              input: {
+                method: "read" as const,
+                path,
+                error,
+              },
+              state,
+            });
+
+            throw error;
+          }
+
+          hooks.call("read:after", { input: { path, content }, state });
+          return content;
+        } catch (error) {
+          if (error instanceof Error) {
+            hooks.call("on:error", {
+              input: {
+                method: "read" as const,
+                path,
+                error,
+              },
+              state,
+            });
+          }
+
+          throw error;
         }
-        return content;
       },
       exists: async (path) => {
+        hooks.call("exists:before", { input: { path }, state });
+
         // fast path for checking direct entry existence
         if (state.files.has(path)) {
+          hooks.call("exists:after", { input: { path, exists: true }, state });
           return true;
         }
 
@@ -47,124 +186,68 @@ export const createMemoryMockFS = defineFileSystemBridge({
         const pathWithSlash = normalizedPath === "" ? "" : (normalizedPath.endsWith("/") ? normalizedPath : `${normalizedPath}/`);
         for (const filePath of state.files.keys()) {
           if (filePath.startsWith(pathWithSlash)) {
+            hooks.call("exists:after", { input: { path, exists: true }, state });
             return true;
           }
         }
 
+        hooks.call("exists:after", { input: { path, exists: false }, state });
         return false;
       },
-      listdir: async (path, recursive = false) => {
+      listdir: async (path, recursive) => {
+        hooks.call("listdir:before", { input: { path, recursive }, state });
+
+        const normalizedPath = path.endsWith("/") ? path : `${path}/`;
         const entries: FSEntry[] = [];
-        const normalizedPath = normalizeRootPath(path);
-        const pathPrefix = normalizedPath === "" ? "" : (normalizedPath.endsWith("/") ? normalizedPath : `${normalizedPath}/`);
-        const seenDirs = new Set<string>();
 
         for (const filePath of state.files.keys()) {
-          // skip files not in this directory
-          if (!filePath.startsWith(pathPrefix)) {
-            continue;
-          }
-
-          const relativePath = filePath.slice(pathPrefix.length);
-          const parts = relativePath.split("/");
-
-          if (!recursive) {
-            // Non-recursive: only direct children
-            if (parts.length === 1 && parts[0]) {
-              // Direct file
-              entries.push({
-                type: "file" as const,
-                name: parts[0],
-                path: relativePath,
-              });
-            } else if (parts.length > 1 && parts[0]) {
-              // Directory (implicit)
-              const dirName = parts[0];
-              if (!seenDirs.has(dirName)) {
-                seenDirs.add(dirName);
-                entries.push({
-                  type: "directory" as const,
-                  name: dirName,
-                  path: dirName,
-                  children: [],
-                });
-              }
-            }
-          } else {
-            let currentLevel = entries;
-
-            for (let i = 0; i < parts.length; i++) {
-              const part = parts[i];
-              if (!part) continue;
-
-              const isLastPart = i === parts.length - 1;
-              const partPath = parts.slice(0, i + 1).join("/");
-
-              if (isLastPart) {
-                // It's a file
-                currentLevel.push({
-                  type: "file" as const,
-                  name: part,
-                  path: partPath,
-                });
-              } else {
-                // It's a directory - find or create it
-                let dirEntry = currentLevel.find(
-                  (e) => e.type === "directory" && e.name === part,
-                ) as Extract<FSEntry, { type: "directory" }> | undefined;
-
-                if (!dirEntry) {
-                  dirEntry = {
-                    type: "directory" as const,
-                    name: part,
-                    path: partPath,
-                    children: [],
-                  };
-                  currentLevel.push(dirEntry);
-                }
-
-                currentLevel = dirEntry.children!;
-              }
+          if (filePath.startsWith(normalizedPath)) {
+            const relativePath = filePath.slice(normalizedPath.length);
+            const firstSegment = relativePath.split("/")[0];
+            if (firstSegment && !entries.some((e) => e.name === firstSegment)) {
+              const hasNestedPath = relativePath.includes("/");
+              entries.push(
+                hasNestedPath
+                  ? {
+                      type: "directory",
+                      name: firstSegment,
+                      path: `${normalizedPath}${firstSegment}`,
+                      children: [],
+                    }
+                  : {
+                      type: "file",
+                      name: firstSegment,
+                      path: `${normalizedPath}${firstSegment}`,
+                    },
+              );
             }
           }
         }
 
+        hooks.call("listdir:after", { input: { path, recursive, entries }, state });
         return entries;
       },
-      write: async (path, data, encoding = "utf8") => {
-        const content = typeof data === "string"
-          ? data
-          : Buffer.from(data).toString(encoding);
+      write: async (path, data, encoding) => {
+        // Before hook
+        hooks.call("write:before", { input: { path, data, encoding }, state });
+
+        const content = typeof data === "string" ? data : Buffer.from(data).toString(encoding || "utf-8");
         state.files.set(path, content);
+
+        // After hook
+        hooks.call("write:after", { input: { path, data, encoding }, state });
       },
       mkdir: async (_path) => {
         // no-op: directories are implicit in flat Map storage
       },
       rm: async (path, options) => {
-        // TODO(luxass): should we align this with real node:fs behavior and throw if file/dir doesn't exist?
+        // Before hook
+        hooks.call("rm:before", { input: { path, options }, state });
 
-        // remove file, if the path matches explicitly
-        if (state.files.has(path)) {
-          state.files.delete(path);
-          return;
-        }
+        state.files.delete(path);
 
-        // remove directory (recursive)
-        if (options?.recursive) {
-          const normalizedPath = normalizeRootPath(path);
-          const pathPrefix = normalizedPath === "" ? "" : (normalizedPath.endsWith("/") ? normalizedPath : `${normalizedPath}/`);
-          const keysToDelete: string[] = [];
-
-          for (const filePath of state.files.keys()) {
-            if (filePath.startsWith(pathPrefix)) {
-              keysToDelete.push(filePath);
-            }
-          }
-
-          for (const key of keysToDelete) {
-            state.files.delete(key);
-          }
-        }
+        // After hook
+        hooks.call("rm:after", { input: { path, options }, state });
       },
     };
   },

@@ -50,6 +50,7 @@
     "@luxass/msw-utils": "catalog:prod",
     "@ucdjs/fs-bridge": "workspace:*",
     "@ucdjs/schemas": "workspace:*",
+    "hooxs": "catalog:prod",
     "msw": "catalog:testing",
     "zod": "catalog:prod"
   },
