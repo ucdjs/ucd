@@ -181,7 +181,8 @@ describe("hooks", () => {
       expect(beforeHook).toHaveBeenCalledOnce();
       expect(beforeHook).toHaveBeenCalledWith({
         path: "old-file",
-        options: { recursive: true, force: false },
+        recursive: true,
+        force: false,
       });
     });
   });
@@ -372,7 +373,7 @@ describe("hooks", () => {
       expect(afterHook).toHaveBeenCalledOnce();
       expect(afterHook).toHaveBeenCalledWith({
         path: "old-file",
-        options: { recursive: true },
+        recursive: true,
       });
     });
   });

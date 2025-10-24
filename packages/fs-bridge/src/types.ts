@@ -299,21 +299,11 @@ export interface FileSystemBridgeHooks {
      * The path involved in the operation.
      */
     path: string;
-
-    /**
-     *  Optional configuration for the operation.
-     */
-    options?: unknown;
-  }) => void;
+  } & FileSystemBridgeRmOptions) => void;
   "rm:after"?: (payload: {
     /**
      * The path involved in the operation.
      */
     path: string;
-
-    /**
-     * Optional configuration for the operation.
-     */
-    options?: unknown;
-  }) => void;
+  } & FileSystemBridgeRmOptions) => void;
 }

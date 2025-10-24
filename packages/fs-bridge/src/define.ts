@@ -3,6 +3,7 @@ import type {
   FileSystemBridgeHooks,
   FileSystemBridgeObject,
   FileSystemBridgeOperations,
+  FileSystemBridgeRmOptions,
   HasOptionalCapabilityMap,
   OptionalCapabilityKey,
   OptionalFileSystemBridgeOperations,
@@ -224,9 +225,12 @@ function getPayloadForHook(property: string, phase: "before" | "after", args: un
       }
     }
 
-    case "mkdir":
+    case "mkdir": {
+      return { path: args[0] as string };
+    }
+
     case "rm": {
-      return { path: args[0] as string, options: args[1] };
+      return { path: args[0] as string, ...(args[1] as FileSystemBridgeRmOptions) };
     }
 
     default:
