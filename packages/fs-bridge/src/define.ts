@@ -81,7 +81,7 @@ export function defineFileSystemBridge<
         // if it's an operation method and not implemented, throw
         if (typeof property === "string" && bridgeOperations.includes(property as keyof FileSystemBridgeOperations)) {
           if (val == null || typeof val !== "function") {
-            return () => {
+            return (...args: unknown[]) => {
               debug?.("Attempted to call unsupported operation", { operation: property });
               const error = new BridgeUnsupportedOperation(property as
                 OptionalCapabilityKey);
