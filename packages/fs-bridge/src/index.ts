@@ -14,6 +14,7 @@ export { hasCapability } from "./guards";
 export type {
   FileSystemBridge,
   FileSystemBridgeFactory,
+  FileSystemBridgeHooks,
   FileSystemBridgeMetadata,
   FileSystemBridgeOperations,
   FileSystemBridgeRmOptions,
