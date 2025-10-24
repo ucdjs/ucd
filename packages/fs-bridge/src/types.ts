@@ -1,3 +1,4 @@
+import type { createHooks } from "hooxs";
 import type { z } from "zod";
 
 export interface FileSystemBridgeRmOptions {
@@ -161,6 +162,8 @@ export interface FileSystemBridge extends FileSystemBridgeOperations {
    * Metadata about this file system bridge.
    */
   meta: FileSystemBridgeMetadata;
+
+  on: ReturnType<typeof createHooks<FileSystemBridgeHooks>>["register"];
 }
 
 export type FileSystemBridgeFactory<
@@ -172,3 +175,145 @@ export type FileSystemBridgeFactory<
       ? [options?: z.input<TOptionsSchema>]
       : [options: z.input<TOptionsSchema>]
 ) => FileSystemBridge;
+
+export interface FileSystemBridgeHooks {
+  "error"?: (payload: {
+    /**
+     * The method that triggered the error.
+     */
+    method: keyof FileSystemBridgeOperations;
+
+    /**
+     * The path involved in the operation.
+     */
+    path: string;
+
+    /**
+     * The error that occurred.
+     */
+    error: Error;
+
+    /**
+     * Optional arguments passed to the method.
+     */
+    args?: unknown[];
+  }) => void;
+
+  "read:before"?: (payload: {
+    /**
+     * The path involved in the operation.
+     */
+    path: string;
+  }) => void;
+  "read:after"?: (payload: {
+    /**
+     * The path involved in the operation.
+     */
+    path: string;
+
+    /**
+     * The content being read or written.
+     */
+    content: string;
+  }) => void;
+
+  "write:before"?: (payload: {
+    /**
+     * The path involved in the operation.
+     */
+    path: string;
+
+    /**
+     * The content being read or written.
+     */
+    content: string;
+  }) => void;
+  "write:after"?: (payload: {
+    /**
+     * The path involved in the operation.
+     */
+    path: string;
+  }) => void;
+
+  "listdir:before"?: (payload: {
+    /**
+     * The path involved in the operation.
+     */
+    path: string;
+
+    /**
+     * Whether the operation is recursive.
+     */
+    recursive: boolean;
+  }) => void;
+  "listdir:after"?: (payload: {
+    /**
+     * The path involved in the operation.
+     */
+    path: string;
+
+    /**
+     * Whether the operation is recursive.
+     */
+    recursive: boolean;
+
+    /**
+     * The list of entries returned by the operation.
+     */
+    entries: unknown[];
+  }) => void;
+
+  "exists:before"?: (payload: {
+    /**
+     * The path involved in the operation.
+     */
+    path: string;
+  }) => void;
+  "exists:after"?: (payload: {
+    /**
+     * The path involved in the operation.
+     */
+    path: string;
+
+    /**
+     * Whether the path exists.
+     */
+    exists: boolean;
+  }) => void;
+
+  "mkdir:before"?: (payload: {
+    /**
+     * The path involved in the operation.
+     */
+    path: string;
+  }) => void;
+  "mkdir:after"?: (payload: {
+    /**
+     * The path involved in the operation.
+     */
+    path: string;
+  }) => void;
+
+  "rm:before"?: (payload: {
+    /**
+     * The path involved in the operation.
+     */
+    path: string;
+
+    /**
+     *  Optional configuration for the operation.
+     */
+    options?: unknown;
+  }) => void;
+  "rm:after"?: (payload: {
+    /**
+     * The path involved in the operation.
+     */
+    path: string;
+
+    /**
+     * Optional configuration for the operation.
+     */
+    options?: unknown;
+  }) => void;
+}
