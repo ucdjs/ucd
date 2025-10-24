@@ -58,6 +58,14 @@ export function defineFileSystemBridge<
     const hooks = createHooks<FileSystemBridgeHooks>();
 
     const optionalCapabilities = inferOptionalCapabilitiesFromOperations(bridge);
+    const bridgeOperations: (keyof FileSystemBridgeOperations)[] = [
+      "read",
+      "write",
+      "listdir",
+      "exists",
+      "mkdir",
+      "rm",
+    ];
 
     const newBridge = {
       ...bridge,
@@ -71,7 +79,7 @@ export function defineFileSystemBridge<
         const val = target[property as keyof typeof target];
 
         // if it's an operation method and not implemented, throw
-        if (typeof property === "string" && property in optionalCapabilities) {
+        if (typeof property === "string" && bridgeOperations.includes(property as keyof FileSystemBridgeOperations)) {
           if (val == null || typeof val !== "function") {
             return () => {
               debug?.("Attempted to call unsupported operation", { operation: property });
