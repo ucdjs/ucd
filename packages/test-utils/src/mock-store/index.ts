@@ -1,4 +1,4 @@
-import type { InferEndpointConfig, MockStoreConfig } from "./types";
+import type { MockStoreConfig } from "./types";
 import { mockFetch } from "../msw";
 import { MOCK_ROUTES } from "./handlers";
 import { extractConfigMetadata, wrapMockFetchWithConfig } from "./utils";
