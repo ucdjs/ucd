@@ -98,11 +98,11 @@ catalogs:
       specifier: 0.4.0
       version: 0.4.0
     '@luxass/unicode-utils':
-      specifier: 0.11.0
-      version: 0.11.0
-    '@luxass/unicode-utils-new':
-      specifier: npm:@luxass/unicode-utils@0.12.0-beta.11
+      specifier: 0.12.0-beta.11
       version: 0.12.0-beta.11
+    '@luxass/unicode-utils-old':
+      specifier: npm:@luxass/unicode-utils@0.11.0
+      version: 0.11.0
     '@luxass/utils':
       specifier: 2.7.2
       version: 2.7.2
@@ -290,9 +290,9 @@ importers:
       '@hono/zod-openapi':
         specifier: catalog:workers
         version: 1.1.4(hono@4.10.1)(zod@4.1.11)
-      '@luxass/unicode-utils-new':
+      '@luxass/unicode-utils':
         specifier: catalog:prod
-        version: '@luxass/unicode-utils@0.12.0-beta.11'
+        version: 0.12.0-beta.11
       '@luxass/utils':
         specifier: catalog:prod
         version: 2.7.2
@@ -474,7 +474,7 @@ importers:
         version: 1.0.0-alpha.5
       '@luxass/unicode-utils':
         specifier: catalog:prod
-        version: 0.11.0
+        version: 0.12.0-beta.11
       '@luxass/utils':
         specifier: catalog:prod
         version: 2.7.2
@@ -693,9 +693,9 @@ importers:
       '@ai-sdk/openai':
         specifier: catalog:prod
         version: 2.0.32(zod@4.1.11)
-      '@luxass/unicode-utils':
+      '@luxass/unicode-utils-old':
         specifier: catalog:prod
-        version: 0.11.0
+        version: '@luxass/unicode-utils@0.11.0'
       '@luxass/utils':
         specifier: catalog:prod
         version: 2.7.2
@@ -773,9 +773,9 @@ importers:
       '@luxass/msw-utils':
         specifier: catalog:prod
         version: 0.4.0(msw@2.11.6(@types/node@24.3.1)(typescript@5.9.3))
-      '@luxass/unicode-utils-new':
+      '@luxass/unicode-utils':
         specifier: catalog:prod
-        version: '@luxass/unicode-utils@0.12.0-beta.11'
+        version: 0.12.0-beta.11
       '@luxass/utils':
         specifier: catalog:prod
         version: 2.7.2
@@ -886,9 +886,9 @@ importers:
 
   packages/ucd-store:
     dependencies:
-      '@luxass/unicode-utils-new':
+      '@luxass/unicode-utils':
         specifier: catalog:prod
-        version: '@luxass/unicode-utils@0.12.0-beta.11'
+        version: 0.12.0-beta.11
       '@luxass/utils':
         specifier: catalog:prod
         version: 2.7.2
@@ -947,9 +947,9 @@ importers:
 
   packages/ucd-store-v2:
     dependencies:
-      '@luxass/unicode-utils-new':
+      '@luxass/unicode-utils':
         specifier: catalog:prod
-        version: '@luxass/unicode-utils@0.12.0-beta.11'
+        version: 0.12.0-beta.11
       '@luxass/utils':
         specifier: catalog:prod
         version: 2.7.2
@@ -1110,9 +1110,9 @@ importers:
       '@luxass/eslint-config':
         specifier: catalog:linting
         version: 6.0.1(@eslint-react/eslint-plugin@2.2.2(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.22)(eslint-plugin-format@1.0.2(eslint@9.38.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.0(eslint@9.38.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.4.24(eslint@9.38.0(jiti@2.6.1)))(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3)(vitest@3.2.4)
-      '@luxass/unicode-utils-new':
+      '@luxass/unicode-utils':
         specifier: catalog:prod
-        version: '@luxass/unicode-utils@0.12.0-beta.11'
+        version: 0.12.0-beta.11
       '@luxass/utils':
         specifier: catalog:prod
         version: 2.7.2

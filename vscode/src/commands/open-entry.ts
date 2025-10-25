@@ -1,6 +1,6 @@
 import type { TreeViewNode } from "reactive-vscode";
 import type { UCDTreeItem } from "../composables/useUCDExplorer";
-import { hasUCDFolderPath } from "@luxass/unicode-utils-new";
+import { hasUCDFolderPath } from "@luxass/unicode-utils";
 import { executeCommand, useCommand } from "reactive-vscode";
 import { languages, Uri, window } from "vscode";
 import * as Meta from "../generated/meta";

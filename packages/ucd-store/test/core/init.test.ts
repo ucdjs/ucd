@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { mockStoreApi } from "#test-utils/mock-store";
 import { HttpResponse, mockFetch } from "#test-utils/msw";
-import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
+import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { defineFileSystemBridge } from "@ucdjs/fs-bridge";
 import NodeFileSystemBridge from "@ucdjs/fs-bridge/bridges/node";

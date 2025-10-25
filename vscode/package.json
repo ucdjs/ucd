@@ -172,7 +172,7 @@
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:linting",
-    "@luxass/unicode-utils-new": "catalog:prod",
+    "@luxass/unicode-utils": "catalog:prod",
     "@luxass/utils": "catalog:prod",
     "@reactive-vscode/vueuse": "catalog:vscode",
     "@types/node": "catalog:types",

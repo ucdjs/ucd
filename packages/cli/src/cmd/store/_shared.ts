@@ -73,7 +73,7 @@ export async function runVersionPrompt({
 }: RunVersionPromptOptions = {}): Promise<string[]> {
   const selectedVersions = await multiselect({
     options: UNICODE_VERSION_METADATA.map(({ version }) => ({
-      value: version,
+      value: version as string,
       label: version,
     })),
     message: "Select Unicode versions to initialize the store with:",

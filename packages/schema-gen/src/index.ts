@@ -1,7 +1,7 @@
 import type { LanguageModel } from "ai";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-import { RawDataFile } from "@luxass/unicode-utils";
+import { RawDataFile } from "@luxass/unicode-utils-old";
 import { sanitizeIdentifier, toPascalCase, toSnakeCase } from "@luxass/utils";
 import { createConcurrencyLimiter } from "@ucdjs-internal/shared";
 import { genArrayFromRaw, genInterface } from "knitwork";
