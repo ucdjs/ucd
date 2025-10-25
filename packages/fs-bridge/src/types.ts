@@ -307,3 +307,11 @@ export interface FileSystemBridgeHooks {
     path: string;
   } & FileSystemBridgeRmOptions) => void;
 }
+
+export type HookKey = keyof FileSystemBridgeHooks;
+
+export type HookPayloadMap = {
+  [K in keyof FileSystemBridgeHooks]: Parameters<NonNullable<FileSystemBridgeHooks[K]>>[0];
+};
+
+export type HookPayload = NonNullable<HookPayloadMap[keyof HookPayloadMap]>;

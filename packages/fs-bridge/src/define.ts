@@ -4,7 +4,11 @@ import type {
   FileSystemBridgeObject,
   FileSystemBridgeOperations,
   FileSystemBridgeRmOptions,
+  FSEntry,
   HasOptionalCapabilityMap,
+  HookKey,
+  HookPayload,
+  HookPayloadMap,
   OptionalCapabilityKey,
   OptionalFileSystemBridgeOperations,
 } from "./types";
@@ -84,8 +88,7 @@ export function defineFileSystemBridge<
           if (val == null || typeof val !== "function") {
             return (...args: unknown[]) => {
               debug?.("Attempted to call unsupported operation", { operation: property });
-              const error = new BridgeUnsupportedOperation(property as
-                OptionalCapabilityKey);
+              const error = new BridgeUnsupportedOperation(property as OptionalCapabilityKey);
 
               // call error hook for unsupported operations
               hooks.call("error", {
@@ -105,7 +108,8 @@ export function defineFileSystemBridge<
             return (...args: unknown[]) => {
               try {
                 const beforePayload = getPayloadForHook(property, "before", args);
-                hooks.call(`${property}:before` as keyof FileSystemBridgeHooks, beforePayload);
+
+                hooks.call(`${property}:before` as HookKey, beforePayload);
 
                 const result = originalMethod.apply(target, args);
 
@@ -120,14 +124,14 @@ export function defineFileSystemBridge<
                   return (result as Promise<unknown>)
                     .then((res) => {
                       const afterPayload = getPayloadForHook(property, "after", args, res);
-                      hooks.call(`${property}:after` as keyof FileSystemBridgeHooks, afterPayload);
+                      hooks.call(`${property}:after` as HookKey, afterPayload);
                       return res;
                     })
                     .catch((err: unknown) => handleError(property, args, err, hooks));
                 }
 
                 const afterPayload = getPayloadForHook(property, "after", args, result);
-                hooks.call(`${property}:after` as keyof FileSystemBridgeHooks, afterPayload);
+                hooks.call(`${property}:after` as HookKey, afterPayload);
                 return result;
               } catch (err: unknown) {
                 return handleError(property, args, err, hooks);
@@ -191,49 +195,83 @@ function handleError(
   );
 }
 
-function getPayloadForHook(property: string, phase: "before" | "after", args: unknown[], result?: unknown): any {
+function getPayloadForHook(
+  property: string,
+  phase: "before" | "after",
+  args: unknown[],
+  result?: unknown,
+): HookPayload {
   switch (property) {
     case "read": {
       if (phase === "before") {
-        return { path: args[0] as string };
+        return {
+          path: args[0] as string,
+        } satisfies HookPayloadMap["read:before"];
       } else {
-        return { path: args[0] as string, content: result as string };
+        return {
+          path: args[0] as string,
+          content: result as string,
+        } satisfies HookPayloadMap["read:after"];
       }
     }
 
     case "write": {
       if (phase === "before") {
-        return { path: args[0] as string, content: args[1] as string };
+        return {
+          path: args[0] as string,
+          content: args[1] as string,
+        } satisfies HookPayloadMap["write:before"];
       } else {
-        return { path: args[0] as string };
+        return {
+          path: args[0] as string,
+        } satisfies HookPayloadMap["write:after"];
       }
     }
 
     case "listdir": {
       if (phase === "before") {
-        return { path: args[0] as string, recursive: (args[1] as boolean | undefined) ?? false };
+        return {
+          path: args[0] as string,
+          recursive: (args[1] as boolean | undefined) ?? false,
+        } satisfies HookPayloadMap["listdir:before"];
       } else {
-        return { path: args[0] as string, recursive: (args[1] as boolean | undefined) ?? false, entries: result as unknown[] };
+        return {
+          path: args[0] as string,
+          recursive: (args[1] as boolean | undefined) ?? false,
+          entries: result as FSEntry[],
+        } satisfies HookPayloadMap["listdir:after"];
       }
     }
 
     case "exists": {
       if (phase === "before") {
-        return { path: args[0] as string };
+        return {
+          path: args[0] as string,
+        } satisfies HookPayloadMap["exists:before"];
       } else {
-        return { path: args[0] as string, exists: result as boolean };
+        return {
+          path: args[0] as string,
+          exists: result as boolean,
+        } satisfies HookPayloadMap["exists:after"];
       }
     }
 
     case "mkdir": {
-      return { path: args[0] as string };
+      return {
+        path: args[0] as string,
+      } satisfies (HookPayloadMap["mkdir:before"] & HookPayloadMap["mkdir:after"]);
     }
 
     case "rm": {
-      return { path: args[0] as string, ...(args[1] as FileSystemBridgeRmOptions) };
+      return {
+        path: args[0] as string,
+        ...(args[1] as FileSystemBridgeRmOptions),
+      } satisfies (HookPayloadMap["rm:before"] & HookPayloadMap["rm:after"]);
     }
 
     default:
-      return {};
+      throw new BridgeGenericError(
+        `Failed to construct hook payload for '${property}:${phase}' hook`,
+      );
   }
 }
