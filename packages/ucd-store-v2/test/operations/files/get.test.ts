@@ -472,9 +472,13 @@ describe("getFile", () => {
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
-          "/api/v1/files/:wildcard": {
-            status: 500,
-            message: "Internal Server Error",
+          "/api/v1/files/:wildcard": () => {
+            return HttpResponse.json({
+              status: 500,
+              message: "Internal Server Error",
+            }, {
+              status: 500,
+            });
           },
         },
       });
@@ -528,9 +532,11 @@ describe("getFile", () => {
       mockStoreApi({
         versions: ["15.0.0"],
         responses: {
-          "/api/v1/files/:wildcard": {
-            status: 500,
-            message: "Server Error",
+          "/api/v1/files/:wildcard": () => {
+            return HttpResponse.json({
+              status: 500,
+              message: "Server Error",
+            }, 500);
           },
         },
       });
