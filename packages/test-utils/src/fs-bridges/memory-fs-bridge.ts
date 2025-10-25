@@ -28,6 +28,7 @@ export const createMemoryMockFS = defineFileSystemBridge({
         state.files.set(path, content);
       }
     }
+
     return {
       read: async (path) => {
         const content = state.files.get(path);
