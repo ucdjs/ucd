@@ -260,7 +260,7 @@ export interface FileSystemBridgeHooks {
     /**
      * The list of entries returned by the operation.
      */
-    entries: unknown[];
+    entries: FSEntry[];
   }) => void;
 
   "exists:before"?: (payload: {
