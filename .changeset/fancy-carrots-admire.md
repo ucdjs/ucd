@@ -11,7 +11,7 @@ Reorganize package structure and improve MSW server flexibility
 - Consolidated all types into `mock-store/types.ts`
 
 **MSW Server Improvements:**
-- `setupMockStore` now accepts optional `mswServer` parameter for custom MSW servers
+- `mockStoreApi` now accepts optional `mswServer` parameter for custom MSW servers
 - Smart server resolution: automatically uses global server when `@ucdjs/test-utils/msw/vitest-setup` is imported
 - Handlers now receive `mockFetch` via dependency injection for better testability
 - Clear error messages when MSW server is not configured
@@ -27,5 +27,5 @@ export default defineConfig({
 })
 
 // Option 2: Provide your own server
-setupMockStore({ mswServer: yourCustomServer });
+mockStoreApi({ mswServer: yourCustomServer });
 ```

@@ -117,15 +117,15 @@ pnpm clean                      # Clean build artifacts and node_modules
 
 #### Testing Patterns
 
-**Using setupMockStore():**
-The `setupMockStore()` utility from `#test-utils/mock-store` provides MSW-based mocking for the UCD API:
+**Using mockStoreApi():**
+The `mockStoreApi()` utility from `#test-utils/mock-store` provides MSW-based mocking for the UCD API:
 
 ```typescript
-import { setupMockStore } from "#test-utils/mock-store";
+import { mockStoreApi } from "#test-utils/mock-store";
 import { HttpResponse } from "#test-utils/msw";
 
 beforeEach(() => {
-  setupMockStore({
+  mockStoreApi({
     baseUrl: "https://api.ucdjs.dev",
     responses: {
       "/api/v1/versions": ["16.0.0", "15.1.0"],
