@@ -17,21 +17,24 @@ interface ContentTypeToType {
   "application/octet-stream": Blob | File | ArrayBuffer | Uint8Array;
 }
 
-type InferResponsesByEndpoint<Endpoint extends EndpointWithGet> = paths[Endpoint]["get"]["responses"] extends {
-  200: {
-    content: infer Content;
-  };
-}
-  ? Content extends Record<string, any>
-    ? {
-        [K in keyof Content]: K extends keyof ContentTypeToType
-          ? Content[K] extends ContentTypeToType[K]
-            ? Content[K]
-            : ContentTypeToType[K]
-          : Content[K];
-      }[keyof Content]
-    : never
+type InferContentTypes<Content> = Content extends Record<string, any>
+  ? {
+      [K in keyof Content]: K extends keyof ContentTypeToType
+        ? Content[K] extends ContentTypeToType[K]
+          ? Content[K]
+          : ContentTypeToType[K]
+        : Content[K];
+    }[keyof Content]
   : never;
+
+type InferResponsesByEndpoint<Endpoint extends EndpointWithGet> =
+  paths[Endpoint]["get"]["responses"] extends infer Responses
+    ? {
+        [StatusCode in keyof Responses]: Responses[StatusCode] extends { content: infer Content }
+          ? InferContentTypes<Content>
+          : never;
+      }[keyof Responses]
+    : never;
 
 type ExtractPathParams<Path extends string> = Path extends `${infer _Start}/{${infer Param}}${infer Rest}`
   ? PathParams<Param> & ExtractPathParams<Rest>
