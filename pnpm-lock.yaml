@@ -97,8 +97,8 @@ catalogs:
     '@luxass/msw-utils':
       specifier: 0.4.0
       version: 0.4.0
-    '@luxass/unicode-utils-new':
-      specifier: npm:@luxass/unicode-utils@0.12.0-beta.11
+    '@luxass/unicode-utils':
+      specifier: 0.12.0-beta.11
       version: 0.12.0-beta.11
     '@luxass/unicode-utils-old':
       specifier: npm:@luxass/unicode-utils@0.11.0
@@ -290,9 +290,9 @@ importers:
       '@hono/zod-openapi':
         specifier: catalog:workers
         version: 1.1.4(hono@4.10.1)(zod@4.1.11)
-      '@luxass/unicode-utils-new':
+      '@luxass/unicode-utils':
         specifier: catalog:prod
-        version: '@luxass/unicode-utils@0.12.0-beta.11'
+        version: 0.12.0-beta.11
       '@luxass/utils':
         specifier: catalog:prod
         version: 2.7.2
@@ -773,9 +773,9 @@ importers:
       '@luxass/msw-utils':
         specifier: catalog:prod
         version: 0.4.0(msw@2.11.6(@types/node@24.3.1)(typescript@5.9.3))
-      '@luxass/unicode-utils-new':
+      '@luxass/unicode-utils':
         specifier: catalog:prod
-        version: '@luxass/unicode-utils@0.12.0-beta.11'
+        version: 0.12.0-beta.11
       '@luxass/utils':
         specifier: catalog:prod
         version: 2.7.2
@@ -886,9 +886,9 @@ importers:
 
   packages/ucd-store:
     dependencies:
-      '@luxass/unicode-utils-new':
+      '@luxass/unicode-utils':
         specifier: catalog:prod
-        version: '@luxass/unicode-utils@0.12.0-beta.11'
+        version: 0.12.0-beta.11
       '@luxass/utils':
         specifier: catalog:prod
         version: 2.7.2
@@ -947,9 +947,9 @@ importers:
 
   packages/ucd-store-v2:
     dependencies:
-      '@luxass/unicode-utils-new':
+      '@luxass/unicode-utils':
         specifier: catalog:prod
-        version: '@luxass/unicode-utils@0.12.0-beta.11'
+        version: 0.12.0-beta.11
       '@luxass/utils':
         specifier: catalog:prod
         version: 2.7.2
@@ -1110,9 +1110,9 @@ importers:
       '@luxass/eslint-config':
         specifier: catalog:linting
         version: 6.0.1(@eslint-react/eslint-plugin@2.2.2(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.22)(eslint-plugin-format@1.0.2(eslint@9.38.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.0(eslint@9.38.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.4.24(eslint@9.38.0(jiti@2.6.1)))(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3)(vitest@3.2.4)
-      '@luxass/unicode-utils-new':
+      '@luxass/unicode-utils':
         specifier: catalog:prod
-        version: '@luxass/unicode-utils@0.12.0-beta.11'
+        version: 0.12.0-beta.11
       '@luxass/utils':
         specifier: catalog:prod
         version: 2.7.2
@@ -14362,14 +14362,14 @@ snapshots:
       msw: 2.11.6(@types/node@22.18.12)(typescript@5.9.3)
       vite: 7.1.11(@types/node@22.18.12)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 
-  '@vitest/mocker@3.2.4(msw@2.11.6(@types/node@24.3.1)(typescript@5.9.3))(vite@7.1.11(@types/node@22.18.12)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))':
+  '@vitest/mocker@3.2.4(msw@2.11.6(@types/node@24.3.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.3.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))':
     dependencies:
       '@vitest/spy': 3.2.4
       estree-walker: 3.0.3
       magic-string: 0.30.19
     optionalDependencies:
       msw: 2.11.6(@types/node@24.3.1)(typescript@5.9.3)
-      vite: 7.1.11(@types/node@22.18.12)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+      vite: 7.1.11(@types/node@24.3.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 
   '@vitest/pretty-format@3.2.4':
     dependencies:
@@ -14400,7 +14400,7 @@ snapshots:
       sirv: 3.0.2
       tinyglobby: 0.2.15
       tinyrainbow: 2.0.0
-      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@22.18.12)(@vitest/ui@3.2.4)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.11.6(@types/node@22.18.12)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
+      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@24.3.1)(@vitest/ui@3.2.4)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.11.6(@types/node@24.3.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1)
 
   '@vitest/utils@3.2.4':
     dependencies:
@@ -21209,7 +21209,7 @@ snapshots:
     dependencies:
       '@types/chai': 5.2.2
       '@vitest/expect': 3.2.4
-      '@vitest/mocker': 3.2.4(msw@2.11.6(@types/node@24.3.1)(typescript@5.9.3))(vite@7.1.11(@types/node@22.18.12)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
+      '@vitest/mocker': 3.2.4(msw@2.11.6(@types/node@24.3.1)(typescript@5.9.3))(vite@7.1.11(@types/node@24.3.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.20.6)(yaml@2.8.1))
       '@vitest/pretty-format': 3.2.4
       '@vitest/runner': 3.2.4
       '@vitest/snapshot': 3.2.4

@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { mockStoreApi } from "#test-utils/mock-store";
 import { HttpResponse } from "#test-utils/msw";
-import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
+import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { createNodeUCDStore } from "@ucdjs/ucd-store";
 import { assert, beforeEach, describe, expect, it, vi } from "vitest";
