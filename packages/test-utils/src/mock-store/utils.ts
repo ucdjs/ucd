@@ -10,8 +10,8 @@ interface ConfiguredResponseConfig<Response> {
 
 export type ConfiguredResponse<Response> = Response & {
   [CONFIGURED_RESPONSE]: {
-    latency?: number | "random";
-    headers?: Record<string, string>;
+    latency?: ConfiguredResponseConfig<Response>["latency"];
+    headers?: ConfiguredResponseConfig<Response>["headers"];
   };
 };
 
