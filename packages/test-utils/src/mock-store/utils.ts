@@ -44,7 +44,9 @@ export function parseLatency(latency: number | "random"): number {
 }
 
 export function isConfiguredResponse(value: unknown): value is ConfiguredResponse<any> {
-  return typeof value === "object" && value !== null && CONFIGURED_RESPONSE in value;
+  return (typeof value === "object" || typeof value === "function")
+    && value !== null
+    && CONFIGURED_RESPONSE in (value as object);
 }
 
 export function extractConfigMetadata(response: unknown): {
@@ -60,6 +62,7 @@ export function extractConfigMetadata(response: unknown): {
       headers: config.headers,
     };
   }
+
   return { actualResponse: response };
 }
 
