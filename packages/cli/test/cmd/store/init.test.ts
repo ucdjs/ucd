@@ -36,7 +36,6 @@ describe("store init command", () => {
 
     mockStoreApi({
       responses: {
-        // @ts-expect-error fix later
         "/api/v1/versions": [...UNICODE_VERSION_METADATA],
         "/api/v1/versions/:version/file-tree": [{
           type: "file",
@@ -98,7 +97,6 @@ describe("store init command", () => {
     const storePath = await testdir();
     mockStoreApi({
       responses: {
-        // @ts-expect-error fix later
         "/api/v1/versions": [...UNICODE_VERSION_METADATA],
         "/api/v1/versions/:version/file-tree": [{
           type: "file",
@@ -140,7 +138,6 @@ describe("store init command", () => {
 
     mockStoreApi({
       responses: {
-        // @ts-expect-error fix later
         "/api/v1/versions": [...UNICODE_VERSION_METADATA],
         "/api/v1/versions/:version/file-tree": [{
           type: "file",
@@ -186,7 +183,6 @@ describe("store init command", () => {
 
     mockStoreApi({
       responses: {
-        // @ts-expect-error fix later
         "/api/v1/versions": [...UNICODE_VERSION_METADATA],
         "/api/v1/versions/:version/file-tree": [{
           type: "file",

@@ -1,6 +1,6 @@
 import type { UCDStore } from "../store";
 import type { SharedStoreOperationOptions } from "../types";
-import { hasUCDFolderPath, resolveUCDVersion } from "@luxass/unicode-utils-new";
+import { hasUCDFolderPath, resolveUCDVersion } from "@luxass/unicode-utils";
 import { createConcurrencyLimiter, ensureIsPositiveConcurrency } from "@ucdjs-internal/shared";
 import { assertCapability } from "@ucdjs/fs-bridge";
 import { dirname, join } from "pathe";

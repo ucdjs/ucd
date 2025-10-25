@@ -42,7 +42,7 @@
     "playground:memory": "tsx --tsconfig=./tsconfig.json ./playgrounds/memory-playground.ts"
   },
   "dependencies": {
-    "@luxass/unicode-utils-new": "catalog:prod",
+    "@luxass/unicode-utils": "catalog:prod",
     "@luxass/utils": "catalog:prod",
     "@ucdjs-internal/shared": "workspace:*",
     "@ucdjs/client": "workspace:*",
