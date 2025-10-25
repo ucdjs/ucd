@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { mockStoreApi } from "#test-utils/mock-store";
 import { HttpResponse, mockFetch } from "#test-utils/msw";
-import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-old";
+import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { red } from "farver";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -36,7 +36,6 @@ describe("store init command", () => {
 
     mockStoreApi({
       responses: {
-        // @ts-expect-error fix later
         "/api/v1/versions": [...UNICODE_VERSION_METADATA],
         "/api/v1/versions/:version/file-tree": [{
           type: "file",
@@ -98,7 +97,6 @@ describe("store init command", () => {
     const storePath = await testdir();
     mockStoreApi({
       responses: {
-        // @ts-expect-error fix later
         "/api/v1/versions": [...UNICODE_VERSION_METADATA],
         "/api/v1/versions/:version/file-tree": [{
           type: "file",
@@ -140,7 +138,6 @@ describe("store init command", () => {
 
     mockStoreApi({
       responses: {
-        // @ts-expect-error fix later
         "/api/v1/versions": [...UNICODE_VERSION_METADATA],
         "/api/v1/versions/:version/file-tree": [{
           type: "file",
@@ -186,7 +183,6 @@ describe("store init command", () => {
 
     mockStoreApi({
       responses: {
-        // @ts-expect-error fix later
         "/api/v1/versions": [...UNICODE_VERSION_METADATA],
         "/api/v1/versions/:version/file-tree": [{
           type: "file",

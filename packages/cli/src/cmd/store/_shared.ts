@@ -1,7 +1,7 @@
 import type { UCDStore } from "@ucdjs/ucd-store";
 import type { Readable, Writable } from "node:stream";
 import { isCancel, multiselect } from "@clack/prompts";
-import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-old";
+import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils";
 import { createHTTPUCDStore, createNodeUCDStore } from "@ucdjs/ucd-store";
 
 export interface CLIStoreCmdSharedFlags {
@@ -73,7 +73,7 @@ export async function runVersionPrompt({
 }: RunVersionPromptOptions = {}): Promise<string[]> {
   const selectedVersions = await multiselect({
     options: UNICODE_VERSION_METADATA.map(({ version }) => ({
-      value: version,
+      value: version as string,
       label: version,
     })),
     message: "Select Unicode versions to initialize the store with:",
