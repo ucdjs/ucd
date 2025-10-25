@@ -124,9 +124,9 @@ catalogs:
     farver:
       specifier: 0.4.2
       version: 0.4.2
-    hooxs:
-      specifier: 2.0.0-beta.1
-      version: 2.0.0-beta.1
+    hookable:
+      specifier: 5.5.3
+      version: 5.5.3
     knitwork:
       specifier: 1.2.0
       version: 1.2.0
@@ -613,9 +613,9 @@ importers:
       defu:
         specifier: catalog:prod
         version: 6.1.4
-      hooxs:
+      hookable:
         specifier: catalog:prod
-        version: 2.0.0-beta.1
+        version: 5.5.3
       pathe:
         specifier: catalog:prod
         version: 2.0.3
@@ -6744,9 +6744,6 @@ packages:
 
   hookable@5.5.3:
     resolution: {integrity: sha512-Yc+BQe8SvoXH1643Qez1zqLRmbA5rCL+sSmk6TVos0LWVfNIB7PGncdlId77WzLGSIB5KaWgTaNTs2lNVEI6VQ==}
-
-  hooxs@2.0.0-beta.1:
-    resolution: {integrity: sha512-ExcYVK8Otks71lTjdolxmSjtFuzorDL7Z0RgJa04v4QUG29ErwUw2ssPmQzcn5YHHCac3asKj3+d2UnV74+0aA==}
 
   hosted-git-info@4.1.0:
     resolution: {integrity: sha512-kyCuEOWjJqZuDbRHzL8V93NzQhwIB71oFWSyzVo+KPZI+pnQPPxucdkrOZvkLRnrf5URsQM+IJ09Dw29cRALIA==}
@@ -17052,8 +17049,6 @@ snapshots:
   hono@4.10.1: {}
 
   hookable@5.5.3: {}
-
-  hooxs@2.0.0-beta.1: {}
 
   hosted-git-info@4.1.0:
     dependencies:

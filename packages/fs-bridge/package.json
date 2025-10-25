@@ -47,7 +47,7 @@
     "@ucdjs/path-utils": "workspace:*",
     "@ucdjs/schemas": "workspace:*",
     "defu": "catalog:prod",
-    "hooxs": "catalog:prod",
+    "hookable": "catalog:prod",
     "pathe": "catalog:prod",
     "zod": "catalog:prod"
   },
