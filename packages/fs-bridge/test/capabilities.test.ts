@@ -248,7 +248,7 @@ describe("assertCapability function", () => {
 });
 
 describe("proxy error handling", () => {
-  it("should throw descriptive error for unsupported write operation", () => {
+  it("should throw descriptive error for unsupported write operation", async () => {
     const bridge = defineFileSystemBridge({
       meta: {
         name: "Write Error Bridge",
@@ -262,12 +262,12 @@ describe("proxy error handling", () => {
     });
 
     const fs = bridge();
-    expect(() => fs.write?.("test.txt", "content")).toThrow(
+    await expect(() => fs.write?.("test.txt", "content")).rejects.toThrow(
       "File system bridge does not support the 'write' capability.",
     );
   });
 
-  it("should throw descriptive error for unsupported mkdir operation", () => {
+  it("should throw descriptive error for unsupported mkdir operation", async () => {
     const bridge = defineFileSystemBridge({
       meta: {
         name: "Mkdir Error Bridge",
@@ -281,12 +281,13 @@ describe("proxy error handling", () => {
     });
 
     const fs = bridge();
-    expect(() => fs.mkdir?.("new-dir")).toThrow(
+
+    await expect(() => fs.mkdir?.("new-dir")).rejects.toThrow(
       "File system bridge does not support the 'mkdir' capability.",
     );
   });
 
-  it("should throw descriptive error for unsupported rm operation", () => {
+  it("should throw descriptive error for unsupported rm operation", async () => {
     const bridge = defineFileSystemBridge({
       meta: {
         name: "RM Error Bridge",
@@ -300,7 +301,7 @@ describe("proxy error handling", () => {
     });
 
     const fs = bridge();
-    expect(() => fs.rm?.("test.txt")).toThrow(
+    await expect(() => fs.rm?.("test.txt")).rejects.toThrow(
       "File system bridge does not support the 'rm' capability.",
     );
   });
@@ -349,9 +350,9 @@ describe("proxy error handling", () => {
     await expect(fs.exists("test.txt")).resolves.toBe(true);
 
     // unsupported operations should throw
-    expect(() => fs.write?.("test.txt", "content")).toThrow();
-    expect(() => fs.mkdir?.("dir")).toThrow();
-    expect(() => fs.rm?.("test.txt")).toThrow();
+    await expect(() => fs.write?.("test.txt", "content")).rejects.toThrow();
+    await expect(() => fs.mkdir?.("dir")).rejects.toThrow();
+    await expect(() => fs.rm?.("test.txt")).rejects.toThrow();
   });
 
   it("should not interfere with capabilities property access", () => {
@@ -375,7 +376,7 @@ describe("proxy error handling", () => {
     });
   });
 
-  it("should handle concurrent unsupported operation calls", () => {
+  it("should handle concurrent unsupported operation calls", async () => {
     const bridge = defineFileSystemBridge({
       meta: {
         name: "Concurrent Unsupported Bridge",
@@ -390,9 +391,9 @@ describe("proxy error handling", () => {
 
     const fs = bridge();
     // multiple calls to unsupported operations should all throw
-    expect(() => fs.write?.("file1.txt", "content1")).toThrow();
-    expect(() => fs.write?.("file2.txt", "content2")).toThrow();
-    expect(() => fs.write?.("file3.txt", "content3")).toThrow();
+    await expect(() => fs.write?.("file1.txt", "content1")).rejects.toThrow();
+    await expect(() => fs.write?.("file2.txt", "content2")).rejects.toThrow();
+    await expect(() => fs.write?.("file3.txt", "content3")).rejects.toThrow();
   });
 });
 

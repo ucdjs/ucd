@@ -277,7 +277,7 @@ describe("defineFileSystemBridge", () => {
   });
 
   describe("unsupported operations", () => {
-    it("should throw when accessing unsupported operation", () => {
+    it("should throw when accessing unsupported operation", async () => {
       const bridge = defineFileSystemBridge({
         name: "Unsupported Operation Bridge",
         description: "A mock file system bridge with no operations",
@@ -289,10 +289,10 @@ describe("defineFileSystemBridge", () => {
 
       const operations = bridge();
 
-      expect(() => operations.write!("./test.txt", "Hello!")).toThrowError(new BridgeUnsupportedOperation("write"));
+      await expect(() => operations.write!("./test.txt", "Hello!")).rejects.toThrowError(new BridgeUnsupportedOperation("write"));
     });
 
-    it("should throw if method doesn't have catch", () => {
+    it("should throw if method doesn't have catch", async () => {
       const p = Promise.resolve("value");
 
       const bridge = defineFileSystemBridge({
@@ -310,7 +310,7 @@ describe("defineFileSystemBridge", () => {
 
       const operations = bridge();
 
-      expect(() => operations.write!("./test.txt", "hello!")).toThrowError(
+      await expect(() => operations.write!("./test.txt", "hello!")).rejects.toThrowError(
         new BridgeGenericError("The promise returned by 'write' operation does not support .catch()"),
       );
     });
@@ -363,7 +363,7 @@ describe("defineFileSystemBridge", () => {
       );
     });
 
-    it("should catch and rethrow errors from sync operations", () => {
+    it("should catch and rethrow errors from sync operations", async () => {
       const bridge = defineFileSystemBridge({
         name: "Sync Error Bridge",
         description: "A mock file system bridge that throws in sync operation",
@@ -379,7 +379,7 @@ describe("defineFileSystemBridge", () => {
 
       const operations = bridge();
 
-      expect(() => operations.write!("./test.txt", "hELLO!")).toThrow(
+      await expect(() => operations.write!("./test.txt", "hELLO!")).rejects.toThrow(
         "Unexpected error in 'write' operation: Sync error",
       );
     });
