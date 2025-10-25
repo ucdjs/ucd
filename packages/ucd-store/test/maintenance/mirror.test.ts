@@ -15,7 +15,7 @@ describe("store mirror", () => {
       baseUrl: UCDJS_API_BASE_URL,
       responses: {
         "/api/v1/versions": [...UNICODE_VERSION_METADATA],
-        "/api/v1/versions/:version/file-tree": [
+        "/api/v1/versions/{version}/file-tree": [
           {
             type: "file",
             name: "ArabicShaping.txt",
@@ -43,7 +43,7 @@ describe("store mirror", () => {
             ],
           },
         ],
-        "/api/v1/files/:wildcard": () => {
+        "/api/v1/files/{wildcard}": () => {
           return HttpResponse.text("File content");
         },
       },

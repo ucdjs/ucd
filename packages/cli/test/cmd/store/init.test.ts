@@ -37,7 +37,7 @@ describe("store init command", () => {
     mockStoreApi({
       responses: {
         "/api/v1/versions": [...UNICODE_VERSION_METADATA],
-        "/api/v1/versions/:version/file-tree": [{
+        "/api/v1/versions/{version}/file-tree": [{
           type: "file",
           name: "ArabicShaping.txt",
           path: "/ArabicShaping.txt",
@@ -48,7 +48,7 @@ describe("store init command", () => {
           path: "/BidiBrackets.txt",
           lastModified: 1752862620000,
         }],
-        "/api/v1/files/:wildcard": ({ params }) => {
+        "/api/v1/files/{wildcard}": ({ params }) => {
           return HttpResponse.text(`Content of ${params.wildcard}`);
         },
       },
@@ -98,7 +98,7 @@ describe("store init command", () => {
     mockStoreApi({
       responses: {
         "/api/v1/versions": [...UNICODE_VERSION_METADATA],
-        "/api/v1/versions/:version/file-tree": [{
+        "/api/v1/versions/{version}/file-tree": [{
           type: "file",
           name: "ArabicShaping.txt",
           path: "/ArabicShaping.txt",
@@ -109,7 +109,7 @@ describe("store init command", () => {
           path: "/BidiBrackets.txt",
           lastModified: 1752862620000,
         }],
-        "/api/v1/files/:wildcard": ({ params }) => {
+        "/api/v1/files/{wildcard}": ({ params }) => {
           return HttpResponse.text(`Content of ${params.wildcard}`);
         },
       },
@@ -139,7 +139,7 @@ describe("store init command", () => {
     mockStoreApi({
       responses: {
         "/api/v1/versions": [...UNICODE_VERSION_METADATA],
-        "/api/v1/versions/:version/file-tree": [{
+        "/api/v1/versions/{version}/file-tree": [{
           type: "file",
           name: "ArabicShaping.txt",
           path: "/ArabicShaping.txt",
@@ -150,7 +150,7 @@ describe("store init command", () => {
           path: "/BidiBrackets.txt",
           lastModified: 1752862620000,
         }],
-        "/api/v1/files/:wildcard": ({ params }) => {
+        "/api/v1/files/{wildcard}": ({ params }) => {
           return HttpResponse.text(`Content of ${params.wildcard}`);
         },
       },
@@ -184,7 +184,7 @@ describe("store init command", () => {
     mockStoreApi({
       responses: {
         "/api/v1/versions": [...UNICODE_VERSION_METADATA],
-        "/api/v1/versions/:version/file-tree": [{
+        "/api/v1/versions/{version}/file-tree": [{
           type: "file",
           name: "ArabicShaping.txt",
           path: "/ArabicShaping.txt",
@@ -195,7 +195,7 @@ describe("store init command", () => {
           path: "/BidiBrackets.txt",
           lastModified: 1752862620000,
         }],
-        "/api/v1/files/:wildcard": ({ params }) => {
+        "/api/v1/files/{wildcard}": ({ params }) => {
           return HttpResponse.text(`Content of ${params.wildcard}`);
         },
       },
