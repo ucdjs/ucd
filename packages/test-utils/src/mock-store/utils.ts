@@ -102,10 +102,10 @@ export function wrapMockFetchWithConfig(
           const response = await resolver(...resolverArgs);
 
           // apply custom headers to response
-          if (headers != null) {
-            Object.entries(headers).forEach(([key, value]) => {
-              ((response as any).headers as Headers).set(key, value);
-            });
+          if (headers != null && (response as any)?.headers instanceof Headers) {
+            for (const [key, value] of Object.entries(headers)) {
+              (response as any).headers.set(key, value);
+            }
           }
 
           return response;
@@ -114,7 +114,7 @@ export function wrapMockFetchWithConfig(
         return [method, url, wrappedResolver];
       });
 
-      return originalMockFetch(wrappedRoutes as any);
+      return originalMockFetch(wrappedRoutes as any, ...args.slice(1) as any);
     }
 
     return originalMockFetch(...args);
