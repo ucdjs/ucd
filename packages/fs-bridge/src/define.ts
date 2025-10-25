@@ -86,12 +86,12 @@ export function defineFileSystemBridge<
         // if it's an operation method and not implemented, throw
         if (typeof property === "string" && bridgeOperations.includes(property as keyof FileSystemBridgeOperations)) {
           if (val == null || typeof val !== "function") {
-            return (...args: unknown[]) => {
+            return async (...args: unknown[]) => {
               debug?.("Attempted to call unsupported operation", { operation: property });
               const error = new BridgeUnsupportedOperation(property as OptionalCapabilityKey);
 
               // call error hook for unsupported operations
-              hooks.callHook("error", {
+              await hooks.callHook("error", {
                 method: property as keyof FileSystemBridgeOperations,
                 path: args[0] as string,
                 error,
@@ -105,11 +105,11 @@ export function defineFileSystemBridge<
           const originalMethod = val as (...args: unknown[]) => unknown;
 
           if (typeof originalMethod === "function") {
-            return (...args: unknown[]) => {
+            return async (...args: unknown[]) => {
               try {
                 const beforePayload = getPayloadForHook(property, "before", args);
 
-                hooks.callHook(`${property}:before` as HookKey, beforePayload);
+                await hooks.callHook(`${property}:before` as HookKey, beforePayload);
 
                 const result = originalMethod.apply(target, args);
 
@@ -122,16 +122,16 @@ export function defineFileSystemBridge<
                   }
 
                   return (result as Promise<unknown>)
-                    .then((res) => {
+                    .then(async (res) => {
                       const afterPayload = getPayloadForHook(property, "after", args, res);
-                      hooks.callHook(`${property}:after` as HookKey, afterPayload);
+                      await hooks.callHook(`${property}:after` as HookKey, afterPayload);
                       return res;
                     })
                     .catch((err: unknown) => handleError(property, args, err, hooks));
                 }
 
                 const afterPayload = getPayloadForHook(property, "after", args, result);
-                hooks.callHook(`${property}:after` as HookKey, afterPayload);
+                await hooks.callHook(`${property}:after` as HookKey, afterPayload);
                 return result;
               } catch (err: unknown) {
                 return handleError(property, args, err, hooks);
@@ -159,15 +159,15 @@ function inferOptionalCapabilitiesFromOperations(ops: OptionalFileSystemBridgeOp
   };
 }
 
-function handleError(
+async function handleError(
   operation: PropertyKey,
   args: unknown[],
   err: unknown,
   hooks: ReturnType<typeof createHooks<FileSystemBridgeHooks>>,
-): never {
+): Promise<never> {
   // Ensure that we always call the "error" hook with Error instances
   if (err instanceof Error) {
-    hooks.callHook("error", {
+    await hooks.callHook("error", {
       method: operation as keyof FileSystemBridgeOperations,
       path: args[0] as string,
       error: err,
@@ -220,7 +220,7 @@ function getPayloadForHook(
         return {
           path: args[0] as string,
           content: args[1] as string,
-          encoding: (args[2] as BufferEncoding | undefined) ?? "utf-8",
+          encoding: (args[2] as BufferEncoding | undefined),
         } satisfies HookPayloadMap["write:before"];
       } else {
         return {
