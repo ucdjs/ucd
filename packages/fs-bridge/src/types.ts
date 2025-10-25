@@ -1,4 +1,4 @@
-import type { createHooks } from "hooxs";
+import type { createHooks } from "hookable";
 import type { z } from "zod";
 
 export interface FileSystemBridgeRmOptions {
@@ -163,7 +163,7 @@ export interface FileSystemBridge extends FileSystemBridgeOperations {
    */
   meta: FileSystemBridgeMetadata;
 
-  on: ReturnType<typeof createHooks<FileSystemBridgeHooks>>["register"];
+  on: ReturnType<typeof createHooks<FileSystemBridgeHooks>>["hook"];
 }
 
 export type FileSystemBridgeFactory<
@@ -177,7 +177,7 @@ export type FileSystemBridgeFactory<
 ) => FileSystemBridge;
 
 export interface FileSystemBridgeHooks {
-  "error"?: (payload: {
+  "error": (payload: {
     /**
      * The method that triggered the error.
      */
@@ -199,25 +199,13 @@ export interface FileSystemBridgeHooks {
     args?: unknown[];
   }) => void;
 
-  "read:before"?: (payload: {
+  "read:before": (payload: {
     /**
      * The path involved in the operation.
      */
     path: string;
   }) => void;
-  "read:after"?: (payload: {
-    /**
-     * The path involved in the operation.
-     */
-    path: string;
-
-    /**
-     * The content being read or written.
-     */
-    content: string;
-  }) => void;
-
-  "write:before"?: (payload: {
+  "read:after": (payload: {
     /**
      * The path involved in the operation.
      */
@@ -228,14 +216,31 @@ export interface FileSystemBridgeHooks {
      */
     content: string;
   }) => void;
-  "write:after"?: (payload: {
+
+  "write:before": (payload: {
+    /**
+     * The path involved in the operation.
+     */
+    path: string;
+
+    /**
+     * The content being read or written.
+     */
+    content: string;
+
+    /**
+     * Optional encoding for string content.
+     */
+    encoding?: BufferEncoding;
+  }) => void;
+  "write:after": (payload: {
     /**
      * The path involved in the operation.
      */
     path: string;
   }) => void;
 
-  "listdir:before"?: (payload: {
+  "listdir:before": (payload: {
     /**
      * The path involved in the operation.
      */
@@ -246,7 +251,7 @@ export interface FileSystemBridgeHooks {
      */
     recursive: boolean;
   }) => void;
-  "listdir:after"?: (payload: {
+  "listdir:after": (payload: {
     /**
      * The path involved in the operation.
      */
@@ -263,13 +268,13 @@ export interface FileSystemBridgeHooks {
     entries: FSEntry[];
   }) => void;
 
-  "exists:before"?: (payload: {
+  "exists:before": (payload: {
     /**
      * The path involved in the operation.
      */
     path: string;
   }) => void;
-  "exists:after"?: (payload: {
+  "exists:after": (payload: {
     /**
      * The path involved in the operation.
      */
@@ -281,26 +286,26 @@ export interface FileSystemBridgeHooks {
     exists: boolean;
   }) => void;
 
-  "mkdir:before"?: (payload: {
+  "mkdir:before": (payload: {
     /**
      * The path involved in the operation.
      */
     path: string;
   }) => void;
-  "mkdir:after"?: (payload: {
+  "mkdir:after": (payload: {
     /**
      * The path involved in the operation.
      */
     path: string;
   }) => void;
 
-  "rm:before"?: (payload: {
+  "rm:before": (payload: {
     /**
      * The path involved in the operation.
      */
     path: string;
   } & FileSystemBridgeRmOptions) => void;
-  "rm:after"?: (payload: {
+  "rm:after": (payload: {
     /**
      * The path involved in the operation.
      */

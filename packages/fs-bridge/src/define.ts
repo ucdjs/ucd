@@ -14,7 +14,7 @@ import type {
 } from "./types";
 import { createDebugger } from "@ucdjs-internal/shared";
 import { PathUtilsBaseError, resolveSafePath } from "@ucdjs/path-utils";
-import { createHooks } from "hooxs";
+import { createHooks } from "hookable";
 import { z } from "zod";
 import {
   BridgeBaseError,
@@ -76,7 +76,7 @@ export function defineFileSystemBridge<
       ...bridge,
       optionalCapabilities,
       meta: fsBridge.meta,
-      on: hooks.register.bind(hooks),
+      on: hooks.hook.bind(hooks),
     };
 
     const bridgeOperationsProxy = new Proxy(newBridge, {
@@ -91,7 +91,7 @@ export function defineFileSystemBridge<
               const error = new BridgeUnsupportedOperation(property as OptionalCapabilityKey);
 
               // call error hook for unsupported operations
-              hooks.call("error", {
+              hooks.callHook("error", {
                 method: property as keyof FileSystemBridgeOperations,
                 path: args[0] as string,
                 error,
@@ -109,7 +109,7 @@ export function defineFileSystemBridge<
               try {
                 const beforePayload = getPayloadForHook(property, "before", args);
 
-                hooks.call(`${property}:before` as HookKey, beforePayload);
+                hooks.callHook(`${property}:before` as HookKey, beforePayload);
 
                 const result = originalMethod.apply(target, args);
 
@@ -124,14 +124,14 @@ export function defineFileSystemBridge<
                   return (result as Promise<unknown>)
                     .then((res) => {
                       const afterPayload = getPayloadForHook(property, "after", args, res);
-                      hooks.call(`${property}:after` as HookKey, afterPayload);
+                      hooks.callHook(`${property}:after` as HookKey, afterPayload);
                       return res;
                     })
                     .catch((err: unknown) => handleError(property, args, err, hooks));
                 }
 
                 const afterPayload = getPayloadForHook(property, "after", args, result);
-                hooks.call(`${property}:after` as HookKey, afterPayload);
+                hooks.callHook(`${property}:after` as HookKey, afterPayload);
                 return result;
               } catch (err: unknown) {
                 return handleError(property, args, err, hooks);
@@ -167,7 +167,7 @@ function handleError(
 ): never {
   // Ensure that we always call the "error" hook with Error instances
   if (err instanceof Error) {
-    hooks.call("error", {
+    hooks.callHook("error", {
       method: operation as keyof FileSystemBridgeOperations,
       path: args[0] as string,
       error: err,
