@@ -23,13 +23,13 @@ describe("store init", () => {
     mockStoreApi({
       responses: {
         "/api/v1/versions": [...UNICODE_VERSION_METADATA],
-        "/api/v1/versions/:version/file-tree": [{
+        "/api/v1/versions/{version}/file-tree": [{
           type: "file",
           name: "ArabicShaping.txt",
           path: "ArabicShaping.txt",
           lastModified: 1724601900000,
         }],
-        "/api/v1/files/:wildcard": ({ params }) => {
+        "/api/v1/files/{wildcard}": ({ params }) => {
           return HttpResponse.text(`Content of ${params.wildcard}`);
         },
       },

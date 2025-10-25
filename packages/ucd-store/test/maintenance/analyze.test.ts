@@ -46,7 +46,7 @@ describe("analyze operations", () => {
       baseUrl: UCDJS_API_BASE_URL,
       responses: {
         "/api/v1/versions": [...UNICODE_VERSION_METADATA],
-        "/api/v1/versions/:version/file-tree": ({ params }) => {
+        "/api/v1/versions/{version}/file-tree": ({ params }) => {
           if (params.version === "15.0.0") {
             return HttpResponse.json([MOCK_FILES[0]!]);
           }
@@ -57,7 +57,7 @@ describe("analyze operations", () => {
 
           return HttpResponse.json([]);
         },
-        "/api/v1/files/:wildcard": true,
+        "/api/v1/files/{wildcard}": true,
       },
     });
 

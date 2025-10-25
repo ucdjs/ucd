@@ -1,22 +1,7 @@
-import type {
-  MockStoreConfig,
-  StoreEndpointConfig,
-  StoreEndpoints,
-  StoreResponseOverrides,
-} from "./types";
+import type { MockStoreConfig } from "./types";
 import { mockFetch } from "../msw";
-import { setupFileTreeHandler } from "./handlers/file-tree";
-import { setupFilesHandler, setupStoreManifestHandler } from "./handlers/files";
-import { setupVersionsHandler } from "./handlers/versions";
-import { setupWellKnownHandler } from "./handlers/well-known";
-
-const DEFAULT_RESPONSES = {
-  "/.well-known/ucd-config.json": true,
-  "/api/v1/versions": true,
-  "/api/v1/versions/:version/file-tree": true,
-  "/api/v1/files/.ucd-store.json": true,
-  "/api/v1/files/:wildcard": true,
-} as const satisfies StoreResponseOverrides;
+import { MOCK_ROUTES } from "./handlers";
+import { extractConfigMetadata, wrapMockFetchWithConfig } from "./utils";
 
 export function mockStoreApi(config?: MockStoreConfig): void {
   const {
@@ -27,68 +12,41 @@ export function mockStoreApi(config?: MockStoreConfig): void {
 
   const normalizedBaseUrl = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
 
-  const mergedResponses = {
-    ...DEFAULT_RESPONSES,
-    ...responses,
-  };
+  for (const route of MOCK_ROUTES) {
+    const endpoint = route.endpoint;
 
-  function isResponseEnabled(path: StoreEndpoints): boolean {
-    return path in mergedResponses && mergedResponses[path] !== false;
-  }
+    // Every endpoint is optional, but by default enabled
+    const response = responses?.[endpoint as keyof typeof responses] ?? true;
 
-  function getResponse<K extends StoreEndpoints>(key: K): StoreEndpointConfig[K] {
-    const response = mergedResponses[key];
-    if (response === false) {
-      throw new Error(`Response for ${key} is disabled`);
-    }
+    // If explicitly disabled, skip
+    if (response === false) continue;
 
-    return response as StoreEndpointConfig[K];
-  }
+    const shouldUseDefaultValue = response === true || response == null;
 
-  if (isResponseEnabled("/.well-known/ucd-config.json")) {
-    setupWellKnownHandler({
-      baseUrl: normalizedBaseUrl,
-      response: getResponse("/.well-known/ucd-config.json"),
-      versions,
-      mockFetch,
+    // Extract configuration metadata from response
+    const { actualResponse, latency, headers } = extractConfigMetadata(response);
+
+    // Create wrapped mockFetch with latency and headers handling
+    const configuredMockFetch = wrapMockFetchWithConfig(mockFetch, latency, headers);
+
+    const mswPath = endpoint.replace(/\{(\w+)\}/g, (_, p1) => {
+      if (p1 === "wildcard") {
+        return "*";
+      }
+
+      return `:${p1}`;
     });
-  }
 
-  if (isResponseEnabled("/api/v1/versions")) {
-    setupVersionsHandler({
-      baseUrl: normalizedBaseUrl,
-      response: getResponse("/api/v1/versions"),
+    route.setup({
+      url: `${normalizedBaseUrl}${mswPath}`,
+      // @ts-expect-error - TS can't infer that endpoint is keyof responses here
+      providedResponse: actualResponse,
+      shouldUseDefaultValue,
+      mockFetch: configuredMockFetch,
       versions,
-      mockFetch,
-    });
-  }
-
-  if (isResponseEnabled("/api/v1/versions/:version/file-tree")) {
-    setupFileTreeHandler({
-      baseUrl: normalizedBaseUrl,
-      response: getResponse("/api/v1/versions/:version/file-tree"),
-      versions,
-      mockFetch,
-    });
-  }
-
-  if (isResponseEnabled("/api/v1/files/:wildcard")) {
-    setupFilesHandler({
-      baseUrl: normalizedBaseUrl,
-      response: getResponse("/api/v1/files/:wildcard"),
-      versions,
-      mockFetch,
-    });
-  }
-
-  if (isResponseEnabled("/api/v1/files/.ucd-store.json")) {
-    setupStoreManifestHandler({
-      baseUrl: normalizedBaseUrl,
-      response: getResponse("/api/v1/files/.ucd-store.json"),
-      versions,
-      mockFetch,
     });
   }
 }
 
-export type { MockStoreConfig, StoreEndpointConfig, StoreEndpoints } from "./types";
+export type { MockStoreConfig };
+export { configure } from "./utils";

@@ -129,7 +129,7 @@ beforeEach(() => {
     baseUrl: "https://api.ucdjs.dev",
     responses: {
       "/api/v1/versions": ["16.0.0", "15.1.0"],
-      "/api/v1/files/:wildcard": () => HttpResponse.text("File content"),
+      "/api/v1/files/{wildcard}": () => HttpResponse.text("File content"),
     },
   });
 });

@@ -40,7 +40,9 @@
     "dev": "tsdown --watch",
     "clean": "git clean -xdf dist node_modules",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "generate:client": "openapi-typescript ../../ucd-generated/api/openapi.json -o ./src/.generated/api.d.ts",
+    "generate:client:local": "openapi-typescript http://localhost:8787/openapi.json -o ./src/.generated/api.d.ts"
   },
   "peerDependencies": {
     "@ucdjs/ucd-store": "workspace:*",
@@ -59,6 +61,7 @@
     "@ucdjs-tooling/tsdown-config": "workspace:*",
     "@ucdjs/ucd-store": "workspace:*",
     "eslint": "catalog:linting",
+    "openapi-typescript": "catalog:dev",
     "publint": "catalog:dev",
     "tsdown": "catalog:dev",
     "tsx": "catalog:dev",
