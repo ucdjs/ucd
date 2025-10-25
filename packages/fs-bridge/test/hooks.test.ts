@@ -414,7 +414,7 @@ describe("hooks", () => {
       });
     });
 
-    it("should call error hook on sync operation error", () => {
+    it("should call error hook on sync operation error", async () => {
       const errorHook = vi.fn();
       const testError = new Error("Sync write error");
 
@@ -441,7 +441,7 @@ describe("hooks", () => {
       operations.on("error", errorHook);
 
       assertCapability(operations, "write");
-      expect(() => operations.write("test.txt", "content")).toThrow();
+      await expect(() => operations.write("test.txt", "content")).rejects.toThrow();
 
       expect(errorHook).toHaveBeenCalledOnce();
       expect(errorHook).toHaveBeenCalledWith({
@@ -452,7 +452,7 @@ describe("hooks", () => {
       });
     });
 
-    it("should call error hook for unsupported operations", () => {
+    it("should call error hook for unsupported operations", async () => {
       const errorHook = vi.fn();
       const bridge = defineFileSystemBridge({
         meta: {
@@ -469,7 +469,7 @@ describe("hooks", () => {
       const operations = bridge();
       operations.on("error", errorHook);
 
-      expect(() => operations.write!("test.txt", "content")).toThrow(
+      await expect(() => operations.write!("test.txt", "content")).rejects.toThrow(
         BridgeUnsupportedOperation,
       );
 
