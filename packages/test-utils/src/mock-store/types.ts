@@ -24,7 +24,7 @@ type ExtractPathParams<Path extends string> = Path extends `${infer _Start}/{${i
   // eslint-disable-next-line ts/no-empty-object-type
   : {};
 
-type InferContentTypes<Content> = Content extends Record<string, any>
+export type InferContentTypes<Content> = Content extends Record<string, any>
   ? {
       [K in keyof Content]: K extends keyof ContentTypeToType
         ? Content[K] extends ContentTypeToType[K]
@@ -34,7 +34,7 @@ type InferContentTypes<Content> = Content extends Record<string, any>
     }[keyof Content]
   : never;
 
-type InferResponsesByEndpoint<Endpoint extends EndpointWithGet>
+export type InferResponsesByEndpoint<Endpoint extends EndpointWithGet>
   = paths[Endpoint]["get"]["responses"] extends infer Responses
     ? {
         [StatusCode in keyof Responses]: Responses[StatusCode] extends { content: infer Content }
