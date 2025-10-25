@@ -220,6 +220,7 @@ function getPayloadForHook(
         return {
           path: args[0] as string,
           content: args[1] as string,
+          encoding: (args[2] as BufferEncoding | undefined) ?? "utf-8",
         } satisfies HookPayloadMap["write:before"];
       } else {
         return {
