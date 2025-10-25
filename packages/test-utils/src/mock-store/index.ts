@@ -1,6 +1,7 @@
 import type { InferEndpointConfig, MockStoreConfig } from "./types";
 import { mockFetch } from "../msw";
 import { MOCK_ROUTES } from "./handlers";
+import { extractConfigMetadata, wrapMockFetchWithConfig } from "./utils";
 
 export function mockStoreApi(config?: MockStoreConfig): void {
   const {
@@ -22,6 +23,12 @@ export function mockStoreApi(config?: MockStoreConfig): void {
 
     const shouldUseDefaultValue = response === true || response == null;
 
+    // Extract configuration metadata from response
+    const { actualResponse, latency, headers } = extractConfigMetadata(response);
+
+    // Create wrapped mockFetch with latency and headers handling
+    const configuredMockFetch = wrapMockFetchWithConfig(mockFetch, latency, headers);
+
     const mswPath = endpoint.replace(/\{(\w+)\}/g, (_, p1) => {
       if (p1 === "wildcard") {
         return "*";
@@ -33,9 +40,9 @@ export function mockStoreApi(config?: MockStoreConfig): void {
     route.setup({
       url: `${normalizedBaseUrl}${mswPath}`,
       // @ts-expect-error - TS can't infer that endpoint is keyof responses here
-      providedResponse: response,
+      providedResponse: actualResponse,
       shouldUseDefaultValue,
-      mockFetch,
+      mockFetch: configuredMockFetch,
       versions,
     });
   }
