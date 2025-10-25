@@ -27,8 +27,8 @@ type InferContentTypes<Content> = Content extends Record<string, any>
     }[keyof Content]
   : never;
 
-type InferResponsesByEndpoint<Endpoint extends EndpointWithGet> =
-  paths[Endpoint]["get"]["responses"] extends infer Responses
+type InferResponsesByEndpoint<Endpoint extends EndpointWithGet>
+  = paths[Endpoint]["get"]["responses"] extends infer Responses
     ? {
         [StatusCode in keyof Responses]: Responses[StatusCode] extends { content: infer Content }
           ? InferContentTypes<Content>
