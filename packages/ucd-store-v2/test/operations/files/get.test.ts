@@ -114,13 +114,12 @@ describe("getFile", () => {
 
       const filter = createPathFilter({});
       const fs = createMemoryMockFS({
-        hooks: {
-          "read:before": readFailure,
-        },
         initialFiles: {
           "/test/16.0.0/UnicodeData.txt": "This content won't be read",
         },
       });
+
+      fs.on("read:before", readFailure);
 
       const context = createInternalContext({
         client,
@@ -138,10 +137,7 @@ describe("getFile", () => {
       expect(data).toBe(apiResponse);
       expect(callCount).toBe(1);
       expect(readFailure).toHaveBeenCalledWith({
-        input: {
-          path: "/test/16.0.0/UnicodeData.txt",
-        },
-        state: expect.any(Object),
+        path: "/test/16.0.0/UnicodeData.txt",
       });
     });
   });
