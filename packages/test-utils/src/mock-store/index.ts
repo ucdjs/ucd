@@ -64,7 +64,13 @@ export function mockStoreApi(config?: MockStoreConfig): void {
 
     const shouldUseDefaultValue = response === true || response == null;
 
-    const mswPath = endpoint.replace(/\{(\w+)\}/g, ":$1");
+    const mswPath = endpoint.replace(/\{(\w+)\}/g, (_, p1) => {
+      if (p1 === "wildcard") {
+        return "*";
+      }
+
+      return `:${p1}`;
+    });
 
     route.setup({
       url: `${normalizedBaseUrl}${mswPath}`,
