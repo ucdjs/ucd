@@ -40,3 +40,6 @@ export function mockStoreApi(config?: MockStoreConfig): void {
     });
   }
 }
+
+export type { MockStoreConfig };
+export { configure } from "./utils";

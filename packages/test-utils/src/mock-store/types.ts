@@ -2,6 +2,7 @@ import type { MockFetchFn } from "@luxass/msw-utils";
 import type { DefaultBodyType, HttpResponseResolver, PathParams } from "msw";
 import type { paths } from "../.generated/api";
 import type { MOCK_ROUTES } from "./handlers";
+import type { ConfiguredResponse } from "./utils";
 
 interface ContentTypeToType {
   "application/json": any;
@@ -48,7 +49,7 @@ export type InferEndpointConfig<
   [K in Routes[number]["endpoint"]]: Extract<Routes[number], {
     endpoint: K;
   }> extends RouteHandlerDefinition<infer E>
-    ? InferResponsesByEndpoint<E> | TypedResponseResolver<ExtractPathParams<E>, InferResponsesByEndpoint<E>> | true
+    ? InferResponsesByEndpoint<E> | ConfiguredResponse<InferResponsesByEndpoint<E>> | TypedResponseResolver<ExtractPathParams<E>, InferResponsesByEndpoint<E>> | true
     : never;
 };
 
