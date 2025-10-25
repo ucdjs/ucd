@@ -2,7 +2,7 @@ import type { UnicodeTree } from "@ucdjs/schemas";
 import { createMemoryMockFS } from "#test-utils/fs-bridges";
 import { mockStoreApi } from "#test-utils/mock-store";
 import { HttpResponse, mockFetch } from "#test-utils/msw";
-import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
+import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { assertCapability } from "@ucdjs/fs-bridge";
 import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "@ucdjs/ucd-store";

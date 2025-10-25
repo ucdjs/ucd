@@ -7,7 +7,7 @@ import {
   resolveUCDVersion,
   UNICODE_STABLE_VERSION,
   UNICODE_VERSION_METADATA,
-} from "@luxass/unicode-utils-new";
+} from "@luxass/unicode-utils";
 import { traverse } from "apache-autoindex-parse/traverse";
 import { V1_VERSIONS_ROUTER_BASE_PATH } from "../../constants";
 import { badRequest, internalServerError, notFound } from "../../lib/errors";

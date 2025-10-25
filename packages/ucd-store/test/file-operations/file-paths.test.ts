@@ -1,5 +1,5 @@
 import { mockStoreApi } from "#test-utils/mock-store";
-import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils-new";
+import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { assert, beforeEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
