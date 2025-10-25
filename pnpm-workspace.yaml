@@ -42,7 +42,7 @@ catalogs:
 
   prod:
     # merge these together when heading inference is implemented better
-    "@luxass/unicode-utils": 0.11.0
+    "@luxass/unicode-utils-old": npm:@luxass/unicode-utils@0.11.0
     "@luxass/unicode-utils-new": npm:@luxass/unicode-utils@0.12.0-beta.11
     "@luxass/utils": 2.7.2
     destr: 2.0.5

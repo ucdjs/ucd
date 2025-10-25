@@ -1,4 +1,4 @@
-import type { RawDataFile } from "@luxass/unicode-utils";
+import type { RawDataFile } from "@luxass/unicode-utils-old";
 import type { LanguageModel } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
 import { dedent } from "@luxass/utils";

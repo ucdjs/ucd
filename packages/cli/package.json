@@ -44,7 +44,7 @@
   },
   "dependencies": {
     "@clack/prompts": "catalog:prod",
-    "@luxass/unicode-utils": "catalog:prod",
+    "@luxass/unicode-utils-old": "catalog:prod",
     "@luxass/utils": "catalog:prod",
     "@ucdjs/schema-gen": "workspace:*",
     "@ucdjs/ucd-store": "workspace:*",

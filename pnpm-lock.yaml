@@ -97,12 +97,12 @@ catalogs:
     '@luxass/msw-utils':
       specifier: 0.4.0
       version: 0.4.0
-    '@luxass/unicode-utils':
-      specifier: 0.11.0
-      version: 0.11.0
     '@luxass/unicode-utils-new':
       specifier: npm:@luxass/unicode-utils@0.12.0-beta.11
       version: 0.12.0-beta.11
+    '@luxass/unicode-utils-old':
+      specifier: npm:@luxass/unicode-utils@0.11.0
+      version: 0.11.0
     '@luxass/utils':
       specifier: 2.7.2
       version: 2.7.2
@@ -472,9 +472,9 @@ importers:
       '@clack/prompts':
         specifier: catalog:prod
         version: 1.0.0-alpha.5
-      '@luxass/unicode-utils':
+      '@luxass/unicode-utils-old':
         specifier: catalog:prod
-        version: 0.11.0
+        version: '@luxass/unicode-utils@0.11.0'
       '@luxass/utils':
         specifier: catalog:prod
         version: 2.7.2
@@ -693,9 +693,9 @@ importers:
       '@ai-sdk/openai':
         specifier: catalog:prod
         version: 2.0.32(zod@4.1.11)
-      '@luxass/unicode-utils':
+      '@luxass/unicode-utils-old':
         specifier: catalog:prod
-        version: 0.11.0
+        version: '@luxass/unicode-utils@0.11.0'
       '@luxass/utils':
         specifier: catalog:prod
         version: 2.7.2
