@@ -161,7 +161,7 @@ function handleError(
   err: unknown,
   hooks: ReturnType<typeof createHooks<FileSystemBridgeHooks>>,
 ): never {
-  // Ensure that we always calls the "error" hook with Error instances
+  // Ensure that we always call the "error" hook with Error instances
   if (err instanceof Error) {
     hooks.call("error", {
       method: operation as keyof FileSystemBridgeOperations,
