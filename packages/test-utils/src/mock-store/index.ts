@@ -1,4 +1,5 @@
 import type { MockStoreConfig } from "./types";
+import { createDebugger } from "@ucdjs-internal/shared";
 import { mockFetch } from "../msw";
 import { MOCK_ROUTES } from "./handlers";
 import {
@@ -7,13 +8,18 @@ import {
   wrapMockFetch,
 } from "./utils";
 
+const debug = createDebugger("ucdjs:test-utils:mock-store");
+
 export function mockStoreApi(config?: MockStoreConfig): void {
   const {
     baseUrl = "https://api.ucdjs.dev",
     responses,
     versions = ["16.0.0", "15.1.0", "15.0.0"],
     customResponses = [],
+    onRequest,
   } = config || {};
+
+  debug?.("Setting up mock store API with config:", config);
 
   const normalizedBaseUrl = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
 
@@ -30,16 +36,25 @@ export function mockStoreApi(config?: MockStoreConfig): void {
 
     // extract metadata from configure
     const { actualResponse, latency, headers } = extractConfiguredMetadata(response);
+    debug?.(`Setting up mock for endpoint: ${endpoint} with response:`, actualResponse);
 
     const wrappedMockFetch = wrapMockFetch(mockFetch, {
+      onRequest,
       beforeFetch: async () => {
+        debug?.("Before fetch for endpoint:", endpoint);
         // apply latency before calling resolver
         if (latency) {
           const ms = parseLatency(latency);
           await new Promise((resolve) => setTimeout(resolve, ms));
         }
       },
-      afterFetch(response) {
+      afterFetch({ response }) {
+        debug?.("After fetch for endpoint:", endpoint);
+        if (!response) {
+          debug?.("No response returned from resolver");
+          return;
+        }
+
         if (
           !headers
           || !("headers" in response)
@@ -56,6 +71,7 @@ export function mockStoreApi(config?: MockStoreConfig): void {
     });
 
     const mswPath = toMSWPath(endpoint);
+    debug?.(`MSW path for endpoint ${endpoint}: ${mswPath}`);
 
     route.setup({
       url: `${normalizedBaseUrl}${mswPath}`,
@@ -71,6 +87,7 @@ export function mockStoreApi(config?: MockStoreConfig): void {
   }
 
   if (customResponses.length > 0) {
+    debug?.("Setting up custom responses");
     mockFetch(customResponses);
   }
 }

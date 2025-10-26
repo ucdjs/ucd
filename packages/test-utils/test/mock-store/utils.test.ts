@@ -1,3 +1,6 @@
+import type { WrapMockFetchCallbackPayload, WrapMockFetchCallbackPayloadWithResponse } from "packages/test-utils/src/mock-store/types";
+import { mockFetch } from "#test-utils/msw";
+import { HttpResponse } from "msw";
 import { describe, expect, it, vi } from "vitest";
 import {
   configure,
@@ -141,77 +144,13 @@ describe("wrapMockFetch", () => {
     expect(wrapped).toBe(mockFetch);
   });
 
-  it("should wrap mockFetch with latency", async () => {
-    const mockFetch = vi.fn((_routes) => {
-      return Promise.resolve();
-    });
-
-    const resolver = vi.fn(async () => ({ status: 200 }));
-    const wrapped = wrapMockFetch(mockFetch, {
-      beforeFetch: async () => {
-        // simulate latency
-        await new Promise((resolve) => setTimeout(resolve, 50));
-      },
-    });
-
-    wrapped([
-      [
-        "GET",
-        "/test",
-        // @ts-expect-error test mock
-        resolver,
-      ],
-    ]);
-
-    expect(mockFetch).toHaveBeenCalledWith(
-      expect.arrayContaining([
-        expect.arrayContaining(["GET", "/test", expect.any(Function)]),
-      ]),
-    );
-  });
-
-  it("should wrap mockFetch with headers", async () => {
-    const mockFetch = vi.fn((_routes) => {
-      return Promise.resolve();
-    });
-
-    const resolver = vi.fn(async () => ({
-      status: 200,
-      headers: new Headers(),
-    }));
-
-    const wrapped = wrapMockFetch(mockFetch, {
-      afterFetch: (response) => {
-        if (response.headers instanceof Headers) {
-          response.headers.set("X-Custom", "value");
-        }
-      },
-    });
-
-    wrapped([[
-      "GET",
-      "/test",
-      // @ts-expect-error test mock
-      resolver,
-    ]]);
-
-    expect(mockFetch).toHaveBeenCalledWith(
-      expect.arrayContaining([
-        expect.arrayContaining(["GET", "/test", expect.any(Function)]),
-      ]),
-    );
-  });
-
   it("should not wrap non-function resolvers", async () => {
     const mockFetch = vi.fn((_routes) => {
       return Promise.resolve();
     });
 
     const wrapped = wrapMockFetch(mockFetch, {
-      beforeFetch: async () => {
-        // simulate latency
-        await new Promise((resolve) => setTimeout(resolve, 50));
-      },
+      beforeFetch: async () => {},
     });
 
     const routes = [["GET", "/test", { data: "static" }]];
@@ -223,10 +162,7 @@ describe("wrapMockFetch", () => {
   it("should handle non-array routes", async () => {
     const mockFetch = vi.fn();
     const wrapped = wrapMockFetch(mockFetch, {
-      beforeFetch: async () => {
-        // simulate latency
-        await new Promise((resolve) => setTimeout(resolve, 50));
-      },
+      beforeFetch: async () => {},
     });
 
     const singleRoute = "not-an-array";
@@ -241,10 +177,7 @@ describe("wrapMockFetch", () => {
     });
 
     const wrapped = wrapMockFetch(mockFetch, {
-      beforeFetch: async () => {
-        // simulate latency
-        await new Promise((resolve) => setTimeout(resolve, 50));
-      },
+      beforeFetch: async () => {},
     });
 
     const routes = [["GET"]];
@@ -253,80 +186,189 @@ describe("wrapMockFetch", () => {
     expect(mockFetch).toHaveBeenCalledWith(routes);
   });
 
-  it("should apply latency before calling resolver", async () => {
-    const mockFetch = vi.fn(async (routes) => {
-      const [, , wrappedResolver] = routes[0];
-      if (typeof wrappedResolver === "function") {
-        await wrappedResolver();
-      }
-    });
+  it("should call beforeFetch callback", async () => {
+    const beforeFetch = vi.fn();
 
-    const startTime = Date.now();
-    const resolver = vi.fn(async () => ({ status: 200 }));
-    const wrapped = wrapMockFetch(mockFetch, {
-      beforeFetch: async () => {
-        // simulate latency
-        await new Promise((resolve) => setTimeout(resolve, 50));
-      },
-    });
+    const resolver = vi.fn(async () => HttpResponse.json({ status: 200 }));
+    const wrapped = wrapMockFetch(mockFetch, { beforeFetch });
 
-    const routes = [["GET", "/test", resolver]];
-    await wrapped(routes as any);
+    await wrapped([
+      ["GET", "https://api.ucdjs.dev/test", resolver],
+    ]);
 
-    const elapsed = Date.now() - startTime;
-    expect(elapsed).toBeGreaterThanOrEqual(45);
+    const res = await fetch("https://api.ucdjs.dev/test");
+    const data = await res.json();
+
+    expect(data).toEqual({ status: 200 });
+    expect(beforeFetch).toHaveBeenCalledWith({
+      path: "/test",
+      method: "GET",
+      params: {},
+      url: "https://api.ucdjs.dev/test",
+    } satisfies WrapMockFetchCallbackPayload);
   });
 
-  it("should apply headers to response", async () => {
-    const headers = new Headers();
-    const response = { status: 200, headers };
+  it("should call afterFetch callback with response", async () => {
+    const responsePayload = {
+      message: "Hello, World!",
+    };
 
-    const mockFetch = vi.fn(async (routes) => {
-      const [, , wrappedResolver] = routes[0];
-      if (typeof wrappedResolver === "function") {
-        return await wrappedResolver();
+    const resolver = vi.fn(async () => HttpResponse.json(responsePayload));
+    const afterFetch = vi.fn(({ response }) => {
+      if (!response || !("headers" in response)) return;
+
+      if (response.headers instanceof Headers) {
+        response.headers.set("X-Custom", "value");
+        response.headers.set("X-Another", "header");
       }
     });
 
-    const resolver = vi.fn(async () => response);
-    const wrapped = wrapMockFetch(mockFetch, {
-      afterFetch: (response) => {
-        if (response.headers instanceof Headers) {
-          response.headers.set("X-Custom", "value");
-          response.headers.set("X-Another", "header");
-        }
-      },
-    });
+    const wrapped = wrapMockFetch(mockFetch, { afterFetch });
 
-    const routes = [["GET", "/test", resolver]];
-    await wrapped(routes as any);
+    await wrapped([
+      ["GET", "https://api.ucdjs.dev/test", resolver],
+    ]);
 
-    expect(headers.get("X-Custom")).toBe("value");
-    expect(headers.get("X-Another")).toBe("header");
+    const res = await fetch("https://api.ucdjs.dev/test");
+    const responseData = await res.json();
+
+    expect(responseData).toEqual(responsePayload);
+
+    expect(afterFetch).toHaveBeenCalledWith({
+      path: "/test",
+      method: "GET",
+      params: {},
+      url: "https://api.ucdjs.dev/test",
+      response: expect.any(Object),
+    } satisfies WrapMockFetchCallbackPayloadWithResponse);
+    expect(res.headers.get("X-Custom")).toBe("value");
+    expect(res.headers.get("X-Another")).toBe("header");
   });
 
-  it("should parse random latency", async () => {
-    const mockFetch = vi.fn(async (routes) => {
-      const [, , wrappedResolver] = routes[0];
-      if (typeof wrappedResolver === "function") {
-        await wrappedResolver();
-      }
+  describe("onRequest callback", () => {
+    it("should call onRequest with correct payload", async () => {
+      const onRequest = vi.fn();
+      const resolver = vi.fn(async () => {
+        return HttpResponse.json({ status: 200 });
+      });
+
+      const wrapped = wrapMockFetch(mockFetch, { onRequest });
+
+      await wrapped([["GET", "https://api.ucdjs.dev/api/v1/versions", resolver]]);
+
+      await fetch("https://api.ucdjs.dev/api/v1/versions");
+
+      expect(onRequest).toHaveBeenCalledWith({
+        path: "/api/v1/versions",
+        method: "GET",
+        params: {},
+        url: "https://api.ucdjs.dev/api/v1/versions",
+      } satisfies WrapMockFetchCallbackPayload);
     });
 
-    const resolver = vi.fn(async () => ({ status: 200 }));
-    const wrapped = wrapMockFetch(mockFetch, {
-      beforeFetch: async () => {
-        // simulate latency
-        const ms = parseLatency("random");
-        await new Promise((resolve) => setTimeout(resolve, ms));
-      },
+    it("should call onRequest with path parameters", async () => {
+      const onRequest = vi.fn();
+      const resolver = vi.fn(async () => {
+        return HttpResponse.json({ status: 200 });
+      });
+
+      const wrapped = wrapMockFetch(mockFetch, { onRequest });
+
+      await wrapped([["GET", "https://api.ucdjs.dev/api/v1/versions/:version/file-tree", resolver]]);
+
+      await fetch("https://api.ucdjs.dev/api/v1/versions/16.0.0/file-tree");
+
+      expect(onRequest).toHaveBeenCalledWith({
+        path: "/api/v1/versions/16.0.0/file-tree",
+        method: "GET",
+        params: { version: "16.0.0" },
+        url: "https://api.ucdjs.dev/api/v1/versions/16.0.0/file-tree",
+      } satisfies WrapMockFetchCallbackPayload);
     });
 
-    const startTime = Date.now();
-    const routes = [["GET", "/test", resolver]];
-    await wrapped(routes as any);
+    it("should track multiple requests", async () => {
+      const requests: any[] = [];
+      const onRequest = vi.fn((payload) => {
+        requests.push(payload);
+      });
 
-    const elapsed = Date.now() - startTime;
-    expect(elapsed).toBeGreaterThanOrEqual(95);
+      const resolver = vi.fn(async () => {
+        return HttpResponse.json({ status: 200 });
+      });
+      const wrapped = wrapMockFetch(mockFetch, { onRequest });
+
+      await wrapped([
+        ["GET", "https://api.ucdjs.dev/api/v1/versions", resolver],
+        ["GET", "https://api.ucdjs.dev/api/v1/files/test.txt", resolver],
+      ]);
+
+      await fetch("https://api.ucdjs.dev/api/v1/versions");
+      await fetch("https://api.ucdjs.dev/api/v1/files/test.txt");
+
+      expect(onRequest).toHaveBeenCalledTimes(2);
+      expect(requests).toHaveLength(2);
+      expect(requests[0].path).toBe("/api/v1/versions");
+      expect(requests[1].path).toBe("/api/v1/files/test.txt");
+    });
+
+    it("should call onRequest before beforeFetch", async () => {
+      const callOrder: string[] = [];
+      const onRequest = vi.fn(() => {
+        callOrder.push("onRequest");
+      });
+      const beforeFetch = vi.fn(async () => {
+        callOrder.push("beforeFetch");
+      });
+
+      const resolver = vi.fn(async () => {
+        return HttpResponse.json({ status: 200 });
+      });
+
+      const wrapped = wrapMockFetch(mockFetch, {
+        onRequest,
+        beforeFetch,
+      });
+
+      await wrapped([["GET", "https://api.ucdjs.dev/test", resolver]]);
+
+      await fetch("https://api.ucdjs.dev/test");
+
+      expect(callOrder).toEqual(["onRequest", "beforeFetch"]);
+    });
+
+    it("should work with beforeFetch and afterFetch", async () => {
+      const onRequest = vi.fn();
+      const beforeFetch = vi.fn();
+      const afterFetch = vi.fn();
+
+      const resolver = vi.fn(async () => {
+        return HttpResponse.json({ status: 200 });
+      });
+      const wrapped = wrapMockFetch(mockFetch, { onRequest, beforeFetch, afterFetch });
+
+      await wrapped([["GET", "https://api.ucdjs.dev/:id", resolver]]);
+
+      await fetch("https://api.ucdjs.dev/123");
+
+      expect(onRequest).toHaveBeenCalledWith({
+        path: "/123",
+        method: "GET",
+        params: { id: "123" },
+        url: "https://api.ucdjs.dev/123",
+      } satisfies WrapMockFetchCallbackPayload);
+      expect(beforeFetch).toHaveBeenCalledWith({
+        path: "/123",
+        method: "GET",
+        params: { id: "123" },
+        url: "https://api.ucdjs.dev/123",
+      } satisfies WrapMockFetchCallbackPayload);
+      expect(afterFetch).toHaveBeenCalledWith({
+        path: "/123",
+        method: "GET",
+        params: { id: "123" },
+        url: "https://api.ucdjs.dev/123",
+        response: expect.any(Object),
+      } satisfies WrapMockFetchCallbackPayloadWithResponse);
+    });
   });
 });

@@ -50,6 +50,7 @@
   },
   "dependencies": {
     "@luxass/msw-utils": "catalog:prod",
+    "@ucdjs-internal/shared": "workspace:*",
     "@ucdjs/fs-bridge": "workspace:*",
     "@ucdjs/schemas": "workspace:*",
     "msw": "catalog:testing",
