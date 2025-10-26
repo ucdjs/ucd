@@ -23,16 +23,22 @@ export function configure<const Response>(
   }
 
   if (
-    typeof config.response !== "function" && typeof config.response !== "object" && config.response != null
+    config.response == null
+    || (typeof config.response !== "function" && typeof config.response !== "object")
   ) {
-    throw new TypeError("Invalid configure() call: response must be a function or an object");
+    throw new TypeError(
+      "Invalid configure() call: response must be a function or a non-null object",
+    );
   }
 
-  (config.response as any)[CONFIGURED_RESPONSE] = {
-    latency: config.latency,
-    headers: config.headers,
-  };
-  return config.response as any;
+  Object.defineProperty(config.response as object, CONFIGURED_RESPONSE, {
+    value: { latency: config.latency, headers: config.headers },
+    enumerable: false,
+    configurable: false,
+    writable: false,
+  });
+
+  return config.response as ConfiguredResponse<Response>;
 }
 
 /**
@@ -73,12 +79,12 @@ export function extractConfigMetadata(response: unknown): {
   headers?: Record<string, string>;
 } {
   if (isConfiguredResponse(response)) {
-    const { [CONFIGURED_RESPONSE]: config, ...actualResponse } = response;
-    return {
-      actualResponse,
-      latency: config.latency,
-      headers: config.headers,
+    const meta = (response as any)[CONFIGURED_RESPONSE] as {
+      latency?: number | "random";
+      headers?: Record<string, string>;
     };
+
+    return { actualResponse: response, latency: meta.latency, headers: meta.headers };
   }
 
   return { actualResponse: response };
