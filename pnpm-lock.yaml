@@ -868,6 +868,9 @@ importers:
       eslint:
         specifier: catalog:linting
         version: 9.38.0(jiti@2.6.1)
+      openapi-typescript:
+        specifier: catalog:dev
+        version: 7.10.1(typescript@5.9.3)
       publint:
         specifier: catalog:dev
         version: 0.3.15

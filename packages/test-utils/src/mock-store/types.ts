@@ -1,43 +1,75 @@
 import type { MockFetchFn } from "@luxass/msw-utils";
-import type {
-  FileEntryList,
-  UCDStoreManifest,
-  UCDWellKnownConfig,
-  UnicodeTree,
-  UnicodeVersionList,
-} from "@ucdjs/schemas";
-import type {
-  DefaultBodyType,
-  HttpResponseResolver,
-  PathParams,
-} from "msw";
+import type { DefaultBodyType, HttpResponseResolver, PathParams } from "msw";
+import type { paths } from "../.generated/api";
+import type { MOCK_ROUTES } from "./handlers";
+import type { kConfiguredResponse } from "./helpers";
 
-export type FileEndpointResponse = ArrayBuffer | Uint8Array | string | Blob | File | FileEntryList;
+interface ContentTypeToType {
+  "application/json": any;
+  "text/plain": string;
+  "application/octet-stream": Blob | File | ArrayBuffer | Uint8Array;
+}
+
+export type EndpointWithGet = {
+  [K in keyof paths]: paths[K] extends { get: any } ? K : never;
+}[keyof paths];
 
 export type TypedResponseResolver<
-  Params extends PathParams<keyof Params> = PathParams,
+  Params extends PathParams<string> = PathParams,
   Response extends DefaultBodyType = DefaultBodyType,
 > = HttpResponseResolver<Params, DefaultBodyType, Response>;
 
-// eslint-disable-next-line ts/no-empty-object-type
-export interface EmptyObject {}
+type ExtractPathParams<Path extends string> = Path extends `${infer _Start}/{${infer Param}}${infer Rest}`
+  ? PathParams<Param> & ExtractPathParams<Rest>
+  // eslint-disable-next-line ts/no-empty-object-type
+  : {};
 
-export interface StoreEndpointConfig {
-  "/.well-known/ucd-config.json": true | UCDWellKnownConfig | TypedResponseResolver<EmptyObject, UCDWellKnownConfig>;
-  "/api/v1/versions": true | UnicodeVersionList | TypedResponseResolver<EmptyObject, UnicodeVersionList>;
-  "/api/v1/versions/:version/file-tree": true | UnicodeTree | TypedResponseResolver<{
-    version: string;
-  }, UnicodeTree>;
-  "/api/v1/files/.ucd-store.json": (true | UCDStoreManifest) | TypedResponseResolver<EmptyObject, UCDStoreManifest>;
-  "/api/v1/files/:wildcard": (true | FileEndpointResponse) | TypedResponseResolver<{
-    wildcard: string;
-  }, FileEndpointResponse>;
+export type InferContentTypes<Content> = Content extends Record<string, any>
+  ? {
+      [K in keyof Content]: K extends keyof ContentTypeToType
+        ? Content[K] extends ContentTypeToType[K]
+          ? Content[K]
+          : ContentTypeToType[K]
+        : Content[K];
+    }[keyof Content]
+  : never;
+
+export type InferResponsesByEndpoint<Endpoint extends EndpointWithGet>
+  = paths[Endpoint]["get"]["responses"] extends infer Responses
+    ? {
+        [StatusCode in keyof Responses]: Responses[StatusCode] extends { content: infer Content }
+          ? InferContentTypes<Content>
+          : never;
+      }[keyof Responses]
+    : never;
+
+export type InferEndpointConfig<
+  Routes extends readonly RouteHandlerDefinition<any>[],
+> = {
+  [K in Routes[number]["endpoint"]]: Extract<Routes[number], {
+    endpoint: K;
+  }> extends RouteHandlerDefinition<infer E>
+    ? InferResponsesByEndpoint<E> | ConfiguredResponse<InferResponsesByEndpoint<E>> | TypedResponseResolver<ExtractPathParams<E>, InferResponsesByEndpoint<E>> | true
+    : never;
+};
+
+interface MockRouteHandlerContext<Endpoint extends EndpointWithGet> {
+  url: string;
+  providedResponse: InferResponsesByEndpoint<Endpoint> | TypedResponseResolver<ExtractPathParams<Endpoint>, InferResponsesByEndpoint<Endpoint>> | true;
+  mockFetch: MockFetchFn;
+  versions: string[];
+  shouldUseDefaultValue: boolean;
 }
 
-export type StoreEndpoints = keyof StoreEndpointConfig;
+export interface RouteHandlerDefinition<Endpoint extends EndpointWithGet> {
+  endpoint: Endpoint;
+  setup: (context: MockRouteHandlerContext<Endpoint>) => void;
+}
 
-export type StoreResponseOverrides = Partial<{
-  [K in StoreEndpoints]: false | StoreEndpointConfig[K]
+type DerivedEndpointConfig = InferEndpointConfig<typeof MOCK_ROUTES>;
+
+type DerivedResponses = Partial<{
+  [K in keyof DerivedEndpointConfig]: false | DerivedEndpointConfig[K];
 }>;
 
 export interface MockStoreConfig {
@@ -56,7 +88,7 @@ export interface MockStoreConfig {
    * If the value is `false`, then no handler will be used.
    * If the value provided is a specific response, then that response will be used.
    */
-  responses?: StoreResponseOverrides;
+  responses?: DerivedResponses;
 
   /**
    * The versions to use for placeholders
@@ -65,9 +97,26 @@ export interface MockStoreConfig {
   versions?: string[];
 }
 
-export interface HandlerContext<Key extends StoreEndpoints> {
-  baseUrl: string;
-  response: StoreEndpointConfig[Key];
-  versions: string[];
-  mockFetch: MockFetchFn;
+export interface ConfiguredResponseConfig<Response> {
+  /**
+   * The actual response to be returned
+   */
+  response: Response;
+
+  /**
+   *  Optional latency in milliseconds or "random" for a random delay between 100-999ms
+   */
+  latency?: number | "random";
+
+  /**
+   * Optional custom headers to add to the response
+   */
+  headers?: Record<string, string>;
 }
+
+export type ConfiguredResponse<Response> = Response & {
+  [kConfiguredResponse]: {
+    latency?: ConfiguredResponseConfig<Response>["latency"];
+    headers?: ConfiguredResponseConfig<Response>["headers"];
+  };
+};

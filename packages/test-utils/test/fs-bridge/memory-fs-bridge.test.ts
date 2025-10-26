@@ -1,7 +1,7 @@
 import { Buffer } from "node:buffer";
 import { assertCapability } from "@ucdjs/fs-bridge";
 import { assert, describe, expect, it } from "vitest";
-import { createMemoryMockFS } from "../src/fs-bridges/memory-fs-bridge";
+import { createMemoryMockFS } from "../../src/fs-bridges/memory-fs-bridge";
 
 describe("memory fs bridge", () => {
   it("should initialize with files from options", async () => {

@@ -1,33 +1,36 @@
-import type { HandlerContext } from "../types";
 import { HttpResponse } from "../../msw";
+import { defineMockRouteHandler } from "../define";
 
-export function setupWellKnownHandler({
-  baseUrl,
-  response,
-  mockFetch,
-}: HandlerContext<"/.well-known/ucd-config.json">): void {
-  if (typeof response === "function") {
+export const wellKnownConfig = defineMockRouteHandler({
+  endpoint: "/.well-known/ucd-config.json",
+  setup: ({
+    url,
+    providedResponse,
+    shouldUseDefaultValue,
+    mockFetch,
+  }) => {
+    if (typeof providedResponse === "function") {
+      mockFetch([
+        ["GET", url, providedResponse],
+      ]);
+      return;
+    }
+
     mockFetch([
-      ["GET", `${baseUrl}/.well-known/ucd-config.json`, response],
-    ]);
-    return;
-  }
+      ["GET", url, () => {
+        if (shouldUseDefaultValue) {
+          return HttpResponse.json({
+            version: "0.1",
+            endpoints: {
+              files: "/api/v1/files",
+              manifest: "/api/v1/files/.ucd-store.json",
+              versions: "/api/v1/versions",
+            },
+          });
+        }
 
-  mockFetch([
-    ["GET", `${baseUrl}/.well-known/ucd-config.json`, () => {
-      if (response === true || response == null) {
-        // Return default well-known config
-        const defaultConfig = {
-          version: "1.0",
-          endpoints: {
-            files: "/api/v1/files",
-            manifest: "/api/v1/files/.ucd-store.json",
-            versions: "/api/v1/versions",
-          },
-        };
-        return HttpResponse.json(defaultConfig);
-      }
-      return HttpResponse.json(response);
-    }],
-  ]);
-}
+        return HttpResponse.json(providedResponse);
+      }],
+    ]);
+  },
+});
