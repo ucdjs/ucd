@@ -1,3 +1,4 @@
+import type { JsonBodyType } from "msw";
 import type { MockStoreConfig } from "./types";
 import { createDebugger, isApiError } from "@ucdjs-internal/shared";
 import { HttpResponse } from "msw";
@@ -44,12 +45,14 @@ export function mockStoreApi(config?: MockStoreConfig): void {
       // If the configured response is an error, short-circuit here
       // This prevents issues where we return an error object to a resolver
       // that doesn't get transformed into an actual error response
-      const tmp = actualResponse;
-      actualResponse = () => {
-        return HttpResponse.json(tmp, {
-          status: tmp.status,
+      // eslint-disable-next-line prefer-const
+      let tmp = actualResponse;
+      function newHandler(): HttpResponse<JsonBodyType> {
+        return HttpResponse.json(tmp as any, {
+          status: (tmp as any).status,
         });
-      };
+      }
+      actualResponse = newHandler;
     }
 
     const wrappedMockFetch = wrapMockFetch(mockFetch, {
