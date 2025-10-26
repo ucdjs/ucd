@@ -1,4 +1,4 @@
-import type { UCDStoreManifest, UCDWellKnownConfig, UnicodeTree, UnicodeVersionList } from "@ucdjs/schemas";
+import type { UCDWellKnownConfig, UnicodeTree, UnicodeVersionList } from "@ucdjs/schemas";
 import { describe, expect, it, vi } from "vitest";
 import { configure, mockStoreApi } from "../../src/mock-store";
 
