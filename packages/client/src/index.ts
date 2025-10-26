@@ -86,5 +86,3 @@ export async function createUCDClient(baseUrl: string): Promise<UCDClient> {
 export function createUCDClientWithConfig(baseUrl: string, endpointConfig: UCDWellKnownConfig): UCDClient {
   return createResources(baseUrl, endpointConfig.endpoints);
 }
-
-export * from "./guards";
