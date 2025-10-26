@@ -2,7 +2,7 @@ import type { MockFetchFn } from "@luxass/msw-utils";
 import type { DefaultBodyType, HttpResponseResolver, PathParams } from "msw";
 import type { paths } from "../.generated/api";
 import type { MOCK_ROUTES } from "./handlers";
-import type { CONFIGURED_RESPONSE } from "./helpers";
+import type { kConfiguredResponse } from "./helpers";
 
 interface ContentTypeToType {
   "application/json": any;
@@ -115,7 +115,7 @@ export interface ConfiguredResponseConfig<Response> {
 }
 
 export type ConfiguredResponse<Response> = Response & {
-  [CONFIGURED_RESPONSE]: {
+  [kConfiguredResponse]: {
     latency?: ConfiguredResponseConfig<Response>["latency"];
     headers?: ConfiguredResponseConfig<Response>["headers"];
   };

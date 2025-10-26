@@ -1,6 +1,6 @@
 import type { MockFetchFn } from "@luxass/msw-utils";
 import type { ConfiguredResponse } from "./types";
-import { CONFIGURED_RESPONSE } from "./helpers";
+import { kConfiguredResponse } from "./helpers";
 
 export function parseLatency(latency: number | "random"): number {
   if (latency === "random") {
@@ -14,7 +14,7 @@ export function parseLatency(latency: number | "random"): number {
 export function isConfiguredResponse(value: unknown): value is ConfiguredResponse<any> {
   return (typeof value === "object" || typeof value === "function")
     && value !== null
-    && CONFIGURED_RESPONSE in (value as object);
+    && kConfiguredResponse in (value as object);
 }
 
 export function extractConfiguredMetadata(response: unknown): {
@@ -23,7 +23,7 @@ export function extractConfiguredMetadata(response: unknown): {
   headers?: Record<string, string>;
 } {
   if (isConfiguredResponse(response)) {
-    const meta = (response as any)[CONFIGURED_RESPONSE] as {
+    const meta = (response as any)[kConfiguredResponse] as {
       latency?: number | "random";
       headers?: Record<string, string>;
     };
