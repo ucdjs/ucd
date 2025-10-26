@@ -4,6 +4,7 @@ import {
   extractConfigMetadata,
   isConfiguredResponse,
   parseLatency,
+  unsafeResponse,
   wrapMockFetchWithConfig,
 } from "../../src/mock-store/utils";
 
@@ -99,6 +100,37 @@ describe("response configuration", () => {
         "Invalid configure() call: response must be a function or an object",
       );
     });
+  });
+});
+
+describe("unsafeResponse", () => {
+  it("should return response as-is without type checking", () => {
+    const invalidData = { invalid: "data" };
+    const result = unsafeResponse(invalidData);
+
+    expect(result).toBe(invalidData);
+  });
+
+  it("should accept any type of data", () => {
+    expect(unsafeResponse("string")).toBe("string");
+    expect(unsafeResponse(123)).toBe(123);
+    expect(unsafeResponse(true)).toBe(true);
+    expect(unsafeResponse(null)).toBe(null);
+    expect(unsafeResponse(undefined)).toBe(undefined);
+    expect(unsafeResponse([])).toEqual([]);
+    expect(unsafeResponse({})).toEqual({});
+  });
+
+  it("should work with configure for latency/headers", () => {
+    const weirdData = { completely: "invalid" };
+    const configured = configure({
+      response: unsafeResponse(weirdData),
+      latency: 100,
+    });
+
+    const metadata = extractConfigMetadata(configured);
+    expect(metadata.actualResponse).toEqual({ completely: "invalid" });
+    expect(metadata.latency).toBe(100);
   });
 });
 
