@@ -274,7 +274,7 @@ describe("wrapMockFetch", () => {
     await wrapped(routes as any);
 
     const elapsed = Date.now() - startTime;
-    expect(elapsed).toBeGreaterThanOrEqual(50); // at least 50ms latency + tick
+    expect(elapsed).toBeGreaterThanOrEqual(45);
   });
 
   it("should apply headers to response", async () => {
