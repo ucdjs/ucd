@@ -1,5 +1,5 @@
 import type { MockFetchFn } from "@luxass/msw-utils";
-import type { DefaultBodyType, HttpResponseResolver, PathParams } from "msw";
+import type { AsyncResponseResolverReturnType, DefaultBodyType, HttpResponseResolver, PathParams } from "msw";
 import type { paths } from "../.generated/api";
 import type { MOCK_ROUTES } from "./handlers";
 import type { kConfiguredResponse } from "./helpers";
@@ -110,7 +110,7 @@ export interface MockStoreConfig {
    * ]
    * ```
    */
-  customResponses?: MockFetchType;
+  customResponses?: MockFetchParamTupleList[0][];
 
   /**
    * Callback invoked on each request to the mock store
@@ -128,15 +128,14 @@ export interface MockStoreConfig {
   onRequest?: OnRequestCallback;
 }
 
-type MockFetchType
-  = MockFetchFn extends { (...args: infer A): any; (...args: any[]): any } ? A[0] : never;
+export type MockFetchParamTupleList = MockFetchFn extends {
+  (...a: infer A): any;
+  (...a: infer B): any;
+  (...a: infer C): any;
+} ? [A, B, C]
+  : never;
 
-export type OnRequestCallback = ({ endpoint, method, params, url }: {
-  endpoint: string;
-  method: string;
-  params: Record<string, any>;
-  url: string;
-}) => void;
+export type MockFetchType = MockFetchParamTupleList[0][];
 
 export interface ConfiguredResponseConfig<Response> {
   /**
@@ -161,3 +160,16 @@ export type ConfiguredResponse<Response> = Response & {
     headers?: ConfiguredResponseConfig<Response>["headers"];
   };
 };
+
+export interface CallbackRequestPayload {
+  endpoint: string;
+  method: string;
+  params: Record<string, any>;
+  url: string;
+}
+
+export type OnRequestCallback = (payload: CallbackRequestPayload) => void;
+export type OnBeforeMockFetchCallback = (payload: CallbackRequestPayload) => void | Promise<void>;
+export type OnAfterMockFetchCallback = (payload: CallbackRequestPayload & {
+  response: AsyncResponseResolverReturnType<DefaultBodyType>;
+}) => void | Promise<void>;
