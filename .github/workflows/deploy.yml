@@ -38,6 +38,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.repository == 'ucdjs/ucd'
     environment: apps-production
+    timeout-minutes: 10
     steps:
       - name: Approve production deployment
         run: echo "Production deployment approved"
