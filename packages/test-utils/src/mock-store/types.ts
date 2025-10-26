@@ -1,5 +1,5 @@
 import type { MockFetchFn } from "@luxass/msw-utils";
-import type { DefaultBodyType, HttpResponseResolver, PathParams } from "msw";
+import type { AsyncResponseResolverReturnType, DefaultBodyType, HttpResponseResolver, PathParams } from "msw";
 import type { paths } from "../.generated/api";
 import type { MOCK_ROUTES } from "./handlers";
 import type { kConfiguredResponse } from "./helpers";
@@ -110,11 +110,32 @@ export interface MockStoreConfig {
    * ]
    * ```
    */
-  customResponses?: MockFetchType;
+  customResponses?: MockFetchParamTupleList[0][];
+
+  /**
+   * Callback invoked on each request to the mock store
+   *
+   * NOTE:
+   * This is not invoked for `customResponses` handlers.
+   *
+   * @example
+   * ```ts
+   * onRequest: ({ path, method, params, url }) => {
+   *   console.log(`Request to ${method} ${path} with params`, params);
+   * }
+   * ```
+   */
+  onRequest?: OnRequestCallback;
 }
 
-type MockFetchType
-  = MockFetchFn extends { (...args: infer A): any; (...args: any[]): any } ? A[0] : never;
+export type MockFetchParamTupleList = MockFetchFn extends {
+  (...a: infer A): any;
+  (...a: infer B): any;
+  (...a: infer C): any;
+} ? [A, B, C]
+  : never;
+
+export type MockFetchType = MockFetchParamTupleList[0][];
 
 export interface ConfiguredResponseConfig<Response> {
   /**
@@ -139,3 +160,18 @@ export type ConfiguredResponse<Response> = Response & {
     headers?: ConfiguredResponseConfig<Response>["headers"];
   };
 };
+
+export interface WrapMockFetchCallbackPayload {
+  path: string;
+  method: string;
+  params: Record<string, any>;
+  url: string;
+}
+
+export interface WrapMockFetchCallbackPayloadWithResponse extends WrapMockFetchCallbackPayload {
+  response: AsyncResponseResolverReturnType<DefaultBodyType>;
+}
+
+export type OnRequestCallback = (payload: WrapMockFetchCallbackPayload) => void;
+export type OnBeforeMockFetchCallback = (payload: WrapMockFetchCallbackPayload) => void | Promise<void>;
+export type OnAfterMockFetchCallback = (payload: WrapMockFetchCallbackPayloadWithResponse) => void | Promise<void>;
