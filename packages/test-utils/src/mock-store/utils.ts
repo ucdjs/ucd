@@ -1,5 +1,5 @@
 import type { MockFetchFn } from "@luxass/msw-utils";
-import type { ConfiguredResponse } from "./types";
+import type { ConfiguredResponse, OnRequestCallback } from "./types";
 import { kConfiguredResponse } from "./helpers";
 
 export function parseLatency(latency: number | "random"): number {
@@ -41,11 +41,12 @@ export function extractConfiguredMetadata(response: unknown): {
 export function wrapMockFetch(
   originalMockFetch: MockFetchFn,
   opts?: {
+    onRequest?: OnRequestCallback;
     beforeFetch?: (args: Parameters<MockFetchFn>) => Promise<void> | void;
     afterFetch?: (response: Response) => Promise<void> | void;
   },
 ): MockFetchFn {
-  const { beforeFetch, afterFetch } = opts || {};
+  const { beforeFetch, afterFetch, onRequest } = opts || {};
   if (!beforeFetch && !afterFetch) {
     // no configuration, return original
     return originalMockFetch;
@@ -69,6 +70,17 @@ export function wrapMockFetch(
         }
 
         const wrappedResolver = async (...resolverArgs: any[]): Promise<any> => {
+          const methodOrMethods = Array.isArray(method) ? method : [method];
+          for (const method of methodOrMethods) {
+            const payload = {
+              endpoint: route[1],
+              method,
+              params: {},
+              url: resolverArgs[0].request.url,
+            };
+
+            onRequest?.(payload);
+          }
           await beforeFetch?.(args);
 
           // call original resolver
