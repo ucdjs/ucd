@@ -36,7 +36,7 @@ env:
 jobs:
   detect-changes:
     runs-on: ubuntu-latest
-    if: github.repository == 'ucdjs/ucd' && github.event_name == 'pull_request'
+    if: github.repository == 'ucdjs/ucd' && github.event_name == 'push'
     outputs:
       has-changes: ${{ steps.detect.outputs.has-changes }}
       changed-apps: ${{ steps.detect.outputs.changed-apps }}
