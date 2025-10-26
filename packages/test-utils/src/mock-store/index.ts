@@ -58,8 +58,11 @@ export function mockStoreApi(config?: MockStoreConfig): void {
 
     route.setup({
       url: `${normalizedBaseUrl}${mswPath}`,
-      // @ts-expect-error - TS can't infer that endpoint is keyof responses here
-      providedResponse: actualResponse,
+      // TypeScript cannot infer that `endpoint` is always a key of `responses` here,
+      // because `endpoint` comes from MOCK_ROUTES and `responses` is user-provided.
+      // We assert the type here because we know from the context that `endpoint` is intended
+      // to match the keys of `responses`, and `actualResponse` is the value for that key.
+      providedResponse: actualResponse as any,
       shouldUseDefaultValue,
       mockFetch: wrappedMockFetch,
       versions,
