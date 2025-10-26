@@ -1,12 +1,12 @@
 import type { MockFetchFn } from "@luxass/msw-utils";
 import type { HttpResponseResolver } from "msw";
 import type {
-  CallbackRequestPayload,
   ConfiguredResponse,
   MockFetchType,
   OnAfterMockFetchCallback,
   OnBeforeMockFetchCallback,
   OnRequestCallback,
+  WrapMockFetchCallbackPayload,
 } from "./types";
 import { createDebugger } from "@ucdjs-internal/shared";
 import { kConfiguredResponse } from "./helpers";
@@ -93,11 +93,11 @@ export function wrapMockFetch(
 
         const wrappedResolver: HttpResponseResolver = async (args) => {
           const callbackRequestPayload = {
-            endpoint: route[1],
+            path: new URL(args.request.url).pathname,
             method: args.request.method,
             params: args.params,
             url: args.request.url,
-          } satisfies CallbackRequestPayload;
+          } satisfies WrapMockFetchCallbackPayload;
 
           onRequest?.(callbackRequestPayload);
 
