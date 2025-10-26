@@ -161,15 +161,17 @@ export type ConfiguredResponse<Response> = Response & {
   };
 };
 
-export interface CallbackRequestPayload {
-  endpoint: string;
+export interface WrapMockFetchCallbackPayload {
+  path: string;
   method: string;
   params: Record<string, any>;
   url: string;
 }
 
-export type OnRequestCallback = (payload: CallbackRequestPayload) => void;
-export type OnBeforeMockFetchCallback = (payload: CallbackRequestPayload) => void | Promise<void>;
-export type OnAfterMockFetchCallback = (payload: CallbackRequestPayload & {
+export interface WrapMockFetchCallbackPayloadWithResponse extends WrapMockFetchCallbackPayload {
   response: AsyncResponseResolverReturnType<DefaultBodyType>;
-}) => void | Promise<void>;
+}
+
+export type OnRequestCallback = (payload: WrapMockFetchCallbackPayload) => void;
+export type OnBeforeMockFetchCallback = (payload: WrapMockFetchCallbackPayload) => void | Promise<void>;
+export type OnAfterMockFetchCallback = (payload: WrapMockFetchCallbackPayloadWithResponse) => void | Promise<void>;
