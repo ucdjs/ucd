@@ -75,7 +75,7 @@ export function wrapMockFetch(
           // @ts-expect-error - hmmm, fix later.
           const response = await resolver(...resolverArgs);
 
-          // @ts-expect-error - hmmm, fix later.
+          // @ts-expect-error - response type depends on resolver, may not be a Response object
           await afterFetch?.(response);
 
           return response;
