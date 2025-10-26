@@ -120,8 +120,8 @@ export interface MockStoreConfig {
    *
    * @example
    * ```ts
-   * onRequest: ({ endpoint, method, params, url }) => {
-   *   console.log(`Request to ${method} ${endpoint} with params`, params);
+   * onRequest: ({ path, method, params, url }) => {
+   *   console.log(`Request to ${method} ${path} with params`, params);
    * }
    * ```
    */
