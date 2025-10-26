@@ -4,9 +4,9 @@ import { versionsRoute } from "./versions";
 import { wellKnownConfig } from "./well-known";
 
 export const MOCK_ROUTES = [
-  filesRoute,
   fileTreeRoute,
   wellKnownConfig,
   storeManifestRoute,
   versionsRoute,
+  filesRoute,
 ] as const;
