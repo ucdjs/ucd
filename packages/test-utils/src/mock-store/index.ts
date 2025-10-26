@@ -1,5 +1,7 @@
+import type { JsonBodyType } from "msw";
 import type { MockStoreConfig } from "./types";
-import { createDebugger } from "@ucdjs-internal/shared";
+import { createDebugger, isApiError } from "@ucdjs-internal/shared";
+import { HttpResponse } from "msw";
 import { mockFetch } from "../msw";
 import { MOCK_ROUTES } from "./handlers";
 import {
@@ -35,8 +37,23 @@ export function mockStoreApi(config?: MockStoreConfig): void {
     const shouldUseDefaultValue = response === true || response == null;
 
     // extract metadata from configure
-    const { actualResponse, latency, headers } = extractConfiguredMetadata(response);
+    let { actualResponse, latency, headers } = extractConfiguredMetadata(response);
     debug?.(`Setting up mock for endpoint: ${endpoint} with response:`, actualResponse);
+
+    if (isApiError(actualResponse)) {
+      debug?.(`Detected ApiError-like response for endpoint: ${endpoint}`);
+      // If the configured response is an error, short-circuit here
+      // This prevents issues where we return an error object to a resolver
+      // that doesn't get transformed into an actual error response
+      // eslint-disable-next-line prefer-const
+      let tmp = actualResponse;
+      function newHandler(): HttpResponse<JsonBodyType> {
+        return HttpResponse.json(tmp as any, {
+          status: (tmp as any).status,
+        });
+      }
+      actualResponse = newHandler;
+    }
 
     const wrappedMockFetch = wrapMockFetch(mockFetch, {
       onRequest,
