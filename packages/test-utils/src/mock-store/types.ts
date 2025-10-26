@@ -2,7 +2,7 @@ import type { MockFetchFn } from "@luxass/msw-utils";
 import type { DefaultBodyType, HttpResponseResolver, PathParams } from "msw";
 import type { paths } from "../.generated/api";
 import type { MOCK_ROUTES } from "./handlers";
-import type { ConfiguredResponse } from "./utils";
+import type { CONFIGURED_RESPONSE } from "./helpers";
 
 interface ContentTypeToType {
   "application/json": any;
@@ -96,3 +96,27 @@ export interface MockStoreConfig {
    */
   versions?: string[];
 }
+
+export interface ConfiguredResponseConfig<Response> {
+  /**
+   * The actual response to be returned
+   */
+  response: Response;
+
+  /**
+   *  Optional latency in milliseconds or "random" for a random delay between 100-999ms
+   */
+  latency?: number | "random";
+
+  /**
+   * Optional custom headers to add to the response
+   */
+  headers?: Record<string, string>;
+}
+
+export type ConfiguredResponse<Response> = Response & {
+  [CONFIGURED_RESPONSE]: {
+    latency?: ConfiguredResponseConfig<Response>["latency"];
+    headers?: ConfiguredResponseConfig<Response>["headers"];
+  };
+};
