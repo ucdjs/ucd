@@ -54,9 +54,10 @@ export function unsafeResponse<T = any>(response: T): any {
 
 export function parseLatency(latency: number | "random"): number {
   if (latency === "random") {
-    // Random latency between 100ms and 1000ms
+    // Random latency between 100ms and 999ms
     return Math.floor(Math.random() * 900) + 100;
   }
+
   return latency;
 }
 
