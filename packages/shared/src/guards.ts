@@ -12,7 +12,7 @@ import type { ApiError } from "@ucdjs/schemas";
  *
  * @example
  * ```typescript
- * import { isApiError } from "@ucdjs/client";
+ * import { isApiError } from "@ucdjs-internal/shared";
  * import { client } from "@ucdjs/client";
  *
  * const { error, data } = await client.GET("/api/v1/versions");

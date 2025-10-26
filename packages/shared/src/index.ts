@@ -18,6 +18,8 @@ export type {
 } from "./filter";
 
 export { flattenFilePaths } from "./flatten";
+export * from "./guards";
+
 export { safeJsonParse } from "./json";
 
 export { discoverEndpointsFromConfig, getDefaultUCDEndpointConfig } from "./ucd-config";
