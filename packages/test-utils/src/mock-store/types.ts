@@ -116,7 +116,7 @@ export interface MockStoreConfig {
    * Callback invoked on each request to the mock store
    *
    * NOTE:
-   * These is not invoked for `customResponses` handlers.
+   * This is not invoked for `customResponses` handlers.
    *
    * @example
    * ```ts
