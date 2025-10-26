@@ -38,9 +38,12 @@ describe("getFile", () => {
     });
 
     it("should prefer local FS over API when file exists locally", async () => {
-      // TODO: extend mockStoreApi to verify API hasn't been called
+      let callCount = 0;
       mockStoreApi({
         versions: ["16.0.0"],
+        onRequest: () => {
+          callCount += 1;
+        },
       });
 
       const filter = createPathFilter({});
@@ -61,6 +64,7 @@ describe("getFile", () => {
 
       expect(error).toBeNull();
       expect(data).toBe("Local version");
+      expect(callCount).toBe(0);
     });
   });
 
