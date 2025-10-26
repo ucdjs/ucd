@@ -6,7 +6,7 @@ import {
   extractConfiguredMetadata,
   isConfiguredResponse,
   parseLatency,
-  wrapMockFetchWithConfig,
+  wrapMockFetch,
 } from "../../src/mock-store/utils";
 
 describe("extractConfiguredMetadata", () => {
@@ -133,10 +133,10 @@ describe("isConfiguredResponse", () => {
   });
 });
 
-describe("wrapMockFetchWithConfig", () => {
+describe("wrapMockFetch", () => {
   it("should return original mockFetch when no config provided", () => {
     const mockFetch = vi.fn();
-    const wrapped = wrapMockFetchWithConfig(mockFetch);
+    const wrapped = wrapMockFetch(mockFetch);
 
     expect(wrapped).toBe(mockFetch);
   });
@@ -147,7 +147,12 @@ describe("wrapMockFetchWithConfig", () => {
     });
 
     const resolver = vi.fn(async () => ({ status: 200 }));
-    const wrapped = wrapMockFetchWithConfig(mockFetch, 50);
+    const wrapped = wrapMockFetch(mockFetch, {
+      beforeFetch: async () => {
+        // simulate latency
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      },
+    });
 
     wrapped([
       [
@@ -175,8 +180,12 @@ describe("wrapMockFetchWithConfig", () => {
       headers: new Headers(),
     }));
 
-    const wrapped = wrapMockFetchWithConfig(mockFetch, undefined, {
-      "X-Custom": "value",
+    const wrapped = wrapMockFetch(mockFetch, {
+      afterFetch: (response) => {
+        if (response.headers instanceof Headers) {
+          response.headers.set("X-Custom", "value");
+        }
+      },
     });
 
     wrapped([[
@@ -198,7 +207,12 @@ describe("wrapMockFetchWithConfig", () => {
       return Promise.resolve();
     });
 
-    const wrapped = wrapMockFetchWithConfig(mockFetch, 50);
+    const wrapped = wrapMockFetch(mockFetch, {
+      beforeFetch: async () => {
+        // simulate latency
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      },
+    });
 
     const routes = [["GET", "/test", { data: "static" }]];
     wrapped(routes as any);
@@ -208,7 +222,12 @@ describe("wrapMockFetchWithConfig", () => {
 
   it("should handle non-array routes", async () => {
     const mockFetch = vi.fn();
-    const wrapped = wrapMockFetchWithConfig(mockFetch, 50);
+    const wrapped = wrapMockFetch(mockFetch, {
+      beforeFetch: async () => {
+        // simulate latency
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      },
+    });
 
     const singleRoute = "not-an-array";
     wrapped(singleRoute as any);
@@ -221,7 +240,12 @@ describe("wrapMockFetchWithConfig", () => {
       return Promise.resolve();
     });
 
-    const wrapped = wrapMockFetchWithConfig(mockFetch, 50);
+    const wrapped = wrapMockFetch(mockFetch, {
+      beforeFetch: async () => {
+        // simulate latency
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      },
+    });
 
     const routes = [["GET"]];
     wrapped(routes as any);
@@ -239,7 +263,12 @@ describe("wrapMockFetchWithConfig", () => {
 
     const startTime = Date.now();
     const resolver = vi.fn(async () => ({ status: 200 }));
-    const wrapped = wrapMockFetchWithConfig(mockFetch, 50);
+    const wrapped = wrapMockFetch(mockFetch, {
+      beforeFetch: async () => {
+        // simulate latency
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      },
+    });
 
     const routes = [["GET", "/test", resolver]];
     await wrapped(routes as any);
@@ -260,9 +289,13 @@ describe("wrapMockFetchWithConfig", () => {
     });
 
     const resolver = vi.fn(async () => response);
-    const wrapped = wrapMockFetchWithConfig(mockFetch, undefined, {
-      "X-Custom": "value",
-      "X-Another": "header",
+    const wrapped = wrapMockFetch(mockFetch, {
+      afterFetch: (response) => {
+        if (response.headers instanceof Headers) {
+          response.headers.set("X-Custom", "value");
+          response.headers.set("X-Another", "header");
+        }
+      },
     });
 
     const routes = [["GET", "/test", resolver]];
@@ -281,7 +314,13 @@ describe("wrapMockFetchWithConfig", () => {
     });
 
     const resolver = vi.fn(async () => ({ status: 200 }));
-    const wrapped = wrapMockFetchWithConfig(mockFetch, "random");
+    const wrapped = wrapMockFetch(mockFetch, {
+      beforeFetch: async () => {
+        // simulate latency
+        const ms = parseLatency("random");
+        await new Promise((resolve) => setTimeout(resolve, ms));
+      },
+    });
 
     const startTime = Date.now();
     const routes = [["GET", "/test", resolver]];

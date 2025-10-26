@@ -48,9 +48,6 @@ export function mockStoreApi(config?: MockStoreConfig): void {
       },
     });
 
-    // Create wrapped mockFetch with latency and headers handling
-    // const configuredMockFetch = wrapMockFetchWithConfig(mockFetch, latency, headers);
-
     const mswPath = endpoint.replace(/\{(\w+)\}/g, (_, p1) => {
       if (p1 === "wildcard") {
         return "*";
