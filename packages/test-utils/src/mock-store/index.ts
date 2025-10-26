@@ -39,11 +39,17 @@ export function mockStoreApi(config?: MockStoreConfig): void {
         }
       },
       afterFetch(response) {
-        // apply custom headers to response
-        if (headers != null && (response as any)?.headers instanceof Headers) {
-          for (const [key, value] of Object.entries(headers)) {
-            (response as any).headers.set(key, value);
-          }
+        if (
+          !headers
+          || !("headers" in response)
+          || !(response.headers instanceof Headers)
+        ) {
+          return;
+        }
+
+        for (const [key, value] of Object.entries(headers)) {
+          const current = response.headers.get(key);
+          if (current !== value) response.headers.set(key, value);
         }
       },
     });
