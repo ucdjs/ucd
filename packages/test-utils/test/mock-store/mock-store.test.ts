@@ -301,6 +301,7 @@ describe("mockStoreApi", () => {
       mockStoreApi({
         responses: {
           "/api/v1/files/{wildcard}": fileList,
+          "/api/v1/versions": true,
         },
       });
 

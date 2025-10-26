@@ -15,7 +15,7 @@ export type EndpointWithGet = {
 }[keyof paths];
 
 export type TypedResponseResolver<
-  Params extends PathParams<keyof Params> = PathParams,
+  Params extends PathParams<string> = PathParams,
   Response extends DefaultBodyType = DefaultBodyType,
 > = HttpResponseResolver<Params, DefaultBodyType, Response>;
 
