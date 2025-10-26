@@ -34,17 +34,80 @@ env:
   FORCE_COLOR: true
 
 jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    if: github.repository == 'ucdjs/ucd' && github.event_name == 'pull_request'
+    outputs:
+      has-changes: ${{ steps.detect.outputs.has-changes }}
+      changed-apps: ${{ steps.detect.outputs.changed-apps }}
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: setup pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+
+      - name: setup node
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: lts/*
+          cache: pnpm
+
+      - name: install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: detect changed apps
+        id: detect
+        env:
+          TURBO_SCM_BASE: origin/main
+        run: |
+          # Get affected packages using turbo
+          AFFECTED=$(pnpm turbo ls --affected --output=json)
+
+          echo "Affected packages:"
+          echo "$AFFECTED"
+
+          PACKAGE_NAMES=$(echo "$AFFECTED" | jq -r '.packages.items[].name')
+          echo "Affected package names:"
+          echo "$PACKAGE_NAMES"
+
+          FILTERED_PACKAGE_NAMES=$(echo "$PACKAGE_NAMES" | grep -E '^@ucdjs/(api|web|docs)$' | sed 's/@ucdjs\///')
+          echo "Filtered deployable package names:"
+          echo "$FILTERED_PACKAGE_NAMES"
+
+          CHANGED_APPS=$(echo "$FILTERED_PACKAGE_NAMES" | jq -R -s -c 'split("\n") | map(select(length > 0))')
+
+          # Check if any deployable apps changed
+          if [ "$CHANGED_APPS" = "[]" ] || [ -z "$CHANGED_APPS" ]; then
+            echo "has-changes=false" >> "$GITHUB_OUTPUT"
+            echo "changed-apps=[]" >> "$GITHUB_OUTPUT"
+            echo "No deployable apps affected by changes"
+          else
+            echo "has-changes=true" >> "$GITHUB_OUTPUT"
+            echo "changed-apps=$CHANGED_APPS" >> "$GITHUB_OUTPUT"
+            echo "Affected deployable apps: $CHANGED_APPS"
+          fi
+
   production-approval:
     runs-on: ubuntu-latest
-    if: github.repository == 'ucdjs/ucd'
-    environment: apps-production
+    needs: [detect-changes]
     timeout-minutes: 10
+    if: |
+      always() && (
+        github.repository == 'ucdjs/ucd' &&
+        (github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.has-changes == 'true')
+      )
+    environment: apps-production
     steps:
       - name: Approve production deployment
         run: echo "Production deployment approved"
 
   deploy:
-    needs: production-approval
+    needs:
+      - detect-changes
+      - production-approval
     permissions:
       contents: read
     uses: ./.github/workflows/deploy-app.yml
