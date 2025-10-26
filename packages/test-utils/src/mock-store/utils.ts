@@ -35,6 +35,23 @@ export function configure<const Response>(
   return config.response as any;
 }
 
+/**
+ * Bypass type checking for testing edge cases and invalid responses.
+ * This is useful for testing error handling with responses that don't match the schema.
+ *
+ * @example
+ * ```ts
+ * mockStoreApi({
+ *   responses: {
+ *     "/api/v1/versions": unsafeResponse({ invalid: "data" })
+ *   }
+ * });
+ * ```
+ */
+export function unsafeResponse<T = any>(response: T): any {
+  return response as any;
+}
+
 export function parseLatency(latency: number | "random"): number {
   if (latency === "random") {
     // Random latency between 100ms and 1000ms
