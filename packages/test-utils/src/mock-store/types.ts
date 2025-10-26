@@ -97,7 +97,7 @@ export interface MockStoreConfig {
   versions?: string[];
 
   /**
-   * Custom MockFetch handlers to register
+   * Custom mock fetch handlers to register
    *
    * @example
    * ```ts
