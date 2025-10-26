@@ -782,4 +782,182 @@ describe("mockStoreApi", () => {
       }).not.toThrow();
     });
   });
+
+  describe("apiError auto-conversion", () => {
+    it("should automatically convert ApiError-like response to error response", async () => {
+      mockStoreApi({
+        responses: {
+          "/api/v1/versions": {
+            message: "Version not found",
+            status: 404,
+            timestamp: "2024-01-01T00:00:00.000Z",
+          },
+        },
+      });
+
+      const response = await fetch("https://api.ucdjs.dev/api/v1/versions");
+      const data = await response.json();
+
+      expect(response.status).toBe(404);
+      expect(data).toEqual({
+        message: "Version not found",
+        status: 404,
+        timestamp: "2024-01-01T00:00:00.000Z",
+      });
+    });
+
+    it("should handle ApiError with 500 status code", async () => {
+      mockStoreApi({
+        responses: {
+          "/api/v1/versions": {
+            message: "Internal server error",
+            status: 500,
+            timestamp: "2024-01-01T00:00:00.000Z",
+          },
+        },
+      });
+
+      const response = await fetch("https://api.ucdjs.dev/api/v1/versions");
+      const data = await response.json();
+
+      expect(response.status).toBe(500);
+      expect(data.message).toBe("Internal server error");
+    });
+
+    it("should handle ApiError with 401 status code", async () => {
+      mockStoreApi({
+        responses: {
+          "/api/v1/versions": {
+            message: "Unauthorized",
+            status: 401,
+            timestamp: "2024-01-01T00:00:00.000Z",
+          },
+        },
+      });
+
+      const response = await fetch("https://api.ucdjs.dev/api/v1/versions");
+      const data = await response.json();
+
+      expect(response.status).toBe(401);
+      expect(data.message).toBe("Unauthorized");
+    });
+
+    it("should work with configure() helper", async () => {
+      mockStoreApi({
+        responses: {
+          "/api/v1/versions": configure({
+            response: {
+              message: "Bad request",
+              status: 400,
+              timestamp: "2024-01-01T00:00:00.000Z",
+            },
+          }),
+        },
+      });
+
+      const response = await fetch("https://api.ucdjs.dev/api/v1/versions");
+      const data = await response.json();
+
+      expect(response.status).toBe(400);
+      expect(data).toEqual({
+        message: "Bad request",
+        status: 400,
+        timestamp: "2024-01-01T00:00:00.000Z",
+      });
+    });
+
+    it("should work with configure() helper and latency", async () => {
+      mockStoreApi({
+        responses: {
+          "/api/v1/versions": configure({
+            response: {
+              message: "Service unavailable",
+              status: 503,
+              timestamp: "2024-01-01T00:00:00.000Z",
+            },
+            latency: 50,
+          }),
+        },
+      });
+
+      const start = Date.now();
+      const response = await fetch("https://api.ucdjs.dev/api/v1/versions");
+      const elapsed = Date.now() - start;
+      const data = await response.json();
+
+      expect(response.status).toBe(503);
+      expect(elapsed).toBeGreaterThanOrEqual(45);
+      expect(data.message).toBe("Service unavailable");
+    });
+
+    it("should work with configure() helper and custom headers", async () => {
+      mockStoreApi({
+        responses: {
+          "/api/v1/versions": configure({
+            response: {
+              message: "Too many requests",
+              status: 429,
+              timestamp: "2024-01-01T00:00:00.000Z",
+            },
+            headers: {
+              "X-Rate-Limit-Remaining": "0",
+              "X-Rate-Limit-Reset": "1234567890",
+            },
+          }),
+        },
+      });
+
+      const response = await fetch("https://api.ucdjs.dev/api/v1/versions");
+      const data = await response.json();
+
+      expect(response.status).toBe(429);
+      expect(data.message).toBe("Too many requests");
+      expect(response.headers.get("X-Rate-Limit-Remaining")).toBe("0");
+      expect(response.headers.get("X-Rate-Limit-Reset")).toBe("1234567890");
+    });
+
+    it("should still work with regular success responses", async () => {
+      mockStoreApi({
+        responses: {
+          "/api/v1/versions": [
+            {
+              version: "16.0.0",
+              documentationUrl: "https://unicode.org",
+              date: null,
+              url: "https://unicode.org",
+              mappedUcdVersion: null,
+              type: "stable" as const,
+            },
+          ],
+        },
+      });
+
+      const response = await fetch("https://api.ucdjs.dev/api/v1/versions");
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data).toHaveLength(1);
+      expect(data[0].version).toBe("16.0.0");
+    });
+
+    it("should handle ApiError on different endpoints", async () => {
+      mockStoreApi({
+        responses: {
+          "/api/v1/versions/{version}/file-tree": {
+            message: "Version not found",
+            status: 404,
+            timestamp: "2024-01-01T00:00:00.000Z",
+          },
+        },
+      });
+
+      const response = await fetch(
+        "https://api.ucdjs.dev/api/v1/versions/99.0.0/file-tree",
+      );
+      const data = await response.json();
+
+      expect(response.status).toBe(404);
+      expect(data.message).toBe("Version not found");
+    });
+  });
 });
