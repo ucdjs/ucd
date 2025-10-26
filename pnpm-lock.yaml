@@ -840,9 +840,9 @@ importers:
       '@luxass/msw-utils':
         specifier: catalog:prod
         version: 0.4.0(msw@2.11.6(@types/node@24.3.1)(typescript@5.9.3))
-      '@ucdjs/fs-bridge':
+      '@ucdjs-internal/shared':
         specifier: workspace:*
-        version: link:../fs-bridge
+        version: link:../shared
       '@ucdjs/schemas':
         specifier: workspace:*
         version: link:../schemas
@@ -862,6 +862,9 @@ importers:
       '@ucdjs-tooling/tsdown-config':
         specifier: workspace:*
         version: link:../../tooling/tsdown-config
+      '@ucdjs/fs-bridge':
+        specifier: workspace:*
+        version: link:../fs-bridge
       '@ucdjs/ucd-store':
         specifier: workspace:*
         version: link:../ucd-store
