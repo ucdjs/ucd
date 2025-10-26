@@ -2,7 +2,7 @@ import { createMemoryMockFS } from "#test-utils/fs-bridges";
 import { createPathFilter, getDefaultUCDEndpointConfig } from "@ucdjs-internal/shared";
 import { createUCDClientWithConfig } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
-import { setupMockStore as mockStoreApi } from "@ucdjs/test-utils";
+import { mockStoreApi } from "@ucdjs/test-utils";
 import { describe, expect, it } from "vitest";
 import { createInternalContext } from "../../../src/core/context";
 import { createFilesNamespace } from "../../../src/operations/files/index";
@@ -58,7 +58,7 @@ describe("createFilesNamespace", () => {
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
-          "/api/v1/files/:wildcard": "Test content",
+          "/api/v1/files/{wildcard}": "Test content",
         },
       });
 
@@ -136,7 +136,7 @@ describe("createFilesNamespace", () => {
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
-          "/api/v1/files/:wildcard": "Content",
+          "/api/v1/files/{wildcard}": "Content",
         },
       });
 
@@ -274,7 +274,7 @@ describe("createFilesNamespace", () => {
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
-          "/api/v1/files/:wildcard": "Content",
+          "/api/v1/files/{wildcard}": "Content",
         },
       });
 

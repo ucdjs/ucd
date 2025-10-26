@@ -2,7 +2,7 @@ import { createMemoryMockFS } from "#test-utils/fs-bridges";
 import { createPathFilter } from "@ucdjs-internal/shared";
 import { createUCDClientWithConfig } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
-import { setupMockStore as mockStoreApi } from "@ucdjs/test-utils";
+import { mockStoreApi } from "@ucdjs/test-utils";
 import { describe, expect, it } from "vitest";
 import { createInternalContext } from "../../../src/core/context";
 import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../../../src/errors";
@@ -259,9 +259,10 @@ describe("listFiles", () => {
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
-          "/api/v1/versions/:version/file-tree": {
+          "/api/v1/versions/{version}/file-tree": {
             status: 500,
             message: "Internal Server Error",
+            timestamp: new Date().toISOString(),
           },
         },
       });
@@ -288,9 +289,10 @@ describe("listFiles", () => {
       mockStoreApi({
         versions: ["15.0.0"],
         responses: {
-          "/api/v1/versions/:version/file-tree": {
+          "/api/v1/versions/{version}/file-tree": {
             status: 404,
             message: "Not Found",
+            timestamp: new Date().toISOString(),
           },
         },
       });
@@ -319,7 +321,7 @@ describe("listFiles", () => {
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
-          "/api/v1/versions/:version/file-tree": [],
+          "/api/v1/versions/{version}/file-tree": [],
         },
       });
 

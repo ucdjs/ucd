@@ -4,7 +4,7 @@ import { createPathFilter, getDefaultUCDEndpointConfig } from "@ucdjs-internal/s
 import { createUCDClientWithConfig } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { defineFileSystemBridge } from "@ucdjs/fs-bridge";
-import { setupMockStore as mockStoreApi } from "@ucdjs/test-utils";
+import { mockStoreApi } from "@ucdjs/test-utils";
 import { describe, expect, it, vi } from "vitest";
 import { createInternalContext } from "../../../src/core/context";
 import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../../../src/errors";
@@ -69,7 +69,7 @@ describe("getFile", () => {
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
-          "/api/v1/files/:wildcard": async () => {
+          "/api/v1/files/{wildcard}": async () => {
             callCount += 1;
             return HttpResponse.text(apiResponse);
           },
@@ -101,7 +101,7 @@ describe("getFile", () => {
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
-          "/api/v1/files/:wildcard": async () => {
+          "/api/v1/files/{wildcard}": async () => {
             callCount += 1;
             return HttpResponse.text(apiResponse);
           },
@@ -147,7 +147,7 @@ describe("getFile", () => {
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
-          "/api/v1/files/:wildcard": "API content to cache",
+          "/api/v1/files/{wildcard}": "API content to cache",
         },
       });
 
@@ -176,7 +176,7 @@ describe("getFile", () => {
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
-          "/api/v1/files/:wildcard": "API content no cache",
+          "/api/v1/files/{wildcard}": "API content no cache",
         },
       });
 
@@ -207,7 +207,7 @@ describe("getFile", () => {
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
-          "/api/v1/files/:wildcard": "API content",
+          "/api/v1/files/{wildcard}": "API content",
         },
       });
 
@@ -252,7 +252,7 @@ describe("getFile", () => {
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
-          "/api/v1/files/:wildcard": "API content",
+          "/api/v1/files/{wildcard}": "API content",
         },
       });
 
@@ -286,7 +286,7 @@ describe("getFile", () => {
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
-          "/api/v1/files/:wildcard": "Plain text content",
+          "/api/v1/files/{wildcard}": "Plain text content",
         },
       });
 
@@ -312,7 +312,7 @@ describe("getFile", () => {
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
-          "/api/v1/files/:wildcard": { key: "value", nested: { data: 123 } },
+          "/api/v1/files/{wildcard}": JSON.stringify({ key: "value", nested: { data: 123 } }),
         },
       });
 
@@ -472,10 +472,11 @@ describe("getFile", () => {
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
-          "/api/v1/files/:wildcard": () => {
+          "/api/v1/files/{wildcard}": () => {
             return HttpResponse.json({
               status: 500,
               message: "Internal Server Error",
+              timestamp: new Date().toISOString(),
             }, {
               status: 500,
             });
@@ -504,9 +505,10 @@ describe("getFile", () => {
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
-          "/api/v1/files/:wildcard": {
+          "/api/v1/files/{wildcard}": {
             status: 404,
             message: "Not Found",
+            timestamp: new Date().toISOString(),
           },
         },
       });
@@ -532,11 +534,14 @@ describe("getFile", () => {
       mockStoreApi({
         versions: ["15.0.0"],
         responses: {
-          "/api/v1/files/:wildcard": () => {
+          "/api/v1/files/{wildcard}": () => {
             return HttpResponse.json({
               status: 500,
               message: "Server Error",
-            }, 500);
+              timestamp: new Date().toISOString(),
+            }, {
+              status: 500,
+            });
           },
         },
       });
@@ -564,7 +569,7 @@ describe("getFile", () => {
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
-          "/api/v1/files/:wildcard": "",
+          "/api/v1/files/{wildcard}": "",
         },
       });
 
@@ -589,7 +594,7 @@ describe("getFile", () => {
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
-          "/api/v1/files/:wildcard": "Content",
+          "/api/v1/files/{wildcard}": "Content",
         },
       });
 
@@ -614,7 +619,7 @@ describe("getFile", () => {
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
-          "/api/v1/files/:wildcard": "Nested content",
+          "/api/v1/files/{wildcard}": "Nested content",
         },
       });
 
