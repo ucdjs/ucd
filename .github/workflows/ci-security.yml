@@ -54,7 +54,7 @@ jobs:
 
       - name: install uv
         if: steps.changes.outputs.workflows == 'true'
-        uses: astral-sh/setup-uv@b75a909f75acd358c2196fb9a5f1299a9a8868a4 # v6.7.0
+        uses: astral-sh/setup-uv@2ddd2b9cb38ad8efd50337e8ab201519a34c9f24 # v7.1.1
 
       - name: run zizmor
         if: steps.changes.outputs.workflows == 'true'
@@ -64,7 +64,7 @@ jobs:
 
       - name: upload sarif file
         if: steps.changes.outputs.workflows == 'true'
-        uses: github/codeql-action/upload-sarif@573acd9552f33577783abde4acb66a1058e762e5 # codeql-bundle-v2.23.1
+        uses: github/codeql-action/upload-sarif@17783bfb99b07f70fae080b654aed0c514057477 # codeql-bundle-v2.23.3
         with:
           sarif_file: results.sarif
           category: zizmor
