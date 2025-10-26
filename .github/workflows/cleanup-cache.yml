@@ -3,6 +3,7 @@ name: cleanup cache
 on:
   schedule:
     - cron: "0 11 * * *" # runs every day at 11:00 UTC
+  workflow_dispatch:
   pull_request:
     types:
       - closed
