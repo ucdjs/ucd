@@ -13,9 +13,9 @@ let apiCallCount = 0;
 
 mockStoreApi({
   versions: ["16.0.0"],
-  onRequest: ({ endpoint, method, params, url }) => {
+  onRequest: ({ path, method, params, url }) => {
     apiCallCount++;
-    console.log(`API called: ${method} ${endpoint}`);
+    console.log(`API called: ${method} ${path}`);
   }
 });
 
@@ -26,7 +26,7 @@ expect(apiCallCount).toBe(0); // Verify API wasn't called
 **Features:**
 
 - Track API requests during tests
-- Access request metadata: `endpoint`, `method`, `params`, `url`
+- Access request metadata: `path`, `method`, `params`, `url`
 - Verify endpoints weren't called (e.g., when using local caches)
 
 This resolves issue #363.
