@@ -65,8 +65,8 @@ export function wrapMockFetch(
 
   debug?.("Wrapping mockFetch with beforeFetch=%s, afterFetch=%s, onRequest=%s");
 
-  if (!beforeFetch && !afterFetch) {
-    debug?.("No beforeFetch or afterFetch configured, returning original mockFetch");
+  if (!beforeFetch && !afterFetch && !onRequest) {
+    debug?.("No callbacks configured, returning original mockFetch");
     // no configuration, return original
     return originalMockFetch;
   }
