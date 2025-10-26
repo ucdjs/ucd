@@ -1,7 +1,11 @@
 import type { MockStoreConfig } from "./types";
 import { mockFetch } from "../msw";
 import { MOCK_ROUTES } from "./handlers";
-import { extractConfigMetadata, wrapMockFetchWithConfig } from "./utils";
+import {
+  extractConfiguredMetadata,
+  parseLatency,
+  wrapMockFetch,
+} from "./utils";
 
 export function mockStoreApi(config?: MockStoreConfig): void {
   const {
@@ -23,11 +27,29 @@ export function mockStoreApi(config?: MockStoreConfig): void {
 
     const shouldUseDefaultValue = response === true || response == null;
 
-    // Extract configuration metadata from response
-    const { actualResponse, latency, headers } = extractConfigMetadata(response);
+    // extract metadata from configure
+    const { actualResponse, latency, headers } = extractConfiguredMetadata(response);
+
+    const wrappedMockFetch = wrapMockFetch(mockFetch, {
+      beforeFetch: async () => {
+        // apply latency before calling resolver
+        if (latency) {
+          const ms = parseLatency(latency);
+          await new Promise((resolve) => setTimeout(resolve, ms));
+        }
+      },
+      afterFetch(response) {
+        // apply custom headers to response
+        if (headers != null && (response as any)?.headers instanceof Headers) {
+          for (const [key, value] of Object.entries(headers)) {
+            (response as any).headers.set(key, value);
+          }
+        }
+      },
+    });
 
     // Create wrapped mockFetch with latency and headers handling
-    const configuredMockFetch = wrapMockFetchWithConfig(mockFetch, latency, headers);
+    // const configuredMockFetch = wrapMockFetchWithConfig(mockFetch, latency, headers);
 
     const mswPath = endpoint.replace(/\{(\w+)\}/g, (_, p1) => {
       if (p1 === "wildcard") {
@@ -42,11 +64,11 @@ export function mockStoreApi(config?: MockStoreConfig): void {
       // @ts-expect-error - TS can't infer that endpoint is keyof responses here
       providedResponse: actualResponse,
       shouldUseDefaultValue,
-      mockFetch: configuredMockFetch,
+      mockFetch: wrappedMockFetch,
       versions,
     });
   }
 }
 
 export type { MockStoreConfig };
-export { configure, unsafeResponse } from "./utils";
+export { configure, unsafeResponse } from "./helpers";
