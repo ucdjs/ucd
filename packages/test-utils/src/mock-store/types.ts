@@ -111,10 +111,32 @@ export interface MockStoreConfig {
    * ```
    */
   customResponses?: MockFetchType;
+
+  /**
+   * Callback invoked on each request to the mock store
+   *
+   * NOTE:
+   * These is not invoked for `customResponses` handlers.
+   *
+   * @example
+   * ```ts
+   * onRequest: ({ endpoint, method, params, url }) => {
+   *   console.log(`Request to ${method} ${endpoint} with params`, params);
+   * }
+   * ```
+   */
+  onRequest?: OnRequestCallback;
 }
 
 type MockFetchType
   = MockFetchFn extends { (...args: infer A): any; (...args: any[]): any } ? A[0] : never;
+
+export type OnRequestCallback = ({ endpoint, method, params, url }: {
+  endpoint: string;
+  method: string;
+  params: Record<string, any>;
+  url: string;
+}) => void;
 
 export interface ConfiguredResponseConfig<Response> {
   /**

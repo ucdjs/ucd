@@ -13,6 +13,7 @@ export function mockStoreApi(config?: MockStoreConfig): void {
     responses,
     versions = ["16.0.0", "15.1.0", "15.0.0"],
     customResponses = [],
+    onRequest,
   } = config || {};
 
   const normalizedBaseUrl = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
@@ -32,6 +33,7 @@ export function mockStoreApi(config?: MockStoreConfig): void {
     const { actualResponse, latency, headers } = extractConfiguredMetadata(response);
 
     const wrappedMockFetch = wrapMockFetch(mockFetch, {
+      onRequest,
       beforeFetch: async () => {
         // apply latency before calling resolver
         if (latency) {
