@@ -29,7 +29,7 @@ export function unsafeResponse<T = any>(response: T): any {
   return response as any;
 }
 
-export const CONFIGURED_RESPONSE: unique symbol = Symbol.for("__ucdjs_test_utils_configured__");
+export const kConfiguredResponse: symbol = Symbol.for("ucdjs:test-utils:mock-store:configured-response");
 
 /**
  * Configures a response with optional latency and headers for mocking purposes.
@@ -93,7 +93,7 @@ export function configure<const Response>(
     );
   }
 
-  Object.defineProperty(config.response as object, CONFIGURED_RESPONSE, {
+  Object.defineProperty(config.response as object, kConfiguredResponse, {
     value: { latency: config.latency, headers: config.headers },
     enumerable: false,
     configurable: false,
