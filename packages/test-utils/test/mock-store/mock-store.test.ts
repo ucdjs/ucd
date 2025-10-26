@@ -1,4 +1,5 @@
 import type { UCDWellKnownConfig, UnicodeTree, UnicodeVersionList } from "@ucdjs/schemas";
+import { HttpResponse } from "msw";
 import { describe, expect, it, vi } from "vitest";
 import { configure, mockStoreApi } from "../../src/mock-store";
 
@@ -93,7 +94,7 @@ describe("mockStoreApi", () => {
       mockStoreApi({
         responses: {
           "/api/v1/versions": vi.fn(async () => {
-            return Response.json(customVersion);
+            return HttpResponse.json<UnicodeVersionList>(customVersion);
           }),
         },
       });
@@ -206,7 +207,8 @@ describe("mockStoreApi", () => {
                 path: `test-${params.version}.txt`,
               },
             ];
-            return Response.json(tree);
+
+            return HttpResponse.json<UnicodeTree>(tree);
           }),
         },
       });
@@ -603,6 +605,181 @@ describe("mockStoreApi", () => {
         const response = await fetch(url);
         expect(response.ok).toBe(true);
       }
+    });
+  });
+
+  describe("customResponses", () => {
+    it("should handle single custom GET endpoint", async () => {
+      mockStoreApi({
+        customResponses: [
+          ["GET", "https://api.ucdjs.dev/api/v1/stats", () => {
+            return HttpResponse.json({ totalVersions: 42 });
+          }],
+        ],
+      });
+
+      const response = await fetch("https://api.ucdjs.dev/api/v1/stats");
+      const data = await response.json();
+
+      expect(response.ok).toBe(true);
+      expect(data).toEqual({ totalVersions: 42 });
+    });
+
+    it("should handle multiple custom endpoints", async () => {
+      mockStoreApi({
+        customResponses: [
+          ["GET", "https://api.ucdjs.dev/api/v1/health", () => {
+            return HttpResponse.json({ status: "healthy" });
+          }],
+          ["GET", "https://api.ucdjs.dev/api/v1/metadata", () => {
+            return HttpResponse.json({ lastUpdated: "2024-01-01" });
+          }],
+        ],
+      });
+
+      const response1 = await fetch("https://api.ucdjs.dev/api/v1/health");
+      const response2 = await fetch("https://api.ucdjs.dev/api/v1/metadata");
+
+      const data1 = await response1.json();
+      const data2 = await response2.json();
+
+      expect(data1).toEqual({ status: "healthy" });
+      expect(data2).toEqual({ lastUpdated: "2024-01-01" });
+    });
+
+    it("should handle multiple HTTP methods on same endpoint", async () => {
+      mockStoreApi({
+        customResponses: [
+          [["POST", "PUT"], "https://api.ucdjs.dev/api/v1/cache", ({ request }) => {
+            return HttpResponse.json({ method: request.method });
+          }],
+        ],
+      });
+
+      const postResponse = await fetch("https://api.ucdjs.dev/api/v1/cache", {
+        method: "POST",
+      });
+      const putResponse = await fetch("https://api.ucdjs.dev/api/v1/cache", {
+        method: "PUT",
+      });
+
+      const postData = await postResponse.json();
+      const putData = await putResponse.json();
+
+      expect(postData).toEqual({ method: "POST" });
+      expect(putData).toEqual({ method: "PUT" });
+    });
+
+    it("should access path parameters in custom resolver", async () => {
+      mockStoreApi({
+        customResponses: [
+          ["GET", "https://api.ucdjs.dev/api/v1/versions/:version/stats", ({ params }) => {
+            return HttpResponse.json({ version: params.version, downloads: 100 });
+          }],
+        ],
+      });
+
+      const response = await fetch("https://api.ucdjs.dev/api/v1/versions/16.0.0/stats");
+      const data = await response.json();
+
+      expect(data).toEqual({ version: "16.0.0", downloads: 100 });
+    });
+
+    it("should work alongside regular responses", async () => {
+      mockStoreApi({
+        responses: {
+          "/api/v1/versions": [],
+        },
+        customResponses: [
+          ["GET", "https://api.ucdjs.dev/api/v1/search", () => {
+            return HttpResponse.json({ results: [] });
+          }],
+        ],
+      });
+
+      const regularResponse = await fetch("https://api.ucdjs.dev/api/v1/versions");
+      const customResponse = await fetch("https://api.ucdjs.dev/api/v1/search");
+
+      expect(regularResponse.ok).toBe(true);
+      expect(customResponse.ok).toBe(true);
+
+      const customData = await customResponse.json();
+      expect(customData).toEqual({ results: [] });
+    });
+
+    it("should handle custom responses with different content types", async () => {
+      mockStoreApi({
+        customResponses: [
+          ["GET", "https://api.ucdjs.dev/api/v1/raw/readme.txt", () => {
+            return HttpResponse.text("UCD Store Documentation", {
+              headers: { "Content-Type": "text/plain" },
+            });
+          }],
+          ["GET", "https://api.ucdjs.dev/api/v1/status", () => {
+            return HttpResponse.json({ online: true });
+          }],
+        ],
+      });
+
+      const textResponse = await fetch("https://api.ucdjs.dev/api/v1/raw/readme.txt");
+      const jsonResponse = await fetch("https://api.ucdjs.dev/api/v1/status");
+
+      const text = await textResponse.text();
+      const json = await jsonResponse.json();
+
+      expect(text).toBe("UCD Store Documentation");
+      expect(json).toEqual({ online: true });
+    });
+
+    it("should handle custom responses with status codes", async () => {
+      mockStoreApi({
+        customResponses: [
+          ["GET", "https://api.ucdjs.dev/api/v1/versions/99.0.0", () => {
+            return HttpResponse.json(
+              { message: "Version not found", status: 404 },
+              { status: 404 },
+            );
+          }],
+          ["POST", "https://api.ucdjs.dev/api/v1/cache/invalidate", () => {
+            return HttpResponse.json(
+              { success: true },
+              { status: 201 },
+            );
+          }],
+        ],
+      });
+
+      const notFoundResponse = await fetch("https://api.ucdjs.dev/api/v1/versions/99.0.0");
+      const createdResponse = await fetch("https://api.ucdjs.dev/api/v1/cache/invalidate", {
+        method: "POST",
+      });
+
+      expect(notFoundResponse.status).toBe(404);
+      expect(createdResponse.status).toBe(201);
+    });
+
+    it("should handle async custom responses", async () => {
+      mockStoreApi({
+        customResponses: [
+          ["GET", "https://api.ucdjs.dev/api/v1/delayed", async () => {
+            await new Promise((resolve) => setTimeout(resolve, 10));
+            return HttpResponse.json({ delayed: true });
+          }],
+        ],
+      });
+
+      const response = await fetch("https://api.ucdjs.dev/api/v1/delayed");
+      const data = await response.json();
+
+      expect(data).toEqual({ delayed: true });
+    });
+
+    it("should handle empty customResponses array", () => {
+      expect(() => {
+        mockStoreApi({
+          customResponses: [],
+        });
+      }).not.toThrow();
     });
   });
 });

@@ -95,7 +95,26 @@ export interface MockStoreConfig {
    * @default ["16.0.0","15.1.0","15.0.0"]
    */
   versions?: string[];
+
+  /**
+   * Custom mock fetch handlers to register
+   *
+   * @example
+   * ```ts
+   * customResponses: [
+   *   ["GET", "/custom-endpoint", () => HttpResponse.json({ custom: true })],
+   *   [["POST", "PUT"], "/another-endpoint", ({ params }) => {
+   *     const id = params.id;
+   *     return HttpResponse.json({ id });
+   *   }],
+   * ]
+   * ```
+   */
+  customResponses?: MockFetchType;
 }
+
+type MockFetchType
+  = MockFetchFn extends { (...args: infer A): any; (...args: any[]): any } ? A[0] : never;
 
 export interface ConfiguredResponseConfig<Response> {
   /**
