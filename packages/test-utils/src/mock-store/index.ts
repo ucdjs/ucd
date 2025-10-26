@@ -12,6 +12,7 @@ export function mockStoreApi(config?: MockStoreConfig): void {
     baseUrl = "https://api.ucdjs.dev",
     responses,
     versions = ["16.0.0", "15.1.0", "15.0.0"],
+    customResponses = [],
   } = config || {};
 
   const normalizedBaseUrl = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
@@ -54,13 +55,7 @@ export function mockStoreApi(config?: MockStoreConfig): void {
       },
     });
 
-    const mswPath = endpoint.replace(/\{(\w+)\}/g, (_, p1) => {
-      if (p1 === "wildcard") {
-        return "*";
-      }
-
-      return `:${p1}`;
-    });
+    const mswPath = toMSWPath(endpoint);
 
     route.setup({
       url: `${normalizedBaseUrl}${mswPath}`,
@@ -74,6 +69,20 @@ export function mockStoreApi(config?: MockStoreConfig): void {
       versions,
     });
   }
+
+  if (customResponses.length > 0) {
+    mockFetch(customResponses);
+  }
+}
+
+function toMSWPath(endpoint: string): string {
+  return endpoint.replace(/\{(\w+)\}/g, (_, p1) => {
+    if (p1 === "wildcard") {
+      return "*";
+    }
+
+    return `:${p1}`;
+  });
 }
 
 export type { MockStoreConfig };
