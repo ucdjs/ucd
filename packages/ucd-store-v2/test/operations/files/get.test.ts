@@ -374,7 +374,7 @@ describe("getFile", () => {
       manifestPath: "/test/.ucd-store.json",
     });
 
-    const [_, error] = await getFile(context, "99.0.0", "UnicodeData.txt");
+    const [_data, error] = await getFile(context, "99.0.0", "UnicodeData.txt");
 
     expect(error).toBeInstanceOf(UCDStoreVersionNotFoundError);
     expect(error?.message).toContain("99.0.0");
@@ -414,7 +414,7 @@ describe("getFile", () => {
     expect(error).toBeNull();
     expect(data).toBe("Content for data.txt");
 
-    const [_, error2] = await getFile(context, "16.0.0", "UnicodeData.txt");
+    const [_data, error2] = await getFile(context, "16.0.0", "UnicodeData.txt");
     expect(error2).toBeInstanceOf(UCDStoreGenericError);
     expect(error2?.message).toMatch(/File '(.*)' does not pass filters/);
   });
@@ -443,7 +443,7 @@ describe("getFile", () => {
         manifestPath: "/test/.ucd-store.json",
       });
 
-      const [_, error] = await getFile(context, "16.0.0", "UnicodeData.txt");
+      const [_data, error] = await getFile(context, "16.0.0", "UnicodeData.txt");
 
       expect(error).toBeInstanceOf(UCDStoreGenericError);
       expect(error?.message).toMatch(/Failed to fetch file 'UnicodeData.txt':/);
@@ -472,7 +472,7 @@ describe("getFile", () => {
         manifestPath: "/test/.ucd-store.json",
       });
 
-      const [_, error] = await getFile(context, "16.0.0", "NonExistent.txt");
+      const [_data, error] = await getFile(context, "16.0.0", "NonExistent.txt");
 
       expect(error).toBeInstanceOf(UCDStoreGenericError);
       expect(error?.message).toContain("Failed to fetch file");
