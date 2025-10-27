@@ -1,10 +1,10 @@
+import { mockStoreApi, unsafeResponse } from "#test-utils";
 import { createMemoryMockFS } from "#test-utils/fs-bridges";
 import { HttpResponse } from "#test-utils/msw";
 import { createPathFilter, getDefaultUCDEndpointConfig } from "@ucdjs-internal/shared";
 import { createUCDClientWithConfig } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { defineFileSystemBridge } from "@ucdjs/fs-bridge";
-import { mockStoreApi } from "@ucdjs/test-utils";
 import { describe, expect, it, vi } from "vitest";
 import { createInternalContext } from "../../../src/core/context";
 import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../../../src/errors";
@@ -204,16 +204,18 @@ describe("getFile", () => {
       expect(error).toBeNull();
       expect(data).toBeDefined();
 
-      // Verify file was not cached
+      // verify file was not cached
       const exists = await fs.exists("/test/16.0.0/UnicodeData.txt");
       expect(exists).toBe(false);
     });
 
     it("should not cache with read-only FS bridge", async () => {
+      const apiResponseContent = "API content";
+
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
-          "/api/v1/files/{wildcard}": "API content",
+          "/api/v1/files/{wildcard}": apiResponseContent,
         },
       });
 
@@ -251,24 +253,28 @@ describe("getFile", () => {
 
       expect(error).toBeNull();
       expect(data).toBeDefined();
-      // No error should be thrown for lack of write capability
+      expect(data).toBe(apiResponseContent);
+
+      // verify file was not cached
+      const exists = await readOnlyFS.exists("/test/16.0.0/UnicodeData.txt");
+      expect(exists).toBe(false);
     });
 
     it("should handle cache write failures gracefully", async () => {
+      const apiResponseContent = "API content";
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
-          "/api/v1/files/{wildcard}": "API content",
+          "/api/v1/files/{wildcard}": apiResponseContent,
         },
       });
 
       const filter = createPathFilter({});
       const fs = createMemoryMockFS();
 
-      // Override write to simulate failure
-      fs.write = async () => {
+      fs.on("write:before", () => {
         throw new Error("Simulated write failure");
-      };
+      });
 
       const context = createInternalContext({
         client,
@@ -281,18 +287,24 @@ describe("getFile", () => {
 
       const [data, error] = await getFile(context, "16.0.0", "UnicodeData.txt");
 
-      // Should succeed despite cache failure
+      // should succeed despite cache failure
       expect(error).toBeNull();
       expect(data).toBeDefined();
+      expect(data).toBe(apiResponseContent);
+
+      // verify file was not cached
+      const exists = await fs.exists("/test/16.0.0/UnicodeData.txt");
+      expect(exists).toBe(false);
     });
   });
 
   describe("response type handling", () => {
     it("should handle string response from API", async () => {
+      const plainTextContent = "Plain text content";
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
-          "/api/v1/files/{wildcard}": "Plain text content",
+          "/api/v1/files/{wildcard}": plainTextContent,
         },
       });
 
@@ -311,14 +323,19 @@ describe("getFile", () => {
 
       expect(error).toBeNull();
       expect(typeof data).toBe("string");
-      expect(data).toBe("Plain text content");
+      expect(data).toBe(plainTextContent);
     });
 
     it("should convert JSON response to string", async () => {
+      const customResponse = {
+        key: "value",
+        nested: { data: 123 },
+      };
+
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
-          "/api/v1/files/{wildcard}": JSON.stringify({ key: "value", nested: { data: 123 } }),
+          "/api/v1/files/{wildcard}": unsafeResponse(customResponse),
         },
       });
 
@@ -338,9 +355,8 @@ describe("getFile", () => {
       expect(error).toBeNull();
       expect(typeof data).toBe("string");
 
-      // Should be valid JSON string
       const parsed = JSON.parse(data!);
-      expect(parsed).toEqual({ key: "value", nested: { data: 123 } });
+      expect(parsed).toStrictEqual(customResponse);
     });
   });
 
