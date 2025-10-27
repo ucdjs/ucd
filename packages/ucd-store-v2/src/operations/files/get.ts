@@ -77,7 +77,7 @@ export async function getFile(
       );
     }
 
-    if (!result.data) {
+    if (result.data == null) {
       throw new UCDStoreGenericError(
         `Failed to fetch file '${filePath}': no data returned`,
         { version, filePath },
@@ -89,7 +89,7 @@ export async function getFile(
     if (typeof result.data === "string") {
       content = result.data;
     } else {
-      content = JSON.stringify(result.data, null, 2);
+      content = JSON.stringify(result.data);
     }
 
     // cache to local FS if available and not disabled
