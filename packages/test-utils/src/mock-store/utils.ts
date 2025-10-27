@@ -91,9 +91,8 @@ export function wrapMockFetch(
           return route;
         }
 
+        const isWildcardRoute = url.includes(":wildcard+");
         const wrappedResolver: HttpResponseResolver = async (args) => {
-          const isWildcardRoute = url.includes(":wildcard+");
-
           // We modify the wildcard param to be a string instead of an array
           // Since we changed our wildcard capture route to use ":wildcard+" instead of "*"
           // But that made MSW return an array for the param ["16.0.0", "UnicodeData.txt"],
