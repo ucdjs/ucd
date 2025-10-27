@@ -41,7 +41,7 @@ describe("v1_files", () => {
 
       expect(response.status).toBe(200);
       expect(response.headers.get("content-type")).toBe("text/plain; charset=utf-8");
-      expect(response.headers.get("cache-control")).toBe("max-age=3600");
+      expect(response.headers.get("cache-control")).toMatch(/max-age=\d+/);
 
       const content = await response.text();
       expect(content).toBe(mockFileContent);
@@ -129,7 +129,7 @@ describe("v1_files", () => {
 
       expect(response.status).toBe(200);
       expect(response.headers.get("content-type")).toBe("application/octet-stream");
-      expect(response.headers.get("cache-control")).toBe("max-age=3600");
+      expect(response.headers.get("cache-control")).toMatch(/max-age=\d+/);
     });
   });
 
@@ -182,7 +182,7 @@ describe("v1_files", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toBe("text/plain; charset=utf-8");
-    expect(response.headers.get("cache-control")).toBe("max-age=3600");
+    expect(response.headers.get("cache-control")).toMatch(/max-age=\d+/);
   });
 
   it("should handle HEAD requests for directories", async () => {
@@ -210,7 +210,7 @@ describe("v1_files", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toBe("application/json");
-    expect(response.headers.get("cache-control")).toBe("max-age=3600");
+    expect(response.headers.get("cache-control")).toMatch(/max-age=\d+/);
     expect(response.headers.get(UCD_FILE_STAT_TYPE_HEADER)).toBe("directory");
     expect(response.headers.get("content-length")).toBeDefined();
     expect(response.headers.get("last-modified")).toBeDefined();

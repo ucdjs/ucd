@@ -4,7 +4,7 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import { trimTrailingSlash } from "@luxass/utils";
 import { DEFAULT_USER_AGENT, UCD_FILE_STAT_TYPE_HEADER } from "@ucdjs/env";
 import { cache } from "hono/cache";
-import { HTML_EXTENSIONS, V1_FILES_ROUTER_BASE_PATH } from "../../constants";
+import { HTML_EXTENSIONS, MAX_AGE_ONE_WEEK_SECONDS, V1_FILES_ROUTER_BASE_PATH } from "../../constants";
 import { badGateway, badRequest, notFound } from "../../lib/errors";
 import { parseUnicodeDirectory } from "../../lib/files";
 import { GET_UCD_STORE, METADATA_WILDCARD_ROUTE, WILDCARD_ROUTE } from "./openapi";
@@ -44,7 +44,7 @@ V1_FILES_ROUTER.openAPIRegistry.registerPath(METADATA_WILDCARD_ROUTE);
 
 V1_FILES_ROUTER.get("/:wildcard{.*}?", cache({
   cacheName: "ucdjs:v1_files:files",
-  cacheControl: "max-age=604800", // 7 days
+  cacheControl: `max-age=${MAX_AGE_ONE_WEEK_SECONDS}`, // 7 days
 }), async (c) => {
   const path = c.req.param("wildcard")?.trim() || "";
 

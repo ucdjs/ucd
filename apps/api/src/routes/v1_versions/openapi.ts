@@ -1,6 +1,7 @@
 import { createRoute } from "@hono/zod-openapi";
 import { UnicodeTreeSchema, UnicodeVersionListSchema } from "@ucdjs/schemas";
 import { cache } from "hono/cache";
+import { MAX_AGE_ONE_DAY_SECONDS, MAX_AGE_ONE_WEEK_SECONDS } from "../../constants";
 import { VERSION_ROUTE_PARAM } from "../../lib/shared-parameters";
 import { generateReferences, OPENAPI_TAGS } from "../../openapi";
 import { GET_VERSION_FILE_TREE_ROUTE_DOCS, LIST_ALL_UNICODE_VERSIONS_ROUTE_DOCS } from "./docs";
@@ -12,7 +13,7 @@ export const LIST_ALL_UNICODE_VERSIONS_ROUTE = createRoute({
   middleware: [
     cache({
       cacheName: "ucdjs:v1_versions:list",
-      cacheControl: "max-age=345600", // 4 days
+      cacheControl: `max-age=${MAX_AGE_ONE_DAY_SECONDS * 4}`, // 4 days
     }),
   ] as const,
   description: LIST_ALL_UNICODE_VERSIONS_ROUTE_DOCS,
@@ -71,7 +72,7 @@ export const GET_VERSION_FILE_TREE_ROUTE = createRoute({
   middleware: [
     cache({
       cacheName: "ucdjs:v1_versions:file-tree",
-      cacheControl: "max-age=604800", // 1 week
+      cacheControl: `max-age=${MAX_AGE_ONE_WEEK_SECONDS}`, // 1 week
     }),
   ] as const,
   parameters: [
