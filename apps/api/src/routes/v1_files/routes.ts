@@ -4,7 +4,7 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import { trimTrailingSlash } from "@luxass/utils";
 import { DEFAULT_USER_AGENT, UCD_FILE_STAT_TYPE_HEADER } from "@ucdjs/env";
 import { cache } from "hono/cache";
-import { V1_FILES_ROUTER_BASE_PATH } from "../../constants";
+import { HTML_EXTENSIONS, V1_FILES_ROUTER_BASE_PATH } from "../../constants";
 import { badGateway, badRequest, notFound } from "../../lib/errors";
 import { parseUnicodeDirectory } from "../../lib/files";
 import { GET_UCD_STORE, METADATA_WILDCARD_ROUTE, WILDCARD_ROUTE } from "./openapi";
@@ -86,10 +86,9 @@ V1_FILES_ROUTER.get("/:wildcard{.*}?", cache({
     "Content-Length": response.headers.get("Content-Length") || "",
   };
 
-  const htmlExtensions = [".html", ".htm", ".xhtml"];
-  const isHtmlFile = htmlExtensions.some((ext) =>
-    normalizedPath.toLowerCase().endsWith(ext),
-  );
+  const extName = normalizedPath.split(".").pop()?.toLowerCase() || "";
+
+  const isHtmlFile = HTML_EXTENSIONS.includes(`.${extName}`);
 
   // check if this is a directory listing (HTML response for non-HTML files)
   const isDirectoryListing = contentType.includes("text/html") && !isHtmlFile;
@@ -106,20 +105,7 @@ V1_FILES_ROUTER.get("/:wildcard{.*}?", cache({
     });
   }
 
-  const extName = normalizedPath.split(".").pop()?.toLowerCase() || "";
-  if (extName === "json") {
-    contentType ||= "application/json";
-  } else if (extName === "xml") {
-    contentType ||= "application/xml";
-  } else if (extName === "txt") {
-    contentType ||= "text/plain";
-  } else if (extName === "html" || extName === "htm" || extName === "xhtml") {
-    contentType ||= "text/html";
-  } else if (extName === "pdf") {
-    contentType ||= "application/pdf";
-  } else {
-    contentType ||= "application/octet-stream"; // Default for binary files
-  }
+  contentType ||= determineContentTypeFromExtension(extName);
 
   return c.newResponse(response.body!, 200, {
     "Content-Type": contentType,
@@ -130,3 +116,31 @@ V1_FILES_ROUTER.get("/:wildcard{.*}?", cache({
     [UCD_FILE_STAT_TYPE_HEADER]: "file",
   });
 });
+
+function determineContentTypeFromExtension(extName: string) {
+  if (HTML_EXTENSIONS.includes(`.${extName}`)) {
+    return "text/html";
+  }
+
+  if (extName === "csv") {
+    return "text/csv";
+  }
+
+  if (extName === "xml") {
+    return "application/xml";
+  }
+
+  if (extName === "txt") {
+    return "text/plain";
+  }
+
+  if (extName === "pdf") {
+    return "application/pdf";
+  }
+
+  if (extName === "json") {
+    return "application/json";
+  }
+
+  return "application/octet-stream"; // Default for binary files
+}
