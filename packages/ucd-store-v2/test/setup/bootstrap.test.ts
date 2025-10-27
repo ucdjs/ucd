@@ -1,5 +1,6 @@
 import { createMemoryMockFS } from "#test-utils/fs-bridges";
 import { HttpResponse, mockFetch } from "#test-utils/msw";
+import { getDefaultUCDEndpointConfig } from "@ucdjs-internal/shared";
 import { createUCDClientWithConfig } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { defineFileSystemBridge } from "@ucdjs/fs-bridge";
@@ -7,15 +8,6 @@ import { describe, expect, it } from "vitest";
 import { readManifest } from "../../src/core/manifest";
 import { UCDStoreGenericError } from "../../src/errors";
 import { bootstrap } from "../../src/setup/bootstrap";
-
-const MOCK_CONFIG = {
-  version: "1.0",
-  endpoints: {
-    files: "/api/v1/files",
-    manifest: "/api/v1/files/.ucd-store.json",
-    versions: "/api/v1/versions",
-  },
-};
 
 function createMockVersions(versions: string[]) {
   return versions.map((version) => ({
@@ -44,7 +36,7 @@ describe("bootstrap", () => {
       }],
     ]);
 
-    const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, MOCK_CONFIG);
+    const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, getDefaultUCDEndpointConfig());
 
     await bootstrap({ client, fs, basePath, versions, manifestPath });
 
@@ -64,7 +56,7 @@ describe("bootstrap", () => {
       }],
     ]);
 
-    const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, MOCK_CONFIG);
+    const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, getDefaultUCDEndpointConfig());
 
     await bootstrap({ client, fs, basePath, versions, manifestPath });
 
@@ -92,7 +84,7 @@ describe("bootstrap", () => {
       }],
     ]);
 
-    const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, MOCK_CONFIG);
+    const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, getDefaultUCDEndpointConfig());
 
     await expect(
       bootstrap({ client, fs, basePath, versions, manifestPath }),
@@ -116,7 +108,7 @@ describe("bootstrap", () => {
       }],
     ]);
 
-    const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, MOCK_CONFIG);
+    const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, getDefaultUCDEndpointConfig());
 
     await bootstrap({ client, fs, basePath, versions, manifestPath });
 
@@ -138,7 +130,7 @@ describe("bootstrap", () => {
       }],
     ]);
 
-    const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, MOCK_CONFIG);
+    const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, getDefaultUCDEndpointConfig());
 
     await expect(
       bootstrap({ client, fs, basePath, versions, manifestPath }),
@@ -163,7 +155,7 @@ describe("bootstrap", () => {
       }],
     ]);
 
-    const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, MOCK_CONFIG);
+    const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, getDefaultUCDEndpointConfig());
 
     await expect(
       bootstrap({ client, fs, basePath, versions, manifestPath }),
@@ -188,7 +180,7 @@ describe("bootstrap", () => {
       }],
     ]);
 
-    const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, MOCK_CONFIG);
+    const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, getDefaultUCDEndpointConfig());
 
     await expect(
       bootstrap({ client, fs, basePath, versions, manifestPath }),
@@ -213,7 +205,7 @@ describe("bootstrap", () => {
       }],
     ]);
 
-    const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, MOCK_CONFIG);
+    const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, getDefaultUCDEndpointConfig());
 
     await bootstrap({ client, fs, basePath, versions, manifestPath });
 
@@ -257,7 +249,7 @@ describe("bootstrap", () => {
       }],
     ]);
 
-    const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, MOCK_CONFIG);
+    const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, getDefaultUCDEndpointConfig());
 
     await expect(
       bootstrap({ client, fs, basePath, versions, manifestPath }),
