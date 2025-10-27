@@ -200,6 +200,16 @@ export const METADATA_WILDCARD_ROUTE = createRoute({
           },
           required: true,
         },
+        "Last-Modified": {
+          description: "Last modification time from upstream",
+          schema: { type: "string" },
+          required: false,
+        },
+        "Content-Length": {
+          description: "Byte length when applicable",
+          schema: { type: "string" },
+          required: false,
+        },
       },
     },
   },
