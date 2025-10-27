@@ -11,12 +11,24 @@ import { listFiles } from "../../../src/operations/files/list";
 describe("listFiles", () => {
   const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, getDefaultUCDEndpointConfig());
 
-  describe("successful file listing", () => {
-    it("should list files for valid version", async () => {
-      mockStoreApi({ versions: ["16.0.0"] });
+  describe("local store (default behavior)", () => {
+    it("should list files from local directory when it exists", async () => {
+      let callCount = 0;
+      mockStoreApi({
+        versions: ["16.0.0"],
+        onRequest: () => {
+          callCount++;
+        },
+      });
 
       const filter = createPathFilter({});
-      const fs = createMemoryMockFS();
+      const fs = createMemoryMockFS({
+        initialFiles: {
+          "/test/16.0.0/UnicodeData.txt": "content",
+          "/test/16.0.0/Blocks.txt": "content",
+        },
+      });
+
       const context = createInternalContext({
         client,
         filter,
@@ -31,14 +43,22 @@ describe("listFiles", () => {
       expect(error).toBeNull();
       expect(data).toBeDefined();
       expect(Array.isArray(data)).toBe(true);
-      expect(data!.length).toBeGreaterThan(0);
+      expect(data!.length).toBe(2);
+      expect(callCount).toBe(0);
     });
 
-    it("should return flat array of file paths", async () => {
-      mockStoreApi({ versions: ["16.0.0"] });
+    it("should return empty array when directory doesn't exist locally", async () => {
+      let callCount = 0;
+      mockStoreApi({
+        versions: ["16.0.0"],
+        onRequest: () => {
+          callCount++;
+        },
+      });
 
       const filter = createPathFilter({});
       const fs = createMemoryMockFS();
+
       const context = createInternalContext({
         client,
         filter,
@@ -51,35 +71,177 @@ describe("listFiles", () => {
       const [data, error] = await listFiles(context, "16.0.0");
 
       expect(error).toBeNull();
-      expect(data).toBeDefined();
-      data!.forEach((path) => {
-        expect(typeof path).toBe("string");
-      });
+      expect(data).toEqual([]);
+      expect(callCount).toBe(0);
     });
 
-    it("should work with multiple versions in context", async () => {
-      mockStoreApi({ versions: ["16.0.0", "15.1.0", "15.0.0"] });
+    it("should return empty array when local read fails", async () => {
+      let callCount = 0;
+      mockStoreApi({
+        versions: ["16.0.0"],
+        onRequest: () => {
+          callCount++;
+        },
+      });
 
       const filter = createPathFilter({});
-      const fs = createMemoryMockFS();
+      const fs = createMemoryMockFS({
+        initialFiles: {
+          "/test/16.0.0/UnicodeData.txt": "content",
+        },
+      });
+
+      fs.on("listdir:before", () => {
+        throw new Error("Read failed");
+      });
+
       const context = createInternalContext({
         client,
         filter,
         fs,
         basePath: "/test",
-        versions: ["16.0.0", "15.1.0", "15.0.0"],
+        versions: ["16.0.0"],
         manifestPath: "/test/.ucd-store.json",
       });
 
-      const [data, error] = await listFiles(context, "15.1.0");
+      const [data, error] = await listFiles(context, "16.0.0");
 
       expect(error).toBeNull();
-      expect(data).toBeDefined();
+      expect(data).toEqual([]);
+      expect(callCount).toBe(0);
     });
   });
 
-  describe("version validation", () => {
-    it("should throw UCDStoreVersionNotFoundError for non-existent version", async () => {
+  // eslint-disable-next-line test/prefer-lowercase-title
+  describe("API fallback (allowApi: true)", () => {
+    it("should prefer local store over API", async () => {
+      let callCount = 0;
+      mockStoreApi({
+        versions: ["16.0.0"],
+        onRequest: () => {
+          callCount++;
+        },
+      });
+
+      const filter = createPathFilter({});
+      const fs = createMemoryMockFS({
+        initialFiles: {
+          "/test/16.0.0/UnicodeData.txt": "content",
+        },
+      });
+
+      const context = createInternalContext({
+        client,
+        filter,
+        fs,
+        basePath: "/test",
+        versions: ["16.0.0"],
+        manifestPath: "/test/.ucd-store.json",
+      });
+
+      const [data, error] = await listFiles(context, "16.0.0", {
+        allowApi: true,
+      });
+
+      expect(error).toBeNull();
+      expect(data).toBeDefined();
+      expect(data!.length).toBe(1);
+      expect(callCount).toBe(0);
+    });
+
+    it("should fetch from API when directory doesn't exist locally", async () => {
+      mockStoreApi({ versions: ["16.0.0"] });
+
+      const filter = createPathFilter({});
+      const fs = createMemoryMockFS();
+
+      const context = createInternalContext({
+        client,
+        filter,
+        fs,
+        basePath: "/test",
+        versions: ["16.0.0"],
+        manifestPath: "/test/.ucd-store.json",
+      });
+
+      const [data, error] = await listFiles(context, "16.0.0", {
+        allowApi: true,
+      });
+
+      expect(error).toBeNull();
+      expect(data).toBeDefined();
+      expect(Array.isArray(data)).toBe(true);
+      expect(data!.length).toBeGreaterThan(0);
+    });
+
+    it("should fall back to API when local read fails", async () => {
+      mockStoreApi({ versions: ["16.0.0"] });
+
+      const filter = createPathFilter({});
+      const fs = createMemoryMockFS({
+        initialFiles: {
+          "/test/16.0.0/UnicodeData.txt": "content",
+        },
+      });
+
+      fs.on("listdir:before", () => {
+        throw new Error("Read failed");
+      });
+
+      const context = createInternalContext({
+        client,
+        filter,
+        fs,
+        basePath: "/test",
+        versions: ["16.0.0"],
+        manifestPath: "/test/.ucd-store.json",
+      });
+
+      const [data, error] = await listFiles(context, "16.0.0", {
+        allowApi: true,
+      });
+
+      expect(error).toBeNull();
+      expect(data).toBeDefined();
+      expect(data!.length).toBeGreaterThan(0);
+    });
+
+    it("should handle API errors", async () => {
+      mockStoreApi({
+        versions: ["16.0.0"],
+        responses: {
+          "/api/v1/versions/{version}/file-tree": {
+            status: 500,
+            message: "Internal Server Error",
+            timestamp: new Date().toISOString(),
+          },
+        },
+      });
+
+      const filter = createPathFilter({});
+      const fs = createMemoryMockFS();
+
+      const context = createInternalContext({
+        client,
+        filter,
+        fs,
+        basePath: "/test",
+        versions: ["16.0.0"],
+        manifestPath: "/test/.ucd-store.json",
+      });
+
+      const [data, error] = await listFiles(context, "16.0.0", {
+        allowApi: true,
+      });
+
+      expect(error).toBeInstanceOf(UCDStoreGenericError);
+      expect(error?.message).toMatch(/Failed to fetch file tree for version '16\.0\.0'/);
+      expect(data).toBeNull();
+    });
+  });
+
+  describe("validation", () => {
+    it("should throw error for non-existent version", async () => {
       mockStoreApi({ versions: ["16.0.0"] });
 
       const filter = createPathFilter({});
@@ -96,29 +258,8 @@ describe("listFiles", () => {
       const [data, error] = await listFiles(context, "99.0.0");
 
       expect(error).toBeInstanceOf(UCDStoreVersionNotFoundError);
-      expect(error?.message).toContain("99.0.0");
+      expect(error?.message).toMatch(/Version '\d+\.\d+\.\d+' does not exist in the store/);
       expect(data).toBeNull();
-    });
-
-    it("should validate version before making API call", async () => {
-      mockStoreApi({ versions: ["16.0.0"] });
-
-      const filter = createPathFilter({});
-      const fs = createMemoryMockFS();
-      const context = createInternalContext({
-        client,
-        filter,
-        fs,
-        basePath: "/test",
-        versions: ["16.0.0"],
-        manifestPath: "/test/.ucd-store.json",
-      });
-
-      // This should fail immediately without making API call
-      const [data, error] = await listFiles(context, "invalid-version");
-
-      expect(data).toBeNull();
-      expect(error).toBeInstanceOf(UCDStoreVersionNotFoundError);
     });
   });
 
@@ -137,7 +278,9 @@ describe("listFiles", () => {
         manifestPath: "/test/.ucd-store.json",
       });
 
-      const [data, error] = await listFiles(context, "16.0.0");
+      const [data, error] = await listFiles(context, "16.0.0", {
+        allowApi: true,
+      });
 
       expect(error).toBeNull();
       expect(data).toBeDefined();
@@ -160,7 +303,9 @@ describe("listFiles", () => {
         manifestPath: "/test/.ucd-store.json",
       });
 
-      const [data, error] = await listFiles(context, "16.0.0");
+      const [data, error] = await listFiles(context, "16.0.0", {
+        allowApi: true,
+      });
 
       expect(error).toBeNull();
       expect(data).toBeDefined();
@@ -186,6 +331,7 @@ describe("listFiles", () => {
       });
 
       const [data, error] = await listFiles(context, "16.0.0", {
+        allowApi: true,
         filters: { include: ["**/*.txt"] },
       });
 
@@ -211,6 +357,7 @@ describe("listFiles", () => {
       });
 
       const [data, error] = await listFiles(context, "16.0.0", {
+        allowApi: true,
         filters: { exclude: ["**/*.txt"] },
       });
 
@@ -236,6 +383,7 @@ describe("listFiles", () => {
       });
 
       const [data, error] = await listFiles(context, "16.0.0", {
+        allowApi: true,
         filters: { exclude: ["**/*.txt"] },
       });
 
@@ -247,70 +395,8 @@ describe("listFiles", () => {
     });
   });
 
-  describe("aPI error handling", () => {
-    it("should handle API errors gracefully", async () => {
-      mockStoreApi({
-        versions: ["16.0.0"],
-        responses: {
-          "/api/v1/versions/{version}/file-tree": {
-            status: 500,
-            message: "Internal Server Error",
-            timestamp: new Date().toISOString(),
-          },
-        },
-      });
-
-      const filter = createPathFilter({});
-      const fs = createMemoryMockFS();
-      const context = createInternalContext({
-        client,
-        filter,
-        fs,
-        basePath: "/test",
-        versions: ["16.0.0"],
-        manifestPath: "/test/.ucd-store.json",
-      });
-
-      const [data, error] = await listFiles(context, "16.0.0");
-
-      expect(error).toBeInstanceOf(UCDStoreGenericError);
-      expect(error?.message).toContain("Failed to fetch file tree");
-      expect(data).toBeNull();
-    });
-
-    it("should include version in error message", async () => {
-      mockStoreApi({
-        versions: ["15.0.0"],
-        responses: {
-          "/api/v1/versions/{version}/file-tree": {
-            status: 404,
-            message: "Not Found",
-            timestamp: new Date().toISOString(),
-          },
-        },
-      });
-
-      const filter = createPathFilter({});
-      const fs = createMemoryMockFS();
-      const context = createInternalContext({
-        client,
-        filter,
-        fs,
-        basePath: "/test",
-        versions: ["15.0.0"],
-        manifestPath: "/test/.ucd-store.json",
-      });
-
-      const [data, error] = await listFiles(context, "15.0.0");
-
-      expect(data).toBeNull();
-      expect(error).toBeInstanceOf(UCDStoreGenericError);
-      expect(error?.message).toContain("15.0.0");
-    });
-  });
-
-  describe("empty and edge cases", () => {
-    it("should handle empty file tree", async () => {
+  describe("edge cases", () => {
+    it("should handle empty file tree from API", async () => {
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
@@ -329,7 +415,9 @@ describe("listFiles", () => {
         manifestPath: "/test/.ucd-store.json",
       });
 
-      const [data, error] = await listFiles(context, "16.0.0");
+      const [data, error] = await listFiles(context, "16.0.0", {
+        allowApi: true,
+      });
 
       expect(error).toBeNull();
       expect(data).toBeDefined();
@@ -350,7 +438,9 @@ describe("listFiles", () => {
         manifestPath: "/test/.ucd-store.json",
       });
 
-      const [data, error] = await listFiles(context, "16.0.0");
+      const [data, error] = await listFiles(context, "16.0.0", {
+        allowApi: true,
+      });
 
       expect(error).toBeNull();
       expect(data).toBeDefined();
