@@ -113,7 +113,7 @@ function toMSWPath(endpoint: string): string {
   return endpoint.replace(/\{(\w+)\}/g, (_, p1) => {
     // This plays nicely with the change we made
     // for :wildcard+ in our wrap mock fetch logic
-    // https://github.com/ucdjs/ucd/blob/43640a1e2a905f669708a76c8193558429d36df3/packages/test-utils/src/mock-store/utils.ts#L95-L106
+    // https://github.com/ucdjs/ucd/blob/c662bec8429c98e5fd98942e2c12f0e6fd479d51/packages/test-utils/src/mock-store/utils.ts#L94-L105
     if (p1 === "wildcard") {
       return `:${p1}+`;
     }
