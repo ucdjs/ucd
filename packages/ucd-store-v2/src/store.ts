@@ -20,7 +20,9 @@ import { createInternalContext, createPublicContext } from "./core/context";
 import { readManifest, writeManifest } from "./core/manifest";
 import { UCDStoreGenericError } from "./errors";
 import { analyze } from "./operations/analyze";
-import { createFilesNamespace } from "./operations/files";
+import { getFile } from "./operations/files/get";
+import { listFiles } from "./operations/files/list";
+import { getFileTree } from "./operations/files/tree";
 import { mirror } from "./operations/mirror";
 import { sync } from "./operations/sync";
 import { bootstrap } from "./setup/bootstrap";
@@ -132,10 +134,20 @@ export async function createUCDStore(options: UCDStoreOptions): Promise<UCDStore
   const publicContext = createPublicContext(internalContext);
 
   return Object.assign(publicContext, {
-    files: createFilesNamespace(internalContext),
-    mirror: (options?) => mirror(internalContext, options),
-    sync: (options?) => sync(internalContext, options),
-    analyze: (options?) => analyze(internalContext, options),
+    files: {
+      get(version, path, options) {
+        return getFile(internalContext, version, path, options);
+      },
+      list(version, options) {
+        return listFiles(internalContext, version, options);
+      },
+      tree(version, options) {
+        return getFileTree(internalContext, version, options);
+      },
+    },
+    mirror: (options) => mirror(internalContext, options),
+    sync: (options) => sync(internalContext, options),
+    analyze: (options) => analyze(internalContext, options),
   } satisfies UCDStoreOperations);
 }
 

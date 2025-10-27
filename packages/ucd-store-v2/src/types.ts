@@ -5,6 +5,8 @@ import type { UCDWellKnownConfig, UnicodeTreeNode } from "@ucdjs/schemas";
 import type { StoreError } from "./errors";
 import type { AnalyzeOptions, VersionAnalysis } from "./operations/analyze";
 import type { GetFileOptions } from "./operations/files/get";
+import type { ListFilesOptions } from "./operations/files/list";
+import type { GetFileTreeOptions } from "./operations/files/tree";
 import type { MirrorOptions, MirrorResult } from "./operations/mirror";
 import type { SyncOptions, SyncResult } from "./operations/sync";
 
@@ -162,13 +164,13 @@ export interface UCDStoreFileOperations {
    * List all file paths for a Unicode version.
    * Returns a flat array of file paths.
    */
-  list: (version: string, options?: SharedOperationOptions) => Promise<OperationResult<string[], StoreError>>;
+  list: (version: string, options?: ListFilesOptions) => Promise<OperationResult<string[], StoreError>>;
 
   /**
    * Get the file tree structure for a Unicode version.
    * Returns a hierarchical tree of files and directories.
    */
-  tree: (version: string, options?: SharedOperationOptions) => Promise<OperationResult<UnicodeTreeNode[], StoreError>>;
+  tree: (version: string, options?: GetFileTreeOptions) => Promise<OperationResult<UnicodeTreeNode[], StoreError>>;
 }
 
 export interface UCDStoreOperations {
