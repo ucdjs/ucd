@@ -179,6 +179,30 @@ describe("v1_files", () => {
       const content = await response.text();
       expect(content).toBe(mockContent);
     });
+
+    it("should correctly extract extension from paths with dots in directory names", async () => {
+      const mockContent = "Unicode data content";
+
+      fetchMock.get("https://unicode.org")
+        .intercept({ path: "/Public/15.1.0/ucd/UnicodeData?F=2" })
+        .reply(200, mockContent, {
+          headers: {
+            "content-length": mockContent.length.toString(),
+          },
+        });
+
+      const request = new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd/UnicodeData");
+      const ctx = createExecutionContext();
+      const response = await worker.fetch(request, env, ctx);
+      await waitOnExecutionContext(ctx);
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toBe("application/octet-stream");
+      expect(response.headers.get("cache-control")).toMatch(/max-age=\d+/);
+
+      const content = await response.text();
+      expect(content).toBe(mockContent);
+    });
   });
 
   // eslint-disable-next-line test/prefer-lowercase-title
