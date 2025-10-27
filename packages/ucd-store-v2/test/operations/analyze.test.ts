@@ -20,13 +20,13 @@ describe("analyze", () => {
           {
             type: "file",
             name: "UnicodeData.txt",
-            path: "/UnicodeData.txt",
+            path: "UnicodeData.txt",
             lastModified: Date.now(),
           },
           {
             type: "file",
             name: "ReadMe.txt",
-            path: "/ReadMe.txt",
+            path: "ReadMe.txt",
             lastModified: Date.now(),
           },
         ] satisfies UnicodeTree,
@@ -60,7 +60,7 @@ describe("analyze", () => {
       isComplete: true,
       orphanedFiles: [],
       missingFiles: [],
-      files: ["/UnicodeData.txt", "/ReadMe.txt"],
+      files: ["UnicodeData.txt", "ReadMe.txt"],
       expectedFileCount: 2,
       fileCount: 2,
       totalSize: "N/A",
@@ -78,19 +78,19 @@ describe("analyze", () => {
           {
             type: "file",
             name: "UnicodeData.txt",
-            path: "/UnicodeData.txt",
+            path: "UnicodeData.txt",
             lastModified: Date.now(),
           },
           {
             type: "file",
             name: "ReadMe.txt",
-            path: "/ReadMe.txt",
+            path: "ReadMe.txt",
             lastModified: Date.now(),
           },
           {
             type: "file",
             name: "ArabicShaping.txt",
-            path: "/ArabicShaping.txt",
+            path: "ArabicShaping.txt",
             lastModified: Date.now(),
           },
         ] satisfies UnicodeTree,
@@ -123,8 +123,8 @@ describe("analyze", () => {
       version: "16.0.0",
       isComplete: false,
       orphanedFiles: [],
-      missingFiles: ["/ReadMe.txt", "/ArabicShaping.txt"],
-      files: ["/UnicodeData.txt"],
+      missingFiles: ["ReadMe.txt", "ArabicShaping.txt"],
+      files: ["UnicodeData.txt"],
       expectedFileCount: 3,
       fileCount: 1,
       totalSize: "N/A",
@@ -142,7 +142,7 @@ describe("analyze", () => {
           {
             type: "file",
             name: "UnicodeData.txt",
-            path: "/UnicodeData.txt",
+            path: "UnicodeData.txt",
             lastModified: Date.now(),
           },
         ] satisfies UnicodeTree,
@@ -174,9 +174,9 @@ describe("analyze", () => {
     expect(data![0]).toEqual({
       version: "16.0.0",
       isComplete: false,
-      orphanedFiles: ["/OrphanedFile.txt", "/AnotherOrphan.html"],
+      orphanedFiles: ["OrphanedFile.txt", "AnotherOrphan.html"],
       missingFiles: [],
-      files: ["/UnicodeData.txt"],
+      files: ["UnicodeData.txt"],
       expectedFileCount: 1,
       fileCount: 1,
       totalSize: "N/A",
@@ -195,13 +195,13 @@ describe("analyze", () => {
           {
             type: "file",
             name: "UnicodeData.txt",
-            path: "/UnicodeData.txt",
+            path: "UnicodeData.txt",
             lastModified: Date.now(),
           },
           {
             type: "file",
             name: "ReadMe.txt",
-            path: "/ReadMe.txt",
+            path: "ReadMe.txt",
             lastModified: Date.now(),
           },
         ] satisfies UnicodeTree,
@@ -232,9 +232,9 @@ describe("analyze", () => {
     expect(data![0]).toEqual({
       version: "16.0.0",
       isComplete: false,
-      orphanedFiles: ["/OrphanedFile.txt"],
-      missingFiles: ["/ReadMe.txt"],
-      files: ["/UnicodeData.txt"],
+      orphanedFiles: ["OrphanedFile.txt"],
+      missingFiles: ["ReadMe.txt"],
+      files: ["UnicodeData.txt"],
       expectedFileCount: 2,
       fileCount: 1,
       totalSize: "N/A",
@@ -254,7 +254,7 @@ describe("analyze", () => {
               {
                 type: "file",
                 name: "UnicodeData.txt",
-                path: "/UnicodeData.txt",
+                path: "UnicodeData.txt",
                 lastModified: Date.now(),
               },
             ] satisfies UnicodeTree);
@@ -264,7 +264,7 @@ describe("analyze", () => {
             {
               type: "file",
               name: "ReadMe.txt",
-              path: "/ReadMe.txt",
+              path: "ReadMe.txt",
               lastModified: Date.now(),
             },
           ] satisfies UnicodeTree);
@@ -316,7 +316,7 @@ describe("analyze", () => {
           {
             type: "file",
             name: "UnicodeData.txt",
-            path: "/UnicodeData.txt",
+            path: "UnicodeData.txt",
             lastModified: Date.now(),
           },
         ] satisfies UnicodeTree,
@@ -386,7 +386,7 @@ describe("analyze", () => {
           {
             type: "file",
             name: "README",
-            path: "/README",
+            path: "README",
             lastModified: Date.now(),
           },
         ] satisfies UnicodeTree,
@@ -427,7 +427,7 @@ describe("analyze", () => {
           {
             type: "file",
             name: "UnicodeData.txt",
-            path: "/UnicodeData.txt",
+            path: "UnicodeData.txt",
             lastModified: Date.now(),
           },
         ] satisfies UnicodeTree,
@@ -446,15 +446,17 @@ describe("analyze", () => {
       manifestPath: "/test/.ucd-store.json",
     });
 
+    const result = await fs.listdir("", true);
     const [data, error] = await analyze(context);
 
     expect(error).toBeNull();
     expect(data).toBeDefined();
+
     expect(data![0]).toEqual({
       version: "16.0.0",
       isComplete: false,
       orphanedFiles: [],
-      missingFiles: ["/UnicodeData.txt"],
+      missingFiles: ["UnicodeData.txt"],
       files: [],
       expectedFileCount: 1,
       fileCount: 0,
@@ -501,19 +503,19 @@ describe("analyze", () => {
           {
             type: "file",
             name: "file1.txt",
-            path: "/file1.txt",
+            path: "file1.txt",
             lastModified: Date.now(),
           },
           {
             type: "file",
             name: "file2.txt",
-            path: "/file2.txt",
+            path: "file2.txt",
             lastModified: Date.now(),
           },
           {
             type: "file",
             name: "file3.html",
-            path: "/file3.html",
+            path: "file3.html",
             lastModified: Date.now(),
           },
         ] satisfies UnicodeTree,
