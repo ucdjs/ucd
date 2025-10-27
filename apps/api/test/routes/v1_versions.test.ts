@@ -275,7 +275,6 @@ describe("v1_versions", () => {
       await waitOnExecutionContext(ctx);
 
       expect(response.status).toBe(200);
-      // Check that cache headers are set (from the cache middleware)
       expect(response.headers.get("cache-control")).toBeTruthy();
     });
 

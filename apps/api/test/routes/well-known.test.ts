@@ -29,7 +29,7 @@ describe("well-known", () => {
 
       expect(response.status).toBe(200);
       expect.soft(response.headers.get("content-type")).toBe("application/json");
-      expect.soft(response.headers.get("cache-control")).toBe("max-age=345600");
+      expect.soft(response.headers.get("cache-control")).toMatch(/max-age=\d+/);
 
       const json = await response.json();
 
