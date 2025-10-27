@@ -100,8 +100,8 @@ V1_FILES_ROUTER.get("/:wildcard{.*}?", cache({
   const baseHeaders: Record<string, string> = {};
   if (lastModified) baseHeaders["Last-Modified"] = lastModified;
 
-  const extName = normalizedPath.split(".").pop()?.toLowerCase() || "";
-
+  const leaf = normalizedPath.split("/").pop() ?? "";
+  const extName = leaf.includes(".") ? leaf.split(".").pop()!.toLowerCase() : "";
   const isHtmlFile = HTML_EXTENSIONS.includes(`.${extName}`);
 
   // check if this is a directory listing (HTML response for non-HTML files)
@@ -119,9 +119,11 @@ V1_FILES_ROUTER.get("/:wildcard{.*}?", cache({
     });
   }
 
-  console.error(`[v1_files]: pre content type check: ${contentType} for .${extName} file`);
+  // eslint-disable-next-line no-console
+  console.log(`[v1_files]: pre content type check: ${contentType} for .${extName} file`);
   contentType ||= determineContentTypeFromExtension(extName);
-  console.error(`[v1_files]: inferred content type as ${contentType} for .${extName} file`);
+  // eslint-disable-next-line no-console
+  console.log(`[v1_files]: inferred content type as ${contentType} for .${extName} file`);
 
   const headers: Record<string, string> = {
     "Content-Type": contentType,
