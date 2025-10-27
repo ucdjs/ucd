@@ -30,7 +30,16 @@ describe("getFileTree", () => {
 
       expect(error).toBeNull();
       expect(data).toBeDefined();
-      expect(Array.isArray(data)).toBe(true);
+      expect(data).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          name: "ArabicShaping.txt",
+          type: "file",
+        }),
+        expect.objectContaining({
+          name: "extracted",
+          type: "directory",
+        }),
+      ]));
     });
 
     it("should return hierarchical tree structure", async () => {
@@ -50,19 +59,19 @@ describe("getFileTree", () => {
       const [data, _error] = await getFileTree(context, "16.0.0");
 
       expect(data).toBeDefined();
-      expect(data!.length).toBeGreaterThan(0);
-
-      for (const node of data!) {
-        expect(node).toHaveProperty("name");
-        expect(node).toHaveProperty("type");
-
-        if (node.type === "directory") {
-          expect(node).toHaveProperty("children");
-          expect(Array.isArray(node.children)).toBe(true);
-        } else {
-          expect(node).toHaveProperty("path");
-        }
-      }
+      expect(data).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          name: "extracted",
+          type: "directory",
+          children: expect.arrayContaining([
+            expect.objectContaining({
+              name: "DerivedBidiClass.txt",
+              type: "file",
+              path: expect.any(String),
+            }),
+          ]),
+        }),
+      ]));
     });
 
     it("should work with multiple versions in context", async () => {
@@ -83,6 +92,27 @@ describe("getFileTree", () => {
 
       expect(error).toBeNull();
       expect(data).toBeDefined();
+
+      expect(data).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          name: "ArabicShaping.txt",
+          type: "file",
+        }),
+        expect.objectContaining({
+          name: "BidiBrackets.txt",
+          type: "file",
+        }),
+        expect.objectContaining({
+          name: "extracted",
+          type: "directory",
+          children: [
+            expect.objectContaining({
+              name: "DerivedBidiClass.txt",
+              type: "file",
+            }),
+          ],
+        }),
+      ]));
     });
   });
 
@@ -155,19 +185,23 @@ describe("getFileTree", () => {
 
       expect(error).toBeNull();
       expect(data).toBeDefined();
-
-      // All file nodes should match the filter
-      const checkNodes = (nodes: any[]) => {
-        nodes.forEach((node) => {
-          if (node.type === "file") {
-            expect(node.path).toMatch(/\.txt$/);
-          } else if (node.type === "directory" && node.children) {
-            checkNodes(node.children);
-          }
-        });
-      };
-
-      checkNodes(data!);
+      expect(data).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          name: "ArabicShaping.txt",
+          type: "file",
+          path: expect.stringMatching(/\.txt$/),
+        }),
+        expect.objectContaining({
+          name: "extracted",
+          type: "directory",
+          children: expect.arrayContaining([
+            expect.objectContaining({
+              type: "file",
+              path: expect.stringMatching(/\.txt$/),
+            }),
+          ]),
+        }),
+      ]));
     });
 
     it("should apply global exclude filters to tree structure", async () => {
@@ -188,19 +222,12 @@ describe("getFileTree", () => {
 
       expect(error).toBeNull();
       expect(data).toBeDefined();
-
-      // No file nodes should match the excluded pattern
-      const checkNodes = (nodes: any[]) => {
-        nodes.forEach((node) => {
-          if (node.type === "file") {
-            expect(node.path).not.toMatch(/\.txt$/);
-          } else if (node.type === "directory" && node.children) {
-            checkNodes(node.children);
-          }
-        });
-      };
-
-      checkNodes(data!);
+      expect(data).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          name: "extracted",
+          type: "directory",
+        }),
+      ]));
     });
   });
 
@@ -225,19 +252,23 @@ describe("getFileTree", () => {
 
       expect(error).toBeNull();
       expect(data).toBeDefined();
-
-      // All file nodes should match the filter
-      const checkNodes = (nodes: any[]) => {
-        nodes.forEach((node) => {
-          if (node.type === "file") {
-            expect(node.path).toMatch(/\.txt$/);
-          } else if (node.type === "directory" && node.children) {
-            checkNodes(node.children);
-          }
-        });
-      };
-
-      checkNodes(data!);
+      expect(data).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          name: "ArabicShaping.txt",
+          type: "file",
+          path: expect.stringMatching(/\.txt$/),
+        }),
+        expect.objectContaining({
+          name: "extracted",
+          type: "directory",
+          children: expect.arrayContaining([
+            expect.objectContaining({
+              type: "file",
+              path: expect.stringMatching(/\.txt$/),
+            }),
+          ]),
+        }),
+      ]));
     });
 
     it("should apply method-specific exclude filters on top of global filters", async () => {
@@ -260,19 +291,12 @@ describe("getFileTree", () => {
 
       expect(error).toBeNull();
       expect(data).toBeDefined();
-
-      // No file nodes should match the excluded pattern
-      const checkNodes = (nodes: any[]) => {
-        nodes.forEach((node) => {
-          if (node.type === "file") {
-            expect(node.path).not.toMatch(/\.txt$/);
-          } else if (node.type === "directory" && node.children) {
-            checkNodes(node.children);
-          }
-        });
-      };
-
-      checkNodes(data!);
+      expect(data).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          name: "extracted",
+          type: "directory",
+        }),
+      ]));
     });
 
     it("should combine global and method-specific filters", async () => {
@@ -295,19 +319,12 @@ describe("getFileTree", () => {
 
       expect(error).toBeNull();
       expect(data).toBeDefined();
-
-      // No file nodes should match the excluded pattern
-      const checkNodes = (nodes: any[]) => {
-        nodes.forEach((node) => {
-          if (node.type === "file") {
-            expect(node.path).not.toMatch(/\.txt$/);
-          } else if (node.type === "directory" && node.children) {
-            checkNodes(node.children);
-          }
-        });
-      };
-
-      checkNodes(data!);
+      expect(data).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          name: "extracted",
+          type: "directory",
+        }),
+      ]));
     });
   });
 
@@ -330,10 +347,22 @@ describe("getFileTree", () => {
 
       expect(error).toBeNull();
       expect(data).toBeDefined();
-
-      // The tree may or may not have nested structures depending on the mock data
-      // Just verify the structure is valid
-      expect(Array.isArray(data)).toBe(true);
+      expect(data).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          name: "ArabicShaping.txt",
+          type: "file",
+        }),
+        expect.objectContaining({
+          name: "extracted",
+          type: "directory",
+          children: expect.arrayContaining([
+            expect.objectContaining({
+              type: "file",
+              path: expect.stringMatching(/\.txt$/),
+            }),
+          ]),
+        }),
+      ]));
     });
 
     it("should preserve directory hierarchy even when filtering files", async () => {
@@ -354,27 +383,26 @@ describe("getFileTree", () => {
 
       expect(error).toBeNull();
       expect(data).toBeDefined();
-
-      // Verify tree structure is maintained
-      const validateHierarchy = (nodes: any[], depth = 0) => {
-        nodes.forEach((node) => {
-          expect(node).toHaveProperty("name");
-          expect(node).toHaveProperty("type");
-
-          if (node.type === "directory") {
-            expect(node).toHaveProperty("children");
-            if (node.children && node.children.length > 0) {
-              validateHierarchy(node.children, depth + 1);
-            }
-          }
-        });
-      };
-
-      validateHierarchy(data!);
+      expect(data).toEqual(expect.arrayContaining([
+        expect.objectContaining({
+          name: "ArabicShaping.txt",
+          type: "file",
+        }),
+        expect.objectContaining({
+          name: "extracted",
+          type: "directory",
+          children: expect.arrayContaining([
+            expect.objectContaining({
+              name: "DerivedBidiClass.txt",
+              type: "file",
+            }),
+          ]),
+        }),
+      ]));
     });
   });
 
-  describe("aPI error handling", () => {
+  describe("api error handling", () => {
     it("should handle API errors gracefully", async () => {
       mockStoreApi({
         versions: ["16.0.0"],
@@ -435,53 +463,49 @@ describe("getFileTree", () => {
     });
   });
 
-  describe("empty and edge cases", () => {
-    it("should handle empty file tree", async () => {
-      mockStoreApi({
-        versions: ["16.0.0"],
-        responses: {
-          "/api/v1/versions/{version}/file-tree": [],
-        },
-      });
-
-      const filter = createPathFilter({});
-      const fs = createMemoryMockFS();
-      const context = createInternalContext({
-        client,
-        filter,
-        fs,
-        basePath: "/test",
-        versions: ["16.0.0"],
-        manifestPath: "/test/.ucd-store.json",
-      });
-
-      const [data, error] = await getFileTree(context, "16.0.0");
-
-      expect(error).toBeNull();
-      expect(data).toBeDefined();
-      expect(data).toEqual([]);
+  it("should handle empty file tree", async () => {
+    mockStoreApi({
+      versions: ["16.0.0"],
+      responses: {
+        "/api/v1/versions/{version}/file-tree": [],
+      },
     });
 
-    it("should handle filters that exclude all files", async () => {
-      mockStoreApi({ versions: ["16.0.0"] });
-
-      const filter = createPathFilter({ include: ["**/*.nonexistent"] });
-      const fs = createMemoryMockFS();
-      const context = createInternalContext({
-        client,
-        filter,
-        fs,
-        basePath: "/test",
-        versions: ["16.0.0"],
-        manifestPath: "/test/.ucd-store.json",
-      });
-
-      const [data, error] = await getFileTree(context, "16.0.0");
-
-      expect(error).toBeNull();
-      expect(data).toBeDefined();
-      // Tree should be empty or only contain empty directories
-      expect(Array.isArray(data)).toBe(true);
+    const filter = createPathFilter({});
+    const fs = createMemoryMockFS();
+    const context = createInternalContext({
+      client,
+      filter,
+      fs,
+      basePath: "/test",
+      versions: ["16.0.0"],
+      manifestPath: "/test/.ucd-store.json",
     });
+
+    const [data, error] = await getFileTree(context, "16.0.0");
+
+    expect(error).toBeNull();
+    expect(data).toBeDefined();
+    expect(data).toEqual([]);
+  });
+
+  it("should handle filters that exclude all files", async () => {
+    mockStoreApi({ versions: ["16.0.0"] });
+
+    const filter = createPathFilter({ include: ["**/*.nonexistent"] });
+    const fs = createMemoryMockFS();
+    const context = createInternalContext({
+      client,
+      filter,
+      fs,
+      basePath: "/test",
+      versions: ["16.0.0"],
+      manifestPath: "/test/.ucd-store.json",
+    });
+
+    const [data, error] = await getFileTree(context, "16.0.0");
+
+    expect(error).toBeNull();
+    expect(data).toEqual([]);
   });
 });
