@@ -106,7 +106,7 @@ V1_FILES_ROUTER.get("/:wildcard{.*}?", cache({
 
   // check if this is a directory listing (HTML response for non-HTML files)
   const isDirectoryListing = contentType.includes("text/html") && !isHtmlFile;
-
+  console.error(`[v1_files]: fetched content type: ${contentType} for .${extName} file`);
   if (isDirectoryListing) {
     const html = await response.text();
     const files = await parseUnicodeDirectory(html);
@@ -119,7 +119,9 @@ V1_FILES_ROUTER.get("/:wildcard{.*}?", cache({
     });
   }
 
+  console.error(`[v1_files]: pre content type check: ${contentType} for .${extName} file`);
   contentType ||= determineContentTypeFromExtension(extName);
+  console.error(`[v1_files]: inferred content type as ${contentType} for .${extName} file`);
 
   const headers: Record<string, string> = {
     "Content-Type": contentType,
