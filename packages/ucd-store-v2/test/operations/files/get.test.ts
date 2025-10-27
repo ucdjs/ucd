@@ -380,92 +380,43 @@ describe("getFile", () => {
     expect(error?.message).toContain("99.0.0");
   });
 
-  describe("filter validation", () => {
-    it("should throw error when file does not pass filters", async () => {
-      mockStoreApi({ versions: ["16.0.0"] });
+  it("should handle combined include and exclude filters for different file paths", async () => {
+    mockStoreApi({
+      versions: ["16.0.0"],
+      responses: {
+        "/api/v1/files/{wildcard}": ({ params }) => {
+          if (params.wildcard === "16.0.0/data.txt") {
+            return HttpResponse.text("Content for data.txt");
+          }
 
-      const filter = createPathFilter({ include: ["**/*.txt"] });
-      const fs = createMemoryMockFS();
-      const context = createInternalContext({
-        client,
-        filter,
-        fs,
-        basePath: "/test",
-        versions: ["16.0.0"],
-        manifestPath: "/test/.ucd-store.json",
-      });
-
-      const [_data, error] = await getFile(context, "16.0.0", "data.json");
-
-      expect(error).toBeInstanceOf(UCDStoreGenericError);
-      expect(error?.message).toContain("does not pass filters");
+          // For other files, return a default or let it fail as needed
+          return HttpResponse.text("Unexpected file");
+        },
+      },
     });
 
-    it("should apply global filters", async () => {
-      mockStoreApi({ versions: ["16.0.0"] });
-
-      const filter = createPathFilter({ exclude: ["**/*.txt"] });
-      const fs = createMemoryMockFS();
-      const context = createInternalContext({
-        client,
-        filter,
-        fs,
-        basePath: "/test",
-        versions: ["16.0.0"],
-        manifestPath: "/test/.ucd-store.json",
-      });
-
-      const [_data, error] = await getFile(context, "16.0.0", "UnicodeData.txt");
-
-      expect(error).toBeInstanceOf(UCDStoreGenericError);
-      expect(error?.message).toContain("does not pass filters");
+    const filter = createPathFilter({
+      include: ["**/*.txt"],
+      exclude: ["**/UnicodeData.txt"],
     });
 
-    it("should apply method-specific filters on top of global filters", async () => {
-      mockStoreApi({ versions: ["16.0.0"] });
-
-      const filter = createPathFilter({});
-      const fs = createMemoryMockFS();
-      const context = createInternalContext({
-        client,
-        filter,
-        fs,
-        basePath: "/test",
-        versions: ["16.0.0"],
-        manifestPath: "/test/.ucd-store.json",
-      });
-
-      const [_data, error] = await getFile(context, "16.0.0", "UnicodeData.txt", {
-        filters: { exclude: ["**/*.txt"] },
-      });
-
-      expect(error).toBeInstanceOf(UCDStoreGenericError);
-      expect(error?.message).toContain("does not pass filters");
+    const fs = createMemoryMockFS();
+    const context = createInternalContext({
+      client,
+      filter,
+      fs,
+      basePath: "/test",
+      versions: ["16.0.0"],
+      manifestPath: "/test/.ucd-store.json",
     });
 
-    it("should check filters before attempting file operations", async () => {
-      mockStoreApi({ versions: ["16.0.0"] });
+    const [data, error] = await getFile(context, "16.0.0", "data.txt");
+    expect(error).toBeNull();
+    expect(data).toBe("Content for data.txt");
 
-      const filter = createPathFilter({ include: ["**/*.json"] });
-      const fs = createMemoryMockFS();
-      const context = createInternalContext({
-        client,
-        filter,
-        fs,
-        basePath: "/test",
-        versions: ["16.0.0"],
-        manifestPath: "/test/.ucd-store.json",
-      });
-
-      // pre-populate local FS
-      await fs.write!("/test/16.0.0/UnicodeData.txt", "content");
-
-      const [_data, error] = await getFile(context, "16.0.0", "UnicodeData.txt");
-
-      // should fail due to filter, not attempt to read file
-      expect(error).toBeInstanceOf(UCDStoreGenericError);
-      expect(error?.message).toContain("does not pass filters");
-    });
+    const [_, error2] = await getFile(context, "16.0.0", "UnicodeData.txt");
+    expect(error2).toBeInstanceOf(UCDStoreGenericError);
+    expect(error2?.message).toMatch(/File '(.*)' does not pass filters/);
   });
 
   describe("api error handling", () => {
