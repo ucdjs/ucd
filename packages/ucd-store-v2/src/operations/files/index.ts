@@ -1,6 +1,5 @@
 import type {
   InternalUCDStoreContext,
-  SharedOperationOptions,
   UCDStoreFileOperations,
 } from "../../types";
 import type { GetFileOptions } from "./get";
