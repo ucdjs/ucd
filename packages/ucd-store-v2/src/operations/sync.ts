@@ -2,6 +2,7 @@ import type { OperationResult } from "@ucdjs-internal/shared";
 import type { StoreError } from "../errors";
 import type { InternalUCDStoreContext } from "../types";
 import { tryCatch } from "@ucdjs-internal/shared";
+import { readManifest } from "../core/manifest";
 
 export interface SyncOptions {
   /**
@@ -64,6 +65,11 @@ export async function sync(
   _options?: SyncOptions,
 ): Promise<OperationResult<SyncResult, StoreError>> {
   return tryCatch(async () => {
+    const [availableVersions, err] = await context.client.versions.list();
+    if (err) throw err;
+
+    const manifest = readManifest(context.fs, context.manifestPath);
+
     // TODO: Implement sync operation
     // 1. Fetch available versions from API
     // 2. Read current manifest
