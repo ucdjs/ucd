@@ -1,11 +1,11 @@
 import type { OperationResult } from "@ucdjs-internal/shared";
 import type { StoreError } from "../errors";
-import type { InternalUCDStoreContext } from "../types";
+import type { InternalUCDStoreContext, SharedOperationOptions } from "../types";
 import { tryCatch } from "@ucdjs-internal/shared";
 import { getExpectedFilePaths } from "../core/files";
 import { listFiles } from "./files/list";
 
-export interface AnalyzeOptions {
+export interface AnalyzeOptions extends SharedOperationOptions {
   /**
    * Specific versions to analyze. If not provided, analyzes all versions.
    */
@@ -71,16 +71,18 @@ export async function analyze(
     const versionsToAnalyze = options?.versions ?? context.versions;
 
     const promises = versionsToAnalyze.map(async (version) => {
-      // if version not in store, skip
+      // If version not in store, skip
       if (!context.versions.includes(version)) {
         return null;
       }
 
-      // get the expected files for this version
       const expectedFiles = await getExpectedFilePaths(context.client, version);
 
-      // get the actual files from the store
-      const [actualFiles, error] = await listFiles(context, version);
+      // Get files from store
+      const [actualFiles, error] = await listFiles(context, version, {
+        allowApi: false,
+        filters: options?.filters,
+      });
 
       if (error != null) {
         throw error;

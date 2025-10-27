@@ -446,7 +446,6 @@ describe("analyze", () => {
       manifestPath: "/test/.ucd-store.json",
     });
 
-    const result = await fs.listdir("", true);
     const [data, error] = await analyze(context);
 
     expect(error).toBeNull();
