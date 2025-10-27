@@ -38,7 +38,7 @@ export async function getFileTree(
       );
     }
 
-    if (!result.data) {
+    if (result.data == null) {
       throw new UCDStoreGenericError(
         `Failed to fetch file tree for version '${version}': no data returned`,
         { version },
