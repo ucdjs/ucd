@@ -1,6 +1,6 @@
 import { createMemoryMockFS } from "#test-utils/fs-bridges";
 import { mockStoreApi } from "#test-utils/mock-store";
-import { createPathFilter } from "@ucdjs-internal/shared";
+import { createPathFilter, getDefaultUCDEndpointConfig } from "@ucdjs-internal/shared";
 import { createUCDClientWithConfig } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { describe, expect, it } from "vitest";
@@ -9,14 +9,7 @@ import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../../../src
 import { listFiles } from "../../../src/operations/files/list";
 
 describe("listFiles", () => {
-  const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, {
-    version: "0.1",
-    endpoints: {
-      files: "/api/v1/files",
-      manifest: "/api/v1/files/.ucd-store.json",
-      versions: "/api/v1/versions",
-    },
-  });
+  const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, getDefaultUCDEndpointConfig());
 
   describe("successful file listing", () => {
     it("should list files for valid version", async () => {
