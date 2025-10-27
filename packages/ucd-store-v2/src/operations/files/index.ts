@@ -4,6 +4,8 @@ import type {
   UCDStoreFileOperations,
 } from "../../types";
 import type { GetFileOptions } from "./get";
+import type { ListFilesOptions } from "./list";
+import type { GetFileTreeOptions } from "./tree";
 import { getFile } from "./get";
 import { listFiles } from "./list";
 import { getFileTree } from "./tree";
@@ -20,10 +22,10 @@ export function createFilesNamespace(context: InternalUCDStoreContext): UCDStore
     get: (version: string, path: string, options?: GetFileOptions) =>
       getFile(context, version, path, options),
 
-    list: (version: string, options?: SharedOperationOptions) =>
+    list: (version: string, options?: ListFilesOptions) =>
       listFiles(context, version, options),
 
-    tree: (version: string, options?: SharedOperationOptions) =>
+    tree: (version: string, options?: GetFileTreeOptions) =>
       getFileTree(context, version, options),
   };
 }
