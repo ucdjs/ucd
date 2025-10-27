@@ -443,7 +443,7 @@ describe("getFile", () => {
         manifestPath: "/test/.ucd-store.json",
       });
 
-      const [_data, error] = await getFile(context, "16.0.0", "UnicodeData.txt");
+      const [_, error] = await getFile(context, "16.0.0", "UnicodeData.txt");
 
       expect(error).toBeInstanceOf(UCDStoreGenericError);
       expect(error?.message).toMatch(/Failed to fetch file 'UnicodeData.txt':/);
@@ -472,7 +472,7 @@ describe("getFile", () => {
         manifestPath: "/test/.ucd-store.json",
       });
 
-      const [_data, error] = await getFile(context, "16.0.0", "NonExistent.txt");
+      const [_, error] = await getFile(context, "16.0.0", "NonExistent.txt");
 
       expect(error).toBeInstanceOf(UCDStoreGenericError);
       expect(error?.message).toContain("Failed to fetch file");
