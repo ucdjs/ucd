@@ -3,6 +3,7 @@ import type { StoreError } from "../../errors";
 import type { InternalUCDStoreContext, SharedOperationOptions } from "../../types";
 import {
   createDebugger,
+  filterTreeStructure,
   flattenFilePaths,
   tryCatch,
 } from "@ucdjs-internal/shared";
@@ -11,50 +12,64 @@ import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../../errors
 
 const debug = createDebugger("ucdjs:ucd-store:files:list");
 
+export interface ListFilesOptions extends SharedOperationOptions {
+  /**
+   * Whether to allow falling back to API if files are not found in local store
+   * @default false
+   */
+  allowApi?: boolean;
+}
+
 /**
- * Retrieves all file paths for a specific Unicode version.
- * First attempts to list from local file system, then falls back to API if not found.
+ * Retrieves all file paths for a specific Unicode version from the local store.
+ * By default, only lists files that are actually present in the store.
  * Flattens the file tree and applies global filters and optional method-specific filters.
  *
  * @param {InternalUCDStoreContext} context - Internal store context with client, filters, and configuration
- * @param {string} version - The Unicode version to fetch file paths for
- * @param {SharedOperationOptions} [options] - Optional filters to apply on top of global filters
+ * @param {string} version - The Unicode version to list files for
+ * @param {ListFilesOptions} [options] - Optional filters and API fallback behavior
  * @returns {Promise<OperationResult<string[], StoreError>>} Operation result with filtered file paths or error
  */
 export async function listFiles(
   context: InternalUCDStoreContext,
   version: string,
-  options?: SharedOperationOptions,
+  options?: ListFilesOptions,
 ): Promise<OperationResult<string[], StoreError>> {
   return tryCatch(async () => {
-    // validate version exists in store
+    // Validate version exists in store
     if (!context.versions.includes(version)) {
       throw new UCDStoreVersionNotFoundError(version);
     }
 
-    // construct local path
     const localPath = join(context.basePath, version);
 
-    // try listing from local FS first
+    // Try listing from local store first
     const dirExists = await context.fs.exists(localPath);
 
     if (dirExists) {
       try {
         const entries = await context.fs.listdir(localPath, true);
-        const allPaths = flattenFilePaths(entries);
 
-        if (allPaths.length > 0) {
-          // apply filters to paths (global filters + optional method-specific filters)
-          const filteredPaths = allPaths.filter((path) => context.filter(path, options?.filters));
-          return filteredPaths;
+        const filteredEntries = filterTreeStructure(context.filter, entries, options?.filters);
+
+        return flattenFilePaths(filteredEntries);
+      } catch (err) {
+        debug?.("Failed to list local directory:", localPath, err);
+
+        // If allowApi is false, return empty array
+        if (!options?.allowApi) {
+          return [];
         }
-      } catch {
-        // If listdir fails, fall through to fetch from API
-        debug?.("Failed to list local directory, fetching from API:", localPath);
       }
     }
 
-    // Fetch file tree from API
+    // If directory doesn't exist and allowApi is false, return empty array
+    if (!options?.allowApi) {
+      debug?.("Directory does not exist locally and allowApi is false:", localPath);
+      return [];
+    }
+
+    debug?.("Fetching file tree from API for version:", version);
     const result = await context.client.versions.getFileTree(version);
 
     if (result.error) {
@@ -71,14 +86,12 @@ export async function listFiles(
       );
     }
 
-    // filterTreeStructure(result.data, context.filter, options?.filters);
+    const entries = filterTreeStructure(
+      context.filter,
+      result.data,
+      options?.filters,
+    );
 
-    // flatten tree to paths
-    const allPaths = flattenFilePaths(result.data);
-
-    // apply filters to paths (global filters + optional method-specific filters)
-    const filteredPaths = allPaths.filter((path) => context.filter(path, options?.filters));
-
-    return filteredPaths;
+    return flattenFilePaths(entries);
   });
 }
