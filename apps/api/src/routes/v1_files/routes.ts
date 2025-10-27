@@ -3,6 +3,7 @@ import type { HonoEnv } from "../../types";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { trimTrailingSlash } from "@luxass/utils";
 import { DEFAULT_USER_AGENT, UCD_FILE_STAT_TYPE_HEADER } from "@ucdjs/env";
+import { decodePathSafely } from "@ucdjs/path-utils";
 import { cache } from "hono/cache";
 import { HTML_EXTENSIONS, MAX_AGE_ONE_WEEK_SECONDS, V1_FILES_ROUTER_BASE_PATH } from "../../constants";
 import { badGateway, badRequest, notFound } from "../../lib/errors";
@@ -48,11 +49,24 @@ V1_FILES_ROUTER.get("/:wildcard{.*}?", cache({
 }), async (c) => {
   const path = c.req.param("wildcard")?.trim() || "";
 
-  if (path.startsWith("..") || path.includes("//")
-    || path.startsWith("%2E%2E") || path.includes("%2F%2F")) {
+  const raw = path;
+  const lower = raw.toLowerCase();
+  // reject encoded double slashes and dot-dot in any position (encoded or plain)
+  if (
+    raw.startsWith("..")
+    || raw.includes("//")
+    || lower.startsWith("%2e%2e")
+    || lower.includes("%2f%2f")
+  ) {
     return badRequest({
       message: "Invalid path",
     });
+  }
+
+  const decoded = decodePathSafely(raw);
+
+  if (decoded.split("/").includes("..")) {
+    return badRequest({ message: "Invalid path" });
   }
 
   const normalizedPath = path.replace(/^\/+|\/+$/g, "");
