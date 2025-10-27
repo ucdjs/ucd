@@ -11,4 +11,5 @@
  * headers[UCD_FILE_STAT_TYPE_HEADER] = "file";
  * ```
  */
+
 export const UCD_FILE_STAT_TYPE_HEADER = "UCD-File-Stat-Type";
