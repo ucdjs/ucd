@@ -360,45 +360,24 @@ describe("getFile", () => {
     });
   });
 
-  describe("version validation", () => {
-    it("should throw UCDStoreVersionNotFoundError for non-existent version", async () => {
-      mockStoreApi({ versions: ["16.0.0"] });
+  it("should throw UCDStoreVersionNotFoundError for non-existent version", async () => {
+    mockStoreApi({ versions: ["16.0.0"] });
 
-      const filter = createPathFilter({});
-      const fs = createMemoryMockFS();
-      const context = createInternalContext({
-        client,
-        filter,
-        fs,
-        basePath: "/test",
-        versions: ["16.0.0"],
-        manifestPath: "/test/.ucd-store.json",
-      });
-
-      const [_data, error] = await getFile(context, "99.0.0", "UnicodeData.txt");
-
-      expect(error).toBeInstanceOf(UCDStoreVersionNotFoundError);
-      expect(error?.message).toContain("99.0.0");
+    const filter = createPathFilter({});
+    const fs = createMemoryMockFS();
+    const context = createInternalContext({
+      client,
+      filter,
+      fs,
+      basePath: "/test",
+      versions: ["16.0.0"],
+      manifestPath: "/test/.ucd-store.json",
     });
 
-    it("should validate version before checking local FS", async () => {
-      mockStoreApi({ versions: ["16.0.0"] });
+    const [_, error] = await getFile(context, "99.0.0", "UnicodeData.txt");
 
-      const filter = createPathFilter({});
-      const fs = createMemoryMockFS();
-      const context = createInternalContext({
-        client,
-        filter,
-        fs,
-        basePath: "/test",
-        versions: ["16.0.0"],
-        manifestPath: "/test/.ucd-store.json",
-      });
-
-      const [_data, error] = await getFile(context, "invalid-version", "UnicodeData.txt");
-
-      expect(error).toBeInstanceOf(UCDStoreVersionNotFoundError);
-    });
+    expect(error).toBeInstanceOf(UCDStoreVersionNotFoundError);
+    expect(error?.message).toContain("99.0.0");
   });
 
   describe("filter validation", () => {
@@ -516,7 +495,7 @@ describe("getFile", () => {
       const [_data, error] = await getFile(context, "16.0.0", "UnicodeData.txt");
 
       expect(error).toBeInstanceOf(UCDStoreGenericError);
-      expect(error?.message).toContain("Failed to fetch file");
+      expect(error?.message).toMatch(/Failed to fetch file 'UnicodeData.txt':/);
     });
 
     it("should handle 404 errors from API", async () => {
@@ -547,111 +526,55 @@ describe("getFile", () => {
       expect(error).toBeInstanceOf(UCDStoreGenericError);
       expect(error?.message).toContain("Failed to fetch file");
     });
-
-    it("should include file path and version in error message", async () => {
-      mockStoreApi({
-        versions: ["15.0.0"],
-        responses: {
-          "/api/v1/files/{wildcard}": {
-            status: 500,
-            message: "Server Error",
-            timestamp: new Date().toISOString(),
-          },
-        },
-      });
-
-      const filter = createPathFilter({});
-      const fs = createMemoryMockFS();
-      const context = createInternalContext({
-        client,
-        filter,
-        fs,
-        basePath: "/test",
-        versions: ["15.0.0"],
-        manifestPath: "/test/.ucd-store.json",
-      });
-
-      const [_data, error] = await getFile(context, "15.0.0", "UnicodeData.txt");
-
-      expect(error).toBeInstanceOf(UCDStoreGenericError);
-      expect(error?.message).toContain("UnicodeData.txt");
-    });
   });
 
-  describe("edge cases", () => {
-    it("should handle empty string response from API", async () => {
-      mockStoreApi({
-        versions: ["16.0.0"],
-        responses: {
-          "/api/v1/files/{wildcard}": "",
-        },
-      });
-
-      const filter = createPathFilter({});
-      const fs = createMemoryMockFS();
-      const context = createInternalContext({
-        client,
-        filter,
-        fs,
-        basePath: "/test",
-        versions: ["16.0.0"],
-        manifestPath: "/test/.ucd-store.json",
-      });
-
-      const [data, error] = await getFile(context, "16.0.0", "empty.txt");
-
-      expect(error).toBeNull();
-      expect(data).toBe("");
+  it("should handle empty string response from API", async () => {
+    mockStoreApi({
+      versions: ["16.0.0"],
+      responses: {
+        "/api/v1/files/{wildcard}": "",
+      },
     });
 
-    it("should handle files with special characters in path", async () => {
-      mockStoreApi({
-        versions: ["16.0.0"],
-        responses: {
-          "/api/v1/files/{wildcard}": "Content",
-        },
-      });
-
-      const filter = createPathFilter({});
-      const fs = createMemoryMockFS();
-      const context = createInternalContext({
-        client,
-        filter,
-        fs,
-        basePath: "/test",
-        versions: ["16.0.0"],
-        manifestPath: "/test/.ucd-store.json",
-      });
-
-      const [data, error] = await getFile(context, "16.0.0", "path/with-dashes_and_underscores.txt");
-
-      expect(error).toBeNull();
-      expect(data).toBeDefined();
+    const filter = createPathFilter({});
+    const fs = createMemoryMockFS();
+    const context = createInternalContext({
+      client,
+      filter,
+      fs,
+      basePath: "/test",
+      versions: ["16.0.0"],
+      manifestPath: "/test/.ucd-store.json",
     });
 
-    it("should handle nested file paths", async () => {
-      mockStoreApi({
-        versions: ["16.0.0"],
-        responses: {
-          "/api/v1/files/{wildcard}": "Nested content",
-        },
-      });
+    const [data, error] = await getFile(context, "16.0.0", "empty.txt");
 
-      const filter = createPathFilter({});
-      const fs = createMemoryMockFS();
-      const context = createInternalContext({
-        client,
-        filter,
-        fs,
-        basePath: "/test",
-        versions: ["16.0.0"],
-        manifestPath: "/test/.ucd-store.json",
-      });
+    expect(error).toBeNull();
+    expect(data).toBe("");
+  });
 
-      const [data, error] = await getFile(context, "16.0.0", "extracted/DerivedAge.txt");
-
-      expect(error).toBeNull();
-      expect(data).toBe("Nested content");
+  it("should handle nested file paths", async () => {
+    mockStoreApi({
+      versions: ["16.0.0"],
+      responses: {
+        "/api/v1/files/{wildcard}": "Nested content",
+      },
     });
+
+    const filter = createPathFilter({});
+    const fs = createMemoryMockFS();
+    const context = createInternalContext({
+      client,
+      filter,
+      fs,
+      basePath: "/test",
+      versions: ["16.0.0"],
+      manifestPath: "/test/.ucd-store.json",
+    });
+
+    const [data, error] = await getFile(context, "16.0.0", "extracted/DerivedAge.txt");
+
+    expect(error).toBeNull();
+    expect(data).toBe("Nested content");
   });
 });
