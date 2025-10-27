@@ -3,8 +3,9 @@ import type { HonoEnv } from "../../types";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { trimTrailingSlash } from "@luxass/utils";
 import { DEFAULT_USER_AGENT, UCD_FILE_STAT_TYPE_HEADER } from "@ucdjs/env";
+import { decodePathSafely } from "@ucdjs/path-utils";
 import { cache } from "hono/cache";
-import { V1_FILES_ROUTER_BASE_PATH } from "../../constants";
+import { HTML_EXTENSIONS, MAX_AGE_ONE_WEEK_SECONDS, V1_FILES_ROUTER_BASE_PATH } from "../../constants";
 import { badGateway, badRequest, notFound } from "../../lib/errors";
 import { parseUnicodeDirectory } from "../../lib/files";
 import { GET_UCD_STORE, METADATA_WILDCARD_ROUTE, WILDCARD_ROUTE } from "./openapi";
@@ -44,15 +45,28 @@ V1_FILES_ROUTER.openAPIRegistry.registerPath(METADATA_WILDCARD_ROUTE);
 
 V1_FILES_ROUTER.get("/:wildcard{.*}?", cache({
   cacheName: "ucdjs:v1_files:files",
-  cacheControl: "max-age=604800", // 7 days
+  cacheControl: `max-age=${MAX_AGE_ONE_WEEK_SECONDS}`, // 7 days
 }), async (c) => {
   const path = c.req.param("wildcard")?.trim() || "";
 
-  if (path.startsWith("..") || path.includes("//")
-    || path.startsWith("%2E%2E") || path.includes("%2F%2F")) {
+  const raw = path;
+  const lower = raw.toLowerCase();
+  // reject encoded double slashes and dot-dot in any position (encoded or plain)
+  if (
+    raw.startsWith("..")
+    || raw.includes("//")
+    || lower.startsWith("%2e%2e")
+    || lower.includes("%2f%2f")
+  ) {
     return badRequest({
       message: "Invalid path",
     });
+  }
+
+  const decoded = decodePathSafely(raw);
+
+  if (decoded.split("/").includes("..")) {
+    return badRequest({ message: "Invalid path" });
   }
 
   const normalizedPath = path.replace(/^\/+|\/+$/g, "");
@@ -81,52 +95,62 @@ V1_FILES_ROUTER.get("/:wildcard{.*}?", cache({
   }
 
   let contentType = response.headers.get("content-type") || "";
-  const sharedHeaders = {
-    "Last-Modified": response.headers.get("Last-Modified") || "",
-    "Content-Length": response.headers.get("Content-Length") || "",
-  };
+  const lastModified = response.headers.get("Last-Modified") || undefined;
+  const upstreamContentLength = response.headers.get("Content-Length") || undefined;
+  const baseHeaders: Record<string, string> = {};
+  if (lastModified) baseHeaders["Last-Modified"] = lastModified;
 
-  const htmlExtensions = [".html", ".htm", ".xhtml"];
-  const isHtmlFile = htmlExtensions.some((ext) =>
-    normalizedPath.toLowerCase().endsWith(ext),
-  );
+  const leaf = normalizedPath.split("/").pop() ?? "";
+  const extName = leaf.includes(".") ? leaf.split(".").pop()!.toLowerCase() : "";
+  const isHtmlFile = HTML_EXTENSIONS.includes(`.${extName}`);
 
   // check if this is a directory listing (HTML response for non-HTML files)
   const isDirectoryListing = contentType.includes("text/html") && !isHtmlFile;
-
+  console.error(`[v1_files]: fetched content type: ${contentType} for .${extName} file`);
   if (isDirectoryListing) {
     const html = await response.text();
     const files = await parseUnicodeDirectory(html);
 
     return c.json(files, 200, {
-      ...sharedHeaders,
+      ...baseHeaders,
 
       // Custom STAT Headers
       [UCD_FILE_STAT_TYPE_HEADER]: "directory",
     });
   }
 
-  const extName = normalizedPath.split(".").pop()?.toLowerCase() || "";
-  if (extName === "json") {
-    contentType ||= "application/json";
-  } else if (extName === "xml") {
-    contentType ||= "application/xml";
-  } else if (extName === "txt") {
-    contentType ||= "text/plain";
-  } else if (extName === "html" || extName === "htm" || extName === "xhtml") {
-    contentType ||= "text/html";
-  } else if (extName === "pdf") {
-    contentType ||= "application/pdf";
-  } else {
-    contentType ||= "application/octet-stream"; // Default for binary files
-  }
+  // eslint-disable-next-line no-console
+  console.log(`[v1_files]: pre content type check: ${contentType} for .${extName} file`);
+  contentType ||= determineContentTypeFromExtension(extName);
+  // eslint-disable-next-line no-console
+  console.log(`[v1_files]: inferred content type as ${contentType} for .${extName} file`);
 
-  return c.newResponse(response.body!, 200, {
+  const headers: Record<string, string> = {
     "Content-Type": contentType,
-    "Content-Disposition": response.headers.get("Content-Disposition") ?? "",
-    ...sharedHeaders,
+    ...baseHeaders,
 
     // Custom STAT Headers
     [UCD_FILE_STAT_TYPE_HEADER]: "file",
-  });
+  };
+
+  const cd = response.headers.get("Content-Disposition");
+  if (cd) headers["Content-Disposition"] = cd;
+  if (upstreamContentLength) headers["Content-Length"] = upstreamContentLength;
+  return c.newResponse(response.body!, 200, headers);
 });
+
+const mimeTypes: Record<string, string> = {
+  csv: "text/csv",
+  xml: "application/xml",
+  txt: "text/plain",
+  pdf: "application/pdf",
+  json: "application/json",
+};
+
+function determineContentTypeFromExtension(extName: string) {
+  if (HTML_EXTENSIONS.includes(`.${extName}`)) {
+    return "text/html";
+  }
+
+  return mimeTypes[extName] || "application/octet-stream";
+}

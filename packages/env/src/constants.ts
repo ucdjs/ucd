@@ -6,9 +6,10 @@
  *
  * @example
  * ```typescript
- * import { UCD_FILE_STAT_TYPE_HEADER } from "@ucdjs/env/constants";
+ * import { UCD_FILE_STAT_TYPE_HEADER } from "@ucdjs/env";
  *
  * headers[UCD_FILE_STAT_TYPE_HEADER] = "file";
  * ```
  */
+
 export const UCD_FILE_STAT_TYPE_HEADER = "UCD-File-Stat-Type";

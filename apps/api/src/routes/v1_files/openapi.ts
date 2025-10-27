@@ -3,6 +3,7 @@ import { dedent } from "@luxass/utils";
 import { UCD_FILE_STAT_TYPE_HEADER } from "@ucdjs/env";
 import { FileEntryListSchema, UCDStoreManifestSchema } from "@ucdjs/schemas";
 import { cache } from "hono/cache";
+import { MAX_AGE_ONE_WEEK_SECONDS } from "../../constants";
 import { generateReferences, OPENAPI_TAGS } from "../../openapi";
 import {
   WILDCARD_HEAD_ROUTE_DOCS,
@@ -46,7 +47,7 @@ export const GET_UCD_STORE = createRoute({
   middleware: [
     cache({
       cacheName: "ucdjs:v1_files:ucd-store",
-      cacheControl: "max-age=604800", // 7 days
+      cacheControl: `max-age=${MAX_AGE_ONE_WEEK_SECONDS}`, // 7 days
     }),
   ] as const,
   description: "Retrieve the UCD Store manifest",
@@ -198,6 +199,16 @@ export const METADATA_WILDCARD_ROUTE = createRoute({
             type: "string",
           },
           required: true,
+        },
+        "Last-Modified": {
+          description: "Last modification time from upstream",
+          schema: { type: "string" },
+          required: false,
+        },
+        "Content-Length": {
+          description: "Byte length when applicable",
+          schema: { type: "string" },
+          required: false,
         },
       },
     },

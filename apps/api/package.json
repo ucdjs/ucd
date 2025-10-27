@@ -24,6 +24,7 @@
     "@scalar/hono-api-reference": "catalog:workers",
     "@ucdjs-internal/shared": "workspace:*",
     "@ucdjs/env": "workspace:*",
+    "@ucdjs/path-utils": "workspace:*",
     "@ucdjs/schemas": "workspace:*",
     "@ucdjs/utils": "workspace:*",
     "apache-autoindex-parse": "catalog:prod",

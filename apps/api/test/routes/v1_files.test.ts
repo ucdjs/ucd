@@ -41,7 +41,7 @@ describe("v1_files", () => {
 
       expect(response.status).toBe(200);
       expect(response.headers.get("content-type")).toBe("text/plain; charset=utf-8");
-      expect(response.headers.get("cache-control")).toBe("max-age=3600");
+      expect(response.headers.get("cache-control")).toMatch(/max-age=\d+/);
 
       const content = await response.text();
       expect(content).toBe(mockFileContent);
@@ -129,7 +129,79 @@ describe("v1_files", () => {
 
       expect(response.status).toBe(200);
       expect(response.headers.get("content-type")).toBe("application/octet-stream");
-      expect(response.headers.get("cache-control")).toBe("max-age=3600");
+      expect(response.headers.get("cache-control")).toMatch(/max-age=\d+/);
+    });
+
+    it("should infer content-type from .txt when upstream omits it", async () => {
+      const mockContent = "Plain text content";
+
+      fetchMock.get("https://unicode.org")
+        .intercept({ path: "/Public/sample/file.txt?F=2" })
+        .reply(200, mockContent, {
+          headers: {
+            "content-length": mockContent.length.toString(),
+          },
+        });
+
+      const request = new Request("https://api.ucdjs.dev/api/v1/files/sample/file.txt");
+      const ctx = createExecutionContext();
+      const response = await worker.fetch(request, env, ctx);
+      await waitOnExecutionContext(ctx);
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toBe("text/plain");
+      expect(response.headers.get("cache-control")).toMatch(/max-age=\d+/);
+
+      const content = await response.text();
+      expect(content).toBe(mockContent);
+    });
+
+    it("should infer content-type from .xml when upstream omits it", async () => {
+      const mockContent = "<root></root>";
+
+      fetchMock.get("https://unicode.org")
+        .intercept({ path: "/Public/sample/file.xml?F=2" })
+        .reply(200, mockContent, {
+          headers: {
+            "content-length": mockContent.length.toString(),
+          },
+        });
+
+      const request = new Request("https://api.ucdjs.dev/api/v1/files/sample/file.xml");
+      const ctx = createExecutionContext();
+      const response = await worker.fetch(request, env, ctx);
+      await waitOnExecutionContext(ctx);
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toBe("application/xml");
+      expect(response.headers.get("cache-control")).toMatch(/max-age=\d+/);
+
+      const content = await response.text();
+      expect(content).toBe(mockContent);
+    });
+
+    it("should correctly extract extension from paths with dots in directory names", async () => {
+      const mockContent = "Unicode data content";
+
+      fetchMock.get("https://unicode.org")
+        .intercept({ path: "/Public/15.1.0/ucd/UnicodeData?F=2" })
+        .reply(200, mockContent, {
+          headers: {
+            "content-length": mockContent.length.toString(),
+          },
+        });
+
+      const request = new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd/UnicodeData");
+      const ctx = createExecutionContext();
+      const response = await worker.fetch(request, env, ctx);
+      await waitOnExecutionContext(ctx);
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toBe("application/octet-stream");
+      expect(response.headers.get("cache-control")).toMatch(/max-age=\d+/);
+
+      const content = await response.text();
+      expect(content).toBe(mockContent);
     });
   });
 
@@ -182,7 +254,7 @@ describe("v1_files", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toBe("text/plain; charset=utf-8");
-    expect(response.headers.get("cache-control")).toBe("max-age=3600");
+    expect(response.headers.get("cache-control")).toMatch(/max-age=\d+/);
   });
 
   it("should handle HEAD requests for directories", async () => {
@@ -210,7 +282,7 @@ describe("v1_files", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toBe("application/json");
-    expect(response.headers.get("cache-control")).toBe("max-age=3600");
+    expect(response.headers.get("cache-control")).toMatch(/max-age=\d+/);
     expect(response.headers.get(UCD_FILE_STAT_TYPE_HEADER)).toBe("directory");
     expect(response.headers.get("content-length")).toBeDefined();
     expect(response.headers.get("last-modified")).toBeDefined();

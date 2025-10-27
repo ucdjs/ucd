@@ -1,7 +1,7 @@
 import { createRoute } from "@hono/zod-openapi";
 import { UCDWellKnownConfigSchema } from "@ucdjs/schemas";
 import { cache } from "hono/cache";
-import { V1_FILES_ROUTER_BASE_PATH, V1_VERSIONS_ROUTER_BASE_PATH } from "../../constants";
+import { MAX_AGE_ONE_DAY_SECONDS, V1_FILES_ROUTER_BASE_PATH, V1_VERSIONS_ROUTER_BASE_PATH } from "../../constants";
 import { OPENAPI_TAGS } from "../../openapi";
 import { UCD_CONFIG_ROUTE_DOCS } from "./docs";
 
@@ -12,7 +12,7 @@ export const UCD_CONFIG_ROUTE = createRoute({
   middleware: [
     cache({
       cacheName: "ucdjs:well-known:ucd-config",
-      cacheControl: "max-age=345600", // 4 days
+      cacheControl: `max-age=${MAX_AGE_ONE_DAY_SECONDS * 4}`, // 4 days
     }),
   ] as const,
   description: UCD_CONFIG_ROUTE_DOCS,
