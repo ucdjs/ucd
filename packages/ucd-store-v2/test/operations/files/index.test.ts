@@ -1,8 +1,8 @@
 import { createMemoryMockFS } from "#test-utils/fs-bridges";
+import { mockStoreApi } from "#test-utils/mock-store";
 import { createPathFilter, getDefaultUCDEndpointConfig } from "@ucdjs-internal/shared";
 import { createUCDClientWithConfig } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
-import { mockStoreApi } from "@ucdjs/test-utils";
 import { describe, expect, it } from "vitest";
 import { createInternalContext } from "../../../src/core/context";
 import { createFilesNamespace } from "../../../src/operations/files/index";
