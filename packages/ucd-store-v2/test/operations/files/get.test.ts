@@ -478,30 +478,26 @@ describe("getFile", () => {
         manifestPath: "/test/.ucd-store.json",
       });
 
-      // Pre-populate local FS
+      // pre-populate local FS
       await fs.write!("/test/16.0.0/UnicodeData.txt", "content");
 
       const [_data, error] = await getFile(context, "16.0.0", "UnicodeData.txt");
 
-      // Should fail due to filter, not attempt to read file
+      // should fail due to filter, not attempt to read file
       expect(error).toBeInstanceOf(UCDStoreGenericError);
       expect(error?.message).toContain("does not pass filters");
     });
   });
 
-  describe("aPI error handling", () => {
+  describe("api error handling", () => {
     it("should handle API errors gracefully", async () => {
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
-          "/api/v1/files/{wildcard}": () => {
-            return HttpResponse.json({
-              status: 500,
-              message: "Internal Server Error",
-              timestamp: new Date().toISOString(),
-            }, {
-              status: 500,
-            });
+          "/api/v1/files/{wildcard}": {
+            status: 500,
+            message: "Internal Server Error",
+            timestamp: new Date().toISOString(),
           },
         },
       });
@@ -556,14 +552,10 @@ describe("getFile", () => {
       mockStoreApi({
         versions: ["15.0.0"],
         responses: {
-          "/api/v1/files/{wildcard}": () => {
-            return HttpResponse.json({
-              status: 500,
-              message: "Server Error",
-              timestamp: new Date().toISOString(),
-            }, {
-              status: 500,
-            });
+          "/api/v1/files/{wildcard}": {
+            status: 500,
+            message: "Server Error",
+            timestamp: new Date().toISOString(),
           },
         },
       });
