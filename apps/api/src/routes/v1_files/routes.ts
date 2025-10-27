@@ -44,7 +44,7 @@ V1_FILES_ROUTER.openAPIRegistry.registerPath(METADATA_WILDCARD_ROUTE);
 
 V1_FILES_ROUTER.get("/:wildcard{.*}?", cache({
   cacheName: "ucdjs:v1_files:files",
-  cacheControl: "max-age=3600", // 1 hour
+  cacheControl: "max-age=604800", // 7 days
 }), async (c) => {
   const path = c.req.param("wildcard")?.trim() || "";
 
