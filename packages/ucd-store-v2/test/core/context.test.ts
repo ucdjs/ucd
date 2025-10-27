@@ -1,19 +1,12 @@
 import { createMemoryMockFS } from "#test-utils/fs-bridges";
-import { createPathFilter } from "@ucdjs-internal/shared";
+import { createPathFilter, getDefaultUCDEndpointConfig } from "@ucdjs-internal/shared";
 import { createUCDClientWithConfig } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { describe, expect, it } from "vitest";
 import { createInternalContext, createPublicContext } from "../../src/core/context";
 
 describe("createInternalContext", async () => {
-  const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, {
-    version: "0.1",
-    endpoints: {
-      files: "/api/v1/files",
-      manifest: "/api/v1/files/.ucd-store.json",
-      versions: "/api/v1/versions",
-    },
-  });
+  const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, getDefaultUCDEndpointConfig());
 
   it("should create context with all required properties", async () => {
     const filter = createPathFilter({});

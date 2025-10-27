@@ -1,18 +1,20 @@
-import type { ApiError, UnicodeTree } from "@ucdjs/schemas";
-import { HttpResponse, mockFetch } from "#test-utils/msw";
-import { createUCDClient } from "@ucdjs/client";
+import type { UnicodeTree } from "@ucdjs/schemas";
+import { mockStoreApi } from "#test-utils/mock-store";
+import { getDefaultUCDEndpointConfig } from "@ucdjs-internal/shared";
+import { createUCDClientWithConfig } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { describe, expect, it } from "vitest";
 import { getExpectedFilePaths } from "../../src/core/files";
 import { UCDStoreGenericError } from "../../src/errors";
 
-describe("getExpectedFilePaths", async () => {
-  const client = await createUCDClient(UCDJS_API_BASE_URL);
+describe("getExpectedFilePaths", () => {
+  const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, getDefaultUCDEndpointConfig());
 
   it("should return flattened file paths for valid version", async () => {
-    mockFetch([
-      ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions/:version/file-tree`, () => {
-        return HttpResponse.json([
+    mockStoreApi({
+      versions: ["15.0.0"],
+      responses: {
+        "/api/v1/versions/{version}/file-tree": [
           {
             type: "file",
             name: "ReadMe.txt",
@@ -39,9 +41,9 @@ describe("getExpectedFilePaths", async () => {
               },
             ],
           },
-        ] satisfies UnicodeTree);
-      }],
-    ]);
+        ] satisfies UnicodeTree,
+      },
+    });
 
     const result = await getExpectedFilePaths(client, "15.0.0");
 
@@ -53,15 +55,16 @@ describe("getExpectedFilePaths", async () => {
   });
 
   it("should throw UCDStoreGenericError when API returns error", async () => {
-    mockFetch([
-      ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions/:version/file-tree`, () => {
-        return HttpResponse.json({
-          message: "Version not found",
+    mockStoreApi({
+      versions: ["15.0.0"],
+      responses: {
+        "/api/v1/versions/{version}/file-tree": {
           status: 404,
+          message: "Version not found",
           timestamp: new Date().toISOString(),
-        } satisfies ApiError, { status: 404 });
-      }],
-    ]);
+        },
+      },
+    });
 
     await expect(
       getExpectedFilePaths(client, "15.0.0"),
@@ -69,11 +72,12 @@ describe("getExpectedFilePaths", async () => {
   });
 
   it("should handle empty file tree", async () => {
-    mockFetch([
-      ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions/:version/file-tree`, () => {
-        return HttpResponse.json([], { status: 200 });
-      }],
-    ]);
+    mockStoreApi({
+      versions: ["15.0.0"],
+      responses: {
+        "/api/v1/versions/{version}/file-tree": [],
+      },
+    });
 
     const result = await getExpectedFilePaths(client, "15.0.0");
 

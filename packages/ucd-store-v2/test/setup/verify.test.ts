@@ -1,19 +1,11 @@
 import { createMemoryMockFS } from "#test-utils/fs-bridges";
 import { HttpResponse, mockFetch } from "#test-utils/msw";
+import { getDefaultUCDEndpointConfig } from "@ucdjs-internal/shared";
 import { createUCDClientWithConfig } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { describe, expect, it } from "vitest";
 import { UCDStoreGenericError } from "../../src/errors";
 import { verify } from "../../src/setup/verify";
-
-const MOCK_CONFIG = {
-  version: "1.0",
-  endpoints: {
-    files: "/api/v1/files",
-    manifest: "/api/v1/files/.ucd-store.json",
-    versions: "/api/v1/versions",
-  },
-};
 
 function createMockVersions(versions: string[]) {
   return versions.map((version) => ({
@@ -43,7 +35,7 @@ describe("verify", () => {
       }],
     ]);
 
-    const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, MOCK_CONFIG);
+    const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, getDefaultUCDEndpointConfig());
     const result = await verify({ client, manifestPath, fs });
 
     expect(result.valid).toBe(true);
@@ -65,7 +57,7 @@ describe("verify", () => {
       }],
     ]);
 
-    const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, MOCK_CONFIG);
+    const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, getDefaultUCDEndpointConfig());
     const result = await verify({ client, manifestPath, fs });
 
     expect(result.valid).toBe(true);
@@ -91,7 +83,7 @@ describe("verify", () => {
       }],
     ]);
 
-    const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, MOCK_CONFIG);
+    const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, getDefaultUCDEndpointConfig());
     const result = await verify({ client, manifestPath, fs });
 
     expect(result.valid).toBe(false);
@@ -113,7 +105,7 @@ describe("verify", () => {
       }],
     ]);
 
-    const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, MOCK_CONFIG);
+    const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, getDefaultUCDEndpointConfig());
     const result = await verify({ client, manifestPath, fs });
 
     expect(result.missingVersions).toContain("99.0.0");
@@ -133,7 +125,7 @@ describe("verify", () => {
       }],
     ]);
 
-    const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, MOCK_CONFIG);
+    const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, getDefaultUCDEndpointConfig());
     const result = await verify({ client, manifestPath, fs });
 
     expect(result.valid).toBe(true);
@@ -156,7 +148,7 @@ describe("verify", () => {
       }],
     ]);
 
-    const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, MOCK_CONFIG);
+    const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, getDefaultUCDEndpointConfig());
 
     await expect(verify({ client, manifestPath, fs })).rejects.toThrow(UCDStoreGenericError);
     await expect(verify({ client, manifestPath, fs })).rejects.toThrow(
@@ -178,7 +170,7 @@ describe("verify", () => {
       }],
     ]);
 
-    const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, MOCK_CONFIG);
+    const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, getDefaultUCDEndpointConfig());
 
     await expect(verify({ client, manifestPath, fs })).rejects.toThrow(UCDStoreGenericError);
     await expect(verify({ client, manifestPath, fs })).rejects.toThrow(
