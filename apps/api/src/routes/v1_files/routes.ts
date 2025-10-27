@@ -139,30 +139,18 @@ V1_FILES_ROUTER.get("/:wildcard{.*}?", cache({
   return c.newResponse(response.body!, 200, headers);
 });
 
+const mimeTypes: Record<string, string> = {
+  csv: "text/csv",
+  xml: "application/xml",
+  txt: "text/plain",
+  pdf: "application/pdf",
+  json: "application/json",
+};
+
 function determineContentTypeFromExtension(extName: string) {
   if (HTML_EXTENSIONS.includes(`.${extName}`)) {
     return "text/html";
   }
 
-  if (extName === "csv") {
-    return "text/csv";
-  }
-
-  if (extName === "xml") {
-    return "application/xml";
-  }
-
-  if (extName === "txt") {
-    return "text/plain";
-  }
-
-  if (extName === "pdf") {
-    return "application/pdf";
-  }
-
-  if (extName === "json") {
-    return "application/json";
-  }
-
-  return "application/octet-stream"; // Default for binary files
+  return mimeTypes[extName] || "application/octet-stream";
 }
