@@ -95,10 +95,10 @@ V1_FILES_ROUTER.get("/:wildcard{.*}?", cache({
   }
 
   let contentType = response.headers.get("content-type") || "";
-  const sharedHeaders = {
-    "Last-Modified": response.headers.get("Last-Modified") || "",
-    "Content-Length": response.headers.get("Content-Length") || "",
-  };
+  const lastModified = response.headers.get("Last-Modified") || undefined;
+  const upstreamContentLength = response.headers.get("Content-Length") || undefined;
+  const baseHeaders: Record<string, string> = {};
+  if (lastModified) baseHeaders["Last-Modified"] = lastModified;
 
   const extName = normalizedPath.split(".").pop()?.toLowerCase() || "";
 
@@ -112,7 +112,7 @@ V1_FILES_ROUTER.get("/:wildcard{.*}?", cache({
     const files = await parseUnicodeDirectory(html);
 
     return c.json(files, 200, {
-      ...sharedHeaders,
+      ...baseHeaders,
 
       // Custom STAT Headers
       [UCD_FILE_STAT_TYPE_HEADER]: "directory",
@@ -121,14 +121,18 @@ V1_FILES_ROUTER.get("/:wildcard{.*}?", cache({
 
   contentType ||= determineContentTypeFromExtension(extName);
 
-  return c.newResponse(response.body!, 200, {
+  const headers: Record<string, string> = {
     "Content-Type": contentType,
-    "Content-Disposition": response.headers.get("Content-Disposition") ?? "",
-    ...sharedHeaders,
+    ...baseHeaders,
 
     // Custom STAT Headers
     [UCD_FILE_STAT_TYPE_HEADER]: "file",
-  });
+  };
+
+  const cd = response.headers.get("Content-Disposition");
+  if (cd) headers["Content-Disposition"] = cd;
+  if (upstreamContentLength) headers["Content-Length"] = upstreamContentLength;
+  return c.newResponse(response.body!, 200, headers);
 });
 
 function determineContentTypeFromExtension(extName: string) {
