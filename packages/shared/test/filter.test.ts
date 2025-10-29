@@ -691,27 +691,27 @@ describe("filterTreeStructure", () => {
         {
           type: "file",
           name: "DerivedBidiClass.txt",
-          path: "DerivedBidiClass.txt",
+          path: "extracted/DerivedBidiClass.txt",
         },
         {
           type: "file",
           name: "config.json",
-          path: "config.json",
+          path: "extracted/config.json",
         },
         {
           type: "directory",
           name: "nested",
-          path: "nested",
+          path: "extracted/nested",
           children: [
             {
               type: "file",
               name: "DeepFile.txt",
-              path: "DeepFile.txt",
+              path: "extracted/nested/DeepFile.txt",
             },
             {
               type: "file",
               name: "debug.log",
-              path: "debug.log",
+              path: "extracted/nested/debug.log",
             },
           ],
         },
@@ -738,7 +738,7 @@ describe("filterTreeStructure", () => {
             {
               type: "file",
               name: "config.json",
-              path: "config.json",
+              path: "extracted/config.json",
             },
           ],
         },
@@ -772,17 +772,17 @@ describe("filterTreeStructure", () => {
             {
               type: "file",
               name: "DerivedBidiClass.txt",
-              path: "DerivedBidiClass.txt",
+              path: "extracted/DerivedBidiClass.txt",
             },
             {
               type: "directory",
               name: "nested",
-              path: "nested",
+              path: "extracted/nested",
               children: [
                 {
                   type: "file",
                   name: "DeepFile.txt",
-                  path: "DeepFile.txt",
+                  path: "extracted/nested/DeepFile.txt",
                 },
               ],
             },
@@ -806,12 +806,12 @@ describe("filterTreeStructure", () => {
             {
               type: "directory",
               name: "nested",
-              path: "nested",
+              path: "extracted/nested",
               children: [
                 {
                   type: "file",
                   name: "DeepFile.txt",
-                  path: "DeepFile.txt",
+                  path: "extracted/nested/DeepFile.txt",
                 },
               ],
             },
@@ -840,27 +840,27 @@ describe("filterTreeStructure", () => {
             {
               type: "file",
               name: "DerivedBidiClass.txt",
-              path: "DerivedBidiClass.txt",
+              path: "extracted/DerivedBidiClass.txt",
             },
             {
               type: "file",
               name: "config.json",
-              path: "config.json",
+              path: "extracted/config.json",
             },
             {
               type: "directory",
               name: "nested",
-              path: "nested",
+              path: "extracted/nested",
               children: [
                 {
                   type: "file",
                   name: "DeepFile.txt",
-                  path: "DeepFile.txt",
+                  path: "extracted/nested/DeepFile.txt",
                 },
                 {
                   type: "file",
                   name: "debug.log",
-                  path: "debug.log",
+                  path: "extracted/nested/debug.log",
                 },
               ],
             },
@@ -970,12 +970,12 @@ describe("filterTreeStructure", () => {
             {
               type: "directory",
               name: "nested",
-              path: "nested",
+              path: "extracted/nested",
               children: [
                 {
                   type: "file",
                   name: "DeepFile.txt",
-                  path: "DeepFile.txt",
+                  path: "extracted/nested/DeepFile.txt",
                 },
               ],
             },
@@ -1010,22 +1010,22 @@ describe("filterTreeStructure", () => {
             {
               type: "file",
               name: "DerivedBidiClass.txt",
-              path: "DerivedBidiClass.txt",
+              path: "extracted/DerivedBidiClass.txt",
             },
             {
               type: "file",
               name: "config.json",
-              path: "config.json",
+              path: "extracted/config.json",
             },
             {
               type: "directory",
               name: "nested",
-              path: "nested",
+              path: "extracted/nested",
               children: [
                 {
                   type: "file",
                   name: "DeepFile.txt",
-                  path: "DeepFile.txt",
+                  path: "extracted/nested/DeepFile.txt",
                 },
                 // debug.log should be excluded
               ],
