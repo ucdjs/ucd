@@ -79,6 +79,9 @@ const NodeFileSystemBridge = defineFileSystemBridge({
             ? nodePath.join(relativeToTarget, entry.name)
             : entry.name;
 
+          // Update the path to be the full relative path
+          fsEntry.path = entryRelativePath;
+
           entryMap.set(entryRelativePath, fsEntry);
 
           if (!relativeToTarget) {

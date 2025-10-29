@@ -41,7 +41,7 @@ export const fileTreeRoute = defineMockRouteHandler({
                 {
                   type: "file",
                   name: "DerivedBidiClass.txt",
-                  path: "DerivedBidiClass.txt",
+                  path: "extracted/DerivedBidiClass.txt",
                   lastModified: 1724609100000,
                 },
               ],
