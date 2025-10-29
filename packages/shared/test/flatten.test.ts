@@ -55,7 +55,7 @@ describe("flattenFilePaths", () => {
           { type: "file", name: "nested-file.txt", path: "folder1/nested-file.txt" },
         ],
       },
-      { type: "file", name: "another-root-file.txt", path: "folder1/another-root-file.txt" },
+      { type: "file", name: "another-root-file.txt", path: "another-root-file.txt" },
     ]);
 
     expect(result).toEqual([
@@ -172,13 +172,13 @@ describe("flattenFilePaths", () => {
         name: "src",
         path: "src",
         children: [
-          { type: "file", name: "index.ts", path: "index.ts" },
+          { type: "file", name: "index.ts", path: "src/index.ts" },
           {
             type: "directory",
             name: "utils",
             path: "utils",
             children: [
-              { type: "file", name: "helpers.ts", path: "helpers.ts" },
+              { type: "file", name: "helpers.ts", path: "src/utils/helpers.ts" },
             ],
           },
         ],
