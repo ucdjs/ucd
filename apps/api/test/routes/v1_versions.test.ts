@@ -12,8 +12,8 @@ import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import worker from "../../src/worker";
 
 // mock the unicode-utils-new module
-vi.mock("@luxass/unicode-utils", async (importOriginal) => {
-  const original = await importOriginal<typeof import("@luxass/unicode-utils")>();
+vi.mock("@unicode-utils/core", async (importOriginal) => {
+  const original = await importOriginal<typeof import("@unicode-utils/core")>();
 
   return {
     ...original,
@@ -61,7 +61,7 @@ describe("v1_versions", () => {
     `;
 
     it("should return unicode versions with proper structure", async () => {
-      const { getCurrentDraftVersion, resolveUCDVersion } = await import("@luxass/unicode-utils");
+      const { getCurrentDraftVersion, resolveUCDVersion } = await import("@unicode-utils/core");
 
       vi.mocked(getCurrentDraftVersion).mockResolvedValue(null);
       vi.mocked(resolveUCDVersion).mockImplementation((version: string) => {
@@ -101,7 +101,7 @@ describe("v1_versions", () => {
     });
 
     it("should handle draft versions correctly", async () => {
-      const { getCurrentDraftVersion, resolveUCDVersion } = await import("@luxass/unicode-utils");
+      const { getCurrentDraftVersion, resolveUCDVersion } = await import("@unicode-utils/core");
 
       vi.mocked(getCurrentDraftVersion).mockResolvedValue("17.0.0");
       vi.mocked(resolveUCDVersion).mockImplementation((version: string) => {
@@ -130,7 +130,7 @@ describe("v1_versions", () => {
     });
 
     it("should handle different UCD version mappings", async () => {
-      const { getCurrentDraftVersion, resolveUCDVersion } = await import("@luxass/unicode-utils");
+      const { getCurrentDraftVersion, resolveUCDVersion } = await import("@unicode-utils/core");
 
       vi.mocked(getCurrentDraftVersion).mockResolvedValue(null);
       vi.mocked(resolveUCDVersion).mockImplementation((version: string) => {
@@ -181,7 +181,7 @@ describe("v1_versions", () => {
     });
 
     it("should handle malformed HTML response", async () => {
-      const { getCurrentDraftVersion, resolveUCDVersion } = await import("@luxass/unicode-utils");
+      const { getCurrentDraftVersion, resolveUCDVersion } = await import("@unicode-utils/core");
 
       vi.mocked(getCurrentDraftVersion).mockResolvedValue(null);
       vi.mocked(resolveUCDVersion).mockImplementation((version: string) => version);
@@ -204,7 +204,7 @@ describe("v1_versions", () => {
     });
 
     it("should handle empty table response", async () => {
-      const { getCurrentDraftVersion, resolveUCDVersion } = await import("@luxass/unicode-utils");
+      const { getCurrentDraftVersion, resolveUCDVersion } = await import("@unicode-utils/core");
 
       vi.mocked(getCurrentDraftVersion).mockResolvedValue(null);
       vi.mocked(resolveUCDVersion).mockImplementation((version: string) => version);
@@ -238,7 +238,7 @@ describe("v1_versions", () => {
     });
 
     it("should handle getCurrentDraftVersion throwing error", async () => {
-      const { getCurrentDraftVersion, resolveUCDVersion } = await import("@luxass/unicode-utils");
+      const { getCurrentDraftVersion, resolveUCDVersion } = await import("@unicode-utils/core");
 
       vi.mocked(getCurrentDraftVersion).mockRejectedValue(new Error("Draft version fetch failed"));
       vi.mocked(resolveUCDVersion).mockImplementation((version: string) => version);
@@ -260,7 +260,7 @@ describe("v1_versions", () => {
     });
 
     it("should set proper cache headers", async () => {
-      const { getCurrentDraftVersion, resolveUCDVersion } = await import("@luxass/unicode-utils");
+      const { getCurrentDraftVersion, resolveUCDVersion } = await import("@unicode-utils/core");
 
       vi.mocked(getCurrentDraftVersion).mockResolvedValue(null);
       vi.mocked(resolveUCDVersion).mockImplementation((version: string) => version);
@@ -279,7 +279,7 @@ describe("v1_versions", () => {
     });
 
     it("should sort versions correctly (newest first)", async () => {
-      const { getCurrentDraftVersion, resolveUCDVersion } = await import("@luxass/unicode-utils");
+      const { getCurrentDraftVersion, resolveUCDVersion } = await import("@unicode-utils/core");
 
       vi.mocked(getCurrentDraftVersion).mockResolvedValue(null);
       vi.mocked(resolveUCDVersion).mockImplementation((version: string) => version);
@@ -302,7 +302,7 @@ describe("v1_versions", () => {
     });
 
     it("should handle versions with mixed year formats", async () => {
-      const { getCurrentDraftVersion, resolveUCDVersion } = await import("@luxass/unicode-utils");
+      const { getCurrentDraftVersion, resolveUCDVersion } = await import("@unicode-utils/core");
 
       vi.mocked(getCurrentDraftVersion).mockResolvedValue(null);
       vi.mocked(resolveUCDVersion).mockImplementation((version: string) => version);
