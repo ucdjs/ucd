@@ -1,11 +1,11 @@
 import { existsSync, readFileSync } from "node:fs";
 import { mockStoreApi } from "#test-utils/mock-store";
 import { HttpResponse, mockFetch } from "#test-utils/msw";
-import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils";
 import { dedent } from "@luxass/utils";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { assertCapability } from "@ucdjs/fs-bridge";
 import { createNodeUCDStore } from "@ucdjs/ucd-store";
+import { UNICODE_VERSION_METADATA } from "@unicode-utils/core";
 import { assert, beforeEach, describe, expect, it, vi } from "vitest";
 import { captureSnapshot, testdir } from "vitest-testdirs";
 

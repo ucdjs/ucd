@@ -1,7 +1,7 @@
 import type { TreeViewNode } from "reactive-vscode";
 import type { TreeItem } from "vscode";
-import { UNICODE_VERSION_METADATA } from "@luxass/unicode-utils";
 import { UCDStore } from "@ucdjs/ucd-store";
+import { UNICODE_VERSION_METADATA } from "@unicode-utils/core";
 import { computed, createSingletonComposable, ref, toRaw } from "reactive-vscode";
 import { ThemeIcon, TreeItemCollapsibleState } from "vscode";
 import { getFilesByVersion } from "../lib/files";

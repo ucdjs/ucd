@@ -19,7 +19,6 @@
   },
   "dependencies": {
     "@hono/zod-openapi": "catalog:workers",
-    "@luxass/unicode-utils": "catalog:prod",
     "@luxass/utils": "catalog:prod",
     "@scalar/hono-api-reference": "catalog:workers",
     "@ucdjs-internal/shared": "workspace:*",
@@ -27,6 +26,7 @@
     "@ucdjs/path-utils": "workspace:*",
     "@ucdjs/schemas": "workspace:*",
     "@ucdjs/utils": "workspace:*",
+    "@unicode-utils/core": "catalog:prod",
     "apache-autoindex-parse": "catalog:prod",
     "hono": "catalog:workers",
     "zod": "catalog:prod"
