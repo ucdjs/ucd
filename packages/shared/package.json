@@ -40,10 +40,10 @@
   },
   "dependencies": {
     "@luxass/msw-utils": "catalog:prod",
-    "@luxass/unicode-utils": "catalog:prod",
     "@luxass/utils": "catalog:prod",
     "@ucdjs/env": "workspace:*",
     "@ucdjs/schemas": "workspace:*",
+    "@unicode-utils/core": "catalog:prod",
     "debug": "catalog:prod",
     "defu": "catalog:prod",
     "destr": "catalog:prod",
