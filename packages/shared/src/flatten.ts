@@ -47,7 +47,7 @@ export function flattenFilePaths<T extends TreeNode>(entries: T[], prefix: strin
       : (file.path ?? file.name);
 
     if (file.type === "directory" && file.children) {
-      paths.push(...flattenFilePaths(file.children, fullPath));
+      paths.push(...flattenFilePaths(file.children, prefix));
     } else {
       paths.push(fullPath);
     }
