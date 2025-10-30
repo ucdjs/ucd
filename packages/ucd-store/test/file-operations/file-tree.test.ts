@@ -63,19 +63,19 @@ describe("file tree", () => {
         children: [
           {
             name: "DerivedBidiClass.txt",
-            path: "DerivedBidiClass.txt",
+            path: "extracted/DerivedBidiClass.txt",
             type: "file",
           },
           {
             children: [
               {
                 name: "DeepFile.txt",
-                path: "DeepFile.txt",
+                path: "extracted/nested/DeepFile.txt",
                 type: "file",
               },
             ],
             name: "nested",
-            path: "nested",
+            path: "extracted/nested",
             type: "directory",
           },
         ],
@@ -231,7 +231,7 @@ describe("file tree", () => {
         children: [
           {
             name: "DerivedBidiClass.txt",
-            path: "DerivedBidiClass.txt",
+            path: "extracted/DerivedBidiClass.txt",
             type: "file",
           },
         ],
@@ -246,12 +246,12 @@ describe("file tree", () => {
         children: [
           {
             name: "DerivedBidiClass.txt",
-            path: "DerivedBidiClass.txt",
+            path: "extracted/DerivedBidiClass.txt",
             type: "file",
           },
           {
             name: "nested",
-            path: "nested",
+            path: "extracted/nested",
             type: "directory",
             children: [],
           },
@@ -291,17 +291,17 @@ describe("file tree", () => {
           children: [
             {
               name: "DerivedBidiClass.txt",
-              path: "DerivedBidiClass.txt",
+              path: "extracted/DerivedBidiClass.txt",
               type: "file",
             },
             {
               name: "nested",
-              path: "nested",
+              path: "extracted/nested",
               type: "directory",
               children: [
                 {
                   name: "DeepFile.txt",
-                  path: "DeepFile.txt",
+                  path: "extracted/nested/DeepFile.txt",
                   type: "file",
                 },
               ],
@@ -347,7 +347,7 @@ describe("file tree", () => {
           children: [
             {
               name: "DerivedBidiClass.txt",
-              path: "DerivedBidiClass.txt",
+              path: "extracted/DerivedBidiClass.txt",
               type: "file",
             },
           ],

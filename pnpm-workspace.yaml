@@ -8,6 +8,7 @@ minimumReleaseAgeExclude:
   - "@luxass/eslint-config"
   - "@luxass/unicode-utils"
   - "@luxass/msw-utils"
+  - apache-autoindex-parse
 
 packages:
   - "packages/*"
@@ -54,7 +55,7 @@ catalogs:
     ai: 5.0.48
     knitwork: 1.2.0
     picomatch: 4.0.3
-    apache-autoindex-parse: 3.0.3
+    apache-autoindex-parse: 4.0.3
     pathe: 2.0.3
     "@clack/prompts": 1.0.0-alpha.5
     debug: 4.4.3

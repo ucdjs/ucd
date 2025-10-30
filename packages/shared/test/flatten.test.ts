@@ -31,8 +31,8 @@ describe("flattenFilePaths", () => {
         path: "folder1",
         type: "directory",
         children: [
-          { type: "file", name: "file1.txt", path: "file1.txt" },
-          { type: "file", name: "file2.txt", path: "file2.txt" },
+          { type: "file", name: "file1.txt", path: "folder1/file1.txt" },
+          { type: "file", name: "file2.txt", path: "folder1/file2.txt" },
         ],
       },
     ]);
@@ -52,7 +52,7 @@ describe("flattenFilePaths", () => {
         name: "folder1",
         path: "folder1",
         children: [
-          { type: "file", name: "nested-file.txt", path: "nested-file.txt" },
+          { type: "file", name: "nested-file.txt", path: "folder1/nested-file.txt" },
         ],
       },
       { type: "file", name: "another-root-file.txt", path: "another-root-file.txt" },
@@ -75,17 +75,17 @@ describe("flattenFilePaths", () => {
           {
             type: "directory",
             name: "level2",
-            path: "level2",
+            path: "level1/level2",
             children: [
               {
                 type: "directory",
                 name: "level3",
-                path: "level3",
+                path: "level1/level2/level3",
                 children: [
                   {
                     type: "file",
                     name: "deep-file.txt",
-                    path: "deep-file.txt",
+                    path: "level1/level2/level3/deep-file.txt",
                   },
                 ],
               },
@@ -110,7 +110,7 @@ describe("flattenFilePaths", () => {
         name: "folder",
         path: "folder",
         children: [
-          { type: "file", name: "nested.txt", path: "nested.txt" },
+          { type: "file", name: "nested.txt", path: "folder/nested.txt" },
         ],
       },
     ], "prefix");
@@ -155,14 +155,14 @@ describe("flattenFilePaths", () => {
         name: "docs",
         path: "docs",
         children: [
-          { type: "file", name: "readme.md", path: "readme.md" },
+          { type: "file", name: "readme.md", path: "docs/readme.md" },
           {
             type: "directory",
             name: "api",
-            path: "api",
+            path: "docs/api",
             children: [
-              { type: "file", name: "index.html", path: "index.html" },
-              { type: "file", name: "methods.html", path: "methods.html" },
+              { type: "file", name: "index.html", path: "docs/api/index.html" },
+              { type: "file", name: "methods.html", path: "docs/api/methods.html" },
             ],
           },
         ],
@@ -172,13 +172,13 @@ describe("flattenFilePaths", () => {
         name: "src",
         path: "src",
         children: [
-          { type: "file", name: "index.ts", path: "index.ts" },
+          { type: "file", name: "index.ts", path: "src/index.ts" },
           {
             type: "directory",
             name: "utils",
             path: "utils",
             children: [
-              { type: "file", name: "helpers.ts", path: "helpers.ts" },
+              { type: "file", name: "helpers.ts", path: "src/utils/helpers.ts" },
             ],
           },
         ],

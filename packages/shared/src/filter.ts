@@ -202,8 +202,8 @@ function internal__filterTreeStructure(
   const filteredEntries: TreeEntry[] = [];
 
   for (const entry of entries) {
-    // Construct the full path by combining parent path with entry path
-    const fullPath = parentPath ? `${parentPath}/${entry.path}` : entry.path;
+    // Since entry.path now contains the full path, use it directly
+    const fullPath = entry.path;
 
     if (entry.type === "file") {
       // For files, simply check if the full path matches the filter

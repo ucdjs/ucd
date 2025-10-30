@@ -357,11 +357,11 @@ describe("v1_versions", () => {
   // eslint-disable-next-line test/prefer-lowercase-title
   describe("GET /api/v1/versions/{version}/file-tree", () => {
     const files: TraverseEntry[] = [
-      { type: "file", name: "file1.txt", path: "/Public/15.1.0/ucd/file1.txt" },
-      { type: "file", name: "file2.txt", path: "/Public/15.1.0/ucd/file2.txt" },
-      { type: "directory", name: "subdir", path: "/Public/15.1.0/ucd/subdir", children: [] },
-      { type: "file", name: "file3.txt", path: "/Public/15.1.0/ucd/subdir/file3.txt" },
-      { type: "file", name: "emoji-data.txt", path: "/Public/15.1.0/ucd/emoji/emoji-data.txt" },
+      { type: "file", name: "file1.txt", path: "Public/15.1.0/ucd/file1.txt" },
+      { type: "file", name: "file2.txt", path: "Public/15.1.0/ucd/file2.txt" },
+      { type: "directory", name: "subdir", path: "Public/15.1.0/ucd/subdir", children: [] },
+      { type: "file", name: "file3.txt", path: "Public/15.1.0/ucd/subdir/file3.txt" },
+      { type: "file", name: "emoji-data.txt", path: "Public/15.1.0/ucd/emoji/emoji-data.txt" },
     ];
 
     it("should return files for a valid Unicode version", async () => {

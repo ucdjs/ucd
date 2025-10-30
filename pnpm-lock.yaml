@@ -110,8 +110,8 @@ catalogs:
       specifier: 5.0.48
       version: 5.0.48
     apache-autoindex-parse:
-      specifier: 3.0.3
-      version: 3.0.3
+      specifier: 4.0.3
+      version: 4.0.3
     debug:
       specifier: 4.4.3
       version: 4.4.3
@@ -316,7 +316,7 @@ importers:
         version: link:../../packages/utils
       apache-autoindex-parse:
         specifier: catalog:prod
-        version: 3.0.3
+        version: 4.0.3
       hono:
         specifier: catalog:workers
         version: 4.10.1
@@ -4959,8 +4959,8 @@ packages:
     resolution: {integrity: sha512-KMReFUr0B4t+D+OBkjR3KYqvocp2XaSzO55UcB6mgQMd3KbcE+mWTyvVV7D/zsdEbNnV6acZUutkiHQXvTr1Rw==}
     engines: {node: '>= 8'}
 
-  apache-autoindex-parse@3.0.3:
-    resolution: {integrity: sha512-+BLXIGoiNpC8Hj9/XZYfs/zGu9noVAm0Vr4wqfADud3jJffgvkjdcD8836d/ROhxGwLDqDBAMrkeKuXjfE+rYQ==}
+  apache-autoindex-parse@4.0.3:
+    resolution: {integrity: sha512-fuaK6MjHm+pQmPoiYzCSfgU8HMFNwH+LJIo3/X9GtECTGXt0RTcfC4QdRrb8Yp3/PGGTkl8qRTDtPE0X1rGqEg==}
 
   archiver-utils@5.0.2:
     resolution: {integrity: sha512-wuLJMmIBQYCsGZgYLTy5FIB2pF6Lfb6cXMSF8Qywwk3t20zWnAi7zLcQFdKQmIB8wyZpY5ER38x08GbwtR2cLA==}
@@ -14820,7 +14820,7 @@ snapshots:
       normalize-path: 3.0.0
       picomatch: 2.3.1
 
-  apache-autoindex-parse@3.0.3: {}
+  apache-autoindex-parse@4.0.3: {}
 
   archiver-utils@5.0.2:
     dependencies:
