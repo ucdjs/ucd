@@ -9,6 +9,14 @@ import { defineFileSystemBridge } from "../define";
 
 const debug = createDebugger("ucdjs:fs-bridge:node");
 
+/**
+ * Normalizes path separators to forward slashes for cross-platform consistency.
+ * On Windows, converts backslashes to forward slashes.
+ */
+function normalizePathSeparators(path: string): string {
+  return path.replace(/\\/g, "/");
+}
+
 async function safeExists(path: string): Promise<boolean> {
   try {
     await fsp.stat(path);
@@ -79,7 +87,13 @@ const NodeFileSystemBridge = defineFileSystemBridge({
             ? nodePath.join(relativeToTarget, entry.name)
             : entry.name;
 
-          entryMap.set(entryRelativePath, fsEntry);
+          // Normalize path separators to forward slashes for cross-platform consistency
+          const normalizedPath = normalizePathSeparators(entryRelativePath);
+
+          // Update the path to be the full relative path
+          fsEntry.path = normalizedPath;
+
+          entryMap.set(normalizedPath, fsEntry);
 
           if (!relativeToTarget) {
             rootEntries.push(fsEntry);

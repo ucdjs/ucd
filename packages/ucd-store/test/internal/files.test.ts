@@ -34,7 +34,7 @@ describe("getExpectedFilePaths", async () => {
               {
                 type: "file",
                 name: "emoji-data.txt",
-                path: "/emoji-data.txt",
+                path: "/ucd/emoji-data.txt",
                 lastModified: Date.now(),
               },
             ],
