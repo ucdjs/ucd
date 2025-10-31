@@ -23,6 +23,10 @@ jobs:
           persist-credentials: false
 
       - name: cleanup caches older than 5 days
-        uses: luxass/purge-action-cache@ae761ee5cfbd10b9d62d959393555283b6049da5 # v0.1.0
+        uses: luxass/purge-action-cache@a7ed471442fd9cbb83d69b4a06c2e87c0df3515a # v0.2.0
         with:
-          max-age: 432000
+          max-age: ${{ github.event_name == 'pull_request' && 0 || 432000 }}
+          mode: ${{ github.event_name == 'pull_request' && 'ref' || 'age' }}
+          ref-key: ${{ github.event_name == 'pull_request' && 'refs/pull/${{ github.event.pull_request.number }}/merge' || '' }}
+
+
