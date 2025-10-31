@@ -44,7 +44,7 @@ jobs:
         uses: luxass/purge-action-cache@8203fbc1edd23369505f170a1d54074195a59c58 # v0.3.0
         with:
           max-age: ${{ github.event_name == 'pull_request' && 0 || github.event.inputs.max-age || 432000 }}
-          mode: ${{ github.event_name == 'pull_request' && 'ref' || (github.event.inputs.mode || 'normal') }}
+          mode: ${{ github.event_name == 'pull_request' && 'normal' || (github.event.inputs.mode || 'normal') }}
           ref-key: ${{ github.event_name == 'pull_request' && 'refs/pull/${{ github.event.pull_request.number }}/merge' || (github.event.inputs.ref-key || '') }}
           debug: ${{ github.event.inputs.debug || 'false' }}
 
