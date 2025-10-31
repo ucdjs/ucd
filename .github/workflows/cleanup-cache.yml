@@ -17,6 +17,10 @@ on:
         description: 'Reference key (only for ref mode)'
         required: false
         default: ''
+      debug:
+        description: 'Enable debug logging'
+        required: false
+        default: 'false'
   pull_request:
     types:
       - closed
@@ -41,5 +45,6 @@ jobs:
           max-age: ${{ github.event_name == 'pull_request' && 0 || github.event.inputs.max-age || 432000 }}
           mode: ${{ github.event_name == 'pull_request' && 'ref' || (github.event.inputs.mode || 'normal') }}
           ref-key: ${{ github.event_name == 'pull_request' && 'refs/pull/${{ github.event.pull_request.number }}/merge' || (github.event.inputs.ref-key || '') }}
+          debug: ${{ github.event.inputs.debug || 'false' }}
 
 
