@@ -14,7 +14,7 @@ import type {
 } from "./types";
 import { createDebugger } from "@ucdjs-internal/shared";
 import { PathUtilsBaseError, resolveSafePath } from "@ucdjs/path-utils";
-import { createHooks } from "hookable";
+import { HookableCore } from "hookable";
 import { z } from "zod";
 import {
   BridgeBaseError,
@@ -60,7 +60,7 @@ export function defineFileSystemBridge<
       );
     }
 
-    const hooks = createHooks<FileSystemBridgeHooks>();
+    const hooks = new HookableCore<FileSystemBridgeHooks>();
 
     const optionalCapabilities = inferOptionalCapabilitiesFromOperations(bridge);
     const bridgeOperations: (keyof FileSystemBridgeOperations)[] = [
@@ -163,7 +163,7 @@ async function handleError(
   operation: PropertyKey,
   args: unknown[],
   err: unknown,
-  hooks: ReturnType<typeof createHooks<FileSystemBridgeHooks>>,
+  hooks: HookableCore<FileSystemBridgeHooks>,
 ): Promise<never> {
   // Ensure that we always call the "error" hook with Error instances
   if (err instanceof Error) {
