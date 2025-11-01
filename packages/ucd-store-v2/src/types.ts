@@ -3,7 +3,7 @@ import type { UCDClient } from "@ucdjs/client";
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 import type { UCDWellKnownConfig, UnicodeTreeNode } from "@ucdjs/schemas";
 import type { StoreError } from "./errors";
-import type { AnalyzeOptions, VersionAnalysis } from "./operations/analyze";
+import type { AnalysisReport, AnalyzeOptions } from "./operations/analyze";
 import type { GetFileOptions } from "./operations/files/get";
 import type { ListFilesOptions } from "./operations/files/list";
 import type { GetFileTreeOptions } from "./operations/files/tree";
@@ -199,7 +199,7 @@ export interface UCDStoreOperations {
    *
    * @deprecated This needs to be implemented properly
    */
-  analyze: (options?: AnalyzeOptions) => Promise<OperationResult<VersionAnalysis[], StoreError>>;
+  analyze: (options?: AnalyzeOptions) => Promise<OperationResult<Map<string, AnalysisReport>, StoreError>>;
 
   /**
    * File operations namespace
