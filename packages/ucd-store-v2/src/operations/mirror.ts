@@ -354,6 +354,8 @@ export async function mirror(
         } else if (
           typeof data === "object"
           && data !== null
+          && !Array.isArray(data)
+          && Object.prototype.toString.call(data) === "[object Object]"
           && contentType === "application/json"
         ) {
           content = JSON.stringify(data);
