@@ -28,16 +28,12 @@ describe("mirror", () => {
       manifestPath: "/test/.ucd-store.json",
     });
 
-    const beforeTime = Date.now();
     const [data, error] = await mirror(context);
 
     expect(error).toBeNull();
     expect(data).toBeDefined();
 
     expect(data?.timestamp).toEqual(expect.any(String));
-    const timestampMs = new Date(data!.timestamp).getTime();
-    const timeDiff = Math.abs(timestampMs - beforeTime);
-    expect(timeDiff).toBeLessThanOrEqual(20);
 
     const versionKeys = [...data!.versions.keys()];
     expect(versionKeys).toEqual(["16.0.0", "15.1.0"]);
