@@ -1,4 +1,4 @@
-import type { createHooks, HookableCore } from "hookable";
+import type { HookableCore } from "hookable";
 import type { z } from "zod";
 
 export interface FileSystemBridgeRmOptions {
