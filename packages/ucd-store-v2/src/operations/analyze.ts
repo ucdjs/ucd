@@ -12,7 +12,49 @@ export interface AnalyzeOptions extends SharedOperationOptions {
   versions?: string[];
 }
 
-export interface VersionAnalysis {
+export interface AnalysisFilesReport {
+  /**
+   * List of files that were found in the store for this version
+   *
+   * NOTE:
+   * This does not include orphaned files.
+   */
+  present: readonly string[];
+
+  /**
+   * List of orphaned files
+   */
+  orphaned: readonly string[];
+
+  /**
+   * List of files missing from the store
+   */
+  missing: readonly string[];
+}
+
+export interface AnalysisCountsReport {
+  /**
+   * Total number of files expected for this version
+   */
+  expected: number;
+
+  /**
+   * Number of files found in the store for this version
+   */
+  present: number;
+
+  /**
+   * Number of orphaned files for this version
+   */
+  orphaned: number;
+
+  /**
+   * Number of missing files for this version
+   */
+  missing: number;
+}
+
+export interface AnalysisReport {
   /**
    * The version analyzed
    */
@@ -25,34 +67,16 @@ export interface VersionAnalysis {
    */
   isComplete: boolean;
 
-  orphanedFiles: string[];
+  files: AnalysisFilesReport;
+
+  counts: AnalysisCountsReport;
 
   /**
-   * List of missing files (if any)
-   */
-  missingFiles: string[];
-
-  /**
-   * List of files that were found in the store for this version
+   * Breakdown of file types by extension
    *
-   * NOTE:
-   * This does not include orphaned files.
+   * This provides insight into the composition of files within the version.
    */
-  files: string[];
-
-  /**
-   * Total number of files expected for this version
-   */
-  expectedFileCount: number;
-
-  /**
-   * Number of files found for this version
-   */
-  fileCount: number;
-
-  totalSize: string;
-  fileTypes: Record<string, number>; // { ".txt": 85, ".html": 10 }
-  lastModified?: string;
+  fileTypes: Record<string, number>;
 }
 
 /**
@@ -60,13 +84,14 @@ export interface VersionAnalysis {
  *
  * @param {InternalUCDStoreContext} context - Internal store context
  * @param {AnalyzeOptions} [options] - Analyze options
- * @returns {Promise<OperationResult<AnalysisResult[], StoreError>>} Operation result
+ * @returns {Promise<OperationResult<Map<string, AnalysisReport>, StoreError>>} Operation result
  */
 export async function analyze(
   context: InternalUCDStoreContext,
   options?: AnalyzeOptions,
-): Promise<OperationResult<VersionAnalysis[], StoreError>> {
-  let results: VersionAnalysis[] = [];
+): Promise<OperationResult<Map<string, AnalysisReport>, StoreError>> {
+  const results = new Map<string, AnalysisReport>();
+
   return tryCatch(async () => {
     const versionsToAnalyze = options?.versions ?? context.versions;
 
@@ -88,60 +113,73 @@ export async function analyze(
         throw error;
       }
 
-      const orphanedFiles: string[] = [];
-      const missingFiles: string[] = [];
-      const files: string[] = [];
-      const fileTypes: Record<string, number> = {};
-
       const expectedSet = new Set(expectedFiles);
       const actualSet = new Set(actualFiles);
+
+      const files: string[] = [];
+      const orphanedFiles: string[] = [];
+      const missingFiles: string[] = [];
+      const fileTypes: Record<string, number> = {};
+
+      for (const actualFile of actualSet) {
+        const ext = getExtension(actualFile);
+        fileTypes[ext] ??= 0;
+        fileTypes[ext] += 1;
+
+        if (expectedSet.has(actualFile)) {
+          files.push(actualFile);
+        } else {
+          orphanedFiles.push(actualFile);
+        }
+      }
+
       for (const expectedFile of expectedSet) {
         if (!actualSet.has(expectedFile)) {
           missingFiles.push(expectedFile);
         }
       }
 
-      for (const actualFile of actualSet) {
-        const isExpected = expectedSet.has(actualFile);
-        if (!isExpected) {
-          orphanedFiles.push(actualFile);
-
-          const extMatch = actualFile.match(/\.[^/.]+$/);
-          const ext = extMatch ? extMatch[0] : "no_extension";
-
-          fileTypes[ext] ||= 0;
-          fileTypes[ext] += 1;
-
-          continue;
-        }
-
-        if (isExpected) {
-          files.push(actualFile);
-
-          const extMatch = actualFile.match(/\.[^/.]+$/);
-          const ext = extMatch ? extMatch[0] : "no_extension";
-
-          fileTypes[ext] ||= 0;
-          fileTypes[ext] += 1;
-        }
-      }
-
       const isComplete = orphanedFiles.length === 0 && missingFiles.length === 0;
+
       return {
         version,
-        expectedFileCount: expectedFiles.length,
-        fileCount: files.length,
         isComplete,
-        orphanedFiles,
-        missingFiles,
-        files,
-        totalSize: "N/A",
+        files: {
+          present: Object.freeze(files),
+          orphaned: Object.freeze(orphanedFiles),
+          missing: Object.freeze(missingFiles),
+        },
+        counts: {
+          get expected() {
+            return expectedFiles.length;
+          },
+          get present() {
+            return files.length;
+          },
+          get orphaned() {
+            return orphanedFiles.length;
+          },
+          get missing() {
+            return missingFiles.length;
+          },
+        },
         fileTypes,
-      } satisfies VersionAnalysis;
+      } satisfies AnalysisReport;
     });
 
-    results = await Promise.all(promises).then((res) => res.filter((r): r is VersionAnalysis => r !== null));
+    for await (const report of promises) {
+      if (report == null) {
+        continue;
+      }
+
+      results.set(report.version, report);
+    }
 
     return results;
   });
+}
+
+function getExtension(filePath: string): string {
+  const match = filePath.match(/\.[^/.]+$/);
+  return match ? match[0] : "no_extension";
 }
