@@ -1,5 +1,6 @@
 import { createMemoryMockFS } from "#test-utils/fs-bridges";
-import { mockStoreApi } from "#test-utils/mock-store";
+import { configure, mockStoreApi } from "#test-utils/mock-store";
+import { HttpResponse } from "#test-utils/msw";
 import { createPathFilter, getDefaultUCDEndpointConfig } from "@ucdjs-internal/shared";
 import { createUCDClientWithConfig } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
@@ -27,27 +28,64 @@ describe("mirror", () => {
       manifestPath: "/test/.ucd-store.json",
     });
 
+    const beforeTime = Date.now();
     const [data, error] = await mirror(context);
 
     expect(error).toBeNull();
     expect(data).toBeDefined();
-    expect(data).toMatchObject({
-      timestamp: expect.any(String),
-      versions: expect.any(Array),
-      summary: {
-        totalFiles: expect.any(Number),
+
+    expect(data?.timestamp).toEqual(expect.any(String));
+    const timestampMs = new Date(data!.timestamp).getTime();
+    const timeDiff = Math.abs(timestampMs - beforeTime);
+    expect(timeDiff).toBeLessThanOrEqual(20);
+
+    const versionKeys = [...data!.versions.keys()];
+    expect(versionKeys).toEqual(["16.0.0", "15.1.0"]);
+
+    const v16 = data!.versions.get("16.0.0")!;
+
+    expect(v16).toMatchObject({
+      version: "16.0.0",
+      files: {
+        downloaded: expect.any(Array),
+        skipped: expect.any(Array),
+        failed: expect.any(Array),
+      },
+      counts: {
         downloaded: expect.any(Number),
         skipped: expect.any(Number),
         failed: expect.any(Number),
-        duration: expect.any(Number),
-        totalSize: expect.any(String),
+      },
+      errors: expect.any(Array),
+    });
+
+    expect(data?.summary).toBeDefined();
+    expect(data?.summary).toMatchObject({
+      counts: {
+        downloaded: 6,
+        failed: 0,
+        skipped: 0,
+        totalFiles: 6,
+      },
+      duration: expect.any(Number),
+      metrics: {
+        averageTimePerFile: expect.any(Number),
+        cacheHitRate: 0,
+        failureRate: 0,
+        successRate: 100,
+      },
+      storage: {
+        averageFileSize: "20.00 B",
+        totalSize: "120.00 B",
       },
     });
   });
 
   it("should mirror specific versions when provided", async () => {
+    const providedVersions = ["16.0.0", "15.1.0", "15.0.0"];
+
     mockStoreApi({
-      versions: ["16.0.0", "15.1.0", "15.0.0"],
+      versions: providedVersions,
     });
 
     const filter = createPathFilter({});
@@ -58,7 +96,7 @@ describe("mirror", () => {
       filter,
       fs,
       basePath: "/test",
-      versions: ["16.0.0", "15.1.0", "15.0.0"],
+      versions: providedVersions,
       manifestPath: "/test/.ucd-store.json",
     });
 
@@ -68,15 +106,64 @@ describe("mirror", () => {
 
     expect(error).toBeNull();
     expect(data).toBeDefined();
+
+    const versionKeys = [...data!.versions.keys()];
+
+    expect(versionKeys).toEqual(["16.0.0"]);
+
+    const v16 = data!.versions.get("16.0.0")!;
+
+    expect(v16).toMatchObject({
+      version: "16.0.0",
+      files: {
+        downloaded: expect.any(Array),
+        skipped: expect.any(Array),
+        failed: expect.any(Array),
+      },
+      counts: {
+        downloaded: expect.any(Number),
+        skipped: expect.any(Number),
+        failed: expect.any(Number),
+      },
+      errors: expect.any(Array),
+    });
   });
 
   it("should support force option to re-download existing files", async () => {
     mockStoreApi({
       versions: ["16.0.0"],
+      responses: {
+        "/api/v1/versions/{version}/file-tree": [
+          {
+            name: "cased.txt",
+            path: "cased.txt",
+            type: "file",
+          },
+          {
+            name: "common.txt",
+            path: "common.txt",
+            type: "file",
+          },
+          {
+            name: "scripts.txt",
+            path: "scripts.txt",
+            type: "file",
+          },
+        ],
+        "/api/v1/files/{wildcard}": ({ params }) => {
+          return HttpResponse.json(`Content of ${params.wildcard}`);
+        },
+      },
     });
 
     const filter = createPathFilter({});
-    const fs = createMemoryMockFS();
+    const fs = createMemoryMockFS({
+      initialFiles: {
+        "/test/16.0.0/cased.txt": "existing content",
+        "/test/16.0.0/common.txt": "existing content",
+        "/test/16.0.0/scripts.txt": "existing content",
+      },
+    });
 
     const context = createInternalContext({
       client,
@@ -87,73 +174,64 @@ describe("mirror", () => {
       manifestPath: "/test/.ucd-store.json",
     });
 
-    const [data, error] = await mirror(context, {
+    const [firstMirrorData, firstMirrorError] = await mirror(context, {
+      force: false,
+    });
+    expect(firstMirrorError).toBeNull();
+    expect(firstMirrorData).toBeDefined();
+
+    const firstV16 = firstMirrorData!.versions.get("16.0.0")!;
+    expect(firstV16.counts.downloaded).toBe(0);
+    expect(firstV16.counts.skipped).toBeGreaterThan(0);
+    const skippedCount = firstV16.counts.skipped;
+
+    const originalCasedContent = await fs.read("/test/16.0.0/cased.txt");
+    const originalCommonContent = await fs.read("/test/16.0.0/common.txt");
+    const originalScriptsContent = await fs.read("/test/16.0.0/scripts.txt");
+
+    expect(originalCasedContent).toBe("existing content");
+    expect(originalCommonContent).toBe("existing content");
+    expect(originalScriptsContent).toBe("existing content");
+
+    const [secondMirrorData, secondMirrorError] = await mirror(context, {
       force: true,
     });
+    expect(secondMirrorError).toBeNull();
+    expect(secondMirrorData).toBeDefined();
 
-    expect(error).toBeNull();
-    expect(data).toBeDefined();
+    const secondV16 = secondMirrorData!.versions.get("16.0.0")!;
+    expect(secondV16.files.downloaded.length).toBe(skippedCount);
+    expect(secondV16.counts.downloaded).toBe(skippedCount);
+    expect(secondV16.counts.skipped).toBe(0);
+
+    const updatedCasedContent = await fs.read("/test/16.0.0/cased.txt");
+    const updatedCommonContent = await fs.read("/test/16.0.0/common.txt");
+    const updatedScriptsContent = await fs.read("/test/16.0.0/scripts.txt");
+
+    expect(updatedCasedContent).not.toBe(originalCasedContent);
+    expect(updatedCommonContent).not.toBe(originalCommonContent);
+    expect(updatedScriptsContent).not.toBe(originalScriptsContent);
   });
 
   it("should support custom concurrency limit", async () => {
+    const DELAY_MS = 30;
+    const FILE_COUNT = 10;
+
     mockStoreApi({
       versions: ["16.0.0"],
-    });
-
-    const filter = createPathFilter({});
-    const fs = createMemoryMockFS();
-
-    const context = createInternalContext({
-      client,
-      filter,
-      fs,
-      basePath: "/test",
-      versions: ["16.0.0"],
-      manifestPath: "/test/.ucd-store.json",
-    });
-
-    const [data, error] = await mirror(context, {
-      concurrency: 10,
-    });
-
-    expect(error).toBeNull();
-    expect(data).toBeDefined();
-  });
-
-  it("should call progress callback during download", async () => {
-    mockStoreApi({
-      versions: ["16.0.0"],
-    });
-
-    const filter = createPathFilter({});
-    const fs = createMemoryMockFS();
-
-    const context = createInternalContext({
-      client,
-      filter,
-      fs,
-      basePath: "/test",
-      versions: ["16.0.0"],
-      manifestPath: "/test/.ucd-store.json",
-    });
-
-    const progressCalls: Array<{ version: string; current: number; total: number; file: string }> = [];
-
-    const [data, error] = await mirror(context, {
-      onProgress: (progress) => {
-        progressCalls.push(progress);
+      responses: {
+        "/api/v1/versions/{version}/file-tree": Array.from({ length: FILE_COUNT }, (_, i) => ({
+          name: `file${i}.txt`,
+          path: `file${i}.txt`,
+          type: "file",
+        })),
+        "/api/v1/files/{wildcard}": configure({
+          latency: DELAY_MS,
+          response: () => HttpResponse.text("file content"),
+        }),
       },
     });
 
-    expect(error).toBeNull();
-    expect(data).toBeDefined();
-  });
-
-  it("should return proper result structure", async () => {
-    mockStoreApi({
-      versions: ["16.0.0"],
-    });
-
     const filter = createPathFilter({});
     const fs = createMemoryMockFS();
 
@@ -166,20 +244,24 @@ describe("mirror", () => {
       manifestPath: "/test/.ucd-store.json",
     });
 
-    const [data, error] = await mirror(context);
+    // With concurrency: 5 and DELAY_MS per file:
+    // Sequential would take: 10 * 30ms = 300ms+
+    // Concurrent (limit 5): 2 batches * 30ms = 60ms+
+    const startTime = Date.now();
+    const [data, error] = await mirror(context, {
+      concurrency: 5,
+    });
+    const duration = Date.now() - startTime;
 
     expect(error).toBeNull();
-    expect(data).toEqual({
-      timestamp: expect.any(String),
-      versions: expect.any(Array),
-      summary: {
-        totalFiles: 0,
-        downloaded: 0,
-        skipped: 0,
-        failed: 0,
-        duration: expect.any(Number),
-        totalSize: "0 B",
-      },
-    });
+    expect(data).toBeDefined();
+    expect(data?.versions.size).toBe(1);
+
+    const v16 = data!.versions.get("16.0.0")!;
+    expect(v16.counts.downloaded).toBe(FILE_COUNT);
+
+    // Duration should be less than 100ms
+    // Since a bit of overhead is expected
+    expect(duration).toBeLessThan(100);
   });
 });
