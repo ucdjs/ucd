@@ -7,7 +7,7 @@ import type { AnalysisReport, AnalyzeOptions } from "./operations/analyze";
 import type { GetFileOptions } from "./operations/files/get";
 import type { ListFilesOptions } from "./operations/files/list";
 import type { GetFileTreeOptions } from "./operations/files/tree";
-import type { MirrorOptions, MirrorResult } from "./operations/mirror";
+import type { MirrorOptions, MirrorReport } from "./operations/mirror";
 import type { SyncOptions, SyncResult } from "./operations/sync";
 
 /**
@@ -192,7 +192,7 @@ export interface UCDStoreOperations {
    *
    * @deprecated This needs to be implemented properly
    */
-  mirror: (options?: MirrorOptions) => Promise<OperationResult<MirrorResult, StoreError>>;
+  mirror: (options?: MirrorOptions) => Promise<OperationResult<MirrorReport, StoreError>>;
 
   /**
    * Analyzes Unicode data in the store.
