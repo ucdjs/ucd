@@ -25,7 +25,7 @@ describe("hooks", () => {
       });
 
       const operations = bridge();
-      operations.on("read:before", beforeHook);
+      operations.hook("read:before", beforeHook);
 
       await operations.read("test.txt");
 
@@ -53,7 +53,7 @@ describe("hooks", () => {
       });
 
       const operations = bridge();
-      operations.on("write:before", beforeHook);
+      operations.hook("write:before", beforeHook);
 
       assertCapability(operations, "write");
       await operations.write("test.txt", "hello world");
@@ -85,7 +85,7 @@ describe("hooks", () => {
       });
 
       const operations = bridge();
-      operations.on("listdir:before", beforeHook);
+      operations.hook("listdir:before", beforeHook);
 
       await operations.listdir("/path", true);
 
@@ -116,7 +116,7 @@ describe("hooks", () => {
       });
 
       const operations = bridge();
-      operations.on("exists:before", beforeHook);
+      operations.hook("exists:before", beforeHook);
 
       await operations.exists("test.txt");
 
@@ -144,7 +144,7 @@ describe("hooks", () => {
       });
 
       const operations = bridge();
-      operations.on("mkdir:before", beforeHook);
+      operations.hook("mkdir:before", beforeHook);
 
       assertCapability(operations, "mkdir");
       await operations.mkdir("new-dir");
@@ -173,7 +173,7 @@ describe("hooks", () => {
       });
 
       const operations = bridge();
-      operations.on("rm:before", beforeHook);
+      operations.hook("rm:before", beforeHook);
 
       assertCapability(operations, "rm");
       await operations.rm("old-file", { recursive: true, force: false });
@@ -208,7 +208,7 @@ describe("hooks", () => {
       });
 
       const operations = bridge();
-      operations.on("read:after", afterHook);
+      operations.hook("read:after", afterHook);
 
       await operations.read("test.txt");
 
@@ -239,7 +239,7 @@ describe("hooks", () => {
       });
 
       const operations = bridge();
-      operations.on("write:after", afterHook);
+      operations.hook("write:after", afterHook);
 
       assertCapability(operations, "write");
       await operations.write("test.txt", "content");
@@ -273,7 +273,7 @@ describe("hooks", () => {
       });
 
       const operations = bridge();
-      operations.on("listdir:after", afterHook);
+      operations.hook("listdir:after", afterHook);
 
       await operations.listdir("/path", false);
 
@@ -305,7 +305,7 @@ describe("hooks", () => {
       });
 
       const operations = bridge();
-      operations.on("exists:after", afterHook);
+      operations.hook("exists:after", afterHook);
 
       await operations.exists("test.txt");
 
@@ -336,7 +336,7 @@ describe("hooks", () => {
       });
 
       const operations = bridge();
-      operations.on("mkdir:after", afterHook);
+      operations.hook("mkdir:after", afterHook);
 
       assertCapability(operations, "mkdir");
       await operations.mkdir("new-dir");
@@ -365,7 +365,7 @@ describe("hooks", () => {
       });
 
       const operations = bridge();
-      operations.on("rm:after", afterHook);
+      operations.hook("rm:after", afterHook);
 
       assertCapability(operations, "rm");
       await operations.rm("old-file", { recursive: true });
@@ -401,7 +401,7 @@ describe("hooks", () => {
       });
 
       const operations = bridge();
-      operations.on("error", errorHook);
+      operations.hook("error", errorHook);
 
       await expect(operations.read("test.txt")).rejects.toThrow();
 
@@ -438,7 +438,7 @@ describe("hooks", () => {
       });
 
       const operations = bridge();
-      operations.on("error", errorHook);
+      operations.hook("error", errorHook);
 
       assertCapability(operations, "write");
       await expect(() => operations.write("test.txt", "content")).rejects.toThrow();
@@ -467,7 +467,7 @@ describe("hooks", () => {
       });
 
       const operations = bridge();
-      operations.on("error", errorHook);
+      operations.hook("error", errorHook);
 
       await expect(() => operations.write!("test.txt", "content")).rejects.toThrow(
         BridgeUnsupportedOperation,
@@ -502,7 +502,7 @@ describe("hooks", () => {
       });
 
       const operations = bridge();
-      operations.on("error", errorHook);
+      operations.hook("error", errorHook);
 
       assertCapability(operations, ["mkdir", "rm", "write"]);
 
@@ -546,9 +546,9 @@ describe("hooks", () => {
       });
 
       const operations = bridge();
-      operations.on("read:before", handler1);
-      operations.on("read:before", handler2);
-      operations.on("read:before", handler3);
+      operations.hook("read:before", handler1);
+      operations.hook("read:before", handler2);
+      operations.hook("read:before", handler3);
 
       await operations.read("test.txt");
 
@@ -580,8 +580,8 @@ describe("hooks", () => {
       });
 
       const operations = bridge();
-      operations.on("read:before", () => callOrder.push("before"));
-      operations.on("read:after", () => callOrder.push("after"));
+      operations.hook("read:before", () => callOrder.push("before"));
+      operations.hook("read:after", () => callOrder.push("after"));
 
       await operations.read("test.txt");
 
@@ -610,9 +610,9 @@ describe("hooks", () => {
       });
 
       const operations = bridge();
-      operations.on("read:before", beforeHook);
-      operations.on("read:after", afterHook);
-      operations.on("error", errorHook);
+      operations.hook("read:before", beforeHook);
+      operations.hook("read:after", afterHook);
+      operations.hook("error", errorHook);
 
       await expect(operations.read("test.txt")).rejects.toThrow();
 
@@ -642,12 +642,12 @@ describe("hooks", () => {
       });
 
       const operations = bridge();
-      operations.on("read:before", vi.fn());
-      operations.on("read:after", vi.fn());
-      operations.on("exists:before", vi.fn());
-      operations.on("exists:after", vi.fn());
-      operations.on("listdir:before", vi.fn());
-      operations.on("listdir:after", vi.fn());
+      operations.hook("read:before", vi.fn());
+      operations.hook("read:after", vi.fn());
+      operations.hook("exists:before", vi.fn());
+      operations.hook("exists:after", vi.fn());
+      operations.hook("listdir:before", vi.fn());
+      operations.hook("listdir:after", vi.fn());
 
       const readResult = await operations.read("test.txt");
       const existsResult = await operations.exists("test.txt");

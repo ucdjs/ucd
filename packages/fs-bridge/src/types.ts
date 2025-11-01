@@ -163,7 +163,10 @@ export interface FileSystemBridge extends FileSystemBridgeOperations {
    */
   meta: FileSystemBridgeMetadata;
 
-  on: ReturnType<typeof createHooks<FileSystemBridgeHooks>>["hook"];
+  /**
+   * Hook system for listening to file system events.
+   */
+  hook: ReturnType<typeof createHooks<FileSystemBridgeHooks>>["hook"];
 }
 
 export type FileSystemBridgeFactory<
