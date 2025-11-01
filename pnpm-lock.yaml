@@ -122,8 +122,8 @@ catalogs:
       specifier: 0.4.2
       version: 0.4.2
     hookable:
-      specifier: 5.5.3
-      version: 5.5.3
+      specifier: 6.0.0-rc.1
+      version: 6.0.0-rc.1
     knitwork:
       specifier: 1.2.0
       version: 1.2.0
@@ -615,7 +615,7 @@ importers:
         version: 6.1.4
       hookable:
         specifier: catalog:prod
-        version: 5.5.3
+        version: 6.0.0-rc.1
       pathe:
         specifier: catalog:prod
         version: 2.0.3
@@ -6753,6 +6753,9 @@ packages:
 
   hookable@5.5.3:
     resolution: {integrity: sha512-Yc+BQe8SvoXH1643Qez1zqLRmbA5rCL+sSmk6TVos0LWVfNIB7PGncdlId77WzLGSIB5KaWgTaNTs2lNVEI6VQ==}
+
+  hookable@6.0.0-rc.1:
+    resolution: {integrity: sha512-HTdlk761/7uL1OuzvMicnj5F5pGq+iITNCYuKVXakQGn95zyYl5b8u/t407RrU34Jv0vYMiqtkFXEJKHYSFViQ==}
 
   hosted-git-info@4.1.0:
     resolution: {integrity: sha512-kyCuEOWjJqZuDbRHzL8V93NzQhwIB71oFWSyzVo+KPZI+pnQPPxucdkrOZvkLRnrf5URsQM+IJ09Dw29cRALIA==}
@@ -17069,6 +17072,8 @@ snapshots:
   hono@4.10.1: {}
 
   hookable@5.5.3: {}
+
+  hookable@6.0.0-rc.1: {}
 
   hosted-git-info@4.1.0:
     dependencies:

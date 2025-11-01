@@ -1,4 +1,4 @@
-import type { createHooks } from "hookable";
+import type { HookableCore } from "hookable";
 import type { z } from "zod";
 
 export interface FileSystemBridgeRmOptions {
@@ -166,7 +166,7 @@ export interface FileSystemBridge extends FileSystemBridgeOperations {
   /**
    * Hook system for listening to file system events.
    */
-  hook: ReturnType<typeof createHooks<FileSystemBridgeHooks>>["hook"];
+  hook: HookableCore<FileSystemBridgeHooks>["hook"];
 }
 
 export type FileSystemBridgeFactory<
