@@ -39,15 +39,15 @@ export interface MirrorReport {
   versions: Map<string, MirrorVersionReport>;
 
   summary?: {
-  /**
-   * Total operation duration in milliseconds
-   */
+    /**
+     * Total operation duration in milliseconds
+     */
     duration: number;
 
     counts: {
-    /**
-     * Total number of files that were queued for processing
-     */
+      /**
+       * Total number of files that were queued for processing
+       */
       totalFiles: number;
 
       /**
@@ -67,9 +67,9 @@ export interface MirrorReport {
     };
 
     metrics: {
-    /**
-     * Success rate as a percentage (0-100)
-     */
+      /**
+       * Success rate as a percentage (0-100)
+       */
       successRate: number;
 
       /**
@@ -89,9 +89,9 @@ export interface MirrorReport {
     };
 
     storage: {
-    /**
-     * Human-readable total size of all downloaded files
-     */
+      /**
+       * Human-readable total size of all downloaded files
+       */
       totalSize: string;
 
       /**
@@ -331,28 +331,37 @@ export async function mirror(
         }
 
         // Fetch file content from API
-        const result = await context.client.files.get(item.remotePath);
+        const { data, error, response } = await context.client.files.get(item.remotePath);
 
-        if (result.error) {
+        if (error) {
           throw new UCDStoreGenericError(
-            `Failed to fetch file '${item.filePath}': ${result.error.message}`,
+            `Failed to fetch file '${item.filePath}': ${error.message}`,
           );
         }
 
-        if (!result.data) {
+        if (!data) {
           throw new UCDStoreGenericError(
             `Failed to fetch file '${item.filePath}': no data returned`,
           );
         }
 
-        // TODO: handle this better
-        // Maybe by returning the size from the api in headers?
-        // Since it could allow us to stream the response directly to disk
-        const content = typeof result.data === "string"
-          ? result.data
-          : JSON.stringify(result.data);
+        const contentSize = +(response?.headers.get("content-length") ?? "0");
+        const contentType = response?.headers.get("content-type");
+        let content;
 
-        const contentSize = getContentSize(content);
+        if (typeof data === "string") {
+          content = data;
+        } else if (
+          typeof data === "object"
+          && data !== null
+          && contentType === "application/json"
+        ) {
+          content = JSON.stringify(data);
+        } else {
+          throw new UCDStoreGenericError(
+            `Failed to mirror file '${item.filePath}': unsupported data type received`,
+          );
+        }
 
         await context.fs.write!(item.localPath, content);
 
@@ -430,10 +439,6 @@ function computeSummary(
   } satisfies MirrorReport["summary"];
 
   return summary;
-}
-
-function getContentSize(content: string): number {
-  return new TextEncoder().encode(content).length;
 }
 
 function formatBytes(bytes: number): string {
