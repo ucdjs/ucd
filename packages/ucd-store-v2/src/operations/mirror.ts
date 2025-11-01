@@ -35,80 +35,132 @@ export interface MirrorOptions extends SharedOperationOptions {
   /**
    * Progress callback for tracking downloads
    */
-  onProgress?: (progress: MirrorProgress) => void;
+  onProgress?: MirrorProgressCallback;
 }
 
+export type MirrorProgressCallback = (progress: MirrorProgress) => void;
+
 export interface MirrorProgress {
+  /**
+   * The Unicode version being mirrored
+   */
   version: string;
+
+  /**
+   * The number of files processed so far
+   */
   current: number;
+
+  /**
+   * The total number of files to process
+   */
   total: number;
+
+  /**
+   * The current file being processed
+   */
   file: string;
 }
 
-export interface MirrorResult {
-  timestamp: string;
+interface OverallSummary {
+  /**
+   * Total number of files that were queued for processing
+   */
+  totalFiles: number;
 
   /**
-   * Per-version results
+   * Number of files successfully downloaded
    */
-  versions: VersionMirrorResult[];
+  downloaded: number;
 
   /**
-   * Overall summary
+   * Number of files skipped (already existed locally and force=false)
    */
-  summary: {
-    totalFiles: number;
-    downloaded: number;
-    skipped: number;
-    failed: number;
-    duration: number; // milliseconds
-    totalSize: string;
-  };
+  skipped: number;
+
+  /**
+   * Number of files that failed to download
+   */
+  failed: number;
+
+  /**
+   * Total operation duration in milliseconds
+   */
+  duration: number;
+
+  /**
+   * Human-readable total size of all downloaded files
+   */
+  totalSize: string;
 }
 
-export interface VersionMirrorResult {
+export interface MirrorReport {
+  /** ISO 8601 timestamp when the operation completed */
+  timestamp: string;
+  /**
+   * Results for each mirrored version
+   */
+  versions: MirrorVersionReport[];
+
+  /**
+   * Overall operation statistics
+   */
+  summary: OverallSummary;
+}
+
+/**
+ * Per-version mirror operation results.
+ *
+ * Contains statistics and error details for a single Unicode version that was mirrored.
+ */
+export interface MirrorVersionReport {
+  /** The Unicode version that was mirrored */
   version: string;
+  /** Number of files successfully downloaded for this version */
   filesDownloaded: number;
+  /** Number of files skipped for this version */
   filesSkipped: number;
+  /** Number of files that failed to download for this version */
   filesFailed: number;
+  /** Human-readable total size of downloaded files for this version */
   size: string;
+  /** List of download errors with file paths and reasons */
   errors: Array<{ file: string; reason: string }>;
 }
 
 /**
- * Formats bytes to human-readable string
+ * Internal queue item for processing a single file download.
+ *
+ * Used internally by the mirror operation to track file downloads and associated metadata.
  */
-function formatBytes(bytes: number): string {
-  if (bytes === 0) return "0 B";
-
-  const sizes = ["B", "KB", "MB", "GB", "TB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(1024));
-  const value = bytes / (1024 ** i);
-
-  return `${value.toFixed(2)} ${sizes[i]}`;
+interface MirrorQueueItem {
+  /** The Unicode version for this file */
+  version: string;
+  /** The relative file path within the version */
+  filePath: string;
+  /** The full local filesystem path where the file will be saved */
+  localPath: string;
+  /** The remote path used to fetch the file from the API */
+  remotePath: string;
+  /** Reference to the version report being updated with results */
+  versionResult: MirrorVersionReport;
 }
 
 /**
- * Calculates byte size of content efficiently
+ * Running statistics accumulated during the mirror operation.
+ *
+ * Used to track aggregate numbers across all concurrent downloads.
  */
-function getContentSize(content: string): number {
-  // Use TextEncoder for accurate byte size without creating Blob
-  return new TextEncoder().encode(content).length;
-}
-
-interface MirrorQueueItem {
-  version: string;
-  filePath: string;
-  localPath: string;
-  remotePath: string;
-  versionResult: VersionMirrorResult;
-}
-
 interface SummaryStats {
+  /** Running count of successfully downloaded files */
   downloaded: number;
+  /** Running count of skipped files */
   skipped: number;
+  /** Running count of failed downloads */
   failed: number;
+  /** Accumulated byte size of all downloaded content */
   totalSize: number;
+  /** Total files processed (downloaded + skipped + failed) */
   completed: number;
 }
 
@@ -118,12 +170,12 @@ interface SummaryStats {
  *
  * @param {InternalUCDStoreContext} context - Internal store context
  * @param {MirrorOptions} [options] - Mirror options
- * @returns {Promise<OperationResult<MirrorResult, StoreError>>} Operation result
+ * @returns {Promise<OperationResult<MirrorReport, StoreError>>} Operation result
  */
 export async function mirror(
   context: InternalUCDStoreContext,
   options?: MirrorOptions,
-): Promise<OperationResult<MirrorResult, StoreError>> {
+): Promise<OperationResult<MirrorReport, StoreError>> {
   return tryCatch(async () => {
     if (!hasCapability(context.fs, ["mkdir", "write"])) {
       throw new UCDStoreGenericError("Filesystem does not support required write operations for mirroring.");
@@ -161,7 +213,7 @@ export async function mirror(
 
     debug?.(`Starting mirror for ${versions.length} version(s) with concurrency=${concurrency}`);
 
-    const versionResults = new Map<string, VersionMirrorResult>(
+    const versionResults = new Map<string, MirrorVersionReport>(
       versions.map((version) => [
         version,
         {
@@ -330,4 +382,18 @@ export async function mirror(
       },
     };
   });
+}
+
+function getContentSize(content: string): number {
+  return new TextEncoder().encode(content).length;
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes === 0) return "0 B";
+
+  const sizes = ["B", "KB", "MB", "GB", "TB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  const value = bytes / (1024 ** i);
+
+  return `${value.toFixed(2)} ${sizes[i]}`;
 }
