@@ -29,7 +29,7 @@ describe("analyze", () => {
             path: "ReadMe.txt",
             lastModified: Date.now(),
           },
-        ] satisfies UnicodeTree,
+        ],
       },
     });
 
