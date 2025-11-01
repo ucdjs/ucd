@@ -46,7 +46,6 @@ catalogs:
     "@luxass/unicode-utils-old": npm:@luxass/unicode-utils@0.11.0
     "@unicode-utils/core": 0.12.0-beta.18
     "@luxass/utils": 2.7.2
-    destr: 2.0.5
     farver: 0.4.2
     yargs-parser: 22.0.0
     defu: 6.1.4
