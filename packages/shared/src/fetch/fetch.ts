@@ -9,7 +9,6 @@ import type {
   SafeFetchResponse,
 } from "./types";
 import { isMSWError } from "@luxass/msw-utils/runtime-guards";
-import destr from "destr";
 import { FetchError } from "./error";
 import {
   detectResponseType,
@@ -188,11 +187,12 @@ function createCustomFetch(): CustomFetch {
     if (hasBody) {
       const responseType = context.options.parseAs || detectResponseType(context.response.headers.get("content-type") || "");
 
-      // We override the `.json()` method to parse the body more securely with `destr`
       switch (responseType) {
         case "json": {
           const data = await context.response.text();
-          context.response.data = destr(data);
+          if (data) {
+            context.response.data = JSON.parse(data);
+          }
           break;
         }
         case "stream": {
