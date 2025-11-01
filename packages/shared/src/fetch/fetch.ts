@@ -9,6 +9,7 @@ import type {
   SafeFetchResponse,
 } from "./types";
 import { isMSWError } from "@luxass/msw-utils/runtime-guards";
+import { safeJsonParse } from "../json";
 import { FetchError } from "./error";
 import {
   detectResponseType,
@@ -190,9 +191,7 @@ function createCustomFetch(): CustomFetch {
       switch (responseType) {
         case "json": {
           const data = await context.response.text();
-          if (data) {
-            context.response.data = JSON.parse(data);
-          }
+          context.response.data = safeJsonParse(data) ?? undefined;
           break;
         }
         case "stream": {
