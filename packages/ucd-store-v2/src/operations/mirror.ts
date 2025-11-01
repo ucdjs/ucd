@@ -353,7 +353,7 @@ export async function mirror(
           content = data;
         } else if (
           typeof data === "object"
-          && data !== null
+          && data != null
           && !Array.isArray(data)
           && Object.prototype.toString.call(data) === "[object Object]"
           && contentType === "application/json"
