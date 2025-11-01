@@ -13,7 +13,7 @@ export interface FilesResource {
    * @param {string} path - The path to the file (e.g., "16.0.0/ucd/UnicodeData.txt")
    * @returns {Promise<SafeFetchResponse<string | FileResponse["application/json"]>>} File content as text, JSON, or other format depending on the file type
    */
-  get: (path: string) => Promise<SafeFetchResponse<string | FileResponse["application/json"]>>;
+  get: (path: string) => Promise<SafeFetchResponse<FileResponse[keyof FileResponse]>>;
 
   /**
    * Get the UCD manifest file containing metadata about available files
