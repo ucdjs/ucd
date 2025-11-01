@@ -18,25 +18,25 @@ describe("getExpectedFilePaths", () => {
           {
             type: "file",
             name: "ReadMe.txt",
-            path: "/ReadMe.txt",
+            path: "ReadMe.txt",
             lastModified: Date.now(),
           },
           {
             type: "file",
             name: "UnicodeData.txt",
-            path: "/UnicodeData.txt",
+            path: "UnicodeData.txt",
             lastModified: Date.now(),
           },
           {
             type: "directory",
             name: "ucd",
-            path: "/ucd",
+            path: "ucd",
             lastModified: Date.now(),
             children: [
               {
                 type: "file",
                 name: "emoji-data.txt",
-                path: "/emoji-data.txt",
+                path: "ucd/emoji-data.txt",
                 lastModified: Date.now(),
               },
             ],
@@ -48,9 +48,9 @@ describe("getExpectedFilePaths", () => {
     const result = await getExpectedFilePaths(client, "15.0.0");
 
     expect(result).toEqual([
-      "/ReadMe.txt",
-      "/UnicodeData.txt",
-      "/ucd/emoji-data.txt",
+      "ReadMe.txt",
+      "UnicodeData.txt",
+      "ucd/emoji-data.txt",
     ]);
   });
 
