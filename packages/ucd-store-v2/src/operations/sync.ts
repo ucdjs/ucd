@@ -1,8 +1,10 @@
 import type { OperationResult } from "@ucdjs-internal/shared";
 import type { StoreError } from "../errors";
 import type { InternalUCDStoreContext } from "../types";
+import type { MirrorReport } from "./mirror";
 import { tryCatch } from "@ucdjs-internal/shared";
-import { readManifest } from "../core/manifest";
+import { readManifest, writeManifest } from "../core/manifest";
+import { mirror } from "./mirror";
 
 export interface SyncOptions {
   /**
@@ -44,12 +46,9 @@ export interface SyncResult {
   versions: string[];
 
   /**
-   * Mirror result if mirror: true was used
+   * Report of mirrored versions (if mirroring was performed)
    */
-  mirrored?: {
-    success: string[];
-    failed: string[];
-  };
+  mirrored?: MirrorReport;
 }
 
 /**
@@ -57,34 +56,81 @@ export interface SyncResult {
  * Updates which versions the store knows about (metadata-level operation).
  *
  * @param {InternalUCDStoreContext} context - Internal store context
- * @param {SyncOptions} [_options] - Sync options
+ * @param {SyncOptions} [options] - Sync options
  * @returns {Promise<OperationResult<SyncResult, StoreError>>} Operation result
  */
 export async function sync(
   context: InternalUCDStoreContext,
-  _options?: SyncOptions,
+  options?: SyncOptions,
 ): Promise<OperationResult<SyncResult, StoreError>> {
   return tryCatch(async () => {
-    const [availableVersions, err] = await context.client.versions.list();
-    if (err) throw err;
+    const strategy = options?.strategy ?? "add";
+    const shouldMirror = options?.mirror ?? false;
 
-    const manifest = readManifest(context.fs, context.manifestPath);
+    const apiResult = await context.client.versions.list();
+    if (apiResult.error) throw apiResult.error;
+    if (!apiResult.data) {
+      throw new Error("Failed to fetch Unicode versions: no data returned");
+    }
 
-    // TODO: Implement sync operation
-    // 1. Fetch available versions from API
-    // 2. Read current manifest
-    // 3. Determine added/removed/unchanged based on strategy
-    // 4. Update manifest with new versions
-    // 5. If options.mirror is true, call mirror() for new versions
-    // 6. Return SyncResult
+    const availableVersions = apiResult.data.map(({ version }) => version);
+
+    const manifest = await readManifest(context.fs, context.manifestPath);
+
+    const currentVersions = new Set(Object.keys(manifest));
+    const apiVersions = new Set(availableVersions);
+
+    const added: string[] = [];
+    const removed: string[] = [];
+    const unchanged: string[] = [];
+
+    // Find added versions (in API but not in manifest)
+    for (const version of apiVersions) {
+      if (!currentVersions.has(version)) {
+        added.push(version);
+      } else {
+        unchanged.push(version);
+      }
+    }
+
+    // For "update" strategy, find removed versions (in manifest but not in API)
+    if (strategy === "update") {
+      for (const version of currentVersions) {
+        if (!apiVersions.has(version)) {
+          removed.push(version);
+        }
+      }
+    }
+
+    // Determine versions based on strategy
+    let finalVersions: string[];
+    if (strategy === "add") {
+      // Keep all existing versions and add new ones
+      finalVersions = [...currentVersions, ...added];
+    } else {
+      // Use only API versions (removes unavailable versions)
+      finalVersions = [...apiVersions];
+    }
+
+    await writeManifest(context.fs, context.manifestPath, finalVersions);
 
     const result: SyncResult = {
       timestamp: new Date().toISOString(),
-      added: [],
-      removed: [],
-      unchanged: [],
-      versions: context.versions,
+      added,
+      removed,
+      unchanged,
+      versions: finalVersions,
     };
+
+    // If we should mirror new versions
+    if (shouldMirror && added.length > 0) {
+      const [mirrorReport, mirrorErr] = await mirror(context, {
+        versions: added,
+      });
+
+      if (mirrorErr) throw mirrorErr;
+      result.mirrored = mirrorReport;
+    }
 
     return result;
   });
