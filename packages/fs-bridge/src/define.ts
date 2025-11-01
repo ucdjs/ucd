@@ -76,7 +76,7 @@ export function defineFileSystemBridge<
       ...bridge,
       optionalCapabilities,
       meta: fsBridge.meta,
-      on: hooks.hook.bind(hooks),
+      hook: hooks.hook.bind(hooks),
     };
 
     const bridgeOperationsProxy = new Proxy(newBridge, {
