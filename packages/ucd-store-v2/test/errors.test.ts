@@ -148,7 +148,7 @@ describe("custom errors", () => {
     it("should create error with correct properties and inheritance", () => {
       const manifestPath = "/path/to/.ucd-store.json";
       const message = "malformed JSON";
-      const error = new UCDStoreInvalidManifestError(manifestPath, message);
+      const error = new UCDStoreInvalidManifestError({ manifestPath, message });
 
       expect(error).toBeInstanceOf(Error);
       expect(error).toBeInstanceOf(UCDStoreBaseError);
@@ -160,7 +160,7 @@ describe("custom errors", () => {
     it("should format error message correctly", () => {
       const manifestPath = "/store/.ucd-store.json";
       const message = "schema validation failed";
-      const error = new UCDStoreInvalidManifestError(manifestPath, message);
+      const error = new UCDStoreInvalidManifestError({ manifestPath, message });
 
       expect(error.message).toBe(`invalid manifest at ${manifestPath}: ${message}`);
     });
@@ -171,7 +171,7 @@ describe("custom errors", () => {
       { manifestPath: "/config/store-config.json", message: "invalid version format" },
       { manifestPath: "/home/user/.ucd/manifest.json", message: "unexpected token at line 5" },
     ])("should handle different manifest errors", ({ manifestPath, message }) => {
-      const error = new UCDStoreInvalidManifestError(manifestPath, message);
+      const error = new UCDStoreInvalidManifestError({ manifestPath, message });
 
       expect(error.message).toBe(`invalid manifest at ${manifestPath}: ${message}`);
     });

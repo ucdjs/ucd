@@ -60,19 +60,29 @@ export async function readManifest(
 
   if (!manifestData) {
     debug?.("Failed to read manifest: store manifest is empty");
-    throw new UCDStoreInvalidManifestError(manifestPath, "store manifest is empty");
+    throw new UCDStoreInvalidManifestError({
+      manifestPath,
+      message: "store manifest is empty",
+    });
   }
 
   const jsonData = safeJsonParse(manifestData);
   if (!jsonData) {
     debug?.("Failed to read manifest: store manifest is not valid JSON");
-    throw new UCDStoreInvalidManifestError(manifestPath, "store manifest is not a valid JSON");
+    throw new UCDStoreInvalidManifestError({
+      manifestPath,
+      message: "store manifest is not a valid JSON",
+    });
   }
 
   const parsedManifest = UCDStoreManifestSchema.safeParse(jsonData);
   if (!parsedManifest.success) {
     debug?.("Failed to read manifest: store manifest failed schema validation", { errors: parsedManifest.error.issues });
-    throw new UCDStoreInvalidManifestError(manifestPath, `store manifest does not match expected schema: ${parsedManifest.error.message}`);
+    throw new UCDStoreInvalidManifestError({
+      manifestPath,
+      message: "store manifest does not match expected schema",
+      details: parsedManifest.error.issues.map((issue) => issue.message),
+    });
   }
 
   return parsedManifest.data;

@@ -1,7 +1,7 @@
 import { join } from "node:path";
 import { createMemoryMockFS } from "#test-utils/fs-bridges";
 import { defineFileSystemBridge } from "@ucdjs/fs-bridge";
-import { describe, expect, it } from "vitest";
+import { assert, describe, expect, it } from "vitest";
 import { testdir } from "vitest-testdirs";
 import { readManifest, writeManifest } from "../../src/core/manifest";
 import { UCDStoreInvalidManifestError } from "../../src/errors";
@@ -197,13 +197,16 @@ describe("readManifest", () => {
 
     await fs.write!(manifestPath, JSON.stringify(["15.0.0", "14.0.0"]));
 
-    await expect(readManifest(fs, manifestPath)).rejects.toThrow(
-      UCDStoreInvalidManifestError,
-    );
+    const err = await readManifest(fs, manifestPath).then((v) => {
+      expect.fail("Expected to throw, but resolved with:", v);
+    }).catch((e) => e);
 
-    await expect(readManifest(fs, manifestPath)).rejects.toThrow(
-      "store manifest is not a valid JSON",
-    );
+    assert.instanceOf(err, UCDStoreInvalidManifestError);
+
+    expect(err.message).toContain("store manifest does not match expected schema");
+    expect(err.details).toEqual([
+      "Invalid input: expected record, received array",
+    ]);
   });
 
   it("should handle manifest with empty object", async () => {

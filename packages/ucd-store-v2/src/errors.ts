@@ -1,6 +1,7 @@
 // Base error class for UCD Store
 // All store errors extend this class, to make it easier
 // to filter errors.
+
 export abstract class UCDStoreBaseError extends Error {
   constructor(message: string) {
     super(message);
@@ -61,12 +62,22 @@ export class UCDStoreBridgeUnsupportedOperation extends UCDStoreBaseError {
 }
 
 export class UCDStoreInvalidManifestError extends UCDStoreBaseError {
-  private manifestPath: string;
+  public readonly manifestPath: string;
+  public readonly details: string[];
 
-  constructor(manifestPath: string, message: string) {
+  constructor({
+    manifestPath,
+    message,
+    details,
+  }: {
+    manifestPath: string;
+    message: string;
+    details?: string[];
+  }) {
     super(`invalid manifest at ${manifestPath}: ${message}`);
     this.name = "UCDStoreInvalidManifestError";
     this.manifestPath = manifestPath;
+    this.details = details || [];
   }
 }
 
