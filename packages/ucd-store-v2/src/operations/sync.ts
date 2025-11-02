@@ -88,8 +88,19 @@ export async function sync(
     for (const version of apiVersions) {
       if (!currentVersions.has(version)) {
         added.push(version);
-      } else {
-        unchanged.push(version);
+      }
+    }
+
+    // Find unchanged versions based on strategy
+    if (strategy === "add") {
+      // All current versions are unchanged (kept)
+      unchanged.push(...currentVersions);
+    } else {
+      // Only versions in both API and manifest are unchanged
+      for (const version of currentVersions) {
+        if (apiVersions.has(version)) {
+          unchanged.push(version);
+        }
       }
     }
 

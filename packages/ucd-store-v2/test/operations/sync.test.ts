@@ -98,7 +98,7 @@ describe("sync", () => {
       timestamp: expect.any(String),
       added: ["15.1.0"],
       removed: [], // add strategy doesn't remove
-      unchanged: ["16.0.0"],
+      unchanged: ["16.0.0", "14.0.0"],
       versions: expect.arrayContaining(["16.0.0", "15.1.0", "14.0.0"]),
     });
     expect(data?.versions).toHaveLength(3);
