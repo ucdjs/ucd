@@ -11,7 +11,7 @@ export interface FilesResource {
    * Get a file or directory listing from the Unicode data
    *
    * @param {string} path - The path to the file (e.g., "16.0.0/ucd/UnicodeData.txt")
-   * @returns {Promise<SafeFetchResponse<string | FileResponse["application/json"]>>} File content as text, JSON, or other format depending on the file type
+   * @returns {Promise<SafeFetchResponse<FileResponse[keyof FileResponse]>>} File content as text, JSON, or other format depending on the file type
    */
   get: (path: string) => Promise<SafeFetchResponse<FileResponse[keyof FileResponse]>>;
 
@@ -40,7 +40,7 @@ export function createFilesResource(options: CreateFilesResourceOptions): FilesR
     async getManifest() {
       const url = new URL(endpoints.manifest, baseUrl);
 
-      return customFetch.safe<ManifestResponse>(url.toString(), {
+      return customFetch.safe(url.toString(), {
         parseAs: "json",
       });
     },
