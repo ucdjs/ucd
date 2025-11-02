@@ -24,29 +24,98 @@ You can define a custom filesystem bridge using the `defineFileSystemBridge` fun
 import { defineFileSystemBridge } from "@ucdjs/fs-bridge";
 
 const MyFileSystemBridge = defineFileSystemBridge({
-  read: async (path) => {
-    // Implement your read logic here
+  meta: {
+    name: "My Custom Bridge",
+    description: "A custom file system bridge"
   },
-  write: async (path, content) => {
-    // Implement your write logic here
-  },
-  listdir: async (path, recursive = false) => {
-    // Implement your directory listing logic here
-  },
-  mkdir: async (path) => {
-    // Implement your directory creation logic here
-  },
-  exists: async (path) => {
-    // Implement your existence check logic here
-  },
-  stat: async (path) => {
-    // Implement your file stats retrieval logic here
-  },
-  rm: async (path, options) => {
-    // Implement your file/directory removal logic here
+  setup() {
+    return {
+      // Required operations
+      read: async (path) => {
+        // Implement your read logic here
+      },
+      exists: async (path) => {
+        // Implement your existence check logic here
+      },
+      listdir: async (path, recursive = false) => {
+        // Implement your directory listing logic here
+      },
+
+      // Optional operations
+      write: async (path, content) => {
+        // Implement your write logic here
+      },
+      mkdir: async (path) => {
+        // Implement your directory creation logic here
+      },
+      rm: async (path, options) => {
+        // Implement your file/directory removal logic here
+      }
+    };
   }
 });
 ```
+
+### Async/Sync Mode Detection
+
+The bridge automatically detects whether it should operate in **async mode** or **sync mode** based on the implementation of the required operations (`read`, `exists`, `listdir`):
+
+- **Async Mode**: If ANY required operation is an `async` function, unsupported operations return a rejected Promise
+- **Sync Mode**: If ALL required operations are synchronous, unsupported operations throw synchronously
+
+This ensures a consistent API within each bridge type.
+
+#### Async Bridge Example
+
+```typescript
+const asyncBridge = defineFileSystemBridge({
+  meta: { name: "Async Bridge" },
+  setup() {
+    return {
+      read: async (path) => fetchContent(path),    // Async
+      exists: async (path) => checkExists(path),    // Async
+      listdir: async (path) => fetchList(path),     // Async
+      // write, mkdir, rm are not implemented
+    };
+  }
+})();
+
+// Unsupported operations return rejected Promise (can use await)
+try {
+  await asyncBridge.write?.("file.txt", "content");
+} catch (error) {
+  console.error("Write not supported:", error);
+}
+```
+
+#### Sync Bridge Example
+
+```typescript
+const syncBridge = defineFileSystemBridge({
+  meta: { name: "Sync Bridge" },
+  setup() {
+    const store = new Map();
+    return {
+      read: (path) => store.get(path),      // Sync
+      exists: (path) => store.has(path),    // Sync
+      listdir: (path) => [],                // Sync
+      // write, mkdir, rm are not implemented
+    };
+  }
+})();
+
+// Unsupported operations throw synchronously (no async overhead)
+try {
+  syncBridge.write?.("file.txt", "content");
+} catch (error) {
+  console.error("Write not supported:", error);
+}
+```
+
+**Why this matters:**
+- **Async bridges** maintain a consistent async API - all operations can be awaited
+- **Sync bridges** have zero async overhead - perfect for in-memory operations
+- The mode is detected automatically - no configuration needed
 
 ### Predefined Bridges
 
