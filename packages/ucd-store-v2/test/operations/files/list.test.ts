@@ -91,7 +91,7 @@ describe("listFiles", () => {
         },
       });
 
-      fs.on("listdir:before", () => {
+      fs.hook("listdir:before", () => {
         throw new Error("Read failed");
       });
 
@@ -184,7 +184,7 @@ describe("listFiles", () => {
         },
       });
 
-      fs.on("listdir:before", () => {
+      fs.hook("listdir:before", () => {
         throw new Error("Read failed");
       });
 

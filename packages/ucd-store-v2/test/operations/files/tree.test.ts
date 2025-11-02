@@ -110,7 +110,7 @@ describe("getFileTree", () => {
         },
       });
 
-      fs.on("listdir:before", () => {
+      fs.hook("listdir:before", () => {
         throw new Error("Read failed");
       });
 
@@ -221,7 +221,7 @@ describe("getFileTree", () => {
         },
       });
 
-      fs.on("listdir:before", () => {
+      fs.hook("listdir:before", () => {
         throw new Error("Read failed");
       });
 

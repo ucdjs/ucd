@@ -75,7 +75,7 @@ describe("getFile", () => {
         },
       });
 
-      fs.on("read:before", () => {
+      fs.hook("read:before", () => {
         throw new Error("Read failed");
       });
 
@@ -177,7 +177,7 @@ describe("getFile", () => {
         },
       });
 
-      fs.on("read:before", () => {
+      fs.hook("read:before", () => {
         throw new Error("Read failed");
       });
 
