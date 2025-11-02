@@ -9,6 +9,7 @@ import type { ListFilesOptions } from "./operations/files/list";
 import type { GetFileTreeOptions } from "./operations/files/tree";
 import type { MirrorOptions, MirrorReport } from "./operations/mirror";
 import type { SyncOptions, SyncResult } from "./operations/sync";
+import { C } from "@vitest/runner/dist/hooks.d-C0RE9A6t";
 
 /**
  * Strategy for handling version conflicts when manifest exists and versions are provided.
@@ -206,6 +207,13 @@ export interface UCDStoreOperations {
    * @experimental This method is under development and may change
    */
   analyze: (options?: AnalyzeOptions) => Promise<OperationResult<Map<string, AnalysisReport>, StoreError>>;
+
+  /**
+   * Compares a version to another version in the store.
+   *
+   * @experimental This method is under development and may change
+   */
+  compare: (options?: CompareOptions) => Promise<OperationResult<VersionComparison, StoreError>>;
 
   /**
    * File operations namespace
