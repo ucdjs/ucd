@@ -22,7 +22,7 @@ describe("store init", () => {
   beforeEach(() => {
     mockStoreApi({
       responses: {
-        "/api/v1/versions": [...UNICODE_VERSION_METADATA],
+        "/api/v1/versions": UNICODE_VERSION_METADATA,
         "/api/v1/versions/{version}/file-tree": [{
           type: "file",
           name: "ArabicShaping.txt",
