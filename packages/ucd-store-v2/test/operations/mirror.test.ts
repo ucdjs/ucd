@@ -212,6 +212,10 @@ describe("mirror", () => {
   it("should support custom concurrency limit", async () => {
     const DELAY_MS = 30;
     const FILE_COUNT = 10;
+    const CONCURRENCY_LIMIT = 5;
+
+    let currentConcurrent = 0;
+    let maxConcurrent = 0;
 
     mockStoreApi({
       versions: ["16.0.0"],
@@ -222,8 +226,15 @@ describe("mirror", () => {
           type: "file",
         })),
         "/api/v1/files/{wildcard}": configure({
-          latency: DELAY_MS,
-          response: () => HttpResponse.text("file content"),
+          response: async () => {
+            currentConcurrent++;
+            maxConcurrent = Math.max(maxConcurrent, currentConcurrent);
+
+            await new Promise((resolve) => setTimeout(resolve, DELAY_MS));
+
+            currentConcurrent--;
+            return HttpResponse.text("file content");
+          },
         }),
       },
     });
@@ -240,14 +251,9 @@ describe("mirror", () => {
       manifestPath: "/test/.ucd-store.json",
     });
 
-    // With concurrency: 5 and DELAY_MS per file:
-    // Sequential would take: 10 * 30ms = 300ms+
-    // Concurrent (limit 5): 2 batches * 30ms = 60ms+
-    const startTime = Date.now();
     const [data, error] = await mirror(context, {
-      concurrency: 5,
+      concurrency: CONCURRENCY_LIMIT,
     });
-    const duration = Date.now() - startTime;
 
     expect(error).toBeNull();
     expect(data).toBeDefined();
@@ -256,8 +262,7 @@ describe("mirror", () => {
     const v16 = data!.versions.get("16.0.0")!;
     expect(v16.counts.downloaded).toBe(FILE_COUNT);
 
-    // Duration should be less than 100ms
-    // Since a bit of overhead is expected
-    expect(duration).toBeLessThan(100);
+    expect(maxConcurrent).toBeLessThanOrEqual(CONCURRENCY_LIMIT);
+    expect(maxConcurrent).toBeGreaterThanOrEqual(2);
   });
 });
