@@ -45,7 +45,7 @@ jobs:
         with:
           max-age: ${{ github.event_name == 'pull_request' && 0 || github.event.inputs.max-age || 432000 }}
           mode: ${{ github.event_name == 'pull_request' && 'normal' || (github.event.inputs.mode || 'normal') }}
-          ref-key: ${{ github.event_name == 'pull_request' && 'refs/pull/${{ github.event.pull_request.number }}/merge' || (github.event.inputs.ref-key || '') }}
+          ref-key: ${{ github.event_name == 'pull_request' && format('refs/pull/{0}/merge', github.event.pull_request.number) || (github.event.inputs.ref-key || '') }}
           debug: ${{ github.event.inputs.debug || 'false' }}
 
 
