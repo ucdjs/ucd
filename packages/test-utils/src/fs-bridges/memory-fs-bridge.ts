@@ -30,14 +30,14 @@ export const createMemoryMockFS = defineFileSystemBridge({
     }
 
     return {
-      read: async (path) => {
+      read: (path) => {
         const content = state.files.get(path);
         if (content === undefined) {
           throw new Error(`ENOENT: no such file or directory, open '${path}'`);
         }
         return content;
       },
-      exists: async (path) => {
+      exists: (path) => {
         // fast path for checking direct entry existence
         if (state.files.has(path)) {
           return true;
@@ -54,7 +54,7 @@ export const createMemoryMockFS = defineFileSystemBridge({
 
         return false;
       },
-      listdir: async (path, recursive = false) => {
+      listdir: (path, recursive = false) => {
         const entries: FSEntry[] = [];
         const normalizedPath = normalizeRootPath(path);
         const pathPrefix = normalizedPath === "" ? "" : (normalizedPath.endsWith("/") ? normalizedPath : `${normalizedPath}/`);
@@ -132,16 +132,16 @@ export const createMemoryMockFS = defineFileSystemBridge({
 
         return entries;
       },
-      write: async (path, data, encoding = "utf8") => {
+      write: (path, data, encoding = "utf8") => {
         const content = typeof data === "string"
           ? data
           : Buffer.from(data).toString(encoding);
         state.files.set(path, content);
       },
-      mkdir: async (_path) => {
+      mkdir: (_path) => {
         // no-op: directories are implicit in flat Map storage
       },
-      rm: async (path, options) => {
+      rm: (path, options) => {
         // TODO(luxass): should we align this with real node:fs behavior and throw if file/dir doesn't exist?
 
         // remove file, if the path matches explicitly
