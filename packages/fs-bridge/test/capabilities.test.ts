@@ -262,7 +262,7 @@ describe("proxy error handling", () => {
     });
 
     const fs = bridge();
-    await expect(() => fs.write?.("test.txt", "content")).rejects.toThrow(
+    expect(() => fs.write?.("test.txt", "content")).toThrow(
       "File system bridge does not support the 'write' capability.",
     );
   });
@@ -282,7 +282,7 @@ describe("proxy error handling", () => {
 
     const fs = bridge();
 
-    await expect(() => fs.mkdir?.("new-dir")).rejects.toThrow(
+    expect(() => fs.mkdir?.("new-dir")).toThrow(
       "File system bridge does not support the 'mkdir' capability.",
     );
   });
@@ -301,7 +301,7 @@ describe("proxy error handling", () => {
     });
 
     const fs = bridge();
-    await expect(() => fs.rm?.("test.txt")).rejects.toThrow(
+    expect(() => fs.rm?.("test.txt")).toThrow(
       "File system bridge does not support the 'rm' capability.",
     );
   });
@@ -350,9 +350,9 @@ describe("proxy error handling", () => {
     await expect(fs.exists("test.txt")).resolves.toBe(true);
 
     // unsupported operations should throw
-    await expect(() => fs.write?.("test.txt", "content")).rejects.toThrow();
-    await expect(() => fs.mkdir?.("dir")).rejects.toThrow();
-    await expect(() => fs.rm?.("test.txt")).rejects.toThrow();
+    expect(() => fs.write?.("test.txt", "content")).toThrow();
+    expect(() => fs.mkdir?.("dir")).toThrow();
+    expect(() => fs.rm?.("test.txt")).toThrow();
   });
 
   it("should not interfere with capabilities property access", () => {
@@ -391,9 +391,9 @@ describe("proxy error handling", () => {
 
     const fs = bridge();
     // multiple calls to unsupported operations should all throw
-    await expect(() => fs.write?.("file1.txt", "content1")).rejects.toThrow();
-    await expect(() => fs.write?.("file2.txt", "content2")).rejects.toThrow();
-    await expect(() => fs.write?.("file3.txt", "content3")).rejects.toThrow();
+    expect(() => fs.write?.("file1.txt", "content1")).toThrow();
+    expect(() => fs.write?.("file2.txt", "content2")).toThrow();
+    expect(() => fs.write?.("file3.txt", "content3")).toThrow();
   });
 });
 
