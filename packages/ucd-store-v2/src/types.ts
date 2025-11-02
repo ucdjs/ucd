@@ -180,8 +180,14 @@ export interface UCDStoreOperations {
    *
    * Example: Fetches the list of available Unicode versions from the API and updates the manifest.
    *
-   * @deprecated This needs to be implemented properly
-   */
+   /**
+    * Synchronizes the store manifest with available versions from the API.
+    * This is a metadata-level operation that updates which versions the store knows about.
+    *
+    * Example: Fetches the list of available Unicode versions from the API and updates the manifest.
+    *
+    * @experimental This method is under development and may change
+    */
   sync: (options?: SyncOptions) => Promise<OperationResult<SyncResult, StoreError>>;
 
   /**
@@ -190,14 +196,14 @@ export interface UCDStoreOperations {
    *
    * Example: Downloads all .txt files for version 16.0.0 to local storage.
    *
-   * @deprecated This needs to be implemented properly
+   * @experimental This method is under development and may change
    */
   mirror: (options?: MirrorOptions) => Promise<OperationResult<MirrorReport, StoreError>>;
 
   /**
    * Analyzes Unicode data in the store.
    *
-   * @deprecated This needs to be implemented properly
+   * @experimental This method is under development and may change
    */
   analyze: (options?: AnalyzeOptions) => Promise<OperationResult<Map<string, AnalysisReport>, StoreError>>;
 
