@@ -1,6 +1,6 @@
 import type { FileSystemBridgeOperations } from "../src/types";
 import { assert, describe, expect, it, vi } from "vitest";
-import { assertCapability, BridgeUnsupportedOperation } from "../src";
+import { assertCapability, BridgeUnsupportedOperation, hasCapability } from "../src";
 import { defineFileSystemBridge } from "../src/define";
 
 function createTemporaryTestBridge(capabilities: {
@@ -134,7 +134,46 @@ describe("capabilities", () => {
     });
   });
 
-  describe("proxy behavior for unsupported operations", () => {
+  describe("hasCapability", () => {
+    it("should return true for single supported capability", () => {
+      const fs = createTemporaryTestBridge({ write: true });
+      expect(hasCapability(fs, "write")).toBe(true);
+    });
+
+    it("should return false for single unsupported capability", () => {
+      const fs = createTemporaryTestBridge({ write: false });
+      expect(hasCapability(fs, "write")).toBe(false);
+      expect(hasCapability(fs, "mkdir")).toBe(false);
+      expect(hasCapability(fs, "rm")).toBe(false);
+    });
+
+    it("should return true when all capabilities in array are supported", () => {
+      const fs = createTemporaryTestBridge({ write: true, mkdir: true, rm: true });
+      expect(hasCapability(fs, ["write", "mkdir"])).toBe(true);
+      expect(hasCapability(fs, ["write", "mkdir", "rm"])).toBe(true);
+    });
+
+    it("should return false when any capability in array is unsupported", () => {
+      const fs = createTemporaryTestBridge({ write: true, mkdir: false });
+      expect(hasCapability(fs, ["write", "mkdir"])).toBe(false);
+      expect(hasCapability(fs, ["write"])).toBe(true);
+    });
+
+    it("should work as type guard", () => {
+      const fs = createTemporaryTestBridge({ write: true, mkdir: true });
+
+      if (hasCapability(fs, "write")) {
+        expect(fs.write).toBeDefined();
+      }
+
+      if (hasCapability(fs, ["write", "mkdir"])) {
+        expect(fs.write).toBeDefined();
+        expect(fs.mkdir).toBeDefined();
+      }
+    });
+  });
+
+  describe("unsupported operation handling", () => {
     it("should throw synchronously when calling unsupported operation", () => {
       const bridge = defineFileSystemBridge({
         meta: { name: "Read-Only", description: "Read-only bridge" },
@@ -153,24 +192,23 @@ describe("capabilities", () => {
       expect(() => fs.rm?.("file.txt")).toThrow(BridgeUnsupportedOperation);
     });
 
-    it("should be catchable with await despite throwing synchronously", async () => {
+    it("should be catchable with await", async () => {
       const bridge = defineFileSystemBridge({
         meta: { name: "Read-Only", description: "Read-only bridge" },
-        setup: () => ({
-          read: vi.fn().mockResolvedValue("content"),
-          exists: vi.fn().mockResolvedValue(true),
-          listdir: vi.fn().mockResolvedValue([]),
-        }),
+        setup: () => {
+          return {
+            read: vi.fn().mockResolvedValue("content"),
+            exists: vi.fn().mockResolvedValue(true),
+            listdir: vi.fn().mockResolvedValue([]),
+          };
+        },
       });
 
       const fs = bridge();
 
-      try {
-        await fs.write?.("test.txt", "content");
-        expect.fail("Should have thrown");
-      } catch (error) {
-        expect(error).toBeInstanceOf(BridgeUnsupportedOperation);
-      }
+      await expect(fs.write?.("test.txt", "content")).rejects.toBeInstanceOf(
+        BridgeUnsupportedOperation,
+      );
     });
 
     it("should allow supported operations to work", async () => {
