@@ -1,15 +1,10 @@
 import type {
-  FileSystemBridge,
   FileSystemBridgeFactory,
   FileSystemBridgeHooks,
   FileSystemBridgeObject,
   FileSystemBridgeOperations,
-  FileSystemBridgeRmOptions,
-  FSEntry,
   HasOptionalCapabilityMap,
   HookKey,
-  HookPayload,
-  HookPayloadMap,
   OptionalCapabilityKey,
   OptionalFileSystemBridgeOperations,
 } from "./types";
@@ -23,6 +18,7 @@ import {
   BridgeSetupError,
   BridgeUnsupportedOperation,
 } from "./errors";
+import { detectBridgeRuntimeMode, getPayloadForHook } from "./utils";
 
 const debug = createDebugger("ucdjs:fs-bridge:define");
 
@@ -128,7 +124,7 @@ export function defineFileSystemBridge<
 
     const hooks = new HookableCore<FileSystemBridgeHooks>();
     const optionalCapabilities = inferOptionalCapabilitiesFromOperations(operations);
-    const isAsyncMode = detectOverallBridgeMode(operations);
+    const isAsyncMode = detectBridgeRuntimeMode(operations);
 
     const baseWrapperOptions = {
       hooks,
@@ -152,29 +148,6 @@ export function defineFileSystemBridge<
       rm: createOperationWrapper("rm", baseWrapperOptions),
     };
   };
-}
-
-/**
- * Detects whether the bridge operates in async mode by inspecting required operations.
- *
- * A bridge is considered "async mode" if ANY of the required operations (read, exists, listdir)
- * is an async function. This ensures consistent error handling for unsupported operations.
- *
- * @internal
- *
- * @param {FileSystemBridgeOperations} operations - The bridge operations object
- * @returns {boolean} true if the bridge is in async mode, false for sync mode
- */
-function detectOverallBridgeMode(operations: FileSystemBridgeOperations): boolean {
-  // Check only required operations since they are always implemented
-  const requiredOperations = [
-    operations.read,
-    operations.exists,
-    operations.listdir,
-  ];
-
-  // If any required operation is async, the entire bridge is in async mode
-  return requiredOperations.some((op) => op.constructor.name === "AsyncFunction");
 }
 
 interface OperationWrapperOptions {
@@ -217,7 +190,6 @@ function createOperationWrapper<T extends keyof FileSystemBridgeOperations>(oper
     };
   }
 
-  // Return wrapped operation with hooks
   return (...args: unknown[]) => {
     try {
       const beforePayload = getPayloadForHook(operationName, "before", args);
@@ -243,7 +215,6 @@ function createOperationWrapper<T extends keyof FileSystemBridgeOperations>(oper
           .catch((err: unknown) => handleError(operationName, args, err, hooks));
       }
 
-      // Synchronous result
       const afterPayload = getPayloadForHook(operationName, "after", args, result);
       hooks.callHook(`${operationName}:after` as HookKey, afterPayload);
       return result;
@@ -314,86 +285,4 @@ function handleError(
     `Unexpected error in '${String(operation)}' operation: ${err.message}`,
     err,
   );
-}
-
-function getPayloadForHook(
-  property: string,
-  phase: "before" | "after",
-  args: unknown[],
-  result?: unknown,
-): HookPayload {
-  switch (property) {
-    case "read": {
-      if (phase === "before") {
-        return {
-          path: args[0] as string,
-        } satisfies HookPayloadMap["read:before"];
-      } else {
-        return {
-          path: args[0] as string,
-          content: result as string,
-        } satisfies HookPayloadMap["read:after"];
-      }
-    }
-
-    case "write": {
-      if (phase === "before") {
-        return {
-          path: args[0] as string,
-          content: args[1] as string,
-          encoding: (args[2] as BufferEncoding | undefined),
-        } satisfies HookPayloadMap["write:before"];
-      } else {
-        return {
-          path: args[0] as string,
-        } satisfies HookPayloadMap["write:after"];
-      }
-    }
-
-    case "listdir": {
-      if (phase === "before") {
-        return {
-          path: args[0] as string,
-          recursive: (args[1] as boolean | undefined) ?? false,
-        } satisfies HookPayloadMap["listdir:before"];
-      } else {
-        return {
-          path: args[0] as string,
-          recursive: (args[1] as boolean | undefined) ?? false,
-          entries: result as FSEntry[],
-        } satisfies HookPayloadMap["listdir:after"];
-      }
-    }
-
-    case "exists": {
-      if (phase === "before") {
-        return {
-          path: args[0] as string,
-        } satisfies HookPayloadMap["exists:before"];
-      } else {
-        return {
-          path: args[0] as string,
-          exists: result as boolean,
-        } satisfies HookPayloadMap["exists:after"];
-      }
-    }
-
-    case "mkdir": {
-      return {
-        path: args[0] as string,
-      } satisfies (HookPayloadMap["mkdir:before"] & HookPayloadMap["mkdir:after"]);
-    }
-
-    case "rm": {
-      return {
-        path: args[0] as string,
-        ...(args[1] as FileSystemBridgeRmOptions),
-      } satisfies (HookPayloadMap["rm:before"] & HookPayloadMap["rm:after"]);
-    }
-
-    default:
-      throw new BridgeGenericError(
-        `Failed to construct hook payload for '${property}:${phase}' hook`,
-      );
-  }
 }
