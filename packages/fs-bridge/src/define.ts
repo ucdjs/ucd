@@ -1,4 +1,5 @@
 import type {
+  FileSystemBridge,
   FileSystemBridgeFactory,
   FileSystemBridgeHooks,
   FileSystemBridgeObject,
@@ -45,9 +46,9 @@ export function defineFileSystemBridge<
 
     const { state } = fsBridge;
 
-    let bridge = null;
+    let operations: FileSystemBridgeOperations;
     try {
-      bridge = fsBridge.setup({
+      operations = fsBridge.setup({
         options,
         state: (structuredClone(state) ?? {}) as TState,
         resolveSafePath,
@@ -61,90 +62,86 @@ export function defineFileSystemBridge<
     }
 
     const hooks = new HookableCore<FileSystemBridgeHooks>();
+    const optionalCapabilities = inferOptionalCapabilitiesFromOperations(operations);
 
-    const optionalCapabilities = inferOptionalCapabilitiesFromOperations(bridge);
-    const bridgeOperations: (keyof FileSystemBridgeOperations)[] = [
-      "read",
-      "write",
-      "listdir",
-      "exists",
-      "mkdir",
-      "rm",
-    ];
-
-    const newBridge = {
-      ...bridge,
-      optionalCapabilities,
+    return {
       meta: fsBridge.meta,
+      optionalCapabilities,
       hook: hooks.hook.bind(hooks),
+
+      // required operations
+      read: createOperationWrapper("read", operations.read, hooks, operations),
+      exists: createOperationWrapper("exists", operations.exists, hooks, operations),
+      listdir: createOperationWrapper("listdir", operations.listdir, hooks, operations),
+
+      // optional operations
+      write: createOperationWrapper("write", operations.write, hooks, operations),
+      mkdir: createOperationWrapper("mkdir", operations.mkdir, hooks, operations),
+      rm: createOperationWrapper("rm", operations.rm, hooks, operations),
     };
+  };
+}
 
-    const bridgeOperationsProxy = new Proxy(newBridge, {
-      get(target, property) {
-        const val = target[property as keyof typeof target];
+/**
+ * @internal
+ */
+function createOperationWrapper<T extends keyof FileSystemBridgeOperations>(
+  operationName: T,
+  operation: FileSystemBridgeOperations[T] | undefined,
+  hooks: HookableCore<FileSystemBridgeHooks>,
+  operationsContext: FileSystemBridgeOperations,
+): any {
+  // If operation doesn't exist, return function that throws
+  if (operation == null || typeof operation !== "function") {
+    return (...args: unknown[]) => {
+      debug?.("Attempted to call unsupported operation", { operation: operationName });
+      const error = new BridgeUnsupportedOperation(operationName as OptionalCapabilityKey);
 
-        // if it's an operation method and not implemented, throw
-        if (typeof property === "string" && bridgeOperations.includes(property as keyof FileSystemBridgeOperations)) {
-          if (val == null || typeof val !== "function") {
-            return (...args: unknown[]) => {
-              debug?.("Attempted to call unsupported operation", { operation: property });
-              const error = new BridgeUnsupportedOperation(property as OptionalCapabilityKey);
+      // Call error hook for unsupported operations
+      hooks.callHook("error", {
+        method: operationName,
+        path: args[0] as string,
+        error,
+        args,
+      });
 
-              // call error hook for unsupported operations
-              hooks.callHook("error", {
-                method: property as keyof FileSystemBridgeOperations,
-                path: args[0] as string,
-                error,
-                args,
-              });
+      throw error;
+    };
+  }
 
-              throw error;
-            };
-          }
+  // Return wrapped operation with hooks
+  return (...args: unknown[]) => {
+    try {
+      const beforePayload = getPayloadForHook(operationName, "before", args);
+      hooks.callHook(`${operationName}:before` as HookKey, beforePayload);
 
-          const originalMethod = val as (...args: unknown[]) => unknown;
+      // Call with the original operations context, to preserve "this"
+      const result = (operation as any).apply(operationsContext, args);
 
-          if (typeof originalMethod === "function") {
-            return (...args: unknown[]) => {
-              try {
-                const beforePayload = getPayloadForHook(property, "before", args);
-
-                hooks.callHook(`${property}:before` as HookKey, beforePayload);
-
-                const result = originalMethod.apply(target, args);
-
-                // check if result is a promise
-                if (result && typeof (result as PromiseLike<unknown>)?.then === "function") {
-                  if (!("catch" in (result as Promise<unknown>))) {
-                    throw new BridgeGenericError(
-                      `The promise returned by '${String(property)}' operation does not support .catch()`,
-                    );
-                  }
-
-                  return (result as Promise<unknown>)
-                    .then((res) => {
-                      const afterPayload = getPayloadForHook(property, "after", args, res);
-                      hooks.callHook(`${property}:after` as HookKey, afterPayload);
-                      return res;
-                    })
-                    .catch((err: unknown) => handleError(property, args, err, hooks));
-                }
-
-                const afterPayload = getPayloadForHook(property, "after", args, result);
-                hooks.callHook(`${property}:after` as HookKey, afterPayload);
-                return result;
-              } catch (err: unknown) {
-                return handleError(property, args, err, hooks);
-              }
-            };
-          }
+      // Check if result is a promise
+      if (result && typeof (result as PromiseLike<unknown>)?.then === "function") {
+        if (!("catch" in (result as Promise<unknown>))) {
+          throw new BridgeGenericError(
+            `The promise returned by '${operationName}' operation does not support .catch()`,
+          );
         }
 
-        return val;
-      },
-    });
+        return (result as Promise<unknown>)
+          .then((res) => {
+            const afterPayload = getPayloadForHook(operationName, "after", args, res);
+            hooks.callHook(`${operationName}:after` as HookKey, afterPayload);
+            return res;
+          })
+          .catch((err: unknown) => handleError(operationName, args, err, hooks));
+      }
 
-    return bridgeOperationsProxy;
+      // Synchronous result
+      const afterPayload = getPayloadForHook(operationName, "after", args, result);
+      hooks.callHook(`${operationName}:after` as HookKey, afterPayload);
+      return result;
+    } catch (err: unknown) {
+      return handleError(operationName, args, err, hooks);
+    }
   };
 }
 
@@ -159,6 +156,9 @@ function inferOptionalCapabilitiesFromOperations(ops: OptionalFileSystemBridgeOp
   };
 }
 
+/**
+ * @internal
+ */
 function handleError(
   operation: PropertyKey,
   args: unknown[],
@@ -184,14 +184,27 @@ function handleError(
     throw err;
   }
 
+  // If the error is not an Error instance, wrap it
+  if (!(err instanceof Error)) {
+    debug?.("Non-Error thrown in bridge operation", {
+      operation: String(operation),
+      error: String(err),
+    });
+
+    throw new BridgeGenericError(
+      `Non-Error thrown in '${String(operation)}' operation: ${String(err)}`,
+    );
+  }
+
   // wrap unexpected errors in BridgeGenericError
   debug?.("Unexpected error in bridge operation", {
     operation: String(operation),
-    error: err instanceof Error ? err.message : String(err),
+    error: err.message,
   });
+
   throw new BridgeGenericError(
-    `Unexpected error in '${String(operation)}' operation: ${err instanceof Error ? err.message : String(err)}`,
-    err instanceof Error ? err : undefined,
+    `Unexpected error in '${String(operation)}' operation: ${err.message}`,
+    err,
   );
 }
 
