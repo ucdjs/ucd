@@ -26,6 +26,71 @@ import {
 
 const debug = createDebugger("ucdjs:fs-bridge:define");
 
+/**
+ * Defines a file system bridge that provides a unified interface for file operations.
+ *
+ * The bridge automatically detects whether it should operate in async or sync mode by inspecting
+ * the required operations (`read`, `exists`, `listdir`). This detection affects how unsupported
+ * operations behave:
+ *
+ * - **Async Mode**: If ANY required operation is an `async` function, the bridge operates in async mode.
+ *   Unsupported operations will return a rejected Promise.
+ * - **Sync Mode**: If ALL required operations are synchronous, the bridge operates in sync mode.
+ *   Unsupported operations will throw synchronously.
+ *
+ * This ensures a consistent API within each bridge: async bridges are fully awaitable,
+ * while sync bridges have zero async overhead.
+ *
+ * @template TOptionsSchema - Zod schema for bridge options
+ * @template TState - State object type for the bridge
+ * @param {FileSystemBridgeObject<TOptionsSchema, TState>} fsBridge - Bridge definition object
+ * @returns {FileSystemBridgeFactory<TOptionsSchema>} Factory function that creates bridge instances
+ *
+ * @example
+ * ```ts
+ * // Sync Bridge (e.g., memory bridge)
+ * const syncBridge = defineFileSystemBridge({
+ *   meta: { name: "Sync Bridge" },
+ *   setup() {
+ *     const store = new Map();
+ *     return {
+ *       read: (path) => store.get(path),   // Sync
+ *       exists: (path) => store.has(path), // Sync
+ *       listdir: (path) => [],             // Sync
+ *     };
+ *   }
+ * })();
+ *
+ * // Unsupported operations throw synchronously
+ * try {
+ *   syncBridge.write?.("file.txt", "content");
+ * } catch (error) {
+ *   // Catches synchronous throw
+ * }
+ * ```
+ *
+ * @example
+ * ```ts
+ * // Async Bridge (e.g., HTTP/Node bridge)
+ * const asyncBridge = defineFileSystemBridge({
+ *   meta: { name: "Async Bridge" },
+ *   setup() {
+ *     return {
+ *       read: async (path) => fetchContent(path),  // Async
+ *       exists: async (path) => checkExists(path), // Async
+ *       listdir: async (path) => fetchList(path),  // Async
+ *     };
+ *   }
+ * })();
+ *
+ * // Unsupported operations return rejected Promise
+ * try {
+ *   await asyncBridge.write?.("file.txt", "content");
+ * } catch (error) {
+ *   // Catches async rejection
+ * }
+ * ```
+ */
 export function defineFileSystemBridge<
   TOptionsSchema extends z.ZodType = z.ZodNever,
   TState extends Record<string, unknown> = Record<string, unknown>,
@@ -63,6 +128,13 @@ export function defineFileSystemBridge<
 
     const hooks = new HookableCore<FileSystemBridgeHooks>();
     const optionalCapabilities = inferOptionalCapabilitiesFromOperations(operations);
+    const isAsyncMode = detectOverallBridgeMode(operations);
+
+    const baseWrapperOptions = {
+      hooks,
+      operations,
+      isAsyncMode,
+    } satisfies OperationWrapperOptions;
 
     return {
       meta: fsBridge.meta,
@@ -70,28 +142,58 @@ export function defineFileSystemBridge<
       hook: hooks.hook.bind(hooks),
 
       // required operations
-      read: createOperationWrapper("read", operations.read, hooks, operations),
-      exists: createOperationWrapper("exists", operations.exists, hooks, operations),
-      listdir: createOperationWrapper("listdir", operations.listdir, hooks, operations),
+      read: createOperationWrapper("read", baseWrapperOptions),
+      exists: createOperationWrapper("exists", baseWrapperOptions),
+      listdir: createOperationWrapper("listdir", baseWrapperOptions),
 
       // optional operations
-      write: createOperationWrapper("write", operations.write, hooks, operations),
-      mkdir: createOperationWrapper("mkdir", operations.mkdir, hooks, operations),
-      rm: createOperationWrapper("rm", operations.rm, hooks, operations),
+      write: createOperationWrapper("write", baseWrapperOptions),
+      mkdir: createOperationWrapper("mkdir", baseWrapperOptions),
+      rm: createOperationWrapper("rm", baseWrapperOptions),
     };
   };
 }
 
 /**
+ * Detects whether the bridge operates in async mode by inspecting required operations.
+ *
+ * A bridge is considered "async mode" if ANY of the required operations (read, exists, listdir)
+ * is an async function. This ensures consistent error handling for unsupported operations.
+ *
+ * @internal
+ *
+ * @param {FileSystemBridgeOperations} operations - The bridge operations object
+ * @returns {boolean} true if the bridge is in async mode, false for sync mode
+ */
+function detectOverallBridgeMode(operations: FileSystemBridgeOperations): boolean {
+  // Check only required operations since they are always implemented
+  const requiredOperations = [
+    operations.read,
+    operations.exists,
+    operations.listdir,
+  ];
+
+  // If any required operation is async, the entire bridge is in async mode
+  return requiredOperations.some((op) => op.constructor.name === "AsyncFunction");
+}
+
+interface OperationWrapperOptions {
+  hooks: HookableCore<FileSystemBridgeHooks>;
+  operations: FileSystemBridgeOperations;
+  isAsyncMode: boolean;
+}
+
+/**
  * @internal
  */
-function createOperationWrapper<T extends keyof FileSystemBridgeOperations>(
-  operationName: T,
-  operation: FileSystemBridgeOperations[T] | undefined,
-  hooks: HookableCore<FileSystemBridgeHooks>,
-  operationsContext: FileSystemBridgeOperations,
-): any {
-  // If operation doesn't exist, return function that throws
+function createOperationWrapper<T extends keyof FileSystemBridgeOperations>(operationName: T, {
+  hooks,
+  operations,
+  isAsyncMode,
+}: OperationWrapperOptions) {
+  const operation = operations[operationName];
+
+  // If operation doesn't exist, return function that throws/rejects based on bridge mode
   if (operation == null || typeof operation !== "function") {
     return (...args: unknown[]) => {
       debug?.("Attempted to call unsupported operation", { operation: operationName });
@@ -105,6 +207,12 @@ function createOperationWrapper<T extends keyof FileSystemBridgeOperations>(
         args,
       });
 
+      // For async bridges, return rejected Promise to maintain consistent async API
+      // For sync bridges, throw synchronously for zero overhead
+      if (isAsyncMode) {
+        return Promise.reject(error);
+      }
+
       throw error;
     };
   }
@@ -116,7 +224,7 @@ function createOperationWrapper<T extends keyof FileSystemBridgeOperations>(
       hooks.callHook(`${operationName}:before` as HookKey, beforePayload);
 
       // Call with the original operations context, to preserve "this"
-      const result = (operation as any).apply(operationsContext, args);
+      const result = (operation as any).apply(operations, args);
 
       // Check if result is a promise
       if (result && typeof (result as PromiseLike<unknown>)?.then === "function") {
