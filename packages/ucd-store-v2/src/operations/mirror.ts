@@ -224,6 +224,8 @@ export async function mirror(
 
     let report: MirrorVersionReport | undefined;
     for (const version of versions) {
+      const totalMetricValue = (report?.files.downloaded.length ?? 0) + (report?.files.skipped.length ?? 0) + (report?.files.failed.length ?? 0);
+
       report = {
         version,
         files: {
@@ -244,13 +246,13 @@ export async function mirror(
         },
         metrics: {
           get cacheHitRate() {
-            return (report?.files.skipped.length ?? 0) / (report?.files.downloaded.length ?? 1) * 100;
+            return totalMetricValue > 0 ? (report?.files.skipped.length ?? 0) / totalMetricValue * 100 : 0;
           },
           get failureRate() {
-            return (report?.files.failed.length ?? 0) / (report?.files.downloaded.length ?? 1) * 100;
+            return totalMetricValue > 0 ? (report?.files.failed.length ?? 0) / totalMetricValue * 100 : 0;
           },
           get successRate() {
-            return (report?.files.downloaded.length ?? 0) / (report?.files.downloaded.length ?? 1) * 100;
+            return totalMetricValue > 0 ? (report?.files.downloaded.length ?? 0) / totalMetricValue * 100 : 0;
           },
         },
         errors: [],
