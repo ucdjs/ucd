@@ -25,7 +25,7 @@ export function createInternalContext(options: {
     filter: options.filter,
     fs: options.fs,
     basePath: options.basePath,
-    versions: options.versions,
+    versions: [...options.versions],
     manifestPath: options.manifestPath,
   };
 }
