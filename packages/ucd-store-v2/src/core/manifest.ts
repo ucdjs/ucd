@@ -72,7 +72,7 @@ export async function readManifest(
   const parsedManifest = UCDStoreManifestSchema.safeParse(jsonData);
   if (!parsedManifest.success) {
     debug?.("Failed to read manifest: store manifest failed schema validation", { errors: parsedManifest.error.issues });
-    throw new UCDStoreInvalidManifestError(manifestPath, `store manifest is not a valid JSON: ${parsedManifest.error.message}`);
+    throw new UCDStoreInvalidManifestError(manifestPath, `store manifest does not match expected schema: ${parsedManifest.error.message}`);
   }
 
   return parsedManifest.data;
