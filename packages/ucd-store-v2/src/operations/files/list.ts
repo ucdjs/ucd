@@ -21,8 +21,9 @@ export interface ListFilesOptions extends SharedOperationOptions {
 }
 
 /**
- * Retrieves all file paths for a specific Unicode version from the local store.
- * By default, only lists files that are actually present in the store.
+ * Retrieves all file paths for a specific Unicode version from the local store,
+ * with optional fallback to the API when allowApi is enabled.
+ * By default, only lists files that are actually present in the local store.
  * Flattens the file tree and applies global filters and optional method-specific filters.
  *
  * @param {InternalUCDStoreContext} context - Internal store context with client, filters, and configuration
