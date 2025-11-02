@@ -147,7 +147,7 @@ describe("mirror", () => {
           },
         ],
         "/api/v1/files/{wildcard}": ({ params }) => {
-          return HttpResponse.json(`Content of ${params.wildcard}`);
+          return HttpResponse.text(`Content of ${params.wildcard}`);
         },
       },
     });
