@@ -318,32 +318,32 @@ describe("http fs-bridge", () => {
 
   describe("unsupported operations", () => {
     it("should throw error for unsupported write operation with optional chaining", async () => {
-      await expect(() => bridge.write?.("test.txt", "content")).rejects.toThrowError(
+      await expect(bridge.write?.("test.txt", "content")).rejects.toThrowError(
         "File system bridge does not support the 'write' capability.",
       );
     });
 
     it("should throw error for unsupported mkdir operation with optional chaining", async () => {
-      await expect(() => bridge.mkdir?.("new-dir")).rejects.toThrowError(
+      await expect(bridge.mkdir?.("new-dir")).rejects.toThrowError(
         "File system bridge does not support the 'mkdir' capability.",
       );
     });
 
     it("should throw error for unsupported rm operation with optional chaining", async () => {
-      await expect(() => bridge.rm?.("test.txt")).rejects.toThrowError(
+      await expect(bridge.rm?.("test.txt")).rejects.toThrowError(
         "File system bridge does not support the 'rm' capability.",
       );
     });
 
     it("should throw error when calling unsupported operations directly without optional chaining", async () => {
       // Direct calls (without ?) should also throw due to proxy
-      await expect(() => (bridge as any).write("test.txt", "content")).rejects.toThrow(
+      await expect((bridge as any).write("test.txt", "content")).rejects.toThrow(
         "File system bridge does not support the 'write' capability.",
       );
-      await expect(() => (bridge as any).mkdir("new-dir")).rejects.toThrow(
+      await expect((bridge as any).mkdir("new-dir")).rejects.toThrow(
         "File system bridge does not support the 'mkdir' capability.",
       );
-      await expect(() => (bridge as any).rm("test.txt")).rejects.toThrow(
+      await expect((bridge as any).rm("test.txt")).rejects.toThrow(
         "File system bridge does not support the 'rm' capability.",
       );
     });
