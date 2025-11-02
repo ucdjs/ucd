@@ -449,7 +449,8 @@ function formatBytes(bytes: number): string {
 
   const sizes = ["B", "KB", "MB", "GB", "TB"];
   const i = Math.floor(Math.log(bytes) / Math.log(1024));
-  const value = bytes / (1024 ** i);
+  const clampedI = Math.max(0, Math.min(i, sizes.length - 1));
+  const value = bytes / (1024 ** clampedI);
 
-  return `${value.toFixed(2)} ${sizes[i]}`;
+  return `${value.toFixed(2)} ${sizes[clampedI]}`;
 }
