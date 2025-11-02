@@ -72,9 +72,9 @@ const asyncBridge = defineFileSystemBridge({
   meta: { name: "Async Bridge" },
   setup() {
     return {
-      read: async (path) => fetchContent(path),    // Async
-      exists: async (path) => checkExists(path),    // Async
-      listdir: async (path) => fetchList(path),     // Async
+      read: async (path) => fetchContent(path), // Async
+      exists: async (path) => checkExists(path), // Async
+      listdir: async (path) => fetchList(path), // Async
       // write, mkdir, rm are not implemented
     };
   }
@@ -96,9 +96,9 @@ const syncBridge = defineFileSystemBridge({
   setup() {
     const store = new Map();
     return {
-      read: (path) => store.get(path),      // Sync
-      exists: (path) => store.has(path),    // Sync
-      listdir: (path) => [],                // Sync
+      read: (path) => store.get(path), // Sync
+      exists: (path) => store.has(path), // Sync
+      listdir: (path) => [], // Sync
       // write, mkdir, rm are not implemented
     };
   }
