@@ -36,7 +36,7 @@ describe("store init command", () => {
 
     mockStoreApi({
       responses: {
-        "/api/v1/versions": [...UNICODE_VERSION_METADATA],
+        "/api/v1/versions": UNICODE_VERSION_METADATA,
         "/api/v1/versions/{version}/file-tree": [{
           type: "file",
           name: "ArabicShaping.txt",
@@ -97,7 +97,7 @@ describe("store init command", () => {
     const storePath = await testdir();
     mockStoreApi({
       responses: {
-        "/api/v1/versions": [...UNICODE_VERSION_METADATA],
+        "/api/v1/versions": UNICODE_VERSION_METADATA,
         "/api/v1/versions/{version}/file-tree": [{
           type: "file",
           name: "ArabicShaping.txt",
@@ -138,7 +138,7 @@ describe("store init command", () => {
 
     mockStoreApi({
       responses: {
-        "/api/v1/versions": [...UNICODE_VERSION_METADATA],
+        "/api/v1/versions": UNICODE_VERSION_METADATA,
         "/api/v1/versions/{version}/file-tree": [{
           type: "file",
           name: "ArabicShaping.txt",
@@ -183,7 +183,7 @@ describe("store init command", () => {
 
     mockStoreApi({
       responses: {
-        "/api/v1/versions": [...UNICODE_VERSION_METADATA],
+        "/api/v1/versions": UNICODE_VERSION_METADATA,
         "/api/v1/versions/{version}/file-tree": [{
           type: "file",
           name: "ArabicShaping.txt",

@@ -10,7 +10,7 @@ describe("file paths", () => {
     mockStoreApi({
       baseUrl: UCDJS_API_BASE_URL,
       responses: {
-        "/api/v1/versions": [...UNICODE_VERSION_METADATA],
+        "/api/v1/versions": UNICODE_VERSION_METADATA,
       },
     });
 
