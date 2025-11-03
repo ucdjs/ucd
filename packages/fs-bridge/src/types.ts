@@ -106,6 +106,13 @@ export interface FileSystemBridgeMetadata {
   description: string;
 }
 
+export interface FileSystemBridgeMetadataWithAsyncMode extends FileSystemBridgeMetadata {
+  /**
+   * Indicates whether the bridge operates in async mode
+   */
+  isAsyncMode: boolean;
+}
+
 export interface FileSystemBridgeObject<
   TOptionsSchema extends z.ZodType = z.ZodNever,
   TState extends Record<string, unknown> = Record<string, unknown>,
@@ -163,7 +170,7 @@ export interface FileSystemBridge extends FileSystemBridgeOperations {
   /**
    * Metadata about this file system bridge.
    */
-  meta: FileSystemBridgeMetadata;
+  meta: FileSystemBridgeMetadataWithAsyncMode;
 
   /**
    * Hook system for listening to file system events.

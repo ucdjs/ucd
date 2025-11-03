@@ -133,7 +133,10 @@ export function defineFileSystemBridge<
     } satisfies OperationWrapperOptions;
 
     return {
-      meta: fsBridge.meta,
+      meta: {
+        ...fsBridge.meta,
+        isAsyncMode,
+      },
       optionalCapabilities,
       hook: hooks.hook.bind(hooks),
 
