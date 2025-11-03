@@ -180,43 +180,45 @@ async function handleError(
   err: unknown,
   hooks: HookableCore<FileSystemBridgeHooks>,
 ): Promise<never> {
-  // If the error is not an Error instance, wrap it
-  if (!(err instanceof Error)) {
+  const knownError = (() => {
+    if (err instanceof Error) {
+      return err;
+    }
+
     debug?.("Non-Error thrown in bridge operation", {
       operation: String(operation),
       error: String(err),
     });
 
-    err = new BridgeGenericError(
+    return new BridgeGenericError(
       `Non-Error thrown in '${String(operation)}' operation: ${String(err)}`,
     );
-  }
+  })();
 
   await hooks.callHook("error", {
     method: operation as keyof FileSystemBridgeOperations,
     path: args[0] as string,
-    error: err,
+    error: knownError,
     args,
   });
-  
 
-  // re-throw custom bridge errors directly
-  if (err instanceof BridgeBaseError) {
-    throw err;
-  }
+  if (knownError instanceof BridgeBaseError || knownError instanceof PathUtilsBaseError) {
+    debug?.("Known error thrown in bridge operation", {
+      operation: String(operation),
+      error: knownError.message,
+    });
 
-  if (err instanceof PathUtilsBaseError) {
-    throw err;
+    throw knownError;
   }
 
   // wrap unexpected errors in BridgeGenericError
   debug?.("Unexpected error in bridge operation", {
     operation: String(operation),
-    error: err.message,
+    error: knownError.message,
   });
 
   throw new BridgeGenericError(
-    `Unexpected error in '${String(operation)}' operation: ${err.message}`,
-    err,
+    `Unexpected error in '${String(operation)}' operation: ${knownError.message}`,
+    knownError,
   );
 }
