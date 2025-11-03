@@ -174,62 +174,85 @@ describe("capabilities", () => {
   });
 
   describe("unsupported operation handling", () => {
-    it("should throw synchronously when calling unsupported operation", () => {
+    it("should throw synchronously for sync bridges when calling unsupported operation", () => {
       const bridge = defineFileSystemBridge({
-        meta: { name: "Read-Only", description: "Read-only bridge" },
+        meta: { name: "Sync Read-Only", description: "Sync read-only bridge" },
         setup: () => ({
-          read: vi.fn().mockResolvedValue("content"),
-          exists: vi.fn().mockResolvedValue(true),
-          listdir: vi.fn().mockResolvedValue([]),
+          read: (_path: string) => "content",
+          exists: (_path: string) => true,
+          listdir: (_path: string) => [],
         }),
       });
 
       const fs = bridge();
 
-      // These should throw immediately (sync throw)
+      // Sync bridge should throw synchronously
+      expect(fs.meta.isAsyncMode).toBe(false);
       expect(() => fs.write?.("test.txt", "content")).toThrow(BridgeUnsupportedOperation);
       expect(() => fs.mkdir?.("dir")).toThrow(BridgeUnsupportedOperation);
       expect(() => fs.rm?.("file.txt")).toThrow(BridgeUnsupportedOperation);
     });
 
-    it("should be catchable with await", async () => {
+    it("should return rejected Promise for async bridges when calling unsupported operation", async () => {
       const bridge = defineFileSystemBridge({
-        meta: { name: "Read-Only", description: "Read-only bridge" },
-        setup: () => {
-          return {
-            read: vi.fn().mockResolvedValue("content"),
-            exists: vi.fn().mockResolvedValue(true),
-            listdir: vi.fn().mockResolvedValue([]),
-          };
-        },
-      });
-
-      const fs = bridge();
-
-      await expect(fs.write?.("test.txt", "content")).rejects.toBeInstanceOf(
-        BridgeUnsupportedOperation,
-      );
-    });
-
-    it("should allow supported operations to work", async () => {
-      const readMock = vi.fn().mockResolvedValue("test content");
-      const bridge = defineFileSystemBridge({
-        meta: { name: "Test", description: "Test bridge" },
+        meta: { name: "Async Read-Only", description: "Async read-only bridge" },
         setup: () => ({
-          read: readMock,
-          exists: vi.fn().mockResolvedValue(true),
-          listdir: vi.fn().mockResolvedValue([]),
+          read: async (_path: string) => "content",
+          exists: async (_path: string) => true,
+          listdir: async (_path: string) => [],
         }),
       });
 
       const fs = bridge();
 
+      expect(fs.meta.isAsyncMode).toBe(true);
+      await expect(fs.write?.("test.txt", "content")).rejects.toThrow(BridgeUnsupportedOperation);
+      await expect(fs.mkdir?.("dir")).rejects.toThrow(BridgeUnsupportedOperation);
+      await expect(fs.rm?.("file.txt")).rejects.toThrow(BridgeUnsupportedOperation);
+    });
+
+    it("should allow supported operations to work in sync mode", () => {
+      const readMock = vi.fn().mockReturnValue("test content");
+      const bridge = defineFileSystemBridge({
+        meta: { name: "Sync Test", description: "Sync test bridge" },
+        setup: () => ({
+          read: readMock,
+          exists: (_path: string) => true,
+          listdir: (_path: string) => [],
+        }),
+      });
+
+      const fs = bridge();
+
+      expect(fs.meta.isAsyncMode).toBe(false);
+
+      const result = fs.read("test.txt");
+      expect(result).toBe("test content");
+      expect(readMock).toHaveBeenCalledWith("test.txt");
+
+      expect(() => fs.write?.("test.txt", "content")).toThrow();
+    });
+
+    it("should allow supported operations to work in async mode", async () => {
+      const readMock = vi.fn().mockResolvedValue("test content");
+      const bridge = defineFileSystemBridge({
+        meta: { name: "Async Test", description: "Async test bridge" },
+        setup: () => ({
+          read: readMock,
+          exists: async (_path: string) => true,
+          listdir: async (_path: string) => [],
+        }),
+      });
+
+      const fs = bridge();
+
+      expect(fs.meta.isAsyncMode).toBe(true);
+
       const result = await fs.read("test.txt");
       expect(result).toBe("test content");
       expect(readMock).toHaveBeenCalledWith("test.txt");
 
-      // Write is not supported
-      expect(() => fs.write?.("test.txt", "content")).toThrow();
+      await expect(fs.write?.("test.txt", "content")).rejects.toThrow();
     });
   });
 });
