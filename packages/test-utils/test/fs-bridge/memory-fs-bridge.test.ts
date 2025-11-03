@@ -30,7 +30,7 @@ describe("memory fs bridge", () => {
 
   it("should throw ENOENT for non-existent file", async () => {
     const fs = createMemoryMockFS();
-    await expect(fs.read("missing.txt")).rejects.toThrow("ENOENT: no such file or directory, open 'missing.txt'");
+    expect(() => fs.read("missing.txt")).toThrow("ENOENT: no such file or directory, open 'missing.txt'");
   });
 
   it("should write string content", async () => {
@@ -242,7 +242,7 @@ describe("memory fs bridge", () => {
     const fs = createMemoryMockFS();
 
     assertCapability(fs, "rm");
-    await expect(fs.rm("missing.txt")).resolves.toBeUndefined();
+    expect(() => fs.rm("missing.txt")).not.toThrow();
   });
 
   it("should remove directory recursively", async () => {
