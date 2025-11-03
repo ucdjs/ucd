@@ -196,7 +196,12 @@ function createOperationWrapper<T extends keyof FileSystemBridgeOperations>(oper
   return (...args: unknown[]) => {
     try {
       const beforePayload = getPayloadForHook(operationName, "before", args);
-      hooks.callHook(`${operationName}:before` as HookKey, beforePayload);
+      const res = hooks.callHook(`${operationName}:before` as HookKey, beforePayload);
+      if (res instanceof Promise) {
+        return res.then((err) => {
+          throw err;
+        });
+      }
 
       // Call with the original operations context, to preserve "this"
       const result = (operation as any).apply(operations, args);
