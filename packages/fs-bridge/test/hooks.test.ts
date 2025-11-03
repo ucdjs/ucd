@@ -225,7 +225,7 @@ describe("hooks", () => {
       });
     });
 
-    it("should call error hook for unsupported operations", () => {
+    it("should call error hook for unsupported operations", async () => {
       const errorHook = vi.fn();
       const bridge = defineFileSystemBridge({
         meta: { name: "Read-Only", description: "Read-only" },
@@ -239,7 +239,7 @@ describe("hooks", () => {
       const fs = bridge();
       fs.hook("error", errorHook);
 
-      expect(() => fs.write?.("test.txt", "content")).toThrow(
+      await expect(fs.write?.("test.txt", "content")).rejects.toThrow(
         BridgeUnsupportedOperation,
       );
 
