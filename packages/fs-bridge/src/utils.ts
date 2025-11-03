@@ -180,15 +180,25 @@ async function handleError(
   err: unknown,
   hooks: HookableCore<FileSystemBridgeHooks>,
 ): Promise<never> {
-  // Ensure that we always call the "error" hook with Error instances
-  if (err instanceof Error) {
-    await hooks.callHook("error", {
-      method: operation as keyof FileSystemBridgeOperations,
-      path: args[0] as string,
-      error: err,
-      args,
+  // If the error is not an Error instance, wrap it
+  if (!(err instanceof Error)) {
+    debug?.("Non-Error thrown in bridge operation", {
+      operation: String(operation),
+      error: String(err),
     });
+
+    err = new BridgeGenericError(
+      `Non-Error thrown in '${String(operation)}' operation: ${String(err)}`,
+    );
   }
+
+  await hooks.callHook("error", {
+    method: operation as keyof FileSystemBridgeOperations,
+    path: args[0] as string,
+    error: err,
+    args,
+  });
+  
 
   // re-throw custom bridge errors directly
   if (err instanceof BridgeBaseError) {
@@ -197,18 +207,6 @@ async function handleError(
 
   if (err instanceof PathUtilsBaseError) {
     throw err;
-  }
-
-  // If the error is not an Error instance, wrap it
-  if (!(err instanceof Error)) {
-    debug?.("Non-Error thrown in bridge operation", {
-      operation: String(operation),
-      error: String(err),
-    });
-
-    throw new BridgeGenericError(
-      `Non-Error thrown in '${String(operation)}' operation: ${String(err)}`,
-    );
   }
 
   // wrap unexpected errors in BridgeGenericError
