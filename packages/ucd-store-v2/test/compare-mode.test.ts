@@ -36,11 +36,7 @@ describe("resolveComparisonMode", () => {
         allowApi: false,
       });
 
-      expect(mode).toEqual({
-        type: "local-local",
-        fromLocal: true,
-        toLocal: true,
-      } satisfies ComparisonMode);
+      expect(mode).toEqual(["local", "local"] satisfies ComparisonMode);
     });
 
     it("should return local-api when from is local and to needs API", async () => {
@@ -67,11 +63,7 @@ describe("resolveComparisonMode", () => {
         allowApi: true,
       });
 
-      expect(mode).toEqual({
-        type: "local-api",
-        fromLocal: true,
-        toLocal: false,
-      } satisfies ComparisonMode);
+      expect(mode).toEqual(["local", "api"] satisfies ComparisonMode);
     });
 
     it("should return api-local when from needs API and to is local", async () => {
@@ -98,11 +90,7 @@ describe("resolveComparisonMode", () => {
         allowApi: true,
       });
 
-      expect(mode).toEqual({
-        type: "api-local",
-        fromLocal: false,
-        toLocal: true,
-      } satisfies ComparisonMode);
+      expect(mode).toEqual(["api", "local"] satisfies ComparisonMode);
     });
 
     it("should return api-api when neither version exists locally", async () => {
@@ -128,11 +116,7 @@ describe("resolveComparisonMode", () => {
         allowApi: true,
       });
 
-      expect(mode).toEqual({
-        type: "api-api",
-        fromLocal: false,
-        toLocal: false,
-      } satisfies ComparisonMode);
+      expect(mode).toEqual(["api", "api"] satisfies ComparisonMode);
     });
 
     it("should throw error when from version not local and allowApi is false", async () => {
@@ -212,11 +196,7 @@ describe("resolveComparisonMode", () => {
       });
 
       // Should be local-api because 15.1.0 directory doesn't exist
-      expect(mode).toEqual({
-        type: "local-api",
-        fromLocal: true,
-        toLocal: false,
-      } satisfies ComparisonMode);
+      expect(mode).toEqual(["local", "api"] satisfies ComparisonMode);
     });
 
     it("should check both manifest and directory existence", async () => {
@@ -244,11 +224,7 @@ describe("resolveComparisonMode", () => {
       });
 
       // Should be local-api because 99.0.0 not in manifest
-      expect(mode).toEqual({
-        type: "local-api",
-        fromLocal: true,
-        toLocal: false,
-      } satisfies ComparisonMode);
+      expect(mode).toEqual(["local", "api"] satisfies ComparisonMode);
     });
 
     it("should handle comparing version to itself", async () => {
@@ -274,11 +250,7 @@ describe("resolveComparisonMode", () => {
         allowApi: false,
       });
 
-      expect(mode).toEqual({
-        type: "local-local",
-        fromLocal: true,
-        toLocal: true,
-      } satisfies ComparisonMode);
+      expect(mode).toEqual(["local", "local"] satisfies ComparisonMode);
     });
   });
 
@@ -308,11 +280,7 @@ describe("resolveComparisonMode", () => {
         manualMode: "local-local",
       });
 
-      expect(mode).toEqual({
-        type: "local-local",
-        fromLocal: true,
-        toLocal: true,
-      } satisfies ComparisonMode);
+      expect(mode).toEqual(["local", "local"] satisfies ComparisonMode);
     });
 
     it("should accept valid api-api mode", async () => {
@@ -339,11 +307,7 @@ describe("resolveComparisonMode", () => {
         manualMode: "api-api",
       });
 
-      expect(mode).toEqual({
-        type: "api-api",
-        fromLocal: false,
-        toLocal: false,
-      } satisfies ComparisonMode);
+      expect(mode).toEqual(["api", "api"] satisfies ComparisonMode);
     });
 
     it("should throw error when local-local mode but from version not local", async () => {
@@ -508,11 +472,7 @@ describe("resolveComparisonMode", () => {
         manualMode: "api-api",
       });
 
-      expect(mode).toEqual({
-        type: "api-api",
-        fromLocal: false,
-        toLocal: false,
-      } satisfies ComparisonMode);
+      expect(mode).toEqual(["api", "api"] satisfies ComparisonMode);
     });
   });
 });
