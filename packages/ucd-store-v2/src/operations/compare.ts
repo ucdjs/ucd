@@ -39,22 +39,6 @@ export interface CompareOptions extends SharedOperationOptions {
   mode?: ComparisonModeType;
 }
 
-type SingleModeType = "local" | "api";
-
-/**
- * Comparison mode as a tuple indicating the source for each version.
- * - First element: source for 'from' version ("local" or "api")
- * - Second element: source for 'to' version ("local" or "api")
- *
- * @example
- * ["local", "local"] // Both versions from local storage
- * ["local", "api"]   // From local, to from API
- * ["api", "local"]   // From API, to from local
- * ["api", "api"]     // Both versions from API
- */
-export type ComparisonMode = [from: SingleModeType, to: SingleModeType];
-export type ComparisonModeType = `${SingleModeType}-${SingleModeType}`;
-
 export interface VersionComparison {
   /**
    * The version being compared from
@@ -126,6 +110,149 @@ export interface VersionComparison {
     unchanged: number;
   };
 }
+
+/**
+ * Compare two versions in the store
+ *
+ * @param {InternalUCDStoreContext} context - Internal store context
+ * @param {CompareOptions} [options] - Compare options
+ * @returns {Promise<OperationResult<VersionComparison, StoreError>>} Operation result
+ */
+export async function compare(
+  context: InternalUCDStoreContext,
+  options?: CompareOptions,
+): Promise<OperationResult<VersionComparison, StoreError>> {
+  return tryCatch(async () => {
+    if (!options?.from || !options?.to) {
+      throw new Error("Both 'from' and 'to' versions must be specified");
+    }
+
+    const allowApi = options.allowApi ?? false;
+
+    const [fromSource, toSource] = await resolveComparisonMode({
+      context,
+      fromVersion: options.from,
+      toVersion: options.to,
+      manualMode: options.mode,
+      allowApi,
+    });
+
+    const [fromFiles, toFiles] = await Promise.all([
+      getFileList(context, options.from, fromSource === "local", options),
+      getFileList(context, options.to, toSource === "local", options),
+    ]);
+
+    const fromSet = new Set(fromFiles);
+    const toSet = new Set(toFiles);
+
+    const added: string[] = [];
+    const removed: string[] = [];
+    const incommon: string[] = [];
+
+    for (const file of toFiles) {
+      if (!fromSet.has(file)) {
+        added.push(file);
+      } else {
+        incommon.push(file);
+      }
+    }
+
+    for (const file of fromFiles) {
+      if (!toSet.has(file)) {
+        removed.push(file);
+      }
+    }
+
+    // Compare content of common files to detect modifications
+    const modified: string[] = [];
+    const unchanged: string[] = [];
+
+    if (incommon.length > 0) {
+      const results = await Promise.allSettled(
+        incommon.map(async (filePath) => {
+          // Fetch from content based on mode - use allowApi only if that version needs API
+          const [fromContent, fromContentError] = await getFile(
+            context,
+            options.from,
+            filePath,
+            { allowApi: fromSource === "api", filters: options.filters },
+          );
+
+          if (fromContentError != null) {
+            throw fromContentError;
+          }
+
+          const [toContent, toContentError] = await getFile(
+            context,
+            options.to,
+            filePath,
+            { allowApi: toSource === "api", filters: options.filters },
+          );
+
+          if (toContentError != null) {
+            throw toContentError;
+          }
+
+          return { filePath, fromContent, toContent };
+        }),
+      );
+
+      // Process results and collect any errors
+      const errors: StoreError[] = [];
+      for (const result of results) {
+        if (result.status === "rejected") {
+          errors.push(result.reason);
+        } else {
+          const { fromContent, toContent } = result.value;
+          if (fromContent === toContent) {
+            unchanged.push(result.value.filePath);
+          } else {
+            modified.push(result.value.filePath);
+          }
+        }
+      }
+
+      if (errors.length > 0) {
+        throw errors[0];
+      }
+    }
+
+    return {
+      from: options.from,
+      to: options.to,
+      files: {
+        added: Object.freeze(added),
+        removed: Object.freeze(removed),
+        modified: Object.freeze(modified),
+        unchanged: Object.freeze(unchanged),
+      },
+      counts: {
+        fromTotal: fromFiles.length,
+        toTotal: toFiles.length,
+        added: added.length,
+        removed: removed.length,
+        modified: modified.length,
+        unchanged: unchanged.length,
+      },
+    } satisfies VersionComparison;
+  });
+}
+
+type SingleModeType = "local" | "api";
+
+/**
+ * Comparison mode as a tuple indicating the source for each version.
+ * - First element: source for 'from' version ("local" or "api")
+ * - Second element: source for 'to' version ("local" or "api")
+ *
+ * @example
+ * ["local", "local"] // Both versions from local storage
+ * ["local", "api"]   // From local, to from API
+ * ["api", "local"]   // From API, to from local
+ * ["api", "api"]     // Both versions from API
+ */
+export type ComparisonMode = [from: SingleModeType, to: SingleModeType];
+export type ComparisonModeType = `${SingleModeType}-${SingleModeType}`;
 
 /**
  * @internal
@@ -265,131 +392,4 @@ async function getFileList(
       context.filter(path) && combinedFilter(path),
     );
   }
-}
-
-/**
- * Compare two versions in the store
- *
- * @param {InternalUCDStoreContext} context - Internal store context
- * @param {CompareOptions} [options] - Compare options
- * @returns {Promise<OperationResult<VersionComparison, StoreError>>} Operation result
- */
-export async function compare(
-  context: InternalUCDStoreContext,
-  options?: CompareOptions,
-): Promise<OperationResult<VersionComparison, StoreError>> {
-  return tryCatch(async () => {
-    if (!options?.from || !options?.to) {
-      throw new Error("Both 'from' and 'to' versions must be specified");
-    }
-
-    const allowApi = options.allowApi ?? false;
-
-    const [fromSource, toSource] = await resolveComparisonMode({
-      context,
-      fromVersion: options.from,
-      toVersion: options.to,
-      manualMode: options.mode,
-      allowApi,
-    });
-
-    const [fromFiles, toFiles] = await Promise.all([
-      getFileList(context, options.from, fromSource === "local", options),
-      getFileList(context, options.to, toSource === "local", options),
-    ]);
-
-    const fromSet = new Set(fromFiles);
-    const toSet = new Set(toFiles);
-
-    const added: string[] = [];
-    const removed: string[] = [];
-    const incommon: string[] = [];
-
-    for (const file of toFiles) {
-      if (!fromSet.has(file)) {
-        added.push(file);
-      } else {
-        incommon.push(file);
-      }
-    }
-
-    for (const file of fromFiles) {
-      if (!toSet.has(file)) {
-        removed.push(file);
-      }
-    }
-
-    // Compare content of common files to detect modifications
-    const modified: string[] = [];
-    const unchanged: string[] = [];
-
-    if (incommon.length > 0) {
-      const results = await Promise.allSettled(
-        incommon.map(async (filePath) => {
-          // Fetch from content based on mode - use allowApi only if that version needs API
-          const [fromContent, fromContentError] = await getFile(
-            context,
-            options.from,
-            filePath,
-            { allowApi: fromSource === "api", filters: options.filters },
-          );
-
-          if (fromContentError != null) {
-            throw fromContentError;
-          }
-
-          const [toContent, toContentError] = await getFile(
-            context,
-            options.to,
-            filePath,
-            { allowApi: toSource === "api", filters: options.filters },
-          );
-
-          if (toContentError != null) {
-            throw toContentError;
-          }
-
-          return { filePath, fromContent, toContent };
-        }),
-      );
-
-      // Process results and collect any errors
-      const errors: StoreError[] = [];
-      for (const result of results) {
-        if (result.status === "rejected") {
-          errors.push(result.reason);
-        } else {
-          const { fromContent, toContent } = result.value;
-          if (fromContent === toContent) {
-            unchanged.push(result.value.filePath);
-          } else {
-            modified.push(result.value.filePath);
-          }
-        }
-      }
-
-      if (errors.length > 0) {
-        throw errors[0];
-      }
-    }
-
-    return {
-      from: options.from,
-      to: options.to,
-      files: {
-        added: Object.freeze(added),
-        removed: Object.freeze(removed),
-        modified: Object.freeze(modified),
-        unchanged: Object.freeze(unchanged),
-      },
-      counts: {
-        fromTotal: fromFiles.length,
-        toTotal: toFiles.length,
-        added: added.length,
-        removed: removed.length,
-        modified: modified.length,
-        unchanged: unchanged.length,
-      },
-    } satisfies VersionComparison;
-  });
 }
