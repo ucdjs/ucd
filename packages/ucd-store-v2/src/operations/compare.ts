@@ -36,28 +36,24 @@ export interface CompareOptions extends SharedOperationOptions {
    *
    * @default undefined (auto-detect based on version availability)
    */
-  mode?: ComparisonMode["type"];
+  mode?: ComparisonModeType;
 }
+
+type SingleModeType = "local" | "api";
 
 /**
- * Comparison mode information
+ * Comparison mode as a tuple indicating the source for each version.
+ * - First element: source for 'from' version ("local" or "api")
+ * - Second element: source for 'to' version ("local" or "api")
+ *
+ * @example
+ * ["local", "local"] // Both versions from local storage
+ * ["local", "api"]   // From local, to from API
+ * ["api", "local"]   // From API, to from local
+ * ["api", "api"]     // Both versions from API
  */
-export interface ComparisonMode {
-  /**
-   * The type of comparison being performed
-   */
-  type: "local-local" | "local-api" | "api-local" | "api-api";
-
-  /**
-   * Whether the 'from' version is available locally
-   */
-  fromLocal: boolean;
-
-  /**
-   * Whether the 'to' version is available locally
-   */
-  toLocal: boolean;
-}
+export type ComparisonMode = [from: SingleModeType, to: SingleModeType];
+export type ComparisonModeType = `${SingleModeType}-${SingleModeType}`;
 
 export interface VersionComparison {
   /**
@@ -132,20 +128,18 @@ export interface VersionComparison {
 }
 
 /**
- * Creates a ComparisonMode from a mode type string.
- *
  * @internal
  */
-function resolveModeFromType(type: ComparisonMode["type"]): ComparisonMode {
+function resolveModeFromType(type: ComparisonModeType): ComparisonMode {
   switch (type) {
     case "local-local":
-      return { type: "local-local", fromLocal: true, toLocal: true };
+      return ["local", "local"];
     case "local-api":
-      return { type: "local-api", fromLocal: true, toLocal: false };
+      return ["local", "api"];
     case "api-local":
-      return { type: "api-local", fromLocal: false, toLocal: true };
+      return ["api", "local"];
     case "api-api":
-      return { type: "api-api", fromLocal: false, toLocal: false };
+      return ["api", "api"];
   }
 }
 
@@ -154,8 +148,7 @@ interface ResolveComparisonModeParams {
   fromVersion: string;
   toVersion: string;
   allowApi: boolean;
-
-  manualMode?: ComparisonMode["type"];
+  manualMode?: ComparisonModeType;
 }
 
 /**
@@ -192,23 +185,24 @@ export async function resolveComparisonMode({
   // If manual mode is specified, validate and use it
   if (manualMode) {
     const mode = resolveModeFromType(manualMode);
+    const [fromSource, toSource] = mode;
 
     // Validate mode requirements
-    if (mode.fromLocal && !fromLocal) {
+    if (fromSource === "local" && !fromLocal) {
       throw new UCDStoreGenericError(
         `Cannot use mode '${manualMode}': 'from' version '${fromVersion}' is not available locally`,
         { version: fromVersion },
       );
     }
 
-    if (mode.toLocal && !toLocal) {
+    if (toSource === "local" && !toLocal) {
       throw new UCDStoreGenericError(
         `Cannot use mode '${manualMode}': 'to' version '${toVersion}' is not available locally`,
         { version: toVersion },
       );
     }
 
-    if ((!mode.fromLocal || !mode.toLocal) && !allowApi) {
+    if ((fromSource === "api" || toSource === "api") && !allowApi) {
       throw new UCDStoreGenericError(
         `Cannot use mode '${manualMode}': requires API access but allowApi is false`,
       );
@@ -228,23 +222,15 @@ export async function resolveComparisonMode({
   }
 
   // Determine mode based on availability
-  let type: ComparisonMode["type"];
-
   if (fromLocal && toLocal) {
-    type = "local-local";
+    return ["local", "local"];
   } else if (fromLocal && !toLocal) {
-    type = "local-api";
+    return ["local", "api"];
   } else if (!fromLocal && toLocal) {
-    type = "api-local";
+    return ["api", "local"];
   } else {
-    type = "api-api";
+    return ["api", "api"];
   }
-
-  return {
-    type,
-    fromLocal,
-    toLocal,
-  };
 }
 
 async function getFileList(
@@ -299,7 +285,7 @@ export async function compare(
 
     const allowApi = options.allowApi ?? false;
 
-    const mode = await resolveComparisonMode({
+    const [fromSource, toSource] = await resolveComparisonMode({
       context,
       fromVersion: options.from,
       toVersion: options.to,
@@ -307,10 +293,9 @@ export async function compare(
       allowApi,
     });
 
-    // Fetch file lists based on mode
     const [fromFiles, toFiles] = await Promise.all([
-      getFileList(context, options.from, mode.fromLocal, options),
-      getFileList(context, options.to, mode.toLocal, options),
+      getFileList(context, options.from, fromSource === "local", options),
+      getFileList(context, options.to, toSource === "local", options),
     ]);
 
     const fromSet = new Set(fromFiles);
@@ -346,7 +331,7 @@ export async function compare(
             context,
             options.from,
             filePath,
-            { allowApi: !mode.fromLocal, filters: options.filters },
+            { allowApi: fromSource === "api", filters: options.filters },
           );
 
           if (fromContentError != null) {
@@ -357,7 +342,7 @@ export async function compare(
             context,
             options.to,
             filePath,
-            { allowApi: !mode.toLocal, filters: options.filters },
+            { allowApi: toSource === "api", filters: options.filters },
           );
 
           if (toContentError != null) {
