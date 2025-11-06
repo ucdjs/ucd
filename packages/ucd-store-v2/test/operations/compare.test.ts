@@ -387,6 +387,9 @@ describe("compare", () => {
     // No API responses needed for local-local mode
     mockStoreApi({
       versions: ["16.0.0", "15.1.0"],
+      onRequest: ({ url }) => {
+        expect.fail(`No API requests should be made in local-local mode, but got request to ${url}`);
+      },
     });
 
     const filter = createPathFilter({});
@@ -648,6 +651,54 @@ describe("compare", () => {
       from: "15.1.0",
       to: "16.0.0",
       mode: "local-api", // Force local-api mode
+      allowApi: true,
+    });
+
+    expect(error).toBeNull();
+    expect(data).toBeDefined();
+    expect(data?.files.added).toEqual(["NewFile.txt"]);
+    expect(data?.files.removed).toEqual(["ReadMe.txt"]);
+  });
+
+  it("should allow manually specifying api-local mode", async () => {
+    mockStoreApi({
+      versions: ["16.0.0"],
+      responses: {
+        "/api/v1/versions/{version}/file-tree": ({ params }) => {
+          if (params.version === "15.1.0") {
+            return HttpResponse.json([
+              { type: "file", name: "UnicodeData.txt", path: "UnicodeData.txt", lastModified: Date.now() },
+              { type: "file", name: "ReadMe.txt", path: "ReadMe.txt", lastModified: Date.now() },
+            ]);
+          }
+          return HttpResponse.json([]);
+        },
+      },
+    });
+
+    const filter = createPathFilter({});
+    const fs = createMemoryMockFS({
+      initialFiles: {
+        "/test/15.1.0/UnicodeData.txt": "data",
+        "/test/15.1.0/ReadMe.txt": "readme",
+        "/test/16.0.0/UnicodeData.txt": "data",
+        "/test/16.0.0/NewFile.txt": "new",
+      },
+    });
+
+    const context = createInternalContext({
+      client,
+      filter,
+      fs,
+      basePath: "/test",
+      versions: ["16.0.0"],
+      manifestPath: "/test/.ucd-store.json",
+    });
+
+    const [data, error] = await compare(context, {
+      from: "15.1.0",
+      to: "16.0.0",
+      mode: "api-local", // Force api-local mode
       allowApi: true,
     });
 
