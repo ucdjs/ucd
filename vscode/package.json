@@ -1,7 +1,7 @@
 {
   "name": "vscode-ucd",
   "displayName": "UCD",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Visualize and find information about UCD files.",
   "type": "module",
   "author": {
