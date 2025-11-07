@@ -16,11 +16,17 @@ jobs:
   release:
     name: release
     runs-on: ubuntu-latest
-    if: ${{ github.repository_owner == 'ucdjs' }}
+    if: |
+      github.repository == 'ucdjs/ucd' && (
+        github.event.pusher.name == 'luxass' &&
+        contains(github.event.head_commit.message, 'Merge pull request') &&
+        contains(github.event.head_commit.message, 'release/')
+      )
     permissions:
       contents: write
       pull-requests: write
       id-token: write
+    environment: npm-registry
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
@@ -43,29 +49,4 @@ jobs:
         run: pnpm turbo --filter "./packages/**" build lint test typecheck
 
       - name: create release
-        id: changeset
-        uses: changesets/action@e0145edc7d9d8679003495b11f87bd8ef63c0cba # v1.5.3
-        with:
-          commit: "chore(release): 📦 version packages"
-          title: "chore(release): 📦  version packages"
-          publish: pnpm exec changeset publish
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_CONFIG_PROVENANCE: true
-
-      # changeset has some issues with pnpm so we sync it up manually
-      - name: sync lockfile if necessary
-        if: steps.changeset.outputs.hasChangesets == 'true'
-        run: |
-          git checkout changeset-release/main
-          pnpm install --no-frozen-lockfile
-
-          # check for changes and only commit if there are any
-          if git diff --exit-code; then
-            echo "No changes to commit."
-          else
-            git add .
-            git commit -m "chore(release): 📦 sync lockfile"
-            git push origin changeset-release/main
-          fi
+        run: pnpm release:publish
