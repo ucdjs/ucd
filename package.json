@@ -27,6 +27,7 @@
   },
   "devDependencies": {
     "@types/node": "catalog:types",
+    "@ucdjs/release-scripts": "catalog:monorepo",
     "@vitest/coverage-istanbul": "catalog:testing",
     "@vitest/ui": "catalog:testing",
     "eslint": "catalog:linting",

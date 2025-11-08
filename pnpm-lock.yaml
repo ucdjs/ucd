@@ -78,6 +78,9 @@ catalogs:
       specifier: 0.4.24
       version: 0.4.24
   monorepo:
+    '@ucdjs/release-scripts':
+      specifier: 0.0.0
+      version: 0.0.0
     turbo:
       specifier: 2.5.8
       version: 2.5.8
@@ -251,6 +254,9 @@ importers:
       '@types/node':
         specifier: catalog:types
         version: 22.18.12
+      '@ucdjs/release-scripts':
+        specifier: catalog:monorepo
+        version: 0.0.0
       '@vitest/coverage-istanbul':
         specifier: catalog:testing
         version: 3.2.4(vitest@3.2.4)
@@ -4300,6 +4306,9 @@ packages:
     resolution: {integrity: sha512-SnbaqayTVFEA6/tYumdF0UmybY0KHyKwGPBXnyckFlrrKdhWFrL3a2HIPXHjht5ZOElKGcXfD2D63P36btb+ww==}
     engines: {node: '>=20.0.0'}
 
+  '@ucdjs/release-scripts@0.0.0':
+    resolution: {integrity: sha512-ZjzylPYuNcjITkkMti3GMfzIJoevnrefC7ShvbOkNf6Fi2eep2AiE32ho9+pNiuj589+X5ho/Xi62prBsh8K8A==}
+
   '@ungap/structured-clone@1.3.0':
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
 
@@ -5301,6 +5310,9 @@ packages:
     resolution: {integrity: sha512-buhp5kePrmda3vhc5B9t7pUQXAb2Tnd0qgpkIhPhkHXxJpiPJ11H0ZEU0oBpJ2QztSbzG/ZxMj/CHsYJqRHmyg==}
     engines: {node: '>= 12.0.0'}
 
+  commit-parser@0.4.5:
+    resolution: {integrity: sha512-xCI6Vf55oQJ/LMR3Y5yqtV1aBuGmSaYS6MteZiHGTGBIBA0HKjJGhgDYTQdVI2/7aLQX684kxqYytauFuLYpjA==}
+
   commondir@1.0.1:
     resolution: {integrity: sha512-W9pAhw0ja1Edb5GVdIF1mjZw/ASI0AlShXM83UUGe2DVr5TdAPEA1OA8m/g8zWp9x6On7gqufY+FatDbC3MDQg==}
 
@@ -6192,6 +6204,10 @@ packages:
 
   farver@0.4.2:
     resolution: {integrity: sha512-CuMB1CcrrW6L58Ky2ok7f1hDlAmwELZkuqiTWjsLfzbTE5pCW1ndrUucN51cBhzksIPHc+u3VijzSxPTVGz3MA==}
+
+  farver@1.0.0-beta.1:
+    resolution: {integrity: sha512-rHj+XLOnEJ44miIXJ2W68GKnys5TYQgGhpClfbSzdpKAcYpwdjJjDJMjzj9uLVP243fszLaKDgDFwC89YB37cg==}
+    engines: {node: '>=20'}
 
   fast-deep-equal@3.1.3:
     resolution: {integrity: sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==}
@@ -9143,6 +9159,10 @@ packages:
   termenv@0.4.2:
     resolution: {integrity: sha512-epHsaE/vKyO5wesFG+lTwC0vkhnOZ7xqNpMX9tOzV5pu/r2P7YpadmeNV4fdKMY3e8thpC0EKNbNobzVm0uh8g==}
 
+  termenv@1.0.2:
+    resolution: {integrity: sha512-Qhgg8HwPAwvvzvl8xUXH13R0dLcXqgOCHMfFejf3vGYYxmZfMUwN5jTdB+lDEtlJCxgwH8o349L5O7hU2QxPOA==}
+    engines: {node: '>=20'}
+
   terminal-link@4.0.0:
     resolution: {integrity: sha512-lk+vH+MccxNqgVqSnkMVKx4VLJfnLjDBGzH16JVZjKE2DoxP57s6/vt6JmXV5I3jBcfGrxNrYtC+mPtU7WJztA==}
     engines: {node: '>=18'}
@@ -9187,6 +9207,10 @@ packages:
 
   tinyexec@1.0.1:
     resolution: {integrity: sha512-5uC6DDlmeqiOwCPmK9jMSdOuZTh8bU39Ys6yidB+UTt5hfZUPGAypSgFRiEp+jbi9qH40BLDvy85jIU88wKSqw==}
+
+  tinyexec@1.0.2:
+    resolution: {integrity: sha512-W/KYk+NFhkmsYpuHq5JykngiOCnxeVL8v8dFnqxSD8qEEdRfXk1SDM6JzNqcERbcGYj9tMrDQBYV9cjgnunFIg==}
+    engines: {node: '>=18'}
 
   tinyglobby@0.2.15:
     resolution: {integrity: sha512-j2Zq4NyQYG5XMST4cbs02Ak8iJUdxRM0XI5QyxXuZOzKOINmWurp3smXu3y5wDcJrptwpSjgXHzIQxR0omXljQ==}
@@ -13768,6 +13792,16 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  '@ucdjs/release-scripts@0.0.0':
+    dependencies:
+      commit-parser: 0.4.5
+      debug: 4.4.3(supports-color@10.2.2)
+      farver: 1.0.0-beta.1
+      prompts: 2.4.2
+      tinyexec: 1.0.2
+    transitivePeerDependencies:
+      - supports-color
+
   '@ungap/structured-clone@1.3.0': {}
 
   '@unhead/vue@2.0.17(vue@3.5.22(typescript@5.9.3))':
@@ -14876,6 +14910,8 @@ snapshots:
     optional: true
 
   comment-parser@1.4.1: {}
+
+  commit-parser@0.4.5: {}
 
   commondir@1.0.1: {}
 
@@ -16079,6 +16115,10 @@ snapshots:
   farver@0.4.2:
     dependencies:
       termenv: 0.4.2
+
+  farver@1.0.0-beta.1:
+    dependencies:
+      termenv: 1.0.2
 
   fast-deep-equal@3.1.3: {}
 
@@ -19915,6 +19955,8 @@ snapshots:
 
   termenv@0.4.2: {}
 
+  termenv@1.0.2: {}
+
   terminal-link@4.0.0:
     dependencies:
       ansi-escapes: 7.1.1
@@ -19958,6 +20000,8 @@ snapshots:
   tinyexec@0.3.2: {}
 
   tinyexec@1.0.1: {}
+
+  tinyexec@1.0.2: {}
 
   tinyglobby@0.2.15:
     dependencies:
