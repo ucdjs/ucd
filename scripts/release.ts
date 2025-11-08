@@ -9,6 +9,6 @@ release({
     ]
   },
   prompts: {
-    packages: process.env.CI != null
+    packages: process.env.CI == null
   }
 })
