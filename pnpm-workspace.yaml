@@ -6,9 +6,12 @@ minimumReleaseAge: 1440 # 1 day
 
 minimumReleaseAgeExclude:
   - "@luxass/eslint-config"
-  - "@unicode-utils/*"
   - "@luxass/msw-utils"
   - apache-autoindex-parse
+
+  # Unicode Related Packages
+  - "@unicode-utils/*"
+  - "@ucdjs/*"
 
 packages:
   - "packages/*"
@@ -19,6 +22,7 @@ packages:
 catalogs:
   monorepo:
     turbo: 2.5.8
+    "@ucdjs/release-scripts": 0.0.0
 
   testing:
     "@vitest/coverage-istanbul": 3.2.4
