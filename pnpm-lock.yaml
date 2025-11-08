@@ -251,9 +251,6 @@ importers:
       '@types/node':
         specifier: catalog:types
         version: 22.18.12
-      '@ucdjs/release-scripts':
-        specifier: link:../release-scripts
-        version: link:../release-scripts
       '@vitest/coverage-istanbul':
         specifier: catalog:testing
         version: 3.2.4(vitest@3.2.4)
