@@ -7,5 +7,8 @@ release({
     excluded: [
       "vscode-ucd"
     ]
+  },
+  prompts: {
+    packages: process.env.CI != null
   }
 })
