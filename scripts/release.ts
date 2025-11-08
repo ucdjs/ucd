@@ -12,5 +12,5 @@ release({
     packages: process.env.CI == null,
     versions: process.env.CI == null,
   },
-  githubToken: process.env.MY_CUSTOM_GITHUB_TOKEN!,
+  githubToken: process.env.UCDJS_RELEASE_TOKEN!,
 })
