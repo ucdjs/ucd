@@ -4,8 +4,8 @@ release({
   repo: 'ucdjs/ucd',
   packages: {
     excludePrivate: true,
-  },
-  toTag: (pkg, version) => {
-    return pkg + "@" + version
-  },
+    excluded: [
+      "vscode-ucd"
+    ]
+  }
 })
