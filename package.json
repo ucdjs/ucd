@@ -21,11 +21,11 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
-    "typecheck": "turbo run typecheck"
+    "typecheck": "turbo run typecheck",
+    "release": "node ./scripts/release.ts",
+    "release:publish": "node ./scripts/release-publish.ts"
   },
   "devDependencies": {
-    "@changesets/changelog-github": "catalog:monorepo",
-    "@changesets/cli": "catalog:monorepo",
     "@types/node": "catalog:types",
     "@vitest/coverage-istanbul": "catalog:testing",
     "@vitest/ui": "catalog:testing",

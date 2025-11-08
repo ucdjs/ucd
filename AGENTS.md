@@ -80,11 +80,6 @@ pnpm lint:openapi              # Lint OpenAPI spec with Spectral
 pnpm deploy                    # Deploy to Cloudflare Workers
 ```
 
-### Changesets (for versioning)
-```bash
-pnpm changeset                  # Create a changeset for changes
-```
-
 ### Clean
 ```bash
 pnpm clean                      # Clean build artifacts and node_modules
