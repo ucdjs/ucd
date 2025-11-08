@@ -79,8 +79,8 @@ catalogs:
       version: 0.4.24
   monorepo:
     '@ucdjs/release-scripts':
-      specifier: 0.0.0
-      version: 0.0.0
+      specifier: 0.1.0-beta.2
+      version: 0.1.0-beta.2
     turbo:
       specifier: 2.5.8
       version: 2.5.8
@@ -256,7 +256,7 @@ importers:
         version: 22.18.12
       '@ucdjs/release-scripts':
         specifier: catalog:monorepo
-        version: 0.0.0
+        version: 0.1.0-beta.2
       '@vitest/coverage-istanbul':
         specifier: catalog:testing
         version: 3.2.4(vitest@3.2.4)
@@ -4306,8 +4306,8 @@ packages:
     resolution: {integrity: sha512-SnbaqayTVFEA6/tYumdF0UmybY0KHyKwGPBXnyckFlrrKdhWFrL3a2HIPXHjht5ZOElKGcXfD2D63P36btb+ww==}
     engines: {node: '>=20.0.0'}
 
-  '@ucdjs/release-scripts@0.0.0':
-    resolution: {integrity: sha512-ZjzylPYuNcjITkkMti3GMfzIJoevnrefC7ShvbOkNf6Fi2eep2AiE32ho9+pNiuj589+X5ho/Xi62prBsh8K8A==}
+  '@ucdjs/release-scripts@0.1.0-beta.2':
+    resolution: {integrity: sha512-Tcq3vPxH6crb/luwvINGSm/L82x0vRc2fZBYr2F0fwDFDKU+2M+mpSXjoCDVcDVFe9y2oHL80x9dIBUG5qVpLg==}
 
   '@ungap/structured-clone@1.3.0':
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
@@ -10213,7 +10213,7 @@ snapshots:
   '@antfu/install-pkg@1.1.0':
     dependencies:
       package-manager-detector: 1.3.0
-      tinyexec: 1.0.1
+      tinyexec: 1.0.2
 
   '@antfu/utils@9.2.1': {}
 
@@ -11514,7 +11514,7 @@ snapshots:
       scule: 1.3.0
       semver: 7.7.3
       std-env: 3.9.0
-      tinyexec: 1.0.1
+      tinyexec: 1.0.2
       ufo: 1.6.1
       youch: 4.1.0-beta.11
     transitivePeerDependencies:
@@ -13792,7 +13792,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@ucdjs/release-scripts@0.0.0':
+  '@ucdjs/release-scripts@0.1.0-beta.2':
     dependencies:
       commit-parser: 0.4.5
       debug: 4.4.3(supports-color@10.2.2)
@@ -18370,7 +18370,7 @@ snapshots:
       consola: 3.4.2
       pathe: 2.0.3
       pkg-types: 2.3.0
-      tinyexec: 1.0.1
+      tinyexec: 1.0.2
 
   object-deep-merge@2.0.0: {}
 
