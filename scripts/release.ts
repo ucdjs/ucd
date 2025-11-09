@@ -1,9 +1,9 @@
-import { release } from '@ucdjs/release-scripts'
+import { release } from "@ucdjs/release-scripts"
 
-const workspaceRoot = new URL('../', import.meta.url);
+const workspaceRoot = new URL("../", import.meta.url);
 
 release({
-  repo: 'ucdjs/ucd',
+  repo: "ucdjs/ucd",
   workspaceRoot: workspaceRoot.pathname,
   packages: {
     excludePrivate: true,
