@@ -7,7 +7,7 @@ release({
   workspaceRoot: workspaceRoot.pathname,
   packages: {
     excludePrivate: true,
-    excluded: [
+    exclude: [
       "vscode-ucd"
     ]
   },
