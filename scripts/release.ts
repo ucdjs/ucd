@@ -22,9 +22,13 @@ release({
 
       The following packages have been prepared for release:
 
-      <% it.packages.forEach((pkg) => { %>
-      - **<%= pkg.name %>**: <%= pkg.currentVersion %> → <%= pkg.newVersion %> (<%= pkg.bumpType %>)
-      <% }) %>
+      <% if (it.packages.length > 0) { %>
+        <% it.packages.forEach((pkg) => { %>
+        - **<%= pkg.name %>**: <%= pkg.currentVersion %> → <%= pkg.newVersion %> (<%= pkg.bumpType %>)
+        <% }) %>
+      <% } else { %>
+        There are no packages to release.
+      <% } %>
 
       Please review the changes and merge when ready.
 
