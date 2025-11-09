@@ -22,9 +22,9 @@ release({
 
       The following packages have been prepared for release:
 
-      <? for (const pkg of packages) { ?>
-      - **{{pkg.name}}**: {{pkg.currentVersion}} → {{pkg.newVersion}}
-      <? } ?>
+      <% packages.forEach((pkg) => { %>
+      - **<%= pkg.name %>**: <%= pkg.currentVersion %> → <%= pkg.newVersion %> (<%= pkg.bumpType %>)
+      <% }) %>
 
       Please review the changes and merge when ready.
 
