@@ -22,7 +22,7 @@ release({
 
       The following packages have been prepared for release:
 
-      <% packages.forEach((pkg) => { %>
+      <% it.packages.forEach((pkg) => { %>
       - **<%= pkg.name %>**: <%= pkg.currentVersion %> → <%= pkg.newVersion %> (<%= pkg.bumpType %>)
       <% }) %>
 
