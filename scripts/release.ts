@@ -27,6 +27,9 @@ release({
       <? } ?>
 
       Please review the changes and merge when ready.
+
+      > [!NOTE]
+      > When this PR is merged, the release process will be triggered automatically, publishing the new package versions to the registry.
     `
   },
   githubToken: process.env.UCDJS_RELEASE_TOKEN!,
