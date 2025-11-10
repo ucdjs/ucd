@@ -6,6 +6,9 @@ release({
   repo: "ucdjs/ucd",
   workspaceRoot: workspaceRoot.pathname,
   packages: {
+    include: [
+      "env"
+    ],
     excludePrivate: true,
     exclude: [
       "vscode-ucd"
