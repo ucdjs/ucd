@@ -7,7 +7,7 @@ release({
   workspaceRoot: workspaceRoot.pathname,
   packages: {
     include: [
-      "env"
+      "@ucdjs/env"
     ],
     excludePrivate: true,
     exclude: [
