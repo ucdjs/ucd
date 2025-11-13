@@ -826,6 +826,37 @@ importers:
         specifier: catalog:testing
         version: 4.2.1(vitest@3.2.4)
 
+  packages/test-pkg:
+    dependencies:
+      '@ucdjs-internal/shared':
+        specifier: workspace:*
+        version: link:../shared
+    devDependencies:
+      '@luxass/eslint-config':
+        specifier: catalog:linting
+        version: 6.0.1(@eslint-react/eslint-plugin@2.2.2(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.22)(eslint-plugin-format@1.0.2(eslint@9.38.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.0(eslint@9.38.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.4.24(eslint@9.38.0(jiti@2.6.1)))(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3)(vitest@3.2.4)
+      '@ucdjs-tooling/tsconfig':
+        specifier: workspace:*
+        version: link:../../tooling/tsconfig
+      '@ucdjs-tooling/tsdown-config':
+        specifier: workspace:*
+        version: link:../../tooling/tsdown-config
+      eslint:
+        specifier: catalog:linting
+        version: 9.38.0(jiti@2.6.1)
+      publint:
+        specifier: catalog:dev
+        version: 0.3.15
+      tsdown:
+        specifier: catalog:dev
+        version: 0.15.9(publint@0.3.15)(typescript@5.9.3)(vue-tsc@3.1.0(typescript@5.9.3))
+      typescript:
+        specifier: catalog:dev
+        version: 5.9.3
+      vitest-testdirs:
+        specifier: catalog:testing
+        version: 4.2.1(vitest@3.2.4)
+
   packages/test-utils:
     dependencies:
       '@luxass/msw-utils':

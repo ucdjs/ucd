@@ -6,15 +6,12 @@ release({
   repo: "ucdjs/ucd",
   workspaceRoot: workspaceRoot.pathname,
   packages: {
-    include: [
-      "@ucdjs/env"
-    ],
     excludePrivate: true,
     exclude: [
       "vscode-ucd"
     ]
   },
-  safeguards: true,
+  safeguards: process.env.DISABLE_SAFEGUARDS == null,
   prompts: {
     packages: process.env.CI == null,
     versions: process.env.CI == null,
