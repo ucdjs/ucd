@@ -79,8 +79,8 @@ catalogs:
       version: 0.4.24
   monorepo:
     '@ucdjs/release-scripts':
-      specifier: 0.1.0-beta.12
-      version: 0.1.0-beta.12
+      specifier: 0.1.0-beta.13
+      version: 0.1.0-beta.13
     turbo:
       specifier: 2.5.8
       version: 2.5.8
@@ -256,7 +256,7 @@ importers:
         version: 22.18.12
       '@ucdjs/release-scripts':
         specifier: catalog:monorepo
-        version: 0.1.0-beta.12
+        version: 0.1.0-beta.13
       '@vitest/coverage-istanbul':
         specifier: catalog:testing
         version: 3.2.4(vitest@3.2.4)
@@ -816,37 +816,6 @@ importers:
       rolldown:
         specifier: 1.0.0-beta.44
         version: 1.0.0-beta.44
-      tsdown:
-        specifier: catalog:dev
-        version: 0.15.9(publint@0.3.15)(typescript@5.9.3)(vue-tsc@3.1.0(typescript@5.9.3))
-      typescript:
-        specifier: catalog:dev
-        version: 5.9.3
-      vitest-testdirs:
-        specifier: catalog:testing
-        version: 4.2.1(vitest@3.2.4)
-
-  packages/test-pkg:
-    dependencies:
-      '@ucdjs-internal/shared':
-        specifier: workspace:*
-        version: link:../shared
-    devDependencies:
-      '@luxass/eslint-config':
-        specifier: catalog:linting
-        version: 6.0.1(@eslint-react/eslint-plugin@2.2.2(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.22)(eslint-plugin-format@1.0.2(eslint@9.38.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.0(eslint@9.38.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.4.24(eslint@9.38.0(jiti@2.6.1)))(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3)(vitest@3.2.4)
-      '@ucdjs-tooling/tsconfig':
-        specifier: workspace:*
-        version: link:../../tooling/tsconfig
-      '@ucdjs-tooling/tsdown-config':
-        specifier: workspace:*
-        version: link:../../tooling/tsdown-config
-      eslint:
-        specifier: catalog:linting
-        version: 9.38.0(jiti@2.6.1)
-      publint:
-        specifier: catalog:dev
-        version: 0.3.15
       tsdown:
         specifier: catalog:dev
         version: 0.15.9(publint@0.3.15)(typescript@5.9.3)(vue-tsc@3.1.0(typescript@5.9.3))
@@ -4337,8 +4306,8 @@ packages:
     resolution: {integrity: sha512-SnbaqayTVFEA6/tYumdF0UmybY0KHyKwGPBXnyckFlrrKdhWFrL3a2HIPXHjht5ZOElKGcXfD2D63P36btb+ww==}
     engines: {node: '>=20.0.0'}
 
-  '@ucdjs/release-scripts@0.1.0-beta.12':
-    resolution: {integrity: sha512-8zPmnsbv+zkD+qTFTIOjGVPyCPjkiPb4Cfy5uBCk4fu45qHlt9ZRtau5Unrzl9o6vI7Oz1c/54+FGWnRgvpdGg==}
+  '@ucdjs/release-scripts@0.1.0-beta.13':
+    resolution: {integrity: sha512-wpd7tYsJqjpGsvOISBAjoAQwBglGdqqUrxzZihIsfGSPhRIBj1zcxDUltlgfVqFS+GIj1sLdBylQWsTJzso7Xg==}
 
   '@ungap/structured-clone@1.3.0':
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
@@ -13820,11 +13789,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@ucdjs/release-scripts@0.1.0-beta.12':
+  '@ucdjs/release-scripts@0.1.0-beta.13':
     dependencies:
       '@luxass/utils': 2.7.2
       commit-parser: 0.4.5
       farver: 1.0.0-beta.1
+      mri: 1.2.0
       prompts: 2.4.2
       tinyexec: 1.0.2
 
