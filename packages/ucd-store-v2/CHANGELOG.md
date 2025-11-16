@@ -21,7 +21,7 @@
 * fix(ucd-store-v2): ensure 'read:before' hook is correctly set up ([e2831585](https://github.com/ucdjs/ucd/commit/e2831585ef825a2f11ba90bee18f1631a9c36804))
 * fix: replace `@luxass/unicode-utils-new` with `@luxass/unicode-utils` ([301056ad](https://github.com/ucdjs/ucd/commit/301056ad6d16ec0de30ce8e6e611db4d59ab3e9b))
 
-### docs
+### Documentation
 
 * docs(ucd-store-v2): update documentation for `listFiles` to include API fallback behavior ([a2a5cf2f](https://github.com/ucdjs/ucd/commit/a2a5cf2fd919d51119c51aa4f16f9057ecaf6497))
 
@@ -29,7 +29,7 @@
 
 * Potential fix for pull request finding 'Comparison between inconvertible types' ([057fb8df](https://github.com/ucdjs/ucd/commit/057fb8df16606b6be85d848383c5f544ebf7a1c5))
 
-### refactor
+### Refactoring
 
 * refactor(ucd-store-v2): enhance sync operation with mirroring support and improved result structure ([8bbe1cd8](https://github.com/ucdjs/ucd/commit/8bbe1cd877878fce8dd2e3d7915af1bbc378550a))
 * refactor(ucd-store-v2): improve error handling and response processing ([248a0dc4](https://github.com/ucdjs/ucd/commit/248a0dc4ade38163afdb71beca6567d94a2357a0))

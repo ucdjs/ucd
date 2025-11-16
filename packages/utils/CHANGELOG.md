@@ -38,7 +38,7 @@
 * feat: add UCD file mirroring utilities and filesystem adapter ([e85bdbde](https://github.com/ucdjs/ucd/commit/e85bdbde6df5aaca29f214b943fbd85c53605ca3))
 * feat: add turbo.json configuration files for cli, schema-gen, ucd-store, and utils; update tsconfig.base.build.json and remove test:watch task from turbo.json ([48dad498](https://github.com/ucdjs/ucd/commit/48dad4988f63c50f2c878f310112cf0fd44e6058))
 
-### refactor
+### Refactoring
 
 * refactor(tsdown-config): update package references to @ucdjs-tooling/tsdown-config ([ccc002da](https://github.com/ucdjs/ucd/commit/ccc002dafd139e0b08e55098470f7a2a8af361ab))
 * refactor: update tsconfig references to use @ucdjs-tooling/tsconfig ([e5c39ac8](https://github.com/ucdjs/ucd/commit/e5c39ac8d2e0ad1cc4a29e4417013ed124c83801))
@@ -72,7 +72,7 @@
 * refactor: simplify createDefaultFSAdapter and add tests for FS adapter ([3fccaf55](https://github.com/ucdjs/ucd/commit/3fccaf55b4ced89c0f31a4869e630c8b173023b4))
 * refactor: move filter functionality from ucd-store to utils package ([98b84b07](https://github.com/ucdjs/ucd/commit/98b84b07af8c09a3b8881af95a5fdf99d4afb52e))
 
-### docs
+### Documentation
 
 * docs(utils): enhance createPathFilter documentation with detailed examples ([f0308f87](https://github.com/ucdjs/ucd/commit/f0308f87cc02bd05533b59430a7892b8a40e0f22))
 * docs(utils): update README to enhance usage examples and clarify functionality ([82a55e1c](https://github.com/ucdjs/ucd/commit/82a55e1c4f87ced174802e0ac73ceb6364e48544))

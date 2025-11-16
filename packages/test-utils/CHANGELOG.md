@@ -47,7 +47,7 @@
 
 * fix ([a765b117](https://github.com/ucdjs/ucd/commit/a765b1173889e3f74e0f1c68ef2f077804679904))
 
-### refactor
+### Refactoring
 
 * refactor(test-utils): reorder MOCK_ROUTES for clarity ([8c1366cc](https://github.com/ucdjs/ucd/commit/8c1366cc3650da4fdcc7bbd57bf8ba1d18a5136b))
 * refactor(test-utils): rename CONFIGURED_RESPONSE to kConfiguredResponse ([e2e9e84c](https://github.com/ucdjs/ucd/commit/e2e9e84c4eb5edff49b09415fafa83bbb7e55dd3))
