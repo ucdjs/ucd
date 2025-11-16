@@ -2,25 +2,6 @@
 
 ## [1.1.0](https://github.com/ucdjs/ucd/compare/@ucdjs/test-utils@1.0.0...@ucdjs/test-utils@1.1.0) (2025-11-16)
 
-### Bug Fixes
-
-* ensure 'read:before' hook is correctly set up ([e2831585](https://github.com/ucdjs/ucd/commit/e2831585ef825a2f11ba90bee18f1631a9c36804)) (by Lucas)
-* update file paths to include 'extracted' prefix ([PR #371](https://github.com/ucdjs/ucd/pull/371)) ([2f455a5f](https://github.com/ucdjs/ucd/commit/2f455a5f8abb5da0e3bc5d1da30b156579b63243)) (by Lucas Nørgård)
-* update wildcard route handling ([c662bec8](https://github.com/ucdjs/ucd/commit/c662bec8429c98e5fd98942e2c12f0e6fd479d51)) (by Lucas)
-* switch behaviour ([70a2b8df](https://github.com/ucdjs/ucd/commit/70a2b8df611fcf2041c1f41a1d05171a19541c91)) (by Lucas Nørgård)
-* handle wildcard params differently ([43640a1e](https://github.com/ucdjs/ucd/commit/43640a1e2a905f669708a76c8193558429d36df3)) (by Lucas Nørgård)
-* improve debug message for wrapMockFetch ([04a939cc](https://github.com/ucdjs/ucd/commit/04a939cccd06940d42946a7cf72360f597ae62d5)) (by Lucas)
-* improve header handling in `afterFetch` for response ([34dc1f4c](https://github.com/ucdjs/ucd/commit/34dc1f4cdabed4651ede28b14eacb4da20b29d04)) (by Lucas)
-* update `Params` type in `TypedResponseResolver` for better type safety ([dd0c510c](https://github.com/ucdjs/ucd/commit/dd0c510ccad61cf9a481f770b25dc1305dc5d474)) (by Lucas)
-* improve TypeScript type inference for providedResponse ([bfd05075](https://github.com/ucdjs/ucd/commit/bfd0507535db0bc01bc367bf918ff5f91f9c78ff)) (by Lucas)
-* adjust latency expectation in tests ([0caa3e94](https://github.com/ucdjs/ucd/commit/0caa3e9409e9ac397ac495c2f37b5a028a39be7a)) (by Lucas)
-* improve response validation and error message ([ff437240](https://github.com/ucdjs/ucd/commit/ff4372408f96a19fda604c733879d05225d24c48)) (by Lucas)
-* improve header handling in `wrapMockFetchWithConfig` ([6aaf8a17](https://github.com/ucdjs/ucd/commit/6aaf8a17b5edf7580c44d25b3cf7af737f0af14b)) (by Lucas)
-* rename `setupMockStore` to `mockStoreApi` for clarity ([80f2d4a3](https://github.com/ucdjs/ucd/commit/80f2d4a39aeaaad853206fb05b358f7911f32258)) (by Lucas)
-* cast response to HttpResponseResolver in handlers ([9d01beb5](https://github.com/ucdjs/ucd/commit/9d01beb56201f0d19484e46112285600926b9371)) (by Lucas)
-* normalize base URL correctly ([ad160737](https://github.com/ucdjs/ucd/commit/ad16073723399deabbfa019836d00d4d29094ba6)) (by Lucas)
-* update vitest-setup path and improve setupMockStore return type ([c9b2a1cd](https://github.com/ucdjs/ucd/commit/c9b2a1cdadecf0262fa6dc7870db9341544d59ba)) (by Lucas)
-
 ### Features
 
 * add ApiError auto-conversion and related tests ([1d2aa933](https://github.com/ucdjs/ucd/commit/1d2aa933b17d21714edc799ba32edbeb9cbc5ab8)) (by Lucas)
@@ -43,9 +24,24 @@
 * enhance mock fetch handlers and add platform detection ([abf7bedb](https://github.com/ucdjs/ucd/commit/abf7bedbb0e6451b206c246c75b5eb31cfc8fc29)) (by Lucas)
 * add initial test-utils package ([PR #268](https://github.com/ucdjs/ucd/pull/268)) ([d200f56e](https://github.com/ucdjs/ucd/commit/d200f56e102f61d2d8b8820c8ad50fd57dd6c053)) (by Lucas Nørgård)
 
-### Miscellaneous
+### Bug Fixes
 
-* fix ([a765b117](https://github.com/ucdjs/ucd/commit/a765b1173889e3f74e0f1c68ef2f077804679904)) (by Lucas)
+* ensure 'read:before' hook is correctly set up ([e2831585](https://github.com/ucdjs/ucd/commit/e2831585ef825a2f11ba90bee18f1631a9c36804)) (by Lucas)
+* update file paths to include 'extracted' prefix ([PR #371](https://github.com/ucdjs/ucd/pull/371)) ([2f455a5f](https://github.com/ucdjs/ucd/commit/2f455a5f8abb5da0e3bc5d1da30b156579b63243)) (by Lucas Nørgård)
+* update wildcard route handling ([c662bec8](https://github.com/ucdjs/ucd/commit/c662bec8429c98e5fd98942e2c12f0e6fd479d51)) (by Lucas)
+* switch behaviour ([70a2b8df](https://github.com/ucdjs/ucd/commit/70a2b8df611fcf2041c1f41a1d05171a19541c91)) (by Lucas Nørgård)
+* handle wildcard params differently ([43640a1e](https://github.com/ucdjs/ucd/commit/43640a1e2a905f669708a76c8193558429d36df3)) (by Lucas Nørgård)
+* improve debug message for wrapMockFetch ([04a939cc](https://github.com/ucdjs/ucd/commit/04a939cccd06940d42946a7cf72360f597ae62d5)) (by Lucas)
+* improve header handling in `afterFetch` for response ([34dc1f4c](https://github.com/ucdjs/ucd/commit/34dc1f4cdabed4651ede28b14eacb4da20b29d04)) (by Lucas)
+* update `Params` type in `TypedResponseResolver` for better type safety ([dd0c510c](https://github.com/ucdjs/ucd/commit/dd0c510ccad61cf9a481f770b25dc1305dc5d474)) (by Lucas)
+* improve TypeScript type inference for providedResponse ([bfd05075](https://github.com/ucdjs/ucd/commit/bfd0507535db0bc01bc367bf918ff5f91f9c78ff)) (by Lucas)
+* adjust latency expectation in tests ([0caa3e94](https://github.com/ucdjs/ucd/commit/0caa3e9409e9ac397ac495c2f37b5a028a39be7a)) (by Lucas)
+* improve response validation and error message ([ff437240](https://github.com/ucdjs/ucd/commit/ff4372408f96a19fda604c733879d05225d24c48)) (by Lucas)
+* improve header handling in `wrapMockFetchWithConfig` ([6aaf8a17](https://github.com/ucdjs/ucd/commit/6aaf8a17b5edf7580c44d25b3cf7af737f0af14b)) (by Lucas)
+* rename `setupMockStore` to `mockStoreApi` for clarity ([80f2d4a3](https://github.com/ucdjs/ucd/commit/80f2d4a39aeaaad853206fb05b358f7911f32258)) (by Lucas)
+* cast response to HttpResponseResolver in handlers ([9d01beb5](https://github.com/ucdjs/ucd/commit/9d01beb56201f0d19484e46112285600926b9371)) (by Lucas)
+* normalize base URL correctly ([ad160737](https://github.com/ucdjs/ucd/commit/ad16073723399deabbfa019836d00d4d29094ba6)) (by Lucas)
+* update vitest-setup path and improve setupMockStore return type ([c9b2a1cd](https://github.com/ucdjs/ucd/commit/c9b2a1cdadecf0262fa6dc7870db9341544d59ba)) (by Lucas)
 
 ### Refactoring
 

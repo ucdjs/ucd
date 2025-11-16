@@ -24,13 +24,6 @@
 * implement Windows path utilities ([09840fe5](https://github.com/ucdjs/ucd/commit/09840fe59d0c7171a770cda28050b26f959fea68)) (by Lucas)
 * setup package ([f4e6cce5](https://github.com/ucdjs/ucd/commit/f4e6cce5864dc26efda2590f0882c8f3b58554d5)) (by Lucas)
 
-### Refactoring
-
-* update package references to @ucdjs-tooling/tsdown-config ([ccc002da](https://github.com/ucdjs/ucd/commit/ccc002dafd139e0b08e55098470f7a2a8af361ab)) (by Lucas)
-* update tsconfig references to use @ucdjs-tooling/tsconfig ([e5c39ac8](https://github.com/ucdjs/ucd/commit/e5c39ac8d2e0ad1cc4a29e4417013ed124c83801)) (by Lucas)
-* swap parameters for consistency ([2264cfa4](https://github.com/ucdjs/ucd/commit/2264cfa423e235ce6191ad58823d14439bf1dada)) (by Lucas)
-* remove unc support ([2c180272](https://github.com/ucdjs/ucd/commit/2c180272743923f156ce211c6a2e4cc845c5dfee)) (by Lucas)
-
 ### Bug Fixes
 
 * normalize input path in resolveSafePath function ([49a4ccdd](https://github.com/ucdjs/ucd/commit/49a4ccdd750e5f1efe83f590dc372cf37ae06fa8)) (by Lucas)
@@ -51,9 +44,12 @@
 * simplify Windows path resolution ([05d6907b](https://github.com/ucdjs/ucd/commit/05d6907b05e84e3429a1f83f882923d8465aa7e0)) (by Lucas)
 * trim trailing slashes in toUnixFormat function ([9e7eff34](https://github.com/ucdjs/ucd/commit/9e7eff34e5bfbb639333f9c8afa6db93a29390d9)) (by Lucas)
 
-### Miscellaneous
+### Refactoring
 
-* Merge branch 'path-utils' into implement-path-util-logic ([99af8586](https://github.com/ucdjs/ucd/commit/99af8586405b119e57d450593356bc5aa5d6447d)) (by Lucas Nørgård)
+* update package references to @ucdjs-tooling/tsdown-config ([ccc002da](https://github.com/ucdjs/ucd/commit/ccc002dafd139e0b08e55098470f7a2a8af361ab)) (by Lucas)
+* update tsconfig references to use @ucdjs-tooling/tsconfig ([e5c39ac8](https://github.com/ucdjs/ucd/commit/e5c39ac8d2e0ad1cc4a29e4417013ed124c83801)) (by Lucas)
+* swap parameters for consistency ([2264cfa4](https://github.com/ucdjs/ucd/commit/2264cfa423e235ce6191ad58823d14439bf1dada)) (by Lucas)
+* remove unc support ([2c180272](https://github.com/ucdjs/ucd/commit/2c180272743923f156ce211c6a2e4cc845c5dfee)) (by Lucas)
 
 
 ## 0.1.0

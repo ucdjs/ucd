@@ -2,33 +2,6 @@
 
 ## [0.2.0](https://github.com/ucdjs/ucd/compare/@ucdjs/fs-bridge@0.1.0...@ucdjs/fs-bridge@0.2.0) (2025-11-16)
 
-### Bug Fixes
-
-* improve error handling in `handleError` function ([4ad7725c](https://github.com/ucdjs/ucd/commit/4ad7725c82ccb107d35d2ca405c0c469c4fc0b82)) (by Lucas)
-* convert strings to errors ([e5da9589](https://github.com/ucdjs/ucd/commit/e5da95891c6d22233cd2f60769585e45a68e14e9)) (by Lucas Nørgård)
-* update file paths to include 'extracted' prefix ([PR #371](https://github.com/ucdjs/ucd/pull/371)) ([2f455a5f](https://github.com/ucdjs/ucd/commit/2f455a5f8abb5da0e3bc5d1da30b156579b63243)) (by Lucas Nørgård)
-* make hooks call asynchronous and ensure proper error handling ([32d96256](https://github.com/ucdjs/ucd/commit/32d962567f775e11415f5e85c59afe46980b3dd5)) (by Lucas)
-* replace `hooxs` with `hookable` and update hook method calls ([666ac4c1](https://github.com/ucdjs/ucd/commit/666ac4c173c9177b07aa26bf19350fb836adce32)) (by Lucas)
-* update `entries` type in hook payload to use `FSEntry[]` ([96d73c06](https://github.com/ucdjs/ucd/commit/96d73c06dc4d0e446640b7a7c0627afb3fc72a3d)) (by Lucas)
-* correct unsupported operation handling in defineFileSystemBridge ([722f516c](https://github.com/ucdjs/ucd/commit/722f516c7f6518dfdbdc7725f2da6a72b3505f7b)) (by Lucas)
-* use `structuredClone` for state in `defineFileSystemBridge` ([cb28a42e](https://github.com/ucdjs/ucd/commit/cb28a42eca70bbcdaf2a8d3425721de7bef21bf9)) (by Lucas)
-* set default type for TOptionsSchema in defineFileSystemBridge ([a37a81c2](https://github.com/ucdjs/ucd/commit/a37a81c2b5c0adc5c130312fce50a6e1697f0713)) (by Lucas)
-* improve error handling during bridge setup ([efad5a3a](https://github.com/ucdjs/ucd/commit/efad5a3a4d5bfabeb7fd83e27bd7eebc57b07aa4)) (by Lucas)
-* enhance error handling with PathUtilsBaseError ([87bb2163](https://github.com/ucdjs/ucd/commit/87bb21639252ed895ec3e67f8a158911bb4339be)) (by Lucas)
-* improve proxy method handling in defineFileSystemBridge ([93bc2610](https://github.com/ucdjs/ucd/commit/93bc2610e0aab663000c3bd26f54d615cf6a2d77)) (by Lucas)
-* refine error handling and type assertions in proxy methods ([b93ae49e](https://github.com/ucdjs/ucd/commit/b93ae49e7d413efb1d74ef94f21360ed36619f9a)) (by Lucas)
-* enhance error handling for promise operations ([9c054b6f](https://github.com/ucdjs/ucd/commit/9c054b6f51cf6a3c633855ac1fa9740f14a35af8)) (by Lucas)
-* refine constructor for BridgeBaseError and remove duplicate class definition ([1147df55](https://github.com/ucdjs/ucd/commit/1147df55c2546866e3230dcdbdc949c469bba937)) (by Lucas)
-* refine type assertion for original method in proxy ([b7c733dd](https://github.com/ucdjs/ucd/commit/b7c733dd6ed1ac420d80273e275125e1e19955d2)) (by Lucas)
-* refine type assertion for original method in proxy ([13043af5](https://github.com/ucdjs/ucd/commit/13043af591eb21cbac1999a6d12768da3daad81a)) (by Lucas)
-* improve error handling in proxy methods ([798c9cb4](https://github.com/ucdjs/ucd/commit/798c9cb4ec34b25f9f416af1e8bf0f53d5fc2686)) (by Lucas)
-* ensure original method context is preserved in proxy ([e0453470](https://github.com/ucdjs/ucd/commit/e0453470288b7d998a3254b814f04a0eed786502)) (by Lucas)
-* improve error messaging and initialization logic ([dad79c58](https://github.com/ucdjs/ucd/commit/dad79c580ec37c2bd75c6cb2faaca3ada733ddbf)) (by Lucas)
-* improve error handling for HEAD requests ([261cf461](https://github.com/ucdjs/ucd/commit/261cf4611edc6bc2fc981e4521684e0c530d8262)) (by Lucas)
-* improve error handling for invalid URL encoding in path resolution ([a5ef25cf](https://github.com/ucdjs/ucd/commit/a5ef25cff9ddc98b2c7bf55c9ae324ba6668f115)) (by Lucas)
-* improve error messaging for dangerous control characters in path resolution ([98dd1c02](https://github.com/ucdjs/ucd/commit/98dd1c023dd428a9ddbe3e45517d776b0ab99bdf)) (by Lucas)
-* enhance error handling and directory listing logic ([02be1238](https://github.com/ucdjs/ucd/commit/02be1238ee1e5a63ce75d8e44385bc36c4b3a256)) (by Lucas)
-
 ### Features
 
 * add utility functions for hook payload construction and operation wrapping ([f90f3b87](https://github.com/ucdjs/ucd/commit/f90f3b873044aaecac01aa96df13b2adc58582be)) (by Lucas)
@@ -63,6 +36,33 @@
 * update import paths and module exports ([99e60ad0](https://github.com/ucdjs/ucd/commit/99e60ad091d26c32ec4c6d89667acca6b4a42c74)) (by Lucas)
 * add HTTP and Node file system bridges with comprehensive tests ([5bc90ebc](https://github.com/ucdjs/ucd/commit/5bc90ebcf5e20e11f4d209983975fa732d57cc3f)) (by Lucas)
 
+### Bug Fixes
+
+* improve error handling in `handleError` function ([4ad7725c](https://github.com/ucdjs/ucd/commit/4ad7725c82ccb107d35d2ca405c0c469c4fc0b82)) (by Lucas)
+* convert strings to errors ([e5da9589](https://github.com/ucdjs/ucd/commit/e5da95891c6d22233cd2f60769585e45a68e14e9)) (by Lucas Nørgård)
+* update file paths to include 'extracted' prefix ([PR #371](https://github.com/ucdjs/ucd/pull/371)) ([2f455a5f](https://github.com/ucdjs/ucd/commit/2f455a5f8abb5da0e3bc5d1da30b156579b63243)) (by Lucas Nørgård)
+* make hooks call asynchronous and ensure proper error handling ([32d96256](https://github.com/ucdjs/ucd/commit/32d962567f775e11415f5e85c59afe46980b3dd5)) (by Lucas)
+* replace `hooxs` with `hookable` and update hook method calls ([666ac4c1](https://github.com/ucdjs/ucd/commit/666ac4c173c9177b07aa26bf19350fb836adce32)) (by Lucas)
+* update `entries` type in hook payload to use `FSEntry[]` ([96d73c06](https://github.com/ucdjs/ucd/commit/96d73c06dc4d0e446640b7a7c0627afb3fc72a3d)) (by Lucas)
+* correct unsupported operation handling in defineFileSystemBridge ([722f516c](https://github.com/ucdjs/ucd/commit/722f516c7f6518dfdbdc7725f2da6a72b3505f7b)) (by Lucas)
+* use `structuredClone` for state in `defineFileSystemBridge` ([cb28a42e](https://github.com/ucdjs/ucd/commit/cb28a42eca70bbcdaf2a8d3425721de7bef21bf9)) (by Lucas)
+* set default type for TOptionsSchema in defineFileSystemBridge ([a37a81c2](https://github.com/ucdjs/ucd/commit/a37a81c2b5c0adc5c130312fce50a6e1697f0713)) (by Lucas)
+* improve error handling during bridge setup ([efad5a3a](https://github.com/ucdjs/ucd/commit/efad5a3a4d5bfabeb7fd83e27bd7eebc57b07aa4)) (by Lucas)
+* enhance error handling with PathUtilsBaseError ([87bb2163](https://github.com/ucdjs/ucd/commit/87bb21639252ed895ec3e67f8a158911bb4339be)) (by Lucas)
+* improve proxy method handling in defineFileSystemBridge ([93bc2610](https://github.com/ucdjs/ucd/commit/93bc2610e0aab663000c3bd26f54d615cf6a2d77)) (by Lucas)
+* refine error handling and type assertions in proxy methods ([b93ae49e](https://github.com/ucdjs/ucd/commit/b93ae49e7d413efb1d74ef94f21360ed36619f9a)) (by Lucas)
+* enhance error handling for promise operations ([9c054b6f](https://github.com/ucdjs/ucd/commit/9c054b6f51cf6a3c633855ac1fa9740f14a35af8)) (by Lucas)
+* refine constructor for BridgeBaseError and remove duplicate class definition ([1147df55](https://github.com/ucdjs/ucd/commit/1147df55c2546866e3230dcdbdc949c469bba937)) (by Lucas)
+* refine type assertion for original method in proxy ([b7c733dd](https://github.com/ucdjs/ucd/commit/b7c733dd6ed1ac420d80273e275125e1e19955d2)) (by Lucas)
+* refine type assertion for original method in proxy ([13043af5](https://github.com/ucdjs/ucd/commit/13043af591eb21cbac1999a6d12768da3daad81a)) (by Lucas)
+* improve error handling in proxy methods ([798c9cb4](https://github.com/ucdjs/ucd/commit/798c9cb4ec34b25f9f416af1e8bf0f53d5fc2686)) (by Lucas)
+* ensure original method context is preserved in proxy ([e0453470](https://github.com/ucdjs/ucd/commit/e0453470288b7d998a3254b814f04a0eed786502)) (by Lucas)
+* improve error messaging and initialization logic ([dad79c58](https://github.com/ucdjs/ucd/commit/dad79c580ec37c2bd75c6cb2faaca3ada733ddbf)) (by Lucas)
+* improve error handling for HEAD requests ([261cf461](https://github.com/ucdjs/ucd/commit/261cf4611edc6bc2fc981e4521684e0c530d8262)) (by Lucas)
+* improve error handling for invalid URL encoding in path resolution ([a5ef25cf](https://github.com/ucdjs/ucd/commit/a5ef25cff9ddc98b2c7bf55c9ae324ba6668f115)) (by Lucas)
+* improve error messaging for dangerous control characters in path resolution ([98dd1c02](https://github.com/ucdjs/ucd/commit/98dd1c023dd428a9ddbe3e45517d776b0ab99bdf)) (by Lucas)
+* enhance error handling and directory listing logic ([02be1238](https://github.com/ucdjs/ucd/commit/02be1238ee1e5a63ce75d8e44385bc36c4b3a256)) (by Lucas)
+
 ### Refactoring
 
 * refactor file system bridge operations and introduce operation wrappers ([b0db2a05](https://github.com/ucdjs/ucd/commit/b0db2a052d26bb21a88a18d202b72f367397b7af)) (by Lucas)
@@ -96,12 +96,6 @@
 * enhance FileSystemBridge capabilities and update type definitions ([be7b3939](https://github.com/ucdjs/ucd/commit/be7b39397991aab6b855768c8026bd788388cdee)) (by Lucas)
 * improve file path handling and analysis logic ([3d586c5b](https://github.com/ucdjs/ucd/commit/3d586c5b14d8f0e49c4fc107a0a4fb4f674ba239)) (by Lucas)
 * streamline path resolution and safety checks ([340eb3e1](https://github.com/ucdjs/ucd/commit/340eb3e164ef4d069ddfb224513feb562b0fc16a)) (by Lucas)
-
-### Miscellaneous
-
-* Merge remote-tracking branch 'origin/main' into bridge-try-catch ([c1682e3e](https://github.com/ucdjs/ucd/commit/c1682e3e2281d2baa131b47e6187e38b363e223a)) (by Lucas)
-* Merge remote-tracking branch 'origin/main' into store ([dfc880dd](https://github.com/ucdjs/ucd/commit/dfc880dd94e58804d8ebefc0a388b51b25d2d5aa)) (by Lucas)
-* Merge branch 'main' into store ([06b7fdcc](https://github.com/ucdjs/ucd/commit/06b7fdccacdec1c89b58bb09c44c016dc08ea752)) (by Lucas Nørgård)
 
 
 ## 0.1.0

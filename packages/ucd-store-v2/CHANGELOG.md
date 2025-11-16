@@ -2,6 +2,20 @@
 
 ## [0.1.0](https://github.com/ucdjs/ucd/compare/@ucdjs/ucd-store-v2@0.0.1...@ucdjs/ucd-store-v2@0.1.0) (2025-11-16)
 
+### Features
+
+* enhance mirroring functionality with concurrency and error handling ([ee7ddae0](https://github.com/ucdjs/ucd/commit/ee7ddae0269ab0ace36cc95693cf8f3c6ee3b5ad)) (by Lucas)
+* enhance getFileTree function to support local file retrieval and API fallback ([bff8a709](https://github.com/ucdjs/ucd/commit/bff8a709ea73e6e4686f66a8bd951b8d1bbb0a4a)) (by Lucas)
+* enhance getFile function to improve error handling and documentation ([b8c9ba4a](https://github.com/ucdjs/ucd/commit/b8c9ba4a1eca06cf229045d35b746e647d4d7646)) (by Lucas)
+* enhance listFiles function to support API fallback ([d3907a4c](https://github.com/ucdjs/ucd/commit/d3907a4cbd1eff52e4789dfe0c4b84bbd21850d2)) (by Lucas)
+* enhance listFiles function to prioritize local file system ([21b9428e](https://github.com/ucdjs/ucd/commit/21b9428e439de82820dc747f33e0a6d0d7cfcb47)) (by Lucas)
+* implement core functionalities for UCD store ([aca2769e](https://github.com/ucdjs/ucd/commit/aca2769ee9c67bf824a0c7788b06c17a4a8e2435)) (by Lucas)
+* add verification function for manifest versions ([44fa003e](https://github.com/ucdjs/ucd/commit/44fa003e1add01fdf8f39303429704ec7ce7406d)) (by Lucas)
+* implement bootstrap function for store initialization ([feb8421f](https://github.com/ucdjs/ucd/commit/feb8421f13922638c6a757e43af44880a7e52d45)) (by Lucas)
+* add functions to write and read UCD store manifest ([ae241979](https://github.com/ucdjs/ucd/commit/ae241979e4d8b7ec92069b66329149a5da4c3c13)) (by Lucas)
+* add custom error classes for UCD Store ([5ef3c1ed](https://github.com/ucdjs/ucd/commit/5ef3c1edf4929dcbda290a51ac927595f4dc8ded)) (by Lucas)
+* add dependencies and devDependencies for ucd-store-v2 package ([721dd79a](https://github.com/ucdjs/ucd/commit/721dd79abacd609662c3509c701d230f9eab0f35)) (by Lucas)
+
 ### Bug Fixes
 
 * update `sync`, `mirror`, and `analyze` methods to reflect experimental status ([ea6f4d52](https://github.com/ucdjs/ucd/commit/ea6f4d5299da2276afe5189c2ebf14a1a3c9b9b3)) (by Lucas)
@@ -21,14 +35,6 @@
 * ensure 'read:before' hook is correctly set up ([e2831585](https://github.com/ucdjs/ucd/commit/e2831585ef825a2f11ba90bee18f1631a9c36804)) (by Lucas)
 * replace `@luxass/unicode-utils-new` with `@luxass/unicode-utils` ([301056ad](https://github.com/ucdjs/ucd/commit/301056ad6d16ec0de30ce8e6e611db4d59ab3e9b)) (by Lucas)
 
-### Documentation
-
-* update documentation for `listFiles` to include API fallback behavior ([a2a5cf2f](https://github.com/ucdjs/ucd/commit/a2a5cf2fd919d51119c51aa4f16f9057ecaf6497)) (by Lucas)
-
-### Miscellaneous
-
-* Potential fix for pull request finding 'Comparison between inconvertible types' ([057fb8df](https://github.com/ucdjs/ucd/commit/057fb8df16606b6be85d848383c5f544ebf7a1c5)) (by Lucas)
-
 ### Refactoring
 
 * enhance sync operation with mirroring support and improved result structure ([8bbe1cd8](https://github.com/ucdjs/ucd/commit/8bbe1cd877878fce8dd2e3d7915af1bbc378550a)) (by Lucas)
@@ -39,19 +45,9 @@
 * extend AnalyzeOptions with SharedOperationOptions ([84c4dc1e](https://github.com/ucdjs/ucd/commit/84c4dc1e0f297bd7f1ed1f3fd60a9049c99abcf2)) (by Lucas)
 * reorganize and enhance file operations tests ([3db7c109](https://github.com/ucdjs/ucd/commit/3db7c1092b890881bcf498b4c583f95aa82cfaab)) (by Lucas)
 
-### Features
+### Documentation
 
-* enhance mirroring functionality with concurrency and error handling ([ee7ddae0](https://github.com/ucdjs/ucd/commit/ee7ddae0269ab0ace36cc95693cf8f3c6ee3b5ad)) (by Lucas)
-* enhance getFileTree function to support local file retrieval and API fallback ([bff8a709](https://github.com/ucdjs/ucd/commit/bff8a709ea73e6e4686f66a8bd951b8d1bbb0a4a)) (by Lucas)
-* enhance getFile function to improve error handling and documentation ([b8c9ba4a](https://github.com/ucdjs/ucd/commit/b8c9ba4a1eca06cf229045d35b746e647d4d7646)) (by Lucas)
-* enhance listFiles function to support API fallback ([d3907a4c](https://github.com/ucdjs/ucd/commit/d3907a4cbd1eff52e4789dfe0c4b84bbd21850d2)) (by Lucas)
-* enhance listFiles function to prioritize local file system ([21b9428e](https://github.com/ucdjs/ucd/commit/21b9428e439de82820dc747f33e0a6d0d7cfcb47)) (by Lucas)
-* implement core functionalities for UCD store ([aca2769e](https://github.com/ucdjs/ucd/commit/aca2769ee9c67bf824a0c7788b06c17a4a8e2435)) (by Lucas)
-* add verification function for manifest versions ([44fa003e](https://github.com/ucdjs/ucd/commit/44fa003e1add01fdf8f39303429704ec7ce7406d)) (by Lucas)
-* implement bootstrap function for store initialization ([feb8421f](https://github.com/ucdjs/ucd/commit/feb8421f13922638c6a757e43af44880a7e52d45)) (by Lucas)
-* add functions to write and read UCD store manifest ([ae241979](https://github.com/ucdjs/ucd/commit/ae241979e4d8b7ec92069b66329149a5da4c3c13)) (by Lucas)
-* add custom error classes for UCD Store ([5ef3c1ed](https://github.com/ucdjs/ucd/commit/5ef3c1edf4929dcbda290a51ac927595f4dc8ded)) (by Lucas)
-* add dependencies and devDependencies for ucd-store-v2 package ([721dd79a](https://github.com/ucdjs/ucd/commit/721dd79abacd609662c3509c701d230f9eab0f35)) (by Lucas)
+* update documentation for `listFiles` to include API fallback behavior ([a2a5cf2f](https://github.com/ucdjs/ucd/commit/a2a5cf2fd919d51119c51aa4f16f9057ecaf6497)) (by Lucas)
 
 
 ## 0.0.1

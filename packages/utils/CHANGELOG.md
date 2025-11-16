@@ -38,6 +38,22 @@
 * add UCD file mirroring utilities and filesystem adapter ([e85bdbde](https://github.com/ucdjs/ucd/commit/e85bdbde6df5aaca29f214b943fbd85c53605ca3)) (by Lucas)
 * add turbo.json configuration files for cli, schema-gen, ucd-store, and utils; update tsconfig.base.build.json and remove test:watch task from turbo.json ([48dad498](https://github.com/ucdjs/ucd/commit/48dad4988f63c50f2c878f310112cf0fd44e6058)) (by Lucas)
 
+### Bug Fixes
+
+* ensure 'entries' is an array before processing ([54af41b9](https://github.com/ucdjs/ucd/commit/54af41b92e2849e1b5eae3d39296ab733af21418)) (by Lucas)
+* set default baseUrl for HTTPFileSystemBridge ([0a699f21](https://github.com/ucdjs/ucd/commit/0a699f210b8eb60666773c8ec6d33db9cbc348cd)) (by Lucas)
+* ensure baseUrl is always defined ([0753a323](https://github.com/ucdjs/ucd/commit/0753a323055c91fc41f682b61a7ea0d98c6297da)) (by Lucas)
+* correct file path handling in flattenFilePaths function ([91aff454](https://github.com/ucdjs/ucd/commit/91aff45407699502d55c352a8dbe8b0d9a18eb6e)) (by Lucas)
+* update predefined filter patterns for exclusions ([c39fa797](https://github.com/ucdjs/ucd/commit/c39fa797388ee47812dffa05601a1b9666d1a388)) (by Lucas)
+* update listdir to return file names and enhance recursive listing ([f4f97aca](https://github.com/ucdjs/ucd/commit/f4f97acaba21c7dbb3958496ab4773cc98873491)) (by Lucas)
+* throw if unresolved import ([8123dda2](https://github.com/ucdjs/ucd/commit/8123dda281a62ed6bd63c6d1b6975a27a6f78346)) (by Lucas)
+* update API URLs in mirror and validate test files to use UCDJS_API_BASE_URL ([8c7678e3](https://github.com/ucdjs/ucd/commit/8c7678e35659fcab55c2c6f5df05fa86aa2bac3c)) (by Lucas)
+* update API URLs in test files ([9dff312a](https://github.com/ucdjs/ucd/commit/9dff312a4ef4cdfeb26e6a263dc399eb07e1eb7f)) (by Lucas)
+* use UNICODE_PROXY_URL as default base URL ([a26f9757](https://github.com/ucdjs/ucd/commit/a26f975776218e6db3b64c3e5a3036fd05f75ebd)) (by Lucas)
+* update default Unicode API base URL ([2415c8e1](https://github.com/ucdjs/ucd/commit/2415c8e121fb7c1563371fac1a8e60f48be46362)) (by Lucas)
+* handle process.env safely in constants file ([1dca07f2](https://github.com/ucdjs/ucd/commit/1dca07f28c2bc5c95c5aa017562405a00b6a3c51)) (by Lucas)
+* correct mock reset method in validate test and add ucd-files to hidden logs ([6807b611](https://github.com/ucdjs/ucd/commit/6807b611919224970467a0c4c6e64a98c3a622c8)) (by Lucas)
+
 ### Refactoring
 
 * update package references to @ucdjs-tooling/tsdown-config ([ccc002da](https://github.com/ucdjs/ucd/commit/ccc002dafd139e0b08e55098470f7a2a8af361ab)) (by Lucas)
@@ -76,28 +92,6 @@
 
 * enhance createPathFilter documentation with detailed examples ([f0308f87](https://github.com/ucdjs/ucd/commit/f0308f87cc02bd05533b59430a7892b8a40e0f22)) (by Lucas)
 * update README to enhance usage examples and clarify functionality ([82a55e1c](https://github.com/ucdjs/ucd/commit/82a55e1c4f87ced174802e0ac73ceb6364e48544)) (by Lucas)
-
-### Miscellaneous
-
-* Merge branch 'main' into store-analyze ([ea3b7f74](https://github.com/ucdjs/ucd/commit/ea3b7f7451e1d658d3adbcb8e01983111a37cfa9)) (by Lucas Nørgård)
-* Merge remote-tracking branch 'origin/main' into improve-store ([be872aa4](https://github.com/ucdjs/ucd/commit/be872aa40a651eb5b2fabfd615e250b07b5a0ffc)) (by Lucas)
-* Merge branch 'main' into improve-store ([c79c1d89](https://github.com/ucdjs/ucd/commit/c79c1d89b260b35d9d495c594766d18b8041ed4b)) (by Lucas Nørgård)
-
-### Bug Fixes
-
-* ensure 'entries' is an array before processing ([54af41b9](https://github.com/ucdjs/ucd/commit/54af41b92e2849e1b5eae3d39296ab733af21418)) (by Lucas)
-* set default baseUrl for HTTPFileSystemBridge ([0a699f21](https://github.com/ucdjs/ucd/commit/0a699f210b8eb60666773c8ec6d33db9cbc348cd)) (by Lucas)
-* ensure baseUrl is always defined ([0753a323](https://github.com/ucdjs/ucd/commit/0753a323055c91fc41f682b61a7ea0d98c6297da)) (by Lucas)
-* correct file path handling in flattenFilePaths function ([91aff454](https://github.com/ucdjs/ucd/commit/91aff45407699502d55c352a8dbe8b0d9a18eb6e)) (by Lucas)
-* update predefined filter patterns for exclusions ([c39fa797](https://github.com/ucdjs/ucd/commit/c39fa797388ee47812dffa05601a1b9666d1a388)) (by Lucas)
-* update listdir to return file names and enhance recursive listing ([f4f97aca](https://github.com/ucdjs/ucd/commit/f4f97acaba21c7dbb3958496ab4773cc98873491)) (by Lucas)
-* throw if unresolved import ([8123dda2](https://github.com/ucdjs/ucd/commit/8123dda281a62ed6bd63c6d1b6975a27a6f78346)) (by Lucas)
-* update API URLs in mirror and validate test files to use UCDJS_API_BASE_URL ([8c7678e3](https://github.com/ucdjs/ucd/commit/8c7678e35659fcab55c2c6f5df05fa86aa2bac3c)) (by Lucas)
-* update API URLs in test files ([9dff312a](https://github.com/ucdjs/ucd/commit/9dff312a4ef4cdfeb26e6a263dc399eb07e1eb7f)) (by Lucas)
-* use UNICODE_PROXY_URL as default base URL ([a26f9757](https://github.com/ucdjs/ucd/commit/a26f975776218e6db3b64c3e5a3036fd05f75ebd)) (by Lucas)
-* update default Unicode API base URL ([2415c8e1](https://github.com/ucdjs/ucd/commit/2415c8e121fb7c1563371fac1a8e60f48be46362)) (by Lucas)
-* handle process.env safely in constants file ([1dca07f2](https://github.com/ucdjs/ucd/commit/1dca07f28c2bc5c95c5aa017562405a00b6a3c51)) (by Lucas)
-* correct mock reset method in validate test and add ucd-files to hidden logs ([6807b611](https://github.com/ucdjs/ucd/commit/6807b611919224970467a0c4c6e64a98c3a622c8)) (by Lucas)
 
 
 ## 0.2.0

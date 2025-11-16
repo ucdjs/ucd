@@ -13,10 +13,6 @@
 * update package references to @ucdjs-tooling/tsdown-config ([ccc002da](https://github.com/ucdjs/ucd/commit/ccc002dafd139e0b08e55098470f7a2a8af361ab)) (by Lucas)
 * update tsconfig references to use @ucdjs-tooling/tsconfig ([e5c39ac8](https://github.com/ucdjs/ucd/commit/e5c39ac8d2e0ad1cc4a29e4417013ed124c83801)) (by Lucas)
 
-### Miscellaneous
-
-* remove proxy-related configurations and references ([5f267695](https://github.com/ucdjs/ucd/commit/5f267695070d8e75de6a31a053fdd47737c74f01)) (by Lucas)
-
 
 ## 0.1.0
 
