@@ -24,7 +24,7 @@
 * feat(path-utils): implement Windows path utilities ([09840fe5](https://github.com/ucdjs/ucd/commit/09840fe59d0c7171a770cda28050b26f959fea68))
 * feat(path-utils): setup package ([f4e6cce5](https://github.com/ucdjs/ucd/commit/f4e6cce5864dc26efda2590f0882c8f3b58554d5))
 
-### refactor
+### Refactoring
 
 * refactor(tsdown-config): update package references to @ucdjs-tooling/tsdown-config ([ccc002da](https://github.com/ucdjs/ucd/commit/ccc002dafd139e0b08e55098470f7a2a8af361ab))
 * refactor: update tsconfig references to use @ucdjs-tooling/tsconfig ([e5c39ac8](https://github.com/ucdjs/ucd/commit/e5c39ac8d2e0ad1cc4a29e4417013ed124c83801))
