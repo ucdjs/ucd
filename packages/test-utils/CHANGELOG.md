@@ -2,6 +2,25 @@
 
 ## [1.1.0](https://github.com/ucdjs/ucd/compare/@ucdjs/test-utils@1.0.0...@ucdjs/test-utils@1.1.0) (2025-11-16)
 
+### Bug Fixes
+
+* fix(ucd-store-v2): ensure 'read:before' hook is correctly set up ([e2831585](https://github.com/ucdjs/ucd/commit/e2831585ef825a2f11ba90bee18f1631a9c36804))
+* fix: update file paths to include 'extracted' prefix (#371) ([#371](https://github.com/ucdjs/ucd/issues/371)) ([2f455a5f](https://github.com/ucdjs/ucd/commit/2f455a5f8abb5da0e3bc5d1da30b156579b63243))
+* fix(test-utils): update wildcard route handling ([c662bec8](https://github.com/ucdjs/ucd/commit/c662bec8429c98e5fd98942e2c12f0e6fd479d51))
+* fix: switch behaviour ([70a2b8df](https://github.com/ucdjs/ucd/commit/70a2b8df611fcf2041c1f41a1d05171a19541c91))
+* fix: handle wildcard params differently ([43640a1e](https://github.com/ucdjs/ucd/commit/43640a1e2a905f669708a76c8193558429d36df3))
+* fix(test-utils): improve debug message for wrapMockFetch ([04a939cc](https://github.com/ucdjs/ucd/commit/04a939cccd06940d42946a7cf72360f597ae62d5))
+* fix(test-utils): improve header handling in `afterFetch` for response ([34dc1f4c](https://github.com/ucdjs/ucd/commit/34dc1f4cdabed4651ede28b14eacb4da20b29d04))
+* fix(test-utils): update `Params` type in `TypedResponseResolver` for better type safety ([dd0c510c](https://github.com/ucdjs/ucd/commit/dd0c510ccad61cf9a481f770b25dc1305dc5d474))
+* fix(test-utils): improve TypeScript type inference for providedResponse ([bfd05075](https://github.com/ucdjs/ucd/commit/bfd0507535db0bc01bc367bf918ff5f91f9c78ff))
+* fix(test-utils): adjust latency expectation in tests ([0caa3e94](https://github.com/ucdjs/ucd/commit/0caa3e9409e9ac397ac495c2f37b5a028a39be7a))
+* fix(test-utils): improve response validation and error message ([ff437240](https://github.com/ucdjs/ucd/commit/ff4372408f96a19fda604c733879d05225d24c48))
+* fix(test-utils): improve header handling in `wrapMockFetchWithConfig` ([6aaf8a17](https://github.com/ucdjs/ucd/commit/6aaf8a17b5edf7580c44d25b3cf7af737f0af14b))
+* fix(test-utils): rename `setupMockStore` to `mockStoreApi` for clarity ([80f2d4a3](https://github.com/ucdjs/ucd/commit/80f2d4a39aeaaad853206fb05b358f7911f32258))
+* fix(test-utils): cast response to HttpResponseResolver in handlers ([9d01beb5](https://github.com/ucdjs/ucd/commit/9d01beb56201f0d19484e46112285600926b9371))
+* fix(test-utils): normalize base URL correctly ([ad160737](https://github.com/ucdjs/ucd/commit/ad16073723399deabbfa019836d00d4d29094ba6))
+* fix(test-utils): update vitest-setup path and improve setupMockStore return type ([c9b2a1cd](https://github.com/ucdjs/ucd/commit/c9b2a1cdadecf0262fa6dc7870db9341544d59ba))
+
 ### Features
 
 * feat(test-utils): add ApiError auto-conversion and related tests ([1d2aa933](https://github.com/ucdjs/ucd/commit/1d2aa933b17d21714edc799ba32edbeb9cbc5ab8))
@@ -24,415 +43,24 @@
 * feat(test-utils): enhance mock fetch handlers and add platform detection ([abf7bedb](https://github.com/ucdjs/ucd/commit/abf7bedbb0e6451b206c246c75b5eb31cfc8fc29))
 * feat(test-utils): add initial test-utils package (#268) ([#268](https://github.com/ucdjs/ucd/issues/268)) ([d200f56e](https://github.com/ucdjs/ucd/commit/d200f56e102f61d2d8b8820c8ad50fd57dd6c053))
 
-### Bug Fixes
-
-* fix(ucd-store-v2): ensure 'read:before' hook is correctly set up ([e2831585](https://github.com/ucdjs/ucd/commit/e2831585ef825a2f11ba90bee18f1631a9c36804))
-* fix: update file paths to include 'extracted' prefix (#371) ([#371](https://github.com/ucdjs/ucd/issues/371)) ([2f455a5f](https://github.com/ucdjs/ucd/commit/2f455a5f8abb5da0e3bc5d1da30b156579b63243))
-* fix(test-utils): update wildcard route handling ([c662bec8](https://github.com/ucdjs/ucd/commit/c662bec8429c98e5fd98942e2c12f0e6fd479d51))
-* fix: switch behaviour ([70a2b8df](https://github.com/ucdjs/ucd/commit/70a2b8df611fcf2041c1f41a1d05171a19541c91))
-* fix: handle wildcard params differently ([43640a1e](https://github.com/ucdjs/ucd/commit/43640a1e2a905f669708a76c8193558429d36df3))
-* fix(test-utils): improve debug message for wrapMockFetch ([04a939cc](https://github.com/ucdjs/ucd/commit/04a939cccd06940d42946a7cf72360f597ae62d5))
-* fix(test-utils): improve header handling in `afterFetch` for response ([34dc1f4c](https://github.com/ucdjs/ucd/commit/34dc1f4cdabed4651ede28b14eacb4da20b29d04))
-* fix(test-utils): update `Params` type in `TypedResponseResolver` for better type safety ([dd0c510c](https://github.com/ucdjs/ucd/commit/dd0c510ccad61cf9a481f770b25dc1305dc5d474))
-* fix(test-utils): improve TypeScript type inference for providedResponse ([bfd05075](https://github.com/ucdjs/ucd/commit/bfd0507535db0bc01bc367bf918ff5f91f9c78ff))
-* fix(test-utils): adjust latency expectation in tests ([0caa3e94](https://github.com/ucdjs/ucd/commit/0caa3e9409e9ac397ac495c2f37b5a028a39be7a))
-* fix(test-utils): improve response validation and error message ([ff437240](https://github.com/ucdjs/ucd/commit/ff4372408f96a19fda604c733879d05225d24c48))
-* fix(test-utils): improve header handling in `wrapMockFetchWithConfig` ([6aaf8a17](https://github.com/ucdjs/ucd/commit/6aaf8a17b5edf7580c44d25b3cf7af737f0af14b))
-* fix(test-utils): rename `setupMockStore` to `mockStoreApi` for clarity ([80f2d4a3](https://github.com/ucdjs/ucd/commit/80f2d4a39aeaaad853206fb05b358f7911f32258))
-* fix(test-utils): cast response to HttpResponseResolver in handlers ([9d01beb5](https://github.com/ucdjs/ucd/commit/9d01beb56201f0d19484e46112285600926b9371))
-* fix(test-utils): normalize base URL correctly ([ad160737](https://github.com/ucdjs/ucd/commit/ad16073723399deabbfa019836d00d4d29094ba6))
-* fix(test-utils): update vitest-setup path and improve setupMockStore return type ([c9b2a1cd](https://github.com/ucdjs/ucd/commit/c9b2a1cdadecf0262fa6dc7870db9341544d59ba))
-
 ### Miscellaneous
 
-* chore(release): 📦 version packages ([d592b87c](https://github.com/ucdjs/ucd/commit/d592b87c3363761635c4085ffa747b84e8173b85))
-* chore: update perma link ([37b1bb63](https://github.com/ucdjs/ucd/commit/37b1bb63847a9bf03ed94e318c2db39b9bb8ae85))
-* chore: improve ([b1c95c14](https://github.com/ucdjs/ucd/commit/b1c95c1424dbfce27b1c44d40380f408738e0cca))
 * fix ([a765b117](https://github.com/ucdjs/ucd/commit/a765b1173889e3f74e0f1c68ef2f077804679904))
-* chore: fix ([23bb1920](https://github.com/ucdjs/ucd/commit/23bb1920995098fb127104af2d3de4263c971049))
-* chore: fix typo ([3a1ce0db](https://github.com/ucdjs/ucd/commit/3a1ce0db85a865be91b2c085a268f66fe0c1b7ef))
-* chore(dependencies): update dependencies in package.json and pnpm-lock.yaml ([a0ac8277](https://github.com/ucdjs/ucd/commit/a0ac827799e06cdeb0bd69fb4ad9d6690da6c042))
-* test(test-utils): enhance wrapMockFetch with onRequest, beforeFetch, and afterFetch callbacks ([e0e5f693](https://github.com/ucdjs/ucd/commit/e0e5f6932ae93a0a079673785099a484ffd5c81e))
-* chore: fix typo ([f0e2691a](https://github.com/ucdjs/ucd/commit/f0e2691aed3952d8fb98b88912fc988ea6924fa2))
-* test(test-utils): add support for custom responses in mockStoreApi ([d354e060](https://github.com/ucdjs/ucd/commit/d354e06003ac1e9479d242277b9435c2da3d4b90))
-* chore: update pnpm ([62648fcd](https://github.com/ucdjs/ucd/commit/62648fcdc77588623a0e55b7dd0e223728d3e31d))
+
+### undefined
+
 * refactor(test-utils): reorder MOCK_ROUTES for clarity ([8c1366cc](https://github.com/ucdjs/ucd/commit/8c1366cc3650da4fdcc7bbd57bf8ba1d18a5136b))
 * refactor(test-utils): rename CONFIGURED_RESPONSE to kConfiguredResponse ([e2e9e84c](https://github.com/ucdjs/ucd/commit/e2e9e84c4eb5edff49b09415fafa83bbb7e55dd3))
-* chore: fix order ([7dbab71e](https://github.com/ucdjs/ucd/commit/7dbab71e4b4d1aed456e00ba647e3f0b04f3b793))
 * refactor(test-utils): remove unused `wrapMockFetchWithConfig` function ([c58c92d7](https://github.com/ucdjs/ucd/commit/c58c92d770c2b0324987beed2e82e96377a8ed1b))
-* chore: fix comment ([f747ab04](https://github.com/ucdjs/ucd/commit/f747ab04df82f6b6b9475b4afdf323cac78682b9))
-* chore: lint ([c80cb671](https://github.com/ucdjs/ucd/commit/c80cb67177781b47b73d9a6a0df01070d92c9a4f))
-* test(test-utils): add comprehensive tests for mockStoreApi functionality ([585652a2](https://github.com/ucdjs/ucd/commit/585652a2ff5c32ce8ab904b2af5f37066e8c5d61))
-* test(test-utils): add comprehensive tests for response configuration and utility functions ([a2d505cf](https://github.com/ucdjs/ucd/commit/a2d505cff4535b12470135d061949e3b7cd5b795))
 * refactor(test-utils): enhance `isConfiguredResponse` type checking ([9c13e3ae](https://github.com/ucdjs/ucd/commit/9c13e3ae1c7c9eecf693c51aa8c93e3f14231b38))
-* test(test-utils): add comprehensive tests for `mockStoreApi` functionality ([d274ac66](https://github.com/ucdjs/ucd/commit/d274ac662eeb2903862e7bc6fa168782674d15e7))
 * refactor(test-utils): remove unused `InferEndpointConfig` import ([5da32d9a](https://github.com/ucdjs/ucd/commit/5da32d9a2cf992ff61145b48f86f8cdb7a1a9b81))
 * refactor(test-utils): update `ConfiguredResponse` type to use `ConfiguredResponseConfig` properties ([2993c13f](https://github.com/ucdjs/ucd/commit/2993c13f709e8385470ab20298624351802da3c0))
-* chore: fix more memory bridge tests ([ee082fd7](https://github.com/ucdjs/ucd/commit/ee082fd7ce482b93b51ee8993b878a95e3d90907))
 * refactor(test-utils): enhance `mockStoreApi` with config extraction and wrapped fetch ([6c321d9a](https://github.com/ucdjs/ucd/commit/6c321d9a55c89bb0e4e4d9c9f7299a54700991df))
 * refactor(test-utils): export `configure` alongside `mockStoreApi` ([5fdd77a3](https://github.com/ucdjs/ucd/commit/5fdd77a3ccfc98ee557f49cf5a86fa1799a23a5e))
 * refactor(test-utils): reorganize types and handlers ([129e24a7](https://github.com/ucdjs/ucd/commit/129e24a77dea2066202722bb89f3a782bc367fd8))
-* chore: lint ([1fd01bf4](https://github.com/ucdjs/ucd/commit/1fd01bf4ca7417e118109f2513ae55b9a9947a13))
 * refactor(test-utils): enhance mswPath generation for endpoint handling ([ed720b81](https://github.com/ucdjs/ucd/commit/ed720b816888f5288dac1d03aa2e8e17f81b87c8))
 * refactor(test-utils): improve type inference for responses ([ead27917](https://github.com/ucdjs/ucd/commit/ead2791726eadc5c045f06735a409fdbadd98d0b))
 * refactor(test-utils): refactor mock store handlers and remove unused types ([b6271135](https://github.com/ucdjs/ucd/commit/b6271135e12e6a76b0c5a822f06bbe0308597658))
-* test(test-utils): add comprehensive tests for memory file system operations ([09dc510e](https://github.com/ucdjs/ucd/commit/09dc510e922f1c2e240e644e9d14d75fa46870ad))
-* chore: format ([5781ed67](https://github.com/ucdjs/ucd/commit/5781ed675ba1575c36811d7d00dd9fd2a4f9c33e))
-* chore: update pnpm ([7e789f64](https://github.com/ucdjs/ucd/commit/7e789f64e1ec75302bf973cee44f0aaf20347f66))
 * refactor(test-utils): move `name` and `description` into `meta` object ([eab09e41](https://github.com/ucdjs/ucd/commit/eab09e41ce84adc0407e35ea9aa151d5bdfcd433))
-* chore: update package.json ([77bfefcf](https://github.com/ucdjs/ucd/commit/77bfefcf1218ef3fdf2e393ae096d20736103a0c))
-* chore(deps): add @ucdjs/fs-bridge as a peer dependency and update its version in dependencies ([4df73a6c](https://github.com/ucdjs/ucd/commit/4df73a6c3eb4a1def8e734780a8d606f0d6405e6))
-* chore(test-utils): update @luxass/msw-utils to version 0.3.0 and add @ucdjs/fs-bridge as a peer dependency ([aaae3cb1](https://github.com/ucdjs/ucd/commit/aaae3cb116d9927f4d63f3be547da474de4e3662))
-* chore: lint ([bac6a278](https://github.com/ucdjs/ucd/commit/bac6a278c5c60bf614cced94d5c790ebd977e16f))
-* chore(tests): update import paths for test utilities ([0ceedd9b](https://github.com/ucdjs/ucd/commit/0ceedd9b1c35cba6a72e8af1edaa9612e2f1daee))
 * refactor(test-utils): rename `setupMockStore` to `mockStoreApi` ([36bd17a2](https://github.com/ucdjs/ucd/commit/36bd17a29d2f15c3ab6c2ca0bf86e0bfee8ee7ea))
 * refactor(test-utils): reorganize MSW setup and mockFetch implementation ([b9be7b04](https://github.com/ucdjs/ucd/commit/b9be7b04b4a6f167680d9750fefd168584521bd6))
-* chore(test-utils): clean up playground scripts in package.json ([95377269](https://github.com/ucdjs/ucd/commit/953772692f6275b43424756d5f661650a1df176d))
-* chore: use type import ([fd8433af](https://github.com/ucdjs/ucd/commit/fd8433afd502ad4a10ce79a4e2c10b8fb57e040b))
-* chore: lint ([ef4ac146](https://github.com/ucdjs/ucd/commit/ef4ac14609a3f3b8cfe0f3b8be66f51a6e01cb7e))
-* chore: remove test-utils changelog ([98e3cca7](https://github.com/ucdjs/ucd/commit/98e3cca70be726635724bd53e65d5fec1100593d))
-
-
-## 1.0.0
-
-### Minor Changes
-
-- [#359](https://github.com/ucdjs/ucd/pull/359) [`74e889a`](https://github.com/ucdjs/ucd/commit/74e889ad3724ece96ef2fb65ca4442ef8573a822) Thanks [@luxass](https://github.com/luxass)! - Added `configure` helper for customizing mock responses with latency and headers.
-
-  The new `configure` helper allows you to simulate network latency and add custom headers to mock responses:
-
-  ```ts
-  import { mockStoreApi, configure } from "@ucdjs/test-utils";
-
-  mockStoreApi({
-    responses: {
-      "/api/v1/versions": configure({
-        response: [{ version: "16.0.0" /* ... */ }],
-        latency: 100, // 100ms delay
-        headers: { "X-Custom-Header": "value" },
-      }),
-    },
-  });
-  ```
-
-  **Features:**
-
-  - **Fixed latency**: Use a number for consistent delay
-  - **Random latency**: Use `"random"` for variable 100-999ms delays
-  - **Custom headers**: Add response headers for testing
-
-  **Examples:**
-
-  ```ts
-  // Random latency for realistic testing
-  configure({
-    response: data,
-    latency: "random", // Random 100-999ms
-  });
-
-  // Test rate limiting headers
-  configure({
-    response: data,
-    headers: {
-      "X-Rate-Limit-Remaining": "10",
-      "X-Rate-Limit-Reset": "1234567890",
-    },
-  });
-
-  // Combine latency and headers
-  configure({
-    response: data,
-    latency: 200,
-    headers: { "X-Request-ID": "test-123" },
-  });
-  ```
-
-- [#362](https://github.com/ucdjs/ucd/pull/362) [`2c6d845`](https://github.com/ucdjs/ucd/commit/2c6d84513fd0ca2f1eda3d8f502114770f3dbe3e) Thanks [@luxass](https://github.com/luxass)! - Added `customResponses` option to `mockStoreApi` for registering custom endpoint handlers.
-
-  You can now add custom endpoints beyond the predefined API routes:
-
-  ```ts
-  import { mockStoreApi } from "@ucdjs/test-utils";
-  import { HttpResponse } from "msw";
-
-  mockStoreApi({
-    customResponses: [
-      [
-        "GET",
-        "https://api.ucdjs.dev/api/v1/stats",
-        () => {
-          return HttpResponse.json({ totalVersions: 42 });
-        },
-      ],
-    ],
-  });
-  ```
-
-  **Features:**
-
-  - Support for custom endpoints with any HTTP method
-  - Multiple methods on the same endpoint
-  - Path parameters support
-  - Works alongside regular `responses` configuration
-
-  **Examples:**
-
-  ```ts
-  // Multiple HTTP methods
-  mockStoreApi({
-    customResponses: [
-      [
-        ["POST", "PUT"],
-        "https://api.ucdjs.dev/api/v1/cache",
-        ({ request }) => {
-          return HttpResponse.json({ method: request.method });
-        },
-      ],
-    ],
-  });
-
-  // Path parameters
-  mockStoreApi({
-    customResponses: [
-      [
-        "GET",
-        "https://api.ucdjs.dev/api/v1/versions/:version/stats",
-        ({ params }) => {
-          return HttpResponse.json({ version: params.version, downloads: 100 });
-        },
-      ],
-    ],
-  });
-
-  // Combine with regular responses
-  mockStoreApi({
-    responses: {
-      "/api/v1/versions": [],
-    },
-    customResponses: [
-      [
-        "GET",
-        "https://api.ucdjs.dev/api/v1/search",
-        () => {
-          return HttpResponse.json({ results: [] });
-        },
-      ],
-    ],
-  });
-  ```
-
-  This is useful for testing custom endpoints or extending the mock API with additional functionality.
-
-- [#359](https://github.com/ucdjs/ucd/pull/359) [`74e889a`](https://github.com/ucdjs/ucd/commit/74e889ad3724ece96ef2fb65ca4442ef8573a822) Thanks [@luxass](https://github.com/luxass)! - Added support for error responses in mock store using `ApiError` type from `@ucdjs/schemas`.
-
-  You can now return API error responses to test error handling scenarios:
-
-  ```ts
-  import { mockStoreApi } from "@ucdjs/test-utils";
-  import type { ApiError } from "@ucdjs/schemas";
-
-  const errorResponse: ApiError = {
-    message: "Version not found",
-    status: 404,
-    timestamp: new Date().toISOString(),
-  };
-
-  mockStoreApi({
-    responses: {
-      "/api/v1/versions": errorResponse,
-    },
-  });
-  ```
-
-  This makes it easier to test error handling while maintaining full type safety with the standardized API error format.
-
-- [#364](https://github.com/ucdjs/ucd/pull/364) [`13b3900`](https://github.com/ucdjs/ucd/commit/13b390035620daf2053c6be8c25d602deed579f2) Thanks [@luxass](https://github.com/luxass)! - Added `onRequest` callback to `mockStoreApi` for request tracking.
-
-  The `onRequest` callback allows tests to track, assert, or log API requests. This is particularly useful for verifying that certain endpoints weren't called during a test, such as when testing local caching behavior.
-
-  ```ts
-  import { mockStoreApi } from "@ucdjs/test-utils";
-
-  let apiCallCount = 0;
-
-  mockStoreApi({
-    versions: ["16.0.0"],
-    onRequest: ({ path, method, params, url }) => {
-      apiCallCount++;
-      console.log(`API called: ${method} ${path}`);
-    },
-  });
-
-  // Later in test
-  expect(apiCallCount).toBe(0); // Verify API wasn't called
-  ```
-
-  **Features:**
-
-  - Track API requests during tests
-  - Access request metadata: `path`, `method`, `params`, `url`
-  - Verify endpoints weren't called (e.g., when using local caches)
-
-  This resolves issue #363.
-
-- [#359](https://github.com/ucdjs/ucd/pull/359) [`74e889a`](https://github.com/ucdjs/ucd/commit/74e889ad3724ece96ef2fb65ca4442ef8573a822) Thanks [@luxass](https://github.com/luxass)! - Added `unsafeResponse` helper for testing with invalid or non-schema-compliant responses.
-
-  The new `unsafeResponse` helper bypasses TypeScript type checking to test error handling with invalid data:
-
-  ```ts
-  import { mockStoreApi, unsafeResponse } from "@ucdjs/test-utils";
-
-  // Test error handling with malformed response
-  mockStoreApi({
-    responses: {
-      "/api/v1/versions": unsafeResponse({ invalid: "data" }),
-    },
-  });
-  ```
-
-  **Use Cases:**
-
-  - Test error handling with malformed API responses
-  - Simulate edge cases where the API returns unexpected data
-  - Validate client-side validation and error recovery
-
-  **Combine with `configure`:**
-
-  ```ts
-  import { mockStoreApi, configure, unsafeResponse } from "@ucdjs/test-utils";
-
-  mockStoreApi({
-    responses: {
-      "/api/v1/versions": configure({
-        response: unsafeResponse({ malformed: "response" }),
-        latency: 100,
-        headers: { "X-Test-Case": "invalid-response" },
-      }),
-    },
-  });
-  ```
-
-  This is useful for testing how your application handles unexpected API behavior.
-
-- [#295](https://github.com/ucdjs/ucd/pull/295) [`7187763`](https://github.com/ucdjs/ucd/commit/71877636a5be78f5e7a867511b78f1fc006f4eaa) Thanks [@luxass](https://github.com/luxass)! - Rename `mockStoreApi` to `mockStoreApi` for better clarity
-
-  The function has been renamed from `mockStoreApi` to `mockStoreApi` to better reflect that it sets up MSW HTTP route handlers for the UCD API, rather than creating a mock store object.
-
-  **Migration:**
-
-  ```typescript
-  // Before
-  import { mockStoreApi } from "@ucdjs/test-utils";
-  mockStoreApi();
-
-  // After
-  import { mockStoreApi } from "@ucdjs/test-utils";
-  mockStoreApi();
-  ```
-
-  The old `mockStoreApi` name is still exported as a deprecated alias for backward compatibility.
-
-- [#292](https://github.com/ucdjs/ucd/pull/292) [`956277e`](https://github.com/ucdjs/ucd/commit/956277ec63983735e072f210cfd896de4e6bfe99) Thanks [@luxass](https://github.com/luxass)! - Reorganize package structure and improve MSW server flexibility
-
-  **Package Structure:**
-
-  - Reorganized into `mock-store/` directory with cleaner file structure
-  - Renamed `global-setup.ts` to `vitest-setup.ts` for clarity
-  - Simplified handler pattern by removing abstraction layer
-  - Consolidated all types into `mock-store/types.ts`
-
-  **MSW Server Improvements:**
-
-  - `mockStoreApi` now accepts optional `mswServer` parameter for custom MSW servers
-  - Smart server resolution: automatically uses global server when `@ucdjs/test-utils/msw/vitest-setup` is imported
-  - Handlers now receive `mockFetch` via dependency injection for better testability
-  - Clear error messages when MSW server is not configured
-
-  **Usage:**
-
-  ```typescript
-  // Option 1: Use vitest-setup (automatic server registration)
-  // vitest.config.ts
-  export default defineConfig({
-    test: {
-      setupFiles: ["@ucdjs/test-utils/msw/vitest-setup"],
-    },
-  });
-
-  // Option 2: Provide your own server
-  mockStoreApi({ mswServer: yourCustomServer });
-  ```
-
-- [#332](https://github.com/ucdjs/ucd/pull/332) [`d621f55`](https://github.com/ucdjs/ucd/commit/d621f552259984f13d14322c91745e52c4a6d77f) Thanks [@luxass](https://github.com/luxass)! - Add in-memory file system bridge for testing
-
-  Introduces `createMemoryMockFS` under `@ucdjs/test-utils/fs-bridges` - a lightweight, Map-based in-memory file system bridge for testing file operations without real I/O.
-
-  **Usage:**
-
-  ```typescript
-  import { describe, it, expect } from "vitest";
-  import { createMemoryMockFS } from "@ucdjs/test-utils/fs-bridges";
-
-  describe("file operations", () => {
-    it("should read and write files", async () => {
-      const fs = createMemoryMockFS();
-
-      await fs.write("test.txt", "content");
-      const content = await fs.read("test.txt");
-
-      expect(content).toBe("content");
-    });
-
-    it("should initialize with pre-populated files", async () => {
-      const fs = createMemoryMockFS({
-        initialFiles: {
-          "manifest.json": JSON.stringify({ versions: ["16.0.0"] }),
-          "16.0.0/UnicodeData.txt": "0000;<control>;Cc;0;BN;;;;;N;NULL;;;;",
-        },
-      });
-
-      expect(await fs.exists("manifest.json")).toBe(true);
-      expect(await fs.exists("16.0.0/UnicodeData.txt")).toBe(true);
-    });
-  });
-  ```
-
-  Supports all file system operations: `read`, `write`, `exists`, `listdir`, `mkdir`, `rm`. Full write/read/mkdir/rm capabilities included.
-
-- [#359](https://github.com/ucdjs/ucd/pull/359) [`74e889a`](https://github.com/ucdjs/ucd/commit/74e889ad3724ece96ef2fb65ca4442ef8573a822) Thanks [@luxass](https://github.com/luxass)! - Changed mock store route parameter syntax from Express-style (`:param`) to OpenAPI-style (`{param}`).
-
-  **Breaking Changes:**
-
-  Route definitions now use curly braces for parameters instead of colons.
-
-  **Before:**
-
-  ```ts
-  mockStoreApi({
-    responses: {
-      "/api/v1/files/:wildcard": customData,
-    },
-  });
-  ```
-
-  **After:**
-
-  ```ts
-  mockStoreApi({
-    responses: {
-      "/api/v1/files/{wildcard}": customData,
-    },
-  });
-  ```
-
-  This aligns the mock store with OpenAPI path parameter conventions and improves consistency across the codebase.
-
-### Patch Changes
-
-- [#291](https://github.com/ucdjs/ucd/pull/291) [`6164ec5`](https://github.com/ucdjs/ucd/commit/6164ec523993459e5edf2cce4d2f3378bb84653c) Thanks [@luxass](https://github.com/luxass)! - Align @ucdjs/test-utils with internal test utils
-
-- Updated dependencies [[`6ac0005`](https://github.com/ucdjs/ucd/commit/6ac000515509945cc87119af57725beabc9b75e4), [`d031fdc`](https://github.com/ucdjs/ucd/commit/d031fdc4426120e901f7f26072c17d2de2f3bd59), [`f15bb51`](https://github.com/ucdjs/ucd/commit/f15bb51c663c05e205553c59ab0a7f06a6e20e39), [`3dfaaae`](https://github.com/ucdjs/ucd/commit/3dfaaaebfbf4f03c0d9755db3fa0601ff825fbce), [`2d3774a`](https://github.com/ucdjs/ucd/commit/2d3774afe4786e45385ba3af19f160487541a64e), [`384810a`](https://github.com/ucdjs/ucd/commit/384810a92e9f68f207b349177842149e758e5813), [`d7b8d08`](https://github.com/ucdjs/ucd/commit/d7b8d088060b2ee473f325b1173cbb67f05ccb2f), [`199021b`](https://github.com/ucdjs/ucd/commit/199021b803ffe5969f8c5e80de3153971b686b69), [`8ed7777`](https://github.com/ucdjs/ucd/commit/8ed77771808dc56a7dc3a1f07bd22cd7b75c2119), [`8dbc72d`](https://github.com/ucdjs/ucd/commit/8dbc72d3197a0eef8e876595583c4109114cbc31), [`2222605`](https://github.com/ucdjs/ucd/commit/22226057f7587669e2ae15cd06011f38dd677741), [`b19dc76`](https://github.com/ucdjs/ucd/commit/b19dc76984e611be178de2037e5436cf3cc27dab), [`505ec62`](https://github.com/ucdjs/ucd/commit/505ec6266588299b09e1b82de0c2478514671b5c), [`ce9b5a7`](https://github.com/ucdjs/ucd/commit/ce9b5a76795292aca5c9f8b6fd7021a66a34c28d), [`82eb12e`](https://github.com/ucdjs/ucd/commit/82eb12e1d1944ebbe2748ec129a2d2b2fa315946), [`d4bdcfd`](https://github.com/ucdjs/ucd/commit/d4bdcfd5a5cd0fc3e2a6e2620a26f5e6f835af40), [`c013665`](https://github.com/ucdjs/ucd/commit/c013665af9188920624e516d0359293859752861), [`7e8a4a7`](https://github.com/ucdjs/ucd/commit/7e8a4a7b0511af98b87a6004e479cdc46df570c5), [`6c564ab`](https://github.com/ucdjs/ucd/commit/6c564aba7670bd2f5d98e9720828031bb8eb0532), [`80a3794`](https://github.com/ucdjs/ucd/commit/80a3794d0469d64f0522347d6f0c3b258f4fcd35), [`d761237`](https://github.com/ucdjs/ucd/commit/d7612378002115098b7f35430aaadfed0913a3af), [`bea2c3c`](https://github.com/ucdjs/ucd/commit/bea2c3c672aee24080eef7b973c7f3c00acb1b6f), [`942dc38`](https://github.com/ucdjs/ucd/commit/942dc380eb97e7123a5aa32e2960f6fef505465d), [`7c612b3`](https://github.com/ucdjs/ucd/commit/7c612b3985a09f65348fa00fb86dba3e11157eec), [`ec348bb`](https://github.com/ucdjs/ucd/commit/ec348bb9cea0285222347526cf5be5d14d9d61ea), [`1bac88a`](https://github.com/ucdjs/ucd/commit/1bac88add4796ef58f9b9b1d769ab03cdd4a61c0), [`69ee629`](https://github.com/ucdjs/ucd/commit/69ee629e77ad2f83a663cb7c6e8aa07fb9655a12), [`a028d2f`](https://github.com/ucdjs/ucd/commit/a028d2f37091a90c76c66ca8c10e43b45b999868), [`85c248b`](https://github.com/ucdjs/ucd/commit/85c248bc8f5304ee6ba56e2ded6d81ce3facd00e), [`d02d0c6`](https://github.com/ucdjs/ucd/commit/d02d0c6bdf7fc990c56e55a9e2517eba40b7e0b3), [`6a43284`](https://github.com/ucdjs/ucd/commit/6a432841e12d6e5783822cc8fe2586ae2b5ab4e1), [`46a6e81`](https://github.com/ucdjs/ucd/commit/46a6e8110dcc1ccef3a436bb18e67d92f0424213), [`7d98e29`](https://github.com/ucdjs/ucd/commit/7d98e29af2f9f6d681f9f2ee401baddf5a2c6ef6), [`2a44473`](https://github.com/ucdjs/ucd/commit/2a444735b6c09b4a5df8c79a580d00acb7511ab2), [`c013665`](https://github.com/ucdjs/ucd/commit/c013665af9188920624e516d0359293859752861), [`4fd46b4`](https://github.com/ucdjs/ucd/commit/4fd46b43613b23c1d120c71ae0754883eb9bf1ff), [`4052200`](https://github.com/ucdjs/ucd/commit/40522006c24f8856ff5ec34bb6630d1e1d7f68e3), [`f15bb51`](https://github.com/ucdjs/ucd/commit/f15bb51c663c05e205553c59ab0a7f06a6e20e39), [`0360dc3`](https://github.com/ucdjs/ucd/commit/0360dc3ac727019d451768dd1ef6eadca572c69b), [`a3f785f`](https://github.com/ucdjs/ucd/commit/a3f785f697a393dbef75728e9a8286359386c5f9), [`64e31f5`](https://github.com/ucdjs/ucd/commit/64e31f5491db5e192136eb66159108d4a98bff03), [`39faaf5`](https://github.com/ucdjs/ucd/commit/39faaf585f3339296ef75c8a39893399ea48789f), [`6b59312`](https://github.com/ucdjs/ucd/commit/6b5931201a9a19a1b8d70f25680e22d4ae0f0743), [`da10e4d`](https://github.com/ucdjs/ucd/commit/da10e4d133819b08c83d60d63d82d9273a1f77a3), [`08189be`](https://github.com/ucdjs/ucd/commit/08189be0432803fe77ab19d9855b38aadaea5459), [`5bc90eb`](https://github.com/ucdjs/ucd/commit/5bc90ebcf5e20e11f4d209983975fa732d57cc3f), [`71d58fb`](https://github.com/ucdjs/ucd/commit/71d58fbf37f580e54a42600dcc4c71f3a63443c0), [`e52d845`](https://github.com/ucdjs/ucd/commit/e52d845b52027c625e72395a8295cbcdae5317e8), [`0ab4b32`](https://github.com/ucdjs/ucd/commit/0ab4b32b726c5ebb0c1199270dddfb7ddaae8f61), [`a9e3aae`](https://github.com/ucdjs/ucd/commit/a9e3aae0efd15e07c50b58b827857631f0553640), [`170bbd1`](https://github.com/ucdjs/ucd/commit/170bbd1a8cfe23787d73e1052108261bb5956d01), [`3993a30`](https://github.com/ucdjs/ucd/commit/3993a304795d26070df7d69ca7b66b226372a234), [`76b56b0`](https://github.com/ucdjs/ucd/commit/76b56b08f38f5da4dc441cdbc7fcb8d074ae5a55)]:
-  - @ucdjs/fs-bridge@0.1.0
-  - @ucdjs-internal/shared@0.1.0
-  - @ucdjs/ucd-store@0.1.0
-  - @ucdjs/schemas@0.1.0
