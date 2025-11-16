@@ -66,7 +66,7 @@
 * remove FsInterface and related functions; update download logic to use buildUCDPath ([d3ee25dc](https://github.com/ucdjs/ucd/commit/d3ee25dc3c9dc22242f1ed4485047f3bc0cd7eba))
 * replace internal flattening function with helper utility ([3610c72d](https://github.com/ucdjs/ucd/commit/3610c72da013d2a5819f5343159b72899a863e83))
 * migrate ucd-store to use utils ([cadc55b4](https://github.com/ucdjs/ucd/commit/cadc55b4238f8fb99e82a84a2047a34fd693ca38))
-* replace hardcoded proxy URL with configurable option in internal__processEntries ([[object Object]](https://github.com/ucdjs/ucd/issues/58)) ([f03d9ff2](https://github.com/ucdjs/ucd/commit/f03d9ff25df5e0023da7da95c27a134474d56792))
+* replace hardcoded proxy URL with configurable option in internal__processEntries ([Issue #58](https://github.com/ucdjs/ucd/issues/58)) ([f03d9ff2](https://github.com/ucdjs/ucd/commit/f03d9ff25df5e0023da7da95c27a134474d56792))
 * improve documentation for validateUCDFiles function ([4c713242](https://github.com/ucdjs/ucd/commit/4c713242fce9bda8c52fd7166fd644ffac4319d1))
 * ucd-files impl ([b1d799a4](https://github.com/ucdjs/ucd/commit/b1d799a44bb6f4fb5efe53836586e12df718128f))
 * simplify createDefaultFSAdapter and add tests for FS adapter ([3fccaf55](https://github.com/ucdjs/ucd/commit/3fccaf55b4ced89c0f31a4869e630c8b173023b4))

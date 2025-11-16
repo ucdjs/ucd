@@ -5,7 +5,7 @@
 ### Bug Fixes
 
 * ensure 'read:before' hook is correctly set up ([e2831585](https://github.com/ucdjs/ucd/commit/e2831585ef825a2f11ba90bee18f1631a9c36804))
-* update file paths to include 'extracted' prefix ([[object Object]](https://github.com/ucdjs/ucd/pull/371)) ([2f455a5f](https://github.com/ucdjs/ucd/commit/2f455a5f8abb5da0e3bc5d1da30b156579b63243))
+* update file paths to include 'extracted' prefix ([PR #371](https://github.com/ucdjs/ucd/pull/371)) ([2f455a5f](https://github.com/ucdjs/ucd/commit/2f455a5f8abb5da0e3bc5d1da30b156579b63243))
 * update wildcard route handling ([c662bec8](https://github.com/ucdjs/ucd/commit/c662bec8429c98e5fd98942e2c12f0e6fd479d51))
 * switch behaviour ([70a2b8df](https://github.com/ucdjs/ucd/commit/70a2b8df611fcf2041c1f41a1d05171a19541c91))
 * handle wildcard params differently ([43640a1e](https://github.com/ucdjs/ucd/commit/43640a1e2a905f669708a76c8193558429d36df3))
@@ -41,7 +41,7 @@
 * add mockFetch to handler functions and improve setupMockStore ([6af022c3](https://github.com/ucdjs/ucd/commit/6af022c3d29494d37378ca30ca72df82faa25e5b))
 * restructure mock store handlers and update exports ([49ffe9d8](https://github.com/ucdjs/ucd/commit/49ffe9d8acadaaf2e4eb0704caf9bb9892625426))
 * enhance mock fetch handlers and add platform detection ([abf7bedb](https://github.com/ucdjs/ucd/commit/abf7bedbb0e6451b206c246c75b5eb31cfc8fc29))
-* add initial test-utils package ([[object Object]](https://github.com/ucdjs/ucd/pull/268)) ([d200f56e](https://github.com/ucdjs/ucd/commit/d200f56e102f61d2d8b8820c8ad50fd57dd6c053))
+* add initial test-utils package ([PR #268](https://github.com/ucdjs/ucd/pull/268)) ([d200f56e](https://github.com/ucdjs/ucd/commit/d200f56e102f61d2d8b8820c8ad50fd57dd6c053))
 
 ### Miscellaneous
 
