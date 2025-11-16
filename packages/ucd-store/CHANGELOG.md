@@ -2,7 +2,7 @@
 
 ## [0.2.0](https://github.com/ucdjs/ucd/compare/@ucdjs/ucd-store@0.1.0...@ucdjs/ucd-store@0.2.0) (2025-11-16)
 
-### undefined
+### refactor
 
 * refactor(tests): simplify mock responses for API versioning ([79c16c9b](https://github.com/ucdjs/ucd/commit/79c16c9b02baacb21e944d480daf33b7b1a1304f))
 * refactor(fs-bridge): prefer for bridge capability change ([0a9500e4](https://github.com/ucdjs/ucd/commit/0a9500e4f2f98f89bd4ebfbfae377693c5eccc0c))

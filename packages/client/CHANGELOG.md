@@ -6,7 +6,7 @@
 
 * fix(ucd-store-v2): update return type for `get` method and remove generic type from `getManifest` ([31ba5a66](https://github.com/ucdjs/ucd/commit/31ba5a665b27877fc6d78f9d3934319b6ff5b782))
 
-### undefined
+### refactor
 
 * refactor(ucd-store-v2): improve error handling and response processing ([248a0dc4](https://github.com/ucdjs/ucd/commit/248a0dc4ade38163afdb71beca6567d94a2357a0))
 * refactor(test-utils): refactor mock store handlers and remove unused types ([b6271135](https://github.com/ucdjs/ucd/commit/b6271135e12e6a76b0c5a822f06bbe0308597658))
