@@ -2,7 +2,7 @@
 
 ## [1.0.0](https://github.com/ucdjs/ucd/compare/@ucdjs-internal/shared@0.1.0...@ucdjs-internal/shared@1.0.0) (2025-11-16)
 
-### undefined
+### refactor
 
 * refactor(shared)!: use native json parse (#376) ([#376](https://github.com/ucdjs/ucd/issues/376)) ([7cbf0e32](https://github.com/ucdjs/ucd/commit/7cbf0e3241aa6519848eefffec098f1c7e6ce17f))
 * refactor(shared): enhance safeFetch response structure ([7a96c23d](https://github.com/ucdjs/ucd/commit/7a96c23dee833ce6098173fed4213c0f2552d218))

@@ -2,7 +2,7 @@
 
 ## [0.2.0](https://github.com/ucdjs/ucd/compare/@ucdjs/schemas@0.1.0...@ucdjs/schemas@0.2.0) (2025-11-16)
 
-### undefined
+### refactor
 
 * refactor(schemas): remove ucdRegistry and update schema registration ([381b5947](https://github.com/ucdjs/ucd/commit/381b59473f77c0f73f3b8184e07c2a8a9258b686))
 * refactor(tsdown-config): update package references to @ucdjs-tooling/tsdown-config ([ccc002da](https://github.com/ucdjs/ucd/commit/ccc002dafd139e0b08e55098470f7a2a8af361ab))

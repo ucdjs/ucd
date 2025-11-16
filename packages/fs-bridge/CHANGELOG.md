@@ -63,7 +63,7 @@
 * feat(fs-bridge): update import paths and module exports ([99e60ad0](https://github.com/ucdjs/ucd/commit/99e60ad091d26c32ec4c6d89667acca6b4a42c74))
 * feat(fs-bridge): add HTTP and Node file system bridges with comprehensive tests ([5bc90ebc](https://github.com/ucdjs/ucd/commit/5bc90ebcf5e20e11f4d209983975fa732d57cc3f))
 
-### undefined
+### refactor
 
 * refactor(fs-bridge): refactor file system bridge operations and introduce operation wrappers ([b0db2a05](https://github.com/ucdjs/ucd/commit/b0db2a052d26bb21a88a18d202b72f367397b7af))
 * refactor: rename `.on` to `.hook` (#377) ([#377](https://github.com/ucdjs/ucd/issues/377)) ([2a444735](https://github.com/ucdjs/ucd/commit/2a444735b6c09b4a5df8c79a580d00acb7511ab2))
