@@ -194,8 +194,6 @@
 * chore: remove cleanup ([275e6301](https://github.com/ucdjs/ucd/commit/275e63016d02f664d264c37847dc1e075d400e1e))
 * chore: disable some tests I will create an issue for tracking test coverage, which these tests fall under ([ce43550a](https://github.com/ucdjs/ucd/commit/ce43550aac40932b1db65ed9786292b9d1e6882a))
 * refactor: make cli use ucd-store to download files ([717e4b71](https://github.com/ucdjs/ucd/commit/717e4b71a7656e5b30dc30aef0d7ba03fbb88e5e))
-
-
 ## 0.3.0
 
 ### Minor Changes
