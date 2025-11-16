@@ -1,6 +1,6 @@
 # @ucdjs/cli
 
-## [0.4.0](https://github.com/ucdjs/ucd/compare/@ucdjs/cli@0.3.0...@ucdjs/cli@0.4.0) (2025-11-16)
+## [1.0.0](https://github.com/ucdjs/ucd/compare/@ucdjs/cli@0.3.0...@ucdjs/cli@1.0.0) (2025-11-16)
 
 ### Features
 
