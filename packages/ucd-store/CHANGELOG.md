@@ -76,7 +76,7 @@
 
 ### Bug Fixes
 
-* update file paths to include 'extracted' prefix ([#NaN](https://github.com/ucdjs/ucd/pull/NaN)) ([#371](https://github.com/ucdjs/ucd/issues/371)) ([2f455a5f](https://github.com/ucdjs/ucd/commit/2f455a5f8abb5da0e3bc5d1da30b156579b63243))
+* update file paths to include 'extracted' prefix ([[object Object]](https://github.com/ucdjs/ucd/pull/371)) ([2f455a5f](https://github.com/ucdjs/ucd/commit/2f455a5f8abb5da0e3bc5d1da30b156579b63243))
 * replace `@luxass/unicode-utils-new` with `@luxass/unicode-utils` ([301056ad](https://github.com/ucdjs/ucd/commit/301056ad6d16ec0de30ce8e6e611db4d59ab3e9b))
 * remove unnecessary assertions ([28cff89f](https://github.com/ucdjs/ucd/commit/28cff89f28b63800c81e036bd014c9fd07706c93))
 * update import paths for setupMockStore ([c667ffa7](https://github.com/ucdjs/ucd/commit/c667ffa7e5e893ddd89ca14232909c9764871539))
