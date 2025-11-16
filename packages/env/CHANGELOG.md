@@ -16,3 +16,10 @@
 ### Miscellaneous
 
 * remove proxy-related configurations and references ([5f267695](https://github.com/ucdjs/ucd/commit/5f267695070d8e75de6a31a053fdd47737c74f01))
+
+
+## 0.1.0
+
+### Minor Changes
+
+- [#94](https://github.com/ucdjs/ucd/pull/94) [`696fdd3`](https://github.com/ucdjs/ucd/commit/696fdd340a2b2faddfcd142e285294f1cc715c1a) Thanks [@luxass](https://github.com/luxass)! - introduce @ucdjs/env
