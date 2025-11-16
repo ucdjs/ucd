@@ -31,6 +31,8 @@
 * chore: add Codecov configuration and badges to documentation ([e18b6d02](https://github.com/ucdjs/ucd/commit/e18b6d02442f93afa055a0956ce5df69b70bba77))
 * chore: refactor tsdown configuration across packages ([323318de](https://github.com/ucdjs/ucd/commit/323318def2095643c3062fb863c78f1942ac1516))
 * test(env): add unit tests for requiredEnv function ([4ec0692c](https://github.com/ucdjs/ucd/commit/4ec0692c85e636260972d2bdec14eb3d4136658c))
+
+
 ## 0.1.0
 
 ### Minor Changes
