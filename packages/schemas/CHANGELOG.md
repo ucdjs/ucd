@@ -24,3 +24,12 @@
 * feat(ucd-store): update UCD store schemas and handling ([8b90a374](https://github.com/ucdjs/ucd/commit/8b90a3741bc8d46ae9ab2764f94c2ef041e00689))
 * feat(ucd-store): enhance UCDStore initialization and manifest loading ([598e2fec](https://github.com/ucdjs/ucd/commit/598e2fec810274fd1801cf50dd2935669f7253d6))
 * feat(schemas): add schemas package with initial implementation ([58b02b89](https://github.com/ucdjs/ucd/commit/58b02b89baf7fd795ce0423ad9acda01726ca44b))
+
+
+## 0.1.0
+
+### Minor Changes
+
+- [#172](https://github.com/ucdjs/ucd/pull/172) [`e52d845`](https://github.com/ucdjs/ucd/commit/e52d845b52027c625e72395a8295cbcdae5317e8) Thanks [@luxass](https://github.com/luxass)! - feat: add initial schemas package
+
+  This package provides schemas for different UCDJS components, including Api Responses, Environment Variables, and more.
