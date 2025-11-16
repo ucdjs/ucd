@@ -6,7 +6,7 @@
 
 * improve error handling in `handleError` function ([4ad7725c](https://github.com/ucdjs/ucd/commit/4ad7725c82ccb107d35d2ca405c0c469c4fc0b82))
 * convert strings to errors ([e5da9589](https://github.com/ucdjs/ucd/commit/e5da95891c6d22233cd2f60769585e45a68e14e9))
-* update file paths to include 'extracted' prefix ([[object Object]](https://github.com/ucdjs/ucd/pull/371)) ([2f455a5f](https://github.com/ucdjs/ucd/commit/2f455a5f8abb5da0e3bc5d1da30b156579b63243))
+* update file paths to include 'extracted' prefix ([PR #371](https://github.com/ucdjs/ucd/pull/371)) ([2f455a5f](https://github.com/ucdjs/ucd/commit/2f455a5f8abb5da0e3bc5d1da30b156579b63243))
 * make hooks call asynchronous and ensure proper error handling ([32d96256](https://github.com/ucdjs/ucd/commit/32d962567f775e11415f5e85c59afe46980b3dd5))
 * replace `hooxs` with `hookable` and update hook method calls ([666ac4c1](https://github.com/ucdjs/ucd/commit/666ac4c173c9177b07aa26bf19350fb836adce32))
 * update `entries` type in hook payload to use `FSEntry[]` ([96d73c06](https://github.com/ucdjs/ucd/commit/96d73c06dc4d0e446640b7a7c0627afb3fc72a3d))
@@ -32,7 +32,7 @@
 ### Features
 
 * add utility functions for hook payload construction and operation wrapping ([f90f3b87](https://github.com/ucdjs/ucd/commit/f90f3b873044aaecac01aa96df13b2adc58582be))
-* upgrade hookable ([[object Object]](https://github.com/ucdjs/ucd/pull/378)) ([4591756b](https://github.com/ucdjs/ucd/commit/4591756bac443dd4b2a7c1c7e0f66e4d69edb11b))
+* upgrade hookable ([PR #378](https://github.com/ucdjs/ucd/pull/378)) ([4591756b](https://github.com/ucdjs/ucd/commit/4591756bac443dd4b2a7c1c7e0f66e4d69edb11b))
 * add `encoding` property to hook payload for `write:before` ([c5de8fbe](https://github.com/ucdjs/ucd/commit/c5de8fbeba60bb699bfd5443dade1c3abcf0bfee))
 * enhance hook payload types and improve type safety ([677ab0e2](https://github.com/ucdjs/ucd/commit/677ab0e27ef74a5842cf3655ff8d9dbefc06ff5c))
 * enhance `rm` operation payload and update hook signatures ([6ef1d6d2](https://github.com/ucdjs/ucd/commit/6ef1d6d2d98de13706656a77b987f0677a373498))
@@ -66,7 +66,7 @@
 ### Refactoring
 
 * refactor file system bridge operations and introduce operation wrappers ([b0db2a05](https://github.com/ucdjs/ucd/commit/b0db2a052d26bb21a88a18d202b72f367397b7af))
-* rename `.on` to `.hook` ([[object Object]](https://github.com/ucdjs/ucd/pull/377)) ([2a444735](https://github.com/ucdjs/ucd/commit/2a444735b6c09b4a5df8c79a580d00acb7511ab2))
+* rename `.on` to `.hook` ([PR #377](https://github.com/ucdjs/ucd/pull/377)) ([2a444735](https://github.com/ucdjs/ucd/commit/2a444735b6c09b4a5df8c79a580d00acb7511ab2))
 * update capability types to use `OptionalCapabilityKey` ([956d8301](https://github.com/ucdjs/ucd/commit/956d8301a592b01be5dbb239738cb3b2bf3d3134))
 * enhance capability handling in file system bridge ([5e5bf2f1](https://github.com/ucdjs/ucd/commit/5e5bf2f11eef8ccc102c5c39313aa505c0b861ea))
 * improve bridge capabilities handling ([680b2ddb](https://github.com/ucdjs/ucd/commit/680b2ddbb59c808ae44a10447cd6fabc0280c39f))
