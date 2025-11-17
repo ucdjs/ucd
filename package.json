@@ -23,6 +23,7 @@
     "test:ui": "vitest --ui",
     "typecheck": "turbo run typecheck",
     "release": "node ./scripts/release.ts",
+    "release:verify": "node ./scripts/release-verify.ts",
     "release:publish": "node ./scripts/release-publish.ts"
   },
   "devDependencies": {
