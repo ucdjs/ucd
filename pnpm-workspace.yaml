@@ -22,7 +22,7 @@ packages:
 catalogs:
   monorepo:
     turbo: 2.5.8
-    "@ucdjs/release-scripts": 0.1.0-beta.13
+    "@ucdjs/release-scripts": 0.1.0-beta.16
 
   testing:
     "@vitest/coverage-istanbul": 3.2.4
