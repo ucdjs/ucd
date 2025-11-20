@@ -1,6 +1,6 @@
 # @ucdjs/utils
 
-## [0.3.0](https://github.com/ucdjs/ucd/compare/@ucdjs/utils@0.2.0...@ucdjs/utils@0.3.0) (2025-11-18)
+## [0.3.0](https://github.com/ucdjs/ucd/compare/@ucdjs/utils@0.2.0...@ucdjs/utils@0.3.0) (2025-11-20)
 
 
 ### Features
