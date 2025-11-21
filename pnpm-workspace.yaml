@@ -59,7 +59,7 @@ catalogs:
     apache-autoindex-parse: 4.0.3
     pathe: 2.0.3
     "@clack/prompts": 1.0.0-alpha.5
-    debug: 4.4.3
+    obug: 2.1.0
     "@luxass/msw-utils": 0.4.0
     hookable: 6.0.0-rc.1
 
@@ -85,7 +85,6 @@ catalogs:
     "@types/yargs-parser": 21.0.3
     "@types/react": 19.2.2
     "@types/react-dom": 19.2.2
-    "@types/debug": 4.1.12
     "@types/vscode": 1.104.0
 
   web:
