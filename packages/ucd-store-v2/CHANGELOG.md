@@ -1,6 +1,6 @@
 # @ucdjs/ucd-store-v2
 
-## [0.1.0](https://github.com/ucdjs/ucd/compare/@ucdjs/ucd-store-v2@0.0.1...@ucdjs/ucd-store-v2@0.1.0) (2025-11-20)
+## [0.1.0](https://github.com/ucdjs/ucd/compare/@ucdjs/ucd-store-v2@0.0.1...@ucdjs/ucd-store-v2@0.1.0) (2025-11-21)
 
 
 ### Features

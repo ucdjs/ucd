@@ -1,6 +1,6 @@
 # @ucdjs/client
 
-## [0.2.0](https://github.com/ucdjs/ucd/compare/@ucdjs/client@0.1.0...@ucdjs/client@0.2.0) (2025-11-20)
+## [0.2.0](https://github.com/ucdjs/ucd/compare/@ucdjs/client@0.1.0...@ucdjs/client@0.2.0) (2025-11-21)
 
 
 ### Features

@@ -1,6 +1,6 @@
 # @ucdjs/env
 
-## [0.2.0](https://github.com/ucdjs/ucd/compare/@ucdjs/env@0.1.0...@ucdjs/env@0.2.0) (2025-11-20)
+## [0.1.1](https://github.com/ucdjs/ucd/compare/@ucdjs/env@0.1.0...@ucdjs/env@0.1.1) (2025-11-21)
 
 
 ### Features

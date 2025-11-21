@@ -1,6 +1,6 @@
 # @ucdjs/test-utils
 
-## [1.1.0](https://github.com/ucdjs/ucd/compare/@ucdjs/test-utils@1.0.0...@ucdjs/test-utils@1.1.0) (2025-11-20)
+## [1.1.0](https://github.com/ucdjs/ucd/compare/@ucdjs/test-utils@1.0.0...@ucdjs/test-utils@1.1.0) (2025-11-21)
 
 
 ### Features
