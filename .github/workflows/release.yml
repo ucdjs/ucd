@@ -40,6 +40,8 @@ jobs:
 
       - name: verify release
         run: pnpm release:verify
+        env:
+          UCDJS_RELEASE_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   release:
     name: release
