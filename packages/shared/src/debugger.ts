@@ -1,5 +1,5 @@
-import type { Debugger } from "debug";
-import createDebug from "debug";
+import type { Debugger } from "obug";
+import { createDebug } from "obug";
 
 export function createDebugger(namespace: `ucdjs:${string}`): Debugger | undefined {
   const debug = createDebug(namespace);
