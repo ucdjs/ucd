@@ -44,14 +44,13 @@
     "@ucdjs/env": "workspace:*",
     "@ucdjs/schemas": "workspace:*",
     "@unicode-utils/core": "catalog:prod",
-    "debug": "catalog:prod",
     "defu": "catalog:prod",
+    "obug": "catalog:prod",
     "picomatch": "catalog:prod",
     "zod": "catalog:prod"
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:linting",
-    "@types/debug": "catalog:types",
     "@types/picomatch": "catalog:types",
     "@ucdjs-tooling/tsconfig": "workspace:*",
     "@ucdjs-tooling/tsdown-config": "workspace:*",

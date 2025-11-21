@@ -109,9 +109,6 @@ catalogs:
     apache-autoindex-parse:
       specifier: 4.0.3
       version: 4.0.3
-    debug:
-      specifier: 4.4.3
-      version: 4.4.3
     defu:
       specifier: 6.1.4
       version: 6.1.4
@@ -124,6 +121,9 @@ catalogs:
     knitwork:
       specifier: 1.2.0
       version: 1.2.0
+    obug:
+      specifier: 2.1.0
+      version: 2.1.0
     pathe:
       specifier: 2.0.3
       version: 2.0.3
@@ -156,9 +156,6 @@ catalogs:
       specifier: 4.2.1
       version: 4.2.1
   types:
-    '@types/debug':
-      specifier: 4.1.12
-      version: 4.1.12
     '@types/node':
       specifier: 22.18.12
       version: 22.18.12
@@ -779,12 +776,12 @@ importers:
       '@unicode-utils/core':
         specifier: catalog:prod
         version: 0.12.0-beta.18
-      debug:
-        specifier: catalog:prod
-        version: 4.4.3(supports-color@10.2.2)
       defu:
         specifier: catalog:prod
         version: 6.1.4
+      obug:
+        specifier: catalog:prod
+        version: 2.1.0
       picomatch:
         specifier: catalog:prod
         version: 4.0.3
@@ -795,9 +792,6 @@ importers:
       '@luxass/eslint-config':
         specifier: catalog:linting
         version: 6.0.1(@eslint-react/eslint-plugin@2.2.2(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.22)(eslint-plugin-format@1.0.2(eslint@9.38.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.0(eslint@9.38.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.4.24(eslint@9.38.0(jiti@2.6.1)))(eslint@9.38.0(jiti@2.6.1))(typescript@5.9.3)(vitest@3.2.4)
-      '@types/debug':
-        specifier: catalog:types
-        version: 4.1.12
       '@types/picomatch':
         specifier: catalog:types
         version: 4.0.2
@@ -7910,6 +7904,9 @@ packages:
   object.assign@4.1.7:
     resolution: {integrity: sha512-nK28WOo+QIjBkDduTINE4JkF/UJJKyf2EJxvJKfblDpyg0Q+pkOHNTL0Qwy6NP6FhE/EnzV73BxxqcJaXY9anw==}
     engines: {node: '>= 0.4'}
+
+  obug@2.1.0:
+    resolution: {integrity: sha512-uu/tgLPoa75CFA7UDkmqspKbefvZh1WMPwkU3bNr0PY746a/+xwXVgbw5co5C3GvJj3h5u8g/pbxXzI0gd1QFg==}
 
   ofetch@1.4.1:
     resolution: {integrity: sha512-QZj2DfGplQAr2oj9KzceK9Hwz6Whxazmn85yYeVuS3u9XTMOGMRx0kO95MQ+vLsj/S/NwBDMMLU5hpxvI6Tklw==}
@@ -18385,6 +18382,8 @@ snapshots:
       es-object-atoms: 1.1.1
       has-symbols: 1.1.0
       object-keys: 1.1.1
+
+  obug@2.1.0: {}
 
   ofetch@1.4.1:
     dependencies:
