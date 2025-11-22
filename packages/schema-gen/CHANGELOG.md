@@ -1,6 +1,6 @@
 # @ucdjs/schema-gen
 
-## [0.3.0](https://github.com/ucdjs/ucd/compare/@ucdjs/schema-gen@0.2.2...@ucdjs/schema-gen@0.3.0) (2025-11-21)
+## [0.3.0](https://github.com/ucdjs/ucd/compare/@ucdjs/schema-gen@0.2.2...@ucdjs/schema-gen@0.3.0) (2025-11-22)
 
 
 ### Features
