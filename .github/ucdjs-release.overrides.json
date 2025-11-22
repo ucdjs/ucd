@@ -1,0 +1,6 @@
+{
+  "@ucdjs-internal/shared": {
+    "type": "minor",
+    "version": "0.2.0"
+  }
+}
