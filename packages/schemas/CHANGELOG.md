@@ -1,6 +1,6 @@
 # @ucdjs/schemas
 
-## [0.2.0](https://github.com/ucdjs/ucd/compare/@ucdjs/schemas@0.1.0...@ucdjs/schemas@0.2.0) (2025-11-21)
+## [0.2.0](https://github.com/ucdjs/ucd/compare/@ucdjs/schemas@0.1.0...@ucdjs/schemas@0.2.0) (2025-11-22)
 
 
 ### Features
