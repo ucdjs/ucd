@@ -1,6 +1,50 @@
 {
   "@ucdjs-internal/shared": {
-    "type": "minor",
+    "type": "none",
+    "version": "0.1.0"
+  },
+  "@ucdjs/cli": {
+    "type": "none",
     "version": "0.3.0"
+  },
+  "@ucdjs/client": {
+    "type": "none",
+    "version": "0.1.0"
+  },
+  "@ucdjs/env": {
+    "type": "none",
+    "version": "0.1.0"
+  },
+  "@ucdjs/fs-bridge": {
+    "type": "none",
+    "version": "0.1.0"
+  },
+  "@ucdjs/path-utils": {
+    "type": "none",
+    "version": "0.1.0"
+  },
+  "@ucdjs/schema-gen": {
+    "type": "none",
+    "version": "0.2.2"
+  },
+  "@ucdjs/schemas": {
+    "type": "none",
+    "version": "0.1.0"
+  },
+  "@ucdjs/test-utils": {
+    "type": "none",
+    "version": "1.0.0"
+  },
+  "@ucdjs/ucd-store": {
+    "type": "none",
+    "version": "0.1.0"
+  },
+  "@ucdjs/ucd-store-v2": {
+    "type": "none",
+    "version": "0.0.1"
+  },
+  "@ucdjs/utils": {
+    "type": "none",
+    "version": "0.2.0"
   }
 }

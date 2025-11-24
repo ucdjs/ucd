@@ -1,6 +1,6 @@
 # @ucdjs/path-utils
 
-## [0.2.0](https://github.com/ucdjs/ucd/compare/@ucdjs/path-utils@0.1.0...@ucdjs/path-utils@0.2.0) (2025-11-22)
+## [0.1.0](https://github.com/ucdjs/ucd/compare/@ucdjs/path-utils@0.1.0...@ucdjs/path-utils@0.1.0) (2025-11-24)
 
 
 ### Features
@@ -48,16 +48,6 @@
 * update tsconfig references to use @ucdjs-tooling/tsconfig ([e5c39ac8](https://github.com/ucdjs/ucd/commit/e5c39ac8d2e0ad1cc4a29e4417013ed124c83801)) (by [@luxass](https://github.com/luxass))
 * swap parameters for consistency ([2264cfa4](https://github.com/ucdjs/ucd/commit/2264cfa423e235ce6191ad58823d14439bf1dada)) (by [@luxass](https://github.com/luxass))
 * remove unc support ([2c180272](https://github.com/ucdjs/ucd/commit/2c180272743923f156ce211c6a2e4cc845c5dfee)) (by [@luxass](https://github.com/luxass))
-
-
-## 0.1.0
-
-### Minor Changes
-
-- [#238](https://github.com/ucdjs/ucd/pull/238) [`e612985`](https://github.com/ucdjs/ucd/commit/e612985209ff4e62fbfba418621a029d000b4b01) Thanks [@luxass](https://github.com/luxass)! - Add comprehensive path utilities with security-focused path resolution
-
-  This release introduces a new path utilities package with cross-platform path handling, Windows-specific utilities, and secure path resolution functionality.
-
   ## New Functions
 
   ### Security Functions

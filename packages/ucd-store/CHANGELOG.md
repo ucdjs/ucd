@@ -1,6 +1,6 @@
 # @ucdjs/ucd-store
 
-## [0.2.0](https://github.com/ucdjs/ucd/compare/@ucdjs/ucd-store@0.1.0...@ucdjs/ucd-store@0.2.0) (2025-11-22)
+## [0.1.0](https://github.com/ucdjs/ucd/compare/@ucdjs/ucd-store@0.1.0...@ucdjs/ucd-store@0.1.0) (2025-11-24)
 
 
 ### Features
@@ -175,30 +175,6 @@
 * simplify imports in local.ts by removing unused types ([9e9bb735](https://github.com/ucdjs/ucd/commit/9e9bb735aece80cb995ac16a718a7342266f5527)) (by [@luxass](https://github.com/luxass))
 * update LocalUCDStore to improve initialization and validation logic ([12a6caf8](https://github.com/ucdjs/ucd/commit/12a6caf835299d2accbbee7fd4eebbd89ddd8067)) (by [@luxass](https://github.com/luxass))
 * update file cache access to private class field and improve URL construction ([4ed626dd](https://github.com/ucdjs/ucd/commit/4ed626dd11b388259ef2c759af5e43fdddc68c85)) (by [@luxass](https://github.com/luxass))
-
-
-## 0.1.0
-
-### Minor Changes
-
-- [#45](https://github.com/ucdjs/ucd/pull/45) [`8dbc72d`](https://github.com/ucdjs/ucd/commit/8dbc72d3197a0eef8e876595583c4109114cbc31) Thanks [@luxass](https://github.com/luxass)! - unify filtering across stores
-
-- [#174](https://github.com/ucdjs/ucd/pull/174) [`2222605`](https://github.com/ucdjs/ucd/commit/22226057f7587669e2ae15cd06011f38dd677741) Thanks [@luxass](https://github.com/luxass)! - refactor: rewrite ucd store to be more modular
-
-- [#59](https://github.com/ucdjs/ucd/pull/59) [`b19dc76`](https://github.com/ucdjs/ucd/commit/b19dc76984e611be178de2037e5436cf3cc27dab) Thanks [@luxass](https://github.com/luxass)! - refactor: migrate ucd-store to use utils
-
-- [#71](https://github.com/ucdjs/ucd/pull/71) [`505ec62`](https://github.com/ucdjs/ucd/commit/505ec6266588299b09e1b82de0c2478514671b5c) Thanks [@luxass](https://github.com/luxass)! - Merge LocalUCDStore & RemoteUCDStore into a single UCDStore class which handles everything. Since we are using the new fs-bridge exposed from `@ucdjs/utils` we can easily do this.
-
-- [#44](https://github.com/ucdjs/ucd/pull/44) [`82eb12e`](https://github.com/ucdjs/ucd/commit/82eb12e1d1944ebbe2748ec129a2d2b2fa315946) Thanks [@luxass](https://github.com/luxass)! - simplify preconfigured filters
-
-- [#206](https://github.com/ucdjs/ucd/pull/206) [`c013665`](https://github.com/ucdjs/ucd/commit/c013665af9188920624e516d0359293859752861) Thanks [@luxass](https://github.com/luxass)! - Implement Repair operation for UCD Store
-
-- [#212](https://github.com/ucdjs/ucd/pull/212) [`80a3794`](https://github.com/ucdjs/ucd/commit/80a3794d0469d64f0522347d6f0c3b258f4fcd35) Thanks [@luxass](https://github.com/luxass)! - feat: migrate from @ucdjs/utils to @ucdjs-internal/shared
-
-  Updated internal imports to use `@ucdjs-internal/shared` instead of `@ucdjs/utils` for utilities like `safeJsonParse` and other shared patterns. This aligns with the new package structure where `@ucdjs-internal/shared` contains internal utilities and `@ucdjs/utils` focuses on public-facing utilities.
-
-- [#209](https://github.com/ucdjs/ucd/pull/209) [`bea2c3c`](https://github.com/ucdjs/ucd/commit/bea2c3c672aee24080eef7b973c7f3c00acb1b6f) Thanks [@luxass](https://github.com/luxass)! - Store operations now return a result wrapper for improved error handling/reporting.
-
   ## What changed
 
   - All core operations (analyze, mirror, clean, repair) now return:

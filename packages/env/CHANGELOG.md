@@ -1,6 +1,6 @@
 # @ucdjs/env
 
-## [0.2.0](https://github.com/ucdjs/ucd/compare/@ucdjs/env@0.1.0...@ucdjs/env@0.2.0) (2025-11-22)
+## [0.1.0](https://github.com/ucdjs/ucd/compare/@ucdjs/env@0.1.0...@ucdjs/env@0.1.0) (2025-11-24)
 
 
 ### Features
@@ -11,10 +11,3 @@
 ### Refactoring
 * update package references to @ucdjs-tooling/tsdown-config ([ccc002da](https://github.com/ucdjs/ucd/commit/ccc002dafd139e0b08e55098470f7a2a8af361ab)) (by [@luxass](https://github.com/luxass))
 * update tsconfig references to use @ucdjs-tooling/tsconfig ([e5c39ac8](https://github.com/ucdjs/ucd/commit/e5c39ac8d2e0ad1cc4a29e4417013ed124c83801)) (by [@luxass](https://github.com/luxass))
-
-
-## 0.1.0
-
-### Minor Changes
-
-- [#94](https://github.com/ucdjs/ucd/pull/94) [`696fdd3`](https://github.com/ucdjs/ucd/commit/696fdd340a2b2faddfcd142e285294f1cc715c1a) Thanks [@luxass](https://github.com/luxass)! - introduce @ucdjs/env

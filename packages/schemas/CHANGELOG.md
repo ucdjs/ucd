@@ -1,6 +1,6 @@
 # @ucdjs/schemas
 
-## [0.2.0](https://github.com/ucdjs/ucd/compare/@ucdjs/schemas@0.1.0...@ucdjs/schemas@0.2.0) (2025-11-22)
+## [0.1.0](https://github.com/ucdjs/ucd/compare/@ucdjs/schemas@0.1.0...@ucdjs/schemas@0.1.0) (2025-11-24)
 
 
 ### Features
@@ -22,12 +22,3 @@
 * update package references to @ucdjs-tooling/tsdown-config ([ccc002da](https://github.com/ucdjs/ucd/commit/ccc002dafd139e0b08e55098470f7a2a8af361ab)) (by [@luxass](https://github.com/luxass))
 * update tsconfig references to use @ucdjs-tooling/tsconfig ([e5c39ac8](https://github.com/ucdjs/ucd/commit/e5c39ac8d2e0ad1cc4a29e4417013ed124c83801)) (by [@luxass](https://github.com/luxass))
 * update imports to use centralized schemas ([93cb36b4](https://github.com/ucdjs/ucd/commit/93cb36b42e463304b7aca4c4817bbe087ba7f843)) (by [@luxass](https://github.com/luxass))
-
-
-## 0.1.0
-
-### Minor Changes
-
-- [#172](https://github.com/ucdjs/ucd/pull/172) [`e52d845`](https://github.com/ucdjs/ucd/commit/e52d845b52027c625e72395a8295cbcdae5317e8) Thanks [@luxass](https://github.com/luxass)! - feat: add initial schemas package
-
-  This package provides schemas for different UCDJS components, including Api Responses, Environment Variables, and more.
