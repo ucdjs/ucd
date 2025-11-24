@@ -4,6 +4,7 @@ import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 import type { UCDWellKnownConfig, UnicodeTreeNode } from "@ucdjs/schemas";
 import type { StoreError } from "./errors";
 import type { AnalysisReport, AnalyzeOptions } from "./operations/analyze";
+import type { CompareOptions, VersionComparison } from "./operations/compare";
 import type { GetFileOptions } from "./operations/files/get";
 import type { ListFilesOptions } from "./operations/files/list";
 import type { GetFileTreeOptions } from "./operations/files/tree";
@@ -180,14 +181,8 @@ export interface UCDStoreOperations {
    *
    * Example: Fetches the list of available Unicode versions from the API and updates the manifest.
    *
-   /**
-    * Synchronizes the store manifest with available versions from the API.
-    * This is a metadata-level operation that updates which versions the store knows about.
-    *
-    * Example: Fetches the list of available Unicode versions from the API and updates the manifest.
-    *
-    * @experimental This method is under development and may change
-    */
+   * @experimental This method is under development and may change
+   */
   sync: (options?: SyncOptions) => Promise<OperationResult<SyncResult, StoreError>>;
 
   /**
@@ -206,6 +201,13 @@ export interface UCDStoreOperations {
    * @experimental This method is under development and may change
    */
   analyze: (options?: AnalyzeOptions) => Promise<OperationResult<Map<string, AnalysisReport>, StoreError>>;
+
+  /**
+   * Compares a version to another version in the store.
+   *
+   * @experimental This method is under development and may change
+   */
+  compare: (options?: CompareOptions) => Promise<OperationResult<VersionComparison, StoreError>>;
 
   /**
    * File operations namespace
