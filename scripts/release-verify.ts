@@ -1,19 +1,3 @@
-import { verify } from "@ucdjs/release-scripts"
+import { verify } from "./release-scripts-shared"
 
-const workspaceRoot = new URL("../", import.meta.url);
-
-verify({
-  repo: "ucdjs/ucd",
-  workspaceRoot: workspaceRoot.pathname,
-  packages: {
-    excludePrivate: true,
-    exclude: [
-      "vscode-ucd"
-    ]
-  },
-  prompts: {
-    packages: process.env.CI == null,
-    versions: process.env.CI == null,
-  },
-  githubToken: process.env.UCDJS_RELEASE_TOKEN!,
-})
+verify()

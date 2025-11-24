@@ -1,21 +1,6 @@
-import { release } from "@ucdjs/release-scripts"
-
-const workspaceRoot = new URL("../", import.meta.url);
+import { release } from "./release-scripts-shared"
 
 release({
-  repo: "ucdjs/ucd",
-  workspaceRoot: workspaceRoot.pathname,
-  packages: {
-    excludePrivate: true,
-    exclude: [
-      "vscode-ucd"
-    ]
-  },
-  safeguards: process.env.DISABLE_SAFEGUARDS == null,
-  prompts: {
-    packages: process.env.CI == null,
-    versions: process.env.CI == null,
-  },
   globalCommitMode: "dependencies",
   pullRequest: {
     body: `
@@ -24,11 +9,11 @@ release({
       The following packages have been prepared for release:
 
       <% if (it.packages.length > 0) { %>
-        <% it.packages.forEach((pkg) => { %>
-        - **<%= pkg.name %>**: <%= pkg.currentVersion %> → <%= pkg.newVersion %> (<%= pkg.bumpType %>)
-        <% }) %>
+      <% it.packages.forEach((pkg) => { %>
+      - **<%= pkg.name %>**: <%= pkg.currentVersion %> → <%= pkg.newVersion %> (<%= pkg.bumpType %>)
+      <% }) %>
       <% } else { %>
-        There are no packages to release.
+      There are no packages to release.
       <% } %>
 
       Please review the changes and merge when ready.
@@ -37,7 +22,6 @@ release({
       > When this PR is merged, the release process will be triggered automatically, publishing the new package versions to the registry.
     `
   },
-  githubToken: process.env.UCDJS_RELEASE_TOKEN!,
   changelog: {
     enabled: true,
   }
