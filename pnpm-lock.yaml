@@ -79,8 +79,8 @@ catalogs:
       version: 0.4.24
   monorepo:
     '@ucdjs/release-scripts':
-      specifier: 0.1.0-beta.21
-      version: 0.1.0-beta.21
+      specifier: 0.1.0-beta.22
+      version: 0.1.0-beta.22
     turbo:
       specifier: 2.5.8
       version: 2.5.8
@@ -253,7 +253,7 @@ importers:
         version: 22.18.12
       '@ucdjs/release-scripts':
         specifier: catalog:monorepo
-        version: 0.1.0-beta.21
+        version: 0.1.0-beta.22
       '@vitest/coverage-istanbul':
         specifier: catalog:testing
         version: 3.2.4(vitest@3.2.4)
@@ -4300,8 +4300,8 @@ packages:
     resolution: {integrity: sha512-SnbaqayTVFEA6/tYumdF0UmybY0KHyKwGPBXnyckFlrrKdhWFrL3a2HIPXHjht5ZOElKGcXfD2D63P36btb+ww==}
     engines: {node: '>=20.0.0'}
 
-  '@ucdjs/release-scripts@0.1.0-beta.21':
-    resolution: {integrity: sha512-GrMMturaUeVIQPK9b4ry3qTPbAdIkxjaWTD8V+tJ+uDefEr9W9jHCGP6Cdm7KQl0ULwfwHRiQi92Gku86e6jDw==}
+  '@ucdjs/release-scripts@0.1.0-beta.22':
+    resolution: {integrity: sha512-DN44z8jt95VaYei+DHZMkhOvoG83ZihJKb09o7lzUEo4nol/ipIxfSpYP33/EhubgYJ3CSXwYXO1oQ65X9DI4Q==}
 
   '@ungap/structured-clone@1.3.0':
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
@@ -13786,7 +13786,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@ucdjs/release-scripts@0.1.0-beta.21':
+  '@ucdjs/release-scripts@0.1.0-beta.22':
     dependencies:
       '@luxass/utils': 2.7.2
       commit-parser: 1.3.0
