@@ -1,3 +1,3 @@
-import { verify } from "./release-scripts-shared"
+import { verify } from "./release-scripts-shared.ts"
 
-verify()
+await verify()
