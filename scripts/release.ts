@@ -1,6 +1,6 @@
-import { release } from "./release-scripts-shared"
+import { prepare } from "./release-scripts-shared"
 
-release({
+await prepare({
   globalCommitMode: "dependencies",
   pullRequest: {
     body: `
