@@ -1,12 +1,11 @@
-# @ucdjs/ucd-store-v2
+# @ucdjs/ucd-store
 
 [![npm version][npm-version-src]][npm-version-href]
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
 [![codecov][codecov-src]][codecov-href]
 
 > [!IMPORTANT]
-> This is just a temporary package name, while we implement the new store version.
-> Once stable, it will replace the existing `@ucdjs/ucd-store` package.
+> This is not fully stable yet. The API may change in minor releases.
 
 A simple, lightweight store for managing Unicode Character Database Files.
 

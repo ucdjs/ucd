@@ -1,4 +1,4 @@
-# @ucdjs/ucd-store-v2
+# @ucdjs/ucd-store
 
 ## 0.0.1
 
