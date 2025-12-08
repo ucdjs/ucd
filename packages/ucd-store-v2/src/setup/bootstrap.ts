@@ -64,7 +64,9 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
   }
 
   debug?.(`Writing manifest to: ${manifestPath}`);
-  await writeManifest(fs, manifestPath, versions);
+  await writeManifest(fs, manifestPath, Object.fromEntries(
+    versions.map((v) => [v, { expectedFiles: [] }]),
+  ));
 
   debug?.("✓ Bootstrap completed successfully");
 }
