@@ -3,19 +3,31 @@ import { z } from "zod";
 
 export const UCDStoreManifestSchema = z.record(
   z.string(),
-  z.string(),
+  z
+    .object({
+      /**
+       * List of expected file paths for this version.
+       * Defaults to an empty array when not provided.
+       */
+      expectedFiles: z.array(z.string()).default([]),
+    })
+    .default({
+      expectedFiles: [],
+    }),
 ).meta({
   id: "UCDStoreManifest",
   description: dedent`
-    A record of key-value pairs representing the UCD store.
-    Each key is a string representing the version, and each value is the path where the version's files are stored.
+    A record of per-version metadata for the UCD store.
+    Each key is the version string, and the value is an object holding metadata.
+
+    Fields:
+    - expectedFiles: string[] (defaults to [])
 
     ## Example
     \`\`\`json
     {
-      "15.1.0": "15.1.0",
-      "14.0.0": "14.0.0",
-      "13.0.0": "13.0.0"
+      "15.1.0": { "expectedFiles": ["UnicodeData.txt", "PropList.txt"] },
+      "14.0.0": { "expectedFiles": [] }
     }
     \`\`\`
 
