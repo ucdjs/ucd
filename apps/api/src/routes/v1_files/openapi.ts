@@ -49,7 +49,7 @@ export const GET_UCD_STORE = createRoute({
       cacheName: "ucdjs:v1_files:ucd-store",
       cacheControl: `max-age=${MAX_AGE_ONE_WEEK_SECONDS}`, // 7 days
     }),
-  ] as const,
+  ],
   description: "Retrieve the UCD Store manifest",
   responses: {
     200: {
