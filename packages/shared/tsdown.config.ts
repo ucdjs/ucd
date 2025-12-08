@@ -1,5 +1,5 @@
 import { createTsdownConfig } from "@ucdjs-tooling/tsdown-config";
-import { replacePlugin } from "rolldown/experimental";
+import { replacePlugin } from "rolldown/plugins";
 
 const __UCD_ENDPOINT_DEFAULT_CONFIG__ = await fetch("https://api.ucdjs.dev/.well-known/ucd-config.json").then((res) => {
   if (!res.ok) {
