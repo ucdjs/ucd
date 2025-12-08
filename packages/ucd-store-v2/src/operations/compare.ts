@@ -137,10 +137,27 @@ export async function compare(
       allowApi,
     });
 
-    const [fromFiles, toFiles] = await Promise.all([
+    const [fromFilesRaw, toFilesRaw] = await Promise.all([
       getFileList(context, options.from, fromSource === "local", options),
       getFileList(context, options.to, toSource === "local", options),
     ]);
+
+    // Only fetch expected file paths for API sources; for local, use the actual local list
+    const [expectedFromFiles, expectedToFiles] = await Promise.all([
+      fromSource === "api"
+        ? getExpectedFilePaths(context.client, options.from)
+        : fromFilesRaw,
+      toSource === "api"
+        ? getExpectedFilePaths(context.client, options.to)
+        : toFilesRaw,
+    ]);
+
+    const expectedFromSet = new Set(expectedFromFiles);
+    const expectedToSet = new Set(expectedToFiles);
+
+    // Filter out any orphaned paths that are not part of the expected set
+    const fromFiles = fromFilesRaw.filter((file) => expectedFromSet.has(file));
+    const toFiles = toFilesRaw.filter((file) => expectedToSet.has(file));
 
     const fromSet = new Set(fromFiles);
     const toSet = new Set(toFiles);

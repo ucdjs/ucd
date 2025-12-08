@@ -914,6 +914,7 @@ describe("compare", () => {
         "/test/15.1.0/UnicodeData.txt": "data",
         "/test/16.0.0/UnicodeData.txt": "data",
         "/test/16.0.0/NewFile.txt": "new",
+
         // Orphaned files that shouldn't affect comparison
         "/test/15.1.0/OrphanedOldFile.txt": "orphan",
         "/test/16.0.0/OrphanedNewFile.txt": "orphan",
