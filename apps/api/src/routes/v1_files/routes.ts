@@ -1,7 +1,6 @@
 import type { UCDStoreManifest } from "@ucdjs/schemas";
 import type { HonoEnv } from "../../types";
 import { OpenAPIHono } from "@hono/zod-openapi";
-import { trimTrailingSlash } from "@luxass/utils";
 import { DEFAULT_USER_AGENT, UCD_FILE_STAT_TYPE_HEADER } from "@ucdjs/env";
 import { decodePathSafely } from "@ucdjs/path-utils";
 import { cache } from "hono/cache";
@@ -12,34 +11,28 @@ import { GET_UCD_STORE, METADATA_WILDCARD_ROUTE, WILDCARD_ROUTE } from "./openap
 
 export const V1_FILES_ROUTER = new OpenAPIHono<HonoEnv>().basePath(V1_FILES_ROUTER_BASE_PATH);
 
-V1_FILES_ROUTER.openapi(GET_UCD_STORE, async (c) => {
-  const response = await fetch("https://unicode.org/Public?F=2", {
-    method: "GET",
-    headers: {
-      "User-Agent": DEFAULT_USER_AGENT,
-    },
-  });
+const STORE_MANIFEST_KEY = "ucd-store-manifest.json";
 
-  if (!response.ok) {
+V1_FILES_ROUTER.openapi(GET_UCD_STORE, async (c) => {
+  const bucket = c.env.UCD_BUCKET;
+  if (!bucket) {
+    console.error("[v1_files]: UCD_BUCKET binding not configured");
     return badGateway(c);
   }
 
-  const html = await response.text();
+  const object = await bucket.get(STORE_MANIFEST_KEY);
 
-  const files = await parseUnicodeDirectory(html);
-
-  const store: UCDStoreManifest = {};
-
-  for (const file of files.filter((file) => {
-    const match = file.name.match(/^(\d+)\.(\d+)\.(\d+)$/);
-    return match && match.length === 4;
-  })) {
-    store[file.name] = {
-      expectedFiles: [],
-    };
+  if (!object) {
+    console.error("[v1_files]: store manifest not found in bucket");
+    return c.json({} satisfies UCDStoreManifest, 200);
   }
 
-  return c.json(store, 200);
+  const manifest = await object.json<UCDStoreManifest>();
+
+  return c.json(manifest, 200, {
+    "Cache-Control": "public, max-age=3600", // 1 hour cache
+    "Last-Modified": object.uploaded.toUTCString(),
+  });
 });
 
 V1_FILES_ROUTER.openAPIRegistry.registerPath(WILDCARD_ROUTE);
