@@ -354,7 +354,9 @@ describe("mockStoreApi", () => {
     });
 
     it("should accept custom manifest data", async () => {
-      const customManifest = { custom: "value" };
+      const customManifest = {
+        custom: { expectedFiles: ["custom.txt"] },
+      };
 
       mockStoreApi({
         responses: {

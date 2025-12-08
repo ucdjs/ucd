@@ -34,7 +34,9 @@ V1_FILES_ROUTER.openapi(GET_UCD_STORE, async (c) => {
     const match = file.name.match(/^(\d+)\.(\d+)\.(\d+)$/);
     return match && match.length === 4;
   })) {
-    store[file.name] = trimTrailingSlash(file.path);
+    store[file.name] = {
+      expectedFiles: [],
+    };
   }
 
   return c.json(store, 200);

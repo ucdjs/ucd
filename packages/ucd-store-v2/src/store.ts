@@ -169,12 +169,16 @@ export async function handleVersionConflict(
   switch (strategy) {
     case "merge": {
       const mergedVersions = Array.from(new Set([...manifestVersions, ...providedVersions]));
-      await writeManifest(fs, manifestPath, mergedVersions);
+      await writeManifest(fs, manifestPath, Object.fromEntries(
+        mergedVersions.map((v) => [v, { expectedFiles: [] }]),
+      ));
       debug?.("Merge mode: combined versions", mergedVersions);
       return mergedVersions;
     }
     case "overwrite": {
-      await writeManifest(fs, manifestPath, providedVersions);
+      await writeManifest(fs, manifestPath, Object.fromEntries(
+        providedVersions.map((v) => [v, { expectedFiles: [] }]),
+      ));
       debug?.("Overwrite mode: replaced manifest with provided versions", providedVersions);
       return providedVersions;
     }

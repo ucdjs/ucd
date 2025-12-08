@@ -13,9 +13,9 @@ import { testdir } from "vitest-testdirs";
 import { createNodeUCDStore, createUCDStore } from "../../src/factory";
 
 const DEFAULT_VERSIONS = {
-  "16.0.0": "16.0.0",
-  "15.1.0": "15.1.0",
-  "15.0.0": "15.0.0",
+  "16.0.0": { expectedFiles: [] },
+  "15.1.0": { expectedFiles: [] },
+  "15.0.0": { expectedFiles: [] },
 } satisfies UCDStoreManifest;
 
 describe("store init", () => {
