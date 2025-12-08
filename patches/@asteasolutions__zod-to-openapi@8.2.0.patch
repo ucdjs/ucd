@@ -1,0 +1,28 @@
+diff --git a/dist/index.cjs b/dist/index.cjs
+index fb8d06ba04c4cfe4e9aeafeebb682557535720e1..5e302f52c05ba22f2c098aa7ab85b72b5a1c0686 100644
+--- a/dist/index.cjs
++++ b/dist/index.cjs
+@@ -581,6 +581,9 @@ class OpenAPIRegistry {
+         };
+     }
+     schemaWithRefId(refId, zodSchema) {
++        if (!("openapi" in zodSchema)) {
++            return zodSchema.meta({ id: refId });
++        }
+         return zodSchema.openapi(refId);
+     }
+ }
+diff --git a/dist/index.mjs b/dist/index.mjs
+index aeeeee9578e884dc907f094b07e5178de8f1c5e6..a963ae961fdb09c6f7a2829cd630de3b2c39aaf0 100644
+--- a/dist/index.mjs
++++ b/dist/index.mjs
+@@ -579,6 +579,9 @@ class OpenAPIRegistry {
+         };
+     }
+     schemaWithRefId(refId, zodSchema) {
++        if (!("openapi" in zodSchema)) {
++            return zodSchema.meta({ id: refId });
++        }
+         return zodSchema.openapi(refId);
+     }
+ }
