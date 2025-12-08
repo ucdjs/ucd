@@ -16,24 +16,20 @@ const debug = createDebugger("ucdjs:ucd-store:manifest");
  *
  * @param {FileSystemBridge} fs - Filesystem bridge to use for writing
  * @param {string} manifestPath - Path where manifest should be written
- * @param {string[]} versions - An array of version strings to include in the manifest
+ * @param {UCDStoreManifest} manifest - Manifest object mapping version strings
  * @returns {Promise<void>} A promise that resolves once the manifest has been written
  * @throws {Error} If the filesystem bridge does not support writing or if the write operation fails
  */
 export async function writeManifest(
   fs: FileSystemBridge,
   manifestPath: string,
-  versions: string[],
+  manifest: UCDStoreManifest,
 ): Promise<void> {
+  const versions = Object.keys(manifest);
   debug?.("Writing manifest", { manifestPath, versions });
   assertCapability(fs, "write");
-  const manifestData: UCDStoreManifest = {};
 
-  for (const version of versions) {
-    manifestData[version] = version;
-  }
-
-  await fs.write(manifestPath, JSON.stringify(manifestData, null, 2));
+  await fs.write(manifestPath, JSON.stringify(manifest, null, 2));
   debug?.("Wrote manifest", { manifestPath, versions });
 }
 
