@@ -14,6 +14,8 @@ on:
           - 'https://api.ucdjs.dev'
           - 'https://preview.api.ucdjs.dev'
 
+permissions: {}
+
 jobs:
   refresh:
     name: Refresh Manifest (${{ matrix.base_url }})
