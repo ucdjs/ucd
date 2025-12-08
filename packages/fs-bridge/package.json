@@ -19,14 +19,14 @@
     "url": "https://github.com/ucdjs/ucd/issues"
   },
   "exports": {
-    ".": "./dist/index.js",
-    "./bridges/http": "./dist/bridges/http.js",
-    "./bridges/node": "./dist/bridges/node.js",
+    ".": "./dist/index.mjs",
+    "./bridges/http": "./dist/bridges/http.mjs",
+    "./bridges/node": "./dist/bridges/node.mjs",
     "./package.json": "./package.json"
   },
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
   "files": [
     "dist"
   ],
