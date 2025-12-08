@@ -60,9 +60,33 @@ export const GET_UCD_STORE = createRoute({
             "ucd-store": {
               summary: "UCD Store Manifest",
               value: {
-                "15.1.0": "15.1.0",
-                "16.0.0": "16.0.0",
-                "17.0.0": "17.0.0",
+                "15.1.0": {
+                  expectedFiles: [
+                    "15.1.0/ucd/UnicodeData.txt",
+                    "15.1.0/ucd/PropList.txt",
+                    "15.1.0/ucd/emoji/emoji-data.txt",
+                  ],
+                },
+                "15.0.0": {
+                  expectedFiles: [
+                    "15.0.0/ucd/UnicodeData.txt",
+                    "15.0.0/ucd/PropList.txt",
+                  ],
+                },
+                "16.0.0": {
+                  expectedFiles: [
+                    "16.0.0/ucd/UnicodeData.txt",
+                    "16.0.0/ucd/PropList.txt",
+                    "16.0.0/ucd/emoji/emoji-data.txt",
+                  ],
+                },
+                "17.0.0": {
+                  expectedFiles: [
+                    "17.0.0/ucd/UnicodeData.txt",
+                    "17.0.0/ucd/PropList.txt",
+                    "17.0.0/ucd/emoji/emoji-data.txt",
+                  ],
+                },
               },
             },
           },
