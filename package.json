@@ -22,9 +22,9 @@
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "typecheck": "turbo run typecheck",
-    "release": "node ./scripts/release.ts",
-    "release:verify": "node ./scripts/release-verify.ts",
-    "release:publish": "node ./scripts/release-publish.ts"
+    "release": "node ./scripts/release.ts prepare",
+    "release:verify": "node ./scripts/release.ts verify",
+    "release:publish": "node ./scripts/release.ts publish"
   },
   "devDependencies": {
     "@types/node": "catalog:types",
