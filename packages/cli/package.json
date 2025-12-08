@@ -7,7 +7,7 @@
     "email": "lucasnrgaard@gmail.com",
     "url": "https://luxass.dev"
   },
-  "packageManager": "pnpm@10.19.0",
+  "packageManager": "pnpm@10.24.0",
   "license": "MIT",
   "homepage": "https://github.com/ucdjs/ucd",
   "repository": {
@@ -19,12 +19,12 @@
     "url": "https://github.com/ucdjs/ucd/issues"
   },
   "exports": {
-    ".": "./dist/cli.js",
+    ".": "./dist/cli.mjs",
     "./package.json": "./package.json"
   },
-  "main": "./dist/cli.js",
-  "module": "./dist/cli.js",
-  "types": "./dist/cli.d.ts",
+  "main": "./dist/cli.mjs",
+  "module": "./dist/cli.mjs",
+  "types": "./dist/cli.d.mts",
   "bin": {
     "ucd": "bin/ucd.js"
   },
