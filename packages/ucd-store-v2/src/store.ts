@@ -1,5 +1,6 @@
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 import type { UCDWellKnownConfig } from "@ucdjs/schemas";
+import type { UCDStoreManifest } from "packages/schemas/dist/index.mjs";
 import type {
   UCDStore,
   UCDStoreOperations,
@@ -17,7 +18,7 @@ import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import defu from "defu";
 import { join } from "pathe";
 import { createInternalContext, createPublicContext } from "./core/context";
-import { readManifest, writeManifest } from "./core/manifest";
+import { readManifest, readManifestOrDefault, writeManifest } from "./core/manifest";
 import { UCDStoreGenericError } from "./errors";
 import { analyze } from "./operations/analyze";
 import { getFile } from "./operations/files/get";
@@ -169,7 +170,7 @@ export async function handleVersionConflict(
   switch (strategy) {
     case "merge": {
       const mergedVersions = Array.from(new Set([...manifestVersions, ...providedVersions]));
-      const existing = await readManifest(fs, manifestPath);
+      const existing = await readManifestOrDefault(fs, manifestPath, {});
       await writeManifest(fs, manifestPath, Object.fromEntries(
         mergedVersions.map((v) => [v, existing[v] ?? { expectedFiles: [] }]),
       ));
@@ -177,7 +178,7 @@ export async function handleVersionConflict(
       return mergedVersions;
     }
     case "overwrite": {
-      const existing = await readManifest(fs, manifestPath);
+      const existing = await readManifestOrDefault(fs, manifestPath, {});
       await writeManifest(fs, manifestPath, Object.fromEntries(
         providedVersions.map((v) => [v, existing[v] ?? { expectedFiles: [] }]),
       ));

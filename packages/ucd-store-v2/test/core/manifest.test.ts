@@ -3,7 +3,7 @@ import { createMemoryMockFS } from "#test-utils/fs-bridges";
 import { defineFileSystemBridge } from "@ucdjs/fs-bridge";
 import { assert, describe, expect, it } from "vitest";
 import { testdir } from "vitest-testdirs";
-import { readManifest, writeManifest } from "../../src/core/manifest";
+import { readManifest, readManifestOrDefault, writeManifest } from "../../src/core/manifest";
 import { UCDStoreInvalidManifestError } from "../../src/errors";
 
 describe("writeManifest", () => {
@@ -275,6 +275,129 @@ describe("readManifest", () => {
     const manifest = await readManifest(fs, manifestPath);
 
     expect(manifest).toEqual(versions);
+  });
+});
+
+describe("readManifestOrDefault", () => {
+  it("should return manifest when file exists and is valid", async () => {
+    const fs = createMemoryMockFS();
+    const manifestPath = "/test/.ucd-store.json";
+    const defaultManifest = { default: { expectedFiles: [] } };
+
+    await fs.write!(
+      manifestPath,
+      JSON.stringify({
+        "15.1.0": { expectedFiles: [] },
+        "15.0.0": { expectedFiles: [] },
+      }),
+    );
+
+    const manifest = await readManifestOrDefault(fs, manifestPath, defaultManifest);
+
+    expect(manifest).toEqual({
+      "15.1.0": { expectedFiles: [] },
+      "15.0.0": { expectedFiles: [] },
+    });
+  });
+
+  it("should return default manifest when file does not exist", async () => {
+    const fs = createMemoryMockFS();
+    const manifestPath = "/test/.ucd-store.json";
+    const defaultManifest = {
+      "default-version": { expectedFiles: ["file1.txt", "file2.txt"] },
+    };
+
+    const manifest = await readManifestOrDefault(fs, manifestPath, defaultManifest);
+
+    expect(manifest).toEqual(defaultManifest);
+  });
+
+  // This is just a validation error.
+  it("should return default manifest when file is empty", async () => {
+    const fs = createMemoryMockFS();
+    const manifestPath = "/test/.ucd-store.json";
+    const defaultManifest = { fallback: { expectedFiles: [] } };
+
+    await fs.write!(manifestPath, "");
+
+    const manifest = await readManifestOrDefault(fs, manifestPath, defaultManifest);
+
+    expect(manifest).toEqual(defaultManifest);
+  });
+
+  it("should return default manifest when JSON is invalid", async () => {
+    const fs = createMemoryMockFS();
+    const manifestPath = "/test/.ucd-store.json";
+    const defaultManifest = { fallback: { expectedFiles: [] } };
+
+    await fs.write!(manifestPath, "{ invalid json }");
+
+    const manifest = await readManifestOrDefault(fs, manifestPath, defaultManifest);
+
+    expect(manifest).toEqual(defaultManifest);
+  });
+
+  it("should return default manifest when schema validation fails", async () => {
+    const fs = createMemoryMockFS();
+    const manifestPath = "/test/.ucd-store.json";
+    const defaultManifest = { fallback: { expectedFiles: [] } };
+
+    // Write an array instead of an object (invalid schema)
+    await fs.write!(manifestPath, JSON.stringify(["15.0.0", "14.0.0"]));
+
+    const manifest = await readManifestOrDefault(fs, manifestPath, defaultManifest);
+
+    expect(manifest).toEqual(defaultManifest);
+  });
+
+  it("should return empty default manifest when provided", async () => {
+    const fs = createMemoryMockFS();
+    const manifestPath = "/test/.ucd-store.json";
+    const defaultManifest = {};
+
+    const manifest = await readManifestOrDefault(fs, manifestPath, defaultManifest);
+
+    expect(manifest).toEqual({});
+  });
+
+  it("should not modify the default manifest object", async () => {
+    const fs = createMemoryMockFS();
+    const manifestPath = "/test/.ucd-store.json";
+    const defaultManifest = { default: { expectedFiles: [] } };
+    const originalDefault = { ...defaultManifest };
+
+    await readManifestOrDefault(fs, manifestPath, defaultManifest);
+
+    expect(defaultManifest).toEqual(originalDefault);
+  });
+
+  it("should handle read errors gracefully", async () => {
+    const fs = defineFileSystemBridge({
+      meta: {
+        name: "Failing Bridge",
+        description: "A bridge that throws on read",
+      },
+      setup() {
+        return {
+          async read() {
+            throw new Error("Read failed");
+          },
+          async exists() {
+            return true;
+          },
+          async listdir() {
+            return [];
+          },
+        };
+      },
+    })();
+
+    const manifestPath = "/test/.ucd-store.json";
+    const defaultManifest = { fallback: { expectedFiles: [] } };
+
+    const manifest = await readManifestOrDefault(fs, manifestPath, defaultManifest);
+
+    expect(manifest).toEqual(defaultManifest);
   });
 });
 

@@ -83,3 +83,27 @@ export async function readManifest(
 
   return parsedManifest.data;
 }
+
+/**
+ * Read the UCD store manifest from disk, or return a default manifest if reading fails.
+ *
+ * This function attempts to read and validate the manifest using readManifest().
+ * If the read operation fails for any reason (missing file, invalid JSON, schema
+ * validation failure, etc.), it returns the provided defaultManifest instead.
+ *
+ * @param {FileSystemBridge} fs - Filesystem bridge to use for reading
+ * @param {string} manifestPath - Path to the manifest file
+ * @param {UCDStoreManifest} defaultManifest - Default manifest to return if reading fails
+ * @returns {Promise<UCDStoreManifest>} A Promise that resolves to either the validated
+ *                                       manifest from disk or the default manifest
+ */
+export async function readManifestOrDefault(
+  fs: FileSystemBridge,
+  manifestPath: string,
+  defaultManifest: UCDStoreManifest,
+): Promise<UCDStoreManifest> {
+  return readManifest(fs, manifestPath).catch((err) => {
+    debug?.("Failed to read manifest, using default:", err);
+    return defaultManifest;
+  });
+}
