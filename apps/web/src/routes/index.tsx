@@ -1,76 +1,118 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute } from '@tanstack/react-router'
+import {
+  Zap,
+  Server,
+  Route as RouteIcon,
+  Shield,
+  Waves,
+  Sparkles,
+} from 'lucide-react'
 
-export const Route = createFileRoute("/")({
-  component: Index,
-});
+export const Route = createFileRoute('/')({ component: App })
 
-function Index() {
+function App() {
+  const features = [
+    {
+      icon: <Zap className="w-12 h-12 text-cyan-400" />,
+      title: 'Powerful Server Functions',
+      description:
+        'Write server-side code that seamlessly integrates with your client components. Type-safe, secure, and simple.',
+    },
+    {
+      icon: <Server className="w-12 h-12 text-cyan-400" />,
+      title: 'Flexible Server Side Rendering',
+      description:
+        'Full-document SSR, streaming, and progressive enhancement out of the box. Control exactly what renders where.',
+    },
+    {
+      icon: <RouteIcon className="w-12 h-12 text-cyan-400" />,
+      title: 'API Routes',
+      description:
+        'Build type-safe API endpoints alongside your application. No separate backend needed.',
+    },
+    {
+      icon: <Shield className="w-12 h-12 text-cyan-400" />,
+      title: 'Strongly Typed Everything',
+      description:
+        'End-to-end type safety from server to client. Catch errors before they reach production.',
+    },
+    {
+      icon: <Waves className="w-12 h-12 text-cyan-400" />,
+      title: 'Full Streaming Support',
+      description:
+        'Stream data from server to client progressively. Perfect for AI applications and real-time updates.',
+    },
+    {
+      icon: <Sparkles className="w-12 h-12 text-cyan-400" />,
+      title: 'Next Generation Ready',
+      description:
+        'Built from the ground up for modern web applications. Deploy anywhere JavaScript runs.',
+    },
+  ]
+
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 animate-fade-in">
-      <div className="max-w-2xl w-full bg-white rounded-xl shadow-sm p-8 md:p-12">
-        <div className="flex flex-col items-center text-center">
-          <h1 className="text-4xl font-bold text-gray-900">UCD.js</h1>
-          <p className="mt-3 text-xl text-gray-600">Unicode Character Database for JavaScript</p>
-
-          <div className="h-px w-24 bg-gray-200 my-8"></div>
-
-          <p className="text-gray-700 mb-8 leading-relaxed max-w-xl">
-            A modern JavaScript library that provides easy access to the Unicode Character Database.
-            Built for developers who need clean, typed access to Unicode character properties and metadata.
+    <div className="min-h-screen bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900">
+      <section className="relative py-20 px-6 text-center overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/10 via-blue-500/10 to-purple-500/10"></div>
+        <div className="relative max-w-5xl mx-auto">
+          <div className="flex items-center justify-center gap-6 mb-6">
+            <img
+              src="/tanstack-circle-logo.png"
+              alt="TanStack Logo"
+              className="w-24 h-24 md:w-32 md:h-32"
+            />
+            <h1 className="text-6xl md:text-7xl font-black text-white [letter-spacing:-0.08em]">
+              <span className="text-gray-300">TANSTACK</span>{' '}
+              <span className="bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+                START
+              </span>
+            </h1>
+          </div>
+          <p className="text-2xl md:text-3xl text-gray-300 mb-4 font-light">
+            The framework for next generation AI applications
           </p>
-
-          <div className="flex items-center justify-center w-full">
+          <p className="text-lg text-gray-400 max-w-3xl mx-auto mb-8">
+            Full-stack framework powered by TanStack Router for React and Solid.
+            Build modern applications with server functions, streaming, and type
+            safety.
+          </p>
+          <div className="flex flex-col items-center gap-4">
             <a
-              href="https://github.com/ucdjs"
+              href="https://tanstack.com/start"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-3 px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors duration-300"
+              className="px-8 py-3 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold rounded-lg transition-colors shadow-lg shadow-cyan-500/50"
             >
-              <span className="flex items-center justify-center">
-                <LucideGithub className="w-5 h-5" />
-              </span>
-              <span className="font-medium">View on GitHub</span>
+              Documentation
             </a>
-          </div>
-
-          <div className="mt-8 pt-8 border-t border-gray-100 w-full">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
-              <div>
-                <h3 className="font-semibold text-gray-900">Lightweight</h3>
-                <p className="mt-2 text-gray-600 text-sm">Optimized for size and performance</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900">Modern</h3>
-                <p className="mt-2 text-gray-600 text-sm">Built for ESM and TypeScript</p>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900">Complete</h3>
-                <p className="mt-2 text-gray-600 text-sm">Full Unicode 16.0 support</p>
-              </div>
-            </div>
+            <p className="text-gray-400 text-sm mt-2">
+              Begin your TanStack Start journey by editing{' '}
+              <code className="px-2 py-1 bg-slate-700 rounded text-cyan-400">
+                /src/routes/index.tsx
+              </code>
+            </p>
           </div>
         </div>
-      </div>
+      </section>
 
-      <footer className="mt-8 text-gray-500 text-sm">
-        ©
-        {" "}
-        {new Date().getFullYear()}
-        {" "}
-        UCD.js. MIT License.
-      </footer>
+      <section className="py-16 px-6 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {features.map((feature, index) => (
+            <div
+              key={index}
+              className="bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-xl p-6 hover:border-cyan-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/10"
+            >
+              <div className="mb-4">{feature.icon}</div>
+              <h3 className="text-xl font-semibold text-white mb-3">
+                {feature.title}
+              </h3>
+              <p className="text-gray-400 leading-relaxed">
+                {feature.description}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
-  );
-}
-
-function LucideGithub(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" {...props}>
-      {/* Icon from Lucide by Lucide Contributors - https://github.com/lucide-icons/lucide/blob/main/LICENSE */}
-      <g fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2">
-        <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5c.08-1.25-.27-2.48-1-3.5c.28-1.15.28-2.35 0-3.5c0 0-1 0-3 1.5c-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5c-.39.49-.68 1.05-.85 1.65c-.17.6-.22 1.23-.15 1.85v4"></path>
-        <path d="M9 18c-4.51 2-5-2-7-2"></path>
-      </g>
-    </svg>
-  );
+  )
 }
