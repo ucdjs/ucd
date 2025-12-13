@@ -197,12 +197,9 @@ jobs:
       include-pr-comment: ${{ github.event_name == 'pull_request' }}
       repository-condition: ${{ github.repository == 'ucdjs/ucd' }}
       extra-build-step: true
-<<<<<<< HEAD
-<<<<<<< HEAD
     secrets:
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
       TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
-<<<<<<< HEAD
       # Note: These secrets must be explicitly declared here even though they may appear as
       # "not defined" in the caller workflow's context. The reusable workflow's job uses
       # environment "apps-deploy" which has CF_API_TOKEN and CF_ACCOUNT_ID defined. When the
@@ -212,23 +209,6 @@ jobs:
       # See: https://docs.github.com/en/actions/using-workflows/reusing-workflows#passing-secrets-to-nested-reusable-workflows
       CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
       CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
-=======
-    # secrets:
-    #   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-    #   TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
->>>>>>> cbe57f5a (debug)
-=======
-    secrets:
-      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-      TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
->>>>>>> 6e9d0fef (ci: update secrets configuration in deployment workflows)
-=======
-      # These are reported as not defined, but they need to be here?
-      # I think this is a GitHub bug or intentional behavior.
-      # Since in the deploy-app we are using a environment with has these secrets defined.
-      CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-      CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
->>>>>>> ca7b8b04 (chore(workflows): make `CF_API_TOKEN` and `CF_ACCOUNT_ID` required in deploy workflows)
 
   update-deployment-comment:
     name: update deployment comment

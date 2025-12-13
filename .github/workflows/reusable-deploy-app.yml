@@ -59,16 +59,6 @@ on:
         description: Cloudflare Account ID
         required: true
 
-      # These will come from the environment secrets.
-      # But if they aren't set here, they will not be available.
-      # This could very much be intentional by GitHub or a bug in their system.
-      CF_API_TOKEN:
-        description: Cloudflare API token
-        required: true
-      CF_ACCOUNT_ID:
-        description: Cloudflare Account ID
-        required: true
-
 # remove default permissions of GITHUB_TOKEN for security
 # https://docs.github.com/en/actions/using-jobs/assigning-permissions-to-jobs
 permissions: {}
