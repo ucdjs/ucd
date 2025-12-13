@@ -6,9 +6,9 @@ import { errorHandler, notFoundHandler } from "./lib/handlers";
 import { setupCors, setupRatelimit } from "./lib/setups";
 import { buildOpenApiConfig, registerApp } from "./openapi";
 import { WELL_KNOWN_ROUTER } from "./routes/.well-known/routes";
+import { TASKS_ROUTER } from "./routes/tasks/routes";
 import { V1_FILES_ROUTER } from "./routes/v1_files/routes";
 import { V1_VERSIONS_ROUTER } from "./routes/v1_versions/routes";
-import { TASKS_ROUTER } from "./routes/tasks/routes";
 
 const app = new OpenAPIHono<HonoEnv>();
 
