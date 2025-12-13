@@ -1,12 +1,11 @@
 import type { HonoEnv } from "../../types";
 import { Hono } from "hono";
 import { parseTar } from "nanotar";
+import { clearCacheEntry } from "../../lib/cache";
 import { badGateway, badRequest, unauthorized } from "../../lib/errors";
 
 export const TASKS_ROUTER = new Hono<HonoEnv>().basePath("/_tasks");
-/**
- * Middleware to verify task API key.
- */
+
 TASKS_ROUTER.use("/*", async (c, next) => {
   const apiKey = c.req.header("X-UCDJS-Task-Key");
   const expectedKey = await c.env.UCDJS_TASK_API_KEY.get();
@@ -115,5 +114,40 @@ TASKS_ROUTER.post("/upload-manifest", async (c) => {
   } catch (error) {
     console.error("[tasks]: failed to process tar file:", error);
     return badRequest(c, { message: "Failed to process tar file" });
+  }
+});
+
+TASKS_ROUTER.get("/purge-cache", async (c) => {
+  const cacheName = c.req.query("cacheName");
+  const path = c.req.query("path");
+
+  if (!cacheName) {
+    return badRequest(c, { message: "Missing 'cacheName' query parameter" });
+  }
+
+  if (!path) {
+    return badRequest(c, { message: "Missing 'path' query parameter" });
+  }
+
+  if (!path.startsWith("/")) {
+    return badRequest(c, { message: "Path must start with /" });
+  }
+
+  try {
+    const clearCache = await clearCacheEntry(cacheName);
+    const url = new URL(c.req.url);
+    const cacheUrl = `${url.origin}${path}`;
+    await clearCache(cacheUrl);
+    // eslint-disable-next-line no-console
+    console.log(`[tasks]: purged cache for ${cacheUrl}`);
+
+    return c.json({
+      success: true,
+      cacheName,
+      purgedUrl: cacheUrl,
+    }, 200);
+  } catch (error) {
+    console.error("[tasks]: failed to purge cache:", error);
+    return badGateway(c);
   }
 });
