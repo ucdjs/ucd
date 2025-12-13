@@ -54,12 +54,16 @@ jobs:
 
       - name: Fetch current store manifest
         id: fetch-store
+        env:
+          BASE_URL: ${{ matrix.base_url }}
         run: |
-          echo "Fetching current store manifest from ${{ matrix.base_url }}..."
-          curl -s "${{ matrix.base_url }}/api/v1/files/.ucd-store.json" -o current-store.json || echo "{}" > current-store.json
+          echo "Fetching current store manifest from $BASE_URL..."
+          curl -s "$BASE_URL/api/v1/files/.ucd-store.json" -o current-store.json || echo "{}" > current-store.json
           echo "Current store manifest fetched"
 
       - name: Create and upload version tar files
+        env:
+          BASE_URL: ${{ matrix.base_url }}
         run: |
           cd manifest-output
 
@@ -106,7 +110,7 @@ jobs:
               -H "X-UCDJS-Task-Key: ${{ secrets.TASK_API_KEY }}" \
               -H "Content-Type: application/x-tar" \
               --data-binary @"$tar_name" \
-              "${{ matrix.base_url }}/_tasks/upload-manifest")
+              "$BASE_URL/_tasks/upload-manifest")
 
             status=$(echo "$response" | tail -1)
             if [ "$status" != "200" ]; then
@@ -132,7 +136,7 @@ jobs:
           {
             echo "## Manifest Refresh Summary"
             echo ""
-            echo "**Target:** \`${{ matrix.base_url }}\`"
+            echo "**Target:** \`$BASE_URL\`"
             echo ""
             echo "| Status | Count |"
             echo "|--------|-------|"
