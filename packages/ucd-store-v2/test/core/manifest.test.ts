@@ -3,7 +3,7 @@ import { createMemoryMockFS } from "#test-utils/fs-bridges";
 import { defineFileSystemBridge } from "@ucdjs/fs-bridge";
 import { assert, describe, expect, it } from "vitest";
 import { testdir } from "vitest-testdirs";
-import { readManifest, writeManifest } from "../../src/core/manifest";
+import { readManifest, readManifestOrDefault, writeManifest } from "../../src/core/manifest";
 import { UCDStoreInvalidManifestError } from "../../src/errors";
 
 describe("writeManifest", () => {
@@ -12,15 +12,17 @@ describe("writeManifest", () => {
     const manifestPath = "/test/.ucd-store.json";
     const versions = ["15.1.0", "15.0.0", "14.0.0"];
 
-    await writeManifest(fs, manifestPath, versions);
+    await writeManifest(fs, manifestPath, Object.fromEntries(
+      versions.map((v) => [v, { expectedFiles: [] }]),
+    ));
 
     const written = await fs.read!(manifestPath);
     const parsed = JSON.parse(written);
 
     expect(parsed).toEqual({
-      "15.1.0": "15.1.0",
-      "15.0.0": "15.0.0",
-      "14.0.0": "14.0.0",
+      "15.1.0": { expectedFiles: [] },
+      "15.0.0": { expectedFiles: [] },
+      "14.0.0": { expectedFiles: [] },
     });
   });
 
@@ -29,7 +31,9 @@ describe("writeManifest", () => {
     const manifestPath = "/test/.ucd-store.json";
     const versions = ["16.0.0"];
 
-    await writeManifest(fs, manifestPath, versions);
+    await writeManifest(fs, manifestPath, Object.fromEntries(
+      versions.map((v) => [v, { expectedFiles: [] }]),
+    ));
 
     const written = await fs.read!(manifestPath);
 
@@ -43,13 +47,15 @@ describe("writeManifest", () => {
     const manifestPath = "/deep/nested/path/.ucd-store.json";
     const versions = ["15.0.0"];
 
-    await writeManifest(fs, manifestPath, versions);
+    await writeManifest(fs, manifestPath, Object.fromEntries(
+      versions.map((v) => [v, { expectedFiles: [] }]),
+    ));
 
     const written = await fs.read!(manifestPath);
     const parsed = JSON.parse(written);
 
     expect(parsed).toEqual({
-      "15.0.0": "15.0.0",
+      "15.0.0": { expectedFiles: [] },
     });
   });
 
@@ -58,7 +64,9 @@ describe("writeManifest", () => {
     const manifestPath = "/test/.ucd-store.json";
     const versions: string[] = [];
 
-    await writeManifest(fs, manifestPath, versions);
+    await writeManifest(fs, manifestPath, Object.fromEntries(
+      versions.map((v) => [v, { expectedFiles: [] }]),
+    ));
 
     const written = await fs.read!(manifestPath);
     const parsed = JSON.parse(written);
@@ -71,17 +79,25 @@ describe("writeManifest", () => {
     const manifestPath = "/test/.ucd-store.json";
 
     // write first manifest
-    await writeManifest(fs, manifestPath, ["15.0.0"]);
+    await writeManifest(fs, manifestPath, Object.fromEntries(
+      ["15.0.0"].map((v) => [v, { expectedFiles: [] }]),
+    ));
 
     // overwrite with new versions
-    await writeManifest(fs, manifestPath, ["16.0.0", "15.1.0"]);
+    await writeManifest(fs, manifestPath, Object.fromEntries(
+      ["16.0.0", "15.1.0"].map((v) => [v, { expectedFiles: [] }]),
+    ));
 
     const written = await fs.read!(manifestPath);
     const parsed = JSON.parse(written);
 
     expect(parsed).toEqual({
-      "16.0.0": "16.0.0",
-      "15.1.0": "15.1.0",
+      "16.0.0": {
+        expectedFiles: [],
+      },
+      "15.1.0": {
+        expectedFiles: [],
+      },
     });
   });
 
@@ -109,7 +125,9 @@ describe("writeManifest", () => {
     const manifestPath = "/test/.ucd-store.json";
     const versions = ["15.0.0"];
 
-    await expect(writeManifest(fs, manifestPath, versions)).rejects.toThrow(
+    await expect(writeManifest(fs, manifestPath, Object.fromEntries(
+      versions.map((v) => [v, { expectedFiles: [] }]),
+    ))).rejects.toThrow(
       "File system bridge does not support the 'write' capability.",
     );
   });
@@ -119,14 +137,16 @@ describe("writeManifest", () => {
     const manifestPath = "/test/.ucd-store.json";
     const versions = ["15.0.0-beta.1", "14.0.0+build.123"];
 
-    await writeManifest(fs, manifestPath, versions);
+    await writeManifest(fs, manifestPath, Object.fromEntries(
+      versions.map((v) => [v, { expectedFiles: [] }]),
+    ));
 
     const written = await fs.read!(manifestPath);
     const parsed = JSON.parse(written);
 
     expect(parsed).toEqual({
-      "15.0.0-beta.1": "15.0.0-beta.1",
-      "14.0.0+build.123": "14.0.0+build.123",
+      "15.0.0-beta.1": { expectedFiles: [] },
+      "14.0.0+build.123": { expectedFiles: [] },
     });
   });
 });
@@ -135,8 +155,8 @@ describe("readManifest", () => {
   it("should read and parse valid manifest", async () => {
     const testdirPath = await testdir({
       ".ucd-store.json": JSON.stringify({
-        "15.1.0": "15.1.0",
-        "15.0.0": "15.0.0",
+        "15.1.0": { expectedFiles: [] },
+        "15.0.0": { expectedFiles: [] },
       }),
     });
 
@@ -147,16 +167,16 @@ describe("readManifest", () => {
     await fs.write!(
       manifestPath,
       JSON.stringify({
-        "15.1.0": "15.1.0",
-        "15.0.0": "15.0.0",
+        "15.1.0": { expectedFiles: [] },
+        "15.0.0": { expectedFiles: [] },
       }),
     );
 
     const manifest = await readManifest(fs, manifestPath);
 
     expect(manifest).toEqual({
-      "15.1.0": "15.1.0",
-      "15.0.0": "15.0.0",
+      "15.1.0": { expectedFiles: [] },
+      "15.0.0": { expectedFiles: [] },
     });
   });
 
@@ -227,14 +247,14 @@ describe("readManifest", () => {
     await fs.write!(
       manifestPath,
       JSON.stringify({
-        "15.0.0": "15.0.0",
+        "15.0.0": { expectedFiles: [] },
       }),
     );
 
     const manifest = await readManifest(fs, manifestPath);
 
     expect(manifest).toEqual({
-      "15.0.0": "15.0.0",
+      "15.0.0": { expectedFiles: [] },
     });
   });
 
@@ -243,11 +263,11 @@ describe("readManifest", () => {
     const manifestPath = "/test/.ucd-store.json";
 
     const versions = {
-      "16.0.0": "16.0.0",
-      "15.1.0": "15.1.0",
-      "15.0.0": "15.0.0",
-      "14.0.0": "14.0.0",
-      "13.0.0": "13.0.0",
+      "16.0.0": { expectedFiles: [] },
+      "15.1.0": { expectedFiles: [] },
+      "15.0.0": { expectedFiles: [] },
+      "14.0.0": { expectedFiles: [] },
+      "13.0.0": { expectedFiles: [] },
     };
 
     await fs.write!(manifestPath, JSON.stringify(versions));
@@ -258,6 +278,129 @@ describe("readManifest", () => {
   });
 });
 
+describe("readManifestOrDefault", () => {
+  it("should return manifest when file exists and is valid", async () => {
+    const fs = createMemoryMockFS();
+    const manifestPath = "/test/.ucd-store.json";
+    const defaultManifest = { default: { expectedFiles: [] } };
+
+    await fs.write!(
+      manifestPath,
+      JSON.stringify({
+        "15.1.0": { expectedFiles: [] },
+        "15.0.0": { expectedFiles: [] },
+      }),
+    );
+
+    const manifest = await readManifestOrDefault(fs, manifestPath, defaultManifest);
+
+    expect(manifest).toEqual({
+      "15.1.0": { expectedFiles: [] },
+      "15.0.0": { expectedFiles: [] },
+    });
+  });
+
+  it("should return default manifest when file does not exist", async () => {
+    const fs = createMemoryMockFS();
+    const manifestPath = "/test/.ucd-store.json";
+    const defaultManifest = {
+      "default-version": { expectedFiles: ["file1.txt", "file2.txt"] },
+    };
+
+    const manifest = await readManifestOrDefault(fs, manifestPath, defaultManifest);
+
+    expect(manifest).toEqual(defaultManifest);
+  });
+
+  // This is just a validation error.
+  it("should return default manifest when file is empty", async () => {
+    const fs = createMemoryMockFS();
+    const manifestPath = "/test/.ucd-store.json";
+    const defaultManifest = { fallback: { expectedFiles: [] } };
+
+    await fs.write!(manifestPath, "");
+
+    const manifest = await readManifestOrDefault(fs, manifestPath, defaultManifest);
+
+    expect(manifest).toEqual(defaultManifest);
+  });
+
+  it("should return default manifest when JSON is invalid", async () => {
+    const fs = createMemoryMockFS();
+    const manifestPath = "/test/.ucd-store.json";
+    const defaultManifest = { fallback: { expectedFiles: [] } };
+
+    await fs.write!(manifestPath, "{ invalid json }");
+
+    const manifest = await readManifestOrDefault(fs, manifestPath, defaultManifest);
+
+    expect(manifest).toEqual(defaultManifest);
+  });
+
+  it("should return default manifest when schema validation fails", async () => {
+    const fs = createMemoryMockFS();
+    const manifestPath = "/test/.ucd-store.json";
+    const defaultManifest = { fallback: { expectedFiles: [] } };
+
+    // Write an array instead of an object (invalid schema)
+    await fs.write!(manifestPath, JSON.stringify(["15.0.0", "14.0.0"]));
+
+    const manifest = await readManifestOrDefault(fs, manifestPath, defaultManifest);
+
+    expect(manifest).toEqual(defaultManifest);
+  });
+
+  it("should return empty default manifest when provided", async () => {
+    const fs = createMemoryMockFS();
+    const manifestPath = "/test/.ucd-store.json";
+    const defaultManifest = {};
+
+    const manifest = await readManifestOrDefault(fs, manifestPath, defaultManifest);
+
+    expect(manifest).toEqual({});
+  });
+
+  it("should not modify the default manifest object", async () => {
+    const fs = createMemoryMockFS();
+    const manifestPath = "/test/.ucd-store.json";
+    const defaultManifest = { default: { expectedFiles: [] } };
+    const originalDefault = { ...defaultManifest };
+
+    await readManifestOrDefault(fs, manifestPath, defaultManifest);
+
+    expect(defaultManifest).toEqual(originalDefault);
+  });
+
+  it("should handle read errors gracefully", async () => {
+    const fs = defineFileSystemBridge({
+      meta: {
+        name: "Failing Bridge",
+        description: "A bridge that throws on read",
+      },
+      setup() {
+        return {
+          async read() {
+            throw new Error("Read failed");
+          },
+          async exists() {
+            return true;
+          },
+          async listdir() {
+            return [];
+          },
+        };
+      },
+    })();
+
+    const manifestPath = "/test/.ucd-store.json";
+    const defaultManifest = { fallback: { expectedFiles: [] } };
+
+    const manifest = await readManifestOrDefault(fs, manifestPath, defaultManifest);
+
+    expect(manifest).toEqual(defaultManifest);
+  });
+});
+
 describe("manifest integration", () => {
   it("should successfully round-trip write and read", async () => {
     const fs = createMemoryMockFS();
@@ -265,14 +408,16 @@ describe("manifest integration", () => {
     const versions = ["16.0.0", "15.1.0", "15.0.0"];
 
     // write manifest
-    await writeManifest(fs, manifestPath, versions);
+    await writeManifest(fs, manifestPath, Object.fromEntries(
+      versions.map((v) => [v, { expectedFiles: [] }]),
+    ));
 
     // read it back
     const manifest = await readManifest(fs, manifestPath);
 
     // should have correct structure
     expect(Object.keys(manifest)).toEqual(versions);
-    expect(Object.values(manifest)).toEqual(versions);
+    expect(Object.values(manifest)).toEqual(versions.map(() => ({ expectedFiles: [] })));
   });
 
   it("should handle multiple write/read cycles", async () => {
@@ -280,22 +425,29 @@ describe("manifest integration", () => {
     const manifestPath = "/test/.ucd-store.json";
 
     // first write/read
-    await writeManifest(fs, manifestPath, ["15.0.0"]);
+    await writeManifest(fs, manifestPath, {
+      "15.0.0": { expectedFiles: [] },
+    });
     const manifest1 = await readManifest(fs, manifestPath);
-    expect(manifest1).toEqual({ "15.0.0": "15.0.0" });
+    expect(manifest1).toEqual({ "15.0.0": { expectedFiles: [] } });
 
     // second write/read
-    await writeManifest(fs, manifestPath, ["16.0.0", "15.1.0"]);
+    await writeManifest(fs, manifestPath, {
+      "16.0.0": { expectedFiles: [] },
+      "15.1.0": { expectedFiles: [] },
+    });
     const manifest2 = await readManifest(fs, manifestPath);
     expect(manifest2).toEqual({
-      "16.0.0": "16.0.0",
-      "15.1.0": "15.1.0",
+      "16.0.0": { expectedFiles: [] },
+      "15.1.0": { expectedFiles: [] },
     });
 
     // third write/read
-    await writeManifest(fs, manifestPath, ["14.0.0"]);
+    await writeManifest(fs, manifestPath, {
+      "14.0.0": { expectedFiles: [] },
+    });
     const manifest3 = await readManifest(fs, manifestPath);
-    expect(manifest3).toEqual({ "14.0.0": "14.0.0" });
+    expect(manifest3).toEqual({ "14.0.0": { expectedFiles: [] } });
   });
 
   it("should handle non-standard version formats", async () => {
@@ -309,7 +461,9 @@ describe("manifest integration", () => {
       "latest",
     ];
 
-    await writeManifest(fs, manifestPath, versions);
+    await writeManifest(fs, manifestPath, Object.fromEntries(
+      versions.map((v) => [v, { expectedFiles: [] }]),
+    ));
     const manifest = await readManifest(fs, manifestPath);
 
     expect(Object.keys(manifest).sort()).toEqual(versions.sort());

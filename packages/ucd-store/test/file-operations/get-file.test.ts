@@ -37,7 +37,7 @@ describe("get file", () => {
     const storePath = await testdir({
       "15.0.0": structure,
       ".ucd-store.json": JSON.stringify({
-        "15.0.0": "15.0.0",
+        "15.0.0": { expectedFiles: [] },
       }),
     });
 
@@ -57,7 +57,7 @@ describe("get file", () => {
         "file.txt": "Full path content",
       },
       ".ucd-store.json": JSON.stringify({
-        "15.0.0": "15.0.0",
+        "15.0.0": { expectedFiles: [] },
       }),
     });
 
@@ -77,7 +77,7 @@ describe("get file", () => {
         "file.txt": "File content",
       },
       ".ucd-store.json": JSON.stringify({
-        "15.0.0": "15.0.0",
+        "15.0.0": { expectedFiles: [] },
       }),
     });
 
@@ -98,7 +98,7 @@ describe("get file", () => {
         "file.txt": "Store file content",
       },
       ".ucd-store.json": JSON.stringify({
-        "15.0.0": "15.0.0",
+        "15.0.0": { expectedFiles: [] },
       }),
     });
 

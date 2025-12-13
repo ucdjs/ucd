@@ -15,7 +15,7 @@ export const LIST_ALL_UNICODE_VERSIONS_ROUTE = createRoute({
       cacheName: "ucdjs:v1_versions:list",
       cacheControl: `max-age=${MAX_AGE_ONE_DAY_SECONDS * 4}`, // 4 days
     }),
-  ] as const,
+  ],
   description: LIST_ALL_UNICODE_VERSIONS_ROUTE_DOCS,
   responses: {
     200: {
@@ -74,7 +74,7 @@ export const GET_VERSION_FILE_TREE_ROUTE = createRoute({
       cacheName: "ucdjs:v1_versions:file-tree",
       cacheControl: `max-age=${MAX_AGE_ONE_WEEK_SECONDS}`, // 1 week
     }),
-  ] as const,
+  ],
   parameters: [
     VERSION_ROUTE_PARAM,
   ],

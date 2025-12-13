@@ -65,7 +65,9 @@ export const storeManifestRoute = defineMockRouteHandler({
       ["GET", url, () => {
         if (shouldUseDefaultValue) {
           return HttpResponse.json(Object.fromEntries(
-            versions.map((version) => [version, version]),
+            versions.map((version) => [version, {
+              expectedFiles: [],
+            }]),
           ) satisfies UCDStoreManifest);
         }
 

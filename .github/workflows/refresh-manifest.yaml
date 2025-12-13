@@ -11,7 +11,8 @@ on:
         description: 'URL to trigger manifest refresh'
         required: false
         type: choice
-        options: &urls
+        # NOTE: Keep in sync with matrix.base_url below
+        options:
           - 'https://api.ucdjs.dev'
           - 'https://preview.api.ucdjs.dev'
 
@@ -24,7 +25,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        base_url: *urls
+        # NOTE: Keep in sync with inputs.base_url.options above
+        base_url: ${{ github.event_name == 'schedule' && fromJson('["https://api.ucdjs.dev", "https://preview.api.ucdjs.dev"]') || fromJson(format('["{0}"]', github.event.inputs.base_url)) }}
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
@@ -43,7 +45,6 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: generate manifest
-        if: github.event_name == 'schedule' || matrix.base_url == inputs.base_url
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         with:
           script: |
@@ -51,19 +52,54 @@ jobs:
 
             await generateManifest({ outputDir: 'manifest-output' });
 
+      - name: Fetch current store manifest
+        id: fetch-store
+        env:
+          BASE_URL: ${{ matrix.base_url }}
+        run: |
+          echo "Fetching current store manifest from $BASE_URL..."
+          curl -s "$BASE_URL/api/v1/files/.ucd-store.json" -o current-store.json || echo "{}" > current-store.json
+          echo "Current store manifest fetched"
+
       - name: Create and upload version tar files
-        if: github.event_name == 'schedule' || matrix.base_url == inputs.base_url
+        env:
+          BASE_URL: ${{ matrix.base_url }}
         run: |
           cd manifest-output
 
           # Upload each version directory as a tar file
           failed=0
+          skipped=0
+          uploaded=0
+          uploaded_versions=""
+          skipped_versions=""
+          failed_versions=""
+
           for version_dir in ucdjs-manifest-v*/; do
             if [ ! -d "$version_dir" ]; then
               continue
             fi
 
             dir_name=$(basename "$version_dir")
+            # Extract version from directory name (ucdjs-manifest-v16.0.0 -> 16.0.0)
+            version="${dir_name#ucdjs-manifest-v}"
+
+            # Calculate SHA256 of the local manifest.json content
+            local_sha=$(cat "$version_dir/manifest.json" | jq -cS '.' | sha256sum | cut -d' ' -f1)
+
+            # Get the remote version data and calculate its SHA256
+            remote_sha=$(jq -cS --arg v "$version" '.[$v] // empty' ../current-store.json | sha256sum | cut -d' ' -f1)
+
+            echo "Version $version: local=$local_sha remote=$remote_sha"
+
+            # Compare checksums - skip if they match
+            if [ "$local_sha" = "$remote_sha" ]; then
+              echo "Skipping $version - no changes detected"
+              skipped=$((skipped + 1))
+              skipped_versions="$skipped_versions $version"
+              continue
+            fi
+
             tar_name="${dir_name}.tar"
             echo "Creating and uploading $tar_name..."
 
@@ -74,7 +110,7 @@ jobs:
               -H "X-UCDJS-Task-Key: ${{ secrets.TASK_API_KEY }}" \
               -H "Content-Type: application/x-tar" \
               --data-binary @"$tar_name" \
-              "${{ matrix.base_url }}/_tasks/upload-manifest")
+              "$BASE_URL/_tasks/upload-manifest")
 
             status=$(echo "$response" | tail -1)
             if [ "$status" != "200" ]; then
@@ -82,17 +118,67 @@ jobs:
               body=$(echo "$response" | sed '$d')
               echo "Response: $body"
               failed=$((failed + 1))
+              failed_versions="$failed_versions $version"
             else
               echo "$dir_name uploaded successfully"
+              uploaded=$((uploaded + 1))
+              uploaded_versions="$uploaded_versions $version"
             fi
 
             # Small delay between uploads
             sleep 0.5
           done
 
+          echo ""
+          echo "Summary: uploaded=$uploaded skipped=$skipped failed=$failed"
+
+          # Write GitHub Actions Job Summary
+          {
+            echo "## Manifest Refresh Summary"
+            echo ""
+            echo "**Target:** \`$BASE_URL\`"
+            echo ""
+            echo "| Status | Count |"
+            echo "|--------|-------|"
+            echo "| ✅ Uploaded | $uploaded |"
+            echo "| ⏭️ Skipped (no changes) | $skipped |"
+            echo "| ❌ Failed | $failed |"
+            echo ""
+
+            if [ $uploaded -gt 0 ]; then
+              echo "### Uploaded Versions"
+              echo ""
+              for v in $uploaded_versions; do
+                echo "- \`$v\`"
+              done
+              echo ""
+            fi
+
+            if [ $skipped -gt 0 ]; then
+              echo "<details>"
+              echo "<summary>Skipped Versions ($skipped)</summary>"
+              echo ""
+              for v in $skipped_versions; do
+                echo "- \`$v\`"
+              done
+              echo ""
+              echo "</details>"
+              echo ""
+            fi
+
+            if [ $failed -gt 0 ]; then
+              echo "### ❌ Failed Versions"
+              echo ""
+              for v in $failed_versions; do
+                echo "- \`$v\`"
+              done
+              echo ""
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
           if [ $failed -gt 0 ]; then
             echo "$failed version(s) failed to upload"
             exit 1
           fi
 
-          echo "All versions uploaded successfully"
+          echo "All versions processed successfully"

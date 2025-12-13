@@ -14,7 +14,7 @@ export const UCD_CONFIG_ROUTE = createRoute({
       cacheName: "ucdjs:well-known:ucd-config",
       cacheControl: `max-age=${MAX_AGE_ONE_DAY_SECONDS * 4}`, // 4 days
     }),
-  ] as const,
+  ],
   description: UCD_CONFIG_ROUTE_DOCS,
   responses: {
     200: {

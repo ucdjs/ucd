@@ -16,24 +16,20 @@ const debug = createDebugger("ucdjs:ucd-store:manifest");
  *
  * @param {FileSystemBridge} fs - Filesystem bridge to use for writing
  * @param {string} manifestPath - Path where manifest should be written
- * @param {string[]} versions - An array of version strings to include in the manifest
+ * @param {UCDStoreManifest} manifest - Manifest object mapping version strings
  * @returns {Promise<void>} A promise that resolves once the manifest has been written
  * @throws {Error} If the filesystem bridge does not support writing or if the write operation fails
  */
 export async function writeManifest(
   fs: FileSystemBridge,
   manifestPath: string,
-  versions: string[],
+  manifest: UCDStoreManifest,
 ): Promise<void> {
+  const versions = Object.keys(manifest);
   debug?.("Writing manifest", { manifestPath, versions });
   assertCapability(fs, "write");
-  const manifestData: UCDStoreManifest = {};
 
-  for (const version of versions) {
-    manifestData[version] = version;
-  }
-
-  await fs.write(manifestPath, JSON.stringify(manifestData, null, 2));
+  await fs.write(manifestPath, JSON.stringify(manifest, null, 2));
   debug?.("Wrote manifest", { manifestPath, versions });
 }
 
@@ -86,4 +82,28 @@ export async function readManifest(
   }
 
   return parsedManifest.data;
+}
+
+/**
+ * Read the UCD store manifest from disk, or return a default manifest if reading fails.
+ *
+ * This function attempts to read and validate the manifest using readManifest().
+ * If the read operation fails for any reason (missing file, invalid JSON, schema
+ * validation failure, etc.), it returns the provided defaultManifest instead.
+ *
+ * @param {FileSystemBridge} fs - Filesystem bridge to use for reading
+ * @param {string} manifestPath - Path to the manifest file
+ * @param {UCDStoreManifest} defaultManifest - Default manifest to return if reading fails
+ * @returns {Promise<UCDStoreManifest>} A Promise that resolves to either the validated
+ *                                       manifest from disk or the default manifest
+ */
+export async function readManifestOrDefault(
+  fs: FileSystemBridge,
+  manifestPath: string,
+  defaultManifest: UCDStoreManifest,
+): Promise<UCDStoreManifest> {
+  return readManifest(fs, manifestPath).catch((err) => {
+    debug?.("Failed to read manifest, using default:", err);
+    return defaultManifest;
+  });
 }
