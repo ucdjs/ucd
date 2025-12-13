@@ -95,10 +95,11 @@ jobs:
     name: upsert deployment comment
     runs-on: ubuntu-latest
     needs: [detect-changes]
-    if: >
+    if: |
       always() && (
+        github.event_name == 'pull_request' &&
         github.repository == 'ucdjs/ucd' &&
-        (github.event_name == 'workflow_dispatch' || needs.detect-changes.result == 'success')
+        needs.detect-changes.result == 'success'
       )
     permissions:
       pull-requests: write
@@ -128,7 +129,7 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           DRY_RUN: ${{ github.event.inputs.dry-run }}
           COMMENT_TABLE: ${{ steps.generate-table.outputs.comment-table }}
-          HAS_CHANGES: ${{ (github.event_name == 'pull_request' && needs.detect-changes.outputs.has-changes) || 'true' }}
+          HAS_CHANGES: ${{ needs.detect-changes.outputs.has-changes }}
         with:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
           issue-number: ${{ github.event.pull_request.number }}
@@ -158,10 +159,16 @@ jobs:
     if: |
       always() && (
         github.repository == 'ucdjs/ucd' &&
-        needs.upsert-deployment-comment.result == 'success' &&
-        (github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.has-changes == 'true')
+        (
+          github.event_name == 'workflow_dispatch' ||
+          (
+            github.event_name == 'pull_request' &&
+            needs.detect-changes.outputs.has-changes == 'true' &&
+            needs.upsert-deployment-comment.result == 'success'
+          )
+        )
       )
-    environment: apps-preview
+    environment: apps-approval
     steps:
       - name: Approve preview deployment
         run: echo "Preview deployment approved"
@@ -170,8 +177,9 @@ jobs:
     name: deploy apps
     needs:
       - detect-changes
+      - upsert-deployment-comment
       - preview-approval
-    if: >
+    if: |
       always() && (
         needs.preview-approval.result == 'success' &&
         github.repository == 'ucdjs/ucd'
@@ -179,19 +187,26 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-    uses: ./.github/workflows/deploy-app.yml
+    uses: ./.github/workflows/reusable-deploy-app.yml
     with:
       environment: preview
       cloudflare-env: preview
       dry-run: ${{ github.event.inputs.dry-run == 'true' }}
       app: ${{ github.event.inputs.app || 'all' }}
       changed-apps: ${{ github.event_name == 'pull_request' && needs.detect-changes.outputs.changed-apps || '[]' }}
-      include-pr-comment: true
-      repository-condition: ${{ github.repository == 'ucdjs/ucd' && github.event.pull_request.user.login == 'luxass' }}
+      include-pr-comment: ${{ github.event_name == 'pull_request' }}
+      repository-condition: ${{ github.repository == 'ucdjs/ucd' }}
       extra-build-step: true
     secrets:
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
       TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+      # Note: These secrets must be explicitly declared here even though they may appear as
+      # "not defined" in the caller workflow's context. The reusable workflow's job uses
+      # environment "apps-deploy" which has CF_API_TOKEN and CF_ACCOUNT_ID defined. When the
+      # secrets are passed through this declaration, they resolve to the environment secrets
+      # in the reusable workflow's context. Without this explicit declaration, the secrets
+      # won't be available to the reusable workflow, even though the environment defines them.
+      # See: https://docs.github.com/en/actions/using-workflows/reusing-workflows#passing-secrets-to-nested-reusable-workflows
       CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
       CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
 
@@ -199,12 +214,12 @@ jobs:
     name: update deployment comment
     runs-on: ubuntu-latest
     needs:
-      - preview-approval
       - deploy
-    if: >
+    if: |
       always() && (
-        needs.preview-approval.result == 'success' &&
-        github.repository == 'ucdjs/ucd'
+        github.event_name == 'pull_request' &&
+        github.repository == 'ucdjs/ucd' &&
+        needs.deploy.result == 'success'
       )
     permissions:
       pull-requests: write
