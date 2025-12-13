@@ -54,10 +54,10 @@ on:
       # This could very much be intentional by GitHub or a bug in their system.
       CF_API_TOKEN:
         description: Cloudflare API token
-        required: false
+        required: true
       CF_ACCOUNT_ID:
         description: Cloudflare Account ID
-        required: false
+        required: true
 
       # These will come from the environment secrets.
       # But if they aren't set here, they will not be available.
