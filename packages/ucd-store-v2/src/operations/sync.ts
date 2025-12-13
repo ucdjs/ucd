@@ -1,5 +1,4 @@
 import type { OperationResult } from "@ucdjs-internal/shared";
-import type { UCDStoreManifest } from "@ucdjs/schemas";
 import type { StoreError } from "../errors";
 import type { InternalUCDStoreContext } from "../types";
 import type { MirrorReport } from "./mirror";
