@@ -64,6 +64,8 @@ jobs:
       - name: Create and upload version tar files
         env:
           BASE_URL: ${{ matrix.base_url }}
+          PATH: /api/v1/files/.ucd-store.json
+          CACHE_NAME: ucdjs:v1_files:ucd-store
         run: |
           cd manifest-output
 
@@ -132,6 +134,27 @@ jobs:
           echo ""
           echo "Summary: uploaded=$uploaded skipped=$skipped failed=$failed"
 
+          # Purge cache only if there were uploads
+          cache_purged="false"
+          if [ $uploaded -gt 0 ]; then
+            echo "Purging cache for .ucd-store.json..."
+            purge_response=$(curl -s -w "\n%{http_code}" -G \
+              -H "X-UCDJS-Task-Key: ${{ secrets.TASK_API_KEY }}" \
+              --data-urlencode "cacheName=$CACHE_NAME" \
+              --data-urlencode "path=$PATH" \
+              "$BASE_URL/_tasks/purge-cache")
+
+            purge_status=$(echo "$purge_response" | tail -1)
+            if [ "$purge_status" = "200" ]; then
+              echo "Cache purged successfully"
+              cache_purged="true"
+            else
+              echo "Warning: Failed to purge cache (status: $purge_status)"
+              purge_body=$(echo "$purge_response" | sed '$d')
+              echo "Response: $purge_body"
+            fi
+          fi
+
           # Write GitHub Actions Job Summary
           {
             echo "## Manifest Refresh Summary"
@@ -147,6 +170,12 @@ jobs:
 
             if [ $uploaded -gt 0 ]; then
               echo "### Uploaded Versions"
+              echo ""
+              if [ "$cache_purged" = "true" ]; then
+                echo "> 🔄 Cache for \`$PATH\` was purged"
+              else
+                echo "> ⚠️ Cache purge failed - changes may take up to 7 days to propagate"
+              fi
               echo ""
               for v in $uploaded_versions; do
                 echo "- \`$v\`"
