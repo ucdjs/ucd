@@ -311,3 +311,10 @@ export function customError(contextOrOptions: Context | CustomResponseOptions, o
     },
   });
 }
+
+export function unauthorized(c: Context, details?: { message?: string }) {
+  return c.json({
+    error: "Unauthorized",
+    message: details?.message || "Authentication required",
+  }, 401);
+}

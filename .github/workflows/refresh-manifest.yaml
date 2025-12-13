@@ -1,0 +1,46 @@
+name: Refresh UCD Store Manifest
+
+on:
+  schedule:
+    - cron: "0 2 * * *"
+
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: 'URL to trigger manifest refresh'
+        required: false
+        type: choice
+        options: &urls
+          - 'https://api.ucdjs.dev'
+          - 'https://preview.api.ucdjs.dev'
+
+permissions: {}
+
+jobs:
+  refresh:
+    name: Refresh Manifest (${{ matrix.base_url }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        base_url: *urls
+    steps:
+      - name: Trigger manifest refresh
+        if: github.event_name == 'schedule' || matrix.base_url == inputs.base_url
+        run: |
+          response=$(curl -s -w "\n%{http_code}" -X POST \
+            -H "X-UCDJS-Task-Key: ${{ secrets.TASK_API_KEY }}" \
+            "${{ matrix.base_url }}/_tasks/refresh-manifest")
+
+          body=$(echo "$response" | sed '$d')
+          status=$(echo "$response" | tail -1)
+
+          echo "Response: $body"
+          echo "Status: $status"
+
+          if [ "$status" != "200" ]; then
+            echo "Failed to refresh manifest"
+            exit 1
+          fi
+
+          echo "Manifest refreshed successfully"
