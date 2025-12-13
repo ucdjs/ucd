@@ -48,18 +48,20 @@ V1_FILES_ROUTER.openapi(GET_UCD_STORE, async (c) => {
       const key = `${STORE_MANIFEST_PREFIX}${version}/manifest.json`;
       const object = await bucket.get(key);
 
-      if (object) {
-        try {
-          const data = await object.json<{ expectedFiles: string[] }>();
-          manifest[version] = data;
+      if (!object) {
+        return;
+      }
 
-          // Track the latest upload time for Last-Modified header
-          if (!latestUploaded || object.uploaded > latestUploaded) {
-            latestUploaded = object.uploaded;
-          }
-        } catch (error) {
-          console.error(`[v1_files]: failed to parse manifest for version ${version}:`, error);
+      try {
+        const data = await object.json<UCDStoreManifest[typeof version]>();
+        manifest[version] = data;
+
+        // Track the latest upload time for Last-Modified header
+        if (!latestUploaded || object.uploaded > latestUploaded) {
+          latestUploaded = object.uploaded;
         }
+      } catch (error) {
+        console.error(`[v1_files]: failed to parse manifest for version ${version}:`, error);
       }
     }),
   );
