@@ -120,7 +120,6 @@ jobs:
       contents: read
     uses: ./.github/workflows/reusable-deploy-app.yml
     with:
-      github_environment: apps-production
       environment: production
       cloudflare-env: production
       dry-run: ${{ github.event.inputs.dry-run == 'true' }}

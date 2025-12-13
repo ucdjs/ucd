@@ -189,8 +189,6 @@ jobs:
       pull-requests: write
     uses: ./.github/workflows/reusable-deploy-app.yml
     with:
-      # This is very important!
-      github_environment: apps-preview
       environment: preview
       cloudflare-env: preview
       dry-run: ${{ github.event.inputs.dry-run == 'true' }}
