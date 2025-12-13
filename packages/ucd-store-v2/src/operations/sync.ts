@@ -123,9 +123,16 @@ export async function sync(
       finalVersions = [...apiVersions];
     }
 
-    await writeManifest(context.fs, context.manifestPath, Object.fromEntries(
-      finalVersions.map((v) => [v, { expectedFiles: [] }]),
-    ));
+    await writeManifest(
+      context.fs,
+      context.manifestPath,
+      Object.fromEntries(
+        finalVersions.map((v) => [
+          v,
+          manifest[v] ?? { expectedFiles: [] },
+        ]),
+      ),
+    );
 
     const result: SyncResult = {
       timestamp: new Date().toISOString(),
