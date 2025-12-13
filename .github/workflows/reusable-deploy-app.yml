@@ -207,9 +207,9 @@ jobs:
         uses: cloudflare/wrangler-action@da0e0dfe58b7a431659754fdf3f186c529afbe65 # v3.14.1
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
-          # We use .output as working directory since Nitro outputs the Cloudflare Module build there
+          # We use .output/server as working directory since Nitro outputs the Cloudflare Module build there
           # and we don't want to have issues, since we also have a wrangler config in the apps/web folder.
-          workingDirectory: ./apps/web/.output
+          workingDirectory: ./apps/web/.output/server
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
 
       - name: deploy docs
