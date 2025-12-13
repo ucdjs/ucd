@@ -32,7 +32,7 @@ describe("file tree", () => {
         },
       },
       ".ucd-store.json": JSON.stringify({
-        "15.0.0": "15.0.0",
+        "15.0.0": { expectedFiles: [] },
       }),
     });
 
@@ -100,7 +100,7 @@ describe("file tree", () => {
         "ArabicShaping.txt": "Arabic shaping data",
       },
       ".ucd-store.json": JSON.stringify({
-        "15.0.0": "15.0.0",
+        "15.0.0": { expectedFiles: [] },
       }),
     });
 
@@ -122,7 +122,7 @@ describe("file tree", () => {
     const storePath = await testdir({
       "15.0.0": {},
       ".ucd-store.json": JSON.stringify({
-        "15.0.0": "15.0.0",
+        "15.0.0": { expectedFiles: [] },
       }),
     });
 
@@ -152,7 +152,7 @@ describe("file tree", () => {
         },
       },
       ".ucd-store.json": JSON.stringify({
-        "15.0.0": "15.0.0",
+        "15.0.0": { expectedFiles: [] },
       }),
     });
 
@@ -199,7 +199,7 @@ describe("file tree", () => {
         },
       },
       ".ucd-store.json": JSON.stringify({
-        "15.0.0": "15.0.0",
+        "15.0.0": { expectedFiles: [] },
       }),
     });
 
@@ -367,7 +367,7 @@ describe("file tree", () => {
         },
       },
       ".ucd-store.json": JSON.stringify({
-        "15.0.0": "15.0.0",
+        "15.0.0": { expectedFiles: [] },
       }),
     });
 
@@ -387,7 +387,7 @@ describe("file tree", () => {
         "ArabicShaping.txt": "Arabic shaping data",
       },
       ".ucd-store.json": JSON.stringify({
-        "15.0.0": "15.0.0",
+        "15.0.0": { expectedFiles: [] },
       }),
     });
 
@@ -411,7 +411,7 @@ describe("file tree", () => {
         "file3.txt": "content3",
       },
       ".ucd-store.json": JSON.stringify({
-        "15.0.0": "15.0.0",
+        "15.0.0": { expectedFiles: [] },
       }),
     });
 
@@ -451,7 +451,7 @@ describe("file tree", () => {
         },
       },
       ".ucd-store.json": JSON.stringify({
-        "15.0.0": "15.0.0",
+        "15.0.0": { expectedFiles: [] },
       }),
     });
 
@@ -502,7 +502,7 @@ describe("file tree", () => {
         },
       },
       ".ucd-store.json": JSON.stringify({
-        "15.0.0": "15.0.0",
+        "15.0.0": { expectedFiles: [] },
       }),
     });
 

@@ -31,7 +31,7 @@ describe("file paths", () => {
         },
       },
       ".ucd-store.json": JSON.stringify({
-        "15.0.0": "15.0.0",
+        "15.0.0": { expectedFiles: [] },
       }),
     });
 
@@ -63,7 +63,7 @@ describe("file paths", () => {
         },
       },
       ".ucd-store.json": JSON.stringify({
-        "15.0.0": "15.0.0",
+        "15.0.0": { expectedFiles: [] },
       }),
     });
 
@@ -89,7 +89,7 @@ describe("file paths", () => {
         "ArabicShaping.txt": "Arabic shaping data",
       },
       ".ucd-store.json": JSON.stringify({
-        "15.0.0": "15.0.0",
+        "15.0.0": { expectedFiles: [] },
       }),
     });
 

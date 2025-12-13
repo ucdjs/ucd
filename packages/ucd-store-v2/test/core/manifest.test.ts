@@ -92,8 +92,12 @@ describe("writeManifest", () => {
     const parsed = JSON.parse(written);
 
     expect(parsed).toEqual({
-      "16.0.0": "16.0.0",
-      "15.1.0": "15.1.0",
+      "16.0.0": {
+        expectedFiles: [],
+      },
+      "15.1.0": {
+        expectedFiles: [],
+      },
     });
   });
 
@@ -141,8 +145,8 @@ describe("writeManifest", () => {
     const parsed = JSON.parse(written);
 
     expect(parsed).toEqual({
-      "15.0.0-beta.1": "15.0.0-beta.1",
-      "14.0.0+build.123": "14.0.0+build.123",
+      "15.0.0-beta.1": { expectedFiles: [] },
+      "14.0.0+build.123": { expectedFiles: [] },
     });
   });
 });
@@ -151,8 +155,8 @@ describe("readManifest", () => {
   it("should read and parse valid manifest", async () => {
     const testdirPath = await testdir({
       ".ucd-store.json": JSON.stringify({
-        "15.1.0": "15.1.0",
-        "15.0.0": "15.0.0",
+        "15.1.0": { expectedFiles: [] },
+        "15.0.0": { expectedFiles: [] },
       }),
     });
 
@@ -163,16 +167,16 @@ describe("readManifest", () => {
     await fs.write!(
       manifestPath,
       JSON.stringify({
-        "15.1.0": "15.1.0",
-        "15.0.0": "15.0.0",
+        "15.1.0": { expectedFiles: [] },
+        "15.0.0": { expectedFiles: [] },
       }),
     );
 
     const manifest = await readManifest(fs, manifestPath);
 
     expect(manifest).toEqual({
-      "15.1.0": "15.1.0",
-      "15.0.0": "15.0.0",
+      "15.1.0": { expectedFiles: [] },
+      "15.0.0": { expectedFiles: [] },
     });
   });
 
@@ -243,14 +247,14 @@ describe("readManifest", () => {
     await fs.write!(
       manifestPath,
       JSON.stringify({
-        "15.0.0": "15.0.0",
+        "15.0.0": { expectedFiles: [] },
       }),
     );
 
     const manifest = await readManifest(fs, manifestPath);
 
     expect(manifest).toEqual({
-      "15.0.0": "15.0.0",
+      "15.0.0": { expectedFiles: [] },
     });
   });
 
@@ -259,11 +263,11 @@ describe("readManifest", () => {
     const manifestPath = "/test/.ucd-store.json";
 
     const versions = {
-      "16.0.0": "16.0.0",
-      "15.1.0": "15.1.0",
-      "15.0.0": "15.0.0",
-      "14.0.0": "14.0.0",
-      "13.0.0": "13.0.0",
+      "16.0.0": { expectedFiles: [] },
+      "15.1.0": { expectedFiles: [] },
+      "15.0.0": { expectedFiles: [] },
+      "14.0.0": { expectedFiles: [] },
+      "13.0.0": { expectedFiles: [] },
     };
 
     await fs.write!(manifestPath, JSON.stringify(versions));
@@ -290,7 +294,7 @@ describe("manifest integration", () => {
 
     // should have correct structure
     expect(Object.keys(manifest)).toEqual(versions);
-    expect(Object.values(manifest)).toEqual(versions);
+    expect(Object.values(manifest)).toEqual(versions.map(() => ({ expectedFiles: [] })));
   });
 
   it("should handle multiple write/read cycles", async () => {
