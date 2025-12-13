@@ -87,15 +87,24 @@ jobs:
             version="${dir_name#ucdjs-manifest-v}"
 
             echo "Processing version $version..."
+
+            # Get local and remote JSON (normalized for comparison)
+            local_json=$(jq -cS '.' "$version_dir/manifest.json")
             store_version_value=$(jq -r --arg v "$version" '.[$v] // empty' ../current-store.json)
 
-            # Calculate SHA256 of the local manifest.json content
-            local_sha=$(jq -cS '.' "$version_dir/manifest.json" | sha256sum | cut -d' ' -f1)
-
-            # Get the remote version data and calculate its SHA256
-            # If remote doesn't have this version, use empty string for comparison
             if [ -n "$store_version_value" ]; then
-              remote_sha=$(echo "$store_version_value" | jq -cS '.' | sha256sum | cut -d' ' -f1)
+              remote_json=$(echo "$store_version_value" | jq -cS '.')
+            else
+              remote_json=""
+            fi
+
+            echo "Local JSON:  $local_json"
+            echo "Remote JSON: $remote_json"
+
+            # Calculate SHA256 checksums
+            local_sha=$(echo "$local_json" | sha256sum | cut -d' ' -f1)
+            if [ -n "$remote_json" ]; then
+              remote_sha=$(echo "$remote_json" | sha256sum | cut -d' ' -f1)
             else
               remote_sha=""
             fi
