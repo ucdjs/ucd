@@ -64,7 +64,7 @@ jobs:
       - name: Create and upload version tar files
         env:
           BASE_URL: ${{ matrix.base_url }}
-          PATH: /api/v1/files/.ucd-store.json
+          CACHE_PATH: /api/v1/files/.ucd-store.json
           CACHE_NAME: ucdjs:v1_files:ucd-store
         run: |
           cd manifest-output
@@ -141,7 +141,7 @@ jobs:
             purge_response=$(curl -s -w "\n%{http_code}" -G \
               -H "X-UCDJS-Task-Key: ${{ secrets.TASK_API_KEY }}" \
               --data-urlencode "cacheName=$CACHE_NAME" \
-              --data-urlencode "path=$PATH" \
+              --data-urlencode "path=$CACHE_PATH" \
               "$BASE_URL/_tasks/purge-cache")
 
             purge_status=$(echo "$purge_response" | tail -1)
@@ -172,7 +172,7 @@ jobs:
               echo "### Uploaded Versions"
               echo ""
               if [ "$cache_purged" = "true" ]; then
-                echo "> 🔄 Cache for \`$PATH\` was purged"
+                echo "> 🔄 Cache for \`$CACHE_PATH\` was purged"
               else
                 echo "> ⚠️ Cache purge failed - changes may take up to 7 days to propagate"
               fi
