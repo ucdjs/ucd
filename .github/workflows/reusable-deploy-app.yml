@@ -41,13 +41,23 @@ on:
         default: false
         type: boolean
 
-    # secrets:
-    #   TURBO_TOKEN:
-    #     description: Turbo token
-    #     required: true
-    #   TURBO_TEAM:
-    #     description: Turbo team
-    #     required: true
+    secrets:
+      TURBO_TOKEN:
+        description: Turbo token
+        required: true
+      TURBO_TEAM:
+        description: Turbo team
+        required: true
+
+      # These will come from the environment secrets.
+      # But if they aren't set here, they will not be available.
+      # This could very much be intentional by GitHub or a bug in their system.
+      CF_API_TOKEN:
+        description: Cloudflare API token
+        required: false
+      CF_ACCOUNT_ID:
+        description: Cloudflare Account ID
+        required: false
 
       # These will come from the environment secrets.
       # But if they aren't set here, they will not be available.
@@ -64,8 +74,8 @@ on:
 permissions: {}
 
 env:
-  # TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-  # TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+  TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+  TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
   TURBO_TELEMETRY_DISABLED: 1
   DO_NOT_TRACK: 1
   FORCE_COLOR: true

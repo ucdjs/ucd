@@ -198,6 +198,7 @@ jobs:
       repository-condition: ${{ github.repository == 'ucdjs/ucd' }}
       extra-build-step: true
 <<<<<<< HEAD
+<<<<<<< HEAD
     secrets:
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
       TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
@@ -215,6 +216,11 @@ jobs:
     #   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
     #   TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
 >>>>>>> cbe57f5a (debug)
+=======
+    secrets:
+      TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+      TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+>>>>>>> 6e9d0fef (ci: update secrets configuration in deployment workflows)
 
   update-deployment-comment:
     name: update deployment comment
