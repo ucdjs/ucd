@@ -197,6 +197,7 @@ jobs:
       include-pr-comment: ${{ github.event_name == 'pull_request' }}
       repository-condition: ${{ github.repository == 'ucdjs/ucd' }}
       extra-build-step: true
+<<<<<<< HEAD
     secrets:
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
       TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
@@ -209,6 +210,11 @@ jobs:
       # See: https://docs.github.com/en/actions/using-workflows/reusing-workflows#passing-secrets-to-nested-reusable-workflows
       CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
       CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+=======
+    # secrets:
+    #   TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+    #   TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+>>>>>>> cbe57f5a (debug)
 
   update-deployment-comment:
     name: update deployment comment
