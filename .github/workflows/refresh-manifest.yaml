@@ -88,16 +88,17 @@ jobs:
 
             echo "Processing version $version..."
             store_version_value=$(jq -r --arg v "$version" '.[$v] // empty' ../current-store.json)
-            echo "Store version data: $store_version_value"
-
 
             # Calculate SHA256 of the local manifest.json content
-            local_sha=$(cat "$version_dir/manifest.json" | jq -cS '.' | sha256sum | cut -d' ' -f1)
+            local_sha=$(jq -cS '.' "$version_dir/manifest.json" | sha256sum | cut -d' ' -f1)
 
             # Get the remote version data and calculate its SHA256
-            remote_sha=$(echo "$store_version_value" | jq -cS '.' | sha256sum | cut -d' ' -f1)
-
-
+            # If remote doesn't have this version, use empty string for comparison
+            if [ -n "$store_version_value" ]; then
+              remote_sha=$(echo "$store_version_value" | jq -cS '.' | sha256sum | cut -d' ' -f1)
+            else
+              remote_sha=""
+            fi
 
             echo "Version $version: local=$local_sha remote=$remote_sha"
 
