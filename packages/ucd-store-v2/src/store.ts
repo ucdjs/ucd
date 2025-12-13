@@ -1,6 +1,5 @@
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 import type { UCDWellKnownConfig } from "@ucdjs/schemas";
-import type { UCDStoreManifest } from "packages/schemas/dist/index.mjs";
 import type {
   UCDStore,
   UCDStoreOperations,

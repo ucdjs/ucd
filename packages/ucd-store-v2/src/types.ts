@@ -180,14 +180,13 @@ export interface UCDStoreOperations {
    *
    * Example: Fetches the list of available Unicode versions from the API and updates the manifest.
    *
-   /**
-    * Synchronizes the store manifest with available versions from the API.
-    * This is a metadata-level operation that updates which versions the store knows about.
-    *
-    * Example: Fetches the list of available Unicode versions from the API and updates the manifest.
-    *
-    * @experimental This method is under development and may change
-    */
+   * Synchronizes the store manifest with available versions from the API.
+   * This is a metadata-level operation that updates which versions the store knows about.
+   *
+   * Example: Fetches the list of available Unicode versions from the API and updates the manifest.
+   *
+   * @experimental This method is under development and may change
+   */
   sync: (options?: SyncOptions) => Promise<OperationResult<SyncResult, StoreError>>;
 
   /**
