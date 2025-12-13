@@ -29,7 +29,7 @@ describe("sync", () => {
     const fs = createMemoryMockFS({
       initialFiles: {
         "/test/.ucd-store.json": JSON.stringify({
-          "16.0.0": "16.0.0",
+          "16.0.0": { expectedFiles: [] },
         }),
       },
     });
@@ -58,9 +58,9 @@ describe("sync", () => {
 
     const manifestContent = await fs.read("/test/.ucd-store.json");
     expect(manifestContent).toBe(JSON.stringify({
-      "16.0.0": "16.0.0",
-      "15.1.0": "15.1.0",
-      "15.0.0": "15.0.0",
+      "16.0.0": { expectedFiles: [] },
+      "15.1.0": { expectedFiles: [] },
+      "15.0.0": { expectedFiles: [] },
     }, null, 2));
   });
 
@@ -73,8 +73,8 @@ describe("sync", () => {
     const fs = createMemoryMockFS({
       initialFiles: {
         "/test/.ucd-store.json": JSON.stringify({
-          "16.0.0": "16.0.0",
-          "14.0.0": "14.0.0",
+          "16.0.0": { expectedFiles: [] },
+          "14.0.0": { expectedFiles: [] },
         }),
       },
     });
@@ -105,9 +105,9 @@ describe("sync", () => {
 
     const manifestContent = await fs.read("/test/.ucd-store.json");
     expect(manifestContent).toBe(JSON.stringify({
-      "16.0.0": "16.0.0",
-      "14.0.0": "14.0.0",
-      "15.1.0": "15.1.0",
+      "16.0.0": { expectedFiles: [] },
+      "14.0.0": { expectedFiles: [] },
+      "15.1.0": { expectedFiles: [] },
     }, null, 2));
   });
 
@@ -120,8 +120,8 @@ describe("sync", () => {
     const fs = createMemoryMockFS({
       initialFiles: {
         "/test/.ucd-store.json": JSON.stringify({
-          "16.0.0": "16.0.0",
-          "15.0.0": "15.0.0",
+          "16.0.0": { expectedFiles: [] },
+          "15.0.0": { expectedFiles: [] },
         }),
       },
     });
@@ -153,8 +153,8 @@ describe("sync", () => {
 
     const manifestContent = await fs.read("/test/.ucd-store.json");
     expect(manifestContent).toBe(JSON.stringify({
-      "16.0.0": "16.0.0",
-      "15.1.0": "15.1.0",
+      "16.0.0": { expectedFiles: [] },
+      "15.1.0": { expectedFiles: [] },
     }, null, 2));
   });
 
@@ -167,7 +167,7 @@ describe("sync", () => {
     const fs = createMemoryMockFS({
       initialFiles: {
         "/test/.ucd-store.json": JSON.stringify({
-          "16.0.0": "16.0.0",
+          "16.0.0": { expectedFiles: [] },
         }),
       },
     });
@@ -221,8 +221,8 @@ describe("sync", () => {
 
     const manifestContent = await fs.read("/test/.ucd-store.json");
     expect(manifestContent).toBe(JSON.stringify({
-      "16.0.0": "16.0.0",
-      "15.1.0": "15.1.0",
+      "16.0.0": { expectedFiles: [] },
+      "15.1.0": { expectedFiles: [] },
     }, null, 2));
   });
 
@@ -235,7 +235,7 @@ describe("sync", () => {
     const fs = createMemoryMockFS({
       initialFiles: {
         "/test/.ucd-store.json": JSON.stringify({
-          "16.0.0": "16.0.0",
+          "16.0.0": { expectedFiles: [] },
         }),
       },
     });
@@ -262,7 +262,7 @@ describe("sync", () => {
 
     const manifestContent = await fs.read("/test/.ucd-store.json");
     expect(manifestContent).toBe(JSON.stringify({
-      "16.0.0": "16.0.0",
+      "16.0.0": { expectedFiles: [] },
     }, null, 2));
   });
 
@@ -275,7 +275,7 @@ describe("sync", () => {
     const fs = createMemoryMockFS({
       initialFiles: {
         "/test/.ucd-store.json": JSON.stringify({
-          "16.0.0": "16.0.0",
+          "16.0.0": { expectedFiles: [] },
         }),
       },
     });
@@ -299,7 +299,7 @@ describe("sync", () => {
 
     const manifestContent = await fs.read("/test/.ucd-store.json");
     expect(manifestContent).toBe(JSON.stringify({
-      "16.0.0": "16.0.0",
+      "16.0.0": { expectedFiles: [] },
     }, null, 2));
   });
 });

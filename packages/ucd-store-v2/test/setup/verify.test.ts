@@ -25,8 +25,8 @@ describe("verify", () => {
     const manifestVersions = ["16.0.0", "15.1.0"];
 
     await fs.write!(manifestPath, JSON.stringify({
-      "16.0.0": "16.0.0",
-      "15.1.0": "15.1.0",
+      "16.0.0": { expectedFiles: [] },
+      "15.1.0": { expectedFiles: [] },
     }));
 
     mockFetch([
@@ -48,7 +48,7 @@ describe("verify", () => {
     const manifestPath = "/test/.ucd-store.json";
 
     await fs.write!(manifestPath, JSON.stringify({
-      "16.0.0": "16.0.0",
+      "16.0.0": { expectedFiles: [] },
     }));
 
     mockFetch([
@@ -72,9 +72,9 @@ describe("verify", () => {
     const manifestPath = "/test/.ucd-store.json";
 
     await fs.write!(manifestPath, JSON.stringify({
-      "16.0.0": "16.0.0",
-      "15.1.0": "15.1.0",
-      "99.0.0": "99.0.0",
+      "16.0.0": { expectedFiles: [] },
+      "15.1.0": { expectedFiles: [] },
+      "99.0.0": { expectedFiles: [] },
     }));
 
     mockFetch([
@@ -94,9 +94,9 @@ describe("verify", () => {
     const manifestPath = "/test/.ucd-store.json";
 
     await fs.write!(manifestPath, JSON.stringify({
-      "16.0.0": "16.0.0",
-      "99.0.0": "99.0.0",
-      "88.0.0": "88.0.0",
+      "16.0.0": { expectedFiles: [] },
+      "99.0.0": { expectedFiles: [] },
+      "88.0.0": { expectedFiles: [] },
     }));
 
     mockFetch([
@@ -139,7 +139,7 @@ describe("verify", () => {
     const manifestPath = "/test/.ucd-store.json";
 
     await fs.write!(manifestPath, JSON.stringify({
-      "16.0.0": "16.0.0",
+      "16.0.0": { expectedFiles: [] },
     }));
 
     mockFetch([
@@ -161,7 +161,7 @@ describe("verify", () => {
     const manifestPath = "/test/.ucd-store.json";
 
     await fs.write!(manifestPath, JSON.stringify({
-      "16.0.0": "16.0.0",
+      "16.0.0": { expectedFiles: [] },
     }));
 
     mockFetch([

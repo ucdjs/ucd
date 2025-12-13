@@ -198,8 +198,8 @@ describe("store clean", () => {
 
     expect(existsSync(`${storePath}/.ucd-store.json`)).toBe(true);
     expect(readFileSync(`${storePath}/.ucd-store.json`, "utf-8")).toBe(JSON.stringify({
-      "15.0.0": "15.0.0",
-      "16.0.0": "16.0.0",
+      "15.0.0": { expectedFiles: [] },
+      "16.0.0": { expectedFiles: [] },
     }, null, 2));
 
     const [cleanData, cleanError] = await store.clean();
@@ -252,8 +252,8 @@ describe("store clean", () => {
 
     expect(existsSync(`${storePath}/.ucd-store.json`)).toBe(true);
     expect(readFileSync(`${storePath}/.ucd-store.json`, "utf-8")).toBe(JSON.stringify({
-      "15.0.0": "15.0.0",
-      "16.0.0": "16.0.0",
+      "15.0.0": { expectedFiles: [] },
+      "16.0.0": { expectedFiles: [] },
     }, null, 2));
 
     const [cleanData, cleanError] = await store.clean({
@@ -276,7 +276,7 @@ describe("store clean", () => {
 
     expect(existsSync(`${storePath}/.ucd-store.json`)).toBe(true);
     expect(readFileSync(`${storePath}/.ucd-store.json`, "utf-8")).toBe(JSON.stringify({
-      "16.0.0": "16.0.0",
+      "16.0.0": { expectedFiles: [] },
     }, null, 2));
   });
 
