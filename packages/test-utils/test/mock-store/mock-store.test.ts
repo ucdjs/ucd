@@ -335,8 +335,8 @@ describe("mockStoreApi", () => {
       expect(response.ok).toBe(true);
 
       const data = await response.json();
-      expect(data["16.0.0"]).toBe("16.0.0");
-      expect(data["15.1.0"]).toBe("15.1.0");
+      expect(data["16.0.0"]).toEqual({ expectedFiles: [] });
+      expect(data["15.1.0"]).toEqual({ expectedFiles: [] });
     });
 
     it("should use custom versions in manifest", async () => {
@@ -349,12 +349,14 @@ describe("mockStoreApi", () => {
       );
       const data = await response.json();
 
-      expect(data["1.0.0"]).toBe("1.0.0");
-      expect(data["2.0.0"]).toBe("2.0.0");
+      expect(data["1.0.0"]).toEqual({ expectedFiles: [] });
+      expect(data["2.0.0"]).toEqual({ expectedFiles: [] });
     });
 
     it("should accept custom manifest data", async () => {
-      const customManifest = { custom: "value" };
+      const customManifest = {
+        custom: { expectedFiles: ["custom.txt"] },
+      };
 
       mockStoreApi({
         responses: {

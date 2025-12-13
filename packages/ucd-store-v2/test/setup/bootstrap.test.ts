@@ -213,7 +213,7 @@ describe("bootstrap", () => {
 
     // each key should map to itself
     for (const version of versions) {
-      expect(manifest[version]).toBe(version);
+      expect(manifest[version]).toEqual({ expectedFiles: [] });
     }
   });
 

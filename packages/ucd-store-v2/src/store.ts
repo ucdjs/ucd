@@ -17,7 +17,7 @@ import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import defu from "defu";
 import { join } from "pathe";
 import { createInternalContext, createPublicContext } from "./core/context";
-import { readManifest, writeManifest } from "./core/manifest";
+import { readManifest, readManifestOrDefault, writeManifest } from "./core/manifest";
 import { UCDStoreGenericError } from "./errors";
 import { analyze } from "./operations/analyze";
 import { getFile } from "./operations/files/get";
@@ -169,12 +169,18 @@ export async function handleVersionConflict(
   switch (strategy) {
     case "merge": {
       const mergedVersions = Array.from(new Set([...manifestVersions, ...providedVersions]));
-      await writeManifest(fs, manifestPath, mergedVersions);
+      const existing = await readManifestOrDefault(fs, manifestPath, {});
+      await writeManifest(fs, manifestPath, Object.fromEntries(
+        mergedVersions.map((v) => [v, existing[v] ?? { expectedFiles: [] }]),
+      ));
       debug?.("Merge mode: combined versions", mergedVersions);
       return mergedVersions;
     }
     case "overwrite": {
-      await writeManifest(fs, manifestPath, providedVersions);
+      const existing = await readManifestOrDefault(fs, manifestPath, {});
+      await writeManifest(fs, manifestPath, Object.fromEntries(
+        providedVersions.map((v) => [v, existing[v] ?? { expectedFiles: [] }]),
+      ));
       debug?.("Overwrite mode: replaced manifest with provided versions", providedVersions);
       return providedVersions;
     }

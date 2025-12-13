@@ -76,7 +76,7 @@ describe("analyze operations", () => {
           },
         },
         ".ucd-store.json": JSON.stringify({
-          "15.0.0": "15.0.0",
+          "15.0.0": { expectedFiles: [] },
         }),
       };
 
@@ -119,7 +119,7 @@ describe("analyze operations", () => {
           "OrphanedFile.txt": "This shouldn't be here",
         },
         ".ucd-store.json": JSON.stringify({
-          "15.0.0": "15.0.0",
+          "15.0.0": { expectedFiles: [] },
         }),
       };
 
@@ -160,8 +160,8 @@ describe("analyze operations", () => {
           "BidiBrackets.txt": "Bidi brackets data v15.1.0",
         },
         ".ucd-store.json": JSON.stringify({
-          "15.0.0": "15.0.0",
-          "15.1.0": "15.1.0",
+          "15.0.0": { expectedFiles: [] },
+          "15.1.0": { expectedFiles: [] },
         }),
       };
 
@@ -198,8 +198,8 @@ describe("analyze operations", () => {
           "BidiBrackets.txt": "Bidi brackets data",
         },
         ".ucd-store.json": JSON.stringify({
-          "15.0.0": "15.0.0",
-          "15.1.0": "15.1.0",
+          "15.0.0": { expectedFiles: [] },
+          "15.1.0": { expectedFiles: [] },
         }),
       };
 
@@ -234,7 +234,7 @@ describe("analyze operations", () => {
           "ArabicShaping.txt": "Arabic shaping data",
         },
         ".ucd-store.json": JSON.stringify({
-          "15.0.0": "15.0.0",
+          "15.0.0": { expectedFiles: [] },
         }),
       };
 
@@ -265,7 +265,7 @@ describe("analyze operations", () => {
           "ArabicShaping.txt": "Arabic shaping data",
         },
         ".ucd-store.json": JSON.stringify({
-          "15.0.0": "15.0.0",
+          "15.0.0": { expectedFiles: [] },
         }),
       };
 
@@ -297,7 +297,7 @@ describe("analyze operations", () => {
       mockFetch([
         [["GET", "HEAD"], `${UCDJS_API_BASE_URL}/api/v1/files/.ucd-store.json`, () => {
           return HttpResponse.json({
-            "15.0.0": "15.0.0",
+            "15.0.0": { expectedFiles: [] },
           });
         }],
         ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions/15.0.0/file-tree`, () => {
@@ -358,7 +358,7 @@ describe("analyze operations", () => {
 
       assertCapability(customFS, "write");
       await customFS.write("/.ucd-store.json", JSON.stringify({
-        "15.0.0": "15.0.0",
+        "15.0.0": { expectedFiles: [] },
       }));
       await customFS.write("/15.0.0/ArabicShaping.txt", "Arabic shaping data");
 
@@ -411,7 +411,7 @@ describe("analyze operations", () => {
     const storeDir = await testdir({
       "15.0.0": {},
       ".ucd-store.json": JSON.stringify({
-        "15.0.0": "15.0.0",
+        "15.0.0": { expectedFiles: [] },
       }),
     });
 
@@ -444,7 +444,7 @@ describe("analyze operations", () => {
         "BidiBrackets.txt": "Bidi brackets data",
       },
       ".ucd-store.json": JSON.stringify({
-        "15.0.0": "15.0.0",
+        "15.0.0": { expectedFiles: [] },
       }),
     });
 
@@ -509,7 +509,7 @@ describe("analyze operations", () => {
         "test.txt": "This is an orphaned file",
       },
       ".ucd-store.json": JSON.stringify({
-        "15.0.0": "15.0.0",
+        "15.0.0": { expectedFiles: [] },
       }),
     });
 
