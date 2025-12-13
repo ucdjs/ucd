@@ -131,9 +131,11 @@ jobs:
     secrets:
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
       TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
-      # Note: When using reusable workflows, secrets must be explicitly passed from the caller,
-      # even when the called workflow uses an environment that has these secrets defined.
-      # This is expected behavior - reusable workflows don't automatically inherit environment secrets.
+      # Note: Secrets must be explicitly passed to reusable workflows. The reusable workflow's
+      # job uses environment "apps-deploy" which has CF_API_TOKEN and CF_ACCOUNT_ID defined,
+      # but those environment secrets are not accessible to the caller workflow. The caller
+      # accesses secrets from its own context (repository/organization/caller's environments),
+      # which must then be explicitly passed through. This is GitHub's security model for reusable workflows.
       # See: https://docs.github.com/en/actions/using-workflows/reusing-workflows#passing-secrets-to-nested-reusable-workflows
       CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
       CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
