@@ -29,6 +29,19 @@
       }
     ]
   },
+  "r2_buckets": [
+    {
+      "binding": "UCD_BUCKET",
+      "bucket_name": "ucdjs-data-local"
+    }
+  ],
+  "secrets_store_secrets": [
+    {
+      "binding": "UCDJS_TASK_API_KEY",
+      "secret_name": "UCDJS_TASK_API_KEY",
+      "store_id": "673d2913c9314d48a64b6d9e1894ed12"
+    }
+  ],
   "placement": { "mode": "smart" },
   "env": {
     "production": {
@@ -42,6 +55,19 @@
         "custom_domain": true,
         "pattern": "api.ucdjs.dev"
       },
+      "r2_buckets": [
+        {
+          "binding": "UCD_BUCKET",
+          "bucket_name": "ucdjs-data"
+        }
+      ],
+      "secrets_store_secrets": [
+        {
+          "binding": "UCDJS_TASK_API_KEY",
+          "secret_name": "UCDJS_TASK_API_KEY",
+          "store_id": "673d2913c9314d48a64b6d9e1894ed12"
+        }
+      ],
       "unsafe": {
         "bindings": [
           {
@@ -67,6 +93,19 @@
         "custom_domain": true,
         "pattern": "preview.api.ucdjs.dev"
       },
+      "r2_buckets": [
+        {
+          "binding": "UCD_BUCKET",
+          "bucket_name": "ucdjs-data-preview"
+        }
+      ],
+      "secrets_store_secrets": [
+        {
+          "binding": "UCDJS_TASK_API_KEY",
+          "secret_name": "UCDJS_TASK_API_KEY",
+          "store_id": "673d2913c9314d48a64b6d9e1894ed12"
+        }
+      ],
       "unsafe": {
         "bindings": [
           {
@@ -91,6 +130,19 @@
         "ENVIRONMENT": "testing",
         "API_VERSION": "x.y.z"
       },
+      "secrets_store_secrets": [
+        {
+          "binding": "UCDJS_TASK_API_KEY",
+          "secret_name": "UCDJS_TASK_API_KEY",
+          "store_id": "673d2913c9314d48a64b6d9e1894ed12"
+        }
+      ],
+      "r2_buckets": [
+        {
+          "binding": "UCD_BUCKET",
+          "bucket_name": "ucdjs-data-preview"
+        }
+      ],
       "unsafe": {
         "bindings": [
           {

@@ -223,6 +223,29 @@ export function badGateway(contextOrOptions: Context | ResponseOptions = {}, opt
   }) as any;
 }
 
+export function unauthorized(contextOrOptions: Context | ResponseOptions = {}, options: ResponseOptions = {}): Response & TypedResponse<ApiError, 401, "json"> {
+  let finalOptions: ResponseOptions;
+
+  if ("req" in contextOrOptions) {
+    finalOptions = options;
+  } else {
+    // It's options (legacy usage)
+    finalOptions = contextOrOptions;
+  }
+
+  return Response.json({
+    message: finalOptions.message || "Unauthorized",
+    status: 401,
+    timestamp: new Date().toISOString(),
+  } satisfies ApiError, {
+    status: 401,
+    headers: {
+      "Content-Type": "application/json",
+      ...finalOptions.headers,
+    },
+  }) as any;
+}
+
 export type CustomResponseOptions = Omit<Required<ResponseOptions>, "headers"> & {
   /**
    * Custom headers to include in the response.

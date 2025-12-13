@@ -29,6 +29,7 @@
     "@unicode-utils/core": "catalog:prod",
     "apache-autoindex-parse": "catalog:prod",
     "hono": "catalog:workers",
+    "nanotar": "catalog:dev",
     "zod": "catalog:prod"
   },
   "devDependencies": {
@@ -41,7 +42,6 @@
     "@ucdjs/moonbeam": "workspace:*",
     "eslint": "catalog:linting",
     "eslint-plugin-format": "catalog:linting",
-    "nanotar": "catalog:dev",
     "tsx": "catalog:dev",
     "typescript": "catalog:dev",
     "vitest": "catalog:testing",
