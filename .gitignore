@@ -37,7 +37,7 @@ dist
 .vitest-testdirs
 .cache
 tsconfig.test.vitest-temp.json
-data
+data/
 **/.ucd-files
 ucd-generated
 .vite-node
