@@ -61,8 +61,12 @@ jobs:
       - name: detect changed apps
         id: detect
         env:
-          TURBO_SCM_BASE: origin/main
+          # For push events: compare against the commit before this push
+          TURBO_SCM_BASE: HEAD~1
+          TURBO_SCM_HEAD: HEAD
         run: |
+          echo "Comparing changes between $TURBO_SCM_BASE and $TURBO_SCM_HEAD"
+
           # Get affected packages using turbo
           AFFECTED=$(pnpm turbo ls --affected --output=json)
 
