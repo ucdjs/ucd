@@ -105,6 +105,7 @@ TASKS_ROUTER.post("/refresh-manifest", async (c) => {
         // eslint-disable-next-line no-console
         console.log(`[tasks]: processing version ${file.name}`);
         const expectedFiles = await getExpectedFilesForVersion(file.name);
+        // @ts-expect-error We will fix this later.
         store[file.name] = { expectedFiles };
         totalFiles += expectedFiles.length;
       }),
