@@ -11,7 +11,8 @@ on:
         description: 'URL to trigger manifest refresh'
         required: false
         type: choice
-        options: &urls
+        # NOTE: Keep in sync with matrix.base_url below
+        options:
           - 'https://api.ucdjs.dev'
           - 'https://preview.api.ucdjs.dev'
 
@@ -24,7 +25,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        base_url: *urls
+        # NOTE: Keep in sync with inputs.base_url.options above
+        base_url: ${{ github.event_name == 'schedule' && fromJson('["https://api.ucdjs.dev", "https://preview.api.ucdjs.dev"]') || fromJson(format('["{0}"]', inputs.base_url)) }}
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
@@ -43,7 +45,6 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: generate manifest
-        if: github.event_name == 'schedule' || matrix.base_url == inputs.base_url
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         with:
           script: |
@@ -52,7 +53,6 @@ jobs:
             await generateManifest({ outputDir: 'manifest-output' });
 
       - name: Create and upload version tar files
-        if: github.event_name == 'schedule' || matrix.base_url == inputs.base_url
         run: |
           cd manifest-output
 
