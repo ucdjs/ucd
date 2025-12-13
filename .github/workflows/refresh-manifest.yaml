@@ -113,7 +113,7 @@ jobs:
             echo "Creating and uploading $tar_name..."
 
             # Create tar with the directory contents
-            tar -cvf "$tar_name" -C "$version_dir" .
+            tar -cf "$tar_name" -C "$version_dir" .
 
             response=$(curl -s -w "\n%{http_code}" -X POST \
               -H "X-UCDJS-Task-Key: ${{ secrets.TASK_API_KEY }}" \
