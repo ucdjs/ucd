@@ -32,7 +32,7 @@ V1_FILES_ROUTER.openapi(GET_UCD_STORE, async (c) => {
   // Keys look like: manifest/17.0.0/manifest.json
   const versions = new Set<string>();
   for (const obj of listResult.objects) {
-    const relativePath = obj.key.replace(STORE_MANIFEST_PREFIX, "");
+    const relativePath = obj.key.slice(STORE_MANIFEST_PREFIX.length);
     const version = relativePath.split("/")[0];
     if (version) {
       versions.add(version);
