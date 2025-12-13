@@ -3,6 +3,10 @@ name: deploy app
 on:
   workflow_call:
     inputs:
+      github_environment:
+        description: GitHub Environment name to use for deployment (for environment-scoped secrets & protection rules)
+        required: true
+        type: string
       environment:
         description: Deployment environment (production or preview)
         required: true
