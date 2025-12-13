@@ -4,6 +4,9 @@
 [![npm downloads][npm-downloads-src]][npm-downloads-href]
 [![codecov][codecov-src]][codecov-href]
 
+> [!IMPORTANT]
+> This is not fully stable yet. The API may change in minor releases.
+
 A simple, lightweight store for managing Unicode Character Database Files.
 
 ## Installation
