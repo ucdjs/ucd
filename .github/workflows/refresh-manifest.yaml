@@ -86,11 +86,18 @@ jobs:
             # Extract version from directory name (ucdjs-manifest-v16.0.0 -> 16.0.0)
             version="${dir_name#ucdjs-manifest-v}"
 
+            echo "Processing version $version..."
+            store_version_value=$(jq -r --arg v "$version" '.[$v] // empty' ../current-store.json)
+            echo "Store version data: $store_version_value"
+
+
             # Calculate SHA256 of the local manifest.json content
             local_sha=$(cat "$version_dir/manifest.json" | jq -cS '.' | sha256sum | cut -d' ' -f1)
 
             # Get the remote version data and calculate its SHA256
-            remote_sha=$(jq -cS --arg v "$version" '.[$v] // empty' ../current-store.json | sha256sum | cut -d' ' -f1)
+            remote_sha=$(echo "$store_version_value" | jq -cS '.' | sha256sum | cut -d' ' -f1)
+
+
 
             echo "Version $version: local=$local_sha remote=$remote_sha"
 
