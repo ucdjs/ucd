@@ -131,8 +131,9 @@ jobs:
     secrets:
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
       TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
-      # These are reported as not defined, but they need to be here?
-      # I think this is a GitHub bug or intentional behavior.
-      # Since in the deploy-app we are using a environment with has these secrets defined.
+      # Note: When using reusable workflows with environment secrets, GitHub requires these secrets
+      # to be explicitly passed from the caller workflow, even if they are defined in the environment.
+      # This is intentional and expected behavior per GitHub's security model.
+      # See: https://docs.github.com/en/actions/security-for-github-actions/security-guides/using-secrets-in-github-actions#using-secrets-in-a-workflow
       CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
       CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
