@@ -23,7 +23,8 @@ async function fetchFilesForUcdFolder(ucdFolder: string): Promise<string[]> {
       },
     });
 
-    return files;
+    // Sort for consistent ordering (important for checksum comparison)
+    return files.sort();
   } catch (error) {
     console.error(`Failed to fetch files for ${ucdFolder}:`, error);
     return [];
