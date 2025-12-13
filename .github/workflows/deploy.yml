@@ -97,9 +97,12 @@ jobs:
     if: |
       always() && (
         github.repository == 'ucdjs/ucd' &&
-        (github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.has-changes == 'true')
+        (
+          github.event_name == 'workflow_dispatch' ||
+          (github.event_name == 'push' && needs.detect-changes.outputs.has-changes == 'true')
+        )
       )
-    environment: apps-production
+    environment: apps-approval
     steps:
       - name: Approve production deployment
         run: echo "Production deployment approved"
@@ -108,19 +111,28 @@ jobs:
     needs:
       - detect-changes
       - production-approval
+    if: |
+      always() && (
+        needs.production-approval.result == 'success' &&
+        github.repository == 'ucdjs/ucd'
+      )
     permissions:
       contents: read
-    uses: ./.github/workflows/deploy-app.yml
+    uses: ./.github/workflows/reusable-deploy-app.yml
     with:
       environment: production
       cloudflare-env: production
       dry-run: ${{ github.event.inputs.dry-run == 'true' }}
       app: ${{ github.event.inputs.app || 'all' }}
+      changed-apps: ${{ github.event_name == 'push' && needs.detect-changes.outputs.changed-apps || '[]' }}
       include-pr-comment: false
       repository-condition: ${{ github.repository == 'ucdjs/ucd' }}
       extra-build-step: false
     secrets:
       TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
       TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+      # These are reported as not defined, but they need to be here?
+      # I think this is a GitHub bug or intentional behavior.
+      # Since in the deploy-app we are using a environment with has these secrets defined.
       CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
       CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}

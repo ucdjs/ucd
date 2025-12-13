@@ -17,9 +17,9 @@ on:
         default: false
         type: boolean
       app:
-        description: App to deploy (api, web, or both)
+        description: App to deploy (api, web, docs, or all)
         required: false
-        default: both
+        default: all
         type: string
       changed-apps:
         description: JSON array of apps affected by changes (from turbo)
@@ -48,11 +48,15 @@ on:
       TURBO_TEAM:
         description: Turbo team
         required: true
+
+      # These will come from the environment secrets.
+      # But if they aren't set here, they will not be available.
+      # This could very much be intentional by GitHub or a bug in their system.
       CF_API_TOKEN:
         description: Cloudflare API token
         required: true
       CF_ACCOUNT_ID:
-        description: Cloudflare account ID
+        description: Cloudflare Account ID
         required: true
 
 # remove default permissions of GITHUB_TOKEN for security
@@ -111,12 +115,12 @@ jobs:
           echo "Apps to deploy: $APPS_TO_DEPLOY"
           echo "apps=$APPS_TO_DEPLOY" >> "$GITHUB_OUTPUT"
 
-
   deploy:
     name: deploy app (${{ matrix.app }})
     runs-on: ubuntu-latest
     needs: get-apps
     if: ${{ inputs.repository-condition && fromJson(needs.get-apps.outputs.apps)[0] != null }}
+    environment: apps-deploy
     strategy:
       fail-fast: ${{ inputs.environment == 'production' }}
       matrix:
@@ -147,10 +151,13 @@ jobs:
       - name: build apps
         env:
           CLOUDFLARE_ENV: ${{ inputs.cloudflare-env }}
-        run: pnpm build:apps
+          APP_NAME: ${{ matrix.app }}
+        run: pnpm build:app
 
       - name: typecheck
-        run: pnpm run typecheck
+        env:
+          APP_NAME: ${{ matrix.app }}
+        run: pnpm typecheck:app
 
       - name: validate openapi
         if: matrix.app == 'api'
