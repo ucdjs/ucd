@@ -3,10 +3,6 @@ name: deploy app
 on:
   workflow_call:
     inputs:
-      github_environment:
-        description: GitHub Environment name to use for deployment (for environment-scoped secrets & protection rules)
-        required: true
-        type: string
       environment:
         description: Deployment environment (production or preview)
         required: true
@@ -132,22 +128,6 @@ jobs:
     permissions:
       contents: read
     steps:
-      - name: debug secrets availability
-        run: |
-          echo "Environment: ${{ inputs.github_environment }}"
-          if [ -n "${{ secrets.CF_API_TOKEN }}" ]; then
-            echo "CF_API_TOKEN is SET (length: ${#CF_API_TOKEN})"
-          else
-            echo "CF_API_TOKEN is EMPTY or NOT SET"
-          fi
-          if [ -n "${{ secrets.CF_ACCOUNT_ID }}" ]; then
-            echo "CF_ACCOUNT_ID is SET"
-          else
-            echo "CF_ACCOUNT_ID is EMPTY or NOT SET"
-          fi
-        env:
-          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           persist-credentials: false
