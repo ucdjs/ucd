@@ -46,11 +46,13 @@ jobs:
 
       - name: generate manifest
         uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
+        env:
+          BASE_URL: ${{ matrix.base_url }}
         with:
           script: |
-            const { default: generateManifest } = await import('${{ github.workspace }}/apps/api/scripts/generate-manifest.ts');
+            const { runGenerateManifest } = await import('${{ github.workspace }}/apps/api/scripts/generate-manifest.ts');
 
-            await generateManifest({ outputDir: 'manifest-output' });
+            await runGenerateManifest({ outputDir: 'manifest-output', apiBaseUrl: process.env.BASE_URL });
 
       - name: Fetch current store manifest
         id: fetch-store
