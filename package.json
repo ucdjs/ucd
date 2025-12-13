@@ -14,6 +14,7 @@
   "scripts": {
     "build": "turbo run build --filter \"./packages/*\" --concurrency=15",
     "build:apps": "turbo run build --filter \"./apps/*\"",
+    "build:app": "turbo run build --filter \"./apps/${APP_NAME}\"",
     "clean": "turbo run clean && git clean -xdf node_modules",
     "dev": "turbo watch dev --filter \"./packages/*\"",
     "dev:apps": "turbo run dev --filter \"./apps/*\"",
@@ -22,6 +23,8 @@
     "test:watch": "vitest",
     "test:ui": "vitest --ui",
     "typecheck": "turbo run typecheck",
+    "typecheck:apps": "turbo run typecheck --filter \"./apps/*\"",
+    "typecheck:app": "turbo run typecheck --filter \"./apps/${APP_NAME}\"",
     "release": "node ./scripts/release.ts prepare",
     "release:verify": "node ./scripts/release.ts verify",
     "release:publish": "node ./scripts/release.ts publish"
