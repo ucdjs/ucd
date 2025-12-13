@@ -1,0 +1,33 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ucdjs-dev",
+  "compatibility_date": "2025-07-30",
+  "main": "./worker/index.ts",
+  "vars": {
+    "ENVIRONMENT": "local"
+  },
+  "env": {
+    "production": {
+      "name": "ucdjs-dev",
+      "preview_urls": false,
+      "route": {
+        "custom_domain": true,
+        "pattern": "ucdjs.dev"
+      },
+      "vars": {
+        "ENVIRONMENT": "production"
+      }
+    },
+    "preview": {
+      "name": "ucdjs-dev-preview",
+      "preview_urls": false,
+      "route": {
+        "custom_domain": true,
+        "pattern": "preview.ucdjs.dev"
+      },
+      "vars": {
+        "ENVIRONMENT": "preview"
+      }
+    }
+  }
+}
