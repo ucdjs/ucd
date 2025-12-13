@@ -11,7 +11,7 @@ import { GET_UCD_STORE, METADATA_WILDCARD_ROUTE, WILDCARD_ROUTE } from "./openap
 
 export const V1_FILES_ROUTER = new OpenAPIHono<HonoEnv>().basePath(V1_FILES_ROUTER_BASE_PATH);
 
-const STORE_MANIFEST_KEY = "ucd-store-manifest.json";
+const STORE_MANIFEST_PREFIX = "manifest/";
 
 V1_FILES_ROUTER.openapi(GET_UCD_STORE, async (c) => {
   const bucket = c.env.UCD_BUCKET;
@@ -20,19 +20,59 @@ V1_FILES_ROUTER.openapi(GET_UCD_STORE, async (c) => {
     return badGateway(c);
   }
 
-  const object = await bucket.get(STORE_MANIFEST_KEY);
+  // List all version directories under the manifest prefix
+  const listResult = await bucket.list({ prefix: STORE_MANIFEST_PREFIX });
 
-  if (!object) {
-    console.error("[v1_files]: store manifest not found in bucket");
+  if (!listResult.objects.length) {
+    console.error("[v1_files]: no manifest versions found in bucket");
     return c.json({} satisfies UCDStoreManifest, 200);
   }
 
-  const manifest = await object.json<UCDStoreManifest>();
+  // Extract unique version directories from the object keys
+  // Keys look like: manifest/17.0.0/manifest.json
+  const versions = new Set<string>();
+  for (const obj of listResult.objects) {
+    const relativePath = obj.key.replace(STORE_MANIFEST_PREFIX, "");
+    const version = relativePath.split("/")[0];
+    if (version) {
+      versions.add(version);
+    }
+  }
 
-  return c.json(manifest, 200, {
+  // Fetch manifest.json for each version
+  const manifest: UCDStoreManifest = {};
+  let latestUploaded: Date | undefined;
+
+  await Promise.all(
+    Array.from(versions).map(async (version) => {
+      const key = `${STORE_MANIFEST_PREFIX}${version}/manifest.json`;
+      const object = await bucket.get(key);
+
+      if (object) {
+        try {
+          const data = await object.json<{ expectedFiles: string[] }>();
+          manifest[version] = data;
+
+          // Track the latest upload time for Last-Modified header
+          if (!latestUploaded || object.uploaded > latestUploaded) {
+            latestUploaded = object.uploaded;
+          }
+        } catch (error) {
+          console.error(`[v1_files]: failed to parse manifest for version ${version}:`, error);
+        }
+      }
+    }),
+  );
+
+  const headers: Record<string, string> = {
     "Cache-Control": "public, max-age=3600", // 1 hour cache
-    "Last-Modified": object.uploaded.toUTCString(),
-  });
+  };
+
+  if (latestUploaded) {
+    headers["Last-Modified"] = latestUploaded.toUTCString();
+  }
+
+  return c.json(manifest, 200, headers);
 });
 
 V1_FILES_ROUTER.openAPIRegistry.registerPath(WILDCARD_ROUTE);
