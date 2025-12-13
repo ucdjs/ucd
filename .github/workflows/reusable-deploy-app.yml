@@ -116,7 +116,7 @@ jobs:
           echo "apps=$APPS_TO_DEPLOY" >> "$GITHUB_OUTPUT"
 
   deploy:
-    name: deploy app (${{ matrix.app }})
+    name: deploy ${{ matrix.app }}
     runs-on: ubuntu-latest
     needs: get-apps
     if: ${{ inputs.repository-condition && fromJson(needs.get-apps.outputs.apps)[0] != null }}
@@ -209,7 +209,8 @@ jobs:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           # We use .output/server as working directory since Nitro outputs the Cloudflare Module build there
           # and we don't want to have issues, since we also have a wrangler config in the apps/web folder.
-          workingDirectory: ./apps/web/.output/server
+          # workingDirectory: ./apps/web/.output/server
+          workingDirectory: ./apps/web
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
 
       - name: deploy docs
