@@ -62,10 +62,13 @@ jobs:
       - name: detect changed apps
         id: detect
         env:
-          # For PRs: compare PR head against the base branch (what we're merging into)
-          TURBO_SCM_BASE: HEAD~1  # Previous commit
-          TURBO_SCM_HEAD: HEAD    # Current commit
+          # For 'opened': compare entire PR against base branch
+          # For 'synchronize': compare against previous PR head (only what changed in this push)
+          # github.event.before is empty on 'opened', so fall back to base.sha
+          TURBO_SCM_BASE: ${{ github.event.before || github.event.pull_request.base.sha }}
+          TURBO_SCM_HEAD: ${{ github.event.pull_request.head.sha }}
         run: |
+          echo "Event action: ${{ github.event.action }}"
           echo "Comparing changes between $TURBO_SCM_BASE and $TURBO_SCM_HEAD"
 
           # Get affected packages using turbo
