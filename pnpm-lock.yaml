@@ -308,6 +308,9 @@ importers:
       hono:
         specifier: catalog:workers
         version: 4.10.7
+      nanotar:
+        specifier: catalog:dev
+        version: 0.2.0
       zod:
         specifier: catalog:prod
         version: 4.1.13
@@ -339,9 +342,6 @@ importers:
       eslint-plugin-format:
         specifier: catalog:linting
         version: 1.1.0(eslint@9.39.1(jiti@2.6.1))
-      nanotar:
-        specifier: catalog:dev
-        version: 0.2.0
       tsx:
         specifier: catalog:dev
         version: 4.21.0
