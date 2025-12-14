@@ -343,6 +343,10 @@ export async function resolveComparisonMode({
   const fromLocalPath = join(context.basePath, fromVersion);
   const toLocalPath = join(context.basePath, toVersion);
 
+  // TODO: The `exists()` check doesn't distinguish between files and directories.
+  // If a file named after the version exists (e.g., a file named "16.0.0" instead of
+  // a directory), this would incorrectly return true. The fs-bridge interface currently
+  // lacks an `isDirectory()` or `stat()` method to properly validate this.
   const [fromExists, toExists] = await Promise.all([
     context.fs.exists(fromLocalPath),
     context.fs.exists(toLocalPath),
