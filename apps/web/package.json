@@ -19,6 +19,8 @@
     "@tanstack/react-router-ssr-query": "catalog:web",
     "@tanstack/react-start": "catalog:web",
     "@tanstack/router-plugin": "catalog:web",
+    "@base-ui/react": "catalog:web",
+    "@fontsource-variable/inter": "catalog:web",
     "lucide-react": "catalog:web",
     "nitro": "catalog:web",
     "react": "catalog:web",
@@ -26,7 +28,12 @@
     "tailwindcss": "catalog:web",
     "vite-tsconfig-paths": "catalog:web",
     "zod": "catalog:prod",
-    "@unicode-utils/core": "catalog:prod"
+    "@unicode-utils/core": "catalog:prod",
+    "class-variance-authority": "catalog:web",
+    "clsx": "catalog:web",
+    "shadcn": "catalog:web",
+    "tailwind-merge": "catalog:web",
+    "tw-animate-css": "catalog:web"
   },
   "devDependencies": {
     "@tanstack/devtools-vite": "catalog:web",
