@@ -12,12 +12,14 @@ const config = defineConfig({
     nitro({
       preset: "cloudflare_module",
       cloudflare: {
-        deployConfig: true,
+        // This is false because we can't use CF environments
+        // in redirected configs which is what this will use.
+        deployConfig: false,
         nodeCompat: true,
         wrangler: {
           "name": "ucdjs-dev",
-        }
-      }
+        },
+      },
     }),
     // this is the plugin that enables path aliases
     viteTsConfigPaths({
