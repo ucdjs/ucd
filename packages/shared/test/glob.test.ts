@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createGlobMatcher, DEFAULT_PICOMATCH_OPTIONS, matchGlob } from "../src/glob";
+import { createGlobMatcher, DEFAULT_PICOMATCH_OPTIONS, isValidGlobPattern, matchGlob, MAX_BRACE_ALTERNATIVES, MAX_NESTING_DEPTH, MAX_PATTERN_LENGTH } from "../src/glob";
 
 describe("glob", () => {
   // eslint-disable-next-line test/prefer-lowercase-title
@@ -114,6 +114,95 @@ describe("glob", () => {
       const caseSensitiveMatcher = createGlobMatcher("Uni*", { nocase: false });
       expect(caseSensitiveMatcher("UnicodeData.txt")).toBe(true);
       expect(caseSensitiveMatcher("unicodedata.txt")).toBe(false);
+    });
+  });
+
+  describe("isValidGlobPattern", () => {
+    it("should return true for valid simple patterns", () => {
+      expect(isValidGlobPattern("*.txt")).toBe(true);
+      expect(isValidGlobPattern("file.txt")).toBe(true);
+      expect(isValidGlobPattern("*")).toBe(true);
+      expect(isValidGlobPattern("?")).toBe(true);
+    });
+
+    it("should return true for valid patterns with brackets", () => {
+      expect(isValidGlobPattern("file[123].txt")).toBe(true);
+      expect(isValidGlobPattern("[a-z]*.txt")).toBe(true);
+      expect(isValidGlobPattern("file[!0-9].txt")).toBe(true);
+    });
+
+    it("should return true for valid patterns with braces", () => {
+      expect(isValidGlobPattern("*.{txt,xml}")).toBe(true);
+      expect(isValidGlobPattern("{foo,bar,baz}")).toBe(true);
+      expect(isValidGlobPattern("file.{txt,md,json}")).toBe(true);
+    });
+
+    it("should return true for valid complex patterns", () => {
+      expect(isValidGlobPattern("**/*.txt")).toBe(true);
+      expect(isValidGlobPattern("src/**/*.{ts,tsx}")).toBe(true);
+      expect(isValidGlobPattern("**/[A-Z]*.txt")).toBe(true);
+    });
+
+    it("should return false for empty patterns", () => {
+      expect(isValidGlobPattern("")).toBe(false);
+      expect(isValidGlobPattern("   ")).toBe(false);
+    });
+
+    it("should return true for patterns with special chars that are valid", () => {
+      // These are actually valid glob patterns
+      expect(isValidGlobPattern("Uni*")).toBe(true);
+      expect(isValidGlobPattern("*Data*")).toBe(true);
+      expect(isValidGlobPattern("*.{txt,xml,json}")).toBe(true);
+    });
+
+    describe("malicious pattern detection", () => {
+      it("should reject patterns that are too long", () => {
+        const longPattern = "a".repeat(MAX_PATTERN_LENGTH + 1);
+        const okPattern = "a".repeat(MAX_PATTERN_LENGTH);
+
+        expect.soft(isValidGlobPattern(longPattern)).toBe(false);
+        expect.soft(isValidGlobPattern(okPattern)).toBe(true);
+      });
+
+      it("should reject patterns with excessive consecutive wildcards", () => {
+        expect(isValidGlobPattern("****")).toBe(false);
+        expect(isValidGlobPattern("*****")).toBe(false);
+        expect(isValidGlobPattern("file****name")).toBe(false);
+
+        // ** (globstar) and *** should be allowed
+        expect(isValidGlobPattern("**")).toBe(true);
+        expect(isValidGlobPattern("***")).toBe(true);
+        expect(isValidGlobPattern("**/*.txt")).toBe(true);
+      });
+
+      it("should reject patterns with too many brace alternatives", () => {
+        const manyAlternatives = `{${Array.from({ length: MAX_BRACE_ALTERNATIVES + 1 }, (_, i) => String.fromCharCode(97 + i)).join(",")}}`;
+        const okAlternatives = `{${Array.from({ length: MAX_BRACE_ALTERNATIVES }, (_, i) => String.fromCharCode(97 + i)).join(",")}}`;
+
+        expect.soft(isValidGlobPattern(manyAlternatives)).toBe(false);
+        expect.soft(isValidGlobPattern(okAlternatives)).toBe(true);
+      });
+
+      it("should reject patterns with too deep nesting", () => {
+        const deeplyNested = `${"{a,".repeat(MAX_NESTING_DEPTH + 1)}x${"}".repeat(MAX_NESTING_DEPTH + 1)}`;
+        const okNesting = `${"{a,".repeat(MAX_NESTING_DEPTH)}x${"}".repeat(MAX_NESTING_DEPTH)}`;
+
+        expect.soft(isValidGlobPattern(deeplyNested)).toBe(false);
+        expect.soft(isValidGlobPattern(okNesting)).toBe(true);
+      });
+
+      it("should reject patterns with unbalanced brackets", () => {
+        expect(isValidGlobPattern("file[123.txt")).toBe(false);
+        expect(isValidGlobPattern("file{a,b.txt")).toBe(false);
+        expect(isValidGlobPattern("file(test.txt")).toBe(false);
+        expect(isValidGlobPattern("file]123.txt")).toBe(false);
+        expect(isValidGlobPattern("file}a,b.txt")).toBe(false);
+      });
+
+      it("should allow escaped special characters", () => {
+        expect(isValidGlobPattern("file\\[123\\].txt")).toBe(true);
+        expect(isValidGlobPattern("file\\{a,b\\}.txt")).toBe(true);
+      });
     });
   });
 });

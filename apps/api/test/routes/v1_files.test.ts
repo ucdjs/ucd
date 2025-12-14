@@ -525,6 +525,34 @@ describe("v1_files", () => {
       const content = await response.text();
       expect(content).toBe(mockFileContent);
     });
+
+    it("should return 400 for empty pattern", async () => {
+      const html = generateAutoIndexHtml([
+        { name: "UnicodeData.txt", path: "/Public/15.1.0/ucd/UnicodeData.txt", type: "file", lastModified: Date.now() },
+      ], "F2");
+
+      fetchMock.get("https://unicode.org")
+        .intercept({ path: "/Public/15.1.0/ucd?F=2" })
+        .reply(200, html, {
+          headers: { "content-type": "text/html; charset=utf-8" },
+        });
+
+      const request = new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd?pattern=");
+      const ctx = createExecutionContext();
+      const response = await worker.fetch(request, env, ctx);
+      await waitOnExecutionContext(ctx);
+
+      expect(response.status).toBe(200);
+      const result = await response.json();
+      expect(result).toEqual([
+        {
+          lastModified: 1765723380000,
+          name: "UnicodeData.txt",
+          path: "/Public/15.1.0/ucd/UnicodeData.txt",
+          type: "file",
+        },
+      ]);
+    });
   });
 
   // eslint-disable-next-line test/prefer-lowercase-title
