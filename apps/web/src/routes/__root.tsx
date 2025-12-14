@@ -49,8 +49,28 @@ function RootDocument({ children }: { children: React.ReactNode }) {
     <html lang="en">
       <head>
         <HeadContent />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+                function updateTheme(e) {
+                  if (e.matches) {
+                    document.documentElement.classList.add('dark');
+                  } else {
+                    document.documentElement.classList.remove('dark');
+                  }
+                }
+
+                updateTheme(mediaQuery);
+                mediaQuery.addEventListener('change', updateTheme);
+              })();
+            `,
+          }}
+        />
       </head>
-      <body className="bg-gradient-to-br from-gray-50 to-gray-100">
+      <body>
         {children}
         <TanStackDevtools
           config={{
