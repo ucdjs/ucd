@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { useSuspenseQuery } from '@tanstack/react-query'
+import { useSuspenseQuery, useQuery } from '@tanstack/react-query'
 import { ArrowRight, BookOpen, Grid3X3, Type } from 'lucide-react'
 
 import {
@@ -21,18 +21,24 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { versionsQueryOptions } from '@/apis/versions'
+import { versionsQueryOptions, versionDetailsQueryOptions } from '@/apis/versions'
 
 export const Route = createFileRoute('/v/$version/')({
   component: VersionPage,
-  loader: ({ context }) => {
+  loader: ({ context, params }) => {
     context.queryClient.ensureQueryData(versionsQueryOptions())
+    context.queryClient.ensureQueryData(versionDetailsQueryOptions(params.version))
   },
 })
+
+function formatNumber(num: number): string {
+  return num.toLocaleString()
+}
 
 function VersionPage() {
   const { version } = Route.useParams()
   const { data: versions } = useSuspenseQuery(versionsQueryOptions())
+  const { data: details } = useQuery(versionDetailsQueryOptions(version))
 
   const versionData = versions.find(v => v.version === version)
   const isLatest = versions[0]?.version === version
@@ -68,9 +74,9 @@ function VersionPage() {
         </div>
       </header>
 
-      <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-        {/* Version Header */}
-        <div className="flex flex-col gap-2 py-4">
+      <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
+        {/* Version Header - Compact */}
+        <div className="flex flex-col gap-3 py-4">
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold tracking-tight">
               Unicode {version}
@@ -82,20 +88,66 @@ function VersionPage() {
             )}
           </div>
           {versionData && (
-            <p className="text-muted-foreground">
-              Released {versionData.date} · {versionData.type === 'stable' ? 'Stable release' : versionData.type}
-            </p>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+              <span>Released {versionData.date}</span>
+              <span className="hidden sm:inline">·</span>
+              <span className="capitalize">{versionData.type}</span>
+              {versionData.documentationUrl && (
+                <>
+                  <span className="hidden sm:inline">·</span>
+                  <a
+                    href={versionData.documentationUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline inline-flex items-center gap-1"
+                  >
+                    <BookOpen className="size-3" />
+                    Docs
+                  </a>
+                </>
+              )}
+              <span className="hidden sm:inline">·</span>
+              <a
+                href={versionData.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                Source
+              </a>
+            </div>
           )}
-          {versionData?.documentationUrl && (
-            <a
-              href={versionData.documentationUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm text-primary hover:underline inline-flex items-center gap-1"
-            >
-              <BookOpen className="size-4" />
-              Official Documentation
-            </a>
+          {/* Version Statistics */}
+          {details && details.totalCharacters > 0 && (
+            <div className="flex flex-wrap gap-4 text-sm">
+              <div className="flex items-center gap-2 rounded-md bg-muted/50 px-3 py-1.5">
+                <span className="font-semibold">{formatNumber(details.totalCharacters)}</span>
+                <span className="text-muted-foreground">characters</span>
+                {details.newCharacters > 0 && (
+                  <span className="text-xs text-green-600 dark:text-green-400">
+                    (+{formatNumber(details.newCharacters)} new)
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-2 rounded-md bg-muted/50 px-3 py-1.5">
+                <span className="font-semibold">{formatNumber(details.totalBlocks)}</span>
+                <span className="text-muted-foreground">blocks</span>
+                {details.newBlocks > 0 && (
+                  <span className="text-xs text-green-600 dark:text-green-400">
+                    (+{details.newBlocks} new)
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-2 rounded-md bg-muted/50 px-3 py-1.5">
+                <span className="font-semibold">{formatNumber(details.totalScripts)}</span>
+                <span className="text-muted-foreground">scripts</span>
+                {details.newScripts > 0 && (
+                  <span className="text-xs text-green-600 dark:text-green-400">
+                    (+{details.newScripts} new)
+                  </span>
+                )}
+              </div>
+            </div>
           )}
         </div>
 
@@ -160,44 +212,6 @@ function VersionPage() {
             </Card>
           </div>
         </section>
-
-        {/* Version Info */}
-        {versionData && (
-          <section>
-            <h2 className="mb-4 text-lg font-semibold">Version Details</h2>
-            <Card>
-              <CardContent className="pt-6">
-                <dl className="grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <dt className="text-sm font-medium text-muted-foreground">Version</dt>
-                    <dd className="text-sm">{versionData.version}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm font-medium text-muted-foreground">Release Date</dt>
-                    <dd className="text-sm">{versionData.date}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm font-medium text-muted-foreground">Type</dt>
-                    <dd className="text-sm capitalize">{versionData.type}</dd>
-                  </div>
-                  <div>
-                    <dt className="text-sm font-medium text-muted-foreground">Data URL</dt>
-                    <dd className="text-sm">
-                      <a
-                        href={versionData.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline"
-                      >
-                        {versionData.url}
-                      </a>
-                    </dd>
-                  </div>
-                </dl>
-              </CardContent>
-            </Card>
-          </section>
-        )}
       </div>
     </>
   )
