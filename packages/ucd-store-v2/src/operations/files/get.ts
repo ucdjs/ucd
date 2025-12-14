@@ -27,6 +27,19 @@ export interface GetFileOptions extends SharedOperationOptions {
 }
 
 /**
+ * Internal options for getFileInternal with additional control properties
+ * @internal
+ */
+export interface GetFileInternalOptions extends GetFileOptions {
+  /**
+   * Skip version validation check.
+   * Use when the caller has already validated the version or is using API mode.
+   * @internal
+   */
+  skipVersionCheck?: boolean;
+}
+
+/**
  * Retrieves a specific file for a Unicode version from the local store.
  * By default, only reads files that are actually present in the store.
  * Optionally caches the file to local FS after fetching from API (if allowApi is enabled).
@@ -43,9 +56,24 @@ export async function getFile(
   filePath: string,
   options?: GetFileOptions,
 ): Promise<OperationResult<string, StoreError>> {
+  return getFileInternal(context, version, filePath, options);
+}
+
+/**
+ * Internal implementation for retrieving a file with additional control options.
+ * This function provides more granular control for internal operations like compare.
+ *
+ * @internal
+ */
+export async function getFileInternal(
+  context: InternalUCDStoreContext,
+  version: string,
+  filePath: string,
+  options?: GetFileInternalOptions,
+): Promise<OperationResult<string, StoreError>> {
   return tryCatch(async () => {
-    // Validate version exists in store
-    if (!context.versions.includes(version)) {
+    // Validate version exists in store (unless skipped)
+    if (!options?.skipVersionCheck && !context.versions.includes(version)) {
       throw new UCDStoreVersionNotFoundError(version);
     }
 
