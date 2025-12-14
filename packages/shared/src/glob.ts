@@ -210,8 +210,8 @@ export function isValidGlobPattern(pattern: string): boolean {
       continue;
     }
 
-    // Inside character classes [...], only ] is special (closes the class)
-    // All other chars including }, ), { are literals
+    // Inside character classes [...], only an unescaped ] is special (closes the class)
+    // All other chars including }, ), {, and , are literals
     if (inCharacterClass) {
       if (char === "]") {
         inCharacterClass = false;
@@ -241,9 +241,9 @@ export function isValidGlobPattern(pattern: string): boolean {
         maxTotalDepth = Math.max(maxTotalDepth, braceDepth + bracketDepth + parenDepth);
         break;
       case "}":
-        // Only count as closing a brace if we have an open brace
+        // Only count as closing a brace if we have an open brace and we're not inside parentheses
         // Otherwise picomatch treats it as a literal
-        if (braceDepth > 0) {
+        if (braceDepth > 0 && parenDepth === 0) {
           braceDepth--;
           // Pop the counter for this brace group
           braceAlternativesStack.pop();
@@ -262,8 +262,9 @@ export function isValidGlobPattern(pattern: string): boolean {
         }
         break;
       case ",":
-        // Only count commas that are inside a brace group (not inside parens/brackets)
-        if (braceAlternativesStack.length > 0) {
+        // Only count commas that are inside a brace group and not inside parentheses
+        // Commas inside parentheses (like regex groups) are not brace alternatives
+        if (braceAlternativesStack.length > 0 && parenDepth === 0) {
           // Increment the top of stack (current brace level)
           const currentLevel = braceAlternativesStack.length - 1;
           const newCount = braceAlternativesStack[currentLevel]! + 1;
