@@ -1,29 +1,29 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { useSuspenseQuery } from '@tanstack/react-query'
-import { ArrowRight, ExternalLink, Hash, Layers, Search } from 'lucide-react'
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { ArrowRight, ExternalLink, Hash, Layers, Search } from "lucide-react";
 
+import { versionsQueryOptions } from "@/apis/versions";
 import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbList,
   BreadcrumbPage,
-} from "@/components/ui/breadcrumb"
-import { Separator } from "@/components/ui/separator"
-import { SidebarTrigger } from "@/components/ui/sidebar"
-import { Button } from "@/components/ui/button"
-import { versionsQueryOptions } from '@/apis/versions'
+} from "@/components/ui/breadcrumb";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
-export const Route = createFileRoute('/')({
+export const Route = createFileRoute("/")({
   component: HomePage,
   loader: ({ context }) => {
-    context.queryClient.ensureQueryData(versionsQueryOptions())
+    context.queryClient.ensureQueryData(versionsQueryOptions());
   },
-})
+});
 
 function HomePage() {
-  const { data: versions } = useSuspenseQuery(versionsQueryOptions())
+  const { data: versions } = useSuspenseQuery(versionsQueryOptions());
 
-  const latestVersion = versions[0]
+  const latestVersion = versions[0];
 
   return (
     <>
@@ -66,18 +66,28 @@ function HomePage() {
 
         {/* Quick Actions - Compact */}
         <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm" nativeButton={false} render={
-            <Link to="/explorer">
-              <Search className="size-4" />
-              Character Explorer
-            </Link>
-          } />
-          <Button variant="outline" size="sm" nativeButton={false} render={
-            <a href="https://api.ucdjs.dev" target="_blank" rel="noopener noreferrer">
-              <ExternalLink className="size-4" />
-              API Reference
-            </a>
-          } />
+          <Button
+            variant="outline"
+            size="sm"
+            nativeButton={false}
+            render={(
+              <Link to="/explorer">
+                <Search className="size-4" />
+                Character Explorer
+              </Link>
+            )}
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            nativeButton={false}
+            render={(
+              <a href="https://api.ucdjs.dev" target="_blank" rel="noopener noreferrer">
+                <ExternalLink className="size-4" />
+                API Reference
+              </a>
+            )}
+          />
         </div>
 
         {/* Unicode Versions - Compact Grid */}
@@ -112,5 +122,5 @@ function HomePage() {
         </section>
       </div>
     </>
-  )
+  );
 }

@@ -1,7 +1,8 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { useSuspenseQuery, useQuery } from '@tanstack/react-query'
-import { ArrowRight, BookOpen, Grid3X3, Type } from 'lucide-react'
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { ArrowRight, BookOpen, Grid3X3, Type } from "lucide-react";
 
+import { versionDetailsQueryOptions, versionsQueryOptions } from "@/apis/versions";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -9,9 +10,8 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
-import { Separator } from "@/components/ui/separator"
-import { SidebarTrigger } from "@/components/ui/sidebar"
+} from "@/components/ui/breadcrumb";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -19,37 +19,37 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { versionsQueryOptions, versionDetailsQueryOptions } from '@/apis/versions'
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
-export const Route = createFileRoute('/v/$version/')({
+export const Route = createFileRoute("/v/$version/")({
   component: VersionPage,
   loader: ({ context, params }) => {
-    context.queryClient.ensureQueryData(versionsQueryOptions())
-    context.queryClient.ensureQueryData(versionDetailsQueryOptions(params.version))
+    context.queryClient.ensureQueryData(versionsQueryOptions());
+    context.queryClient.ensureQueryData(versionDetailsQueryOptions(params.version));
   },
-})
+});
 
 function formatNumber(num: number): string {
-  return num.toLocaleString()
+  return num.toLocaleString();
 }
 
 function VersionPage() {
-  const { version } = Route.useParams()
-  const { data: versions } = useSuspenseQuery(versionsQueryOptions())
-  const { data: details } = useQuery(versionDetailsQueryOptions(version))
+  const { version } = Route.useParams();
+  const { data: versions } = useSuspenseQuery(versionsQueryOptions());
+  const { data: details } = useQuery(versionDetailsQueryOptions(version));
 
-  const versionData = versions.find(v => v.version === version)
-  const isLatest = versions[0]?.version === version
+  const versionData = versions.find((v) => v.version === version);
+  const isLatest = versions[0]?.version === version;
 
   // Sample characters to showcase
   const sampleCharacters = [
-    { hex: '0041', name: 'Latin Capital Letter A' },
-    { hex: '03B1', name: 'Greek Small Letter Alpha' },
-    { hex: '4E2D', name: 'CJK Unified Ideograph (中)' },
-    { hex: '1F600', name: 'Grinning Face Emoji' },
-  ]
+    { hex: "0041", name: "Latin Capital Letter A" },
+    { hex: "03B1", name: "Greek Small Letter Alpha" },
+    { hex: "4E2D", name: "CJK Unified Ideograph (中)" },
+    { hex: "1F600", name: "Grinning Face Emoji" },
+  ];
 
   return (
     <>
@@ -67,7 +67,10 @@ function VersionPage() {
               </BreadcrumbItem>
               <BreadcrumbSeparator className="hidden md:block" />
               <BreadcrumbItem>
-                <BreadcrumbPage>Unicode {version}</BreadcrumbPage>
+                <BreadcrumbPage>
+                  Unicode
+                  {version}
+                </BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
@@ -79,7 +82,9 @@ function VersionPage() {
         <div className="flex flex-col gap-3 py-4">
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold tracking-tight">
-              Unicode {version}
+              Unicode
+              {" "}
+              {version}
             </h1>
             {isLatest && (
               <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
@@ -89,7 +94,10 @@ function VersionPage() {
           </div>
           {versionData && (
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-              <span>Released {versionData.date}</span>
+              <span>
+                Released
+                {versionData.date}
+              </span>
               <span className="hidden sm:inline">·</span>
               <span className="capitalize">{versionData.type}</span>
               {versionData.documentationUrl && (
@@ -125,7 +133,10 @@ function VersionPage() {
                 <span className="text-muted-foreground">characters</span>
                 {details.newCharacters > 0 && (
                   <span className="text-xs text-green-600 dark:text-green-400">
-                    (+{formatNumber(details.newCharacters)} new)
+                    (+
+                    {formatNumber(details.newCharacters)}
+                    {" "}
+                    new)
                   </span>
                 )}
               </div>
@@ -134,7 +145,10 @@ function VersionPage() {
                 <span className="text-muted-foreground">blocks</span>
                 {details.newBlocks > 0 && (
                   <span className="text-xs text-green-600 dark:text-green-400">
-                    (+{details.newBlocks} new)
+                    (+
+                    {details.newBlocks}
+                    {" "}
+                    new)
                   </span>
                 )}
               </div>
@@ -143,7 +157,10 @@ function VersionPage() {
                 <span className="text-muted-foreground">scripts</span>
                 {details.newScripts > 0 && (
                   <span className="text-xs text-green-600 dark:text-green-400">
-                    (+{details.newScripts} new)
+                    (+
+                    {details.newScripts}
+                    {" "}
+                    new)
                   </span>
                 )}
               </div>
@@ -171,12 +188,16 @@ function VersionPage() {
                 </p>
               </CardContent>
               <CardFooter>
-                <Button variant="outline" size="sm" render={
-                  <Link to="/v/$version/blocks" params={{ version }}>
-                    View Blocks
-                    <ArrowRight className="ml-1 size-4" />
-                  </Link>
-                } />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  render={(
+                    <Link to="/v/$version/blocks" params={{ version }}>
+                      View Blocks
+                      <ArrowRight className="ml-1 size-4" />
+                    </Link>
+                  )}
+                />
               </CardFooter>
             </Card>
 
@@ -200,10 +221,11 @@ function VersionPage() {
                       className="inline-flex items-center gap-1 px-2 py-1 text-sm bg-muted rounded-md hover:bg-muted/80 transition-colors"
                     >
                       <span className="font-mono text-xs text-muted-foreground">
-                        U+{char.hex}
+                        U+
+                        {char.hex}
                       </span>
                       <span className="text-lg">
-                        {String.fromCodePoint(parseInt(char.hex, 16))}
+                        {String.fromCodePoint(Number.parseInt(char.hex, 16))}
                       </span>
                     </Link>
                   ))}
@@ -214,5 +236,5 @@ function VersionPage() {
         </section>
       </div>
     </>
-  )
+  );
 }
