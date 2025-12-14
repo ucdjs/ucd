@@ -35,6 +35,7 @@
     "@vitejs/plugin-react": "catalog:web",
     "babel-plugin-react-compiler": "catalog:web",
     "typescript": "catalog:dev",
-    "vite": "catalog:web"
+    "vite": "catalog:web",
+    "wrangler": "catalog:workers"
   }
 }
