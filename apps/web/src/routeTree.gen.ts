@@ -11,9 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ExplorerIndexRouteImport } from './routes/explorer/index'
-import { Route as ExplorerFilesRouteImport } from './routes/explorer/files'
 import { Route as VVersionRouteRouteImport } from './routes/v/$version/route'
 import { Route as VVersionIndexRouteImport } from './routes/v/$version/index'
+import { Route as ExplorerFilesSplatRouteImport } from './routes/explorer/files.$'
 import { Route as VVersionBlocksIndexRouteImport } from './routes/v/$version/blocks/index'
 import { Route as VVersionUHexRouteImport } from './routes/v/$version/u/$hex'
 import { Route as VVersionBlocksIdRouteImport } from './routes/v/$version/blocks/$id'
@@ -28,11 +28,6 @@ const ExplorerIndexRoute = ExplorerIndexRouteImport.update({
   path: '/explorer/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ExplorerFilesRoute = ExplorerFilesRouteImport.update({
-  id: '/explorer/files',
-  path: '/explorer/files',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const VVersionRouteRoute = VVersionRouteRouteImport.update({
   id: '/v/$version',
   path: '/v/$version',
@@ -42,6 +37,11 @@ const VVersionIndexRoute = VVersionIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => VVersionRouteRoute,
+} as any)
+const ExplorerFilesSplatRoute = ExplorerFilesSplatRouteImport.update({
+  id: '/explorer/files/$',
+  path: '/explorer/files/$',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const VVersionBlocksIndexRoute = VVersionBlocksIndexRouteImport.update({
   id: '/blocks/',
@@ -62,8 +62,8 @@ const VVersionBlocksIdRoute = VVersionBlocksIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/v/$version': typeof VVersionRouteRouteWithChildren
-  '/explorer/files': typeof ExplorerFilesRoute
   '/explorer': typeof ExplorerIndexRoute
+  '/explorer/files/$': typeof ExplorerFilesSplatRoute
   '/v/$version/': typeof VVersionIndexRoute
   '/v/$version/blocks/$id': typeof VVersionBlocksIdRoute
   '/v/$version/u/$hex': typeof VVersionUHexRoute
@@ -71,8 +71,8 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/explorer/files': typeof ExplorerFilesRoute
   '/explorer': typeof ExplorerIndexRoute
+  '/explorer/files/$': typeof ExplorerFilesSplatRoute
   '/v/$version': typeof VVersionIndexRoute
   '/v/$version/blocks/$id': typeof VVersionBlocksIdRoute
   '/v/$version/u/$hex': typeof VVersionUHexRoute
@@ -82,8 +82,8 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/v/$version': typeof VVersionRouteRouteWithChildren
-  '/explorer/files': typeof ExplorerFilesRoute
   '/explorer/': typeof ExplorerIndexRoute
+  '/explorer/files/$': typeof ExplorerFilesSplatRoute
   '/v/$version/': typeof VVersionIndexRoute
   '/v/$version/blocks/$id': typeof VVersionBlocksIdRoute
   '/v/$version/u/$hex': typeof VVersionUHexRoute
@@ -94,8 +94,8 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/v/$version'
-    | '/explorer/files'
     | '/explorer'
+    | '/explorer/files/$'
     | '/v/$version/'
     | '/v/$version/blocks/$id'
     | '/v/$version/u/$hex'
@@ -103,8 +103,8 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/explorer/files'
     | '/explorer'
+    | '/explorer/files/$'
     | '/v/$version'
     | '/v/$version/blocks/$id'
     | '/v/$version/u/$hex'
@@ -113,8 +113,8 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/v/$version'
-    | '/explorer/files'
     | '/explorer/'
+    | '/explorer/files/$'
     | '/v/$version/'
     | '/v/$version/blocks/$id'
     | '/v/$version/u/$hex'
@@ -124,8 +124,8 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   VVersionRouteRoute: typeof VVersionRouteRouteWithChildren
-  ExplorerFilesRoute: typeof ExplorerFilesRoute
   ExplorerIndexRoute: typeof ExplorerIndexRoute
+  ExplorerFilesSplatRoute: typeof ExplorerFilesSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -144,13 +144,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ExplorerIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/explorer/files': {
-      id: '/explorer/files'
-      path: '/explorer/files'
-      fullPath: '/explorer/files'
-      preLoaderRoute: typeof ExplorerFilesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/v/$version': {
       id: '/v/$version'
       path: '/v/$version'
@@ -164,6 +157,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/v/$version/'
       preLoaderRoute: typeof VVersionIndexRouteImport
       parentRoute: typeof VVersionRouteRoute
+    }
+    '/explorer/files/$': {
+      id: '/explorer/files/$'
+      path: '/explorer/files/$'
+      fullPath: '/explorer/files/$'
+      preLoaderRoute: typeof ExplorerFilesSplatRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/v/$version/blocks/': {
       id: '/v/$version/blocks/'
@@ -210,8 +210,8 @@ const VVersionRouteRouteWithChildren = VVersionRouteRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   VVersionRouteRoute: VVersionRouteRouteWithChildren,
-  ExplorerFilesRoute: ExplorerFilesRoute,
   ExplorerIndexRoute: ExplorerIndexRoute,
+  ExplorerFilesSplatRoute: ExplorerFilesSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

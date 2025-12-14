@@ -38,17 +38,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   // Build navigation items from versions
   const navItems = React.useMemo(() => {
-    // if (isLoading || versions.length === 0) {
-    //   return [
-    //     {
-    //       title: "Versions",
-    //       url: "#",
-    //       icon: Layers,
-    //       isActive: true,
-    //       items: [],
-    //     },
-    //   ]
-    // }
+    if (isLoading || versions.length === 0) {
+      return [
+        {
+          title: "Versions",
+          url: "#",
+          icon: Layers,
+          isActive: true,
+          items: [],
+        },
+      ];
+    }
 
     return [
       {
