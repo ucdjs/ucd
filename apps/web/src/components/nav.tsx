@@ -1,23 +1,14 @@
-"use client"
-
-import { ChevronRight, type LucideIcon } from "lucide-react"
+import {
+  ChevronRight, type LucideIcon
+} from "lucide-react"
+import {
+  SidebarMenuButton, SidebarMenuItem, SidebarMenuLink, SidebarMenuSub, SidebarMenuSubButton, SidebarMenuSubItem
+} from "./ui/sidebar"
 import { Link } from "@tanstack/react-router"
-
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible"
-import {
-  SidebarGroup,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
-} from "@/components/ui/sidebar"
+  Collapsible, CollapsibleContent, CollapsibleTrigger
+} from "./ui/collapsible"
+import { Button } from "./ui/button"
 
 export interface NavItem {
   title: string
@@ -30,44 +21,22 @@ export interface NavItem {
   }[]
 }
 
-// Renders a link - handles both internal and external URLs
-function NavLink({
-  url,
-  children
-}: {
-  url: string
-  children: React.ReactNode
-}) {
-  if (url.startsWith('http')) {
-    return (
-      <a href={url} target="_blank" rel="noopener noreferrer">
-        {children}
-      </a>
-    )
-  }
-  return <Link to={url}>{children}</Link>
-}
-
-// Non-collapsible nav item - direct link
-function NavItemLink({ item }: { item: NavItem }) {
-  return (
+export function NavItem({ item }: { item: NavItem }) {
+  return (item.items == null || !item.items.length) ? (
     <SidebarMenuItem>
       <SidebarMenuButton
         tooltip={item.title}
-        render={
-          <NavLink url={item.url}>
-            {item.icon && <item.icon />}
-            <span>{item.title}</span>
-          </NavLink>
-        }
+        render={() => {
+          return (
+            <Link to={item.url}>
+              {item.icon && <item.icon />}
+              <span>{item.title}</span>
+            </Link>
+          )
+        }}
       />
     </SidebarMenuItem>
-  )
-}
-
-// Collapsible nav item with sub-items
-function NavItemCollapsible({ item }: { item: NavItem }) {
-  return (
+  ) : (
     <SidebarMenuItem className="group/collapsible">
       <Collapsible defaultOpen={item.isActive}>
         <CollapsibleTrigger
@@ -85,9 +54,9 @@ function NavItemCollapsible({ item }: { item: NavItem }) {
               <SidebarMenuSubItem key={subItem.title}>
                 <SidebarMenuSubButton
                   render={
-                    <NavLink url={subItem.url}>
+                    <Link to={subItem.url}>
                       <span>{subItem.title}</span>
-                    </NavLink>
+                    </Link>
                   }
                 />
               </SidebarMenuSubItem>

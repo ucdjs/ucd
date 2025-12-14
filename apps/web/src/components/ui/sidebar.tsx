@@ -695,6 +695,60 @@ function SidebarMenuSubButton({
   })
 }
 
+function SidebarMenuLink({
+  render,
+  isActive = false,
+  variant = "default",
+  size = "default",
+  tooltip,
+  className,
+  ...props
+}: useRender.ComponentProps<"a"> &
+  React.ComponentProps<"a"> & {
+    isActive?: boolean
+    tooltip?: string | React.ComponentProps<typeof TooltipContent>
+  } & VariantProps<typeof sidebarMenuButtonVariants>) {
+  const { isMobile, state } = useSidebar()
+  const comp = useRender({
+    defaultTagName: "a",
+    props: mergeProps<"a">(
+      {
+        className: cn(sidebarMenuButtonVariants({ variant, size }), className),
+      },
+      props
+    ),
+    render: !tooltip ? render : TooltipTrigger,
+    state: {
+      slot: "sidebar-menu-link",
+      sidebar: "menu-link",
+      size,
+      active: isActive,
+    },
+  })
+
+  if (!tooltip) {
+    return comp
+  }
+
+  if (typeof tooltip === "string") {
+    tooltip = {
+      children: tooltip,
+    }
+  }
+
+  return (
+    <Tooltip>
+      {comp}
+      <TooltipContent
+        side="right"
+        align="center"
+        hidden={state !== "collapsed" || isMobile}
+        {...tooltip}
+      />
+    </Tooltip>
+  )
+}
+
 export {
   Sidebar,
   SidebarContent,
@@ -710,6 +764,7 @@ export {
   SidebarMenuAction,
   SidebarMenuBadge,
   SidebarMenuButton,
+  SidebarMenuLink,
   SidebarMenuItem,
   SidebarMenuSkeleton,
   SidebarMenuSub,

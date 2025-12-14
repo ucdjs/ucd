@@ -44,6 +44,7 @@ function Button({
       data-slot="button"
       className={cn(buttonVariants({ variant, size, className }))}
       {...props}
+      x-native-button={String(props.nativeButton)}
     />
   )
 }

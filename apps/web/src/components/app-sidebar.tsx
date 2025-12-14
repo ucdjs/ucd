@@ -1,167 +1,118 @@
 "use client"
 
 import * as React from "react"
-import {
-  AudioWaveform,
-  BookOpen,
-  Bot,
-  Command,
-  Frame,
-  GalleryVerticalEnd,
-  Map,
-  PieChart,
-  Settings2,
-  SquareTerminal,
-} from "lucide-react"
+import { BookOpen, Search, Layers, ExternalLink } from "lucide-react"
+import { useQuery } from "@tanstack/react-query"
+import { Link } from "@tanstack/react-router"
 
-import { NavMain } from "@/components/nav-main"
 import {
   Sidebar,
   SidebarContent,
   SidebarHeader,
+  SidebarFooter,
   SidebarRail,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarGroup,
+  SidebarGroupLabel,
 } from "@/components/ui/sidebar"
+import { fetchVersions, versionsQueryOptions } from "@/apis/versions"
+import { NavItem } from "./nav"
 
-// This is sample data.
-const data = {
-  user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
-  },
-  teams: [
-    {
-      name: "Acme Inc",
-      logo: GalleryVerticalEnd,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
-    },
-  ],
-  navMain: [
-    {
-      title: "Playground",
-      url: "#",
-      icon: SquareTerminal,
-      isActive: true,
-      items: [
-        {
-          title: "History",
-          url: "#",
-        },
-        {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Models",
-      url: "#",
-      icon: Bot,
-      items: [
-        {
-          title: "Genesis",
-          url: "#",
-        },
-        {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Documentation",
-      url: "#",
-      icon: BookOpen,
-      items: [
-        {
-          title: "Introduction",
-          url: "#",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings2,
-      items: [
-        {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
-        },
-      ],
-    },
-  ],
-  projects: [
-    {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
-    },
-  ],
+function UcdLogo({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="15 15 70 70"
+      width="100%"
+      height="100%"
+      className={className}
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <rect x="20" y="20" width="60" height="60" rx="8" fill="#10B981" opacity="0.2" />
+      <path d="M35 40 L65 40 M35 50 L55 50 M35 60 L60 60" stroke="#059669" strokeWidth="6" strokeLinecap="round" />
+      <circle cx="70" cy="30" r="8" fill="#059669" opacity="0.8" />
+    </svg>
+  )
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { data: versions = [], isLoading } = useQuery(versionsQueryOptions())
+
+  // Build navigation items from versions
+  const navItems = React.useMemo(() => {
+    // if (isLoading || versions.length === 0) {
+    //   return [
+    //     {
+    //       title: "Versions",
+    //       url: "#",
+    //       icon: Layers,
+    //       isActive: true,
+    //       items: [],
+    //     },
+    //   ]
+    // }
+
+    return [
+      {
+        title: "Versions",
+        url: "#",
+        icon: Layers,
+        isActive: false,
+        items: versions.map((v) => ({
+          title: `Unicode ${v.version}`,
+          url: `/v/${v.version}`,
+        })),
+      },
+      {
+        title: "Explorer",
+        url: "/explorer",
+        icon: Search,
+      },
+    ]
+  }, [versions, isLoading])
+
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader>
-        <h1>UCD.js</h1>
+      <SidebarHeader className="p-4">
+        <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+          <UcdLogo className="size-10 shrink-0" />
+          <div className="grid text-left leading-tight group-data-[collapsible=icon]:hidden">
+            <h2 className="font-semibold text-base">UCD.js</h2>
+            <span className="text-xs text-muted-foreground">Unicode Database</span>
+          </div>
+        </Link>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        {/* <NavProjects projects={data.projects} /> */}
+        <SidebarGroup>
+          <SidebarMenu>
+            {navItems.map((item) => <NavItem key={item.title} item={item} />)}
+          </SidebarMenu>
+        </SidebarGroup>
       </SidebarContent>
+      <SidebarFooter>
+        <SidebarGroup>
+          <SidebarGroupLabel>Documentation</SidebarGroupLabel>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton render={
+                <Link to="/">
+                  <BookOpen className="size-4" />
+                  <span>Getting Started</span>
+                </Link>
+              } />
+            </SidebarMenuItem>
+            <SidebarMenuItem>
+              <SidebarMenuButton render={
+                <a href="https://api.ucdjs.dev" target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="size-4" />
+                  <span>API Reference</span>
+                </a>
+              } />
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarGroup>
+      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   )
