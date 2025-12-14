@@ -8,3 +8,7 @@ export { FileExplorer } from "./file-explorer";
 export type { FileExplorerProps } from "./file-explorer";
 export { FileViewer } from "./file-viewer";
 export type { FileViewerProps } from "./file-viewer";
+export { NON_RENDERABLE_EXTENSIONS, NonRenderableFile } from "./non-renderable-file";
+export type { NonRenderableFileProps } from "./non-renderable-file";
+export { ParentDirectory } from "./parent-directory";
+export type { ParentDirectoryProps } from "./parent-directory";

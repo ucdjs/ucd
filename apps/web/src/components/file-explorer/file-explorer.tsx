@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { DirectoryItem } from "./directory";
 import { ExplorerToolbar } from "./explorer-toolbar";
 import { FileItem } from "./file";
+import { ParentDirectory } from "./parent-directory";
 
 export interface FileExplorerProps {
   files: FileEntry[];
@@ -103,6 +104,7 @@ export function FileExplorer({ files, currentPath, isLoading }: FileExplorerProp
                   : "flex flex-col rounded-lg border border-border overflow-hidden",
               )}
             >
+              <ParentDirectory currentPath={currentPath} viewMode={viewMode} />
               {directories.map((dir) => (
                 <DirectoryItem
                   key={dir.path}
