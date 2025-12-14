@@ -199,8 +199,6 @@ jobs:
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
           vars: API_VERSION
 
-      # when using @cloudflare/vite-plugin we can't make use of the `environment` option,
-      # and if we use and empty string it will also fail due to multiple environments being defined
       - name: deploy web
         id: deploy-web
         if: ${{ !inputs.dry-run && matrix.app == 'web' }}
