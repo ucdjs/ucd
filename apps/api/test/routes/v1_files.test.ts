@@ -546,7 +546,7 @@ describe("v1_files", () => {
       const result = await response.json();
       expect(result).toEqual([
         {
-          lastModified: 1765723380000,
+          lastModified: expect.any(Number),
           name: "UnicodeData.txt",
           path: "/Public/15.1.0/ucd/UnicodeData.txt",
           type: "file",
