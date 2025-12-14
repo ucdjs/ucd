@@ -14,6 +14,26 @@ export const V1_FILES_ROUTER = new OpenAPIHono<HonoEnv>().basePath(V1_FILES_ROUT
 
 const STORE_MANIFEST_PREFIX = "manifest/";
 
+function isInvalidPath(raw: string): boolean {
+  const lower = raw.toLowerCase();
+  // Reject encoded double slashes and dot-dot in any position (encoded or plain)
+  if (
+    raw.startsWith("..")
+    || raw.includes("//")
+    || lower.startsWith("%2e%2e")
+    || lower.includes("%2f%2f")
+  ) {
+    return true;
+  }
+
+  const decoded = decodePathSafely(raw);
+  if (decoded.split("/").includes("..")) {
+    return true;
+  }
+
+  return false;
+}
+
 V1_FILES_ROUTER.openapi(GET_UCD_STORE, async (c) => {
   const bucket = c.env.UCD_BUCKET;
   if (!bucket) {
@@ -89,23 +109,11 @@ V1_FILES_ROUTER.openapi(SEARCH_ROUTE, async (c) => {
     });
   }
 
-  // Validate basePath
-  const raw = basePath;
-  const lower = raw.toLowerCase();
-  if (
-    raw.startsWith("..")
-    || raw.includes("//")
-    || lower.startsWith("%2e%2e")
-    || lower.includes("%2f%2f")
-  ) {
+  // Validate basePath for path traversal attacks
+  if (isInvalidPath(basePath)) {
     return badRequest({
       message: "Invalid path",
     });
-  }
-
-  const decoded = decodePathSafely(raw);
-  if (decoded.split("/").includes("..")) {
-    return badRequest({ message: "Invalid path" });
   }
 
   const normalizedPath = basePath.replace(/^\/+|\/+$/g, "");
@@ -168,24 +176,11 @@ V1_FILES_ROUTER.get("/:wildcard{.*}?", cache({
 }), async (c) => {
   const path = c.req.param("wildcard")?.trim() || "";
 
-  const raw = path;
-  const lower = raw.toLowerCase();
-  // reject encoded double slashes and dot-dot in any position (encoded or plain)
-  if (
-    raw.startsWith("..")
-    || raw.includes("//")
-    || lower.startsWith("%2e%2e")
-    || lower.includes("%2f%2f")
-  ) {
+  // Validate path for path traversal attacks
+  if (isInvalidPath(path)) {
     return badRequest({
       message: "Invalid path",
     });
-  }
-
-  const decoded = decodePathSafely(raw);
-
-  if (decoded.split("/").includes("..")) {
-    return badRequest({ message: "Invalid path" });
   }
 
   const normalizedPath = path.replace(/^\/+|\/+$/g, "");
