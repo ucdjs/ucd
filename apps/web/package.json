@@ -33,7 +33,8 @@
     "clsx": "catalog:web",
     "shadcn": "catalog:web",
     "tailwind-merge": "catalog:web",
-    "tw-animate-css": "catalog:web"
+    "tw-animate-css": "catalog:web",
+    "@ucdjs/schemas": "workspace:*"
   },
   "devDependencies": {
     "@tanstack/devtools-vite": "catalog:web",
