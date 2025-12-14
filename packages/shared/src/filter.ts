@@ -1,5 +1,6 @@
 import type { PicomatchOptions } from "picomatch";
 import picomatch from "picomatch";
+import { DEFAULT_PICOMATCH_OPTIONS } from "./glob";
 
 /**
  * Predefined filter patterns for common file exclusions.
@@ -136,8 +137,7 @@ function internal__createFilterFunction(config: PathFilterOptions): PathFilterFn
     const normalizedPath = path.replace(/\\/g, "/").replace(/^\.\//, "");
 
     return picomatch.isMatch(normalizedPath, includePatterns, {
-      dot: true,
-      nocase: true,
+      ...DEFAULT_PICOMATCH_OPTIONS,
       ignore: excludePatterns,
     } satisfies PicomatchOptions);
   };
