@@ -5,12 +5,12 @@ export const WILDCARD_PARAM_DOCS = dedent`
 
     ## Path Format Options
 
-    | Pattern | Description | Example |
-    |---------|-------------|---------|
-    | \`{version}/ucd/{filename}\` | UCD files for specific version | \`15.1.0/ucd/UnicodeData.txt\` |
-    | \`{version}/ucd/{sub}/{file}\` | Files in subdirectories | \`15.1.0/ucd/emoji/emoji-data.txt\` |
-    | \`{version}\` | List files for version | \`15.1.0\` |
-    | \`latest/ucd/{filename}\` | Latest version of file | \`latest/ucd/PropList.txt\` |
+    | Pattern                        | Description                    | Example                             |
+    |--------------------------------|--------------------------------|-------------------------------------|
+    | \`{version}/ucd/{filename}\`   | UCD files for specific version | \`15.1.0/ucd/UnicodeData.txt\`      |
+    | \`{version}/ucd/{sub}/{file}\` | Files in subdirectories        | \`15.1.0/ucd/emoji/emoji-data.txt\` |
+    | \`{version}\`                  | List files for version         | \`15.1.0\`                          |
+    | \`latest/ucd/{filename}\`      | Latest version of file         | \`latest/ucd/PropList.txt\`         |
 `;
 
 export const PATTERN_PARAM_DOCS = dedent`
@@ -19,12 +19,12 @@ export const PATTERN_PARAM_DOCS = dedent`
 
   ## Supported Glob Syntax
 
-  | Pattern | Description | Example |
-  |---------|-------------|---------|
-  | \`*\` | Match any characters (except path separators) | \`*.txt\` matches \`file.txt\` |
-  | \`?\` | Match a single character | \`file?.txt\` matches \`file1.txt\` |
-  | \`{a,b}\` | Match any of the patterns | \`*.{txt,xml}\` matches \`file.txt\` or \`file.xml\` |
-  | \`[abc]\` | Match any character in the set | \`file[123].txt\` matches \`file1.txt\` |
+  | Pattern   | Description                                   | Example                                              |
+  |-----------|-----------------------------------------------|------------------------------------------------------|
+  | \`*\`     | Match any characters (except path separators) | \`*.txt\` matches \`file.txt\`                       |
+  | \`?\`     | Match a single character                      | \`file?.txt\` matches \`file1.txt\`                  |
+  | \`{a,b}\` | Match any of the patterns                     | \`*.{txt,xml}\` matches \`file.txt\` or \`file.xml\` |
+  | \`[abc]\` | Match any character in the set                | \`file[123].txt\` matches \`file1.txt\`              |
 
   ## Examples
 
@@ -51,11 +51,11 @@ export const SEARCH_ROUTE_DOCS = dedent`
   - \`come/\` (directory)
   - \`computer.txt\` (file)
 
-  | Query | Result |
-  |-------|--------|
-  | \`com\` | \`computer.txt\` (file matches first) |
-  | \`come\` | \`come/\` (exact directory match) |
-  | \`comp\` | \`computer.txt\` |
+  | Query    | Result                                         |
+  |----------|------------------------------------------------|
+  | \`com\`  | \`computer.txt\` (file), \`come/\` (directory) |
+  | \`come\` | \`come/\` (exact directory match)              |
+  | \`comp\` | \`computer.txt\`                               |
 
   > [!NOTE]
   > If no entries match the query, an empty array is returned with a 200 status.
