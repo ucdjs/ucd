@@ -184,11 +184,16 @@ export function isValidGlobPattern(pattern: string): boolean {
   }
 
   // Check nesting depth and brace alternatives
-  let depth = 0;
-  let maxDepth = 0;
   // Stack of alternative counters for nested brace groups
   const braceAlternativesStack: number[] = [];
+  // Track nesting depth for each bracket type separately
+  let braceDepth = 0;
+  let bracketDepth = 0;
+  let parenDepth = 0;
+  let maxTotalDepth = 0;
   let escaped = false;
+  // Track if we're inside a character class [...] where special chars are literal
+  let inCharacterClass = false;
 
   for (let i = 0; i < pattern.length; i++) {
     const char = pattern[i];
@@ -205,37 +210,59 @@ export function isValidGlobPattern(pattern: string): boolean {
       continue;
     }
 
+    // Inside character classes [...], only ] is special (closes the class)
+    // All other chars including }, ), { are literals
+    if (inCharacterClass) {
+      if (char === "]") {
+        inCharacterClass = false;
+        bracketDepth--;
+        if (bracketDepth < 0) {
+          return false;
+        }
+      }
+      // Skip all other characters inside character class
+      continue;
+    }
+
     switch (char) {
       case "{":
-        depth++;
-        maxDepth = Math.max(maxDepth, depth);
+        braceDepth++;
+        maxTotalDepth = Math.max(maxTotalDepth, braceDepth + bracketDepth + parenDepth);
         // Push a new counter for this brace group (starts at 1 alternative)
         braceAlternativesStack.push(1);
         break;
       case "[":
+        bracketDepth++;
+        maxTotalDepth = Math.max(maxTotalDepth, braceDepth + bracketDepth + parenDepth);
+        inCharacterClass = true;
+        break;
       case "(":
-        depth++;
-        maxDepth = Math.max(maxDepth, depth);
+        parenDepth++;
+        maxTotalDepth = Math.max(maxTotalDepth, braceDepth + bracketDepth + parenDepth);
         break;
       case "}":
-        depth--;
-        // Pop the counter for this brace group
-        braceAlternativesStack.pop();
-        // Unbalanced brackets
-        if (depth < 0) {
-          return false;
+        // Only count as closing a brace if we have an open brace
+        // Otherwise picomatch treats it as a literal
+        if (braceDepth > 0) {
+          braceDepth--;
+          // Pop the counter for this brace group
+          braceAlternativesStack.pop();
         }
         break;
       case "]":
+        // ] outside of character class - picomatch treats as literal if no open [
+        if (bracketDepth > 0) {
+          bracketDepth--;
+        }
+        break;
       case ")":
-        depth--;
-        // Unbalanced brackets
-        if (depth < 0) {
-          return false;
+        // ) without matching ( - picomatch treats as literal
+        if (parenDepth > 0) {
+          parenDepth--;
         }
         break;
       case ",":
-        // Only count commas that are inside a brace group
+        // Only count commas that are inside a brace group (not inside parens/brackets)
         if (braceAlternativesStack.length > 0) {
           // Increment the top of stack (current brace level)
           const currentLevel = braceAlternativesStack.length - 1;
@@ -250,12 +277,12 @@ export function isValidGlobPattern(pattern: string): boolean {
   }
 
   // Check for unclosed brackets
-  if (depth !== 0) {
+  if (braceDepth !== 0 || bracketDepth !== 0 || parenDepth !== 0) {
     return false;
   }
 
   // Check max nesting depth
-  if (maxDepth > MAX_NESTING_DEPTH) {
+  if (maxTotalDepth > MAX_NESTING_DEPTH) {
     return false;
   }
 
