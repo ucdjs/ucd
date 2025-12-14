@@ -186,45 +186,62 @@ export function isValidGlobPattern(pattern: string): boolean {
   // Check nesting depth and brace alternatives
   let depth = 0;
   let maxDepth = 0;
-  let braceAlternatives = 0;
-  let inBrace = false;
+  // Stack of alternative counters for nested brace groups
+  const braceAlternativesStack: number[] = [];
+  let escaped = false;
 
   for (let i = 0; i < pattern.length; i++) {
     const char = pattern[i];
-    const prevChar = i > 0 ? pattern[i - 1] : "";
 
-    // Skip escaped characters
-    if (prevChar === "\\") {
+    // Handle escape sequences: toggle escaped on each backslash
+    if (char === "\\") {
+      escaped = !escaped;
+      continue;
+    }
+
+    // If this character is escaped, skip it and clear escaped flag
+    if (escaped) {
+      escaped = false;
       continue;
     }
 
     switch (char) {
       case "{":
+        depth++;
+        maxDepth = Math.max(maxDepth, depth);
+        // Push a new counter for this brace group (starts at 1 alternative)
+        braceAlternativesStack.push(1);
+        break;
       case "[":
       case "(":
         depth++;
         maxDepth = Math.max(maxDepth, depth);
-        if (char === "{") {
-          inBrace = true;
-          braceAlternatives = 1; // Start counting alternatives
-        }
         break;
       case "}":
+        depth--;
+        // Pop the counter for this brace group
+        braceAlternativesStack.pop();
+        // Unbalanced brackets
+        if (depth < 0) {
+          return false;
+        }
+        break;
       case "]":
       case ")":
         depth--;
-        if (char === "}") {
-          inBrace = false;
-        }
         // Unbalanced brackets
         if (depth < 0) {
           return false;
         }
         break;
       case ",":
-        if (inBrace) {
-          braceAlternatives++;
-          if (braceAlternatives > MAX_BRACE_ALTERNATIVES) {
+        // Only count commas that are inside a brace group
+        if (braceAlternativesStack.length > 0) {
+          // Increment the top of stack (current brace level)
+          const currentLevel = braceAlternativesStack.length - 1;
+          const newCount = braceAlternativesStack[currentLevel]! + 1;
+          braceAlternativesStack[currentLevel] = newCount;
+          if (newCount > MAX_BRACE_ALTERNATIVES) {
             return false;
           }
         }

@@ -203,6 +203,37 @@ describe("glob", () => {
         expect(isValidGlobPattern("file\\[123\\].txt")).toBe(true);
         expect(isValidGlobPattern("file\\{a,b\\}.txt")).toBe(true);
       });
+
+      it("should handle consecutive backslashes correctly", () => {
+        // \\\\ is two escaped backslashes, so the { is NOT escaped
+        // This pattern has 6 alternatives which exceeds MAX_BRACE_ALTERNATIVES (5)
+        expect(isValidGlobPattern("\\\\{a,b,c,d,e,f}")).toBe(false);
+
+        // Single backslash escapes the brace - both braces must be escaped for balanced pattern
+        expect(isValidGlobPattern("\\{a,b,c,d,e,f}")).toBe(false);
+
+        // \\\\ + \{ = escaped backslash + escaped brace (both braces escaped)
+        expect(isValidGlobPattern("\\\\\\{a,b,c,d,e,f\\}")).toBe(true);
+      });
+
+      it("should count alternatives per brace level independently (nested braces)", () => {
+        // Outer brace has 2 alternatives, inner has 5 alternatives - should be valid
+        expect(isValidGlobPattern("{a{b,c,d,e,f},g}")).toBe(true);
+
+        // Outer brace has 2 alternatives, inner has 6 alternatives - should be invalid
+        expect(isValidGlobPattern("{a{b,c,d,e,f,g},h}")).toBe(false);
+
+        // Both levels at max (5 alternatives each)
+        expect(isValidGlobPattern("{a{1,2,3,4,5},b,c,d,e}")).toBe(true);
+      });
+
+      it("should count alternatives independently for sequential brace groups", () => {
+        // Two sequential groups, each with 5 alternatives - should be valid
+        expect(isValidGlobPattern("{a,b,c,d,e}{f,g,h,i,j}")).toBe(true);
+
+        // First group valid, second exceeds limit - should be invalid
+        expect(isValidGlobPattern("{a,b,c,d,e}{f,g,h,i,j,k}")).toBe(false);
+      });
     });
   });
 });
