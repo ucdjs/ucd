@@ -1,12 +1,12 @@
 {
-  "name": "web",
-  "private": true,
+  "name": "@ucdjs/web",
   "type": "module",
+  "private": true,
+  "packageManager": "pnpm@10.25.0",
   "scripts": {
     "dev": "vite dev --port 3000",
     "build": "vite build",
-    "preview": "vite preview",
-    "test": "vitest run"
+    "preview": "vite preview"
   },
   "dependencies": {
     "@tailwindcss/vite": "catalog:web",
