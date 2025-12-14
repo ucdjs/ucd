@@ -16,9 +16,6 @@ const config = defineConfig({
         // in redirected configs which is what this will use.
         deployConfig: false,
         nodeCompat: true,
-        wrangler: {
-          "name": "ucdjs-dev",
-        },
       },
     }),
     // this is the plugin that enables path aliases
