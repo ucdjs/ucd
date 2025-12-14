@@ -526,7 +526,7 @@ describe("v1_files", () => {
       expect(content).toBe(mockFileContent);
     });
 
-    it("should return 400 for empty pattern", async () => {
+    it("should return 200 for empty pattern", async () => {
       const html = generateAutoIndexHtml([
         { name: "UnicodeData.txt", path: "/Public/15.1.0/ucd/UnicodeData.txt", type: "file", lastModified: Date.now() },
       ], "F2");
