@@ -13,6 +13,62 @@ export const WILDCARD_PARAM_DOCS = dedent`
     | \`latest/ucd/{filename}\` | Latest version of file | \`latest/ucd/PropList.txt\` |
 `;
 
+export const PATTERN_PARAM_DOCS = dedent`
+  A glob pattern to filter directory listing results by filename. Only applies when the response is a directory listing.
+  The matching is **case-insensitive**.
+
+  ## Supported Glob Syntax
+
+  | Pattern | Description | Example |
+  |---------|-------------|---------|
+  | \`*\` | Match any characters (except path separators) | \`*.txt\` matches \`file.txt\` |
+  | \`?\` | Match a single character | \`file?.txt\` matches \`file1.txt\` |
+  | \`{a,b}\` | Match any of the patterns | \`*.{txt,xml}\` matches \`file.txt\` or \`file.xml\` |
+  | \`[abc]\` | Match any character in the set | \`file[123].txt\` matches \`file1.txt\` |
+
+  ## Examples
+
+  - \`*.txt\` - Match all text files
+  - \`Uni*\` - Match files starting with "Uni" (e.g., UnicodeData.txt)
+  - \`*Data*\` - Match files containing "Data"
+  - \`*.{txt,xml}\` - Match text or XML files
+`;
+
+export const SEARCH_ROUTE_DOCS = dedent`
+  Search for files and directories within a path. This endpoint performs a **prefix-based search** on entry names.
+
+  ## Search Behavior
+
+  The search is **case-insensitive** and matches entries where the name **starts with** the query string.
+
+  Results are sorted with **files first**, followed by **directories**. This prioritization means:
+  - If your query matches both files and directories, files appear first
+  - Within each group (files/directories), results maintain their original order
+
+  ## Example
+
+  Given a directory with:
+  - \`come/\` (directory)
+  - \`computer.txt\` (file)
+
+  | Query | Result |
+  |-------|--------|
+  | \`com\` | \`computer.txt\` (file matches first) |
+  | \`come\` | \`come/\` (exact directory match) |
+  | \`comp\` | \`computer.txt\` |
+
+  > [!NOTE]
+  > If no entries match the query, an empty array is returned with a 200 status.
+`;
+
+export const SEARCH_QUERY_PARAM_DOCS = dedent`
+  The search query string. Entries are matched if their name **starts with** this value (case-insensitive).
+`;
+
+export const SEARCH_PATH_PARAM_DOCS = dedent`
+  The base path to search within. If not provided, searches from the root of the Unicode Public directory.
+`;
+
 export const WILDCARD_ROUTE_DOCS = dedent`
   This endpoint proxies your request directly to Unicode.org, allowing you to access any file or directory under the Unicode Public directory structure with only slight [modifications](#tag/files/get/api/v1/files/{wildcard}/description/modifications).
 

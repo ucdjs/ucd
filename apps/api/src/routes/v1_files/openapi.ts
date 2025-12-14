@@ -6,6 +6,10 @@ import { cache } from "hono/cache";
 import { MAX_AGE_ONE_WEEK_SECONDS } from "../../constants";
 import { generateReferences, OPENAPI_TAGS } from "../../openapi";
 import {
+  PATTERN_PARAM_DOCS,
+  SEARCH_PATH_PARAM_DOCS,
+  SEARCH_QUERY_PARAM_DOCS,
+  SEARCH_ROUTE_DOCS,
   WILDCARD_HEAD_ROUTE_DOCS,
   WILDCARD_PARAM_DOCS,
   WILDCARD_ROUTE_DOCS,
@@ -36,6 +40,34 @@ const WILDCARD_PARAM = {
     "list-version-dir": {
       summary: "Versioned path",
       value: "15.1.0",
+    },
+  },
+} as const;
+
+const PATTERN_QUERY_PARAM = {
+  in: "query",
+  name: "pattern",
+  description: PATTERN_PARAM_DOCS,
+  required: false,
+  schema: {
+    type: "string",
+  },
+  examples: {
+    "txt-files": {
+      summary: "Match all .txt files",
+      value: "*.txt",
+    },
+    "prefix-match": {
+      summary: "Match files starting with 'Uni'",
+      value: "Uni*",
+    },
+    "contains-match": {
+      summary: "Match files containing 'Data'",
+      value: "*Data*",
+    },
+    "multi-extension": {
+      summary: "Match .txt or .xml files",
+      value: "*.{txt,xml}",
     },
   },
 } as const;
@@ -106,7 +138,7 @@ export const WILDCARD_ROUTE = createRoute({
   method: "get",
   path: "/{wildcard}",
   tags: [OPENAPI_TAGS.FILES],
-  parameters: [WILDCARD_PARAM],
+  parameters: [WILDCARD_PARAM, PATTERN_QUERY_PARAM],
   description: WILDCARD_ROUTE_DOCS,
   responses: {
     200: {
@@ -236,5 +268,97 @@ export const METADATA_WILDCARD_ROUTE = createRoute({
         },
       },
     },
+  },
+});
+
+export const SEARCH_ROUTE = createRoute({
+  method: "get",
+  path: "/search",
+  tags: [OPENAPI_TAGS.FILES],
+  middleware: [
+    cache({
+      cacheName: "ucdjs:v1_files:search",
+      cacheControl: `max-age=${MAX_AGE_ONE_WEEK_SECONDS}`, // 7 days
+    }),
+  ],
+  parameters: [
+    {
+      in: "query",
+      name: "q",
+      description: SEARCH_QUERY_PARAM_DOCS,
+      required: true,
+      schema: {
+        type: "string",
+        minLength: 1,
+      },
+      examples: {
+        "unicode-prefix": {
+          summary: "Search for entries starting with 'uni'",
+          value: "uni",
+        },
+        "version-prefix": {
+          summary: "Search for version directories",
+          value: "15",
+        },
+      },
+    },
+    {
+      in: "query",
+      name: "path",
+      description: SEARCH_PATH_PARAM_DOCS,
+      required: false,
+      schema: {
+        type: "string",
+      },
+      examples: {
+        "root": {
+          summary: "Search from root",
+          value: "",
+        },
+        "ucd-dir": {
+          summary: "Search within UCD directory",
+          value: "15.1.0/ucd",
+        },
+      },
+    },
+  ],
+  description: SEARCH_ROUTE_DOCS,
+  responses: {
+    200: {
+      description: "Search results sorted with files first, then directories",
+      content: {
+        "application/json": {
+          schema: FileEntryListSchema,
+          examples: {
+            "files-first": {
+              summary: "Files appear before directories",
+              value: [
+                {
+                  type: "file",
+                  name: "computer.txt",
+                  path: "computer.txt",
+                  lastModified: 1693213740000,
+                },
+                {
+                  type: "directory",
+                  name: "come",
+                  path: "come",
+                  lastModified: 1697495340000,
+                },
+              ],
+            },
+            "empty-results": {
+              summary: "No matching entries",
+              value: [],
+            },
+          },
+        },
+      },
+    },
+    ...(generateReferences([
+      400,
+      500,
+      502,
+    ])),
   },
 });

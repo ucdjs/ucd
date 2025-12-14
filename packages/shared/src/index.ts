@@ -18,6 +18,8 @@ export type {
 } from "./filter";
 
 export { flattenFilePaths } from "./flatten";
+export { createGlobMatcher, DEFAULT_PICOMATCH_OPTIONS, matchGlob } from "./glob";
+export type { GlobMatchOptions } from "./glob";
 export * from "./guards";
 
 export { safeJsonParse } from "./json";

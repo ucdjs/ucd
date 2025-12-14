@@ -1,13 +1,14 @@
 import type { UCDStoreManifest } from "@ucdjs/schemas";
 import type { HonoEnv } from "../../types";
 import { OpenAPIHono } from "@hono/zod-openapi";
+import { createGlobMatcher } from "@ucdjs-internal/shared";
 import { DEFAULT_USER_AGENT, UCD_FILE_STAT_TYPE_HEADER } from "@ucdjs/env";
 import { decodePathSafely } from "@ucdjs/path-utils";
 import { cache } from "hono/cache";
 import { HTML_EXTENSIONS, MAX_AGE_ONE_WEEK_SECONDS, V1_FILES_ROUTER_BASE_PATH } from "../../constants";
 import { badGateway, badRequest, notFound } from "../../lib/errors";
 import { parseUnicodeDirectory } from "../../lib/files";
-import { GET_UCD_STORE, METADATA_WILDCARD_ROUTE, WILDCARD_ROUTE } from "./openapi";
+import { GET_UCD_STORE, METADATA_WILDCARD_ROUTE, SEARCH_ROUTE, WILDCARD_ROUTE } from "./openapi";
 
 export const V1_FILES_ROUTER = new OpenAPIHono<HonoEnv>().basePath(V1_FILES_ROUTER_BASE_PATH);
 
@@ -77,6 +78,87 @@ V1_FILES_ROUTER.openapi(GET_UCD_STORE, async (c) => {
   return c.json(manifest, 200, headers);
 });
 
+// Search endpoint - must be registered BEFORE the wildcard route
+V1_FILES_ROUTER.openapi(SEARCH_ROUTE, async (c) => {
+  const query = c.req.query("q");
+  const basePath = c.req.query("path") || "";
+
+  if (!query) {
+    return badRequest({
+      message: "Missing required query parameter: q",
+    });
+  }
+
+  // Validate basePath
+  const raw = basePath;
+  const lower = raw.toLowerCase();
+  if (
+    raw.startsWith("..")
+    || raw.includes("//")
+    || lower.startsWith("%2e%2e")
+    || lower.includes("%2f%2f")
+  ) {
+    return badRequest({
+      message: "Invalid path",
+    });
+  }
+
+  const decoded = decodePathSafely(raw);
+  if (decoded.split("/").includes("..")) {
+    return badRequest({ message: "Invalid path" });
+  }
+
+  const normalizedPath = basePath.replace(/^\/+|\/+$/g, "");
+  const url = normalizedPath
+    ? `https://unicode.org/Public/${normalizedPath}?F=2`
+    : "https://unicode.org/Public?F=2";
+
+  // eslint-disable-next-line no-console
+  console.info(`[v1_files:search]: fetching directory at ${url}`);
+
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      "User-Agent": DEFAULT_USER_AGENT,
+    },
+  });
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      // Return empty array if the base path doesn't exist
+      return c.json([], 200);
+    }
+    return badGateway(c);
+  }
+
+  const contentType = response.headers.get("content-type") || "";
+
+  // If not a directory listing, return empty results
+  if (!contentType.includes("text/html")) {
+    return c.json([], 200);
+  }
+
+  const html = await response.text();
+  const entries = await parseUnicodeDirectory(html);
+
+  // Filter entries where name starts with query (case-insensitive)
+  const queryLower = query.toLowerCase();
+  const matchingEntries = entries.filter((entry) =>
+    entry.name.toLowerCase().startsWith(queryLower),
+  );
+
+  // Sort: files first, then directories
+  const sortedEntries = matchingEntries.sort((a, b) => {
+    // Files before directories
+    if (a.type === "file" && b.type === "directory") return -1;
+    if (a.type === "directory" && b.type === "file") return 1;
+    // Maintain original order within same type
+    return 0;
+  });
+
+  return c.json(sortedEntries, 200);
+});
+
 V1_FILES_ROUTER.openAPIRegistry.registerPath(WILDCARD_ROUTE);
 V1_FILES_ROUTER.openAPIRegistry.registerPath(METADATA_WILDCARD_ROUTE);
 
@@ -143,10 +225,19 @@ V1_FILES_ROUTER.get("/:wildcard{.*}?", cache({
 
   // check if this is a directory listing (HTML response for non-HTML files)
   const isDirectoryListing = contentType.includes("text/html") && !isHtmlFile;
-  console.error(`[v1_files]: fetched content type: ${contentType} for .${extName} file`);
+
+  // eslint-disable-next-line no-console
+  console.info(`[v1_files]: fetched content type: ${contentType} for .${extName} file`);
   if (isDirectoryListing) {
     const html = await response.text();
-    const files = await parseUnicodeDirectory(html);
+    let files = await parseUnicodeDirectory(html);
+
+    // Apply pattern filter if provided
+    const pattern = c.req.query("pattern");
+    if (pattern) {
+      const matcher = createGlobMatcher(pattern);
+      files = files.filter((entry) => matcher(entry.name));
+    }
 
     return c.json(files, 200, {
       ...baseHeaders,
