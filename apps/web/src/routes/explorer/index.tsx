@@ -1,3 +1,4 @@
+import { ComponentExample } from '@/components/component-example'
 import { createFileRoute } from '@tanstack/react-router'
 
 export const Route = createFileRoute('/explorer/')({
@@ -5,5 +6,7 @@ export const Route = createFileRoute('/explorer/')({
 })
 
 function RouteComponent() {
-  return <div>Hello "/explorer/"!</div>
+  return <div>
+    <ComponentExample />
+  </div>
 }
