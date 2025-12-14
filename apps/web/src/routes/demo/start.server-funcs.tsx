@@ -1,4 +1,3 @@
-import fs from 'node:fs'
 import { useCallback, useState } from 'react'
 import { createFileRoute, useRouter } from '@tanstack/react-router'
 import { createServerFn } from '@tanstack/react-start'
@@ -15,39 +14,28 @@ const loggedServerFunction = createServerFn({ method: "GET" }).middleware([
 ]);
 */
 
-const TODOS_FILE = 'todos.json'
-
-async function readTodos() {
-  return JSON.parse(
-    await fs.promises.readFile(TODOS_FILE, 'utf-8').catch(() =>
-      JSON.stringify(
-        [
-          { id: 1, name: 'Get groceries' },
-          { id: 2, name: 'Buy a new phone' },
-        ],
-        null,
-        2,
-      ),
-    ),
-  )
+function readTodos() {
+  return [
+    { id: 1, name: 'Get groceries' },
+    { id: 2, name: 'Buy a new phone' },
+  ]
 }
 
 const getTodos = createServerFn({
   method: 'GET',
-}).handler(async () => await readTodos())
+}).handler(() => readTodos())
 
 const addTodo = createServerFn({ method: 'POST' })
   .inputValidator((d: string) => d)
-  .handler(async ({ data }) => {
-    const todos = await readTodos()
+  .handler(({ data }) => {
+    const todos = readTodos()
     todos.push({ id: todos.length + 1, name: data })
-    await fs.promises.writeFile(TODOS_FILE, JSON.stringify(todos, null, 2))
     return todos
   })
 
 export const Route = createFileRoute('/demo/start/server-funcs')({
   component: Home,
-  loader: async () => await getTodos(),
+  loader: () => getTodos(),
 })
 
 function Home() {
