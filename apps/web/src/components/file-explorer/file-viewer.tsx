@@ -1,5 +1,5 @@
 import { Check, Download, ExternalLink, FileText, Link2 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -78,6 +78,60 @@ function getLanguageFromContentType(contentType: string, fileName: string): stri
   }
 }
 
+// Memoized line number component
+interface LineNumberProps {
+  lineNum: number;
+  selected: boolean;
+  onClick: (lineNum: number, event: React.MouseEvent) => void;
+  onRef?: (lineNum: number, el: HTMLDivElement | null) => void;
+}
+
+function LineNumberComponent({ lineNum, selected, onClick, onRef }: LineNumberProps) {
+  const handleClick = useCallback((e: React.MouseEvent) => {
+    onClick(lineNum, e);
+  }, [lineNum, onClick]);
+
+  const handleRef = useCallback((el: HTMLDivElement | null) => {
+    onRef?.(lineNum, el);
+  }, [lineNum, onRef]);
+
+  return (
+    <div
+      ref={handleRef}
+      onClick={handleClick}
+      className={cn(
+        "px-3 py-0 leading-5 cursor-pointer hover:bg-primary/10",
+        selected && "bg-primary/20 text-primary font-medium",
+      )}
+    >
+      {lineNum}
+    </div>
+  );
+}
+
+const LineNumber = memo(LineNumberComponent);
+
+// Memoized line content component
+interface LineContentProps {
+  line: string;
+  selected: boolean;
+}
+
+function LineContentComponent({ line, selected }: LineContentProps) {
+  return (
+    <pre
+      className={cn(
+        "px-3 py-0 leading-5 whitespace-pre m-0",
+        selected && "bg-primary/10",
+      )}
+    >
+      {line || " "}
+    </pre>
+  );
+}
+
+const LineContent = memo(LineContentComponent);
+
 export function FileViewer({ content, contentType, fileName, filePath }: FileViewerProps) {
   const language = getLanguageFromContentType(contentType, fileName);
   const lines = useMemo(() => content.split("\n"), [content]);
@@ -131,10 +185,17 @@ export function FileViewer({ content, contentType, fileName, filePath }: FileVie
     }
   }, [lastClickedLine]);
 
-  const isLineSelected = useCallback((lineNum: number): boolean => {
-    if (!selection) return false;
-    return lineNum >= selection.start && lineNum <= selection.end;
-  }, [selection]);
+  const handleLineRef = useCallback((lineNum: number, el: HTMLDivElement | null) => {
+    if (el) {
+      lineRefs.current.set(lineNum, el);
+    } else {
+      lineRefs.current.delete(lineNum);
+    }
+  }, []);
+
+  // Memoize selection bounds for O(1) check in render
+  const selectionStart = selection?.start ?? -1;
+  const selectionEnd = selection?.end ?? -1;
 
   const handleCopyLink = useCallback(async () => {
     if (!selection) return;
@@ -213,21 +274,15 @@ export function FileViewer({ content, contentType, fileName, filePath }: FileVie
             <div className="flex-shrink-0 select-none border-r border-border bg-muted/50 text-right text-xs text-muted-foreground font-mono">
               {lines.map((_, idx) => {
                 const lineNum = idx + 1;
-                const selected = isLineSelected(lineNum);
+                const selected = lineNum >= selectionStart && lineNum <= selectionEnd;
                 return (
-                  <div
-                    key={`line-num-${lineNum}`}
-                    ref={(el) => {
-                      if (el) lineRefs.current.set(lineNum, el);
-                    }}
-                    onClick={(e) => handleLineClick(lineNum, e)}
-                    className={cn(
-                      "px-3 py-0 leading-5 cursor-pointer hover:bg-primary/10 transition-colors",
-                      selected && "bg-primary/20 text-primary font-medium",
-                    )}
-                  >
-                    {lineNum}
-                  </div>
+                  <LineNumber
+                    key={lineNum}
+                    lineNum={lineNum}
+                    selected={selected}
+                    onClick={handleLineClick}
+                    onRef={handleLineRef}
+                  />
                 );
               })}
             </div>
@@ -235,17 +290,13 @@ export function FileViewer({ content, contentType, fileName, filePath }: FileVie
             <div className="flex-1 overflow-x-auto text-sm font-mono">
               {lines.map((line, idx) => {
                 const lineNum = idx + 1;
-                const selected = isLineSelected(lineNum);
+                const selected = lineNum >= selectionStart && lineNum <= selectionEnd;
                 return (
-                  <pre
-                    key={`line-content-${lineNum}`}
-                    className={cn(
-                      "px-3 py-0 leading-5 whitespace-pre m-0",
-                      selected && "bg-primary/10",
-                    )}
-                  >
-                    {line || " "}
-                  </pre>
+                  <LineContent
+                    key={lineNum}
+                    line={line}
+                    selected={selected}
+                  />
                 );
               })}
             </div>
