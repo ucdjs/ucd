@@ -255,6 +255,16 @@ describe("glob", () => {
         expect(isValidGlobPattern("{a,(?:}),b}")).toBe(true);
         expect(isValidGlobPattern("(})")).toBe(true);
       });
+
+      it("should not count commas inside character classes toward alternatives", () => {
+        // Many commas inside character class should not count as alternatives
+        expect(isValidGlobPattern("{a,[,,,,,],b}")).toBe(true);
+      });
+
+      it("should not count commas inside parentheses toward alternatives", () => {
+        // Many commas inside parentheses should not count as alternatives
+        expect(isValidGlobPattern("{a,(,,,,,),b}")).toBe(true);
+      });
     });
   });
 });
