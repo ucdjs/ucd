@@ -25,7 +25,8 @@
     "react-dom": "catalog:web",
     "tailwindcss": "catalog:web",
     "vite-tsconfig-paths": "catalog:web",
-    "zod": "catalog:prod"
+    "zod": "catalog:prod",
+    "@unicode-utils/core": "catalog:prod"
   },
   "devDependencies": {
     "@tanstack/devtools-vite": "catalog:web",
