@@ -191,12 +191,18 @@ describe("glob", () => {
         expect.soft(isValidGlobPattern(okNesting)).toBe(true);
       });
 
-      it("should reject patterns with unbalanced brackets", () => {
+      it("should reject patterns with unclosed opening brackets", () => {
+        // Unclosed opening brackets should be rejected
         expect(isValidGlobPattern("file[123.txt")).toBe(false);
         expect(isValidGlobPattern("file{a,b.txt")).toBe(false);
         expect(isValidGlobPattern("file(test.txt")).toBe(false);
-        expect(isValidGlobPattern("file]123.txt")).toBe(false);
-        expect(isValidGlobPattern("file}a,b.txt")).toBe(false);
+      });
+
+      it("should allow patterns with stray closing brackets (picomatch treats as literal)", () => {
+        // Picomatch treats stray closing brackets as literals
+        expect(isValidGlobPattern("file]123.txt")).toBe(true);
+        expect(isValidGlobPattern("file}a,b.txt")).toBe(true);
+        expect(isValidGlobPattern("file)test.txt")).toBe(true);
       });
 
       it("should allow escaped special characters", () => {
@@ -209,8 +215,10 @@ describe("glob", () => {
         // This pattern has 6 alternatives which exceeds MAX_BRACE_ALTERNATIVES (5)
         expect(isValidGlobPattern("\\\\{a,b,c,d,e,f}")).toBe(false);
 
-        // Single backslash escapes the brace - both braces must be escaped for balanced pattern
-        expect(isValidGlobPattern("\\{a,b,c,d,e,f}")).toBe(false);
+        // Single backslash escapes the opening brace, so it's literal {
+        // The } is then a stray closing brace (treated as literal by picomatch)
+        // No brace expansion happens, so this is valid
+        expect(isValidGlobPattern("\\{a,b,c,d,e,f}")).toBe(true);
 
         // \\\\ + \{ = escaped backslash + escaped brace (both braces escaped)
         expect(isValidGlobPattern("\\\\\\{a,b,c,d,e,f\\}")).toBe(true);
@@ -233,6 +241,19 @@ describe("glob", () => {
 
         // First group valid, second exceeds limit - should be invalid
         expect(isValidGlobPattern("{a,b,c,d,e}{f,g,h,i,j,k}")).toBe(false);
+      });
+
+      it("should handle closing braces inside square brackets correctly", () => {
+        // } inside square brackets should not close the outer brace group
+        expect(isValidGlobPattern("{a,[}],b}")).toBe(true);
+        expect(isValidGlobPattern("[}]")).toBe(true);
+        expect(isValidGlobPattern("{a,b,[}]}")).toBe(true);
+      });
+
+      it("should handle closing braces inside parentheses correctly", () => {
+        // } inside parentheses should not close the outer brace group
+        expect(isValidGlobPattern("{a,(?:}),b}")).toBe(true);
+        expect(isValidGlobPattern("(})")).toBe(true);
       });
     });
   });
