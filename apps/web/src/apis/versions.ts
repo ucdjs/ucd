@@ -1,16 +1,8 @@
 import { createServerFn } from '@tanstack/react-start'
 import { queryOptions } from '@tanstack/react-query'
+import type { UnicodeVersion } from '@ucdjs/schemas'
 
 const API_BASE = 'https://api.ucdjs.dev/api/v1'
-
-export interface UnicodeVersion {
-  version: string
-  documentationUrl: string
-  date: string
-  url: string
-  mappedUcdVersion: string | null
-  type: 'stable' | 'draft' | 'beta'
-}
 
 export interface UnicodeVersionDetails {
   version: string
@@ -67,16 +59,18 @@ export const fetchVersionDetails = async (version: string): Promise<UnicodeVersi
   }
 }
 
-export const versionsQueryOptions = () =>
-  queryOptions({
+export function versionsQueryOptions() {
+  return queryOptions({
     queryKey: ['versions'],
     queryFn: () => fetchVersions(),
-    staleTime: 1000 * 60 * 60, // 1 hour
+    staleTime: 1000 * 60 * 60,
   })
+}
 
-export const versionDetailsQueryOptions = (version: string) =>
-  queryOptions({
+export function versionDetailsQueryOptions(version: string) {
+  return queryOptions({
     queryKey: ['version-details', version],
     queryFn: () => fetchVersionDetails(version),
-    staleTime: 1000 * 60 * 60, // 1 hour
+    staleTime: 1000 * 60 * 60,
   })
+}

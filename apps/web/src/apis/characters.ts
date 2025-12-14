@@ -1,7 +1,5 @@
 import { queryOptions } from '@tanstack/react-query'
 
-const API_BASE = 'https://api.ucdjs.dev/api/v1'
-
 export interface UnicodeCharacter {
   codepoint: string
   name: string
@@ -41,9 +39,10 @@ export const fetchCharacter = async (hex: string, version: string) => {
   } satisfies UnicodeCharacter
 }
 
-export const characterQueryOptions = (hex: string, version: string) =>
-  queryOptions({
+export function characterQueryOptions(hex: string, version: string) {
+  return queryOptions({
     queryKey: ['character', version, hex],
     queryFn: () => fetchCharacter(hex, version),
-    staleTime: 1000 * 60 * 60, // 1 hour
+    staleTime: 1000 * 60 * 60,
   })
+}
