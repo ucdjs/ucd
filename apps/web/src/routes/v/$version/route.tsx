@@ -44,10 +44,5 @@ export const Route = createFileRoute('/v/$version')({
 })
 
 function VersionLayoutComponent() {
-  const { version } = Route.useParams()
-
-  return <div>
-    <h1>Version: {version}</h1>
-    <Outlet />
-  </div>
+  return <Outlet />
 }

@@ -11,6 +11,7 @@ import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools'
 import appCss from '../styles.css?url'
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/app-sidebar'
+import { versionsQueryOptions } from '@/apis/versions'
 
 interface MyRouterContext {
   queryClient: QueryClient
@@ -43,34 +44,19 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     ],
   }),
 
+  loader: ({ context }) => {
+    // Prefetch versions for SSR - sidebar will have data immediately
+    context.queryClient.ensureQueryData(versionsQueryOptions())
+  },
+
   shellComponent: RootDocument,
 })
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en">
       <head>
         <HeadContent />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-
-                function updateTheme(e) {
-                  if (e.matches) {
-                    document.documentElement.classList.add('dark');
-                  } else {
-                    document.documentElement.classList.remove('dark');
-                  }
-                }
-
-                updateTheme(mediaQuery);
-                mediaQuery.addEventListener('change', updateTheme);
-              })();
-            `,
-          }}
-        />
       </head>
       <body>
         <SidebarProvider>
