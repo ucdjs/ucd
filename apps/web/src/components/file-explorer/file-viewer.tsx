@@ -1,4 +1,5 @@
-import { Check, Download, ExternalLink, FileText, Link2 } from "lucide-react";
+import { Link } from "@tanstack/react-router";
+import { ArrowLeft, Check, Download, ExternalLink, FileText, Link2 } from "lucide-react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -132,10 +133,17 @@ function LineContentComponent({ line, selected }: LineContentProps) {
 
 const LineContent = memo(LineContentComponent);
 
+function getParentPath(path: string): string {
+  const parts = path.split("/").filter(Boolean);
+  parts.pop();
+  return parts.join("/");
+}
+
 export function FileViewer({ content, contentType, fileName, filePath }: FileViewerProps) {
   const language = getLanguageFromContentType(contentType, fileName);
   const lines = useMemo(() => content.split("\n"), [content]);
   const lineCount = lines.length;
+  const parentPath = getParentPath(filePath);
 
   // Parse initial selection from URL hash (only on mount)
   const initialSelection = useMemo((): LineSelection | null => {
@@ -221,10 +229,22 @@ export function FileViewer({ content, contentType, fileName, filePath }: FileVie
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="flex items-center gap-2 text-base font-medium">
-          <FileText className="size-4" />
-          {fileName}
-        </CardTitle>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            nativeButton={false}
+            render={(
+              <Link to="/explorer/files/$" params={{ _splat: parentPath || "/" }}>
+                <ArrowLeft className="size-4" />
+              </Link>
+            )}
+          />
+          <CardTitle className="flex items-center gap-2 text-base font-medium">
+            <FileText className="size-4" />
+            {fileName}
+          </CardTitle>
+        </div>
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground">
             {lineCount}

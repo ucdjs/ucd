@@ -3,7 +3,12 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronRight, Home } from "lucide-react";
 
 import { filesQueryOptions } from "@/apis/files";
-import { FileExplorer, FileViewer } from "@/components/file-explorer";
+import {
+  FileExplorer,
+  FileViewer,
+  NON_RENDERABLE_EXTENSIONS,
+  NonRenderableFile,
+} from "@/components/file-explorer";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -31,6 +36,9 @@ function FilesExplorerPage() {
   const pathSegments = path ? path.split("/").filter(Boolean) : [];
 
   const isFile = data.type === "file";
+  const fileName = pathSegments[pathSegments.length - 1] || "file";
+  const fileExt = fileName.split(".").pop()?.toLowerCase() || "";
+  const canRender = !NON_RENDERABLE_EXTENSIONS.has(fileExt);
 
   return (
     <>
@@ -103,14 +111,22 @@ function FilesExplorerPage() {
         </div>
 
         {isFile
-          ? (
-              <FileViewer
-                content={data.content}
-                contentType={data.contentType}
-                fileName={pathSegments[pathSegments.length - 1] || "file"}
-                filePath={path}
-              />
-            )
+          ? canRender
+            ? (
+                <FileViewer
+                  content={data.content}
+                  contentType={data.contentType}
+                  fileName={fileName}
+                  filePath={path}
+                />
+              )
+            : (
+                <NonRenderableFile
+                  fileName={fileName}
+                  filePath={path}
+                  contentType={data.contentType}
+                />
+              )
           : (
               <FileExplorer
                 files={data.files}
