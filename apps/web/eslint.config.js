@@ -6,4 +6,8 @@ export default luxass({
   formatters: true,
   pnpm: true,
   react: true,
+}).append({
+  ignores: [
+    "**/routeTree.gen.ts",
+  ],
 });
