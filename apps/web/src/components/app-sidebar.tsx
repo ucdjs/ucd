@@ -1,11 +1,8 @@
-"use client"
-
-import { useQuery } from "@tanstack/react-query"
-import { Link } from "@tanstack/react-router"
-import { BookOpen, ExternalLink, Layers, Search } from "lucide-react"
-import * as React from "react"
-
-import { versionsQueryOptions } from "@/apis/versions"
+import { useQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
+import { BookOpen, ExternalLink, Layers, Search } from "lucide-react";
+import * as React from "react";
+import { versionsQueryOptions } from "@/apis/versions";
 import {
   Sidebar,
   SidebarContent,
@@ -17,8 +14,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-} from "@/components/ui/sidebar"
-import { NavItem } from "./nav"
+} from "@/components/ui/sidebar";
+import { NavItem } from "./nav";
 
 function UcdLogo({ className }: { className?: string }) {
   return (
@@ -33,11 +30,11 @@ function UcdLogo({ className }: { className?: string }) {
       <path d="M35 40 L65 40 M35 50 L55 50 M35 60 L60 60" stroke="#059669" strokeWidth="6" strokeLinecap="round" />
       <circle cx="70" cy="30" r="8" fill="#059669" opacity="0.8" />
     </svg>
-  )
+  );
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { data: versions = [], isLoading } = useQuery(versionsQueryOptions())
+  const { data: versions = [], isLoading } = useQuery(versionsQueryOptions());
 
   // Build navigation items from versions
   const navItems = React.useMemo(() => {
@@ -69,8 +66,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         url: "/explorer",
         icon: Search,
       },
-    ]
-  }, [versions, isLoading])
+    ];
+  }, [versions, isLoading]);
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -95,25 +92,27 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarGroupLabel>Documentation</SidebarGroupLabel>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton render={
+              <SidebarMenuButton render={(
                 <Link to="/">
                   <BookOpen className="size-4" />
                   <span>Getting Started</span>
                 </Link>
-              } />
+              )}
+              />
             </SidebarMenuItem>
             <SidebarMenuItem>
-              <SidebarMenuButton render={
+              <SidebarMenuButton render={(
                 <a href="https://api.ucdjs.dev" target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="size-4" />
                   <span>API Reference</span>
                 </a>
-              } />
+              )}
+              />
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
-  )
+  );
 }

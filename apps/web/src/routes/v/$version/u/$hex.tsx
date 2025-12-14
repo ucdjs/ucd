@@ -1,8 +1,9 @@
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { useSuspenseQuery } from '@tanstack/react-query'
-import { ArrowLeft, Copy, Check } from 'lucide-react'
-import * as React from 'react'
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { ArrowLeft, Check, Copy } from "lucide-react";
+import * as React from "react";
 
+import { characterQueryOptions } from "@/apis/characters";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -10,35 +11,34 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
-import { Separator } from "@/components/ui/separator"
-import { SidebarTrigger } from "@/components/ui/sidebar"
+} from "@/components/ui/breadcrumb";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { characterQueryOptions } from '@/apis/characters'
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
-export const Route = createFileRoute('/v/$version/u/$hex')({
+export const Route = createFileRoute("/v/$version/u/$hex")({
   component: CharacterPage,
   loader: ({ context, params }) => {
-    context.queryClient.ensureQueryData(characterQueryOptions(params.hex, params.version))
+    context.queryClient.ensureQueryData(characterQueryOptions(params.hex, params.version));
   },
-})
+});
 
 function CharacterPage() {
-  const { hex, version } = Route.useParams()
-  const { data: character } = useSuspenseQuery(characterQueryOptions(hex, version))
-  const [copied, setCopied] = React.useState(false)
+  const { hex, version } = Route.useParams();
+  const { data: character } = useSuspenseQuery(characterQueryOptions(hex, version));
+  const [copied, setCopied] = React.useState(false);
 
   const copyCharacter = async () => {
-    await navigator.clipboard.writeText(character.character)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
+    await navigator.clipboard.writeText(character.character);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
     <>
@@ -56,11 +56,14 @@ function CharacterPage() {
               </BreadcrumbItem>
               <BreadcrumbSeparator className="hidden md:block" />
               <BreadcrumbItem className="hidden md:block">
-                <BreadcrumbLink render={
+                <BreadcrumbLink render={(
                   <Link to="/v/$version" params={{ version }}>
-                    Unicode {version}
+                    Unicode
+                    {" "}
+                    {version}
                   </Link>
-                } />
+                )}
+                />
               </BreadcrumbItem>
               <BreadcrumbSeparator className="hidden md:block" />
               <BreadcrumbItem>
@@ -74,12 +77,18 @@ function CharacterPage() {
       <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
         {/* Back button */}
         <div>
-          <Button variant="ghost" size="sm" render={
-            <Link to="/v/$version" params={{ version }}>
-              <ArrowLeft className="mr-1 size-4" />
-              Back to Unicode {version}
-            </Link>
-          } />
+          <Button
+            variant="ghost"
+            size="sm"
+            render={(
+              <Link to="/v/$version" params={{ version }}>
+                <ArrowLeft className="mr-1 size-4" />
+                Back to Unicode
+                {" "}
+                {version}
+              </Link>
+            )}
+          />
         </div>
 
         {/* Character Display */}
@@ -94,11 +103,13 @@ function CharacterPage() {
               className="absolute -top-2 -right-2 size-8"
               onClick={copyCharacter}
             >
-              {copied ? (
-                <Check className="size-4 text-green-500" />
-              ) : (
-                <Copy className="size-4" />
-              )}
+              {copied
+                ? (
+                    <Check className="size-4 text-green-500" />
+                  )
+                : (
+                    <Copy className="size-4" />
+                  )}
             </Button>
           </div>
           <div className="text-center">
@@ -134,7 +145,7 @@ function CharacterPage() {
                   <PropertyRow label="Bidi Class" value={character.bidirectional} />
                   <PropertyRow
                     label="Decomposition"
-                    value={character.decomposition || 'None'}
+                    value={character.decomposition || "None"}
                   />
                 </dl>
               </CardContent>
@@ -148,15 +159,15 @@ function CharacterPage() {
                 <dl className="grid gap-3">
                   <PropertyRow
                     label="Uppercase"
-                    value={character.uppercase || 'N/A'}
+                    value={character.uppercase || "N/A"}
                   />
                   <PropertyRow
                     label="Lowercase"
-                    value={character.lowercase || 'N/A'}
+                    value={character.lowercase || "N/A"}
                   />
                   <PropertyRow
                     label="Titlecase"
-                    value={character.titlecase || 'N/A'}
+                    value={character.titlecase || "N/A"}
                   />
                 </dl>
               </CardContent>
@@ -180,7 +191,7 @@ function CharacterPage() {
                   />
                   <PropertyRow
                     label="Decimal"
-                    value={character.character.codePointAt(0)?.toString() || ''}
+                    value={character.character.codePointAt(0)?.toString() || ""}
                     mono
                   />
                 </dl>
@@ -190,36 +201,36 @@ function CharacterPage() {
         </section>
       </div>
     </>
-  )
+  );
 }
 
 function PropertyRow({
   label,
   value,
-  mono = false
+  mono = false,
 }: {
-  label: string
-  value: string
-  mono?: boolean
+  label: string;
+  value: string;
+  mono?: boolean;
 }) {
   return (
     <div className="flex justify-between gap-4">
       <dt className="text-sm text-muted-foreground">{label}</dt>
-      <dd className={`text-sm text-right ${mono ? 'font-mono' : ''}`}>{value}</dd>
+      <dd className={`text-sm text-right ${mono ? "font-mono" : ""}`}>{value}</dd>
     </div>
-  )
+  );
 }
 
 function getUtf8Encoding(char: string): string {
-  const encoder = new TextEncoder()
-  const bytes = encoder.encode(char)
-  return Array.from(bytes).map(b => b.toString(16).toUpperCase().padStart(2, '0')).join(' ')
+  const encoder = new TextEncoder();
+  const bytes = encoder.encode(char);
+  return Array.from(bytes).map((b) => b.toString(16).toUpperCase().padStart(2, "0")).join(" ");
 }
 
 function getUtf16Encoding(char: string): string {
-  const codes: string[] = []
+  const codes: string[] = [];
   for (let i = 0; i < char.length; i++) {
-    codes.push(char.charCodeAt(i).toString(16).toUpperCase().padStart(4, '0'))
+    codes.push(char.charCodeAt(i).toString(16).toUpperCase().padStart(4, "0"));
   }
-  return codes.join(' ')
+  return codes.join(" ");
 }
