@@ -66,13 +66,15 @@ export function matchGlob(pattern: string, value: string, options: GlobMatchOpti
   } satisfies PicomatchOptions);
 }
 
+export type GlobMatchFn = (value: string) => boolean;
+
 /**
  * Create a reusable glob matcher function for a given pattern.
  * This is more efficient when matching many values against the same pattern.
  *
- * @param pattern - The glob pattern to compile
- * @param options - Optional configuration for matching behavior
- * @returns A function that tests strings against the compiled pattern
+ * @param {string} pattern - The glob pattern to compile
+ * @param {GlobMatchOptions} options - Optional configuration for matching behavior
+ * @returns {GlobMatchFn} A function that tests strings against the compiled pattern
  *
  * @example
  * ```ts
@@ -88,7 +90,7 @@ export function matchGlob(pattern: string, value: string, options: GlobMatchOpti
  * // ['a.txt', 'c.txt']
  * ```
  */
-export function createGlobMatcher(pattern: string, options: GlobMatchOptions = {}): (value: string) => boolean {
+export function createGlobMatcher(pattern: string, options: GlobMatchOptions = {}): GlobMatchFn {
   const {
     nocase = DEFAULT_PICOMATCH_OPTIONS.nocase,
     dot = DEFAULT_PICOMATCH_OPTIONS.dot,
@@ -100,4 +102,151 @@ export function createGlobMatcher(pattern: string, options: GlobMatchOptions = {
   } satisfies PicomatchOptions);
 
   return (value: string): boolean => isMatch(value);
+}
+
+/**
+ * Maximum allowed length for glob patterns.
+ * Helps prevent DoS attacks with extremely long patterns.
+ */
+export const MAX_PATTERN_LENGTH = 200;
+
+/**
+ * Maximum allowed nesting depth for braces/brackets.
+ * Prevents exponential backtracking with deeply nested patterns.
+ */
+export const MAX_NESTING_DEPTH = 3;
+
+/**
+ * Maximum number of alternatives in brace expansion.
+ * Prevents patterns like `{a,b,c,...}` with thousands of alternatives.
+ */
+export const MAX_BRACE_ALTERNATIVES = 5;
+
+/**
+ * Maximum consecutive wildcards allowed.
+ * Prevents patterns like `*****` which can cause performance issues.
+ */
+export const MAX_CONSECUTIVE_WILDCARDS = 3;
+
+/**
+ * Validate if a string is a valid and safe glob pattern.
+ * Checks for:
+ * - Empty or whitespace-only patterns
+ * - Excessively long patterns (DoS prevention)
+ * - Deeply nested braces/brackets (ReDoS prevention)
+ * - Too many brace alternatives (explosion prevention)
+ * - Excessive consecutive wildcards
+ * - Syntax errors (via picomatch compilation)
+ *
+ * @param {string} pattern - The glob pattern to validate
+ * @returns {boolean} `true` if the pattern is valid and safe, `false` otherwise
+ *
+ * @example
+ * ```ts
+ * import { isValidGlobPattern } from '@ucdjs-internal/shared';
+ *
+ * // Valid patterns
+ * isValidGlobPattern('*.txt'); // true
+ * isValidGlobPattern('file[123].txt'); // true
+ * isValidGlobPattern('*.{txt,xml}'); // true
+ *
+ * // Invalid patterns
+ * isValidGlobPattern('file[123.txt'); // false - unclosed bracket
+ * isValidGlobPattern('*.{txt,xml'); // false - unclosed brace
+ * isValidGlobPattern(''); // false - empty pattern
+ *
+ * // Potentially malicious patterns
+ * isValidGlobPattern('*'.repeat(100)); // false - too many wildcards
+ * isValidGlobPattern('a'.repeat(1000)); // false - too long
+ * isValidGlobPattern('{a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y}'); // false - too many alternatives
+ * ```
+ */
+export function isValidGlobPattern(pattern: string): boolean {
+  // Empty patterns are invalid
+  if (!pattern || pattern.trim().length === 0) {
+    return false;
+  }
+
+  // Check pattern length
+  if (pattern.length > MAX_PATTERN_LENGTH) {
+    return false;
+  }
+
+  // Check for excessive consecutive wildcards (e.g., "****")
+  const consecutiveWildcardMatch = pattern.match(/\*+/g);
+  if (consecutiveWildcardMatch) {
+    for (const match of consecutiveWildcardMatch) {
+      // Allow ** for globstar, but not more than MAX_CONSECUTIVE_WILDCARDS
+      if (match.length > MAX_CONSECUTIVE_WILDCARDS) {
+        return false;
+      }
+    }
+  }
+
+  // Check nesting depth and brace alternatives
+  let depth = 0;
+  let maxDepth = 0;
+  let braceAlternatives = 0;
+  let inBrace = false;
+
+  for (let i = 0; i < pattern.length; i++) {
+    const char = pattern[i];
+    const prevChar = i > 0 ? pattern[i - 1] : "";
+
+    // Skip escaped characters
+    if (prevChar === "\\") {
+      continue;
+    }
+
+    switch (char) {
+      case "{":
+      case "[":
+      case "(":
+        depth++;
+        maxDepth = Math.max(maxDepth, depth);
+        if (char === "{") {
+          inBrace = true;
+          braceAlternatives = 1; // Start counting alternatives
+        }
+        break;
+      case "}":
+      case "]":
+      case ")":
+        depth--;
+        if (char === "}") {
+          inBrace = false;
+        }
+        // Unbalanced brackets
+        if (depth < 0) {
+          return false;
+        }
+        break;
+      case ",":
+        if (inBrace) {
+          braceAlternatives++;
+          if (braceAlternatives > MAX_BRACE_ALTERNATIVES) {
+            return false;
+          }
+        }
+        break;
+    }
+  }
+
+  // Check for unclosed brackets
+  if (depth !== 0) {
+    return false;
+  }
+
+  // Check max nesting depth
+  if (maxDepth > MAX_NESTING_DEPTH) {
+    return false;
+  }
+
+  // Try to compile the pattern - picomatch will throw on invalid patterns
+  try {
+    picomatch(pattern);
+    return true;
+  } catch {
+    return false;
+  }
 }

@@ -1,7 +1,7 @@
 import type { UCDStoreManifest } from "@ucdjs/schemas";
 import type { HonoEnv } from "../../types";
 import { OpenAPIHono } from "@hono/zod-openapi";
-import { createGlobMatcher } from "@ucdjs-internal/shared";
+import { createGlobMatcher, isValidGlobPattern } from "@ucdjs-internal/shared";
 import { DEFAULT_USER_AGENT, UCD_FILE_STAT_TYPE_HEADER } from "@ucdjs/env";
 import { decodePathSafely } from "@ucdjs/path-utils";
 import { cache } from "hono/cache";
@@ -148,7 +148,7 @@ V1_FILES_ROUTER.openapi(SEARCH_ROUTE, async (c) => {
   );
 
   // Sort: files first, then directories
-  const sortedEntries = matchingEntries.sort((a, b) => {
+  const sortedEntries = matchingEntries.toSorted((a, b) => {
     // Files before directories
     if (a.type === "file" && b.type === "directory") return -1;
     if (a.type === "directory" && b.type === "file") return 1;
@@ -235,6 +235,14 @@ V1_FILES_ROUTER.get("/:wildcard{.*}?", cache({
     // Apply pattern filter if provided
     const pattern = c.req.query("pattern");
     if (pattern) {
+      // eslint-disable-next-line no-console
+      console.info(`[v1_files]: applying glob pattern filter: ${pattern}`);
+      if (!isValidGlobPattern(pattern)) {
+        return badRequest({
+          message: "Invalid glob pattern",
+        });
+      }
+
       const matcher = createGlobMatcher(pattern);
       files = files.filter((entry) => matcher(entry.name));
     }
