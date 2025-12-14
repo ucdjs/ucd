@@ -1,23 +1,23 @@
 "use client"
 
-import * as React from "react"
-import { BookOpen, Search, Layers, ExternalLink } from "lucide-react"
 import { useQuery } from "@tanstack/react-query"
 import { Link } from "@tanstack/react-router"
+import { BookOpen, ExternalLink, Layers, Search } from "lucide-react"
+import * as React from "react"
 
+import { versionsQueryOptions } from "@/apis/versions"
 import {
   Sidebar,
   SidebarContent,
-  SidebarHeader,
   SidebarFooter,
-  SidebarRail,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
   SidebarGroup,
   SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarRail,
 } from "@/components/ui/sidebar"
-import { fetchVersions, versionsQueryOptions } from "@/apis/versions"
 import { NavItem } from "./nav"
 
 function UcdLogo({ className }: { className?: string }) {
