@@ -1,12 +1,50 @@
-import { Download, FileText } from "lucide-react";
+import { Check, Download, FileText, Link2 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 export interface FileViewerProps {
   content: string;
   contentType: string;
   fileName: string;
+}
+
+export interface LineSelection {
+  start: number;
+  end: number;
+}
+
+/**
+ * Parse line selection from URL hash
+ * Supports: #L5, #L5-L10, #L5-10
+ */
+function parseLineHash(hash: string): LineSelection | null {
+  if (!hash || !hash.startsWith("#L")) return null;
+
+  const match = hash.match(/^#L(\d+)(?:-L?(\d+))?$/);
+  if (!match) return null;
+
+  const start = Number.parseInt(match[1], 10);
+  const end = match[2] ? Number.parseInt(match[2], 10) : start;
+
+  if (Number.isNaN(start) || Number.isNaN(end)) return null;
+
+  return {
+    start: Math.min(start, end),
+    end: Math.max(start, end),
+  };
+}
+
+/**
+ * Generate URL hash from line selection
+ */
+function generateLineHash(selection: LineSelection): string {
+  if (selection.start === selection.end) {
+    return `#L${selection.start}`;
+  }
+  return `#L${selection.start}-L${selection.end}`;
 }
 
 function getLanguageFromContentType(contentType: string, fileName: string): string {
@@ -40,7 +78,70 @@ function getLanguageFromContentType(contentType: string, fileName: string): stri
 
 export function FileViewer({ content, contentType, fileName }: FileViewerProps) {
   const language = getLanguageFromContentType(contentType, fileName);
-  const lineCount = content.split("\n").length;
+  const lines = useMemo(() => content.split("\n"), [content]);
+  const lineCount = lines.length;
+
+  // Parse initial selection from URL hash (only on mount)
+  const initialSelection = useMemo((): LineSelection | null => {
+    if (typeof window === "undefined") return null;
+    const hash = window.location.hash;
+    const parsed = parseLineHash(hash);
+    if (parsed && parsed.start <= lineCount && parsed.end <= lineCount) {
+      return parsed;
+    }
+    return null;
+  }, [lineCount]);
+
+  const [selection, setSelection] = useState<LineSelection | null>(initialSelection);
+  const [lastClickedLine, setLastClickedLine] = useState<number | null>(null);
+  const [copied, setCopied] = useState(false);
+  const lineRefs = useRef<Map<number, HTMLDivElement>>(new Map());
+
+  // Scroll to selection when it changes
+  useEffect(() => {
+    if (selection) {
+      const lineElement = lineRefs.current.get(selection.start);
+      if (lineElement) {
+        lineElement.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }
+  }, [selection]);
+
+  // Update URL hash when selection changes
+  useEffect(() => {
+    if (selection) {
+      const hash = generateLineHash(selection);
+      window.history.replaceState(null, "", hash);
+    }
+  }, [selection]);
+
+  const handleLineClick = useCallback((lineNum: number, event: React.MouseEvent) => {
+    if (event.shiftKey && lastClickedLine !== null) {
+      // Range selection with shift+click
+      setSelection({
+        start: Math.min(lastClickedLine, lineNum),
+        end: Math.max(lastClickedLine, lineNum),
+      });
+    } else {
+      // Single line selection
+      setSelection({ start: lineNum, end: lineNum });
+      setLastClickedLine(lineNum);
+    }
+  }, [lastClickedLine]);
+
+  const isLineSelected = useCallback((lineNum: number): boolean => {
+    if (!selection) return false;
+    return lineNum >= selection.start && lineNum <= selection.end;
+  }, [selection]);
+
+  const handleCopyLink = useCallback(async () => {
+    if (!selection) return;
+
+    const url = `${window.location.origin}${window.location.pathname}${generateLineHash(selection)}`;
+    await navigator.clipboard.writeText(url);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }, [selection]);
 
   function handleDownload() {
     const blob = new Blob([content], { type: contentType });
@@ -71,6 +172,17 @@ export function FileViewer({ content, contentType, fileName }: FileViewerProps) 
             {" "}
             {language}
           </span>
+          {selection && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleCopyLink}
+              title="Copy link to selected lines"
+            >
+              {copied ? <Check className="size-4" /> : <Link2 className="size-4" />}
+              {copied ? "Copied!" : "Copy Link"}
+            </Button>
+          )}
           <Button variant="outline" size="sm" onClick={handleDownload}>
             <Download className="size-4" />
             Download
@@ -81,19 +193,56 @@ export function FileViewer({ content, contentType, fileName }: FileViewerProps) 
         <div className="relative rounded-lg border border-border bg-muted/30 overflow-hidden">
           <div className="flex">
             {/* Line numbers */}
-            <div className="flex-shrink-0 select-none border-r border-border bg-muted/50 px-3 py-3 text-right text-xs text-muted-foreground font-mono">
-              {Array.from({ length: lineCount }, (_, i) => i + 1).map((lineNum) => (
-                <div key={`line-${lineNum}`} className="leading-5">
-                  {lineNum}
-                </div>
-              ))}
+            <div className="flex-shrink-0 select-none border-r border-border bg-muted/50 text-right text-xs text-muted-foreground font-mono">
+              {lines.map((_, idx) => {
+                const lineNum = idx + 1;
+                const selected = isLineSelected(lineNum);
+                return (
+                  <div
+                    key={`line-num-${lineNum}`}
+                    ref={(el) => {
+                      if (el) lineRefs.current.set(lineNum, el);
+                    }}
+                    onClick={(e) => handleLineClick(lineNum, e)}
+                    className={cn(
+                      "px-3 py-0 leading-5 cursor-pointer hover:bg-primary/10 transition-colors",
+                      selected && "bg-primary/20 text-primary font-medium",
+                    )}
+                  >
+                    {lineNum}
+                  </div>
+                );
+              })}
             </div>
             {/* Content */}
-            <pre className="flex-1 overflow-x-auto p-3 text-sm font-mono leading-5 whitespace-pre">
-              {content}
-            </pre>
+            <div className="flex-1 overflow-x-auto text-sm font-mono">
+              {lines.map((line, idx) => {
+                const lineNum = idx + 1;
+                const selected = isLineSelected(lineNum);
+                return (
+                  <pre
+                    key={`line-content-${lineNum}`}
+                    className={cn(
+                      "px-3 py-0 leading-5 whitespace-pre m-0",
+                      selected && "bg-primary/10",
+                    )}
+                  >
+                    {line || " "}
+                  </pre>
+                );
+              })}
+            </div>
           </div>
         </div>
+        {selection && (
+          <p className="mt-2 text-xs text-muted-foreground">
+            {selection.start === selection.end
+              ? `Line ${selection.start} selected`
+              : `Lines ${selection.start}-${selection.end} selected (${selection.end - selection.start + 1} lines)`}
+            {" "}
+            • Click to select, Shift+click for range
+          </p>
+        )}
       </CardContent>
     </Card>
   );
