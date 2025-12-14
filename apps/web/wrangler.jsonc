@@ -1,8 +1,8 @@
 {
+  "compatibility_date": "2025-07-30",
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "ucdjs-dev",
-  "compatibility_date": "2025-07-30",
-  "main": "./worker/index.ts",
+  "main": "./.output/server/index.mjs",
   "vars": {
     "ENVIRONMENT": "local"
   },
@@ -29,5 +29,22 @@
         "ENVIRONMENT": "preview"
       }
     }
-  }
+  },
+  "assets": {
+    "binding": "ASSETS",
+    "directory": "./.output/public"
+  },
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "no_bundle": true,
+  "rules": [
+    {
+      "type": "ESModule",
+      "globs": [
+        "**/*.mjs",
+        "**/*.js"
+      ]
+    }
+  ]
 }
