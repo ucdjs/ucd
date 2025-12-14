@@ -108,6 +108,7 @@ function FilesExplorerPage() {
                 content={data.content}
                 contentType={data.contentType}
                 fileName={pathSegments[pathSegments.length - 1] || "file"}
+                filePath={path}
               />
             )
           : (

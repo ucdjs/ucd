@@ -1,4 +1,4 @@
-import { Check, Download, FileText, Link2 } from "lucide-react";
+import { Check, Download, ExternalLink, FileText, Link2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,8 @@ export interface FileViewerProps {
   content: string;
   contentType: string;
   fileName: string;
+  /** Path to the file (used for raw link) */
+  filePath: string;
 }
 
 export interface LineSelection {
@@ -76,7 +78,7 @@ function getLanguageFromContentType(contentType: string, fileName: string): stri
   }
 }
 
-export function FileViewer({ content, contentType, fileName }: FileViewerProps) {
+export function FileViewer({ content, contentType, fileName, filePath }: FileViewerProps) {
   const language = getLanguageFromContentType(contentType, fileName);
   const lines = useMemo(() => content.split("\n"), [content]);
   const lineCount = lines.length;
@@ -183,6 +185,21 @@ export function FileViewer({ content, contentType, fileName }: FileViewerProps) 
               {copied ? "Copied!" : "Copy Link"}
             </Button>
           )}
+          <Button
+            variant="outline"
+            size="sm"
+            nativeButton={false}
+            render={(
+              <a
+                href={`https://api.ucdjs.dev/api/v1/files/${filePath}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <ExternalLink className="size-4" />
+                Open Raw
+              </a>
+            )}
+          />
           <Button variant="outline" size="sm" onClick={handleDownload}>
             <Download className="size-4" />
             Download
