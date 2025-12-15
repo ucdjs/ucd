@@ -199,7 +199,8 @@ describe("glob", () => {
       });
 
       it("should allow patterns with stray closing brackets (picomatch treats as literal)", () => {
-        // Picomatch treats stray closing brackets as literals
+        // Picomatch follows bash behavior where closing brackets without matching opening brackets
+        // are treated as literal characters rather than syntax errors.
         expect(isValidGlobPattern("file]123.txt")).toBe(true);
         expect(isValidGlobPattern("file}a,b.txt")).toBe(true);
         expect(isValidGlobPattern("file)test.txt")).toBe(true);

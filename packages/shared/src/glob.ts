@@ -210,15 +210,12 @@ export function isValidGlobPattern(pattern: string): boolean {
       continue;
     }
 
-    // Inside character classes [...], only an unescaped ] is special (closes the class)
+    // Inside character classes [...], only an unescaped ] is special (closes the class).
     // All other chars including }, ), {, and , are literals
     if (inCharacterClass) {
       if (char === "]") {
         inCharacterClass = false;
         bracketDepth--;
-        if (bracketDepth < 0) {
-          return false;
-        }
       }
       // Skip all other characters inside character class
       continue;
@@ -241,8 +238,9 @@ export function isValidGlobPattern(pattern: string): boolean {
         maxTotalDepth = Math.max(maxTotalDepth, braceDepth + bracketDepth + parenDepth);
         break;
       case "}":
-        // Only count as closing a brace if we have an open brace and we're not inside parentheses
-        // Otherwise picomatch treats it as a literal
+        // Only count as closing a brace if we have an open brace and we're not inside parentheses.
+        // Braces inside extglob parentheses are treated as literals by picomatch, not as brace expansion,
+        // so we do not decrement braceDepth when inside parentheses.
         if (braceDepth > 0 && parenDepth === 0) {
           braceDepth--;
           // Pop the counter for this brace group
@@ -262,8 +260,9 @@ export function isValidGlobPattern(pattern: string): boolean {
         }
         break;
       case ",":
-        // Only count commas that are inside a brace group and not inside parentheses
-        // Commas inside parentheses (like regex groups) are not brace alternatives
+        // Only count commas that are inside a brace group and not inside parentheses.
+        // Commas inside parentheses (which represent extglob patterns like @(a,b), !(a,b), etc.) are not brace alternatives,
+        // because in extglob patterns, commas have different semantics than in brace expansion.
         if (braceAlternativesStack.length > 0 && parenDepth === 0) {
           // Increment the top of stack (current brace level)
           const currentLevel = braceAlternativesStack.length - 1;
