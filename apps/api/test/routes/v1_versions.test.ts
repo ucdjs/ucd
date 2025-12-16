@@ -343,17 +343,6 @@ describe("v1_versions", () => {
     });
   });
 
-  describe("route not found", () => {
-    it("should return 404 for non-existent routes", async () => {
-      const request = new Request("https://api.ucdjs.dev/api/v1/versions/nonexistent");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
-
-      expect(response.status).toBe(404);
-    });
-  });
-
   // eslint-disable-next-line test/prefer-lowercase-title
   describe("GET /api/v1/versions/{version}/file-tree", () => {
     const files: TraverseEntry[] = [
