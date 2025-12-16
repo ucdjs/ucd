@@ -13,7 +13,6 @@
   "dependencies": {
     "@base-ui/react": "catalog:web",
     "@fontsource-variable/inter": "catalog:web",
-    "@tailwindcss/vite": "catalog:web",
     "@tanstack/react-devtools": "catalog:web",
     "@tanstack/react-form": "catalog:web",
     "@tanstack/react-query": "catalog:web",
@@ -22,7 +21,6 @@
     "@tanstack/react-router-devtools": "catalog:web",
     "@tanstack/react-router-ssr-query": "catalog:web",
     "@tanstack/react-start": "catalog:web",
-    "@tanstack/router-plugin": "catalog:web",
     "@ucdjs/schemas": "workspace:*",
     "@unicode-utils/core": "catalog:prod",
     "class-variance-authority": "catalog:web",
@@ -31,19 +29,18 @@
     "fumadocs-mdx": "catalog:docs",
     "fumadocs-ui": "catalog:docs",
     "lucide-react": "catalog:web",
-    "nitro": "catalog:web",
     "react": "catalog:web",
     "react-dom": "catalog:web",
     "shadcn": "catalog:web",
     "tailwind-merge": "catalog:web",
-    "tailwindcss": "catalog:web",
     "tw-animate-css": "catalog:web",
-    "vite-tsconfig-paths": "catalog:web",
     "zod": "catalog:prod"
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:linting",
+    "@tailwindcss/vite": "catalog:web",
     "@tanstack/devtools-vite": "catalog:web",
+    "@tanstack/router-plugin": "catalog:web",
     "@types/mdx": "catalog:types",
     "@types/node": "catalog:types",
     "@types/react": "catalog:types",
@@ -52,8 +49,11 @@
     "babel-plugin-react-compiler": "catalog:web",
     "eslint": "catalog:linting",
     "eslint-plugin-format": "catalog:linting",
+    "nitro": "catalog:web",
+    "tailwindcss": "catalog:web",
     "typescript": "catalog:dev",
     "vite": "catalog:web",
+    "vite-tsconfig-paths": "catalog:web",
     "wrangler": "catalog:workers"
   }
 }
