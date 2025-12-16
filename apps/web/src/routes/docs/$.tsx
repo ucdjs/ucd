@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/static-components */
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { useFumadocsLoader } from "fumadocs-core/source/client";
@@ -10,6 +11,7 @@ import {
   DocsTitle,
 } from "fumadocs-ui/layouts/docs/page";
 import defaultMdxComponents from "fumadocs-ui/mdx";
+import { useMemo } from "react";
 import { source } from "@/lib/docs-loader";
 import { baseOptions } from "@/lib/layout.shared";
 
@@ -58,7 +60,8 @@ export const Route = createFileRoute("/docs/$")({
 function Page() {
   const data = Route.useLoaderData();
   const { pageTree } = useFumadocsLoader(data);
-  const Content = clientLoader.getComponent(data.path);
+
+  const Content = useMemo(() => clientLoader.getComponent(data.path), [data.path]);
 
   return (
     <DocsLayout {...baseOptions()} tree={pageTree}>
