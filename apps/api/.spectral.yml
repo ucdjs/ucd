@@ -3,7 +3,7 @@ extends:
 
 overrides:
   - files:
-      - ../../ucd-generated/api/openapi.json#/paths/~1api~1v1~1files~1.ucd-store.json
+      - ../../ucd-generated/api/openapi.json#/paths/~1.well-known~1.ucd-store.json
     rules:
       luxass/no-file-extensions-in-paths: off
       luxass/paths-kebab-case: off
