@@ -15,6 +15,7 @@ export type {
 export {
   UnicodeTreeNodeSchema,
   UnicodeTreeSchema,
+  UnicodeVersionDetailsSchema,
   UnicodeVersionListSchema,
   UnicodeVersionSchema,
 } from "./unicode";
@@ -23,5 +24,6 @@ export type {
   UnicodeTree,
   UnicodeTreeNode,
   UnicodeVersion,
+  UnicodeVersionDetails,
   UnicodeVersionList,
 } from "./unicode";
