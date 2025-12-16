@@ -1,20 +1,35 @@
-import { cloudflare } from "@cloudflare/vite-plugin";
 import tailwindcss from "@tailwindcss/vite";
-import { tanstackRouter } from "@tanstack/router-plugin/vite";
-import react from "@vitejs/plugin-react";
+import { devtools } from "@tanstack/devtools-vite";
+import { tanstackStart } from "@tanstack/react-start/plugin/vite";
+import viteReact from "@vitejs/plugin-react";
+import { nitro } from "nitro/vite";
 import { defineConfig } from "vite";
+import viteTsConfigPaths from "vite-tsconfig-paths";
 
-// https://vite.dev/config/
-export default defineConfig({
+const config = defineConfig({
   plugins: [
-    tanstackRouter({
-      target: "react",
-      autoCodeSplitting: true,
+    devtools(),
+    nitro({
+      preset: "cloudflare_module",
+      cloudflare: {
+        // This is false because we can't use CF environments
+        // in redirected configs which is what this will use.
+        deployConfig: false,
+        nodeCompat: true,
+      },
     }),
-    react(),
+    // this is the plugin that enables path aliases
+    viteTsConfigPaths({
+      projects: ["./tsconfig.json"],
+    }),
     tailwindcss(),
-    cloudflare({
-      configPath: "./wrangler.jsonc",
+    tanstackStart(),
+    viteReact({
+      babel: {
+        plugins: ["babel-plugin-react-compiler"],
+      },
     }),
   ],
 });
+
+export default config;
