@@ -124,6 +124,11 @@ catalogs:
     "@vscode/vsce": 3.7.1
 
   docs:
+    fumadocs-mdx: 14.1.1
+    fumadocs-core: 16.2.5
+    "@types/mdx": 2.0.13
+    fumadocs-ui: 16.2.5
+
     docus: 5.3.1
     nuxt: 4.2.1
     better-sqlite3: 12.5.0

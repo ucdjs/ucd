@@ -11,6 +11,9 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ExplorerIndexRouteImport } from './routes/explorer/index'
+import { Route as DocsIndexRouteImport } from './routes/docs/index'
+import { Route as DocsSplatRouteImport } from './routes/docs/$'
+import { Route as ApiSearchRouteImport } from './routes/api/search'
 import { Route as VVersionRouteRouteImport } from './routes/v/$version/route'
 import { Route as VVersionIndexRouteImport } from './routes/v/$version/index'
 import { Route as ExplorerFilesSplatRouteImport } from './routes/explorer/files.$'
@@ -26,6 +29,21 @@ const IndexRoute = IndexRouteImport.update({
 const ExplorerIndexRoute = ExplorerIndexRouteImport.update({
   id: '/explorer/',
   path: '/explorer/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocsIndexRoute = DocsIndexRouteImport.update({
+  id: '/docs/',
+  path: '/docs/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocsSplatRoute = DocsSplatRouteImport.update({
+  id: '/docs/$',
+  path: '/docs/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiSearchRoute = ApiSearchRouteImport.update({
+  id: '/api/search',
+  path: '/api/search',
   getParentRoute: () => rootRouteImport,
 } as any)
 const VVersionRouteRoute = VVersionRouteRouteImport.update({
@@ -62,6 +80,9 @@ const VVersionBlocksIdRoute = VVersionBlocksIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/v/$version': typeof VVersionRouteRouteWithChildren
+  '/api/search': typeof ApiSearchRoute
+  '/docs/$': typeof DocsSplatRoute
+  '/docs': typeof DocsIndexRoute
   '/explorer': typeof ExplorerIndexRoute
   '/explorer/files/$': typeof ExplorerFilesSplatRoute
   '/v/$version/': typeof VVersionIndexRoute
@@ -71,6 +92,9 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/api/search': typeof ApiSearchRoute
+  '/docs/$': typeof DocsSplatRoute
+  '/docs': typeof DocsIndexRoute
   '/explorer': typeof ExplorerIndexRoute
   '/explorer/files/$': typeof ExplorerFilesSplatRoute
   '/v/$version': typeof VVersionIndexRoute
@@ -82,6 +106,9 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/v/$version': typeof VVersionRouteRouteWithChildren
+  '/api/search': typeof ApiSearchRoute
+  '/docs/$': typeof DocsSplatRoute
+  '/docs/': typeof DocsIndexRoute
   '/explorer/': typeof ExplorerIndexRoute
   '/explorer/files/$': typeof ExplorerFilesSplatRoute
   '/v/$version/': typeof VVersionIndexRoute
@@ -94,6 +121,9 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/v/$version'
+    | '/api/search'
+    | '/docs/$'
+    | '/docs'
     | '/explorer'
     | '/explorer/files/$'
     | '/v/$version/'
@@ -103,6 +133,9 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/api/search'
+    | '/docs/$'
+    | '/docs'
     | '/explorer'
     | '/explorer/files/$'
     | '/v/$version'
@@ -113,6 +146,9 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/v/$version'
+    | '/api/search'
+    | '/docs/$'
+    | '/docs/'
     | '/explorer/'
     | '/explorer/files/$'
     | '/v/$version/'
@@ -124,6 +160,9 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   VVersionRouteRoute: typeof VVersionRouteRouteWithChildren
+  ApiSearchRoute: typeof ApiSearchRoute
+  DocsSplatRoute: typeof DocsSplatRoute
+  DocsIndexRoute: typeof DocsIndexRoute
   ExplorerIndexRoute: typeof ExplorerIndexRoute
   ExplorerFilesSplatRoute: typeof ExplorerFilesSplatRoute
 }
@@ -142,6 +181,27 @@ declare module '@tanstack/react-router' {
       path: '/explorer'
       fullPath: '/explorer'
       preLoaderRoute: typeof ExplorerIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs/': {
+      id: '/docs/'
+      path: '/docs'
+      fullPath: '/docs'
+      preLoaderRoute: typeof DocsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs/$': {
+      id: '/docs/$'
+      path: '/docs/$'
+      fullPath: '/docs/$'
+      preLoaderRoute: typeof DocsSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/search': {
+      id: '/api/search'
+      path: '/api/search'
+      fullPath: '/api/search'
+      preLoaderRoute: typeof ApiSearchRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/v/$version': {
@@ -210,6 +270,9 @@ const VVersionRouteRouteWithChildren = VVersionRouteRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   VVersionRouteRoute: VVersionRouteRouteWithChildren,
+  ApiSearchRoute: ApiSearchRoute,
+  DocsSplatRoute: DocsSplatRoute,
+  DocsIndexRoute: DocsIndexRoute,
   ExplorerIndexRoute: ExplorerIndexRoute,
   ExplorerFilesSplatRoute: ExplorerFilesSplatRoute,
 }

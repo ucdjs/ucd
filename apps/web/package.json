@@ -27,6 +27,9 @@
     "@unicode-utils/core": "catalog:prod",
     "class-variance-authority": "catalog:web",
     "clsx": "catalog:web",
+    "fumadocs-core": "catalog:docs",
+    "fumadocs-mdx": "catalog:docs",
+    "fumadocs-ui": "catalog:docs",
     "lucide-react": "catalog:web",
     "nitro": "catalog:web",
     "react": "catalog:web",
@@ -41,6 +44,7 @@
   "devDependencies": {
     "@luxass/eslint-config": "catalog:linting",
     "@tanstack/devtools-vite": "catalog:web",
+    "@types/mdx": "catalog:docs",
     "@types/node": "catalog:types",
     "@types/react": "catalog:types",
     "@types/react-dom": "catalog:types",
