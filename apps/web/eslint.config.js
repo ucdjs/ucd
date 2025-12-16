@@ -9,5 +9,6 @@ export default luxass({
 }).append({
   ignores: [
     "**/routeTree.gen.ts",
+    ".source/*",
   ],
 });

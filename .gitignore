@@ -42,3 +42,4 @@ data/
 ucd-generated
 .vite-node
 **/.generated
+**/.source/*

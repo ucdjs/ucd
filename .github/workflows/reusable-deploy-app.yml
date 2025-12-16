@@ -17,7 +17,7 @@ on:
         default: false
         type: boolean
       app:
-        description: App to deploy (api, web, docs, or all)
+        description: App to deploy (api, web, or all)
         required: false
         default: all
         type: string
@@ -209,21 +209,11 @@ jobs:
           environment: ${{ inputs.environment }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
 
-      - name: deploy docs
-        id: deploy-docs
-        if: ${{ !inputs.dry-run && matrix.app == 'docs' }}
-        uses: cloudflare/wrangler-action@da0e0dfe58b7a431659754fdf3f186c529afbe65 # v3.14.1
-        with:
-          apiToken: ${{ secrets.CF_API_TOKEN }}
-          workingDirectory: ./apps/docs
-          accountId: ${{ secrets.CF_ACCOUNT_ID }}
-          environment: ${{ inputs.environment }}
-
       - name: extract values and create deployment result
         id: extract-values
         if: ${{ inputs.include-pr-comment }}
         env:
-          DEPLOYMENT_URL: ${{ steps.deploy-api.outputs.deployment-url || steps.deploy-web.outputs.deployment-url || steps.deploy-docs.outputs.deployment-url }}
+          DEPLOYMENT_URL: ${{ steps.deploy-api.outputs.deployment-url || steps.deploy-web.outputs.deployment-url }}
           APP: ${{ matrix.app }}
           DRY_RUN: ${{ inputs.dry-run }}
         run: |
