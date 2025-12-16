@@ -12,7 +12,7 @@ import { RootProvider } from "fumadocs-ui/provider/tanstack";
 import { versionsQueryOptions } from "@/apis/versions";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import appCss from "../styles.css?url";
+import GLOBAL_CSS_URL from "../globals.css?url";
 
 interface MyRouterContext {
   queryClient: QueryClient;
@@ -40,7 +40,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       },
       {
         rel: "stylesheet",
-        href: appCss,
+        href: GLOBAL_CSS_URL,
       },
     ],
   }),
