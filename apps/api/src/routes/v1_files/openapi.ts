@@ -1,7 +1,7 @@
 import { createRoute, z } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
 import { UCD_FILE_STAT_TYPE_HEADER } from "@ucdjs/env";
-import { FileEntryListSchema, UCDStoreManifestSchema } from "@ucdjs/schemas";
+import { FileEntryListSchema } from "@ucdjs/schemas";
 import { cache } from "hono/cache";
 import { MAX_AGE_ONE_WEEK_SECONDS } from "../../constants";
 import { generateReferences, OPENAPI_TAGS } from "../../openapi";
@@ -71,68 +71,6 @@ const PATTERN_QUERY_PARAM = {
     },
   },
 } as const;
-
-export const GET_UCD_STORE = createRoute({
-  method: "get",
-  path: "/.ucd-store.json",
-  tags: [OPENAPI_TAGS.FILES],
-  middleware: [
-    cache({
-      cacheName: "ucdjs:v1_files:ucd-store",
-      cacheControl: `max-age=${MAX_AGE_ONE_WEEK_SECONDS}`, // 7 days
-    }),
-  ],
-  description: "Retrieve the UCD Store manifest",
-  responses: {
-    200: {
-      content: {
-        "application/json": {
-          schema: UCDStoreManifestSchema,
-          examples: {
-            "ucd-store": {
-              summary: "UCD Store Manifest",
-              value: {
-                "15.1.0": {
-                  expectedFiles: [
-                    "15.1.0/ucd/UnicodeData.txt",
-                    "15.1.0/ucd/PropList.txt",
-                    "15.1.0/ucd/emoji/emoji-data.txt",
-                  ],
-                },
-                "15.0.0": {
-                  expectedFiles: [
-                    "15.0.0/ucd/UnicodeData.txt",
-                    "15.0.0/ucd/PropList.txt",
-                  ],
-                },
-                "16.0.0": {
-                  expectedFiles: [
-                    "16.0.0/ucd/UnicodeData.txt",
-                    "16.0.0/ucd/PropList.txt",
-                    "16.0.0/ucd/emoji/emoji-data.txt",
-                  ],
-                },
-                "17.0.0": {
-                  expectedFiles: [
-                    "17.0.0/ucd/UnicodeData.txt",
-                    "17.0.0/ucd/PropList.txt",
-                    "17.0.0/ucd/emoji/emoji-data.txt",
-                  ],
-                },
-              },
-            },
-          },
-        },
-      },
-      description: "The UCD Store manifest",
-    },
-    ...(generateReferences([
-      429,
-      500,
-      502,
-    ])),
-  },
-});
 
 export const WILDCARD_ROUTE = createRoute({
   method: "get",

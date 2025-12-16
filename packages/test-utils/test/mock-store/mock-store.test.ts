@@ -325,12 +325,12 @@ describe("mockStoreApi", () => {
     });
   });
 
-  describe("endpoint: /api/v1/files/.ucd-store.json", () => {
+  describe("endpoint: /.well-known/ucd-store.json", () => {
     it("should return default manifest", async () => {
       mockStoreApi();
 
       const response = await fetch(
-        "https://api.ucdjs.dev/api/v1/files/.ucd-store.json",
+        "https://api.ucdjs.dev/.well-known/ucd-store.json",
       );
       expect(response.ok).toBe(true);
 
@@ -345,7 +345,7 @@ describe("mockStoreApi", () => {
       });
 
       const response = await fetch(
-        "https://api.ucdjs.dev/api/v1/files/.ucd-store.json",
+        "https://api.ucdjs.dev/.well-known/ucd-store.json",
       );
       const data = await response.json();
 
@@ -360,12 +360,12 @@ describe("mockStoreApi", () => {
 
       mockStoreApi({
         responses: {
-          "/api/v1/files/.ucd-store.json": customManifest,
+          "/.well-known/ucd-store.json": customManifest,
         },
       });
 
       const response = await fetch(
-        "https://api.ucdjs.dev/api/v1/files/.ucd-store.json",
+        "https://api.ucdjs.dev/.well-known/ucd-store.json",
       );
       const data = await response.json();
 
@@ -387,7 +387,7 @@ describe("mockStoreApi", () => {
         version: "0.1",
         endpoints: {
           files: "/api/v1/files",
-          manifest: "/api/v1/files/.ucd-store.json",
+          manifest: "/.well-known/ucd-store.json",
           versions: "/api/v1/versions",
         },
       });
@@ -425,7 +425,7 @@ describe("mockStoreApi", () => {
         version: "0.1",
         endpoints: {
           files: "/api/v1/files",
-          manifest: "/api/v1/files/.ucd-store.json",
+          manifest: "/.well-known/ucd-store.json",
           versions: "/api/v1/versions",
         },
       };
@@ -599,7 +599,7 @@ describe("mockStoreApi", () => {
         `${customBase}/api/v1/versions`,
         `${customBase}/api/v1/versions/16.0.0/file-tree`,
         `${customBase}/api/v1/files/test.txt`,
-        `${customBase}/api/v1/files/.ucd-store.json`,
+        `${customBase}/.well-known/ucd-store.json`,
         `${customBase}/.well-known/ucd-config.json`,
       ];
 

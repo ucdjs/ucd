@@ -1,4 +1,3 @@
-import type { UCDStoreManifest } from "@ucdjs/schemas";
 import type { HonoEnv } from "../../types";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { createGlobMatcher, isValidGlobPattern } from "@ucdjs-internal/shared";
@@ -8,11 +7,9 @@ import { cache } from "hono/cache";
 import { HTML_EXTENSIONS, MAX_AGE_ONE_WEEK_SECONDS, V1_FILES_ROUTER_BASE_PATH } from "../../constants";
 import { badGateway, badRequest, notFound } from "../../lib/errors";
 import { parseUnicodeDirectory } from "../../lib/files";
-import { GET_UCD_STORE, METADATA_WILDCARD_ROUTE, SEARCH_ROUTE, WILDCARD_ROUTE } from "./openapi";
+import { METADATA_WILDCARD_ROUTE, SEARCH_ROUTE, WILDCARD_ROUTE } from "./openapi";
 
 export const V1_FILES_ROUTER = new OpenAPIHono<HonoEnv>().basePath(V1_FILES_ROUTER_BASE_PATH);
-
-const STORE_MANIFEST_PREFIX = "manifest/";
 
 function isInvalidPath(raw: string): boolean {
   const lower = raw.toLowerCase();
@@ -33,70 +30,6 @@ function isInvalidPath(raw: string): boolean {
 
   return false;
 }
-
-V1_FILES_ROUTER.openapi(GET_UCD_STORE, async (c) => {
-  const bucket = c.env.UCD_BUCKET;
-  if (!bucket) {
-    console.error("[v1_files]: UCD_BUCKET binding not configured");
-    return badGateway(c);
-  }
-
-  // List all version directories under the manifest prefix
-  const listResult = await bucket.list({ prefix: STORE_MANIFEST_PREFIX });
-
-  if (!listResult.objects.length) {
-    console.error("[v1_files]: no manifest versions found in bucket");
-    return c.json({} satisfies UCDStoreManifest, 200);
-  }
-
-  // Extract unique version directories from the object keys
-  // Keys look like: manifest/17.0.0/manifest.json
-  const versions = new Set<string>();
-  for (const obj of listResult.objects) {
-    const relativePath = obj.key.slice(STORE_MANIFEST_PREFIX.length);
-    const version = relativePath.split("/")[0];
-    if (version) {
-      versions.add(version);
-    }
-  }
-
-  // Fetch manifest.json for each version
-  const manifest: UCDStoreManifest = {};
-  let latestUploaded: Date | undefined;
-
-  await Promise.all(
-    Array.from(versions).map(async (version) => {
-      const key = `${STORE_MANIFEST_PREFIX}${version}/manifest.json`;
-      const object = await bucket.get(key);
-
-      if (!object) {
-        return;
-      }
-
-      try {
-        const data = await object.json<UCDStoreManifest[typeof version]>();
-        manifest[version] = data;
-
-        // Track the latest upload time for Last-Modified header
-        if (!latestUploaded || object.uploaded > latestUploaded) {
-          latestUploaded = object.uploaded;
-        }
-      } catch (error) {
-        console.error(`[v1_files]: failed to parse manifest for version ${version}:`, error);
-      }
-    }),
-  );
-
-  const headers: Record<string, string> = {
-    "Cache-Control": "public, max-age=3600", // 1 hour cache
-  };
-
-  if (latestUploaded) {
-    headers["Last-Modified"] = latestUploaded.toUTCString();
-  }
-
-  return c.json(manifest, 200, headers);
-});
 
 // Search endpoint - must be registered BEFORE the wildcard route
 V1_FILES_ROUTER.openapi(SEARCH_ROUTE, async (c) => {

@@ -1,9 +1,9 @@
 import { createRoute } from "@hono/zod-openapi";
-import { UCDWellKnownConfigSchema } from "@ucdjs/schemas";
+import { UCDStoreManifestSchema, UCDWellKnownConfigSchema } from "@ucdjs/schemas";
 import { cache } from "hono/cache";
-import { MAX_AGE_ONE_DAY_SECONDS, V1_FILES_ROUTER_BASE_PATH, V1_VERSIONS_ROUTER_BASE_PATH } from "../../constants";
-import { OPENAPI_TAGS } from "../../openapi";
-import { UCD_CONFIG_ROUTE_DOCS } from "./docs";
+import { MAX_AGE_ONE_DAY_SECONDS, MAX_AGE_ONE_WEEK_SECONDS, V1_FILES_ROUTER_BASE_PATH, V1_VERSIONS_ROUTER_BASE_PATH } from "../../constants";
+import { generateReferences, OPENAPI_TAGS } from "../../openapi";
+import { UCD_CONFIG_ROUTE_DOCS, UCD_STORE_ROUTE_DOCS } from "./docs";
 
 export const UCD_CONFIG_ROUTE = createRoute({
   method: "get",
@@ -38,5 +38,67 @@ export const UCD_CONFIG_ROUTE = createRoute({
       },
       description: "Retrieves the UCD configuration",
     },
+  },
+});
+
+export const UCD_STORE_ROUTE = createRoute({
+  method: "get",
+  path: "/ucd-store.json",
+  tags: [OPENAPI_TAGS.WELL_KNOWN],
+  middleware: [
+    cache({
+      cacheName: "ucdjs:well-known:ucd-store",
+      cacheControl: `max-age=${MAX_AGE_ONE_WEEK_SECONDS}`, // 7 days
+    }),
+  ],
+  description: UCD_STORE_ROUTE_DOCS,
+  responses: {
+    200: {
+      content: {
+        "application/json": {
+          schema: UCDStoreManifestSchema,
+          examples: {
+            "ucd-store": {
+              summary: "UCD Store Manifest",
+              value: {
+                "15.1.0": {
+                  expectedFiles: [
+                    "15.1.0/ucd/UnicodeData.txt",
+                    "15.1.0/ucd/PropList.txt",
+                    "15.1.0/ucd/emoji/emoji-data.txt",
+                  ],
+                },
+                "15.0.0": {
+                  expectedFiles: [
+                    "15.0.0/ucd/UnicodeData.txt",
+                    "15.0.0/ucd/PropList.txt",
+                  ],
+                },
+                "16.0.0": {
+                  expectedFiles: [
+                    "16.0.0/ucd/UnicodeData.txt",
+                    "16.0.0/ucd/PropList.txt",
+                    "16.0.0/ucd/emoji/emoji-data.txt",
+                  ],
+                },
+                "17.0.0": {
+                  expectedFiles: [
+                    "17.0.0/ucd/UnicodeData.txt",
+                    "17.0.0/ucd/PropList.txt",
+                    "17.0.0/ucd/emoji/emoji-data.txt",
+                  ],
+                },
+              },
+            },
+          },
+        },
+      },
+      description: "The UCD Store manifest",
+    },
+    ...(generateReferences([
+      429,
+      500,
+      502,
+    ])),
   },
 });
