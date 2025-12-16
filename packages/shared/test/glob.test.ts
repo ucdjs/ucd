@@ -208,10 +208,23 @@ describe("glob", () => {
         expect(isValidGlobPattern(pattern, limits)).toBe(false);
       });
 
+      it("should reject sequential brace groups that exceed limit multiplicatively", () => {
+        // {a,b,c,d}{a,b,c,d} = 4 × 4 = 16 expansions, should exceed limit of 8
+        expect(isValidGlobPattern("{a,b,c,d}{a,b,c,d}", { maxBraceExpansions: 8 })).toBe(false);
+        // {a,b,c}{d,e,f} = 3 × 3 = 9 expansions, should exceed limit of 8
+        expect(isValidGlobPattern("{a,b,c}{d,e,f}", { maxBraceExpansions: 8 })).toBe(false);
+        // {a,b}{c,d}{e,f} = 2 × 2 × 2 = 8 expansions, should exceed limit of 7
+        expect(isValidGlobPattern("{a,b}{c,d}{e,f}", { maxBraceExpansions: 7 })).toBe(false);
+      });
+
       it("should accept patterns within brace expansion limit", () => {
         const options = Array.from({ length: MAX_GLOB_BRACE_EXPANSIONS }, (_, i) => `p${i}`).join(",");
         expect(isValidGlobPattern(`{${options}}`)).toBe(true);
         expect(isValidGlobPattern("{a,b}", { maxBraceExpansions: 3 })).toBe(true);
+        // Sequential groups that multiply to within limit
+        expect(isValidGlobPattern("{a,b}{c,d}", { maxBraceExpansions: 5 })).toBe(true); // 2 × 2 = 4
+        expect(isValidGlobPattern("{a,b,c}{d,e}", { maxBraceExpansions: 7 })).toBe(true); // 3 × 2 = 6
+        expect(isValidGlobPattern("{a,b}{c,d}{e,f}", { maxBraceExpansions: 8 })).toBe(true); // 2 × 2 × 2 = 8
       });
     });
 
@@ -342,6 +355,10 @@ describe("glob", () => {
         expect(isValidGlobPattern(`{${manyOptions}}`, apiLimits)).toBe(false);
         expect(isValidGlobPattern("!(!(!(!file)))", apiLimits)).toBe(false);
         expect(isValidGlobPattern("*".repeat(20), apiLimits)).toBe(false);
+        // Sequential brace groups that multiply to exceed limit (4 × 4 = 16 > 8)
+        expect(isValidGlobPattern("{a,b,c,d}{a,b,c,d}", apiLimits)).toBe(false);
+        // Sequential brace groups that multiply to exceed limit (3 × 3 = 9 > 8)
+        expect(isValidGlobPattern("{a,b,c}{d,e,f}", apiLimits)).toBe(false);
       });
     });
   });

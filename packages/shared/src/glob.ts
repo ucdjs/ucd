@@ -82,9 +82,10 @@ function countWildcards(pattern: string): { stars: number; questions: number } {
 }
 
 function analyzeBraces(pattern: string): { expansions: number; valid: boolean } {
-  let expansions = 0;
   let braceDepth = 0;
-  let optionsInBrace = 0;
+  // Track sequential top-level brace groups for multiplicative expansion
+  const topLevelGroups: number[] = [];
+  let currentTopLevelOptions = 0;
 
   for (let i = 0; i < pattern.length; i += 1) {
     const ch = pattern.charAt(i);
@@ -96,20 +97,34 @@ function analyzeBraces(pattern: string): { expansions: number; valid: boolean } 
 
     if (ch === "{") {
       braceDepth += 1;
-      if (braceDepth === 1) optionsInBrace = 1;
+      if (braceDepth === 1) {
+        // Starting a new top-level brace group
+        currentTopLevelOptions = 1;
+      }
     } else if (ch === "}") {
-      if (braceDepth === 0) return { expansions, valid: false };
+      if (braceDepth === 0) return { expansions: 0, valid: false };
       braceDepth -= 1;
       if (braceDepth === 0) {
-        expansions += optionsInBrace;
-        optionsInBrace = 0;
+        // Completed a top-level brace group
+        topLevelGroups.push(currentTopLevelOptions);
+        currentTopLevelOptions = 0;
       }
     } else if (ch === "," && braceDepth === 1) {
-      optionsInBrace += 1;
+      // Count options only at top level
+      currentTopLevelOptions += 1;
     }
   }
 
-  if (braceDepth !== 0) return { expansions, valid: false };
+  if (braceDepth !== 0) return { expansions: 0, valid: false };
+
+  // Calculate multiplicative expansion for sequential brace groups
+  // If there are no brace groups, return 0 (no expansions)
+  if (topLevelGroups.length === 0) {
+    return { expansions: 0, valid: true };
+  }
+
+  // Multiply all sequential top-level brace groups
+  const expansions = topLevelGroups.reduce((product, count) => product * count, 1);
   return { expansions, valid: true };
 }
 
