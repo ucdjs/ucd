@@ -8,7 +8,7 @@ describe("createVersionsResource", () => {
   const baseUrl = UCDJS_API_BASE_URL;
   const endpoints = {
     files: "/api/v1/files",
-    manifest: "/api/v1/files/.ucd-store.json",
+    manifest: "/.well-known/ucd-store.json",
     versions: "/api/v1/versions",
   };
 
