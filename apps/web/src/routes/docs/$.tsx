@@ -1,4 +1,4 @@
-/* eslint-disable react-hooks/static-components */
+/* eslint-disable react-hooks/static-components -- Fumadocs dynamically creates components per route */
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { useFumadocsLoader } from "fumadocs-core/source/client";
@@ -11,7 +11,6 @@ import {
   DocsTitle,
 } from "fumadocs-ui/layouts/docs/page";
 import defaultMdxComponents from "fumadocs-ui/mdx";
-import { useMemo } from "react";
 import { source } from "@/lib/docs-loader";
 import { baseOptions } from "@/lib/layout.shared";
 
@@ -30,17 +29,17 @@ const serverLoader = createServerFn({
   });
 
 const clientLoader = browserCollections.docs.createClientLoader({
-  component({ toc, frontmatter, default: MDX }) {
+  component({
+    toc,
+    frontmatter,
+    default: MDX,
+  }) {
     return (
       <DocsPage toc={toc}>
         <DocsTitle>{frontmatter.title}</DocsTitle>
         <DocsDescription>{frontmatter.description}</DocsDescription>
         <DocsBody>
-          <MDX
-            components={{
-              ...defaultMdxComponents,
-            }}
-          />
+          <MDX components={defaultMdxComponents} />
         </DocsBody>
       </DocsPage>
     );
@@ -61,7 +60,9 @@ function Page() {
   const data = Route.useLoaderData();
   const { pageTree } = useFumadocsLoader(data);
 
-  const Content = useMemo(() => clientLoader.getComponent(data.path), [data.path]);
+  // Fumadocs dynamically creates components based on the page path
+  // This is intentional - components are created per route
+  const Content = clientLoader.getComponent(data.path);
 
   return (
     <DocsLayout {...baseOptions()} tree={pageTree}>
