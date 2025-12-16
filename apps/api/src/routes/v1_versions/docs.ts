@@ -10,6 +10,17 @@ export const LIST_ALL_UNICODE_VERSIONS_ROUTE_DOCS = dedent`
     - Supports **caching** for performance optimization
 `;
 
+export const GET_VERSION_DOCS = dedent`
+    ## Get Unicode Version Details
+
+    This endpoint retrieves detailed information about a specific Unicode version.
+
+    - Provides **version metadata** such as version name, documentation URL, release date, and type (stable/draft)
+    - Includes **location information** (UCD URL and mapped version)
+    - Returns **statistics** about characters, blocks, and scripts (if available)
+    - Supports **caching** for performance optimization
+`;
+
 export const GET_VERSION_FILE_TREE_ROUTE_DOCS = dedent`
     This endpoint provides a **structured list of all files** inside the [\`ucd folder\`](https://unicode.org/Public/UCD/latest/ucd) associated with a specific Unicode version.
 
