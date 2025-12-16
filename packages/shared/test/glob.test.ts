@@ -1,5 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { createGlobMatcher, DEFAULT_PICOMATCH_OPTIONS, isValidGlobPattern, matchGlob, MAX_BRACE_ALTERNATIVES, MAX_NESTING_DEPTH, MAX_PATTERN_LENGTH } from "../src/glob";
+import {
+  createGlobMatcher,
+  DEFAULT_PICOMATCH_OPTIONS,
+  isValidGlobPattern,
+  matchGlob,
+  MAX_GLOB_BRACE_EXPANSIONS,
+  MAX_GLOB_LENGTH,
+  MAX_GLOB_QUESTIONS,
+  MAX_GLOB_SEGMENTS,
+  MAX_GLOB_STARS,
+} from "../src/glob";
 
 describe("glob", () => {
   // eslint-disable-next-line test/prefer-lowercase-title
@@ -118,121 +128,216 @@ describe("glob", () => {
   });
 
   describe("isValidGlobPattern", () => {
-    it("should return true for valid simple patterns", () => {
-      expect(isValidGlobPattern("*.txt")).toBe(true);
-      expect(isValidGlobPattern("file.txt")).toBe(true);
-      expect(isValidGlobPattern("*")).toBe(true);
-      expect(isValidGlobPattern("?")).toBe(true);
+    describe("valid patterns", () => {
+      it.each([
+        "*.txt",
+        "src/**/*.ts",
+        "*.{txt,xml}",
+        "file?.txt",
+        "file[123].txt",
+        "Uni*",
+        "*Data.txt",
+        "**/*",
+        "a/b/c",
+        "path/to/file.txt",
+      ])("should accept valid pattern: %s", (pattern) => {
+        expect(isValidGlobPattern(pattern)).toBe(true);
+      });
     });
 
-    it("should return true for valid patterns with brackets", () => {
-      expect(isValidGlobPattern("file[123].txt")).toBe(true);
-      expect(isValidGlobPattern("[a-z]*.txt")).toBe(true);
-      expect(isValidGlobPattern("file[!0-9].txt")).toBe(true);
+    describe("invalid input types", () => {
+      it.each([
+        [""],
+        [undefined as unknown as string],
+        [null as unknown as string],
+        [123 as unknown as string],
+        [[] as unknown as string],
+      ])("should reject invalid input: %s", (input) => {
+        expect(isValidGlobPattern(input)).toBe(false);
+      });
     });
 
-    it("should return true for valid patterns with braces", () => {
-      expect(isValidGlobPattern("*.{txt,xml}")).toBe(true);
-      expect(isValidGlobPattern("{foo,bar,baz}")).toBe(true);
-      expect(isValidGlobPattern("file.{txt,md,json}")).toBe(true);
+    describe("whitespace-only patterns", () => {
+      it.each([
+        " ",
+        "  ",
+        "\t",
+        "\n",
+        " \t\n ",
+      ])("should reject whitespace-only pattern: %s", (pattern) => {
+        expect(isValidGlobPattern(pattern)).toBe(false);
+      });
     });
 
-    it("should return true for valid complex patterns", () => {
-      expect(isValidGlobPattern("**/*.txt")).toBe(true);
-      expect(isValidGlobPattern("src/**/*.{ts,tsx}")).toBe(true);
-      expect(isValidGlobPattern("**/[A-Z]*.txt")).toBe(true);
+    // eslint-disable-next-line test/prefer-lowercase-title
+    describe("DoS protection - length limits", () => {
+      it.each([
+        [MAX_GLOB_LENGTH + 1, {}],
+        [10, { maxLength: 5 }],
+        [100, { maxLength: 50 }],
+      ])("should reject patterns longer than limit (length: %d)", (length, limits) => {
+        const pattern = "a".repeat(length);
+        expect(isValidGlobPattern(pattern, limits)).toBe(false);
+      });
+
+      it("should accept patterns within length limit", () => {
+        expect(isValidGlobPattern("a".repeat(MAX_GLOB_LENGTH))).toBe(true);
+        expect(isValidGlobPattern("a".repeat(5), { maxLength: 10 })).toBe(true);
+      });
     });
 
-    it("should return false for empty patterns", () => {
-      expect(isValidGlobPattern("")).toBe(false);
-      expect(isValidGlobPattern("   ")).toBe(false);
+    // eslint-disable-next-line test/prefer-lowercase-title
+    describe("DoS protection - segment limits", () => {
+      it.each([
+        [MAX_GLOB_SEGMENTS + 1, {}],
+        [3, { maxSegments: 2 }],
+        [10, { maxSegments: 5 }],
+      ])("should reject patterns with too many segments (segments: %d)", (segments, limits) => {
+        const pattern = Array.from({ length: segments }, () => "seg").join("/");
+        expect(isValidGlobPattern(pattern, limits)).toBe(false);
+      });
+
+      it("should accept patterns within segment limit", () => {
+        const pattern = Array.from({ length: MAX_GLOB_SEGMENTS }, () => "seg").join("/");
+        expect(isValidGlobPattern(pattern)).toBe(true);
+        expect(isValidGlobPattern("a/b", { maxSegments: 3 })).toBe(true);
+      });
     });
 
-    it("should return true for patterns with special chars that are valid", () => {
-      // These are actually valid glob patterns
-      expect(isValidGlobPattern("Uni*")).toBe(true);
-      expect(isValidGlobPattern("*Data*")).toBe(true);
-      expect(isValidGlobPattern("*.{txt,xml,json}")).toBe(true);
+    // eslint-disable-next-line test/prefer-lowercase-title
+    describe("DoS protection - brace expansion limits", () => {
+      it.each([
+        [MAX_GLOB_BRACE_EXPANSIONS + 1, {}],
+        [3, { maxBraceExpansions: 2 }],
+        [10, { maxBraceExpansions: 5 }],
+      ])("should reject patterns with too many brace expansions (expansions: %d)", (expansions, limits) => {
+        const options = Array.from({ length: expansions }, (_, i) => `p${i}`).join(",");
+        const pattern = `{${options}}`;
+        expect(isValidGlobPattern(pattern, limits)).toBe(false);
+      });
+
+      it("should reject sequential brace groups that exceed limit multiplicatively", () => {
+        // {a,b,c,d}{a,b,c,d} = 4 × 4 = 16 expansions, should exceed limit of 8
+        expect(isValidGlobPattern("{a,b,c,d}{a,b,c,d}", { maxBraceExpansions: 8 })).toBe(false);
+        // {a,b,c}{d,e,f} = 3 × 3 = 9 expansions, should exceed limit of 8
+        expect(isValidGlobPattern("{a,b,c}{d,e,f}", { maxBraceExpansions: 8 })).toBe(false);
+        // {a,b}{c,d}{e,f} = 2 × 2 × 2 = 8 expansions, should exceed limit of 7
+        expect(isValidGlobPattern("{a,b}{c,d}{e,f}", { maxBraceExpansions: 7 })).toBe(false);
+      });
+
+      it("should accept patterns within brace expansion limit", () => {
+        const options = Array.from({ length: MAX_GLOB_BRACE_EXPANSIONS }, (_, i) => `p${i}`).join(",");
+        expect(isValidGlobPattern(`{${options}}`)).toBe(true);
+        expect(isValidGlobPattern("{a,b}", { maxBraceExpansions: 3 })).toBe(true);
+        // Sequential groups that multiply to within limit
+        expect(isValidGlobPattern("{a,b}{c,d}", { maxBraceExpansions: 5 })).toBe(true); // 2 × 2 = 4
+        expect(isValidGlobPattern("{a,b,c}{d,e}", { maxBraceExpansions: 7 })).toBe(true); // 3 × 2 = 6
+        expect(isValidGlobPattern("{a,b}{c,d}{e,f}", { maxBraceExpansions: 8 })).toBe(true); // 2 × 2 × 2 = 8
+      });
+
+      it("should correctly count nested brace expansions", () => {
+        // {a{1,2},b} expands to a1, a2, b = 3 total expansions
+        expect(isValidGlobPattern("{a{1,2},b}", { maxBraceExpansions: 3 })).toBe(true);
+        expect(isValidGlobPattern("{a{1,2},b}", { maxBraceExpansions: 2 })).toBe(false);
+        // {a{1,2}{3,4},b} expands to a13, a14, a23, a24, b = 5 total expansions
+        expect(isValidGlobPattern("{a{1,2}{3,4},b}", { maxBraceExpansions: 5 })).toBe(true);
+        expect(isValidGlobPattern("{a{1,2}{3,4},b}", { maxBraceExpansions: 4 })).toBe(false);
+      });
     });
 
-    describe("malicious pattern detection", () => {
-      it("should reject patterns that are too long", () => {
-        const longPattern = "a".repeat(MAX_PATTERN_LENGTH + 1);
-        const okPattern = "a".repeat(MAX_PATTERN_LENGTH);
-
-        expect.soft(isValidGlobPattern(longPattern)).toBe(false);
-        expect.soft(isValidGlobPattern(okPattern)).toBe(true);
+    // eslint-disable-next-line test/prefer-lowercase-title
+    describe("DoS protection - wildcard limits", () => {
+      it.each([
+        ["*", MAX_GLOB_STARS + 1, {}],
+        ["?", MAX_GLOB_QUESTIONS + 1, {}],
+        ["*", 2, { maxStars: 1 }],
+        ["?", 2, { maxQuestions: 1 }],
+        ["*", 20, { maxStars: 10 }],
+        ["?", 20, { maxQuestions: 10 }],
+      ])("should reject patterns with too many %s wildcards (count: %d)", (wildcard, count, limits) => {
+        const pattern = wildcard.repeat(count);
+        expect(isValidGlobPattern(pattern, limits)).toBe(false);
       });
 
-      it("should reject patterns with excessive consecutive wildcards", () => {
-        expect(isValidGlobPattern("****")).toBe(false);
-        expect(isValidGlobPattern("*****")).toBe(false);
-        expect(isValidGlobPattern("file****name")).toBe(false);
+      it("should accept patterns within wildcard limits", () => {
+        expect(isValidGlobPattern("*".repeat(MAX_GLOB_STARS))).toBe(true);
+        expect(isValidGlobPattern("?".repeat(MAX_GLOB_QUESTIONS))).toBe(true);
+        expect(isValidGlobPattern("**", { maxStars: 3 })).toBe(true);
+        expect(isValidGlobPattern("??", { maxQuestions: 3 })).toBe(true);
+      });
+    });
 
-        // ** (globstar) and *** should be allowed
-        expect(isValidGlobPattern("**")).toBe(true);
-        expect(isValidGlobPattern("***")).toBe(true);
-        expect(isValidGlobPattern("**/*.txt")).toBe(true);
+    describe("malformed patterns", () => {
+      it.each([
+        "{unclosed",
+        "}unopened",
+        "test\0file",
+        "{{nested",
+        "}}nested",
+        "{{{{too",
+        "}}}}deep",
+      ])("should reject malformed pattern: %s", (pattern) => {
+        expect(isValidGlobPattern(pattern)).toBe(false);
+      });
+    });
+
+    describe("security - null bytes and special characters", () => {
+      it.each([
+        "test\0file",
+        "pattern\0with\0nulls",
+        "\0start",
+        "end\0",
+      ])("should reject patterns with null bytes: %s", (pattern) => {
+        expect(isValidGlobPattern(pattern)).toBe(false);
+      });
+    });
+
+    // eslint-disable-next-line test/prefer-lowercase-title
+    describe("API usage scenarios", () => {
+      it("should accept common file patterns", () => {
+        expect(isValidGlobPattern("*.txt")).toBe(true);
+        expect(isValidGlobPattern("UnicodeData.txt")).toBe(true);
+        expect(isValidGlobPattern("*.{txt,xml}")).toBe(true);
+        expect(isValidGlobPattern("**/*.ts")).toBe(true);
       });
 
-      it("should reject patterns with too many brace alternatives", () => {
-        const manyAlternatives = `{${Array.from({ length: MAX_BRACE_ALTERNATIVES + 1 }, (_, i) => String.fromCharCode(97 + i)).join(",")}}`;
-        const okAlternatives = `{${Array.from({ length: MAX_BRACE_ALTERNATIVES }, (_, i) => String.fromCharCode(97 + i)).join(",")}}`;
-
-        expect.soft(isValidGlobPattern(manyAlternatives)).toBe(false);
-        expect.soft(isValidGlobPattern(okAlternatives)).toBe(true);
+      it("should reject excessive patterns that could cause DoS", () => {
+        // Very long pattern
+        expect(isValidGlobPattern("a".repeat(300))).toBe(false);
+        // Too many segments
+        expect(isValidGlobPattern(Array.from({ length: 20 }, () => "seg").join("/"))).toBe(false);
+        // Too many brace expansions
+        const manyOptions = Array.from({ length: 30 }, (_, i) => `opt${i}`).join(",");
+        expect(isValidGlobPattern(`{${manyOptions}}`)).toBe(false);
+        // Too many wildcards
+        expect(isValidGlobPattern("*".repeat(40))).toBe(false);
+        expect(isValidGlobPattern("?".repeat(40))).toBe(false);
       });
 
-      it("should reject patterns with too deep nesting", () => {
-        const deeplyNested = `${"{a,".repeat(MAX_NESTING_DEPTH + 1)}x${"}".repeat(MAX_NESTING_DEPTH + 1)}`;
-        const okNesting = `${"{a,".repeat(MAX_NESTING_DEPTH)}x${"}".repeat(MAX_NESTING_DEPTH)}`;
+      it("should work with custom limits for API", () => {
+        const apiLimits = {
+          maxLength: 128,
+          maxSegments: 8,
+          maxBraceExpansions: 8,
+          maxStars: 16,
+          maxQuestions: 16,
+        };
 
-        expect.soft(isValidGlobPattern(deeplyNested)).toBe(false);
-        expect.soft(isValidGlobPattern(okNesting)).toBe(true);
-      });
+        // Valid patterns for API
+        expect(isValidGlobPattern("*.txt", apiLimits)).toBe(true);
+        expect(isValidGlobPattern("UnicodeData.txt", apiLimits)).toBe(true);
+        expect(isValidGlobPattern("*.{txt,xml}", apiLimits)).toBe(true);
 
-      it("should reject patterns with unbalanced brackets", () => {
-        expect(isValidGlobPattern("file[123.txt")).toBe(false);
-        expect(isValidGlobPattern("file{a,b.txt")).toBe(false);
-        expect(isValidGlobPattern("file(test.txt")).toBe(false);
-        expect(isValidGlobPattern("file]123.txt")).toBe(false);
-        expect(isValidGlobPattern("file}a,b.txt")).toBe(false);
-      });
-
-      it("should allow escaped special characters", () => {
-        expect(isValidGlobPattern("file\\[123\\].txt")).toBe(true);
-        expect(isValidGlobPattern("file\\{a,b\\}.txt")).toBe(true);
-      });
-
-      it("should handle consecutive backslashes correctly", () => {
-        // \\\\ is two escaped backslashes, so the { is NOT escaped
-        // This pattern has 6 alternatives which exceeds MAX_BRACE_ALTERNATIVES (5)
-        expect(isValidGlobPattern("\\\\{a,b,c,d,e,f}")).toBe(false);
-
-        // Single backslash escapes the brace - both braces must be escaped for balanced pattern
-        expect(isValidGlobPattern("\\{a,b,c,d,e,f}")).toBe(false);
-
-        // \\\\ + \{ = escaped backslash + escaped brace (both braces escaped)
-        expect(isValidGlobPattern("\\\\\\{a,b,c,d,e,f\\}")).toBe(true);
-      });
-
-      it("should count alternatives per brace level independently (nested braces)", () => {
-        // Outer brace has 2 alternatives, inner has 5 alternatives - should be valid
-        expect(isValidGlobPattern("{a{b,c,d,e,f},g}")).toBe(true);
-
-        // Outer brace has 2 alternatives, inner has 6 alternatives - should be invalid
-        expect(isValidGlobPattern("{a{b,c,d,e,f,g},h}")).toBe(false);
-
-        // Both levels at max (5 alternatives each)
-        expect(isValidGlobPattern("{a{1,2,3,4,5},b,c,d,e}")).toBe(true);
-      });
-
-      it("should count alternatives independently for sequential brace groups", () => {
-        // Two sequential groups, each with 5 alternatives - should be valid
-        expect(isValidGlobPattern("{a,b,c,d,e}{f,g,h,i,j}")).toBe(true);
-
-        // First group valid, second exceeds limit - should be invalid
-        expect(isValidGlobPattern("{a,b,c,d,e}{f,g,h,i,j,k}")).toBe(false);
+        // Patterns that exceed API limits
+        expect(isValidGlobPattern("a".repeat(130), apiLimits)).toBe(false);
+        expect(isValidGlobPattern(Array.from({ length: 10 }, () => "seg").join("/"), apiLimits)).toBe(false);
+        const manyOptions = Array.from({ length: 10 }, (_, i) => `opt${i}`).join(",");
+        expect(isValidGlobPattern(`{${manyOptions}}`, apiLimits)).toBe(false);
+        expect(isValidGlobPattern("*".repeat(20), apiLimits)).toBe(false);
+        // Sequential brace groups that multiply to exceed limit (4 × 4 = 16 > 8)
+        expect(isValidGlobPattern("{a,b,c,d}{a,b,c,d}", apiLimits)).toBe(false);
+        // Sequential brace groups that multiply to exceed limit (3 × 3 = 9 > 8)
+        expect(isValidGlobPattern("{a,b,c}{d,e,f}", apiLimits)).toBe(false);
       });
     });
   });

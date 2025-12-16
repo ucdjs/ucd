@@ -232,7 +232,13 @@ V1_FILES_ROUTER.get("/:wildcard{.*}?", cache({
     if (pattern) {
       // eslint-disable-next-line no-console
       console.info(`[v1_files]: applying glob pattern filter: ${pattern}`);
-      if (!isValidGlobPattern(pattern)) {
+      if (!isValidGlobPattern(pattern, {
+        maxLength: 128,
+        maxSegments: 8,
+        maxBraceExpansions: 8,
+        maxStars: 16,
+        maxQuestions: 16,
+      })) {
         return badRequest({
           message: "Invalid glob pattern",
         });

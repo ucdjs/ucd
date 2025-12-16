@@ -25,35 +25,6 @@ export interface GlobMatchOptions {
   dot?: boolean;
 }
 
-/**
- * Check if a string matches a glob pattern.
- * Uses case-insensitive matching by default.
- *
- * @param pattern - The glob pattern to match against (e.g., `*.txt`, `Uni*`, `*Data*`)
- * @param value - The string to test against the pattern
- * @param options - Optional configuration for matching behavior
- * @returns `true` if the value matches the pattern, `false` otherwise
- *
- * @example
- * ```ts
- * import { matchGlob } from '@ucdjs-internal/shared';
- *
- * // Match files by extension
- * matchGlob('*.txt', 'UnicodeData.txt'); // true
- * matchGlob('*.txt', 'readme.md'); // false
- *
- * // Match by prefix
- * matchGlob('Uni*', 'UnicodeData.txt'); // true
- * matchGlob('uni*', 'UnicodeData.txt'); // true (case-insensitive)
- *
- * // Match by substring
- * matchGlob('*Data*', 'UnicodeData.txt'); // true
- *
- * // Match multiple patterns with braces
- * matchGlob('*.{txt,xml}', 'data.txt'); // true
- * matchGlob('*.{txt,xml}', 'data.xml'); // true
- * ```
- */
 export function matchGlob(pattern: string, value: string, options: GlobMatchOptions = {}): boolean {
   const {
     nocase = DEFAULT_PICOMATCH_OPTIONS.nocase,
@@ -68,28 +39,6 @@ export function matchGlob(pattern: string, value: string, options: GlobMatchOpti
 
 export type GlobMatchFn = (value: string) => boolean;
 
-/**
- * Create a reusable glob matcher function for a given pattern.
- * This is more efficient when matching many values against the same pattern.
- *
- * @param {string} pattern - The glob pattern to compile
- * @param {GlobMatchOptions} options - Optional configuration for matching behavior
- * @returns {GlobMatchFn} A function that tests strings against the compiled pattern
- *
- * @example
- * ```ts
- * import { createGlobMatcher } from '@ucdjs-internal/shared';
- *
- * const matcher = createGlobMatcher('*.txt');
- * matcher('file.txt'); // true
- * matcher('file.md'); // false
- *
- * // Filter an array of filenames
- * const files = ['a.txt', 'b.md', 'c.txt'];
- * const txtFiles = files.filter(createGlobMatcher('*.txt'));
- * // ['a.txt', 'c.txt']
- * ```
- */
 export function createGlobMatcher(pattern: string, options: GlobMatchOptions = {}): GlobMatchFn {
   const {
     nocase = DEFAULT_PICOMATCH_OPTIONS.nocase,
@@ -104,164 +53,145 @@ export function createGlobMatcher(pattern: string, options: GlobMatchOptions = {
   return (value: string): boolean => isMatch(value);
 }
 
-/**
- * Maximum allowed length for glob patterns.
- * Helps prevent DoS attacks with extremely long patterns.
- */
-export const MAX_PATTERN_LENGTH = 200;
+export const MAX_GLOB_LENGTH = 256;
+export const MAX_GLOB_SEGMENTS = 16;
+export const MAX_GLOB_BRACE_EXPANSIONS = 24;
+export const MAX_GLOB_STARS = 32;
+export const MAX_GLOB_QUESTIONS = 32;
 
-/**
- * Maximum allowed nesting depth for braces/brackets.
- * Prevents exponential backtracking with deeply nested patterns.
- */
-export const MAX_NESTING_DEPTH = 3;
+function countWildcards(pattern: string): { stars: number; questions: number } {
+  let stars = 0;
+  let questions = 0;
 
-/**
- * Maximum number of alternatives in brace expansion.
- * Prevents patterns like `{a,b,c,...}` with thousands of alternatives.
- */
-export const MAX_BRACE_ALTERNATIVES = 5;
+  for (let i = 0; i < pattern.length; i += 1) {
+    const ch = pattern.charAt(i);
 
-/**
- * Maximum consecutive wildcards allowed.
- * Prevents patterns like `*****` which can cause performance issues.
- */
-export const MAX_CONSECUTIVE_WILDCARDS = 3;
+    if (ch === "\\") {
+      i += 1;
+      continue;
+    }
 
-/**
- * Validate if a string is a valid and safe glob pattern.
- * Checks for:
- * - Empty or whitespace-only patterns
- * - Excessively long patterns (DoS prevention)
- * - Deeply nested braces/brackets (ReDoS prevention)
- * - Too many brace alternatives (explosion prevention)
- * - Excessive consecutive wildcards
- * - Syntax errors (via picomatch compilation)
- *
- * @param {string} pattern - The glob pattern to validate
- * @returns {boolean} `true` if the pattern is valid and safe, `false` otherwise
- *
- * @example
- * ```ts
- * import { isValidGlobPattern } from '@ucdjs-internal/shared';
- *
- * // Valid patterns
- * isValidGlobPattern('*.txt'); // true
- * isValidGlobPattern('file[123].txt'); // true
- * isValidGlobPattern('*.{txt,xml}'); // true
- *
- * // Invalid patterns
- * isValidGlobPattern('file[123.txt'); // false - unclosed bracket
- * isValidGlobPattern('*.{txt,xml'); // false - unclosed brace
- * isValidGlobPattern(''); // false - empty pattern
- *
- * // Potentially malicious patterns
- * isValidGlobPattern('*'.repeat(100)); // false - too many wildcards
- * isValidGlobPattern('a'.repeat(1000)); // false - too long
- * isValidGlobPattern('{a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y}'); // false - too many alternatives
- * ```
- */
-export function isValidGlobPattern(pattern: string): boolean {
-  // Empty patterns are invalid
-  if (!pattern || pattern.trim().length === 0) {
-    return false;
+    if (ch === "*") stars += 1;
+    if (ch === "?") questions += 1;
   }
 
-  // Check pattern length
-  if (pattern.length > MAX_PATTERN_LENGTH) {
-    return false;
-  }
+  return { stars, questions };
+}
 
-  // Check for excessive consecutive wildcards (e.g., "****")
-  const consecutiveWildcardMatch = pattern.match(/\*+/g);
-  if (consecutiveWildcardMatch) {
-    for (const match of consecutiveWildcardMatch) {
-      // Allow ** for globstar, but not more than MAX_CONSECUTIVE_WILDCARDS
-      if (match.length > MAX_CONSECUTIVE_WILDCARDS) {
-        return false;
+function analyzeBraces(pattern: string): { expansions: number; valid: boolean } {
+  let braceDepth = 0;
+  // Track sequential top-level brace groups for multiplicative expansion
+  const topLevelGroups: number[] = [];
+  // Track top-level options and their nested expansions
+  const topLevelOptions: Array<{ base: number; nestedMultiplier: number }> = [];
+  let currentNestedStack: number[] = [];
+
+  for (let i = 0; i < pattern.length; i += 1) {
+    const ch = pattern.charAt(i);
+
+    if (ch === "\\") {
+      i += 1;
+      continue;
+    }
+
+    if (ch === "{") {
+      braceDepth += 1;
+      if (braceDepth === 1) {
+        // Starting a new top-level brace group
+        topLevelOptions.push({ base: 1, nestedMultiplier: 1 });
+        currentNestedStack = [];
+      } else {
+        // Starting a nested brace group
+        currentNestedStack.push(1);
+      }
+    } else if (ch === "}") {
+      if (braceDepth === 0) return { expansions: 0, valid: false };
+      braceDepth -= 1;
+      if (braceDepth === 0) {
+        // Completed a top-level brace group
+        // Calculate total expansions: sum of (base * nestedMultiplier) for each option
+        let totalExpansions = 0;
+        for (const option of topLevelOptions) {
+          totalExpansions += option.base * option.nestedMultiplier;
+        }
+        topLevelGroups.push(totalExpansions);
+        topLevelOptions.length = 0;
+        currentNestedStack = [];
+      } else {
+        // Completed a nested brace group
+        if (currentNestedStack.length > 0) {
+          const nestedCount = currentNestedStack.pop()!;
+          if (currentNestedStack.length > 0) {
+            // Multiply with parent nested group
+            currentNestedStack[currentNestedStack.length - 1]! *= nestedCount;
+          } else if (topLevelOptions.length > 0) {
+            // This nested group belongs to the current top-level option
+            topLevelOptions[topLevelOptions.length - 1]!.nestedMultiplier *= nestedCount;
+          }
+        }
+      }
+    } else if (ch === ",") {
+      if (braceDepth === 1) {
+        // Count options only at top level
+        topLevelOptions.push({ base: 1, nestedMultiplier: 1 });
+      } else if (braceDepth > 1) {
+        // Count options in nested braces
+        if (currentNestedStack.length > 0) {
+          currentNestedStack[currentNestedStack.length - 1]! += 1;
+        }
       }
     }
   }
 
-  // Check nesting depth and brace alternatives
-  let depth = 0;
-  let maxDepth = 0;
-  // Stack of alternative counters for nested brace groups
-  const braceAlternativesStack: number[] = [];
-  let escaped = false;
+  if (braceDepth !== 0) return { expansions: 0, valid: false };
 
-  for (let i = 0; i < pattern.length; i++) {
-    const char = pattern[i];
-
-    // Handle escape sequences: toggle escaped on each backslash
-    if (char === "\\") {
-      escaped = !escaped;
-      continue;
-    }
-
-    // If this character is escaped, skip it and clear escaped flag
-    if (escaped) {
-      escaped = false;
-      continue;
-    }
-
-    switch (char) {
-      case "{":
-        depth++;
-        maxDepth = Math.max(maxDepth, depth);
-        // Push a new counter for this brace group (starts at 1 alternative)
-        braceAlternativesStack.push(1);
-        break;
-      case "[":
-      case "(":
-        depth++;
-        maxDepth = Math.max(maxDepth, depth);
-        break;
-      case "}":
-        depth--;
-        // Pop the counter for this brace group
-        braceAlternativesStack.pop();
-        // Unbalanced brackets
-        if (depth < 0) {
-          return false;
-        }
-        break;
-      case "]":
-      case ")":
-        depth--;
-        // Unbalanced brackets
-        if (depth < 0) {
-          return false;
-        }
-        break;
-      case ",":
-        // Only count commas that are inside a brace group
-        if (braceAlternativesStack.length > 0) {
-          // Increment the top of stack (current brace level)
-          const currentLevel = braceAlternativesStack.length - 1;
-          const newCount = braceAlternativesStack[currentLevel]! + 1;
-          braceAlternativesStack[currentLevel] = newCount;
-          if (newCount > MAX_BRACE_ALTERNATIVES) {
-            return false;
-          }
-        }
-        break;
-    }
+  // Calculate multiplicative expansion for sequential brace groups
+  // If there are no brace groups, return 0 (no expansions)
+  if (topLevelGroups.length === 0) {
+    return { expansions: 0, valid: true };
   }
 
-  // Check for unclosed brackets
-  if (depth !== 0) {
-    return false;
-  }
+  // Multiply all sequential top-level brace groups
+  const expansions = topLevelGroups.reduce((product, count) => product * count, 1);
+  return { expansions, valid: true };
+}
 
-  // Check max nesting depth
-  if (maxDepth > MAX_NESTING_DEPTH) {
-    return false;
-  }
+export interface GlobValidationLimits {
+  maxLength?: number;
+  maxSegments?: number;
+  maxBraceExpansions?: number;
+  maxStars?: number;
+  maxQuestions?: number;
+}
 
-  // Try to compile the pattern - picomatch will throw on invalid patterns
+export function isValidGlobPattern(pattern: string, limits: GlobValidationLimits = {}): boolean {
+  const {
+    maxLength = MAX_GLOB_LENGTH,
+    maxSegments = MAX_GLOB_SEGMENTS,
+    maxBraceExpansions = MAX_GLOB_BRACE_EXPANSIONS,
+    maxStars = MAX_GLOB_STARS,
+    maxQuestions = MAX_GLOB_QUESTIONS,
+  } = limits;
+
+  if (typeof pattern !== "string") return false;
+  if (pattern.length === 0) return false;
+  if (pattern.trim().length === 0) return false;
+  if (pattern.length > maxLength) return false;
+  if (pattern.includes("\0")) return false;
+
+  const segments = pattern.split(/[/\\]+/).filter(Boolean);
+  if (segments.length > maxSegments) return false;
+
+  const { stars, questions } = countWildcards(pattern);
+  if (stars > maxStars) return false;
+  if (questions > maxQuestions) return false;
+
+  const { expansions, valid: braceValid } = analyzeBraces(pattern);
+  if (!braceValid) return false;
+  if (expansions > maxBraceExpansions) return false;
+
   try {
-    picomatch(pattern);
+    picomatch.scan(pattern);
     return true;
   } catch {
     return false;
