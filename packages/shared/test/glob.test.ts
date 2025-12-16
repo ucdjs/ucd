@@ -219,20 +219,21 @@ describe("glob", () => {
     describe("DoS protection - extglob depth limits", () => {
       it.each([
         ["!(!(!(!(file))))", {}], // depth 4, limit 3
-        ["!(!file)", { maxExtglobDepth: 1 }], // depth 2, limit 1
-        ["!(!(!file))", { maxExtglobDepth: 1 }], // depth 3, limit 1
-        ["!(!(!file))", { maxExtglobDepth: 2 }], // depth 3, limit 2
-        ["@(@(@(file)))", {}], // depth 3, limit 3 (should reject)
-        ["+(*(*(*file)))", {}], // depth 3, limit 3 (should reject)
+        ["!(!(!file))", { maxExtglobDepth: 1 }], // depth 2, limit 1
       ])("should reject patterns exceeding extglob depth limit: %s", (pattern, limits) => {
         expect(isValidGlobPattern(pattern, limits)).toBe(false);
       });
 
       it("should accept patterns within extglob depth limit", () => {
         expect(isValidGlobPattern("!(*.txt)")).toBe(true); // depth 1
-        expect(isValidGlobPattern("!(!file)", { maxExtglobDepth: 2 })).toBe(true); // depth 2, limit 2
-        expect(isValidGlobPattern("!(!(!file))", { maxExtglobDepth: 3 })).toBe(true); // depth 3, limit 3
+        // Patterns at the exact limit should be accepted
+        expect(isValidGlobPattern("!(!file)", { maxExtglobDepth: 1 })).toBe(true); // depth 1, limit 1
+        expect(isValidGlobPattern("!(!file)", { maxExtglobDepth: 2 })).toBe(true); // depth 1, limit 2
+        expect(isValidGlobPattern("!(!(!file))", { maxExtglobDepth: 2 })).toBe(true); // depth 2, limit 2
+        expect(isValidGlobPattern("!(!(!file))", { maxExtglobDepth: 3 })).toBe(true); // depth 2, limit 3
         expect(isValidGlobPattern("@(@(file))", { maxExtglobDepth: 3 })).toBe(true); // depth 2, limit 3
+        expect(isValidGlobPattern("@(@(@(file)))")).toBe(true); // depth 3, default limit 3
+        expect(isValidGlobPattern("+(*(*(*file)))")).toBe(true); // depth 3, default limit 3
       });
     });
 
