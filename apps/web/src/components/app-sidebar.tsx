@@ -93,7 +93,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton render={(
-                <Link to="/">
+                <Link to="/docs/$" params={{ _splat: "ucdjs" }}>
                   <BookOpen className="size-4" />
                   <span>Getting Started</span>
                 </Link>

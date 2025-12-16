@@ -5,13 +5,14 @@ import {
   createRootRouteWithContext,
   HeadContent,
   Scripts,
+  useLocation,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
-
+import { RootProvider } from "fumadocs-ui/provider/tanstack";
 import { versionsQueryOptions } from "@/apis/versions";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import appCss from "../styles.css?url";
+import GLOBAL_CSS_URL from "../globals.css?url";
 
 interface MyRouterContext {
   queryClient: QueryClient;
@@ -39,7 +40,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       },
       {
         rel: "stylesheet",
-        href: appCss,
+        href: GLOBAL_CSS_URL,
       },
     ],
   }),
@@ -53,18 +54,25 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 });
 
 function RootDocument({ children }: { children: React.ReactNode }) {
+  const location = useLocation();
+  const isDocsPage = location.pathname.startsWith("/docs");
+
   return (
     <html lang="en">
       <head>
         <HeadContent />
       </head>
       <body>
-        <SidebarProvider>
-          <AppSidebar />
-          <SidebarInset>
-            {children}
-          </SidebarInset>
-        </SidebarProvider>
+        {isDocsPage
+          ? (
+              <RootProvider>{children}</RootProvider>
+            )
+          : (
+              <SidebarProvider>
+                <AppSidebar />
+                <SidebarInset>{children}</SidebarInset>
+              </SidebarProvider>
+            )}
         <TanStackDevtools
           config={{
             position: "bottom-right",
