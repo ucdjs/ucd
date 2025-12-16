@@ -182,7 +182,7 @@ export function isValidGlobPattern(pattern: string, limits: GlobValidationLimits
 
   const { depth: extDepth, valid: extValid } = analyzeExtglobDepth(pattern);
   if (!extValid) return false;
-  if (extDepth >= maxExtglobDepth) return false;
+  if (extDepth > maxExtglobDepth) return false;
 
   try {
     picomatch.scan(pattern);
