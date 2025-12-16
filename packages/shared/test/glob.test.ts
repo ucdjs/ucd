@@ -137,10 +137,6 @@ describe("glob", () => {
         "file[123].txt",
         "Uni*",
         "*Data.txt",
-        "!(*.txt)",
-        "@(file1|file2)",
-        "+(*.txt|*.md)",
-        "?(file)",
         "**/*",
         "a/b/c",
         "path/to/file.txt",
@@ -158,6 +154,18 @@ describe("glob", () => {
         [[] as unknown as string],
       ])("should reject invalid input: %s", (input) => {
         expect(isValidGlobPattern(input)).toBe(false);
+      });
+    });
+
+    describe("whitespace-only patterns", () => {
+      it.each([
+        " ",
+        "  ",
+        "\t",
+        "\n",
+        " \t\n ",
+      ])("should reject whitespace-only pattern: %s", (pattern) => {
+        expect(isValidGlobPattern(pattern)).toBe(false);
       });
     });
 
@@ -226,27 +234,14 @@ describe("glob", () => {
         expect(isValidGlobPattern("{a,b,c}{d,e}", { maxBraceExpansions: 7 })).toBe(true); // 3 × 2 = 6
         expect(isValidGlobPattern("{a,b}{c,d}{e,f}", { maxBraceExpansions: 8 })).toBe(true); // 2 × 2 × 2 = 8
       });
-    });
 
-    // eslint-disable-next-line test/prefer-lowercase-title
-    describe("DoS protection - extglob depth limits", () => {
-      it.each([
-        ["!(!(!(!(file))))", {}], // depth 4, limit 3
-        ["!(!(!file))", { maxExtglobDepth: 1 }], // depth 2, limit 1
-      ])("should reject patterns exceeding extglob depth limit: %s", (pattern, limits) => {
-        expect(isValidGlobPattern(pattern, limits)).toBe(false);
-      });
-
-      it("should accept patterns within extglob depth limit", () => {
-        expect(isValidGlobPattern("!(*.txt)")).toBe(true); // depth 1
-        // Patterns at the exact limit should be accepted
-        expect(isValidGlobPattern("!(!file)", { maxExtglobDepth: 1 })).toBe(true); // depth 1, limit 1
-        expect(isValidGlobPattern("!(!file)", { maxExtglobDepth: 2 })).toBe(true); // depth 1, limit 2
-        expect(isValidGlobPattern("!(!(!file))", { maxExtglobDepth: 2 })).toBe(true); // depth 2, limit 2
-        expect(isValidGlobPattern("!(!(!file))", { maxExtglobDepth: 3 })).toBe(true); // depth 2, limit 3
-        expect(isValidGlobPattern("@(@(file))", { maxExtglobDepth: 3 })).toBe(true); // depth 2, limit 3
-        expect(isValidGlobPattern("@(@(@(file)))")).toBe(true); // depth 3, default limit 3
-        expect(isValidGlobPattern("+(*(*(*file)))")).toBe(true); // depth 3, default limit 3
+      it("should correctly count nested brace expansions", () => {
+        // {a{1,2},b} expands to a1, a2, b = 3 total expansions
+        expect(isValidGlobPattern("{a{1,2},b}", { maxBraceExpansions: 3 })).toBe(true);
+        expect(isValidGlobPattern("{a{1,2},b}", { maxBraceExpansions: 2 })).toBe(false);
+        // {a{1,2}{3,4},b} expands to a13, a14, a23, a24, b = 5 total expansions
+        expect(isValidGlobPattern("{a{1,2}{3,4},b}", { maxBraceExpansions: 5 })).toBe(true);
+        expect(isValidGlobPattern("{a{1,2}{3,4},b}", { maxBraceExpansions: 4 })).toBe(false);
       });
     });
 
@@ -277,24 +272,12 @@ describe("glob", () => {
         "{unclosed",
         "}unopened",
         "test\0file",
-        "!(*unclosed",
-        "@(file",
-        "+(*.txt",
-        "?(file",
-        "**(*.txt",
         "{{nested",
         "}}nested",
         "{{{{too",
         "}}}}deep",
       ])("should reject malformed pattern: %s", (pattern) => {
         expect(isValidGlobPattern(pattern)).toBe(false);
-      });
-
-      // Note: picomatch.scan accepts "*(missing)paren" as valid, so we rely on picomatch's validation
-      it("should handle edge cases that picomatch accepts", () => {
-        // picomatch.scan accepts this pattern, so we accept it too
-        const result = isValidGlobPattern("*(missing)paren");
-        expect(typeof result).toBe("boolean");
       });
     });
 
@@ -326,8 +309,6 @@ describe("glob", () => {
         // Too many brace expansions
         const manyOptions = Array.from({ length: 30 }, (_, i) => `opt${i}`).join(",");
         expect(isValidGlobPattern(`{${manyOptions}}`)).toBe(false);
-        // Too deep extglob nesting
-        expect(isValidGlobPattern("!(!(!(!(!file)))))")).toBe(false);
         // Too many wildcards
         expect(isValidGlobPattern("*".repeat(40))).toBe(false);
         expect(isValidGlobPattern("?".repeat(40))).toBe(false);
@@ -338,7 +319,6 @@ describe("glob", () => {
           maxLength: 128,
           maxSegments: 8,
           maxBraceExpansions: 8,
-          maxExtglobDepth: 2,
           maxStars: 16,
           maxQuestions: 16,
         };
@@ -353,7 +333,6 @@ describe("glob", () => {
         expect(isValidGlobPattern(Array.from({ length: 10 }, () => "seg").join("/"), apiLimits)).toBe(false);
         const manyOptions = Array.from({ length: 10 }, (_, i) => `opt${i}`).join(",");
         expect(isValidGlobPattern(`{${manyOptions}}`, apiLimits)).toBe(false);
-        expect(isValidGlobPattern("!(!(!(!file)))", apiLimits)).toBe(false);
         expect(isValidGlobPattern("*".repeat(20), apiLimits)).toBe(false);
         // Sequential brace groups that multiply to exceed limit (4 × 4 = 16 > 8)
         expect(isValidGlobPattern("{a,b,c,d}{a,b,c,d}", apiLimits)).toBe(false);
