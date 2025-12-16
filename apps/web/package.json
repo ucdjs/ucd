@@ -44,7 +44,7 @@
   "devDependencies": {
     "@luxass/eslint-config": "catalog:linting",
     "@tanstack/devtools-vite": "catalog:web",
-    "@types/mdx": "catalog:docs",
+    "@types/mdx": "catalog:types",
     "@types/node": "catalog:types",
     "@types/react": "catalog:types",
     "@types/react-dom": "catalog:types",
