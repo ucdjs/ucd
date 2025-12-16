@@ -86,6 +86,7 @@ catalogs:
     "@types/react": 19.2.7
     "@types/react-dom": 19.2.3
     "@types/vscode": 1.106.1
+    "@types/mdx": 2.0.13
 
   web:
     react: 19.2.3
@@ -126,23 +127,12 @@ catalogs:
   docs:
     fumadocs-mdx: 14.1.1
     fumadocs-core: 16.2.5
-    "@types/mdx": 2.0.13
     fumadocs-ui: 16.2.5
-
-    docus: 5.3.1
-    nuxt: 4.2.1
-    better-sqlite3: 12.5.0
-    "@nuxt/content": 3.9.0
-    "@nuxt/eslint": 1.11.0
-    "@nuxt/test-utils": 3.21.0
-    "@nuxt/ui": 4.2.1
-    vue-tsc: 3.1.4
 
 onlyBuiltDependencies:
   - esbuild
   - rolldown
   - workerd
-  - better-sqlite3
 
 overrides:
   "@asteasolutions/zod-to-openapi": 8.2.0

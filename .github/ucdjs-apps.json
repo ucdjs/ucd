@@ -9,11 +9,6 @@
       "name": "web",
       "display_name": "Website",
       "deployable": true
-    },
-    {
-      "name": "docs",
-      "display_name": "Documentation",
-      "deployable": true
     }
   ]
 }

@@ -11,6 +11,7 @@ export function baseOptions(): BaseLayoutProps & {
   return {
     nav: {
       title: "UCD.js",
+      url: "/",
     },
     sidebar: {
       tabs: [
