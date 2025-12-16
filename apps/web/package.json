@@ -7,8 +7,8 @@
     "dev": "vite dev --port 3000",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "lint": "fumadocs-mdx && eslint .",
+    "typecheck": "fumadocs-mdx && tsc --noEmit"
   },
   "dependencies": {
     "@base-ui/react": "catalog:web",
