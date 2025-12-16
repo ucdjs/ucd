@@ -53,144 +53,141 @@ export function createGlobMatcher(pattern: string, options: GlobMatchOptions = {
   return (value: string): boolean => isMatch(value);
 }
 
-// Increased length for flexibility, but still a hard limit.
-export const MAX_PATTERN_LENGTH = 100;
+export const MAX_GLOB_LENGTH = 256;
+export const MAX_GLOB_SEGMENTS = 16;
+export const MAX_GLOB_BRACE_EXPANSIONS = 24;
+export const MAX_GLOB_EXTGLOB_DEPTH = 3;
+export const MAX_GLOB_STARS = 32;
+export const MAX_GLOB_QUESTIONS = 32;
 
-// Limits for complexity and DoS prevention
-export const MAX_SINGLE_WILDCARDS = 5;
-export const MAX_CONSECUTIVE_WILDCARDS = 3;
-export const MAX_NESTING_DEPTH = 1; // Crucial: 1 allows top-level {a,b}, 0 blocks all.
-export const MAX_BRACE_ALTERNATIVES = 10; // Increased tolerance slightly
-export const BLOCK_RECURSIVE_WILDCARD = false; // Blocks '**'
-export const BLOCK_PATH_TRAVERSAL = true; // Blocks '..'
-export const BLOCK_DANGEROUS_SEQUENCES = true;
+const EXTGLOB_PREFIXES = new Set(["!", "@", "+", "?", "*"]);
 
-/**
- * Performs a deep structural analysis of the pattern to check for nested brace expansions.
- * This is a highly effective DoS guard against exponential backtracking.
- * @param {string} pattern The glob pattern string.
- * @param {number} maxNestingLevel The maximum allowed nesting depth (1 allows top-level only).
- * @returns `true` if nesting is too deep or the pattern is unbalanced, `false` otherwise.
- */
-function hasExcessiveNesting(pattern: string, maxNestingLevel: number): boolean {
-  let currentNesting = 0;
+function countWildcards(pattern: string): { stars: number; questions: number } {
+  let stars = 0;
+  let questions = 0;
 
-  for (let i = 0; i < pattern.length; i++) {
-    const char = pattern[i];
+  for (let i = 0; i < pattern.length; i += 1) {
+    const ch = pattern.charAt(i);
 
-    // Skip characters inside character sets [...]
-    if (char === "[") {
-      const endBracket = pattern.indexOf("]", i + 1);
-      if (endBracket !== -1) {
-        i = endBracket;
+    if (ch === "\\") {
+      i += 1;
+      continue;
+    }
+
+    if (ch === "*") stars += 1;
+    if (ch === "?") questions += 1;
+  }
+
+  return { stars, questions };
+}
+
+function analyzeBraces(pattern: string): { expansions: number; valid: boolean } {
+  let expansions = 0;
+  let braceDepth = 0;
+  let optionsInBrace = 0;
+
+  for (let i = 0; i < pattern.length; i += 1) {
+    const ch = pattern.charAt(i);
+
+    if (ch === "\\") {
+      i += 1;
+      continue;
+    }
+
+    if (ch === "{") {
+      braceDepth += 1;
+      if (braceDepth === 1) optionsInBrace = 1;
+    } else if (ch === "}") {
+      if (braceDepth === 0) return { expansions, valid: false };
+      braceDepth -= 1;
+      if (braceDepth === 0) {
+        expansions += optionsInBrace;
+        optionsInBrace = 0;
+      }
+    } else if (ch === "," && braceDepth === 1) {
+      optionsInBrace += 1;
+    }
+  }
+
+  if (braceDepth !== 0) return { expansions, valid: false };
+  return { expansions, valid: true };
+}
+
+function analyzeExtglobDepth(pattern: string): { depth: number; valid: boolean } {
+  let depth = 0;
+  let maxDepth = 0;
+
+  for (let i = 0; i < pattern.length; i += 1) {
+    const ch = pattern.charAt(i);
+
+    if (ch === "\\") {
+      i += 1;
+      continue;
+    }
+
+    if (i + 1 < pattern.length) {
+      const next = pattern.charAt(i + 1);
+      if (EXTGLOB_PREFIXES.has(ch) && next === "(") {
+        depth += 1;
+        maxDepth = Math.max(maxDepth, depth);
+        i += 1; // skip "("
         continue;
       }
     }
 
-    if (char === "{") {
-      currentNesting++;
-      if (currentNesting > maxNestingLevel) {
-        return true;
-      }
-    } else if (char === "}") {
-      if (currentNesting > 0) {
-        currentNesting--;
-      } else {
-        return true; // Unmatched '}'
-      }
+    if (ch === ")") {
+      if (depth === 0) return { depth: maxDepth, valid: false };
+      depth -= 1;
     }
   }
 
-  // Check for unbalanced braces (unmatched '{')
-  return currentNesting !== 0;
+  if (depth !== 0) return { depth: maxDepth, valid: false };
+  return { depth: maxDepth, valid: true };
 }
 
-/**
- * Validates if a string is a valid and safe glob pattern.
- * Prioritizes custom quantitative and structural checks to prevent DoS/ReDoS
- * before attempting picomatch compilation.
- *
- * @param {string} pattern - The glob pattern to validate
- * @returns {boolean} `true` if the pattern is safe, `false` otherwise
- */
-export function isValidGlobPattern(pattern: string): boolean {
-  // 1. Empty/Whitespace Check
-  if (!pattern || pattern.trim().length === 0) {
-    return false;
-  }
+export interface GlobValidationLimits {
+  maxLength?: number;
+  maxSegments?: number;
+  maxBraceExpansions?: number;
+  maxExtglobDepth?: number;
+  maxStars?: number;
+  maxQuestions?: number;
+}
 
-  // 2. Length Check (DoS)
-  if (pattern.length > MAX_PATTERN_LENGTH) {
-    return false;
-  }
+export function isValidGlobPattern(pattern: string, limits: GlobValidationLimits = {}): boolean {
+  const {
+    maxLength = MAX_GLOB_LENGTH,
+    maxSegments = MAX_GLOB_SEGMENTS,
+    maxBraceExpansions = MAX_GLOB_BRACE_EXPANSIONS,
+    maxExtglobDepth = MAX_GLOB_EXTGLOB_DEPTH,
+    maxStars = MAX_GLOB_STARS,
+    maxQuestions = MAX_GLOB_QUESTIONS,
+  } = limits;
 
-  // 3. Structural Complexity Check (Nested Braces)
-  if (hasExcessiveNesting(pattern, MAX_NESTING_DEPTH)) {
-    return false;
-  }
+  if (typeof pattern !== "string") return false;
+  if (pattern.length === 0) return false;
+  if (pattern.length > maxLength) return false;
+  if (pattern.includes("\0")) return false;
 
-  // 4. Quantitative Limits & Traversal Guards
+  const segments = pattern.split(/[/\\]+/).filter(Boolean);
+  if (segments.length > maxSegments) return false;
 
-  // Path Traversal '..'
-  if (BLOCK_PATH_TRAVERSAL && pattern.includes("..")) {
-    return false;
-  }
+  const { stars, questions } = countWildcards(pattern);
+  if (stars > maxStars) return false;
+  if (questions > maxQuestions) return false;
 
-  // Recursive Wildcard '**'
-  if (BLOCK_RECURSIVE_WILDCARD && pattern.includes("**")) {
-    return false;
-  }
+  const { expansions, valid: braceValid } = analyzeBraces(pattern);
+  if (!braceValid) return false;
+  if (expansions > maxBraceExpansions) return false;
 
-  // Simple Wildcard Count '*'
-  const singleWildcardCount = (pattern.match(/(?<!\*)\*(?!\*)/g) || []).length;
-  if (singleWildcardCount > MAX_SINGLE_WILDCARDS) {
-    return false;
-  }
+  const { depth: extDepth, valid: extValid } = analyzeExtglobDepth(pattern);
+  if (!extValid) return false;
+  if (extDepth >= maxExtglobDepth) return false;
 
-  // Consecutive Wildcards (e.g., '****')
-  // Match three or more stars.
-  if (pattern.match(new RegExp(`\\*{${MAX_CONSECUTIVE_WILDCARDS},}`, "g"))) {
-    return false;
-  }
-
-  // Brace Alternatives (Approximation: count the commas inside braces)
-  const braceContentMatch = pattern.match(/\{([^}]+)\}/g) || [];
-  for (const match of braceContentMatch) {
-    const alternatives = match.split(",").length;
-    if (alternatives > MAX_BRACE_ALTERNATIVES) {
-      return false;
-    }
-  }
-
-  // 5. Hard ReDoS Sequence Guard (NEW)
-  // This blocks patterns known to generate complex backtracking state machines.
-  // E.g., repeating groups that can match the same string in multiple ways.
-  if (BLOCK_DANGEROUS_SEQUENCES) {
-    // Examples: `(*a|*b)*` or `(a|a)+`
-    // We check for simplified glob equivalents known to be problematic.
-    if (pattern.includes("*|*") || pattern.includes("(*|*)") || pattern.includes("(?|?)")) {
-      return false;
-    }
-  }
-
-  // 6. Wide Traversal Guard (e.g., '/*files.txt' or 'dir/*/')
-  if (pattern.includes("/*") || pattern.includes("*/")) {
-    return false;
-  }
-
-  // 7. Hidden File Wildcard Check (e.g., '.*')
-  if (pattern.includes(".*") && !pattern.startsWith("./.") && !pattern.startsWith(".")) {
-    return false;
-  }
-
-  // If the pattern passed all structural/quantitative guards, we now allow picomatch
-  // to perform the final syntax check. This is generally safer than relying solely on picomatch
-  // for ReDoS prevention.
   try {
-    picomatch(pattern, DEFAULT_PICOMATCH_OPTIONS);
+    picomatch.scan(pattern);
     return true;
   } catch {
-    // Syntax error detected by picomatch
     return false;
   }
 }
