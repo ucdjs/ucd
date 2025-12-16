@@ -116,7 +116,7 @@ jobs:
           echo "apps=$APPS_TO_DEPLOY" >> "$GITHUB_OUTPUT"
 
   deploy:
-    name: deploy app (${{ matrix.app }})
+    name: deploy ${{ matrix.app }}
     runs-on: ubuntu-latest
     needs: get-apps
     if: ${{ inputs.repository-condition && fromJson(needs.get-apps.outputs.apps)[0] != null }}
@@ -199,8 +199,6 @@ jobs:
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
           vars: API_VERSION
 
-      # when using @cloudflare/vite-plugin we can't make use of the `environment` option,
-      # and if we use and empty string it will also fail due to multiple environments being defined
       - name: deploy web
         id: deploy-web
         if: ${{ !inputs.dry-run && matrix.app == 'web' }}
@@ -208,6 +206,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           workingDirectory: ./apps/web
+          environment: ${{ inputs.environment }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
 
       - name: deploy docs
