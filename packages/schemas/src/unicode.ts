@@ -123,3 +123,51 @@ export const UnicodeTreeSchema = z.array(UnicodeTreeNodeSchema).meta({
 });
 
 export type UnicodeTree = z.output<typeof UnicodeTreeSchema>;
+
+export const UnicodeVersionDetailsSchema = UnicodeVersionSchema.extend({
+  statistics: z.object({
+    totalCharacters: z.number().int().nonnegative().meta({
+      description: "Total number of characters in this Unicode version.",
+    }),
+    newCharacters: z.number().int().nonnegative().meta({
+      description: "Number of new characters added in this version.",
+    }),
+    totalBlocks: z.number().int().nonnegative().meta({
+      description: "Total number of blocks in this Unicode version.",
+    }),
+    newBlocks: z.number().int().nonnegative().meta({
+      description: "Number of new blocks added in this version.",
+    }),
+    totalScripts: z.number().int().nonnegative().meta({
+      description: "Total number of scripts in this Unicode version.",
+    }),
+    newScripts: z.number().int().nonnegative().meta({
+      description: "Number of new scripts added in this version.",
+    }),
+  }).optional().meta({
+    description: "Statistics about this Unicode version. May be null if statistics are not available.",
+  }),
+}).meta({
+  id: "UnicodeVersionDetails",
+  description: "Detailed information about a Unicode version, including metadata and statistics.",
+  examples: [
+    {
+      version: "16.0.0",
+      documentationUrl: "https://www.unicode.org/versions/Unicode16.0.0/",
+      date: "2024",
+      url: "https://www.unicode.org/Public/16.0.0",
+      mappedUcdVersion: null,
+      type: "stable",
+      statistics: {
+        totalCharacters: 149813,
+        newCharacters: 5185,
+        totalBlocks: 331,
+        newBlocks: 4,
+        totalScripts: 165,
+        newScripts: 2,
+      },
+    },
+  ],
+});
+
+export type UnicodeVersionDetails = z.output<typeof UnicodeVersionDetailsSchema>;

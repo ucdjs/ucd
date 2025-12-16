@@ -14,6 +14,7 @@ import { badRequest, internalServerError, notFound } from "../../lib/errors";
 import { createLogger } from "../../lib/logger";
 import {
   GET_VERSION_FILE_TREE_ROUTE,
+  GET_VERSION_ROUTE,
   LIST_ALL_UNICODE_VERSIONS_ROUTE,
 } from "./openapi";
 
@@ -127,6 +128,178 @@ V1_VERSIONS_ROUTER.openapi(LIST_ALL_UNICODE_VERSIONS_ROUTE, async (c) => {
   } catch (err) {
     console.error("Error fetching Unicode versions:", err);
     return internalServerError(c);
+  }
+});
+
+async function getVersionFromList(version: string): Promise<UnicodeVersion | null> {
+  try {
+    const controller = new AbortController();
+    const response = await fetch("https://www.unicode.org/versions/enumeratedversions.html", {
+      signal: controller.signal,
+    });
+
+    setTimeout(() => {
+      controller.abort();
+    }, 7000);
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const html = await response.text();
+    const versionPattern = /Unicode \d+\.\d+\.\d+/;
+    const tableMatch = html.match(/<table[^>]*>[\s\S]*?<\/table>/g)?.find((table) =>
+      versionPattern.test(table),
+    );
+
+    if (!tableMatch) {
+      return null;
+    }
+
+    const draft = await getCurrentDraftVersion().catch(() => null);
+    const rows = tableMatch.match(/<tr>[\s\S]*?<\/tr>/g) || [];
+
+    for (const row of rows) {
+      const versionMatch = row.match(new RegExp(`<a[^>]+href="([^"]+)"[^>]*>\\s*(${versionPattern.source})\\s*</a>`));
+      if (!versionMatch) continue;
+
+      const documentationUrl = versionMatch[1];
+      const foundVersion = versionMatch[2]!.replace("Unicode ", "");
+
+      if (foundVersion !== version) continue;
+
+      const dateMatch = row.match(/<td[^>]*>(\d{4})<\/td>/);
+      const ucdVersion = resolveUCDVersion(foundVersion);
+      const publicUrl = `https://www.unicode.org/Public/${ucdVersion}`;
+
+      return {
+        version: foundVersion,
+        documentationUrl: documentationUrl!,
+        date: dateMatch?.[1] ?? null,
+        url: publicUrl,
+        mappedUcdVersion: ucdVersion === foundVersion ? null : ucdVersion,
+        type: draft === foundVersion ? "draft" : "stable",
+      };
+    }
+
+    // Check if it's the draft version
+    if (draft === version) {
+      const draftUcdVersion = resolveUCDVersion(draft);
+      return {
+        version: draft,
+        documentationUrl: `https://www.unicode.org/versions/Unicode${draft}/`,
+        date: null,
+        url: `https://www.unicode.org/Public/${draft}`,
+        mappedUcdVersion: draftUcdVersion === draft ? null : draftUcdVersion,
+        type: "draft",
+      };
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+async function calculateStatistics(
+  bucket: NonNullable<HonoEnv["Bindings"]["UCD_BUCKET"]>,
+  version: string,
+): Promise<{ totalCharacters: number; newCharacters: number; totalBlocks: number; newBlocks: number; totalScripts: number; newScripts: number } | null> {
+  try {
+    const mappedVersion = resolveUCDVersion(version);
+    const ucdPrefix = `manifest/${mappedVersion}/ucd/`;
+
+    // Try to get UnicodeData.txt
+    const unicodeDataKey = `${ucdPrefix}UnicodeData.txt`;
+    const unicodeDataObj = await bucket.get(unicodeDataKey);
+    if (!unicodeDataObj) return null;
+
+    const unicodeDataText = await unicodeDataObj.text();
+    const lines = unicodeDataText.split("\n").filter((line) => line.trim() && !line.startsWith("#"));
+    const totalCharacters = lines.length;
+
+    // Try to get Blocks.txt
+    const blocksKey = `${ucdPrefix}Blocks.txt`;
+    const blocksObj = await bucket.get(blocksKey);
+    let totalBlocks = 0;
+    if (blocksObj) {
+      const blocksText = await blocksObj.text();
+      const blockLines = blocksText.split("\n").filter((line) => line.trim() && !line.startsWith("#"));
+      totalBlocks = blockLines.length;
+    }
+
+    // Try to get Scripts.txt
+    const scriptsKey = `${ucdPrefix}Scripts.txt`;
+    const scriptsObj = await bucket.get(scriptsKey);
+    let totalScripts = 0;
+    if (scriptsObj) {
+      const scriptsText = await scriptsObj.text();
+      const scriptLines = scriptsText.split("\n").filter((line) => line.trim() && !line.startsWith("#"));
+      const uniqueScripts = new Set<string>();
+      for (const line of scriptLines) {
+        const match = line.match(/^([0-9A-F]+)(?:\.\.([0-9A-F]+))?\s*;\s*(\w+)/);
+        if (match) {
+          uniqueScripts.add(match[3]!);
+        }
+      }
+      totalScripts = uniqueScripts.size;
+    }
+
+    // Calculate new characters/blocks/scripts by comparing with previous version
+    // For now, we'll return 0 for new counts as calculating them requires comparing with previous version
+    // This can be enhanced later to fetch previous version data
+    return {
+      totalCharacters,
+      newCharacters: 0,
+      totalBlocks,
+      newBlocks: 0,
+      totalScripts,
+      newScripts: 0,
+    };
+  } catch {
+    return null;
+  }
+}
+
+V1_VERSIONS_ROUTER.openapi(GET_VERSION_ROUTE, async (c) => {
+  try {
+    let version = c.req.param("version");
+
+    if (version === "latest") {
+      version = UNICODE_STABLE_VERSION;
+    }
+
+    if (
+      !UNICODE_VERSION_METADATA.map((v) => v.version)
+        .includes(version as typeof UNICODE_VERSION_METADATA[number]["version"])) {
+      return badRequest(c, {
+        message: "Invalid Unicode version",
+      });
+    }
+
+    const versionInfo = await getVersionFromList(version);
+    if (!versionInfo) {
+      return notFound(c, {
+        message: "Unicode version not found",
+      });
+    }
+
+    // Try to get statistics from bucket if available
+    const bucket = c.env.UCD_BUCKET;
+    let statistics = null;
+    if (bucket) {
+      statistics = await calculateStatistics(bucket, version);
+    }
+
+    return c.json({
+      ...versionInfo,
+      statistics: statistics ?? undefined,
+    }, 200);
+  } catch (error) {
+    log.error("Error fetching version details", { error });
+    return internalServerError(c, {
+      message: "Failed to fetch version details",
+    });
   }
 });
 
