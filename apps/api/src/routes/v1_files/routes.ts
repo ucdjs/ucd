@@ -236,7 +236,6 @@ V1_FILES_ROUTER.get("/:wildcard{.*}?", cache({
         maxLength: 128,
         maxSegments: 8,
         maxBraceExpansions: 8,
-        maxExtglobDepth: 2,
         maxStars: 16,
         maxQuestions: 16,
       })) {

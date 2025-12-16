@@ -56,11 +56,8 @@ export function createGlobMatcher(pattern: string, options: GlobMatchOptions = {
 export const MAX_GLOB_LENGTH = 256;
 export const MAX_GLOB_SEGMENTS = 16;
 export const MAX_GLOB_BRACE_EXPANSIONS = 24;
-export const MAX_GLOB_EXTGLOB_DEPTH = 3;
 export const MAX_GLOB_STARS = 32;
 export const MAX_GLOB_QUESTIONS = 32;
-
-const EXTGLOB_PREFIXES = new Set(["!", "@", "+", "?", "*"]);
 
 function countWildcards(pattern: string): { stars: number; questions: number } {
   let stars = 0;
@@ -85,7 +82,9 @@ function analyzeBraces(pattern: string): { expansions: number; valid: boolean } 
   let braceDepth = 0;
   // Track sequential top-level brace groups for multiplicative expansion
   const topLevelGroups: number[] = [];
-  let currentTopLevelOptions = 0;
+  // Track top-level options and their nested expansions
+  const topLevelOptions: Array<{ base: number; nestedMultiplier: number }> = [];
+  let currentNestedStack: number[] = [];
 
   for (let i = 0; i < pattern.length; i += 1) {
     const ch = pattern.charAt(i);
@@ -99,19 +98,48 @@ function analyzeBraces(pattern: string): { expansions: number; valid: boolean } 
       braceDepth += 1;
       if (braceDepth === 1) {
         // Starting a new top-level brace group
-        currentTopLevelOptions = 1;
+        topLevelOptions.push({ base: 1, nestedMultiplier: 1 });
+        currentNestedStack = [];
+      } else {
+        // Starting a nested brace group
+        currentNestedStack.push(1);
       }
     } else if (ch === "}") {
       if (braceDepth === 0) return { expansions: 0, valid: false };
       braceDepth -= 1;
       if (braceDepth === 0) {
         // Completed a top-level brace group
-        topLevelGroups.push(currentTopLevelOptions);
-        currentTopLevelOptions = 0;
+        // Calculate total expansions: sum of (base * nestedMultiplier) for each option
+        let totalExpansions = 0;
+        for (const option of topLevelOptions) {
+          totalExpansions += option.base * option.nestedMultiplier;
+        }
+        topLevelGroups.push(totalExpansions);
+        topLevelOptions.length = 0;
+        currentNestedStack = [];
+      } else {
+        // Completed a nested brace group
+        if (currentNestedStack.length > 0) {
+          const nestedCount = currentNestedStack.pop()!;
+          if (currentNestedStack.length > 0) {
+            // Multiply with parent nested group
+            currentNestedStack[currentNestedStack.length - 1]! *= nestedCount;
+          } else if (topLevelOptions.length > 0) {
+            // This nested group belongs to the current top-level option
+            topLevelOptions[topLevelOptions.length - 1]!.nestedMultiplier *= nestedCount;
+          }
+        }
       }
-    } else if (ch === "," && braceDepth === 1) {
-      // Count options only at top level
-      currentTopLevelOptions += 1;
+    } else if (ch === ",") {
+      if (braceDepth === 1) {
+        // Count options only at top level
+        topLevelOptions.push({ base: 1, nestedMultiplier: 1 });
+      } else if (braceDepth > 1) {
+        // Count options in nested braces
+        if (currentNestedStack.length > 0) {
+          currentNestedStack[currentNestedStack.length - 1]! += 1;
+        }
+      }
     }
   }
 
@@ -128,43 +156,10 @@ function analyzeBraces(pattern: string): { expansions: number; valid: boolean } 
   return { expansions, valid: true };
 }
 
-function analyzeExtglobDepth(pattern: string): { depth: number; valid: boolean } {
-  let depth = 0;
-  let maxDepth = 0;
-
-  for (let i = 0; i < pattern.length; i += 1) {
-    const ch = pattern.charAt(i);
-
-    if (ch === "\\") {
-      i += 1;
-      continue;
-    }
-
-    if (i + 1 < pattern.length) {
-      const next = pattern.charAt(i + 1);
-      if (EXTGLOB_PREFIXES.has(ch) && next === "(") {
-        depth += 1;
-        maxDepth = Math.max(maxDepth, depth);
-        i += 1; // skip "("
-        continue;
-      }
-    }
-
-    if (ch === ")") {
-      if (depth === 0) return { depth: maxDepth, valid: false };
-      depth -= 1;
-    }
-  }
-
-  if (depth !== 0) return { depth: maxDepth, valid: false };
-  return { depth: maxDepth, valid: true };
-}
-
 export interface GlobValidationLimits {
   maxLength?: number;
   maxSegments?: number;
   maxBraceExpansions?: number;
-  maxExtglobDepth?: number;
   maxStars?: number;
   maxQuestions?: number;
 }
@@ -174,13 +169,13 @@ export function isValidGlobPattern(pattern: string, limits: GlobValidationLimits
     maxLength = MAX_GLOB_LENGTH,
     maxSegments = MAX_GLOB_SEGMENTS,
     maxBraceExpansions = MAX_GLOB_BRACE_EXPANSIONS,
-    maxExtglobDepth = MAX_GLOB_EXTGLOB_DEPTH,
     maxStars = MAX_GLOB_STARS,
     maxQuestions = MAX_GLOB_QUESTIONS,
   } = limits;
 
   if (typeof pattern !== "string") return false;
   if (pattern.length === 0) return false;
+  if (pattern.trim().length === 0) return false;
   if (pattern.length > maxLength) return false;
   if (pattern.includes("\0")) return false;
 
@@ -194,10 +189,6 @@ export function isValidGlobPattern(pattern: string, limits: GlobValidationLimits
   const { expansions, valid: braceValid } = analyzeBraces(pattern);
   if (!braceValid) return false;
   if (expansions > maxBraceExpansions) return false;
-
-  const { depth: extDepth, valid: extValid } = analyzeExtglobDepth(pattern);
-  if (!extValid) return false;
-  if (extDepth > maxExtglobDepth) return false;
 
   try {
     picomatch.scan(pattern);
