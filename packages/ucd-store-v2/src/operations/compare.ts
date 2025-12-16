@@ -269,7 +269,19 @@ export async function compare(
       }
 
       if (errors.length > 0) {
-        throw errors[0];
+        const errorMessages = errors.map((err, idx) => {
+          // Try to extract filePath and message if possible
+          if (err && typeof err === "object" && "filePath" in err && "message" in err) {
+            return `(${idx + 1}) File: ${err.filePath} - ${err.message}`;
+          } else if (err && typeof err === "object" && "message" in err) {
+            return `(${idx + 1}) ${err.message}`;
+          } else {
+            return `(${idx + 1}) ${String(err)}`;
+          }
+        }).join("\n");
+        throw new UCDStoreGenericError(
+          `Multiple file comparison errors occurred:\n${errorMessages}`,
+        );
       }
     }
 
