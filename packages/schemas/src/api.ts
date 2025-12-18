@@ -42,7 +42,7 @@ export const UCDWellKnownConfigSchema = z.object({
 
     /**
      * Path to manifest file
-     * @example "/api/v1/files/.ucd-store.json"
+     * @example "/.well-known/ucd-store.json"
      */
     manifest: z.string(),
 
