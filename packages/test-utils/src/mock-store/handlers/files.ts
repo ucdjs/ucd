@@ -44,35 +44,3 @@ export const filesRoute = defineMockRouteHandler({
     ]);
   },
 });
-
-export const storeManifestRoute = defineMockRouteHandler({
-  endpoint: "/api/v1/files/.ucd-store.json",
-  setup: ({
-    url,
-    providedResponse,
-    shouldUseDefaultValue,
-    versions,
-    mockFetch,
-  }) => {
-    if (typeof providedResponse === "function") {
-      mockFetch([
-        ["GET", url, providedResponse],
-      ]);
-      return;
-    }
-
-    mockFetch([
-      ["GET", url, () => {
-        if (shouldUseDefaultValue) {
-          return HttpResponse.json(Object.fromEntries(
-            versions.map((version) => [version, {
-              expectedFiles: [],
-            }]),
-          ) satisfies UCDStoreManifest);
-        }
-
-        return HttpResponse.json(providedResponse);
-      }],
-    ]);
-  },
-});
