@@ -6,7 +6,7 @@ import {
   waitOnExecutionContext,
 } from "cloudflare:test";
 
-import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { afterEach, assert, beforeAll, describe, expect, it, vi } from "vitest";
 import worker from "../../src/worker";
 
 // Mock unicode-utils for version fetching
@@ -72,10 +72,7 @@ describe("well-known", () => {
         expect.fail("Response does not match UCDWellKnownConfigSchema");
       }
 
-      // Verify versions array is present
-      expect(json).toHaveProperty("versions");
-      expect(Array.isArray(json.versions)).toBe(true);
-      expect(json.versions.length).toBeGreaterThan(0);
+      expect(result.data.versions).toEqual(["16.0.0", "15.1.0"]);
     });
   });
 
@@ -91,8 +88,6 @@ describe("well-known", () => {
           ],
         },
       };
-
-      const mockManifestJson = JSON.stringify(mockManifest["16.0.0"]);
 
       // Mock bucket.list to return version directories
       const mockList = vi.fn().mockResolvedValue({
@@ -203,8 +198,9 @@ describe("well-known", () => {
 
       expect(response.status).toBe(404);
       const json = await response.json();
-      expect(json).toHaveProperty("message");
-      expect(json.message).toContain("Invalid version format");
+
+      assert(typeof json === "object" && json !== null && "message" in json);
+      expect(json.message).toContain("Version parameter is required");
     });
   });
 });

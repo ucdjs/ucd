@@ -26,8 +26,12 @@ describe("ucd client", () => {
       expect(client).toBeDefined();
       expect(client.files).toBeDefined();
       expect(client.versions).toBeDefined();
+      expect(client.config).toBeDefined();
+      expect(client.manifest).toBeDefined();
       expect(client.files).toHaveProperty("get");
       expect(client.versions).toHaveProperty("list");
+      expect(client.config).toHaveProperty("get");
+      expect(client.manifest).toHaveProperty("get");
     });
 
     it("should throw an error when well-known config is not found", async () => {
@@ -89,8 +93,12 @@ describe("ucd client", () => {
       expect(client).toBeDefined();
       expect(client.files).toBeDefined();
       expect(client.versions).toBeDefined();
+      expect(client.config).toBeDefined();
+      expect(client.manifest).toBeDefined();
       expect(client.files).toHaveProperty("get");
       expect(client.versions).toHaveProperty("list");
+      expect(client.config).toHaveProperty("get");
+      expect(client.manifest).toHaveProperty("get");
     });
 
     it("should handle custom base URLs correctly", () => {
@@ -109,8 +117,12 @@ describe("ucd client", () => {
       expect(client).toBeDefined();
       expect(client.files).toBeDefined();
       expect(client.versions).toBeDefined();
+      expect(client.config).toBeDefined();
+      expect(client.manifest).toBeDefined();
       expect(client.files).toHaveProperty("get");
       expect(client.versions).toHaveProperty("list");
+      expect(client.config).toHaveProperty("get");
+      expect(client.manifest).toHaveProperty("get");
     });
 
     it("should create a client instance and call the versions endpoint", async () => {
