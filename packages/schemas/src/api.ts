@@ -41,7 +41,8 @@ export const UCDWellKnownConfigSchema = z.object({
     files: z.string(),
 
     /**
-     * Path to manifest file
+     * Path to manifest file (deprecated)
+     * @deprecated Use per-version endpoint `/.well-known/ucd-store/{version}.json` instead
      * @example "/.well-known/ucd-store.json"
      */
     manifest: z.string(),
@@ -52,12 +53,20 @@ export const UCDWellKnownConfigSchema = z.object({
      */
     versions: z.string(),
   }),
+
+  /**
+   * List of available Unicode versions
+   * This array contains all versions that have manifests available.
+   */
+  versions: z.array(z.string()).optional(),
 }).meta({
   id: "UCDWellKnownConfig",
   description: dedent`
     Configuration schema for the .well-known/ucd-config.json endpoint.
 
     This configuration provides clients with the necessary information to interact with the UCD API server, including endpoint paths and optional metadata about the server itself.
+
+    The \`manifest\` endpoint is deprecated. Use the per-version endpoint \`/.well-known/ucd-store/{version}.json\` instead for better performance and caching.
   `,
 });
 
