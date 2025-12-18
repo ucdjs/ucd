@@ -5,10 +5,10 @@ import { env } from "hono/adapter";
 import { errorHandler, notFoundHandler } from "./lib/handlers";
 import { setupCors, setupRatelimit } from "./lib/setups";
 import { buildOpenApiConfig, registerApp } from "./openapi";
-import { WELL_KNOWN_ROUTER } from "./routes/.well-known/routes";
+import { WELL_KNOWN_ROUTER } from "./routes/.well-known/router";
 import { TASKS_ROUTER } from "./routes/tasks/routes";
-import { V1_FILES_ROUTER } from "./routes/v1_files/routes";
-import { V1_VERSIONS_ROUTER } from "./routes/v1_versions/routes";
+import { V1_FILES_ROUTER } from "./routes/v1_files/router";
+import { V1_VERSIONS_ROUTER } from "./routes/v1_versions/router";
 
 const app = new OpenAPIHono<HonoEnv>();
 
