@@ -1,6 +1,6 @@
 import { UCDWellKnownConfigSchema } from "@ucdjs/schemas";
 import { env, fetchMock } from "cloudflare:test";
-import { afterEach, assert, beforeAll, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { executeRequest } from "../helpers/request";
 import { expectApiError, expectCacheHeaders, expectJsonResponse, expectSuccess } from "../helpers/response";
 
@@ -191,7 +191,7 @@ describe("well-known", () => {
 
       await expectApiError(response, {
         status: 404,
-        message: /Version parameter is required/,
+        message: /Invalid version format: invalid\. Expected format: X\.Y\.Z \(e\.g\., 16\.0\.0\)/,
       });
     });
   });
