@@ -192,7 +192,7 @@ export function captureValidationError<T extends Component>(
 }
 
 /**
- * Specialized error capture for parsing/parsing errors.
+ * Specialized error capture for parsing errors.
  * Automatically adds parsing-specific tags.
  *
  * @example
