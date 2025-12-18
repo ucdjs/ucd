@@ -1,13 +1,8 @@
 import { UCDWellKnownConfigSchema } from "@ucdjs/schemas";
-import {
-  createExecutionContext,
-  env,
-  fetchMock,
-  waitOnExecutionContext,
-} from "cloudflare:test";
-
+import { env, fetchMock } from "cloudflare:test";
 import { afterEach, assert, beforeAll, describe, expect, it, vi } from "vitest";
-import worker from "../../src/worker";
+import { executeRequest } from "../helpers/request";
+import { expectApiError, expectCacheHeaders, expectJsonResponse, expectSuccess } from "../helpers/response";
 
 // Mock unicode-utils for version fetching
 vi.mock("@unicode-utils/core", async (importOriginal) => {
@@ -55,18 +50,18 @@ describe("well-known", () => {
         .intercept({ path: "/versions/enumeratedversions.html" })
         .reply(200, mockHtmlResponse);
 
-      const request = new Request("https://api.ucdjs.dev/.well-known/ucd-config.json");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
+      const { response, json } = await executeRequest(
+        new Request("https://api.ucdjs.dev/.well-known/ucd-config.json"),
+        env,
+      );
 
-      expect(response.status).toBe(200);
-      expect.soft(response.headers.get("content-type")).toBe("application/json");
-      expect.soft(response.headers.get("cache-control")).toMatch(/max-age=\d+/);
+      expectSuccess(response);
+      expectJsonResponse(response);
+      expectCacheHeaders(response);
 
-      const json = await response.json();
+      const data = await json();
 
-      const result = UCDWellKnownConfigSchema.safeParse(json);
+      const result = UCDWellKnownConfigSchema.safeParse(data);
 
       if (!result.success) {
         expect.fail("Response does not match UCDWellKnownConfigSchema");
@@ -110,19 +105,19 @@ describe("well-known", () => {
         } as any,
       };
 
-      const request = new Request("https://api.ucdjs.dev/.well-known/ucd-store.json");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, mockEnv, ctx);
-      await waitOnExecutionContext(ctx);
+      const { response, json } = await executeRequest(
+        new Request("https://api.ucdjs.dev/.well-known/ucd-store.json"),
+        mockEnv,
+      );
 
-      expect(response.status).toBe(200);
+      expectSuccess(response);
       expect(response.headers.get("Deprecation")).toBe("true");
       expect(response.headers.get("Sunset")).toBeTruthy();
       expect(response.headers.get("Link")).toContain("ucd-store/{version}.json");
       expect(response.headers.get("Link")).toContain("successor-version");
 
-      const json = await response.json();
-      expect(json).toHaveProperty("16.0.0");
+      const data = await json();
+      expect(data).toHaveProperty("16.0.0");
     });
   });
 
@@ -148,18 +143,18 @@ describe("well-known", () => {
         } as any,
       };
 
-      const request = new Request("https://api.ucdjs.dev/.well-known/ucd-store/16.0.0.json");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, mockEnv, ctx);
-      await waitOnExecutionContext(ctx);
+      const { response, json } = await executeRequest(
+        new Request("https://api.ucdjs.dev/.well-known/ucd-store/16.0.0.json"),
+        mockEnv,
+      );
 
-      expect(response.status).toBe(200);
-      expect(response.headers.get("content-type")).toBe("application/json");
-      expect(response.headers.get("cache-control")).toMatch(/max-age=\d+/);
+      expectSuccess(response);
+      expectJsonResponse(response);
+      expectCacheHeaders(response);
       expect(response.headers.get("Last-Modified")).toBeTruthy();
 
-      const json = await response.json();
-      expect(json).toEqual(mockManifest);
+      const data = await json();
+      expect(data).toEqual(mockManifest);
       expect(mockGet).toHaveBeenCalledWith("manifest/16.0.0/manifest.json");
     });
 
@@ -173,14 +168,12 @@ describe("well-known", () => {
         } as any,
       };
 
-      const request = new Request("https://api.ucdjs.dev/.well-known/ucd-store/99.0.0.json");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, mockEnv, ctx);
-      await waitOnExecutionContext(ctx);
+      const { response } = await executeRequest(
+        new Request("https://api.ucdjs.dev/.well-known/ucd-store/99.0.0.json"),
+        mockEnv,
+      );
 
-      expect(response.status).toBe(404);
-      const json = await response.json();
-      expect(json).toHaveProperty("message");
+      await expectApiError(response, { status: 404 });
     });
 
     it("should return 404 for invalid version format", async () => {
@@ -191,16 +184,15 @@ describe("well-known", () => {
         } as any,
       };
 
-      const request = new Request("https://api.ucdjs.dev/.well-known/ucd-store/invalid.json");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, mockEnv, ctx);
-      await waitOnExecutionContext(ctx);
+      const { response } = await executeRequest(
+        new Request("https://api.ucdjs.dev/.well-known/ucd-store/invalid.json"),
+        mockEnv,
+      );
 
-      expect(response.status).toBe(404);
-      const json = await response.json();
-
-      assert(typeof json === "object" && json !== null && "message" in json);
-      expect(json.message).toContain("Version parameter is required");
+      await expectApiError(response, {
+        status: 404,
+        message: /Version parameter is required/,
+      });
     });
   });
 });

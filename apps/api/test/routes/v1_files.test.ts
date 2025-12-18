@@ -1,14 +1,9 @@
 import { UCD_FILE_STAT_TYPE_HEADER } from "@ucdjs/env";
 import { generateAutoIndexHtml } from "apache-autoindex-parse/test-utils";
-import {
-  createExecutionContext,
-  env,
-  fetchMock,
-  waitOnExecutionContext,
-} from "cloudflare:test";
+import { env, fetchMock } from "cloudflare:test";
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
-
-import worker from "../../src/worker";
+import { executeRequest } from "../helpers/request";
+import { expectApiError, expectCacheHeaders, expectContentType, expectSuccess } from "../helpers/response";
 
 beforeAll(() => {
   fetchMock.activate();
@@ -34,45 +29,35 @@ describe("v1_files", () => {
           },
         });
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd/UnicodeData.txt");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
+      const { response, text } = await executeRequest(
+        new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd/UnicodeData.txt"),
+        env,
+      );
 
-      expect(response.status).toBe(200);
-      expect(response.headers.get("content-type")).toBe("text/plain; charset=utf-8");
-      expect(response.headers.get("cache-control")).toMatch(/max-age=\d+/);
+      expectSuccess(response);
+      expectContentType(response, "text/plain; charset=utf-8");
+      expectCacheHeaders(response);
 
-      const content = await response.text();
+      const content = await text();
       expect(content).toBe(mockFileContent);
     });
 
     it("should reject paths with '..' segments", async () => {
-      const request = new Request("https://api.ucdjs.dev/api/v1/files/..%2Ftest");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
+      const { response } = await executeRequest(
+        new Request("https://api.ucdjs.dev/api/v1/files/..%2Ftest"),
+        env,
+      );
 
-      expect(response.status).toBe(400);
-      expect(response.headers.get("content-type")).toContain("application/json");
-
-      const error = await response.json();
-      expect(error).toHaveProperty("message", "Invalid path");
-      expect(error).toHaveProperty("status", 400);
+      await expectApiError(response, { status: 400, message: "Invalid path" });
     });
 
     it("should reject paths with '//' segments", async () => {
-      const request = new Request("https://api.ucdjs.dev/api/v1/files/path//with//double//slashes");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
+      const { response } = await executeRequest(
+        new Request("https://api.ucdjs.dev/api/v1/files/path//with//double//slashes"),
+        env,
+      );
 
-      expect(response.status).toBe(400);
-      expect(response.headers.get("content-type")).toContain("application/json");
-
-      const error = await response.json();
-      expect(error).toHaveProperty("message", "Invalid path");
-      expect(error).toHaveProperty("status", 400);
+      await expectApiError(response, { status: 400, message: "Invalid path" });
     });
 
     it("should handle 404 from files endpoint", async () => {
@@ -80,17 +65,12 @@ describe("v1_files", () => {
         .intercept({ path: "/Public/nonexistent/path?F=2" })
         .reply(404, "Not Found");
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/files/nonexistent/path");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
+      const { response } = await executeRequest(
+        new Request("https://api.ucdjs.dev/api/v1/files/nonexistent/path"),
+        env,
+      );
 
-      expect(response.status).toBe(404);
-      expect(response.headers.get("content-type")).toContain("application/json");
-
-      const error = await response.json();
-      expect(error).toHaveProperty("message", "Resource not found");
-      expect(error).toHaveProperty("status", 404);
+      await expectApiError(response, { status: 404, message: "Resource not found" });
     });
 
     it("should handle 502 from unicode.org", async () => {
@@ -98,17 +78,12 @@ describe("v1_files", () => {
         .intercept({ path: "/Public/error/path?F=2" })
         .reply(500, "Internal Server Error");
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/files/error/path");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
+      const { response } = await executeRequest(
+        new Request("https://api.ucdjs.dev/api/v1/files/error/path"),
+        env,
+      );
 
-      expect(response.status).toBe(502);
-      expect(response.headers.get("content-type")).toContain("application/json");
-
-      const error = await response.json();
-      expect(error).toHaveProperty("message", "Bad Gateway");
-      expect(error).toHaveProperty("status", 502);
+      await expectApiError(response, { status: 502, message: "Bad Gateway" });
     });
 
     it("should handle missing content-type header", async () => {
@@ -122,14 +97,14 @@ describe("v1_files", () => {
           },
         });
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/files/binary/file");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
+      const { response } = await executeRequest(
+        new Request("https://api.ucdjs.dev/api/v1/files/binary/file"),
+        env,
+      );
 
-      expect(response.status).toBe(200);
-      expect(response.headers.get("content-type")).toBe("application/octet-stream");
-      expect(response.headers.get("cache-control")).toMatch(/max-age=\d+/);
+      expectSuccess(response);
+      expectContentType(response, "application/octet-stream");
+      expectCacheHeaders(response);
     });
 
     it("should infer content-type from .txt when upstream omits it", async () => {
@@ -143,16 +118,16 @@ describe("v1_files", () => {
           },
         });
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/files/sample/file.txt");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
+      const { response, text } = await executeRequest(
+        new Request("https://api.ucdjs.dev/api/v1/files/sample/file.txt"),
+        env,
+      );
 
-      expect(response.status).toBe(200);
-      expect(response.headers.get("content-type")).toBe("text/plain");
-      expect(response.headers.get("cache-control")).toMatch(/max-age=\d+/);
+      expectSuccess(response);
+      expectContentType(response, "text/plain");
+      expectCacheHeaders(response);
 
-      const content = await response.text();
+      const content = await text();
       expect(content).toBe(mockContent);
     });
 
@@ -167,16 +142,16 @@ describe("v1_files", () => {
           },
         });
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/files/sample/file.xml");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
+      const { response, text } = await executeRequest(
+        new Request("https://api.ucdjs.dev/api/v1/files/sample/file.xml"),
+        env,
+      );
 
-      expect(response.status).toBe(200);
-      expect(response.headers.get("content-type")).toBe("application/xml");
-      expect(response.headers.get("cache-control")).toMatch(/max-age=\d+/);
+      expectSuccess(response);
+      expectContentType(response, "application/xml");
+      expectCacheHeaders(response);
 
-      const content = await response.text();
+      const content = await text();
       expect(content).toBe(mockContent);
     });
 
@@ -191,16 +166,16 @@ describe("v1_files", () => {
           },
         });
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd/UnicodeData");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
+      const { response, text } = await executeRequest(
+        new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd/UnicodeData"),
+        env,
+      );
 
-      expect(response.status).toBe(200);
-      expect(response.headers.get("content-type")).toBe("application/octet-stream");
-      expect(response.headers.get("cache-control")).toMatch(/max-age=\d+/);
+      expectSuccess(response);
+      expectContentType(response, "application/octet-stream");
+      expectCacheHeaders(response);
 
-      const content = await response.text();
+      const content = await text();
       expect(content).toBe(mockContent);
     });
   });
@@ -218,18 +193,21 @@ describe("v1_files", () => {
           },
         });
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd/UnicodeData.txt", {
-        method: "HEAD",
-      });
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
+      const { response } = await executeRequest(
+        new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd/UnicodeData.txt", {
+          method: "HEAD",
+        }),
+        env,
+      );
 
-      expect(response.status).toBe(200);
-      expect(response.headers.get("content-type")).toBe("text/plain; charset=utf-8");
-      expect(response.headers.get("content-length")).toBe("1234");
-      expect(response.headers.get("last-modified")).toBe("Wed, 01 Jan 2020 00:00:00 GMT");
-      expect(response.headers.get(UCD_FILE_STAT_TYPE_HEADER)).toBe("file");
+      expectSuccess(response, {
+        headers: {
+          "content-type": "text/plain; charset=utf-8",
+          "content-length": "1234",
+          "last-modified": "Wed, 01 Jan 2020 00:00:00 GMT",
+          [UCD_FILE_STAT_TYPE_HEADER]: "file",
+        },
+      });
     });
   });
 
@@ -245,16 +223,16 @@ describe("v1_files", () => {
         },
       });
 
-    const request = new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd/UnicodeData.txt", {
-      method: "HEAD",
-    });
-    const ctx = createExecutionContext();
-    const response = await worker.fetch(request, env, ctx);
-    await waitOnExecutionContext(ctx);
+    const { response } = await executeRequest(
+      new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd/UnicodeData.txt", {
+        method: "HEAD",
+      }),
+      env,
+    );
 
-    expect(response.status).toBe(200);
-    expect(response.headers.get("content-type")).toBe("text/plain; charset=utf-8");
-    expect(response.headers.get("cache-control")).toMatch(/max-age=\d+/);
+    expectSuccess(response);
+    expectContentType(response, "text/plain; charset=utf-8");
+    expectCacheHeaders(response);
   });
 
   it("should handle HEAD requests for directories", async () => {
@@ -272,42 +250,41 @@ describe("v1_files", () => {
         },
       });
 
-    const request = new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd", {
-      method: "HEAD",
-    });
+    const { response } = await executeRequest(
+      new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd", {
+        method: "HEAD",
+      }),
+      env,
+    );
 
-    const ctx = createExecutionContext();
-    const response = await worker.fetch(request, env, ctx);
-    await waitOnExecutionContext(ctx);
-
-    expect(response.status).toBe(200);
-    expect(response.headers.get("content-type")).toBe("application/json");
-    expect(response.headers.get("cache-control")).toMatch(/max-age=\d+/);
+    expectSuccess(response);
+    expectContentType(response, "application/json");
+    expectCacheHeaders(response);
     expect(response.headers.get(UCD_FILE_STAT_TYPE_HEADER)).toBe("directory");
     expect(response.headers.get("content-length")).toBeDefined();
     expect(response.headers.get("last-modified")).toBeDefined();
   });
 
   it("should handle HEAD requests with invalid paths", async () => {
-    const request = new Request("https://api.ucdjs.dev/api/v1/files/..%2Ftest", {
-      method: "HEAD",
-    });
-    const ctx = createExecutionContext();
-    const response = await worker.fetch(request, env, ctx);
-    await waitOnExecutionContext(ctx);
+    const { response } = await executeRequest(
+      new Request("https://api.ucdjs.dev/api/v1/files/..%2Ftest", {
+        method: "HEAD",
+      }),
+      env,
+    );
 
-    expect(response.status).toBe(400);
+    await expectApiError(response, { status: 400 });
   });
 
   it("should handle HEAD requests with '//' segments", async () => {
-    const request = new Request("https://api.ucdjs.dev/api/v1/files/path//with//double//slashes", {
-      method: "HEAD",
-    });
-    const ctx = createExecutionContext();
-    const response = await worker.fetch(request, env, ctx);
-    await waitOnExecutionContext(ctx);
+    const { response } = await executeRequest(
+      new Request("https://api.ucdjs.dev/api/v1/files/path//with//double//slashes", {
+        method: "HEAD",
+      }),
+      env,
+    );
 
-    expect(response.status).toBe(400);
+    await expectApiError(response, { status: 400 });
   });
 
   it("should handle HEAD requests for non-existent files", async () => {
@@ -315,14 +292,14 @@ describe("v1_files", () => {
       .intercept({ path: "/Public/nonexistent/path?F=2" })
       .reply(404, "Not Found");
 
-    const request = new Request("https://api.ucdjs.dev/api/v1/files/nonexistent/path", {
-      method: "HEAD",
-    });
-    const ctx = createExecutionContext();
-    const response = await worker.fetch(request, env, ctx);
-    await waitOnExecutionContext(ctx);
+    const { response } = await executeRequest(
+      new Request("https://api.ucdjs.dev/api/v1/files/nonexistent/path", {
+        method: "HEAD",
+      }),
+      env,
+    );
 
-    expect(response.status).toBe(404);
+    await expectApiError(response, { status: 404 });
   });
 
   it("should handle HEAD requests with 502 from unicode.org", async () => {
@@ -330,14 +307,14 @@ describe("v1_files", () => {
       .intercept({ path: "/Public/error/path?F=2" })
       .reply(500, "Internal Server Error");
 
-    const request = new Request("https://api.ucdjs.dev/api/v1/files/error/path", {
-      method: "HEAD",
-    });
-    const ctx = createExecutionContext();
-    const response = await worker.fetch(request, env, ctx);
-    await waitOnExecutionContext(ctx);
+    const { response } = await executeRequest(
+      new Request("https://api.ucdjs.dev/api/v1/files/error/path", {
+        method: "HEAD",
+      }),
+      env,
+    );
 
-    expect(response.status).toBe(502);
+    await expectApiError(response, { status: 502 });
   });
 
   it("should handle HEAD requests with missing content-type header", async () => {
@@ -351,15 +328,15 @@ describe("v1_files", () => {
         },
       });
 
-    const request = new Request("https://api.ucdjs.dev/api/v1/files/binary/file", {
-      method: "HEAD",
-    });
-    const ctx = createExecutionContext();
-    const response = await worker.fetch(request, env, ctx);
-    await waitOnExecutionContext(ctx);
+    const { response } = await executeRequest(
+      new Request("https://api.ucdjs.dev/api/v1/files/binary/file", {
+        method: "HEAD",
+      }),
+      env,
+    );
 
-    expect(response.status).toBe(200);
-    expect(response.headers.get("content-type")).toBe("application/octet-stream");
+    expectSuccess(response);
+    expectContentType(response, "application/octet-stream");
   });
 
   // eslint-disable-next-line test/prefer-lowercase-title
@@ -378,13 +355,13 @@ describe("v1_files", () => {
           headers: { "content-type": "text/html; charset=utf-8" },
         });
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd?pattern=*.txt");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
+      const { response, json } = await executeRequest(
+        new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd?pattern=*.txt"),
+        env,
+      );
 
-      expect(response.status).toBe(200);
-      const files = await response.json<{ name: string }[]>();
+      expectSuccess(response);
+      const files = await json() as { name: string }[];
       expect(files).toHaveLength(2);
       expect(files.map((f) => f.name)).toEqual(["UnicodeData.txt", "Blocks.txt"]);
     });
@@ -402,13 +379,13 @@ describe("v1_files", () => {
           headers: { "content-type": "text/html; charset=utf-8" },
         });
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd?pattern=Uni*");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
+      const { response, json } = await executeRequest(
+        new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd?pattern=Uni*"),
+        env,
+      );
 
-      expect(response.status).toBe(200);
-      const files = await response.json<{ name: string }[]>();
+      expectSuccess(response);
+      const files = await json() as { name: string }[];
       expect(files).toHaveLength(2);
       expect(files.map((f) => f.name)).toEqual(["UnicodeData.txt", "Unihan.zip"]);
     });
@@ -425,13 +402,13 @@ describe("v1_files", () => {
           headers: { "content-type": "text/html; charset=utf-8" },
         });
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd?pattern=unicode*");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
+      const { response, json } = await executeRequest(
+        new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd?pattern=unicode*"),
+        env,
+      );
 
-      expect(response.status).toBe(200);
-      const files = await response.json<{ name: string }[]>();
+      expectSuccess(response);
+      const files = await json() as { name: string }[];
       expect(files).toHaveLength(1);
       expect(files[0]!.name).toBe("UnicodeData.txt");
     });
@@ -448,13 +425,13 @@ describe("v1_files", () => {
           headers: { "content-type": "text/html; charset=utf-8" },
         });
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd?pattern=*.xml");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
+      const { response, json } = await executeRequest(
+        new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd?pattern=*.xml"),
+        env,
+      );
 
-      expect(response.status).toBe(200);
-      const files = await response.json<{ name: string }[]>();
+      expectSuccess(response);
+      const files = await json() as { name: string }[];
       expect(files).toEqual([]);
     });
 
@@ -471,13 +448,13 @@ describe("v1_files", () => {
           headers: { "content-type": "text/html; charset=utf-8" },
         });
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd?pattern=*.{txt,xml}");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
+      const { response, json } = await executeRequest(
+        new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd?pattern=*.{txt,xml}"),
+        env,
+      );
 
-      expect(response.status).toBe(200);
-      const files = await response.json<{ name: string }[]>();
+      expectSuccess(response);
+      const files = await json() as { name: string }[];
       expect(files).toHaveLength(2);
       expect(files.map((f) => f.name)).toEqual(["UnicodeData.txt", "ucd.all.flat.xml"]);
     });
@@ -495,13 +472,13 @@ describe("v1_files", () => {
           headers: { "content-type": "text/html; charset=utf-8" },
         });
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd?pattern=*Data*");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
+      const { response, json } = await executeRequest(
+        new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd?pattern=*Data*"),
+        env,
+      );
 
-      expect(response.status).toBe(200);
-      const files = await response.json<{ name: string }[]>();
+      expectSuccess(response);
+      const files = await json() as { name: string }[];
       expect(files).toHaveLength(2);
       expect(files.map((f) => f.name)).toEqual(["UnicodeData.txt", "emoji-data.txt"]);
     });
@@ -515,14 +492,14 @@ describe("v1_files", () => {
           headers: { "content-type": "text/plain; charset=utf-8" },
         });
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd/UnicodeData.txt?pattern=*.xml");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
+      const { response, text } = await executeRequest(
+        new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd/UnicodeData.txt?pattern=*.xml"),
+        env,
+      );
 
-      expect(response.status).toBe(200);
-      expect(response.headers.get("content-type")).toBe("text/plain; charset=utf-8");
-      const content = await response.text();
+      expectSuccess(response);
+      expectContentType(response, "text/plain; charset=utf-8");
+      const content = await text();
       expect(content).toBe(mockFileContent);
     });
 
@@ -537,13 +514,13 @@ describe("v1_files", () => {
           headers: { "content-type": "text/html; charset=utf-8" },
         });
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd?pattern=");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
+      const { response, json } = await executeRequest(
+        new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd?pattern="),
+        env,
+      );
 
-      expect(response.status).toBe(200);
-      const result = await response.json();
+      expectSuccess(response);
+      const result = await json();
       expect(result).toEqual([
         {
           lastModified: expect.any(Number),
@@ -570,13 +547,13 @@ describe("v1_files", () => {
           headers: { "content-type": "text/html; charset=utf-8" },
         });
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/files/search?q=com");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
+      const { response, json } = await executeRequest(
+        new Request("https://api.ucdjs.dev/api/v1/files/search?q=com"),
+        env,
+      );
 
-      expect(response.status).toBe(200);
-      const results = await response.json<{ name: string; type: string }[]>();
+      expectSuccess(response);
+      const results = await json() as { name: string; type: string }[];
 
       expect(results).toHaveLength(2);
       // Files should come before directories
@@ -596,13 +573,13 @@ describe("v1_files", () => {
           headers: { "content-type": "text/html; charset=utf-8" },
         });
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/files/search?q=unicode");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
+      const { response, json } = await executeRequest(
+        new Request("https://api.ucdjs.dev/api/v1/files/search?q=unicode"),
+        env,
+      );
 
-      expect(response.status).toBe(200);
-      const results = await response.json<{ name: string; type: string }[]>();
+      expectSuccess(response);
+      const results = await json() as { name: string; type: string }[];
 
       expect(results).toHaveLength(1);
       expect(results[0]!.name).toBe("UnicodeData.txt");
@@ -621,13 +598,13 @@ describe("v1_files", () => {
           headers: { "content-type": "text/html; charset=utf-8" },
         });
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/files/search?q=emoji&path=15.1.0/ucd/emoji");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
+      const { response, json } = await executeRequest(
+        new Request("https://api.ucdjs.dev/api/v1/files/search?q=emoji&path=15.1.0/ucd/emoji"),
+        env,
+      );
 
-      expect(response.status).toBe(200);
-      const results = await response.json<{ name: string; type: string }[]>();
+      expectSuccess(response);
+      const results = await json() as { name: string; type: string }[];
 
       expect(results).toHaveLength(2);
       expect(results.map((r) => r.name)).toEqual(["emoji-data.txt", "emoji-sequences.txt"]);
@@ -645,13 +622,13 @@ describe("v1_files", () => {
           headers: { "content-type": "text/html; charset=utf-8" },
         });
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/files/search?q=nonexistent");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
+      const { response, json } = await executeRequest(
+        new Request("https://api.ucdjs.dev/api/v1/files/search?q=nonexistent"),
+        env,
+      );
 
-      expect(response.status).toBe(200);
-      const results = await response.json();
+      expectSuccess(response);
+      const results = await json();
       expect(results).toEqual([]);
     });
 
@@ -660,45 +637,41 @@ describe("v1_files", () => {
         .intercept({ path: "/Public/nonexistent/path?F=2" })
         .reply(404, "Not Found");
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/files/search?q=test&path=nonexistent/path");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
+      const { response, json } = await executeRequest(
+        new Request("https://api.ucdjs.dev/api/v1/files/search?q=test&path=nonexistent/path"),
+        env,
+      );
 
-      expect(response.status).toBe(200);
-      const results = await response.json();
+      expectSuccess(response);
+      const results = await json();
       expect(results).toEqual([]);
     });
 
     it("should reject invalid path with '..'", async () => {
-      const request = new Request("https://api.ucdjs.dev/api/v1/files/search?q=test&path=../etc");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
+      const { response } = await executeRequest(
+        new Request("https://api.ucdjs.dev/api/v1/files/search?q=test&path=../etc"),
+        env,
+      );
 
-      expect(response.status).toBe(400);
-      const error = await response.json();
-      expect(error).toHaveProperty("message", "Invalid path");
+      await expectApiError(response, { status: 400, message: "Invalid path" });
     });
 
     it("should reject invalid path with '//'", async () => {
-      const request = new Request("https://api.ucdjs.dev/api/v1/files/search?q=test&path=path//double");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
+      const { response } = await executeRequest(
+        new Request("https://api.ucdjs.dev/api/v1/files/search?q=test&path=path//double"),
+        env,
+      );
 
-      expect(response.status).toBe(400);
-      const error = await response.json();
-      expect(error).toHaveProperty("message", "Invalid path");
+      await expectApiError(response, { status: 400, message: "Invalid path" });
     });
 
     it("should return 400 when q parameter is missing", async () => {
-      const request = new Request("https://api.ucdjs.dev/api/v1/files/search");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
+      const { response } = await executeRequest(
+        new Request("https://api.ucdjs.dev/api/v1/files/search"),
+        env,
+      );
 
-      expect(response.status).toBe(400);
+      await expectApiError(response, { status: 400 });
     });
 
     it("should match exact directory name when query matches exactly", async () => {
@@ -713,13 +686,13 @@ describe("v1_files", () => {
           headers: { "content-type": "text/html; charset=utf-8" },
         });
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/files/search?q=come");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
+      const { response, json } = await executeRequest(
+        new Request("https://api.ucdjs.dev/api/v1/files/search?q=come"),
+        env,
+      );
 
-      expect(response.status).toBe(200);
-      const results = await response.json<{ name: string; type: string }[]>();
+      expectSuccess(response);
+      const results = await json() as { name: string; type: string }[];
 
       // Only the directory matches exactly
       expect(results).toHaveLength(1);

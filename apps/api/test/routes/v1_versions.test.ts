@@ -2,14 +2,10 @@ import type { UnicodeVersion } from "@ucdjs/schemas";
 import type { Entry } from "apache-autoindex-parse";
 import type { TraverseEntry } from "apache-autoindex-parse/traverse";
 import { generateAutoIndexHtml } from "apache-autoindex-parse/test-utils";
-import {
-  createExecutionContext,
-  env,
-  fetchMock,
-  waitOnExecutionContext,
-} from "cloudflare:test";
+import { env, fetchMock } from "cloudflare:test";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import worker from "../../src/worker";
+import { executeRequest } from "../helpers/request";
+import { expectApiError, expectJsonResponse, expectSuccess } from "../helpers/response";
 
 // mock the unicode-utils-new module
 vi.mock("@unicode-utils/core", async (importOriginal) => {
@@ -76,15 +72,14 @@ describe("v1_versions", () => {
         .intercept({ path: "/versions/enumeratedversions.html" })
         .reply(200, mockHtmlResponse);
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/versions");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
+      const { response, json } = await executeRequest(
+        new Request("https://api.ucdjs.dev/api/v1/versions"),
+        env,
+      );
 
-      expect(response.status).toBe(200);
-      expect(response.headers.get("content-type")).toContain("application/json");
-
-      const data = await response.json() as UnicodeVersion[];
+      expectSuccess(response);
+      expectJsonResponse(response);
+      const data = await json() as UnicodeVersion[];
 
       expect(Array.isArray(data)).toBe(true);
       expect(data).toHaveLength(3);
@@ -113,13 +108,13 @@ describe("v1_versions", () => {
         .intercept({ path: "/versions/enumeratedversions.html" })
         .reply(200, mockHtmlResponse);
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/versions");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
+      const { response, json } = await executeRequest(
+        new Request("https://api.ucdjs.dev/api/v1/versions"),
+        env,
+      );
 
-      expect(response.status).toBe(200);
-      const data = await response.json() as UnicodeVersion[];
+      expectSuccess(response);
+      const data = await json() as UnicodeVersion[];
 
       // Should include the draft version
       const draftVersion = data.find((v) => v.type === "draft");
@@ -145,13 +140,13 @@ describe("v1_versions", () => {
         .intercept({ path: "/versions/enumeratedversions.html" })
         .reply(200, mockHtmlResponse);
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/versions");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
+      const { response, json } = await executeRequest(
+        new Request("https://api.ucdjs.dev/api/v1/versions"),
+        env,
+      );
 
-      expect(response.status).toBe(200);
-      const data = await response.json() as UnicodeVersion[];
+      expectSuccess(response);
+      const data = await json() as UnicodeVersion[];
 
       // Find the version with different mapping
       const versionWithDifferentMapping = data.find((v) => v.version === "15.0.0");
@@ -167,17 +162,15 @@ describe("v1_versions", () => {
         .intercept({ path: "/versions/enumeratedversions.html" })
         .reply(500, "Internal Server Error");
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/versions");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
+      const { response } = await executeRequest(
+        new Request("https://api.ucdjs.dev/api/v1/versions"),
+        env,
+      );
 
-      expect(response.status).toBe(502);
-      expect(response.headers.get("content-type")).toContain("application/json");
-
-      const error = await response.json();
-      expect(error).toHaveProperty("message", "Failed to fetch Unicode versions from upstream service");
-      expect(error).toHaveProperty("status", 502);
+      await expectApiError(response, {
+        status: 502,
+        message: "Failed to fetch Unicode versions from upstream service",
+      });
     });
 
     it("should handle malformed HTML response", async () => {
@@ -190,17 +183,15 @@ describe("v1_versions", () => {
         .intercept({ path: "/versions/enumeratedversions.html" })
         .reply(200, "<html><body><p>No table here</p></body></html>");
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/versions");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
+      const { response } = await executeRequest(
+        new Request("https://api.ucdjs.dev/api/v1/versions"),
+        env,
+      );
 
-      expect(response.status).toBe(502);
-      expect(response.headers.get("content-type")).toContain("application/json");
-
-      const error = await response.json();
-      expect(error).toHaveProperty("message", "Failed to fetch Unicode versions from upstream service");
-      expect(error).toHaveProperty("status", 502);
+      await expectApiError(response, {
+        status: 502,
+        message: "Failed to fetch Unicode versions from upstream service",
+      });
     });
 
     it("should handle empty table response", async () => {
@@ -224,17 +215,15 @@ describe("v1_versions", () => {
         .intercept({ path: "/versions/enumeratedversions.html" })
         .reply(200, emptyTableHtml);
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/versions");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
+      const { response } = await executeRequest(
+        new Request("https://api.ucdjs.dev/api/v1/versions"),
+        env,
+      );
 
-      expect(response.status).toBe(502);
-      expect(response.headers.get("content-type")).toContain("application/json");
-
-      const error = await response.json();
-      expect(error).toHaveProperty("message", "No Unicode versions found");
-      expect(error).toHaveProperty("status", 502);
+      await expectApiError(response, {
+        status: 502,
+        message: "No Unicode versions found",
+      });
     });
 
     it("should handle getCurrentDraftVersion throwing error", async () => {
@@ -247,13 +236,13 @@ describe("v1_versions", () => {
         .intercept({ path: "/versions/enumeratedversions.html" })
         .reply(200, mockHtmlResponse);
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/versions");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
+      const { response, json } = await executeRequest(
+        new Request("https://api.ucdjs.dev/api/v1/versions"),
+        env,
+      );
 
-      expect(response.status).toBe(200);
-      const data = await response.json() as UnicodeVersion[];
+      expectSuccess(response);
+      const data = await json() as UnicodeVersion[];
 
       // Should still work without draft version
       expect(data.every((v) => v.type === "stable")).toBe(true);
@@ -269,12 +258,12 @@ describe("v1_versions", () => {
         .intercept({ path: "/versions/enumeratedversions.html" })
         .reply(200, mockHtmlResponse);
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/versions");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
+      const { response } = await executeRequest(
+        new Request("https://api.ucdjs.dev/api/v1/versions"),
+        env,
+      );
 
-      expect(response.status).toBe(200);
+      expectSuccess(response);
       expect(response.headers.get("cache-control")).toBeTruthy();
     });
 
@@ -288,13 +277,13 @@ describe("v1_versions", () => {
         .intercept({ path: "/versions/enumeratedversions.html" })
         .reply(200, mockHtmlResponse);
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/versions");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
+      const { response, json } = await executeRequest(
+        new Request("https://api.ucdjs.dev/api/v1/versions"),
+        env,
+      );
 
-      expect(response.status).toBe(200);
-      const data = await response.json() as UnicodeVersion[];
+      expectSuccess(response);
+      const data = await json() as UnicodeVersion[];
 
       expect(data[0]!.version).toBe("16.0.0");
       expect(data[1]!.version).toBe("15.1.0");
@@ -328,13 +317,13 @@ describe("v1_versions", () => {
         .intercept({ path: "/versions/enumeratedversions.html" })
         .reply(200, mixedYearHtml);
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/versions");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
+      const { response, json } = await executeRequest(
+        new Request("https://api.ucdjs.dev/api/v1/versions"),
+        env,
+      );
 
-      expect(response.status).toBe(200);
-      const data = await response.json() as UnicodeVersion[];
+      expectSuccess(response);
+      const data = await json() as UnicodeVersion[];
 
       // Should only include versions with valid year patterns
       expect(data).toHaveLength(1);
@@ -358,15 +347,14 @@ describe("v1_versions", () => {
         .intercept({ path: "/Public/15.1.0/ucd" })
         .reply(200, generateAutoIndexHtml(files, "F2"));
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/versions/15.1.0/file-tree");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
+      const { response, json } = await executeRequest(
+        new Request("https://api.ucdjs.dev/api/v1/versions/15.1.0/file-tree"),
+        env,
+      );
 
-      expect(response.status).toBe(200);
-      expect(response.headers.get("content-type")).toContain("application/json");
-
-      const data = await response.json() as unknown[];
+      expectSuccess(response);
+      expectJsonResponse(response);
+      const data = await json() as unknown[];
       expect(Array.isArray(data)).toBe(true);
 
       const expectedFiles = files.map((file) => {
@@ -382,15 +370,14 @@ describe("v1_versions", () => {
     });
 
     it("should return files for latest version", async () => {
-      const request = new Request("https://api.ucdjs.dev/api/v1/versions/latest/file-tree");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
+      const { response, json } = await executeRequest(
+        new Request("https://api.ucdjs.dev/api/v1/versions/latest/file-tree"),
+        env,
+      );
 
-      expect(response.status).toBe(200);
-      expect(response.headers.get("content-type")).toContain("application/json");
-
-      const data = await response.json();
+      expectSuccess(response);
+      expectJsonResponse(response);
+      const data = await json();
       expect(Array.isArray(data)).toBe(true);
     });
 
@@ -399,15 +386,15 @@ describe("v1_versions", () => {
         .intercept({ path: "/Public/15.1.0/ucd" })
         .reply(200, generateAutoIndexHtml(files, "F2"));
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/versions/15.1.0/file-tree");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
+      const { response, json } = await executeRequest(
+        new Request("https://api.ucdjs.dev/api/v1/versions/15.1.0/file-tree"),
+        env,
+      );
 
-      expect(response.status).toBe(200);
-      expect(response.headers.get("content-type")).toContain("application/json");
+      expectSuccess(response);
+      expectJsonResponse(response);
 
-      const data = await response.json() as TraverseEntry[];
+      const data = await json() as TraverseEntry[];
 
       // validate the response structure
       expect(Array.isArray(data)).toBe(true);
@@ -454,67 +441,61 @@ describe("v1_versions", () => {
         .intercept({ path: "/Public/3.1-Update1" })
         .reply(200, generateAutoIndexHtml(files, "F2"));
 
-      const request = new Request("https://api.ucdjs.dev/api/v1/versions/3.1.1/file-tree");
-      const ctx = createExecutionContext();
-      const response = await worker.fetch(request, env, ctx);
-      await waitOnExecutionContext(ctx);
+      const { response, json } = await executeRequest(
+        new Request("https://api.ucdjs.dev/api/v1/versions/3.1.1/file-tree"),
+        env,
+      );
 
-      expect(response.status).toBe(200);
-      expect(response.headers.get("content-type")).toContain("application/json");
-
-      const data = await response.json();
+      expectSuccess(response);
+      expectJsonResponse(response);
+      const data = await json();
       expect(Array.isArray(data)).toBe(true);
     });
 
     describe("error handling", () => {
       it("should return 400 for invalid Unicode version", async () => {
-        const request = new Request("https://api.ucdjs.dev/api/v1/versions/99.99.99/file-tree");
-        const ctx = createExecutionContext();
-        const response = await worker.fetch(request, env, ctx);
-        await waitOnExecutionContext(ctx);
+        const { response } = await executeRequest(
+          new Request("https://api.ucdjs.dev/api/v1/versions/99.99.99/file-tree"),
+          env,
+        );
 
-        expect(response.status).toBe(400);
-        expect(response.headers.get("content-type")).toContain("application/json");
-
-        const error = await response.json();
-        expect(error).toHaveProperty("message", "Invalid Unicode version");
-        expect(error).toHaveProperty("status", 400);
+        await expectApiError(response, {
+          status: 400,
+          message: "Invalid Unicode version",
+        });
       });
 
       it("should return 400 for malformed version string", async () => {
-        const request = new Request("https://api.ucdjs.dev/api/v1/versions/invalid-version/file-tree");
-        const ctx = createExecutionContext();
-        const response = await worker.fetch(request, env, ctx);
-        await waitOnExecutionContext(ctx);
+        const { response } = await executeRequest(
+          new Request("https://api.ucdjs.dev/api/v1/versions/invalid-version/file-tree"),
+          env,
+        );
 
-        expect(response.status).toBe(400);
-        expect(response.headers.get("content-type")).toContain("application/json");
-
-        const error = await response.json();
-        expect(error).toHaveProperty("message", "Invalid Unicode version");
-        expect(error).toHaveProperty("status", 400);
+        await expectApiError(response, {
+          status: 400,
+          message: "Invalid Unicode version",
+        });
       });
 
       it("should return 404 for non-existent routes", async () => {
-        const request = new Request("https://api.ucdjs.dev/api/v1/versions/nonexistent/file-tree");
-        const ctx = createExecutionContext();
-        const response = await worker.fetch(request, env, ctx);
-        await waitOnExecutionContext(ctx);
+        const { response } = await executeRequest(
+          new Request("https://api.ucdjs.dev/api/v1/versions/nonexistent/file-tree"),
+          env,
+        );
 
-        expect(response.status).toBe(400);
+        await expectApiError(response, { status: 400 });
       });
     });
 
     describe("cache", () => {
       it("should set proper cache headers", async () => {
-        const request = new Request("https://api.ucdjs.dev/api/v1/versions/15.1.0/file-tree");
-        const ctx = createExecutionContext();
-        const response = await worker.fetch(request, env, ctx);
-        await waitOnExecutionContext(ctx);
+        const { response } = await executeRequest(
+          new Request("https://api.ucdjs.dev/api/v1/versions/15.1.0/file-tree"),
+          env,
+        );
 
-        expect(response.status).toBe(200);
-        const cacheHeaderValue = response.headers.get("cache-control");
-        expect(cacheHeaderValue).toBeTruthy();
+        expectSuccess(response);
+        expect(response.headers.get("cache-control")).toBeTruthy();
       });
 
       it("should cache the response for subsequent requests", async () => {
@@ -526,31 +507,31 @@ describe("v1_versions", () => {
             return generateAutoIndexHtml(files, "F2");
           }).persist();
 
-        const request1 = new Request("https://api.ucdjs.dev/api/v1/versions/16.0.0/file-tree");
-        const ctx1 = createExecutionContext();
-        const firstResponse = await worker.fetch(request1, env, ctx1);
-        await waitOnExecutionContext(ctx1);
-        expect(firstResponse.status).toBe(200);
+        const { response: firstResponse } = await executeRequest(
+          new Request("https://api.ucdjs.dev/api/v1/versions/16.0.0/file-tree"),
+          env,
+        );
+        expectSuccess(firstResponse);
         expect(callCounter).toBe(1); // First call should hit the network
         expect(firstResponse.headers.get("cf-cache-status")).toBeNull();
 
-        const request2 = new Request("https://api.ucdjs.dev/api/v1/versions/16.0.0/file-tree");
-        const ctx2 = createExecutionContext();
-        const secondResponse = await worker.fetch(request2, env, ctx2);
-        await waitOnExecutionContext(ctx2);
+        const { response: secondResponse } = await executeRequest(
+          new Request("https://api.ucdjs.dev/api/v1/versions/16.0.0/file-tree"),
+          env,
+        );
 
-        expect(secondResponse.status).toBe(200);
+        expectSuccess(secondResponse);
         expect(callCounter).toBe(1); // Second call should hit the cache
         expect(secondResponse.headers.get("cf-cache-status")).toBe("HIT");
       });
 
       it("should not cache responses for invalid versions", async () => {
-        const request = new Request("https://api.ucdjs.dev/api/v1/versions/invalid-version/file-tree");
-        const ctx = createExecutionContext();
-        const response = await worker.fetch(request, env, ctx);
-        await waitOnExecutionContext(ctx);
+        const { response } = await executeRequest(
+          new Request("https://api.ucdjs.dev/api/v1/versions/invalid-version/file-tree"),
+          env,
+        );
 
-        expect(response.status).toBe(400);
+        await expectApiError(response, { status: 400 });
         expect(response.headers.get("cf-cache-status")).toBeNull();
       });
     });
