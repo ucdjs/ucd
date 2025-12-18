@@ -14,6 +14,7 @@ import { cache } from "hono/cache";
 import { MAX_AGE_ONE_DAY_SECONDS, MAX_AGE_ONE_WEEK_SECONDS } from "../../constants";
 import { badGateway, badRequest, internalServerError, notFound } from "../../lib/errors";
 import { createLogger } from "../../lib/logger";
+import { captureUpstreamError, COMPONENTS } from "../../lib/sentry";
 import { VERSION_ROUTE_PARAM } from "../../lib/shared-parameters";
 import { generateReferences, OPENAPI_TAGS } from "../../openapi";
 import { calculateStatistics, getVersionFromList } from "./utils";
@@ -181,6 +182,18 @@ export function registerGetVersionRoute(router: OpenAPIHono<HonoEnv>) {
     // If there's an error (upstream service failure), return 502
     if (error) {
       log.error("Error fetching version from upstream service", { error });
+      captureUpstreamError(error, {
+        component: COMPONENTS.V1_VERSIONS,
+        operation: "getVersionFromList",
+        upstreamService: "unicode.org",
+        context: c,
+        tags: {
+          requested_version: version,
+        },
+        extra: {
+          version,
+        },
+      });
       return badGateway(c, {
         message: "Failed to fetch Unicode version from upstream service",
       });

@@ -5,6 +5,7 @@ import {
   getCurrentDraftVersion,
   resolveUCDVersion,
 } from "@unicode-utils/core";
+import { captureParseError, captureUpstreamError, COMPONENTS } from "../../lib/sentry";
 
 export async function getAllVersionsFromList() {
   return tryCatch(async (): Promise<UnicodeVersion[]> => {
@@ -18,7 +19,21 @@ export async function getAllVersionsFromList() {
     }, 7000);
 
     if (!response.ok) {
-      throw new Error(`Failed to fetch Unicode versions page: HTTP ${response.status}`);
+      const error = new Error(`Failed to fetch Unicode versions page: HTTP ${response.status}`);
+      captureUpstreamError(error, {
+        component: COMPONENTS.V1_VERSIONS,
+        operation: "getAllVersionsFromList",
+        upstreamService: "unicode.org",
+        tags: {
+          http_status: response.status.toString(),
+        },
+        extra: {
+          status: response.status,
+          statusText: response.statusText,
+          url: "https://www.unicode.org/versions/enumeratedversions.html",
+        },
+      });
+      throw error;
     }
 
     const html = await response.text();
@@ -28,7 +43,20 @@ export async function getAllVersionsFromList() {
     );
 
     if (!tableMatch) {
-      throw new Error("Could not find version table in Unicode versions page");
+      const error = new Error("Could not find version table in Unicode versions page");
+      captureParseError(error, {
+        component: COMPONENTS.V1_VERSIONS,
+        operation: "getAllVersionsFromList",
+        tags: {
+          issue_type: "missing_table",
+          upstream_service: "unicode.org",
+        },
+        extra: {
+          html_length: html.length,
+          html_preview: html.substring(0, 500), // First 500 chars for debugging
+        },
+      });
+      throw error;
     }
 
     const draft = await getCurrentDraftVersion().catch(() => null);

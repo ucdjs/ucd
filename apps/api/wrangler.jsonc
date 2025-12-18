@@ -4,7 +4,8 @@
   "main": "src/worker.ts",
   "compatibility_date": "2025-07-30",
   "compatibility_flags": [
-    "enable_request_signal"
+    "enable_request_signal",
+    "nodejs_als"
   ],
   "observability": {
     "logs": {
@@ -15,6 +16,9 @@
   "vars": {
     "API_VERSION": "x.y.z",
     "ENVIRONMENT": "local"
+  },
+  "version_metadata": {
+    "binding": "CF_VERSION_METADATA"
   },
   "unsafe": {
     "bindings": [
@@ -50,6 +54,9 @@
       "vars": {
         "API_VERSION": "x.y.z",
         "ENVIRONMENT": "production"
+      },
+      "version_metadata": {
+        "binding": "CF_VERSION_METADATA"
       },
       "route": {
         "custom_domain": true,
@@ -88,6 +95,9 @@
       "vars": {
         "API_VERSION": "x.y.z",
         "ENVIRONMENT": "preview"
+      },
+      "version_metadata": {
+        "binding": "CF_VERSION_METADATA"
       },
       "route": {
         "custom_domain": true,
@@ -129,6 +139,9 @@
       "vars": {
         "ENVIRONMENT": "testing",
         "API_VERSION": "x.y.z"
+      },
+      "version_metadata": {
+        "binding": "CF_VERSION_METADATA"
       },
       "secrets_store_secrets": [
         {
