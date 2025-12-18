@@ -12,7 +12,7 @@ import {
 import { traverse } from "apache-autoindex-parse/traverse";
 import { cache } from "hono/cache";
 import { MAX_AGE_ONE_DAY_SECONDS, MAX_AGE_ONE_WEEK_SECONDS } from "../../constants";
-import { badRequest, internalServerError, notFound } from "../../lib/errors";
+import { badGateway, badRequest, internalServerError, notFound } from "../../lib/errors";
 import { createLogger } from "../../lib/logger";
 import { VERSION_ROUTE_PARAM } from "../../lib/shared-parameters";
 import { generateReferences, OPENAPI_TAGS } from "../../openapi";
@@ -26,7 +26,7 @@ const GET_VERSION_FILE_TREE_ROUTE_DOCS = dedent`
     For older versions, the files are retrieved without the \`/ucd\` prefix, while for the latest version, the \`/ucd\` prefix is included.
 `;
 
-export const GET_VERSION_ROUTE = createRoute({
+const GET_VERSION_ROUTE = createRoute({
   method: "get",
   path: "/{version}",
   tags: [OPENAPI_TAGS.VERSIONS],
@@ -83,6 +83,7 @@ export const GET_VERSION_ROUTE = createRoute({
       400,
       404,
       429,
+      502,
       500,
     ])),
   },
@@ -161,45 +162,48 @@ export const GET_VERSION_FILE_TREE_ROUTE = createRoute({
 
 export function registerGetVersionRoute(router: OpenAPIHono<HonoEnv>) {
   router.openapi(GET_VERSION_ROUTE, async (c) => {
-    try {
-      let version = c.req.param("version");
+    let version = c.req.param("version");
 
-      if (version === "latest") {
-        version = UNICODE_STABLE_VERSION;
-      }
+    if (version === "latest") {
+      version = UNICODE_STABLE_VERSION;
+    }
 
-      if (
-        !UNICODE_VERSION_METADATA.map((v) => v.version)
-          .includes(version as typeof UNICODE_VERSION_METADATA[number]["version"])) {
-        return badRequest(c, {
-          message: "Invalid Unicode version",
-        });
-      }
-
-      const versionInfo = await getVersionFromList(version);
-      if (!versionInfo) {
-        return notFound(c, {
-          message: "Unicode version not found",
-        });
-      }
-
-      // Try to get statistics from bucket if available
-      const bucket = c.env.UCD_BUCKET;
-      let statistics = null;
-      if (bucket) {
-        statistics = await calculateStatistics(bucket, version);
-      }
-
-      return c.json({
-        ...versionInfo,
-        statistics: statistics ?? undefined,
-      }, 200);
-    } catch (error) {
-      log.error("Error fetching version details", { error });
-      return internalServerError(c, {
-        message: "Failed to fetch version details",
+    if (
+      !UNICODE_VERSION_METADATA.map((v) => v.version)
+        .includes(version as typeof UNICODE_VERSION_METADATA[number]["version"])) {
+      return badRequest(c, {
+        message: "Invalid Unicode version",
       });
     }
+
+    const [versionInfo, error] = await getVersionFromList(version);
+
+    // If there's an error (upstream service failure), return 502
+    if (error) {
+      log.error("Error fetching version from upstream service", { error });
+      return badGateway(c, {
+        message: "Failed to fetch Unicode version from upstream service",
+      });
+    }
+
+    // If versionInfo is null but no error, it means version not found
+    if (!versionInfo) {
+      return notFound(c, {
+        message: "Unicode version not found",
+      });
+    }
+
+    // Try to get statistics from bucket if available
+    const bucket = c.env.UCD_BUCKET;
+    let statistics = null;
+    if (bucket) {
+      statistics = await calculateStatistics(bucket, version);
+    }
+
+    return c.json({
+      ...versionInfo,
+      statistics: statistics ?? undefined,
+    }, 200);
   });
 }
 
