@@ -90,7 +90,7 @@ export default Sentry.withSentry((env: HonoEnv["Bindings"]) => {
     release: versionId,
     // Adds request headers and IP for users, for more info visit:
     // https://docs.sentry.io/platforms/javascript/guides/cloudflare/configuration/options/#sendDefaultPii
-    sendDefaultPii: true,
+    sendDefaultPii: false,
     enabled: env.ENVIRONMENT !== "testing",
   };
 }, app);
