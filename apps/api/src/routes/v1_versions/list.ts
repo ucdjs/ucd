@@ -7,6 +7,7 @@ import { cache } from "hono/cache";
 import { MAX_AGE_ONE_DAY_SECONDS } from "../../constants";
 import { badGateway } from "../../lib/errors";
 import { createLogger } from "../../lib/logger";
+import { captureError, captureUpstreamError, COMPONENTS } from "../../lib/sentry";
 import { generateReferences, OPENAPI_TAGS } from "../../openapi";
 import { getAllVersionsFromList } from "./utils";
 
@@ -88,6 +89,13 @@ export function registerListVersionsRoute(router: OpenAPIHono<HonoEnv>) {
 
     if (error) {
       log.error("Error fetching Unicode versions", { error });
+      captureUpstreamError(error, {
+        component: COMPONENTS.V1_VERSIONS,
+        operation: "getAllVersionsFromList",
+        upstreamService: "unicode.org",
+        context: c,
+      });
+
       return badGateway(c, {
         message: "Failed to fetch Unicode versions from upstream service",
       });
@@ -95,6 +103,19 @@ export function registerListVersionsRoute(router: OpenAPIHono<HonoEnv>) {
 
     if (!versions || versions.length === 0) {
       log.error("No versions found after successful fetch");
+      const emptyResultError = new Error("No Unicode versions found after successful fetch from enumerated page");
+      captureError(emptyResultError, {
+        component: COMPONENTS.V1_VERSIONS,
+        operation: "getAllVersionsFromList",
+        context: c,
+        tags: {
+          issue_type: "empty_result",
+        },
+        extra: {
+          versions_count: versions?.length ?? 0,
+        },
+      });
+
       return badGateway(c, {
         message: "No Unicode versions found",
       });

@@ -255,6 +255,9 @@ catalogs:
     '@scalar/hono-api-reference':
       specifier: 0.9.28
       version: 0.9.28
+    '@sentry/cloudflare':
+      specifier: 10.31.0
+      version: 10.31.0
     hono:
       specifier: 4.10.8
       version: 4.10.8
@@ -311,6 +314,9 @@ importers:
       '@scalar/hono-api-reference':
         specifier: catalog:workers
         version: 0.9.28(hono@4.10.8)
+      '@sentry/cloudflare':
+        specifier: catalog:workers
+        version: 10.31.0
       '@ucdjs-internal/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -3821,6 +3827,19 @@ packages:
   '@secretlint/types@10.2.2':
     resolution: {integrity: sha512-Nqc90v4lWCXyakD6xNyNACBJNJ0tNCwj2WNk/7ivyacYHxiITVgmLUFXTBOeCdy79iz6HtN9Y31uw/jbLrdOAg==}
     engines: {node: '>=20.0.0'}
+
+  '@sentry/cloudflare@10.31.0':
+    resolution: {integrity: sha512-nL2Vr7SJ1S9ouUW+RSpQQ92pH8r2W07qBK3mwSceRsK3dQN72uYGAUjze/ynGYDvrcxOPsxPLmdifgXXJ/Wk9Q==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@cloudflare/workers-types': ^4.x
+    peerDependenciesMeta:
+      '@cloudflare/workers-types':
+        optional: true
+
+  '@sentry/core@10.31.0':
+    resolution: {integrity: sha512-VTSXdyhnu3CNaSwhp/CchZRCKh1fa7byP+KClApthsppQ57w7OjXN8dDUf38K1ZCsfdTEvdEU4qCL/WnAEbd+g==}
+    engines: {node: '>=18'}
 
   '@shikijs/core@3.20.0':
     resolution: {integrity: sha512-f2ED7HYV4JEk827mtMDwe/yQ25pRiXZmtHjWF8uzZKuKiEsJR7Ce1nuQ+HhV9FzDcbIo4ObBCD9GPTzNuy9S1g==}
@@ -11697,6 +11716,13 @@ snapshots:
 
   '@secretlint/types@10.2.2': {}
 
+  '@sentry/cloudflare@10.31.0':
+    dependencies:
+      '@opentelemetry/api': 1.9.0
+      '@sentry/core': 10.31.0
+
+  '@sentry/core@10.31.0': {}
+
   '@shikijs/core@3.20.0':
     dependencies:
       '@shikijs/types': 3.20.0
@@ -12896,14 +12922,14 @@ snapshots:
       msw: 2.12.4(@types/node@22.18.12)(typescript@5.9.3)
       vite: 7.2.7(@types/node@22.18.12)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1)
 
-  '@vitest/mocker@3.2.4(msw@2.12.4(@types/node@24.3.1)(typescript@5.9.3))(vite@7.2.7(@types/node@22.18.12)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1))':
+  '@vitest/mocker@3.2.4(msw@2.12.4(@types/node@24.3.1)(typescript@5.9.3))(vite@7.2.7(@types/node@24.3.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1))':
     dependencies:
       '@vitest/spy': 3.2.4
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
       msw: 2.12.4(@types/node@24.3.1)(typescript@5.9.3)
-      vite: 7.2.7(@types/node@22.18.12)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1)
+      vite: 7.2.7(@types/node@24.3.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1)
 
   '@vitest/pretty-format@3.2.4':
     dependencies:
@@ -12934,7 +12960,7 @@ snapshots:
       sirv: 3.0.2
       tinyglobby: 0.2.15
       tinyrainbow: 2.0.0
-      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@22.18.12)(@vitest/ui@3.2.4)(jiti@2.6.1)(jsdom@27.3.0(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.12.4(@types/node@22.18.12)(typescript@5.9.3))(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1)
+      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@24.3.1)(@vitest/ui@3.2.4)(jiti@2.6.1)(jsdom@27.3.0(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.12.4(@types/node@24.3.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1)
 
   '@vitest/utils@3.2.4':
     dependencies:
@@ -18364,7 +18390,7 @@ snapshots:
     dependencies:
       '@types/chai': 5.2.2
       '@vitest/expect': 3.2.4
-      '@vitest/mocker': 3.2.4(msw@2.12.4(@types/node@24.3.1)(typescript@5.9.3))(vite@7.2.7(@types/node@22.18.12)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1))
+      '@vitest/mocker': 3.2.4(msw@2.12.4(@types/node@24.3.1)(typescript@5.9.3))(vite@7.2.7(@types/node@24.3.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1))
       '@vitest/pretty-format': 3.2.4
       '@vitest/runner': 3.2.4
       '@vitest/snapshot': 3.2.4
