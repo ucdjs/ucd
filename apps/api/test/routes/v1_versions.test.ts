@@ -172,12 +172,12 @@ describe("v1_versions", () => {
       const response = await worker.fetch(request, env, ctx);
       await waitOnExecutionContext(ctx);
 
-      expect(response.status).toBe(500);
+      expect(response.status).toBe(502);
       expect(response.headers.get("content-type")).toContain("application/json");
 
       const error = await response.json();
-      expect(error).toHaveProperty("message", "Failed to fetch Unicode versions");
-      expect(error).toHaveProperty("status", 500);
+      expect(error).toHaveProperty("message", "Failed to fetch Unicode versions from upstream service");
+      expect(error).toHaveProperty("status", 502);
     });
 
     it("should handle malformed HTML response", async () => {
@@ -195,12 +195,12 @@ describe("v1_versions", () => {
       const response = await worker.fetch(request, env, ctx);
       await waitOnExecutionContext(ctx);
 
-      expect(response.status).toBe(404);
+      expect(response.status).toBe(502);
       expect(response.headers.get("content-type")).toContain("application/json");
 
       const error = await response.json();
-      expect(error).toHaveProperty("message", "Unicode versions table not found");
-      expect(error).toHaveProperty("status", 404);
+      expect(error).toHaveProperty("message", "Failed to fetch Unicode versions from upstream service");
+      expect(error).toHaveProperty("status", 502);
     });
 
     it("should handle empty table response", async () => {
@@ -229,12 +229,12 @@ describe("v1_versions", () => {
       const response = await worker.fetch(request, env, ctx);
       await waitOnExecutionContext(ctx);
 
-      expect(response.status).toBe(404);
+      expect(response.status).toBe(502);
       expect(response.headers.get("content-type")).toContain("application/json");
 
       const error = await response.json();
       expect(error).toHaveProperty("message", "No Unicode versions found");
-      expect(error).toHaveProperty("status", 404);
+      expect(error).toHaveProperty("status", 502);
     });
 
     it("should handle getCurrentDraftVersion throwing error", async () => {

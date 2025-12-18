@@ -5,24 +5,14 @@ import { dedent } from "@luxass/utils";
 import { UnicodeVersionListSchema } from "@ucdjs/schemas";
 import { cache } from "hono/cache";
 import { MAX_AGE_ONE_DAY_SECONDS } from "../../constants";
-import { internalServerError } from "../../lib/errors";
+import { badGateway } from "../../lib/errors";
 import { createLogger } from "../../lib/logger";
 import { generateReferences, OPENAPI_TAGS } from "../../openapi";
 import { getAllVersionsFromList } from "./utils";
 
 const log = createLogger("ucd:api:v1_versions");
 
-const LIST_ALL_UNICODE_VERSIONS_ROUTE_DOCS = dedent`
-    ## List All Unicode Versions
-
-    This endpoint retrieves a comprehensive list of all Unicode versions, including metadata and support status.
-
-    - Provides **version metadata** such as documentation URLs and public URLs
-    - Includes **draft versions** if available
-    - Supports **caching** for performance optimization
-`;
-
-export const LIST_ALL_UNICODE_VERSIONS_ROUTE = createRoute({
+const LIST_ALL_UNICODE_VERSIONS_ROUTE = createRoute({
   method: "get",
   path: "/",
   tags: [OPENAPI_TAGS.VERSIONS],
@@ -32,7 +22,15 @@ export const LIST_ALL_UNICODE_VERSIONS_ROUTE = createRoute({
       cacheControl: `max-age=${MAX_AGE_ONE_DAY_SECONDS * 4}`, // 4 days
     }),
   ],
-  description: LIST_ALL_UNICODE_VERSIONS_ROUTE_DOCS,
+  description: dedent`
+    ## List All Unicode Versions
+
+    This endpoint retrieves a comprehensive list of all Unicode versions, including metadata and support status.
+
+    - Provides **version metadata** such as documentation URLs and public URLs
+    - Includes **draft versions** if available
+    - Supports **caching** for performance optimization
+  `,
   responses: {
     200: {
       content: {
@@ -76,6 +74,7 @@ export const LIST_ALL_UNICODE_VERSIONS_ROUTE = createRoute({
     ...(generateReferences([
       404,
       429,
+      502,
       500,
     ])),
   },
@@ -83,23 +82,25 @@ export const LIST_ALL_UNICODE_VERSIONS_ROUTE = createRoute({
 
 export function registerListVersionsRoute(router: OpenAPIHono<HonoEnv>) {
   router.openapi(LIST_ALL_UNICODE_VERSIONS_ROUTE, async (c) => {
-    try {
-      log.info("Fetching unicode html versions page");
+    log.info("Fetching unicode html versions page");
 
-      const versions = await getAllVersionsFromList();
+    const [versions, error] = await getAllVersionsFromList();
 
-      if (versions.length === 0) {
-        log.error("Failed to fetch Unicode versions page or no versions found");
-        return internalServerError(c, {
-          message: "Failed to fetch Unicode versions",
-        });
-      }
-
-      log.info("Successfully fetched Unicode versions", { count: versions.length });
-      return c.json(versions, 200);
-    } catch (err) {
-      log.error("Error fetching Unicode versions", { error: err });
-      return internalServerError(c);
+    if (error) {
+      log.error("Error fetching Unicode versions", { error });
+      return badGateway(c, {
+        message: "Failed to fetch Unicode versions from upstream service",
+      });
     }
+
+    if (!versions || versions.length === 0) {
+      log.error("No versions found after successful fetch");
+      return badGateway(c, {
+        message: "No Unicode versions found",
+      });
+    }
+
+    log.info("Successfully fetched Unicode versions", { count: versions.length });
+    return c.json(versions, 200);
   });
 }
