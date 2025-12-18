@@ -3,7 +3,7 @@ import type { UCDWellKnownConfig } from "@ucdjs/schemas";
 import type { paths } from "../.generated/api";
 import { customFetch } from "@ucdjs-internal/shared";
 
-type ManifestResponse = paths["/api/v1/files/.ucd-store.json"]["get"]["responses"][200]["content"]["application/json"];
+type ManifestResponse = paths["/.well-known/ucd-store.json"]["get"]["responses"][200]["content"]["application/json"];
 type FileResponse = paths["/api/v1/files/{wildcard}"]["get"]["responses"][200]["content"];
 
 export interface FilesResource {
