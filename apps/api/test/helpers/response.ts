@@ -1,8 +1,6 @@
 import type { ApiError } from "@ucdjs/schemas";
 import { expect } from "vitest";
 
-// Success response validators
-
 export function expectSuccess(response: Response, options?: {
   status?: number;
   headers?: Record<string, string | RegExp>;
@@ -47,8 +45,6 @@ export function expectContentType(response: Response, expectedType: string | Reg
   }
 }
 
-// Error response validators
-
 export interface ExpectApiErrorOptions {
   status: number;
   message?: string | RegExp;
@@ -56,7 +52,7 @@ export interface ExpectApiErrorOptions {
 
 export async function expectApiError(
   response: Response,
-  options: ExpectApiErrorOptions
+  options: ExpectApiErrorOptions,
 ): Promise<ApiError> {
   expect(response.status).toBe(options.status);
   expect(response.headers.get("content-type")).toContain("application/json");
@@ -77,3 +73,16 @@ export async function expectApiError(
   return error;
 }
 
+/**
+ * Validates error response for HEAD requests.
+ * HEAD requests should only return status codes, not error bodies.
+ */
+export function expectHeadError(response: Response, expectedStatus: number) {
+  expect(response.status).toBe(expectedStatus);
+  // HEAD requests should not have a body, so we don't try to parse JSON
+  // The content-length should be 0 or the body should be empty
+  const contentLength = response.headers.get("content-length");
+  if (contentLength !== null) {
+    expect(Number.parseInt(contentLength, 10)).toBe(0);
+  }
+}
