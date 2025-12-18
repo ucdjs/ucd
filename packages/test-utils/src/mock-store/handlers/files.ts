@@ -1,4 +1,3 @@
-import type { UCDStoreManifest } from "@ucdjs/schemas";
 import { HttpResponse } from "../../msw";
 import { defineMockRouteHandler } from "../define";
 
