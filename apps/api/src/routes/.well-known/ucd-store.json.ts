@@ -27,6 +27,9 @@ const UCD_STORE_ROUTE = createRoute({
     This endpoint retrieves the UCD Store manifest, which contains metadata about available Unicode data files for each version.
 
     The manifest provides information about expected files for each Unicode version, allowing clients to discover and verify available data files.
+
+    > [!WARNING]
+    > **This endpoint is deprecated.** Use the per-version endpoint \`/.well-known/ucd-store/{version}.json\` instead for better performance and caching.
   `,
   responses: {
     200: {
@@ -133,8 +136,15 @@ export function registerUcdStoreRoute(router: OpenAPIHono<HonoEnv>) {
       }),
     );
 
+    // Calculate sunset date (6 months from now)
+    const sunsetDate = new Date();
+    sunsetDate.setMonth(sunsetDate.getMonth() + 6);
+
     const headers: Record<string, string> = {
       "Cache-Control": "public, max-age=3600", // 1 hour cache
+      "Deprecation": "true",
+      "Sunset": sunsetDate.toUTCString(),
+      "Link": `</.well-known/ucd-store/{version}.json>; rel="successor-version"`,
     };
 
     if (latestUploaded) {
