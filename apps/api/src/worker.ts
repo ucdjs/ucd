@@ -82,16 +82,15 @@ app.notFound(notFoundHandler);
 
 export const getOpenAPI31Document = app.getOpenAPI31Document;
 
-// eslint-disable-next-line node/prefer-global/process, style/multiline-ternary
-const wrappedApp = process.env.ENVIRONMENT === "testing" ? app : Sentry.withSentry((env: HonoEnv["Bindings"]) => {
+export default Sentry.withSentry((env: HonoEnv["Bindings"]) => {
   const { id: versionId } = env.CF_VERSION_METADATA;
+
   return {
     dsn: "https://29f2e9a8606ffa38a83a3e66cb2a95de@o4510553981714432.ingest.de.sentry.io/4510553988399184",
     release: versionId,
     // Adds request headers and IP for users, for more info visit:
     // https://docs.sentry.io/platforms/javascript/guides/cloudflare/configuration/options/#sendDefaultPii
     sendDefaultPii: true,
+    enabled: env.ENVIRONMENT !== "testing",
   };
 }, app);
-
-export default wrappedApp;
