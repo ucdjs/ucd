@@ -21,6 +21,7 @@
     "@hono/zod-openapi": "catalog:workers",
     "@luxass/utils": "catalog:prod",
     "@scalar/hono-api-reference": "catalog:workers",
+    "@sentry/cloudflare": "catalog:workers",
     "@ucdjs-internal/shared": "workspace:*",
     "@ucdjs/env": "workspace:*",
     "@ucdjs/path-utils": "workspace:*",

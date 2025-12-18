@@ -78,6 +78,7 @@ catalogs:
     "@scalar/hono-api-reference": 0.9.28
     hono: 4.10.8
     "@cloudflare/workers-types": 4.20251210.0
+    "@sentry/cloudflare": 10.31.0
 
   types:
     "@types/picomatch": 4.0.2
