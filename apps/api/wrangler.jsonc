@@ -55,6 +55,9 @@
         "API_VERSION": "x.y.z",
         "ENVIRONMENT": "production"
       },
+      "version_metadata": {
+        "binding": "CF_VERSION_METADATA"
+      },
       "route": {
         "custom_domain": true,
         "pattern": "api.ucdjs.dev"
@@ -92,6 +95,9 @@
       "vars": {
         "API_VERSION": "x.y.z",
         "ENVIRONMENT": "preview"
+      },
+      "version_metadata": {
+        "binding": "CF_VERSION_METADATA"
       },
       "route": {
         "custom_domain": true,
@@ -133,6 +139,9 @@
       "vars": {
         "ENVIRONMENT": "testing",
         "API_VERSION": "x.y.z"
+      },
+      "version_metadata": {
+        "binding": "CF_VERSION_METADATA"
       },
       "secrets_store_secrets": [
         {
