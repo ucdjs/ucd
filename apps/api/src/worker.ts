@@ -82,7 +82,8 @@ app.notFound(notFoundHandler);
 
 export const getOpenAPI31Document = app.getOpenAPI31Document;
 
-export default Sentry.withSentry((env: HonoEnv["Bindings"]) => {
+// eslint-disable-next-line node/prefer-global/process, style/multiline-ternary
+const wrappedApp = process.env.ENVIRONMENT === "testing" ? app : Sentry.withSentry((env: HonoEnv["Bindings"]) => {
   const { id: versionId } = env.CF_VERSION_METADATA;
   return {
     dsn: "https://29f2e9a8606ffa38a83a3e66cb2a95de@o4510553981714432.ingest.de.sentry.io/4510553988399184",
@@ -92,3 +93,5 @@ export default Sentry.withSentry((env: HonoEnv["Bindings"]) => {
     sendDefaultPii: true,
   };
 }, app);
+
+export default wrappedApp;
