@@ -3,6 +3,13 @@ extends:
 
 overrides:
   - files:
+      - ../../ucd-generated/api/openapi.json#/paths/~1.well-known~1ucd-store~1%7Bversion%7D.json
+    rules:
+      luxass/no-file-extensions-in-paths: off
+      luxass/paths-kebab-case: off
+
+  # This should be removed once we are out of the migration.
+  - files:
       - ../../ucd-generated/api/openapi.json#/paths/~1.well-known~1ucd-store.json
     rules:
       luxass/no-file-extensions-in-paths: off

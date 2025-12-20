@@ -13,7 +13,7 @@ afterEach(() => {
 });
 
 describe("shared", () => {
-  describe("API error response structure", () => {
+  describe("api error response structure", () => {
     it("should return consistent error response format for 404", async () => {
       const { response } = await executeRequest(
         new Request("https://api.ucdjs.dev/api/v1/nonexistent/route"),
