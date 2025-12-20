@@ -30,11 +30,6 @@ export const LockfileSchema = z.object({
   lockfileVersion: z.literal(1),
 
   /**
-   * Schema identifier for the lockfile format
-   */
-  schema: z.literal("unicode-mirror-index@1"),
-
-  /**
    * Map of Unicode versions to their snapshot metadata
    */
   versions: z.record(z.string(), LockfileVersionEntrySchema),
@@ -61,11 +56,6 @@ const SnapshotFileEntrySchema = z.object({
  * Schema for a version snapshot
  */
 export const SnapshotSchema = z.object({
-  /**
-   * Schema identifier for the snapshot format
-   */
-  schema: z.literal("unicode-snapshot@1"),
-
   /**
    * The Unicode version this snapshot represents
    */
