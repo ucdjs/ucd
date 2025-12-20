@@ -1,8 +1,12 @@
 import type { UCDWellKnownConfig } from "@ucdjs/schemas";
+import type { ConfigResource } from "./resources/config";
 import type { FilesResource } from "./resources/files";
+import type { ManifestResource } from "./resources/manifest";
 import type { VersionsResource } from "./resources/versions";
 import { discoverEndpointsFromConfig } from "@ucdjs-internal/shared";
+import { createConfigResource } from "./resources/config";
 import { createFilesResource } from "./resources/files";
+import { createManifestResource } from "./resources/manifest";
 import { createVersionsResource } from "./resources/versions";
 
 export interface UCDClient {
@@ -15,6 +19,16 @@ export interface UCDClient {
    * Access version-related endpoints
    */
   versions: VersionsResource;
+
+  /**
+   * Access configuration endpoints
+   */
+  config: ConfigResource;
+
+  /**
+   * Access manifest endpoints
+   */
+  manifest: ManifestResource;
 }
 
 function createResources(baseUrl: string, endpointConfig: UCDWellKnownConfig["endpoints"]): UCDClient {
@@ -28,9 +42,19 @@ function createResources(baseUrl: string, endpointConfig: UCDWellKnownConfig["en
     endpoints: endpointConfig,
   });
 
+  const config = createConfigResource({
+    baseUrl,
+  });
+
+  const manifest = createManifestResource({
+    baseUrl,
+  });
+
   return {
     files,
     versions,
+    config,
+    manifest,
   };
 }
 
@@ -50,6 +74,12 @@ function createResources(baseUrl: string, endpointConfig: UCDWellKnownConfig["en
  *
  * // Get a file
  * const file = await client.files.get('16.0.0/ucd/UnicodeData.txt');
+ *
+ * // Get configuration
+ * const config = await client.config.get();
+ *
+ * // Get manifest for a version
+ * const manifest = await client.manifest.get('16.0.0');
  * ```
  */
 export async function createUCDClient(baseUrl: string): Promise<UCDClient> {
