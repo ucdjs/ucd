@@ -63,7 +63,8 @@ export async function readLockfile(
 
 /**
  * Writes a lockfile to the filesystem.
- * Only works if the filesystem bridge supports write operations.
+ * If the filesystem bridge does not support write operations, the function
+ * will skip writing the lockfile and return without throwing.
  *
  * @param {FileSystemBridge} fs - Filesystem bridge to use for writing
  * @param {string} lockfilePath - Path where the lockfile should be written

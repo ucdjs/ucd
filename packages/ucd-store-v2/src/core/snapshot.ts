@@ -15,12 +15,45 @@ function stringToUint8Array(str: string): Uint8Array {
   if (typeof TextEncoder !== "undefined") {
     return new TextEncoder().encode(str);
   }
-  // Fallback for environments without TextEncoder
-  const bytes = new Uint8Array(str.length);
+
+  // Fallback for environments without TextEncoder: manual UTF-8 encoding
+  const bytes: number[] = [];
   for (let i = 0; i < str.length; i++) {
-    bytes[i] = str.charCodeAt(i);
+    const codePoint = str.codePointAt(i);
+    if (codePoint === undefined) {
+      continue;
+    }
+    // If this is a surrogate pair, advance an extra code unit
+    if (codePoint > 0xFFFF) {
+      i++;
+    }
+    if (codePoint <= 0x7F) {
+    // 1-byte sequence
+      bytes.push(codePoint);
+    } else if (codePoint <= 0x7FF) {
+    // 2-byte sequence
+      bytes.push(
+        0xC0 | (codePoint >> 6),
+        0x80 | (codePoint & 0x3F),
+      );
+    } else if (codePoint <= 0xFFFF) {
+    // 3-byte sequence
+      bytes.push(
+        0xE0 | (codePoint >> 12),
+        0x80 | ((codePoint >> 6) & 0x3F),
+        0x80 | (codePoint & 0x3F),
+      );
+    } else {
+    // 4-byte sequence
+      bytes.push(
+        0xF0 | (codePoint >> 18),
+        0x80 | ((codePoint >> 12) & 0x3F),
+        0x80 | ((codePoint >> 6) & 0x3F),
+        0x80 | (codePoint & 0x3F),
+      );
+    }
   }
-  return bytes;
+  return new Uint8Array(bytes);
 }
 
 /**
@@ -161,8 +194,8 @@ export async function readSnapshotOrDefault(
   basePath: string,
   version: string,
 ): Promise<Snapshot | undefined> {
-  return readSnapshot(fs, basePath, version).catch(() => {
-    debug?.("Failed to read snapshot, returning undefined");
+  return readSnapshot(fs, basePath, version).catch((err) => {
+    debug?.("Failed to read snapshot, returning undefined", err);
     return undefined;
   });
 }
