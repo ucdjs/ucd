@@ -82,26 +82,19 @@ describe("createManifestResource", () => {
       expect(error).toHaveProperty("status", 404);
     });
 
-    it("should handle invalid version format", async () => {
+    it.each([
+      "16",
+      "16.0",
+      "v16.0.0",
+      "16.0.0.0",
+      "latest",
+    ])("should handle invalid version format %s", async (version) => {
       const manifestResource = createManifestResource({ baseUrl });
-      const { data, error } = await manifestResource.get("invalid");
+      const { data, error } = await manifestResource.get(version);
 
       expect(data).toBeNull();
       expect(error).toBeDefined();
       expect(error?.message).toContain("Invalid version format");
-    });
-
-    it("should handle invalid version formats", async () => {
-      const invalidVersions = ["16", "16.0", "v16.0.0", "16.0.0.0", "latest"];
-
-      for (const invalidVersion of invalidVersions) {
-        const manifestResource = createManifestResource({ baseUrl });
-        const { data, error } = await manifestResource.get(invalidVersion);
-
-        expect(data).toBeNull();
-        expect(error).toBeDefined();
-        expect(error?.message).toContain("Invalid version format");
-      }
     });
 
     it("should handle server errors", async () => {
