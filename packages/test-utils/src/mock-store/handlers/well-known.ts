@@ -36,8 +36,8 @@ export const wellKnownConfig = defineMockRouteHandler({
   },
 });
 
-export const wellKnownStoreManifest = defineMockRouteHandler({
-  endpoint: "/.well-known/ucd-store.json",
+export const wellKnownStoreVersionManifest = defineMockRouteHandler({
+  endpoint: "/.well-known/ucd-store/{version}.json",
   setup: ({
     url,
     providedResponse,
@@ -53,13 +53,31 @@ export const wellKnownStoreManifest = defineMockRouteHandler({
     }
 
     mockFetch([
-      ["GET", url, () => {
+      ["GET", url, ({ params }) => {
+        const version = params.version as string;
+
         if (shouldUseDefaultValue) {
-          return HttpResponse.json(Object.fromEntries(
-            versions.map((version) => [version, {
+          // Return default response for the requested version
+          // If version is in the versions list, return its manifest, otherwise return empty
+          if (versions.includes(version)) {
+            return HttpResponse.json({
               expectedFiles: [],
-            }]),
-          ) satisfies UCDStoreManifest);
+            });
+          }
+
+          // Version not found - return 404
+          return HttpResponse.json(
+            { message: `Manifest not found for version: ${version}` },
+            { status: 404 },
+          );
+        }
+
+        // If providedResponse is an object, it should be the manifest for this version
+        // If it's a record keyed by version, extract the specific version
+        if (typeof providedResponse === "object" && providedResponse !== null) {
+          if (version in providedResponse) {
+            return HttpResponse.json((providedResponse as Record<string, any>)[version]);
+          }
         }
 
         return HttpResponse.json(providedResponse);
