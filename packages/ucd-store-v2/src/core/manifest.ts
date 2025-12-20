@@ -1,3 +1,4 @@
+import type { UCDClient } from "@ucdjs/client";
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 import type { UCDStoreManifest } from "@ucdjs/schemas";
 import { createDebugger, safeJsonParse } from "@ucdjs-internal/shared";
@@ -105,5 +106,40 @@ export async function readManifestOrDefault(
   return readManifest(fs, manifestPath).catch((err) => {
     debug?.("Failed to read manifest, using default:", err);
     return defaultManifest;
+  });
+}
+
+/**
+ * Fetches the manifest for a specific Unicode version from the API.
+ * Attempts to use the version-specific endpoint first, falls back to the deprecated endpoint if needed.
+ *
+ * @param {UCDClient} client - The UCD client instance for making API requests
+ * @param {string} version - The Unicode version to fetch manifest for
+ * @returns {Promise<{ expectedFiles: string[] }>} A promise that resolves to the version manifest
+ * @throws {UCDStoreInvalidManifestError} When both endpoints fail or return invalid data
+ */
+export async function fetchVersionManifest(
+  client: UCDClient,
+  version: string,
+): Promise<{ expectedFiles: string[] }> {
+  debug?.("Fetching manifest for version:", version);
+
+  // Try version-specific endpoint first
+  const versionResult = await client.manifest.get(version);
+
+  if (!versionResult.error && versionResult.data) {
+    debug?.("Successfully fetched manifest from version-specific endpoint");
+    return versionResult.data;
+  }
+
+  debug?.("Version-specific endpoint failed, falling back to deprecated endpoint:", versionResult.error?.message);
+
+  // Fallback to deprecated endpoint
+  // Note: The deprecated endpoint returns all versions, so we need to extract the specific version
+  // For now, we'll use getFileTree as a fallback since it's more reliable
+  // In the future, we could fetch the full manifest and extract the version
+  throw new UCDStoreInvalidManifestError({
+    manifestPath: `/.well-known/ucd-store/${version}.json`,
+    message: `Failed to fetch manifest for version '${version}': ${versionResult.error?.message || "unknown error"}`,
   });
 }

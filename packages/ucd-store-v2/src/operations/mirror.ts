@@ -1,4 +1,5 @@
 import type { OperationResult } from "@ucdjs-internal/shared";
+import type { Lockfile, Snapshot } from "@ucdjs/schemas";
 import type { StoreError } from "../errors";
 import type { InternalUCDStoreContext, SharedOperationOptions } from "../types";
 import {
@@ -10,6 +11,18 @@ import {
 } from "@ucdjs-internal/shared";
 import { hasCapability } from "@ucdjs/fs-bridge";
 import { dirname, join } from "pathe";
+import {
+  canUseLockfile,
+  getLockfilePath,
+  readLockfileOrDefault,
+  writeLockfile,
+} from "../core/lockfile";
+import {
+  computeFileHash,
+  getSnapshotPath,
+  readSnapshotOrDefault,
+  writeSnapshot,
+} from "../core/snapshot";
 import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../errors";
 
 const debug = createDebugger("ucdjs:ucd-store:mirror");
@@ -200,6 +213,42 @@ export async function mirror(
     const concurrency = options?.concurrency ?? 5;
     const force = options?.force ?? false;
 
+    // Check if lockfile/snapshot system can be used
+    const useLockfile = canUseLockfile(context.fs);
+    const lockfilePath = getLockfilePath(context.basePath);
+    let lockfile: Lockfile | undefined;
+    const versionSnapshots = new Map<string, Snapshot>();
+    const newSnapshots = new Map<string, Snapshot>();
+
+    if (useLockfile) {
+      debug?.("Lockfile system is available, loading existing lockfile and snapshots");
+      lockfile = await readLockfileOrDefault(context.fs, lockfilePath);
+
+      // Load snapshots for each version and initialize new snapshots
+      for (const version of versions) {
+        const snapshot = await readSnapshotOrDefault(context.fs, context.basePath, version);
+        if (snapshot) {
+          versionSnapshots.set(version, snapshot);
+          // Start with existing snapshot, will be updated as files are downloaded
+          newSnapshots.set(version, {
+            schema: "unicode-snapshot@1",
+            unicodeVersion: version,
+            files: { ...snapshot.files },
+          });
+          debug?.(`Loaded snapshot for version ${version} with ${Object.keys(snapshot.files).length} files`);
+        } else {
+          // Create new snapshot for this version
+          newSnapshots.set(version, {
+            schema: "unicode-snapshot@1",
+            unicodeVersion: version,
+            files: {},
+          });
+        }
+      }
+    } else {
+      debug?.("Lockfile system not available (read-only filesystem), skipping lockfile operations");
+    }
+
     if (versions.length === 0) {
       debug?.("No versions to mirror");
       return {
@@ -325,10 +374,28 @@ export async function mirror(
 
     await Promise.all(filesQueue.map((item) => limit(async () => {
       try {
-        // Skip if file exists and force is disabled
+        // Check snapshot for file integrity if available
+        const snapshot = versionSnapshots.get(item.version);
+        const snapshotFile = snapshot?.files[item.filePath];
+
+        if (!force && snapshotFile) {
+          // File exists in snapshot, check if local file matches
+          if (await context.fs.exists(item.localPath)) {
+            const localContent = await context.fs.read(item.localPath);
+            if (localContent) {
+              const localHash = await computeFileHash(localContent);
+              if (localHash === snapshotFile.hash && localContent.length === snapshotFile.size) {
+                debug?.(`File ${item.filePath} matches snapshot, skipping`);
+                item.versionResult.files.skipped.push(item.filePath);
+                return;
+              }
+            }
+          }
+        }
+
+        // Skip if file exists and force is disabled (fallback check)
         if (!force && await context.fs.exists(item.localPath)) {
           item.versionResult.files.skipped.push(item.filePath);
-
           return;
         }
 
@@ -370,6 +437,18 @@ export async function mirror(
 
         item.versionResult.files.downloaded.push(item.filePath);
         totalDownloadedSize += contentSize;
+
+        // Update snapshot with file hash and size
+        if (useLockfile) {
+          const newSnapshot = newSnapshots.get(item.version);
+          if (newSnapshot) {
+            const hash = await computeFileHash(content);
+            newSnapshot.files[item.filePath] = {
+              hash,
+              size: content.length,
+            };
+          }
+        }
       } catch (err) {
         item.versionResult.files.failed.push(item.filePath);
         item.versionResult.errors.push({
@@ -395,6 +474,50 @@ export async function mirror(
       summary.counts.skipped,
       summary.counts.failed,
     );
+
+    // Generate snapshots and update lockfile if lockfile system is available
+    if (useLockfile) {
+      debug?.("Generating snapshots and updating lockfile");
+
+      const lockfileVersions: Record<string, { path: string; fileCount: number; totalSize: number }> = {};
+
+      for (const version of versions) {
+        const snapshot = newSnapshots.get(version);
+        if (snapshot && Object.keys(snapshot.files).length > 0) {
+          // Calculate totals for this version
+          let totalSize = 0;
+          for (const file of Object.values(snapshot.files)) {
+            totalSize += file.size;
+          }
+
+          // Write snapshot
+          await writeSnapshot(context.fs, context.basePath, version, snapshot);
+
+          // Add to lockfile (path is relative to basePath)
+          lockfileVersions[version] = {
+            path: `.snapshots/${version}.json`,
+            fileCount: Object.keys(snapshot.files).length,
+            totalSize,
+          };
+
+          debug?.(`Generated snapshot for version ${version}: ${lockfileVersions[version].fileCount} files, ${totalSize} bytes`);
+        }
+      }
+
+      // Create or update lockfile (merge with existing if present)
+      const existingVersions = lockfile?.versions ?? {};
+      const newLockfile: Lockfile = {
+        lockfileVersion: 1,
+        schema: "unicode-mirror-index@1",
+        versions: {
+          ...existingVersions,
+          ...lockfileVersions,
+        },
+      };
+
+      await writeLockfile(context.fs, lockfilePath, newLockfile);
+      debug?.("Updated lockfile");
+    }
 
     return {
       timestamp: new Date().toISOString(),
