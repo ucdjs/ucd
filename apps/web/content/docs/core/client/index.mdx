@@ -1,0 +1,113 @@
+---
+title: Client
+description: OpenAPI-based API client for the UCD API
+---
+
+## Installation
+
+<Tabs items={['npm', 'pnpm', 'yarn']}>
+  <Tab value="npm">
+    ```bash npm
+    npm install @ucdjs/client
+    ```
+  </Tab>
+  <Tab value="pnpm">
+    ```bash pnpm
+    pnpm add @ucdjs/client
+    ```
+  </Tab>
+  <Tab value="yarn">
+    ```bash yarn
+    yarn add @ucdjs/client
+    ```
+  </Tab>
+</Tabs>
+
+## Overview
+
+The `@ucdjs/client` package provides a type-safe API client for interacting with the UCD.js API. It offers a clean, resource-based interface for accessing Unicode Character Database files, version information, and configuration data.
+
+The client is built on top of the OpenAPI specification, ensuring full type safety and accurate TypeScript inference for all API responses. It uses a safe error handling pattern that never throws exceptions.
+
+## Getting Started
+
+Create a client instance using `createUCDClient()`:
+
+```typescript
+import { createUCDClient } from "@ucdjs/client";
+
+const client = await createUCDClient("https://api.ucdjs.dev");
+const { data: versions, error } = await client.versions.list();
+
+if (error) {
+  console.error("Failed to fetch versions:", error.message);
+} else {
+  console.log("Available versions:", versions);
+}
+```
+
+## Resources
+
+The client provides four resource namespaces:
+
+| Resource | Description |
+|----------|-------------|
+| `files` | Access Unicode data files and directory listings |
+| `versions` | Get information about available Unicode versions |
+| `config` | Access the API's well-known configuration |
+| `manifest` | Get version-specific manifests listing expected files |
+
+### Examples
+
+<Tabs items={['files', 'versions', 'config', 'manifest']}>
+  <Tab value="files">
+    ```typescript
+    const { data: fileContent, error } = await client.files.get("16.0.0/ucd/UnicodeData.txt");
+
+    if (error) {
+      console.error("Failed to fetch file:", error.message);
+      return;
+    }
+
+    console.log("File content:", fileContent);
+    ```
+  </Tab>
+  <Tab value="versions">
+    ```typescript
+    // List all versions
+    const { data: versions, error } = await client.versions.list();
+
+    if (error) {
+      console.error("Failed to fetch versions:", error.message);
+      return;
+    }
+
+    // Get file tree for a version
+    const { data: fileTree } = await client.versions.getFileTree("16.0.0");
+    ```
+  </Tab>
+  <Tab value="config">
+    ```typescript
+    const { data: config, error } = await client.config.get();
+
+    if (error) {
+      console.error("Failed to fetch config:", error.message);
+      return;
+    }
+
+    console.log("API Version:", config.version);
+    ```
+  </Tab>
+  <Tab value="manifest">
+    ```typescript
+    const { data: manifest, error } = await client.manifest.get("16.0.0");
+
+    if (error) {
+      console.error("Failed to fetch manifest:", error.message);
+      return;
+    }
+
+    console.log("Expected files:", manifest.expectedFiles);
+    ```
+  </Tab>
+</Tabs>

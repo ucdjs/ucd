@@ -3,6 +3,7 @@ import { createFileRoute, notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { useFumadocsLoader } from "fumadocs-core/source/client";
 import browserCollections from "fumadocs-mdx:collections/browser";
+import * as TabsComponents from "fumadocs-ui/components/tabs";
 import { DocsLayout } from "fumadocs-ui/layouts/docs";
 import {
   DocsBody,
@@ -11,6 +12,7 @@ import {
   DocsTitle,
 } from "fumadocs-ui/layouts/docs/page";
 import defaultMdxComponents from "fumadocs-ui/mdx";
+import { MethodReference } from "@/components/api-reference";
 import { source } from "@/lib/docs-loader";
 import { baseOptions } from "@/lib/layout.shared";
 
@@ -34,12 +36,23 @@ const clientLoader = browserCollections.docs.createClientLoader({
     frontmatter,
     default: MDX,
   }) {
+    // Extract sub-components for MDX
+    const MethodReferenceParameter = (MethodReference as any).Parameter;
+    const MethodReferenceReturns = (MethodReference as any).Returns;
+
     return (
       <DocsPage toc={toc}>
         <DocsTitle>{frontmatter.title}</DocsTitle>
         <DocsDescription>{frontmatter.description}</DocsDescription>
         <DocsBody>
-          <MDX components={defaultMdxComponents} />
+          <MDX components={{
+            ...defaultMdxComponents,
+            ...TabsComponents,
+            MethodReference,
+            "MethodReference.Parameter": MethodReferenceParameter,
+            "MethodReference.Returns": MethodReferenceReturns,
+          }}
+          />
         </DocsBody>
       </DocsPage>
     );

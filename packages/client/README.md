@@ -71,6 +71,10 @@ if (binaryData) {
 }
 ```
 
+## Documentation
+
+For comprehensive documentation, examples, and API reference, visit the [Client Documentation](https://ucdjs.dev/docs/core/client).
+
 ## 📄 License
 
 Published under [MIT License](./LICENSE).
