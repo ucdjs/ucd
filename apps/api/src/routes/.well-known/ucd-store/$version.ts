@@ -127,9 +127,7 @@ export function registerUcdStoreVersionRoute(router: OpenAPIHono<HonoEnv>) {
     try {
       const data = await object.json<UCDStoreManifest[typeof version]>();
 
-      const headers: Record<string, string> = {
-        "Cache-Control": "public, max-age=604800", // 7 days
-      };
+      const headers: Record<string, string> = {};
 
       if (object.uploaded) {
         headers["Last-Modified"] = object.uploaded.toUTCString();
