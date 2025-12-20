@@ -11,14 +11,6 @@ describe("createFilesResource", () => {
     versions: "/api/v1/versions",
   };
 
-  const mockManifest = {
-    version: "1.0",
-    files: [
-      { path: "16.0.0/ucd/UnicodeData.txt", size: 1024 },
-      { path: "16.0.0/ucd/PropList.txt", size: 2048 },
-    ],
-  };
-
   describe("get()", () => {
     it("should fetch file content as text successfully", async () => {
       const fileContent = "# Unicode Data File\n0000;NULL;...";
@@ -121,68 +113,6 @@ describe("createFilesResource", () => {
     });
   });
 
-  describe("getManifest()", () => {
-    it("should fetch the UCD manifest successfully", async () => {
-      mockFetch([
-        ["GET", `${baseUrl}${endpoints.manifest}`, () => {
-          return HttpResponse.json(mockManifest);
-        }],
-      ]);
-
-      const filesResource = createFilesResource({ baseUrl, endpoints });
-      const { data, error } = await filesResource.getManifest();
-
-      expect(error).toBeNull();
-      expect(data).toEqual(mockManifest);
-    });
-
-    it("should return manifest with correct structure", async () => {
-      mockFetch([
-        ["GET", `${baseUrl}${endpoints.manifest}`, () => {
-          return HttpResponse.json(mockManifest);
-        }],
-      ]);
-
-      const filesResource = createFilesResource({ baseUrl, endpoints });
-      const { data, error } = await filesResource.getManifest();
-
-      expect(error).toBeNull();
-      expect(data).toHaveProperty("version");
-      expect(data).toHaveProperty("files");
-      expect(Array.isArray(data!.files)).toBe(true);
-    });
-
-    it("should handle 404 errors for missing manifest", async () => {
-      mockFetch([
-        ["GET", `${baseUrl}${endpoints.manifest}`, () => {
-          return new HttpResponse(null, { status: 404 });
-        }],
-      ]);
-
-      const filesResource = createFilesResource({ baseUrl, endpoints });
-      const { data, error } = await filesResource.getManifest();
-
-      expect(data).toBeNull();
-      expect(error).toBeDefined();
-      expect(error).toHaveProperty("status", 404);
-    });
-
-    it("should handle server errors", async () => {
-      mockFetch([
-        ["GET", `${baseUrl}${endpoints.manifest}`, () => {
-          return new HttpResponse(null, { status: 500 });
-        }],
-      ]);
-
-      const filesResource = createFilesResource({ baseUrl, endpoints });
-      const { data, error } = await filesResource.getManifest();
-
-      expect(data).toBeNull();
-      expect(error).toBeDefined();
-      expect(error).toHaveProperty("status", 500);
-    });
-  });
-
   describe("custom configuration", () => {
     it("should work with custom base URLs", async () => {
       const customBaseUrl = "https://custom-ucd-server.com";
@@ -225,29 +155,6 @@ describe("createFilesResource", () => {
 
       expect(error).toBeNull();
       expect(data).toBe(fileContent);
-    });
-
-    it("should work with custom manifest paths", async () => {
-      const customManifestPath = "/v2/manifest.json";
-
-      mockFetch([
-        ["GET", `${baseUrl}${customManifestPath}`, () => {
-          return HttpResponse.json(mockManifest);
-        }],
-      ]);
-
-      const filesResource = createFilesResource({
-        baseUrl,
-        endpoints: {
-          ...endpoints,
-          manifest: customManifestPath,
-        },
-      });
-
-      const { data, error } = await filesResource.getManifest();
-
-      expect(error).toBeNull();
-      expect(data).toEqual(mockManifest);
     });
   });
 });
