@@ -1,42 +1,41 @@
 import type { UCDClient } from "@ucdjs/client";
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 import { createDebugger } from "@ucdjs-internal/shared";
-import { readManifest } from "../core/manifest";
 import { UCDStoreGenericError } from "../errors";
 
 const debug = createDebugger("ucdjs:ucd-store:verify");
 
 export interface VerifyOptions {
   client: UCDClient;
-  manifestPath: string;
+  lockfilePath: string;
   fs: FileSystemBridge;
+  versions: string[];
 }
 
 export interface VerifyResult {
   valid: boolean;
-  manifestVersions: string[];
+  lockfileVersions: string[];
   availableVersions: string[];
   missingVersions: string[];
   extraVersions: string[];
 }
 
 /**
- * Verifies that versions in the manifest are available in the API.
- * This checks the health of the store by comparing manifest versions
+ * Verifies that versions in the lockfile are available in the API.
+ * This checks the health of the store by comparing lockfile versions
  * against the current list of available versions from the API.
  *
- * @param {VerifyOptions} options - Verification options or internal store context
+ * @param {VerifyOptions} options - Verification options
  * @returns {Promise<VerifyResult>} Verification result with comparison details
  * @throws {UCDStoreGenericError} If API fetch fails
  */
 export async function verify(options: VerifyOptions): Promise<VerifyResult> {
-  const { client, manifestPath, fs } = options;
+  const { client, lockfilePath: _lockfilePath, fs: _fs, versions } = options;
 
-  debug?.("Starting manifest verification");
+  debug?.("Starting lockfile verification");
 
-  const manifest = await readManifest(fs, manifestPath);
-  const manifestVersions = Object.keys(manifest);
-  debug?.(`Found ${manifestVersions.length} versions in manifest:`, manifestVersions);
+  const lockfileVersions = versions;
+  debug?.(`Found ${lockfileVersions.length} versions in lockfile:`, lockfileVersions);
 
   const result = await client.versions.list();
 
@@ -55,8 +54,8 @@ export async function verify(options: VerifyOptions): Promise<VerifyResult> {
   const availableVersions = result.data.map(({ version }) => version);
   debug?.(`Fetched ${availableVersions.length} available versions from API`);
 
-  const missingVersions = manifestVersions.filter((v) => !availableVersions.includes(v));
-  const extraVersions = availableVersions.filter((v) => !manifestVersions.includes(v));
+  const missingVersions = lockfileVersions.filter((v) => !availableVersions.includes(v));
+  const extraVersions = availableVersions.filter((v) => !lockfileVersions.includes(v));
 
   const valid = missingVersions.length === 0;
   debug?.(
@@ -72,7 +71,7 @@ export async function verify(options: VerifyOptions): Promise<VerifyResult> {
 
   return {
     valid,
-    manifestVersions,
+    lockfileVersions,
     availableVersions,
     missingVersions,
     extraVersions,

@@ -3,7 +3,7 @@ import type { StoreError } from "../errors";
 import type { InternalUCDStoreContext } from "../types";
 import type { MirrorReport } from "./mirror";
 import { tryCatch } from "@ucdjs-internal/shared";
-import { readManifest, writeManifest } from "../core/manifest";
+import { readLockfileOrDefault, writeLockfile } from "../core/lockfile";
 import { mirror } from "./mirror";
 
 export interface SyncOptions {
@@ -26,22 +26,22 @@ export interface SyncResult {
   timestamp: string;
 
   /**
-   * Versions that were added to the manifest
+   * Versions that were added to the lockfile
    */
   added: string[];
 
   /**
-   * Versions that were removed from the manifest (if strategy: "update")
+   * Versions that were removed from the lockfile (if strategy: "update")
    */
   removed: string[];
 
   /**
-   * Versions that were already in the manifest
+   * Versions that were already in the lockfile
    */
   unchanged: string[];
 
   /**
-   * Current versions in the manifest after sync
+   * Current versions in the lockfile after sync
    */
   versions: string[];
 
@@ -52,7 +52,7 @@ export interface SyncResult {
 }
 
 /**
- * Synchronizes the store manifest with available versions from the API.
+ * Synchronizes the store lockfile with available versions from ucd-config.json.
  * Updates which versions the store knows about (metadata-level operation).
  *
  * @param {InternalUCDStoreContext} context - Internal store context
@@ -67,24 +67,41 @@ export async function sync(
     const strategy = options?.strategy ?? "add";
     const shouldMirror = options?.mirror ?? false;
 
-    const apiResult = await context.client.versions.list();
-    if (apiResult.error) throw apiResult.error;
-    if (!apiResult.data) {
-      throw new Error("Failed to fetch Unicode versions: no data returned");
+    // Get available versions from config (via client.config.get())
+    const configResult = await context.client.config.get();
+    let availableVersions: string[] = [];
+
+    if (configResult.error || !configResult.data) {
+      // Fallback to versions.list() if config is not available
+      const apiResult = await context.client.versions.list();
+      if (apiResult.error) throw apiResult.error;
+      if (!apiResult.data) {
+        throw new Error("Failed to fetch Unicode versions: no data returned");
+      }
+      availableVersions = apiResult.data.map(({ version }) => version);
+    } else {
+      // Use versions from config
+      availableVersions = configResult.data.versions ?? [];
+      if (availableVersions.length === 0) {
+        // Fallback if config doesn't have versions array
+        const apiResult = await context.client.versions.list();
+        if (apiResult.error) throw apiResult.error;
+        if (!apiResult.data) {
+          throw new Error("Failed to fetch Unicode versions: no data returned");
+        }
+        availableVersions = apiResult.data.map(({ version }) => version);
+      }
     }
 
-    const availableVersions = apiResult.data.map(({ version }) => version);
-
-    const manifest = await readManifest(context.fs, context.manifestPath);
-
-    const currentVersions = new Set(Object.keys(manifest));
+    const lockfile = await readLockfileOrDefault(context.fs, context.lockfilePath);
+    const currentVersions = new Set(lockfile ? Object.keys(lockfile.versions) : []);
     const apiVersions = new Set(availableVersions);
 
     const added: string[] = [];
     const removed: string[] = [];
     const unchanged: string[] = [];
 
-    // Find added versions (in API but not in manifest)
+    // Find added versions (in API/config but not in lockfile)
     for (const version of apiVersions) {
       if (!currentVersions.has(version)) {
         added.push(version);
@@ -96,7 +113,7 @@ export async function sync(
       // All current versions are unchanged (kept)
       unchanged.push(...currentVersions);
     } else {
-      // Only versions in both API and manifest are unchanged
+      // Only versions in both API/config and lockfile are unchanged
       for (const version of currentVersions) {
         if (apiVersions.has(version)) {
           unchanged.push(version);
@@ -104,7 +121,7 @@ export async function sync(
       }
     }
 
-    // For "update" strategy, find removed versions (in manifest but not in API)
+    // For "update" strategy, find removed versions (in lockfile but not in API/config)
     if (strategy === "update") {
       for (const version of currentVersions) {
         if (!apiVersions.has(version)) {
@@ -119,19 +136,30 @@ export async function sync(
       // Keep all existing versions and add new ones
       finalVersions = [...currentVersions, ...added];
     } else {
-      // Use only API versions (removes unavailable versions)
+      // Use only API/config versions (removes unavailable versions)
       finalVersions = [...apiVersions];
     }
 
-    await writeManifest(
+    // Update lockfile with final versions
+    await writeLockfile(
       context.fs,
-      context.manifestPath,
-      Object.fromEntries(
-        finalVersions.map((v) => [
-          v,
-          manifest[v] ?? { expectedFiles: [] },
-        ]),
-      ),
+      context.lockfilePath,
+      {
+        lockfileVersion: 1,
+        versions: Object.fromEntries(
+          finalVersions.map((v) => {
+            const existingEntry = lockfile?.versions[v];
+            return [
+              v,
+              existingEntry ?? {
+                path: `v${v}/snapshot.json`, // relative path
+                fileCount: 0,
+                totalSize: 0,
+              },
+            ];
+          }),
+        ),
+      },
     );
 
     const result: SyncResult = {

@@ -13,7 +13,7 @@ describe("createInternalContext", async () => {
     const fs = createMemoryMockFS();
     const basePath = "/test/store";
     const versions = ["16.0.0", "15.1.0"];
-    const manifestPath = "/test/store/.ucd-store.json";
+    const lockfilePath = "/test/store/.ucd-store.lock";
 
     const context = createInternalContext({
       client,
@@ -21,7 +21,7 @@ describe("createInternalContext", async () => {
       fs,
       basePath,
       versions,
-      manifestPath,
+      lockfilePath,
     });
 
     expect(context.client).toBe(client);
@@ -29,7 +29,7 @@ describe("createInternalContext", async () => {
     expect(context.fs).toBe(fs);
     expect(context.basePath).toBe(basePath);
     expect(context.versions).toEqual(versions);
-    expect(context.manifestPath).toBe(manifestPath);
+    expect(context.lockfilePath).toBe(lockfilePath);
   });
 
   it("should preserve all input values correctly", async () => {
@@ -37,7 +37,7 @@ describe("createInternalContext", async () => {
     const fs = createMemoryMockFS();
     const basePath = "/different/path";
     const versions = ["15.0.0"];
-    const manifestPath = "/different/path/.ucd-store.json";
+    const lockfilePath = "/different/path/.ucd-store.lock";
 
     const context = createInternalContext({
       client,
@@ -45,13 +45,13 @@ describe("createInternalContext", async () => {
       fs,
       basePath,
       versions,
-      manifestPath,
+      lockfilePath,
     });
 
     expect(context).toMatchObject({
       basePath,
       versions,
-      manifestPath,
+      lockfilePath,
     });
     expect(context.client).toBe(client);
     expect(context.filter).toBe(filter);
@@ -69,7 +69,7 @@ describe("createInternalContext", async () => {
       fs,
       basePath: "/test",
       versions,
-      manifestPath: "/test/.ucd-store.json",
+      lockfilePath: "/test/.ucd-store.lock",
     });
 
     // Internal context should have mutable versions
@@ -90,7 +90,7 @@ describe("createInternalContext", async () => {
       fs,
       basePath: "/test",
       versions: [],
-      manifestPath: "/test/.ucd-store.json",
+      lockfilePath: "/test/.ucd-store.lock",
     });
 
     expect(context.versions).toEqual([]);
@@ -112,7 +112,7 @@ describe("createPublicContext", async () => {
     const fs = createMemoryMockFS();
     const basePath = "/test/store";
     const versions = ["16.0.0", "15.1.0"];
-    const manifestPath = "/test/store/.ucd-store.json";
+    const lockfilePath = "/test/store/.ucd-store.lock";
 
     const internalContext = createInternalContext({
       client,
@@ -120,7 +120,7 @@ describe("createPublicContext", async () => {
       fs,
       basePath,
       versions,
-      manifestPath,
+      lockfilePath,
     });
 
     const publicContext = createPublicContext(internalContext);
@@ -133,7 +133,7 @@ describe("createPublicContext", async () => {
     // Should not expose internal properties
     expect("client" in publicContext).toBe(false);
     expect("filter" in publicContext).toBe(false);
-    expect("manifestPath" in publicContext).toBe(false);
+    expect("lockfilePath" in publicContext).toBe(false);
   });
 
   it("should return frozen versions array", async () => {
@@ -146,7 +146,7 @@ describe("createPublicContext", async () => {
       fs,
       basePath: "/test",
       versions: ["16.0.0"],
-      manifestPath: "/test/.ucd-store.json",
+      lockfilePath: "/test/.ucd-store.lock",
     });
 
     const publicContext = createPublicContext(internalContext);
@@ -174,7 +174,7 @@ describe("createPublicContext", async () => {
       fs,
       basePath: "/test",
       versions: ["16.0.0"],
-      manifestPath: "/test/.ucd-store.json",
+      lockfilePath: "/test/.ucd-store.lock",
     });
 
     const publicContext = createPublicContext(internalContext);
@@ -202,7 +202,7 @@ describe("createPublicContext", async () => {
       fs,
       basePath: "/test",
       versions: ["16.0.0"],
-      manifestPath: "/test/.ucd-store.json",
+      lockfilePath: "/test/.ucd-store.lock",
     });
 
     const publicContext = createPublicContext(internalContext);
@@ -231,7 +231,7 @@ describe("createPublicContext", async () => {
       fs,
       basePath: "/test",
       versions: ["16.0.0"],
-      manifestPath: "/test/.ucd-store.json",
+      lockfilePath: "/test/.ucd-store.lock",
     });
 
     const publicContext = createPublicContext(internalContext);
@@ -251,7 +251,7 @@ describe("createPublicContext", async () => {
       fs,
       basePath: "/my/store/path",
       versions: ["16.0.0"],
-      manifestPath: "/my/store/path/.ucd-store.json",
+      lockfilePath: "/my/store/path/.ucd-store.lock",
     });
 
     const publicContext = createPublicContext(internalContext);
@@ -270,7 +270,7 @@ describe("createPublicContext", async () => {
       fs,
       basePath: "/test",
       versions: [],
-      manifestPath: "/test/.ucd-store.json",
+      lockfilePath: "/test/.ucd-store.lock",
     });
 
     const publicContext = createPublicContext(internalContext);
@@ -289,7 +289,7 @@ describe("createPublicContext", async () => {
       fs,
       basePath: "/test",
       versions: ["16.0.0"],
-      manifestPath: "/test/.ucd-store.json",
+      lockfilePath: "/test/.ucd-store.lock",
     });
 
     const publicContext = createPublicContext(internalContext);
