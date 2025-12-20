@@ -70,7 +70,6 @@ export async function readLockfile(
  * @param {string} lockfilePath - Path where the lockfile should be written
  * @param {Lockfile} lockfile - The lockfile data to write
  * @returns {Promise<void>} A promise that resolves when the lockfile has been written
- * @throws {Error} If the filesystem bridge does not support writing
  */
 export async function writeLockfile(
   fs: FileSystemBridge,
