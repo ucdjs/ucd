@@ -12,7 +12,6 @@ import {
   DocsTitle,
 } from "fumadocs-ui/layouts/docs/page";
 import defaultMdxComponents from "fumadocs-ui/mdx";
-import { MethodReference } from "@/components/api-reference";
 import { source } from "@/lib/docs-loader";
 import { baseOptions } from "@/lib/layout.shared";
 
@@ -36,10 +35,6 @@ const clientLoader = browserCollections.docs.createClientLoader({
     frontmatter,
     default: MDX,
   }) {
-    // Extract sub-components for MDX
-    const MethodReferenceParameter = (MethodReference as any).Parameter;
-    const MethodReferenceReturns = (MethodReference as any).Returns;
-
     return (
       <DocsPage toc={toc}>
         <DocsTitle>{frontmatter.title}</DocsTitle>
@@ -48,9 +43,6 @@ const clientLoader = browserCollections.docs.createClientLoader({
           <MDX components={{
             ...defaultMdxComponents,
             ...TabsComponents,
-            MethodReference,
-            "MethodReference.Parameter": MethodReferenceParameter,
-            "MethodReference.Returns": MethodReferenceReturns,
           }}
           />
         </DocsBody>
