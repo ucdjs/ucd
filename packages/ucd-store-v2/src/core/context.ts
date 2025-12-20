@@ -18,7 +18,7 @@ export function createInternalContext(options: {
   fs: FileSystemBridge;
   basePath: string;
   versions: string[];
-  manifestPath: string;
+  lockfilePath: string;
 }): InternalUCDStoreContext {
   return {
     client: options.client,
@@ -26,7 +26,7 @@ export function createInternalContext(options: {
     fs: options.fs,
     basePath: options.basePath,
     versions: [...options.versions],
-    manifestPath: options.manifestPath,
+    lockfilePath: options.lockfilePath,
   };
 }
 

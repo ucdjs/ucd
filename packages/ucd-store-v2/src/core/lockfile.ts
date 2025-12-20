@@ -315,7 +315,8 @@ export async function readSnapshotOrDefault(
 
 /**
  * Gets the snapshot path for a given version.
+ * Snapshots are stored inside version directories: v{version}/snapshot.json
  */
 export function getSnapshotPath(basePath: string, version: string): string {
-  return join(basePath, ".snapshots", `${version}.json`);
+  return join(basePath, `v${version}`, "snapshot.json");
 }
