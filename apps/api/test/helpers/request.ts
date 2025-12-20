@@ -24,14 +24,17 @@ export async function executeRequest(
     await waitOnExecutionContext(ctx);
   }
 
+  let _json: any;
+  let _text: string;
+
   return {
     response,
     ctx,
     async json() {
-      return response.json();
+      return _json ?? (_json = await response.json());
     },
     async text() {
-      return response.text();
+      return _text ?? (_text = await response.text());
     },
   };
 }
