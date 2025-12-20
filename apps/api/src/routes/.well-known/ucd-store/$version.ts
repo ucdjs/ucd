@@ -38,14 +38,8 @@ const VERSION_PARAM = {
 
 const UCD_STORE_VERSION_ROUTE = createRoute({
   method: "get",
-  path: "/ucd-store/:version{.*\\.json}",
+  path: "/ucd-store/{version}.json",
   tags: [OPENAPI_TAGS.WELL_KNOWN],
-  middleware: [
-    cache({
-      cacheName: "ucdjs:well-known:ucd-store-version",
-      cacheControl: `max-age=${MAX_AGE_ONE_WEEK_SECONDS}`, // 7 days
-    }),
-  ],
   parameters: [VERSION_PARAM],
   description: dedent`
     ## UCD Store Manifest (Per Version)
@@ -91,8 +85,14 @@ const UCD_STORE_VERSION_ROUTE = createRoute({
 });
 
 export function registerUcdStoreVersionRoute(router: OpenAPIHono<HonoEnv>) {
-  router.openapi(UCD_STORE_VERSION_ROUTE, async (c) => {
-    // The path ends with .json, so we need to remove it
+  router.openAPIRegistry.registerPath(UCD_STORE_VERSION_ROUTE);
+
+  // We register the route separately to avoid, having weird behavior with the OpenAPI schema.
+  router.get("/ucd-store/:version{.*\\.json}", cache({
+    cacheName: "ucdjs:well-known:ucd-store-version",
+    cacheControl: `max-age=${MAX_AGE_ONE_WEEK_SECONDS}`, // 7 days
+  }), async (c) => {
+    // We need to remove the .json extension from the version parameter.
     const version = c.req.param("version").replace(".json", "");
     const bucket = c.env.UCD_BUCKET;
 
