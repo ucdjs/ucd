@@ -12,12 +12,12 @@ const LockfileVersionEntrySchema = z.object({
   /**
    * Number of files in this version
    */
-  fileCount: z.number(),
+  fileCount: z.number().int().nonnegative(),
 
   /**
    * Total size of all files in this version (in bytes)
    */
-  totalSize: z.number(),
+  totalSize: z.number().int().nonnegative(),
 });
 
 /**
@@ -49,7 +49,7 @@ const SnapshotFileEntrySchema = z.object({
   /**
    * Size of the file in bytes
    */
-  size: z.number(),
+  size: z.number().int().nonnegative(),
 });
 
 /**
