@@ -137,8 +137,7 @@ export function registerUcdStoreRoute(router: OpenAPIHono<HonoEnv>) {
     );
 
     // Calculate sunset date (6 months from now)
-    const sunsetDate = new Date();
-    sunsetDate.setMonth(sunsetDate.getMonth() + 6);
+    const sunsetDate = new Date("2026-06-20T00:00:00Z");
 
     const headers: Record<string, string> = {
       "Cache-Control": "public, max-age=3600", // 1 hour cache
