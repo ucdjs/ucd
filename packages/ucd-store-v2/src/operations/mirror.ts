@@ -10,6 +10,7 @@ import {
 } from "@ucdjs-internal/shared";
 import { hasCapability } from "@ucdjs/fs-bridge";
 import { dirname, join } from "pathe";
+import { computeFileHash, readLockfileOrDefault, writeLockfile, writeSnapshot } from "../core/lockfile";
 import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../errors";
 
 const debug = createDebugger("ucdjs:ucd-store:mirror");
@@ -382,6 +383,55 @@ export async function mirror(
     })));
 
     const duration = Date.now() - startTime;
+
+    // Create snapshots and update lockfile for mirrored versions
+    const lockfile = await readLockfileOrDefault(context.fs, context.lockfilePath);
+    const updatedLockfileVersions = lockfile ? { ...lockfile.versions } : {};
+
+    for (const [version, report] of versionedReports.entries()) {
+      // Create snapshot if any files were processed (downloaded or skipped)
+      const allFiles = [...report.files.downloaded, ...report.files.skipped];
+      if (allFiles.length > 0) {
+        debug?.(`Creating snapshot for version ${version}`);
+
+        // Read all mirrored files (downloaded + skipped) and compute hashes
+        const snapshotFiles: Record<string, { hash: string; size: number }> = {};
+        let totalSize = 0;
+
+        for (const filePath of allFiles) {
+          const localPath = join(context.basePath, version, filePath);
+          const fileContent = await context.fs.read(localPath);
+
+          if (fileContent) {
+            const hash = await computeFileHash(fileContent);
+            const size = new TextEncoder().encode(fileContent).length;
+            snapshotFiles[filePath] = { hash, size };
+            totalSize += size;
+          }
+        }
+
+        // Write snapshot
+        await writeSnapshot(context.fs, context.basePath, version, {
+          unicodeVersion: version,
+          files: snapshotFiles,
+        });
+
+        // Update lockfile entry
+        updatedLockfileVersions[version] = {
+          path: `v${version}/snapshot.json`,
+          fileCount: allFiles.length,
+          totalSize,
+        };
+      }
+    }
+
+    // Write updated lockfile
+    if (Object.keys(updatedLockfileVersions).length > 0) {
+      await writeLockfile(context.fs, context.lockfilePath, {
+        lockfileVersion: 1,
+        versions: updatedLockfileVersions,
+      });
+    }
 
     const summary = computeSummary(
       versionedReports,

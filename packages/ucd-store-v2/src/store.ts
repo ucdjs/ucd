@@ -15,9 +15,8 @@ import {
 import { createUCDClientWithConfig } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import defu from "defu";
-import { join } from "pathe";
 import { createInternalContext, createPublicContext } from "./core/context";
-import { readManifest, readManifestOrDefault, writeManifest } from "./core/manifest";
+import { getLockfilePath, readLockfileOrDefault } from "./core/lockfile";
 import { UCDStoreGenericError } from "./errors";
 import { analyze } from "./operations/analyze";
 import { getFile } from "./operations/files/get";
@@ -53,7 +52,7 @@ export async function createUCDStore(options: UCDStoreOptions): Promise<UCDStore
   });
 
   const filter = createPathFilter(globalFilters);
-  const manifestPath = join(basePath, ".ucd-store.json");
+  const lockfilePath = getLockfilePath(basePath);
 
   // resolve the endpoints config
   let resolvedEndpointConfig = endpointConfig;
@@ -69,9 +68,12 @@ export async function createUCDStore(options: UCDStoreOptions): Promise<UCDStore
     client = createUCDClientWithConfig(baseUrl, resolvedEndpointConfig!);
   }
 
-  // check for existing manifest
-  const manifestExists = await fs.exists(manifestPath);
-  debug?.("Manifest exists:", manifestExists, "at path:", manifestPath);
+  // Extract versions from config if available
+  const configVersions = resolvedEndpointConfig?.versions;
+
+  // check for existing lockfile
+  const lockfileExists = await fs.exists(lockfilePath);
+  debug?.("Lockfile exists:", lockfileExists, "at path:", lockfilePath);
 
   let storeVersions = versions;
 
@@ -82,52 +84,70 @@ export async function createUCDStore(options: UCDStoreOptions): Promise<UCDStore
     fs,
     basePath,
     versions: storeVersions,
-    manifestPath,
+    lockfilePath,
   });
 
-  // if there is a manifest, we can skip the bootstrap process
-  // and just use the versions from the manifest
-  if (manifestExists) {
-    const manifest = await readManifest(fs, manifestPath);
-    const manifestVersions = Object.keys(manifest);
-    debug?.("Manifest versions:", manifestVersions);
+  // if there is a lockfile, we can skip the bootstrap process
+  // and just use the versions from the lockfile
+  if (lockfileExists) {
+    const lockfile = await readLockfileOrDefault(fs, lockfilePath);
+    const lockfileVersions = lockfile ? Object.keys(lockfile.versions) : [];
+    debug?.("Lockfile versions:", lockfileVersions);
 
     // If user provided versions, handle according to strategy
     if (versions.length > 0) {
       storeVersions = await handleVersionConflict(
         versionStrategy,
         versions,
-        manifestVersions,
+        lockfileVersions,
         fs,
-        manifestPath,
+        lockfilePath,
+        configVersions,
       );
     } else {
-      // No versions provided, use manifest
-      storeVersions = manifestVersions;
-      debug?.("Using versions from manifest:", storeVersions);
+      // No versions provided, use lockfile or config
+      if (lockfileVersions.length > 0) {
+        storeVersions = lockfileVersions;
+        debug?.("Using versions from lockfile:", storeVersions);
+      } else if (configVersions && configVersions.length > 0) {
+        storeVersions = configVersions;
+        debug?.("Using versions from config:", storeVersions);
+      }
     }
 
     internalContext.versions = storeVersions;
 
     if (shouldVerify) {
-      const verifyResult = await verify(internalContext);
+      const verifyResult = await verify({
+        client,
+        lockfilePath,
+        fs,
+        versions: storeVersions,
+      });
 
       if (!verifyResult.valid) {
         throw new UCDStoreGenericError(
-          `Manifest verification failed: ${verifyResult.missingVersions.length} version(s) in manifest are not available in API: ${verifyResult.missingVersions.join(", ")}`,
+          `Lockfile verification failed: ${verifyResult.missingVersions.length} version(s) in lockfile are not available in API: ${verifyResult.missingVersions.join(", ")}`,
         );
       }
     }
   } else {
-    // If there isn't a manifest, and bootstrap is disabled, throw an error
-    // because we can't proceed without a manifest. SINCE there is no data!
+    // If there isn't a lockfile, and bootstrap is disabled, throw an error
+    // because we can't proceed without a lockfile. SINCE there is no data!
     if (!shouldBootstrap) {
       throw new UCDStoreGenericError(
-        `Store manifest not found at ${manifestPath} and bootstrap is disabled. `
-        + `Enable bootstrap or create manifest manually.`,
+        `Store lockfile not found at ${lockfilePath} and bootstrap is disabled. `
+        + `Enable bootstrap or create lockfile manually.`,
       );
     }
 
+    // Use versions from config if available, otherwise use provided versions
+    if (!storeVersions.length && configVersions && configVersions.length > 0) {
+      storeVersions = configVersions;
+      debug?.("Using versions from config for bootstrap:", storeVersions);
+    }
+
+    internalContext.versions = storeVersions;
     await bootstrap(internalContext);
   }
 
@@ -162,38 +182,69 @@ async function retrieveEndpointConfiguration(baseUrl: string = UCDJS_API_BASE_UR
 export async function handleVersionConflict(
   strategy: VersionConflictStrategy,
   providedVersions: string[],
-  manifestVersions: string[],
+  lockfileVersions: string[],
   fs: FileSystemBridge,
-  manifestPath: string,
+  lockfilePath: string,
+  _configVersions?: string[],
 ): Promise<string[]> {
   switch (strategy) {
     case "merge": {
-      const mergedVersions = Array.from(new Set([...manifestVersions, ...providedVersions]));
-      const existing = await readManifestOrDefault(fs, manifestPath, {});
-      await writeManifest(fs, manifestPath, Object.fromEntries(
-        mergedVersions.map((v) => [v, existing[v] ?? { expectedFiles: [] }]),
-      ));
+      const mergedVersions = Array.from(new Set([...lockfileVersions, ...providedVersions]));
+      const existing = await readLockfileOrDefault(fs, lockfilePath);
+      const { writeLockfile } = await import("./core/lockfile");
+
+      await writeLockfile(fs, lockfilePath, {
+        lockfileVersion: 1,
+        versions: Object.fromEntries(
+          mergedVersions.map((v) => {
+            const existingEntry = existing?.versions[v];
+            return [
+              v,
+              existingEntry ?? {
+                path: `v${v}/snapshot.json`, // relative path
+                fileCount: 0,
+                totalSize: 0,
+              },
+            ];
+          }),
+        ),
+      });
       debug?.("Merge mode: combined versions", mergedVersions);
       return mergedVersions;
     }
     case "overwrite": {
-      const existing = await readManifestOrDefault(fs, manifestPath, {});
-      await writeManifest(fs, manifestPath, Object.fromEntries(
-        providedVersions.map((v) => [v, existing[v] ?? { expectedFiles: [] }]),
-      ));
-      debug?.("Overwrite mode: replaced manifest with provided versions", providedVersions);
+      const existing = await readLockfileOrDefault(fs, lockfilePath);
+      const { writeLockfile } = await import("./core/lockfile");
+
+      await writeLockfile(fs, lockfilePath, {
+        lockfileVersion: 1,
+        versions: Object.fromEntries(
+          providedVersions.map((v) => {
+            const existingEntry = existing?.versions[v];
+            return [
+              v,
+              existingEntry ?? {
+                path: `v${v}/snapshot.json`, // relative path
+                fileCount: 0,
+                totalSize: 0,
+              },
+            ];
+          }),
+        ),
+      });
+      debug?.("Overwrite mode: replaced lockfile with provided versions", providedVersions);
       return providedVersions;
     }
     case "strict":
     default: {
-      if (!arraysEqual(providedVersions, manifestVersions)) {
+      if (!arraysEqual(providedVersions, lockfileVersions)) {
         throw new UCDStoreGenericError(
-          `Version mismatch: manifest has [${manifestVersions.join(", ")}], provided [${providedVersions.join(", ")}]. `
+          `Version mismatch: lockfile has [${lockfileVersions.join(", ")}], provided [${providedVersions.join(", ")}]. `
           + `Use versionStrategy: "merge" or "overwrite" to resolve.`,
         );
       }
-      debug?.("Strict mode: versions match manifest");
-      return manifestVersions;
+      debug?.("Strict mode: versions match lockfile");
+      return lockfileVersions;
     }
   }
 }
