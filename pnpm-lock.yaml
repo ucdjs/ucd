@@ -532,6 +532,9 @@ importers:
       '@ucdjs/ucd-store':
         specifier: workspace:*
         version: link:../ucd-store
+      '@ucdjs/ucd-store-v2':
+        specifier: workspace:*
+        version: link:../ucd-store-v2
       '@unicode-utils/core':
         specifier: catalog:prod
         version: 0.12.0-beta.18
@@ -12922,14 +12925,14 @@ snapshots:
       msw: 2.12.4(@types/node@22.18.12)(typescript@5.9.3)
       vite: 7.2.7(@types/node@22.18.12)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1)
 
-  '@vitest/mocker@3.2.4(msw@2.12.4(@types/node@24.3.1)(typescript@5.9.3))(vite@7.2.7(@types/node@24.3.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1))':
+  '@vitest/mocker@3.2.4(msw@2.12.4(@types/node@24.3.1)(typescript@5.9.3))(vite@7.2.7(@types/node@22.18.12)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1))':
     dependencies:
       '@vitest/spy': 3.2.4
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
       msw: 2.12.4(@types/node@24.3.1)(typescript@5.9.3)
-      vite: 7.2.7(@types/node@24.3.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1)
+      vite: 7.2.7(@types/node@22.18.12)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1)
 
   '@vitest/pretty-format@3.2.4':
     dependencies:
@@ -12960,7 +12963,7 @@ snapshots:
       sirv: 3.0.2
       tinyglobby: 0.2.15
       tinyrainbow: 2.0.0
-      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@24.3.1)(@vitest/ui@3.2.4)(jiti@2.6.1)(jsdom@27.3.0(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.12.4(@types/node@24.3.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1)
+      vitest: 3.2.4(@types/debug@4.1.12)(@types/node@22.18.12)(@vitest/ui@3.2.4)(jiti@2.6.1)(jsdom@27.3.0(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.12.4(@types/node@22.18.12)(typescript@5.9.3))(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1)
 
   '@vitest/utils@3.2.4':
     dependencies:
@@ -18390,7 +18393,7 @@ snapshots:
     dependencies:
       '@types/chai': 5.2.2
       '@vitest/expect': 3.2.4
-      '@vitest/mocker': 3.2.4(msw@2.12.4(@types/node@24.3.1)(typescript@5.9.3))(vite@7.2.7(@types/node@24.3.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1))
+      '@vitest/mocker': 3.2.4(msw@2.12.4(@types/node@24.3.1)(typescript@5.9.3))(vite@7.2.7(@types/node@22.18.12)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1))
       '@vitest/pretty-format': 3.2.4
       '@vitest/runner': 3.2.4
       '@vitest/snapshot': 3.2.4
