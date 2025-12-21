@@ -4,48 +4,48 @@ overview: Comprehensively verify and fix fs-bridge path resolution to handle all
 todos:
   - id: understand-resolvesafepath
     content: Analyze resolveSafePath implementation - understand current behavior for all scenarios. Add tests to path-utils if gaps are found.
-    status: pending
+    status: completed
   - id: understand-node-bridge
     content: Analyze fs-bridge node bridge - understand how it uses resolveSafePath and basePath resolution
-    status: pending
+    status: completed
   - id: understand-http-bridge
     content: Analyze fs-bridge http bridge - understand baseUrl model and security differences
-    status: pending
+    status: completed
   - id: create-security-test-folder
     content: Create packages/fs-bridge/test/security/ folder structure
-    status: pending
+    status: completed
   - id: create-test-suite-relative-basepath
     content: Create comprehensive test suite for relative basePath scenarios
-    status: pending
+    status: completed
     dependencies:
       - understand-resolvesafepath
       - understand-node-bridge
   - id: create-test-suite-absolute-basepath
     content: Create comprehensive test suite for absolute basePath scenarios
-    status: pending
+    status: completed
     dependencies:
       - understand-resolvesafepath
       - understand-node-bridge
   - id: create-test-suite-security
     content: Create comprehensive security test suite - path traversal, encoded attacks, etc. Add corresponding tests to path-utils if needed.
-    status: pending
+    status: completed
     dependencies:
       - understand-resolvesafepath
       - create-security-test-folder
   - id: create-test-suite-edge-cases
     content: Create comprehensive edge case test suite - empty paths, /, ., .., etc. Add corresponding tests to path-utils if needed.
-    status: pending
+    status: completed
     dependencies:
       - understand-resolvesafepath
   - id: create-test-suite-bridge-methods
     content: Create test suite for all bridge methods with all path scenarios
-    status: pending
+    status: completed
     dependencies:
       - understand-node-bridge
       - understand-http-bridge
   - id: run-comprehensive-tests
     content: Run all comprehensive tests and document failures
-    status: pending
+    status: completed
     dependencies:
       - create-test-suite-relative-basepath
       - create-test-suite-absolute-basepath
@@ -54,12 +54,12 @@ todos:
       - create-test-suite-bridge-methods
   - id: analyze-issues
     content: Analyze test failures - categorize as security/bugs/edge cases, determine if approach needs change
-    status: pending
+    status: completed
     dependencies:
       - run-comprehensive-tests
   - id: decision-point
     content: "Decision point: If approach flawed, pause and replan. If fixable, proceed. Only evaluate API changes if fixing without API changes fails."
-    status: pending
+    status: in_progress
     dependencies:
       - analyze-issues
   - id: evaluate-api-improvements
@@ -80,7 +80,7 @@ todos:
       - request-api-change-permission
   - id: fix-node-bridge
     content: Fix fs-bridge node bridge bugs if any found
-    status: pending
+    status: completed
     dependencies:
       - decision-point
       - request-api-change-permission

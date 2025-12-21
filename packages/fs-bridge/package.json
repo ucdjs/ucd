@@ -18,6 +18,10 @@
   "bugs": {
     "url": "https://github.com/ucdjs/ucd/issues"
   },
+  "imports": {
+    "#internal:bridge/node": "./src/bridges/node.ts",
+    "#internal:bridge/http": "./src/bridges/http.ts"
+  },
   "exports": {
     ".": "./dist/index.mjs",
     "./bridges/http": "./dist/bridges/http.mjs",

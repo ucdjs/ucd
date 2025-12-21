@@ -4,6 +4,7 @@ import fsp from "node:fs/promises";
 import nodePath from "node:path";
 import { trimTrailingSlash } from "@luxass/utils/path";
 import { createDebugger } from "@ucdjs-internal/shared";
+import { assertNotUNCPath } from "@ucdjs/path-utils";
 import { z } from "zod";
 import { defineFileSystemBridge } from "../define";
 
@@ -36,6 +37,9 @@ const NodeFileSystemBridge = defineFileSystemBridge({
     basePath: z.string(),
   }),
   setup({ options, resolveSafePath }) {
+    // Validate UNC paths before resolving
+    assertNotUNCPath(options.basePath);
+
     const basePath = nodePath.resolve(options.basePath);
 
     return {
