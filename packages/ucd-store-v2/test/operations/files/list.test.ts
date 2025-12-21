@@ -6,7 +6,6 @@ import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../../../src
 import { listFiles } from "../../../src/operations/files/list";
 
 describe("listFiles", () => {
-
   describe("local store (default behavior)", () => {
     it("should list files from local directory when it exists", async () => {
       let callCount = 0;
