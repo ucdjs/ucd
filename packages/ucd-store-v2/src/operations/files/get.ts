@@ -57,7 +57,7 @@ export async function getFile(
       );
     }
 
-    const localPath = join(context.basePath, `v${version}`, filePath);
+    const localPath = join(context.basePath, version, filePath);
 
     const fileExists = await context.fs.exists(localPath);
 

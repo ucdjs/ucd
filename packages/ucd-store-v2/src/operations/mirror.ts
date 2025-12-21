@@ -9,6 +9,7 @@ import {
   tryCatch,
 } from "@ucdjs-internal/shared";
 import { hasCapability } from "@ucdjs/fs-bridge";
+import { hasUCDFolderPath } from "@unicode-utils/core";
 import { dirname, join } from "pathe";
 import { computeFileHash, readLockfileOrDefault, writeLockfile, writeSnapshot } from "../core/lockfile";
 import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../errors";
@@ -296,8 +297,17 @@ export async function mirror(
 
       // build queue items with all paths pre-computed
       for (const filePath of filePaths) {
-        const localPath = join(context.basePath, `v${version}`, filePath);
-        const remotePath = `${version}/${filePath}`;
+        const localPath = join(context.basePath, version, filePath);
+
+        // Note:
+        // The store always uses `<version>/ucd/<file>` paths when mirroring,
+        // because the Unicode database also includes e.g. `<version>/ucdxml/<file>`,
+        // which is _not_ part of the store. Paths returned from the API are
+        // relative to their containing folder and do not include the `ucd` segment.
+        // By adding `ucd` here, we ensure that only files within `ucd` are mirrored
+        // and avoid accidentally pulling `ucdxml` or other subfolders not needed
+        // by the store.
+        const remotePath = join(version, hasUCDFolderPath(version) ? "ucd" : "", filePath);
 
         directoriesToCreate.add(dirname(localPath));
 
@@ -332,6 +342,8 @@ export async function mirror(
 
           return;
         }
+
+        debug?.(`Fetching file ${item.remotePath} from API`);
 
         // Fetch file content from API
         const { data, error, response } = await context.client.files.get(item.remotePath);
@@ -418,7 +430,7 @@ export async function mirror(
 
         // Update lockfile entry
         updatedLockfileVersions[version] = {
-          path: `v${version}/snapshot.json`,
+          path: `${version}/snapshot.json`,
           fileCount: allFiles.length,
           totalSize,
         };
