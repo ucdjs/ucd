@@ -32,6 +32,12 @@ todos:
     dependencies:
       - understand-resolvesafepath
       - create-security-test-folder
+  - id: create-http-security-tests
+    content: Create comprehensive HTTP bridge security test suite in packages/fs-bridge/test/security/http/ - path traversal, encoded attacks, boundary enforcement, excessive encoding, mixed attacks. Use mockFetch for HTTP mocking and test with different baseUrl.pathname configurations (shallow and deep).
+    status: completed
+    dependencies:
+      - create-test-suite-security
+      - understand-http-bridge
   - id: create-test-suite-edge-cases
     content: Create comprehensive edge case test suite - empty paths, /, ., .., etc. Add corresponding tests to path-utils if needed.
     status: completed
@@ -50,6 +56,7 @@ todos:
       - create-test-suite-relative-basepath
       - create-test-suite-absolute-basepath
       - create-test-suite-security
+      - create-http-security-tests
       - create-test-suite-edge-cases
       - create-test-suite-bridge-methods
   - id: analyze-issues
@@ -218,6 +225,7 @@ The fs-bridge is a security-critical layer between ucd-store and filesystems (no
 
 3. **Security Tests** (in dedicated `test/security/` folder)
 
+- **Node Bridge Security Tests** (in `test/security/node/`):
 - **Path traversal that goes outside basePath** (`../../etc/passwd` when basePath is `/home/user`) → Should fail ❌
 - **Path traversal that stays within basePath** (`subdir/../file.txt` when basePath is `/home/user`) → Should work ✅
 - Encoded traversal (`%2e%2e%2f`) that goes outside → Should fail ❌
@@ -228,6 +236,16 @@ The fs-bridge is a security-critical layer between ucd-store and filesystems (no
 - Boundary enforcement tests
 - CWD independence tests (for absolute basePath)
 - Mixed attack vectors
+- **HTTP Bridge Security Tests** (in `test/security/http/`):
+- Path traversal prevention with HTTP bridge (using `baseUrl.pathname` as basePath)
+- URL-encoded traversal attacks (`%2e%2e%2f`, `%252e%252e%252f`, etc.)
+- Boundary enforcement for different `baseUrl.pathname` configurations:
+    - Shallow pathname: `/api/v1/files`
+    - Deep pathname: `/api/v1/files/v16.0.0`
+- Excessive encoding scenarios
+- Mixed attack vectors (combined traversal and encoding)
+- Use `mockFetch` from `#test-utils/msw` for HTTP mocking
+- Verify actual HTTP requests made are correct
 - **CRITICAL**: The security check happens AFTER normalization - final resolved path must be within basePath
 - **Organize in dedicated `test/security/` folder for better discoverability and maintenance**
 - **Add corresponding tests to path-utils** to verify resolveSafePath handles these scenarios correctly
@@ -413,9 +431,16 @@ The fs-bridge is a security-critical layer between ucd-store and filesystems (no
 7. `packages/fs-bridge/test/bridges/http.test.ts` - HTTP bridge tests
 8. `packages/fs-bridge/test/security/` - **NEW**: Dedicated security test folder
 
+- **Node Bridge Security Tests** (`test/security/node/`):
 - `path-traversal.test.ts` - Path traversal attack tests
 - `encoded-attacks.test.ts` - Encoded attack vector tests
 - `boundary-enforcement.test.ts` - Boundary enforcement tests
 - `control-characters.test.ts` - Control character and null byte tests
 - `unc-paths.test.ts` - UNC path tests (if applicable)
 - `excessive-encoding.test.ts` - Excessive encoding tests
+- `mixed-attacks.test.ts` - Combined attack vectors
+- **HTTP Bridge Security Tests** (`test/security/http/`) - **TODO**:
+- `path-traversal.test.ts` - Path traversal prevention with HTTP bridge
+- `encoded-attacks.test.ts` - URL-encoded attack vectors
+- `boundary-enforcement.test.ts` - Boundary enforcement for different baseUrl.pathname configurations
+- `excessive-encoding.test.ts` - Excessive encoding scenarios
