@@ -66,7 +66,7 @@ todos:
       - run-comprehensive-tests
   - id: decision-point
     content: "Decision point: If approach flawed, pause and replan. If fixable, proceed. Only evaluate API changes if fixing without API changes fails."
-    status: in_progress
+    status: completed
     dependencies:
       - analyze-issues
   - id: evaluate-api-improvements
@@ -93,7 +93,7 @@ todos:
       - request-api-change-permission
   - id: fix-http-bridge
     content: Fix fs-bridge http bridge bugs if any found
-    status: pending
+    status: completed
     dependencies:
       - decision-point
       - request-api-change-permission
@@ -106,12 +106,12 @@ todos:
       - fix-http-bridge
   - id: security-audit
     content: Security audit - review all path resolution code, verify no traversal possible
-    status: pending
+    status: completed
     dependencies:
       - add-regression-tests
   - id: penetration-testing
     content: Penetration testing - try attack vectors, verify all blocked
-    status: pending
+    status: completed
     dependencies:
       - security-audit
 ---
