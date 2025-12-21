@@ -1,6 +1,5 @@
-import { createMemoryMockFS } from "#test-utils/fs-bridges";
-import { defineFileSystemBridge } from "@ucdjs/fs-bridge";
-import { assert, describe, expect, it, vi } from "vitest";
+import { createMemoryMockFS, createReadOnlyBridge } from "#test-utils/fs-bridges";
+import { assert, describe, expect, it } from "vitest";
 import {
   canUseLockfile,
   getLockfilePath,
@@ -10,14 +9,7 @@ import {
 } from "../../src/core/lockfile";
 import { UCDStoreInvalidManifestError } from "../../src/errors";
 
-const readOnlyBridge = defineFileSystemBridge({
-  meta: { name: "Read-Only", description: "Read Only bridge" },
-  setup: () => ({
-    read: vi.fn().mockResolvedValue("content"),
-    exists: vi.fn().mockResolvedValue(true),
-    listdir: vi.fn().mockResolvedValue([]),
-  }),
-})();
+const readOnlyBridge = createReadOnlyBridge();
 
 describe("canUseLockfile", () => {
   it("should return true for filesystem bridge with write capability", () => {
