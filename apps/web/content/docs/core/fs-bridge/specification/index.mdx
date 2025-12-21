@@ -1,5 +1,5 @@
 ---
-title: FS Bridge Specification
+title: Overview
 description: Complete specification for the FileSystemBridge interface
 ---
 
@@ -166,46 +166,7 @@ await bridge.rm("directory", { recursive: true, force: true });
 
 ## Capabilities System
 
-Bridges automatically detect which optional operations they support. The `optionalCapabilities` property is a map indicating which optional operations are available:
-
-```typescript
-interface HasOptionalCapabilityMap {
-  write: boolean;
-  mkdir: boolean;
-  rm: boolean;
-}
-```
-
-### Checking Capabilities
-
-Use the `hasCapability` function to check if a bridge supports an operation:
-
-```typescript
-import { hasCapability } from "@ucdjs/fs-bridge";
-
-if (hasCapability(bridge, "write")) {
-  // TypeScript now knows bridge.write exists
-  await bridge.write("file.txt", "content");
-}
-
-// Check multiple capabilities
-if (hasCapability(bridge, ["write", "mkdir"])) {
-  await bridge.write("file.txt", "content");
-  await bridge.mkdir("directory");
-}
-```
-
-### Asserting Capabilities
-
-Use `assertCapability` to throw an error if a capability is not available:
-
-```typescript
-import { assertCapability } from "@ucdjs/fs-bridge";
-
-assertCapability(bridge, "write");
-// TypeScript now knows bridge.write exists
-await bridge.write("file.txt", "content");
-```
+Bridges automatically detect which optional operations they support. For complete documentation on checking and asserting capabilities, see the [Capabilities documentation](/docs/core/fs-bridge/specification/capabilities).
 
 ## Hooks System
 
@@ -349,61 +310,7 @@ for (const entry of entries) {
 
 ## Error Handling
 
-The bridge system defines several error types:
-
-### BridgeBaseError
-
-Base class for all bridge errors.
-
-### BridgeGenericError
-
-Generic error wrapper that includes the original error.
-
-```typescript
-class BridgeGenericError extends BridgeBaseError {
-  public readonly originalError?: Error;
-}
-```
-
-### BridgeSetupError
-
-Thrown when bridge setup fails.
-
-```typescript
-class BridgeSetupError extends BridgeBaseError {
-  public readonly originalError?: Error;
-}
-```
-
-### BridgeUnsupportedOperation
-
-Thrown when attempting to use an optional operation that the bridge doesn't support.
-
-```typescript
-class BridgeUnsupportedOperation extends BridgeBaseError {
-  public readonly capability: OptionalCapabilityKey;
-}
-```
-
-### BridgeFileNotFound
-
-Thrown when a file or directory is not found.
-
-```typescript
-class BridgeFileNotFound extends BridgeBaseError {
-  public readonly path: string;
-}
-```
-
-### BridgeEntryIsDir
-
-Thrown when a file operation is attempted on a directory.
-
-```typescript
-class BridgeEntryIsDir extends BridgeBaseError {
-  public readonly path: string;
-}
-```
+The bridge system defines several error types for different error scenarios. For complete documentation on error types and error handling patterns, see the [Errors documentation](/docs/core/fs-bridge/specification/errors).
 
 ## Type Safety
 
