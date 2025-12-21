@@ -1,41 +1,38 @@
 import { createMemoryMockFS, createReadOnlyBridge } from "#test-utils/fs-bridges";
-import { createSnapshot } from "@ucdjs/lockfile/test-utils";
 import { defineFileSystemBridge } from "@ucdjs/fs-bridge";
-import { describe, expect, it, vi } from "vitest";
 import {
   computeFileHash,
   getSnapshotPath,
+  LockfileBridgeUnsupportedOperation,
+  LockfileInvalidError,
   readSnapshot,
   readSnapshotOrDefault,
   writeSnapshot,
-  LockfileBridgeUnsupportedOperation,
-  LockfileInvalidError,
 } from "@ucdjs/lockfile";
+import { createSnapshot } from "@ucdjs/lockfile/test-utils";
+import { describe, expect, it, vi } from "vitest";
 
 const readOnlyBridge = createReadOnlyBridge();
 
 describe("getSnapshotPath", () => {
-  it("should return correct path format with v prefix", () => {
-    const basePath = "/test/store";
+  it("should return relative path format", () => {
     const version = "16.0.0";
-    const result = getSnapshotPath(basePath, version);
+    const result = getSnapshotPath(version);
 
-    expect(result).toBe("/test/store/v16.0.0/snapshot.json");
+    expect(result).toBe("16.0.0/snapshot.json");
   });
 
-  it("should handle nested base paths correctly", () => {
-    const basePath = "/deep/nested/path/to/store";
+  it("should return relative path regardless of basePath", () => {
     const version = "15.1.0";
-    const result = getSnapshotPath(basePath, version);
+    const result = getSnapshotPath(version);
 
-    expect(result).toBe("/deep/nested/path/to/store/v15.1.0/snapshot.json");
+    expect(result).toBe("15.1.0/snapshot.json");
   });
 
   it("should handle different version formats", () => {
-    const basePath = "/test";
-    expect(getSnapshotPath(basePath, "16.0.0")).toBe("/test/v16.0.0/snapshot.json");
-    expect(getSnapshotPath(basePath, "15.1.0")).toBe("/test/v15.1.0/snapshot.json");
-    expect(getSnapshotPath(basePath, "1.0.0")).toBe("/test/v1.0.0/snapshot.json");
+    expect(getSnapshotPath("16.0.0")).toBe("16.0.0/snapshot.json");
+    expect(getSnapshotPath("15.1.0")).toBe("15.1.0/snapshot.json");
+    expect(getSnapshotPath("1.0.0")).toBe("1.0.0/snapshot.json");
   });
 });
 
@@ -95,7 +92,7 @@ describe("readSnapshot", () => {
       "Blocks.txt": "content2",
     });
 
-    const snapshotPath = getSnapshotPath(basePath, version);
+    const snapshotPath = getSnapshotPath(version);
     await fs.write!(snapshotPath, JSON.stringify(snapshot));
 
     const result = await readSnapshot(fs, basePath, version);
@@ -111,7 +108,7 @@ describe("readSnapshot", () => {
     const fs = createMemoryMockFS();
     const basePath = "/test";
     const version = "16.0.0";
-    const snapshotPath = getSnapshotPath(basePath, version);
+    const snapshotPath = getSnapshotPath(version);
 
     await fs.write!(snapshotPath, "");
 
@@ -128,7 +125,7 @@ describe("readSnapshot", () => {
     const fs = createMemoryMockFS();
     const basePath = "/test";
     const version = "16.0.0";
-    const snapshotPath = getSnapshotPath(basePath, version);
+    const snapshotPath = getSnapshotPath(version);
 
     await fs.write!(snapshotPath, "{ invalid json }");
 
@@ -145,7 +142,7 @@ describe("readSnapshot", () => {
     const fs = createMemoryMockFS();
     const basePath = "/test";
     const version = "16.0.0";
-    const snapshotPath = getSnapshotPath(basePath, version);
+    const snapshotPath = getSnapshotPath(version);
 
     await fs.write!(snapshotPath, JSON.stringify({
       unicodeVersion: "16.0.0",
@@ -168,7 +165,7 @@ describe("readSnapshot", () => {
       "UnicodeData.txt": "content",
     });
 
-    const snapshotPath = getSnapshotPath(basePath, version);
+    const snapshotPath = getSnapshotPath(version);
     await fs.write!(snapshotPath, JSON.stringify(snapshot));
 
     const result = await readSnapshot(fs, basePath, version);
@@ -190,7 +187,7 @@ describe("readSnapshot", () => {
       "extracted/DerivedBidiClass.txt": "content3",
     });
 
-    const snapshotPath = getSnapshotPath(basePath, version);
+    const snapshotPath = getSnapshotPath(version);
     await fs.write!(snapshotPath, JSON.stringify(snapshot));
 
     const result = await readSnapshot(fs, basePath, version);
@@ -215,7 +212,7 @@ describe("writeSnapshot", () => {
 
     await writeSnapshot(fs, basePath, version, snapshot);
 
-    const snapshotPath = getSnapshotPath(basePath, version);
+    const snapshotPath = getSnapshotPath(version);
     const written = await fs.read!(snapshotPath);
     const parsed = JSON.parse(written);
 
@@ -230,7 +227,7 @@ describe("writeSnapshot", () => {
       "UnicodeData.txt": "content",
     });
 
-    const snapshotDir = `/test/v${version}`;
+    const snapshotDir = `/test/${version}`;
     const dirExistsBefore = await fs.exists(snapshotDir);
     expect(dirExistsBefore).toBe(false);
 
@@ -250,7 +247,7 @@ describe("writeSnapshot", () => {
 
     await writeSnapshot(fs, basePath, version, snapshot);
 
-    const snapshotPath = getSnapshotPath(basePath, version);
+    const snapshotPath = getSnapshotPath(version);
     const written = await fs.read!(snapshotPath);
 
     expect(() => JSON.parse(written)).not.toThrow();
@@ -300,7 +297,7 @@ describe("writeSnapshot", () => {
       "UnicodeData.txt": "content",
     });
 
-    const snapshotDir = `/test/v${version}`;
+    const snapshotDir = `/test/${version}`;
     await fs.mkdir!(snapshotDir);
 
     // Should not throw
@@ -317,7 +314,7 @@ describe("readSnapshotOrDefault", () => {
       "UnicodeData.txt": "content",
     });
 
-    const snapshotPath = getSnapshotPath(basePath, version);
+    const snapshotPath = getSnapshotPath(version);
     await fs.write!(snapshotPath, JSON.stringify(snapshot));
 
     const result = await readSnapshotOrDefault(fs, basePath, version);
@@ -339,7 +336,7 @@ describe("readSnapshotOrDefault", () => {
     const fs = createMemoryMockFS();
     const basePath = "/test";
     const version = "16.0.0";
-    const snapshotPath = getSnapshotPath(basePath, version);
+    const snapshotPath = getSnapshotPath(version);
 
     await fs.write!(snapshotPath, "");
 
@@ -352,7 +349,7 @@ describe("readSnapshotOrDefault", () => {
     const fs = createMemoryMockFS();
     const basePath = "/test";
     const version = "16.0.0";
-    const snapshotPath = getSnapshotPath(basePath, version);
+    const snapshotPath = getSnapshotPath(version);
 
     await fs.write!(snapshotPath, "{ invalid json }");
 
@@ -365,7 +362,7 @@ describe("readSnapshotOrDefault", () => {
     const fs = createMemoryMockFS();
     const basePath = "/test";
     const version = "16.0.0";
-    const snapshotPath = getSnapshotPath(basePath, version);
+    const snapshotPath = getSnapshotPath(version);
 
     await fs.write!(snapshotPath, JSON.stringify({
       unicodeVersion: "16.0.0",

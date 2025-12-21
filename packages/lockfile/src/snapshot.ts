@@ -23,7 +23,7 @@ export async function readSnapshot(
   basePath: string,
   version: string,
 ): Promise<Snapshot> {
-  const snapshotPath = getSnapshotPath(basePath, version);
+  const snapshotPath = getSnapshotPath(version);
   debug?.("Reading snapshot from:", snapshotPath);
 
   const snapshotData = await fs.read(snapshotPath);
@@ -79,7 +79,7 @@ export async function writeSnapshot(
     return;
   }
 
-  const snapshotPath = getSnapshotPath(basePath, version);
+  const snapshotPath = getSnapshotPath(version);
   const snapshotDir = dirname(snapshotPath);
 
   debug?.("Writing snapshot to:", snapshotPath);

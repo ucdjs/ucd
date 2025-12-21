@@ -526,12 +526,18 @@ importers:
       '@luxass/utils':
         specifier: catalog:prod
         version: 2.7.2
+      '@ucdjs-internal/shared':
+        specifier: workspace:*
+        version: link:../shared
       '@ucdjs/client':
         specifier: workspace:*
         version: link:../client
       '@ucdjs/env':
         specifier: workspace:*
         version: link:../env
+      '@ucdjs/lockfile':
+        specifier: workspace:*
+        version: link:../lockfile
       '@ucdjs/schema-gen':
         specifier: workspace:*
         version: link:../schema-gen
