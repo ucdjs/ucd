@@ -1,0 +1,9 @@
+{
+  "title": "FS Bridge",
+  "pages": [
+    "index",
+    "bridges",
+    "hooks",
+    "specification"
+  ]
+}
