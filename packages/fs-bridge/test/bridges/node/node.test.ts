@@ -1,8 +1,8 @@
+import NodeFileSystemBridge from "#internal:bridge/node";
 import { flattenFilePaths } from "@ucdjs-internal/shared";
 import { describe, expect, it } from "vitest";
 import { testdir } from "vitest-testdirs";
-import { assertCapability } from "../../src";
-import NodeFileSystemBridge from "../../src/bridges/node";
+import { assertCapability } from "../../../src";
 
 describe("node fs-bridge", () => {
   describe("read operation", () => {
