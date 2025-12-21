@@ -2,7 +2,9 @@
 import type { Prettify } from "@luxass/utils";
 import type { CLIArguments } from "../../cli-utils";
 import type { CLIStoreCmdSharedFlags } from "./_shared";
-import { UCDStoreUnsupportedFeature } from "@ucdjs/ucd-store";
+import fs from "node:fs/promises";
+import { join } from "node:path";
+import { UCDStoreGenericError } from "@ucdjs/ucd-store-v2";
 import { red } from "farver/fast";
 import { printHelp } from "../../cli-utils";
 import { assertRemoteOrStoreDir, createStoreFromFlags, runVersionPrompt, SHARED_FLAGS } from "./_shared";
@@ -10,7 +12,6 @@ import { assertRemoteOrStoreDir, createStoreFromFlags, runVersionPrompt, SHARED_
 export interface CLIStoreInitCmdOptions {
   flags: CLIArguments<Prettify<CLIStoreCmdSharedFlags & {
     dryRun?: boolean;
-    force?: boolean;
   }>>;
   versions: string[];
 }
@@ -24,7 +25,7 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
       tables: {
         Flags: [
           ...SHARED_FLAGS,
-          ["--force", "Overwrite existing files if they already exist."],
+          ["--dry-run", "Show what would be done without making changes."],
           ["--help (-h)", "See all available flags."],
         ],
       },
@@ -34,15 +35,28 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
 
   const {
     storeDir,
-    force,
     remote,
     baseUrl,
     include: patterns,
+    lockfileOnly,
+    force,
     dryRun,
   } = flags;
 
   try {
     assertRemoteOrStoreDir(flags);
+
+    // If lockfile-only mode, check if lockfile exists
+    if (lockfileOnly && storeDir && !remote) {
+      // Use the same relative path that getLockfilePath returns
+      const lockfilePath = join(storeDir, ".ucd-store.lock");
+      const lockfileExists = await fs.access(lockfilePath).then(() => true).catch(() => false);
+      if (!lockfileExists) {
+        console.error(red(`\n❌ Error: Lockfile not found at ${lockfilePath}`));
+        console.error("Cannot proceed in --lockfile-only mode without an existing lockfile.");
+        return;
+      }
+    }
 
     let selectedVersions = versions;
 
@@ -57,42 +71,28 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
       selectedVersions = pickedVersions;
     }
 
-    const store = await createStoreFromFlags({
+    // Create store with bootstrap enabled (unless lockfile-only)
+    // The store creation will automatically bootstrap if needed
+    await createStoreFromFlags({
       baseUrl,
       storeDir,
       remote,
       include: patterns,
       versions: selectedVersions,
-    });
-
-    await store.init({
       force,
-      dryRun,
+      lockfileOnly,
     });
-
-    if (!store.initialized) {
-      console.error(red(`\n❌ Error: Store initialization failed.`));
-      console.error("Please check the store configuration and try again.");
-      console.error("This output may help you debug the issue:");
-
-      // TODO: utilize store status with a pretty printer.
-
-      return;
-    }
 
     if (dryRun) {
-      console.info("Store initialized successfully in dry-run mode.");
+      console.info("Store initialization would be successful in dry-run mode.");
       console.info("No files have been written to disk.");
     } else {
       console.info("Store initialized successfully.");
+      console.info(`Lockfile created with ${selectedVersions.length} version(s): ${selectedVersions.join(", ")}`);
     }
   } catch (err) {
-    if (err instanceof UCDStoreUnsupportedFeature) {
-      console.error(red(`\n❌ Error: Unsupported feature:`));
-      console.error(`  ${err.message}`);
-      console.error("");
-      console.error("This store does not support the init operation.");
-      console.error("Please check the store capabilities or use a different store type.");
+    if (err instanceof UCDStoreGenericError) {
+      console.error(red(`\n❌ Error: ${err.message}`));
       return;
     }
 
@@ -106,7 +106,6 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
     console.error(red(`\n❌ Error initializing store:`));
     console.error(`  ${message}`);
     console.error("Please check the store configuration and try again.");
-    console.error("If the issue persists, consider running with --dry-run to see more details.");
     console.error("If you believe this is a bug, please report it at https://github.com/ucdjs/ucd/issues");
   }
 }

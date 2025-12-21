@@ -296,7 +296,7 @@ export async function mirror(
 
       // build queue items with all paths pre-computed
       for (const filePath of filePaths) {
-        const localPath = join(context.basePath, version, filePath);
+        const localPath = join(context.basePath, `v${version}`, filePath);
         const remotePath = `${version}/${filePath}`;
 
         directoriesToCreate.add(dirname(localPath));
