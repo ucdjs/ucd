@@ -9,8 +9,9 @@ import { assertRemoteOrStoreDir, createStoreFromFlags, SHARED_FLAGS } from "./_s
 
 export interface CLIStoreSyncCmdOptions {
   flags: CLIArguments<Prettify<CLIStoreCmdSharedFlags & {
-    strategy?: "add" | "update";
-    mirror?: boolean;
+    concurrency?: number;
+    removeUnavailable?: boolean;
+    clean?: boolean;
   }>>;
   versions: string[];
 }
@@ -18,14 +19,15 @@ export interface CLIStoreSyncCmdOptions {
 export async function runSyncStore({ flags, versions }: CLIStoreSyncCmdOptions) {
   if (flags?.help || flags?.h) {
     printHelp({
-      headline: "Sync UCD Store lockfile with available versions",
+      headline: "Sync lockfile with API and mirror files",
       commandName: "ucd store sync",
       usage: "[...versions] [...flags]",
       tables: {
         Flags: [
           ...SHARED_FLAGS,
-          ["--strategy", "Sync strategy: 'add' (default) to add new versions, 'update' to add new and remove unavailable."],
-          ["--mirror", "Automatically mirror files after syncing versions."],
+          ["--concurrency", "Maximum concurrent downloads (default: 5)."],
+          ["--remove-unavailable", "Remove versions from lockfile that are not available in API."],
+          ["--clean", "Remove orphaned files (files not in expected files list)."],
           ["--help (-h)", "See all available flags."],
         ],
       },
@@ -39,33 +41,58 @@ export async function runSyncStore({ flags, versions }: CLIStoreSyncCmdOptions) 
     baseUrl,
     include: patterns,
     exclude: excludePatterns,
-    lockfileOnly,
     force,
-    strategy = "add",
-    mirror: shouldMirror,
+    concurrency = 5,
+    removeUnavailable,
+    clean,
   } = flags;
 
   try {
     assertRemoteOrStoreDir(flags);
 
+    // Sync requires local store (needs write capability)
+    if (remote) {
+      console.error(red(`\n❌ Error: Sync operation requires a local store directory.`));
+      console.error("Use --store-dir to specify a local directory for syncing.");
+      return;
+    }
+
+    if (!storeDir) {
+      console.error(red(`\n❌ Error: Store directory must be specified.`));
+      return;
+    }
+
     const store = await createStoreFromFlags({
       baseUrl,
       storeDir,
-      remote,
+      remote: false,
       include: patterns,
       exclude: excludePatterns,
       versions,
       force,
-      lockfileOnly,
+      lockfileOnly: false,
     });
 
-    if (lockfileOnly) {
-      console.info(yellow("⚠ Read-only mode: Showing what would change without updating lockfile."));
+    // Check write capability
+    // assertWriteCapability(store);
+
+    console.info("Starting sync operation...");
+    if (versions.length > 0) {
+      console.info(`Syncing ${versions.length} version(s): ${versions.join(", ")}`);
+    } else {
+      console.info("Syncing all versions in lockfile...");
     }
 
     const [syncResult, syncError] = await store.sync({
-      strategy: force ? "update" : strategy,
-      mirror: shouldMirror,
+      versions: versions.length > 0 ? versions : undefined,
+      force,
+      concurrency,
+      removeUnavailable,
+      cleanOrphaned: clean,
+      filters: {
+        include: patterns,
+        exclude: excludePatterns,
+      },
     });
 
     if (syncError) {
@@ -82,41 +109,62 @@ export async function runSyncStore({ flags, versions }: CLIStoreSyncCmdOptions) 
     // Display sync results
     console.info(green("\n✓ Sync completed successfully\n"));
 
-    if (syncResult.added.length > 0) {
-      console.info(green(`Added ${syncResult.added.length} version(s):`));
-      for (const version of syncResult.added) {
-        console.info(`  + ${version}`);
+    // Display lockfile update results
+    if (syncResult.added.length > 0 || syncResult.removed.length > 0 || syncResult.unchanged.length > 0) {
+      console.info("Lockfile updated:");
+      if (syncResult.added.length > 0) {
+        console.info(green(`  Added: ${syncResult.added.length} version(s): ${syncResult.added.join(", ")}`));
       }
-      console.info("");
-    }
-
-    if (syncResult.removed.length > 0) {
-      console.info(yellow(`Removed ${syncResult.removed.length} version(s):`));
-      for (const version of syncResult.removed) {
-        console.info(`  - ${version}`);
+      if (syncResult.removed.length > 0) {
+        console.info(yellow(`  Removed: ${syncResult.removed.length} version(s): ${syncResult.removed.join(", ")}`));
       }
-      console.info("");
-    }
-
-    if (syncResult.unchanged.length > 0) {
-      console.info(`Unchanged ${syncResult.unchanged.length} version(s):`);
-      for (const version of syncResult.unchanged) {
-        console.info(`  = ${version}`);
+      if (syncResult.unchanged.length > 0) {
+        console.info(`  Unchanged: ${syncResult.unchanged.length} version(s): ${syncResult.unchanged.join(", ")}`);
       }
       console.info("");
     }
 
     console.info(`Total versions in lockfile: ${syncResult.versions.length}`);
 
-    if (shouldMirror && syncResult.mirrorReport) {
-      console.info(green("\n✓ Mirroring completed\n"));
+    if (syncResult.mirrorReport) {
       const report = syncResult.mirrorReport;
-      console.info(`Mirrored ${report.versions.size} version(s)`);
       if (report.summary) {
-        console.info(`  Files downloaded: ${report.summary.counts.downloaded}`);
-        console.info(`  Files skipped: ${report.summary.counts.skipped}`);
-        console.info(`  Total size: ${(report.summary.counts.totalSize / 1024 / 1024).toFixed(2)} MB`);
+        const { counts, duration, storage } = report.summary;
+        console.info(`Summary:`);
+        console.info(`  Versions processed: ${report.versions.size}`);
+        console.info(`  Files downloaded: ${green(String(counts.downloaded))}`);
+        console.info(`  Files skipped: ${yellow(String(counts.skipped))}`);
+        console.info(`  Files failed: ${counts.failed > 0 ? red(String(counts.failed)) : String(counts.failed)}`);
+        console.info(`  Total size: ${storage.totalSize}`);
+        console.info(`  Duration: ${(duration / 1000).toFixed(2)}s`);
+        console.info("");
       }
+
+      // Show per-version details
+      for (const [version, versionReport] of report.versions) {
+        console.info(`Version ${version}:`);
+        console.info(`  Files: ${versionReport.counts.downloaded} downloaded, ${versionReport.counts.skipped} skipped`);
+        if (versionReport.counts.failed > 0) {
+          console.info(`  ${red(`Failed: ${versionReport.counts.failed}`)}`);
+        }
+        console.info("");
+      }
+    }
+
+    // Show removed orphaned files if any
+    if (syncResult.removedFiles.size > 0) {
+      console.info(yellow("\n⚠ Orphaned files removed:\n"));
+      for (const [version, removedFiles] of syncResult.removedFiles) {
+        if (removedFiles.length > 0) {
+          console.info(`Version ${version}:`);
+          for (const filePath of removedFiles) {
+            console.info(`  - ${filePath}`);
+          }
+          console.info("");
+        }
+      }
+    } else if (clean) {
+      console.info(green("\n✓ No orphaned files found\n"));
     }
   } catch (err) {
     if (err instanceof UCDStoreGenericError) {
@@ -137,4 +185,3 @@ export async function runSyncStore({ flags, versions }: CLIStoreSyncCmdOptions) 
     console.error("If you believe this is a bug, please report it at https://github.com/ucdjs/ucd/issues");
   }
 }
-

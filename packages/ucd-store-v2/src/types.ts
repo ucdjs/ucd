@@ -175,10 +175,10 @@ export interface UCDStoreFileOperations {
 
 export interface UCDStoreOperations {
   /**
-   * Synchronizes the store lockfile with available versions from ucd-config.json.
-   * This is a metadata-level operation that updates which versions the store knows about.
+   * Synchronizes the store lockfile with available versions from API and mirrors files.
+   * Updates lockfile with new versions, downloads missing files, and optionally removes orphaned files/unavailable versions.
    *
-   * Example: Fetches the list of available Unicode versions from ucd-config.json and updates the lockfile.
+   * Example: Fetches available versions from API, updates lockfile, mirrors files, and optionally cleans up orphaned files.
    *
    * @experimental This method is under development and may change
    */

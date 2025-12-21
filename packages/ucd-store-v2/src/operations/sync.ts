@@ -1,25 +1,51 @@
 import type { OperationResult } from "@ucdjs-internal/shared";
 import type { StoreError } from "../errors";
-import type { InternalUCDStoreContext } from "../types";
+import type { InternalUCDStoreContext, SharedOperationOptions } from "../types";
 import type { MirrorReport } from "./mirror";
-import { tryCatch } from "@ucdjs-internal/shared";
-import { readLockfileOrDefault, writeLockfile } from "../core/lockfile";
+import {
+  createConcurrencyLimiter,
+  createDebugger,
+  tryCatch,
+} from "@ucdjs-internal/shared";
+import { hasCapability } from "@ucdjs/fs-bridge";
+import { join } from "pathe";
+import { getExpectedFilePaths } from "../core/files";
+import { readLockfileOrDefault, readSnapshotOrDefault, writeLockfile } from "../core/lockfile";
+import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../errors";
+import { listFiles } from "./files/list";
 import { mirror } from "./mirror";
 
-export interface SyncOptions {
+const debug = createDebugger("ucdjs:ucd-store:sync");
+
+export interface SyncOptions extends SharedOperationOptions {
   /**
-   * Whether to automatically mirror files after syncing versions.
-   * @default false
+   * Specific versions to sync. If not provided, syncs all versions in lockfile.
    */
-  mirror?: boolean;
+  versions?: string[];
 
   /**
-   * Strategy for handling version updates
-   * - "add": Only add new versions (keep existing)
-   * - "update": Add new, remove unavailable versions
-   * @default "add"
+   * Whether to re-download files even if they already exist locally.
+   * @default false
    */
-  strategy?: "add" | "update";
+  force?: boolean;
+
+  /**
+   * Maximum concurrent downloads
+   * @default 5
+   */
+  concurrency?: number;
+
+  /**
+   * Remove versions from lockfile that are not available in API.
+   * @default false
+   */
+  removeUnavailable?: boolean;
+
+  /**
+   * Remove orphaned files (files not in expected files list for each version).
+   * @default false
+   */
+  cleanOrphaned?: boolean;
 }
 
 export interface SyncResult {
@@ -31,7 +57,7 @@ export interface SyncResult {
   added: string[];
 
   /**
-   * Versions that were removed from the lockfile (if strategy: "update")
+   * Versions that were removed from the lockfile (if removeUnavailable was true)
    */
   removed: string[];
 
@@ -41,19 +67,24 @@ export interface SyncResult {
   unchanged: string[];
 
   /**
-   * Current versions in the lockfile after sync
+   * All versions in lockfile after sync
    */
   versions: string[];
 
   /**
-   * Report of mirrored versions (if mirroring was performed)
+   * Report of mirrored files (same structure as mirror operation)
    */
-  mirrored?: MirrorReport;
+  mirrorReport?: MirrorReport;
+
+  /**
+   * Files that were removed (orphaned files, only if cleanOrphaned was true)
+   */
+  removedFiles: Map<string, string[]>;
 }
 
 /**
- * Synchronizes the store lockfile with available versions from ucd-config.json.
- * Updates which versions the store knows about (metadata-level operation).
+ * Synchronizes the store lockfile with available versions from API and mirrors files.
+ * Updates lockfile, downloads missing files, and optionally removes orphaned files/unavailable versions.
  *
  * @param {InternalUCDStoreContext} context - Internal store context
  * @param {SyncOptions} [options] - Sync options
@@ -64,10 +95,17 @@ export async function sync(
   options?: SyncOptions,
 ): Promise<OperationResult<SyncResult, StoreError>> {
   return tryCatch(async () => {
-    const strategy = options?.strategy ?? "add";
-    const shouldMirror = options?.mirror ?? false;
+    if (!hasCapability(context.fs, ["mkdir", "write"])) {
+      throw new UCDStoreGenericError("Filesystem does not support required write operations for syncing.");
+    }
 
-    // Get available versions from config (via client.config.get())
+    const concurrency = options?.concurrency ?? 5;
+    const force = options?.force ?? false;
+    const removeUnavailable = options?.removeUnavailable ?? false;
+    const cleanOrphaned = options?.cleanOrphaned ?? false;
+
+    // Step 1: Fetch available versions from API
+    debug?.("Fetching available versions from API");
     const configResult = await context.client.config.get();
     let availableVersions: string[] = [];
 
@@ -76,7 +114,7 @@ export async function sync(
       const apiResult = await context.client.versions.list();
       if (apiResult.error) throw apiResult.error;
       if (!apiResult.data) {
-        throw new Error("Failed to fetch Unicode versions: no data returned");
+        throw new UCDStoreGenericError("Failed to fetch Unicode versions: no data returned");
       }
       availableVersions = apiResult.data.map(({ version }) => version);
     } else {
@@ -87,64 +125,42 @@ export async function sync(
         const apiResult = await context.client.versions.list();
         if (apiResult.error) throw apiResult.error;
         if (!apiResult.data) {
-          throw new Error("Failed to fetch Unicode versions: no data returned");
+          throw new UCDStoreGenericError("Failed to fetch Unicode versions: no data returned");
         }
         availableVersions = apiResult.data.map(({ version }) => version);
       }
     }
 
+    debug?.(`Found ${availableVersions.length} available versions from API`);
+
+    // Step 2: Read current lockfile
     const lockfile = await readLockfileOrDefault(context.fs, context.lockfilePath);
     const currentVersions = new Set(lockfile ? Object.keys(lockfile.versions) : []);
-    const apiVersions = new Set(availableVersions);
 
-    const added: string[] = [];
-    const removed: string[] = [];
-    const unchanged: string[] = [];
+    // Step 3: Determine which versions to add/remove/keep
+    const availableVersionsSet = new Set(availableVersions);
+    const added = availableVersions.filter((v) => !currentVersions.has(v));
+    const unchanged = Array.from(currentVersions).filter((v) => availableVersionsSet.has(v));
 
-    // Find added versions (in API/config but not in lockfile)
-    for (const version of apiVersions) {
-      if (!currentVersions.has(version)) {
-        added.push(version);
-      }
-    }
-
-    // Find unchanged versions based on strategy
-    if (strategy === "add") {
-      // All current versions are unchanged (kept)
-      unchanged.push(...currentVersions);
-    } else {
-      // Only versions in both API/config and lockfile are unchanged
-      for (const version of currentVersions) {
-        if (apiVersions.has(version)) {
-          unchanged.push(version);
-        }
-      }
-    }
-
-    // For "update" strategy, find removed versions (in lockfile but not in API/config)
-    if (strategy === "update") {
-      for (const version of currentVersions) {
-        if (!apiVersions.has(version)) {
-          removed.push(version);
-        }
-      }
-    }
-
-    // Determine versions based on strategy
+    let removed: string[] = [];
     let finalVersions: string[];
-    if (strategy === "add") {
-      // Keep all existing versions and add new ones
-      finalVersions = [...currentVersions, ...added];
+
+    if (removeUnavailable) {
+      // Remove versions not available in API
+      removed = Array.from(currentVersions).filter((v) => !availableVersionsSet.has(v));
+      finalVersions = availableVersions; // Only keep versions available in API
     } else {
-      // Use only API/config versions (removes unavailable versions)
-      finalVersions = [...apiVersions];
+      // Keep all existing versions + add new ones
+      finalVersions = [...currentVersions, ...added];
     }
 
-    // Update lockfile with final versions
-    await writeLockfile(
-      context.fs,
-      context.lockfilePath,
-      {
+    debug?.(
+      `Lockfile update: ${added.length} added, ${removed.length} removed, ${unchanged.length} unchanged`,
+    );
+
+    // Step 4: Update lockfile
+    if (lockfile || added.length > 0 || removed.length > 0) {
+      await writeLockfile(context.fs, context.lockfilePath, {
         lockfileVersion: 1,
         versions: Object.fromEntries(
           finalVersions.map((v) => {
@@ -159,27 +175,119 @@ export async function sync(
             ];
           }),
         ),
-      },
-    );
+      });
+    }
 
-    const result: SyncResult = {
+    // Step 5: Determine which versions to sync files for
+    const versionsToSync = options?.versions ?? finalVersions;
+
+    // Validate specified versions exist in lockfile
+    if (options?.versions && options.versions.length > 0) {
+      for (const version of options.versions) {
+        if (!finalVersions.includes(version)) {
+          throw new UCDStoreVersionNotFoundError(version);
+        }
+      }
+    }
+
+    if (versionsToSync.length === 0) {
+      debug?.("No versions to sync");
+      return {
+        timestamp: new Date().toISOString(),
+        added,
+        removed,
+        unchanged,
+        versions: finalVersions,
+        removedFiles: new Map(),
+      };
+    }
+
+    debug?.(`Starting sync for ${versionsToSync.length} version(s) with concurrency=${concurrency}, force=${force}`);
+
+    // Step 6: Mirror files for all versions
+    const [mirrorReport, mirrorError] = await mirror(context, {
+      versions: versionsToSync,
+      force,
+      concurrency,
+      filters: options?.filters,
+    });
+
+    if (mirrorError) {
+      throw mirrorError;
+    }
+
+    // Step 7: Remove orphaned files if cleanOrphaned flag is set
+    const removedFiles = new Map<string, string[]>();
+
+    if (cleanOrphaned) {
+      const limit = createConcurrencyLimiter(concurrency);
+
+      for (const version of versionsToSync) {
+        // Get expected files from snapshot if available, otherwise from API
+        let expectedFiles: string[] = [];
+        const snapshot = await readSnapshotOrDefault(context.fs, context.basePath, version);
+
+        if (snapshot && snapshot.files) {
+          // Use files from snapshot
+          expectedFiles = Object.keys(snapshot.files);
+        } else {
+          // Fallback to API
+          expectedFiles = await getExpectedFilePaths(context.client, version);
+        }
+
+        // Apply filters
+        const filteredExpectedFiles = expectedFiles.filter((filePath) =>
+          context.filter(filePath, options?.filters),
+        );
+
+        const expectedFilesSet = new Set(filteredExpectedFiles);
+
+        // Get all actual files
+        const [actualFiles, listError] = await listFiles(context, version, {
+          allowApi: false,
+          filters: options?.filters,
+        });
+
+        if (listError) {
+          debug?.(`Failed to list files for version ${version} when checking orphaned files:`, listError);
+          continue;
+        }
+
+        // Find orphaned files (files not in expected files)
+        const orphanedFiles = actualFiles.filter((filePath) => !expectedFilesSet.has(filePath));
+
+        if (orphanedFiles.length > 0) {
+          removedFiles.set(version, []);
+
+          // Remove orphaned files
+          await Promise.all(
+            orphanedFiles.map((filePath) =>
+              limit(async () => {
+                try {
+                  const localPath = join(context.basePath, `v${version}`, filePath);
+                  if (await context.fs.exists(localPath)) {
+                    await context.fs.rm!(localPath);
+                    removedFiles.get(version)!.push(filePath);
+                    debug?.(`Removed orphaned file: ${filePath} for version ${version}`);
+                  }
+                } catch (err) {
+                  debug?.(`Failed to remove orphaned file ${filePath} for version ${version}:`, err);
+                }
+              }),
+            ),
+          );
+        }
+      }
+    }
+
+    return {
       timestamp: new Date().toISOString(),
       added,
       removed,
       unchanged,
       versions: finalVersions,
+      mirrorReport,
+      removedFiles,
     };
-
-    // If we should mirror new versions
-    if (shouldMirror && added.length > 0) {
-      const [mirrorReport, mirrorErr] = await mirror(context, {
-        versions: added,
-      });
-
-      if (mirrorErr) throw mirrorErr;
-      result.mirrored = mirrorReport;
-    }
-
-    return result;
   });
 }

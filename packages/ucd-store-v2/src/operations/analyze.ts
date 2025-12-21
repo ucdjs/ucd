@@ -104,8 +104,9 @@ export async function analyze(
       const expectedFiles = await getExpectedFilePaths(context.client, version);
 
       // Get files from store
+      // Use allowApi: true to support HTTP bridge (read-only stores)
       const [actualFiles, error] = await listFiles(context, version, {
-        allowApi: false,
+        allowApi: true,
         filters: options?.filters,
       });
 

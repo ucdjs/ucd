@@ -45,26 +45,31 @@ export async function runMirrorStore({ flags, versions }: CLIStoreMirrorCmdOptio
   try {
     assertRemoteOrStoreDir(flags);
 
+    // Mirror requires local store (needs write capability)
     if (remote) {
       console.error(red(`\n❌ Error: Mirror operation requires a local store directory.`));
       console.error("Use --store-dir to specify a local directory for mirroring.");
       return;
     }
 
+    if (!storeDir) {
+      console.error(red(`\n❌ Error: Store directory must be specified.`));
+      return;
+    }
+
     const store = await createStoreFromFlags({
       baseUrl,
       storeDir,
-      remote,
+      remote: false,
       include: patterns,
       exclude: excludePatterns,
       versions,
       force,
-      lockfileOnly,
+      lockfileOnly: false,
     });
 
-    if (lockfileOnly) {
-      console.info(yellow("⚠ Read-only mode: Files will be downloaded but lockfile will not be updated."));
-    }
+    // Check write capability
+    // assertWriteCapability(store);
 
     console.info("Starting mirror operation...");
     if (versions.length > 0) {

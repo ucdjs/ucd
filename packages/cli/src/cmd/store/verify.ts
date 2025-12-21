@@ -14,7 +14,7 @@ export interface CLIStoreVerifyCmdOptions {
   versions: string[];
 }
 
-export async function runVerifyStore({ flags, versions }: CLIStoreVerifyCmdOptions) {
+export async function runVerifyStore({ flags }: CLIStoreVerifyCmdOptions) {
   if (flags?.help || flags?.h) {
     printHelp({
       headline: "Verify UCD Store integrity",
@@ -37,37 +37,55 @@ export async function runVerifyStore({ flags, versions }: CLIStoreVerifyCmdOptio
     baseUrl,
     include: patterns,
     exclude: excludePatterns,
-    lockfileOnly,
     json,
   } = flags;
 
   try {
     assertRemoteOrStoreDir(flags);
 
-    // For verify, we need to create a store with verify enabled
-    // But verify is called during store creation, so we need to handle it differently
-    // Actually, verify is an internal operation, so we'll need to read the lockfile
-    // and check versions against the API manually
+    const store = await createStoreFromFlags({
+      baseUrl,
+      storeDir,
+      remote,
+      include: patterns,
+      exclude: excludePatterns,
+      lockfileOnly: true,
+    });
 
-    if (remote || !storeDir) {
-      console.error(red(`\n❌ Error: Verify operation requires a local store directory.`));
-      return;
-    }
+    // Note: lockfileOnly is used to create read-only store
 
-    // Read lockfile to get versions
+    // Read lockfile to get versions - works with both local and remote stores
     const { readLockfile, getLockfilePath } = await import("@ucdjs/ucd-store-v2/core/lockfile");
     const { createUCDClient } = await import("@ucdjs/client");
     const { UCDJS_API_BASE_URL } = await import("@ucdjs/env");
 
-    const lockfilePath = getLockfilePath(storeDir);
-    const fs = await import("@ucdjs/fs-bridge/bridges/node").then((m) => m.default);
-    if (!fs) {
-      console.error(red(`\n❌ Error: Could not load Node.js filesystem bridge.`));
+    let lockfilePath: string;
+    if (remote) {
+      // For remote stores, lockfile path is relative to base URL
+      lockfilePath = getLockfilePath("");
+    } else {
+      if (!storeDir) {
+        console.error(red(`\n❌ Error: Store directory must be specified.`));
+        return;
+      }
+      lockfilePath = getLockfilePath(storeDir);
+    }
+
+    const bridge = store.fs;
+    let lockfile;
+    try {
+      lockfile = await readLockfile(bridge, lockfilePath);
+    } catch (_err) {
+      if (remote) {
+        console.error(red(`\n❌ Error: Could not read lockfile from remote store.`));
+        console.error("Verify operation requires a lockfile. For remote stores, the lockfile must be accessible via the API.");
+      } else {
+        console.error(red(`\n❌ Error: Lockfile not found at ${lockfilePath}`));
+        console.error("Run 'ucd store init' to create a new store.");
+      }
       return;
     }
 
-    const bridge = fs({ basePath: storeDir });
-    const lockfile = await readLockfile(bridge, lockfilePath);
     const lockfileVersions = Object.keys(lockfile.versions);
 
     // Create client to fetch available versions
