@@ -3,6 +3,7 @@ import {
   FailedToDecodePathError,
   IllegalCharacterInPathError,
   MaximumDecodingIterationsExceededError,
+  PathTraversalError,
 } from "../src/errors";
 import { decodePathSafely, isWithinBase, resolveSafePath } from "../src/security";
 import { isCaseSensitive } from "../src/utils";
@@ -234,5 +235,33 @@ describe("resolveSafePath", () => {
     expect.soft(resolveSafePath("/home/user", "/")).toBe("/home/user");
     expect.soft(resolveSafePath("/var/www", "/")).toBe("/var/www");
     expect.soft(resolveSafePath("base", "/")).toBe("/base");
+  });
+
+  describe("known limitations", () => {
+    it.todo("should detect traversal attempts with spaces between path segments (e.g., '.. /.. /etc/passwd')", () => {
+      // Currently, spaces in traversal paths are not normalized before traversal detection.
+      // For example, ".. /.. /etc/passwd" (with space between ".." and "/") creates a literal
+      // path with spaces rather than being detected as traversal. This is because:
+      // 1. The path is trimmed (removing leading/trailing whitespace)
+      // 2. The path is decoded (%20 -> space)
+      // 3. But spaces within path segments are not normalized before checking for traversal
+      //
+      // Expected behavior: Spaces between traversal sequences should be normalized or the path
+      // should be detected as traversal. For example:
+      // - ".. /.. /etc/passwd" should throw PathTraversalError
+      // - "..%20/..%20/etc/passwd" should throw PathTraversalError after decoding
+      //
+      // Current behavior: These paths create literal paths with spaces and do not throw errors.
+      //
+      // This is a security concern as it could allow bypassing traversal detection.
+      //
+      // These should throw PathTraversalError but currently don't:
+      // expect(() => resolveSafePath("/base", ".. /.. /etc/passwd")).toThrow(PathTraversalError);
+      // expect(() => resolveSafePath("/base", "..%20/..%20/etc/passwd")).toThrow(PathTraversalError);
+      //
+      // Current behavior (creates literal paths):
+      // resolveSafePath("/base", ".. /.. /etc/passwd") -> "/base/.. /.. /etc/passwd"
+      // resolveSafePath("/base", "..%20/..%20/etc/passwd") -> "/base/.. /.. /etc/passwd"
+    });
   });
 });
