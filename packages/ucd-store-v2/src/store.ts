@@ -17,7 +17,7 @@ import { createUCDClientWithConfig } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import defu from "defu";
 import { createInternalContext, createPublicContext } from "./core/context";
-import { getLockfilePath, readLockfileOrDefault } from "./core/lockfile";
+import { getLockfilePath, readLockfileOrDefault } from "@ucdjs/lockfile";
 import { UCDStoreGenericError } from "./errors";
 import { analyze } from "./operations/analyze";
 import { getFile } from "./operations/files/get";
@@ -194,7 +194,7 @@ export async function handleVersionConflict(
     case "merge": {
       const mergedVersions = Array.from(new Set([...lockfileVersions, ...providedVersions]));
       const existing = await readLockfileOrDefault(fs, lockfilePath);
-      const { writeLockfile } = await import("./core/lockfile");
+      const { writeLockfile } = await import("@ucdjs/lockfile");
       const { extractFilterPatterns } = await import("./core/context");
       const filters = filter ? extractFilterPatterns(filter) : existing?.filters;
 
@@ -220,7 +220,7 @@ export async function handleVersionConflict(
     }
     case "overwrite": {
       const existing = await readLockfileOrDefault(fs, lockfilePath);
-      const { writeLockfile } = await import("./core/lockfile");
+      const { writeLockfile } = await import("@ucdjs/lockfile");
       const { extractFilterPatterns } = await import("./core/context");
       const filters = filter ? extractFilterPatterns(filter) : existing?.filters;
 

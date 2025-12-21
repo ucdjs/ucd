@@ -13,7 +13,7 @@ export interface CreateLockfileOptions {
 
   /**
    * Custom snapshot paths per version
-   * If not provided, defaults to `v{version}/snapshot.json`
+   * If not provided, defaults to `{version}/snapshot.json`
    */
   snapshotPaths?: Record<string, string>;
 }
@@ -30,7 +30,7 @@ export function createLockfileEntry(
   },
 ): Lockfile["versions"][string] {
   return {
-    path: options?.snapshotPath ?? `v${version}/snapshot.json`,
+    path: options?.snapshotPath ?? `${version}/snapshot.json`,
     fileCount: options?.fileCount ?? 0,
     totalSize: options?.totalSize ?? 0,
   };
@@ -70,3 +70,4 @@ export function createLockfile(
     ),
   };
 }
+

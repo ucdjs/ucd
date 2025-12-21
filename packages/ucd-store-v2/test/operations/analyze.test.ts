@@ -1,6 +1,6 @@
 import type { AnalysisReport } from "../../src/operations/analyze";
-import { createEmptyLockfile } from "#internal-pkg:test-utils/lockfile-builder";
 import { createTestContext } from "#internal-pkg:test-utils/test-context";
+import { createEmptyLockfile } from "@ucdjs/lockfile/test-utils";
 import { mockStoreApi } from "#test-utils/mock-store";
 import { HttpResponse } from "#test-utils/msw";
 import { describe, expect, it } from "vitest";

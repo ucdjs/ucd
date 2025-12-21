@@ -1,6 +1,6 @@
 {
-  "name": "@ucdjs/ucd-store-v2",
-  "version": "0.0.1",
+  "name": "@ucdjs/lockfile",
+  "version": "0.1.0",
   "type": "module",
   "author": {
     "name": "Lucas Nørgård",
@@ -13,16 +13,14 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ucdjs/ucd.git",
-    "directory": "packages/ucd-store"
+    "directory": "packages/lockfile"
   },
   "bugs": {
     "url": "https://github.com/ucdjs/ucd/issues"
   },
-  "imports": {
-    "#internal-pkg:test-utils/*": "./test/helpers/*.ts"
-  },
   "exports": {
     ".": "./dist/index.mjs",
+    "./test-utils": "./dist/test-utils/index.mjs",
     "./package.json": "./package.json"
   },
   "main": "./dist/index.mjs",
@@ -39,23 +37,13 @@
     "dev": "tsdown --watch",
     "clean": "git clean -xdf dist node_modules",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit",
-    "playground:http": "tsx --tsconfig=./tsconfig.json ./playgrounds/http-playground.ts",
-    "playground:node": "tsx --tsconfig=./tsconfig.json ./playgrounds/node-playground.ts",
-    "playground:memory": "tsx --tsconfig=./tsconfig.json ./playgrounds/memory-playground.ts"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@luxass/utils": "catalog:prod",
-    "@ucdjs-internal/shared": "workspace:*",
-    "@ucdjs/client": "workspace:*",
-    "@ucdjs/env": "workspace:*",
     "@ucdjs/fs-bridge": "workspace:*",
-    "@ucdjs/lockfile": "workspace:*",
     "@ucdjs/schemas": "workspace:*",
-    "@unicode-utils/core": "catalog:prod",
-    "defu": "catalog:prod",
-    "pathe": "catalog:prod",
-    "zod": "catalog:prod"
+    "@ucdjs-internal/shared": "workspace:*",
+    "pathe": "catalog:prod"
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:linting",
@@ -64,7 +52,6 @@
     "eslint": "catalog:linting",
     "publint": "catalog:dev",
     "tsdown": "catalog:dev",
-    "tsx": "catalog:dev",
     "typescript": "catalog:dev",
     "vitest-testdirs": "catalog:testing"
   },

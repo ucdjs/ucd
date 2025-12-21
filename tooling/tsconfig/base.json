@@ -9,6 +9,9 @@
       "@ucdjs/client": ["./packages/client/src/index.ts"],
       "@ucdjs/schema-gen": ["./packages/schema-gen/src/index.ts"],
 
+      "@ucdjs/lockfile": ["./packages/lockfile/src/index.ts"],
+      "@ucdjs/lockfile/test-utils": ["./packages/lockfile/test/utils/index.ts"],
+
       "@ucdjs/schemas": ["./packages/schemas/src/index.ts"],
       "@ucdjs/ucd-store": ["./packages/ucd-store/src/index.ts"],
       "@ucdjs/ucd-store-v2": ["./packages/ucd-store-v2/src/index.ts"],

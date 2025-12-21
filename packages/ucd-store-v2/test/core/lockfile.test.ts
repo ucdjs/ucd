@@ -3,11 +3,11 @@ import { assert, describe, expect, it } from "vitest";
 import {
   canUseLockfile,
   getLockfilePath,
+  LockfileInvalidError,
   readLockfile,
   readLockfileOrDefault,
   writeLockfile,
-} from "../../src/core/lockfile";
-import { UCDStoreInvalidManifestError } from "../../src/errors";
+} from "@ucdjs/lockfile";
 
 const readOnlyBridge = createReadOnlyBridge();
 
@@ -132,14 +132,14 @@ describe("readLockfile", () => {
     expect(result).toEqual(lockfile);
   });
 
-  it("should throw UCDStoreInvalidManifestError when lockfile is empty", async () => {
+  it("should throw LockfileInvalidError when lockfile is empty", async () => {
     const fs = createMemoryMockFS();
     const lockfilePath = "/test/.ucd-store.lock";
 
     await fs.write!(lockfilePath, "");
 
     await expect(readLockfile(fs, lockfilePath)).rejects.toThrow(
-      UCDStoreInvalidManifestError,
+      LockfileInvalidError,
     );
 
     await expect(readLockfile(fs, lockfilePath)).rejects.toThrow(
@@ -147,14 +147,14 @@ describe("readLockfile", () => {
     );
   });
 
-  it("should throw UCDStoreInvalidManifestError when JSON is invalid", async () => {
+  it("should throw LockfileInvalidError when JSON is invalid", async () => {
     const fs = createMemoryMockFS();
     const lockfilePath = "/test/.ucd-store.lock";
 
     await fs.write!(lockfilePath, "{ invalid json }");
 
     await expect(readLockfile(fs, lockfilePath)).rejects.toThrow(
-      UCDStoreInvalidManifestError,
+      LockfileInvalidError,
     );
 
     await expect(readLockfile(fs, lockfilePath)).rejects.toThrow(
@@ -162,7 +162,7 @@ describe("readLockfile", () => {
     );
   });
 
-  it("should throw UCDStoreInvalidManifestError when schema validation fails", async () => {
+  it("should throw LockfileInvalidError when schema validation fails", async () => {
     const fs = createMemoryMockFS();
     const lockfilePath = "/test/.ucd-store.lock";
 
@@ -175,7 +175,7 @@ describe("readLockfile", () => {
       expect.fail("Expected to throw, but resolved with:", v);
     }).catch((e) => e);
 
-    assert.instanceOf(err, UCDStoreInvalidManifestError);
+    assert.instanceOf(err, LockfileInvalidError);
 
     expect(err.message).toContain("lockfile does not match expected schema");
   });

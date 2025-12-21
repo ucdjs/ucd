@@ -4,7 +4,7 @@ import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 import { createDebugger } from "@ucdjs-internal/shared";
 import { assertCapability } from "@ucdjs/fs-bridge";
 import { extractFilterPatterns } from "../core/context";
-import { writeLockfile } from "../core/lockfile";
+import { writeLockfile } from "@ucdjs/lockfile";
 import { UCDStoreGenericError } from "../errors";
 
 const debug = createDebugger("ucdjs:ucd-store:bootstrap");

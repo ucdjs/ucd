@@ -1,5 +1,5 @@
-import { createSnapshot } from "#internal-pkg:test-utils/snapshot-builder";
 import { createMemoryMockFS, createReadOnlyBridge } from "#test-utils/fs-bridges";
+import { createSnapshot } from "@ucdjs/lockfile/test-utils";
 import { defineFileSystemBridge } from "@ucdjs/fs-bridge";
 import { describe, expect, it, vi } from "vitest";
 import {
@@ -8,8 +8,9 @@ import {
   readSnapshot,
   readSnapshotOrDefault,
   writeSnapshot,
-} from "../../src/core/lockfile";
-import { UCDStoreBridgeUnsupportedOperation, UCDStoreInvalidManifestError } from "../../src/errors";
+  LockfileBridgeUnsupportedOperation,
+  LockfileInvalidError,
+} from "@ucdjs/lockfile";
 
 const readOnlyBridge = createReadOnlyBridge();
 
@@ -106,7 +107,7 @@ describe("readSnapshot", () => {
     expect(result.files["Blocks.txt"]).toBeDefined();
   });
 
-  it("should throw UCDStoreInvalidManifestError when snapshot is empty", async () => {
+  it("should throw LockfileInvalidError when snapshot is empty", async () => {
     const fs = createMemoryMockFS();
     const basePath = "/test";
     const version = "16.0.0";
@@ -115,7 +116,7 @@ describe("readSnapshot", () => {
     await fs.write!(snapshotPath, "");
 
     await expect(readSnapshot(fs, basePath, version)).rejects.toThrow(
-      UCDStoreInvalidManifestError,
+      LockfileInvalidError,
     );
 
     await expect(readSnapshot(fs, basePath, version)).rejects.toThrow(
@@ -123,7 +124,7 @@ describe("readSnapshot", () => {
     );
   });
 
-  it("should throw UCDStoreInvalidManifestError when JSON is invalid", async () => {
+  it("should throw LockfileInvalidError when JSON is invalid", async () => {
     const fs = createMemoryMockFS();
     const basePath = "/test";
     const version = "16.0.0";
@@ -132,7 +133,7 @@ describe("readSnapshot", () => {
     await fs.write!(snapshotPath, "{ invalid json }");
 
     await expect(readSnapshot(fs, basePath, version)).rejects.toThrow(
-      UCDStoreInvalidManifestError,
+      LockfileInvalidError,
     );
 
     await expect(readSnapshot(fs, basePath, version)).rejects.toThrow(
@@ -140,7 +141,7 @@ describe("readSnapshot", () => {
     );
   });
 
-  it("should throw UCDStoreInvalidManifestError when schema validation fails", async () => {
+  it("should throw LockfileInvalidError when schema validation fails", async () => {
     const fs = createMemoryMockFS();
     const basePath = "/test";
     const version = "16.0.0";
@@ -155,7 +156,7 @@ describe("readSnapshot", () => {
       expect.fail("Expected to throw, but resolved with:", v);
     }).catch((e) => e);
 
-    expect(err).toBeInstanceOf(UCDStoreInvalidManifestError);
+    expect(err).toBeInstanceOf(LockfileInvalidError);
     expect(err.message).toContain("snapshot does not match expected schema");
   });
 
@@ -266,7 +267,7 @@ describe("writeSnapshot", () => {
     await expect(writeSnapshot(readOnlyBridge, basePath, version, snapshot)).resolves.not.toThrow();
   });
 
-  it("should throw UCDStoreBridgeUnsupportedOperation when directory doesn't exist and mkdir unavailable", async () => {
+  it("should throw LockfileBridgeUnsupportedOperation when directory doesn't exist and mkdir unavailable", async () => {
     const bridgeWithoutMkdir = defineFileSystemBridge({
       meta: { name: "No-Mkdir", description: "Bridge without mkdir" },
       setup: () => ({
@@ -287,7 +288,7 @@ describe("writeSnapshot", () => {
     });
 
     await expect(writeSnapshot(bridgeWithoutMkdir, basePath, version, snapshot)).rejects.toThrow(
-      UCDStoreBridgeUnsupportedOperation,
+      LockfileBridgeUnsupportedOperation,
     );
   });
 
