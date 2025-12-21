@@ -3,7 +3,6 @@ import {
   FailedToDecodePathError,
   IllegalCharacterInPathError,
   MaximumDecodingIterationsExceededError,
-  PathTraversalError,
 } from "../src/errors";
 import { decodePathSafely, isWithinBase, resolveSafePath } from "../src/security";
 import { isCaseSensitive } from "../src/utils";

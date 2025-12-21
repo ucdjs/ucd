@@ -1,10 +1,10 @@
 import { createTestContext } from "#internal-pkg:test-utils/test-context";
-import { createEmptyLockfile } from "@ucdjs/lockfile/test-utils";
 import { mockStoreApi } from "#test-utils/mock-store";
 import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
-import { describe, expect, it } from "vitest";
 import { readLockfile, readSnapshot } from "@ucdjs/lockfile";
+import { createEmptyLockfile } from "@ucdjs/lockfile/test-utils";
+import { describe, expect, it } from "vitest";
 import { mirror } from "../../src/operations/mirror";
 import { sync } from "../../src/operations/sync";
 import { bootstrap } from "../../src/setup/bootstrap";
@@ -63,7 +63,7 @@ describe("store operations integration", () => {
       const lockfileAfterMirror = await readLockfile(fs, lockfilePath);
       expect(lockfileAfterMirror.versions["16.0.0"]?.fileCount).toBeGreaterThan(0);
       expect(lockfileAfterMirror.versions["16.0.0"]?.totalSize).toBeGreaterThan(0);
-      expect(lockfileAfterMirror.versions["16.0.0"]?.path).toBe("v16.0.0/snapshot.json");
+      expect(lockfileAfterMirror.versions["16.0.0"]?.path).toBe("16.0.0/snapshot.json");
 
       // Act - Step 3: Verify
       const verifyResult = await verify({
@@ -95,7 +95,7 @@ describe("store operations integration", () => {
         },
       });
 
-      const { context, fs, lockfilePath } = await createTestContext({
+      const { context, fs } = await createTestContext({
         versions: ["16.0.0", "15.1.0"],
       });
 
@@ -131,8 +131,8 @@ describe("store operations integration", () => {
     });
   });
 
-  describe("sync → Mirror flow", () => {
-    it("should sync updates lockfile with new versions from config, then mirror downloads files and creates snapshots", async () => {
+  describe("sync operation", () => {
+    it("should sync updates lockfile with new versions from API and mirrors files for all versions", async () => {
       // Arrange
       mockStoreApi({
         versions: ["16.0.0", "15.1.0", "15.0.0"],
@@ -163,10 +163,8 @@ describe("store operations integration", () => {
         lockfile: createEmptyLockfile(["16.0.0"]),
       });
 
-      // Act - Step 1: Sync (should add 15.1.0 and 15.0.0)
-      const [syncData, syncError] = await sync(context, {
-        strategy: "add",
-      });
+      // Act - Sync (should add 15.1.0 and 15.0.0, and mirror files for all versions)
+      const [syncData, syncError] = await sync(context);
       expect(syncError).toBeNull();
       expect(syncData).toBeDefined();
       expect(syncData?.added.sort()).toEqual(["15.0.0", "15.1.0"]);
@@ -176,25 +174,22 @@ describe("store operations integration", () => {
       const lockfileVersions = Object.keys(lockfileAfterSync.versions).sort();
       expect(lockfileVersions).toEqual(["15.0.0", "15.1.0", "16.0.0"]);
 
-      // Act - Step 2: Mirror (should download files for new versions)
-      const [mirrorData, mirrorError] = await mirror(context, {
-        versions: ["15.1.0", "15.0.0"], // Mirror only new versions
-      });
-      expect(mirrorError).toBeNull();
-      expect(mirrorData).toBeDefined();
-
-      // Verify snapshots were created for new versions
+      // Verify snapshots were created for all versions (sync also mirrors files)
       const snapshot15_1 = await readSnapshot(fs, context.basePath, "15.1.0");
       const snapshot15_0 = await readSnapshot(fs, context.basePath, "15.0.0");
+      const snapshot16 = await readSnapshot(fs, context.basePath, "16.0.0");
       expect(snapshot15_1.unicodeVersion).toBe("15.1.0");
       expect(snapshot15_0.unicodeVersion).toBe("15.0.0");
+      expect(snapshot16.unicodeVersion).toBe("16.0.0");
 
-      // Verify lockfile references correct snapshot paths
-      const lockfileAfterMirror = await readLockfile(fs, lockfilePath);
-      expect(lockfileAfterMirror.versions["15.1.0"]?.path).toBe("v15.1.0/snapshot.json");
-      expect(lockfileAfterMirror.versions["15.0.0"]?.path).toBe("v15.0.0/snapshot.json");
-      expect(lockfileAfterMirror.versions["15.1.0"]?.fileCount).toBeGreaterThan(0);
-      expect(lockfileAfterMirror.versions["15.0.0"]?.fileCount).toBeGreaterThan(0);
+      // Verify lockfile references correct snapshot paths (no "v" prefix)
+      const lockfileAfterSync2 = await readLockfile(fs, lockfilePath);
+      expect(lockfileAfterSync2.versions["15.1.0"]?.path).toBe("15.1.0/snapshot.json");
+      expect(lockfileAfterSync2.versions["15.0.0"]?.path).toBe("15.0.0/snapshot.json");
+      expect(lockfileAfterSync2.versions["16.0.0"]?.path).toBe("16.0.0/snapshot.json");
+      expect(lockfileAfterSync2.versions["15.1.0"]?.fileCount).toBeGreaterThan(0);
+      expect(lockfileAfterSync2.versions["15.0.0"]?.fileCount).toBeGreaterThan(0);
+      expect(lockfileAfterSync2.versions["16.0.0"]?.fileCount).toBeGreaterThan(0);
     });
 
     it("should preserve existing lockfile entries when syncing and mirroring", async () => {
@@ -228,12 +223,12 @@ describe("store operations integration", () => {
           lockfileVersion: 1,
           versions: {
             "16.0.0": {
-              path: "v16.0.0/snapshot.json",
+              path: "16.0.0/snapshot.json",
               fileCount: 5,
               totalSize: 500,
             },
             "15.1.0": {
-              path: "v15.1.0/snapshot.json",
+              path: "15.1.0/snapshot.json",
               fileCount: 0,
               totalSize: 0,
             },
@@ -242,7 +237,7 @@ describe("store operations integration", () => {
       });
 
       // Act - Sync (should not change existing entries)
-      const [syncData, syncError] = await sync(context);
+      const [, syncError] = await sync(context);
       expect(syncError).toBeNull();
 
       // Verify existing entry was preserved
@@ -251,7 +246,7 @@ describe("store operations integration", () => {
       expect(lockfileAfterSync.versions["16.0.0"]?.totalSize).toBe(500);
 
       // Act - Mirror only 15.1.0
-      const [mirrorData, mirrorError] = await mirror(context, {
+      const [, mirrorError] = await mirror(context, {
         versions: ["15.1.0"],
       });
       expect(mirrorError).toBeNull();

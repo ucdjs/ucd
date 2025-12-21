@@ -1,10 +1,10 @@
 import {
   createTestContext,
 } from "#internal-pkg:test-utils/test-context";
-import { createEmptyLockfile } from "@ucdjs/lockfile/test-utils";
 import { mockStoreApi } from "#test-utils/mock-store";
 import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
+import { createEmptyLockfile } from "@ucdjs/lockfile/test-utils";
 import { describe, expect, it } from "vitest";
 import { UCDStoreGenericError } from "../../src/errors";
 import { verify } from "../../src/setup/verify";

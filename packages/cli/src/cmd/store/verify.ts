@@ -2,10 +2,16 @@
 import type { Prettify } from "@luxass/utils";
 import type { CLIArguments } from "../../cli-utils";
 import type { CLIStoreCmdSharedFlags } from "./_shared";
+import { createDebugger } from "@ucdjs-internal/shared";
+import { createUCDClient } from "@ucdjs/client";
+import { UCDJS_API_BASE_URL } from "@ucdjs/env";
+import { getLockfilePath, readLockfile } from "@ucdjs/lockfile";
 import { UCDStoreGenericError } from "@ucdjs/ucd-store-v2";
 import { green, red, yellow } from "farver/fast";
 import { printHelp } from "../../cli-utils";
 import { assertRemoteOrStoreDir, createStoreFromFlags, SHARED_FLAGS } from "./_shared";
+
+const debug = createDebugger("ucdjs:cli:store:verify");
 
 export interface CLIStoreVerifyCmdOptions {
   flags: CLIArguments<Prettify<CLIStoreCmdSharedFlags & {
@@ -55,10 +61,6 @@ export async function runVerifyStore({ flags }: CLIStoreVerifyCmdOptions) {
     // Note: lockfileOnly is used to create read-only store
 
     // Read lockfile to get versions - works with both local and remote stores
-    const { readLockfile, getLockfilePath } = await import("@ucdjs/ucd-store-v2/core/lockfile");
-    const { createUCDClient } = await import("@ucdjs/client");
-    const { UCDJS_API_BASE_URL } = await import("@ucdjs/env");
-
     let lockfilePath: string;
     if (remote) {
       // For remote stores, lockfile path is relative to base URL
@@ -75,7 +77,8 @@ export async function runVerifyStore({ flags }: CLIStoreVerifyCmdOptions) {
     let lockfile;
     try {
       lockfile = await readLockfile(bridge, lockfilePath);
-    } catch (_err) {
+    } catch (err) {
+      debug?.("Error reading lockfile:", err);
       if (remote) {
         console.error(red(`\n❌ Error: Could not read lockfile from remote store.`));
         console.error("Verify operation requires a lockfile. For remote stores, the lockfile must be accessible via the API.");

@@ -15,9 +15,9 @@ import {
 } from "@ucdjs-internal/shared";
 import { createUCDClientWithConfig } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
+import { getLockfilePath, readLockfileOrDefault } from "@ucdjs/lockfile";
 import defu from "defu";
 import { createInternalContext, createPublicContext } from "./core/context";
-import { getLockfilePath, readLockfileOrDefault } from "@ucdjs/lockfile";
 import { UCDStoreGenericError } from "./errors";
 import { analyze } from "./operations/analyze";
 import { getFile } from "./operations/files/get";

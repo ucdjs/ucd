@@ -5,4 +5,3 @@ export default luxass({
   type: "lib",
   pnpm: true,
 });
-

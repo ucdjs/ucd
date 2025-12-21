@@ -1,9 +1,9 @@
 import { createTestContext } from "#internal-pkg:test-utils/test-context";
-import { createEmptyLockfile } from "@ucdjs/lockfile/test-utils";
 import { configure, mockStoreApi } from "#test-utils/mock-store";
 import { HttpResponse } from "#test-utils/msw";
-import { describe, expect, it } from "vitest";
 import { readLockfile, readSnapshot } from "@ucdjs/lockfile";
+import { createEmptyLockfile } from "@ucdjs/lockfile/test-utils";
+import { describe, expect, it } from "vitest";
 import { mirror } from "../../src/operations/mirror";
 
 describe("mirror", () => {

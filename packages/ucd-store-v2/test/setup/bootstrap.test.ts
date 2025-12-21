@@ -3,8 +3,8 @@ import { mockStoreApi } from "#test-utils/mock-store";
 import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { defineFileSystemBridge } from "@ucdjs/fs-bridge";
-import { describe, expect, it } from "vitest";
 import { readLockfile } from "@ucdjs/lockfile";
+import { describe, expect, it } from "vitest";
 import { UCDStoreGenericError } from "../../src/errors";
 import { bootstrap } from "../../src/setup/bootstrap";
 

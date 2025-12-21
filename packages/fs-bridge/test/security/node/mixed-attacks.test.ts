@@ -1,5 +1,5 @@
 import NodeFileSystemBridge from "#internal:bridge/node";
-import { IllegalCharacterInPathError, PathTraversalError } from "@ucdjs/path-utils";
+import { PathTraversalError } from "@ucdjs/path-utils";
 import { describe, expect, it } from "vitest";
 import { testdir } from "vitest-testdirs";
 
