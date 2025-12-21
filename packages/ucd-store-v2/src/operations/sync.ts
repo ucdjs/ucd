@@ -160,6 +160,10 @@ export async function sync(
 
     // Step 4: Update lockfile
     if (lockfile || added.length > 0 || removed.length > 0) {
+      // Preserve filters from existing lockfile or use current context filters
+      const { extractFilterPatterns } = await import("../core/context");
+      const filters = extractFilterPatterns(context.filter) ?? lockfile?.filters;
+
       await writeLockfile(context.fs, context.lockfilePath, {
         lockfileVersion: 1,
         versions: Object.fromEntries(
@@ -175,6 +179,7 @@ export async function sync(
             ];
           }),
         ),
+        filters,
       });
     }
 

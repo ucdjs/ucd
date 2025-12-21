@@ -439,9 +439,14 @@ export async function mirror(
 
     // Write updated lockfile
     if (Object.keys(updatedLockfileVersions).length > 0) {
+      // Preserve filters from existing lockfile or use current context filters
+      const { extractFilterPatterns } = await import("../core/context");
+      const filters = extractFilterPatterns(context.filter) ?? lockfile?.filters;
+
       await writeLockfile(context.fs, context.lockfilePath, {
         lockfileVersion: 1,
         versions: updatedLockfileVersions,
+        filters,
       });
     }
 

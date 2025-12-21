@@ -1,3 +1,4 @@
+import type { PathFilter } from "@ucdjs-internal/shared";
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 import type { UCDWellKnownConfig } from "@ucdjs/schemas";
 import type {
@@ -103,6 +104,7 @@ export async function createUCDStore(options: UCDStoreOptions): Promise<UCDStore
         fs,
         lockfilePath,
         configVersions,
+        filter,
       );
     } else {
       // No versions provided, use lockfile or config
@@ -186,12 +188,15 @@ export async function handleVersionConflict(
   fs: FileSystemBridge,
   lockfilePath: string,
   _configVersions?: string[],
+  filter?: PathFilter,
 ): Promise<string[]> {
   switch (strategy) {
     case "merge": {
       const mergedVersions = Array.from(new Set([...lockfileVersions, ...providedVersions]));
       const existing = await readLockfileOrDefault(fs, lockfilePath);
       const { writeLockfile } = await import("./core/lockfile");
+      const { extractFilterPatterns } = await import("./core/context");
+      const filters = filter ? extractFilterPatterns(filter) : existing?.filters;
 
       await writeLockfile(fs, lockfilePath, {
         lockfileVersion: 1,
@@ -208,6 +213,7 @@ export async function handleVersionConflict(
             ];
           }),
         ),
+        filters,
       });
       debug?.("Merge mode: combined versions", mergedVersions);
       return mergedVersions;
@@ -215,6 +221,8 @@ export async function handleVersionConflict(
     case "overwrite": {
       const existing = await readLockfileOrDefault(fs, lockfilePath);
       const { writeLockfile } = await import("./core/lockfile");
+      const { extractFilterPatterns } = await import("./core/context");
+      const filters = filter ? extractFilterPatterns(filter) : existing?.filters;
 
       await writeLockfile(fs, lockfilePath, {
         lockfileVersion: 1,
@@ -231,6 +239,7 @@ export async function handleVersionConflict(
             ];
           }),
         ),
+        filters,
       });
       debug?.("Overwrite mode: replaced lockfile with provided versions", providedVersions);
       return providedVersions;
