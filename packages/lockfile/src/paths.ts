@@ -15,11 +15,12 @@ export function getLockfilePath(_basePath: string): string {
  * Gets the snapshot path for a given version.
  * Snapshots are stored inside version directories: {version}/snapshot.json
  *
- * @param {string} basePath - Base path of the store
+ * Returns a relative path that will be resolved against the bridge's basePath.
+ * This prevents path duplication when the bridge's basePath is already set.
+ *
  * @param {string} version - The Unicode version
- * @returns {string} The snapshot path
+ * @returns {string} The snapshot path relative to the bridge's basePath
  */
-export function getSnapshotPath(basePath: string, version: string): string {
-  return join(basePath, version, "snapshot.json");
+export function getSnapshotPath(version: string): string {
+  return join(version, "snapshot.json");
 }
-

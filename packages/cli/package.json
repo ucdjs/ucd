@@ -45,8 +45,10 @@
   "dependencies": {
     "@clack/prompts": "catalog:prod",
     "@luxass/utils": "catalog:prod",
+    "@ucdjs-internal/shared": "workspace:*",
     "@ucdjs/client": "workspace:*",
     "@ucdjs/env": "workspace:*",
+    "@ucdjs/lockfile": "workspace:*",
     "@ucdjs/schema-gen": "workspace:*",
     "@ucdjs/ucd-store-v2": "workspace:*",
     "@unicode-utils/core": "catalog:prod",

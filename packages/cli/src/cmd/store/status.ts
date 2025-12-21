@@ -2,10 +2,16 @@
 import type { Prettify } from "@luxass/utils";
 import type { CLIArguments } from "../../cli-utils";
 import type { CLIStoreCmdSharedFlags } from "./_shared";
+import { createDebugger } from "@ucdjs-internal/shared";
+import { createUCDClient } from "@ucdjs/client";
+import { UCDJS_API_BASE_URL } from "@ucdjs/env";
+import { getLockfilePath, readLockfile, readSnapshotOrDefault } from "@ucdjs/lockfile";
 import { UCDStoreGenericError } from "@ucdjs/ucd-store-v2";
 import { green, red, yellow } from "farver/fast";
 import { printHelp } from "../../cli-utils";
 import { assertRemoteOrStoreDir, createStoreFromFlags, SHARED_FLAGS } from "./_shared";
+
+const debug = createDebugger("ucdjs:cli:store:status");
 
 export interface CLIStoreStatusCmdOptions {
   flags: CLIArguments<Prettify<CLIStoreCmdSharedFlags & {
@@ -34,7 +40,6 @@ export async function runStatusStore({ flags }: CLIStoreStatusCmdOptions) {
     storeDir,
     remote,
     baseUrl,
-    lockfileOnly,
     json,
   } = flags;
 
@@ -49,10 +54,6 @@ export async function runStatusStore({ flags }: CLIStoreStatusCmdOptions) {
     });
 
     // Read lockfile - works with both local and remote stores
-    const { readLockfile, getLockfilePath, readSnapshotOrDefault } = await import("@ucdjs/ucd-store-v2/core/lockfile");
-    const { createUCDClient } = await import("@ucdjs/client");
-    const { UCDJS_API_BASE_URL } = await import("@ucdjs/env");
-
     let lockfilePath: string;
     const bridge = store.fs;
 
@@ -71,6 +72,7 @@ export async function runStatusStore({ flags }: CLIStoreStatusCmdOptions) {
     try {
       lockfile = await readLockfile(bridge, lockfilePath);
     } catch (err) {
+      debug?.("Error reading lockfile:", err);
       console.error(red(`\n❌ Error: Lockfile not found at ${lockfilePath}`));
       console.error("Run 'ucd store init' to create a new store.");
       return;
@@ -113,6 +115,7 @@ export async function runStatusStore({ flags }: CLIStoreStatusCmdOptions) {
         let hasSnapshot = false;
         if (!remote && storeDir) {
           const snapshot = await readSnapshotOrDefault(bridge, storeDir, version);
+          console.info("snapshot", snapshot, storeDir, version);
           hasSnapshot = snapshot !== undefined;
         }
         const isAvailableInAPI = availableVersionsSet.has(version);
@@ -137,9 +140,9 @@ export async function runStatusStore({ flags }: CLIStoreStatusCmdOptions) {
         totalVersions: lockfileVersions.length,
         versions: versionStatuses.map((s) => ({
           version: s.version,
-          snapshotPath: s.entry.path,
-          fileCount: s.entry.fileCount,
-          totalSize: s.entry.totalSize,
+          snapshotPath: s.entry?.path,
+          fileCount: s.entry?.fileCount,
+          totalSize: s.entry?.totalSize,
           mirrored: s.hasSnapshot,
           availableInAPI: s.isAvailableInAPI,
         })),
@@ -169,10 +172,10 @@ export async function runStatusStore({ flags }: CLIStoreStatusCmdOptions) {
       const apiIcon = isAvailableInAPI ? green("✓") : red("✗");
 
       console.info(`  Version ${version}:`);
-      console.info(`    Snapshot: ${entry.path}`);
+      console.info(`    Snapshot: ${entry?.path}`);
       console.info(`    Status: ${statusIcon} ${hasSnapshot ? "Mirrored" : "Not mirrored"}`);
-      console.info(`    Files: ${entry.fileCount}`);
-      console.info(`    Size: ${(entry.totalSize / 1024 / 1024).toFixed(2)} MB`);
+      console.info(`    Files: ${entry?.fileCount}`);
+      console.info(`    Size: ${((entry?.totalSize ?? 0) / 1024 / 1024).toFixed(2)} MB`);
       console.info(`    API: ${apiIcon} ${isAvailableInAPI ? "Available" : "Not available"}`);
       console.info("");
     }
