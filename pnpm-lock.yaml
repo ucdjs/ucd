@@ -526,12 +526,15 @@ importers:
       '@luxass/utils':
         specifier: catalog:prod
         version: 2.7.2
+      '@ucdjs/client':
+        specifier: workspace:*
+        version: link:../client
+      '@ucdjs/env':
+        specifier: workspace:*
+        version: link:../env
       '@ucdjs/schema-gen':
         specifier: workspace:*
         version: link:../schema-gen
-      '@ucdjs/ucd-store':
-        specifier: workspace:*
-        version: link:../ucd-store
       '@ucdjs/ucd-store-v2':
         specifier: workspace:*
         version: link:../ucd-store-v2

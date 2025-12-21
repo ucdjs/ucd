@@ -54,7 +54,7 @@ export async function runStatusStore({ flags }: CLIStoreStatusCmdOptions) {
     const { UCDJS_API_BASE_URL } = await import("@ucdjs/env");
 
     let lockfilePath: string;
-    let bridge = store.fs;
+    const bridge = store.fs;
 
     if (remote) {
       // For remote stores, lockfile path is relative to base URL
