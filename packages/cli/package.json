@@ -46,7 +46,6 @@
     "@clack/prompts": "catalog:prod",
     "@luxass/utils": "catalog:prod",
     "@ucdjs/schema-gen": "workspace:*",
-    "@ucdjs/ucd-store": "workspace:*",
     "@ucdjs/ucd-store-v2": "workspace:*",
     "@unicode-utils/core": "catalog:prod",
     "farver": "catalog:prod",

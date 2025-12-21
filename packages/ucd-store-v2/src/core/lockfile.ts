@@ -106,8 +106,9 @@ export async function readLockfileOrDefault(
 /**
  * Gets the default lockfile path for a given base path.
  */
-export function getLockfilePath(basePath: string): string {
-  return join(basePath, ".ucd-store.lock");
+export function getLockfilePath(_basePath: string): string {
+  console.log("getLockfilePath", _basePath, "joined", join(_basePath, ".ucd-store.lock"));
+  return ".ucd-store.lock";
 }
 
 /**

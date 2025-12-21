@@ -4,45 +4,45 @@ overview: Redesign the CLI store commands to align with the new ucd-store-v2 API
 todos:
   - id: update-package-json
     content: Update packages/cli/package.json to depend on @ucdjs/ucd-store-v2
-    status: pending
+    status: completed
   - id: update-shared-utilities
     content: Update packages/cli/src/cmd/store/_shared.ts to use ucd-store-v2 API and add force/lockfile-only flag handling
-    status: pending
+    status: completed
     dependencies:
       - update-package-json
   - id: update-init-command
     content: Update packages/cli/src/cmd/store/init.ts to use bootstrap from ucd-store-v2 with force/lockfile-only support
-    status: pending
+    status: completed
     dependencies:
       - update-shared-utilities
   - id: create-sync-command
     content: Create packages/cli/src/cmd/store/sync.ts with sync command implementation and force/lockfile-only flags
-    status: pending
+    status: completed
     dependencies:
       - update-shared-utilities
   - id: create-mirror-command
     content: Create packages/cli/src/cmd/store/mirror.ts with mirror command implementation and force/lockfile-only flags
-    status: pending
+    status: completed
     dependencies:
       - update-shared-utilities
   - id: create-verify-command
     content: Create packages/cli/src/cmd/store/verify.ts with verify command implementation and lockfile-only flag
-    status: pending
+    status: completed
     dependencies:
       - update-shared-utilities
   - id: create-status-command
     content: Create packages/cli/src/cmd/store/status.ts with status command and lockfile inspection capabilities
-    status: pending
+    status: completed
     dependencies:
       - update-shared-utilities
   - id: update-analyze-command
     content: Update packages/cli/src/cmd/store/analyze.ts to use new ucd-store-v2 API with lockfile-only flag
-    status: pending
+    status: completed
     dependencies:
       - update-shared-utilities
   - id: update-root-command
     content: Update packages/cli/src/cmd/store/root.ts with new command routing, help text, and remove repair/clean references
-    status: pending
+    status: completed
     dependencies:
       - create-sync-command
       - create-mirror-command
@@ -50,7 +50,7 @@ todos:
       - create-status-command
   - id: delete-deprecated-commands
     content: Delete packages/cli/src/cmd/store/repair.ts and clean.ts files
-    status: pending
+    status: completed
     dependencies:
       - update-root-command
 ---
@@ -486,7 +486,3 @@ Store Status: /path/to/store
 ## Benefits
 
 1. **API Alignment**: CLI commands directly map to store operations
-2. **Lockfile Inspection**: Status command provides comprehensive lockfile information
-3. **Flexible Flags**: `--force` and `--lockfile-only` provide control over behavior
-4. **Read-only Mode**: `--lockfile-only` enables safe inspection without modifications
-5. **Intuitive**: Operation names match what they do
