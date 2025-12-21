@@ -40,9 +40,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@ucdjs-internal/shared": "workspace:*",
     "@ucdjs/fs-bridge": "workspace:*",
     "@ucdjs/schemas": "workspace:*",
-    "@ucdjs-internal/shared": "workspace:*",
     "pathe": "catalog:prod"
   },
   "devDependencies": {
