@@ -1,6 +1,7 @@
 import type { Prettify, RemoveIndexSignature } from "@luxass/utils";
 import type { Arguments } from "yargs-parser";
 import type { CLICodegenCmdOptions } from "./cmd/codegen/root";
+import type { CLIFilesCmdOptions } from "./cmd/files/root";
 import type { CLIStoreCmdOptions } from "./cmd/store/root";
 import process from "node:process";
 import {
@@ -17,11 +18,13 @@ type CLICommand
   = | "help"
     | "version"
     | "codegen"
-    | "store";
+    | "store"
+    | "files";
 
 const SUPPORTED_COMMANDS = new Set<CLICommand>([
   "codegen",
   "store",
+  "files",
 ]);
 
 export interface GlobalCLIFlags {
@@ -172,6 +175,7 @@ export async function runCommand(cmd: CLICommand, flags: Arguments): Promise<voi
           "Commands": [
             ["download", "Download Unicode data files."],
             ["codegen", "Generate TypeScript code from UCD data."],
+            ["files", "List and get files from the UCD API."],
           ],
           "Global Flags": [
             ["--force", "Force the operation to run, even if it's not needed."],
@@ -201,6 +205,14 @@ export async function runCommand(cmd: CLICommand, flags: Arguments): Promise<voi
       });
       break;
     }
+    case "files": {
+      const { runFilesRoot } = await import("./cmd/files/root");
+      const subcommand = flags._[1]?.toString() ?? "";
+      await runFilesRoot(subcommand, {
+        flags: flags as CLIFilesCmdOptions["flags"],
+      });
+      break;
+    }
     default:
       throw new Error(`Error running ${cmd} -- no command found.`);
   }
@@ -219,11 +231,14 @@ export function parseFlags(args: string[]) {
       "help",
       "h",
       "dry-run",
+      "json",
     ],
     string: [
       "output-dir",
       "input-dir",
       "output-file",
+      "base-url",
+      "output",
     ],
   });
 }
