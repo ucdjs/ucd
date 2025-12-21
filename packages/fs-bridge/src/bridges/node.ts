@@ -44,6 +44,13 @@ const NodeFileSystemBridge = defineFileSystemBridge({
 
     return {
       async read(path) {
+        // Reject file paths ending with / - files don't have trailing slashes
+        // Allow /, ./, and ../ as they are special directory references
+        const trimmedPath = path.trim();
+        if (trimmedPath.endsWith("/") && trimmedPath !== "/" && trimmedPath !== "./" && trimmedPath !== "../") {
+          throw new Error("Cannot read file: path ends with '/'");
+        }
+
         const resolvedPath = resolveSafePath(basePath, path);
         return fsp.readFile(resolvedPath, "utf-8");
       },
@@ -117,6 +124,13 @@ const NodeFileSystemBridge = defineFileSystemBridge({
         return rootEntries;
       },
       async write(path, data, encoding = "utf-8") {
+        // Reject file paths ending with / - files don't have trailing slashes
+        // Allow /, ./, and ../ as they are special directory references
+        const trimmedPath = path.trim();
+        if (trimmedPath.endsWith("/") && trimmedPath !== "/" && trimmedPath !== "./" && trimmedPath !== "../") {
+          throw new Error("Cannot write file: path ends with '/'");
+        }
+
         const resolvedPath = resolveSafePath(basePath, path);
         const parentDir = nodePath.dirname(resolvedPath);
 
