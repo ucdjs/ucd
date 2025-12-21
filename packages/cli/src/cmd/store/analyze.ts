@@ -2,7 +2,7 @@
 import type { Prettify } from "@luxass/utils";
 import type { CLIArguments } from "../../cli-utils";
 import type { CLIStoreCmdSharedFlags } from "./_shared";
-import { UCDStoreUnsupportedFeature } from "@ucdjs/ucd-store";
+import { UCDStoreGenericError } from "@ucdjs/ucd-store-v2";
 import { green, red } from "farver/fast";
 import { printHelp } from "../../cli-utils";
 import { assertRemoteOrStoreDir, createStoreFromFlags, SHARED_FLAGS } from "./_shared";
@@ -12,7 +12,7 @@ export interface CLIStoreAnalyzeCmdOptions {
     json?: boolean;
     checkOrphaned?: boolean;
   }>>;
-  versions?: string[];
+  versions: string[];
 }
 
 export async function runAnalyzeStore({ flags, versions }: CLIStoreAnalyzeCmdOptions) {
@@ -43,7 +43,8 @@ export async function runAnalyzeStore({ flags, versions }: CLIStoreAnalyzeCmdOpt
     remote,
     baseUrl,
     include: patterns,
-    checkOrphaned,
+    exclude: excludePatterns,
+    lockfileOnly,
   } = flags;
 
   try {
@@ -54,16 +55,17 @@ export async function runAnalyzeStore({ flags, versions }: CLIStoreAnalyzeCmdOpt
       storeDir,
       remote,
       include: patterns,
+      exclude: excludePatterns,
+      versions,
+      lockfileOnly,
     });
 
-    if (store == null) {
-      console.error("Error: Failed to create UCD store.");
-      return;
-    }
-
     const [analyzeData, analyzeError] = await store.analyze({
-      checkOrphaned: !!checkOrphaned,
-      versions: versions || [],
+      versions: versions.length > 0 ? versions : undefined,
+      filters: {
+        include: patterns,
+        exclude: excludePatterns,
+      },
     });
 
     if (analyzeError != null) {
@@ -72,37 +74,52 @@ export async function runAnalyzeStore({ flags, versions }: CLIStoreAnalyzeCmdOpt
       return;
     }
 
-    if (json) {
-      console.info(JSON.stringify(analyzeData, null, 2));
+    if (!analyzeData) {
+      console.error(red(`\n❌ Error: Analyze operation returned no result.`));
       return;
     }
 
-    for (const { version, fileCount, isComplete, missingFiles, orphanedFiles, expectedFileCount } of analyzeData) {
+    if (json) {
+      // Convert Map to object for JSON serialization
+      const analyzeDataObj = Object.fromEntries(
+        Array.from(analyzeData.entries()).map(([version, report]) => [
+          version,
+          {
+            ...report,
+            files: {
+              ...report.files,
+              missing: Array.from(report.files.missing || []),
+              orphaned: Array.from(report.files.orphaned || []),
+            },
+          },
+        ]),
+      );
+      console.info(JSON.stringify(analyzeDataObj, null, 2));
+      return;
+    }
+
+    for (const [version, report] of analyzeData.entries()) {
       console.info(`Version: ${version}`);
-      if (isComplete) {
+      if (report.isComplete) {
         console.info(`  Status: ${green("complete")}`);
       } else {
         console.warn(`  Status: ${red("incomplete")}`);
       }
-      console.info(`  Files: ${fileCount}`);
-      if (missingFiles && missingFiles.length > 0) {
-        console.warn(`  Missing files: ${missingFiles.length}`);
+      console.info(`  Files: ${report.counts.present}`);
+      if (report.files.missing && report.files.missing.length > 0) {
+        console.warn(`  Missing files: ${report.files.missing.length}`);
       }
-      if (orphanedFiles && orphanedFiles.length > 0) {
-        console.warn(`  Orphaned files: ${orphanedFiles.length}`);
+      if (report.files.orphaned && report.files.orphaned.length > 0) {
+        console.warn(`  Orphaned files: ${report.files.orphaned.length}`);
       }
 
-      if (expectedFileCount) {
-        console.info(`  Total files expected: ${expectedFileCount}`);
+      if (report.counts.expected) {
+        console.info(`  Total files expected: ${report.counts.expected}`);
       }
     }
   } catch (err) {
-    if (err instanceof UCDStoreUnsupportedFeature) {
-      console.error(red(`\n❌ Error: Unsupported feature:`));
-      console.error(`  ${err.message}`);
-      console.error("");
-      console.error("This store does not support the analyze operation.");
-      console.error("Please check the store capabilities or use a different store type.");
+    if (err instanceof UCDStoreGenericError) {
+      console.error(red(`\n❌ Error: ${err.message}`));
       return;
     }
 
