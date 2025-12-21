@@ -1,8 +1,7 @@
 import HTTPFileSystemBridge from "#internal:bridge/http";
 import NodeFileSystemBridge from "#internal:bridge/node";
-import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
-import { FailedToDecodePathError, IllegalCharacterInPathError, PathTraversalError } from "@ucdjs/path-utils";
+import { IllegalCharacterInPathError, PathTraversalError } from "@ucdjs/path-utils";
 import { describe, expect, it } from "vitest";
 import { testdir } from "vitest-testdirs";
 

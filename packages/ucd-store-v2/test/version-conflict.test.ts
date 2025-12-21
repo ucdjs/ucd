@@ -1,7 +1,7 @@
 import { createTestContext } from "#internal-pkg:test-utils/test-context";
+import { readLockfile } from "@ucdjs/lockfile";
 import { createEmptyLockfile, createLockfile } from "@ucdjs/lockfile/test-utils";
 import { describe, expect, it } from "vitest";
-import { readLockfile } from "@ucdjs/lockfile";
 import { UCDStoreGenericError } from "../src/errors";
 import { handleVersionConflict } from "../src/store";
 

@@ -1,5 +1,4 @@
 import { createMemoryMockFS, createReadOnlyBridge } from "#test-utils/fs-bridges";
-import { assert, describe, expect, it } from "vitest";
 import {
   canUseLockfile,
   getLockfilePath,
@@ -8,6 +7,7 @@ import {
   readLockfileOrDefault,
   writeLockfile,
 } from "@ucdjs/lockfile";
+import { assert, describe, expect, it } from "vitest";
 
 const readOnlyBridge = createReadOnlyBridge();
 

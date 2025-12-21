@@ -1,5 +1,4 @@
 import HTTPFileSystemBridge from "#internal:bridge/http";
-import { mockFetch } from "#test-utils/msw";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { PathTraversalError } from "@ucdjs/path-utils";
 import { describe, expect, it } from "vitest";

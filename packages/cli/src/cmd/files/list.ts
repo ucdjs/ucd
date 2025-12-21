@@ -9,12 +9,12 @@ export interface CLIFilesListCmdOptions {
   flags: CLIArguments<CLIFilesCmdOptions["flags"]>;
 }
 
-type FileEntry = {
+interface FileEntry {
   type: "file" | "directory";
   name: string;
   path: string;
   lastModified: number;
-};
+}
 
 function formatDate(timestamp: number): string {
   const date = new Date(timestamp);
@@ -130,4 +130,3 @@ export async function runFilesList({ path, flags }: CLIFilesListCmdOptions) {
     console.error("If you believe this is a bug, please report it at https://github.com/ucdjs/ucd/issues");
   }
 }
-

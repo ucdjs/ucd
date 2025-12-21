@@ -56,4 +56,3 @@ export class LockfileBridgeUnsupportedOperation extends LockfileBaseError {
     Object.setPrototypeOf(this, LockfileBridgeUnsupportedOperation.prototype);
   }
 }
-

@@ -13,8 +13,8 @@ pnpm add @ucdjs/lockfile
 ### Reading and Writing Lockfiles
 
 ```typescript
-import { readLockfile, writeLockfile, getLockfilePath } from "@ucdjs/lockfile";
 import { NodeFileSystemBridge } from "@ucdjs/fs-bridge";
+import { getLockfilePath, readLockfile, writeLockfile } from "@ucdjs/lockfile";
 
 const fs = NodeFileSystemBridge({ basePath: "./store" });
 const lockfilePath = getLockfilePath("./store");
@@ -38,7 +38,7 @@ await writeLockfile(fs, lockfilePath, {
 ### Reading and Writing Snapshots
 
 ```typescript
-import { readSnapshot, writeSnapshot, getSnapshotPath } from "@ucdjs/lockfile";
+import { getSnapshotPath, readSnapshot, writeSnapshot } from "@ucdjs/lockfile";
 
 const basePath = "./store";
 const version = "16.0.0";
@@ -129,4 +129,3 @@ const snapshot = await createSnapshot("16.0.0", {
 ## License
 
 MIT
-

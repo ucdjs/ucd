@@ -64,4 +64,3 @@ export async function runFilesRoot(subcommand: string, { flags }: CLIFilesCmdOpt
 
   throw new Error(`Invalid subcommand: ${subcommand}`);
 }
-
