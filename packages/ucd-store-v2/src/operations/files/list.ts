@@ -42,7 +42,7 @@ export async function listFiles(
       throw new UCDStoreVersionNotFoundError(version);
     }
 
-    const localPath = join(context.basePath, `v${version}`);
+    const localPath = join(context.basePath, version);
 
     // Try listing from local store first
     const dirExists = await context.fs.exists(localPath);

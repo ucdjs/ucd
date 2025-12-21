@@ -201,7 +201,7 @@ export async function handleVersionConflict(
             return [
               v,
               existingEntry ?? {
-                path: `v${v}/snapshot.json`, // relative path
+                path: `${v}/snapshot.json`, // relative path
                 fileCount: 0,
                 totalSize: 0,
               },
@@ -224,7 +224,7 @@ export async function handleVersionConflict(
             return [
               v,
               existingEntry ?? {
-                path: `v${v}/snapshot.json`, // relative path
+                path: `${v}/snapshot.json`, // relative path
                 fileCount: 0,
                 totalSize: 0,
               },

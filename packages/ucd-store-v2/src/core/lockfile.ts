@@ -107,7 +107,6 @@ export async function readLockfileOrDefault(
  * Gets the default lockfile path for a given base path.
  */
 export function getLockfilePath(_basePath: string): string {
-  console.log("getLockfilePath", _basePath, "joined", join(_basePath, ".ucd-store.lock"));
   return ".ucd-store.lock";
 }
 
@@ -316,8 +315,8 @@ export async function readSnapshotOrDefault(
 
 /**
  * Gets the snapshot path for a given version.
- * Snapshots are stored inside version directories: v{version}/snapshot.json
+ * Snapshots are stored inside version directories: {version}/snapshot.json
  */
 export function getSnapshotPath(basePath: string, version: string): string {
-  return join(basePath, `v${version}`, "snapshot.json");
+  return join(basePath, version, "snapshot.json");
 }

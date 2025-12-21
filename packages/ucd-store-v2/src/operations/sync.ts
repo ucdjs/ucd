@@ -168,7 +168,7 @@ export async function sync(
             return [
               v,
               existingEntry ?? {
-                path: `v${v}/snapshot.json`, // relative path
+                path: `${v}/snapshot.json`, // relative path
                 fileCount: 0,
                 totalSize: 0,
               },
@@ -264,7 +264,7 @@ export async function sync(
             orphanedFiles.map((filePath) =>
               limit(async () => {
                 try {
-                  const localPath = join(context.basePath, `v${version}`, filePath);
+                  const localPath = join(context.basePath, version, filePath);
                   if (await context.fs.exists(localPath)) {
                     await context.fs.rm!(localPath);
                     removedFiles.get(version)!.push(filePath);

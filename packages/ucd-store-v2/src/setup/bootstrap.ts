@@ -71,7 +71,7 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
       versions.map((v) => [
         v,
         {
-          path: `v${v}/snapshot.json`, // relative path to snapshot
+          path: `${v}/snapshot.json`, // relative path to snapshot
           fileCount: 0,
           totalSize: 0,
         },
