@@ -1,4 +1,5 @@
 import type { UCDStore, UCDStoreOptions } from "./types";
+import { resolve } from "pathe";
 import { createUCDStore } from "./store";
 
 /**
@@ -19,10 +20,15 @@ export async function createNodeUCDStore(options: Omit<UCDStoreOptions, "fs"> = 
     throw new Error("Node.js FileSystemBridge could not be loaded");
   }
 
+  // Resolve basePath to absolute path to match bridge's resolved basePath
+  // This prevents path duplication when operations construct paths using context.basePath
+  const resolvedBasePath = options.basePath ? resolve(options.basePath) : resolve("./");
+
   return createUCDStore({
     ...options,
+    basePath: resolvedBasePath,
     fs: fs({
-      basePath: options.basePath || "./",
+      basePath: resolvedBasePath,
     }),
   });
 }

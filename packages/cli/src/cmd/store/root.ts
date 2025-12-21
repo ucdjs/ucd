@@ -31,12 +31,12 @@ export async function runStoreRoot(subcommand: string, { flags }: CLIStoreCmdOpt
       usage: "[command] [...flags]",
       tables: {
         Commands: [
-          ["init", "Initialize an UCD Store (create lockfile)."],
-          ["sync", "Sync lockfile with available versions from API."],
+          ["init", "Initialize an UCD Store (create lockfile and download files)."],
+          ["sync", "Sync files to match lockfile state (download missing, optionally remove orphaned)."],
           ["mirror", "Download Unicode data files to local storage."],
-          ["verify", "Verify store integrity against API."],
-          ["analyze", "Analyze store contents and file status."],
-          ["status", "Show store status and lockfile information."],
+          ["verify", "Verify store integrity against API (works with HTTP bridge)."],
+          ["analyze", "Analyze store contents and file status (works with HTTP bridge)."],
+          ["status", "Show store status and lockfile information (works with HTTP bridge)."],
         ],
         Flags: [
           ["--store-dir", "Directory where the UCD files are stored."],

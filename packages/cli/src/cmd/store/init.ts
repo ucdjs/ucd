@@ -2,17 +2,13 @@
 import type { Prettify } from "@luxass/utils";
 import type { CLIArguments } from "../../cli-utils";
 import type { CLIStoreCmdSharedFlags } from "./_shared";
-import fs from "node:fs/promises";
-import { join } from "node:path";
 import { UCDStoreGenericError } from "@ucdjs/ucd-store-v2";
-import { red } from "farver/fast";
+import { green, red, yellow } from "farver/fast";
 import { printHelp } from "../../cli-utils";
 import { assertRemoteOrStoreDir, createStoreFromFlags, runVersionPrompt, SHARED_FLAGS } from "./_shared";
 
 export interface CLIStoreInitCmdOptions {
-  flags: CLIArguments<Prettify<CLIStoreCmdSharedFlags & {
-    dryRun?: boolean;
-  }>>;
+  flags: CLIArguments<Prettify<CLIStoreCmdSharedFlags>>;
   versions: string[];
 }
 
@@ -25,7 +21,6 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
       tables: {
         Flags: [
           ...SHARED_FLAGS,
-          ["--dry-run", "Show what would be done without making changes."],
           ["--help (-h)", "See all available flags."],
         ],
       },
@@ -38,24 +33,23 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
     remote,
     baseUrl,
     include: patterns,
-    lockfileOnly,
+    exclude: excludePatterns,
     force,
-    dryRun,
   } = flags;
 
   try {
     assertRemoteOrStoreDir(flags);
 
-    // If lockfile-only mode, check if lockfile exists
-    if (lockfileOnly && storeDir && !remote) {
-      // Use the same relative path that getLockfilePath returns
-      const lockfilePath = join(storeDir, ".ucd-store.lock");
-      const lockfileExists = await fs.access(lockfilePath).then(() => true).catch(() => false);
-      if (!lockfileExists) {
-        console.error(red(`\n❌ Error: Lockfile not found at ${lockfilePath}`));
-        console.error("Cannot proceed in --lockfile-only mode without an existing lockfile.");
-        return;
-      }
+    // Init requires local store (needs write capability)
+    if (remote) {
+      console.error(red(`\n❌ Error: Init operation requires a local store directory.`));
+      console.error("Use --store-dir to specify a local directory for initialization.");
+      return;
+    }
+
+    if (!storeDir) {
+      console.error(red(`\n❌ Error: Store directory must be specified.`));
+      return;
     }
 
     let selectedVersions = versions;
@@ -71,24 +65,62 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
       selectedVersions = pickedVersions;
     }
 
-    // Create store with bootstrap enabled (unless lockfile-only)
+    // Create store with bootstrap enabled
     // The store creation will automatically bootstrap if needed
-    await createStoreFromFlags({
+    const store = await createStoreFromFlags({
       baseUrl,
       storeDir,
-      remote,
+      remote: false,
       include: patterns,
+      exclude: excludePatterns,
       versions: selectedVersions,
       force,
-      lockfileOnly,
+      lockfileOnly: false,
     });
 
-    if (dryRun) {
-      console.info("Store initialization would be successful in dry-run mode.");
-      console.info("No files have been written to disk.");
-    } else {
-      console.info("Store initialized successfully.");
-      console.info(`Lockfile created with ${selectedVersions.length} version(s): ${selectedVersions.join(", ")}`);
+    // Check write capability
+    // assertWriteCapability(store);
+
+    console.info("Store initialized successfully.");
+    console.info(`Lockfile created with ${selectedVersions.length} version(s): ${selectedVersions.join(", ")}`);
+
+    // Automatically mirror files after lockfile creation
+    console.info("\nStarting mirror operation...");
+    const [mirrorResult, mirrorError] = await store.mirror({
+      versions: selectedVersions,
+      force,
+      filters: {
+        include: patterns,
+        exclude: excludePatterns,
+      },
+    });
+
+    if (mirrorError) {
+      console.error(red(`\n⚠ Warning: Mirror operation failed:`));
+      console.error(`  ${mirrorError.message}`);
+      console.error("Lockfile was created successfully, but files were not downloaded.");
+      return;
+    }
+
+    if (!mirrorResult) {
+      console.error(red(`\n⚠ Warning: Mirror operation returned no result.`));
+      console.error("Lockfile was created successfully, but files were not downloaded.");
+      return;
+    }
+
+    // Display mirror results
+    console.info(green("\n✓ Mirror operation completed successfully\n"));
+
+    if (mirrorResult.summary) {
+      const { counts, duration, storage } = mirrorResult.summary;
+      console.info(`Summary:`);
+      console.info(`  Versions processed: ${mirrorResult.versions.size}`);
+      console.info(`  Files downloaded: ${green(String(counts.downloaded))}`);
+      console.info(`  Files skipped: ${yellow(String(counts.skipped))}`);
+      console.info(`  Files failed: ${counts.failed > 0 ? red(String(counts.failed)) : String(counts.failed)}`);
+      console.info(`  Total size: ${storage.totalSize}`);
+      console.info(`  Duration: ${(duration / 1000).toFixed(2)}s`);
+      console.info("");
     }
   } catch (err) {
     if (err instanceof UCDStoreGenericError) {
