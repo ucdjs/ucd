@@ -311,4 +311,3 @@ const snapshot = createSnapshot("16.0.0", {
 2. **Readability** - Less boilerplate, clearer intent
 3. **Maintainability** - Changes to test setup happen in one place
 4. **Type Safety** - Helpers provide proper types
-5. **Reusability** - Common patterns extracted to helpers
