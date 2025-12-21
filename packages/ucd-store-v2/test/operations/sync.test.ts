@@ -1,9 +1,9 @@
 import type { MirrorReport } from "../../src/operations/mirror";
-import { createEmptyLockfile } from "#internal-pkg:test-utils/lockfile-builder";
 import { createTestContext } from "#internal-pkg:test-utils/test-context";
+import { createEmptyLockfile } from "@ucdjs/lockfile/test-utils";
 import { mockStoreApi } from "#test-utils/mock-store";
 import { describe, expect, it, vi } from "vitest";
-import { readLockfile } from "../../src/core/lockfile";
+import { readLockfile } from "@ucdjs/lockfile";
 import { mirror } from "../../src/operations/mirror";
 import { sync } from "../../src/operations/sync";
 

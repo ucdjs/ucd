@@ -10,7 +10,7 @@ import {
 import { hasCapability } from "@ucdjs/fs-bridge";
 import { join } from "pathe";
 import { getExpectedFilePaths } from "../core/files";
-import { readLockfileOrDefault, readSnapshotOrDefault, writeLockfile } from "../core/lockfile";
+import { readLockfileOrDefault, readSnapshotOrDefault, writeLockfile } from "@ucdjs/lockfile";
 import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../errors";
 import { listFiles } from "./files/list";
 import { mirror } from "./mirror";

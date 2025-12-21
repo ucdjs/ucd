@@ -9,9 +9,9 @@ import {
   tryCatch,
 } from "@ucdjs-internal/shared";
 import { hasCapability } from "@ucdjs/fs-bridge";
+import { computeFileHash, readLockfileOrDefault, writeLockfile, writeSnapshot } from "@ucdjs/lockfile";
 import { hasUCDFolderPath } from "@unicode-utils/core";
 import { dirname, join } from "pathe";
-import { computeFileHash, readLockfileOrDefault, writeLockfile, writeSnapshot } from "../core/lockfile";
 import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../errors";
 
 const debug = createDebugger("ucdjs:ucd-store:mirror");

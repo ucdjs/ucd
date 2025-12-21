@@ -1,5 +1,5 @@
 import type { Snapshot } from "@ucdjs/schemas";
-import { computeFileHash } from "../../src/core/lockfile";
+import { computeFileHash } from "../hash";
 
 export interface CreateSnapshotOptions {
   /**
@@ -55,3 +55,4 @@ export function createSnapshotWithHashes(
     ),
   };
 }
+

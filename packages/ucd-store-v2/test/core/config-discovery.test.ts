@@ -3,7 +3,7 @@ import { mockStoreApi } from "#test-utils/mock-store";
 import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { describe, expect, it } from "vitest";
-import { readLockfile } from "../../src/core/lockfile";
+import { readLockfile } from "@ucdjs/lockfile";
 import { createUCDStore } from "../../src/store";
 
 describe("config discovery integration", () => {

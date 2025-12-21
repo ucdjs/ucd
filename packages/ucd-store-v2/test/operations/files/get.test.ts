@@ -1,6 +1,6 @@
-import { createEmptyLockfile } from "#internal-pkg:test-utils/lockfile-builder";
 import { createTestContext } from "#internal-pkg:test-utils/test-context";
 import { mockStoreApi } from "#test-utils/mock-store";
+import { createEmptyLockfile } from "@ucdjs/lockfile/test-utils";
 import { describe, expect, it } from "vitest";
 import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../../../src/errors";
 import { getFile } from "../../../src/operations/files/get";
