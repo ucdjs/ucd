@@ -21,6 +21,26 @@ const LockfileVersionEntrySchema = z.object({
 });
 
 /**
+ * Schema for filters applied when creating/updating the lockfile
+ */
+const LockfileFiltersSchema = z.object({
+  /**
+   * Glob patterns for files to include
+   */
+  include: z.array(z.string()).optional(),
+
+  /**
+   * Glob patterns for files to exclude
+   */
+  exclude: z.array(z.string()).optional(),
+
+  /**
+   * Whether default exclusions (.zip, .pdf) were disabled
+   */
+  disableDefaultExclusions: z.boolean().optional(),
+}).optional();
+
+/**
  * Schema for the lockfile structure
  */
 export const LockfileSchema = z.object({
@@ -33,6 +53,12 @@ export const LockfileSchema = z.object({
    * Map of Unicode versions to their snapshot metadata
    */
   versions: z.record(z.string(), LockfileVersionEntrySchema),
+
+  /**
+   * Filters that were applied when creating/updating this lockfile.
+   * This helps track which files were excluded and why.
+   */
+  filters: LockfileFiltersSchema,
 });
 
 export type Lockfile = z.output<typeof LockfileSchema>;

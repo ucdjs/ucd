@@ -1,7 +1,9 @@
+import type { PathFilter } from "@ucdjs-internal/shared";
 import type { UCDClient } from "@ucdjs/client";
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 import { createDebugger } from "@ucdjs-internal/shared";
 import { assertCapability } from "@ucdjs/fs-bridge";
+import { extractFilterPatterns } from "../core/context";
 import { writeLockfile } from "../core/lockfile";
 import { UCDStoreGenericError } from "../errors";
 
@@ -13,6 +15,7 @@ export interface BootstrapOptions {
   basePath: string;
   versions: string[];
   lockfilePath: string;
+  filter?: PathFilter;
 }
 
 /**
@@ -23,7 +26,7 @@ export interface BootstrapOptions {
  * @throws {UCDStoreGenericError} If API fetch fails or versions are invalid
  */
 export async function bootstrap(options: BootstrapOptions): Promise<void> {
-  const { client, fs, basePath, versions, lockfilePath } = options;
+  const { client, fs, basePath, versions, lockfilePath, filter } = options;
 
   debug?.("Starting bootstrap for versions:", versions);
 
@@ -65,6 +68,7 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
   }
 
   debug?.(`Writing lockfile to: ${lockfilePath}`);
+  const filters = filter ? extractFilterPatterns(filter) : undefined;
   await writeLockfile(fs, lockfilePath, {
     lockfileVersion: 1,
     versions: Object.fromEntries(
@@ -77,6 +81,7 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
         },
       ]),
     ),
+    filters,
   });
 
   debug?.("✓ Bootstrap completed successfully");

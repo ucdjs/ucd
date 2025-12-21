@@ -1,4 +1,4 @@
-import type { PathFilter } from "@ucdjs-internal/shared";
+import type { PathFilter, PathFilterOptions } from "@ucdjs-internal/shared";
 import type { UCDClient } from "@ucdjs/client";
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 import type {
@@ -27,6 +27,32 @@ export function createInternalContext(options: {
     basePath: options.basePath,
     versions: [...options.versions],
     lockfilePath: options.lockfilePath,
+  };
+}
+
+/**
+ * Extracts filter patterns from a PathFilter for storage in the lockfile.
+ *
+ * @param {PathFilter} filter - The path filter to extract patterns from
+ * @returns {PathFilterOptions | undefined} The filter options, or undefined if no filters are configured
+ * @internal
+ */
+export function extractFilterPatterns(filter: PathFilter): PathFilterOptions | undefined {
+  const patterns = filter.patterns();
+
+  // Return undefined if no filters are configured (empty include/exclude)
+  const hasInclude = patterns.include && patterns.include.length > 0;
+  const hasExclude = patterns.exclude && patterns.exclude.length > 0;
+  const hasDisableDefault = patterns.disableDefaultExclusions === true;
+
+  if (!hasInclude && !hasExclude && !hasDisableDefault) {
+    return undefined;
+  }
+
+  return {
+    include: patterns.include,
+    exclude: patterns.exclude,
+    disableDefaultExclusions: patterns.disableDefaultExclusions,
   };
 }
 
