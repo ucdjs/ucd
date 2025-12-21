@@ -44,9 +44,7 @@ This refactor updates `ucd-store-v2` to:
 
 ## Key Architectural Changes
 
-**CRITICAL**: `expectedFiles` should NEVER be written to disk. It's only fetched from the well-known endpoint (`/.well-known/ucd-store/{version}.json`) when needed.
-
-**Old approach**:
+**CRITICAL**: `expectedFiles` should NEVER be written to disk. It's only fetched from the well-known endpoint (`/.well-known/ucd-store/{version}.json`) when needed.**Old approach**:
 
 - `.ucd-store.json` contained versions and their `expectedFiles` (stored locally)
 - Used as both manifest and lockfile
@@ -60,7 +58,7 @@ This refactor updates `ucd-store-v2` to:
 
 **Store directory structure**:
 
-```
+```javascript
 store dir/
 ├── .ucd-store.lock
 ├── v16.0.0/
@@ -68,6 +66,8 @@ store dir/
 └── v15.1.0/
     └── snapshot.json
 ```
+
+
 
 ## Changes Required
 
@@ -130,10 +130,10 @@ store dir/
 **File**: `packages/ucd-store-v2/src/operations/mirror.ts`
 
 - After mirroring files for a version:
-  - Compute file hashes using `computeFileHash` from lockfile module
-  - Create snapshot with file hashes and metadata
-  - Write snapshot using `writeSnapshot` (snapshot goes in `v{version}/snapshot.json`)
-  - Update lockfile entry for that version with snapshot path (e.g., `v16.0.0/snapshot.json`), fileCount, and totalSize
+- Compute file hashes using `computeFileHash` from lockfile module
+- Create snapshot with file hashes and metadata
+- Write snapshot using `writeSnapshot` (snapshot goes in `v{version}/snapshot.json`)
+- Update lockfile entry for that version with snapshot path (e.g., `v16.0.0/snapshot.json`), fileCount, and totalSize
 - Use `writeLockfile` to persist the updated lockfile
 
 ### 7. Update files operations to fetch expectedFiles from API when needed
@@ -171,4 +171,3 @@ store dir/
 6. Update sync to use config versions and update lockfile
 7. Update mirror to create snapshots and update lockfile
 8. Update files operations to use manifest endpoint for expectedFiles
-9. Remove or deprecate manifest-related code

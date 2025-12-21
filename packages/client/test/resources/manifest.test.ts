@@ -17,7 +17,7 @@ describe("createManifestResource", () => {
   describe("get()", () => {
     it("should fetch manifest for valid version successfully", async () => {
       mockFetch([
-        ["GET", `${baseUrl}/.well-known/ucd-store/16.0.0.json`, () => {
+        ["GET", `${baseUrl}/.well-known/ucd-store/{version}.json`, () => {
           return HttpResponse.json(mockManifest);
         }],
       ]);
@@ -31,7 +31,7 @@ describe("createManifestResource", () => {
 
     it("should return manifest with correct structure", async () => {
       mockFetch([
-        ["GET", `${baseUrl}/.well-known/ucd-store/16.0.0.json`, () => {
+        ["GET", `${baseUrl}/.well-known/ucd-store/{version}.json`, () => {
           return HttpResponse.json(mockManifest);
         }],
       ]);
@@ -99,7 +99,7 @@ describe("createManifestResource", () => {
 
     it("should handle server errors", async () => {
       mockFetch([
-        ["GET", `${baseUrl}/.well-known/ucd-store/16.0.0.json`, () => {
+        ["GET", `${baseUrl}/.well-known/ucd-store/{version}.json`, () => {
           return new HttpResponse(null, { status: 500 });
         }],
       ]);
@@ -114,7 +114,7 @@ describe("createManifestResource", () => {
 
     it("should handle network errors", async () => {
       mockFetch([
-        ["GET", `${baseUrl}/.well-known/ucd-store/16.0.0.json`, () => {
+        ["GET", `${baseUrl}/.well-known/ucd-store/{version}.json`, () => {
           return HttpResponse.error();
         }],
       ]);
@@ -132,7 +132,7 @@ describe("createManifestResource", () => {
       const customBaseUrl = "https://custom-ucd-server.com";
 
       mockFetch([
-        ["GET", `${customBaseUrl}/.well-known/ucd-store/16.0.0.json`, () => {
+        ["GET", `${customBaseUrl}/.well-known/ucd-store/{version}.json`, () => {
           return HttpResponse.json(mockManifest);
         }],
       ]);

@@ -1,13 +1,15 @@
-import { createMemoryMockFS } from "#test-utils/fs-bridges";
+import { createEmptyLockfile } from "#internal-pkg:test-utils/lockfile-builder";
+import {
+  createTestContext,
+} from "#internal-pkg:test-utils/test-context";
+import { mockStoreApi } from "#test-utils/mock-store";
 import { HttpResponse, mockFetch } from "#test-utils/msw";
-import { getDefaultUCDEndpointConfig } from "@ucdjs-internal/shared";
-import { createUCDClientWithConfig } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { describe, expect, it } from "vitest";
 import { UCDStoreGenericError } from "../../src/errors";
 import { verify } from "../../src/setup/verify";
 
-function createMockVersions(versions: string[]) {
+function _createMockVersions(versions: string[]) {
   return versions.map((version) => ({
     version,
     documentationUrl: `https://www.unicode.org/versions/Unicode${version}/`,
@@ -19,162 +21,203 @@ function createMockVersions(versions: string[]) {
 }
 
 describe("verify", () => {
-  it("should return valid result when all manifest versions exist in API", async () => {
-    const fs = createMemoryMockFS();
-    const manifestPath = "/test/.ucd-store.json";
-    const manifestVersions = ["16.0.0", "15.1.0"];
+  describe("valid lockfile", () => {
+    it("should return valid result when all lockfile versions exist in API", async () => {
+      // Arrange
+      mockStoreApi({
+        versions: ["16.0.0", "15.1.0", "15.0.0"],
+      });
 
-    await fs.write!(manifestPath, JSON.stringify({
-      "16.0.0": { expectedFiles: [] },
-      "15.1.0": { expectedFiles: [] },
-    }));
+      const { context, fs, lockfilePath } = await createTestContext({
+        versions: ["16.0.0", "15.1.0"],
+        lockfile: createEmptyLockfile(["16.0.0", "15.1.0"]),
+      });
 
-    mockFetch([
-      ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
-        return HttpResponse.json(createMockVersions(["16.0.0", "15.1.0", "15.0.0"]));
-      }],
-    ]);
+      // Act
+      const result = await verify({
+        client: context.client,
+        lockfilePath,
+        fs,
+        versions: context.versions,
+      });
 
-    const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, getDefaultUCDEndpointConfig());
-    const result = await verify({ client, manifestPath, fs });
+      // Assert
+      expect(result.valid).toBe(true);
+      expect(result.lockfileVersions).toEqual(["16.0.0", "15.1.0"]);
+      expect(result.missingVersions).toEqual([]);
+    });
 
-    expect(result.valid).toBe(true);
-    expect(result.manifestVersions).toEqual(manifestVersions);
-    expect(result.missingVersions).toEqual([]);
+    it("should include extra versions available in API but not in lockfile", async () => {
+      // Arrange
+      mockStoreApi({
+        versions: ["16.0.0", "15.1.0", "15.0.0", "14.0.0"],
+      });
+
+      const { context, fs, lockfilePath } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+      });
+
+      // Act
+      const result = await verify({
+        client: context.client,
+        lockfilePath,
+        fs,
+        versions: context.versions,
+      });
+
+      // Assert
+      expect(result.valid).toBe(true);
+      expect(result.extraVersions).toContain("15.1.0");
+      expect(result.extraVersions).toContain("15.0.0");
+      expect(result.extraVersions).toContain("14.0.0");
+      expect(result.extraVersions).toHaveLength(3);
+    });
   });
 
-  it("should include extra versions available in API but not in manifest", async () => {
-    const fs = createMemoryMockFS();
-    const manifestPath = "/test/.ucd-store.json";
+  describe("invalid lockfile", () => {
+    it("should return invalid result when lockfile has versions not in API", async () => {
+      // Arrange
+      mockStoreApi({
+        versions: ["16.0.0", "15.1.0"],
+      });
 
-    await fs.write!(manifestPath, JSON.stringify({
-      "16.0.0": { expectedFiles: [] },
-    }));
+      const { context, fs, lockfilePath } = await createTestContext({
+        versions: ["16.0.0", "15.1.0", "99.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0", "15.1.0", "99.0.0"]),
+      });
 
-    mockFetch([
-      ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
-        return HttpResponse.json(createMockVersions(["16.0.0", "15.1.0", "15.0.0", "14.0.0"]));
-      }],
-    ]);
+      // Act
+      const result = await verify({
+        client: context.client,
+        lockfilePath,
+        fs,
+        versions: context.versions,
+      });
 
-    const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, getDefaultUCDEndpointConfig());
-    const result = await verify({ client, manifestPath, fs });
+      // Assert
+      expect(result.valid).toBe(false);
+    });
 
-    expect(result.valid).toBe(true);
-    expect(result.extraVersions).toContain("15.1.0");
-    expect(result.extraVersions).toContain("15.0.0");
-    expect(result.extraVersions).toContain("14.0.0");
-    expect(result.extraVersions).toHaveLength(3);
+    it("should list missing versions when they don't exist in API", async () => {
+      // Arrange
+      mockStoreApi({
+        versions: ["16.0.0", "15.1.0"],
+      });
+
+      const { context, fs, lockfilePath } = await createTestContext({
+        versions: ["16.0.0", "99.0.0", "88.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0", "99.0.0", "88.0.0"]),
+      });
+
+      // Act
+      const result = await verify({
+        client: context.client,
+        lockfilePath,
+        fs,
+        versions: context.versions,
+      });
+
+      // Assert
+      expect(result.missingVersions).toContain("99.0.0");
+      expect(result.missingVersions).toContain("88.0.0");
+      expect(result.missingVersions).toHaveLength(2);
+    });
   });
 
-  it("should return invalid result when manifest has versions not in API", async () => {
-    const fs = createMemoryMockFS();
-    const manifestPath = "/test/.ucd-store.json";
+  describe("edge cases", () => {
+    it("should handle empty lockfile", async () => {
+      // Arrange
+      mockStoreApi({
+        versions: ["16.0.0", "15.1.0"],
+      });
 
-    await fs.write!(manifestPath, JSON.stringify({
-      "16.0.0": { expectedFiles: [] },
-      "15.1.0": { expectedFiles: [] },
-      "99.0.0": { expectedFiles: [] },
-    }));
+      const { context, fs, lockfilePath } = await createTestContext({
+        versions: [],
+        lockfile: createEmptyLockfile([]),
+      });
 
-    mockFetch([
-      ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
-        return HttpResponse.json(createMockVersions(["16.0.0", "15.1.0"]));
-      }],
-    ]);
+      // Act
+      const result = await verify({
+        client: context.client,
+        lockfilePath,
+        fs,
+        versions: context.versions,
+      });
 
-    const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, getDefaultUCDEndpointConfig());
-    const result = await verify({ client, manifestPath, fs });
-
-    expect(result.valid).toBe(false);
+      // Assert
+      expect(result.valid).toBe(true);
+      expect(result.lockfileVersions).toEqual([]);
+      expect(result.missingVersions).toEqual([]);
+      expect(result.extraVersions).toEqual(["16.0.0", "15.1.0"]);
+    });
   });
 
-  it("should list missing versions when they don't exist in API", async () => {
-    const fs = createMemoryMockFS();
-    const manifestPath = "/test/.ucd-store.json";
+  describe("error handling", () => {
+    it("should throw error when API request fails", async () => {
+      // Arrange
+      mockFetch([
+        ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
+          return new HttpResponse(null, { status: 500 });
+        }],
+      ]);
 
-    await fs.write!(manifestPath, JSON.stringify({
-      "16.0.0": { expectedFiles: [] },
-      "99.0.0": { expectedFiles: [] },
-      "88.0.0": { expectedFiles: [] },
-    }));
+      const { context, fs, lockfilePath } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+      });
 
-    mockFetch([
-      ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
-        return HttpResponse.json(createMockVersions(["16.0.0", "15.1.0"]));
-      }],
-    ]);
+      // Act & Assert
+      await expect(
+        verify({
+          client: context.client,
+          lockfilePath,
+          fs,
+          versions: context.versions,
+        }),
+      ).rejects.toThrow(UCDStoreGenericError);
 
-    const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, getDefaultUCDEndpointConfig());
-    const result = await verify({ client, manifestPath, fs });
+      await expect(
+        verify({
+          client: context.client,
+          lockfilePath,
+          fs,
+          versions: context.versions,
+        }),
+      ).rejects.toThrow("Failed to fetch Unicode versions during verification");
+    });
 
-    expect(result.missingVersions).toContain("99.0.0");
-    expect(result.missingVersions).toContain("88.0.0");
-    expect(result.missingVersions).toHaveLength(2);
-  });
+    it("should throw error when API returns no data", async () => {
+      // Arrange
+      mockFetch([
+        ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
+          return HttpResponse.json(null);
+        }],
+      ]);
 
-  it("should handle empty manifest", async () => {
-    const fs = createMemoryMockFS();
-    const manifestPath = "/test/.ucd-store.json";
+      const { context, fs, lockfilePath } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+      });
 
-    await fs.write!(manifestPath, JSON.stringify({}));
+      // Act & Assert
+      await expect(
+        verify({
+          client: context.client,
+          lockfilePath,
+          fs,
+          versions: context.versions,
+        }),
+      ).rejects.toThrow(UCDStoreGenericError);
 
-    mockFetch([
-      ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
-        return HttpResponse.json(createMockVersions(["16.0.0", "15.1.0"]));
-      }],
-    ]);
-
-    const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, getDefaultUCDEndpointConfig());
-    const result = await verify({ client, manifestPath, fs });
-
-    expect(result.valid).toBe(true);
-    expect(result.manifestVersions).toEqual([]);
-    expect(result.missingVersions).toEqual([]);
-    expect(result.extraVersions).toEqual(["16.0.0", "15.1.0"]);
-  });
-
-  it("should throw error when API request fails", async () => {
-    const fs = createMemoryMockFS();
-    const manifestPath = "/test/.ucd-store.json";
-
-    await fs.write!(manifestPath, JSON.stringify({
-      "16.0.0": { expectedFiles: [] },
-    }));
-
-    mockFetch([
-      ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
-        return new HttpResponse(null, { status: 500 });
-      }],
-    ]);
-
-    const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, getDefaultUCDEndpointConfig());
-
-    await expect(verify({ client, manifestPath, fs })).rejects.toThrow(UCDStoreGenericError);
-    await expect(verify({ client, manifestPath, fs })).rejects.toThrow(
-      "Failed to fetch Unicode versions during verification",
-    );
-  });
-
-  it("should throw error when API returns no data", async () => {
-    const fs = createMemoryMockFS();
-    const manifestPath = "/test/.ucd-store.json";
-
-    await fs.write!(manifestPath, JSON.stringify({
-      "16.0.0": { expectedFiles: [] },
-    }));
-
-    mockFetch([
-      ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
-        return HttpResponse.json(null);
-      }],
-    ]);
-
-    const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, getDefaultUCDEndpointConfig());
-
-    await expect(verify({ client, manifestPath, fs })).rejects.toThrow(UCDStoreGenericError);
-    await expect(verify({ client, manifestPath, fs })).rejects.toThrow(
-      "Failed to fetch Unicode versions during verification: no data returned",
-    );
+      await expect(
+        verify({
+          client: context.client,
+          lockfilePath,
+          fs,
+          versions: context.versions,
+        }),
+      ).rejects.toThrow("Failed to fetch Unicode versions during verification: no data returned");
+    });
   });
 });

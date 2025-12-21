@@ -4,50 +4,50 @@ overview: Design a reusable test structure with helper utilities, then refactor 
 todos:
   - id: create-test-helpers
     content: "Create test helper utilities: test-context.ts, lockfile-builder.ts, snapshot-builder.ts, and index.ts"
-    status: pending
+    status: completed
   - id: create-example-test
     content: Update one test file (e.g., bootstrap.test.ts) as example using new helpers
-    status: pending
+    status: completed
     dependencies:
       - create-test-helpers
   - id: update-bootstrap-tests
     content: Update bootstrap.test.ts using new test structure and helpers
-    status: pending
+    status: completed
     dependencies:
       - create-example-test
   - id: update-sync-tests
     content: Update sync.test.ts using new test structure, config mocking, and helpers
-    status: pending
+    status: completed
     dependencies:
       - create-example-test
   - id: update-verify-tests
     content: Update verify.test.ts using new test structure and helpers
-    status: pending
+    status: completed
     dependencies:
       - create-example-test
   - id: update-version-conflict-tests
     content: Update version-conflict.test.ts using new test structure and helpers
-    status: pending
+    status: completed
     dependencies:
       - create-example-test
   - id: update-mirror-tests
     content: Update mirror.test.ts using new test structure, snapshot builders, and helpers
-    status: pending
+    status: completed
     dependencies:
       - create-example-test
   - id: update-files-tests
     content: Update files operation tests using new test structure and manifest endpoint mocking
-    status: pending
+    status: completed
     dependencies:
       - create-example-test
   - id: update-remaining-tests
     content: Update all remaining test files (analyze, errors, etc.) using new test structure
-    status: pending
+    status: completed
     dependencies:
       - create-example-test
   - id: remove-manifest-tests
     content: Remove deprecated manifest.test.ts file
-    status: pending
+    status: completed
   - id: add-new-test-coverage
     content: Add new test files for snapshot operations, config discovery, and integration tests
     status: pending
@@ -312,10 +312,3 @@ const snapshot = createSnapshot("16.0.0", {
 3. **Maintainability** - Changes to test setup happen in one place
 4. **Type Safety** - Helpers provide proper types
 5. **Reusability** - Common patterns extracted to helpers
-
-## Migration Strategy
-
-1. Create helper files first
-2. Update one test file as example/reference
-3. Update remaining test files following the pattern
-4. Remove deprecated manifest.test.ts
