@@ -6,7 +6,6 @@ import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../../../src
 import { getFileTree } from "../../../src/operations/files/tree";
 
 describe("getFileTree", () => {
-
   describe("local store (default behavior)", () => {
     it("should return tree structure from local directory when it exists", async () => {
       let callCount = 0;
