@@ -130,11 +130,12 @@ describe("edge cases", () => {
       });
       const bridge = NodeFileSystemBridge({ basePath: testDir });
 
-      // Both should work
       const content1 = await bridge.read("dir/file.txt");
-      const content2 = await bridge.read("dir/file.txt/");
       expect(content1).toBe("content");
-      // Note: trailing slash on file might fail, but directory should work
+
+      await expect(
+        bridge.read("dir/file.txt/"),
+      ).rejects.toThrow();
     });
 
     it("should normalize mixed separators", async () => {
