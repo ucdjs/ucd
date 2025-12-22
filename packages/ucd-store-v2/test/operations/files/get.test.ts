@@ -8,6 +8,7 @@ import { getFile } from "../../../src/operations/files/get";
 describe("getFile", () => {
   describe("local store (default behavior)", () => {
     it("should read file from local store when it exists", async () => {
+      // Arrange
       let callCount = 0;
       mockStoreApi({
         versions: ["16.0.0"],
@@ -24,14 +25,17 @@ describe("getFile", () => {
         },
       });
 
+      // Act
       const [data, error] = await getFile(context, "16.0.0", "UnicodeData.txt");
 
+      // Assert
       expect(error).toBeNull();
       expect(data).toBe("Local content");
       expect(callCount).toBe(0);
     });
 
     it("should throw error when file does not exist locally", async () => {
+      // Arrange
       mockStoreApi({ versions: ["16.0.0"] });
 
       const { context } = await createTestContext({
@@ -39,13 +43,16 @@ describe("getFile", () => {
         lockfile: createEmptyLockfile(["16.0.0"]),
       });
 
+      // Act
       const [_data, error] = await getFile(context, "16.0.0", "UnicodeData.txt");
 
+      // Assert
       expect(error).toBeInstanceOf(UCDStoreGenericError);
       expect(error?.message).toMatch(/File '(.*)' does not exist in local store/);
     });
 
     it("should throw error when local read fails", async () => {
+      // Arrange
       mockStoreApi({ versions: ["16.0.0"] });
 
       const { context, fs } = await createTestContext({
@@ -60,8 +67,10 @@ describe("getFile", () => {
         throw new Error("Read failed");
       });
 
+      // Act
       const [_data, error] = await getFile(context, "16.0.0", "UnicodeData.txt");
 
+      // Assert
       expect(error).toBeInstanceOf(UCDStoreGenericError);
       expect(error?.message).toMatch(/Failed to read file '(.*)' from local store/);
     });
@@ -70,6 +79,7 @@ describe("getFile", () => {
   // eslint-disable-next-line test/prefer-lowercase-title
   describe("API fallback (allowApi: true)", () => {
     it("should prefer local store over API", async () => {
+      // Arrange
       let callCount = 0;
       mockStoreApi({
         versions: ["16.0.0"],
@@ -89,16 +99,19 @@ describe("getFile", () => {
         },
       });
 
+      // Act
       const [data, error] = await getFile(context, "16.0.0", "UnicodeData.txt", {
         allowApi: true,
       });
 
+      // Assert
       expect(error).toBeNull();
       expect(data).toBe("Local content");
       expect(callCount).toBe(0);
     });
 
     it("should fetch from API when file not in local store", async () => {
+      // Arrange
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
@@ -111,15 +124,18 @@ describe("getFile", () => {
         lockfile: createEmptyLockfile(["16.0.0"]),
       });
 
+      // Act
       const [data, error] = await getFile(context, "16.0.0", "UnicodeData.txt", {
         allowApi: true,
       });
 
+      // Assert
       expect(error).toBeNull();
       expect(data).toBe("API content");
     });
 
     it("should fall back to API when local read fails", async () => {
+      // Arrange
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
@@ -139,15 +155,18 @@ describe("getFile", () => {
         throw new Error("Read failed");
       });
 
+      // Act
       const [data, error] = await getFile(context, "16.0.0", "UnicodeData.txt", {
         allowApi: true,
       });
 
+      // Assert
       expect(error).toBeNull();
       expect(data).toBe("API content");
     });
 
     it("should cache file after API fetch by default", async () => {
+      // Arrange
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
@@ -163,10 +182,12 @@ describe("getFile", () => {
       const fileExists = await fs.exists("/test/v16.0.0/UnicodeData.txt");
       expect(fileExists).toBe(false);
 
+      // Act
       const [data, error] = await getFile(context, "16.0.0", "UnicodeData.txt", {
         allowApi: true,
       });
 
+      // Assert
       expect(error).toBeNull();
       expect(data).toBe("API content");
 
@@ -178,6 +199,7 @@ describe("getFile", () => {
     });
 
     it("should not cache when cache option is false", async () => {
+      // Arrange
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
@@ -190,11 +212,13 @@ describe("getFile", () => {
         lockfile: createEmptyLockfile(["16.0.0"]),
       });
 
+      // Act
       const [data, error] = await getFile(context, "16.0.0", "UnicodeData.txt", {
         allowApi: true,
         cache: false,
       });
 
+      // Assert
       const fileExists = await fs.exists("/test/v16.0.0/UnicodeData.txt");
       expect(fileExists).toBe(false);
 
@@ -206,6 +230,7 @@ describe("getFile", () => {
     });
 
     it("should handle API errors", async () => {
+      // Arrange
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
@@ -222,10 +247,12 @@ describe("getFile", () => {
         lockfile: createEmptyLockfile(["16.0.0"]),
       });
 
+      // Act
       const [_data, error] = await getFile(context, "16.0.0", "UnicodeData.txt", {
         allowApi: true,
       });
 
+      // Assert
       expect(error).toBeInstanceOf(UCDStoreGenericError);
       expect(error?.message).toMatch(/Failed to fetch file '(.*)'/);
     });
@@ -233,6 +260,7 @@ describe("getFile", () => {
 
   describe("validation", () => {
     it("should throw error for non-existent version", async () => {
+      // Arrange
       mockStoreApi({ versions: ["16.0.0"] });
 
       const { context } = await createTestContext({
@@ -240,13 +268,16 @@ describe("getFile", () => {
         lockfile: createEmptyLockfile(["16.0.0"]),
       });
 
+      // Act
       const [_data, error] = await getFile(context, "99.0.0", "UnicodeData.txt");
 
+      // Assert
       expect(error).toBeInstanceOf(UCDStoreVersionNotFoundError);
       expect(error?.message).toMatch(/Version '\d+\.\d+\.\d+' does not exist in the store/);
     });
 
     it("should throw error when file does not pass filters", async () => {
+      // Arrange
       mockStoreApi({ versions: ["16.0.0"] });
 
       const { context } = await createTestContext({
@@ -255,8 +286,10 @@ describe("getFile", () => {
         globalFilters: { exclude: ["**/UnicodeData.txt"] },
       });
 
+      // Act
       const [_data, error] = await getFile(context, "16.0.0", "UnicodeData.txt");
 
+      // Assert
       expect(error).toBeInstanceOf(UCDStoreGenericError);
       expect(error?.message).toMatch(/File '(.*)' does not pass filters/);
     });

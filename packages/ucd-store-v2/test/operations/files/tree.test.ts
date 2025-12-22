@@ -8,6 +8,7 @@ import { getFileTree } from "../../../src/operations/files/tree";
 describe("getFileTree", () => {
   describe("local store (default behavior)", () => {
     it("should return tree structure from local directory when it exists", async () => {
+      // Arrange
       let callCount = 0;
       mockStoreApi({
         versions: ["16.0.0"],
@@ -26,8 +27,10 @@ describe("getFileTree", () => {
         },
       });
 
+      // Act
       const [data, error] = await getFileTree(context, "16.0.0");
 
+      // Assert
       expect(error).toBeNull();
       expect(data).toBeDefined();
       expect(data).toEqual(expect.arrayContaining([
@@ -54,6 +57,7 @@ describe("getFileTree", () => {
     });
 
     it("should return empty array when directory doesn't exist locally", async () => {
+      // Arrange
       let callCount = 0;
       mockStoreApi({
         versions: ["16.0.0"],
@@ -67,14 +71,17 @@ describe("getFileTree", () => {
         lockfile: createEmptyLockfile(["16.0.0"]),
       });
 
+      // Act
       const [data, error] = await getFileTree(context, "16.0.0");
 
+      // Assert
       expect(error).toBeNull();
       expect(data).toEqual([]);
       expect(callCount).toBe(0);
     });
 
     it("should return empty array when local read fails", async () => {
+      // Arrange
       let callCount = 0;
       mockStoreApi({
         versions: ["16.0.0"],
@@ -95,8 +102,10 @@ describe("getFileTree", () => {
         throw new Error("Read failed");
       });
 
+      // Act
       const [data, error] = await getFileTree(context, "16.0.0");
 
+      // Assert
       expect(error).toBeNull();
       expect(data).toEqual([]);
       expect(callCount).toBe(0);
@@ -106,6 +115,7 @@ describe("getFileTree", () => {
   // eslint-disable-next-line test/prefer-lowercase-title
   describe("API fallback (allowApi: true)", () => {
     it("should prefer local store over API", async () => {
+      // Arrange
       let callCount = 0;
       mockStoreApi({
         versions: ["16.0.0"],
@@ -122,10 +132,12 @@ describe("getFileTree", () => {
         },
       });
 
+      // Act
       const [data, error] = await getFileTree(context, "16.0.0", {
         allowApi: true,
       });
 
+      // Assert
       expect(error).toBeNull();
       expect(data).toBeDefined();
       expect(data!.length).toBeGreaterThan(0);
@@ -133,6 +145,7 @@ describe("getFileTree", () => {
     });
 
     it("should fetch from API when directory doesn't exist locally", async () => {
+      // Arrange
       mockStoreApi({ versions: ["16.0.0", "15.1.0", "15.0.0"] });
 
       const { context } = await createTestContext({
@@ -140,10 +153,12 @@ describe("getFileTree", () => {
         lockfile: createEmptyLockfile(["16.0.0", "15.1.0", "15.0.0"]),
       });
 
+      // Act
       const [data, error] = await getFileTree(context, "15.1.0", {
         allowApi: true,
       });
 
+      // Assert
       expect(error).toBeNull();
       expect(data).toBeDefined();
 
@@ -170,6 +185,7 @@ describe("getFileTree", () => {
     });
 
     it("should fall back to API when local read fails", async () => {
+      // Arrange
       mockStoreApi({ versions: ["16.0.0"] });
 
       const { context, fs } = await createTestContext({
@@ -184,16 +200,19 @@ describe("getFileTree", () => {
         throw new Error("Read failed");
       });
 
+      // Act
       const [data, error] = await getFileTree(context, "16.0.0", {
         allowApi: true,
       });
 
+      // Assert
       expect(error).toBeNull();
       expect(data).toBeDefined();
       expect(data!.length).toBeGreaterThan(0);
     });
 
     it("should handle API errors", async () => {
+      // Arrange
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
@@ -210,10 +229,12 @@ describe("getFileTree", () => {
         lockfile: createEmptyLockfile(["16.0.0"]),
       });
 
+      // Act
       const [data, error] = await getFileTree(context, "16.0.0", {
         allowApi: true,
       });
 
+      // Assert
       expect(error).toBeInstanceOf(UCDStoreGenericError);
       expect(error?.message).toMatch(/Failed to fetch file tree for version '16\.0\.0'/);
       expect(data).toBeNull();
@@ -222,6 +243,7 @@ describe("getFileTree", () => {
 
   describe("validation", () => {
     it("should throw error for non-existent version", async () => {
+      // Arrange
       let callCount = 0;
       mockStoreApi({
         versions: ["16.0.0"],
@@ -235,8 +257,10 @@ describe("getFileTree", () => {
         lockfile: createEmptyLockfile(["16.0.0"]),
       });
 
+      // Act
       const [data, error] = await getFileTree(context, "99.0.0");
 
+      // Assert
       expect(callCount).toBe(0);
       expect(error).toBeInstanceOf(UCDStoreVersionNotFoundError);
       expect(error?.message).toMatch(/Version '\d+\.\d+\.\d+' does not exist in the store/);
@@ -246,6 +270,7 @@ describe("getFileTree", () => {
 
   describe("global filter application", () => {
     it("should apply global exclude filters to tree structure", async () => {
+      // Arrange
       mockStoreApi({ versions: ["16.0.0"] });
 
       const { context } = await createTestContext({
@@ -254,10 +279,12 @@ describe("getFileTree", () => {
         globalFilters: { exclude: ["**/*.txt"] },
       });
 
+      // Act
       const [data, error] = await getFileTree(context, "16.0.0", {
         allowApi: true,
       });
 
+      // Assert
       expect(error).toBeNull();
       expect(data).toBeDefined();
       expect(data).toEqual(expect.arrayContaining([
@@ -269,6 +296,7 @@ describe("getFileTree", () => {
     });
 
     it("should filter nested directory structures while preserving hierarchy", async () => {
+      // Arrange
       mockStoreApi({ versions: ["16.0.0"] });
 
       const { context } = await createTestContext({
@@ -277,10 +305,12 @@ describe("getFileTree", () => {
         globalFilters: { include: ["**/*.txt"] },
       });
 
+      // Act
       const [data, error] = await getFileTree(context, "16.0.0", {
         allowApi: true,
       });
 
+      // Assert
       expect(error).toBeNull();
       expect(data).toBeDefined();
       expect(data).toEqual(expect.arrayContaining([
@@ -304,6 +334,7 @@ describe("getFileTree", () => {
 
   describe("method-specific filter application", () => {
     it("should apply method-specific include filters on top of global filters", async () => {
+      // Arrange
       mockStoreApi({ versions: ["16.0.0"] });
 
       const { context } = await createTestContext({
@@ -311,11 +342,13 @@ describe("getFileTree", () => {
         lockfile: createEmptyLockfile(["16.0.0"]),
       });
 
+      // Act
       const [data, error] = await getFileTree(context, "16.0.0", {
         allowApi: true,
         filters: { include: ["**/*.txt"] },
       });
 
+      // Assert
       expect(error).toBeNull();
       expect(data).toBeDefined();
       expect(data).toEqual(expect.arrayContaining([
@@ -338,6 +371,7 @@ describe("getFileTree", () => {
     });
 
     it("should apply method-specific exclude filters on top of global filters", async () => {
+      // Arrange
       mockStoreApi({ versions: ["16.0.0"] });
 
       const { context } = await createTestContext({
@@ -345,11 +379,13 @@ describe("getFileTree", () => {
         lockfile: createEmptyLockfile(["16.0.0"]),
       });
 
+      // Act
       const [data, error] = await getFileTree(context, "16.0.0", {
         allowApi: true,
         filters: { exclude: ["**/*.txt"] },
       });
 
+      // Assert
       expect(error).toBeNull();
       expect(data).toBeDefined();
       expect(data).toEqual(expect.arrayContaining([
@@ -363,6 +399,7 @@ describe("getFileTree", () => {
 
   describe("edge cases", () => {
     it("should handle empty file tree from API", async () => {
+      // Arrange
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
@@ -375,16 +412,19 @@ describe("getFileTree", () => {
         lockfile: createEmptyLockfile(["16.0.0"]),
       });
 
+      // Act
       const [data, error] = await getFileTree(context, "16.0.0", {
         allowApi: true,
       });
 
+      // Assert
       expect(error).toBeNull();
       expect(data).toBeDefined();
       expect(data).toEqual([]);
     });
 
     it("should handle filters that exclude all files", async () => {
+      // Arrange
       mockStoreApi({ versions: ["16.0.0"] });
 
       const { context } = await createTestContext({
@@ -393,10 +433,12 @@ describe("getFileTree", () => {
         globalFilters: { include: ["**/*.nonexistent"] },
       });
 
+      // Act
       const [data, error] = await getFileTree(context, "16.0.0", {
         allowApi: true,
       });
 
+      // Assert
       expect(error).toBeNull();
       expect(data).toEqual([]);
     });
