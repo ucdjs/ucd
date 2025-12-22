@@ -47,9 +47,9 @@ describe("sync", () => {
       expect(data).toBeDefined();
       expect(data?.added).toEqual(["15.1.0", "15.0.0"]);
 
-      // Verify lockfile was updated
       const lockfile = await readLockfile(fs, lockfilePath);
-      expect(Object.keys(lockfile.versions).sort()).toEqual(["15.0.0", "15.1.0", "16.0.0"]);
+      const versionKeys = Object.keys(lockfile.versions).sort();
+      expect(versionKeys).toEqual(["15.0.0", "15.1.0", "16.0.0"]);
       expect(lockfile.versions["15.1.0"]).toEqual({
         path: "v15.1.0/snapshot.json",
         fileCount: 0,
@@ -92,9 +92,9 @@ describe("sync", () => {
       expect(data).toBeDefined();
       expect(data?.added).toEqual(["15.1.0", "15.0.0"]);
 
-      // Verify lockfile was updated
       const lockfile = await readLockfile(fs, lockfilePath);
-      expect(Object.keys(lockfile.versions).sort()).toEqual(["15.0.0", "15.1.0", "16.0.0"]);
+      const versionKeys = Object.keys(lockfile.versions).sort();
+      expect(versionKeys).toEqual(["15.0.0", "15.1.0", "16.0.0"]);
       expect(lockfile.versions["15.1.0"]).toEqual({
         path: "v15.1.0/snapshot.json",
         fileCount: 0,
@@ -108,15 +108,15 @@ describe("sync", () => {
     });
   });
 
-  describe("add strategy", () => {
-    it("should sync with default add strategy", async () => {
+  describe("removeUnavailable option", () => {
+    it("should keep existing versions by default", async () => {
       // Arrange
       mockStoreApi({
         versions: ["16.0.0", "15.1.0", "15.0.0"],
       });
 
       const { context, fs, lockfilePath } = await createTestContext({
-        versions: ["16.0.0"],
+        versions: ["16.0.0", "15.1.0", "15.0.0"],
         lockfile: createEmptyLockfile(["16.0.0"]),
       });
 
@@ -136,26 +136,27 @@ describe("sync", () => {
       expect(data?.versions).toHaveLength(3);
 
       const lockfile = await readLockfile(fs, lockfilePath);
-      expect(Object.keys(lockfile.versions).sort()).toEqual(["15.0.0", "15.1.0", "16.0.0"]);
+      const versionKeys = Object.keys(lockfile.versions).sort();
+      expect(versionKeys).toEqual(["15.0.0", "15.1.0", "16.0.0"]);
       expect(lockfile.versions["16.0.0"]?.path).toBe("v16.0.0/snapshot.json");
       expect(lockfile.versions["15.1.0"]?.path).toBe("v15.1.0/snapshot.json");
       expect(lockfile.versions["15.0.0"]?.path).toBe("v15.0.0/snapshot.json");
     });
 
-    it("should keep versions not in API when using add strategy", async () => {
+    it("should keep versions not in API when removeUnavailable is false", async () => {
       // Arrange
       mockStoreApi({
         versions: ["16.0.0", "15.1.0"],
       });
 
       const { context, fs, lockfilePath } = await createTestContext({
-        versions: ["16.0.0", "14.0.0"], // 14.0.0 not in API
+        versions: ["16.0.0", "14.0.0", "15.1.0"],
         lockfile: createEmptyLockfile(["16.0.0", "14.0.0"]),
       });
 
       // Act
       const [data, error] = await sync(context, {
-        strategy: "add",
+        removeUnavailable: false,
       });
 
       // Assert
@@ -164,32 +165,31 @@ describe("sync", () => {
       expect(data).toMatchObject({
         timestamp: expect.any(String),
         added: ["15.1.0"],
-        removed: [], // add strategy doesn't remove
+        removed: [],
         unchanged: ["16.0.0", "14.0.0"],
         versions: expect.arrayContaining(["16.0.0", "15.1.0", "14.0.0"]),
       });
       expect(data?.versions).toHaveLength(3);
 
       const lockfile = await readLockfile(fs, lockfilePath);
-      expect(Object.keys(lockfile.versions).sort()).toEqual(["14.0.0", "15.1.0", "16.0.0"]);
+      const versionKeys = Object.keys(lockfile.versions).sort();
+      expect(versionKeys).toEqual(["14.0.0", "15.1.0", "16.0.0"]);
     });
-  });
 
-  describe("update strategy", () => {
-    it("should remove versions not in API when using update strategy", async () => {
+    it("should remove versions not in API when removeUnavailable is true", async () => {
       // Arrange
       mockStoreApi({
         versions: ["16.0.0", "15.1.0"],
       });
 
       const { context, fs, lockfilePath } = await createTestContext({
-        versions: ["16.0.0", "15.0.0"], // 15.0.0 not in API
+        versions: ["16.0.0", "15.1.0"],
         lockfile: createEmptyLockfile(["16.0.0", "15.0.0"]),
       });
 
       // Act
       const [data, error] = await sync(context, {
-        strategy: "update",
+        removeUnavailable: true,
       });
 
       // Assert
@@ -198,7 +198,7 @@ describe("sync", () => {
       expect(data).toMatchObject({
         timestamp: expect.any(String),
         added: ["15.1.0"],
-        removed: ["15.0.0"], // update strategy removes unavailable versions
+        removed: ["15.0.0"],
         unchanged: ["16.0.0"],
         versions: expect.arrayContaining(["16.0.0", "15.1.0"]),
       });
@@ -206,25 +206,26 @@ describe("sync", () => {
       expect(data?.versions).not.toContain("15.0.0");
 
       const lockfile = await readLockfile(fs, lockfilePath);
-      expect(Object.keys(lockfile.versions).sort()).toEqual(["15.1.0", "16.0.0"]);
+      const versionKeys = Object.keys(lockfile.versions).sort();
+      expect(versionKeys).toEqual(["15.1.0", "16.0.0"]);
       expect(lockfile.versions).not.toHaveProperty("15.0.0");
     });
   });
 
   describe("lockfile updates", () => {
-    it("should preserve existing lockfile entries when updating", async () => {
+    it("should add new versions to lockfile and update entries after mirroring", async () => {
       // Arrange
       mockStoreApi({
         versions: ["16.0.0", "15.1.0"],
       });
 
       const { context, fs, lockfilePath } = await createTestContext({
-        versions: ["16.0.0"],
+        versions: ["16.0.0", "15.1.0"],
         lockfile: {
           lockfileVersion: 1,
           versions: {
             "16.0.0": {
-              path: "v16.0.0/snapshot.json",
+              path: "16.0.0/snapshot.json",
               fileCount: 10,
               totalSize: 1024,
             },
@@ -233,39 +234,42 @@ describe("sync", () => {
       });
 
       // Act
-      const [_data, error] = await sync(context);
+      const [data, error] = await sync(context);
 
       // Assert
       expect(error).toBeNull();
+      expect(data).toBeDefined();
+      expect(data?.added).toEqual(["15.1.0"]);
+      expect(data?.removed).toEqual([]);
+      expect(data?.unchanged).toEqual(["16.0.0"]);
+      expect(data?.versions).toEqual(expect.arrayContaining(["16.0.0", "15.1.0"]));
+      expect(data?.versions).toHaveLength(2);
+
       const lockfile = await readLockfile(fs, lockfilePath);
-      // Existing entry should be preserved
-      expect(lockfile.versions["16.0.0"]).toEqual({
-        path: "v16.0.0/snapshot.json",
-        fileCount: 10,
-        totalSize: 1024,
-      });
-      // New entry should have empty snapshot
-      expect(lockfile.versions["15.1.0"]).toEqual({
-        path: "v15.1.0/snapshot.json",
-        fileCount: 0,
-        totalSize: 0,
-      });
+      const versionKeys = Object.keys(lockfile.versions).sort();
+      expect(versionKeys).toEqual(["15.1.0", "16.0.0"]);
+
+      const v16 = lockfile.versions["16.0.0"];
+      expect(v16).toBeDefined();
+      expect(v16?.path).toBe("16.0.0/snapshot.json");
+      expect(v16?.fileCount).toBeGreaterThan(0);
+      expect(v16?.totalSize).toBeGreaterThan(0);
+
+      const v15 = lockfile.versions["15.1.0"];
+      expect(v15).toBeDefined();
+      expect(v15?.path).toBe("15.1.0/snapshot.json");
+      expect(v15?.fileCount).toBeGreaterThan(0);
+      expect(v15?.totalSize).toBeGreaterThan(0);
     });
   });
 
-  describe("with mirror", () => {
-    it("should support mirror option and mirror new versions", async () => {
+  describe("mirror integration", () => {
+    it("should automatically mirror files for synced versions", async () => {
       // Arrange
       mockStoreApi({
         versions: ["16.0.0", "15.1.0"],
       });
 
-      const { context } = await createTestContext({
-        versions: ["16.0.0"],
-        lockfile: createEmptyLockfile(["16.0.0"]),
-      });
-
-      // Mock the mirror function to return a successful mirror result
       const mockMirrorReport: MirrorReport = {
         timestamp: new Date().toISOString(),
         versions: new Map([
@@ -292,49 +296,59 @@ describe("sync", () => {
 
       vi.mocked(mirror).mockResolvedValueOnce([mockMirrorReport, null]);
 
-      // Act
-      const [data, error] = await sync(context, {
-        mirror: true,
+      const { context } = await createTestContext({
+        versions: ["16.0.0", "15.1.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
       });
+
+      // Act
+      const [data, error] = await sync(context);
 
       // Assert
       expect(error).toBeNull();
       expect(data).toBeDefined();
       expect(data?.added).toEqual(["15.1.0"]);
-      expect(data?.mirrored).toBeDefined();
-      expect(data?.mirrored).toEqual(mockMirrorReport);
-      expect(mirror).toHaveBeenCalledWith(context, { versions: ["15.1.0"] });
+      expect(data?.mirrorReport).toBeDefined();
+      expect(data?.mirrorReport).toEqual(mockMirrorReport);
+      expect(mirror).toHaveBeenCalledWith(context, {
+        versions: ["16.0.0", "15.1.0"],
+        concurrency: 5,
+        filters: undefined,
+        force: false,
+      });
     });
 
-    it("should not include mirrored property when mirror:true but no new versions", async () => {
+    it("should include mirrorReport when versions are synced", async () => {
       // Arrange
       mockStoreApi({
         versions: ["16.0.0"],
       });
 
-      const { context } = await createTestContext({
-        versions: ["16.0.0"],
-        lockfile: createEmptyLockfile(["16.0.0"]),
-      });
+      const mockMirrorReport: MirrorReport = {
+        timestamp: new Date().toISOString(),
+        versions: new Map([
+          [
+            "16.0.0",
+            {
+              version: "16.0.0",
+              counts: { downloaded: 3, skipped: 0, failed: 0 },
+              files: {
+                downloaded: [],
+                skipped: [],
+                failed: [],
+              },
+              metrics: {
+                cacheHitRate: 0,
+                failureRate: 0,
+                successRate: 100,
+              },
+              errors: [],
+            },
+          ],
+        ]),
+      };
 
-      // Act
-      const [data, error] = await sync(context, {
-        mirror: true,
-      });
-
-      // Assert
-      expect(error).toBeNull();
-      expect(data).toBeDefined();
-      expect(data?.mirrored).toBeUndefined();
-    });
-  });
-
-  describe("no changes", () => {
-    it("should return proper result structure when no changes", async () => {
-      // Arrange
-      mockStoreApi({
-        versions: ["16.0.0"],
-      });
+      vi.mocked(mirror).mockResolvedValueOnce([mockMirrorReport, null]);
 
       const { context } = await createTestContext({
         versions: ["16.0.0"],
@@ -346,13 +360,65 @@ describe("sync", () => {
 
       // Assert
       expect(error).toBeNull();
-      expect(data).toEqual({
+      expect(data).toBeDefined();
+      expect(data?.mirrorReport).toBeDefined();
+      expect(data?.mirrorReport).toEqual(mockMirrorReport);
+    });
+  });
+
+  describe("no changes", () => {
+    it("should return proper result structure when no changes", async () => {
+      // Arrange
+      mockStoreApi({
+        versions: ["16.0.0"],
+      });
+
+      const mockMirrorReport: MirrorReport = {
+        timestamp: new Date().toISOString(),
+        versions: new Map([
+          [
+            "16.0.0",
+            {
+              version: "16.0.0",
+              counts: { downloaded: 0, skipped: 0, failed: 0 },
+              files: {
+                downloaded: [],
+                skipped: [],
+                failed: [],
+              },
+              metrics: {
+                cacheHitRate: 0,
+                failureRate: 0,
+                successRate: 100,
+              },
+              errors: [],
+            },
+          ],
+        ]),
+      };
+
+      vi.mocked(mirror).mockResolvedValueOnce([mockMirrorReport, null]);
+
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+      });
+
+      // Act
+      const [data, error] = await sync(context);
+
+      // Assert
+      expect(error).toBeNull();
+      expect(data).toMatchObject({
         timestamp: expect.any(String),
         added: [],
         removed: [],
         unchanged: ["16.0.0"],
         versions: ["16.0.0"],
+        removedFiles: expect.any(Map),
       });
+      expect(data?.mirrorReport).toBeDefined();
+      expect(data?.mirrorReport).toEqual(mockMirrorReport);
     });
   });
 });

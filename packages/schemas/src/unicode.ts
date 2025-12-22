@@ -126,22 +126,22 @@ export type UnicodeTree = z.output<typeof UnicodeTreeSchema>;
 
 export const UnicodeVersionDetailsSchema = UnicodeVersionSchema.extend({
   statistics: z.object({
-    totalCharacters: z.number().int().nonnegative().meta({
+    totalCharacters: z.int().nonnegative().meta({
       description: "Total number of characters in this Unicode version.",
     }),
-    newCharacters: z.number().int().nonnegative().meta({
+    newCharacters: z.int().nonnegative().meta({
       description: "Number of new characters added in this version.",
     }),
-    totalBlocks: z.number().int().nonnegative().meta({
+    totalBlocks: z.int().nonnegative().meta({
       description: "Total number of blocks in this Unicode version.",
     }),
-    newBlocks: z.number().int().nonnegative().meta({
+    newBlocks: z.int().nonnegative().meta({
       description: "Number of new blocks added in this version.",
     }),
-    totalScripts: z.number().int().nonnegative().meta({
+    totalScripts: z.int().nonnegative().meta({
       description: "Total number of scripts in this Unicode version.",
     }),
-    newScripts: z.number().int().nonnegative().meta({
+    newScripts: z.int().nonnegative().meta({
       description: "Number of new scripts added in this version.",
     }),
   }).optional().meta({

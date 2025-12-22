@@ -130,12 +130,10 @@ describe("mirror", () => {
       expect(error).toBeNull();
       expect(data).toBeDefined();
 
-      // Check snapshot was created
       const snapshot = await readSnapshot(fs, context.basePath, "16.0.0");
       expect(snapshot.unicodeVersion).toBe("16.0.0");
       expect(Object.keys(snapshot.files).length).toBeGreaterThan(0);
 
-      // Verify all files have hashes
       for (const [_filePath, fileData] of Object.entries(snapshot.files)) {
         expect(fileData.hash).toMatch(/^sha256:[a-f0-9]{64}$/);
         expect(fileData.size).toBeGreaterThan(0);
@@ -245,6 +243,8 @@ describe("mirror", () => {
       const [firstMirrorData, firstMirrorError] = await mirror(context, {
         force: false,
       });
+
+      // Assert - First mirror
       expect(firstMirrorError).toBeNull();
       expect(firstMirrorData).toBeDefined();
 
@@ -265,6 +265,8 @@ describe("mirror", () => {
       const [secondMirrorData, secondMirrorError] = await mirror(context, {
         force: true,
       });
+
+      // Assert - Second mirror
       expect(secondMirrorError).toBeNull();
       expect(secondMirrorData).toBeDefined();
 
