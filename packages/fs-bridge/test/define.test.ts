@@ -1,4 +1,4 @@
-import { tryCatch } from "@ucdjs-internal/shared";
+import { wrapTry } from "@ucdjs-internal/shared";
 import { assert, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 import { defineFileSystemBridge } from "../src/define";
@@ -34,7 +34,7 @@ describe("defineFileSystemBridge", () => {
         },
       });
 
-      const [data, err] = tryCatch(() => bridge());
+      const [data, err] = wrapTry(() => bridge());
 
       if (data != null) expect.fail("The bridge setup should have failed");
 
@@ -51,7 +51,7 @@ describe("defineFileSystemBridge", () => {
         },
       });
 
-      const [data, err] = tryCatch(() => bridge());
+      const [data, err] = wrapTry(() => bridge());
 
       if (data != null) expect.fail("The bridge setup should have failed");
 

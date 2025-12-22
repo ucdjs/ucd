@@ -6,13 +6,13 @@ import {
   createDebugger,
   filterTreeStructure,
   flattenFilePaths,
-  tryCatchOld,
+  wrapTry,
 } from "@ucdjs-internal/shared";
 import { hasCapability } from "@ucdjs/fs-bridge";
 import { computeFileHash, readLockfileOrDefault, writeLockfile, writeSnapshot } from "@ucdjs/lockfile";
 import { hasUCDFolderPath } from "@unicode-utils/core";
 import { dirname, join } from "pathe";
-import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../errors";
+import { UCDStoreGenericError } from "../errors";
 
 const debug = createDebugger("ucdjs:ucd-store:mirror");
 
@@ -193,10 +193,12 @@ export async function mirror(
   context: InternalUCDStoreContext,
   options?: MirrorOptions,
 ): Promise<OperationResult<MirrorReport, StoreError>> {
-  return tryCatchOld(async () => {
+  return wrapTry(async () => {
     if (!hasCapability(context.fs, ["mkdir", "write"])) {
       throw new UCDStoreGenericError("Filesystem does not support required write operations for mirroring.");
     }
+
+    debug?.("Starting mirror operation with context: %O", context);
 
     const versions = options?.versions ?? context.versions;
     const concurrency = options?.concurrency ?? 5;
@@ -211,11 +213,11 @@ export async function mirror(
     }
 
     // Validate all versions exist in context
-    for (const version of versions) {
-      if (!context.versions.includes(version)) {
-        throw new UCDStoreVersionNotFoundError(version);
-      }
-    }
+    // for (const version of versions) {
+    //   if (!context.versions.includes(version)) {
+    //     throw new UCDStoreVersionNotFoundError(version);
+    //   }
+    // }
 
     const startTime = Date.now();
     const limit = createConcurrencyLimiter(concurrency);
@@ -269,13 +271,15 @@ export async function mirror(
       debug?.(`Fetching file tree for version ${version}`);
 
       const result = await context.client.versions.getFileTree(version);
-
+      debug?.(`Fetched file tree for version ${version}`);
       if (result.error) {
         throw new UCDStoreGenericError(
           `Failed to fetch file tree for version '${version}': ${result.error.message}`,
           { version, status: result.error.status },
         );
       }
+
+      debug?.(`Processing file tree for version ${version}: %O`, result.data);
 
       if (result.data == null) {
         throw new UCDStoreGenericError(

@@ -9,6 +9,7 @@ export const wellKnownConfig = defineMockRouteHandler({
     providedResponse,
     shouldUseDefaultValue,
     mockFetch,
+    versions,
   }) => {
     if (typeof providedResponse === "function") {
       mockFetch([
@@ -27,7 +28,8 @@ export const wellKnownConfig = defineMockRouteHandler({
               manifest: "/.well-known/ucd-store.json",
               versions: "/api/v1/versions",
             },
-          });
+            versions,
+          } satisfies typeof providedResponse);
         }
 
         return HttpResponse.json(providedResponse);
