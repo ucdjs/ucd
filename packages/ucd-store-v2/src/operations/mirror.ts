@@ -6,7 +6,7 @@ import {
   createDebugger,
   filterTreeStructure,
   flattenFilePaths,
-  tryCatch,
+  tryCatchOld,
 } from "@ucdjs-internal/shared";
 import { hasCapability } from "@ucdjs/fs-bridge";
 import { computeFileHash, readLockfileOrDefault, writeLockfile, writeSnapshot } from "@ucdjs/lockfile";
@@ -193,7 +193,7 @@ export async function mirror(
   context: InternalUCDStoreContext,
   options?: MirrorOptions,
 ): Promise<OperationResult<MirrorReport, StoreError>> {
-  return tryCatch(async () => {
+  return tryCatchOld(async () => {
     if (!hasCapability(context.fs, ["mkdir", "write"])) {
       throw new UCDStoreGenericError("Filesystem does not support required write operations for mirroring.");
     }

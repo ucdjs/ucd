@@ -12,7 +12,9 @@ const packageProjects = readdirSync(fileURLToPath(new URL("./packages", import.m
     return {
       extends: true,
       test: {
-        include: [`./packages/${dir}/**/*.{test,spec}.?(c|m)[jt]s?(x)`],
+        include: [
+          `./packages/${dir}/**/*.{test,spec}.?(c|m)[jt]s?(x)`,
+        ],
         name: dir,
       }
     } satisfies TestProjectConfiguration;
@@ -23,7 +25,9 @@ const workerUnitProjects = readdirSync(fileURLToPath(new URL("./apps", import.me
     return {
       extends: true,
       test: {
-        include: [`./apps/${dir}/test/unit/**/*.{test,spec}.?(c|m)[jt]s?(x)`],
+        include: [
+          `./apps/${dir}/test/unit/**/*.{test,spec}.?(c|m)[jt]s?(x)`,
+        ],
         name: `${dir}:unit`,
       },
     } satisfies TestProjectConfiguration;

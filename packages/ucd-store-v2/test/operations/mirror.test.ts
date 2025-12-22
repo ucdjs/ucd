@@ -9,7 +9,6 @@ import { mirror } from "../../src/operations/mirror";
 describe("mirror", () => {
   describe("basic mirroring", () => {
     it("should mirror all versions by default", async () => {
-      // Arrange
       mockStoreApi({
         versions: ["16.0.0", "15.1.0"],
       });
@@ -19,10 +18,8 @@ describe("mirror", () => {
         lockfile: createEmptyLockfile(["16.0.0", "15.1.0"]),
       });
 
-      // Act
       const [data, error] = await mirror(context);
 
-      // Assert
       expect(error).toBeNull();
       expect(data).toBeDefined();
       expect(data?.timestamp).toEqual(expect.any(String));
@@ -69,7 +66,6 @@ describe("mirror", () => {
     });
 
     it("should mirror specific versions when provided", async () => {
-      // Arrange
       const providedVersions = ["16.0.0", "15.1.0", "15.0.0"];
 
       mockStoreApi({
@@ -81,12 +77,10 @@ describe("mirror", () => {
         lockfile: createEmptyLockfile(providedVersions),
       });
 
-      // Act
       const [data, error] = await mirror(context, {
         versions: ["16.0.0"],
       });
 
-      // Assert
       expect(error).toBeNull();
       expect(data).toBeDefined();
 
@@ -113,7 +107,6 @@ describe("mirror", () => {
 
   describe("snapshot creation", () => {
     it("should create snapshots for mirrored versions", async () => {
-      // Arrange
       mockStoreApi({
         versions: ["16.0.0"],
       });
@@ -123,10 +116,8 @@ describe("mirror", () => {
         lockfile: createEmptyLockfile(["16.0.0"]),
       });
 
-      // Act
       const [data, error] = await mirror(context);
 
-      // Assert
       expect(error).toBeNull();
       expect(data).toBeDefined();
 
@@ -141,7 +132,6 @@ describe("mirror", () => {
     });
 
     it("should update lockfile with snapshot metadata", async () => {
-      // Arrange
       mockStoreApi({
         versions: ["16.0.0"],
       });
@@ -151,10 +141,8 @@ describe("mirror", () => {
         lockfile: createEmptyLockfile(["16.0.0"]),
       });
 
-      // Act
       const [_data, error] = await mirror(context);
 
-      // Assert
       expect(error).toBeNull();
 
       const lockfile = await readLockfile(fs, lockfilePath);
@@ -166,7 +154,6 @@ describe("mirror", () => {
     });
 
     it("should preserve existing lockfile entries for non-mirrored versions", async () => {
-      // Arrange
       mockStoreApi({
         versions: ["16.0.0", "15.1.0"],
       });
@@ -190,12 +177,10 @@ describe("mirror", () => {
         },
       });
 
-      // Act
       const [_data, error] = await mirror(context, {
         versions: ["16.0.0"], // Only mirror 16.0.0
       });
 
-      // Assert
       expect(error).toBeNull();
 
       const lockfile = await readLockfile(fs, lockfilePath);
@@ -212,7 +197,6 @@ describe("mirror", () => {
 
   describe("force option", () => {
     it("should support force option to re-download existing files", async () => {
-      // Arrange
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
@@ -239,12 +223,10 @@ describe("mirror", () => {
         },
       });
 
-      // Act - First mirror without force
       const [firstMirrorData, firstMirrorError] = await mirror(context, {
         force: false,
       });
 
-      // Assert - First mirror
       expect(firstMirrorError).toBeNull();
       expect(firstMirrorData).toBeDefined();
 
@@ -261,12 +243,10 @@ describe("mirror", () => {
       expect(originalCommonContent).toBe("existing content");
       expect(originalScriptsContent).toBe("existing content");
 
-      // Act - Second mirror with force
       const [secondMirrorData, secondMirrorError] = await mirror(context, {
         force: true,
       });
 
-      // Assert - Second mirror
       expect(secondMirrorError).toBeNull();
       expect(secondMirrorData).toBeDefined();
 
@@ -287,7 +267,6 @@ describe("mirror", () => {
 
   describe("concurrency", () => {
     it("should support custom concurrency limit", async () => {
-      // Arrange
       const DELAY_MS = 30;
       const FILE_COUNT = 10;
       const CONCURRENCY_LIMIT = 5;
@@ -320,12 +299,10 @@ describe("mirror", () => {
         lockfile: createEmptyLockfile(["16.0.0"]),
       });
 
-      // Act
       const [data, error] = await mirror(context, {
         concurrency: CONCURRENCY_LIMIT,
       });
 
-      // Assert
       expect(error).toBeNull();
       expect(data).toBeDefined();
       expect(data?.versions.size).toBe(1);

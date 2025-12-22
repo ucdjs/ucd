@@ -5,7 +5,7 @@ import type { MirrorReport } from "./mirror";
 import {
   createConcurrencyLimiter,
   createDebugger,
-  tryCatch,
+  tryCatchOld,
 } from "@ucdjs-internal/shared";
 import { hasCapability } from "@ucdjs/fs-bridge";
 import { readLockfileOrDefault, readSnapshotOrDefault, writeLockfile } from "@ucdjs/lockfile";
@@ -94,7 +94,7 @@ export async function sync(
   context: InternalUCDStoreContext,
   options?: SyncOptions,
 ): Promise<OperationResult<SyncResult, StoreError>> {
-  return tryCatch(async () => {
+  return tryCatchOld(async () => {
     if (!hasCapability(context.fs, ["mkdir", "write"])) {
       throw new UCDStoreGenericError("Filesystem does not support required write operations for syncing.");
     }
@@ -104,42 +104,19 @@ export async function sync(
     const removeUnavailable = options?.removeUnavailable ?? false;
     const cleanOrphaned = options?.cleanOrphaned ?? false;
 
-    // Step 1: Fetch available versions from API
     debug?.("Fetching available versions from API");
-    const configResult = await context.client.config.get();
-    let availableVersions: string[] = [];
+    const availableVersionsFromApi: string[] = await getVersionsFromApi(context);
 
-    if (configResult.error || !configResult.data) {
-      // Fallback to versions.list() if config is not available
-      const apiResult = await context.client.versions.list();
-      if (apiResult.error) throw apiResult.error;
-      if (!apiResult.data) {
-        throw new UCDStoreGenericError("Failed to fetch Unicode versions: no data returned");
-      }
-      availableVersions = apiResult.data.map(({ version }) => version);
-    } else {
-      // Use versions from config
-      availableVersions = configResult.data.versions ?? [];
-      if (availableVersions.length === 0) {
-        // Fallback if config doesn't have versions array
-        const apiResult = await context.client.versions.list();
-        if (apiResult.error) throw apiResult.error;
-        if (!apiResult.data) {
-          throw new UCDStoreGenericError("Failed to fetch Unicode versions: no data returned");
-        }
-        availableVersions = apiResult.data.map(({ version }) => version);
-      }
-    }
-
-    debug?.(`Found ${availableVersions.length} available versions from API`);
+    debug?.(`Found ${availableVersionsFromApi.length} available versions from API`);
 
     // Step 2: Read current lockfile
     const lockfile = await readLockfileOrDefault(context.fs, context.lockfilePath);
     const currentVersions = new Set(lockfile ? Object.keys(lockfile.versions) : []);
 
     // Step 3: Determine which versions to add/remove/keep
-    const availableVersionsSet = new Set(availableVersions);
-    const added = availableVersions.filter((v) => !currentVersions.has(v));
+    const availableVersionsSet = new Set(availableVersionsFromApi);
+    const added = availableVersionsFromApi.filter((v) => !currentVersions.has(v));
+    // TODO: include the versions in the unchanged, that exists in the lockfile, but not on the API.
     const unchanged = Array.from(currentVersions).filter((v) => availableVersionsSet.has(v));
 
     let removed: string[] = [];
@@ -148,7 +125,7 @@ export async function sync(
     if (removeUnavailable) {
       // Remove versions not available in API
       removed = Array.from(currentVersions).filter((v) => !availableVersionsSet.has(v));
-      finalVersions = availableVersions; // Only keep versions available in API
+      finalVersions = availableVersionsFromApi; // Only keep versions available in API
     } else {
       // Keep all existing versions + add new ones
       finalVersions = [...currentVersions, ...added];
@@ -295,4 +272,28 @@ export async function sync(
       removedFiles,
     };
   });
+}
+
+async function getVersionsFromApi(context: InternalUCDStoreContext): Promise<string[]> {
+  const configResult = await context.client.config.get();
+  let availableVersionsFromApi: string[] = [];
+
+  // If the response from config.get is not available, or is an error.
+  // We can't proceed with the sync operation.
+  if (configResult.error || !configResult.data) {
+    // Fallback to versions.list() if config is not available
+    const { data, error } = await context.client.versions.list();
+    if (error) {
+      debug?.(`Failed to fetch versions from API:`, error);
+      throw error;
+    }
+
+    if (data == null) {
+      throw new Error("Failed to fetch versions from API");
+    }
+
+    availableVersionsFromApi = data.map(({ version }) => version);
+  }
+
+  return availableVersionsFromApi;
 }

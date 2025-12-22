@@ -18,7 +18,6 @@ vi.mock("../../src/operations/mirror", async (importOriginal) => {
 describe("sync", () => {
   describe("version discovery", () => {
     it("should use versions from ucd-config.json when available", async () => {
-      // Arrange
       mockStoreApi({
         versions: ["16.0.0", "15.1.0", "15.0.0"],
         responses: {
@@ -39,10 +38,8 @@ describe("sync", () => {
         lockfile: createEmptyLockfile(["16.0.0"]),
       });
 
-      // Act
       const [data, error] = await sync(context);
 
-      // Assert
       expect(error).toBeNull();
       expect(data).toBeDefined();
       expect(data?.added).toEqual(["15.1.0", "15.0.0"]);
@@ -63,7 +60,6 @@ describe("sync", () => {
     });
 
     it("should fallback to versions.list() when config doesn't have versions", async () => {
-      // Arrange
       mockStoreApi({
         versions: ["16.0.0", "15.1.0", "15.0.0"],
         responses: {
@@ -84,10 +80,8 @@ describe("sync", () => {
         lockfile: createEmptyLockfile(["16.0.0"]),
       });
 
-      // Act
       const [data, error] = await sync(context);
 
-      // Assert
       expect(error).toBeNull();
       expect(data).toBeDefined();
       expect(data?.added).toEqual(["15.1.0", "15.0.0"]);
@@ -110,7 +104,6 @@ describe("sync", () => {
 
   describe("removeUnavailable option", () => {
     it("should keep existing versions by default", async () => {
-      // Arrange
       mockStoreApi({
         versions: ["16.0.0", "15.1.0", "15.0.0"],
       });
@@ -120,10 +113,8 @@ describe("sync", () => {
         lockfile: createEmptyLockfile(["16.0.0"]),
       });
 
-      // Act
       const [data, error] = await sync(context);
 
-      // Assert
       expect(error).toBeNull();
       expect(data).toBeDefined();
       expect(data).toMatchObject({
@@ -144,7 +135,6 @@ describe("sync", () => {
     });
 
     it("should keep versions not in API when removeUnavailable is false", async () => {
-      // Arrange
       mockStoreApi({
         versions: ["16.0.0", "15.1.0"],
       });
@@ -154,12 +144,10 @@ describe("sync", () => {
         lockfile: createEmptyLockfile(["16.0.0", "14.0.0"]),
       });
 
-      // Act
       const [data, error] = await sync(context, {
         removeUnavailable: false,
       });
 
-      // Assert
       expect(error).toBeNull();
       expect(data).toBeDefined();
       expect(data).toMatchObject({
@@ -177,7 +165,6 @@ describe("sync", () => {
     });
 
     it("should remove versions not in API when removeUnavailable is true", async () => {
-      // Arrange
       mockStoreApi({
         versions: ["16.0.0", "15.1.0"],
       });
@@ -187,12 +174,10 @@ describe("sync", () => {
         lockfile: createEmptyLockfile(["16.0.0", "15.0.0"]),
       });
 
-      // Act
       const [data, error] = await sync(context, {
         removeUnavailable: true,
       });
 
-      // Assert
       expect(error).toBeNull();
       expect(data).toBeDefined();
       expect(data).toMatchObject({
@@ -214,7 +199,6 @@ describe("sync", () => {
 
   describe("lockfile updates", () => {
     it("should add new versions to lockfile and update entries after mirroring", async () => {
-      // Arrange
       mockStoreApi({
         versions: ["16.0.0", "15.1.0"],
       });
@@ -233,10 +217,8 @@ describe("sync", () => {
         },
       });
 
-      // Act
       const [data, error] = await sync(context);
 
-      // Assert
       expect(error).toBeNull();
       expect(data).toBeDefined();
       expect(data?.added).toEqual(["15.1.0"]);
@@ -265,7 +247,6 @@ describe("sync", () => {
 
   describe("mirror integration", () => {
     it("should automatically mirror files for synced versions", async () => {
-      // Arrange
       mockStoreApi({
         versions: ["16.0.0", "15.1.0"],
       });
@@ -301,10 +282,8 @@ describe("sync", () => {
         lockfile: createEmptyLockfile(["16.0.0"]),
       });
 
-      // Act
       const [data, error] = await sync(context);
 
-      // Assert
       expect(error).toBeNull();
       expect(data).toBeDefined();
       expect(data?.added).toEqual(["15.1.0"]);
@@ -319,7 +298,6 @@ describe("sync", () => {
     });
 
     it("should include mirrorReport when versions are synced", async () => {
-      // Arrange
       mockStoreApi({
         versions: ["16.0.0"],
       });
@@ -355,10 +333,8 @@ describe("sync", () => {
         lockfile: createEmptyLockfile(["16.0.0"]),
       });
 
-      // Act
       const [data, error] = await sync(context);
 
-      // Assert
       expect(error).toBeNull();
       expect(data).toBeDefined();
       expect(data?.mirrorReport).toBeDefined();
@@ -368,7 +344,6 @@ describe("sync", () => {
 
   describe("no changes", () => {
     it("should return proper result structure when no changes", async () => {
-      // Arrange
       mockStoreApi({
         versions: ["16.0.0"],
       });
@@ -404,10 +379,8 @@ describe("sync", () => {
         lockfile: createEmptyLockfile(["16.0.0"]),
       });
 
-      // Act
       const [data, error] = await sync(context);
 
-      // Assert
       expect(error).toBeNull();
       expect(data).toMatchObject({
         timestamp: expect.any(String),

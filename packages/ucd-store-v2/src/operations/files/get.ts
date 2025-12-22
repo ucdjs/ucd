@@ -1,7 +1,7 @@
 import type { OperationResult } from "@ucdjs-internal/shared";
 import type { StoreError } from "../../errors";
 import type { InternalUCDStoreContext, SharedOperationOptions } from "../../types";
-import { createDebugger, tryCatch } from "@ucdjs-internal/shared";
+import { createDebugger, tryCatchOld } from "@ucdjs-internal/shared";
 import { hasCapability } from "@ucdjs/fs-bridge";
 import { join } from "pathe";
 import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../../errors";
@@ -43,7 +43,7 @@ export async function getFile(
   filePath: string,
   options?: GetFileOptions,
 ): Promise<OperationResult<string, StoreError>> {
-  return tryCatch(async () => {
+  return tryCatchOld(async () => {
     // Validate version exists in store
     if (!context.versions.includes(version)) {
       throw new UCDStoreVersionNotFoundError(version);

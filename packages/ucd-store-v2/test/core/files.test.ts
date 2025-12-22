@@ -7,7 +7,6 @@ import { UCDStoreGenericError } from "../../src/errors";
 describe("getExpectedFilePaths", () => {
   describe("successful retrieval", () => {
     it("should return file paths from manifest endpoint", async () => {
-      // Arrange
       mockStoreApi({
         versions: ["15.0.0"],
         responses: {
@@ -25,10 +24,8 @@ describe("getExpectedFilePaths", () => {
         versions: ["15.0.0"],
       });
 
-      // Act
       const result = await getExpectedFilePaths(context.client, "15.0.0");
 
-      // Assert
       expect(result).toEqual([
         "ReadMe.txt",
         "UnicodeData.txt",
@@ -37,7 +34,6 @@ describe("getExpectedFilePaths", () => {
     });
 
     it("should handle empty expectedFiles array", async () => {
-      // Arrange
       mockStoreApi({
         versions: ["15.0.0"],
         responses: {
@@ -51,17 +47,14 @@ describe("getExpectedFilePaths", () => {
         versions: ["15.0.0"],
       });
 
-      // Act
       const result = await getExpectedFilePaths(context.client, "15.0.0");
 
-      // Assert
       expect(result).toEqual([]);
     });
   });
 
   describe("error handling", () => {
     it("should throw UCDStoreGenericError when API returns error", async () => {
-      // Arrange
       mockStoreApi({
         versions: ["15.0.0"],
         responses: {
@@ -77,14 +70,12 @@ describe("getExpectedFilePaths", () => {
         versions: ["15.0.0"],
       });
 
-      // Act & Assert
       await expect(
         getExpectedFilePaths(context.client, "15.0.0"),
       ).rejects.toThrow(UCDStoreGenericError);
     });
 
     it("should throw error when manifest response is invalid", async () => {
-      // Arrange
       mockStoreApi({
         versions: ["15.0.0"],
         responses: {
@@ -100,7 +91,6 @@ describe("getExpectedFilePaths", () => {
         versions: ["15.0.0"],
       });
 
-      // Act & Assert
       await expect(
         getExpectedFilePaths(context.client, "15.0.0"),
       ).rejects.toThrow();

@@ -9,7 +9,6 @@ import { analyze } from "../../src/operations/analyze";
 describe("analyze", () => {
   describe("complete versions", () => {
     it("should analyze complete version with all files present", async () => {
-      // Arrange
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
@@ -31,10 +30,8 @@ describe("analyze", () => {
         },
       });
 
-      // Act
       const [data, error] = await analyze(context);
 
-      // Assert
       expect(error).toBeNull();
       expect(data).toBeDefined();
       expect(data).toHaveLength(1);
@@ -64,7 +61,6 @@ describe("analyze", () => {
 
   describe("missing files", () => {
     it("should detect missing files", async () => {
-      // Arrange
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
@@ -86,10 +82,8 @@ describe("analyze", () => {
         },
       });
 
-      // Act
       const [data, error] = await analyze(context);
 
-      // Assert
       expect(error).toBeNull();
       expect(data).toBeDefined();
       expect(data).toHaveLength(1);
@@ -122,7 +116,6 @@ describe("analyze", () => {
 
   describe("orphaned files", () => {
     it("should detect orphaned files", async () => {
-      // Arrange
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
@@ -144,10 +137,8 @@ describe("analyze", () => {
         },
       });
 
-      // Act
       const [data, error] = await analyze(context);
 
-      // Assert
       expect(error).toBeNull();
       expect(data).toBeDefined();
 
@@ -177,7 +168,6 @@ describe("analyze", () => {
 
   describe("mixed scenarios", () => {
     it("should detect both missing and orphaned files", async () => {
-      // Arrange
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
@@ -199,10 +189,8 @@ describe("analyze", () => {
         },
       });
 
-      // Act
       const [data, error] = await analyze(context);
 
-      // Assert
       expect(error).toBeNull();
       expect(data).toBeDefined();
 
@@ -231,7 +219,6 @@ describe("analyze", () => {
 
   describe("multiple versions", () => {
     it("should analyze multiple versions", async () => {
-      // Arrange
       mockStoreApi({
         versions: ["16.0.0", "15.1.0"],
         responses: {
@@ -252,10 +239,8 @@ describe("analyze", () => {
         },
       });
 
-      // Act
       const [data, error] = await analyze(context);
 
-      // Assert
       expect(error).toBeNull();
       expect(data).toBeDefined();
       expect(data).toHaveLength(2);
@@ -284,7 +269,6 @@ describe("analyze", () => {
     });
 
     it("should analyze only specified versions", async () => {
-      // Arrange
       mockStoreApi({
         versions: ["16.0.0", "15.1.0", "15.0.0"],
         responses: {
@@ -304,12 +288,10 @@ describe("analyze", () => {
         },
       });
 
-      // Act
       const [data, error] = await analyze(context, {
         versions: ["16.0.0", "15.1.0"],
       });
 
-      // Assert
       expect(error).toBeNull();
       expect(data).toBeDefined();
       expect(data).toHaveLength(2);
@@ -319,7 +301,6 @@ describe("analyze", () => {
     });
 
     it("should skip versions not in store", async () => {
-      // Arrange
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
@@ -334,12 +315,10 @@ describe("analyze", () => {
         lockfile: createEmptyLockfile(["16.0.0"]),
       });
 
-      // Act
       const [data, error] = await analyze(context, {
         versions: ["16.0.0", "99.0.0"],
       });
 
-      // Assert
       expect(error).toBeNull();
       expect(data).toBeDefined();
       expect(data).toHaveLength(1);
@@ -350,7 +329,6 @@ describe("analyze", () => {
 
   describe("edge cases", () => {
     it("should handle files without extensions", async () => {
-      // Arrange
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
@@ -369,10 +347,8 @@ describe("analyze", () => {
         },
       });
 
-      // Act
       const [data, error] = await analyze(context);
 
-      // Assert
       expect(error).toBeNull();
       expect(data).toBeDefined();
 
@@ -385,7 +361,6 @@ describe("analyze", () => {
     });
 
     it("should handle empty store", async () => {
-      // Arrange
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
@@ -400,10 +375,8 @@ describe("analyze", () => {
         lockfile: createEmptyLockfile(["16.0.0"]),
       });
 
-      // Act
       const [data, error] = await analyze(context);
 
-      // Assert
       expect(error).toBeNull();
       expect(data).toBeDefined();
 
@@ -429,7 +402,6 @@ describe("analyze", () => {
     });
 
     it("should count different file types correctly", async () => {
-      // Arrange
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
@@ -453,10 +425,8 @@ describe("analyze", () => {
         },
       });
 
-      // Act
       const [data, error] = await analyze(context);
 
-      // Assert
       expect(error).toBeNull();
       expect(data).toBeDefined();
 
@@ -471,7 +441,6 @@ describe("analyze", () => {
 
   describe("error handling", () => {
     it("should handle API errors when fetching manifest", async () => {
-      // Arrange
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
@@ -488,10 +457,8 @@ describe("analyze", () => {
         lockfile: createEmptyLockfile(["16.0.0"]),
       });
 
-      // Act
       const [_data, error] = await analyze(context);
 
-      // Assert
       expect(error).toBeDefined();
       expect(error?.message).toContain("Failed to fetch expected files");
     });
