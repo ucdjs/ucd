@@ -78,6 +78,7 @@ export const wellKnownStoreVersionManifest = defineMockRouteHandler({
     shouldUseDefaultValue,
     versions,
     mockFetch,
+    files,
   }) => {
     if (typeof providedResponse === "function") {
       mockFetch([
@@ -104,6 +105,22 @@ export const wellKnownStoreVersionManifest = defineMockRouteHandler({
         }
 
         if (shouldUseDefaultValue) {
+          // If the only key in files is "*", we will
+          // just return the files object as is.
+          if (Object.keys(files).length === 1 && Object.keys(files)[0] === "*") {
+            return HttpResponse.json({
+              expectedFiles: files["*"],
+            });
+          }
+
+          // If there is multiple keys in files we will try and match the version
+          const version = params.version as string;
+          if (version && files[version]) {
+            return HttpResponse.json({
+              expectedFiles: files[version],
+            });
+          }
+
           return HttpResponse.json({
             expectedFiles: [],
           });

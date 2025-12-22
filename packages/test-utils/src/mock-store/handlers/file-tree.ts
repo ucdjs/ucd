@@ -8,6 +8,7 @@ export const fileTreeRoute = defineMockRouteHandler({
     providedResponse,
     shouldUseDefaultValue,
     mockFetch,
+    files,
   }) => {
     if (typeof providedResponse === "function") {
       mockFetch([
@@ -17,36 +18,21 @@ export const fileTreeRoute = defineMockRouteHandler({
     }
 
     mockFetch([
-      ["GET", url, () => {
+      ["GET", url, ({ params }) => {
         if (shouldUseDefaultValue) {
-          return HttpResponse.json([
-            {
-              type: "file",
-              name: "ArabicShaping.txt",
-              path: "ArabicShaping.txt",
-              lastModified: 1644920820000,
-            },
-            {
-              type: "file",
-              name: "BidiBrackets.txt",
-              path: "BidiBrackets.txt",
-              lastModified: 1651584360000,
-            },
-            {
-              type: "directory",
-              name: "extracted",
-              path: "extracted",
-              lastModified: 1724676960000,
-              children: [
-                {
-                  type: "file",
-                  name: "DerivedBidiClass.txt",
-                  path: "extracted/DerivedBidiClass.txt",
-                  lastModified: 1724609100000,
-                },
-              ],
-            },
-          ]);
+          // If the only key in files is "*", we will
+          // just return the files object as is.
+          if (Object.keys(files).length === 1 && Object.keys(files)[0] === "*") {
+            return HttpResponse.json(files["*"]);
+          }
+
+          // If there is multiple keys in files we will try and match the version
+          const version = params.version as string;
+          if (version && files[version]) {
+            return HttpResponse.json(files[version]);
+          }
+
+          return HttpResponse.json([]);
         }
 
         return HttpResponse.json(providedResponse);

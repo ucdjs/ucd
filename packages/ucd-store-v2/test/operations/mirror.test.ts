@@ -276,13 +276,15 @@ describe("mirror", () => {
 
       mockStoreApi({
         versions: ["16.0.0"],
-        // files: {
-        //   ...(Array.from({ length: FILE_COUNT }, (_, i) => `file${i}.txt`)),
-        // },
+        files: {
+          "*": Array.from({ length: FILE_COUNT }, (_, i) => ({
+            name: `file${i}.txt`,
+            type: "file" as const,
+            path: `file${i}.txt`,
+            lastModified: Date.now(),
+          })),
+        },
         responses: {
-          "/.well-known/ucd-store/{version}.json": {
-            expectedFiles: Array.from({ length: FILE_COUNT }, (_, i) => `file${i}.txt`),
-          },
           "/api/v1/files/{wildcard}": configure({
             response: async () => {
               currentConcurrent++;

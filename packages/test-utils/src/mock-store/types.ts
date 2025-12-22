@@ -1,4 +1,5 @@
 import type { MockFetchFn } from "@luxass/msw-utils";
+import type { UnicodeTree } from "@ucdjs/schemas";
 import type { AsyncResponseResolverReturnType, DefaultBodyType, HttpResponseResolver, PathParams } from "msw";
 import type { paths } from "../.generated/api";
 import type { MOCK_ROUTES } from "./handlers";
@@ -59,6 +60,7 @@ interface MockRouteHandlerContext<Endpoint extends EndpointWithGet> {
   mockFetch: MockFetchFn;
   versions: string[];
   shouldUseDefaultValue: boolean;
+  files: Record<string, UnicodeTree[]>;
 }
 
 export interface RouteHandlerDefinition<Endpoint extends EndpointWithGet> {
@@ -87,8 +89,23 @@ export interface MockStoreConfig {
    * If the value provided is `true`, then a default handler will be used.
    * If the value is `false`, then no handler will be used.
    * If the value provided is a specific response, then that response will be used.
+   *
+   * By default, all endpoints will use the default handler.
    */
   responses?: DerivedResponses;
+
+  /**
+   * The files to mock for the store endpoint.
+   *
+   * The keys are the version to mock the files for.
+   *
+   * It will be used by the following endpoints:
+   * - `/api/v1/versions/{version}/file-tree`
+   * - `/.well-known/ucd-store/{version}.json`
+   *
+   * A special key of `*` can be used to mock all versions.
+   */
+  files?: Record<string, UnicodeTree>;
 
   /**
    * The versions to use for placeholders

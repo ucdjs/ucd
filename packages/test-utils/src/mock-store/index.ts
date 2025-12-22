@@ -19,6 +19,7 @@ export function mockStoreApi(config?: MockStoreConfig): void {
     versions = ["16.0.0", "15.1.0", "15.0.0"],
     customResponses = [],
     onRequest,
+    files = {},
   } = config || {};
 
   debug?.("Setting up mock store API with config:", config);
@@ -100,6 +101,7 @@ export function mockStoreApi(config?: MockStoreConfig): void {
       shouldUseDefaultValue,
       mockFetch: wrappedMockFetch,
       versions,
+      files,
     });
   }
 
