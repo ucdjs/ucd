@@ -276,6 +276,9 @@ describe("mirror", () => {
 
       mockStoreApi({
         versions: ["16.0.0"],
+        // files: {
+        //   ...(Array.from({ length: FILE_COUNT }, (_, i) => `file${i}.txt`)),
+        // },
         responses: {
           "/.well-known/ucd-store/{version}.json": {
             expectedFiles: Array.from({ length: FILE_COUNT }, (_, i) => `file${i}.txt`),
@@ -289,6 +292,22 @@ describe("mirror", () => {
 
               currentConcurrent--;
               return HttpResponse.text("file content");
+            },
+          }),
+          "/api/v1/versions/{version}/file-tree": configure({
+            response: async () => {
+              currentConcurrent++;
+              maxConcurrent = Math.max(maxConcurrent, currentConcurrent);
+
+              await new Promise((resolve) => setTimeout(resolve, DELAY_MS));
+
+              currentConcurrent--;
+              return HttpResponse.json(Array.from({ length: FILE_COUNT }, (_, i) => ({
+                name: `file${i}.txt`,
+                type: "file" as const,
+                path: `file${i}.txt`,
+                lastModified: Date.now(),
+              })));
             },
           }),
         },
@@ -308,6 +327,7 @@ describe("mirror", () => {
       expect(data?.versions.size).toBe(1);
 
       const v16 = data!.versions.get("16.0.0")!;
+      console.error(v16);
       expect(v16.counts.downloaded).toBe(FILE_COUNT);
 
       expect(maxConcurrent).toBeLessThanOrEqual(CONCURRENCY_LIMIT);

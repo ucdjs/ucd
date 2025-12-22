@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { wrapTry, tryOr } from "../../src/async/try-catch";
+import { tryOr, wrapTry } from "../../src/async/try-catch";
 
 describe("tryCatch", () => {
   describe("synchronous operations", () => {

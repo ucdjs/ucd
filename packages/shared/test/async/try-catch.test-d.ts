@@ -1,7 +1,7 @@
 import { describe, expectTypeOf, it } from "vitest";
 import { tryOr, wrapTry } from "../../src/async/try-catch";
 
-describe("tryCatchOld - type inference", () => {
+describe("wrapTry - type inference", () => {
   it("should infer correct return type for sync operation", () => {
     const result = wrapTry(() => "success");
 

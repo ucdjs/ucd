@@ -1,7 +1,7 @@
 import type { OperationResult } from "@ucdjs-internal/shared";
 import type { StoreError } from "../errors";
 import type { InternalUCDStoreContext, SharedOperationOptions } from "../types";
-import { tryCatchOld } from "@ucdjs-internal/shared";
+import { wrapTry } from "@ucdjs-internal/shared";
 import { getExpectedFilePaths } from "../core/files";
 import { listFiles } from "./files/list";
 
@@ -92,7 +92,7 @@ export async function analyze(
 ): Promise<OperationResult<Map<string, AnalysisReport>, StoreError>> {
   const results = new Map<string, AnalysisReport>();
 
-  return tryCatchOld(async () => {
+  return wrapTry(async () => {
     const versionsToAnalyze = options?.versions ?? context.versions;
 
     const promises = versionsToAnalyze.map(async (version) => {

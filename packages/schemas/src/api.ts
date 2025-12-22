@@ -58,7 +58,7 @@ export const UCDWellKnownConfigSchema = z.object({
    * List of available Unicode versions
    * This array contains all versions that have manifests available.
    */
-  versions: z.array(z.string()).optional(),
+  versions: z.array(z.string()).default([]),
 }).meta({
   id: "UCDWellKnownConfig",
   description: dedent`

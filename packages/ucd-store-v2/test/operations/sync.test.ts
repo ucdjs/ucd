@@ -20,17 +20,6 @@ describe("sync", () => {
     it("should use versions from ucd-config.json when available", async () => {
       mockStoreApi({
         versions: ["16.0.0", "15.1.0", "15.0.0"],
-        responses: {
-          "/.well-known/ucd-config.json": {
-            version: "0.1",
-            endpoints: {
-              files: "/api/v1/files",
-              manifest: "/.well-known/ucd-store.json",
-              versions: "/api/v1/versions",
-            },
-            versions: ["16.0.0", "15.1.0", "15.0.0"],
-          },
-        },
       });
 
       const { context, fs, lockfilePath } = await createTestContext({
@@ -48,56 +37,14 @@ describe("sync", () => {
       const versionKeys = Object.keys(lockfile.versions).sort();
       expect(versionKeys).toEqual(["15.0.0", "15.1.0", "16.0.0"]);
       expect(lockfile.versions["15.1.0"]).toEqual({
-        path: "v15.1.0/snapshot.json",
-        fileCount: 0,
-        totalSize: 0,
+        path: "15.1.0/snapshot.json",
+        fileCount: 3,
+        totalSize: 60,
       });
       expect(lockfile.versions["15.0.0"]).toEqual({
-        path: "v15.0.0/snapshot.json",
-        fileCount: 0,
-        totalSize: 0,
-      });
-    });
-
-    it("should fallback to versions.list() when config doesn't have versions", async () => {
-      mockStoreApi({
-        versions: ["16.0.0", "15.1.0", "15.0.0"],
-        responses: {
-          "/.well-known/ucd-config.json": {
-            version: "0.1",
-            endpoints: {
-              files: "/api/v1/files",
-              manifest: "/.well-known/ucd-store.json",
-              versions: "/api/v1/versions",
-            },
-            // No versions array
-          },
-        },
-      });
-
-      const { context, fs, lockfilePath } = await createTestContext({
-        versions: ["16.0.0"],
-        lockfile: createEmptyLockfile(["16.0.0"]),
-      });
-
-      const [data, error] = await sync(context);
-
-      expect(error).toBeNull();
-      expect(data).toBeDefined();
-      expect(data?.added).toEqual(["15.1.0", "15.0.0"]);
-
-      const lockfile = await readLockfile(fs, lockfilePath);
-      const versionKeys = Object.keys(lockfile.versions).sort();
-      expect(versionKeys).toEqual(["15.0.0", "15.1.0", "16.0.0"]);
-      expect(lockfile.versions["15.1.0"]).toEqual({
-        path: "v15.1.0/snapshot.json",
-        fileCount: 0,
-        totalSize: 0,
-      });
-      expect(lockfile.versions["15.0.0"]).toEqual({
-        path: "v15.0.0/snapshot.json",
-        fileCount: 0,
-        totalSize: 0,
+        path: "15.0.0/snapshot.json",
+        fileCount: 3,
+        totalSize: 60,
       });
     });
   });
@@ -129,9 +76,9 @@ describe("sync", () => {
       const lockfile = await readLockfile(fs, lockfilePath);
       const versionKeys = Object.keys(lockfile.versions).sort();
       expect(versionKeys).toEqual(["15.0.0", "15.1.0", "16.0.0"]);
-      expect(lockfile.versions["16.0.0"]?.path).toBe("v16.0.0/snapshot.json");
-      expect(lockfile.versions["15.1.0"]?.path).toBe("v15.1.0/snapshot.json");
-      expect(lockfile.versions["15.0.0"]?.path).toBe("v15.0.0/snapshot.json");
+      expect(lockfile.versions["16.0.0"]?.path).toBe("16.0.0/snapshot.json");
+      expect(lockfile.versions["15.1.0"]?.path).toBe("15.1.0/snapshot.json");
+      expect(lockfile.versions["15.0.0"]?.path).toBe("15.0.0/snapshot.json");
     });
 
     it("should keep versions not in API when removeUnavailable is false", async () => {

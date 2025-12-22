@@ -5,7 +5,7 @@ import type { MirrorReport } from "./mirror";
 import {
   createConcurrencyLimiter,
   createDebugger,
-  tryCatchOld,
+  wrapTry,
 } from "@ucdjs-internal/shared";
 import { hasCapability } from "@ucdjs/fs-bridge";
 import { readLockfileOrDefault, readSnapshotOrDefault, writeLockfile } from "@ucdjs/lockfile";
@@ -94,7 +94,7 @@ export async function sync(
   context: InternalUCDStoreContext,
   options?: SyncOptions,
 ): Promise<OperationResult<SyncResult, StoreError>> {
-  return tryCatchOld(async () => {
+  return wrapTry(async () => {
     if (!hasCapability(context.fs, ["mkdir", "write"])) {
       throw new UCDStoreGenericError("Filesystem does not support required write operations for syncing.");
     }
@@ -105,19 +105,31 @@ export async function sync(
     const cleanOrphaned = options?.cleanOrphaned ?? false;
 
     debug?.("Fetching available versions from API");
-    const availableVersionsFromApi: string[] = await getVersionsFromApi(context);
+    const availableVersionsFromApi = await getVersionsFromApi(context);
 
     debug?.(`Found ${availableVersionsFromApi.length} available versions from API`);
 
-    // Step 2: Read current lockfile
     const lockfile = await readLockfileOrDefault(context.fs, context.lockfilePath);
     const currentVersions = new Set(lockfile ? Object.keys(lockfile.versions) : []);
 
-    // Step 3: Determine which versions to add/remove/keep
     const availableVersionsSet = new Set(availableVersionsFromApi);
     const added = availableVersionsFromApi.filter((v) => !currentVersions.has(v));
-    // TODO: include the versions in the unchanged, that exists in the lockfile, but not on the API.
-    const unchanged = Array.from(currentVersions).filter((v) => availableVersionsSet.has(v));
+
+    const unchanged = Array.from(currentVersions).filter((v) => {
+      // If the removeUnavailable is set to true, we will only keep the versions that
+      // is available and already exist as unchanged. If the version is not available,
+      // we will remove it from the unchanged list.
+
+      if (removeUnavailable && !availableVersionsSet.has(v)) {
+        return false;
+      }
+
+      if (!removeUnavailable) {
+        return true;
+      }
+
+      return availableVersionsSet.has(v);
+    });
 
     let removed: string[] = [];
     let finalVersions: string[];
@@ -163,14 +175,18 @@ export async function sync(
     // Step 5: Determine which versions to sync files for
     const versionsToSync = options?.versions ?? finalVersions;
 
+    debug?.(`Determining versions to sync: ${versionsToSync.join(", ")}`);
     // Validate specified versions exist in lockfile
     if (options?.versions && options.versions.length > 0) {
+      debug?.(`Validating specified versions: ${options.versions.join(", ")}`);
       for (const version of options.versions) {
         if (!finalVersions.includes(version)) {
           throw new UCDStoreVersionNotFoundError(version);
         }
       }
     }
+
+    debug?.(`Validating versions to sync: ${versionsToSync.join(", ")}`);
 
     if (versionsToSync.length === 0) {
       debug?.("No versions to sync");
@@ -281,18 +297,10 @@ async function getVersionsFromApi(context: InternalUCDStoreContext): Promise<str
   // If the response from config.get is not available, or is an error.
   // We can't proceed with the sync operation.
   if (configResult.error || !configResult.data) {
-    // Fallback to versions.list() if config is not available
-    const { data, error } = await context.client.versions.list();
-    if (error) {
-      debug?.(`Failed to fetch versions from API:`, error);
-      throw error;
-    }
-
-    if (data == null) {
-      throw new Error("Failed to fetch versions from API");
-    }
-
-    availableVersionsFromApi = data.map(({ version }) => version);
+    // TODO: handle this error better.
+    throw new Error("Failed to fetch versions from API");
+  } else {
+    availableVersionsFromApi = configResult.data.versions;
   }
 
   return availableVersionsFromApi;
