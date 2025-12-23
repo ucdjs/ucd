@@ -92,7 +92,7 @@ describe("configure", () => {
 
     it("should throw TypeError when response is not function or object", () => {
       expect(() => configure({ response: "string" as any })).toThrow(
-        "Invalid configure() call: response must be a function or a non-null object",
+        "Invalid configure() call: response must be true, a function, or a non-null object",
       );
     });
   });
