@@ -1,5 +1,5 @@
 import { Buffer } from "node:buffer";
-import { assertCapability } from "@ucdjs/fs-bridge";
+import { assertCapability, BridgeUnsupportedOperation } from "@ucdjs/fs-bridge";
 import { assert, describe, expect, it } from "vitest";
 import { createMemoryMockFS } from "../../src/fs-bridges/memory-fs-bridge";
 
@@ -26,6 +26,37 @@ describe("memory fs bridge", () => {
       initialFiles: { "file.txt": "content" },
     });
     expect(await fs.read("file.txt")).toBe("content");
+  });
+
+  it("should allow overriding functions via options", async () => {
+    const fs = createMemoryMockFS({
+      functions: {
+        read: async (path: string) => `overridden:${path}`,
+      },
+    });
+
+    expect(await fs.read("file.txt")).toBe("overridden:file.txt");
+  });
+
+  it("should disable optional functions when set to false", async () => {
+    const fs = createMemoryMockFS({
+      functions: {
+        write: false,
+      },
+    });
+
+    expect(() => assertCapability(fs, "write")).toThrow(BridgeUnsupportedOperation);
+    await expect(fs.write!("file.txt", "content")).rejects.toBeInstanceOf(BridgeUnsupportedOperation);
+  });
+
+  it("should throw when disabling required function via false", async () => {
+    const fs = createMemoryMockFS({
+      functions: {
+        read: false,
+      },
+    });
+
+    await expect(fs.read("file.txt")).rejects.toBeInstanceOf(BridgeUnsupportedOperation);
   });
 
   it("should throw ENOENT for non-existent file", async () => {
