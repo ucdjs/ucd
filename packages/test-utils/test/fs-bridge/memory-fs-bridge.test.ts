@@ -242,11 +242,48 @@ describe("memory fs bridge", () => {
     });
   });
 
-  it("should not create directories with mkdir", async () => {
+  it("should create directories with mkdir", async () => {
     const fs = createMemoryMockFS();
 
     assertCapability(fs, "mkdir");
     await fs.mkdir("dir");
+    expect(await fs.exists("dir")).toBe(true);
+  });
+
+  it("should create nested directories with mkdir", async () => {
+    const fs = createMemoryMockFS();
+
+    assertCapability(fs, "mkdir");
+    await fs.mkdir("a/b/c");
+    expect(await fs.exists("a")).toBe(true);
+    expect(await fs.exists("a/b")).toBe(true);
+    expect(await fs.exists("a/b/c")).toBe(true);
+  });
+
+  it("should list explicitly created empty directories", async () => {
+    const fs = createMemoryMockFS();
+
+    assertCapability(fs, "mkdir");
+    await fs.mkdir("emptydir");
+    const entries = await fs.listdir("", false);
+    expect(entries).toEqual([{ type: "directory", name: "emptydir", path: "emptydir", children: [] }]);
+  });
+
+  it("should throw EISDIR when reading a directory", async () => {
+    const fs = createMemoryMockFS();
+
+    assertCapability(fs, "mkdir");
+    await fs.mkdir("dir");
+    await expect(fs.read("dir/")).rejects.toThrow("EISDIR: illegal operation on a directory, read 'dir/'");
+  });
+
+  it("should remove explicit directory with rm", async () => {
+    const fs = createMemoryMockFS();
+
+    assertCapability(fs, ["mkdir", "rm"]);
+    await fs.mkdir("dir");
+    expect(await fs.exists("dir")).toBe(true);
+    await fs.rm("dir");
     expect(await fs.exists("dir")).toBe(false);
   });
 
