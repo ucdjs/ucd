@@ -52,7 +52,7 @@ describe("strict strategy", () => {
     expect(result).toEqual(lockfileVersions);
   });
 
-  it("should throw error when provided versions differ from lockfile", async () => {
+  it("should throw UCDStoreGenericError when versions differ", async () => {
     // Arrange
     const { fs, lockfilePath } = await createTestContext({
       versions: ["16.0.0", "15.1.0", "15.0.0"],
@@ -72,18 +72,30 @@ describe("strict strategy", () => {
         lockfilePath,
       ),
     ).rejects.toThrow(UCDStoreGenericError);
+  });
 
-    await expect(
-      handleVersionConflict(
-        "strict",
-        providedVersions,
-        lockfileVersions,
-        fs,
-        lockfilePath,
-      ),
-    ).rejects.toThrow(
-      "Version mismatch: lockfile has [16.0.0, 15.1.0, 15.0.0], provided [16.0.0, 15.1.0]. Use versionStrategy: \"merge\" or \"overwrite\" to resolve.",
-    );
+  it("should include version mismatch details in error message", async () => {
+    // Arrange
+    const { fs, lockfilePath } = await createTestContext({
+      versions: ["16.0.0", "15.1.0", "15.0.0"],
+      lockfile: createEmptyLockfile(["16.0.0", "15.1.0", "15.0.0"]),
+    });
+
+    const providedVersions = ["16.0.0", "15.1.0"];
+    const lockfileVersions = ["16.0.0", "15.1.0", "15.0.0"];
+
+    // Act
+    const error = await handleVersionConflict(
+      "strict",
+      providedVersions,
+      lockfileVersions,
+      fs,
+      lockfilePath,
+    ).catch((e) => e);
+
+    // Assert
+    expect(error).toBeInstanceOf(UCDStoreGenericError);
+    expect(error.message).toContain("Version mismatch: lockfile has [16.0.0, 15.1.0, 15.0.0], provided [16.0.0, 15.1.0]. Use versionStrategy: \"merge\" or \"overwrite\" to resolve.");
   });
 });
 

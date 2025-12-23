@@ -1,5 +1,7 @@
 import { createTestContext } from "#internal-pkg:test-utils/test-context";
+import { createMemoryMockFS } from "#test-utils/fs-bridges";
 import { mockStoreApi } from "#test-utils/mock-store";
+import { HttpResponse } from "#test-utils/msw";
 import { createEmptyLockfile } from "@ucdjs/lockfile/test-utils";
 import { describe, expect, it } from "vitest";
 import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../../../src/errors";
@@ -246,7 +248,7 @@ describe("getFile", () => {
       expect(error?.message).toMatch(/Version '\d+\.\d+\.\d+' does not exist in the store/);
     });
 
-    it("should throw error when file does not pass filters", async () => {
+    it("should throw error when file does not pass global filters", async () => {
       mockStoreApi({ versions: ["16.0.0"] });
 
       const { context } = await createTestContext({
@@ -259,6 +261,131 @@ describe("getFile", () => {
 
       expect(error).toBeInstanceOf(UCDStoreGenericError);
       expect(error?.message).toMatch(/File '(.*)' does not pass filters/);
+    });
+
+    it("should throw error when file does not pass method-specific filters", async () => {
+      mockStoreApi({ versions: ["16.0.0"] });
+
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+        initialFiles: {
+          "/test/16.0.0/UnicodeData.txt": "content",
+        },
+      });
+
+      const [_data, error] = await getFile(context, "16.0.0", "UnicodeData.txt", {
+        filters: { exclude: ["**/UnicodeData.txt"] },
+      });
+
+      expect(error).toBeInstanceOf(UCDStoreGenericError);
+      expect(error?.message).toMatch(/File '(.*)' does not pass filters/);
+    });
+
+    it("should handle 'no data returned' error when API returns null", async () => {
+      mockStoreApi({
+        versions: ["16.0.0"],
+        responses: {
+          "/api/v1/files/{wildcard}": () => {
+            return new HttpResponse(null, { status: 200 });
+          },
+        },
+      });
+
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+      });
+
+      const [_data, error] = await getFile(context, "16.0.0", "UnicodeData.txt", {
+        allowApi: true,
+      });
+
+      expect(error).toBeInstanceOf(UCDStoreGenericError);
+      expect(error?.message).toMatch(/Failed to fetch file '(.*)': no data returned/);
+    });
+
+    it("should handle JSON response from API", async () => {
+      mockStoreApi({
+        versions: ["16.0.0"],
+        responses: {
+          "/api/v1/files/{wildcard}": () => {
+            return HttpResponse.json({
+              // @ts-expect-error - This is correct, but TypeScript complains.ﬁ
+              data: "test",
+              version: "16.0.0",
+            });
+          },
+        },
+      });
+
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+      });
+
+      const [data, error] = await getFile(context, "16.0.0", "UnicodeData.txt", {
+        allowApi: true,
+      });
+
+      expect(error).toBeNull();
+      expect(data).toBeDefined();
+      expect(typeof data).toBe("string");
+      expect(data).toContain("data");
+      expect(data).toContain("version");
+    });
+
+    it("should return content even if cache write fails", async () => {
+      mockStoreApi({
+        versions: ["16.0.0"],
+        responses: {
+          "/api/v1/files/{wildcard}": "API content",
+        },
+      });
+
+      const { context, fs } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+      });
+
+      fs.hook("write:before", () => {
+        throw new Error("Write failed");
+      });
+
+      const [data, error] = await getFile(context, "16.0.0", "UnicodeData.txt", {
+        allowApi: true,
+      });
+
+      expect(error).toBeNull();
+      expect(data).toBe("API content");
+    });
+
+    it("should return content when FS lacks write capability", async () => {
+      const readOnlyMemoryFS = createMemoryMockFS({
+        functions: {
+          write: false,
+        },
+      });
+
+      mockStoreApi({
+        versions: ["16.0.0"],
+        responses: {
+          "/api/v1/files/{wildcard}": "API content",
+        },
+      });
+
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+        fs: readOnlyMemoryFS,
+      });
+
+      const [data, error] = await getFile(context, "16.0.0", "UnicodeData.txt", {
+        allowApi: true,
+      });
+
+      expect(error).toBeNull();
+      expect(data).toBe("API content");
     });
   });
 });

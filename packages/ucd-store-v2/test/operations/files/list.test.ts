@@ -1,5 +1,6 @@
 import { createTestContext } from "#internal-pkg:test-utils/test-context";
 import { mockStoreApi } from "#test-utils/mock-store";
+import { HttpResponse } from "#test-utils/msw";
 import { createEmptyLockfile } from "@ucdjs/lockfile/test-utils";
 import { describe, expect, it } from "vitest";
 import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../../../src/errors";
@@ -178,6 +179,32 @@ describe("listFiles", () => {
 
       expect(error).toBeInstanceOf(UCDStoreGenericError);
       expect(error?.message).toMatch(/Failed to fetch file tree for version '16\.0\.0'/);
+      expect(data).toBeNull();
+    });
+
+    it("should handle 'no data returned' error when API returns null", async () => {
+      mockStoreApi({
+        versions: ["16.0.0"],
+        responses: {
+          "/api/v1/versions/{version}/file-tree": () => {
+            return new HttpResponse(null, {
+              status: 200,
+            });
+          },
+        },
+      });
+
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+      });
+
+      const [data, error] = await listFiles(context, "16.0.0", {
+        allowApi: true,
+      });
+
+      expect(error).toBeInstanceOf(UCDStoreGenericError);
+      expect(error?.message).toMatch(/Failed to fetch file tree for version '16\.0\.0': no data returned/);
       expect(data).toBeNull();
     });
   });

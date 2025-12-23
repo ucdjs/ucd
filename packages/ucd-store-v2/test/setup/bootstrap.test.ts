@@ -188,7 +188,7 @@ describe("bootstrap", () => {
       ).resolves.not.toThrow();
     });
 
-    it("should throw error when requested versions are not available in API", async () => {
+    it("should throw UCDStoreGenericError when versions not available", async () => {
       // Arrange
       mockStoreApi({
         versions: ["16.0.0", "15.1.0"],
@@ -208,21 +208,35 @@ describe("bootstrap", () => {
           lockfilePath: context.lockfilePath,
         }),
       ).rejects.toThrow(UCDStoreGenericError);
+    });
 
-      await expect(
-        bootstrap({
-          client: context.client,
-          fs: context.fs,
-          basePath: context.basePath,
-          versions: context.versions,
-          lockfilePath: context.lockfilePath,
-        }),
-      ).rejects.toThrow("Some requested versions are not available in the API: 99.0.0, 88.0.0");
+    it("should include unavailable versions in error message", async () => {
+      // Arrange
+      mockStoreApi({
+        versions: ["16.0.0", "15.1.0"],
+      });
+
+      const { context } = await createTestContext({
+        versions: ["16.0.0", "99.0.0", "88.0.0"],
+      });
+
+      // Act
+      const error = await bootstrap({
+        client: context.client,
+        fs: context.fs,
+        basePath: context.basePath,
+        versions: context.versions,
+        lockfilePath: context.lockfilePath,
+      }).catch((e) => e);
+
+      // Assert
+      expect(error).toBeInstanceOf(UCDStoreGenericError);
+      expect(error.message).toContain("Some requested versions are not available in the API: 99.0.0, 88.0.0");
     });
   });
 
   describe("error handling", () => {
-    it("should throw error when API request fails", async () => {
+    it("should throw UCDStoreGenericError when API request fails", async () => {
       // Arrange
       mockFetch([
         ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
@@ -244,19 +258,35 @@ describe("bootstrap", () => {
           lockfilePath: context.lockfilePath,
         }),
       ).rejects.toThrow(UCDStoreGenericError);
-
-      await expect(
-        bootstrap({
-          client: context.client,
-          fs: context.fs,
-          basePath: context.basePath,
-          versions: context.versions,
-          lockfilePath: context.lockfilePath,
-        }),
-      ).rejects.toThrow("Failed to fetch Unicode versions");
     });
 
-    it("should throw error when API returns no data", async () => {
+    it("should include 'Failed to fetch Unicode versions' in error message", async () => {
+      // Arrange
+      mockFetch([
+        ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
+          return new HttpResponse(null, { status: 500 });
+        }],
+      ]);
+
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+      });
+
+      // Act
+      const error = await bootstrap({
+        client: context.client,
+        fs: context.fs,
+        basePath: context.basePath,
+        versions: context.versions,
+        lockfilePath: context.lockfilePath,
+      }).catch((e) => e);
+
+      // Assert
+      expect(error).toBeInstanceOf(UCDStoreGenericError);
+      expect(error.message).toContain("Failed to fetch Unicode versions");
+    });
+
+    it("should throw UCDStoreGenericError when API returns no data", async () => {
       // Arrange
       mockFetch([
         ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
@@ -278,16 +308,32 @@ describe("bootstrap", () => {
           lockfilePath: context.lockfilePath,
         }),
       ).rejects.toThrow(UCDStoreGenericError);
+    });
 
-      await expect(
-        bootstrap({
-          client: context.client,
-          fs: context.fs,
-          basePath: context.basePath,
-          versions: context.versions,
-          lockfilePath: context.lockfilePath,
-        }),
-      ).rejects.toThrow("Failed to fetch Unicode versions: no data returned");
+    it("should include 'no data returned' in error message", async () => {
+      // Arrange
+      mockFetch([
+        ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
+          return HttpResponse.json(null);
+        }],
+      ]);
+
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+      });
+
+      // Act
+      const error = await bootstrap({
+        client: context.client,
+        fs: context.fs,
+        basePath: context.basePath,
+        versions: context.versions,
+        lockfilePath: context.lockfilePath,
+      }).catch((e) => e);
+
+      // Assert
+      expect(error).toBeInstanceOf(UCDStoreGenericError);
+      expect(error.message).toContain("Failed to fetch Unicode versions: no data returned");
     });
 
     it("should throw error when filesystem lacks mkdir capability", async () => {

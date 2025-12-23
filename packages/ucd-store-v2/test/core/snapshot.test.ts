@@ -115,10 +115,20 @@ describe("readSnapshot", () => {
     await expect(readSnapshot(fs, basePath, version)).rejects.toThrow(
       LockfileInvalidError,
     );
+  });
 
-    await expect(readSnapshot(fs, basePath, version)).rejects.toThrow(
-      "snapshot is empty",
-    );
+  it("should include 'snapshot is empty' in error message", async () => {
+    const fs = createMemoryMockFS();
+    const basePath = "/test";
+    const version = "16.0.0";
+    const snapshotPath = getSnapshotPath(version);
+
+    await fs.write!(snapshotPath, "");
+
+    const error = await readSnapshot(fs, basePath, version).catch((e) => e);
+
+    expect(error).toBeInstanceOf(LockfileInvalidError);
+    expect(error.message).toContain("snapshot is empty");
   });
 
   it("should throw LockfileInvalidError when JSON is invalid", async () => {
@@ -132,10 +142,20 @@ describe("readSnapshot", () => {
     await expect(readSnapshot(fs, basePath, version)).rejects.toThrow(
       LockfileInvalidError,
     );
+  });
 
-    await expect(readSnapshot(fs, basePath, version)).rejects.toThrow(
-      "snapshot is not valid JSON",
-    );
+  it("should include 'snapshot is not valid JSON' in error message", async () => {
+    const fs = createMemoryMockFS();
+    const basePath = "/test";
+    const version = "16.0.0";
+    const snapshotPath = getSnapshotPath(version);
+
+    await fs.write!(snapshotPath, "{ invalid json }");
+
+    const error = await readSnapshot(fs, basePath, version).catch((e) => e);
+
+    expect(error).toBeInstanceOf(LockfileInvalidError);
+    expect(error.message).toContain("snapshot is not valid JSON");
   });
 
   it("should throw LockfileInvalidError when schema validation fails", async () => {
