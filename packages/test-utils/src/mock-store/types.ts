@@ -74,6 +74,15 @@ type DerivedResponses = Partial<{
   [K in keyof DerivedEndpointConfig]: false | DerivedEndpointConfig[K];
 }>;
 
+export type StoreVersionFileKey = "16.0.0" | "17.0.0";
+export type StoreFileKeyWildcard = "*";
+
+type PartialRecord<K extends keyof any, T> = {
+  [P in K]?: T;
+};
+
+export type MockStoreFiles = PartialRecord<StoreVersionFileKey | StoreFileKeyWildcard | (string & {}), UnicodeTree>;
+
 export interface MockStoreConfig {
   /**
    * The base URL for the store.
@@ -105,7 +114,7 @@ export interface MockStoreConfig {
    *
    * A special key of `*` can be used to mock all versions.
    */
-  files?: Record<string, UnicodeTree>;
+  files?: MockStoreFiles;
 
   /**
    * The versions to use for placeholders

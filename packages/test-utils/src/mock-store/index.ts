@@ -1,5 +1,5 @@
 import type { JsonBodyType } from "msw";
-import type { MockStoreConfig } from "./types";
+import type { MockStoreConfig, MockStoreFiles } from "./types";
 import { createDebugger, isApiError } from "@ucdjs-internal/shared";
 import { HttpResponse } from "msw";
 import { mockFetch } from "../msw";
@@ -12,6 +12,37 @@ import {
 
 const debug = createDebugger("ucdjs:test-utils:mock-store");
 
+const DEFAULT_MOCK_STORE_FILES = {
+  "*": [
+    {
+      type: "file",
+      name: "ArabicShaping.txt",
+      path: "ArabicShaping.txt",
+      lastModified: 1755287100000,
+    },
+    {
+      type: "file",
+      name: "BidiBrackets.txt",
+      path: "BidiBrackets.txt",
+      lastModified: 1755287100000,
+    },
+    {
+      type: "directory",
+      name: "extracted",
+      path: "extracted",
+      lastModified: 1755287100000,
+      children: [
+        {
+          type: "file",
+          name: "DerivedBidiClass.txt",
+          path: "extracted/DerivedBidiClass.txt",
+          lastModified: 1755287100000,
+        },
+      ],
+    },
+  ],
+} satisfies MockStoreFiles;
+
 export function mockStoreApi(config?: MockStoreConfig): void {
   const {
     baseUrl = "https://api.ucdjs.dev",
@@ -19,7 +50,7 @@ export function mockStoreApi(config?: MockStoreConfig): void {
     versions = ["16.0.0", "15.1.0", "15.0.0"],
     customResponses = [],
     onRequest,
-    files = {},
+    files = DEFAULT_MOCK_STORE_FILES,
   } = config || {};
 
   debug?.("Setting up mock store API with config:", config);
