@@ -1,9 +1,11 @@
 import type { OperationResult } from "@ucdjs-internal/shared";
 import type { StoreError } from "../errors";
 import type { InternalUCDStoreContext, SharedOperationOptions } from "../types";
-import { wrapTry } from "@ucdjs-internal/shared";
+import { createDebugger, wrapTry } from "@ucdjs-internal/shared";
 import { getExpectedFilePaths } from "../core/files";
 import { listFiles } from "./files/list";
+
+const debug = createDebugger("ucdjs:ucd-store:analyze");
 
 export interface AnalyzeOptions extends SharedOperationOptions {
   /**
@@ -102,17 +104,20 @@ export async function analyze(
       }
 
       const expectedFiles = await getExpectedFilePaths(context.client, version);
+      debug?.("Found expected files while analyzing: %O", expectedFiles);
 
       // Get files from store
       // Use allowApi: true to support HTTP bridge (read-only stores)
       const [actualFiles, error] = await listFiles(context, version, {
-        allowApi: true,
+        allowApi: false,
         filters: options?.filters,
       });
 
       if (error != null) {
         throw error;
       }
+
+      debug?.("Actual files while analyzing: %O", actualFiles);
 
       const expectedSet = new Set(expectedFiles);
       const actualSet = new Set(actualFiles);
@@ -121,6 +126,8 @@ export async function analyze(
       const orphanedFiles: string[] = [];
       const missingFiles: string[] = [];
       const fileTypes: Record<string, number> = {};
+
+      debug?.("Started analyzing files");
 
       for (const actualFile of actualSet) {
         const ext = getExtension(actualFile);
@@ -139,6 +146,8 @@ export async function analyze(
           missingFiles.push(expectedFile);
         }
       }
+
+      debug?.("Finished analyzing files");
 
       const isComplete = orphanedFiles.length === 0 && missingFiles.length === 0;
 

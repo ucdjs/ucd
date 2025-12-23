@@ -25,8 +25,8 @@ describe("analyze", () => {
         versions: ["16.0.0"],
         lockfile: createEmptyLockfile(["16.0.0"]),
         initialFiles: {
-          "/test/v16.0.0/UnicodeData.txt": "data",
-          "/test/v16.0.0/ReadMe.txt": "readme",
+          "/test/16.0.0/UnicodeData.txt": "data",
+          "/test/16.0.0/ReadMe.txt": "readme",
         },
       });
 
@@ -63,14 +63,27 @@ describe("analyze", () => {
     it("should detect missing files", async () => {
       mockStoreApi({
         versions: ["16.0.0"],
-        responses: {
-          "/.well-known/ucd-store/{version}.json": {
-            expectedFiles: [
-              "UnicodeData.txt",
-              "ReadMe.txt",
-              "ArabicShaping.txt",
-            ],
-          },
+        files: {
+          "*": [
+            {
+              name: "UnicodeData.txt",
+              path: "UnicodeData.txt",
+              lastModified: Date.now(),
+              type: "file",
+            },
+            {
+              name: "ReadMe.txt",
+              path: "ReadMe.txt",
+              lastModified: Date.now(),
+              type: "file",
+            },
+            {
+              name: "ArabicShaping.txt",
+              path: "ArabicShaping.txt",
+              lastModified: Date.now(),
+              type: "file",
+            },
+          ],
         },
       });
 
@@ -78,7 +91,7 @@ describe("analyze", () => {
         versions: ["16.0.0"],
         lockfile: createEmptyLockfile(["16.0.0"]),
         initialFiles: {
-          "/test/v16.0.0/UnicodeData.txt": "data",
+          "/test/16.0.0/UnicodeData.txt": "data",
         },
       });
 
@@ -131,9 +144,9 @@ describe("analyze", () => {
         versions: ["16.0.0"],
         lockfile: createEmptyLockfile(["16.0.0"]),
         initialFiles: {
-          "/test/v16.0.0/UnicodeData.txt": "data",
-          "/test/v16.0.0/OrphanedFile.txt": "orphaned",
-          "/test/v16.0.0/AnotherOrphan.html": "orphaned",
+          "/test/16.0.0/UnicodeData.txt": "data",
+          "/test/16.0.0/OrphanedFile.txt": "orphaned",
+          "/test/16.0.0/AnotherOrphan.html": "orphaned",
         },
       });
 
@@ -184,8 +197,8 @@ describe("analyze", () => {
         versions: ["16.0.0"],
         lockfile: createEmptyLockfile(["16.0.0"]),
         initialFiles: {
-          "/test/v16.0.0/UnicodeData.txt": "data",
-          "/test/v16.0.0/OrphanedFile.txt": "orphaned",
+          "/test/16.0.0/UnicodeData.txt": "data",
+          "/test/16.0.0/OrphanedFile.txt": "orphaned",
         },
       });
 
@@ -234,8 +247,8 @@ describe("analyze", () => {
         versions: ["16.0.0", "15.1.0"],
         lockfile: createEmptyLockfile(["16.0.0", "15.1.0"]),
         initialFiles: {
-          "/test/v16.0.0/UnicodeData.txt": "data",
-          "/test/v15.1.0/ReadMe.txt": "readme",
+          "/test/16.0.0/UnicodeData.txt": "data",
+          "/test/15.1.0/ReadMe.txt": "readme",
         },
       });
 
@@ -282,9 +295,9 @@ describe("analyze", () => {
         versions: ["16.0.0", "15.1.0", "15.0.0"],
         lockfile: createEmptyLockfile(["16.0.0", "15.1.0", "15.0.0"]),
         initialFiles: {
-          "/test/v16.0.0/UnicodeData.txt": "data",
-          "/test/v15.1.0/UnicodeData.txt": "data",
-          "/test/v15.0.0/UnicodeData.txt": "data",
+          "/test/16.0.0/UnicodeData.txt": "data",
+          "/test/15.1.0/UnicodeData.txt": "data",
+          "/test/15.0.0/UnicodeData.txt": "data",
         },
       });
 
@@ -331,10 +344,15 @@ describe("analyze", () => {
     it("should handle files without extensions", async () => {
       mockStoreApi({
         versions: ["16.0.0"],
-        responses: {
-          "/.well-known/ucd-store/{version}.json": {
-            expectedFiles: ["README"],
-          },
+        files: {
+          "*": [
+            {
+              name: "README",
+              path: "README",
+              lastModified: Date.now(),
+              type: "file",
+            },
+          ],
         },
       });
 
@@ -342,8 +360,8 @@ describe("analyze", () => {
         versions: ["16.0.0"],
         lockfile: createEmptyLockfile(["16.0.0"]),
         initialFiles: {
-          "/test/v16.0.0/README": "readme",
-          "/test/v16.0.0/ORPHAN": "orphaned",
+          "/test/16.0.0/README": "readme",
+          "/test/16.0.0/ORPHAN": "orphaned",
         },
       });
 
@@ -363,10 +381,15 @@ describe("analyze", () => {
     it("should handle empty store", async () => {
       mockStoreApi({
         versions: ["16.0.0"],
-        responses: {
-          "/.well-known/ucd-store/{version}.json": {
-            expectedFiles: ["UnicodeData.txt"],
-          },
+        files: {
+          "*": [
+            {
+              name: "UnicodeData.txt",
+              path: "UnicodeData.txt",
+              lastModified: Date.now(),
+              type: "file",
+            },
+          ],
         },
       });
 
@@ -404,14 +427,27 @@ describe("analyze", () => {
     it("should count different file types correctly", async () => {
       mockStoreApi({
         versions: ["16.0.0"],
-        responses: {
-          "/.well-known/ucd-store/{version}.json": {
-            expectedFiles: [
-              "file1.txt",
-              "file2.txt",
-              "file3.html",
-            ],
-          },
+        files: {
+          "*": [
+            {
+              name: "file1.txt",
+              path: "file1.txt",
+              lastModified: Date.now(),
+              type: "file",
+            },
+            {
+              name: "file2.txt",
+              path: "file2.txt",
+              lastModified: Date.now(),
+              type: "file",
+            },
+            {
+              name: "file3.html",
+              path: "file3.html",
+              lastModified: Date.now(),
+              type: "file",
+            },
+          ],
         },
       });
 
@@ -419,9 +455,9 @@ describe("analyze", () => {
         versions: ["16.0.0"],
         lockfile: createEmptyLockfile(["16.0.0"]),
         initialFiles: {
-          "/test/v16.0.0/file1.txt": "data",
-          "/test/v16.0.0/file2.txt": "data",
-          "/test/v16.0.0/file3.html": "html",
+          "/test/16.0.0/file1.txt": "data",
+          "/test/16.0.0/file2.txt": "data",
+          "/test/16.0.0/file3.html": "html",
         },
       });
 
