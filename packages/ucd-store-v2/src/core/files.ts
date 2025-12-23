@@ -36,5 +36,12 @@ export async function getExpectedFilePaths(
     );
   }
 
+  if (!Array.isArray(result.data.expectedFiles)) {
+    throw new UCDStoreGenericError(
+      `Failed to fetch expected files for version '${version}': invalid response (missing expectedFiles)`,
+      { version },
+    );
+  }
+
   return result.data.expectedFiles;
 }

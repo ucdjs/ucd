@@ -173,7 +173,23 @@ export async function sync(
     }
 
     // Step 5: Determine which versions to sync files for
-    const versionsToSync = options?.versions ?? finalVersions;
+    // Only mirror versions that need it: new versions or versions with no files (fileCount: 0)
+    // Unless force is enabled, which re-downloads everything
+    let versionsToSync: string[];
+    if (options?.versions) {
+      // User explicitly requested specific versions
+      versionsToSync = options.versions;
+    } else if (force) {
+      // Force mode: re-mirror all versions
+      versionsToSync = finalVersions;
+    } else {
+      // Default: only mirror versions that don't have files yet
+      versionsToSync = finalVersions.filter((v) => {
+        const entry = lockfile?.versions[v];
+        // Mirror if no entry exists or fileCount is 0
+        return !entry || entry.fileCount === 0;
+      });
+    }
 
     debug?.(`Determining versions to sync: ${versionsToSync.join(", ")}`);
     // Validate specified versions exist in lockfile

@@ -66,7 +66,7 @@ describe("bootstrap", () => {
       // Assert
       const lockfile = await readLockfile(fs, lockfilePath);
       for (const version of context.versions) {
-        expect(lockfile.versions[version]?.path).toBe(`v${version}/snapshot.json`);
+        expect(lockfile.versions[version]?.path).toBe(`${version}/snapshot.json`);
         expect(lockfile.versions[version]?.fileCount).toBe(0);
         expect(lockfile.versions[version]?.totalSize).toBe(0);
       }

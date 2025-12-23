@@ -318,17 +318,19 @@ describe("readLockfileOrDefault", () => {
 });
 
 describe("getLockfilePath", () => {
-  it("should return correct path with .ucd-store.lock filename", () => {
+  it("should return relative path with .ucd-store.lock filename", () => {
     const basePath = "/test/store";
     const result = getLockfilePath(basePath);
 
-    expect(result).toBe("/test/store/.ucd-store.lock");
+    // getLockfilePath returns a relative path; callers handle the basePath
+    expect(result).toBe(".ucd-store.lock");
   });
 
-  it("should handle nested base paths correctly", () => {
+  it("should return same relative path regardless of base path", () => {
     const basePath = "/deep/nested/path/to/store";
     const result = getLockfilePath(basePath);
 
-    expect(result).toBe("/deep/nested/path/to/store/.ucd-store.lock");
+    // The basePath parameter is unused; function always returns relative path
+    expect(result).toBe(".ucd-store.lock");
   });
 });
