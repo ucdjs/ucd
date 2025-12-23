@@ -1,4 +1,5 @@
 import type { UCDStoreManifest } from "@ucdjs/schemas";
+import { flattenFilePaths } from "@ucdjs-internal/shared";
 import { HttpResponse } from "../../msw";
 import { defineMockRouteHandler } from "../define";
 
@@ -109,7 +110,7 @@ export const wellKnownStoreVersionManifest = defineMockRouteHandler({
           // just return the files object as is.
           if (Object.keys(files).length === 1 && Object.keys(files)[0] === "*") {
             return HttpResponse.json({
-              expectedFiles: files["*"],
+              expectedFiles: flattenFilePaths(files["*"]!),
             });
           }
 
@@ -117,7 +118,7 @@ export const wellKnownStoreVersionManifest = defineMockRouteHandler({
           const version = params.version as string;
           if (version && files[version]) {
             return HttpResponse.json({
-              expectedFiles: files[version],
+              expectedFiles: flattenFilePaths(files[version]),
             });
           }
 
