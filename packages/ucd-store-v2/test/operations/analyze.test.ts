@@ -475,6 +475,135 @@ describe("analyze", () => {
     });
   });
 
+  describe("filter application", () => {
+    it("should apply global filters during analysis", async () => {
+      mockStoreApi({
+        versions: ["16.0.0"],
+        files: {
+          "*": [
+            {
+              name: "file1.txt",
+              path: "file1.txt",
+              lastModified: Date.now(),
+              type: "file",
+            },
+            {
+              name: "file2.html",
+              path: "file2.html",
+              lastModified: Date.now(),
+              type: "file",
+            },
+          ],
+        },
+      });
+
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+        globalFilters: { include: ["**/*.txt"] },
+        initialFiles: {
+          "/test/16.0.0/file1.txt": "data",
+          "/test/16.0.0/file2.html": "html",
+        },
+      });
+
+      const [data, error] = await analyze(context);
+
+      expect(error).toBeNull();
+      const v16 = data?.get("16.0.0");
+      expect(v16?.files.present).toContain("file1.txt");
+      expect(v16?.files.present).not.toContain("file2.html");
+    });
+
+    it("should apply method-specific filters during analysis", async () => {
+      mockStoreApi({
+        versions: ["16.0.0"],
+        files: {
+          "*": [
+            {
+              name: "file1.txt",
+              path: "file1.txt",
+              lastModified: Date.now(),
+              type: "file",
+            },
+            {
+              name: "file2.html",
+              path: "file2.html",
+              lastModified: Date.now(),
+              type: "file",
+            },
+          ],
+        },
+      });
+
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+        initialFiles: {
+          "/test/16.0.0/file1.txt": "data",
+          "/test/16.0.0/file2.html": "html",
+        },
+      });
+
+      const [data, error] = await analyze(context, {
+        filters: { include: ["**/*.txt"] },
+      });
+
+      expect(error).toBeNull();
+      const v16 = data?.get("16.0.0");
+      expect(v16?.files.present).toContain("file1.txt");
+      expect(v16?.files.present).not.toContain("file2.html");
+    });
+
+    it("should combine global and method-specific filters", async () => {
+      mockStoreApi({
+        versions: ["16.0.0"],
+        files: {
+          "*": [
+            {
+              name: "file1.txt",
+              path: "file1.txt",
+              lastModified: Date.now(),
+              type: "file",
+            },
+            {
+              name: "file2.html",
+              path: "file2.html",
+              lastModified: Date.now(),
+              type: "file",
+            },
+            {
+              name: "file3.txt",
+              path: "file3.txt",
+              lastModified: Date.now(),
+              type: "file",
+            },
+          ],
+        },
+      });
+
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+        globalFilters: { include: ["**/*"] },
+        initialFiles: {
+          "/test/16.0.0/file1.txt": "data",
+          "/test/16.0.0/file2.html": "html",
+          "/test/16.0.0/file3.txt": "data",
+        },
+      });
+
+      const [data, error] = await analyze(context, {
+        filters: { exclude: ["**/file3.txt"] },
+      });
+
+      expect(error).toBeNull();
+      const v16 = data?.get("16.0.0");
+      expect(v16?.files.present).toContain("file1.txt");
+      expect(v16?.files.present).not.toContain("file3.txt");
+    });
+  });
+
   describe("error handling", () => {
     it("should handle API errors when fetching manifest", async () => {
       mockStoreApi({

@@ -1,4 +1,5 @@
 import { createTestContext } from "#internal-pkg:test-utils/test-context";
+import { createReadOnlyBridge } from "#test-utils/fs-bridges";
 import { configure, mockStoreApi } from "#test-utils/mock-store";
 import { HttpResponse } from "#test-utils/msw";
 import { readLockfile, readSnapshot } from "@ucdjs/lockfile";
@@ -8,7 +9,7 @@ import { mirror } from "../../src/operations/mirror";
 
 describe("mirror", () => {
   describe("basic mirroring", () => {
-    it("should mirror all versions by default", async () => {
+    it("should mirror all versions when no versions option provided", async () => {
       mockStoreApi({
         versions: ["16.0.0", "15.1.0"],
         files: {
@@ -30,10 +31,58 @@ describe("mirror", () => {
 
       expect(error).toBeNull();
       expect(data).toBeDefined();
-      expect(data?.timestamp).toEqual(expect.any(String));
 
       const versionKeys = [...data!.versions.keys()];
       expect(versionKeys).toEqual(["16.0.0", "15.1.0"]);
+    });
+
+    it("should include timestamp in report", async () => {
+      mockStoreApi({
+        versions: ["16.0.0"],
+        files: {
+          "*": Array.from({ length: 3 }, (_, i) => ({
+            name: `file${i}.txt`,
+            type: "file" as const,
+            path: `file${i}.txt`,
+            lastModified: Date.now(),
+          })),
+        },
+      });
+
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+      });
+
+      const [data, error] = await mirror(context);
+
+      expect(error).toBeNull();
+      expect(data?.timestamp).toEqual(expect.any(String));
+      expect(new Date(data!.timestamp).getTime()).not.toBeNaN();
+    });
+
+    it("should include version report structure", async () => {
+      mockStoreApi({
+        versions: ["16.0.0"],
+        files: {
+          "*": Array.from({ length: 3 }, (_, i) => ({
+            name: `file${i}.txt`,
+            type: "file" as const,
+            path: `file${i}.txt`,
+            lastModified: Date.now(),
+          })),
+        },
+      });
+
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+      });
+
+      const [data, error] = await mirror(context);
+
+      expect(error).toBeNull();
+      expect(data).toBeDefined();
 
       const v16 = data!.versions.get("16.0.0")!;
       expect(v16).toMatchObject({
@@ -50,27 +99,86 @@ describe("mirror", () => {
         },
         errors: expect.any(Array),
       });
+    });
 
-      expect(data?.summary).toBeDefined();
-      expect(data?.summary).toMatchObject({
-        counts: {
-          downloaded: 6,
-          failed: 0,
-          skipped: 0,
-          totalFiles: 6,
-        },
-        duration: expect.any(Number),
-        metrics: {
-          averageTimePerFile: expect.any(Number),
-          cacheHitRate: 0,
-          failureRate: 0,
-          successRate: 100,
-        },
-        storage: {
-          averageFileSize: "20.00 B",
-          totalSize: "120.00 B",
+    it("should calculate summary counts correctly", async () => {
+      mockStoreApi({
+        versions: ["16.0.0"],
+        files: {
+          "*": Array.from({ length: 3 }, (_, i) => ({
+            name: `file${i}.txt`,
+            type: "file" as const,
+            path: `file${i}.txt`,
+            lastModified: Date.now(),
+          })),
         },
       });
+
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+      });
+
+      const [data, error] = await mirror(context);
+
+      expect(error).toBeNull();
+      expect(data?.summary?.counts).toEqual({
+        downloaded: 3,
+        skipped: 0,
+        failed: 0,
+        totalFiles: 3,
+      });
+    });
+
+    it("should calculate success rate correctly", async () => {
+      mockStoreApi({
+        versions: ["16.0.0"],
+        files: {
+          "*": Array.from({ length: 10 }, (_, i) => ({
+            name: `file${i}.txt`,
+            type: "file" as const,
+            path: `file${i}.txt`,
+            lastModified: Date.now(),
+          })),
+        },
+      });
+
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+      });
+
+      const [data, error] = await mirror(context);
+
+      expect(error).toBeNull();
+      expect(data?.summary?.metrics.successRate).toBe(100);
+      expect(data?.summary?.metrics.failureRate).toBe(0);
+      expect(data?.summary?.metrics.cacheHitRate).toBe(0);
+    });
+
+    it("should format storage sizes correctly", async () => {
+      mockStoreApi({
+        versions: ["16.0.0"],
+        files: {
+          "*": Array.from({ length: 3 }, (_, i) => ({
+            name: `file${i}.txt`,
+            type: "file" as const,
+            path: `file${i}.txt`,
+            lastModified: Date.now(),
+          })),
+        },
+      });
+
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+      });
+
+      const [data, error] = await mirror(context);
+
+      expect(error).toBeNull();
+      expect(data?.summary?.storage.totalSize).toBe("120.00 B");
+      expect(data?.summary?.storage.averageFileSize).toBe("40.00 B");
     });
 
     it("should mirror specific versions when provided", async () => {
@@ -228,35 +336,58 @@ describe("mirror", () => {
   });
 
   describe("force option", () => {
-    it("should support force option to re-download existing files", async () => {
+    it("should skip existing files when force is false", async () => {
       mockStoreApi({
         versions: ["16.0.0"],
         files: {
           "*": [
             {
-              name: "cased.txt",
+              name: "file1.txt",
               type: "file" as const,
-              path: "cased.txt",
+              path: "file1.txt",
               lastModified: Date.now(),
             },
             {
-              name: "common.txt",
+              name: "file2.txt",
               type: "file" as const,
-              path: "common.txt",
+              path: "file2.txt",
               lastModified: Date.now(),
             },
+          ],
+        },
+      });
+
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+        initialFiles: {
+          "/test/16.0.0/file1.txt": "existing",
+          "/test/16.0.0/file2.txt": "existing",
+        },
+      });
+
+      const [data, error] = await mirror(context, { force: false });
+
+      expect(error).toBeNull();
+      expect(data?.versions.get("16.0.0")?.counts.downloaded).toBe(0);
+      expect(data?.versions.get("16.0.0")?.counts.skipped).toBe(2);
+    });
+
+    it("should re-download existing files when force is true", async () => {
+      mockStoreApi({
+        versions: ["16.0.0"],
+        files: {
+          "*": [
             {
-              name: "scripts.txt",
+              name: "file1.txt",
               type: "file" as const,
-              path: "scripts.txt",
+              path: "file1.txt",
               lastModified: Date.now(),
             },
           ],
         },
         responses: {
-          "/api/v1/files/{wildcard}": ({ params }) => {
-            return HttpResponse.text(`Content of ${params.wildcard}`);
-          },
+          "/api/v1/files/{wildcard}": () => HttpResponse.text("new content"),
         },
       });
 
@@ -264,51 +395,18 @@ describe("mirror", () => {
         versions: ["16.0.0"],
         lockfile: createEmptyLockfile(["16.0.0"]),
         initialFiles: {
-          "/test/16.0.0/cased.txt": "existing content",
-          "/test/16.0.0/common.txt": "existing content",
-          "/test/16.0.0/scripts.txt": "existing content",
+          "/test/16.0.0/file1.txt": "old content",
         },
       });
 
-      const [firstMirrorData, firstMirrorError] = await mirror(context, {
-        force: false,
-      });
+      const [data, error] = await mirror(context, { force: true });
 
-      expect(firstMirrorError).toBeNull();
-      expect(firstMirrorData).toBeDefined();
+      expect(error).toBeNull();
+      expect(data?.versions.get("16.0.0")?.counts.downloaded).toBe(1);
+      expect(data?.versions.get("16.0.0")?.counts.skipped).toBe(0);
 
-      const firstV16 = firstMirrorData!.versions.get("16.0.0")!;
-      expect(firstV16.counts.downloaded).toBe(0);
-      expect(firstV16.counts.skipped).toBeGreaterThan(0);
-      const skippedCount = firstV16.counts.skipped;
-
-      const originalCasedContent = await fs.read("/test/16.0.0/cased.txt");
-      const originalCommonContent = await fs.read("/test/16.0.0/common.txt");
-      const originalScriptsContent = await fs.read("/test/16.0.0/scripts.txt");
-
-      expect(originalCasedContent).toBe("existing content");
-      expect(originalCommonContent).toBe("existing content");
-      expect(originalScriptsContent).toBe("existing content");
-
-      const [secondMirrorData, secondMirrorError] = await mirror(context, {
-        force: true,
-      });
-
-      expect(secondMirrorError).toBeNull();
-      expect(secondMirrorData).toBeDefined();
-
-      const secondV16 = secondMirrorData!.versions.get("16.0.0")!;
-      expect(secondV16.files.downloaded.length).toBe(skippedCount);
-      expect(secondV16.counts.downloaded).toBe(skippedCount);
-      expect(secondV16.counts.skipped).toBe(0);
-
-      const updatedCasedContent = await fs.read("/test/16.0.0/cased.txt");
-      const updatedCommonContent = await fs.read("/test/16.0.0/common.txt");
-      const updatedScriptsContent = await fs.read("/test/16.0.0/scripts.txt");
-
-      expect(updatedCasedContent).not.toBe(originalCasedContent);
-      expect(updatedCommonContent).not.toBe(originalCommonContent);
-      expect(updatedScriptsContent).not.toBe(originalScriptsContent);
+      const content = await fs.read("/test/16.0.0/file1.txt");
+      expect(content).toBe("new content");
     });
   });
 
@@ -377,6 +475,201 @@ describe("mirror", () => {
 
       expect(maxConcurrent).toBeLessThanOrEqual(CONCURRENCY_LIMIT);
       expect(maxConcurrent).toBeGreaterThanOrEqual(2);
+    });
+  });
+
+  describe("error handling", () => {
+    it("should handle file tree fetch failure", async () => {
+      mockStoreApi({
+        versions: ["16.0.0"],
+        responses: {
+          "/api/v1/versions/{version}/file-tree": {
+            status: 500,
+            message: "Internal Server Error",
+            timestamp: new Date().toISOString(),
+          },
+        },
+      });
+
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+      });
+
+      const [_data, error] = await mirror(context);
+
+      expect(error).toBeDefined();
+      expect(error?.message).toContain("Failed to fetch file tree");
+    });
+
+    it("should handle partial failures", async () => {
+      mockStoreApi({
+        versions: ["16.0.0"],
+        files: {
+          "*": [
+            {
+              name: "file1.txt",
+              type: "file" as const,
+              path: "file1.txt",
+              lastModified: Date.now(),
+            },
+            {
+              name: "file2.txt",
+              type: "file" as const,
+              path: "file2.txt",
+              lastModified: Date.now(),
+            },
+          ],
+        },
+        responses: {
+          "/api/v1/files/{wildcard}": ({ params }) => {
+            if (params.wildcard === "16.0.0/file1.txt") {
+              return HttpResponse.text("content");
+            }
+            return HttpResponse.json({
+              status: 500,
+              message: "Internal Server Error",
+              timestamp: new Date().toISOString(),
+            }, { status: 500 });
+          },
+        },
+      });
+
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+      });
+
+      const [data, error] = await mirror(context);
+
+      expect(error).toBeNull();
+      expect(data).toBeDefined();
+      const v16 = data!.versions.get("16.0.0")!;
+      expect(v16.counts.downloaded).toBe(1);
+      expect(v16.counts.failed).toBe(1);
+      expect(v16.errors.length).toBeGreaterThan(0);
+    });
+
+    it("should fail when filesystem does not support write operations", async () => {
+      mockStoreApi({
+        versions: ["16.0.0"],
+        files: {
+          "*": [
+            {
+              name: "file1.txt",
+              type: "file" as const,
+              path: "file1.txt",
+              lastModified: Date.now(),
+            },
+          ],
+        },
+      });
+
+      const fs = createReadOnlyBridge();
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+      });
+      context.fs = fs;
+
+      const [_data, error] = await mirror(context);
+
+      expect(error).toBeDefined();
+      expect(error?.message).toContain("does not support required write operations");
+    });
+  });
+
+  describe("feature coverage", () => {
+    it("should handle JSON response from API", async () => {
+      mockStoreApi({
+        versions: ["16.0.0"],
+        files: {
+          "*": [
+            {
+              name: "file.json",
+              type: "file" as const,
+              path: "file.json",
+              lastModified: Date.now(),
+            },
+          ],
+        },
+        responses: {
+          "/api/v1/files/{wildcard}": () => {
+            return HttpResponse.json({ data: "json content" }, {
+              headers: { "content-type": "application/json" },
+            }) as any;
+          },
+        },
+      });
+
+      const { context, fs } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+      });
+
+      const [data, error] = await mirror(context);
+
+      expect(error).toBeNull();
+      expect(data?.versions.get("16.0.0")?.counts.downloaded).toBe(1);
+
+      const content = await fs.read("/test/16.0.0/file.json");
+      expect(content).toBe("{\"data\":\"json content\"}");
+    });
+
+    it("should apply filters during mirroring", async () => {
+      mockStoreApi({
+        versions: ["16.0.0"],
+        files: {
+          "*": [
+            {
+              name: "file1.txt",
+              type: "file" as const,
+              path: "file1.txt",
+              lastModified: Date.now(),
+            },
+            {
+              name: "file2.html",
+              type: "file" as const,
+              path: "file2.html",
+              lastModified: Date.now(),
+            },
+          ],
+        },
+      });
+
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+      });
+
+      const [data, error] = await mirror(context, {
+        filters: { include: ["**/*.txt"] },
+      });
+
+      expect(error).toBeNull();
+      const v16 = data!.versions.get("16.0.0")!;
+      expect(v16.files.downloaded).toEqual(["file1.txt"]);
+      expect(v16.files.downloaded).not.toContain("file2.html");
+    });
+
+    it("should return empty report when versions array is empty", async () => {
+      mockStoreApi({
+        versions: ["16.0.0"],
+      });
+
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+      });
+
+      const [data, error] = await mirror(context, {
+        versions: [],
+      });
+
+      expect(error).toBeNull();
+      expect(data).toBeDefined();
+      expect(data?.versions.size).toBe(0);
+      expect(data?.summary).toBeUndefined();
     });
   });
 });
