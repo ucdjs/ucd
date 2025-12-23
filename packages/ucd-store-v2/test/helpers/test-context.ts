@@ -54,6 +54,11 @@ export interface CreateTestContextOptions {
    * @default UCDJS_API_BASE_URL
    */
   baseUrl?: string;
+
+  /**
+   * Custom filesystem bridge (if not provided, will create default)
+   */
+  fs?: FileSystemBridge;
 }
 
 export interface TestContext {
@@ -80,7 +85,7 @@ export async function createTestContext(
   const globalFilters = options?.globalFilters ?? {};
 
   // Create filesystem with initial files
-  const fs = createMemoryMockFS({
+  const fs = options?.fs ?? createMemoryMockFS({
     initialFiles: options?.initialFiles,
   });
 
