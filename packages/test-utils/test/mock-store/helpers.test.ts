@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   configure,
   unsafeResponse,
@@ -24,6 +24,57 @@ describe("configure", () => {
     });
 
     expect(configured).toBe(fn);
+  });
+
+  it("should attach hooks metadata to response object", () => {
+    const beforeHook = vi.fn();
+    const afterHook = vi.fn();
+    const response = { data: "test" };
+    const configured = configure({
+      response,
+      before: beforeHook,
+      after: afterHook,
+    });
+
+    expect(configured).toBe(response);
+    const metadata = extractConfiguredMetadata(configured);
+    expect(metadata.beforeHook).toBe(beforeHook);
+    expect(metadata.afterHook).toBe(afterHook);
+  });
+
+  it("should attach hooks metadata to function response", () => {
+    const beforeHook = vi.fn();
+    const afterHook = vi.fn();
+    const fn = () => ({ data: "test" });
+    const configured = configure({
+      response: fn,
+      before: beforeHook,
+      after: afterHook,
+    });
+
+    expect(configured).toBe(fn);
+    const metadata = extractConfiguredMetadata(configured);
+    expect(metadata.beforeHook).toBe(beforeHook);
+    expect(metadata.afterHook).toBe(afterHook);
+  });
+
+  it("should attach hooks with latency and headers", () => {
+    const beforeHook = vi.fn();
+    const afterHook = vi.fn();
+    const response = { data: "test" };
+    const configured = configure({
+      response,
+      latency: 100,
+      headers: { "X-Custom": "value" },
+      before: beforeHook,
+      after: afterHook,
+    });
+
+    const metadata = extractConfiguredMetadata(configured);
+    expect(metadata.latency).toBe(100);
+    expect(metadata.headers).toEqual({ "X-Custom": "value" });
+    expect(metadata.beforeHook).toBe(beforeHook);
+    expect(metadata.afterHook).toBe(afterHook);
   });
 
   describe("validation", () => {

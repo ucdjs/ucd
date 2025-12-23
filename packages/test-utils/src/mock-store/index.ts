@@ -35,10 +35,16 @@ export function mockStoreApi(config?: MockStoreConfig): void {
     // If explicitly disabled, skip
     if (response === false) continue;
 
-    const shouldUseDefaultValue = response === true || response == null;
-
     // extract metadata from configure
-    let { actualResponse, latency, headers } = extractConfiguredMetadata(response);
+    let { actualResponse, latency, headers, beforeHook, afterHook } = extractConfiguredMetadata(response);
+
+    // Normalize wrapped true object back to true for handlers
+    if (typeof actualResponse === "object" && actualResponse !== null && "__useDefaultResolver" in actualResponse) {
+      actualResponse = true;
+    }
+
+    // Check if we should use default value (true or null)
+    const shouldUseDefaultValue = actualResponse === true || response == null;
     debug?.(`Setting up mock for endpoint: ${endpoint} with response:`, actualResponse);
 
     if (isApiError(actualResponse)) {
@@ -58,16 +64,21 @@ export function mockStoreApi(config?: MockStoreConfig): void {
 
     const wrappedMockFetch = wrapMockFetch(mockFetch, {
       onRequest,
-      beforeFetch: async () => {
+      beforeFetch: async (payload) => {
         debug?.("Before fetch for endpoint:", endpoint);
         // apply latency before calling resolver
         if (latency) {
           const ms = parseLatency(latency);
           await new Promise((resolve) => setTimeout(resolve, ms));
         }
+        // call before hook if configured
+        await beforeHook?.(payload);
       },
-      afterFetch({ response }) {
+      afterFetch: async ({ response, ...payload }) => {
         debug?.("After fetch for endpoint:", endpoint);
+        // call after hook if configured
+        await afterHook?.({ ...payload, response });
+
         if (!response) {
           debug?.("No response returned from resolver");
           return;

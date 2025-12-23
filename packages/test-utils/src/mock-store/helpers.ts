@@ -75,6 +75,21 @@ export const kConfiguredResponse: symbol = Symbol.for("ucdjs:test-utils:mock-sto
  *     })
  *   }
  * });
+ *
+ * // Configure with before/after hooks
+ * mockStoreApi({
+ *   responses: {
+ *     "/api/v1/versions/{version}/file-tree": configure({
+ *       response: true,
+ *       before: async () => {
+ *         // Custom logic before resolver
+ *       },
+ *       after: async () => {
+ *         // Custom logic after resolver
+ *       },
+ *     })
+ *   }
+ * });
  * ```
  */
 export function configure<const Response>(
@@ -86,19 +101,27 @@ export function configure<const Response>(
 
   if (
     config.response == null
-    || (typeof config.response !== "function" && typeof config.response !== "object")
+    || (config.response !== true && typeof config.response !== "function" && typeof config.response !== "object")
   ) {
     throw new TypeError(
-      "Invalid configure() call: response must be a function or a non-null object",
+      "Invalid configure() call: response must be true, a function, or a non-null object",
     );
   }
 
-  Object.defineProperty(config.response as object, kConfiguredResponse, {
-    value: { latency: config.latency, headers: config.headers },
+  // If response is true (primitive), wrap it in an object so we can attach metadata
+  const responseToConfigure = config.response === true ? { __useDefaultResolver: true } : config.response;
+
+  Object.defineProperty(responseToConfigure as object, kConfiguredResponse, {
+    value: {
+      latency: config.latency,
+      headers: config.headers,
+      before: config.before,
+      after: config.after,
+    },
     enumerable: false,
     configurable: false,
     writable: false,
   });
 
-  return config.response as ConfiguredResponse<Response>;
+  return responseToConfigure as ConfiguredResponse<Response>;
 }
