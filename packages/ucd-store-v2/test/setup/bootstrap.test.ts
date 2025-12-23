@@ -8,17 +8,6 @@ import { describe, expect, it } from "vitest";
 import { UCDStoreGenericError } from "../../src/errors";
 import { bootstrap } from "../../src/setup/bootstrap";
 
-function _createMockVersions(versions: string[]) {
-  return versions.map((version) => ({
-    version,
-    documentationUrl: `https://www.unicode.org/versions/Unicode${version}/`,
-    date: "2024",
-    url: `https://www.unicode.org/Public/${version}`,
-    mappedUcdVersion: null,
-    type: "stable" as const,
-  }));
-}
-
 describe("bootstrap", () => {
   describe("lockfile creation", () => {
     it("should create lockfile with valid versions", async () => {
