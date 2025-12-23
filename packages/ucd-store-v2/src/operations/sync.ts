@@ -189,7 +189,7 @@ export async function sync(
     debug?.(`Validating versions to sync: ${versionsToSync.join(", ")}`);
 
     if (versionsToSync.length === 0) {
-      debug?.("No versions to sync");
+      debug?.("No versions to sync", { versionsToSync });
       return {
         timestamp: new Date().toISOString(),
         added,
