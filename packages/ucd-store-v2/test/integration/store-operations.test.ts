@@ -75,7 +75,9 @@ describe("store operations integration", () => {
 
       expect(verifyResult.valid).toBe(true);
       expect(verifyResult.missingVersions).toEqual([]);
-      expect(verifyResult.extraVersions).toEqual([]);
+      // extraVersions shows versions available in API but not being tracked
+      // Since we only bootstrap with 16.0.0 but API has 15.1.0 too, that's expected
+      expect(verifyResult.extraVersions).toEqual(["15.1.0"]);
     });
 
     it("should handle multiple versions in bootstrap → mirror → verify flow", async () => {

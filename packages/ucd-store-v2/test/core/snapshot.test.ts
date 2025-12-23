@@ -247,7 +247,9 @@ describe("writeSnapshot", () => {
       "UnicodeData.txt": "content",
     });
 
-    const snapshotDir = `/test/${version}`;
+    // The snapshot is written to a relative path (version/snapshot.json)
+    // The directory created is just the version folder, not basePath/version
+    const snapshotDir = version;
     const dirExistsBefore = await fs.exists(snapshotDir);
     expect(dirExistsBefore).toBe(false);
 
