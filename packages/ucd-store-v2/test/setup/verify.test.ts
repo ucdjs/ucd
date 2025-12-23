@@ -9,17 +9,6 @@ import { describe, expect, it } from "vitest";
 import { UCDStoreGenericError } from "../../src/errors";
 import { verify } from "../../src/setup/verify";
 
-function _createMockVersions(versions: string[]) {
-  return versions.map((version) => ({
-    version,
-    documentationUrl: `https://www.unicode.org/versions/Unicode${version}/`,
-    date: "2024",
-    url: `https://www.unicode.org/Public/${version}`,
-    mappedUcdVersion: null,
-    type: "stable" as const,
-  }));
-}
-
 describe("verify", () => {
   describe("valid lockfile", () => {
     it("should return valid result when all lockfile versions exist in API", async () => {
@@ -154,7 +143,7 @@ describe("verify", () => {
   });
 
   describe("error handling", () => {
-    it("should throw error when API request fails", async () => {
+    it("should throw UCDStoreGenericError when API request fails", async () => {
       // Arrange
       mockFetch([
         ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
@@ -176,18 +165,35 @@ describe("verify", () => {
           versions: context.versions,
         }),
       ).rejects.toThrow(UCDStoreGenericError);
-
-      await expect(
-        verify({
-          client: context.client,
-          lockfilePath,
-          fs,
-          versions: context.versions,
-        }),
-      ).rejects.toThrow("Failed to fetch Unicode versions during verification");
     });
 
-    it("should throw error when API returns no data", async () => {
+    it("should include 'Failed to fetch Unicode versions during verification' in error message", async () => {
+      // Arrange
+      mockFetch([
+        ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
+          return new HttpResponse(null, { status: 500 });
+        }],
+      ]);
+
+      const { context, fs, lockfilePath } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+      });
+
+      // Act
+      const error = await verify({
+        client: context.client,
+        lockfilePath,
+        fs,
+        versions: context.versions,
+      }).catch((e) => e);
+
+      // Assert
+      expect(error).toBeInstanceOf(UCDStoreGenericError);
+      expect(error.message).toContain("Failed to fetch Unicode versions during verification");
+    });
+
+    it("should throw UCDStoreGenericError when API returns no data", async () => {
       // Arrange
       mockFetch([
         ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
@@ -209,15 +215,32 @@ describe("verify", () => {
           versions: context.versions,
         }),
       ).rejects.toThrow(UCDStoreGenericError);
+    });
 
-      await expect(
-        verify({
-          client: context.client,
-          lockfilePath,
-          fs,
-          versions: context.versions,
-        }),
-      ).rejects.toThrow("Failed to fetch Unicode versions during verification: no data returned");
+    it("should include 'no data returned' in error message", async () => {
+      // Arrange
+      mockFetch([
+        ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
+          return HttpResponse.json(null);
+        }],
+      ]);
+
+      const { context, fs, lockfilePath } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+      });
+
+      // Act
+      const error = await verify({
+        client: context.client,
+        lockfilePath,
+        fs,
+        versions: context.versions,
+      }).catch((e) => e);
+
+      // Assert
+      expect(error).toBeInstanceOf(UCDStoreGenericError);
+      expect(error.message).toContain("Failed to fetch Unicode versions during verification: no data returned");
     });
   });
 });

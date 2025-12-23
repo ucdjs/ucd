@@ -141,10 +141,18 @@ describe("readLockfile", () => {
     await expect(readLockfile(fs, lockfilePath)).rejects.toThrow(
       LockfileInvalidError,
     );
+  });
 
-    await expect(readLockfile(fs, lockfilePath)).rejects.toThrow(
-      "lockfile is empty",
-    );
+  it("should include 'lockfile is empty' in error message", async () => {
+    const fs = createMemoryMockFS();
+    const lockfilePath = "/test/.ucd-store.lock";
+
+    await fs.write!(lockfilePath, "");
+
+    const error = await readLockfile(fs, lockfilePath).catch((e) => e);
+
+    expect(error).toBeInstanceOf(LockfileInvalidError);
+    expect(error.message).toContain("lockfile is empty");
   });
 
   it("should throw LockfileInvalidError when JSON is invalid", async () => {
@@ -156,10 +164,18 @@ describe("readLockfile", () => {
     await expect(readLockfile(fs, lockfilePath)).rejects.toThrow(
       LockfileInvalidError,
     );
+  });
 
-    await expect(readLockfile(fs, lockfilePath)).rejects.toThrow(
-      "lockfile is not valid JSON",
-    );
+  it("should include 'lockfile is not valid JSON' in error message", async () => {
+    const fs = createMemoryMockFS();
+    const lockfilePath = "/test/.ucd-store.lock";
+
+    await fs.write!(lockfilePath, "{ invalid json }");
+
+    const error = await readLockfile(fs, lockfilePath).catch((e) => e);
+
+    expect(error).toBeInstanceOf(LockfileInvalidError);
+    expect(error.message).toContain("lockfile is not valid JSON");
   });
 
   it("should throw LockfileInvalidError when schema validation fails", async () => {

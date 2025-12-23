@@ -1,5 +1,7 @@
 import { createTestContext } from "#internal-pkg:test-utils/test-context";
 import { mockStoreApi } from "#test-utils/mock-store";
+import { HttpResponse, mockFetch } from "#test-utils/msw";
+import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { createEmptyLockfile } from "@ucdjs/lockfile/test-utils";
 import { describe, expect, it } from "vitest";
 import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../../../src/errors";
@@ -103,7 +105,8 @@ describe("getFileTree", () => {
     });
   });
 
-  describe("aPI fallback (allowApi: true)", () => {
+  // eslint-disable-next-line test/prefer-lowercase-title
+  describe("API fallback (allowApi: true)", () => {
     it("should prefer local store over API", async () => {
       let callCount = 0;
       mockStoreApi({
@@ -215,6 +218,31 @@ describe("getFileTree", () => {
 
       expect(error).toBeInstanceOf(UCDStoreGenericError);
       expect(error?.message).toMatch(/Failed to fetch file tree for version '16\.0\.0'/);
+      expect(data).toBeNull();
+    });
+
+    it("should handle 'no data returned' error when API returns null", async () => {
+      mockStoreApi({
+        versions: ["16.0.0"],
+      });
+
+      mockFetch([
+        ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions/16.0.0/file-tree`, () => {
+          return HttpResponse.json(null);
+        }],
+      ]);
+
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+      });
+
+      const [data, error] = await getFileTree(context, "16.0.0", {
+        allowApi: true,
+      });
+
+      expect(error).toBeInstanceOf(UCDStoreGenericError);
+      expect(error?.message).toMatch(/Failed to fetch file tree for version '16\.0\.0': no data returned/);
       expect(data).toBeNull();
     });
   });

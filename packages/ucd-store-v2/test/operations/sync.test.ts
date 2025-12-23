@@ -1,5 +1,6 @@
 import type { MirrorReport } from "../../src/operations/mirror";
 import { createTestContext } from "#internal-pkg:test-utils/test-context";
+import { createReadOnlyBridge } from "#test-utils/fs-bridges";
 import { mockStoreApi } from "#test-utils/mock-store";
 import { readLockfile, writeSnapshot } from "@ucdjs/lockfile";
 import { createEmptyLockfile } from "@ucdjs/lockfile/test-utils";
@@ -629,8 +630,8 @@ describe("sync", () => {
       expect(error).toBeNull();
       expect(data?.added).toEqual([]);
       expect(data?.removed).toEqual([]);
-      expect(data?.unchanged).toEqual([]);
-      expect(data?.versions).toEqual([]);
+      expect(data?.unchanged).toEqual(["16.0.0"]);
+      expect(data?.versions).toEqual(["16.0.0"]);
     });
 
     it("should handle no lockfile exists initially", async () => {
@@ -698,6 +699,27 @@ describe("sync", () => {
       });
       expect(data?.mirrorReport).toBeDefined();
       expect(data?.mirrorReport).toEqual(mockMirrorReport);
+    });
+  });
+
+  describe("filesystem capability checks", () => {
+    it("should throw error when filesystem lacks mkdir capability", async () => {
+      const readOnlyBridge = createReadOnlyBridge();
+
+      mockStoreApi({
+        versions: ["16.0.0"],
+      });
+
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+        fs: readOnlyBridge,
+      });
+
+      const [_data, error] = await sync(context);
+
+      expect(error).toBeInstanceOf(Error);
+      expect(error?.message).toContain("Filesystem does not support required write operations for syncing");
     });
   });
 });
