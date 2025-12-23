@@ -1,6 +1,7 @@
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 import type { Snapshot } from "@ucdjs/schemas";
 import { createDebugger, safeJsonParse } from "@ucdjs-internal/shared";
+import { hasCapability } from "@ucdjs/fs-bridge";
 import { SnapshotSchema } from "@ucdjs/schemas";
 import { dirname } from "pathe";
 import { LockfileBridgeUnsupportedOperation, LockfileInvalidError } from "./errors";
@@ -87,7 +88,7 @@ export async function writeSnapshot(
   // Ensure snapshot directory exists
   const dirExists = await fs.exists(snapshotDir);
   if (!dirExists) {
-    if (!fs.mkdir) {
+    if (!hasCapability(fs, "mkdir")) {
       const availableCapabilities = Object.keys(fs.optionalCapabilities).filter(
         (k) => fs.optionalCapabilities[k as keyof typeof fs.optionalCapabilities],
       );
@@ -97,6 +98,7 @@ export async function writeSnapshot(
         availableCapabilities,
       );
     }
+
     debug?.("Creating snapshot directory:", snapshotDir);
     await fs.mkdir(snapshotDir);
   }
