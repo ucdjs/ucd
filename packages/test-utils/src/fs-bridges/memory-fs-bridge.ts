@@ -12,13 +12,27 @@ function normalizeRootPath(path: string | undefined): string {
   return (!path || path === "." || path === "/") ? "" : path;
 }
 
-z.function({
-  input: [z.object({
-    name: z.string(),
-    age: z.number().int(),
-  })],
-  output: z.string(),
-});
+/**
+ * Marker value for explicit directories in the flat Map storage.
+ * Directories are stored as "path/" -> DIR_MARKER
+ */
+const DIR_MARKER = Symbol("directory");
+
+/**
+ * Checks if a path represents an explicit directory marker.
+ */
+function isDirMarkerKey(path: string): boolean {
+  return path.endsWith("/");
+}
+
+/**
+ * Gets the directory marker key for a given path.
+ */
+function getDirMarkerKey(path: string): string {
+  const normalized = normalizeRootPath(path);
+  if (normalized === "") return "";
+  return normalized.endsWith("/") ? normalized : `${normalized}/`;
+}
 
 export const createMemoryMockFS = defineFileSystemBridge({
   meta: {
@@ -90,7 +104,7 @@ export const createMemoryMockFS = defineFileSystemBridge({
     }).partial().optional(),
   }).optional(),
   state: {
-    files: new Map<string, string>(),
+    files: new Map<string, string | typeof DIR_MARKER>(),
   },
   setup({ options, state }) {
     if (options?.initialFiles) {
@@ -106,11 +120,20 @@ export const createMemoryMockFS = defineFileSystemBridge({
         if (content === undefined) {
           throw new Error(`ENOENT: no such file or directory, open '${path}'`);
         }
+        if (content === DIR_MARKER) {
+          throw new Error(`EISDIR: illegal operation on a directory, read '${path}'`);
+        }
         return content;
       },
       exists: async (path: string) => {
-        // fast path for checking direct entry existence
+        // fast path for checking direct entry existence (file)
         if (state.files.has(path)) {
+          return true;
+        }
+
+        // check for explicit directory marker
+        const dirMarkerKey = getDirMarkerKey(path);
+        if (dirMarkerKey && state.files.has(dirMarkerKey)) {
           return true;
         }
 
@@ -131,13 +154,62 @@ export const createMemoryMockFS = defineFileSystemBridge({
         const pathPrefix = normalizedPath === "" ? "" : (normalizedPath.endsWith("/") ? normalizedPath : `${normalizedPath}/`);
         const seenDirs = new Set<string>();
 
-        for (const filePath of state.files.keys()) {
+        for (const [filePath, value] of state.files.entries()) {
           // skip files not in this directory
           if (!filePath.startsWith(pathPrefix)) {
             continue;
           }
 
           const relativePath = filePath.slice(pathPrefix.length);
+
+          // Handle explicit directory markers (entries ending with /)
+          if (isDirMarkerKey(filePath) && value === DIR_MARKER) {
+            // relativePath will be like "dirname/" - remove trailing slash
+            const dirPath = relativePath.slice(0, -1);
+            const parts = dirPath.split("/");
+
+            if (!recursive) {
+              // Non-recursive: only direct children (single part directory names)
+              if (parts.length === 1 && parts[0]) {
+                const dirName = parts[0];
+                if (!seenDirs.has(dirName)) {
+                  seenDirs.add(dirName);
+                  entries.push({
+                    type: "directory" as const,
+                    name: dirName,
+                    path: dirName,
+                    children: [],
+                  });
+                }
+              }
+            } else {
+              // Recursive: build nested directory structure
+              let currentLevel = entries;
+              for (let i = 0; i < parts.length; i++) {
+                const part = parts[i];
+                if (!part) continue;
+
+                const partPath = parts.slice(0, i + 1).join("/");
+                let dirEntry = currentLevel.find(
+                  (e) => e.type === "directory" && e.name === part,
+                ) as Extract<FSEntry, { type: "directory" }> | undefined;
+
+                if (!dirEntry) {
+                  dirEntry = {
+                    type: "directory" as const,
+                    name: part,
+                    path: partPath,
+                    children: [],
+                  };
+                  currentLevel.push(dirEntry);
+                }
+
+                currentLevel = dirEntry.children!;
+              }
+            }
+            continue;
+          }
+
           const parts = relativePath.split("/");
 
           if (!recursive) {
@@ -150,7 +222,7 @@ export const createMemoryMockFS = defineFileSystemBridge({
                 path: relativePath,
               });
             } else if (parts.length > 1 && parts[0]) {
-              // Directory (implicit)
+              // Directory (implicit from file path)
               const dirName = parts[0];
               if (!seenDirs.has(dirName)) {
                 seenDirs.add(dirName);
@@ -209,8 +281,26 @@ export const createMemoryMockFS = defineFileSystemBridge({
           : Buffer.from(data).toString(encoding);
         state.files.set(path, content);
       },
-      mkdir: async (_path: string) => {
-        // no-op: directories are implicit in flat Map storage
+      mkdir: async (path: string) => {
+        const normalizedPath = normalizeRootPath(path);
+        if (normalizedPath === "") {
+          // Root directory always exists, nothing to create
+          return;
+        }
+
+        // Create directory marker (path ending with /)
+        const dirMarkerKey = getDirMarkerKey(normalizedPath);
+        state.files.set(dirMarkerKey, DIR_MARKER);
+
+        // Also create parent directories (recursive mkdir behavior, like Node.js)
+        const parts = normalizedPath.split("/");
+        for (let i = 1; i < parts.length; i++) {
+          const parentPath = parts.slice(0, i).join("/");
+          const parentMarkerKey = getDirMarkerKey(parentPath);
+          if (parentMarkerKey && !state.files.has(parentMarkerKey)) {
+            state.files.set(parentMarkerKey, DIR_MARKER);
+          }
+        }
       },
       rm: async (path: string, options?: { recursive?: boolean; force?: boolean }) => {
         // TODO(luxass): should we align this with real node:fs behavior and throw if file/dir doesn't exist?
@@ -221,7 +311,13 @@ export const createMemoryMockFS = defineFileSystemBridge({
           return;
         }
 
-        // remove directory (recursive)
+        // remove explicit directory marker
+        const dirMarkerKey = getDirMarkerKey(path);
+        if (dirMarkerKey && state.files.has(dirMarkerKey)) {
+          state.files.delete(dirMarkerKey);
+        }
+
+        // remove directory contents (recursive)
         if (options?.recursive) {
           const normalizedPath = normalizeRootPath(path);
           const pathPrefix = normalizedPath === "" ? "" : (normalizedPath.endsWith("/") ? normalizedPath : `${normalizedPath}/`);
