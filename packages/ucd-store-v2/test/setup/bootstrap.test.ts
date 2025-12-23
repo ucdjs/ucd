@@ -44,12 +44,12 @@ describe("bootstrap", () => {
       const lockfile = await readLockfile(fs, lockfilePath);
       expect(Object.keys(lockfile.versions).sort()).toEqual(["15.1.0", "16.0.0"]);
       expect(lockfile.versions["16.0.0"]).toEqual({
-        path: "v16.0.0/snapshot.json",
+        path: "16.0.0/snapshot.json",
         fileCount: 0,
         totalSize: 0,
       });
       expect(lockfile.versions["15.1.0"]).toEqual({
-        path: "v15.1.0/snapshot.json",
+        path: "15.1.0/snapshot.json",
         fileCount: 0,
         totalSize: 0,
       });
@@ -110,7 +110,6 @@ describe("bootstrap", () => {
 
   describe("directory creation", () => {
     it("should create base directory when it doesn't exist", async () => {
-      // Arrange
       mockStoreApi({
         versions: ["16.0.0", "15.1.0"],
       });
@@ -120,7 +119,6 @@ describe("bootstrap", () => {
         versions: ["16.0.0"],
       });
 
-      // Act
       await bootstrap({
         client: context.client,
         fs: context.fs,
@@ -129,7 +127,6 @@ describe("bootstrap", () => {
         lockfilePath: context.lockfilePath,
       });
 
-      // Assert
       const exists = await fs.exists(context.basePath);
       expect(exists).toBe(true);
     });
