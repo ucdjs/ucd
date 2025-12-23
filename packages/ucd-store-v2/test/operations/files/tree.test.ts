@@ -303,7 +303,9 @@ describe("getFileTree", () => {
 
   describe("method-specific filter application", () => {
     it("should apply method-specific include filters on top of global filters", async () => {
-      mockStoreApi({ versions: ["16.0.0"] });
+      mockStoreApi({
+        versions: ["16.0.0"],
+      });
 
       const { context } = await createTestContext({
         versions: ["16.0.0"],

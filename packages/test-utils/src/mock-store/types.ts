@@ -60,7 +60,7 @@ interface MockRouteHandlerContext<Endpoint extends EndpointWithGet> {
   mockFetch: MockFetchFn;
   versions: string[];
   shouldUseDefaultValue: boolean;
-  files: Record<string, UnicodeTree[]>;
+  files: Record<string, UnicodeTree>;
 }
 
 export interface RouteHandlerDefinition<Endpoint extends EndpointWithGet> {
@@ -169,12 +169,24 @@ export interface ConfiguredResponseConfig<Response> {
    * Optional custom headers to add to the response
    */
   headers?: Record<string, string>;
+
+  /**
+   * Optional hook that runs before the resolver is called
+   */
+  before?: OnBeforeMockFetchCallback;
+
+  /**
+   * Optional hook that runs after the resolver returns
+   */
+  after?: OnAfterMockFetchCallback;
 }
 
 export type ConfiguredResponse<Response> = Response & {
   [kConfiguredResponse]: {
     latency?: ConfiguredResponseConfig<Response>["latency"];
     headers?: ConfiguredResponseConfig<Response>["headers"];
+    before?: ConfiguredResponseConfig<Response>["before"];
+    after?: ConfiguredResponseConfig<Response>["after"];
   };
 };
 
