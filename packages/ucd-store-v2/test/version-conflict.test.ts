@@ -7,7 +7,6 @@ import { handleVersionConflict } from "../src/store";
 
 describe("strict strategy", () => {
   it("should return lockfile versions when they match provided versions", async () => {
-    // Arrange
     const { fs, lockfilePath } = await createTestContext({
       versions: ["16.0.0", "15.1.0", "15.0.0"],
       lockfile: createEmptyLockfile(["16.0.0", "15.1.0", "15.0.0"]),
@@ -16,7 +15,6 @@ describe("strict strategy", () => {
     const providedVersions = ["16.0.0", "15.1.0", "15.0.0"];
     const lockfileVersions = ["16.0.0", "15.1.0", "15.0.0"];
 
-    // Act
     const result = await handleVersionConflict(
       "strict",
       providedVersions,
@@ -25,12 +23,10 @@ describe("strict strategy", () => {
       lockfilePath,
     );
 
-    // Assert
     expect(result).toEqual(lockfileVersions);
   });
 
   it("should return lockfile versions when order differs but content matches", async () => {
-    // Arrange
     const { fs, lockfilePath } = await createTestContext({
       versions: ["16.0.0", "15.1.0", "15.0.0"],
       lockfile: createEmptyLockfile(["16.0.0", "15.1.0", "15.0.0"]),
@@ -39,7 +35,6 @@ describe("strict strategy", () => {
     const providedVersions = ["15.0.0", "16.0.0", "15.1.0"];
     const lockfileVersions = ["16.0.0", "15.1.0", "15.0.0"];
 
-    // Act
     const result = await handleVersionConflict(
       "strict",
       providedVersions,
@@ -48,12 +43,10 @@ describe("strict strategy", () => {
       lockfilePath,
     );
 
-    // Assert
     expect(result).toEqual(lockfileVersions);
   });
 
   it("should throw UCDStoreGenericError when versions differ", async () => {
-    // Arrange
     const { fs, lockfilePath } = await createTestContext({
       versions: ["16.0.0", "15.1.0", "15.0.0"],
       lockfile: createEmptyLockfile(["16.0.0", "15.1.0", "15.0.0"]),
@@ -62,7 +55,6 @@ describe("strict strategy", () => {
     const providedVersions = ["16.0.0", "15.1.0"];
     const lockfileVersions = ["16.0.0", "15.1.0", "15.0.0"];
 
-    // Act & Assert
     await expect(
       handleVersionConflict(
         "strict",
@@ -75,7 +67,6 @@ describe("strict strategy", () => {
   });
 
   it("should include version mismatch details in error message", async () => {
-    // Arrange
     const { fs, lockfilePath } = await createTestContext({
       versions: ["16.0.0", "15.1.0", "15.0.0"],
       lockfile: createEmptyLockfile(["16.0.0", "15.1.0", "15.0.0"]),
@@ -84,7 +75,6 @@ describe("strict strategy", () => {
     const providedVersions = ["16.0.0", "15.1.0"];
     const lockfileVersions = ["16.0.0", "15.1.0", "15.0.0"];
 
-    // Act
     const error = await handleVersionConflict(
       "strict",
       providedVersions,
@@ -93,7 +83,6 @@ describe("strict strategy", () => {
       lockfilePath,
     ).catch((e) => e);
 
-    // Assert
     expect(error).toBeInstanceOf(UCDStoreGenericError);
     expect(error.message).toContain("Version mismatch: lockfile has [16.0.0, 15.1.0, 15.0.0], provided [16.0.0, 15.1.0]. Use versionStrategy: \"merge\" or \"overwrite\" to resolve.");
   });
@@ -101,7 +90,6 @@ describe("strict strategy", () => {
 
 describe("merge strategy", () => {
   it("should combine provided and lockfile versions", async () => {
-    // Arrange
     const { fs, lockfilePath } = await createTestContext({
       versions: ["15.0.0", "14.0.0"],
       lockfile: createEmptyLockfile(["15.0.0", "14.0.0"]),
@@ -110,7 +98,6 @@ describe("merge strategy", () => {
     const providedVersions = ["16.0.0", "15.1.0"];
     const lockfileVersions = ["15.0.0", "14.0.0"];
 
-    // Act
     const result = await handleVersionConflict(
       "merge",
       providedVersions,
@@ -119,7 +106,6 @@ describe("merge strategy", () => {
       lockfilePath,
     );
 
-    // Assert
     expect(result).toEqual(["15.0.0", "14.0.0", "16.0.0", "15.1.0"]);
 
     const lockfile = await readLockfile(fs, lockfilePath);
@@ -127,7 +113,6 @@ describe("merge strategy", () => {
   });
 
   it("should remove duplicate versions when merging", async () => {
-    // Arrange
     const { fs, lockfilePath } = await createTestContext({
       versions: ["15.1.0", "15.0.0", "14.0.0"],
       lockfile: createEmptyLockfile(["15.1.0", "15.0.0", "14.0.0"]),
@@ -136,7 +121,6 @@ describe("merge strategy", () => {
     const providedVersions = ["16.0.0", "15.1.0", "15.0.0"];
     const lockfileVersions = ["15.1.0", "15.0.0", "14.0.0"];
 
-    // Act
     const result = await handleVersionConflict(
       "merge",
       providedVersions,
@@ -145,7 +129,6 @@ describe("merge strategy", () => {
       lockfilePath,
     );
 
-    // Assert
     expect(result).toHaveLength(4);
     expect(result).toContain("16.0.0");
     expect(result).toContain("15.1.0");
@@ -157,7 +140,6 @@ describe("merge strategy", () => {
   });
 
   it("should preserve existing lockfile entries when merging", async () => {
-    // Arrange
     const { fs, lockfilePath } = await createTestContext({
       versions: ["15.0.0"],
       lockfile: createLockfile(["15.0.0"], {
@@ -169,7 +151,6 @@ describe("merge strategy", () => {
     const providedVersions = ["16.0.0"];
     const lockfileVersions = ["15.0.0"];
 
-    // Act
     await handleVersionConflict(
       "merge",
       providedVersions,
@@ -178,17 +159,17 @@ describe("merge strategy", () => {
       lockfilePath,
     );
 
-    // Assert
     const lockfile = await readLockfile(fs, lockfilePath);
+
     // Existing entry should be preserved
     expect(lockfile.versions["15.0.0"]).toEqual({
-      path: "v15.0.0/snapshot.json",
+      path: "15.0.0/snapshot.json",
       fileCount: 10,
       totalSize: 1024,
     });
     // New entry should have empty snapshot
     expect(lockfile.versions["16.0.0"]).toEqual({
-      path: "v16.0.0/snapshot.json",
+      path: "16.0.0/snapshot.json",
       fileCount: 0,
       totalSize: 0,
     });
@@ -197,7 +178,6 @@ describe("merge strategy", () => {
 
 describe("overwrite strategy", () => {
   it("should replace lockfile versions with provided versions", async () => {
-    // Arrange
     const { fs, lockfilePath } = await createTestContext({
       versions: ["15.0.0", "14.0.0"],
       lockfile: createEmptyLockfile(["15.0.0", "14.0.0"]),
@@ -206,7 +186,6 @@ describe("overwrite strategy", () => {
     const providedVersions = ["16.0.0", "15.1.0"];
     const lockfileVersions = ["15.0.0", "14.0.0"];
 
-    // Act
     const result = await handleVersionConflict(
       "overwrite",
       providedVersions,
@@ -215,7 +194,6 @@ describe("overwrite strategy", () => {
       lockfilePath,
     );
 
-    // Assert
     expect(result).toEqual(providedVersions);
 
     const lockfile = await readLockfile(fs, lockfilePath);
@@ -223,7 +201,6 @@ describe("overwrite strategy", () => {
   });
 
   it("should preserve existing entries for versions that remain", async () => {
-    // Arrange
     const { fs, lockfilePath } = await createTestContext({
       versions: ["16.0.0", "15.0.0"],
       lockfile: createLockfile(["16.0.0", "15.0.0"], {
@@ -235,7 +212,6 @@ describe("overwrite strategy", () => {
     const providedVersions = ["16.0.0", "15.1.0"]; // Keep 16.0.0, replace 15.0.0 with 15.1.0
     const lockfileVersions = ["16.0.0", "15.0.0"];
 
-    // Act
     await handleVersionConflict(
       "overwrite",
       providedVersions,
@@ -244,11 +220,11 @@ describe("overwrite strategy", () => {
       lockfilePath,
     );
 
-    // Assert
     const lockfile = await readLockfile(fs, lockfilePath);
+
     // Existing entry for 16.0.0 should be preserved
     expect(lockfile.versions["16.0.0"]).toEqual({
-      path: "v16.0.0/snapshot.json",
+      path: "16.0.0/snapshot.json",
       fileCount: 10,
       totalSize: 1024,
     });
@@ -256,7 +232,7 @@ describe("overwrite strategy", () => {
     expect(lockfile.versions).not.toHaveProperty("15.0.0");
     // 15.1.0 should be added with empty snapshot
     expect(lockfile.versions["15.1.0"]).toEqual({
-      path: "v15.1.0/snapshot.json",
+      path: "15.1.0/snapshot.json",
       fileCount: 0,
       totalSize: 0,
     });
@@ -265,7 +241,6 @@ describe("overwrite strategy", () => {
 
 describe("empty provided versions array", () => {
   it("should throw error with strict strategy", async () => {
-    // Arrange
     const { fs, lockfilePath } = await createTestContext({
       versions: ["15.0.0"],
       lockfile: createEmptyLockfile(["15.0.0"]),
@@ -274,7 +249,6 @@ describe("empty provided versions array", () => {
     const providedVersions: string[] = [];
     const lockfileVersions = ["15.0.0"];
 
-    // Act & Assert
     await expect(
       handleVersionConflict(
         "strict",
@@ -287,7 +261,6 @@ describe("empty provided versions array", () => {
   });
 
   it("should return lockfile versions with merge strategy", async () => {
-    // Arrange
     const { fs, lockfilePath } = await createTestContext({
       versions: ["15.0.0"],
       lockfile: createEmptyLockfile(["15.0.0"]),
@@ -296,7 +269,6 @@ describe("empty provided versions array", () => {
     const providedVersions: string[] = [];
     const lockfileVersions = ["15.0.0"];
 
-    // Act
     const result = await handleVersionConflict(
       "merge",
       providedVersions,
@@ -305,7 +277,6 @@ describe("empty provided versions array", () => {
       lockfilePath,
     );
 
-    // Assert
     expect(result).toEqual(["15.0.0"]);
   });
 
@@ -319,7 +290,6 @@ describe("empty provided versions array", () => {
     const providedVersions: string[] = [];
     const lockfileVersions = ["15.0.0"];
 
-    // Act
     const result = await handleVersionConflict(
       "overwrite",
       providedVersions,
@@ -328,7 +298,6 @@ describe("empty provided versions array", () => {
       lockfilePath,
     );
 
-    // Assert
     expect(result).toEqual([]);
 
     const lockfile = await readLockfile(fs, lockfilePath);
@@ -338,7 +307,6 @@ describe("empty provided versions array", () => {
 
 describe("empty lockfile versions array", () => {
   it("should throw error with strict strategy", async () => {
-    // Arrange
     const { fs, lockfilePath } = await createTestContext({
       versions: [],
       lockfile: createEmptyLockfile([]),
@@ -347,7 +315,6 @@ describe("empty lockfile versions array", () => {
     const providedVersions = ["16.0.0"];
     const lockfileVersions: string[] = [];
 
-    // Act & Assert
     await expect(
       handleVersionConflict(
         "strict",
@@ -360,7 +327,6 @@ describe("empty lockfile versions array", () => {
   });
 
   it("should return provided versions with merge strategy", async () => {
-    // Arrange
     const { fs, lockfilePath } = await createTestContext({
       versions: [],
       lockfile: createEmptyLockfile([]),
@@ -369,7 +335,6 @@ describe("empty lockfile versions array", () => {
     const providedVersions = ["16.0.0"];
     const lockfileVersions: string[] = [];
 
-    // Act
     const result = await handleVersionConflict(
       "merge",
       providedVersions,
@@ -378,7 +343,6 @@ describe("empty lockfile versions array", () => {
       lockfilePath,
     );
 
-    // Assert
     expect(result).toEqual(["16.0.0"]);
 
     const lockfile = await readLockfile(fs, lockfilePath);
@@ -386,7 +350,6 @@ describe("empty lockfile versions array", () => {
   });
 
   it("should return provided versions with overwrite strategy", async () => {
-    // Arrange
     const { fs, lockfilePath } = await createTestContext({
       versions: [],
       lockfile: createEmptyLockfile([]),
@@ -395,7 +358,6 @@ describe("empty lockfile versions array", () => {
     const providedVersions = ["16.0.0"];
     const lockfileVersions: string[] = [];
 
-    // Act
     const result = await handleVersionConflict(
       "overwrite",
       providedVersions,
@@ -404,7 +366,6 @@ describe("empty lockfile versions array", () => {
       lockfilePath,
     );
 
-    // Assert
     expect(result).toEqual(["16.0.0"]);
 
     const lockfile = await readLockfile(fs, lockfilePath);
@@ -414,7 +375,6 @@ describe("empty lockfile versions array", () => {
 
 describe("both arrays empty", () => {
   it("should succeed with strict strategy", async () => {
-    // Arrange
     const { fs, lockfilePath } = await createTestContext({
       versions: [],
       lockfile: createEmptyLockfile([]),
@@ -423,7 +383,6 @@ describe("both arrays empty", () => {
     const providedVersions: string[] = [];
     const lockfileVersions: string[] = [];
 
-    // Act
     const result = await handleVersionConflict(
       "strict",
       providedVersions,
@@ -432,12 +391,10 @@ describe("both arrays empty", () => {
       lockfilePath,
     );
 
-    // Assert
     expect(result).toEqual([]);
   });
 
   it("should return empty array with merge strategy", async () => {
-    // Arrange
     const { fs, lockfilePath } = await createTestContext({
       versions: [],
       lockfile: createEmptyLockfile([]),
@@ -446,7 +403,6 @@ describe("both arrays empty", () => {
     const providedVersions: string[] = [];
     const lockfileVersions: string[] = [];
 
-    // Act
     const result = await handleVersionConflict(
       "merge",
       providedVersions,
@@ -460,7 +416,6 @@ describe("both arrays empty", () => {
   });
 
   it("should return empty array with overwrite strategy", async () => {
-    // Arrange
     const { fs, lockfilePath } = await createTestContext({
       versions: [],
       lockfile: createEmptyLockfile([]),
@@ -469,7 +424,6 @@ describe("both arrays empty", () => {
     const providedVersions: string[] = [];
     const lockfileVersions: string[] = [];
 
-    // Act
     const result = await handleVersionConflict(
       "overwrite",
       providedVersions,
@@ -478,7 +432,6 @@ describe("both arrays empty", () => {
       lockfilePath,
     );
 
-    // Assert
     expect(result).toEqual([]);
   });
 });
