@@ -213,13 +213,6 @@ export async function mirror(
       };
     }
 
-    // Validate all versions exist in context
-    // for (const version of versions) {
-    //   if (!context.versions.includes(version)) {
-    //     throw new UCDStoreVersionNotFoundError(version);
-    //   }
-    // }
-
     const startTime = Date.now();
     const limit = createConcurrencyLimiter(concurrency);
 
