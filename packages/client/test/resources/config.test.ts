@@ -53,7 +53,7 @@ describe("createConfigResource", () => {
     });
 
     it("should handle config without versions array", async () => {
-      const configWithoutVersions: UCDWellKnownConfig = {
+      const configWithoutVersions = {
         version: "0.1",
         endpoints: {
           files: "/api/v1/files",
@@ -72,7 +72,11 @@ describe("createConfigResource", () => {
       const { data, error } = await configResource.get();
 
       expect(error).toBeNull();
-      expect(data).toEqual(configWithoutVersions);
+      // Zod schema adds default versions: [] when not provided
+      expect(data).toEqual({
+        ...configWithoutVersions,
+        versions: [],
+      });
     });
 
     it("should handle 404 errors", async () => {
