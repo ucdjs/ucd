@@ -108,7 +108,7 @@ export async function analyze(
 
       // Get files from store
       // Use allowApi: true to support HTTP bridge (read-only stores)
-      const [actualFiles, error] = await listFiles(context, version, {
+      let [actualFiles, error] = await listFiles(context, version, {
         allowApi: false,
         filters: options?.filters,
       });
@@ -116,6 +116,9 @@ export async function analyze(
       if (error != null) {
         throw error;
       }
+
+      // Filter out the snapshot.json, since it is not expected to be there.
+      actualFiles = (actualFiles || []).filter((file) => file !== "snapshot.json");
 
       debug?.("Actual files while analyzing: %O", actualFiles);
 

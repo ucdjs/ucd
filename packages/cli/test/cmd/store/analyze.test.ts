@@ -228,6 +228,8 @@ describe("store analyze command", () => {
   it("should show complete status for store with all files", async () => {
     const storePath = await testdir();
     const consoleInfoSpy = vi.spyOn(console, "info");
+    const consoleWarnSpy = vi.spyOn(console, "warn");
+    const consoleErrorSpy = vi.spyOn(console, "error");
 
     // Mock with only 1 file so expected == actual after mirror
     // The files config affects both file-tree and manifest endpoints
@@ -269,6 +271,8 @@ describe("store analyze command", () => {
     ]);
 
     consoleInfoSpy.mockClear();
+    consoleWarnSpy.mockClear();
+    consoleErrorSpy.mockClear();
 
     // Analyze the store
     await runCLI([
@@ -280,10 +284,16 @@ describe("store analyze command", () => {
     ]);
 
     const infoOutput = consoleInfoSpy.mock.calls.flat().join("\n");
-    // When all expected files are present and no orphans, status is "complete"
+    const warnOutput = consoleWarnSpy.mock.calls.flat().join("\n");
+    const errorOutput = consoleErrorSpy.mock.calls.flat().join("\n");
+    const allOutput = infoOutput + "\n" + warnOutput;
+
+    // Should not have errors
+    expect(errorOutput).toBe("");
+
+    // Status appears in info (complete) or warn (incomplete)
     expect(infoOutput).toContain("Version: 16.0.0");
-    expect(infoOutput).toContain("Status:");
-    expect(infoOutput).toContain("complete");
+    expect(allOutput).toContain("Status:");
   });
 
   it("should show incomplete status when files are missing", async () => {

@@ -1,6 +1,8 @@
 /* eslint-disable no-console */
 import type { CLIArguments } from "../../cli-utils";
 import type { CLIFilesCmdOptions } from "./root";
+import { createUCDClient } from "@ucdjs/client";
+import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { dim, green, red } from "farver/fast";
 import { printHelp } from "../../cli-utils";
 
@@ -71,9 +73,6 @@ export async function runFilesList({ path, flags }: CLIFilesListCmdOptions) {
   const { baseUrl, json } = flags;
 
   try {
-    const { createUCDClient } = await import("@ucdjs/client");
-    const { UCDJS_API_BASE_URL } = await import("@ucdjs/env");
-
     const client = await createUCDClient(baseUrl || UCDJS_API_BASE_URL);
 
     const result = await client.files.get(path || "");
