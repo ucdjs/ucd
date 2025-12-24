@@ -1,6 +1,7 @@
 import type { SafeFetchResponse } from "@ucdjs-internal/shared";
 import type { UCDWellKnownConfig } from "@ucdjs/schemas";
 import { customFetch } from "@ucdjs-internal/shared";
+import { UCDWellKnownConfigSchema } from "@ucdjs/schemas";
 
 export interface ConfigResource {
   /**
@@ -22,6 +23,7 @@ export function createConfigResource(options: CreateConfigResourceOptions): Conf
       const url = new URL("/.well-known/ucd-config.json", baseUrl);
       return customFetch.safe<UCDWellKnownConfig>(url.toString(), {
         parseAs: "json",
+        schema: UCDWellKnownConfigSchema,
       });
     },
   };
