@@ -68,8 +68,8 @@ catalogs:
       specifier: 1.0.0-alpha.7
       version: 1.0.0-alpha.7
     '@luxass/msw-utils':
-      specifier: 0.4.0
-      version: 0.4.0
+      specifier: 0.5.0
+      version: 0.5.0
     '@luxass/unicode-utils-old':
       specifier: npm:@luxass/unicode-utils@0.11.0
       version: 0.11.0
@@ -875,7 +875,7 @@ importers:
     dependencies:
       '@luxass/msw-utils':
         specifier: catalog:prod
-        version: 0.4.0(msw@2.12.4(@types/node@24.3.1)(typescript@5.9.3))
+        version: 0.5.0(msw@2.12.4(@types/node@24.3.1)(typescript@5.9.3))
       '@luxass/utils':
         specifier: catalog:prod
         version: 2.7.2
@@ -936,7 +936,7 @@ importers:
     dependencies:
       '@luxass/msw-utils':
         specifier: catalog:prod
-        version: 0.4.0(msw@2.12.4(@types/node@24.3.1)(typescript@5.9.3))
+        version: 0.5.0(msw@2.12.4(@types/node@24.3.1)(typescript@5.9.3))
       '@ucdjs-internal/shared':
         specifier: workspace:*
         version: link:../shared
@@ -2787,8 +2787,8 @@ packages:
       prettier-plugin-astro:
         optional: true
 
-  '@luxass/msw-utils@0.4.0':
-    resolution: {integrity: sha512-zwrHcIL7uVOROvVBmfDXuuZo8RimLoH/LABdGxs0cWEnd0jC3jyMR7jvg0AQg8FzDUldNBoTBd5x4An1zcH2LQ==}
+  '@luxass/msw-utils@0.5.0':
+    resolution: {integrity: sha512-uqFTw1GWovCOLxXepgXvkcjbZaxCaY3oMsKO+BNXVeNsxe83umuVbYb4+4dDuma759Up05sBWef41I4xlQEduw==}
     peerDependencies:
       msw: '>=2.11.0 <3.0.0'
 
@@ -10836,7 +10836,7 @@ snapshots:
       - typescript
       - vitest
 
-  '@luxass/msw-utils@0.4.0(msw@2.12.4(@types/node@24.3.1)(typescript@5.9.3))':
+  '@luxass/msw-utils@0.5.0(msw@2.12.4(@types/node@24.3.1)(typescript@5.9.3))':
     dependencies:
       msw: 2.12.4(@types/node@24.3.1)(typescript@5.9.3)
 

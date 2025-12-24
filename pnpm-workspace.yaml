@@ -60,7 +60,7 @@ catalogs:
     pathe: 2.0.3
     "@clack/prompts": 1.0.0-alpha.7
     obug: 2.1.1
-    "@luxass/msw-utils": 0.4.0
+    "@luxass/msw-utils": 0.5.0
     hookable: 6.0.0-rc.1
 
   dev:
