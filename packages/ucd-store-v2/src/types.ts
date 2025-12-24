@@ -4,6 +4,7 @@ import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 import type { UCDWellKnownConfig, UnicodeTreeNode } from "@ucdjs/schemas";
 import type { StoreError } from "./errors";
 import type { AnalysisReport, AnalyzeOptions } from "./operations/analyze";
+import type { CompareOptions, VersionComparison } from "./operations/compare";
 import type { GetFileOptions } from "./operations/files/get";
 import type { ListFilesOptions } from "./operations/files/list";
 import type { GetFileTreeOptions } from "./operations/files/tree";
@@ -205,6 +206,23 @@ export interface UCDStoreOperations {
    * @experimental This method is under development and may change
    */
   analyze: (options?: AnalyzeOptions) => Promise<OperationResult<Map<string, AnalysisReport>, StoreError>>;
+
+  /**
+   * Compares two Unicode versions to identify file changes.
+   * Shows which files were added, removed, modified, or unchanged between versions.
+   *
+   * @example
+   * ```ts
+   * const [comparison, error] = await store.compare({
+   *   from: "15.0.0",
+   *   to: "16.0.0",
+   * });
+   * console.log(comparison.files.added);    // Files added in 16.0.0
+   * console.log(comparison.files.removed);  // Files removed from 15.0.0
+   * console.log(comparison.files.modified); // Files that changed content
+   * ```
+   */
+  compare: (options?: CompareOptions) => Promise<OperationResult<VersionComparison, StoreError>>;
 
   /**
    * File operations namespace
