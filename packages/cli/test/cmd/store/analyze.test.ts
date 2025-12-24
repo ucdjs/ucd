@@ -286,7 +286,7 @@ describe("store analyze command", () => {
     const infoOutput = consoleInfoSpy.mock.calls.flat().join("\n");
     const warnOutput = consoleWarnSpy.mock.calls.flat().join("\n");
     const errorOutput = consoleErrorSpy.mock.calls.flat().join("\n");
-    const allOutput = infoOutput + "\n" + warnOutput;
+    const allOutput = `${infoOutput}\n${warnOutput}`;
 
     // Should not have errors
     expect(errorOutput).toBe("");
