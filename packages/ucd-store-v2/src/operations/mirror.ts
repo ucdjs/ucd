@@ -12,6 +12,7 @@ import { hasCapability } from "@ucdjs/fs-bridge";
 import { computeFileHash, readLockfileOrDefault, writeLockfile, writeSnapshot } from "@ucdjs/lockfile";
 import { hasUCDFolderPath } from "@unicode-utils/core";
 import { dirname, join } from "pathe";
+import { extractFilterPatterns } from "../core/context";
 import { UCDStoreGenericError } from "../errors";
 
 const debug = createDebugger("ucdjs:ucd-store:mirror");
@@ -444,7 +445,6 @@ export async function mirror(
     // Write updated lockfile
     if (Object.keys(updatedLockfileVersions).length > 0) {
       // Preserve filters from existing lockfile or use current context filters
-      const { extractFilterPatterns } = await import("../core/context");
       const filters = extractFilterPatterns(context.filter) ?? lockfile?.filters;
 
       await writeLockfile(context.fs, context.lockfilePath, {
