@@ -240,6 +240,10 @@ export function parseFlags(args: string[]) {
       "base-url",
       "output",
     ],
+    array: [
+      "include",
+      "exclude",
+    ],
   });
 }
 
