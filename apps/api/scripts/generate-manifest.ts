@@ -1,12 +1,13 @@
 import type { UnicodeVersion } from "@ucdjs/schemas";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
+import { hasUCDFolderPath } from "@unicode-utils/core";
 import { traverse } from "apache-autoindex-parse/traverse";
 
 const USER_AGENT = "ucdjs (+https://github.com/ucdjs/ucd)";
 
-async function fetchFilesForUcdFolder(ucdFolder: string): Promise<string[]> {
-  const baseUrl = `https://unicode.org/Public/${ucdFolder}`;
+async function fetchFilesForVersion(version: string): Promise<string[]> {
+  const baseUrl = `https://unicode.org/Public/${version}${hasUCDFolderPath(version) ? "/ucd" : ""}`;
 
   try {
     const files: string[] = [];
@@ -16,7 +17,7 @@ async function fetchFilesForUcdFolder(ucdFolder: string): Promise<string[]> {
         "User-Agent": USER_AGENT,
       },
       onFile: (file) => {
-        const relativePath = file.path.replace(`/${ucdFolder}/`, "").replace(/^\//, "");
+        const relativePath = file.path.replace(`/${version}/`, "").replace(/^\//, "");
         if (relativePath) {
           files.push(relativePath);
         }
@@ -26,7 +27,7 @@ async function fetchFilesForUcdFolder(ucdFolder: string): Promise<string[]> {
     // Sort for consistent ordering (important for checksum comparison)
     return files.sort();
   } catch (error) {
-    console.error(`Failed to fetch files for ${ucdFolder}:`, error);
+    console.error(`Failed to fetch files for ${version}:`, error);
     return [];
   }
 }
@@ -76,7 +77,7 @@ export async function runGenerateManifest(options: GenerateManifestOptions = {})
         let expectedFiles = fileCache.get(ucdFolder);
         if (!expectedFiles) {
           console.log(`Fetching files for ${v.version} from ${ucdFolder}...`);
-          expectedFiles = await fetchFilesForUcdFolder(ucdFolder);
+          expectedFiles = await fetchFilesForVersion(ucdFolder);
           fileCache.set(ucdFolder, expectedFiles);
           totalFiles += expectedFiles.length;
         } else {
