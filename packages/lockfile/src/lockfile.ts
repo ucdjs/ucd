@@ -1,5 +1,5 @@
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
-import type { Lockfile } from "@ucdjs/schemas";
+import type { Lockfile, LockfileInput } from "@ucdjs/schemas";
 import { createDebugger, safeJsonParse } from "@ucdjs-internal/shared";
 import { hasCapability } from "@ucdjs/fs-bridge";
 import { LockfileSchema } from "@ucdjs/schemas";
@@ -69,13 +69,13 @@ export async function readLockfile(
  *
  * @param {FileSystemBridge} fs - Filesystem bridge to use for writing
  * @param {string} lockfilePath - Path where the lockfile should be written
- * @param {Lockfile} lockfile - The lockfile data to write
+ * @param {LockfileInput} lockfile - The lockfile data to write
  * @returns {Promise<void>} A promise that resolves when the lockfile has been written
  */
 export async function writeLockfile(
   fs: FileSystemBridge,
   lockfilePath: string,
-  lockfile: Lockfile,
+  lockfile: LockfileInput,
 ): Promise<void> {
   if (!canUseLockfile(fs)) {
     debug?.("Filesystem bridge does not support write operations, skipping lockfile write");
