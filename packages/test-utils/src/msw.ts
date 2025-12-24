@@ -13,4 +13,7 @@ export { http, HttpResponse } from "msw";
 export const mswServer = setupServer();
 globalThis.__ucd_msw_server = mswServer;
 
-export const mockFetch = createMockFetch({ mswServer });
+export const mockFetch = createMockFetch({
+  mswServer,
+  replaceOpenAPIPathParams: true,
+});
