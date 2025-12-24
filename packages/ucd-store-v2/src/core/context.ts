@@ -5,6 +5,9 @@ import type {
   InternalUCDStoreContext,
   UCDStoreContext,
 } from "../types";
+import { createDebugger } from "@ucdjs-internal/shared";
+
+const debug = createDebugger("ucdjs:ucd-store:context");
 
 /**
  * Creates an internal store context object.
@@ -49,9 +52,14 @@ export function extractFilterPatterns(filter: PathFilter): PathFilterOptions | u
     return undefined;
   }
 
+  function ensureArray<T>(value: T | T[]): T[] {
+    return Array.isArray(value) ? value : [value];
+  }
+
+  debug?.(`Extracting filter patterns: include=${hasInclude}, exclude=${hasExclude}, disableDefaultExclusions=${hasDisableDefault}`);
   return {
-    include: patterns.include,
-    exclude: patterns.exclude,
+    include: ensureArray(patterns.include!),
+    exclude: ensureArray(patterns.exclude!),
     disableDefaultExclusions: patterns.disableDefaultExclusions,
   };
 }

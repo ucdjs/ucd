@@ -27,18 +27,22 @@ const LockfileFiltersSchema = z.object({
   /**
    * Glob patterns for files to include
    */
-  include: z.array(z.string()).optional(),
+  include: z.array(z.string()).default([]),
 
   /**
    * Glob patterns for files to exclude
    */
-  exclude: z.array(z.string()).optional(),
+  exclude: z.array(z.string()).default([]),
 
   /**
    * Whether default exclusions (.zip, .pdf) were disabled
    */
-  disableDefaultExclusions: z.boolean().optional(),
-}).optional();
+  disableDefaultExclusions: z.boolean().default(false),
+}).default({
+  include: [],
+  exclude: [],
+  disableDefaultExclusions: false,
+});
 
 /**
  * Schema for the lockfile structure
@@ -62,6 +66,7 @@ export const LockfileSchema = z.object({
 });
 
 export type Lockfile = z.output<typeof LockfileSchema>;
+export type LockfileInput = z.input<typeof LockfileSchema>;
 
 /**
  * Schema for a single file entry in a snapshot
