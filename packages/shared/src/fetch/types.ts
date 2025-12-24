@@ -1,13 +1,14 @@
+import type { ZodType } from "zod";
 import type { FetchError } from "./error";
 
 export interface CustomFetch {
   <T = any, R extends ResponseType = "json">(
     request: RequestInfo,
-    options?: FetchOptions<R>
+    options?: FetchOptions<R, T>
   ): Promise<FetchResponse<MappedResponseType<R, T>>>;
   safe: <T = any, R extends ResponseType = "json">(
     request: RequestInfo,
-    options?: FetchOptions<R>,
+    options?: FetchOptions<R, T>,
   ) => Promise<SafeFetchResponse<MappedResponseType<R, T>>>;
 }
 
@@ -40,6 +41,16 @@ export interface FetchOptions<R extends ResponseType = ResponseType, T = any>
   body?: RequestInit["body"] | Record<string, any>;
 
   parseAs?: R;
+
+  /**
+   * Zod schema to validate the response data against.
+   * If validation fails, an error will be returned/thrown.
+   *
+   * TODO(@luxass): figure out how we can hide the true value of
+   *  `schema` from the user. Since it is very large, it can be
+   *  confusing to see it in error messages.
+   */
+  schema?: ZodType<T>;
 
   /**
    * @experimental Set to "half" to enable duplex streaming.
