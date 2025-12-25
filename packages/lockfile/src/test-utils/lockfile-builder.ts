@@ -16,6 +16,15 @@ export interface CreateLockfileOptions {
    * If not provided, defaults to `{version}/snapshot.json`
    */
   snapshotPaths?: Record<string, string>;
+
+  /**
+   * Custom filters for the lockfile
+   */
+  filters?: {
+    disableDefaultExclusions?: boolean;
+    exclude?: string[];
+    include?: string[];
+  };
 }
 
 /**
@@ -46,6 +55,11 @@ export function createEmptyLockfile(versions: string[]): Lockfile {
     versions: Object.fromEntries(
       versions.map((version) => [version, createLockfileEntry(version)]),
     ),
+    filters: {
+      disableDefaultExclusions: false,
+      exclude: [],
+      include: [],
+    },
   };
 }
 
@@ -68,5 +82,10 @@ export function createLockfile(
         }),
       ]),
     ),
+    filters: {
+      disableDefaultExclusions: options?.filters?.disableDefaultExclusions ?? false,
+      exclude: options?.filters?.exclude ?? [],
+      include: options?.filters?.include ?? [],
+    },
   };
 }
