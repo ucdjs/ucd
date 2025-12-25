@@ -60,7 +60,7 @@ interface MockRouteHandlerContext<Endpoint extends EndpointWithGet> {
   mockFetch: MockFetchFn;
   versions: string[];
   shouldUseDefaultValue: boolean;
-  files: Record<string, UnicodeTree>;
+  files: MockStoreFiles;
 }
 
 export interface RouteHandlerDefinition<Endpoint extends EndpointWithGet> {
