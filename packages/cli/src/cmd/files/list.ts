@@ -1,12 +1,11 @@
-/* eslint-disable no-console */
 import type { CLIArguments } from "../../cli-utils";
 import type { CLIFilesCmdOptions } from "./root";
-import process from "node:process";
 import { createDebugger } from "@ucdjs-internal/shared";
 import { createUCDClient } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { dim, green, red } from "farver/fast";
 import { printHelp } from "../../cli-utils";
+import { output } from "../../output";
 
 const debug = createDebugger("ucdjs:cli:files:list");
 
@@ -82,28 +81,28 @@ export async function runFilesList({ path, flags }: CLIFilesListCmdOptions) {
     const result = await client.files.get(path || "");
 
     if (result.error) {
-      console.error(red(`\n❌ Error fetching directory listing:`));
-      console.error(`  ${result.error.message}`);
+      output.error(red(`\n❌ Error fetching directory listing:`));
+      output.error(`  ${result.error.message}`);
       if (result.error.status === 404) {
-        console.error(`  Path "${path || "(root)"}" not found.`);
+        output.error(`  Path "${path || "(root)"}" not found.`);
       }
       return;
     }
 
     if (!result.data) {
-      console.error(red(`\n❌ Error: No data returned from API.`));
+      output.error(red(`\n❌ Error: No data returned from API.`));
       return;
     }
 
     // Check if it's a directory listing (array) or a file (string)
     if (typeof result.data === "string") {
-      console.error(red(`\n❌ Error: Path "${path || "(root)"}" is a file, not a directory.`));
-      console.error(`  Use "ucd files get" to retrieve file content.`);
+      output.error(red(`\n❌ Error: Path "${path || "(root)"}" is a file, not a directory.`));
+      output.error(`  Use "ucd files get" to retrieve file content.`);
       return;
     }
 
     if (!Array.isArray(result.data)) {
-      console.error(red(`\n❌ Error: Unexpected response format from API.`));
+      output.error(red(`\n❌ Error: Unexpected response format from API.`));
       return;
     }
 
@@ -111,15 +110,15 @@ export async function runFilesList({ path, flags }: CLIFilesListCmdOptions) {
 
     if (json) {
       // Write JSON directly to stdout, bypassing console redirection
-      process.stdout.write(`${JSON.stringify(entries, null, 2)}\n`);
+      output.json(entries);
       return;
     }
 
     // Formatted output
     const pathDisplay = path || "(root)";
-    console.info(`\nDirectory listing: ${green(pathDisplay)}\n`);
-    console.info(formatDirectoryListing(entries));
-    console.info("");
+    output.info(`\nDirectory listing: ${green(pathDisplay)}\n`);
+    output.info(formatDirectoryListing(entries));
+    output.info("");
   } catch (err) {
     let message = "Unknown error";
     if (err instanceof Error) {
@@ -128,9 +127,9 @@ export async function runFilesList({ path, flags }: CLIFilesListCmdOptions) {
       message = err;
     }
 
-    console.error(red(`\n❌ Error listing files:`));
-    console.error(`  ${message}`);
-    console.error("Please check the API configuration and try again.");
-    console.error("If you believe this is a bug, please report it at https://github.com/ucdjs/ucd/issues");
+    output.error(red(`\n❌ Error listing files:`));
+    output.error(`  ${message}`);
+    output.error("Please check the API configuration and try again.");
+    output.error("If you believe this is a bug, please report it at https://github.com/ucdjs/ucd/issues");
   }
 }

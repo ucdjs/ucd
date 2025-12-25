@@ -1,10 +1,10 @@
-/* eslint-disable no-console */
 import type { Prettify } from "@luxass/utils";
 import type { CLIArguments } from "../../cli-utils";
 import type { CLIStoreCmdSharedFlags } from "./_shared";
 import { UCDStoreGenericError } from "@ucdjs/ucd-store-v2";
 import { green, red, yellow } from "farver/fast";
 import { printHelp } from "../../cli-utils";
+import { output } from "../../output";
 import { assertRemoteOrStoreDir, createStoreFromFlags, SHARED_FLAGS } from "./_shared";
 
 export interface CLIStoreMirrorCmdOptions {
@@ -47,13 +47,13 @@ export async function runMirrorStore({ flags, versions }: CLIStoreMirrorCmdOptio
 
     // Mirror requires local store (needs write capability)
     if (remote) {
-      console.error(red(`\n❌ Error: Mirror operation requires a local store directory.`));
-      console.error("Use --store-dir to specify a local directory for mirroring.");
+      output.error(red(`\n❌ Error: Mirror operation requires a local store directory.`));
+      output.error("Use --store-dir to specify a local directory for mirroring.");
       return;
     }
 
     if (!storeDir) {
-      console.error(red(`\n❌ Error: Store directory must be specified.`));
+      output.error(red(`\n❌ Error: Store directory must be specified.`));
       return;
     }
 
@@ -71,11 +71,11 @@ export async function runMirrorStore({ flags, versions }: CLIStoreMirrorCmdOptio
     // Check write capability
     // assertWriteCapability(store);
 
-    console.info("Starting mirror operation...");
+    output.info("Starting mirror operation...");
     if (versions.length > 0) {
-      console.info(`Mirroring ${versions.length} version(s): ${versions.join(", ")}`);
+      output.info(`Mirroring ${versions.length} version(s): ${versions.join(", ")}`);
     } else {
-      console.info("Mirroring all versions in lockfile...");
+      output.info("Mirroring all versions in lockfile...");
     }
 
     const [mirrorResult, mirrorError] = await store.mirror({
@@ -89,59 +89,59 @@ export async function runMirrorStore({ flags, versions }: CLIStoreMirrorCmdOptio
     });
 
     if (mirrorError) {
-      console.error(red(`\n❌ Error mirroring store:`));
-      console.error(`  ${mirrorError.message}`);
+      output.error(red(`\n❌ Error mirroring store:`));
+      output.error(`  ${mirrorError.message}`);
       return;
     }
 
     if (!mirrorResult) {
-      console.error(red(`\n❌ Error: Mirror operation returned no result.`));
+      output.error(red(`\n❌ Error: Mirror operation returned no result.`));
       return;
     }
 
     // Display mirror results
-    console.info(green("\n✓ Mirror operation completed successfully\n"));
+    output.info(green("\n✓ Mirror operation completed successfully\n"));
 
     if (mirrorResult.summary) {
       const { counts, duration, storage, metrics } = mirrorResult.summary;
-      console.info(`Summary:`);
-      console.info(`  Versions processed: ${mirrorResult.versions.size}`);
-      console.info(`  Files downloaded: ${green(String(counts.downloaded))}`);
-      console.info(`  Files skipped: ${yellow(String(counts.skipped))}`);
-      console.info(`  Files failed: ${counts.failed > 0 ? red(String(counts.failed)) : String(counts.failed)}`);
-      console.info(`  Total size: ${storage.totalSize}`);
-      console.info(`  Success rate: ${metrics.successRate.toFixed(1)}%`);
-      console.info(`  Duration: ${(duration / 1000).toFixed(2)}s`);
-      console.info("");
+      output.info(`Summary:`);
+      output.info(`  Versions processed: ${mirrorResult.versions.size}`);
+      output.info(`  Files downloaded: ${green(String(counts.downloaded))}`);
+      output.info(`  Files skipped: ${yellow(String(counts.skipped))}`);
+      output.info(`  Files failed: ${counts.failed > 0 ? red(String(counts.failed)) : String(counts.failed)}`);
+      output.info(`  Total size: ${storage.totalSize}`);
+      output.info(`  Success rate: ${metrics.successRate.toFixed(1)}%`);
+      output.info(`  Duration: ${(duration / 1000).toFixed(2)}s`);
+      output.info("");
     }
 
     // Show per-version details
     for (const [version, report] of mirrorResult.versions) {
-      console.info(`Version ${version}:`);
-      console.info(`  Files: ${report.counts.downloaded} downloaded, ${report.counts.skipped} skipped`);
+      output.info(`Version ${version}:`);
+      output.info(`  Files: ${report.counts.downloaded} downloaded, ${report.counts.skipped} skipped`);
       if (report.counts.failed > 0) {
-        console.info(`  ${red(`Failed: ${report.counts.failed}`)}`);
+        output.info(`  ${red(`Failed: ${report.counts.failed}`)}`);
         // Show first few errors if any
         for (const error of report.errors.slice(0, 3)) {
-          console.info(`    - ${error.file}: ${error.reason}`);
+          output.info(`    - ${error.file}: ${error.reason}`);
         }
         if (report.errors.length > 3) {
-          console.info(`    ... and ${report.errors.length - 3} more errors`);
+          output.info(`    ... and ${report.errors.length - 3} more errors`);
         }
       }
-      console.info(`  Success rate: ${report.metrics.successRate.toFixed(1)}%`);
+      output.info(`  Success rate: ${report.metrics.successRate.toFixed(1)}%`);
       if (report.metrics.cacheHitRate > 0) {
-        console.info(`  Cache hit rate: ${report.metrics.cacheHitRate.toFixed(1)}%`);
+        output.info(`  Cache hit rate: ${report.metrics.cacheHitRate.toFixed(1)}%`);
       }
-      console.info("");
+      output.info("");
     }
 
     if (lockfileOnly) {
-      console.info(yellow("⚠ Note: Lockfile was not updated due to --lockfile-only flag."));
+      output.info(yellow("⚠ Note: Lockfile was not updated due to --lockfile-only flag."));
     }
   } catch (err) {
     if (err instanceof UCDStoreGenericError) {
-      console.error(red(`\n❌ Error: ${err.message}`));
+      output.error(red(`\n❌ Error: ${err.message}`));
       return;
     }
 
@@ -152,9 +152,9 @@ export async function runMirrorStore({ flags, versions }: CLIStoreMirrorCmdOptio
       message = err;
     }
 
-    console.error(red(`\n❌ Error mirroring store:`));
-    console.error(`  ${message}`);
-    console.error("Please check the store configuration and try again.");
-    console.error("If you believe this is a bug, please report it at https://github.com/ucdjs/ucd/issues");
+    output.error(red(`\n❌ Error mirroring store:`));
+    output.error(`  ${message}`);
+    output.error("Please check the store configuration and try again.");
+    output.error("If you believe this is a bug, please report it at https://github.com/ucdjs/ucd/issues");
   }
 }

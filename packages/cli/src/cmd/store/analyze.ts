@@ -1,11 +1,10 @@
-/* eslint-disable no-console */
 import type { Prettify } from "@luxass/utils";
 import type { CLIArguments } from "../../cli-utils";
 import type { CLIStoreCmdSharedFlags } from "./_shared";
-import process from "node:process";
 import { UCDStoreGenericError } from "@ucdjs/ucd-store-v2";
 import { green, red } from "farver/fast";
 import { printHelp } from "../../cli-utils";
+import { output } from "../../output";
 import { assertRemoteOrStoreDir, createStoreFromFlags, SHARED_FLAGS } from "./_shared";
 
 export interface CLIStoreAnalyzeCmdOptions {
@@ -35,7 +34,7 @@ export async function runAnalyzeStore({ flags, versions }: CLIStoreAnalyzeCmdOpt
   }
 
   if (!versions || versions.length === 0) {
-    console.info("No specific versions provided. Analyzing all versions in the store.");
+    output.info("No specific versions provided. Analyzing all versions in the store.");
   }
 
   const {
@@ -70,13 +69,13 @@ export async function runAnalyzeStore({ flags, versions }: CLIStoreAnalyzeCmdOpt
     });
 
     if (analyzeError != null) {
-      console.error(red(`\n❌ Error analyzing store:`));
-      console.error(`  ${analyzeError.message}`);
+      output.error(red(`\n❌ Error analyzing store:`));
+      output.error(`  ${analyzeError.message}`);
       return;
     }
 
     if (!analyzeData) {
-      console.error(red(`\n❌ Error: Analyze operation returned no result.`));
+      output.error(red(`\n❌ Error: Analyze operation returned no result.`));
       return;
     }
 
@@ -95,32 +94,32 @@ export async function runAnalyzeStore({ flags, versions }: CLIStoreAnalyzeCmdOpt
           },
         ]),
       );
-      process.stdout.write(JSON.stringify(analyzeDataObj, null, 2));
+      output.json(analyzeDataObj);
       return;
     }
 
     for (const [version, report] of analyzeData.entries()) {
-      console.info(`Version: ${version}`);
+      output.info(`Version: ${version}`);
       if (report.isComplete) {
-        console.info(`  Status: ${green("complete")}`);
+        output.info(`  Status: ${green("complete")}`);
       } else {
-        console.warn(`  Status: ${red("incomplete")}`);
+        output.warn(`  Status: ${red("incomplete")}`);
       }
-      console.info(`  Files: ${report.counts.present}`);
+      output.info(`  Files: ${report.counts.present}`);
       if (report.files.missing && report.files.missing.length > 0) {
-        console.warn(`  Missing files: ${report.files.missing.length}`);
+        output.warn(`  Missing files: ${report.files.missing.length}`);
       }
       if (report.files.orphaned && report.files.orphaned.length > 0) {
-        console.warn(`  Orphaned files: ${report.files.orphaned.length}`);
+        output.warn(`  Orphaned files: ${report.files.orphaned.length}`);
       }
 
       if (report.counts.expected) {
-        console.info(`  Total files expected: ${report.counts.expected}`);
+        output.info(`  Total files expected: ${report.counts.expected}`);
       }
     }
   } catch (err) {
     if (err instanceof UCDStoreGenericError) {
-      console.error(red(`\n❌ Error: ${err.message}`));
+      output.error(red(`\n❌ Error: ${err.message}`));
       return;
     }
 
@@ -131,9 +130,9 @@ export async function runAnalyzeStore({ flags, versions }: CLIStoreAnalyzeCmdOpt
       message = err;
     }
 
-    console.error(red(`\n❌ Error analyzing store:`));
-    console.error(`  ${message}`);
-    console.error("Please check the store configuration and try again.");
-    console.error("If you believe this is a bug, please report it at https://github.com/ucdjs/ucd/issues");
+    output.error(red(`\n❌ Error analyzing store:`));
+    output.error(`  ${message}`);
+    output.error("Please check the store configuration and try again.");
+    output.error("If you believe this is a bug, please report it at https://github.com/ucdjs/ucd/issues");
   }
 }

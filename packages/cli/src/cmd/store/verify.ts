@@ -1,8 +1,6 @@
-/* eslint-disable no-console */
 import type { Prettify } from "@luxass/utils";
 import type { CLIArguments } from "../../cli-utils";
 import type { CLIStoreCmdSharedFlags } from "./_shared";
-import process from "node:process";
 import { createDebugger } from "@ucdjs-internal/shared";
 import { createUCDClient } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
@@ -10,6 +8,7 @@ import { getLockfilePath, readLockfile } from "@ucdjs/lockfile";
 import { UCDStoreGenericError } from "@ucdjs/ucd-store-v2";
 import { green, red, yellow } from "farver/fast";
 import { printHelp } from "../../cli-utils";
+import { output } from "../../output";
 import { assertRemoteOrStoreDir, createStoreFromFlags, SHARED_FLAGS } from "./_shared";
 
 const debug = createDebugger("ucdjs:cli:store:verify");
@@ -68,7 +67,7 @@ export async function runVerifyStore({ flags }: CLIStoreVerifyCmdOptions) {
       lockfilePath = getLockfilePath("");
     } else {
       if (!storeDir) {
-        console.error(red(`\n❌ Error: Store directory must be specified.`));
+        output.error(red(`\n❌ Error: Store directory must be specified.`));
         return;
       }
       lockfilePath = getLockfilePath(storeDir);
@@ -81,11 +80,11 @@ export async function runVerifyStore({ flags }: CLIStoreVerifyCmdOptions) {
     } catch (err) {
       debug?.("Error reading lockfile:", err);
       if (remote) {
-        console.error(red(`\n❌ Error: Could not read lockfile from remote store.`));
-        console.error("Verify operation requires a lockfile. For remote stores, the lockfile must be accessible via the API.");
+        output.error(red(`\n❌ Error: Could not read lockfile from remote store.`));
+        output.error("Verify operation requires a lockfile. For remote stores, the lockfile must be accessible via the API.");
       } else {
-        console.error(red(`\n❌ Error: Lockfile not found at ${lockfilePath}`));
-        console.error("Run 'ucd store init' to create a new store.");
+        output.error(red(`\n❌ Error: Lockfile not found at ${lockfilePath}`));
+        output.error("Run 'ucd store init' to create a new store.");
       }
       return;
     }
@@ -102,11 +101,11 @@ export async function runVerifyStore({ flags }: CLIStoreVerifyCmdOptions) {
     if (configResult.error || !configResult.data) {
       const apiResult = await client.versions.list();
       if (apiResult.error) {
-        console.error(red(`\n❌ Error fetching versions: ${apiResult.error.message}`));
+        output.error(red(`\n❌ Error fetching versions: ${apiResult.error.message}`));
         return;
       }
       if (!apiResult.data) {
-        console.error(red(`\n❌ Error: No versions data returned from API.`));
+        output.error(red(`\n❌ Error: No versions data returned from API.`));
         return;
       }
       availableVersions = apiResult.data.map(({ version }) => version);
@@ -115,11 +114,11 @@ export async function runVerifyStore({ flags }: CLIStoreVerifyCmdOptions) {
       if (availableVersions.length === 0) {
         const apiResult = await client.versions.list();
         if (apiResult.error) {
-          console.error(red(`\n❌ Error fetching versions: ${apiResult.error.message}`));
+          output.error(red(`\n❌ Error fetching versions: ${apiResult.error.message}`));
           return;
         }
         if (!apiResult.data) {
-          console.error(red(`\n❌ Error: No versions data returned from API.`));
+          output.error(red(`\n❌ Error: No versions data returned from API.`));
           return;
         }
         availableVersions = apiResult.data.map(({ version }) => version);
@@ -136,38 +135,38 @@ export async function runVerifyStore({ flags }: CLIStoreVerifyCmdOptions) {
     const isValid = missingVersions.length === 0;
 
     if (json) {
-      process.stdout.write(JSON.stringify({
+      output.json({
         valid: isValid,
         lockfileVersions,
         availableVersions,
         missingVersions,
         extraVersions,
         validVersions,
-      }, null, 2));
+      });
       return;
     }
 
     if (isValid) {
-      console.info(green("\n✓ Store verification passed\n"));
-      console.info(`All ${lockfileVersions.length} version(s) in lockfile are available in API.`);
+      output.info(green("\n✓ Store verification passed\n"));
+      output.info(`All ${lockfileVersions.length} version(s) in lockfile are available in API.`);
     } else {
-      console.error(red("\n❌ Store verification failed\n"));
-      console.error(`Found ${missingVersions.length} version(s) in lockfile that are not available in API:`);
+      output.error(red("\n❌ Store verification failed\n"));
+      output.error(`Found ${missingVersions.length} version(s) in lockfile that are not available in API:`);
       for (const version of missingVersions) {
-        console.error(`  - ${version}`);
+        output.error(`  - ${version}`);
       }
     }
 
     if (extraVersions.length > 0) {
-      console.info(yellow(`\n⚠ Note: ${extraVersions.length} version(s) available in API but not in lockfile:`));
+      output.info(yellow(`\n⚠ Note: ${extraVersions.length} version(s) available in API but not in lockfile:`));
       for (const version of extraVersions) {
-        console.info(`  + ${version}`);
+        output.info(`  + ${version}`);
       }
-      console.info("Run 'ucd store sync' to update the lockfile.");
+      output.info("Run 'ucd store sync' to update the lockfile.");
     }
   } catch (err) {
     if (err instanceof UCDStoreGenericError) {
-      console.error(red(`\n❌ Error: ${err.message}`));
+      output.error(red(`\n❌ Error: ${err.message}`));
       return;
     }
 
@@ -178,9 +177,9 @@ export async function runVerifyStore({ flags }: CLIStoreVerifyCmdOptions) {
       message = err;
     }
 
-    console.error(red(`\n❌ Error verifying store:`));
-    console.error(`  ${message}`);
-    console.error("Please check the store configuration and try again.");
-    console.error("If you believe this is a bug, please report it at https://github.com/ucdjs/ucd/issues");
+    output.error(red(`\n❌ Error verifying store:`));
+    output.error(`  ${message}`);
+    output.error("Please check the store configuration and try again.");
+    output.error("If you believe this is a bug, please report it at https://github.com/ucdjs/ucd/issues");
   }
 }

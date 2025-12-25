@@ -1,38 +1,37 @@
+import type { ConsoleOutputCapture } from "../../__test-utils";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { mockStoreApi } from "#test-utils/mock-store";
 import { HttpResponse } from "#test-utils/msw";
 import { UNICODE_VERSION_METADATA } from "@unicode-utils/core";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { testdir } from "vitest-testdirs";
 import { runCLI } from "../../../src/cli-utils";
+import { captureConsoleOutput } from "../../__test-utils";
 
 describe("store mirror command", () => {
+  let capture: ConsoleOutputCapture;
+
   beforeEach(() => {
-    vi.spyOn(console, "info").mockImplementation(() => {});
-    vi.spyOn(console, "error").mockImplementation(() => {});
-    vi.spyOn(console, "warn").mockImplementation(() => {});
+    capture = captureConsoleOutput();
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    capture.restore();
   });
 
   it("should show help when --help flag is passed", async () => {
-    const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-
+    const helpCapture = captureConsoleOutput();
     await runCLI(["store", "mirror", "--help"]);
 
-    expect(consoleLogSpy).toHaveBeenCalled();
-    const output = consoleLogSpy.mock.calls.flat().join("\n");
-    expect(output).toContain("Mirror Unicode data files to local storage");
-    expect(output).toContain("--store-dir");
-    expect(output).toContain("--concurrency");
+    expect(helpCapture.contains("Mirror Unicode data files to local storage")).toBe(true);
+    expect(helpCapture.contains("--store-dir")).toBe(true);
+    expect(helpCapture.contains("--concurrency")).toBe(true);
+
+    helpCapture.restore();
   });
 
   it("should fail if neither --remote nor --store-dir is specified", async () => {
-    const consoleErrorSpy = vi.spyOn(console, "error");
-
     mockStoreApi({
       responses: {
         "/api/v1/versions": UNICODE_VERSION_METADATA,
@@ -41,14 +40,10 @@ describe("store mirror command", () => {
 
     await runCLI(["store", "mirror"]);
 
-    expect(consoleErrorSpy).toHaveBeenCalled();
-    const errorOutput = consoleErrorSpy.mock.calls.flat().join("\n");
-    expect(errorOutput).toContain("Either --remote or --store-dir must be specified");
+    expect(capture.containsError("Either --remote or --store-dir must be specified")).toBe(true);
   });
 
   it("should fail if --remote is specified (mirror requires local store)", async () => {
-    const consoleErrorSpy = vi.spyOn(console, "error");
-
     mockStoreApi({
       responses: {
         "/api/v1/versions": UNICODE_VERSION_METADATA,
@@ -57,15 +52,11 @@ describe("store mirror command", () => {
 
     await runCLI(["store", "mirror", "--remote"]);
 
-    expect(consoleErrorSpy).toHaveBeenCalled();
-    const errorOutput = consoleErrorSpy.mock.calls.flat().join("\n");
-    expect(errorOutput).toContain("Mirror operation requires a local store directory");
+    expect(capture.containsError("Mirror operation requires a local store directory")).toBe(true);
   });
 
   it("should mirror specific versions", async () => {
-    // First, initialize a store with a lockfile
     const storePath = await testdir();
-    const consoleInfoSpy = vi.spyOn(console, "info");
 
     mockStoreApi({
       responses: {
@@ -87,7 +78,6 @@ describe("store mirror command", () => {
       },
     });
 
-    // Initialize the store first
     await runCLI([
       "store",
       "init",
@@ -96,9 +86,8 @@ describe("store mirror command", () => {
       "16.0.0",
     ]);
 
-    consoleInfoSpy.mockClear();
+    capture.clear();
 
-    // Then run mirror with specific versions
     await runCLI([
       "store",
       "mirror",
@@ -107,15 +96,13 @@ describe("store mirror command", () => {
       "16.0.0",
     ]);
 
-    const infoOutput = consoleInfoSpy.mock.calls.flat().join("\n");
-    expect(infoOutput).toContain("Starting mirror operation");
-    expect(infoOutput).toContain("Mirroring 1 version(s)");
-    expect(infoOutput).toContain("Mirror operation completed successfully");
+    expect(capture.containsInfo("Starting mirror operation")).toBe(true);
+    expect(capture.containsInfo("Mirroring 1 version(s)")).toBe(true);
+    expect(capture.containsInfo("Mirror operation completed successfully")).toBe(true);
   });
 
   it("should mirror all versions when none specified", async () => {
     const storePath = await testdir();
-    const consoleInfoSpy = vi.spyOn(console, "info");
 
     mockStoreApi({
       responses: {
@@ -132,7 +119,6 @@ describe("store mirror command", () => {
       },
     });
 
-    // Initialize with multiple versions
     await runCLI([
       "store",
       "init",
@@ -142,9 +128,8 @@ describe("store mirror command", () => {
       "15.1.0",
     ]);
 
-    consoleInfoSpy.mockClear();
+    capture.clear();
 
-    // Mirror without specifying versions
     await runCLI([
       "store",
       "mirror",
@@ -152,10 +137,9 @@ describe("store mirror command", () => {
       storePath,
     ]);
 
-    const infoOutput = consoleInfoSpy.mock.calls.flat().join("\n");
-    expect(infoOutput).toContain("Starting mirror operation");
-    expect(infoOutput).toContain("Mirroring all versions in lockfile");
-    expect(infoOutput).toContain("Mirror operation completed successfully");
+    expect(capture.containsInfo("Starting mirror operation")).toBe(true);
+    expect(capture.containsInfo("Mirroring all versions in lockfile")).toBe(true);
+    expect(capture.containsInfo("Mirror operation completed successfully")).toBe(true);
   });
 
   it("should create version directories and files", async () => {
@@ -184,20 +168,16 @@ describe("store mirror command", () => {
       "16.0.0",
     ]);
 
-    // Check that the version directory exists
     expect(existsSync(join(storePath, "16.0.0"))).toBe(true);
 
-    // Check that the file was created
     expect(existsSync(join(storePath, "16.0.0", "UnicodeData.txt"))).toBe(true);
 
-    // Check file content
     const content = readFileSync(join(storePath, "16.0.0", "UnicodeData.txt"), "utf-8");
     expect(content).toContain("Content of");
   });
 
   it("should display download statistics", async () => {
     const storePath = await testdir();
-    const consoleInfoSpy = vi.spyOn(console, "info");
 
     mockStoreApi({
       responses: {
@@ -227,10 +207,8 @@ describe("store mirror command", () => {
       "16.0.0",
     ]);
 
-    const infoOutput = consoleInfoSpy.mock.calls.flat().join("\n");
-    // Check for statistics in output
-    expect(infoOutput).toContain("Files downloaded:");
-    expect(infoOutput).toContain("Files skipped:");
+    expect(capture.containsInfo("Files downloaded:")).toBe(true);
+    expect(capture.containsInfo("Files skipped:")).toBe(true);
   });
 
   it("should respect include patterns", async () => {
@@ -274,7 +252,6 @@ describe("store mirror command", () => {
       "**/Arabic*.txt",
     ]);
 
-    // Check that only the included file exists
     expect(existsSync(join(storePath, "16.0.0", "ArabicShaping.txt"))).toBe(true);
     expect(existsSync(join(storePath, "16.0.0", "BidiBrackets.txt"))).toBe(false);
     expect(existsSync(join(storePath, "16.0.0", "UnicodeData.txt"))).toBe(false);
@@ -321,7 +298,6 @@ describe("store mirror command", () => {
       "**/Bidi*.txt",
     ]);
 
-    // Check that excluded file doesn't exist
     expect(existsSync(join(storePath, "16.0.0", "ArabicShaping.txt"))).toBe(true);
     expect(existsSync(join(storePath, "16.0.0", "BidiBrackets.txt"))).toBe(false);
     expect(existsSync(join(storePath, "16.0.0", "UnicodeData.txt"))).toBe(true);
