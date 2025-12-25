@@ -590,6 +590,9 @@ importers:
       '@ucdjs/env':
         specifier: workspace:*
         version: link:../env
+      '@ucdjs/path-utils':
+        specifier: workspace:*
+        version: link:../path-utils
       '@ucdjs/schemas':
         specifier: workspace:*
         version: link:../schemas
