@@ -2,6 +2,7 @@
 import type { Prettify } from "@luxass/utils";
 import type { CLIArguments } from "../../cli-utils";
 import type { CLIStoreCmdSharedFlags } from "./_shared";
+import process from "node:process";
 import { createDebugger } from "@ucdjs-internal/shared";
 import { createUCDClient } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
@@ -135,7 +136,7 @@ export async function runVerifyStore({ flags }: CLIStoreVerifyCmdOptions) {
     const isValid = missingVersions.length === 0;
 
     if (json) {
-      console.info(JSON.stringify({
+      process.stdout.write(JSON.stringify({
         valid: isValid,
         lockfileVersions,
         availableVersions,

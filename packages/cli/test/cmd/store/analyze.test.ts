@@ -158,21 +158,26 @@ describe("store analyze command", () => {
   it("should output JSON when --json flag is passed", async () => {
     const storePath = await testdir();
     const consoleInfoSpy = vi.spyOn(console, "info");
+    const stdoutSpy = vi.spyOn(process.stdout, "write");
 
     mockStoreApi({
       responses: {
         "/api/v1/versions": UNICODE_VERSION_METADATA,
-        "/api/v1/versions/{version}/file-tree": [{
-          type: "file",
-          name: "ArabicShaping.txt",
-          path: "/ArabicShaping.txt",
-          lastModified: 1752862620000,
-        }],
         "/api/v1/files/{wildcard}": ({ params }) => {
           return HttpResponse.text(`Content of ${params.wildcard}`);
         },
       },
+      files: {
+        "*": [{
+          type: "file",
+          name: "ArabicShaping.txt",
+          path: "ArabicShaping.txt",
+          lastModified: 1752862620000,
+        }],
+      },
     });
+
+    expect(consoleInfoSpy).not.toHaveBeenCalled();
 
     // Initialize the store first
     await runCLI([
@@ -192,8 +197,6 @@ describe("store analyze command", () => {
       "16.0.0",
     ]);
 
-    consoleInfoSpy.mockClear();
-
     // Analyze with JSON flag
     await runCLI([
       "store",
@@ -205,12 +208,12 @@ describe("store analyze command", () => {
     ]);
 
     // Find the JSON output in the console.info calls
-    const infoOutputs = consoleInfoSpy.mock.calls.flat();
-    const jsonOutput = infoOutputs.find((output) => {
+    const output = stdoutSpy.mock.calls.flat();
+    const jsonOutput = output.find((output) => {
       if (typeof output !== "string") return false;
       try {
         const parsed = JSON.parse(output);
-        return parsed && typeof parsed === "object" && "16.0.0" in parsed;
+        return parsed && typeof parsed === "object" && "valid" in parsed;
       } catch {
         return false;
       }

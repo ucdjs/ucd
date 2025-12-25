@@ -2,6 +2,7 @@
 import type { Prettify } from "@luxass/utils";
 import type { CLIArguments } from "../../cli-utils";
 import type { CLIStoreCmdSharedFlags } from "./_shared";
+import process from "node:process";
 import { UCDStoreGenericError } from "@ucdjs/ucd-store-v2";
 import { green, red } from "farver/fast";
 import { printHelp } from "../../cli-utils";
@@ -94,7 +95,7 @@ export async function runAnalyzeStore({ flags, versions }: CLIStoreAnalyzeCmdOpt
           },
         ]),
       );
-      console.info(JSON.stringify(analyzeDataObj, null, 2));
+      process.stdout.write(JSON.stringify(analyzeDataObj, null, 2));
       return;
     }
 
