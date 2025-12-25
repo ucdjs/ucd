@@ -43,6 +43,7 @@
   "dependencies": {
     "@ucdjs-internal/shared": "workspace:*",
     "@ucdjs/env": "workspace:*",
+    "@ucdjs/path-utils": "workspace:*",
     "@ucdjs/schemas": "workspace:*"
   },
   "devDependencies": {
