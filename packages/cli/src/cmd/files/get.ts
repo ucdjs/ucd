@@ -2,7 +2,8 @@
 import type { CLIArguments } from "../../cli-utils";
 import type { CLIFilesCmdOptions } from "./root";
 import { writeFile } from "node:fs/promises";
-import { resolve } from "node:path";
+import { createUCDClient } from "@ucdjs/client";
+import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { green, red } from "farver/fast";
 import { printHelp } from "../../cli-utils";
 
@@ -39,9 +40,6 @@ export async function runFilesGet({ path, flags }: CLIFilesGetCmdOptions) {
   const { baseUrl, output } = flags;
 
   try {
-    const { createUCDClient } = await import("@ucdjs/client");
-    const { UCDJS_API_BASE_URL } = await import("@ucdjs/env");
-
     const client = await createUCDClient(baseUrl || UCDJS_API_BASE_URL);
 
     const result = await client.files.get(path);
@@ -70,10 +68,8 @@ export async function runFilesGet({ path, flags }: CLIFilesGetCmdOptions) {
     const content = result.data as string;
 
     if (output) {
-      // Write to file
-      const outputPath = resolve(output);
-      await writeFile(outputPath, content, "utf-8");
-      console.info(green(`\n✓ File written to: ${outputPath}\n`));
+      await writeFile(output, content, "utf-8");
+      console.info(green(`\n✓ File written to: ${output}\n`));
     } else {
       // Write to stdout
       console.info(content);

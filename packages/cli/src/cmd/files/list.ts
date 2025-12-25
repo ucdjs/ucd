@@ -1,10 +1,14 @@
 /* eslint-disable no-console */
 import type { CLIArguments } from "../../cli-utils";
 import type { CLIFilesCmdOptions } from "./root";
+import process from "node:process";
+import { createDebugger } from "@ucdjs-internal/shared";
 import { createUCDClient } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { dim, green, red } from "farver/fast";
 import { printHelp } from "../../cli-utils";
+
+const debug = createDebugger("ucdjs:cli:files:list");
 
 export interface CLIFilesListCmdOptions {
   path: string;
@@ -74,7 +78,7 @@ export async function runFilesList({ path, flags }: CLIFilesListCmdOptions) {
 
   try {
     const client = await createUCDClient(baseUrl || UCDJS_API_BASE_URL);
-
+    debug?.(`Fetching directory listing for path "${path || "(root)"}"`);
     const result = await client.files.get(path || "");
 
     if (result.error) {
@@ -106,7 +110,8 @@ export async function runFilesList({ path, flags }: CLIFilesListCmdOptions) {
     const entries = result.data as FileEntry[];
 
     if (json) {
-      console.info(JSON.stringify(entries, null, 2));
+      // Write JSON directly to stdout, bypassing console redirection
+      process.stdout.write(`${JSON.stringify(entries, null, 2)}\n`);
       return;
     }
 
