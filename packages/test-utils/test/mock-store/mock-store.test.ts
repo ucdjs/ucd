@@ -401,6 +401,7 @@ describe("mockStoreApi", () => {
           manifest: "/custom/manifest",
           versions: "/custom/versions",
         },
+        versions: [],
       };
 
       mockStoreApi({
@@ -428,6 +429,7 @@ describe("mockStoreApi", () => {
           manifest: "/.well-known/ucd-store.json",
           versions: "/api/v1/versions",
         },
+        versions: [],
       };
 
       mockStoreApi({
@@ -925,7 +927,24 @@ describe("mockStoreApi", () => {
       mockStoreApi({
         responses: {
           "/api/v1/versions": configure({
-            response: ["16.0.0", "15.1.0"],
+            response: [
+              {
+                version: "16.0.0",
+                documentationUrl: "https://www.unicode.org/versions/Unicode16.0.0/",
+                date: "2024",
+                url: "https://www.unicode.org/Public/16.0.0",
+                mappedUcdVersion: null,
+                type: "stable",
+              },
+              {
+                version: "15.1.0",
+                documentationUrl: "https://www.unicode.org/versions/Unicode15.1.0/",
+                date: "2023",
+                url: "https://www.unicode.org/Public/15.1.0",
+                mappedUcdVersion: null,
+                type: "stable",
+              },
+            ],
             before: beforeHook,
             after: afterHook,
           }),
@@ -961,7 +980,16 @@ describe("mockStoreApi", () => {
       mockStoreApi({
         responses: {
           "/api/v1/versions": configure({
-            response: ["16.0.0"],
+            response: [
+              {
+                version: "16.0.0",
+                documentationUrl: "https://www.unicode.org/versions/Unicode16.0.0/",
+                date: "2024",
+                url: "https://www.unicode.org/Public/16.0.0",
+                mappedUcdVersion: null,
+                type: "stable",
+              },
+            ],
             latency: 50,
             headers: { "X-Custom": "value" },
             before: beforeHook,

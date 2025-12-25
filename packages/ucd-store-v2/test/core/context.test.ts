@@ -105,6 +105,7 @@ describe("createPublicContext", async () => {
       manifest: "/.well-known/ucd-store.json",
       versions: "/api/v1/versions",
     },
+    versions: ["16.0.0", "15.1.0"],
   });
 
   it("should create context with only public properties", async () => {

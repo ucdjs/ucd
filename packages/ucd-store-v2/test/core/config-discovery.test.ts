@@ -143,6 +143,7 @@ describe("config discovery integration", () => {
       mockStoreApi({
         versions: ["16.0.0", "15.1.0"],
         responses: {
+          // @ts-expect-error This is just for a test, so should be fine.
           "/.well-known/ucd-config.json": {
             version: "0.1",
             endpoints: {
