@@ -103,13 +103,14 @@ export async function runMirrorStore({ flags, versions }: CLIStoreMirrorCmdOptio
     console.info(green("\n✓ Mirror operation completed successfully\n"));
 
     if (mirrorResult.summary) {
-      const { counts, duration, storage } = mirrorResult.summary;
+      const { counts, duration, storage, metrics } = mirrorResult.summary;
       console.info(`Summary:`);
       console.info(`  Versions processed: ${mirrorResult.versions.size}`);
       console.info(`  Files downloaded: ${green(String(counts.downloaded))}`);
       console.info(`  Files skipped: ${yellow(String(counts.skipped))}`);
       console.info(`  Files failed: ${counts.failed > 0 ? red(String(counts.failed)) : String(counts.failed)}`);
       console.info(`  Total size: ${storage.totalSize}`);
+      console.info(`  Success rate: ${metrics.successRate.toFixed(1)}%`);
       console.info(`  Duration: ${(duration / 1000).toFixed(2)}s`);
       console.info("");
     }
@@ -120,9 +121,17 @@ export async function runMirrorStore({ flags, versions }: CLIStoreMirrorCmdOptio
       console.info(`  Files: ${report.counts.downloaded} downloaded, ${report.counts.skipped} skipped`);
       if (report.counts.failed > 0) {
         console.info(`  ${red(`Failed: ${report.counts.failed}`)}`);
+        // Show first few errors if any
+        for (const error of report.errors.slice(0, 3)) {
+          console.info(`    - ${error.file}: ${error.reason}`);
+        }
+        if (report.errors.length > 3) {
+          console.info(`    ... and ${report.errors.length - 3} more errors`);
+        }
       }
-      if (report.storage) {
-        console.info(`  Size: ${report.storage.totalSize}`);
+      console.info(`  Success rate: ${report.metrics.successRate.toFixed(1)}%`);
+      if (report.metrics.cacheHitRate > 0) {
+        console.info(`  Cache hit rate: ${report.metrics.cacheHitRate.toFixed(1)}%`);
       }
       console.info("");
     }
