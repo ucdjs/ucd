@@ -1,36 +1,35 @@
+import type { ConsoleOutputCapture } from "../../__test-utils";
 import { mockStoreApi } from "#test-utils/mock-store";
 import { HttpResponse } from "#test-utils/msw";
 import { UNICODE_VERSION_METADATA } from "@unicode-utils/core";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { testdir } from "vitest-testdirs";
 import { runCLI } from "../../../src/cli-utils";
+import { captureConsoleOutput } from "../../__test-utils";
 
 describe("store verify command", () => {
+  let capture: ConsoleOutputCapture;
+
   beforeEach(() => {
-    vi.spyOn(console, "info").mockImplementation(() => {});
-    vi.spyOn(console, "error").mockImplementation(() => {});
-    vi.spyOn(console, "warn").mockImplementation(() => {});
+    capture = captureConsoleOutput();
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    capture.restore();
   });
 
   it("should show help when --help flag is passed", async () => {
-    const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-
+    const helpCapture = captureConsoleOutput();
     await runCLI(["store", "verify", "--help"]);
 
-    expect(consoleLogSpy).toHaveBeenCalled();
-    const output = consoleLogSpy.mock.calls.flat().join("\n");
-    expect(output).toContain("Verify UCD Store integrity");
-    expect(output).toContain("--store-dir");
-    expect(output).toContain("--json");
+    expect(helpCapture.contains("Verify UCD Store integrity")).toBe(true);
+    expect(helpCapture.contains("--store-dir")).toBe(true);
+    expect(helpCapture.contains("--json")).toBe(true);
+
+    helpCapture.restore();
   });
 
   it("should fail if neither --remote nor --store-dir is specified", async () => {
-    const consoleErrorSpy = vi.spyOn(console, "error");
-
     mockStoreApi({
       responses: {
         "/api/v1/versions": UNICODE_VERSION_METADATA,
@@ -39,14 +38,11 @@ describe("store verify command", () => {
 
     await runCLI(["store", "verify"]);
 
-    expect(consoleErrorSpy).toHaveBeenCalled();
-    const errorOutput = consoleErrorSpy.mock.calls.flat().join("\n");
-    expect(errorOutput).toContain("Either --remote or --store-dir must be specified");
+    expect(capture.containsError("Either --remote or --store-dir must be specified")).toBe(true);
   });
 
   it("should error when lockfile does not exist", async () => {
     const storePath = await testdir();
-    const consoleErrorSpy = vi.spyOn(console, "error");
 
     mockStoreApi({
       responses: {
@@ -61,13 +57,11 @@ describe("store verify command", () => {
       storePath,
     ]);
 
-    const errorOutput = consoleErrorSpy.mock.calls.flat().join("\n");
-    expect(errorOutput).toContain("lockfile not found");
+    expect(capture.containsError("lockfile not found")).toBe(true);
   });
 
   it("should verify store successfully when all versions match", async () => {
     const storePath = await testdir();
-    const consoleInfoSpy = vi.spyOn(console, "info");
 
     mockStoreApi({
       responses: {
@@ -86,7 +80,6 @@ describe("store verify command", () => {
       },
     });
 
-    // Initialize the store first
     await runCLI([
       "store",
       "init",
@@ -95,9 +88,8 @@ describe("store verify command", () => {
       "16.0.0",
     ]);
 
-    consoleInfoSpy.mockClear();
+    capture.clear();
 
-    // Verify the store
     await runCLI([
       "store",
       "verify",
@@ -105,14 +97,11 @@ describe("store verify command", () => {
       storePath,
     ]);
 
-    const infoOutput = consoleInfoSpy.mock.calls.flat().join("\n");
-    expect(infoOutput).toContain("Store verification passed");
+    expect(capture.containsInfo("Store verification passed")).toBe(true);
   });
 
   it("should output JSON when --json flag is passed", async () => {
     const storePath = await testdir();
-    const consoleInfoSpy = vi.spyOn(console, "info");
-    const stdoutSpy = vi.spyOn(process.stdout, "write");
 
     mockStoreApi({
       responses: {
@@ -131,9 +120,6 @@ describe("store verify command", () => {
       },
     });
 
-    expect(consoleInfoSpy).not.toHaveBeenCalled();
-
-    // Initialize the store first
     await runCLI([
       "store",
       "init",
@@ -142,7 +128,8 @@ describe("store verify command", () => {
       "16.0.0",
     ]);
 
-    // Verify with JSON flag
+    capture.clear();
+
     await runCLI([
       "store",
       "verify",
@@ -151,31 +138,18 @@ describe("store verify command", () => {
       "--json",
     ]);
 
-    // Find the JSON output in the console.info calls
-    const output = stdoutSpy.mock.calls.flat();
-    const jsonOutput = output.find((output) => {
-      if (typeof output !== "string") return false;
-      try {
-        const parsed = JSON.parse(output);
-        return parsed && typeof parsed === "object" && "valid" in parsed;
-      } catch {
-        return false;
-      }
-    });
-
-    expect(jsonOutput).toBeDefined();
-    const parsed = JSON.parse(jsonOutput as string);
-    expect(parsed).toHaveProperty("valid");
-    expect(parsed).toHaveProperty("lockfileVersions");
-    expect(parsed).toHaveProperty("availableVersions");
-    expect(parsed).toHaveProperty("missingVersions");
-    expect(parsed).toHaveProperty("extraVersions");
-    expect(parsed).toHaveProperty("validVersions");
+    expect(capture.hasValidJson()).toBe(true);
+    const json = capture.json<{ valid: boolean; lockfileVersions: string[]; availableVersions: string[] }>();
+    expect(json).toHaveProperty("valid");
+    expect(json).toHaveProperty("lockfileVersions");
+    expect(json).toHaveProperty("availableVersions");
+    expect(json).toHaveProperty("missingVersions");
+    expect(json).toHaveProperty("extraVersions");
+    expect(json).toHaveProperty("validVersions");
   });
 
   it("should show warning for versions available in API but not in lockfile", async () => {
     const storePath = await testdir();
-    const consoleInfoSpy = vi.spyOn(console, "info");
 
     mockStoreApi({
       responses: {
@@ -194,7 +168,6 @@ describe("store verify command", () => {
       },
     });
 
-    // Initialize the store with only one version
     await runCLI([
       "store",
       "init",
@@ -203,9 +176,8 @@ describe("store verify command", () => {
       "16.0.0",
     ]);
 
-    consoleInfoSpy.mockClear();
+    capture.clear();
 
-    // Verify the store
     await runCLI([
       "store",
       "verify",
@@ -213,10 +185,7 @@ describe("store verify command", () => {
       storePath,
     ]);
 
-    const infoOutput = consoleInfoSpy.mock.calls.flat().join("\n");
-    // Should pass verification but note about extra versions
-    expect(infoOutput).toContain("Store verification passed");
-    // Should mention versions available in API but not in lockfile
-    expect(infoOutput).toContain("version(s) available in API but not in lockfile");
+    expect(capture.containsInfo("Store verification passed")).toBe(true);
+    expect(capture.containsInfo("version(s) available in API but not in lockfile")).toBe(true);
   });
 });

@@ -1,11 +1,10 @@
-/* eslint-disable no-console */
 import type { CLIArguments } from "../../cli-utils";
 import type { CLIFilesCmdOptions } from "./root";
-import process from "node:process";
 import { customFetch } from "@ucdjs-internal/shared";
 import { UCD_FILE_STAT_TYPE_HEADER, UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { bold, dim, green, red } from "farver/fast";
 import { printHelp } from "../../cli-utils";
+import { output } from "../../output";
 
 export interface CLIFilesInfoCmdOptions {
   path: string;
@@ -80,16 +79,16 @@ export async function runFilesInfo({ path, flags }: CLIFilesInfoCmdOptions) {
     });
 
     if (result.error) {
-      console.error(red(`\n❌ Error fetching file info:`));
-      console.error(`  ${result.error.message}`);
+      output.error(red(`\n❌ Error fetching file info:`));
+      output.error(`  ${result.error.message}`);
       if (result.error.status === 404) {
-        console.error(`  Path "${path || "(root)"}" not found.`);
+        output.error(`  Path "${path || "(root)"}" not found.`);
       }
       return;
     }
 
     if (!result.response) {
-      console.error(red(`\n❌ Error: No response from API.`));
+      output.error(red(`\n❌ Error: No response from API.`));
       return;
     }
 
@@ -104,14 +103,14 @@ export async function runFilesInfo({ path, flags }: CLIFilesInfoCmdOptions) {
 
     if (json) {
       // Write JSON directly to stdout, bypassing console redirection
-      process.stdout.write(`${JSON.stringify(metadata, null, 2)}\n`);
+      output.json(metadata);
       return;
     }
 
     // Formatted output
-    console.info(`\nFile info: ${green(path || "(root)")}\n`);
-    console.info(formatMetadata(metadata));
-    console.info("");
+    output.info(`\nFile info: ${green(path || "(root)")}\n`);
+    output.info(formatMetadata(metadata));
+    output.info("");
   } catch (err) {
     let message = "Unknown error";
     if (err instanceof Error) {
@@ -120,9 +119,9 @@ export async function runFilesInfo({ path, flags }: CLIFilesInfoCmdOptions) {
       message = err;
     }
 
-    console.error(red(`\n❌ Error getting file info:`));
-    console.error(`  ${message}`);
-    console.error("Please check the API configuration and try again.");
-    console.error("If you believe this is a bug, please report it at https://github.com/ucdjs/ucd/issues");
+    output.error(red(`\n❌ Error getting file info:`));
+    output.error(`  ${message}`);
+    output.error("Please check the API configuration and try again.");
+    output.error("If you believe this is a bug, please report it at https://github.com/ucdjs/ucd/issues");
   }
 }

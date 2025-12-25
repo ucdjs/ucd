@@ -1,36 +1,35 @@
+import type { ConsoleOutputCapture } from "../../__test-utils";
 import { mockStoreApi } from "#test-utils/mock-store";
 import { HttpResponse } from "#test-utils/msw";
 import { UNICODE_VERSION_METADATA } from "@unicode-utils/core";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { testdir } from "vitest-testdirs";
 import { runCLI } from "../../../src/cli-utils";
+import { captureConsoleOutput } from "../../__test-utils";
 
 describe("store status command", () => {
+  let capture: ConsoleOutputCapture;
+
   beforeEach(() => {
-    vi.spyOn(console, "info").mockImplementation(() => {});
-    vi.spyOn(console, "error").mockImplementation(() => {});
-    vi.spyOn(console, "warn").mockImplementation(() => {});
+    capture = captureConsoleOutput();
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    capture.restore();
   });
 
   it("should show help when --help flag is passed", async () => {
-    const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-
+    const helpCapture = captureConsoleOutput();
     await runCLI(["store", "status", "--help"]);
 
-    expect(consoleLogSpy).toHaveBeenCalled();
-    const output = consoleLogSpy.mock.calls.flat().join("\n");
-    expect(output).toContain("Show UCD Store status and lockfile information");
-    expect(output).toContain("--store-dir");
-    expect(output).toContain("--json");
+    expect(helpCapture.contains("Show UCD Store status and lockfile information")).toBe(true);
+    expect(helpCapture.contains("--store-dir")).toBe(true);
+    expect(helpCapture.contains("--json")).toBe(true);
+
+    helpCapture.restore();
   });
 
   it("should fail if neither --remote nor --store-dir is specified", async () => {
-    const consoleErrorSpy = vi.spyOn(console, "error");
-
     mockStoreApi({
       responses: {
         "/api/v1/versions": UNICODE_VERSION_METADATA,
@@ -39,14 +38,11 @@ describe("store status command", () => {
 
     await runCLI(["store", "status"]);
 
-    expect(consoleErrorSpy).toHaveBeenCalled();
-    const errorOutput = consoleErrorSpy.mock.calls.flat().join("\n");
-    expect(errorOutput).toContain("Either --remote or --store-dir must be specified");
+    expect(capture.containsError("Either --remote or --store-dir must be specified")).toBe(true);
   });
 
   it("should show status for local store with lockfile", async () => {
     const storePath = await testdir();
-    const consoleInfoSpy = vi.spyOn(console, "info");
 
     mockStoreApi({
       responses: {
@@ -63,7 +59,6 @@ describe("store status command", () => {
       },
     });
 
-    // Initialize the store first
     await runCLI([
       "store",
       "init",
@@ -72,9 +67,8 @@ describe("store status command", () => {
       "16.0.0",
     ]);
 
-    consoleInfoSpy.mockClear();
+    capture.clear();
 
-    // Then check status
     await runCLI([
       "store",
       "status",
@@ -82,15 +76,13 @@ describe("store status command", () => {
       storePath,
     ]);
 
-    const infoOutput = consoleInfoSpy.mock.calls.flat().join("\n");
-    expect(infoOutput).toContain("Store Status:");
-    expect(infoOutput).toContain("Lockfile:");
-    expect(infoOutput).toContain("Total Versions:");
+    expect(capture.containsInfo("Store Status:")).toBe(true);
+    expect(capture.containsInfo("Lockfile:")).toBe(true);
+    expect(capture.containsInfo("Total Versions:")).toBe(true);
   });
 
   it("should error when lockfile does not exist", async () => {
     const storePath = await testdir();
-    const consoleErrorSpy = vi.spyOn(console, "error");
 
     mockStoreApi({
       responses: {
@@ -105,14 +97,11 @@ describe("store status command", () => {
       storePath,
     ]);
 
-    const errorOutput = consoleErrorSpy.mock.calls.flat().join("\n");
-    expect(errorOutput).toContain("lockfile not found");
+    expect(capture.containsError("lockfile not found")).toBe(true);
   });
 
   it("should output JSON when --json flag is passed", async () => {
     const storePath = await testdir();
-    const consoleInfoSpy = vi.spyOn(console, "info");
-    const stdoutSpy = vi.spyOn(process.stdout, "write");
 
     mockStoreApi({
       responses: {
@@ -131,9 +120,6 @@ describe("store status command", () => {
       },
     });
 
-    expect(consoleInfoSpy).not.toHaveBeenCalled();
-
-    // Initialize the store first
     await runCLI([
       "store",
       "init",
@@ -142,9 +128,8 @@ describe("store status command", () => {
       "16.0.0",
     ]);
 
-    consoleInfoSpy.mockClear();
+    capture.clear();
 
-    // Then check status with JSON flag
     await runCLI([
       "store",
       "status",
@@ -153,30 +138,17 @@ describe("store status command", () => {
       "--json",
     ]);
 
-    // Find the JSON output in the console.info calls
-    const output = stdoutSpy.mock.calls.flat();
-    const jsonOutput = output.find((output) => {
-      if (typeof output !== "string") return false;
-      try {
-        const parsed = JSON.parse(output);
-        return parsed && typeof parsed === "object" && "valid" in parsed;
-      } catch {
-        return false;
-      }
-    });
-
-    expect(jsonOutput).toBeDefined();
-    const parsed = JSON.parse(jsonOutput as string);
-    expect(parsed).toHaveProperty("lockfilePath");
-    expect(parsed).toHaveProperty("lockfileVersion");
-    expect(parsed).toHaveProperty("totalVersions");
-    expect(parsed).toHaveProperty("versions");
-    expect(parsed).toHaveProperty("summary");
+    expect(capture.hasValidJson()).toBe(true);
+    const json = capture.json<{ lockfilePath: string; lockfileVersion: number; totalVersions: number }>();
+    expect(json).toHaveProperty("lockfilePath");
+    expect(json).toHaveProperty("lockfileVersion");
+    expect(json).toHaveProperty("totalVersions");
+    expect(json).toHaveProperty("versions");
+    expect(json).toHaveProperty("summary");
   });
 
   it("should show version information", async () => {
     const storePath = await testdir();
-    const consoleInfoSpy = vi.spyOn(console, "info");
 
     mockStoreApi({
       responses: {
@@ -193,7 +165,6 @@ describe("store status command", () => {
       },
     });
 
-    // Initialize with multiple versions
     await runCLI([
       "store",
       "init",
@@ -203,7 +174,7 @@ describe("store status command", () => {
       "15.1.0",
     ]);
 
-    consoleInfoSpy.mockClear();
+    capture.clear();
 
     await runCLI([
       "store",
@@ -212,8 +183,7 @@ describe("store status command", () => {
       storePath,
     ]);
 
-    const infoOutput = consoleInfoSpy.mock.calls.flat().join("\n");
-    expect(infoOutput).toContain("Version 16.0.0");
-    expect(infoOutput).toContain("Version 15.1.0");
+    expect(capture.containsInfo("Version 16.0.0")).toBe(true);
+    expect(capture.containsInfo("Version 15.1.0")).toBe(true);
   });
 });

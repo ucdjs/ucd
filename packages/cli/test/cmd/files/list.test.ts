@@ -1,35 +1,34 @@
+import type { ConsoleOutputCapture } from "../../__test-utils";
 import { mockStoreApi } from "#test-utils/mock-store";
 import { HttpResponse } from "#test-utils/msw";
 import { UNICODE_VERSION_METADATA } from "@unicode-utils/core";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { runCLI } from "../../../src/cli-utils";
+import { captureConsoleOutput } from "../../__test-utils";
 
 describe("files list command", () => {
+  let capture: ConsoleOutputCapture;
+
   beforeEach(() => {
-    vi.spyOn(console, "info").mockImplementation(() => {});
-    vi.spyOn(console, "error").mockImplementation(() => {});
-    vi.spyOn(console, "warn").mockImplementation(() => {});
+    capture = captureConsoleOutput();
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    capture.restore();
   });
 
   it("should show help when --help flag is passed", async () => {
-    const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-
+    const helpCapture = captureConsoleOutput();
     await runCLI(["files", "list", "--help"]);
 
-    expect(consoleLogSpy).toHaveBeenCalled();
-    const output = consoleLogSpy.mock.calls.flat().join("\n");
-    expect(output).toContain("List files and directories from the UCD API");
-    expect(output).toContain("--base-url");
-    expect(output).toContain("--json");
+    expect(helpCapture.contains("List files and directories from the UCD API")).toBe(true);
+    expect(helpCapture.contains("--base-url")).toBe(true);
+    expect(helpCapture.contains("--json")).toBe(true);
+
+    helpCapture.restore();
   });
 
   it("should list files from API", async () => {
-    const consoleInfoSpy = vi.spyOn(console, "info");
-
     mockStoreApi({
       responses: {
         "/api/v1/versions": UNICODE_VERSION_METADATA,
@@ -52,16 +51,12 @@ describe("files list command", () => {
       },
     });
 
-    // Use a path that matches the wildcard pattern
     await runCLI(["files", "list"]);
 
-    const infoOutput = consoleInfoSpy.mock.calls.flat().join("\n");
-    expect(infoOutput).toContain("Directory listing:");
+    expect(capture.containsInfo("Directory listing:")).toBe(true);
   });
 
   it("should list files at specific path", async () => {
-    const consoleInfoSpy = vi.spyOn(console, "info");
-
     mockStoreApi({
       responses: {
         "/api/v1/versions": UNICODE_VERSION_METADATA,
@@ -91,15 +86,11 @@ describe("files list command", () => {
 
     await runCLI(["files", "list", "16.0.0"]);
 
-    const infoOutput = consoleInfoSpy.mock.calls.flat().join("\n");
-    expect(infoOutput).toContain("Directory listing:");
-    expect(infoOutput).toContain("16.0.0");
+    expect(capture.containsInfo("Directory listing:")).toBe(true);
+    expect(capture.contains("16.0.0")).toBe(true);
   });
 
   it("should output JSON when --json flag is passed", async () => {
-    const consoleInfoSpy = vi.spyOn(console, "info");
-    const stdoutSpy = vi.spyOn(process.stdout, "write");
-
     mockStoreApi({
       responses: {
         "/api/v1/versions": UNICODE_VERSION_METADATA,
@@ -116,40 +107,23 @@ describe("files list command", () => {
       },
     });
 
-    // Use a path that matches the wildcard pattern
     await runCLI(["files", "list", "--json"]);
 
-    expect(consoleInfoSpy).not.toHaveBeenCalled();
-
-    // Find the JSON output in the console.info calls
-    const output = stdoutSpy.mock.calls.flat();
-    const jsonOutput = output.find((output) => {
-      if (typeof output !== "string") return false;
-      try {
-        const parsed = JSON.parse(output);
-        return Array.isArray(parsed);
-      } catch {
-        return false;
-      }
-    });
-
-    expect(jsonOutput).toBeDefined();
-    const parsed = JSON.parse(jsonOutput as string);
-    expect(Array.isArray(parsed)).toBe(true);
-    expect(parsed.length).toBeGreaterThan(0);
-    expect(parsed[0]).toHaveProperty("type");
-    expect(parsed[0]).toHaveProperty("name");
-    expect(parsed[0]).toHaveProperty("path");
+    expect(capture.hasValidJson()).toBe(true);
+    const json = capture.json<Array<{ type: string; name: string; path: string }>>();
+    expect(json).toBeDefined();
+    expect(json).toBeInstanceOf(Array);
+    expect(json!.length).toBeGreaterThan(0);
+    expect(json![0]).toHaveProperty("type");
+    expect(json![0]).toHaveProperty("name");
+    expect(json![0]).toHaveProperty("path");
   });
 
   it("should error when path is a file not a directory", async () => {
-    const consoleErrorSpy = vi.spyOn(console, "error");
-
     mockStoreApi({
       responses: {
         "/api/v1/versions": UNICODE_VERSION_METADATA,
         "/api/v1/files/{wildcard}": () => {
-          // Return string content (file) instead of array (directory)
           return HttpResponse.text("File content here");
         },
       },
@@ -157,13 +131,10 @@ describe("files list command", () => {
 
     await runCLI(["files", "list", "16.0.0/UnicodeData.txt"]);
 
-    const errorOutput = consoleErrorSpy.mock.calls.flat().join("\n");
-    expect(errorOutput).toContain("is a file, not a directory");
+    expect(capture.containsError("is a file, not a directory")).toBe(true);
   });
 
   it("should handle 404 error for non-existent path", async () => {
-    const consoleErrorSpy = vi.spyOn(console, "error");
-
     mockStoreApi({
       responses: {
         "/api/v1/versions": UNICODE_VERSION_METADATA,
@@ -177,7 +148,6 @@ describe("files list command", () => {
 
     await runCLI(["files", "list", "non-existent-path"]);
 
-    const errorOutput = consoleErrorSpy.mock.calls.flat().join("\n");
-    expect(errorOutput).toContain("Error fetching directory listing");
+    expect(capture.containsError("Error fetching directory listing")).toBe(true);
   });
 });

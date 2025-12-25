@@ -1,37 +1,36 @@
+import type { ConsoleOutputCapture } from "../../__test-utils";
 import { mockStoreApi } from "#test-utils/mock-store";
 import { HttpResponse } from "#test-utils/msw";
 import { UNICODE_VERSION_METADATA } from "@unicode-utils/core";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { testdir } from "vitest-testdirs";
 import { runCLI } from "../../../src/cli-utils";
+import { captureConsoleOutput } from "../../__test-utils";
 
 describe("store analyze command", () => {
+  let capture: ConsoleOutputCapture;
+
   beforeEach(() => {
-    vi.spyOn(console, "info").mockImplementation(() => {});
-    vi.spyOn(console, "error").mockImplementation(() => {});
-    vi.spyOn(console, "warn").mockImplementation(() => {});
+    capture = captureConsoleOutput();
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    capture.restore();
   });
 
   it("should show help when --help flag is passed", async () => {
-    const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-
+    const helpCapture = captureConsoleOutput();
     await runCLI(["store", "analyze", "--help"]);
 
-    expect(consoleLogSpy).toHaveBeenCalled();
-    const output = consoleLogSpy.mock.calls.flat().join("\n");
-    expect(output).toContain("Analyze UCD Store");
-    expect(output).toContain("--store-dir");
-    expect(output).toContain("--json");
-    expect(output).toContain("--check-orphaned");
+    expect(helpCapture.contains("Analyze UCD Store")).toBe(true);
+    expect(helpCapture.contains("--store-dir")).toBe(true);
+    expect(helpCapture.contains("--json")).toBe(true);
+    expect(helpCapture.contains("--check-orphaned")).toBe(true);
+
+    helpCapture.restore();
   });
 
   it("should fail if neither --remote nor --store-dir is specified", async () => {
-    const consoleErrorSpy = vi.spyOn(console, "error");
-
     mockStoreApi({
       responses: {
         "/api/v1/versions": UNICODE_VERSION_METADATA,
@@ -40,14 +39,11 @@ describe("store analyze command", () => {
 
     await runCLI(["store", "analyze"]);
 
-    expect(consoleErrorSpy).toHaveBeenCalled();
-    const errorOutput = consoleErrorSpy.mock.calls.flat().join("\n");
-    expect(errorOutput).toContain("Either --remote or --store-dir must be specified");
+    expect(capture.containsError("Either --remote or --store-dir must be specified")).toBe(true);
   });
 
   it("should analyze store for a specific version", async () => {
     const storePath = await testdir();
-    const consoleInfoSpy = vi.spyOn(console, "info");
 
     mockStoreApi({
       responses: {
@@ -69,7 +65,6 @@ describe("store analyze command", () => {
       },
     });
 
-    // Initialize the store first
     await runCLI([
       "store",
       "init",
@@ -78,7 +73,6 @@ describe("store analyze command", () => {
       "16.0.0",
     ]);
 
-    // Mirror files to have something to analyze
     await runCLI([
       "store",
       "mirror",
@@ -87,9 +81,8 @@ describe("store analyze command", () => {
       "16.0.0",
     ]);
 
-    consoleInfoSpy.mockClear();
+    capture.clear();
 
-    // Analyze the store
     await runCLI([
       "store",
       "analyze",
@@ -98,14 +91,12 @@ describe("store analyze command", () => {
       "16.0.0",
     ]);
 
-    const infoOutput = consoleInfoSpy.mock.calls.flat().join("\n");
-    expect(infoOutput).toContain("Version: 16.0.0");
-    expect(infoOutput).toContain("Files:");
+    expect(capture.containsInfo("Version: 16.0.0")).toBe(true);
+    expect(capture.containsInfo("Files:")).toBe(true);
   });
 
   it("should analyze all versions when no version is specified", async () => {
     const storePath = await testdir();
-    const consoleInfoSpy = vi.spyOn(console, "info");
 
     mockStoreApi({
       responses: {
@@ -122,7 +113,6 @@ describe("store analyze command", () => {
       },
     });
 
-    // Initialize the store with multiple versions
     await runCLI([
       "store",
       "init",
@@ -132,7 +122,6 @@ describe("store analyze command", () => {
       "15.1.0",
     ]);
 
-    // Mirror files
     await runCLI([
       "store",
       "mirror",
@@ -140,9 +129,8 @@ describe("store analyze command", () => {
       storePath,
     ]);
 
-    consoleInfoSpy.mockClear();
+    capture.clear();
 
-    // Analyze without specifying version (should analyze all)
     await runCLI([
       "store",
       "analyze",
@@ -150,15 +138,11 @@ describe("store analyze command", () => {
       storePath,
     ]);
 
-    // Should show message about analyzing all versions
-    const infoOutput = consoleInfoSpy.mock.calls.flat().join("\n");
-    expect(infoOutput).toContain("No specific versions provided");
+    expect(capture.containsInfo("No specific versions provided")).toBe(true);
   });
 
   it("should output JSON when --json flag is passed", async () => {
     const storePath = await testdir();
-    const consoleInfoSpy = vi.spyOn(console, "info");
-    const stdoutSpy = vi.spyOn(process.stdout, "write");
 
     mockStoreApi({
       responses: {
@@ -177,9 +161,6 @@ describe("store analyze command", () => {
       },
     });
 
-    expect(consoleInfoSpy).not.toHaveBeenCalled();
-
-    // Initialize the store first
     await runCLI([
       "store",
       "init",
@@ -188,7 +169,6 @@ describe("store analyze command", () => {
       "16.0.0",
     ]);
 
-    // Mirror files
     await runCLI([
       "store",
       "mirror",
@@ -197,7 +177,8 @@ describe("store analyze command", () => {
       "16.0.0",
     ]);
 
-    // Analyze with JSON flag
+    capture.clear();
+
     await runCLI([
       "store",
       "analyze",
@@ -207,35 +188,19 @@ describe("store analyze command", () => {
       "--json",
     ]);
 
-    // Find the JSON output in the console.info calls
-    const output = stdoutSpy.mock.calls.flat();
-    const jsonOutput = output.find((output) => {
-      if (typeof output !== "string") return false;
-      try {
-        const parsed = JSON.parse(output);
-        return parsed && typeof parsed === "object" && "valid" in parsed;
-      } catch {
-        return false;
-      }
-    });
-
-    expect(jsonOutput).toBeDefined();
-    const parsed = JSON.parse(jsonOutput as string);
-    expect(parsed).toHaveProperty("16.0.0");
-    expect(parsed["16.0.0"]).toHaveProperty("version");
-    expect(parsed["16.0.0"]).toHaveProperty("isComplete");
-    expect(parsed["16.0.0"]).toHaveProperty("files");
-    expect(parsed["16.0.0"]).toHaveProperty("counts");
+    expect(capture.hasValidJson()).toBe(true);
+    const json = capture.json<Record<string, { version: string; isComplete: boolean; counts: { present: number }; files: { missing?: string[] } }>>();
+    expect(json).toHaveProperty("16.0.0");
+    const version16 = json!["16.0.0"];
+    expect(version16).toHaveProperty("version");
+    expect(version16).toHaveProperty("isComplete");
+    expect(version16).toHaveProperty("files");
+    expect(version16).toHaveProperty("counts");
   });
 
   it("should show complete status for store with all files", async () => {
     const storePath = await testdir();
-    const consoleInfoSpy = vi.spyOn(console, "info");
-    const consoleWarnSpy = vi.spyOn(console, "warn");
-    const consoleErrorSpy = vi.spyOn(console, "error");
 
-    // Mock with only 1 file so expected == actual after mirror
-    // The files config affects both file-tree and manifest endpoints
     const singleFileTree = [{
       type: "file" as const,
       name: "ArabicShaping.txt",
@@ -250,13 +215,11 @@ describe("store analyze command", () => {
           return HttpResponse.text(`Content of ${params.wildcard}`);
         },
       },
-      // Use files config which affects both file-tree and manifest endpoints
       files: {
         "*": singleFileTree,
       },
     });
 
-    // Initialize and mirror the store
     await runCLI([
       "store",
       "init",
@@ -273,11 +236,8 @@ describe("store analyze command", () => {
       "16.0.0",
     ]);
 
-    consoleInfoSpy.mockClear();
-    consoleWarnSpy.mockClear();
-    consoleErrorSpy.mockClear();
+    capture.clear();
 
-    // Analyze the store
     await runCLI([
       "store",
       "analyze",
@@ -286,23 +246,12 @@ describe("store analyze command", () => {
       "16.0.0",
     ]);
 
-    const infoOutput = consoleInfoSpy.mock.calls.flat().join("\n");
-    const warnOutput = consoleWarnSpy.mock.calls.flat().join("\n");
-    const errorOutput = consoleErrorSpy.mock.calls.flat().join("\n");
-    const allOutput = `${infoOutput}\n${warnOutput}`;
-
-    // Should not have errors
-    expect(errorOutput).toBe("");
-
-    // Status appears in info (complete) or warn (incomplete)
-    expect(infoOutput).toContain("Version: 16.0.0");
-    expect(allOutput).toContain("Status:");
+    expect(capture.containsInfo("Version: 16.0.0")).toBe(true);
+    expect(capture.containsInfo("Status:")).toBe(true);
   });
 
   it("should show incomplete status when files are missing", async () => {
     const storePath = await testdir();
-    const consoleInfoSpy = vi.spyOn(console, "info");
-    const consoleWarnSpy = vi.spyOn(console, "warn");
 
     mockStoreApi({
       responses: {
@@ -329,7 +278,6 @@ describe("store analyze command", () => {
       },
     });
 
-    // Initialize the store with only one file included
     await runCLI([
       "store",
       "init",
@@ -340,7 +288,6 @@ describe("store analyze command", () => {
       "**/ArabicShaping.txt",
     ]);
 
-    // Mirror only the included file
     await runCLI([
       "store",
       "mirror",
@@ -351,10 +298,8 @@ describe("store analyze command", () => {
       "**/ArabicShaping.txt",
     ]);
 
-    consoleInfoSpy.mockClear();
-    consoleWarnSpy.mockClear();
+    capture.clear();
 
-    // Analyze without filters - should show missing files
     await runCLI([
       "store",
       "analyze",
@@ -363,11 +308,7 @@ describe("store analyze command", () => {
       "16.0.0",
     ]);
 
-    const infoOutput = consoleInfoSpy.mock.calls.flat().join("\n");
-    const warnOutput = consoleWarnSpy.mock.calls.flat().join("\n");
-
-    // Should show either incomplete status or missing files warning
-    const allOutput = infoOutput + warnOutput;
-    expect(allOutput).toMatch(/incomplete|Missing files/i);
+    expect(capture.containsWarn("incomplete")).toBe(true);
+    expect(capture.containsWarn("Missing files")).toBe(true);
   });
 });

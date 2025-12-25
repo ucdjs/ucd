@@ -1,38 +1,37 @@
+import type { ConsoleOutputCapture } from "../../__test-utils";
 import { mockStoreApi } from "#test-utils/mock-store";
 import { HttpResponse } from "#test-utils/msw";
 import { UNICODE_VERSION_METADATA } from "@unicode-utils/core";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { testdir } from "vitest-testdirs";
 import { runCLI } from "../../../src/cli-utils";
+import { captureConsoleOutput } from "../../__test-utils";
 
 describe("store sync command", () => {
+  let capture: ConsoleOutputCapture;
+
   beforeEach(() => {
-    vi.spyOn(console, "info").mockImplementation(() => {});
-    vi.spyOn(console, "error").mockImplementation(() => {});
-    vi.spyOn(console, "warn").mockImplementation(() => {});
+    capture = captureConsoleOutput();
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    capture.restore();
   });
 
   it("should show help when --help flag is passed", async () => {
-    const consoleLogSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-
+    const helpCapture = captureConsoleOutput();
     await runCLI(["store", "sync", "--help"]);
 
-    expect(consoleLogSpy).toHaveBeenCalled();
-    const output = consoleLogSpy.mock.calls.flat().join("\n");
-    expect(output).toContain("Sync lockfile with API and mirror files");
-    expect(output).toContain("--store-dir");
-    expect(output).toContain("--concurrency");
-    expect(output).toContain("--remove-unavailable");
-    expect(output).toContain("--clean");
+    expect(helpCapture.contains("Sync lockfile with API and mirror files")).toBe(true);
+    expect(helpCapture.contains("--store-dir")).toBe(true);
+    expect(helpCapture.contains("--concurrency")).toBe(true);
+    expect(helpCapture.contains("--remove-unavailable")).toBe(true);
+    expect(helpCapture.contains("--clean")).toBe(true);
+
+    helpCapture.restore();
   });
 
   it("should fail if neither --remote nor --store-dir is specified", async () => {
-    const consoleErrorSpy = vi.spyOn(console, "error");
-
     mockStoreApi({
       responses: {
         "/api/v1/versions": UNICODE_VERSION_METADATA,
@@ -41,14 +40,10 @@ describe("store sync command", () => {
 
     await runCLI(["store", "sync"]);
 
-    expect(consoleErrorSpy).toHaveBeenCalled();
-    const errorOutput = consoleErrorSpy.mock.calls.flat().join("\n");
-    expect(errorOutput).toContain("Either --remote or --store-dir must be specified");
+    expect(capture.containsError("Either --remote or --store-dir must be specified")).toBe(true);
   });
 
   it("should fail if --remote is used (sync requires local store)", async () => {
-    const consoleErrorSpy = vi.spyOn(console, "error");
-
     mockStoreApi({
       responses: {
         "/api/v1/versions": UNICODE_VERSION_METADATA,
@@ -57,14 +52,11 @@ describe("store sync command", () => {
 
     await runCLI(["store", "sync", "--remote"]);
 
-    expect(consoleErrorSpy).toHaveBeenCalled();
-    const errorOutput = consoleErrorSpy.mock.calls.flat().join("\n");
-    expect(errorOutput).toContain("Sync operation requires a local store directory");
+    expect(capture.containsError("Sync operation requires a local store directory")).toBe(true);
   });
 
   it("should sync store for specific versions", async () => {
     const storePath = await testdir();
-    const consoleInfoSpy = vi.spyOn(console, "info");
 
     mockStoreApi({
       responses: {
@@ -83,7 +75,6 @@ describe("store sync command", () => {
       },
     });
 
-    // Initialize the store first
     await runCLI([
       "store",
       "init",
@@ -92,9 +83,8 @@ describe("store sync command", () => {
       "16.0.0",
     ]);
 
-    consoleInfoSpy.mockClear();
+    capture.clear();
 
-    // Sync the store
     await runCLI([
       "store",
       "sync",
@@ -103,15 +93,13 @@ describe("store sync command", () => {
       "16.0.0",
     ]);
 
-    const infoOutput = consoleInfoSpy.mock.calls.flat().join("\n");
-    expect(infoOutput).toContain("Starting sync operation");
-    expect(infoOutput).toContain("Syncing 1 version(s)");
-    expect(infoOutput).toContain("16.0.0");
+    expect(capture.containsInfo("Starting sync operation")).toBe(true);
+    expect(capture.containsInfo("Syncing 1 version(s)")).toBe(true);
+    expect(capture.containsInfo("16.0.0")).toBe(true);
   });
 
   it("should sync all versions when no version is specified", async () => {
     const storePath = await testdir();
-    const consoleInfoSpy = vi.spyOn(console, "info");
 
     mockStoreApi({
       responses: {
@@ -130,7 +118,6 @@ describe("store sync command", () => {
       },
     });
 
-    // Initialize the store with multiple versions
     await runCLI([
       "store",
       "init",
@@ -140,9 +127,8 @@ describe("store sync command", () => {
       "15.1.0",
     ]);
 
-    consoleInfoSpy.mockClear();
+    capture.clear();
 
-    // Sync without specifying versions
     await runCLI([
       "store",
       "sync",
@@ -150,14 +136,12 @@ describe("store sync command", () => {
       storePath,
     ]);
 
-    const infoOutput = consoleInfoSpy.mock.calls.flat().join("\n");
-    expect(infoOutput).toContain("Starting sync operation");
-    expect(infoOutput).toContain("Syncing all versions in lockfile");
+    expect(capture.containsInfo("Starting sync operation")).toBe(true);
+    expect(capture.containsInfo("Syncing all versions in lockfile")).toBe(true);
   });
 
   it("should show success message after sync", async () => {
     const storePath = await testdir();
-    const consoleInfoSpy = vi.spyOn(console, "info");
 
     mockStoreApi({
       responses: {
@@ -176,7 +160,6 @@ describe("store sync command", () => {
       },
     });
 
-    // Initialize and sync the store
     await runCLI([
       "store",
       "init",
@@ -185,7 +168,7 @@ describe("store sync command", () => {
       "16.0.0",
     ]);
 
-    consoleInfoSpy.mockClear();
+    capture.clear();
 
     await runCLI([
       "store",
@@ -195,13 +178,11 @@ describe("store sync command", () => {
       "16.0.0",
     ]);
 
-    const infoOutput = consoleInfoSpy.mock.calls.flat().join("\n");
-    expect(infoOutput).toContain("Sync completed successfully");
+    expect(capture.containsInfo("Sync completed successfully")).toBe(true);
   });
 
   it("should display mirror results after sync", async () => {
     const storePath = await testdir();
-    const consoleInfoSpy = vi.spyOn(console, "info");
 
     mockStoreApi({
       responses: {
@@ -220,7 +201,6 @@ describe("store sync command", () => {
       },
     });
 
-    // Initialize the store
     await runCLI([
       "store",
       "init",
@@ -229,9 +209,8 @@ describe("store sync command", () => {
       "16.0.0",
     ]);
 
-    consoleInfoSpy.mockClear();
+    capture.clear();
 
-    // Sync the store
     await runCLI([
       "store",
       "sync",
@@ -240,8 +219,6 @@ describe("store sync command", () => {
       "16.0.0",
     ]);
 
-    const infoOutput = consoleInfoSpy.mock.calls.flat().join("\n");
-    // Should show either Summary or version count info
-    expect(infoOutput).toContain("Total versions in lockfile:");
+    expect(capture.containsInfo("Total versions in lockfile:")).toBe(true);
   });
 });
