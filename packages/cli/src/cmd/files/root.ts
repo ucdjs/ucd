@@ -12,6 +12,7 @@ export interface CLIFilesCmdOptions {
 const FILES_SUBCOMMANDS = [
   "list",
   "get",
+  "info",
 ] as const;
 export type Subcommand = (typeof FILES_SUBCOMMANDS)[number];
 
@@ -28,6 +29,7 @@ export async function runFilesRoot(subcommand: string, { flags }: CLIFilesCmdOpt
         Commands: [
           ["list", "List files and directories from the UCD API."],
           ["get", "Get a specific file from the UCD API."],
+          ["info", "Get metadata about a file or directory."],
         ],
         Flags: [
           ["--base-url", "Base URL for the UCD API (defaults to api.ucdjs.dev)."],
@@ -56,6 +58,18 @@ export async function runFilesRoot(subcommand: string, { flags }: CLIFilesCmdOpt
     // Join path parts in case path was split (e.g., if it contains spaces)
     const path = pathParts.length > 0 ? pathParts.join(" ") : "";
     await runFilesGet({
+      path,
+      flags: flags as CLIFilesCmdOptions["flags"],
+    });
+    return;
+  }
+
+  if (subcommand === "info") {
+    const { runFilesInfo } = await import("./info");
+    const pathParts = flags._.slice(2) as string[];
+    // Join path parts in case path was split (e.g., if it contains spaces)
+    const path = pathParts.length > 0 ? pathParts.join(" ") : "";
+    await runFilesInfo({
       path,
       flags: flags as CLIFilesCmdOptions["flags"],
     });
