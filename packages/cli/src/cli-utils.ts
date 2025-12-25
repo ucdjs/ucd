@@ -14,6 +14,43 @@ import {
 import yargs from "yargs-parser";
 import pkg from "../package.json" with { type: "json" };
 
+/**
+ * Redirects console.info and console.log to stderr when --json flag is used.
+ * This ensures that only structured JSON output goes to stdout, making the CLI
+ * suitable for piping and scripting.
+ *
+ * @param {boolean} jsonMode - Whether to enable JSON mode (redirect to stderr)
+ * @returns {() => void} A cleanup function to restore original console methods
+ */
+export function setupConsoleForJsonMode(jsonMode: boolean): () => void {
+  if (!jsonMode) {
+    return () => {};
+  }
+
+  // eslint-disable-next-line no-console
+  const originalInfo = console.info.bind(console);
+  // eslint-disable-next-line no-console
+  const originalLog = console.log.bind(console);
+
+  // Redirect console.info and console.log to stderr in JSON mode
+  // eslint-disable-next-line no-console
+  console.info = (...args: unknown[]) => {
+    console.error(...args);
+  };
+  // eslint-disable-next-line no-console
+  console.log = (...args: unknown[]) => {
+    console.error(...args);
+  };
+
+  // Return cleanup function to restore original methods
+  return () => {
+    // eslint-disable-next-line no-console
+    console.info = originalInfo;
+    // eslint-disable-next-line no-console
+    console.log = originalLog;
+  };
+}
+
 type CLICommand
   = | "help"
     | "version"
@@ -248,16 +285,22 @@ export function parseFlags(args: string[]) {
 }
 
 export async function runCLI(args: string[]): Promise<void> {
+  const flags = parseFlags(args);
+
+  // makes it easier to identify the process via activity monitor or other tools
+  process.title = "ucd-cli";
+
+  // Setup console redirection for JSON mode and get cleanup function
+  const cleanupConsole = setupConsoleForJsonMode(!!flags.json);
+
   try {
-    const flags = parseFlags(args);
-
-    // makes it easier to identify the process via activity monitor or other tools
-    process.title = "ucd-cli";
-
     const cmd = resolveCommand(flags);
     await runCommand(cmd, flags);
   } catch (err) {
     console.error(err);
     process.exit(1);
+  } finally {
+    // Restore original console methods
+    cleanupConsole();
   }
 }
