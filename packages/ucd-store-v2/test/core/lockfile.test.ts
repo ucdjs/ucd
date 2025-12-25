@@ -123,6 +123,11 @@ describe("readLockfile", () => {
           totalSize: 980000,
         },
       },
+      filters: {
+        disableDefaultExclusions: false,
+        exclude: [],
+        include: [],
+      },
     };
 
     await fs.write!(lockfilePath, JSON.stringify(lockfile));
@@ -208,6 +213,11 @@ describe("readLockfile", () => {
           totalSize: 1024000,
         },
       },
+      filters: {
+        disableDefaultExclusions: false,
+        exclude: [],
+        include: [],
+      },
     };
 
     await fs.write!(lockfilePath, JSON.stringify(lockfile));
@@ -239,6 +249,11 @@ describe("readLockfile", () => {
           totalSize: 950000,
         },
       },
+      filters: {
+        disableDefaultExclusions: false,
+        exclude: [],
+        include: [],
+      },
     };
 
     await fs.write!(lockfilePath, JSON.stringify(lockfile));
@@ -261,6 +276,11 @@ describe("readLockfileOrDefault", () => {
           fileCount: 100,
           totalSize: 1024000,
         },
+      },
+      filters: {
+        disableDefaultExclusions: false,
+        exclude: [],
+        include: [],
       },
     };
 
