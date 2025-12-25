@@ -924,26 +924,30 @@ describe("mockStoreApi", () => {
       const beforeHook = vi.fn();
       const afterHook = vi.fn();
 
+      const version16 = {
+        version: "16.0.0",
+        documentationUrl: "https://www.unicode.org/versions/Unicode16.0.0/",
+        date: "2024",
+        url: "https://www.unicode.org/Public/16.0.0",
+        mappedUcdVersion: null,
+        type: "stable",
+      } as const;
+
+      const version15 = {
+        version: "15.1.0",
+        documentationUrl: "https://www.unicode.org/versions/Unicode15.1.0/",
+        date: "2023",
+        url: "https://www.unicode.org/Public/15.1.0",
+        mappedUcdVersion: null,
+        type: "stable",
+      } as const;
+
       mockStoreApi({
         responses: {
           "/api/v1/versions": configure({
             response: [
-              {
-                version: "16.0.0",
-                documentationUrl: "https://www.unicode.org/versions/Unicode16.0.0/",
-                date: "2024",
-                url: "https://www.unicode.org/Public/16.0.0",
-                mappedUcdVersion: null,
-                type: "stable",
-              },
-              {
-                version: "15.1.0",
-                documentationUrl: "https://www.unicode.org/versions/Unicode15.1.0/",
-                date: "2023",
-                url: "https://www.unicode.org/Public/15.1.0",
-                mappedUcdVersion: null,
-                type: "stable",
-              },
+              version16,
+              version15,
             ],
             before: beforeHook,
             after: afterHook,
@@ -952,10 +956,12 @@ describe("mockStoreApi", () => {
       });
 
       const response = await fetch("https://api.ucdjs.dev/api/v1/versions");
-      const data = await response.json();
+      const [v16, v15] = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data).toEqual(["16.0.0", "15.1.0"]);
+      expect(v16).toEqual(version16);
+      expect(v15).toEqual(version15);
+
       expect(beforeHook).toHaveBeenCalledTimes(1);
       expect(afterHook).toHaveBeenCalledTimes(1);
       expect(beforeHook).toHaveBeenCalledWith(
@@ -977,18 +983,20 @@ describe("mockStoreApi", () => {
       const beforeHook = vi.fn();
       const afterHook = vi.fn();
 
+      const version16 = {
+        version: "16.0.0",
+        documentationUrl: "https://www.unicode.org/versions/Unicode16.0.0/",
+        date: "2024",
+        url: "https://www.unicode.org/Public/16.0.0",
+        mappedUcdVersion: null,
+        type: "stable",
+      } as const;
+
       mockStoreApi({
         responses: {
           "/api/v1/versions": configure({
             response: [
-              {
-                version: "16.0.0",
-                documentationUrl: "https://www.unicode.org/versions/Unicode16.0.0/",
-                date: "2024",
-                url: "https://www.unicode.org/Public/16.0.0",
-                mappedUcdVersion: null,
-                type: "stable",
-              },
+              version16,
             ],
             latency: 50,
             headers: { "X-Custom": "value" },
@@ -1001,10 +1009,10 @@ describe("mockStoreApi", () => {
       const start = Date.now();
       const response = await fetch("https://api.ucdjs.dev/api/v1/versions");
       const elapsed = Date.now() - start;
-      const data = await response.json();
+      const [v16] = await response.json();
 
       expect(response.status).toBe(200);
-      expect(data).toEqual(["16.0.0"]);
+      expect(v16).toEqual(version16);
       expect(elapsed).toBeGreaterThanOrEqual(45);
       expect(response.headers.get("X-Custom")).toBe("value");
       expect(beforeHook).toHaveBeenCalledTimes(1);
