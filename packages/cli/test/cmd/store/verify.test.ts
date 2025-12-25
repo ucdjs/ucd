@@ -112,6 +112,7 @@ describe("store verify command", () => {
   it("should output JSON when --json flag is passed", async () => {
     const storePath = await testdir();
     const consoleInfoSpy = vi.spyOn(console, "info");
+    const stdoutSpy = vi.spyOn(process.stdout, "write");
 
     mockStoreApi({
       responses: {
@@ -130,6 +131,8 @@ describe("store verify command", () => {
       },
     });
 
+    expect(consoleInfoSpy).not.toHaveBeenCalled();
+
     // Initialize the store first
     await runCLI([
       "store",
@@ -138,8 +141,6 @@ describe("store verify command", () => {
       storePath,
       "16.0.0",
     ]);
-
-    consoleInfoSpy.mockClear();
 
     // Verify with JSON flag
     await runCLI([
@@ -151,8 +152,8 @@ describe("store verify command", () => {
     ]);
 
     // Find the JSON output in the console.info calls
-    const infoOutputs = consoleInfoSpy.mock.calls.flat();
-    const jsonOutput = infoOutputs.find((output) => {
+    const output = stdoutSpy.mock.calls.flat();
+    const jsonOutput = output.find((output) => {
       if (typeof output !== "string") return false;
       try {
         const parsed = JSON.parse(output);

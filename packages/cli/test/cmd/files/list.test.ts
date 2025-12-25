@@ -98,6 +98,7 @@ describe("files list command", () => {
 
   it("should output JSON when --json flag is passed", async () => {
     const consoleInfoSpy = vi.spyOn(console, "info");
+    const stdoutSpy = vi.spyOn(process.stdout, "write");
 
     mockStoreApi({
       responses: {
@@ -118,9 +119,11 @@ describe("files list command", () => {
     // Use a path that matches the wildcard pattern
     await runCLI(["files", "list", "--json"]);
 
+    expect(consoleInfoSpy).not.toHaveBeenCalled();
+
     // Find the JSON output in the console.info calls
-    const infoOutputs = consoleInfoSpy.mock.calls.flat();
-    const jsonOutput = infoOutputs.find((output) => {
+    const output = stdoutSpy.mock.calls.flat();
+    const jsonOutput = output.find((output) => {
       if (typeof output !== "string") return false;
       try {
         const parsed = JSON.parse(output);

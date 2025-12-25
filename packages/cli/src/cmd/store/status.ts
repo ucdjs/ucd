@@ -2,6 +2,7 @@
 import type { Prettify } from "@luxass/utils";
 import type { CLIArguments } from "../../cli-utils";
 import type { CLIStoreCmdSharedFlags } from "./_shared";
+import process from "node:process";
 import { createDebugger } from "@ucdjs-internal/shared";
 import { createUCDClient } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
@@ -133,7 +134,7 @@ export async function runStatusStore({ flags }: CLIStoreStatusCmdOptions) {
     const availableCount = versionStatuses.filter((s) => s.isAvailableInAPI).length;
 
     if (json) {
-      console.info(JSON.stringify({
+      process.stdout.write(JSON.stringify({
         storePath: storeDir,
         lockfilePath,
         lockfileVersion: lockfile.lockfileVersion,
