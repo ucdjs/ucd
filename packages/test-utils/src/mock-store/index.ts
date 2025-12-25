@@ -156,10 +156,10 @@ export function mockStoreApi(config?: MockStoreConfig): void {
 function toMSWPath(endpoint: string): string {
   return endpoint.replace(/\{(\w+)\}/g, (_, p1) => {
     // This plays nicely with the change we made
-    // for :wildcard+ in our wrap mock fetch logic
+    // for :wildcard* in our wrap mock fetch logic
     // https://github.com/ucdjs/ucd/blob/c662bec8429c98e5fd98942e2c12f0e6fd479d51/packages/test-utils/src/mock-store/utils.ts#L94-L105
     if (p1 === "wildcard") {
-      return `:${p1}+`;
+      return `:${p1}*`;
     }
 
     return `:${p1}`;
