@@ -1,5 +1,6 @@
 import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
+import { PathTraversalError } from "@ucdjs/path-utils";
 import { describe, expect, it } from "vitest";
 import { createFilesResource } from "../../src/resources/files";
 
@@ -152,6 +153,70 @@ describe("createFilesResource", () => {
         },
       });
       const { data, error } = await filesResource.get("16.0.0/ucd/UnicodeData.txt");
+
+      expect(error).toBeNull();
+      expect(data).toBe(fileContent);
+    });
+  });
+
+  describe("path traversal protection", () => {
+    it("should reject paths with .. that traverse outside the endpoint", async () => {
+      const filesResource = createFilesResource({ baseUrl, endpoints });
+
+      // "../../../etc/passwd" from "/api/v1/files" resolves to "/etc/passwd"
+      // which is outside "/api/v1/files", so it should be rejected
+      const { data, error } = await filesResource.get("../../../etc/passwd");
+
+      expect(data).toBeNull();
+      expect(error).toBeInstanceOf(PathTraversalError);
+    });
+
+    it("should reject paths that try to access parent directories", async () => {
+      const filesResource = createFilesResource({ baseUrl, endpoints });
+
+      const { data, error } = await filesResource.get("16.0.0/../../secrets/api-key");
+
+      expect(data).toBeNull();
+      expect(error).toBeInstanceOf(PathTraversalError);
+    });
+
+    it("should reject encoded path traversal attempts", async () => {
+      const filesResource = createFilesResource({ baseUrl, endpoints });
+
+      // URL encoded ".." sequences
+      const { data, error } = await filesResource.get("..%2F..%2F..%2Fetc%2Fpasswd");
+
+      expect(data).toBeNull();
+      expect(error).toBeInstanceOf(PathTraversalError);
+    });
+
+    it("should allow valid nested paths", async () => {
+      const fileContent = "Valid nested content";
+
+      mockFetch([
+        ["GET", `${baseUrl}${endpoints.files}/16.0.0/ucd/auxiliary/data.txt`, () => {
+          return HttpResponse.text(fileContent);
+        }],
+      ]);
+
+      const filesResource = createFilesResource({ baseUrl, endpoints });
+      const { data, error } = await filesResource.get("16.0.0/ucd/auxiliary/data.txt");
+
+      expect(error).toBeNull();
+      expect(data).toBe(fileContent);
+    });
+
+    it("should allow paths that contain .. in file/directory names (not as traversal)", async () => {
+      const fileContent = "File with dots";
+
+      mockFetch([
+        ["GET", `${baseUrl}${endpoints.files}/16.0.0/ucd/test..file.txt`, () => {
+          return HttpResponse.text(fileContent);
+        }],
+      ]);
+
+      const filesResource = createFilesResource({ baseUrl, endpoints });
+      const { data, error } = await filesResource.get("16.0.0/ucd/test..file.txt");
 
       expect(error).toBeNull();
       expect(data).toBe(fileContent);
