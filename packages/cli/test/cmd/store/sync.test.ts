@@ -19,16 +19,13 @@ describe("store sync command", () => {
   });
 
   it("should show help when --help flag is passed", async () => {
-    const helpCapture = captureConsoleOutput();
     await runCLI(["store", "sync", "--help"]);
 
-    expect(helpCapture.contains("Sync lockfile with API and mirror files")).toBe(true);
-    expect(helpCapture.contains("--store-dir")).toBe(true);
-    expect(helpCapture.contains("--concurrency")).toBe(true);
-    expect(helpCapture.contains("--remove-unavailable")).toBe(true);
-    expect(helpCapture.contains("--clean")).toBe(true);
-
-    helpCapture.restore();
+    expect(capture.containsInfo("Sync lockfile with API and mirror files")).toBe(true);
+    expect(capture.containsInfo("--store-dir")).toBe(true);
+    expect(capture.containsInfo("--concurrency")).toBe(true);
+    expect(capture.containsInfo("--remove-unavailable")).toBe(true);
+    expect(capture.containsInfo("--clean")).toBe(true);
   });
 
   it("should fail if neither --remote nor --store-dir is specified", async () => {

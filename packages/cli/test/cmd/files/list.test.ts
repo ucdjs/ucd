@@ -18,14 +18,11 @@ describe("files list command", () => {
   });
 
   it("should show help when --help flag is passed", async () => {
-    const helpCapture = captureConsoleOutput();
     await runCLI(["files", "list", "--help"]);
 
-    expect(helpCapture.contains("List files and directories from the UCD API")).toBe(true);
-    expect(helpCapture.contains("--base-url")).toBe(true);
-    expect(helpCapture.contains("--json")).toBe(true);
-
-    helpCapture.restore();
+    expect(capture.containsInfo("List files and directories from the UCD API")).toBe(true);
+    expect(capture.containsInfo("--base-url")).toBe(true);
+    expect(capture.containsInfo("--json")).toBe(true);
   });
 
   it("should list files from API", async () => {
