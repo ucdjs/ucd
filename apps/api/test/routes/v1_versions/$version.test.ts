@@ -27,7 +27,8 @@ beforeEach(() => {
 });
 
 describe("v1_versions", () => {
-  describe("gET /api/v1/versions/{version}/file-tree", () => {
+  // eslint-disable-next-line test/prefer-lowercase-title
+  describe("GET /api/v1/versions/{version}/file-tree", () => {
     const files: TraverseEntry[] = [
       { type: "file", name: "file1.txt", path: "Public/15.1.0/ucd/file1.txt" },
       { type: "file", name: "file2.txt", path: "Public/15.1.0/ucd/file2.txt" },
