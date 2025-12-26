@@ -3,11 +3,11 @@ import { fileURLToPath } from "node:url";
 import { defineConfig, type TestProjectConfiguration } from "vitest/config";
 import { aliases } from "./vitest.aliases";
 
-const pkgRoot = (pkg: string) =>
-  fileURLToPath(new URL(`./packages/${pkg}`, import.meta.url));
+const pkgRoot = (root: string, pkg: string) =>
+  fileURLToPath(new URL(`./${root}/${pkg}`, import.meta.url));
 
 const packageProjects = readdirSync(fileURLToPath(new URL("./packages", import.meta.url)))
-  .filter((dir) => existsSync(pkgRoot(dir) + "/package.json"))
+  .filter((dir) => existsSync(pkgRoot("packages", dir) + "/package.json"))
   .map((dir) => {
     return {
       extends: true,
@@ -21,18 +21,24 @@ const packageProjects = readdirSync(fileURLToPath(new URL("./packages", import.m
     } satisfies TestProjectConfiguration;
   });
 
-// const workerUnitProjects = readdirSync(fileURLToPath(new URL("./apps", import.meta.url)))
-//   .map((dir) => {
-//     return {
-//       extends: true,
-//       test: {
-//         include: [
-//           `./apps/${dir}/test/unit/**/*.{test,spec}.?(c|m)[jt]s?(x)`,
-//         ],
-//         name: `${dir}:unit`,
-//       },
-//     } satisfies TestProjectConfiguration;
-//   });
+const appProjects = readdirSync(fileURLToPath(new URL("./apps", import.meta.url)))
+  .filter((dir) => existsSync(pkgRoot("apps", dir) + "/package.json"))
+  .map((dir) => {
+    if (dir === "api") {
+      return `./apps/${dir}/vitest.config.ts`
+    }
+
+    return {
+      extends: true,
+      test: {
+        dir: `./apps/${dir}/test`,
+        include: [
+          "**/*.{test,spec}.?(c|m)[jt]s?(x)",
+        ],
+        name: dir,
+      },
+    } satisfies TestProjectConfiguration;
+  });
 
 const hiddenLogs: string[] = [];
 
@@ -59,8 +65,7 @@ export default defineConfig({
     },
     projects: [
       ...packageProjects,
-      // ...workerUnitProjects,
-      // "./apps/api/vitest.config.worker.ts",
+      ...appProjects,
     ]
   },
   esbuild: { target: "es2020" },
