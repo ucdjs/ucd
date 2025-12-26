@@ -2,7 +2,7 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { RawDataFile } from "@luxass/unicode-utils-old";
-import { MockLanguageModelV2 } from "ai/test";
+import { MockLanguageModelV3 } from "ai/test";
 import { describe, expect, it } from "vitest";
 import { generateFields } from "../src/fields";
 
@@ -13,10 +13,22 @@ describe("generateFields", () => {
   it("should return null when datafile has no heading", async () => {
     const result = await generateFields({
       datafile: new RawDataFile("TEST", "TEST"),
-      model: new MockLanguageModelV2({
+      model: new MockLanguageModelV3({
         doGenerate: async () => ({
-          finishReason: "stop",
-          usage: { inputTokens: 5000, outputTokens: 20, totalTokens: 5020 },
+          finishReason: { raw: undefined, unified: "stop" },
+          usage: {
+            inputTokens: {
+              total: 5000,
+              noCache: 5000,
+              cacheRead: undefined,
+              cacheWrite: undefined,
+            },
+            outputTokens: {
+              total: 20,
+              text: 20,
+              reasoning: undefined,
+            },
+          },
           warnings: [],
           content: [{ type: "text", text: `{"fields": []}` }],
         }),
@@ -39,10 +51,22 @@ describe("generateFields", () => {
 
     const result = await generateFields({
       datafile: new RawDataFile(arabicShapingContent, "ArabicShaping"),
-      model: new MockLanguageModelV2({
+      model: new MockLanguageModelV3({
         doGenerate: async () => ({
-          finishReason: "stop",
-          usage: { inputTokens: 5000, outputTokens: 20, totalTokens: 5020 },
+          finishReason: { raw: undefined, unified: "stop" },
+          usage: {
+            inputTokens: {
+              total: 5000,
+              noCache: 5000,
+              cacheRead: undefined,
+              cacheWrite: undefined,
+            },
+            outputTokens: {
+              total: 20,
+              text: 20,
+              reasoning: undefined,
+            },
+          },
           warnings: [],
           content: [
             {
