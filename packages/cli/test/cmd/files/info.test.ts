@@ -18,14 +18,11 @@ describe("files info command", () => {
   });
 
   it("should show help when --help flag is passed", async () => {
-    const helpCapture = captureConsoleOutput();
     await runCLI(["files", "info", "--help"]);
 
-    expect(helpCapture.contains("Get metadata about a file or directory")).toBe(true);
-    expect(helpCapture.contains("--base-url")).toBe(true);
-    expect(helpCapture.contains("--json")).toBe(true);
-
-    helpCapture.restore();
+    expect(capture.containsInfo("Get metadata about a file or directory")).toBe(true);
+    expect(capture.containsInfo("--base-url")).toBe(true);
+    expect(capture.containsInfo("--json")).toBe(true);
   });
 
   it("should get file metadata from API", async () => {

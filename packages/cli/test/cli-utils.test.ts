@@ -62,11 +62,14 @@ describe("runCommand", () => {
   });
 
   it("should print help message for 'help' command", async () => {
-    const helpCapture = vi.spyOn(console, "log").mockImplementation(() => {});
+    const helpCapture = vi.spyOn(console, "info").mockImplementation(() => {});
+
     await runCommand("help", { _: [] });
+
     expect(helpCapture).toHaveBeenCalledWith(
       expect.stringContaining("A CLI for working with the Unicode Character Database (UCD)."),
     );
+
     helpCapture.mockRestore();
   });
 
