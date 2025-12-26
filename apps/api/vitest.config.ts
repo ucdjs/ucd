@@ -4,14 +4,6 @@ import { defineProject } from "vitest/config";
 const appRoot = new URL(".", import.meta.url).pathname;
 
 export default defineProject({
-  test: {
-    name: "api",
-    dir: `./apps/api/test`,
-    setupFiles: [`${appRoot}/test/__setup.ts`],
-    include: [
-      "**/*.{test,spec}.?(c|m)[jt]s?(x)",
-    ],
-  },
   plugins: [
     cloudflareTest({
       miniflare: {

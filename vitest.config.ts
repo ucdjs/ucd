@@ -1,4 +1,4 @@
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { defineConfig, mergeConfig, type TestProjectConfiguration } from "vitest/config";
 import { aliases } from "./vitest.aliases";
@@ -6,42 +6,46 @@ import { aliases } from "./vitest.aliases";
 const pkgRoot = (root: string, pkg: string) =>
   fileURLToPath(new URL(`./${root}/${pkg}`, import.meta.url));
 
-const packageProjects = readdirSync(fileURLToPath(new URL("./packages", import.meta.url)))
-  .filter((dir) => existsSync(pkgRoot("packages", dir) + "/package.json"))
-  .map((dir) => {
-    return {
-      extends: true,
-      test: {
-        dir: `./packages/${dir}/test`,
-        include: [
-          "**/*.{test,spec}.?(c|m)[jt]s?(x)",
-        ],
-        name: dir,
-      },
-    } satisfies TestProjectConfiguration;
-  });
+async function createProjects(root: string): Promise<TestProjectConfiguration[]> {
+  try {
+    const rootDir = fileURLToPath(new URL(`./${root}`, import.meta.url));
+    const dirs = readdirSync(rootDir).filter((dir) => existsSync(pkgRoot(root, dir) + "/package.json"));
 
-const appProjects = await Promise.all(readdirSync(fileURLToPath(new URL("./apps", import.meta.url)))
-  .filter((dir) => existsSync(pkgRoot("apps", dir) + "/package.json"))
-  .map(async (dir) => {
-    const base = {
-      extends: true,
-      test: {
-        dir: `./apps/${dir}/test`,
-        include: [
-          "**/*.{test,spec}.?(c|m)[jt]s?(x)",
-        ],
-        name: dir,
-      },
-    } satisfies TestProjectConfiguration;
+    const promises = dirs.map(async (dir) => {
+      const base = {
+        extends: true,
+        test: {
+          dir: `./${root}/${dir}/test`,
+          include: ["**/*.{test,spec}.?(c|m)[jt]s?(x)"],
+          name: dir,
+        },
+      } satisfies TestProjectConfiguration;
 
-    if (dir === "api") {
-      const apiConfig = await import(pkgRoot("apps", dir) + "/vitest.config.ts").then((m) => m.default)
-      return mergeConfig(base, apiConfig)
-    }
+      const customConfigPath = pkgRoot(root, dir) + "/vitest.config.ts";
 
-    return base
-  }));
+      if (existsSync(customConfigPath)) {
+        try {
+          const customConfig = await import(customConfigPath).then((m) => m.default);
+
+          return mergeConfig(base, customConfig);
+        } catch (error) {
+          console.warn(`[vitest] Failed to load custom config for ${root}/${dir}:`, error);
+          return base;
+        }
+      }
+
+      return base;
+    });
+
+    return Promise.all(promises);
+  } catch (err) {
+    console.warn(`[vitest] Failed to scan ${root} directory:`, err);
+    return [];
+  }
+}
+
+const packageProjects = await createProjects("packages");
+const appProjects = await createProjects("apps");
 
 const hiddenLogs: string[] = [];
 
@@ -50,15 +54,11 @@ export default defineConfig({
     coverage: {
       provider: "istanbul",
       include: ["**/src/**"],
-      exclude: [
-        "tooling/*"
-      ]
+      exclude: ["tooling/*"],
     },
     environment: "node",
     mockReset: true,
-    setupFiles: [
-      "./packages/test-utils/src/msw/vitest-setup.ts",
-    ],
+    setupFiles: ["./packages/test-utils/src/msw/vitest-setup.ts"],
     onConsoleLog(log, type) {
       if (type === "stderr") {
         return !hiddenLogs.some((hidden) => log.includes(hidden));
@@ -66,11 +66,8 @@ export default defineConfig({
 
       return false;
     },
-    projects: [
-      ...packageProjects,
-      ...appProjects,
-    ]
+    projects: [...packageProjects, ...appProjects],
   },
   esbuild: { target: "es2020" },
   resolve: { alias: aliases },
-})
+});
