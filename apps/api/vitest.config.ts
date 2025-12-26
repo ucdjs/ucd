@@ -1,12 +1,13 @@
 import { cloudflareTest } from "@cloudflare/vitest-pool-workers";
 import { defineProject } from "vitest/config";
-import { aliases } from "../../vitest.aliases";
+
+const appRoot = new URL(".", import.meta.url).pathname;
 
 export default defineProject({
   test: {
     name: "api",
     dir: `./apps/api/test`,
-    setupFiles: ["./test/__setup.ts"],
+    setupFiles: [`${appRoot}/test/__setup.ts`],
     include: [
       "**/*.{test,spec}.?(c|m)[jt]s?(x)",
     ],
@@ -21,12 +22,9 @@ export default defineProject({
         },
       },
       wrangler: {
-        configPath: "./wrangler.jsonc",
+        configPath: `${appRoot}/wrangler.jsonc`,
         environment: "testing",
       },
     }),
   ],
-  resolve: {
-    alias: aliases,
-  },
 });
