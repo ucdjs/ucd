@@ -8,13 +8,11 @@ export class ConsoleOutputCapture {
     info: string[];
     warn: string[];
     error: string[];
-    stdout: string[];
   } = {
     log: [],
     info: [],
     warn: [],
     error: [],
-    stdout: [],
   };
 
   start(): void {
@@ -34,13 +32,13 @@ export class ConsoleOutputCapture {
       }));
     }
 
-    this.spies.set("stdout", vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => {
-      const output = typeof chunk === "string" ? chunk : String(chunk);
-      this.captured.stdout.push(output);
-      // Don't redirect to console.log - just capture it silently
-      // This prevents the circular issue with JSON mode where console.log -> console.error
-      return true;
-    }));
+    // this.spies.set("stdout", vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => {
+    //   const output = typeof chunk === "string" ? chunk : String(chunk);
+    //   this.captured.stdout.push(output);
+    //   // Don't redirect to console.log - just capture it silently
+    //   // This prevents the circular issue with JSON mode where console.log -> console.error
+    //   return true;
+    // }));
   }
 
   restore(): void {
@@ -56,8 +54,11 @@ export class ConsoleOutputCapture {
       ...this.captured.info,
       ...this.captured.warn,
       ...this.captured.error,
-      ...this.captured.stdout,
     ].join("\n");
+  }
+
+  getLogOutput(): string {
+    return this.captured.log.join("\n");
   }
 
   getInfoOutput(): string {
@@ -70,10 +71,6 @@ export class ConsoleOutputCapture {
 
   getWarnOutput(): string {
     return this.captured.warn.join("\n");
-  }
-
-  getStdoutOutput(): string {
-    return this.captured.stdout.join("");
   }
 
   contains(text: string): boolean {
@@ -92,15 +89,15 @@ export class ConsoleOutputCapture {
     return this.captured.warn.some((call) => call.includes(text));
   }
 
-  containsStdout(text: string): boolean {
-    return this.captured.stdout.some((call) => call.includes(text));
+  containsLog(text: string): boolean {
+    return this.captured.log.some((call) => call.includes(text));
   }
 
   json<T = unknown>(): T | null {
-    const stdout = this.getStdoutOutput().trim();
-    if (!stdout) return null;
+    const log = this.getLogOutput().trim();
+    if (!log) return null;
     try {
-      return JSON.parse(stdout) as T;
+      return JSON.parse(log) as T;
     } catch {
       return null;
     }
@@ -115,7 +112,6 @@ export class ConsoleOutputCapture {
     this.captured.info = [];
     this.captured.warn = [];
     this.captured.error = [];
-    this.captured.stdout = [];
   }
 }
 

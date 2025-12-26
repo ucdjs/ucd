@@ -16,7 +16,7 @@ const packageProjects = readdirSync(fileURLToPath(new URL("./packages", import.m
           `./packages/${dir}/**/*.{test,spec}.?(c|m)[jt]s?(x)`,
         ],
         name: dir,
-      }
+      },
     } satisfies TestProjectConfiguration;
   });
 
