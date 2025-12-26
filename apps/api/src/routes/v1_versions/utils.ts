@@ -33,6 +33,7 @@ export async function getAllVersionsFromList() {
           url: "https://www.unicode.org/versions/enumeratedversions.html",
         },
       });
+
       throw error;
     }
 
@@ -56,6 +57,7 @@ export async function getAllVersionsFromList() {
           html_preview: html.substring(0, 500), // First 500 chars for debugging
         },
       });
+
       throw error;
     }
 

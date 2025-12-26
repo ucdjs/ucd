@@ -1,5 +1,4 @@
 import type { UnicodeVersion } from "@ucdjs/schemas";
-
 import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { env } from "cloudflare:workers";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -305,28 +304,26 @@ describe("v1_versions", () => {
       const { getCurrentDraftVersion, resolveUCDVersion } = await import("@unicode-utils/core");
 
       vi.mocked(getCurrentDraftVersion).mockResolvedValue(null);
-      vi.mocked(resolveUCDVersion).mockImplementation((version: string) => version);
-
-      const mixedYearHtml = `
-        <html>
-          <body>
-            <table>
-              <tr>
-                <td><a href="https://www.unicode.org/versions/Unicode16.0.0/">Unicode 16.0.0</a></td>
-                <td>2024</td>
-              </tr>
-              <tr>
-                <td><a href="https://www.unicode.org/versions/Unicode15.1.0/">Unicode 15.1.0</a></td>
-                <td>some other text</td>
-              </tr>
-            </table>
-          </body>
-        </html>
-      `;
+      vi.mocked(resolveUCDVersion).mockImplementation((version) => version);
 
       mockFetch([
         ["GET", "https://www.unicode.org/versions/enumeratedversions.html", () => {
-          return HttpResponse.text(mixedYearHtml);
+          return HttpResponse.text(`
+            <html>
+              <body>
+                <table>
+                  <tr>
+                    <td><a href="https://www.unicode.org/versions/Unicode16.0.0/">Unicode 16.0.0</a></td>
+                    <td>2024</td>
+                  </tr>
+                  <tr>
+                    <td><a href="https://www.unicode.org/versions/Unicode15.1.0/">Unicode 15.1.0</a></td>
+                    <td>some other text</td>
+                  </tr>
+                </table>
+              </body>
+            </html>
+          `);
         }],
       ]);
 

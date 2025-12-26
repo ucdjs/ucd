@@ -341,7 +341,7 @@ describe("v1_files", () => {
 
     mockFetch([
       ["GET", "https://unicode.org/Public/binary/file?F=2", () => {
-        return HttpResponse.text(mockContent, {
+        return new Response(mockContent, {
           headers: {
             "content-length": mockContent.length.toString(),
           },
