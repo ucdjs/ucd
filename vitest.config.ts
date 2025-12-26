@@ -1,6 +1,6 @@
-import { existsSync, readdirSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { defineConfig, type TestProjectConfiguration } from "vitest/config";
+import { defineConfig, mergeConfig, type TestProjectConfiguration } from "vitest/config";
 import { aliases } from "./vitest.aliases";
 
 const pkgRoot = (root: string, pkg: string) =>
@@ -21,14 +21,10 @@ const packageProjects = readdirSync(fileURLToPath(new URL("./packages", import.m
     } satisfies TestProjectConfiguration;
   });
 
-const appProjects = readdirSync(fileURLToPath(new URL("./apps", import.meta.url)))
+const appProjects = await Promise.all(readdirSync(fileURLToPath(new URL("./apps", import.meta.url)))
   .filter((dir) => existsSync(pkgRoot("apps", dir) + "/package.json"))
-  .map((dir) => {
-    if (dir === "api") {
-      return `./apps/${dir}/vitest.config.ts`
-    }
-
-    return {
+  .map(async (dir) => {
+    const base = {
       extends: true,
       test: {
         dir: `./apps/${dir}/test`,
@@ -38,7 +34,14 @@ const appProjects = readdirSync(fileURLToPath(new URL("./apps", import.meta.url)
         name: dir,
       },
     } satisfies TestProjectConfiguration;
-  });
+
+    if (dir === "api") {
+      const apiConfig = await import(pkgRoot("apps", dir) + "/vitest.config.ts").then((m) => m.default)
+      return mergeConfig(base, apiConfig)
+    }
+
+    return base
+  }));
 
 const hiddenLogs: string[] = [];
 
