@@ -1,4 +1,4 @@
-import { HttpResponse, mockFetch } from "#test-utils/msw";
+import { HttpResponse, mockFetch, RawResponse } from "#test-utils/msw";
 import { UCD_FILE_STAT_TYPE_HEADER } from "@ucdjs/env";
 import { generateAutoIndexHtml } from "apache-autoindex-parse/test-utils";
 import { env } from "cloudflare:workers";
@@ -91,7 +91,14 @@ describe("v1_files", () => {
     });
 
     it("should handle missing content-type header", async () => {
-      const mockContent = "Some binary content";
+      const mockContent = new Uint8Array(new Uint8Array([
+        // eslint-disable-next-line antfu/consistent-list-newline
+        0x49, 0x27, 0x6D, 0x20, 0x61, 0x20, 0x74, 0x65,
+        // eslint-disable-next-line antfu/consistent-list-newline
+        0x61, 0x70, 0x6F, 0x74, 0x2E, 0x20, 0x53, 0x68,
+        // eslint-disable-next-line antfu/consistent-list-newline
+        0x68, 0x68, 0x21,
+      ]));
 
       mockFetch([
         ["GET", "https://unicode.org/Public/binary/file", () => {
@@ -119,7 +126,7 @@ describe("v1_files", () => {
 
       mockFetch([
         ["GET", "https://unicode.org/Public/sample/file.txt", () => {
-          return new Response(mockContent, {
+          return new RawResponse(mockContent, {
             status: 200,
             headers: {
               "content-length": mockContent.length.toString(),
@@ -146,7 +153,7 @@ describe("v1_files", () => {
 
       mockFetch([
         ["GET", "https://unicode.org/Public/sample/file.xml", () => {
-          return new Response(mockContent, {
+          return new RawResponse(mockContent, {
             headers: {
               "content-length": mockContent.length.toString(),
             },
@@ -170,11 +177,13 @@ describe("v1_files", () => {
     it("should correctly extract extension from paths with dots in directory names", async () => {
       const mockContent = "Unicode data content";
 
+      const encoder = new TextEncoder();
+      const body = encoder.encode("Unicode data content");
+
       mockFetch([
-        ["GET", "https://unicode.org/Public/15.1.0/ucd/UnicodeData.txt", () => {
-          return new Response(mockContent, {
+        ["GET", "https://unicode.org/Public/15.1.0/ucd/UnicodeData", () => {
+          return new RawResponse(body, {
             headers: {
-              "content-type": "text/plain; charset=utf-8",
               "content-length": mockContent.length.toString(),
             },
           });
@@ -211,7 +220,9 @@ describe("v1_files", () => {
       ]);
 
       const { response } = await executeRequest(
-        new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd/UnicodeData.txt"),
+        new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd/UnicodeData.txt", {
+          method: "HEAD",
+        }),
         env,
       );
       expectSuccess(response);
@@ -337,7 +348,14 @@ describe("v1_files", () => {
   });
 
   it("should handle HEAD requests with missing content-type header", async () => {
-    const mockContent = "Some binary content";
+    const mockContent = new Uint8Array(new Uint8Array([
+      // eslint-disable-next-line antfu/consistent-list-newline
+      0x49, 0x27, 0x6D, 0x20, 0x61, 0x20, 0x74, 0x65,
+      // eslint-disable-next-line antfu/consistent-list-newline
+      0x61, 0x70, 0x6F, 0x74, 0x2E, 0x20, 0x53, 0x68,
+      // eslint-disable-next-line antfu/consistent-list-newline
+      0x68, 0x68, 0x21,
+    ]));
 
     mockFetch([
       ["GET", "https://unicode.org/Public/binary/file", () => {
