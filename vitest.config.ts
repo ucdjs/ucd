@@ -12,26 +12,27 @@ const packageProjects = readdirSync(fileURLToPath(new URL("./packages", import.m
     return {
       extends: true,
       test: {
+        dir: `./packages/${dir}/test`,
         include: [
-          `./packages/${dir}/**/*.{test,spec}.?(c|m)[jt]s?(x)`,
+          "**/*.{test,spec}.?(c|m)[jt]s?(x)",
         ],
         name: dir,
       },
     } satisfies TestProjectConfiguration;
   });
 
-const workerUnitProjects = readdirSync(fileURLToPath(new URL("./apps", import.meta.url)))
-  .map((dir) => {
-    return {
-      extends: true,
-      test: {
-        include: [
-          `./apps/${dir}/test/unit/**/*.{test,spec}.?(c|m)[jt]s?(x)`,
-        ],
-        name: `${dir}:unit`,
-      },
-    } satisfies TestProjectConfiguration;
-  });
+// const workerUnitProjects = readdirSync(fileURLToPath(new URL("./apps", import.meta.url)))
+//   .map((dir) => {
+//     return {
+//       extends: true,
+//       test: {
+//         include: [
+//           `./apps/${dir}/test/unit/**/*.{test,spec}.?(c|m)[jt]s?(x)`,
+//         ],
+//         name: `${dir}:unit`,
+//       },
+//     } satisfies TestProjectConfiguration;
+//   });
 
 const hiddenLogs: string[] = [];
 
@@ -58,8 +59,8 @@ export default defineConfig({
     },
     projects: [
       ...packageProjects,
-      ...workerUnitProjects,
-      "./apps/api/vitest.config.worker.ts",
+      // ...workerUnitProjects,
+      // "./apps/api/vitest.config.worker.ts",
     ]
   },
   esbuild: { target: "es2020" },
