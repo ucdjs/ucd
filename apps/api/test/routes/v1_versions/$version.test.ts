@@ -4,32 +4,30 @@ import { HttpResponse, mockFetch } from "#test-utils/msw";
 
 import { generateAutoIndexHtml } from "apache-autoindex-parse/test-utils";
 import { env } from "cloudflare:workers";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { executeRequest } from "../../helpers/request";
 import { expectApiError, expectCacheHeaders, expectJsonResponse, expectSuccess } from "../../helpers/response";
 
-// mock the unicode-utils-new module
 vi.mock("@unicode-utils/core", async (importOriginal) => {
   const original = await importOriginal<typeof import("@unicode-utils/core")>();
 
   return {
     ...original,
-    getCurrentDraftVersion: vi.fn(() => {
+    getCurrentDraftVersion: vi.fn().mockImplementation(() => {
       return original.getCurrentDraftVersion();
     }),
-    resolveUCDVersion: vi.fn((version) => {
+    resolveUCDVersion: vi.fn().mockImplementation((version) => {
       return original.resolveUCDVersion(version);
     }),
   };
 });
 
-afterEach(() => {
+beforeEach(() => {
   vi.resetAllMocks();
 });
 
 describe("v1_versions", () => {
-  // eslint-disable-next-line test/prefer-lowercase-title
-  describe("GET /api/v1/versions/{version}/file-tree", () => {
+  describe("gET /api/v1/versions/{version}/file-tree", () => {
     const files: TraverseEntry[] = [
       { type: "file", name: "file1.txt", path: "Public/15.1.0/ucd/file1.txt" },
       { type: "file", name: "file2.txt", path: "Public/15.1.0/ucd/file2.txt" },

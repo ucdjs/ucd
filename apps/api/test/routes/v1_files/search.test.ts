@@ -17,7 +17,7 @@ describe("v1_files", () => {
       ], "F2");
 
       mockFetch([
-        ["GET", "https://unicode.org/Public?F=2", () => {
+        ["GET", "https://unicode.org/Public", () => {
           return HttpResponse.text(html, {
             headers: { "content-type": "text/html; charset=utf-8" },
           });
@@ -45,7 +45,7 @@ describe("v1_files", () => {
       ], "F2");
 
       mockFetch([
-        ["GET", "https://unicode.org/Public?F=2", () => {
+        ["GET", "https://unicode.org/Public", () => {
           return HttpResponse.text(html, {
             headers: { "content-type": "text/html; charset=utf-8" },
           });
@@ -72,7 +72,7 @@ describe("v1_files", () => {
       ], "F2");
 
       mockFetch([
-        ["GET", "https://unicode.org/Public/15.1.0/ucd/emoji?F=2", () => {
+        ["GET", "https://unicode.org/Public/15.1.0/ucd/emoji", () => {
           return HttpResponse.text(html, {
             headers: { "content-type": "text/html; charset=utf-8" },
           });
@@ -98,7 +98,7 @@ describe("v1_files", () => {
       ], "F2");
 
       mockFetch([
-        ["GET", "https://unicode.org/Public?F=2", () => {
+        ["GET", "https://unicode.org/Public", () => {
           return HttpResponse.text(html, {
             headers: { "content-type": "text/html; charset=utf-8" },
           });
@@ -117,7 +117,7 @@ describe("v1_files", () => {
 
     it("should return empty array when path does not exist", async () => {
       mockFetch([
-        ["GET", "https://unicode.org/Public/nonexistent/path?F=2", () => {
+        ["GET", "https://unicode.org/Public/nonexistent/path", () => {
           return HttpResponse.text("Not Found", { status: 404 });
         }],
       ]);
@@ -166,7 +166,7 @@ describe("v1_files", () => {
       ], "F2");
 
       mockFetch([
-        ["GET", "https://unicode.org/Public?F=2", () => {
+        ["GET", "https://unicode.org/Public", () => {
           return HttpResponse.text(html, {
             headers: { "content-type": "text/html; charset=utf-8" },
           });

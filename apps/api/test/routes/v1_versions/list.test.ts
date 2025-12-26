@@ -1,32 +1,36 @@
 import type { UnicodeVersion } from "@ucdjs/schemas";
 import { HttpResponse, mockFetch } from "#test-utils/msw";
+import * as UnicodeUtils from "@unicode-utils/core";
 import { env } from "cloudflare:workers";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { executeRequest } from "../../helpers/request";
-import { expectApiError, expectCacheHeaders, expectJsonResponse, expectSuccess } from "../../helpers/response";
+import {
+  expectApiError,
+  expectCacheHeaders,
+  expectJsonResponse,
+  expectSuccess,
+} from "../../helpers/response";
 
-// mock the unicode-utils-new module
 vi.mock("@unicode-utils/core", async (importOriginal) => {
   const original = await importOriginal<typeof import("@unicode-utils/core")>();
 
   return {
     ...original,
-    getCurrentDraftVersion: vi.fn(() => {
+    getCurrentDraftVersion: vi.fn().mockImplementation(() => {
       return original.getCurrentDraftVersion();
     }),
-    resolveUCDVersion: vi.fn((version) => {
+    resolveUCDVersion: vi.fn().mockImplementation((version) => {
       return original.resolveUCDVersion(version);
     }),
   };
 });
 
-afterEach(() => {
+beforeEach(() => {
   vi.resetAllMocks();
 });
 
 describe("v1_versions", () => {
-  // eslint-disable-next-line test/prefer-lowercase-title
-  describe("GET /api/v1/versions", () => {
+  describe("gET /api/v1/versions", () => {
     const mockHtmlResponse = `
       <html>
         <body>
@@ -49,16 +53,8 @@ describe("v1_versions", () => {
     `;
 
     it("should return unicode versions with proper structure", async () => {
-      const { getCurrentDraftVersion, resolveUCDVersion } = await import("@unicode-utils/core");
-
-      vi.mocked(getCurrentDraftVersion).mockResolvedValue(null);
-      vi.mocked(resolveUCDVersion).mockImplementation((version: string) => {
-        // Mock the UCD version mapping
-        if (version === "16.0.0") return "16.0.0";
-        if (version === "15.1.0") return "15.1.0";
-        if (version === "15.0.0") return "15.0.0";
-        return version;
-      });
+      vi.mocked(UnicodeUtils.getCurrentDraftVersion).mockResolvedValue(null);
+      vi.mocked(UnicodeUtils.resolveUCDVersion).mockImplementation((version) => version);
 
       mockFetch([
         ["GET", "https://www.unicode.org/versions/enumeratedversions.html", () => {
@@ -90,13 +86,8 @@ describe("v1_versions", () => {
     });
 
     it("should handle draft versions correctly", async () => {
-      const { getCurrentDraftVersion, resolveUCDVersion } = await import("@unicode-utils/core");
-
-      vi.mocked(getCurrentDraftVersion).mockResolvedValue("17.0.0");
-      vi.mocked(resolveUCDVersion).mockImplementation((version: string) => {
-        if (version === "17.0.0") return "17.0.0";
-        return version;
-      });
+      vi.mocked(UnicodeUtils.getCurrentDraftVersion).mockResolvedValue("17.0.0");
+      vi.mocked(UnicodeUtils.resolveUCDVersion).mockImplementation((version) => version);
 
       mockFetch([
         ["GET", "https://www.unicode.org/versions/enumeratedversions.html", () => {
@@ -121,11 +112,9 @@ describe("v1_versions", () => {
     });
 
     it("should handle different UCD version mappings", async () => {
-      const { getCurrentDraftVersion, resolveUCDVersion } = await import("@unicode-utils/core");
-
-      vi.mocked(getCurrentDraftVersion).mockResolvedValue(null);
-      vi.mocked(resolveUCDVersion).mockImplementation((version: string) => {
-        // Mock scenario where some versions have different UCD mappings
+      vi.mocked(UnicodeUtils.getCurrentDraftVersion).mockResolvedValue(null);
+      vi.mocked(UnicodeUtils.resolveUCDVersion).mockImplementation((version: string) => {
+      // Mock scenario where some versions have different UCD mappings
         if (version === "16.0.0") return "16.0.0";
         if (version === "15.1.0") return "15.1.0";
         if (version === "15.0.0") return "15.0.0-Update1"; // Different mapping
@@ -174,10 +163,8 @@ describe("v1_versions", () => {
     });
 
     it("should handle malformed HTML response", async () => {
-      const { getCurrentDraftVersion, resolveUCDVersion } = await import("@unicode-utils/core");
-
-      vi.mocked(getCurrentDraftVersion).mockResolvedValue(null);
-      vi.mocked(resolveUCDVersion).mockImplementation((version: string) => version);
+      vi.mocked(UnicodeUtils.getCurrentDraftVersion).mockResolvedValue(null);
+      vi.mocked(UnicodeUtils.resolveUCDVersion).mockImplementation((version: string) => version);
 
       mockFetch([
         ["GET", "https://www.unicode.org/versions/enumeratedversions.html", () => {
@@ -197,10 +184,8 @@ describe("v1_versions", () => {
     });
 
     it("should handle empty table response", async () => {
-      const { getCurrentDraftVersion, resolveUCDVersion } = await import("@unicode-utils/core");
-
-      vi.mocked(getCurrentDraftVersion).mockResolvedValue(null);
-      vi.mocked(resolveUCDVersion).mockImplementation((version: string) => version);
+      vi.mocked(UnicodeUtils.getCurrentDraftVersion).mockResolvedValue(null);
+      vi.mocked(UnicodeUtils.resolveUCDVersion).mockImplementation((version) => version);
 
       const emptyTableHtml = `
         <html>
@@ -231,10 +216,8 @@ describe("v1_versions", () => {
     });
 
     it("should handle getCurrentDraftVersion throwing error", async () => {
-      const { getCurrentDraftVersion, resolveUCDVersion } = await import("@unicode-utils/core");
-
-      vi.mocked(getCurrentDraftVersion).mockRejectedValue(new Error("Draft version fetch failed"));
-      vi.mocked(resolveUCDVersion).mockImplementation((version: string) => version);
+      vi.mocked(UnicodeUtils.getCurrentDraftVersion).mockRejectedValue(new Error("Draft version fetch failed"));
+      vi.mocked(UnicodeUtils.resolveUCDVersion).mockImplementation((version) => version);
 
       mockFetch([
         ["GET", "https://www.unicode.org/versions/enumeratedversions.html", () => {
@@ -255,10 +238,8 @@ describe("v1_versions", () => {
     });
 
     it("should set proper cache headers", async () => {
-      const { getCurrentDraftVersion, resolveUCDVersion } = await import("@unicode-utils/core");
-
-      vi.mocked(getCurrentDraftVersion).mockResolvedValue(null);
-      vi.mocked(resolveUCDVersion).mockImplementation((version: string) => version);
+      vi.mocked(UnicodeUtils.getCurrentDraftVersion).mockResolvedValue(null);
+      vi.mocked(UnicodeUtils.resolveUCDVersion).mockImplementation((version) => version);
 
       mockFetch([
         ["GET", "https://www.unicode.org/versions/enumeratedversions.html", () => {
@@ -276,10 +257,8 @@ describe("v1_versions", () => {
     });
 
     it("should sort versions correctly (newest first)", async () => {
-      const { getCurrentDraftVersion, resolveUCDVersion } = await import("@unicode-utils/core");
-
-      vi.mocked(getCurrentDraftVersion).mockResolvedValue(null);
-      vi.mocked(resolveUCDVersion).mockImplementation((version: string) => version);
+      vi.mocked(UnicodeUtils.getCurrentDraftVersion).mockResolvedValue(null);
+      vi.mocked(UnicodeUtils.resolveUCDVersion).mockImplementation((version) => version);
 
       mockFetch([
         ["GET", "https://www.unicode.org/versions/enumeratedversions.html", () => {
@@ -301,10 +280,8 @@ describe("v1_versions", () => {
     });
 
     it("should handle versions with mixed year formats", async () => {
-      const { getCurrentDraftVersion, resolveUCDVersion } = await import("@unicode-utils/core");
-
-      vi.mocked(getCurrentDraftVersion).mockResolvedValue(null);
-      vi.mocked(resolveUCDVersion).mockImplementation((version) => version);
+      vi.mocked(UnicodeUtils.getCurrentDraftVersion).mockResolvedValue(null);
+      vi.mocked(UnicodeUtils.resolveUCDVersion).mockImplementation((version) => version);
 
       mockFetch([
         ["GET", "https://www.unicode.org/versions/enumeratedversions.html", () => {
