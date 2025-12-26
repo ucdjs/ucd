@@ -62,7 +62,7 @@ describe("v1_files", () => {
 
     it("should handle 404 from files endpoint", async () => {
       mockFetch([
-        ["GET", "https://unicode.org/Public/nonexistent/path?F=2", () => {
+        ["GET", "https://unicode.org/Public/nonexistent/path", () => {
           return new Response("Not Found", { status: 404 });
         }],
       ]);
