@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "compatibility_date": "2025-07-30",
+  "compatibility_date": "2025-12-19",
   "name": "ucdjs-dev",
   "main": ".output/server/index.mjs",
   "vars": {

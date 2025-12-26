@@ -19,7 +19,7 @@ describe("v1_files", () => {
       const mockFileContent = "# Unicode Character Database\n# Version 15.1.0\n";
 
       mockFetch([
-        ["GET", "https://unicode.org/Public/15.1.0/ucd/UnicodeData.txt?F=2", () => {
+        ["GET", "https://unicode.org/Public/15.1.0/ucd/UnicodeData.txt", () => {
           return HttpResponse.text(mockFileContent, {
             headers: {
               "content-type": "text/plain; charset=utf-8",
@@ -77,7 +77,7 @@ describe("v1_files", () => {
 
     it("should handle 502 from unicode.org", async () => {
       mockFetch([
-        ["GET", "https://unicode.org/Public/error/path?F=2", () => {
+        ["GET", "https://unicode.org/Public/error/path", () => {
           return new Response("Bad Gateway", { status: 502 });
         }],
       ]);
@@ -94,7 +94,7 @@ describe("v1_files", () => {
       const mockContent = "Some binary content";
 
       mockFetch([
-        ["GET", "https://unicode.org/Public/binary/file?F=2", () => {
+        ["GET", "https://unicode.org/Public/binary/file", () => {
           return new Response(mockContent, {
             status: 200,
             headers: {
@@ -118,7 +118,7 @@ describe("v1_files", () => {
       const mockContent = "Plain text content";
 
       mockFetch([
-        ["GET", "https://unicode.org/Public/sample/file.txt?F=2", () => {
+        ["GET", "https://unicode.org/Public/sample/file.txt", () => {
           return new Response(mockContent, {
             status: 200,
             headers: {
@@ -145,7 +145,7 @@ describe("v1_files", () => {
       const mockContent = "<root></root>";
 
       mockFetch([
-        ["GET", "https://unicode.org/Public/sample/file.xml?F=2", () => {
+        ["GET", "https://unicode.org/Public/sample/file.xml", () => {
           return new Response(mockContent, {
             headers: {
               "content-length": mockContent.length.toString(),
@@ -171,7 +171,7 @@ describe("v1_files", () => {
       const mockContent = "Unicode data content";
 
       mockFetch([
-        ["GET", "https://unicode.org/Public/15.1.0/ucd/UnicodeData.txt?F=2", () => {
+        ["GET", "https://unicode.org/Public/15.1.0/ucd/UnicodeData.txt", () => {
           return new Response(mockContent, {
             headers: {
               "content-type": "text/plain; charset=utf-8",
@@ -199,7 +199,7 @@ describe("v1_files", () => {
   describe("HEAD /api/v1/files/:wildcard", () => {
     it("should return headers for a specific file path", async () => {
       mockFetch([
-        ["GET", "https://unicode.org/Public/15.1.0/ucd/UnicodeData.txt?F=2", () => {
+        ["GET", "https://unicode.org/Public/15.1.0/ucd/UnicodeData.txt", () => {
           return HttpResponse.text("", {
             headers: {
               "content-type": "text/plain; charset=utf-8",
@@ -224,7 +224,7 @@ describe("v1_files", () => {
     const mockFileContent = "# Unicode Character Database\n# Version 15.1.0\n";
 
     mockFetch([
-      ["GET", "https://unicode.org/Public/15.1.0/ucd/UnicodeData.txt?F=2", () => {
+      ["GET", "https://unicode.org/Public/15.1.0/ucd/UnicodeData.txt", () => {
         return HttpResponse.text(mockFileContent, {
           headers: {
             "content-type": "text/plain; charset=utf-8",
@@ -253,7 +253,7 @@ describe("v1_files", () => {
     ], "F2");
 
     mockFetch([
-      ["GET", "https://unicode.org/Public/15.1.0/ucd?F=2", () => {
+      ["GET", "https://unicode.org/Public/15.1.0/ucd", () => {
         return HttpResponse.text(html, {
           headers: {
             "content-type": "text/html; charset=utf-8",
@@ -302,7 +302,7 @@ describe("v1_files", () => {
 
   it("should handle HEAD requests for non-existent files", async () => {
     mockFetch([
-      ["GET", "https://unicode.org/Public/nonexistent/path?F=2", () => {
+      ["GET", "https://unicode.org/Public/nonexistent/path", () => {
         return HttpResponse.text("Not Found", { status: 404 });
       }],
     ]);
@@ -319,7 +319,7 @@ describe("v1_files", () => {
 
   it("should handle HEAD requests with 502 from unicode.org", async () => {
     mockFetch([
-      ["GET", "https://unicode.org/Public/error/path?F=2", () => {
+      ["GET", "https://unicode.org/Public/error/path", () => {
         return HttpResponse.text("Internal Server Error", {
           status: 500,
         });
@@ -340,7 +340,7 @@ describe("v1_files", () => {
     const mockContent = "Some binary content";
 
     mockFetch([
-      ["GET", "https://unicode.org/Public/binary/file?F=2", () => {
+      ["GET", "https://unicode.org/Public/binary/file", () => {
         return new Response(mockContent, {
           headers: {
             "content-length": mockContent.length.toString(),
@@ -371,7 +371,7 @@ describe("v1_files", () => {
       ], "F2");
 
       mockFetch([
-        ["GET", "https://unicode.org/Public/15.1.0/ucd?F=2", () => {
+        ["GET", "https://unicode.org/Public/15.1.0/ucd", () => {
           return HttpResponse.text(html, {
             headers: { "content-type": "text/html; charset=utf-8" },
           });
@@ -397,7 +397,7 @@ describe("v1_files", () => {
       ], "F2");
 
       mockFetch([
-        ["GET", "https://unicode.org/Public/15.1.0/ucd?F=2", () => {
+        ["GET", "https://unicode.org/Public/15.1.0/ucd", () => {
           return HttpResponse.text(html, {
             headers: { "content-type": "text/html; charset=utf-8" },
           });
@@ -422,7 +422,7 @@ describe("v1_files", () => {
       ], "F2");
 
       mockFetch([
-        ["GET", "https://unicode.org/Public/15.1.0/ucd?F=2", () => {
+        ["GET", "https://unicode.org/Public/15.1.0/ucd", () => {
           return HttpResponse.text(html, {
             headers: { "content-type": "text/html; charset=utf-8" },
           });
@@ -447,7 +447,7 @@ describe("v1_files", () => {
       ], "F2");
 
       mockFetch([
-        ["GET", "https://unicode.org/Public/15.1.0/ucd?F=2", () => {
+        ["GET", "https://unicode.org/Public/15.1.0/ucd", () => {
           return HttpResponse.text(html, {
             headers: { "content-type": "text/html; charset=utf-8" },
           });
@@ -472,7 +472,7 @@ describe("v1_files", () => {
       ], "F2");
 
       mockFetch([
-        ["GET", "https://unicode.org/Public/15.1.0/ucd?F=2", () => {
+        ["GET", "https://unicode.org/Public/15.1.0/ucd", () => {
           return HttpResponse.text(html, {
             headers: { "content-type": "text/html; charset=utf-8" },
           });
@@ -498,7 +498,7 @@ describe("v1_files", () => {
       ], "F2");
 
       mockFetch([
-        ["GET", "https://unicode.org/Public/15.1.0/ucd?F=2", () => {
+        ["GET", "https://unicode.org/Public/15.1.0/ucd", () => {
           return HttpResponse.text(html, {
             headers: { "content-type": "text/html; charset=utf-8" },
           });
@@ -520,7 +520,7 @@ describe("v1_files", () => {
       const mockFileContent = "# Unicode Character Database";
 
       mockFetch([
-        ["GET", "https://unicode.org/Public/15.1.0/ucd/UnicodeData.txt?F=2", () => {
+        ["GET", "https://unicode.org/Public/15.1.0/ucd/UnicodeData.txt", () => {
           return HttpResponse.text(mockFileContent, {
             status: 200,
             headers: { "content-type": "text/plain; charset=utf-8" },
@@ -545,7 +545,7 @@ describe("v1_files", () => {
       ], "F2");
 
       mockFetch([
-        ["GET", "https://unicode.org/Public/15.1.0/ucd?F=2", () => {
+        ["GET", "https://unicode.org/Public/15.1.0/ucd", () => {
           return HttpResponse.text(html, {
             status: 200,
             headers: { "content-type": "text/html; charset=utf-8" },

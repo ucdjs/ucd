@@ -7,11 +7,14 @@ export default defineProject({
   plugins: [
     cloudflareTest({
       miniflare: {
-        compatibilityFlags: ["nodejs_compat"],
-        bindings: {
-          ENVIRONMENT: "production",
-          USE_SVC_BINDING: "false",
-        },
+        cache: false,
+        compatibilityFlags: [
+          "nodejs_compat",
+          "enable_nodejs_tty_module",
+          "enable_nodejs_fs_module",
+          "enable_nodejs_http_modules",
+          "enable_nodejs_perf_hooks_module",
+        ],
       },
       wrangler: {
         configPath: `${appRoot}/wrangler.jsonc`,
