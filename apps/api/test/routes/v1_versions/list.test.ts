@@ -30,7 +30,8 @@ beforeEach(() => {
 });
 
 describe("v1_versions", () => {
-  describe("gET /api/v1/versions", () => {
+  // eslint-disable-next-line test/prefer-lowercase-title
+  describe("GET /api/v1/versions", () => {
     const mockHtmlResponse = `
       <html>
         <body>
