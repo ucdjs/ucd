@@ -188,7 +188,10 @@ describe("v1_versions", () => {
       });
     });
 
-    describe("cache", () => {
+    // This is marked as TODO, until Vitest Pool Workers is
+    // working with cache. There is currently some issues with
+    // caching being persisted across test cases.
+    describe.todo("cache", () => {
       it("should set proper cache headers", async () => {
         const { response } = await executeRequest(
           new Request("https://api.ucdjs.dev/api/v1/versions/15.1.0/file-tree"),
