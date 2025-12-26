@@ -1,9 +1,10 @@
 import type { Entry } from "apache-autoindex-parse";
 import type { TraverseEntry } from "apache-autoindex-parse/traverse";
+import { HttpResponse, mockFetch } from "#test-utils/msw";
+
 import { generateAutoIndexHtml } from "apache-autoindex-parse/test-utils";
-import { fetchMock } from "cloudflare:test";
 import { env } from "cloudflare:workers";
-import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { executeRequest } from "../../helpers/request";
 import { expectApiError, expectCacheHeaders, expectJsonResponse, expectSuccess } from "../../helpers/response";
 
@@ -22,13 +23,7 @@ vi.mock("@unicode-utils/core", async (importOriginal) => {
   };
 });
 
-beforeAll(() => {
-  fetchMock.activate();
-  fetchMock.disableNetConnect();
-});
-
 afterEach(() => {
-  fetchMock.assertNoPendingInterceptors();
   vi.resetAllMocks();
 });
 
@@ -44,9 +39,11 @@ describe("v1_versions", () => {
     ];
 
     it("should return files for a valid Unicode version", async () => {
-      fetchMock.get("https://unicode.org")
-        .intercept({ path: "/Public/15.1.0/ucd" })
-        .reply(200, generateAutoIndexHtml(files, "F2"));
+      mockFetch([
+        ["GET", "https://unicode.org/Public/15.1.0/ucd", () => {
+          return HttpResponse.text(generateAutoIndexHtml(files, "F2"));
+        }],
+      ]);
 
       const { response, json } = await executeRequest(
         new Request("https://api.ucdjs.dev/api/v1/versions/15.1.0/file-tree"),
@@ -83,9 +80,11 @@ describe("v1_versions", () => {
     });
 
     it("should return structured file data with proper schema", async () => {
-      fetchMock.get("https://unicode.org")
-        .intercept({ path: "/Public/15.1.0/ucd" })
-        .reply(200, generateAutoIndexHtml(files, "F2"));
+      mockFetch([
+        ["GET", "https://unicode.org/Public/15.1.0/ucd", () => {
+          return HttpResponse.text(generateAutoIndexHtml(files, "F2"));
+        }],
+      ]);
 
       const { response, json } = await executeRequest(
         new Request("https://api.ucdjs.dev/api/v1/versions/15.1.0/file-tree"),
@@ -138,9 +137,11 @@ describe("v1_versions", () => {
     });
 
     it("should handle older Unicode versions", async () => {
-      fetchMock.get("https://unicode.org")
-        .intercept({ path: "/Public/3.1-Update1" })
-        .reply(200, generateAutoIndexHtml(files, "F2"));
+      mockFetch([
+        ["GET", "https://unicode.org/Public/3.1-Update1", () => {
+          return HttpResponse.text(generateAutoIndexHtml(files, "F2"));
+        }],
+      ]);
 
       const { response, json } = await executeRequest(
         new Request("https://api.ucdjs.dev/api/v1/versions/3.1.1/file-tree"),
@@ -201,12 +202,12 @@ describe("v1_versions", () => {
 
       it("should cache the response for subsequent requests", async () => {
         let callCounter = 0;
-        fetchMock.get("https://unicode.org")
-          .intercept({ path: "/Public/16.0.0/ucd" })
-          .reply(200, () => {
+        mockFetch([
+          ["GET", "https://unicode.org/Public/16.0.0/ucd", () => {
             callCounter++;
-            return generateAutoIndexHtml(files, "F2");
-          }).persist();
+            return HttpResponse.text(generateAutoIndexHtml(files, "F2"));
+          }],
+        ]);
 
         const { response: firstResponse } = await executeRequest(
           new Request("https://api.ucdjs.dev/api/v1/versions/16.0.0/file-tree"),

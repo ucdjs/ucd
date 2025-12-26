@@ -1,8 +1,8 @@
+import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { UCD_FILE_STAT_TYPE_HEADER } from "@ucdjs/env";
 import { generateAutoIndexHtml } from "apache-autoindex-parse/test-utils";
-import { fetchMock } from "cloudflare:test";
 import { env } from "cloudflare:workers";
-import { afterEach, beforeAll, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 import { executeRequest } from "../../helpers/request";
 import {
   expectApiError,
@@ -12,29 +12,22 @@ import {
   expectSuccess,
 } from "../../helpers/response";
 
-beforeAll(() => {
-  fetchMock.activate();
-  fetchMock.disableNetConnect();
-});
-
-afterEach(() => {
-  fetchMock.assertNoPendingInterceptors();
-});
-
 describe("v1_files", () => {
   // eslint-disable-next-line test/prefer-lowercase-title
   describe("GET /api/v1/files/:wildcard", () => {
     it("should route specific file path successfully", async () => {
       const mockFileContent = "# Unicode Character Database\n# Version 15.1.0\n";
 
-      fetchMock.get("https://unicode.org")
-        .intercept({ path: "/Public/15.1.0/ucd/UnicodeData.txt?F=2" })
-        .reply(200, mockFileContent, {
-          headers: {
-            "content-type": "text/plain; charset=utf-8",
-            "content-length": mockFileContent.length.toString(),
-          },
-        });
+      mockFetch([
+        ["GET", "https://unicode.org/Public/15.1.0/ucd/UnicodeData.txt?F=2", () => {
+          return HttpResponse.text(mockFileContent, {
+            headers: {
+              "content-type": "text/plain; charset=utf-8",
+              "content-length": mockFileContent.length.toString(),
+            },
+          });
+        }],
+      ]);
 
       const { response, text } = await executeRequest(
         new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd/UnicodeData.txt"),
@@ -68,9 +61,11 @@ describe("v1_files", () => {
     });
 
     it("should handle 404 from files endpoint", async () => {
-      fetchMock.get("https://unicode.org")
-        .intercept({ path: "/Public/nonexistent/path?F=2" })
-        .reply(404, "Not Found");
+      mockFetch([
+        ["GET", "https://unicode.org/Public/nonexistent/path?F=2", () => {
+          return new Response("Not Found", { status: 404 });
+        }],
+      ]);
 
       const { response } = await executeRequest(
         new Request("https://api.ucdjs.dev/api/v1/files/nonexistent/path"),
@@ -81,9 +76,11 @@ describe("v1_files", () => {
     });
 
     it("should handle 502 from unicode.org", async () => {
-      fetchMock.get("https://unicode.org")
-        .intercept({ path: "/Public/error/path?F=2" })
-        .reply(500, "Internal Server Error");
+      mockFetch([
+        ["GET", "https://unicode.org/Public/error/path?F=2", () => {
+          return new Response("Bad Gateway", { status: 502 });
+        }],
+      ]);
 
       const { response } = await executeRequest(
         new Request("https://api.ucdjs.dev/api/v1/files/error/path"),
@@ -96,13 +93,16 @@ describe("v1_files", () => {
     it("should handle missing content-type header", async () => {
       const mockContent = "Some binary content";
 
-      fetchMock.get("https://unicode.org")
-        .intercept({ path: "/Public/binary/file?F=2" })
-        .reply(200, mockContent, {
-          headers: {
-            "content-length": mockContent.length.toString(),
-          },
-        });
+      mockFetch([
+        ["GET", "https://unicode.org/Public/binary/file?F=2", () => {
+          return new Response(mockContent, {
+            status: 200,
+            headers: {
+              "content-length": mockContent.length.toString(),
+            },
+          });
+        }],
+      ]);
 
       const { response } = await executeRequest(
         new Request("https://api.ucdjs.dev/api/v1/files/binary/file"),
@@ -117,13 +117,16 @@ describe("v1_files", () => {
     it("should infer content-type from .txt when upstream omits it", async () => {
       const mockContent = "Plain text content";
 
-      fetchMock.get("https://unicode.org")
-        .intercept({ path: "/Public/sample/file.txt?F=2" })
-        .reply(200, mockContent, {
-          headers: {
-            "content-length": mockContent.length.toString(),
-          },
-        });
+      mockFetch([
+        ["GET", "https://unicode.org/Public/sample/file.txt?F=2", () => {
+          return new Response(mockContent, {
+            status: 200,
+            headers: {
+              "content-length": mockContent.length.toString(),
+            },
+          });
+        }],
+      ]);
 
       const { response, text } = await executeRequest(
         new Request("https://api.ucdjs.dev/api/v1/files/sample/file.txt"),
@@ -141,13 +144,15 @@ describe("v1_files", () => {
     it("should infer content-type from .xml when upstream omits it", async () => {
       const mockContent = "<root></root>";
 
-      fetchMock.get("https://unicode.org")
-        .intercept({ path: "/Public/sample/file.xml?F=2" })
-        .reply(200, mockContent, {
-          headers: {
-            "content-length": mockContent.length.toString(),
-          },
-        });
+      mockFetch([
+        ["GET", "https://unicode.org/Public/sample/file.xml?F=2", () => {
+          return new Response(mockContent, {
+            headers: {
+              "content-length": mockContent.length.toString(),
+            },
+          });
+        }],
+      ]);
 
       const { response, text } = await executeRequest(
         new Request("https://api.ucdjs.dev/api/v1/files/sample/file.xml"),
@@ -165,13 +170,16 @@ describe("v1_files", () => {
     it("should correctly extract extension from paths with dots in directory names", async () => {
       const mockContent = "Unicode data content";
 
-      fetchMock.get("https://unicode.org")
-        .intercept({ path: "/Public/15.1.0/ucd/UnicodeData?F=2" })
-        .reply(200, mockContent, {
-          headers: {
-            "content-length": mockContent.length.toString(),
-          },
-        });
+      mockFetch([
+        ["GET", "https://unicode.org/Public/15.1.0/ucd/UnicodeData.txt?F=2", () => {
+          return new Response(mockContent, {
+            headers: {
+              "content-type": "text/plain; charset=utf-8",
+              "content-length": mockContent.length.toString(),
+            },
+          });
+        }],
+      ]);
 
       const { response, text } = await executeRequest(
         new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd/UnicodeData"),
@@ -190,45 +198,41 @@ describe("v1_files", () => {
   // eslint-disable-next-line test/prefer-lowercase-title
   describe("HEAD /api/v1/files/:wildcard", () => {
     it("should return headers for a specific file path", async () => {
-      fetchMock.get("https://unicode.org")
-        .intercept({ path: "/Public/15.1.0/ucd/UnicodeData.txt?F=2" })
-        .reply(200, "", {
-          headers: {
-            "content-type": "text/plain; charset=utf-8",
-            "content-length": "1234",
-            "last-modified": "Wed, 01 Jan 2020 00:00:00 GMT",
-          },
-        });
+      mockFetch([
+        ["GET", "https://unicode.org/Public/15.1.0/ucd/UnicodeData.txt?F=2", () => {
+          return HttpResponse.text("", {
+            headers: {
+              "content-type": "text/plain; charset=utf-8",
+              "content-length": "1234",
+              "last-modified": "Wed, 01 Jan 2020 00:00:00 GMT",
+            },
+          });
+        }],
+      ]);
 
       const { response } = await executeRequest(
-        new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd/UnicodeData.txt", {
-          method: "HEAD",
-        }),
+        new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd/UnicodeData.txt"),
         env,
       );
-
-      expectSuccess(response, {
-        headers: {
-          "content-type": "text/plain; charset=utf-8",
-          "content-length": "1234",
-          "last-modified": "Wed, 01 Jan 2020 00:00:00 GMT",
-          [UCD_FILE_STAT_TYPE_HEADER]: "file",
-        },
-      });
+      expectSuccess(response);
+      expectContentType(response, "text/plain; charset=utf-8");
+      expectCacheHeaders(response);
     });
   });
 
   it("should handle HEAD requests with specific file path", async () => {
     const mockFileContent = "# Unicode Character Database\n# Version 15.1.0\n";
 
-    fetchMock.get("https://unicode.org")
-      .intercept({ path: "/Public/15.1.0/ucd/UnicodeData.txt?F=2" })
-      .reply(200, mockFileContent, {
-        headers: {
-          "content-type": "text/plain; charset=utf-8",
-          "content-length": mockFileContent.length.toString(),
-        },
-      });
+    mockFetch([
+      ["GET", "https://unicode.org/Public/15.1.0/ucd/UnicodeData.txt?F=2", () => {
+        return HttpResponse.text(mockFileContent, {
+          headers: {
+            "content-type": "text/plain; charset=utf-8",
+            "content-length": mockFileContent.length.toString(),
+          },
+        });
+      }],
+    ]);
 
     const { response } = await executeRequest(
       new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd/UnicodeData.txt", {
@@ -248,14 +252,16 @@ describe("v1_files", () => {
       { name: "Blocks.txt", path: "/Public/15.1.0/ucd/Blocks.txt", type: "file", lastModified: Date.now() },
     ], "F2");
 
-    fetchMock.get("https://unicode.org")
-      .intercept({ path: "/Public/15.1.0/ucd?F=2" })
-      .reply(200, html, {
-        headers: {
-          "content-type": "text/html; charset=utf-8",
-          "content-length": html.length.toString(),
-        },
-      });
+    mockFetch([
+      ["GET", "https://unicode.org/Public/15.1.0/ucd?F=2", () => {
+        return HttpResponse.text(html, {
+          headers: {
+            "content-type": "text/html; charset=utf-8",
+            "content-length": html.length.toString(),
+          },
+        });
+      }],
+    ]);
 
     const { response } = await executeRequest(
       new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd", {
@@ -295,9 +301,11 @@ describe("v1_files", () => {
   });
 
   it("should handle HEAD requests for non-existent files", async () => {
-    fetchMock.get("https://unicode.org")
-      .intercept({ path: "/Public/nonexistent/path?F=2" })
-      .reply(404, "Not Found");
+    mockFetch([
+      ["GET", "https://unicode.org/Public/nonexistent/path?F=2", () => {
+        return HttpResponse.text("Not Found", { status: 404 });
+      }],
+    ]);
 
     const { response } = await executeRequest(
       new Request("https://api.ucdjs.dev/api/v1/files/nonexistent/path", {
@@ -310,9 +318,13 @@ describe("v1_files", () => {
   });
 
   it("should handle HEAD requests with 502 from unicode.org", async () => {
-    fetchMock.get("https://unicode.org")
-      .intercept({ path: "/Public/error/path?F=2" })
-      .reply(500, "Internal Server Error");
+    mockFetch([
+      ["GET", "https://unicode.org/Public/error/path?F=2", () => {
+        return HttpResponse.text("Internal Server Error", {
+          status: 500,
+        });
+      }],
+    ]);
 
     const { response } = await executeRequest(
       new Request("https://api.ucdjs.dev/api/v1/files/error/path", {
@@ -327,13 +339,15 @@ describe("v1_files", () => {
   it("should handle HEAD requests with missing content-type header", async () => {
     const mockContent = "Some binary content";
 
-    fetchMock.get("https://unicode.org")
-      .intercept({ path: "/Public/binary/file?F=2" })
-      .reply(200, mockContent, {
-        headers: {
-          "content-length": mockContent.length.toString(),
-        },
-      });
+    mockFetch([
+      ["GET", "https://unicode.org/Public/binary/file?F=2", () => {
+        return HttpResponse.text(mockContent, {
+          headers: {
+            "content-length": mockContent.length.toString(),
+          },
+        });
+      }],
+    ]);
 
     const { response } = await executeRequest(
       new Request("https://api.ucdjs.dev/api/v1/files/binary/file", {
@@ -356,11 +370,13 @@ describe("v1_files", () => {
         { name: "data.xml", path: "/Public/15.1.0/ucd/data.xml", type: "file", lastModified: Date.now() },
       ], "F2");
 
-      fetchMock.get("https://unicode.org")
-        .intercept({ path: "/Public/15.1.0/ucd?F=2" })
-        .reply(200, html, {
-          headers: { "content-type": "text/html; charset=utf-8" },
-        });
+      mockFetch([
+        ["GET", "https://unicode.org/Public/15.1.0/ucd?F=2", () => {
+          return HttpResponse.text(html, {
+            headers: { "content-type": "text/html; charset=utf-8" },
+          });
+        }],
+      ]);
 
       const { response, json } = await executeRequest(
         new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd?pattern=*.txt"),
@@ -380,11 +396,13 @@ describe("v1_files", () => {
         { name: "Blocks.txt", path: "/Public/15.1.0/ucd/Blocks.txt", type: "file", lastModified: Date.now() },
       ], "F2");
 
-      fetchMock.get("https://unicode.org")
-        .intercept({ path: "/Public/15.1.0/ucd?F=2" })
-        .reply(200, html, {
-          headers: { "content-type": "text/html; charset=utf-8" },
-        });
+      mockFetch([
+        ["GET", "https://unicode.org/Public/15.1.0/ucd?F=2", () => {
+          return HttpResponse.text(html, {
+            headers: { "content-type": "text/html; charset=utf-8" },
+          });
+        }],
+      ]);
 
       const { response, json } = await executeRequest(
         new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd?pattern=Uni*"),
@@ -403,11 +421,13 @@ describe("v1_files", () => {
         { name: "Blocks.txt", path: "/Public/15.1.0/ucd/Blocks.txt", type: "file", lastModified: Date.now() },
       ], "F2");
 
-      fetchMock.get("https://unicode.org")
-        .intercept({ path: "/Public/15.1.0/ucd?F=2" })
-        .reply(200, html, {
-          headers: { "content-type": "text/html; charset=utf-8" },
-        });
+      mockFetch([
+        ["GET", "https://unicode.org/Public/15.1.0/ucd?F=2", () => {
+          return HttpResponse.text(html, {
+            headers: { "content-type": "text/html; charset=utf-8" },
+          });
+        }],
+      ]);
 
       const { response, json } = await executeRequest(
         new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd?pattern=unicode*"),
@@ -426,11 +446,13 @@ describe("v1_files", () => {
         { name: "Blocks.txt", path: "/Public/15.1.0/ucd/Blocks.txt", type: "file", lastModified: Date.now() },
       ], "F2");
 
-      fetchMock.get("https://unicode.org")
-        .intercept({ path: "/Public/15.1.0/ucd?F=2" })
-        .reply(200, html, {
-          headers: { "content-type": "text/html; charset=utf-8" },
-        });
+      mockFetch([
+        ["GET", "https://unicode.org/Public/15.1.0/ucd?F=2", () => {
+          return HttpResponse.text(html, {
+            headers: { "content-type": "text/html; charset=utf-8" },
+          });
+        }],
+      ]);
 
       const { response, json } = await executeRequest(
         new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd?pattern=*.xml"),
@@ -449,11 +471,13 @@ describe("v1_files", () => {
         { name: "Unihan.zip", path: "/Public/15.1.0/ucd/Unihan.zip", type: "file", lastModified: Date.now() },
       ], "F2");
 
-      fetchMock.get("https://unicode.org")
-        .intercept({ path: "/Public/15.1.0/ucd?F=2" })
-        .reply(200, html, {
-          headers: { "content-type": "text/html; charset=utf-8" },
-        });
+      mockFetch([
+        ["GET", "https://unicode.org/Public/15.1.0/ucd?F=2", () => {
+          return HttpResponse.text(html, {
+            headers: { "content-type": "text/html; charset=utf-8" },
+          });
+        }],
+      ]);
 
       const { response, json } = await executeRequest(
         new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd?pattern=*.{txt,xml}"),
@@ -473,11 +497,13 @@ describe("v1_files", () => {
         { name: "Blocks.txt", path: "/Public/15.1.0/ucd/Blocks.txt", type: "file", lastModified: Date.now() },
       ], "F2");
 
-      fetchMock.get("https://unicode.org")
-        .intercept({ path: "/Public/15.1.0/ucd?F=2" })
-        .reply(200, html, {
-          headers: { "content-type": "text/html; charset=utf-8" },
-        });
+      mockFetch([
+        ["GET", "https://unicode.org/Public/15.1.0/ucd?F=2", () => {
+          return HttpResponse.text(html, {
+            headers: { "content-type": "text/html; charset=utf-8" },
+          });
+        }],
+      ]);
 
       const { response, json } = await executeRequest(
         new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd?pattern=*Data*"),
@@ -493,11 +519,14 @@ describe("v1_files", () => {
     it("should not apply pattern filter for file requests", async () => {
       const mockFileContent = "# Unicode Character Database";
 
-      fetchMock.get("https://unicode.org")
-        .intercept({ path: "/Public/15.1.0/ucd/UnicodeData.txt?F=2" })
-        .reply(200, mockFileContent, {
-          headers: { "content-type": "text/plain; charset=utf-8" },
-        });
+      mockFetch([
+        ["GET", "https://unicode.org/Public/15.1.0/ucd/UnicodeData.txt?F=2", () => {
+          return HttpResponse.text(mockFileContent, {
+            status: 200,
+            headers: { "content-type": "text/plain; charset=utf-8" },
+          });
+        }],
+      ]);
 
       const { response, text } = await executeRequest(
         new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd/UnicodeData.txt?pattern=*.xml"),
@@ -515,11 +544,14 @@ describe("v1_files", () => {
         { name: "UnicodeData.txt", path: "/Public/15.1.0/ucd/UnicodeData.txt", type: "file", lastModified: Date.now() },
       ], "F2");
 
-      fetchMock.get("https://unicode.org")
-        .intercept({ path: "/Public/15.1.0/ucd?F=2" })
-        .reply(200, html, {
-          headers: { "content-type": "text/html; charset=utf-8" },
-        });
+      mockFetch([
+        ["GET", "https://unicode.org/Public/15.1.0/ucd?F=2", () => {
+          return HttpResponse.text(html, {
+            status: 200,
+            headers: { "content-type": "text/html; charset=utf-8" },
+          });
+        }],
+      ]);
 
       const { response, json } = await executeRequest(
         new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd?pattern="),
