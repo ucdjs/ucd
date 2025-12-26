@@ -1,7 +1,8 @@
 import type { UnicodeVersion } from "@ucdjs/schemas";
-import { fetchMock } from "cloudflare:test";
+
+import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { env } from "cloudflare:workers";
-import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { executeRequest } from "../../helpers/request";
 import { expectApiError, expectCacheHeaders, expectJsonResponse, expectSuccess } from "../../helpers/response";
 
@@ -20,13 +21,7 @@ vi.mock("@unicode-utils/core", async (importOriginal) => {
   };
 });
 
-beforeAll(() => {
-  fetchMock.activate();
-  fetchMock.disableNetConnect();
-});
-
 afterEach(() => {
-  fetchMock.assertNoPendingInterceptors();
   vi.resetAllMocks();
 });
 
@@ -66,9 +61,11 @@ describe("v1_versions", () => {
         return version;
       });
 
-      fetchMock.get("https://www.unicode.org")
-        .intercept({ path: "/versions/enumeratedversions.html" })
-        .reply(200, mockHtmlResponse);
+      mockFetch([
+        ["GET", "https://www.unicode.org/versions/enumeratedversions.html", () => {
+          return HttpResponse.text(mockHtmlResponse);
+        }],
+      ]);
 
       const { response, json } = await executeRequest(
         new Request("https://api.ucdjs.dev/api/v1/versions"),
@@ -102,9 +99,11 @@ describe("v1_versions", () => {
         return version;
       });
 
-      fetchMock.get("https://www.unicode.org")
-        .intercept({ path: "/versions/enumeratedversions.html" })
-        .reply(200, mockHtmlResponse);
+      mockFetch([
+        ["GET", "https://www.unicode.org/versions/enumeratedversions.html", () => {
+          return HttpResponse.text(mockHtmlResponse);
+        }],
+      ]);
 
       const { response, json } = await executeRequest(
         new Request("https://api.ucdjs.dev/api/v1/versions"),
@@ -134,9 +133,11 @@ describe("v1_versions", () => {
         return version;
       });
 
-      fetchMock.get("https://www.unicode.org")
-        .intercept({ path: "/versions/enumeratedversions.html" })
-        .reply(200, mockHtmlResponse);
+      mockFetch([
+        ["GET", "https://www.unicode.org/versions/enumeratedversions.html", () => {
+          return HttpResponse.text(mockHtmlResponse);
+        }],
+      ]);
 
       const { response, json } = await executeRequest(
         new Request("https://api.ucdjs.dev/api/v1/versions"),
@@ -156,9 +157,11 @@ describe("v1_versions", () => {
     });
 
     it("should handle errors when fetching unicode.org fails", async () => {
-      fetchMock.get("https://www.unicode.org")
-        .intercept({ path: "/versions/enumeratedversions.html" })
-        .reply(500, "Internal Server Error");
+      mockFetch([
+        ["GET", "https://www.unicode.org/versions/enumeratedversions.html", () => {
+          return HttpResponse.text("Internal Server Error", { status: 500 });
+        }],
+      ]);
 
       const { response } = await executeRequest(
         new Request("https://api.ucdjs.dev/api/v1/versions"),
@@ -177,9 +180,11 @@ describe("v1_versions", () => {
       vi.mocked(getCurrentDraftVersion).mockResolvedValue(null);
       vi.mocked(resolveUCDVersion).mockImplementation((version: string) => version);
 
-      fetchMock.get("https://www.unicode.org")
-        .intercept({ path: "/versions/enumeratedversions.html" })
-        .reply(200, "<html><body><p>No table here</p></body></html>");
+      mockFetch([
+        ["GET", "https://www.unicode.org/versions/enumeratedversions.html", () => {
+          return HttpResponse.text("<html><body><p>No table here</p></body></html>");
+        }],
+      ]);
 
       const { response } = await executeRequest(
         new Request("https://api.ucdjs.dev/api/v1/versions"),
@@ -209,9 +214,11 @@ describe("v1_versions", () => {
         </html>
       `;
 
-      fetchMock.get("https://www.unicode.org")
-        .intercept({ path: "/versions/enumeratedversions.html" })
-        .reply(200, emptyTableHtml);
+      mockFetch([
+        ["GET", "https://www.unicode.org/versions/enumeratedversions.html", () => {
+          return HttpResponse.text(emptyTableHtml);
+        }],
+      ]);
 
       const { response } = await executeRequest(
         new Request("https://api.ucdjs.dev/api/v1/versions"),
@@ -230,9 +237,11 @@ describe("v1_versions", () => {
       vi.mocked(getCurrentDraftVersion).mockRejectedValue(new Error("Draft version fetch failed"));
       vi.mocked(resolveUCDVersion).mockImplementation((version: string) => version);
 
-      fetchMock.get("https://www.unicode.org")
-        .intercept({ path: "/versions/enumeratedversions.html" })
-        .reply(200, mockHtmlResponse);
+      mockFetch([
+        ["GET", "https://www.unicode.org/versions/enumeratedversions.html", () => {
+          return HttpResponse.text(mockHtmlResponse);
+        }],
+      ]);
 
       const { response, json } = await executeRequest(
         new Request("https://api.ucdjs.dev/api/v1/versions"),
@@ -252,9 +261,11 @@ describe("v1_versions", () => {
       vi.mocked(getCurrentDraftVersion).mockResolvedValue(null);
       vi.mocked(resolveUCDVersion).mockImplementation((version: string) => version);
 
-      fetchMock.get("https://www.unicode.org")
-        .intercept({ path: "/versions/enumeratedversions.html" })
-        .reply(200, mockHtmlResponse);
+      mockFetch([
+        ["GET", "https://www.unicode.org/versions/enumeratedversions.html", () => {
+          return HttpResponse.text(mockHtmlResponse);
+        }],
+      ]);
 
       const { response } = await executeRequest(
         new Request("https://api.ucdjs.dev/api/v1/versions"),
@@ -271,9 +282,11 @@ describe("v1_versions", () => {
       vi.mocked(getCurrentDraftVersion).mockResolvedValue(null);
       vi.mocked(resolveUCDVersion).mockImplementation((version: string) => version);
 
-      fetchMock.get("https://www.unicode.org")
-        .intercept({ path: "/versions/enumeratedversions.html" })
-        .reply(200, mockHtmlResponse);
+      mockFetch([
+        ["GET", "https://www.unicode.org/versions/enumeratedversions.html", () => {
+          return HttpResponse.text(mockHtmlResponse);
+        }],
+      ]);
 
       const { response, json } = await executeRequest(
         new Request("https://api.ucdjs.dev/api/v1/versions"),
@@ -311,9 +324,11 @@ describe("v1_versions", () => {
         </html>
       `;
 
-      fetchMock.get("https://www.unicode.org")
-        .intercept({ path: "/versions/enumeratedversions.html" })
-        .reply(200, mixedYearHtml);
+      mockFetch([
+        ["GET", "https://www.unicode.org/versions/enumeratedversions.html", () => {
+          return HttpResponse.text(mixedYearHtml);
+        }],
+      ]);
 
       const { response, json } = await executeRequest(
         new Request("https://api.ucdjs.dev/api/v1/versions"),
