@@ -1,7 +1,8 @@
 import type { Entry } from "apache-autoindex-parse";
 import type { TraverseEntry } from "apache-autoindex-parse/traverse";
 import { generateAutoIndexHtml } from "apache-autoindex-parse/test-utils";
-import { env, fetchMock } from "cloudflare:test";
+import { fetchMock } from "cloudflare:test";
+import { env } from "cloudflare:workers";
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { executeRequest } from "../../helpers/request";
 import { expectApiError, expectCacheHeaders, expectJsonResponse, expectSuccess } from "../../helpers/response";

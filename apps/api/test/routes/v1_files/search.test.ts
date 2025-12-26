@@ -1,5 +1,6 @@
 import { generateAutoIndexHtml } from "apache-autoindex-parse/test-utils";
-import { env, fetchMock } from "cloudflare:test";
+import { fetchMock } from "cloudflare:test";
+import { env } from "cloudflare:workers";
 import { afterEach, beforeAll, describe, expect, it } from "vitest";
 import { executeRequest } from "../../helpers/request";
 import { expectApiError, expectSuccess } from "../../helpers/response";
