@@ -2,6 +2,7 @@ import { existsSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { defineConfig, mergeConfig, type TestProjectConfiguration } from "vitest/config";
 import { aliases } from "./vitest.aliases";
+import { normalize } from "node:path";
 
 const pkgRoot = (root: string, pkg: string) =>
   fileURLToPath(new URL(`./${root}/${pkg}`, import.meta.url));
@@ -9,7 +10,7 @@ const pkgRoot = (root: string, pkg: string) =>
 async function createProjects(root: string): Promise<TestProjectConfiguration[]> {
   try {
     const rootDir = fileURLToPath(new URL(`./${root}`, import.meta.url));
-    const dirs = readdirSync(rootDir).filter((dir) => existsSync(pkgRoot(root, dir) + "/package.json"));
+    const dirs = readdirSync(rootDir).filter((dir) => existsSync(normalize(pkgRoot(root, dir) + "/package.json")));
 
     const promises = dirs.map(async (dir) => {
       const base = {
@@ -21,12 +22,14 @@ async function createProjects(root: string): Promise<TestProjectConfiguration[]>
         },
       } satisfies TestProjectConfiguration;
 
-      const customConfigPath = pkgRoot(root, dir) + "/vitest.config.ts";
+      const customConfigPath = normalize(pkgRoot(root, dir) + "/vitest.config.ts")
 
       if (existsSync(customConfigPath)) {
-        console.log(`[vitest] Loading custom config for ${root}/${dir} using path ${customConfigPath}`);
+        const safePath = customConfigPath.replace(/^[a-zA-Z]:/, "");
+        console.log(`[vitest] Loading custom config for ${root}/${dir} using path ${customConfigPath} and safe path ${safePath}`);
+
         try {
-          const customConfig = await import(customConfigPath).then((m) => m.default);
+          const customConfig = await import(safePath).then((m) => m.default);
 
           return mergeConfig(base, customConfig);
         } catch (err) {
