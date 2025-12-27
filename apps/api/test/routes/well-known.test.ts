@@ -10,14 +10,13 @@ import {
   expectSuccess,
 } from "../helpers/response";
 
-// Mock unicode-utils for version fetching
 vi.mock("@unicode-utils/core", async (importOriginal) => {
   const original = await importOriginal<typeof import("@unicode-utils/core")>();
 
   return {
     ...original,
-    getCurrentDraftVersion: vi.fn(() => Promise.resolve(null)),
-    resolveUCDVersion: vi.fn((version: string) => version),
+    getCurrentDraftVersion: vi.fn(() => original.getCurrentDraftVersion()),
+    resolveUCDVersion: vi.fn((version) => original.resolveUCDVersion(version)),
   };
 });
 
