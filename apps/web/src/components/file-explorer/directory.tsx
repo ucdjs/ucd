@@ -70,9 +70,7 @@ export function DirectoryItem({ directory, viewMode, currentPath }: DirectoryIte
             </div>
             {lastModified && (
               <Tooltip>
-                <TooltipTrigger asChild>
-                  <p className="text-xs text-muted-foreground cursor-help">{lastModified}</p>
-                </TooltipTrigger>
+                <TooltipTrigger render={() => <p className="text-xs text-muted-foreground cursor-help">{lastModified}</p>} />
                 <TooltipContent>
                   {formatExactDate(directory.lastModified!)}
                 </TooltipContent>
@@ -104,11 +102,12 @@ export function DirectoryItem({ directory, viewMode, currentPath }: DirectoryIte
       </span>
       {lastModified && (
         <Tooltip>
-          <TooltipTrigger asChild>
+          <TooltipTrigger render={() => (
             <span className="text-xs text-muted-foreground shrink-0 cursor-help">
               {lastModified}
             </span>
-          </TooltipTrigger>
+          )}
+          />
           <TooltipContent>
             {formatExactDate(directory.lastModified!)}
           </TooltipContent>

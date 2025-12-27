@@ -81,9 +81,7 @@ export function FileItem({ file, viewMode, currentPath }: FileItemProps) {
             </div>
             {lastModified && (
               <Tooltip>
-                <TooltipTrigger asChild>
-                  <p className="text-xs text-muted-foreground cursor-help">{lastModified}</p>
-                </TooltipTrigger>
+                <TooltipTrigger render={() => <p className="text-xs text-muted-foreground cursor-help">{lastModified}</p>} />
                 <TooltipContent>
                   {formatExactDate(file.lastModified!)}
                 </TooltipContent>
@@ -114,11 +112,12 @@ export function FileItem({ file, viewMode, currentPath }: FileItemProps) {
       </Link>
       {lastModified && (
         <Tooltip>
-          <TooltipTrigger asChild>
+          <TooltipTrigger render={() => (
             <span className="text-xs text-muted-foreground shrink-0 cursor-help">
               {lastModified}
             </span>
-          </TooltipTrigger>
+          )}
+          />
           <TooltipContent>
             {formatExactDate(file.lastModified!)}
           </TooltipContent>
