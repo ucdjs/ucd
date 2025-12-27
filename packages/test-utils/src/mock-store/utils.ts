@@ -32,17 +32,23 @@ export function extractConfiguredMetadata(response: unknown): {
   actualResponse: unknown;
   latency?: number | "random";
   headers?: Record<string, string>;
+  beforeHook?: OnBeforeMockFetchCallback;
+  afterHook?: OnAfterMockFetchCallback;
 } {
   if (isConfiguredResponse(response)) {
     const meta = (response as any)[kConfiguredResponse] as {
       latency?: number | "random";
       headers?: Record<string, string>;
+      before?: OnBeforeMockFetchCallback;
+      after?: OnAfterMockFetchCallback;
     };
 
     return {
       actualResponse: response,
       latency: meta.latency,
       headers: meta.headers,
+      beforeHook: meta.before,
+      afterHook: meta.after,
     };
   }
 
@@ -91,7 +97,7 @@ export function wrapMockFetch(
           return route;
         }
 
-        const isWildcardRoute = url.includes(":wildcard+");
+        const isWildcardRoute = url.includes(":wildcard*");
         const wrappedResolver: HttpResponseResolver = async (args) => {
           // We modify the wildcard param to be a string instead of an array
           // Since we changed our wildcard capture route to use ":wildcard+" instead of "*"

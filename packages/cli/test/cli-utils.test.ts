@@ -62,19 +62,24 @@ describe("runCommand", () => {
   });
 
   it("should print help message for 'help' command", async () => {
-    const consoleSpy = vi.spyOn(console, "log");
+    const helpCapture = vi.spyOn(console, "info").mockImplementation(() => {});
+
     await runCommand("help", { _: [] });
-    expect(consoleSpy).toHaveBeenCalledWith(
+
+    expect(helpCapture).toHaveBeenCalledWith(
       expect.stringContaining("A CLI for working with the Unicode Character Database (UCD)."),
     );
+
+    helpCapture.mockRestore();
   });
 
   it("should print version for 'version' command", async () => {
-    const consoleSpy = vi.spyOn(console, "log");
+    const versionCapture = vi.spyOn(console, "log").mockImplementation(() => {});
     await runCommand("version", { _: [] });
-    expect(consoleSpy).toHaveBeenCalledWith(
+    expect(versionCapture).toHaveBeenCalledWith(
       expect.stringContaining(`v${pkg.version}`),
     );
+    versionCapture.mockRestore();
   });
 
   it("should handle 'store' command", async () => {
@@ -94,8 +99,7 @@ describe("runCommand", () => {
   });
 
   it("should throw error for unknown command", async () => {
-    // @ts-expect-error Testing invalid command
-    await expect(runCommand("invalid", { _: [] })).rejects.toThrow(
+    await expect(runCommand("invalid" as any, { _: [] })).rejects.toThrow(
       "Error running invalid -- no command found.",
     );
   });

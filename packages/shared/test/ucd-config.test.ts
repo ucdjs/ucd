@@ -16,6 +16,7 @@ describe("discoverEndpointsFromConfig", () => {
               manifest: "/.well-known/ucd-store.json",
               versions: "/api/v1/versions",
             },
+            versions: [],
           } satisfies UCDWellKnownConfig);
         }],
       ]);
@@ -31,6 +32,7 @@ describe("discoverEndpointsFromConfig", () => {
           manifest: "/.well-known/ucd-store.json",
           versions: "/api/v1/versions",
         },
+        versions: [],
       });
     });
 

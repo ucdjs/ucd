@@ -5,7 +5,7 @@ import type { InternalUCDStoreContext, SharedOperationOptions } from "../../type
 import {
   createDebugger,
   filterTreeStructure,
-  tryCatch,
+  wrapTry,
 } from "@ucdjs-internal/shared";
 import { join } from "pathe";
 import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../../errors";
@@ -35,7 +35,7 @@ export async function getFileTree(
   version: string,
   options?: GetFileTreeOptions,
 ): Promise<OperationResult<UnicodeTreeNode[], StoreError>> {
-  return tryCatch(async () => {
+  return wrapTry(async () => {
     // Validate version exists in store
     if (!context.versions.includes(version)) {
       throw new UCDStoreVersionNotFoundError(version);

@@ -63,29 +63,29 @@ export interface UCDStoreOptions {
   versions?: string[];
 
   /**
-   * Whether to enable bootstrap mode when no manifest exists.
-   * If false, store creation will fail if no manifest is found.
+   * Whether to enable bootstrap mode when no lockfile exists.
+   * If false, store creation will fail if no lockfile is found.
    *
    * @default true
    */
   bootstrap?: boolean;
 
   /**
-   * Whether to verify manifest versions against the API.
-   * If true, will check that all versions in the manifest are still available.
-   * Only applies when a manifest already exists.
+   * Whether to verify lockfile versions against the API.
+   * If true, will check that all versions in the lockfile are still available.
+   * Only applies when a lockfile already exists.
    *
    * @default false
    */
   verify?: boolean;
 
   /**
-   * Strategy for handling version conflicts when manifest exists and versions are provided.
-   * - "strict": Throw error if provided versions differ from manifest (default)
-   * - "merge": Combine manifest and provided versions, update manifest
-   * - "overwrite": Replace manifest versions with provided versions, update manifest
+   * Strategy for handling version conflicts when lockfile exists and versions are provided.
+   * - "strict": Throw error if provided versions differ from lockfile (default)
+   * - "merge": Combine lockfile and provided versions, update lockfile
+   * - "overwrite": Replace lockfile versions with provided versions, update lockfile
    *
-   * Only applies when manifest exists and versions are provided.
+   * Only applies when lockfile exists and versions are provided.
    *
    * @default "strict"
    */
@@ -124,9 +124,9 @@ export interface InternalUCDStoreContext {
   versions: string[];
 
   /**
-   * Path to the store manifest file.
+   * Path to the store lockfile.
    */
-  manifestPath: string;
+  lockfilePath: string;
 }
 
 export type UCDStoreContext = Readonly<Pick<InternalUCDStoreContext, "basePath" | "fs">> & {
@@ -175,15 +175,10 @@ export interface UCDStoreFileOperations {
 
 export interface UCDStoreOperations {
   /**
-   * Synchronizes the store manifest with available versions from the API.
-   * This is a metadata-level operation that updates which versions the store knows about.
+   * Synchronizes the store lockfile with available versions from API and mirrors files.
+   * Updates lockfile with new versions, downloads missing files, and optionally removes orphaned files/unavailable versions.
    *
-   * Example: Fetches the list of available Unicode versions from the API and updates the manifest.
-   *
-   * Synchronizes the store manifest with available versions from the API.
-   * This is a metadata-level operation that updates which versions the store knows about.
-   *
-   * Example: Fetches the list of available Unicode versions from the API and updates the manifest.
+   * Example: Fetches available versions from API, updates lockfile, mirrors files, and optionally cleans up orphaned files.
    *
    * @experimental This method is under development and may change
    */

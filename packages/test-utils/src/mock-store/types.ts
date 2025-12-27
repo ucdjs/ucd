@@ -1,4 +1,5 @@
 import type { MockFetchFn } from "@luxass/msw-utils";
+import type { UnicodeTree } from "@ucdjs/schemas";
 import type { AsyncResponseResolverReturnType, DefaultBodyType, HttpResponseResolver, PathParams } from "msw";
 import type { paths } from "../.generated/api";
 import type { MOCK_ROUTES } from "./handlers";
@@ -59,6 +60,7 @@ interface MockRouteHandlerContext<Endpoint extends EndpointWithGet> {
   mockFetch: MockFetchFn;
   versions: string[];
   shouldUseDefaultValue: boolean;
+  files: MockStoreFiles;
 }
 
 export interface RouteHandlerDefinition<Endpoint extends EndpointWithGet> {
@@ -71,6 +73,15 @@ type DerivedEndpointConfig = InferEndpointConfig<typeof MOCK_ROUTES>;
 type DerivedResponses = Partial<{
   [K in keyof DerivedEndpointConfig]: false | DerivedEndpointConfig[K];
 }>;
+
+export type StoreVersionFileKey = "16.0.0" | "17.0.0";
+export type StoreFileKeyWildcard = "*";
+
+type PartialRecord<K extends keyof any, T> = {
+  [P in K]?: T;
+};
+
+export type MockStoreFiles = PartialRecord<StoreVersionFileKey | StoreFileKeyWildcard | (string & {}), UnicodeTree>;
 
 export interface MockStoreConfig {
   /**
@@ -87,8 +98,23 @@ export interface MockStoreConfig {
    * If the value provided is `true`, then a default handler will be used.
    * If the value is `false`, then no handler will be used.
    * If the value provided is a specific response, then that response will be used.
+   *
+   * By default, all endpoints will use the default handler.
    */
   responses?: DerivedResponses;
+
+  /**
+   * The files to mock for the store endpoint.
+   *
+   * The keys are the version to mock the files for.
+   *
+   * It will be used by the following endpoints:
+   * - `/api/v1/versions/{version}/file-tree`
+   * - `/.well-known/ucd-store/{version}.json`
+   *
+   * A special key of `*` can be used to mock all versions.
+   */
+  files?: MockStoreFiles;
 
   /**
    * The versions to use for placeholders
@@ -152,12 +178,24 @@ export interface ConfiguredResponseConfig<Response> {
    * Optional custom headers to add to the response
    */
   headers?: Record<string, string>;
+
+  /**
+   * Optional hook that runs before the resolver is called
+   */
+  before?: OnBeforeMockFetchCallback;
+
+  /**
+   * Optional hook that runs after the resolver returns
+   */
+  after?: OnAfterMockFetchCallback;
 }
 
 export type ConfiguredResponse<Response> = Response & {
   [kConfiguredResponse]: {
     latency?: ConfiguredResponseConfig<Response>["latency"];
     headers?: ConfiguredResponseConfig<Response>["headers"];
+    before?: ConfiguredResponseConfig<Response>["before"];
+    after?: ConfiguredResponseConfig<Response>["after"];
   };
 };
 

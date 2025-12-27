@@ -1,16 +1,7 @@
-import { env, fetchMock } from "cloudflare:test";
-import { afterEach, beforeAll, describe, expect, it } from "vitest";
+import { env } from "cloudflare:workers";
+import { describe, expect, it } from "vitest";
 import { executeRequest } from "../helpers/request";
 import { expectApiError } from "../helpers/response";
-
-beforeAll(() => {
-  fetchMock.activate();
-  fetchMock.disableNetConnect();
-});
-
-afterEach(() => {
-  fetchMock.assertNoPendingInterceptors();
-});
 
 describe("shared", () => {
   describe("api error response structure", () => {

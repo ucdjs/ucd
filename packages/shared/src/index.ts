@@ -7,6 +7,7 @@ export type { FetchOptions, FetchResponse, SafeFetchResponse } from "./fetch/typ
 
 export {
   createPathFilter,
+  DEFAULT_EXCLUDED_EXTENSIONS,
   filterTreeStructure,
   PRECONFIGURED_FILTERS,
 } from "./filter";

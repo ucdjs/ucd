@@ -203,6 +203,19 @@ function createCustomFetch(): CustomFetch {
           context.response.data = await context.response[responseType]() as MappedResponseType<R, T>;
         }
       }
+
+      // Validate response data with schema if provided
+      if (context.options.schema && context.response.data !== undefined) {
+        const result = await context.options.schema.safeParseAsync(context.response.data);
+        if (!result.success) {
+          context.error = new Error(`Response validation failed: ${result.error.message}`);
+          context.error.name = "ValidationError";
+          (context.error as any).issues = result.error.issues;
+          return await handleError(context);
+        }
+
+        context.response.data = result.data as MappedResponseType<R, T>;
+      }
     }
 
     if (

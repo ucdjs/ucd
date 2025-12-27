@@ -7,7 +7,7 @@
     "email": "lucasnrgaard@gmail.com",
     "url": "https://luxass.dev"
   },
-  "packageManager": "pnpm@10.25.0",
+  "packageManager": "pnpm@10.26.1",
   "license": "MIT",
   "homepage": "https://github.com/ucdjs/ucd",
   "repository": {
@@ -17,6 +17,10 @@
   },
   "bugs": {
     "url": "https://github.com/ucdjs/ucd/issues"
+  },
+  "imports": {
+    "#internal:bridge/node": "./src/bridges/node.ts",
+    "#internal:bridge/http": "./src/bridges/http.ts"
   },
   "exports": {
     ".": "./dist/index.mjs",

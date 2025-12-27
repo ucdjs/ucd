@@ -11,7 +11,7 @@ import type {
   InitOptions,
   UCDStoreOptions,
 } from "./types";
-import { createPathFilter, filterTreeStructure, flattenFilePaths, safeJsonParse, tryCatch } from "@ucdjs-internal/shared";
+import { createPathFilter, filterTreeStructure, flattenFilePaths, safeJsonParse, wrapTry } from "@ucdjs-internal/shared";
 import { createUCDClient } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { assertCapability } from "@ucdjs/fs-bridge";
@@ -140,7 +140,7 @@ export class UCDStore {
   }
 
   async getFileTree(version: string, extraFilters?: Pick<PathFilterOptions, "include" | "exclude">): Promise<OperationResult<UnicodeTreeNode[], StoreError>> {
-    return tryCatch(async () => {
+    return wrapTry(async () => {
       await this.#ensureClient();
 
       if (!this.#initialized) {
@@ -164,7 +164,7 @@ export class UCDStore {
   }
 
   async getFilePaths(version: string, extraFilters?: Pick<PathFilterOptions, "include" | "exclude">): Promise<OperationResult<string[], StoreError>> {
-    return tryCatch(async () => {
+    return wrapTry(async () => {
       await this.#ensureClient();
 
       if (!this.#initialized) {
@@ -186,7 +186,7 @@ export class UCDStore {
   }
 
   async getFile(version: string, filePath: string, extraFilters?: Pick<PathFilterOptions, "include" | "exclude">): Promise<OperationResult<string, StoreError>> {
-    return tryCatch(async () => {
+    return wrapTry(async () => {
       await this.#ensureClient();
 
       if (!this.#initialized) {
@@ -324,7 +324,7 @@ export class UCDStore {
    * @returns {Promise<OperationResult<AnalyzeResult[], StoreError>>} A promise that resolves to a StoreOperationResult containing an array of VersionAnalysis objects, one for each analyzed version
    */
   async analyze(options: AnalyzeOptions): Promise<OperationResult<AnalyzeResult[], StoreError>> {
-    return tryCatch(async () => {
+    return wrapTry(async () => {
       await this.#ensureClient();
 
       if (!this.#initialized) {
@@ -362,7 +362,7 @@ export class UCDStore {
    * @returns {Promise<OperationResult<MirrorResult[], StoreError>>} A promise that resolves to an array of MirrorResult objects, one for each mirrored version
    */
   async mirror(options: MirrorOptions = {}): Promise<OperationResult<MirrorResult[], StoreError>> {
-    return tryCatch(async () => {
+    return wrapTry(async () => {
       await this.#ensureClient();
 
       if (!this.#initialized) {
@@ -402,7 +402,7 @@ export class UCDStore {
    * @return {Promise<OperationResult<CleanResult[], StoreError>>} A promise that resolves to an array of CleanResult objects, one for each version cleaned
    */
   async clean(options: CleanOptions = {}): Promise<OperationResult<CleanResult[], StoreError>> {
-    return tryCatch(async () => {
+    return wrapTry(async () => {
       await this.#ensureClient();
 
       if (!this.#initialized) {
@@ -430,7 +430,7 @@ export class UCDStore {
   }
 
   async repair(options: RepairOptions = {}): Promise<OperationResult<RepairResult[], StoreError>> {
-    return tryCatch(async () => {
+    return wrapTry(async () => {
       await this.#ensureClient();
 
       if (!this.#initialized) {

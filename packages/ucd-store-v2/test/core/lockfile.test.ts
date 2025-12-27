@@ -1,23 +1,15 @@
-import { createMemoryMockFS } from "#test-utils/fs-bridges";
-import { defineFileSystemBridge } from "@ucdjs/fs-bridge";
-import { assert, describe, expect, it, vi } from "vitest";
+import { createMemoryMockFS, createReadOnlyBridge } from "#test-utils/fs-bridges";
 import {
   canUseLockfile,
   getLockfilePath,
+  LockfileInvalidError,
   readLockfile,
   readLockfileOrDefault,
   writeLockfile,
-} from "../../src/core/lockfile";
-import { UCDStoreInvalidManifestError } from "../../src/errors";
+} from "@ucdjs/lockfile";
+import { assert, describe, expect, it } from "vitest";
 
-const readOnlyBridge = defineFileSystemBridge({
-  meta: { name: "Read-Only", description: "Read Only bridge" },
-  setup: () => ({
-    read: vi.fn().mockResolvedValue("content"),
-    exists: vi.fn().mockResolvedValue(true),
-    listdir: vi.fn().mockResolvedValue([]),
-  }),
-})();
+const readOnlyBridge = createReadOnlyBridge();
 
 describe("canUseLockfile", () => {
   it("should return true for filesystem bridge with write capability", () => {
@@ -131,6 +123,11 @@ describe("readLockfile", () => {
           totalSize: 980000,
         },
       },
+      filters: {
+        disableDefaultExclusions: false,
+        exclude: [],
+        include: [],
+      },
     };
 
     await fs.write!(lockfilePath, JSON.stringify(lockfile));
@@ -140,37 +137,53 @@ describe("readLockfile", () => {
     expect(result).toEqual(lockfile);
   });
 
-  it("should throw UCDStoreInvalidManifestError when lockfile is empty", async () => {
+  it("should throw LockfileInvalidError when lockfile is empty", async () => {
     const fs = createMemoryMockFS();
     const lockfilePath = "/test/.ucd-store.lock";
 
     await fs.write!(lockfilePath, "");
 
     await expect(readLockfile(fs, lockfilePath)).rejects.toThrow(
-      UCDStoreInvalidManifestError,
-    );
-
-    await expect(readLockfile(fs, lockfilePath)).rejects.toThrow(
-      "lockfile is empty",
+      LockfileInvalidError,
     );
   });
 
-  it("should throw UCDStoreInvalidManifestError when JSON is invalid", async () => {
+  it("should include 'lockfile is empty' in error message", async () => {
+    const fs = createMemoryMockFS();
+    const lockfilePath = "/test/.ucd-store.lock";
+
+    await fs.write!(lockfilePath, "");
+
+    const error = await readLockfile(fs, lockfilePath).catch((e) => e);
+
+    expect(error).toBeInstanceOf(LockfileInvalidError);
+    expect(error.message).toContain("lockfile is empty");
+  });
+
+  it("should throw LockfileInvalidError when JSON is invalid", async () => {
     const fs = createMemoryMockFS();
     const lockfilePath = "/test/.ucd-store.lock";
 
     await fs.write!(lockfilePath, "{ invalid json }");
 
     await expect(readLockfile(fs, lockfilePath)).rejects.toThrow(
-      UCDStoreInvalidManifestError,
-    );
-
-    await expect(readLockfile(fs, lockfilePath)).rejects.toThrow(
-      "lockfile is not valid JSON",
+      LockfileInvalidError,
     );
   });
 
-  it("should throw UCDStoreInvalidManifestError when schema validation fails", async () => {
+  it("should include 'lockfile is not valid JSON' in error message", async () => {
+    const fs = createMemoryMockFS();
+    const lockfilePath = "/test/.ucd-store.lock";
+
+    await fs.write!(lockfilePath, "{ invalid json }");
+
+    const error = await readLockfile(fs, lockfilePath).catch((e) => e);
+
+    expect(error).toBeInstanceOf(LockfileInvalidError);
+    expect(error.message).toContain("lockfile is not valid JSON");
+  });
+
+  it("should throw LockfileInvalidError when schema validation fails", async () => {
     const fs = createMemoryMockFS();
     const lockfilePath = "/test/.ucd-store.lock";
 
@@ -183,7 +196,7 @@ describe("readLockfile", () => {
       expect.fail("Expected to throw, but resolved with:", v);
     }).catch((e) => e);
 
-    assert.instanceOf(err, UCDStoreInvalidManifestError);
+    assert.instanceOf(err, LockfileInvalidError);
 
     expect(err.message).toContain("lockfile does not match expected schema");
   });
@@ -199,6 +212,11 @@ describe("readLockfile", () => {
           fileCount: 100,
           totalSize: 1024000,
         },
+      },
+      filters: {
+        disableDefaultExclusions: false,
+        exclude: [],
+        include: [],
       },
     };
 
@@ -231,6 +249,11 @@ describe("readLockfile", () => {
           totalSize: 950000,
         },
       },
+      filters: {
+        disableDefaultExclusions: false,
+        exclude: [],
+        include: [],
+      },
     };
 
     await fs.write!(lockfilePath, JSON.stringify(lockfile));
@@ -253,6 +276,11 @@ describe("readLockfileOrDefault", () => {
           fileCount: 100,
           totalSize: 1024000,
         },
+      },
+      filters: {
+        disableDefaultExclusions: false,
+        exclude: [],
+        include: [],
       },
     };
 
@@ -310,17 +338,19 @@ describe("readLockfileOrDefault", () => {
 });
 
 describe("getLockfilePath", () => {
-  it("should return correct path with .ucd-store.lock filename", () => {
+  it("should return relative path with .ucd-store.lock filename", () => {
     const basePath = "/test/store";
     const result = getLockfilePath(basePath);
 
-    expect(result).toBe("/test/store/.ucd-store.lock");
+    // getLockfilePath returns a relative path; callers handle the basePath
+    expect(result).toBe(".ucd-store.lock");
   });
 
-  it("should handle nested base paths correctly", () => {
+  it("should return same relative path regardless of base path", () => {
     const basePath = "/deep/nested/path/to/store";
     const result = getLockfilePath(basePath);
 
-    expect(result).toBe("/deep/nested/path/to/store/.ucd-store.lock");
+    // The basePath parameter is unused; function always returns relative path
+    expect(result).toBe(".ucd-store.lock");
   });
 });

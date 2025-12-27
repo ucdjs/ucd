@@ -1,11 +1,10 @@
 import type { MirrorReport } from "../../src/operations/mirror";
-import { createMemoryMockFS } from "#test-utils/fs-bridges";
+import { createTestContext } from "#internal-pkg:test-utils/test-context";
+import { createReadOnlyBridge } from "#test-utils/fs-bridges";
 import { mockStoreApi } from "#test-utils/mock-store";
-import { createPathFilter, getDefaultUCDEndpointConfig } from "@ucdjs-internal/shared";
-import { createUCDClientWithConfig } from "@ucdjs/client";
-import { UCDJS_API_BASE_URL } from "@ucdjs/env";
+import { readLockfile, writeSnapshot } from "@ucdjs/lockfile";
+import { createEmptyLockfile } from "@ucdjs/lockfile/test-utils";
 import { describe, expect, it, vi } from "vitest";
-import { createInternalContext } from "../../src/core/context";
 import { mirror } from "../../src/operations/mirror";
 import { sync } from "../../src/operations/sync";
 
@@ -18,288 +17,709 @@ vi.mock("../../src/operations/mirror", async (importOriginal) => {
 });
 
 describe("sync", () => {
-  const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, getDefaultUCDEndpointConfig());
+  describe("version discovery", () => {
+    it("should discover versions from API config", async () => {
+      mockStoreApi({
+        versions: ["16.0.0", "15.1.0", "15.0.0"],
+      });
 
-  it("should sync with default add strategy", async () => {
-    mockStoreApi({
-      versions: ["16.0.0", "15.1.0", "15.0.0"],
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+      });
+
+      const [data, error] = await sync(context);
+
+      expect(error).toBeNull();
+      expect(data).toBeDefined();
+      expect(data?.added).toEqual(["15.1.0", "15.0.0"]);
+      expect(data?.unchanged).toEqual(["16.0.0"]);
     });
 
-    const filter = createPathFilter({});
-    const fs = createMemoryMockFS({
-      initialFiles: {
-        "/test/.ucd-store.json": JSON.stringify({
-          "16.0.0": { expectedFiles: [] },
-        }),
-      },
+    it("should add discovered versions to lockfile", async () => {
+      mockStoreApi({
+        versions: ["16.0.0", "15.1.0"],
+      });
+
+      const { context, fs, lockfilePath } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+      });
+
+      const [_data, error] = await sync(context);
+
+      expect(error).toBeNull();
+
+      const lockfile = await readLockfile(fs, lockfilePath);
+      const versionKeys = Object.keys(lockfile.versions).sort();
+      expect(versionKeys).toEqual(["15.1.0", "16.0.0"]);
     });
 
-    const context = createInternalContext({
-      client,
-      filter,
-      fs,
-      basePath: "/test",
-      versions: ["16.0.0"],
-      manifestPath: "/test/.ucd-store.json",
+    it("should create lockfile entries for new versions", async () => {
+      mockStoreApi({
+        versions: ["16.0.0", "15.1.0"],
+      });
+
+      const { context, fs, lockfilePath } = await createTestContext({
+        versions: ["16.0.0", "15.1.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+      });
+
+      const [_data, error] = await sync(context);
+
+      expect(error).toBeNull();
+
+      const lockfile = await readLockfile(fs, lockfilePath);
+      const entry = lockfile.versions["15.1.0"];
+      expect(entry).toBeDefined();
+      expect(entry?.path).toBe("15.1.0/snapshot.json");
+      expect(entry?.fileCount).toBeGreaterThanOrEqual(0);
+      expect(entry?.totalSize).toBeGreaterThanOrEqual(0);
     });
-
-    const [data, error] = await sync(context);
-
-    expect(error).toBeNull();
-    expect(data).toBeDefined();
-    expect(data).toMatchObject({
-      timestamp: expect.any(String),
-      added: ["15.1.0", "15.0.0"],
-      removed: [],
-      unchanged: ["16.0.0"],
-      versions: expect.arrayContaining(["16.0.0", "15.1.0", "15.0.0"]),
-    });
-    expect(data?.versions).toHaveLength(3);
-
-    const manifestContent = await fs.read("/test/.ucd-store.json");
-    expect(manifestContent).toBe(JSON.stringify({
-      "16.0.0": { expectedFiles: [] },
-      "15.1.0": { expectedFiles: [] },
-      "15.0.0": { expectedFiles: [] },
-    }, null, 2));
   });
 
-  it("should use add strategy and keep versions not in API", async () => {
-    mockStoreApi({
-      versions: ["16.0.0", "15.1.0"],
+  describe("removeUnavailable option", () => {
+    it("should keep existing versions by default", async () => {
+      mockStoreApi({
+        versions: ["16.0.0", "15.1.0", "15.0.0"],
+      });
+
+      const { context, fs, lockfilePath } = await createTestContext({
+        versions: ["16.0.0", "15.1.0", "15.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+      });
+
+      const [data, error] = await sync(context);
+
+      expect(error).toBeNull();
+      expect(data).toBeDefined();
+      expect(data).toMatchObject({
+        timestamp: expect.any(String),
+        added: ["15.1.0", "15.0.0"],
+        removed: [],
+        unchanged: ["16.0.0"],
+        versions: expect.arrayContaining(["16.0.0", "15.1.0", "15.0.0"]),
+      });
+      expect(data?.versions).toHaveLength(3);
+
+      const lockfile = await readLockfile(fs, lockfilePath);
+      const versionKeys = Object.keys(lockfile.versions).sort();
+      expect(versionKeys).toEqual(["15.0.0", "15.1.0", "16.0.0"]);
+      expect(lockfile.versions["16.0.0"]?.path).toBe("16.0.0/snapshot.json");
+      expect(lockfile.versions["15.1.0"]?.path).toBe("15.1.0/snapshot.json");
+      expect(lockfile.versions["15.0.0"]?.path).toBe("15.0.0/snapshot.json");
     });
 
-    const filter = createPathFilter({});
-    const fs = createMemoryMockFS({
-      initialFiles: {
-        "/test/.ucd-store.json": JSON.stringify({
-          "16.0.0": { expectedFiles: [] },
-          "14.0.0": { expectedFiles: [] },
-        }),
-      },
+    it("should keep versions not in API when removeUnavailable is false", async () => {
+      mockStoreApi({
+        versions: ["16.0.0", "15.1.0"],
+      });
+
+      const { context, fs, lockfilePath } = await createTestContext({
+        versions: ["16.0.0", "14.0.0", "15.1.0"],
+        lockfile: createEmptyLockfile(["16.0.0", "14.0.0"]),
+      });
+
+      const [data, error] = await sync(context, {
+        removeUnavailable: false,
+      });
+
+      expect(error).toBeNull();
+      expect(data).toBeDefined();
+      expect(data).toMatchObject({
+        timestamp: expect.any(String),
+        added: ["15.1.0"],
+        removed: [],
+        unchanged: ["16.0.0", "14.0.0"],
+        versions: expect.arrayContaining(["16.0.0", "15.1.0", "14.0.0"]),
+      });
+      expect(data?.versions).toHaveLength(3);
+
+      const lockfile = await readLockfile(fs, lockfilePath);
+      const versionKeys = Object.keys(lockfile.versions).sort();
+      expect(versionKeys).toEqual(["14.0.0", "15.1.0", "16.0.0"]);
     });
 
-    const context = createInternalContext({
-      client,
-      filter,
-      fs,
-      basePath: "/test",
-      versions: ["16.0.0", "14.0.0"], // 14.0.0 not in API
-      manifestPath: "/test/.ucd-store.json",
-    });
+    it("should remove versions not in API when removeUnavailable is true", async () => {
+      mockStoreApi({
+        versions: ["16.0.0", "15.1.0"],
+      });
 
-    const [data, error] = await sync(context, {
-      strategy: "add",
-    });
+      const { context, fs, lockfilePath } = await createTestContext({
+        versions: ["16.0.0", "15.1.0"],
+        lockfile: createEmptyLockfile(["16.0.0", "15.0.0"]),
+      });
 
-    expect(error).toBeNull();
-    expect(data).toBeDefined();
-    expect(data).toMatchObject({
-      timestamp: expect.any(String),
-      added: ["15.1.0"],
-      removed: [], // add strategy doesn't remove
-      unchanged: ["16.0.0", "14.0.0"],
-      versions: expect.arrayContaining(["16.0.0", "15.1.0", "14.0.0"]),
-    });
-    expect(data?.versions).toHaveLength(3);
+      const [data, error] = await sync(context, {
+        removeUnavailable: true,
+      });
 
-    const manifestContent = await fs.read("/test/.ucd-store.json");
-    expect(manifestContent).toBe(JSON.stringify({
-      "16.0.0": { expectedFiles: [] },
-      "14.0.0": { expectedFiles: [] },
-      "15.1.0": { expectedFiles: [] },
-    }, null, 2));
+      expect(error).toBeNull();
+      expect(data).toBeDefined();
+      expect(data).toMatchObject({
+        timestamp: expect.any(String),
+        added: ["15.1.0"],
+        removed: ["15.0.0"],
+        unchanged: ["16.0.0"],
+        versions: expect.arrayContaining(["16.0.0", "15.1.0"]),
+      });
+      expect(data?.versions).toHaveLength(2);
+      expect(data?.versions).not.toContain("15.0.0");
+
+      const lockfile = await readLockfile(fs, lockfilePath);
+      const versionKeys = Object.keys(lockfile.versions).sort();
+      expect(versionKeys).toEqual(["15.1.0", "16.0.0"]);
+      expect(lockfile.versions).not.toHaveProperty("15.0.0");
+    });
   });
 
-  it("should use update strategy and remove versions not in API", async () => {
-    mockStoreApi({
-      versions: ["16.0.0", "15.1.0"],
+  describe("lockfile updates", () => {
+    it("should add new versions to lockfile", async () => {
+      mockStoreApi({
+        versions: ["16.0.0", "15.1.0"],
+      });
+
+      const { context, fs, lockfilePath } = await createTestContext({
+        versions: ["16.0.0", "15.1.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+      });
+
+      const [data, error] = await sync(context);
+
+      expect(error).toBeNull();
+      expect(data?.added).toEqual(["15.1.0"]);
+      expect(data?.unchanged).toEqual(["16.0.0"]);
+
+      const lockfile = await readLockfile(fs, lockfilePath);
+      const versionKeys = Object.keys(lockfile.versions).sort();
+      expect(versionKeys).toEqual(["15.1.0", "16.0.0"]);
     });
 
-    const filter = createPathFilter({});
-    const fs = createMemoryMockFS({
-      initialFiles: {
-        "/test/.ucd-store.json": JSON.stringify({
-          "16.0.0": { expectedFiles: [] },
-          "15.0.0": { expectedFiles: [] },
-        }),
-      },
-    });
+    it("should update existing lockfile entries", async () => {
+      mockStoreApi({
+        versions: ["16.0.0"],
+      });
 
-    const context = createInternalContext({
-      client,
-      filter,
-      fs,
-      basePath: "/test",
-      versions: ["16.0.0", "15.0.0"], // 15.0.0 not in API
-      manifestPath: "/test/.ucd-store.json",
-    });
-
-    const [data, error] = await sync(context, {
-      strategy: "update",
-    });
-
-    expect(error).toBeNull();
-    expect(data).toBeDefined();
-    expect(data).toMatchObject({
-      timestamp: expect.any(String),
-      added: ["15.1.0"],
-      removed: ["15.0.0"], // update strategy removes unavailable versions
-      unchanged: ["16.0.0"],
-      versions: expect.arrayContaining(["16.0.0", "15.1.0"]),
-    });
-    expect(data?.versions).toHaveLength(2);
-    expect(data?.versions).not.toContain("15.0.0");
-
-    const manifestContent = await fs.read("/test/.ucd-store.json");
-    expect(manifestContent).toBe(JSON.stringify({
-      "16.0.0": { expectedFiles: [] },
-      "15.1.0": { expectedFiles: [] },
-    }, null, 2));
-  });
-
-  it("should support mirror option and mirror new versions", async () => {
-    mockStoreApi({
-      versions: ["16.0.0", "15.1.0"],
-    });
-
-    const filter = createPathFilter({});
-    const fs = createMemoryMockFS({
-      initialFiles: {
-        "/test/.ucd-store.json": JSON.stringify({
-          "16.0.0": { expectedFiles: [] },
-        }),
-      },
-    });
-
-    const context = createInternalContext({
-      client,
-      filter,
-      fs,
-      basePath: "/test",
-      versions: ["16.0.0"],
-      manifestPath: "/test/.ucd-store.json",
-    });
-
-    // Mock the mirror function to return a successful mirror result
-    const mockMirrorReport: MirrorReport = {
-      timestamp: new Date().toISOString(),
-      versions: new Map([
-        [
-          "15.1.0",
-          {
-            version: "15.1.0",
-            counts: { downloaded: 5, skipped: 0, failed: 0 },
-            files: {
-              downloaded: [],
-              skipped: [],
-              failed: [],
+      const { context, fs, lockfilePath } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: {
+          lockfileVersion: 1,
+          versions: {
+            "16.0.0": {
+              path: "16.0.0/snapshot.json",
+              fileCount: 10,
+              totalSize: 1024,
             },
-            metrics: {
-              cacheHitRate: 0,
-              failureRate: 0,
-              successRate: 100,
-            },
-            errors: [],
           },
-        ],
-      ]),
-    };
+        },
+      });
 
-    vi.mocked(mirror).mockResolvedValueOnce([mockMirrorReport, null]);
+      const [_data, error] = await sync(context);
 
-    const [data, error] = await sync(context, {
-      mirror: true,
+      expect(error).toBeNull();
+
+      const lockfile = await readLockfile(fs, lockfilePath);
+      const v16 = lockfile.versions["16.0.0"];
+      expect(v16).toBeDefined();
+      expect(v16?.fileCount).toBeGreaterThan(0);
+      expect(v16?.totalSize).toBeGreaterThan(0);
     });
 
-    expect(error).toBeNull();
-    expect(data).toBeDefined();
-    expect(data?.added).toEqual(["15.1.0"]);
-    expect(data?.mirrored).toBeDefined();
-    expect(data?.mirrored).toEqual(mockMirrorReport);
-    expect(mirror).toHaveBeenCalledWith(context, { versions: ["15.1.0"] });
+    it("should set correct metadata in lockfile entries", async () => {
+      mockStoreApi({
+        versions: ["16.0.0", "15.1.0"],
+      });
 
-    const manifestContent = await fs.read("/test/.ucd-store.json");
-    expect(manifestContent).toBe(JSON.stringify({
-      "16.0.0": { expectedFiles: [] },
-      "15.1.0": { expectedFiles: [] },
-    }, null, 2));
+      const { context, fs, lockfilePath } = await createTestContext({
+        versions: ["16.0.0", "15.1.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+      });
+
+      const [_data, error] = await sync(context);
+
+      expect(error).toBeNull();
+
+      const lockfile = await readLockfile(fs, lockfilePath);
+      const v15 = lockfile.versions["15.1.0"];
+      expect(v15).toBeDefined();
+      expect(v15?.path).toBe("15.1.0/snapshot.json");
+      expect(v15?.fileCount).toBeGreaterThan(0);
+      expect(v15?.totalSize).toBeGreaterThan(0);
+    });
   });
 
-  it("should return proper result structure when no changes", async () => {
-    mockStoreApi({
-      versions: ["16.0.0"],
+  describe("mirror integration", () => {
+    it("should automatically mirror files for synced versions", async () => {
+      mockStoreApi({
+        versions: ["16.0.0", "15.1.0"],
+      });
+
+      const mockMirrorReport: MirrorReport = {
+        timestamp: new Date().toISOString(),
+        versions: new Map([
+          [
+            "15.1.0",
+            {
+              version: "15.1.0",
+              counts: { downloaded: 5, skipped: 0, failed: 0 },
+              files: {
+                downloaded: [],
+                skipped: [],
+                failed: [],
+              },
+              metrics: {
+                cacheHitRate: 0,
+                failureRate: 0,
+                successRate: 100,
+              },
+              errors: [],
+            },
+          ],
+        ]),
+      };
+
+      vi.mocked(mirror).mockResolvedValueOnce([mockMirrorReport, null]);
+
+      const { context } = await createTestContext({
+        versions: ["16.0.0", "15.1.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+      });
+
+      const [data, error] = await sync(context);
+
+      expect(error).toBeNull();
+      expect(data).toBeDefined();
+      expect(data?.added).toEqual(["15.1.0"]);
+      expect(data?.mirrorReport).toBeDefined();
+      expect(data?.mirrorReport).toEqual(mockMirrorReport);
+      expect(mirror).toHaveBeenCalledWith(context, {
+        versions: ["16.0.0", "15.1.0"],
+        concurrency: 5,
+        filters: undefined,
+        force: false,
+      });
     });
 
-    const filter = createPathFilter({});
-    const fs = createMemoryMockFS({
-      initialFiles: {
-        "/test/.ucd-store.json": JSON.stringify({
-          "16.0.0": { expectedFiles: [] },
-        }),
-      },
+    it("should include mirrorReport when versions are synced", async () => {
+      mockStoreApi({
+        versions: ["16.0.0"],
+      });
+
+      const mockMirrorReport: MirrorReport = {
+        timestamp: new Date().toISOString(),
+        versions: new Map([
+          [
+            "16.0.0",
+            {
+              version: "16.0.0",
+              counts: { downloaded: 3, skipped: 0, failed: 0 },
+              files: {
+                downloaded: [],
+                skipped: [],
+                failed: [],
+              },
+              metrics: {
+                cacheHitRate: 0,
+                failureRate: 0,
+                successRate: 100,
+              },
+              errors: [],
+            },
+          ],
+        ]),
+      };
+
+      vi.mocked(mirror).mockResolvedValueOnce([mockMirrorReport, null]);
+
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+      });
+
+      const [data, error] = await sync(context);
+
+      expect(error).toBeNull();
+      expect(data).toBeDefined();
+      expect(data?.mirrorReport).toBeDefined();
+      expect(data?.mirrorReport).toEqual(mockMirrorReport);
     });
-
-    const context = createInternalContext({
-      client,
-      filter,
-      fs,
-      basePath: "/test",
-      versions: ["16.0.0"],
-      manifestPath: "/test/.ucd-store.json",
-    });
-
-    const [data, error] = await sync(context);
-
-    expect(error).toBeNull();
-    expect(data).toEqual({
-      timestamp: expect.any(String),
-      added: [],
-      removed: [],
-      unchanged: ["16.0.0"],
-      versions: ["16.0.0"],
-    });
-
-    const manifestContent = await fs.read("/test/.ucd-store.json");
-    expect(manifestContent).toBe(JSON.stringify({
-      "16.0.0": { expectedFiles: [] },
-    }, null, 2));
   });
 
-  it("should not include mirrored property when mirror:true but no new versions", async () => {
-    mockStoreApi({
-      versions: ["16.0.0"],
+  describe("cleanOrphaned option", () => {
+    it("should remove orphaned files when cleanOrphaned is true", async () => {
+      mockStoreApi({
+        versions: ["16.0.0"],
+      });
+
+      const mockMirrorReport: MirrorReport = {
+        timestamp: new Date().toISOString(),
+        versions: new Map([
+          [
+            "16.0.0",
+            {
+              version: "16.0.0",
+              counts: { downloaded: 0, skipped: 0, failed: 0 },
+              files: {
+                downloaded: [],
+                skipped: [],
+                failed: [],
+              },
+              metrics: {
+                cacheHitRate: 0,
+                failureRate: 0,
+                successRate: 100,
+              },
+              errors: [],
+            },
+          ],
+        ]),
+      };
+
+      vi.mocked(mirror).mockResolvedValueOnce([mockMirrorReport, null]);
+
+      const { context, fs } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+        initialFiles: {
+          "/test/16.0.0/UnicodeData.txt": "data",
+          "/test/16.0.0/OrphanedFile.txt": "orphaned",
+        },
+      });
+
+      // Create snapshot with expected files
+      await writeSnapshot(fs, context.basePath, "16.0.0", {
+        unicodeVersion: "16.0.0",
+        files: {
+          "UnicodeData.txt": { hash: "sha256:test", size: 4 },
+        },
+      });
+
+      const [data, error] = await sync(context, {
+        cleanOrphaned: true,
+      });
+
+      expect(error).toBeNull();
+      expect(data?.removedFiles.get("16.0.0")).toContain("OrphanedFile.txt");
+      const exists = await fs.exists("/test/16.0.0/OrphanedFile.txt");
+      expect(exists).toBe(false);
     });
 
-    const filter = createPathFilter({});
-    const fs = createMemoryMockFS({
-      initialFiles: {
-        "/test/.ucd-store.json": JSON.stringify({
-          "16.0.0": { expectedFiles: [] },
-        }),
-      },
+    it("should keep orphaned files when cleanOrphaned is false", async () => {
+      mockStoreApi({
+        versions: ["16.0.0"],
+      });
+
+      const mockMirrorReport: MirrorReport = {
+        timestamp: new Date().toISOString(),
+        versions: new Map([
+          [
+            "16.0.0",
+            {
+              version: "16.0.0",
+              counts: { downloaded: 0, skipped: 0, failed: 0 },
+              files: {
+                downloaded: [],
+                skipped: [],
+                failed: [],
+              },
+              metrics: {
+                cacheHitRate: 0,
+                failureRate: 0,
+                successRate: 100,
+              },
+              errors: [],
+            },
+          ],
+        ]),
+      };
+
+      vi.mocked(mirror).mockResolvedValueOnce([mockMirrorReport, null]);
+
+      const { context, fs } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+        initialFiles: {
+          "/test/16.0.0/OrphanedFile.txt": "orphaned",
+        },
+      });
+
+      const [data, error] = await sync(context, {
+        cleanOrphaned: false,
+      });
+
+      expect(error).toBeNull();
+      expect(data?.removedFiles.size).toBe(0);
+      const exists = await fs.exists("/test/16.0.0/OrphanedFile.txt");
+      expect(exists).toBe(true);
+    });
+  });
+
+  describe("versions option", () => {
+    it("should sync only specified versions", async () => {
+      mockStoreApi({
+        versions: ["16.0.0", "15.1.0", "15.0.0"],
+      });
+
+      const mockMirrorReport: MirrorReport = {
+        timestamp: new Date().toISOString(),
+        versions: new Map([
+          [
+            "16.0.0",
+            {
+              version: "16.0.0",
+              counts: { downloaded: 0, skipped: 0, failed: 0 },
+              files: {
+                downloaded: [],
+                skipped: [],
+                failed: [],
+              },
+              metrics: {
+                cacheHitRate: 0,
+                failureRate: 0,
+                successRate: 100,
+              },
+              errors: [],
+            },
+          ],
+        ]),
+      };
+
+      vi.mocked(mirror).mockResolvedValueOnce([mockMirrorReport, null]);
+
+      const { context } = await createTestContext({
+        versions: ["16.0.0", "15.1.0", "15.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0", "15.1.0", "15.0.0"]),
+      });
+
+      const [_data, error] = await sync(context, {
+        versions: ["16.0.0"],
+      });
+
+      expect(error).toBeNull();
+      expect(mirror).toHaveBeenCalledWith(context, expect.objectContaining({
+        versions: ["16.0.0"],
+      }));
     });
 
-    const context = createInternalContext({
-      client,
-      filter,
-      fs,
-      basePath: "/test",
-      versions: ["16.0.0"],
-      manifestPath: "/test/.ucd-store.json",
+    it("should throw error when specified version does not exist in lockfile", async () => {
+      mockStoreApi({
+        versions: ["16.0.0"],
+      });
+
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+      });
+
+      const [_data, error] = await sync(context, {
+        versions: ["99.0.0"],
+      });
+
+      expect(error).toBeDefined();
+      expect(error?.message).toContain("does not exist");
+    });
+  });
+
+  describe("error handling", () => {
+    it("should handle API config fetch failure", async () => {
+      mockStoreApi({
+        versions: ["16.0.0"],
+        responses: {
+          "/.well-known/ucd-config.json": {
+            status: 500,
+            message: "Internal Server Error",
+            timestamp: new Date().toISOString(),
+          },
+        },
+      });
+
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+      });
+
+      const [_data, error] = await sync(context);
+
+      expect(error).toBeDefined();
+      expect(error?.message).toContain("Failed to fetch versions");
     });
 
-    const [data, error] = await sync(context, {
-      mirror: true,
+    it("should propagate mirror operation failure", async () => {
+      mockStoreApi({
+        versions: ["16.0.0"],
+      });
+
+      const mockError = new Error("Mirror failed");
+      vi.mocked(mirror).mockResolvedValueOnce([null, mockError as any]);
+
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+      });
+
+      const [_data, error] = await sync(context);
+
+      expect(error).toBeDefined();
+      expect(error?.message).toBe("Mirror failed");
+    });
+  });
+
+  describe("filter application", () => {
+    it("should apply filters during sync", async () => {
+      mockStoreApi({
+        versions: ["16.0.0"],
+      });
+
+      const mockMirrorReport: MirrorReport = {
+        timestamp: new Date().toISOString(),
+        versions: new Map([
+          [
+            "16.0.0",
+            {
+              version: "16.0.0",
+              counts: { downloaded: 0, skipped: 0, failed: 0 },
+              files: {
+                downloaded: [],
+                skipped: [],
+                failed: [],
+              },
+              metrics: {
+                cacheHitRate: 0,
+                failureRate: 0,
+                successRate: 100,
+              },
+              errors: [],
+            },
+          ],
+        ]),
+      };
+
+      vi.mocked(mirror).mockResolvedValueOnce([mockMirrorReport, null]);
+
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+      });
+
+      const [_data, error] = await sync(context, {
+        filters: { include: ["**/*.txt"] },
+      });
+
+      expect(error).toBeNull();
+      expect(mirror).toHaveBeenCalledWith(context, expect.objectContaining({
+        filters: { include: ["**/*.txt"] },
+      }));
+    });
+  });
+
+  describe("edge cases", () => {
+    it("should handle empty versions array", async () => {
+      mockStoreApi({
+        versions: ["16.0.0"],
+      });
+
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+      });
+
+      const [data, error] = await sync(context, {
+        versions: [],
+      });
+
+      expect(error).toBeNull();
+      expect(data?.added).toEqual([]);
+      expect(data?.removed).toEqual([]);
+      expect(data?.unchanged).toEqual(["16.0.0"]);
+      expect(data?.versions).toEqual(["16.0.0"]);
     });
 
-    expect(error).toBeNull();
-    expect(data).toBeDefined();
-    expect(data?.mirrored).toBeUndefined();
+    it("should handle no lockfile exists initially", async () => {
+      mockStoreApi({
+        versions: ["16.0.0"],
+      });
 
-    const manifestContent = await fs.read("/test/.ucd-store.json");
-    expect(manifestContent).toBe(JSON.stringify({
-      "16.0.0": { expectedFiles: [] },
-    }, null, 2));
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+      });
+
+      const [data, error] = await sync(context);
+
+      expect(error).toBeNull();
+      expect(data).toBeDefined();
+      expect(data?.added).toEqual(["16.0.0"]);
+    });
+
+    it("should return proper result structure when no changes", async () => {
+      mockStoreApi({
+        versions: ["16.0.0"],
+      });
+
+      const mockMirrorReport: MirrorReport = {
+        timestamp: new Date().toISOString(),
+        versions: new Map([
+          [
+            "16.0.0",
+            {
+              version: "16.0.0",
+              counts: { downloaded: 0, skipped: 0, failed: 0 },
+              files: {
+                downloaded: [],
+                skipped: [],
+                failed: [],
+              },
+              metrics: {
+                cacheHitRate: 0,
+                failureRate: 0,
+                successRate: 100,
+              },
+              errors: [],
+            },
+          ],
+        ]),
+      };
+
+      vi.mocked(mirror).mockResolvedValueOnce([mockMirrorReport, null]);
+
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+      });
+
+      const [data, error] = await sync(context);
+
+      expect(error).toBeNull();
+      expect(data).toMatchObject({
+        timestamp: expect.any(String),
+        added: [],
+        removed: [],
+        unchanged: ["16.0.0"],
+        versions: ["16.0.0"],
+        removedFiles: expect.any(Map),
+      });
+      expect(data?.mirrorReport).toBeDefined();
+      expect(data?.mirrorReport).toEqual(mockMirrorReport);
+    });
+  });
+
+  describe("filesystem capability checks", () => {
+    it("should throw error when filesystem lacks mkdir capability", async () => {
+      const readOnlyBridge = createReadOnlyBridge();
+
+      mockStoreApi({
+        versions: ["16.0.0"],
+      });
+
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+        fs: readOnlyBridge,
+      });
+
+      const [_data, error] = await sync(context);
+
+      expect(error).toBeInstanceOf(Error);
+      expect(error?.message).toContain("Filesystem does not support required write operations for syncing");
+    });
   });
 });

@@ -163,9 +163,9 @@ jobs:
         if: matrix.app == 'api'
         run: pnpm --filter=@ucdjs/api run lint:openapi
 
-      - name: test api
+      - name: test
         if: matrix.app == 'api'
-        run: pnpm run test --project "api:unit" --project "api:worker"
+        run: pnpm run test
 
       - name: generate api version
         id: api-version

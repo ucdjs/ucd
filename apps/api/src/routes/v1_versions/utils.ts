@@ -1,6 +1,6 @@
 import type { UnicodeVersion } from "@ucdjs/schemas";
 import type { HonoEnv } from "../../types";
-import { tryCatch } from "@ucdjs-internal/shared";
+import { wrapTry } from "@ucdjs-internal/shared";
 import {
   getCurrentDraftVersion,
   resolveUCDVersion,
@@ -8,7 +8,7 @@ import {
 import { captureParseError, captureUpstreamError, COMPONENTS } from "../../lib/sentry";
 
 export async function getAllVersionsFromList() {
-  return tryCatch(async (): Promise<UnicodeVersion[]> => {
+  return wrapTry(async (): Promise<UnicodeVersion[]> => {
     const controller = new AbortController();
     const response = await fetch("https://www.unicode.org/versions/enumeratedversions.html", {
       signal: controller.signal,
@@ -33,6 +33,7 @@ export async function getAllVersionsFromList() {
           url: "https://www.unicode.org/versions/enumeratedversions.html",
         },
       });
+
       throw error;
     }
 
@@ -56,6 +57,7 @@ export async function getAllVersionsFromList() {
           html_preview: html.substring(0, 500), // First 500 chars for debugging
         },
       });
+
       throw error;
     }
 

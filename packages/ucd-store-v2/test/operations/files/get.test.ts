@@ -1,16 +1,13 @@
-import { mockStoreApi } from "#test-utils";
+import { createTestContext } from "#internal-pkg:test-utils/test-context";
 import { createMemoryMockFS } from "#test-utils/fs-bridges";
-import { createPathFilter, getDefaultUCDEndpointConfig } from "@ucdjs-internal/shared";
-import { createUCDClientWithConfig } from "@ucdjs/client";
-import { UCDJS_API_BASE_URL } from "@ucdjs/env";
+import { mockStoreApi } from "#test-utils/mock-store";
+import { HttpResponse } from "#test-utils/msw";
+import { createEmptyLockfile } from "@ucdjs/lockfile/test-utils";
 import { describe, expect, it } from "vitest";
-import { createInternalContext } from "../../../src/core/context";
 import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../../../src/errors";
 import { getFile } from "../../../src/operations/files/get";
 
 describe("getFile", () => {
-  const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, getDefaultUCDEndpointConfig());
-
   describe("local store (default behavior)", () => {
     it("should read file from local store when it exists", async () => {
       let callCount = 0;
@@ -21,20 +18,12 @@ describe("getFile", () => {
         },
       });
 
-      const filter = createPathFilter({});
-      const fs = createMemoryMockFS({
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
         initialFiles: {
           "/test/16.0.0/UnicodeData.txt": "Local content",
         },
-      });
-
-      const context = createInternalContext({
-        client,
-        filter,
-        fs,
-        basePath: "/test",
-        versions: ["16.0.0"],
-        manifestPath: "/test/.ucd-store.json",
       });
 
       const [data, error] = await getFile(context, "16.0.0", "UnicodeData.txt");
@@ -47,16 +36,9 @@ describe("getFile", () => {
     it("should throw error when file does not exist locally", async () => {
       mockStoreApi({ versions: ["16.0.0"] });
 
-      const filter = createPathFilter({});
-      const fs = createMemoryMockFS();
-
-      const context = createInternalContext({
-        client,
-        filter,
-        fs,
-        basePath: "/test",
+      const { context } = await createTestContext({
         versions: ["16.0.0"],
-        manifestPath: "/test/.ucd-store.json",
+        lockfile: createEmptyLockfile(["16.0.0"]),
       });
 
       const [_data, error] = await getFile(context, "16.0.0", "UnicodeData.txt");
@@ -68,8 +50,9 @@ describe("getFile", () => {
     it("should throw error when local read fails", async () => {
       mockStoreApi({ versions: ["16.0.0"] });
 
-      const filter = createPathFilter({});
-      const fs = createMemoryMockFS({
+      const { context, fs } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
         initialFiles: {
           "/test/16.0.0/UnicodeData.txt": "content",
         },
@@ -77,15 +60,6 @@ describe("getFile", () => {
 
       fs.hook("read:before", () => {
         throw new Error("Read failed");
-      });
-
-      const context = createInternalContext({
-        client,
-        filter,
-        fs,
-        basePath: "/test",
-        versions: ["16.0.0"],
-        manifestPath: "/test/.ucd-store.json",
       });
 
       const [_data, error] = await getFile(context, "16.0.0", "UnicodeData.txt");
@@ -109,20 +83,12 @@ describe("getFile", () => {
         },
       });
 
-      const filter = createPathFilter({});
-      const fs = createMemoryMockFS({
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
         initialFiles: {
           "/test/16.0.0/UnicodeData.txt": "Local content",
         },
-      });
-
-      const context = createInternalContext({
-        client,
-        filter,
-        fs,
-        basePath: "/test",
-        versions: ["16.0.0"],
-        manifestPath: "/test/.ucd-store.json",
       });
 
       const [data, error] = await getFile(context, "16.0.0", "UnicodeData.txt", {
@@ -142,16 +108,9 @@ describe("getFile", () => {
         },
       });
 
-      const filter = createPathFilter({});
-      const fs = createMemoryMockFS();
-
-      const context = createInternalContext({
-        client,
-        filter,
-        fs,
-        basePath: "/test",
+      const { context } = await createTestContext({
         versions: ["16.0.0"],
-        manifestPath: "/test/.ucd-store.json",
+        lockfile: createEmptyLockfile(["16.0.0"]),
       });
 
       const [data, error] = await getFile(context, "16.0.0", "UnicodeData.txt", {
@@ -170,8 +129,9 @@ describe("getFile", () => {
         },
       });
 
-      const filter = createPathFilter({});
-      const fs = createMemoryMockFS({
+      const { context, fs } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
         initialFiles: {
           "/test/16.0.0/UnicodeData.txt": "content",
         },
@@ -179,15 +139,6 @@ describe("getFile", () => {
 
       fs.hook("read:before", () => {
         throw new Error("Read failed");
-      });
-
-      const context = createInternalContext({
-        client,
-        filter,
-        fs,
-        basePath: "/test",
-        versions: ["16.0.0"],
-        manifestPath: "/test/.ucd-store.json",
       });
 
       const [data, error] = await getFile(context, "16.0.0", "UnicodeData.txt", {
@@ -206,16 +157,9 @@ describe("getFile", () => {
         },
       });
 
-      const filter = createPathFilter({});
-      const fs = createMemoryMockFS();
-
-      const context = createInternalContext({
-        client,
-        filter,
-        fs,
-        basePath: "/test",
+      const { context, fs } = await createTestContext({
         versions: ["16.0.0"],
-        manifestPath: "/test/.ucd-store.json",
+        lockfile: createEmptyLockfile(["16.0.0"]),
       });
 
       const fileExists = await fs.exists("/test/16.0.0/UnicodeData.txt");
@@ -243,16 +187,9 @@ describe("getFile", () => {
         },
       });
 
-      const filter = createPathFilter({});
-      const fs = createMemoryMockFS();
-
-      const context = createInternalContext({
-        client,
-        filter,
-        fs,
-        basePath: "/test",
+      const { context, fs } = await createTestContext({
         versions: ["16.0.0"],
-        manifestPath: "/test/.ucd-store.json",
+        lockfile: createEmptyLockfile(["16.0.0"]),
       });
 
       const [data, error] = await getFile(context, "16.0.0", "UnicodeData.txt", {
@@ -282,16 +219,9 @@ describe("getFile", () => {
         },
       });
 
-      const filter = createPathFilter({});
-      const fs = createMemoryMockFS();
-
-      const context = createInternalContext({
-        client,
-        filter,
-        fs,
-        basePath: "/test",
+      const { context } = await createTestContext({
         versions: ["16.0.0"],
-        manifestPath: "/test/.ucd-store.json",
+        lockfile: createEmptyLockfile(["16.0.0"]),
       });
 
       const [_data, error] = await getFile(context, "16.0.0", "UnicodeData.txt", {
@@ -307,16 +237,9 @@ describe("getFile", () => {
     it("should throw error for non-existent version", async () => {
       mockStoreApi({ versions: ["16.0.0"] });
 
-      const filter = createPathFilter({});
-      const fs = createMemoryMockFS();
-
-      const context = createInternalContext({
-        client,
-        filter,
-        fs,
-        basePath: "/test",
+      const { context } = await createTestContext({
         versions: ["16.0.0"],
-        manifestPath: "/test/.ucd-store.json",
+        lockfile: createEmptyLockfile(["16.0.0"]),
       });
 
       const [_data, error] = await getFile(context, "99.0.0", "UnicodeData.txt");
@@ -325,25 +248,144 @@ describe("getFile", () => {
       expect(error?.message).toMatch(/Version '\d+\.\d+\.\d+' does not exist in the store/);
     });
 
-    it("should throw error when file does not pass filters", async () => {
+    it("should throw error when file does not pass global filters", async () => {
       mockStoreApi({ versions: ["16.0.0"] });
 
-      const filter = createPathFilter({ exclude: ["**/UnicodeData.txt"] });
-      const fs = createMemoryMockFS();
-
-      const context = createInternalContext({
-        client,
-        filter,
-        fs,
-        basePath: "/test",
+      const { context } = await createTestContext({
         versions: ["16.0.0"],
-        manifestPath: "/test/.ucd-store.json",
+        lockfile: createEmptyLockfile(["16.0.0"]),
+        globalFilters: { exclude: ["**/UnicodeData.txt"] },
       });
 
       const [_data, error] = await getFile(context, "16.0.0", "UnicodeData.txt");
 
       expect(error).toBeInstanceOf(UCDStoreGenericError);
       expect(error?.message).toMatch(/File '(.*)' does not pass filters/);
+    });
+
+    it("should throw error when file does not pass method-specific filters", async () => {
+      mockStoreApi({ versions: ["16.0.0"] });
+
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+        initialFiles: {
+          "/test/16.0.0/UnicodeData.txt": "content",
+        },
+      });
+
+      const [_data, error] = await getFile(context, "16.0.0", "UnicodeData.txt", {
+        filters: { exclude: ["**/UnicodeData.txt"] },
+      });
+
+      expect(error).toBeInstanceOf(UCDStoreGenericError);
+      expect(error?.message).toMatch(/File '(.*)' does not pass filters/);
+    });
+
+    it("should handle 'no data returned' error when API returns null", async () => {
+      mockStoreApi({
+        versions: ["16.0.0"],
+        responses: {
+          "/api/v1/files/{wildcard}": () => {
+            return new HttpResponse(null, { status: 200 });
+          },
+        },
+      });
+
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+      });
+
+      const [_data, error] = await getFile(context, "16.0.0", "UnicodeData.txt", {
+        allowApi: true,
+      });
+
+      expect(error).toBeInstanceOf(UCDStoreGenericError);
+      expect(error?.message).toMatch(/Failed to fetch file '(.*)': no data returned/);
+    });
+
+    it("should handle JSON response from API", async () => {
+      mockStoreApi({
+        versions: ["16.0.0"],
+        responses: {
+          "/api/v1/files/{wildcard}": () => {
+            return HttpResponse.json({
+              // @ts-expect-error - This is correct, but TypeScript complains.ﬁ
+              data: "test",
+              version: "16.0.0",
+            });
+          },
+        },
+      });
+
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+      });
+
+      const [data, error] = await getFile(context, "16.0.0", "UnicodeData.txt", {
+        allowApi: true,
+      });
+
+      expect(error).toBeNull();
+      expect(data).toBeDefined();
+      expect(typeof data).toBe("string");
+      expect(data).toContain("data");
+      expect(data).toContain("version");
+    });
+
+    it("should return content even if cache write fails", async () => {
+      mockStoreApi({
+        versions: ["16.0.0"],
+        responses: {
+          "/api/v1/files/{wildcard}": "API content",
+        },
+      });
+
+      const { context, fs } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+      });
+
+      fs.hook("write:before", () => {
+        throw new Error("Write failed");
+      });
+
+      const [data, error] = await getFile(context, "16.0.0", "UnicodeData.txt", {
+        allowApi: true,
+      });
+
+      expect(error).toBeNull();
+      expect(data).toBe("API content");
+    });
+
+    it("should return content when FS lacks write capability", async () => {
+      const readOnlyMemoryFS = createMemoryMockFS({
+        functions: {
+          write: false,
+        },
+      });
+
+      mockStoreApi({
+        versions: ["16.0.0"],
+        responses: {
+          "/api/v1/files/{wildcard}": "API content",
+        },
+      });
+
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+        fs: readOnlyMemoryFS,
+      });
+
+      const [data, error] = await getFile(context, "16.0.0", "UnicodeData.txt", {
+        allowApi: true,
+      });
+
+      expect(error).toBeNull();
+      expect(data).toBe("API content");
     });
   });
 });

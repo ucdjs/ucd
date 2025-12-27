@@ -9,8 +9,12 @@
       "@ucdjs/client": ["./packages/client/src/index.ts"],
       "@ucdjs/schema-gen": ["./packages/schema-gen/src/index.ts"],
 
+      "@ucdjs/lockfile": ["./packages/lockfile/src/index.ts"],
+      "@ucdjs/lockfile/test-utils": ["./packages/lockfile/test-utils/index.ts"],
+
       "@ucdjs/schemas": ["./packages/schemas/src/index.ts"],
       "@ucdjs/ucd-store": ["./packages/ucd-store/src/index.ts"],
+      "@ucdjs/ucd-store-v2": ["./packages/ucd-store-v2/src/index.ts"],
 
       // utility packages
       "@ucdjs-internal/shared": ["./packages/shared/src/index.ts"],
@@ -19,16 +23,27 @@
 
       // fs bridge
       "@ucdjs/fs-bridge": ["./packages/fs-bridge/src/index.ts"],
-      "@ucdjs/fs-bridge/bridges/http": ["./packages/fs-bridge/src/bridges/http.ts"],
-      "@ucdjs/fs-bridge/bridges/node": ["./packages/fs-bridge/src/bridges/node.ts"],
+      "@ucdjs/fs-bridge/bridges/http": [
+        "./packages/fs-bridge/src/bridges/http.ts"
+      ],
+      "@ucdjs/fs-bridge/bridges/node": [
+        "./packages/fs-bridge/src/bridges/node.ts"
+      ],
 
       // Test utils
       "@ucdjs/test-utils": ["./packages/test-utils/src/index.ts"],
       // we use alias for test utils to avoid having to build it during development
-      "#test-utils/mock-store": ["./packages/test-utils/src/mock-store/index.ts"],
+      "#test-utils/mock-store": [
+        "./packages/test-utils/src/mock-store/index.ts"
+      ],
       "#test-utils/msw": ["./packages/test-utils/src/msw.ts"],
       "#test-utils": ["./packages/test-utils/src/index.ts"],
-      "#test-utils/fs-bridges": ["./packages/test-utils/src/fs-bridges/index.ts"],
+      "#test-utils/fs-bridges": [
+        "./packages/test-utils/src/fs-bridges/index.ts"
+      ],
+      "#test-utils/matchers": [
+        "./packages/test-utils/src/matchers/types.d.ts"
+      ],
 
       // Internal Test Utils
       "#internal/test-utils/conditions": ["./test/utils/conditions.ts"]

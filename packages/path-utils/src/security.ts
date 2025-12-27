@@ -29,6 +29,10 @@ const debug = createDebugger("ucdjs:path-utils:security");
  */
 export function isWithinBase(basePath: string, resolvedPath: string): boolean {
   if (typeof resolvedPath !== "string" || typeof basePath !== "string") {
+    debug?.("isWithinBase: invalid input types", {
+      resolvedPathType: typeof resolvedPath,
+      basePathType: typeof basePath,
+    });
     return false;
   }
 
@@ -36,6 +40,10 @@ export function isWithinBase(basePath: string, resolvedPath: string): boolean {
   basePath = basePath.trim();
 
   if (resolvedPath === "" || basePath === "") {
+    debug?.("isWithinBase: empty path(s)", {
+      resolvedPathEmpty: resolvedPath === "",
+      basePathEmpty: basePath === "",
+    });
     return false;
   }
 
@@ -61,13 +69,25 @@ export function isWithinBase(basePath: string, resolvedPath: string): boolean {
   // like /root vs /root2, we append a separator unless the base path already ends
   // with one (such as the root directory "/").
   const baseWithSeparator = base.endsWith(pathe.sep) ? base : base + pathe.sep;
-  return resolved === base || resolved.startsWith(baseWithSeparator);
+  const isWithin = resolved === base || resolved.startsWith(baseWithSeparator);
+
+  debug?.("isWithinBase: check completed", {
+    normalizedBase,
+    normalizedResolved,
+    baseWithSeparator,
+    isCaseSensitive,
+    isWithin,
+  });
+
+  return isWithin;
 }
 
 export function decodePathSafely(encodedPath: string): string {
   if (typeof encodedPath !== "string") {
     throw new TypeError("Encoded path must be a string");
   }
+
+  debug?.("decodePathSafely: starting decode", { encodedPath });
 
   let decodedPath = encodedPath;
   let previousPath: string;
@@ -93,9 +113,20 @@ export function decodePathSafely(encodedPath: string): string {
   } while (decodedPath !== previousPath && iterations < MAX_DECODING_ITERATIONS);
 
   if (iterations >= MAX_DECODING_ITERATIONS) {
-    debug?.("Maximum decoding iterations exceeded", { iterations, originalPath: encodedPath, finalPath: decodedPath });
+    debug?.("decodePathSafely: max iterations exceeded", {
+      iterations,
+      originalPath: encodedPath,
+      finalPath: decodedPath,
+    });
     throw new MaximumDecodingIterationsExceededError();
   }
+
+  debug?.("decodePathSafely: completed", {
+    iterations,
+    originalPath: encodedPath,
+    decodedPath,
+    wasEncoded: encodedPath !== decodedPath,
+  });
 
   return decodedPath;
 }
@@ -107,6 +138,8 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
 
   basePath = basePath.trim();
   inputPath = inputPath.trim();
+
+  debug?.("resolveSafePath: called", { basePath, inputPath });
 
   if (basePath === "") {
     throw new Error("Base path cannot be empty");
@@ -120,13 +153,16 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
   let decodedPath: string;
   try {
     decodedPath = decodePathSafely(inputPath);
-  } catch {
-    debug?.("Failed to decode input path", { inputPath });
+  } catch (err) {
+    debug?.("resolveSafePath: failed to decode input path", { inputPath, error: err });
     throw new FailedToDecodePathError();
   }
 
   // Check decoded path as well in case UNC was encoded
   assertNotUNCPath(decodedPath);
+
+  const originalBasePath = basePath;
+  const originalInputPath = inputPath;
 
   basePath = isWindowsDrivePath(basePath)
     ? basePath
@@ -135,13 +171,23 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
     ? inputPath
     : prependLeadingSlash(inputPath);
 
+  debug?.("resolveSafePath: after leading slash normalization", {
+    basePath: { original: originalBasePath, normalized: basePath },
+    inputPath: { original: originalInputPath, normalized: inputPath },
+    decodedPath,
+  });
+
   // normalize the base path to absolute form
   const normalizedBasePath = pathe.normalize(basePath);
 
   const illegalMatch = decodedPath.match(CONTROL_CHARACTER_RE);
   if (decodedPath.includes("\0") || illegalMatch != null) {
     const illegalChar = decodedPath.includes("\0") ? "\0" : (illegalMatch?.[0] ?? "[unknown]");
-    debug?.("Illegal character detected in path", { decodedPath, illegalChar });
+    debug?.("resolveSafePath: illegal character detected", {
+      decodedPath,
+      illegalChar,
+      charCode: illegalChar.charCodeAt(0),
+    });
     throw new IllegalCharacterInPathError(illegalChar);
   }
 
@@ -151,6 +197,12 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
   const isAbsoluteInput
     = WINDOWS_DRIVE_RE.test(decodedPath)
       || pathe.isAbsolute(toUnixFormat(decodedPath));
+
+  debug?.("resolveSafePath: path analysis", {
+    absoluteInputPath,
+    isAbsoluteInput,
+    normalizedBasePath,
+  });
 
   // If the input path is "within" the base path, we can just return as-is.
   // This is to ensure that something like "C:\Users\John\Documents\Projects\file.txt"
@@ -173,9 +225,17 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
 
     if (normalizedInput.toLowerCase().startsWith(normalizedBase.toLowerCase())) {
       const tailAfterBase = normalizedInput.slice(normalizedBase.length);
-      return pathe.normalize(normalizedBase + tailAfterBase);
+      const result = pathe.normalize(normalizedBase + tailAfterBase);
+      debug?.("resolveSafePath: absolute path within base (preserving casing)", {
+        normalizedBase,
+        normalizedInput,
+        tailAfterBase,
+        result,
+      });
+      return result;
     }
 
+    debug?.("resolveSafePath: absolute path within base", { result: absoluteInputPath });
     return pathe.normalize(absoluteInputPath);
   }
 
@@ -183,6 +243,10 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
   const isWindows = osPlatform === "win32" || (!isCaseSensitive && osPlatform !== "darwin");
 
   if (isWindows && isWindowsDrivePath(decodedPath)) {
+    debug?.("resolveSafePath: delegating to Windows path resolution", {
+      isWindows,
+      decodedPath,
+    });
     return internal_resolveWindowsPath(basePath, decodedPath);
   }
 
@@ -190,21 +254,30 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
   const unixPath = decodedPath.replace(/\\/g, "/");
 
   if (pathe.isAbsolute(unixPath)) {
+    debug?.("resolveSafePath: handling absolute Unix path", { unixPath, normalizedBasePath });
     resolvedPath = internal_handleAbsolutePath(unixPath, normalizedBasePath);
   } else {
+    debug?.("resolveSafePath: handling relative Unix path", { unixPath, normalizedBasePath });
     resolvedPath = internal_handleRelativePath(unixPath, normalizedBasePath);
   }
 
   if (!isWithinBase(normalizedBasePath, resolvedPath)) {
-    debug?.("Path traversal detected", {
+    debug?.("resolveSafePath: path traversal detected", {
       basePath: normalizedBasePath,
-      accessedPath: resolvedPath,
+      resolvedPath,
+      originalInput: inputPath,
     });
     throw new PathTraversalError(normalizedBasePath, resolvedPath);
   }
 
   // normalize to platform-native format for final output
   const normalized = pathe.normalize(resolvedPath);
+
+  debug?.("resolveSafePath: completed successfully", {
+    originalInput: originalInputPath,
+    basePath: normalizedBasePath,
+    result: normalized,
+  });
 
   return normalized;
 }
@@ -213,6 +286,8 @@ export function resolveSafePath(basePath: string, inputPath: string): string {
  * @internal
  */
 export function internal_resolveWindowsPath(basePath: string, decodedPath: string): string {
+  debug?.("internal_resolveWindowsPath: called", { basePath, decodedPath });
+
   // Both base path and input path are Windows drive paths
   if (isWindowsDrivePath(decodedPath) && isWindowsDrivePath(basePath)) {
     const normalizedBasePath = pathe.normalize(basePath);
@@ -227,9 +302,18 @@ export function internal_resolveWindowsPath(basePath: string, decodedPath: strin
     const baseDriveLetter = getWindowsDriveLetter(basePath);
     const inputDriveLetter = getWindowsDriveLetter(decodedPath);
 
+    debug?.("internal_resolveWindowsPath: drive letter comparison", {
+      baseDriveLetter,
+      inputDriveLetter,
+      match: baseDriveLetter === inputDriveLetter,
+    });
+
     // If either the drive letters is null, or they are not equal, throw a drive mismatch error
     if (baseDriveLetter != null && inputDriveLetter != null && baseDriveLetter !== inputDriveLetter) {
-      debug?.("Drive letter mismatch detected", { baseDriveLetter, inputDriveLetter });
+      debug?.("internal_resolveWindowsPath: drive letter mismatch", {
+        baseDriveLetter,
+        inputDriveLetter,
+      });
       throw new WindowsDriveMismatchError(baseDriveLetter, inputDriveLetter);
     }
 
@@ -238,16 +322,27 @@ export function internal_resolveWindowsPath(basePath: string, decodedPath: strin
 
     // If the decoded path is outside the base path, then we throw an error.
     if (!isWithinBase(normalizedBasePath, normalizedDecodedPath)) {
-      debug?.("Windows path traversal detected", {
+      debug?.("internal_resolveWindowsPath: path traversal detected", {
         basePath: normalizedBasePath,
-        accessedPath: normalizedDecodedPath,
+        resolvedPath: normalizedDecodedPath,
       });
       throw new PathTraversalError(normalizedBasePath, normalizedDecodedPath);
     }
 
-    return pathe.normalize(normalizedDecodedPath);
+    const result = pathe.normalize(normalizedDecodedPath);
+    debug?.("internal_resolveWindowsPath: completed successfully", {
+      basePath: normalizedBasePath,
+      result,
+    });
+    return result;
   }
 
+  debug?.("internal_resolveWindowsPath: unhandled path combination", {
+    basePath,
+    decodedPath,
+    isBaseWindowsDrive: isWindowsDrivePath(basePath),
+    isInputWindowsDrive: isWindowsDrivePath(decodedPath),
+  });
   throw new WindowsPathBehaviorNotImplementedError();
 }
 
@@ -259,12 +354,22 @@ function internal_handleAbsolutePath(absoluteUnixPath: string, basePath: string)
   // virtual filesystem boundary model: absolute paths are relative to boundary root
   if (absoluteUnixPath === "/") {
     // root reference points to boundary root
+    debug?.("internal_handleAbsolutePath: root path mapped to base", { basePath });
     return basePath;
   }
 
   // strip leading slash and resolve relative to boundary root
   const pathWithoutLeadingSlash = absoluteUnixPath.replace(/^\/+/, "");
-  return pathe.resolve(basePath, pathWithoutLeadingSlash);
+  const resolved = pathe.resolve(basePath, pathWithoutLeadingSlash);
+
+  debug?.("internal_handleAbsolutePath: resolved", {
+    absoluteUnixPath,
+    pathWithoutLeadingSlash,
+    basePath,
+    resolved,
+  });
+
+  return resolved;
 }
 
 /**
@@ -274,8 +379,17 @@ function internal_handleAbsolutePath(absoluteUnixPath: string, basePath: string)
 function internal_handleRelativePath(relativeUnixPath: string, basePath: string): string {
   // current directory references point to base path
   if (relativeUnixPath === "." || relativeUnixPath === "./") {
+    debug?.("internal_handleRelativePath: current directory mapped to base", { basePath });
     return basePath;
   }
 
-  return pathe.resolve(basePath, relativeUnixPath);
+  const resolved = pathe.resolve(basePath, relativeUnixPath);
+
+  debug?.("internal_handleRelativePath: resolved", {
+    relativeUnixPath,
+    basePath,
+    resolved,
+  });
+
+  return resolved;
 }

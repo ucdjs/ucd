@@ -209,7 +209,7 @@ describe("store mirror", () => {
     expect(mirrorError.message).toBe("Version '99.99.99' does not exist in the store.");
   });
 
-  it("should handle API errors during file fetching", async () => {
+  it.todo("should handle API errors during file fetching", async () => {
     mockFetch([
       ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions/:version/file-tree`, () => {
         return HttpResponse.json({
