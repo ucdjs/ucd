@@ -1,3 +1,4 @@
+import os from "node:os";
 import { resolve } from "node:path";
 import NodeFileSystemBridge from "#internal:bridge/node";
 import { PathTraversalError } from "@ucdjs/path-utils";
@@ -46,7 +47,7 @@ describe("boundary enforcement", () => {
       // Change CWD shouldn't affect boundary enforcement
       const originalCwd = process.cwd();
       try {
-        process.chdir("/tmp");
+        process.chdir(os.tmpdir());
         // Should still prevent traversal
         await expect(
           bridge.read("../../etc/passwd"),

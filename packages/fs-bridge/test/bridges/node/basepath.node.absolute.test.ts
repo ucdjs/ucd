@@ -1,3 +1,4 @@
+import os from "node:os";
 import { resolve } from "node:path";
 import NodeFileSystemBridge from "#internal:bridge/node";
 import { describe, expect, it } from "vitest";
@@ -114,13 +115,14 @@ describe("node bridge - absolute basePath scenarios", () => {
       const testDir = await testdir({
         "file.txt": "content",
       });
+
       const absoluteBasePath = resolve(testDir);
       const bridge = NodeFileSystemBridge({ basePath: absoluteBasePath });
 
       const originalCwd = process.cwd();
       try {
         // Change CWD
-        process.chdir("/tmp");
+        process.chdir(os.tmpdir());
 
         // Should still work with absolute basePath
         const content = await bridge.read("file.txt");
