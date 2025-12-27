@@ -36,6 +36,7 @@ describe("UNC path prevention", () => {
       const testDir = await testdir({
         "file.txt": "content",
       });
+
       const bridge = NodeFileSystemBridge({ basePath: testDir });
 
       // UNC paths should be rejected even if encoded

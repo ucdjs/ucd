@@ -21,14 +21,36 @@ export const toMatchError: RawMatcherFn<MatcherState, [ErrorMatcherOptions]> = f
   received: unknown,
   options: ErrorMatcherOptions,
 ) {
-  if (!(received instanceof Error)) {
+  let error: Error | null = null;
+
+  // If received is a function, call it and catch the error
+  if (typeof received === "function") {
+    try {
+      received();
+
+      return {
+        pass: false,
+        message: () => "Expected function to throw an error, but it did not",
+      };
+    } catch (e: unknown) {
+      if (!(e instanceof Error)) {
+        return {
+          pass: false,
+          message: () => `Expected function to throw an Error, but it threw ${typeof e}`,
+        };
+      }
+
+      error = e;
+    }
+  } else if (received instanceof Error) {
+    error = received;
+  } else {
     return {
       pass: false,
-      message: () => `Expected an Error instance, but received ${typeof received}`,
+      message: () => `Expected an Error instance or a function that throws, but received ${typeof received}`,
     };
   }
 
-  const error: Error = received;
   const errorName = error.constructor.name;
 
   // Check error type
