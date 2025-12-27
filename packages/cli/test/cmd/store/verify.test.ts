@@ -136,7 +136,8 @@ describe("store verify command", () => {
     ]);
 
     expect(capture.hasValidJson()).toBe(true);
-    const json = capture.json<{ valid: boolean; lockfileVersions: string[]; availableVersions: string[] }>();
+    const json = capture.json();
+
     expect(json).toHaveProperty("valid");
     expect(json).toHaveProperty("lockfileVersions");
     expect(json).toHaveProperty("availableVersions");

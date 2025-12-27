@@ -2,6 +2,7 @@
 import type { Prettify } from "@luxass/utils";
 import type { CLIArguments } from "../../cli-utils";
 import type { CLIStoreCmdSharedFlags } from "./_shared";
+import { hasCapability } from "@ucdjs/fs-bridge";
 import { UCDStoreGenericError } from "@ucdjs/ucd-store-v2";
 import { green, red, yellow } from "farver/fast";
 import { printHelp } from "../../cli-utils";
@@ -74,7 +75,11 @@ export async function runSyncStore({ flags, versions }: CLIStoreSyncCmdOptions) 
     });
 
     // Check write capability
-    // assertWriteCapability(store);
+    if (!hasCapability(store.fs, "write")) {
+      console.error(red(`\n❌ Error: Store does not have write capability required for sync operation.`));
+      console.error("Please check the store configuration and try again.");
+      return;
+    }
 
     console.info("Starting sync operation...");
     if (versions.length > 0) {

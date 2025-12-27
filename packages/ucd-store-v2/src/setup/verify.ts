@@ -1,22 +1,52 @@
 import type { UCDClient } from "@ucdjs/client";
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
-import { createDebugger } from "@ucdjs-internal/shared";
+import { createDebugger, tryOr } from "@ucdjs-internal/shared";
+import { readLockfile } from "@ucdjs/lockfile";
 import { UCDStoreGenericError } from "../errors";
 
 const debug = createDebugger("ucdjs:ucd-store:verify");
 
 export interface VerifyOptions {
+  /**
+   * UCD Client instance to use for API requests.
+   */
   client: UCDClient;
+
+  /**
+   * Path to the lockfile to verify against.
+   */
   lockfilePath: string;
+
+  /**
+   * File system bridge for file operations.
+   */
   fs: FileSystemBridge;
-  versions: string[];
 }
 
 export interface VerifyResult {
+  /**
+   * Whether the lockfile is valid (all versions present in the API).
+   */
   valid: boolean;
+
+  /**
+   * Versions listed in the lockfile.
+   */
   lockfileVersions: string[];
+
+  /**
+   * Versions available from the API.
+   */
   availableVersions: string[];
+
+  /**
+   * Versions present in the lockfile but missing from the API.
+   */
   missingVersions: string[];
+
+  /**
+   * Versions available in the API but not listed in the lockfile.
+   */
   extraVersions: string[];
 }
 
@@ -30,28 +60,36 @@ export interface VerifyResult {
  * @throws {UCDStoreGenericError} If API fetch fails
  */
 export async function verify(options: VerifyOptions): Promise<VerifyResult> {
-  const { client, lockfilePath: _lockfilePath, fs: _fs, versions } = options;
+  const { client, lockfilePath, fs } = options;
 
   debug?.("Starting lockfile verification");
 
-  const lockfileVersions = versions;
+  const lockfile = await tryOr({
+    try: () => readLockfile(fs, lockfilePath),
+    err: (err) => {
+      throw new UCDStoreGenericError(`Failed to read lockfile at ${lockfilePath}: ${(err as any).message}`);
+    },
+  });
+
+  const lockfileVersions = Object.keys(lockfile.versions || {});
   debug?.(`Found ${lockfileVersions.length} versions in lockfile:`, lockfileVersions);
 
-  const result = await client.versions.list();
+  const apiResponseResult = await client.versions.list();
 
-  if (result.error) {
+  if (apiResponseResult.error) {
     throw new UCDStoreGenericError(
-      `Failed to fetch Unicode versions during verification: ${result.error.message}${
-        result.error.status ? ` (status ${result.error.status})` : ""
+      `Failed to fetch Unicode versions during verification: ${apiResponseResult.error.message}${
+        apiResponseResult.error.status ? ` (status ${apiResponseResult.error.status})` : ""
       }`,
     );
   }
 
-  if (!result.data) {
+  if (!apiResponseResult.data) {
     throw new UCDStoreGenericError("Failed to fetch Unicode versions during verification: no data returned");
   }
 
-  const availableVersions = result.data.map(({ version }) => version);
+  // The list of available versions from the API
+  const availableVersions = apiResponseResult.data.map(({ version }) => version);
   debug?.(`Fetched ${availableVersions.length} available versions from API`);
 
   const missingVersions = lockfileVersions.filter((v) => !availableVersions.includes(v));
