@@ -25,12 +25,13 @@ catalogs:
     "@ucdjs/release-scripts": 0.1.0-beta.24
 
   testing:
-    "@vitest/coverage-istanbul": 3.2.4
-    "@vitest/ui": 3.2.4
-    vitest: 3.2.4
+    "@vitest/coverage-istanbul": 4.0.16
+    "@vitest/ui": 4.0.16
+    vitest: 4.0.16
     vitest-testdirs: 4.3.0
     msw: 2.12.4
-    "@cloudflare/vitest-pool-workers": 0.9.13
+    # "@cloudflare/vitest-pool-workers": 0.11.1
+    "@cloudflare/vitest-pool-workers": https://pkg.pr.new/@cloudflare/vitest-pool-workers@11632
 
   linting:
     "@luxass/eslint-config": 6.0.3
@@ -138,6 +139,7 @@ onlyBuiltDependencies:
 overrides:
   "@asteasolutions/zod-to-openapi": 8.2.0
   rolldown: catalog:dev
+  wrangler: catalog:workers
 
 patchedDependencies:
   "@asteasolutions/zod-to-openapi@8.2.0": patches/@asteasolutions__zod-to-openapi@8.2.0.patch

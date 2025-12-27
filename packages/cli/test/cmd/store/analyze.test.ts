@@ -19,15 +19,12 @@ describe("store analyze command", () => {
   });
 
   it("should show help when --help flag is passed", async () => {
-    const helpCapture = captureConsoleOutput();
     await runCLI(["store", "analyze", "--help"]);
 
-    expect(helpCapture.contains("Analyze UCD Store")).toBe(true);
-    expect(helpCapture.contains("--store-dir")).toBe(true);
-    expect(helpCapture.contains("--json")).toBe(true);
-    expect(helpCapture.contains("--check-orphaned")).toBe(true);
-
-    helpCapture.restore();
+    expect(capture.containsInfo("Analyze UCD Store")).toBe(true);
+    expect(capture.containsInfo("--store-dir")).toBe(true);
+    expect(capture.containsInfo("--json")).toBe(true);
+    expect(capture.containsInfo("--check-orphaned")).toBe(true);
   });
 
   it("should fail if neither --remote nor --store-dir is specified", async () => {

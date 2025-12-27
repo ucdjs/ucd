@@ -31,14 +31,6 @@ export class ConsoleOutputCapture {
         original(...args);
       }));
     }
-
-    // this.spies.set("stdout", vi.spyOn(process.stdout, "write").mockImplementation((chunk: unknown) => {
-    //   const output = typeof chunk === "string" ? chunk : String(chunk);
-    //   this.captured.stdout.push(output);
-    //   // Don't redirect to console.log - just capture it silently
-    //   // This prevents the circular issue with JSON mode where console.log -> console.error
-    //   return true;
-    // }));
   }
 
   restore(): void {
