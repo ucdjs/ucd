@@ -25,7 +25,8 @@ async function createProjects(root: string): Promise<TestProjectConfiguration[]>
       const customConfigPath = normalize(pkgRoot(root, dir) + "/vitest.config.ts")
 
       if (existsSync(customConfigPath)) {
-        const safePath = customConfigPath.replace(/^[a-zA-Z]:\//, "");
+        // Replace C:/ or D:\
+        const safePath = customConfigPath.replace(/^[A-Z]:\\/, "/").replace()
         console.log(`[vitest] Loading custom config for ${root}/${dir} using path ${customConfigPath} and safe path ${safePath}`);
 
         try {
