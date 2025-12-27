@@ -25,16 +25,14 @@ async function createProjects(root: string): Promise<TestProjectConfiguration[]>
       const customConfigPath = normalize(pkgRoot(root, dir) + "/vitest.config.ts")
 
       if (existsSync(customConfigPath)) {
-        // Replace C:/ or D:\
         const safePath = customConfigPath.replace(/^[A-Z]:\\/, "/").replace(/\\/g, "/");
-        console.log(`[vitest] Loading custom config for ${root}/${dir} using path ${customConfigPath} and safe path ${safePath}`);
 
         try {
           const customConfig = await import(safePath).then((m) => m.default);
 
           return mergeConfig(base, customConfig);
         } catch (err) {
-          console.warn(`[vitest] Failed to load custom config for ${root}/${dir}:`, err);
+          console.warn(`[vitest] Failed to load custom config for ${root}/${dir} (path: ${customConfigPath}, safe path: ${safePath}):`, err);
           return base;
         }
       }
