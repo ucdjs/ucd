@@ -21,7 +21,10 @@ function isValidSubcommand(subcommand: string): subcommand is Subcommand {
 }
 
 export async function runFilesRoot(subcommand: string, { flags }: CLIFilesCmdOptions) {
-  if (!isValidSubcommand(subcommand) || (!isValidSubcommand(subcommand) && (flags?.help || flags?.h))) {
+  const isValidSub = isValidSubcommand(subcommand);
+  const requestsHelp = flags?.help || flags?.h;
+
+  if (!isValidSub || (requestsHelp && !isValidSub)) {
     printHelp({
       commandName: "ucd files",
       usage: "[command] [...flags]",

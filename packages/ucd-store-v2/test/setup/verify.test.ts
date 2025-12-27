@@ -27,7 +27,6 @@ describe("verify", () => {
         client: context.client,
         lockfilePath,
         fs,
-        versions: context.versions,
       });
 
       // Assert
@@ -52,7 +51,6 @@ describe("verify", () => {
         client: context.client,
         lockfilePath,
         fs,
-        versions: context.versions,
       });
 
       // Assert
@@ -81,7 +79,6 @@ describe("verify", () => {
         client: context.client,
         lockfilePath,
         fs,
-        versions: context.versions,
       });
 
       // Assert
@@ -104,7 +101,6 @@ describe("verify", () => {
         client: context.client,
         lockfilePath,
         fs,
-        versions: context.versions,
       });
 
       // Assert
@@ -131,7 +127,6 @@ describe("verify", () => {
         client: context.client,
         lockfilePath,
         fs,
-        versions: context.versions,
       });
 
       // Assert
@@ -162,7 +157,6 @@ describe("verify", () => {
           client: context.client,
           lockfilePath,
           fs,
-          versions: context.versions,
         }),
       ).rejects.toThrow(UCDStoreGenericError);
     });
@@ -185,7 +179,6 @@ describe("verify", () => {
         client: context.client,
         lockfilePath,
         fs,
-        versions: context.versions,
       }).catch((e) => e);
 
       // Assert
@@ -212,7 +205,6 @@ describe("verify", () => {
           client: context.client,
           lockfilePath,
           fs,
-          versions: context.versions,
         }),
       ).rejects.toThrow(UCDStoreGenericError);
     });
@@ -235,7 +227,6 @@ describe("verify", () => {
         client: context.client,
         lockfilePath,
         fs,
-        versions: context.versions,
       }).catch((e) => e);
 
       // Assert

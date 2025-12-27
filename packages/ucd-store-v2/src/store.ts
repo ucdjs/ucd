@@ -124,7 +124,6 @@ export async function createUCDStore(options: UCDStoreOptions): Promise<UCDStore
         client,
         lockfilePath,
         fs,
-        versions: storeVersions,
       });
 
       if (!verifyResult.valid) {

@@ -98,14 +98,14 @@ describe("v1_files", () => {
 
     describe("content-type inference", () => {
       it("should handle missing content-type header", async () => {
-        const mockContent = new Uint8Array(new Uint8Array([
+        const mockContent = new Uint8Array([
           // eslint-disable-next-line antfu/consistent-list-newline
           0x49, 0x27, 0x6D, 0x20, 0x61, 0x20, 0x74, 0x65,
           // eslint-disable-next-line antfu/consistent-list-newline
           0x61, 0x70, 0x6F, 0x74, 0x2E, 0x20, 0x53, 0x68,
           // eslint-disable-next-line antfu/consistent-list-newline
           0x68, 0x68, 0x21,
-        ]));
+        ]);
 
         mockFetch([
           ["GET", "https://unicode.org/Public/binary/file", () => {
@@ -184,12 +184,9 @@ describe("v1_files", () => {
       it("should correctly extract extension from paths with dots in directory names", async () => {
         const mockContent = "Unicode data content";
 
-        const encoder = new TextEncoder();
-        const body = encoder.encode("Unicode data content");
-
         mockFetch([
           ["GET", "https://unicode.org/Public/15.1.0/ucd/UnicodeData", () => {
-            return new RawResponse(body, {
+            return new RawResponse(mockContent, {
               headers: {
                 "content-length": mockContent.length.toString(),
               },
@@ -548,14 +545,14 @@ describe("v1_files", () => {
 
     describe("content-type inference", () => {
       it("should handle HEAD requests with missing content-type header", async () => {
-        const mockContent = new Uint8Array(new Uint8Array([
+        const mockContent = new Uint8Array([
           // eslint-disable-next-line antfu/consistent-list-newline
           0x49, 0x27, 0x6D, 0x20, 0x61, 0x20, 0x74, 0x65,
           // eslint-disable-next-line antfu/consistent-list-newline
           0x61, 0x70, 0x6F, 0x74, 0x2E, 0x20, 0x53, 0x68,
           // eslint-disable-next-line antfu/consistent-list-newline
           0x68, 0x68, 0x21,
-        ]));
+        ]);
 
         mockFetch([
           ["GET", "https://unicode.org/Public/binary/file", () => {

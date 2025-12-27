@@ -1,3 +1,4 @@
+import type { UCDWellKnownConfig } from "@ucdjs/schemas";
 import { createTestContext } from "#internal-pkg:test-utils/test-context";
 import { mockStoreApi } from "#test-utils/mock-store";
 import { HttpResponse, mockFetch } from "#test-utils/msw";
@@ -143,7 +144,6 @@ describe("config discovery integration", () => {
       mockStoreApi({
         versions: ["16.0.0", "15.1.0"],
         responses: {
-          // @ts-expect-error This is just for a test, so should be fine.
           "/.well-known/ucd-config.json": {
             version: "0.1",
             endpoints: {
@@ -152,7 +152,7 @@ describe("config discovery integration", () => {
               versions: "/api/v1/versions",
             },
             // No versions field
-          },
+          } as unknown as UCDWellKnownConfig,
         },
       });
 

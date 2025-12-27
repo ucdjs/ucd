@@ -4,8 +4,10 @@ import { describe, expect, it } from "vitest";
 import { testdir } from "vitest-testdirs";
 import { BridgeSetupError } from "../../../src/errors";
 
-describe("uNC path prevention", () => {
-  describe("uNC path rejection", () => {
+// eslint-disable-next-line test/prefer-lowercase-title
+describe("UNC path prevention", () => {
+  // eslint-disable-next-line test/prefer-lowercase-title
+  describe("UNC path rejection", () => {
     it("should reject UNC paths in basePath", () => {
       expect(() => {
         NodeFileSystemBridge({ basePath: "\\\\server\\share" });
