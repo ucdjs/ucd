@@ -19,14 +19,11 @@ describe("store status command", () => {
   });
 
   it("should show help when --help flag is passed", async () => {
-    const helpCapture = captureConsoleOutput();
     await runCLI(["store", "status", "--help"]);
 
-    expect(helpCapture.contains("Show UCD Store status and lockfile information")).toBe(true);
-    expect(helpCapture.contains("--store-dir")).toBe(true);
-    expect(helpCapture.contains("--json")).toBe(true);
-
-    helpCapture.restore();
+    expect(capture.containsInfo("Show UCD Store status and lockfile information")).toBe(true);
+    expect(capture.containsInfo("--store-dir")).toBe(true);
+    expect(capture.containsInfo("--json")).toBe(true);
   });
 
   it("should fail if neither --remote nor --store-dir is specified", async () => {

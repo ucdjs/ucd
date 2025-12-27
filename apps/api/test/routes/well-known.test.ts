@@ -1,27 +1,26 @@
+import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { UCDWellKnownConfigSchema } from "@ucdjs/schemas";
-import { env, fetchMock } from "cloudflare:test";
-import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
+import { env } from "cloudflare:workers";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { executeRequest } from "../helpers/request";
-import { expectApiError, expectCacheHeaders, expectJsonResponse, expectSuccess } from "../helpers/response";
+import {
+  expectApiError,
+  expectCacheHeaders,
+  expectJsonResponse,
+  expectSuccess,
+} from "../helpers/response";
 
-// Mock unicode-utils for version fetching
 vi.mock("@unicode-utils/core", async (importOriginal) => {
   const original = await importOriginal<typeof import("@unicode-utils/core")>();
 
   return {
     ...original,
-    getCurrentDraftVersion: vi.fn(() => Promise.resolve(null)),
-    resolveUCDVersion: vi.fn((version: string) => version),
+    getCurrentDraftVersion: vi.fn(() => original.getCurrentDraftVersion()),
+    resolveUCDVersion: vi.fn((version) => original.resolveUCDVersion(version)),
   };
 });
 
-beforeAll(() => {
-  fetchMock.activate();
-  fetchMock.disableNetConnect();
-});
-
 afterEach(() => {
-  fetchMock.assertNoPendingInterceptors();
   vi.resetAllMocks();
 });
 
@@ -46,9 +45,11 @@ describe("well-known", () => {
     `;
 
     it("should return UCD config successfully with versions array", async () => {
-      fetchMock.get("https://www.unicode.org")
-        .intercept({ path: "/versions/enumeratedversions.html" })
-        .reply(200, mockHtmlResponse);
+      mockFetch([
+        ["GET", "https://www.unicode.org/versions/enumeratedversions.html", () => {
+          return HttpResponse.text(mockHtmlResponse);
+        }],
+      ]);
 
       const { response, json } = await executeRequest(
         new Request("https://api.ucdjs.dev/.well-known/ucd-config.json"),

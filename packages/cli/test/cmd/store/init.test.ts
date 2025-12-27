@@ -33,13 +33,10 @@ describe("store init command", () => {
   });
 
   it("should show help when --help flag is passed", async () => {
-    const helpCapture = captureConsoleOutput();
     await runCLI(["store", "init", "--help"]);
 
-    expect(helpCapture.contains("Initialize an UCD Store")).toBe(true);
-    expect(helpCapture.contains("--store-dir")).toBe(true);
-
-    helpCapture.restore();
+    expect(capture.containsInfo("Initialize an UCD Store")).toBe(true);
+    expect(capture.containsInfo("--store-dir")).toBe(true);
   });
 
   it("should initialize store with basic options", async () => {

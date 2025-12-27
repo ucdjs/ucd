@@ -154,7 +154,7 @@ export function printHelp({
   );
 
   // eslint-disable-next-line no-console
-  console.log(`${message.join("\n")}\n`);
+  console.info(`${message.join("\n")}\n`);
 }
 
 /**

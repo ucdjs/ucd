@@ -21,14 +21,11 @@ describe("files get command", () => {
   });
 
   it("should show help when --help flag is passed", async () => {
-    const helpCapture = captureConsoleOutput();
     await runCLI(["files", "get", "--help"]);
 
-    expect(helpCapture.contains("Get a specific file from the UCD API")).toBe(true);
-    expect(helpCapture.contains("--base-url")).toBe(true);
-    expect(helpCapture.contains("--output")).toBe(true);
-
-    helpCapture.restore();
+    expect(capture.containsInfo("Get a specific file from the UCD API")).toBe(true);
+    expect(capture.containsInfo("--base-url")).toBe(true);
+    expect(capture.containsInfo("--output")).toBe(true);
   });
 
   it("should error when no path is provided", async () => {

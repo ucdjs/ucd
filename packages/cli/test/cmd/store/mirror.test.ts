@@ -21,14 +21,11 @@ describe("store mirror command", () => {
   });
 
   it("should show help when --help flag is passed", async () => {
-    const helpCapture = captureConsoleOutput();
     await runCLI(["store", "mirror", "--help"]);
 
-    expect(helpCapture.contains("Mirror Unicode data files to local storage")).toBe(true);
-    expect(helpCapture.contains("--store-dir")).toBe(true);
-    expect(helpCapture.contains("--concurrency")).toBe(true);
-
-    helpCapture.restore();
+    expect(capture.containsInfo("Mirror Unicode data files to local storage")).toBe(true);
+    expect(capture.containsInfo("--store-dir")).toBe(true);
+    expect(capture.containsInfo("--concurrency")).toBe(true);
   });
 
   it("should fail if neither --remote nor --store-dir is specified", async () => {

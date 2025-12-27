@@ -19,14 +19,11 @@ describe("store verify command", () => {
   });
 
   it("should show help when --help flag is passed", async () => {
-    const helpCapture = captureConsoleOutput();
     await runCLI(["store", "verify", "--help"]);
 
-    expect(helpCapture.contains("Verify UCD Store integrity")).toBe(true);
-    expect(helpCapture.contains("--store-dir")).toBe(true);
-    expect(helpCapture.contains("--json")).toBe(true);
-
-    helpCapture.restore();
+    expect(capture.containsInfo("Verify UCD Store integrity")).toBe(true);
+    expect(capture.containsInfo("--store-dir")).toBe(true);
+    expect(capture.containsInfo("--json")).toBe(true);
   });
 
   it("should fail if neither --remote nor --store-dir is specified", async () => {
