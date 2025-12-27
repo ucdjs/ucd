@@ -102,7 +102,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton render={(
-                <a href="https://api.ucdjs.dev" target="_blank" rel="noopener noreferrer">
+                <a href={import.meta.env.VITE_UCDJS_API_BASE_URL} target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="size-4" />
                   <span>API Reference</span>
                 </a>
