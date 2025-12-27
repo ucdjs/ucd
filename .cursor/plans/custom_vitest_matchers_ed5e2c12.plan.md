@@ -216,7 +216,3 @@ Add tests for matchers in `packages/test-utils/test/matchers/`:
 The matchers are additive - existing tests continue to work. Teams can gradually adopt new matchers:
 
 - Result tuple matchers can replace `expect(error).toBeNull()` patterns
-- Response matchers can replace helper functions in `apps/api/test/helpers/response.ts`
-- Error matchers provide more explicit assertions
-
-## Benefits

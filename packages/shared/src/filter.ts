@@ -3,6 +3,23 @@ import picomatch from "picomatch";
 import { DEFAULT_PICOMATCH_OPTIONS } from "./glob";
 
 /**
+ * File extensions excluded by default in createPathFilter.
+ * These are archive and document formats that are typically not needed for Unicode data processing.
+ */
+export const DEFAULT_EXCLUDED_EXTENSIONS = [
+  // Archive formats
+  ".zip",
+  ".tar",
+  ".gz",
+  ".bz2",
+  ".xz",
+  ".7z",
+  ".rar",
+  // Document formats
+  ".pdf",
+] as const;
+
+/**
  * Predefined filter patterns for common file exclusions.
  * These constants can be used with `createPathFilter` to easily exclude common file types.
  *
@@ -41,12 +58,19 @@ export interface PathFilterOptions {
    * If empty or not set, includes everything using "**" pattern
    */
   include?: string[];
+
   /**
    * Glob patterns for files to exclude.
    * These override include patterns
    */
   exclude?: string[];
 
+  /**
+   * Whether to disable default exclusions (.zip, .pdf).
+   * If true, no default exclusions will be applied.
+   *
+   * @default false
+   */
   disableDefaultExclusions?: boolean;
 }
 
@@ -123,9 +147,8 @@ function internal__createFilterFunction(config: PathFilterOptions): PathFilterFn
   const rawExcludePatterns: string[] = config.disableDefaultExclusions
     ? [...(config.exclude || [])]
     : [
-        // exclude .zip & .pdf files by default
-        "**/*.zip",
-        "**/*.pdf",
+        // Exclude archive and document files by default
+        ...DEFAULT_EXCLUDED_EXTENSIONS.map((ext) => `**/*${ext}`),
         ...(config.exclude || []),
       ];
 
