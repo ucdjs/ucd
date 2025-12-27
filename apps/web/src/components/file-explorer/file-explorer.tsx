@@ -19,7 +19,25 @@ export interface FileExplorerProps {
 export function FileExplorer({ files, currentPath, isLoading }: FileExplorerProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState<ViewMode>("list");
-  const [filter, setFilter] = useState<FileFilter>({ type: "all" });
+  const [filter, setFilter] = useState<FileFilter>({
+    type: "all",
+    sortBy: "name",
+    sortOrder: "asc",
+  });
+
+  // Extract available file extensions
+  const availableExtensions = useMemo(() => {
+    const extensions = new Set<string>();
+    files.forEach((file) => {
+      if (file.type === "file") {
+        const ext = file.name.split(".").pop()?.toLowerCase();
+        if (ext && ext !== file.name) {
+          extensions.add(ext);
+        }
+      }
+    });
+    return Array.from(extensions).sort();
+  }, [files]);
 
   // Filter and sort files
   const filteredFiles = useMemo(() => {
@@ -40,11 +58,45 @@ export function FileExplorer({ files, currentPath, isLoading }: FileExplorerProp
       result = result.filter((file) => file.type === "directory");
     }
 
-    // Sort: directories first, then alphabetically
+    // Apply extension filter
+    if (filter.extension) {
+      result = result.filter((file) => {
+        if (file.type === "directory") return true;
+        const ext = file.name.split(".").pop()?.toLowerCase();
+        return ext === filter.extension;
+      });
+    }
+
+    // Sort files
+    const sortBy = filter.sortBy || "name";
+    const sortOrder = filter.sortOrder || "asc";
+
     result.sort((a, b) => {
-      if (a.type === "directory" && b.type !== "directory") return -1;
-      if (a.type !== "directory" && b.type === "directory") return 1;
-      return a.name.localeCompare(b.name);
+      // Always keep directories first unless sorting by type
+      if (sortBy !== "type") {
+        if (a.type === "directory" && b.type !== "directory") return -1;
+        if (a.type !== "directory" && b.type === "directory") return 1;
+      }
+
+      let comparison = 0;
+
+      switch (sortBy) {
+        case "date":
+          comparison = (a.lastModified || 0) - (b.lastModified || 0);
+          break;
+        case "type":
+          if (a.type === b.type) {
+            comparison = a.name.localeCompare(b.name);
+          } else {
+            comparison = a.type.localeCompare(b.type);
+          }
+          break;
+        case "name":
+        default:
+          comparison = a.name.localeCompare(b.name);
+      }
+
+      return sortOrder === "desc" ? -comparison : comparison;
     });
 
     return result;
@@ -84,6 +136,7 @@ export function FileExplorer({ files, currentPath, isLoading }: FileExplorerProp
         onViewModeChange={setViewMode}
         filter={filter}
         onFilterChange={setFilter}
+        availableExtensions={availableExtensions}
       />
 
       {filteredFiles.length === 0

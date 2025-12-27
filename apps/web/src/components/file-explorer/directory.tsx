@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { FolderIcon, FolderOpen } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 export interface DirectoryItemProps {
@@ -30,6 +31,18 @@ function formatRelativeTime(timestamp: number): string {
   return "just now";
 }
 
+function formatExactDate(timestamp: number): string {
+  return new Date(timestamp).toLocaleString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    timeZoneName: "short",
+  });
+}
+
 export function DirectoryItem({ directory, viewMode, currentPath }: DirectoryItemProps) {
   const dirPath = currentPath ? `${currentPath}/${directory.name}` : directory.name;
   const lastModified = directory.lastModified
@@ -38,25 +51,36 @@ export function DirectoryItem({ directory, viewMode, currentPath }: DirectoryIte
 
   if (viewMode === "cards") {
     return (
-      <Card size="sm" className="hover:ring-primary/30 transition-all hover:ring-2 group">
-        <CardContent className="flex flex-col gap-2">
-          <div className="flex items-center gap-2">
-            <FolderIcon className="size-4 text-amber-500 group-hover:hidden" />
-            <FolderOpen className="size-4 text-amber-500 hidden group-hover:block" />
-            <Link
-              to="/explorer/files/$"
-              params={{ _splat: dirPath }}
-              className="truncate font-medium text-sm hover:text-primary transition-colors"
-              title={directory.name}
-            >
-              {directory.name}
-            </Link>
-          </div>
-          {lastModified && (
-            <p className="text-xs text-muted-foreground">{lastModified}</p>
-          )}
-        </CardContent>
-      </Card>
+      <Link
+        to="/explorer/files/$"
+        params={{ _splat: dirPath }}
+        className="block group"
+      >
+        <Card size="sm" className="hover:ring-2 hover:ring-primary/30 hover:bg-accent/50 transition-all cursor-pointer">
+          <CardContent className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <FolderIcon className="size-4 text-amber-500 group-hover:hidden shrink-0" />
+              <FolderOpen className="size-4 text-amber-500 hidden group-hover:block shrink-0" />
+              <span
+                className="truncate font-medium text-sm group-hover:text-primary transition-colors"
+                title={directory.name}
+              >
+                {directory.name}
+              </span>
+            </div>
+            {lastModified && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <p className="text-xs text-muted-foreground cursor-help">{lastModified}</p>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {formatExactDate(directory.lastModified!)}
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </CardContent>
+        </Card>
+      </Link>
     );
   }
 
@@ -79,9 +103,16 @@ export function DirectoryItem({ directory, viewMode, currentPath }: DirectoryIte
         {directory.name}
       </span>
       {lastModified && (
-        <span className="text-xs text-muted-foreground shrink-0">
-          {lastModified}
-        </span>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="text-xs text-muted-foreground shrink-0 cursor-help">
+              {lastModified}
+            </span>
+          </TooltipTrigger>
+          <TooltipContent>
+            {formatExactDate(directory.lastModified!)}
+          </TooltipContent>
+        </Tooltip>
       )}
     </Link>
   );

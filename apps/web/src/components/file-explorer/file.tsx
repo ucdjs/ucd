@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { FileIcon, FileText } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 export interface FileItemProps {
@@ -42,6 +43,18 @@ function formatRelativeTime(timestamp: number): string {
   return "just now";
 }
 
+function formatExactDate(timestamp: number): string {
+  return new Date(timestamp).toLocaleString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    timeZoneName: "short",
+  });
+}
+
 export function FileItem({ file, viewMode, currentPath }: FileItemProps) {
   const filePath = currentPath ? `${currentPath}/${file.name}` : file.name;
   const lastModified = file.lastModified
@@ -50,24 +63,35 @@ export function FileItem({ file, viewMode, currentPath }: FileItemProps) {
 
   if (viewMode === "cards") {
     return (
-      <Card size="sm" className="hover:ring-primary/30 transition-all hover:ring-2">
-        <CardContent className="flex flex-col gap-2">
-          <div className="flex items-center gap-2">
-            {getFileIcon(file.name)}
-            <Link
-              to="/explorer/files/$"
-              params={{ _splat: filePath }}
-              className="truncate font-medium text-sm hover:text-primary transition-colors"
-              title={file.name}
-            >
-              {file.name}
-            </Link>
-          </div>
-          {lastModified && (
-            <p className="text-xs text-muted-foreground">{lastModified}</p>
-          )}
-        </CardContent>
-      </Card>
+      <Link
+        to="/explorer/files/$"
+        params={{ _splat: filePath }}
+        className="block group"
+      >
+        <Card size="sm" className="hover:ring-2 hover:ring-primary/30 hover:bg-accent/50 transition-all cursor-pointer">
+          <CardContent className="flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              {getFileIcon(file.name)}
+              <span
+                className="truncate font-medium text-sm group-hover:text-primary transition-colors"
+                title={file.name}
+              >
+                {file.name}
+              </span>
+            </div>
+            {lastModified && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <p className="text-xs text-muted-foreground cursor-help">{lastModified}</p>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {formatExactDate(file.lastModified!)}
+                </TooltipContent>
+              </Tooltip>
+            )}
+          </CardContent>
+        </Card>
+      </Link>
     );
   }
 
@@ -89,9 +113,16 @@ export function FileItem({ file, viewMode, currentPath }: FileItemProps) {
         {file.name}
       </Link>
       {lastModified && (
-        <span className="text-xs text-muted-foreground shrink-0">
-          {lastModified}
-        </span>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="text-xs text-muted-foreground shrink-0 cursor-help">
+              {lastModified}
+            </span>
+          </TooltipTrigger>
+          <TooltipContent>
+            {formatExactDate(file.lastModified!)}
+          </TooltipContent>
+        </Tooltip>
       )}
     </div>
   );
