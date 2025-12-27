@@ -1,8 +1,10 @@
+import type { PathFilter } from "@ucdjs-internal/shared";
 import type { UCDClient } from "@ucdjs/client";
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 import { createDebugger } from "@ucdjs-internal/shared";
 import { assertCapability } from "@ucdjs/fs-bridge";
-import { writeManifest } from "../core/manifest";
+import { writeLockfile } from "@ucdjs/lockfile";
+import { extractFilterPatterns } from "../core/context";
 import { UCDStoreGenericError } from "../errors";
 
 const debug = createDebugger("ucdjs:ucd-store:bootstrap");
@@ -12,21 +14,23 @@ export interface BootstrapOptions {
   fs: FileSystemBridge;
   basePath: string;
   versions: string[];
-  manifestPath: string;
+  lockfilePath: string;
+  filter?: PathFilter;
 }
 
 /**
  * Bootstraps a new store by validating versions against the API
- * and creating the initial manifest.
+ * and creating the initial lockfile.
  *
  * @param {BootstrapOptions} options - Bootstrap configuration options
  * @throws {UCDStoreGenericError} If API fetch fails or versions are invalid
  */
 export async function bootstrap(options: BootstrapOptions): Promise<void> {
-  const { client, fs, basePath, versions, manifestPath } = options;
+  const { client, fs, basePath, versions, lockfilePath, filter } = options;
 
   debug?.("Starting bootstrap for versions:", versions);
 
+  // Validate versions against API
   const result = await client.versions.list();
 
   if (result.error) {
@@ -63,10 +67,22 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
     debug?.("Base directory already exists");
   }
 
-  debug?.(`Writing manifest to: ${manifestPath}`);
-  await writeManifest(fs, manifestPath, Object.fromEntries(
-    versions.map((v) => [v, { expectedFiles: [] }]),
-  ));
+  debug?.(`Writing lockfile to: ${lockfilePath}`);
+  const filters = filter ? extractFilterPatterns(filter) : undefined;
+  await writeLockfile(fs, lockfilePath, {
+    lockfileVersion: 1,
+    versions: Object.fromEntries(
+      versions.map((v) => [
+        v,
+        {
+          path: `${v}/snapshot.json`, // relative path to snapshot
+          fileCount: 0,
+          totalSize: 0,
+        },
+      ]),
+    ),
+    filters,
+  });
 
   debug?.("✓ Bootstrap completed successfully");
 }

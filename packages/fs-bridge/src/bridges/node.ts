@@ -4,6 +4,7 @@ import fsp from "node:fs/promises";
 import nodePath from "node:path";
 import { trimTrailingSlash } from "@luxass/utils/path";
 import { createDebugger } from "@ucdjs-internal/shared";
+import { assertNotUNCPath } from "@ucdjs/path-utils";
 import { z } from "zod";
 import { defineFileSystemBridge } from "../define";
 
@@ -36,10 +37,20 @@ const NodeFileSystemBridge = defineFileSystemBridge({
     basePath: z.string(),
   }),
   setup({ options, resolveSafePath }) {
+    // Validate UNC paths before resolving
+    assertNotUNCPath(options.basePath);
+
     const basePath = nodePath.resolve(options.basePath);
 
     return {
       async read(path) {
+        // Reject file paths ending with / - files don't have trailing slashes
+        // Allow /, ./, and ../ as they are special directory references
+        const trimmedPath = path.trim();
+        if (trimmedPath.endsWith("/") && trimmedPath !== "/" && trimmedPath !== "./" && trimmedPath !== "../") {
+          throw new Error("Cannot read file: path ends with '/'");
+        }
+
         const resolvedPath = resolveSafePath(basePath, path);
         return fsp.readFile(resolvedPath, "utf-8");
       },
@@ -113,6 +124,13 @@ const NodeFileSystemBridge = defineFileSystemBridge({
         return rootEntries;
       },
       async write(path, data, encoding = "utf-8") {
+        // Reject file paths ending with / - files don't have trailing slashes
+        // Allow /, ./, and ../ as they are special directory references
+        const trimmedPath = path.trim();
+        if (trimmedPath.endsWith("/") && trimmedPath !== "/" && trimmedPath !== "./" && trimmedPath !== "../") {
+          throw new Error("Cannot write file: path ends with '/'");
+        }
+
         const resolvedPath = resolveSafePath(basePath, path);
         const parentDir = nodePath.dirname(resolvedPath);
 

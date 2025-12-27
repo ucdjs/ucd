@@ -16,29 +16,32 @@ describe("createVersionsResource", () => {
     {
       version: "16.0.0",
       documentationUrl: "https://www.unicode.org/versions/Unicode16.0.0/",
-      date: "2024-09-10",
+      date: "2024",
       url: "https://www.unicode.org/Public/16.0.0/ucd/",
       type: "stable",
-      mappedUcdVersion: "16.0.0",
+      mappedUcdVersion: null,
     },
     {
       version: "15.1.0",
       documentationUrl: "https://www.unicode.org/versions/Unicode15.1.0/",
-      date: "2023-09-12",
+      date: "2023",
       url: "https://www.unicode.org/Public/15.1.0/ucd/",
       type: "stable",
-      mappedUcdVersion: "15.1.0",
+      mappedUcdVersion: null,
     },
   ] satisfies UnicodeVersionList;
 
-  const mockFileTree = {
-    name: "ucd",
-    type: "directory",
-    children: [
-      { name: "UnicodeData.txt", type: "file" },
-      { name: "PropList.txt", type: "file" },
-    ],
-  };
+  const mockFileTree = [
+    {
+      name: "ucd",
+      type: "directory",
+      path: "/16.0.0/ucd",
+      children: [
+        { name: "UnicodeData.txt", type: "file", path: "/16.0.0/ucd/UnicodeData.txt" },
+        { name: "PropList.txt", type: "file", path: "/16.0.0/ucd/PropList.txt" },
+      ],
+    },
+  ];
 
   describe("list()", () => {
     it("should fetch all Unicode versions successfully", async () => {
@@ -123,11 +126,22 @@ describe("createVersionsResource", () => {
     it.each(
       ["15.1.0", "15.0.0", "14.0.0"],
     )("should handle file tree fetching for version %s", async (version) => {
+      const versionFileTree = [
+        {
+          name: "ucd",
+          type: "directory",
+          path: `/${version}/ucd`,
+          children: [
+            { name: "UnicodeData.txt", type: "file", path: `/${version}/ucd/UnicodeData.txt` },
+          ],
+        },
+      ];
+
       mockFetch([
         [
           "GET",
           `${baseUrl}${endpoints.versions}/${version}/file-tree`,
-          () => HttpResponse.json({ ...mockFileTree, version }),
+          () => HttpResponse.json(versionFileTree),
         ],
       ]);
 
@@ -135,7 +149,7 @@ describe("createVersionsResource", () => {
       const { data, error } = await versionsResource.getFileTree(version);
 
       expect(error).toBeNull();
-      expect(data).toHaveProperty("version", version);
+      expect(data).toEqual(versionFileTree);
     });
 
     it("should handle 404 errors for non-existent versions", async () => {

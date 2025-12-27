@@ -1,16 +1,13 @@
-import { createMemoryMockFS } from "#test-utils/fs-bridges";
+import { createTestContext } from "#internal-pkg:test-utils/test-context";
 import { mockStoreApi } from "#test-utils/mock-store";
-import { createPathFilter, getDefaultUCDEndpointConfig } from "@ucdjs-internal/shared";
-import { createUCDClientWithConfig } from "@ucdjs/client";
+import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
+import { createEmptyLockfile } from "@ucdjs/lockfile/test-utils";
 import { describe, expect, it } from "vitest";
-import { createInternalContext } from "../../../src/core/context";
 import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../../../src/errors";
 import { getFileTree } from "../../../src/operations/files/tree";
 
 describe("getFileTree", () => {
-  const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, getDefaultUCDEndpointConfig());
-
   describe("local store (default behavior)", () => {
     it("should return tree structure from local directory when it exists", async () => {
       let callCount = 0;
@@ -21,22 +18,14 @@ describe("getFileTree", () => {
         },
       });
 
-      const filter = createPathFilter({});
-      const fs = createMemoryMockFS({
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
         initialFiles: {
           "/test/16.0.0/UnicodeData.txt": "content",
           "/test/16.0.0/Blocks.txt": "content",
           "/test/16.0.0/extracted/DerivedBidiClass.txt": "content",
         },
-      });
-
-      const context = createInternalContext({
-        client,
-        filter,
-        fs,
-        basePath: "/test",
-        versions: ["16.0.0"],
-        manifestPath: "/test/.ucd-store.json",
       });
 
       const [data, error] = await getFileTree(context, "16.0.0");
@@ -75,16 +64,9 @@ describe("getFileTree", () => {
         },
       });
 
-      const filter = createPathFilter({});
-      const fs = createMemoryMockFS();
-
-      const context = createInternalContext({
-        client,
-        filter,
-        fs,
-        basePath: "/test",
+      const { context } = await createTestContext({
         versions: ["16.0.0"],
-        manifestPath: "/test/.ucd-store.json",
+        lockfile: createEmptyLockfile(["16.0.0"]),
       });
 
       const [data, error] = await getFileTree(context, "16.0.0");
@@ -103,8 +85,9 @@ describe("getFileTree", () => {
         },
       });
 
-      const filter = createPathFilter({});
-      const fs = createMemoryMockFS({
+      const { context, fs } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
         initialFiles: {
           "/test/16.0.0/UnicodeData.txt": "content",
         },
@@ -112,15 +95,6 @@ describe("getFileTree", () => {
 
       fs.hook("listdir:before", () => {
         throw new Error("Read failed");
-      });
-
-      const context = createInternalContext({
-        client,
-        filter,
-        fs,
-        basePath: "/test",
-        versions: ["16.0.0"],
-        manifestPath: "/test/.ucd-store.json",
       });
 
       const [data, error] = await getFileTree(context, "16.0.0");
@@ -142,20 +116,12 @@ describe("getFileTree", () => {
         },
       });
 
-      const filter = createPathFilter({});
-      const fs = createMemoryMockFS({
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
         initialFiles: {
           "/test/16.0.0/UnicodeData.txt": "content",
         },
-      });
-
-      const context = createInternalContext({
-        client,
-        filter,
-        fs,
-        basePath: "/test",
-        versions: ["16.0.0"],
-        manifestPath: "/test/.ucd-store.json",
       });
 
       const [data, error] = await getFileTree(context, "16.0.0", {
@@ -171,15 +137,9 @@ describe("getFileTree", () => {
     it("should fetch from API when directory doesn't exist locally", async () => {
       mockStoreApi({ versions: ["16.0.0", "15.1.0", "15.0.0"] });
 
-      const filter = createPathFilter({});
-      const fs = createMemoryMockFS();
-      const context = createInternalContext({
-        client,
-        filter,
-        fs,
-        basePath: "/test",
+      const { context } = await createTestContext({
         versions: ["16.0.0", "15.1.0", "15.0.0"],
-        manifestPath: "/test/.ucd-store.json",
+        lockfile: createEmptyLockfile(["16.0.0", "15.1.0", "15.0.0"]),
       });
 
       const [data, error] = await getFileTree(context, "15.1.0", {
@@ -214,8 +174,9 @@ describe("getFileTree", () => {
     it("should fall back to API when local read fails", async () => {
       mockStoreApi({ versions: ["16.0.0"] });
 
-      const filter = createPathFilter({});
-      const fs = createMemoryMockFS({
+      const { context, fs } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
         initialFiles: {
           "/test/16.0.0/UnicodeData.txt": "content",
         },
@@ -223,15 +184,6 @@ describe("getFileTree", () => {
 
       fs.hook("listdir:before", () => {
         throw new Error("Read failed");
-      });
-
-      const context = createInternalContext({
-        client,
-        filter,
-        fs,
-        basePath: "/test",
-        versions: ["16.0.0"],
-        manifestPath: "/test/.ucd-store.json",
       });
 
       const [data, error] = await getFileTree(context, "16.0.0", {
@@ -255,15 +207,9 @@ describe("getFileTree", () => {
         },
       });
 
-      const filter = createPathFilter({});
-      const fs = createMemoryMockFS();
-      const context = createInternalContext({
-        client,
-        filter,
-        fs,
-        basePath: "/test",
+      const { context } = await createTestContext({
         versions: ["16.0.0"],
-        manifestPath: "/test/.ucd-store.json",
+        lockfile: createEmptyLockfile(["16.0.0"]),
       });
 
       const [data, error] = await getFileTree(context, "16.0.0", {
@@ -272,6 +218,31 @@ describe("getFileTree", () => {
 
       expect(error).toBeInstanceOf(UCDStoreGenericError);
       expect(error?.message).toMatch(/Failed to fetch file tree for version '16\.0\.0'/);
+      expect(data).toBeNull();
+    });
+
+    it("should handle 'no data returned' error when API returns null", async () => {
+      mockStoreApi({
+        versions: ["16.0.0"],
+      });
+
+      mockFetch([
+        ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions/16.0.0/file-tree`, () => {
+          return HttpResponse.json(null);
+        }],
+      ]);
+
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+      });
+
+      const [data, error] = await getFileTree(context, "16.0.0", {
+        allowApi: true,
+      });
+
+      expect(error).toBeInstanceOf(UCDStoreGenericError);
+      expect(error?.message).toMatch(/Failed to fetch file tree for version '16\.0\.0': no data returned/);
       expect(data).toBeNull();
     });
   });
@@ -286,15 +257,9 @@ describe("getFileTree", () => {
         },
       });
 
-      const filter = createPathFilter({});
-      const fs = createMemoryMockFS();
-      const context = createInternalContext({
-        client,
-        filter,
-        fs,
-        basePath: "/test",
+      const { context } = await createTestContext({
         versions: ["16.0.0"],
-        manifestPath: "/test/.ucd-store.json",
+        lockfile: createEmptyLockfile(["16.0.0"]),
       });
 
       const [data, error] = await getFileTree(context, "99.0.0");
@@ -310,15 +275,10 @@ describe("getFileTree", () => {
     it("should apply global exclude filters to tree structure", async () => {
       mockStoreApi({ versions: ["16.0.0"] });
 
-      const filter = createPathFilter({ exclude: ["**/*.txt"] });
-      const fs = createMemoryMockFS();
-      const context = createInternalContext({
-        client,
-        filter,
-        fs,
-        basePath: "/test",
+      const { context } = await createTestContext({
         versions: ["16.0.0"],
-        manifestPath: "/test/.ucd-store.json",
+        lockfile: createEmptyLockfile(["16.0.0"]),
+        globalFilters: { exclude: ["**/*.txt"] },
       });
 
       const [data, error] = await getFileTree(context, "16.0.0", {
@@ -338,15 +298,10 @@ describe("getFileTree", () => {
     it("should filter nested directory structures while preserving hierarchy", async () => {
       mockStoreApi({ versions: ["16.0.0"] });
 
-      const filter = createPathFilter({ include: ["**/*.txt"] });
-      const fs = createMemoryMockFS();
-      const context = createInternalContext({
-        client,
-        filter,
-        fs,
-        basePath: "/test",
+      const { context } = await createTestContext({
         versions: ["16.0.0"],
-        manifestPath: "/test/.ucd-store.json",
+        lockfile: createEmptyLockfile(["16.0.0"]),
+        globalFilters: { include: ["**/*.txt"] },
       });
 
       const [data, error] = await getFileTree(context, "16.0.0", {
@@ -376,17 +331,13 @@ describe("getFileTree", () => {
 
   describe("method-specific filter application", () => {
     it("should apply method-specific include filters on top of global filters", async () => {
-      mockStoreApi({ versions: ["16.0.0"] });
-
-      const filter = createPathFilter({});
-      const fs = createMemoryMockFS();
-      const context = createInternalContext({
-        client,
-        filter,
-        fs,
-        basePath: "/test",
+      mockStoreApi({
         versions: ["16.0.0"],
-        manifestPath: "/test/.ucd-store.json",
+      });
+
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
       });
 
       const [data, error] = await getFileTree(context, "16.0.0", {
@@ -418,15 +369,9 @@ describe("getFileTree", () => {
     it("should apply method-specific exclude filters on top of global filters", async () => {
       mockStoreApi({ versions: ["16.0.0"] });
 
-      const filter = createPathFilter({});
-      const fs = createMemoryMockFS();
-      const context = createInternalContext({
-        client,
-        filter,
-        fs,
-        basePath: "/test",
+      const { context } = await createTestContext({
         versions: ["16.0.0"],
-        manifestPath: "/test/.ucd-store.json",
+        lockfile: createEmptyLockfile(["16.0.0"]),
       });
 
       const [data, error] = await getFileTree(context, "16.0.0", {
@@ -454,15 +399,9 @@ describe("getFileTree", () => {
         },
       });
 
-      const filter = createPathFilter({});
-      const fs = createMemoryMockFS();
-      const context = createInternalContext({
-        client,
-        filter,
-        fs,
-        basePath: "/test",
+      const { context } = await createTestContext({
         versions: ["16.0.0"],
-        manifestPath: "/test/.ucd-store.json",
+        lockfile: createEmptyLockfile(["16.0.0"]),
       });
 
       const [data, error] = await getFileTree(context, "16.0.0", {
@@ -477,15 +416,10 @@ describe("getFileTree", () => {
     it("should handle filters that exclude all files", async () => {
       mockStoreApi({ versions: ["16.0.0"] });
 
-      const filter = createPathFilter({ include: ["**/*.nonexistent"] });
-      const fs = createMemoryMockFS();
-      const context = createInternalContext({
-        client,
-        filter,
-        fs,
-        basePath: "/test",
+      const { context } = await createTestContext({
         versions: ["16.0.0"],
-        manifestPath: "/test/.ucd-store.json",
+        lockfile: createEmptyLockfile(["16.0.0"]),
+        globalFilters: { include: ["**/*.nonexistent"] },
       });
 
       const [data, error] = await getFileTree(context, "16.0.0", {

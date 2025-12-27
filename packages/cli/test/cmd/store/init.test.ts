@@ -1,14 +1,13 @@
+import type { ConsoleOutputCapture } from "../../__test-utils";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { mockStoreApi } from "#test-utils/mock-store";
-import { HttpResponse, mockFetch } from "#test-utils/msw";
-import { UCDJS_API_BASE_URL } from "@ucdjs/env";
+import { HttpResponse } from "#test-utils/msw";
 import { UNICODE_VERSION_METADATA } from "@unicode-utils/core";
-import { red } from "farver";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
 import { runCLI } from "../../../src/cli-utils";
-import { MockReadable, MockWritable } from "../../__test-utils";
+import { captureConsoleOutput, MockReadable, MockWritable } from "../../__test-utils";
 
 vi.mock("../../../src/cmd/store/_shared", async (importOriginal) => {
   const original = await importOriginal<typeof import("../../../src/cmd/store/_shared")>();
@@ -21,14 +20,23 @@ vi.mock("../../../src/cmd/store/_shared", async (importOriginal) => {
 describe("store init command", () => {
   let output: MockWritable;
   let input: MockReadable;
+  let capture: ConsoleOutputCapture;
 
   beforeEach(() => {
     output = new MockWritable();
     input = new MockReadable();
+    capture = captureConsoleOutput();
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    capture.restore();
+  });
+
+  it("should show help when --help flag is passed", async () => {
+    await runCLI(["store", "init", "--help"]);
+
+    expect(capture.containsInfo("Initialize an UCD Store")).toBe(true);
+    expect(capture.containsInfo("--store-dir")).toBe(true);
   });
 
   it("should initialize store with basic options", async () => {
@@ -62,35 +70,38 @@ describe("store init command", () => {
       "17.0.0",
     ]);
 
-    // check that store was created
     expect(existsSync(storePath)).toBe(true);
 
-    // check that manifest file exists
-    const manifestPath = join(storePath, ".ucd-store.json");
-    expect(existsSync(manifestPath)).toBe(true);
+    const lockfilePath = join(storePath, ".ucd-store.lock");
+    expect(existsSync(lockfilePath)).toBe(true);
 
-    // verify manifest content
-    const manifest = JSON.parse(readFileSync(manifestPath, "utf-8"));
-    expect(manifest).toBeTypeOf("object");
-    expect(manifest["17.0.0"]).toBeDefined();
+    const lockfile = JSON.parse(readFileSync(lockfilePath, "utf-8"));
+    expect(lockfile).toBeTypeOf("object");
+    expect(lockfile.versions["17.0.0"]).toBeDefined();
   });
 
   it("should fail if neither --remote nor --store-dir is specified", async () => {
-    const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
-    mockFetch([
-      ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
-        return HttpResponse.json(UNICODE_VERSION_METADATA);
-      }],
-    ]);
+    mockStoreApi({
+      responses: {
+        "/api/v1/versions": UNICODE_VERSION_METADATA,
+      },
+    });
 
     await runCLI(["store", "init"]);
 
-    expect(consoleErrorSpy).toHaveBeenCalledTimes(5);
-    expect(consoleErrorSpy).toHaveBeenCalledWith(red("\n❌ Error initializing store:"));
-    expect(consoleErrorSpy).toHaveBeenCalledWith("  Either --remote or --store-dir must be specified.");
-    expect(consoleErrorSpy).toHaveBeenCalledWith("Please check the store configuration and try again.");
-    expect(consoleErrorSpy).toHaveBeenCalledWith("If the issue persists, consider running with --dry-run to see more details.");
-    expect(consoleErrorSpy).toHaveBeenCalledWith("If you believe this is a bug, please report it at https://github.com/ucdjs/ucd/issues");
+    expect(capture.containsError("Either --remote or --store-dir must be specified")).toBe(true);
+  });
+
+  it("should fail if --remote is specified (init requires local store)", async () => {
+    mockStoreApi({
+      responses: {
+        "/api/v1/versions": UNICODE_VERSION_METADATA,
+      },
+    });
+
+    await runCLI(["store", "init", "--remote"]);
+
+    expect(capture.containsError("Init operation requires a local store directory")).toBe(true);
   });
 
   it("should initialize with specific versions", async () => {
@@ -124,17 +135,15 @@ describe("store init command", () => {
       "15.0.0",
     ]);
 
-    // check manifest contains only specified versions
-    const manifestPath = join(storePath, ".ucd-store.json");
-    const manifest = JSON.parse(readFileSync(manifestPath, "utf-8"));
+    const lockfilePath = join(storePath, ".ucd-store.lock");
+    const lockfile = JSON.parse(readFileSync(lockfilePath, "utf-8"));
 
-    expect(Object.keys(manifest)).toEqual(expect.arrayContaining(["15.1.0", "15.0.0"]));
-    expect(Object.keys(manifest)).toHaveLength(2);
+    expect(Object.keys(lockfile.versions)).toEqual(expect.arrayContaining(["15.1.0", "15.0.0"]));
+    expect(Object.keys(lockfile.versions)).toHaveLength(2);
   });
 
-  it("should handle --dry-run flag", async () => {
+  it("should display mirror results after initialization", async () => {
     const storePath = await testdir();
-    const consoleInfoSpy = vi.spyOn(console, "info").mockImplementation(() => {});
 
     mockStoreApi({
       responses: {
@@ -161,16 +170,15 @@ describe("store init command", () => {
       "init",
       "--store-dir",
       storePath,
-      "--dry-run",
       "15.1.0",
     ]);
 
-    expect(existsSync(join(storePath, ".ucd-store.json"))).toBe(false);
-    expect(consoleInfoSpy).toHaveBeenCalledWith(expect.stringContaining("Store initialized successfully in dry-run mode."));
-    expect(consoleInfoSpy).toHaveBeenCalledWith(expect.stringContaining("No files have been written to disk."));
+    expect(capture.containsInfo("Store initialized successfully")).toBe(true);
+    expect(capture.containsInfo("Starting mirror operation")).toBe(true);
+    expect(capture.containsInfo("Mirror operation completed successfully")).toBe(true);
   });
 
-  it("should handle prompts for versions", async () => {
+  it("should handle prompts for versions when none provided", async () => {
     const storePath = await testdir();
     const { runVersionPrompt } = await import("../../../src/cmd/store/_shared");
 
@@ -217,11 +225,11 @@ describe("store init command", () => {
 
     await cliPromise;
 
-    const manifestPath = join(storePath, ".ucd-store.json");
-    expect(existsSync(manifestPath)).toBe(true);
+    const lockfilePath = join(storePath, ".ucd-store.lock");
+    expect(existsSync(lockfilePath)).toBe(true);
 
-    const manifest = JSON.parse(readFileSync(manifestPath, "utf-8"));
-    expect(manifest).toBeTypeOf("object");
-    expect(Object.keys(manifest)).toHaveLength(2);
+    const lockfile = JSON.parse(readFileSync(lockfilePath, "utf-8"));
+    expect(lockfile).toBeTypeOf("object");
+    expect(Object.keys(lockfile.versions)).toHaveLength(2);
   });
 });

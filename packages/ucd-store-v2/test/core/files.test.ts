@@ -1,86 +1,99 @@
-import type { UnicodeTree } from "@ucdjs/schemas";
+import { createTestContext } from "#internal-pkg:test-utils/test-context";
 import { mockStoreApi } from "#test-utils/mock-store";
-import { getDefaultUCDEndpointConfig } from "@ucdjs-internal/shared";
-import { createUCDClientWithConfig } from "@ucdjs/client";
-import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { describe, expect, it } from "vitest";
 import { getExpectedFilePaths } from "../../src/core/files";
 import { UCDStoreGenericError } from "../../src/errors";
 
 describe("getExpectedFilePaths", () => {
-  const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, getDefaultUCDEndpointConfig());
-
-  it("should return flattened file paths for valid version", async () => {
-    mockStoreApi({
-      versions: ["15.0.0"],
-      responses: {
-        "/api/v1/versions/{version}/file-tree": [
-          {
-            type: "file",
-            name: "ReadMe.txt",
-            path: "ReadMe.txt",
-            lastModified: Date.now(),
-          },
-          {
-            type: "file",
-            name: "UnicodeData.txt",
-            path: "UnicodeData.txt",
-            lastModified: Date.now(),
-          },
-          {
-            type: "directory",
-            name: "ucd",
-            path: "ucd",
-            lastModified: Date.now(),
-            children: [
-              {
-                type: "file",
-                name: "emoji-data.txt",
-                path: "ucd/emoji-data.txt",
-                lastModified: Date.now(),
-              },
+  describe("successful retrieval", () => {
+    it("should return file paths from manifest endpoint", async () => {
+      mockStoreApi({
+        versions: ["15.0.0"],
+        responses: {
+          "/.well-known/ucd-store/{version}.json": {
+            expectedFiles: [
+              "ReadMe.txt",
+              "UnicodeData.txt",
+              "ucd/emoji-data.txt",
             ],
           },
-        ] satisfies UnicodeTree,
-      },
-    });
-
-    const result = await getExpectedFilePaths(client, "15.0.0");
-
-    expect(result).toEqual([
-      "ReadMe.txt",
-      "UnicodeData.txt",
-      "ucd/emoji-data.txt",
-    ]);
-  });
-
-  it("should throw UCDStoreGenericError when API returns error", async () => {
-    mockStoreApi({
-      versions: ["15.0.0"],
-      responses: {
-        "/api/v1/versions/{version}/file-tree": {
-          status: 404,
-          message: "Version not found",
-          timestamp: new Date().toISOString(),
         },
-      },
+      });
+
+      const { context } = await createTestContext({
+        versions: ["15.0.0"],
+      });
+
+      const result = await getExpectedFilePaths(context.client, "15.0.0");
+
+      expect(result).toEqual([
+        "ReadMe.txt",
+        "UnicodeData.txt",
+        "ucd/emoji-data.txt",
+      ]);
     });
 
-    await expect(
-      getExpectedFilePaths(client, "15.0.0"),
-    ).rejects.toThrow(UCDStoreGenericError);
+    it("should handle empty expectedFiles array", async () => {
+      mockStoreApi({
+        versions: ["15.0.0"],
+        responses: {
+          "/.well-known/ucd-store/{version}.json": {
+            expectedFiles: [],
+          },
+        },
+      });
+
+      const { context } = await createTestContext({
+        versions: ["15.0.0"],
+      });
+
+      const result = await getExpectedFilePaths(context.client, "15.0.0");
+
+      expect(result).toEqual([]);
+    });
   });
 
-  it("should handle empty file tree", async () => {
-    mockStoreApi({
-      versions: ["15.0.0"],
-      responses: {
-        "/api/v1/versions/{version}/file-tree": [],
-      },
+  describe("error handling", () => {
+    it("should throw UCDStoreGenericError when API returns error", async () => {
+      mockStoreApi({
+        versions: ["15.0.0"],
+        responses: {
+          "/.well-known/ucd-store/{version}.json": {
+            status: 404,
+            message: "Version not found",
+            timestamp: new Date().toISOString(),
+          },
+        },
+      });
+
+      const { context } = await createTestContext({
+        versions: ["15.0.0"],
+      });
+
+      await expect(
+        getExpectedFilePaths(context.client, "15.0.0"),
+      ).rejects.toThrow(UCDStoreGenericError);
     });
 
-    const result = await getExpectedFilePaths(client, "15.0.0");
+    it("should throw error when manifest response is invalid", async () => {
+      mockStoreApi({
+        versions: ["15.0.0"],
+        responses: {
+          "/.well-known/ucd-store/{version}.json": {
+            // @ts-expect-error - This is a test error
+            // Missing expectedFiles
+            version: "15.0.0",
+          },
+        },
+      });
 
-    expect(result).toEqual([]);
+      const { context } = await createTestContext({
+        versions: ["15.0.0"],
+      });
+
+      await expect(
+        getExpectedFilePaths(context.client, "15.0.0"),
+      ).rejects.toThrow();
+    });
   });
 });

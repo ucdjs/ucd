@@ -8,13 +8,13 @@ export interface ExecuteRequestOptions {
 export interface ExecuteRequestResult {
   response: Response;
   ctx: ReturnType<typeof createExecutionContext>;
-  json: () => Promise<any>;
+  json: <T = unknown>() => Promise<T>;
   text: () => Promise<string>;
 }
 
 export async function executeRequest(
   request: Request,
-  env: any,
+  env: Cloudflare.Env,
   options?: ExecuteRequestOptions,
 ): Promise<ExecuteRequestResult> {
   const ctx = createExecutionContext();
@@ -30,8 +30,8 @@ export async function executeRequest(
   return {
     response,
     ctx,
-    async json() {
-      return _json ?? (_json = await response.json());
+    async json<T = unknown>() {
+      return _json ?? (_json = await response.json<T>());
     },
     async text() {
       return _text ?? (_text = await response.text());

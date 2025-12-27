@@ -1,7 +1,27 @@
+import type { UnicodeVersionList } from "@ucdjs/schemas";
 import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { describe, expect, it } from "vitest";
 import { createUCDClient, createUCDClientWithConfig } from "../src";
+
+const mockVersionsList: UnicodeVersionList = [
+  {
+    version: "16.0.0",
+    documentationUrl: "https://www.unicode.org/versions/Unicode16.0.0/",
+    date: "2024",
+    url: "https://www.unicode.org/Public/16.0.0/ucd/",
+    type: "stable",
+    mappedUcdVersion: null,
+  },
+  {
+    version: "15.1.0",
+    documentationUrl: "https://www.unicode.org/versions/Unicode15.1.0/",
+    date: "2023",
+    url: "https://www.unicode.org/Public/15.1.0/ucd/",
+    type: "stable",
+    mappedUcdVersion: null,
+  },
+];
 
 describe("ucd client", () => {
   describe("createUCDClient (async version)", () => {
@@ -60,7 +80,7 @@ describe("ucd client", () => {
           return HttpResponse.json(mockWellKnownConfig);
         }],
         ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
-          return HttpResponse.json(["16.0.0", "15.1.0"]);
+          return HttpResponse.json(mockVersionsList);
         }],
       ]);
 
@@ -73,7 +93,7 @@ describe("ucd client", () => {
       const { data: versions, error } = await client.versions.list();
 
       expect(error).toBeNull();
-      expect(versions).toEqual(["16.0.0", "15.1.0"]);
+      expect(versions).toEqual(mockVersionsList);
     });
   });
 
@@ -86,6 +106,7 @@ describe("ucd client", () => {
           manifest: "/custom/files/manifest.json",
           versions: "/custom/versions",
         },
+        versions: ["16.0.0"],
       };
 
       const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, providedConfig);
@@ -110,6 +131,7 @@ describe("ucd client", () => {
           manifest: "/custom/files/manifest.json",
           versions: "/custom/versions",
         },
+        versions: ["16.0.0"],
       };
 
       const client = createUCDClientWithConfig(customBaseUrl, providedConfig);
@@ -133,11 +155,12 @@ describe("ucd client", () => {
           manifest: "/custom/files/manifest.json",
           versions: "/custom/versions",
         },
+        versions: ["16.0.0", "15.1.0"],
       };
 
       mockFetch([
         ["GET", `${UCDJS_API_BASE_URL}/custom/versions`, () => {
-          return HttpResponse.json(["16.0.0", "15.1.0"]);
+          return HttpResponse.json(mockVersionsList);
         }],
       ]);
 
@@ -150,7 +173,7 @@ describe("ucd client", () => {
       const { data: versions, error } = await client.versions.list();
 
       expect(error).toBeNull();
-      expect(versions).toEqual(["16.0.0", "15.1.0"]);
+      expect(versions).toEqual(mockVersionsList);
     });
   });
 });

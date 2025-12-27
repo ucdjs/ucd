@@ -1,0 +1,61 @@
+{
+  "name": "@ucdjs/lockfile",
+  "version": "0.1.0",
+  "type": "module",
+  "author": {
+    "name": "Lucas Nørgård",
+    "email": "lucasnrgaard@gmail.com",
+    "url": "https://luxass.dev"
+  },
+  "packageManager": "pnpm@10.26.1",
+  "license": "MIT",
+  "homepage": "https://github.com/ucdjs/ucd",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ucdjs/ucd.git",
+    "directory": "packages/lockfile"
+  },
+  "bugs": {
+    "url": "https://github.com/ucdjs/ucd/issues"
+  },
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./test-utils": "./dist/test-utils/index.mjs",
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "build": "tsdown --tsconfig=./tsconfig.build.json",
+    "dev": "tsdown --watch",
+    "clean": "git clean -xdf dist node_modules",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ucdjs-internal/shared": "workspace:*",
+    "@ucdjs/fs-bridge": "workspace:*",
+    "@ucdjs/schemas": "workspace:*",
+    "pathe": "catalog:prod"
+  },
+  "devDependencies": {
+    "@luxass/eslint-config": "catalog:linting",
+    "@ucdjs-tooling/tsconfig": "workspace:*",
+    "@ucdjs-tooling/tsdown-config": "workspace:*",
+    "eslint": "catalog:linting",
+    "publint": "catalog:dev",
+    "tsdown": "catalog:dev",
+    "typescript": "catalog:dev",
+    "vitest-testdirs": "catalog:testing"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

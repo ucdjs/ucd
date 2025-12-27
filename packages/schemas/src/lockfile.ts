@@ -12,12 +12,36 @@ const LockfileVersionEntrySchema = z.object({
   /**
    * Number of files in this version
    */
-  fileCount: z.number().int().nonnegative(),
+  fileCount: z.int().nonnegative(),
 
   /**
    * Total size of all files in this version (in bytes)
    */
-  totalSize: z.number().int().nonnegative(),
+  totalSize: z.int().nonnegative(),
+});
+
+/**
+ * Schema for filters applied when creating/updating the lockfile
+ */
+const LockfileFiltersSchema = z.object({
+  /**
+   * Glob patterns for files to include
+   */
+  include: z.array(z.string()).default([]),
+
+  /**
+   * Glob patterns for files to exclude
+   */
+  exclude: z.array(z.string()).default([]),
+
+  /**
+   * Whether default exclusions (.zip, .pdf) were disabled
+   */
+  disableDefaultExclusions: z.boolean().default(false),
+}).default({
+  include: [],
+  exclude: [],
+  disableDefaultExclusions: false,
 });
 
 /**
@@ -33,9 +57,16 @@ export const LockfileSchema = z.object({
    * Map of Unicode versions to their snapshot metadata
    */
   versions: z.record(z.string(), LockfileVersionEntrySchema),
+
+  /**
+   * Filters that were applied when creating/updating this lockfile.
+   * This helps track which files were excluded and why.
+   */
+  filters: LockfileFiltersSchema,
 });
 
 export type Lockfile = z.output<typeof LockfileSchema>;
+export type LockfileInput = z.input<typeof LockfileSchema>;
 
 /**
  * Schema for a single file entry in a snapshot
@@ -49,7 +80,7 @@ const SnapshotFileEntrySchema = z.object({
   /**
    * Size of the file in bytes
    */
-  size: z.number().int().nonnegative(),
+  size: z.int().nonnegative(),
 });
 
 /**

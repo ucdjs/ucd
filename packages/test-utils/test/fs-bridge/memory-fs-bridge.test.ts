@@ -1,5 +1,5 @@
 import { Buffer } from "node:buffer";
-import { assertCapability } from "@ucdjs/fs-bridge";
+import { assertCapability, BridgeUnsupportedOperation } from "@ucdjs/fs-bridge";
 import { assert, describe, expect, it } from "vitest";
 import { createMemoryMockFS } from "../../src/fs-bridges/memory-fs-bridge";
 
@@ -26,6 +26,37 @@ describe("memory fs bridge", () => {
       initialFiles: { "file.txt": "content" },
     });
     expect(await fs.read("file.txt")).toBe("content");
+  });
+
+  it("should allow overriding functions via options", async () => {
+    const fs = createMemoryMockFS({
+      functions: {
+        read: async (path: string) => `overridden:${path}`,
+      },
+    });
+
+    expect(await fs.read("file.txt")).toBe("overridden:file.txt");
+  });
+
+  it("should disable optional functions when set to false", async () => {
+    const fs = createMemoryMockFS({
+      functions: {
+        write: false,
+      },
+    });
+
+    expect(() => assertCapability(fs, "write")).toThrow(BridgeUnsupportedOperation);
+    await expect(fs.write!("file.txt", "content")).rejects.toBeInstanceOf(BridgeUnsupportedOperation);
+  });
+
+  it("should throw when disabling required function via false", async () => {
+    const fs = createMemoryMockFS({
+      functions: {
+        read: false,
+      },
+    });
+
+    await expect(fs.read("file.txt")).rejects.toBeInstanceOf(BridgeUnsupportedOperation);
   });
 
   it("should throw ENOENT for non-existent file", async () => {
@@ -211,11 +242,48 @@ describe("memory fs bridge", () => {
     });
   });
 
-  it("should not create directories with mkdir", async () => {
+  it("should create directories with mkdir", async () => {
     const fs = createMemoryMockFS();
 
     assertCapability(fs, "mkdir");
     await fs.mkdir("dir");
+    expect(await fs.exists("dir")).toBe(true);
+  });
+
+  it("should create nested directories with mkdir", async () => {
+    const fs = createMemoryMockFS();
+
+    assertCapability(fs, "mkdir");
+    await fs.mkdir("a/b/c");
+    expect(await fs.exists("a")).toBe(true);
+    expect(await fs.exists("a/b")).toBe(true);
+    expect(await fs.exists("a/b/c")).toBe(true);
+  });
+
+  it("should list explicitly created empty directories", async () => {
+    const fs = createMemoryMockFS();
+
+    assertCapability(fs, "mkdir");
+    await fs.mkdir("emptydir");
+    const entries = await fs.listdir("", false);
+    expect(entries).toEqual([{ type: "directory", name: "emptydir", path: "emptydir", children: [] }]);
+  });
+
+  it("should throw EISDIR when reading a directory", async () => {
+    const fs = createMemoryMockFS();
+
+    assertCapability(fs, "mkdir");
+    await fs.mkdir("dir");
+    await expect(fs.read("dir/")).rejects.toThrow("EISDIR: illegal operation on a directory, read 'dir/'");
+  });
+
+  it("should remove explicit directory with rm", async () => {
+    const fs = createMemoryMockFS();
+
+    assertCapability(fs, ["mkdir", "rm"]);
+    await fs.mkdir("dir");
+    expect(await fs.exists("dir")).toBe(true);
+    await fs.rm("dir");
     expect(await fs.exists("dir")).toBe(false);
   });
 

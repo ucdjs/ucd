@@ -401,6 +401,7 @@ describe("mockStoreApi", () => {
           manifest: "/custom/manifest",
           versions: "/custom/versions",
         },
+        versions: [],
       };
 
       mockStoreApi({
@@ -428,6 +429,7 @@ describe("mockStoreApi", () => {
           manifest: "/.well-known/ucd-store.json",
           versions: "/api/v1/versions",
         },
+        versions: [],
       };
 
       mockStoreApi({
@@ -916,6 +918,157 @@ describe("mockStoreApi", () => {
       expect(data.message).toBe("Too many requests");
       expect(response.headers.get("X-Rate-Limit-Remaining")).toBe("0");
       expect(response.headers.get("X-Rate-Limit-Reset")).toBe("1234567890");
+    });
+
+    it("should work with configure() helper and before/after hooks", async () => {
+      const beforeHook = vi.fn();
+      const afterHook = vi.fn();
+
+      const version16 = {
+        version: "16.0.0",
+        documentationUrl: "https://www.unicode.org/versions/Unicode16.0.0/",
+        date: "2024",
+        url: "https://www.unicode.org/Public/16.0.0",
+        mappedUcdVersion: null,
+        type: "stable",
+      } as const;
+
+      const version15 = {
+        version: "15.1.0",
+        documentationUrl: "https://www.unicode.org/versions/Unicode15.1.0/",
+        date: "2023",
+        url: "https://www.unicode.org/Public/15.1.0",
+        mappedUcdVersion: null,
+        type: "stable",
+      } as const;
+
+      mockStoreApi({
+        responses: {
+          "/api/v1/versions": configure({
+            response: [
+              version16,
+              version15,
+            ],
+            before: beforeHook,
+            after: afterHook,
+          }),
+        },
+      });
+
+      const response = await fetch("https://api.ucdjs.dev/api/v1/versions");
+      const [v16, v15] = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(v16).toEqual(version16);
+      expect(v15).toEqual(version15);
+
+      expect(beforeHook).toHaveBeenCalledTimes(1);
+      expect(afterHook).toHaveBeenCalledTimes(1);
+      expect(beforeHook).toHaveBeenCalledWith(
+        expect.objectContaining({
+          path: "/api/v1/versions",
+          method: "GET",
+        }),
+      );
+      expect(afterHook).toHaveBeenCalledWith(
+        expect.objectContaining({
+          path: "/api/v1/versions",
+          method: "GET",
+          response: expect.any(Response),
+        }),
+      );
+    });
+
+    it("should work with configure() helper, hooks, latency, and headers", async () => {
+      const beforeHook = vi.fn();
+      const afterHook = vi.fn();
+
+      const version16 = {
+        version: "16.0.0",
+        documentationUrl: "https://www.unicode.org/versions/Unicode16.0.0/",
+        date: "2024",
+        url: "https://www.unicode.org/Public/16.0.0",
+        mappedUcdVersion: null,
+        type: "stable",
+      } as const;
+
+      mockStoreApi({
+        responses: {
+          "/api/v1/versions": configure({
+            response: [
+              version16,
+            ],
+            latency: 50,
+            headers: { "X-Custom": "value" },
+            before: beforeHook,
+            after: afterHook,
+          }),
+        },
+      });
+
+      const start = Date.now();
+      const response = await fetch("https://api.ucdjs.dev/api/v1/versions");
+      const elapsed = Date.now() - start;
+      const [v16] = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(v16).toEqual(version16);
+      expect(elapsed).toBeGreaterThanOrEqual(45);
+      expect(response.headers.get("X-Custom")).toBe("value");
+      expect(beforeHook).toHaveBeenCalledTimes(1);
+      expect(afterHook).toHaveBeenCalledTimes(1);
+    });
+
+    it("should work with configure() hooks and default resolver using files option", async () => {
+      const beforeHook = vi.fn();
+      const afterHook = vi.fn();
+      const files: UnicodeTree = [
+        {
+          type: "file",
+          name: "test.txt",
+          path: "test.txt",
+          lastModified: Date.now(),
+        },
+      ];
+
+      mockStoreApi({
+        versions: ["16.0.0"],
+        files: {
+          "*": files,
+        },
+        responses: {
+          "/api/v1/versions/{version}/file-tree": configure({
+            response: true, // Uses default resolver with files option
+            before: beforeHook,
+            after: afterHook,
+          }),
+        },
+      });
+
+      const response = await fetch(
+        "https://api.ucdjs.dev/api/v1/versions/16.0.0/file-tree",
+      );
+      const data = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(data).toEqual(files);
+      expect(beforeHook).toHaveBeenCalledTimes(1);
+      expect(afterHook).toHaveBeenCalledTimes(1);
+      expect(beforeHook).toHaveBeenCalledWith(
+        expect.objectContaining({
+          path: "/api/v1/versions/16.0.0/file-tree",
+          method: "GET",
+          params: { version: "16.0.0" },
+        }),
+      );
+      expect(afterHook).toHaveBeenCalledWith(
+        expect.objectContaining({
+          path: "/api/v1/versions/16.0.0/file-tree",
+          method: "GET",
+          params: { version: "16.0.0" },
+          response: expect.any(Response),
+        }),
+      );
     });
 
     it("should still work with regular success responses", async () => {

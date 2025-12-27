@@ -1,0 +1,256 @@
+---
+title: Hooks
+description: Monitor and debug file system operations with hooks
+---
+
+import { TypeTable } from "fumadocs-ui/components/type-table";
+
+# Hooks System
+
+All file system bridges support a hook system that allows you to listen to file system events. This is useful for monitoring, debugging, logging, and performance tracking.
+
+## Overview
+
+Hooks are event listeners that are called at specific points during bridge operations. Each operation has `before` and `after` hooks, and there's also a global `error` hook for error handling.
+
+## Basic Usage
+
+```typescript
+import NodeFileSystemBridge from "@ucdjs/fs-bridge/bridges/node";
+
+const bridge = NodeFileSystemBridge({
+  basePath: "/path/to/directory"
+});
+
+// Register a hook
+bridge.hook("read:before", (payload) => {
+  console.log(`Reading file: ${payload.path}`);
+});
+
+// Use the bridge normally
+const content = await bridge.read("file.txt");
+// Console: "Reading file: file.txt"
+```
+
+## Available Hooks
+
+<TypeTable
+  type={{
+    "error": {
+      description: "Called when any operation encounters an error",
+      type: "(payload: { method: keyof FileSystemBridgeOperations; path: string; error: Error; args?: unknown[] }) => void",
+      returns: "void",
+      parameters: [
+        {
+          name: "payload",
+          description: "The payload object containing the error information",
+        }
+      ]
+    },
+    "read:before": {
+      description: "Called before a file is read",
+      type: "(payload: { path: string }) => void",
+      returns: "void",
+      parameters: [
+        {
+          name: "payload",
+          description: "The payload object containing the file path",
+        }
+      ]
+    },
+    "read:after": {
+      description: "Called after a file is read",
+      type: "(payload: { path: string; content: string }) => void",
+      returns: "void",
+      parameters: [
+        {
+          name: "payload",
+          description: "The payload object containing the file path and read content",
+        }
+      ]
+    },
+    "write:before": {
+      description: "Called before a file is written",
+      type: "(payload: { path: string; content: string | Uint8Array; encoding?: BufferEncoding }) => void",
+      returns: "void",
+      parameters: [
+        {
+          name: "payload",
+          description: "The payload object containing the file path, content to write, and optional encoding",
+        }
+      ]
+    },
+    "write:after": {
+      description: "Called after a file is written",
+      type: "(payload: { path: string }) => void",
+      returns: "void",
+      parameters: [
+        {
+          name: "payload",
+          description: "The payload object containing the file path that was written",
+        }
+      ]
+    },
+    "listdir:before": {
+      description: "Called before a directory is listed",
+      type: "(payload: { path: string; recursive: boolean }) => void",
+      returns: "void",
+      parameters: [
+        {
+          name: "payload",
+          description: "The payload object containing the directory path and recursive flag",
+        }
+      ]
+    },
+    "listdir:after": {
+      description: "Called after a directory is listed",
+      type: "(payload: { path: string; recursive: boolean; entries: FSEntry[] }) => void",
+      returns: "void",
+      parameters: [
+        {
+          name: "payload",
+          description: "The payload object containing the directory path, recursive flag, and list of entries",
+        }
+      ]
+    },
+    "exists:before": {
+      description: "Called before a file or directory is checked for existence",
+      type: "(payload: { path: string }) => void",
+      returns: "void",
+      parameters: [
+        {
+          name: "payload",
+          description: "The payload object containing the path to check",
+        }
+      ]
+    },
+    "exists:after": {
+      description: "Called after a file or directory is checked for existence",
+      type: "(payload: { path: string; exists: boolean }) => void",
+      returns: "void",
+      parameters: [
+        {
+          name: "payload",
+          description: "The payload object containing the path and whether it exists",
+        }
+      ]
+    },
+    "mkdir:before": {
+      description: "Called before a directory is created",
+      type: "(payload: { path: string }) => void",
+      returns: "void",
+      parameters: [
+        {
+          name: "payload",
+          description: "The payload object containing the directory path to create",
+        }
+      ]
+    },
+    "mkdir:after": {
+      description: "Called after a directory is created",
+      type: "(payload: { path: string }) => void",
+      returns: "void",
+      parameters: [
+        {
+          name: "payload",
+          description: "The payload object containing the directory path that was created",
+        }
+      ]
+    },
+    "rm:before": {
+      description: "Called before a file or directory is removed",
+      type: "(payload: { path: string; recursive?: boolean; force?: boolean }) => void",
+      returns: "void",
+      parameters: [
+        {
+          name: "payload",
+          description: "The payload object containing the path to remove and optional removal options",
+        }
+      ]
+    },
+    "rm:after": {
+      description: "Called after a file or directory is removed",
+      type: "(payload: { path: string; recursive?: boolean; force?: boolean }) => void",
+      returns: "void",
+      parameters: [
+        {
+          name: "payload",
+          description: "The payload object containing the path that was removed and removal options used",
+        }
+      ]
+    }
+  }}
+/>
+
+## Best Practices
+
+When working with hooks, keep these guidelines in mind:
+
+- **Keep hooks lightweight**: Hooks are called synchronously and can impact performance. Keep hook logic fast and avoid blocking operations.
+- **Don't modify payloads**: The payload objects are shared. Modifying them can lead to unexpected behavior.
+- **Handle errors gracefully**: If your hook logic can fail, wrap it in try-catch to prevent breaking the operation.
+- **Use hooks for observability**: Hooks are perfect for logging, monitoring, and debugging, but avoid complex business logic.
+- **Clean up when needed**: If you're tracking state in hooks (like timings), make sure to clean up to avoid memory leaks.
+- **Consider performance**: Registering many hooks or heavy hook logic can slow down operations. Profile if performance is critical.
+
+## Hook Execution Order
+
+Hooks are executed in the order they were registered:
+1. All `before` hooks are executed sequentially
+2. The operation is performed
+3. All `after` hooks are executed sequentially
+
+If a `before` hook throws an error, the operation will not be performed, and `after` hooks will not be called. The `error` hook will be triggered.
+
+You can register multiple hooks for the same event:
+
+```typescript
+bridge.hook("read:before", (payload) => {
+  console.log("Hook 1: Reading", payload.path);
+});
+
+bridge.hook("read:before", (payload) => {
+  console.log("Hook 2: Reading", payload.path);
+});
+
+// Both hooks will be called when reading a file
+await bridge.read("file.txt");
+```
+
+## Use Cases
+
+<Tabs items={['logging', 'performance']}>
+  <Tab value="logging">
+    Log all file system operations for debugging:
+
+    ```typescript
+    bridge.hook("read:before", (payload) => {
+      logger.info(`Reading file: ${payload.path}`);
+    });
+
+    bridge.hook("error", (payload) => {
+      logger.error(`Operation failed: ${payload.method} on ${payload.path}`, payload.error);
+    });
+    ```
+  </Tab>
+  <Tab value="performance">
+    Track operation performance:
+
+    ```typescript
+    const timings = new Map<string, number>();
+
+    bridge.hook("read:before", (payload) => {
+      timings.set(payload.path, Date.now());
+    });
+
+    bridge.hook("read:after", (payload) => {
+      const startTime = timings.get(payload.path);
+      if (startTime) {
+        const duration = Date.now() - startTime;
+        console.log(`Read ${payload.path} took ${duration}ms`);
+        timings.delete(payload.path);
+      }
+    });
+    ```
+  </Tab>
+</Tabs>

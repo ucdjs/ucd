@@ -1,9 +1,11 @@
 import type { OperationResult } from "@ucdjs-internal/shared";
 import type { StoreError } from "../errors";
 import type { InternalUCDStoreContext, SharedOperationOptions } from "../types";
-import { tryCatch } from "@ucdjs-internal/shared";
+import { createDebugger, wrapTry } from "@ucdjs-internal/shared";
 import { getExpectedFilePaths } from "../core/files";
 import { listFiles } from "./files/list";
+
+const debug = createDebugger("ucdjs:ucd-store:analyze");
 
 export interface AnalyzeOptions extends SharedOperationOptions {
   /**
@@ -92,7 +94,7 @@ export async function analyze(
 ): Promise<OperationResult<Map<string, AnalysisReport>, StoreError>> {
   const results = new Map<string, AnalysisReport>();
 
-  return tryCatch(async () => {
+  return wrapTry(async () => {
     const versionsToAnalyze = options?.versions ?? context.versions;
 
     const promises = versionsToAnalyze.map(async (version) => {
@@ -102,9 +104,11 @@ export async function analyze(
       }
 
       const expectedFiles = await getExpectedFilePaths(context.client, version);
+      debug?.("Found expected files while analyzing: %O", expectedFiles);
 
       // Get files from store
-      const [actualFiles, error] = await listFiles(context, version, {
+      // Use allowApi: true to support HTTP bridge (read-only stores)
+      let [actualFiles, error] = await listFiles(context, version, {
         allowApi: false,
         filters: options?.filters,
       });
@@ -113,6 +117,11 @@ export async function analyze(
         throw error;
       }
 
+      // Filter out the snapshot.json, since it is not expected to be there.
+      actualFiles = (actualFiles || []).filter((file) => file !== "snapshot.json");
+
+      debug?.("Actual files while analyzing: %O", actualFiles);
+
       const expectedSet = new Set(expectedFiles);
       const actualSet = new Set(actualFiles);
 
@@ -120,6 +129,8 @@ export async function analyze(
       const orphanedFiles: string[] = [];
       const missingFiles: string[] = [];
       const fileTypes: Record<string, number> = {};
+
+      debug?.("Started analyzing files");
 
       for (const actualFile of actualSet) {
         const ext = getExtension(actualFile);
@@ -138,6 +149,8 @@ export async function analyze(
           missingFiles.push(expectedFile);
         }
       }
+
+      debug?.("Finished analyzing files");
 
       const isComplete = orphanedFiles.length === 0 && missingFiles.length === 0;
 

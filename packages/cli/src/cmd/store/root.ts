@@ -10,31 +10,42 @@ export interface CLIStoreCmdOptions {
   }>;
 }
 
-const CODEGEN_SUBCOMMANDS = [
+const STORE_SUBCOMMANDS = [
   "init",
-  "repair",
-  "clean",
+  "sync",
+  "mirror",
+  "verify",
   "analyze",
+  "status",
 ] as const;
-export type Subcommand = (typeof CODEGEN_SUBCOMMANDS)[number];
+export type Subcommand = (typeof STORE_SUBCOMMANDS)[number];
 
 function isValidSubcommand(subcommand: string): subcommand is Subcommand {
-  return CODEGEN_SUBCOMMANDS.includes(subcommand as Subcommand);
+  return STORE_SUBCOMMANDS.includes(subcommand as Subcommand);
 }
 
 export async function runStoreRoot(subcommand: string, { flags }: CLIStoreCmdOptions) {
-  if (!isValidSubcommand(subcommand) || (!isValidSubcommand(subcommand) && (flags?.help || flags?.h))) {
+  const isValidSub = isValidSubcommand(subcommand);
+  const requestsHelp = flags?.help || flags?.h;
+
+  if (!isValidSub || (requestsHelp && !isValidSub)) {
     printHelp({
       commandName: "ucd store",
       usage: "[command] [...flags]",
       tables: {
         Commands: [
-          ["init", "Initialize an UCD Store."],
-          ["repair", "Repair an UCD Store."],
-          ["clean", "Clean an UCD Store."],
-          ["status", "Show the status of an UCD Store."],
+          ["init", "Initialize an UCD Store (create lockfile and download files)."],
+          ["sync", "Sync files to match lockfile state (download missing, optionally remove orphaned)."],
+          ["mirror", "Download Unicode data files to local storage."],
+          ["verify", "Verify store integrity against API (works with HTTP bridge)."],
+          ["analyze", "Analyze store contents and file status (works with HTTP bridge)."],
+          ["status", "Show store status and lockfile information (works with HTTP bridge)."],
         ],
         Flags: [
+          ["--store-dir", "Directory where the UCD files are stored."],
+          ["--remote", "Use a Remote UCD Store."],
+          ["--force", "Force operation (command-specific behavior)."],
+          ["--lockfile-only", "Read-only mode: only read lockfile, never update it."],
           ["--help (-h)", "See all available flags."],
         ],
       },
@@ -42,9 +53,10 @@ export async function runStoreRoot(subcommand: string, { flags }: CLIStoreCmdOpt
     return;
   }
 
+  const versions = flags._.slice(2) as string[];
+
   if (subcommand === "init") {
     const { runInitStore } = await import("./init");
-    const versions = flags._.slice(2) as string[];
     await runInitStore({
       versions,
       flags: flags as CLIStoreInitCmdOptions["flags"],
@@ -52,28 +64,33 @@ export async function runStoreRoot(subcommand: string, { flags }: CLIStoreCmdOpt
     return;
   }
 
-  if (subcommand === "clean") {
-    const { runCleanStore } = await import("./clean");
-    await runCleanStore({ flags });
+  if (subcommand === "sync") {
+    const { runSyncStore } = await import("./sync");
+    await runSyncStore({ flags, versions });
     return;
   }
 
-  if (subcommand === "repair") {
-    const { runRepairStore } = await import("./repair");
-    const versions = flags._.slice(2) as string[];
+  if (subcommand === "mirror") {
+    const { runMirrorStore } = await import("./mirror");
+    await runMirrorStore({ flags, versions });
+    return;
+  }
 
-    await runRepairStore({
-      versions,
-      flags: flags as CLIStoreInitCmdOptions["flags"],
-    });
+  if (subcommand === "verify") {
+    const { runVerifyStore } = await import("./verify");
+    await runVerifyStore({ flags, versions });
     return;
   }
 
   if (subcommand === "analyze") {
     const { runAnalyzeStore } = await import("./analyze");
-    const versions = flags._.slice(2) as string[];
-
     await runAnalyzeStore({ flags, versions });
+    return;
+  }
+
+  if (subcommand === "status") {
+    const { runStatusStore } = await import("./status");
+    await runStatusStore({ flags });
     return;
   }
 

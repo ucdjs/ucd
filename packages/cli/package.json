@@ -7,7 +7,7 @@
     "email": "lucasnrgaard@gmail.com",
     "url": "https://luxass.dev"
   },
-  "packageManager": "pnpm@10.25.0",
+  "packageManager": "pnpm@10.26.1",
   "license": "MIT",
   "homepage": "https://github.com/ucdjs/ucd",
   "repository": {
@@ -45,8 +45,13 @@
   "dependencies": {
     "@clack/prompts": "catalog:prod",
     "@luxass/utils": "catalog:prod",
+    "@ucdjs-internal/shared": "workspace:*",
+    "@ucdjs/client": "workspace:*",
+    "@ucdjs/env": "workspace:*",
+    "@ucdjs/fs-bridge": "workspace:*",
+    "@ucdjs/lockfile": "workspace:*",
     "@ucdjs/schema-gen": "workspace:*",
-    "@ucdjs/ucd-store": "workspace:*",
+    "@ucdjs/ucd-store-v2": "workspace:*",
     "@unicode-utils/core": "catalog:prod",
     "farver": "catalog:prod",
     "yargs-parser": "catalog:prod"

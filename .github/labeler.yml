@@ -44,6 +44,10 @@
   - changed-files:
       - any-glob-to-any-file: packages/shared/**
 
+"pkg: lockfile":
+  - changed-files:
+      - any-glob-to-any-file: packages/lockfile/**
+
 "apps: api":
   - changed-files:
       - any-glob-to-any-file: apps/api/**

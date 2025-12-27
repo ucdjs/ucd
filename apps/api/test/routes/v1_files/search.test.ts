@@ -1,17 +1,10 @@
+import { HttpResponse, mockFetch } from "#test-utils/msw";
+
 import { generateAutoIndexHtml } from "apache-autoindex-parse/test-utils";
-import { env, fetchMock } from "cloudflare:test";
-import { afterEach, beforeAll, describe, expect, it } from "vitest";
+import { env } from "cloudflare:workers";
+import { describe, expect, it } from "vitest";
 import { executeRequest } from "../../helpers/request";
 import { expectApiError, expectSuccess } from "../../helpers/response";
-
-beforeAll(() => {
-  fetchMock.activate();
-  fetchMock.disableNetConnect();
-});
-
-afterEach(() => {
-  fetchMock.assertNoPendingInterceptors();
-});
 
 describe("v1_files", () => {
   // eslint-disable-next-line test/prefer-lowercase-title
@@ -23,11 +16,13 @@ describe("v1_files", () => {
         { name: "other.txt", path: "/Public/other.txt", type: "file", lastModified: Date.now() },
       ], "F2");
 
-      fetchMock.get("https://unicode.org")
-        .intercept({ path: "/Public?F=2" })
-        .reply(200, html, {
-          headers: { "content-type": "text/html; charset=utf-8" },
-        });
+      mockFetch([
+        ["GET", "https://unicode.org/Public", () => {
+          return HttpResponse.text(html, {
+            headers: { "content-type": "text/html; charset=utf-8" },
+          });
+        }],
+      ]);
 
       const { response, json } = await executeRequest(
         new Request("https://api.ucdjs.dev/api/v1/files/search?q=com"),
@@ -49,11 +44,13 @@ describe("v1_files", () => {
         { name: "Blocks.txt", path: "/Public/Blocks.txt", type: "file", lastModified: Date.now() },
       ], "F2");
 
-      fetchMock.get("https://unicode.org")
-        .intercept({ path: "/Public?F=2" })
-        .reply(200, html, {
-          headers: { "content-type": "text/html; charset=utf-8" },
-        });
+      mockFetch([
+        ["GET", "https://unicode.org/Public", () => {
+          return HttpResponse.text(html, {
+            headers: { "content-type": "text/html; charset=utf-8" },
+          });
+        }],
+      ]);
 
       const { response, json } = await executeRequest(
         new Request("https://api.ucdjs.dev/api/v1/files/search?q=unicode"),
@@ -74,11 +71,13 @@ describe("v1_files", () => {
         { name: "other.txt", path: "/Public/15.1.0/ucd/emoji/other.txt", type: "file", lastModified: Date.now() },
       ], "F2");
 
-      fetchMock.get("https://unicode.org")
-        .intercept({ path: "/Public/15.1.0/ucd/emoji?F=2" })
-        .reply(200, html, {
-          headers: { "content-type": "text/html; charset=utf-8" },
-        });
+      mockFetch([
+        ["GET", "https://unicode.org/Public/15.1.0/ucd/emoji", () => {
+          return HttpResponse.text(html, {
+            headers: { "content-type": "text/html; charset=utf-8" },
+          });
+        }],
+      ]);
 
       const { response, json } = await executeRequest(
         new Request("https://api.ucdjs.dev/api/v1/files/search?q=emoji&path=15.1.0/ucd/emoji"),
@@ -98,11 +97,13 @@ describe("v1_files", () => {
         { name: "Blocks.txt", path: "/Public/Blocks.txt", type: "file", lastModified: Date.now() },
       ], "F2");
 
-      fetchMock.get("https://unicode.org")
-        .intercept({ path: "/Public?F=2" })
-        .reply(200, html, {
-          headers: { "content-type": "text/html; charset=utf-8" },
-        });
+      mockFetch([
+        ["GET", "https://unicode.org/Public", () => {
+          return HttpResponse.text(html, {
+            headers: { "content-type": "text/html; charset=utf-8" },
+          });
+        }],
+      ]);
 
       const { response, json } = await executeRequest(
         new Request("https://api.ucdjs.dev/api/v1/files/search?q=nonexistent"),
@@ -115,9 +116,11 @@ describe("v1_files", () => {
     });
 
     it("should return empty array when path does not exist", async () => {
-      fetchMock.get("https://unicode.org")
-        .intercept({ path: "/Public/nonexistent/path?F=2" })
-        .reply(404, "Not Found");
+      mockFetch([
+        ["GET", "https://unicode.org/Public/nonexistent/path", () => {
+          return HttpResponse.text("Not Found", { status: 404 });
+        }],
+      ]);
 
       const { response, json } = await executeRequest(
         new Request("https://api.ucdjs.dev/api/v1/files/search?q=test&path=nonexistent/path"),
@@ -162,11 +165,13 @@ describe("v1_files", () => {
         { name: "computer.txt", path: "/Public/computer.txt", type: "file", lastModified: Date.now() },
       ], "F2");
 
-      fetchMock.get("https://unicode.org")
-        .intercept({ path: "/Public?F=2" })
-        .reply(200, html, {
-          headers: { "content-type": "text/html; charset=utf-8" },
-        });
+      mockFetch([
+        ["GET", "https://unicode.org/Public", () => {
+          return HttpResponse.text(html, {
+            headers: { "content-type": "text/html; charset=utf-8" },
+          });
+        }],
+      ]);
 
       const { response, json } = await executeRequest(
         new Request("https://api.ucdjs.dev/api/v1/files/search?q=come"),

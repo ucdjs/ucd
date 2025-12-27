@@ -1,5 +1,7 @@
 import type { SafeFetchResponse } from "@ucdjs-internal/shared";
+import type { UCDStoreVersionManifest } from "@ucdjs/schemas";
 import { customFetch } from "@ucdjs-internal/shared";
+import { UCDStoreVersionManifestSchema } from "@ucdjs/schemas";
 
 /**
  * Regex pattern for validating Unicode version format (X.Y.Z)
@@ -7,24 +9,13 @@ import { customFetch } from "@ucdjs-internal/shared";
  */
 const VERSION_FORMAT_REGEX = /^\d+\.\d+\.\d+$/;
 
-/**
- * Response type for per-version manifest endpoint
- * Matches the schema from /.well-known/ucd-store/{version}.json
- */
-export interface VersionManifestResponse {
-  /**
-   * List of expected file paths for this version
-   */
-  expectedFiles: string[];
-}
-
 export interface ManifestResource {
   /**
    * Get the manifest for a specific Unicode version
    * @param {string} version - The Unicode version (e.g., "16.0.0")
-   * @returns {Promise<SafeFetchResponse<VersionManifestResponse>>} The manifest containing expectedFiles
+   * @returns {Promise<SafeFetchResponse<UCDStoreVersionManifest>>} The manifest containing expectedFiles
    */
-  get: (version: string) => Promise<SafeFetchResponse<VersionManifestResponse>>;
+  get: (version: string) => Promise<SafeFetchResponse<UCDStoreVersionManifest>>;
 }
 
 export interface CreateManifestResourceOptions {
@@ -45,8 +36,9 @@ export function createManifestResource(options: CreateManifestResourceOptions): 
       }
 
       const url = new URL(`/.well-known/ucd-store/${version}.json`, baseUrl);
-      return customFetch.safe<VersionManifestResponse>(url.toString(), {
+      return customFetch.safe<UCDStoreVersionManifest>(url.toString(), {
         parseAs: "json",
+        schema: UCDStoreVersionManifestSchema,
       });
     },
   };

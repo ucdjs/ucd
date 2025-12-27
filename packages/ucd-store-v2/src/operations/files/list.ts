@@ -5,7 +5,7 @@ import {
   createDebugger,
   filterTreeStructure,
   flattenFilePaths,
-  tryCatch,
+  wrapTry,
 } from "@ucdjs-internal/shared";
 import { join } from "pathe";
 import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../../errors";
@@ -36,7 +36,7 @@ export async function listFiles(
   version: string,
   options?: ListFilesOptions,
 ): Promise<OperationResult<string[], StoreError>> {
-  return tryCatch(async () => {
+  return wrapTry(async () => {
     // Validate version exists in store
     if (!context.versions.includes(version)) {
       throw new UCDStoreVersionNotFoundError(version);

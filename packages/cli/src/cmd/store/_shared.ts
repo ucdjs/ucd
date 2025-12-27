@@ -1,7 +1,7 @@
-import type { UCDStore } from "@ucdjs/ucd-store";
+import type { UCDStore } from "@ucdjs/ucd-store-v2";
 import type { Readable, Writable } from "node:stream";
 import { isCancel, multiselect } from "@clack/prompts";
-import { createHTTPUCDStore, createNodeUCDStore } from "@ucdjs/ucd-store";
+import { createHTTPUCDStore, createNodeUCDStore } from "@ucdjs/ucd-store-v2";
 import { UNICODE_VERSION_METADATA } from "@unicode-utils/core";
 
 export interface CLIStoreCmdSharedFlags {
@@ -11,6 +11,8 @@ export interface CLIStoreCmdSharedFlags {
   exclude?: string[];
   baseUrl?: string;
   versions?: string[];
+  force?: boolean;
+  lockfileOnly?: boolean;
 }
 
 export const SHARED_FLAGS = [
@@ -19,6 +21,8 @@ export const SHARED_FLAGS = [
   ["--include", "Patterns to include files in the store."],
   ["--exclude", "Patterns to exclude files from the store."],
   ["--base-url", "Base URL for the UCD Store."],
+  ["--force", "Force operation (command-specific behavior)."],
+  ["--lockfile-only", "Read-only mode: only read lockfile, never update it."],
 ] as [string, string][];
 
 export function assertRemoteOrStoreDir(flags: CLIStoreCmdSharedFlags): asserts flags is CLIStoreCmdSharedFlags & { remote: true } | { storeDir: string } {
@@ -31,20 +35,24 @@ export function assertRemoteOrStoreDir(flags: CLIStoreCmdSharedFlags): asserts f
  * Creates a UCD store instance based on the provided CLI flags.
  *
  * @param {CLIStoreCmdSharedFlags} flags - Configuration flags for creating the store
- * @returns {Promise<UCDStore | null>} A promise that resolves to a UCDStore instance or null
+ * @returns {Promise<UCDStore>} A promise that resolves to a UCDStore instance
  * @throws {Error} When store directory is not specified for local stores
  */
 export async function createStoreFromFlags(flags: CLIStoreCmdSharedFlags): Promise<UCDStore> {
-  const { storeDir, remote, baseUrl, include, exclude } = flags;
+  const { storeDir, remote, baseUrl, include, exclude, force, lockfileOnly } = flags;
+
+  const options = {
+    baseUrl,
+    globalFilters: {
+      include,
+      exclude,
+    },
+    bootstrap: !lockfileOnly, // Read-only if lockfile-only
+    versionStrategy: force ? ("overwrite" as const) : ("strict" as const),
+  };
 
   if (remote) {
-    return createHTTPUCDStore({
-      baseUrl,
-      globalFilters: {
-        include,
-        exclude,
-      },
-    });
+    return createHTTPUCDStore(options);
   }
 
   if (!storeDir) {
@@ -52,12 +60,8 @@ export async function createStoreFromFlags(flags: CLIStoreCmdSharedFlags): Promi
   }
 
   return createNodeUCDStore({
+    ...options,
     basePath: storeDir,
-    baseUrl,
-    globalFilters: {
-      include,
-      exclude,
-    },
     versions: flags.versions || [],
   });
 }

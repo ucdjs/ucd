@@ -7,7 +7,7 @@
     "email": "lucasnrgaard@gmail.com",
     "url": "https://luxass.dev"
   },
-  "packageManager": "pnpm@10.25.0",
+  "packageManager": "pnpm@10.26.1",
   "license": "MIT",
   "homepage": "https://github.com/ucdjs/ucd",
   "repository": {
@@ -43,6 +43,7 @@
   "dependencies": {
     "@ucdjs-internal/shared": "workspace:*",
     "@ucdjs/env": "workspace:*",
+    "@ucdjs/path-utils": "workspace:*",
     "@ucdjs/schemas": "workspace:*"
   },
   "devDependencies": {

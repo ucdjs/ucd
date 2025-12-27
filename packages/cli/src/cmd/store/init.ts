@@ -2,16 +2,14 @@
 import type { Prettify } from "@luxass/utils";
 import type { CLIArguments } from "../../cli-utils";
 import type { CLIStoreCmdSharedFlags } from "./_shared";
-import { UCDStoreUnsupportedFeature } from "@ucdjs/ucd-store";
-import { red } from "farver/fast";
+import { hasCapability } from "@ucdjs/fs-bridge";
+import { UCDStoreGenericError } from "@ucdjs/ucd-store-v2";
+import { green, red, yellow } from "farver/fast";
 import { printHelp } from "../../cli-utils";
 import { assertRemoteOrStoreDir, createStoreFromFlags, runVersionPrompt, SHARED_FLAGS } from "./_shared";
 
 export interface CLIStoreInitCmdOptions {
-  flags: CLIArguments<Prettify<CLIStoreCmdSharedFlags & {
-    dryRun?: boolean;
-    force?: boolean;
-  }>>;
+  flags: CLIArguments<Prettify<CLIStoreCmdSharedFlags>>;
   versions: string[];
 }
 
@@ -24,7 +22,6 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
       tables: {
         Flags: [
           ...SHARED_FLAGS,
-          ["--force", "Overwrite existing files if they already exist."],
           ["--help (-h)", "See all available flags."],
         ],
       },
@@ -34,15 +31,27 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
 
   const {
     storeDir,
-    force,
     remote,
     baseUrl,
     include: patterns,
-    dryRun,
+    exclude: excludePatterns,
+    force,
   } = flags;
 
   try {
     assertRemoteOrStoreDir(flags);
+
+    // Init requires local store (needs write capability)
+    if (remote) {
+      console.error(red(`\n❌ Error: Init operation requires a local store directory.`));
+      console.error("Use --store-dir to specify a local directory for initialization.");
+      return;
+    }
+
+    if (!storeDir) {
+      console.error(red(`\n❌ Error: Store directory must be specified.`));
+      return;
+    }
 
     let selectedVersions = versions;
 
@@ -57,42 +66,70 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
       selectedVersions = pickedVersions;
     }
 
+    // Create store with bootstrap enabled
+    // The store creation will automatically bootstrap if needed
     const store = await createStoreFromFlags({
       baseUrl,
       storeDir,
-      remote,
+      remote: false,
       include: patterns,
+      exclude: excludePatterns,
       versions: selectedVersions,
-    });
-
-    await store.init({
       force,
-      dryRun,
+      lockfileOnly: false,
     });
 
-    if (!store.initialized) {
-      console.error(red(`\n❌ Error: Store initialization failed.`));
+    // Check write capability
+    if (!hasCapability(store.fs, "write")) {
+      console.error(red(`\n❌ Error: Store does not have write capability required for sync operation.`));
       console.error("Please check the store configuration and try again.");
-      console.error("This output may help you debug the issue:");
-
-      // TODO: utilize store status with a pretty printer.
-
       return;
     }
 
-    if (dryRun) {
-      console.info("Store initialized successfully in dry-run mode.");
-      console.info("No files have been written to disk.");
-    } else {
-      console.info("Store initialized successfully.");
+    console.info("Store initialized successfully.");
+    console.info(`Lockfile created with ${selectedVersions.length} version(s): ${selectedVersions.join(", ")}`);
+
+    // Automatically mirror files after lockfile creation
+    console.info("\nStarting mirror operation...");
+    const [mirrorResult, mirrorError] = await store.mirror({
+      versions: selectedVersions,
+      force,
+      filters: {
+        include: patterns,
+        exclude: excludePatterns,
+      },
+    });
+
+    if (mirrorError) {
+      console.error(red(`\n⚠ Warning: Mirror operation failed:`));
+      console.error(`  ${mirrorError.message}`);
+      console.error("Lockfile was created successfully, but files were not downloaded.");
+      return;
+    }
+
+    if (!mirrorResult) {
+      console.error(red(`\n⚠ Warning: Mirror operation returned no result.`));
+      console.error("Lockfile was created successfully, but files were not downloaded.");
+      return;
+    }
+
+    // Display mirror results
+    console.info(green("\n✓ Mirror operation completed successfully\n"));
+
+    if (mirrorResult.summary) {
+      const { counts, duration, storage } = mirrorResult.summary;
+      console.info(`Summary:`);
+      console.info(`  Versions processed: ${mirrorResult.versions.size}`);
+      console.info(`  Files downloaded: ${green(String(counts.downloaded))}`);
+      console.info(`  Files skipped: ${yellow(String(counts.skipped))}`);
+      console.info(`  Files failed: ${counts.failed > 0 ? red(String(counts.failed)) : String(counts.failed)}`);
+      console.info(`  Total size: ${storage.totalSize}`);
+      console.info(`  Duration: ${(duration / 1000).toFixed(2)}s`);
+      console.info("");
     }
   } catch (err) {
-    if (err instanceof UCDStoreUnsupportedFeature) {
-      console.error(red(`\n❌ Error: Unsupported feature:`));
-      console.error(`  ${err.message}`);
-      console.error("");
-      console.error("This store does not support the init operation.");
-      console.error("Please check the store capabilities or use a different store type.");
+    if (err instanceof UCDStoreGenericError) {
+      console.error(red(`\n❌ Error: ${err.message}`));
       return;
     }
 
@@ -106,7 +143,6 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
     console.error(red(`\n❌ Error initializing store:`));
     console.error(`  ${message}`);
     console.error("Please check the store configuration and try again.");
-    console.error("If the issue persists, consider running with --dry-run to see more details.");
     console.error("If you believe this is a bug, please report it at https://github.com/ucdjs/ucd/issues");
   }
 }

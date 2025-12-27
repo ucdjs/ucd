@@ -1,7 +1,7 @@
 import type { OperationResult } from "@ucdjs-internal/shared";
 import type { StoreError } from "../../errors";
 import type { InternalUCDStoreContext, SharedOperationOptions } from "../../types";
-import { createDebugger, tryCatch } from "@ucdjs-internal/shared";
+import { createDebugger, tryOr, wrapTry } from "@ucdjs-internal/shared";
 import { hasCapability } from "@ucdjs/fs-bridge";
 import { join } from "pathe";
 import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../../errors";
@@ -43,7 +43,7 @@ export async function getFile(
   filePath: string,
   options?: GetFileOptions,
 ): Promise<OperationResult<string, StoreError>> {
-  return tryCatch(async () => {
+  return wrapTry(async () => {
     // Validate version exists in store
     if (!context.versions.includes(version)) {
       throw new UCDStoreVersionNotFoundError(version);
@@ -51,6 +51,7 @@ export async function getFile(
 
     // Check if file passes filters (global filters + optional method-specific filters)
     if (!context.filter(filePath, options?.filters)) {
+      debug?.("File '%s' does not pass filters", filePath);
       throw new UCDStoreGenericError(
         `File '${filePath}' does not pass filters`,
         { version, filePath },
@@ -59,21 +60,29 @@ export async function getFile(
 
     const localPath = join(context.basePath, version, filePath);
 
+    debug?.("Checking local file existence:", localPath);
+
     const fileExists = await context.fs.exists(localPath);
 
     if (fileExists) {
-      try {
-        const content = await context.fs.read(localPath);
-        return content;
-      } catch (err) {
-        debug?.("Failed to read local file:", localPath, err);
+      debug?.("Local file exists:", localPath);
+      const content = await tryOr({
+        try: context.fs.read(localPath),
+        err: (err) => {
+          debug?.("Failed to read local file:", localPath, err);
 
-        if (!options?.allowApi) {
-          throw new UCDStoreGenericError(
-            `Failed to read file '${filePath}' from local store`,
-            { version, filePath },
-          );
-        }
+          if (!options?.allowApi) {
+            throw new UCDStoreGenericError(
+              `Failed to read file '${filePath}' from local store`,
+              { version, filePath },
+            );
+          }
+        },
+      });
+
+      if (content != null) {
+        debug?.("Returning local file content:", localPath);
+        return content;
       }
     }
 

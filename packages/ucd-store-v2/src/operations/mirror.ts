@@ -6,11 +6,14 @@ import {
   createDebugger,
   filterTreeStructure,
   flattenFilePaths,
-  tryCatch,
+  wrapTry,
 } from "@ucdjs-internal/shared";
 import { hasCapability } from "@ucdjs/fs-bridge";
+import { computeFileHash, readLockfileOrDefault, writeLockfile, writeSnapshot } from "@ucdjs/lockfile";
+import { hasUCDFolderPath } from "@unicode-utils/core";
 import { dirname, join } from "pathe";
-import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../errors";
+import { extractFilterPatterns } from "../core/context";
+import { UCDStoreGenericError } from "../errors";
 
 const debug = createDebugger("ucdjs:ucd-store:mirror");
 
@@ -191,10 +194,12 @@ export async function mirror(
   context: InternalUCDStoreContext,
   options?: MirrorOptions,
 ): Promise<OperationResult<MirrorReport, StoreError>> {
-  return tryCatch(async () => {
+  return wrapTry(async () => {
     if (!hasCapability(context.fs, ["mkdir", "write"])) {
       throw new UCDStoreGenericError("Filesystem does not support required write operations for mirroring.");
     }
+
+    debug?.("Starting mirror operation with context: %O", context);
 
     const versions = options?.versions ?? context.versions;
     const concurrency = options?.concurrency ?? 5;
@@ -206,13 +211,6 @@ export async function mirror(
         timestamp: new Date().toISOString(),
         versions: new Map<string, MirrorVersionReport>(),
       };
-    }
-
-    // Validate all versions exist in context
-    for (const version of versions) {
-      if (!context.versions.includes(version)) {
-        throw new UCDStoreVersionNotFoundError(version);
-      }
     }
 
     const startTime = Date.now();
@@ -267,13 +265,15 @@ export async function mirror(
       debug?.(`Fetching file tree for version ${version}`);
 
       const result = await context.client.versions.getFileTree(version);
-
+      debug?.(`Fetched file tree for version ${version}`);
       if (result.error) {
         throw new UCDStoreGenericError(
           `Failed to fetch file tree for version '${version}': ${result.error.message}`,
           { version, status: result.error.status },
         );
       }
+
+      debug?.(`Processing file tree for version ${version}: %O`, result.data);
 
       if (result.data == null) {
         throw new UCDStoreGenericError(
@@ -296,7 +296,16 @@ export async function mirror(
       // build queue items with all paths pre-computed
       for (const filePath of filePaths) {
         const localPath = join(context.basePath, version, filePath);
-        const remotePath = `${version}/${filePath}`;
+
+        // Note:
+        // The store always uses `<version>/ucd/<file>` paths when mirroring,
+        // because the Unicode database also includes e.g. `<version>/ucdxml/<file>`,
+        // which is _not_ part of the store. Paths returned from the API are
+        // relative to their containing folder and do not include the `ucd` segment.
+        // By adding `ucd` here, we ensure that only files within `ucd` are mirrored
+        // and avoid accidentally pulling `ucdxml` or other subfolders not needed
+        // by the store.
+        const remotePath = join(version, hasUCDFolderPath(version) ? "ucd" : "", filePath);
 
         directoriesToCreate.add(dirname(localPath));
 
@@ -331,6 +340,8 @@ export async function mirror(
 
           return;
         }
+
+        debug?.(`Fetching file ${item.remotePath} from API`);
 
         // Fetch file content from API
         const { data, error, response } = await context.client.files.get(item.remotePath);
@@ -382,6 +393,59 @@ export async function mirror(
     })));
 
     const duration = Date.now() - startTime;
+
+    // Create snapshots and update lockfile for mirrored versions
+    const lockfile = await readLockfileOrDefault(context.fs, context.lockfilePath);
+    const updatedLockfileVersions = lockfile ? { ...lockfile.versions } : {};
+
+    for (const [version, report] of versionedReports.entries()) {
+      // Create snapshot if any files were processed (downloaded or skipped)
+      const allFiles = [...report.files.downloaded, ...report.files.skipped];
+      if (allFiles.length > 0) {
+        debug?.(`Creating snapshot for version ${version}`);
+
+        // Read all mirrored files (downloaded + skipped) and compute hashes
+        const snapshotFiles: Record<string, { hash: string; size: number }> = {};
+        let totalSize = 0;
+
+        for (const filePath of allFiles) {
+          const localPath = join(context.basePath, version, filePath);
+          const fileContent = await context.fs.read(localPath);
+
+          if (fileContent) {
+            const hash = await computeFileHash(fileContent);
+            const size = new TextEncoder().encode(fileContent).length;
+            snapshotFiles[filePath] = { hash, size };
+            totalSize += size;
+          }
+        }
+
+        // Write snapshot
+        await writeSnapshot(context.fs, context.basePath, version, {
+          unicodeVersion: version,
+          files: snapshotFiles,
+        });
+
+        // Update lockfile entry
+        updatedLockfileVersions[version] = {
+          path: `${version}/snapshot.json`,
+          fileCount: allFiles.length,
+          totalSize,
+        };
+      }
+    }
+
+    // Write updated lockfile
+    if (Object.keys(updatedLockfileVersions).length > 0) {
+      // Preserve filters from existing lockfile or use current context filters
+      const filters = extractFilterPatterns(context.filter) ?? lockfile?.filters;
+
+      await writeLockfile(context.fs, context.lockfilePath, {
+        lockfileVersion: 1,
+        versions: updatedLockfileVersions,
+        filters,
+      });
+    }
 
     const summary = computeSummary(
       versionedReports,

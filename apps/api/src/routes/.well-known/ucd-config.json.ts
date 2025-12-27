@@ -11,7 +11,6 @@ import { getAllVersionsFromList } from "../v1_versions/utils";
 
 const UCD_CONFIG_ROUTE = createRoute({
   method: "get",
-  operationId: "getUCDConfig",
   path: "/ucd-config.json",
   tags: [OPENAPI_TAGS.WELL_KNOWN],
   middleware: [

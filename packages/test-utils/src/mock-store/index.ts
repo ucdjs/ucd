@@ -1,5 +1,5 @@
 import type { JsonBodyType } from "msw";
-import type { MockStoreConfig } from "./types";
+import type { MockStoreConfig, MockStoreFiles } from "./types";
 import { createDebugger, isApiError } from "@ucdjs-internal/shared";
 import { HttpResponse } from "msw";
 import { mockFetch } from "../msw";
@@ -12,6 +12,37 @@ import {
 
 const debug = createDebugger("ucdjs:test-utils:mock-store");
 
+const DEFAULT_MOCK_STORE_FILES = {
+  "*": [
+    {
+      type: "file",
+      name: "ArabicShaping.txt",
+      path: "ArabicShaping.txt",
+      lastModified: 1755287100000,
+    },
+    {
+      type: "file",
+      name: "BidiBrackets.txt",
+      path: "BidiBrackets.txt",
+      lastModified: 1755287100000,
+    },
+    {
+      type: "directory",
+      name: "extracted",
+      path: "extracted",
+      lastModified: 1755287100000,
+      children: [
+        {
+          type: "file",
+          name: "DerivedBidiClass.txt",
+          path: "extracted/DerivedBidiClass.txt",
+          lastModified: 1755287100000,
+        },
+      ],
+    },
+  ],
+} satisfies MockStoreFiles;
+
 export function mockStoreApi(config?: MockStoreConfig): void {
   const {
     baseUrl = "https://api.ucdjs.dev",
@@ -19,6 +50,7 @@ export function mockStoreApi(config?: MockStoreConfig): void {
     versions = ["16.0.0", "15.1.0", "15.0.0"],
     customResponses = [],
     onRequest,
+    files = DEFAULT_MOCK_STORE_FILES,
   } = config || {};
 
   debug?.("Setting up mock store API with config:", config);
@@ -34,10 +66,16 @@ export function mockStoreApi(config?: MockStoreConfig): void {
     // If explicitly disabled, skip
     if (response === false) continue;
 
-    const shouldUseDefaultValue = response === true || response == null;
-
     // extract metadata from configure
-    let { actualResponse, latency, headers } = extractConfiguredMetadata(response);
+    let { actualResponse, latency, headers, beforeHook, afterHook } = extractConfiguredMetadata(response);
+
+    // Normalize wrapped true object back to true for handlers
+    if (typeof actualResponse === "object" && actualResponse !== null && "__useDefaultResolver" in actualResponse) {
+      actualResponse = true;
+    }
+
+    // Check if we should use default value (true or null)
+    const shouldUseDefaultValue = actualResponse === true || response == null;
     debug?.(`Setting up mock for endpoint: ${endpoint} with response:`, actualResponse);
 
     if (isApiError(actualResponse)) {
@@ -57,16 +95,21 @@ export function mockStoreApi(config?: MockStoreConfig): void {
 
     const wrappedMockFetch = wrapMockFetch(mockFetch, {
       onRequest,
-      beforeFetch: async () => {
+      beforeFetch: async (payload) => {
         debug?.("Before fetch for endpoint:", endpoint);
         // apply latency before calling resolver
         if (latency) {
           const ms = parseLatency(latency);
           await new Promise((resolve) => setTimeout(resolve, ms));
         }
+        // call before hook if configured
+        await beforeHook?.(payload);
       },
-      afterFetch({ response }) {
+      afterFetch: async ({ response, ...payload }) => {
         debug?.("After fetch for endpoint:", endpoint);
+        // call after hook if configured
+        await afterHook?.({ ...payload, response });
+
         if (!response) {
           debug?.("No response returned from resolver");
           return;
@@ -100,6 +143,7 @@ export function mockStoreApi(config?: MockStoreConfig): void {
       shouldUseDefaultValue,
       mockFetch: wrappedMockFetch,
       versions,
+      files,
     });
   }
 
@@ -112,10 +156,10 @@ export function mockStoreApi(config?: MockStoreConfig): void {
 function toMSWPath(endpoint: string): string {
   return endpoint.replace(/\{(\w+)\}/g, (_, p1) => {
     // This plays nicely with the change we made
-    // for :wildcard+ in our wrap mock fetch logic
+    // for :wildcard* in our wrap mock fetch logic
     // https://github.com/ucdjs/ucd/blob/c662bec8429c98e5fd98942e2c12f0e6fd479d51/packages/test-utils/src/mock-store/utils.ts#L94-L105
     if (p1 === "wildcard") {
-      return `:${p1}+`;
+      return `:${p1}*`;
     }
 
     return `:${p1}`;
