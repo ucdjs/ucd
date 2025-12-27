@@ -26,6 +26,7 @@ catalogs:
 
   testing:
     "@vitest/coverage-istanbul": 4.0.16
+    "@vitest/expect": 4.0.16
     "@vitest/ui": 4.0.16
     vitest: 4.0.16
     vitest-testdirs: 4.3.0

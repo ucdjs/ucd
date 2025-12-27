@@ -21,6 +21,8 @@
   "exports": {
     ".": "./dist/index.mjs",
     "./fs-bridges": "./dist/fs-bridges/index.mjs",
+    "./matchers/types": "./dist/matchers/types.mjs",
+    "./matchers/vitest-setup": "./dist/matchers/vitest-setup.mjs",
     "./mock-store": "./dist/mock-store.mjs",
     "./msw": "./dist/msw.mjs",
     "./msw/vitest-setup": "./dist/msw/vitest-setup.mjs",
@@ -61,6 +63,7 @@
     "@ucdjs-tooling/tsconfig": "workspace:*",
     "@ucdjs-tooling/tsdown-config": "workspace:*",
     "@ucdjs/ucd-store": "workspace:*",
+    "@vitest/expect": "catalog:testing",
     "eslint": "catalog:linting",
     "openapi-typescript": "catalog:dev",
     "publint": "catalog:dev",
