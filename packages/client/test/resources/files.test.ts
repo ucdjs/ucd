@@ -8,7 +8,7 @@ describe("createFilesResource", () => {
   const baseUrl = UCDJS_API_BASE_URL;
   const endpoints = {
     files: "/api/v1/files",
-    manifest: "/.well-known/ucd-store.json",
+    manifest: "/.well-known/ucd-store/{version}.json",
     versions: "/api/v1/versions",
   };
 

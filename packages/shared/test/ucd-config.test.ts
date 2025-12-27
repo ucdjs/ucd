@@ -13,7 +13,7 @@ describe("discoverEndpointsFromConfig", () => {
             version: "0.1",
             endpoints: {
               files: "/api/v1/files",
-              manifest: "/.well-known/ucd-store.json",
+              manifest: "/.well-known/ucd-store/{version}.json",
               versions: "/api/v1/versions",
             },
             versions: [],
@@ -29,7 +29,7 @@ describe("discoverEndpointsFromConfig", () => {
         version: "0.1",
         endpoints: {
           files: "/api/v1/files",
-          manifest: "/.well-known/ucd-store.json",
+          manifest: "/.well-known/ucd-store/{version}.json",
           versions: "/api/v1/versions",
         },
         versions: [],
@@ -42,7 +42,7 @@ describe("discoverEndpointsFromConfig", () => {
           return HttpResponse.json({
             endpoints: {
               files: "/api/v1/files",
-              manifest: "/.well-known/ucd-store.json",
+              manifest: "/.well-known/ucd-store/{version}.json",
               versions: "/api/v1/versions",
             },
           });
@@ -114,7 +114,7 @@ describe("discoverEndpointsFromConfig", () => {
             version: "0.1",
             endpoints: {
               files: 123,
-              manifest: "/.well-known/ucd-store.json",
+              manifest: "/.well-known/ucd-store/{version}.json",
               versions: "/api/v1/versions",
             },
           });
