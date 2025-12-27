@@ -30,7 +30,8 @@
         "pattern": "ucdjs.dev"
       },
       "vars": {
-        "ENVIRONMENT": "production"
+        "ENVIRONMENT": "production",
+        "API_BASE_URL": "https://api.ucdjs.dev"
       }
     },
     "preview": {
@@ -41,7 +42,8 @@
         "pattern": "preview.ucdjs.dev"
       },
       "vars": {
-        "ENVIRONMENT": "preview"
+        "ENVIRONMENT": "preview",
+        "API_BASE_URL": "https://preview.api.ucdjs.dev"
       }
     }
   },
