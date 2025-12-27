@@ -1,3 +1,5 @@
+/// <reference types="../../../../test-utils/src/matchers/types.d.ts" />
+
 import NodeFileSystemBridge from "#internal:bridge/node";
 import { UNCPathNotSupportedError } from "@ucdjs/path-utils";
 import { describe, expect, it } from "vitest";
@@ -11,17 +13,10 @@ describe("UNC path prevention", () => {
     it("should reject UNC paths in basePath", () => {
       expect(() => {
         NodeFileSystemBridge({ basePath: "\\\\server\\share" });
-      }).toThrow(BridgeSetupError);
-
-      // Verify the error is due to UNC path
-      try {
-        NodeFileSystemBridge({ basePath: "\\\\server\\share" });
-        expect.fail("Should have thrown");
-      } catch (error: any) {
-        // The error should be BridgeSetupError wrapping UNCPathNotSupportedError
-        expect(error).toBeInstanceOf(BridgeSetupError);
-        expect(error.originalError).toBeInstanceOf(UNCPathNotSupportedError);
-      }
+      }).toMatchError({
+        type: BridgeSetupError,
+        cause: UNCPathNotSupportedError,
+      });
     });
 
     it("should reject UNC paths in input paths", async () => {
@@ -41,6 +36,7 @@ describe("UNC path prevention", () => {
       const testDir = await testdir({
         "file.txt": "content",
       });
+
       const bridge = NodeFileSystemBridge({ basePath: testDir });
 
       // UNC paths should be rejected even if encoded

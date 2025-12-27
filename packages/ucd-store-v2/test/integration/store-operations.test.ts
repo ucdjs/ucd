@@ -70,7 +70,6 @@ describe("store operations integration", () => {
         client: context.client,
         fs: context.fs,
         lockfilePath: context.lockfilePath,
-        versions: ["16.0.0"],
       });
 
       expect(verifyResult.valid).toBe(true);
@@ -126,7 +125,6 @@ describe("store operations integration", () => {
         client: context.client,
         fs: context.fs,
         lockfilePath: context.lockfilePath,
-        versions: ["16.0.0", "15.1.0"],
       });
 
       expect(verifyResult.valid).toBe(true);

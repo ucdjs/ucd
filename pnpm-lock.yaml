@@ -119,6 +119,9 @@ catalogs:
     '@vitest/coverage-istanbul':
       specifier: 4.0.16
       version: 4.0.16
+    '@vitest/expect':
+      specifier: 4.0.16
+      version: 4.0.16
     '@vitest/ui':
       specifier: 4.0.16
       version: 4.0.16
@@ -533,6 +536,9 @@ importers:
       '@ucdjs/env':
         specifier: workspace:*
         version: link:../env
+      '@ucdjs/fs-bridge':
+        specifier: workspace:*
+        version: link:../fs-bridge
       '@ucdjs/lockfile':
         specifier: workspace:*
         version: link:../lockfile
@@ -966,6 +972,9 @@ importers:
       '@ucdjs/ucd-store':
         specifier: workspace:*
         version: link:../ucd-store
+      '@vitest/expect':
+        specifier: catalog:testing
+        version: 4.0.16
       eslint:
         specifier: catalog:linting
         version: 9.39.2(jiti@2.6.1)
