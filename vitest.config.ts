@@ -24,12 +24,13 @@ async function createProjects(root: string): Promise<TestProjectConfiguration[]>
       const customConfigPath = pkgRoot(root, dir) + "/vitest.config.ts";
 
       if (existsSync(customConfigPath)) {
+        console.log(`[vitest] Loading custom config for ${root}/${dir} using path ${customConfigPath}`);
         try {
           const customConfig = await import(customConfigPath).then((m) => m.default);
 
           return mergeConfig(base, customConfig);
-        } catch (error) {
-          console.warn(`[vitest] Failed to load custom config for ${root}/${dir}:`, error);
+        } catch (err) {
+          console.warn(`[vitest] Failed to load custom config for ${root}/${dir}:`, err);
           return base;
         }
       }
