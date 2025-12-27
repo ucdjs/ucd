@@ -54,20 +54,10 @@ jobs:
 
             await runGenerateManifest({ outputDir: 'manifest-output', apiBaseUrl: process.env.BASE_URL });
 
-      - name: Fetch current store manifest
-        id: fetch-store
-        env:
-          BASE_URL: ${{ matrix.base_url }}
-        run: |
-          echo "Fetching current store manifest from $BASE_URL..."
-          curl -s "$BASE_URL/api/v1/files/.ucd-store.json" -o current-store.json || echo "{}" > current-store.json
-          echo "Current store manifest fetched"
-
       - name: Create and upload version tar files
         env:
           BASE_URL: ${{ matrix.base_url }}
-          CACHE_PATH: /api/v1/files/.ucd-store.json
-          CACHE_NAME: ucdjs:v1_files:ucd-store
+          CACHE_NAME: ucdjs:well-known:ucd-store
         run: |
           cd manifest-output
 
@@ -90,12 +80,14 @@ jobs:
 
             echo "Processing version $version..."
 
-            # Get local and remote JSON (normalized for comparison)
+            # Get local JSON (normalized for comparison)
             local_json=$(jq -cS '.' "$version_dir/manifest.json")
-            store_version_value=$(jq -r --arg v "$version" '.[$v] // empty' ../current-store.json)
-
-            if [ -n "$store_version_value" ]; then
-              remote_json=$(echo "$store_version_value" | jq -cS '.')
+            
+            # Fetch remote manifest directly from versioned endpoint
+            remote_response=$(curl -s "$BASE_URL/.well-known/ucd-store/$version.json")
+            
+            if [ -n "$remote_response" ] && [ "$remote_response" != "null" ]; then
+              remote_json=$(echo "$remote_response" | jq -cS '.')
             else
               remote_json=""
             fi
@@ -156,11 +148,11 @@ jobs:
           # Purge cache only if there were uploads
           cache_purged="false"
           if [ $uploaded -gt 0 ]; then
-            echo "Purging cache for .ucd-store.json..."
+            echo "Purging cache for versioned manifests..."
+            # Note: We purge by cache name which covers all versioned endpoints
             purge_response=$(curl -s -w "\n%{http_code}" -G \
               -H "X-UCDJS-Task-Key: ${{ secrets.TASK_API_KEY }}" \
               --data-urlencode "cacheName=$CACHE_NAME" \
-              --data-urlencode "path=$CACHE_PATH" \
               "$BASE_URL/_tasks/purge-cache")
 
             purge_status=$(echo "$purge_response" | tail -1)
@@ -191,7 +183,7 @@ jobs:
               echo "### Uploaded Versions"
               echo ""
               if [ "$cache_purged" = "true" ]; then
-                echo "> 🔄 Cache for \`$CACHE_PATH\` was purged"
+                echo "> 🔄 Cache for versioned manifests was purged"
               else
                 echo "> ⚠️ Cache purge failed - changes may take up to 7 days to propagate"
               fi

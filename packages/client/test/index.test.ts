@@ -29,7 +29,7 @@ describe("ucd client", () => {
       version: "1.0",
       endpoints: {
         files: "/api/v1/files",
-        manifest: "/.well-known/ucd-store.json",
+        manifest: "/.well-known/ucd-store/{version}.json",
         versions: "/api/v1/versions",
       },
     };

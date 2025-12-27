@@ -73,56 +73,6 @@ describe("well-known", () => {
   });
 
   // eslint-disable-next-line test/prefer-lowercase-title
-  describe("GET /ucd-store.json", () => {
-    it("should return deprecated manifest with deprecation headers", async () => {
-      // Mock bucket with manifest data
-      const mockManifest = {
-        "16.0.0": {
-          expectedFiles: [
-            "16.0.0/ucd/UnicodeData.txt",
-            "16.0.0/ucd/PropList.txt",
-          ],
-        },
-      };
-
-      // Mock bucket.list to return version directories
-      const mockList = vi.fn().mockResolvedValue({
-        objects: [
-          { key: "manifest/16.0.0/manifest.json" },
-        ],
-      });
-
-      // Mock bucket.get to return manifest
-      const mockGet = vi.fn().mockResolvedValue({
-        json: async () => mockManifest["16.0.0"],
-        uploaded: new Date("2024-01-01"),
-      });
-
-      const mockEnv = {
-        ...env,
-        UCD_BUCKET: {
-          list: mockList,
-          get: mockGet,
-        } as any,
-      };
-
-      const { response, json } = await executeRequest(
-        new Request("https://api.ucdjs.dev/.well-known/ucd-store.json"),
-        mockEnv,
-      );
-
-      expectSuccess(response);
-      expect(response.headers.get("Deprecation")).toBe("true");
-      expect(response.headers.get("Sunset")).toBeTruthy();
-      expect(response.headers.get("Link")).toContain("ucd-store/{version}.json");
-      expect(response.headers.get("Link")).toContain("successor-version");
-
-      const data = await json();
-      expect(data).toHaveProperty("16.0.0");
-    });
-  });
-
-  // eslint-disable-next-line test/prefer-lowercase-title
   describe("GET /ucd-store/{version}.json", () => {
     it("should return manifest for specific version", async () => {
       const mockManifest = {

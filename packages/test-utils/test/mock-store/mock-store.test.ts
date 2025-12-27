@@ -325,54 +325,6 @@ describe("mockStoreApi", () => {
     });
   });
 
-  describe("endpoint: /.well-known/ucd-store.json", () => {
-    it("should return default manifest", async () => {
-      mockStoreApi();
-
-      const response = await fetch(
-        "https://api.ucdjs.dev/.well-known/ucd-store.json",
-      );
-      expect(response.ok).toBe(true);
-
-      const data = await response.json();
-      expect(data["16.0.0"]).toEqual({ expectedFiles: [] });
-      expect(data["15.1.0"]).toEqual({ expectedFiles: [] });
-    });
-
-    it("should use custom versions in manifest", async () => {
-      mockStoreApi({
-        versions: ["1.0.0", "2.0.0"],
-      });
-
-      const response = await fetch(
-        "https://api.ucdjs.dev/.well-known/ucd-store.json",
-      );
-      const data = await response.json();
-
-      expect(data["1.0.0"]).toEqual({ expectedFiles: [] });
-      expect(data["2.0.0"]).toEqual({ expectedFiles: [] });
-    });
-
-    it("should accept custom manifest data", async () => {
-      const customManifest = {
-        custom: { expectedFiles: ["custom.txt"] },
-      };
-
-      mockStoreApi({
-        responses: {
-          "/.well-known/ucd-store.json": customManifest,
-        },
-      });
-
-      const response = await fetch(
-        "https://api.ucdjs.dev/.well-known/ucd-store.json",
-      );
-      const data = await response.json();
-
-      expect(data).toEqual(customManifest);
-    });
-  });
-
   describe("endpoint: /.well-known/ucd-config.json", () => {
     it("should return default config", async () => {
       mockStoreApi();
@@ -387,7 +339,7 @@ describe("mockStoreApi", () => {
         version: "0.1",
         endpoints: {
           files: "/api/v1/files",
-          manifest: "/.well-known/ucd-store.json",
+          manifest: "/.well-known/ucd-store/{version}.json",
           versions: "/api/v1/versions",
         },
       });
@@ -426,7 +378,7 @@ describe("mockStoreApi", () => {
         version: "0.1",
         endpoints: {
           files: "/api/v1/files",
-          manifest: "/.well-known/ucd-store.json",
+          manifest: "/.well-known/ucd-store/{version}.json",
           versions: "/api/v1/versions",
         },
         versions: [],
@@ -601,7 +553,7 @@ describe("mockStoreApi", () => {
         `${customBase}/api/v1/versions`,
         `${customBase}/api/v1/versions/16.0.0/file-tree`,
         `${customBase}/api/v1/files/test.txt`,
-        `${customBase}/.well-known/ucd-store.json`,
+        `${customBase}/.well-known/ucd-store/16.0.0.json`,
         `${customBase}/.well-known/ucd-config.json`,
       ];
 

@@ -43,7 +43,7 @@ export const UCDWellKnownConfigSchema = z.object({
     /**
      * Path to manifest file (deprecated)
      * @deprecated Use per-version endpoint `/.well-known/ucd-store/{version}.json` instead
-     * @example "/.well-known/ucd-store.json"
+     * @example "/.well-known/ucd-store/{version}.json"
      */
     manifest: z.string(),
 

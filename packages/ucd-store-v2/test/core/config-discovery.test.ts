@@ -17,7 +17,7 @@ describe("config discovery integration", () => {
             version: "0.1",
             endpoints: {
               files: "/api/v1/files",
-              manifest: "/.well-known/ucd-store.json",
+              manifest: "/.well-known/ucd-store/{version}.json",
               versions: "/api/v1/versions",
             },
             versions: ["16.0.0", "15.1.0"],
@@ -112,7 +112,7 @@ describe("config discovery integration", () => {
             version: "0.1",
             endpoints: {
               files: "/api/v1/files",
-              manifest: "/.well-known/ucd-store.json",
+              manifest: "/.well-known/ucd-store/{version}.json",
               versions: "/api/v1/versions",
             },
             versions: ["16.0.0", "15.1.0"], // Config has specific versions
@@ -148,7 +148,7 @@ describe("config discovery integration", () => {
             version: "0.1",
             endpoints: {
               files: "/api/v1/files",
-              manifest: "/.well-known/ucd-store.json",
+              manifest: "/.well-known/ucd-store/{version}.json",
               versions: "/api/v1/versions",
             },
             // No versions field
@@ -223,7 +223,7 @@ describe("config discovery integration", () => {
             version: "0.1",
             endpoints: {
               files: "/api/v1/files",
-              manifest: "/.well-known/ucd-store.json",
+              manifest: "/.well-known/ucd-store/{version}.json",
               versions: "/api/v1/versions",
             },
             versions: ["16.0.0", "15.1.0"],
@@ -289,7 +289,7 @@ describe("config discovery integration", () => {
             version: "0.1",
             endpoints: {
               files: "/api/v1/files",
-              manifest: "/.well-known/ucd-store.json",
+              manifest: "/.well-known/ucd-store/{version}.json",
               versions: "/api/v1/versions",
             },
             versions: ["16.0.0", "15.1.0"],
@@ -325,7 +325,7 @@ describe("config discovery integration", () => {
             version: "0.1",
             endpoints: {
               files: "/api/v1/files",
-              manifest: "/.well-known/ucd-store.json",
+              manifest: "/.well-known/ucd-store/{version}.json",
               versions: "/api/v1/versions",
             },
             versions: ["16.0.0", "15.1.0"], // Config has these versions

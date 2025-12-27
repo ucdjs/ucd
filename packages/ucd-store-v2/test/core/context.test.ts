@@ -102,7 +102,7 @@ describe("createPublicContext", async () => {
     version: "0.1",
     endpoints: {
       files: "/api/v1/files",
-      manifest: "/.well-known/ucd-store.json",
+      manifest: "/.well-known/ucd-store/{version}.json",
       versions: "/api/v1/versions",
     },
     versions: ["16.0.0", "15.1.0"],
