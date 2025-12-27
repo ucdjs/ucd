@@ -11,18 +11,23 @@ UCD.js is a monorepo project that provides tools and APIs for working with Unico
 The repository is organized into three main workspace categories:
 
 - **packages/**: Core library packages published to npm
-- **apps/**: Applications (API worker, docs, web)
+- **apps/**: Applications (API worker, web - includes documentation)
 - **tooling/**: Internal development tools (eslint-plugin, tsconfig, tsdown-config, moonbeam)
 - **vscode/**: VS Code extension
 
 ### Key Packages
 
 - **@ucdjs/ucd-store**: Store for managing Unicode Character Database files. Supports multiple file system bridges (Node.js, HTTP, in-memory). Core operations include mirror, analyze, and clean.
+- **@ucdjs/ucd-store-v2**: Next-generation store with lockfile and snapshot support.
+  > NOTE: This is a temporary package name while the new store is being implemented. Once stable, it will replace `@ucdjs/ucd-store`.
+  > Core operations include mirror, analyze, and sync (different from v1).
+- **@ucdjs/lockfile**: Lockfile and snapshot management utilities for UCD stores. Provides file hashing, lockfile/snapshot validation, and test utilities.
 - **@ucdjs/schema-gen**: Uses AI (OpenAI) to generate TypeScript schemas from Unicode data files
 - **@ucdjs/cli**: Command-line interface for UCD operations (binary: `ucd`)
+  > Currently uses `@ucdjs/ucd-store-v2` and `@ucdjs/lockfile` under the hood.
 - **@ucdjs/client**: OpenAPI-based API client for the UCD API
 - **@ucdjs/fs-bridge**: File system abstraction layer that allows different storage backends
-- **@ucdjs/schemas**: Zod schemas for Unicode data files
+- **@ucdjs/schemas**: Zod schemas for Unicode data files (includes lockfile and snapshot schemas)
 - **@ucdjs-internal/shared**: Internal Shared utilities across packages
   > NOTE: This package may not follow semantic versioning, as it's only for internal use
   > Changes here may require coordinated updates in other packages
@@ -33,8 +38,8 @@ The repository is organized into three main workspace categories:
 ### Key Apps
 
 - **apps/api**: Cloudflare Workers API using Hono and OpenAPI (serves at api.ucdjs.dev)
-- **apps/docs**: Documentation site using Nuxt/Docus
-- **apps/web**: Web application using React and Vite
+- **apps/web**: Web application using React, Vite, and TanStack Router (includes documentation at /docs)
+  > Uses fumadocs framework for documentation with content in `apps/web/content/docs/`
 
 ## Common Commands
 
@@ -88,7 +93,7 @@ pnpm clean                      # Clean build artifacts and node_modules
 ## Architecture Notes
 
 ### Build System
-- Uses **tsdown** for building TypeScript packages (configured via tsdown.config.ts)
+- Uses **tsdown** for building TypeScript packages (each package has its own tsdown.config.ts using @ucdjs-tooling/tsdown-config)
 - Uses **Turbo** for task orchestration and caching
 - Build dependencies are topologically sorted (see turbo.json)
 - Packages output to `dist/` directories
@@ -143,11 +148,10 @@ it("should work with filesystem", async () => {
 ```
 
 **Worker Testing:**
-The API app uses a separate Vitest project configuration (`vitest.config.worker.ts`) with:
+The API app uses a separate Vitest project configuration (`vitest.config.ts`) with:
 - `@cloudflare/vitest-pool-workers` for Cloudflare Workers environment
-- `singleWorker: true` and `isolatedStorage: true` for test isolation
 - Miniflare bindings for rate limiting and environment variables
-- Tests in `apps/api/test/**` (excluding `test/unit/**` which uses standard Node environment)
+- Tests in `apps/api/test/**` (all tests run in Cloudflare Workers environment, unit tests use mocks)
 
 ### Package Dependencies
 - Uses pnpm **catalogs** for centralized dependency version management
@@ -163,7 +167,12 @@ The `@ucdjs/fs-bridge` package provides an abstraction layer for file system ope
 ### API Architecture
 The API (apps/api) is a Cloudflare Worker built with:
 - **Hono** web framework with OpenAPI plugin (@hono/zod-openapi)
-- Routes organized by version (v1_files, v1_versions)
+- Routes organized by version and type:
+  - `/api/v1/files` - File access and search endpoints
+  - `/api/v1/versions` - Version metadata and file trees
+  - `/api/v1/schemas` - JSON schemas (lockfile.json, snapshot.json)
+  - `/_tasks` - Internal admin endpoints (requires API key)
+  - `/.well-known/` - Well-known endpoints (ucd-config, ucd-store)
 - OpenAPI spec auto-generated from Zod schemas
 - Scalar API documentation served at root (`/`)
 - Environment-aware (local, preview, production)
@@ -173,6 +182,21 @@ The `@ucdjs/schema-gen` package uses OpenAI to generate TypeScript type definiti
 1. Reads raw Unicode data files
 2. Uses AI to infer field types and descriptions
 3. Generates TypeScript interfaces using knitwork
+
+### UCD Store Migration
+The project is currently migrating from `@ucdjs/ucd-store` to `@ucdjs/ucd-store-v2`. Key differences:
+
+**Old Store (@ucdjs/ucd-store)**:
+- Operations: mirror, analyze, clean
+- No lockfile/snapshot support
+
+**New Store (@ucdjs/ucd-store-v2)**:
+- Operations: mirror, analyze, sync
+- Integrated lockfile and snapshot support via `@ucdjs/lockfile`
+- Currently used by CLI
+- Will replace old store once stable
+
+Both stores coexist during the migration period. When working with the CLI or testing new features, use ucd-store-v2.
 
 ### Internal Development Tools
 
@@ -232,8 +256,8 @@ The API worker (apps/api) has multiple deployment environments configured in `wr
   - `ENVIRONMENT=production`
 
 - **testing**: Used by worker tests
-  - Configured in `vitest.config.worker.ts`
-  - Uses miniflare bindings for isolated testing
+   - Configured in `apps/api/vitest.config.ts`
+   - Uses miniflare bindings for isolated testing
 
 ### Common Gotchas & Debugging
 
@@ -257,8 +281,9 @@ The API worker (apps/api) has multiple deployment environments configured in `wr
    - Without Moonbeam, imports resolve to node_modules instead of source files
 
 5. **Worker tests vs unit tests**
-   - Worker tests: `apps/api/test/**` (exclude `test/unit/**`) - run in Cloudflare Workers environment
-   - Unit tests: `apps/api/test/unit/**` - run in Node.js environment
+   - All API tests run in Cloudflare Workers environment via vitest.config.ts
+   - Worker tests: `apps/api/test/routes/**` - test actual API endpoints and routes
+   - Unit tests: `apps/api/test/unit/**` - test individual functions with mocks (e.g., cache, handlers, errors)
    - Use the correct test location based on what you're testing
 
 ### Adding New Packages
@@ -271,4 +296,4 @@ The API worker (apps/api) has multiple deployment environments configured in `wr
 
 ### Node Version
 - Requires Node.js >= 22.18
-- pnpm 10.17.1 (enforced via packageManager field)
+- pnpm 10.26.1 (enforced via packageManager field)
