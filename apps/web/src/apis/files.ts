@@ -2,7 +2,6 @@ import type { FileEntry } from "@ucdjs/schemas";
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 
-const API_BASE = "https://api.ucdjs.dev/api/v1";
 const UCD_FILE_STAT_TYPE_HEADER = "UCD-File-Stat-Type";
 
 export type FilesResponse
@@ -12,7 +11,8 @@ export type FilesResponse
 export const fetchFiles = createServerFn({ method: "GET" })
   .inputValidator((data: { path: string }) => data)
   .handler(async ({ data }): Promise<FilesResponse> => {
-    const url = data.path ? `${API_BASE}/files/${data.path}` : `${API_BASE}/files`;
+    const baseFilesUrl = `${import.meta.env.VITE_UCDJS_API_BASE_URL}/api/v1/files`;
+    const url = data.path ? `${baseFilesUrl}/${data.path}` : baseFilesUrl;
 
     const res = await fetch(url);
 
