@@ -41,6 +41,9 @@
       "#test-utils/fs-bridges": [
         "./packages/test-utils/src/fs-bridges/index.ts"
       ],
+      "#test-utils/matchers": [
+        "./packages/test-utils/src/matchers/types.d.ts"
+      ],
 
       // Internal Test Utils
       "#internal/test-utils/conditions": ["./test/utils/conditions.ts"]

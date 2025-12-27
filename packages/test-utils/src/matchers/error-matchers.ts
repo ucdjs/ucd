@@ -1,0 +1,84 @@
+import type { MatcherState, RawMatcherFn } from "@vitest/expect";
+
+export interface ErrorMatcherOptions {
+  /**
+   * Expected error class constructor
+   */
+  type?: new (...args: any[]) => Error;
+
+  /**
+   * Expected error message (string for exact match, RegExp for pattern)
+   */
+  message?: string | RegExp;
+
+  /**
+   * Expected cause error type (supports both .cause and .originalError)
+   */
+  cause?: new (...args: any[]) => Error;
+}
+
+export const toMatchError: RawMatcherFn<MatcherState, [ErrorMatcherOptions]> = function (
+  received: unknown,
+  options: ErrorMatcherOptions,
+) {
+  if (!(received instanceof Error)) {
+    return {
+      pass: false,
+      message: () => `Expected an Error instance, but received ${typeof received}`,
+    };
+  }
+
+  const error: Error = received;
+  const errorName = error.constructor.name;
+
+  // Check error type
+  if (options.type && !(error instanceof options.type)) {
+    return {
+      pass: false,
+      message: () =>
+        `Expected error to be instance of ${options.type!.name}, but got ${errorName}`,
+    };
+  }
+
+  // Check error message
+  if (options.message) {
+    const messageMatches = typeof options.message === "string"
+      ? error.message === options.message
+      : options.message.test(error.message);
+
+    if (!messageMatches) {
+      return {
+        pass: false,
+        message: () =>
+          `Expected error message to match ${options.message}, but got "${error.message}"`,
+      };
+    }
+  }
+
+  // Check error cause (supports both .cause and .originalError)
+  if (options.cause) {
+    const causeError = (error as { cause?: unknown; originalError?: unknown }).cause
+      ?? (error as { originalError?: unknown }).originalError;
+
+    if (!causeError) {
+      return {
+        pass: false,
+        message: () => `Expected error to have a cause, but none was found`,
+      };
+    }
+
+    if (!(causeError instanceof options.cause)) {
+      const causeName = causeError instanceof Error ? causeError.constructor.name : typeof causeError;
+      return {
+        pass: false,
+        message: () =>
+          `Expected cause to be instance of ${options.cause!.name}, but got ${causeName}`,
+      };
+    }
+  }
+
+  return {
+    pass: true,
+    message: () => `Expected error not to match the given criteria`,
+  };
+};

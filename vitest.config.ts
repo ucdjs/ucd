@@ -61,7 +61,10 @@ export default defineConfig({
     },
     environment: "node",
     mockReset: true,
-    setupFiles: ["./packages/test-utils/src/msw/vitest-setup.ts"],
+    setupFiles: [
+      "./packages/test-utils/src/msw/vitest-setup.ts",
+      "./packages/test-utils/src/matchers/vitest-setup.ts"
+    ],
     onConsoleLog(log, type) {
       if (type === "stderr") {
         return !hiddenLogs.some((hidden) => log.includes(hidden));
