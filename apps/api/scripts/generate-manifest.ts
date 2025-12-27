@@ -1,10 +1,31 @@
 import type { UnicodeVersion } from "@ucdjs/schemas";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
+import { DEFAULT_EXCLUDED_EXTENSIONS } from "@ucdjs-internal/shared";
 import { hasUCDFolderPath } from "@unicode-utils/core";
 import { traverse } from "apache-autoindex-parse/traverse";
 
 const USER_AGENT = "ucdjs (+https://github.com/ucdjs/ucd)";
+
+/**
+ * Set of excluded extensions for fast lookup.
+ */
+const EXCLUDED_EXTENSIONS = new Set(
+  (DEFAULT_EXCLUDED_EXTENSIONS as readonly string[]).map((ext) => ext.toLowerCase()),
+);
+
+/**
+ * Checks if a file path should be excluded based on its extension.
+ */
+function shouldExcludeFile(filePath: string): boolean {
+  const lowerPath = filePath.toLowerCase();
+  for (const ext of EXCLUDED_EXTENSIONS) {
+    if (lowerPath.endsWith(ext)) {
+      return true;
+    }
+  }
+  return false;
+}
 
 async function fetchFilesForVersion(version: string): Promise<string[]> {
   const baseUrl = `https://unicode.org/Public/${version}${hasUCDFolderPath(version) ? "/ucd" : ""}`;
@@ -18,7 +39,7 @@ async function fetchFilesForVersion(version: string): Promise<string[]> {
       },
       onFile: (file) => {
         const relativePath = file.path.replace(`/${version}/`, "").replace(/^\//, "");
-        if (relativePath) {
+        if (relativePath && !shouldExcludeFile(relativePath)) {
           files.push(relativePath);
         }
       },
