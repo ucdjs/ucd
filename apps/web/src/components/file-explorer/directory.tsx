@@ -69,12 +69,9 @@ export function DirectoryItem({ directory, viewMode, currentPath }: DirectoryIte
               </span>
             </div>
             {lastModified && (
-              <Tooltip>
-                <TooltipTrigger render={() => <p className="text-xs text-muted-foreground cursor-help">{lastModified}</p>} />
-                <TooltipContent>
-                  {formatExactDate(directory.lastModified!)}
-                </TooltipContent>
-              </Tooltip>
+              <span className="text-xs text-muted-foreground" title={formatExactDate(directory.lastModified!)}>
+                {lastModified}
+              </span>
             )}
           </CardContent>
         </Card>

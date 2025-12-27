@@ -80,12 +80,9 @@ export function FileItem({ file, viewMode, currentPath }: FileItemProps) {
               </span>
             </div>
             {lastModified && (
-              <Tooltip>
-                <TooltipTrigger render={() => <p className="text-xs text-muted-foreground cursor-help">{lastModified}</p>} />
-                <TooltipContent>
-                  {formatExactDate(file.lastModified!)}
-                </TooltipContent>
-              </Tooltip>
+              <span className="text-xs text-muted-foreground" title={formatExactDate(file.lastModified!)}>
+                {lastModified}
+              </span>
             )}
           </CardContent>
         </Card>
