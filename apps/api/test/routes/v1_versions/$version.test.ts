@@ -13,12 +13,8 @@ vi.mock("@unicode-utils/core", async (importOriginal) => {
 
   return {
     ...original,
-    getCurrentDraftVersion: vi.fn().mockImplementation(() => {
-      return original.getCurrentDraftVersion();
-    }),
-    resolveUCDVersion: vi.fn().mockImplementation((version) => {
-      return original.resolveUCDVersion(version);
-    }),
+    getCurrentDraftVersion: vi.fn(() => original.getCurrentDraftVersion()),
+    resolveUCDVersion: vi.fn((version) => original.resolveUCDVersion(version)),
   };
 });
 
