@@ -21,12 +21,16 @@ const config = defineConfig({
         nodeCompat: true,
       },
     }),
-    // this is the plugin that enables path aliases
     viteTsConfigPaths({
       projects: ["./tsconfig.json"],
     }),
     tailwindcss(),
-    tanstackStart(),
+    tanstackStart({
+      srcDirectory: "src",
+      prerender: {
+        enabled: false, // We can't enable prerendering until Nitro fixes their preview server.
+      },
+    }),
     viteReact({
       babel: {
         plugins: ["babel-plugin-react-compiler"],
