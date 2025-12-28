@@ -448,153 +448,157 @@ export function registerWildcardRoute(router: OpenAPIHono<HonoEnv>) {
   router.openAPIRegistry.registerPath(WILDCARD_ROUTE);
   router.openAPIRegistry.registerPath(METADATA_WILDCARD_ROUTE);
 
-  router.get(
-    "/:wildcard{.*}?",
-    cache({
-      cacheName: "ucdjs:v1_files:files",
-      cacheControl: `max-age=${MAX_AGE_ONE_WEEK_SECONDS}`, // 7 days
-    }),
-    async (c) => {
-      const path = c.req.param("wildcard")?.trim() || "";
+  router.get("/:wildcard{.*}?", cache({
+    cacheName: "ucdjs:v1_files:files",
+    cacheControl: `max-age=${MAX_AGE_ONE_WEEK_SECONDS}`, // 7 days
+  }), async (c) => {
+    const path = c.req.param("wildcard")?.trim() || "";
 
-      // Validate path for path traversal attacks
-      if (isInvalidPath(path)) {
-        return badRequest({
-          message: "Invalid path",
+    // Validate path for path traversal attacks
+    if (isInvalidPath(path)) {
+      return badRequest({
+        message: "Invalid path",
+      });
+    }
+
+    const normalizedPath = path.replace(/^\/+|\/+$/g, "");
+    const url = normalizedPath
+      ? `https://unicode.org/Public/${normalizedPath}?F=2`
+      : "https://unicode.org/Public?F=2";
+
+    // eslint-disable-next-line no-console
+    console.info(`[v1_files]: fetching file at ${url}`);
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "User-Agent": DEFAULT_USER_AGENT,
+      },
+    });
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        return notFound(c, {
+          message: "Resource not found",
         });
       }
 
-      const normalizedPath = path.replace(/^\/+|\/+$/g, "");
-      const url = normalizedPath
-        ? `https://unicode.org/Public/${normalizedPath}?F=2`
-        : "https://unicode.org/Public?F=2";
+      return badGateway(c);
+    }
 
-      // eslint-disable-next-line no-console
-      console.info(`[v1_files]: fetching file at ${url}`);
+    let contentType = response.headers.get("content-type") || "";
+    const lastModified = response.headers.get("Last-Modified") || undefined;
+    const upstreamContentLength = response.headers.get("Content-Length") || undefined;
+    const baseHeaders: Record<string, string> = {};
+    if (lastModified) baseHeaders["Last-Modified"] = lastModified;
 
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          "User-Agent": DEFAULT_USER_AGENT,
-        },
-      });
+    const leaf = normalizedPath.split("/").pop() ?? "";
+    const extName = leaf.includes(".") ? leaf.split(".").pop()!.toLowerCase() : "";
+    const isHtmlFile = HTML_EXTENSIONS.includes(`.${extName}`);
 
-      if (!response.ok) {
-        if (response.status === 404) {
-          return notFound(c, {
-            message: "Resource not found",
+    // check if this is a directory listing (HTML response for non-HTML files)
+    const isDirectoryListing = contentType.includes("text/html") && !isHtmlFile;
+
+    // eslint-disable-next-line no-console
+    console.info(`[v1_files]: fetched content type: ${contentType} for .${extName} file`);
+    if (isDirectoryListing) {
+      const html = await response.text();
+      let files = await parseUnicodeDirectory(html);
+
+      // Get query parameters for filtering and sorting
+      const query = c.req.query("query");
+      const pattern = c.req.query("pattern");
+      const type = c.req.query("type") || "all";
+      const sort = c.req.query("sort") || "name";
+      const order = c.req.query("order") || "asc";
+
+      // Apply query filter (prefix search, case-insensitive)
+      if (query) {
+        // eslint-disable-next-line no-console
+        console.info(`[v1_files]: applying query filter: ${query}`);
+        const queryLower = query.toLowerCase();
+        files = files.filter((entry) => entry.name.toLowerCase().startsWith(queryLower));
+      }
+
+      // Apply pattern filter if provided
+      if (pattern) {
+        // eslint-disable-next-line no-console
+        console.info(`[v1_files]: applying glob pattern filter: ${pattern}`);
+        if (!isValidGlobPattern(pattern, {
+          maxLength: 128,
+          maxSegments: 8,
+          maxBraceExpansions: 8,
+          maxStars: 16,
+          maxQuestions: 16,
+        })) {
+          return badRequest({
+            message: "Invalid glob pattern",
           });
         }
 
-        return badGateway(c);
+        const matcher = createGlobMatcher(pattern);
+        files = files.filter((entry) => matcher(entry.name));
       }
 
-      let contentType = response.headers.get("content-type") || "";
-      const lastModified = response.headers.get("Last-Modified") || undefined;
-      const upstreamContentLength = response.headers.get("Content-Length") || undefined;
-      const baseHeaders: Record<string, string> = {};
-      if (lastModified) baseHeaders["Last-Modified"] = lastModified;
-
-      const leaf = normalizedPath.split("/").pop() ?? "";
-      const extName = leaf.includes(".") ? leaf.split(".").pop()!.toLowerCase() : "";
-      const isHtmlFile = HTML_EXTENSIONS.includes(`.${extName}`);
-
-      // check if this is a directory listing (HTML response for non-HTML files)
-      const isDirectoryListing = contentType.includes("text/html") && !isHtmlFile;
-
-      // eslint-disable-next-line no-console
-      console.info(`[v1_files]: fetched content type: ${contentType} for .${extName} file`);
-      if (isDirectoryListing) {
-        const html = await response.text();
-        let files = await parseUnicodeDirectory(html);
-
-        // Get query parameters for filtering and sorting
-        const query = c.req.query("query");
-        const pattern = c.req.query("pattern");
-        const type = c.req.query("type") || "all";
-        const sort = c.req.query("sort") || "name";
-        const order = c.req.query("order") || "asc";
-
-        // Apply query filter (prefix search, case-insensitive)
-        if (query) {
-          // eslint-disable-next-line no-console
-          console.info(`[v1_files]: applying query filter: ${query}`);
-          const queryLower = query.toLowerCase();
-          files = files.filter((entry) => entry.name.toLowerCase().startsWith(queryLower));
-        }
-
-        // Apply pattern filter if provided
-        if (pattern) {
-          // eslint-disable-next-line no-console
-          console.info(`[v1_files]: applying glob pattern filter: ${pattern}`);
-          if (!isValidGlobPattern(pattern, {
-            maxLength: 128,
-            maxSegments: 8,
-            maxBraceExpansions: 8,
-            maxStars: 16,
-            maxQuestions: 16,
-          })) {
-            return badRequest({
-              message: "Invalid glob pattern",
-            });
-          }
-
-          const matcher = createGlobMatcher(pattern);
-          files = files.filter((entry) => matcher(entry.name));
-        }
-
-        // Apply type filter
-        if (type === "files") {
-          files = files.filter((entry) => entry.type === "file");
-        } else if (type === "directories") {
-          files = files.filter((entry) => entry.type === "directory");
-        }
-
-        // Apply sorting
-        files = files.toSorted((a, b) => {
-          let comparison: number;
-
-          if (sort === "lastModified") {
-            // lastModified is always available from parseUnicodeDirectory
-            comparison = (a.lastModified ?? 0) - (b.lastModified ?? 0);
-          } else {
-            // Default to name sorting
-            comparison = a.name.localeCompare(b.name);
-          }
-
-          return order === "desc" ? -comparison : comparison;
-        });
-
-        return c.json(files, 200, {
-          ...baseHeaders,
-
-          // Custom STAT Headers
-          [UCD_STAT_TYPE_HEADER]: "directory",
-          [UCD_STAT_CHILDREN_HEADER]: `${files.length}`,
-          [UCD_STAT_CHILDREN_FILES_HEADER]: `${files.filter((f) => f.type === "file").length}`,
-          [UCD_STAT_CHILDREN_DIRS_HEADER]: `${files.filter((f) => f.type === "directory").length}`,
-        });
+      // Apply type filter
+      if (type === "files") {
+        files = files.filter((entry) => entry.type === "file");
+      } else if (type === "directories") {
+        files = files.filter((entry) => entry.type === "directory");
       }
 
-      // eslint-disable-next-line no-console
-      console.log(`[v1_files]: pre content type check: ${contentType} for .${extName} file`);
-      contentType ||= determineContentTypeFromExtension(extName);
-      // eslint-disable-next-line no-console
-      console.log(`[v1_files]: inferred content type as ${contentType} for .${extName} file`);
+      // Apply sorting (directories always first, like Windows File Explorer)
+      // Within each group, items are sorted by the requested field and order
+      files = files.toSorted((a, b) => {
+        // Directories always come first
+        if (a.type !== b.type) {
+          return a.type === "directory" ? -1 : 1;
+        }
 
-      const headers: Record<string, string> = {
-        "Content-Type": contentType,
+        // Within same type, apply the requested sort
+        let comparison: number;
+
+        if (sort === "lastModified") {
+          // lastModified is always available from parseUnicodeDirectory
+          comparison = (a.lastModified ?? 0) - (b.lastModified ?? 0);
+        } else {
+          // Natural name sorting (numeric aware) so 2.0.0 < 10.0.0
+          comparison = a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: "base" });
+        }
+
+        return order === "desc" ? -comparison : comparison;
+      });
+
+      return c.json(files, 200, {
         ...baseHeaders,
 
         // Custom STAT Headers
-        [UCD_STAT_TYPE_HEADER]: "file",
-        [UCD_STAT_SIZE_HEADER]: upstreamContentLength || "0",
-      };
+        [UCD_STAT_TYPE_HEADER]: "directory",
+        [UCD_STAT_CHILDREN_HEADER]: `${files.length}`,
+        [UCD_STAT_CHILDREN_FILES_HEADER]: `${files.filter((f) => f.type === "file").length}`,
+        [UCD_STAT_CHILDREN_DIRS_HEADER]: `${files.filter((f) => f.type === "directory").length}`,
+      });
+    }
 
-      const cd = response.headers.get("Content-Disposition");
-      if (cd) headers["Content-Disposition"] = cd;
-      if (upstreamContentLength) headers["Content-Length"] = upstreamContentLength;
-      return c.newResponse(response.body!, 200, headers);
-    },
-  );
+    // eslint-disable-next-line no-console
+    console.log(`[v1_files]: pre content type check: ${contentType} for .${extName} file`);
+    contentType ||= determineContentTypeFromExtension(extName);
+    // eslint-disable-next-line no-console
+    console.log(`[v1_files]: inferred content type as ${contentType} for .${extName} file`);
+
+    const headers: Record<string, string> = {
+      "Content-Type": contentType,
+      ...baseHeaders,
+
+      // Custom STAT Headers
+      [UCD_STAT_TYPE_HEADER]: "file",
+      [UCD_STAT_SIZE_HEADER]: upstreamContentLength || "0",
+    };
+
+    const cd = response.headers.get("Content-Disposition");
+    if (cd) headers["Content-Disposition"] = cd;
+    if (upstreamContentLength) headers["Content-Length"] = upstreamContentLength;
+
+    return c.newResponse(response.body!, 200, headers);
+  });
 }
