@@ -1,6 +1,6 @@
-import { useQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { BookOpen, ExternalLink, Layers, Search } from "lucide-react";
+import { BookOpen, ExternalLink, Layers } from "lucide-react";
 import * as React from "react";
 import { versionsQueryOptions } from "@/apis/versions";
 import {
@@ -16,40 +16,13 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { NavItem } from "./nav";
-
-function UcdLogo({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="15 15 70 70"
-      width="100%"
-      height="100%"
-      className={className}
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <rect x="20" y="20" width="60" height="60" rx="8" fill="#10B981" opacity="0.2" />
-      <path d="M35 40 L65 40 M35 50 L55 50 M35 60 L60 60" stroke="#059669" strokeWidth="6" strokeLinecap="round" />
-      <circle cx="70" cy="30" r="8" fill="#059669" opacity="0.8" />
-    </svg>
-  );
-}
+import { UcdLogo } from "./ucd-logo";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { data: versions = [], isLoading } = useQuery(versionsQueryOptions());
+  const { data: versions } = useSuspenseQuery(versionsQueryOptions());
 
   // Build navigation items from versions
   const navItems = React.useMemo(() => {
-    if (isLoading || versions.length === 0) {
-      return [
-        {
-          title: "Versions",
-          url: "#",
-          icon: Layers,
-          isActive: true,
-          items: [],
-        },
-      ];
-    }
-
     return [
       {
         title: "Versions",
@@ -61,13 +34,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           url: `/v/${v.version}`,
         })),
       },
-      {
-        title: "Explorer",
-        url: "/explorer",
-        icon: Search,
-      },
     ];
-  }, [versions, isLoading]);
+  }, [versions]);
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -84,6 +52,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarGroup>
           <SidebarMenu>
             {navItems.map((item) => <NavItem key={item.title} item={item} />)}
+          </SidebarMenu>
+        </SidebarGroup>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Explorer</SidebarGroupLabel>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton render={(
+                <Link to="/file-explorer/$" params={{ _splat: "" }}>
+                  <BookOpen className="size-4" />
+                  <span>File Explorer</span>
+                </Link>
+              )}
+              />
+            </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>

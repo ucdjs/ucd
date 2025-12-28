@@ -1,8 +1,10 @@
 import type { LucideIcon } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import clsx from "clsx";
 import {
   ChevronRight,
 } from "lucide-react";
+import { buttonVariants } from "./ui/button";
 import {
   Collapsible,
   CollapsibleContent,
@@ -35,7 +37,7 @@ export function NavItem({ item }: { item: NavItemProps }) {
             tooltip={item.title}
             render={() => {
               return (
-                <Link to={item.url}>
+                <Link to={item.url} className={clsx(buttonVariants({ variant: "ghost" }), "inline-block")}>
                   {item.icon && <item.icon />}
                   <span>{item.title}</span>
                 </Link>
@@ -52,7 +54,7 @@ export function NavItem({ item }: { item: NavItemProps }) {
                 <SidebarMenuButton tooltip={item.title}>
                   {item.icon && <item.icon />}
                   <span>{item.title}</span>
-                  <ChevronRight className="ml-auto transition-transform duration-200 group-data-[panel-open]/collapsible:rotate-90" />
+                  <ChevronRight className="ml-auto transition-transform duration-200 group-data-panel-open/collapsible:rotate-90" />
                 </SidebarMenuButton>
               )}
             />
