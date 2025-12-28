@@ -1,4 +1,4 @@
-import { Download } from "lucide-react";
+import { DownloadIcon } from "@phosphor-icons/react";
 
 import { Button } from "@/components/ui/button";
 
@@ -19,7 +19,7 @@ export function LargeFileWarning({ fileName, size, downloadUrl, contentType }: L
   return (
     <div className="flex flex-col items-center justify-center gap-4 rounded-lg border border-yellow-200 bg-yellow-50 p-8 dark:border-yellow-800 dark:bg-yellow-950">
       <div className="rounded-full bg-yellow-100 p-3 dark:bg-yellow-900">
-        <Download className="size-6 text-yellow-600 dark:text-yellow-400" />
+        <DownloadIcon className="size-6 text-yellow-600 dark:text-yellow-400" />
       </div>
 
       <div className="text-center">
@@ -60,7 +60,7 @@ export function LargeFileWarning({ fileName, size, downloadUrl, contentType }: L
         nativeButton={false}
         render={(
           <a href={downloadUrl} download={fileName}>
-            <Download className="mr-2 size-4" />
+            <DownloadIcon className="mr-2 size-4" />
             Download File
           </a>
         )}

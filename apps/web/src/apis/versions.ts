@@ -2,8 +2,6 @@ import type { UnicodeVersion } from "@ucdjs/schemas";
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
 
-const API_BASE = "https://api.ucdjs.dev/api/v1";
-
 export interface UnicodeVersionDetails {
   version: string;
   totalCharacters: number;
@@ -27,12 +25,15 @@ const VERSION_DETAILS_MOCK: Record<string, UnicodeVersionDetails> = {
 };
 
 export const fetchVersions = createServerFn({ method: "GET" }).handler(async () => {
-  const res = await fetch(`${API_BASE}/versions`, {
+  // eslint-disable-next-line node/prefer-global/process
+  const res = await fetch(`${process.env.UCDJS_API_BASE_URL}/api/v1/versions`, {
     headers: { accept: "application/json" },
   });
+
   if (!res.ok) {
     throw new Error("Failed to fetch versions");
   }
+
   return res.json() as Promise<UnicodeVersion[]>;
 });
 

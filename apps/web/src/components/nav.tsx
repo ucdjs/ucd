@@ -1,9 +1,7 @@
-import type { LucideIcon } from "lucide-react";
+import type { Icon } from "@phosphor-icons/react";
+import { CaretRightIcon } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
 import clsx from "clsx";
-import {
-  ChevronRight,
-} from "lucide-react";
 import { buttonVariants } from "./ui/button";
 import {
   Collapsible,
@@ -21,7 +19,7 @@ import {
 export interface NavItemProps {
   title: string;
   url: string;
-  icon?: LucideIcon;
+  icon?: Icon;
   isActive?: boolean;
   items?: {
     title: string;
@@ -54,7 +52,7 @@ export function NavItem({ item }: { item: NavItemProps }) {
                 <SidebarMenuButton tooltip={item.title}>
                   {item.icon && <item.icon />}
                   <span>{item.title}</span>
-                  <ChevronRight className="ml-auto transition-transform duration-200 group-data-panel-open/collapsible:rotate-90" />
+                  <CaretRightIcon className="ml-auto transition-transform duration-200 group-data-panel-open/collapsible:rotate-90" />
                 </SidebarMenuButton>
               )}
             />

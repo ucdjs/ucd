@@ -1,4 +1,4 @@
-import { Download, FileWarning } from "lucide-react";
+import { DownloadIcon, WarningDiamondIcon } from "@phosphor-icons/react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -134,14 +134,14 @@ export function NonRenderableFile({ fileName, filePath, contentType }: NonRender
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-lg">
-          <FileWarning className="size-5 text-amber-500" />
+          <WarningDiamondIcon className="size-5 text-amber-500" />
           {fileName}
         </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="flex flex-col items-center justify-center py-12 text-center gap-6">
           <div className="rounded-full bg-muted p-6">
-            <FileWarning className="size-12 text-muted-foreground" />
+            <WarningDiamondIcon className="size-12 text-muted-foreground" />
           </div>
           <div className="space-y-2">
             <h3 className="text-lg font-medium">Cannot preview this file</h3>
@@ -172,7 +172,7 @@ export function NonRenderableFile({ fileName, filePath, contentType }: NonRender
                 href={`https://api.ucdjs.dev/api/v1/files/${filePath}`}
                 download={fileName}
               >
-                <Download className="size-4" />
+                <DownloadIcon className="size-4" />
                 Download File
               </a>
             )}

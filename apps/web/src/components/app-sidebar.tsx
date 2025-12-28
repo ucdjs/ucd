@@ -1,6 +1,6 @@
+import { ArrowSquareOutIcon, BookOpenIcon, StackSimpleIcon } from "@phosphor-icons/react";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
-import { BookOpen, ExternalLink, Layers } from "lucide-react";
+import { Link, useLoaderData } from "@tanstack/react-router";
 import * as React from "react";
 import { versionsQueryOptions } from "@/apis/versions";
 import {
@@ -19,6 +19,7 @@ import { NavItem } from "./nav";
 import { UcdLogo } from "./ucd-logo";
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { ucdjsApiBaseUrl } = useLoaderData({ from: "__root__" });
   const { data: versions } = useSuspenseQuery(versionsQueryOptions());
 
   // Build navigation items from versions
@@ -27,7 +28,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       {
         title: "Versions",
         url: "#",
-        icon: Layers,
+        icon: StackSimpleIcon,
         isActive: false,
         items: versions.map((v) => ({
           title: `Unicode ${v.version}`,
@@ -61,7 +62,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuItem>
               <SidebarMenuButton render={(
                 <Link to="/file-explorer/$" params={{ _splat: "" }}>
-                  <BookOpen className="size-4" />
+                  <BookOpenIcon className="size-4" />
                   <span>File Explorer</span>
                 </Link>
               )}
@@ -77,7 +78,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuItem>
               <SidebarMenuButton render={(
                 <Link to="/docs/$" params={{ _splat: "ucdjs" }}>
-                  <BookOpen className="size-4" />
+                  <BookOpenIcon className="size-4" />
                   <span>Getting Started</span>
                 </Link>
               )}
@@ -85,8 +86,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton render={(
-                <a href={import.meta.env.VITE_UCDJS_API_BASE_URL} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="size-4" />
+                <a href={ucdjsApiBaseUrl ?? "https://api.ucdjs.dev"} target="_blank" rel="noopener noreferrer">
+                  <ArrowSquareOutIcon className="size-4" />
                   <span>API Reference</span>
                 </a>
               )}

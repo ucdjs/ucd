@@ -1,6 +1,12 @@
+import {
+  ArrowRightIcon,
+  ArrowSquareOutIcon,
+  HashStraightIcon,
+  MagnifyingGlassIcon,
+  StackSimpleIcon,
+} from "@phosphor-icons/react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, ExternalLink, Hash, Layers, Search } from "lucide-react";
 
 import { versionsQueryOptions } from "@/apis/versions";
 import {
@@ -49,7 +55,7 @@ function HomePage() {
         <div className="flex flex-col gap-4 py-6">
           <div className="flex items-center gap-3">
             <div className="bg-primary text-primary-foreground flex size-10 items-center justify-center rounded-lg">
-              <Hash className="size-5" />
+              <HashStraightIcon className="size-5" />
             </div>
             <div>
               <h1 className="text-2xl font-bold tracking-tight">UCD.js</h1>
@@ -71,7 +77,7 @@ function HomePage() {
             nativeButton={false}
             render={(
               <Link to="/file-explorer">
-                <Search className="size-4" />
+                <MagnifyingGlassIcon className="size-4" />
                 Character Explorer
               </Link>
             )}
@@ -82,7 +88,7 @@ function HomePage() {
             nativeButton={false}
             render={(
               <a href="https://api.ucdjs.dev" target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="size-4" />
+                <ArrowSquareOutIcon className="size-4" />
                 API Reference
               </a>
             )}
@@ -91,7 +97,7 @@ function HomePage() {
 
         <section>
           <h2 className="mb-3 text-sm font-semibold flex items-center gap-2 text-muted-foreground uppercase tracking-wide">
-            <Layers className="size-4" />
+            <StackSimpleIcon className="size-4" />
             Unicode Versions
           </h2>
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -112,7 +118,7 @@ function HomePage() {
                 </div>
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <span className="text-xs">{version.date}</span>
-                  <ArrowRight className="size-4 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+                  <ArrowRightIcon className="size-4 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
                 </div>
               </Link>
             ))}

@@ -1,6 +1,11 @@
+import {
+  ArrowRightIcon,
+  BookOpenIcon,
+  GridNineIcon,
+  TextAaIcon,
+} from "@phosphor-icons/react";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, BookOpen, Grid3X3, Type } from "lucide-react";
 
 import { versionDetailsQueryOptions, versionsQueryOptions } from "@/apis/versions";
 import {
@@ -109,7 +114,7 @@ function VersionPage() {
                     rel="noopener noreferrer"
                     className="text-primary hover:underline inline-flex items-center gap-1"
                   >
-                    <BookOpen className="size-3" />
+                    <BookOpenIcon className="size-3" />
                     Docs
                   </a>
                 </>
@@ -175,7 +180,7 @@ function VersionPage() {
             <Card className="hover:ring-primary/50 transition-all">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Grid3X3 className="size-5" />
+                  <GridNineIcon className="size-5" />
                   Unicode Blocks
                 </CardTitle>
                 <CardDescription>
@@ -194,7 +199,7 @@ function VersionPage() {
                   render={(
                     <Link to="/v/$version/blocks" params={{ version }}>
                       View Blocks
-                      <ArrowRight className="ml-1 size-4" />
+                      <ArrowRightIcon className="ml-1 size-4" />
                     </Link>
                   )}
                 />
@@ -204,7 +209,7 @@ function VersionPage() {
             <Card className="hover:ring-primary/50 transition-all">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Type className="size-5" />
+                  <TextAaIcon className="size-5" />
                   Sample Characters
                 </CardTitle>
                 <CardDescription>

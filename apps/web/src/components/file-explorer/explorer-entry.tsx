@@ -1,7 +1,7 @@
 import type { FileEntry } from "@ucdjs/schemas";
 import type { ViewMode } from "@/types/file-explorer";
+import { FileIcon, FolderIcon, FolderOpenIcon } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
-import { FileIcon, FolderIcon, FolderOpen } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
@@ -50,7 +50,7 @@ export function ExplorerEntry({ entry, viewMode, currentPath }: ExplorerEntryPro
               ? (
                   <>
                     <FolderIcon className="size-4 text-amber-500 group-hover:hidden" />
-                    <FolderOpen className="size-4 text-amber-500 hidden group-hover:block" />
+                    <FolderOpenIcon className="size-4 text-amber-500 hidden group-hover:block" />
                   </>
                 )
               : (
@@ -85,7 +85,7 @@ export function ExplorerEntry({ entry, viewMode, currentPath }: ExplorerEntryPro
         ? (
             <>
               <FolderIcon className="size-4 text-amber-500 group-hover:hidden shrink-0" />
-              <FolderOpen className="size-4 text-amber-500 hidden group-hover:block shrink-0" />
+              <FolderOpenIcon className="size-4 text-amber-500 hidden group-hover:block shrink-0" />
             </>
           )
         : (
