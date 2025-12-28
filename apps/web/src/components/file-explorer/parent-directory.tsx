@@ -31,7 +31,6 @@ export function ParentDirectory({ currentPath, viewMode }: ParentDirectoryProps)
             <Link
               to="/file-explorer/$"
               params={{ _splat: parentPath || "" }}
-              search
               className="truncate font-medium text-sm text-muted-foreground hover:text-primary transition-colors"
             >
               ..

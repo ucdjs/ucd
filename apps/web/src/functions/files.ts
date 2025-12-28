@@ -1,6 +1,6 @@
 import type { FileEntry } from "@ucdjs/schemas";
 import type z from "zod";
-import type { filesFilterSchema } from "@/routes/file-explorer/route";
+import type { searchSchema } from "@/routes/file-explorer/$";
 import { queryOptions } from "@tanstack/react-query";
 import { notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
@@ -40,14 +40,22 @@ export type FilesResponse
  * This prevents loading massive files into memory and keeps routing fast.
  */
 export const fetchFiles = createServerFn({ method: "GET" })
-  .inputValidator((data: { path: string } & z.output<typeof filesFilterSchema>) => data)
+  .inputValidator((data: { path: string } & z.output<typeof searchSchema>) => data)
   .handler(async ({ data }): Promise<any> => {
     const baseFilesUrl = `${import.meta.env.VITE_UCDJS_API_BASE_URL}/api/v1/files`;
     const url = new URL(data.path, `${baseFilesUrl}/`);
 
+    if (data.query) {
+      url.searchParams.set("query", data.query);
+    }
+
     url.searchParams.set("pattern", data.pattern || "");
     url.searchParams.set("sort", data.sort || "name");
     url.searchParams.set("order", data.order || "asc");
+
+    if (data.type && data.type !== "all") {
+      url.searchParams.set("type", data.type);
+    }
 
     const res = await fetch(url);
 
@@ -85,18 +93,28 @@ export const fetchFiles = createServerFn({ method: "GET" })
     return { type: "directory", files };
   });
 
-interface FilesQueryOptions extends z.output<typeof filesFilterSchema> {
+interface FilesQueryOptions extends z.output<typeof searchSchema> {
   path?: string;
 }
 
 export function filesQueryOptions(options: FilesQueryOptions = {}) {
   return queryOptions({
-    queryKey: ["files", options.path, options.pattern, options.sort, options.order],
+    queryKey: [
+      "files",
+      options.path,
+      options.pattern,
+      options.sort,
+      options.order,
+      options.query,
+      options.type,
+    ],
     queryFn: () => fetchFiles({ data: {
       path: options.path || "",
       pattern: options.pattern,
       sort: options.sort,
       order: options.order,
+      query: options.query,
+      type: options.type,
     } }),
     staleTime: 1000 * 60 * 60, // 1 hour
   });
@@ -105,15 +123,23 @@ export function filesQueryOptions(options: FilesQueryOptions = {}) {
 export const getFileHeadInfo = createServerFn({ method: "GET" })
   .inputValidator((data: {
     path: string;
-    search: z.output<typeof filesFilterSchema>;
+    search: z.output<typeof searchSchema>;
   }) => data)
   .handler(async ({ data }) => {
     const baseFilesUrl = `${import.meta.env.VITE_UCDJS_API_BASE_URL}/api/v1/files`;
     const url = new URL(data.path, `${baseFilesUrl}/`);
 
+    if (data.search.query) {
+      url.searchParams.set("query", data.search.query);
+    }
+
     url.searchParams.set("pattern", data.search.pattern || "");
     url.searchParams.set("sort", data.search.sort || "name");
     url.searchParams.set("order", data.search.order || "asc");
+
+    if (data.search.type && data.search.type !== "all") {
+      url.searchParams.set("type", data.search.type);
+    }
 
     const headRes = await fetch(url, { method: "HEAD" });
 

@@ -1,17 +1,39 @@
-import type { FileFilter, ViewMode } from "@/types/file-explorer";
-import { createFileRoute, redirect } from "@tanstack/react-router";
-import { Suspense, useState } from "react";
+import type { ViewMode } from "@/types/file-explorer";
+import { createFileRoute, redirect, retainSearchParams, useSearch } from "@tanstack/react-router";
+import { zodValidator } from "@tanstack/zod-adapter";
+import { Suspense } from "react";
+import z from "zod";
 import { EntryList } from "@/components/file-explorer/entry-list";
 import { ExplorerToolbar } from "@/components/file-explorer/explorer-toolbar";
 import { ParentDirectory } from "@/components/file-explorer/parent-directory";
 import { ExplorerNotFound } from "@/components/not-found";
-
 import { Skeleton } from "@/components/ui/skeleton";
 import { filesQueryOptions, getFileHeadInfo } from "@/functions/files";
 import { cn } from "@/lib/utils";
 
+// eslint-disable-next-line react-refresh/only-export-components
+export const searchSchema = z.object({
+  query: z.string().optional(),
+  viewMode: z.enum(["list", "cards"]).optional(),
+  pattern: z.string().optional(),
+  sort: z.enum(["name", "modified_date"]).optional(),
+  order: z.enum(["asc", "desc"]).optional(),
+  type: z.enum(["all", "files", "directories"]).optional(),
+});
+
 export const Route = createFileRoute("/file-explorer/$")({
   component: DirectoryExplorerPage,
+  validateSearch: zodValidator(searchSchema),
+  search: {
+    middlewares: [retainSearchParams([
+      "query",
+      "viewMode",
+      "pattern",
+      "sort",
+      "order",
+      "type",
+    ])],
+  },
   async beforeLoad({ params, search }) {
     const path = params._splat || "";
     const { statType, amount } = await getFileHeadInfo({ data: { path, search } });
@@ -27,20 +49,30 @@ export const Route = createFileRoute("/file-explorer/$")({
       path,
       statType,
       amount,
-      search,
     };
   },
-  loader: async ({ context }) => {
+  loaderDeps({ search }) {
+    return {
+      pattern: search.pattern,
+      sort: search.sort,
+      order: search.order,
+      viewMode: search.viewMode || "list",
+      query: search.query,
+      type: search.type,
+    };
+  },
+  loader: async ({ context, deps }) => {
     context.queryClient.prefetchQuery(filesQueryOptions({
       path: context.path,
-      pattern: context.search.pattern,
-      sort: context.search.sort,
-      order: context.search.order,
+      pattern: deps.pattern,
+      sort: deps.sort,
+      order: deps.order,
+      query: deps.query,
+      type: deps.type,
     }));
 
     return {
       amount: context.amount,
-      search: context.search,
     };
   },
   notFoundComponent: DirectoryNotFoundBoundary,
@@ -48,21 +80,14 @@ export const Route = createFileRoute("/file-explorer/$")({
 
 function DirectoryExplorerPage() {
   const { _splat: path = "" } = Route.useParams();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [viewMode, setViewMode] = useState<ViewMode>("list");
-  const [filter, setFilter] = useState<FileFilter>({ type: "all" });
   const { amount } = Route.useLoaderData();
+  const search = useSearch({ from: "/file-explorer/$" });
+
+  const viewMode = search.viewMode || "list";
 
   return (
     <div className="flex flex-col gap-4">
-      <ExplorerToolbar
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
-        viewMode={viewMode}
-        onViewModeChange={setViewMode}
-        filter={filter}
-        onFilterChange={setFilter}
-      />
+      <ExplorerToolbar />
 
       <div
         className={cn(
@@ -82,9 +107,7 @@ function DirectoryExplorerPage() {
         >
           <EntryList
             currentPath={path}
-            searchTerm={searchTerm}
             viewMode={viewMode}
-            filter={filter}
           />
         </Suspense>
       </div>

@@ -38,7 +38,7 @@ export function ExplorerEntry({ entry, viewMode, currentPath }: ExplorerEntryPro
 
   const isDirectory = entry.type === "directory";
   const linkProps = isDirectory
-    ? { to: "/file-explorer/$" as const, params: { _splat: entryPath }, search: true }
+    ? { to: "/file-explorer/$" as const, params: { _splat: entryPath } }
     : { to: "/file-explorer/v/$" as const, params: { _splat: entryPath } };
 
   if (viewMode === "cards") {

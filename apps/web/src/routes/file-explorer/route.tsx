@@ -1,10 +1,7 @@
+import { CaretRightIcon, FolderOpenIcon, HouseIcon } from "@phosphor-icons/react";
 import { createFileRoute, Link, Outlet, useMatches } from "@tanstack/react-router";
-
-import { zodValidator } from "@tanstack/zod-adapter";
-import { ChevronRight, FolderOpen, Home } from "lucide-react";
 import { Suspense } from "react";
 import { Fragment } from "react/jsx-runtime";
-import z from "zod";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -16,15 +13,8 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
-export const filesFilterSchema = z.object({
-  pattern: z.string().optional(),
-  sort: z.enum(["name", "modified_date"]).optional(),
-  order: z.enum(["asc", "desc"]).optional(),
-});
-
 export const Route = createFileRoute("/file-explorer")({
   component: FileExplorerLayout,
-  validateSearch: zodValidator(filesFilterSchema),
 });
 
 function FileExplorerLayout() {
@@ -58,20 +48,20 @@ function FileExplorerLayout() {
                   render={<Link to="/" />}
                   className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  <Home className="size-3.5" />
+                  <HouseIcon className="size-3.5" />
                   <span className="sr-only">Home</span>
                 </BreadcrumbLink>
               </BreadcrumbItem>
 
               <BreadcrumbSeparator className="shrink-0">
-                <ChevronRight className="size-3.5" />
+                <CaretRightIcon className="size-3.5" />
               </BreadcrumbSeparator>
 
               <BreadcrumbItem className="shrink-0">
                 {isRoot
                   ? (
                       <BreadcrumbPage className="flex items-center gap-1.5 font-medium">
-                        <FolderOpen className="size-3.5 text-amber-500" />
+                        <FolderOpenIcon className="size-3.5 text-amber-500" />
                         File Explorer
                       </BreadcrumbPage>
                     )
@@ -80,7 +70,7 @@ function FileExplorerLayout() {
                         render={<Link to="/file-explorer/$" params={{ _splat: "" }} />}
                         className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors"
                       >
-                        <FolderOpen className="size-3.5 text-amber-500" />
+                        <FolderOpenIcon className="size-3.5 text-amber-500" />
                         <span className="hidden sm:inline">File Explorer</span>
                       </BreadcrumbLink>
                     )}
@@ -93,7 +83,7 @@ function FileExplorerLayout() {
                 return (
                   <Fragment key={segmentPath}>
                     <BreadcrumbSeparator className="shrink-0">
-                      <ChevronRight className="size-3.5" />
+                      <CaretRightIcon className="size-3.5" />
                     </BreadcrumbSeparator>
                     <BreadcrumbItem className="min-w-0">
                       {isLast
