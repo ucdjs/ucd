@@ -1,5 +1,4 @@
-import { Link } from "@tanstack/react-router";
-import { ArrowLeft, Download, FileWarning } from "lucide-react";
+import { Download, FileWarning } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -127,37 +126,17 @@ function getFileTypeDescription(fileName: string): string {
   return descriptions[ext] || "Binary File";
 }
 
-function getParentPath(path: string): string {
-  const parts = path.split("/").filter(Boolean);
-  parts.pop();
-  return parts.join("/");
-}
-
 export function NonRenderableFile({ fileName, filePath, contentType }: NonRenderableFileProps) {
   const fileType = getFileTypeDescription(fileName);
   const ext = fileName.split(".").pop()?.toLowerCase() || "";
-  const parentPath = getParentPath(filePath);
 
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <FileWarning className="size-5 text-amber-500" />
-            {fileName}
-          </CardTitle>
-          <Button
-            variant="ghost"
-            size="sm"
-            nativeButton={false}
-            render={(
-              <Link to="/explorer/files/$" params={{ _splat: parentPath || "/" }}>
-                <ArrowLeft className="size-4" />
-                Back
-              </Link>
-            )}
-          />
-        </div>
+        <CardTitle className="flex items-center gap-2 text-lg">
+          <FileWarning className="size-5 text-amber-500" />
+          {fileName}
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <div className="flex flex-col items-center justify-center py-12 text-center gap-6">
@@ -186,30 +165,18 @@ export function NonRenderableFile({ fileName, filePath, contentType }: NonRender
               </p>
             )}
           </div>
-          <div className="flex gap-3">
-            <Button
-              nativeButton={false}
-              render={(
-                <a
-                  href={`https://api.ucdjs.dev/api/v1/files/${filePath}`}
-                  download={fileName}
-                >
-                  <Download className="size-4" />
-                  Download File
-                </a>
-              )}
-            />
-            <Button
-              variant="outline"
-              nativeButton={false}
-              render={(
-                <Link to="/explorer/files/$" params={{ _splat: parentPath || "/" }}>
-                  <ArrowLeft className="size-4" />
-                  Go Back
-                </Link>
-              )}
-            />
-          </div>
+          <Button
+            nativeButton={false}
+            render={(
+              <a
+                href={`https://api.ucdjs.dev/api/v1/files/${filePath}`}
+                download={fileName}
+              >
+                <Download className="size-4" />
+                Download File
+              </a>
+            )}
+          />
         </div>
       </CardContent>
     </Card>

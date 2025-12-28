@@ -11,14 +11,16 @@ import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { RootProvider } from "fumadocs-ui/provider/tanstack";
 import { versionsQueryOptions } from "@/apis/versions";
 import { AppSidebar } from "@/components/app-sidebar";
+import { AppNotFound } from "@/components/not-found";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import GLOBAL_CSS_URL from "../globals.css?url";
 
-interface MyRouterContext {
+export interface AppRouterContext {
   queryClient: QueryClient;
 }
 
-export const Route = createRootRouteWithContext<MyRouterContext>()({
+export const Route = createRootRouteWithContext<AppRouterContext>()({
+  notFoundComponent: AppNotFound,
   head: () => ({
     meta: [
       {
@@ -42,6 +44,14 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         rel: "stylesheet",
         href: GLOBAL_CSS_URL,
       },
+    ],
+    scripts: [
+      import.meta.env.DEV
+        ? {
+            src: "//unpkg.com/react-scan/dist/auto.global.js",
+            crossOrigin: "anonymous",
+          }
+        : undefined,
     ],
   }),
 
@@ -70,7 +80,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           : (
               <SidebarProvider>
                 <AppSidebar />
-                <SidebarInset>{children}</SidebarInset>
+                <SidebarInset>
+                  {children}
+                </SidebarInset>
               </SidebarProvider>
             )}
         <TanStackDevtools

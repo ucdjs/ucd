@@ -3,7 +3,14 @@ import type { HonoEnv } from "../../types";
 import { createRoute, z } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
 import { createGlobMatcher, isValidGlobPattern } from "@ucdjs-internal/shared";
-import { DEFAULT_USER_AGENT, UCD_FILE_STAT_TYPE_HEADER } from "@ucdjs/env";
+import {
+  DEFAULT_USER_AGENT,
+  UCD_STAT_CHILDREN_DIRS_HEADER,
+  UCD_STAT_CHILDREN_FILES_HEADER,
+  UCD_STAT_CHILDREN_HEADER,
+  UCD_STAT_SIZE_HEADER,
+  UCD_STAT_TYPE_HEADER,
+} from "@ucdjs/env";
 import { FileEntryListSchema } from "@ucdjs/schemas";
 import { cache } from "hono/cache";
 import { HTML_EXTENSIONS, MAX_AGE_ONE_WEEK_SECONDS } from "../../constants";
@@ -123,13 +130,41 @@ export const WILDCARD_ROUTE = createRoute({
     200: {
       description: "Response from Unicode.org",
       headers: {
-        [UCD_FILE_STAT_TYPE_HEADER]: {
+        [UCD_STAT_TYPE_HEADER]: {
           description: "The type of the file or directory",
           schema: {
             type: "string",
             enum: ["file", "directory"],
           },
           required: true,
+        },
+        [UCD_STAT_SIZE_HEADER]: {
+          description: "The size of the file in bytes (only for files)",
+          schema: {
+            type: "string",
+          },
+          required: false,
+        },
+        [UCD_STAT_CHILDREN_HEADER]: {
+          description: "Number of children (only for directories)",
+          schema: {
+            type: "string",
+          },
+          required: false,
+        },
+        [UCD_STAT_CHILDREN_FILES_HEADER]: {
+          description: "Number of child files (only for directories)",
+          schema: {
+            type: "string",
+          },
+          required: false,
+        },
+        [UCD_STAT_CHILDREN_DIRS_HEADER]: {
+          description: "Number of child directories (only for directories)",
+          schema: {
+            type: "string",
+          },
+          required: false,
         },
       },
       content: {
@@ -228,13 +263,41 @@ export const METADATA_WILDCARD_ROUTE = createRoute({
     200: {
       description: "Response from Unicode.org",
       headers: {
-        [UCD_FILE_STAT_TYPE_HEADER]: {
+        [UCD_STAT_TYPE_HEADER]: {
           description: "The type of the file or directory",
           schema: {
             type: "string",
             enum: ["file", "directory"],
           },
           required: true,
+        },
+        [UCD_STAT_SIZE_HEADER]: {
+          description: "The size of the file in bytes (only for files)",
+          schema: {
+            type: "string",
+          },
+          required: false,
+        },
+        [UCD_STAT_CHILDREN_HEADER]: {
+          description: "Number of children (only for directories)",
+          schema: {
+            type: "string",
+          },
+          required: false,
+        },
+        [UCD_STAT_CHILDREN_FILES_HEADER]: {
+          description: "Number of child files (only for directories)",
+          schema: {
+            type: "string",
+          },
+          required: false,
+        },
+        [UCD_STAT_CHILDREN_DIRS_HEADER]: {
+          description: "Number of child directories (only for directories)",
+          schema: {
+            type: "string",
+          },
+          required: false,
         },
         "Content-Type": {
           description: "The content type of the file",
@@ -262,109 +325,123 @@ export function registerWildcardRoute(router: OpenAPIHono<HonoEnv>) {
   router.openAPIRegistry.registerPath(WILDCARD_ROUTE);
   router.openAPIRegistry.registerPath(METADATA_WILDCARD_ROUTE);
 
-  router.get("/:wildcard{.*}?", cache({
-    cacheName: "ucdjs:v1_files:files",
-    cacheControl: `max-age=${MAX_AGE_ONE_WEEK_SECONDS}`, // 7 days
-  }), async (c) => {
-    const path = c.req.param("wildcard")?.trim() || "";
+  router.get(
+    "/:wildcard{.*}?",
+    // cache({
+    //   cacheName: "ucdjs:v1_files:files",
+    //   cacheControl: `max-age=${MAX_AGE_ONE_WEEK_SECONDS}`, // 7 days
+    // }),
+    async (c) => {
+      const path = c.req.param("wildcard")?.trim() || "";
 
-    // Validate path for path traversal attacks
-    if (isInvalidPath(path)) {
-      return badRequest({
-        message: "Invalid path",
-      });
-    }
+      if (c.req.method !== "HEAD") {
+        console.log(`[v1_files]: processing with (slowdown) ${c.req.method} request for path: ${path}`);
+        // TODO: Remove this delay - it's only for testing loading states
+        await new Promise((resolve) => setTimeout(resolve, 500));
+      }
 
-    const normalizedPath = path.replace(/^\/+|\/+$/g, "");
-    const url = normalizedPath
-      ? `https://unicode.org/Public/${normalizedPath}?F=2`
-      : "https://unicode.org/Public?F=2";
-
-    // eslint-disable-next-line no-console
-    console.info(`[v1_files]: fetching file at ${url}`);
-
-    const response = await fetch(url, {
-      method: "GET",
-      headers: {
-        "User-Agent": DEFAULT_USER_AGENT,
-      },
-    });
-
-    if (!response.ok) {
-      if (response.status === 404) {
-        return notFound(c, {
-          message: "Resource not found",
+      // Validate path for path traversal attacks
+      if (isInvalidPath(path)) {
+        return badRequest({
+          message: "Invalid path",
         });
       }
 
-      return badGateway(c);
-    }
+      const normalizedPath = path.replace(/^\/+|\/+$/g, "");
+      const url = normalizedPath
+        ? `https://unicode.org/Public/${normalizedPath}?F=2`
+        : "https://unicode.org/Public?F=2";
 
-    let contentType = response.headers.get("content-type") || "";
-    const lastModified = response.headers.get("Last-Modified") || undefined;
-    const upstreamContentLength = response.headers.get("Content-Length") || undefined;
-    const baseHeaders: Record<string, string> = {};
-    if (lastModified) baseHeaders["Last-Modified"] = lastModified;
+      // eslint-disable-next-line no-console
+      console.info(`[v1_files]: fetching file at ${url}`);
 
-    const leaf = normalizedPath.split("/").pop() ?? "";
-    const extName = leaf.includes(".") ? leaf.split(".").pop()!.toLowerCase() : "";
-    const isHtmlFile = HTML_EXTENSIONS.includes(`.${extName}`);
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "User-Agent": DEFAULT_USER_AGENT,
+        },
+      });
 
-    // check if this is a directory listing (HTML response for non-HTML files)
-    const isDirectoryListing = contentType.includes("text/html") && !isHtmlFile;
-
-    // eslint-disable-next-line no-console
-    console.info(`[v1_files]: fetched content type: ${contentType} for .${extName} file`);
-    if (isDirectoryListing) {
-      const html = await response.text();
-      let files = await parseUnicodeDirectory(html);
-
-      // Apply pattern filter if provided
-      const pattern = c.req.query("pattern");
-      if (pattern) {
-        // eslint-disable-next-line no-console
-        console.info(`[v1_files]: applying glob pattern filter: ${pattern}`);
-        if (!isValidGlobPattern(pattern, {
-          maxLength: 128,
-          maxSegments: 8,
-          maxBraceExpansions: 8,
-          maxStars: 16,
-          maxQuestions: 16,
-        })) {
-          return badRequest({
-            message: "Invalid glob pattern",
+      if (!response.ok) {
+        if (response.status === 404) {
+          return notFound(c, {
+            message: "Resource not found",
           });
         }
 
-        const matcher = createGlobMatcher(pattern);
-        files = files.filter((entry) => matcher(entry.name));
+        return badGateway(c);
       }
 
-      return c.json(files, 200, {
+      let contentType = response.headers.get("content-type") || "";
+      const lastModified = response.headers.get("Last-Modified") || undefined;
+      const upstreamContentLength = response.headers.get("Content-Length") || undefined;
+      const baseHeaders: Record<string, string> = {};
+      if (lastModified) baseHeaders["Last-Modified"] = lastModified;
+
+      const leaf = normalizedPath.split("/").pop() ?? "";
+      const extName = leaf.includes(".") ? leaf.split(".").pop()!.toLowerCase() : "";
+      const isHtmlFile = HTML_EXTENSIONS.includes(`.${extName}`);
+
+      // check if this is a directory listing (HTML response for non-HTML files)
+      const isDirectoryListing = contentType.includes("text/html") && !isHtmlFile;
+
+      // eslint-disable-next-line no-console
+      console.info(`[v1_files]: fetched content type: ${contentType} for .${extName} file`);
+      if (isDirectoryListing) {
+        const html = await response.text();
+        let files = await parseUnicodeDirectory(html);
+
+        // Apply pattern filter if provided
+        const pattern = c.req.query("pattern");
+        if (pattern) {
+        // eslint-disable-next-line no-console
+          console.info(`[v1_files]: applying glob pattern filter: ${pattern}`);
+          if (!isValidGlobPattern(pattern, {
+            maxLength: 128,
+            maxSegments: 8,
+            maxBraceExpansions: 8,
+            maxStars: 16,
+            maxQuestions: 16,
+          })) {
+            return badRequest({
+              message: "Invalid glob pattern",
+            });
+          }
+
+          const matcher = createGlobMatcher(pattern);
+          files = files.filter((entry) => matcher(entry.name));
+        }
+
+        return c.json(files, 200, {
+          ...baseHeaders,
+
+          // Custom STAT Headers
+          [UCD_STAT_TYPE_HEADER]: "directory",
+          [UCD_STAT_CHILDREN_HEADER]: `${files.length}`,
+          [UCD_STAT_CHILDREN_FILES_HEADER]: `${files.filter((f) => f.type === "file").length}`,
+          [UCD_STAT_CHILDREN_DIRS_HEADER]: `${files.filter((f) => f.type === "directory").length}`,
+        });
+      }
+
+      // eslint-disable-next-line no-console
+      console.log(`[v1_files]: pre content type check: ${contentType} for .${extName} file`);
+      contentType ||= determineContentTypeFromExtension(extName);
+      // eslint-disable-next-line no-console
+      console.log(`[v1_files]: inferred content type as ${contentType} for .${extName} file`);
+
+      const headers: Record<string, string> = {
+        "Content-Type": contentType,
         ...baseHeaders,
 
         // Custom STAT Headers
-        [UCD_FILE_STAT_TYPE_HEADER]: "directory",
-      });
-    }
+        [UCD_STAT_TYPE_HEADER]: "file",
+        [UCD_STAT_SIZE_HEADER]: upstreamContentLength || "0",
+      };
 
-    // eslint-disable-next-line no-console
-    console.log(`[v1_files]: pre content type check: ${contentType} for .${extName} file`);
-    contentType ||= determineContentTypeFromExtension(extName);
-    // eslint-disable-next-line no-console
-    console.log(`[v1_files]: inferred content type as ${contentType} for .${extName} file`);
-
-    const headers: Record<string, string> = {
-      "Content-Type": contentType,
-      ...baseHeaders,
-
-      // Custom STAT Headers
-      [UCD_FILE_STAT_TYPE_HEADER]: "file",
-    };
-
-    const cd = response.headers.get("Content-Disposition");
-    if (cd) headers["Content-Disposition"] = cd;
-    if (upstreamContentLength) headers["Content-Length"] = upstreamContentLength;
-    return c.newResponse(response.body!, 200, headers);
-  });
+      const cd = response.headers.get("Content-Disposition");
+      if (cd) headers["Content-Disposition"] = cd;
+      if (upstreamContentLength) headers["Content-Length"] = upstreamContentLength;
+      return c.newResponse(response.body!, 200, headers);
+    },
+  );
 }
