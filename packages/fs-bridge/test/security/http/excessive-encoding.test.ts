@@ -33,7 +33,7 @@ describe("excessive encoding attacks", () => {
 
         await expect(
           bridge.read(`${encodedTraversal}etc/passwd`),
-        ).rejects.toThrow();
+        ).rejects.toThrow("Failed to decode path");
       });
     });
 
@@ -65,7 +65,7 @@ describe("excessive encoding attacks", () => {
 
         await expect(
           bridge.read(`${encodedTraversal}etc/passwd`),
-        ).rejects.toThrow();
+        ).rejects.toThrow("Failed to decode path");
       });
     });
   });

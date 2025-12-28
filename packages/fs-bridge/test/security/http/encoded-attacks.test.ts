@@ -5,7 +5,8 @@ import { PathTraversalError } from "@ucdjs/path-utils";
 import { describe, expect, it } from "vitest";
 
 describe("encoded attack vectors", () => {
-  describe("url-encoded traversal attacks", () => {
+  // eslint-disable-next-line test/prefer-lowercase-title
+  describe("URL-encoded traversal attacks", () => {
     describe("shallow pathname (/api/v1/files)", () => {
       const baseUrl = `${UCDJS_API_BASE_URL}/api/v1/files`;
 
@@ -137,7 +138,7 @@ describe("encoded attack vectors", () => {
 
         await expect(
           bridge.read(encodedPath),
-        ).rejects.toThrow();
+        ).rejects.toThrow("Failed to decode path");
       });
     });
 
@@ -155,7 +156,7 @@ describe("encoded attack vectors", () => {
 
         await expect(
           bridge.read(encodedPath),
-        ).rejects.toThrow();
+        ).rejects.toThrow("Failed to decode path");
       });
     });
   });
