@@ -64,14 +64,13 @@ function HomePage() {
           </p>
         </div>
 
-        {/* Quick Actions - Compact */}
         <div className="flex flex-wrap gap-2">
           <Button
             variant="outline"
             size="sm"
             nativeButton={false}
             render={(
-              <Link to="/explorer">
+              <Link to="/file-explorer">
                 <Search className="size-4" />
                 Character Explorer
               </Link>
@@ -90,7 +89,6 @@ function HomePage() {
           />
         </div>
 
-        {/* Unicode Versions - Compact Grid */}
         <section>
           <h2 className="mb-3 text-sm font-semibold flex items-center gap-2 text-muted-foreground uppercase tracking-wide">
             <Layers className="size-4" />
