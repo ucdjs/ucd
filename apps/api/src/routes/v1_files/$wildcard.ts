@@ -106,11 +106,125 @@ const PATTERN_QUERY_PARAM = {
   },
 } as const;
 
+const QUERY_PARAM = {
+  in: "query",
+  name: "query",
+  description: dedent`
+    A search query to filter directory listing results. Entries are matched if their name **starts with** this value (case-insensitive).
+    This is useful for quick prefix-based searching within a directory.
+
+    ## Examples
+
+    - \`Uni\` - Match entries starting with "Uni" (e.g., UnicodeData.txt)
+    - \`15\` - Match version directories starting with "15"
+  `,
+  required: false,
+  schema: {
+    type: "string",
+  },
+  examples: {
+    "unicode-prefix": {
+      summary: "Search for entries starting with 'Uni'",
+      value: "Uni",
+    },
+    "version-prefix": {
+      summary: "Search for version directories",
+      value: "15",
+    },
+  },
+} as const;
+
+const TYPE_QUERY_PARAM = {
+  in: "query",
+  name: "type",
+  description: dedent`
+    Filter directory listing results by entry type.
+
+    - \`all\` (default) - Return both files and directories
+    - \`files\` - Return only files
+    - \`directories\` - Return only directories
+  `,
+  required: false,
+  schema: {
+    type: "string",
+    enum: ["all", "files", "directories"] as string[],
+    default: "all",
+  },
+  examples: {
+    "all": {
+      summary: "Show all entries (default)",
+      value: "all",
+    },
+    "files-only": {
+      summary: "Show only files",
+      value: "files",
+    },
+    "directories-only": {
+      summary: "Show only directories",
+      value: "directories",
+    },
+  },
+} as const;
+
+const SORT_QUERY_PARAM = {
+  in: "query",
+  name: "sort",
+  description: dedent`
+    The field to sort directory listing results by.
+
+    - \`name\` (default) - Sort alphabetically by entry name
+    - \`lastModified\` - Sort by last modification timestamp
+  `,
+  required: false,
+  schema: {
+    type: "string",
+    enum: ["name", "lastModified"] as string[],
+    default: "name",
+  },
+  examples: {
+    "by-name": {
+      summary: "Sort by name (default)",
+      value: "name",
+    },
+    "by-date": {
+      summary: "Sort by last modified date",
+      value: "lastModified",
+    },
+  },
+} as const;
+
+const ORDER_QUERY_PARAM = {
+  in: "query",
+  name: "order",
+  description: dedent`
+    The sort order for directory listing results.
+
+    - \`asc\` (default) - Ascending order (A-Z, oldest first)
+    - \`desc\` - Descending order (Z-A, newest first)
+  `,
+  required: false,
+  schema: {
+    type: "string",
+    enum: ["asc", "desc"] as string[],
+    default: "asc",
+  },
+  examples: {
+    ascending: {
+      summary: "Ascending order (default)",
+      value: "asc",
+    },
+    descending: {
+      summary: "Descending order",
+      value: "desc",
+    },
+  },
+} as const;
+
 export const WILDCARD_ROUTE = createRoute({
   method: "get",
   path: "/{wildcard}",
   tags: [OPENAPI_TAGS.FILES],
-  parameters: [WILDCARD_PARAM, PATTERN_QUERY_PARAM],
+  parameters: [WILDCARD_PARAM, PATTERN_QUERY_PARAM, QUERY_PARAM, TYPE_QUERY_PARAM, SORT_QUERY_PARAM, ORDER_QUERY_PARAM],
   description: dedent`
     This endpoint proxies your request directly to Unicode.org, allowing you to access any file or directory under the Unicode Public directory structure with only slight [modifications](#tag/files/get/api/v1/files/{wildcard}/description/modifications).
 
@@ -120,6 +234,15 @@ export const WILDCARD_ROUTE = createRoute({
     > [!NOTE]
     > If you wanna access only some metadata about the path, you can use a \`HEAD\` request instead. See [here](#tag/files/head/api/v1/files/{wildcard})
 
+    ### Directory Listing Features
+
+    When accessing a directory, you can use the following query parameters to filter and sort the results:
+
+    - \`query\` - Prefix-based search (case-insensitive) on entry names
+    - \`pattern\` - Glob pattern matching for more complex filtering
+    - \`type\` - Filter by entry type: \`all\` (default), \`files\`, or \`directories\`
+    - \`sort\` - Sort by \`name\` (default) or \`lastModified\`
+    - \`order\` - Sort order: \`asc\` (default) or \`desc\`
 
     ### Modifications
 
@@ -249,7 +372,7 @@ export const METADATA_WILDCARD_ROUTE = createRoute({
   method: "head",
   path: "/{wildcard}",
   tags: [OPENAPI_TAGS.FILES],
-  parameters: [WILDCARD_PARAM],
+  parameters: [WILDCARD_PARAM, PATTERN_QUERY_PARAM, QUERY_PARAM, TYPE_QUERY_PARAM, SORT_QUERY_PARAM, ORDER_QUERY_PARAM],
   description: dedent`
     This endpoint returns metadata about the requested file or directory without fetching the entire content.
     It is useful for checking the existence of a file or directory and retrieving its metadata without downloading
@@ -327,18 +450,12 @@ export function registerWildcardRoute(router: OpenAPIHono<HonoEnv>) {
 
   router.get(
     "/:wildcard{.*}?",
-    // cache({
-    //   cacheName: "ucdjs:v1_files:files",
-    //   cacheControl: `max-age=${MAX_AGE_ONE_WEEK_SECONDS}`, // 7 days
-    // }),
+    cache({
+      cacheName: "ucdjs:v1_files:files",
+      cacheControl: `max-age=${MAX_AGE_ONE_WEEK_SECONDS}`, // 7 days
+    }),
     async (c) => {
       const path = c.req.param("wildcard")?.trim() || "";
-
-      if (c.req.method !== "HEAD") {
-        console.log(`[v1_files]: processing with (slowdown) ${c.req.method} request for path: ${path}`);
-        // TODO: Remove this delay - it's only for testing loading states
-        await new Promise((resolve) => setTimeout(resolve, 500));
-      }
 
       // Validate path for path traversal attacks
       if (isInvalidPath(path)) {
@@ -391,10 +508,24 @@ export function registerWildcardRoute(router: OpenAPIHono<HonoEnv>) {
         const html = await response.text();
         let files = await parseUnicodeDirectory(html);
 
-        // Apply pattern filter if provided
+        // Get query parameters for filtering and sorting
+        const query = c.req.query("query");
         const pattern = c.req.query("pattern");
+        const type = c.req.query("type") || "all";
+        const sort = c.req.query("sort") || "name";
+        const order = c.req.query("order") || "asc";
+
+        // Apply query filter (prefix search, case-insensitive)
+        if (query) {
+          // eslint-disable-next-line no-console
+          console.info(`[v1_files]: applying query filter: ${query}`);
+          const queryLower = query.toLowerCase();
+          files = files.filter((entry) => entry.name.toLowerCase().startsWith(queryLower));
+        }
+
+        // Apply pattern filter if provided
         if (pattern) {
-        // eslint-disable-next-line no-console
+          // eslint-disable-next-line no-console
           console.info(`[v1_files]: applying glob pattern filter: ${pattern}`);
           if (!isValidGlobPattern(pattern, {
             maxLength: 128,
@@ -411,6 +542,28 @@ export function registerWildcardRoute(router: OpenAPIHono<HonoEnv>) {
           const matcher = createGlobMatcher(pattern);
           files = files.filter((entry) => matcher(entry.name));
         }
+
+        // Apply type filter
+        if (type === "files") {
+          files = files.filter((entry) => entry.type === "file");
+        } else if (type === "directories") {
+          files = files.filter((entry) => entry.type === "directory");
+        }
+
+        // Apply sorting
+        files = files.toSorted((a, b) => {
+          let comparison: number;
+
+          if (sort === "lastModified") {
+            // lastModified is always available from parseUnicodeDirectory
+            comparison = (a.lastModified ?? 0) - (b.lastModified ?? 0);
+          } else {
+            // Default to name sorting
+            comparison = a.name.localeCompare(b.name);
+          }
+
+          return order === "desc" ? -comparison : comparison;
+        });
 
         return c.json(files, 200, {
           ...baseHeaders,

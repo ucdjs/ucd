@@ -233,7 +233,7 @@ describe("v1_files", () => {
         expectSuccess(response);
         const files = await json() as { name: string }[];
         expect(files).toHaveLength(2);
-        expect(files.map((f) => f.name)).toEqual(["UnicodeData.txt", "Blocks.txt"]);
+        expect(files.map((f) => f.name)).toEqual(["Blocks.txt", "UnicodeData.txt"]);
       });
 
       it("should filter directory listing by prefix pattern Uni*", async () => {
@@ -334,10 +334,10 @@ describe("v1_files", () => {
         expectSuccess(response);
         const files = await json() as { name: string }[];
         expect(files).toHaveLength(2);
-        expect(files.map((f) => f.name)).toEqual(["UnicodeData.txt", "ucd.all.flat.xml"]);
+        expect(files.map((f) => f.name)).toEqual(["ucd.all.flat.xml", "UnicodeData.txt"]);
       });
 
-      it("should support substring pattern *Data*", async () => {
+      it("should support substring pattern *Data* (case-insensitive)", async () => {
         const html = generateAutoIndexHtml([
           { name: "UnicodeData.txt", path: "/Public/15.1.0/ucd/UnicodeData.txt", type: "file", lastModified: Date.now() },
           { name: "emoji-data.txt", path: "/Public/15.1.0/ucd/emoji-data.txt", type: "file", lastModified: Date.now() },
@@ -360,7 +360,7 @@ describe("v1_files", () => {
         expectSuccess(response);
         const files = await json() as { name: string }[];
         expect(files).toHaveLength(2);
-        expect(files.map((f) => f.name)).toEqual(["UnicodeData.txt", "emoji-data.txt"]);
+        expect(files.map((f) => f.name)).toEqual(["emoji-data.txt", "UnicodeData.txt"]);
       });
 
       it("should not apply pattern filter for file requests", async () => {
@@ -414,6 +414,432 @@ describe("v1_files", () => {
             path: "/Public/15.1.0/ucd/UnicodeData.txt",
             type: "file",
           },
+        ]);
+      });
+    });
+
+    describe("query filter (prefix search)", () => {
+      it("should filter entries by prefix", async () => {
+        const html = generateAutoIndexHtml([
+          { name: "come", path: "/Public/come", type: "directory", lastModified: Date.now() },
+          { name: "computer.txt", path: "/Public/computer.txt", type: "file", lastModified: Date.now() },
+          { name: "other.txt", path: "/Public/other.txt", type: "file", lastModified: Date.now() },
+        ], "F2");
+
+        mockFetch([
+          ["GET", "https://unicode.org/Public", () => {
+            return HttpResponse.text(html, {
+              headers: { "content-type": "text/html; charset=utf-8" },
+            });
+          }],
+        ]);
+
+        const { response, json } = await executeRequest(
+          new Request("https://api.ucdjs.dev/api/v1/files?query=com"),
+          env,
+        );
+
+        expectSuccess(response);
+        const results = await json() as { name: string; type: string }[];
+
+        expect(results).toHaveLength(2);
+        expect(results.map((r) => r.name)).toContain("come");
+        expect(results.map((r) => r.name)).toContain("computer.txt");
+      });
+
+      it("should search case-insensitively", async () => {
+        const html = generateAutoIndexHtml([
+          { name: "UnicodeData.txt", path: "/Public/UnicodeData.txt", type: "file", lastModified: Date.now() },
+          { name: "Blocks.txt", path: "/Public/Blocks.txt", type: "file", lastModified: Date.now() },
+        ], "F2");
+
+        mockFetch([
+          ["GET", "https://unicode.org/Public", () => {
+            return HttpResponse.text(html, {
+              headers: { "content-type": "text/html; charset=utf-8" },
+            });
+          }],
+        ]);
+
+        const { response, json } = await executeRequest(
+          new Request("https://api.ucdjs.dev/api/v1/files?query=unicode"),
+          env,
+        );
+
+        expectSuccess(response);
+        const results = await json() as { name: string }[];
+
+        expect(results).toHaveLength(1);
+        expect(results[0]!.name).toBe("UnicodeData.txt");
+      });
+
+      it("should search within a specific path", async () => {
+        const html = generateAutoIndexHtml([
+          { name: "emoji-data.txt", path: "/Public/15.1.0/ucd/emoji/emoji-data.txt", type: "file", lastModified: Date.now() },
+          { name: "emoji-sequences.txt", path: "/Public/15.1.0/ucd/emoji/emoji-sequences.txt", type: "file", lastModified: Date.now() },
+          { name: "other.txt", path: "/Public/15.1.0/ucd/emoji/other.txt", type: "file", lastModified: Date.now() },
+        ], "F2");
+
+        mockFetch([
+          ["GET", "https://unicode.org/Public/15.1.0/ucd/emoji", () => {
+            return HttpResponse.text(html, {
+              headers: { "content-type": "text/html; charset=utf-8" },
+            });
+          }],
+        ]);
+
+        const { response, json } = await executeRequest(
+          new Request("https://api.ucdjs.dev/api/v1/files/15.1.0/ucd/emoji?query=emoji"),
+          env,
+        );
+
+        expectSuccess(response);
+        const results = await json() as { name: string }[];
+
+        expect(results).toHaveLength(2);
+        expect(results.map((r) => r.name)).toEqual(["emoji-data.txt", "emoji-sequences.txt"]);
+      });
+
+      it("should return empty array when no matches found", async () => {
+        const html = generateAutoIndexHtml([
+          { name: "UnicodeData.txt", path: "/Public/UnicodeData.txt", type: "file", lastModified: Date.now() },
+          { name: "Blocks.txt", path: "/Public/Blocks.txt", type: "file", lastModified: Date.now() },
+        ], "F2");
+
+        mockFetch([
+          ["GET", "https://unicode.org/Public", () => {
+            return HttpResponse.text(html, {
+              headers: { "content-type": "text/html; charset=utf-8" },
+            });
+          }],
+        ]);
+
+        const { response, json } = await executeRequest(
+          new Request("https://api.ucdjs.dev/api/v1/files?query=nonexistent"),
+          env,
+        );
+
+        expectSuccess(response);
+        const results = await json();
+        expect(results).toEqual([]);
+      });
+
+      it("should match exact entry name when query matches exactly", async () => {
+        const html = generateAutoIndexHtml([
+          { name: "come", path: "/Public/come", type: "directory", lastModified: Date.now() },
+          { name: "computer.txt", path: "/Public/computer.txt", type: "file", lastModified: Date.now() },
+        ], "F2");
+
+        mockFetch([
+          ["GET", "https://unicode.org/Public", () => {
+            return HttpResponse.text(html, {
+              headers: { "content-type": "text/html; charset=utf-8" },
+            });
+          }],
+        ]);
+
+        const { response, json } = await executeRequest(
+          new Request("https://api.ucdjs.dev/api/v1/files?query=come"),
+          env,
+        );
+
+        expectSuccess(response);
+        const results = await json() as { name: string; type: string }[];
+
+        // Only the directory matches exactly
+        expect(results).toHaveLength(1);
+        expect(results[0]).toMatchObject({ name: "come", type: "directory" });
+      });
+
+      it("should combine query with pattern filter", async () => {
+        const html = generateAutoIndexHtml([
+          { name: "UnicodeData.txt", path: "/Public/UnicodeData.txt", type: "file", lastModified: Date.now() },
+          { name: "Unicode.zip", path: "/Public/Unicode.zip", type: "file", lastModified: Date.now() },
+          { name: "Blocks.txt", path: "/Public/Blocks.txt", type: "file", lastModified: Date.now() },
+        ], "F2");
+
+        mockFetch([
+          ["GET", "https://unicode.org/Public", () => {
+            return HttpResponse.text(html, {
+              headers: { "content-type": "text/html; charset=utf-8" },
+            });
+          }],
+        ]);
+
+        const { response, json } = await executeRequest(
+          new Request("https://api.ucdjs.dev/api/v1/files?query=Uni&pattern=*.txt"),
+          env,
+        );
+
+        expectSuccess(response);
+        const results = await json() as { name: string }[];
+
+        expect(results).toHaveLength(1);
+        expect(results[0]!.name).toBe("UnicodeData.txt");
+      });
+    });
+
+    describe("type filter", () => {
+      it("should return only files when type=files", async () => {
+        const html = generateAutoIndexHtml([
+          { name: "UnicodeData.txt", path: "/Public/UnicodeData.txt", type: "file", lastModified: Date.now() },
+          { name: "emoji", path: "/Public/emoji", type: "directory", lastModified: Date.now() },
+          { name: "Blocks.txt", path: "/Public/Blocks.txt", type: "file", lastModified: Date.now() },
+        ], "F2");
+
+        mockFetch([
+          ["GET", "https://unicode.org/Public", () => {
+            return HttpResponse.text(html, {
+              headers: { "content-type": "text/html; charset=utf-8" },
+            });
+          }],
+        ]);
+
+        const { response, json } = await executeRequest(
+          new Request("https://api.ucdjs.dev/api/v1/files?type=files"),
+          env,
+        );
+
+        expectSuccess(response);
+        const results = await json() as { name: string; type: string }[];
+
+        expect(results).toHaveLength(2);
+        expect(results.every((r) => r.type === "file")).toBe(true);
+      });
+
+      it("should return only directories when type=directories", async () => {
+        const html = generateAutoIndexHtml([
+          { name: "UnicodeData.txt", path: "/Public/UnicodeData.txt", type: "file", lastModified: Date.now() },
+          { name: "emoji", path: "/Public/emoji", type: "directory", lastModified: Date.now() },
+          { name: "charts", path: "/Public/charts", type: "directory", lastModified: Date.now() },
+        ], "F2");
+
+        mockFetch([
+          ["GET", "https://unicode.org/Public", () => {
+            return HttpResponse.text(html, {
+              headers: { "content-type": "text/html; charset=utf-8" },
+            });
+          }],
+        ]);
+
+        const { response, json } = await executeRequest(
+          new Request("https://api.ucdjs.dev/api/v1/files?type=directories"),
+          env,
+        );
+
+        expectSuccess(response);
+        const results = await json() as { name: string; type: string }[];
+
+        expect(results).toHaveLength(2);
+        expect(results.every((r) => r.type === "directory")).toBe(true);
+      });
+
+      it("should return all entries when type=all", async () => {
+        const html = generateAutoIndexHtml([
+          { name: "UnicodeData.txt", path: "/Public/UnicodeData.txt", type: "file", lastModified: Date.now() },
+          { name: "emoji", path: "/Public/emoji", type: "directory", lastModified: Date.now() },
+        ], "F2");
+
+        mockFetch([
+          ["GET", "https://unicode.org/Public", () => {
+            return HttpResponse.text(html, {
+              headers: { "content-type": "text/html; charset=utf-8" },
+            });
+          }],
+        ]);
+
+        const { response, json } = await executeRequest(
+          new Request("https://api.ucdjs.dev/api/v1/files?type=all"),
+          env,
+        );
+
+        expectSuccess(response);
+        const results = await json() as { name: string }[];
+
+        expect(results).toHaveLength(2);
+      });
+
+      it("should combine type with query filter", async () => {
+        const html = generateAutoIndexHtml([
+          { name: "UnicodeData.txt", path: "/Public/UnicodeData.txt", type: "file", lastModified: Date.now() },
+          { name: "Unicode", path: "/Public/Unicode", type: "directory", lastModified: Date.now() },
+          { name: "Blocks.txt", path: "/Public/Blocks.txt", type: "file", lastModified: Date.now() },
+        ], "F2");
+
+        mockFetch([
+          ["GET", "https://unicode.org/Public", () => {
+            return HttpResponse.text(html, {
+              headers: { "content-type": "text/html; charset=utf-8" },
+            });
+          }],
+        ]);
+
+        const { response, json } = await executeRequest(
+          new Request("https://api.ucdjs.dev/api/v1/files?query=Uni&type=files"),
+          env,
+        );
+
+        expectSuccess(response);
+        const results = await json() as { name: string; type: string }[];
+
+        expect(results).toHaveLength(1);
+        expect(results[0]).toMatchObject({ name: "UnicodeData.txt", type: "file" });
+      });
+    });
+
+    describe("sort and order", () => {
+      it("should sort by name ascending by default", async () => {
+        const html = generateAutoIndexHtml([
+          { name: "Blocks.txt", path: "/Public/Blocks.txt", type: "file", lastModified: Date.now() },
+          { name: "UnicodeData.txt", path: "/Public/UnicodeData.txt", type: "file", lastModified: Date.now() },
+          { name: "ArabicShaping.txt", path: "/Public/ArabicShaping.txt", type: "file", lastModified: Date.now() },
+        ], "F2");
+
+        mockFetch([
+          ["GET", "https://unicode.org/Public", () => {
+            return HttpResponse.text(html, {
+              headers: { "content-type": "text/html; charset=utf-8" },
+            });
+          }],
+        ]);
+
+        const { response, json } = await executeRequest(
+          new Request("https://api.ucdjs.dev/api/v1/files"),
+          env,
+        );
+
+        expectSuccess(response);
+        const results = await json() as { name: string }[];
+
+        expect(results.map((r) => r.name)).toEqual([
+          "ArabicShaping.txt",
+          "Blocks.txt",
+          "UnicodeData.txt",
+        ]);
+      });
+
+      it("should sort by name descending when order=desc", async () => {
+        const html = generateAutoIndexHtml([
+          { name: "Blocks.txt", path: "/Public/Blocks.txt", type: "file", lastModified: Date.now() },
+          { name: "UnicodeData.txt", path: "/Public/UnicodeData.txt", type: "file", lastModified: Date.now() },
+          { name: "ArabicShaping.txt", path: "/Public/ArabicShaping.txt", type: "file", lastModified: Date.now() },
+        ], "F2");
+
+        mockFetch([
+          ["GET", "https://unicode.org/Public", () => {
+            return HttpResponse.text(html, {
+              headers: { "content-type": "text/html; charset=utf-8" },
+            });
+          }],
+        ]);
+
+        const { response, json } = await executeRequest(
+          new Request("https://api.ucdjs.dev/api/v1/files?sort=name&order=desc"),
+          env,
+        );
+
+        expectSuccess(response);
+        const results = await json() as { name: string }[];
+
+        expect(results.map((r) => r.name)).toEqual([
+          "UnicodeData.txt",
+          "Blocks.txt",
+          "ArabicShaping.txt",
+        ]);
+      });
+
+      it("should sort by lastModified ascending", async () => {
+        const html = generateAutoIndexHtml([
+          { name: "Blocks.txt", path: "/Public/Blocks.txt", type: "file", lastModified: Date.now() },
+          { name: "UnicodeData.txt", path: "/Public/UnicodeData.txt", type: "file", lastModified: Date.now() },
+          { name: "ArabicShaping.txt", path: "/Public/ArabicShaping.txt", type: "file", lastModified: Date.now() },
+        ], "F2");
+
+        mockFetch([
+          ["GET", "https://unicode.org/Public", () => {
+            return HttpResponse.text(html, {
+              headers: { "content-type": "text/html; charset=utf-8" },
+            });
+          }],
+        ]);
+
+        const { response, json } = await executeRequest(
+          new Request("https://api.ucdjs.dev/api/v1/files?sort=lastModified&order=asc"),
+          env,
+        );
+
+        expectSuccess(response);
+        const results = await json() as { name: string; lastModified: number }[];
+
+        // Check all entries returned and have lastModified
+        expect(results).toHaveLength(3);
+        expect(results.every((r) => typeof r.lastModified === "number")).toBe(true);
+        // Verify sorted by lastModified ascending
+        for (let i = 1; i < results.length; i++) {
+          expect(results[i]!.lastModified).toBeGreaterThanOrEqual(results[i - 1]!.lastModified);
+        }
+      });
+
+      it("should sort by lastModified descending", async () => {
+        const html = generateAutoIndexHtml([
+          { name: "Blocks.txt", path: "/Public/Blocks.txt", type: "file", lastModified: Date.now() },
+          { name: "UnicodeData.txt", path: "/Public/UnicodeData.txt", type: "file", lastModified: Date.now() },
+          { name: "ArabicShaping.txt", path: "/Public/ArabicShaping.txt", type: "file", lastModified: Date.now() },
+        ], "F2");
+
+        mockFetch([
+          ["GET", "https://unicode.org/Public", () => {
+            return HttpResponse.text(html, {
+              headers: { "content-type": "text/html; charset=utf-8" },
+            });
+          }],
+        ]);
+
+        const { response, json } = await executeRequest(
+          new Request("https://api.ucdjs.dev/api/v1/files?sort=lastModified&order=desc"),
+          env,
+        );
+
+        expectSuccess(response);
+        const results = await json() as { name: string; lastModified: number }[];
+
+        // Check all entries returned and have lastModified
+        expect(results).toHaveLength(3);
+        expect(results.every((r) => typeof r.lastModified === "number")).toBe(true);
+        // Verify sorted by lastModified descending
+        for (let i = 1; i < results.length; i++) {
+          expect(results[i]!.lastModified).toBeLessThanOrEqual(results[i - 1]!.lastModified);
+        }
+      });
+
+      it("should combine sort with filters", async () => {
+        const now = Date.now();
+        const html = generateAutoIndexHtml([
+          { name: "UnicodeData.txt", path: "/Public/UnicodeData.txt", type: "file", lastModified: now - 1000 },
+          { name: "Unihan.zip", path: "/Public/Unihan.zip", type: "file", lastModified: now - 3000 },
+          { name: "Blocks.txt", path: "/Public/Blocks.txt", type: "file", lastModified: now - 2000 },
+        ], "F2");
+
+        mockFetch([
+          ["GET", "https://unicode.org/Public", () => {
+            return HttpResponse.text(html, {
+              headers: { "content-type": "text/html; charset=utf-8" },
+            });
+          }],
+        ]);
+
+        const { response, json } = await executeRequest(
+          new Request("https://api.ucdjs.dev/api/v1/files?query=Uni&sort=lastModified&order=desc"),
+          env,
+        );
+
+        expectSuccess(response);
+        const results = await json() as { name: string }[];
+
+        expect(results).toHaveLength(2);
+        expect(results.map((r) => r.name)).toEqual([
+          "UnicodeData.txt",
+          "Unihan.zip",
         ]);
       });
     });
