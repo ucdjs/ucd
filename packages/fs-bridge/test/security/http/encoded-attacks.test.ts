@@ -125,7 +125,8 @@ describe("encoded attack vectors", () => {
 
   describe("excessive encoding", () => {
     describe("shallow pathname (/api/v1/files)", () => {
-      const baseUrl = `${UCDJS_API_BASE_URL}/api/v1/files`;
+      const basePath = "/api/v1/files";
+      const baseUrl = `${UCDJS_API_BASE_URL}${basePath}`;
 
       it("should prevent excessive encoding attacks", async () => {
         const bridge = HTTPFileSystemBridge({ baseUrl });
@@ -138,12 +139,13 @@ describe("encoded attack vectors", () => {
 
         await expect(
           bridge.read(encodedPath),
-        ).rejects.toThrow("Failed to decode path");
+        ).rejects.toThrow(`Path traversal detected: attempted to access '/api/v1' which is outside the allowed base path '${basePath}'`);
       });
     });
 
-    describe("deep pathname (/api/v1/files/v16.0.0)", () => {
-      const baseUrl = `${UCDJS_API_BASE_URL}/api/v1/files/v16.0.0`;
+    describe("deep pathname (/api/v1/files/16.0.0)", () => {
+      const basePath = "/api/v1/files/16.0.0";
+      const baseUrl = `${UCDJS_API_BASE_URL}${basePath}`;
 
       it("should prevent excessive encoding attacks", async () => {
         const bridge = HTTPFileSystemBridge({ baseUrl });
@@ -156,7 +158,7 @@ describe("encoded attack vectors", () => {
 
         await expect(
           bridge.read(encodedPath),
-        ).rejects.toThrow("Failed to decode path");
+        ).rejects.toThrow(`Path traversal detected: attempted to access '/api/v1/files' which is outside the allowed base path '${basePath}'`);
       });
     });
   });
