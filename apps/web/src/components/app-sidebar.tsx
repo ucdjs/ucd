@@ -39,9 +39,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader className="p-4">
-        <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-          <UcdLogo className="size-10 shrink-0" />
+      <SidebarHeader className="p-4 group-data-[collapsible=icon]:p-2 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center">
+        <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:justify-center">
+          <UcdLogo className="size-10 shrink-0 group-data-[collapsible=icon]:size-8" />
           <div className="grid text-left leading-tight group-data-[collapsible=icon]:hidden">
             <h2 className="font-semibold text-base">UCD.js</h2>
             <span className="text-xs text-muted-foreground">Unicode Database</span>

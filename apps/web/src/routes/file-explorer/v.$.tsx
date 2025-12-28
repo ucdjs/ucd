@@ -1,18 +1,25 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
+import { Suspense } from "react";
 
-import { FileViewer } from "@/components/file-explorer/file-viewer";
+import { FileViewer, FileViewerSkeleton } from "@/components/file-explorer/file-viewer";
 import { LargeFileWarning } from "@/components/file-explorer/large-file-warning";
 import { NON_RENDERABLE_EXTENSIONS, NonRenderableFile } from "@/components/file-explorer/non-renderable-file";
 import { ExplorerNotFound } from "@/components/not-found";
 import { filesQueryOptions, getFileHeadInfo } from "@/functions/files";
 
+/**
+ * Maximum file size to render inline (1MB)
+ * Files larger than this will show the large file warning
+ */
+const MAX_INLINE_FILE_SIZE = 1024 * 1024;
+
 export const Route = createFileRoute("/file-explorer/v/$")({
   component: FileViewerPage,
-  async beforeLoad({ params, search }) {
+  async beforeLoad({ params }) {
     const path = params._splat || "";
 
-    const { statType } = await getFileHeadInfo({ data: { path, search } });
+    const { statType, size } = await getFileHeadInfo({ data: { path } });
 
     if (statType !== "file") {
       throw redirect({
@@ -21,50 +28,90 @@ export const Route = createFileRoute("/file-explorer/v/$")({
       });
     }
 
+    // Extract file info for early checks
+    const pathSegments = path.split("/").filter(Boolean);
+    const fileName = pathSegments[pathSegments.length - 1] || "file";
+    const fileExt = fileName.split(".").pop()?.toLowerCase() || "";
+
     return {
       path,
       statType,
+      size,
+      fileName,
+      fileExt,
     };
   },
   loader: async ({ context }) => {
-    context.queryClient.prefetchQuery(filesQueryOptions(context.path));
+    const isTooLarge = context.size > MAX_INLINE_FILE_SIZE;
+    const canRender = !NON_RENDERABLE_EXTENSIONS.has(context.fileExt);
+
+    // Only prefetch if we'll actually render the file content
+    if (!isTooLarge && canRender) {
+      context.queryClient.prefetchQuery(filesQueryOptions({
+        path: context.path,
+      }));
+    }
+
+    return {
+      size: context.size,
+      fileName: context.fileName,
+      fileExt: context.fileExt,
+      path: context.path,
+      isTooLarge,
+      canRender,
+    };
   },
   notFoundComponent: FileNotFoundBoundary,
 });
 
 function FileViewerPage() {
-  const { _splat: path = "" } = Route.useParams();
-  const { data } = useSuspenseQuery(filesQueryOptions(path));
+  const loaderData = Route.useLoaderData();
+  const { size, fileName, path, isTooLarge, canRender } = loaderData;
 
-  const pathSegments = path.split("/").filter(Boolean);
-  const fileName = pathSegments[pathSegments.length - 1] || "file";
-  const fileExt = fileName.split(".").pop()?.toLowerCase() || "";
-  const canRender = !NON_RENDERABLE_EXTENSIONS.has(fileExt);
-
-  // This route only handles files
-  if (data.type === "directory") {
-    return null;
-  }
-
-  if (data.type === "file-too-large") {
+  // Check for large files first - no data fetching needed
+  if (isTooLarge) {
     return (
       <LargeFileWarning
         fileName={fileName}
-        size={data.size}
-        downloadUrl={data.downloadUrl}
-        contentType={data.contentType}
+        size={size}
+        downloadUrl={`https://api.ucdjs.dev/api/v1/files/${path}`}
+        contentType="application/octet-stream"
       />
     );
   }
 
+  // Check for non-renderable files - no data fetching needed
   if (!canRender) {
     return (
       <NonRenderableFile
         fileName={fileName}
         filePath={path}
-        contentType={data.contentType}
+        contentType="application/octet-stream"
       />
     );
+  }
+
+  // Wrap the actual file content fetching in Suspense
+  return (
+    <Suspense fallback={<FileViewerSkeleton fileName={fileName} />}>
+      <FileViewerContent
+        path={path}
+        fileName={fileName}
+      />
+    </Suspense>
+  );
+}
+
+/**
+ * Component that fetches and renders file content
+ * Separated to enable Suspense boundary around data fetching
+ */
+function FileViewerContent({ path, fileName }: { path: string; fileName: string }) {
+  const { data } = useSuspenseQuery(filesQueryOptions({ path }));
+
+  // This route only handles files
+  if (data.type === "directory" || data.type === "file-too-large") {
+    return null;
   }
 
   return (

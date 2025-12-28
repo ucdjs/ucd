@@ -21,6 +21,8 @@ export const searchSchema = z.object({
   type: z.enum(["all", "files", "directories"]).optional(),
 });
 
+export type SearchQueryParams = z.output<typeof searchSchema>;
+
 export const Route = createFileRoute("/file-explorer/$")({
   component: DirectoryExplorerPage,
   validateSearch: zodValidator(searchSchema),
@@ -36,7 +38,14 @@ export const Route = createFileRoute("/file-explorer/$")({
   },
   async beforeLoad({ params, search }) {
     const path = params._splat || "";
-    const { statType, amount } = await getFileHeadInfo({ data: { path, search } });
+    const { statType, amount } = await getFileHeadInfo({ data: {
+      path,
+      order: search.order,
+      pattern: search.pattern,
+      sort: search.sort,
+      query: search.query,
+      type: search.type,
+    } });
 
     if (statType !== "directory") {
       throw redirect({

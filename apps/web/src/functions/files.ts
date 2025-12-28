@@ -1,6 +1,6 @@
 import type { FileEntry } from "@ucdjs/schemas";
 import type z from "zod";
-import type { searchSchema } from "@/routes/file-explorer/$";
+import type { SearchQueryParams, searchSchema } from "@/routes/file-explorer/$";
 import { queryOptions } from "@tanstack/react-query";
 import { notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
@@ -93,7 +93,7 @@ export const fetchFiles = createServerFn({ method: "GET" })
     return { type: "directory", files };
   });
 
-interface FilesQueryOptions extends z.output<typeof searchSchema> {
+interface FilesQueryOptions extends Omit<SearchQueryParams, "viewMode"> {
   path?: string;
 }
 
@@ -123,22 +123,21 @@ export function filesQueryOptions(options: FilesQueryOptions = {}) {
 export const getFileHeadInfo = createServerFn({ method: "GET" })
   .inputValidator((data: {
     path: string;
-    search: z.output<typeof searchSchema>;
-  }) => data)
+  } & Omit<SearchQueryParams, "viewMode">) => data)
   .handler(async ({ data }) => {
     const baseFilesUrl = `${import.meta.env.VITE_UCDJS_API_BASE_URL}/api/v1/files`;
     const url = new URL(data.path, `${baseFilesUrl}/`);
 
-    if (data.search.query) {
-      url.searchParams.set("query", data.search.query);
+    if (data.query) {
+      url.searchParams.set("query", data.query);
     }
 
-    url.searchParams.set("pattern", data.search.pattern || "");
-    url.searchParams.set("sort", data.search.sort || "name");
-    url.searchParams.set("order", data.search.order || "asc");
+    url.searchParams.set("pattern", data.pattern || "");
+    url.searchParams.set("sort", data.sort || "name");
+    url.searchParams.set("order", data.order || "asc");
 
-    if (data.search.type && data.search.type !== "all") {
-      url.searchParams.set("type", data.search.type);
+    if (data.type && data.type !== "all") {
+      url.searchParams.set("type", data.type);
     }
 
     const headRes = await fetch(url, { method: "HEAD" });

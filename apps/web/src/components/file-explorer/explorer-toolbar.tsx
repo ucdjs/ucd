@@ -1,26 +1,44 @@
+import {
+  ArrowsDownUpIcon,
+  FileIcon,
+  FileTextIcon,
+  FileXIcon,
+  FileZipIcon,
+  FolderIcon,
+  FunnelSimpleIcon,
+  ListIcon,
+  MagnifyingGlassIcon,
+  SortAscendingIcon,
+  SortDescendingIcon,
+  SquaresFourIcon,
+  XIcon,
+} from "@phosphor-icons/react";
 import { useNavigate, useSearch } from "@tanstack/react-router";
-import { ArrowDown, ArrowUp, Filter, Grid3X3, List, Search, Settings, X } from "lucide-react";
 import { memo, useCallback, useRef, useState } from "react";
+
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
-  DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 
 export type ViewMode = "list" | "cards";
 
 // Isolated search input - only re-renders when query changes
 const SearchInput = memo(() => {
   const navigate = useNavigate({ from: "/file-explorer/$" });
-  const search = useSearch({ from: "/file-explorer/$", select: (s) => s.query });
+  const query = useSearch({ from: "/file-explorer/$", select: (s) => s.query });
 
-  const [localValue, setLocalValue] = useState(search || "");
+  const [localValue, setLocalValue] = useState(query || "");
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -56,23 +74,26 @@ const SearchInput = memo(() => {
   }, [navigate]);
 
   return (
-    <div className="relative flex-1 min-w-50 max-w-md">
-      <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+    <div className="relative flex-1 min-w-48 max-w-sm">
+      <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" weight="bold" />
       <Input
         type="text"
         placeholder="Search files..."
         value={localValue}
         onChange={handleChange}
-        className="pl-8 pr-8"
+        className={cn(
+          "pl-8 pr-8 h-8",
+          query && "border-primary/50 bg-primary/5",
+        )}
       />
       {localValue && (
         <Button
           variant="ghost"
           size="icon-xs"
-          className="absolute right-1 top-1/2 -translate-y-1/2"
+          className="absolute right-1 top-1/2 -translate-y-1/2 hover:bg-destructive/10 hover:text-destructive"
           onClick={handleClear}
         >
-          <X className="size-3" />
+          <XIcon className="size-3" weight="bold" />
           <span className="sr-only">Clear search</span>
         </Button>
       )}
@@ -81,10 +102,11 @@ const SearchInput = memo(() => {
 });
 SearchInput.displayName = "SearchInput";
 
-// Isolated filter dropdown - only re-renders when type changes
-const FilterDropdown = memo(() => {
+// Type filter dropdown - files/directories/all
+const TypeFilter = memo(() => {
   const navigate = useNavigate({ from: "/file-explorer/$" });
   const filterType = useSearch({ from: "/file-explorer/$", select: (s) => s.type }) || "all";
+  const isActive = filterType !== "all";
 
   const setType = useCallback((type: "all" | "files" | "directories" | undefined) => {
     navigate({
@@ -95,40 +117,76 @@ const FilterDropdown = memo(() => {
     });
   }, [navigate]);
 
+  const getIcon = () => {
+    switch (filterType) {
+      case "files":
+        return <FileIcon className="size-4" weight="duotone" />;
+      case "directories":
+        return <FolderIcon className="size-4" weight="duotone" />;
+      default:
+        return <FunnelSimpleIcon className="size-4" weight="bold" />;
+    }
+  };
+
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger
-        className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-input bg-background px-2.5 h-8 text-sm font-medium hover:bg-muted transition-colors"
+      <DropdownMenuTrigger render={(props) => (
+        <Button
+          {...props}
+          variant={isActive ? "secondary" : "outline"}
+          size="sm"
+          className={cn(
+            "gap-1.5 h-8",
+            isActive && "border-primary/50 bg-primary/10 hover:bg-primary/20",
+          )}
+        >
+          {getIcon()}
+          <span className="hidden sm:inline text-xs">
+            {filterType === "all" ? "Type" : filterType === "files" ? "Files" : "Folders"}
+          </span>
+          {isActive && (
+            <span
+              role="button"
+              className="ml-0.5 rounded-full hover:bg-destructive/20 p-0.5"
+              onClick={(e) => {
+                e.stopPropagation();
+                setType(undefined);
+              }}
+            >
+              <XIcon className="size-3" weight="bold" />
+            </span>
+          )}
+        </Button>
+      )}
       >
-        <Filter className="size-4" />
-        <span className="hidden sm:inline">
-          {filterType === "all" ? "All" : filterType === "files" ? "Files" : "Directories"}
-        </span>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="start" className="w-40">
         <DropdownMenuGroup>
-          <DropdownMenuLabel>Filter by Type</DropdownMenuLabel>
+          <DropdownMenuLabel>Type</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => setType(undefined)}>
-            All
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setType("files")}>
-            Files only
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setType("directories")}>
-            Directories only
-          </DropdownMenuItem>
+          <DropdownMenuRadioGroup value={filterType} onValueChange={(v) => setType(v as "all" | "files" | "directories")}>
+            <DropdownMenuRadioItem value="all">
+              All files
+            </DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value="files">
+              Files only
+            </DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value="directories">
+              Directories only
+            </DropdownMenuRadioItem>
+          </DropdownMenuRadioGroup>
         </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   );
 });
-FilterDropdown.displayName = "FilterDropdown";
+TypeFilter.displayName = "TypeFilter";
 
-// Pattern filter dropdown - only re-renders when pattern changes
+// Pattern/extension filter dropdown
 const PatternFilter = memo(() => {
   const navigate = useNavigate({ from: "/file-explorer/$" });
   const pattern = useSearch({ from: "/file-explorer/$", select: (s) => s.pattern });
+  const isActive = !!pattern;
 
   const setPattern = useCallback((newPattern: string | undefined) => {
     navigate({
@@ -140,34 +198,60 @@ const PatternFilter = memo(() => {
   }, [navigate]);
 
   const commonPatterns = [
-    { label: "All files", value: undefined },
-    { label: "Text files (*.txt)", value: "*.txt" },
-    { label: "XML files (*.xml)", value: "*.xml" },
-    { label: "Zip files (*.zip)", value: "*.zip" },
+    { label: "All files", value: undefined, icon: <FunnelSimpleIcon className="size-4" weight="bold" /> },
+    { label: "Text files", value: "*.txt", icon: <FileTextIcon className="size-4" weight="duotone" /> },
+    { label: "XML files", value: "*.xml", icon: <FileXIcon className="size-4" weight="duotone" /> },
+    { label: "Zip archives", value: "*.zip", icon: <FileZipIcon className="size-4" weight="duotone" /> },
   ];
+
+  const currentPattern = commonPatterns.find((p) => p.value === pattern);
+  const displayIcon = currentPattern?.icon || <FileTextIcon className="size-4" weight="duotone" />;
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger
-        className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-input bg-background px-2.5 h-8 text-sm font-medium hover:bg-muted transition-colors"
-      >
-        <Filter className="size-4" />
-        <span className="hidden sm:inline text-xs">
-          {pattern ? `${pattern}` : "All ext"}
-        </span>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuGroup>
-          <DropdownMenuLabel>Filter by Extension</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          {commonPatterns.map((p) => (
-            <DropdownMenuItem
-              key={p.value || "all"}
-              onClick={() => setPattern(p.value)}
+      <DropdownMenuTrigger render={(props) => (
+        <Button
+          {...props}
+          variant={isActive ? "secondary" : "outline"}
+          size="sm"
+          className={cn(
+            "gap-1.5 h-8",
+            isActive && "border-primary/50 bg-primary/10 hover:bg-primary/20",
+          )}
+        >
+          {displayIcon}
+          <span className="hidden sm:inline text-xs">
+            {pattern || "Extension"}
+          </span>
+          {isActive && (
+            <span
+              role="button"
+              className="ml-0.5 rounded-full hover:bg-destructive/20 p-0.5"
+              onClick={(e) => {
+                e.stopPropagation();
+                setPattern(undefined);
+              }}
             >
-              {p.label}
-            </DropdownMenuItem>
-          ))}
+              <XIcon className="size-3" weight="bold" />
+            </span>
+          )}
+        </Button>
+      )}
+      >
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-40">
+        <DropdownMenuGroup>
+          <DropdownMenuLabel>Extension</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuRadioGroup value={pattern || ""} onValueChange={(v) => setPattern(v || undefined)}>
+            {commonPatterns.map((p) => (
+              <DropdownMenuRadioItem key={p.value || "all"} value={p.value || ""}>
+                <span className="mr-2">{p.icon}</span>
+                {p.label}
+                {p.value && <span className="ml-auto text-xs text-muted-foreground">{p.value}</span>}
+              </DropdownMenuRadioItem>
+            ))}
+          </DropdownMenuRadioGroup>
         </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -175,7 +259,83 @@ const PatternFilter = memo(() => {
 });
 PatternFilter.displayName = "PatternFilter";
 
-// Isolated view mode toggle - only re-renders when viewMode changes
+// Sort dropdown with field and order combined
+const SortControl = memo(() => {
+  const navigate = useNavigate({ from: "/file-explorer/$" });
+  const sort = useSearch({ from: "/file-explorer/$", select: (s) => s.sort }) || "name";
+  const order = useSearch({ from: "/file-explorer/$", select: (s) => s.order }) || "asc";
+
+  const setSort = useCallback((newSort: "name" | "modified_date") => {
+    navigate({
+      search: (prev) => ({
+        ...prev,
+        sort: newSort,
+      }),
+    });
+  }, [navigate]);
+
+  const toggleOrder = useCallback(() => {
+    navigate({
+      search: (prev) => ({
+        ...prev,
+        order: order === "asc" ? "desc" : "asc",
+      }),
+    });
+  }, [navigate, order]);
+
+  return (
+    <div className="flex items-center">
+      <DropdownMenu>
+        <DropdownMenuTrigger render={(props) => (
+          <Button
+            {...props}
+            variant="outline"
+            size="sm"
+            className="gap-1.5 h-8 rounded-r-none border-r-0"
+          >
+            <ArrowsDownUpIcon className="size-4" weight="bold" />
+            <span className="hidden sm:inline text-xs">
+              {sort === "name" ? "Name" : "Modified"}
+            </span>
+          </Button>
+        )}
+        >
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="w-40">
+          <DropdownMenuGroup>
+            <DropdownMenuLabel>Sort By</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuRadioGroup value={sort} onValueChange={(v) => setSort(v as "name" | "modified_date")}>
+              <DropdownMenuRadioItem value="name">
+                Name
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="modified_date">
+                Last Modified
+              </DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+          </DropdownMenuGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <Button
+        variant="outline"
+        size="icon-sm"
+        className="rounded-l-none h-8"
+        onClick={toggleOrder}
+        title={order === "asc" ? "Ascending" : "Descending"}
+      >
+        {order === "asc"
+          ? <SortAscendingIcon className="size-4" weight="bold" />
+          : <SortDescendingIcon className="size-4" weight="bold" />}
+        <span className="sr-only">
+          {order === "asc" ? "Sort ascending" : "Sort descending"}
+        </span>
+      </Button>
+    </div>
+  );
+});
+SortControl.displayName = "SortControl";
+
+// View mode toggle
 const ViewModeToggle = memo(() => {
   const navigate = useNavigate({ from: "/file-explorer/$" });
   const viewMode = useSearch({ from: "/file-explorer/$", select: (s) => s.viewMode }) || "list";
@@ -195,112 +355,82 @@ const ViewModeToggle = memo(() => {
         variant={viewMode === "list" ? "secondary" : "ghost"}
         size="icon-sm"
         onClick={() => setViewMode("list")}
-        className="rounded-none border-0"
+        className="rounded-none border-0 h-8"
+        title="List view"
       >
-        <List className="size-4" />
+        <ListIcon className="size-4" weight="bold" />
         <span className="sr-only">List view</span>
       </Button>
       <Button
         variant={viewMode === "cards" ? "secondary" : "ghost"}
         size="icon-sm"
         onClick={() => setViewMode("cards")}
-        className="rounded-none border-0 border-l border-input"
+        className="rounded-none border-0 border-l border-input h-8"
+        title="Grid view"
       >
-        <Grid3X3 className="size-4" />
-        <span className="sr-only">Card view</span>
+        <SquaresFourIcon className="size-4" weight="bold" />
+        <span className="sr-only">Grid view</span>
       </Button>
     </div>
   );
 });
 ViewModeToggle.displayName = "ViewModeToggle";
 
-// Sort by dropdown - only re-renders when sort param changes
-const SortByDropdown = memo(() => {
+// Active filters summary with clear all
+const ActiveFilters = memo(() => {
   const navigate = useNavigate({ from: "/file-explorer/$" });
-  const sort = useSearch({ from: "/file-explorer/$", select: (s) => s.sort }) || "name";
+  const query = useSearch({ from: "/file-explorer/$", select: (s) => s.query });
+  const type = useSearch({ from: "/file-explorer/$", select: (s) => s.type });
+  const pattern = useSearch({ from: "/file-explorer/$", select: (s) => s.pattern });
 
-  const setSort = useCallback((newSort: "name" | "modified_date") => {
+  const activeCount = [query, type, pattern].filter(Boolean).length;
+
+  const clearAll = useCallback(() => {
     navigate({
       search: (prev) => ({
         ...prev,
-        sort: newSort,
+        query: undefined,
+        type: undefined,
+        pattern: undefined,
       }),
     });
   }, [navigate]);
 
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-input bg-background px-2.5 h-8 text-sm font-medium hover:bg-muted transition-colors"
-        title="Sort by"
-      >
-        <Settings className="size-4" />
-        <span className="hidden sm:inline text-xs">
-          {sort === "name" ? "Name" : "Modified"}
-        </span>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuGroup>
-          <DropdownMenuLabel>Sort By</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => setSort("name")}>
-            Name
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => setSort("modified_date")}>
-            Last Modified
-          </DropdownMenuItem>
-        </DropdownMenuGroup>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-});
-SortByDropdown.displayName = "SortByDropdown";
-
-// Sort order toggle - only re-renders when order changes
-const SortOrderToggle = memo(() => {
-  const navigate = useNavigate({ from: "/file-explorer/$" });
-  const order = useSearch({ from: "/file-explorer/$", select: (s) => s.order }) || "asc";
-
-  const toggleOrder = useCallback(() => {
-    navigate({
-      search: (prev) => ({
-        ...prev,
-        order: order === "asc" ? "desc" : "asc",
-      }),
-    });
-  }, [navigate, order]);
+  if (activeCount === 0) return null;
 
   return (
-    <Button
-      variant="outline"
-      size="icon-sm"
-      onClick={toggleOrder}
-      title={`Sort ${order === "asc" ? "ascending" : "descending"}`}
+    <Badge
+      variant="secondary"
+      className="gap-1 cursor-pointer hover:bg-destructive/10 hover:text-destructive transition-colors"
+      onClick={clearAll}
     >
-      {order === "asc"
-        ? (
-            <ArrowUp className="size-4" />
-          )
-        : (
-            <ArrowDown className="size-4" />
-          )}
-      <span className="sr-only">
-        {order === "asc" ? "Sort ascending" : "Sort descending"}
+      <span className="text-xs">
+        {activeCount}
+        {" "}
+        filter
+        {activeCount > 1 ? "s" : ""}
       </span>
-    </Button>
+      <XIcon className="size-3" weight="bold" />
+    </Badge>
   );
 });
-SortOrderToggle.displayName = "SortOrderToggle";
+ActiveFilters.displayName = "ActiveFilters";
 
 export function ExplorerToolbar() {
   return (
     <div className="flex items-center gap-2 flex-wrap">
       <SearchInput />
-      <FilterDropdown />
-      <PatternFilter />
-      <SortByDropdown />
-      <SortOrderToggle />
-      <ViewModeToggle />
+
+      <div className="flex items-center gap-1.5">
+        <TypeFilter />
+        <PatternFilter />
+      </div>
+
+      <div className="flex items-center gap-1.5 ml-auto">
+        <ActiveFilters />
+        <SortControl />
+        <ViewModeToggle />
+      </div>
     </div>
   );
 }
