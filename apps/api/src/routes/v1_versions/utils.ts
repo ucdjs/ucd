@@ -138,6 +138,7 @@ export async function getVersionFromList(version: string): Promise<
   return [versionInfo, null] as const;
 }
 
+// TODO: fix this in the future.
 export async function calculateStatistics(
   bucket: NonNullable<HonoEnv["Bindings"]["UCD_BUCKET"]>,
   version: string,
