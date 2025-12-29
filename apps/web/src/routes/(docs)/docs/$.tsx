@@ -52,7 +52,7 @@ const clientLoader = browserCollections.docs.createClientLoader({
   },
 });
 
-export const Route = createFileRoute("/docs/$")({
+export const Route = createFileRoute("/(docs)/docs/$")({
   component: Page,
   loader: async ({ params }) => {
     const slugs = params._splat?.split("/") ?? [];

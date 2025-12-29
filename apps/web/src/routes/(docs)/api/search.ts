@@ -7,7 +7,7 @@ const server = createFromSource(source, {
   language: "english",
 });
 
-export const Route = createFileRoute("/api/search")({
+export const Route = createFileRoute("/(docs)/api/search")({
   server: {
     handlers: {
       GET: async ({ request }) => server.GET(request),
