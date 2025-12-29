@@ -3,6 +3,7 @@ import type { StoreError } from "../../errors";
 import type { InternalUCDStoreContext, SharedOperationOptions } from "../../types";
 import { createDebugger, tryOr, wrapTry } from "@ucdjs-internal/shared";
 import { hasCapability } from "@ucdjs/fs-bridge";
+import { hasUCDFolderPath } from "@unicode-utils/core";
 import { join } from "pathe";
 import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../../errors";
 
@@ -95,7 +96,14 @@ export async function getFile(
     }
 
     debug?.("Fetching file from API:", filePath);
-    const remotePath = join(version, filePath);
+
+    // Note:
+    // The store always uses `<version>/ucd/<file>` paths when fetching from API,
+    // because the Unicode database also includes e.g. `<version>/ucdxml/<file>`,
+    // which is _not_ part of the store. Paths returned from the API are
+    // relative to their containing folder and do not include the `ucd` segment.
+    // By adding `ucd` here, we ensure consistency with the mirror operation.
+    const remotePath = join(version, hasUCDFolderPath(version) ? "ucd" : "", filePath);
     const result = await context.client.files.get(remotePath);
 
     if (result.error) {
