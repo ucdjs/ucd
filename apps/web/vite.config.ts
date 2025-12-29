@@ -31,7 +31,7 @@ const config = defineConfig({
         enabled: false, // We can't enable prerendering until Nitro fixes their preview server.
       },
       server: {
-        entry: "src/server.ts",
+        entry: "server.ts",
       },
     }),
     viteReact({

@@ -18,6 +18,20 @@ export const Route = createFileRoute("/")({
   loader: ({ context }) => {
     context.queryClient.prefetchQuery(versionsQueryOptions());
   },
+  head: () => ({
+    meta: [
+      {
+        charSet: "utf-8",
+      },
+      {
+        name: "viewport",
+        content: "width=device-width, initial-scale=1",
+      },
+      {
+        title: "UCD.js - Unicode Character Database",
+      },
+    ],
+  }),
 });
 
 function HomePage() {

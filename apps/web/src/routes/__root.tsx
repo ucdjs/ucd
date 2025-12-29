@@ -35,6 +35,14 @@ export const Route = createRootRouteWithContext<AppRouterContext>()({
       {
         title: "UCD.js | Unicode Character Database for JavaScript",
       },
+      {
+        name: "description",
+        content: "Explore the Unicode Character Database with a modern, developer-friendly interface.",
+      },
+      {
+        name: "keywords",
+        content: "Unicode, Character Database, JavaScript, UCD.js",
+      },
     ],
     links: [
       {
