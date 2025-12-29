@@ -1,14 +1,11 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
+import { VersionHeader } from "@/components/layout/version/header";
 import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 export const Route = createFileRoute("/v/$version/search")({
   component: VersionSearchPage,
@@ -19,34 +16,13 @@ function VersionSearchPage() {
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-4">
-      <header className="flex items-center gap-4">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem className="hidden md:block">
-              <BreadcrumbLink render={<Link to="/">Home</Link>} />
-            </BreadcrumbItem>
-            <BreadcrumbSeparator className="hidden md:block" />
-            <BreadcrumbItem className="hidden md:block">
-              <BreadcrumbLink render={(
-                <Link to="/v/$version" params={{ version }}>
-                  Unicode
-                  {version}
-                </Link>
-              )}
-              />
-            </BreadcrumbItem>
-            <BreadcrumbSeparator className="hidden md:block" />
-            <BreadcrumbItem>
-              <BreadcrumbPage>Search</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-      </header>
+      <VersionHeader version={version} title="Search" />
 
       <Card>
         <CardHeader>
           <CardTitle>
             Search within Unicode
+            {" "}
             {version}
           </CardTitle>
         </CardHeader>
@@ -57,12 +33,6 @@ function VersionSearchPage() {
             {version}
             .
           </p>
-          <Button
-            nativeButton={false}
-            render={
-              <Link to="/search">Back to ideas</Link>
-            }
-          />
         </CardContent>
       </Card>
     </div>

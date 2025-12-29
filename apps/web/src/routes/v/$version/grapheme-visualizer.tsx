@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+import { VersionHeader } from "@/components/layout/version/header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -12,34 +12,13 @@ function GraphemeVisualizerVersion() {
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-4">
-      <header className="flex items-center gap-4">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem className="hidden md:block">
-              <BreadcrumbLink render={<Link to="/">Home</Link>} />
-            </BreadcrumbItem>
-            <BreadcrumbSeparator className="hidden md:block" />
-            <BreadcrumbItem className="hidden md:block">
-              <BreadcrumbLink render={(
-                <Link to="/v/$version" params={{ version: params.version }}>
-                  Unicode
-                  {params.version}
-                </Link>
-              )}
-              />
-            </BreadcrumbItem>
-            <BreadcrumbSeparator className="hidden md:block" />
-            <BreadcrumbItem>
-              <BreadcrumbPage>Grapheme & ZWJ Visualizer</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-      </header>
+      <VersionHeader version={params.version} title="Grapheme & ZWJ Visualizer" />
 
       <Card>
         <CardHeader>
           <CardTitle>
             Grapheme & ZWJ Visualizer —
+            {" "}
             {params.version}
           </CardTitle>
         </CardHeader>
