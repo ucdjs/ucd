@@ -17,21 +17,24 @@ import {
 import { UcdLogo } from "../../ucd-logo";
 import { VersionsList, VersionsListSkeleton } from "./versions-list";
 
-const TOOLS_ITEMS = [
+const MAIN_ITEMS = [
+  { to: "/", icon: BookOpen, label: "Home" },
   { to: "/search", icon: Search, label: "Search" },
-  { to: "/file-explorer/$", params: { _splat: "" }, icon: BookOpen, label: "File Explorer" },
-  { to: "/compare", icon: Grid3X3, label: "Compare" },
 ] as const;
 
 const VERSION_ITEMS = [
   { to: "/v/$version", icon: BookOpen, label: "Overview" },
-  { to: "/v/$version/search", icon: Search, label: "Search" },
   { to: "/v/$version/blocks", icon: Grid3X3, label: "Blocks" },
   { to: "/v/$version/grapheme-visualizer", icon: Lightbulb, label: "Grapheme Visualizer" },
   { to: "/v/$version/normalization-preview", icon: Lightbulb, label: "Normalization Preview" },
   { to: "/v/$version/bidi-linebreak", icon: Lightbulb, label: "BIDI & Line Break" },
   { to: "/v/$version/font-glyph-view", icon: Lightbulb, label: "Font & Glyph View" },
   { to: "/v/$version/u/$hex", params: { hex: "0041" }, icon: Type, label: "Codepoint Visualizer" },
+] as const;
+
+const TOOLS_ITEMS = [
+  { to: "/file-explorer/$", params: { _splat: "" }, icon: BookOpen, label: "File Explorer" },
+  { to: "/compare", icon: Grid3X3, label: "Compare" },
 ] as const;
 
 export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
@@ -54,12 +57,11 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Tools</SidebarGroupLabel>
           <SidebarMenu>
-            {TOOLS_ITEMS.map((item) => (
+            {MAIN_ITEMS.map((item) => (
               <SidebarMenuItem key={item.label}>
                 <SidebarMenuButton render={(
-                  <Link to={item.to} params={"params" in item ? item.params : undefined}>
+                  <Link to={item.to}>
                     <item.icon className="size-4" />
                     <span>{item.label}</span>
                   </Link>
@@ -101,6 +103,23 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
         <Suspense fallback={<VersionsListSkeleton />}>
           <VersionsList />
         </Suspense>
+
+        <SidebarGroup>
+          <SidebarGroupLabel>Tools</SidebarGroupLabel>
+          <SidebarMenu>
+            {TOOLS_ITEMS.map((item) => (
+              <SidebarMenuItem key={item.label}>
+                <SidebarMenuButton render={(
+                  <Link to={item.to} params={"params" in item ? item.params : undefined}>
+                    <item.icon className="size-4" />
+                    <span>{item.label}</span>
+                  </Link>
+                )}
+                />
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenu>
+        </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
         <SidebarGroup>

@@ -144,7 +144,14 @@ export const UnicodeVersionDetailsSchema = UnicodeVersionSchema.extend({
     newScripts: z.int().nonnegative().meta({
       description: "Number of new scripts added in this version.",
     }),
-  }).optional().meta({
+  }).default({
+    newBlocks: 0,
+    newCharacters: 0,
+    newScripts: 0,
+    totalBlocks: 0,
+    totalCharacters: 0,
+    totalScripts: 0,
+  }).meta({
     description: "Statistics about this Unicode version. May be null if statistics are not available.",
   }),
 }).meta({

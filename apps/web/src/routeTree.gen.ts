@@ -19,7 +19,6 @@ import { Route as FileExplorerSplatRouteImport } from './routes/file-explorer/$'
 import { Route as VVersionRouteRouteImport } from './routes/v/$version/route'
 import { Route as VVersionIndexRouteImport } from './routes/v/$version/index'
 import { Route as docsDocsIndexRouteImport } from './routes/(docs)/docs/index'
-import { Route as VVersionSearchRouteImport } from './routes/v/$version/search'
 import { Route as VVersionNormalizationPreviewRouteImport } from './routes/v/$version/normalization-preview'
 import { Route as VVersionGraphemeVisualizerRouteImport } from './routes/v/$version/grapheme-visualizer'
 import { Route as VVersionFontGlyphViewRouteImport } from './routes/v/$version/font-glyph-view'
@@ -80,11 +79,6 @@ const docsDocsIndexRoute = docsDocsIndexRouteImport.update({
   id: '/(docs)/docs/',
   path: '/docs/',
   getParentRoute: () => rootRouteImport,
-} as any)
-const VVersionSearchRoute = VVersionSearchRouteImport.update({
-  id: '/search',
-  path: '/search',
-  getParentRoute: () => VVersionRouteRoute,
 } as any)
 const VVersionNormalizationPreviewRoute =
   VVersionNormalizationPreviewRouteImport.update({
@@ -155,7 +149,6 @@ export interface FileRoutesByFullPath {
   '/v/$version/font-glyph-view': typeof VVersionFontGlyphViewRoute
   '/v/$version/grapheme-visualizer': typeof VVersionGraphemeVisualizerRoute
   '/v/$version/normalization-preview': typeof VVersionNormalizationPreviewRoute
-  '/v/$version/search': typeof VVersionSearchRoute
   '/docs': typeof docsDocsIndexRoute
   '/v/$version/': typeof VVersionIndexRoute
   '/v/$version/blocks/$id': typeof VVersionBlocksIdRoute
@@ -177,7 +170,6 @@ export interface FileRoutesByTo {
   '/v/$version/font-glyph-view': typeof VVersionFontGlyphViewRoute
   '/v/$version/grapheme-visualizer': typeof VVersionGraphemeVisualizerRoute
   '/v/$version/normalization-preview': typeof VVersionNormalizationPreviewRoute
-  '/v/$version/search': typeof VVersionSearchRoute
   '/docs': typeof docsDocsIndexRoute
   '/v/$version': typeof VVersionIndexRoute
   '/v/$version/blocks/$id': typeof VVersionBlocksIdRoute
@@ -201,7 +193,6 @@ export interface FileRoutesById {
   '/v/$version/font-glyph-view': typeof VVersionFontGlyphViewRoute
   '/v/$version/grapheme-visualizer': typeof VVersionGraphemeVisualizerRoute
   '/v/$version/normalization-preview': typeof VVersionNormalizationPreviewRoute
-  '/v/$version/search': typeof VVersionSearchRoute
   '/(docs)/docs/': typeof docsDocsIndexRoute
   '/v/$version/': typeof VVersionIndexRoute
   '/v/$version/blocks/$id': typeof VVersionBlocksIdRoute
@@ -226,7 +217,6 @@ export interface FileRouteTypes {
     | '/v/$version/font-glyph-view'
     | '/v/$version/grapheme-visualizer'
     | '/v/$version/normalization-preview'
-    | '/v/$version/search'
     | '/docs'
     | '/v/$version/'
     | '/v/$version/blocks/$id'
@@ -248,7 +238,6 @@ export interface FileRouteTypes {
     | '/v/$version/font-glyph-view'
     | '/v/$version/grapheme-visualizer'
     | '/v/$version/normalization-preview'
-    | '/v/$version/search'
     | '/docs'
     | '/v/$version'
     | '/v/$version/blocks/$id'
@@ -271,7 +260,6 @@ export interface FileRouteTypes {
     | '/v/$version/font-glyph-view'
     | '/v/$version/grapheme-visualizer'
     | '/v/$version/normalization-preview'
-    | '/v/$version/search'
     | '/(docs)/docs/'
     | '/v/$version/'
     | '/v/$version/blocks/$id'
@@ -364,13 +352,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof docsDocsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/v/$version/search': {
-      id: '/v/$version/search'
-      path: '/search'
-      fullPath: '/v/$version/search'
-      preLoaderRoute: typeof VVersionSearchRouteImport
-      parentRoute: typeof VVersionRouteRoute
-    }
     '/v/$version/normalization-preview': {
       id: '/v/$version/normalization-preview'
       path: '/normalization-preview'
@@ -462,7 +443,6 @@ interface VVersionRouteRouteChildren {
   VVersionFontGlyphViewRoute: typeof VVersionFontGlyphViewRoute
   VVersionGraphemeVisualizerRoute: typeof VVersionGraphemeVisualizerRoute
   VVersionNormalizationPreviewRoute: typeof VVersionNormalizationPreviewRoute
-  VVersionSearchRoute: typeof VVersionSearchRoute
   VVersionIndexRoute: typeof VVersionIndexRoute
   VVersionBlocksIdRoute: typeof VVersionBlocksIdRoute
   VVersionUHexRoute: typeof VVersionUHexRoute
@@ -474,7 +454,6 @@ const VVersionRouteRouteChildren: VVersionRouteRouteChildren = {
   VVersionFontGlyphViewRoute: VVersionFontGlyphViewRoute,
   VVersionGraphemeVisualizerRoute: VVersionGraphemeVisualizerRoute,
   VVersionNormalizationPreviewRoute: VVersionNormalizationPreviewRoute,
-  VVersionSearchRoute: VVersionSearchRoute,
   VVersionIndexRoute: VVersionIndexRoute,
   VVersionBlocksIdRoute: VVersionBlocksIdRoute,
   VVersionUHexRoute: VVersionUHexRoute,
