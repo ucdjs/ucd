@@ -154,8 +154,6 @@ function SelectScrollUpButton({
       {...props}
     >
       <ChevronUp />
-      \n
-      {" "}
     </SelectPrimitive.ScrollUpArrow>
   );
 }
