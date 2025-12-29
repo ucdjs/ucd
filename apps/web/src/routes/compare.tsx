@@ -169,56 +169,57 @@ function ComparePage() {
             <div className="grid gap-4 md:grid-cols-4">
               <StatCard
                 label="Added"
-                value={comparison.counts.added}
+                value={comparison.added.length}
                 icon={<Plus className="size-4 text-green-600" />}
                 className="border-green-200 dark:border-green-900"
               />
               <StatCard
                 label="Removed"
-                value={comparison.counts.removed}
+                value={comparison.removed.length}
                 icon={<Minus className="size-4 text-red-600" />}
                 className="border-red-200 dark:border-red-900"
               />
               <StatCard
                 label="Modified"
-                value={comparison.counts.modified}
+                value={comparison.modified.length}
                 icon={<FileText className="size-4 text-amber-600" />}
                 className="border-amber-200 dark:border-amber-900"
               />
               <StatCard
                 label="Unchanged"
-                value={comparison.counts.unchanged}
+                value={comparison.unchanged}
                 icon={<FileText className="size-4 text-muted-foreground" />}
               />
             </div>
 
             <div className="grid gap-4 lg:grid-cols-3">
-              {comparison.files.added.length > 0 && (
+              {comparison.added.length > 0 && (
                 <FileListCard
                   title="Added Files"
-                  files={comparison.files.added}
+                  files={comparison.added}
                   variant="added"
                 />
               )}
-              {comparison.files.removed.length > 0 && (
+              {comparison.removed.length > 0 && (
                 <FileListCard
                   title="Removed Files"
-                  files={comparison.files.removed}
+                  files={comparison.removed}
                   variant="removed"
                 />
               )}
-              {comparison.files.modified.length > 0 && (
+              {comparison.modified.length > 0 && (
                 <FileListCard
                   title="Modified Files"
-                  files={comparison.files.modified}
+                  files={comparison.modified}
                   variant="modified"
+                  changes={comparison.changes}
                 />
               )}
             </div>
 
-            {comparison.files.added.length === 0
-              && comparison.files.removed.length === 0
-              && comparison.files.modified.length === 0 && (
+            {comparison.added.length === 0
+              && comparison.removed.length === 0
+              && comparison.modified.length === 0 && (
               <Card>
                 <CardContent className="py-8 text-center">
                   <p className="text-muted-foreground">
@@ -264,20 +265,39 @@ function StatCard({
   );
 }
 
+function formatBytes(bytes: number): string {
+  if (bytes === 0) return "0 B";
+  const sizes = ["B", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  const clampedI = Math.max(0, Math.min(i, sizes.length - 1));
+  const value = bytes / (1024 ** clampedI);
+  return `${value.toFixed(1)} ${sizes[clampedI]}`;
+}
+
+interface FileChange {
+  file: string;
+  from: { size: number };
+  to: { size: number };
+}
+
 function FileListCard({
   title,
   files,
   variant,
+  changes,
 }: {
   title: string;
   files: readonly string[];
   variant: "added" | "removed" | "modified";
+  changes?: readonly FileChange[];
 }) {
   const colors = {
     added: "text-green-600 dark:text-green-400",
     removed: "text-red-600 dark:text-red-400",
     modified: "text-amber-600 dark:text-amber-400",
   };
+
+  const changesMap = new Map(changes?.map((c) => [c.file, c]) ?? []);
 
   return (
     <Card>
@@ -291,12 +311,26 @@ function FileListCard({
       </CardHeader>
       <CardContent>
         <div className="max-h-64 overflow-y-auto">
-          <ul className="space-y-1">
-            {files.map((file) => (
-              <li key={file} className={`font-mono text-xs ${colors[variant]}`}>
-                {file}
-              </li>
-            ))}
+          <ul className="space-y-1.5">
+            {files.map((file) => {
+              const change = changesMap.get(file);
+              return (
+                <li key={file} className={`font-mono text-xs ${colors[variant]}`}>
+                  <span>{file}</span>
+                  {change && (
+                    <span className="ml-2 text-muted-foreground">
+                      (
+                      {formatBytes(change.from.size)}
+                      {" "}
+                      →
+                      {" "}
+                      {formatBytes(change.to.size)}
+                      )
+                    </span>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         </div>
       </CardContent>
