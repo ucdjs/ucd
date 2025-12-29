@@ -60,6 +60,7 @@ function GlobalSearchPage() {
                   <div className="text-sm text-muted-foreground">{r.name}</div>
                   <div className="text-xs text-muted-foreground/70">
                     Introduced in
+                    {" "}
                     {r.version}
                   </div>
                 </div>
