@@ -14,6 +14,7 @@ import { Route as CompareRouteImport } from './routes/compare'
 import { Route as CodepointInspectorRouteImport } from './routes/codepoint-inspector'
 import { Route as FileExplorerRouteRouteImport } from './routes/file-explorer/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as VIndexRouteImport } from './routes/v/index'
 import { Route as FileExplorerSplatRouteImport } from './routes/file-explorer/$'
 import { Route as VVersionRouteRouteImport } from './routes/v/$version/route'
 import { Route as VVersionIndexRouteImport } from './routes/v/$version/index'
@@ -53,6 +54,11 @@ const FileExplorerRouteRoute = FileExplorerRouteRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VIndexRoute = VIndexRouteImport.update({
+  id: '/v/',
+  path: '/v/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FileExplorerSplatRoute = FileExplorerSplatRouteImport.update({
@@ -141,6 +147,7 @@ export interface FileRoutesByFullPath {
   '/search': typeof SearchRoute
   '/v/$version': typeof VVersionRouteRouteWithChildren
   '/file-explorer/$': typeof FileExplorerSplatRoute
+  '/v': typeof VIndexRoute
   '/api/search': typeof docsApiSearchRoute
   '/docs/$': typeof docsDocsSplatRoute
   '/file-explorer/v/$': typeof FileExplorerVSplatRoute
@@ -162,6 +169,7 @@ export interface FileRoutesByTo {
   '/compare': typeof CompareRoute
   '/search': typeof SearchRoute
   '/file-explorer/$': typeof FileExplorerSplatRoute
+  '/v': typeof VIndexRoute
   '/api/search': typeof docsApiSearchRoute
   '/docs/$': typeof docsDocsSplatRoute
   '/file-explorer/v/$': typeof FileExplorerVSplatRoute
@@ -185,6 +193,7 @@ export interface FileRoutesById {
   '/search': typeof SearchRoute
   '/v/$version': typeof VVersionRouteRouteWithChildren
   '/file-explorer/$': typeof FileExplorerSplatRoute
+  '/v/': typeof VIndexRoute
   '/(docs)/api/search': typeof docsApiSearchRoute
   '/(docs)/docs/$': typeof docsDocsSplatRoute
   '/file-explorer/v/$': typeof FileExplorerVSplatRoute
@@ -209,6 +218,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/v/$version'
     | '/file-explorer/$'
+    | '/v'
     | '/api/search'
     | '/docs/$'
     | '/file-explorer/v/$'
@@ -230,6 +240,7 @@ export interface FileRouteTypes {
     | '/compare'
     | '/search'
     | '/file-explorer/$'
+    | '/v'
     | '/api/search'
     | '/docs/$'
     | '/file-explorer/v/$'
@@ -252,6 +263,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/v/$version'
     | '/file-explorer/$'
+    | '/v/'
     | '/(docs)/api/search'
     | '/(docs)/docs/$'
     | '/file-explorer/v/$'
@@ -274,6 +286,7 @@ export interface RootRouteChildren {
   CompareRoute: typeof CompareRoute
   SearchRoute: typeof SearchRoute
   VVersionRouteRoute: typeof VVersionRouteRouteWithChildren
+  VIndexRoute: typeof VIndexRoute
   docsApiSearchRoute: typeof docsApiSearchRoute
   docsDocsSplatRoute: typeof docsDocsSplatRoute
   docsDocsIndexRoute: typeof docsDocsIndexRoute
@@ -314,6 +327,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/v/': {
+      id: '/v/'
+      path: '/v'
+      fullPath: '/v'
+      preLoaderRoute: typeof VIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/file-explorer/$': {
@@ -472,6 +492,7 @@ const rootRouteChildren: RootRouteChildren = {
   CompareRoute: CompareRoute,
   SearchRoute: SearchRoute,
   VVersionRouteRoute: VVersionRouteRouteWithChildren,
+  VIndexRoute: VIndexRoute,
   docsApiSearchRoute: docsApiSearchRoute,
   docsDocsSplatRoute: docsDocsSplatRoute,
   docsDocsIndexRoute: docsDocsIndexRoute,

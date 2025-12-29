@@ -1,8 +1,7 @@
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, BookOpen, Grid3X3, Search, Type } from "lucide-react";
-
-import { versionDetailsQueryOptions, versionsQueryOptions } from "@/apis/versions";
+import { versionDetailsQueryOptions } from "@/apis/versions";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -11,7 +10,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -22,6 +21,7 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { versionsQueryOptions } from "@/functions/versions";
 
 export const Route = createFileRoute("/v/$version/")({
   component: VersionPage,

@@ -1,6 +1,4 @@
-import type { UnicodeVersion } from "@ucdjs/schemas";
 import { queryOptions } from "@tanstack/react-query";
-import { createServerFn } from "@tanstack/react-start";
 
 export interface UnicodeVersionDetails {
   version: string;
@@ -24,19 +22,6 @@ const VERSION_DETAILS_MOCK: Record<string, UnicodeVersionDetails> = {
   "12.0.0": { version: "12.0.0", totalCharacters: 137743, newCharacters: 553, totalBlocks: 310, newBlocks: 4, totalScripts: 155, newScripts: 1 },
 };
 
-export const fetchVersions = createServerFn({ method: "GET" }).handler(async () => {
-  // eslint-disable-next-line node/prefer-global/process
-  const res = await fetch(`${process.env.UCDJS_API_BASE_URL}/api/v1/versions`, {
-    headers: { accept: "application/json" },
-  });
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch versions");
-  }
-
-  return res.json() as Promise<UnicodeVersion[]>;
-});
-
 export async function fetchVersionDetails(version: string): Promise<UnicodeVersionDetails> {
   // TODO: Replace with actual API call when endpoint is available
   // const res = await fetch(`${API_BASE}/versions/${version}/details`)
@@ -58,14 +43,6 @@ export async function fetchVersionDetails(version: string): Promise<UnicodeVersi
     totalScripts: 0,
     newScripts: 0,
   };
-}
-
-export function versionsQueryOptions() {
-  return queryOptions({
-    queryKey: ["versions"],
-    queryFn: () => fetchVersions(),
-    staleTime: 1000 * 60 * 60,
-  });
 }
 
 export function versionDetailsQueryOptions(version: string) {

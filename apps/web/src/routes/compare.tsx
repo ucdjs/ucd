@@ -1,7 +1,7 @@
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import * as React from "react";
-import { versionDetailsQueryOptions, versionsQueryOptions } from "@/apis/versions";
+import { useState } from "react";
+import { versionDetailsQueryOptions } from "@/apis/versions";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { versionsQueryOptions } from "@/functions/versions";
 
 export const Route = createFileRoute("/compare")({
   component: ComparePage,
@@ -19,8 +20,8 @@ export const Route = createFileRoute("/compare")({
 
 function ComparePage() {
   const { data: versions } = useSuspenseQuery(versionsQueryOptions());
-  const [left, setLeft] = React.useState<string | undefined>(versions?.[0]?.version);
-  const [right, setRight] = React.useState<string | undefined>(versions?.[1]?.version);
+  const [left, setLeft] = useState<string | undefined>(versions?.[0]?.version);
+  const [right, setRight] = useState<string | undefined>(versions?.[1]?.version);
 
   const leftQuery = useQuery({ ...(versionDetailsQueryOptions(left ?? "")), enabled: !!left });
   const rightQuery = useQuery({ ...(versionDetailsQueryOptions(right ?? "")), enabled: !!right });

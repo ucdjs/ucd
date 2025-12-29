@@ -41,9 +41,8 @@ export type FilesResponse
  */
 export const fetchFiles = createServerFn({ method: "GET" })
   .inputValidator((data: { path: string } & z.output<typeof searchSchema>) => data)
-  .handler(async ({ data }): Promise<any> => {
-    // eslint-disable-next-line node/prefer-global/process
-    const baseFilesUrl = `${process.env.UCDJS_API_BASE_URL}/api/v1/files`;
+  .handler(async ({ data, context }) => {
+    const baseFilesUrl = `${context.apiBaseUrl}/api/v1/files`;
     const url = new URL(data.path, `${baseFilesUrl}/`);
 
     if (data.query) {
@@ -75,7 +74,7 @@ export const fetchFiles = createServerFn({ method: "GET" })
         type: "file-too-large",
         size,
         contentType,
-        downloadUrl: url,
+        downloadUrl: url.toString(),
       };
     }
 
@@ -125,9 +124,8 @@ export const getFileHeadInfo = createServerFn({ method: "GET" })
   .inputValidator((data: {
     path: string;
   } & Omit<SearchQueryParams, "viewMode">) => data)
-  .handler(async ({ data }) => {
-    // eslint-disable-next-line node/prefer-global/process
-    const baseFilesUrl = `${process.env.UCDJS_API_BASE_URL}/api/v1/files`;
+  .handler(async ({ data, context }) => {
+    const baseFilesUrl = `${context.apiBaseUrl}/api/v1/files`;
     const url = new URL(data.path, `${baseFilesUrl}/`);
 
     if (data.query) {

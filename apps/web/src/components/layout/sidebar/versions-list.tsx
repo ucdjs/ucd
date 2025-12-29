@@ -1,15 +1,17 @@
 import type { UnicodeVersion } from "@ucdjs/schemas";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { ChevronDown } from "lucide-react";
 import { useState } from "react";
+import { versionsQueryOptions } from "@/functions/versions";
+import { UVersion } from "../../u-version";
 import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "./ui/sidebar";
-import { UVersion } from "./uversion";
+} from "../../ui/sidebar";
 
 const DEFAULT_VISIBLE_VERSIONS = 5;
 
@@ -24,11 +26,8 @@ function getBadgeLabel(v: UnicodeVersion): { label: string; cls: string } {
   return { label: "Legacy", cls: "bg-muted/60 text-muted-foreground/80" };
 }
 
-export interface VersionsListProps {
-  versions: UnicodeVersion[];
-}
-
-export function VersionsList({ versions }: VersionsListProps) {
+export function VersionsList() {
+  const { data: versions } = useSuspenseQuery(versionsQueryOptions());
   const [showAll, setShowAll] = useState(false);
   const visibleVersions = showAll ? versions : versions.slice(0, DEFAULT_VISIBLE_VERSIONS);
   const hiddenCount = versions.length - DEFAULT_VISIBLE_VERSIONS;
@@ -77,6 +76,29 @@ export function VersionsList({ versions }: VersionsListProps) {
             </SidebarMenuButton>
           </SidebarMenuItem>
         )}
+      </SidebarMenu>
+    </SidebarGroup>
+  );
+}
+
+export function VersionsListSkeleton() {
+  return (
+    <SidebarGroup className="mt-auto animate-pulse">
+      <div className="h-4 bg-muted rounded w-16 mb-4" />
+      <SidebarMenu>
+        <div className="overflow-auto" style={{ height: "10rem" }}>
+          {Array.from({ length: 5 }).map((_, i) => (
+            <SidebarMenuItem key={i}>
+              <div className="flex items-center justify-between gap-2 py-2 px-2">
+                <div className="flex items-center gap-2 flex-1">
+                  <div className="h-4 bg-muted rounded w-4" />
+                  <div className="h-4 bg-muted rounded flex-1" />
+                </div>
+                <div className="h-4 bg-muted rounded w-12" />
+              </div>
+            </SidebarMenuItem>
+          ))}
+        </div>
       </SidebarMenu>
     </SidebarGroup>
   );

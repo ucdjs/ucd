@@ -1,8 +1,7 @@
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, ExternalLink, Hash, Layers, Search } from "lucide-react";
-
-import { versionsQueryOptions } from "@/apis/versions";
+import { createFileRoute, Link, useLoaderData } from "@tanstack/react-router";
+import { BookOpen, Code2, ExternalLink, Hash, Layers, Search } from "lucide-react";
+import { Suspense } from "react";
+import { VersionsCardList, VersionsCardListSkeleton } from "@/components/home/versions-list";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -12,18 +11,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { versionsQueryOptions } from "@/functions/versions";
 
 export const Route = createFileRoute("/")({
   component: HomePage,
   loader: ({ context }) => {
-    context.queryClient.ensureQueryData(versionsQueryOptions());
+    context.queryClient.prefetchQuery(versionsQueryOptions());
   },
 });
 
 function HomePage() {
-  const { data: versions } = useSuspenseQuery(versionsQueryOptions());
-
-  const latestVersion = versions[0];
+  const { ucdjsApiBaseUrl } = useLoaderData({ from: "__root__" });
 
   return (
     <>
@@ -52,18 +50,20 @@ function HomePage() {
               <Hash className="size-5" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight">UCD.js</h1>
+              <h1 className="text-3xl font-bold tracking-tight">UCD.js</h1>
               <p className="text-sm text-muted-foreground">
                 Unicode Character Database for JavaScript
               </p>
             </div>
           </div>
-          <p className="max-w-2xl text-sm text-muted-foreground">
+          <p className="max-w-3xl text-sm text-muted-foreground leading-relaxed">
             Explore the Unicode Character Database with a modern, developer-friendly interface.
             Browse characters, blocks, scripts, and properties across all Unicode versions.
+            Access comprehensive Unicode data through powerful search and filtering capabilities.
           </p>
         </div>
 
+        {/* Quick Actions */}
         <div className="flex flex-wrap gap-2">
           <Button
             variant="outline"
@@ -72,7 +72,7 @@ function HomePage() {
             render={(
               <Link to="/file-explorer">
                 <Search className="size-4" />
-                Character Explorer
+                Character Search
               </Link>
             )}
           />
@@ -81,42 +81,44 @@ function HomePage() {
             size="sm"
             nativeButton={false}
             render={(
-              <a href="https://api.ucdjs.dev" target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="size-4" />
+              <a href={ucdjsApiBaseUrl ?? "https://api.ucdjs.dev"} target="_blank" rel="noopener noreferrer">
+                <Code2 className="size-4" />
                 API Reference
+              </a>
+            )}
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            nativeButton={false}
+            render={(
+              <a href="https://github.com/ucdjs/ucd" target="_blank" rel="noopener noreferrer">
+                <ExternalLink className="size-4" />
+                GitHub
+              </a>
+            )}
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            nativeButton={false}
+            render={(
+              <a href="https://www.unicode.org/" target="_blank" rel="noopener noreferrer">
+                <BookOpen className="size-4" />
+                Unicode Docs
               </a>
             )}
           />
         </div>
 
         <section>
-          <h2 className="mb-3 text-sm font-semibold flex items-center gap-2 text-muted-foreground uppercase tracking-wide">
+          <h2 className="mb-4 text-sm font-semibold flex items-center gap-2 text-muted-foreground uppercase tracking-wide">
             <Layers className="size-4" />
             Unicode Versions
           </h2>
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-            {versions.map((version) => (
-              <Link
-                key={version.version}
-                to="/v/$version"
-                params={{ version: version.version }}
-                className="group flex items-center justify-between rounded-lg border bg-card p-3 hover:bg-accent hover:border-accent transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="font-medium">{version.version}</span>
-                  {version.version === latestVersion?.version && (
-                    <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-medium">
-                      Latest
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center gap-2 text-muted-foreground">
-                  <span className="text-xs">{version.date}</span>
-                  <ArrowRight className="size-4 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
-                </div>
-              </Link>
-            ))}
-          </div>
+          <Suspense fallback={<VersionsCardListSkeleton />}>
+            <VersionsCardList />
+          </Suspense>
         </section>
       </div>
     </>

@@ -1,8 +1,7 @@
 import type { ComponentProps } from "react";
-import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link, useLoaderData, useMatches } from "@tanstack/react-router";
 import { BookOpen, ExternalLink, Grid3X3, Lightbulb, Search, Type } from "lucide-react";
-import { versionsQueryOptions } from "@/apis/versions";
+import { Suspense } from "react";
 import {
   Sidebar,
   SidebarContent,
@@ -15,8 +14,8 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { UcdLogo } from "./ucd-logo";
-import { VersionsList } from "./versions-list";
+import { UcdLogo } from "../../ucd-logo";
+import { VersionsList, VersionsListSkeleton } from "./versions-list";
 
 const TOOLS_ITEMS = [
   { to: "/search", icon: Search, label: "Search" },
@@ -37,7 +36,6 @@ const VERSION_ITEMS = [
 
 export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
   const { ucdjsApiBaseUrl } = useLoaderData({ from: "__root__" });
-  const { data: versions } = useSuspenseQuery(versionsQueryOptions());
 
   const matches = useMatches();
   const currentVersionMatch = matches.find((m) => (m.params as any)?.version !== undefined);
@@ -55,7 +53,6 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
         </Link>
       </SidebarHeader>
       <SidebarContent>
-
         <SidebarGroup>
           <SidebarGroupLabel>Tools</SidebarGroupLabel>
           <SidebarMenu>
@@ -101,7 +98,9 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
             )
           : null}
 
-        <VersionsList versions={versions} />
+        <Suspense fallback={<VersionsListSkeleton />}>
+          <VersionsList />
+        </Suspense>
       </SidebarContent>
       <SidebarFooter>
         <SidebarGroup>
