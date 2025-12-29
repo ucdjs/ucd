@@ -123,6 +123,7 @@ catalogs:
     class-variance-authority: 0.7.1
     "@base-ui/react": 1.0.0
     "@fontsource-variable/inter": 5.2.8
+    recharts: 3.6.0
 
   vscode:
     vscode-ext-gen: 1.5.1
