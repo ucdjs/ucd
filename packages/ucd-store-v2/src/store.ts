@@ -20,6 +20,7 @@ import defu from "defu";
 import { createInternalContext, createPublicContext } from "./core/context";
 import { UCDStoreGenericError } from "./errors";
 import { analyze } from "./operations/analyze";
+import { compare } from "./operations/compare";
 import { getFile } from "./operations/files/get";
 import { listFiles } from "./operations/files/list";
 import { getFileTree } from "./operations/files/tree";
@@ -169,6 +170,7 @@ export async function createUCDStore(options: UCDStoreOptions): Promise<UCDStore
     mirror: (options) => mirror(internalContext, options),
     sync: (options) => sync(internalContext, options),
     analyze: (options) => analyze(internalContext, options),
+    compare: (options) => compare(internalContext, options),
   } satisfies UCDStoreOperations);
 }
 
