@@ -8,7 +8,10 @@ import { setupCors, setupRatelimit } from "./lib/setups";
 import { buildOpenApiConfig, registerApp } from "./openapi";
 import { WELL_KNOWN_ROUTER } from "./routes/.well-known/router";
 import { TASKS_ROUTER } from "./routes/tasks/routes";
+import { V1_BLOCKS_ROUTER } from "./routes/v1_blocks/router";
+import { V1_CHARACTERS_ROUTER } from "./routes/v1_characters/router";
 import { V1_FILES_ROUTER } from "./routes/v1_files/router";
+import { V1_PROPERTIES_ROUTER } from "./routes/v1_properties/router";
 import { V1_SCHEMAS_ROUTER } from "./routes/v1_schemas/router";
 import { V1_VERSIONS_ROUTER } from "./routes/v1_versions/router";
 
@@ -21,6 +24,9 @@ setupRatelimit(app);
 app.route("/", V1_VERSIONS_ROUTER);
 app.route("/", V1_FILES_ROUTER);
 app.route("/", V1_SCHEMAS_ROUTER);
+app.route("/", V1_CHARACTERS_ROUTER);
+app.route("/", V1_PROPERTIES_ROUTER);
+app.route("/", V1_BLOCKS_ROUTER);
 app.route("/", WELL_KNOWN_ROUTER);
 app.route("/", TASKS_ROUTER);
 

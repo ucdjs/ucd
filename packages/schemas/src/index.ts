@@ -15,6 +15,10 @@ export type { Lockfile, LockfileInput, Snapshot } from "./lockfile";
 export { UCDStoreVersionManifestSchema } from "./manifest";
 export type { UCDStoreVersionManifest } from "./manifest";
 export {
+  UnicodeBlockListSchema,
+  UnicodeBlockSchema,
+  UnicodeCharacterSchema,
+  UnicodePropertyResponseSchema,
   UnicodeTreeNodeSchema,
   UnicodeTreeSchema,
   UnicodeVersionDetailsSchema,
@@ -22,6 +26,10 @@ export {
   UnicodeVersionSchema,
 } from "./unicode";
 export type {
+  UnicodeBlock,
+  UnicodeBlockList,
+  UnicodeCharacter,
+  UnicodePropertyResponse,
   UnicodeTree,
   UnicodeTreeNode,
   UnicodeVersion,
