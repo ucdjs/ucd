@@ -10,6 +10,13 @@ export {
   createNodeUCDStore,
 } from "./factory";
 
+export type {
+  CompareOptions,
+  ComparisonMode,
+  SingleModeType,
+  VersionComparison,
+} from "./operations/compare";
+
 export { createUCDStore } from "./store";
 
 export type {

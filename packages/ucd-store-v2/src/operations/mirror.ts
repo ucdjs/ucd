@@ -9,7 +9,7 @@ import {
   wrapTry,
 } from "@ucdjs-internal/shared";
 import { hasCapability } from "@ucdjs/fs-bridge";
-import { computeFileHash, readLockfileOrDefault, writeLockfile, writeSnapshot } from "@ucdjs/lockfile";
+import { computeContentHash, computeFileHash, readLockfileOrDefault, writeLockfile, writeSnapshot } from "@ucdjs/lockfile";
 import { hasUCDFolderPath } from "@unicode-utils/core";
 import { dirname, join } from "pathe";
 import { extractFilterPatterns } from "../core/context";
@@ -405,7 +405,7 @@ export async function mirror(
         debug?.(`Creating snapshot for version ${version}`);
 
         // Read all mirrored files (downloaded + skipped) and compute hashes
-        const snapshotFiles: Record<string, { hash: string; size: number }> = {};
+        const snapshotFiles: Record<string, { hash: string; fileHash: string; size: number }> = {};
         let totalSize = 0;
 
         for (const filePath of allFiles) {
@@ -413,9 +413,12 @@ export async function mirror(
           const fileContent = await context.fs.read(localPath);
 
           if (fileContent) {
-            const hash = await computeFileHash(fileContent);
+            // Compute content hash (without Unicode header) for content comparison
+            const hash = await computeContentHash(fileContent);
+            // Compute file hash (full file) for integrity verification
+            const fileHash = await computeFileHash(fileContent);
             const size = new TextEncoder().encode(fileContent).length;
-            snapshotFiles[filePath] = { hash, size };
+            snapshotFiles[filePath] = { hash, fileHash, size };
             totalSize += size;
           }
         }

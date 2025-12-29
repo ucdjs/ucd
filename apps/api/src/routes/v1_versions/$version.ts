@@ -208,14 +208,26 @@ export function registerGetVersionRoute(router: OpenAPIHono<HonoEnv>) {
 
     // Try to get statistics from bucket if available
     const bucket = c.env.UCD_BUCKET;
-    let statistics = null;
+    let statistics = {
+      newBlocks: 0,
+      newCharacters: 0,
+      newScripts: 0,
+      totalBlocks: 0,
+      totalCharacters: 0,
+      totalScripts: 0,
+    };
+
+    // This is so bad.... but we have to do it for now.
     if (bucket) {
-      statistics = await calculateStatistics(bucket, version);
+      const tmp = await calculateStatistics(bucket, version);
+      if (tmp) {
+        statistics = tmp;
+      }
     }
 
     return c.json({
       ...versionInfo,
-      statistics: statistics ?? undefined,
+      statistics,
     }, 200);
   });
 }
