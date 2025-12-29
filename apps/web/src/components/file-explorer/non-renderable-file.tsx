@@ -5,8 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export interface NonRenderableFileProps {
   fileName: string;
-  filePath: string;
   contentType: string;
+  fileUrl: string;
 }
 
 /**
@@ -126,7 +126,11 @@ function getFileTypeDescription(fileName: string): string {
   return descriptions[ext] || "Binary File";
 }
 
-export function NonRenderableFile({ fileName, filePath, contentType }: NonRenderableFileProps) {
+export function NonRenderableFile({
+  fileName,
+  contentType,
+  fileUrl,
+}: NonRenderableFileProps) {
   const fileType = getFileTypeDescription(fileName);
   const ext = fileName.split(".").pop()?.toLowerCase() || "";
 
@@ -169,7 +173,7 @@ export function NonRenderableFile({ fileName, filePath, contentType }: NonRender
             nativeButton={false}
             render={(
               <a
-                href={`https://api.ucdjs.dev/api/v1/files/${filePath}`}
+                href={fileUrl}
                 download={fileName}
               >
                 <Download className="size-4" />

@@ -59,6 +59,7 @@ export const Route = createFileRoute("/file-explorer/v/$")({
       path: context.path,
       isTooLarge,
       canRender,
+      fileUrl: new URL(context.path, `${context.apiBaseUrl}/api/v1/files/`).toString(),
     };
   },
   notFoundComponent: FileNotFoundBoundary,
@@ -66,7 +67,7 @@ export const Route = createFileRoute("/file-explorer/v/$")({
 
 function FileViewerPage() {
   const loaderData = Route.useLoaderData();
-  const { size, fileName, path, isTooLarge, canRender } = loaderData;
+  const { size, fileName, path, isTooLarge, canRender, fileUrl } = loaderData;
 
   // Check for large files first - no data fetching needed
   if (isTooLarge) {
@@ -74,7 +75,7 @@ function FileViewerPage() {
       <LargeFileWarning
         fileName={fileName}
         size={size}
-        downloadUrl={`https://api.ucdjs.dev/api/v1/files/${path}`}
+        downloadUrl={fileUrl}
         contentType="application/octet-stream"
       />
     );
@@ -85,8 +86,8 @@ function FileViewerPage() {
     return (
       <NonRenderableFile
         fileName={fileName}
-        filePath={path}
         contentType="application/octet-stream"
+        fileUrl={fileUrl}
       />
     );
   }
