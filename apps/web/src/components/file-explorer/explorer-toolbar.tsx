@@ -1,3 +1,4 @@
+import type { SearchQueryParams } from "@/routes/file-explorer/$";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import {
   Archive,
@@ -13,8 +14,7 @@ import {
   TrendingUp,
   X,
 } from "lucide-react";
-import { memo, useCallback, useRef, useState } from "react";
-
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -59,10 +59,20 @@ const SearchInput = memo(() => {
     }, 300);
   }, [navigate]);
 
+  useEffect(() => {
+    return () => {
+      // If there is a pending timer, we will clear it.
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, []);
+
   const handleClear = useCallback(() => {
     if (timerRef.current) {
       clearTimeout(timerRef.current);
     }
+
     setLocalValue("");
     navigate({
       search: (prev) => ({
@@ -264,7 +274,7 @@ const SortControl = memo(() => {
   const sort = useSearch({ from: "/file-explorer/$", select: (s) => s.sort }) || "name";
   const order = useSearch({ from: "/file-explorer/$", select: (s) => s.order }) || "asc";
 
-  const setSort = useCallback((newSort: "name" | "modified_date") => {
+  const setSort = useCallback((newSort: Required<SearchQueryParams["sort"]>) => {
     navigate({
       search: (prev) => ({
         ...prev,
@@ -304,11 +314,11 @@ const SortControl = memo(() => {
           <DropdownMenuGroup>
             <DropdownMenuLabel>Sort By</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuRadioGroup value={sort} onValueChange={(v) => setSort(v as "name" | "modified_date")}>
+            <DropdownMenuRadioGroup value={sort} onValueChange={(v) => setSort(v)}>
               <DropdownMenuRadioItem value="name">
                 Name
               </DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="modified_date">
+              <DropdownMenuRadioItem value="lastModified">
                 Last Modified
               </DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
