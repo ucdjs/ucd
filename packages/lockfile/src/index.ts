@@ -4,7 +4,7 @@ export {
   LockfileInvalidError,
 } from "./errors";
 
-export { computeFileHash } from "./hash";
+export { computeContentHash, computeFileHash, stripUnicodeHeader } from "./hash";
 
 export {
   canUseLockfile,

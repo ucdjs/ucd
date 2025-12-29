@@ -73,9 +73,17 @@ export type LockfileInput = z.input<typeof LockfileSchema>;
  */
 const SnapshotFileEntrySchema = z.object({
   /**
-   * SHA-256 hash of the file content (format: "sha256:...")
+   * SHA-256 hash of the file content without the Unicode header (format: "sha256:...").
+   * This hash is used for comparing content across versions, since the header
+   * contains version-specific information (version number, date, copyright year).
    */
   hash: z.string().regex(/^sha256:[a-f0-9]{64}$/),
+
+  /**
+   * SHA-256 hash of the complete file including headers (format: "sha256:...").
+   * This hash represents the actual file on disk.
+   */
+  fileHash: z.string().regex(/^sha256:[a-f0-9]{64}$/),
 
   /**
    * Size of the file in bytes

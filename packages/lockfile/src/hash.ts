@@ -1,3 +1,63 @@
+// TODO: A lot of this will be replaced with a proper unicode library later
+// @unicode-utils/core
+
+/**
+ * Strips the Unicode file header from content.
+ * The header typically contains:
+ * - Filename with version (e.g., "# DerivedBinaryProperties-15.1.0.txt")
+ * - Date line (e.g., "# Date: 2023-01-05, 20:34:33 GMT")
+ * - Copyright line (e.g., "# © 2023 Unicode®, Inc.")
+ *
+ * @param {string} content - The file content to strip the header from
+ * @returns {string} The content with the header stripped
+ */
+export function stripUnicodeHeader(content: string): string {
+  // Match consecutive comment lines at the start that look like header lines
+  const lines = content.split("\n");
+  let headerEndIndex = 0;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (line == null) {
+      continue;
+    }
+
+    const trimmedLine = line.trim();
+
+    // Empty lines within the header block are allowed
+    if (trimmedLine === "" || trimmedLine === "#") {
+      continue;
+    }
+
+    // Check if this is a header line
+    if (trimmedLine.startsWith("#")) {
+      const isHeaderLine
+        = /\d+\.\d+\.\d+\.txt/i.test(trimmedLine) // Filename with version
+          || /Date:/i.test(trimmedLine) // Date line
+          || /©|Unicode®|Unicode,\s*Inc/i.test(trimmedLine); // Copyright line
+
+      if (isHeaderLine) {
+        headerEndIndex = i + 1;
+        continue;
+      }
+    }
+
+    // Once we hit a non-header line, stop
+    break;
+  }
+
+  // If we found header lines, skip them
+  if (headerEndIndex > 0) {
+    // Also skip any blank lines immediately after the header
+    while (headerEndIndex < lines.length && lines[headerEndIndex]?.trim() === "") {
+      headerEndIndex++;
+    }
+    return lines.slice(headerEndIndex).join("\n");
+  }
+
+  return content;
+}
+
 /**
  * Converts a string to Uint8Array using UTF-8 encoding.
  * Provides a fallback for environments without TextEncoder.
@@ -90,4 +150,18 @@ export async function computeFileHash(content: string | Uint8Array): Promise<str
   throw new Error(
     "SHA-256 hashing is not available. Web Crypto API is required for hash computation.",
   );
+}
+
+/**
+ * Computes the SHA-256 hash of file content after stripping the Unicode header.
+ * This is useful for comparing file content across versions, since the header
+ * contains version-specific information (version number, date, copyright year).
+ *
+ * @param {string} content - The file content to hash
+ * @returns {Promise<string>} A promise that resolves to the hash in format "sha256:..."
+ * @throws {Error} When Web Crypto API is not available
+ */
+export async function computeContentHash(content: string): Promise<string> {
+  const strippedContent = stripUnicodeHeader(content);
+  return computeFileHash(strippedContent);
 }
