@@ -1,8 +1,8 @@
 import type { VariantProps } from "class-variance-authority";
 import { mergeProps } from "@base-ui/react/merge-props";
 import { useRender } from "@base-ui/react/use-render";
-import { SidebarIcon } from "@phosphor-icons/react";
 import { cva } from "class-variance-authority";
+import { Menu } from "lucide-react";
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -269,7 +269,7 @@ function SidebarTrigger({
       }}
       {...props}
     >
-      <SidebarIcon />
+      <Menu />
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
   );

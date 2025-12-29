@@ -1,5 +1,5 @@
-import { WarningCircleIcon } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
+import { AlertCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
@@ -15,7 +15,7 @@ export function NotFoundLayout({ title, description, hint, actions }: NotFoundLa
     <div className="flex flex-1 items-center justify-center p-8">
       <div className="max-w-lg space-y-5 text-center">
         <div className="inline-flex items-center gap-2 rounded-full bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground">
-          <WarningCircleIcon className="size-4" />
+          <AlertCircle className="size-4" />
           Page not found
         </div>
         <div className="space-y-2">

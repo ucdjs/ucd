@@ -22,7 +22,7 @@ export interface AppRouterContext {
 
 const getUCDJSApiBaseUrl = createServerFn({ method: "GET" }).handler(() => {
   // eslint-disable-next-line node/prefer-global/process
-  return process.env.UCDJS_API_BASE_URL;
+  return process.env.UCDJS_API_BASE_URL || "https://api.ucdjs.dev";
 });
 
 export const Route = createRootRouteWithContext<AppRouterContext>()({

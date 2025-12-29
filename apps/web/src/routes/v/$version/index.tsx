@@ -1,11 +1,6 @@
-import {
-  ArrowRightIcon,
-  BookOpenIcon,
-  GridNineIcon,
-  TextAaIcon,
-} from "@phosphor-icons/react";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { ArrowRight, BookOpen, Grid3X3, Search, Type } from "lucide-react";
 
 import { versionDetailsQueryOptions, versionsQueryOptions } from "@/apis/versions";
 import {
@@ -16,7 +11,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -114,7 +109,7 @@ function VersionPage() {
                     rel="noopener noreferrer"
                     className="text-primary hover:underline inline-flex items-center gap-1"
                   >
-                    <BookOpenIcon className="size-3" />
+                    <BookOpen className="size-3" />
                     Docs
                   </a>
                 </>
@@ -180,7 +175,7 @@ function VersionPage() {
             <Card className="hover:ring-primary/50 transition-all">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <GridNineIcon className="size-5" />
+                  <Grid3X3 className="size-5" />
                   Unicode Blocks
                 </CardTitle>
                 <CardDescription>
@@ -193,23 +188,24 @@ function VersionPage() {
                 </p>
               </CardContent>
               <CardFooter>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  render={(
-                    <Link to="/v/$version/blocks" params={{ version }}>
-                      View Blocks
-                      <ArrowRightIcon className="ml-1 size-4" />
-                    </Link>
-                  )}
-                />
+                <Link
+                  to="/v/$version/blocks"
+                  className={buttonVariants({
+                    variant: "outline",
+                    size: "sm",
+                  })}
+                  params={{ version }}
+                >
+                  View Blocks
+                  <ArrowRight className="ml-1 size-4" />
+                </Link>
               </CardFooter>
             </Card>
 
             <Card className="hover:ring-primary/50 transition-all">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <TextAaIcon className="size-5" />
+                  <Type className="size-5" />
                   Sample Characters
                 </CardTitle>
                 <CardDescription>
@@ -236,6 +232,36 @@ function VersionPage() {
                   ))}
                 </div>
               </CardContent>
+            </Card>
+
+            <Card className="hover:ring-primary/50 transition-all">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Search className="size-5" />
+                  Search (Version)
+                </CardTitle>
+                <CardDescription>
+                  Search within this Unicode release
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Search names, properties, blocks, and run regex/fuzzy queries scoped to this Unicode version.
+                </p>
+              </CardContent>
+              <CardFooter>
+                <Link
+                  to="/v/$version/search"
+                  className={buttonVariants({
+                    variant: "outline",
+                    size: "sm",
+                  })}
+                  params={{ version }}
+                >
+                  Open Search
+                  <ArrowRight className="ml-1 size-4" />
+                </Link>
+              </CardFooter>
             </Card>
           </div>
         </section>

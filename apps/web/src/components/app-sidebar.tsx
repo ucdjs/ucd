@@ -1,7 +1,7 @@
-import { ArrowSquareOutIcon, BookOpenIcon, StackSimpleIcon } from "@phosphor-icons/react";
+import type { ComponentProps } from "react";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Link, useLoaderData } from "@tanstack/react-router";
-import * as React from "react";
+import { Link, useLoaderData, useMatches } from "@tanstack/react-router";
+import { BookOpen, ExternalLink, Grid3X3, Lightbulb, Search, Type } from "lucide-react";
 import { versionsQueryOptions } from "@/apis/versions";
 import {
   Sidebar,
@@ -15,28 +15,33 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { NavItem } from "./nav";
 import { UcdLogo } from "./ucd-logo";
+import { VersionsList } from "./versions-list";
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+const TOOLS_ITEMS = [
+  { to: "/search", icon: Search, label: "Search" },
+  { to: "/file-explorer/$", params: { _splat: "" }, icon: BookOpen, label: "File Explorer" },
+  { to: "/compare", icon: Grid3X3, label: "Compare" },
+] as const;
+
+const VERSION_ITEMS = [
+  { to: "/v/$version", icon: BookOpen, label: "Overview" },
+  { to: "/v/$version/search", icon: Search, label: "Search" },
+  { to: "/v/$version/blocks", icon: Grid3X3, label: "Blocks" },
+  { to: "/v/$version/grapheme-visualizer", icon: Lightbulb, label: "Grapheme Visualizer" },
+  { to: "/v/$version/normalization-preview", icon: Lightbulb, label: "Normalization Preview" },
+  { to: "/v/$version/bidi-linebreak", icon: Lightbulb, label: "BIDI & Line Break" },
+  { to: "/v/$version/font-glyph-view", icon: Lightbulb, label: "Font & Glyph View" },
+  { to: "/v/$version/u/$hex", params: { hex: "0041" }, icon: Type, label: "Codepoint Visualizer" },
+] as const;
+
+export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
   const { ucdjsApiBaseUrl } = useLoaderData({ from: "__root__" });
   const { data: versions } = useSuspenseQuery(versionsQueryOptions());
 
-  // Build navigation items from versions
-  const navItems = React.useMemo(() => {
-    return [
-      {
-        title: "Versions",
-        url: "#",
-        icon: StackSimpleIcon,
-        isActive: false,
-        items: versions.map((v) => ({
-          title: `Unicode ${v.version}`,
-          url: `/v/${v.version}`,
-        })),
-      },
-    ];
-  }, [versions]);
+  const matches = useMatches();
+  const currentVersionMatch = matches.find((m) => (m.params as any)?.version !== undefined);
+  const currentVersion = currentVersionMatch ? (currentVersionMatch.params as any).version : undefined;
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -50,26 +55,53 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </Link>
       </SidebarHeader>
       <SidebarContent>
+
         <SidebarGroup>
+          <SidebarGroupLabel>Tools</SidebarGroupLabel>
           <SidebarMenu>
-            {navItems.map((item) => <NavItem key={item.title} item={item} />)}
+            {TOOLS_ITEMS.map((item) => (
+              <SidebarMenuItem key={item.label}>
+                <SidebarMenuButton render={(
+                  <Link to={item.to} params={"params" in item ? item.params : undefined}>
+                    <item.icon className="size-4" />
+                    <span>{item.label}</span>
+                  </Link>
+                )}
+                />
+              </SidebarMenuItem>
+            ))}
           </SidebarMenu>
         </SidebarGroup>
 
-        <SidebarGroup>
-          <SidebarGroupLabel>Explorer</SidebarGroupLabel>
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton render={(
-                <Link to="/file-explorer/$" params={{ _splat: "" }}>
-                  <BookOpenIcon className="size-4" />
-                  <span>File Explorer</span>
-                </Link>
-              )}
-              />
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarGroup>
+        {currentVersion
+          ? (
+              <SidebarGroup>
+                <SidebarGroupLabel>
+                  Version:
+                  {" "}
+                  {currentVersion}
+                </SidebarGroupLabel>
+                <SidebarMenu>
+                  {VERSION_ITEMS.map((item) => (
+                    <SidebarMenuItem key={item.label}>
+                      <SidebarMenuButton render={(
+                        <Link
+                          to={item.to}
+                          params={{ version: currentVersion, ...("params" in item ? item.params : {}) }}
+                        >
+                          <item.icon className="size-4" />
+                          <span>{item.label}</span>
+                        </Link>
+                      )}
+                      />
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroup>
+            )
+          : null}
+
+        <VersionsList versions={versions} />
       </SidebarContent>
       <SidebarFooter>
         <SidebarGroup>
@@ -78,7 +110,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuItem>
               <SidebarMenuButton render={(
                 <Link to="/docs/$" params={{ _splat: "ucdjs" }}>
-                  <BookOpenIcon className="size-4" />
+                  <BookOpen className="size-4" />
                   <span>Getting Started</span>
                 </Link>
               )}
@@ -87,7 +119,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenuItem>
               <SidebarMenuButton render={(
                 <a href={ucdjsApiBaseUrl ?? "https://api.ucdjs.dev"} target="_blank" rel="noopener noreferrer">
-                  <ArrowSquareOutIcon className="size-4" />
+                  <ExternalLink className="size-4" />
                   <span>API Reference</span>
                 </a>
               )}

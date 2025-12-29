@@ -1,5 +1,5 @@
-import { ArrowUpIcon, FolderIcon } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
+import { ArrowUp, FolderUp } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
@@ -27,7 +27,7 @@ export function ParentDirectory({ currentPath, viewMode }: ParentDirectoryProps)
       <Card size="sm" className="hover:ring-primary/30 transition-all hover:ring-2 group">
         <CardContent className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
-            <FolderIcon className="size-4 text-muted-foreground group-hover:text-primary" />
+            <FolderUp className="size-4 text-muted-foreground group-hover:text-primary" />
             <Link
               to="/file-explorer/$"
               params={{ _splat: parentPath || "" }}
@@ -52,11 +52,11 @@ export function ParentDirectory({ currentPath, viewMode }: ParentDirectoryProps)
         "border-b border-border/50",
       )}
     >
-      <FolderIcon className="size-4 text-muted-foreground group-hover:text-primary shrink-0" />
+      <FolderUp className="size-4 text-muted-foreground group-hover:text-primary shrink-0" />
       <span className="flex-1 text-sm text-muted-foreground group-hover:text-primary transition-colors">
         ..
       </span>
-      <ArrowUpIcon className="size-3 text-muted-foreground/50" />
+      <ArrowUp className="size-3 text-muted-foreground/50" />
     </Link>
   );
 }

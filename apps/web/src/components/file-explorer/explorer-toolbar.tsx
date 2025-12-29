@@ -1,19 +1,18 @@
-import {
-  ArrowsDownUpIcon,
-  FileIcon,
-  FileTextIcon,
-  FileXIcon,
-  FileZipIcon,
-  FolderIcon,
-  FunnelSimpleIcon,
-  ListIcon,
-  MagnifyingGlassIcon,
-  SortAscendingIcon,
-  SortDescendingIcon,
-  SquaresFourIcon,
-  XIcon,
-} from "@phosphor-icons/react";
 import { useNavigate, useSearch } from "@tanstack/react-router";
+import {
+  Archive,
+  ArrowUpDown,
+  File,
+  FileText,
+  Filter,
+  Folder,
+  Grid3X3,
+  List,
+  Search,
+  TrendingDown,
+  TrendingUp,
+  X,
+} from "lucide-react";
 import { memo, useCallback, useRef, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
@@ -75,7 +74,7 @@ const SearchInput = memo(() => {
 
   return (
     <div className="relative flex-1 min-w-48 max-w-sm">
-      <MagnifyingGlassIcon className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" weight="bold" />
+      <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
       <Input
         type="text"
         placeholder="Search files..."
@@ -93,7 +92,7 @@ const SearchInput = memo(() => {
           className="absolute right-1 top-1/2 -translate-y-1/2 hover:bg-destructive/10 hover:text-destructive"
           onClick={handleClear}
         >
-          <XIcon className="size-3" weight="bold" />
+          <X className="size-3" />
           <span className="sr-only">Clear search</span>
         </Button>
       )}
@@ -120,11 +119,11 @@ const TypeFilter = memo(() => {
   const getIcon = () => {
     switch (filterType) {
       case "files":
-        return <FileIcon className="size-4" weight="duotone" />;
+        return <File className="size-4" />;
       case "directories":
-        return <FolderIcon className="size-4" weight="duotone" />;
+        return <Folder className="size-4" />;
       default:
-        return <FunnelSimpleIcon className="size-4" weight="bold" />;
+        return <Filter className="size-4" />;
     }
   };
 
@@ -153,7 +152,7 @@ const TypeFilter = memo(() => {
                 setType(undefined);
               }}
             >
-              <XIcon className="size-3" weight="bold" />
+              <X className="size-3" />
             </span>
           )}
         </Button>
@@ -198,14 +197,14 @@ const PatternFilter = memo(() => {
   }, [navigate]);
 
   const commonPatterns = [
-    { label: "All files", value: undefined, icon: <FunnelSimpleIcon className="size-4" weight="bold" /> },
-    { label: "Text files", value: "*.txt", icon: <FileTextIcon className="size-4" weight="duotone" /> },
-    { label: "XML files", value: "*.xml", icon: <FileXIcon className="size-4" weight="duotone" /> },
-    { label: "Zip archives", value: "*.zip", icon: <FileZipIcon className="size-4" weight="duotone" /> },
+    { label: "All files", value: undefined, icon: <Filter className="size-4" /> },
+    { label: "Text files", value: "*.txt", icon: <FileText className="size-4" /> },
+    { label: "XML files", value: "*.xml", icon: <File className="size-4" /> },
+    { label: "Zip archives", value: "*.zip", icon: <Archive className="size-4" /> },
   ];
 
   const currentPattern = commonPatterns.find((p) => p.value === pattern);
-  const displayIcon = currentPattern?.icon || <FileTextIcon className="size-4" weight="duotone" />;
+  const displayIcon = currentPattern?.icon || <FileText className="size-4" />;
 
   return (
     <DropdownMenu>
@@ -232,7 +231,7 @@ const PatternFilter = memo(() => {
                 setPattern(undefined);
               }}
             >
-              <XIcon className="size-3" weight="bold" />
+              <X className="size-3" />
             </span>
           )}
         </Button>
@@ -293,7 +292,7 @@ const SortControl = memo(() => {
             size="sm"
             className="gap-1.5 h-8 rounded-r-none border-r-0"
           >
-            <ArrowsDownUpIcon className="size-4" weight="bold" />
+            <ArrowUpDown className="size-4" />
             <span className="hidden sm:inline text-xs">
               {sort === "name" ? "Name" : "Modified"}
             </span>
@@ -324,8 +323,8 @@ const SortControl = memo(() => {
         title={order === "asc" ? "Ascending" : "Descending"}
       >
         {order === "asc"
-          ? <SortAscendingIcon className="size-4" weight="bold" />
-          : <SortDescendingIcon className="size-4" weight="bold" />}
+          ? <TrendingUp className="size-4" />
+          : <TrendingDown className="size-4" />}
         <span className="sr-only">
           {order === "asc" ? "Sort ascending" : "Sort descending"}
         </span>
@@ -358,7 +357,7 @@ const ViewModeToggle = memo(() => {
         className="rounded-none border-0 h-8"
         title="List view"
       >
-        <ListIcon className="size-4" weight="bold" />
+        <List className="size-4" />
         <span className="sr-only">List view</span>
       </Button>
       <Button
@@ -368,7 +367,7 @@ const ViewModeToggle = memo(() => {
         className="rounded-none border-0 border-l border-input h-8"
         title="Grid view"
       >
-        <SquaresFourIcon className="size-4" weight="bold" />
+        <Grid3X3 className="size-4" />
         <span className="sr-only">Grid view</span>
       </Button>
     </div>
@@ -410,7 +409,7 @@ const ActiveFilters = memo(() => {
         filter
         {activeCount > 1 ? "s" : ""}
       </span>
-      <XIcon className="size-3" weight="bold" />
+      <X className="size-3" />
     </Badge>
   );
 });

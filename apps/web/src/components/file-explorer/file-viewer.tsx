@@ -1,11 +1,4 @@
-import {
-  ArrowSquareOutIcon,
-  CheckIcon,
-  CircleNotchIcon,
-  DownloadIcon,
-  FileTextIcon,
-  LinkSimpleIcon,
-} from "@phosphor-icons/react";
+import { Check, Download, ExternalLink, FileText, Link2, Loader2 } from "lucide-react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -230,7 +223,7 @@ export function FileViewer({ content, contentType, fileName, filePath }: FileVie
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="flex items-center gap-2 text-base font-medium">
-          <FileTextIcon className="size-4" />
+          <FileText className="size-4" />
           {fileName}
         </CardTitle>
         <div className="flex items-center gap-2">
@@ -250,7 +243,7 @@ export function FileViewer({ content, contentType, fileName, filePath }: FileVie
               onClick={handleCopyLink}
               title="Copy link to selected lines"
             >
-              {copied ? <CheckIcon className="size-4" /> : <LinkSimpleIcon className="size-4" />}
+              {copied ? <Check className="size-4" /> : <Link2 className="size-4" />}
               {copied ? "Copied!" : "Copy Link"}
             </Button>
           )}
@@ -264,13 +257,13 @@ export function FileViewer({ content, contentType, fileName, filePath }: FileVie
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <ArrowSquareOutIcon className="size-4" />
+                <ExternalLink className="size-4" />
                 Open Raw
               </a>
             )}
           />
           <Button variant="outline" size="sm" onClick={handleDownload}>
-            <DownloadIcon className="size-4" />
+            <Download className="size-4" />
             Download
           </Button>
         </div>
@@ -337,17 +330,17 @@ export function FileViewerSkeleton({ fileName }: FileViewerSkeletonProps) {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="flex items-center gap-2 text-base font-medium">
-          <FileTextIcon className="size-4" />
+          <FileText className="size-4" />
           {fileName}
         </CardTitle>
         <div className="flex items-center gap-2">
           <Skeleton className="h-4 w-20" />
           <Button variant="outline" size="sm" disabled>
-            <ArrowSquareOutIcon className="size-4" />
+            <ExternalLink className="size-4" />
             Open Raw
           </Button>
           <Button variant="outline" size="sm" disabled>
-            <DownloadIcon className="size-4" />
+            <Download className="size-4" />
             Download
           </Button>
         </div>
@@ -367,7 +360,7 @@ export function FileViewerSkeleton({ fileName }: FileViewerSkeletonProps) {
             {/* Content skeleton */}
             <div className="flex-1 overflow-x-auto text-sm font-mono p-3 space-y-1">
               <div className="flex items-center justify-center py-8">
-                <CircleNotchIcon className="size-6 animate-spin text-muted-foreground" />
+                <Loader2 className="size-6 animate-spin text-muted-foreground" />
                 <span className="ml-2 text-sm text-muted-foreground">Loading file content...</span>
               </div>
             </div>

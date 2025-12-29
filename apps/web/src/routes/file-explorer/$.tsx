@@ -47,8 +47,6 @@ export const Route = createFileRoute("/file-explorer/$")({
       type: search.type,
     } });
 
-    console.error("Directory statType:", statType);
-
     if (statType !== "directory") {
       throw redirect({
         to: "/file-explorer/v/$",

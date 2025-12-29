@@ -1,6 +1,6 @@
-import { ArrowLeftIcon, CheckIcon, CopyIcon } from "@phosphor-icons/react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { ArrowLeft, Check, Copy } from "lucide-react";
 import * as React from "react";
 
 import { characterQueryOptions } from "@/apis/characters";
@@ -82,7 +82,7 @@ function CharacterPage() {
             size="sm"
             render={(
               <Link to="/v/$version" params={{ version }}>
-                <ArrowLeftIcon className="mr-1 size-4" />
+                <ArrowLeft className="mr-1 size-4" />
                 Back to Unicode
                 {" "}
                 {version}
@@ -105,10 +105,10 @@ function CharacterPage() {
             >
               {copied
                 ? (
-                    <CheckIcon className="size-4 text-green-500" />
+                    <Check className="size-4 text-green-500" />
                   )
                 : (
-                    <CopyIcon className="size-4" />
+                    <Copy className="size-4" />
                   )}
             </Button>
           </div>

@@ -129,7 +129,6 @@ export const getFileHeadInfo = createServerFn({ method: "GET" })
     // eslint-disable-next-line node/prefer-global/process
     const baseFilesUrl = `${process.env.UCDJS_API_BASE_URL}/api/v1/files`;
     const url = new URL(data.path, `${baseFilesUrl}/`);
-    console.error("HEAD URL:", url.toString());
 
     if (data.query) {
       url.searchParams.set("query", data.query);
@@ -143,23 +142,15 @@ export const getFileHeadInfo = createServerFn({ method: "GET" })
       url.searchParams.set("type", data.type);
     }
 
-    console.error("Fetching HEAD info from URL:", url.toString());
-
     const headRes = await fetch(url, { method: "HEAD" });
 
-    console.error("HEAD response status:", headRes.status);
-
     if (headRes.status === 404) {
-      console.error("File not found:", data.path);
       throw notFound();
     }
 
     if (!headRes.ok) {
-      console.error("Failed to fetch HEAD info:", headRes.statusText);
       throw new Error(`Failed to fetch: ${headRes.statusText}`);
     }
-
-    console.error("HEADERS", headRes.headers);
 
     const statType = headRes.headers.get(UCD_STAT_TYPE_HEADER);
     const sizeHeader = headRes.headers.get(UCD_STAT_SIZE_HEADER) || headRes.headers.get("Content-Length");
@@ -167,8 +158,6 @@ export const getFileHeadInfo = createServerFn({ method: "GET" })
     const amountChildrenHeader = headRes.headers.get(UCD_STAT_CHILDREN_HEADER);
     const amountChildrenFilesHeader = headRes.headers.get(UCD_STAT_CHILDREN_FILES_HEADER);
     const amountChildrenDirsHeader = headRes.headers.get(UCD_STAT_CHILDREN_DIRS_HEADER);
-
-    console.error("HEAD statType:", statType, "size:", size);
 
     return {
       statType,
