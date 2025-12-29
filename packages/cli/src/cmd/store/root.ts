@@ -17,6 +17,7 @@ const STORE_SUBCOMMANDS = [
   "verify",
   "analyze",
   "status",
+  "compare",
 ] as const;
 export type Subcommand = (typeof STORE_SUBCOMMANDS)[number];
 
@@ -40,6 +41,7 @@ export async function runStoreRoot(subcommand: string, { flags }: CLIStoreCmdOpt
           ["verify", "Verify store integrity against API (works with HTTP bridge)."],
           ["analyze", "Analyze store contents and file status (works with HTTP bridge)."],
           ["status", "Show store status and lockfile information (works with HTTP bridge)."],
+          ["compare", "Compare two versions and report differences."],
         ],
         Flags: [
           ["--store-dir", "Directory where the UCD files are stored."],
@@ -91,6 +93,13 @@ export async function runStoreRoot(subcommand: string, { flags }: CLIStoreCmdOpt
   if (subcommand === "status") {
     const { runStatusStore } = await import("./status");
     await runStatusStore({ flags });
+    return;
+  }
+
+  if (subcommand === "compare") {
+    const [from, to] = versions.slice(0, 2);
+    const { runCompareStore } = await import("./compare");
+    await runCompareStore({ flags, from, to });
     return;
   }
 
