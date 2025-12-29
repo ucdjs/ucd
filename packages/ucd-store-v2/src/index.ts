@@ -13,6 +13,7 @@ export {
 export type {
   CompareOptions,
   ComparisonMode,
+  FileChangeInfo,
   SingleModeType,
   VersionComparison,
 } from "./operations/compare";

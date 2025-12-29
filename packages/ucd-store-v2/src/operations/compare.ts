@@ -57,23 +57,36 @@ export interface CompareOptions extends SharedOperationOptions {
   mode?: ComparisonMode;
 }
 
+export interface FileChangeInfo {
+  /** The file path */
+  file: string;
+  /** File metadata from the source version */
+  from: {
+    /** File size in bytes */
+    size: number;
+  };
+  /** File metadata from the target version */
+  to: {
+    /** File size in bytes */
+    size: number;
+  };
+}
+
 export interface VersionComparison {
+  /** The source version being compared from */
   from: string;
+  /** The target version being compared to */
   to: string;
-  files: {
-    added: readonly string[];
-    removed: readonly string[];
-    modified: readonly string[];
-    unchanged: readonly string[];
-  };
-  counts: {
-    fromTotal: number;
-    toTotal: number;
-    added: number;
-    removed: number;
-    modified: number;
-    unchanged: number;
-  };
+  /** Files that were added in the target version */
+  added: readonly string[];
+  /** Files that were removed from the source version */
+  removed: readonly string[];
+  /** Files that were modified between versions */
+  modified: readonly string[];
+  /** Number of files that are unchanged between versions */
+  unchanged: number;
+  /** Detailed change information for modified files */
+  changes: readonly FileChangeInfo[];
 }
 
 /**
@@ -153,8 +166,9 @@ export async function compare(
     const removed = fromList.filter((p) => !toSet.has(p)).sort();
     const common = fromList.filter((p) => toSet.has(p)).sort();
 
-    let modified: string[] = [];
-    let unchanged: string[] = [];
+    const modified: string[] = [];
+    const changes: FileChangeInfo[] = [];
+    let unchangedCount = 0;
 
     const includeHashes = options.includeFileHashes !== false; // default true
 
@@ -180,32 +194,31 @@ export async function compare(
 
         if (fromHash !== toHash) {
           modified.push(file);
+          changes.push({
+            file,
+            from: {
+              size: new TextEncoder().encode(fromContent).length,
+            },
+            to: {
+              size: new TextEncoder().encode(toContent).length,
+            },
+          });
         } else {
-          unchanged.push(file);
+          unchangedCount++;
         }
       })));
     } else {
-      unchanged = common.slice();
-      modified = [];
+      unchangedCount = common.length;
     }
 
     const result: VersionComparison = {
       from,
       to,
-      files: {
-        added: Object.freeze(added),
-        removed: Object.freeze(removed),
-        modified: Object.freeze(modified),
-        unchanged: Object.freeze(unchanged),
-      },
-      counts: {
-        fromTotal: fromList.length,
-        toTotal: toList.length,
-        added: added.length,
-        removed: removed.length,
-        modified: modified.length,
-        unchanged: unchanged.length,
-      },
+      added: Object.freeze(added),
+      removed: Object.freeze(removed),
+      modified: Object.freeze(modified.sort()),
+      unchanged: unchangedCount,
+      changes: Object.freeze(changes.sort((a, b) => a.file.localeCompare(b.file))),
     };
 
     return result;
