@@ -8,7 +8,11 @@ import { defineFileSystemBridge } from "../define";
 
 const debug = createDebugger("ucdjs:fs-bridge:http");
 
-const API_BASE_URL_SCHEMA = z.codec(z.httpUrl(), z.instanceof(URL), {
+const API_BASE_URL_SCHEMA = z.codec(z.url({
+  protocol: /^https?$/,
+  hostname: z.regexes.hostname,
+  normalize: true,
+}), z.instanceof(URL), {
   decode: (urlString) => new URL(urlString),
   encode: (url) => url.href,
 }).default(new URL("/api/v1/files", UCDJS_API_BASE_URL));
