@@ -4,7 +4,12 @@ import type { InternalUCDStoreContext, SharedOperationOptions } from "../types";
 import { createDebugger, tryOr, wrapTry } from "@ucdjs-internal/shared";
 import { hasUCDFolderPath } from "@unicode-utils/core";
 import { join } from "pathe";
-import { UCDStoreFilterError, UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../errors";
+import {
+  UCDStoreApiFallbackError,
+  UCDStoreFilterError,
+  UCDStoreGenericError,
+  UCDStoreVersionNotFoundError,
+} from "../errors";
 
 const debug = createDebugger("ucdjs:ucd-store:files:get");
 
@@ -100,17 +105,21 @@ async function _getFile(
     const result = await this.client.files.get(remotePath);
 
     if (result.error) {
-      throw new UCDStoreGenericError(
-        `Failed to fetch file '${filePath}': ${result.error.message}`,
-        { version, filePath, status: result.error.status },
-      );
+      throw new UCDStoreApiFallbackError({
+        version,
+        filePath,
+        status: result.error.status,
+        reason: "fetch-failed",
+        message: `Failed to fetch file '${filePath}': ${result.error.message}`,
+      });
     }
 
     if (result.data == null) {
-      throw new UCDStoreGenericError(
-        `Failed to fetch file '${filePath}': no data returned`,
-        { version, filePath },
-      );
+      throw new UCDStoreApiFallbackError({
+        version,
+        filePath,
+        reason: "no-data",
+      });
     }
 
     // Handle both string and JSON responses
