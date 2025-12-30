@@ -1,6 +1,6 @@
 import type { OperationResult } from "@ucdjs-internal/shared";
-import type { StoreError } from "../../errors";
-import type { InternalUCDStoreContext, SharedOperationOptions } from "../../types";
+import type { StoreError } from "../errors";
+import type { InternalUCDStoreContext, SharedOperationOptions } from "../types";
 import {
   createDebugger,
   filterTreeStructure,
@@ -8,7 +8,7 @@ import {
   wrapTry,
 } from "@ucdjs-internal/shared";
 import { join } from "pathe";
-import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../../errors";
+import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../errors";
 
 const debug = createDebugger("ucdjs:ucd-store:files:list");
 
@@ -36,32 +36,30 @@ export interface ListFilesOptions extends SharedOperationOptions {
  *   `allowApi` is true, in which case it fetches the file tree from the API
  *   and applies the same filtering before flattening.
  *
- * @param context Internal store context with client, filters, and configuration
+ * @this {InternalUCDStoreContext} - Internal store context with client, filters, FS bridge, and configuration
  * @param version Unicode version to list files for (must be resolved in the store)
  * @param options Optional filters and `allowApi` fallback behavior
  * @returns Operation result containing filtered, flattened file paths or an error
  */
-export async function listFiles(
-  context: InternalUCDStoreContext,
+async function _listFiles(
+  this: InternalUCDStoreContext,
   version: string,
   options?: ListFilesOptions,
 ): Promise<OperationResult<string[], StoreError>> {
   return wrapTry(async () => {
     // Validate version exists in store
-    if (!context.versions.resolved.includes(version)) {
+    if (!this.versions.resolved.includes(version)) {
       throw new UCDStoreVersionNotFoundError(version);
     }
 
-    const localPath = join(context.basePath, version);
-
+    const localPath = join(this.basePath, version);
     // Try listing from local store first
-    const dirExists = await context.fs.exists(localPath);
+    const dirExists = await this.fs.exists(localPath);
 
     if (dirExists) {
       try {
-        const entries = await context.fs.listdir(localPath, true);
-
-        const filteredEntries = filterTreeStructure(context.filter, entries, options?.filters);
+        const entries = await this.fs.listdir(localPath, true);
+        const filteredEntries = filterTreeStructure(this.filter, entries, options?.filters);
 
         return flattenFilePaths(filteredEntries);
       } catch (err) {
@@ -81,7 +79,7 @@ export async function listFiles(
     }
 
     debug?.("Fetching file tree from API for version:", version);
-    const result = await context.client.versions.getFileTree(version);
+    const result = await this.client.versions.getFileTree(version);
 
     if (result.error) {
       throw new UCDStoreGenericError(
@@ -98,11 +96,35 @@ export async function listFiles(
     }
 
     const entries = filterTreeStructure(
-      context.filter,
+      this.filter,
       result.data,
       options?.filters,
     );
 
     return flattenFilePaths(entries);
   });
+}
+
+function isContext(obj: any): obj is InternalUCDStoreContext {
+  return !!obj && typeof obj === "object" && Array.isArray(obj.versions?.resolved);
+}
+
+export function listFiles(
+  context: InternalUCDStoreContext,
+  version: string,
+  options?: ListFilesOptions,
+): Promise<OperationResult<string[], StoreError>>;
+
+export function listFiles(
+  this: InternalUCDStoreContext,
+  version: string,
+  options?: ListFilesOptions,
+): Promise<OperationResult<string[], StoreError>>;
+
+export function listFiles(this: any, thisOrContext: any, version?: any, options?: any): Promise<OperationResult<string[], StoreError>> {
+  if (isContext(thisOrContext)) {
+    return _listFiles.call(thisOrContext, version, options);
+  }
+
+  return _listFiles.call(this as InternalUCDStoreContext, thisOrContext, version);
 }

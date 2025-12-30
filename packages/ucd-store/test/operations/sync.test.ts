@@ -1,15 +1,15 @@
-import type { MirrorReport } from "../../src/operations/mirror";
+import type { MirrorReport } from "../../src/tasks/mirror";
 import { createTestContext } from "#internal-pkg:test-utils/test-context";
 import { createReadOnlyBridge } from "#test-utils/fs-bridges";
 import { mockStoreApi } from "#test-utils/mock-store";
 import { readLockfile, writeSnapshot } from "@ucdjs/lockfile";
 import { createEmptyLockfile } from "@ucdjs/lockfile/test-utils";
 import { describe, expect, it, vi } from "vitest";
-import { mirror } from "../../src/operations/mirror";
-import { sync } from "../../src/operations/sync";
+import { mirror } from "../../src/tasks/mirror";
+import { sync } from "../../src/tasks/sync";
 
 vi.mock("../../src/operations/mirror", async (importOriginal) => {
-  const original = await importOriginal<typeof import("../../src/operations/mirror")>();
+  const original = await importOriginal<typeof import("../../src/tasks/mirror")>();
   return {
     ...original,
     mirror: vi.fn(original.mirror),

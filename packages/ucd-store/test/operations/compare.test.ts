@@ -1,10 +1,10 @@
-import type { VersionComparison } from "../../src/operations/compare";
+import type { VersionComparison } from "../../src/reports/compare";
 import { createTestContext } from "#internal-pkg:test-utils/test-context";
 import { mockStoreApi } from "#test-utils/mock-store";
 import { HttpResponse } from "#test-utils/msw";
 import { createEmptyLockfile } from "@ucdjs/lockfile/test-utils";
 import { describe, expect, it } from "vitest";
-import { compare } from "../../src/operations/compare";
+import { compare } from "../../src/reports/compare";
 
 describe("compare", () => {
   it("should detect added, removed and modified files", async () => {

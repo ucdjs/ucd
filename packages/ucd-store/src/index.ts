@@ -16,7 +16,7 @@ export type {
   FileChangeInfo,
   SingleModeType,
   VersionComparison,
-} from "./operations/compare";
+} from "./reports/compare";
 
 export { createUCDStore } from "./store";
 

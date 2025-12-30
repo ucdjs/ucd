@@ -1,10 +1,10 @@
-import type { AnalysisReport } from "../../src/operations/analyze";
+import type { AnalysisReport } from "../../src/reports/analyze";
 import { createTestContext } from "#internal-pkg:test-utils/test-context";
 import { mockStoreApi } from "#test-utils/mock-store";
 import { HttpResponse } from "#test-utils/msw";
 import { createEmptyLockfile } from "@ucdjs/lockfile/test-utils";
 import { describe, expect, it } from "vitest";
-import { analyze } from "../../src/operations/analyze";
+import { analyze } from "../../src/reports/analyze";
 
 describe("analyze", () => {
   describe("complete versions", () => {

@@ -3,8 +3,8 @@ import { mockStoreApi } from "#test-utils/mock-store";
 import { HttpResponse } from "#test-utils/msw";
 import { createEmptyLockfile } from "@ucdjs/lockfile/test-utils";
 import { describe, expect, it } from "vitest";
-import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../../../src/errors";
-import { getFile } from "../../../src/operations/files/get";
+import { UCDStoreFilterError, UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../../../src/errors";
+import { getFile } from "../../../src/files/get";
 
 describe("getFile", () => {
   describe("version validation", () => {
@@ -49,8 +49,7 @@ describe("getFile", () => {
       const [data, error] = await getFile(context, "16.0.0", "UnicodeData.txt");
 
       expect(data).toBeNull();
-      // TODO: use UCDStoreFilterError
-      expect(error).toBeInstanceOf(UCDStoreGenericError);
+      expect(error).toBeInstanceOf(UCDStoreFilterError);
       expect(error?.message).toContain("does not pass filters");
     });
 
@@ -69,8 +68,7 @@ describe("getFile", () => {
       const [data, error] = await getFile(context, "16.0.0", "UnicodeData.txt");
 
       expect(data).toBeNull();
-      // TODO: use UCDStoreFilterError
-      expect(error).toBeInstanceOf(UCDStoreGenericError);
+      expect(error).toBeInstanceOf(UCDStoreFilterError);
       expect(error?.message).toContain("does not pass filters");
     });
 

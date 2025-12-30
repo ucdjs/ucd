@@ -1,14 +1,14 @@
 import type { OperationResult } from "@ucdjs-internal/shared";
 import type { UnicodeTreeNode } from "@ucdjs/schemas";
-import type { StoreError } from "../../errors";
-import type { InternalUCDStoreContext, SharedOperationOptions } from "../../types";
+import type { StoreError } from "../errors";
+import type { InternalUCDStoreContext, SharedOperationOptions } from "../types";
 import {
   createDebugger,
   filterTreeStructure,
   wrapTry,
 } from "@ucdjs-internal/shared";
 import { join } from "pathe";
-import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../../errors";
+import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../errors";
 
 const debug = createDebugger("ucdjs:ucd-store:files:tree");
 
@@ -30,27 +30,27 @@ export interface GetFileTreeOptions extends SharedOperationOptions {
  * @param {GetFileTreeOptions} [options] - Optional filters and API fallback behavior
  * @returns {Promise<OperationResult<UnicodeTreeNode[], StoreError>>} Operation result with filtered file tree or error
  */
-export async function getFileTree(
-  context: InternalUCDStoreContext,
+async function _getFileTree(
+  this: InternalUCDStoreContext,
   version: string,
   options?: GetFileTreeOptions,
 ): Promise<OperationResult<UnicodeTreeNode[], StoreError>> {
   return wrapTry(async () => {
     // Validate version exists in store
-    if (!context.versions.resolved.includes(version)) {
+    if (!this.versions.resolved.includes(version)) {
       throw new UCDStoreVersionNotFoundError(version);
     }
 
-    const localPath = join(context.basePath, version);
+    const localPath = join(this.basePath, version);
 
     // Try listing from local store first
-    const dirExists = await context.fs.exists(localPath);
+    const dirExists = await this.fs.exists(localPath);
 
     if (dirExists) {
       try {
-        const entries = await context.fs.listdir(localPath, true);
+        const entries = await this.fs.listdir(localPath, true);
 
-        const filteredTree = filterTreeStructure(context.filter, entries, {
+        const filteredTree = filterTreeStructure(this.filter, entries, {
           exclude: options?.filters?.exclude,
           include: options?.filters?.include,
         });
@@ -74,7 +74,7 @@ export async function getFileTree(
 
     // Fetch file tree from API
     debug?.("Fetching file tree from API for version:", version);
-    const result = await context.client.versions.getFileTree(version);
+    const result = await this.client.versions.getFileTree(version);
 
     if (result.error) {
       throw new UCDStoreGenericError(
@@ -90,11 +90,35 @@ export async function getFileTree(
       );
     }
 
-    const filteredTree = filterTreeStructure(context.filter, result.data, {
+    const filteredTree = filterTreeStructure(this.filter, result.data, {
       exclude: options?.filters?.exclude,
       include: options?.filters?.include,
     });
 
     return filteredTree;
   });
+}
+
+function isContext(obj: any): obj is InternalUCDStoreContext {
+  return !!obj && typeof obj === "object" && Array.isArray(obj.versions?.resolved);
+}
+
+export function getFileTree(
+  context: InternalUCDStoreContext,
+  version: string,
+  options?: GetFileTreeOptions,
+): Promise<OperationResult<UnicodeTreeNode[], StoreError>>;
+
+export function getFileTree(
+  this: InternalUCDStoreContext,
+  version: string,
+  options?: GetFileTreeOptions,
+): Promise<OperationResult<UnicodeTreeNode[], StoreError>>;
+
+export function getFileTree(this: any, thisOrContext: any, version?: any, options?: any): Promise<OperationResult<UnicodeTreeNode[], StoreError>> {
+  if (isContext(thisOrContext)) {
+    return _getFileTree.call(thisOrContext, version, options);
+  }
+
+  return _getFileTree.call(this as InternalUCDStoreContext, thisOrContext, version);
 }

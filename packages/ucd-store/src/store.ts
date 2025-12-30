@@ -18,15 +18,15 @@ import { createUCDClientWithConfig } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { getLockfilePath, readLockfileOrDefault } from "@ucdjs/lockfile";
 import defu from "defu";
-import { createInternalContext, createPublicContext } from "./core/context";
+import { createInternalContext, createPublicContext } from "./context";
 import { UCDStoreGenericError } from "./errors";
-import { analyze } from "./operations/analyze";
-import { compare } from "./operations/compare";
-import { getFile } from "./operations/files/get";
-import { listFiles } from "./operations/files/list";
-import { getFileTree } from "./operations/files/tree";
-import { mirror } from "./operations/mirror";
-import { sync } from "./operations/sync";
+import { analyze } from "./reports/analyze";
+import { compare } from "./reports/compare";
+import { getFile } from "./files/get";
+import { listFiles } from "./files/list";
+import { getFileTree } from "./files/tree";
+import { mirror } from "./tasks/mirror";
+import { sync } from "./tasks/sync";
 import { bootstrap } from "./setup/bootstrap";
 import { verify } from "./setup/verify";
 
@@ -233,20 +233,14 @@ export async function createUCDStore<
 
   return Object.assign(publicContext, {
     files: {
-      get(version, path, options) {
-        return getFile(internalContext, version, path, options);
-      },
-      list(version, options) {
-        return listFiles(internalContext, version, options);
-      },
-      tree(version, options) {
-        return getFileTree(internalContext, version, options);
-      },
+      get: getFile.bind(internalContext),
+      list: listFiles.bind(internalContext),
+      tree: getFileTree.bind(internalContext),
     },
-    mirror: (options) => mirror(internalContext, options),
-    sync: (options) => sync(internalContext, options),
-    analyze: (options) => analyze(internalContext, options),
-    compare: (options) => compare(internalContext, options),
+    mirror: mirror.bind(internalContext),
+    sync: sync.bind(internalContext),
+    analyze: analyze.bind(internalContext),
+    compare: compare.bind(internalContext),
   } satisfies UCDStoreOperations);
 }
 
@@ -272,7 +266,7 @@ export async function handleVersionConflict(
       const mergedVersions = Array.from(new Set([...lockfileVersions, ...providedVersions]));
       const existing = await readLockfileOrDefault(fs, lockfilePath);
       const { writeLockfile } = await import("@ucdjs/lockfile");
-      const { extractFilterPatterns } = await import("./core/context");
+      const { extractFilterPatterns } = await import("./context");
       const filters = filter ? extractFilterPatterns(filter) : existing?.filters;
 
       await writeLockfile(fs, lockfilePath, {
@@ -298,7 +292,7 @@ export async function handleVersionConflict(
     case "overwrite": {
       const existing = await readLockfileOrDefault(fs, lockfilePath);
       const { writeLockfile } = await import("@ucdjs/lockfile");
-      const { extractFilterPatterns } = await import("./core/context");
+      const { extractFilterPatterns } = await import("./context");
       const filters = filter ? extractFilterPatterns(filter) : existing?.filters;
 
       await writeLockfile(fs, lockfilePath, {

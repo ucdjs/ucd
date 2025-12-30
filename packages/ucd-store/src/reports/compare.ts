@@ -4,8 +4,8 @@ import type { InternalUCDStoreContext, SharedOperationOptions } from "../types";
 import { createConcurrencyLimiter, createDebugger, wrapTry } from "@ucdjs-internal/shared";
 import { computeContentHash } from "@ucdjs/lockfile";
 import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../errors";
-import { getFile } from "./files/get";
-import { listFiles } from "./files/list";
+import { getFile } from "../files/get";
+import { listFiles } from "../files/list";
 
 const debug = createDebugger("ucdjs:ucd-store:compare");
 
@@ -117,8 +117,8 @@ function modeToAllowApi(mode: SingleModeType): boolean {
 /**
  * Compares two versions in the store and returns a report describing added/removed/modified/unchanged files.
  */
-export async function compare(
-  context: InternalUCDStoreContext,
+async function _compare(
+  this: InternalUCDStoreContext,
   options?: CompareOptions,
 ): Promise<OperationResult<VersionComparison, StoreError>> {
   return wrapTry(async () => {
@@ -133,24 +133,24 @@ export async function compare(
       throw new UCDStoreGenericError("Both `from` and `to` versions must be specified");
     }
 
-    if (!context.versions.resolved.includes(from)) {
+    if (!this.versions.resolved.includes(from)) {
       throw new UCDStoreVersionNotFoundError(from);
     }
 
-    if (!context.versions.resolved.includes(to)) {
+    if (!this.versions.resolved.includes(to)) {
       throw new UCDStoreVersionNotFoundError(to);
     }
 
     const { fromMode, toMode } = resolveModes(options.mode);
     debug?.("Comparing %s -> %s (modes: %s, %s)", from, to, fromMode, toMode);
 
-    const [fromFiles, fromError] = await listFiles(context, from, {
+    const [fromFiles, fromError] = await listFiles(this, from, {
       allowApi: modeToAllowApi(fromMode),
       filters: options.filters,
     });
     if (fromError) throw fromError;
 
-    const [toFiles, toError] = await listFiles(context, to, {
+    const [toFiles, toError] = await listFiles(this, to, {
       allowApi: modeToAllowApi(toMode),
       filters: options.filters,
     });
@@ -177,15 +177,13 @@ export async function compare(
       const limit = createConcurrencyLimiter(concurrency);
 
       await Promise.all(common.map((file) => limit(async () => {
-        const [fromContent, fErr] = await getFile(context, from, file, {
+        const [fromContent, fErr] = await getFile(this, from, file, {
           allowApi: modeToAllowApi(fromMode),
-          cache: false,
         });
         if (fErr) throw fErr;
 
-        const [toContent, tErr] = await getFile(context, to, file, {
+        const [toContent, tErr] = await getFile(this, to, file, {
           allowApi: modeToAllowApi(toMode),
-          cache: false,
         });
         if (tErr) throw tErr;
 
@@ -223,4 +221,26 @@ export async function compare(
 
     return result;
   });
+}
+
+function isContext(obj: any): obj is InternalUCDStoreContext {
+  return !!obj && typeof obj === "object" && Array.isArray(obj.versions?.resolved);
+}
+
+export function compare(
+  context: InternalUCDStoreContext,
+  options?: CompareOptions,
+): Promise<OperationResult<VersionComparison, StoreError>>;
+
+export function compare(
+  this: InternalUCDStoreContext,
+  options?: CompareOptions,
+): Promise<OperationResult<VersionComparison, StoreError>>;
+
+export function compare(this: any, thisOrContext: any, options?: any): Promise<OperationResult<VersionComparison, StoreError>> {
+  if (isContext(thisOrContext)) {
+    return _compare.call(thisOrContext, options);
+  }
+
+  return _compare.call(this, thisOrContext);
 }

@@ -2,7 +2,7 @@ import type { InternalUCDStoreContext } from "../types";
 import { createDebugger } from "@ucdjs-internal/shared";
 import { assertCapability } from "@ucdjs/fs-bridge";
 import { writeLockfile } from "@ucdjs/lockfile";
-import { extractFilterPatterns } from "../core/context";
+import { extractFilterPatterns } from "../context";
 import { UCDStoreGenericError } from "../errors";
 
 const debug = createDebugger("ucdjs:ucd-store:bootstrap");

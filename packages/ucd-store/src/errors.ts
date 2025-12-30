@@ -91,24 +91,22 @@ export class UCDStoreNotInitializedError extends UCDStoreBaseError {
 export class UCDStoreFilterError extends UCDStoreBaseError {
   public readonly excludePattern: string[] = [];
   public readonly includePattern: string[] = [];
-  public readonly filterDetails: string;
+  public readonly filePath: string;
 
-  constructor({
-    message,
+  constructor(message: string, {
     excludePattern,
     includePattern,
-    filterDetails,
+    filePath,
   }: {
-    message: string;
     excludePattern: string[];
     includePattern: string[];
-    filterDetails: string;
+    filePath: string;
   }) {
     super(message);
     this.name = "UCDStoreFilterError";
     this.excludePattern = excludePattern;
     this.includePattern = includePattern;
-    this.filterDetails = filterDetails;
+    this.filePath = filePath;
   }
 }
 

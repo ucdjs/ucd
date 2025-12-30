@@ -12,7 +12,7 @@ import { hasCapability } from "@ucdjs/fs-bridge";
 import { computeContentHash, computeFileHash, readLockfileOrDefault, writeLockfile, writeSnapshot } from "@ucdjs/lockfile";
 import { hasUCDFolderPath } from "@unicode-utils/core";
 import { dirname, join } from "pathe";
-import { extractFilterPatterns } from "../core/context";
+import { extractFilterPatterns } from "../context";
 import { UCDStoreGenericError } from "../errors";
 
 const debug = createDebugger("ucdjs:ucd-store:mirror");
@@ -190,18 +190,18 @@ interface MirrorQueueItem {
  * @param {MirrorOptions} [options] - Mirror options
  * @returns {Promise<OperationResult<MirrorReport, StoreError>>} Operation result
  */
-export async function mirror(
-  context: InternalUCDStoreContext,
+async function _mirror(
+  this: InternalUCDStoreContext,
   options?: MirrorOptions,
 ): Promise<OperationResult<MirrorReport, StoreError>> {
   return wrapTry(async () => {
-    if (!hasCapability(context.fs, ["mkdir", "write"])) {
+    if (!hasCapability(this.fs, ["mkdir", "write"])) {
       throw new UCDStoreGenericError("Filesystem does not support required write operations for mirroring.");
     }
 
-    debug?.("Starting mirror operation with context: %O", context);
+    debug?.("Starting mirror operation with context: %O", this);
 
-    const versions = options?.versions ?? context.versions.resolved;
+    const versions = options?.versions ?? this.versions.resolved;
     const concurrency = options?.concurrency ?? 5;
     const force = options?.force ?? false;
 
@@ -264,7 +264,7 @@ export async function mirror(
     for (const version of versions) {
       debug?.(`Fetching file tree for version ${version}`);
 
-      const result = await context.client.versions.getFileTree(version);
+      const result = await this.client.versions.getFileTree(version);
       debug?.(`Fetched file tree for version ${version}`);
       if (result.error) {
         throw new UCDStoreGenericError(
@@ -282,7 +282,7 @@ export async function mirror(
         );
       }
 
-      const filteredTree = filterTreeStructure(context.filter, result.data, options?.filters);
+      const filteredTree = filterTreeStructure(this.filter, result.data, options?.filters);
       const filePaths = flattenFilePaths(filteredTree);
 
       debug?.(`Found ${filePaths.length} files for version ${version} after filtering`);
@@ -295,7 +295,7 @@ export async function mirror(
 
       // build queue items with all paths pre-computed
       for (const filePath of filePaths) {
-        const localPath = join(context.basePath, version, filePath);
+        const localPath = join(this.basePath, version, filePath);
 
         // Note:
         // The store always uses `<version>/ucd/<file>` paths when mirroring,
@@ -325,17 +325,17 @@ export async function mirror(
     let totalDownloadedSize = 0;
 
     await Promise.all([...directoriesToCreate].map(async (dir) => {
-      if (!await context.fs.exists(dir)) {
+      if (!await this.fs.exists(dir)) {
         // We have verified that `mkdir` capability exists
         // at the top of the function
-        await context.fs.mkdir!(dir);
+        await this.fs.mkdir!(dir);
       }
     }));
 
     await Promise.all(filesQueue.map((item) => limit(async () => {
       try {
         // Skip if file exists and force is disabled
-        if (!force && await context.fs.exists(item.localPath)) {
+        if (!force && await this.fs.exists(item.localPath)) {
           item.versionResult.files.skipped.push(item.filePath);
 
           return;
@@ -344,7 +344,7 @@ export async function mirror(
         debug?.(`Fetching file ${item.remotePath} from API`);
 
         // Fetch file content from API
-        const { data, error, response } = await context.client.files.get(item.remotePath);
+        const { data, error, response } = await this.client.files.get(item.remotePath);
 
         if (error) {
           throw new UCDStoreGenericError(
@@ -377,7 +377,7 @@ export async function mirror(
           );
         }
 
-        await context.fs.write!(item.localPath, content);
+        await this.fs.write!(item.localPath, content);
 
         item.versionResult.files.downloaded.push(item.filePath);
         totalDownloadedSize += contentSize;
@@ -395,7 +395,7 @@ export async function mirror(
     const duration = Date.now() - startTime;
 
     // Create snapshots and update lockfile for mirrored versions
-    const lockfile = await readLockfileOrDefault(context.fs, context.lockfile.path);
+    const lockfile = await readLockfileOrDefault(this.fs, this.lockfile.path);
     const updatedLockfileVersions = lockfile ? { ...lockfile.versions } : {};
 
     for (const [version, report] of versionedReports.entries()) {
@@ -409,8 +409,8 @@ export async function mirror(
         let totalSize = 0;
 
         for (const filePath of allFiles) {
-          const localPath = join(context.basePath, version, filePath);
-          const fileContent = await context.fs.read(localPath);
+          const localPath = join(this.basePath, version, filePath);
+          const fileContent = await this.fs.read(localPath);
 
           if (fileContent) {
             // Compute content hash (without Unicode header) for content comparison
@@ -424,7 +424,7 @@ export async function mirror(
         }
 
         // Write snapshot
-        await writeSnapshot(context.fs, context.basePath, version, {
+        await writeSnapshot(this.fs, this.basePath, version, {
           unicodeVersion: version,
           files: snapshotFiles,
         });
@@ -441,9 +441,9 @@ export async function mirror(
     // Write updated lockfile
     if (Object.keys(updatedLockfileVersions).length > 0) {
       // Preserve filters from existing lockfile or use current context filters
-      const filters = extractFilterPatterns(context.filter) ?? lockfile?.filters;
+      const filters = extractFilterPatterns(this.filter) ?? lockfile?.filters;
 
-      await writeLockfile(context.fs, context.lockfile.path, {
+      await writeLockfile(this.fs, this.lockfile.path, {
         lockfileVersion: 1,
         versions: updatedLockfileVersions,
         filters,
@@ -469,6 +469,28 @@ export async function mirror(
       summary,
     };
   });
+}
+
+function isContext(obj: any): obj is InternalUCDStoreContext {
+  return !!obj && typeof obj === "object" && Array.isArray(obj.versions?.resolved);
+}
+
+export function mirror(
+  context: InternalUCDStoreContext,
+  options?: MirrorOptions,
+): Promise<OperationResult<MirrorReport, StoreError>>;
+
+export function mirror(
+  this: InternalUCDStoreContext,
+  options?: MirrorOptions,
+): Promise<OperationResult<MirrorReport, StoreError>>;
+
+export function mirror(this: any, thisOrContext?: any, options?: any): Promise<OperationResult<MirrorReport, StoreError>> {
+  if (isContext(thisOrContext)) {
+    return _mirror.call(thisOrContext, options);
+  }
+
+  return _mirror.call(this, thisOrContext);
 }
 
 function computeSummary(

@@ -4,7 +4,7 @@ import { HttpResponse } from "#test-utils/msw";
 import { createEmptyLockfile } from "@ucdjs/lockfile/test-utils";
 import { describe, expect, it } from "vitest";
 import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../../../src/errors";
-import { getFileTree } from "../../../src/operations/files/tree";
+import { getFileTree } from "../../../src/files/tree";
 
 describe("getFileTree", () => {
   describe("version validation", () => {

@@ -9,7 +9,7 @@ import { createPathFilter, getDefaultUCDEndpointConfig } from "@ucdjs-internal/s
 import { createUCDClientWithConfig } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { getLockfilePath, writeLockfile } from "@ucdjs/lockfile";
-import { createInternalContext } from "../../src/core/context";
+import { createInternalContext } from "../../src/context";
 
 export interface CreateTestContextOptions {
   /**

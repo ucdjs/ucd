@@ -4,13 +4,13 @@ import type { FileSystemBridge, FileSystemBridgeArgs, FileSystemBridgeFactory } 
 import type { UCDWellKnownConfig, UnicodeTreeNode } from "@ucdjs/schemas";
 import type z from "zod";
 import type { StoreError } from "./errors";
-import type { AnalysisReport, AnalyzeOptions } from "./operations/analyze";
-import type { CompareOptions, VersionComparison } from "./operations/compare";
-import type { GetFileOptions } from "./operations/files/get";
-import type { ListFilesOptions } from "./operations/files/list";
-import type { GetFileTreeOptions } from "./operations/files/tree";
-import type { MirrorOptions, MirrorReport } from "./operations/mirror";
-import type { SyncOptions, SyncResult } from "./operations/sync";
+import type { AnalysisReport, AnalyzeOptions } from "./reports/analyze";
+import type { CompareOptions, VersionComparison } from "./reports/compare";
+import type { GetFileOptions } from "./files/get";
+import type { ListFilesOptions } from "./files/list";
+import type { GetFileTreeOptions } from "./files/tree";
+import type { MirrorOptions, MirrorReport } from "./tasks/mirror";
+import type { SyncOptions, SyncResult } from "./tasks/sync";
 
 /**
  * Strategy for handling version conflicts when manifest exists and versions are provided.
@@ -215,6 +215,14 @@ export interface InternalUCDStoreContext {
      */
     resolved: string[];
   };
+
+  /**
+   * Retrieves the expected file paths for a specific Unicode version from the API.
+   *
+   * @param version - The Unicode version to get expected file paths for
+   * @returns A promise that resolves to an array of file paths
+   */
+  getExpectedFilePaths: (version: string) => Promise<string[]>;
 }
 
 export type UCDStoreContext = Readonly<Pick<InternalUCDStoreContext, "basePath" | "fs">> & {

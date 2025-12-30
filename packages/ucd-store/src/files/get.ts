@@ -1,10 +1,10 @@
 import type { OperationResult } from "@ucdjs-internal/shared";
-import type { StoreError } from "../../errors";
-import type { InternalUCDStoreContext, SharedOperationOptions } from "../../types";
+import type { StoreError } from "../errors";
+import type { InternalUCDStoreContext, SharedOperationOptions } from "../types";
 import { createDebugger, tryOr, wrapTry } from "@ucdjs-internal/shared";
 import { hasUCDFolderPath } from "@unicode-utils/core";
 import { join } from "pathe";
-import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../../errors";
+import { UCDStoreFilterError, UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../errors";
 
 const debug = createDebugger("ucdjs:ucd-store:files:get");
 
@@ -21,43 +21,47 @@ export interface GetFileOptions extends SharedOperationOptions {
  * By default, only reads files that are actually present in the store.
  * Optionally caches the file to local FS after fetching from API (if allowApi is enabled).
  *
- * @param {InternalUCDStoreContext} context - Internal store context with client, filters, FS bridge, and configuration
+ * @this {InternalUCDStoreContext} - Internal store context with client, filters, FS bridge, and configuration
  * @param {string} version - The Unicode version containing the file
  * @param {string} filePath - The path to the file within the version
  * @param {GetFileOptions} [options] - Optional filters, cache behavior, and API fallback
  * @returns {Promise<OperationResult<string, StoreError>>} Operation result with file content or error
  */
-export async function getFile(
-  context: InternalUCDStoreContext,
+async function _getFile(
+  this: InternalUCDStoreContext,
   version: string,
   filePath: string,
   options?: GetFileOptions,
 ): Promise<OperationResult<string, StoreError>> {
   return wrapTry(async () => {
     // Validate version exists in store
-    if (!context.versions.resolved.includes(version)) {
+    if (!this.versions.resolved.includes(version)) {
       throw new UCDStoreVersionNotFoundError(version);
     }
 
     // Check if file passes filters (global filters + optional method-specific filters)
-    if (!context.filter(filePath, options?.filters)) {
+    if (!this.filter(filePath, options?.filters)) {
       debug?.("File '%s' does not pass filters", filePath);
-      throw new UCDStoreGenericError(
+      throw new UCDStoreFilterError(
         `File '${filePath}' does not pass filters`,
-        { version, filePath },
+        {
+          excludePattern: options?.filters?.exclude || [],
+          includePattern: options?.filters?.include || [],
+          filePath,
+        },
       );
     }
 
-    const localPath = join(context.basePath, version, filePath);
+    const localPath = join(this.basePath, version, filePath);
 
     debug?.("Checking local file existence:", localPath);
 
-    const fileExists = await context.fs.exists(localPath);
+    const fileExists = await this.fs.exists(localPath);
 
     if (fileExists) {
       debug?.("Local file exists:", localPath);
       const content = await tryOr({
-        try: context.fs.read(localPath),
+        try: this.fs.read(localPath),
         err: (err) => {
           debug?.("Failed to read local file:", localPath, err);
 
@@ -93,7 +97,7 @@ export async function getFile(
     // relative to their containing folder and do not include the `ucd` segment.
     // By adding `ucd` here, we ensure consistency with the mirror operation.
     const remotePath = join(version, hasUCDFolderPath(version) ? "ucd" : "", filePath);
-    const result = await context.client.files.get(remotePath);
+    const result = await this.client.files.get(remotePath);
 
     if (result.error) {
       throw new UCDStoreGenericError(
@@ -119,4 +123,31 @@ export async function getFile(
 
     return content;
   });
+}
+
+function isContext(obj: any): obj is InternalUCDStoreContext {
+  return !!obj && typeof obj === "object" && Array.isArray(obj.versions?.resolved);
+}
+
+export function getFile(
+  context: InternalUCDStoreContext,
+  version: string,
+  filePath: string,
+  options?: GetFileOptions,
+): Promise<OperationResult<string, StoreError>>;
+
+export function getFile(
+  this: InternalUCDStoreContext,
+  version: string,
+  filePath: string,
+  options?: GetFileOptions,
+): Promise<OperationResult<string, StoreError>>;
+
+export function getFile(this: any, thisOrContext: any, version?: any, filePath?: any, options?: any): Promise<OperationResult<string, StoreError>> {
+  if (isContext(thisOrContext)) {
+    return _getFile.call(thisOrContext, version, filePath, options);
+  }
+
+  // Bound call: `this` is the context, first arg is version
+  return _getFile.call(this as InternalUCDStoreContext, thisOrContext, version, filePath);
 }

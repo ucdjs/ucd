@@ -3,7 +3,7 @@ import { mockStoreApi } from "#test-utils/mock-store";
 import { HttpResponse } from "#test-utils/msw";
 import { getLockfilePath, readLockfile } from "@ucdjs/lockfile";
 import { describe, expect, it } from "vitest";
-import { createUCDStore } from "../../src/store";
+import { createUCDStore } from "../src/store";
 
 describe("config discovery integration", () => {
   it("should use versions from discovered config when no versions provided", async () => {

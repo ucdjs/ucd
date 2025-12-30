@@ -5,7 +5,7 @@ import { HttpResponse } from "#test-utils/msw";
 import { readLockfile, readSnapshot } from "@ucdjs/lockfile";
 import { createEmptyLockfile } from "@ucdjs/lockfile/test-utils";
 import { describe, expect, it } from "vitest";
-import { mirror } from "../../src/operations/mirror";
+import { mirror } from "../../src/tasks/mirror";
 
 describe("mirror", () => {
   describe("basic mirroring", () => {

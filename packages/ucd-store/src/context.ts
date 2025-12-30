@@ -4,8 +4,9 @@ import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 import type {
   InternalUCDStoreContext,
   UCDStoreContext,
-} from "../types";
+} from "./types";
 import { createDebugger } from "@ucdjs-internal/shared";
+import { UCDStoreGenericError } from "./errors";
 
 const debug = createDebugger("ucdjs:ucd-store:context");
 
@@ -80,6 +81,33 @@ export function createInternalContext(options: CreateInternalContextOptions): In
         debug?.("Cached API versions:", apiVersionsCache);
         return apiVersionsCache;
       },
+    },
+    async getExpectedFilePaths(version: string): Promise<string[]> {
+      debug?.("Fetching expected files for version:", version);
+      const result = await options.client.manifest.get(version);
+
+      if (result.error) {
+        throw new UCDStoreGenericError(
+          `Failed to fetch expected files for version '${version}': ${result.error.message}`,
+          { version, status: result.error.status },
+        );
+      }
+
+      if (!result.data) {
+        throw new UCDStoreGenericError(
+          `Failed to fetch expected files for version '${version}': empty response`,
+          { version },
+        );
+      }
+
+      if (!Array.isArray(result.data.expectedFiles)) {
+        throw new UCDStoreGenericError(
+          `Failed to fetch expected files for version '${version}': invalid response (missing expectedFiles)`,
+          { version },
+        );
+      }
+
+      return result.data.expectedFiles;
     },
   };
 }
