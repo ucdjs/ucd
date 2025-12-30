@@ -8,7 +8,7 @@ import {
   wrapTry,
 } from "@ucdjs-internal/shared";
 import { join } from "pathe";
-import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../errors";
+import { UCDStoreApiFallbackError, UCDStoreVersionNotFoundError } from "../errors";
 
 const debug = createDebugger("ucdjs:ucd-store:files:list");
 
@@ -82,17 +82,20 @@ async function _listFiles(
     const result = await this.client.versions.getFileTree(version);
 
     if (result.error) {
-      throw new UCDStoreGenericError(
-        `Failed to fetch file tree for version '${version}': ${result.error.message}`,
-        { version, status: result.error.status },
-      );
+      throw new UCDStoreApiFallbackError({
+        version,
+        filePath: "file-tree",
+        reason: "fetch-failed",
+        status: result.error.status,
+      });
     }
 
     if (result.data == null) {
-      throw new UCDStoreGenericError(
-        `Failed to fetch file tree for version '${version}': no data returned`,
-        { version },
-      );
+      throw new UCDStoreApiFallbackError({
+        version,
+        filePath: "file-tree",
+        reason: "no-data",
+      });
     }
 
     const entries = filterTreeStructure(
