@@ -1,7 +1,7 @@
-import type { CompareOptions, VersionComparison } from "@ucdjs/ucd-store-v2";
+import type { CompareOptions, VersionComparison } from "@ucdjs/ucd-store";
 import { queryOptions } from "@tanstack/react-query";
 import { createServerFn } from "@tanstack/react-start";
-import { createHTTPUCDStore } from "@ucdjs/ucd-store-v2";
+import { createHTTPUCDStore } from "@ucdjs/ucd-store";
 
 // Cache for store instances per baseUrl on the server
 const storeCache = new Map<string, ReturnType<typeof createHTTPUCDStore>>();

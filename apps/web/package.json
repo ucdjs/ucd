@@ -25,7 +25,7 @@
     "@ucdjs-internal/shared": "workspace:*",
     "@ucdjs/env": "workspace:*",
     "@ucdjs/schemas": "workspace:*",
-    "@ucdjs/ucd-store-v2": "workspace:*",
+    "@ucdjs/ucd-store": "workspace:*",
     "@unicode-utils/core": "catalog:prod",
     "class-variance-authority": "catalog:web",
     "clsx": "catalog:web",

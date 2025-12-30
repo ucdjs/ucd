@@ -51,7 +51,7 @@
     "@ucdjs/fs-bridge": "workspace:*",
     "@ucdjs/lockfile": "workspace:*",
     "@ucdjs/schema-gen": "workspace:*",
-    "@ucdjs/ucd-store-v2": "workspace:*",
+    "@ucdjs/ucd-store": "workspace:*",
     "@unicode-utils/core": "catalog:prod",
     "farver": "catalog:prod",
     "yargs-parser": "catalog:prod"

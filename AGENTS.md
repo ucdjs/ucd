@@ -18,13 +18,10 @@ The repository is organized into three main workspace categories:
 ### Key Packages
 
 - **@ucdjs/ucd-store**: Store for managing Unicode Character Database files. Supports multiple file system bridges (Node.js, HTTP, in-memory). Core operations include mirror, analyze, and clean.
-- **@ucdjs/ucd-store-v2**: Next-generation store with lockfile and snapshot support.
-  > NOTE: This is a temporary package name while the new store is being implemented. Once stable, it will replace `@ucdjs/ucd-store`.
-  > Core operations include mirror, analyze, and sync (different from v1).
 - **@ucdjs/lockfile**: Lockfile and snapshot management utilities for UCD stores. Provides file hashing, lockfile/snapshot validation, and test utilities.
 - **@ucdjs/schema-gen**: Uses AI (OpenAI) to generate TypeScript schemas from Unicode data files
 - **@ucdjs/cli**: Command-line interface for UCD operations (binary: `ucd`)
-  > Currently uses `@ucdjs/ucd-store-v2` and `@ucdjs/lockfile` under the hood.
+  > Currently uses `@ucdjs/ucd-store` and `@ucdjs/lockfile` under the hood.
 - **@ucdjs/client**: OpenAPI-based API client for the UCD API
 - **@ucdjs/fs-bridge**: File system abstraction layer that allows different storage backends
 - **@ucdjs/schemas**: Zod schemas for Unicode data files (includes lockfile and snapshot schemas)
@@ -182,21 +179,6 @@ The `@ucdjs/schema-gen` package uses OpenAI to generate TypeScript type definiti
 1. Reads raw Unicode data files
 2. Uses AI to infer field types and descriptions
 3. Generates TypeScript interfaces using knitwork
-
-### UCD Store Migration
-The project is currently migrating from `@ucdjs/ucd-store` to `@ucdjs/ucd-store-v2`. Key differences:
-
-**Old Store (@ucdjs/ucd-store)**:
-- Operations: mirror, analyze, clean
-- No lockfile/snapshot support
-
-**New Store (@ucdjs/ucd-store-v2)**:
-- Operations: mirror, analyze, sync
-- Integrated lockfile and snapshot support via `@ucdjs/lockfile`
-- Currently used by CLI
-- Will replace old store once stable
-
-Both stores coexist during the migration period. When working with the CLI or testing new features, use ucd-store-v2.
 
 ### Internal Development Tools
 

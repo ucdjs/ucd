@@ -3,7 +3,7 @@ import type { Prettify } from "@luxass/utils";
 import type { CLIArguments } from "../../cli-utils";
 import type { CLIStoreCmdSharedFlags } from "./_shared";
 import { hasCapability } from "@ucdjs/fs-bridge";
-import { UCDStoreGenericError } from "@ucdjs/ucd-store-v2";
+import { UCDStoreGenericError } from "@ucdjs/ucd-store";
 import { green, red, yellow } from "farver/fast";
 import { printHelp } from "../../cli-utils";
 import { assertRemoteOrStoreDir, createStoreFromFlags, SHARED_FLAGS } from "./_shared";

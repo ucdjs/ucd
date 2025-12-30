@@ -1,4 +1,4 @@
-# @ucdjs/ucd-store-v2
+# @ucdjs/ucd-store
 
 [![npm version][npm-version-src]][npm-version-href]
 [![npm downloads][npm-downloads-src]][npm-downloads-href]

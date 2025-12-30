@@ -14,7 +14,6 @@
 
       "@ucdjs/schemas": ["./packages/schemas/src/index.ts"],
       "@ucdjs/ucd-store": ["./packages/ucd-store/src/index.ts"],
-      "@ucdjs/ucd-store-v2": ["./packages/ucd-store-v2/src/index.ts"],
 
       // utility packages
       "@ucdjs-internal/shared": ["./packages/shared/src/index.ts"],
