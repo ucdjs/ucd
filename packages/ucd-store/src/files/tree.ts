@@ -8,7 +8,7 @@ import {
   wrapTry,
 } from "@ucdjs-internal/shared";
 import { join } from "pathe";
-import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../errors";
+import { UCDStoreApiFallbackError, UCDStoreVersionNotFoundError } from "../errors";
 
 const debug = createDebugger("ucdjs:ucd-store:files:tree");
 
@@ -25,7 +25,7 @@ export interface GetFileTreeOptions extends SharedOperationOptions {
  * By default, only returns the tree structure for files actually present in the store.
  * Applies global filters and optional method-specific filters to the tree.
  *
- * @param {InternalUCDStoreContext} context - Internal store context with client, filters, and configuration
+ * @this {InternalUCDStoreContext} - Internal store context with client, filters, FS bridge, and configuration
  * @param {string} version - The Unicode version to fetch the file tree for
  * @param {GetFileTreeOptions} [options] - Optional filters and API fallback behavior
  * @returns {Promise<OperationResult<UnicodeTreeNode[], StoreError>>} Operation result with filtered file tree or error
@@ -77,17 +77,20 @@ async function _getFileTree(
     const result = await this.client.versions.getFileTree(version);
 
     if (result.error) {
-      throw new UCDStoreGenericError(
-        `Failed to fetch file tree for version '${version}': ${result.error.message}`,
-        { version, status: result.error.status },
-      );
+      throw new UCDStoreApiFallbackError({
+        version,
+        filePath: "file-tree",
+        reason: "fetch-failed",
+        status: result.error.status,
+      });
     }
 
     if (result.data == null) {
-      throw new UCDStoreGenericError(
-        `Failed to fetch file tree for version '${version}': no data returned`,
-        { version },
-      );
+      throw new UCDStoreApiFallbackError({
+        version,
+        filePath: "file-tree",
+        reason: "no-data",
+      });
     }
 
     const filteredTree = filterTreeStructure(this.filter, result.data, {
