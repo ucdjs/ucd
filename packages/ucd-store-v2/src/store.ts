@@ -1,6 +1,7 @@
 import type { PathFilter } from "@ucdjs-internal/shared";
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 import type { UCDWellKnownConfig } from "@ucdjs/schemas";
+import type z from "zod";
 import type {
   UCDStore,
   UCDStoreOperations,
@@ -31,12 +32,15 @@ import { verify } from "./setup/verify";
 
 const debug = createDebugger("ucdjs:ucd-store");
 
-export async function createUCDStore(options: UCDStoreOptions): Promise<UCDStore> {
+export async function createUCDStore<
+  BridgeOptionsSchema extends z.ZodType,
+>(options: UCDStoreOptions<BridgeOptionsSchema>): Promise<UCDStore> {
   debug?.("Creating UCD Store with options", options);
   const {
     baseUrl,
     globalFilters,
-    fs,
+    fs: fsFactory,
+    fsOptions,
     basePath,
     versions,
     endpointConfig,
@@ -49,12 +53,11 @@ export async function createUCDStore(options: UCDStoreOptions): Promise<UCDStore
     basePath: "",
     versions: [],
     bootstrap: true,
-    verify: false,
+    verify: true,
     versionStrategy: "strict" as const,
   });
 
   const filter = createPathFilter(globalFilters);
-  const lockfilePath = getLockfilePath(basePath);
 
   // resolve the endpoints config
   let resolvedEndpointConfig = endpointConfig;
@@ -70,12 +73,39 @@ export async function createUCDStore(options: UCDStoreOptions): Promise<UCDStore
     client = createUCDClientWithConfig(baseUrl, resolvedEndpointConfig!);
   }
 
-  // Extract versions from config if available
-  const configVersions = resolvedEndpointConfig?.versions;
+  // Build discovery context
+  const discoveryContext = {
+    baseUrl,
+    endpointConfig: resolvedEndpointConfig!,
+    versions: resolvedEndpointConfig?.versions ?? [],
+  };
 
-  // check for existing lockfile
-  const lockfileExists = await fs.exists(lockfilePath);
-  debug?.("Lockfile exists:", lockfileExists, "at path:", lockfilePath);
+  // Resolve fsOptions - can be static or a function receiving discovery context
+  const resolvedFsOptions = typeof fsOptions === "function"
+    ? fsOptions(discoveryContext)
+    : fsOptions;
+
+  // Call the factory with resolved options
+  // We need to handle 3 cases: no-args factory, optional-args factory, required-args factory
+  const fs = resolvedFsOptions !== undefined
+    // @ts-expect-error - TS cannot infer the args length properly here
+    ? fsFactory(resolvedFsOptions)
+    // @ts-expect-error - TS cannot infer the args length properly here
+    : fsFactory();
+
+  // Lockfiles only make sense for writable file systems
+  const supportsLockfile = fs.optionalCapabilities?.write === true;
+  const lockfilePath = supportsLockfile ? getLockfilePath(basePath) : null;
+  debug?.("Lockfile support:", supportsLockfile, "path:", lockfilePath);
+
+  // Extract versions from config if available
+  const configVersions = resolvedEndpointConfig?.versions ?? [];
+
+  // check for existing lockfile (only if supported)
+  const lockfileExists = supportsLockfile
+    ? await fs.exists(lockfilePath!)
+    : false;
+  debug?.("Lockfile exists:", lockfileExists);
 
   let storeVersions = versions;
 
@@ -85,14 +115,43 @@ export async function createUCDStore(options: UCDStoreOptions): Promise<UCDStore
     filter,
     fs,
     basePath,
-    versions: storeVersions,
-    lockfilePath,
+    lockfile: {
+      supports: supportsLockfile,
+      exists: lockfileExists,
+      path: lockfilePath ?? "",
+    },
+    versions: {
+      userProvided: versions,
+      configFile: configVersions,
+    },
   });
 
-  // if there is a lockfile, we can skip the bootstrap process
-  // and just use the versions from the lockfile
-  if (lockfileExists) {
-    const lockfile = await readLockfileOrDefault(fs, lockfilePath);
+  // Early validation: verify that versions (from input or config) are available in API
+  // This prevents wasted work if versions don't exist
+  const versionsToValidate = versions.length > 0 ? versions : configVersions;
+  if (versionsToValidate.length > 0) {
+    const apiVersions = await internalContext.versions.apiVersions();
+
+    if (apiVersions.length === 0) {
+      debug?.("Warning: Could not fetch API versions for validation, skipping early check");
+    } else {
+      const invalidVersions = versionsToValidate.filter((v) => !apiVersions.includes(v));
+
+      if (invalidVersions.length > 0) {
+        const source = versions.length > 0 ? "Provided" : "Config";
+        throw new UCDStoreGenericError(
+          `${source} versions are not available in API: ${invalidVersions.join(", ")}. `
+          + `Available versions: ${apiVersions.slice(0, 5).join(", ")}${apiVersions.length > 5 ? "..." : ""}`,
+        );
+      }
+
+      debug?.("✓ Early version validation passed");
+    }
+  }
+
+  // Case 1: Lockfile exists - use it
+  if (internalContext.lockfile.exists && internalContext.lockfile.path) {
+    const lockfile = await readLockfileOrDefault(fs, internalContext.lockfile.path);
     const lockfileVersions = lockfile ? Object.keys(lockfile.versions) : [];
     debug?.("Lockfile versions:", lockfileVersions);
 
@@ -103,54 +162,71 @@ export async function createUCDStore(options: UCDStoreOptions): Promise<UCDStore
         versions,
         lockfileVersions,
         fs,
-        lockfilePath,
+        internalContext.lockfile.path,
         configVersions,
         filter,
       );
-    } else {
-      // No versions provided, use lockfile or config
-      if (lockfileVersions.length > 0) {
-        storeVersions = lockfileVersions;
-        debug?.("Using versions from lockfile:", storeVersions);
-      } else if (configVersions && configVersions.length > 0) {
-        storeVersions = configVersions;
-        debug?.("Using versions from config:", storeVersions);
-      }
+    } else if (lockfileVersions.length > 0) {
+      storeVersions = lockfileVersions;
+      debug?.("Using versions from lockfile:", storeVersions);
+    } else if (configVersions.length) {
+      storeVersions = configVersions;
+      debug?.("Using versions from config:", storeVersions);
     }
 
-    internalContext.versions = storeVersions;
+    internalContext.versions.resolved = storeVersions;
+    internalContext.lockfile.exists = true;
+  }
 
-    if (shouldVerify) {
-      const verifyResult = await verify({
-        client,
-        lockfilePath,
-        fs,
-      });
-
-      if (!verifyResult.valid) {
-        throw new UCDStoreGenericError(
-          `Lockfile verification failed: ${verifyResult.missingVersions.length} version(s) in lockfile are not available in API: ${verifyResult.missingVersions.join(", ")}`,
-        );
-      }
-    }
-  } else {
-    // If there isn't a lockfile, and bootstrap is disabled, throw an error
-    // because we can't proceed without a lockfile. SINCE there is no data!
+  // Case 2: Writable bridge but no lockfile - need bootstrap
+  if (!internalContext.lockfile.exists && internalContext.lockfile.supports) {
     if (!shouldBootstrap) {
       throw new UCDStoreGenericError(
-        `Store lockfile not found at ${lockfilePath} and bootstrap is disabled. `
+        `Store lockfile not found at ${internalContext.lockfile.path} and bootstrap is disabled. `
         + `Enable bootstrap or create lockfile manually.`,
       );
     }
 
-    // Use versions from config if available, otherwise use provided versions
-    if (!storeVersions.length && configVersions && configVersions.length > 0) {
+    if (!storeVersions.length && configVersions.length) {
       storeVersions = configVersions;
       debug?.("Using versions from config for bootstrap:", storeVersions);
     }
 
-    internalContext.versions = storeVersions;
+    internalContext.versions.resolved = storeVersions;
     await bootstrap(internalContext);
+    internalContext.lockfile.exists = true;
+  }
+
+  // Case 3: Read-only bridge - must have versions
+  if (!internalContext.lockfile.supports) {
+    if (!storeVersions.length && configVersions.length) {
+      storeVersions = configVersions;
+      debug?.("Read-only bridge: using versions from config:", storeVersions);
+    }
+
+    if (!storeVersions.length) {
+      throw new UCDStoreGenericError(
+        `No versions provided for read-only file system bridge. `
+        + `Provide versions in options or ensure endpoint config is available.`,
+      );
+    }
+
+    internalContext.versions.resolved = storeVersions;
+    debug?.("Read-only bridge initialized with versions:", storeVersions);
+  }
+
+  // Unified verification: handles both lockfile-based and direct version validation
+  if (shouldVerify && internalContext.versions.resolved.length > 0) {
+    const verifyResult = await verify({ context: internalContext });
+
+    if (!verifyResult.valid) {
+      const source = verifyResult.source === "lockfile" ? "Lockfile" : "Version";
+      throw new UCDStoreGenericError(
+        `${source} verification failed: ${verifyResult.invalidVersions.length} version(s) are not available in API: ${verifyResult.invalidVersions.join(", ")}`,
+      );
+    }
+
+    debug?.(`✓ Verification passed (source: ${verifyResult.source})`);
   }
 
   const publicContext = createPublicContext(internalContext);

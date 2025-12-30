@@ -99,7 +99,7 @@ export interface MockStoreConfig {
    * If the value is `false`, then no handler will be used.
    * If the value provided is a specific response, then that response will be used.
    *
-   * By default, all endpoints will use the default handler.
+   * By default, all endpoints are disabled.
    */
   responses?: DerivedResponses;
 

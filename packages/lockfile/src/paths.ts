@@ -4,10 +4,10 @@ import { join } from "pathe";
  * Gets the default lockfile path for a given base path.
  * The lockfile is always named `.ucd-store.lock` regardless of base path.
  *
- * @param {string} _basePath - Base path (unused, kept for API compatibility)
+ * @param {string} _notUsedWillBeRemoved - Base path (unused, kept for API compatibility)
  * @returns {string} The lockfile path (`.ucd-store.lock`)
  */
-export function getLockfilePath(_basePath: string): string {
+export function getLockfilePath(_notUsedWillBeRemoved: string): string {
   return ".ucd-store.lock";
 }
 

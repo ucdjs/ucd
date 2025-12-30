@@ -21,15 +21,25 @@ export interface ListFilesOptions extends SharedOperationOptions {
 }
 
 /**
- * Retrieves all file paths for a specific Unicode version from the local store,
- * with optional fallback to the API when allowApi is enabled.
- * By default, only lists files that are actually present in the local store.
- * Flattens the file tree and applies global filters and optional method-specific filters.
+ * Lists all file paths for a Unicode version. The operation prefers the
+ * configured file system bridge and can optionally fall back to the API when
+ * the bridge path is missing or cannot be read.
  *
- * @param {InternalUCDStoreContext} context - Internal store context with client, filters, and configuration
- * @param {string} version - The Unicode version to list files for
- * @param {ListFilesOptions} [options] - Optional filters and API fallback behavior
- * @returns {Promise<OperationResult<string[], StoreError>>} Operation result with filtered file paths or error
+ * Behavior
+ * - Throws `UCDStoreVersionNotFoundError` when the requested version is not
+ *   part of the resolved store versions.
+ * - When the bridge directory for the version exists, returns flattened file
+ *   paths filtered with global filters plus any `options.filters`. If listing
+ *   fails and `allowApi` is true, it falls back to the API; otherwise it
+ *   returns an empty array.
+ * - When the bridge directory does not exist, it returns an empty array unless
+ *   `allowApi` is true, in which case it fetches the file tree from the API
+ *   and applies the same filtering before flattening.
+ *
+ * @param context Internal store context with client, filters, and configuration
+ * @param version Unicode version to list files for (must be resolved in the store)
+ * @param options Optional filters and `allowApi` fallback behavior
+ * @returns Operation result containing filtered, flattened file paths or an error
  */
 export async function listFiles(
   context: InternalUCDStoreContext,
@@ -38,7 +48,7 @@ export async function listFiles(
 ): Promise<OperationResult<string[], StoreError>> {
   return wrapTry(async () => {
     // Validate version exists in store
-    if (!context.versions.includes(version)) {
+    if (!context.versions.resolved.includes(version)) {
       throw new UCDStoreVersionNotFoundError(version);
     }
 

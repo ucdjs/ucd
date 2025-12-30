@@ -95,11 +95,11 @@ export async function analyze(
   const results = new Map<string, AnalysisReport>();
 
   return wrapTry(async () => {
-    const versionsToAnalyze = options?.versions ?? context.versions;
+    const versionsToAnalyze = options?.versions ?? context.versions.resolved;
 
     const promises = versionsToAnalyze.map(async (version) => {
       // If version not in store, skip
-      if (!context.versions.includes(version)) {
+      if (!context.versions.resolved.includes(version)) {
         return null;
       }
 

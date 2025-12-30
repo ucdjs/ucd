@@ -201,7 +201,7 @@ export async function mirror(
 
     debug?.("Starting mirror operation with context: %O", context);
 
-    const versions = options?.versions ?? context.versions;
+    const versions = options?.versions ?? context.versions.resolved;
     const concurrency = options?.concurrency ?? 5;
     const force = options?.force ?? false;
 
@@ -395,7 +395,7 @@ export async function mirror(
     const duration = Date.now() - startTime;
 
     // Create snapshots and update lockfile for mirrored versions
-    const lockfile = await readLockfileOrDefault(context.fs, context.lockfilePath);
+    const lockfile = await readLockfileOrDefault(context.fs, context.lockfile.path);
     const updatedLockfileVersions = lockfile ? { ...lockfile.versions } : {};
 
     for (const [version, report] of versionedReports.entries()) {
@@ -443,7 +443,7 @@ export async function mirror(
       // Preserve filters from existing lockfile or use current context filters
       const filters = extractFilterPatterns(context.filter) ?? lockfile?.filters;
 
-      await writeLockfile(context.fs, context.lockfilePath, {
+      await writeLockfile(context.fs, context.lockfile.path, {
         lockfileVersion: 1,
         versions: updatedLockfileVersions,
         filters,

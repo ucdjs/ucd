@@ -1,6 +1,4 @@
-import type { PathFilter } from "@ucdjs-internal/shared";
-import type { UCDClient } from "@ucdjs/client";
-import type { FileSystemBridge } from "@ucdjs/fs-bridge";
+import type { InternalUCDStoreContext } from "../types";
 import { createDebugger } from "@ucdjs-internal/shared";
 import { assertCapability } from "@ucdjs/fs-bridge";
 import { writeLockfile } from "@ucdjs/lockfile";
@@ -9,43 +7,26 @@ import { UCDStoreGenericError } from "../errors";
 
 const debug = createDebugger("ucdjs:ucd-store:bootstrap");
 
-export interface BootstrapOptions {
-  client: UCDClient;
-  fs: FileSystemBridge;
-  basePath: string;
-  versions: string[];
-  lockfilePath: string;
-  filter?: PathFilter;
-}
-
 /**
  * Bootstraps a new store by validating versions against the API
- * and creating the initial lockfile.
+ * and creating the initial lockfile (if the bridge supports writing).
  *
- * @param {BootstrapOptions} options - Bootstrap configuration options
+ * @param {InternalUCDStoreContext} context - The internal store context
  * @throws {UCDStoreGenericError} If API fetch fails or versions are invalid
  */
-export async function bootstrap(options: BootstrapOptions): Promise<void> {
-  const { client, fs, basePath, versions, lockfilePath, filter } = options;
+export async function bootstrap(context: InternalUCDStoreContext): Promise<void> {
+  const { fs, basePath, filter } = context;
+  const versions = context.versions.resolved;
 
   debug?.("Starting bootstrap for versions:", versions);
 
-  // Validate versions against API
-  const result = await client.versions.list();
+  // Validate versions against API using context's cached getter
+  const availableVersions = await context.versions.apiVersions();
 
-  if (result.error) {
-    throw new UCDStoreGenericError(
-      `Failed to fetch Unicode versions: ${result.error.message}${
-        result.error.status ? ` (status ${result.error.status})` : ""
-      }`,
-    );
+  if (availableVersions.length === 0) {
+    throw new UCDStoreGenericError("Failed to fetch Unicode versions: no versions available from API");
   }
 
-  if (!result.data) {
-    throw new UCDStoreGenericError("Failed to fetch Unicode versions: no data returned");
-  }
-
-  const availableVersions = result.data.map(({ version }) => version);
   debug?.(`Fetched ${availableVersions.length} available versions from API`);
 
   const missingVersions = versions.filter((v) => !availableVersions.includes(v));
@@ -67,22 +48,28 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
     debug?.("Base directory already exists");
   }
 
-  debug?.(`Writing lockfile to: ${lockfilePath}`);
-  const filters = filter ? extractFilterPatterns(filter) : undefined;
-  await writeLockfile(fs, lockfilePath, {
-    lockfileVersion: 1,
-    versions: Object.fromEntries(
-      versions.map((v) => [
-        v,
-        {
-          path: `${v}/snapshot.json`, // relative path to snapshot
-          fileCount: 0,
-          totalSize: 0,
-        },
-      ]),
-    ),
-    filters,
-  });
+  // Only write lockfile if the bridge supports it
+  if (context.lockfile.supports && context.lockfile.path) {
+    debug?.(`Writing lockfile to: ${context.lockfile.path}`);
+    const filters = filter ? extractFilterPatterns(filter) : undefined;
+    await writeLockfile(fs, context.lockfile.path, {
+      lockfileVersion: 1,
+      versions: Object.fromEntries(
+        versions.map((v) => [
+          v,
+          {
+            path: `${v}/snapshot.json`, // relative path to snapshot
+            fileCount: 0,
+            totalSize: 0,
+          },
+        ]),
+      ),
+      filters,
+    });
+    debug?.("✓ Lockfile written");
+  } else {
+    debug?.("Skipping lockfile write - bridge does not support writing");
+  }
 
   debug?.("✓ Bootstrap completed successfully");
 }

@@ -61,7 +61,7 @@ export function mockStoreApi(config?: MockStoreConfig): void {
     const endpoint = route.endpoint;
 
     // Every endpoint is optional, but by default enabled
-    const response = responses?.[endpoint as keyof typeof responses] ?? true;
+    const response = responses?.[endpoint as keyof typeof responses] ?? false;
 
     // If explicitly disabled, skip
     if (response === false) continue;

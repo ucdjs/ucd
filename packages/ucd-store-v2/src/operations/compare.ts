@@ -133,11 +133,11 @@ export async function compare(
       throw new UCDStoreGenericError("Both `from` and `to` versions must be specified");
     }
 
-    if (!context.versions.includes(from)) {
+    if (!context.versions.resolved.includes(from)) {
       throw new UCDStoreVersionNotFoundError(from);
     }
 
-    if (!context.versions.includes(to)) {
+    if (!context.versions.resolved.includes(to)) {
       throw new UCDStoreVersionNotFoundError(to);
     }
 

@@ -12,8 +12,6 @@ minimumReleaseAgeExclude:
   # Unicode Related Packages
   - "@unicode-utils/*"
   - "@ucdjs/*"
-  - msw
-  - "@tanstack/*"
 
 packages:
   - "packages/*"

@@ -37,7 +37,7 @@ export async function getFileTree(
 ): Promise<OperationResult<UnicodeTreeNode[], StoreError>> {
   return wrapTry(async () => {
     // Validate version exists in store
-    if (!context.versions.includes(version)) {
+    if (!context.versions.resolved.includes(version)) {
       throw new UCDStoreVersionNotFoundError(version);
     }
 

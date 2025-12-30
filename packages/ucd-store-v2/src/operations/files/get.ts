@@ -2,7 +2,6 @@ import type { OperationResult } from "@ucdjs-internal/shared";
 import type { StoreError } from "../../errors";
 import type { InternalUCDStoreContext, SharedOperationOptions } from "../../types";
 import { createDebugger, tryOr, wrapTry } from "@ucdjs-internal/shared";
-import { hasCapability } from "@ucdjs/fs-bridge";
 import { hasUCDFolderPath } from "@unicode-utils/core";
 import { join } from "pathe";
 import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../../errors";
@@ -10,16 +9,6 @@ import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../../errors
 const debug = createDebugger("ucdjs:ucd-store:files:get");
 
 export interface GetFileOptions extends SharedOperationOptions {
-  /**
-   * Whether to cache the file to local FS if available
-   *
-   * NOTE:
-   * This requires that `allowApi` is enabled and that the FS bridge has write capability.
-   *
-   * @default true
-   */
-  cache?: boolean;
-
   /**
    * Whether to allow falling back to API if file is not found in local store
    * @default false
@@ -46,7 +35,7 @@ export async function getFile(
 ): Promise<OperationResult<string, StoreError>> {
   return wrapTry(async () => {
     // Validate version exists in store
-    if (!context.versions.includes(version)) {
+    if (!context.versions.resolved.includes(version)) {
       throw new UCDStoreVersionNotFoundError(version);
     }
 
@@ -126,17 +115,6 @@ export async function getFile(
       content = result.data;
     } else {
       content = JSON.stringify(result.data);
-    }
-
-    // Cache to local FS if available and not disabled
-    const shouldCache = options?.cache !== false;
-    if (shouldCache && hasCapability(context.fs, "write")) {
-      try {
-        await context.fs.write(localPath, content);
-        debug?.("Cached file to local FS:", localPath);
-      } catch (err) {
-        debug?.("Failed to cache file:", err);
-      }
     }
 
     return content;

@@ -1,7 +1,8 @@
 import type { OperationResult, PathFilter, PathFilterOptions } from "@ucdjs-internal/shared";
 import type { UCDClient } from "@ucdjs/client";
-import type { FileSystemBridge } from "@ucdjs/fs-bridge";
+import type { FileSystemBridge, FileSystemBridgeArgs, FileSystemBridgeFactory } from "@ucdjs/fs-bridge";
 import type { UCDWellKnownConfig, UnicodeTreeNode } from "@ucdjs/schemas";
+import type z from "zod";
 import type { StoreError } from "./errors";
 import type { AnalysisReport, AnalyzeOptions } from "./operations/analyze";
 import type { CompareOptions, VersionComparison } from "./operations/compare";
@@ -9,7 +10,6 @@ import type { GetFileOptions } from "./operations/files/get";
 import type { ListFilesOptions } from "./operations/files/list";
 import type { GetFileTreeOptions } from "./operations/files/tree";
 import type { MirrorOptions, MirrorReport } from "./operations/mirror";
-
 import type { SyncOptions, SyncResult } from "./operations/sync";
 
 /**
@@ -17,7 +17,43 @@ import type { SyncOptions, SyncResult } from "./operations/sync";
  */
 export type VersionConflictStrategy = "strict" | "merge" | "overwrite";
 
-export interface UCDStoreOptions {
+/**
+ * Context available during bridge construction after endpoint discovery.
+ */
+export interface DiscoveryContext {
+  /**
+   * The resolved base URL for the API.
+   */
+  baseUrl: string;
+
+  /**
+   * The discovered endpoint configuration.
+   */
+  endpointConfig: UCDWellKnownConfig;
+
+  /**
+   * The resolved versions from config (if available).
+   */
+  versions: string[];
+}
+
+/**
+ * Helper type to extract the options type from a FileSystemBridgeFactory.
+ * Returns the first argument type, or `never` if the factory takes no arguments.
+ */
+type ExtractBridgeOptions<TSchema extends z.ZodType> = FileSystemBridgeArgs<TSchema>[0];
+
+type FsOptionsInputFn<TSchema extends z.ZodType> = (ctx: DiscoveryContext) => ExtractBridgeOptions<TSchema>;
+
+/**
+ * Input type for fsOptions - can be static options or a function receiving DiscoveryContext.
+ */
+export type FsOptionsInput<TSchema extends z.ZodType>
+  = [ExtractBridgeOptions<TSchema>] extends [never]
+    ? never // Factory takes no arguments, fsOptions not allowed
+    : ExtractBridgeOptions<TSchema> | FsOptionsInputFn<TSchema>;
+
+export interface UCDStoreOptions<BridgeOptionsSchema extends z.ZodType> {
   /**
    * Base URL for the Unicode API
    *
@@ -50,7 +86,18 @@ export interface UCDStoreOptions {
    * - `@ucdjs/fs-bridge/bridges/node` for Node.js environments with full capabilities
    * - `@ucdjs/fs-bridge/bridges/http` for HTTP-based file systems (read-only)
    */
-  fs: FileSystemBridge;
+  fs: FileSystemBridgeFactory<BridgeOptionsSchema>;
+
+  /**
+   * Options to pass to the File System Bridge factory.
+   * Can be static options or a function that receives the discovery context.
+   *
+   * TODO:
+   * When using the function form, the options has some typing issues.
+   * E.g. the function allows unspecified properties that are not in the schema.
+   * This should be fixed to strictly enforce the schema shape.
+   */
+  fsOptions?: FsOptionsInput<BridgeOptionsSchema>;
 
   /**
    * Base Path attached to the base URL, when accessing files.
@@ -77,7 +124,7 @@ export interface UCDStoreOptions {
    * If true, will check that all versions in the lockfile are still available.
    * Only applies when a lockfile already exists.
    *
-   * @default false
+   * @default true
    */
   verify?: boolean;
 
@@ -121,14 +168,53 @@ export interface InternalUCDStoreContext {
   basePath: string;
 
   /**
-   * List of Unicode versions available in the store.
+   * Lockfile-related state and configuration.
    */
-  versions: string[];
+  lockfile: {
+    /**
+     * Whether the file system bridge supports lockfile operations (write capability).
+     */
+    supports: boolean;
+
+    /**
+     * Whether a lockfile currently exists.
+     */
+    exists: boolean;
+
+    /**
+     * Path to the store lockfile.
+     * Empty string if lockfile is not supported.
+     */
+    path: string;
+  };
 
   /**
-   * Path to the store lockfile.
+   * Version sources and resolution.
    */
-  lockfilePath: string;
+  versions: {
+    /**
+     * The versions that were provided as input to createUCDStore.
+     * Empty array if no versions were explicitly provided.
+     */
+    userProvided: readonly string[];
+
+    /**
+     * The versions from the resolved endpoint configuration.
+     * Empty array if no config was available.
+     */
+    configFile: readonly string[];
+
+    /**
+     * Getter that lazily fetches and caches available versions from the API.
+     * Returns a frozen array of version strings.
+     */
+    apiVersions: () => Promise<readonly string[]>;
+
+    /**
+     * The currently resolved/effective versions used for operations.
+     */
+    resolved: string[];
+  };
 }
 
 export type UCDStoreContext = Readonly<Pick<InternalUCDStoreContext, "basePath" | "fs">> & {

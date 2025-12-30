@@ -9,27 +9,78 @@ import { createDebugger } from "@ucdjs-internal/shared";
 
 const debug = createDebugger("ucdjs:ucd-store:context");
 
+interface CreateInternalContextOptions {
+  client: UCDClient;
+  filter: PathFilter;
+  fs: FileSystemBridge;
+  basePath: string;
+
+  lockfile: {
+    supports: boolean;
+    exists: boolean;
+    path: string;
+  };
+
+  versions: {
+    userProvided: readonly string[];
+    configFile: readonly string[];
+    /**
+     * Pre-resolved versions (optional).
+     * If not provided, `resolved` will be an empty mutable array.
+     * In production, `store.ts` sets this after determining the version source.
+     * In tests, this can be set directly.
+     */
+    resolved?: readonly string[];
+  };
+}
+
 /**
  * Creates an internal store context object.
  * This context is used internally by store methods and operations.
  *
  * @internal
  */
-export function createInternalContext(options: {
-  client: UCDClient;
-  filter: PathFilter;
-  fs: FileSystemBridge;
-  basePath: string;
-  versions: string[];
-  lockfilePath: string;
-}): InternalUCDStoreContext {
+export function createInternalContext(options: CreateInternalContextOptions): InternalUCDStoreContext {
+  // Cache for API versions (lazy loaded)
+  let apiVersionsCache: readonly string[] | null = null;
+
   return {
     client: options.client,
     filter: options.filter,
     fs: options.fs,
     basePath: options.basePath,
-    versions: [...options.versions],
-    lockfilePath: options.lockfilePath,
+    lockfile: {
+      supports: options.lockfile.supports,
+      exists: options.lockfile.exists,
+      path: options.lockfile.path,
+    },
+    versions: {
+      userProvided: Object.freeze([...options.versions.userProvided]),
+      configFile: Object.freeze([...options.versions.configFile]),
+      resolved: options.versions.resolved ? [...options.versions.resolved] : [],
+      async apiVersions() {
+        if (apiVersionsCache !== null) {
+          debug?.("Using cached API versions");
+          return apiVersionsCache;
+        }
+
+        debug?.("Fetching API versions");
+        const result = await options.client.versions.list();
+
+        if (result.error || !result.data) {
+          debug?.("Failed to fetch API versions:", result.error);
+          // Return empty array on error - caller should handle validation
+          apiVersionsCache = Object.freeze([] as string[]);
+          return apiVersionsCache;
+        }
+
+        // Extract version strings from the version objects
+        const versionStrings = result.data.map((v) => v.version);
+        apiVersionsCache = Object.freeze(versionStrings);
+        debug?.("Cached API versions:", apiVersionsCache);
+        return apiVersionsCache;
+      },
+    },
   };
 }
 
@@ -79,7 +130,7 @@ export function createPublicContext(
       return context.basePath;
     },
     get versions() {
-      return Object.freeze([...context.versions]);
+      return Object.freeze([...context.versions.resolved]);
     },
     get fs() {
       return context.fs;

@@ -109,7 +109,7 @@ export async function sync(
 
     debug?.(`Found ${availableVersionsFromApi.length} available versions from API`);
 
-    const lockfile = await readLockfileOrDefault(context.fs, context.lockfilePath);
+    const lockfile = await readLockfileOrDefault(context.fs, context.lockfile.path);
     const currentVersions = new Set(lockfile ? Object.keys(lockfile.versions) : []);
 
     const availableVersionsSet = new Set(availableVersionsFromApi);
@@ -153,7 +153,7 @@ export async function sync(
       const { extractFilterPatterns } = await import("../core/context");
       const filters = extractFilterPatterns(context.filter) ?? lockfile?.filters;
 
-      await writeLockfile(context.fs, context.lockfilePath, {
+      await writeLockfile(context.fs, context.lockfile.path, {
         lockfileVersion: 1,
         versions: Object.fromEntries(
           finalVersions.map((v) => {

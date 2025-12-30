@@ -1,38 +1,33 @@
-import type { UCDClient } from "@ucdjs/client";
-import type { FileSystemBridge } from "@ucdjs/fs-bridge";
+import type { InternalUCDStoreContext } from "../types";
 import { createDebugger, tryOr } from "@ucdjs-internal/shared";
 import { readLockfile } from "@ucdjs/lockfile";
 import { UCDStoreGenericError } from "../errors";
+import { validateVersions } from "./validate";
 
 const debug = createDebugger("ucdjs:ucd-store:verify");
 
 export interface VerifyOptions {
   /**
-   * UCD Client instance to use for API requests.
+   * Internal store context.
    */
-  client: UCDClient;
-
-  /**
-   * Path to the lockfile to verify against.
-   */
-  lockfilePath: string;
-
-  /**
-   * File system bridge for file operations.
-   */
-  fs: FileSystemBridge;
+  context: InternalUCDStoreContext;
 }
 
 export interface VerifyResult {
   /**
-   * Whether the lockfile is valid (all versions present in the API).
+   * Whether the verification passed (all versions are valid).
    */
   valid: boolean;
 
   /**
-   * Versions listed in the lockfile.
+   * The source of versions that were verified.
    */
-  lockfileVersions: string[];
+  source: "lockfile" | "store";
+
+  /**
+   * Versions that were verified.
+   */
+  verifiedVersions: string[];
 
   /**
    * Versions available from the API.
@@ -40,78 +35,93 @@ export interface VerifyResult {
   availableVersions: string[];
 
   /**
-   * Versions present in the lockfile but missing from the API.
+   * Versions that are invalid (not present in the API).
    */
-  missingVersions: string[];
+  invalidVersions: string[];
 
   /**
-   * Versions available in the API but not listed in the lockfile.
+   * Versions available in the API but not in the store/lockfile.
+   * Only populated when source is "lockfile".
    */
   extraVersions: string[];
 }
 
 /**
- * Verifies that versions in the lockfile are available in the API.
- * This checks the health of the store by comparing lockfile versions
- * against the current list of available versions from the API.
+ * Verifies that store versions are available in the API.
+ *
+ * If the store supports lockfiles and one exists, it verifies the lockfile versions.
+ * Otherwise, it validates the store's configured versions directly against the API.
  *
  * @param {VerifyOptions} options - Verification options
  * @returns {Promise<VerifyResult>} Verification result with comparison details
- * @throws {UCDStoreGenericError} If API fetch fails
+ * @throws {UCDStoreGenericError} If lockfile read or API fetch fails
  */
 export async function verify(options: VerifyOptions): Promise<VerifyResult> {
-  const { client, lockfilePath, fs } = options;
+  const { context } = options;
+  const { client, fs } = context;
+  const { supports: supportsLockfile, exists: lockfileExists, path: lockfilePath } = context.lockfile;
+  const versions = context.versions.resolved;
 
-  debug?.("Starting lockfile verification");
+  // If we have lockfile support and a lockfile exists, verify against lockfile
+  if (supportsLockfile && lockfileExists && lockfilePath) {
+    debug?.("Starting lockfile verification");
 
-  const lockfile = await tryOr({
-    try: () => readLockfile(fs, lockfilePath),
-    err: (err) => {
-      throw new UCDStoreGenericError(`Failed to read lockfile at ${lockfilePath}: ${(err as any).message}`);
-    },
+    const lockfile = await tryOr({
+      try: () => readLockfile(fs, lockfilePath),
+      err: (err) => {
+        throw new UCDStoreGenericError(`Failed to read lockfile at ${lockfilePath}: ${(err as any).message}`);
+      },
+    });
+
+    const lockfileVersions = Object.keys(lockfile.versions || {});
+    debug?.(`Found ${lockfileVersions.length} versions in lockfile:`, lockfileVersions);
+
+    const validationResult = await validateVersions({
+      client,
+      versions: lockfileVersions,
+    });
+
+    const extraVersions = validationResult.availableVersions.filter((v) => !lockfileVersions.includes(v));
+
+    debug?.(
+      validationResult.valid ? "✓ Lockfile verification passed" : "✗ Lockfile verification failed",
+      {
+        invalid: validationResult.invalidVersions.length,
+        extra: extraVersions.length,
+      },
+    );
+
+    return {
+      valid: validationResult.valid,
+      source: "lockfile",
+      verifiedVersions: lockfileVersions,
+      availableVersions: validationResult.availableVersions,
+      invalidVersions: validationResult.invalidVersions,
+      extraVersions,
+    };
+  }
+
+  // No lockfile - validate store versions directly
+  debug?.("Starting store version validation (no lockfile)");
+
+  const validationResult = await validateVersions({
+    client,
+    versions,
   });
 
-  const lockfileVersions = Object.keys(lockfile.versions || {});
-  debug?.(`Found ${lockfileVersions.length} versions in lockfile:`, lockfileVersions);
-
-  const apiResponseResult = await client.versions.list();
-
-  if (apiResponseResult.error) {
-    throw new UCDStoreGenericError(
-      `Failed to fetch Unicode versions during verification: ${apiResponseResult.error.message}${
-        apiResponseResult.error.status ? ` (status ${apiResponseResult.error.status})` : ""
-      }`,
-    );
-  }
-
-  if (!apiResponseResult.data) {
-    throw new UCDStoreGenericError("Failed to fetch Unicode versions during verification: no data returned");
-  }
-
-  // The list of available versions from the API
-  const availableVersions = apiResponseResult.data.map(({ version }) => version);
-  debug?.(`Fetched ${availableVersions.length} available versions from API`);
-
-  const missingVersions = lockfileVersions.filter((v) => !availableVersions.includes(v));
-  const extraVersions = availableVersions.filter((v) => !lockfileVersions.includes(v));
-
-  const valid = missingVersions.length === 0;
   debug?.(
-    valid ? "✓ Verification passed" : "✗ Verification failed",
+    validationResult.valid ? "✓ Version validation passed" : "✗ Version validation failed",
     {
-      missing: missingVersions.length,
-      extra: extraVersions.length,
+      invalid: validationResult.invalidVersions.length,
     },
   );
 
-  debug?.("Missing versions:", missingVersions);
-  debug?.("Extra versions available:", extraVersions);
-
   return {
-    valid,
-    lockfileVersions,
-    availableVersions,
-    missingVersions,
-    extraVersions,
+    valid: validationResult.valid,
+    source: "store",
+    verifiedVersions: versions,
+    availableVersions: validationResult.availableVersions,
+    invalidVersions: validationResult.invalidVersions,
+    extraVersions: [], // Not applicable for store-based verification
   };
 }

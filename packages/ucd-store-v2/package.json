@@ -40,9 +40,9 @@
     "clean": "git clean -xdf dist node_modules",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "playground:http": "tsx --tsconfig=./tsconfig.json ./playgrounds/http-playground.ts",
-    "playground:node": "tsx --tsconfig=./tsconfig.json ./playgrounds/node-playground.ts",
-    "playground:memory": "tsx --tsconfig=./tsconfig.json ./playgrounds/memory-playground.ts"
+    "playground:http": "tsx --import @ucdjs/moonbeam/register ./playgrounds/http-playground.ts",
+    "playground:node": "tsx --import @ucdjs/moonbeam/register ./playgrounds/node-playground.ts",
+    "playground:memory": "tsx --import @ucdjs/moonbeam/register ./playgrounds/memory-playground.ts"
   },
   "dependencies": {
     "@luxass/utils": "catalog:prod",
@@ -61,6 +61,7 @@
     "@luxass/eslint-config": "catalog:linting",
     "@ucdjs-tooling/tsconfig": "workspace:*",
     "@ucdjs-tooling/tsdown-config": "workspace:*",
+    "@ucdjs/moonbeam": "workspace:*",
     "eslint": "catalog:linting",
     "publint": "catalog:dev",
     "tsdown": "catalog:dev",

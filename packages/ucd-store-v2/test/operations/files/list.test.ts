@@ -7,13 +7,259 @@ import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../../../src
 import { listFiles } from "../../../src/operations/files/list";
 
 describe("listFiles", () => {
-  describe("local store (default behavior)", () => {
-    it("should list files from local directory when it exists", async () => {
-      let callCount = 0;
+  describe("version validation", () => {
+    it("should return error when version is not in resolved versions", async () => {
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+      });
+
+      const [data, error] = await listFiles(context, "15.0.0");
+
+      expect(data).toBeNull();
+      expect(error).toBeInstanceOf(UCDStoreVersionNotFoundError);
+      expect(error?.message).toContain("15.0.0");
+    });
+
+    it("should return error when resolved versions is empty", async () => {
+      const { context } = await createTestContext({
+        versions: [],
+      });
+
+      const [data, error] = await listFiles(context, "16.0.0");
+
+      expect(data).toBeNull();
+      expect(error).toBeInstanceOf(UCDStoreVersionNotFoundError);
+    });
+  });
+
+  describe("default behavior (reading from bridge)", () => {
+    it("should return list of file paths from bridge", async () => {
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+        initialFiles: {
+          "/test/16.0.0/UnicodeData.txt": "content",
+          "/test/16.0.0/Blocks.txt": "content",
+          "/test/16.0.0/Scripts.txt": "content",
+        },
+      });
+
+      const [data, error] = await listFiles(context, "16.0.0");
+
+      expect(error).toBeNull();
+      expect(data).toBeDefined();
+      expect(data).toHaveLength(3);
+      expect(data).toContain("UnicodeData.txt");
+      expect(data).toContain("Blocks.txt");
+      expect(data).toContain("Scripts.txt");
+    });
+
+    it("should return files from nested directories with full paths", async () => {
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+        initialFiles: {
+          "/test/16.0.0/UnicodeData.txt": "content",
+          "/test/16.0.0/auxiliary/GraphemeBreakProperty.txt": "content",
+          "/test/16.0.0/extracted/DerivedBidiClass.txt": "content",
+        },
+      });
+
+      const [data, error] = await listFiles(context, "16.0.0");
+
+      expect(error).toBeNull();
+      expect(data).toContain("UnicodeData.txt");
+      expect(data).toContain("auxiliary/GraphemeBreakProperty.txt");
+      expect(data).toContain("extracted/DerivedBidiClass.txt");
+    });
+
+    it("should return empty array when version directory does not exist", async () => {
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+      });
+
+      const [data, error] = await listFiles(context, "16.0.0");
+
+      expect(error).toBeNull();
+      expect(data).toEqual([]);
+    });
+
+    it("should return empty array when listdir fails", async () => {
+      const { context, fs } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+        initialFiles: {
+          "/test/16.0.0/UnicodeData.txt": "content",
+        },
+      });
+
+      fs.hook("listdir:before", () => {
+        throw new Error("Listdir failed");
+      });
+
+      const [data, error] = await listFiles(context, "16.0.0");
+
+      expect(error).toBeNull();
+      expect(data).toEqual([]);
+    });
+
+    it("should not make API calls when reading from bridge", async () => {
+      let apiCalled = false;
       mockStoreApi({
         versions: ["16.0.0"],
         onRequest: () => {
-          callCount++;
+          apiCalled = true;
+        },
+        responses: {
+          "/api/v1/versions": true,
+        },
+      });
+
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+        initialFiles: {
+          "/test/16.0.0/UnicodeData.txt": "content",
+        },
+      });
+
+      const [data, error] = await listFiles(context, "16.0.0");
+
+      expect(error).toBeNull();
+      expect(data).toHaveLength(1);
+      expect(apiCalled).toBe(false);
+    });
+  });
+
+  describe("filter application", () => {
+    it("should apply global include filter", async () => {
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+        globalFilters: {
+          include: ["*.txt"],
+        },
+        initialFiles: {
+          "/test/16.0.0/UnicodeData.txt": "content",
+          "/test/16.0.0/Blocks.txt": "content",
+          "/test/16.0.0/emoji-data.json": "content",
+        },
+      });
+
+      const [data, error] = await listFiles(context, "16.0.0");
+
+      expect(error).toBeNull();
+      expect(data).toContain("UnicodeData.txt");
+      expect(data).toContain("Blocks.txt");
+      expect(data).not.toContain("emoji-data.json");
+    });
+
+    it("should apply global exclude filter", async () => {
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+        globalFilters: {
+          exclude: ["**/extracted/**"],
+        },
+        initialFiles: {
+          "/test/16.0.0/UnicodeData.txt": "content",
+          "/test/16.0.0/extracted/DerivedBidiClass.txt": "content",
+        },
+      });
+
+      const [data, error] = await listFiles(context, "16.0.0");
+
+      expect(error).toBeNull();
+      expect(data).toContain("UnicodeData.txt");
+      expect(data).not.toContain("extracted/DerivedBidiClass.txt");
+    });
+
+    it("should apply per-request filters", async () => {
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+        initialFiles: {
+          "/test/16.0.0/UnicodeData.txt": "content",
+          "/test/16.0.0/Blocks.txt": "content",
+          "/test/16.0.0/Scripts.txt": "content",
+        },
+      });
+
+      const [data, error] = await listFiles(context, "16.0.0", {
+        filters: {
+          include: ["UnicodeData.txt"],
+        },
+      });
+
+      expect(error).toBeNull();
+      expect(data).toEqual(["UnicodeData.txt"]);
+    });
+
+    it("should combine global and per-request filters", async () => {
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+        globalFilters: {
+          include: ["*.txt"],
+        },
+        initialFiles: {
+          "/test/16.0.0/UnicodeData.txt": "content",
+          "/test/16.0.0/Blocks.txt": "content",
+          "/test/16.0.0/data.json": "content",
+        },
+      });
+
+      const [data, error] = await listFiles(context, "16.0.0", {
+        filters: {
+          exclude: ["Blocks.txt"],
+        },
+      });
+
+      expect(error).toBeNull();
+      expect(data).toContain("UnicodeData.txt");
+      expect(data).not.toContain("Blocks.txt");
+      expect(data).not.toContain("data.json");
+    });
+  });
+
+  // eslint-disable-next-line test/prefer-lowercase-title
+  describe("API fallback (allowApi: true)", () => {
+    it("should fetch from API when local directory does not exist", async () => {
+      mockStoreApi({
+        versions: ["16.0.0"],
+        responses: {
+          "/api/v1/versions": true,
+          "/api/v1/versions/{version}/file-tree": true,
+        },
+      });
+
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        lockfile: createEmptyLockfile(["16.0.0"]),
+      });
+
+      const [data, error] = await listFiles(context, "16.0.0", {
+        allowApi: true,
+      });
+
+      expect(error).toBeNull();
+      expect(data).toBeDefined();
+      expect(Array.isArray(data)).toBe(true);
+      expect(data!.length).toBeGreaterThan(0);
+    });
+
+    it("should prefer bridge over API when both available", async () => {
+      let apiCalled = false;
+      mockStoreApi({
+        versions: ["16.0.0"],
+        onRequest: () => {
+          apiCalled = true;
+        },
+        responses: {
+          "/api/v1/versions": true,
+          "/api/v1/versions/{version}/file-tree": true,
         },
       });
 
@@ -26,42 +272,21 @@ describe("listFiles", () => {
         },
       });
 
-      const [data, error] = await listFiles(context, "16.0.0");
-
-      expect(error).toBeNull();
-      expect(data).toBeDefined();
-      expect(Array.isArray(data)).toBe(true);
-      expect(data!.length).toBe(2);
-      expect(callCount).toBe(0);
-    });
-
-    it("should return empty array when directory doesn't exist locally", async () => {
-      let callCount = 0;
-      mockStoreApi({
-        versions: ["16.0.0"],
-        onRequest: () => {
-          callCount++;
-        },
+      const [data, error] = await listFiles(context, "16.0.0", {
+        allowApi: true,
       });
 
-      const { context } = await createTestContext({
-        versions: ["16.0.0"],
-        lockfile: createEmptyLockfile(["16.0.0"]),
-      });
-
-      const [data, error] = await listFiles(context, "16.0.0");
-
       expect(error).toBeNull();
-      expect(data).toEqual([]);
-      expect(callCount).toBe(0);
+      expect(data).toHaveLength(2);
+      expect(apiCalled).toBe(false);
     });
 
-    it("should return empty array when local read fails", async () => {
-      let callCount = 0;
+    it("should fall back to API when listdir fails", async () => {
       mockStoreApi({
         versions: ["16.0.0"],
-        onRequest: () => {
-          callCount++;
+        responses: {
+          "/api/v1/versions": true,
+          "/api/v1/versions/{version}/file-tree": true,
         },
       });
 
@@ -74,77 +299,7 @@ describe("listFiles", () => {
       });
 
       fs.hook("listdir:before", () => {
-        throw new Error("Read failed");
-      });
-
-      const [data, error] = await listFiles(context, "16.0.0");
-
-      expect(error).toBeNull();
-      expect(data).toEqual([]);
-      expect(callCount).toBe(0);
-    });
-  });
-
-  // eslint-disable-next-line test/prefer-lowercase-title
-  describe("API fallback (allowApi: true)", () => {
-    it("should prefer local store over API", async () => {
-      let callCount = 0;
-      mockStoreApi({
-        versions: ["16.0.0"],
-        onRequest: () => {
-          callCount++;
-        },
-      });
-
-      const { context } = await createTestContext({
-        versions: ["16.0.0"],
-        lockfile: createEmptyLockfile(["16.0.0"]),
-        initialFiles: {
-          "/test/16.0.0/UnicodeData.txt": "content",
-        },
-      });
-
-      const [data, error] = await listFiles(context, "16.0.0", {
-        allowApi: true,
-      });
-
-      expect(error).toBeNull();
-      expect(data).toBeDefined();
-      expect(data!.length).toBe(1);
-      expect(callCount).toBe(0);
-    });
-
-    it("should fetch from API when directory doesn't exist locally", async () => {
-      mockStoreApi({ versions: ["16.0.0"] });
-
-      const { context } = await createTestContext({
-        versions: ["16.0.0"],
-        lockfile: createEmptyLockfile(["16.0.0"]),
-      });
-
-      const [data, error] = await listFiles(context, "16.0.0", {
-        allowApi: true,
-      });
-
-      expect(error).toBeNull();
-      expect(data).toBeDefined();
-      expect(Array.isArray(data)).toBe(true);
-      expect(data!.length).toBeGreaterThan(0);
-    });
-
-    it("should fall back to API when local read fails", async () => {
-      mockStoreApi({ versions: ["16.0.0"] });
-
-      const { context, fs } = await createTestContext({
-        versions: ["16.0.0"],
-        lockfile: createEmptyLockfile(["16.0.0"]),
-        initialFiles: {
-          "/test/16.0.0/UnicodeData.txt": "content",
-        },
-      });
-
-      fs.hook("listdir:before", () => {
-        throw new Error("Read failed");
+        throw new Error("Listdir failed");
       });
 
       const [data, error] = await listFiles(context, "16.0.0", {
@@ -156,15 +311,12 @@ describe("listFiles", () => {
       expect(data!.length).toBeGreaterThan(0);
     });
 
-    it("should handle API errors", async () => {
+    it("should return error when API request fails", async () => {
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
-          "/api/v1/versions/{version}/file-tree": {
-            status: 500,
-            message: "Internal Server Error",
-            timestamp: new Date().toISOString(),
-          },
+          "/api/v1/versions": true,
+          "/api/v1/versions/{version}/file-tree": () => new HttpResponse(null, { status: 500 }),
         },
       });
 
@@ -177,20 +329,17 @@ describe("listFiles", () => {
         allowApi: true,
       });
 
+      expect(data).toBeNull();
       expect(error).toBeInstanceOf(UCDStoreGenericError);
-      expect(error?.message).toMatch(/Failed to fetch file tree for version '16\.0\.0'/);
-      expect(data).toBeNull();
+      expect(error?.message).toContain("Failed to fetch file tree");
     });
 
-    it("should handle 'no data returned' error when API returns null", async () => {
+    it("should return error when API returns no data", async () => {
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
-          "/api/v1/versions/{version}/file-tree": () => {
-            return new HttpResponse(null, {
-              status: 200,
-            });
-          },
+          "/api/v1/versions": true,
+          "/api/v1/versions/{version}/file-tree": () => HttpResponse.json(null),
         },
       });
 
@@ -203,146 +352,26 @@ describe("listFiles", () => {
         allowApi: true,
       });
 
+      expect(data).toBeNull();
       expect(error).toBeInstanceOf(UCDStoreGenericError);
-      expect(error?.message).toMatch(/Failed to fetch file tree for version '16\.0\.0': no data returned/);
-      expect(data).toBeNull();
-    });
-  });
-
-  describe("validation", () => {
-    it("should throw error for non-existent version", async () => {
-      mockStoreApi({ versions: ["16.0.0"] });
-
-      const { context } = await createTestContext({
-        versions: ["16.0.0"],
-        lockfile: createEmptyLockfile(["16.0.0"]),
-      });
-
-      const [data, error] = await listFiles(context, "99.0.0");
-
-      expect(error).toBeInstanceOf(UCDStoreVersionNotFoundError);
-      expect(error?.message).toMatch(/Version '\d+\.\d+\.\d+' does not exist in the store/);
-      expect(data).toBeNull();
-    });
-  });
-
-  describe("global filter application", () => {
-    it("should apply global include filters", async () => {
-      mockStoreApi({ versions: ["16.0.0"] });
-
-      const { context } = await createTestContext({
-        versions: ["16.0.0"],
-        lockfile: createEmptyLockfile(["16.0.0"]),
-        globalFilters: { include: ["**/*.txt"] },
-      });
-
-      const [data, error] = await listFiles(context, "16.0.0", {
-        allowApi: true,
-      });
-
-      expect(error).toBeNull();
-      expect(data).toBeDefined();
-      data!.forEach((path) => {
-        expect(path).toMatch(/\.txt$/);
-      });
+      expect(error?.message).toContain("no data returned");
     });
 
-    it("should apply global exclude filters", async () => {
-      mockStoreApi({ versions: ["16.0.0"] });
-
-      const { context } = await createTestContext({
-        versions: ["16.0.0"],
-        lockfile: createEmptyLockfile(["16.0.0"]),
-        globalFilters: { exclude: ["**/*.txt"] },
-      });
-
-      const [data, error] = await listFiles(context, "16.0.0", {
-        allowApi: true,
-      });
-
-      expect(error).toBeNull();
-      expect(data).toBeDefined();
-      data!.forEach((path) => {
-        expect(path).not.toMatch(/\.txt$/);
-      });
-    });
-  });
-
-  describe("method-specific filter application", () => {
-    it("should apply method-specific include filters on top of global filters", async () => {
-      mockStoreApi({ versions: ["16.0.0"] });
-
-      const { context } = await createTestContext({
-        versions: ["16.0.0"],
-        lockfile: createEmptyLockfile(["16.0.0"]),
-      });
-
-      const [data, error] = await listFiles(context, "16.0.0", {
-        allowApi: true,
-        filters: { include: ["**/*.txt"] },
-      });
-
-      expect(error).toBeNull();
-      expect(data).toBeDefined();
-      data!.forEach((path) => {
-        expect(path).toMatch(/\.txt$/);
-      });
-    });
-
-    it("should apply method-specific exclude filters on top of global filters", async () => {
-      mockStoreApi({ versions: ["16.0.0"] });
-
-      const { context } = await createTestContext({
-        versions: ["16.0.0"],
-        lockfile: createEmptyLockfile(["16.0.0"]),
-      });
-
-      const [data, error] = await listFiles(context, "16.0.0", {
-        allowApi: true,
-        filters: { exclude: ["**/*.txt"] },
-      });
-
-      expect(error).toBeNull();
-      expect(data).toBeDefined();
-      data!.forEach((path) => {
-        expect(path).not.toMatch(/\.txt$/);
-      });
-    });
-
-    it("should combine global and method-specific filters", async () => {
-      mockStoreApi({ versions: ["16.0.0"] });
-
-      const { context } = await createTestContext({
-        versions: ["16.0.0"],
-        lockfile: createEmptyLockfile(["16.0.0"]),
-        globalFilters: { include: ["**/*"] },
-      });
-
-      const [data, error] = await listFiles(context, "16.0.0", {
-        allowApi: true,
-        filters: { exclude: ["**/*.txt"] },
-      });
-
-      expect(error).toBeNull();
-      expect(data).toBeDefined();
-      data!.forEach((path) => {
-        expect(path).not.toMatch(/\.txt$/);
-      });
-    });
-  });
-
-  describe("edge cases", () => {
-    it("should handle empty file tree from API", async () => {
+    it("should apply filters to API results", async () => {
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
-          "/api/v1/versions/{version}/file-tree": [],
+          "/api/v1/versions": true,
+          "/api/v1/versions/{version}/file-tree": true,
         },
       });
 
       const { context } = await createTestContext({
         versions: ["16.0.0"],
         lockfile: createEmptyLockfile(["16.0.0"]),
+        globalFilters: {
+          include: ["UnicodeData.txt"],
+        },
       });
 
       const [data, error] = await listFiles(context, "16.0.0", {
@@ -350,26 +379,31 @@ describe("listFiles", () => {
       });
 
       expect(error).toBeNull();
-      expect(data).toBeDefined();
-      expect(data).toEqual([]);
+      expect(data).toEqual(["UnicodeData.txt"]);
     });
+  });
 
-    it("should handle filters that exclude all files", async () => {
-      mockStoreApi({ versions: ["16.0.0"] });
-
+  describe("multiple versions", () => {
+    it("should list files for correct version", async () => {
       const { context } = await createTestContext({
-        versions: ["16.0.0"],
-        lockfile: createEmptyLockfile(["16.0.0"]),
-        globalFilters: { include: ["**/*.nonexistent"] },
+        versions: ["16.0.0", "15.1.0"],
+        lockfile: createEmptyLockfile(["16.0.0", "15.1.0"]),
+        initialFiles: {
+          "/test/16.0.0/UnicodeData.txt": "v16",
+          "/test/16.0.0/NewFile.txt": "v16 only",
+          "/test/15.1.0/UnicodeData.txt": "v15",
+        },
       });
 
-      const [data, error] = await listFiles(context, "16.0.0", {
-        allowApi: true,
-      });
+      const [data16, error16] = await listFiles(context, "16.0.0");
+      const [data15, error15] = await listFiles(context, "15.1.0");
 
-      expect(error).toBeNull();
-      expect(data).toBeDefined();
-      expect(data).toEqual([]);
+      expect(error16).toBeNull();
+      expect(error15).toBeNull();
+      expect(data16).toHaveLength(2);
+      expect(data16).toContain("NewFile.txt");
+      expect(data15).toHaveLength(1);
+      expect(data15).not.toContain("NewFile.txt");
     });
   });
 });

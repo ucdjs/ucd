@@ -1,7 +1,8 @@
 import type { PathFilterOptions } from "@ucdjs-internal/shared";
 import type { UCDClient } from "@ucdjs/client";
-import type { FileSystemBridge } from "@ucdjs/fs-bridge";
+import type { FileSystemBridge, FileSystemBridgeFactory } from "@ucdjs/fs-bridge";
 import type { LockfileInput } from "@ucdjs/schemas";
+import type z from "zod";
 import type { InternalUCDStoreContext } from "../../src/types";
 import { createMemoryMockFS } from "#test-utils/fs-bridges";
 import { createPathFilter, getDefaultUCDEndpointConfig } from "@ucdjs-internal/shared";
@@ -18,7 +19,8 @@ export interface CreateTestContextOptions {
   basePath?: string;
 
   /**
-   * List of Unicode versions
+   * List of Unicode versions to use.
+   * These are set as both `userProvided` and `resolved` versions.
    * @default []
    */
   versions?: string[];
@@ -62,11 +64,24 @@ export interface CreateTestContextOptions {
 }
 
 export interface TestContext {
+  /** Internal context for testing store internals directly */
   context: InternalUCDStoreContext;
+  /** The instantiated filesystem bridge */
   fs: FileSystemBridge;
+  /** A factory that returns the same fs instance - for use with createUCDStore */
+  fsFactory: FileSystemBridgeFactory<z.ZodUndefined>;
   client: UCDClient;
   basePath: string;
   lockfilePath: string;
+}
+
+/**
+ * Wraps an existing FileSystemBridge into a factory function.
+ * Used by tests that need to call `createUCDStore()` which expects a factory.
+ * @internal
+ */
+function wrapBridgeAsFactory(bridge: FileSystemBridge): FileSystemBridgeFactory<z.ZodUndefined> {
+  return () => bridge;
 }
 
 /**
@@ -98,24 +113,36 @@ export async function createTestContext(
   // Create filter
   const filter = createPathFilter(globalFilters);
 
+  let lockfileExists = false;
+
   // Write lockfile if provided
   if (options?.lockfile) {
     await writeLockfile(fs, lockfilePath, options.lockfile);
+    lockfileExists = true;
   }
 
-  // Create internal context
+  // Create internal context with resolved versions set directly
   const context = createInternalContext({
     client,
     filter,
     fs,
     basePath,
-    versions,
-    lockfilePath,
+    lockfile: {
+      supports: true,
+      exists: lockfileExists,
+      path: lockfilePath,
+    },
+    versions: {
+      userProvided: versions,
+      configFile: [],
+      resolved: versions,
+    },
   });
 
   return {
     context,
     fs,
+    fsFactory: wrapBridgeAsFactory(fs),
     client,
     basePath,
     lockfilePath,
