@@ -22,6 +22,23 @@ function stripContent<T extends FileNode>(nodes: T[]): Omit<T, "_content" | "chi
   });
 }
 
+/**
+ * Strips the "ucd" segment from a file path if present.
+ * The real API uses paths like `<version>/ucd/<file>` for modern Unicode versions,
+ * but the mock files are defined without the "ucd" prefix.
+ *
+ * Examples:
+ * - "ucd/UnicodeData.txt" -> "UnicodeData.txt"
+ * - "ucd/auxiliary/GraphemeBreakProperty.txt" -> "auxiliary/GraphemeBreakProperty.txt"
+ * - "UnicodeData.txt" -> "UnicodeData.txt" (no change)
+ */
+function stripUcdPrefix(filePath: string): string {
+  if (filePath.startsWith("ucd/")) {
+    return filePath.slice(4);
+  }
+  return filePath;
+}
+
 export const filesRoute = defineMockRouteHandler({
   endpoint: "/api/v1/files/{wildcard}",
   setup: ({
@@ -44,7 +61,12 @@ export const filesRoute = defineMockRouteHandler({
           const wildcard = params.wildcard as string;
           // Extract version and file path from wildcard (e.g., "16.0.0/ucd/UnicodeData.txt")
           const [version, ...pathParts] = wildcard.split("/");
-          const filePath = pathParts.join("/");
+          const rawFilePath = pathParts.join("/");
+
+          // Strip the "ucd" segment from the path if present
+          // The real API uses `<version>/ucd/<file>` paths, but mock files
+          // are defined relative to the ucd folder (e.g., "UnicodeData.txt")
+          const filePath = stripUcdPrefix(rawFilePath);
 
           // Get files for this version, or fall back to "*"
           const versionFiles = (version ? files[version] : undefined) ?? files["*"];
