@@ -3,7 +3,7 @@ import type { CLIFilesCmdOptions } from "./root";
 import { customFetch } from "@ucdjs-internal/shared";
 import { UCD_STAT_TYPE_HEADER, UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { bold, dim, green, red } from "farver/fast";
-import { printHelp } from "../../cli-utils";
+import { formatBytes, printHelp } from "../../cli-utils";
 import { output } from "../../output";
 
 export interface CLIFilesInfoCmdOptions {
@@ -40,14 +40,6 @@ function formatMetadata(metadata: FileMetadata): string {
   }
 
   return lines.join("\n");
-}
-
-function formatBytes(bytes: number): string {
-  if (bytes === 0) return "0 Bytes";
-  const k = 1024;
-  const sizes = ["Bytes", "KB", "MB", "GB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
 }
 
 export async function runFilesInfo({ path, flags }: CLIFilesInfoCmdOptions) {

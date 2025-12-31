@@ -5,19 +5,11 @@ import process from "node:process";
 import NodeFileSystemBridge from "@ucdjs/fs-bridge/bridges/node";
 import { getLockfilePath, readLockfile } from "@ucdjs/lockfile";
 import { bold, dim, green, red, yellow } from "farver/fast";
-import { printHelp } from "../../cli-utils";
+import { formatBytes, printHelp } from "../../cli-utils";
 import { output } from "../../output";
 
 export interface CLILockfileInfoCmdOptions {
   flags: CLIArguments<CLILockfileCmdOptions["flags"]>;
-}
-
-function formatBytes(bytes: number): string {
-  if (bytes === 0) return "0 Bytes";
-  const k = 1024;
-  const sizes = ["Bytes", "KB", "MB", "GB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
 }
 
 export async function runLockfileInfo({ flags }: CLILockfileInfoCmdOptions) {
