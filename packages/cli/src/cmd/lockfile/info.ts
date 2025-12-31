@@ -84,16 +84,19 @@ export async function runLockfileInfo({ flags }: CLILockfileInfoCmdOptions) {
     output.log(`  ${bold("Total Size:")}       ${formatBytes(totalSize)}`);
 
     // Display filters if any are set
-    const { filters } = lockfile;
-    if (filters.include.length > 0 || filters.exclude.length > 0 || filters.disableDefaultExclusions) {
+    const includeFilters = lockfile.filters?.include ?? [];
+    const excludeFilters = lockfile.filters?.exclude ?? [];
+    const disableDefaultExclusions = lockfile.filters?.disableDefaultExclusions ?? false;
+
+    if (includeFilters.length > 0 || excludeFilters.length > 0 || disableDefaultExclusions) {
       output.log(`\n  ${bold("Filters:")}`);
-      if (filters.include.length > 0) {
-        output.log(`    ${bold("Include:")} ${filters.include.join(", ")}`);
+      if (includeFilters.length > 0) {
+        output.log(`    ${bold("Include:")} ${includeFilters.join(", ")}`);
       }
-      if (filters.exclude.length > 0) {
-        output.log(`    ${bold("Exclude:")} ${filters.exclude.join(", ")}`);
+      if (excludeFilters.length > 0) {
+        output.log(`    ${bold("Exclude:")} ${excludeFilters.join(", ")}`);
       }
-      if (filters.disableDefaultExclusions) {
+      if (disableDefaultExclusions) {
         output.log(`    ${yellow("Default exclusions disabled")}`);
       }
     }
