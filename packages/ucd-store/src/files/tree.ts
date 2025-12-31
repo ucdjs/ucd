@@ -8,6 +8,7 @@ import {
   wrapTry,
 } from "@ucdjs-internal/shared";
 import { join } from "pathe";
+import { isUCDStoreInternalContext } from "../context";
 import { UCDStoreApiFallbackError, UCDStoreVersionNotFoundError } from "../errors";
 
 const debug = createDebugger("ucdjs:ucd-store:files:tree");
@@ -102,10 +103,6 @@ async function _getFileTree(
   });
 }
 
-function isContext(obj: any): obj is InternalUCDStoreContext {
-  return !!obj && typeof obj === "object" && Array.isArray(obj.versions?.resolved);
-}
-
 export function getFileTree(
   context: InternalUCDStoreContext,
   version: string,
@@ -118,10 +115,25 @@ export function getFileTree(
   options?: GetFileTreeOptions,
 ): Promise<OperationResult<UnicodeTreeNode[], StoreError>>;
 
-export function getFileTree(this: any, thisOrContext: any, version?: any, options?: any): Promise<OperationResult<UnicodeTreeNode[], StoreError>> {
-  if (isContext(thisOrContext)) {
-    return _getFileTree.call(thisOrContext, version, options);
+export function getFileTree(
+  this: InternalUCDStoreContext | void,
+  thisOrContext: InternalUCDStoreContext | string,
+  versionOrOptions?: string | GetFileTreeOptions,
+  options?: GetFileTreeOptions,
+): Promise<OperationResult<UnicodeTreeNode[], StoreError>> {
+  if (isUCDStoreInternalContext(thisOrContext)) {
+    return _getFileTree.call(
+      thisOrContext,
+      versionOrOptions as string,
+      options,
+    );
   }
 
-  return _getFileTree.call(this as InternalUCDStoreContext, thisOrContext, version);
+  // 'thisOrContext' is the version string
+  // 'versionOrOptions' is the options object
+  return _getFileTree.call(
+    this as InternalUCDStoreContext,
+    thisOrContext as string,
+    versionOrOptions as GetFileTreeOptions,
+  );
 }

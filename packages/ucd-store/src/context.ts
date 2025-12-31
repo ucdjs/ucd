@@ -112,6 +112,13 @@ export function createInternalContext(options: CreateInternalContextOptions): In
   };
 }
 
+export function isUCDStoreInternalContext(obj: unknown): obj is InternalUCDStoreContext {
+  return !!obj && typeof obj === "object"
+    && "versions" in obj
+    && typeof obj.versions === "object"
+    && obj.versions != null && "resolved" in obj.versions
+    && Array.isArray(obj.versions?.resolved);
+}
 /**
  * Extracts filter patterns from a PathFilter for storage in the lockfile.
  *

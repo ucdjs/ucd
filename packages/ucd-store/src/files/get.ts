@@ -4,6 +4,7 @@ import type { InternalUCDStoreContext, SharedOperationOptions } from "../types";
 import { createDebugger, tryOr, wrapTry } from "@ucdjs-internal/shared";
 import { hasUCDFolderPath } from "@unicode-utils/core";
 import { join } from "pathe";
+import { isUCDStoreInternalContext } from "../context";
 import {
   UCDStoreApiFallbackError,
   UCDStoreFilterError,
@@ -134,10 +135,6 @@ async function _getFile(
   });
 }
 
-function isContext(obj: any): obj is InternalUCDStoreContext {
-  return !!obj && typeof obj === "object" && Array.isArray(obj.versions?.resolved);
-}
-
 export function getFile(
   context: InternalUCDStoreContext,
   version: string,
@@ -152,11 +149,27 @@ export function getFile(
   options?: GetFileOptions,
 ): Promise<OperationResult<string, StoreError>>;
 
-export function getFile(this: any, thisOrContext: any, version?: any, filePath?: any, options?: any): Promise<OperationResult<string, StoreError>> {
-  if (isContext(thisOrContext)) {
-    return _getFile.call(thisOrContext, version, filePath, options);
+export function getFile(
+  this: InternalUCDStoreContext | void,
+  thisOrContext: InternalUCDStoreContext | string,
+  versionOrPath: string,
+  pathOrOptions?: string | GetFileOptions,
+  options?: GetFileOptions,
+): Promise<OperationResult<string, StoreError>> {
+  if (isUCDStoreInternalContext(thisOrContext)) {
+    return _getFile.call(
+      thisOrContext,
+      versionOrPath,
+      pathOrOptions as string,
+      options,
+    );
   }
 
-  // Bound call: `this` is the context, first arg is version
-  return _getFile.call(this as InternalUCDStoreContext, thisOrContext, version, filePath);
+  // 'this' is the context, 'thisOrContext' is actually the version
+  return _getFile.call(
+    this as InternalUCDStoreContext,
+    thisOrContext as string,
+    versionOrPath,
+    pathOrOptions as GetFileOptions,
+  );
 }

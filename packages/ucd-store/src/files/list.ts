@@ -8,6 +8,7 @@ import {
   wrapTry,
 } from "@ucdjs-internal/shared";
 import { join } from "pathe";
+import { isUCDStoreInternalContext } from "../context";
 import { UCDStoreApiFallbackError, UCDStoreVersionNotFoundError } from "../errors";
 
 const debug = createDebugger("ucdjs:ucd-store:files:list");
@@ -108,10 +109,6 @@ async function _listFiles(
   });
 }
 
-function isContext(obj: any): obj is InternalUCDStoreContext {
-  return !!obj && typeof obj === "object" && Array.isArray(obj.versions?.resolved);
-}
-
 export function listFiles(
   context: InternalUCDStoreContext,
   version: string,
@@ -124,10 +121,24 @@ export function listFiles(
   options?: ListFilesOptions,
 ): Promise<OperationResult<string[], StoreError>>;
 
-export function listFiles(this: any, thisOrContext: any, version?: any, options?: any): Promise<OperationResult<string[], StoreError>> {
-  if (isContext(thisOrContext)) {
-    return _listFiles.call(thisOrContext, version, options);
+export function listFiles(
+  this: InternalUCDStoreContext | void,
+  thisOrContext: InternalUCDStoreContext | string,
+  versionOrOptions?: string | ListFilesOptions,
+  options?: ListFilesOptions,
+): Promise<OperationResult<string[], StoreError>> {
+  if (isUCDStoreInternalContext(thisOrContext)) {
+    return _listFiles.call(
+      thisOrContext,
+      versionOrOptions as string,
+      options,
+    );
   }
 
-  return _listFiles.call(this as InternalUCDStoreContext, thisOrContext, version);
+  // 'thisOrContext' is the version, 'versionOrOptions' is the options
+  return _listFiles.call(
+    this as InternalUCDStoreContext,
+    thisOrContext as string,
+    versionOrOptions as ListFilesOptions,
+  );
 }
