@@ -20,15 +20,15 @@ import { getLockfilePath, readLockfileOrDefault } from "@ucdjs/lockfile";
 import defu from "defu";
 import { createInternalContext, createPublicContext } from "./context";
 import { UCDStoreGenericError } from "./errors";
-import { analyze } from "./reports/analyze";
-import { compare } from "./reports/compare";
 import { getFile } from "./files/get";
 import { listFiles } from "./files/list";
 import { getFileTree } from "./files/tree";
-import { mirror } from "./tasks/mirror";
-import { sync } from "./tasks/sync";
+import { analyze } from "./reports/analyze";
+import { compare } from "./reports/compare";
 import { bootstrap } from "./setup/bootstrap";
 import { verify } from "./setup/verify";
+import { mirror } from "./tasks/mirror";
+import { sync } from "./tasks/sync";
 
 const debug = createDebugger("ucdjs:ucd-store");
 
