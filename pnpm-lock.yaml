@@ -68,8 +68,8 @@ catalogs:
       specifier: 1.0.0-alpha.9
       version: 1.0.0-alpha.9
     '@luxass/msw-utils':
-      specifier: 0.5.0
-      version: 0.5.0
+      specifier: 0.6.0
+      version: 0.6.0
     '@luxass/unicode-utils-old':
       specifier: npm:@luxass/unicode-utils@0.11.0
       version: 0.11.0
@@ -689,6 +689,9 @@ importers:
 
   packages/fs-bridge:
     dependencies:
+      '@luxass/msw-utils':
+        specifier: catalog:prod
+        version: 0.6.0(msw@2.12.7(@types/node@24.3.1)(typescript@5.9.3))
       '@luxass/utils':
         specifier: catalog:prod
         version: 2.7.2
@@ -906,7 +909,7 @@ importers:
     dependencies:
       '@luxass/msw-utils':
         specifier: catalog:prod
-        version: 0.5.0(msw@2.12.7(@types/node@24.3.1)(typescript@5.9.3))
+        version: 0.6.0(msw@2.12.7(@types/node@24.3.1)(typescript@5.9.3))
       '@luxass/utils':
         specifier: catalog:prod
         version: 2.7.2
@@ -967,7 +970,7 @@ importers:
     dependencies:
       '@luxass/msw-utils':
         specifier: catalog:prod
-        version: 0.5.0(msw@2.12.7(@types/node@24.3.1)(typescript@5.9.3))
+        version: 0.6.0(msw@2.12.7(@types/node@24.3.1)(typescript@5.9.3))
       '@ucdjs-internal/shared':
         specifier: workspace:*
         version: link:../shared
@@ -2460,8 +2463,8 @@ packages:
       prettier-plugin-astro:
         optional: true
 
-  '@luxass/msw-utils@0.5.0':
-    resolution: {integrity: sha512-uqFTw1GWovCOLxXepgXvkcjbZaxCaY3oMsKO+BNXVeNsxe83umuVbYb4+4dDuma759Up05sBWef41I4xlQEduw==}
+  '@luxass/msw-utils@0.6.0':
+    resolution: {integrity: sha512-tz5wAfRCYTac3J2Mf2MRm6TDbxveMxn6DGmfJ24NbkUoKkMaw+wq43XLu98bUa4+806Bvs2bfnNj8XLVbqtOEg==}
     peerDependencies:
       msw: '>=2.11.0 <3.0.0'
 
@@ -10419,7 +10422,7 @@ snapshots:
       - typescript
       - vitest
 
-  '@luxass/msw-utils@0.5.0(msw@2.12.7(@types/node@24.3.1)(typescript@5.9.3))':
+  '@luxass/msw-utils@0.6.0(msw@2.12.7(@types/node@24.3.1)(typescript@5.9.3))':
     dependencies:
       msw: 2.12.7(@types/node@24.3.1)(typescript@5.9.3)
 
@@ -12606,14 +12609,14 @@ snapshots:
       msw: 2.12.7(@types/node@22.18.12)(typescript@5.9.3)
       vite: 7.3.0(@types/node@22.18.12)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1)
 
-  '@vitest/mocker@4.0.16(msw@2.12.7(@types/node@24.3.1)(typescript@5.9.3))(vite@7.3.0(@types/node@22.18.12)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1))':
+  '@vitest/mocker@4.0.16(msw@2.12.7(@types/node@24.3.1)(typescript@5.9.3))(vite@7.3.0(@types/node@24.3.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1))':
     dependencies:
       '@vitest/spy': 4.0.16
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
       msw: 2.12.7(@types/node@24.3.1)(typescript@5.9.3)
-      vite: 7.3.0(@types/node@22.18.12)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1)
+      vite: 7.3.0(@types/node@24.3.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1)
 
   '@vitest/pretty-format@4.0.16':
     dependencies:
@@ -12641,7 +12644,7 @@ snapshots:
       sirv: 3.0.2
       tinyglobby: 0.2.15
       tinyrainbow: 3.0.3
-      vitest: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@22.18.12)(@vitest/ui@4.0.16)(jiti@2.6.1)(jsdom@27.3.0(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.12.7(@types/node@22.18.12)(typescript@5.9.3))(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1)
+      vitest: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@24.3.1)(@vitest/ui@4.0.16)(jiti@2.6.1)(jsdom@27.3.0(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.12.7(@types/node@24.3.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1)
 
   '@vitest/utils@4.0.16':
     dependencies:
@@ -17966,7 +17969,7 @@ snapshots:
   vitest@4.0.16(@opentelemetry/api@1.9.0)(@types/node@24.3.1)(@vitest/ui@4.0.16)(jiti@2.6.1)(jsdom@27.3.0(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.12.7(@types/node@24.3.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1):
     dependencies:
       '@vitest/expect': 4.0.16
-      '@vitest/mocker': 4.0.16(msw@2.12.7(@types/node@24.3.1)(typescript@5.9.3))(vite@7.3.0(@types/node@22.18.12)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1))
+      '@vitest/mocker': 4.0.16(msw@2.12.7(@types/node@24.3.1)(typescript@5.9.3))(vite@7.3.0(@types/node@24.3.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1))
       '@vitest/pretty-format': 4.0.16
       '@vitest/runner': 4.0.16
       '@vitest/snapshot': 4.0.16
