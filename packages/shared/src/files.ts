@@ -15,6 +15,33 @@ export interface TreeNode {
 }
 
 /**
+ * Recursively find a file node by its path in the tree.
+ *
+ * @template T - A tree node type that extends the base TreeNode interface
+ * @param {T[]} entries - Array of file tree nodes that may contain nested children
+ * @param {string} targetPath - The path to search for
+ * @param {string} [prefix] - Optional path prefix for recursive calls (default: "")
+ * @returns {T | undefined} The found file node or undefined
+ */
+export function findFileByPath<T extends TreeNode>(entries: T[], targetPath: string, prefix: string = ""): T | undefined {
+  for (const file of entries) {
+    const fullPath = prefix
+      ? `${prefix}/${file.path ?? file.name}`
+      : (file.path ?? file.name);
+
+    if (file.type === "directory" && file.children) {
+      const found = findFileByPath(file.children as T[], targetPath, fullPath);
+      if (found) {
+        return found as T;
+      }
+    } else if (fullPath === targetPath || `/${fullPath}` === targetPath) {
+      return file;
+    }
+  }
+  return undefined;
+}
+
+/**
  * Recursively flattens a hierarchical file structure into an array of file paths.
  *
  * @template T - A tree node type that extends the base TreeNode interface

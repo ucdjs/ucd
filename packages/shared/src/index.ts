@@ -5,20 +5,20 @@ export * from "./debugger";
 export { customFetch } from "./fetch/fetch";
 export type { FetchOptions, FetchResponse, SafeFetchResponse } from "./fetch/types";
 
+export { findFileByPath, flattenFilePaths } from "./files";
+export type { TreeNode } from "./files";
+
 export {
   createPathFilter,
   DEFAULT_EXCLUDED_EXTENSIONS,
   filterTreeStructure,
   PRECONFIGURED_FILTERS,
 } from "./filter";
-
 export type {
   PathFilter,
   PathFilterOptions,
   TreeEntry,
 } from "./filter";
-
-export { flattenFilePaths } from "./flatten";
 export {
   createGlobMatcher,
   DEFAULT_PICOMATCH_OPTIONS,
