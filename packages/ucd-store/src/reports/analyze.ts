@@ -83,7 +83,7 @@ export interface AnalysisReport {
 /**
  * Analyzes Unicode data in the store.
  *
- * @param {InternalUCDStoreContext} context - Internal store context
+ * @this {InternalUCDStoreContext} - Internal store context with client, filters, FS bridge, and configuration
  * @param {AnalyzeOptions} [options] - Analyze options
  * @returns {Promise<OperationResult<Map<string, AnalysisReport>, StoreError>>} Operation result
  */

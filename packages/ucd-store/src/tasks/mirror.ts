@@ -186,7 +186,7 @@ interface MirrorQueueItem {
  * Mirrors Unicode data files from the API to local storage.
  * Downloads actual Unicode data files for specified versions.
  *
- * @param {InternalUCDStoreContext} context - Internal store context
+ * @this {InternalUCDStoreContext} - Internal store context with client, filters, FS bridge, and configuration
  * @param {MirrorOptions} [options] - Mirror options
  * @returns {Promise<OperationResult<MirrorReport, StoreError>>} Operation result
  */
