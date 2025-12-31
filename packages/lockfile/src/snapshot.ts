@@ -1,6 +1,6 @@
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 import type { Snapshot } from "@ucdjs/schemas";
-import { createDebugger, safeJsonParse } from "@ucdjs-internal/shared";
+import { createDebugger, safeJsonParse, tryOr } from "@ucdjs-internal/shared";
 import { hasCapability } from "@ucdjs/fs-bridge";
 import { SnapshotSchema } from "@ucdjs/schemas";
 import { dirname } from "pathe";
@@ -27,7 +27,16 @@ export async function readSnapshot(
   const snapshotPath = getSnapshotPath(version);
   debug?.("Reading snapshot from:", snapshotPath);
 
-  const snapshotData = await fs.read(snapshotPath);
+  const snapshotData = await tryOr({
+    try: fs.read(snapshotPath),
+    err: (err) => {
+      debug?.("Failed to read snapshot:", err);
+      throw new LockfileInvalidError({
+        lockfilePath: snapshotPath,
+        message: "snapshot could not be read",
+      });
+    },
+  });
 
   if (!snapshotData) {
     throw new LockfileInvalidError({
@@ -115,7 +124,7 @@ export async function writeSnapshot(
  * @param {string} version - The Unicode version
  * @returns {Promise<Snapshot | undefined>} A promise that resolves to the snapshot or undefined
  */
-export async function readSnapshotOrDefault(
+export async function readSnapshotOrUndefined(
   fs: FileSystemBridge,
   basePath: string,
   version: string,

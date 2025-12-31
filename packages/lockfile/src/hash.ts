@@ -2,6 +2,14 @@
 // @unicode-utils/core
 
 /**
+ * Combined regex pattern for Unicode header lines:
+ * - Filename with version (e.g., "DerivedBinaryProperties-15.1.0.txt")
+ * - Date line (e.g., "Date: 2023-01-05")
+ * - Copyright line (e.g., "© 2023 Unicode®, Inc.")
+ */
+const HEADER_LINE_PATTERN = /\d+\.\d+\.\d+\.txt|Date:|©|Unicode®|Unicode,\s*Inc/i;
+
+/**
  * Strips the Unicode file header from content.
  * The header typically contains:
  * - Filename with version (e.g., "# DerivedBinaryProperties-15.1.0.txt")
@@ -29,17 +37,10 @@ export function stripUnicodeHeader(content: string): string {
       continue;
     }
 
-    // Check if this is a header line
-    if (trimmedLine.startsWith("#")) {
-      const isHeaderLine
-        = /\d+\.\d+\.\d+\.txt/i.test(trimmedLine) // Filename with version
-          || /Date:/i.test(trimmedLine) // Date line
-          || /©|Unicode®|Unicode,\s*Inc/i.test(trimmedLine); // Copyright line
-
-      if (isHeaderLine) {
-        headerEndIndex = i + 1;
-        continue;
-      }
+    // Check if this is a header line (comment starting with # that matches header pattern)
+    if (trimmedLine.startsWith("#") && HEADER_LINE_PATTERN.test(trimmedLine)) {
+      headerEndIndex = i + 1;
+      continue;
     }
 
     // Once we hit a non-header line, stop
@@ -59,70 +60,47 @@ export function stripUnicodeHeader(content: string): string {
 }
 
 /**
- * Converts a string to Uint8Array using UTF-8 encoding.
- * Provides a fallback for environments without TextEncoder.
+ * Cached TextEncoder instance for UTF-8 string encoding.
  *
  * @internal
  */
-function stringToUint8Array(str: string): Uint8Array {
-  if (typeof TextEncoder !== "undefined") {
-    return new TextEncoder().encode(str);
-  }
+const textEncoder = new TextEncoder();
 
-  // Fallback for environments without TextEncoder: manual UTF-8 encoding
-  const bytes: number[] = [];
-  for (let i = 0; i < str.length; i++) {
-    const codePoint = str.codePointAt(i);
-    if (codePoint === undefined) {
-      continue;
-    }
-    // If this is a surrogate pair, advance an extra code unit
-    if (codePoint > 0xFFFF) {
-      i++;
-    }
-    if (codePoint <= 0x7F) {
-      // 1-byte sequence
-      bytes.push(codePoint);
-    } else if (codePoint <= 0x7FF) {
-      // 2-byte sequence
-      bytes.push(
-        0xC0 | (codePoint >> 6),
-        0x80 | (codePoint & 0x3F),
-      );
-    } else if (codePoint <= 0xFFFF) {
-      // 3-byte sequence
-      bytes.push(
-        0xE0 | (codePoint >> 12),
-        0x80 | ((codePoint >> 6) & 0x3F),
-        0x80 | (codePoint & 0x3F),
-      );
-    } else {
-      // 4-byte sequence
-      bytes.push(
-        0xF0 | (codePoint >> 18),
-        0x80 | ((codePoint >> 12) & 0x3F),
-        0x80 | ((codePoint >> 6) & 0x3F),
-        0x80 | (codePoint & 0x3F),
-      );
-    }
-  }
-  return new Uint8Array(bytes);
+/**
+ * Hex characters for nibble-to-hex conversion.
+ *
+ * @internal
+ */
+const HEX_CHARS = "0123456789abcdef";
+
+/**
+ * Pre-computed lookup table for byte-to-hex conversion.
+ * Maps each byte value (0-255) to its two-character hex representation.
+ * Uses bit operations to extract high and low nibbles.
+ *
+ * @internal
+ */
+const HEX_TABLE: string[] = [];
+for (let i = 0; i < 256; i++) {
+  HEX_TABLE[i] = HEX_CHARS[i >> 4]! + HEX_CHARS[i & 0xF]!;
 }
 
 /**
- * Converts a Uint8Array to a hex string.
+ * Converts a Uint8Array to a hex string using pre-computed lookup table.
  *
  * @internal
  */
 function uint8ArrayToHex(bytes: Uint8Array): string {
-  return Array.from(bytes)
-    .map((b) => b.toString(16).padStart(2, "0"))
-    .join("");
+  let result = "";
+  for (let i = 0; i < bytes.length; i++) {
+    result += HEX_TABLE[bytes[i]!];
+  }
+  return result;
 }
 
 /**
  * Computes the SHA-256 hash of file content using Web Crypto API.
- * This is a basic implementation that works in both browser and Node.js environments.
+ * Works in both browser and Node.js 18+ environments.
  *
  * @param {string | Uint8Array} content - The file content to hash
  * @returns {Promise<string>} A promise that resolves to the hash in format "sha256:..."
@@ -130,23 +108,15 @@ function uint8ArrayToHex(bytes: Uint8Array): string {
  */
 export async function computeFileHash(content: string | Uint8Array): Promise<string> {
   // Convert string to Uint8Array if needed
-  const data = typeof content === "string" ? stringToUint8Array(content) : content;
-
-  // Ensure we have a proper ArrayBufferView for crypto.subtle.digest
-  const buffer = data.buffer instanceof ArrayBuffer
-    ? data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength)
-    : new Uint8Array(data).buffer;
+  const data = typeof content === "string" ? textEncoder.encode(content) : content;
 
   // Use Web Crypto API (available in browsers and Node.js 18+)
+  // crypto.subtle.digest accepts Uint8Array directly - no buffer extraction needed
   if (typeof crypto !== "undefined" && crypto.subtle && typeof crypto.subtle.digest === "function") {
-    const hashBuffer = await crypto.subtle.digest("SHA-256", buffer);
-    const hashArray = new Uint8Array(hashBuffer);
-    const hashHex = uint8ArrayToHex(hashArray);
-    return `sha256:${hashHex}`;
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data as Uint8Array<ArrayBuffer>);
+    return `sha256:${uint8ArrayToHex(new Uint8Array(hashBuffer))}`;
   }
 
-  // Fallback: This should not happen in modern environments, but provide a basic implementation
-  // Note: This is a placeholder that can be replaced with a proper crypto library later
   throw new Error(
     "SHA-256 hashing is not available. Web Crypto API is required for hash computation.",
   );
@@ -161,7 +131,7 @@ export async function computeFileHash(content: string | Uint8Array): Promise<str
  * @returns {Promise<string>} A promise that resolves to the hash in format "sha256:..."
  * @throws {Error} When Web Crypto API is not available
  */
-export async function computeContentHash(content: string): Promise<string> {
+export async function computeFileHashWithoutUCDHeader(content: string): Promise<string> {
   const strippedContent = stripUnicodeHeader(content);
   return computeFileHash(strippedContent);
 }

@@ -5,15 +5,15 @@ export {
 } from "./errors";
 
 export {
-  computeContentHash,
   computeFileHash,
+  computeFileHashWithoutUCDHeader,
   stripUnicodeHeader,
 } from "./hash";
 
 export {
   canUseLockfile,
   readLockfile,
-  readlockfileOrUndefined,
+  readLockfileOrUndefined,
   validateLockfile,
   writeLockfile,
 } from "./lockfile";
@@ -27,6 +27,6 @@ export {
 
 export {
   readSnapshot,
-  readSnapshotOrDefault,
+  readSnapshotOrUndefined,
   writeSnapshot,
 } from "./snapshot";

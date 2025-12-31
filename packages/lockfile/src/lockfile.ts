@@ -156,7 +156,7 @@ export async function writeLockfile(
  * @param {string} lockfilePath - Path to the lockfile
  * @returns {Promise<Lockfile | undefined>} A promise that resolves to the lockfile or undefined
  */
-export async function readlockfileOrUndefined(
+export async function readLockfileOrUndefined(
   fs: FileSystemBridge,
   lockfilePath: string,
 ): Promise<Lockfile | undefined> {

@@ -2,7 +2,7 @@ import type { OperationResult } from "@ucdjs-internal/shared";
 import type { StoreError } from "../errors";
 import type { InternalUCDStoreContext, SharedOperationOptions } from "../types";
 import { createConcurrencyLimiter, createDebugger, wrapTry } from "@ucdjs-internal/shared";
-import { computeContentHash } from "@ucdjs/lockfile";
+import { computeFileHashWithoutUCDHeader } from "@ucdjs/lockfile";
 import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../errors";
 import { getFile } from "../files/get";
 import { listFiles } from "../files/list";
@@ -187,8 +187,8 @@ async function _compare(
         });
         if (tErr) throw tErr;
 
-        const fromHash = await computeContentHash(fromContent);
-        const toHash = await computeContentHash(toContent);
+        const fromHash = await computeFileHashWithoutUCDHeader(fromContent);
+        const toHash = await computeFileHashWithoutUCDHeader(toContent);
 
         if (fromHash !== toHash) {
           modified.push(file);

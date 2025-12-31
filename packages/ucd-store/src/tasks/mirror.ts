@@ -9,7 +9,7 @@ import {
   wrapTry,
 } from "@ucdjs-internal/shared";
 import { hasCapability } from "@ucdjs/fs-bridge";
-import { computeContentHash, computeFileHash, readlockfileOrUndefined, writeLockfile, writeSnapshot } from "@ucdjs/lockfile";
+import { computeFileHash, computeFileHashWithoutUCDHeader, readLockfileOrUndefined, writeLockfile, writeSnapshot } from "@ucdjs/lockfile";
 import { hasUCDFolderPath } from "@unicode-utils/core";
 import { dirname, join } from "pathe";
 import { extractFilterPatterns } from "../context";
@@ -395,7 +395,7 @@ async function _mirror(
     const duration = Date.now() - startTime;
 
     // Create snapshots and update lockfile for mirrored versions
-    const lockfile = await readlockfileOrUndefined(this.fs, this.lockfile.path);
+    const lockfile = await readLockfileOrUndefined(this.fs, this.lockfile.path);
     const updatedLockfileVersions = lockfile ? { ...lockfile.versions } : {};
 
     for (const [version, report] of versionedReports.entries()) {
@@ -414,7 +414,7 @@ async function _mirror(
 
           if (fileContent) {
             // Compute content hash (without Unicode header) for content comparison
-            const hash = await computeContentHash(fileContent);
+            const hash = await computeFileHashWithoutUCDHeader(fileContent);
             // Compute file hash (full file) for integrity verification
             const fileHash = await computeFileHash(fileContent);
             const size = new TextEncoder().encode(fileContent).length;

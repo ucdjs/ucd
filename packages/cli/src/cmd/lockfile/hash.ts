@@ -4,7 +4,7 @@ import { Buffer } from "node:buffer";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import process from "node:process";
-import { computeContentHash, computeFileHash, stripUnicodeHeader } from "@ucdjs/lockfile";
+import { computeFileHash, computeFileHashWithoutUCDHeader, stripUnicodeHeader } from "@ucdjs/lockfile";
 import { bold, dim, green, red, yellow } from "farver/fast";
 import { formatBytes, printHelp } from "../../cli-utils";
 import { output } from "../../output";
@@ -67,7 +67,7 @@ export async function runLockfileHash({ filePath, flags }: CLILockfileHashCmdOpt
 
     // Compute both hashes for informational purposes
     const fileHash = await computeFileHash(content);
-    const contentHash = await computeContentHash(content);
+    const contentHash = await computeFileHashWithoutUCDHeader(content);
 
     // Determine which hash to use based on strip-header flag
     const primaryHash = stripHeader ? contentHash : fileHash;

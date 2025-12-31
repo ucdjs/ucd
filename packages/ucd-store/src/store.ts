@@ -16,7 +16,7 @@ import {
 } from "@ucdjs-internal/shared";
 import { createUCDClientWithConfig } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
-import { getLockfilePath, readlockfileOrUndefined } from "@ucdjs/lockfile";
+import { getLockfilePath, readLockfileOrUndefined } from "@ucdjs/lockfile";
 import defu from "defu";
 import { createInternalContext, createPublicContext } from "./context";
 import { UCDStoreGenericError } from "./errors";
@@ -151,7 +151,7 @@ export async function createUCDStore<
 
   // Case 1: Lockfile exists - use it
   if (internalContext.lockfile.exists && internalContext.lockfile.path) {
-    const lockfile = await readlockfileOrUndefined(fs, internalContext.lockfile.path);
+    const lockfile = await readLockfileOrUndefined(fs, internalContext.lockfile.path);
     const lockfileVersions = lockfile ? Object.keys(lockfile.versions) : [];
     debug?.("Lockfile versions:", lockfileVersions);
 
@@ -264,7 +264,7 @@ export async function handleVersionConflict(
   switch (strategy) {
     case "merge": {
       const mergedVersions = Array.from(new Set([...lockfileVersions, ...providedVersions]));
-      const existing = await readlockfileOrUndefined(fs, lockfilePath);
+      const existing = await readLockfileOrUndefined(fs, lockfilePath);
       const { writeLockfile } = await import("@ucdjs/lockfile");
       const { extractFilterPatterns } = await import("./context");
       const filters = filter ? extractFilterPatterns(filter) : existing?.filters;
@@ -290,7 +290,7 @@ export async function handleVersionConflict(
       return mergedVersions;
     }
     case "overwrite": {
-      const existing = await readlockfileOrUndefined(fs, lockfilePath);
+      const existing = await readLockfileOrUndefined(fs, lockfilePath);
       const { writeLockfile } = await import("@ucdjs/lockfile");
       const { extractFilterPatterns } = await import("./context");
       const filters = filter ? extractFilterPatterns(filter) : existing?.filters;

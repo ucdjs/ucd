@@ -9,8 +9,8 @@ import {
 } from "@ucdjs-internal/shared";
 import { hasCapability } from "@ucdjs/fs-bridge";
 import {
-  readlockfileOrUndefined,
-  readSnapshotOrDefault,
+  readLockfileOrUndefined,
+  readSnapshotOrUndefined,
   writeLockfile,
 } from "@ucdjs/lockfile";
 import { join } from "pathe";
@@ -112,7 +112,7 @@ async function _sync(
 
     debug?.(`Found ${availableVersionsFromApi.length} available versions from API`);
 
-    const lockfile = await readlockfileOrUndefined(this.fs, this.lockfile.path);
+    const lockfile = await readLockfileOrUndefined(this.fs, this.lockfile.path);
     const currentVersions = new Set(lockfile ? Object.keys(lockfile.versions) : []);
 
     const availableVersionsSet = new Set(availableVersionsFromApi);
@@ -242,7 +242,7 @@ async function _sync(
       for (const version of versionsToSync) {
         // Get expected files from snapshot if available, otherwise from API
         let expectedFiles: string[] = [];
-        const snapshot = await readSnapshotOrDefault(this.fs, this.basePath, version);
+        const snapshot = await readSnapshotOrUndefined(this.fs, this.basePath, version);
 
         if (snapshot && snapshot.files) {
           // Use files from snapshot

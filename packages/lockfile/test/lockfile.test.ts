@@ -1,7 +1,7 @@
 import { createMemoryMockFS } from "#test-utils/fs-bridges";
 import { describe, expect, it } from "vitest";
 import { LockfileInvalidError } from "../src/errors";
-import { canUseLockfile, readLockfile, readlockfileOrUndefined, validateLockfile, writeLockfile } from "../src/lockfile";
+import { canUseLockfile, readLockfile, readLockfileOrUndefined, validateLockfile, writeLockfile } from "../src/lockfile";
 
 describe("validateLockfile", () => {
   it("should validate a valid lockfile", () => {
@@ -398,7 +398,7 @@ describe("writeLockfile", () => {
   });
 });
 
-describe("readlockfileOrUndefined", () => {
+describe("readLockfileOrUndefined", () => {
   it("should read a valid lockfile", async () => {
     const validLockfileData = {
       lockfileVersion: 1,
@@ -413,7 +413,7 @@ describe("readlockfileOrUndefined", () => {
       },
     });
 
-    const lockfile = await readlockfileOrUndefined(fs, ".ucd-store.lock");
+    const lockfile = await readLockfileOrUndefined(fs, ".ucd-store.lock");
 
     expect(lockfile).toBeDefined();
     expect(lockfile?.lockfileVersion).toBe(1);
@@ -424,7 +424,7 @@ describe("readlockfileOrUndefined", () => {
       initialFiles: {},
     });
 
-    const lockfile = await readlockfileOrUndefined(fs, ".ucd-store.lock");
+    const lockfile = await readLockfileOrUndefined(fs, ".ucd-store.lock");
 
     expect(lockfile).toBeUndefined();
   });
@@ -436,7 +436,7 @@ describe("readlockfileOrUndefined", () => {
       },
     });
 
-    const lockfile = await readlockfileOrUndefined(fs, ".ucd-store.lock");
+    const lockfile = await readLockfileOrUndefined(fs, ".ucd-store.lock");
 
     expect(lockfile).toBeUndefined();
   });
@@ -453,7 +453,7 @@ describe("readlockfileOrUndefined", () => {
       },
     });
 
-    const lockfile = await readlockfileOrUndefined(fs, ".ucd-store.lock");
+    const lockfile = await readLockfileOrUndefined(fs, ".ucd-store.lock");
 
     expect(lockfile).toBeUndefined();
   });

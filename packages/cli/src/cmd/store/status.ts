@@ -4,7 +4,7 @@ import type { CLIStoreCmdSharedFlags } from "./_shared";
 import { createDebugger } from "@ucdjs-internal/shared";
 import { createUCDClient } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
-import { getLockfilePath, readLockfile, readSnapshotOrDefault } from "@ucdjs/lockfile";
+import { getLockfilePath, readLockfile, readSnapshotOrUndefined } from "@ucdjs/lockfile";
 import { UCDStoreGenericError } from "@ucdjs/ucd-store";
 import { green, red, yellow } from "farver/fast";
 import { printHelp } from "../../cli-utils";
@@ -114,7 +114,7 @@ export async function runStatusStore({ flags }: CLIStoreStatusCmdOptions) {
         // For remote stores, snapshots don't exist (they're local only)
         let hasSnapshot = false;
         if (!remote && storeDir) {
-          const snapshot = await readSnapshotOrDefault(bridge, storeDir, version);
+          const snapshot = await readSnapshotOrUndefined(bridge, storeDir, version);
           output.info("snapshot", snapshot, storeDir, version);
           hasSnapshot = snapshot !== undefined;
         }
