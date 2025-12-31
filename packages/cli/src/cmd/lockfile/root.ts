@@ -8,7 +8,9 @@ export interface CLILockfileCmdOptions {
   }>;
 }
 
-const LOCKFILE_SUBCOMMANDS = [] as const;
+const LOCKFILE_SUBCOMMANDS = [
+  "info",
+] as const;
 export type Subcommand = (typeof LOCKFILE_SUBCOMMANDS)[number];
 
 function isValidSubcommand(subcommand: string): subcommand is Subcommand {
@@ -36,6 +38,12 @@ export async function runLockfileRoot(subcommand: string, { flags }: CLILockfile
         ],
       },
     });
+    return;
+  }
+
+  if (subcommand === "info") {
+    const { runLockfileInfo } = await import("./info");
+    await runLockfileInfo({ flags });
     return;
   }
 
