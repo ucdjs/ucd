@@ -53,9 +53,9 @@ describe("lockfile validate command", () => {
 
     await runCLI(["lockfile", "validate", "--store-dir", storePath]);
 
-    expect(capture.containsInfo("Lockfile is valid")).toBe(true);
-    expect(capture.containsInfo("Lockfile Version:")).toBe(true);
-    expect(capture.containsInfo("Tracked Versions:")).toBe(true);
+    expect(capture.containsLog("Lockfile is valid")).toBe(true);
+    expect(capture.containsLog("Lockfile Version:")).toBe(true);
+    expect(capture.containsLog("Tracked Versions:")).toBe(true);
   });
 
   it("should report invalid JSON", async () => {
@@ -81,7 +81,7 @@ describe("lockfile validate command", () => {
     await runCLI(["lockfile", "validate", "--store-dir", storePath]);
 
     expect(capture.containsError("Lockfile does not match expected schema")).toBe(true);
-    expect(capture.containsInfo("Issues:")).toBe(true);
+    expect(capture.containsLog("Issues:")).toBe(true);
   });
 
   it("should show warnings for empty versions", async () => {
@@ -98,9 +98,9 @@ describe("lockfile validate command", () => {
 
     await runCLI(["lockfile", "validate", "--store-dir", storePath]);
 
-    expect(capture.containsInfo("Lockfile is valid")).toBe(true);
-    expect(capture.containsInfo("Warnings:")).toBe(true);
-    expect(capture.containsInfo("no versions tracked")).toBe(true);
+    expect(capture.containsLog("Lockfile is valid")).toBe(true);
+    expect(capture.containsLog("Warnings:")).toBe(true);
+    expect(capture.containsLog("no versions tracked")).toBe(true);
   });
 
   it("should show warnings for versions with 0 files", async () => {
@@ -125,10 +125,10 @@ describe("lockfile validate command", () => {
 
     await runCLI(["lockfile", "validate", "--store-dir", storePath]);
 
-    expect(capture.containsInfo("Lockfile is valid")).toBe(true);
-    expect(capture.containsInfo("Warnings:")).toBe(true);
-    expect(capture.containsInfo("16.0.0")).toBe(true);
-    expect(capture.containsInfo("0 files")).toBe(true);
+    expect(capture.containsLog("Lockfile is valid")).toBe(true);
+    expect(capture.containsLog("Warnings:")).toBe(true);
+    expect(capture.containsLog("16.0.0")).toBe(true);
+    expect(capture.containsLog("0 files")).toBe(true);
   });
 
   it("should output JSON when --json flag is passed with valid lockfile", async () => {

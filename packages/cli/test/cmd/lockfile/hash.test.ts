@@ -46,12 +46,12 @@ describe("lockfile hash command", () => {
 
     await runCLI(["lockfile", "hash", `${storePath}/test.txt`]);
 
-    expect(capture.containsInfo("File Hash Information")).toBe(true);
-    expect(capture.containsInfo("File:")).toBe(true);
-    expect(capture.containsInfo("Size:")).toBe(true);
-    expect(capture.containsInfo("File Hash:")).toBe(true);
-    expect(capture.containsInfo("Content Hash:")).toBe(true);
-    expect(capture.containsInfo("sha256:")).toBe(true);
+    expect(capture.containsLog("File Hash Information")).toBe(true);
+    expect(capture.containsLog("File:")).toBe(true);
+    expect(capture.containsLog("Size:")).toBe(true);
+    expect(capture.containsLog("File Hash:")).toBe(true);
+    expect(capture.containsLog("Content Hash:")).toBe(true);
+    expect(capture.containsLog("sha256:")).toBe(true);
   });
 
   it("should detect Unicode header in file", async () => {
@@ -69,9 +69,9 @@ describe("lockfile hash command", () => {
 
     await runCLI(["lockfile", "hash", `${storePath}/UnicodeData.txt`]);
 
-    expect(capture.containsInfo("Unicode Header:")).toBe(true);
-    expect(capture.containsInfo("Present")).toBe(true);
-    expect(capture.containsInfo("Header Lines:")).toBe(true);
+    expect(capture.containsLog("Unicode Header:")).toBe(true);
+    expect(capture.containsLog("Present")).toBe(true);
+    expect(capture.containsLog("Header Lines:")).toBe(true);
   });
 
   it("should show different hashes for file with header", async () => {
@@ -127,8 +127,8 @@ describe("lockfile hash command", () => {
 
     await runCLI(["lockfile", "hash", `${storePath}/test.txt`, "--compare", expectedHash]);
 
-    expect(capture.containsInfo("Comparison:")).toBe(true);
-    expect(capture.containsInfo("Hashes match")).toBe(true);
+    expect(capture.containsLog("Comparison:")).toBe(true);
+    expect(capture.containsLog("Hashes match")).toBe(true);
   });
 
   it("should compare hashes when --compare is provided (not matching)", async () => {
@@ -140,8 +140,8 @@ describe("lockfile hash command", () => {
 
     await runCLI(["lockfile", "hash", `${storePath}/test.txt`, "--compare", wrongHash]);
 
-    expect(capture.containsInfo("Comparison:")).toBe(true);
-    expect(capture.containsInfo("Hashes do not match")).toBe(true);
+    expect(capture.containsLog("Comparison:")).toBe(true);
+    expect(capture.containsLog("Hashes do not match")).toBe(true);
   });
 
   it("should normalize hash without sha256: prefix for comparison", async () => {
@@ -154,7 +154,7 @@ describe("lockfile hash command", () => {
 
     await runCLI(["lockfile", "hash", `${storePath}/test.txt`, "--compare", hashWithoutPrefix]);
 
-    expect(capture.containsInfo("Hashes match")).toBe(true);
+    expect(capture.containsLog("Hashes match")).toBe(true);
   });
 
   it("should use content hash when --strip-header is provided", async () => {
