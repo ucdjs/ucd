@@ -10,6 +10,25 @@ interface FileNode {
   _content?: string;
 }
 
+/**
+ * Recursively strips the `_content` property from file nodes.
+ * This is used to return clean JSON responses that match the API schema.
+ */
+function stripContent<T extends FileNode>(nodes: T[]): Omit<T, "_content">[] {
+  return nodes.map((node) => {
+    const { _content, children, ...rest } = node;
+
+    if (children && Array.isArray(children)) {
+      return {
+        ...rest,
+        children: stripContent(children),
+      } as Omit<T, "_content">;
+    }
+
+    return rest as Omit<T, "_content">;
+  });
+}
+
 export const filesRoute = defineMockRouteHandler({
   endpoint: "/api/v1/files/{wildcard}",
   setup: ({
@@ -38,9 +57,22 @@ export const filesRoute = defineMockRouteHandler({
           const versionFiles = (version ? files[version] : undefined) ?? files["*"];
 
           if (versionFiles && Array.isArray(versionFiles)) {
-            // Find the file node that matches the path
+            // If no path specified, return the root files for this version
+            if (!filePath) {
+              const stripped = stripContent(versionFiles as FileNode[]);
+              return HttpResponse.json(stripped);
+            }
+
+            // Find the file/directory node that matches the path
             const fileNode = findFileByPath(versionFiles as FileNode[], filePath);
 
+            // If it's a directory, return its children (or empty array)
+            if (fileNode && fileNode.type === "directory") {
+              const stripped = stripContent(fileNode.children ?? []);
+              return HttpResponse.json(stripped);
+            }
+
+            // If it's a file with _content, return the content
             if (fileNode && "_content" in fileNode && typeof fileNode._content === "string") {
               return HttpResponse.text(fileNode._content);
             }
@@ -51,9 +83,7 @@ export const filesRoute = defineMockRouteHandler({
             }
           }
 
-          // Fallback: return the filename as content
-          const name = wildcard.split("/").pop() ?? wildcard;
-          return HttpResponse.text(name);
+          return HttpResponse.text("This is a default file response.");
         }
 
         if (providedResponse instanceof ArrayBuffer || providedResponse instanceof Uint8Array) {
