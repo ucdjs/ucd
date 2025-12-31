@@ -1,12 +1,18 @@
 import { mockStoreApi } from "#test-utils/mock-store";
-import nodeFileSystemBridge from "@ucdjs/fs-bridge/bridges/node";
 import { describe, expect, it } from "vitest";
 import { testdir } from "vitest-testdirs";
-import { createUCDStore } from "../../../src/store";
+import { createNodeUCDStore } from "../../../src/factory";
 
 describe("node integration: file operations", () => {
   describe("files.get", () => {
     it("should read file from disk", async () => {
+      mockStoreApi({
+        versions: ["16.0.0"],
+        responses: {
+          "/.well-known/ucd-config.json": true,
+        },
+      });
+
       const lockfile = {
         version: 1,
         createdAt: new Date().toISOString(),
@@ -21,15 +27,14 @@ describe("node integration: file operations", () => {
       };
 
       const storePath = await testdir({
-        "ucd.lock": JSON.stringify(lockfile, null, 2),
+        ".ucd-store.lock": JSON.stringify(lockfile, null, 2),
         "16.0.0": {
           "UnicodeData.txt": "0041;LATIN CAPITAL LETTER A;Lu;0;L;;;;;N;;;;0061;",
         },
       });
 
-      const store = await createUCDStore({
+      const store = await createNodeUCDStore({
         basePath: storePath,
-        fs: nodeFileSystemBridge,
         bootstrap: false,
         verify: false,
       });
@@ -41,6 +46,13 @@ describe("node integration: file operations", () => {
     });
 
     it("should read file from nested directory", async () => {
+      mockStoreApi({
+        versions: ["16.0.0"],
+        responses: {
+          "/.well-known/ucd-config.json": true,
+        },
+      });
+
       const lockfile = {
         version: 1,
         createdAt: new Date().toISOString(),
@@ -55,7 +67,7 @@ describe("node integration: file operations", () => {
       };
 
       const storePath = await testdir({
-        "ucd.lock": JSON.stringify(lockfile, null, 2),
+        ".ucd-store.lock": JSON.stringify(lockfile, null, 2),
         "16.0.0": {
           auxiliary: {
             "GraphemeBreakProperty.txt": "grapheme break data",
@@ -63,9 +75,8 @@ describe("node integration: file operations", () => {
         },
       });
 
-      const store = await createUCDStore({
+      const store = await createNodeUCDStore({
         basePath: storePath,
-        fs: nodeFileSystemBridge,
         bootstrap: false,
         verify: false,
       });
@@ -77,6 +88,13 @@ describe("node integration: file operations", () => {
     });
 
     it("should return error for non-existent file", async () => {
+      mockStoreApi({
+        versions: ["16.0.0"],
+        responses: {
+          "/.well-known/ucd-config.json": true,
+        },
+      });
+
       const lockfile = {
         version: 1,
         createdAt: new Date().toISOString(),
@@ -91,13 +109,12 @@ describe("node integration: file operations", () => {
       };
 
       const storePath = await testdir({
-        "ucd.lock": JSON.stringify(lockfile, null, 2),
+        ".ucd-store.lock": JSON.stringify(lockfile, null, 2),
         "16.0.0": {},
       });
 
-      const store = await createUCDStore({
+      const store = await createNodeUCDStore({
         basePath: storePath,
-        fs: nodeFileSystemBridge,
         bootstrap: false,
         verify: false,
       });
@@ -113,6 +130,7 @@ describe("node integration: file operations", () => {
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
+          "/.well-known/ucd-config.json": true,
           "/api/v1/versions": true,
           "/api/v1/files/{wildcard}": "API fetched content",
         },
@@ -132,13 +150,12 @@ describe("node integration: file operations", () => {
       };
 
       const storePath = await testdir({
-        "ucd.lock": JSON.stringify(lockfile, null, 2),
+        ".ucd-store.lock": JSON.stringify(lockfile, null, 2),
         "16.0.0": {},
       });
 
-      const store = await createUCDStore({
+      const store = await createNodeUCDStore({
         basePath: storePath,
-        fs: nodeFileSystemBridge,
         bootstrap: false,
         verify: false,
       });
@@ -154,6 +171,13 @@ describe("node integration: file operations", () => {
 
   describe("files.list", () => {
     it("should list files from disk", async () => {
+      mockStoreApi({
+        versions: ["16.0.0"],
+        responses: {
+          "/.well-known/ucd-config.json": true,
+        },
+      });
+
       const lockfile = {
         version: 1,
         createdAt: new Date().toISOString(),
@@ -168,7 +192,7 @@ describe("node integration: file operations", () => {
       };
 
       const storePath = await testdir({
-        "ucd.lock": JSON.stringify(lockfile, null, 2),
+        ".ucd-store.lock": JSON.stringify(lockfile, null, 2),
         "16.0.0": {
           "UnicodeData.txt": "content",
           "Blocks.txt": "content",
@@ -176,9 +200,8 @@ describe("node integration: file operations", () => {
         },
       });
 
-      const store = await createUCDStore({
+      const store = await createNodeUCDStore({
         basePath: storePath,
-        fs: nodeFileSystemBridge,
         bootstrap: false,
         verify: false,
       });
@@ -193,6 +216,13 @@ describe("node integration: file operations", () => {
     });
 
     it("should list files from nested directories", async () => {
+      mockStoreApi({
+        versions: ["16.0.0"],
+        responses: {
+          "/.well-known/ucd-config.json": true,
+        },
+      });
+
       const lockfile = {
         version: 1,
         createdAt: new Date().toISOString(),
@@ -207,7 +237,7 @@ describe("node integration: file operations", () => {
       };
 
       const storePath = await testdir({
-        "ucd.lock": JSON.stringify(lockfile, null, 2),
+        ".ucd-store.lock": JSON.stringify(lockfile, null, 2),
         "16.0.0": {
           "UnicodeData.txt": "content",
           "extracted": {
@@ -216,9 +246,8 @@ describe("node integration: file operations", () => {
         },
       });
 
-      const store = await createUCDStore({
+      const store = await createNodeUCDStore({
         basePath: storePath,
-        fs: nodeFileSystemBridge,
         bootstrap: false,
         verify: false,
       });
@@ -231,6 +260,13 @@ describe("node integration: file operations", () => {
     });
 
     it("should apply global filters", async () => {
+      mockStoreApi({
+        versions: ["16.0.0"],
+        responses: {
+          "/.well-known/ucd-config.json": true,
+        },
+      });
+
       const lockfile = {
         version: 1,
         createdAt: new Date().toISOString(),
@@ -245,7 +281,7 @@ describe("node integration: file operations", () => {
       };
 
       const storePath = await testdir({
-        "ucd.lock": JSON.stringify(lockfile, null, 2),
+        ".ucd-store.lock": JSON.stringify(lockfile, null, 2),
         "16.0.0": {
           "UnicodeData.txt": "content",
           "Blocks.txt": "content",
@@ -253,9 +289,8 @@ describe("node integration: file operations", () => {
         },
       });
 
-      const store = await createUCDStore({
+      const store = await createNodeUCDStore({
         basePath: storePath,
-        fs: nodeFileSystemBridge,
         bootstrap: false,
         verify: false,
         globalFilters: {
@@ -274,6 +309,13 @@ describe("node integration: file operations", () => {
 
   describe("files.tree", () => {
     it("should return tree structure from disk", async () => {
+      mockStoreApi({
+        versions: ["16.0.0"],
+        responses: {
+          "/.well-known/ucd-config.json": true,
+        },
+      });
+
       const lockfile = {
         version: 1,
         createdAt: new Date().toISOString(),
@@ -288,7 +330,7 @@ describe("node integration: file operations", () => {
       };
 
       const storePath = await testdir({
-        "ucd.lock": JSON.stringify(lockfile, null, 2),
+        ".ucd-store.lock": JSON.stringify(lockfile, null, 2),
         "16.0.0": {
           "UnicodeData.txt": "content",
           "extracted": {
@@ -297,9 +339,8 @@ describe("node integration: file operations", () => {
         },
       });
 
-      const store = await createUCDStore({
+      const store = await createNodeUCDStore({
         basePath: storePath,
-        fs: nodeFileSystemBridge,
         bootstrap: false,
         verify: false,
       });
