@@ -11,6 +11,7 @@ export interface CLILockfileCmdOptions {
 const LOCKFILE_SUBCOMMANDS = [
   "info",
   "hash",
+  "validate",
 ] as const;
 export type Subcommand = (typeof LOCKFILE_SUBCOMMANDS)[number];
 
@@ -53,6 +54,12 @@ export async function runLockfileRoot(subcommand: string, { flags }: CLILockfile
     const pathParts = flags._.slice(2) as string[];
     const filePath = pathParts.length > 0 ? pathParts.join(" ") : "";
     await runLockfileHash({ filePath, flags });
+    return;
+  }
+
+  if (subcommand === "validate") {
+    const { runLockfileValidate } = await import("./validate");
+    await runLockfileValidate({ flags });
     return;
   }
 
