@@ -11,21 +11,14 @@ interface FileNode {
 }
 
 /**
- * Recursively strips the `_content` property from file nodes.
- * This is used to return clean JSON responses that match the API schema.
+ * Strips the `_content` and `children` properties from file nodes.
+ * This is used to return clean JSON responses that match the API schema,
+ * where directory listings show flat entries without nested children.
  */
-function stripContent<T extends FileNode>(nodes: T[]): Omit<T, "_content">[] {
+function stripContent<T extends FileNode>(nodes: T[]): Omit<T, "_content" | "children">[] {
   return nodes.map((node) => {
-    const { _content, children, ...rest } = node;
-
-    if (children && Array.isArray(children)) {
-      return {
-        ...rest,
-        children: stripContent(children),
-      } as Omit<T, "_content">;
-    }
-
-    return rest as Omit<T, "_content">;
+    const { _content, children: _children, ...rest } = node;
+    return rest as Omit<T, "_content" | "children">;
   });
 }
 
