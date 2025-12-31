@@ -41,7 +41,6 @@ export async function createUCDStore<
     globalFilters,
     fs: fsFactory,
     fsOptions,
-    basePath,
     versions,
     endpointConfig,
     bootstrap: shouldBootstrap,
@@ -50,7 +49,6 @@ export async function createUCDStore<
   } = defu(options, {
     baseUrl: UCDJS_API_BASE_URL,
     globalFilters: {},
-    basePath: "",
     versions: [],
     bootstrap: true,
     verify: true,
@@ -95,7 +93,8 @@ export async function createUCDStore<
 
   // Lockfiles only make sense for writable file systems
   const supportsLockfile = fs.optionalCapabilities?.write === true;
-  const lockfilePath = supportsLockfile ? getLockfilePath(basePath) : null;
+  // Lockfile path is always relative
+  const lockfilePath = supportsLockfile ? getLockfilePath() : null;
   debug?.("Lockfile support:", supportsLockfile, "path:", lockfilePath);
 
   // Extract versions from config if available
@@ -114,7 +113,6 @@ export async function createUCDStore<
     client,
     filter,
     fs,
-    basePath,
     lockfile: {
       supports: supportsLockfile,
       exists: lockfileExists,
@@ -217,7 +215,7 @@ export async function createUCDStore<
 
   // Unified verification: handles both lockfile-based and direct version validation
   if (shouldVerify && internalContext.versions.resolved.length > 0) {
-    const verifyResult = await verify({ context: internalContext });
+    const verifyResult = await verify(internalContext);
 
     if (!verifyResult.valid) {
       const source = verifyResult.source === "lockfile" ? "Lockfile" : "Version";
@@ -261,6 +259,8 @@ export async function handleVersionConflict(
   _configVersions?: string[],
   filter?: PathFilter,
 ): Promise<string[]> {
+  const now = new Date();
+
   switch (strategy) {
     case "merge": {
       const mergedVersions = Array.from(new Set([...lockfileVersions, ...providedVersions]));
@@ -271,6 +271,8 @@ export async function handleVersionConflict(
 
       await writeLockfile(fs, lockfilePath, {
         lockfileVersion: 1,
+        createdAt: existing?.createdAt ?? now,
+        updatedAt: now,
         versions: Object.fromEntries(
           mergedVersions.map((v) => {
             const existingEntry = existing?.versions[v];
@@ -280,6 +282,8 @@ export async function handleVersionConflict(
                 path: `${v}/snapshot.json`, // relative path
                 fileCount: 0,
                 totalSize: 0,
+                createdAt: now,
+                updatedAt: now,
               },
             ];
           }),
@@ -297,6 +301,8 @@ export async function handleVersionConflict(
 
       await writeLockfile(fs, lockfilePath, {
         lockfileVersion: 1,
+        createdAt: existing?.createdAt ?? now,
+        updatedAt: now,
         versions: Object.fromEntries(
           providedVersions.map((v) => {
             const existingEntry = existing?.versions[v];
@@ -306,6 +312,8 @@ export async function handleVersionConflict(
                 path: `${v}/snapshot.json`, // relative path
                 fileCount: 0,
                 totalSize: 0,
+                createdAt: now,
+                updatedAt: now,
               },
             ];
           }),

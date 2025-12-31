@@ -21,7 +21,7 @@ describe("getFile", () => {
       const { context } = await createTestContext({
         versions: ["16.0.0"],
         initialFiles: {
-          "/test/16.0.0/UnicodeData.txt": UNICODE_DATA_CONTENT,
+          "16.0.0/UnicodeData.txt": UNICODE_DATA_CONTENT,
         },
       });
 
@@ -36,7 +36,7 @@ describe("getFile", () => {
       const { context } = await createTestContext({
         versions: ["16.0.0"],
         initialFiles: {
-          "/test/16.0.0/extracted/DerivedBidiClass.txt": nestedContent,
+          "16.0.0/extracted/DerivedBidiClass.txt": nestedContent,
         },
       });
 
@@ -53,8 +53,8 @@ describe("getFile", () => {
       const { context } = await createTestContext({
         versions: ["16.0.0", "15.0.0"],
         initialFiles: {
-          "/test/16.0.0/ReadMe.txt": contentV16,
-          "/test/15.0.0/ReadMe.txt": contentV15,
+          "16.0.0/ReadMe.txt": contentV16,
+          "15.0.0/ReadMe.txt": contentV15,
         },
       });
 
@@ -71,7 +71,7 @@ describe("getFile", () => {
       const { context } = await createTestContext({
         versions: ["16.0.0"],
         initialFiles: {
-          "/test/16.0.0/Empty.txt": "",
+          "16.0.0/Empty.txt": "",
         },
       });
 
@@ -87,7 +87,7 @@ describe("getFile", () => {
       const { context } = await createTestContext({
         versions: ["16.0.0"],
         initialFiles: {
-          "/test/16.0.0/Unicode.txt": unicodeContent,
+          "16.0.0/Unicode.txt": unicodeContent,
         },
       });
 
@@ -120,7 +120,7 @@ describe("getFile", () => {
       const { context } = await createTestContext({
         versions: ["16.0.0", "15.1.0", "15.0.0"],
         initialFiles: {
-          "/test/15.1.0/ReadMe.txt": "Version 15.1.0",
+          "15.1.0/ReadMe.txt": "Version 15.1.0",
         },
       });
 
@@ -139,7 +139,7 @@ describe("getFile", () => {
           exclude: ["**/*.txt"],
         },
         initialFiles: {
-          "/test/16.0.0/UnicodeData.txt": UNICODE_DATA_CONTENT,
+          "16.0.0/UnicodeData.txt": UNICODE_DATA_CONTENT,
         },
       });
 
@@ -161,7 +161,7 @@ describe("getFile", () => {
           include: ["ReadMe.txt"],
         },
         initialFiles: {
-          "/test/16.0.0/UnicodeData.txt": UNICODE_DATA_CONTENT,
+          "16.0.0/UnicodeData.txt": UNICODE_DATA_CONTENT,
         },
       });
 
@@ -175,7 +175,7 @@ describe("getFile", () => {
       const { context } = await createTestContext({
         versions: ["16.0.0"],
         initialFiles: {
-          "/test/16.0.0/UnicodeData.txt": UNICODE_DATA_CONTENT,
+          "16.0.0/UnicodeData.txt": UNICODE_DATA_CONTENT,
         },
       });
 
@@ -197,7 +197,7 @@ describe("getFile", () => {
           exclude: ["**/test/**"],
         },
         initialFiles: {
-          "/test/16.0.0/UnicodeData.txt": UNICODE_DATA_CONTENT,
+          "16.0.0/UnicodeData.txt": UNICODE_DATA_CONTENT,
         },
       });
 
@@ -281,7 +281,7 @@ describe("getFile", () => {
       const { context } = await createTestContext({
         versions: ["16.0.0"],
         initialFiles: {
-          "/test/16.0.0/UnicodeData.txt": storeContent,
+          "16.0.0/UnicodeData.txt": storeContent,
         },
       });
 
@@ -457,7 +457,7 @@ describe("getFile", () => {
       const { context } = await createTestContext({
         versions: ["16.0.0"],
         initialFiles: {
-          "/test/16.0.0/ReadMe.txt": "Hello World",
+          "16.0.0/ReadMe.txt": "Hello World",
         },
       });
 
@@ -471,7 +471,7 @@ describe("getFile", () => {
       const { context } = await createTestContext({
         versions: ["16.0.0"],
         initialFiles: {
-          "/test/16.0.0/ReadMe.txt": "Hello Bound",
+          "16.0.0/ReadMe.txt": "Hello Bound",
         },
       });
 

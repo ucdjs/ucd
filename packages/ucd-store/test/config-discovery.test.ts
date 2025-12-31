@@ -15,14 +15,13 @@ describe("config discovery integration", () => {
       },
     });
 
-    const { fsFactory, basePath } = await createTestContext({
+    const { fsFactory } = await createTestContext({
       versions: [],
       lockfile: undefined,
     });
 
     const store = await createUCDStore({
       fs: fsFactory,
-      basePath,
       versions: [],
       bootstrap: true,
     });
@@ -34,7 +33,7 @@ describe("config discovery integration", () => {
     expect(store.sync).toBeDefined();
 
     // Verify lockfile was created with config versions
-    const lockfile = await readLockfile(store.fs, getLockfilePath(store.basePath));
+    const lockfile = await readLockfile(store.fs, getLockfilePath());
     const lockfileVersions = Object.keys(lockfile.versions).sort();
     expect(lockfileVersions).toEqual(["15.1.0", "16.0.0"]);
   });
@@ -54,14 +53,13 @@ describe("config discovery integration", () => {
       },
     });
 
-    const { fsFactory, basePath } = await createTestContext({
+    const { fsFactory } = await createTestContext({
       versions: [],
       lockfile: undefined,
     });
 
     const store = await createUCDStore({
       fs: fsFactory,
-      basePath,
       versions: ["16.0.0"],
       bootstrap: true,
     });
@@ -69,7 +67,7 @@ describe("config discovery integration", () => {
     expect(store).toBeDefined();
     expect(store.versions).toEqual(["16.0.0"]);
 
-    const lockfile = await readLockfile(store.fs, getLockfilePath(store.basePath));
+    const lockfile = await readLockfile(store.fs, getLockfilePath());
     const lockfileVersions = Object.keys(lockfile.versions).sort();
     expect(lockfileVersions).toEqual(["16.0.0"]);
   });
@@ -85,14 +83,13 @@ describe("config discovery integration", () => {
       },
     });
 
-    const { fsFactory, basePath } = await createTestContext({
+    const { fsFactory } = await createTestContext({
       versions: [],
       lockfile: undefined,
     });
 
     const store = await createUCDStore({
       fs: fsFactory,
-      basePath,
       versions: ["16.0.0"],
       bootstrap: true,
     });
@@ -100,7 +97,7 @@ describe("config discovery integration", () => {
     expect(store).toBeDefined();
     expect(store.versions).toEqual(["16.0.0"]);
 
-    const lockfile = await readLockfile(store.fs, getLockfilePath(store.basePath));
+    const lockfile = await readLockfile(store.fs, getLockfilePath());
     const lockfileVersions = Object.keys(lockfile.versions).sort();
     expect(lockfileVersions).toEqual(["16.0.0"]);
   });
@@ -122,14 +119,13 @@ describe("config discovery integration", () => {
       },
     });
 
-    const { fs, fsFactory, basePath, lockfilePath } = await createTestContext({
+    const { fs, fsFactory, lockfilePath } = await createTestContext({
       versions: [],
       lockfile: undefined,
     });
 
     const store = await createUCDStore({
       fs: fsFactory,
-      basePath,
       versions: ["15.0.0"],
       bootstrap: true,
     });
@@ -151,14 +147,13 @@ describe("config discovery integration", () => {
       },
     });
 
-    const { fsFactory, basePath } = await createTestContext({
+    const { fsFactory } = await createTestContext({
       versions: [],
       lockfile: undefined,
     });
 
     await expect(createUCDStore({
       fs: fsFactory,
-      basePath,
       versions: ["16.0.0"],
     })).rejects.toThrow();
   });
@@ -180,7 +175,7 @@ describe("config discovery integration", () => {
       },
     });
 
-    const { fsFactory, basePath } = await createTestContext({
+    const { fsFactory } = await createTestContext({
       versions: [],
       lockfile: undefined,
     });
@@ -188,7 +183,6 @@ describe("config discovery integration", () => {
     // Should fail because config versions (16.0.0, 15.1.0) are not in API (15.0.0)
     await expect(createUCDStore({
       fs: fsFactory,
-      basePath,
       versions: [], // Use config versions
       bootstrap: true,
     })).rejects.toThrow();

@@ -14,7 +14,6 @@ interface CreateInternalContextOptions {
   client: UCDClient;
   filter: PathFilter;
   fs: FileSystemBridge;
-  basePath: string;
 
   lockfile: {
     supports: boolean;
@@ -49,7 +48,6 @@ export function createInternalContext(options: CreateInternalContextOptions): In
     client: options.client,
     filter: options.filter,
     fs: options.fs,
-    basePath: options.basePath,
     lockfile: {
       supports: options.lockfile.supports,
       exists: options.lockfile.exists,
@@ -161,9 +159,6 @@ export function createPublicContext(
   context: InternalUCDStoreContext,
 ): UCDStoreContext {
   return {
-    get basePath() {
-      return context.basePath;
-    },
     get versions() {
       return Object.freeze([...context.versions.resolved]);
     },

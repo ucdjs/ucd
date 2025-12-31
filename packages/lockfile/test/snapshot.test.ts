@@ -27,7 +27,7 @@ describe("readSnapshot", () => {
       },
     });
 
-    const snapshot = await readSnapshot(fs, "", "16.0.0");
+    const snapshot = await readSnapshot(fs, "16.0.0");
 
     expect(snapshot.unicodeVersion).toBe("16.0.0");
     expect(Object.keys(snapshot.files)).toHaveLength(2);
@@ -43,8 +43,8 @@ describe("readSnapshot", () => {
     });
 
     // TODO: make use of the toMatchError here.
-    await expect(readSnapshot(fs, "", "16.0.0")).rejects.toThrow(LockfileInvalidError);
-    await expect(readSnapshot(fs, "", "16.0.0")).rejects.toThrow("snapshot is empty");
+    await expect(readSnapshot(fs, "16.0.0")).rejects.toThrow(LockfileInvalidError);
+    await expect(readSnapshot(fs, "16.0.0")).rejects.toThrow("snapshot is empty");
   });
 
   it("should throw LockfileInvalidError when snapshot is not valid JSON", async () => {
@@ -55,8 +55,8 @@ describe("readSnapshot", () => {
     });
 
     // TODO: make use of the toMatchError here.
-    await expect(readSnapshot(fs, "", "16.0.0")).rejects.toThrow(LockfileInvalidError);
-    await expect(readSnapshot(fs, "", "16.0.0")).rejects.toThrow("snapshot is not valid JSON");
+    await expect(readSnapshot(fs, "16.0.0")).rejects.toThrow(LockfileInvalidError);
+    await expect(readSnapshot(fs, "16.0.0")).rejects.toThrow("snapshot is not valid JSON");
   });
 
   it("should throw LockfileInvalidError when snapshot does not match schema", async () => {
@@ -77,8 +77,8 @@ describe("readSnapshot", () => {
     });
 
     // TODO: make use of the toMatchError here.
-    await expect(readSnapshot(fs, "", "16.0.0")).rejects.toThrow(LockfileInvalidError);
-    await expect(readSnapshot(fs, "", "16.0.0")).rejects.toThrow("snapshot does not match expected schema");
+    await expect(readSnapshot(fs, "16.0.0")).rejects.toThrow(LockfileInvalidError);
+    await expect(readSnapshot(fs, "16.0.0")).rejects.toThrow("snapshot does not match expected schema");
   });
 
   it("should throw LockfileInvalidError when snapshot does not exist", async () => {
@@ -86,7 +86,7 @@ describe("readSnapshot", () => {
       initialFiles: {},
     });
 
-    await expect(readSnapshot(fs, "", "16.0.0")).rejects.toThrow(LockfileInvalidError);
+    await expect(readSnapshot(fs, "16.0.0")).rejects.toThrow(LockfileInvalidError);
   });
 
   it("should validate hash format", async () => {
@@ -107,7 +107,7 @@ describe("readSnapshot", () => {
       },
     });
 
-    await expect(readSnapshot(fs, "", "16.0.0")).rejects.toThrow(LockfileInvalidError);
+    await expect(readSnapshot(fs, "16.0.0")).rejects.toThrow(LockfileInvalidError);
   });
 
   it("should reject negative file sizes", async () => {
@@ -128,7 +128,7 @@ describe("readSnapshot", () => {
       },
     });
 
-    await expect(readSnapshot(fs, "", "16.0.0")).rejects.toThrow(LockfileInvalidError);
+    await expect(readSnapshot(fs, "16.0.0")).rejects.toThrow(LockfileInvalidError);
   });
 });
 
@@ -151,7 +151,7 @@ describe("writeSnapshot", () => {
       },
     });
 
-    await writeSnapshot(fs, "", "16.0.0", validSnapshot);
+    await writeSnapshot(fs, "16.0.0", validSnapshot);
 
     const content = await fs.read("16.0.0/snapshot.json");
     expect(content).toBeDefined();
@@ -168,7 +168,7 @@ describe("writeSnapshot", () => {
       },
     });
 
-    await writeSnapshot(fs, "", "16.0.0", validSnapshot);
+    await writeSnapshot(fs, "16.0.0", validSnapshot);
 
     const content = await fs.read("16.0.0/snapshot.json");
     expect(content).toContain("\n");
@@ -180,7 +180,7 @@ describe("writeSnapshot", () => {
       initialFiles: {},
     });
 
-    await writeSnapshot(fs, "", "16.0.0", validSnapshot);
+    await writeSnapshot(fs, "16.0.0", validSnapshot);
 
     const content = await fs.read("16.0.0/snapshot.json");
     expect(content).toBeDefined();
@@ -195,7 +195,7 @@ describe("writeSnapshot", () => {
     });
 
     // Should not throw, just skip
-    await expect(writeSnapshot(fs, "", "16.0.0", validSnapshot)).resolves.toBeUndefined();
+    await expect(writeSnapshot(fs, "16.0.0", validSnapshot)).resolves.toBeUndefined();
   });
 
   it("should throw when mkdir is not available and directory doesn't exist", async () => {
@@ -206,7 +206,7 @@ describe("writeSnapshot", () => {
       },
     });
 
-    await expect(writeSnapshot(fs, "", "16.0.0", validSnapshot)).rejects.toThrow(LockfileBridgeUnsupportedOperation);
+    await expect(writeSnapshot(fs, "16.0.0", validSnapshot)).rejects.toThrow(LockfileBridgeUnsupportedOperation);
   });
 });
 
@@ -223,7 +223,7 @@ describe("readSnapshotOrUndefined", () => {
       },
     });
 
-    const snapshot = await readSnapshotOrUndefined(fs, "", "16.0.0");
+    const snapshot = await readSnapshotOrUndefined(fs, "16.0.0");
 
     expect(snapshot).toBeDefined();
     expect(snapshot?.unicodeVersion).toBe("16.0.0");
@@ -234,7 +234,7 @@ describe("readSnapshotOrUndefined", () => {
       initialFiles: {},
     });
 
-    const snapshot = await readSnapshotOrUndefined(fs, "", "16.0.0");
+    const snapshot = await readSnapshotOrUndefined(fs, "16.0.0");
 
     expect(snapshot).toBeUndefined();
   });
@@ -246,7 +246,7 @@ describe("readSnapshotOrUndefined", () => {
       },
     });
 
-    const snapshot = await readSnapshotOrUndefined(fs, "", "16.0.0");
+    const snapshot = await readSnapshotOrUndefined(fs, "16.0.0");
 
     expect(snapshot).toBeUndefined();
   });
@@ -263,7 +263,7 @@ describe("readSnapshotOrUndefined", () => {
       },
     });
 
-    const snapshot = await readSnapshotOrUndefined(fs, "", "16.0.0");
+    const snapshot = await readSnapshotOrUndefined(fs, "16.0.0");
 
     expect(snapshot).toBeUndefined();
   });

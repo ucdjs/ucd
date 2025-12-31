@@ -12,7 +12,7 @@ import { hasCapability } from "@ucdjs/fs-bridge";
 import { computeFileHash, computeFileHashWithoutUCDHeader, readLockfileOrUndefined, writeLockfile, writeSnapshot } from "@ucdjs/lockfile";
 import { hasUCDFolderPath } from "@unicode-utils/core";
 import { dirname, join } from "pathe";
-import { extractFilterPatterns } from "../context";
+import { extractFilterPatterns, isUCDStoreInternalContext } from "../context";
 import { UCDStoreGenericError } from "../errors";
 
 const debug = createDebugger("ucdjs:ucd-store:mirror");
@@ -295,7 +295,8 @@ async function _mirror(
 
       // build queue items with all paths pre-computed
       for (const filePath of filePaths) {
-        const localPath = join(this.basePath, version, filePath);
+        // Use relative path
+        const localPath = join(version, filePath);
 
         // Note:
         // The store always uses `<version>/ucd/<file>` paths when mirroring,
@@ -397,6 +398,7 @@ async function _mirror(
     // Create snapshots and update lockfile for mirrored versions
     const lockfile = await readLockfileOrUndefined(this.fs, this.lockfile.path);
     const updatedLockfileVersions = lockfile ? { ...lockfile.versions } : {};
+    const now = new Date();
 
     for (const [version, report] of versionedReports.entries()) {
       // Create snapshot if any files were processed (downloaded or skipped)
@@ -409,7 +411,8 @@ async function _mirror(
         let totalSize = 0;
 
         for (const filePath of allFiles) {
-          const localPath = join(this.basePath, version, filePath);
+          // Use relative path
+          const localPath = join(version, filePath);
           const fileContent = await this.fs.read(localPath);
 
           if (fileContent) {
@@ -424,16 +427,19 @@ async function _mirror(
         }
 
         // Write snapshot
-        await writeSnapshot(this.fs, this.basePath, version, {
+        await writeSnapshot(this.fs, version, {
           unicodeVersion: version,
           files: snapshotFiles,
         });
 
-        // Update lockfile entry
+        // Update lockfile entry - preserve createdAt if version already exists
+        const existingEntry = updatedLockfileVersions[version];
         updatedLockfileVersions[version] = {
           path: `${version}/snapshot.json`,
           fileCount: allFiles.length,
           totalSize,
+          createdAt: existingEntry?.createdAt ?? now,
+          updatedAt: now,
         };
       }
     }
@@ -445,6 +451,8 @@ async function _mirror(
 
       await writeLockfile(this.fs, this.lockfile.path, {
         lockfileVersion: 1,
+        createdAt: lockfile?.createdAt ?? now,
+        updatedAt: now,
         versions: updatedLockfileVersions,
         filters,
       });
@@ -471,10 +479,6 @@ async function _mirror(
   });
 }
 
-function isContext(obj: any): obj is InternalUCDStoreContext {
-  return !!obj && typeof obj === "object" && Array.isArray(obj.versions?.resolved);
-}
-
 export function mirror(
   context: InternalUCDStoreContext,
   options?: MirrorOptions,
@@ -485,12 +489,22 @@ export function mirror(
   options?: MirrorOptions,
 ): Promise<OperationResult<MirrorReport, StoreError>>;
 
-export function mirror(this: any, thisOrContext?: any, options?: any): Promise<OperationResult<MirrorReport, StoreError>> {
-  if (isContext(thisOrContext)) {
+export function mirror(
+  this: InternalUCDStoreContext | void,
+  thisOrContext?: InternalUCDStoreContext | MirrorOptions,
+  options?: MirrorOptions,
+): Promise<OperationResult<MirrorReport, StoreError>> {
+  if (isUCDStoreInternalContext(thisOrContext)) {
+    // thisOrContext is the context
     return _mirror.call(thisOrContext, options);
   }
 
-  return _mirror.call(this, thisOrContext);
+  // 'this' is the context
+  // 'thisOrContext' is actually the 'options'
+  return _mirror.call(
+    this as InternalUCDStoreContext,
+    thisOrContext as MirrorOptions,
+  );
 }
 
 function computeSummary(

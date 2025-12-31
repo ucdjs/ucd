@@ -36,7 +36,7 @@ export async function runLockfileInfo({ flags }: CLILockfileInfoCmdOptions) {
   console.error("Reading lockfile info from store at:", storePath);
   try {
     const fs = NodeFileSystemBridge({ basePath: storePath });
-    const lockfilePath = getLockfilePath(storePath);
+    const lockfilePath = getLockfilePath();
 
     let lockfile;
     try {

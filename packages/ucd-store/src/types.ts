@@ -100,12 +100,6 @@ export interface UCDStoreOptions<BridgeOptionsSchema extends z.ZodType> {
   fsOptions?: FsOptionsInput<BridgeOptionsSchema>;
 
   /**
-   * Base Path attached to the base URL, when accessing files.
-   * This is used to resolve file paths when reading from the store.
-   */
-  basePath?: string;
-
-  /**
    * List of Unicode versions to include in the store.
    * Only used when initializing a new store that supports mirroring.
    */
@@ -161,11 +155,6 @@ export interface InternalUCDStoreContext {
    * File system bridge for file operations.
    */
   fs: FileSystemBridge;
-
-  /**
-   * Base path where store files are located.
-   */
-  basePath: string;
 
   /**
    * Lockfile-related state and configuration.
@@ -225,7 +214,7 @@ export interface InternalUCDStoreContext {
   getExpectedFilePaths: (version: string) => Promise<string[]>;
 }
 
-export type UCDStoreContext = Readonly<Pick<InternalUCDStoreContext, "basePath" | "fs">> & {
+export type UCDStoreContext = Readonly<Pick<InternalUCDStoreContext, "fs">> & {
   /**
    * List of Unicode versions available in the store.
    */

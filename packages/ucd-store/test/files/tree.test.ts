@@ -29,8 +29,8 @@ describe("getFileTree", () => {
       const { context } = await createTestContext({
         versions: ["16.0.0"],
         initialFiles: {
-          "/test/16.0.0/UnicodeData.txt": "Unicode data content",
-          "/test/16.0.0/ReadMe.txt": "Readme content",
+          "16.0.0/UnicodeData.txt": "Unicode data content",
+          "16.0.0/ReadMe.txt": "Readme content",
         },
       });
 
@@ -48,8 +48,8 @@ describe("getFileTree", () => {
       const { context } = await createTestContext({
         versions: ["16.0.0"],
         initialFiles: {
-          "/test/16.0.0/UnicodeData.txt": "content",
-          "/test/16.0.0/extracted/DerivedBidiClass.txt": "derived content",
+          "16.0.0/UnicodeData.txt": "content",
+          "16.0.0/extracted/DerivedBidiClass.txt": "derived content",
         },
       });
 
@@ -73,8 +73,8 @@ describe("getFileTree", () => {
       const { context } = await createTestContext({
         versions: ["16.0.0", "15.0.0"],
         initialFiles: {
-          "/test/16.0.0/FileA.txt": "v16 file",
-          "/test/15.0.0/FileX.txt": "v15 file",
+          "16.0.0/FileA.txt": "v16 file",
+          "15.0.0/FileX.txt": "v15 file",
         },
       });
 
@@ -101,7 +101,7 @@ describe("getFileTree", () => {
 
       // Create an empty directory
       if (fs.mkdir) {
-        await fs.mkdir("/test/16.0.0");
+        await fs.mkdir("16.0.0");
       }
 
       const [data, error] = await getFileTree(context, "16.0.0");
@@ -132,7 +132,7 @@ describe("getFileTree", () => {
       const { context } = await createTestContext({
         versions: ["16.0.0", "15.1.0", "15.0.0"],
         initialFiles: {
-          "/test/15.1.0/UnicodeData.txt": "content",
+          "15.1.0/UnicodeData.txt": "content",
         },
       });
 
@@ -153,8 +153,8 @@ describe("getFileTree", () => {
           exclude: ["**/*.txt"],
         },
         initialFiles: {
-          "/test/16.0.0/UnicodeData.txt": "content",
-          "/test/16.0.0/data.json": "json content",
+          "16.0.0/UnicodeData.txt": "content",
+          "16.0.0/data.json": "json content",
         },
       });
 
@@ -176,8 +176,8 @@ describe("getFileTree", () => {
           include: ["ReadMe.txt"],
         },
         initialFiles: {
-          "/test/16.0.0/UnicodeData.txt": "content",
-          "/test/16.0.0/ReadMe.txt": "readme content",
+          "16.0.0/UnicodeData.txt": "content",
+          "16.0.0/ReadMe.txt": "readme content",
         },
       });
 
@@ -194,8 +194,8 @@ describe("getFileTree", () => {
       const { context } = await createTestContext({
         versions: ["16.0.0"],
         initialFiles: {
-          "/test/16.0.0/UnicodeData.txt": "content",
-          "/test/16.0.0/ReadMe.txt": "readme",
+          "16.0.0/UnicodeData.txt": "content",
+          "16.0.0/ReadMe.txt": "readme",
         },
       });
 
@@ -221,9 +221,9 @@ describe("getFileTree", () => {
           include: ["**/*.txt"],
         },
         initialFiles: {
-          "/test/16.0.0/UnicodeData.txt": "content",
-          "/test/16.0.0/ReadMe.txt": "readme",
-          "/test/16.0.0/data.json": "json",
+          "16.0.0/UnicodeData.txt": "content",
+          "16.0.0/ReadMe.txt": "readme",
+          "16.0.0/data.json": "json",
         },
       });
 
@@ -247,9 +247,9 @@ describe("getFileTree", () => {
           exclude: ["extracted/**"],
         },
         initialFiles: {
-          "/test/16.0.0/UnicodeData.txt": "content",
-          "/test/16.0.0/extracted/DerivedAge.txt": "age",
-          "/test/16.0.0/extracted/DerivedBidiClass.txt": "bidi",
+          "16.0.0/UnicodeData.txt": "content",
+          "16.0.0/extracted/DerivedAge.txt": "age",
+          "16.0.0/extracted/DerivedBidiClass.txt": "bidi",
         },
       });
 
@@ -338,7 +338,7 @@ describe("getFileTree", () => {
       const { context } = await createTestContext({
         versions: ["16.0.0"],
         initialFiles: {
-          "/test/16.0.0/StoreOnly.txt": "store content",
+          "16.0.0/StoreOnly.txt": "store content",
         },
       });
 
@@ -520,7 +520,7 @@ describe("getFileTree", () => {
       const { context } = await createTestContext({
         versions: ["16.0.0"],
         initialFiles: {
-          "/test/16.0.0/ReadMe.txt": "Hello World",
+          "16.0.0/ReadMe.txt": "Hello World",
         },
       });
 
@@ -536,7 +536,7 @@ describe("getFileTree", () => {
       const { context } = await createTestContext({
         versions: ["16.0.0"],
         initialFiles: {
-          "/test/16.0.0/ReadMe.txt": "Hello Bound",
+          "16.0.0/ReadMe.txt": "Hello Bound",
         },
       });
 

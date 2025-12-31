@@ -1,9 +1,8 @@
 /// <reference types="../../../test-utils/src/matchers/types.d.ts" />
 
-import type { UnicodeTreeNode } from "@ucdjs/schemas";
 import { createTestContext } from "#internal-pkg:test-utils/test-context";
 import { createMemoryMockFS } from "#test-utils/fs-bridges";
-import { mockStoreApi } from "#test-utils/mock-store";
+import { createFileTree, mockStoreApi } from "#test-utils/mock-store";
 import { HttpResponse } from "#test-utils/msw";
 import { describe, expect, it } from "vitest";
 import {
@@ -11,48 +10,9 @@ import {
 } from "../../src/errors";
 import { mirror } from "../../src/tasks/mirror";
 
-type FileTreeNode = UnicodeTreeNode & { _content?: string };
-
 describe("mirror", () => {
   const UNICODE_DATA_CONTENT = "0041;LATIN CAPITAL LETTER A;Lu;0;L;;;;;N;;;;0061;";
   const BLOCKS_CONTENT = "# Blocks-16.0.0.txt\n0000..007F; Basic Latin";
-
-  // Helper to create a simple file tree with content
-  function createFileTree(files: Record<string, string>): FileTreeNode[] {
-    return Object.entries(files).map(([name, content]) => ({
-      type: "file" as const,
-      name,
-      path: name,
-      _content: content,
-    }));
-  }
-
-  // Helper to create a file tree with directories
-  function createFileTreeWithDirs(
-    files: Record<string, Record<string, string> | string>,
-  ): FileTreeNode[] {
-    const result: FileTreeNode[] = [];
-    for (const [name, value] of Object.entries(files)) {
-      if (typeof value === "string") {
-        // It's a file with content
-        result.push({ type: "file" as const, name, path: name, _content: value });
-      } else {
-        // It's a directory with files
-        result.push({
-          type: "directory" as const,
-          name,
-          path: name,
-          children: Object.entries(value).map(([fileName, content]) => ({
-            type: "file" as const,
-            name: fileName,
-            path: `${name}/${fileName}`,
-            _content: content,
-          })),
-        });
-      }
-    }
-    return result;
-  }
 
   describe("basic mirroring", () => {
     it("should mirror files for a single version", async () => {
@@ -87,8 +47,8 @@ describe("mirror", () => {
       expect(versionReport?.counts.failed).toBe(0);
 
       // Verify files were written
-      const unicodeData = await fs.read("/test/16.0.0/UnicodeData.txt");
-      const blocks = await fs.read("/test/16.0.0/Blocks.txt");
+      const unicodeData = await fs.read("16.0.0/UnicodeData.txt");
+      const blocks = await fs.read("16.0.0/Blocks.txt");
       expect(unicodeData).toBe(UNICODE_DATA_CONTENT);
       expect(blocks).toBe(BLOCKS_CONTENT);
     });
@@ -161,7 +121,7 @@ describe("mirror", () => {
       const { context, fs } = await createTestContext({
         versions: ["16.0.0"],
         initialFiles: {
-          "/test/16.0.0/UnicodeData.txt": "existing content",
+          "16.0.0/UnicodeData.txt": "existing content",
         },
       });
 
@@ -172,7 +132,7 @@ describe("mirror", () => {
       expect(data?.versions.get("16.0.0")?.counts.downloaded).toBe(1);
 
       // Existing file should NOT be overwritten
-      const existingFile = await fs.read("/test/16.0.0/UnicodeData.txt");
+      const existingFile = await fs.read("16.0.0/UnicodeData.txt");
       expect(existingFile).toBe("existing content");
     });
 
@@ -193,7 +153,7 @@ describe("mirror", () => {
       const { context, fs } = await createTestContext({
         versions: ["16.0.0"],
         initialFiles: {
-          "/test/16.0.0/UnicodeData.txt": "existing content",
+          "16.0.0/UnicodeData.txt": "existing content",
         },
       });
 
@@ -204,7 +164,7 @@ describe("mirror", () => {
       expect(data?.versions.get("16.0.0")?.counts.downloaded).toBe(1);
 
       // Existing file SHOULD be overwritten
-      const updatedFile = await fs.read("/test/16.0.0/UnicodeData.txt");
+      const updatedFile = await fs.read("16.0.0/UnicodeData.txt");
       expect(updatedFile).toBe("new content from API");
     });
   });
@@ -245,7 +205,7 @@ describe("mirror", () => {
       mockStoreApi({
         versions: ["16.0.0"],
         files: {
-          "*": createFileTreeWithDirs({
+          "*": createFileTree({
             "UnicodeData.txt": "content",
             "Blocks.txt": "content",
             "Scripts.txt": "content",
@@ -313,7 +273,7 @@ describe("mirror", () => {
       mockStoreApi({
         versions: ["16.0.0"],
         files: {
-          "*": createFileTreeWithDirs({
+          "*": createFileTree({
             "UnicodeData.txt": "content",
             "Blocks.txt": "content",
             "auxiliary": {
@@ -494,13 +454,11 @@ describe("mirror", () => {
 
       expect(error).toBeNull();
 
-      const allFiles = await fs.listdir("/test", true);
-
       // Verify snapshot was created
-      const snapshotExists = await fs.exists("/test/16.0.0/snapshot.json");
+      const snapshotExists = await fs.exists("16.0.0/snapshot.json");
       expect(snapshotExists).toBe(true);
 
-      const snapshotContent = await fs.read("/test/16.0.0/snapshot.json");
+      const snapshotContent = await fs.read("16.0.0/snapshot.json");
       expect(snapshotContent).toBeDefined();
 
       const snapshot = JSON.parse(snapshotContent!);
@@ -529,11 +487,15 @@ describe("mirror", () => {
         versions: ["16.0.0", "15.1.0"],
         lockfile: {
           lockfileVersion: 1,
+          createdAt: new Date("2024-01-01"),
+          updatedAt: new Date("2024-01-01"),
           versions: {
             "14.0.0": {
               path: "14.0.0/snapshot.json",
               fileCount: 5,
               totalSize: 1000,
+              createdAt: new Date("2024-01-01"),
+              updatedAt: new Date("2024-01-01"),
             },
           },
         },
@@ -583,7 +545,7 @@ describe("mirror", () => {
       const { context } = await createTestContext({
         versions: ["16.0.0"],
         initialFiles: {
-          "/test/16.0.0/UnicodeData.txt": "existing",
+          "16.0.0/UnicodeData.txt": "existing",
         },
       });
 
@@ -615,7 +577,7 @@ describe("mirror", () => {
       const { context } = await createTestContext({
         versions: ["16.0.0"],
         initialFiles: {
-          "/test/16.0.0/UnicodeData.txt": "existing",
+          "16.0.0/UnicodeData.txt": "existing",
         },
       });
 
@@ -703,7 +665,7 @@ describe("mirror", () => {
       mockStoreApi({
         versions: ["16.0.0"],
         files: {
-          "*": createFileTreeWithDirs({
+          "*": createFileTree({
             auxiliary: { "GraphemeBreakProperty.txt": "content" },
             extracted: { "DerivedBidiClass.txt": "content" },
           }),
@@ -723,14 +685,14 @@ describe("mirror", () => {
       expect(error).toBeNull();
 
       // Verify directories were created
-      const auxiliaryExists = await fs.exists("/test/16.0.0/auxiliary");
-      const extractedExists = await fs.exists("/test/16.0.0/extracted");
+      const auxiliaryExists = await fs.exists("16.0.0/auxiliary");
+      const extractedExists = await fs.exists("16.0.0/extracted");
       expect(auxiliaryExists).toBe(true);
       expect(extractedExists).toBe(true);
 
       // Verify files exist in nested directories
-      const graphemeFile = await fs.read("/test/16.0.0/auxiliary/GraphemeBreakProperty.txt");
-      const bidiFile = await fs.read("/test/16.0.0/extracted/DerivedBidiClass.txt");
+      const graphemeFile = await fs.read("16.0.0/auxiliary/GraphemeBreakProperty.txt");
+      const bidiFile = await fs.read("16.0.0/extracted/DerivedBidiClass.txt");
       expect(graphemeFile).toBe("content");
       expect(bidiFile).toBe("content");
     });

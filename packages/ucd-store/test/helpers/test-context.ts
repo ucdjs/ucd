@@ -96,11 +96,12 @@ export async function createTestContext(
 ): Promise<TestContext> {
   const basePath = options?.basePath ?? "/test";
   const versions = options?.versions ?? [];
-  const lockfilePath = options?.lockfilePath ?? getLockfilePath(basePath);
+  const lockfilePath = options?.lockfilePath ?? getLockfilePath();
   const globalFilters = options?.globalFilters ?? {};
 
-  // Create filesystem with initial files
+  // Create filesystem with initial files and basePath for path sandboxing
   const fs = options?.fs ?? createMemoryMockFS({
+    basePath,
     initialFiles: options?.initialFiles,
   });
 
@@ -126,7 +127,6 @@ export async function createTestContext(
     client,
     filter,
     fs,
-    basePath,
     lockfile: {
       supports: true,
       exists: lockfileExists,

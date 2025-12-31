@@ -14,14 +14,12 @@ const debug = createDebugger("ucdjs:lockfile:snapshot");
  * Reads and validates a snapshot for a specific version.
  *
  * @param {FileSystemBridge} fs - Filesystem bridge to use for reading
- * @param {string} basePath - Base path of the store
  * @param {string} version - The Unicode version
  * @returns {Promise<Snapshot>} A promise that resolves to the validated snapshot
  * @throws {LockfileInvalidError} When the snapshot is invalid or missing
  */
 export async function readSnapshot(
   fs: FileSystemBridge,
-  basePath: string,
   version: string,
 ): Promise<Snapshot> {
   const snapshotPath = getSnapshotPath(version);
@@ -72,7 +70,6 @@ export async function readSnapshot(
  * Only works if the filesystem bridge supports write operations.
  *
  * @param {FileSystemBridge} fs - Filesystem bridge to use for writing
- * @param {string} basePath - Base path of the store
  * @param {string} version - The Unicode version
  * @param {Snapshot} snapshot - The snapshot data to write
  * @returns {Promise<void>} A promise that resolves when the snapshot has been written
@@ -80,7 +77,6 @@ export async function readSnapshot(
  */
 export async function writeSnapshot(
   fs: FileSystemBridge,
-  basePath: string,
   version: string,
   snapshot: Snapshot,
 ): Promise<void> {
@@ -120,16 +116,14 @@ export async function writeSnapshot(
  * Reads a snapshot or returns undefined if it doesn't exist or is invalid.
  *
  * @param {FileSystemBridge} fs - Filesystem bridge to use for reading
- * @param {string} basePath - Base path of the store
  * @param {string} version - The Unicode version
  * @returns {Promise<Snapshot | undefined>} A promise that resolves to the snapshot or undefined
  */
 export async function readSnapshotOrUndefined(
   fs: FileSystemBridge,
-  basePath: string,
   version: string,
 ): Promise<Snapshot | undefined> {
-  return readSnapshot(fs, basePath, version).catch((err) => {
+  return readSnapshot(fs, version).catch((err) => {
     debug?.("Failed to read snapshot, returning undefined", err);
     return undefined;
   });

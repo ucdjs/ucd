@@ -58,7 +58,8 @@ async function _getFile(
       );
     }
 
-    const localPath = join(this.basePath, version, filePath);
+    // Use relative path
+    const localPath = join(version, filePath);
 
     debug?.("Checking local file existence:", localPath);
 

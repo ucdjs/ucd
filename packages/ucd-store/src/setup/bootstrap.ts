@@ -15,7 +15,7 @@ const debug = createDebugger("ucdjs:ucd-store:bootstrap");
  * @throws {UCDStoreGenericError} If API fetch fails or versions are invalid
  */
 export async function bootstrap(context: InternalUCDStoreContext): Promise<void> {
-  const { fs, basePath, filter } = context;
+  const { fs, filter } = context;
   const versions = context.versions.resolved;
 
   debug?.("Starting bootstrap for versions:", versions);
@@ -39,11 +39,12 @@ export async function bootstrap(context: InternalUCDStoreContext): Promise<void>
 
   debug?.("✓ All requested versions are available");
 
-  const basePathExists = await fs.exists(basePath);
-  if (!basePathExists) {
-    debug?.(`Creating base directory: ${basePath}`);
+  // Check if store root exists using "." - fs-bridge will resolve it to basePath
+  const storeRootExists = await fs.exists(".");
+  if (!storeRootExists) {
+    debug?.("Creating store root directory");
     assertCapability(fs, "mkdir");
-    await fs.mkdir(basePath);
+    await fs.mkdir(".");
   } else {
     debug?.("Base directory already exists");
   }
@@ -52,8 +53,11 @@ export async function bootstrap(context: InternalUCDStoreContext): Promise<void>
   if (context.lockfile.supports && context.lockfile.path) {
     debug?.(`Writing lockfile to: ${context.lockfile.path}`);
     const filters = filter ? extractFilterPatterns(filter) : undefined;
+    const now = new Date();
     await writeLockfile(fs, context.lockfile.path, {
       lockfileVersion: 1,
+      createdAt: now,
+      updatedAt: now,
       versions: Object.fromEntries(
         versions.map((v) => [
           v,
@@ -61,6 +65,8 @@ export async function bootstrap(context: InternalUCDStoreContext): Promise<void>
             path: `${v}/snapshot.json`, // relative path to snapshot
             fileCount: 0,
             totalSize: 0,
+            createdAt: now,
+            updatedAt: now,
           },
         ]),
       ),

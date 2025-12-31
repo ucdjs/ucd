@@ -155,9 +155,12 @@ async function _sync(
       // Preserve filters from existing lockfile or use current context filters
       const { extractFilterPatterns } = await import("../context");
       const filters = extractFilterPatterns(this.filter) ?? lockfile?.filters;
+      const now = new Date();
 
       await writeLockfile(this.fs, this.lockfile.path, {
         lockfileVersion: 1,
+        createdAt: lockfile?.createdAt ?? now,
+        updatedAt: now,
         versions: Object.fromEntries(
           finalVersions.map((v) => {
             const existingEntry = lockfile?.versions[v];
@@ -167,6 +170,8 @@ async function _sync(
                 path: `${v}/snapshot.json`, // relative path
                 fileCount: 0,
                 totalSize: 0,
+                createdAt: now,
+                updatedAt: now,
               },
             ];
           }),
@@ -242,7 +247,7 @@ async function _sync(
       for (const version of versionsToSync) {
         // Get expected files from snapshot if available, otherwise from API
         let expectedFiles: string[] = [];
-        const snapshot = await readSnapshotOrUndefined(this.fs, this.basePath, version);
+        const snapshot = await readSnapshotOrUndefined(this.fs, version);
 
         if (snapshot && snapshot.files) {
           // Use files from snapshot
@@ -281,7 +286,7 @@ async function _sync(
             orphanedFiles.map((filePath) =>
               limit(async () => {
                 try {
-                  const localPath = join(this.basePath, version, filePath);
+                  const localPath = join(version, filePath);
                   if (await this.fs.exists(localPath)) {
                     await this.fs.rm!(localPath);
                     removedFiles.get(version)!.push(filePath);

@@ -11,23 +11,25 @@ import { createUCDStore } from "./store";
  * - Setting up local file storage with write/read capabilities
  * - Initializing the store with the specified options
  *
- * @param {Omit<UCDStoreOptions, "fs">} options - Configuration options for the Node.js UCD store
+ * @param {{ basePath?: string } & Omit<UCDStoreOptions, "fs" | "fsOptions">} options - Configuration options for the Node.js UCD store
  * @returns {Promise<UCDStore>} A fully initialized UCDStore instance with Node.js filesystem capabilities
  */
-export async function createNodeUCDStore<BridgeOptionsSchema extends z.ZodType>(options: Omit<UCDStoreOptions<BridgeOptionsSchema>, "fs"> = {}): Promise<UCDStore> {
+export async function createNodeUCDStore<BridgeOptionsSchema extends z.ZodType>(options: { basePath?: string } & Omit<UCDStoreOptions<BridgeOptionsSchema>, "fs" | "fsOptions"> = {}): Promise<UCDStore> {
   const nodeFs = await import("@ucdjs/fs-bridge/bridges/node").then((m) => m.default);
 
   if (!nodeFs) {
     throw new Error("Node.js FileSystemBridge could not be loaded");
   }
 
-  // Resolve basePath to absolute path to match bridge's resolved basePath
-  // This prevents path duplication when operations construct paths using context.basePath
+  // Resolve basePath to absolute path for the fs-bridge
+  // The bridge handles all path resolution - store operations use relative paths
   const resolvedBasePath = options.basePath ? resolve(options.basePath) : resolve("./");
 
+  // Remove basePath from options since it's only for fsOptions
+  const { basePath: _, ...storeOptions } = options;
+
   return createUCDStore({
-    ...options,
-    basePath: resolvedBasePath,
+    ...storeOptions,
     fs: nodeFs,
     fsOptions: { basePath: resolvedBasePath },
   });

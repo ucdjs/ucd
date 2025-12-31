@@ -54,18 +54,12 @@ export async function runStatusStore({ flags }: CLIStoreStatusCmdOptions) {
     });
 
     // Read lockfile - works with both local and remote stores
-    let lockfilePath: string;
+    const lockfilePath = getLockfilePath();
     const bridge = store.fs;
 
-    if (remote) {
-      // For remote stores, lockfile path is relative to base URL
-      lockfilePath = getLockfilePath("");
-    } else {
-      if (!storeDir) {
-        output.error(red(`\n❌ Error: Store directory must be specified.`));
-        return;
-      }
-      lockfilePath = getLockfilePath(storeDir);
+    if (!remote && !storeDir) {
+      output.error(red(`\n❌ Error: Store directory must be specified.`));
+      return;
     }
 
     let lockfile;
@@ -114,8 +108,8 @@ export async function runStatusStore({ flags }: CLIStoreStatusCmdOptions) {
         // For remote stores, snapshots don't exist (they're local only)
         let hasSnapshot = false;
         if (!remote && storeDir) {
-          const snapshot = await readSnapshotOrUndefined(bridge, storeDir, version);
-          output.info("snapshot", snapshot, storeDir, version);
+          const snapshot = await readSnapshotOrUndefined(bridge, version);
+          output.info("snapshot", snapshot, version);
           hasSnapshot = snapshot !== undefined;
         }
         const isAvailableInAPI = availableVersionsSet.has(version);

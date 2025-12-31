@@ -4,15 +4,6 @@ import { readLockfile } from "@ucdjs/lockfile";
 import { UCDStoreGenericError } from "../errors";
 import { validateVersions } from "./validate";
 
-const debug = createDebugger("ucdjs:ucd-store:verify");
-
-export interface VerifyOptions {
-  /**
-   * Internal store context.
-   */
-  context: InternalUCDStoreContext;
-}
-
 export interface VerifyResult {
   /**
    * Whether the verification passed (all versions are valid).
@@ -46,18 +37,19 @@ export interface VerifyResult {
   extraVersions: string[];
 }
 
+const debug = createDebugger("ucdjs:ucd-store:verify");
+
 /**
  * Verifies that store versions are available in the API.
  *
  * If the store supports lockfiles and one exists, it verifies the lockfile versions.
  * Otherwise, it validates the store's configured versions directly against the API.
  *
- * @param {VerifyOptions} options - Verification options
+ * @param {InternalUCDStoreContext} context - Internal store context
  * @returns {Promise<VerifyResult>} Verification result with comparison details
  * @throws {UCDStoreGenericError} If lockfile read or API fetch fails
  */
-export async function verify(options: VerifyOptions): Promise<VerifyResult> {
-  const { context } = options;
+export async function verify(context: InternalUCDStoreContext): Promise<VerifyResult> {
   const { client, fs } = context;
   const { supports: supportsLockfile, exists: lockfileExists, path: lockfilePath } = context.lockfile;
   const versions = context.versions.resolved;

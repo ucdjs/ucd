@@ -33,7 +33,7 @@ export async function runLockfileValidate({ flags }: CLILockfileValidateCmdOptio
 
   const { storeDir, json } = flags;
   const storePath = storeDir ? resolve(storeDir) : process.cwd();
-  const lockfilePath = resolve(storePath, getLockfilePath(storePath));
+  const lockfilePath = resolve(storePath, getLockfilePath());
 
   try {
     let rawContent: string;

@@ -100,18 +100,15 @@ function uint8ArrayToHex(bytes: Uint8Array): string {
 
 /**
  * Computes the SHA-256 hash of file content using Web Crypto API.
- * Works in both browser and Node.js 18+ environments.
  *
  * @param {string | Uint8Array} content - The file content to hash
  * @returns {Promise<string>} A promise that resolves to the hash in format "sha256:..."
  * @throws {Error} When Web Crypto API is not available
  */
 export async function computeFileHash(content: string | Uint8Array): Promise<string> {
-  // Convert string to Uint8Array if needed
   const data = typeof content === "string" ? textEncoder.encode(content) : content;
 
-  // Use Web Crypto API (available in browsers and Node.js 18+)
-  // crypto.subtle.digest accepts Uint8Array directly - no buffer extraction needed
+  // Use Web Crypto API if available
   if (typeof crypto !== "undefined" && crypto.subtle && typeof crypto.subtle.digest === "function") {
     const hashBuffer = await crypto.subtle.digest("SHA-256", data as Uint8Array<ArrayBuffer>);
     return `sha256:${uint8ArrayToHex(new Uint8Array(hashBuffer))}`;

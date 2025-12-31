@@ -7,7 +7,6 @@ import {
   flattenFilePaths,
   wrapTry,
 } from "@ucdjs-internal/shared";
-import { join } from "pathe";
 import { isUCDStoreInternalContext } from "../context";
 import { UCDStoreApiFallbackError, UCDStoreVersionNotFoundError } from "../errors";
 
@@ -53,7 +52,8 @@ async function _listFiles(
       throw new UCDStoreVersionNotFoundError(version);
     }
 
-    const localPath = join(this.basePath, version);
+    // Use relative path
+    const localPath = version;
     // Try listing from local store first
     const dirExists = await this.fs.exists(localPath);
 

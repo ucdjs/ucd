@@ -1,12 +1,11 @@
 import { mockStoreApi } from "#test-utils/mock-store";
-import nodeFileSystemBridge from "@ucdjs/fs-bridge/bridges/node";
 import { describe, expect, it } from "vitest";
 import { testdir } from "vitest-testdirs";
-import { createUCDStore } from "../../../src/store";
+import { createNodeUCDStore } from "../../../src/factory";
 
 describe("node integration: store creation", () => {
   describe("bootstrap behavior", () => {
-    it.only("should create store with node bridge and bootstrap lockfile", async () => {
+    it("should create store with node bridge and bootstrap lockfile", async () => {
       mockStoreApi({
         versions: ["16.0.0", "15.1.0"],
         responses: {
@@ -16,22 +15,15 @@ describe("node integration: store creation", () => {
           "/.well-known/ucd-store/{version}.json": true,
           "/.well-known/ucd-config.json": true,
         },
-        onRequest: ({ params, path }) => {
-          console.error("API called: ", path, params);
-        },
       });
 
-      const storePath = await testdir({}, {
-        cleanup: false,
-      });
+      const storePath = await testdir({});
 
-      const store = await createUCDStore({
+      const store = await createNodeUCDStore({
         basePath: storePath,
-        fs: nodeFileSystemBridge,
-        fsOptions: {
-          basePath: storePath,
-        },
         versions: ["16.0.0"],
+        bootstrap: true,
+        verify: false,
       });
 
       expect(store).toBeDefined();
@@ -43,14 +35,14 @@ describe("node integration: store creation", () => {
         versions: ["16.0.0", "15.1.0"],
         responses: {
           "/api/v1/versions": true,
+          "/.well-known/ucd-config.json": true,
         },
       });
 
       const storePath = await testdir({});
 
-      const store = await createUCDStore({
+      const store = await createNodeUCDStore({
         basePath: storePath,
-        fs: nodeFileSystemBridge,
         versions: ["16.0.0", "15.1.0"],
         bootstrap: true,
         verify: false,
@@ -60,7 +52,7 @@ describe("node integration: store creation", () => {
 
       // Verify lockfile was created on disk
       const fs = await import("node:fs/promises");
-      const lockfilePath = `${storePath}/ucd.lock`;
+      const lockfilePath = `${storePath}/.ucd-store.lock`;
       const lockfileExists = await fs.stat(lockfilePath).then(() => true).catch(() => false);
       expect(lockfileExists).toBe(true);
 
@@ -71,60 +63,65 @@ describe("node integration: store creation", () => {
       expect(lockfile.versions).toHaveProperty("15.1.0");
     });
 
-    it("should skip bootstrap when bootstrap: false", async () => {
+    it("should throw error when bootstrap: false and no lockfile exists", async () => {
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
           "/api/v1/versions": true,
+          "/.well-known/ucd-config.json": true,
         },
       });
 
       const storePath = await testdir({});
 
-      // Without bootstrap and without existing lockfile, should use versions from options
-      const store = await createUCDStore({
+      // Without bootstrap and without existing lockfile, should throw
+      await expect(createNodeUCDStore({
         basePath: storePath,
-        fs: nodeFileSystemBridge,
         versions: ["16.0.0"],
         bootstrap: false,
         verify: false,
-      });
-
-      expect(store).toBeDefined();
-      // Store should still work but no lockfile created
-      const fs = await import("node:fs/promises");
-      const lockfileExists = await fs.stat(`${storePath}/ucd.lock`).then(() => true).catch(() => false);
-      expect(lockfileExists).toBe(false);
+      })).rejects.toThrow("lockfile not found");
     });
   });
 
   describe("existing lockfile", () => {
     it("should read versions from existing lockfile", async () => {
+      mockStoreApi({
+        versions: ["16.0.0", "15.1.0"],
+        responses: {
+          "/.well-known/ucd-config.json": true,
+        },
+      });
+
+      const now = new Date().toISOString();
       const lockfile = {
-        version: 1,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        lockfileVersion: 1,
+        createdAt: now,
+        updatedAt: now,
         versions: {
           "16.0.0": {
             path: "16.0.0/snapshot.json",
             fileCount: 0,
             totalSize: 0,
+            createdAt: now,
+            updatedAt: now,
           },
           "15.1.0": {
             path: "15.1.0/snapshot.json",
             fileCount: 0,
             totalSize: 0,
+            createdAt: now,
+            updatedAt: now,
           },
         },
       };
 
       const storePath = await testdir({
-        "ucd.lock": JSON.stringify(lockfile, null, 2),
+        ".ucd-store.lock": JSON.stringify(lockfile, null, 2),
       });
 
-      const store = await createUCDStore({
+      const store = await createNodeUCDStore({
         basePath: storePath,
-        fs: nodeFileSystemBridge,
         versions: [], // No versions specified, should use lockfile
         bootstrap: false,
         verify: false,
@@ -140,14 +137,14 @@ describe("node integration: store creation", () => {
         versions: ["16.0.0"],
         responses: {
           "/api/v1/versions": true,
+          "/.well-known/ucd-config.json": true,
         },
       });
 
       const storePath = await testdir({});
 
-      const store = await createUCDStore({
+      const store = await createNodeUCDStore({
         basePath: storePath,
-        fs: nodeFileSystemBridge,
         versions: ["16.0.0"],
         bootstrap: true,
         verify: false,

@@ -29,8 +29,8 @@ describe("listFiles", () => {
       const { context } = await createTestContext({
         versions: ["16.0.0"],
         initialFiles: {
-          "/test/16.0.0/UnicodeData.txt": "Unicode data content",
-          "/test/16.0.0/ReadMe.txt": "Readme content",
+          "16.0.0/UnicodeData.txt": "Unicode data content",
+          "16.0.0/ReadMe.txt": "Readme content",
         },
       });
 
@@ -47,9 +47,9 @@ describe("listFiles", () => {
       const { context } = await createTestContext({
         versions: ["16.0.0"],
         initialFiles: {
-          "/test/16.0.0/UnicodeData.txt": "content",
-          "/test/16.0.0/extracted/DerivedBidiClass.txt": "derived content",
-          "/test/16.0.0/extracted/DerivedAge.txt": "age content",
+          "16.0.0/UnicodeData.txt": "content",
+          "16.0.0/extracted/DerivedBidiClass.txt": "derived content",
+          "16.0.0/extracted/DerivedAge.txt": "age content",
         },
       });
 
@@ -67,9 +67,9 @@ describe("listFiles", () => {
       const { context } = await createTestContext({
         versions: ["16.0.0", "15.0.0"],
         initialFiles: {
-          "/test/16.0.0/FileA.txt": "v16 file",
-          "/test/16.0.0/FileB.txt": "v16 file B",
-          "/test/15.0.0/FileX.txt": "v15 file",
+          "16.0.0/FileA.txt": "v16 file",
+          "16.0.0/FileB.txt": "v16 file B",
+          "15.0.0/FileX.txt": "v15 file",
         },
       });
 
@@ -89,7 +89,7 @@ describe("listFiles", () => {
       });
 
       // Create an empty directory marker
-      await fs.mkdir!("/test/16.0.0");
+      await fs.mkdir!("16.0.0");
 
       const [data, error] = await listFiles(context, "16.0.0");
 
@@ -119,7 +119,7 @@ describe("listFiles", () => {
       const { context } = await createTestContext({
         versions: ["16.0.0", "15.1.0", "15.0.0"],
         initialFiles: {
-          "/test/15.1.0/UnicodeData.txt": "content",
+          "15.1.0/UnicodeData.txt": "content",
         },
       });
 
@@ -138,8 +138,8 @@ describe("listFiles", () => {
           exclude: ["**/*.txt"],
         },
         initialFiles: {
-          "/test/16.0.0/UnicodeData.txt": "content",
-          "/test/16.0.0/data.json": "json content",
+          "16.0.0/UnicodeData.txt": "content",
+          "16.0.0/data.json": "json content",
         },
       });
 
@@ -157,8 +157,8 @@ describe("listFiles", () => {
           include: ["ReadMe.txt"],
         },
         initialFiles: {
-          "/test/16.0.0/UnicodeData.txt": "content",
-          "/test/16.0.0/ReadMe.txt": "readme content",
+          "16.0.0/UnicodeData.txt": "content",
+          "16.0.0/ReadMe.txt": "readme content",
         },
       });
 
@@ -172,8 +172,8 @@ describe("listFiles", () => {
       const { context } = await createTestContext({
         versions: ["16.0.0"],
         initialFiles: {
-          "/test/16.0.0/UnicodeData.txt": "content",
-          "/test/16.0.0/ReadMe.txt": "readme",
+          "16.0.0/UnicodeData.txt": "content",
+          "16.0.0/ReadMe.txt": "readme",
         },
       });
 
@@ -195,9 +195,9 @@ describe("listFiles", () => {
           include: ["**/*.txt"],
         },
         initialFiles: {
-          "/test/16.0.0/UnicodeData.txt": "content",
-          "/test/16.0.0/ReadMe.txt": "readme",
-          "/test/16.0.0/data.json": "json",
+          "16.0.0/UnicodeData.txt": "content",
+          "16.0.0/ReadMe.txt": "readme",
+          "16.0.0/data.json": "json",
         },
       });
 
@@ -286,7 +286,7 @@ describe("listFiles", () => {
       const { context } = await createTestContext({
         versions: ["16.0.0"],
         initialFiles: {
-          "/test/16.0.0/StoreOnly.txt": "store content",
+          "16.0.0/StoreOnly.txt": "store content",
         },
       });
 
@@ -442,7 +442,7 @@ describe("listFiles", () => {
       const { context } = await createTestContext({
         versions: ["16.0.0"],
         initialFiles: {
-          "/test/16.0.0/ReadMe.txt": "Hello World",
+          "16.0.0/ReadMe.txt": "Hello World",
         },
       });
 
@@ -456,7 +456,7 @@ describe("listFiles", () => {
       const { context } = await createTestContext({
         versions: ["16.0.0"],
         initialFiles: {
-          "/test/16.0.0/ReadMe.txt": "Hello Bound",
+          "16.0.0/ReadMe.txt": "Hello Bound",
         },
       });
 

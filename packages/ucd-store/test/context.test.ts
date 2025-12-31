@@ -11,13 +11,11 @@ describe("createInternalContext", async () => {
   it("should create context with all required properties", async () => {
     const filter = createPathFilter({});
     const fs = createMemoryMockFS();
-    const basePath = "/test/store";
 
     const context = createInternalContext({
       client,
       filter,
       fs,
-      basePath,
       lockfile: {
         supports: true,
         exists: false,
@@ -32,7 +30,6 @@ describe("createInternalContext", async () => {
     expect(context.client).toBe(client);
     expect(context.filter).toBe(filter);
     expect(context.fs).toBe(fs);
-    expect(context.basePath).toBe(basePath);
     expect(context.lockfile.supports).toBe(true);
     expect(context.lockfile.exists).toBe(false);
     expect(context.lockfile.path).toBe("/test/store/.ucd-store.lock");
@@ -50,7 +47,7 @@ describe("createInternalContext", async () => {
       client,
       filter,
       fs,
-      basePath: "/test",
+
       lockfile: {
         supports: true,
         exists: false,
@@ -78,7 +75,7 @@ describe("createInternalContext", async () => {
       client,
       filter,
       fs,
-      basePath: "/test",
+
       lockfile: {
         supports: true,
         exists: false,
@@ -102,7 +99,7 @@ describe("createInternalContext", async () => {
       client,
       filter,
       fs,
-      basePath: "/test",
+
       lockfile: {
         supports: true,
         exists: false,
@@ -127,7 +124,7 @@ describe("createInternalContext", async () => {
       client,
       filter,
       fs,
-      basePath: "/test",
+
       lockfile: {
         supports: true,
         exists: false,
@@ -159,13 +156,11 @@ describe("createPublicContext", async () => {
   it("should create context with only public properties", async () => {
     const filter = createPathFilter({});
     const fs = createMemoryMockFS();
-    const basePath = "/test/store";
 
     const internalContext = createInternalContext({
       client,
       filter,
       fs,
-      basePath,
       lockfile: {
         supports: true,
         exists: false,
@@ -183,7 +178,6 @@ describe("createPublicContext", async () => {
     const publicContext = createPublicContext(internalContext);
 
     // Should have public properties
-    expect(publicContext.basePath).toBe(basePath);
     expect(publicContext.fs).toBe(fs);
     expect(publicContext.versions).toEqual(["16.0.0", "15.1.0"]);
 
@@ -191,6 +185,7 @@ describe("createPublicContext", async () => {
     expect("client" in publicContext).toBe(false);
     expect("filter" in publicContext).toBe(false);
     expect("lockfile" in publicContext).toBe(false);
+    expect("basePath" in publicContext).toBe(false);
   });
 
   it("should return frozen versions array", async () => {
@@ -201,7 +196,6 @@ describe("createPublicContext", async () => {
       client,
       filter,
       fs,
-      basePath: "/test",
       lockfile: {
         supports: true,
         exists: false,
@@ -234,7 +228,7 @@ describe("createPublicContext", async () => {
       client,
       filter,
       fs,
-      basePath: "/test",
+
       lockfile: {
         supports: true,
         exists: false,
@@ -252,15 +246,12 @@ describe("createPublicContext", async () => {
 
     // Initial state
     expect(publicContext.versions).toEqual(["16.0.0"]);
-    expect(publicContext.basePath).toBe("/test");
 
     // Modify internal context
     internalContext.versions.resolved = ["16.0.0", "15.1.0", "15.0.0"];
-    internalContext.basePath = "/new/path";
 
     // Changes should be reflected in public context
     expect(publicContext.versions).toEqual(["16.0.0", "15.1.0", "15.0.0"]);
-    expect(publicContext.basePath).toBe("/new/path");
   });
 
   it("should return new frozen array on each versions access", async () => {
@@ -271,7 +262,7 @@ describe("createPublicContext", async () => {
       client,
       filter,
       fs,
-      basePath: "/test",
+
       lockfile: {
         supports: true,
         exists: false,
@@ -309,7 +300,7 @@ describe("createPublicContext", async () => {
       client,
       filter,
       fs,
-      basePath: "/test",
+
       lockfile: {
         supports: true,
         exists: false,
@@ -327,7 +318,7 @@ describe("createPublicContext", async () => {
     expect(Object.isFrozen(publicContext.versions)).toBe(true);
   });
 
-  it("should not allow modification of fs or basePath", async () => {
+  it("should not allow modification of fs", async () => {
     const filter = createPathFilter({});
     const fs = createMemoryMockFS();
 
@@ -335,7 +326,7 @@ describe("createPublicContext", async () => {
       client,
       filter,
       fs,
-      basePath: "/test",
+
       lockfile: {
         supports: true,
         exists: false,
@@ -350,11 +341,6 @@ describe("createPublicContext", async () => {
     const publicContext = createPublicContext(internalContext);
 
     // Properties should be readonly (getters without setters)
-    expect(() => {
-      // @ts-expect-error - testing runtime behavior
-      publicContext.basePath = "/new/path";
-    }).toThrow();
-
     expect(() => {
       // @ts-expect-error - testing runtime behavior
       publicContext.fs = createMemoryMockFS();
