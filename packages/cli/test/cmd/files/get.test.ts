@@ -39,6 +39,7 @@ describe("files get command", () => {
 
     mockStoreApi({
       responses: {
+        "/.well-known/ucd-config.json": true,
         "/api/v1/versions": UNICODE_VERSION_METADATA,
         "/api/v1/files/{wildcard}": () => {
           return HttpResponse.text(fileContent);
@@ -58,6 +59,7 @@ describe("files get command", () => {
 
     mockStoreApi({
       responses: {
+        "/.well-known/ucd-config.json": true,
         "/api/v1/versions": UNICODE_VERSION_METADATA,
         "/api/v1/files/{wildcard}": () => {
           return HttpResponse.text(fileContent);
@@ -77,6 +79,7 @@ describe("files get command", () => {
   it("should error when path is a directory not a file", async () => {
     mockStoreApi({
       responses: {
+        "/.well-known/ucd-config.json": true,
         "/api/v1/versions": UNICODE_VERSION_METADATA,
         "/api/v1/files/{wildcard}": () => {
           return HttpResponse.json([
@@ -99,6 +102,7 @@ describe("files get command", () => {
   it("should handle 404 error for non-existent file", async () => {
     mockStoreApi({
       responses: {
+        "/.well-known/ucd-config.json": true,
         "/api/v1/versions": UNICODE_VERSION_METADATA,
         "/api/v1/files/{wildcard}": () => {
           return HttpResponse.json(
