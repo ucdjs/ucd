@@ -43,6 +43,7 @@ describe("store verify command", () => {
 
     mockStoreApi({
       responses: {
+        "/.well-known/ucd-config.json": true,
         "/api/v1/versions": UNICODE_VERSION_METADATA,
       },
     });
@@ -62,7 +63,9 @@ describe("store verify command", () => {
 
     mockStoreApi({
       responses: {
+        "/.well-known/ucd-config.json": true,
         "/api/v1/versions": UNICODE_VERSION_METADATA,
+        "/api/v1/versions/{version}/file-tree": true,
         "/api/v1/files/{wildcard}": ({ params }) => {
           return HttpResponse.text(`Content of ${params.wildcard}`);
         },
@@ -102,7 +105,9 @@ describe("store verify command", () => {
 
     mockStoreApi({
       responses: {
+        "/.well-known/ucd-config.json": true,
         "/api/v1/versions": UNICODE_VERSION_METADATA,
+        "/api/v1/versions/{version}/file-tree": true,
         "/api/v1/files/{wildcard}": ({ params }) => {
           return HttpResponse.text(`Content of ${params.wildcard}`);
         },
@@ -151,7 +156,9 @@ describe("store verify command", () => {
 
     mockStoreApi({
       responses: {
+        "/.well-known/ucd-config.json": true,
         "/api/v1/versions": UNICODE_VERSION_METADATA,
+        "/api/v1/versions/{version}/file-tree": true,
         "/api/v1/files/{wildcard}": ({ params }) => {
           return HttpResponse.text(`Content of ${params.wildcard}`);
         },

@@ -54,6 +54,7 @@ describe("store compare command", () => {
 
     mockStoreApi({
       responses: {
+        "/.well-known/ucd-config.json": true,
         "/api/v1/versions": UNICODE_VERSION_METADATA,
         "/api/v1/versions/{version}/file-tree": [
           {
@@ -107,8 +108,14 @@ describe("store compare command", () => {
     ]);
 
     expect(capture.containsInfo("Comparison: 15.0.0 → 16.0.0")).toBe(true);
-    expect(capture.containsInfo("Files:")).toBe(true);
+    expect(capture.containsInfo("Summary:")).toBe(true);
+    // Both versions have the same 2 files, so all should be unchanged
+    expect(capture.containsInfo("Added:")).toBe(true);
+    expect(capture.containsInfo("Removed:")).toBe(true);
     expect(capture.containsInfo("Unchanged:")).toBe(true);
+    // Verify the counts show 0 for added/removed and 2 for unchanged
+    expect(capture.contains("0")).toBe(true); // Added and Removed should be 0
+    expect(capture.contains("2")).toBe(true); // Unchanged should be 2
   });
 
   it("should detect added files when comparing versions", async () => {
@@ -140,6 +147,7 @@ describe("store compare command", () => {
 
     mockStoreApi({
       responses: {
+        "/.well-known/ucd-config.json": true,
         "/api/v1/versions": UNICODE_VERSION_METADATA,
         "/api/v1/versions/{version}/file-tree": ({ params }) => {
           if (params.version === "15.0.0") {
@@ -183,8 +191,12 @@ describe("store compare command", () => {
       "--skip-hashes",
     ]);
 
-    expect(capture.containsInfo("Added: 1")).toBe(true);
-    expect(capture.contains("Blocks.txt")).toBe(true);
+    // version1 has 1 file, version2 has 2 files - so 1 file was added
+    expect(capture.containsInfo("Added:")).toBe(true);
+    expect(capture.contains("1")).toBe(true); // 1 file added
+    expect(capture.contains("Blocks.txt")).toBe(true); // The added file
+    // ArabicShaping.txt exists in both, so should be unchanged
+    expect(capture.containsInfo("Unchanged:")).toBe(true);
   });
 
   it("should detect removed files when comparing versions", async () => {
@@ -216,6 +228,7 @@ describe("store compare command", () => {
 
     mockStoreApi({
       responses: {
+        "/.well-known/ucd-config.json": true,
         "/api/v1/versions": UNICODE_VERSION_METADATA,
         "/api/v1/versions/{version}/file-tree": ({ params }) => {
           if (params.version === "15.0.0") {
@@ -259,8 +272,12 @@ describe("store compare command", () => {
       "--skip-hashes",
     ]);
 
-    expect(capture.containsInfo("Removed: 1")).toBe(true);
-    expect(capture.contains("Blocks.txt")).toBe(true);
+    // version1 has 2 files, version2 has 1 file - so 1 file was removed
+    expect(capture.containsInfo("Removed:")).toBe(true);
+    expect(capture.contains("1")).toBe(true); // 1 file removed
+    expect(capture.contains("Blocks.txt")).toBe(true); // The removed file
+    // ArabicShaping.txt exists in both, so should be unchanged
+    expect(capture.containsInfo("Unchanged:")).toBe(true);
   });
 
   it("should detect modified files when comparing versions with hash checking", async () => {
@@ -268,6 +285,7 @@ describe("store compare command", () => {
 
     mockStoreApi({
       responses: {
+        "/.well-known/ucd-config.json": true,
         "/api/v1/versions": UNICODE_VERSION_METADATA,
         "/api/v1/versions/{version}/file-tree": [
           {
@@ -315,7 +333,13 @@ describe("store compare command", () => {
       storePath,
     ]);
 
-    expect(capture.containsInfo("Modified: 1")).toBe(true);
+    // Same file in both versions but different content = modified
+    expect(capture.containsInfo("Modified:")).toBe(true);
+    expect(capture.contains("1")).toBe(true); // 1 file modified
+    expect(capture.contains("ArabicShaping.txt")).toBe(true); // The modified file
+    // No files added or removed
+    expect(capture.containsInfo("Added:")).toBe(true);
+    expect(capture.containsInfo("Removed:")).toBe(true);
   });
 
   it("should output JSON when --json flag is passed", async () => {
@@ -323,6 +347,7 @@ describe("store compare command", () => {
 
     mockStoreApi({
       responses: {
+        "/.well-known/ucd-config.json": true,
         "/api/v1/versions": UNICODE_VERSION_METADATA,
         "/api/v1/versions/{version}/file-tree": [
           {
@@ -373,19 +398,23 @@ describe("store compare command", () => {
     const json = capture.json<{
       from: string;
       to: string;
-      files: Record<string, string[]>;
-      counts: Record<string, number>;
+      added: string[];
+      removed: string[];
+      modified: string[];
+      unchanged: number;
+      changes: Array<{ path: string; fromHash?: string; toHash?: string }>;
     }>();
+
+    // Verify the structure and values
     expect(json).toBeDefined();
     expect(json?.from).toBe("15.0.0");
     expect(json?.to).toBe("16.0.0");
-    expect(json?.files).toHaveProperty("added");
-    expect(json?.files).toHaveProperty("removed");
-    expect(json?.files).toHaveProperty("modified");
-    expect(json?.files).toHaveProperty("unchanged");
-    expect(json?.counts).toHaveProperty("added");
-    expect(json?.counts).toHaveProperty("removed");
-    expect(json?.counts).toHaveProperty("modified");
-    expect(json?.counts).toHaveProperty("unchanged");
+
+    // Both versions have same file with same content = unchanged
+    expect(json?.added).toEqual([]);
+    expect(json?.removed).toEqual([]);
+    expect(json?.modified).toEqual([]);
+    expect(json?.unchanged).toBe(1); // ArabicShaping.txt
+    expect(json?.changes).toEqual([]); // No detailed changes since nothing modified
   });
 });

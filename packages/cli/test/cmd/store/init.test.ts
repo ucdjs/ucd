@@ -44,6 +44,7 @@ describe("store init command", () => {
 
     mockStoreApi({
       responses: {
+        "/.well-known/ucd-config.json": true,
         "/api/v1/versions": UNICODE_VERSION_METADATA,
         "/api/v1/versions/{version}/file-tree": [{
           type: "file",
@@ -108,6 +109,7 @@ describe("store init command", () => {
     const storePath = await testdir();
     mockStoreApi({
       responses: {
+        "/.well-known/ucd-config.json": true,
         "/api/v1/versions": UNICODE_VERSION_METADATA,
         "/api/v1/versions/{version}/file-tree": [{
           type: "file",
@@ -147,6 +149,7 @@ describe("store init command", () => {
 
     mockStoreApi({
       responses: {
+        "/.well-known/ucd-config.json": true,
         "/api/v1/versions": UNICODE_VERSION_METADATA,
         "/api/v1/versions/{version}/file-tree": [{
           type: "file",
@@ -191,6 +194,7 @@ describe("store init command", () => {
 
     mockStoreApi({
       responses: {
+        "/.well-known/ucd-config.json": true,
         "/api/v1/versions": UNICODE_VERSION_METADATA,
         "/api/v1/versions/{version}/file-tree": [{
           type: "file",
