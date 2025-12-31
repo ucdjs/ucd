@@ -1,11 +1,64 @@
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 import type { Lockfile, LockfileInput } from "@ucdjs/schemas";
-import { createDebugger, safeJsonParse } from "@ucdjs-internal/shared";
+import { createDebugger, safeJsonParse, tryOr } from "@ucdjs-internal/shared";
 import { hasCapability } from "@ucdjs/fs-bridge";
 import { LockfileSchema } from "@ucdjs/schemas";
 import { LockfileInvalidError } from "./errors";
 
 const debug = createDebugger("ucdjs:lockfile");
+
+/**
+ * Result of validating a lockfile
+ */
+export interface ValidateLockfileResult {
+  /** Whether the lockfile is valid */
+  valid: boolean;
+  /** The parsed lockfile data (only present if valid) */
+  data?: Lockfile;
+  /** Validation errors (only present if invalid) */
+  errors?: Array<{
+    /** The path to the field that failed validation */
+    path: string;
+    /** Human-readable error message */
+    message: string;
+    /** Zod error code */
+    code: string;
+  }>;
+}
+
+/**
+ * Validates lockfile data against the schema without reading from filesystem.
+ * Useful for validating lockfile objects before writing or for CLI validation commands.
+ *
+ * @param {unknown} data - The data to validate as a lockfile
+ * @returns {ValidateLockfileResult} Validation result with parsed data or errors
+ *
+ * @example
+ * ```ts
+ * const result = validateLockfile(someData);
+ * if (result.valid) {
+ *   console.log('Lockfile is valid:', result.data);
+ * } else {
+ *   console.error('Validation errors:', result.errors);
+ * }
+ * ```
+ */
+export function validateLockfile(data: unknown): ValidateLockfileResult {
+  const result = LockfileSchema.safeParse(data);
+
+  if (result.success) {
+    return { valid: true, data: result.data };
+  }
+
+  return {
+    valid: false,
+    errors: result.error.issues.map((issue) => ({
+      path: issue.path.join("."),
+      message: issue.message,
+      code: issue.code,
+    })),
+  };
+}
 
 /**
  * Checks if the filesystem bridge supports lockfile operations (requires write capability)
@@ -31,7 +84,16 @@ export async function readLockfile(
 ): Promise<Lockfile> {
   debug?.("Reading lockfile from:", lockfilePath);
 
-  const lockfileData = await fs.read(lockfilePath);
+  const lockfileData = await tryOr({
+    try: fs.read(lockfilePath),
+    err: (err) => {
+      debug?.("Failed to read lockfile:", err);
+      throw new LockfileInvalidError({
+        lockfilePath,
+        message: "lockfile could not be read",
+      });
+    },
+  });
 
   if (!lockfileData) {
     throw new LockfileInvalidError({
@@ -94,7 +156,7 @@ export async function writeLockfile(
  * @param {string} lockfilePath - Path to the lockfile
  * @returns {Promise<Lockfile | undefined>} A promise that resolves to the lockfile or undefined
  */
-export async function readLockfileOrDefault(
+export async function readlockfileOrUndefined(
   fs: FileSystemBridge,
   lockfilePath: string,
 ): Promise<Lockfile | undefined> {
