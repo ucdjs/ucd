@@ -96,13 +96,11 @@ export async function runCompareStore({ flags, from, to }: CLIStoreCompareCmdOpt
       output.json({
         from: comparison.from,
         to: comparison.to,
-        files: {
-          added: Array.from(comparison.files.added),
-          removed: Array.from(comparison.files.removed),
-          modified: Array.from(comparison.files.modified),
-          unchanged: Array.from(comparison.files.unchanged),
-        },
-        counts: comparison.counts,
+        added: comparison.added,
+        removed: comparison.removed,
+        modified: comparison.modified,
+        unchanged: comparison.unchanged,
+        changes: comparison.changes,
       });
       return;
     }
@@ -110,55 +108,60 @@ export async function runCompareStore({ flags, from, to }: CLIStoreCompareCmdOpt
     // Human-readable output
     output.info(`\n📊 Comparison: ${comparison.from} → ${comparison.to}\n`);
 
-    output.info(`📁 Files:`);
-    output.info(`  Total in ${comparison.from}: ${comparison.counts.fromTotal}`);
-    output.info(`  Total in ${comparison.to}: ${comparison.counts.toTotal}`);
+    const totalAdded = comparison.added.length;
+    const totalRemoved = comparison.removed.length;
+    const totalModified = comparison.modified.length;
+    const totalUnchanged = comparison.unchanged;
+
+    output.info(`📁 Summary:`);
+    output.info(`  Added:     ${totalAdded}`);
+    output.info(`  Removed:   ${totalRemoved}`);
+    output.info(`  Modified:  ${totalModified}`);
+    output.info(`  Unchanged: ${totalUnchanged}`);
     output.info("");
 
-    if (comparison.counts.added > 0) {
-      output.info(green(`✅ Added: ${comparison.counts.added}`));
-      if (comparison.files.added.length <= 10) {
-        comparison.files.added.forEach((file) => {
+    if (totalAdded > 0) {
+      output.info(green(`✅ Added files:`));
+      if (comparison.added.length <= 10) {
+        comparison.added.forEach((file) => {
           output.info(`   + ${file}`);
         });
       } else {
-        comparison.files.added.slice(0, 10).forEach((file) => {
+        comparison.added.slice(0, 10).forEach((file) => {
           output.info(`   + ${file}`);
         });
-        output.info(`   + ... and ${comparison.files.added.length - 10} more`);
+        output.info(`   + ... and ${comparison.added.length - 10} more`);
       }
+      output.info("");
     }
 
-    if (comparison.counts.removed > 0) {
-      output.info(red(`❌ Removed: ${comparison.counts.removed}`));
-      if (comparison.files.removed.length <= 10) {
-        comparison.files.removed.forEach((file) => {
+    if (totalRemoved > 0) {
+      output.info(red(`❌ Removed files:`));
+      if (comparison.removed.length <= 10) {
+        comparison.removed.forEach((file) => {
           output.info(`   - ${file}`);
         });
       } else {
-        comparison.files.removed.slice(0, 10).forEach((file) => {
+        comparison.removed.slice(0, 10).forEach((file) => {
           output.info(`   - ${file}`);
         });
-        output.info(`   - ... and ${comparison.files.removed.length - 10} more`);
+        output.info(`   - ... and ${comparison.removed.length - 10} more`);
       }
+      output.info("");
     }
 
-    if (comparison.counts.modified > 0) {
-      output.info(yellow(`🔄 Modified: ${comparison.counts.modified}`));
-      if (comparison.files.modified.length <= 10) {
-        comparison.files.modified.forEach((file) => {
+    if (totalModified > 0) {
+      output.info(yellow(`🔄 Modified files:`));
+      if (comparison.modified.length <= 10) {
+        comparison.modified.forEach((file) => {
           output.info(`   ~ ${file}`);
         });
       } else {
-        comparison.files.modified.slice(0, 10).forEach((file) => {
+        comparison.modified.slice(0, 10).forEach((file) => {
           output.info(`   ~ ${file}`);
         });
-        output.info(`   ~ ... and ${comparison.files.modified.length - 10} more`);
+        output.info(`   ~ ... and ${comparison.modified.length - 10} more`);
       }
-    }
-
-    if (comparison.counts.unchanged > 0) {
-      output.info(`  Unchanged: ${comparison.counts.unchanged}`);
     }
   } catch (err) {
     if (err instanceof UCDStoreGenericError) {
