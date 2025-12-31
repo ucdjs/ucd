@@ -9,7 +9,7 @@ import {
 } from "@ucdjs-internal/shared";
 import { hasCapability } from "@ucdjs/fs-bridge";
 import {
-  readLockfileOrDefault,
+  readlockfileOrUndefined,
   readSnapshotOrDefault,
   writeLockfile,
 } from "@ucdjs/lockfile";
@@ -112,7 +112,7 @@ async function _sync(
 
     debug?.(`Found ${availableVersionsFromApi.length} available versions from API`);
 
-    const lockfile = await readLockfileOrDefault(this.fs, this.lockfile.path);
+    const lockfile = await readlockfileOrUndefined(this.fs, this.lockfile.path);
     const currentVersions = new Set(lockfile ? Object.keys(lockfile.versions) : []);
 
     const availableVersionsSet = new Set(availableVersionsFromApi);

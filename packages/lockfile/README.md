@@ -75,7 +75,7 @@ const hash = await computeFileHash(content);
 - `canUseLockfile(fs: FileSystemBridge): boolean` - Check if bridge supports lockfile operations
 - `readLockfile(fs: FileSystemBridge, lockfilePath: string): Promise<Lockfile>` - Read and validate lockfile
 - `writeLockfile(fs: FileSystemBridge, lockfilePath: string, lockfile: Lockfile): Promise<void>` - Write lockfile
-- `readLockfileOrDefault(fs: FileSystemBridge, lockfilePath: string): Promise<Lockfile | undefined>` - Read lockfile or return undefined
+- `readlockfileOrUndefined(fs: FileSystemBridge, lockfilePath: string): Promise<Lockfile | undefined>` - Read lockfile or return undefined
 
 ### Snapshot Operations
 

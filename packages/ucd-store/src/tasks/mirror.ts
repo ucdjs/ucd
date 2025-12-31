@@ -9,7 +9,7 @@ import {
   wrapTry,
 } from "@ucdjs-internal/shared";
 import { hasCapability } from "@ucdjs/fs-bridge";
-import { computeContentHash, computeFileHash, readLockfileOrDefault, writeLockfile, writeSnapshot } from "@ucdjs/lockfile";
+import { computeContentHash, computeFileHash, readlockfileOrUndefined, writeLockfile, writeSnapshot } from "@ucdjs/lockfile";
 import { hasUCDFolderPath } from "@unicode-utils/core";
 import { dirname, join } from "pathe";
 import { extractFilterPatterns } from "../context";
@@ -395,7 +395,7 @@ async function _mirror(
     const duration = Date.now() - startTime;
 
     // Create snapshots and update lockfile for mirrored versions
-    const lockfile = await readLockfileOrDefault(this.fs, this.lockfile.path);
+    const lockfile = await readlockfileOrUndefined(this.fs, this.lockfile.path);
     const updatedLockfileVersions = lockfile ? { ...lockfile.versions } : {};
 
     for (const [version, report] of versionedReports.entries()) {
