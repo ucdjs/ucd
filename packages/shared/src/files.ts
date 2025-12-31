@@ -15,27 +15,29 @@ export interface TreeNode {
 }
 
 /**
- * Recursively find a file node by its path in the tree.
+ * Recursively find a node (file or directory) by its path in the tree.
  *
  * @template T - A tree node type that extends the base TreeNode interface
  * @param {T[]} entries - Array of file tree nodes that may contain nested children
  * @param {string} targetPath - The path to search for
- * @param {string} [prefix] - Optional path prefix for recursive calls (default: "")
- * @returns {T | undefined} The found file node or undefined
+ * @returns {T | undefined} The found node or undefined
  */
-export function findFileByPath<T extends TreeNode>(entries: T[], targetPath: string, prefix: string = ""): T | undefined {
-  for (const file of entries) {
-    const fullPath = prefix
-      ? `${prefix}/${file.path ?? file.name}`
-      : (file.path ?? file.name);
+export function findFileByPath<T extends TreeNode>(entries: T[], targetPath: string): T | undefined {
+  for (const fileOrDirectory of entries) {
+    // Use path property directly as it already contains the full path
+    const filePath = fileOrDirectory.path ?? fileOrDirectory.name;
 
-    if (file.type === "directory" && file.children) {
-      const found = findFileByPath(file.children as T[], targetPath, fullPath);
+    // Check if this node matches the target path
+    if (filePath === targetPath) {
+      return fileOrDirectory;
+    }
+
+    // If it's a directory, also search in children
+    if (fileOrDirectory.type === "directory" && fileOrDirectory.children) {
+      const found = findFileByPath(fileOrDirectory.children as T[], targetPath);
       if (found) {
         return found as T;
       }
-    } else if (fullPath === targetPath || `/${fullPath}` === targetPath) {
-      return file;
     }
   }
   return undefined;

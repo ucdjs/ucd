@@ -32,14 +32,15 @@ describe("findFileByPath", () => {
       {
         type: "directory",
         name: "folder",
+        path: "folder",
         children: [
-          { type: "file", name: "nested.txt" },
+          { type: "file", name: "nested.txt", path: "folder/nested.txt" },
         ],
       },
     ];
 
     const result = findFileByPath(files, "folder/nested.txt");
-    expect(result).toEqual({ type: "file", name: "nested.txt" });
+    expect(result).toEqual({ type: "file", name: "nested.txt", path: "folder/nested.txt" });
   });
 
   it("should find a file in deeply nested directories", () => {
@@ -47,16 +48,19 @@ describe("findFileByPath", () => {
       {
         type: "directory",
         name: "level1",
+        path: "level1",
         children: [
           {
             type: "directory",
             name: "level2",
+            path: "level1/level2",
             children: [
               {
                 type: "directory",
                 name: "level3",
+                path: "level1/level2/level3",
                 children: [
-                  { type: "file", name: "deep.txt" },
+                  { type: "file", name: "deep.txt", path: "level1/level2/level3/deep.txt" },
                 ],
               },
             ],
@@ -66,7 +70,7 @@ describe("findFileByPath", () => {
     ];
 
     const result = findFileByPath(files, "level1/level2/level3/deep.txt");
-    expect(result).toEqual({ type: "file", name: "deep.txt" });
+    expect(result).toEqual({ type: "file", name: "deep.txt", path: "level1/level2/level3/deep.txt" });
   });
 
   it("should use path property when available", () => {
@@ -78,28 +82,31 @@ describe("findFileByPath", () => {
     expect(result).toEqual({ type: "file", name: "file.txt", path: "custom/path.txt" });
   });
 
-  it("should match path with leading slash", () => {
+  it("should not match path with leading slash", () => {
     const files: TreeNode[] = [
       { type: "file", name: "file.txt" },
     ];
 
     const result = findFileByPath(files, "/file.txt");
-    expect(result).toEqual({ type: "file", name: "file.txt" });
+    expect(result).not.toEqual({ type: "file", name: "file.txt" });
+    expect(result).toBeUndefined();
   });
 
-  it("should match nested path with leading slash", () => {
+  it("should not match nested path with leading slash", () => {
     const files: TreeNode[] = [
       {
         type: "directory",
         name: "folder",
+        path: "folder",
         children: [
-          { type: "file", name: "nested.txt" },
+          { type: "file", name: "nested.txt", path: "folder/nested.txt" },
         ],
       },
     ];
 
     const result = findFileByPath(files, "/folder/nested.txt");
-    expect(result).toEqual({ type: "file", name: "nested.txt" });
+    expect(result).not.toEqual({ type: "file", name: "nested.txt", path: "folder/nested.txt" });
+    expect(result).toBeUndefined();
   });
 
   it("should preserve custom properties on the returned node", () => {
@@ -116,46 +123,58 @@ describe("findFileByPath", () => {
     expect(result?._content).toBe("Hello, World!");
   });
 
-  it("should not match directories themselves", () => {
+  it("should match directories themselves", () => {
     const files: TreeNode[] = [
       {
         type: "directory",
         name: "folder",
+        path: "folder",
         children: [
-          { type: "file", name: "file.txt" },
+          { type: "file", name: "file.txt", path: "folder/file.txt" },
         ],
       },
     ];
 
-    // Searching for just the directory name should not match the directory
+    // Searching for just the directory name should match the directory
     const result = findFileByPath(files, "folder");
-    expect(result).toBeUndefined();
+    expect(result).toEqual({
+      type: "directory",
+      name: "folder",
+      path: "folder",
+      children: [{
+        type: "file",
+        name: "file.txt",
+        path: "folder/file.txt",
+      }],
+    });
   });
 
   it("should handle mixed files and directories", () => {
     const files: TreeNode[] = [
-      { type: "file", name: "root.txt" },
+      { type: "file", name: "root.txt", path: "root.txt" },
       {
         type: "directory",
         name: "docs",
+        path: "docs",
         children: [
-          { type: "file", name: "readme.md" },
+          { type: "file", name: "readme.md", path: "docs/readme.md" },
           {
             type: "directory",
             name: "api",
+            path: "docs/api",
             children: [
-              { type: "file", name: "index.html" },
+              { type: "file", name: "index.html", path: "docs/api/index.html" },
             ],
           },
         ],
       },
-      { type: "file", name: "package.json" },
+      { type: "file", name: "package.json", path: "package.json" },
     ];
 
-    expect(findFileByPath(files, "root.txt")).toEqual({ type: "file", name: "root.txt" });
-    expect(findFileByPath(files, "docs/readme.md")).toEqual({ type: "file", name: "readme.md" });
-    expect(findFileByPath(files, "docs/api/index.html")).toEqual({ type: "file", name: "index.html" });
-    expect(findFileByPath(files, "package.json")).toEqual({ type: "file", name: "package.json" });
+    expect(findFileByPath(files, "root.txt")).toEqual({ type: "file", name: "root.txt", path: "root.txt" });
+    expect(findFileByPath(files, "docs/readme.md")).toEqual({ type: "file", name: "readme.md", path: "docs/readme.md" });
+    expect(findFileByPath(files, "docs/api/index.html")).toEqual({ type: "file", name: "index.html", path: "docs/api/index.html" });
+    expect(findFileByPath(files, "package.json")).toEqual({ type: "file", name: "package.json", path: "package.json" });
   });
 
   it("should handle empty directories", () => {
@@ -163,13 +182,14 @@ describe("findFileByPath", () => {
       {
         type: "directory",
         name: "empty",
+        path: "empty",
         children: [],
       },
-      { type: "file", name: "file.txt" },
+      { type: "file", name: "file.txt", path: "file.txt" },
     ];
 
     const result = findFileByPath(files, "file.txt");
-    expect(result).toEqual({ type: "file", name: "file.txt" });
+    expect(result).toEqual({ type: "file", name: "file.txt", path: "file.txt" });
   });
 });
 
