@@ -1,5 +1,5 @@
 import type { MockFetchFn } from "@luxass/msw-utils";
-import type { UnicodeTree } from "@ucdjs/schemas";
+import type { UnicodeTreeNode } from "@ucdjs/schemas";
 import type { AsyncResponseResolverReturnType, DefaultBodyType, HttpResponseResolver, PathParams } from "msw";
 import type { paths } from "../.generated/api";
 import type { MOCK_ROUTES } from "./handlers";
@@ -81,7 +81,9 @@ type PartialRecord<K extends keyof any, T> = {
   [P in K]?: T;
 };
 
-export type MockStoreFiles = PartialRecord<StoreVersionFileKey | StoreFileKeyWildcard | (string & {}), UnicodeTree>;
+export type MockStoreFiles = PartialRecord<StoreVersionFileKey | StoreFileKeyWildcard | (string & {}), (UnicodeTreeNode & {
+  _content?: string;
+})[]>;
 
 export interface MockStoreConfig {
   /**
