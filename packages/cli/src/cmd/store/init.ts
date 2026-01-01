@@ -1,12 +1,12 @@
-/* eslint-disable no-console */
 import type { Prettify } from "@luxass/utils";
 import type { CLIArguments } from "../../cli-utils";
 import type { CLIStoreCmdSharedFlags } from "./_shared";
-import { hasCapability } from "@ucdjs/fs-bridge";
+import { spinner } from "@clack/prompts";
 import { UCDStoreGenericError } from "@ucdjs/ucd-store";
-import { green, red, yellow } from "farver/fast";
+import { cyan, dim, green, red, yellow } from "farver/fast";
 import { printHelp } from "../../cli-utils";
-import { assertRemoteOrStoreDir, createStoreFromFlags, runVersionPrompt, SHARED_FLAGS } from "./_shared";
+import { output } from "../../output";
+import { assertLocalStore, createStoreFromFlags, LOCAL_STORE_FLAGS, runVersionPrompt, SHARED_FLAGS } from "./_shared";
 
 export interface CLIStoreInitCmdOptions {
   flags: CLIArguments<Prettify<CLIStoreCmdSharedFlags>>;
@@ -21,6 +21,7 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
       usage: "[...versions] [...flags]",
       tables: {
         Flags: [
+          ...LOCAL_STORE_FLAGS,
           ...SHARED_FLAGS,
           ["--help (-h)", "See all available flags."],
         ],
@@ -29,9 +30,10 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
     return;
   }
 
+  assertLocalStore(flags);
+
   const {
     storeDir,
-    remote,
     baseUrl,
     include: patterns,
     exclude: excludePatterns,
@@ -39,35 +41,30 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
   } = flags;
 
   try {
-    assertRemoteOrStoreDir(flags);
-
-    // Init requires local store (needs write capability)
-    if (remote) {
-      console.error(red(`\n❌ Error: Init operation requires a local store directory.`));
-      console.error("Use --store-dir to specify a local directory for initialization.");
-      return;
-    }
-
-    if (!storeDir) {
-      console.error(red(`\n❌ Error: Store directory must be specified.`));
-      return;
-    }
+    output.log("");
+    output.log(cyan("UCD Store Initialization"));
+    output.log("");
 
     let selectedVersions = versions;
-
     if (!selectedVersions || selectedVersions.length === 0) {
       const pickedVersions = await runVersionPrompt();
 
       if (pickedVersions.length === 0) {
-        console.error("No versions selected. Operation cancelled.");
+        output.warn(yellow("No versions selected. Operation cancelled."));
         return;
       }
 
       selectedVersions = pickedVersions;
     }
 
-    // Create store with bootstrap enabled
-    // The store creation will automatically bootstrap if needed
+    output.log(`Store path: ${cyan(storeDir)}`);
+    output.log(`Versions:   ${selectedVersions.map((v) => cyan(v)).join(", ")}`);
+    output.log("");
+
+    const s = spinner();
+
+    // Create store
+    s.start("Creating lockfile...");
     const store = await createStoreFromFlags({
       baseUrl,
       storeDir,
@@ -76,21 +73,12 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
       exclude: excludePatterns,
       versions: selectedVersions,
       force,
-      lockfileOnly: false,
+      requireExistingStore: false,
     });
+    s.stop(green("✓ Lockfile created"));
 
-    // Check write capability
-    if (!hasCapability(store.fs, "write")) {
-      console.error(red(`\n❌ Error: Store does not have write capability required for sync operation.`));
-      console.error("Please check the store configuration and try again.");
-      return;
-    }
-
-    console.log("Store initialized successfully.");
-    console.log(`Lockfile created with ${selectedVersions.length} version(s): ${selectedVersions.join(", ")}`);
-
-    // Automatically mirror files after lockfile creation
-    console.log("\nStarting mirror operation...");
+    // Mirror files
+    s.start("Downloading Unicode data files...");
     const [mirrorResult, mirrorError] = await store.mirror({
       versions: selectedVersions,
       force,
@@ -101,35 +89,44 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
     });
 
     if (mirrorError) {
-      console.error(red(`\n⚠ Warning: Mirror operation failed:`));
-      console.error(`  ${mirrorError.message}`);
-      console.error("Lockfile was created successfully, but files were not downloaded.");
+      s.stop(red("✗ Mirror failed"));
+      output.error(mirrorError.message);
+      output.warn(yellow("Lockfile was created, but files were not downloaded."));
       return;
     }
 
     if (!mirrorResult) {
-      console.error(red(`\n⚠ Warning: Mirror operation returned no result.`));
-      console.error("Lockfile was created successfully, but files were not downloaded.");
+      s.stop(red("✗ Mirror returned no result"));
+      output.warn(yellow("Lockfile was created, but files were not downloaded."));
       return;
     }
 
-    // Display mirror results
-    console.log(green("\n✓ Mirror operation completed successfully\n"));
+    s.stop(green("✓ Files downloaded"));
 
+    // Summary
     if (mirrorResult.summary) {
       const { counts, duration, storage } = mirrorResult.summary;
-      console.log(`Summary:`);
-      console.log(`  Versions processed: ${mirrorResult.versions.size}`);
-      console.log(`  Files downloaded: ${green(String(counts.downloaded))}`);
-      console.log(`  Files skipped: ${yellow(String(counts.skipped))}`);
-      console.log(`  Files failed: ${counts.failed > 0 ? red(String(counts.failed)) : String(counts.failed)}`);
-      console.log(`  Total size: ${storage.totalSize}`);
-      console.log(`  Duration: ${(duration / 1000).toFixed(2)}s`);
-      console.log("");
+
+      output.log("");
+      output.log(dim("Summary"));
+      output.log(`  Versions:   ${mirrorResult.versions.size}`);
+      output.log(`  Downloaded: ${green(String(counts.downloaded))} files`);
+      if (counts.skipped > 0) {
+        output.log(`  Skipped:    ${yellow(String(counts.skipped))} files`);
+      }
+      if (counts.failed > 0) {
+        output.log(`  Failed:     ${red(String(counts.failed))} files`);
+      }
+      output.log(`  Total size: ${storage.totalSize}`);
+      output.log(`  Duration:   ${(duration / 1000).toFixed(2)}s`);
     }
+
+    output.log("");
+    output.log(green("Store initialized successfully!"));
+    output.log("");
   } catch (err) {
     if (err instanceof UCDStoreGenericError) {
-      console.error(red(`\n❌ Error: ${err.message}`));
+      output.error(red(`Error: ${err.message}`));
       return;
     }
 
@@ -140,9 +137,7 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
       message = err;
     }
 
-    console.error(red(`\n❌ Error initializing store:`));
-    console.error(`  ${message}`);
-    console.error("Please check the store configuration and try again.");
-    console.error("If you believe this is a bug, please report it at https://github.com/ucdjs/ucd/issues");
+    output.error(red(`Error: ${message}`));
+    output.log(dim("If you believe this is a bug, please report it at https://github.com/ucdjs/ucd/issues"));
   }
 }

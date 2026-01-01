@@ -6,9 +6,9 @@ import { defineFileSystemBridge } from "@ucdjs/fs-bridge";
 import { readLockfile } from "@ucdjs/lockfile";
 import { describe, expect, it } from "vitest";
 import { UCDStoreGenericError } from "../../src/errors";
-import { bootstrap } from "../../src/setup/bootstrap";
+import { initLockfile } from "../../src/setup/init-lockfile";
 
-describe("bootstrap", () => {
+describe("initLockfile", () => {
   describe("lockfile creation", () => {
     it("should create lockfile with valid versions", async () => {
       // Arrange
@@ -24,7 +24,7 @@ describe("bootstrap", () => {
       });
 
       // Act
-      await bootstrap(context);
+      await initLockfile(context);
 
       // Assert
       const lockfile = await readLockfile(fs, lockfilePath);
@@ -55,7 +55,7 @@ describe("bootstrap", () => {
       });
 
       // Act
-      await bootstrap(context);
+      await initLockfile(context);
 
       // Assert
       const lockfile = await readLockfile(fs, lockfilePath);
@@ -80,7 +80,7 @@ describe("bootstrap", () => {
       });
 
       // Act
-      await bootstrap(context);
+      await initLockfile(context);
 
       // Assert
       const lockfile = await readLockfile(fs, lockfilePath);
@@ -102,7 +102,7 @@ describe("bootstrap", () => {
         versions: ["16.0.0"],
       });
 
-      await bootstrap(context);
+      await initLockfile(context);
 
       // basePath is now handled by fs-bridge, test directory existence via fs
       const exists = await fs.exists(".");
@@ -127,7 +127,7 @@ describe("bootstrap", () => {
       });
 
       // Act
-      await expect(bootstrap(context)).resolves.not.toThrow();
+      await expect(initLockfile(context)).resolves.not.toThrow();
 
       // Assert
       const lockfile = await readLockfile(fs, lockfilePath);
@@ -150,7 +150,7 @@ describe("bootstrap", () => {
       });
 
       // Act & Assert
-      await expect(bootstrap(context)).resolves.not.toThrow();
+      await expect(initLockfile(context)).resolves.not.toThrow();
     });
 
     it("should throw UCDStoreGenericError when versions not available", async () => {
@@ -167,7 +167,7 @@ describe("bootstrap", () => {
       });
 
       // Act & Assert
-      await expect(bootstrap(context)).rejects.toThrow(UCDStoreGenericError);
+      await expect(initLockfile(context)).rejects.toThrow(UCDStoreGenericError);
     });
 
     it("should include unavailable versions in error message", async () => {
@@ -184,7 +184,7 @@ describe("bootstrap", () => {
       });
 
       // Act
-      const error = await bootstrap(context).catch((e) => e);
+      const error = await initLockfile(context).catch((e) => e);
 
       // Assert
       expect(error).toBeInstanceOf(UCDStoreGenericError);
@@ -206,7 +206,7 @@ describe("bootstrap", () => {
       });
 
       // Act & Assert
-      await expect(bootstrap(context)).rejects.toThrow(UCDStoreGenericError);
+      await expect(initLockfile(context)).rejects.toThrow(UCDStoreGenericError);
     });
 
     it("should include 'Failed to fetch Unicode versions' in error message", async () => {
@@ -222,7 +222,7 @@ describe("bootstrap", () => {
       });
 
       // Act
-      const error = await bootstrap(context).catch((e) => e);
+      const error = await initLockfile(context).catch((e) => e);
 
       // Assert
       expect(error).toBeInstanceOf(UCDStoreGenericError);
@@ -242,7 +242,7 @@ describe("bootstrap", () => {
       });
 
       // Act & Assert
-      await expect(bootstrap(context)).rejects.toThrow(UCDStoreGenericError);
+      await expect(initLockfile(context)).rejects.toThrow(UCDStoreGenericError);
     });
 
     it("should include 'no versions available' in error message", async () => {
@@ -258,7 +258,7 @@ describe("bootstrap", () => {
       });
 
       // Act
-      const error = await bootstrap(context).catch((e) => e);
+      const error = await initLockfile(context).catch((e) => e);
 
       // Assert
       expect(error).toBeInstanceOf(UCDStoreGenericError);
@@ -301,7 +301,7 @@ describe("bootstrap", () => {
       });
 
       // Act & Assert
-      await expect(bootstrap(context)).rejects.toThrow("File system bridge does not support the 'mkdir' capability.");
+      await expect(initLockfile(context)).rejects.toThrow("File system bridge does not support the 'mkdir' capability.");
     });
 
     it("should skip lockfile write when bridge does not support writing", async () => {
@@ -324,7 +324,7 @@ describe("bootstrap", () => {
       context.lockfile.supports = false;
 
       // Act - should not throw even though lockfile can't be written
-      await expect(bootstrap(context)).resolves.not.toThrow();
+      await expect(initLockfile(context)).resolves.not.toThrow();
     });
   });
 });

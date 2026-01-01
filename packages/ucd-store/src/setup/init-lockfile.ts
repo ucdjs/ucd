@@ -5,20 +5,23 @@ import { writeLockfile } from "@ucdjs/lockfile";
 import { extractFilterPatterns } from "../context";
 import { UCDStoreGenericError } from "../errors";
 
-const debug = createDebugger("ucdjs:ucd-store:bootstrap");
+const debug = createDebugger("ucdjs:ucd-store:init-lockfile");
 
 /**
- * Bootstraps a new store by validating versions against the API
+ * Initializes a new store lockfile by validating versions against the API
  * and creating the initial lockfile (if the bridge supports writing).
+ *
+ * This only creates the lockfile structure - it does NOT download any files.
+ * Use `mirror()` to download the actual Unicode data files.
  *
  * @param {InternalUCDStoreContext} context - The internal store context
  * @throws {UCDStoreGenericError} If API fetch fails or versions are invalid
  */
-export async function bootstrap(context: InternalUCDStoreContext): Promise<void> {
+export async function initLockfile(context: InternalUCDStoreContext): Promise<void> {
   const { fs, filter } = context;
   const versions = context.versions.resolved;
 
-  debug?.("Starting bootstrap for versions:", versions);
+  debug?.("Starting lockfile initialization for versions:", versions);
 
   // Validate versions against API using context's cached getter
   const availableVersions = await context.versions.apiVersions();
@@ -77,5 +80,5 @@ export async function bootstrap(context: InternalUCDStoreContext): Promise<void>
     debug?.("Skipping lockfile write - bridge does not support writing");
   }
 
-  debug?.("✓ Bootstrap completed successfully");
+  debug?.("✓ Lockfile initialization completed successfully");
 }

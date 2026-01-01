@@ -31,7 +31,14 @@ export const WILDCARD_ROUTE = createRoute({
   method: "get",
   path: "/{wildcard}",
   tags: [OPENAPI_TAGS.FILES],
-  parameters: [WILDCARD_PARAM, PATTERN_QUERY_PARAM, QUERY_PARAM, TYPE_QUERY_PARAM, SORT_QUERY_PARAM, ORDER_QUERY_PARAM],
+  parameters: [
+    WILDCARD_PARAM,
+    PATTERN_QUERY_PARAM,
+    QUERY_PARAM,
+    TYPE_QUERY_PARAM,
+    SORT_QUERY_PARAM,
+    ORDER_QUERY_PARAM,
+  ],
   description: dedent`
     This endpoint proxies your request directly to Unicode.org, allowing you to access any file or directory under the Unicode Public directory structure with only slight [modifications](#tag/files/get/api/v1/files/{wildcard}/description/modifications).
 
@@ -179,7 +186,14 @@ export const METADATA_WILDCARD_ROUTE = createRoute({
   method: "head",
   path: "/{wildcard}",
   tags: [OPENAPI_TAGS.FILES],
-  parameters: [WILDCARD_PARAM, PATTERN_QUERY_PARAM, QUERY_PARAM, TYPE_QUERY_PARAM, SORT_QUERY_PARAM, ORDER_QUERY_PARAM],
+  parameters: [
+    WILDCARD_PARAM,
+    PATTERN_QUERY_PARAM,
+    QUERY_PARAM,
+    TYPE_QUERY_PARAM,
+    SORT_QUERY_PARAM,
+    ORDER_QUERY_PARAM,
+  ],
   description: dedent`
     This endpoint returns metadata about the requested file or directory without fetching the entire content.
     It is useful for checking the existence of a file or directory and retrieving its metadata without downloading
@@ -311,6 +325,7 @@ export function registerWildcardRoute(router: OpenAPIHono<HonoEnv>) {
     if (isDirectoryListing) {
       const html = await response.text();
       let files = await parseUnicodeDirectory(html);
+      console.log(files);
 
       // Get query parameters for filtering and sorting
       const query = c.req.query("query");

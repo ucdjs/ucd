@@ -9,6 +9,9 @@ import {
 } from "@ucdjs-internal/shared";
 import { isUCDStoreInternalContext } from "../context";
 import { UCDStoreApiFallbackError, UCDStoreVersionNotFoundError } from "../errors";
+import { isBuiltinHttpBridge } from "@ucdjs/fs-bridge";
+import { hasUCDFolderPath } from "@unicode-utils/core";
+import { join } from "pathe";
 
 const debug = createDebugger("ucdjs:ucd-store:files:list");
 
@@ -52,19 +55,33 @@ async function _listFiles(
       throw new UCDStoreVersionNotFoundError(version);
     }
 
-    // Use relative path
-    const localPath = version;
-    // Try listing from local store first
-    const dirExists = await this.fs.exists(localPath);
+    // Get the correct path for this bridge type
+    // HTTP bridges need to access the `ucd/` subdirectory
+    let filesPath = version;
+
+    if (isBuiltinHttpBridge(this.fs) && hasUCDFolderPath(version)) {
+      debug?.("Using HTTP bridge path with ucd subpath for version:", version);
+      filesPath = join(version, "ucd");
+    }
+
+    debug?.("Using files path:", filesPath, "for version:", version);
+
+    // Try listing from the store first
+    const dirExists = await this.fs.exists(filesPath);
 
     if (dirExists) {
       try {
-        const entries = await this.fs.listdir(localPath, true);
+        const entries = await this.fs.listdir(filesPath, true);
+        console.error(JSON.stringify(entries, null, 2));
         const filteredEntries = filterTreeStructure(this.filter, entries, options?.filters);
+        const flatPaths = flattenFilePaths(filteredEntries);
+        debug?.("Listed %d files from store for version: %s", flatPaths.length, version);
+        debug?.("File paths: %O", flatPaths);
 
-        return flattenFilePaths(filteredEntries);
+        // Normalize paths (strip `ucd/` prefix for HTTP bridges)
+        return flatPaths
       } catch (err) {
-        debug?.("Failed to list local directory:", localPath, err);
+        debug?.("Failed to list directory:", filesPath, err);
 
         // If allowApi is false, return empty array
         if (!options?.allowApi) {
@@ -75,7 +92,7 @@ async function _listFiles(
 
     // If directory doesn't exist and allowApi is false, return empty array
     if (!options?.allowApi) {
-      debug?.("Directory does not exist locally and allowApi is false:", localPath);
+      debug?.("Directory does not exist and allowApi is false:", filesPath);
       return [];
     }
 

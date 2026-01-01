@@ -4,8 +4,8 @@ import { testdir } from "vitest-testdirs";
 import { createNodeUCDStore } from "../../../src/factory";
 
 describe("node integration: store creation", () => {
-  describe("bootstrap behavior", () => {
-    it("should create store with node bridge and bootstrap lockfile", async () => {
+  describe("lockfile initialization", () => {
+    it("should create store with node bridge and initialize lockfile", async () => {
       mockStoreApi({
         versions: ["16.0.0", "15.1.0"],
         responses: {
@@ -22,7 +22,7 @@ describe("node integration: store creation", () => {
       const store = await createNodeUCDStore({
         basePath: storePath,
         versions: ["16.0.0"],
-        bootstrap: true,
+        requireExistingStore: false,
         verify: false,
       });
 
@@ -30,7 +30,7 @@ describe("node integration: store creation", () => {
       expect(store.versions).toEqual(["16.0.0"]);
     });
 
-    it("should create lockfile on disk when bootstrapping", async () => {
+    it("should create lockfile on disk when initializing", async () => {
       mockStoreApi({
         versions: ["16.0.0", "15.1.0"],
         responses: {
@@ -44,7 +44,7 @@ describe("node integration: store creation", () => {
       const store = await createNodeUCDStore({
         basePath: storePath,
         versions: ["16.0.0", "15.1.0"],
-        bootstrap: true,
+        requireExistingStore: false,
         verify: false,
       });
 
@@ -63,7 +63,7 @@ describe("node integration: store creation", () => {
       expect(lockfile.versions).toHaveProperty("15.1.0");
     });
 
-    it("should throw error when bootstrap: false and no lockfile exists", async () => {
+    it("should throw error when requireExistingStore: true and no lockfile exists", async () => {
       mockStoreApi({
         versions: ["16.0.0"],
         responses: {
@@ -74,11 +74,11 @@ describe("node integration: store creation", () => {
 
       const storePath = await testdir({});
 
-      // Without bootstrap and without existing lockfile, should throw
+      // With requireExistingStore: true (default) and without existing lockfile, should throw
       await expect(createNodeUCDStore({
         basePath: storePath,
         versions: ["16.0.0"],
-        bootstrap: false,
+        requireExistingStore: true,
         verify: false,
       })).rejects.toThrow("lockfile not found");
     });
@@ -123,7 +123,7 @@ describe("node integration: store creation", () => {
       const store = await createNodeUCDStore({
         basePath: storePath,
         versions: [], // No versions specified, should use lockfile
-        bootstrap: false,
+        requireExistingStore: true,
         verify: false,
       });
 
@@ -146,7 +146,7 @@ describe("node integration: store creation", () => {
       const store = await createNodeUCDStore({
         basePath: storePath,
         versions: ["16.0.0"],
-        bootstrap: true,
+        requireExistingStore: false,
         verify: false,
       });
 

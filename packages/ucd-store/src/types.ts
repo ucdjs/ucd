@@ -53,7 +53,7 @@ export type FsOptionsInput<TSchema extends z.ZodType>
     ? never // Factory takes no arguments, fsOptions not allowed
     : ExtractBridgeOptions<TSchema> | FsOptionsInputFn<TSchema>;
 
-export interface UCDStoreOptions<BridgeOptionsSchema extends z.ZodType> {
+export interface UCDStoreOptions<BridgeOptionsSchema extends z.ZodType = z.ZodUnknown> {
   /**
    * Base URL for the Unicode API
    *
@@ -70,7 +70,7 @@ export interface UCDStoreOptions<BridgeOptionsSchema extends z.ZodType> {
 
   /**
    * Optional endpoint configuration for the UCD API.
-   * If not provided, will use default configuration or discover from API in bootstrap mode.
+   * If not provided, will use default configuration or discover from API.
    */
   endpointConfig?: UCDWellKnownConfig;
 
@@ -106,12 +106,13 @@ export interface UCDStoreOptions<BridgeOptionsSchema extends z.ZodType> {
   versions?: string[];
 
   /**
-   * Whether to enable bootstrap mode when no lockfile exists.
-   * If false, store creation will fail if no lockfile is found.
+   * Whether to require an existing store with a lockfile.
+   * If true (default), store creation will fail if no lockfile is found.
+   * Set to false to automatically initialize a new lockfile when one doesn't exist.
    *
    * @default true
    */
-  bootstrap?: boolean;
+  requireExistingStore?: boolean;
 
   /**
    * Whether to verify lockfile versions against the API.

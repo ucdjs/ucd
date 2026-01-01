@@ -44,7 +44,6 @@ export async function runAnalyzeStore({ flags, versions }: CLIStoreAnalyzeCmdOpt
     baseUrl,
     include: patterns,
     exclude: excludePatterns,
-    lockfileOnly,
   } = flags;
 
   try {
@@ -56,8 +55,7 @@ export async function runAnalyzeStore({ flags, versions }: CLIStoreAnalyzeCmdOpt
       remote,
       include: patterns,
       exclude: excludePatterns,
-      versions,
-      lockfileOnly,
+      requireExistingStore: true,
     });
 
     const [analyzeData, analyzeError] = await store.analyze({

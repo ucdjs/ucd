@@ -6,7 +6,7 @@ import { UCDStoreGenericError } from "@ucdjs/ucd-store";
 import { green, red, yellow } from "farver/fast";
 import { printHelp } from "../../cli-utils";
 import { output } from "../../output";
-import { assertRemoteOrStoreDir, createStoreFromFlags, SHARED_FLAGS } from "./_shared";
+import { assertLocalStore, createStoreFromFlags, LOCAL_STORE_FLAGS, SHARED_FLAGS } from "./_shared";
 
 export interface CLIStoreMirrorCmdOptions {
   flags: CLIArguments<Prettify<CLIStoreCmdSharedFlags & {
@@ -23,6 +23,7 @@ export async function runMirrorStore({ flags, versions }: CLIStoreMirrorCmdOptio
       usage: "[...versions] [...flags]",
       tables: {
         Flags: [
+          ...LOCAL_STORE_FLAGS,
           ...SHARED_FLAGS,
           ["--concurrency", "Maximum concurrent downloads (default: 5)."],
           ["--help (-h)", "See all available flags."],
@@ -32,32 +33,18 @@ export async function runMirrorStore({ flags, versions }: CLIStoreMirrorCmdOptio
     return;
   }
 
+  assertLocalStore(flags);
+
   const {
     storeDir,
-    remote,
     baseUrl,
     include: patterns,
     exclude: excludePatterns,
-    lockfileOnly,
     force,
     concurrency = 5,
   } = flags;
 
   try {
-    assertRemoteOrStoreDir(flags);
-
-    // Mirror requires local store (needs write capability)
-    if (remote) {
-      output.error(red(`\n❌ Error: Mirror operation requires a local store directory.`));
-      output.error("Use --store-dir to specify a local directory for mirroring.");
-      return;
-    }
-
-    if (!storeDir) {
-      output.error(red(`\n❌ Error: Store directory must be specified.`));
-      return;
-    }
-
     const store = await createStoreFromFlags({
       baseUrl,
       storeDir,
@@ -66,15 +53,8 @@ export async function runMirrorStore({ flags, versions }: CLIStoreMirrorCmdOptio
       exclude: excludePatterns,
       versions,
       force,
-      lockfileOnly: false,
+      requireExistingStore: true,
     });
-
-    // Check write capability
-    if (!hasCapability(store.fs, "write")) {
-      console.error(red(`\n❌ Error: Store does not have write capability required for sync operation.`));
-      console.error("Please check the store configuration and try again.");
-      return;
-    }
 
     output.log("Starting mirror operation...");
     if (versions.length > 0) {
@@ -139,10 +119,6 @@ export async function runMirrorStore({ flags, versions }: CLIStoreMirrorCmdOptio
         output.log(`  Cache hit rate: ${report.metrics.cacheHitRate.toFixed(1)}%`);
       }
       output.log("");
-    }
-
-    if (lockfileOnly) {
-      output.log(yellow("⚠ Note: Lockfile was not updated due to --lockfile-only flag."));
     }
   } catch (err) {
     if (err instanceof UCDStoreGenericError) {

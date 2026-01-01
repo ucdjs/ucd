@@ -6,7 +6,7 @@ import { hasCapability } from "@ucdjs/fs-bridge";
 import { UCDStoreGenericError } from "@ucdjs/ucd-store";
 import { green, red, yellow } from "farver/fast";
 import { printHelp } from "../../cli-utils";
-import { assertRemoteOrStoreDir, createStoreFromFlags, SHARED_FLAGS } from "./_shared";
+import { assertLocalStore, createStoreFromFlags, LOCAL_STORE_FLAGS, SHARED_FLAGS } from "./_shared";
 
 export interface CLIStoreSyncCmdOptions {
   flags: CLIArguments<Prettify<CLIStoreCmdSharedFlags & {
@@ -25,6 +25,7 @@ export async function runSyncStore({ flags, versions }: CLIStoreSyncCmdOptions) 
       usage: "[...versions] [...flags]",
       tables: {
         Flags: [
+          ...LOCAL_STORE_FLAGS,
           ...SHARED_FLAGS,
           ["--concurrency", "Maximum concurrent downloads (default: 5)."],
           ["--remove-unavailable", "Remove versions from lockfile that are not available in API."],
@@ -36,9 +37,10 @@ export async function runSyncStore({ flags, versions }: CLIStoreSyncCmdOptions) 
     return;
   }
 
+  assertLocalStore(flags);
+
   const {
     storeDir,
-    remote,
     baseUrl,
     include: patterns,
     exclude: excludePatterns,
@@ -49,20 +51,6 @@ export async function runSyncStore({ flags, versions }: CLIStoreSyncCmdOptions) 
   } = flags;
 
   try {
-    assertRemoteOrStoreDir(flags);
-
-    // Sync requires local store (needs write capability)
-    if (remote) {
-      console.error(red(`\n❌ Error: Sync operation requires a local store directory.`));
-      console.error("Use --store-dir to specify a local directory for syncing.");
-      return;
-    }
-
-    if (!storeDir) {
-      console.error(red(`\n❌ Error: Store directory must be specified.`));
-      return;
-    }
-
     const store = await createStoreFromFlags({
       baseUrl,
       storeDir,
@@ -71,15 +59,9 @@ export async function runSyncStore({ flags, versions }: CLIStoreSyncCmdOptions) 
       exclude: excludePatterns,
       versions,
       force,
-      lockfileOnly: false,
+      requireExistingStore: true,
+      versionStrategy: "merge",
     });
-
-    // Check write capability
-    if (!hasCapability(store.fs, "write")) {
-      console.error(red(`\n❌ Error: Store does not have write capability required for sync operation.`));
-      console.error("Please check the store configuration and try again.");
-      return;
-    }
 
     console.log("Starting sync operation...");
     if (versions.length > 0) {

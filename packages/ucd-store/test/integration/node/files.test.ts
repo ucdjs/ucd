@@ -35,7 +35,7 @@ describe("node integration: file operations", () => {
 
       const store = await createNodeUCDStore({
         basePath: storePath,
-        bootstrap: false,
+        requireExistingStore: true,
         verify: false,
       });
 
@@ -77,7 +77,7 @@ describe("node integration: file operations", () => {
 
       const store = await createNodeUCDStore({
         basePath: storePath,
-        bootstrap: false,
+        requireExistingStore: true,
         verify: false,
       });
 
@@ -115,7 +115,7 @@ describe("node integration: file operations", () => {
 
       const store = await createNodeUCDStore({
         basePath: storePath,
-        bootstrap: false,
+        requireExistingStore: true,
         verify: false,
       });
 
@@ -156,7 +156,7 @@ describe("node integration: file operations", () => {
 
       const store = await createNodeUCDStore({
         basePath: storePath,
-        bootstrap: false,
+        requireExistingStore: true,
         verify: false,
       });
 
@@ -202,7 +202,7 @@ describe("node integration: file operations", () => {
 
       const store = await createNodeUCDStore({
         basePath: storePath,
-        bootstrap: false,
+        requireExistingStore: true,
         verify: false,
       });
 
@@ -248,7 +248,7 @@ describe("node integration: file operations", () => {
 
       const store = await createNodeUCDStore({
         basePath: storePath,
-        bootstrap: false,
+        requireExistingStore: true,
         verify: false,
       });
 
@@ -291,7 +291,7 @@ describe("node integration: file operations", () => {
 
       const store = await createNodeUCDStore({
         basePath: storePath,
-        bootstrap: false,
+        requireExistingStore: true,
         verify: false,
         globalFilters: {
           include: ["*.txt"],
@@ -341,7 +341,7 @@ describe("node integration: file operations", () => {
 
       const store = await createNodeUCDStore({
         basePath: storePath,
-        bootstrap: false,
+        requireExistingStore: true,
         verify: false,
       });
 

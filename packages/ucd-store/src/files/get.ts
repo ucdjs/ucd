@@ -59,6 +59,7 @@ async function _getFile(
     }
 
     // Use relative path
+    // TODO: maybe include ucd/ here.
     const localPath = join(version, filePath);
 
     debug?.("Checking local file existence:", localPath);

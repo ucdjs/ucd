@@ -25,7 +25,7 @@ import { listFiles } from "./files/list";
 import { getFileTree } from "./files/tree";
 import { analyze } from "./reports/analyze";
 import { compare } from "./reports/compare";
-import { bootstrap } from "./setup/bootstrap";
+import { initLockfile } from "./setup/init-lockfile";
 import { verify } from "./setup/verify";
 import { mirror } from "./tasks/mirror";
 import { sync } from "./tasks/sync";
@@ -43,14 +43,14 @@ export async function createUCDStore<
     fsOptions,
     versions,
     endpointConfig,
-    bootstrap: shouldBootstrap,
+    requireExistingStore,
     verify: shouldVerify,
     versionStrategy,
   } = defu(options, {
     baseUrl: UCDJS_API_BASE_URL,
     globalFilters: {},
     versions: [],
-    bootstrap: true,
+    requireExistingStore: true,
     verify: true,
     versionStrategy: "strict" as const,
   });
@@ -176,22 +176,22 @@ export async function createUCDStore<
     internalContext.lockfile.exists = true;
   }
 
-  // Case 2: Writable bridge but no lockfile - need bootstrap
+  // Case 2: Writable bridge but no lockfile - need initialization
   if (!internalContext.lockfile.exists && internalContext.lockfile.supports) {
-    if (!shouldBootstrap) {
+    if (requireExistingStore) {
       throw new UCDStoreGenericError(
-        `Store lockfile not found at ${internalContext.lockfile.path} and bootstrap is disabled. `
-        + `Enable bootstrap or create lockfile manually.`,
+        `Store lockfile not found at ${internalContext.lockfile.path}. `
+        + `Initialize the store first or set requireExistingStore: false to create automatically.`,
       );
     }
 
     if (!storeVersions.length && configVersions.length) {
       storeVersions = configVersions;
-      debug?.("Using versions from config for bootstrap:", storeVersions);
+      debug?.("Using versions from config for initialization:", storeVersions);
     }
 
     internalContext.versions.resolved = storeVersions;
-    await bootstrap(internalContext);
+    await initLockfile(internalContext);
     internalContext.lockfile.exists = true;
   }
 

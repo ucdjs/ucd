@@ -28,7 +28,7 @@ describe("http integration: file operations", () => {
       });
 
       const store = await createHTTPUCDStore({
-        bootstrap: false,
+        requireExistingStore: true,
         verify: false,
       });
 
@@ -68,7 +68,7 @@ describe("http integration: file operations", () => {
       });
 
       const store = await createHTTPUCDStore({
-        bootstrap: false,
+        requireExistingStore: true,
         verify: false,
       });
 
@@ -100,7 +100,7 @@ describe("http integration: file operations", () => {
       });
 
       const store = await createHTTPUCDStore({
-        bootstrap: false,
+        requireExistingStore: true,
         verify: false,
       });
 
@@ -134,7 +134,7 @@ describe("http integration: file operations", () => {
       });
 
       const store = await createHTTPUCDStore({
-        bootstrap: false,
+        requireExistingStore: true,
         verify: false,
       });
 
@@ -165,7 +165,7 @@ describe("http integration: file operations", () => {
       });
 
       const store = await createHTTPUCDStore({
-        bootstrap: false,
+        requireExistingStore: true,
         verify: false,
       });
 
@@ -216,7 +216,7 @@ describe("http integration: file operations", () => {
       });
 
       const store = await createHTTPUCDStore({
-        bootstrap: false,
+        requireExistingStore: true,
         verify: false,
       });
 
@@ -249,7 +249,7 @@ describe("http integration: file operations", () => {
       });
 
       const store = await createHTTPUCDStore({
-        bootstrap: false,
+        requireExistingStore: true,
         verify: false,
         globalFilters: {
           include: ["*.txt"],
@@ -300,7 +300,7 @@ describe("http integration: file operations", () => {
       });
 
       const store = await createHTTPUCDStore({
-        bootstrap: false,
+        requireExistingStore: true,
         verify: false,
       });
 
@@ -337,7 +337,7 @@ describe("http integration: file operations", () => {
       });
 
       const store = await createHTTPUCDStore({
-        bootstrap: false,
+        requireExistingStore: true,
         verify: false,
       });
 
@@ -373,7 +373,7 @@ describe("http integration: file operations", () => {
       });
 
       const store = await createHTTPUCDStore({
-        bootstrap: false,
+        requireExistingStore: true,
         verify: false,
       });
 
@@ -416,7 +416,7 @@ describe("http integration: file operations", () => {
       });
 
       const store = await createHTTPUCDStore({
-        bootstrap: false,
+        requireExistingStore: true,
         verify: false,
       });
 

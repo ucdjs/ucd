@@ -23,7 +23,7 @@ describe("config discovery integration", () => {
     const store = await createUCDStore({
       fs: fsFactory,
       versions: [],
-      bootstrap: true,
+      requireExistingStore: false,
     });
 
     expect(store).toBeDefined();
@@ -61,7 +61,7 @@ describe("config discovery integration", () => {
     const store = await createUCDStore({
       fs: fsFactory,
       versions: ["16.0.0"],
-      bootstrap: true,
+      requireExistingStore: false,
     });
 
     expect(store).toBeDefined();
@@ -91,7 +91,7 @@ describe("config discovery integration", () => {
     const store = await createUCDStore({
       fs: fsFactory,
       versions: ["16.0.0"],
-      bootstrap: true,
+      requireExistingStore: false,
     });
 
     expect(store).toBeDefined();
@@ -127,7 +127,7 @@ describe("config discovery integration", () => {
     const store = await createUCDStore({
       fs: fsFactory,
       versions: ["15.0.0"],
-      bootstrap: true,
+      requireExistingStore: false,
     });
 
     expect(store).toBeDefined();
@@ -184,7 +184,7 @@ describe("config discovery integration", () => {
     await expect(createUCDStore({
       fs: fsFactory,
       versions: [], // Use config versions
-      bootstrap: true,
+      requireExistingStore: false,
     })).rejects.toThrow();
   });
 });

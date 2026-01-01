@@ -9,7 +9,7 @@ export {
   BridgeUnsupportedOperation,
 } from "./errors";
 
-export { hasCapability } from "./guards";
+export { hasCapability, isBuiltinHttpBridge } from "./guards";
 
 export type {
   FileSystemBridge,
