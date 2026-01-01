@@ -37,6 +37,8 @@ export async function runAnalyzeStore({ flags, versions }: CLIStoreAnalyzeCmdOpt
     output.log("No specific versions provided. Analyzing all versions in the store.");
   }
 
+  assertRemoteOrStoreDir(flags);
+
   const {
     storeDir,
     json,
@@ -47,8 +49,6 @@ export async function runAnalyzeStore({ flags, versions }: CLIStoreAnalyzeCmdOpt
   } = flags;
 
   try {
-    assertRemoteOrStoreDir(flags);
-
     const store = await createStoreFromFlags({
       baseUrl,
       storeDir,

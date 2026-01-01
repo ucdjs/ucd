@@ -69,8 +69,14 @@ export function assertLocalStore(flags: CLIStoreCmdSharedFlags): asserts flags i
 
 export function assertRemoteOrStoreDir(flags: CLIStoreCmdSharedFlags): asserts flags is CLIStoreCmdSharedFlags & { remote: true } | { storeDir: string } {
   if (!flags.remote && !flags.storeDir) {
-    throw new Error("Either --remote or --store-dir must be specified.");
+    output.error(red(`\n❌ Store Error:`));
+    output.error(`  Either --remote or --store-dir must be specified.`);
+    output.error("Please check the store configuration and try again.");
+    output.error("If you believe this is a bug, please report it at https://github.com/ucdjs/ucd/issues");
+    return;
   }
+
+  void 0;
 }
 
 /**

@@ -40,11 +40,26 @@ export async function runCompareStore({ flags, from, to }: CLIStoreCompareCmdOpt
     return;
   }
 
+  assertRemoteOrStoreDir(flags);
+
   if (!from || !to) {
     output.error(red("\n❌ Error: Both <from> and <to> versions must be specified."));
     output.log(`Usage: ucd store compare <from> <to> [flags]`);
     return;
   }
+
+  // Ensure that the from and to versions are not the same
+  if (from === to) {
+    output.error(red("\n❌ Error: <from> and <to> versions must be different."));
+    return;
+  }
+
+  // TODO:
+  // Should we handle the cases where from is newer than to?
+  // For now, we just compare as-is.
+  //
+  // But we could either throw an error, or swap them and indicate that the comparison is reversed.
+  // If we swap them, we need to tell the user that the comparison is reversed.
 
   const {
     storeDir,
@@ -53,21 +68,18 @@ export async function runCompareStore({ flags, from, to }: CLIStoreCompareCmdOpt
     baseUrl,
     include: patterns,
     exclude: excludePatterns,
-    lockfileOnly,
     skipHashes,
     concurrency,
   } = flags;
 
   try {
-    assertRemoteOrStoreDir(flags);
-
     const store = await createStoreFromFlags({
       baseUrl,
       storeDir,
       remote,
       include: patterns,
       exclude: excludePatterns,
-      lockfileOnly,
+      requireExistingStore: true,
     });
 
     const [comparison, compareError] = await store.compare({
