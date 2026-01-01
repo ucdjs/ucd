@@ -77,8 +77,8 @@ catalogs:
       specifier: 2.7.2
       version: 2.7.2
     '@unicode-utils/core':
-      specifier: 0.12.0-beta.18
-      version: 0.12.0-beta.18
+      specifier: 0.12.0-beta.19
+      version: 0.12.0-beta.19
     ai:
       specifier: 6.0.3
       version: 6.0.3
@@ -341,7 +341,7 @@ importers:
         version: link:../../packages/utils
       '@unicode-utils/core':
         specifier: catalog:prod
-        version: 0.12.0-beta.18
+        version: 0.12.0-beta.19
       apache-autoindex-parse:
         specifier: catalog:prod
         version: 5.0.2
@@ -444,7 +444,7 @@ importers:
         version: link:../../packages/ucd-store
       '@unicode-utils/core':
         specifier: catalog:prod
-        version: 0.12.0-beta.18
+        version: 0.12.0-beta.19
       class-variance-authority:
         specifier: catalog:web
         version: 0.7.1
@@ -574,7 +574,7 @@ importers:
         version: link:../ucd-store
       '@unicode-utils/core':
         specifier: catalog:prod
-        version: 0.12.0-beta.18
+        version: 0.12.0-beta.19
       farver:
         specifier: catalog:prod
         version: 0.4.2
@@ -924,7 +924,7 @@ importers:
         version: link:../schemas
       '@unicode-utils/core':
         specifier: catalog:prod
-        version: 0.12.0-beta.18
+        version: 0.12.0-beta.19
       defu:
         specifier: catalog:prod
         version: 6.1.4
@@ -1052,7 +1052,7 @@ importers:
         version: link:../schemas
       '@unicode-utils/core':
         specifier: catalog:prod
-        version: 0.12.0-beta.18
+        version: 0.12.0-beta.19
       defu:
         specifier: catalog:prod
         version: 6.1.4
@@ -1218,7 +1218,7 @@ importers:
         version: link:../tooling/tsdown-config
       '@unicode-utils/core':
         specifier: catalog:prod
-        version: 0.12.0-beta.18
+        version: 0.12.0-beta.19
       '@vscode/vsce':
         specifier: catalog:vscode
         version: 3.7.1
@@ -4381,14 +4381,14 @@ packages:
   '@ungap/structured-clone@1.3.0':
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
 
-  '@unicode-utils/core@0.12.0-beta.18':
-    resolution: {integrity: sha512-ZEnOPC06uWYJYrTVvho7qlE4h1bp98FNhCC5b3t7NbWiBrG7Ai0Es+JrPVoIj9gtB/ygpzbtCfjsJJLnc6Xbhw==}
+  '@unicode-utils/core@0.12.0-beta.19':
+    resolution: {integrity: sha512-ff/yj9Oa6M/NM/lfzF76UboH88soTRixsSXF6U29wZdOSUvMqNKs/DX4Bpo/W3HCqfgCSnYlK4j+9lwbvXvbMg==}
 
-  '@unicode-utils/metadata@0.12.0-beta.18':
-    resolution: {integrity: sha512-G6Sh7xiZ3++eP81LC32CGS9fbVSZ7PAgnPK1QwXmy8yIvkgjZDnTQJpQgT3ZJXBoHgsAny2wj/Xk1QKUIpz67A==}
+  '@unicode-utils/metadata@0.12.0-beta.19':
+    resolution: {integrity: sha512-0H635vLW0RVhP2llsjT/nM5B+mzcKTOB4fqqHgrXeSk4aSpXwx9qOTDytds+PYW+VDejSYaPiQ32+WDqMiMHHQ==}
 
-  '@unicode-utils/parser@0.12.0-beta.18':
-    resolution: {integrity: sha512-XNSdSeC5oc+aStIrD9WW9AtloWhzfXTkqtawspHbmfcxmYJ4M5MxIPulrlx3uTcOgKenctC28iZ9+nX+DH6lPQ==}
+  '@unicode-utils/parser@0.12.0-beta.19':
+    resolution: {integrity: sha512-u3YDS7ZWRMP16F9S7apOzvIAio1t9sjobXELFJB6fsILOOehHGL2j3X39iwkj7ViH/O/1tUne6p+0hx4WdYTSA==}
 
   '@vercel/oidc@3.0.5':
     resolution: {integrity: sha512-fnYhv671l+eTTp48gB4zEsTW/YtRgRPnkI2nT7x6qw5rkI1Lq2hTmQIpHPgyThI0znLK+vX2n9XxKdXZ7BUbbw==}
@@ -12536,18 +12536,18 @@ snapshots:
 
   '@ungap/structured-clone@1.3.0': {}
 
-  '@unicode-utils/core@0.12.0-beta.18':
+  '@unicode-utils/core@0.12.0-beta.19':
     dependencies:
       '@luxass/utils': 2.7.2
-      '@unicode-utils/metadata': 0.12.0-beta.18
-      '@unicode-utils/parser': 0.12.0-beta.18
+      '@unicode-utils/metadata': 0.12.0-beta.19
+      '@unicode-utils/parser': 0.12.0-beta.19
       defu: 6.1.4
 
-  '@unicode-utils/metadata@0.12.0-beta.18':
+  '@unicode-utils/metadata@0.12.0-beta.19':
     dependencies:
       '@luxass/utils': 2.7.2
 
-  '@unicode-utils/parser@0.12.0-beta.18':
+  '@unicode-utils/parser@0.12.0-beta.19':
     dependencies:
       '@luxass/utils': 2.7.2
       defu: 6.1.4
@@ -12612,14 +12612,14 @@ snapshots:
       msw: 2.12.7(@types/node@22.18.12)(typescript@5.9.3)
       vite: 7.3.0(@types/node@22.18.12)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1)
 
-  '@vitest/mocker@4.0.16(msw@2.12.7(@types/node@24.3.1)(typescript@5.9.3))(vite@7.3.0(@types/node@24.3.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1))':
+  '@vitest/mocker@4.0.16(msw@2.12.7(@types/node@24.3.1)(typescript@5.9.3))(vite@7.3.0(@types/node@22.18.12)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1))':
     dependencies:
       '@vitest/spy': 4.0.16
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
       msw: 2.12.7(@types/node@24.3.1)(typescript@5.9.3)
-      vite: 7.3.0(@types/node@24.3.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1)
+      vite: 7.3.0(@types/node@22.18.12)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1)
 
   '@vitest/pretty-format@4.0.16':
     dependencies:
@@ -12647,7 +12647,7 @@ snapshots:
       sirv: 3.0.2
       tinyglobby: 0.2.15
       tinyrainbow: 3.0.3
-      vitest: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@24.3.1)(@vitest/ui@4.0.16)(jiti@2.6.1)(jsdom@27.3.0(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.12.7(@types/node@24.3.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1)
+      vitest: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@22.18.12)(@vitest/ui@4.0.16)(jiti@2.6.1)(jsdom@27.3.0(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.12.7(@types/node@22.18.12)(typescript@5.9.3))(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1)
 
   '@vitest/utils@4.0.16':
     dependencies:
@@ -17972,7 +17972,7 @@ snapshots:
   vitest@4.0.16(@opentelemetry/api@1.9.0)(@types/node@24.3.1)(@vitest/ui@4.0.16)(jiti@2.6.1)(jsdom@27.3.0(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.12.7(@types/node@24.3.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1):
     dependencies:
       '@vitest/expect': 4.0.16
-      '@vitest/mocker': 4.0.16(msw@2.12.7(@types/node@24.3.1)(typescript@5.9.3))(vite@7.3.0(@types/node@24.3.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1))
+      '@vitest/mocker': 4.0.16(msw@2.12.7(@types/node@24.3.1)(typescript@5.9.3))(vite@7.3.0(@types/node@22.18.12)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1))
       '@vitest/pretty-format': 4.0.16
       '@vitest/runner': 4.0.16
       '@vitest/snapshot': 4.0.16
