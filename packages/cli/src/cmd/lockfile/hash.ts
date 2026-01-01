@@ -113,36 +113,36 @@ export async function runLockfileHash({ filePath, flags }: CLILockfileHashCmdOpt
       return;
     }
 
-    output.info(`\n  ${bold("File Hash Information")}`);
-    output.info(`  ${dim("─".repeat(50))}\n`);
+    output.log(`\n  ${bold("File Hash Information")}`);
+    output.log(`  ${dim("─".repeat(50))}\n`);
 
-    output.info(`  ${bold("File:")}            ${green(resolvedPath)}`);
-    output.info(`  ${bold("Size:")}            ${formatBytes(fileSize)}`);
-    output.info(`  ${bold("Unicode Header:")}  ${hasUnicodeHeader ? yellow("Present") : dim("Not detected")}`);
+    output.log(`  ${bold("File:")}            ${green(resolvedPath)}`);
+    output.log(`  ${bold("Size:")}            ${formatBytes(fileSize)}`);
+    output.log(`  ${bold("Unicode Header:")}  ${hasUnicodeHeader ? yellow("Present") : dim("Not detected")}`);
     if (hasUnicodeHeader) {
-      output.info(`  ${bold("Header Lines:")}    ${headerLinesRemoved}`);
+      output.log(`  ${bold("Header Lines:")}    ${headerLinesRemoved}`);
     }
 
-    output.info(`\n  ${bold("Hashes:")}`);
-    output.info(`  ${dim("─".repeat(50))}`);
-    output.info(`  ${bold("File Hash:")}       ${dim(fileHash)}`);
-    output.info(`                   ${dim("(hash of complete file content)")}`);
-    output.info(`  ${bold("Content Hash:")}    ${dim(contentHash)}`);
-    output.info(`                   ${dim("(hash with Unicode header stripped)")}`);
+    output.log(`\n  ${bold("Hashes:")}`);
+    output.log(`  ${dim("─".repeat(50))}`);
+    output.log(`  ${bold("File Hash:")}       ${dim(fileHash)}`);
+    output.log(`                   ${dim("(hash of complete file content)")}`);
+    output.log(`  ${bold("Content Hash:")}    ${dim(contentHash)}`);
+    output.log(`                   ${dim("(hash with Unicode header stripped)")}`);
 
     if (compareResult) {
-      output.info(`\n  ${bold("Comparison:")}`);
-      output.info(`  ${dim("─".repeat(50))}`);
-      output.info(`  ${bold("Provided Hash:")}   ${dim(compareResult.providedHash)}`);
-      output.info(`  ${bold("Computed Hash:")}   ${dim(primaryHash)}`);
+      output.log(`\n  ${bold("Comparison:")}`);
+      output.log(`  ${dim("─".repeat(50))}`);
+      output.log(`  ${bold("Provided Hash:")}   ${dim(compareResult.providedHash)}`);
+      output.log(`  ${bold("Computed Hash:")}   ${dim(primaryHash)}`);
       if (compareResult.matches) {
-        output.info(`  ${bold("Result:")}          ${green("✅ Hashes match")}`);
+        output.log(`  ${bold("Result:")}          ${green("✅ Hashes match")}`);
       } else {
-        output.info(`  ${bold("Result:")}          ${red("❌ Hashes do not match")}`);
+        output.log(`  ${bold("Result:")}          ${red("❌ Hashes do not match")}`);
       }
     }
 
-    output.info("");
+    output.log("");
   } catch (err) {
     if (json) {
       output.json({

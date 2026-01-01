@@ -21,10 +21,10 @@ describe("store analyze command", () => {
   it("should show help when --help flag is passed", async () => {
     await runCLI(["store", "analyze", "--help"]);
 
-    expect(capture.containsInfo("Analyze UCD Store")).toBe(true);
-    expect(capture.containsInfo("--store-dir")).toBe(true);
-    expect(capture.containsInfo("--json")).toBe(true);
-    expect(capture.containsInfo("--check-orphaned")).toBe(true);
+    expect(capture.containsLog("Analyze UCD Store")).toBe(true);
+    expect(capture.containsLog("--store-dir")).toBe(true);
+    expect(capture.containsLog("--json")).toBe(true);
+    expect(capture.containsLog("--check-orphaned")).toBe(true);
   });
 
   it("should fail if neither --remote nor --store-dir is specified", async () => {
@@ -90,8 +90,8 @@ describe("store analyze command", () => {
       "16.0.0",
     ]);
 
-    expect(capture.containsInfo("Version: 16.0.0")).toBe(true);
-    expect(capture.containsInfo("Files:")).toBe(true);
+    expect(capture.containsLog("Version: 16.0.0")).toBe(true);
+    expect(capture.containsLog("Files:")).toBe(true);
   });
 
   it("should analyze all versions when no version is specified", async () => {
@@ -139,7 +139,7 @@ describe("store analyze command", () => {
       storePath,
     ]);
 
-    expect(capture.containsInfo("No specific versions provided")).toBe(true);
+    expect(capture.containsLog("No specific versions provided")).toBe(true);
   });
 
   it("should output JSON when --json flag is passed", async () => {
@@ -253,8 +253,8 @@ describe("store analyze command", () => {
       "16.0.0",
     ]);
 
-    expect(capture.containsInfo("Version: 16.0.0")).toBe(true);
-    expect(capture.containsInfo("Status:")).toBe(true);
+    expect(capture.containsLog("Version: 16.0.0")).toBe(true);
+    expect(capture.containsLog("Status:")).toBe(true);
   });
 
   it("should show incomplete status when files are missing", async () => {

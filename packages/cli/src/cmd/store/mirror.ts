@@ -76,11 +76,11 @@ export async function runMirrorStore({ flags, versions }: CLIStoreMirrorCmdOptio
       return;
     }
 
-    output.info("Starting mirror operation...");
+    output.log("Starting mirror operation...");
     if (versions.length > 0) {
-      output.info(`Mirroring ${versions.length} version(s): ${versions.join(", ")}`);
+      output.log(`Mirroring ${versions.length} version(s): ${versions.join(", ")}`);
     } else {
-      output.info("Mirroring all versions in lockfile...");
+      output.log("Mirroring all versions in lockfile...");
     }
 
     const [mirrorResult, mirrorError] = await store.mirror({
@@ -105,44 +105,44 @@ export async function runMirrorStore({ flags, versions }: CLIStoreMirrorCmdOptio
     }
 
     // Display mirror results
-    output.info(green("\n✓ Mirror operation completed successfully\n"));
+    output.log(green("\n✓ Mirror operation completed successfully\n"));
 
     if (mirrorResult.summary) {
       const { counts, duration, storage, metrics } = mirrorResult.summary;
-      output.info(`Summary:`);
-      output.info(`  Versions processed: ${mirrorResult.versions.size}`);
-      output.info(`  Files downloaded: ${green(String(counts.downloaded))}`);
-      output.info(`  Files skipped: ${yellow(String(counts.skipped))}`);
-      output.info(`  Files failed: ${counts.failed > 0 ? red(String(counts.failed)) : String(counts.failed)}`);
-      output.info(`  Total size: ${storage.totalSize}`);
-      output.info(`  Success rate: ${metrics.successRate.toFixed(1)}%`);
-      output.info(`  Duration: ${(duration / 1000).toFixed(2)}s`);
-      output.info("");
+      output.log(`Summary:`);
+      output.log(`  Versions processed: ${mirrorResult.versions.size}`);
+      output.log(`  Files downloaded: ${green(String(counts.downloaded))}`);
+      output.log(`  Files skipped: ${yellow(String(counts.skipped))}`);
+      output.log(`  Files failed: ${counts.failed > 0 ? red(String(counts.failed)) : String(counts.failed)}`);
+      output.log(`  Total size: ${storage.totalSize}`);
+      output.log(`  Success rate: ${metrics.successRate.toFixed(1)}%`);
+      output.log(`  Duration: ${(duration / 1000).toFixed(2)}s`);
+      output.log("");
     }
 
     // Show per-version details
     for (const [version, report] of mirrorResult.versions) {
-      output.info(`Version ${version}:`);
-      output.info(`  Files: ${report.counts.downloaded} downloaded, ${report.counts.skipped} skipped`);
+      output.log(`Version ${version}:`);
+      output.log(`  Files: ${report.counts.downloaded} downloaded, ${report.counts.skipped} skipped`);
       if (report.counts.failed > 0) {
-        output.info(`  ${red(`Failed: ${report.counts.failed}`)}`);
+        output.log(`  ${red(`Failed: ${report.counts.failed}`)}`);
         // Show first few errors if any
         for (const error of report.errors.slice(0, 3)) {
-          output.info(`    - ${error.file}: ${error.reason}`);
+          output.log(`    - ${error.file}: ${error.reason}`);
         }
         if (report.errors.length > 3) {
-          output.info(`    ... and ${report.errors.length - 3} more errors`);
+          output.log(`    ... and ${report.errors.length - 3} more errors`);
         }
       }
-      output.info(`  Success rate: ${report.metrics.successRate.toFixed(1)}%`);
+      output.log(`  Success rate: ${report.metrics.successRate.toFixed(1)}%`);
       if (report.metrics.cacheHitRate > 0) {
-        output.info(`  Cache hit rate: ${report.metrics.cacheHitRate.toFixed(1)}%`);
+        output.log(`  Cache hit rate: ${report.metrics.cacheHitRate.toFixed(1)}%`);
       }
-      output.info("");
+      output.log("");
     }
 
     if (lockfileOnly) {
-      output.info(yellow("⚠ Note: Lockfile was not updated due to --lockfile-only flag."));
+      output.log(yellow("⚠ Note: Lockfile was not updated due to --lockfile-only flag."));
     }
   } catch (err) {
     if (err instanceof UCDStoreGenericError) {

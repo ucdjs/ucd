@@ -100,9 +100,9 @@ export async function runFilesInfo({ path, flags }: CLIFilesInfoCmdOptions) {
     }
 
     // Formatted output
-    output.info(`\nFile info: ${green(path || "(root)")}\n`);
-    output.info(formatMetadata(metadata));
-    output.info("");
+    output.log(`\nFile info: ${green(path || "(root)")}\n`);
+    output.log(formatMetadata(metadata));
+    output.log("");
   } catch (err) {
     let message = "Unknown error";
     if (err instanceof Error) {

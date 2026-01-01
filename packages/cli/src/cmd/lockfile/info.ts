@@ -73,15 +73,15 @@ export async function runLockfileInfo({ flags }: CLILockfileInfoCmdOptions) {
       return;
     }
 
-    output.info(`\n  ${bold("UCD Store Lockfile Information")}`);
-    output.info(`  ${dim("─".repeat(40))}\n`);
+    output.log(`\n  ${bold("UCD Store Lockfile Information")}`);
+    output.log(`  ${dim("─".repeat(40))}\n`);
 
-    output.info(`  ${bold("Store Path:")}       ${green(storePath)}`);
-    output.info(`  ${bold("Lockfile Path:")}    ${dim(lockfilePath)}`);
-    output.info(`  ${bold("Lockfile Version:")} ${lockfile.lockfileVersion}`);
-    output.info(`  ${bold("Total Versions:")}   ${versions.length}`);
-    output.info(`  ${bold("Total Files:")}      ${totalFiles.toLocaleString()}`);
-    output.info(`  ${bold("Total Size:")}       ${formatBytes(totalSize)}`);
+    output.log(`  ${bold("Store Path:")}       ${green(storePath)}`);
+    output.log(`  ${bold("Lockfile Path:")}    ${dim(lockfilePath)}`);
+    output.log(`  ${bold("Lockfile Version:")} ${lockfile.lockfileVersion}`);
+    output.log(`  ${bold("Total Versions:")}   ${versions.length}`);
+    output.log(`  ${bold("Total Files:")}      ${totalFiles.toLocaleString()}`);
+    output.log(`  ${bold("Total Size:")}       ${formatBytes(totalSize)}`);
 
     // Display filters if any are set
     const includeFilters = lockfile.filters?.include ?? [];
@@ -89,20 +89,20 @@ export async function runLockfileInfo({ flags }: CLILockfileInfoCmdOptions) {
     const disableDefaultExclusions = lockfile.filters?.disableDefaultExclusions ?? false;
 
     if (includeFilters.length > 0 || excludeFilters.length > 0 || disableDefaultExclusions) {
-      output.info(`\n  ${bold("Filters:")}`);
+      output.log(`\n  ${bold("Filters:")}`);
       if (includeFilters.length > 0) {
-        output.info(`    ${bold("Include:")} ${includeFilters.join(", ")}`);
+        output.log(`    ${bold("Include:")} ${includeFilters.join(", ")}`);
       }
       if (excludeFilters.length > 0) {
-        output.info(`    ${bold("Exclude:")} ${excludeFilters.join(", ")}`);
+        output.log(`    ${bold("Exclude:")} ${excludeFilters.join(", ")}`);
       }
       if (disableDefaultExclusions) {
-        output.info(`    ${yellow("Default exclusions disabled")}`);
+        output.log(`    ${yellow("Default exclusions disabled")}`);
       }
     }
 
-    output.info(`\n  ${bold("Versions:")}`);
-    output.info(`  ${dim("─".repeat(40))}`);
+    output.log(`\n  ${bold("Versions:")}`);
+    output.log(`  ${dim("─".repeat(40))}`);
 
     // Sort versions by semver (descending)
     const sortedVersions = versions.sort((a, b) => {
@@ -117,13 +117,13 @@ export async function runLockfileInfo({ flags }: CLILockfileInfoCmdOptions) {
       const entry = lockfile.versions[version];
       if (!entry) continue;
 
-      output.info(`\n    ${green(version)}`);
-      output.info(`      ${bold("Files:")}      ${entry.fileCount.toLocaleString()}`);
-      output.info(`      ${bold("Size:")}       ${formatBytes(entry.totalSize)}`);
-      output.info(`      ${bold("Snapshot:")}   ${dim(entry.path)}`);
+      output.log(`\n    ${green(version)}`);
+      output.log(`      ${bold("Files:")}      ${entry.fileCount.toLocaleString()}`);
+      output.log(`      ${bold("Size:")}       ${formatBytes(entry.totalSize)}`);
+      output.log(`      ${bold("Snapshot:")}   ${dim(entry.path)}`);
     }
 
-    output.info("");
+    output.log("");
   } catch (err) {
     output.error(red(`\n❌ Error reading lockfile:`));
     if (err instanceof Error) {

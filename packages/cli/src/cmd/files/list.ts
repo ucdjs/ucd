@@ -116,9 +116,9 @@ export async function runFilesList({ path, flags }: CLIFilesListCmdOptions) {
 
     // Formatted output
     const pathDisplay = path || "(root)";
-    output.info(`\nDirectory listing: ${green(pathDisplay)}\n`);
-    output.info(formatDirectoryListing(entries));
-    output.info("");
+    output.log(`\nDirectory listing: ${green(pathDisplay)}\n`);
+    output.log(formatDirectoryListing(entries));
+    output.log("");
   } catch (err) {
     let message = "Unknown error";
     if (err instanceof Error) {

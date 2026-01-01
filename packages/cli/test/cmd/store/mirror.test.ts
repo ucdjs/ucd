@@ -23,9 +23,9 @@ describe("store mirror command", () => {
   it("should show help when --help flag is passed", async () => {
     await runCLI(["store", "mirror", "--help"]);
 
-    expect(capture.containsInfo("Mirror Unicode data files to local storage")).toBe(true);
-    expect(capture.containsInfo("--store-dir")).toBe(true);
-    expect(capture.containsInfo("--concurrency")).toBe(true);
+    expect(capture.containsLog("Mirror Unicode data files to local storage")).toBe(true);
+    expect(capture.containsLog("--store-dir")).toBe(true);
+    expect(capture.containsLog("--concurrency")).toBe(true);
   });
 
   it("should fail if neither --remote nor --store-dir is specified", async () => {
@@ -94,9 +94,9 @@ describe("store mirror command", () => {
       "16.0.0",
     ]);
 
-    expect(capture.containsInfo("Starting mirror operation")).toBe(true);
-    expect(capture.containsInfo("Mirroring 1 version(s)")).toBe(true);
-    expect(capture.containsInfo("Mirror operation completed successfully")).toBe(true);
+    expect(capture.containsLog("Starting mirror operation")).toBe(true);
+    expect(capture.containsLog("Mirroring 1 version(s)")).toBe(true);
+    expect(capture.containsLog("Mirror operation completed successfully")).toBe(true);
   });
 
   it("should mirror all versions when none specified", async () => {
@@ -136,9 +136,9 @@ describe("store mirror command", () => {
       storePath,
     ]);
 
-    expect(capture.containsInfo("Starting mirror operation")).toBe(true);
-    expect(capture.containsInfo("Mirroring all versions in lockfile")).toBe(true);
-    expect(capture.containsInfo("Mirror operation completed successfully")).toBe(true);
+    expect(capture.containsLog("Starting mirror operation")).toBe(true);
+    expect(capture.containsLog("Mirroring all versions in lockfile")).toBe(true);
+    expect(capture.containsLog("Mirror operation completed successfully")).toBe(true);
   });
 
   it("should create version directories and files", async () => {
@@ -208,8 +208,8 @@ describe("store mirror command", () => {
       "16.0.0",
     ]);
 
-    expect(capture.containsInfo("Files downloaded:")).toBe(true);
-    expect(capture.containsInfo("Files skipped:")).toBe(true);
+    expect(capture.containsLog("Files downloaded:")).toBe(true);
+    expect(capture.containsLog("Files skipped:")).toBe(true);
   });
 
   it("should respect include patterns", async () => {

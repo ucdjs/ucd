@@ -21,12 +21,12 @@ describe("store compare command", () => {
   it("should show help when --help flag is passed", async () => {
     await runCLI(["store", "compare", "--help"]);
 
-    expect(capture.containsInfo("Compare Two Versions in UCD Store")).toBe(true);
-    expect(capture.containsInfo("from")).toBe(true);
-    expect(capture.containsInfo("to")).toBe(true);
-    expect(capture.containsInfo("--skip-hashes")).toBe(true);
-    expect(capture.containsInfo("--concurrency")).toBe(true);
-    expect(capture.containsInfo("--json")).toBe(true);
+    expect(capture.containsLog("Compare Two Versions in UCD Store")).toBe(true);
+    expect(capture.containsLog("from")).toBe(true);
+    expect(capture.containsLog("to")).toBe(true);
+    expect(capture.containsLog("--skip-hashes")).toBe(true);
+    expect(capture.containsLog("--concurrency")).toBe(true);
+    expect(capture.containsLog("--json")).toBe(true);
   });
 
   it("should fail if neither --remote nor --store-dir is specified", async () => {
@@ -107,12 +107,12 @@ describe("store compare command", () => {
       "--skip-hashes",
     ]);
 
-    expect(capture.containsInfo("Comparison: 15.0.0 → 16.0.0")).toBe(true);
-    expect(capture.containsInfo("Summary:")).toBe(true);
+    expect(capture.containsLog("Comparison: 15.0.0 → 16.0.0")).toBe(true);
+    expect(capture.containsLog("Summary:")).toBe(true);
     // Both versions have the same 2 files, so all should be unchanged
-    expect(capture.containsInfo("Added:")).toBe(true);
-    expect(capture.containsInfo("Removed:")).toBe(true);
-    expect(capture.containsInfo("Unchanged:")).toBe(true);
+    expect(capture.containsLog("Added:")).toBe(true);
+    expect(capture.containsLog("Removed:")).toBe(true);
+    expect(capture.containsLog("Unchanged:")).toBe(true);
     // Verify the counts show 0 for added/removed and 2 for unchanged
     expect(capture.contains("0")).toBe(true); // Added and Removed should be 0
     expect(capture.contains("2")).toBe(true); // Unchanged should be 2
@@ -192,11 +192,11 @@ describe("store compare command", () => {
     ]);
 
     // version1 has 1 file, version2 has 2 files - so 1 file was added
-    expect(capture.containsInfo("Added:")).toBe(true);
+    expect(capture.containsLog("Added:")).toBe(true);
     expect(capture.contains("1")).toBe(true); // 1 file added
     expect(capture.contains("Blocks.txt")).toBe(true); // The added file
     // ArabicShaping.txt exists in both, so should be unchanged
-    expect(capture.containsInfo("Unchanged:")).toBe(true);
+    expect(capture.containsLog("Unchanged:")).toBe(true);
   });
 
   it("should detect removed files when comparing versions", async () => {
@@ -273,11 +273,11 @@ describe("store compare command", () => {
     ]);
 
     // version1 has 2 files, version2 has 1 file - so 1 file was removed
-    expect(capture.containsInfo("Removed:")).toBe(true);
+    expect(capture.containsLog("Removed:")).toBe(true);
     expect(capture.contains("1")).toBe(true); // 1 file removed
     expect(capture.contains("Blocks.txt")).toBe(true); // The removed file
     // ArabicShaping.txt exists in both, so should be unchanged
-    expect(capture.containsInfo("Unchanged:")).toBe(true);
+    expect(capture.containsLog("Unchanged:")).toBe(true);
   });
 
   it("should detect modified files when comparing versions with hash checking", async () => {
@@ -334,12 +334,12 @@ describe("store compare command", () => {
     ]);
 
     // Same file in both versions but different content = modified
-    expect(capture.containsInfo("Modified:")).toBe(true);
+    expect(capture.containsLog("Modified:")).toBe(true);
     expect(capture.contains("1")).toBe(true); // 1 file modified
     expect(capture.contains("ArabicShaping.txt")).toBe(true); // The modified file
     // No files added or removed
-    expect(capture.containsInfo("Added:")).toBe(true);
-    expect(capture.containsInfo("Removed:")).toBe(true);
+    expect(capture.containsLog("Added:")).toBe(true);
+    expect(capture.containsLog("Removed:")).toBe(true);
   });
 
   it("should output JSON when --json flag is passed", async () => {

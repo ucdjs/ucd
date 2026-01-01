@@ -42,7 +42,7 @@ export async function runCompareStore({ flags, from, to }: CLIStoreCompareCmdOpt
 
   if (!from || !to) {
     output.error(red("\n❌ Error: Both <from> and <to> versions must be specified."));
-    output.info(`Usage: ucd store compare <from> <to> [flags]`);
+    output.log(`Usage: ucd store compare <from> <to> [flags]`);
     return;
   }
 
@@ -106,61 +106,61 @@ export async function runCompareStore({ flags, from, to }: CLIStoreCompareCmdOpt
     }
 
     // Human-readable output
-    output.info(`\n📊 Comparison: ${comparison.from} → ${comparison.to}\n`);
+    output.log(`\n📊 Comparison: ${comparison.from} → ${comparison.to}\n`);
 
     const totalAdded = comparison.added.length;
     const totalRemoved = comparison.removed.length;
     const totalModified = comparison.modified.length;
     const totalUnchanged = comparison.unchanged;
 
-    output.info(`📁 Summary:`);
-    output.info(`  Added:     ${totalAdded}`);
-    output.info(`  Removed:   ${totalRemoved}`);
-    output.info(`  Modified:  ${totalModified}`);
-    output.info(`  Unchanged: ${totalUnchanged}`);
-    output.info("");
+    output.log(`📁 Summary:`);
+    output.log(`  Added:     ${totalAdded}`);
+    output.log(`  Removed:   ${totalRemoved}`);
+    output.log(`  Modified:  ${totalModified}`);
+    output.log(`  Unchanged: ${totalUnchanged}`);
+    output.log("");
 
     if (totalAdded > 0) {
-      output.info(green(`✅ Added files:`));
+      output.log(green(`✅ Added files:`));
       if (comparison.added.length <= 10) {
         comparison.added.forEach((file) => {
-          output.info(`   + ${file}`);
+          output.log(`   + ${file}`);
         });
       } else {
         comparison.added.slice(0, 10).forEach((file) => {
-          output.info(`   + ${file}`);
+          output.log(`   + ${file}`);
         });
-        output.info(`   + ... and ${comparison.added.length - 10} more`);
+        output.log(`   + ... and ${comparison.added.length - 10} more`);
       }
-      output.info("");
+      output.log("");
     }
 
     if (totalRemoved > 0) {
-      output.info(red(`❌ Removed files:`));
+      output.log(red(`❌ Removed files:`));
       if (comparison.removed.length <= 10) {
         comparison.removed.forEach((file) => {
-          output.info(`   - ${file}`);
+          output.log(`   - ${file}`);
         });
       } else {
         comparison.removed.slice(0, 10).forEach((file) => {
-          output.info(`   - ${file}`);
+          output.log(`   - ${file}`);
         });
-        output.info(`   - ... and ${comparison.removed.length - 10} more`);
+        output.log(`   - ... and ${comparison.removed.length - 10} more`);
       }
-      output.info("");
+      output.log("");
     }
 
     if (totalModified > 0) {
-      output.info(yellow(`🔄 Modified files:`));
+      output.log(yellow(`🔄 Modified files:`));
       if (comparison.modified.length <= 10) {
         comparison.modified.forEach((file) => {
-          output.info(`   ~ ${file}`);
+          output.log(`   ~ ${file}`);
         });
       } else {
         comparison.modified.slice(0, 10).forEach((file) => {
-          output.info(`   ~ ${file}`);
+          output.log(`   ~ ${file}`);
         });
-        output.info(`   ~ ... and ${comparison.modified.length - 10} more`);
+        output.log(`   ~ ... and ${comparison.modified.length - 10} more`);
       }
     }
   } catch (err) {

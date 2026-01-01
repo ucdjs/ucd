@@ -21,9 +21,9 @@ describe("store status command", () => {
   it("should show help when --help flag is passed", async () => {
     await runCLI(["store", "status", "--help"]);
 
-    expect(capture.containsInfo("Show UCD Store status and lockfile information")).toBe(true);
-    expect(capture.containsInfo("--store-dir")).toBe(true);
-    expect(capture.containsInfo("--json")).toBe(true);
+    expect(capture.containsLog("Show UCD Store status and lockfile information")).toBe(true);
+    expect(capture.containsLog("--store-dir")).toBe(true);
+    expect(capture.containsLog("--json")).toBe(true);
   });
 
   it("should fail if neither --remote nor --store-dir is specified", async () => {
@@ -74,9 +74,9 @@ describe("store status command", () => {
       storePath,
     ]);
 
-    expect(capture.containsInfo("Store Status:")).toBe(true);
-    expect(capture.containsInfo("Lockfile:")).toBe(true);
-    expect(capture.containsInfo("Total Versions:")).toBe(true);
+    expect(capture.containsLog("Store Status:")).toBe(true);
+    expect(capture.containsLog("Lockfile:")).toBe(true);
+    expect(capture.containsLog("Total Versions:")).toBe(true);
   });
 
   it("should error when lockfile does not exist", async () => {
@@ -185,7 +185,7 @@ describe("store status command", () => {
       storePath,
     ]);
 
-    expect(capture.containsInfo("Version 16.0.0")).toBe(true);
-    expect(capture.containsInfo("Version 15.1.0")).toBe(true);
+    expect(capture.containsLog("Version 16.0.0")).toBe(true);
+    expect(capture.containsLog("Version 15.1.0")).toBe(true);
   });
 });

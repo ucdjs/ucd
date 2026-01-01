@@ -18,9 +18,9 @@ describe("lockfile info command", () => {
   it("should show help when --help flag is passed", async () => {
     await runCLI(["lockfile", "info", "--help"]);
 
-    expect(capture.containsInfo("Display lockfile information and summary")).toBe(true);
-    expect(capture.containsInfo("--store-dir")).toBe(true);
-    expect(capture.containsInfo("--json")).toBe(true);
+    expect(capture.containsLog("Display lockfile information and summary")).toBe(true);
+    expect(capture.containsLog("--store-dir")).toBe(true);
+    expect(capture.containsLog("--json")).toBe(true);
   });
 
   it("should error when lockfile does not exist", async () => {
@@ -60,11 +60,11 @@ describe("lockfile info command", () => {
 
     await runCLI(["lockfile", "info", "--store-dir", storePath]);
 
-    expect(capture.containsInfo("UCD Store Lockfile Information")).toBe(true);
-    expect(capture.containsInfo("Total Versions:")).toBe(true);
-    expect(capture.containsInfo("2")).toBe(true);
-    expect(capture.containsInfo("16.0.0")).toBe(true);
-    expect(capture.containsInfo("15.1.0")).toBe(true);
+    expect(capture.containsLog("UCD Store Lockfile Information")).toBe(true);
+    expect(capture.containsLog("Total Versions:")).toBe(true);
+    expect(capture.containsLog("2")).toBe(true);
+    expect(capture.containsLog("16.0.0")).toBe(true);
+    expect(capture.containsLog("15.1.0")).toBe(true);
   });
 
   it("should display filters when present", async () => {
@@ -85,11 +85,11 @@ describe("lockfile info command", () => {
 
     await runCLI(["lockfile", "info", "--store-dir", storePath]);
 
-    expect(capture.containsInfo("Filters:")).toBe(true);
-    expect(capture.containsInfo("Include:")).toBe(true);
-    expect(capture.containsInfo("*.txt")).toBe(true);
-    expect(capture.containsInfo("Exclude:")).toBe(true);
-    expect(capture.containsInfo("*.zip")).toBe(true);
+    expect(capture.containsLog("Filters:")).toBe(true);
+    expect(capture.containsLog("Include:")).toBe(true);
+    expect(capture.containsLog("*.txt")).toBe(true);
+    expect(capture.containsLog("Exclude:")).toBe(true);
+    expect(capture.containsLog("*.zip")).toBe(true);
   });
 
   it("should output JSON when --json flag is passed", async () => {
@@ -166,7 +166,7 @@ describe("lockfile info command", () => {
 
     await runCLI(["lockfile", "info", "--store-dir", storePath]);
 
-    const output = capture.getInfoOutput();
+    const output = capture.getLogOutput();
     const idx16 = output.indexOf("16.0.0");
     const idx15 = output.indexOf("15.1.0");
     const idx14 = output.indexOf("14.0.0");

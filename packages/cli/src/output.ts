@@ -5,11 +5,6 @@ export interface Output {
   log: (...args: unknown[]) => void;
 
   /**
-   * Log an informational message to stdout (or stderr in JSON mode)
-   */
-  info: (...args: unknown[]) => void;
-
-  /**
    * Log a warning message to stderr
    */
   warn: (...args: unknown[]) => void;
@@ -32,7 +27,7 @@ let jsonMode = false;
  * Centralized output utility for CLI commands.
  *
  * In JSON mode:
- * - `log` and `info` are redirected to stderr so only JSON goes to stdout
+ * - `log` is redirected to stderr so only JSON goes to stdout
  * - `warn` and `error` always go to stderr
  * - `json` always writes to stdout
  *
@@ -46,14 +41,6 @@ export const output: Output = {
     } else {
       // eslint-disable-next-line no-console
       console.log(...args);
-    }
-  },
-  info: (...args: unknown[]) => {
-    if (jsonMode) {
-      console.error(...args);
-    } else {
-      // eslint-disable-next-line no-console
-      console.info(...args);
     }
   },
   warn: (...args: unknown[]) => {
@@ -70,7 +57,7 @@ export const output: Output = {
 
 /**
  * Enable or disable JSON mode.
- * When enabled, `output.log` and `output.info` are redirected to stderr.
+ * When enabled, `output.log` is redirected to stderr.
  *
  * @param enabled - Whether to enable JSON mode
  */

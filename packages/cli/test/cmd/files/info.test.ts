@@ -20,9 +20,9 @@ describe("files info command", () => {
   it("should show help when --help flag is passed", async () => {
     await runCLI(["files", "info", "--help"]);
 
-    expect(capture.containsInfo("Get metadata about a file or directory")).toBe(true);
-    expect(capture.containsInfo("--base-url")).toBe(true);
-    expect(capture.containsInfo("--json")).toBe(true);
+    expect(capture.containsLog("Get metadata about a file or directory")).toBe(true);
+    expect(capture.containsLog("--base-url")).toBe(true);
+    expect(capture.containsLog("--json")).toBe(true);
   });
 
   it("should get file metadata from API", async () => {
@@ -44,9 +44,9 @@ describe("files info command", () => {
 
     await runCLI(["files", "info", "16.0.0/UnicodeData.txt"]);
 
-    expect(capture.containsInfo("File info:")).toBe(true);
-    expect(capture.containsInfo("16.0.0/UnicodeData.txt")).toBe(true);
-    expect(capture.containsInfo("file")).toBe(true);
+    expect(capture.containsLog("File info:")).toBe(true);
+    expect(capture.containsLog("16.0.0/UnicodeData.txt")).toBe(true);
+    expect(capture.containsLog("file")).toBe(true);
   });
 
   it("should get directory metadata from API", async () => {
@@ -67,8 +67,8 @@ describe("files info command", () => {
 
     await runCLI(["files", "info", "16.0.0"]);
 
-    expect(capture.containsInfo("File info:")).toBe(true);
-    expect(capture.containsInfo("directory")).toBe(true);
+    expect(capture.containsLog("File info:")).toBe(true);
+    expect(capture.containsLog("directory")).toBe(true);
   });
 
   it("should output JSON when --json flag is passed", async () => {
@@ -133,7 +133,7 @@ describe("files info command", () => {
 
     await runCLI(["files", "info"]);
 
-    expect(capture.containsInfo("File info:")).toBe(true);
-    expect(capture.containsInfo("(root)")).toBe(true);
+    expect(capture.containsLog("File info:")).toBe(true);
+    expect(capture.containsLog("(root)")).toBe(true);
   });
 });

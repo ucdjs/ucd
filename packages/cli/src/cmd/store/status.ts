@@ -109,7 +109,7 @@ export async function runStatusStore({ flags }: CLIStoreStatusCmdOptions) {
         let hasSnapshot = false;
         if (!remote && storeDir) {
           const snapshot = await readSnapshotOrUndefined(bridge, version);
-          output.info("snapshot", snapshot, version);
+          output.log("snapshot", snapshot, version);
           hasSnapshot = snapshot !== undefined;
         }
         const isAvailableInAPI = availableVersionsSet.has(version);
@@ -151,32 +151,32 @@ export async function runStatusStore({ flags }: CLIStoreStatusCmdOptions) {
 
     // Display status
     if (remote) {
-      output.info(`Store Status: Remote (${baseUrl || "default API"})`);
+      output.log(`Store Status: Remote (${baseUrl || "default API"})`);
     } else {
-      output.info(`Store Status: ${storeDir}`);
+      output.log(`Store Status: ${storeDir}`);
     }
-    output.info(`  Lockfile: ${lockfilePath}`);
-    output.info(`  Lockfile Version: ${lockfile.lockfileVersion}`);
-    output.info(`  Total Versions: ${lockfileVersions.length}`);
-    output.info("");
+    output.log(`  Lockfile: ${lockfilePath}`);
+    output.log(`  Lockfile Version: ${lockfile.lockfileVersion}`);
+    output.log(`  Total Versions: ${lockfileVersions.length}`);
+    output.log("");
 
     for (const status of versionStatuses.sort((a, b) => a.version.localeCompare(b.version))) {
       const { version, entry, hasSnapshot, isAvailableInAPI } = status;
       const statusIcon = hasSnapshot ? green("✓") : yellow("⚠");
       const apiIcon = isAvailableInAPI ? green("✓") : red("✗");
 
-      output.info(`  Version ${version}:`);
-      output.info(`    Snapshot: ${entry?.path}`);
-      output.info(`    Status: ${statusIcon} ${hasSnapshot ? "Mirrored" : "Not mirrored"}`);
-      output.info(`    Files: ${entry?.fileCount}`);
-      output.info(`    Size: ${((entry?.totalSize ?? 0) / 1024 / 1024).toFixed(2)} MB`);
-      output.info(`    API: ${apiIcon} ${isAvailableInAPI ? "Available" : "Not available"}`);
-      output.info("");
+      output.log(`  Version ${version}:`);
+      output.log(`    Snapshot: ${entry?.path}`);
+      output.log(`    Status: ${statusIcon} ${hasSnapshot ? "Mirrored" : "Not mirrored"}`);
+      output.log(`    Files: ${entry?.fileCount}`);
+      output.log(`    Size: ${((entry?.totalSize ?? 0) / 1024 / 1024).toFixed(2)} MB`);
+      output.log(`    API: ${apiIcon} ${isAvailableInAPI ? "Available" : "Not available"}`);
+      output.log("");
     }
 
-    output.info("  Summary:");
-    output.info(`    Mirrored: ${mirroredCount}/${lockfileVersions.length} versions`);
-    output.info(`    Available in API: ${availableCount}/${lockfileVersions.length} versions`);
+    output.log("  Summary:");
+    output.log(`    Mirrored: ${mirroredCount}/${lockfileVersions.length} versions`);
+    output.log(`    Available in API: ${availableCount}/${lockfileVersions.length} versions`);
   } catch (err) {
     if (err instanceof UCDStoreGenericError) {
       output.error(red(`\n❌ Error: ${err.message}`));

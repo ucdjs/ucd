@@ -69,10 +69,10 @@ export async function runFilesGet({ path, flags }: CLIFilesGetCmdOptions) {
 
     if (outputFlag) {
       await writeFile(outputFlag, content, "utf-8");
-      output.info(green(`\n✓ File written to: ${outputFlag}\n`));
+      output.log(green(`\n✓ File written to: ${outputFlag}\n`));
     } else {
       // Write to stdout
-      output.info(content);
+      output.log(content);
     }
   } catch (err) {
     let message = "Unknown error";

@@ -21,9 +21,9 @@ describe("store verify command", () => {
   it("should show help when --help flag is passed", async () => {
     await runCLI(["store", "verify", "--help"]);
 
-    expect(capture.containsInfo("Verify UCD Store integrity")).toBe(true);
-    expect(capture.containsInfo("--store-dir")).toBe(true);
-    expect(capture.containsInfo("--json")).toBe(true);
+    expect(capture.containsLog("Verify UCD Store integrity")).toBe(true);
+    expect(capture.containsLog("--store-dir")).toBe(true);
+    expect(capture.containsLog("--json")).toBe(true);
   });
 
   it("should fail if neither --remote nor --store-dir is specified", async () => {
@@ -97,7 +97,7 @@ describe("store verify command", () => {
       storePath,
     ]);
 
-    expect(capture.containsInfo("Store verification passed")).toBe(true);
+    expect(capture.containsLog("Store verification passed")).toBe(true);
   });
 
   it("should output JSON when --json flag is passed", async () => {
@@ -190,7 +190,7 @@ describe("store verify command", () => {
       storePath,
     ]);
 
-    expect(capture.containsInfo("Store verification passed")).toBe(true);
-    expect(capture.containsInfo("version(s) available in API but not in lockfile")).toBe(true);
+    expect(capture.containsLog("Store verification passed")).toBe(true);
+    expect(capture.containsLog("version(s) available in API but not in lockfile")).toBe(true);
   });
 });

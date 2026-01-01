@@ -86,11 +86,11 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
       return;
     }
 
-    console.info("Store initialized successfully.");
-    console.info(`Lockfile created with ${selectedVersions.length} version(s): ${selectedVersions.join(", ")}`);
+    console.log("Store initialized successfully.");
+    console.log(`Lockfile created with ${selectedVersions.length} version(s): ${selectedVersions.join(", ")}`);
 
     // Automatically mirror files after lockfile creation
-    console.info("\nStarting mirror operation...");
+    console.log("\nStarting mirror operation...");
     const [mirrorResult, mirrorError] = await store.mirror({
       versions: selectedVersions,
       force,
@@ -114,18 +114,18 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
     }
 
     // Display mirror results
-    console.info(green("\n✓ Mirror operation completed successfully\n"));
+    console.log(green("\n✓ Mirror operation completed successfully\n"));
 
     if (mirrorResult.summary) {
       const { counts, duration, storage } = mirrorResult.summary;
-      console.info(`Summary:`);
-      console.info(`  Versions processed: ${mirrorResult.versions.size}`);
-      console.info(`  Files downloaded: ${green(String(counts.downloaded))}`);
-      console.info(`  Files skipped: ${yellow(String(counts.skipped))}`);
-      console.info(`  Files failed: ${counts.failed > 0 ? red(String(counts.failed)) : String(counts.failed)}`);
-      console.info(`  Total size: ${storage.totalSize}`);
-      console.info(`  Duration: ${(duration / 1000).toFixed(2)}s`);
-      console.info("");
+      console.log(`Summary:`);
+      console.log(`  Versions processed: ${mirrorResult.versions.size}`);
+      console.log(`  Files downloaded: ${green(String(counts.downloaded))}`);
+      console.log(`  Files skipped: ${yellow(String(counts.skipped))}`);
+      console.log(`  Files failed: ${counts.failed > 0 ? red(String(counts.failed)) : String(counts.failed)}`);
+      console.log(`  Total size: ${storage.totalSize}`);
+      console.log(`  Duration: ${(duration / 1000).toFixed(2)}s`);
+      console.log("");
     }
   } catch (err) {
     if (err instanceof UCDStoreGenericError) {

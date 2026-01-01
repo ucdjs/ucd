@@ -20,9 +20,9 @@ describe("files list command", () => {
   it("should show help when --help flag is passed", async () => {
     await runCLI(["files", "list", "--help"]);
 
-    expect(capture.containsInfo("List files and directories from the UCD API")).toBe(true);
-    expect(capture.containsInfo("--base-url")).toBe(true);
-    expect(capture.containsInfo("--json")).toBe(true);
+    expect(capture.containsLog("List files and directories from the UCD API")).toBe(true);
+    expect(capture.containsLog("--base-url")).toBe(true);
+    expect(capture.containsLog("--json")).toBe(true);
   });
 
   it("should list files from API", async () => {
@@ -51,7 +51,7 @@ describe("files list command", () => {
 
     await runCLI(["files", "list"]);
 
-    expect(capture.containsInfo("Directory listing:")).toBe(true);
+    expect(capture.containsLog("Directory listing:")).toBe(true);
   });
 
   it("should list files at specific path", async () => {
@@ -85,7 +85,7 @@ describe("files list command", () => {
 
     await runCLI(["files", "list", "16.0.0"]);
 
-    expect(capture.containsInfo("Directory listing:")).toBe(true);
+    expect(capture.containsLog("Directory listing:")).toBe(true);
     expect(capture.contains("16.0.0")).toBe(true);
   });
 

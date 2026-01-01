@@ -21,11 +21,11 @@ describe("store sync command", () => {
   it("should show help when --help flag is passed", async () => {
     await runCLI(["store", "sync", "--help"]);
 
-    expect(capture.containsInfo("Sync lockfile with API and mirror files")).toBe(true);
-    expect(capture.containsInfo("--store-dir")).toBe(true);
-    expect(capture.containsInfo("--concurrency")).toBe(true);
-    expect(capture.containsInfo("--remove-unavailable")).toBe(true);
-    expect(capture.containsInfo("--clean")).toBe(true);
+    expect(capture.containsLog("Sync lockfile with API and mirror files")).toBe(true);
+    expect(capture.containsLog("--store-dir")).toBe(true);
+    expect(capture.containsLog("--concurrency")).toBe(true);
+    expect(capture.containsLog("--remove-unavailable")).toBe(true);
+    expect(capture.containsLog("--clean")).toBe(true);
   });
 
   it("should fail if neither --remote nor --store-dir is specified", async () => {
@@ -92,9 +92,9 @@ describe("store sync command", () => {
       "16.0.0",
     ]);
 
-    expect(capture.containsInfo("Starting sync operation")).toBe(true);
-    expect(capture.containsInfo("Syncing 1 version(s)")).toBe(true);
-    expect(capture.containsInfo("16.0.0")).toBe(true);
+    expect(capture.containsLog("Starting sync operation")).toBe(true);
+    expect(capture.containsLog("Syncing 1 version(s)")).toBe(true);
+    expect(capture.containsLog("16.0.0")).toBe(true);
   });
 
   it("should sync all versions when no version is specified", async () => {
@@ -137,8 +137,8 @@ describe("store sync command", () => {
       storePath,
     ]);
 
-    expect(capture.containsInfo("Starting sync operation")).toBe(true);
-    expect(capture.containsInfo("Syncing all versions in lockfile")).toBe(true);
+    expect(capture.containsLog("Starting sync operation")).toBe(true);
+    expect(capture.containsLog("Syncing all versions in lockfile")).toBe(true);
   });
 
   it("should show success message after sync", async () => {
@@ -181,7 +181,7 @@ describe("store sync command", () => {
       "16.0.0",
     ]);
 
-    expect(capture.containsInfo("Sync completed successfully")).toBe(true);
+    expect(capture.containsLog("Sync completed successfully")).toBe(true);
   });
 
   it("should display mirror results after sync", async () => {
@@ -224,6 +224,6 @@ describe("store sync command", () => {
       "16.0.0",
     ]);
 
-    expect(capture.containsInfo("Total versions in lockfile:")).toBe(true);
+    expect(capture.containsLog("Total versions in lockfile:")).toBe(true);
   });
 });
