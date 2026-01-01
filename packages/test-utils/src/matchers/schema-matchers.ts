@@ -3,9 +3,7 @@ import type z from "zod";
 
 export interface SchemaMatcherOptions<TSchema extends z.ZodType> {
   schema: TSchema;
-
   success: boolean;
-
   data?: Partial<z.infer<TSchema>>;
 }
 
@@ -15,39 +13,36 @@ export const toMatchSchema: RawMatcherFn<MatcherState, [SchemaMatcherOptions<z.Z
   options: SchemaMatcherOptions<TSchema>,
 ) {
   const result = options.schema.safeParse(received);
+  const successMatches = result.success === options.success;
 
-  let pass = result.success === options.success;
-  let failedProperty: string | undefined;
+  if (!successMatches) {
+    const expectedStatus = options.success ? "succeed" : "fail";
+    const actualStatus = result.success ? "succeeded" : "failed";
+    const issues = result.error?.issues ? `\n${this.utils.printExpected(result.error.issues)}` : "";
+    return {
+      pass: false,
+      message: () => `Expected schema validation to ${expectedStatus}, but it ${actualStatus}${issues}`,
+    };
+  }
 
-  // If validation succeeded and we have data expectations, verify each property
-  if (pass && options.data !== undefined && result.success) {
+  // Check partial data properties if provided
+  if (options.data && result.success) {
     for (const key in options.data) {
-      if (!this.equals((result.data as any)[key], (options.data as any)[key])) {
-        pass = false;
-        failedProperty = key;
-        break;
+      const expected = (options.data as any)[key];
+      const received = (result.data as any)[key];
+
+      if (!this.equals(received, expected)) {
+        return {
+          pass: false,
+          message: () =>
+            `Expected property "${key}" to equal ${this.utils.printExpected(expected)}, but received ${this.utils.printReceived(received)}`,
+        };
       }
     }
   }
 
   return {
-    pass,
-    message: () => {
-      if (pass) {
-        return `Expected schema validation to not match`;
-      }
-
-      if (result.success !== options.success) {
-        return `Expected schema validation to ${options.success ? "succeed" : "fail"}, but it ${result.success ? "succeeded" : "failed"}`;
-      }
-
-      if (failedProperty !== undefined && result.success) {
-        const expectedValue = (options.data as any)?.[failedProperty];
-        const receivedValue = (result.data as any)[failedProperty];
-        return `Expected property "${failedProperty}" to equal ${this.utils.printExpected(expectedValue)}, but received ${this.utils.printReceived(receivedValue)}`;
-      }
-
-      return `Schema validation did not match expectations`;
-    },
+    pass: true,
+    message: () => `Expected schema validation to not match`,
   };
 };

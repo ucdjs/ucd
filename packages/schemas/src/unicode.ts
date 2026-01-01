@@ -62,19 +62,33 @@ export type UnicodeVersionList = z.output<typeof UnicodeVersionListSchema>;
 // WE CAN'T USE RECURSIVE TYPES IN HONO ZOD OPENAPI, SO WE HAVE TO DEFINE THE INTERFACES MANUALLY
 type TreeNode = DirectoryTreeNode | FileTreeNode;
 
-interface DirectoryTreeNode {
-  type: "directory";
+interface BaseTreeNode {
+  /**
+   * The name of the file or directory.
+   */
   name: string;
+
+  /**
+   * The path to the file or directory.
+   *
+   * If the node is a directory, it will always end with a trailing slash (`/`).
+   */
   path: string;
-  children: TreeNode[];
-  lastModified?: number; // Unix timestamp
+
+  /**
+   * The last modified date of the directory, if available.
+   */
+  lastModified: number | null; // Unix timestamp
+
 }
 
-interface FileTreeNode {
+interface DirectoryTreeNode extends BaseTreeNode {
+  type: "directory";
+  children: TreeNode[];
+}
+
+interface FileTreeNode extends BaseTreeNode {
   type: "file";
-  name: string;
-  path: string;
-  lastModified?: number; // Unix timestamp
 }
 
 const BaseTreeNodeSchema = z.object({
@@ -84,7 +98,7 @@ const BaseTreeNodeSchema = z.object({
   path: z.string().meta({
     description: "The path to the file or directory.",
   }),
-  lastModified: z.number().optional().meta({
+  lastModified: z.number().or(z.null()).meta({
     description: "The last modified date of the directory, if available.",
   }),
 });

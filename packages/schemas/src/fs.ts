@@ -3,17 +3,15 @@ import { z } from "zod";
 
 export const UCDStoreManifestSchema = z.record(
   z.string(),
-  z
-    .object({
-      /**
-       * List of expected file paths for this version.
-       * Defaults to an empty array when not provided.
-       */
-      expectedFiles: z.array(z.string()).default([]),
-    })
-    .default({
-      expectedFiles: [],
-    }),
+  z.object({
+    /**
+     * List of expected file paths for this version.
+     * Defaults to an empty array when not provided.
+     */
+    expectedFiles: z.array(z.string()).default([]),
+  }).default({
+    expectedFiles: [],
+  }),
 ).meta({
   id: "UCDStoreManifest",
   description: dedent`
