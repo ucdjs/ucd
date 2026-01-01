@@ -14,7 +14,12 @@ describe("mockStoreApi", () => {
     });
 
     it("should normalize baseUrl with trailing slash", async () => {
-      mockStoreApi({ baseUrl: "https://api.luxass.dev/" });
+      mockStoreApi({
+        baseUrl: "https://api.luxass.dev/",
+        responses: {
+          "/api/v1/versions": true,
+        },
+      });
 
       const response = await fetch("https://api.luxass.dev/api/v1/versions");
       expect(response.ok).toBe(true);
@@ -31,7 +36,11 @@ describe("mockStoreApi", () => {
 
   describe("endpoint: /api/v1/versions", () => {
     it("should return default versions list", async () => {
-      mockStoreApi();
+      mockStoreApi({
+        responses: {
+          "/api/v1/versions": true,
+        },
+      });
 
       const response = await fetch("https://api.ucdjs.dev/api/v1/versions");
       expect(response.ok).toBe(true);
@@ -47,6 +56,9 @@ describe("mockStoreApi", () => {
     it("should use custom versions in default response", async () => {
       mockStoreApi({
         versions: ["1.0.0", "2.0.0"],
+        responses: {
+          "/api/v1/versions": true,
+        },
       });
 
       const response = await fetch("https://api.ucdjs.dev/api/v1/versions");
@@ -157,7 +169,11 @@ describe("mockStoreApi", () => {
 
   describe("endpoint: /api/v1/versions/{version}/file-tree", () => {
     it("should return default file tree", async () => {
-      mockStoreApi();
+      mockStoreApi({
+        responses: {
+          "/api/v1/versions/{version}/file-tree": true,
+        },
+      });
 
       const response = await fetch(
         "https://api.ucdjs.dev/api/v1/versions/16.0.0/file-tree",
@@ -205,6 +221,7 @@ describe("mockStoreApi", () => {
                 type: "file",
                 name: `test-${params.version}.txt`,
                 path: `test-${params.version}.txt`,
+                lastModified: 123456,
               },
             ];
 
@@ -224,7 +241,11 @@ describe("mockStoreApi", () => {
 
   describe("endpoint: /api/v1/files/{wildcard}", () => {
     it("should return default text content", async () => {
-      mockStoreApi();
+      mockStoreApi({
+        responses: {
+          "/api/v1/files/{wildcard}": true,
+        },
+      });
 
       const response = await fetch(
         "https://api.ucdjs.dev/api/v1/files/test.txt",
@@ -316,7 +337,11 @@ describe("mockStoreApi", () => {
     });
 
     it("should handle wildcard paths", async () => {
-      mockStoreApi();
+      mockStoreApi({
+        responses: {
+          "/api/v1/files/{wildcard}": true,
+        },
+      });
 
       const response = await fetch(
         "https://api.ucdjs.dev/api/v1/files/nested/deep/file.txt",
@@ -411,6 +436,7 @@ describe("mockStoreApi", () => {
           type: "file",
           name: "custom.txt",
           path: "custom.txt",
+          lastModified: 123456,
         },
       ];
 

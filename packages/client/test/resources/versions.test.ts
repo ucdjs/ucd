@@ -5,7 +5,6 @@ import { describe, expect, it } from "vitest";
 import { createVersionsResource } from "../../src/resources/versions";
 
 describe("createVersionsResource", () => {
-  const baseUrl = UCDJS_API_BASE_URL;
   const endpoints = {
     files: "/api/v1/files",
     manifest: "/.well-known/ucd-store/{version}.json",
@@ -46,7 +45,7 @@ describe("createVersionsResource", () => {
   describe("list()", () => {
     it("should fetch all Unicode versions successfully", async () => {
       mockFetch([
-        ["GET", `${baseUrl}${endpoints.versions}`, () => {
+        ["GET", `${UCDJS_API_BASE_URL}${endpoints.versions}`, () => {
           return HttpResponse.json(mockVersionsList);
         }],
       ]);
@@ -62,7 +61,7 @@ describe("createVersionsResource", () => {
 
     it("should return versions with correct structure", async () => {
       mockFetch([
-        ["GET", `${baseUrl}${endpoints.versions}`, () => {
+        ["GET", `${UCDJS_API_BASE_URL}${endpoints.versions}`, () => {
           return HttpResponse.json(mockVersionsList);
         }],
       ]);
@@ -80,7 +79,7 @@ describe("createVersionsResource", () => {
 
     it("should handle errors gracefully", async () => {
       mockFetch([
-        ["GET", `${baseUrl}${endpoints.versions}`, () => {
+        ["GET", `${UCDJS_API_BASE_URL}${endpoints.versions}`, () => {
           return new HttpResponse(null, { status: 500 });
         }],
       ]);
@@ -95,7 +94,7 @@ describe("createVersionsResource", () => {
 
     it("should handle network errors", async () => {
       mockFetch([
-        ["GET", `${baseUrl}${endpoints.versions}`, () => {
+        ["GET", `${UCDJS_API_BASE_URL}${endpoints.versions}`, () => {
           return HttpResponse.error();
         }],
       ]);
@@ -111,7 +110,7 @@ describe("createVersionsResource", () => {
   describe("getFileTree()", () => {
     it("should fetch file tree for a version successfully", async () => {
       mockFetch([
-        ["GET", `${baseUrl}${endpoints.versions}/16.0.0/file-tree`, () => {
+        ["GET", `${UCDJS_API_BASE_URL}${endpoints.versions}/16.0.0/file-tree`, () => {
           return HttpResponse.json(mockFileTree);
         }],
       ]);
@@ -140,7 +139,7 @@ describe("createVersionsResource", () => {
       mockFetch([
         [
           "GET",
-          `${baseUrl}${endpoints.versions}/${version}/file-tree`,
+          `${UCDJS_API_BASE_URL}${endpoints.versions}/${version}/file-tree`,
           () => HttpResponse.json(versionFileTree),
         ],
       ]);
@@ -154,7 +153,7 @@ describe("createVersionsResource", () => {
 
     it("should handle 404 errors for non-existent versions", async () => {
       mockFetch([
-        ["GET", `${baseUrl}${endpoints.versions}/99.0.0/file-tree`, () => {
+        ["GET", `${UCDJS_API_BASE_URL}${endpoints.versions}/99.0.0/file-tree`, () => {
           return new HttpResponse(null, { status: 404 });
         }],
       ]);
@@ -169,7 +168,7 @@ describe("createVersionsResource", () => {
 
     it("should handle server errors", async () => {
       mockFetch([
-        ["GET", `${baseUrl}${endpoints.versions}/16.0.0/file-tree`, () => {
+        ["GET", `${UCDJS_API_BASE_URL}${endpoints.versions}/16.0.0/file-tree`, () => {
           return new HttpResponse(null, { status: 500 });
         }],
       ]);
@@ -207,7 +206,7 @@ describe("createVersionsResource", () => {
       const customVersionsPath = "/v2/versions";
 
       mockFetch([
-        ["GET", `${baseUrl}${customVersionsPath}`, () => {
+        ["GET", `${UCDJS_API_BASE_URL}${customVersionsPath}`, () => {
           return HttpResponse.json(mockVersionsList);
         }],
       ]);
