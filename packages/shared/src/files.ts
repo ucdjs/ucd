@@ -1,18 +1,5 @@
+import type { UnicodeTreeNode } from "@ucdjs/schemas";
 import { prependLeadingSlash } from "@luxass/utils";
-
-/**
- * A tree node structure that can be flattened.
- */
-export interface TreeNode {
-  /** The type of the node */
-  type: string;
-  /** The name of the node */
-  name: string;
-  /** The path of the node (optional, falls back to name) */
-  path?: string;
-  /** Child nodes (required for directory types) */
-  children?: TreeNode[];
-}
 
 /**
  * Recursively find a node (file or directory) by its path in the tree.
@@ -22,7 +9,7 @@ export interface TreeNode {
  * @param {string} targetPath - The path to search for
  * @returns {T | undefined} The found node or undefined
  */
-export function findFileByPath<T extends TreeNode>(entries: T[], targetPath: string): T | undefined {
+export function findFileByPath<T extends UnicodeTreeNode>(entries: T[], targetPath: string): T | undefined {
   for (const fileOrDirectory of entries) {
     // Use path property directly as it already contains the full path
     const filePath = fileOrDirectory.path ?? fileOrDirectory.name;
@@ -63,7 +50,7 @@ export function findFileByPath<T extends TreeNode>(entries: T[], targetPath: str
  * // Returns: ["folder1/file1.txt", "file2.txt"]
  * ```
  */
-export function flattenFilePaths<T extends TreeNode>(entries: T[], prefix: string = ""): string[] {
+export function flattenFilePaths<T extends UnicodeTreeNode>(entries: T[], prefix: string = ""): string[] {
   const paths: string[] = [];
 
   if (!Array.isArray(entries)) {

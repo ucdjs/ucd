@@ -1,4 +1,4 @@
-import type { TreeNode } from "../src/files";
+import type { UnicodeTreeNode } from "@ucdjs/schemas";
 import { describe, expect, it } from "vitest";
 import { findFileByPath, flattenFilePaths } from "../src/files";
 
@@ -9,18 +9,18 @@ describe("findFileByPath", () => {
   });
 
   it("should find a file at the root level", () => {
-    const files: TreeNode[] = [
-      { type: "file", name: "file1.txt" },
-      { type: "file", name: "file2.txt" },
+    const files: UnicodeTreeNode[] = [
+      { type: "file", name: "file1.txt", path: "file1.txt" },
+      { type: "file", name: "file2.txt", path: "file2.txt" },
     ];
 
     const result = findFileByPath(files, "file1.txt");
-    expect(result).toEqual({ type: "file", name: "file1.txt" });
+    expect(result).toEqual({ type: "file", name: "file1.txt", path: "file1.txt" });
   });
 
   it("should return undefined when file is not found", () => {
-    const files: TreeNode[] = [
-      { type: "file", name: "file1.txt" },
+    const files: UnicodeTreeNode[] = [
+      { type: "file", name: "file1.txt", path: "file1.txt" },
     ];
 
     const result = findFileByPath(files, "nonexistent.txt");
@@ -28,7 +28,7 @@ describe("findFileByPath", () => {
   });
 
   it("should find a file in a nested directory", () => {
-    const files: TreeNode[] = [
+    const files: UnicodeTreeNode[] = [
       {
         type: "directory",
         name: "folder",
@@ -44,7 +44,7 @@ describe("findFileByPath", () => {
   });
 
   it("should find a file in deeply nested directories", () => {
-    const files: TreeNode[] = [
+    const files: UnicodeTreeNode[] = [
       {
         type: "directory",
         name: "level1",
@@ -74,7 +74,7 @@ describe("findFileByPath", () => {
   });
 
   it("should use path property when available", () => {
-    const files: TreeNode[] = [
+    const files: UnicodeTreeNode[] = [
       { type: "file", name: "file.txt", path: "custom/path.txt" },
     ];
 
@@ -83,17 +83,17 @@ describe("findFileByPath", () => {
   });
 
   it("should not match path with leading slash", () => {
-    const files: TreeNode[] = [
-      { type: "file", name: "file.txt" },
+    const files: UnicodeTreeNode[] = [
+      { type: "file", name: "file.txt", path: "file.txt" },
     ];
 
     const result = findFileByPath(files, "/file.txt");
-    expect(result).not.toEqual({ type: "file", name: "file.txt" });
+    expect(result).not.toEqual({ type: "file", name: "file.txt", path: "file.txt" });
     expect(result).toBeUndefined();
   });
 
   it("should not match nested path with leading slash", () => {
-    const files: TreeNode[] = [
+    const files: UnicodeTreeNode[] = [
       {
         type: "directory",
         name: "folder",
@@ -110,21 +110,21 @@ describe("findFileByPath", () => {
   });
 
   it("should preserve custom properties on the returned node", () => {
-    interface CustomNode extends TreeNode {
+    type CustomNode = UnicodeTreeNode & {
       _content?: string;
-    }
+    };
 
     const files: CustomNode[] = [
-      { type: "file", name: "file.txt", _content: "Hello, World!" },
+      { type: "file", name: "file.txt", path: "file.txt", _content: "Hello, World!" },
     ];
 
     const result = findFileByPath(files, "file.txt");
-    expect(result).toEqual({ type: "file", name: "file.txt", _content: "Hello, World!" });
+    expect(result).toEqual({ type: "file", name: "file.txt", path: "file.txt", _content: "Hello, World!" });
     expect(result?._content).toBe("Hello, World!");
   });
 
   it("should match directories themselves", () => {
-    const files: TreeNode[] = [
+    const files: UnicodeTreeNode[] = [
       {
         type: "directory",
         name: "folder",
@@ -150,7 +150,7 @@ describe("findFileByPath", () => {
   });
 
   it("should handle mixed files and directories", () => {
-    const files: TreeNode[] = [
+    const files: UnicodeTreeNode[] = [
       { type: "file", name: "root.txt", path: "root.txt" },
       {
         type: "directory",
@@ -178,7 +178,7 @@ describe("findFileByPath", () => {
   });
 
   it("should handle empty directories", () => {
-    const files: TreeNode[] = [
+    const files: UnicodeTreeNode[] = [
       {
         type: "directory",
         name: "empty",
@@ -386,5 +386,113 @@ describe("flattenFilePaths", () => {
       "src/utils/helpers.ts",
       "package.json",
     ]);
+  });
+
+  it("should handle paths with leading slashes", () => {
+    const result = flattenFilePaths([
+      {
+        type: "file",
+        name: "file1.txt",
+        path: "/file1.txt",
+      },
+      {
+        type: "directory",
+        name: "folder",
+        path: "/folder",
+        children: [
+          { type: "file", name: "nested.txt", path: "/folder/nested.txt" },
+        ],
+      },
+    ]);
+
+    expect(result).toEqual(["/file1.txt", "/folder/nested.txt"]);
+  });
+
+  it("should handle mixed paths with and without leading slashes", () => {
+    const result = flattenFilePaths([
+      {
+        type: "file",
+        name: "file1.txt",
+        path: "file1.txt",
+      },
+      {
+        type: "file",
+        name: "file2.txt",
+        path: "/file2.txt",
+      },
+      {
+        type: "directory",
+        name: "folder",
+        path: "folder",
+        children: [
+          { type: "file", name: "nested1.txt", path: "folder/nested1.txt" },
+          { type: "file", name: "nested2.txt", path: "/folder/nested2.txt" },
+        ],
+      },
+    ]);
+
+    expect(result).toEqual([
+      "file1.txt",
+      "/file2.txt",
+      "folder/nested1.txt",
+      "/folder/nested2.txt",
+    ]);
+  });
+
+  it("should handle prefix with leading slash", () => {
+    const result = flattenFilePaths([
+      {
+        type: "file",
+        name: "file.txt",
+        path: "file.txt",
+      },
+      {
+        type: "directory",
+        name: "folder",
+        path: "folder",
+        children: [
+          { type: "file", name: "nested.txt", path: "folder/nested.txt" },
+        ],
+      },
+    ], "/prefix");
+
+    expect(result).toEqual(["/prefix/file.txt", "/prefix/folder/nested.txt"]);
+  });
+
+  it("should handle prefix with leading slash and paths with leading slashes", () => {
+    const result = flattenFilePaths([
+      {
+        type: "file",
+        name: "file.txt",
+        path: "/file.txt",
+      },
+      {
+        type: "directory",
+        name: "folder",
+        path: "/folder",
+        children: [
+          { type: "file", name: "nested.txt", path: "/folder/nested.txt" },
+        ],
+      },
+    ], "/root");
+
+    expect(result).toEqual(["/root/file.txt", "/root/folder/nested.txt"]);
+  });
+
+  it("should handle paths without leading slashes with regular prefix", () => {
+    const result = flattenFilePaths([
+      {
+        type: "file",
+        name: "file1.txt",
+        path: "file1.txt",
+      },
+      {
+        type: "file",
+        name: "file2.txt",
+        path: "subdir/file2.txt",
+      },
+    ], "base");
+
+    expect(result).toEqual(["base/file1.txt", "base/subdir/file2.txt"]);
   });
 });

@@ -6,7 +6,6 @@ export { customFetch } from "./fetch/fetch";
 export type { FetchOptions, FetchResponse, SafeFetchResponse } from "./fetch/types";
 
 export { findFileByPath, flattenFilePaths } from "./files";
-export type { TreeNode } from "./files";
 
 export {
   createPathFilter,
