@@ -32,6 +32,7 @@ export type {
   UnicodePropertyResponse,
   UnicodeTree,
   UnicodeTreeNode,
+  UnicodeTreeNodeWithoutLastModified,
   UnicodeVersion,
   UnicodeVersionDetails,
   UnicodeVersionList,

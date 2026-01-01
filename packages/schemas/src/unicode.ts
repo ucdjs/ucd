@@ -1,3 +1,4 @@
+import type { DeepOmit } from "./types";
 import { z } from "zod";
 
 export const UnicodeVersionSchema = z.object({
@@ -130,6 +131,8 @@ export const UnicodeTreeNodeSchema = z.union([DirectoryTreeNodeSchema, FileTreeN
 });
 
 export type UnicodeTreeNode = z.output<typeof UnicodeTreeNodeSchema>;
+
+export type UnicodeTreeNodeWithoutLastModified = DeepOmit<UnicodeTreeNode, "lastModified">;
 
 export const UnicodeTreeSchema = z.array(UnicodeTreeNodeSchema).meta({
   id: "UnicodeTree",
