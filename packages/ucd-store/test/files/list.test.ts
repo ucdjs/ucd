@@ -250,6 +250,10 @@ describe("listFiles", () => {
             apiCalled = true;
             return HttpResponse.json(SAMPLE_FILE_TREE);
           },
+          "/api/v1/versions": true,
+          "/api/v1/files/{wildcard}": true,
+          "/.well-known/ucd-config.json": true,
+          "/.well-known/ucd-store/{version}.json": true,
         },
       });
 

@@ -7,11 +7,11 @@ import {
   flattenFilePaths,
   wrapTry,
 } from "@ucdjs-internal/shared";
-import { isUCDStoreInternalContext } from "../context";
-import { UCDStoreApiFallbackError, UCDStoreVersionNotFoundError } from "../errors";
 import { isBuiltinHttpBridge } from "@ucdjs/fs-bridge";
 import { hasUCDFolderPath } from "@unicode-utils/core";
 import { join } from "pathe";
+import { isUCDStoreInternalContext } from "../context";
+import { UCDStoreApiFallbackError, UCDStoreVersionNotFoundError } from "../errors";
 
 const debug = createDebugger("ucdjs:ucd-store:files:list");
 
@@ -79,7 +79,7 @@ async function _listFiles(
         debug?.("File paths: %O", flatPaths);
 
         // Normalize paths (strip `ucd/` prefix for HTTP bridges)
-        return flatPaths
+        return flatPaths;
       } catch (err) {
         debug?.("Failed to list directory:", filesPath, err);
 
