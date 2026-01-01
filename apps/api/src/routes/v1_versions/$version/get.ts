@@ -7,10 +7,10 @@ import {
   UNICODE_STABLE_VERSION,
   UNICODE_VERSION_METADATA,
 } from "@unicode-utils/core";
-import { createLogger } from "apps/api/src/lib/logger";
 import { cache } from "hono/cache";
 import { MAX_AGE_ONE_DAY_SECONDS } from "../../../constants";
 import { badGateway, badRequest, notFound } from "../../../lib/errors";
+import { createLogger } from "../../../lib/logger";
 import { captureUpstreamError, COMPONENTS } from "../../../lib/sentry";
 import { VERSION_ROUTE_PARAM } from "../../../lib/shared-parameters";
 import { generateReferences, OPENAPI_TAGS } from "../../../openapi";
