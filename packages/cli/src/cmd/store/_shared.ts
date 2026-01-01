@@ -3,8 +3,7 @@ import type { Readable, Writable } from "node:stream";
 import { isCancel, multiselect } from "@clack/prompts";
 import { createHTTPUCDStore, createNodeUCDStore } from "@ucdjs/ucd-store";
 import { UNICODE_VERSION_METADATA } from "@unicode-utils/core";
-import { red } from "farver/fast";
-import { output } from "../../output";
+import { output, red } from "../../output";
 
 export interface CLIStoreCmdSharedFlags {
   storeDir?: string;

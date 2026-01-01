@@ -5,9 +5,8 @@ import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import process from "node:process";
 import { computeFileHash, computeFileHashWithoutUCDHeader, stripUnicodeHeader } from "@ucdjs/lockfile";
-import { bold, dim, green, red, yellow } from "farver/fast";
-import { formatBytes, printHelp } from "../../cli-utils";
-import { output } from "../../output";
+import { printHelp } from "../../cli-utils";
+import { bold, dim, formatBytes, green, output, red, yellow } from "../../output";
 
 export interface CLILockfileHashCmdOptions {
   filePath: string;

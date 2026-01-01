@@ -2,9 +2,8 @@ import type { CLIArguments } from "../../cli-utils";
 import type { CLIFilesCmdOptions } from "./root";
 import { customFetch } from "@ucdjs-internal/shared";
 import { UCD_STAT_TYPE_HEADER, UCDJS_API_BASE_URL } from "@ucdjs/env";
-import { bold, dim, green, red } from "farver/fast";
-import { formatBytes, printHelp } from "../../cli-utils";
-import { output } from "../../output";
+import { printHelp } from "../../cli-utils";
+import { bold, dim, formatBytes, green, output, red } from "../../output";
 
 export interface CLIFilesInfoCmdOptions {
   path: string;

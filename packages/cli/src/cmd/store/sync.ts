@@ -1,11 +1,20 @@
-/* eslint-disable no-console */
 import type { Prettify } from "@luxass/utils";
 import type { CLIArguments } from "../../cli-utils";
 import type { CLIStoreCmdSharedFlags } from "./_shared";
-import { hasCapability } from "@ucdjs/fs-bridge";
 import { UCDStoreGenericError } from "@ucdjs/ucd-store";
-import { green, red, yellow } from "farver/fast";
 import { printHelp } from "../../cli-utils";
+import {
+  blankLine,
+  cyan,
+  formatDuration,
+  green,
+  header,
+  keyValue,
+  list,
+  output,
+  red,
+  yellow,
+} from "../../output";
 import { assertLocalStore, createStoreFromFlags, LOCAL_STORE_FLAGS, SHARED_FLAGS } from "./_shared";
 
 export interface CLIStoreSyncCmdOptions {
@@ -63,12 +72,16 @@ export async function runSyncStore({ flags, versions }: CLIStoreSyncCmdOptions) 
       versionStrategy: "merge",
     });
 
-    console.log("Starting sync operation...");
+    header("Sync Operation");
+
+    keyValue("Store Path", storeDir, { valueColor: cyan });
     if (versions.length > 0) {
-      console.log(`Syncing ${versions.length} version(s): ${versions.join(", ")}`);
+      keyValue("Versions", versions.map((v) => cyan(v)).join(", "));
     } else {
-      console.log("Syncing all versions in lockfile...");
+      keyValue("Versions", "all versions in lockfile");
     }
+
+    blankLine();
 
     const [syncResult, syncError] = await store.sync({
       versions: versions.length > 0 ? versions : undefined,
@@ -83,79 +96,89 @@ export async function runSyncStore({ flags, versions }: CLIStoreSyncCmdOptions) 
     });
 
     if (syncError) {
-      console.error(red(`\n❌ Error syncing store:`));
-      console.error(`  ${syncError.message}`);
+      output.fail("Sync operation failed", {
+        details: [syncError.message],
+      });
       return;
     }
 
     if (!syncResult) {
-      console.error(red(`\n❌ Error: Sync operation returned no result.`));
+      output.fail("Sync operation returned no result");
       return;
     }
 
-    // Display sync results
-    console.log(green("\n✓ Sync completed successfully\n"));
+    output.success("Sync completed");
 
     // Display lockfile update results
     if (syncResult.added.length > 0 || syncResult.removed.length > 0 || syncResult.unchanged.length > 0) {
-      console.log("Lockfile updated:");
+      header("Lockfile Changes");
+
       if (syncResult.added.length > 0) {
-        console.log(green(`  Added: ${syncResult.added.length} version(s): ${syncResult.added.join(", ")}`));
+        keyValue("Added", `${green(String(syncResult.added.length))} version(s)`);
+        list(syncResult.added, { prefix: "+", itemColor: green, indent: 4 });
       }
       if (syncResult.removed.length > 0) {
-        console.log(yellow(`  Removed: ${syncResult.removed.length} version(s): ${syncResult.removed.join(", ")}`));
+        keyValue("Removed", `${yellow(String(syncResult.removed.length))} version(s)`);
+        list(syncResult.removed, { prefix: "-", itemColor: yellow, indent: 4 });
       }
       if (syncResult.unchanged.length > 0) {
-        console.log(`  Unchanged: ${syncResult.unchanged.length} version(s): ${syncResult.unchanged.join(", ")}`);
+        keyValue("Unchanged", `${syncResult.unchanged.length} version(s)`);
       }
-      console.log("");
     }
 
-    console.log(`Total versions in lockfile: ${syncResult.versions.length}`);
+    keyValue("Total Versions", String(syncResult.versions.length));
 
     if (syncResult.mirrorReport) {
       const report = syncResult.mirrorReport;
       if (report.summary) {
         const { counts, duration, storage } = report.summary;
-        console.log(`Summary:`);
-        console.log(`  Versions processed: ${report.versions.size}`);
-        console.log(`  Files downloaded: ${green(String(counts.downloaded))}`);
-        console.log(`  Files skipped: ${yellow(String(counts.skipped))}`);
-        console.log(`  Files failed: ${counts.failed > 0 ? red(String(counts.failed)) : String(counts.failed)}`);
-        console.log(`  Total size: ${storage.totalSize}`);
-        console.log(`  Duration: ${(duration / 1000).toFixed(2)}s`);
-        console.log("");
+
+        header("Mirror Summary");
+
+        keyValue("Versions", String(report.versions.size));
+        keyValue("Downloaded", `${green(String(counts.downloaded))} files`);
+        keyValue("Skipped", `${yellow(String(counts.skipped))} files`);
+        if (counts.failed > 0) {
+          keyValue("Failed", `${red(String(counts.failed))} files`);
+        }
+        keyValue("Total Size", storage.totalSize);
+        keyValue("Duration", formatDuration(duration));
       }
 
-      // Show per-version details
-      for (const [version, versionReport] of report.versions) {
-        console.log(`Version ${version}:`);
-        console.log(`  Files: ${versionReport.counts.downloaded} downloaded, ${versionReport.counts.skipped} skipped`);
-        if (versionReport.counts.failed > 0) {
-          console.log(`  ${red(`Failed: ${versionReport.counts.failed}`)}`);
+      // Show per-version details if multiple versions
+      if (report.versions.size > 1) {
+        header("Version Details");
+
+        for (const [version, versionReport] of report.versions) {
+          output.log(`  ${cyan(version)}`);
+          output.log(`    Downloaded: ${green(String(versionReport.counts.downloaded))}, Skipped: ${yellow(String(versionReport.counts.skipped))}`);
+          if (versionReport.counts.failed > 0) {
+            output.log(`    ${red(`Failed: ${versionReport.counts.failed}`)}`);
+          }
+          blankLine();
         }
-        console.log("");
       }
     }
 
     // Show removed orphaned files if any
     if (syncResult.removedFiles.size > 0) {
-      console.log(yellow("\n⚠ Orphaned files removed:\n"));
+      header("Orphaned Files Removed");
+
       for (const [version, removedFiles] of syncResult.removedFiles) {
         if (removedFiles.length > 0) {
-          console.log(`Version ${version}:`);
-          for (const filePath of removedFiles) {
-            console.log(`  - ${filePath}`);
-          }
-          console.log("");
+          output.log(`  ${cyan(version)}`);
+          list(removedFiles, { prefix: "-", indent: 4, itemColor: yellow });
+          blankLine();
         }
       }
     } else if (clean) {
-      console.log(green("\n✓ No orphaned files found\n"));
+      output.success("No orphaned files found");
     }
+
+    blankLine();
   } catch (err) {
     if (err instanceof UCDStoreGenericError) {
-      console.error(red(`\n❌ Error: ${err.message}`));
+      output.fail(err.message);
       return;
     }
 
@@ -166,9 +189,6 @@ export async function runSyncStore({ flags, versions }: CLIStoreSyncCmdOptions) 
       message = err;
     }
 
-    console.error(red(`\n❌ Error syncing store:`));
-    console.error(`  ${message}`);
-    console.error("Please check the store configuration and try again.");
-    console.error("If you believe this is a bug, please report it at https://github.com/ucdjs/ucd/issues");
+    output.fail(message, { bugReport: true });
   }
 }

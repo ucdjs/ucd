@@ -3,9 +3,8 @@ import type { CLIFilesCmdOptions } from "./root";
 import { createDebugger } from "@ucdjs-internal/shared";
 import { createUCDClient } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
-import { dim, green, red } from "farver/fast";
 import { printHelp } from "../../cli-utils";
-import { output } from "../../output";
+import { dim, green, output, red } from "../../output";
 
 const debug = createDebugger("ucdjs:cli:files:list");
 

@@ -3,9 +3,8 @@ import type { CLIFilesCmdOptions } from "./root";
 import { writeFile } from "node:fs/promises";
 import { createUCDClient } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
-import { green, red } from "farver/fast";
 import { printHelp } from "../../cli-utils";
-import { output } from "../../output";
+import { green, output, red } from "../../output";
 
 export interface CLIFilesGetCmdOptions {
   path: string;

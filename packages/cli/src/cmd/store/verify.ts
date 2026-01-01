@@ -6,9 +6,8 @@ import { createUCDClient } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { getLockfilePath, readLockfile } from "@ucdjs/lockfile";
 import { UCDStoreGenericError } from "@ucdjs/ucd-store";
-import { green, red, yellow } from "farver/fast";
 import { printHelp } from "../../cli-utils";
-import { output } from "../../output";
+import { green, output, red, yellow } from "../../output";
 import { assertRemoteOrStoreDir, createStoreFromFlags, SHARED_FLAGS } from "./_shared";
 
 const debug = createDebugger("ucdjs:cli:store:verify");

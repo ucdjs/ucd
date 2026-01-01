@@ -5,9 +5,8 @@ import { resolve } from "node:path";
 import process from "node:process";
 import { safeJsonParse } from "@ucdjs-internal/shared";
 import { getLockfilePath, validateLockfile } from "@ucdjs/lockfile";
-import { bold, dim, green, red, yellow } from "farver/fast";
 import { printHelp } from "../../cli-utils";
-import { output } from "../../output";
+import { bold, dim, green, output, red, yellow } from "../../output";
 
 export interface CLILockfileValidateCmdOptions {
   flags: CLIArguments<CLILockfileCmdOptions["flags"]>;

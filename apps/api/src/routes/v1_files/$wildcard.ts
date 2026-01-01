@@ -324,7 +324,7 @@ export function registerWildcardRoute(router: OpenAPIHono<HonoEnv>) {
     console.info(`[v1_files]: fetched content type: ${contentType} for .${extName} file`);
     if (isDirectoryListing) {
       const html = await response.text();
-      let files = await parseUnicodeDirectory(html);
+      let files = await parseUnicodeDirectory(html, normalizedPath);
 
       // Get query parameters for filtering and sorting
       const query = c.req.query("query");

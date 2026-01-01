@@ -1,11 +1,20 @@
 import type { Prettify } from "@luxass/utils";
 import type { CLIArguments } from "../../cli-utils";
 import type { CLIStoreCmdSharedFlags } from "./_shared";
-import { hasCapability } from "@ucdjs/fs-bridge";
 import { UCDStoreGenericError } from "@ucdjs/ucd-store";
-import { green, red, yellow } from "farver/fast";
 import { printHelp } from "../../cli-utils";
-import { output } from "../../output";
+import {
+  blankLine,
+  cyan,
+  formatDuration,
+  green,
+  header,
+  keyValue,
+  list,
+  output,
+  red,
+  yellow,
+} from "../../output";
 import { assertLocalStore, createStoreFromFlags, LOCAL_STORE_FLAGS, SHARED_FLAGS } from "./_shared";
 
 export interface CLIStoreMirrorCmdOptions {
@@ -56,12 +65,16 @@ export async function runMirrorStore({ flags, versions }: CLIStoreMirrorCmdOptio
       requireExistingStore: true,
     });
 
-    output.log("Starting mirror operation...");
+    header("Mirror Operation");
+
+    keyValue("Store Path", storeDir, { valueColor: cyan });
     if (versions.length > 0) {
-      output.log(`Mirroring ${versions.length} version(s): ${versions.join(", ")}`);
+      keyValue("Versions", versions.map((v) => cyan(v)).join(", "));
     } else {
-      output.log("Mirroring all versions in lockfile...");
+      keyValue("Versions", "all versions in lockfile");
     }
+
+    blankLine();
 
     const [mirrorResult, mirrorError] = await store.mirror({
       versions: versions.length > 0 ? versions : undefined,
@@ -74,55 +87,59 @@ export async function runMirrorStore({ flags, versions }: CLIStoreMirrorCmdOptio
     });
 
     if (mirrorError) {
-      output.error(red(`\n❌ Error mirroring store:`));
-      output.error(`  ${mirrorError.message}`);
+      output.fail("Mirror operation failed", {
+        details: [mirrorError.message],
+      });
       return;
     }
 
     if (!mirrorResult) {
-      output.error(red(`\n❌ Error: Mirror operation returned no result.`));
+      output.fail("Mirror operation returned no result");
       return;
     }
 
-    // Display mirror results
-    output.log(green("\n✓ Mirror operation completed successfully\n"));
+    output.success("Mirror operation completed");
 
     if (mirrorResult.summary) {
       const { counts, duration, storage, metrics } = mirrorResult.summary;
-      output.log(`Summary:`);
-      output.log(`  Versions processed: ${mirrorResult.versions.size}`);
-      output.log(`  Files downloaded: ${green(String(counts.downloaded))}`);
-      output.log(`  Files skipped: ${yellow(String(counts.skipped))}`);
-      output.log(`  Files failed: ${counts.failed > 0 ? red(String(counts.failed)) : String(counts.failed)}`);
-      output.log(`  Total size: ${storage.totalSize}`);
-      output.log(`  Success rate: ${metrics.successRate.toFixed(1)}%`);
-      output.log(`  Duration: ${(duration / 1000).toFixed(2)}s`);
-      output.log("");
+
+      header("Summary");
+
+      keyValue("Versions", String(mirrorResult.versions.size));
+      keyValue("Downloaded", `${green(String(counts.downloaded))} files`);
+      keyValue("Skipped", `${yellow(String(counts.skipped))} files`);
+      if (counts.failed > 0) {
+        keyValue("Failed", `${red(String(counts.failed))} files`);
+      }
+      keyValue("Total Size", storage.totalSize);
+      keyValue("Success Rate", `${metrics.successRate.toFixed(1)}%`);
+      keyValue("Duration", formatDuration(duration));
     }
 
-    // Show per-version details
-    for (const [version, report] of mirrorResult.versions) {
-      output.log(`Version ${version}:`);
-      output.log(`  Files: ${report.counts.downloaded} downloaded, ${report.counts.skipped} skipped`);
-      if (report.counts.failed > 0) {
-        output.log(`  ${red(`Failed: ${report.counts.failed}`)}`);
-        // Show first few errors if any
-        for (const error of report.errors.slice(0, 3)) {
-          output.log(`    - ${error.file}: ${error.reason}`);
+    // Show per-version details if multiple versions
+    if (mirrorResult.versions.size > 1) {
+      header("Version Details");
+
+      for (const [version, report] of mirrorResult.versions) {
+        output.log(`  ${cyan(version)}`);
+        output.log(`    Downloaded: ${green(String(report.counts.downloaded))}, Skipped: ${yellow(String(report.counts.skipped))}`);
+
+        if (report.counts.failed > 0) {
+          output.log(`    ${red(`Failed: ${report.counts.failed}`)}`);
+          const errorMessages = report.errors.slice(0, 3).map((e) => `${e.file}: ${e.reason}`);
+          list(errorMessages, { indent: 4, prefix: "-" });
+          if (report.errors.length > 3) {
+            output.log(`      ... and ${report.errors.length - 3} more errors`);
+          }
         }
-        if (report.errors.length > 3) {
-          output.log(`    ... and ${report.errors.length - 3} more errors`);
-        }
+        blankLine();
       }
-      output.log(`  Success rate: ${report.metrics.successRate.toFixed(1)}%`);
-      if (report.metrics.cacheHitRate > 0) {
-        output.log(`  Cache hit rate: ${report.metrics.cacheHitRate.toFixed(1)}%`);
-      }
-      output.log("");
     }
+
+    blankLine();
   } catch (err) {
     if (err instanceof UCDStoreGenericError) {
-      output.error(red(`\n❌ Error: ${err.message}`));
+      output.fail(err.message);
       return;
     }
 
@@ -133,9 +150,6 @@ export async function runMirrorStore({ flags, versions }: CLIStoreMirrorCmdOptio
       message = err;
     }
 
-    output.error(red(`\n❌ Error mirroring store:`));
-    output.error(`  ${message}`);
-    output.error("Please check the store configuration and try again.");
-    output.error("If you believe this is a bug, please report it at https://github.com/ucdjs/ucd/issues");
+    output.fail(message, { bugReport: true });
   }
 }

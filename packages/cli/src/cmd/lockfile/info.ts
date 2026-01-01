@@ -4,9 +4,8 @@ import { resolve } from "node:path";
 import process from "node:process";
 import NodeFileSystemBridge from "@ucdjs/fs-bridge/bridges/node";
 import { getLockfilePath, readLockfile } from "@ucdjs/lockfile";
-import { bold, dim, green, red, yellow } from "farver/fast";
-import { formatBytes, printHelp } from "../../cli-utils";
-import { output } from "../../output";
+import { printHelp } from "../../cli-utils";
+import { bold, dim, formatBytes, green, output, red, yellow } from "../../output";
 
 export interface CLILockfileInfoCmdOptions {
   flags: CLIArguments<CLILockfileCmdOptions["flags"]>;
