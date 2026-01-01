@@ -1,24 +1,24 @@
-/**
- * Output interface for CLI commands.
- * Provides a centralized way to handle output that respects JSON mode.
- */
 export interface Output {
   /**
    * Log a message to stdout (or stderr in JSON mode)
    */
   log: (...args: unknown[]) => void;
+
   /**
    * Log an informational message to stdout (or stderr in JSON mode)
    */
   info: (...args: unknown[]) => void;
+
   /**
    * Log a warning message to stderr
    */
   warn: (...args: unknown[]) => void;
+
   /**
    * Log an error message to stderr
    */
   error: (...args: unknown[]) => void;
+
   /**
    * Output JSON data to stdout. Only use this for structured JSON output.
    * Always writes to stdout, regardless of JSON mode.

@@ -87,9 +87,9 @@ export async function runLockfileValidate({ flags }: CLILockfileValidateCmdOptio
       } else {
         output.error(red(`\n❌ Validation failed: Lockfile does not match expected schema.`));
         output.error(`  ${dim(`Path: ${lockfilePath}`)}\n`);
-        output.log(`  ${bold("Issues:")}`);
+        output.info(`  ${bold("Issues:")}`);
         for (const issue of issues) {
-          output.log(`    ${yellow("•")} ${bold(issue.path || "(root)")}: ${issue.message}`);
+          output.info(`    ${yellow("•")} ${bold(issue.path || "(root)")}: ${issue.message}`);
         }
       }
       return;
@@ -123,15 +123,15 @@ export async function runLockfileValidate({ flags }: CLILockfileValidateCmdOptio
         warnings: warnings.length > 0 ? warnings : undefined,
       });
     } else {
-      output.log(green(`\n✅ Lockfile is valid.`));
-      output.log(`  ${dim(`Path: ${lockfilePath}`)}`);
-      output.log(`  ${bold("Lockfile Version:")} ${lockfile.lockfileVersion}`);
-      output.log(`  ${bold("Tracked Versions:")} ${versionCount}`);
+      output.info(green(`\n✅ Lockfile is valid.`));
+      output.info(`  ${dim(`Path: ${lockfilePath}`)}`);
+      output.info(`  ${bold("Lockfile Version:")} ${lockfile.lockfileVersion}`);
+      output.info(`  ${bold("Tracked Versions:")} ${versionCount}`);
 
       if (warnings.length > 0) {
-        output.log(`\n  ${yellow(bold("Warnings:"))}`);
+        output.info(`\n  ${yellow(bold("Warnings:"))}`);
         for (const warning of warnings) {
-          output.log(`    ${yellow("•")} ${warning}`);
+          output.info(`    ${yellow("•")} ${warning}`);
         }
       }
     }
