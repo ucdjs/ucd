@@ -83,8 +83,8 @@ catalogs:
       specifier: 6.0.3
       version: 6.0.3
     apache-autoindex-parse:
-      specifier: 5.0.0
-      version: 5.0.0
+      specifier: 5.0.2
+      version: 5.0.2
     defu:
       specifier: 6.1.4
       version: 6.1.4
@@ -344,7 +344,7 @@ importers:
         version: 0.12.0-beta.18
       apache-autoindex-parse:
         specifier: catalog:prod
-        version: 5.0.0
+        version: 5.0.2
       hono:
         specifier: catalog:workers
         version: 4.11.3
@@ -4628,8 +4628,8 @@ packages:
     resolution: {integrity: sha512-KMReFUr0B4t+D+OBkjR3KYqvocp2XaSzO55UcB6mgQMd3KbcE+mWTyvVV7D/zsdEbNnV6acZUutkiHQXvTr1Rw==}
     engines: {node: '>= 8'}
 
-  apache-autoindex-parse@5.0.0:
-    resolution: {integrity: sha512-fetnDXv12IF8EkMRj0npHahpLJewToD10fjG7to+ymORHvnHk9/ZdkoNjDIRA8l5UBhM2PRauU2ysEAX0xa8uw==}
+  apache-autoindex-parse@5.0.2:
+    resolution: {integrity: sha512-cEw6EWV4qIZrdq0iWaTqU7EBwfcvVoTZbS4EEBtljyzK5KUEVJqiB6PsZDFUKif9SncFq69flO5B8UMA/CJa0w==}
 
   are-docs-informative@0.0.2:
     resolution: {integrity: sha512-ixiS0nLNNG5jNQzgZJNoUpBKdo9yTYZMGJ+QgT2jmjR7G7+QHRCc4v6LQ3NgE7EBJq+o0ams3waJwkrlBom8Ig==}
@@ -12612,14 +12612,14 @@ snapshots:
       msw: 2.12.7(@types/node@22.18.12)(typescript@5.9.3)
       vite: 7.3.0(@types/node@22.18.12)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1)
 
-  '@vitest/mocker@4.0.16(msw@2.12.7(@types/node@24.3.1)(typescript@5.9.3))(vite@7.3.0(@types/node@22.18.12)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1))':
+  '@vitest/mocker@4.0.16(msw@2.12.7(@types/node@24.3.1)(typescript@5.9.3))(vite@7.3.0(@types/node@24.3.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1))':
     dependencies:
       '@vitest/spy': 4.0.16
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
       msw: 2.12.7(@types/node@24.3.1)(typescript@5.9.3)
-      vite: 7.3.0(@types/node@22.18.12)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1)
+      vite: 7.3.0(@types/node@24.3.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1)
 
   '@vitest/pretty-format@4.0.16':
     dependencies:
@@ -12647,7 +12647,7 @@ snapshots:
       sirv: 3.0.2
       tinyglobby: 0.2.15
       tinyrainbow: 3.0.3
-      vitest: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@22.18.12)(@vitest/ui@4.0.16)(jiti@2.6.1)(jsdom@27.3.0(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.12.7(@types/node@22.18.12)(typescript@5.9.3))(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1)
+      vitest: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@24.3.1)(@vitest/ui@4.0.16)(jiti@2.6.1)(jsdom@27.3.0(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.12.7(@types/node@24.3.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1)
 
   '@vitest/utils@4.0.16':
     dependencies:
@@ -12847,7 +12847,7 @@ snapshots:
       normalize-path: 3.0.0
       picomatch: 2.3.1
 
-  apache-autoindex-parse@5.0.0: {}
+  apache-autoindex-parse@5.0.2: {}
 
   are-docs-informative@0.0.2: {}
 
@@ -17972,7 +17972,7 @@ snapshots:
   vitest@4.0.16(@opentelemetry/api@1.9.0)(@types/node@24.3.1)(@vitest/ui@4.0.16)(jiti@2.6.1)(jsdom@27.3.0(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.12.7(@types/node@24.3.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1):
     dependencies:
       '@vitest/expect': 4.0.16
-      '@vitest/mocker': 4.0.16(msw@2.12.7(@types/node@24.3.1)(typescript@5.9.3))(vite@7.3.0(@types/node@22.18.12)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1))
+      '@vitest/mocker': 4.0.16(msw@2.12.7(@types/node@24.3.1)(typescript@5.9.3))(vite@7.3.0(@types/node@24.3.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1))
       '@vitest/pretty-format': 4.0.16
       '@vitest/runner': 4.0.16
       '@vitest/snapshot': 4.0.16
