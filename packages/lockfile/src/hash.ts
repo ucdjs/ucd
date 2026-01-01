@@ -19,7 +19,7 @@ function isHeaderLine(line: string): boolean {
     || line.includes("©")
     || lower.includes("unicode®")
     || lower.includes("unicode, inc")
-    || /\d+\.\d+\.\d+\.txt/.test(line)
+    || /^\d{1,3}\.\d{1,3}\.\d{1,3}\.txt$/.test(line)
   );
 }
 
