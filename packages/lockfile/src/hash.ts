@@ -2,12 +2,26 @@
 // @unicode-utils/core
 
 /**
- * Combined regex pattern for Unicode header lines:
+ * Checks if a line looks like a Unicode header line.
+ * Header lines typically contain:
  * - Filename with version (e.g., "DerivedBinaryProperties-15.1.0.txt")
  * - Date line (e.g., "Date: 2023-01-05")
  * - Copyright line (e.g., "© 2023 Unicode®, Inc.")
+ *
+ * Uses simple string operations instead of complex regex to avoid ReDoS vulnerabilities.
+ *
+ * @internal
  */
-const HEADER_LINE_PATTERN = /\d+\.\d+\.\d+\.txt|Date:|©|Unicode®|Unicode,\s*Inc/i;
+function isHeaderLine(line: string): boolean {
+  const lower = line.toLowerCase();
+  return (
+    lower.includes("date:")
+    || line.includes("©")
+    || lower.includes("unicode®")
+    || lower.includes("unicode, inc")
+    || /\d+\.\d+\.\d+\.txt/.test(line)
+  );
+}
 
 /**
  * Strips the Unicode file header from content.
@@ -38,7 +52,7 @@ export function stripUnicodeHeader(content: string): string {
     }
 
     // Check if this is a header line (comment starting with # that matches header pattern)
-    if (trimmedLine.startsWith("#") && HEADER_LINE_PATTERN.test(trimmedLine)) {
+    if (trimmedLine.startsWith("#") && isHeaderLine(trimmedLine)) {
       headerEndIndex = i + 1;
       continue;
     }
