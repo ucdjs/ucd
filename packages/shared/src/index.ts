@@ -16,7 +16,6 @@ export {
 export type {
   PathFilter,
   PathFilterOptions,
-  TreeEntry,
 } from "./filter";
 export {
   createGlobMatcher,
