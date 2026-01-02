@@ -3,9 +3,7 @@ import { describe, expect, it } from "vitest";
 import { executeRequest } from "../../helpers/request";
 import {
   expectApiError,
-  expectCacheHeaders,
   expectJsonResponse,
-  expectSuccess,
 } from "../../helpers/response";
 
 describe("v1_blocks", () => {

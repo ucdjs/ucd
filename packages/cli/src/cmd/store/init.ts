@@ -6,7 +6,6 @@ import { printHelp } from "../../cli-utils";
 import {
   blankLine,
   cyan,
-  formatBytes,
   formatDuration,
   green,
   header,

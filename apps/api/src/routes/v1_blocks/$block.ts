@@ -4,7 +4,6 @@ import { createRoute } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
 import { UnicodeBlockSchema } from "@ucdjs/schemas";
 import { cache } from "hono/cache";
-import { z } from "zod";
 import { MAX_AGE_ONE_DAY_SECONDS } from "../../constants";
 import { badRequest, notFound } from "../../lib/errors";
 import { createLogger } from "../../lib/logger";

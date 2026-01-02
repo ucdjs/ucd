@@ -1,4 +1,4 @@
-import type { UnicodeTreeNode, UnicodeTreeNodeWithoutLastModified } from "@ucdjs/schemas";
+import type { UnicodeTreeNodeWithoutLastModified } from "@ucdjs/schemas";
 import type { PicomatchOptions } from "picomatch";
 import picomatch from "picomatch";
 import { DEFAULT_PICOMATCH_OPTIONS } from "./glob";
