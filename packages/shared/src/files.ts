@@ -1,4 +1,4 @@
-import type { UnicodeTreeNode, UnicodeTreeNodeWithoutLastModified } from "@ucdjs/schemas";
+import type { UnicodeTreeNodeWithoutLastModified } from "@ucdjs/schemas";
 import { prependLeadingSlash } from "@luxass/utils";
 
 /**
@@ -23,7 +23,7 @@ export function findFileByPath<T extends UnicodeTreeNodeWithoutLastModified>(ent
     if (fileOrDirectory.type === "directory" && fileOrDirectory.children) {
       const found = findFileByPath(fileOrDirectory.children as T[], targetPath);
       if (found) {
-        return found as T;
+        return found;
       }
     }
   }
