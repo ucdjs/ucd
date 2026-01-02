@@ -38,39 +38,3 @@ export function addPathsToFileNodes(
     };
   });
 }
-
-/**
- * Adds paths to all file nodes in the mock store files configuration.
- * For version-specific files, paths will be formatted as: /{version}/{pathname}
- * For wildcard files ("*"), paths will be formatted as: /{version}/{pathname}
- * where version is taken from the versions array.
- *
- * @param files - The mock store files configuration without paths
- * @param versions - Array of versions to use for path generation
- * @returns Files with paths added
- */
-export function addPathsToMockStoreFiles(
-  files: Record<string, MockStoreNode[] | undefined> | undefined,
-  versions: string[],
-): Record<string, MockStoreNode[]> {
-  const result: Record<string, MockStoreNode[]> = {};
-
-  if (!files) {
-    return result;
-  }
-
-  for (const [key, nodes] of Object.entries(files)) {
-    if (!nodes) continue;
-
-    if (key === "*") {
-      // For wildcard, use the first version to generate paths
-      const version = versions[0] || "16.0.0";
-      result[key] = addPathsToFileNodes(nodes, version);
-    } else {
-      // For version-specific keys, use the version as the key
-      result[key] = addPathsToFileNodes(nodes, key);
-    }
-  }
-
-  return result;
-}
