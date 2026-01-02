@@ -3,7 +3,7 @@ import type { MockStoreNode } from "./types";
 /**
  * Recursively traverses the file tree and adds paths to all nodes.
  * The path format is: /{version}/{pathname}
- * 
+ *
  * @param nodes - The file nodes without paths
  * @param version - The version to include in the path
  * @param basePath - The base path to prepend (defaults to empty)
@@ -44,7 +44,7 @@ export function addPathsToFileNodes(
  * For version-specific files, paths will be formatted as: /{version}/{pathname}
  * For wildcard files ("*"), paths will be formatted as: /{version}/{pathname}
  * where version is taken from the versions array.
- * 
+ *
  * @param files - The mock store files configuration without paths
  * @param versions - Array of versions to use for path generation
  * @returns Files with paths added

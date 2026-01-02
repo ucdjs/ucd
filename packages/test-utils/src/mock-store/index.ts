@@ -3,7 +3,6 @@ import type { MockStoreConfig, MockStoreFiles } from "./types";
 import { createDebugger, isApiError } from "@ucdjs-internal/shared";
 import { HttpResponse } from "msw";
 import { mockFetch } from "../msw";
-import { addPathsToFileNodes } from "./add-paths";
 import { defaultArabicShapingFileContent } from "./default-files/arabic-shaping";
 import { defaultBidiBracketsFileContent } from "./default-files/bidi-brackets";
 import { defaultDerivedBidClassFileContent } from "./default-files/derived-bidi-class";

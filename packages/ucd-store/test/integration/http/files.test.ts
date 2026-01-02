@@ -13,7 +13,6 @@ describe("http integration: file operations", () => {
           "16.0.0": [
             {
               name: "UnicodeData.txt",
-              path: "UnicodeData.txt",
               type: "file",
               lastModified: Date.now(),
               _content: "0041;LATIN CAPITAL LETTER A;Lu;0;L;;;;;N;;;;0061;",
@@ -45,17 +44,15 @@ describe("http integration: file operations", () => {
           "16.0.0": [
             {
               name: "auxiliary",
-              path: "auxiliary",
               type: "directory",
               lastModified: Date.now(),
               children: [
                 {
                   name: "GraphemeBreakProperty.txt",
-                  path: "auxiliary/GraphemeBreakProperty.txt",
                   type: "file",
                   lastModified: Date.now(),
                   _content: "grapheme break data",
-                } as any,
+                },
               ],
             },
           ],
@@ -85,7 +82,6 @@ describe("http integration: file operations", () => {
           "16.0.0": [
             {
               name: "UnicodeData.txt",
-              path: "UnicodeData.txt",
               type: "file",
               lastModified: Date.now(),
               _content: "some content",
@@ -119,7 +115,6 @@ describe("http integration: file operations", () => {
           "16.0.0": [
             {
               name: "Unicode.txt",
-              path: "Unicode.txt",
               type: "file",
               lastModified: Date.now(),
               _content: unicodeContent,
@@ -151,9 +146,9 @@ describe("http integration: file operations", () => {
         versions: ["16.0.0"],
         files: {
           "16.0.0": [
-            { type: "file", name: "UnicodeData.txt", path: "UnicodeData.txt", lastModified: 0 },
-            { type: "file", name: "Blocks.txt", path: "Blocks.txt", lastModified: 0 },
-            { type: "file", name: "Scripts.txt", path: "Scripts.txt", lastModified: 0 },
+            { type: "file", name: "UnicodeData.txt", lastModified: 0 },
+            { type: "file", name: "Blocks.txt", lastModified: 0 },
+            { type: "file", name: "Scripts.txt", lastModified: 0 },
           ],
         },
         responses: {
@@ -188,19 +183,16 @@ describe("http integration: file operations", () => {
             {
               type: "file",
               name: "UnicodeData.txt",
-              path: "UnicodeData.txt",
               lastModified: 0,
             },
             {
               type: "directory",
               name: "extracted",
-              path: "extracted",
               lastModified: 0,
               children: [
                 {
                   type: "file",
                   name: "DerivedBidiClass.txt",
-                  path: "extracted/DerivedBidiClass.txt",
                   lastModified: 0,
                 },
               ],
@@ -235,9 +227,9 @@ describe("http integration: file operations", () => {
         versions: ["16.0.0"],
         files: {
           "16.0.0": [
-            { type: "file", name: "UnicodeData.txt", path: "UnicodeData.txt", lastModified: 0 },
-            { type: "file", name: "Blocks.txt", path: "Blocks.txt", lastModified: 0 },
-            { type: "file", name: "data.json", path: "data.json", lastModified: 0 },
+            { type: "file", name: "UnicodeData.txt", lastModified: 0 },
+            { type: "file", name: "Blocks.txt", lastModified: 0 },
+            { type: "file", name: "data.json", lastModified: 0 },
           ],
         },
         responses: {
@@ -274,17 +266,15 @@ describe("http integration: file operations", () => {
         versions: ["16.0.0"],
         files: {
           "16.0.0": [
-            { type: "file", name: "UnicodeData.txt", path: "UnicodeData.txt", lastModified: 0 },
+            { type: "file", name: "UnicodeData.txt", lastModified: 0 },
             {
               type: "directory",
               name: "extracted",
-              path: "extracted",
               lastModified: 0,
               children: [
                 {
                   type: "file",
                   name: "DerivedBidiClass.txt",
-                  path: "extracted/DerivedBidiClass.txt",
                   lastModified: 0,
                 },
               ],
@@ -356,7 +346,6 @@ describe("http integration: file operations", () => {
           "16.0.0": [
             {
               name: "UnicodeData.txt",
-              path: "UnicodeData.txt",
               type: "file",
               lastModified: Date.now(),
               _content: "content",
@@ -392,7 +381,6 @@ describe("http integration: file operations", () => {
           "16.0.0": [
             {
               name: "UnicodeData.txt",
-              path: "UnicodeData.txt",
               type: "file",
               lastModified: Date.now(),
               _content: "v16 content",
@@ -401,7 +389,6 @@ describe("http integration: file operations", () => {
           "15.0.0": [
             {
               name: "UnicodeData.txt",
-              path: "UnicodeData.txt",
               type: "file",
               lastModified: Date.now(),
               _content: "v15 content",
