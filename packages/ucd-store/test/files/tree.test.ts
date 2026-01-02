@@ -11,19 +11,6 @@ import {
 import { getFileTree } from "../../src/files/tree";
 
 describe("getFileTree", () => {
-  const SAMPLE_API_TREE = [
-    { type: "file" as const, name: "UnicodeData.txt", path: "UnicodeData.txt" },
-    { type: "file" as const, name: "ReadMe.txt", path: "ReadMe.txt" },
-    {
-      type: "directory" as const,
-      name: "extracted",
-      path: "extracted",
-      children: [
-        { type: "file" as const, name: "DerivedBidiClass.txt", path: "extracted/DerivedBidiClass.txt" },
-      ],
-    },
-  ];
-
   describe("getting file tree from store", () => {
     it("should return tree structure when files exist in store", async () => {
       const { context } = await createTestContext({
@@ -296,28 +283,34 @@ describe("getFileTree", () => {
       let apiCalled = false;
 
       mockStoreApi({
-        versions: ["16.0.0"],
+        versions: ["17.0.0"],
         responses: {
-          "/api/v1/versions/{version}/file-tree": () => {
+          "/api/v1/versions/{version}/file-tree": true,
+          "/api/v1/versions": true,
+          "/api/v1/files/{wildcard}": true,
+          "/.well-known/ucd-config.json": true,
+          "/.well-known/ucd-store/{version}.json": true,
+        },
+        onRequest: ({ path }) => {
+          if (path === "/api/v1/versions/17.0.0/file-tree") {
             apiCalled = true;
-            return HttpResponse.json(SAMPLE_API_TREE);
-          },
+          }
         },
       });
 
       const { context } = await createTestContext({
-        versions: ["16.0.0"],
+        versions: ["17.0.0"],
       });
 
-      const [data, error] = await getFileTree(context, "16.0.0", {
+      const [data, error] = await getFileTree(context, "17.0.0", {
         allowApi: true,
       });
 
       expect(error).toBeNull();
       expect(apiCalled).toBe(true);
       expect(data).toEqual(expect.arrayContaining([
-        expect.objectContaining({ type: "file", name: "UnicodeData.txt" }),
-        expect.objectContaining({ type: "file", name: "ReadMe.txt" }),
+        expect.objectContaining({ type: "file", name: "ArabicShaping.txt" }),
+        expect.objectContaining({ type: "file", name: "BidiBrackets.txt" }),
         expect.objectContaining({ type: "directory", name: "extracted" }),
       ]));
     });
@@ -326,23 +319,29 @@ describe("getFileTree", () => {
       let apiCalled = false;
 
       mockStoreApi({
-        versions: ["16.0.0"],
+        versions: ["17.0.0"],
         responses: {
-          "/api/v1/versions/{version}/file-tree": () => {
+          "/api/v1/versions/{version}/file-tree": true,
+          "/api/v1/versions": true,
+          "/api/v1/files/{wildcard}": true,
+          "/.well-known/ucd-config.json": true,
+          "/.well-known/ucd-store/{version}.json": true,
+        },
+        onRequest: ({ path }) => {
+          if (path === "/api/v1/versions/17.0.0/file-tree") {
             apiCalled = true;
-            return HttpResponse.json(SAMPLE_API_TREE);
-          },
+          }
         },
       });
 
       const { context } = await createTestContext({
-        versions: ["16.0.0"],
+        versions: ["17.0.0"],
         initialFiles: {
-          "16.0.0/StoreOnly.txt": "store content",
+          "17.0.0/StoreOnly.txt": "store content",
         },
       });
 
-      const [data, error] = await getFileTree(context, "16.0.0", {
+      const [data, error] = await getFileTree(context, "17.0.0", {
         allowApi: true,
       });
 
@@ -422,9 +421,9 @@ describe("getFileTree", () => {
         responses: {
           "/api/v1/versions/{version}/file-tree": () => {
             return HttpResponse.json([
-              { type: "file" as const, name: "UnicodeData.txt", path: "UnicodeData.txt" },
-              { type: "file" as const, name: "ReadMe.txt", path: "ReadMe.txt" },
-              { type: "file" as const, name: "data.json", path: "data.json" },
+              { type: "file" as const, name: "UnicodeData.txt", path: "UnicodeData.txt", lastModified: null },
+              { type: "file" as const, name: "ReadMe.txt", path: "ReadMe.txt", lastModified: null },
+              { type: "file" as const, name: "data.json", path: "data.json", lastModified: null },
             ]);
           },
         },
@@ -460,20 +459,22 @@ describe("getFileTree", () => {
               {
                 type: "directory" as const,
                 name: "level1",
-                path: "level1",
+                path: "/level1",
+                lastModified: null,
                 children: [
                   {
                     type: "directory" as const,
                     name: "level2",
-                    path: "level1/level2",
+                    path: "/level1/level2",
+                    lastModified: null,
                     children: [
-                      { type: "file" as const, name: "deep.txt", path: "level1/level2/deep.txt" },
+                      { type: "file" as const, name: "deep.txt", path: "/level1/level2/deep.txt", lastModified: null },
                     ],
                   },
-                  { type: "file" as const, name: "mid.txt", path: "level1/mid.txt" },
+                  { type: "file" as const, name: "mid.txt", path: "/level1/mid.txt", lastModified: null },
                 ],
               },
-              { type: "file" as const, name: "root.txt", path: "root.txt" },
+              { type: "file" as const, name: "root.txt", path: "/root.txt", lastModified: null },
             ]);
           },
         },
