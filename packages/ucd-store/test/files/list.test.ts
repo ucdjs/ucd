@@ -11,19 +11,6 @@ import {
 import { listFiles } from "../../src/files/list";
 
 describe("listFiles", () => {
-  const SAMPLE_FILE_TREE = [
-    { type: "file" as const, name: "UnicodeData.txt", path: "UnicodeData.txt" },
-    { type: "file" as const, name: "ReadMe.txt", path: "ReadMe.txt" },
-    {
-      type: "directory" as const,
-      name: "extracted",
-      path: "extracted",
-      children: [
-        { type: "file" as const, name: "DerivedBidiClass.txt", path: "extracted/DerivedBidiClass.txt" },
-      ],
-    },
-  ];
-
   describe("listing files from store", () => {
     it("should return flat array of file paths when files exist in store", async () => {
       const { context } = await createTestContext({
@@ -244,33 +231,35 @@ describe("listFiles", () => {
       let apiCalled = false;
 
       mockStoreApi({
-        versions: ["16.0.0"],
+        versions: ["17.0.0"],
         responses: {
-          "/api/v1/versions/{version}/file-tree": () => {
-            apiCalled = true;
-            return HttpResponse.json(SAMPLE_FILE_TREE);
-          },
+          "/api/v1/versions/{version}/file-tree": true,
           "/api/v1/versions": true,
           "/api/v1/files/{wildcard}": true,
           "/.well-known/ucd-config.json": true,
           "/.well-known/ucd-store/{version}.json": true,
         },
+        onRequest: ({ path }) => {
+          if (path === "/api/v1/versions/17.0.0/file-tree") {
+            apiCalled = true;
+          }
+        },
       });
 
       const { context } = await createTestContext({
-        versions: ["16.0.0"],
+        versions: ["17.0.0"],
       });
 
-      const [data, error] = await listFiles(context, "16.0.0", {
+      const [data, error] = await listFiles(context, "17.0.0", {
         allowApi: true,
       });
 
       expect(error).toBeNull();
       expect(apiCalled).toBe(true);
       expect(data).toEqual(expect.arrayContaining([
-        "UnicodeData.txt",
-        "ReadMe.txt",
-        "extracted/DerivedBidiClass.txt",
+        "/17.0.0/ucd/ArabicShaping.txt",
+        "/17.0.0/ucd/BidiBrackets.txt",
+        "/17.0.0/ucd/extracted/DerivedBidiClass.txt",
       ]));
     });
 
@@ -278,23 +267,29 @@ describe("listFiles", () => {
       let apiCalled = false;
 
       mockStoreApi({
-        versions: ["16.0.0"],
+        versions: ["17.0.0"],
         responses: {
-          "/api/v1/versions/{version}/file-tree": () => {
+          "/api/v1/versions/{version}/file-tree": true,
+          "/api/v1/versions": true,
+          "/api/v1/files/{wildcard}": true,
+          "/.well-known/ucd-config.json": true,
+          "/.well-known/ucd-store/{version}.json": true,
+        },
+        onRequest: ({ path }) => {
+          if (path === "/api/v1/versions/17.0.0/file-tree") {
             apiCalled = true;
-            return HttpResponse.json(SAMPLE_FILE_TREE);
-          },
+          }
         },
       });
 
       const { context } = await createTestContext({
-        versions: ["16.0.0"],
+        versions: ["17.0.0"],
         initialFiles: {
-          "16.0.0/StoreOnly.txt": "store content",
+          "17.0.0/StoreOnly.txt": "store content",
         },
       });
 
-      const [data, error] = await listFiles(context, "16.0.0", {
+      const [data, error] = await listFiles(context, "17.0.0", {
         allowApi: true,
       });
 
@@ -372,9 +367,9 @@ describe("listFiles", () => {
         responses: {
           "/api/v1/versions/{version}/file-tree": () => {
             return HttpResponse.json([
-              { type: "file", name: "UnicodeData.txt", path: "UnicodeData.txt" },
-              { type: "file", name: "ReadMe.txt", path: "ReadMe.txt" },
-              { type: "file", name: "data.json", path: "data.json" },
+              { type: "file", name: "UnicodeData.txt", path: "UnicodeData.txt", lastModified: null },
+              { type: "file", name: "ReadMe.txt", path: "ReadMe.txt", lastModified: null },
+              { type: "file", name: "data.json", path: "data.json", lastModified: null },
             ]);
           },
         },
@@ -405,20 +400,22 @@ describe("listFiles", () => {
               {
                 type: "directory",
                 name: "level1",
-                path: "level1",
+                path: "/level1",
+                lastModified: null,
                 children: [
                   {
                     type: "directory",
                     name: "level2",
-                    path: "level1/level2",
+                    path: "/level1/level2",
+                    lastModified: null,
                     children: [
-                      { type: "file", name: "deep.txt", path: "level1/level2/deep.txt" },
+                      { type: "file", name: "deep.txt", path: "/level1/level2/deep.txt", lastModified: null },
                     ],
                   },
-                  { type: "file", name: "mid.txt", path: "level1/mid.txt" },
+                  { type: "file", name: "mid.txt", path: "/level1/mid.txt", lastModified: null },
                 ],
               },
-              { type: "file", name: "root.txt", path: "root.txt" },
+              { type: "file", name: "root.txt", path: "/root.txt", lastModified: null },
             ]);
           },
         },
@@ -434,9 +431,9 @@ describe("listFiles", () => {
 
       expect(error).toBeNull();
       expect(data).toEqual(expect.arrayContaining([
-        "root.txt",
-        "level1/mid.txt",
-        "level1/level2/deep.txt",
+        "/root.txt",
+        "/level1/mid.txt",
+        "/level1/level2/deep.txt",
       ]));
     });
   });
