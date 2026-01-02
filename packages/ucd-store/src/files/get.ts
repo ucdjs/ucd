@@ -2,6 +2,7 @@ import type { OperationResult } from "@ucdjs-internal/shared";
 import type { StoreError } from "../errors";
 import type { InternalUCDStoreContext, SharedOperationOptions } from "../types";
 import { createDebugger, tryOr, wrapTry } from "@ucdjs-internal/shared";
+import { isBuiltinHttpBridge } from "@ucdjs/fs-bridge";
 import { hasUCDFolderPath } from "@unicode-utils/core";
 import { join } from "pathe";
 import { isUCDStoreInternalContext } from "../context";
@@ -59,8 +60,11 @@ async function _getFile(
     }
 
     // Use relative path
-    // TODO: maybe include ucd/ here.
-    const localPath = join(version, filePath);
+    let localPath = join(version, filePath);
+    if (isBuiltinHttpBridge(this.fs) && hasUCDFolderPath(version)) {
+      debug?.("Using HTTP bridge path with ucd subpath for version:", version);
+      localPath = join(version, "ucd", filePath);
+    }
 
     debug?.("Checking local file existence:", localPath);
 

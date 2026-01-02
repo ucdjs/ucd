@@ -19,27 +19,34 @@ const debug = createDebugger("ucdjs:test-utils:mock-store");
 const DEFAULT_MOCK_STORE_FILES = {
   "*": [
     {
-      type: "file",
-      name: "ArabicShaping.txt",
-      lastModified: 1755287100000,
-      _content: defaultArabicShapingFileContent,
-    },
-    {
-      type: "file",
-      name: "BidiBrackets.txt",
-      lastModified: 1755287100000,
-      _content: defaultBidiBracketsFileContent,
-    },
-    {
+      name: "ucd",
       type: "directory",
-      name: "extracted",
       lastModified: 1755287100000,
       children: [
         {
           type: "file",
-          name: "DerivedBidiClass.txt",
+          name: "ArabicShaping.txt",
           lastModified: 1755287100000,
-          _content: defaultDerivedBidClassFileContent,
+          _content: defaultArabicShapingFileContent,
+        },
+        {
+          type: "file",
+          name: "BidiBrackets.txt",
+          lastModified: 1755287100000,
+          _content: defaultBidiBracketsFileContent,
+        },
+        {
+          type: "directory",
+          name: "extracted",
+          lastModified: 1755287100000,
+          children: [
+            {
+              type: "file",
+              name: "DerivedBidiClass.txt",
+              lastModified: 1755287100000,
+              _content: defaultDerivedBidClassFileContent,
+            },
+          ],
         },
       ],
     },

@@ -12,10 +12,17 @@ describe("http integration: file operations", () => {
         files: {
           "16.0.0": [
             {
-              name: "UnicodeData.txt",
-              type: "file",
+              name: "ucd",
+              type: "directory",
               lastModified: Date.now(),
-              _content: "0041;LATIN CAPITAL LETTER A;Lu;0;L;;;;;N;;;;0061;",
+              children: [
+                {
+                  name: "UnicodeData.txt",
+                  type: "file",
+                  lastModified: Date.now(),
+                  _content: "0041;LATIN CAPITAL LETTER A;Lu;0;L;;;;;N;;;;0061;",
+                },
+              ],
             },
           ],
         },
@@ -43,15 +50,22 @@ describe("http integration: file operations", () => {
         files: {
           "16.0.0": [
             {
-              name: "auxiliary",
+              name: "ucd",
               type: "directory",
               lastModified: Date.now(),
               children: [
                 {
-                  name: "GraphemeBreakProperty.txt",
-                  type: "file",
+                  name: "auxiliary",
+                  type: "directory",
                   lastModified: Date.now(),
-                  _content: "grapheme break data",
+                  children: [
+                    {
+                      name: "GraphemeBreakProperty.txt",
+                      type: "file",
+                      lastModified: Date.now(),
+                      _content: "grapheme break data",
+                    },
+                  ],
                 },
               ],
             },
@@ -114,10 +128,17 @@ describe("http integration: file operations", () => {
         files: {
           "16.0.0": [
             {
-              name: "Unicode.txt",
-              type: "file",
+              name: "ucd",
+              type: "directory",
               lastModified: Date.now(),
-              _content: unicodeContent,
+              children: [
+                {
+                  name: "Unicode.txt",
+                  type: "file",
+                  lastModified: Date.now(),
+                  _content: unicodeContent,
+                },
+              ],
             },
           ],
         },
@@ -146,9 +167,16 @@ describe("http integration: file operations", () => {
         versions: ["16.0.0"],
         files: {
           "16.0.0": [
-            { type: "file", name: "UnicodeData.txt", lastModified: 0 },
-            { type: "file", name: "Blocks.txt", lastModified: 0 },
-            { type: "file", name: "Scripts.txt", lastModified: 0 },
+            {
+              name: "ucd",
+              type: "directory",
+              lastModified: Date.now(),
+              children: [
+                { type: "file", name: "UnicodeData.txt", lastModified: 0 },
+                { type: "file", name: "Blocks.txt", lastModified: 0 },
+                { type: "file", name: "Scripts.txt", lastModified: 0 },
+              ],
+            },
           ],
         },
         responses: {
@@ -167,7 +195,6 @@ describe("http integration: file operations", () => {
       const [data, error] = await store.files.list("16.0.0");
 
       expect(error).toBeNull();
-      expect(data).toHaveLength(3);
       expect(data).toEqual([
         "UnicodeData.txt",
         "Blocks.txt",

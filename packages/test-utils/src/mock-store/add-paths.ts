@@ -22,7 +22,7 @@ export function addPathsToFileNodes(
       const dirNode = node as Extract<MockStoreNode, { type: "directory" }>;
       return {
         ...dirNode,
-        path: fullPath,
+        path: `${fullPath}/`,
         children: addPathsToFileNodes(
           dirNode.children,
           version,
