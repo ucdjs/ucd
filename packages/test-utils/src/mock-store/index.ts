@@ -3,6 +3,7 @@ import type { MockStoreConfig, MockStoreFiles } from "./types";
 import { createDebugger, isApiError } from "@ucdjs-internal/shared";
 import { HttpResponse } from "msw";
 import { mockFetch } from "../msw";
+import { addPathsToFileNodes } from "./add-paths";
 import { defaultArabicShapingFileContent } from "./default-files/arabic-shaping";
 import { defaultBidiBracketsFileContent } from "./default-files/bidi-brackets";
 import { defaultDerivedBidClassFileContent } from "./default-files/derived-bidi-class";
@@ -21,27 +22,23 @@ const DEFAULT_MOCK_STORE_FILES = {
     {
       type: "file",
       name: "ArabicShaping.txt",
-      path: "/17.0.0/ucd/ArabicShaping.txt",
       lastModified: 1755287100000,
       _content: defaultArabicShapingFileContent,
     },
     {
       type: "file",
       name: "BidiBrackets.txt",
-      path: "/17.0.0/ucd/BidiBrackets.txt",
       lastModified: 1755287100000,
       _content: defaultBidiBracketsFileContent,
     },
     {
       type: "directory",
       name: "extracted",
-      path: "/17.0.0/ucd/extracted",
       lastModified: 1755287100000,
       children: [
         {
           type: "file",
           name: "DerivedBidiClass.txt",
-          path: "/17.0.0/ucd/extracted/DerivedBidiClass.txt",
           lastModified: 1755287100000,
           _content: defaultDerivedBidClassFileContent,
         },
@@ -174,6 +171,7 @@ function toMSWPath(endpoint: string): string {
 }
 
 export type { MockStoreConfig };
+export { addPathsToFileNodes } from "./add-paths";
 export { createFileTree } from "./file-tree";
 export type { FileTreeInput, FileTreeNodeWithContent } from "./file-tree";
 export { configure, unsafeResponse } from "./helpers";

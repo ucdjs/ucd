@@ -1,6 +1,7 @@
 import type { MockStoreNode } from "../types";
 import { findFileByPath } from "@ucdjs-internal/shared";
 import { HttpResponse } from "../../msw";
+import { addPathsToFileNodes } from "../add-paths";
 import { defineMockRouteHandler } from "../define";
 
 /**
@@ -38,14 +39,32 @@ export const filesRoute = defineMockRouteHandler({
           const wildcard = params.wildcard as string;
 
           // Extract version and file path from wildcard (e.g., "16.0.0/ucd/UnicodeData.txt")
-          // TODO: Handle cases where we request `/api/v1/files/test.txt`.
-          const [version, ...pathParts] = wildcard.split("/");
-          const filePath = pathParts.join("/");
+          // Handle both versioned paths (start with version key) and paths without version
+          const [firstPart, ...pathParts] = wildcard.split("/");
 
-          // Get files for this version, or fall back to "*"
-          const versionFiles = (version ? files[version] : undefined) ?? files["*"];
+          // Check if the first part is a valid version key in files
+          const isVersionKey = firstPart && firstPart in files;
 
-          if (versionFiles != null && Array.isArray(versionFiles)) {
+          let version: string;
+          let filePath: string;
+          let versionFilesRaw: typeof files[keyof typeof files];
+
+          if (isVersionKey) {
+            // Version-specific path: "16.0.0/ucd/file.txt"
+            version = firstPart;
+            filePath = pathParts.join("/");
+            versionFilesRaw = files[firstPart];
+          } else {
+            // Non-versioned path: "test.txt" - use root files or fall back to wildcard
+            version = "root"; // Use "root" for path generation
+            filePath = wildcard; // Use full path since no version prefix
+            versionFilesRaw = files.root || files["*"];
+          }
+
+          if (versionFilesRaw != null && Array.isArray(versionFilesRaw)) {
+            // Add paths to the files based on the version
+            const versionFiles = addPathsToFileNodes(versionFilesRaw, version);
+
             // If no path specified, return the root files for this version
             if (!filePath) {
               const stripped = omitChildrenAndContent(versionFiles);
@@ -53,11 +72,11 @@ export const filesRoute = defineMockRouteHandler({
             }
 
             // Find the file/directory node that matches the path
-            const fileNode = findFileByPath(versionFiles, `/${version}/${filePath}`);
+            const fileNode = findFileByPath(versionFiles as any, `/${version}/${filePath}`);
 
             // If it's a directory, return its children (or empty array)
             if (fileNode && fileNode.type === "directory") {
-              const stripped = omitChildrenAndContent(fileNode.children ?? []);
+              const stripped = omitChildrenAndContent((fileNode.children ?? []) as any);
               return HttpResponse.json(stripped);
             }
 
