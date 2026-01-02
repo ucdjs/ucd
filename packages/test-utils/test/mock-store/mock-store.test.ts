@@ -103,11 +103,13 @@ describe("mockStoreApi", () => {
         type: "draft",
       }];
 
+      const customResolver = vi.fn(async () => {
+        return HttpResponse.json<UnicodeVersionList>(customVersion);
+      });
+
       mockStoreApi({
         responses: {
-          "/api/v1/versions": vi.fn(async () => {
-            return HttpResponse.json<UnicodeVersionList>(customVersion);
-          }),
+          "/api/v1/versions": customResolver,
         },
       });
 
@@ -115,6 +117,10 @@ describe("mockStoreApi", () => {
       const data = await response.json();
 
       expect(data).toEqual(customVersion);
+      expect(customResolver).toHaveBeenCalledWith(expect.objectContaining({
+        params: {},
+        requestId: expect.any(String),
+      }));
     });
 
     it("should skip endpoint when set to false", async () => {
@@ -213,20 +219,18 @@ describe("mockStoreApi", () => {
     });
 
     it("should accept custom resolver with path params", async () => {
+      const customResolver = vi.fn(async ({ params }) => {
+        return HttpResponse.json<UnicodeTree>([{
+          type: "file",
+          name: `test-${params.version}.txt`,
+          path: `test-${params.version}.txt`,
+          lastModified: 123456,
+        }]);
+      });
+
       mockStoreApi({
         responses: {
-          "/api/v1/versions/{version}/file-tree": vi.fn(async ({ params }) => {
-            const tree: UnicodeTree = [
-              {
-                type: "file",
-                name: `test-${params.version}.txt`,
-                path: `test-${params.version}.txt`,
-                lastModified: 123456,
-              },
-            ];
-
-            return HttpResponse.json<UnicodeTree>(tree);
-          }),
+          "/api/v1/versions/{version}/file-tree": customResolver,
         },
       });
 
@@ -236,6 +240,9 @@ describe("mockStoreApi", () => {
       const data = await response.json();
 
       expect(data[0].name).toBe("test-1.0.0.txt");
+      expect(customResolver).toHaveBeenCalledWith(expect.objectContaining({
+        params: { version: "1.0.0" },
+      }));
     });
   });
 
@@ -248,12 +255,15 @@ describe("mockStoreApi", () => {
       });
 
       const response = await fetch(
-        "https://api.ucdjs.dev/api/v1/files/test.txt",
+        "https://api.ucdjs.dev/api/v1/files/17.0.0/ucd/ArabicShaping.txt",
       );
       expect(response.ok).toBe(true);
 
       const text = await response.text();
-      expect(text).toBe("Default file content");
+
+      const lines = text.split("\n");
+      expect(lines.at(0)).toBe("# ArabicShaping-17.0.0.txt");
+      expect(lines.at(1)).toBe("# Date: 2025-08-14");
     });
 
     it("should accept custom text content", async () => {
@@ -352,7 +362,11 @@ describe("mockStoreApi", () => {
 
   describe("endpoint: /.well-known/ucd-config.json", () => {
     it("should return default config", async () => {
-      mockStoreApi();
+      mockStoreApi({
+        responses: {
+          "/.well-known/ucd-config.json": true,
+        },
+      });
 
       const response = await fetch(
         "https://api.ucdjs.dev/.well-known/ucd-config.json",
@@ -442,6 +456,7 @@ describe("mockStoreApi", () => {
 
       mockStoreApi({
         responses: {
+          "/.well-known/ucd-config.json": true,
           "/api/v1/versions": false,
           "/api/v1/versions/{version}/file-tree": customTree,
         },
@@ -553,6 +568,9 @@ describe("mockStoreApi", () => {
     it("should work with custom baseUrl without trailing slash", async () => {
       mockStoreApi({
         baseUrl: "https://custom.ucdjs.dev",
+        responses: {
+          "/api/v1/versions": true,
+        },
       });
 
       const response = await fetch("https://custom.ucdjs.dev/api/v1/versions");
@@ -562,6 +580,9 @@ describe("mockStoreApi", () => {
     it("should work with custom baseUrl with trailing slash", async () => {
       mockStoreApi({
         baseUrl: "https://custom.ucdjs.dev/",
+        responses: {
+          "/api/v1/versions": true,
+        },
       });
 
       const response = await fetch("https://custom.ucdjs.dev/api/v1/versions");
@@ -573,6 +594,13 @@ describe("mockStoreApi", () => {
 
       mockStoreApi({
         baseUrl: customBase,
+        responses: {
+          "/api/v1/versions": true,
+          "/api/v1/versions/{version}/file-tree": true,
+          "/api/v1/files/{wildcard}": true,
+          "/.well-known/ucd-config.json": true,
+          "/.well-known/ucd-store/{version}.json": true,
+        },
       });
 
       const urls = [

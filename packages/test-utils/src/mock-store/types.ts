@@ -81,9 +81,13 @@ type PartialRecord<K extends keyof any, T> = {
   [P in K]?: T;
 };
 
-export type MockStoreFiles = PartialRecord<StoreVersionFileKey | StoreFileKeyWildcard | (string & {}), (UnicodeTreeNode & {
-  _content?: string;
-})[]>;
+type MockStoreKey = StoreVersionFileKey | StoreFileKeyWildcard | (string & {});
+
+export type MockStoreNode
+  = | (Omit<UnicodeTreeNode, "type"> & { type: "file"; _content?: string })
+    | (Omit<UnicodeTreeNode, "type"> & { type: "directory"; _content?: string; children: MockStoreNode[] });
+
+export type MockStoreFiles = PartialRecord<MockStoreKey, MockStoreNode[]>;
 
 export interface MockStoreConfig {
   /**

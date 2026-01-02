@@ -1,41 +1,21 @@
-import type { UnicodeTreeNode } from "@ucdjs/schemas";
+import type { MockStoreNode } from "../types";
 import { findFileByPath } from "@ucdjs-internal/shared";
 import { HttpResponse } from "../../msw";
 import { defineMockRouteHandler } from "../define";
-
-type ExtendedUnicodeTreeNode = UnicodeTreeNode & {
-  _content?: string;
-};
 
 /**
  * Strips the `_content` and `children` properties from file nodes.
  * This is used to return clean JSON responses that match the API schema,
  * where directory listings show flat entries without nested children.
  */
-function omitChildrenAndContent<T extends ExtendedUnicodeTreeNode>(nodes: T[]): Omit<T, "_content" | "children">[] {
+function omitChildrenAndContent<T extends MockStoreNode>(nodes: T[]): Omit<T, "_content" | "children">[] {
   return nodes.map((node) => {
     const { _content, children: _children, ...rest } = node as any;
     return rest as Omit<T, "_content" | "children">;
   });
 }
 
-/**
- * Strips the "ucd" segment from a file path if present.
- * The real API uses paths like `<version>/ucd/<file>` for modern Unicode versions,
- * but the mock files are defined without the "ucd" prefix.
- *
- * Examples:
- * - "ucd/UnicodeData.txt" -> "UnicodeData.txt"
- * - "ucd/auxiliary/GraphemeBreakProperty.txt" -> "auxiliary/GraphemeBreakProperty.txt"
- * - "UnicodeData.txt" -> "UnicodeData.txt" (no change)
- */
-function stripUcdPrefix(filePath: string): string {
-  if (filePath.startsWith("ucd/")) {
-    return filePath.slice(4);
-  }
-  return filePath;
-}
-
+const DEFAULT_FILE_RESPONSE_CONTENT = "This is a default file response.";
 export const filesRoute = defineMockRouteHandler({
   endpoint: "/api/v1/files/{wildcard}",
   setup: ({
@@ -56,19 +36,16 @@ export const filesRoute = defineMockRouteHandler({
       [["GET", "HEAD"], url, ({ params }) => {
         if (shouldUseDefaultValue) {
           const wildcard = params.wildcard as string;
-          // Extract version and file path from wildcard (e.g., "16.0.0/ucd/UnicodeData.txt")
-          const [version, ...pathParts] = wildcard.split("/");
-          const rawFilePath = pathParts.join("/");
 
-          // Strip the "ucd" segment from the path if present
-          // The real API uses `<version>/ucd/<file>` paths, but mock files
-          // are defined relative to the ucd folder (e.g., "UnicodeData.txt")
-          const filePath = stripUcdPrefix(rawFilePath);
+          // Extract version and file path from wildcard (e.g., "16.0.0/ucd/UnicodeData.txt")
+          // TODO: Handle cases where we request `/api/v1/files/test.txt`.
+          const [version, ...pathParts] = wildcard.split("/");
+          const filePath = pathParts.join("/");
 
           // Get files for this version, or fall back to "*"
           const versionFiles = (version ? files[version] : undefined) ?? files["*"];
 
-          if (versionFiles && Array.isArray(versionFiles)) {
+          if (versionFiles != null && Array.isArray(versionFiles)) {
             // If no path specified, return the root files for this version
             if (!filePath) {
               const stripped = omitChildrenAndContent(versionFiles);
@@ -76,7 +53,7 @@ export const filesRoute = defineMockRouteHandler({
             }
 
             // Find the file/directory node that matches the path
-            const fileNode = findFileByPath(versionFiles, filePath);
+            const fileNode = findFileByPath(versionFiles, `/${version}/${filePath}`);
 
             // If it's a directory, return its children (or empty array)
             if (fileNode && fileNode.type === "directory") {
@@ -91,11 +68,12 @@ export const filesRoute = defineMockRouteHandler({
 
             // If file found but no _content, return the filename
             if (fileNode) {
-              return HttpResponse.text(fileNode.name);
+              console.warn(`Mock store: File "${filePath}" found but has no _content. Returning default response content.`);
+              return HttpResponse.text(DEFAULT_FILE_RESPONSE_CONTENT);
             }
           }
 
-          return HttpResponse.text("This is a default file response.");
+          return HttpResponse.text(DEFAULT_FILE_RESPONSE_CONTENT);
         }
 
         if (providedResponse instanceof ArrayBuffer || providedResponse instanceof Uint8Array) {
