@@ -35,9 +35,10 @@ describe("createVersionsResource", () => {
       name: "ucd",
       type: "directory",
       path: "/16.0.0/ucd",
+      lastModified: 1755287100000,
       children: [
-        { name: "UnicodeData.txt", type: "file", path: "/16.0.0/ucd/UnicodeData.txt" },
-        { name: "PropList.txt", type: "file", path: "/16.0.0/ucd/PropList.txt" },
+        { name: "UnicodeData.txt", type: "file", path: "/16.0.0/ucd/UnicodeData.txt", lastModified: 1755287100000 },
+        { name: "PropList.txt", type: "file", path: "/16.0.0/ucd/PropList.txt", lastModified: 1755287100000 },
       ],
     },
   ];
@@ -50,7 +51,7 @@ describe("createVersionsResource", () => {
         }],
       ]);
 
-      const versionsResource = createVersionsResource({ baseUrl, endpoints });
+      const versionsResource = createVersionsResource({ baseUrl: UCDJS_API_BASE_URL, endpoints });
       const { data, error } = await versionsResource.list();
 
       expect(error).toBeNull();
@@ -66,7 +67,7 @@ describe("createVersionsResource", () => {
         }],
       ]);
 
-      const versionsResource = createVersionsResource({ baseUrl, endpoints });
+      const versionsResource = createVersionsResource({ baseUrl: UCDJS_API_BASE_URL, endpoints });
       const { data, error } = await versionsResource.list();
 
       expect(error).toBeNull();
@@ -84,7 +85,7 @@ describe("createVersionsResource", () => {
         }],
       ]);
 
-      const versionsResource = createVersionsResource({ baseUrl, endpoints });
+      const versionsResource = createVersionsResource({ baseUrl: UCDJS_API_BASE_URL, endpoints });
       const { data, error } = await versionsResource.list();
 
       expect(data).toBeNull();
@@ -99,7 +100,7 @@ describe("createVersionsResource", () => {
         }],
       ]);
 
-      const versionsResource = createVersionsResource({ baseUrl, endpoints });
+      const versionsResource = createVersionsResource({ baseUrl: UCDJS_API_BASE_URL, endpoints });
       const { data, error } = await versionsResource.list();
 
       expect(data).toBeNull();
@@ -115,7 +116,7 @@ describe("createVersionsResource", () => {
         }],
       ]);
 
-      const versionsResource = createVersionsResource({ baseUrl, endpoints });
+      const versionsResource = createVersionsResource({ baseUrl: UCDJS_API_BASE_URL, endpoints });
       const { data, error } = await versionsResource.getFileTree("16.0.0");
 
       expect(error).toBeNull();
@@ -130,21 +131,18 @@ describe("createVersionsResource", () => {
           name: "ucd",
           type: "directory",
           path: `/${version}/ucd`,
+          lastModified: 1700000000000,
           children: [
-            { name: "UnicodeData.txt", type: "file", path: `/${version}/ucd/UnicodeData.txt` },
+            { name: "UnicodeData.txt", type: "file", path: `/${version}/ucd/UnicodeData.txt`, lastModified: 1700000000000 },
           ],
         },
       ];
 
-      mockFetch([
-        [
-          "GET",
-          `${UCDJS_API_BASE_URL}${endpoints.versions}/${version}/file-tree`,
-          () => HttpResponse.json(versionFileTree),
-        ],
-      ]);
+      mockFetch("GET", `${UCDJS_API_BASE_URL}${endpoints.versions}/${version}/file-tree`, () => {
+        return HttpResponse.json(versionFileTree);
+      });
 
-      const versionsResource = createVersionsResource({ baseUrl, endpoints });
+      const versionsResource = createVersionsResource({ baseUrl: UCDJS_API_BASE_URL, endpoints });
       const { data, error } = await versionsResource.getFileTree(version);
 
       expect(error).toBeNull();
@@ -158,7 +156,7 @@ describe("createVersionsResource", () => {
         }],
       ]);
 
-      const versionsResource = createVersionsResource({ baseUrl, endpoints });
+      const versionsResource = createVersionsResource({ baseUrl: UCDJS_API_BASE_URL, endpoints });
       const { data, error } = await versionsResource.getFileTree("99.0.0");
 
       expect(data).toBeNull();
@@ -173,7 +171,7 @@ describe("createVersionsResource", () => {
         }],
       ]);
 
-      const versionsResource = createVersionsResource({ baseUrl, endpoints });
+      const versionsResource = createVersionsResource({ baseUrl: UCDJS_API_BASE_URL, endpoints });
       const { data, error } = await versionsResource.getFileTree("16.0.0");
 
       expect(data).toBeNull();
@@ -212,7 +210,7 @@ describe("createVersionsResource", () => {
       ]);
 
       const versionsResource = createVersionsResource({
-        baseUrl,
+        baseUrl: UCDJS_API_BASE_URL,
         endpoints: {
           ...endpoints,
           versions: customVersionsPath,
