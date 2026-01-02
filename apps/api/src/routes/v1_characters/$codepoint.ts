@@ -8,13 +8,14 @@ import { z } from "zod";
 import { MAX_AGE_ONE_DAY_SECONDS } from "../../constants";
 import { badRequest, notFound } from "../../lib/errors";
 import { createLogger } from "../../lib/logger";
+import { VERSION_ROUTE_PARAM } from "../../lib/shared-parameters";
 import { generateReferences, OPENAPI_TAGS } from "../../openapi";
 
 const log = createLogger("ucd:api:v1_characters");
 
 const GET_CHARACTER_ROUTE = createRoute({
   method: "get",
-  path: "/{codepoint}",
+  path: "/{version}/{codepoint}",
   tags: [OPENAPI_TAGS.CHARACTERS],
   middleware: [
     cache({
@@ -22,11 +23,16 @@ const GET_CHARACTER_ROUTE = createRoute({
       cacheControl: `max-age=${MAX_AGE_ONE_DAY_SECONDS}`,
     }),
   ],
-  request: {
-    params: z.object({
-      codepoint: z.string(),
-    }),
-  },
+  parameters: [
+    VERSION_ROUTE_PARAM,
+    {
+      name: "codepoint",
+      in: "path",
+      schema: { type: "string" },
+      required: true,
+      description: "Unicode codepoint in U+XXXX, 0xXXXX, decimal, or character format (e.g., U+0041, 0x41, 65, A)",
+    },
+  ],
   description: dedent`
     ## Get Unicode Character Details
 
@@ -107,7 +113,7 @@ function parseCodepoint(input: string): string | null {
 
 export function registerCharacterRoute(router: OpenAPIHono<HonoEnv>) {
   router.openapi(GET_CHARACTER_ROUTE, async (c) => {
-    const { codepoint: codepointInput } = c.req.valid("param");
+    const { codepoint: codepointInput, version } = c.req.param();
 
     const codepoint = parseCodepoint(codepointInput);
 
@@ -120,7 +126,7 @@ export function registerCharacterRoute(router: OpenAPIHono<HonoEnv>) {
 
     // TODO: Fetch character data from Unicode database
     // For now, return a placeholder response
-    log.info("Fetching character data", { codepoint });
+    log.info("Fetching character data", { codepoint, version });
 
     return notFound(c, {
       message: `Character data for ${codepoint} not yet available. API implementation pending.`,

@@ -8,25 +8,14 @@ import { z } from "zod";
 import { MAX_AGE_ONE_DAY_SECONDS } from "../../constants";
 import { badRequest, notFound } from "../../lib/errors";
 import { createLogger } from "../../lib/logger";
+import { VERSION_ROUTE_PARAM } from "../../lib/shared-parameters";
 import { generateReferences, OPENAPI_TAGS } from "../../openapi";
 
 const log = createLogger("ucd:api:v1_blocks");
 
-const QUERY_PARAMS = z.object({
-  include_characters: z.enum(["true", "false"]).default("false").meta({
-    description: "Whether to include the character list in the response",
-  }),
-  format: z.enum(["minimal", "detailed"]).default("minimal").meta({
-    description: "Character format: minimal returns only codepoint/name, detailed includes additional properties",
-  }),
-  limit: z.coerce.number().int().positive().optional().meta({
-    description: "Maximum number of characters to return",
-  }),
-});
-
 const GET_BLOCK_ROUTE = createRoute({
   method: "get",
-  path: "/{block}",
+  path: "/{version}/{block}",
   tags: [OPENAPI_TAGS.BLOCKS],
   middleware: [
     cache({
@@ -34,12 +23,17 @@ const GET_BLOCK_ROUTE = createRoute({
       cacheControl: `max-age=${MAX_AGE_ONE_DAY_SECONDS}`,
     }),
   ],
-  request: {
-    params: z.object({
-      block: z.string(),
-    }),
-    query: QUERY_PARAMS,
-  },
+  parameters: [
+    VERSION_ROUTE_PARAM,
+    {
+      name: "block",
+      in: "path",
+      schema: { type: "string" },
+      required: true,
+      description: "Unicode block name or ID (e.g., Basic_Latin, CJK_Unified_Ideographs)",
+    },
+  ],
+
   description: dedent`
     ## Get Unicode Block Details
 
@@ -99,8 +93,7 @@ const GET_BLOCK_ROUTE = createRoute({
 
 export function registerBlockRoute(router: OpenAPIHono<HonoEnv>) {
   router.openapi(GET_BLOCK_ROUTE, async (c) => {
-    const { block } = c.req.valid("param");
-    const { include_characters: includeCharacters, format, limit } = c.req.valid("query");
+    const { block, version } = c.req.param();
 
     if (!block || block.length === 0) {
       log.warn("Empty block name");
@@ -113,9 +106,7 @@ export function registerBlockRoute(router: OpenAPIHono<HonoEnv>) {
     // Include characters if requested, apply format and limit
     log.info("Fetching block data", {
       block,
-      includeCharacters,
-      format,
-      limit,
+      version,
     });
 
     return notFound(c, {

@@ -8,28 +8,14 @@ import { z } from "zod";
 import { MAX_AGE_ONE_DAY_SECONDS } from "../../constants";
 import { badRequest, notFound } from "../../lib/errors";
 import { createLogger } from "../../lib/logger";
+import { VERSION_ROUTE_PARAM } from "../../lib/shared-parameters";
 import { generateReferences, OPENAPI_TAGS } from "../../openapi";
 
 const log = createLogger("ucd:api:v1_properties");
 
-const QUERY_PARAMS = z.object({
-  value: z.string().optional().meta({
-    description: "Optional property value filter (e.g., Numeric_Value=5)",
-  }),
-  format: z.enum(["json", "ranges", "list"]).default("ranges").meta({
-    description: "Response format: json for full details, ranges for codepoint ranges, list for simple character list",
-  }),
-  limit: z.coerce.number().int().positive().optional().meta({
-    description: "Maximum number of results to return",
-  }),
-  offset: z.coerce.number().int().nonnegative().default(0).meta({
-    description: "Pagination offset for result set",
-  }),
-});
-
 const GET_PROPERTY_ROUTE = createRoute({
   method: "get",
-  path: "/{property}",
+  path: "/{version}/{property}",
   tags: [OPENAPI_TAGS.PROPERTIES],
   middleware: [
     cache({
@@ -37,12 +23,16 @@ const GET_PROPERTY_ROUTE = createRoute({
       cacheControl: `max-age=${MAX_AGE_ONE_DAY_SECONDS}`,
     }),
   ],
-  request: {
-    params: z.object({
-      property: z.string(),
-    }),
-    query: QUERY_PARAMS,
-  },
+  parameters: [
+    VERSION_ROUTE_PARAM,
+    {
+      name: "property",
+      in: "path",
+      schema: { type: "string" },
+      required: true,
+      description: "Unicode property name (e.g., Alphabetic, Uppercase, Emoji)",
+    },
+  ],
   description: dedent`
     ## Get Characters by Unicode Property
 
@@ -99,8 +89,7 @@ const GET_PROPERTY_ROUTE = createRoute({
 
 export function registerPropertyRoute(router: OpenAPIHono<HonoEnv>) {
   router.openapi(GET_PROPERTY_ROUTE, async (c) => {
-    const { property } = c.req.valid("param");
-    const { format, limit, offset, value } = c.req.valid("query");
+    const { property, version } = c.req.param();
 
     if (!property || property.length === 0) {
       log.warn("Empty property name");
@@ -111,7 +100,10 @@ export function registerPropertyRoute(router: OpenAPIHono<HonoEnv>) {
 
     // TODO: Fetch property data from Unicode database
     // Filter by property and value, apply format, pagination
-    log.info("Fetching property data", { property, value, format, limit, offset });
+    log.info("Fetching property data", {
+      property,
+      version,
+    });
 
     return notFound(c, {
       message: `Property "${property}" data not yet available. API implementation pending.`,

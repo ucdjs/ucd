@@ -4,22 +4,27 @@ import { createRoute } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
 import { UnicodeBlockListSchema } from "@ucdjs/schemas";
 import { cache } from "hono/cache";
+import { z } from "zod";
 import { MAX_AGE_ONE_DAY_SECONDS } from "../../constants";
 import { internalServerError } from "../../lib/errors";
 import { createLogger } from "../../lib/logger";
+import { VERSION_ROUTE_PARAM } from "../../lib/shared-parameters";
 import { generateReferences, OPENAPI_TAGS } from "../../openapi";
 
 const log = createLogger("ucd:api:v1_blocks");
 
 const GET_BLOCKS_LIST_ROUTE = createRoute({
   method: "get",
-  path: "/",
+  path: "/{version}",
   tags: [OPENAPI_TAGS.BLOCKS],
   middleware: [
     cache({
       cacheName: "ucdjs:v1_blocks:list",
       cacheControl: `max-age=${MAX_AGE_ONE_DAY_SECONDS * 7}`, // 7 days
     }),
+  ],
+  parameters: [
+    VERSION_ROUTE_PARAM,
   ],
   description: dedent`
     ## List All Unicode Blocks
@@ -67,10 +72,12 @@ const GET_BLOCKS_LIST_ROUTE = createRoute({
 
 export function registerBlocksListRoute(router: OpenAPIHono<HonoEnv>) {
   router.openapi(GET_BLOCKS_LIST_ROUTE, async (c) => {
+    const { version } = c.req.param();
+
     log.info("Fetching blocks list");
 
     // TODO: Fetch blocks list from Unicode database
-    log.info("Blocks list request");
+    log.info("Blocks list request", { version });
 
     return internalServerError(c, {
       message: "Blocks list not yet available. API implementation pending.",
