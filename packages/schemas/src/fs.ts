@@ -38,7 +38,7 @@ export type UCDStoreManifest = z.output<typeof UCDStoreManifestSchema>;
 const BaseItemSchema = z.object({
   name: z.string(),
   path: z.string(),
-  lastModified: z.number(),
+  lastModified: z.number().or(z.null()),
 });
 
 const DirectoryResponseSchema = BaseItemSchema.extend({
@@ -58,6 +58,22 @@ export const FileEntrySchema = z.union([
 
     This schema represents either a directory listing or a file response.
   `,
+}).superRefine((data, ctx) => {
+  // Ensure that directory paths end with a slash
+  if (data.type === "directory" && !data.path.endsWith("/")) {
+    ctx.addIssue({
+      code: "custom",
+      message: "Directory paths must end with a trailing slash ('/').",
+    });
+  }
+
+  // If the path doesn't start with a slash.
+  if (!data.path.startsWith("/")) {
+    ctx.addIssue({
+      code: "custom",
+      message: "Paths must start with a leading slash ('/').",
+    });
+  }
 });
 
 export type FileEntry = z.infer<typeof FileEntrySchema>;
