@@ -17,6 +17,7 @@ const STORE_SUBCOMMANDS = [
   "verify",
   "analyze",
   "status",
+  "compare",
 ] as const;
 export type Subcommand = (typeof STORE_SUBCOMMANDS)[number];
 
@@ -33,19 +34,19 @@ export async function runStoreRoot(subcommand: string, { flags }: CLIStoreCmdOpt
       commandName: "ucd store",
       usage: "[command] [...flags]",
       tables: {
-        Commands: [
+        "Commands (local store only)": [
           ["init", "Initialize an UCD Store (create lockfile and download files)."],
           ["sync", "Sync files to match lockfile state (download missing, optionally remove orphaned)."],
           ["mirror", "Download Unicode data files to local storage."],
-          ["verify", "Verify store integrity against API (works with HTTP bridge)."],
-          ["analyze", "Analyze store contents and file status (works with HTTP bridge)."],
-          ["status", "Show store status and lockfile information (works with HTTP bridge)."],
         ],
-        Flags: [
-          ["--store-dir", "Directory where the UCD files are stored."],
-          ["--remote", "Use a Remote UCD Store."],
+        "Commands (local or remote)": [
+          ["verify", "Verify store integrity against API."],
+          ["analyze", "Analyze store contents and file status."],
+          ["status", "Show store status and version information."],
+          ["compare", "Compare two versions and report differences."],
+        ],
+        "Flags": [
           ["--force", "Force operation (command-specific behavior)."],
-          ["--lockfile-only", "Read-only mode: only read lockfile, never update it."],
           ["--help (-h)", "See all available flags."],
         ],
       },
@@ -91,6 +92,13 @@ export async function runStoreRoot(subcommand: string, { flags }: CLIStoreCmdOpt
   if (subcommand === "status") {
     const { runStatusStore } = await import("./status");
     await runStatusStore({ flags });
+    return;
+  }
+
+  if (subcommand === "compare") {
+    const [from, to] = versions.slice(0, 2);
+    const { runCompareStore } = await import("./compare");
+    await runCompareStore({ flags, from, to });
     return;
   }
 

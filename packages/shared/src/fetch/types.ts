@@ -1,5 +1,5 @@
 import type { ZodType } from "zod";
-import type { FetchError } from "./error";
+import type { FetchError, FetchSchemaValidationError } from "./error";
 
 export interface CustomFetch {
   <T = any, R extends ResponseType = "json">(
@@ -28,7 +28,7 @@ export type MappedResponseType<
 
 export interface SafeFetchResponse<T = any> {
   data: T | null;
-  error: FetchError<T> | null;
+  error: FetchError<T> | FetchSchemaValidationError<T> | null;
   response?: FetchResponse<T>;
 }
 

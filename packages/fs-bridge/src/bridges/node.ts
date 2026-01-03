@@ -44,6 +44,7 @@ const NodeFileSystemBridge = defineFileSystemBridge({
 
     return {
       async read(path) {
+        // TODO: duplicate code with write - refactor
         // Reject file paths ending with / - files don't have trailing slashes
         // Allow /, ./, and ../ as they are special directory references
         const trimmedPath = path.trim();

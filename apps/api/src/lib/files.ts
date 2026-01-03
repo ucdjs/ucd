@@ -20,8 +20,11 @@ import { parse } from "apache-autoindex-parse";
  * console.log(entries); // [{ type: 'directory', name: 'UNIDATA', path: '/UNIDATA', ... }]
  * ```
  */
-export async function parseUnicodeDirectory(html: string): Promise<Entry[]> {
-  const files = parse(html, "F2");
+export async function parseUnicodeDirectory(html: string, basePath = ""): Promise<Entry[]> {
+  const files = parse(html, {
+    format: "F2",
+    basePath,
+  });
 
   return files.map(({ type, name, path, lastModified }) => ({
     type,

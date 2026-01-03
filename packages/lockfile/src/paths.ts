@@ -1,25 +1,21 @@
 import { join } from "pathe";
 
 /**
- * Gets the default lockfile path for a given base path.
- * The lockfile is always named `.ucd-store.lock` regardless of base path.
+ * Gets the lockfile filename.
+ * The lockfile is always named `.ucd-store.lock` and stored at the store root.
  *
- * @param {string} _basePath - Base path (unused, kept for API compatibility)
- * @returns {string} The lockfile path (`.ucd-store.lock`)
+ * @returns {string} The lockfile filename
  */
-export function getLockfilePath(_basePath: string): string {
+export function getLockfilePath(): string {
   return ".ucd-store.lock";
 }
 
 /**
- * Gets the snapshot path for a given version.
+ * Gets the snapshot path for a given version (relative to store root).
  * Snapshots are stored inside version directories: {version}/snapshot.json
  *
- * Returns a relative path that will be resolved against the bridge's basePath.
- * This prevents path duplication when the bridge's basePath is already set.
- *
  * @param {string} version - The Unicode version
- * @returns {string} The snapshot path relative to the bridge's basePath
+ * @returns {string} The snapshot path relative to store root
  */
 export function getSnapshotPath(version: string): string {
   return join(version, "snapshot.json");

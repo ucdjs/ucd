@@ -1,14 +1,15 @@
-import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { createFileRoute, notFound, Outlet, redirect } from "@tanstack/react-router";
 import { createMiddleware } from "@tanstack/react-start";
 
 import { UNICODE_STABLE_VERSION, UNICODE_VERSION_METADATA } from "@unicode-utils/core";
+import { VersionNotFound } from "@/components/not-found";
 
 const validateVersionMiddleware = createMiddleware({
   type: "request",
 }).server(
   async ({ next, pathname }) => {
     const pathSegments = pathname.split("/");
-    const version = pathSegments[2].toLowerCase() || "";
+    const version = pathSegments[2]?.toLowerCase() || "";
 
     if (version === "latest") {
       const latest = UNICODE_STABLE_VERSION;
@@ -29,7 +30,7 @@ const validateVersionMiddleware = createMiddleware({
       : false;
 
     if (!exists) {
-      return new Response("Version not found", { status: 404 });
+      throw notFound();
     }
 
     return next();
@@ -38,6 +39,7 @@ const validateVersionMiddleware = createMiddleware({
 
 export const Route = createFileRoute("/v/$version")({
   component: VersionLayoutComponent,
+  notFoundComponent: VersionNotFoundBoundary,
   server: {
     middleware: [validateVersionMiddleware],
   },
@@ -45,4 +47,10 @@ export const Route = createFileRoute("/v/$version")({
 
 function VersionLayoutComponent() {
   return <Outlet />;
+}
+
+function VersionNotFoundBoundary() {
+  const { version } = Route.useParams();
+
+  return <VersionNotFound version={version} />;
 }

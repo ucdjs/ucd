@@ -1,4 +1,5 @@
 import { HttpResponse } from "../../msw";
+import { addPathsToFileNodes } from "../add-paths";
 import { defineMockRouteHandler } from "../define";
 
 export const fileTreeRoute = defineMockRouteHandler({
@@ -20,16 +21,28 @@ export const fileTreeRoute = defineMockRouteHandler({
     mockFetch([
       ["GET", url, ({ params }) => {
         if (shouldUseDefaultValue) {
-          // If the only key in files is "*", we will
-          // just return the files object as is.
+          const version = params.version as string;
+
+          // If the only key in files is "*", we will use it with the requested version
           if (Object.keys(files).length === 1 && Object.keys(files)[0] === "*") {
-            return HttpResponse.json(files["*"]);
+            const filesData = files["*"];
+            if (filesData) {
+              const filesWithPaths = addPathsToFileNodes(filesData, version);
+              return HttpResponse.json(filesWithPaths);
+            }
+            return HttpResponse.json([]);
           }
 
-          // If there is multiple keys in files we will try and match the version
-          const version = params.version as string;
+          // If there are version-specific files, use them
           if (version && files[version]) {
-            return HttpResponse.json(files[version]);
+            const filesWithPaths = addPathsToFileNodes(files[version]!, version);
+            return HttpResponse.json(filesWithPaths);
+          }
+
+          // Otherwise, use wildcard files if available
+          if (files["*"]) {
+            const filesWithPaths = addPathsToFileNodes(files["*"], version);
+            return HttpResponse.json(filesWithPaths);
           }
 
           return HttpResponse.json([]);

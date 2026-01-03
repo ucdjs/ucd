@@ -7,7 +7,7 @@
     "email": "lucasnrgaard@gmail.com",
     "url": "https://luxass.dev"
   },
-  "packageManager": "pnpm@10.26.1",
+  "packageManager": "pnpm@10.26.2",
   "license": "MIT",
   "homepage": "https://github.com/ucdjs/ucd",
   "repository": {
@@ -47,6 +47,7 @@
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:linting",
+    "@luxass/utils": "catalog:prod",
     "@ucdjs-tooling/tsconfig": "workspace:*",
     "@ucdjs-tooling/tsdown-config": "workspace:*",
     "eslint": "catalog:linting",

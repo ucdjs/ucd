@@ -7,6 +7,9 @@ export type OpenAPIObjectConfig = Parameters<OpenAPIHono["getOpenAPI31Document"]
 export const OPENAPI_TAGS = {
   VERSIONS: "Versions",
   FILES: "Files",
+  CHARACTERS: "Characters",
+  PROPERTIES: "Properties",
+  BLOCKS: "Blocks",
   WELL_KNOWN: "Well-Known",
 } as const satisfies Record<string, string>;
 

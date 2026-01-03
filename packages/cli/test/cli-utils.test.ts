@@ -62,7 +62,7 @@ describe("runCommand", () => {
   });
 
   it("should print help message for 'help' command", async () => {
-    const helpCapture = vi.spyOn(console, "info").mockImplementation(() => {});
+    const helpCapture = vi.spyOn(console, "log").mockImplementation(() => {});
 
     await runCommand("help", { _: [] });
 

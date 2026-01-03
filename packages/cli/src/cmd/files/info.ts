@@ -1,10 +1,9 @@
 import type { CLIArguments } from "../../cli-utils";
 import type { CLIFilesCmdOptions } from "./root";
 import { customFetch } from "@ucdjs-internal/shared";
-import { UCD_FILE_STAT_TYPE_HEADER, UCDJS_API_BASE_URL } from "@ucdjs/env";
-import { bold, dim, green, red } from "farver/fast";
+import { UCD_STAT_TYPE_HEADER, UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { printHelp } from "../../cli-utils";
-import { output } from "../../output";
+import { bold, dim, formatBytes, green, output, red } from "../../output";
 
 export interface CLIFilesInfoCmdOptions {
   path: string;
@@ -40,14 +39,6 @@ function formatMetadata(metadata: FileMetadata): string {
   }
 
   return lines.join("\n");
-}
-
-function formatBytes(bytes: number): string {
-  if (bytes === 0) return "0 Bytes";
-  const k = 1024;
-  const sizes = ["Bytes", "KB", "MB", "GB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
 }
 
 export async function runFilesInfo({ path, flags }: CLIFilesInfoCmdOptions) {
@@ -95,7 +86,7 @@ export async function runFilesInfo({ path, flags }: CLIFilesInfoCmdOptions) {
     const headers = result.response.headers;
     const metadata: FileMetadata = {
       path: path || "",
-      type: (headers.get(UCD_FILE_STAT_TYPE_HEADER) as "file" | "directory") || "file",
+      type: (headers.get(UCD_STAT_TYPE_HEADER) as "file" | "directory") || "file",
       contentType: headers.get("Content-Type") || undefined,
       lastModified: headers.get("Last-Modified") || undefined,
       contentLength: headers.get("Content-Length") || undefined,
@@ -108,9 +99,9 @@ export async function runFilesInfo({ path, flags }: CLIFilesInfoCmdOptions) {
     }
 
     // Formatted output
-    output.info(`\nFile info: ${green(path || "(root)")}\n`);
-    output.info(formatMetadata(metadata));
-    output.info("");
+    output.log(`\nFile info: ${green(path || "(root)")}\n`);
+    output.log(formatMetadata(metadata));
+    output.log("");
   } catch (err) {
     let message = "Unknown error";
     if (err instanceof Error) {

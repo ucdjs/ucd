@@ -40,14 +40,13 @@ await writeLockfile(fs, lockfilePath, {
 ```typescript
 import { getSnapshotPath, readSnapshot, writeSnapshot } from "@ucdjs/lockfile";
 
-const basePath = "./store";
 const version = "16.0.0";
 
 // Read snapshot
-const snapshot = await readSnapshot(fs, basePath, version);
+const snapshot = await readSnapshot(fs, version);
 
 // Write snapshot
-await writeSnapshot(fs, basePath, version, {
+await writeSnapshot(fs, version, {
   unicodeVersion: "16.0.0",
   files: {
     "UnicodeData.txt": {
@@ -75,18 +74,18 @@ const hash = await computeFileHash(content);
 - `canUseLockfile(fs: FileSystemBridge): boolean` - Check if bridge supports lockfile operations
 - `readLockfile(fs: FileSystemBridge, lockfilePath: string): Promise<Lockfile>` - Read and validate lockfile
 - `writeLockfile(fs: FileSystemBridge, lockfilePath: string, lockfile: Lockfile): Promise<void>` - Write lockfile
-- `readLockfileOrDefault(fs: FileSystemBridge, lockfilePath: string): Promise<Lockfile | undefined>` - Read lockfile or return undefined
+- `readLockfileOrUndefined(fs: FileSystemBridge, lockfilePath: string): Promise<Lockfile | undefined>` - Read lockfile or return undefined
 
 ### Snapshot Operations
 
-- `readSnapshot(fs: FileSystemBridge, basePath: string, version: string): Promise<Snapshot>` - Read and validate snapshot
-- `writeSnapshot(fs: FileSystemBridge, basePath: string, version: string, snapshot: Snapshot): Promise<void>` - Write snapshot
-- `readSnapshotOrDefault(fs: FileSystemBridge, basePath: string, version: string): Promise<Snapshot | undefined>` - Read snapshot or return undefined
+- `readSnapshot(fs: FileSystemBridge, version: string): Promise<Snapshot>` - Read and validate snapshot
+- `writeSnapshot(fs: FileSystemBridge, version: string, snapshot: Snapshot): Promise<void>` - Write snapshot
+- `readSnapshotOrUndefined(fs: FileSystemBridge, version: string): Promise<Snapshot | undefined>` - Read snapshot or return undefined
 
 ### Path Utilities
 
-- `getLockfilePath(_basePath: string): string` - Get default lockfile path (`.ucd-store.lock`)
-- `getSnapshotPath(basePath: string, version: string): string` - Get snapshot path for version
+- `getLockfilePath(): string` - Get lockfile filename (`.ucd-store.lock`)
+- `getSnapshotPath(version: string): string` - Get snapshot path for version
 
 ### Hash Utilities
 

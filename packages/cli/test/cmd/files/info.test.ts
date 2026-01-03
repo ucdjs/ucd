@@ -1,7 +1,7 @@
 import type { ConsoleOutputCapture } from "../../__test-utils";
 import { mockStoreApi } from "#test-utils/mock-store";
 import { HttpResponse } from "#test-utils/msw";
-import { UCD_FILE_STAT_TYPE_HEADER } from "@ucdjs/env";
+import { UCD_STAT_TYPE_HEADER } from "@ucdjs/env";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { runCLI } from "../../../src/cli-utils";
 import { captureConsoleOutput } from "../../__test-utils";
@@ -20,9 +20,9 @@ describe("files info command", () => {
   it("should show help when --help flag is passed", async () => {
     await runCLI(["files", "info", "--help"]);
 
-    expect(capture.containsInfo("Get metadata about a file or directory")).toBe(true);
-    expect(capture.containsInfo("--base-url")).toBe(true);
-    expect(capture.containsInfo("--json")).toBe(true);
+    expect(capture.containsLog("Get metadata about a file or directory")).toBe(true);
+    expect(capture.containsLog("--base-url")).toBe(true);
+    expect(capture.containsLog("--json")).toBe(true);
   });
 
   it("should get file metadata from API", async () => {
@@ -32,7 +32,7 @@ describe("files info command", () => {
           return new HttpResponse(null, {
             status: 200,
             headers: {
-              [UCD_FILE_STAT_TYPE_HEADER]: "file",
+              [UCD_STAT_TYPE_HEADER]: "file",
               "Content-Type": "text/plain",
               "Last-Modified": "Wed, 18 Sep 2024 12:00:00 GMT",
               "Content-Length": "12345",
@@ -44,9 +44,9 @@ describe("files info command", () => {
 
     await runCLI(["files", "info", "16.0.0/UnicodeData.txt"]);
 
-    expect(capture.containsInfo("File info:")).toBe(true);
-    expect(capture.containsInfo("16.0.0/UnicodeData.txt")).toBe(true);
-    expect(capture.containsInfo("file")).toBe(true);
+    expect(capture.containsLog("File info:")).toBe(true);
+    expect(capture.containsLog("16.0.0/UnicodeData.txt")).toBe(true);
+    expect(capture.containsLog("file")).toBe(true);
   });
 
   it("should get directory metadata from API", async () => {
@@ -56,7 +56,7 @@ describe("files info command", () => {
           return new HttpResponse(null, {
             status: 200,
             headers: {
-              [UCD_FILE_STAT_TYPE_HEADER]: "directory",
+              [UCD_STAT_TYPE_HEADER]: "directory",
               "Content-Type": "application/json",
               "Last-Modified": "Wed, 18 Sep 2024 12:00:00 GMT",
             },
@@ -67,8 +67,8 @@ describe("files info command", () => {
 
     await runCLI(["files", "info", "16.0.0"]);
 
-    expect(capture.containsInfo("File info:")).toBe(true);
-    expect(capture.containsInfo("directory")).toBe(true);
+    expect(capture.containsLog("File info:")).toBe(true);
+    expect(capture.containsLog("directory")).toBe(true);
   });
 
   it("should output JSON when --json flag is passed", async () => {
@@ -78,7 +78,7 @@ describe("files info command", () => {
           return new HttpResponse(null, {
             status: 200,
             headers: {
-              [UCD_FILE_STAT_TYPE_HEADER]: "file",
+              [UCD_STAT_TYPE_HEADER]: "file",
               "Content-Type": "text/plain",
               "Last-Modified": "Wed, 18 Sep 2024 12:00:00 GMT",
               "Content-Length": "12345",
@@ -123,7 +123,7 @@ describe("files info command", () => {
           return new HttpResponse(null, {
             status: 200,
             headers: {
-              [UCD_FILE_STAT_TYPE_HEADER]: "directory",
+              [UCD_STAT_TYPE_HEADER]: "directory",
               "Content-Type": "application/json",
             },
           });
@@ -133,7 +133,7 @@ describe("files info command", () => {
 
     await runCLI(["files", "info"]);
 
-    expect(capture.containsInfo("File info:")).toBe(true);
-    expect(capture.containsInfo("(root)")).toBe(true);
+    expect(capture.containsLog("File info:")).toBe(true);
+    expect(capture.containsLog("(root)")).toBe(true);
   });
 });

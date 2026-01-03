@@ -20,14 +20,15 @@ describe("files list command", () => {
   it("should show help when --help flag is passed", async () => {
     await runCLI(["files", "list", "--help"]);
 
-    expect(capture.containsInfo("List files and directories from the UCD API")).toBe(true);
-    expect(capture.containsInfo("--base-url")).toBe(true);
-    expect(capture.containsInfo("--json")).toBe(true);
+    expect(capture.containsLog("List files and directories from the UCD API")).toBe(true);
+    expect(capture.containsLog("--base-url")).toBe(true);
+    expect(capture.containsLog("--json")).toBe(true);
   });
 
   it("should list files from API", async () => {
     mockStoreApi({
       responses: {
+        "/.well-known/ucd-config.json": true,
         "/api/v1/versions": UNICODE_VERSION_METADATA,
         "/api/v1/files/{wildcard}": () => {
           return HttpResponse.json([
@@ -50,12 +51,13 @@ describe("files list command", () => {
 
     await runCLI(["files", "list"]);
 
-    expect(capture.containsInfo("Directory listing:")).toBe(true);
+    expect(capture.containsLog("Directory listing:")).toBe(true);
   });
 
   it("should list files at specific path", async () => {
     mockStoreApi({
       responses: {
+        "/.well-known/ucd-config.json": true,
         "/api/v1/versions": UNICODE_VERSION_METADATA,
         "/api/v1/files/{wildcard}": ({ params }) => {
           const path = params.wildcard as string;
@@ -83,13 +85,14 @@ describe("files list command", () => {
 
     await runCLI(["files", "list", "16.0.0"]);
 
-    expect(capture.containsInfo("Directory listing:")).toBe(true);
+    expect(capture.containsLog("Directory listing:")).toBe(true);
     expect(capture.contains("16.0.0")).toBe(true);
   });
 
   it("should output JSON when --json flag is passed", async () => {
     mockStoreApi({
       responses: {
+        "/.well-known/ucd-config.json": true,
         "/api/v1/versions": UNICODE_VERSION_METADATA,
         "/api/v1/files/{wildcard}": () => {
           return HttpResponse.json([
@@ -119,6 +122,7 @@ describe("files list command", () => {
   it("should error when path is a file not a directory", async () => {
     mockStoreApi({
       responses: {
+        "/.well-known/ucd-config.json": true,
         "/api/v1/versions": UNICODE_VERSION_METADATA,
         "/api/v1/files/{wildcard}": () => {
           return HttpResponse.text("File content here");
@@ -134,6 +138,7 @@ describe("files list command", () => {
   it("should handle 404 error for non-existent path", async () => {
     mockStoreApi({
       responses: {
+        "/.well-known/ucd-config.json": true,
         "/api/v1/versions": UNICODE_VERSION_METADATA,
         "/api/v1/files/{wildcard}": {
           status: 404,

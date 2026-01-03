@@ -4,7 +4,8 @@ import { describe, expect, it } from "vitest";
 import { testdir } from "vitest-testdirs";
 
 describe("encoded attack vectors", () => {
-  describe("uRL-encoded traversal attacks", () => {
+  // eslint-disable-next-line test/prefer-lowercase-title
+  describe("URL-encoded traversal attacks", () => {
     it("should prevent encoded traversal that goes outside basePath", async () => {
       const testDir = await testdir({
         "file.txt": "content",

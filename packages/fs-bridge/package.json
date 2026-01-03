@@ -7,7 +7,7 @@
     "email": "lucasnrgaard@gmail.com",
     "url": "https://luxass.dev"
   },
-  "packageManager": "pnpm@10.26.1",
+  "packageManager": "pnpm@10.26.2",
   "license": "MIT",
   "homepage": "https://github.com/ucdjs/ucd",
   "repository": {
@@ -26,6 +26,7 @@
     ".": "./dist/index.mjs",
     "./bridges/http": "./dist/bridges/http.mjs",
     "./bridges/node": "./dist/bridges/node.mjs",
+    "./errors": "./dist/errors.mjs",
     "./package.json": "./package.json"
   },
   "main": "./dist/index.mjs",
@@ -57,6 +58,7 @@
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:linting",
+    "@luxass/msw-utils": "catalog:prod",
     "@ucdjs-internal/shared": "workspace:*",
     "@ucdjs-tooling/tsconfig": "workspace:*",
     "@ucdjs-tooling/tsdown-config": "workspace:*",

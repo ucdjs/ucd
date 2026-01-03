@@ -311,8 +311,6 @@ describe("bridge methods with all path scenarios", () => {
       });
       const bridge = NodeFileSystemBridge({ basePath: testDir });
 
-      // Even with relative basePath, joining should work
-      // Note: basePath is resolved internally, so we need to resolve it too
       const resolvedBasePath = resolve(testDir);
       const fullPath = join(resolvedBasePath, "file.txt");
       const content = await bridge.read(fullPath);

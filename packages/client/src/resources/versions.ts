@@ -40,8 +40,7 @@ export function createVersionsResource(options: CreateVersionsResourceOptions): 
         schema: UnicodeVersionListSchema,
       });
     },
-
-    async getFileTree(version: string) {
+    async getFileTree(version) {
       const url = new URL(`${endpoints.versions}/${version}/file-tree`, baseUrl);
 
       return customFetch.safe<FileTreeResponse, "json">(url.toString(), {

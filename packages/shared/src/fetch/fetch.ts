@@ -10,7 +10,7 @@ import type {
 } from "./types";
 import { isMSWError } from "@luxass/msw-utils/runtime-guards";
 import { safeJsonParse } from "../json";
-import { FetchError } from "./error";
+import { FetchError, FetchSchemaValidationError } from "./error";
 import {
   detectResponseType,
   isJSONSerializable,
@@ -82,8 +82,22 @@ function createCustomFetch(): CustomFetch {
       }
     }
 
-    // Throw normalized error
-    const error = FetchError.from(context);
+    // Throw normalized error. Preserve explicit FetchError subclasses (e.g., schema validation).
+    let error: FetchError<T>;
+    if (context.error instanceof FetchError) {
+      error = context.error as FetchError<T>;
+      // Ensure common fields are attached for consumers
+      Object.assign(error, {
+        request: (error as any).request ?? context.request,
+        options: (error as any).options ?? context.options,
+        response: (error as any).response ?? context.response,
+        data: (error as any).data ?? context.response?.data,
+        status: (error as any).status ?? context.response?.status,
+        statusText: (error as any).statusText ?? context.response?.statusText,
+      });
+    } else {
+      error = FetchError.from(context);
+    }
 
     // Only available on V8 based runtimes (https://v8.dev/docs/stack-trace-api)
     if (Error.captureStackTrace) {
@@ -205,12 +219,19 @@ function createCustomFetch(): CustomFetch {
       }
 
       // Validate response data with schema if provided
-      if (context.options.schema && context.response.data !== undefined) {
+      if (
+        context.options.schema
+        && context.response.data !== undefined
+        && context.response.status < 400
+      ) {
         const result = await context.options.schema.safeParseAsync(context.response.data);
         if (!result.success) {
-          context.error = new Error(`Response validation failed: ${result.error.message}`);
-          context.error.name = "ValidationError";
-          (context.error as any).issues = result.error.issues;
+          // Wrap schema failures in a dedicated error with issues attached
+          context.error = new FetchSchemaValidationError(
+            `Response validation failed: ${result.error.message}`,
+            { cause: result.error, issues: result.error.issues },
+          );
+
           return await handleError(context);
         }
 

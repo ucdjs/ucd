@@ -1,5 +1,5 @@
 import type { MockFetchFn } from "@luxass/msw-utils";
-import type { UnicodeTree } from "@ucdjs/schemas";
+import type { UnicodeTreeNode } from "@ucdjs/schemas";
 import type { AsyncResponseResolverReturnType, DefaultBodyType, HttpResponseResolver, PathParams } from "msw";
 import type { paths } from "../.generated/api";
 import type { MOCK_ROUTES } from "./handlers";
@@ -75,13 +75,19 @@ type DerivedResponses = Partial<{
 }>;
 
 export type StoreVersionFileKey = "16.0.0" | "17.0.0";
-export type StoreFileKeyWildcard = "*";
+export type StoreFileKeyWildcard = "*" | "root";
 
 type PartialRecord<K extends keyof any, T> = {
   [P in K]?: T;
 };
 
-export type MockStoreFiles = PartialRecord<StoreVersionFileKey | StoreFileKeyWildcard | (string & {}), UnicodeTree>;
+type MockStoreKey = StoreVersionFileKey | StoreFileKeyWildcard | (string & {});
+
+export type MockStoreNode
+  = | (Omit<UnicodeTreeNode, "type" | "path"> & { type: "file"; path?: string; _content?: string })
+    | (Omit<UnicodeTreeNode, "type" | "path"> & { type: "directory"; path?: string; _content?: string; children: MockStoreNode[] });
+
+export type MockStoreFiles = PartialRecord<MockStoreKey, MockStoreNode[]>;
 
 export interface MockStoreConfig {
   /**
@@ -99,7 +105,7 @@ export interface MockStoreConfig {
    * If the value is `false`, then no handler will be used.
    * If the value provided is a specific response, then that response will be used.
    *
-   * By default, all endpoints will use the default handler.
+   * By default, all endpoints are disabled.
    */
   responses?: DerivedResponses;
 

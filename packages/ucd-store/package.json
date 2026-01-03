@@ -1,13 +1,13 @@
 {
   "name": "@ucdjs/ucd-store",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "type": "module",
   "author": {
     "name": "Lucas Nørgård",
     "email": "lucasnrgaard@gmail.com",
     "url": "https://luxass.dev"
   },
-  "packageManager": "pnpm@10.26.1",
+  "packageManager": "pnpm@10.26.2",
   "license": "MIT",
   "homepage": "https://github.com/ucdjs/ucd",
   "repository": {
@@ -17,6 +17,9 @@
   },
   "bugs": {
     "url": "https://github.com/ucdjs/ucd/issues"
+  },
+  "imports": {
+    "#internal-pkg:test-utils/*": "./test/helpers/*.ts"
   },
   "exports": {
     ".": "./dist/index.mjs",
@@ -37,9 +40,9 @@
     "clean": "git clean -xdf dist node_modules",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "playground:http": "tsx --tsconfig=./tsconfig.json ./playgrounds/http-playground.ts",
-    "playground:node": "tsx --tsconfig=./tsconfig.json ./playgrounds/node-playground.ts",
-    "playground:memory": "tsx --tsconfig=./tsconfig.json ./playgrounds/memory-playground.ts"
+    "playground:http": "tsx --import @ucdjs/moonbeam/register ./playgrounds/http-playground.ts",
+    "playground:node": "tsx --import @ucdjs/moonbeam/register ./playgrounds/node-playground.ts",
+    "playground:memory": "tsx --import @ucdjs/moonbeam/register ./playgrounds/memory-playground.ts"
   },
   "dependencies": {
     "@luxass/utils": "catalog:prod",
@@ -47,6 +50,7 @@
     "@ucdjs/client": "workspace:*",
     "@ucdjs/env": "workspace:*",
     "@ucdjs/fs-bridge": "workspace:*",
+    "@ucdjs/lockfile": "workspace:*",
     "@ucdjs/schemas": "workspace:*",
     "@unicode-utils/core": "catalog:prod",
     "defu": "catalog:prod",
@@ -57,6 +61,7 @@
     "@luxass/eslint-config": "catalog:linting",
     "@ucdjs-tooling/tsconfig": "workspace:*",
     "@ucdjs-tooling/tsdown-config": "workspace:*",
+    "@ucdjs/moonbeam": "workspace:*",
     "eslint": "catalog:linting",
     "publint": "catalog:dev",
     "tsdown": "catalog:dev",

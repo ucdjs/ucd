@@ -5,7 +5,6 @@ import { describe, expect, it } from "vitest";
 import { createVersionsResource } from "../../src/resources/versions";
 
 describe("createVersionsResource", () => {
-  const baseUrl = UCDJS_API_BASE_URL;
   const endpoints = {
     files: "/api/v1/files",
     manifest: "/.well-known/ucd-store/{version}.json",
@@ -36,9 +35,10 @@ describe("createVersionsResource", () => {
       name: "ucd",
       type: "directory",
       path: "/16.0.0/ucd",
+      lastModified: 1755287100000,
       children: [
-        { name: "UnicodeData.txt", type: "file", path: "/16.0.0/ucd/UnicodeData.txt" },
-        { name: "PropList.txt", type: "file", path: "/16.0.0/ucd/PropList.txt" },
+        { name: "UnicodeData.txt", type: "file", path: "/16.0.0/ucd/UnicodeData.txt", lastModified: 1755287100000 },
+        { name: "PropList.txt", type: "file", path: "/16.0.0/ucd/PropList.txt", lastModified: 1755287100000 },
       ],
     },
   ];
@@ -46,12 +46,12 @@ describe("createVersionsResource", () => {
   describe("list()", () => {
     it("should fetch all Unicode versions successfully", async () => {
       mockFetch([
-        ["GET", `${baseUrl}${endpoints.versions}`, () => {
+        ["GET", `${UCDJS_API_BASE_URL}${endpoints.versions}`, () => {
           return HttpResponse.json(mockVersionsList);
         }],
       ]);
 
-      const versionsResource = createVersionsResource({ baseUrl, endpoints });
+      const versionsResource = createVersionsResource({ baseUrl: UCDJS_API_BASE_URL, endpoints });
       const { data, error } = await versionsResource.list();
 
       expect(error).toBeNull();
@@ -62,12 +62,12 @@ describe("createVersionsResource", () => {
 
     it("should return versions with correct structure", async () => {
       mockFetch([
-        ["GET", `${baseUrl}${endpoints.versions}`, () => {
+        ["GET", `${UCDJS_API_BASE_URL}${endpoints.versions}`, () => {
           return HttpResponse.json(mockVersionsList);
         }],
       ]);
 
-      const versionsResource = createVersionsResource({ baseUrl, endpoints });
+      const versionsResource = createVersionsResource({ baseUrl: UCDJS_API_BASE_URL, endpoints });
       const { data, error } = await versionsResource.list();
 
       expect(error).toBeNull();
@@ -80,12 +80,12 @@ describe("createVersionsResource", () => {
 
     it("should handle errors gracefully", async () => {
       mockFetch([
-        ["GET", `${baseUrl}${endpoints.versions}`, () => {
+        ["GET", `${UCDJS_API_BASE_URL}${endpoints.versions}`, () => {
           return new HttpResponse(null, { status: 500 });
         }],
       ]);
 
-      const versionsResource = createVersionsResource({ baseUrl, endpoints });
+      const versionsResource = createVersionsResource({ baseUrl: UCDJS_API_BASE_URL, endpoints });
       const { data, error } = await versionsResource.list();
 
       expect(data).toBeNull();
@@ -95,12 +95,12 @@ describe("createVersionsResource", () => {
 
     it("should handle network errors", async () => {
       mockFetch([
-        ["GET", `${baseUrl}${endpoints.versions}`, () => {
+        ["GET", `${UCDJS_API_BASE_URL}${endpoints.versions}`, () => {
           return HttpResponse.error();
         }],
       ]);
 
-      const versionsResource = createVersionsResource({ baseUrl, endpoints });
+      const versionsResource = createVersionsResource({ baseUrl: UCDJS_API_BASE_URL, endpoints });
       const { data, error } = await versionsResource.list();
 
       expect(data).toBeNull();
@@ -111,12 +111,12 @@ describe("createVersionsResource", () => {
   describe("getFileTree()", () => {
     it("should fetch file tree for a version successfully", async () => {
       mockFetch([
-        ["GET", `${baseUrl}${endpoints.versions}/16.0.0/file-tree`, () => {
+        ["GET", `${UCDJS_API_BASE_URL}${endpoints.versions}/16.0.0/file-tree`, () => {
           return HttpResponse.json(mockFileTree);
         }],
       ]);
 
-      const versionsResource = createVersionsResource({ baseUrl, endpoints });
+      const versionsResource = createVersionsResource({ baseUrl: UCDJS_API_BASE_URL, endpoints });
       const { data, error } = await versionsResource.getFileTree("16.0.0");
 
       expect(error).toBeNull();
@@ -131,21 +131,18 @@ describe("createVersionsResource", () => {
           name: "ucd",
           type: "directory",
           path: `/${version}/ucd`,
+          lastModified: 1700000000000,
           children: [
-            { name: "UnicodeData.txt", type: "file", path: `/${version}/ucd/UnicodeData.txt` },
+            { name: "UnicodeData.txt", type: "file", path: `/${version}/ucd/UnicodeData.txt`, lastModified: 1700000000000 },
           ],
         },
       ];
 
-      mockFetch([
-        [
-          "GET",
-          `${baseUrl}${endpoints.versions}/${version}/file-tree`,
-          () => HttpResponse.json(versionFileTree),
-        ],
-      ]);
+      mockFetch("GET", `${UCDJS_API_BASE_URL}${endpoints.versions}/${version}/file-tree`, () => {
+        return HttpResponse.json(versionFileTree);
+      });
 
-      const versionsResource = createVersionsResource({ baseUrl, endpoints });
+      const versionsResource = createVersionsResource({ baseUrl: UCDJS_API_BASE_URL, endpoints });
       const { data, error } = await versionsResource.getFileTree(version);
 
       expect(error).toBeNull();
@@ -154,12 +151,12 @@ describe("createVersionsResource", () => {
 
     it("should handle 404 errors for non-existent versions", async () => {
       mockFetch([
-        ["GET", `${baseUrl}${endpoints.versions}/99.0.0/file-tree`, () => {
+        ["GET", `${UCDJS_API_BASE_URL}${endpoints.versions}/99.0.0/file-tree`, () => {
           return new HttpResponse(null, { status: 404 });
         }],
       ]);
 
-      const versionsResource = createVersionsResource({ baseUrl, endpoints });
+      const versionsResource = createVersionsResource({ baseUrl: UCDJS_API_BASE_URL, endpoints });
       const { data, error } = await versionsResource.getFileTree("99.0.0");
 
       expect(data).toBeNull();
@@ -169,12 +166,12 @@ describe("createVersionsResource", () => {
 
     it("should handle server errors", async () => {
       mockFetch([
-        ["GET", `${baseUrl}${endpoints.versions}/16.0.0/file-tree`, () => {
+        ["GET", `${UCDJS_API_BASE_URL}${endpoints.versions}/16.0.0/file-tree`, () => {
           return new HttpResponse(null, { status: 500 });
         }],
       ]);
 
-      const versionsResource = createVersionsResource({ baseUrl, endpoints });
+      const versionsResource = createVersionsResource({ baseUrl: UCDJS_API_BASE_URL, endpoints });
       const { data, error } = await versionsResource.getFileTree("16.0.0");
 
       expect(data).toBeNull();
@@ -207,13 +204,13 @@ describe("createVersionsResource", () => {
       const customVersionsPath = "/v2/versions";
 
       mockFetch([
-        ["GET", `${baseUrl}${customVersionsPath}`, () => {
+        ["GET", `${UCDJS_API_BASE_URL}${customVersionsPath}`, () => {
           return HttpResponse.json(mockVersionsList);
         }],
       ]);
 
       const versionsResource = createVersionsResource({
-        baseUrl,
+        baseUrl: UCDJS_API_BASE_URL,
         endpoints: {
           ...endpoints,
           versions: customVersionsPath,

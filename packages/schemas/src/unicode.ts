@@ -1,3 +1,4 @@
+import type { DeepOmit } from "./types";
 import { z } from "zod";
 
 export const UnicodeVersionSchema = z.object({
@@ -62,19 +63,33 @@ export type UnicodeVersionList = z.output<typeof UnicodeVersionListSchema>;
 // WE CAN'T USE RECURSIVE TYPES IN HONO ZOD OPENAPI, SO WE HAVE TO DEFINE THE INTERFACES MANUALLY
 type TreeNode = DirectoryTreeNode | FileTreeNode;
 
-interface DirectoryTreeNode {
-  type: "directory";
+interface BaseTreeNode {
+  /**
+   * The name of the file or directory.
+   */
   name: string;
+
+  /**
+   * The path to the file or directory.
+   *
+   * If the node is a directory, it will always end with a trailing slash (`/`).
+   */
   path: string;
-  children: TreeNode[];
-  lastModified?: number; // Unix timestamp
+
+  /**
+   * The last modified date of the directory, if available.
+   */
+  lastModified: number | null; // Unix timestamp
+
 }
 
-interface FileTreeNode {
+interface DirectoryTreeNode extends BaseTreeNode {
+  type: "directory";
+  children: TreeNode[];
+}
+
+interface FileTreeNode extends BaseTreeNode {
   type: "file";
-  name: string;
-  path: string;
-  lastModified?: number; // Unix timestamp
 }
 
 const BaseTreeNodeSchema = z.object({
@@ -84,7 +99,7 @@ const BaseTreeNodeSchema = z.object({
   path: z.string().meta({
     description: "The path to the file or directory.",
   }),
-  lastModified: z.number().optional().meta({
+  lastModified: z.number().or(z.null()).meta({
     description: "The last modified date of the directory, if available.",
   }),
 });
@@ -117,6 +132,8 @@ export const UnicodeTreeNodeSchema = z.union([DirectoryTreeNodeSchema, FileTreeN
 
 export type UnicodeTreeNode = z.output<typeof UnicodeTreeNodeSchema>;
 
+export type UnicodeTreeNodeWithoutLastModified = DeepOmit<UnicodeTreeNode, "lastModified">;
+
 export const UnicodeTreeSchema = z.array(UnicodeTreeNodeSchema).meta({
   id: "UnicodeTree",
   description: "A tree structure representing files and directories in a Unicode version.",
@@ -144,7 +161,14 @@ export const UnicodeVersionDetailsSchema = UnicodeVersionSchema.extend({
     newScripts: z.int().nonnegative().meta({
       description: "Number of new scripts added in this version.",
     }),
-  }).optional().meta({
+  }).default({
+    newBlocks: 0,
+    newCharacters: 0,
+    newScripts: 0,
+    totalBlocks: 0,
+    totalCharacters: 0,
+    totalScripts: 0,
+  }).meta({
     description: "Statistics about this Unicode version. May be null if statistics are not available.",
   }),
 }).meta({
@@ -171,3 +195,147 @@ export const UnicodeVersionDetailsSchema = UnicodeVersionSchema.extend({
 });
 
 export type UnicodeVersionDetails = z.output<typeof UnicodeVersionDetailsSchema>;
+
+export const UnicodeCharacterSchema = z.object({
+  codepoint: z.string().regex(/^U\+[0-9A-F]{4,6}$/, "Must be in U+XXXX format").meta({
+    description: "The Unicode codepoint in U+XXXX format.",
+    example: "U+0041",
+  }),
+  character: z.string().meta({
+    description: "The actual character.",
+    example: "A",
+  }),
+  name: z.string().meta({
+    description: "The official Unicode character name.",
+    example: "LATIN CAPITAL LETTER A",
+  }),
+  category: z.string().meta({
+    description: "The General Category of the character (e.g., Lu, Ll, Nd).",
+    example: "Lu",
+  }),
+  combiningClass: z.string().optional().meta({
+    description: "The Canonical Combining Class.",
+  }),
+  bidiCategory: z.string().optional().meta({
+    description: "The Bidirectional Category.",
+  }),
+  decomposition: z.string().optional().meta({
+    description: "The decomposition mapping.",
+  }),
+  numericValue: z.string().optional().meta({
+    description: "The Numeric Value property (if applicable).",
+  }),
+  block: z.string().meta({
+    description: "The Unicode block this character belongs to.",
+    example: "Basic Latin",
+  }),
+  script: z.string().optional().meta({
+    description: "The script this character belongs to (e.g., Latin, Greek).",
+    example: "Latin",
+  }),
+  caseMapping: z.object({
+    uppercase: z.string().optional().meta({
+      description: "The uppercase mapping.",
+    }),
+    lowercase: z.string().optional().meta({
+      description: "The lowercase mapping.",
+    }),
+    titlecase: z.string().optional().meta({
+      description: "The titlecase mapping.",
+    }),
+  }).optional().meta({
+    description: "Case mappings for this character.",
+  }),
+}).meta({
+  id: "UnicodeCharacter",
+  description: "Detailed information about a single Unicode character.",
+});
+
+export type UnicodeCharacter = z.output<typeof UnicodeCharacterSchema>;
+
+export const UnicodePropertyResponseSchema = z.object({
+  property: z.string().meta({
+    description: "The Unicode property name.",
+    example: "Alphabetic",
+  }),
+  value: z.string().optional().meta({
+    description: "The property value filter (if any).",
+  }),
+  total: z.number().nonnegative().meta({
+    description: "Total number of characters matching this property.",
+  }),
+  ranges: z.array(z.object({
+    start: z.string().regex(/^U\+[0-9A-F]{4,6}$/).meta({
+      description: "Start codepoint in U+XXXX format.",
+    }),
+    end: z.string().regex(/^U\+[0-9A-F]{4,6}$/).meta({
+      description: "End codepoint in U+XXXX format.",
+    }),
+    count: z.number().nonnegative().meta({
+      description: "Number of characters in this range.",
+    }),
+  })).optional().meta({
+    description: "Character ranges matching this property (if format=ranges).",
+  }),
+  characters: z.array(z.object({
+    codepoint: z.string().regex(/^U\+[0-9A-F]{4,6}$/),
+    character: z.string(),
+    name: z.string(),
+  })).optional().meta({
+    description: "List of characters (if format=list).",
+  }),
+}).meta({
+  id: "UnicodePropertyResponse",
+  description: "Characters matching a specific Unicode property.",
+});
+
+export type UnicodePropertyResponse = z.output<typeof UnicodePropertyResponseSchema>;
+
+// Blocks endpoint schemas
+export const UnicodeBlockSchema = z.object({
+  name: z.string().meta({
+    description: "The official Unicode block name.",
+    example: "Basic Latin",
+  }),
+  aliases: z.array(z.string()).optional().meta({
+    description: "Alternative names for this block.",
+  }),
+  range: z.object({
+    start: z.string().regex(/^U\+[0-9A-F]{4,6}$/).meta({
+      description: "Start codepoint in U+XXXX format.",
+    }),
+    end: z.string().regex(/^U\+[0-9A-F]{4,6}$/).meta({
+      description: "End codepoint in U+XXXX format.",
+    }),
+  }).meta({
+    description: "The codepoint range of this block.",
+  }),
+  count: z.number().nonnegative().meta({
+    description: "Number of assigned characters in this block.",
+  }),
+  description: z.string().optional().meta({
+    description: "A description of the block.",
+  }),
+  relatedScripts: z.array(z.string()).optional().meta({
+    description: "Scripts associated with characters in this block.",
+  }),
+  characters: z.array(z.object({
+    codepoint: z.string().regex(/^U\+[0-9A-F]{4,6}$/),
+    character: z.string(),
+    name: z.string(),
+  })).optional().meta({
+    description: "Characters in this block (if include_characters=true).",
+  }),
+}).meta({
+  id: "UnicodeBlock",
+  description: "Information about a Unicode block.",
+});
+
+export type UnicodeBlock = z.output<typeof UnicodeBlockSchema>;
+
+export const UnicodeBlockListSchema = z.array(UnicodeBlockSchema).meta({
+  id: "UnicodeBlockList",
+  description: "A list of Unicode blocks.",
+});
+
+export type UnicodeBlockList = z.output<typeof UnicodeBlockListSchema>;

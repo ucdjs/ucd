@@ -1,490 +1,355 @@
-import type { OperationResult, PathFilter, PathFilterOptions } from "@ucdjs-internal/shared";
-import type { UCDClient } from "@ucdjs/client";
+import type { PathFilter } from "@ucdjs-internal/shared";
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
-import type { UCDStoreManifest, UnicodeTreeNode } from "@ucdjs/schemas";
-import type { StoreError } from "./errors";
-import type { AnalyzeOptions, AnalyzeResult } from "./internal/analyze";
-import type { CleanOptions, CleanResult } from "./internal/clean";
-import type { MirrorOptions, MirrorResult } from "./internal/mirror";
-import type { RepairOptions, RepairResult } from "./internal/repair";
+import type { UCDWellKnownConfig } from "@ucdjs/schemas";
+import type z from "zod";
 import type {
-  InitOptions,
+  UCDStore,
+  UCDStoreOperations,
   UCDStoreOptions,
+  VersionConflictStrategy,
 } from "./types";
-import { createPathFilter, filterTreeStructure, flattenFilePaths, safeJsonParse, wrapTry } from "@ucdjs-internal/shared";
-import { createUCDClient } from "@ucdjs/client";
-import { UCDJS_API_BASE_URL } from "@ucdjs/env";
-import { assertCapability } from "@ucdjs/fs-bridge";
-import { UCDStoreManifestSchema } from "@ucdjs/schemas";
-import defu from "defu";
-import { isAbsolute, join } from "pathe";
 import {
-  UCDStoreFileNotFoundError,
-  UCDStoreGenericError,
-  UCDStoreInvalidManifestError,
-  UCDStoreNotInitializedError,
-  UCDStoreVersionNotFoundError,
-} from "./errors";
-import { internal__analyze } from "./internal/analyze";
-import { internal__clean } from "./internal/clean";
-import { internal__mirror } from "./internal/mirror";
-import { internal__repair } from "./internal/repair";
+  createDebugger,
+  createPathFilter,
+  discoverEndpointsFromConfig,
+  getDefaultUCDEndpointConfig,
+} from "@ucdjs-internal/shared";
+import { createUCDClientWithConfig } from "@ucdjs/client";
+import { UCDJS_API_BASE_URL } from "@ucdjs/env";
+import { getLockfilePath, readLockfileOrUndefined } from "@ucdjs/lockfile";
+import defu from "defu";
+import { createInternalContext, createPublicContext } from "./context";
+import { UCDStoreGenericError } from "./errors";
+import { getFile } from "./files/get";
+import { listFiles } from "./files/list";
+import { getFileTree } from "./files/tree";
+import { analyze } from "./reports/analyze";
+import { compare } from "./reports/compare";
+import { initLockfile } from "./setup/init-lockfile";
+import { verify } from "./setup/verify";
+import { mirror } from "./tasks/mirror";
+import { sync } from "./tasks/sync";
 
-const DEFAULT_CONCURRENCY = 5;
+const debug = createDebugger("ucdjs:ucd-store");
 
-export class UCDStore {
-  /**
-   * Base URL for the UCD store API.
-   */
-  public readonly baseUrl: string;
+export async function createUCDStore<
+  BridgeOptionsSchema extends z.ZodType,
+>(options: UCDStoreOptions<BridgeOptionsSchema>): Promise<UCDStore> {
+  debug?.("Creating UCD Store with options", options);
+  const {
+    baseUrl,
+    globalFilters,
+    fs: fsFactory,
+    fsOptions,
+    versions,
+    endpointConfig,
+    requireExistingStore,
+    verify: shouldVerify,
+    versionStrategy,
+  } = defu(options, {
+    baseUrl: UCDJS_API_BASE_URL,
+    globalFilters: {},
+    versions: [],
+    requireExistingStore: true,
+    verify: true,
+    versionStrategy: "strict" as const,
+  });
 
-  /**
-   * Base Path attached to the base URL, when accessing files.
-   * This is used to resolve file paths when reading from the store.
-   */
-  public readonly basePath: string;
+  const filter = createPathFilter(globalFilters);
 
-  #client: UCDClient | null = null;
-  #filter: PathFilter;
-  #fs: FileSystemBridge;
-  #versions: string[] = [];
-  #manifestPath: string;
-  #initialized: boolean = false;
+  // resolve the endpoints config
+  let resolvedEndpointConfig = endpointConfig;
+  let client = options.client;
 
-  constructor(options: UCDStoreOptions) {
-    const { baseUrl, globalFilters, fs, basePath, versions, client } = defu(options, {
-      baseUrl: UCDJS_API_BASE_URL,
-      globalFilters: {},
-      basePath: "",
-      versions: [],
-    });
-
-    if (fs == null) {
-      throw new UCDStoreGenericError("FileSystemBridge instance is required to create a UCDStore.");
-    }
-
-    this.baseUrl = baseUrl;
-    this.basePath = basePath;
-    this.#filter = createPathFilter(globalFilters);
-    this.#fs = fs;
-    this.#versions = versions;
-    this.#client = client || null;
-
-    this.#manifestPath = join(this.basePath, ".ucd-store.json");
+  if (!resolvedEndpointConfig && !client) {
+    debug?.("No endpoint config or client provided, will attempt to discover.");
+    resolvedEndpointConfig = await retrieveEndpointConfiguration(baseUrl);
   }
 
-  /**
-   * Ensures the client is initialized before use.
-   * Lazily creates the client on first access.
-   *
-   * @private
-   * @returns {Promise<UCDClient>} The initialized UCD client
-   */
-  async #ensureClient(): Promise<UCDClient> {
-    if (this.#client === null) {
-      this.#client = await createUCDClient(this.baseUrl);
-    }
-    return this.#client;
+  if (!client) {
+    debug?.("No client provided, creating UCD client with resolved endpoint config.");
+    client = createUCDClientWithConfig(baseUrl, resolvedEndpointConfig!);
   }
 
-  /**
-   * Gets the filesystem bridge instance used by this store.
-   *
-   * The filesystem bridge provides an abstraction layer for file system operations,
-   * allowing the store to work with different storage backends (local filesystem,
-   * remote HTTP, in-memory, etc.) through a unified interface.
-   *
-   * @returns {FileSystemBridge} The FileSystemBridge instance configured for this store
-   */
-  get fs(): FileSystemBridge {
-    return this.#fs;
-  }
+  // Build discovery context
+  const discoveryContext = {
+    baseUrl,
+    endpointConfig: resolvedEndpointConfig!,
+    versions: resolvedEndpointConfig?.versions ?? [],
+  };
 
-  /**
-   * Gets the path filter instance used to determine which files should be included or excluded.
-   *
-   * The filter is configured with global filter patterns during store initialization and is used
-   * to filter file paths when retrieving file trees, file paths, and individual files from the store.
-   *
-   * @returns {PathFilter} The PathFilter instance configured with the store's global filter patterns
-   */
-  get filter(): PathFilter {
-    return this.#filter;
-  }
+  // Resolve fsOptions - can be static or a function receiving discovery context
+  const resolvedFsOptions = typeof fsOptions === "function"
+    ? fsOptions(discoveryContext)
+    : fsOptions;
 
-  /**
-   * Gets the UCD client instance used for making API requests.
-   * Note: The client must be initialized via init() before accessing this getter.
-   *
-   * @returns {UCDClient} The UCDClient instance configured with the store's base URL
-   * @throws {UCDStoreNotInitializedError} If the client hasn't been initialized
-   */
-  get client(): UCDClient {
-    if (this.#client === null) {
-      throw new UCDStoreNotInitializedError();
-    }
+  // Call the factory with resolved options
+  // We need to handle 3 cases: no-args factory, optional-args factory, required-args factory
+  const fs = resolvedFsOptions !== undefined
+    // @ts-expect-error - TS cannot infer the args length properly here
+    ? fsFactory(resolvedFsOptions)
+    // @ts-expect-error - TS cannot infer the args length properly here
+    : fsFactory();
 
-    return this.#client;
-  }
+  // Lockfiles only make sense for writable file systems
+  const supportsLockfile = fs.optionalCapabilities?.write === true;
+  // Lockfile path is always relative
+  const lockfilePath = supportsLockfile ? getLockfilePath() : null;
+  debug?.("Lockfile support:", supportsLockfile, "path:", lockfilePath);
 
-  get versions(): readonly string[] {
-    return Object.freeze([...this.#versions]);
-  }
+  // Extract versions from config if available
+  const configVersions = resolvedEndpointConfig?.versions ?? [];
 
-  get initialized(): boolean {
-    return this.#initialized;
-  }
+  // check for existing lockfile (only if supported)
+  const lockfileExists = supportsLockfile
+    ? await fs.exists(lockfilePath!)
+    : false;
+  debug?.("Lockfile exists:", lockfileExists);
 
-  get manifestPath(): string {
-    return this.#manifestPath;
-  }
+  let storeVersions = versions;
 
-  async getFileTree(version: string, extraFilters?: Pick<PathFilterOptions, "include" | "exclude">): Promise<OperationResult<UnicodeTreeNode[], StoreError>> {
-    return wrapTry(async () => {
-      await this.#ensureClient();
+  // create the internal context
+  const internalContext = createInternalContext({
+    client,
+    filter,
+    fs,
+    lockfile: {
+      supports: supportsLockfile,
+      exists: lockfileExists,
+      path: lockfilePath ?? "",
+    },
+    versions: {
+      userProvided: versions,
+      configFile: configVersions,
+    },
+  });
 
-      if (!this.#initialized) {
-        throw new UCDStoreNotInitializedError();
-      }
+  // Early validation: verify that versions (from input or config) are available in API
+  // This prevents wasted work if versions don't exist
+  const versionsToValidate = versions.length > 0 ? versions : configVersions;
+  if (versionsToValidate.length > 0) {
+    const apiVersions = await internalContext.versions.apiVersions();
 
-      if (!this.#versions.includes(version)) {
-        throw new UCDStoreVersionNotFoundError(version);
-      }
+    if (apiVersions.length === 0) {
+      debug?.("Warning: Could not fetch API versions for validation, skipping early check");
+    } else {
+      const invalidVersions = versionsToValidate.filter((v) => !apiVersions.includes(v));
 
-      if (!await this.#fs.exists(join(this.basePath, version))) {
-        throw new UCDStoreVersionNotFoundError(version);
-      }
-
-      const entries = await this.#fs.listdir(join(this.basePath, version), true);
-
-      const filtered = filterTreeStructure(this.#filter, entries, extraFilters);
-
-      return filtered;
-    });
-  }
-
-  async getFilePaths(version: string, extraFilters?: Pick<PathFilterOptions, "include" | "exclude">): Promise<OperationResult<string[], StoreError>> {
-    return wrapTry(async () => {
-      await this.#ensureClient();
-
-      if (!this.#initialized) {
-        throw new UCDStoreNotInitializedError();
-      }
-
-      if (!this.#versions.includes(version)) {
-        throw new UCDStoreVersionNotFoundError(version);
-      }
-
-      const [data, error] = await this.getFileTree(version, extraFilters);
-
-      if (error != null) {
-        throw error;
-      }
-
-      return flattenFilePaths(data);
-    });
-  }
-
-  async getFile(version: string, filePath: string, extraFilters?: Pick<PathFilterOptions, "include" | "exclude">): Promise<OperationResult<string, StoreError>> {
-    return wrapTry(async () => {
-      await this.#ensureClient();
-
-      if (!this.#initialized) {
-        throw new UCDStoreNotInitializedError();
-      }
-
-      if (!this.#versions.includes(version)) {
-        throw new UCDStoreVersionNotFoundError(version);
-      }
-
-      if (!this.#filter(filePath, extraFilters)) {
-        const extraFiltersInfo = extraFilters
-          ? Object.entries(extraFilters)
-              .filter(([, value]) => value != null)
-              .map(([key, value]) => `${key}: ${Array.isArray(value) ? value.join(", ") : value}`)
-              .join("; ")
-          : "";
-
+      if (invalidVersions.length > 0) {
+        const source = versions.length > 0 ? "Provided" : "Config";
         throw new UCDStoreGenericError(
-          `File path "${filePath}" is excluded by the store's filter patterns${
-            extraFiltersInfo ? ` (extra filters: ${extraFiltersInfo})` : ""
-          }.`,
+          `${source} versions are not available in API: ${invalidVersions.join(", ")}. `
+          + `Available versions: ${apiVersions.slice(0, 5).join(", ")}${apiVersions.length > 5 ? "..." : ""}`,
         );
       }
 
-      try {
-        let content = "";
-        if (isAbsolute(filePath)) {
-          content = await this.#fs.read(filePath);
-        } else {
-          content = await this.#fs.read(join(version, filePath));
-        }
-
-        return content;
-      } catch (err) {
-        if (err instanceof Error) {
-          const code = (err as any)?.code;
-          if (code === "ENOENT" || err.message.includes("ENOENT")) {
-            throw new UCDStoreFileNotFoundError(filePath, version);
-          }
-        }
-
-        throw err;
-      }
-    });
+      debug?.("✓ Early version validation passed");
+    }
   }
 
-  async init(options: InitOptions = {}): Promise<void> {
-    const { force = false, dryRun = false } = options;
+  // Case 1: Lockfile exists - use it
+  if (internalContext.lockfile.exists && internalContext.lockfile.path) {
+    const lockfile = await readLockfileOrUndefined(fs, internalContext.lockfile.path);
+    const lockfileVersions = lockfile ? Object.keys(lockfile.versions) : [];
+    debug?.("Lockfile versions:", lockfileVersions);
 
-    // fetch available versions from API to validate
-    const client = await this.#ensureClient();
-    const result = await client.versions.list();
+    // If user provided versions, handle according to strategy
+    if (versions.length > 0) {
+      storeVersions = await handleVersionConflict(
+        versionStrategy,
+        versions,
+        lockfileVersions,
+        fs,
+        internalContext.lockfile.path,
+        configVersions,
+        filter,
+      );
+    } else if (lockfileVersions.length > 0) {
+      storeVersions = lockfileVersions;
+      debug?.("Using versions from lockfile:", storeVersions);
+    } else if (configVersions.length) {
+      storeVersions = configVersions;
+      debug?.("Using versions from config:", storeVersions);
+    }
 
-    if (result.error) {
+    internalContext.versions.resolved = storeVersions;
+    internalContext.lockfile.exists = true;
+  }
+
+  // Case 2: Writable bridge but no lockfile - need initialization
+  if (!internalContext.lockfile.exists && internalContext.lockfile.supports) {
+    if (requireExistingStore) {
       throw new UCDStoreGenericError(
-        `Failed to fetch Unicode versions: ${result.error.message}${
-          result.error.status ? ` (status ${result.error.status})` : ""}`,
+        `Store lockfile not found at ${internalContext.lockfile.path}. `
+        + `Initialize the store first or set requireExistingStore: false to create automatically.`,
       );
     }
 
-    if (!result.data) {
-      throw new UCDStoreGenericError("Failed to fetch Unicode versions: no data returned");
+    if (!storeVersions.length && configVersions.length) {
+      storeVersions = configVersions;
+      debug?.("Using versions from config for initialization:", storeVersions);
     }
 
-    const data = result.data;
+    internalContext.versions.resolved = storeVersions;
+    await initLockfile(internalContext);
+    internalContext.lockfile.exists = true;
+  }
 
-    let hasVersionManifestChanged = false;
-
-    const availableVersions = data.map(({ version }) => version);
-
-    // read existing manifest if it exists
-    let manifestVersions: string[] = [];
-    const manifestExists = await this.#fs.exists(this.#manifestPath);
-    if (manifestExists && !force) {
-      const manifest = await this["~readManifest"]();
-      manifestVersions = Object.keys(manifest);
+  // Case 3: Read-only bridge - must have versions
+  if (!internalContext.lockfile.supports) {
+    if (!storeVersions.length && configVersions.length) {
+      storeVersions = configVersions;
+      debug?.("Read-only bridge: using versions from config:", storeVersions);
     }
 
-    // use api versions if no constructor versions, no versions in manifest & manifest doesn't exist
-    if (this.#versions.length === 0 && (manifestVersions.length === 0 && (!manifestExists || force))) {
-      // No versions specified anywhere, use all available
-      this.#versions = availableVersions;
-      hasVersionManifestChanged = true;
-    }
-
-    // if there is both constructor and manifest versions, merge them
-    if (this.#versions.length > 0 && manifestVersions.length > 0) {
-      this.#versions = Array.from(new Set([...this.#versions, ...manifestVersions]));
-      hasVersionManifestChanged = true;
-    }
-
-    // if no constructor versions, but manifest versions exist
-    // use manifest versions.
-    if (this.#versions.length === 0 && manifestVersions.length > 0) {
-      this.#versions = manifestVersions;
-    }
-
-    // validate all versions exist in API
-    const missingVersions = this.#versions.filter((v) => !availableVersions.includes(v));
-    if (missingVersions.length > 0) {
+    if (!storeVersions.length) {
       throw new UCDStoreGenericError(
-        `Some requested versions are not available in the API: ${missingVersions.join(", ")}`,
+        `No versions provided for read-only file system bridge. `
+        + `Provide versions in options or ensure endpoint config is available.`,
       );
     }
 
-    if (!dryRun) {
-      // only create base directory if it doesn't exist or if forced
-      if (!manifestExists || force) {
-        const basePathExists = await this.#fs.exists(this.basePath);
-        if (!basePathExists) {
-          assertCapability(this.#fs, ["mkdir"]);
-          await this.#fs.mkdir(this.basePath);
-        }
-      }
-
-      // write manifest if versions have changed, doesn't exist, or forced
-      if (hasVersionManifestChanged || !manifestExists || force) {
-        await this["~writeManifest"](this.#versions);
-      }
-    }
-
-    this.#initialized = true;
+    internalContext.versions.resolved = storeVersions;
+    debug?.("Read-only bridge initialized with versions:", storeVersions);
   }
 
-  /**
-   * Analyzes the store to identify potential issues and inconsistencies.
-   *
-   * This method performs a comprehensive analysis of the specified Unicode versions
-   * in the store, checking for missing files, orphaned files (if enabled), and other
-   * integrity issues. The analysis helps maintain store health and identify problems
-   * that may need attention.
-   *
-   * @param {AnalyzeOptions} options - Configuration options for the analysis operation
-   * @returns {Promise<OperationResult<AnalyzeResult[], StoreError>>} A promise that resolves to a StoreOperationResult containing an array of VersionAnalysis objects, one for each analyzed version
-   */
-  async analyze(options: AnalyzeOptions): Promise<OperationResult<AnalyzeResult[], StoreError>> {
-    return wrapTry(async () => {
-      await this.#ensureClient();
+  // Unified verification: handles both lockfile-based and direct version validation
+  if (shouldVerify && internalContext.versions.resolved.length > 0) {
+    const verifyResult = await verify(internalContext);
 
-      if (!this.#initialized) {
-        throw new UCDStoreNotInitializedError();
-      }
+    if (!verifyResult.valid) {
+      const source = verifyResult.source === "lockfile" ? "Lockfile" : "Version";
+      throw new UCDStoreGenericError(
+        `${source} verification failed: ${verifyResult.invalidVersions.length} version(s) are not available in API: ${verifyResult.invalidVersions.join(", ")}`,
+      );
+    }
 
-      let {
-        checkOrphaned = false,
-        versions = [],
-      } = options;
+    debug?.(`✓ Verification passed (source: ${verifyResult.source})`);
+  }
 
-      if (versions.length === 0) {
-        versions = this.#versions;
-      }
+  const publicContext = createPublicContext(internalContext);
 
-      const result = await internal__analyze(this, {
-        checkOrphaned,
-        versions,
+  return Object.assign(publicContext, {
+    files: {
+      get: getFile.bind(internalContext),
+      list: listFiles.bind(internalContext),
+      tree: getFileTree.bind(internalContext),
+    },
+    mirror: mirror.bind(internalContext),
+    sync: sync.bind(internalContext),
+    analyze: analyze.bind(internalContext),
+    compare: compare.bind(internalContext),
+  } satisfies UCDStoreOperations);
+}
+
+async function retrieveEndpointConfiguration(baseUrl: string = UCDJS_API_BASE_URL): Promise<UCDWellKnownConfig> {
+  debug?.("Attempting to discover endpoint configuration from", baseUrl);
+  return discoverEndpointsFromConfig(baseUrl).catch((err) => {
+    debug?.("Failed to discover endpoint config, using default:", err);
+    return getDefaultUCDEndpointConfig();
+  });
+}
+
+export async function handleVersionConflict(
+  strategy: VersionConflictStrategy,
+  providedVersions: string[],
+  lockfileVersions: string[],
+  fs: FileSystemBridge,
+  lockfilePath: string,
+  _configVersions?: string[],
+  filter?: PathFilter,
+): Promise<string[]> {
+  const now = new Date();
+
+  switch (strategy) {
+    case "merge": {
+      const mergedVersions = Array.from(new Set([...lockfileVersions, ...providedVersions]));
+      const existing = await readLockfileOrUndefined(fs, lockfilePath);
+      const { writeLockfile } = await import("@ucdjs/lockfile");
+      const { extractFilterPatterns } = await import("./context");
+      const filters = filter ? extractFilterPatterns(filter) : existing?.filters;
+
+      await writeLockfile(fs, lockfilePath, {
+        lockfileVersion: 1,
+        createdAt: existing?.createdAt ?? now,
+        updatedAt: now,
+        versions: Object.fromEntries(
+          mergedVersions.map((v) => {
+            const existingEntry = existing?.versions[v];
+            return [
+              v,
+              existingEntry ?? {
+                path: `${v}/snapshot.json`, // relative path
+                fileCount: 0,
+                totalSize: 0,
+                createdAt: now,
+                updatedAt: now,
+              },
+            ];
+          }),
+        ),
+        filters,
       });
+      debug?.("Merge mode: combined versions", mergedVersions);
+      return mergedVersions;
+    }
+    case "overwrite": {
+      const existing = await readLockfileOrUndefined(fs, lockfilePath);
+      const { writeLockfile } = await import("@ucdjs/lockfile");
+      const { extractFilterPatterns } = await import("./context");
+      const filters = filter ? extractFilterPatterns(filter) : existing?.filters;
 
-      return result;
-    });
-  }
-
-  /**
-   * Mirrors Unicode data files from the remote UCD API to the local store.
-   *
-   * This method downloads and synchronizes Unicode data files for the specified versions
-   * from the remote UCD API to the local filesystem. It handles concurrent downloads,
-   * supports dry-run mode for testing, and can force re-download of existing files.
-   * The mirroring process ensures that the local store contains all necessary files
-   * for the specified Unicode versions.
-   *
-   * @param {MirrorOptions} options - Configuration options for the mirroring operation
-   * @returns {Promise<OperationResult<MirrorResult[], StoreError>>} A promise that resolves to an array of MirrorResult objects, one for each mirrored version
-   */
-  async mirror(options: MirrorOptions = {}): Promise<OperationResult<MirrorResult[], StoreError>> {
-    return wrapTry(async () => {
-      await this.#ensureClient();
-
-      if (!this.#initialized) {
-        throw new UCDStoreNotInitializedError();
-      }
-
-      let {
-        versions = [],
-        concurrency = DEFAULT_CONCURRENCY,
-        dryRun = false,
-        force = false,
-      } = options;
-
-      if (versions.length === 0) {
-        versions = this.#versions;
-      }
-
-      const result = await internal__mirror(this, {
-        versions,
-        concurrency,
-        dryRun,
-        force,
+      await writeLockfile(fs, lockfilePath, {
+        lockfileVersion: 1,
+        createdAt: existing?.createdAt ?? now,
+        updatedAt: now,
+        versions: Object.fromEntries(
+          providedVersions.map((v) => {
+            const existingEntry = existing?.versions[v];
+            return [
+              v,
+              existingEntry ?? {
+                path: `${v}/snapshot.json`, // relative path
+                fileCount: 0,
+                totalSize: 0,
+                createdAt: now,
+                updatedAt: now,
+              },
+            ];
+          }),
+        ),
+        filters,
       });
-
-      return result;
-    });
-  }
-
-  /**
-   * Cleans orphaned and invalid files from the store.
-   *
-   * This method analyzes the store to identify files that should not exist (orphaned files)
-   * or are corrupted/invalid, and removes them from the filesystem. This helps maintain
-   * store integrity and free up disk space.
-   *
-   * @param {CleanOptions} options - Configuration options for the cleaning operation
-   * @return {Promise<OperationResult<CleanResult[], StoreError>>} A promise that resolves to an array of CleanResult objects, one for each version cleaned
-   */
-  async clean(options: CleanOptions = {}): Promise<OperationResult<CleanResult[], StoreError>> {
-    return wrapTry(async () => {
-      await this.#ensureClient();
-
-      if (!this.#initialized) {
-        throw new UCDStoreNotInitializedError();
-      }
-
-      let {
-        versions = [],
-        concurrency = DEFAULT_CONCURRENCY,
-        dryRun = false,
-      } = options;
-
-      if (versions.length === 0) {
-        versions = this.#versions;
-      }
-
-      const result = await internal__clean(this, {
-        versions,
-        concurrency,
-        dryRun,
-      });
-
-      return result;
-    });
-  }
-
-  async repair(options: RepairOptions = {}): Promise<OperationResult<RepairResult[], StoreError>> {
-    return wrapTry(async () => {
-      await this.#ensureClient();
-
-      if (!this.#initialized) {
-        throw new UCDStoreNotInitializedError();
-      }
-
-      let {
-        versions = [],
-        concurrency = DEFAULT_CONCURRENCY,
-        dryRun = false,
-      } = options;
-
-      if (versions.length === 0) {
-        versions = this.#versions;
-      }
-
-      const result = await internal__repair(this, {
-        versions,
-        concurrency,
-        dryRun,
-      });
-
-      return result;
-    });
-  }
-
-  async "~writeManifest"(versions: string[]): Promise<void> {
-    assertCapability(this.#fs, "write");
-    const manifestData: UCDStoreManifest = {};
-
-    for (const version of versions) {
-      manifestData[version] = { expectedFiles: [] };
+      debug?.("Overwrite mode: replaced lockfile with provided versions", providedVersions);
+      return providedVersions;
     }
+    case "strict":
+    default: {
+      if (!arraysEqual(providedVersions, lockfileVersions)) {
+        throw new UCDStoreGenericError(
+          `Version mismatch: lockfile has [${lockfileVersions.join(", ")}], provided [${providedVersions.join(", ")}]. `
+          + `Use versionStrategy: "merge" or "overwrite" to resolve.`,
+        );
+      }
+      debug?.("Strict mode: versions match lockfile");
+      return lockfileVersions;
+    }
+  }
+}
 
-    await this.#fs.write(this.#manifestPath, JSON.stringify(manifestData, null, 2));
+function arraysEqual(a: string[], b: string[]): boolean {
+  if (a.length !== b.length) return false;
+
+  const setA = new Set(a);
+  const setB = new Set(b);
+
+  // If sets have different sizes, there were duplicates or different elements
+  if (setA.size !== setB.size) return false;
+
+  // Check if all elements in setA exist in setB
+  for (const val of setA) {
+    if (!setB.has(val)) return false;
   }
 
-  async "~readManifest"(): Promise<UCDStoreManifest> {
-    const manifestData = await this.#fs.read(this.#manifestPath);
-
-    if (!manifestData) {
-      throw new UCDStoreInvalidManifestError(this.#manifestPath, "store manifest is empty");
-    }
-
-    const jsonData = safeJsonParse(manifestData);
-    if (!jsonData) {
-      throw new UCDStoreInvalidManifestError(this.#manifestPath, "store manifest is not a valid JSON");
-    }
-
-    const parsedManifest = UCDStoreManifestSchema.safeParse(jsonData);
-    if (!parsedManifest.success) {
-      throw new UCDStoreInvalidManifestError(this.#manifestPath, `store manifest is not a valid JSON: ${parsedManifest.error.message}`);
-    }
-
-    return parsedManifest.data;
-  }
+  return true;
 }

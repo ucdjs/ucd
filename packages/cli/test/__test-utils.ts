@@ -5,12 +5,10 @@ export class ConsoleOutputCapture {
   private spies: Map<unknown, { mockRestore: () => void }> = new Map();
   public readonly captured: {
     log: string[];
-    info: string[];
     warn: string[];
     error: string[];
   } = {
     log: [],
-    info: [],
     warn: [],
     error: [],
   };
@@ -18,7 +16,6 @@ export class ConsoleOutputCapture {
   start(): void {
     const consoleMethods = [
       { name: "log" as const, captureKey: "log" as const },
-      { name: "info" as const, captureKey: "info" as const },
       { name: "warn" as const, captureKey: "warn" as const },
       { name: "error" as const, captureKey: "error" as const },
     ];
@@ -43,7 +40,6 @@ export class ConsoleOutputCapture {
   getAllOutput(): string {
     return [
       ...this.captured.log,
-      ...this.captured.info,
       ...this.captured.warn,
       ...this.captured.error,
     ].join("\n");
@@ -51,10 +47,6 @@ export class ConsoleOutputCapture {
 
   getLogOutput(): string {
     return this.captured.log.join("\n");
-  }
-
-  getInfoOutput(): string {
-    return this.captured.info.join("\n");
   }
 
   getErrorOutput(): string {
@@ -67,10 +59,6 @@ export class ConsoleOutputCapture {
 
   contains(text: string): boolean {
     return this.getAllOutput().includes(text);
-  }
-
-  containsInfo(text: string): boolean {
-    return this.captured.info.some((call) => call.includes(text));
   }
 
   containsError(text: string): boolean {
@@ -101,7 +89,6 @@ export class ConsoleOutputCapture {
 
   clear(): void {
     this.captured.log = [];
-    this.captured.info = [];
     this.captured.warn = [];
     this.captured.error = [];
   }

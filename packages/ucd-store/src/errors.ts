@@ -1,6 +1,7 @@
 // Base error class for UCD Store
 // All store errors extend this class, to make it easier
 // to filter errors.
+
 export abstract class UCDStoreBaseError extends Error {
   constructor(message: string) {
     super(message);
@@ -61,12 +62,22 @@ export class UCDStoreBridgeUnsupportedOperation extends UCDStoreBaseError {
 }
 
 export class UCDStoreInvalidManifestError extends UCDStoreBaseError {
-  private manifestPath: string;
+  public readonly manifestPath: string;
+  public readonly details: string[];
 
-  constructor(manifestPath: string, message: string) {
+  constructor({
+    manifestPath,
+    message,
+    details,
+  }: {
+    manifestPath: string;
+    message: string;
+    details?: string[];
+  }) {
     super(`invalid manifest at ${manifestPath}: ${message}`);
     this.name = "UCDStoreInvalidManifestError";
     this.manifestPath = manifestPath;
+    this.details = details || [];
   }
 }
 
@@ -77,10 +88,65 @@ export class UCDStoreNotInitializedError extends UCDStoreBaseError {
   }
 }
 
+export class UCDStoreFilterError extends UCDStoreBaseError {
+  public readonly excludePattern: string[] = [];
+  public readonly includePattern: string[] = [];
+  public readonly filePath: string;
+
+  constructor(message: string, {
+    excludePattern,
+    includePattern,
+    filePath,
+  }: {
+    excludePattern: string[];
+    includePattern: string[];
+    filePath: string;
+  }) {
+    super(message);
+    this.name = "UCDStoreFilterError";
+    this.excludePattern = excludePattern;
+    this.includePattern = includePattern;
+    this.filePath = filePath;
+  }
+}
+
+export class UCDStoreApiFallbackError extends UCDStoreBaseError {
+  public readonly version: string;
+  public readonly filePath: string;
+  public readonly status?: number;
+  public readonly reason: "fetch-failed" | "no-data";
+
+  constructor({
+    version,
+    filePath,
+    status,
+    reason,
+    message,
+  }: {
+    version: string;
+    filePath: string;
+    status?: number;
+    reason: "fetch-failed" | "no-data";
+    message?: string;
+  }) {
+    const defaultMessage = reason === "fetch-failed"
+      ? `Failed to fetch file '${filePath}' from API${status ? ` (status: ${status})` : ""}`
+      : `API returned no data for file '${filePath}'`;
+
+    super(message ?? defaultMessage);
+    this.name = "UCDStoreApiFallbackError";
+    this.version = version;
+    this.filePath = filePath;
+    this.status = status;
+    this.reason = reason;
+  }
+}
+
 export type StoreError
   = | UCDStoreGenericError
     | UCDStoreFileNotFoundError
     | UCDStoreVersionNotFoundError
     | UCDStoreBridgeUnsupportedOperation
     | UCDStoreInvalidManifestError
-    | UCDStoreNotInitializedError;
+    | UCDStoreNotInitializedError
+    | UCDStoreApiFallbackError;
