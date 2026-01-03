@@ -26,10 +26,5 @@ export async function parseUnicodeDirectory(html: string, basePath = ""): Promis
     basePath,
   });
 
-  return files.map(({ type, name, path, lastModified }) => ({
-    type,
-    name: trimTrailingSlash(name),
-    path: trimTrailingSlash(path),
-    lastModified,
-  }));
+  return files;
 }
