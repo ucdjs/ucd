@@ -1,4 +1,4 @@
-import type { UnicodeTreeNodeWithoutLastModified } from "@ucdjs/schemas";
+import type { UnicodeFileTreeNodeWithoutLastModified } from "@ucdjs/schemas";
 import { prependLeadingSlash } from "@luxass/utils";
 
 /**
@@ -9,7 +9,7 @@ import { prependLeadingSlash } from "@luxass/utils";
  * @param {string} targetPath - The path to search for
  * @returns {T | undefined} The found node or undefined
  */
-export function findFileByPath<T extends UnicodeTreeNodeWithoutLastModified>(entries: T[], targetPath: string): T | undefined {
+export function findFileByPath<T extends UnicodeFileTreeNodeWithoutLastModified>(entries: T[], targetPath: string): T | undefined {
   for (const fileOrDirectory of entries) {
     // Use path property directly as it already contains the full path
     const filePath = fileOrDirectory.path ?? fileOrDirectory.name;
@@ -50,7 +50,7 @@ export function findFileByPath<T extends UnicodeTreeNodeWithoutLastModified>(ent
  * // Returns: ["folder1/file1.txt", "file2.txt"]
  * ```
  */
-export function flattenFilePaths<T extends UnicodeTreeNodeWithoutLastModified>(entries: T[], prefix: string = ""): string[] {
+export function flattenFilePaths<T extends UnicodeFileTreeNodeWithoutLastModified>(entries: T[], prefix: string = ""): string[] {
   const paths: string[] = [];
 
   if (!Array.isArray(entries)) {

@@ -1,4 +1,4 @@
-import type { UnicodeTreeNodeWithoutLastModified } from "@ucdjs/schemas";
+import type { UnicodeFileTreeNodeWithoutLastModified } from "@ucdjs/schemas";
 import type { PicomatchOptions } from "picomatch";
 import picomatch from "picomatch";
 import { DEFAULT_PICOMATCH_OPTIONS } from "./glob";
@@ -197,7 +197,7 @@ function isDirectoryOnlyPattern(pattern: string): boolean {
     && (pattern.includes("/") || !pattern.includes("*"));
 }
 
-export function filterTreeStructure<T extends UnicodeTreeNodeWithoutLastModified>(
+export function filterTreeStructure<T extends UnicodeFileTreeNodeWithoutLastModified>(
   pathFilter: PathFilter,
   entries: T[],
   extraOptions: Pick<PathFilterOptions, "include" | "exclude"> = {},
@@ -205,7 +205,7 @@ export function filterTreeStructure<T extends UnicodeTreeNodeWithoutLastModified
   return internal__filterTreeStructure(pathFilter, entries, "", extraOptions);
 }
 
-function internal__filterTreeStructure<T extends UnicodeTreeNodeWithoutLastModified>(
+function internal__filterTreeStructure<T extends UnicodeFileTreeNodeWithoutLastModified>(
   pathFilter: PathFilter,
   entries: T[],
   parentPath: string,

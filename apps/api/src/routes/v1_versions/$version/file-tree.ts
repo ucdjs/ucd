@@ -1,11 +1,13 @@
 import type { OpenAPIHono } from "@hono/zod-openapi";
-import type { UnicodeTree } from "@ucdjs/schemas";
-import type { z } from "zod";
+import type { UnicodeFileTree } from "@ucdjs/schemas";
 import type { HonoEnv } from "../../../types";
 import { createRoute } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
 import { createDebugger } from "@ucdjs-internal/shared";
-import { UnicodeTreeSchema } from "@ucdjs/schemas";
+import {
+  UnicodeFileTreeNodeSchema,
+  UnicodeFileTreeSchema,
+} from "@ucdjs/schemas";
 import {
   hasUCDFolderPath,
   resolveUCDVersion,
@@ -43,7 +45,7 @@ const GET_VERSION_FILE_TREE_ROUTE = createRoute({
     200: {
       content: {
         "application/json": {
-          schema: UnicodeTreeSchema,
+          schema: UnicodeFileTreeSchema,
           examples: {
             default: {
               summary: "File tree for a Unicode version",
@@ -97,6 +99,7 @@ const GET_VERSION_FILE_TREE_ROUTE = createRoute({
 });
 
 export function registerVersionFileTreeRoute(router: OpenAPIHono<HonoEnv>) {
+  router.openAPIRegistry.register("UnicodeFileTreeNode", UnicodeFileTreeNodeSchema);
   router.openapi(GET_VERSION_FILE_TREE_ROUTE, async (c) => {
     try {
       let version = c.req.param("version");
@@ -123,11 +126,11 @@ export function registerVersionFileTreeRoute(router: OpenAPIHono<HonoEnv>) {
         basePath: normalizedPath,
       });
 
-      // We cast the result to UnicodeTree because the traverse function
+      // We cast the result to UnicodeFileTree because the traverse function
       // returns entries that uses lastModified as `number | undefined`.
       // But we can't use the `number | undefined` type in the API schema.
       // So we need to return lastModified as `number | null` always.
-      return c.json(result as UnicodeTree, 200);
+      return c.json(result as UnicodeFileTree, 200);
     } catch (error) {
       console.error("Error processing directory:", error);
       return internalServerError(c, {

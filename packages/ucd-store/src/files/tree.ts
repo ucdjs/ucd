@@ -1,5 +1,5 @@
 import type { OperationResult } from "@ucdjs-internal/shared";
-import type { UnicodeTreeNode } from "@ucdjs/schemas";
+import type { UnicodeFileTreeNode } from "@ucdjs/schemas";
 import type { StoreError } from "../errors";
 import type { InternalUCDStoreContext, SharedOperationOptions } from "../types";
 import {
@@ -28,13 +28,13 @@ export interface GetFileTreeOptions extends SharedOperationOptions {
  * @this {InternalUCDStoreContext} - Internal store context with client, filters, FS bridge, and configuration
  * @param {string} version - The Unicode version to fetch the file tree for
  * @param {GetFileTreeOptions} [options] - Optional filters and API fallback behavior
- * @returns {Promise<OperationResult<UnicodeTreeNode[], StoreError>>} Operation result with filtered file tree or error
+ * @returns {Promise<OperationResult<UnicodeFileTreeNode[], StoreError>>} Operation result with filtered file tree or error
  */
 async function _getFileTree(
   this: InternalUCDStoreContext,
   version: string,
   options?: GetFileTreeOptions,
-): Promise<OperationResult<UnicodeTreeNode[], StoreError>> {
+): Promise<OperationResult<UnicodeFileTreeNode[], StoreError>> {
   return wrapTry(async () => {
     // Validate version exists in store
     if (!this.versions.resolved.includes(version)) {
@@ -107,20 +107,20 @@ export function getFileTree(
   context: InternalUCDStoreContext,
   version: string,
   options?: GetFileTreeOptions,
-): Promise<OperationResult<UnicodeTreeNode[], StoreError>>;
+): Promise<OperationResult<UnicodeFileTreeNode[], StoreError>>;
 
 export function getFileTree(
   this: InternalUCDStoreContext,
   version: string,
   options?: GetFileTreeOptions,
-): Promise<OperationResult<UnicodeTreeNode[], StoreError>>;
+): Promise<OperationResult<UnicodeFileTreeNode[], StoreError>>;
 
 export function getFileTree(
   this: InternalUCDStoreContext | void,
   thisOrContext: InternalUCDStoreContext | string,
   versionOrOptions?: string | GetFileTreeOptions,
   options?: GetFileTreeOptions,
-): Promise<OperationResult<UnicodeTreeNode[], StoreError>> {
+): Promise<OperationResult<UnicodeFileTreeNode[], StoreError>> {
   if (isUCDStoreInternalContext(thisOrContext)) {
     return _getFileTree.call(
       thisOrContext,

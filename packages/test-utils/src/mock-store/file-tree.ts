@@ -1,10 +1,10 @@
-import type { UnicodeTreeNode } from "@ucdjs/schemas";
+import type { UnicodeFileTreeNode } from "@ucdjs/schemas";
 
 /**
  * A file tree node with optional content for mocking file downloads.
  * The `_content` property is used by the files handler to return content.
  */
-export type FileTreeNodeWithContent = UnicodeTreeNode & { _content?: string };
+export type FileTreeNodeWithContent = UnicodeFileTreeNode & { _content?: string };
 
 /**
  * Input format for creating file trees.
@@ -46,7 +46,7 @@ export interface FileTreeInput {
 /**
  * Creates a file tree structure from a simplified input format.
  *
- * This utility converts a nested object structure into the UnicodeTreeNode format
+ * This utility converts a nested object structure into the UnicodeFileTreeNode format
  * used by mockStoreApi. String values become files with that content, nested objects
  * become directories.
  *

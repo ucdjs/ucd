@@ -35,24 +35,25 @@ export const UCDStoreManifestSchema = z.record(
 
 export type UCDStoreManifest = z.output<typeof UCDStoreManifestSchema>;
 
-const BaseItemSchema = z.object({
+const FileEntryBaseSchema = z.object({
   name: z.string(),
   path: z.string(),
   lastModified: z.number().or(z.null()),
 });
 
-const DirectoryResponseSchema = BaseItemSchema.extend({
+export const FileEntryDirectorySchema = FileEntryBaseSchema.extend({
   type: z.literal("directory"),
 });
 
-const FileResponseSchema = BaseItemSchema.extend({
+export const FileEntryFileSchema = FileEntryBaseSchema.extend({
   type: z.literal("file"),
 });
 
 export const FileEntrySchema = z.union([
-  DirectoryResponseSchema,
-  FileResponseSchema,
+  FileEntryDirectorySchema,
+  FileEntryFileSchema,
 ]).meta({
+  id: "FileEntry",
   description: dedent`
     Response schema for a file entry in the UCD store.
 

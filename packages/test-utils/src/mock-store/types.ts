@@ -1,5 +1,5 @@
 import type { MockFetchFn } from "@luxass/msw-utils";
-import type { UnicodeTreeNode } from "@ucdjs/schemas";
+import type { UnicodeFileTreeNode } from "@ucdjs/schemas";
 import type { AsyncResponseResolverReturnType, DefaultBodyType, HttpResponseResolver, PathParams } from "msw";
 import type { paths } from "../.generated/api";
 import type { MOCK_ROUTES } from "./handlers";
@@ -84,12 +84,12 @@ type PartialRecord<K extends keyof any, T> = {
 type MockStoreKey = StoreVersionFileKey | StoreFileKeyWildcard | (string & {});
 
 export type MockStoreNode
-  = | (Omit<UnicodeTreeNode, "type" | "path"> & { type: "file"; path?: string; _content?: string })
-    | (Omit<UnicodeTreeNode, "type" | "path"> & { type: "directory"; path?: string; _content?: string; children: MockStoreNode[] });
+  = | (Omit<UnicodeFileTreeNode, "type" | "path"> & { type: "file"; path?: string; _content?: string })
+    | (Omit<UnicodeFileTreeNode, "type" | "path"> & { type: "directory"; path?: string; _content?: string; children: MockStoreNode[] });
 
 export type MockStoreNodeWithPath
-  = | (Omit<UnicodeTreeNode, "type"> & { type: "file"; _content?: string })
-    | (Omit<UnicodeTreeNode, "type"> & { type: "directory"; _content?: string; children: MockStoreNodeWithPath[] });
+  = | (Omit<UnicodeFileTreeNode, "type"> & { type: "file"; _content?: string })
+    | (Omit<UnicodeFileTreeNode, "type"> & { type: "directory"; _content?: string; children: MockStoreNodeWithPath[] });
 
 export type MockStoreFiles = PartialRecord<MockStoreKey, MockStoreNode[]>;
 

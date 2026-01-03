@@ -1,5 +1,6 @@
 import type { DeepOmit } from "./types";
 import { z } from "zod";
+import { FileEntryDirectorySchema, FileEntryFileSchema } from "./fs";
 
 export const UnicodeVersionSchema = z.object({
   version: z.string().meta({
@@ -91,78 +92,6 @@ interface DirectoryTreeNode extends BaseTreeNode {
 interface FileTreeNode extends BaseTreeNode {
   type: "file";
 }
-
-const BaseTreeNodeSchema = z.object({
-  name: z.string().meta({
-    description: "The name of the file or directory.",
-  }),
-  path: z.string().meta({
-    description: "The path to the file or directory.",
-  }),
-  lastModified: z.number().or(z.null()).meta({
-    description: "The last modified date of the directory, if available.",
-  }),
-});
-
-const DirectoryTreeNodeSchema: z.ZodType<DirectoryTreeNode> = BaseTreeNodeSchema.extend({
-  type: z.literal("directory").meta({
-    description: "The type of the entry, which is a directory.",
-  }),
-
-  // eslint-disable-next-line ts/no-use-before-define
-  children: z.array(z.lazy(() => UnicodeTreeNodeSchema)).meta({
-    description: "The children of the directory.",
-    type: "array",
-    items: {
-      $ref: "#/components/schemas/UnicodeTreeNode",
-    },
-  }),
-});
-
-const FileTreeNodeSchema = BaseTreeNodeSchema.extend({
-  type: z.literal("file").meta({
-    description: "The type of the entry, which is a file.",
-  }),
-});
-
-export const UnicodeTreeNodeSchema = z.union([DirectoryTreeNodeSchema, FileTreeNodeSchema]).meta({
-  id: "UnicodeTreeNode",
-  description: "A node in the Unicode file tree.",
-}).superRefine((data, ctx) => {
-  if (data.type === "directory" && !("children" in data)) {
-    ctx.addIssue({
-      code: "custom",
-      message: "Directory nodes must have a 'children' property.",
-    });
-  }
-
-  // Ensure that directory paths end with a slash
-  if (data.type === "directory" && !data.path.endsWith("/")) {
-    ctx.addIssue({
-      code: "custom",
-      message: "Directory paths must end with a trailing slash ('/').",
-    });
-  }
-
-  // If the path doesn't start with a slash.
-  if (!data.path.startsWith("/")) {
-    ctx.addIssue({
-      code: "custom",
-      message: "Paths must start with a leading slash ('/').",
-    });
-  }
-});
-
-export type UnicodeTreeNode = z.output<typeof UnicodeTreeNodeSchema>;
-
-export type UnicodeTreeNodeWithoutLastModified = DeepOmit<UnicodeTreeNode, "lastModified">;
-
-export const UnicodeTreeSchema = z.array(UnicodeTreeNodeSchema).meta({
-  id: "UnicodeTree",
-  description: "A tree structure representing files and directories in a Unicode version.",
-});
-
-export type UnicodeTree = z.output<typeof UnicodeTreeSchema>;
 
 export const UnicodeVersionDetailsSchema = UnicodeVersionSchema.extend({
   statistics: z.object({
@@ -275,6 +204,60 @@ export const UnicodeCharacterSchema = z.object({
 });
 
 export type UnicodeCharacter = z.output<typeof UnicodeCharacterSchema>;
+
+// Recursive tree node based on FileEntry schemas from fs.ts
+// Directories must include children; files must not.
+const UnicodeFileTreeFileSchema = FileEntryFileSchema;
+
+const UnicodeFileTreeDirectorySchema: z.ZodType<{
+  name: string;
+  path: string;
+  lastModified: number | null;
+  type: "directory";
+  children: UnicodeFileTreeNode[];
+}> = FileEntryDirectorySchema.extend({
+  // eslint-disable-next-line ts/no-use-before-define
+  children: z.array(z.lazy(() => UnicodeFileTreeNodeSchema)).meta({
+    description: "The children of the directory.",
+    type: "array",
+    items: {
+      $ref: "#/components/schemas/UnicodeFileTreeNode",
+    },
+  }),
+});
+
+export const UnicodeFileTreeNodeSchema = z.union([
+  UnicodeFileTreeDirectorySchema,
+  UnicodeFileTreeFileSchema,
+]).meta({
+  id: "UnicodeFileTreeNode",
+  description: "A recursive file tree node; directories include children, files do not.",
+}).superRefine((data, ctx) => {
+  if (data.type === "directory" && !("children" in data)) {
+    ctx.addIssue({
+      code: "custom",
+      message: "Directory nodes must include children.",
+    });
+  }
+
+  if (data.type === "file" && "children" in data) {
+    ctx.addIssue({
+      code: "custom",
+      message: "File nodes cannot have children.",
+    });
+  }
+});
+
+export type UnicodeFileTreeNode = z.infer<typeof UnicodeFileTreeNodeSchema>;
+
+export type UnicodeFileTreeNodeWithoutLastModified = DeepOmit<UnicodeFileTreeNode, "lastModified">;
+
+export const UnicodeFileTreeSchema = z.array(UnicodeFileTreeNodeSchema).meta({
+  id: "UnicodeFileTree",
+  description: "A recursive file tree structure rooted at an array of entries.",
+});
+
+export type UnicodeFileTree = z.infer<typeof UnicodeFileTreeSchema>;
 
 export const UnicodePropertyResponseSchema = z.object({
   property: z.string().meta({

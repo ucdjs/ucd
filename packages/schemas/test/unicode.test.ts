@@ -1,8 +1,8 @@
 /// <reference types="../../test-utils/src/matchers/types.d.ts" />
 import { describe, expect, it } from "vitest";
 import {
-  UnicodeTreeNodeSchema,
-  UnicodeTreeSchema,
+  UnicodeFileTreeNodeSchema,
+  UnicodeFileTreeSchema,
   UnicodeVersionDetailsSchema,
   UnicodeVersionListSchema,
   UnicodeVersionSchema,
@@ -166,7 +166,7 @@ describe("UnicodeVersionListSchema", () => {
 });
 
 // eslint-disable-next-line test/prefer-lowercase-title
-describe("UnicodeTreeNodeSchema", () => {
+describe("UnicodeFileTreeNodeSchema", () => {
   it("should validate a file node", () => {
     const fileNode = {
       type: "file",
@@ -175,7 +175,7 @@ describe("UnicodeTreeNodeSchema", () => {
       lastModified: 1704067200000,
     };
     expect(fileNode).toMatchSchema({
-      schema: UnicodeTreeNodeSchema,
+      schema: UnicodeFileTreeNodeSchema,
       success: true,
       data: {
         type: "file",
@@ -192,7 +192,7 @@ describe("UnicodeTreeNodeSchema", () => {
     };
 
     expect(fileNode).toMatchSchema({
-      schema: UnicodeTreeNodeSchema,
+      schema: UnicodeFileTreeNodeSchema,
       success: false,
     });
   });
@@ -213,7 +213,7 @@ describe("UnicodeTreeNodeSchema", () => {
       ],
     };
     expect(directoryNode).toMatchSchema({
-      schema: UnicodeTreeNodeSchema,
+      schema: UnicodeFileTreeNodeSchema,
       success: true,
       data: {
         type: "directory",
@@ -253,7 +253,7 @@ describe("UnicodeTreeNodeSchema", () => {
       ],
     };
     expect(nestedStructure).toMatchSchema({
-      schema: UnicodeTreeNodeSchema,
+      schema: UnicodeFileTreeNodeSchema,
       success: true,
     });
   });
@@ -267,7 +267,7 @@ describe("UnicodeTreeNodeSchema", () => {
       lastModified: null,
     };
     expect(emptyDirectory).toMatchSchema({
-      schema: UnicodeTreeNodeSchema,
+      schema: UnicodeFileTreeNodeSchema,
       success: true,
     });
   });
@@ -280,7 +280,7 @@ describe("UnicodeTreeNodeSchema", () => {
       children: [], // files shouldn't have children
     };
     expect(invalidFile).toMatchSchema({
-      schema: UnicodeTreeNodeSchema,
+      schema: UnicodeFileTreeNodeSchema,
       success: false,
     });
   });
@@ -293,14 +293,14 @@ describe("UnicodeTreeNodeSchema", () => {
       // missing children
     };
     expect(invalidDirectory).toMatchSchema({
-      schema: UnicodeTreeNodeSchema,
+      schema: UnicodeFileTreeNodeSchema,
       success: false,
     });
   });
 });
 
 // eslint-disable-next-line test/prefer-lowercase-title
-describe("UnicodeTreeSchema", () => {
+describe("UnicodeFileTreeSchema", () => {
   it("should validate a tree structure", () => {
     const validTree = [
       {
@@ -326,14 +326,14 @@ describe("UnicodeTreeSchema", () => {
     ];
 
     expect(validTree).toMatchSchema({
-      schema: UnicodeTreeSchema,
+      schema: UnicodeFileTreeSchema,
       success: true,
     });
   });
 
   it("should validate an empty tree", () => {
     expect([]).toMatchSchema({
-      schema: UnicodeTreeSchema,
+      schema: UnicodeFileTreeSchema,
       success: true,
     });
   });
