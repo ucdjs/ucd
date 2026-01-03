@@ -1,4 +1,6 @@
 import type { OpenAPIHono } from "@hono/zod-openapi";
+import type { UnicodeTree } from "@ucdjs/schemas";
+import type { z } from "zod";
 import type { HonoEnv } from "../../../types";
 import { createRoute } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
@@ -121,7 +123,11 @@ export function registerVersionFileTreeRoute(router: OpenAPIHono<HonoEnv>) {
         basePath: normalizedPath,
       });
 
-      return c.json(result, 200);
+      // We cast the result to UnicodeTree because the traverse function
+      // returns entries that uses lastModified as `number | undefined`.
+      // But we can't use the `number | undefined` type in the API schema.
+      // So we need to return lastModified as `number | null` always.
+      return c.json(result as UnicodeTree, 200);
     } catch (error) {
       console.error("Error processing directory:", error);
       return internalServerError(c, {
