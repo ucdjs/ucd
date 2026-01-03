@@ -143,7 +143,7 @@ export const WILDCARD_ROUTE = createRoute({
                 0004;<control>;Cc;0;BN;;;;;N;END OF TRANSMISSION;;;;
                 0005;<control>;Cc;0;BN;;;;;N;ENQUIRY;;;;
                 0006;<control>;Cc;0;BN;;;;;N;ACKNOWLEDGE;;;;
-              `,
+              `.trim(),
             },
             "15.1.0/ucd/emoji/emoji-data.txt": {
               summary: "Emoji data file for Unicode 15.1.0",
@@ -152,7 +152,7 @@ export const WILDCARD_ROUTE = createRoute({
                 2660          ; Emoji                # E0.6   [1] (♠️)       spade suit
                 2663          ; Emoji                # E0.6   [1] (♣️)       club suit
                 2665..2666    ; Emoji                # E0.6   [2] (♥️..♦️)    heart suit..diamond suit
-              `,
+              `.trim(),
             },
           },
         },
@@ -419,6 +419,14 @@ export function registerWildcardRoute(router: OpenAPIHono<HonoEnv>) {
     const cd = response.headers.get("Content-Disposition");
     if (cd) headers["Content-Disposition"] = cd;
     if (upstreamContentLength) headers["Content-Length"] = upstreamContentLength;
+
+    // Only trim text-based responses, not binary files
+    const isTextContent = contentType.startsWith("text/") || contentType.includes("xml") || contentType.includes("json");
+    if (isTextContent) {
+      const body = await response.text();
+      const trimmedBody = body.trim();
+      return c.newResponse(trimmedBody, 200, headers);
+    }
 
     return c.newResponse(response.body!, 200, headers);
   });
