@@ -2,18 +2,12 @@
 
 A RESTful API for accessing Unicode Character Database (UCD) data.
 
-## 📦 Installation
+## � Usage
+
+From the root directory:
 
 ```sh
-git clone https://github.com/ucdjs/api.ucdjs.dev.git
-cd api.ucdjs.dev
-pnpm install
-```
-
-## 🚀 Usage
-
-```sh
-pnpm run dev
+pnpm run dev:apps
 ```
 
 ## 📖 API Documentation
