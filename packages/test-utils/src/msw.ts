@@ -8,7 +8,7 @@ declare global {
 }
 
 export { createMockFetch } from "@luxass/msw-utils";
-export { http, HttpResponse } from "msw";
+export { bypass, http, HttpResponse, passthrough } from "msw";
 
 export const mswServer = setupServer();
 globalThis.__ucd_msw_server = mswServer;

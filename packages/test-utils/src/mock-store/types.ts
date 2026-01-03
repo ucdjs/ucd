@@ -87,6 +87,10 @@ export type MockStoreNode
   = | (Omit<UnicodeTreeNode, "type" | "path"> & { type: "file"; path?: string; _content?: string })
     | (Omit<UnicodeTreeNode, "type" | "path"> & { type: "directory"; path?: string; _content?: string; children: MockStoreNode[] });
 
+export type MockStoreNodeWithPath
+  = | (Omit<UnicodeTreeNode, "type"> & { type: "file"; _content?: string })
+    | (Omit<UnicodeTreeNode, "type"> & { type: "directory"; _content?: string; children: MockStoreNodeWithPath[] });
+
 export type MockStoreFiles = PartialRecord<MockStoreKey, MockStoreNode[]>;
 
 export interface MockStoreConfig {

@@ -1,22 +1,22 @@
-import type { MockStoreNode } from "./types";
+import type { MockStoreNode, MockStoreNodeWithPath } from "./types";
 
 /**
  * Recursively traverses the file tree and adds paths to all nodes.
- * The path format is: /{version}/{pathname}
+ * The path format is: /{prefix}/basePath/pathname or /basePath/pathname if prefix is empty
  *
- * @param nodes - The file nodes without paths
- * @param version - The version to include in the path
- * @param basePath - The base path to prepend (defaults to empty)
+ * @param {MockStoreNode[]} nodes - The file nodes without paths
+ * @param {string} prefix - The prefix to include in the path (e.g., version). If empty, path starts with basePath
+ * @param {string} [basePath] - The base path to prepend (defaults to "ucd")
  * @returns File nodes with paths added
  */
 export function addPathsToFileNodes(
   nodes: MockStoreNode[],
-  version: string,
-  basePath: string = "",
-): MockStoreNode[] {
+  prefix: string,
+  basePath: string = "ucd",
+): MockStoreNodeWithPath[] {
   return nodes.map((node) => {
     const pathSegments = [basePath, node.name].filter(Boolean).join("/");
-    const fullPath = `/${version}/${pathSegments}`;
+    const fullPath = prefix ? `/${prefix}/${pathSegments}` : `/${pathSegments}`;
 
     if (node.type === "directory") {
       const dirNode = node as Extract<MockStoreNode, { type: "directory" }>;
@@ -25,7 +25,7 @@ export function addPathsToFileNodes(
         path: `${fullPath}/`,
         children: addPathsToFileNodes(
           dirNode.children,
-          version,
+          prefix,
           pathSegments,
         ),
       };
