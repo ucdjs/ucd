@@ -974,6 +974,9 @@ importers:
       '@luxass/msw-utils':
         specifier: catalog:prod
         version: 0.6.0(msw@2.12.7(@types/node@24.3.1)(typescript@5.9.3))
+      '@luxass/utils':
+        specifier: catalog:prod
+        version: 2.7.2
       '@ucdjs-internal/shared':
         specifier: workspace:*
         version: link:../shared

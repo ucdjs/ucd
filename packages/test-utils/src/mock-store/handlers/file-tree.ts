@@ -1,6 +1,22 @@
+import type { MockStoreNode } from "../types";
 import { HttpResponse } from "../../msw";
 import { addPathsToFileNodes } from "../add-paths";
 import { defineMockRouteHandler } from "../define";
+
+// Aligns with files handler: always return contents of the synthetic "ucd" folder
+// and keep paths prefixed with /{version}/ucd/...
+function normalizeFileTree(nodes: MockStoreNode[]): { nodes: MockStoreNode[]; basePath: string } {
+  if (
+    nodes.length === 1
+    && nodes[0]?.type === "directory"
+    && nodes[0]?.name === "ucd"
+  ) {
+    return { nodes: (nodes[0].children ?? []) as MockStoreNode[], basePath: "ucd" };
+  }
+
+  // Even without an explicit ucd directory, we still prefix paths with "ucd"
+  return { nodes, basePath: "ucd" };
+}
 
 export const fileTreeRoute = defineMockRouteHandler({
   endpoint: "/api/v1/versions/{version}/file-tree",
@@ -23,29 +39,20 @@ export const fileTreeRoute = defineMockRouteHandler({
         if (shouldUseDefaultValue) {
           const version = params.version as string;
 
-          // If the only key in files is "*", we will use it with the requested version
-          if (Object.keys(files).length === 1 && Object.keys(files)[0] === "*") {
-            const filesData = files["*"];
-            if (filesData) {
-              const filesWithPaths = addPathsToFileNodes(filesData, version);
-              return HttpResponse.json(filesWithPaths);
-            }
+          const useWildcardOnly = Object.keys(files).length === 1 && Object.keys(files)[0] === "*";
+
+          // Prefer version-specific data; fall back to wildcard; then nothing
+          const filesData = useWildcardOnly
+            ? files["*"]
+            : files[version] || files["*"];
+
+          if (!filesData) {
             return HttpResponse.json([]);
           }
 
-          // If there are version-specific files, use them
-          if (version && files[version]) {
-            const filesWithPaths = addPathsToFileNodes(files[version]!, version);
-            return HttpResponse.json(filesWithPaths);
-          }
-
-          // Otherwise, use wildcard files if available
-          if (files["*"]) {
-            const filesWithPaths = addPathsToFileNodes(files["*"], version);
-            return HttpResponse.json(filesWithPaths);
-          }
-
-          return HttpResponse.json([]);
+          const { nodes, basePath } = normalizeFileTree(filesData);
+          const filesWithPaths = addPathsToFileNodes(nodes, version, basePath || undefined);
+          return HttpResponse.json(filesWithPaths);
         }
 
         return HttpResponse.json(providedResponse);
