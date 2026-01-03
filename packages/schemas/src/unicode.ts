@@ -128,6 +128,29 @@ const FileTreeNodeSchema = BaseTreeNodeSchema.extend({
 export const UnicodeTreeNodeSchema = z.union([DirectoryTreeNodeSchema, FileTreeNodeSchema]).meta({
   id: "UnicodeTreeNode",
   description: "A node in the Unicode file tree.",
+}).superRefine((data, ctx) => {
+  if (data.type === "directory" && !("children" in data)) {
+    ctx.addIssue({
+      code: "custom",
+      message: "Directory nodes must have a 'children' property.",
+    });
+  }
+
+  // Ensure that directory paths end with a slash
+  if (data.type === "directory" && !data.path.endsWith("/")) {
+    ctx.addIssue({
+      code: "custom",
+      message: "Directory paths must end with a trailing slash ('/').",
+    });
+  }
+
+  // If the path doesn't start with a slash.
+  if (!data.path.startsWith("/")) {
+    ctx.addIssue({
+      code: "custom",
+      message: "Paths must start with a leading slash ('/').",
+    });
+  }
 });
 
 export type UnicodeTreeNode = z.output<typeof UnicodeTreeNodeSchema>;

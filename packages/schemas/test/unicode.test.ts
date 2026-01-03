@@ -1,5 +1,4 @@
 /// <reference types="../../test-utils/src/matchers/types.d.ts" />
-
 import { describe, expect, it } from "vitest";
 import {
   UnicodeTreeNodeSchema,
@@ -202,7 +201,7 @@ describe("UnicodeTreeNodeSchema", () => {
     const directoryNode = {
       type: "directory",
       name: "extracted",
-      path: "/16.0.0/extracted",
+      path: "/16.0.0/extracted/",
       lastModified: 1704067200000,
       children: [
         {
@@ -226,19 +225,19 @@ describe("UnicodeTreeNodeSchema", () => {
     const nestedStructure = {
       type: "directory",
       name: "root",
-      path: "/root",
+      path: "/root/",
       lastModified: null,
       children: [
         {
           type: "directory",
           name: "level1",
-          path: "/root/level1",
+          path: "/root/level1/",
           lastModified: null,
           children: [
             {
               type: "directory",
               name: "level2",
-              path: "/root/level1/level2",
+              path: "/root/level1/level2/",
               lastModified: null,
               children: [
                 {
@@ -263,7 +262,7 @@ describe("UnicodeTreeNodeSchema", () => {
     const emptyDirectory = {
       type: "directory",
       name: "empty",
-      path: "/empty",
+      path: "/empty/",
       children: [],
       lastModified: null,
     };
@@ -313,7 +312,7 @@ describe("UnicodeTreeSchema", () => {
       {
         type: "directory",
         name: "docs",
-        path: "/docs",
+        path: "/docs/",
         lastModified: 1704067200000,
         children: [
           {
