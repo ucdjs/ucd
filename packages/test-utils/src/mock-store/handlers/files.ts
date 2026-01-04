@@ -31,9 +31,10 @@ export const filesRoute = defineMockRouteHandler({
     }
 
     mockFetch([
-      [["GET", "HEAD"], url, ({ params }) => {
+      [["GET", "HEAD"], url, ({ request, params }) => {
         if (shouldUseDefaultValue) {
           const wildcard = (params.wildcard as string) || "";
+          const isHeadRequest = request.method === "HEAD";
 
           // Extract version and file path from wildcard (e.g., "16.0.0/ucd/UnicodeData.txt")
           const [firstPart, ...pathParts] = wildcard.split("/");
@@ -141,14 +142,26 @@ export const filesRoute = defineMockRouteHandler({
 
           // If it's a file with _content, return the content
           if (fileNode && "_content" in fileNode && typeof fileNode._content === "string") {
-            const content = fileNode._content;
-            return HttpResponse.text(content, {
-              headers: {
-                "Content-Type": "text/plain; charset=utf-8",
-                [UCD_STAT_TYPE_HEADER]: "file",
-                [UCD_STAT_SIZE_HEADER]: `${new TextEncoder().encode(content).length}`,
-              },
-            });
+            let content = fileNode._content;
+            const contentLength = new TextEncoder().encode(content).length;
+            const headers: Record<string, string> = {
+              "Content-Type": "text/plain; charset=utf-8",
+              [UCD_STAT_TYPE_HEADER]: "file",
+            };
+
+            // Check if the content ends with a newline; if not, add one for better terminal display
+            if (!content.endsWith("\n")) {
+              headers["X-Content-Warning"] = "Content did not end with a newline; added for display purposes.";
+              content += "\n";
+            }
+
+            // Only include size headers for HEAD requests (buffered response)
+            if (isHeadRequest) {
+              headers["Content-Length"] = `${contentLength}`;
+              headers[UCD_STAT_SIZE_HEADER] = `${contentLength}`;
+            }
+
+            return HttpResponse.text(content, { headers });
           }
 
           // If file found but no _content, return the filename
