@@ -248,8 +248,15 @@ describe("msw files handler contract", () => {
       "https://api.ucdjs.dev/api/v1/files/nonexistent.txt",
     );
 
+    expect(mswResponse).toMatchResponse({
+      status: 404,
+      json: true,
+      error: {
+        message: expect.any(String),
+      },
+    });
+
     expect(mswResponse.ok).toBe(false);
-    expect(mswResponse.status).toBe(404);
 
     const { response: apiResponse } = await executeRequest(
       new Request("https://api.ucdjs.dev/api/v1/files/nonexistent.txt"),
@@ -257,7 +264,13 @@ describe("msw files handler contract", () => {
     );
 
     expect(apiResponse.ok).toBe(false);
-    expect(apiResponse.status).toBe(404);
+    expect(apiResponse).toMatchResponse({
+      status: 404,
+      json: true,
+      error: {
+        message: expect.any(String),
+      },
+    });
   });
 
   it("serves file content with correct headers", async () => {
@@ -298,6 +311,62 @@ describe("msw files handler contract", () => {
     expect(apiResponse.headers.get("content-type")).toBe("text/plain; charset=utf-8");
     expect(apiResponse.headers.get(UCD_STAT_TYPE_HEADER)).toBe("file");
     expect(apiResponse.headers.get(UCD_STAT_SIZE_HEADER)).toBeDefined();
+  });
+
+  it("mirrors headers on HEAD requests for files", async () => {
+    const content = "abcd";
+
+    mockStoreApi({
+      files: {
+        "17.0.0": [
+          {
+            type: "file" as const,
+            name: "ArabicShaping.txt",
+            lastModified: 0,
+            _content: content,
+          },
+        ],
+      },
+      responses: {
+        "/api/v1/files/{wildcard}": true,
+      },
+      onRequest({ path }) {
+        if (path !== "/api/v1/files/17.0.0/ucd/ArabicShaping.txt") {
+          expect.fail(`The requested path should be /api/v1/files/17.0.0/ucd/ArabicShaping.txt`);
+        }
+      },
+      customResponses: [
+        ["GET", "https://unicode.org/Public/17.0.0/ucd/ArabicShaping.txt", () => {
+          return passthrough();
+        }],
+      ],
+    });
+
+    const mswResponse = await fetch(
+      "https://api.ucdjs.dev/api/v1/files/17.0.0/ucd/ArabicShaping.txt",
+      { method: "HEAD" },
+    );
+
+    expect(mswResponse.ok).toBe(true);
+    expect(await mswResponse.text()).toBe("");
+
+    const { response: apiResponse } = await executeRequest(
+      new Request("https://api.ucdjs.dev/api/v1/files/17.0.0/ucd/ArabicShaping.txt", { method: "HEAD" }),
+      env,
+    );
+
+    expect(apiResponse.ok).toBe(true);
+    expect(await apiResponse.text()).toBe("");
+
+    const mswSize = mswResponse.headers.get(UCD_STAT_SIZE_HEADER);
+    const apiSize = apiResponse.headers.get(UCD_STAT_SIZE_HEADER);
+
+    expect(mswResponse.headers.get("content-type")).toBe("text/plain; charset=utf-8");
+    expect(apiResponse.headers.get("content-type")).toBe("text/plain; charset=utf-8");
+    expect(mswResponse.headers.get(UCD_STAT_TYPE_HEADER)).toBe("file");
+    expect(apiResponse.headers.get(UCD_STAT_TYPE_HEADER)).toBe("file");
+    expect(mswSize).toBe(`${new TextEncoder().encode(content).length}`);
+    expect(apiSize).toBe(`${new TextEncoder().encode(content).length}`);
   });
 
   it("sets correct headers for directory listing", async () => {
@@ -352,8 +421,8 @@ describe("msw files handler contract", () => {
 
     expect(apiResponse.ok).toBe(true);
     expect(apiResponse.headers.get(UCD_STAT_TYPE_HEADER)).toBe("directory");
-    expect(apiResponse.headers.get(UCD_STAT_CHILDREN_HEADER)).toBeDefined();
-    expect(apiResponse.headers.get(UCD_STAT_CHILDREN_FILES_HEADER)).toBeDefined();
-    expect(apiResponse.headers.get(UCD_STAT_CHILDREN_DIRS_HEADER)).toBeDefined();
+    expect(apiResponse.headers.get(UCD_STAT_CHILDREN_HEADER)).toBe("2");
+    expect(apiResponse.headers.get(UCD_STAT_CHILDREN_FILES_HEADER)).toBe("1");
+    expect(apiResponse.headers.get(UCD_STAT_CHILDREN_DIRS_HEADER)).toBe("1");
   });
 });
