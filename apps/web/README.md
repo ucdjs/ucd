@@ -31,5 +31,3 @@ The project uses:
 ## 📄 License
 
 Published under [MIT License](./LICENSE).
-
-

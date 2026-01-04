@@ -1,5 +1,4 @@
 import type { Entry } from "apache-autoindex-parse";
-import { trimTrailingSlash } from "@luxass/utils";
 import { parse } from "apache-autoindex-parse";
 
 /**
