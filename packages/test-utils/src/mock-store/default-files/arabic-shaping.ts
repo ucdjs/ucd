@@ -1019,4 +1019,4 @@ export const defaultArabicShapingFileContent = dedent`
     1E94B; ADLAM NASALIZATION MARK; T; No_Joining_Group
 
     # EOF
-`;
+`.trim();

@@ -2615,4 +2615,4 @@ export const defaultDerivedBidClassFileContent = dedent`
     # Total code points: 1
 
     # EOF
-`;
+`.trim();

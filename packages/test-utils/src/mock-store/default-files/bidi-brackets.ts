@@ -194,4 +194,4 @@ export const defaultBidiBracketsFileContent = dedent`
     FF63; FF62; c # HALFWIDTH RIGHT CORNER BRACKET
 
     # EOF
-`;
+`.trim();
