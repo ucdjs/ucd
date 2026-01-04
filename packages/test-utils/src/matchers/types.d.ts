@@ -1,4 +1,5 @@
 import type { ErrorMatcherOptions } from "./error-matchers";
+import type { ApiErrorOptions, HeadersOptions, ResponseMatcherOptions } from "./response-matchers";
 import type { SchemaMatcherOptions } from "./schema-matchers";
 
 import "vitest";
@@ -8,6 +9,11 @@ interface CustomMatchers<R = unknown> {
   toMatchSchema: <TSchema extends z.ZodType>(
     options: SchemaMatcherOptions<TSchema>,
   ) => R;
+  toBeApiError: (options: ApiErrorOptions) => Promise<R>;
+  toBeHeadError: (expectedStatus: number) => R;
+  toHaveResponseHeaders: (options: HeadersOptions) => R;
+  toBeJsonResponse: () => R;
+  toMatchResponse: (options: ResponseMatcherOptions) => Promise<R>;
 }
 
 declare module "vitest" {
