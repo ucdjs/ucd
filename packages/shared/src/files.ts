@@ -43,8 +43,8 @@ export function findFileByPath<T extends UnicodeFileTreeNodeWithoutLastModified>
  * import { flattenFilePaths } from "@ucdjs-internal/shared";
  *
  * const files = [
- *   { name: "folder1", type: "directory", children: [{ name: "file1.txt", type: "file" }] },
- *   { name: "file2.txt", type: "file" }
+ *   { type: "directory", name: "folder1", path: "/folder1", children: [{ type: "file", name: "file1.txt", path: "/folder1/file1.txt" }] },
+ *   { type: "file", name: "file2.txt", path: "/file2.txt" }
  * ];
  * const paths = flattenFilePaths(files);
  * // Returns: ["folder1/file1.txt", "file2.txt"]
@@ -54,13 +54,13 @@ export function flattenFilePaths<T extends UnicodeFileTreeNodeWithoutLastModifie
   const paths: string[] = [];
 
   if (!Array.isArray(entries)) {
-    throw new TypeError("Expected 'entries' to be an array of TreeNode");
+    throw new TypeError("Expected 'entries' to be an array of file tree nodes.");
   }
 
   for (const file of entries) {
     const fullPath = prefix
-      ? `${prefix}${prependLeadingSlash(file.path ?? file.name)}`
-      : (file.path ?? file.name);
+      ? `${prefix}${prependLeadingSlash(file.path)}`
+      : file.path;
 
     if (file.type === "directory" && file.children) {
       paths.push(...flattenFilePaths(file.children, prefix));
