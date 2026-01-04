@@ -1,15 +1,11 @@
-import type { UnicodeVersion } from "@ucdjs/schemas";
+/// <reference types="../../../../../packages/test-utils/src/matchers/types.d.ts" />
+
+import type { UnicodeVersionList } from "@ucdjs/schemas";
 import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { getCurrentDraftVersion, resolveUCDVersion } from "@unicode-utils/core";
 import { env } from "cloudflare:workers";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { executeRequest } from "../../helpers/request";
-import {
-  expectApiError,
-  expectCacheHeaders,
-  expectJsonResponse,
-  expectSuccess,
-} from "../../helpers/response";
 
 vi.mock("@unicode-utils/core", async (importOriginal) => {
   const original = await importOriginal<typeof import("@unicode-utils/core")>();
@@ -64,9 +60,11 @@ describe("v1_versions", () => {
         env,
       );
 
-      expectSuccess(response);
-      expectJsonResponse(response);
-      const data = await json() as UnicodeVersion[];
+      expect(response).toMatchResponse({
+        status: 200,
+        json: true,
+      });
+      const data = await json<UnicodeVersionList>();
 
       expect(Array.isArray(data)).toBe(true);
       expect(data).toHaveLength(3);
@@ -97,8 +95,12 @@ describe("v1_versions", () => {
         env,
       );
 
-      expectSuccess(response);
-      const data = await json() as UnicodeVersion[];
+      expect(response).toMatchResponse({
+        status: 200,
+        json: true,
+      });
+
+      const data = await json<UnicodeVersionList>();
 
       // Should include the draft version
       const draftVersion = data.find((v) => v.type === "draft");
@@ -129,8 +131,11 @@ describe("v1_versions", () => {
         env,
       );
 
-      expectSuccess(response);
-      const data = await json() as UnicodeVersion[];
+      expect(response).toMatchResponse({
+        status: 200,
+        json: true,
+      });
+      const data = await json<UnicodeVersionList>();
 
       // Find the version with different mapping
       const versionWithDifferentMapping = data.find((v) => v.version === "15.0.0");
@@ -153,9 +158,11 @@ describe("v1_versions", () => {
         env,
       );
 
-      await expectApiError(response, {
+      expect(response).toMatchResponse({
         status: 502,
-        message: "Failed to fetch Unicode versions from upstream service",
+        error: {
+          message: "Failed to fetch Unicode versions from upstream service",
+        },
       });
     });
 
@@ -174,9 +181,11 @@ describe("v1_versions", () => {
         env,
       );
 
-      await expectApiError(response, {
+      expect(response).toMatchResponse({
         status: 502,
-        message: "Failed to fetch Unicode versions from upstream service",
+        error: {
+          message: "Failed to fetch Unicode versions from upstream service",
+        },
       });
     });
 
@@ -206,9 +215,11 @@ describe("v1_versions", () => {
         env,
       );
 
-      await expectApiError(response, {
+      expect(response).toMatchResponse({
         status: 502,
-        message: "No Unicode versions found",
+        error: {
+          message: "No Unicode versions found",
+        },
       });
     });
 
@@ -227,8 +238,11 @@ describe("v1_versions", () => {
         env,
       );
 
-      expectSuccess(response);
-      const data = await json() as UnicodeVersion[];
+      expect(response).toMatchResponse({
+        status: 200,
+        json: true,
+      });
+      const data = await json<UnicodeVersionList>();
 
       // Should still work without draft version
       expect(data.every((v) => v.type === "stable")).toBe(true);
@@ -249,8 +263,11 @@ describe("v1_versions", () => {
         env,
       );
 
-      expectSuccess(response);
-      expectCacheHeaders(response);
+      expect(response).toMatchResponse({
+        status: 200,
+        json: true,
+        cache: true,
+      });
     });
 
     it("should sort versions correctly (newest first)", async () => {
@@ -268,8 +285,11 @@ describe("v1_versions", () => {
         env,
       );
 
-      expectSuccess(response);
-      const data = await json() as UnicodeVersion[];
+      expect(response).toMatchResponse({
+        status: 200,
+        json: true,
+      });
+      const data = await json<UnicodeVersionList>();
 
       expect(data[0]!.version).toBe("16.0.0");
       expect(data[1]!.version).toBe("15.1.0");
@@ -306,8 +326,11 @@ describe("v1_versions", () => {
         env,
       );
 
-      expectSuccess(response);
-      const data = await json() as UnicodeVersion[];
+      expect(response).toMatchResponse({
+        status: 200,
+        json: true,
+      });
+      const data = await json<UnicodeVersionList>();
 
       // Should only include versions with valid year patterns
       expect(data).toHaveLength(1);
