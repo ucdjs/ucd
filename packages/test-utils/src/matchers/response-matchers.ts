@@ -7,51 +7,6 @@ export interface ApiErrorOptions {
   message?: string | RegExp;
 }
 
-export interface HeadersOptions {
-  headers?: Record<string, string | RegExp>;
-  json?: boolean;
-  cache?: boolean;
-  cacheMaxAgePattern?: RegExp;
-}
-
-export interface ResponseMatcherOptions {
-  /**
-   * Expected HTTP status code
-   */
-  status?: number;
-
-  /**
-   * Expected response headers (supports exact match or regex pattern)
-   */
-  headers?: Record<string, string | RegExp>;
-
-  /**
-   * Whether to verify application/json content-type
-   */
-  json?: boolean;
-
-  /**
-   * Whether to verify cache-control header exists
-   */
-  cache?: boolean;
-
-  /**
-   * Regex pattern to match against cache-control max-age value
-   */
-  cacheMaxAgePattern?: RegExp;
-
-  /**
-   * For API error responses, validate error structure and message.
-   * When provided, ensures the response is JSON and contains status, message, and timestamp properties.
-   */
-  error?: {
-    /**
-     * Expected error message (string for exact match, RegExp for pattern)
-     */
-    message?: string | RegExp;
-  };
-}
-
 export const toBeApiError: RawMatcherFn<MatcherState, [ApiErrorOptions]> = async function (
   this: MatcherState,
   received: Response,
@@ -105,6 +60,13 @@ export const toBeApiError: RawMatcherFn<MatcherState, [ApiErrorOptions]> = async
   };
 };
 
+export interface HeadersOptions {
+  headers?: Record<string, string | RegExp>;
+  json?: boolean;
+  cache?: boolean;
+  cacheMaxAgePattern?: RegExp;
+}
+
 export const toBeHeadError: RawMatcherFn<MatcherState, [number]> = function (
   this: MatcherState,
   received: Response,
@@ -133,100 +95,43 @@ export const toBeHeadError: RawMatcherFn<MatcherState, [number]> = function (
   };
 };
 
-export const toHaveResponseHeaders: RawMatcherFn<MatcherState, [HeadersOptions]> = function (
-  this: MatcherState,
-  received: Response,
-  options: HeadersOptions,
-) {
-  const { isNot, equals } = this;
+export interface ResponseMatcherOptions {
+  /**
+   * Expected HTTP status code
+   */
+  status?: number;
 
-  // Check JSON content-type if requested
-  if (options.json) {
-    const contentType = received.headers.get("content-type");
-    if (!contentType?.includes("application/json")) {
-      return {
-        pass: false,
-        message: () => `Expected response to${isNot ? " not" : ""} have application/json content-type`,
-      };
-    }
-  }
+  /**
+   * Expected response headers (supports exact match or regex pattern)
+   */
+  headers?: Record<string, string | RegExp>;
 
-  // Check cache headers if requested
-  if (options.cache) {
-    const cacheControl = received.headers.get("cache-control");
-    if (!cacheControl) {
-      return {
-        pass: false,
-        message: () => `Expected response to${isNot ? " not" : ""} have cache-control header`,
-      };
-    }
+  /**
+   * Whether to verify application/json content-type
+   */
+  json?: boolean;
 
-    if (options.cacheMaxAgePattern && !options.cacheMaxAgePattern.test(cacheControl)) {
-      return {
-        pass: false,
-        message: () => `Expected cache-control to${isNot ? " not" : ""} match ${options.cacheMaxAgePattern!.source}`,
-      };
-    }
+  /**
+   * Whether to verify cache-control header exists
+   */
+  cache?: boolean;
 
-    if (!options.cacheMaxAgePattern && !/max-age=\d+/.test(cacheControl)) {
-      return {
-        pass: false,
-        message: () => `Expected cache-control to${isNot ? " not" : ""} have max-age`,
-      };
-    }
-  }
+  /**
+   * Regex pattern to match against cache-control max-age value
+   */
+  cacheMaxAgePattern?: RegExp;
 
-  // Check custom headers
-  if (options.headers) {
-    for (const [key, value] of Object.entries(options.headers)) {
-      const headerValue = received.headers.get(key);
-      if (!headerValue) {
-        return {
-          pass: false,
-          message: () => `Expected response to${isNot ? " not" : ""} have ${key} header`,
-        };
-      }
-
-      const matches = typeof value === "string"
-        ? equals(headerValue, value)
-        : value.test(headerValue);
-
-      if (!matches) {
-        const expected = typeof value === "string" ? value : value.source;
-        return {
-          pass: false,
-          message: () => `Expected ${key} header to${isNot ? " not" : ""} match ${expected}, but got "${headerValue}"`,
-        };
-      }
-    }
-  }
-
-  return {
-    pass: true,
-    message: () => `Expected response to${isNot ? " not" : ""} have the specified headers`,
+  /**
+   * For API error responses, validate error structure and message.
+   * When provided, ensures the response is JSON and contains status, message, and timestamp properties.
+   */
+  error?: {
+    /**
+     * Expected error message (string for exact match, RegExp for pattern)
+     */
+    message?: string | RegExp;
   };
-};
-
-export const toBeJsonResponse: RawMatcherFn<MatcherState> = function (
-  this: MatcherState,
-  received: Response,
-) {
-  const { isNot } = this;
-  const contentType = received.headers.get("content-type");
-  const isJson = contentType?.includes("application/json");
-
-  if (!isJson) {
-    return {
-      pass: isNot,
-      message: () => `Expected response to${isNot ? " not" : ""} have application/json content-type`,
-    };
-  }
-
-  return {
-    pass: !isNot,
-    message: () => `Expected response to${isNot ? " not" : ""} have application/json content-type`,
-  };
-};
+}
 
 export const toMatchResponse: RawMatcherFn<MatcherState, [ResponseMatcherOptions]> = async function (
   this: MatcherState,
@@ -358,9 +263,7 @@ export const toMatchResponse: RawMatcherFn<MatcherState, [ResponseMatcherOptions
 
     // Check error message if provided
     if (options.error.message) {
-      const messageMatches = typeof options.error.message === "string"
-        ? error.message === options.error.message
-        : options.error.message.test(error.message);
+      const messageMatches = equals(error.message, options.error.message);
 
       if (!messageMatches) {
         const expectedMsg = typeof options.error.message === "string"

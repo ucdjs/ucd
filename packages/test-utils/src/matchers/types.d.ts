@@ -11,8 +11,6 @@ interface CustomMatchers<R = unknown> {
   ) => R;
   toBeApiError: (options: ApiErrorOptions) => Promise<R>;
   toBeHeadError: (expectedStatus: number) => R;
-  toHaveResponseHeaders: (options: HeadersOptions) => R;
-  toBeJsonResponse: () => R;
   toMatchResponse: (options: ResponseMatcherOptions) => Promise<R>;
 }
 

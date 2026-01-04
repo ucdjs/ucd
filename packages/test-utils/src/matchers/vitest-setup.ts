@@ -3,8 +3,6 @@ import { toMatchError } from "./error-matchers";
 import {
   toBeApiError,
   toBeHeadError,
-  toBeJsonResponse,
-  toHaveResponseHeaders,
   toMatchResponse,
 } from "./response-matchers";
 import { toMatchSchema } from "./schema-matchers";
@@ -14,7 +12,5 @@ expect.extend({
   toMatchSchema,
   toBeApiError,
   toBeHeadError,
-  toHaveResponseHeaders,
-  toBeJsonResponse,
   toMatchResponse,
 });
