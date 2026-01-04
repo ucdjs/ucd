@@ -2,6 +2,7 @@ import type { MockStoreNode } from "../types";
 import { HttpResponse } from "../../msw";
 import { addPathsToFileNodes } from "../add-paths";
 import { defineMockRouteHandler } from "../define";
+import { omitContentRecursively } from "../utils";
 
 // Aligns with files handler: always return contents of the synthetic "ucd" folder
 // and keep paths prefixed with /{version}/ucd/...
@@ -52,7 +53,8 @@ export const fileTreeRoute = defineMockRouteHandler({
 
           const { nodes, basePath } = normalizeFileTree(filesData);
           const filesWithPaths = addPathsToFileNodes(nodes, version, basePath || undefined);
-          return HttpResponse.json(filesWithPaths);
+
+          return HttpResponse.json(omitContentRecursively(filesWithPaths));
         }
 
         return HttpResponse.json(providedResponse);

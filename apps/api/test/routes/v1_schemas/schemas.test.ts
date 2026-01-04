@@ -1,11 +1,9 @@
+/// <reference types="../../../../../packages/test-utils/src/matchers/types.d.ts" />
+
+import type { JSONSchema } from "zod/v4/core";
 import { env } from "cloudflare:workers";
 import { describe, expect, it } from "vitest";
 import { executeRequest } from "../../helpers/request";
-import {
-  expectCacheHeaders,
-  expectJsonResponse,
-  expectSuccess,
-} from "../../helpers/response";
 
 describe("v1_schemas", () => {
   // eslint-disable-next-line test/prefer-lowercase-title
@@ -16,11 +14,13 @@ describe("v1_schemas", () => {
         env,
       );
 
-      expectSuccess(response);
-      expectJsonResponse(response);
-      expectCacheHeaders(response);
+      expect(response).toMatchResponse({
+        status: 200,
+        json: true,
+        cache: true,
+      });
 
-      const schema = await json() as any;
+      const schema = await json<JSONSchema.JSONSchema>();
 
       // Verify it's a valid JSON Schema
       expect(schema).toHaveProperty("$schema");
@@ -36,7 +36,9 @@ describe("v1_schemas", () => {
         env,
       );
 
-      expectCacheHeaders(response);
+      expect(response).toMatchResponse({
+        cache: true,
+      });
       const cacheControl = response.headers.get("cache-control");
 
       // Should have 4 days cache (from router: MAX_AGE_ONE_DAY_SECONDS * 4)
@@ -54,8 +56,8 @@ describe("v1_schemas", () => {
         env,
       );
 
-      const schema1 = await json1();
-      const schema2 = await json2();
+      const schema1 = await json1<JSONSchema.JSONSchema>();
+      const schema2 = await json2<JSONSchema.JSONSchema>();
 
       expect(schema1).toEqual(schema2);
     });
@@ -66,7 +68,7 @@ describe("v1_schemas", () => {
         env,
       );
 
-      const schema = await json() as any;
+      const schema = await json<JSONSchema.JSONSchema>();
 
       // Lockfile should have properties like version, files, etc.
       expect(schema).toHaveProperty("properties");
@@ -82,11 +84,13 @@ describe("v1_schemas", () => {
         env,
       );
 
-      expectSuccess(response);
-      expectJsonResponse(response);
-      expectCacheHeaders(response);
+      expect(response).toMatchResponse({
+        status: 200,
+        json: true,
+        cache: true,
+      });
 
-      const schema = await json() as any;
+      const schema = await json<JSONSchema.JSONSchema>();
 
       // Verify it's a valid JSON Schema
       expect(schema).toHaveProperty("$schema");
@@ -102,7 +106,9 @@ describe("v1_schemas", () => {
         env,
       );
 
-      expectCacheHeaders(response);
+      expect(response).toMatchResponse({
+        cache: true,
+      });
       const cacheControl = response.headers.get("cache-control");
 
       // Should have 4 days cache (from router: MAX_AGE_ONE_DAY_SECONDS * 4)
@@ -120,8 +126,8 @@ describe("v1_schemas", () => {
         env,
       );
 
-      const schema1 = await json1();
-      const schema2 = await json2();
+      const schema1 = await json1<JSONSchema.JSONSchema>();
+      const schema2 = await json2<JSONSchema.JSONSchema>();
 
       expect(schema1).toEqual(schema2);
     });
@@ -132,7 +138,7 @@ describe("v1_schemas", () => {
         env,
       );
 
-      const schema = await json() as any;
+      const schema = await json<JSONSchema.JSONSchema>();
 
       // Snapshot should have properties
       expect(schema).toHaveProperty("properties");
@@ -152,8 +158,8 @@ describe("v1_schemas", () => {
         env,
       );
 
-      const lockfileSchema = await lockfileJson() as any;
-      const snapshotSchema = await snapshotJson() as any;
+      const lockfileSchema = await lockfileJson<JSONSchema.JSONSchema>();
+      const snapshotSchema = await snapshotJson<JSONSchema.JSONSchema>();
 
       // Schemas should be different
       expect(lockfileSchema).not.toEqual(snapshotSchema);
@@ -188,7 +194,7 @@ describe("v1_schemas", () => {
         env,
       );
 
-      const schema = await json() as any;
+      const schema = await json<JSONSchema.JSONSchema>();
 
       expect(schema.$schema).toBeDefined();
       expect(typeof schema.$schema).toBe("string");
@@ -202,7 +208,7 @@ describe("v1_schemas", () => {
         env,
       );
 
-      const schema = await json() as any;
+      const schema = await json<JSONSchema.JSONSchema>();
 
       // Basic JSON Schema validation
       expect(schema).toHaveProperty("type");

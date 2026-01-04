@@ -24,7 +24,7 @@ for (const { name, schema } of schemas) {
       cacheControl: `max-age=${MAX_AGE_ONE_DAY_SECONDS * 4}`, // 4 days
     }),
     async (c) => {
-      const jsonSchema = tryOr({
+      const jsonSchema = await tryOr({
         try: () => z.toJSONSchema(schema, {
           unrepresentable: "any",
           override: (ctx) => {

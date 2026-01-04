@@ -11,18 +11,7 @@ import {
 import { HttpResponse } from "../../msw";
 import { addPathsToFileNodes } from "../add-paths";
 import { defineMockRouteHandler } from "../define";
-
-/**
- * Strips the `_content` and `children` properties from file nodes.
- * This is used to return clean JSON responses that match the API schema,
- * where directory listings show flat entries without nested children.
- */
-function omitChildrenAndContent<T extends MockStoreNode>(nodes: T[]): Omit<T, "_content" | "children">[] {
-  return nodes.map((node) => {
-    const { _content, children: _children, ...rest } = node as any;
-    return rest as Omit<T, "_content" | "children">;
-  });
-}
+import { omitChildrenAndContent } from "../utils";
 
 const DEFAULT_FILE_RESPONSE_CONTENT = "This is a default file response.";
 export const filesRoute = defineMockRouteHandler({
