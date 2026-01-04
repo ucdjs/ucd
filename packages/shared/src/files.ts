@@ -47,7 +47,7 @@ export function findFileByPath<T extends UnicodeFileTreeNodeWithoutLastModified>
  *   { type: "file", name: "file2.txt", path: "/file2.txt" }
  * ];
  * const paths = flattenFilePaths(files);
- * // Returns: ["folder1/file1.txt", "file2.txt"]
+ * // Returns: ["/folder1/file1.txt", "/file2.txt"]
  * ```
  */
 export function flattenFilePaths<T extends UnicodeFileTreeNodeWithoutLastModified>(entries: T[], prefix: string = ""): string[] {

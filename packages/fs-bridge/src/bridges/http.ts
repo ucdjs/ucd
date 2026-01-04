@@ -61,7 +61,7 @@ const HTTPFileSystemBridge = defineFileSystemBridge({
 
         const url = joinURL(
           baseUrl.origin,
-          resolveSafePath(baseUrl.pathname, path),
+          resolveSafePath(baseUrl.pathname, `/${path}`),
         );
 
         debug?.("Fetching directory listing", { url });
