@@ -110,8 +110,8 @@ catalogs:
       specifier: 22.0.0
       version: 22.0.0
     zod:
-      specifier: 4.2.1
-      version: 4.2.1
+      specifier: 4.3.5
+      version: 4.3.5
   testing:
     '@cloudflare/vitest-pool-workers':
       specifier: https://pkg.pr.new/@cloudflare/vitest-pool-workers@11632
@@ -308,7 +308,7 @@ importers:
     dependencies:
       '@hono/zod-openapi':
         specifier: catalog:workers
-        version: 1.2.0(hono@4.11.1)(zod@4.2.1)
+        version: 1.2.0(hono@4.11.1)(zod@4.3.5)
       '@luxass/utils':
         specifier: catalog:prod
         version: 2.7.2
@@ -347,7 +347,7 @@ importers:
         version: 0.2.0
       zod:
         specifier: catalog:prod
-        version: 4.2.1
+        version: 4.3.5
     devDependencies:
       '@cloudflare/vitest-pool-workers':
         specifier: catalog:testing
@@ -435,13 +435,13 @@ importers:
         version: 2.1.1
       fumadocs-core:
         specifier: catalog:docs
-        version: 16.3.2(@tanstack/react-router@1.142.13(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@types/react@19.2.7)(lucide-react@0.562.0(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(zod@4.2.1)
+        version: 16.3.2(@tanstack/react-router@1.142.13(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@types/react@19.2.7)(lucide-react@0.562.0(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(zod@4.3.5)
       fumadocs-mdx:
         specifier: catalog:docs
-        version: 14.2.2(@types/react@19.2.7)(fumadocs-core@16.3.2(@tanstack/react-router@1.142.13(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@types/react@19.2.7)(lucide-react@0.562.0(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(zod@4.2.1))(react@19.2.3)(vite@7.3.0(@types/node@22.18.12)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1))
+        version: 14.2.2(@types/react@19.2.7)(fumadocs-core@16.3.2(@tanstack/react-router@1.142.13(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@types/react@19.2.7)(lucide-react@0.562.0(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(zod@4.3.5))(react@19.2.3)(vite@7.3.0(@types/node@22.18.12)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1))
       fumadocs-ui:
         specifier: catalog:docs
-        version: 16.3.2(@tanstack/react-router@1.142.13(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(lucide-react@0.562.0(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(tailwindcss@4.1.18)(zod@4.2.1)
+        version: 16.3.2(@tanstack/react-router@1.142.13(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(lucide-react@0.562.0(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(tailwindcss@4.1.18)(zod@4.3.5)
       lucide-react:
         specifier: catalog:web
         version: 0.562.0(react@19.2.3)
@@ -462,7 +462,7 @@ importers:
         version: 1.4.0
       zod:
         specifier: catalog:prod
-        version: 4.2.1
+        version: 4.3.5
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:linting
@@ -691,7 +691,7 @@ importers:
         version: 2.0.3
       zod:
         specifier: catalog:prod
-        version: 4.2.1
+        version: 4.3.5
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:linting
@@ -802,7 +802,7 @@ importers:
     dependencies:
       '@ai-sdk/openai':
         specifier: catalog:prod
-        version: 3.0.0(zod@4.2.1)
+        version: 3.0.0(zod@4.3.5)
       '@luxass/unicode-utils-old':
         specifier: catalog:prod
         version: '@luxass/unicode-utils@0.11.0'
@@ -814,13 +814,13 @@ importers:
         version: link:../shared
       ai:
         specifier: catalog:prod
-        version: 6.0.1(zod@4.2.1)
+        version: 6.0.1(zod@4.3.5)
       knitwork:
         specifier: catalog:prod
         version: 1.3.0
       zod:
         specifier: catalog:prod
-        version: 4.2.1
+        version: 4.3.5
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:linting
@@ -854,7 +854,7 @@ importers:
         version: 2.7.2
       zod:
         specifier: catalog:prod
-        version: 4.2.1
+        version: 4.3.5
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:linting
@@ -906,7 +906,7 @@ importers:
         version: 4.0.3
       zod:
         specifier: catalog:prod
-        version: 4.2.1
+        version: 4.3.5
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:linting
@@ -958,7 +958,7 @@ importers:
         version: 2.12.4(@types/node@24.3.1)(typescript@5.9.3)
       zod:
         specifier: catalog:prod
-        version: 4.2.1
+        version: 4.3.5
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:linting
@@ -1028,7 +1028,7 @@ importers:
         version: 2.0.3
       zod:
         specifier: catalog:prod
-        version: 4.2.1
+        version: 4.3.5
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:linting
@@ -1092,7 +1092,7 @@ importers:
         version: 2.0.3
       zod:
         specifier: catalog:prod
-        version: 4.2.1
+        version: 4.3.5
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:linting
@@ -1270,7 +1270,7 @@ importers:
         version: 1.5.1
       zod:
         specifier: catalog:prod
-        version: 4.2.1
+        version: 4.3.5
 
 packages:
 
@@ -9243,6 +9243,9 @@ packages:
   zod@4.2.1:
     resolution: {integrity: sha512-0wZ1IRqGGhMP76gLqz8EyfBXKk0J2qo2+H3fi4mcUP/KtTocoX08nmIAHl1Z2kJIZbZee8KOpBCSNPRgauucjw==}
 
+  zod@4.3.5:
+    resolution: {integrity: sha512-k7Nwx6vuWx1IJ9Bjuf4Zt1PEllcwe7cls3VNzm4CQ1/hgtFUK2bRNG3rvnpPUhFjmqJKAKtjV576KnUkHocg/g==}
+
   zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
 
@@ -9251,25 +9254,25 @@ snapshots:
   '@acemir/cssom@0.9.29':
     optional: true
 
-  '@ai-sdk/gateway@3.0.0(zod@4.2.1)':
+  '@ai-sdk/gateway@3.0.0(zod@4.3.5)':
     dependencies:
       '@ai-sdk/provider': 3.0.0
-      '@ai-sdk/provider-utils': 4.0.0(zod@4.2.1)
+      '@ai-sdk/provider-utils': 4.0.0(zod@4.3.5)
       '@vercel/oidc': 3.0.5
-      zod: 4.2.1
+      zod: 4.3.5
 
-  '@ai-sdk/openai@3.0.0(zod@4.2.1)':
+  '@ai-sdk/openai@3.0.0(zod@4.3.5)':
     dependencies:
       '@ai-sdk/provider': 3.0.0
-      '@ai-sdk/provider-utils': 4.0.0(zod@4.2.1)
-      zod: 4.2.1
+      '@ai-sdk/provider-utils': 4.0.0(zod@4.3.5)
+      zod: 4.3.5
 
-  '@ai-sdk/provider-utils@4.0.0(zod@4.2.1)':
+  '@ai-sdk/provider-utils@4.0.0(zod@4.3.5)':
     dependencies:
       '@ai-sdk/provider': 3.0.0
       '@standard-schema/spec': 1.1.0
       eventsource-parser: 3.0.6
-      zod: 4.2.1
+      zod: 4.3.5
 
   '@ai-sdk/provider@3.0.0':
     dependencies:
@@ -9308,10 +9311,10 @@ snapshots:
   '@asamuzakjp/nwsapi@2.3.9':
     optional: true
 
-  '@asteasolutions/zod-to-openapi@8.2.0(patch_hash=abfc1e6cb22ebf21d3877734ff544a712b7a8cd4fe22639ee9bff0b0b5d18557)(zod@4.2.1)':
+  '@asteasolutions/zod-to-openapi@8.2.0(patch_hash=abfc1e6cb22ebf21d3877734ff544a712b7a8cd4fe22639ee9bff0b0b5d18557)(zod@4.3.5)':
     dependencies:
       openapi3-ts: 4.5.0
-      zod: 4.2.1
+      zod: 4.3.5
 
   '@asyncapi/specs@6.10.0':
     dependencies:
@@ -10289,9 +10292,9 @@ snapshots:
       '@formatjs/fast-memoize': 3.0.1
       tslib: 2.8.1
 
-  '@fumadocs/ui@16.3.2(@tanstack/react-router@1.142.13(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@types/react@19.2.7)(lucide-react@0.562.0(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(tailwindcss@4.1.18)(zod@4.2.1)':
+  '@fumadocs/ui@16.3.2(@tanstack/react-router@1.142.13(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@types/react@19.2.7)(lucide-react@0.562.0(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(tailwindcss@4.1.18)(zod@4.3.5)':
     dependencies:
-      fumadocs-core: 16.3.2(@tanstack/react-router@1.142.13(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@types/react@19.2.7)(lucide-react@0.562.0(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(zod@4.2.1)
+      fumadocs-core: 16.3.2(@tanstack/react-router@1.142.13(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@types/react@19.2.7)(lucide-react@0.562.0(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(zod@4.3.5)
       lodash.merge: 4.6.2
       next-themes: 0.4.6(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       postcss-selector-parser: 7.1.1
@@ -10312,18 +10315,18 @@ snapshots:
       - waku
       - zod
 
-  '@hono/zod-openapi@1.2.0(hono@4.11.1)(zod@4.2.1)':
+  '@hono/zod-openapi@1.2.0(hono@4.11.1)(zod@4.3.5)':
     dependencies:
-      '@asteasolutions/zod-to-openapi': 8.2.0(patch_hash=abfc1e6cb22ebf21d3877734ff544a712b7a8cd4fe22639ee9bff0b0b5d18557)(zod@4.2.1)
-      '@hono/zod-validator': 0.7.6(hono@4.11.1)(zod@4.2.1)
+      '@asteasolutions/zod-to-openapi': 8.2.0(patch_hash=abfc1e6cb22ebf21d3877734ff544a712b7a8cd4fe22639ee9bff0b0b5d18557)(zod@4.3.5)
+      '@hono/zod-validator': 0.7.6(hono@4.11.1)(zod@4.3.5)
       hono: 4.11.1
       openapi3-ts: 4.5.0
-      zod: 4.2.1
+      zod: 4.3.5
 
-  '@hono/zod-validator@0.7.6(hono@4.11.1)(zod@4.2.1)':
+  '@hono/zod-validator@0.7.6(hono@4.11.1)(zod@4.3.5)':
     dependencies:
       hono: 4.11.1
-      zod: 4.2.1
+      zod: 4.3.5
 
   '@humanfs/core@0.19.1': {}
 
@@ -11428,7 +11431,7 @@ snapshots:
       '@scalar/helpers': 0.2.4
       nanoid: 5.1.5
       type-fest: 5.0.0
-      zod: 4.2.1
+      zod: 4.3.5
 
   '@sec-ant/readable-stream@0.4.1': {}
 
@@ -12910,13 +12913,13 @@ snapshots:
 
   agent-base@7.1.4: {}
 
-  ai@6.0.1(zod@4.2.1):
+  ai@6.0.1(zod@4.3.5):
     dependencies:
-      '@ai-sdk/gateway': 3.0.0(zod@4.2.1)
+      '@ai-sdk/gateway': 3.0.0(zod@4.3.5)
       '@ai-sdk/provider': 3.0.0
-      '@ai-sdk/provider-utils': 4.0.0(zod@4.2.1)
+      '@ai-sdk/provider-utils': 4.0.0(zod@4.3.5)
       '@opentelemetry/api': 1.9.0
-      zod: 4.2.1
+      zod: 4.3.5
 
   ajv-draft-04@1.0.0(ajv@8.17.1):
     optionalDependencies:
@@ -14510,7 +14513,7 @@ snapshots:
   fsevents@2.3.3:
     optional: true
 
-  fumadocs-core@16.3.2(@tanstack/react-router@1.142.13(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@types/react@19.2.7)(lucide-react@0.562.0(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(zod@4.2.1):
+  fumadocs-core@16.3.2(@tanstack/react-router@1.142.13(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@types/react@19.2.7)(lucide-react@0.562.0(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(zod@4.3.5):
     dependencies:
       '@formatjs/intl-localematcher': 0.7.3
       '@orama/orama': 3.1.17
@@ -14536,18 +14539,18 @@ snapshots:
       lucide-react: 0.562.0(react@19.2.3)
       react: 19.2.3
       react-dom: 19.2.3(react@19.2.3)
-      zod: 4.2.1
+      zod: 4.3.5
     transitivePeerDependencies:
       - supports-color
 
-  fumadocs-mdx@14.2.2(@types/react@19.2.7)(fumadocs-core@16.3.2(@tanstack/react-router@1.142.13(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@types/react@19.2.7)(lucide-react@0.562.0(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(zod@4.2.1))(react@19.2.3)(vite@7.3.0(@types/node@22.18.12)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1)):
+  fumadocs-mdx@14.2.2(@types/react@19.2.7)(fumadocs-core@16.3.2(@tanstack/react-router@1.142.13(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@types/react@19.2.7)(lucide-react@0.562.0(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(zod@4.3.5))(react@19.2.3)(vite@7.3.0(@types/node@22.18.12)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1)):
     dependencies:
       '@mdx-js/mdx': 3.1.1
       '@standard-schema/spec': 1.1.0
       chokidar: 5.0.0
       esbuild: 0.27.2
       estree-util-value-to-estree: 3.5.0
-      fumadocs-core: 16.3.2(@tanstack/react-router@1.142.13(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@types/react@19.2.7)(lucide-react@0.562.0(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(zod@4.2.1)
+      fumadocs-core: 16.3.2(@tanstack/react-router@1.142.13(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@types/react@19.2.7)(lucide-react@0.562.0(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(zod@4.3.5)
       js-yaml: 4.1.1
       mdast-util-to-markdown: 2.1.2
       picocolors: 1.1.1
@@ -14559,7 +14562,7 @@ snapshots:
       unist-util-remove-position: 5.0.0
       unist-util-visit: 5.0.0
       vfile: 6.0.3
-      zod: 4.2.1
+      zod: 4.3.5
     optionalDependencies:
       '@types/react': 19.2.7
       react: 19.2.3
@@ -14567,9 +14570,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  fumadocs-ui@16.3.2(@tanstack/react-router@1.142.13(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(lucide-react@0.562.0(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(tailwindcss@4.1.18)(zod@4.2.1):
+  fumadocs-ui@16.3.2(@tanstack/react-router@1.142.13(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(lucide-react@0.562.0(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(tailwindcss@4.1.18)(zod@4.3.5):
     dependencies:
-      '@fumadocs/ui': 16.3.2(@tanstack/react-router@1.142.13(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@types/react@19.2.7)(lucide-react@0.562.0(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(tailwindcss@4.1.18)(zod@4.2.1)
+      '@fumadocs/ui': 16.3.2(@tanstack/react-router@1.142.13(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@types/react@19.2.7)(lucide-react@0.562.0(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(tailwindcss@4.1.18)(zod@4.3.5)
       '@radix-ui/react-accordion': 1.2.12(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@radix-ui/react-collapsible': 1.1.12(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@radix-ui/react-dialog': 1.1.15(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -14581,7 +14584,7 @@ snapshots:
       '@radix-ui/react-slot': 1.2.4(@types/react@19.2.7)(react@19.2.3)
       '@radix-ui/react-tabs': 1.1.13(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       class-variance-authority: 0.7.1
-      fumadocs-core: 16.3.2(@tanstack/react-router@1.142.13(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@types/react@19.2.7)(lucide-react@0.562.0(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(zod@4.2.1)
+      fumadocs-core: 16.3.2(@tanstack/react-router@1.142.13(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@types/react@19.2.7)(lucide-react@0.562.0(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(zod@4.3.5)
       next-themes: 0.4.6(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       react: 19.2.3
       react-dom: 19.2.3(react@19.2.3)
@@ -18325,6 +18328,9 @@ snapshots:
 
   zod@3.25.76: {}
 
-  zod@4.2.1: {}
+  zod@4.2.1:
+    optional: true
+
+  zod@4.3.5: {}
 
   zwitch@2.0.4: {}
