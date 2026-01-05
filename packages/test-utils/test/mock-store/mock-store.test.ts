@@ -202,9 +202,10 @@ describe("mockStoreApi", () => {
           "/api/v1/versions/{version}/file-tree": vi.fn(async ({ params }) => {
             const tree: UnicodeFileTree = [
               {
-                type: "file",
+                type: "file" as const,
                 name: `test-${params.version}.txt`,
                 path: `test-${params.version}.txt`,
+                lastModified: 0,
               },
             ];
 
@@ -408,9 +409,10 @@ describe("mockStoreApi", () => {
     it("should handle mix of enabled, disabled, and custom endpoints", async () => {
       const customTree: UnicodeFileTree = [
         {
-          type: "file",
+          type: "file" as const,
           name: "custom.txt",
           path: "custom.txt",
+          lastModified: 0,
         },
       ];
 
