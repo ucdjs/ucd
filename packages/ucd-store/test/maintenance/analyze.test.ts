@@ -1,4 +1,4 @@
-import type { UnicodeTree } from "@ucdjs/schemas";
+import type { UnicodeFileTree } from "@ucdjs/schemas";
 import { createMemoryMockFS } from "#test-utils/fs-bridges";
 import { mockStoreApi } from "#test-utils/mock-store";
 import { HttpResponse, mockFetch } from "#test-utils/msw";
@@ -38,7 +38,7 @@ const MOCK_FILES = [
       },
     ],
   },
-] satisfies UnicodeTree;
+] satisfies UnicodeFileTree;
 
 describe("analyze operations", () => {
   beforeEach(() => {

@@ -1,4 +1,4 @@
-import type { UnicodeTreeNode } from "@ucdjs/schemas";
+import type { UnicodeFileTreeNode } from "@ucdjs/schemas";
 import type { UCDStore } from "@ucdjs/ucd-store";
 import type { TreeViewNode } from "reactive-vscode";
 import type { UCDTreeItem } from "../composables/useUCDExplorer";
@@ -7,7 +7,7 @@ import { ThemeIcon, TreeItemCollapsibleState } from "vscode";
 import * as Meta from "../generated/meta";
 import { logger } from "../logger";
 
-function mapEntryToTreeNode(version: string, entry: UnicodeTreeNode, parentPath?: string): TreeViewNode {
+function mapEntryToTreeNode(version: string, entry: UnicodeFileTreeNode, parentPath?: string): TreeViewNode {
   if (entry == null) {
     throw new Error("Entry is null or undefined");
   }

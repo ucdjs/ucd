@@ -1,4 +1,4 @@
-import type { UCDWellKnownConfig, UnicodeTree, UnicodeVersionList } from "@ucdjs/schemas";
+import type { UCDWellKnownConfig, UnicodeFileTree, UnicodeVersionList } from "@ucdjs/schemas";
 import { HttpResponse } from "msw";
 import { describe, expect, it, vi } from "vitest";
 import { configure, mockStoreApi } from "../../src/mock-store";
@@ -200,7 +200,7 @@ describe("mockStoreApi", () => {
       mockStoreApi({
         responses: {
           "/api/v1/versions/{version}/file-tree": vi.fn(async ({ params }) => {
-            const tree: UnicodeTree = [
+            const tree: UnicodeFileTree = [
               {
                 type: "file",
                 name: `test-${params.version}.txt`,
@@ -208,7 +208,7 @@ describe("mockStoreApi", () => {
               },
             ];
 
-            return HttpResponse.json<UnicodeTree>(tree);
+            return HttpResponse.json<UnicodeFileTree>(tree);
           }),
         },
       });
@@ -406,7 +406,7 @@ describe("mockStoreApi", () => {
     });
 
     it("should handle mix of enabled, disabled, and custom endpoints", async () => {
-      const customTree: UnicodeTree = [
+      const customTree: UnicodeFileTree = [
         {
           type: "file",
           name: "custom.txt",
@@ -974,7 +974,7 @@ describe("mockStoreApi", () => {
     it("should work with configure() hooks and default resolver using files option", async () => {
       const beforeHook = vi.fn();
       const afterHook = vi.fn();
-      const files: UnicodeTree = [
+      const files: UnicodeFileTree = [
         {
           type: "file",
           name: "test.txt",
