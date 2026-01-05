@@ -60,13 +60,6 @@ export const toBeApiError: RawMatcherFn<MatcherState, [ApiErrorOptions]> = async
   };
 };
 
-export interface HeadersOptions {
-  headers?: Record<string, string | RegExp>;
-  json?: boolean;
-  cache?: boolean;
-  cacheMaxAgePattern?: RegExp;
-}
-
 export const toBeHeadError: RawMatcherFn<MatcherState, [number]> = function (
   this: MatcherState,
   received: Response,
