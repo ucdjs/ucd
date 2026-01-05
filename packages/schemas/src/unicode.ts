@@ -187,6 +187,22 @@ export const UnicodeFileTreeNodeSchema = z.union([
       message: "File nodes cannot have children.",
     });
   }
+
+  // Ensure that directory paths end with a slash
+  if (data.type === "directory" && !data.path.endsWith("/")) {
+    ctx.addIssue({
+      code: "custom",
+      message: "Directory paths must end with a trailing slash ('/').",
+    });
+  }
+
+  // If the path doesn't start with a slash.
+  if (!data.path.startsWith("/")) {
+    ctx.addIssue({
+      code: "custom",
+      message: "Paths must start with a leading slash ('/').",
+    });
+  }
 });
 
 export type UnicodeFileTreeNode = z.infer<typeof UnicodeFileTreeNodeSchema>;

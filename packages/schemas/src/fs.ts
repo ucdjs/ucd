@@ -59,10 +59,7 @@ export const FileEntrySchema = z.union([
 
     This schema represents either a directory listing or a file response.
   `,
-});
-// TODO: Add this to the FileEntrySchema
-// But we need to add more of the features of #420, before we can do that.
-/* .superRefine((data, ctx) => {
+}).superRefine((data, ctx) => {
   // Ensure that directory paths end with a slash
   if (data.type === "directory" && !data.path.endsWith("/")) {
     ctx.addIssue({
@@ -78,7 +75,7 @@ export const FileEntrySchema = z.union([
       message: "Paths must start with a leading slash ('/').",
     });
   }
-}); */
+});
 
 export type FileEntry = z.infer<typeof FileEntrySchema>;
 
