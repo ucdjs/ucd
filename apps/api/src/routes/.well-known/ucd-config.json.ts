@@ -74,7 +74,7 @@ export function registerUcdConfigRoute(router: OpenAPIHono<HonoEnv>) {
       version: "0.1",
       endpoints: {
         files: V1_FILES_ROUTER_BASE_PATH,
-        manifest: `${WELL_KNOWN_ROUTER_BASE_PATH}/ucd-store.json`,
+        manifest: `${WELL_KNOWN_ROUTER_BASE_PATH}/ucd-store/{version}.json`,
         versions: V1_VERSIONS_ROUTER_BASE_PATH,
       },
       versions: versionStrings,
