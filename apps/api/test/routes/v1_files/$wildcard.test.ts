@@ -1,5 +1,5 @@
 import { HttpResponse, mockFetch, RawResponse } from "#test-utils/msw";
-import { UCD_FILE_STAT_TYPE_HEADER } from "@ucdjs/env";
+import { UCD_STAT_TYPE_HEADER } from "@ucdjs/env";
 import { generateAutoIndexHtml } from "apache-autoindex-parse/test-utils";
 import { env } from "cloudflare:workers";
 import { describe, expect, it } from "vitest";
@@ -475,7 +475,7 @@ describe("v1_files", () => {
         expectSuccess(response);
         expectContentType(response, "application/json");
         expectCacheHeaders(response);
-        expect(response.headers.get(UCD_FILE_STAT_TYPE_HEADER)).toBe("directory");
+        expect(response.headers.get(UCD_STAT_TYPE_HEADER)).toBe("directory");
         expect(response.headers.get("content-length")).toBeDefined();
         expect(response.headers.get("last-modified")).toBeDefined();
       });

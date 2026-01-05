@@ -3,7 +3,7 @@ import type { HonoEnv } from "../../types";
 import { createRoute, z } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
 import { createGlobMatcher, isValidGlobPattern } from "@ucdjs-internal/shared";
-import { DEFAULT_USER_AGENT, UCD_FILE_STAT_TYPE_HEADER } from "@ucdjs/env";
+import { DEFAULT_USER_AGENT, UCD_STAT_TYPE_HEADER } from "@ucdjs/env";
 import { FileEntryListSchema } from "@ucdjs/schemas";
 import { cache } from "hono/cache";
 import { HTML_EXTENSIONS, MAX_AGE_ONE_WEEK_SECONDS } from "../../constants";
@@ -123,7 +123,7 @@ export const WILDCARD_ROUTE = createRoute({
     200: {
       description: "Response from Unicode.org",
       headers: {
-        [UCD_FILE_STAT_TYPE_HEADER]: {
+        [UCD_STAT_TYPE_HEADER]: {
           description: "The type of the file or directory",
           schema: {
             type: "string",
@@ -228,7 +228,7 @@ export const METADATA_WILDCARD_ROUTE = createRoute({
     200: {
       description: "Response from Unicode.org",
       headers: {
-        [UCD_FILE_STAT_TYPE_HEADER]: {
+        [UCD_STAT_TYPE_HEADER]: {
           description: "The type of the file or directory",
           schema: {
             type: "string",
@@ -344,7 +344,7 @@ export function registerWildcardRoute(router: OpenAPIHono<HonoEnv>) {
         ...baseHeaders,
 
         // Custom STAT Headers
-        [UCD_FILE_STAT_TYPE_HEADER]: "directory",
+        [UCD_STAT_TYPE_HEADER]: "directory",
       });
     }
 
@@ -359,7 +359,7 @@ export function registerWildcardRoute(router: OpenAPIHono<HonoEnv>) {
       ...baseHeaders,
 
       // Custom STAT Headers
-      [UCD_FILE_STAT_TYPE_HEADER]: "file",
+      [UCD_STAT_TYPE_HEADER]: "file",
     };
 
     const cd = response.headers.get("Content-Disposition");
