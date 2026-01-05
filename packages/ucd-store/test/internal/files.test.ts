@@ -1,4 +1,4 @@
-import type { ApiError, UnicodeTree } from "@ucdjs/schemas";
+import type { ApiError, UnicodeFileTree } from "@ucdjs/schemas";
 import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { createUCDClient } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
@@ -39,7 +39,7 @@ describe("getExpectedFilePaths", async () => {
               },
             ],
           },
-        ] satisfies UnicodeTree);
+        ] satisfies UnicodeFileTree);
       }],
     ]);
 

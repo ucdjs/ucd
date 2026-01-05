@@ -3,17 +3,15 @@ import { z } from "zod";
 
 export const UCDStoreManifestSchema = z.record(
   z.string(),
-  z
-    .object({
-      /**
-       * List of expected file paths for this version.
-       * Defaults to an empty array when not provided.
-       */
-      expectedFiles: z.array(z.string()).default([]),
-    })
-    .default({
-      expectedFiles: [],
-    }),
+  z.object({
+    /**
+     * List of expected file paths for this version.
+     * Defaults to an empty array when not provided.
+     */
+    expectedFiles: z.array(z.string()).default([]),
+  }).default({
+    expectedFiles: [],
+  }),
 ).meta({
   id: "UCDStoreManifest",
   description: dedent`
@@ -37,30 +35,50 @@ export const UCDStoreManifestSchema = z.record(
 
 export type UCDStoreManifest = z.output<typeof UCDStoreManifestSchema>;
 
-const BaseItemSchema = z.object({
+const FileEntryBaseSchema = z.object({
   name: z.string(),
   path: z.string(),
-  lastModified: z.number(),
+  lastModified: z.number().or(z.null()),
 });
 
-const DirectoryResponseSchema = BaseItemSchema.extend({
+export const FileEntryDirectorySchema = FileEntryBaseSchema.extend({
   type: z.literal("directory"),
 });
 
-const FileResponseSchema = BaseItemSchema.extend({
+export const FileEntryFileSchema = FileEntryBaseSchema.extend({
   type: z.literal("file"),
 });
 
 export const FileEntrySchema = z.union([
-  DirectoryResponseSchema,
-  FileResponseSchema,
+  FileEntryDirectorySchema,
+  FileEntryFileSchema,
 ]).meta({
+  id: "FileEntry",
   description: dedent`
     Response schema for a file entry in the UCD store.
 
     This schema represents either a directory listing or a file response.
   `,
 });
+// TODO: Add this to the FileEntrySchema
+// But we need to add more of the features of #420, before we can do that.
+/* .superRefine((data, ctx) => {
+  // Ensure that directory paths end with a slash
+  if (data.type === "directory" && !data.path.endsWith("/")) {
+    ctx.addIssue({
+      code: "custom",
+      message: "Directory paths must end with a trailing slash ('/').",
+    });
+  }
+
+  // If the path doesn't start with a slash.
+  if (!data.path.startsWith("/")) {
+    ctx.addIssue({
+      code: "custom",
+      message: "Paths must start with a leading slash ('/').",
+    });
+  }
+}); */
 
 export type FileEntry = z.infer<typeof FileEntrySchema>;
 
