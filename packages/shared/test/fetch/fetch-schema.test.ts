@@ -161,7 +161,7 @@ describe("custom fetch - schema validation", () => {
       ).rejects.toBeInstanceOf(FetchError);
     });
 
-    it("should emit FetchSchemaValidationError when error response fails schema", async () => {
+    it("should emit FetchError when error response fails schema", async () => {
       const ErrorSchema = z.object({ error: z.string() });
 
       const result = await customFetch.safe(`${UCDJS_API_BASE_URL}/error-invalid`, {
