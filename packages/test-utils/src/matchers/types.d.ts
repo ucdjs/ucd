@@ -1,5 +1,5 @@
 import type { ErrorMatcherOptions } from "./error-matchers";
-import type { ApiErrorOptions, HeadersOptions, ResponseMatcherOptions } from "./response-matchers";
+import type { ApiErrorOptions, ResponseMatcherOptions } from "./response-matchers";
 import type { SchemaMatcherOptions } from "./schema-matchers";
 
 import "vitest";
