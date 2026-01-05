@@ -1,4 +1,9 @@
-import type { FetchContext, FetchOptions, FetchResponse, ResponseType } from "./types";
+import type {
+  FetchContext,
+  FetchOptions,
+  FetchResponse,
+  ResponseType,
+} from "./types";
 
 export class FetchError<T = any> extends Error {
   readonly request?: RequestInfo;
@@ -53,5 +58,18 @@ export class FetchError<T = any> extends Error {
     });
 
     return fetchError;
+  }
+}
+
+export class FetchSchemaValidationError<T = any> extends FetchError<T> {
+  readonly issues?: unknown;
+
+  constructor(message: string, opts?: { cause: unknown; issues?: unknown }) {
+    super(message, opts);
+    this.name = "FetchSchemaValidationError";
+
+    if (opts?.issues !== undefined) {
+      this.issues = opts.issues;
+    }
   }
 }
