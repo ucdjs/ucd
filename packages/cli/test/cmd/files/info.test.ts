@@ -1,7 +1,7 @@
 import type { ConsoleOutputCapture } from "../../__test-utils";
 import { mockStoreApi } from "#test-utils/mock-store";
 import { HttpResponse } from "#test-utils/msw";
-import { UCD_FILE_STAT_TYPE_HEADER } from "@ucdjs/env";
+import { UCD_STAT_TYPE_HEADER } from "@ucdjs/env";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { runCLI } from "../../../src/cli-utils";
 import { captureConsoleOutput } from "../../__test-utils";
@@ -32,7 +32,7 @@ describe("files info command", () => {
           return new HttpResponse(null, {
             status: 200,
             headers: {
-              [UCD_FILE_STAT_TYPE_HEADER]: "file",
+              [UCD_STAT_TYPE_HEADER]: "file",
               "Content-Type": "text/plain",
               "Last-Modified": "Wed, 18 Sep 2024 12:00:00 GMT",
               "Content-Length": "12345",
@@ -56,7 +56,7 @@ describe("files info command", () => {
           return new HttpResponse(null, {
             status: 200,
             headers: {
-              [UCD_FILE_STAT_TYPE_HEADER]: "directory",
+              [UCD_STAT_TYPE_HEADER]: "directory",
               "Content-Type": "application/json",
               "Last-Modified": "Wed, 18 Sep 2024 12:00:00 GMT",
             },
@@ -78,7 +78,7 @@ describe("files info command", () => {
           return new HttpResponse(null, {
             status: 200,
             headers: {
-              [UCD_FILE_STAT_TYPE_HEADER]: "file",
+              [UCD_STAT_TYPE_HEADER]: "file",
               "Content-Type": "text/plain",
               "Last-Modified": "Wed, 18 Sep 2024 12:00:00 GMT",
               "Content-Length": "12345",
@@ -123,7 +123,7 @@ describe("files info command", () => {
           return new HttpResponse(null, {
             status: 200,
             headers: {
-              [UCD_FILE_STAT_TYPE_HEADER]: "directory",
+              [UCD_STAT_TYPE_HEADER]: "directory",
               "Content-Type": "application/json",
             },
           });
