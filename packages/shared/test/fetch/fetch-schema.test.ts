@@ -2,14 +2,14 @@ import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { beforeEach, describe, expect, it } from "vitest";
 import { z } from "zod";
-import { FetchError } from "../../src/fetch/error";
+import { FetchError, FetchSchemaValidationError } from "../../src/fetch/error";
 import { customFetch } from "../../src/fetch/fetch";
 
 describe("custom fetch - schema validation", () => {
   const UserSchema = z.object({
     id: z.number(),
     name: z.string(),
-    email: z.string().email(),
+    email: z.email(),
   });
 
   const UsersListSchema = z.array(UserSchema);
@@ -75,6 +75,15 @@ describe("custom fetch - schema validation", () => {
         ["GET", `${UCDJS_API_BASE_URL}/null-response`, () => {
           return HttpResponse.json(null);
         }],
+        ["GET", `${UCDJS_API_BASE_URL}/server-error`, () => {
+          return HttpResponse.json({ message: "oops" }, { status: 500 });
+        }],
+        ["GET", `${UCDJS_API_BASE_URL}/error-valid`, () => {
+          return HttpResponse.json({ error: "bad" }, { status: 400 });
+        }],
+        ["GET", `${UCDJS_API_BASE_URL}/error-invalid`, () => {
+          return HttpResponse.json({ error: 123 }, { status: 400 });
+        }],
       ]);
     });
 
@@ -108,7 +117,7 @@ describe("custom fetch - schema validation", () => {
       });
 
       expect(result.data).toBeNull();
-      expect(result.error).toBeInstanceOf(FetchError);
+      expect(result.error).toBeInstanceOf(FetchSchemaValidationError);
       expect(result.error?.message).toContain("Response validation failed");
     });
 
@@ -118,8 +127,49 @@ describe("custom fetch - schema validation", () => {
       });
 
       expect(result.error).toBeDefined();
+      expect(result.error).toBeInstanceOf(FetchSchemaValidationError);
       expect(result.error?.cause).toBeDefined();
-      expect((result.error?.cause as any)?.name).toBe("ValidationError");
+      expect((result.error?.cause as any)?.name).toBe("ZodError");
+      expect((result.error as FetchSchemaValidationError).issues).toBeDefined();
+    });
+
+    it("should surface schema validation error even on error responses when payload mismatches schema", async () => {
+      await expect(
+        customFetch(`${UCDJS_API_BASE_URL}/server-error`, {
+          schema: UserSchema,
+        }),
+      ).rejects.toBeInstanceOf(FetchError);
+    });
+
+    it("should return schema validation error via safe fetch on error responses when payload mismatches schema", async () => {
+      const result = await customFetch.safe(`${UCDJS_API_BASE_URL}/server-error`, {
+        schema: UserSchema,
+      });
+
+      expect(result.data).toBeNull();
+      expect(result.error).toBeInstanceOf(FetchError);
+      expect(result.error).not.toBeInstanceOf(FetchSchemaValidationError);
+    });
+
+    it("should validate error responses and still throw FetchError when schema passes", async () => {
+      const ErrorSchema = z.object({ error: z.string() });
+
+      await expect(
+        customFetch(`${UCDJS_API_BASE_URL}/error-valid`, {
+          schema: ErrorSchema,
+        }),
+      ).rejects.toBeInstanceOf(FetchError);
+    });
+
+    it("should emit FetchSchemaValidationError when error response fails schema", async () => {
+      const ErrorSchema = z.object({ error: z.string() });
+
+      const result = await customFetch.safe(`${UCDJS_API_BASE_URL}/error-invalid`, {
+        schema: ErrorSchema,
+      });
+
+      expect(result.error).toBeInstanceOf(FetchError);
+      expect(result.error).not.toBeInstanceOf(FetchSchemaValidationError);
     });
   });
 
