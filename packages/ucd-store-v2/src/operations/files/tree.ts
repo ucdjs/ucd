@@ -1,5 +1,5 @@
 import type { OperationResult } from "@ucdjs-internal/shared";
-import type { UnicodeFileTreeNode } from "@ucdjs/schemas";
+import type { UnicodeFileTreeNodeWithoutLastModified } from "@ucdjs/schemas";
 import type { StoreError } from "../../errors";
 import type { InternalUCDStoreContext, SharedOperationOptions } from "../../types";
 import {
@@ -28,13 +28,13 @@ export interface GetFileTreeOptions extends SharedOperationOptions {
  * @param {InternalUCDStoreContext} context - Internal store context with client, filters, and configuration
  * @param {string} version - The Unicode version to fetch the file tree for
  * @param {GetFileTreeOptions} [options] - Optional filters and API fallback behavior
- * @returns {Promise<OperationResult<UnicodeFileTreeNode[], StoreError>>} Operation result with filtered file tree or error
+ * @returns {Promise<OperationResult<UnicodeFileTreeNodeWithoutLastModified[], StoreError>>} Operation result with filtered file tree or error
  */
 export async function getFileTree(
   context: InternalUCDStoreContext,
   version: string,
   options?: GetFileTreeOptions,
-): Promise<OperationResult<UnicodeFileTreeNode[], StoreError>> {
+): Promise<OperationResult<UnicodeFileTreeNodeWithoutLastModified[], StoreError>> {
   return wrapTry(async () => {
     // Validate version exists in store
     if (!context.versions.includes(version)) {
