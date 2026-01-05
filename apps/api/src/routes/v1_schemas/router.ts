@@ -1,9 +1,13 @@
 import type { HonoEnv } from "../../types";
+import { tryOr } from "@ucdjs-internal/shared";
 import { LockfileSchema, SnapshotSchema } from "@ucdjs/schemas";
 import { Hono } from "hono";
 import { cache } from "hono/cache";
 import { z } from "zod";
-import { MAX_AGE_ONE_DAY_SECONDS, V1_SCHEMAS_ROUTER_BASE_PATH } from "../../constants";
+import {
+  MAX_AGE_ONE_DAY_SECONDS,
+  V1_SCHEMAS_ROUTER_BASE_PATH,
+} from "../../constants";
 
 export const V1_SCHEMAS_ROUTER = new Hono<HonoEnv>().basePath(V1_SCHEMAS_ROUTER_BASE_PATH);
 
@@ -20,7 +24,23 @@ for (const { name, schema } of schemas) {
       cacheControl: `max-age=${MAX_AGE_ONE_DAY_SECONDS * 4}`, // 4 days
     }),
     async (c) => {
-      const jsonSchema = z.toJSONSchema(schema);
+      const jsonSchema = await tryOr({
+        try: () => z.toJSONSchema(schema, {
+          unrepresentable: "any",
+          override: (ctx) => {
+            const def = ctx.zodSchema._zod.def;
+            if (def.type === "date") {
+              ctx.jsonSchema.type = "string";
+              ctx.jsonSchema.format = "date-time";
+            }
+          },
+        }),
+        err: (err) => {
+          console.error(`Failed to generate JSON schema for ${name}:`, err);
+          throw err;
+        },
+      });
+
       return c.json(jsonSchema, 200);
     },
   );
