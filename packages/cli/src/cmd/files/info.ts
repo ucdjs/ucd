@@ -1,7 +1,7 @@
 import type { CLIArguments } from "../../cli-utils";
 import type { CLIFilesCmdOptions } from "./root";
 import { customFetch } from "@ucdjs-internal/shared";
-import { UCD_FILE_STAT_TYPE_HEADER, UCDJS_API_BASE_URL } from "@ucdjs/env";
+import { UCD_STAT_TYPE_HEADER, UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { bold, dim, green, red } from "farver/fast";
 import { printHelp } from "../../cli-utils";
 import { output } from "../../output";
@@ -95,7 +95,7 @@ export async function runFilesInfo({ path, flags }: CLIFilesInfoCmdOptions) {
     const headers = result.response.headers;
     const metadata: FileMetadata = {
       path: path || "",
-      type: (headers.get(UCD_FILE_STAT_TYPE_HEADER) as "file" | "directory") || "file",
+      type: (headers.get(UCD_STAT_TYPE_HEADER) as "file" | "directory") || "file",
       contentType: headers.get("Content-Type") || undefined,
       lastModified: headers.get("Last-Modified") || undefined,
       contentLength: headers.get("Content-Length") || undefined,
