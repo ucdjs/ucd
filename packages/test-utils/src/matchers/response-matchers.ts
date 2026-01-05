@@ -256,9 +256,9 @@ export const toMatchResponse: RawMatcherFn<MatcherState, [ResponseMatcherOptions
 
     // Check error message if provided
     if (options.error.message) {
-      const messageMatches = typeof options.error.message === "string"
-        ? equals(error.message, options.error.message)
-        : options.error.message.test(error.message);
+      const messageMatches = options.error.message instanceof RegExp
+        ? options.error.message.test(error.message)
+        : equals(error.message, options.error.message);
 
       if (!messageMatches) {
         const expectedMsg = typeof options.error.message === "string"
