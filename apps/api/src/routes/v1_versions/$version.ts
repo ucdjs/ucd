@@ -2,7 +2,7 @@ import type { OpenAPIHono } from "@hono/zod-openapi";
 import type { HonoEnv } from "../../types";
 import { createRoute } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
-import { UnicodeTreeSchema, UnicodeVersionDetailsSchema } from "@ucdjs/schemas";
+import { UnicodeFileTreeNodeSchema, UnicodeFileTreeSchema, UnicodeVersionDetailsSchema } from "@ucdjs/schemas";
 import {
   hasUCDFolderPath,
   resolveUCDVersion,
@@ -108,7 +108,7 @@ export const GET_VERSION_FILE_TREE_ROUTE = createRoute({
     200: {
       content: {
         "application/json": {
-          schema: UnicodeTreeSchema,
+          schema: UnicodeFileTreeSchema,
           examples: {
             default: {
               summary: "File tree for a Unicode version",
@@ -221,6 +221,7 @@ export function registerGetVersionRoute(router: OpenAPIHono<HonoEnv>) {
 }
 
 export function registerVersionFileTreeRoute(router: OpenAPIHono<HonoEnv>) {
+  router.openAPIRegistry.register("UnicodeFileTreeNode", UnicodeFileTreeNodeSchema);
   router.openapi(GET_VERSION_FILE_TREE_ROUTE, async (c) => {
     try {
       let version = c.req.param("version");
