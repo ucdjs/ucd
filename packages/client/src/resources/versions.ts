@@ -2,7 +2,7 @@ import type { SafeFetchResponse } from "@ucdjs-internal/shared";
 import type { UCDWellKnownConfig } from "@ucdjs/schemas";
 import type { paths } from "../.generated/api";
 import { customFetch } from "@ucdjs-internal/shared";
-import { UnicodeTreeSchema, UnicodeVersionListSchema } from "@ucdjs/schemas";
+import { UnicodeFileTreeSchema, UnicodeVersionListSchema } from "@ucdjs/schemas";
 
 type VersionsListResponse = paths["/api/v1/versions"]["get"]["responses"][200]["content"]["application/json"];
 type FileTreeResponse = paths["/api/v1/versions/{version}/file-tree"]["get"]["responses"][200]["content"]["application/json"];
@@ -46,7 +46,7 @@ export function createVersionsResource(options: CreateVersionsResourceOptions): 
 
       return customFetch.safe<FileTreeResponse, "json">(url.toString(), {
         parseAs: "json",
-        schema: UnicodeTreeSchema,
+        schema: UnicodeFileTreeSchema,
       });
     },
   };

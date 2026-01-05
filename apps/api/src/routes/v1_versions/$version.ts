@@ -1,8 +1,9 @@
 import type { OpenAPIHono } from "@hono/zod-openapi";
+import type { UnicodeFileTree } from "@ucdjs/schemas";
 import type { HonoEnv } from "../../types";
 import { createRoute } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
-import { UnicodeTreeSchema, UnicodeVersionDetailsSchema } from "@ucdjs/schemas";
+import { UnicodeFileTreeNodeSchema, UnicodeFileTreeSchema, UnicodeVersionDetailsSchema } from "@ucdjs/schemas";
 import {
   hasUCDFolderPath,
   resolveUCDVersion,
@@ -108,7 +109,7 @@ export const GET_VERSION_FILE_TREE_ROUTE = createRoute({
     200: {
       content: {
         "application/json": {
-          schema: UnicodeTreeSchema,
+          schema: UnicodeFileTreeSchema,
           examples: {
             default: {
               summary: "File tree for a Unicode version",
@@ -208,19 +209,32 @@ export function registerGetVersionRoute(router: OpenAPIHono<HonoEnv>) {
 
     // Try to get statistics from bucket if available
     const bucket = c.env.UCD_BUCKET;
-    let statistics = null;
+    let statistics = {
+      newBlocks: 0,
+      newCharacters: 0,
+      newScripts: 0,
+      totalBlocks: 0,
+      totalCharacters: 0,
+      totalScripts: 0,
+    };
+
+    // This is so bad.... but we have to do it for now.
     if (bucket) {
-      statistics = await calculateStatistics(bucket, version);
+      const tmp = await calculateStatistics(bucket, version);
+      if (tmp) {
+        statistics = tmp;
+      }
     }
 
     return c.json({
       ...versionInfo,
-      statistics: statistics ?? undefined,
+      statistics,
     }, 200);
   });
 }
 
 export function registerVersionFileTreeRoute(router: OpenAPIHono<HonoEnv>) {
+  router.openAPIRegistry.register("UnicodeFileTreeNode", UnicodeFileTreeNodeSchema);
   router.openapi(GET_VERSION_FILE_TREE_ROUTE, async (c) => {
     try {
       let version = c.req.param("version");
@@ -243,7 +257,11 @@ export function registerVersionFileTreeRoute(router: OpenAPIHono<HonoEnv>) {
         format: "F2",
       });
 
-      return c.json(result, 200);
+      // We cast the result to UnicodeFileTree because the traverse function
+      // returns entries that uses lastModified as `number | undefined`.
+      // But we can't use the `number | undefined` type in the API schema.
+      // So we need to return lastModified as `number | null` always.
+      return c.json(result as UnicodeFileTree, 200);
     } catch (error) {
       console.error("Error processing directory:", error);
       return internalServerError(c, {

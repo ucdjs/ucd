@@ -1,7 +1,7 @@
 import type { OperationResult, PathFilter, PathFilterOptions } from "@ucdjs-internal/shared";
 import type { UCDClient } from "@ucdjs/client";
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
-import type { UCDStoreManifest, UnicodeTreeNode } from "@ucdjs/schemas";
+import type { UCDStoreManifest, UnicodeFileTreeNodeWithoutLastModified } from "@ucdjs/schemas";
 import type { StoreError } from "./errors";
 import type { AnalyzeOptions, AnalyzeResult } from "./internal/analyze";
 import type { CleanOptions, CleanResult } from "./internal/clean";
@@ -139,7 +139,7 @@ export class UCDStore {
     return this.#manifestPath;
   }
 
-  async getFileTree(version: string, extraFilters?: Pick<PathFilterOptions, "include" | "exclude">): Promise<OperationResult<UnicodeTreeNode[], StoreError>> {
+  async getFileTree(version: string, extraFilters?: Pick<PathFilterOptions, "include" | "exclude">): Promise<OperationResult<UnicodeFileTreeNodeWithoutLastModified[], StoreError>> {
     return wrapTry(async () => {
       await this.#ensureClient();
 

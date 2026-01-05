@@ -1,4 +1,3 @@
-import type { TreeEntry } from "../src/filter";
 import { describe, expect, it } from "vitest";
 import { createPathFilter, filterTreeStructure } from "../src/filter";
 
@@ -672,44 +671,44 @@ describe("createPathFilter", () => {
 });
 
 describe("filterTreeStructure", () => {
-  const tree: TreeEntry[] = [
+  const tree = [
     {
-      type: "file",
+      type: "file" as const,
       name: "root-file.txt",
       path: "root-file.txt",
     },
     {
-      type: "file",
+      type: "file" as const,
       name: "root-config.json",
       path: "root-config.json",
     },
     {
-      type: "directory",
+      type: "directory" as const,
       name: "extracted",
       path: "extracted",
       children: [
         {
-          type: "file",
+          type: "file" as const,
           name: "DerivedBidiClass.txt",
           path: "extracted/DerivedBidiClass.txt",
         },
         {
-          type: "file",
+          type: "file" as const,
           name: "config.json",
           path: "extracted/config.json",
         },
         {
-          type: "directory",
+          type: "directory" as const,
           name: "nested",
           path: "extracted/nested",
           children: [
             {
-              type: "file",
+              type: "file" as const,
               name: "DeepFile.txt",
               path: "extracted/nested/DeepFile.txt",
             },
             {
-              type: "file",
+              type: "file" as const,
               name: "debug.log",
               path: "extracted/nested/debug.log",
             },
@@ -879,10 +878,10 @@ describe("filterTreeStructure", () => {
     });
 
     it("should handle tree with only files", () => {
-      const tree: TreeEntry[] = [
-        { type: "file", name: "file1.txt", path: "file1.txt" },
-        { type: "file", name: "file2.pdf", path: "file2.pdf" },
-        { type: "file", name: "file3.md", path: "file3.md" },
+      const tree = [
+        { type: "file" as const, name: "file1.txt", path: "file1.txt" },
+        { type: "file" as const, name: "file2.pdf", path: "file2.pdf" },
+        { type: "file" as const, name: "file3.md", path: "file3.md" },
       ];
 
       const filter = createPathFilter({ include: ["*.txt"] });
@@ -894,23 +893,23 @@ describe("filterTreeStructure", () => {
     });
 
     it("should handle deeply nested structure", () => {
-      const nestedTree: TreeEntry[] = [
+      const nestedTree = [
         {
-          type: "directory",
+          type: "directory" as const,
           name: "a",
           path: "a",
           children: [
             {
-              type: "directory",
+              type: "directory" as const,
               name: "b",
               path: "b",
               children: [
                 {
-                  type: "directory",
+                  type: "directory" as const,
                   name: "c",
                   path: "c",
                   children: [
-                    { type: "file", name: "deep.txt", path: "deep.txt" },
+                    { type: "file" as const, name: "deep.txt", path: "deep.txt" },
                   ],
                 },
               ],
@@ -1036,36 +1035,36 @@ describe("filterTreeStructure", () => {
     });
 
     it("should handle directory pattern matching file without extension", () => {
-      const treeWithFileNoExt: TreeEntry[] = [
+      const treeWithFileNoExt = [
         {
-          type: "file",
+          type: "file" as const,
           name: "entry",
           path: "entry",
         },
         {
-          type: "file",
+          type: "file" as const,
           name: "entry.txt",
           path: "entry.txt",
         },
         {
-          type: "directory",
+          type: "directory" as const,
           name: "entryDir",
           path: "entryDir",
           children: [
             {
-              type: "file",
+              type: "file" as const,
               name: "content.txt",
               path: "content.txt",
             },
           ],
         },
         {
-          type: "directory",
+          type: "directory" as const,
           name: "other",
           path: "other",
           children: [
             {
-              type: "file",
+              type: "file" as const,
               name: "entry",
               path: "entry",
             },
