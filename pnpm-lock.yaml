@@ -83,8 +83,8 @@ catalogs:
       specifier: 6.0.1
       version: 6.0.1
     apache-autoindex-parse:
-      specifier: 4.1.0
-      version: 4.1.0
+      specifier: 5.0.2
+      version: 5.0.2
     defu:
       specifier: 6.1.4
       version: 6.1.4
@@ -338,7 +338,7 @@ importers:
         version: 0.12.0-beta.18
       apache-autoindex-parse:
         specifier: catalog:prod
-        version: 4.1.0
+        version: 5.0.2
       hono:
         specifier: catalog:workers
         version: 4.11.1
@@ -4778,8 +4778,8 @@ packages:
     resolution: {integrity: sha512-KMReFUr0B4t+D+OBkjR3KYqvocp2XaSzO55UcB6mgQMd3KbcE+mWTyvVV7D/zsdEbNnV6acZUutkiHQXvTr1Rw==}
     engines: {node: '>= 8'}
 
-  apache-autoindex-parse@4.1.0:
-    resolution: {integrity: sha512-SRMLp9a4QJeqg64qpt4/SyezssBXS6R/A3vPAq7R6W6XB+0QGc8CWvGcl60FfXHG3RTtp2ShgRnyFIdC5Gimaw==}
+  apache-autoindex-parse@5.0.2:
+    resolution: {integrity: sha512-cEw6EWV4qIZrdq0iWaTqU7EBwfcvVoTZbS4EEBtljyzK5KUEVJqiB6PsZDFUKif9SncFq69flO5B8UMA/CJa0w==}
 
   are-docs-informative@0.0.2:
     resolution: {integrity: sha512-ixiS0nLNNG5jNQzgZJNoUpBKdo9yTYZMGJ+QgT2jmjR7G7+QHRCc4v6LQ3NgE7EBJq+o0ams3waJwkrlBom8Ig==}
@@ -9240,9 +9240,6 @@ packages:
   zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
-  zod@4.2.1:
-    resolution: {integrity: sha512-0wZ1IRqGGhMP76gLqz8EyfBXKk0J2qo2+H3fi4mcUP/KtTocoX08nmIAHl1Z2kJIZbZee8KOpBCSNPRgauucjw==}
-
   zod@4.3.5:
     resolution: {integrity: sha512-k7Nwx6vuWx1IJ9Bjuf4Zt1PEllcwe7cls3VNzm4CQ1/hgtFUK2bRNG3rvnpPUhFjmqJKAKtjV576KnUkHocg/g==}
 
@@ -10188,7 +10185,7 @@ snapshots:
       eslint: 9.39.2(jiti@2.6.1)
       ts-pattern: 5.9.0
       typescript: 5.9.3
-      zod: 4.2.1
+      zod: 4.3.5
     transitivePeerDependencies:
       - supports-color
     optional: true
@@ -12978,7 +12975,7 @@ snapshots:
       normalize-path: 3.0.0
       picomatch: 2.3.1
 
-  apache-autoindex-parse@4.1.0: {}
+  apache-autoindex-parse@5.0.2: {}
 
   are-docs-informative@0.0.2: {}
 
@@ -14009,8 +14006,8 @@ snapshots:
       '@babel/parser': 7.28.5
       eslint: 9.39.2(jiti@2.6.1)
       hermes-parser: 0.25.1
-      zod: 4.2.1
-      zod-validation-error: 4.0.2(zod@4.2.1)
+      zod: 4.3.5
+      zod-validation-error: 4.0.2(zod@4.3.5)
     transitivePeerDependencies:
       - supports-color
     optional: true
@@ -18319,17 +18316,14 @@ snapshots:
     dependencies:
       zod: 3.25.76
 
-  zod-validation-error@4.0.2(zod@4.2.1):
+  zod-validation-error@4.0.2(zod@4.3.5):
     dependencies:
-      zod: 4.2.1
+      zod: 4.3.5
     optional: true
 
   zod@3.22.3: {}
 
   zod@3.25.76: {}
-
-  zod@4.2.1:
-    optional: true
 
   zod@4.3.5: {}
 
