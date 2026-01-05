@@ -1,3 +1,4 @@
+import type { UnicodeFileTreeNodeWithoutLastModified } from "@ucdjs/schemas";
 import type { PicomatchOptions } from "picomatch";
 import picomatch from "picomatch";
 import { DEFAULT_PICOMATCH_OPTIONS } from "./glob";
@@ -196,33 +197,21 @@ function isDirectoryOnlyPattern(pattern: string): boolean {
     && (pattern.includes("/") || !pattern.includes("*"));
 }
 
-// TODO: Combine all "tree" related entries
-export type TreeEntry = {
-  type: "file";
-  name: string;
-  path: string;
-} | {
-  type: "directory";
-  name: string;
-  path: string;
-  children: TreeEntry[];
-};
-
-export function filterTreeStructure(
+export function filterTreeStructure<T extends UnicodeFileTreeNodeWithoutLastModified>(
   pathFilter: PathFilter,
-  entries: TreeEntry[],
+  entries: T[],
   extraOptions: Pick<PathFilterOptions, "include" | "exclude"> = {},
-): TreeEntry[] {
+): T[] {
   return internal__filterTreeStructure(pathFilter, entries, "", extraOptions);
 }
 
-function internal__filterTreeStructure(
+function internal__filterTreeStructure<T extends UnicodeFileTreeNodeWithoutLastModified>(
   pathFilter: PathFilter,
-  entries: TreeEntry[],
+  entries: T[],
   parentPath: string,
   extraOptions: Pick<PathFilterOptions, "include" | "exclude">,
-): TreeEntry[] {
-  const filteredEntries: TreeEntry[] = [];
+): T[] {
+  const filteredEntries: T[] = [];
 
   for (const entry of entries) {
     // Since entry.path now contains the full path, use it directly
