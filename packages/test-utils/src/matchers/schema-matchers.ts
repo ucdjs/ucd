@@ -27,7 +27,7 @@ export const toMatchSchema: RawMatcherFn<MatcherState, [SchemaMatcherOptions<z.Z
 
   // Check partial data properties if provided
   if (options.data && result.success) {
-    for (const key in options.data) {
+    for (const key of Object.keys(options.data)) {
       const expected = (options.data as any)[key];
       const received = (result.data as any)[key];
 
