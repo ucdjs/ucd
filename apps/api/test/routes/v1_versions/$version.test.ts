@@ -1,12 +1,13 @@
-import type { Entry } from "apache-autoindex-parse";
-import type { TraverseEntry } from "apache-autoindex-parse/traverse";
-import { HttpResponse, mockFetch } from "#test-utils/msw";
+/// <reference types="../../../../../packages/test-utils/src/matchers/types.d.ts" />
 
+import type { UnicodeFileTree, UnicodeFileTreeNode } from "@ucdjs/schemas";
+import type { Entry } from "apache-autoindex-parse";
+import { HttpResponse, mockFetch } from "#test-utils/msw";
+import { flattenFilePaths } from "@ucdjs-internal/shared";
 import { generateAutoIndexHtml } from "apache-autoindex-parse/test-utils";
 import { env } from "cloudflare:workers";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { executeRequest } from "../../helpers/request";
-import { expectApiError, expectCacheHeaders, expectJsonResponse, expectSuccess } from "../../helpers/response";
 
 vi.mock("@unicode-utils/core", async (importOriginal) => {
   const original = await importOriginal<typeof import("@unicode-utils/core")>();
@@ -25,18 +26,42 @@ beforeEach(() => {
 describe("v1_versions", () => {
   // eslint-disable-next-line test/prefer-lowercase-title
   describe("GET /api/v1/versions/{version}/file-tree", () => {
-    const files: TraverseEntry[] = [
-      { type: "file", name: "file1.txt", path: "Public/15.1.0/ucd/file1.txt" },
-      { type: "file", name: "file2.txt", path: "Public/15.1.0/ucd/file2.txt" },
-      { type: "directory", name: "subdir", path: "Public/15.1.0/ucd/subdir", children: [] },
-      { type: "file", name: "file3.txt", path: "Public/15.1.0/ucd/subdir/file3.txt" },
-      { type: "file", name: "emoji-data.txt", path: "Public/15.1.0/ucd/emoji/emoji-data.txt" },
-    ];
+    const expectedFiles = [
+      { type: "file", name: "file1.txt", path: "file1.txt", lastModified: 1755287100000 },
+      { type: "file", name: "file2.txt", path: "file2.txt", lastModified: 1755287100000 },
+      {
+        type: "directory",
+        name: "subdir",
+        path: "subdir/",
+        lastModified: 1755287100000,
+      },
+      {
+        type: "directory",
+        name: "emoji",
+        path: "emoji/",
+        lastModified: 1755287100000,
+      },
+    ] satisfies Entry[];
 
     it("should return files for a valid Unicode version", async () => {
       mockFetch([
         ["GET", "https://unicode.org/Public/15.1.0/ucd", () => {
-          return HttpResponse.text(generateAutoIndexHtml(files, "F2"));
+          return HttpResponse.text(generateAutoIndexHtml([
+            { type: "file", name: "file1.txt", path: "file1.txt", lastModified: 1755287100000 },
+            { type: "file", name: "file2.txt", path: "file2.txt", lastModified: 1755287100000 },
+            { type: "directory", name: "subdir", path: "subdir/", lastModified: 1755287100000 },
+            { type: "directory", name: "emoji", path: "emoji/", lastModified: 1755287100000 },
+          ], "F2"));
+        }],
+        ["GET", "https://unicode.org/Public/15.1.0/ucd/emoji", () => {
+          return HttpResponse.text(generateAutoIndexHtml([
+            { type: "file", name: "emoji-data.txt", path: "emoji-data.txt", lastModified: 1755287100000 },
+          ], "F2"));
+        }],
+        ["GET", "https://unicode.org/Public/15.1.0/ucd/subdir", () => {
+          return HttpResponse.text(generateAutoIndexHtml([
+            { type: "file", name: "file3.txt", path: "file3.txt", lastModified: 1755287100000 },
+          ], "F2"));
         }],
       ]);
 
@@ -45,39 +70,88 @@ describe("v1_versions", () => {
         env,
       );
 
-      expectSuccess(response);
-      expectJsonResponse(response);
-      const data = await json() as unknown[];
-      expect(Array.isArray(data)).toBe(true);
-
-      const expectedFiles = files.map((file) => {
-        return expect.objectContaining({
-          name: file.name,
-          path: file.path,
-          type: file.type,
-          ...(file.type === "directory" ? { children: file.children } : {}),
-        });
+      expect(response).toMatchResponse({
+        json: true,
+        status: 200,
       });
 
-      expect(data).toEqual(expect.arrayContaining(expectedFiles));
+      const data = await json<UnicodeFileTree>();
+      expect(Array.isArray(data)).toBe(true);
+
+      const flattenedFilePaths = flattenFilePaths(data);
+
+      expect(flattenedFilePaths).toEqual([
+        "/15.1.0/ucd/file1.txt",
+        "/15.1.0/ucd/file2.txt",
+        "/15.1.0/ucd/subdir/file3.txt",
+        "/15.1.0/ucd/emoji/emoji-data.txt",
+      ]);
     });
 
     it("should return files for latest version", async () => {
+      mockFetch([
+        ["GET", "https://unicode.org/Public/17.0.0/ucd", () => {
+          return HttpResponse.text(generateAutoIndexHtml([
+            { type: "file", name: "file1.txt", path: "file1.txt", lastModified: 1755287100000 },
+            { type: "file", name: "file2.txt", path: "file2.txt", lastModified: 1755287100000 },
+            { type: "directory", name: "subdir", path: "subdir/", lastModified: 1755287100000 },
+            { type: "directory", name: "emoji", path: "emoji/", lastModified: 1755287100000 },
+          ], "F2"));
+        }],
+        ["GET", "https://unicode.org/Public/17.0.0/ucd/emoji", () => {
+          return HttpResponse.text(generateAutoIndexHtml([
+            { type: "file", name: "emoji-data.txt", path: "emoji-data.txt", lastModified: 1755287100000 },
+          ], "F2"));
+        }],
+        ["GET", "https://unicode.org/Public/17.0.0/ucd/subdir", () => {
+          return HttpResponse.text(generateAutoIndexHtml([
+            { type: "file", name: "file3.txt", path: "file3.txt", lastModified: 1755287100000 },
+          ], "F2"));
+        }],
+      ]);
+
       const { response, json } = await executeRequest(
         new Request("https://api.ucdjs.dev/api/v1/versions/latest/file-tree"),
         env,
       );
 
-      expectSuccess(response);
-      expectJsonResponse(response);
-      const data = await json();
+      expect(response).toMatchResponse({
+        json: true,
+        status: 200,
+      });
+
+      const data = await json<UnicodeFileTree>();
       expect(Array.isArray(data)).toBe(true);
+
+      const flattenedFilePaths = flattenFilePaths(data);
+
+      expect(flattenedFilePaths).toEqual([
+        "/17.0.0/ucd/file1.txt",
+        "/17.0.0/ucd/file2.txt",
+        "/17.0.0/ucd/subdir/file3.txt",
+        "/17.0.0/ucd/emoji/emoji-data.txt",
+      ]);
     });
 
     it("should return structured file data with proper schema", async () => {
       mockFetch([
         ["GET", "https://unicode.org/Public/15.1.0/ucd", () => {
-          return HttpResponse.text(generateAutoIndexHtml(files, "F2"));
+          return HttpResponse.text(generateAutoIndexHtml([
+            { type: "file", name: "file1.txt", path: "file1.txt", lastModified: 1755287100000 },
+            { type: "file", name: "file2.txt", path: "file2.txt", lastModified: 1755287100000 },
+            { type: "directory", name: "subdir", path: "subdir/", lastModified: 1755287100000 },
+            { type: "directory", name: "emoji", path: "emoji/", lastModified: 1755287100000 },
+          ], "F2"));
+        }],
+        ["GET", "https://unicode.org/Public/15.1.0/ucd/emoji", () => {
+          return HttpResponse.text(generateAutoIndexHtml([
+            { type: "file", name: "emoji-data.txt", path: "emoji-data.txt", lastModified: 1755287100000 },
+          ], "F2"));
+        }],
+        ["GET", "https://unicode.org/Public/15.1.0/ucd/subdir", () => {
+          return HttpResponse.text(generateAutoIndexHtml([
+            { type: "file", name: "file3.txt", path: "file3.txt", lastModified: 1755287100000 },
+          ], "F2"));
         }],
       ]);
 
@@ -86,10 +160,12 @@ describe("v1_versions", () => {
         env,
       );
 
-      expectSuccess(response);
-      expectJsonResponse(response);
+      expect(response).toMatchResponse({
+        json: true,
+        status: 200,
+      });
 
-      const data = await json() as TraverseEntry[];
+      const data = await json<UnicodeFileTree>();
 
       // validate the response structure
       expect(Array.isArray(data)).toBe(true);
@@ -105,7 +181,7 @@ describe("v1_versions", () => {
 
           return [files, directories];
         },
-        [[], []] as [Entry[], TraverseEntry[]],
+        [[], []] as [Exclude<UnicodeFileTreeNode, { type: "directory" }>[], Exclude<UnicodeFileTreeNode, { type: "file" }>[]],
       );
 
       expect(filesEntries.length).toBeGreaterThan(0);
@@ -134,7 +210,22 @@ describe("v1_versions", () => {
     it("should handle older Unicode versions", async () => {
       mockFetch([
         ["GET", "https://unicode.org/Public/3.1-Update1", () => {
-          return HttpResponse.text(generateAutoIndexHtml(files, "F2"));
+          return HttpResponse.text(generateAutoIndexHtml([
+            { type: "file", name: "file1.txt", path: "file1.txt", lastModified: 1755287100000 },
+            { type: "file", name: "file2.txt", path: "file2.txt", lastModified: 1755287100000 },
+            { type: "directory", name: "subdir", path: "subdir/", lastModified: 1755287100000 },
+            { type: "directory", name: "emoji", path: "emoji/", lastModified: 1755287100000 },
+          ], "F2"));
+        }],
+        ["GET", "https://unicode.org/Public/3.1-Update1/emoji", () => {
+          return HttpResponse.text(generateAutoIndexHtml([
+            { type: "file", name: "emoji-data.txt", path: "emoji-data.txt", lastModified: 1755287100000 },
+          ], "F2"));
+        }],
+        ["GET", "https://unicode.org/Public/3.1-Update1/subdir", () => {
+          return HttpResponse.text(generateAutoIndexHtml([
+            { type: "file", name: "file3.txt", path: "file3.txt", lastModified: 1755287100000 },
+          ], "F2"));
         }],
       ]);
 
@@ -143,10 +234,21 @@ describe("v1_versions", () => {
         env,
       );
 
-      expectSuccess(response);
-      expectJsonResponse(response);
-      const data = await json();
+      expect(response).toMatchResponse({
+        json: true,
+        status: 200,
+      });
+      const data = await json<UnicodeFileTree>();
       expect(Array.isArray(data)).toBe(true);
+
+      const flattenedFilePaths = flattenFilePaths(data);
+
+      expect(flattenedFilePaths).toEqual([
+        "/3.1-Update1/file1.txt",
+        "/3.1-Update1/file2.txt",
+        "/3.1-Update1/subdir/file3.txt",
+        "/3.1-Update1/emoji/emoji-data.txt",
+      ]);
     });
 
     describe("error handling", () => {
@@ -156,9 +258,11 @@ describe("v1_versions", () => {
           env,
         );
 
-        await expectApiError(response, {
+        expect(response).toMatchResponse({
           status: 400,
-          message: "Invalid Unicode version",
+          error: {
+            message: "Invalid Unicode version",
+          },
         });
       });
 
@@ -168,9 +272,11 @@ describe("v1_versions", () => {
           env,
         );
 
-        await expectApiError(response, {
+        expect(response).toMatchResponse({
           status: 400,
-          message: "Invalid Unicode version",
+          error: {
+            message: "Invalid Unicode version",
+          },
         });
       });
 
@@ -180,7 +286,9 @@ describe("v1_versions", () => {
           env,
         );
 
-        await expectApiError(response, { status: 400 });
+        expect(response).toMatchResponse({
+          status: 400,
+        });
       });
     });
 
@@ -194,8 +302,10 @@ describe("v1_versions", () => {
           env,
         );
 
-        expectSuccess(response);
-        expectCacheHeaders(response);
+        expect(response).toMatchResponse({
+          status: 200,
+          cache: true,
+        });
       });
 
       it("should cache the response for subsequent requests", async () => {
@@ -203,7 +313,7 @@ describe("v1_versions", () => {
         mockFetch([
           ["GET", "https://unicode.org/Public/16.0.0/ucd", () => {
             callCounter++;
-            return HttpResponse.text(generateAutoIndexHtml(files, "F2"));
+            return HttpResponse.text(generateAutoIndexHtml(expectedFiles, "F2"));
           }],
         ]);
 
@@ -211,18 +321,26 @@ describe("v1_versions", () => {
           new Request("https://api.ucdjs.dev/api/v1/versions/16.0.0/file-tree"),
           env,
         );
-        expectSuccess(firstResponse);
+        expect(firstResponse).toMatchResponse({
+          status: 200,
+          headers: {
+            "cf-cache-status": "",
+          },
+        });
         expect(callCounter).toBe(1); // First call should hit the network
-        expect(firstResponse.headers.get("cf-cache-status")).toBeNull();
 
         const { response: secondResponse } = await executeRequest(
           new Request("https://api.ucdjs.dev/api/v1/versions/16.0.0/file-tree"),
           env,
         );
 
-        expectSuccess(secondResponse);
+        expect(secondResponse).toMatchResponse({
+          status: 200,
+          headers: {
+            "cf-cache-status": "HIT",
+          },
+        });
         expect(callCounter).toBe(1); // Second call should hit the cache
-        expect(secondResponse.headers.get("cf-cache-status")).toBe("HIT");
       });
 
       it("should not cache responses for invalid versions", async () => {
@@ -231,7 +349,10 @@ describe("v1_versions", () => {
           env,
         );
 
-        await expectApiError(response, { status: 400 });
+        expect(response).toMatchResponse({
+          status: 400,
+        });
+
         expect(response.headers.get("cf-cache-status")).toBeNull();
       });
     });
