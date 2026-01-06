@@ -1,5 +1,3 @@
-import z, { } from "zod";
-
 export { ApiErrorSchema, UCDWellKnownConfigSchema } from "./api";
 export type { ApiError, UCDWellKnownConfig } from "./api";
 export {
