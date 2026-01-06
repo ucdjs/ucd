@@ -5,7 +5,11 @@ export default luxass({
   type: "lib",
   pnpm: true,
 }).append({
-  ignores: ["src/bridges/node.ts", ...GLOB_TESTS],
+  ignores: [
+    "src/bridges/node.ts",
+    "playgrounds/**",
+    ...GLOB_TESTS,
+  ],
   rules: {
     "no-restricted-imports": ["error", {
       patterns: [

@@ -26,6 +26,7 @@
     ".": "./dist/index.mjs",
     "./bridges/http": "./dist/bridges/http.mjs",
     "./bridges/node": "./dist/bridges/node.mjs",
+    "./errors": "./dist/errors.mjs",
     "./package.json": "./package.json"
   },
   "main": "./dist/index.mjs",
@@ -42,7 +43,9 @@
     "dev": "tsdown --watch",
     "clean": "git clean -xdf dist node_modules",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "playground:node": "tsx --tsconfig=./tsconfig.json ./playgrounds/node-playground.ts",
+    "playground:http": "tsx --tsconfig=./tsconfig.json ./playgrounds/http-playground.ts"
   },
   "dependencies": {
     "@luxass/utils": "catalog:prod",
