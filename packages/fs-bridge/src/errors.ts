@@ -8,14 +8,9 @@ export abstract class BridgeBaseError extends Error {
 }
 
 export class BridgeGenericError extends BridgeBaseError {
-  public readonly originalError?: Error;
-
-  constructor(message: string, originalError?: Error) {
-    super(message, {
-      cause: originalError,
-    });
+  constructor(message: string, options?: ErrorOptions) {
+    super(message, options);
     this.name = "BridgeGenericError";
-    this.originalError = originalError;
   }
 }
 
