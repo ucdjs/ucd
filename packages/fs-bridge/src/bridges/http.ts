@@ -8,7 +8,11 @@ import { defineFileSystemBridge } from "../define";
 
 const debug = createDebugger("ucdjs:fs-bridge:http");
 
-const API_BASE_URL_SCHEMA = z.codec(z.httpUrl(), z.instanceof(URL), {
+const API_BASE_URL_SCHEMA = z.codec(z.url({
+  protocol: /^https?$/,
+  hostname: z.regexes.hostname,
+  normalize: true,
+}), z.instanceof(URL), {
   decode: (urlString) => new URL(urlString),
   encode: (url) => url.href,
 }).default(new URL("/api/v1/files", UCDJS_API_BASE_URL));
@@ -26,10 +30,13 @@ const HTTPFileSystemBridge = defineFileSystemBridge({
 
     return {
       async read(path) {
+        debug?.("Reading file", { path });
+
         // Reject file paths ending with / - files don't have trailing slashes
         // Allow /, ./, and ../ as they are special directory references
         const trimmedPath = path.trim();
         if (trimmedPath.endsWith("/") && trimmedPath !== "/" && trimmedPath !== "./" && trimmedPath !== "../") {
+          debug?.("Rejected file path ending with '/'", { path });
           throw new Error("Cannot read file: path ends with '/'");
         }
 
@@ -38,20 +45,26 @@ const HTTPFileSystemBridge = defineFileSystemBridge({
           resolveSafePath(baseUrl.pathname, path),
         );
 
+        debug?.("Fetching remote file", { url });
         const response = await fetch(url);
 
         if (!response.ok) {
           debug?.("Failed to read remote file", { url, status: response.status, statusText: response.statusText });
           throw new Error(`Failed to read remote file: ${response.statusText}`);
         }
+
+        debug?.("Successfully read remote file", { url });
         return response.text();
       },
       async listdir(path, recursive = false) {
+        debug?.("Listing directory", { path, recursive });
+
         const url = joinURL(
           baseUrl.origin,
-          resolveSafePath(baseUrl.pathname, path),
+          resolveSafePath(baseUrl.pathname, `/${path}`),
         );
 
+        debug?.("Fetching directory listing", { url });
         const response = await fetch(url, {
           method: "GET",
           headers: {
@@ -61,17 +74,21 @@ const HTTPFileSystemBridge = defineFileSystemBridge({
 
         if (!response.ok) {
           if (response.status === 404) {
+            debug?.("Directory not found, returning empty array", { url });
             return [];
           }
 
           if (response.status === 403) {
+            debug?.("Directory access forbidden, returning empty array", { url });
             return [];
           }
 
           if (response.status === 500) {
+            debug?.("Server error while listing directory", { url, status: response.status });
             throw new Error(`Server error while listing directory: ${response.statusText}`);
           }
 
+          debug?.("Failed to list directory", { url, status: response.status, statusText: response.statusText });
           throw new Error(`Failed to list directory: ${response.statusText} (${response.status})`);
         }
 
@@ -88,6 +105,7 @@ const HTTPFileSystemBridge = defineFileSystemBridge({
         const data = result.data;
 
         if (!recursive) {
+          debug?.("Returning non-recursive directory listing", { path, entryCount: data.length });
           return data.map((entry) => {
             if (entry.type === "directory") {
               return {
@@ -109,6 +127,7 @@ const HTTPFileSystemBridge = defineFileSystemBridge({
         // If recursive, we assume the API returns all entries in a flat structure
         // So we can just loop through the entries,
         // and if we encounter a directory, we can fetch their children
+        debug?.("Processing recursive directory listing", { path, entryCount: data.length });
         const entries: FSEntry[] = [];
         for (const entry of data) {
           if (entry.type === "directory") {
@@ -132,16 +151,21 @@ const HTTPFileSystemBridge = defineFileSystemBridge({
           }
         }
 
+        debug?.("Completed recursive directory listing", { path, totalEntries: entries.length });
         return entries;
       },
       async exists(path) {
+        debug?.("Checking file existence", { path });
+
         const url = joinURL(
           baseUrl.origin,
           resolveSafePath(baseUrl.pathname, path),
         );
 
+        debug?.("Sending HEAD request", { url });
         return fetch(url, { method: "HEAD" })
           .then((response) => {
+            debug?.("File existence check result", { url, exists: response.ok });
             return response.ok;
           })
           .catch((err) => {
