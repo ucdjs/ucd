@@ -11,9 +11,10 @@ import type {
   OptionalCapabilityKey,
   OptionalFileSystemBridgeOperations,
 } from "./types";
+import { isMSWError } from "@luxass/msw-utils/runtime-guards";
 import { createDebugger } from "@ucdjs-internal/shared";
 import { PathUtilsBaseError } from "@ucdjs/path-utils";
-import { BridgeBaseError, BridgeGenericError, BridgeUnsupportedOperation } from "./errors";
+import { BridgeGenericError, BridgeUnsupportedOperation } from "./errors";
 
 const debug = createDebugger("ucdjs:fs-bridge:utils");
 
@@ -180,7 +181,7 @@ async function handleError(
   err: unknown,
   hooks: HookableCore<FileSystemBridgeHooks>,
 ): Promise<never> {
-  const knownError = (() => {
+  const normalizedError = (() => {
     if (err instanceof Error) {
       return err;
     }
@@ -192,33 +193,44 @@ async function handleError(
 
     return new BridgeGenericError(
       `Non-Error thrown in '${String(operation)}' operation: ${String(err)}`,
+      { cause: err },
     );
   })();
+
+  // check if this is an MSW error
+  if (isMSWError(normalizedError)) {
+    debug?.("MSW error detected in bridge operation", {
+      operation: String(operation),
+      error: normalizedError.message,
+    });
+
+    throw normalizedError;
+  }
 
   await hooks.callHook("error", {
     method: operation as keyof FileSystemBridgeOperations,
     path: args[0] as string,
-    error: knownError,
+    error: normalizedError,
     args,
   });
 
-  if (knownError instanceof BridgeBaseError || knownError instanceof PathUtilsBaseError) {
+  if (normalizedError instanceof BridgeGenericError || normalizedError instanceof PathUtilsBaseError) {
     debug?.("Known error thrown in bridge operation", {
       operation: String(operation),
-      error: knownError.message,
+      error: normalizedError.message,
     });
 
-    throw knownError;
+    throw normalizedError;
   }
 
   // wrap unexpected errors in BridgeGenericError
   debug?.("Unexpected error in bridge operation", {
     operation: String(operation),
-    error: knownError.message,
+    error: normalizedError.message,
   });
 
   throw new BridgeGenericError(
-    `Unexpected error in '${String(operation)}' operation: ${knownError.message}`,
-    knownError,
+    `Unexpected error in '${String(operation)}' operation: ${normalizedError.message}`,
+    { cause: normalizedError },
   );
 }
