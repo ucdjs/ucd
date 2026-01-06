@@ -57,6 +57,7 @@
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:linting",
+    "@luxass/msw-utils": "catalog:prod",
     "@ucdjs-internal/shared": "workspace:*",
     "@ucdjs-tooling/tsconfig": "workspace:*",
     "@ucdjs-tooling/tsdown-config": "workspace:*",
