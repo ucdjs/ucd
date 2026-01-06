@@ -154,8 +154,7 @@ const UnicodeFileTreeFileSchema = FileEntryFileSchema.meta({
 });
 
 const UnicodeFileTreeDirectorySchema = FileEntryDirectorySchema.extend({
-  get children(): z.ZodArray<typeof UnicodeFileTreeNodeSchema> {
-    // This should be fine because of lazy evaluation
+  get children() {
     // eslint-disable-next-line ts/no-use-before-define
     return z.array(UnicodeFileTreeNodeSchema);
   },
@@ -170,20 +169,6 @@ export const UnicodeFileTreeNodeSchema = z.union([
 ]).meta({
   id: "UnicodeFileTreeNode",
   description: "A recursive file tree node; directories include children, files do not.",
-}).superRefine((data, ctx) => {
-  if (data.type === "directory" && !("children" in data)) {
-    ctx.addIssue({
-      code: "custom",
-      message: "Directory nodes must include children.",
-    });
-  }
-
-  if (data.type === "file" && "children" in data) {
-    ctx.addIssue({
-      code: "custom",
-      message: "File nodes cannot have children.",
-    });
-  }
 });
 
 export type UnicodeFileTreeNode = z.infer<typeof UnicodeFileTreeNodeSchema>;
