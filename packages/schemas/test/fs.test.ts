@@ -8,7 +8,7 @@ describe("FileEntrySchema", () => {
   it("should validate a directory entry", () => {
     const validDirectory = {
       name: "docs",
-      path: "/docs",
+      path: "/docs/",
       lastModified: Date.now(),
       type: "directory",
     };
@@ -96,7 +96,7 @@ describe("FileEntryListSchema", () => {
       },
       {
         name: "folder",
-        path: "/folder",
+        path: "/folder/",
         lastModified: Date.now(),
         type: "directory",
       },
