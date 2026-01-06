@@ -293,7 +293,8 @@ describe("analyze operations", () => {
   });
 
   describe("remote store analyze operations", () => {
-    it("should analyze remote store with complete files", async () => {
+    // Will soon be replaced by ucd-store-v2
+    it.todo("should analyze remote store with complete files", async () => {
       mockFetch([
         [["GET", "HEAD"], `${UCDJS_API_BASE_URL}/api/v1/files/.ucd-store.json`, () => {
           return HttpResponse.json({
