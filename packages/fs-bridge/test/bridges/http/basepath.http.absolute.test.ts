@@ -143,8 +143,8 @@ describe("http bridge - absolute pathname scenarios", () => {
       mockFetch([
         ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/v16.0.0`, () => {
           return new HttpResponse(JSON.stringify([
-            { type: "file", name: "file1.txt", path: "file1.txt", lastModified: Date.now() },
-            { type: "file", name: "file2.txt", path: "file2.txt", lastModified: Date.now() },
+            { type: "file", name: "file1.txt", path: "/file1.txt", lastModified: Date.now() },
+            { type: "file", name: "file2.txt", path: "/file2.txt", lastModified: Date.now() },
           ]), {
             status: 200,
             headers: { "Content-Type": "application/json" },

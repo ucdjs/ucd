@@ -18,7 +18,7 @@ describe("recursive listdir security", () => {
             {
               type: "directory",
               name: "malicious",
-              path: "../../etc", // Malicious traversal in entry.path
+              path: "/../../etc/", // Malicious traversal in entry.path
               lastModified: Date.now(),
             },
           ]), {
@@ -46,7 +46,7 @@ describe("recursive listdir security", () => {
             {
               type: "directory",
               name: "malicious",
-              path: "%2e%2e%2f%2e%2e%2fetc", // Encoded traversal
+              path: "%2f%2e%2e%2f%2e%2e%2fetc%2f", // Encoded traversal
               lastModified: Date.now(),
             },
           ]), {
@@ -72,7 +72,7 @@ describe("recursive listdir security", () => {
             {
               type: "directory",
               name: "subdir",
-              path: "subdir",
+              path: "/subdir/",
               lastModified: Date.now(),
             },
           ]), {
@@ -92,7 +92,7 @@ describe("recursive listdir security", () => {
       const entries = await bridge.listdir("", true);
       expect(entries).toHaveLength(1);
       expect(entries?.[0]?.type).toBe("directory");
-      expect(entries?.[0]?.path).toBe("subdir");
+      expect(entries?.[0]?.path).toBe("/subdir/");
     });
   });
 });

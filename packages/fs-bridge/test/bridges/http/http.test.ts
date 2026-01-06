@@ -132,7 +132,7 @@ describe("http fs-bridge", () => {
       {
         type: "directory" as const,
         name: "subdir",
-        path: "/subdir",
+        path: "/subdir/",
         lastModified: Date.now(),
       },
     ] satisfies FileEntry[];
@@ -165,7 +165,7 @@ describe("http fs-bridge", () => {
         {
           children: [],
           name: "subdir",
-          path: "/subdir",
+          path: "/subdir/",
           type: "directory",
         },
 
@@ -204,7 +204,7 @@ describe("http fs-bridge", () => {
         {
           type: "directory",
           name: "subdir",
-          path: "/subdir",
+          path: "/subdir/",
           children: [
             { type: "file", name: "nested.txt", path: "/nested.txt" },
           ],
@@ -266,7 +266,7 @@ describe("http fs-bridge", () => {
             {
               type: "directory" as const,
               name: "inaccessible",
-              path: "/inaccessible",
+              path: "/inaccessible/",
               lastModified: Date.now(),
             },
           ] satisfies FileEntry[]), {
@@ -291,7 +291,7 @@ describe("http fs-bridge", () => {
       const files = await bridge.listdir("dir", true);
       expect(files).toEqual([
         { type: "file", name: "accessible.txt", path: "/accessible.txt" },
-        { type: "directory", name: "inaccessible", path: "/inaccessible", children: [] },
+        { type: "directory", name: "inaccessible", path: "/inaccessible/", children: [] },
       ]);
       expect(flattenFilePaths(files)).not.toContain("/inaccessible/another-file.txt");
     });
