@@ -68,8 +68,8 @@ catalogs:
       specifier: 1.0.0-alpha.8
       version: 1.0.0-alpha.8
     '@luxass/msw-utils':
-      specifier: 0.5.0
-      version: 0.5.0
+      specifier: 0.6.0
+      version: 0.6.0
     '@luxass/unicode-utils-old':
       specifier: npm:@luxass/unicode-utils@0.11.0
       version: 0.11.0
@@ -696,6 +696,9 @@ importers:
       '@luxass/eslint-config':
         specifier: catalog:linting
         version: 6.0.3(@eslint-react/eslint-plugin@2.3.12(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.25)(eslint-plugin-format@1.1.0(eslint@9.39.2(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@9.39.2(jiti@2.6.1)))(eslint-plugin-react-refresh@0.4.24(eslint@9.39.2(jiti@2.6.1)))(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)(vitest@4.0.16)
+      '@luxass/msw-utils':
+        specifier: catalog:prod
+        version: 0.6.0(msw@2.12.4(@types/node@24.3.1)(typescript@5.9.3))
       '@ucdjs-tooling/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/tsconfig
@@ -882,7 +885,7 @@ importers:
     dependencies:
       '@luxass/msw-utils':
         specifier: catalog:prod
-        version: 0.5.0(msw@2.12.4(@types/node@24.3.1)(typescript@5.9.3))
+        version: 0.6.0(msw@2.12.4(@types/node@24.3.1)(typescript@5.9.3))
       '@luxass/utils':
         specifier: catalog:prod
         version: 2.7.2
@@ -943,7 +946,7 @@ importers:
     dependencies:
       '@luxass/msw-utils':
         specifier: catalog:prod
-        version: 0.5.0(msw@2.12.4(@types/node@24.3.1)(typescript@5.9.3))
+        version: 0.6.0(msw@2.12.4(@types/node@24.3.1)(typescript@5.9.3))
       '@ucdjs-internal/shared':
         specifier: workspace:*
         version: link:../shared
@@ -2654,8 +2657,8 @@ packages:
       prettier-plugin-astro:
         optional: true
 
-  '@luxass/msw-utils@0.5.0':
-    resolution: {integrity: sha512-uqFTw1GWovCOLxXepgXvkcjbZaxCaY3oMsKO+BNXVeNsxe83umuVbYb4+4dDuma759Up05sBWef41I4xlQEduw==}
+  '@luxass/msw-utils@0.6.0':
+    resolution: {integrity: sha512-tz5wAfRCYTac3J2Mf2MRm6TDbxveMxn6DGmfJ24NbkUoKkMaw+wq43XLu98bUa4+806Bvs2bfnNj8XLVbqtOEg==}
     peerDependencies:
       msw: '>=2.11.0 <3.0.0'
 
@@ -10571,7 +10574,7 @@ snapshots:
       - typescript
       - vitest
 
-  '@luxass/msw-utils@0.5.0(msw@2.12.4(@types/node@24.3.1)(typescript@5.9.3))':
+  '@luxass/msw-utils@0.6.0(msw@2.12.4(@types/node@24.3.1)(typescript@5.9.3))':
     dependencies:
       msw: 2.12.4(@types/node@24.3.1)(typescript@5.9.3)
 
