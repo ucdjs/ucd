@@ -148,23 +148,19 @@ export const UnicodeVersionDetailsSchema = UnicodeVersionSchema.extend({
 
 export type UnicodeVersionDetails = z.output<typeof UnicodeVersionDetailsSchema>;
 
-const UnicodeFileTreeFileSchema = FileEntryFileSchema;
+const UnicodeFileTreeFileSchema = FileEntryFileSchema.meta({
+  id: "UnicodeFileTreeFile",
+  description: "A file node in the Unicode file tree.",
+});
 
-const UnicodeFileTreeDirectorySchema: z.ZodType<{
-  name: string;
-  path: string;
-  lastModified: number | null;
-  type: "directory";
-  children: UnicodeFileTreeNode[];
-}> = FileEntryDirectorySchema.extend({
-  // eslint-disable-next-line ts/no-use-before-define
-  children: z.array(z.lazy(() => UnicodeFileTreeNodeSchema)).meta({
-    description: "The children of the directory.",
-    type: "array",
-    items: {
-      $ref: "#/components/schemas/UnicodeFileTreeNode",
-    },
-  }),
+const UnicodeFileTreeDirectorySchema = FileEntryDirectorySchema.extend({
+  get children() {
+    // eslint-disable-next-line ts/no-use-before-define
+    return z.array(UnicodeFileTreeNodeSchema);
+  },
+}).meta({
+  id: "UnicodeFileTreeDirectory",
+  description: "A directory node in the Unicode file tree, containing child nodes.",
 });
 
 export const UnicodeFileTreeNodeSchema = z.union([
@@ -173,20 +169,6 @@ export const UnicodeFileTreeNodeSchema = z.union([
 ]).meta({
   id: "UnicodeFileTreeNode",
   description: "A recursive file tree node; directories include children, files do not.",
-}).superRefine((data, ctx) => {
-  if (data.type === "directory" && !("children" in data)) {
-    ctx.addIssue({
-      code: "custom",
-      message: "Directory nodes must include children.",
-    });
-  }
-
-  if (data.type === "file" && "children" in data) {
-    ctx.addIssue({
-      code: "custom",
-      message: "File nodes cannot have children.",
-    });
-  }
 });
 
 export type UnicodeFileTreeNode = z.infer<typeof UnicodeFileTreeNodeSchema>;

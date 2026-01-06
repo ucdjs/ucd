@@ -138,9 +138,9 @@ onlyBuiltDependencies:
   - workerd
 
 overrides:
-  "@asteasolutions/zod-to-openapi": 8.2.0
+  "@asteasolutions/zod-to-openapi": 8.4.0
   rolldown: catalog:dev
   wrangler: catalog:workers
 
 patchedDependencies:
-  "@asteasolutions/zod-to-openapi@8.2.0": patches/@asteasolutions__zod-to-openapi@8.2.0.patch
+  "@asteasolutions/zod-to-openapi@8.4.0": patches/@asteasolutions__zod-to-openapi@8.4.0.patch
