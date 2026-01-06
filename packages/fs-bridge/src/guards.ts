@@ -33,3 +33,13 @@ export function hasCapability<T extends OptionalCapabilityKey = never>(
 
   return true;
 }
+
+/**
+ * Checks whether a file system bridge is the built-in HTTP File System Bridge.
+ *
+ * @param {FileSystemBridge} fs - The file system bridge to check
+ * @returns {boolean} True if the bridge is the built-in HTTP File System Bridge, false otherwise
+ */
+export function isBuiltinHttpBridge(fs: FileSystemBridge): boolean {
+  return fs.meta.name === "HTTP File System Bridge";
+}

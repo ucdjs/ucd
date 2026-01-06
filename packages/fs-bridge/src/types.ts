@@ -169,14 +169,17 @@ export interface FileSystemBridge extends FileSystemBridgeOperations {
   hook: HookableCore<FileSystemBridgeHooks>["hook"];
 }
 
-export type FileSystemBridgeFactory<
-  TOptionsSchema extends z.ZodType,
-> = (
-  ...args: [z.input<TOptionsSchema>] extends [never]
+export type FileSystemBridgeArgs<TOptionsSchema extends z.ZodType>
+  = [z.input<TOptionsSchema>] extends [never]
     ? []
     : undefined extends z.input<TOptionsSchema>
       ? [options?: z.input<TOptionsSchema>]
-      : [options: z.input<TOptionsSchema>]
+      : [options: z.input<TOptionsSchema>];
+
+export type FileSystemBridgeFactory<
+  TOptionsSchema extends z.ZodType,
+> = (
+  ...args: FileSystemBridgeArgs<TOptionsSchema>
 ) => FileSystemBridge;
 
 export interface FileSystemBridgeHooks {
