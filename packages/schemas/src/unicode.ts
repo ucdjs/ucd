@@ -148,23 +148,20 @@ export const UnicodeVersionDetailsSchema = UnicodeVersionSchema.extend({
 
 export type UnicodeVersionDetails = z.output<typeof UnicodeVersionDetailsSchema>;
 
-const UnicodeFileTreeFileSchema = FileEntryFileSchema;
+const UnicodeFileTreeFileSchema = FileEntryFileSchema.meta({
+  id: "UnicodeFileTreeFile",
+  description: "A file node in the Unicode file tree.",
+});
 
-const UnicodeFileTreeDirectorySchema: z.ZodType<{
-  name: string;
-  path: string;
-  lastModified: number | null;
-  type: "directory";
-  children: UnicodeFileTreeNode[];
-}> = FileEntryDirectorySchema.extend({
-  // eslint-disable-next-line ts/no-use-before-define
-  children: z.array(z.lazy(() => UnicodeFileTreeNodeSchema)).meta({
-    description: "The children of the directory.",
-    type: "array",
-    items: {
-      $ref: "#/components/schemas/UnicodeFileTreeNode",
-    },
-  }),
+const UnicodeFileTreeDirectorySchema = FileEntryDirectorySchema.extend({
+  get children(): z.ZodArray<typeof UnicodeFileTreeNodeSchema> {
+    // This should be fine because of lazy evaluation
+    // eslint-disable-next-line ts/no-use-before-define
+    return z.array(UnicodeFileTreeNodeSchema);
+  },
+}).meta({
+  id: "UnicodeFileTreeDirectory",
+  description: "A directory node in the Unicode file tree, containing child nodes.",
 });
 
 export const UnicodeFileTreeNodeSchema = z.union([
