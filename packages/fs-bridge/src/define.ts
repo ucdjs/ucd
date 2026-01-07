@@ -1,4 +1,5 @@
 import type {
+  FileSystemBridge,
   FileSystemBridgeFactory,
   FileSystemBridgeHooks,
   FileSystemBridgeObject,
@@ -19,7 +20,7 @@ export function defineFileSystemBridge<
   TOptionsSchema extends z.ZodType = z.ZodNever,
   TState extends Record<string, unknown> = Record<string, unknown>,
 >(
-  fsBridge: FileSystemBridgeObject<TOptionsSchema, TState>,
+  fsBridge: FileSystemBridgeObject<TOptionsSchema, TState> & { symbol?: symbol },
 ): FileSystemBridgeFactory<TOptionsSchema> {
   return (...args) => {
     const parsedOptions = (fsBridge.optionsSchema ?? z.never().optional()).safeParse(args[0]);
@@ -59,7 +60,7 @@ export function defineFileSystemBridge<
       operations: bridgeOperations,
     } satisfies OperationWrapperOptions;
 
-    return {
+    const bridge: FileSystemBridge = {
       meta: fsBridge.meta,
       optionalCapabilities,
       hook: hooks.hook.bind(hooks),
@@ -74,5 +75,12 @@ export function defineFileSystemBridge<
       mkdir: createOperationWrapper("mkdir", baseWrapperOptions),
       rm: createOperationWrapper("rm", baseWrapperOptions),
     };
+
+    // Attach symbol if provided
+    if (fsBridge.symbol) {
+      (bridge as unknown as Record<symbol, boolean>)[fsBridge.symbol] = true;
+    }
+
+    return bridge;
   };
 }

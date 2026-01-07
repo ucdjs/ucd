@@ -1,5 +1,6 @@
 import type { FileSystemBridge, OptionalCapabilityKey } from "./types";
 import { createDebugger } from "@ucdjs-internal/shared";
+import { kHttpBridgeSymbol } from "./bridges/http";
 
 const debug = createDebugger("ucdjs:fs-bridge:guards");
 
@@ -37,9 +38,11 @@ export function hasCapability<T extends OptionalCapabilityKey = never>(
 /**
  * Checks whether a file system bridge is the built-in HTTP File System Bridge.
  *
+ * Uses a symbol to identify the bridge type, making it safe against name changes.
+ *
  * @param {FileSystemBridge} fs - The file system bridge to check
  * @returns {boolean} True if the bridge is the built-in HTTP File System Bridge, false otherwise
  */
 export function isBuiltinHttpBridge(fs: FileSystemBridge): boolean {
-  return fs.meta.name === "HTTP File System Bridge";
+  return kHttpBridgeSymbol in fs && (fs as Record<symbol, unknown>)[kHttpBridgeSymbol] === true;
 }
