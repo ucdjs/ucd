@@ -867,10 +867,11 @@ describe("v1_files", () => {
       });
 
       it("should sort by lastModified ascending", async () => {
+        const now = Date.now();
         const html = generateAutoIndexHtml([
-          { name: "Blocks.txt", path: "Blocks.txt", type: "file", lastModified: Date.now() },
-          { name: "UnicodeData.txt", path: "UnicodeData.txt", type: "file", lastModified: Date.now() },
-          { name: "ArabicShaping.txt", path: "ArabicShaping.txt", type: "file", lastModified: Date.now() },
+          { name: "Blocks.txt", path: "Blocks.txt", type: "file", lastModified: now - 2000 },
+          { name: "UnicodeData.txt", path: "UnicodeData.txt", type: "file", lastModified: now - 1000 },
+          { name: "ArabicShaping.txt", path: "ArabicShaping.txt", type: "file", lastModified: now - 3000 },
         ], "F2");
 
         mockFetch([
@@ -896,19 +897,18 @@ describe("v1_files", () => {
         expect(results).toHaveLength(3);
         expect(results.every((r) => typeof r.lastModified === "number")).toBe(true);
 
-        // Verify sorted by lastModified descending
-        let prev: number | null = results.at(-1)!.lastModified;
+        // Verify sorted by lastModified ascending (oldest first)
         for (let i = 1; i < results.length; i++) {
-          expect(results[i]!.lastModified).toBeLessThanOrEqual(prev!);
-          prev = results[i]!.lastModified;
+          expect(results[i]!.lastModified!).toBeGreaterThanOrEqual(results[i - 1]!.lastModified!);
         }
       });
 
       it("should sort by lastModified descending", async () => {
+        const now = Date.now();
         const html = generateAutoIndexHtml([
-          { name: "Blocks.txt", path: "Blocks.txt", type: "file", lastModified: Date.now() },
-          { name: "UnicodeData.txt", path: "UnicodeData.txt", type: "file", lastModified: Date.now() },
-          { name: "ArabicShaping.txt", path: "ArabicShaping.txt", type: "file", lastModified: Date.now() },
+          { name: "Blocks.txt", path: "Blocks.txt", type: "file", lastModified: now - 2000 },
+          { name: "UnicodeData.txt", path: "UnicodeData.txt", type: "file", lastModified: now - 1000 },
+          { name: "ArabicShaping.txt", path: "ArabicShaping.txt", type: "file", lastModified: now - 3000 },
         ], "F2");
 
         mockFetch([
@@ -934,11 +934,9 @@ describe("v1_files", () => {
         expect(results).toHaveLength(3);
         expect(results.every((r) => typeof r.lastModified === "number")).toBe(true);
 
-        // Verify sorted by lastModified descending
-        let prev: number | null = results.at(-1)!.lastModified;
+        // Verify sorted by lastModified descending (newest first)
         for (let i = 1; i < results.length; i++) {
-          expect(results[i]!.lastModified).toBeLessThanOrEqual(prev!);
-          prev = results[i]!.lastModified;
+          expect(results[i]!.lastModified!).toBeLessThanOrEqual(results[i - 1]!.lastModified!);
         }
       });
 
