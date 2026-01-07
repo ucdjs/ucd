@@ -3,7 +3,7 @@ import { createPathFilter, getDefaultUCDEndpointConfig } from "@ucdjs-internal/s
 import { createUCDClientWithConfig } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { describe, expect, it } from "vitest";
-import { createInternalContext, createPublicContext } from "../../src/core/context";
+import { createInternalContext, createPublicContext } from "../src/context";
 
 describe("createInternalContext", async () => {
   const client = createUCDClientWithConfig(UCDJS_API_BASE_URL, getDefaultUCDEndpointConfig());
@@ -11,76 +11,63 @@ describe("createInternalContext", async () => {
   it("should create context with all required properties", async () => {
     const filter = createPathFilter({});
     const fs = createMemoryMockFS();
-    const basePath = "/test/store";
-    const versions = ["16.0.0", "15.1.0"];
-    const lockfilePath = "/test/store/.ucd-store.lock";
 
     const context = createInternalContext({
       client,
       filter,
       fs,
-      basePath,
-      versions,
-      lockfilePath,
+      lockfile: {
+        supports: true,
+        exists: false,
+        path: "/test/store/.ucd-store.lock",
+      },
+      versions: {
+        userProvided: ["16.0.0", "15.1.0"],
+        configFile: [],
+      },
     });
 
     expect(context.client).toBe(client);
     expect(context.filter).toBe(filter);
     expect(context.fs).toBe(fs);
-    expect(context.basePath).toBe(basePath);
-    expect(context.versions).toEqual(versions);
-    expect(context.lockfilePath).toBe(lockfilePath);
+    expect(context.lockfile.supports).toBe(true);
+    expect(context.lockfile.exists).toBe(false);
+    expect(context.lockfile.path).toBe("/test/store/.ucd-store.lock");
+    expect(context.versions.userProvided).toEqual(["16.0.0", "15.1.0"]);
+    expect(context.versions.configFile).toEqual([]);
+    expect(context.versions.resolved).toEqual([]);
+    expect(context.versions.apiVersions).toBeTypeOf("function");
   });
 
-  it("should preserve all input values correctly", async () => {
-    const filter = createPathFilter({ include: ["*.txt"] });
-    const fs = createMemoryMockFS();
-    const basePath = "/different/path";
-    const versions = ["15.0.0"];
-    const lockfilePath = "/different/path/.ucd-store.lock";
-
-    const context = createInternalContext({
-      client,
-      filter,
-      fs,
-      basePath,
-      versions,
-      lockfilePath,
-    });
-
-    expect(context).toMatchObject({
-      basePath,
-      versions,
-      lockfilePath,
-    });
-    expect(context.client).toBe(client);
-    expect(context.filter).toBe(filter);
-    expect(context.fs).toBe(fs);
-  });
-
-  it("should create context with mutable versions array", async () => {
+  it("should create context with mutable resolved versions array", async () => {
     const filter = createPathFilter({});
     const fs = createMemoryMockFS();
-    const versions = ["16.0.0"];
 
     const context = createInternalContext({
       client,
       filter,
       fs,
-      basePath: "/test",
-      versions,
-      lockfilePath: "/test/.ucd-store.lock",
+
+      lockfile: {
+        supports: true,
+        exists: false,
+        path: "/test/.ucd-store.lock",
+      },
+      versions: {
+        userProvided: ["16.0.0"],
+        configFile: [],
+      },
     });
 
-    // Internal context should have mutable versions
+    // resolved versions should be mutable
     expect(() => {
-      context.versions.push("15.1.0");
+      context.versions.resolved.push("15.1.0");
     }).not.toThrow();
 
-    expect(context.versions).toEqual(["16.0.0", "15.1.0"]);
+    expect(context.versions.resolved).toEqual(["15.1.0"]);
   });
 
-  it("should handle empty versions array", async () => {
+  it("should freeze userProvided and configFile versions", async () => {
     const filter = createPathFilter({});
     const fs = createMemoryMockFS();
 
@@ -88,12 +75,70 @@ describe("createInternalContext", async () => {
       client,
       filter,
       fs,
-      basePath: "/test",
-      versions: [],
-      lockfilePath: "/test/.ucd-store.lock",
+
+      lockfile: {
+        supports: true,
+        exists: false,
+        path: "/test/.ucd-store.lock",
+      },
+      versions: {
+        userProvided: ["16.0.0"],
+        configFile: ["15.1.0"],
+      },
     });
 
-    expect(context.versions).toEqual([]);
+    expect(Object.isFrozen(context.versions.userProvided)).toBe(true);
+    expect(Object.isFrozen(context.versions.configFile)).toBe(true);
+  });
+
+  it("should handle empty versions", async () => {
+    const filter = createPathFilter({});
+    const fs = createMemoryMockFS();
+
+    const context = createInternalContext({
+      client,
+      filter,
+      fs,
+
+      lockfile: {
+        supports: true,
+        exists: false,
+        path: "/test/.ucd-store.lock",
+      },
+      versions: {
+        userProvided: [],
+        configFile: [],
+      },
+    });
+
+    expect(context.versions.userProvided).toEqual([]);
+    expect(context.versions.configFile).toEqual([]);
+    expect(context.versions.resolved).toEqual([]);
+  });
+
+  it("should have mutable lockfile.exists flag", async () => {
+    const filter = createPathFilter({});
+    const fs = createMemoryMockFS();
+
+    const context = createInternalContext({
+      client,
+      filter,
+      fs,
+
+      lockfile: {
+        supports: true,
+        exists: false,
+        path: "/test/.ucd-store.lock",
+      },
+      versions: {
+        userProvided: [],
+        configFile: [],
+      },
+    });
+
+    expect(context.lockfile.exists).toBe(false);
+    context.lockfile.exists = true;
+    expect(context.lockfile.exists).toBe(true);
   });
 });
 
@@ -111,30 +156,36 @@ describe("createPublicContext", async () => {
   it("should create context with only public properties", async () => {
     const filter = createPathFilter({});
     const fs = createMemoryMockFS();
-    const basePath = "/test/store";
-    const versions = ["16.0.0", "15.1.0"];
-    const lockfilePath = "/test/store/.ucd-store.lock";
 
     const internalContext = createInternalContext({
       client,
       filter,
       fs,
-      basePath,
-      versions,
-      lockfilePath,
+      lockfile: {
+        supports: true,
+        exists: false,
+        path: "/test/store/.ucd-store.lock",
+      },
+      versions: {
+        userProvided: ["16.0.0", "15.1.0"],
+        configFile: [],
+      },
     });
+
+    // Set resolved versions (simulating what store.ts does)
+    internalContext.versions.resolved = ["16.0.0", "15.1.0"];
 
     const publicContext = createPublicContext(internalContext);
 
     // Should have public properties
-    expect(publicContext.basePath).toBe(basePath);
     expect(publicContext.fs).toBe(fs);
-    expect(publicContext.versions).toEqual(versions);
+    expect(publicContext.versions).toEqual(["16.0.0", "15.1.0"]);
 
     // Should not expose internal properties
     expect("client" in publicContext).toBe(false);
     expect("filter" in publicContext).toBe(false);
-    expect("lockfilePath" in publicContext).toBe(false);
+    expect("lockfile" in publicContext).toBe(false);
+    expect("basePath" in publicContext).toBe(false);
   });
 
   it("should return frozen versions array", async () => {
@@ -145,24 +196,28 @@ describe("createPublicContext", async () => {
       client,
       filter,
       fs,
-      basePath: "/test",
-      versions: ["16.0.0"],
-      lockfilePath: "/test/.ucd-store.lock",
+      lockfile: {
+        supports: true,
+        exists: false,
+        path: "/test/.ucd-store.lock",
+      },
+      versions: {
+        userProvided: ["16.0.0"],
+        configFile: [],
+      },
     });
+
+    internalContext.versions.resolved = ["16.0.0"];
 
     const publicContext = createPublicContext(internalContext);
 
     // Should be frozen/readonly
     expect(Object.isFrozen(publicContext.versions)).toBe(true);
 
-    // Attempting to modify should not work (in strict mode would throw)
-    const versionsBefore = publicContext.versions;
+    // Attempting to modify should throw
     expect(() => {
       (publicContext.versions as string[]).push("15.1.0");
     }).toThrow();
-
-    // Versions should remain unchanged
-    expect(publicContext.versions).toEqual(versionsBefore);
   });
 
   it("should use getters so changes to internal context reflect in public context", async () => {
@@ -173,24 +228,30 @@ describe("createPublicContext", async () => {
       client,
       filter,
       fs,
-      basePath: "/test",
-      versions: ["16.0.0"],
-      lockfilePath: "/test/.ucd-store.lock",
+
+      lockfile: {
+        supports: true,
+        exists: false,
+        path: "/test/.ucd-store.lock",
+      },
+      versions: {
+        userProvided: ["16.0.0"],
+        configFile: [],
+      },
     });
+
+    internalContext.versions.resolved = ["16.0.0"];
 
     const publicContext = createPublicContext(internalContext);
 
     // Initial state
     expect(publicContext.versions).toEqual(["16.0.0"]);
-    expect(publicContext.basePath).toBe("/test");
 
     // Modify internal context
-    internalContext.versions = ["16.0.0", "15.1.0", "15.0.0"];
-    internalContext.basePath = "/new/path";
+    internalContext.versions.resolved = ["16.0.0", "15.1.0", "15.0.0"];
 
     // Changes should be reflected in public context
     expect(publicContext.versions).toEqual(["16.0.0", "15.1.0", "15.0.0"]);
-    expect(publicContext.basePath).toBe("/new/path");
   });
 
   it("should return new frozen array on each versions access", async () => {
@@ -201,10 +262,19 @@ describe("createPublicContext", async () => {
       client,
       filter,
       fs,
-      basePath: "/test",
-      versions: ["16.0.0"],
-      lockfilePath: "/test/.ucd-store.lock",
+
+      lockfile: {
+        supports: true,
+        exists: false,
+        path: "/test/.ucd-store.lock",
+      },
+      versions: {
+        userProvided: ["16.0.0"],
+        configFile: [],
+      },
     });
+
+    internalContext.versions.resolved = ["16.0.0"];
 
     const publicContext = createPublicContext(internalContext);
 
@@ -222,45 +292,6 @@ describe("createPublicContext", async () => {
     expect(Object.isFrozen(versions2)).toBe(true);
   });
 
-  it("should expose fs property correctly", async () => {
-    const filter = createPathFilter({});
-    const fs = createMemoryMockFS();
-
-    const internalContext = createInternalContext({
-      client,
-      filter,
-      fs,
-      basePath: "/test",
-      versions: ["16.0.0"],
-      lockfilePath: "/test/.ucd-store.lock",
-    });
-
-    const publicContext = createPublicContext(internalContext);
-
-    // Should expose the same fs instance
-    expect(publicContext.fs).toBe(fs);
-    expect(publicContext.fs).toBe(internalContext.fs);
-  });
-
-  it("should expose basePath property correctly", async () => {
-    const filter = createPathFilter({});
-    const fs = createMemoryMockFS();
-
-    const internalContext = createInternalContext({
-      client,
-      filter,
-      fs,
-      basePath: "/my/store/path",
-      versions: ["16.0.0"],
-      lockfilePath: "/my/store/path/.ucd-store.lock",
-    });
-
-    const publicContext = createPublicContext(internalContext);
-
-    expect(publicContext.basePath).toBe("/my/store/path");
-    expect(publicContext.basePath).toBe(internalContext.basePath);
-  });
-
   it("should handle empty versions array", async () => {
     const filter = createPathFilter({});
     const fs = createMemoryMockFS();
@@ -269,9 +300,16 @@ describe("createPublicContext", async () => {
       client,
       filter,
       fs,
-      basePath: "/test",
-      versions: [],
-      lockfilePath: "/test/.ucd-store.lock",
+
+      lockfile: {
+        supports: true,
+        exists: false,
+        path: "/test/.ucd-store.lock",
+      },
+      versions: {
+        userProvided: [],
+        configFile: [],
+      },
     });
 
     const publicContext = createPublicContext(internalContext);
@@ -280,7 +318,7 @@ describe("createPublicContext", async () => {
     expect(Object.isFrozen(publicContext.versions)).toBe(true);
   });
 
-  it("should not allow modification of fs or basePath", async () => {
+  it("should not allow modification of fs", async () => {
     const filter = createPathFilter({});
     const fs = createMemoryMockFS();
 
@@ -288,19 +326,21 @@ describe("createPublicContext", async () => {
       client,
       filter,
       fs,
-      basePath: "/test",
-      versions: ["16.0.0"],
-      lockfilePath: "/test/.ucd-store.lock",
+
+      lockfile: {
+        supports: true,
+        exists: false,
+        path: "/test/.ucd-store.lock",
+      },
+      versions: {
+        userProvided: ["16.0.0"],
+        configFile: [],
+      },
     });
 
     const publicContext = createPublicContext(internalContext);
 
     // Properties should be readonly (getters without setters)
-    expect(() => {
-      // @ts-expect-error - testing runtime behavior
-      publicContext.basePath = "/new/path";
-    }).toThrow();
-
     expect(() => {
       // @ts-expect-error - testing runtime behavior
       publicContext.fs = createMemoryMockFS();
