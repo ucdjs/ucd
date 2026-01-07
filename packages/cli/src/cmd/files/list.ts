@@ -1,11 +1,11 @@
+import type { FileEntryList } from "@ucdjs/schemas";
 import type { CLIArguments } from "../../cli-utils";
 import type { CLIFilesCmdOptions } from "./root";
 import { createDebugger } from "@ucdjs-internal/shared";
 import { createUCDClient } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
-import { dim, green, red } from "farver/fast";
 import { printHelp } from "../../cli-utils";
-import { output } from "../../output";
+import { dim, green, output, red } from "../../output";
 
 const debug = createDebugger("ucdjs:cli:files:list");
 
@@ -14,19 +14,12 @@ export interface CLIFilesListCmdOptions {
   flags: CLIArguments<CLIFilesCmdOptions["flags"]>;
 }
 
-interface FileEntry {
-  type: "file" | "directory";
-  name: string;
-  path: string;
-  lastModified: number;
-}
-
 function formatDate(timestamp: number): string {
   const date = new Date(timestamp);
   return date.toLocaleString();
 }
 
-function formatDirectoryListing(entries: FileEntry[]): string {
+function formatDirectoryListing(entries: FileEntryList): string {
   if (entries.length === 0) {
     return "  (empty directory)";
   }
@@ -47,9 +40,9 @@ function formatDirectoryListing(entries: FileEntry[]): string {
     const typeIcon = entry.type === "directory" ? green("📁") : "📄";
     const typeLabel = entry.type === "directory" ? green("dir") : dim("file");
     const name = entry.name.padEnd(padding);
-    const date = formatDate(entry.lastModified);
+    const date = entry.lastModified ? formatDate(entry.lastModified) : dim("no date");
 
-    lines.push(`  ${typeIcon} ${name} ${typeLabel}  ${dim(date)}`);
+    lines.push(`  ${typeIcon} ${name} ${typeLabel}  ${date}`);
   }
 
   return lines.join("\n");
@@ -106,7 +99,7 @@ export async function runFilesList({ path, flags }: CLIFilesListCmdOptions) {
       return;
     }
 
-    const entries = result.data as FileEntry[];
+    const entries = result.data;
 
     if (json) {
       // Write JSON directly to stdout, bypassing console redirection
@@ -116,9 +109,9 @@ export async function runFilesList({ path, flags }: CLIFilesListCmdOptions) {
 
     // Formatted output
     const pathDisplay = path || "(root)";
-    output.info(`\nDirectory listing: ${green(pathDisplay)}\n`);
-    output.info(formatDirectoryListing(entries));
-    output.info("");
+    output.log(`\nDirectory listing: ${green(pathDisplay)}\n`);
+    output.log(formatDirectoryListing(entries));
+    output.log("");
   } catch (err) {
     let message = "Unknown error";
     if (err instanceof Error) {
