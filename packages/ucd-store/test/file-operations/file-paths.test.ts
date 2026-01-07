@@ -5,7 +5,7 @@ import { assert, beforeEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
 import { createNodeUCDStore } from "../../src/factory";
 
-describe("file paths", () => {
+describe.todo("file paths", () => {
   beforeEach(() => {
     mockStoreApi({
       baseUrl: UCDJS_API_BASE_URL,

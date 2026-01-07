@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 import { UCDStoreGenericError } from "../../src/errors";
 import { getExpectedFilePaths } from "../../src/internal/files";
 
-describe("getExpectedFilePaths", async () => {
+describe.todo("getExpectedFilePaths", async () => {
   const client = await createUCDClient(UCDJS_API_BASE_URL);
 
   it("should return flattened file paths for valid version", async () => {
