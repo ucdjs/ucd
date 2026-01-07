@@ -133,7 +133,7 @@ describe("path traversal security", () => {
 
     it("should prevent traversal via encoded path components in recursive listdir", async () => {
       const testDir = await testdir({
-        "normal": {
+        normal: {
           "file.txt": "content",
         },
       });
@@ -151,7 +151,7 @@ describe("path traversal security", () => {
 
     it("should safely handle recursive listdir on legitimate nested structure", async () => {
       const testDir = await testdir({
-        "level1": {
+        level1: {
           "level2": {
             "level3": {
               "deep-file.txt": "deep content",
