@@ -51,6 +51,7 @@
     "@ucdjs/fs-bridge": "workspace:*",
     "@ucdjs/lockfile": "workspace:*",
     "@ucdjs/schema-gen": "workspace:*",
+    "@ucdjs/schemas": "workspace:*",
     "@ucdjs/ucd-store-v2": "workspace:*",
     "@unicode-utils/core": "catalog:prod",
     "farver": "catalog:prod",

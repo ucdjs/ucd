@@ -545,6 +545,9 @@ importers:
       '@ucdjs/schema-gen':
         specifier: workspace:*
         version: link:../schema-gen
+      '@ucdjs/schemas':
+        specifier: workspace:*
+        version: link:../schemas
       '@ucdjs/ucd-store-v2':
         specifier: workspace:*
         version: link:../ucd-store-v2
