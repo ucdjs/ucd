@@ -1,6 +1,6 @@
 {
-  "name": "@ucdjs/ucd-store",
-  "version": "0.1.0",
+  "name": "@ucdjs/ucd-store-v2",
+  "version": "0.0.1",
   "type": "module",
   "author": {
     "name": "Lucas Nørgård",
@@ -17,6 +17,9 @@
   },
   "bugs": {
     "url": "https://github.com/ucdjs/ucd/issues"
+  },
+  "imports": {
+    "#internal-pkg:test-utils/*": "./test/helpers/*.ts"
   },
   "exports": {
     ".": "./dist/index.mjs",
@@ -47,6 +50,7 @@
     "@ucdjs/client": "workspace:*",
     "@ucdjs/env": "workspace:*",
     "@ucdjs/fs-bridge": "workspace:*",
+    "@ucdjs/lockfile": "workspace:*",
     "@ucdjs/schemas": "workspace:*",
     "@unicode-utils/core": "catalog:prod",
     "defu": "catalog:prod",
