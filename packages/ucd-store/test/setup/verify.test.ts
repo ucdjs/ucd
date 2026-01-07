@@ -12,46 +12,41 @@ import { verify } from "../../src/setup/verify";
 describe("verify", () => {
   describe("valid lockfile", () => {
     it("should return valid result when all lockfile versions exist in API", async () => {
-      // Arrange
       mockStoreApi({
         versions: ["16.0.0", "15.1.0", "15.0.0"],
+        responses: {
+          "/api/v1/versions": true,
+        },
       });
 
-      const { context, fs, lockfilePath } = await createTestContext({
+      const { context } = await createTestContext({
         versions: ["16.0.0", "15.1.0"],
         lockfile: createEmptyLockfile(["16.0.0", "15.1.0"]),
       });
 
-      // Act
-      const result = await verify({
-        client: context.client,
-        lockfilePath,
-        fs,
-      });
+      const result = await verify(context);
 
-      // Assert
       expect(result.valid).toBe(true);
-      expect(result.lockfileVersions).toEqual(["16.0.0", "15.1.0"]);
-      expect(result.missingVersions).toEqual([]);
+      expect(result.verifiedVersions).toEqual(["16.0.0", "15.1.0"]);
+      expect(result.invalidVersions).toEqual([]);
     });
 
     it("should include extra versions available in API but not in lockfile", async () => {
       // Arrange
       mockStoreApi({
         versions: ["16.0.0", "15.1.0", "15.0.0", "14.0.0"],
+        responses: {
+          "/api/v1/versions": true,
+        },
       });
 
-      const { context, fs, lockfilePath } = await createTestContext({
+      const { context } = await createTestContext({
         versions: ["16.0.0"],
         lockfile: createEmptyLockfile(["16.0.0"]),
       });
 
       // Act
-      const result = await verify({
-        client: context.client,
-        lockfilePath,
-        fs,
-      });
+      const result = await verify(context);
 
       // Assert
       expect(result.valid).toBe(true);
@@ -67,19 +62,18 @@ describe("verify", () => {
       // Arrange
       mockStoreApi({
         versions: ["16.0.0", "15.1.0"],
+        responses: {
+          "/api/v1/versions": true,
+        },
       });
 
-      const { context, fs, lockfilePath } = await createTestContext({
+      const { context } = await createTestContext({
         versions: ["16.0.0", "15.1.0", "99.0.0"],
         lockfile: createEmptyLockfile(["16.0.0", "15.1.0", "99.0.0"]),
       });
 
       // Act
-      const result = await verify({
-        client: context.client,
-        lockfilePath,
-        fs,
-      });
+      const result = await verify(context);
 
       // Assert
       expect(result.valid).toBe(false);
@@ -89,24 +83,23 @@ describe("verify", () => {
       // Arrange
       mockStoreApi({
         versions: ["16.0.0", "15.1.0"],
+        responses: {
+          "/api/v1/versions": true,
+        },
       });
 
-      const { context, fs, lockfilePath } = await createTestContext({
+      const { context } = await createTestContext({
         versions: ["16.0.0", "99.0.0", "88.0.0"],
         lockfile: createEmptyLockfile(["16.0.0", "99.0.0", "88.0.0"]),
       });
 
       // Act
-      const result = await verify({
-        client: context.client,
-        lockfilePath,
-        fs,
-      });
+      const result = await verify(context);
 
       // Assert
-      expect(result.missingVersions).toContain("99.0.0");
-      expect(result.missingVersions).toContain("88.0.0");
-      expect(result.missingVersions).toHaveLength(2);
+      expect(result.invalidVersions).toContain("99.0.0");
+      expect(result.invalidVersions).toContain("88.0.0");
+      expect(result.invalidVersions).toHaveLength(2);
     });
   });
 
@@ -115,24 +108,23 @@ describe("verify", () => {
       // Arrange
       mockStoreApi({
         versions: ["16.0.0", "15.1.0"],
+        responses: {
+          "/api/v1/versions": true,
+        },
       });
 
-      const { context, fs, lockfilePath } = await createTestContext({
+      const { context } = await createTestContext({
         versions: [],
         lockfile: createEmptyLockfile([]),
       });
 
       // Act
-      const result = await verify({
-        client: context.client,
-        lockfilePath,
-        fs,
-      });
+      const result = await verify(context);
 
       // Assert
       expect(result.valid).toBe(true);
-      expect(result.lockfileVersions).toEqual([]);
-      expect(result.missingVersions).toEqual([]);
+      expect(result.verifiedVersions).toEqual([]);
+      expect(result.invalidVersions).toEqual([]);
       expect(result.extraVersions).toEqual(["16.0.0", "15.1.0"]);
     });
   });
@@ -146,19 +138,13 @@ describe("verify", () => {
         }],
       ]);
 
-      const { context, fs, lockfilePath } = await createTestContext({
+      const { context } = await createTestContext({
         versions: ["16.0.0"],
         lockfile: createEmptyLockfile(["16.0.0"]),
       });
 
       // Act & Assert
-      await expect(
-        verify({
-          client: context.client,
-          lockfilePath,
-          fs,
-        }),
-      ).rejects.toThrow(UCDStoreGenericError);
+      await expect(verify(context)).rejects.toThrow(UCDStoreGenericError);
     });
 
     it("should include 'Failed to fetch Unicode versions during verification' in error message", async () => {
@@ -169,21 +155,17 @@ describe("verify", () => {
         }],
       ]);
 
-      const { context, fs, lockfilePath } = await createTestContext({
+      const { context } = await createTestContext({
         versions: ["16.0.0"],
         lockfile: createEmptyLockfile(["16.0.0"]),
       });
 
       // Act
-      const error = await verify({
-        client: context.client,
-        lockfilePath,
-        fs,
-      }).catch((e) => e);
+      const error = await verify(context).catch((e) => e);
 
       // Assert
       expect(error).toBeInstanceOf(UCDStoreGenericError);
-      expect(error.message).toContain("Failed to fetch Unicode versions during verification");
+      expect(error.message).toContain("Failed to fetch Unicode versions during validation");
     });
 
     it("should throw UCDStoreGenericError when API returns no data", async () => {
@@ -194,19 +176,13 @@ describe("verify", () => {
         }],
       ]);
 
-      const { context, fs, lockfilePath } = await createTestContext({
+      const { context } = await createTestContext({
         versions: ["16.0.0"],
         lockfile: createEmptyLockfile(["16.0.0"]),
       });
 
       // Act & Assert
-      await expect(
-        verify({
-          client: context.client,
-          lockfilePath,
-          fs,
-        }),
-      ).rejects.toThrow(UCDStoreGenericError);
+      await expect(verify(context)).rejects.toThrow(UCDStoreGenericError);
     });
 
     it("should include 'no data returned' in error message", async () => {
@@ -217,21 +193,17 @@ describe("verify", () => {
         }],
       ]);
 
-      const { context, fs, lockfilePath } = await createTestContext({
+      const { context } = await createTestContext({
         versions: ["16.0.0"],
         lockfile: createEmptyLockfile(["16.0.0"]),
       });
 
       // Act
-      const error = await verify({
-        client: context.client,
-        lockfilePath,
-        fs,
-      }).catch((e) => e);
+      const error = await verify(context).catch((e) => e);
 
       // Assert
       expect(error).toBeInstanceOf(UCDStoreGenericError);
-      expect(error.message).toContain("Failed to fetch Unicode versions during verification: no data returned");
+      expect(error.message).toContain("Failed to fetch Unicode versions during validation: no data returned");
     });
   });
 });
