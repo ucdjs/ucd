@@ -8,11 +8,14 @@ import {
   wrapTry,
 } from "@ucdjs-internal/shared";
 import { hasCapability } from "@ucdjs/fs-bridge";
-import { readLockfileOrDefault, readSnapshotOrDefault, writeLockfile } from "@ucdjs/lockfile";
+import {
+  readLockfileOrUndefined,
+  readSnapshotOrUndefined,
+  writeLockfile,
+} from "@ucdjs/lockfile";
 import { join } from "pathe";
-import { getExpectedFilePaths } from "../core/files";
 import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../errors";
-import { listFiles } from "./files/list";
+import { listFiles } from "../files/list";
 import { mirror } from "./mirror";
 
 const debug = createDebugger("ucdjs:ucd-store:sync");
@@ -86,16 +89,16 @@ export interface SyncResult {
  * Synchronizes the store lockfile with available versions from API and mirrors files.
  * Updates lockfile, downloads missing files, and optionally removes orphaned files/unavailable versions.
  *
- * @param {InternalUCDStoreContext} context - Internal store context
+ * @this {InternalUCDStoreContext} - Internal store context
  * @param {SyncOptions} [options] - Sync options
  * @returns {Promise<OperationResult<SyncResult, StoreError>>} Operation result
  */
-export async function sync(
-  context: InternalUCDStoreContext,
+async function _sync(
+  this: InternalUCDStoreContext,
   options?: SyncOptions,
 ): Promise<OperationResult<SyncResult, StoreError>> {
   return wrapTry(async () => {
-    if (!hasCapability(context.fs, ["mkdir", "write"])) {
+    if (!hasCapability(this.fs, ["mkdir", "write"])) {
       throw new UCDStoreGenericError("Filesystem does not support required write operations for syncing.");
     }
 
@@ -105,15 +108,37 @@ export async function sync(
     const cleanOrphaned = options?.cleanOrphaned ?? false;
 
     debug?.("Fetching available versions from API");
-    const availableVersionsFromApi = await getVersionsFromApi(context);
+    const availableVersionsFromApi = await getVersionsFromApi(this);
 
     debug?.(`Found ${availableVersionsFromApi.length} available versions from API`);
 
-    const lockfile = await readLockfileOrDefault(context.fs, context.lockfilePath);
+    const lockfile = await readLockfileOrUndefined(this.fs, this.lockfile.path);
     const currentVersions = new Set(lockfile ? Object.keys(lockfile.versions) : []);
 
     const availableVersionsSet = new Set(availableVersionsFromApi);
-    const added = availableVersionsFromApi.filter((v) => !currentVersions.has(v));
+
+    // If specific versions were requested, only consider those for adding
+    // Otherwise, consider all available versions from the API
+    const versionsToConsider = options?.versions && options.versions.length > 0
+      ? options.versions.filter((v) => availableVersionsSet.has(v))
+      : availableVersionsFromApi;
+
+    // Validate that requested versions exist in API
+    if (options?.versions && options.versions.length > 0) {
+      const invalidVersions = options.versions.filter((v) => !availableVersionsSet.has(v));
+      if (invalidVersions.length > 0) {
+        // For backwards compatibility, throw UCDStoreVersionNotFoundError for single version
+        if (invalidVersions.length === 1) {
+          throw new UCDStoreVersionNotFoundError(invalidVersions[0]!);
+        }
+
+        throw new UCDStoreGenericError(
+          `Requested versions are not available in API: ${invalidVersions.join(", ")}`,
+        );
+      }
+    }
+
+    const added = versionsToConsider.filter((v) => !currentVersions.has(v));
 
     const unchanged = Array.from(currentVersions).filter((v) => {
       // If the removeUnavailable is set to true, we will only keep the versions that
@@ -137,10 +162,16 @@ export async function sync(
     if (removeUnavailable) {
       // Remove versions not available in API
       removed = Array.from(currentVersions).filter((v) => !availableVersionsSet.has(v));
-      finalVersions = availableVersionsFromApi; // Only keep versions available in API
+      // When removing unavailable, if specific versions were requested, use those + existing available
+      // Otherwise use all available from API
+      if (options?.versions && options.versions.length > 0) {
+        finalVersions = [...new Set([...Array.from(currentVersions).filter((v) => availableVersionsSet.has(v)), ...versionsToConsider])];
+      } else {
+        finalVersions = availableVersionsFromApi;
+      }
     } else {
-      // Keep all existing versions + add new ones
-      finalVersions = [...currentVersions, ...added];
+      // Keep all existing versions + add new ones (only the requested or all available)
+      finalVersions = [...new Set([...currentVersions, ...added])];
     }
 
     debug?.(
@@ -150,11 +181,14 @@ export async function sync(
     // Step 4: Update lockfile
     if (lockfile || added.length > 0 || removed.length > 0) {
       // Preserve filters from existing lockfile or use current context filters
-      const { extractFilterPatterns } = await import("../core/context");
-      const filters = extractFilterPatterns(context.filter) ?? lockfile?.filters;
+      const { extractFilterPatterns } = await import("../context");
+      const filters = extractFilterPatterns(this.filter) ?? lockfile?.filters;
+      const now = new Date();
 
-      await writeLockfile(context.fs, context.lockfilePath, {
+      await writeLockfile(this.fs, this.lockfile.path, {
         lockfileVersion: 1,
+        createdAt: lockfile?.createdAt ?? now,
+        updatedAt: now,
         versions: Object.fromEntries(
           finalVersions.map((v) => {
             const existingEntry = lockfile?.versions[v];
@@ -164,6 +198,8 @@ export async function sync(
                 path: `${v}/snapshot.json`, // relative path
                 fileCount: 0,
                 totalSize: 0,
+                createdAt: now,
+                updatedAt: now,
               },
             ];
           }),
@@ -192,15 +228,8 @@ export async function sync(
     }
 
     debug?.(`Determining versions to sync: ${versionsToSync.join(", ")}`);
-    // Validate specified versions exist in lockfile
-    if (options?.versions && options.versions.length > 0) {
-      debug?.(`Validating specified versions: ${options.versions.join(", ")}`);
-      for (const version of options.versions) {
-        if (!finalVersions.includes(version)) {
-          throw new UCDStoreVersionNotFoundError(version);
-        }
-      }
-    }
+    // Note: validation for specified versions happens earlier (line ~126)
+    // where we check if requested versions exist in the API
 
     debug?.(`Validating versions to sync: ${versionsToSync.join(", ")}`);
 
@@ -219,7 +248,7 @@ export async function sync(
     debug?.(`Starting sync for ${versionsToSync.length} version(s) with concurrency=${concurrency}, force=${force}`);
 
     // Step 6: Mirror files for all versions
-    const [mirrorReport, mirrorError] = await mirror(context, {
+    const [mirrorReport, mirrorError] = await mirror(this, {
       versions: versionsToSync,
       force,
       concurrency,
@@ -239,25 +268,25 @@ export async function sync(
       for (const version of versionsToSync) {
         // Get expected files from snapshot if available, otherwise from API
         let expectedFiles: string[] = [];
-        const snapshot = await readSnapshotOrDefault(context.fs, context.basePath, version);
+        const snapshot = await readSnapshotOrUndefined(this.fs, version);
 
         if (snapshot && snapshot.files) {
           // Use files from snapshot
           expectedFiles = Object.keys(snapshot.files);
         } else {
           // Fallback to API
-          expectedFiles = await getExpectedFilePaths(context.client, version);
+          expectedFiles = await this.getExpectedFilePaths(version);
         }
 
         // Apply filters
         const filteredExpectedFiles = expectedFiles.filter((filePath) =>
-          context.filter(filePath, options?.filters),
+          this.filter(filePath, options?.filters),
         );
 
         const expectedFilesSet = new Set(filteredExpectedFiles);
 
         // Get all actual files
-        const [actualFiles, listError] = await listFiles(context, version, {
+        const [actualFiles, listError] = await listFiles(this, version, {
           allowApi: false,
           filters: options?.filters,
         });
@@ -278,9 +307,9 @@ export async function sync(
             orphanedFiles.map((filePath) =>
               limit(async () => {
                 try {
-                  const localPath = join(context.basePath, version, filePath);
-                  if (await context.fs.exists(localPath)) {
-                    await context.fs.rm!(localPath);
+                  const localPath = join(version, filePath);
+                  if (await this.fs.exists(localPath)) {
+                    await this.fs.rm!(localPath);
                     removedFiles.get(version)!.push(filePath);
                     debug?.(`Removed orphaned file: ${filePath} for version ${version}`);
                   }
@@ -304,6 +333,28 @@ export async function sync(
       removedFiles,
     };
   });
+}
+
+function isContext(obj: any): obj is InternalUCDStoreContext {
+  return !!obj && typeof obj === "object" && Array.isArray(obj.versions?.resolved);
+}
+
+export function sync(
+  context: InternalUCDStoreContext,
+  options?: SyncOptions,
+): Promise<OperationResult<SyncResult, StoreError>>;
+
+export function sync(
+  this: InternalUCDStoreContext,
+  options?: SyncOptions,
+): Promise<OperationResult<SyncResult, StoreError>>;
+
+export function sync(this: any, thisOrContext: any, options?: any): Promise<OperationResult<SyncResult, StoreError>> {
+  if (isContext(thisOrContext)) {
+    return _sync.call(thisOrContext, options);
+  }
+
+  return _sync.call(this, thisOrContext);
 }
 
 async function getVersionsFromApi(context: InternalUCDStoreContext): Promise<string[]> {
