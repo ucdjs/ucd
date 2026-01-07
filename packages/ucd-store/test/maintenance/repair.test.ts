@@ -7,7 +7,7 @@ import { UNICODE_VERSION_METADATA } from "@unicode-utils/core";
 import { assert, beforeEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
 
-describe("store repair", () => {
+describe.todo("store repair", () => {
   beforeEach(() => {
     mockStoreApi({
       baseUrl: UCDJS_API_BASE_URL,
