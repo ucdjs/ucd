@@ -115,7 +115,7 @@ const testCases: TestCase[] = [
   {
     description: "Write new file",
     async run() {
-      await bridge.write("new-file.txt", "New content");
+      await bridge.write?.("new-file.txt", "New content");
       const content = await bridge.read("new-file.txt");
       if (content !== "New content") throw new Error("Content mismatch");
     },
@@ -123,7 +123,7 @@ const testCases: TestCase[] = [
   {
     description: "Write overwrites existing file",
     async run() {
-      await bridge.write("new-file.txt", "Updated content");
+      await bridge.write?.("new-file.txt", "Updated content");
       const content = await bridge.read("new-file.txt");
       if (content !== "Updated content") throw new Error("Content mismatch");
     },
@@ -131,7 +131,7 @@ const testCases: TestCase[] = [
   {
     description: "Write auto-creates parent directories",
     async run() {
-      await bridge.write("auto/created/path/file.txt", "Auto-created");
+      await bridge.write?.("auto/created/path/file.txt", "Auto-created");
       const content = await bridge.read("auto/created/path/file.txt");
       if (content !== "Auto-created") throw new Error("Content mismatch");
     },
@@ -139,7 +139,7 @@ const testCases: TestCase[] = [
   {
     description: "Write with / prefix",
     async run() {
-      await bridge.write("/absolute-style.txt", "Absolute style");
+      await bridge.write?.("/absolute-style.txt", "Absolute style");
       const content = await bridge.read("absolute-style.txt");
       if (content !== "Absolute style") throw new Error("Content mismatch");
     },
@@ -148,7 +148,7 @@ const testCases: TestCase[] = [
     description: "Write trailing slash should fail",
     async run() {
       try {
-        await bridge.write("invalid/", "content");
+        await bridge.write?.("invalid/", "content");
         throw new Error("Should have thrown");
       } catch (err) {
         if (err instanceof Error && err.message === "Should have thrown") throw err;
@@ -160,27 +160,27 @@ const testCases: TestCase[] = [
   {
     description: "Mkdir creates directory",
     async run() {
-      await bridge.mkdir("new-dir");
+      await bridge.mkdir?.("new-dir");
       if (!(await bridge.exists("new-dir"))) throw new Error("Directory should exist");
     },
   },
   {
     description: "Mkdir creates nested directories",
     async run() {
-      await bridge.mkdir("deep/nested/dirs");
+      await bridge.mkdir?.("deep/nested/dirs");
       if (!(await bridge.exists("deep/nested/dirs"))) throw new Error("Directory should exist");
     },
   },
   {
     description: "Mkdir is idempotent",
     async run() {
-      await bridge.mkdir("new-dir"); // Should not throw
+      await bridge.mkdir?.("new-dir"); // Should not throw
     },
   },
   {
     description: "Mkdir with / prefix",
     async run() {
-      await bridge.mkdir("/absolute-dir");
+      await bridge.mkdir?.("/absolute-dir");
       if (!(await bridge.exists("absolute-dir"))) throw new Error("Directory should exist");
     },
   },
@@ -207,8 +207,8 @@ const testCases: TestCase[] = [
   {
     description: "Listdir recursive populates children",
     async run() {
-      await bridge.mkdir("recursive-test/sub");
-      await bridge.write("recursive-test/sub/file.txt", "content");
+      await bridge.mkdir?.("recursive-test/sub");
+      await bridge.write?.("recursive-test/sub/file.txt", "content");
       const entries = await bridge.listdir("recursive-test", true);
       const sub = entries.find((e) => e.name === "sub");
       if (!sub || sub.type !== "directory" || sub.children.length !== 1) {
@@ -221,31 +221,31 @@ const testCases: TestCase[] = [
   {
     description: "Rm removes file",
     async run() {
-      await bridge.write("to-remove.txt", "content");
-      await bridge.rm("to-remove.txt");
+      await bridge.write?.("to-remove.txt", "content");
+      await bridge.rm?.("to-remove.txt");
       if (await bridge.exists("to-remove.txt")) throw new Error("File should be removed");
     },
   },
   {
     description: "Rm recursive removes directory",
     async run() {
-      await bridge.mkdir("rm-dir/nested");
-      await bridge.write("rm-dir/file.txt", "content");
-      await bridge.rm("rm-dir", { recursive: true });
+      await bridge.mkdir?.("rm-dir/nested");
+      await bridge.write?.("rm-dir/file.txt", "content");
+      await bridge.rm?.("rm-dir", { recursive: true });
       if (await bridge.exists("rm-dir")) throw new Error("Directory should be removed");
     },
   },
   {
     description: "Rm with force on non-existent does not throw",
     async run() {
-      await bridge.rm("non-existent-rm.txt", { force: true });
+      await bridge.rm?.("non-existent-rm.txt", { force: true });
     },
   },
   {
     description: "Rm without force on non-existent throws",
     async run() {
       try {
-        await bridge.rm("non-existent-rm-no-force.txt");
+        await bridge.rm?.("non-existent-rm-no-force.txt");
         throw new Error("Should have thrown");
       } catch (err) {
         if (err instanceof Error && err.message === "Should have thrown") throw err;
@@ -281,5 +281,5 @@ await rm(tempDir, { recursive: true, force: true });
 console.log(`Cleaned up temp directory: ${tempDir}\n`);
 
 if (failed > 0) {
-  process.exitCode = 1;
+  process.exit(1);
 }
