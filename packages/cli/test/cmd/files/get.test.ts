@@ -23,9 +23,9 @@ describe("files get command", () => {
   it("should show help when --help flag is passed", async () => {
     await runCLI(["files", "get", "--help"]);
 
-    expect(capture.containsInfo("Get a specific file from the UCD API")).toBe(true);
-    expect(capture.containsInfo("--base-url")).toBe(true);
-    expect(capture.containsInfo("--output")).toBe(true);
+    expect(capture.containsLog("Get a specific file from the UCD API")).toBe(true);
+    expect(capture.containsLog("--base-url")).toBe(true);
+    expect(capture.containsLog("--output")).toBe(true);
   });
 
   it("should error when no path is provided", async () => {
@@ -39,6 +39,7 @@ describe("files get command", () => {
 
     mockStoreApi({
       responses: {
+        "/.well-known/ucd-config.json": true,
         "/api/v1/versions": UNICODE_VERSION_METADATA,
         "/api/v1/files/{wildcard}": () => {
           return HttpResponse.text(fileContent);
@@ -48,7 +49,7 @@ describe("files get command", () => {
 
     await runCLI(["files", "get", "16.0.0/UnicodeData.txt"]);
 
-    expect(capture.containsInfo(fileContent)).toBe(true);
+    expect(capture.containsLog(fileContent)).toBe(true);
   });
 
   it("should write file to output path when --output is specified", async () => {
@@ -58,6 +59,7 @@ describe("files get command", () => {
 
     mockStoreApi({
       responses: {
+        "/.well-known/ucd-config.json": true,
         "/api/v1/versions": UNICODE_VERSION_METADATA,
         "/api/v1/files/{wildcard}": () => {
           return HttpResponse.text(fileContent);
@@ -67,7 +69,7 @@ describe("files get command", () => {
 
     await runCLI(["files", "get", "16.0.0/UnicodeData.txt", "--output", outputPath]);
 
-    expect(capture.containsInfo("File written to:")).toBe(true);
+    expect(capture.containsLog("File written to:")).toBe(true);
 
     expect(existsSync(outputPath)).toBe(true);
     const writtenContent = readFileSync(outputPath, "utf-8");
@@ -77,6 +79,7 @@ describe("files get command", () => {
   it("should error when path is a directory not a file", async () => {
     mockStoreApi({
       responses: {
+        "/.well-known/ucd-config.json": true,
         "/api/v1/versions": UNICODE_VERSION_METADATA,
         "/api/v1/files/{wildcard}": () => {
           return HttpResponse.json([
@@ -99,6 +102,7 @@ describe("files get command", () => {
   it("should handle 404 error for non-existent file", async () => {
     mockStoreApi({
       responses: {
+        "/.well-known/ucd-config.json": true,
         "/api/v1/versions": UNICODE_VERSION_METADATA,
         "/api/v1/files/{wildcard}": () => {
           return HttpResponse.json(
