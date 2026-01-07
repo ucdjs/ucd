@@ -109,4 +109,71 @@ describe("path traversal security", () => {
       ).rejects.toThrow(PathTraversalError);
     });
   });
+
+  describe("recursive listdir security", () => {
+    it("should prevent traversal via malicious directory names in recursive listdir", async () => {
+      // Note: On most filesystems, creating a directory named "../" is not allowed,
+      // but we test the path resolution logic to ensure it would be caught
+      const testDir = await testdir({
+        "safe-dir": {
+          "file.txt": "content",
+        },
+      });
+      const bridge = NodeFileSystemBridge({ basePath: testDir });
+
+      // Attempt to access with traversal in the listdir path itself
+      await expect(
+        bridge.listdir("../", true),
+      ).rejects.toThrow(PathTraversalError);
+
+      await expect(
+        bridge.listdir("safe-dir/../../", true),
+      ).rejects.toThrow(PathTraversalError);
+    });
+
+    it("should prevent traversal via encoded path components in recursive listdir", async () => {
+      const testDir = await testdir({
+        "normal": {
+          "file.txt": "content",
+        },
+      });
+      const bridge = NodeFileSystemBridge({ basePath: testDir });
+
+      // URL-encoded traversal attempts
+      await expect(
+        bridge.listdir("%2e%2e/", true),
+      ).rejects.toThrow(PathTraversalError);
+
+      await expect(
+        bridge.listdir("normal/%2e%2e/%2e%2e/", true),
+      ).rejects.toThrow(PathTraversalError);
+    });
+
+    it("should safely handle recursive listdir on legitimate nested structure", async () => {
+      const testDir = await testdir({
+        "level1": {
+          "level2": {
+            "level3": {
+              "deep-file.txt": "deep content",
+            },
+            "mid-file.txt": "mid content",
+          },
+          "top-file.txt": "top content",
+        },
+      });
+      const bridge = NodeFileSystemBridge({ basePath: testDir });
+
+      // Should work - legitimate nested structure
+      const entries = await bridge.listdir("", true);
+      expect(entries).toHaveLength(1);
+
+      const level1 = entries[0];
+      expect(level1?.name).toBe("level1");
+      expect(level1?.type).toBe("directory");
+
+      if (level1?.type === "directory") {
+        expect(level1.children).toHaveLength(2); // level2 dir + top-file.txt
+      }
+    });
+  });
 });

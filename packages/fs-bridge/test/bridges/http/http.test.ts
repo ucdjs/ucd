@@ -525,4 +525,252 @@ describe("http fs-bridge", () => {
       expect(existsFalse).toBe(false);
     });
   });
+
+  describe("schema validation (Zod)", () => {
+    it("should reject listdir response with missing 'type' field", async () => {
+      mockFetch([
+        ["GET", `${baseUrl}/invalid-type`, () => {
+          return new HttpResponse(JSON.stringify([
+            {
+              // missing 'type' field
+              name: "file.txt",
+              path: "/file.txt",
+              lastModified: Date.now(),
+            },
+          ]), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          });
+        }],
+      ]);
+
+      await expect(bridge.listdir("invalid-type")).rejects.toThrow("Invalid response schema");
+    });
+
+    it("should reject listdir response with missing 'name' field", async () => {
+      mockFetch([
+        ["GET", `${baseUrl}/missing-name`, () => {
+          return new HttpResponse(JSON.stringify([
+            {
+              type: "file",
+              // missing 'name' field
+              path: "/file.txt",
+              lastModified: Date.now(),
+            },
+          ]), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          });
+        }],
+      ]);
+
+      await expect(bridge.listdir("missing-name")).rejects.toThrow("Invalid response schema");
+    });
+
+    it("should reject listdir response with missing 'path' field", async () => {
+      mockFetch([
+        ["GET", `${baseUrl}/missing-path`, () => {
+          return new HttpResponse(JSON.stringify([
+            {
+              type: "file",
+              name: "file.txt",
+              // missing 'path' field
+              lastModified: Date.now(),
+            },
+          ]), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          });
+        }],
+      ]);
+
+      await expect(bridge.listdir("missing-path")).rejects.toThrow("Invalid response schema");
+    });
+
+    it("should reject listdir response with invalid 'type' value", async () => {
+      mockFetch([
+        ["GET", `${baseUrl}/wrong-type`, () => {
+          return new HttpResponse(JSON.stringify([
+            {
+              type: "symlink", // invalid type - should be "file" or "directory"
+              name: "link.txt",
+              path: "/link.txt",
+              lastModified: Date.now(),
+            },
+          ]), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          });
+        }],
+      ]);
+
+      await expect(bridge.listdir("wrong-type")).rejects.toThrow("Invalid response schema");
+    });
+
+    it("should reject listdir response with non-string 'name'", async () => {
+      mockFetch([
+        ["GET", `${baseUrl}/number-name`, () => {
+          return new HttpResponse(JSON.stringify([
+            {
+              type: "file",
+              name: 12345, // should be string
+              path: "/file.txt",
+              lastModified: Date.now(),
+            },
+          ]), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          });
+        }],
+      ]);
+
+      await expect(bridge.listdir("number-name")).rejects.toThrow("Invalid response schema");
+    });
+
+    it("should reject listdir response with non-array payload", async () => {
+      mockFetch([
+        ["GET", `${baseUrl}/not-array`, () => {
+          return new HttpResponse(JSON.stringify({
+            type: "file",
+            name: "file.txt",
+            path: "/file.txt",
+          }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          });
+        }],
+      ]);
+
+      await expect(bridge.listdir("not-array")).rejects.toThrow("Invalid response schema");
+    });
+
+    it("should reject listdir response with null payload", async () => {
+      mockFetch([
+        ["GET", `${baseUrl}/null-payload`, () => {
+          return new HttpResponse("null", {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          });
+        }],
+      ]);
+
+      await expect(bridge.listdir("null-payload")).rejects.toThrow("Invalid response schema");
+    });
+  });
+
+  describe("fetch error handling", () => {
+    it("should throw on network error for read operation", async () => {
+      mockFetch([
+        ["GET", `${baseUrl}/network-error.txt`, () => {
+          return Response.error();
+        }],
+      ]);
+
+      await expect(bridge.read("network-error.txt")).rejects.toThrow();
+    });
+
+    it("should throw on network error for listdir operation", async () => {
+      mockFetch([
+        ["GET", `${baseUrl}/network-error-dir`, () => {
+          return Response.error();
+        }],
+      ]);
+
+      await expect(bridge.listdir("network-error-dir")).rejects.toThrow();
+    });
+
+    it("should handle server error (500) for listdir", async () => {
+      mockFetch([
+        ["GET", `${baseUrl}/server-error-dir`, () => {
+          return new HttpResponse("Internal Server Error", {
+            status: 500,
+            statusText: "Internal Server Error",
+          });
+        }],
+      ]);
+
+      await expect(bridge.listdir("server-error-dir")).rejects.toThrow("Server error while listing directory");
+    });
+
+    it("should return empty array for 403 forbidden on listdir", async () => {
+      mockFetch([
+        ["GET", `${baseUrl}/forbidden-dir`, () => {
+          return new HttpResponse("Forbidden", {
+            status: 403,
+            statusText: "Forbidden",
+          });
+        }],
+      ]);
+
+      const entries = await bridge.listdir("forbidden-dir");
+      expect(entries).toEqual([]);
+    });
+  });
+
+  describe("content handling", () => {
+    it("should return text content regardless of Content-Type header for read", async () => {
+      // Even if server returns application/json Content-Type, read() returns text
+      const jsonContent = '{"key": "value"}';
+
+      mockFetch([
+        ["GET", `${baseUrl}/data.json`, () => {
+          return new HttpResponse(jsonContent, {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          });
+        }],
+      ]);
+
+      const content = await bridge.read("data.json");
+      // Should return raw text, not parsed JSON
+      expect(content).toBe(jsonContent);
+      expect(typeof content).toBe("string");
+    });
+
+    it("should handle binary-ish content returned as text", async () => {
+      const binaryLikeContent = "Some content with special chars: \x00\x01\x02";
+
+      mockFetch([
+        ["GET", `${baseUrl}/binary-like.bin`, () => {
+          return new HttpResponse(binaryLikeContent, {
+            status: 200,
+            headers: { "Content-Type": "application/octet-stream" },
+          });
+        }],
+      ]);
+
+      const content = await bridge.read("binary-like.bin");
+      expect(typeof content).toBe("string");
+    });
+
+    it("should handle empty response body for read", async () => {
+      mockFetch([
+        ["GET", `${baseUrl}/empty.txt`, () => {
+          return new HttpResponse("", {
+            status: 200,
+            headers: { "Content-Type": "text/plain" },
+          });
+        }],
+      ]);
+
+      const content = await bridge.read("empty.txt");
+      expect(content).toBe("");
+    });
+
+    it("should handle very large response for read", async () => {
+      const largeContent = "x".repeat(1024 * 1024); // 1MB of 'x'
+
+      mockFetch([
+        ["GET", `${baseUrl}/large.txt`, () => {
+          return new HttpResponse(largeContent, {
+            status: 200,
+            headers: { "Content-Type": "text/plain" },
+          });
+        }],
+      ]);
+
+      const content = await bridge.read("large.txt");
+      expect(content.length).toBe(1024 * 1024);
+    });
+  });
 });

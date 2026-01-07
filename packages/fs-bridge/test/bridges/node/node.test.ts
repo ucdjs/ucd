@@ -422,6 +422,168 @@ describe("node fs-bridge", () => {
     });
   });
 
+  describe("listdir shape consistency", () => {
+    it("should return files with correct shape (type, name, path)", async () => {
+      const testDir = await testdir({
+        "file.txt": "content",
+      });
+      const bridge = NodeFileSystemBridge({ basePath: testDir });
+
+      const entries = await bridge.listdir("");
+      expect(entries).toHaveLength(1);
+
+      const file = entries[0];
+      expect(file).toEqual({
+        type: "file",
+        name: "file.txt",
+        path: "file.txt",
+      });
+      // Ensure no extra properties
+      expect(Object.keys(file!)).toEqual(["type", "name", "path"]);
+    });
+
+    it("should return directories with children array (non-recursive)", async () => {
+      const testDir = await testdir({
+        "subdir": {
+          "nested.txt": "nested",
+        },
+      });
+      const bridge = NodeFileSystemBridge({ basePath: testDir });
+
+      const entries = await bridge.listdir("");
+      expect(entries).toHaveLength(1);
+
+      const dir = entries[0];
+      expect(dir).toEqual({
+        type: "directory",
+        name: "subdir",
+        path: "subdir",
+        children: [], // Non-recursive should have empty children
+      });
+      // Ensure children is always an array for directories
+      expect(dir?.type === "directory" && Array.isArray(dir.children)).toBe(true);
+    });
+
+    it("should populate children array in recursive mode", async () => {
+      const testDir = await testdir({
+        "parent": {
+          "child.txt": "child content",
+          "nested": {
+            "deep.txt": "deep content",
+          },
+        },
+      });
+      const bridge = NodeFileSystemBridge({ basePath: testDir });
+
+      const entries = await bridge.listdir("", true);
+      expect(entries).toHaveLength(1);
+
+      const parent = entries[0];
+      expect(parent?.type).toBe("directory");
+      expect(parent?.name).toBe("parent");
+
+      if (parent?.type === "directory") {
+        expect(parent.children).toHaveLength(2);
+
+        const childFile = parent.children.find((c) => c.name === "child.txt");
+        expect(childFile).toEqual({
+          type: "file",
+          name: "child.txt",
+          path: "parent/child.txt",
+        });
+
+        const nestedDir = parent.children.find((c) => c.name === "nested");
+        expect(nestedDir?.type).toBe("directory");
+        if (nestedDir?.type === "directory") {
+          expect(nestedDir.children).toHaveLength(1);
+          expect(nestedDir.children[0]).toEqual({
+            type: "file",
+            name: "deep.txt",
+            path: "parent/nested/deep.txt",
+          });
+        }
+      }
+    });
+
+    it("should maintain consistent shape across multiple entries", async () => {
+      const testDir = await testdir({
+        "a.txt": "a",
+        "b.txt": "b",
+        "dir1": {},
+        "dir2": { "file.txt": "file" },
+      });
+      const bridge = NodeFileSystemBridge({ basePath: testDir });
+
+      const entries = await bridge.listdir("");
+      expect(entries).toHaveLength(4);
+
+      // All files should have type, name, path (no children)
+      const files = entries.filter((e) => e.type === "file");
+      files.forEach((file) => {
+        expect(Object.keys(file)).toEqual(["type", "name", "path"]);
+      });
+
+      // All directories should have type, name, path, children
+      const dirs = entries.filter((e) => e.type === "directory");
+      dirs.forEach((dir) => {
+        expect(Object.keys(dir)).toEqual(["type", "name", "path", "children"]);
+        if (dir.type === "directory") {
+          expect(Array.isArray(dir.children)).toBe(true);
+        }
+      });
+    });
+  });
+
+  describe("error surfaces for consumers", () => {
+    it("should preserve ENOENT error for missing file read", async () => {
+      const testDir = await testdir();
+      const bridge = NodeFileSystemBridge({ basePath: testDir });
+
+      try {
+        await bridge.read("non-existent-file.txt");
+        expect.fail("Should have thrown");
+      } catch (error: any) {
+        // Errors are wrapped in BridgeGenericError, original is in cause
+        expect(error.name).toBe("BridgeGenericError");
+        expect(error.message).toContain("Unexpected error");
+        // The cause should be the original ENOENT error
+        expect(error.cause).toBeDefined();
+        expect(error.cause.code).toBe("ENOENT");
+      }
+    });
+
+    it("should preserve ENOENT error for rm without force", async () => {
+      const testDir = await testdir();
+      const bridge = NodeFileSystemBridge({ basePath: testDir });
+      assertCapability(bridge, "rm");
+
+      try {
+        await bridge.rm("non-existent.txt");
+        expect.fail("Should have thrown");
+      } catch (error: any) {
+        expect(error.name).toBe("BridgeGenericError");
+        expect(error.cause).toBeDefined();
+        expect(error.cause.code).toBe("ENOENT");
+      }
+    });
+
+    it("should preserve ENOTDIR error for listdir on file", async () => {
+      const testDir = await testdir({
+        "file.txt": "content",
+      });
+      const bridge = NodeFileSystemBridge({ basePath: testDir });
+
+      try {
+        await bridge.listdir("file.txt");
+        expect.fail("Should have thrown");
+      } catch (error: any) {
+        expect(error.name).toBe("BridgeGenericError");
+        expect(error.cause).toBeDefined();
+        expect(error.cause.code).toBe("ENOTDIR");
+      }
+    });
+  });
+
   describe("complex workflows", () => {
     it("should manage a project workspace", async () => {
       const testDir = await testdir();
