@@ -58,6 +58,20 @@ const NodeFileSystemBridge = defineFileSystemBridge({
       async exists(path) {
         return safeExists(resolveSafePath(basePath, path));
       },
+      /**
+       * Lists directory contents at the given path.
+       *
+       * PARITY NOTE: Unlike the HTTP bridge, the Node bridge does not use Zod schema
+       * validation for listdir output. This is intentional because:
+       * - Node bridge constructs FSEntry objects locally from trusted fs.Dirent data
+       * - HTTP bridge must validate untrusted JSON responses from remote API
+       *
+       * However, the output shape MUST remain consistent with the FSEntry contract:
+       * - Files: { type: "file", name: string, path: string }
+       * - Directories: { type: "directory", name: string, path: string, children: FSEntry[] }
+       *
+       * Tests in test/bridges/node/node.test.ts verify this shape consistency.
+       */
       async listdir(path, recursive = false) {
         const targetPath = resolveSafePath(basePath, path);
 
