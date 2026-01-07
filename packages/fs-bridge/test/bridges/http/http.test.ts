@@ -710,7 +710,7 @@ describe("http fs-bridge", () => {
   describe("content handling", () => {
     it("should return text content regardless of Content-Type header for read", async () => {
       // Even if server returns application/json Content-Type, read() returns text
-      const jsonContent = '{"key": "value"}';
+      const jsonContent = "{\"key\": \"value\"}";
 
       mockFetch([
         ["GET", `${baseUrl}/data.json`, () => {

@@ -444,7 +444,7 @@ describe("node fs-bridge", () => {
 
     it("should return directories with children array (non-recursive)", async () => {
       const testDir = await testdir({
-        "subdir": {
+        subdir: {
           "nested.txt": "nested",
         },
       });
@@ -466,7 +466,7 @@ describe("node fs-bridge", () => {
 
     it("should populate children array in recursive mode", async () => {
       const testDir = await testdir({
-        "parent": {
+        parent: {
           "child.txt": "child content",
           "nested": {
             "deep.txt": "deep content",
