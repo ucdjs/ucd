@@ -15,6 +15,12 @@ export interface ErrorMatcherOptions {
    * Expected cause error type (supports both .cause and .originalError)
    */
   cause?: new (...args: any[]) => Error;
+
+  /**
+   * Expected fields/properties on the error object.
+   * Each key-value pair will be checked against the error's properties.
+   */
+  fields?: Record<string, unknown>;
 }
 
 export const toMatchError: RawMatcherFn<MatcherState, [ErrorMatcherOptions]> = function (
@@ -96,6 +102,28 @@ export const toMatchError: RawMatcherFn<MatcherState, [ErrorMatcherOptions]> = f
         message: () =>
           `Expected cause to be instance of ${options.cause!.name}, but got ${causeName}`,
       };
+    }
+  }
+
+  // Check error fields/properties
+  if (options.fields) {
+    const errorRecord = error as unknown as Record<string, unknown>;
+
+    for (const [key, expectedValue] of Object.entries(options.fields)) {
+      const actualValue = errorRecord[key];
+
+      // Deep equality check for objects/arrays, strict equality for primitives
+      const valuesMatch = typeof expectedValue === "object" && expectedValue !== null
+        ? JSON.stringify(actualValue) === JSON.stringify(expectedValue)
+        : actualValue === expectedValue;
+
+      if (!valuesMatch) {
+        return {
+          pass: false,
+          message: () =>
+            `Expected error.${key} to be ${JSON.stringify(expectedValue)}, but got ${JSON.stringify(actualValue)}`,
+        };
+      }
     }
   }
 
