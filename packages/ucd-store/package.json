@@ -1,6 +1,6 @@
 {
-  "name": "@ucdjs/ucd-store-v2",
-  "version": "0.0.1",
+  "name": "@ucdjs/ucd-store",
+  "version": "1.0.0",
   "type": "module",
   "author": {
     "name": "Lucas Nørgård",
