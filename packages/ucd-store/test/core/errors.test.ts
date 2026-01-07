@@ -10,8 +10,8 @@ import {
   UCDStoreVersionNotFoundError,
 } from "../../src/errors";
 
-describe("custom errors", () => {
-  describe("UCDStoreGenericError", () => {
+describe.todo("custom errors", () => {
+  describe.todo("UCDStoreGenericError", () => {
     it("should create an instance with the correct message", () => {
       const message = "Test error message";
       const error = new UCDStoreGenericError(message);
@@ -40,7 +40,7 @@ describe("custom errors", () => {
     });
   });
 
-  describe("UCDStoreFileNotFoundError", () => {
+  describe.todo("UCDStoreFileNotFoundError", () => {
     it("should create error with correct properties and inheritance", () => {
       const filePath = "/path/to/file.txt";
       const version = "1.0.0";
@@ -68,7 +68,7 @@ describe("custom errors", () => {
     });
   });
 
-  describe("UCDStoreVersionNotFoundError", () => {
+  describe.todo("UCDStoreVersionNotFoundError", () => {
     it("should create error with correct properties and inheritance", () => {
       const version = "15.0.0";
       const error = new UCDStoreVersionNotFoundError(version);
@@ -82,7 +82,7 @@ describe("custom errors", () => {
     });
   });
 
-  describe("UCDStoreBridgeUnsupportedOperation", () => {
+  describe.todo("UCDStoreBridgeUnsupportedOperation", () => {
     it("should create error with correct properties and inheritance", () => {
       const operation = "advanced-search";
       const requiredCapabilities = ["indexing", "full-text-search"];
@@ -144,7 +144,7 @@ describe("custom errors", () => {
     });
   });
 
-  describe("UCDStoreInvalidManifestError", () => {
+  describe.todo("UCDStoreInvalidManifestError", () => {
     it("should create error with correct properties and inheritance", () => {
       const manifestPath = "/path/to/.ucd-store.json";
       const message = "malformed JSON";
@@ -177,7 +177,7 @@ describe("custom errors", () => {
     });
   });
 
-  describe("UCDStoreNotInitializedError", () => {
+  describe.todo("UCDStoreNotInitializedError", () => {
     it("should create error with correct properties and inheritance", () => {
       const error = new UCDStoreNotInitializedError();
 

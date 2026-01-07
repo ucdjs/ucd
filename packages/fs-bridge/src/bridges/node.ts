@@ -2,7 +2,7 @@ import type { Dirent } from "node:fs";
 import type { FSEntry } from "../types";
 import fsp from "node:fs/promises";
 import nodePath from "node:path";
-import { trimTrailingSlash } from "@luxass/utils/path";
+import { appendTrailingSlash, prependLeadingSlash } from "@luxass/utils/path";
 import { createDebugger } from "@ucdjs-internal/shared";
 import { assertNotUNCPath } from "@ucdjs/path-utils";
 import { z } from "zod";
@@ -44,6 +44,7 @@ const NodeFileSystemBridge = defineFileSystemBridge({
 
     return {
       async read(path) {
+        // TODO: duplicate code with write - refactor
         // Reject file paths ending with / - files don't have trailing slashes
         // Allow /, ./, and ../ as they are special directory references
         const trimmedPath = path.trim();
@@ -57,22 +58,47 @@ const NodeFileSystemBridge = defineFileSystemBridge({
       async exists(path) {
         return safeExists(resolveSafePath(basePath, path));
       },
+      /**
+       * Lists directory contents at the given path.
+       *
+       * PARITY NOTE: Unlike the HTTP bridge, the Node bridge does not use Zod schema
+       * validation for listdir output. This is intentional because:
+       * - Node bridge constructs FSEntry objects locally from trusted fs.Dirent data
+       * - HTTP bridge must validate untrusted JSON responses from remote API
+       *
+       * However, the output shape MUST remain consistent with the FSEntry contract:
+       * - Files: { type: "file", name: string, path: string }
+       * - Directories: { type: "directory", name: string, path: string, children: FSEntry[] }
+       *
+       * Tests in test/bridges/node/node.test.ts verify this shape consistency.
+       */
       async listdir(path, recursive = false) {
         const targetPath = resolveSafePath(basePath, path);
 
-        function createFSEntry(entry: Dirent): FSEntry {
-          const pathFromName = trimTrailingSlash(entry.name);
+        /**
+         * Formats a relative path to match FileEntry schema requirements:
+         * - Leading slash required for all paths
+         * - Trailing slash required for directories
+         */
+        function formatEntryPath(relativePath: string, isDirectory: boolean): string {
+          const withLeadingSlash = prependLeadingSlash(relativePath);
+          return isDirectory ? appendTrailingSlash(withLeadingSlash) : withLeadingSlash;
+        }
+
+        function createFSEntry(entry: Dirent, relativePath?: string): FSEntry {
+          const pathBase = relativePath ?? entry.name;
+          const formattedPath = formatEntryPath(pathBase, entry.isDirectory());
           return entry.isDirectory()
             ? {
                 type: "directory",
                 name: entry.name,
-                path: pathFromName,
+                path: formattedPath,
                 children: [],
               }
             : {
                 type: "file",
                 name: entry.name,
-                path: pathFromName,
+                path: formattedPath,
               };
         }
 
@@ -92,7 +118,6 @@ const NodeFileSystemBridge = defineFileSystemBridge({
         for (const entry of allEntries) {
           const entryPath = entry.parentPath || entry.path;
           const relativeToTarget = nodePath.relative(targetPath, entryPath);
-          const fsEntry = createFSEntry(entry);
 
           const entryRelativePath = relativeToTarget
             ? nodePath.join(relativeToTarget, entry.name)
@@ -101,9 +126,10 @@ const NodeFileSystemBridge = defineFileSystemBridge({
           // Normalize path separators to forward slashes for cross-platform consistency
           const normalizedPath = normalizePathSeparators(entryRelativePath);
 
-          // Update the path to be the full relative path
-          fsEntry.path = normalizedPath;
+          // Create FSEntry with properly formatted path (leading /, trailing / for dirs)
+          const fsEntry = createFSEntry(entry, normalizedPath);
 
+          // Use normalized path (without leading/trailing slashes) as map key for parent lookup
           entryMap.set(normalizedPath, fsEntry);
 
           if (!relativeToTarget) {
