@@ -14,7 +14,7 @@ import type {
 import { isMSWError } from "@luxass/msw-utils/runtime-guards";
 import { createDebugger } from "@ucdjs-internal/shared";
 import { PathUtilsBaseError } from "@ucdjs/path-utils";
-import { BridgeGenericError, BridgeUnsupportedOperation } from "./errors";
+import { BridgeBaseError, BridgeGenericError, BridgeUnsupportedOperation } from "./errors";
 
 const debug = createDebugger("ucdjs:fs-bridge:utils");
 
@@ -214,7 +214,7 @@ async function handleError(
     args,
   });
 
-  if (normalizedError instanceof BridgeGenericError || normalizedError instanceof PathUtilsBaseError) {
+  if (normalizedError instanceof BridgeBaseError || normalizedError instanceof PathUtilsBaseError) {
     debug?.("Known error thrown in bridge operation", {
       operation: String(operation),
       error: normalizedError.message,
