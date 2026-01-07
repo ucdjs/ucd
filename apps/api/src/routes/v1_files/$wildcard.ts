@@ -229,21 +229,21 @@ export const METADATA_WILDCARD_ROUTE = createRoute({
           schema: {
             type: "string",
           },
-          required: true,
+          required: false,
         },
         [UCD_STAT_CHILDREN_FILES_HEADER]: {
           description: "Number of child files (only for directories)",
           schema: {
             type: "string",
           },
-          required: true,
+          required: false,
         },
         [UCD_STAT_CHILDREN_DIRS_HEADER]: {
           description: "Number of child directories (only for directories)",
           schema: {
             type: "string",
           },
-          required: true,
+          required: false,
         },
         "Content-Type": {
           description: "The content type of the file",
