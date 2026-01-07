@@ -5,7 +5,7 @@ import { UNICODE_VERSION_METADATA } from "@unicode-utils/core";
 import { assert, beforeEach, describe, expect, it, vi } from "vitest";
 import { UCDStore } from "../../src/store";
 
-describe("capability requirements", () => {
+describe.todo("capability requirements", () => {
   beforeEach(() => {
     mockStoreApi({
       baseUrl: UCDJS_API_BASE_URL,

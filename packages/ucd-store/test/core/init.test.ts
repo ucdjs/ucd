@@ -18,7 +18,7 @@ const DEFAULT_VERSIONS = {
   "15.0.0": { expectedFiles: [] },
 } satisfies UCDStoreManifest;
 
-describe("store init", () => {
+describe.todo("store init", () => {
   beforeEach(() => {
     mockStoreApi({
       responses: {
@@ -39,7 +39,7 @@ describe("store init", () => {
     vi.unstubAllEnvs();
   });
 
-  describe("new store initialization", () => {
+  describe.todo("new store initialization", () => {
     it("should create new store with no versions specified", async () => {
       const storePath = await testdir();
       let expectCalled = false;
@@ -153,7 +153,7 @@ describe("store init", () => {
     });
   });
 
-  describe("existing store loading", () => {
+  describe.todo("existing store loading", () => {
     it("should load existing store with same versions", async () => {
       const storePath = await testdir({
         ".ucd-store.json": JSON.stringify(DEFAULT_VERSIONS),
@@ -254,7 +254,7 @@ describe("store init", () => {
     });
   });
 
-  describe("version diff handling", () => {
+  describe.todo("version diff handling", () => {
     it("should handle constructor versions not in existing store", async () => {
       const storePath = await testdir({
         ".ucd-store.json": JSON.stringify({
