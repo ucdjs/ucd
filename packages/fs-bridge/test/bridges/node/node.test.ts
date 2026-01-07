@@ -122,9 +122,9 @@ describe("node fs-bridge", () => {
       const files = await bridge.listdir("");
       expect(files).toHaveLength(3);
       expect(files).toEqual([
-        { type: "file", name: "file1.txt", path: "file1.txt" },
-        { type: "file", name: "file2.txt", path: "file2.txt" },
-        { type: "directory", name: "subdir", path: "subdir", children: [] },
+        { type: "file", name: "file1.txt", path: "/file1.txt" },
+        { type: "file", name: "file2.txt", path: "/file2.txt" },
+        { type: "directory", name: "subdir", path: "/subdir/", children: [] },
       ]);
     });
 
@@ -148,9 +148,9 @@ describe("node fs-bridge", () => {
 
       expect(flattened).toHaveLength(3);
       expect(flattened).toEqual([
-        "dir/deep/file.txt",
-        "dir/nested.txt",
-        "root.txt",
+        "/dir/deep/file.txt",
+        "/dir/nested.txt",
+        "/root.txt",
       ]);
       expect(files.map((f) => f.name)).toContain("root.txt");
     });
@@ -310,7 +310,7 @@ describe("node fs-bridge", () => {
       expect(files[0]).toEqual({
         type: "file",
         name: "nested.txt",
-        path: "nested.txt",
+        path: "/nested.txt",
       });
     });
 
@@ -436,7 +436,7 @@ describe("node fs-bridge", () => {
       expect(file).toEqual({
         type: "file",
         name: "file.txt",
-        path: "file.txt",
+        path: "/file.txt",
       });
       // Ensure no extra properties
       expect(Object.keys(file!)).toEqual(["type", "name", "path"]);
@@ -457,7 +457,7 @@ describe("node fs-bridge", () => {
       expect(dir).toEqual({
         type: "directory",
         name: "subdir",
-        path: "subdir",
+        path: "/subdir/",
         children: [], // Non-recursive should have empty children
       });
       // Ensure children is always an array for directories
@@ -489,7 +489,7 @@ describe("node fs-bridge", () => {
         expect(childFile).toEqual({
           type: "file",
           name: "child.txt",
-          path: "parent/child.txt",
+          path: "/parent/child.txt",
         });
 
         const nestedDir = parent.children.find((c) => c.name === "nested");
@@ -499,7 +499,7 @@ describe("node fs-bridge", () => {
           expect(nestedDir.children[0]).toEqual({
             type: "file",
             name: "deep.txt",
-            path: "parent/nested/deep.txt",
+            path: "/parent/nested/deep.txt",
           });
         }
       }
@@ -605,11 +605,11 @@ describe("node fs-bridge", () => {
       const rootFiles = await bridge.listdir(".");
       expect(rootFiles).toHaveLength(5);
       expect(rootFiles).toEqual(expect.arrayContaining([
-        { type: "file", name: "README.md", path: "README.md" },
-        { type: "directory", name: "docs", path: "docs", children: [] },
-        { type: "file", name: "package.json", path: "package.json" },
-        { type: "directory", name: "src", path: "src", children: [] },
-        { type: "directory", name: "tests", path: "tests", children: [] },
+        { type: "file", name: "README.md", path: "/README.md" },
+        { type: "directory", name: "docs", path: "/docs/", children: [] },
+        { type: "file", name: "package.json", path: "/package.json" },
+        { type: "directory", name: "src", path: "/src/", children: [] },
+        { type: "directory", name: "tests", path: "/tests/", children: [] },
       ]));
 
       // verify file contents
@@ -649,8 +649,8 @@ describe("node fs-bridge", () => {
 
       const flattenedPosts = flattenFilePaths(posts);
       expect(flattenedPosts).toHaveLength(2);
-      expect(flattenedPosts).toContain("2024/first-post.md");
-      expect(flattenedPosts).toContain("2024/second-post.md");
+      expect(flattenedPosts).toContain("/2024/first-post.md");
+      expect(flattenedPosts).toContain("/2024/second-post.md");
 
       // move draft to published
       const draftContent = await bridge.read("drafts/upcoming.md");
