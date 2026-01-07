@@ -548,9 +548,9 @@ importers:
       '@ucdjs/schemas':
         specifier: workspace:*
         version: link:../schemas
-      '@ucdjs/ucd-store-v2':
+      '@ucdjs/ucd-store':
         specifier: workspace:*
-        version: link:../ucd-store-v2
+        version: link:../ucd-store
       '@unicode-utils/core':
         specifier: catalog:prod
         version: 0.12.0-beta.18
@@ -1007,67 +1007,6 @@ importers:
         version: 4.3.0(vitest@4.0.16)
 
   packages/ucd-store:
-    dependencies:
-      '@luxass/utils':
-        specifier: catalog:prod
-        version: 2.7.2
-      '@ucdjs-internal/shared':
-        specifier: workspace:*
-        version: link:../shared
-      '@ucdjs/client':
-        specifier: workspace:*
-        version: link:../client
-      '@ucdjs/env':
-        specifier: workspace:*
-        version: link:../env
-      '@ucdjs/fs-bridge':
-        specifier: workspace:*
-        version: link:../fs-bridge
-      '@ucdjs/schemas':
-        specifier: workspace:*
-        version: link:../schemas
-      '@unicode-utils/core':
-        specifier: catalog:prod
-        version: 0.12.0-beta.18
-      defu:
-        specifier: catalog:prod
-        version: 6.1.4
-      pathe:
-        specifier: catalog:prod
-        version: 2.0.3
-      zod:
-        specifier: catalog:prod
-        version: 4.3.5
-    devDependencies:
-      '@luxass/eslint-config':
-        specifier: catalog:linting
-        version: 6.0.3(@eslint-react/eslint-plugin@2.3.12(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.25)(eslint-plugin-format@1.1.0(eslint@9.39.2(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@9.39.2(jiti@2.6.1)))(eslint-plugin-react-refresh@0.4.24(eslint@9.39.2(jiti@2.6.1)))(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)(vitest@4.0.16)
-      '@ucdjs-tooling/tsconfig':
-        specifier: workspace:*
-        version: link:../../tooling/tsconfig
-      '@ucdjs-tooling/tsdown-config':
-        specifier: workspace:*
-        version: link:../../tooling/tsdown-config
-      eslint:
-        specifier: catalog:linting
-        version: 9.39.2(jiti@2.6.1)
-      publint:
-        specifier: catalog:dev
-        version: 0.3.16
-      tsdown:
-        specifier: catalog:dev
-        version: 0.18.2(publint@0.3.16)(synckit@0.11.11)(typescript@5.9.3)
-      tsx:
-        specifier: catalog:dev
-        version: 4.21.0
-      typescript:
-        specifier: catalog:dev
-        version: 5.9.3
-      vitest-testdirs:
-        specifier: catalog:testing
-        version: 4.3.0(vitest@4.0.16)
-
-  packages/ucd-store-v2:
     dependencies:
       '@luxass/utils':
         specifier: catalog:prod
