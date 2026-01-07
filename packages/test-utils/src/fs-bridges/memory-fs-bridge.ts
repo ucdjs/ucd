@@ -40,9 +40,15 @@ export const createMemoryMockFS = defineFileSystemBridge({
     description: "A simple in-memory file system bridge using a flat Map for storage, perfect for testing.",
   },
   optionsSchema: z.object({
+    /**
+     * Base path for the filesystem - all operations are sandboxed to this path.
+     * Paths are resolved relative to this base path using `resolveSafePath`.
+     * @default "/"
+     */
+    basePath: z.string().optional(),
     initialFiles: z.record(z.string(), z.string()).optional(),
     functions: z.object({
-      read: z.union([
+      read: z.xor([
         z.function({
           input: [
             z.string(),
@@ -51,7 +57,7 @@ export const createMemoryMockFS = defineFileSystemBridge({
         }),
         z.literal(false),
       ]).optional(),
-      exists: z.union([
+      exists: z.xor([
         z.function({
           input: [
             z.string(),
@@ -60,7 +66,7 @@ export const createMemoryMockFS = defineFileSystemBridge({
         }),
         z.literal(false),
       ]).optional(),
-      listdir: z.union([
+      listdir: z.xor([
         z.function({
           input: [
             z.string(),
@@ -70,18 +76,18 @@ export const createMemoryMockFS = defineFileSystemBridge({
         }),
         z.literal(false),
       ]).optional(),
-      write: z.union([
+      write: z.xor([
         z.function({
           input: [
             z.string(),
-            z.union([z.string(), z.instanceof(Uint8Array)]),
+            z.xor([z.string(), z.instanceof(Uint8Array)]),
             z.string().optional(),
           ],
           output: z.promise(z.void()),
         }),
         z.literal(false),
       ]).optional(),
-      mkdir: z.union([
+      mkdir: z.xor([
         z.function({
           input: [
             z.string(),
@@ -91,7 +97,7 @@ export const createMemoryMockFS = defineFileSystemBridge({
         }),
         z.literal(false),
       ]).optional(),
-      rm: z.union([
+      rm: z.xor([
         z.function({
           input: [
             z.string(),
@@ -106,39 +112,50 @@ export const createMemoryMockFS = defineFileSystemBridge({
   state: {
     files: new Map<string, string | typeof DIR_MARKER>(),
   },
-  setup({ options, state }) {
+  setup({ options, state, resolveSafePath }) {
+    const basePath = options?.basePath ?? "/";
+
+    // Helper to resolve path safely within basePath
+    const resolve = (path: string): string => {
+      return resolveSafePath(basePath, path);
+    };
+
     if (options?.initialFiles) {
       for (const [path, content] of Object.entries(options.initialFiles)) {
-        state.files.set(path, content);
+        // Resolve paths relative to basePath
+        state.files.set(resolve(path), content);
       }
     }
 
     // Default implementations
     const operations: Partial<FileSystemBridgeOperations> = {
       read: async (path: string) => {
-        const content = state.files.get(path);
+        const resolvedPath = resolve(path);
+        const content = state.files.get(resolvedPath);
         if (content === undefined) {
-          throw new Error(`ENOENT: no such file or directory, open '${path}'`);
+          throw new Error(`ENOENT: no such file or directory, open '${resolvedPath}'`);
         }
         if (content === DIR_MARKER) {
-          throw new Error(`EISDIR: illegal operation on a directory, read '${path}'`);
+          throw new Error(`EISDIR: illegal operation on a directory, read '${resolvedPath}'`);
         }
         return content;
       },
       exists: async (path: string) => {
+        const resolvedPath = resolve(path);
+
         // fast path for checking direct entry existence (file)
-        if (state.files.has(path)) {
+        if (state.files.has(resolvedPath)) {
           return true;
         }
 
         // check for explicit directory marker
-        const dirMarkerKey = getDirMarkerKey(path);
+        const dirMarkerKey = getDirMarkerKey(resolvedPath);
         if (dirMarkerKey && state.files.has(dirMarkerKey)) {
           return true;
         }
 
         // slower path for checking directory existence (implicit - if any file starts with path/)
-        const normalizedPath = normalizeRootPath(path);
+        const normalizedPath = normalizeRootPath(resolvedPath);
         const pathWithSlash = normalizedPath === "" ? "" : (normalizedPath.endsWith("/") ? normalizedPath : `${normalizedPath}/`);
         for (const filePath of state.files.keys()) {
           if (filePath.startsWith(pathWithSlash)) {
@@ -149,8 +166,9 @@ export const createMemoryMockFS = defineFileSystemBridge({
         return false;
       },
       listdir: async (path: string, recursive = false) => {
+        const resolvedPath = resolve(path);
         const entries: FSEntry[] = [];
-        const normalizedPath = normalizeRootPath(path);
+        const normalizedPath = normalizeRootPath(resolvedPath);
         const pathPrefix = normalizedPath === "" ? "" : (normalizedPath.endsWith("/") ? normalizedPath : `${normalizedPath}/`);
         const seenDirs = new Set<string>();
 
@@ -276,13 +294,15 @@ export const createMemoryMockFS = defineFileSystemBridge({
         return entries;
       },
       write: async (path: string, data: string | Uint8Array, encoding = "utf8") => {
+        const resolvedPath = resolve(path);
         const content = typeof data === "string"
           ? data
           : Buffer.from(data).toString(encoding);
-        state.files.set(path, content);
+        state.files.set(resolvedPath, content);
       },
       mkdir: async (path: string) => {
-        const normalizedPath = normalizeRootPath(path);
+        const resolvedPath = resolve(path);
+        const normalizedPath = normalizeRootPath(resolvedPath);
         if (normalizedPath === "") {
           // Root directory always exists, nothing to create
           return;
@@ -303,23 +323,24 @@ export const createMemoryMockFS = defineFileSystemBridge({
         }
       },
       rm: async (path: string, options?: { recursive?: boolean; force?: boolean }) => {
+        const resolvedPath = resolve(path);
         // TODO(luxass): should we align this with real node:fs behavior and throw if file/dir doesn't exist?
 
         // remove file, if the path matches explicitly
-        if (state.files.has(path)) {
-          state.files.delete(path);
+        if (state.files.has(resolvedPath)) {
+          state.files.delete(resolvedPath);
           return;
         }
 
         // remove explicit directory marker
-        const dirMarkerKey = getDirMarkerKey(path);
+        const dirMarkerKey = getDirMarkerKey(resolvedPath);
         if (dirMarkerKey && state.files.has(dirMarkerKey)) {
           state.files.delete(dirMarkerKey);
         }
 
         // remove directory contents (recursive)
         if (options?.recursive) {
-          const normalizedPath = normalizeRootPath(path);
+          const normalizedPath = normalizeRootPath(resolvedPath);
           const pathPrefix = normalizedPath === "" ? "" : (normalizedPath.endsWith("/") ? normalizedPath : `${normalizedPath}/`);
           const keysToDelete: string[] = [];
 
