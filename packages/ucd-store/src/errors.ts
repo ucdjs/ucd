@@ -88,10 +88,65 @@ export class UCDStoreNotInitializedError extends UCDStoreBaseError {
   }
 }
 
+export class UCDStoreFilterError extends UCDStoreBaseError {
+  public readonly excludePattern: string[] = [];
+  public readonly includePattern: string[] = [];
+  public readonly filePath: string;
+
+  constructor(message: string, {
+    excludePattern,
+    includePattern,
+    filePath,
+  }: {
+    excludePattern: string[];
+    includePattern: string[];
+    filePath: string;
+  }) {
+    super(message);
+    this.name = "UCDStoreFilterError";
+    this.excludePattern = excludePattern;
+    this.includePattern = includePattern;
+    this.filePath = filePath;
+  }
+}
+
+export class UCDStoreApiFallbackError extends UCDStoreBaseError {
+  public readonly version: string;
+  public readonly filePath: string;
+  public readonly status?: number;
+  public readonly reason: "fetch-failed" | "no-data";
+
+  constructor({
+    version,
+    filePath,
+    status,
+    reason,
+    message,
+  }: {
+    version: string;
+    filePath: string;
+    status?: number;
+    reason: "fetch-failed" | "no-data";
+    message?: string;
+  }) {
+    const defaultMessage = reason === "fetch-failed"
+      ? `Failed to fetch file '${filePath}' from API${status ? ` (status: ${status})` : ""}`
+      : `API returned no data for file '${filePath}'`;
+
+    super(message ?? defaultMessage);
+    this.name = "UCDStoreApiFallbackError";
+    this.version = version;
+    this.filePath = filePath;
+    this.status = status;
+    this.reason = reason;
+  }
+}
+
 export type StoreError
   = | UCDStoreGenericError
     | UCDStoreFileNotFoundError
     | UCDStoreVersionNotFoundError
     | UCDStoreBridgeUnsupportedOperation
     | UCDStoreInvalidManifestError
-    | UCDStoreNotInitializedError;
+    | UCDStoreNotInitializedError
+    | UCDStoreApiFallbackError;

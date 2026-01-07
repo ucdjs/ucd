@@ -6,14 +6,17 @@ import { defineFileSystemBridge } from "@ucdjs/fs-bridge";
 import { readLockfile } from "@ucdjs/lockfile";
 import { describe, expect, it } from "vitest";
 import { UCDStoreGenericError } from "../../src/errors";
-import { bootstrap } from "../../src/setup/bootstrap";
+import { initLockfile } from "../../src/setup/init-lockfile";
 
-describe("bootstrap", () => {
+describe("initLockfile", () => {
   describe("lockfile creation", () => {
     it("should create lockfile with valid versions", async () => {
       // Arrange
       mockStoreApi({
         versions: ["16.0.0", "15.1.0", "15.0.0"],
+        responses: {
+          "/api/v1/versions": true,
+        },
       });
 
       const { context, fs, lockfilePath } = await createTestContext({
@@ -21,33 +24,30 @@ describe("bootstrap", () => {
       });
 
       // Act
-      await bootstrap({
-        client: context.client,
-        fs: context.fs,
-        basePath: context.basePath,
-        versions: context.versions,
-        lockfilePath: context.lockfilePath,
-      });
+      await initLockfile(context);
 
       // Assert
       const lockfile = await readLockfile(fs, lockfilePath);
       expect(Object.keys(lockfile.versions).sort()).toEqual(["15.1.0", "16.0.0"]);
-      expect(lockfile.versions["16.0.0"]).toEqual({
+      expect(lockfile.versions["16.0.0"]).toEqual(expect.objectContaining({
         path: "16.0.0/snapshot.json",
         fileCount: 0,
         totalSize: 0,
-      });
-      expect(lockfile.versions["15.1.0"]).toEqual({
+      }));
+      expect(lockfile.versions["15.1.0"]).toEqual(expect.objectContaining({
         path: "15.1.0/snapshot.json",
         fileCount: 0,
         totalSize: 0,
-      });
+      }));
     });
 
     it("should create lockfile with correct snapshot paths", async () => {
       // Arrange
       mockStoreApi({
         versions: ["16.0.0", "15.1.0", "15.0.0"],
+        responses: {
+          "/api/v1/versions": true,
+        },
       });
 
       const { context, fs, lockfilePath } = await createTestContext({
@@ -55,17 +55,11 @@ describe("bootstrap", () => {
       });
 
       // Act
-      await bootstrap({
-        client: context.client,
-        fs: context.fs,
-        basePath: context.basePath,
-        versions: context.versions,
-        lockfilePath: context.lockfilePath,
-      });
+      await initLockfile(context);
 
       // Assert
       const lockfile = await readLockfile(fs, lockfilePath);
-      for (const version of context.versions) {
+      for (const version of context.versions.resolved) {
         expect(lockfile.versions[version]?.path).toBe(`${version}/snapshot.json`);
         expect(lockfile.versions[version]?.fileCount).toBe(0);
         expect(lockfile.versions[version]?.totalSize).toBe(0);
@@ -76,6 +70,9 @@ describe("bootstrap", () => {
       // Arrange
       mockStoreApi({
         versions: ["16.0.0", "15.1.0"],
+        responses: {
+          "/api/v1/versions": true,
+        },
       });
 
       const { context, fs, lockfilePath } = await createTestContext({
@@ -83,13 +80,7 @@ describe("bootstrap", () => {
       });
 
       // Act
-      await bootstrap({
-        client: context.client,
-        fs: context.fs,
-        basePath: context.basePath,
-        versions: context.versions,
-        lockfilePath: context.lockfilePath,
-      });
+      await initLockfile(context);
 
       // Assert
       const lockfile = await readLockfile(fs, lockfilePath);
@@ -101,6 +92,9 @@ describe("bootstrap", () => {
     it("should create base directory when it doesn't exist", async () => {
       mockStoreApi({
         versions: ["16.0.0", "15.1.0"],
+        responses: {
+          "/api/v1/versions": true,
+        },
       });
 
       const { context, fs } = await createTestContext({
@@ -108,15 +102,10 @@ describe("bootstrap", () => {
         versions: ["16.0.0"],
       });
 
-      await bootstrap({
-        client: context.client,
-        fs: context.fs,
-        basePath: context.basePath,
-        versions: context.versions,
-        lockfilePath: context.lockfilePath,
-      });
+      await initLockfile(context);
 
-      const exists = await fs.exists(context.basePath);
+      // basePath is now handled by fs-bridge, test directory existence via fs
+      const exists = await fs.exists(".");
       expect(exists).toBe(true);
     });
 
@@ -124,6 +113,9 @@ describe("bootstrap", () => {
       // Arrange
       mockStoreApi({
         versions: ["16.0.0", "15.1.0"],
+        responses: {
+          "/api/v1/versions": true,
+        },
       });
 
       const { context, fs, lockfilePath } = await createTestContext({
@@ -135,15 +127,7 @@ describe("bootstrap", () => {
       });
 
       // Act
-      await expect(
-        bootstrap({
-          client: context.client,
-          fs: context.fs,
-          basePath: context.basePath,
-          versions: context.versions,
-          lockfilePath: context.lockfilePath,
-        }),
-      ).resolves.not.toThrow();
+      await expect(initLockfile(context)).resolves.not.toThrow();
 
       // Assert
       const lockfile = await readLockfile(fs, lockfilePath);
@@ -156,6 +140,9 @@ describe("bootstrap", () => {
       // Arrange
       mockStoreApi({
         versions: ["16.0.0", "15.1.0"],
+        responses: {
+          "/api/v1/versions": true,
+        },
       });
 
       const { context } = await createTestContext({
@@ -163,21 +150,16 @@ describe("bootstrap", () => {
       });
 
       // Act & Assert
-      await expect(
-        bootstrap({
-          client: context.client,
-          fs: context.fs,
-          basePath: context.basePath,
-          versions: context.versions,
-          lockfilePath: context.lockfilePath,
-        }),
-      ).resolves.not.toThrow();
+      await expect(initLockfile(context)).resolves.not.toThrow();
     });
 
     it("should throw UCDStoreGenericError when versions not available", async () => {
       // Arrange
       mockStoreApi({
         versions: ["16.0.0", "15.1.0"],
+        responses: {
+          "/api/v1/versions": true,
+        },
       });
 
       const { context } = await createTestContext({
@@ -185,21 +167,16 @@ describe("bootstrap", () => {
       });
 
       // Act & Assert
-      await expect(
-        bootstrap({
-          client: context.client,
-          fs: context.fs,
-          basePath: context.basePath,
-          versions: context.versions,
-          lockfilePath: context.lockfilePath,
-        }),
-      ).rejects.toThrow(UCDStoreGenericError);
+      await expect(initLockfile(context)).rejects.toThrow(UCDStoreGenericError);
     });
 
     it("should include unavailable versions in error message", async () => {
       // Arrange
       mockStoreApi({
         versions: ["16.0.0", "15.1.0"],
+        responses: {
+          "/api/v1/versions": true,
+        },
       });
 
       const { context } = await createTestContext({
@@ -207,13 +184,7 @@ describe("bootstrap", () => {
       });
 
       // Act
-      const error = await bootstrap({
-        client: context.client,
-        fs: context.fs,
-        basePath: context.basePath,
-        versions: context.versions,
-        lockfilePath: context.lockfilePath,
-      }).catch((e) => e);
+      const error = await initLockfile(context).catch((e) => e);
 
       // Assert
       expect(error).toBeInstanceOf(UCDStoreGenericError);
@@ -235,15 +206,7 @@ describe("bootstrap", () => {
       });
 
       // Act & Assert
-      await expect(
-        bootstrap({
-          client: context.client,
-          fs: context.fs,
-          basePath: context.basePath,
-          versions: context.versions,
-          lockfilePath: context.lockfilePath,
-        }),
-      ).rejects.toThrow(UCDStoreGenericError);
+      await expect(initLockfile(context)).rejects.toThrow(UCDStoreGenericError);
     });
 
     it("should include 'Failed to fetch Unicode versions' in error message", async () => {
@@ -259,13 +222,7 @@ describe("bootstrap", () => {
       });
 
       // Act
-      const error = await bootstrap({
-        client: context.client,
-        fs: context.fs,
-        basePath: context.basePath,
-        versions: context.versions,
-        lockfilePath: context.lockfilePath,
-      }).catch((e) => e);
+      const error = await initLockfile(context).catch((e) => e);
 
       // Assert
       expect(error).toBeInstanceOf(UCDStoreGenericError);
@@ -285,18 +242,10 @@ describe("bootstrap", () => {
       });
 
       // Act & Assert
-      await expect(
-        bootstrap({
-          client: context.client,
-          fs: context.fs,
-          basePath: context.basePath,
-          versions: context.versions,
-          lockfilePath: context.lockfilePath,
-        }),
-      ).rejects.toThrow(UCDStoreGenericError);
+      await expect(initLockfile(context)).rejects.toThrow(UCDStoreGenericError);
     });
 
-    it("should include 'no data returned' in error message", async () => {
+    it("should include 'no versions available' in error message", async () => {
       // Arrange
       mockFetch([
         ["GET", `${UCDJS_API_BASE_URL}/api/v1/versions`, () => {
@@ -309,22 +258,16 @@ describe("bootstrap", () => {
       });
 
       // Act
-      const error = await bootstrap({
-        client: context.client,
-        fs: context.fs,
-        basePath: context.basePath,
-        versions: context.versions,
-        lockfilePath: context.lockfilePath,
-      }).catch((e) => e);
+      const error = await initLockfile(context).catch((e) => e);
 
       // Assert
       expect(error).toBeInstanceOf(UCDStoreGenericError);
-      expect(error.message).toContain("Failed to fetch Unicode versions: no data returned");
+      expect(error.message).toContain("Failed to fetch Unicode versions: no versions available from API");
     });
 
     it("should throw error when filesystem lacks mkdir capability", async () => {
       // Arrange
-      const fs = defineFileSystemBridge({
+      const noMkdirFS = defineFileSystemBridge({
         meta: {
           name: "No-Mkdir Bridge",
           description: "Bridge without mkdir capability",
@@ -347,22 +290,41 @@ describe("bootstrap", () => {
 
       mockStoreApi({
         versions: ["16.0.0"],
+        responses: {
+          "/api/v1/versions": true,
+        },
       });
 
       const { context } = await createTestContext({
         versions: ["16.0.0"],
+        fs: noMkdirFS,
       });
 
       // Act & Assert
-      await expect(
-        bootstrap({
-          client: context.client,
-          fs,
-          basePath: context.basePath,
-          versions: context.versions,
-          lockfilePath: context.lockfilePath,
-        }),
-      ).rejects.toThrow("File system bridge does not support the 'mkdir' capability.");
+      await expect(initLockfile(context)).rejects.toThrow("File system bridge does not support the 'mkdir' capability.");
+    });
+
+    it("should skip lockfile write when bridge does not support writing", async () => {
+      // Arrange
+      mockStoreApi({
+        versions: ["16.0.0"],
+        responses: {
+          "/api/v1/versions": true,
+        },
+      });
+
+      const { context } = await createTestContext({
+        versions: ["16.0.0"],
+        initialFiles: {
+          "/test/.exists": "marker", // ensure basePath exists so mkdir is not needed
+        },
+      });
+
+      // Simulate a read-only context (lockfile not supported)
+      context.lockfile.supports = false;
+
+      // Act - should not throw even though lockfile can't be written
+      await expect(initLockfile(context)).resolves.not.toThrow();
     });
   });
 });

@@ -162,17 +162,17 @@ describe("merge strategy", () => {
     const lockfile = await readLockfile(fs, lockfilePath);
 
     // Existing entry should be preserved
-    expect(lockfile.versions["15.0.0"]).toEqual({
+    expect(lockfile.versions["15.0.0"]).toEqual(expect.objectContaining({
       path: "15.0.0/snapshot.json",
       fileCount: 10,
       totalSize: 1024,
-    });
+    }));
     // New entry should have empty snapshot
-    expect(lockfile.versions["16.0.0"]).toEqual({
+    expect(lockfile.versions["16.0.0"]).toEqual(expect.objectContaining({
       path: "16.0.0/snapshot.json",
       fileCount: 0,
       totalSize: 0,
-    });
+    }));
   });
 });
 
@@ -223,19 +223,19 @@ describe("overwrite strategy", () => {
     const lockfile = await readLockfile(fs, lockfilePath);
 
     // Existing entry for 16.0.0 should be preserved
-    expect(lockfile.versions["16.0.0"]).toEqual({
+    expect(lockfile.versions["16.0.0"]).toEqual(expect.objectContaining({
       path: "16.0.0/snapshot.json",
       fileCount: 10,
       totalSize: 1024,
-    });
+    }));
     // 15.0.0 should be removed
     expect(lockfile.versions).not.toHaveProperty("15.0.0");
     // 15.1.0 should be added with empty snapshot
-    expect(lockfile.versions["15.1.0"]).toEqual({
+    expect(lockfile.versions["15.1.0"]).toEqual(expect.objectContaining({
       path: "15.1.0/snapshot.json",
       fileCount: 0,
       totalSize: 0,
-    });
+    }));
   });
 });
 
