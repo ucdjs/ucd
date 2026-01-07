@@ -3,6 +3,7 @@ import type { HttpResponseResolver } from "msw";
 import type {
   ConfiguredResponse,
   MockFetchType,
+  MockStoreNode,
   OnAfterMockFetchCallback,
   OnBeforeMockFetchCallback,
   OnRequestCallback,
@@ -149,4 +150,33 @@ export function wrapMockFetch(
 
     return originalMockFetch(...args);
   }) as MockFetchFn;
+}
+
+export type DeepOmit<T, K extends PropertyKey> = T extends object
+  ? T extends any[]
+    ? DeepOmit<T[number], K>[]
+    : {
+        [P in Exclude<keyof T, K>]: DeepOmit<T[P], K>;
+      }
+  : T;
+
+export function omitContentRecursively<T extends MockStoreNode>(nodes: T[]): DeepOmit<T, "_content">[] {
+  return nodes.map((node) => {
+    if (node.type === "directory") {
+      return {
+        ...node,
+        children: omitContentRecursively(node.children),
+      } as DeepOmit<T, "_content">;
+    }
+
+    delete node._content;
+    return node as DeepOmit<T, "_content">;
+  });
+}
+
+export function omitChildrenAndContent<T extends MockStoreNode>(nodes: T[]): Omit<T, "_content" | "children">[] {
+  return nodes.map((node) => {
+    const { _content, children: _children, ...rest } = node as any;
+    return rest as Omit<T, "_content" | "children">;
+  });
 }

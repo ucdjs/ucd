@@ -82,10 +82,9 @@ export const wellKnownStoreVersionManifest = defineMockRouteHandler({
           }
 
           // If there is multiple keys in files we will try and match the version
-          const version = params.version as string;
           if (version && files[version]) {
             return HttpResponse.json({
-              expectedFiles: flattenFilePaths(files[version]),
+              expectedFiles: flattenFilePaths(files[version]!),
             });
           }
 
