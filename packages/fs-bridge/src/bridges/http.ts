@@ -8,6 +8,8 @@ import { defineFileSystemBridge } from "../define";
 
 const debug = createDebugger("ucdjs:fs-bridge:http");
 
+export const kHttpBridgeSymbol = Symbol.for("@ucdjs/fs-bridge:http");
+
 const API_BASE_URL_SCHEMA = z.codec(z.url({
   protocol: /^https?$/,
   hostname: z.regexes.hostname,
@@ -25,6 +27,7 @@ const HTTPFileSystemBridge = defineFileSystemBridge({
   optionsSchema: z.object({
     baseUrl: API_BASE_URL_SCHEMA,
   }),
+  symbol: kHttpBridgeSymbol,
   setup({ options, resolveSafePath }) {
     const baseUrl = options.baseUrl;
 
