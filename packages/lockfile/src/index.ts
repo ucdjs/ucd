@@ -4,14 +4,21 @@ export {
   LockfileInvalidError,
 } from "./errors";
 
-export { computeFileHash } from "./hash";
+export {
+  computeFileHash,
+  computeFileHashWithoutUCDHeader,
+  stripUnicodeHeader,
+} from "./hash";
 
 export {
   canUseLockfile,
   readLockfile,
-  readLockfileOrDefault,
+  readLockfileOrUndefined,
+  validateLockfile,
   writeLockfile,
 } from "./lockfile";
+
+export type { ValidateLockfileResult } from "./lockfile";
 
 export {
   getLockfilePath,
@@ -20,6 +27,6 @@ export {
 
 export {
   readSnapshot,
-  readSnapshotOrDefault,
+  readSnapshotOrUndefined,
   writeSnapshot,
 } from "./snapshot";

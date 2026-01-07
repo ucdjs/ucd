@@ -1,6 +1,13 @@
 import { z } from "zod";
 
 /**
+ * Schema for ISO 8601 date strings that coerces to Date objects.
+ * Accepts ISO date strings, numbers (timestamps), or Date objects as input.
+ * Always outputs a Date object after parsing.
+ */
+const DateSchema = z.coerce.date();
+
+/**
  * Schema for a single version entry in the lockfile
  */
 const LockfileVersionEntrySchema = z.object({
@@ -18,30 +25,36 @@ const LockfileVersionEntrySchema = z.object({
    * Total size of all files in this version (in bytes)
    */
   totalSize: z.int().nonnegative(),
+
+  /**
+   * When this version entry was first created
+   */
+  createdAt: DateSchema,
+
+  /**
+   * When this version entry was last updated
+   */
+  updatedAt: DateSchema,
 });
 
 /**
- * Schema for filters applied when creating/updating the lockfile
+ * Schema for filters applied when creating/updating the lockfile.
  */
 const LockfileFiltersSchema = z.object({
   /**
    * Glob patterns for files to include
    */
-  include: z.array(z.string()).default([]),
+  include: z.array(z.string()).optional(),
 
   /**
    * Glob patterns for files to exclude
    */
-  exclude: z.array(z.string()).default([]),
+  exclude: z.array(z.string()).optional(),
 
   /**
    * Whether default exclusions (.zip, .pdf) were disabled
    */
-  disableDefaultExclusions: z.boolean().default(false),
-}).default({
-  include: [],
-  exclude: [],
-  disableDefaultExclusions: false,
+  disableDefaultExclusions: z.boolean().optional(),
 });
 
 /**
@@ -54,6 +67,16 @@ export const LockfileSchema = z.object({
   lockfileVersion: z.literal(1),
 
   /**
+   * When this lockfile was first created
+   */
+  createdAt: DateSchema,
+
+  /**
+   * When this lockfile was last updated
+   */
+  updatedAt: DateSchema,
+
+  /**
    * Map of Unicode versions to their snapshot metadata
    */
   versions: z.record(z.string(), LockfileVersionEntrySchema),
@@ -62,7 +85,7 @@ export const LockfileSchema = z.object({
    * Filters that were applied when creating/updating this lockfile.
    * This helps track which files were excluded and why.
    */
-  filters: LockfileFiltersSchema,
+  filters: LockfileFiltersSchema.optional(),
 });
 
 export type Lockfile = z.output<typeof LockfileSchema>;
@@ -73,9 +96,17 @@ export type LockfileInput = z.input<typeof LockfileSchema>;
  */
 const SnapshotFileEntrySchema = z.object({
   /**
-   * SHA-256 hash of the file content (format: "sha256:...")
+   * SHA-256 hash of the file content without the Unicode header (format: "sha256:...").
+   * This hash is used for comparing content across versions, since the header
+   * contains version-specific information (version number, date, copyright year).
    */
   hash: z.string().regex(/^sha256:[a-f0-9]{64}$/),
+
+  /**
+   * SHA-256 hash of the complete file including headers (format: "sha256:...").
+   * This hash represents the actual file on disk.
+   */
+  fileHash: z.string().regex(/^sha256:[a-f0-9]{64}$/),
 
   /**
    * Size of the file in bytes
