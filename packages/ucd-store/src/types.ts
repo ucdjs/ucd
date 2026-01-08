@@ -1,6 +1,19 @@
-import type { PathFilterOptions } from "@ucdjs-internal/shared";
+import type { OperationResult, PathFilter, PathFilterOptions } from "@ucdjs-internal/shared";
 import type { UCDClient } from "@ucdjs/client";
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
+import type { UCDWellKnownConfig, UnicodeFileTreeNodeWithoutLastModified } from "@ucdjs/schemas";
+import type { StoreError } from "./errors";
+import type { AnalysisReport, AnalyzeOptions } from "./operations/analyze";
+import type { GetFileOptions } from "./operations/files/get";
+import type { ListFilesOptions } from "./operations/files/list";
+import type { GetFileTreeOptions } from "./operations/files/tree";
+import type { MirrorOptions, MirrorReport } from "./operations/mirror";
+import type { SyncOptions, SyncResult } from "./operations/sync";
+
+/**
+ * Strategy for handling version conflicts when manifest exists and versions are provided.
+ */
+export type VersionConflictStrategy = "strict" | "merge" | "overwrite";
 
 export interface UCDStoreOptions {
   /**
@@ -13,9 +26,15 @@ export interface UCDStoreOptions {
   /**
    * Optional pre-initialized UCD client instance.
    * If provided, this client will be used instead of creating a new one.
-   * The baseUrl option will be ignored if a client is provided.
+   * The baseUrl and endpointConfig options will be ignored if a client is provided.
    */
   client?: UCDClient;
+
+  /**
+   * Optional endpoint configuration for the UCD API.
+   * If not provided, will use default configuration or discover from API in bootstrap mode.
+   */
+  endpointConfig?: UCDWellKnownConfig;
 
   /**
    * Optional filters to apply when fetching Unicode data.
@@ -42,39 +61,148 @@ export interface UCDStoreOptions {
    * Only used when initializing a new store that supports mirroring.
    */
   versions?: string[];
+
+  /**
+   * Whether to enable bootstrap mode when no lockfile exists.
+   * If false, store creation will fail if no lockfile is found.
+   *
+   * @default true
+   */
+  bootstrap?: boolean;
+
+  /**
+   * Whether to verify lockfile versions against the API.
+   * If true, will check that all versions in the lockfile are still available.
+   * Only applies when a lockfile already exists.
+   *
+   * @default false
+   */
+  verify?: boolean;
+
+  /**
+   * Strategy for handling version conflicts when lockfile exists and versions are provided.
+   * - "strict": Throw error if provided versions differ from lockfile (default)
+   * - "merge": Combine lockfile and provided versions, update lockfile
+   * - "overwrite": Replace lockfile versions with provided versions, update lockfile
+   *
+   * Only applies when lockfile exists and versions are provided.
+   *
+   * @default "strict"
+   */
+  versionStrategy?: VersionConflictStrategy;
 }
 
-export interface SharedStoreOperationOptions {
+/**
+ * Internal store context to be passed
+ *
+ * @internal
+ */
+export interface InternalUCDStoreContext {
   /**
-   * List of Unicode versions to include in the operation.
-   * If not provided, the operation will include all available versions.
+   * UCD API client instance.
    */
-  versions?: string[];
+  client: UCDClient;
 
   /**
-   * Whether to perform a dry run without actually writing files.
-   * This is useful for testing and debugging the store actions.
+   * Path filter to apply when fetching files.
    */
-  dryRun?: boolean;
+  filter: PathFilter;
 
   /**
-   * Concurrency level for file operations.
-   * This controls how many files can be processed in parallel.
-   * Higher values may speed up the process but can also increase resource usage.
+   * File system bridge for file operations.
    */
-  concurrency?: number;
+  fs: FileSystemBridge;
+
+  /**
+   * Base path where store files are located.
+   */
+  basePath: string;
+
+  /**
+   * List of Unicode versions available in the store.
+   */
+  versions: string[];
+
+  /**
+   * Path to the store lockfile.
+   */
+  lockfilePath: string;
 }
 
-export interface InitOptions {
+export type UCDStoreContext = Readonly<Pick<InternalUCDStoreContext, "basePath" | "fs">> & {
   /**
-   * Whether to force overwrite existing store manifest and directories.
-   * When true, existing manifest will be recreated even if it already exists.
+   * List of Unicode versions available in the store.
    */
-  force?: boolean;
+  versions: readonly string[];
+};
+
+export interface UCDStore extends UCDStoreContext, UCDStoreOperations {
+}
+
+/**
+ * Options for store methods that support filtering
+ */
+export interface SharedOperationOptions {
+  /**
+   * Additional filters to apply on top of global filters
+   */
+  filters?: Pick<PathFilterOptions, "include" | "exclude">;
+}
+
+/**
+ * File operations namespace for the store.
+ * Provides methods for accessing and manipulating Unicode data files.
+ */
+export interface UCDStoreFileOperations {
+  /**
+   * Get a specific file for a Unicode version.
+   * Tries local FS first, then falls back to API.
+   */
+  get: (version: string, path: string, options?: GetFileOptions) => Promise<OperationResult<string, StoreError>>;
 
   /**
-   * Whether to perform a dry run without actually creating files or directories.
-   * This is useful for testing and debugging the initialization process.
+   * List all file paths for a Unicode version.
+   * Returns a flat array of file paths.
    */
-  dryRun?: boolean;
+  list: (version: string, options?: ListFilesOptions) => Promise<OperationResult<string[], StoreError>>;
+
+  /**
+   * Get the file tree structure for a Unicode version.
+   * Returns a hierarchical tree of files and directories.
+   */
+  tree: (version: string, options?: GetFileTreeOptions) => Promise<OperationResult<UnicodeFileTreeNodeWithoutLastModified[], StoreError>>;
+}
+
+export interface UCDStoreOperations {
+  /**
+   * Synchronizes the store lockfile with available versions from API and mirrors files.
+   * Updates lockfile with new versions, downloads missing files, and optionally removes orphaned files/unavailable versions.
+   *
+   * Example: Fetches available versions from API, updates lockfile, mirrors files, and optionally cleans up orphaned files.
+   *
+   * @experimental This method is under development and may change
+   */
+  sync: (options?: SyncOptions) => Promise<OperationResult<SyncResult, StoreError>>;
+
+  /**
+   * Mirrors Unicode data files from the API to local storage.
+   * This is a file-level operation that downloads actual Unicode data for specified versions.
+   *
+   * Example: Downloads all .txt files for version 16.0.0 to local storage.
+   *
+   * @experimental This method is under development and may change
+   */
+  mirror: (options?: MirrorOptions) => Promise<OperationResult<MirrorReport, StoreError>>;
+
+  /**
+   * Analyzes Unicode data in the store.
+   *
+   * @experimental This method is under development and may change
+   */
+  analyze: (options?: AnalyzeOptions) => Promise<OperationResult<Map<string, AnalysisReport>, StoreError>>;
+
+  /**
+   * File operations namespace
+   */
+  files: UCDStoreFileOperations;
 }

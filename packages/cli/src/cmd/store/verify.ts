@@ -5,7 +5,7 @@ import { createDebugger } from "@ucdjs-internal/shared";
 import { createUCDClient } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { getLockfilePath, readLockfile } from "@ucdjs/lockfile";
-import { UCDStoreGenericError } from "@ucdjs/ucd-store-v2";
+import { UCDStoreGenericError } from "@ucdjs/ucd-store";
 import { green, red, yellow } from "farver/fast";
 import { printHelp } from "../../cli-utils";
 import { output } from "../../output";

@@ -1,7 +1,7 @@
-import type { UCDStore } from "@ucdjs/ucd-store-v2";
+import type { UCDStore } from "@ucdjs/ucd-store";
 import type { Readable, Writable } from "node:stream";
 import { isCancel, multiselect } from "@clack/prompts";
-import { createHTTPUCDStore, createNodeUCDStore } from "@ucdjs/ucd-store-v2";
+import { createHTTPUCDStore, createNodeUCDStore } from "@ucdjs/ucd-store";
 import { UNICODE_VERSION_METADATA } from "@unicode-utils/core";
 
 export interface CLIStoreCmdSharedFlags {
