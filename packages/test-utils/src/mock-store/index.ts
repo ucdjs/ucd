@@ -170,7 +170,6 @@ function toMSWPath(endpoint: string): string {
 }
 
 export type { MockStoreConfig };
-export { addPathsToFileNodes } from "./add-paths";
 export { createFileTree } from "./file-tree";
 export type { FileTreeInput, FileTreeNodeWithContent } from "./file-tree";
 export { configure, unsafeResponse } from "./helpers";

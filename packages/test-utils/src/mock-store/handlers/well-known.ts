@@ -1,5 +1,7 @@
 import { flattenFilePaths } from "@ucdjs-internal/shared";
+import { hasUCDFolderPath } from "@unicode-utils/core";
 import { HttpResponse } from "../../msw";
+import { addPathsToFileNodes } from "../add-paths";
 import { defineMockRouteHandler } from "../define";
 
 export const wellKnownConfig = defineMockRouteHandler({
@@ -77,14 +79,14 @@ export const wellKnownStoreVersionManifest = defineMockRouteHandler({
           // just return the files object as is.
           if (Object.keys(files).length === 1 && Object.keys(files)[0] === "*") {
             return HttpResponse.json({
-              expectedFiles: flattenFilePaths(files["*"]!),
+              expectedFiles: flattenFilePaths(addPathsToFileNodes(files["*"]!, version, hasUCDFolderPath(version) ? "ucd" : undefined)),
             });
           }
 
           // If there is multiple keys in files we will try and match the version
           if (version && files[version]) {
             return HttpResponse.json({
-              expectedFiles: flattenFilePaths(files[version]!),
+              expectedFiles: flattenFilePaths(addPathsToFileNodes(files[version]!, version, hasUCDFolderPath(version) ? "ucd" : undefined)),
             });
           }
 

@@ -56,6 +56,7 @@
     "@ucdjs-internal/shared": "workspace:*",
     "@ucdjs/fs-bridge": "workspace:*",
     "@ucdjs/schemas": "workspace:*",
+    "@unicode-utils/core": "catalog:prod",
     "msw": "catalog:testing",
     "zod": "catalog:prod"
   },
