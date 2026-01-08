@@ -1,5 +1,5 @@
 import type { ApiError } from "@ucdjs/schemas";
-import type { MockStoreNode, MockStoreNodeWithPath } from "../types";
+import type { MockStoreNodeWithPath } from "../types";
 import { findFileByPath } from "@ucdjs-internal/shared";
 import {
   UCD_STAT_CHILDREN_DIRS_HEADER,
