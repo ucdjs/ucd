@@ -2,6 +2,7 @@ import type { OperationResult } from "@ucdjs-internal/shared";
 import type { StoreError } from "../errors";
 import type { InternalUCDStoreContext, SharedOperationOptions } from "../types";
 import { createDebugger, wrapTry } from "@ucdjs-internal/shared";
+import { isUCDStoreInternalContext } from "../context";
 import { listFiles } from "../files/list";
 
 const debug = createDebugger("ucdjs:ucd-store:analyze");
@@ -191,10 +192,6 @@ async function _analyze(
   });
 }
 
-function isContext(obj: any): obj is InternalUCDStoreContext {
-  return !!obj && typeof obj === "object" && Array.isArray(obj.versions?.resolved);
-}
-
 export function analyze(
   context: InternalUCDStoreContext,
   options?: AnalyzeOptions,
@@ -205,12 +202,22 @@ export function analyze(
   options?: AnalyzeOptions,
 ): Promise<OperationResult<Map<string, AnalysisReport>, StoreError>>;
 
-export function analyze(this: any, thisOrContext: any, options?: any): Promise<OperationResult<Map<string, AnalysisReport>, StoreError>> {
-  if (isContext(thisOrContext)) {
+export function analyze(
+  this: InternalUCDStoreContext | void,
+  thisOrContext?: InternalUCDStoreContext | AnalyzeOptions,
+  options?: AnalyzeOptions,
+): Promise<OperationResult<Map<string, AnalysisReport>, StoreError>> {
+  if (isUCDStoreInternalContext(thisOrContext)) {
+    // thisOrContext is the context
     return _analyze.call(thisOrContext, options);
   }
 
-  return _analyze.call(this, thisOrContext);
+  // 'this' is the context
+  // 'thisOrContext' is actually the 'options'
+  return _analyze.call(
+    this as InternalUCDStoreContext,
+    thisOrContext as AnalyzeOptions,
+  );
 }
 
 function getExtension(filePath: string): string {
