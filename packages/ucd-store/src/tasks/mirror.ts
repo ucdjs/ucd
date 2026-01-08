@@ -8,6 +8,7 @@ import {
   flattenFilePaths,
   wrapTry,
 } from "@ucdjs-internal/shared";
+
 import { hasCapability } from "@ucdjs/fs-bridge";
 import {
   computeFileHash,
@@ -20,6 +21,35 @@ import { hasUCDFolderPath } from "@unicode-utils/core";
 import { dirname, join } from "pathe";
 import { extractFilterPatterns, isUCDStoreInternalContext } from "../context";
 import { UCDStoreGenericError } from "../errors";
+
+function normalizeApiPath(version: string, rawPath: string): {
+  normalized: string;
+  remotePath: string;
+  localPath: string;
+} {
+  // incoming paths can be with or without leading slash and with optional trailing slash
+  let path = rawPath.replace(/^\/+/, "").replace(/\/+$/, "");
+
+  // The API file-tree returns paths like "/17.0.0/ucd/Blocks.txt" or "17.0.0/ucd/Blocks.txt"
+  // We need to strip the version prefix if present
+  const versionPrefix = `${version}/`;
+  if (path.startsWith(versionPrefix)) {
+    path = path.slice(versionPrefix.length);
+  }
+
+  const hasUcd = hasUCDFolderPath(version);
+
+  // Strip ucd/ prefix if present (for versions that have it)
+  if (hasUcd && path.startsWith("ucd/")) {
+    path = path.slice(4);
+  }
+
+  const normalized = path;
+  const remotePath = join(version, hasUcd ? "ucd" : "", normalized);
+  const localPath = join(version, normalized);
+
+  return { normalized, remotePath, localPath };
+}
 
 const debug = createDebugger("ucdjs:ucd-store:mirror");
 
@@ -299,26 +329,18 @@ async function _mirror(
 
       const versionResult = versionedReports.get(version)!;
 
-      // build queue items with all paths pre-computed
       for (const filePath of filePaths) {
-        // Use relative path
-        const localPath = join(version, filePath);
-
-        // Note:
-        // The store always uses `<version>/ucd/<file>` paths when mirroring,
-        // because the Unicode database also includes e.g. `<version>/ucdxml/<file>`,
-        // which is _not_ part of the store. Paths returned from the API are
-        // relative to their containing folder and do not include the `ucd` segment.
-        // By adding `ucd` here, we ensure that only files within `ucd` are mirrored
-        // and avoid accidentally pulling `ucdxml` or other subfolders not needed
-        // by the store.
-        const remotePath = join(version, hasUCDFolderPath(version) ? "ucd" : "", filePath);
+        const { normalized, localPath, remotePath } = normalizeApiPath(version, filePath);
 
         directoriesToCreate.add(dirname(localPath));
 
+        debug?.(
+          `Queueing file for mirroring: version=${version}, filePath=${filePath}, normalized=${normalized}, localPath=${localPath}, remotePath=${remotePath}`,
+        );
+
         filesQueue.push({
           version,
-          filePath,
+          filePath: normalized,
           localPath,
           remotePath,
           versionResult,
@@ -343,7 +365,7 @@ async function _mirror(
       try {
         // Skip if file exists and force is disabled
         if (!force && await this.fs.exists(item.localPath)) {
-          item.versionResult.files.skipped.push(item.filePath);
+          item.versionResult.files.skipped.push(item.localPath);
 
           return;
         }
@@ -386,16 +408,17 @@ async function _mirror(
 
         await this.fs.write!(item.localPath, content);
 
-        item.versionResult.files.downloaded.push(item.filePath);
+        // item.versionResult.files.downloaded.push(item.filePath);
+        item.versionResult.files.downloaded.push(item.localPath);
         totalDownloadedSize += contentSize;
       } catch (err) {
-        item.versionResult.files.failed.push(item.filePath);
+        item.versionResult.files.failed.push(item.localPath);
         item.versionResult.errors.push({
-          file: item.filePath,
+          file: item.localPath,
           reason: err instanceof Error ? err.message : String(err),
         });
 
-        debug?.(`Failed to mirror file ${item.filePath} for version ${item.version}:`, err);
+        debug?.(`Failed to mirror file ${item.remotePath} for version ${item.version}:`, err);
       }
     })));
 
@@ -409,6 +432,8 @@ async function _mirror(
     for (const [version, report] of versionedReports.entries()) {
       // Create snapshot if any files were processed (downloaded or skipped)
       const allFiles = [...report.files.downloaded, ...report.files.skipped];
+      debug?.(`Preparing snapshot for version ${version}, total files: ${allFiles.length}`);
+      debug?.(`Files: %O`, allFiles);
       if (allFiles.length > 0) {
         debug?.(`Creating snapshot for version ${version}`);
 
@@ -416,9 +441,12 @@ async function _mirror(
         const snapshotFiles: Record<string, { hash: string; fileHash: string; size: number }> = {};
         let totalSize = 0;
 
-        for (const filePath of allFiles) {
-          // Use relative path
-          const localPath = join(version, filePath);
+        for (const localPath of allFiles) {
+          const normalizedPath = localPath.startsWith(`${version}/`)
+            ? localPath.slice(version.length + 1)
+            : localPath;
+
+          debug?.(`Processing file for snapshot: version=${version}, localPath=${localPath}, normalizedPath=${normalizedPath}`);
           const fileContent = await this.fs.read(localPath);
 
           if (fileContent) {
@@ -427,7 +455,7 @@ async function _mirror(
             // Compute file hash (full file) for integrity verification
             const fileHash = await computeFileHash(fileContent);
             const size = new TextEncoder().encode(fileContent).length;
-            snapshotFiles[filePath] = { hash, fileHash, size };
+            snapshotFiles[normalizedPath] = { hash, fileHash, size };
             totalSize += size;
           }
         }

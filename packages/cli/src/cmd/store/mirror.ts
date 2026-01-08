@@ -63,6 +63,9 @@ export async function runMirrorStore({ flags, versions }: CLIStoreMirrorCmdOptio
       versions,
       force,
       requireExistingStore: true,
+      // Mirror should use "merge" strategy - we're mirroring specific versions
+      // from an existing lockfile, not replacing the entire version set
+      versionStrategy: "merge",
     });
 
     header("Mirror Operation");
