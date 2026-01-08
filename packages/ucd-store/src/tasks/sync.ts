@@ -14,6 +14,7 @@ import {
   writeLockfile,
 } from "@ucdjs/lockfile";
 import { join } from "pathe";
+import { isUCDStoreInternalContext } from "../context";
 import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../errors";
 import { listFiles } from "../files/list";
 import { mirror } from "./mirror";
@@ -335,10 +336,6 @@ async function _sync(
   });
 }
 
-function isContext(obj: any): obj is InternalUCDStoreContext {
-  return !!obj && typeof obj === "object" && Array.isArray(obj.versions?.resolved);
-}
-
 export function sync(
   context: InternalUCDStoreContext,
   options?: SyncOptions,
@@ -349,12 +346,22 @@ export function sync(
   options?: SyncOptions,
 ): Promise<OperationResult<SyncResult, StoreError>>;
 
-export function sync(this: any, thisOrContext: any, options?: any): Promise<OperationResult<SyncResult, StoreError>> {
-  if (isContext(thisOrContext)) {
+export function sync(
+  this: InternalUCDStoreContext | void,
+  thisOrContext?: InternalUCDStoreContext | SyncOptions,
+  options?: SyncOptions,
+): Promise<OperationResult<SyncResult, StoreError>> {
+  if (isUCDStoreInternalContext(thisOrContext)) {
+    // thisOrContext is the context
     return _sync.call(thisOrContext, options);
   }
 
-  return _sync.call(this, thisOrContext);
+  // 'this' is the context
+  // 'thisOrContext' is actually the 'options'
+  return _sync.call(
+    this as InternalUCDStoreContext,
+    thisOrContext as SyncOptions,
+  );
 }
 
 async function getVersionsFromApi(context: InternalUCDStoreContext): Promise<string[]> {

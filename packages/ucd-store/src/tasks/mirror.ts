@@ -9,7 +9,13 @@ import {
   wrapTry,
 } from "@ucdjs-internal/shared";
 import { hasCapability } from "@ucdjs/fs-bridge";
-import { computeFileHash, computeFileHashWithoutUCDHeader, readLockfileOrUndefined, writeLockfile, writeSnapshot } from "@ucdjs/lockfile";
+import {
+  computeFileHash,
+  computeFileHashWithoutUCDHeader,
+  readLockfileOrUndefined,
+  writeLockfile,
+  writeSnapshot,
+} from "@ucdjs/lockfile";
 import { hasUCDFolderPath } from "@unicode-utils/core";
 import { dirname, join } from "pathe";
 import { extractFilterPatterns, isUCDStoreInternalContext } from "../context";
