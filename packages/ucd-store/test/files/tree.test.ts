@@ -309,14 +309,9 @@ describe("getFileTree", () => {
       expect(error).toBeNull();
       expect(apiCalled).toBe(true);
       expect(data).toEqual(expect.arrayContaining([
-        expect.objectContaining({
-          name: "ucd",
-          children: expect.arrayContaining([
-            expect.objectContaining({ type: "file", name: "ArabicShaping.txt" }),
-            expect.objectContaining({ type: "file", name: "BidiBrackets.txt" }),
-            expect.objectContaining({ type: "directory", name: "extracted" }),
-          ]),
-        }),
+        expect.objectContaining({ type: "file", name: "ArabicShaping.txt" }),
+        expect.objectContaining({ type: "file", name: "BidiBrackets.txt" }),
+        expect.objectContaining({ type: "directory", name: "extracted" }),
       ]));
     });
 
