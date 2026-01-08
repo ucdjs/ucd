@@ -52,9 +52,12 @@
   },
   "dependencies": {
     "@luxass/msw-utils": "catalog:prod",
+    "@luxass/utils": "catalog:prod",
     "@ucdjs-internal/shared": "workspace:*",
+    "@ucdjs/env": "workspace:*",
     "@ucdjs/fs-bridge": "workspace:*",
     "@ucdjs/schemas": "workspace:*",
+    "@unicode-utils/core": "catalog:prod",
     "msw": "catalog:testing",
     "zod": "catalog:prod"
   },
