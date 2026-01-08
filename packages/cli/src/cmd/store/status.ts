@@ -4,11 +4,10 @@ import type { CLIStoreCmdSharedFlags } from "./_shared";
 import { createDebugger } from "@ucdjs-internal/shared";
 import { createUCDClient } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
-import { getLockfilePath, readLockfile, readSnapshotOrDefault } from "@ucdjs/lockfile";
+import { getLockfilePath, readLockfile, readSnapshotOrUndefined } from "@ucdjs/lockfile";
 import { UCDStoreGenericError } from "@ucdjs/ucd-store";
-import { green, red, yellow } from "farver/fast";
 import { printHelp } from "../../cli-utils";
-import { output } from "../../output";
+import { green, output, red, yellow } from "../../output";
 import { assertRemoteOrStoreDir, createStoreFromFlags, SHARED_FLAGS } from "./_shared";
 
 const debug = createDebugger("ucdjs:cli:store:status");
@@ -46,39 +45,7 @@ export async function runStatusStore({ flags }: CLIStoreStatusCmdOptions) {
   try {
     assertRemoteOrStoreDir(flags);
 
-    const store = await createStoreFromFlags({
-      baseUrl,
-      storeDir,
-      remote,
-      lockfileOnly: true,
-    });
-
-    // Read lockfile - works with both local and remote stores
-    let lockfilePath: string;
-    const bridge = store.fs;
-
-    if (remote) {
-      // For remote stores, lockfile path is relative to base URL
-      lockfilePath = getLockfilePath("");
-    } else {
-      if (!storeDir) {
-        output.error(red(`\n❌ Error: Store directory must be specified.`));
-        return;
-      }
-      lockfilePath = getLockfilePath(storeDir);
-    }
-
-    let lockfile;
-    try {
-      lockfile = await readLockfile(bridge, lockfilePath);
-    } catch (err) {
-      debug?.("Error reading lockfile:", err);
-      output.error(red(`\n❌ Error: Lockfile not found at ${lockfilePath}`));
-      output.error("Run 'ucd store init' to create a new store.");
-      return;
-    }
-
-    // Create client to fetch available versions
+    // Create client to fetch available versions from API
     const client = await createUCDClient(baseUrl || UCDJS_API_BASE_URL);
 
     // Get available versions from API
@@ -104,6 +71,54 @@ export async function runStatusStore({ flags }: CLIStoreStatusCmdOptions) {
       }
     }
 
+    // Remote store: just show available versions from API
+    if (remote) {
+      if (json) {
+        output.json({
+          type: "remote",
+          baseUrl: baseUrl || UCDJS_API_BASE_URL,
+          availableVersions,
+          totalVersions: availableVersions.length,
+        });
+        return;
+      }
+
+      output.log(`Store Status: Remote (${baseUrl || UCDJS_API_BASE_URL})`);
+      output.log(`  Available Versions: ${availableVersions.length}`);
+      output.log("");
+
+      for (const version of availableVersions.sort((a, b) => b.localeCompare(a))) {
+        output.log(`  ${green("✓")} ${version}`);
+      }
+      return;
+    }
+
+    // Local store: read lockfile and show detailed status
+    if (!storeDir) {
+      output.error(red(`\n❌ Error: Store directory must be specified.`));
+      return;
+    }
+
+    const store = await createStoreFromFlags({
+      baseUrl,
+      storeDir,
+      remote,
+      lockfileOnly: true,
+    });
+
+    const lockfilePath = getLockfilePath();
+    const bridge = store.fs;
+
+    let lockfile;
+    try {
+      lockfile = await readLockfile(bridge, lockfilePath);
+    } catch (err) {
+      debug?.("Error reading lockfile:", err);
+      output.error(red(`\n❌ Error: Lockfile not found at ${lockfilePath}`));
+      output.error("Run 'ucd store init' to create a new store.");
+      return;
+    }
+
     const availableVersionsSet = new Set(availableVersions);
     const lockfileVersions = Object.keys(lockfile.versions);
 
@@ -111,13 +126,8 @@ export async function runStatusStore({ flags }: CLIStoreStatusCmdOptions) {
     const versionStatuses = await Promise.all(
       lockfileVersions.map(async (version) => {
         const entry = lockfile.versions[version];
-        // For remote stores, snapshots don't exist (they're local only)
-        let hasSnapshot = false;
-        if (!remote && storeDir) {
-          const snapshot = await readSnapshotOrDefault(bridge, storeDir, version);
-          output.info("snapshot", snapshot, storeDir, version);
-          hasSnapshot = snapshot !== undefined;
-        }
+        const snapshot = await readSnapshotOrUndefined(bridge, version);
+        const hasSnapshot = snapshot !== undefined;
         const isAvailableInAPI = availableVersionsSet.has(version);
 
         return {
@@ -155,34 +165,30 @@ export async function runStatusStore({ flags }: CLIStoreStatusCmdOptions) {
       return;
     }
 
-    // Display status
-    if (remote) {
-      output.info(`Store Status: Remote (${baseUrl || "default API"})`);
-    } else {
-      output.info(`Store Status: ${storeDir}`);
-    }
-    output.info(`  Lockfile: ${lockfilePath}`);
-    output.info(`  Lockfile Version: ${lockfile.lockfileVersion}`);
-    output.info(`  Total Versions: ${lockfileVersions.length}`);
-    output.info("");
+    // Display status for local store
+    output.log(`Store Status: ${storeDir}`);
+    output.log(`  Lockfile: ${lockfilePath}`);
+    output.log(`  Lockfile Version: ${lockfile.lockfileVersion}`);
+    output.log(`  Total Versions: ${lockfileVersions.length}`);
+    output.log("");
 
     for (const status of versionStatuses.sort((a, b) => a.version.localeCompare(b.version))) {
       const { version, entry, hasSnapshot, isAvailableInAPI } = status;
       const statusIcon = hasSnapshot ? green("✓") : yellow("⚠");
       const apiIcon = isAvailableInAPI ? green("✓") : red("✗");
 
-      output.info(`  Version ${version}:`);
-      output.info(`    Snapshot: ${entry?.path}`);
-      output.info(`    Status: ${statusIcon} ${hasSnapshot ? "Mirrored" : "Not mirrored"}`);
-      output.info(`    Files: ${entry?.fileCount}`);
-      output.info(`    Size: ${((entry?.totalSize ?? 0) / 1024 / 1024).toFixed(2)} MB`);
-      output.info(`    API: ${apiIcon} ${isAvailableInAPI ? "Available" : "Not available"}`);
-      output.info("");
+      output.log(`  Version ${version}:`);
+      output.log(`    Snapshot: ${entry?.path}`);
+      output.log(`    Status: ${statusIcon} ${hasSnapshot ? "Mirrored" : "Not mirrored"}`);
+      output.log(`    Files: ${entry?.fileCount}`);
+      output.log(`    Size: ${((entry?.totalSize ?? 0) / 1024 / 1024).toFixed(2)} MB`);
+      output.log(`    API: ${apiIcon} ${isAvailableInAPI ? "Available" : "Not available"}`);
+      output.log("");
     }
 
-    output.info("  Summary:");
-    output.info(`    Mirrored: ${mirroredCount}/${lockfileVersions.length} versions`);
-    output.info(`    Available in API: ${availableCount}/${lockfileVersions.length} versions`);
+    output.log("  Summary:");
+    output.log(`    Mirrored: ${mirroredCount}/${lockfileVersions.length} versions`);
+    output.log(`    Available in API: ${availableCount}/${lockfileVersions.length} versions`);
   } catch (err) {
     if (err instanceof UCDStoreGenericError) {
       output.error(red(`\n❌ Error: ${err.message}`));
