@@ -3,9 +3,8 @@ import type { CLIFilesCmdOptions } from "./root";
 import { writeFile } from "node:fs/promises";
 import { createUCDClient } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
-import { green, red } from "farver/fast";
 import { printHelp } from "../../cli-utils";
-import { output } from "../../output";
+import { green, output, red } from "../../output";
 
 export interface CLIFilesGetCmdOptions {
   path: string;
@@ -69,10 +68,10 @@ export async function runFilesGet({ path, flags }: CLIFilesGetCmdOptions) {
 
     if (outputFlag) {
       await writeFile(outputFlag, content, "utf-8");
-      output.info(green(`\n✓ File written to: ${outputFlag}\n`));
+      output.log(green(`\n✓ File written to: ${outputFlag}\n`));
     } else {
       // Write to stdout
-      output.info(content);
+      output.log(content);
     }
   } catch (err) {
     let message = "Unknown error";

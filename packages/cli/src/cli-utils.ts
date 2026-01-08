@@ -154,7 +154,7 @@ export function printHelp({
   );
 
   // eslint-disable-next-line no-console
-  console.info(`${message.join("\n")}\n`);
+  console.log(`${message.join("\n")}\n`);
 }
 
 /**
@@ -236,10 +236,9 @@ export function parseFlags(args: string[]) {
     ],
     string: [
       "output-dir",
-      "input-dir",
-      "output-file",
       "base-url",
       "output",
+      "store-dir",
     ],
     array: [
       "include",
