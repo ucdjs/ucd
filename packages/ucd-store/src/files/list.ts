@@ -72,7 +72,6 @@ async function _listFiles(
     if (dirExists) {
       try {
         const entries = await this.fs.listdir(filesPath, true);
-        console.error(JSON.stringify(entries, null, 2));
         const filteredEntries = filterTreeStructure(this.filter, entries, options?.filters);
         const flatPaths = flattenFilePaths(filteredEntries);
         debug?.("Listed %d files from store for version: %s", flatPaths.length, version);
