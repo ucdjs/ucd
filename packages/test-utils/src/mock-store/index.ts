@@ -3,7 +3,11 @@ import type { MockStoreConfig, MockStoreFiles } from "./types";
 import { createDebugger, isApiError } from "@ucdjs-internal/shared";
 import { HttpResponse } from "msw";
 import { mockFetch } from "../msw";
+import { defaultArabicShapingFileContent } from "./default-files/arabic-shaping";
+import { defaultBidiBracketsFileContent } from "./default-files/bidi-brackets";
+import { defaultDerivedBidClassFileContent } from "./default-files/derived-bidi-class";
 import { MOCK_ROUTES } from "./handlers";
+
 import {
   extractConfiguredMetadata,
   parseLatency,
@@ -17,26 +21,25 @@ const DEFAULT_MOCK_STORE_FILES = {
     {
       type: "file",
       name: "ArabicShaping.txt",
-      path: "ArabicShaping.txt",
       lastModified: 1755287100000,
+      _content: defaultArabicShapingFileContent,
     },
     {
       type: "file",
       name: "BidiBrackets.txt",
-      path: "BidiBrackets.txt",
       lastModified: 1755287100000,
+      _content: defaultBidiBracketsFileContent,
     },
     {
       type: "directory",
       name: "extracted",
-      path: "extracted",
       lastModified: 1755287100000,
       children: [
         {
           type: "file",
           name: "DerivedBidiClass.txt",
-          path: "extracted/DerivedBidiClass.txt",
           lastModified: 1755287100000,
+          _content: defaultDerivedBidClassFileContent,
         },
       ],
     },
@@ -61,7 +64,7 @@ export function mockStoreApi(config?: MockStoreConfig): void {
     const endpoint = route.endpoint;
 
     // Every endpoint is optional, but by default enabled
-    const response = responses?.[endpoint as keyof typeof responses] ?? true;
+    const response = responses?.[endpoint as keyof typeof responses] ?? false;
 
     // If explicitly disabled, skip
     if (response === false) continue;
@@ -167,4 +170,6 @@ function toMSWPath(endpoint: string): string {
 }
 
 export type { MockStoreConfig };
+export { createFileTree } from "./file-tree";
+export type { FileTreeInput, FileTreeNodeWithContent } from "./file-tree";
 export { configure, unsafeResponse } from "./helpers";
