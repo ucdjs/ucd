@@ -6,6 +6,7 @@ import {
   createDebugger,
   filterTreeStructure,
   flattenFilePaths,
+  normalizeTreeForFiltering,
   wrapTry,
 } from "@ucdjs-internal/shared";
 
@@ -183,34 +184,39 @@ export interface MirrorVersionReport {
 
   files: {
     /**
-     * List of successfully downloaded file paths
+     * List of successfully downloaded files
      */
-    downloaded: string[];
+    downloaded: ReportFile[];
 
     /**
-     * List of skipped file paths
+     * List of skipped files
      */
-    skipped: string[];
+    skipped: ReportFile[];
 
     /**
-     * List of failed file paths
+     * List of failed files
      */
-    failed: string[];
+    failed: ReportFile[];
   };
 
   /**
    * List of download errors with file paths and reasons
    */
-  errors: {
-    file: string;
+  errors: (ReportFile & {
     reason: string;
-  }[];
+  })[];
+}
+
+interface ReportFile {
+  name: string;
+  filePath: string;
 }
 
 /**
  * @internal
  */
 interface MirrorQueueItem {
+  name: string;
   version: string;
   filePath: string;
   localPath: string;
@@ -318,7 +324,10 @@ async function _mirror(
         );
       }
 
-      const filteredTree = filterTreeStructure(this.filter, result.data, options?.filters);
+      // Normalize the tree paths for filtering (strip version/ucd prefix)
+      // so that filter patterns like "Blocks.txt" or "auxiliary/**" match correctly
+      const normalizedTree = normalizeTreeForFiltering(version, result.data);
+      const filteredTree = filterTreeStructure(this.filter, normalizedTree, options?.filters);
       const filePaths = flattenFilePaths(filteredTree);
 
       debug?.(`Found ${filePaths.length} files for version ${version} after filtering`);
@@ -339,6 +348,7 @@ async function _mirror(
         );
 
         filesQueue.push({
+          name: normalized,
           version,
           filePath: normalized,
           localPath,
@@ -365,7 +375,10 @@ async function _mirror(
       try {
         // Skip if file exists and force is disabled
         if (!force && await this.fs.exists(item.localPath)) {
-          item.versionResult.files.skipped.push(item.localPath);
+          item.versionResult.files.skipped.push({
+            name: item.name,
+            filePath: item.localPath,
+          });
 
           return;
         }
@@ -409,12 +422,13 @@ async function _mirror(
         await this.fs.write!(item.localPath, content);
 
         // item.versionResult.files.downloaded.push(item.filePath);
-        item.versionResult.files.downloaded.push(item.localPath);
+        item.versionResult.files.downloaded.push({ name: item.name, filePath: item.localPath });
         totalDownloadedSize += contentSize;
       } catch (err) {
-        item.versionResult.files.failed.push(item.localPath);
+        item.versionResult.files.failed.push({ name: item.name, filePath: item.localPath });
         item.versionResult.errors.push({
-          file: item.localPath,
+          name: item.name,
+          filePath: item.localPath,
           reason: err instanceof Error ? err.message : String(err),
         });
 
@@ -441,13 +455,13 @@ async function _mirror(
         const snapshotFiles: Record<string, { hash: string; fileHash: string; size: number }> = {};
         let totalSize = 0;
 
-        for (const localPath of allFiles) {
-          const normalizedPath = localPath.startsWith(`${version}/`)
-            ? localPath.slice(version.length + 1)
-            : localPath;
+        for (const localFile of allFiles) {
+          const normalizedPath = localFile.filePath.startsWith(`${version}/`)
+            ? localFile.filePath.slice(version.length + 1)
+            : localFile.filePath;
 
-          debug?.(`Processing file for snapshot: version=${version}, localPath=${localPath}, normalizedPath=${normalizedPath}`);
-          const fileContent = await this.fs.read(localPath);
+          debug?.(`Processing file for snapshot: version=${version}, localPath=${localFile.filePath}, normalizedPath=${normalizedPath}`);
+          const fileContent = await this.fs.read(localFile.filePath);
 
           if (fileContent) {
             // Compute content hash (without Unicode header) for content comparison
