@@ -5,6 +5,7 @@ import type { InternalUCDStoreContext, SharedOperationOptions } from "../types";
 import {
   createDebugger,
   filterTreeStructure,
+  normalizeTreeForFiltering,
   wrapTry,
 } from "@ucdjs-internal/shared";
 import { isUCDStoreInternalContext } from "../context";
@@ -50,8 +51,10 @@ async function _getFileTree(
     if (dirExists) {
       try {
         const entries = await this.fs.listdir(localPath, true);
+        // Normalize tree paths for filtering (strip version/ucd prefix if present)
+        const normalizedEntries = normalizeTreeForFiltering(version, entries);
 
-        const filteredTree = filterTreeStructure(this.filter, entries, {
+        const filteredTree = filterTreeStructure(this.filter, normalizedEntries, {
           exclude: options?.filters?.exclude,
           include: options?.filters?.include,
         });
@@ -94,7 +97,10 @@ async function _getFileTree(
       });
     }
 
-    const filteredTree = filterTreeStructure(this.filter, result.data, {
+    // Normalize tree paths for filtering (strip version/ucd prefix)
+    const normalizedTree = normalizeTreeForFiltering(version, result.data);
+
+    const filteredTree = filterTreeStructure(this.filter, normalizedTree, {
       exclude: options?.filters?.exclude,
       include: options?.filters?.include,
     });
