@@ -5,6 +5,7 @@ import {
   createDebugger,
   filterTreeStructure,
   flattenFilePaths,
+  normalizeTreeForFiltering,
   wrapTry,
 } from "@ucdjs-internal/shared";
 import { isBuiltinHttpBridge } from "@ucdjs/fs-bridge";
@@ -72,7 +73,9 @@ async function _listFiles(
     if (dirExists) {
       try {
         const entries = await this.fs.listdir(filesPath, true);
-        const filteredEntries = filterTreeStructure(this.filter, entries, options?.filters);
+        // Normalize tree paths for filtering (strip version/ucd prefix if present)
+        const normalizedEntries = normalizeTreeForFiltering(version, entries);
+        const filteredEntries = filterTreeStructure(this.filter, normalizedEntries, options?.filters);
         const flatPaths = flattenFilePaths(filteredEntries);
         debug?.("Listed %d files from store for version: %s", flatPaths.length, version);
         debug?.("File paths: %O", flatPaths);
@@ -115,9 +118,11 @@ async function _listFiles(
       });
     }
 
+    // Normalize tree paths for filtering (strip version/ucd prefix)
+    const normalizedTree = normalizeTreeForFiltering(version, result.data);
     const entries = filterTreeStructure(
       this.filter,
-      result.data,
+      normalizedTree,
       options?.filters,
     );
 
