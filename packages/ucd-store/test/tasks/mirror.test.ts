@@ -235,9 +235,10 @@ describe("mirror", () => {
       expect(error).toBeNull();
       const report = data?.versions.get("16.0.0");
       expect(report?.counts.downloaded).toBe(2);
-      expect(report?.files.downloaded).toContain("UnicodeData.txt");
-      expect(report?.files.downloaded).toContain("Blocks.txt");
-      expect(report?.files.downloaded).not.toContain("Scripts.txt");
+      expect(report?.files.downloaded).toEqual([
+        { name: "UnicodeData.txt", filePath: "16.0.0/UnicodeData.txt" },
+        { name: "Blocks.txt", filePath: "16.0.0/Blocks.txt" },
+      ]);
     });
 
     it("should apply exclude filter to file selection", async () => {
@@ -268,9 +269,10 @@ describe("mirror", () => {
 
       expect(error).toBeNull();
       const report = data?.versions.get("16.0.0");
-      expect(report?.files.downloaded).toContain("UnicodeData.txt");
-      expect(report?.files.downloaded).toContain("Blocks.txt");
-      expect(report?.files.downloaded).not.toContain("Scripts.txt");
+      expect(report?.files.downloaded).toEqual([
+        { name: "UnicodeData.txt", filePath: "16.0.0/UnicodeData.txt" },
+        { name: "Blocks.txt", filePath: "16.0.0/Blocks.txt" },
+      ]);
     });
 
     it("should apply glob patterns for filtering", async () => {
@@ -304,10 +306,10 @@ describe("mirror", () => {
 
       expect(error).toBeNull();
       const report = data?.versions.get("16.0.0");
-      expect(report?.files.downloaded).toContain("auxiliary/GraphemeBreakProperty.txt");
-      expect(report?.files.downloaded).toContain("auxiliary/WordBreakProperty.txt");
-      expect(report?.files.downloaded).not.toContain("UnicodeData.txt");
-      expect(report?.files.downloaded).not.toContain("Blocks.txt");
+      expect(report?.files.downloaded).toEqual([
+        { name: "auxiliary/GraphemeBreakProperty.txt", filePath: "16.0.0/auxiliary/GraphemeBreakProperty.txt" },
+        { name: "auxiliary/WordBreakProperty.txt", filePath: "16.0.0/auxiliary/WordBreakProperty.txt" },
+      ]);
     });
   });
 
@@ -392,9 +394,11 @@ describe("mirror", () => {
       const report = data?.versions.get("16.0.0");
       expect(report?.counts.downloaded).toBe(2);
       expect(report?.counts.failed).toBe(1);
-      expect(report?.files.failed).toContain("Blocks.txt");
+      expect(report?.files.failed).toEqual([
+        { name: "Blocks.txt", filePath: "16.0.0/Blocks.txt" },
+      ]);
       expect(report?.errors).toHaveLength(1);
-      expect(report?.errors[0]?.file).toBe("Blocks.txt");
+      expect(report?.errors[0]?.filePath).toBe("16.0.0/Blocks.txt");
     });
   });
 
