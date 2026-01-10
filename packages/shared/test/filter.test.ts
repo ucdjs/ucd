@@ -35,6 +35,9 @@ describe("createPathFilter", () => {
       [["src/**", "lib/**"], "src/file.txt", true],
       [["src/**", "lib/**"], "lib/file.txt", true],
       [["src/**", "lib/**"], "test/file.txt", false],
+      // leading slash paths should still match relative patterns
+      [["src/**"], "/src/file.txt", true],
+      [["src/**"], "/src/", true],
     ])("with multiple include patterns %j, path \"%s\" should return %s", (include, path, expected) => {
       const filter = createPathFilter({ include });
       expect(filter(path)).toBe(expected);
@@ -79,6 +82,7 @@ describe("createPathFilter", () => {
     });
 
     it.each([
+      // typical project filter
       ["src/components/Button.tsx", true, "includes source tsx file"],
       ["src/utils/helper.js", true, "includes source js file"],
       ["src/components/Button.vue", true, "includes vue file"],
@@ -89,6 +93,9 @@ describe("createPathFilter", () => {
       ["src/utils/helper.spec.js", false, "excludes spec files"],
       ["README.md", false, "excludes non-matching extensions"],
       ["package.json", false, "excludes json files"],
+      ["/src/utils/helper.js", true, "leading slash should still match"],
+      ["/src/", false, "leading slash directory should not match file-only pattern"],
+      ["/node_modules/react/index.js", false, "leading slash excluded node_modules"],
     ])("typical project filter: path \"%s\" should return %s (%s)", (path, expected) => {
       const filter = createPathFilter({
         include: ["**/*.{js,ts,jsx,tsx,vue,svelte}"],
@@ -100,7 +107,6 @@ describe("createPathFilter", () => {
           "**/*.spec.*",
         ],
       });
-
       expect(filter(path)).toBe(expected);
     });
 
@@ -675,42 +681,42 @@ describe("filterTreeStructure", () => {
     {
       type: "file" as const,
       name: "root-file.txt",
-      path: "root-file.txt",
+      path: "/root-file.txt",
     },
     {
       type: "file" as const,
       name: "root-config.json",
-      path: "root-config.json",
+      path: "/root-config.json",
     },
     {
       type: "directory" as const,
       name: "extracted",
-      path: "extracted",
+      path: "/extracted/",
       children: [
         {
           type: "file" as const,
           name: "DerivedBidiClass.txt",
-          path: "extracted/DerivedBidiClass.txt",
+          path: "/extracted/DerivedBidiClass.txt",
         },
         {
           type: "file" as const,
           name: "config.json",
-          path: "extracted/config.json",
+          path: "/extracted/config.json",
         },
         {
           type: "directory" as const,
           name: "nested",
-          path: "extracted/nested",
+          path: "/extracted/nested/",
           children: [
             {
               type: "file" as const,
               name: "DeepFile.txt",
-              path: "extracted/nested/DeepFile.txt",
+              path: "/extracted/nested/DeepFile.txt",
             },
             {
               type: "file" as const,
               name: "debug.log",
-              path: "extracted/nested/debug.log",
+              path: "/extracted/nested/debug.log",
             },
           ],
         },
@@ -721,30 +727,32 @@ describe("filterTreeStructure", () => {
   describe("basic filtering", () => {
     it("should filter files based on extension", () => {
       const filter = createPathFilter({ include: ["**/*.json"] });
-      const result = filterTreeStructure(filter, tree);
+       const result = filterTreeStructure(filter, tree);
+ 
+       expect(result).toEqual([
+         {
+           type: "file",
+           name: "root-config.json",
+           path: "/root-config.json",
+         },
+         {
+           type: "directory",
+           name: "extracted",
+           path: "/extracted/",
+           children: [
+             {
+               type: "file",
+               name: "config.json",
+               path: "/extracted/config.json",
+             },
+           ],
+         },
+       ]);
+     });
+ 
+ 
+     it("should include all items when no filters are applied", () => {
 
-      expect(result).toEqual([
-        {
-          type: "file",
-          name: "root-config.json",
-          path: "root-config.json",
-        },
-        {
-          type: "directory",
-          name: "extracted",
-          path: "extracted",
-          children: [
-            {
-              type: "file",
-              name: "config.json",
-              path: "extracted/config.json",
-            },
-          ],
-        },
-      ]);
-    });
-
-    it("should include all items when no filters are applied", () => {
       const filter = createPathFilter();
       const result = filterTreeStructure(filter, tree);
 
@@ -761,27 +769,27 @@ describe("filterTreeStructure", () => {
         {
           type: "file",
           name: "root-file.txt",
-          path: "root-file.txt",
+          path: "/root-file.txt",
         },
         {
           type: "directory",
           name: "extracted",
-          path: "extracted",
+          path: "/extracted/",
           children: [
             {
               type: "file",
               name: "DerivedBidiClass.txt",
-              path: "extracted/DerivedBidiClass.txt",
+              path: "/extracted/DerivedBidiClass.txt",
             },
             {
               type: "directory",
               name: "nested",
-              path: "extracted/nested",
+              path: "/extracted/nested/",
               children: [
                 {
                   type: "file",
                   name: "DeepFile.txt",
-                  path: "extracted/nested/DeepFile.txt",
+                  path: "/extracted/nested/DeepFile.txt",
                 },
               ],
             },
@@ -800,17 +808,17 @@ describe("filterTreeStructure", () => {
         {
           type: "directory",
           name: "extracted",
-          path: "extracted",
+          path: "/extracted/",
           children: [
             {
               type: "directory",
               name: "nested",
-              path: "extracted/nested",
+              path: "/extracted/nested/",
               children: [
                 {
                   type: "file",
                   name: "DeepFile.txt",
-                  path: "extracted/nested/DeepFile.txt",
+                  path: "/extracted/nested/DeepFile.txt",
                 },
               ],
             },
@@ -834,32 +842,32 @@ describe("filterTreeStructure", () => {
         {
           type: "directory",
           name: "extracted",
-          path: "extracted",
+          path: "/extracted/",
           children: [
             {
               type: "file",
               name: "DerivedBidiClass.txt",
-              path: "extracted/DerivedBidiClass.txt",
+              path: "/extracted/DerivedBidiClass.txt",
             },
             {
               type: "file",
               name: "config.json",
-              path: "extracted/config.json",
+              path: "/extracted/config.json",
             },
             {
               type: "directory",
               name: "nested",
-              path: "extracted/nested",
+              path: "/extracted/nested/",
               children: [
                 {
                   type: "file",
                   name: "DeepFile.txt",
-                  path: "extracted/nested/DeepFile.txt",
+                  path: "/extracted/nested/DeepFile.txt",
                 },
                 {
                   type: "file",
                   name: "debug.log",
-                  path: "extracted/nested/debug.log",
+                  path: "/extracted/nested/debug.log",
                 },
               ],
             },
@@ -964,17 +972,17 @@ describe("filterTreeStructure", () => {
         {
           type: "directory",
           name: "extracted",
-          path: "extracted",
+          path: "/extracted/",
           children: [
             {
               type: "directory",
               name: "nested",
-              path: "extracted/nested",
+              path: "/extracted/nested/",
               children: [
                 {
                   type: "file",
                   name: "DeepFile.txt",
-                  path: "extracted/nested/DeepFile.txt",
+                  path: "/extracted/nested/DeepFile.txt",
                 },
               ],
             },
@@ -994,37 +1002,37 @@ describe("filterTreeStructure", () => {
         {
           type: "file",
           name: "root-file.txt",
-          path: "root-file.txt",
+          path: "/root-file.txt",
         },
         {
           type: "file",
           name: "root-config.json",
-          path: "root-config.json",
+          path: "/root-config.json",
         },
         {
           type: "directory",
           name: "extracted",
-          path: "extracted",
+          path: "/extracted/",
           children: [
             {
               type: "file",
               name: "DerivedBidiClass.txt",
-              path: "extracted/DerivedBidiClass.txt",
+              path: "/extracted/DerivedBidiClass.txt",
             },
             {
               type: "file",
               name: "config.json",
-              path: "extracted/config.json",
+              path: "/extracted/config.json",
             },
             {
               type: "directory",
               name: "nested",
-              path: "extracted/nested",
+              path: "/extracted/nested/",
               children: [
                 {
                   type: "file",
                   name: "DeepFile.txt",
-                  path: "extracted/nested/DeepFile.txt",
+                  path: "/extracted/nested/DeepFile.txt",
                 },
                 // debug.log should be excluded
               ],
