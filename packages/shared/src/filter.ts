@@ -141,6 +141,32 @@ export function createPathFilter(options: PathFilterOptions = {}): PathFilter {
   return filterFn;
 }
 
+function normalizeForMatching(value: string): string {
+  // 1) unify slashes
+  let normalized = value.replace(/\\/g, "/");
+
+  // 2) drop leading "./" segments
+  normalized = normalized.replace(/^\.\/+/, "");
+
+  // 3) drop leading slash to let relative globs match absolute-style inputs
+  normalized = normalized.replace(/^\//, "");
+
+  // 4) drop trailing slash so directory paths don't require it in patterns
+  normalized = normalized.replace(/\/$/, "");
+
+  return normalized;
+}
+
+function normalizePatterns(patterns: string[]): string[] {
+  const normalized: string[] = [];
+
+  for (let i = 0; i < patterns.length; i += 1) {
+    normalized.push(normalizeForMatching(patterns[i]!));
+  }
+
+  return normalized;
+}
+
 function internal__createFilterFunction(config: PathFilterOptions): PathFilterFn {
   // If include is empty or not set, include everything using "**" pattern
   const includePatterns = config.include && config.include.length > 0 ? config.include : ["**"];
@@ -153,14 +179,17 @@ function internal__createFilterFunction(config: PathFilterOptions): PathFilterFn
         ...(config.exclude || []),
       ];
 
+  const normalizedIncludePatterns = normalizePatterns(includePatterns);
+  const normalizedExcludePatterns = normalizePatterns(rawExcludePatterns);
+
   // Transform directory-only patterns to include their contents
   // e.g., "**/extracted" becomes both "**/extracted" and "**/extracted/**"
-  const excludePatterns = expandDirectoryPatterns(rawExcludePatterns);
+  const excludePatterns = expandDirectoryPatterns(normalizedExcludePatterns);
 
   return (path: string): boolean => {
-    const normalizedPath = path.replace(/\\/g, "/").replace(/^\.\//, "");
+    const normalizedPath = normalizeForMatching(path);
 
-    return picomatch.isMatch(normalizedPath, includePatterns, {
+    return picomatch.isMatch(normalizedPath, normalizedIncludePatterns, {
       ...DEFAULT_PICOMATCH_OPTIONS,
       ignore: excludePatterns,
     } satisfies PicomatchOptions);
