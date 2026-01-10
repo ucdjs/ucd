@@ -129,7 +129,7 @@ export async function runMirrorStore({ flags, versions }: CLIStoreMirrorCmdOptio
 
         if (report.counts.failed > 0) {
           output.log(`    ${red(`Failed: ${report.counts.failed}`)}`);
-          const errorMessages = report.errors.slice(0, 3).map((e) => `${e.file}: ${e.reason}`);
+          const errorMessages = report.errors.slice(0, 3).map((e) => `${e.filePath}: ${e.reason}`);
           list(errorMessages, { indent: 4, prefix: "-" });
           if (report.errors.length > 3) {
             output.log(`      ... and ${report.errors.length - 3} more errors`);
