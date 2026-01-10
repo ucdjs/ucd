@@ -105,9 +105,52 @@ function FilesExplorerPage() {
 
       <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
         <div className="flex items-center justify-between">
-          <h1 className="text-lg font-semibold">
-            {path ? `/${path}` : "File Explorer"}
-          </h1>
+          <div className="flex items-center gap-1 text-lg font-semibold">
+            {path
+              ? (
+                  <>
+                    <Link
+                      to="/explorer/files/$"
+                      params={{ _splat: "" }}
+                      className="hover:text-primary transition-colors"
+                    >
+                      / (root)
+                    </Link>
+                    {pathSegments.map((segment: string, index: number) => {
+                      const segmentPath = pathSegments.slice(0, index + 1).join("/");
+                      const isLast = index === pathSegments.length - 1;
+
+                      return (
+                        <span key={segmentPath} className="flex items-center gap-1">
+                          <span className="text-muted-foreground">&gt;</span>
+                          {isLast
+                            ? (
+                                <span>{segment}</span>
+                              )
+                            : (
+                                <Link
+                                  to="/explorer/files/$"
+                                  params={{ _splat: segmentPath }}
+                                  className="hover:text-primary transition-colors"
+                                >
+                                  {segment}
+                                </Link>
+                              )}
+                        </span>
+                      );
+                    })}
+                  </>
+                )
+              : (
+                  <Link
+                    to="/explorer/files/$"
+                    params={{ _splat: "" }}
+                    className="hover:text-primary transition-colors"
+                  >
+                    / (root)
+                  </Link>
+                )}
+          </div>
         </div>
 
         {isFile
