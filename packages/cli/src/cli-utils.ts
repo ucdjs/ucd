@@ -13,6 +13,7 @@ import {
 } from "farver/fast";
 import yargs from "yargs-parser";
 import pkg from "../package.json" with { type: "json" };
+import { CLIError } from "./errors";
 import { setJsonMode } from "./output";
 
 type CLICommand
@@ -260,6 +261,13 @@ export async function runCLI(args: string[]): Promise<void> {
     const cmd = resolveCommand(flags);
     await runCommand(cmd, flags);
   } catch (err) {
+    // If the error is instanceof CLIError, use its pretty printer.
+    if (err instanceof CLIError) {
+      err.toPrettyMessage();
+
+      process.exit(1);
+    }
+
     console.error(err);
     process.exit(1);
   } finally {
