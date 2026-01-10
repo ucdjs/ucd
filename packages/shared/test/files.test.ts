@@ -159,129 +159,6 @@ describe("findFileByPath", () => {
         lastModified: null,
       }],
     });
-
-    describe("normalizePathForFiltering", () => {
-      it("strips leading and trailing slashes", () => {
-        expect(normalizePathForFiltering("16.0.0", "/16.0.0/ucd/auxiliary/")).toBe("auxiliary");
-        expect(normalizePathForFiltering("16.0.0", "16.0.0/ucd/Blocks.txt")).toBe("Blocks.txt");
-      });
-
-      it("strips version prefix regardless of leading slash", () => {
-        expect(normalizePathForFiltering("17.0.0", "/17.0.0/ucd/auxiliary/Grapheme.txt")).toBe("auxiliary/Grapheme.txt");
-        expect(normalizePathForFiltering("17.0.0", "17.0.0/ucd/auxiliary/Grapheme.txt")).toBe("auxiliary/Grapheme.txt");
-      });
-
-      it("strips ucd/ when version uses UCD folder", () => {
-        expect(normalizePathForFiltering("16.0.0", "/16.0.0/ucd/Blocks.txt")).toBe("Blocks.txt");
-        expect(normalizePathForFiltering("16.0.0", "/16.0.0/ucd/auxiliary/Grapheme.txt")).toBe("auxiliary/Grapheme.txt");
-      });
-
-      it("keeps ucd/ when version does not use UCD folder", () => {
-        expect(normalizePathForFiltering("1.1.0", "/1.1.0/ucd/Blocks.txt")).toBe("ucd/Blocks.txt");
-      });
-
-      it("handles nested paths with all prefixes", () => {
-        expect(normalizePathForFiltering("16.0.0", "/16.0.0/ucd/auxiliary/LineBreak.txt")).toBe("auxiliary/LineBreak.txt");
-        expect(normalizePathForFiltering("16.0.0", "/16.0.0/ucd/emoji/emoji-data.txt")).toBe("emoji/emoji-data.txt");
-      });
-
-      it("no-ops when already normalized", () => {
-        expect(normalizePathForFiltering("16.0.0", "Blocks.txt")).toBe("Blocks.txt");
-        expect(normalizePathForFiltering("16.0.0", "auxiliary/LineBreak.txt")).toBe("auxiliary/LineBreak.txt");
-      });
-    });
-
-    describe("normalizeTreeForFiltering", () => {
-      it("normalizes file paths and preserves structure", () => {
-        const tree: UnicodeFileTreeNode[] = [
-          { type: "file", name: "Blocks.txt", path: "/16.0.0/ucd/Blocks.txt", lastModified: null },
-          {
-            type: "directory",
-            name: "auxiliary",
-            path: "/16.0.0/ucd/auxiliary/",
-            lastModified: null,
-            children: [
-              { type: "file", name: "Grapheme.txt", path: "/16.0.0/ucd/auxiliary/Grapheme.txt", lastModified: null },
-              {
-                type: "directory",
-                name: "nested",
-                path: "/16.0.0/ucd/auxiliary/nested/",
-                lastModified: null,
-                children: [
-                  { type: "file", name: "Deep.txt", path: "/16.0.0/ucd/auxiliary/nested/Deep.txt", lastModified: null },
-                ],
-              },
-            ],
-          },
-        ];
-
-        const normalized = normalizeTreeForFiltering("16.0.0", tree);
-
-        expect(normalized).toEqual([
-          { type: "file", name: "Blocks.txt", path: "Blocks.txt", lastModified: null },
-          {
-            type: "directory",
-            name: "auxiliary",
-            path: "auxiliary",
-            lastModified: null,
-            children: [
-              { type: "file", name: "Grapheme.txt", path: "auxiliary/Grapheme.txt", lastModified: null },
-              {
-                type: "directory",
-                name: "nested",
-                path: "auxiliary/nested",
-                lastModified: null,
-                children: [
-                  { type: "file", name: "Deep.txt", path: "auxiliary/nested/Deep.txt", lastModified: null },
-                ],
-              },
-            ],
-          },
-        ]);
-      });
-
-      it("retains ucd/ prefix when version lacks UCD folder", () => {
-        const tree: UnicodeFileTreeNode[] = [
-          { type: "file", name: "Blocks.txt", path: "/1.1.0/ucd/Blocks.txt", lastModified: null },
-          { type: "file", name: "ReadMe.txt", path: "/1.1.0/ReadMe.txt", lastModified: null },
-        ];
-
-        const normalized = normalizeTreeForFiltering("1.1.0", tree);
-
-        expect(normalized).toEqual([
-          { type: "file", name: "Blocks.txt", path: "ucd/Blocks.txt", lastModified: null },
-          { type: "file", name: "ReadMe.txt", path: "ReadMe.txt", lastModified: null },
-        ]);
-      });
-
-      it("handles trailing slashes on directories", () => {
-        const tree: UnicodeFileTreeNode[] = [
-          {
-            type: "directory",
-            name: "emoji",
-            path: "/17.0.0/ucd/emoji/",
-            lastModified: null,
-            children: [
-              { type: "file", name: "emoji-data.txt", path: "/17.0.0/ucd/emoji/emoji-data.txt", lastModified: null },
-            ],
-          },
-        ];
-
-        const normalized = normalizeTreeForFiltering("17.0.0", tree);
-
-        expect(normalized).toEqual([
-          {
-            type: "directory",
-            name: "emoji",
-            path: "emoji",
-            lastModified: null,
-            children: [
-              { type: "file", name: "emoji-data.txt", path: "emoji/emoji-data.txt", lastModified: null },
-            ],
-          },
-        ]);
-      });
-    });
   });
 
   it("should handle mixed files and directories", () => {
@@ -561,5 +438,128 @@ describe("flattenFilePaths", () => {
     ]);
 
     expect(result).toEqual(["/file1.txt", "/folder/nested.txt"]);
+  });
+});
+
+describe("normalizePathForFiltering", () => {
+  it("strips leading and trailing slashes", () => {
+    expect(normalizePathForFiltering("16.0.0", "/16.0.0/ucd/auxiliary/")).toBe("auxiliary");
+    expect(normalizePathForFiltering("16.0.0", "16.0.0/ucd/Blocks.txt")).toBe("Blocks.txt");
+  });
+
+  it("strips version prefix regardless of leading slash", () => {
+    expect(normalizePathForFiltering("17.0.0", "/17.0.0/ucd/auxiliary/Grapheme.txt")).toBe("auxiliary/Grapheme.txt");
+    expect(normalizePathForFiltering("17.0.0", "17.0.0/ucd/auxiliary/Grapheme.txt")).toBe("auxiliary/Grapheme.txt");
+  });
+
+  it("strips ucd/ when version uses UCD folder", () => {
+    expect(normalizePathForFiltering("16.0.0", "/16.0.0/ucd/Blocks.txt")).toBe("Blocks.txt");
+    expect(normalizePathForFiltering("16.0.0", "/16.0.0/ucd/auxiliary/Grapheme.txt")).toBe("auxiliary/Grapheme.txt");
+  });
+
+  it("keeps ucd/ when version does not use UCD folder", () => {
+    expect(normalizePathForFiltering("1.1.0", "/1.1.0/ucd/Blocks.txt")).toBe("ucd/Blocks.txt");
+  });
+
+  it("handles nested paths with all prefixes", () => {
+    expect(normalizePathForFiltering("16.0.0", "/16.0.0/ucd/auxiliary/LineBreak.txt")).toBe("auxiliary/LineBreak.txt");
+    expect(normalizePathForFiltering("16.0.0", "/16.0.0/ucd/emoji/emoji-data.txt")).toBe("emoji/emoji-data.txt");
+  });
+
+  it("no-ops when already normalized", () => {
+    expect(normalizePathForFiltering("16.0.0", "Blocks.txt")).toBe("Blocks.txt");
+    expect(normalizePathForFiltering("16.0.0", "auxiliary/LineBreak.txt")).toBe("auxiliary/LineBreak.txt");
+  });
+});
+
+describe("normalizeTreeForFiltering", () => {
+  it("normalizes file paths and preserves structure", () => {
+    const tree: UnicodeFileTreeNode[] = [
+      { type: "file", name: "Blocks.txt", path: "/16.0.0/ucd/Blocks.txt", lastModified: null },
+      {
+        type: "directory",
+        name: "auxiliary",
+        path: "/16.0.0/ucd/auxiliary/",
+        lastModified: null,
+        children: [
+          { type: "file", name: "Grapheme.txt", path: "/16.0.0/ucd/auxiliary/Grapheme.txt", lastModified: null },
+          {
+            type: "directory",
+            name: "nested",
+            path: "/16.0.0/ucd/auxiliary/nested/",
+            lastModified: null,
+            children: [
+              { type: "file", name: "Deep.txt", path: "/16.0.0/ucd/auxiliary/nested/Deep.txt", lastModified: null },
+            ],
+          },
+        ],
+      },
+    ];
+
+    const normalized = normalizeTreeForFiltering("16.0.0", tree);
+
+    expect(normalized).toEqual([
+      { type: "file", name: "Blocks.txt", path: "Blocks.txt", lastModified: null },
+      {
+        type: "directory",
+        name: "auxiliary",
+        path: "auxiliary",
+        lastModified: null,
+        children: [
+          { type: "file", name: "Grapheme.txt", path: "auxiliary/Grapheme.txt", lastModified: null },
+          {
+            type: "directory",
+            name: "nested",
+            path: "auxiliary/nested",
+            lastModified: null,
+            children: [
+              { type: "file", name: "Deep.txt", path: "auxiliary/nested/Deep.txt", lastModified: null },
+            ],
+          },
+        ],
+      },
+    ]);
+  });
+
+  it("retains ucd/ prefix when version lacks UCD folder", () => {
+    const tree: UnicodeFileTreeNode[] = [
+      { type: "file", name: "Blocks.txt", path: "/1.1.0/ucd/Blocks.txt", lastModified: null },
+      { type: "file", name: "ReadMe.txt", path: "/1.1.0/ReadMe.txt", lastModified: null },
+    ];
+
+    const normalized = normalizeTreeForFiltering("1.1.0", tree);
+
+    expect(normalized).toEqual([
+      { type: "file", name: "Blocks.txt", path: "ucd/Blocks.txt", lastModified: null },
+      { type: "file", name: "ReadMe.txt", path: "ReadMe.txt", lastModified: null },
+    ]);
+  });
+
+  it("handles trailing slashes on directories", () => {
+    const tree: UnicodeFileTreeNode[] = [
+      {
+        type: "directory",
+        name: "emoji",
+        path: "/17.0.0/ucd/emoji/",
+        lastModified: null,
+        children: [
+          { type: "file", name: "emoji-data.txt", path: "/17.0.0/ucd/emoji/emoji-data.txt", lastModified: null },
+        ],
+      },
+    ];
+
+    const normalized = normalizeTreeForFiltering("17.0.0", tree);
+
+    expect(normalized).toEqual([
+      {
+        type: "directory",
+        name: "emoji",
+        path: "emoji",
+        lastModified: null,
+        children: [
+          { type: "file", name: "emoji-data.txt", path: "emoji/emoji-data.txt", lastModified: null },
+        ],
+      },
+    ]);
   });
 });
