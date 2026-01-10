@@ -9,6 +9,7 @@ export interface CLILockfileCmdOptions {
 }
 
 const LOCKFILE_SUBCOMMANDS = [
+  "info",
   "hash",
 ] as const;
 export type Subcommand = (typeof LOCKFILE_SUBCOMMANDS)[number];
@@ -27,6 +28,7 @@ export async function runLockfileRoot(subcommand: string, { flags }: CLILockfile
       usage: "[command] [...flags]",
       tables: {
         Commands: [
+          ["info", "Display lockfile information and summary."],
           ["hash", "Compute content hash for a file (useful for debugging)."],
         ],
         Flags: [
@@ -36,6 +38,12 @@ export async function runLockfileRoot(subcommand: string, { flags }: CLILockfile
         ],
       },
     });
+    return;
+  }
+
+  if (subcommand === "info") {
+    const { runLockfileInfo } = await import("./info");
+    await runLockfileInfo({ flags });
     return;
   }
 
