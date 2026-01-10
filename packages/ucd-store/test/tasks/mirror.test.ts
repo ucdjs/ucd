@@ -47,8 +47,8 @@ describe("mirror", () => {
       expect(versionReport?.counts.failed).toBe(0);
 
       // Verify files were written
-      const unicodeData = await fs.read("16.0.0/UnicodeData.txt");
-      const blocks = await fs.read("16.0.0/Blocks.txt");
+      const unicodeData = await fs.read("/16.0.0/UnicodeData.txt");
+      const blocks = await fs.read("/16.0.0/Blocks.txt");
       expect(unicodeData).toBe(UNICODE_DATA_CONTENT);
       expect(blocks).toBe(BLOCKS_CONTENT);
     });
@@ -132,7 +132,7 @@ describe("mirror", () => {
       expect(data?.versions.get("16.0.0")?.counts.downloaded).toBe(1);
 
       // Existing file should NOT be overwritten
-      const existingFile = await fs.read("16.0.0/UnicodeData.txt");
+      const existingFile = await fs.read("/16.0.0/UnicodeData.txt");
       expect(existingFile).toBe("existing content");
     });
 
