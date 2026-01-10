@@ -2,9 +2,8 @@ import type { Prettify } from "@luxass/utils";
 import type { CLIArguments } from "../../cli-utils";
 import type { CLIStoreCmdSharedFlags } from "./_shared";
 import { UCDStoreGenericError } from "@ucdjs/ucd-store";
-import { green, red } from "farver/fast";
 import { printHelp } from "../../cli-utils";
-import { output } from "../../output";
+import { green, output, red } from "../../output";
 import { assertRemoteOrStoreDir, createStoreFromFlags, SHARED_FLAGS } from "./_shared";
 
 export interface CLIStoreAnalyzeCmdOptions {
@@ -34,8 +33,10 @@ export async function runAnalyzeStore({ flags, versions }: CLIStoreAnalyzeCmdOpt
   }
 
   if (!versions || versions.length === 0) {
-    output.info("No specific versions provided. Analyzing all versions in the store.");
+    output.log("No specific versions provided. Analyzing all versions in the store.");
   }
+
+  assertRemoteOrStoreDir(flags);
 
   const {
     storeDir,
@@ -44,20 +45,16 @@ export async function runAnalyzeStore({ flags, versions }: CLIStoreAnalyzeCmdOpt
     baseUrl,
     include: patterns,
     exclude: excludePatterns,
-    lockfileOnly,
   } = flags;
 
   try {
-    assertRemoteOrStoreDir(flags);
-
     const store = await createStoreFromFlags({
       baseUrl,
       storeDir,
       remote,
       include: patterns,
       exclude: excludePatterns,
-      versions,
-      lockfileOnly,
+      requireExistingStore: true,
     });
 
     const [analyzeData, analyzeError] = await store.analyze({
@@ -99,13 +96,13 @@ export async function runAnalyzeStore({ flags, versions }: CLIStoreAnalyzeCmdOpt
     }
 
     for (const [version, report] of analyzeData.entries()) {
-      output.info(`Version: ${version}`);
+      output.log(`Version: ${version}`);
       if (report.isComplete) {
-        output.info(`  Status: ${green("complete")}`);
+        output.log(`  Status: ${green("complete")}`);
       } else {
         output.warn(`  Status: ${red("incomplete")}`);
       }
-      output.info(`  Files: ${report.counts.present}`);
+      output.log(`  Files: ${report.counts.present}`);
       if (report.files.missing && report.files.missing.length > 0) {
         output.warn(`  Missing files: ${report.files.missing.length}`);
       }
@@ -114,7 +111,7 @@ export async function runAnalyzeStore({ flags, versions }: CLIStoreAnalyzeCmdOpt
       }
 
       if (report.counts.expected) {
-        output.info(`  Total files expected: ${report.counts.expected}`);
+        output.log(`  Total files expected: ${report.counts.expected}`);
       }
     }
   } catch (err) {

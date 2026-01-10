@@ -1,8 +1,7 @@
 import { createTestContext } from "#internal-pkg:test-utils/test-context";
 import { mockStoreApi } from "#test-utils/mock-store";
 import { describe, expect, it } from "vitest";
-import { getExpectedFilePaths } from "../../src/core/files";
-import { UCDStoreGenericError } from "../../src/errors";
+import { UCDStoreGenericError } from "../src/errors";
 
 describe("getExpectedFilePaths", () => {
   describe("successful retrieval", () => {
@@ -24,7 +23,7 @@ describe("getExpectedFilePaths", () => {
         versions: ["15.0.0"],
       });
 
-      const result = await getExpectedFilePaths(context.client, "15.0.0");
+      const result = await context.getExpectedFilePaths("15.0.0");
 
       expect(result).toEqual([
         "ReadMe.txt",
@@ -47,7 +46,7 @@ describe("getExpectedFilePaths", () => {
         versions: ["15.0.0"],
       });
 
-      const result = await getExpectedFilePaths(context.client, "15.0.0");
+      const result = await context.getExpectedFilePaths("15.0.0");
 
       expect(result).toEqual([]);
     });
@@ -71,7 +70,7 @@ describe("getExpectedFilePaths", () => {
       });
 
       await expect(
-        getExpectedFilePaths(context.client, "15.0.0"),
+        context.getExpectedFilePaths("15.0.0"),
       ).rejects.toThrow(UCDStoreGenericError);
     });
 
@@ -92,7 +91,7 @@ describe("getExpectedFilePaths", () => {
       });
 
       await expect(
-        getExpectedFilePaths(context.client, "15.0.0"),
+        context.getExpectedFilePaths("15.0.0"),
       ).rejects.toThrow();
     });
   });

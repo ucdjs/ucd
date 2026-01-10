@@ -2,8 +2,8 @@ import type { OperationResult } from "@ucdjs-internal/shared";
 import type { StoreError } from "../errors";
 import type { InternalUCDStoreContext, SharedOperationOptions } from "../types";
 import { createDebugger, wrapTry } from "@ucdjs-internal/shared";
-import { getExpectedFilePaths } from "../core/files";
-import { listFiles } from "./files/list";
+import { isUCDStoreInternalContext } from "../context";
+import { listFiles } from "../files/list";
 
 const debug = createDebugger("ucdjs:ucd-store:analyze");
 
@@ -84,31 +84,31 @@ export interface AnalysisReport {
 /**
  * Analyzes Unicode data in the store.
  *
- * @param {InternalUCDStoreContext} context - Internal store context
+ * @this {InternalUCDStoreContext} - Internal store context with client, filters, FS bridge, and configuration
  * @param {AnalyzeOptions} [options] - Analyze options
  * @returns {Promise<OperationResult<Map<string, AnalysisReport>, StoreError>>} Operation result
  */
-export async function analyze(
-  context: InternalUCDStoreContext,
+async function _analyze(
+  this: InternalUCDStoreContext,
   options?: AnalyzeOptions,
 ): Promise<OperationResult<Map<string, AnalysisReport>, StoreError>> {
   const results = new Map<string, AnalysisReport>();
 
   return wrapTry(async () => {
-    const versionsToAnalyze = options?.versions ?? context.versions;
+    const versionsToAnalyze = options?.versions ?? this.versions.resolved;
 
     const promises = versionsToAnalyze.map(async (version) => {
       // If version not in store, skip
-      if (!context.versions.includes(version)) {
+      if (!this.versions.resolved.includes(version)) {
         return null;
       }
 
-      const expectedFiles = await getExpectedFilePaths(context.client, version);
+      const expectedFiles = await this.getExpectedFilePaths(version);
       debug?.("Found expected files while analyzing: %O", expectedFiles);
 
       // Get files from store
       // Use allowApi: true to support HTTP bridge (read-only stores)
-      let [actualFiles, error] = await listFiles(context, version, {
+      let [actualFiles, error] = await listFiles(this, version, {
         allowApi: false,
         filters: options?.filters,
       });
@@ -190,6 +190,34 @@ export async function analyze(
 
     return results;
   });
+}
+
+export function analyze(
+  context: InternalUCDStoreContext,
+  options?: AnalyzeOptions,
+): Promise<OperationResult<Map<string, AnalysisReport>, StoreError>>;
+
+export function analyze(
+  this: InternalUCDStoreContext,
+  options?: AnalyzeOptions,
+): Promise<OperationResult<Map<string, AnalysisReport>, StoreError>>;
+
+export function analyze(
+  this: InternalUCDStoreContext | void,
+  thisOrContext?: InternalUCDStoreContext | AnalyzeOptions,
+  options?: AnalyzeOptions,
+): Promise<OperationResult<Map<string, AnalysisReport>, StoreError>> {
+  if (isUCDStoreInternalContext(thisOrContext)) {
+    // thisOrContext is the context
+    return _analyze.call(thisOrContext, options);
+  }
+
+  // 'this' is the context
+  // 'thisOrContext' is actually the 'options'
+  return _analyze.call(
+    this as InternalUCDStoreContext,
+    thisOrContext as AnalyzeOptions,
+  );
 }
 
 function getExtension(filePath: string): string {
