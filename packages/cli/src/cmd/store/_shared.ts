@@ -3,6 +3,7 @@ import type { Readable, Writable } from "node:stream";
 import { isCancel, multiselect } from "@clack/prompts";
 import { createHTTPUCDStore, createNodeUCDStore } from "@ucdjs/ucd-store";
 import { UNICODE_VERSION_METADATA } from "@unicode-utils/core";
+import { RemoteNotSupportedError, StoreConfigurationError, StoreDirIsRequiredError } from "../../errors";
 import { output, red } from "../../output";
 
 export interface CLIStoreCmdSharedFlags {
@@ -48,19 +49,11 @@ export const REMOTE_CAPABLE_FLAGS = [
  */
 export function assertLocalStore(flags: CLIStoreCmdSharedFlags): asserts flags is CLIStoreCmdSharedFlags & { storeDir: string } {
   if (flags.remote) {
-    output.error(red(`\n❌ Store Error:`));
-    output.error(`  The --remote flag is not supported for this command.`);
-    output.error("Please check the store configuration and try again.");
-    output.error("If you believe this is a bug, please report it at https://github.com/ucdjs/ucd/issues");
-    return;
+    throw new RemoteNotSupportedError();
   }
 
   if (!flags.storeDir) {
-    output.error(red(`\n❌ Store Error:`));
-    output.error(`  --store-dir is required. Please specify the directory where the UCD files should be stored.`);
-    output.error("Please check the store configuration and try again.");
-    output.error("If you believe this is a bug, please report it at https://github.com/ucdjs/ucd/issues");
-    return;
+    throw new StoreDirIsRequiredError();
   }
 
   void 0;
@@ -68,11 +61,7 @@ export function assertLocalStore(flags: CLIStoreCmdSharedFlags): asserts flags i
 
 export function assertRemoteOrStoreDir(flags: CLIStoreCmdSharedFlags): asserts flags is CLIStoreCmdSharedFlags & { remote: true } | { storeDir: string } {
   if (!flags.remote && !flags.storeDir) {
-    output.error(red(`\n❌ Store Error:`));
-    output.error(`  Either --remote or --store-dir must be specified.`);
-    output.error("Please check the store configuration and try again.");
-    output.error("If you believe this is a bug, please report it at https://github.com/ucdjs/ucd/issues");
-    return;
+    throw new StoreConfigurationError("Either --remote or --store-dir must be specified.");
   }
 
   void 0;
