@@ -727,32 +727,30 @@ describe("filterTreeStructure", () => {
   describe("basic filtering", () => {
     it("should filter files based on extension", () => {
       const filter = createPathFilter({ include: ["**/*.json"] });
-       const result = filterTreeStructure(filter, tree);
- 
-       expect(result).toEqual([
-         {
-           type: "file",
-           name: "root-config.json",
-           path: "/root-config.json",
-         },
-         {
-           type: "directory",
-           name: "extracted",
-           path: "/extracted/",
-           children: [
-             {
-               type: "file",
-               name: "config.json",
-               path: "/extracted/config.json",
-             },
-           ],
-         },
-       ]);
-     });
- 
- 
-     it("should include all items when no filters are applied", () => {
+      const result = filterTreeStructure(filter, tree);
 
+      expect(result).toEqual([
+        {
+          type: "file",
+          name: "root-config.json",
+          path: "/root-config.json",
+        },
+        {
+          type: "directory",
+          name: "extracted",
+          path: "/extracted/",
+          children: [
+            {
+              type: "file",
+              name: "config.json",
+              path: "/extracted/config.json",
+            },
+          ],
+        },
+      ]);
+    });
+
+    it("should include all items when no filters are applied", () => {
       const filter = createPathFilter();
       const result = filterTreeStructure(filter, tree);
 
