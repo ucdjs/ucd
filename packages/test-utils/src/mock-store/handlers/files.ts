@@ -142,18 +142,12 @@ export const filesRoute = defineMockRouteHandler({
 
           // If it's a file with _content, return the content
           if (fileNode && "_content" in fileNode && typeof fileNode._content === "string") {
-            let content = fileNode._content;
+            const content = fileNode._content;
             const contentLength = new TextEncoder().encode(content).length;
             const headers: Record<string, string> = {
               "Content-Type": "text/plain; charset=utf-8",
               [UCD_STAT_TYPE_HEADER]: "file",
             };
-
-            // Check if the content ends with a newline; if not, add one for better terminal display
-            if (!content.endsWith("\n")) {
-              headers["X-Content-Warning"] = "Content did not end with a newline; added for display purposes.";
-              content += "\n";
-            }
 
             // Only include size headers for HEAD requests (buffered response)
             if (isHeadRequest) {
