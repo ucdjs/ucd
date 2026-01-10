@@ -1,5 +1,6 @@
 import type { FileSystemBridgeOperations, FSEntry } from "@ucdjs/fs-bridge";
 import { Buffer } from "node:buffer";
+import { appendTrailingSlash, prependLeadingSlash } from "@luxass/utils/path";
 import { defineFileSystemBridge } from "@ucdjs/fs-bridge";
 import { FileEntrySchema } from "@ucdjs/schemas";
 import { z } from "zod";
@@ -10,6 +11,16 @@ import { z } from "zod";
  */
 function normalizeRootPath(path: string | undefined): string {
   return (!path || path === "." || path === "/") ? "" : path;
+}
+
+/**
+ * Formats a relative path to match FSEntry schema requirements (parity with node/http bridges):
+ * - Leading slash required for all paths
+ * - Trailing slash required for directories
+ */
+function formatEntryPath(relativePath: string, isDirectory: boolean): string {
+  const withLeadingSlash = prependLeadingSlash(relativePath);
+  return isDirectory ? appendTrailingSlash(withLeadingSlash) : withLeadingSlash;
 }
 
 /**
@@ -195,7 +206,7 @@ export const createMemoryMockFS = defineFileSystemBridge({
                   entries.push({
                     type: "directory" as const,
                     name: dirName,
-                    path: dirName,
+                    path: formatEntryPath(dirName, true),
                     children: [],
                   });
                 }
@@ -216,7 +227,7 @@ export const createMemoryMockFS = defineFileSystemBridge({
                   dirEntry = {
                     type: "directory" as const,
                     name: part,
-                    path: partPath,
+                    path: formatEntryPath(partPath, true),
                     children: [],
                   };
                   currentLevel.push(dirEntry);
@@ -237,7 +248,7 @@ export const createMemoryMockFS = defineFileSystemBridge({
               entries.push({
                 type: "file" as const,
                 name: parts[0],
-                path: relativePath,
+                path: formatEntryPath(relativePath, false),
               });
             } else if (parts.length > 1 && parts[0]) {
               // Directory (implicit from file path)
@@ -247,7 +258,7 @@ export const createMemoryMockFS = defineFileSystemBridge({
                 entries.push({
                   type: "directory" as const,
                   name: dirName,
-                  path: dirName,
+                  path: formatEntryPath(dirName, true),
                   children: [],
                 });
               }
@@ -267,7 +278,7 @@ export const createMemoryMockFS = defineFileSystemBridge({
                 currentLevel.push({
                   type: "file" as const,
                   name: part,
-                  path: partPath,
+                  path: formatEntryPath(partPath, false),
                 });
               } else {
                 // It's a directory - find or create it
@@ -279,7 +290,7 @@ export const createMemoryMockFS = defineFileSystemBridge({
                   dirEntry = {
                     type: "directory" as const,
                     name: part,
-                    path: partPath,
+                    path: formatEntryPath(partPath, true),
                     children: [],
                   };
                   currentLevel.push(dirEntry);

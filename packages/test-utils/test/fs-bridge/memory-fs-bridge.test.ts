@@ -133,8 +133,8 @@ describe("memory fs bridge", () => {
       const entries = await fs.listdir("", false);
       expect(entries).toHaveLength(2);
       expect(entries).toEqual(expect.arrayContaining([
-        { type: "file", name: "file1.txt", path: "file1.txt" },
-        { type: "file", name: "file2.txt", path: "file2.txt" },
+        { type: "file", name: "file1.txt", path: "/file1.txt" },
+        { type: "file", name: "file2.txt", path: "/file2.txt" },
       ]));
     });
 
@@ -149,8 +149,8 @@ describe("memory fs bridge", () => {
       const entries = await fs.listdir("", false);
       expect(entries).toHaveLength(2);
       expect(entries).toEqual(expect.arrayContaining([
-        { type: "file", name: "file.txt", path: "file.txt" },
-        { type: "directory", name: "dir", path: "dir", children: [] },
+        { type: "file", name: "file.txt", path: "/file.txt" },
+        { type: "directory", name: "dir", path: "/dir/", children: [] },
       ]));
     });
 
@@ -166,9 +166,9 @@ describe("memory fs bridge", () => {
       const entries = await fs.listdir("dir", false);
       expect(entries).toHaveLength(3);
       expect(entries).toEqual(expect.arrayContaining([
-        { type: "file", name: "file1.txt", path: "file1.txt" },
-        { type: "file", name: "file2.txt", path: "file2.txt" },
-        { type: "directory", name: "nested", path: "nested", children: [] },
+        { type: "file", name: "file1.txt", path: "/file1.txt" },
+        { type: "file", name: "file2.txt", path: "/file2.txt" },
+        { type: "directory", name: "nested", path: "/nested/", children: [] },
       ]));
     });
 
@@ -191,19 +191,19 @@ describe("memory fs bridge", () => {
       expect(entries).toHaveLength(2);
 
       const fileEntry = entries.find((e) => e.type === "file");
-      expect(fileEntry).toEqual({ type: "file", name: "file.txt", path: "file.txt" });
+      expect(fileEntry).toEqual({ type: "file", name: "file.txt", path: "/file.txt" });
 
       const dirEntry = entries.find((e) => e.type === "directory" && e.name === "dir");
       expect(dirEntry).toBeDefined();
       if (dirEntry?.type === "directory") {
         expect(dirEntry.children).toHaveLength(2);
         expect(dirEntry.children).toEqual(expect.arrayContaining([
-          { type: "file", name: "nested.txt", path: "dir/nested.txt" },
+          { type: "file", name: "nested.txt", path: "/dir/nested.txt" },
           {
             type: "directory",
             name: "deep",
-            path: "dir/deep",
-            children: [{ type: "file", name: "file.txt", path: "dir/deep/file.txt" }],
+            path: "/dir/deep/",
+            children: [{ type: "file", name: "file.txt", path: "/dir/deep/file.txt" }],
           },
         ]));
       }
@@ -238,7 +238,7 @@ describe("memory fs bridge", () => {
       expect(cDir.name).toBe("c");
       expect(cDir.children).toHaveLength(1);
 
-      expect(cDir.children[0]).toEqual({ type: "file", name: "file.txt", path: "a/b/c/file.txt" });
+      expect(cDir.children[0]).toEqual({ type: "file", name: "file.txt", path: "/a/b/c/file.txt" });
     });
   });
 
@@ -266,7 +266,7 @@ describe("memory fs bridge", () => {
     assertCapability(fs, "mkdir");
     await fs.mkdir("emptydir");
     const entries = await fs.listdir("", false);
-    expect(entries).toEqual([{ type: "directory", name: "emptydir", path: "emptydir", children: [] }]);
+    expect(entries).toEqual([{ type: "directory", name: "emptydir", path: "/emptydir/", children: [] }]);
   });
 
   it("should throw EISDIR when reading a directory", async () => {
