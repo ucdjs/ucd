@@ -13,6 +13,7 @@ import {
 } from "farver/fast";
 import yargs from "yargs-parser";
 import pkg from "../package.json" with { type: "json" };
+import { CLIError } from "./errors";
 import { setJsonMode } from "./output";
 
 type CLICommand
@@ -20,12 +21,14 @@ type CLICommand
     | "version"
     | "codegen"
     | "store"
-    | "files";
+    | "files"
+    | "lockfile";
 
 const SUPPORTED_COMMANDS = new Set<CLICommand>([
   "codegen",
   "store",
   "files",
+  "lockfile",
 ]);
 
 export interface GlobalCLIFlags {
@@ -177,6 +180,7 @@ export async function runCommand(cmd: CLICommand, flags: Arguments): Promise<voi
             ["download", "Download Unicode data files."],
             ["codegen", "Generate TypeScript code from UCD data."],
             ["files", "List and get files from the UCD API."],
+            ["lockfile", "Inspect and validate UCD store lockfiles."],
           ],
           "Global Flags": [
             ["--force", "Force the operation to run, even if it's not needed."],
@@ -210,6 +214,14 @@ export async function runCommand(cmd: CLICommand, flags: Arguments): Promise<voi
       const { runFilesRoot } = await import("./cmd/files/root");
       const subcommand = flags._[1]?.toString() ?? "";
       await runFilesRoot(subcommand, {
+        flags: flags as CLIFilesCmdOptions["flags"],
+      });
+      break;
+    }
+    case "lockfile": {
+      const { runLockfileRoot } = await import("./cmd/lockfile/root");
+      const subcommand = flags._[1]?.toString() ?? "";
+      await runLockfileRoot(subcommand, {
         flags: flags as CLIFilesCmdOptions["flags"],
       });
       break;
@@ -260,6 +272,13 @@ export async function runCLI(args: string[]): Promise<void> {
     const cmd = resolveCommand(flags);
     await runCommand(cmd, flags);
   } catch (err) {
+    // If the error is instanceof CLIError, use its pretty printer.
+    if (err instanceof CLIError) {
+      err.toPrettyMessage();
+
+      process.exit(1);
+    }
+
     console.error(err);
     process.exit(1);
   } finally {
