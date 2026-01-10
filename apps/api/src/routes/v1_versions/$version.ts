@@ -117,31 +117,31 @@ export const GET_VERSION_FILE_TREE_ROUTE = createRoute({
                 {
                   type: "file",
                   name: "ArabicShaping.txt",
-                  path: "ArabicShaping.txt",
+                  path: "/17.0.0/ucd/ArabicShaping.txt",
                   lastModified: 1724601900000,
                 },
                 {
                   type: "file",
                   name: "BidiBrackets.txt",
-                  path: "BidiBrackets.txt",
+                  path: "/17.0.0/ucd/BidiBrackets.txt",
                   lastModified: 1724601900000,
                 },
                 {
                   type: "directory",
                   name: "emoji",
-                  path: "emoji",
+                  path: "/17.0.0/ucd/emoji/",
                   lastModified: 1724669760000,
                   children: [
                     {
                       type: "file",
                       name: "ReadMe.txt",
-                      path: "ReadMe.txt",
+                      path: "/17.0.0/ucd/emoji/ReadMe.txt",
                       lastModified: 1724601900000,
                     },
                     {
                       type: "file",
                       name: "emoji-data.txt",
-                      path: "emoji-data.txt",
+                      path: "/17.0.0/ucd/emoji/emoji-data.txt",
                       lastModified: 1724601900000,
                     },
                   ],
@@ -254,6 +254,7 @@ export function registerVersionFileTreeRoute(router: OpenAPIHono<HonoEnv>) {
 
       const result = await traverse(`https://unicode.org/Public/${mappedVersion}${hasUCDFolderPath(mappedVersion) ? "/ucd" : ""}`, {
         format: "F2",
+        basePath: `/${mappedVersion}${hasUCDFolderPath(mappedVersion) ? "/ucd/" : "/"}`,
       });
 
       // We cast the result to UnicodeFileTree because the traverse function
