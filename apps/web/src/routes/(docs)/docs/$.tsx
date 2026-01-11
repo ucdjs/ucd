@@ -12,8 +12,8 @@ import {
   DocsTitle,
 } from "fumadocs-ui/layouts/docs/page";
 import defaultMdxComponents from "fumadocs-ui/mdx";
-import { source } from "@/lib/docs-loader";
-import { baseOptions } from "@/lib/layout.shared";
+import { baseOptions } from "@/lib/docs/docs-layout";
+import { source } from "@/lib/docs/docs-loader";
 
 const serverLoader = createServerFn({
   method: "GET",
@@ -51,7 +51,7 @@ const clientLoader = browserCollections.docs.createClientLoader({
   },
 });
 
-export const Route = createFileRoute("/docs/$")({
+export const Route = createFileRoute("/(docs)/docs/$")({
   component: Page,
   loader: async ({ params }) => {
     const slugs = params._splat?.split("/") ?? [];
