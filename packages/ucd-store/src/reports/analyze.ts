@@ -1,9 +1,24 @@
 import type { OperationResult } from "@ucdjs-internal/shared";
 import type { StoreError } from "../errors";
 import type { InternalUCDStoreContext, SharedOperationOptions } from "../types";
+import type {
+  BaseOperationReport,
+  BaseVersionReport,
+  FileCounts,
+  OperationMetrics,
+  ReportError,
+  ReportFile,
+} from "../types/reports";
+import { prependLeadingSlash } from "@luxass/utils";
 import { createDebugger, wrapTry } from "@ucdjs-internal/shared";
 import { isUCDStoreInternalContext } from "../context";
 import { listFiles } from "../files/list";
+import {
+  computeMetrics,
+  createEmptyFileCounts,
+  createEmptySummary,
+  createSummaryFromVersionReports,
+} from "../types/reports";
 
 const debug = createDebugger("ucdjs:ucd-store:analyze");
 
@@ -14,71 +29,69 @@ export interface AnalyzeOptions extends SharedOperationOptions {
   versions?: string[];
 }
 
+/**
+ * Files categorization in an analysis report.
+ */
 export interface AnalysisFilesReport {
   /**
-   * List of files that were found in the store for this version
-   *
-   * NOTE:
-   * This does not include orphaned files.
+   * List of files that were found in the store for this version.
+   * NOTE: This does not include orphaned files.
    */
-  present: readonly string[];
+  present: ReportFile[];
 
   /**
-   * List of orphaned files
+   * List of orphaned files (in store but not expected).
    */
-  orphaned: readonly string[];
+  orphaned: ReportFile[];
 
   /**
-   * List of files missing from the store
+   * List of files missing from the store.
    */
-  missing: readonly string[];
+  missing: ReportFile[];
 }
 
-export interface AnalysisCountsReport {
+/**
+ * Per-version analysis report.
+ * Extends BaseVersionReport for consistency with mirror/sync.
+ */
+export interface AnalysisVersionReport extends BaseVersionReport {
   /**
-   * Total number of files expected for this version
-   */
-  expected: number;
-
-  /**
-   * Number of files found in the store for this version
-   */
-  present: number;
-
-  /**
-   * Number of orphaned files for this version
-   */
-  orphaned: number;
-
-  /**
-   * Number of missing files for this version
-   */
-  missing: number;
-}
-
-export interface AnalysisReport {
-  /**
-   * The version analyzed
-   */
-  version: string;
-
-  /**
-   * Whether the version is complete
-   * This means all expected files are present and no orphaned files exist.
-   * If this is false, it indicates that some files are missing or there are orphaned files.
+   * Whether the version is complete.
+   * True if all expected files are present and no orphaned files exist.
    */
   isComplete: boolean;
 
+  /**
+   * Categorized file lists.
+   */
   files: AnalysisFilesReport;
 
-  counts: AnalysisCountsReport;
-
   /**
-   * Breakdown of file types by extension
-   *
-   * This provides insight into the composition of files within the version.
+   * Breakdown of file types by extension.
+   * Provides insight into the composition of files within the version.
    */
   fileTypes: Record<string, number>;
+}
+
+/**
+ * Complete analysis report for all versions.
+ * Extends BaseOperationReport for consistency with mirror/sync.
+ */
+export interface AnalysisReport extends BaseOperationReport {
+  /**
+   * Per-version analysis results.
+   */
+  versions: Map<string, AnalysisVersionReport>;
+}
+
+/**
+ * Helper to create a ReportFile from a file path.
+ */
+function createReportFile(version: string, filePath: string): ReportFile {
+  return {
+    name: filePath,
+    filePath: `/${version}/${filePath}`,
+  };
 }
 
 /**
@@ -86,35 +99,54 @@ export interface AnalysisReport {
  *
  * @this {InternalUCDStoreContext} - Internal store context with client, filters, FS bridge, and configuration
  * @param {AnalyzeOptions} [options] - Analyze options
- * @returns {Promise<OperationResult<Map<string, AnalysisReport>, StoreError>>} Operation result
+ * @returns {Promise<OperationResult<AnalysisReport, StoreError>>} Operation result
  */
 async function _analyze(
   this: InternalUCDStoreContext,
   options?: AnalyzeOptions,
-): Promise<OperationResult<Map<string, AnalysisReport>, StoreError>> {
-  const results = new Map<string, AnalysisReport>();
-
+): Promise<OperationResult<AnalysisReport, StoreError>> {
   return wrapTry(async () => {
+    const startTime = Date.now();
+    const versionReports = new Map<string, AnalysisVersionReport>();
+
     const versionsToAnalyze = options?.versions ?? this.versions.resolved;
 
-    const promises = versionsToAnalyze.map(async (version) => {
+    // Process versions sequentially to avoid race conditions
+    for (const version of versionsToAnalyze) {
       // If version not in store, skip
       if (!this.versions.resolved.includes(version)) {
-        return null;
+        continue;
       }
 
-      const expectedFiles = await this.getExpectedFilePaths(version);
-      debug?.("Found expected files while analyzing: %O", expectedFiles);
+      const versionStartTime = Date.now();
+      const errors: ReportError[] = [];
+
+      let expectedFiles: string[] = [];
+      try {
+        expectedFiles = await this.getExpectedFilePaths(version);
+        debug?.("Found expected files while analyzing: %O", expectedFiles);
+      } catch (err) {
+        errors.push({
+          name: "expected-files",
+          filePath: prependLeadingSlash(version),
+          reason: err instanceof Error ? err.message : String(err),
+        });
+      }
 
       // Get files from store
-      // Use allowApi: true to support HTTP bridge (read-only stores)
-      let [actualFiles, error] = await listFiles(this, version, {
+      // Use allowApi: false since analyze is for local store analysis
+      let [actualFiles, listError] = await listFiles(this, version, {
         allowApi: false,
         filters: options?.filters,
       });
 
-      if (error != null) {
-        throw error;
+      if (listError != null) {
+        errors.push({
+          name: "list-files",
+          filePath: prependLeadingSlash(version),
+          reason: listError.message,
+        });
+        actualFiles = [];
       }
 
       // Filter out the snapshot.json, since it is not expected to be there.
@@ -125,9 +157,9 @@ async function _analyze(
       const expectedSet = new Set(expectedFiles);
       const actualSet = new Set(actualFiles);
 
-      const files: string[] = [];
-      const orphanedFiles: string[] = [];
-      const missingFiles: string[] = [];
+      const presentFiles: ReportFile[] = [];
+      const orphanedFiles: ReportFile[] = [];
+      const missingFiles: ReportFile[] = [];
       const fileTypes: Record<string, number> = {};
 
       debug?.("Started analyzing files");
@@ -138,75 +170,85 @@ async function _analyze(
         fileTypes[ext] += 1;
 
         if (expectedSet.has(actualFile)) {
-          files.push(actualFile);
+          presentFiles.push(createReportFile(version, actualFile));
         } else {
-          orphanedFiles.push(actualFile);
+          orphanedFiles.push(createReportFile(version, actualFile));
         }
       }
 
       for (const expectedFile of expectedSet) {
         if (!actualSet.has(expectedFile)) {
-          missingFiles.push(expectedFile);
+          missingFiles.push(createReportFile(version, expectedFile));
         }
       }
 
       debug?.("Finished analyzing files");
 
-      const isComplete = orphanedFiles.length === 0 && missingFiles.length === 0;
+      // Sort file lists for deterministic output
+      presentFiles.sort((a, b) => a.name.localeCompare(b.name));
+      orphanedFiles.sort((a, b) => a.name.localeCompare(b.name));
+      missingFiles.sort((a, b) => a.name.localeCompare(b.name));
 
-      return {
+      const isComplete = orphanedFiles.length === 0 && missingFiles.length === 0 && errors.length === 0;
+
+      // Build counts using the unified FileCounts structure
+      const totalFiles = expectedFiles.length;
+      const counts: FileCounts = {
+        total: totalFiles,
+        success: presentFiles.length,
+        skipped: orphanedFiles.length, // orphaned files are "skipped" in analysis context
+        failed: missingFiles.length, // missing files are "failed" in analysis context
+      };
+
+      const versionDuration = Date.now() - versionStartTime;
+      const metrics: OperationMetrics = computeMetrics(counts, versionDuration);
+
+      const versionReport: AnalysisVersionReport = {
         version,
         isComplete,
         files: {
-          present: Object.freeze(files),
-          orphaned: Object.freeze(orphanedFiles),
-          missing: Object.freeze(missingFiles),
+          present: presentFiles,
+          orphaned: orphanedFiles,
+          missing: missingFiles,
         },
-        counts: {
-          get expected() {
-            return expectedFiles.length;
-          },
-          get present() {
-            return files.length;
-          },
-          get orphaned() {
-            return orphanedFiles.length;
-          },
-          get missing() {
-            return missingFiles.length;
-          },
-        },
+        counts,
+        metrics,
+        errors,
         fileTypes,
-      } satisfies AnalysisReport;
-    });
+      };
 
-    for await (const report of promises) {
-      if (report == null) {
-        continue;
-      }
-
-      results.set(report.version, report);
+      versionReports.set(version, versionReport);
     }
 
-    return results;
+    const duration = Date.now() - startTime;
+
+    // Create summary from version reports
+    // For analyze, we don't track storage size, so use 0
+    const summary = createSummaryFromVersionReports(versionReports, duration, 0);
+
+    return {
+      timestamp: new Date().toISOString(),
+      versions: versionReports,
+      summary,
+    };
   });
 }
 
 export function analyze(
   context: InternalUCDStoreContext,
   options?: AnalyzeOptions,
-): Promise<OperationResult<Map<string, AnalysisReport>, StoreError>>;
+): Promise<OperationResult<AnalysisReport, StoreError>>;
 
 export function analyze(
   this: InternalUCDStoreContext,
   options?: AnalyzeOptions,
-): Promise<OperationResult<Map<string, AnalysisReport>, StoreError>>;
+): Promise<OperationResult<AnalysisReport, StoreError>>;
 
 export function analyze(
   this: InternalUCDStoreContext | void,
   thisOrContext?: InternalUCDStoreContext | AnalyzeOptions,
   options?: AnalyzeOptions,
-): Promise<OperationResult<Map<string, AnalysisReport>, StoreError>> {
+): Promise<OperationResult<AnalysisReport, StoreError>> {
   if (isUCDStoreInternalContext(thisOrContext)) {
     // thisOrContext is the context
     return _analyze.call(thisOrContext, options);
