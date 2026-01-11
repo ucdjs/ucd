@@ -114,7 +114,7 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
       header("Summary");
 
       keyValue("Versions", String(mirrorResult.versions.size));
-      keyValue("Downloaded", `${green(String(counts.downloaded))} files`);
+      keyValue("Downloaded", `${green(String(counts.success))} files`);
       if (counts.skipped > 0) {
         keyValue("Skipped", `${yellow(String(counts.skipped))} files`);
       }

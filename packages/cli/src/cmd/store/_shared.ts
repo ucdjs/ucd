@@ -4,7 +4,6 @@ import { isCancel, multiselect } from "@clack/prompts";
 import { createHTTPUCDStore, createNodeUCDStore } from "@ucdjs/ucd-store";
 import { UNICODE_VERSION_METADATA } from "@unicode-utils/core";
 import { RemoteNotSupportedError, StoreConfigurationError, StoreDirIsRequiredError } from "../../errors";
-import { output, red } from "../../output";
 
 export interface CLIStoreCmdSharedFlags {
   storeDir?: string;

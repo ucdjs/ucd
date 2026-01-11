@@ -12,6 +12,7 @@ import type {
 } from "../types";
 import { prependLeadingSlash } from "@luxass/utils";
 import { createDebugger, wrapTry } from "@ucdjs-internal/shared";
+import { patheExtname } from "@ucdjs/path-utils";
 import { isUCDStoreInternalContext } from "../context";
 import { listFiles } from "../files/list";
 import {
@@ -28,9 +29,6 @@ export interface AnalyzeOptions extends SharedOperationOptions {
   versions?: string[];
 }
 
-/**
- * Files categorization in an analysis report.
- */
 export interface AnalysisFilesReport {
   /**
    * List of files that were found in the store for this version.
@@ -49,10 +47,6 @@ export interface AnalysisFilesReport {
   missing: ReportFile[];
 }
 
-/**
- * Per-version analysis report.
- * Extends BaseVersionReport for consistency with mirror/sync.
- */
 export interface AnalysisVersionReport extends BaseVersionReport {
   /**
    * Whether the version is complete.
@@ -72,10 +66,6 @@ export interface AnalysisVersionReport extends BaseVersionReport {
   fileTypes: Record<string, number>;
 }
 
-/**
- * Complete analysis report for all versions.
- * Extends BaseOperationReport for consistency with mirror/sync.
- */
 export interface AnalysisReport extends BaseOperationReport {
   /**
    * Per-version analysis results.
@@ -120,10 +110,11 @@ async function _analyze(
       const versionStartTime = Date.now();
       const errors: ReportError[] = [];
 
-      let expectedFiles: string[] = [];
+      let expectedFilePaths: string[] = [];
       try {
-        expectedFiles = await this.getExpectedFilePaths(version);
-        debug?.("Found expected files while analyzing: %O", expectedFiles);
+        expectedFilePaths = await this.getExpectedFilePaths(version);
+
+        debug?.("Found expected files while analyzing: %O", expectedFilePaths);
       } catch (err) {
         errors.push({
           name: "expected-files",
@@ -134,27 +125,26 @@ async function _analyze(
 
       // Get files from store
       // Use allowApi: false since analyze is for local store analysis
-      let [actualFiles, listError] = await listFiles(this, version, {
+      let [actualFilePaths, listFilesError] = await listFiles(this, version, {
         allowApi: false,
         filters: options?.filters,
       });
 
-      if (listError != null) {
+      if (listFilesError != null) {
         errors.push({
           name: "list-files",
           filePath: prependLeadingSlash(version),
-          reason: listError.message,
+          reason: listFilesError.message,
         });
-        actualFiles = [];
+        actualFilePaths = [];
       }
 
       // Filter out the snapshot.json, since it is not expected to be there.
-      actualFiles = (actualFiles || []).filter((file) => file !== "snapshot.json");
+      actualFilePaths = (actualFilePaths || []).filter((filePath) => !filePath.endsWith("snapshot.json"));
+      debug?.("Actual files while analyzing: %O", actualFilePaths);
 
-      debug?.("Actual files while analyzing: %O", actualFiles);
-
-      const expectedSet = new Set(expectedFiles);
-      const actualSet = new Set(actualFiles);
+      const expectedFilePathsSet = new Set(expectedFilePaths);
+      const actualFilePathsSet = new Set(actualFilePaths);
 
       const presentFiles: ReportFile[] = [];
       const orphanedFiles: ReportFile[] = [];
@@ -163,20 +153,20 @@ async function _analyze(
 
       debug?.("Started analyzing files");
 
-      for (const actualFile of actualSet) {
+      for (const actualFile of actualFilePathsSet) {
         const ext = getExtension(actualFile);
         fileTypes[ext] ??= 0;
         fileTypes[ext] += 1;
 
-        if (expectedSet.has(actualFile)) {
+        if (expectedFilePathsSet.has(actualFile)) {
           presentFiles.push(createReportFile(version, actualFile));
         } else {
           orphanedFiles.push(createReportFile(version, actualFile));
         }
       }
 
-      for (const expectedFile of expectedSet) {
-        if (!actualSet.has(expectedFile)) {
+      for (const expectedFile of expectedFilePathsSet) {
+        if (!actualFilePathsSet.has(expectedFile)) {
           missingFiles.push(createReportFile(version, expectedFile));
         }
       }
@@ -191,7 +181,7 @@ async function _analyze(
       const isComplete = orphanedFiles.length === 0 && missingFiles.length === 0 && errors.length === 0;
 
       // Build counts using the unified FileCounts structure
-      const totalFiles = expectedFiles.length;
+      const totalFiles = expectedFilePaths.length;
       const counts: FileCounts = {
         total: totalFiles,
         success: presentFiles.length,
