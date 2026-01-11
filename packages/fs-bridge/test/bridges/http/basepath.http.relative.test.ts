@@ -1,15 +1,13 @@
 import HTTPFileSystemBridge from "#internal:bridge/http";
 import { HttpResponse, mockFetch } from "#test-utils/msw";
-import { UCDJS_API_BASE_URL } from "@ucdjs/env";
+import { UCDJS_STORE_BASE_URL } from "@ucdjs/env";
 import { describe, expect, it } from "vitest";
 
 describe("http bridge - relative pathname scenarios", () => {
-  const baseUrl = `${UCDJS_API_BASE_URL}/api/v1/files`;
-
   describe("relative pathname with relative input", () => {
     it("should resolve relative paths correctly", async () => {
       mockFetch([
-        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/file.txt`, () => {
+        ["GET", `${UCDJS_STORE_BASE_URL}/file.txt`, () => {
           return new HttpResponse("content", {
             status: 200,
             headers: { "Content-Type": "text/plain" },
@@ -17,7 +15,7 @@ describe("http bridge - relative pathname scenarios", () => {
         }],
       ]);
 
-      const bridge = HTTPFileSystemBridge({ baseUrl });
+      const bridge = HTTPFileSystemBridge({ baseUrl: UCDJS_STORE_BASE_URL });
 
       const content = await bridge.read("file.txt");
       expect(content).toBe("content");
@@ -25,7 +23,7 @@ describe("http bridge - relative pathname scenarios", () => {
 
     it("should resolve nested relative paths", async () => {
       mockFetch([
-        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/v16.0.0/file.txt`, () => {
+        ["GET", `${UCDJS_STORE_BASE_URL}/16.0.0/file.txt`, () => {
           return new HttpResponse("content", {
             status: 200,
             headers: { "Content-Type": "text/plain" },
@@ -33,15 +31,15 @@ describe("http bridge - relative pathname scenarios", () => {
         }],
       ]);
 
-      const bridge = HTTPFileSystemBridge({ baseUrl });
+      const bridge = HTTPFileSystemBridge({ baseUrl: UCDJS_STORE_BASE_URL });
 
-      const content = await bridge.read("v16.0.0/file.txt");
+      const content = await bridge.read("/16.0.0/file.txt");
       expect(content).toBe("content");
     });
 
     it("should allow upward traversal within pathname", async () => {
       mockFetch([
-        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/file.txt`, () => {
+        ["GET", `${UCDJS_STORE_BASE_URL}/file.txt`, () => {
           return new HttpResponse("root content", {
             status: 200,
             headers: { "Content-Type": "text/plain" },
@@ -49,9 +47,9 @@ describe("http bridge - relative pathname scenarios", () => {
         }],
       ]);
 
-      const bridge = HTTPFileSystemBridge({ baseUrl });
+      const bridge = HTTPFileSystemBridge({ baseUrl: UCDJS_STORE_BASE_URL });
 
-      const content = await bridge.read("subdir/../file.txt");
+      const content = await bridge.read("/subdir/../file.txt");
       expect(content).toBe("root content");
     });
   });
@@ -59,7 +57,7 @@ describe("http bridge - relative pathname scenarios", () => {
   describe("relative pathname with absolute input (virtual filesystem)", () => {
     it("should treat absolute input as relative", async () => {
       mockFetch([
-        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/file.txt`, () => {
+        ["GET", `${UCDJS_STORE_BASE_URL}/file.txt`, () => {
           return new HttpResponse("content", {
             status: 200,
             headers: { "Content-Type": "text/plain" },
@@ -67,7 +65,7 @@ describe("http bridge - relative pathname scenarios", () => {
         }],
       ]);
 
-      const bridge = HTTPFileSystemBridge({ baseUrl });
+      const bridge = HTTPFileSystemBridge({ baseUrl: UCDJS_STORE_BASE_URL });
 
       // Absolute path should be treated as relative (virtual filesystem boundary)
       const content = await bridge.read("/file.txt");
@@ -76,7 +74,7 @@ describe("http bridge - relative pathname scenarios", () => {
 
     it("should treat absolute nested path as relative", async () => {
       mockFetch([
-        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/v16.0.0/file.txt`, () => {
+        ["GET", `${UCDJS_STORE_BASE_URL}/16.0.0/file.txt`, () => {
           return new HttpResponse("content", {
             status: 200,
             headers: { "Content-Type": "text/plain" },
@@ -84,9 +82,9 @@ describe("http bridge - relative pathname scenarios", () => {
         }],
       ]);
 
-      const bridge = HTTPFileSystemBridge({ baseUrl });
+      const bridge = HTTPFileSystemBridge({ baseUrl: UCDJS_STORE_BASE_URL });
 
-      const content = await bridge.read("/v16.0.0/file.txt");
+      const content = await bridge.read("/16.0.0/file.txt");
       expect(content).toBe("content");
     });
   });
@@ -94,7 +92,7 @@ describe("http bridge - relative pathname scenarios", () => {
   describe("relative pathname edge cases", () => {
     it("should handle root reference", async () => {
       mockFetch([
-        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files`, () => {
+        ["GET", UCDJS_STORE_BASE_URL, () => {
           return new HttpResponse(JSON.stringify([]), {
             status: 200,
             headers: { "Content-Type": "application/json" },
@@ -102,7 +100,7 @@ describe("http bridge - relative pathname scenarios", () => {
         }],
       ]);
 
-      const bridge = HTTPFileSystemBridge({ baseUrl });
+      const bridge = HTTPFileSystemBridge({ baseUrl: UCDJS_STORE_BASE_URL });
 
       const entries = await bridge.listdir("/");
       expect(entries).toEqual([]);
@@ -110,7 +108,7 @@ describe("http bridge - relative pathname scenarios", () => {
 
     it("should handle current directory reference", async () => {
       mockFetch([
-        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files`, () => {
+        ["GET", UCDJS_STORE_BASE_URL, () => {
           return new HttpResponse(JSON.stringify([]), {
             status: 200,
             headers: { "Content-Type": "application/json" },
@@ -118,7 +116,7 @@ describe("http bridge - relative pathname scenarios", () => {
         }],
       ]);
 
-      const bridge = HTTPFileSystemBridge({ baseUrl });
+      const bridge = HTTPFileSystemBridge({ baseUrl: UCDJS_STORE_BASE_URL });
 
       const entries = await bridge.listdir(".");
       expect(entries).toEqual([]);
@@ -126,7 +124,7 @@ describe("http bridge - relative pathname scenarios", () => {
 
     it("should handle empty path", async () => {
       mockFetch([
-        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files`, () => {
+        ["GET", UCDJS_STORE_BASE_URL, () => {
           return new HttpResponse(JSON.stringify([]), {
             status: 200,
             headers: { "Content-Type": "application/json" },
@@ -134,7 +132,7 @@ describe("http bridge - relative pathname scenarios", () => {
         }],
       ]);
 
-      const bridge = HTTPFileSystemBridge({ baseUrl });
+      const bridge = HTTPFileSystemBridge({ baseUrl: UCDJS_STORE_BASE_URL });
 
       const entries = await bridge.listdir("");
       expect(entries).toEqual([]);
@@ -144,7 +142,7 @@ describe("http bridge - relative pathname scenarios", () => {
   describe("all bridge methods with relative pathname", () => {
     it("should work with read", async () => {
       mockFetch([
-        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/file.txt`, () => {
+        ["GET", `${UCDJS_STORE_BASE_URL}/file.txt`, () => {
           return new HttpResponse("content", {
             status: 200,
             headers: { "Content-Type": "text/plain" },
@@ -152,27 +150,27 @@ describe("http bridge - relative pathname scenarios", () => {
         }],
       ]);
 
-      const bridge = HTTPFileSystemBridge({ baseUrl });
+      const bridge = HTTPFileSystemBridge({ baseUrl: UCDJS_STORE_BASE_URL });
 
-      const content = await bridge.read("file.txt");
+      const content = await bridge.read("/file.txt");
       expect(content).toBe("content");
     });
 
     it("should work with exists", async () => {
       mockFetch([
-        ["HEAD", `${UCDJS_API_BASE_URL}/api/v1/files/file.txt`, () => {
+        ["HEAD", `${UCDJS_STORE_BASE_URL}/file.txt`, () => {
           return new HttpResponse(null, { status: 200 });
         }],
       ]);
 
-      const bridge = HTTPFileSystemBridge({ baseUrl });
+      const bridge = HTTPFileSystemBridge({ baseUrl: UCDJS_STORE_BASE_URL });
 
       expect(await bridge.exists("file.txt")).toBe(true);
     });
 
     it("should work with listdir", async () => {
       mockFetch([
-        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files`, () => {
+        ["GET", UCDJS_STORE_BASE_URL, () => {
           return new HttpResponse(JSON.stringify([
             { type: "file", name: "file1.txt", path: "/file1.txt", lastModified: Date.now() },
             { type: "file", name: "file2.txt", path: "/file2.txt", lastModified: Date.now() },
@@ -183,7 +181,7 @@ describe("http bridge - relative pathname scenarios", () => {
         }],
       ]);
 
-      const bridge = HTTPFileSystemBridge({ baseUrl });
+      const bridge = HTTPFileSystemBridge({ baseUrl: UCDJS_STORE_BASE_URL });
 
       const entries = await bridge.listdir("");
       expect(entries).toHaveLength(2);
