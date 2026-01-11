@@ -2,11 +2,12 @@ import type { FileEntry } from "@ucdjs/schemas";
 import HTTPFileSystemBridge from "#internal:bridge/http";
 import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { flattenFilePaths } from "@ucdjs-internal/shared";
+import { UCDJS_STORE_BASE_URL } from "@ucdjs/env";
 import { describe, expect, it } from "vitest";
 import { assertCapability } from "../../../src";
 
 describe("http fs-bridge", () => {
-  const baseUrl = "https://api.ucdjs.dev";
+  const baseUrl = UCDJS_STORE_BASE_URL;
   const bridge = HTTPFileSystemBridge({ baseUrl });
 
   describe("read operation", () => {
