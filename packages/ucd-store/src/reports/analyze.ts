@@ -12,7 +12,6 @@ import type {
 } from "../types";
 import { prependLeadingSlash } from "@luxass/utils";
 import { createDebugger, wrapTry } from "@ucdjs-internal/shared";
-import { patheExtname } from "@ucdjs/path-utils";
 import { isUCDStoreInternalContext } from "../context";
 import { listFiles } from "../files/list";
 import {
