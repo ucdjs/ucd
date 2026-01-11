@@ -1,6 +1,5 @@
 /* eslint-disable no-console */
 import type { OpenAPIHono } from "@hono/zod-openapi";
-import type { Entry } from "apache-autoindex-parse";
 import type { HonoEnv } from "../../types";
 import { createRoute, z } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
@@ -15,9 +14,16 @@ import {
 } from "@ucdjs/env";
 import { FileEntryListSchema } from "@ucdjs/schemas";
 import { cache } from "hono/cache";
-import { HTML_EXTENSIONS, MAX_AGE_ONE_WEEK_SECONDS } from "../../constants";
+import { MAX_AGE_ONE_WEEK_SECONDS } from "../../constants";
 import { badGateway, badRequest, notFound } from "../../lib/errors";
-import { applyDirectoryFiltersAndSort, parseUnicodeDirectory } from "../../lib/files";
+import {
+  applyDirectoryFiltersAndSort,
+  determineFileExtension,
+  handleDirectoryResponse,
+  handleFileResponse,
+  isDirectoryListing,
+  parseUnicodeDirectory,
+} from "../../lib/files";
 import { generateReferences, OPENAPI_TAGS } from "../../openapi";
 import {
   ORDER_QUERY_PARAM,
@@ -267,36 +273,6 @@ export const METADATA_WILDCARD_ROUTE = createRoute({
   },
 });
 
-function buildDirectoryHeaders(files: Entry[], baseHeaders: Record<string, string>): Record<string, string> {
-  return {
-    ...baseHeaders,
-    [UCD_STAT_TYPE_HEADER]: "directory",
-    [UCD_STAT_CHILDREN_HEADER]: `${files.length}`,
-    [UCD_STAT_CHILDREN_FILES_HEADER]: `${files.filter((f) => f.type === "file").length}`,
-    [UCD_STAT_CHILDREN_DIRS_HEADER]: `${files.filter((f) => f.type === "directory").length}`,
-  };
-}
-
-function buildFileHeaders(
-  contentType: string,
-  baseHeaders: Record<string, string>,
-  response: Response,
-  actualContentLength: number,
-): Record<string, string> {
-  const headers: Record<string, string> = {
-    "Content-Type": contentType,
-    ...baseHeaders,
-    [UCD_STAT_TYPE_HEADER]: "file",
-    [UCD_STAT_SIZE_HEADER]: `${actualContentLength}`,
-    "Content-Length": `${actualContentLength}`,
-  };
-
-  const cd = response.headers.get("Content-Disposition");
-  if (cd) headers["Content-Disposition"] = cd;
-
-  return headers;
-}
-
 export function registerWildcardRoute(router: OpenAPIHono<HonoEnv>) {
   router.openAPIRegistry.registerPath(WILDCARD_ROUTE);
   router.openAPIRegistry.registerPath(METADATA_WILDCARD_ROUTE);
@@ -347,14 +323,11 @@ export function registerWildcardRoute(router: OpenAPIHono<HonoEnv>) {
       if (lastModified) baseHeaders["Last-Modified"] = lastModified;
 
       const leaf = normalizedPath.split("/").pop() ?? "";
-      const extName = leaf.includes(".") ? leaf.split(".").pop()!.toLowerCase() : "";
-      const isHtmlFile = HTML_EXTENSIONS.includes(`.${extName}`);
-
-      // check if this is a directory listing (HTML response for non-HTML files)
-      const isDirectoryListing = contentType.includes("text/html") && !isHtmlFile;
+      const extName = determineFileExtension(leaf);
+      const isDir = isDirectoryListing(contentType, extName);
 
       console.info(`[v1_files]: fetched content type: ${contentType} for .${extName} file`);
-      if (isDirectoryListing) {
+      if (isDir) {
         const html = await response.text();
         const parsedFiles = await parseUnicodeDirectory(html, normalizedPath || "/");
 
@@ -382,8 +355,10 @@ export function registerWildcardRoute(router: OpenAPIHono<HonoEnv>) {
           order: c.req.query("order"),
         });
 
-        const headers = buildDirectoryHeaders(files, baseHeaders);
-        return c.json(files, 200, headers);
+        return handleDirectoryResponse(c, {
+          files,
+          baseHeaders,
+        });
       }
 
       // Handle file response
@@ -393,27 +368,12 @@ export function registerWildcardRoute(router: OpenAPIHono<HonoEnv>) {
 
       const isHeadRequest = c.req.method === "HEAD";
 
-      // For HEAD requests, buffer to calculate accurate size
-      if (isHeadRequest) {
-        const blob = await response.blob();
-        const actualSize = blob.size;
-        const headers = buildFileHeaders(contentType, baseHeaders, response, actualSize);
-        console.log(`[v1_files]: HEAD request, calculated size: ${actualSize}`);
-        return c.newResponse(null, 200, headers);
-      }
-
-      const headers: Record<string, string> = {
-        "Content-Type": contentType,
-        ...baseHeaders,
-        [UCD_STAT_TYPE_HEADER]: "file",
-      };
-
-      const cd = response.headers.get("Content-Disposition");
-      if (cd) headers["Content-Disposition"] = cd;
-
-      console.log(`[v1_files]: binary file, streaming without buffering`);
-
-      return c.newResponse(response.body, 200, headers);
+      return await handleFileResponse(c, {
+        contentType,
+        baseHeaders,
+        response,
+        isHeadRequest,
+      });
     },
   );
 }
