@@ -1035,6 +1035,9 @@ importers:
       '@ucdjs/lockfile':
         specifier: workspace:*
         version: link:../lockfile
+      '@ucdjs/path-utils':
+        specifier: workspace:*
+        version: link:../path-utils
       '@ucdjs/schemas':
         specifier: workspace:*
         version: link:../schemas
@@ -1044,9 +1047,6 @@ importers:
       defu:
         specifier: catalog:prod
         version: 6.1.4
-      pathe:
-        specifier: catalog:prod
-        version: 2.0.3
       zod:
         specifier: catalog:prod
         version: 4.3.5

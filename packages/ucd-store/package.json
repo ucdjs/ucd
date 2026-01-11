@@ -51,10 +51,10 @@
     "@ucdjs/env": "workspace:*",
     "@ucdjs/fs-bridge": "workspace:*",
     "@ucdjs/lockfile": "workspace:*",
+    "@ucdjs/path-utils": "workspace:*",
     "@ucdjs/schemas": "workspace:*",
     "@unicode-utils/core": "catalog:prod",
     "defu": "catalog:prod",
-    "pathe": "catalog:prod",
     "zod": "catalog:prod"
   },
   "devDependencies": {
