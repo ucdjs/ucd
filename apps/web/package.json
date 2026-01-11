@@ -45,6 +45,7 @@
     "@types/node": "catalog:types",
     "@types/react": "catalog:types",
     "@types/react-dom": "catalog:types",
+    "@ucdjs-tooling/tsconfig": "workspace:*",
     "@vitejs/plugin-react": "catalog:web",
     "babel-plugin-react-compiler": "catalog:web",
     "eslint": "catalog:linting",
