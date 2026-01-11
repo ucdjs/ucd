@@ -77,32 +77,37 @@ export async function runAnalyzeStore({ flags, versions }: CLIStoreAnalyzeCmdOpt
     }
 
     if (json) {
-      // Convert Map to object for JSON serialization
-      const analyzeDataObj = Object.fromEntries(
-        Array.from(analyzeData.entries()).map(([version, report]) => [
-          version,
-          {
-            ...report,
-            files: {
-              ...report.files,
-              missing: Array.from(report.files.missing || []),
-              orphaned: Array.from(report.files.orphaned || []),
+      // Convert Map to plain object for JSON serialization
+      const analyzeDataObj = {
+        ...analyzeData,
+        versions: Object.fromEntries(
+          Array.from(analyzeData.versions.entries()).map(([version, report]) => [
+            version,
+            {
+              ...report,
+              files: {
+                ...report.files,
+                missing: report.files.missing ?? [],
+                orphaned: report.files.orphaned ?? [],
+                present: report.files.present ?? [],
+              },
             },
-          },
-        ]),
-      );
+          ]),
+        ),
+      };
+
       output.json(analyzeDataObj);
       return;
     }
 
-    for (const [version, report] of analyzeData.entries()) {
+    for (const [version, report] of analyzeData.versions.entries()) {
       output.log(`Version: ${version}`);
       if (report.isComplete) {
         output.log(`  Status: ${green("complete")}`);
       } else {
         output.warn(`  Status: ${red("incomplete")}`);
       }
-      output.log(`  Files: ${report.counts.present}`);
+      output.log(`  Files: ${report.counts.success}`);
       if (report.files.missing && report.files.missing.length > 0) {
         output.warn(`  Missing files: ${report.files.missing.length}`);
       }
@@ -110,8 +115,8 @@ export async function runAnalyzeStore({ flags, versions }: CLIStoreAnalyzeCmdOpt
         output.warn(`  Orphaned files: ${report.files.orphaned.length}`);
       }
 
-      if (report.counts.expected) {
-        output.log(`  Total files expected: ${report.counts.expected}`);
+      if (report.counts.total) {
+        output.log(`  Total files expected: ${report.counts.total}`);
       }
     }
   } catch (err) {

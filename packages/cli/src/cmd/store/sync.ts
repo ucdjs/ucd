@@ -136,7 +136,7 @@ export async function runSyncStore({ flags, versions }: CLIStoreSyncCmdOptions) 
         header("Mirror Summary");
 
         keyValue("Versions", String(report.versions.size));
-        keyValue("Downloaded", `${green(String(counts.downloaded))} files`);
+        keyValue("Downloaded", `${green(String(counts.success))} files`);
         keyValue("Skipped", `${yellow(String(counts.skipped))} files`);
         if (counts.failed > 0) {
           keyValue("Failed", `${red(String(counts.failed))} files`);
@@ -151,7 +151,7 @@ export async function runSyncStore({ flags, versions }: CLIStoreSyncCmdOptions) 
 
         for (const [version, versionReport] of report.versions) {
           output.log(`  ${cyan(version)}`);
-          output.log(`    Downloaded: ${green(String(versionReport.counts.downloaded))}, Skipped: ${yellow(String(versionReport.counts.skipped))}`);
+          output.log(`    Downloaded: ${green(String(versionReport.counts.success))}, Skipped: ${yellow(String(versionReport.counts.skipped))}`);
           if (versionReport.counts.failed > 0) {
             output.log(`    ${red(`Failed: ${versionReport.counts.failed}`)}`);
           }

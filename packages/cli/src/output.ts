@@ -288,7 +288,7 @@ export function keyValue(key: string, value: string, options: KeyValueOptions = 
  * //   • file2.txt
  * //   ... and 20 more
  */
-export function list(items: string[], options: ListOptions = {}): void {
+export function list(items: ({ name: string; filePath: string } | string)[], options: ListOptions = {}): void {
   if (jsonMode) return;
   const {
     prefix = "•",
@@ -301,7 +301,11 @@ export function list(items: string[], options: ListOptions = {}): void {
   const displayItems = items.slice(0, maxItems);
 
   for (const item of displayItems) {
-    const displayItem = itemColor ? itemColor(item) : item;
+    const displayItem = itemColor
+      ? itemColor(
+          typeof item === "string" ? item : item.filePath,
+        )
+      : (typeof item === "string" ? item : item.filePath);
     console.log(`${ind}${prefix} ${displayItem}`);
   }
 
