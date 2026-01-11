@@ -24,10 +24,10 @@ import { getFile } from "./files/get";
 import { listFiles } from "./files/list";
 import { getFileTree } from "./files/tree";
 import { analyze } from "./reports/analyze";
-import { initLockfile } from "./setup/init-lockfile";
-import { verify } from "./setup/verify";
 import { mirror } from "./tasks/mirror";
 import { sync } from "./tasks/sync";
+import { initLockfile } from "./utils/lockfile";
+import { verify } from "./utils/verify";
 
 const debug = createDebugger("ucdjs:ucd-store");
 

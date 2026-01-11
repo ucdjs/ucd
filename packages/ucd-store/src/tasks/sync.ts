@@ -1,7 +1,11 @@
 import type { OperationResult } from "@ucdjs-internal/shared";
 import type { StoreError } from "../errors";
-import type { InternalUCDStoreContext, SharedOperationOptions } from "../types";
-import type { BaseOperationReport, OperationSummary, ReportFile } from "../types/reports";
+import type {
+  BaseOperationReport,
+  InternalUCDStoreContext,
+  ReportFile,
+  SharedOperationOptions,
+} from "../types";
 import type { MirrorReport } from "./mirror";
 import { prependLeadingSlash } from "@luxass/utils";
 import {
@@ -17,11 +21,10 @@ import {
   writeLockfile,
 } from "@ucdjs/lockfile";
 import { patheBasename } from "@ucdjs/path-utils";
-import { join } from "pathe";
 import { isUCDStoreInternalContext } from "../context";
 import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../errors";
 import { listFiles } from "../files/list";
-import { createEmptySummary } from "../types/reports";
+import { createEmptySummary } from "../utils/reports";
 import { mirror } from "./mirror";
 
 const debug = createDebugger("ucdjs:ucd-store:sync");

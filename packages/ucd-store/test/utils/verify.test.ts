@@ -7,7 +7,7 @@ import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { createEmptyLockfile } from "@ucdjs/lockfile/test-utils";
 import { describe, expect, it } from "vitest";
 import { UCDStoreGenericError } from "../../src/errors";
-import { verify } from "../../src/setup/verify";
+import { verify } from "../../src/utils/verify";
 
 describe("verify", () => {
   describe("valid lockfile", () => {

@@ -287,3 +287,136 @@ export interface UCDStoreOperations {
    */
   files: UCDStoreFileOperations;
 }
+
+export interface ReportFile {
+  /**
+   * The normalized file name (without version prefix).
+   */
+  name: string;
+
+  /**
+   * The full local file path (including version prefix).
+   */
+  filePath: string;
+}
+
+export interface ReportError extends ReportFile {
+  /**
+   * The error message or reason for failure.
+   */
+  reason: string;
+}
+
+export interface OperationMetrics {
+  /**
+   * Success rate as a percentage (0-100).
+   */
+  successRate: number;
+
+  /**
+   * Cache hit rate (skipped) as a percentage (0-100).
+   */
+  cacheHitRate: number;
+
+  /**
+   * Failure rate as a percentage (0-100).
+   */
+  failureRate: number;
+
+  /**
+   * Average milliseconds per file processed.
+   */
+  averageTimePerFile: number;
+}
+
+export interface StorageMetrics {
+  /**
+   * Human-readable total size of all processed files.
+   */
+  totalSize: string;
+
+  /**
+   * Average file size (human-readable).
+   */
+  averageFileSize: string;
+}
+
+export interface FileCounts {
+  /**
+   * Total number of files queued/expected for processing.
+   */
+  total: number;
+
+  /**
+   * Number of files successfully processed (downloaded/present).
+   */
+  success: number;
+
+  /**
+   * Number of files skipped (already existed locally).
+   */
+  skipped: number;
+
+  /**
+   * Number of files that failed.
+   */
+  failed: number;
+}
+
+export interface OperationSummary {
+  /**
+   * Total operation duration in milliseconds.
+   */
+  duration: number;
+
+  /**
+   * File counts.
+   */
+  counts: FileCounts;
+
+  /**
+   * Computed metrics (rates, averages).
+   */
+  metrics: OperationMetrics;
+
+  /**
+   * Storage metrics (sizes).
+   */
+  storage: StorageMetrics;
+}
+
+export interface BaseOperationReport {
+  /**
+   * ISO timestamp when the operation completed.
+   */
+  timestamp: string;
+
+  /**
+   * Summary of the operation.
+   * Always present (use zeroed values when no work was done).
+   */
+  summary: OperationSummary;
+}
+
+export interface BaseVersionReport {
+  /**
+   * The Unicode version this report is for.
+   */
+  version: string;
+
+  /**
+   * File counts for this version.
+   */
+  counts: FileCounts;
+
+  /**
+   * Computed metrics for this version.
+   */
+  metrics: OperationMetrics;
+
+  /**
+   * Errors encountered during processing.
+   * Always present (empty array when no errors).
+   */
+  errors: ReportError[];
+}

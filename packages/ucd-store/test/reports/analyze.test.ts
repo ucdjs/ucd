@@ -1,6 +1,6 @@
 /// <reference types="../../../test-utils/src/matchers/types.d.ts" />
 
-import type { ReportFile } from "../../src/types/reports";
+import type { ReportFile } from "../../src/types";
 import { createTestContext } from "#internal-pkg:test-utils/test-context";
 import { createFileTree, mockStoreApi } from "#test-utils/mock-store";
 import { HttpResponse } from "#test-utils/msw";

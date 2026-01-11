@@ -1,24 +1,23 @@
 import type { OperationResult } from "@ucdjs-internal/shared";
 import type { StoreError } from "../errors";
-import type { InternalUCDStoreContext, SharedOperationOptions } from "../types";
 import type {
   BaseOperationReport,
   BaseVersionReport,
   FileCounts,
+  InternalUCDStoreContext,
   OperationMetrics,
   ReportError,
   ReportFile,
-} from "../types/reports";
+  SharedOperationOptions,
+} from "../types";
 import { prependLeadingSlash } from "@luxass/utils";
 import { createDebugger, wrapTry } from "@ucdjs-internal/shared";
 import { isUCDStoreInternalContext } from "../context";
 import { listFiles } from "../files/list";
 import {
   computeMetrics,
-  createEmptyFileCounts,
-  createEmptySummary,
   createSummaryFromVersionReports,
-} from "../types/reports";
+} from "../utils/reports";
 
 const debug = createDebugger("ucdjs:ucd-store:analyze");
 
