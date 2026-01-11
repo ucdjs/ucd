@@ -210,9 +210,9 @@ describe("node integration: file operations", () => {
 
       expect(error).toBeNull();
       expect(data).toHaveLength(3);
-      expect(data).toContain("UnicodeData.txt");
-      expect(data).toContain("Blocks.txt");
-      expect(data).toContain("Scripts.txt");
+      expect(data).toContain("/16.0.0/UnicodeData.txt");
+      expect(data).toContain("/16.0.0/Blocks.txt");
+      expect(data).toContain("/16.0.0/Scripts.txt");
     });
 
     it("should list files from nested directories", async () => {
@@ -255,8 +255,8 @@ describe("node integration: file operations", () => {
       const [data, error] = await store.files.list("16.0.0");
 
       expect(error).toBeNull();
-      expect(data).toContain("UnicodeData.txt");
-      expect(data).toContain("extracted/DerivedBidiClass.txt");
+      expect(data).toContain("/16.0.0/UnicodeData.txt");
+      expect(data).toContain("/16.0.0/extracted/DerivedBidiClass.txt");
     });
 
     it("should apply global filters", async () => {
@@ -301,9 +301,9 @@ describe("node integration: file operations", () => {
       const [data, error] = await store.files.list("16.0.0");
 
       expect(error).toBeNull();
-      expect(data).toContain("UnicodeData.txt");
-      expect(data).toContain("Blocks.txt");
-      expect(data).not.toContain("data.json");
+      expect(data).toContain("/16.0.0/UnicodeData.txt");
+      expect(data).toContain("/16.0.0/Blocks.txt");
+      expect(data).not.toContain("/16.0.0/data.json");
     });
   });
 

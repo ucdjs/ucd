@@ -2,7 +2,6 @@ import type { OperationResult } from "@ucdjs-internal/shared";
 import type { StoreError } from "../errors";
 import type { InternalUCDStoreContext, SharedOperationOptions } from "../types";
 import { createDebugger, tryOr, wrapTry } from "@ucdjs-internal/shared";
-import { isBuiltinHttpBridge } from "@ucdjs/fs-bridge";
 import { patheJoin } from "@ucdjs/path-utils";
 import { hasUCDFolderPath } from "@unicode-utils/core";
 import { isUCDStoreInternalContext } from "../context";
@@ -59,12 +58,9 @@ async function _getFile(
       );
     }
 
-    // Use relative path
-    let localPath = patheJoin(version, filePath);
-    if (isBuiltinHttpBridge(this.fs) && hasUCDFolderPath(version)) {
-      debug?.("Using HTTP bridge path with ucd subpath for version:", version);
-      localPath = patheJoin(version, "ucd", filePath);
-    }
+    // Use relative path - simple version/file path
+    // Both node bridge and HTTP bridge (via store subdomain) use the same path structure
+    const localPath = patheJoin(version, filePath);
 
     debug?.("Checking local file existence:", localPath);
 
