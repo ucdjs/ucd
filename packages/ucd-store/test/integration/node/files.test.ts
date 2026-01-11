@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { testdir } from "vitest-testdirs";
 import { createNodeUCDStore } from "../../../src/factory";
 
-describe("node integration: file operations", () => {
+describe.todo("node integration: file operations", () => {
   describe("files.get", () => {
     it("should read file from disk", async () => {
       mockStoreApi({

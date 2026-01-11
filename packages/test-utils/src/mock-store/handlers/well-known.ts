@@ -79,14 +79,14 @@ export const wellKnownStoreVersionManifest = defineMockRouteHandler({
           // just return the files object as is.
           if (Object.keys(files).length === 1 && Object.keys(files)[0] === "*") {
             return HttpResponse.json({
-              expectedFiles: flattenFilePaths(addPathsToFileNodes(files["*"]!, version, hasUCDFolderPath(version) ? "ucd" : undefined)),
+              expectedFiles: flattenFilePaths(addPathsToFileNodes(files["*"]!, version)),
             });
           }
 
           // If there is multiple keys in files we will try and match the version
           if (version && files[version]) {
             return HttpResponse.json({
-              expectedFiles: flattenFilePaths(addPathsToFileNodes(files[version]!, version, hasUCDFolderPath(version) ? "ucd" : undefined)),
+              expectedFiles: flattenFilePaths(addPathsToFileNodes(files[version]!, version)),
             });
           }
 
