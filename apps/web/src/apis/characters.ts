@@ -1,4 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
+import { tryOr } from "@ucdjs-internal/shared";
 
 export interface UnicodeCharacter {
   codepoint: string;
@@ -19,9 +20,15 @@ export async function fetchCharacter(hex: string, version: string) {
   // TODO: Replace with actual API call when endpoint exists
   // const res = await fetch(`${API_BASE}/u/${hex}?version=${version}`)
 
-  // Mock data for now
-  const codepoint = Number.parseInt(hex, 16);
-  const char = String.fromCodePoint(codepoint);
+  const char = await tryOr({
+    try: () => {
+      const codepoint = Number.parseInt(hex, 16);
+      return String.fromCodePoint(codepoint);
+    },
+    err: (err) => {
+      throw new Error(`Invalid hex codepoint: ${hex}. ${err}`);
+    },
+  });
 
   return {
     codepoint: `U+${hex.toUpperCase().padStart(4, "0")}`,

@@ -9,16 +9,20 @@ import {
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { RootProvider } from "fumadocs-ui/provider/tanstack";
-import { versionsQueryOptions } from "@/apis/versions";
-import { AppSidebar } from "@/components/app-sidebar";
+import { AppSidebar } from "@/components/layout/sidebar/app-sidebar";
+import { AppNotFound } from "@/components/not-found";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { versionsQueryOptions } from "@/functions/versions";
 import GLOBAL_CSS_URL from "../globals.css?url";
 
-interface MyRouterContext {
+export interface AppRouterContext {
   queryClient: QueryClient;
+  latestUnicodeVersion: string;
+  apiBaseUrl: string;
 }
 
-export const Route = createRootRouteWithContext<MyRouterContext>()({
+export const Route = createRootRouteWithContext<AppRouterContext>()({
+  notFoundComponent: AppNotFound,
   head: () => ({
     meta: [
       {
@@ -30,6 +34,14 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       },
       {
         title: "UCD.js | Unicode Character Database for JavaScript",
+      },
+      {
+        name: "description",
+        content: "Explore the Unicode Character Database with a modern, developer-friendly interface.",
+      },
+      {
+        name: "keywords",
+        content: "Unicode, Character Database, JavaScript, UCD.js",
       },
     ],
     links: [
@@ -43,11 +55,21 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         href: GLOBAL_CSS_URL,
       },
     ],
+    scripts: [
+      import.meta.env.DEV
+        ? {
+            src: "//unpkg.com/react-scan/dist/auto.global.js",
+            crossOrigin: "anonymous",
+          }
+        : undefined,
+    ],
   }),
+  loader: async ({ context }) => {
+    context.queryClient.prefetchQuery(versionsQueryOptions());
 
-  loader: ({ context }) => {
-    // Prefetch versions for SSR - sidebar will have data immediately
-    context.queryClient.ensureQueryData(versionsQueryOptions());
+    return {
+      ucdjsApiBaseUrl: context.apiBaseUrl,
+    };
   },
 
   shellComponent: RootDocument,
@@ -70,7 +92,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           : (
               <SidebarProvider>
                 <AppSidebar />
-                <SidebarInset>{children}</SidebarInset>
+                <SidebarInset>
+                  {children}
+                </SidebarInset>
               </SidebarProvider>
             )}
         <TanStackDevtools
