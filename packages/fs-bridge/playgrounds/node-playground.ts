@@ -13,6 +13,7 @@ import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import process from "node:process";
+import { prependLeadingSlash } from "@luxass/utils/path";
 import NodeFileSystemBridge from "../src/bridges/node";
 
 interface TestCase {
@@ -214,6 +215,27 @@ const testCases: TestCase[] = [
       if (!sub || sub.type !== "directory" || sub.children.length !== 1) {
         throw new Error("Recursive should populate children");
       }
+    },
+  },
+  {
+    description: "Listdir ensure correct paths",
+    async run() {
+      const entries = await bridge.listdir("16.0.0", true);
+
+      // eslint-disable-next-line ts/explicit-function-return-type
+      function checkPaths(nodes: typeof entries, parentPath: string) {
+        for (const node of nodes) {
+          const expectedPath = prependLeadingSlash(`${parentPath}${node.name}${node.type === "directory" ? "/" : ""}`);
+          if (node.path !== expectedPath) {
+            throw new Error(`Incorrect path for ${node.name}: expected "${expectedPath}", got "${node.path}"`);
+          }
+          if (node.type === "directory" && node.children) {
+            checkPaths(node.children, expectedPath);
+          }
+        }
+      }
+
+      checkPaths(entries, "16.0.0/");
     },
   },
 

@@ -310,7 +310,7 @@ describe("node fs-bridge", () => {
       expect(files[0]).toEqual({
         type: "file",
         name: "nested.txt",
-        path: "/nested.txt",
+        path: "/absolute-dir/nested.txt",
       });
     });
 
@@ -649,8 +649,8 @@ describe("node fs-bridge", () => {
 
       const flattenedPosts = flattenFilePaths(posts);
       expect(flattenedPosts).toHaveLength(2);
-      expect(flattenedPosts).toContain("/2024/first-post.md");
-      expect(flattenedPosts).toContain("/2024/second-post.md");
+      expect(flattenedPosts).toContain("/posts/2024/first-post.md");
+      expect(flattenedPosts).toContain("/posts/2024/second-post.md");
 
       // move draft to published
       const draftContent = await bridge.read("drafts/upcoming.md");
