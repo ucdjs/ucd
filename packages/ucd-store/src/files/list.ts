@@ -1,4 +1,5 @@
 import type { OperationResult } from "@ucdjs-internal/shared";
+import type { FSEntry } from "@ucdjs/fs-bridge";
 import type { StoreError } from "../errors";
 import type { InternalUCDStoreContext, SharedOperationOptions } from "../types";
 import {
@@ -25,25 +26,40 @@ export interface ListFilesOptions extends SharedOperationOptions {
 }
 
 /**
+ * Build a lookup of normalized paths to original paths.
+ * This allows us to filter using normalized paths but return original paths.
+ */
+function buildPathMapping(
+  version: string,
+  originalEntries: FSEntry[],
+  normalizedEntries: FSEntry[],
+): Map<string, string> {
+  const originalPaths = flattenFilePaths(originalEntries);
+  const normalizedPaths = flattenFilePaths(normalizedEntries);
+
+  const mapping = new Map<string, string>();
+
+  // Both arrays should be in the same order since normalizeTreeForFiltering
+
+  // preserves structure
+  for (let i = 0; i < normalizedPaths.length; i++) {
+    mapping.set(normalizedPaths[i], originalPaths[i]);
+  }
+
+  return mapping;
+}
+
+/**
  * Lists all file paths for a Unicode version. The operation prefers the
  * configured file system bridge and can optionally fall back to the API when
  * the bridge path is missing or cannot be read.
  *
- * Behavior
- * - Throws `UCDStoreVersionNotFoundError` when the requested version is not
- *   part of the resolved store versions.
- * - When the bridge directory for the version exists, returns flattened file
- *   paths filtered with global filters plus any `options.filters`. If listing
- *   fails and `allowApi` is true, it falls back to the API; otherwise it
- *   returns an empty array.
- * - When the bridge directory does not exist, it returns an empty array unless
- *   `allowApi` is true, in which case it fetches the file tree from the API
- *   and applies the same filtering before flattening.
+ * Returns full paths (e.g., "/16.0.0/UnicodeData.txt"), not just filenames.
  *
- * @this {InternalUCDStoreContext} - Internal store context with client, filters, FS bridge, and configuration
- * @param version Unicode version to list files for (must be resolved in the store)
+ * @this {InternalUCDStoreContext} - Internal store context
+ * @param version Unicode version to list files for
  * @param options Optional filters and `allowApi` fallback behavior
- * @returns Operation result containing filtered, flattened file paths or an error
+ * @returns Operation result containing full file paths or an error
  */
 async function _listFiles(
   this: InternalUCDStoreContext,
@@ -73,19 +89,41 @@ async function _listFiles(
     if (dirExists) {
       try {
         const entries = await this.fs.listdir(filesPath, true);
-        // Normalize tree paths for filtering (strip version/ucd prefix if present)
-        const normalizedEntries = normalizeTreeForFiltering(version, entries);
-        const filteredEntries = filterTreeStructure(this.filter, normalizedEntries, options?.filters);
-        const flatPaths = flattenFilePaths(filteredEntries);
-        debug?.("Listed %d files from store for version: %s", flatPaths.length, version);
-        debug?.("File paths: %O", flatPaths);
 
-        // Normalize paths (strip `ucd/` prefix for HTTP bridges)
-        return flatPaths;
+        debug?.("Listed entries from store for version:", version);
+
+        // Normalize for filtering (strips version/ucd prefix)
+        const normalizedEntries = normalizeTreeForFiltering(version, entries);
+
+        // Build mapping from normalized -> original paths
+        const pathMapping = buildPathMapping(version, entries, normalizedEntries);
+
+        // Filter using normalized paths
+        const filteredEntries = filterTreeStructure(
+          this.filter,
+          normalizedEntries,
+          options?.filters,
+        );
+
+        // Get normalized paths that passed filtering
+        const filteredNormalizedPaths = flattenFilePaths(filteredEntries);
+
+        // Map back to original paths
+        const originalPaths = filteredNormalizedPaths.map((normalizedPath) => {
+          const original = pathMapping.get(normalizedPath);
+          if (!original) {
+            // Fallback: construct the path if mapping fails
+            return `/${version}/${normalizedPath.replace(/^\/+/, "")}`;
+          }
+          return original;
+        });
+
+        debug?.("Listed %d files from store for version: %s", originalPaths.length, version);
+
+        return originalPaths;
       } catch (err) {
         debug?.("Failed to list directory:", filesPath, err);
 
-        // If allowApi is false, return empty array
         if (!options?.allowApi) {
           return [];
         }
@@ -118,15 +156,28 @@ async function _listFiles(
       });
     }
 
-    // Normalize tree paths for filtering (strip version/ucd prefix)
+    // Build mapping from normalized -> original paths
     const normalizedTree = normalizeTreeForFiltering(version, result.data);
-    const entries = filterTreeStructure(
+    const pathMapping = buildPathMapping(version, result.data, normalizedTree);
+
+    // Filter using normalized paths
+    const filteredEntries = filterTreeStructure(
       this.filter,
       normalizedTree,
       options?.filters,
     );
 
-    return flattenFilePaths(entries);
+    // Get normalized paths that passed filtering
+    const filteredNormalizedPaths = flattenFilePaths(filteredEntries);
+
+    // Map back to original paths
+    return filteredNormalizedPaths.map((normalizedPath) => {
+      const original = pathMapping.get(normalizedPath);
+      if (!original) {
+        return `/${version}/${normalizedPath.replace(/^\/+/, "")}`;
+      }
+      return original;
+    });
   });
 }
 

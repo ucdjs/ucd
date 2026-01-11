@@ -1,10 +1,18 @@
 /// <reference types="../../../test-utils/src/matchers/types.d.ts" />
 
+import type { ReportFile } from "../../src/types/reports";
 import { createTestContext } from "#internal-pkg:test-utils/test-context";
 import { createFileTree, mockStoreApi } from "#test-utils/mock-store";
 import { HttpResponse } from "#test-utils/msw";
 import { describe, expect, it } from "vitest";
 import { analyze } from "../../src/reports/analyze";
+
+/**
+ * Helper to check if a file array contains a file with the given name.
+ */
+function hasFileName(files: ReportFile[] | undefined, name: string): boolean {
+  return files?.some((f) => f.name === name) ?? false;
+}
 
 describe("analyze", () => {
   const UNICODE_DATA_CONTENT = "0041;LATIN CAPITAL LETTER A;Lu;0;L;;;;;N;;;;0061;";
@@ -41,14 +49,14 @@ describe("analyze", () => {
 
       expect(error).toBeNull();
       expect(data).toBeDefined();
-      expect(data?.size).toBe(1);
+      expect(data?.versions.size).toBe(1);
 
-      const report = data?.get("16.0.0");
+      const report = data?.versions.get("16.0.0");
       expect(report).toBeDefined();
       expect(report?.version).toBe("16.0.0");
       expect(report?.isComplete).toBe(true);
-      expect(report?.files.present).toContain("UnicodeData.txt");
-      expect(report?.files.present).toContain("Blocks.txt");
+      expect(hasFileName(report?.files.present, "UnicodeData.txt")).toBe(true);
+      expect(hasFileName(report?.files.present, "Blocks.txt")).toBe(true);
       expect(report?.files.orphaned).toHaveLength(0);
       expect(report?.files.missing).toHaveLength(0);
     });
@@ -82,9 +90,9 @@ describe("analyze", () => {
       const [data, error] = await analyze(context);
 
       expect(error).toBeNull();
-      expect(data?.size).toBe(2);
-      expect(data?.has("16.0.0")).toBe(true);
-      expect(data?.has("15.1.0")).toBe(true);
+      expect(data?.versions.size).toBe(2);
+      expect(data?.versions.has("16.0.0")).toBe(true);
+      expect(data?.versions.has("15.1.0")).toBe(true);
     });
 
     it("should return empty map when no versions configured", async () => {
@@ -96,7 +104,7 @@ describe("analyze", () => {
 
       expect(error).toBeNull();
       expect(data).toBeDefined();
-      expect(data?.size).toBe(0);
+      expect(data?.versions.size).toBe(0);
     });
   });
 
@@ -129,13 +137,13 @@ describe("analyze", () => {
       const [data, error] = await analyze(context);
 
       expect(error).toBeNull();
-      const report = data?.get("16.0.0");
+      const report = data?.versions.get("16.0.0");
       expect(report?.isComplete).toBe(false);
-      expect(report?.files.present).toContain("UnicodeData.txt");
-      expect(report?.files.missing).toContain("Blocks.txt");
-      expect(report?.files.missing).toContain("Scripts.txt");
-      expect(report?.counts.missing).toBe(2);
-      expect(report?.counts.present).toBe(1);
+      expect(hasFileName(report?.files.present, "UnicodeData.txt")).toBe(true);
+      expect(hasFileName(report?.files.missing, "Blocks.txt")).toBe(true);
+      expect(hasFileName(report?.files.missing, "Scripts.txt")).toBe(true);
+      expect(report?.counts.failed).toBe(2);
+      expect(report?.counts.success).toBe(1);
     });
 
     it("should mark version as incomplete when files are missing", async () => {
@@ -165,9 +173,9 @@ describe("analyze", () => {
       const [data, error] = await analyze(context);
 
       expect(error).toBeNull();
-      const report = data?.get("16.0.0");
+      const report = data?.versions.get("16.0.0");
       expect(report?.isComplete).toBe(false);
-      expect(report?.files.missing).toContain("Blocks.txt");
+      expect(hasFileName(report?.files.missing, "Blocks.txt")).toBe(true);
     });
   });
 
@@ -199,11 +207,11 @@ describe("analyze", () => {
       const [data, error] = await analyze(context);
 
       expect(error).toBeNull();
-      const report = data?.get("16.0.0");
+      const report = data?.versions.get("16.0.0");
       expect(report?.isComplete).toBe(false);
-      expect(report?.files.orphaned).toContain("OrphanedFile.txt");
-      expect(report?.files.orphaned).toContain("AnotherOrphan.dat");
-      expect(report?.counts.orphaned).toBe(2);
+      expect(hasFileName(report?.files.orphaned, "OrphanedFile.txt")).toBe(true);
+      expect(hasFileName(report?.files.orphaned, "AnotherOrphan.dat")).toBe(true);
+      expect(report?.counts.skipped).toBe(2);
     });
 
     it("should mark version as incomplete when orphaned files exist", async () => {
@@ -232,9 +240,9 @@ describe("analyze", () => {
       const [data, error] = await analyze(context);
 
       expect(error).toBeNull();
-      const report = data?.get("16.0.0");
+      const report = data?.versions.get("16.0.0");
       expect(report?.isComplete).toBe(false);
-      expect(report?.files.orphaned).toContain("ExtraFile.txt");
+      expect(hasFileName(report?.files.orphaned, "ExtraFile.txt")).toBe(true);
     });
 
     it("should not count snapshot.json as orphaned", async () => {
@@ -263,10 +271,10 @@ describe("analyze", () => {
       const [data, error] = await analyze(context);
 
       expect(error).toBeNull();
-      const report = data?.get("16.0.0");
+      const report = data?.versions.get("16.0.0");
       expect(report?.isComplete).toBe(true);
-      expect(report?.files.orphaned).not.toContain("snapshot.json");
-      expect(report?.counts.orphaned).toBe(0);
+      expect(hasFileName(report?.files.orphaned, "snapshot.json")).toBe(false);
+      expect(report?.counts.skipped).toBe(0);
     });
   });
 
@@ -300,15 +308,15 @@ describe("analyze", () => {
       const [data, error] = await analyze(context);
 
       expect(error).toBeNull();
-      const report = data?.get("16.0.0");
+      const report = data?.versions.get("16.0.0");
       expect(report?.isComplete).toBe(false);
-      expect(report?.files.present).toContain("UnicodeData.txt");
-      expect(report?.files.missing).toContain("Blocks.txt");
-      expect(report?.files.missing).toContain("Scripts.txt");
-      expect(report?.files.orphaned).toContain("OrphanedFile.txt");
-      expect(report?.counts.present).toBe(1);
-      expect(report?.counts.missing).toBe(2);
-      expect(report?.counts.orphaned).toBe(1);
+      expect(hasFileName(report?.files.present, "UnicodeData.txt")).toBe(true);
+      expect(hasFileName(report?.files.missing, "Blocks.txt")).toBe(true);
+      expect(hasFileName(report?.files.missing, "Scripts.txt")).toBe(true);
+      expect(hasFileName(report?.files.orphaned, "OrphanedFile.txt")).toBe(true);
+      expect(report?.counts.success).toBe(1);
+      expect(report?.counts.failed).toBe(2);
+      expect(report?.counts.skipped).toBe(1);
     });
   });
 
@@ -342,10 +350,10 @@ describe("analyze", () => {
       });
 
       expect(error).toBeNull();
-      expect(data?.size).toBe(2);
-      expect(data?.has("16.0.0")).toBe(true);
-      expect(data?.has("15.1.0")).toBe(true);
-      expect(data?.has("14.0.0")).toBe(false);
+      expect(data?.versions.size).toBe(2);
+      expect(data?.versions.has("16.0.0")).toBe(true);
+      expect(data?.versions.has("15.1.0")).toBe(true);
+      expect(data?.versions.has("14.0.0")).toBe(false);
     });
 
     it("should skip versions not in resolved versions", async () => {
@@ -376,7 +384,7 @@ describe("analyze", () => {
       });
 
       expect(error).toBeNull();
-      expect(data?.size).toBe(0);
+      expect(data?.versions.size).toBe(0);
     });
   });
 
@@ -414,7 +422,7 @@ describe("analyze", () => {
       const [data, error] = await analyze(context);
 
       expect(error).toBeNull();
-      const report = data?.get("16.0.0");
+      const report = data?.versions.get("16.0.0");
       expect(report?.fileTypes).toBeDefined();
       expect(report?.fileTypes[".txt"]).toBe(4);
       expect(report?.fileTypes[".html"]).toBe(1);
@@ -449,7 +457,7 @@ describe("analyze", () => {
       const [data, error] = await analyze(context);
 
       expect(error).toBeNull();
-      const report = data?.get("16.0.0");
+      const report = data?.versions.get("16.0.0");
       // eslint-disable-next-line dot-notation
       expect(report?.fileTypes["no_extension"]).toBe(2);
       expect(report?.fileTypes[".txt"]).toBe(1);
@@ -488,11 +496,11 @@ describe("analyze", () => {
       const [data, error] = await analyze(context);
 
       expect(error).toBeNull();
-      const report = data?.get("16.0.0");
-      expect(report?.counts.expected).toBe(4);
-      expect(report?.counts.present).toBe(2);
-      expect(report?.counts.missing).toBe(2);
-      expect(report?.counts.orphaned).toBe(1);
+      const report = data?.versions.get("16.0.0");
+      expect(report?.counts.total).toBe(4);
+      expect(report?.counts.success).toBe(2);
+      expect(report?.counts.failed).toBe(2);
+      expect(report?.counts.skipped).toBe(1);
     });
   });
 
@@ -528,11 +536,11 @@ describe("analyze", () => {
       const [data, error] = await analyze(context);
 
       expect(error).toBeNull();
-      const report = data?.get("16.0.0");
+      const report = data?.versions.get("16.0.0");
       expect(report?.isComplete).toBe(false);
-      expect(report?.files.present).toContain("UnicodeData.txt");
-      expect(report?.files.present).toContain("auxiliary/GraphemeBreakProperty.txt");
-      expect(report?.files.missing).toContain("auxiliary/WordBreakProperty.txt");
+      expect(hasFileName(report?.files.present, "UnicodeData.txt")).toBe(true);
+      expect(hasFileName(report?.files.present, "auxiliary/GraphemeBreakProperty.txt")).toBe(true);
+      expect(hasFileName(report?.files.missing, "auxiliary/WordBreakProperty.txt")).toBe(true);
     });
 
     it("should detect orphaned files in nested directories", async () => {
@@ -565,9 +573,9 @@ describe("analyze", () => {
       const [data, error] = await analyze(context);
 
       expect(error).toBeNull();
-      const report = data?.get("16.0.0");
+      const report = data?.versions.get("16.0.0");
       expect(report?.isComplete).toBe(false);
-      expect(report?.files.orphaned).toContain("auxiliary/OrphanedNestedFile.txt");
+      expect(hasFileName(report?.files.orphaned, "auxiliary/OrphanedNestedFile.txt")).toBe(true);
     });
   });
 
@@ -605,14 +613,14 @@ describe("analyze", () => {
       });
 
       expect(error).toBeNull();
-      const report = data?.get("16.0.0");
+      const report = data?.versions.get("16.0.0");
       // With include filter, only included files are counted in actualFiles
       // Scripts.txt exists on disk but is filtered out from actual files
       // So it shows as "missing" (in expected but not in filtered actual)
-      expect(report?.files.present).toContain("UnicodeData.txt");
-      expect(report?.files.present).toContain("Blocks.txt");
-      expect(report?.files.present).not.toContain("Scripts.txt");
-      expect(report?.files.missing).toContain("Scripts.txt");
+      expect(hasFileName(report?.files.present, "UnicodeData.txt")).toBe(true);
+      expect(hasFileName(report?.files.present, "Blocks.txt")).toBe(true);
+      expect(hasFileName(report?.files.present, "Scripts.txt")).toBe(false);
+      expect(hasFileName(report?.files.missing, "Scripts.txt")).toBe(true);
     });
 
     it("should apply exclude filter to analysis", async () => {
@@ -648,13 +656,13 @@ describe("analyze", () => {
       });
 
       expect(error).toBeNull();
-      const report = data?.get("16.0.0");
+      const report = data?.versions.get("16.0.0");
       // With exclude filter, Scripts.txt is filtered out of actualFiles
       // So it shows as "missing" (in expected but not in filtered actual)
-      expect(report?.files.present).toContain("UnicodeData.txt");
-      expect(report?.files.present).toContain("Blocks.txt");
-      expect(report?.files.present).not.toContain("Scripts.txt");
-      expect(report?.files.missing).toContain("Scripts.txt");
+      expect(hasFileName(report?.files.present, "UnicodeData.txt")).toBe(true);
+      expect(hasFileName(report?.files.present, "Blocks.txt")).toBe(true);
+      expect(hasFileName(report?.files.present, "Scripts.txt")).toBe(false);
+      expect(hasFileName(report?.files.missing, "Scripts.txt")).toBe(true);
     });
   });
 

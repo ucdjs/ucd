@@ -277,8 +277,10 @@ export interface UCDStoreOperations {
 
   /**
    * Analyzes Unicode data in the store.
+   * Returns a report with per-version analysis including file categorization,
+   * counts, metrics, and errors.
    */
-  analyze: (options?: AnalyzeOptions) => Promise<OperationResult<Map<string, AnalysisReport>, StoreError>>;
+  analyze: (options?: AnalyzeOptions) => Promise<OperationResult<AnalysisReport, StoreError>>;
 
   /**
    * File operations namespace

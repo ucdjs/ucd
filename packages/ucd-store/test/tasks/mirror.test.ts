@@ -42,7 +42,7 @@ describe("mirror", () => {
 
       const versionReport = data?.versions.get("16.0.0");
       expect(versionReport).toBeDefined();
-      expect(versionReport?.counts.downloaded).toBe(2);
+      expect(versionReport?.counts.success).toBe(2);
       expect(versionReport?.counts.skipped).toBe(0);
       expect(versionReport?.counts.failed).toBe(0);
 
@@ -85,8 +85,8 @@ describe("mirror", () => {
       const report16 = data?.versions.get("16.0.0");
       const report15 = data?.versions.get("15.1.0");
 
-      expect(report16?.counts.downloaded).toBe(2);
-      expect(report15?.counts.downloaded).toBe(2);
+      expect(report16?.counts.success).toBe(2);
+      expect(report15?.counts.success).toBe(2);
     });
 
     it("should return empty report when no versions are configured", async () => {
@@ -129,7 +129,7 @@ describe("mirror", () => {
 
       expect(error).toBeNull();
       expect(data?.versions.get("16.0.0")?.counts.skipped).toBe(1);
-      expect(data?.versions.get("16.0.0")?.counts.downloaded).toBe(1);
+      expect(data?.versions.get("16.0.0")?.counts.success).toBe(1);
 
       // Existing file should NOT be overwritten
       const existingFile = await fs.read("/16.0.0/UnicodeData.txt");
@@ -161,7 +161,7 @@ describe("mirror", () => {
 
       expect(error).toBeNull();
       expect(data?.versions.get("16.0.0")?.counts.skipped).toBe(0);
-      expect(data?.versions.get("16.0.0")?.counts.downloaded).toBe(1);
+      expect(data?.versions.get("16.0.0")?.counts.success).toBe(1);
 
       // Existing file SHOULD be overwritten
       const updatedFile = await fs.read("16.0.0/UnicodeData.txt");
@@ -234,10 +234,10 @@ describe("mirror", () => {
 
       expect(error).toBeNull();
       const report = data?.versions.get("16.0.0");
-      expect(report?.counts.downloaded).toBe(2);
+      expect(report?.counts.success).toBe(2);
       expect(report?.files.downloaded).toEqual([
-        { name: "UnicodeData.txt", filePath: "16.0.0/UnicodeData.txt" },
-        { name: "Blocks.txt", filePath: "16.0.0/Blocks.txt" },
+        { name: "Blocks.txt", filePath: "/16.0.0/Blocks.txt" },
+        { name: "UnicodeData.txt", filePath: "/16.0.0/UnicodeData.txt" },
       ]);
     });
 
@@ -270,8 +270,8 @@ describe("mirror", () => {
       expect(error).toBeNull();
       const report = data?.versions.get("16.0.0");
       expect(report?.files.downloaded).toEqual([
-        { name: "UnicodeData.txt", filePath: "16.0.0/UnicodeData.txt" },
-        { name: "Blocks.txt", filePath: "16.0.0/Blocks.txt" },
+        { name: "Blocks.txt", filePath: "/16.0.0/Blocks.txt" },
+        { name: "UnicodeData.txt", filePath: "/16.0.0/UnicodeData.txt" },
       ]);
     });
 
@@ -307,8 +307,8 @@ describe("mirror", () => {
       expect(error).toBeNull();
       const report = data?.versions.get("16.0.0");
       expect(report?.files.downloaded).toEqual([
-        { name: "auxiliary/GraphemeBreakProperty.txt", filePath: "16.0.0/auxiliary/GraphemeBreakProperty.txt" },
-        { name: "auxiliary/WordBreakProperty.txt", filePath: "16.0.0/auxiliary/WordBreakProperty.txt" },
+        { name: "auxiliary/GraphemeBreakProperty.txt", filePath: "/16.0.0/auxiliary/GraphemeBreakProperty.txt" },
+        { name: "auxiliary/WordBreakProperty.txt", filePath: "/16.0.0/auxiliary/WordBreakProperty.txt" },
       ]);
     });
   });
@@ -392,13 +392,13 @@ describe("mirror", () => {
 
       expect(error).toBeNull();
       const report = data?.versions.get("16.0.0");
-      expect(report?.counts.downloaded).toBe(2);
+      expect(report?.counts.success).toBe(2);
       expect(report?.counts.failed).toBe(1);
       expect(report?.files.failed).toEqual([
-        { name: "Blocks.txt", filePath: "16.0.0/Blocks.txt" },
+        { name: "Blocks.txt", filePath: "/16.0.0/Blocks.txt" },
       ]);
       expect(report?.errors).toHaveLength(1);
-      expect(report?.errors[0]?.filePath).toBe("16.0.0/Blocks.txt");
+      expect(report?.errors[0]?.filePath).toBe("/16.0.0/Blocks.txt");
     });
   });
 
@@ -471,10 +471,10 @@ describe("mirror", () => {
 
       const snapshot = JSON.parse(snapshotContent!);
       expect(snapshot.unicodeVersion).toBe("16.0.0");
-      expect(snapshot.files).toHaveProperty("UnicodeData.txt");
-      expect(snapshot.files["UnicodeData.txt"]).toHaveProperty("hash");
-      expect(snapshot.files["UnicodeData.txt"]).toHaveProperty("fileHash");
-      expect(snapshot.files["UnicodeData.txt"]).toHaveProperty("size");
+      expect(snapshot.files).toHaveProperty("/16.0.0/UnicodeData.txt");
+      expect(snapshot.files["/16.0.0/UnicodeData.txt"]).toHaveProperty("hash");
+      expect(snapshot.files["/16.0.0/UnicodeData.txt"]).toHaveProperty("fileHash");
+      expect(snapshot.files["/16.0.0/UnicodeData.txt"]).toHaveProperty("size");
     });
 
     it("should update existing lockfile with new version entries", async () => {
@@ -561,8 +561,8 @@ describe("mirror", () => {
 
       expect(error).toBeNull();
       expect(data?.summary).toBeDefined();
-      expect(data?.summary?.counts.totalFiles).toBe(3);
-      expect(data?.summary?.counts.downloaded).toBe(1); // Blocks.txt
+      expect(data?.summary?.counts.total).toBe(3);
+      expect(data?.summary?.counts.success).toBe(1); // Blocks.txt
       expect(data?.summary?.counts.skipped).toBe(1); // UnicodeData.txt
       expect(data?.summary?.counts.failed).toBe(1); // Scripts.txt
     });
@@ -662,7 +662,7 @@ describe("mirror", () => {
       });
 
       expect(error).toBeNull();
-      expect(data?.versions.get("16.0.0")?.counts.downloaded).toBe(4);
+      expect(data?.versions.get("16.0.0")?.counts.success).toBe(4);
       // All files should have been downloaded
       expect(downloadOrder).toHaveLength(4);
     });
@@ -693,14 +693,14 @@ describe("mirror", () => {
       expect(error).toBeNull();
 
       // Verify directories were created
-      const auxiliaryExists = await fs.exists("16.0.0/auxiliary");
-      const extractedExists = await fs.exists("16.0.0/extracted");
+      const auxiliaryExists = await fs.exists("/16.0.0/auxiliary");
+      const extractedExists = await fs.exists("/16.0.0/extracted");
       expect(auxiliaryExists).toBe(true);
       expect(extractedExists).toBe(true);
 
       // Verify files exist in nested directories
-      const graphemeFile = await fs.read("16.0.0/auxiliary/GraphemeBreakProperty.txt");
-      const bidiFile = await fs.read("16.0.0/extracted/DerivedBidiClass.txt");
+      const graphemeFile = await fs.read("/16.0.0/auxiliary/GraphemeBreakProperty.txt");
+      const bidiFile = await fs.read("/16.0.0/extracted/DerivedBidiClass.txt");
       expect(graphemeFile).toBe("content");
       expect(bidiFile).toBe("content");
     });

@@ -1,6 +1,16 @@
 import type { OperationResult } from "@ucdjs-internal/shared";
 import type { StoreError } from "../errors";
 import type { InternalUCDStoreContext, SharedOperationOptions } from "../types";
+import type {
+  BaseOperationReport,
+  BaseVersionReport,
+  FileCounts,
+  OperationMetrics,
+  ReportError,
+  ReportFile,
+} from "../types/reports";
+import { prependLeadingSlash } from "@luxass/utils";
+
 import {
   createConcurrencyLimiter,
   createDebugger,
@@ -9,7 +19,6 @@ import {
   normalizeTreeForFiltering,
   wrapTry,
 } from "@ucdjs-internal/shared";
-
 import { hasCapability } from "@ucdjs/fs-bridge";
 import {
   computeFileHash,
@@ -22,6 +31,11 @@ import { hasUCDFolderPath } from "@unicode-utils/core";
 import { dirname, join } from "pathe";
 import { extractFilterPatterns, isUCDStoreInternalContext } from "../context";
 import { UCDStoreGenericError } from "../errors";
+import {
+  computeMetrics,
+  computeStorageMetrics,
+  createEmptySummary,
+} from "../types/reports";
 
 function normalizeApiPath(version: string, rawPath: string): {
   normalized: string;
@@ -73,143 +87,46 @@ export interface MirrorOptions extends SharedOperationOptions {
   concurrency?: number;
 }
 
-export interface MirrorReport {
-  timestamp: string;
+/**
+ * Files categorization in a mirror report.
+ */
+export interface MirrorFilesReport {
+  /**
+   * List of successfully downloaded files.
+   */
+  downloaded: ReportFile[];
 
+  /**
+   * List of skipped files (already existed locally).
+   */
+  skipped: ReportFile[];
+
+  /**
+   * List of failed files.
+   */
+  failed: ReportFile[];
+}
+
+/**
+ * Per-version mirror report.
+ * Extends BaseVersionReport for consistency with analyze/sync.
+ */
+export interface MirrorVersionReport extends BaseVersionReport {
+  /**
+   * Categorized file lists.
+   */
+  files: MirrorFilesReport;
+}
+
+/**
+ * Complete mirror report for all versions.
+ * Extends BaseOperationReport for consistency with analyze/sync.
+ */
+export interface MirrorReport extends BaseOperationReport {
+  /**
+   * Per-version mirror results.
+   */
   versions: Map<string, MirrorVersionReport>;
-
-  summary?: {
-    /**
-     * Total operation duration in milliseconds
-     */
-    duration: number;
-
-    counts: {
-      /**
-       * Total number of files that were queued for processing
-       */
-      totalFiles: number;
-
-      /**
-       * Number of files successfully downloaded
-       */
-      downloaded: number;
-
-      /**
-       * Number of files skipped (already existed locally and force=false)
-       */
-      skipped: number;
-
-      /**
-       * Number of files that failed to download
-       */
-      failed: number;
-    };
-
-    metrics: {
-      /**
-       * Success rate as a percentage (0-100)
-       */
-      successRate: number;
-
-      /**
-       * Cache hit rate (skipped) as a percentage (0-100)
-       */
-      cacheHitRate: number;
-
-      /**
-       * Failure rate as a percentage (0-100)
-       */
-      failureRate: number;
-
-      /**
-       * Average milliseconds per file processed
-       */
-      averageTimePerFile: number;
-    };
-
-    storage: {
-      /**
-       * Human-readable total size of all downloaded files
-       */
-      totalSize: string;
-
-      /**
-       * Average file size for downloaded files
-       */
-      averageFileSize: string;
-    };
-  };
-}
-
-export interface MirrorVersionReport {
-  /**
-   * The Unicode version that was mirrored
-   */
-  version: string;
-
-  counts: {
-    /**
-     * Number of files successfully downloaded for this version
-     */
-    downloaded: number;
-
-    /**
-     * Number of files skipped for this version
-     */
-    skipped: number;
-
-    /**
-     * Number of files that failed to download for this version
-     */
-    failed: number;
-  };
-
-  metrics: {
-    /**
-     * Success rate for this version as a percentage (0-100)
-     */
-    successRate: number;
-
-    /**
-     * Cache hit rate (skipped) for this version as a percentage (0-100)
-     */
-    cacheHitRate: number;
-
-    /**
-     * Failure rate for this version as a percentage (0-100)
-     */
-    failureRate: number;
-  };
-
-  files: {
-    /**
-     * List of successfully downloaded files
-     */
-    downloaded: ReportFile[];
-
-    /**
-     * List of skipped files
-     */
-    skipped: ReportFile[];
-
-    /**
-     * List of failed files
-     */
-    failed: ReportFile[];
-  };
-
-  /**
-   * List of download errors with file paths and reasons
-   */
-  errors: (ReportFile & {
-    reason: string;
-  })[];
-}
-
-interface ReportFile {
-  name: string;
-  filePath: string;
 }
 
 /**
@@ -222,6 +139,56 @@ interface MirrorQueueItem {
   localPath: string;
   remotePath: string;
   versionResult: MirrorVersionReport;
+}
+
+/**
+ * Helper to create a ReportFile from file information.
+ */
+function createReportFile(name: string, filePath: string): ReportFile {
+  return { name, filePath: `/${filePath}` };
+}
+
+/**
+ * Helper to create a version report with empty initial state.
+ */
+function createVersionReport(version: string): MirrorVersionReport {
+  const files: MirrorFilesReport = {
+    downloaded: [],
+    skipped: [],
+    failed: [],
+  };
+
+  return {
+    version,
+    files,
+    counts: {
+      total: 0, // Will be set when we know the total files for this version
+      success: 0,
+      skipped: 0,
+      failed: 0,
+    },
+    metrics: {
+      successRate: 0,
+      cacheHitRate: 0,
+      failureRate: 0,
+      averageTimePerFile: 0,
+    },
+    errors: [],
+  };
+}
+
+/**
+ * Updates a version report's counts and metrics based on its file lists.
+ */
+function finalizeVersionReport(report: MirrorVersionReport, duration: number): void {
+  const total = report.files.downloaded.length + report.files.skipped.length + report.files.failed.length;
+  report.counts = {
+    total,
+    success: report.files.downloaded.length,
+    skipped: report.files.skipped.length,
+    failed: report.files.failed.length,
+  };
+  report.metrics = computeMetrics(report.counts, duration);
 }
 
 /**
@@ -252,6 +219,7 @@ async function _mirror(
       return {
         timestamp: new Date().toISOString(),
         versions: new Map<string, MirrorVersionReport>(),
+        summary: createEmptySummary(0),
       };
     }
 
@@ -262,42 +230,9 @@ async function _mirror(
 
     const versionedReports = new Map<string, MirrorVersionReport>();
 
-    let report: MirrorVersionReport | undefined;
+    // Initialize version reports
     for (const version of versions) {
-      const totalMetricValue = (report?.files.downloaded.length ?? 0) + (report?.files.skipped.length ?? 0) + (report?.files.failed.length ?? 0);
-
-      report = {
-        version,
-        files: {
-          downloaded: [],
-          skipped: [],
-          failed: [],
-        },
-        counts: {
-          get downloaded() {
-            return report?.files.downloaded.length ?? 0;
-          },
-          get skipped() {
-            return report?.files.skipped.length ?? 0;
-          },
-          get failed() {
-            return report?.files.failed.length ?? 0;
-          },
-        },
-        metrics: {
-          get cacheHitRate() {
-            return totalMetricValue > 0 ? (report?.files.skipped.length ?? 0) / totalMetricValue * 100 : 0;
-          },
-          get failureRate() {
-            return totalMetricValue > 0 ? (report?.files.failed.length ?? 0) / totalMetricValue * 100 : 0;
-          },
-          get successRate() {
-            return totalMetricValue > 0 ? (report?.files.downloaded.length ?? 0) / totalMetricValue * 100 : 0;
-          },
-        },
-        errors: [],
-      };
-      versionedReports.set(version, report);
+      versionedReports.set(version, createVersionReport(version));
     }
 
     const directoriesToCreate = new Set<string>();
@@ -375,10 +310,9 @@ async function _mirror(
       try {
         // Skip if file exists and force is disabled
         if (!force && await this.fs.exists(item.localPath)) {
-          item.versionResult.files.skipped.push({
-            name: item.name,
-            filePath: item.localPath,
-          });
+          item.versionResult.files.skipped.push(
+            createReportFile(item.name, item.localPath),
+          );
 
           return;
         }
@@ -421,14 +355,17 @@ async function _mirror(
 
         await this.fs.write!(item.localPath, content);
 
-        // item.versionResult.files.downloaded.push(item.filePath);
-        item.versionResult.files.downloaded.push({ name: item.name, filePath: item.localPath });
+        item.versionResult.files.downloaded.push(
+          createReportFile(item.name, item.localPath),
+        );
         totalDownloadedSize += contentSize;
       } catch (err) {
-        item.versionResult.files.failed.push({ name: item.name, filePath: item.localPath });
+        item.versionResult.files.failed.push(
+          createReportFile(item.name, item.localPath),
+        );
         item.versionResult.errors.push({
           name: item.name,
-          filePath: item.localPath,
+          filePath: prependLeadingSlash(item.localPath),
           reason: err instanceof Error ? err.message : String(err),
         });
 
@@ -437,6 +374,16 @@ async function _mirror(
     })));
 
     const duration = Date.now() - startTime;
+
+    // Finalize version reports with counts and metrics
+    for (const report of versionedReports.values()) {
+      finalizeVersionReport(report, duration / versions.length);
+
+      // Sort file lists for deterministic output
+      report.files.downloaded.sort((a, b) => a.name.localeCompare(b.name));
+      report.files.skipped.sort((a, b) => a.name.localeCompare(b.name));
+      report.files.failed.sort((a, b) => a.name.localeCompare(b.name));
+    }
 
     // Create snapshots and update lockfile for mirrored versions
     const lockfile = await readLockfileOrUndefined(this.fs, this.lockfile.path);
@@ -506,15 +453,31 @@ async function _mirror(
       });
     }
 
-    const summary = computeSummary(
-      versionedReports,
-      totalDownloadedSize,
+    // Aggregate counts from version reports
+    const aggregatedCounts: FileCounts = {
+      total: 0,
+      success: 0,
+      skipped: 0,
+      failed: 0,
+    };
+
+    for (const report of versionedReports.values()) {
+      aggregatedCounts.total += report.counts.total;
+      aggregatedCounts.success += report.counts.success;
+      aggregatedCounts.skipped += report.counts.skipped;
+      aggregatedCounts.failed += report.counts.failed;
+    }
+
+    const summary = {
       duration,
-    )!;
+      counts: aggregatedCounts,
+      metrics: computeMetrics(aggregatedCounts, duration),
+      storage: computeStorageMetrics(totalDownloadedSize, aggregatedCounts.success),
+    };
 
     debug?.(
       `Mirror completed: %d downloaded, %d skipped, %d failed in ${duration}ms`,
-      summary.counts.downloaded,
+      summary.counts.success,
       summary.counts.skipped,
       summary.counts.failed,
     );
@@ -553,55 +516,4 @@ export function mirror(
     this as InternalUCDStoreContext,
     thisOrContext as MirrorOptions,
   );
-}
-
-function computeSummary(
-  versionedReports: Map<string, MirrorVersionReport>,
-  totalDownloadedSize: number,
-  duration: number,
-): MirrorReport["summary"] {
-  let totalFiles = 0;
-  let downloaded = 0;
-  let skipped = 0;
-  let failed = 0;
-
-  for (const report of versionedReports.values()) {
-    totalFiles += report.counts.downloaded + report.counts.skipped + report.counts.failed;
-    downloaded += report.counts.downloaded;
-    skipped += report.counts.skipped;
-    failed += report.counts.failed;
-  }
-
-  const summary = {
-    duration,
-    counts: {
-      totalFiles,
-      downloaded,
-      skipped,
-      failed,
-    },
-    metrics: {
-      successRate: totalFiles > 0 ? (downloaded / totalFiles) * 100 : 0,
-      cacheHitRate: totalFiles > 0 ? (skipped / totalFiles) * 100 : 0,
-      failureRate: totalFiles > 0 ? (failed / totalFiles) * 100 : 0,
-      averageTimePerFile: totalFiles > 0 ? duration / totalFiles : 0,
-    },
-    storage: {
-      totalSize: formatBytes(totalDownloadedSize),
-      averageFileSize: downloaded > 0 ? formatBytes(totalDownloadedSize / downloaded) : "0 B",
-    },
-  } satisfies MirrorReport["summary"];
-
-  return summary;
-}
-
-function formatBytes(bytes: number): string {
-  if (bytes === 0) return "0 B";
-
-  const sizes = ["B", "KB", "MB", "GB", "TB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(1024));
-  const clampedI = Math.max(0, Math.min(i, sizes.length - 1));
-  const value = bytes / (1024 ** clampedI);
-
-  return `${value.toFixed(2)} ${sizes[clampedI]}`;
 }

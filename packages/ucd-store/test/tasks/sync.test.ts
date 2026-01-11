@@ -122,7 +122,8 @@ describe("sync", () => {
       expect(error).toBeNull();
       expect(data?.added).toHaveLength(0);
       expect(data?.unchanged).toContain("16.0.0");
-      expect(data?.mirrorReport).toBeUndefined();
+      // mirrorReport is always present, but versions Map is empty when nothing mirrored
+      expect(data?.mirrorReport.versions.size).toBe(0);
     });
   });
 
@@ -167,10 +168,10 @@ describe("sync", () => {
 
       expect(error).toBeNull();
       expect(data?.mirrorReport).toBeDefined();
-      expect(data?.mirrorReport?.versions.get("16.0.0")?.counts.downloaded).toBe(1);
+      expect(data?.mirrorReport?.versions.get("16.0.0")?.counts.success).toBe(1);
 
       // File should be overwritten
-      const content = await fs.read("16.0.0/UnicodeData.txt");
+      const content = await fs.read("/16.0.0/UnicodeData.txt");
       expect(content).toBe("new content from API");
     });
 
@@ -215,10 +216,10 @@ describe("sync", () => {
 
       expect(error).toBeNull();
       expect(data?.mirrorReport?.versions.get("16.0.0")?.counts.skipped).toBe(1);
-      expect(data?.mirrorReport?.versions.get("16.0.0")?.counts.downloaded).toBe(1);
+      expect(data?.mirrorReport?.versions.get("16.0.0")?.counts.success).toBe(1);
 
       // Existing file should NOT be overwritten
-      const content = await fs.read("16.0.0/UnicodeData.txt");
+      const content = await fs.read("/16.0.0/UnicodeData.txt");
       expect(content).toBe("existing content");
     });
   });
@@ -405,14 +406,17 @@ describe("sync", () => {
       const [data, error] = await sync(context, { cleanOrphaned: true });
 
       expect(error).toBeNull();
-      expect(data?.removedFiles.get("16.0.0")).toContain("OrphanedFile.txt");
+      const removed = data?.removedFiles.get("16.0.0");
+      expect(removed).toEqual([
+        { name: "OrphanedFile.txt", filePath: "/16.0.0/OrphanedFile.txt" },
+      ]);
 
       // Verify orphaned file was removed
-      const orphanedExists = await fs.exists("16.0.0/OrphanedFile.txt");
+      const orphanedExists = await fs.exists("/16.0.0/OrphanedFile.txt");
       expect(orphanedExists).toBe(false);
 
       // Valid file should still exist
-      const validExists = await fs.exists("16.0.0/UnicodeData.txt");
+      const validExists = await fs.exists("/16.0.0/UnicodeData.txt");
       expect(validExists).toBe(true);
     });
 
@@ -459,7 +463,7 @@ describe("sync", () => {
       expect(data?.removedFiles.size).toBe(0);
 
       // Extra file should still exist
-      const extraExists = await fs.exists("16.0.0/ExtraFile.txt");
+      const extraExists = await fs.exists("/16.0.0/ExtraFile.txt");
       expect(extraExists).toBe(true);
     });
   });
@@ -615,7 +619,7 @@ describe("sync", () => {
       expect(error).toBeNull();
       expect(data?.mirrorReport).toBeDefined();
       expect(data?.mirrorReport?.versions.size).toBe(1);
-      expect(data?.mirrorReport?.versions.get("16.0.0")?.counts.downloaded).toBe(2);
+      expect(data?.mirrorReport?.versions.get("16.0.0")?.counts.success).toBe(2);
     });
 
     it("should only mirror versions with fileCount 0 by default", async () => {
@@ -701,7 +705,7 @@ describe("sync", () => {
       const [data, error] = await sync(context, { concurrency: 2 });
 
       expect(error).toBeNull();
-      expect(data?.mirrorReport?.versions.get("16.0.0")?.counts.downloaded).toBe(4);
+      expect(data?.mirrorReport?.versions.get("16.0.0")?.counts.success).toBe(4);
       expect(downloadOrder).toHaveLength(4);
     });
   });
@@ -737,10 +741,11 @@ describe("sync", () => {
 
       expect(error).toBeNull();
       const report = data?.mirrorReport?.versions.get("16.0.0");
-      expect(report?.counts.downloaded).toBe(2);
-      expect(report?.files.downloaded).toContain("UnicodeData.txt");
-      expect(report?.files.downloaded).toContain("Blocks.txt");
-      expect(report?.files.downloaded).not.toContain("Scripts.txt");
+      expect(report?.counts.success).toBe(2);
+      expect(report?.files.downloaded).toEqual([
+        { name: "Blocks.txt", filePath: "/16.0.0/Blocks.txt" },
+        { name: "UnicodeData.txt", filePath: "/16.0.0/UnicodeData.txt" },
+      ]);
     });
 
     it("should apply exclude filter to synced files", async () => {
@@ -772,9 +777,10 @@ describe("sync", () => {
 
       expect(error).toBeNull();
       const report = data?.mirrorReport?.versions.get("16.0.0");
-      expect(report?.files.downloaded).toContain("UnicodeData.txt");
-      expect(report?.files.downloaded).toContain("Blocks.txt");
-      expect(report?.files.downloaded).not.toContain("Scripts.txt");
+      expect(report?.files.downloaded).toEqual([
+        { name: "Blocks.txt", filePath: "/16.0.0/Blocks.txt" },
+        { name: "UnicodeData.txt", filePath: "/16.0.0/UnicodeData.txt" },
+      ]);
     });
   });
 

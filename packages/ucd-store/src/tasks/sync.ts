@@ -1,10 +1,13 @@
 import type { OperationResult } from "@ucdjs-internal/shared";
 import type { StoreError } from "../errors";
 import type { InternalUCDStoreContext, SharedOperationOptions } from "../types";
+import type { BaseOperationReport, OperationSummary, ReportFile } from "../types/reports";
 import type { MirrorReport } from "./mirror";
+import { prependLeadingSlash } from "@luxass/utils";
 import {
   createConcurrencyLimiter,
   createDebugger,
+  normalizePathForFiltering,
   wrapTry,
 } from "@ucdjs-internal/shared";
 import { hasCapability } from "@ucdjs/fs-bridge";
@@ -13,10 +16,12 @@ import {
   readSnapshotOrUndefined,
   writeLockfile,
 } from "@ucdjs/lockfile";
+import { patheBasename } from "@ucdjs/path-utils";
 import { join } from "pathe";
 import { isUCDStoreInternalContext } from "../context";
 import { UCDStoreGenericError, UCDStoreVersionNotFoundError } from "../errors";
 import { listFiles } from "../files/list";
+import { createEmptySummary } from "../types/reports";
 import { mirror } from "./mirror";
 
 const debug = createDebugger("ucdjs:ucd-store:sync");
@@ -52,38 +57,42 @@ export interface SyncOptions extends SharedOperationOptions {
   cleanOrphaned?: boolean;
 }
 
-export interface SyncResult {
-  timestamp: string;
-
+/**
+ * Complete sync report.
+ * Extends BaseOperationReport for consistency with analyze/mirror.
+ */
+export interface SyncResult extends BaseOperationReport {
   /**
-   * Versions that were added to the lockfile
+   * Versions that were added to the lockfile.
    */
   added: string[];
 
   /**
-   * Versions that were removed from the lockfile (if removeUnavailable was true)
+   * Versions that were removed from the lockfile (if removeUnavailable was true).
    */
   removed: string[];
 
   /**
-   * Versions that were already in the lockfile
+   * Versions that were already in the lockfile.
    */
   unchanged: string[];
 
   /**
-   * All versions in lockfile after sync
+   * All versions in lockfile after sync.
    */
   versions: string[];
 
   /**
-   * Report of mirrored files (same structure as mirror operation)
+   * Report of mirrored files (same structure as mirror operation).
+   * Always present (uses empty report when no mirroring occurred).
    */
-  mirrorReport?: MirrorReport;
+  mirrorReport: MirrorReport;
 
   /**
-   * Files that were removed (orphaned files, only if cleanOrphaned was true)
+   * Files that were removed per version (orphaned files, only if cleanOrphaned was true).
+   * Always present (empty Map when no files removed).
    */
-  removedFiles: Map<string, string[]>;
+  removedFiles: Map<string, ReportFile[]>;
 }
 
 /**
@@ -99,6 +108,8 @@ async function _sync(
   options?: SyncOptions,
 ): Promise<OperationResult<SyncResult, StoreError>> {
   return wrapTry(async () => {
+    const startTime = Date.now();
+
     if (!hasCapability(this.fs, ["mkdir", "write"])) {
       throw new UCDStoreGenericError("Filesystem does not support required write operations for syncing.");
     }
@@ -234,15 +245,24 @@ async function _sync(
 
     debug?.(`Validating versions to sync: ${versionsToSync.join(", ")}`);
 
+    const emptyMirrorReport: MirrorReport = {
+      timestamp: new Date().toISOString(),
+      versions: new Map(),
+      summary: createEmptySummary(0),
+    };
+
     if (versionsToSync.length === 0) {
       debug?.("No versions to sync", { versionsToSync });
+      const syncDuration = Date.now() - startTime;
       return {
         timestamp: new Date().toISOString(),
         added,
         removed,
         unchanged,
         versions: finalVersions,
+        mirrorReport: emptyMirrorReport,
         removedFiles: new Map(),
+        summary: createEmptySummary(syncDuration),
       };
     }
 
@@ -261,68 +281,83 @@ async function _sync(
     }
 
     // Step 7: Remove orphaned files if cleanOrphaned flag is set
-    const removedFiles = new Map<string, string[]>();
+    const removedFiles = new Map<string, ReportFile[]>();
 
     if (cleanOrphaned) {
       const limit = createConcurrencyLimiter(concurrency);
 
       for (const version of versionsToSync) {
         // Get expected files from snapshot if available, otherwise from API
-        let expectedFiles: string[] = [];
+        let expectedFilesPaths: string[] = [];
         const snapshot = await readSnapshotOrUndefined(this.fs, version);
 
         if (snapshot && snapshot.files) {
-          // Use files from snapshot
-          expectedFiles = Object.keys(snapshot.files);
+          // Use files from snapshot (already normalized paths like "UnicodeData.txt")
+          expectedFilesPaths = Object.keys(snapshot.files);
         } else {
-          // Fallback to API
-          expectedFiles = await this.getExpectedFilePaths(version);
+          // Fallback to API - paths may include version/ucd prefix
+          const apiExpectedFilesPaths = await this.getExpectedFilePaths(version);
+          // Normalize paths to match listFiles output format (e.g., "UnicodeData.txt")
+          expectedFilesPaths = apiExpectedFilesPaths.map((filePath) =>
+            normalizePathForFiltering(version, filePath),
+          );
         }
 
         // Apply filters
-        const filteredExpectedFiles = expectedFiles.filter((filePath) =>
-          this.filter(filePath, options?.filters),
+        const filteredExpectedFilesPaths = expectedFilesPaths.filter(
+          (filePath) => this.filter(filePath, options?.filters),
         );
 
-        const expectedFilesSet = new Set(filteredExpectedFiles);
+        const expectedFilesPathsSet = new Set(filteredExpectedFilesPaths);
 
         // Get all actual files
-        const [actualFiles, listError] = await listFiles(this, version, {
+        const [actualFilesPaths, listFilesError] = await listFiles(this, version, {
           allowApi: false,
           filters: options?.filters,
         });
 
-        if (listError) {
-          debug?.(`Failed to list files for version ${version} when checking orphaned files:`, listError);
+        if (listFilesError) {
+          debug?.(`Failed to list files for version ${version} when checking orphaned files:`, listFilesError);
           continue;
         }
 
-        // Find orphaned files (files not in expected files)
-        const orphanedFiles = actualFiles.filter((filePath) => !expectedFilesSet.has(filePath));
+        console.error("Actual files for version", version, ":", actualFilesPaths);
+        console.error("Expected files for version", version, ":", filteredExpectedFilesPaths);
 
+        // Filter out snapshot.json from actual files (it's not a UCD data file)
+        const filteredActualFiles = actualFilesPaths.filter((filePath) => !filePath.endsWith("snapshot.json"));
+
+        // Find orphaned files (files not in expected files)
+        const orphanedFiles = filteredActualFiles.filter((filePath) => !expectedFilesPathsSet.has(filePath));
+        console.error("Orphaned files for version", version, ":", orphanedFiles);
         if (orphanedFiles.length > 0) {
           removedFiles.set(version, []);
 
           // Remove orphaned files
-          await Promise.all(
-            orphanedFiles.map((filePath) =>
-              limit(async () => {
-                try {
-                  const localPath = join(version, filePath);
-                  if (await this.fs.exists(localPath)) {
-                    await this.fs.rm!(localPath);
-                    removedFiles.get(version)!.push(filePath);
-                    debug?.(`Removed orphaned file: ${filePath} for version ${version}`);
-                  }
-                } catch (err) {
-                  debug?.(`Failed to remove orphaned file ${filePath} for version ${version}:`, err);
-                }
-              }),
-            ),
-          );
+          await Promise.all(orphanedFiles.map((filePath) => limit(async () => {
+            try {
+              if (await this.fs.exists(filePath)) {
+                await this.fs.rm!(filePath);
+                removedFiles.get(version)!.push({
+                  name: patheBasename(filePath),
+                  filePath: prependLeadingSlash(filePath),
+                });
+                debug?.(`Removed orphaned file: ${filePath} for version ${version}`);
+              }
+            } catch (err) {
+              debug?.(`Failed to remove orphaned file ${filePath} for version ${version}:`, err);
+            }
+          })));
         }
       }
     }
+
+    const syncDuration = Date.now() - startTime;
+
+    // Use mirror report's summary if available, otherwise create empty summary
+    const summary = mirrorReport?.summary ?? createEmptySummary(syncDuration);
+    // Update duration to reflect total sync time including orphan cleanup
+    summary.duration = syncDuration;
 
     return {
       timestamp: new Date().toISOString(),
@@ -330,8 +365,9 @@ async function _sync(
       removed,
       unchanged,
       versions: finalVersions,
-      mirrorReport,
+      mirrorReport: mirrorReport ?? emptyMirrorReport,
       removedFiles,
+      summary,
     };
   });
 }
