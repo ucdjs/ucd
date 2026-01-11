@@ -11,7 +11,6 @@ import { prependLeadingSlash } from "@luxass/utils";
 import {
   createConcurrencyLimiter,
   createDebugger,
-  normalizePathForFiltering,
   wrapTry,
 } from "@ucdjs-internal/shared";
 import { hasCapability } from "@ucdjs/fs-bridge";
@@ -298,12 +297,9 @@ async function _sync(
           // Use files from snapshot (already normalized paths like "UnicodeData.txt")
           expectedFilesPaths = Object.keys(snapshot.files);
         } else {
-          // Fallback to API - paths may include version/ucd prefix
-          const apiExpectedFilesPaths = await this.getExpectedFilePaths(version);
-          // Normalize paths to match listFiles output format (e.g., "UnicodeData.txt")
-          expectedFilesPaths = apiExpectedFilesPaths.map((filePath) =>
-            normalizePathForFiltering(version, filePath),
-          );
+          // Fallback to API - use storePath which matches listFiles output format
+          const apiExpectedFiles = await this.getExpectedFilePaths(version);
+          expectedFilesPaths = apiExpectedFiles.map(f => f.storePath);
         }
 
         // Apply filters
@@ -324,15 +320,15 @@ async function _sync(
           continue;
         }
 
-        console.error("Actual files for version", version, ":", actualFilesPaths);
-        console.error("Expected files for version", version, ":", filteredExpectedFilesPaths);
+        debug?.("Actual files for version %s: %O", version, actualFilesPaths);
+        debug?.("Expected files for version %s: %O", version, filteredExpectedFilesPaths);
 
         // Filter out snapshot.json from actual files (it's not a UCD data file)
         const filteredActualFiles = actualFilesPaths.filter((filePath) => !filePath.endsWith("snapshot.json"));
 
         // Find orphaned files (files not in expected files)
         const orphanedFiles = filteredActualFiles.filter((filePath) => !expectedFilesPathsSet.has(filePath));
-        console.error("Orphaned files for version", version, ":", orphanedFiles);
+        debug?.("Orphaned files for version %s: %O", version, orphanedFiles);
         if (orphanedFiles.length > 0) {
           removedFiles.set(version, []);
 

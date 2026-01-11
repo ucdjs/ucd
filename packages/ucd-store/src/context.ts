@@ -1,6 +1,7 @@
 import type { PathFilter, PathFilterOptions } from "@ucdjs-internal/shared";
 import type { UCDClient } from "@ucdjs/client";
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
+import type { ExpectedFile } from "@ucdjs/schemas";
 import type {
   InternalUCDStoreContext,
   UCDStoreContext,
@@ -80,7 +81,7 @@ export function createInternalContext(options: CreateInternalContextOptions): In
         return apiVersionsCache;
       },
     },
-    async getExpectedFilePaths(version: string): Promise<string[]> {
+    async getExpectedFilePaths(version: string): Promise<ExpectedFile[]> {
       debug?.("Fetching expected files for version:", version);
       const result = await options.client.manifest.get(version);
 

@@ -56,9 +56,6 @@ export interface MirrorOptions extends SharedOperationOptions {
   concurrency?: number;
 }
 
-/**
- * Files categorization in a mirror report.
- */
 export interface MirrorFilesReport {
   /**
    * List of successfully downloaded files.
@@ -76,10 +73,6 @@ export interface MirrorFilesReport {
   failed: ReportFile[];
 }
 
-/**
- * Per-version mirror report.
- * Extends BaseVersionReport for consistency with analyze/sync.
- */
 export interface MirrorVersionReport extends BaseVersionReport {
   /**
    * Categorized file lists.
@@ -87,10 +80,6 @@ export interface MirrorVersionReport extends BaseVersionReport {
   files: MirrorFilesReport;
 }
 
-/**
- * Complete mirror report for all versions.
- * Extends BaseOperationReport for consistency with analyze/sync.
- */
 export interface MirrorReport extends BaseOperationReport {
   /**
    * Per-version mirror results.
