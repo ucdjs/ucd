@@ -1,9 +1,9 @@
-import { Link } from "@tanstack/react-router";
-import { ArrowLeft, Check, Download, ExternalLink, FileText, Link2 } from "lucide-react";
+import { Check, Download, ExternalLink, FileText, Link2, Loader2 } from "lucide-react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 export interface FileViewerProps {
@@ -29,7 +29,7 @@ function parseLineHash(hash: string): LineSelection | null {
   const match = hash.match(/^#L(\d+)(?:-L?(\d+))?$/);
   if (!match) return null;
 
-  const start = Number.parseInt(match[1], 10);
+  const start = Number.parseInt(match[1]!, 10);
   const end = match[2] ? Number.parseInt(match[2], 10) : start;
 
   if (Number.isNaN(start) || Number.isNaN(end)) return null;
@@ -133,17 +133,10 @@ function LineContentComponent({ line, selected }: LineContentProps) {
 
 const LineContent = memo(LineContentComponent);
 
-function getParentPath(path: string): string {
-  const parts = path.split("/").filter(Boolean);
-  parts.pop();
-  return parts.join("/");
-}
-
 export function FileViewer({ content, contentType, fileName, filePath }: FileViewerProps) {
   const language = getLanguageFromContentType(contentType, fileName);
   const lines = useMemo(() => content.split("\n"), [content]);
   const lineCount = lines.length;
-  const parentPath = getParentPath(filePath);
 
   // Parse initial selection from URL hash (only on mount)
   const initialSelection = useMemo((): LineSelection | null => {
@@ -229,22 +222,10 @@ export function FileViewer({ content, contentType, fileName, filePath }: FileVie
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            nativeButton={false}
-            render={(
-              <Link to="/explorer/files/$" params={{ _splat: parentPath || "/" }}>
-                <ArrowLeft className="size-4" />
-              </Link>
-            )}
-          />
-          <CardTitle className="flex items-center gap-2 text-base font-medium">
-            <FileText className="size-4" />
-            {fileName}
-          </CardTitle>
-        </div>
+        <CardTitle className="flex items-center gap-2 text-base font-medium">
+          <FileText className="size-4" />
+          {fileName}
+        </CardTitle>
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground">
             {lineCount}
@@ -291,7 +272,7 @@ export function FileViewer({ content, contentType, fileName, filePath }: FileVie
         <div className="relative rounded-lg border border-border bg-muted/30 overflow-hidden">
           <div className="flex">
             {/* Line numbers */}
-            <div className="flex-shrink-0 select-none border-r border-border bg-muted/50 text-right text-xs text-muted-foreground font-mono">
+            <div className="shrink-0 select-none border-r border-border bg-muted/50 text-right text-xs text-muted-foreground font-mono">
               {lines.map((_, idx) => {
                 const lineNum = idx + 1;
                 const selected = lineNum >= selectionStart && lineNum <= selectionEnd;
@@ -331,6 +312,60 @@ export function FileViewer({ content, contentType, fileName, filePath }: FileVie
             • Click to select, Shift+click for range
           </p>
         )}
+      </CardContent>
+    </Card>
+  );
+}
+
+export interface FileViewerSkeletonProps {
+  fileName: string;
+}
+
+/**
+ * Skeleton loading state for FileViewer
+ * Shows the card shell with loading placeholders for content
+ */
+export function FileViewerSkeleton({ fileName }: FileViewerSkeletonProps) {
+  return (
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="flex items-center gap-2 text-base font-medium">
+          <FileText className="size-4" />
+          {fileName}
+        </CardTitle>
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-4 w-20" />
+          <Button variant="outline" size="sm" disabled>
+            <ExternalLink className="size-4" />
+            Open Raw
+          </Button>
+          <Button variant="outline" size="sm" disabled>
+            <Download className="size-4" />
+            Download
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="relative rounded-lg border border-border bg-muted/30 overflow-hidden">
+          <div className="flex">
+            {/* Line numbers skeleton */}
+            <div className="shrink-0 select-none border-r border-border bg-muted/50 text-right text-xs text-muted-foreground font-mono w-12">
+              {Array.from({ length: 15 }).map((_, idx) => (
+                // eslint-disable-next-line react/no-array-index-key
+                <div key={`skeleton-line-${idx}`} className="px-3 py-0 leading-5">
+                  <Skeleton className="h-3 w-4 ml-auto" />
+                </div>
+              ))}
+            </div>
+            {/* Content skeleton */}
+            <div className="flex-1 overflow-x-auto text-sm font-mono p-3 space-y-1">
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="size-6 animate-spin text-muted-foreground" />
+                <span className="ml-2 text-sm text-muted-foreground">Loading file content...</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </CardContent>
     </Card>
   );
