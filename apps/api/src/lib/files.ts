@@ -1,8 +1,5 @@
 /* eslint-disable no-console */
 import type { Entry } from "apache-autoindex-parse";
-import type { Context } from "hono";
-
-import type { HonoEnv } from "../types";
 import { trimLeadingSlash, trimTrailingSlash } from "@luxass/utils";
 import { createGlobMatcher } from "@ucdjs-internal/shared";
 import {
@@ -133,10 +130,6 @@ export function applyDirectoryFiltersAndSort(
 
   return filtered;
 }
-
-// ============================================================================
-// File Response Handlers
-// ============================================================================
 
 export function buildDirectoryHeaders(
   files: Entry[],
