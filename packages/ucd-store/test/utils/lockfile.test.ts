@@ -6,7 +6,7 @@ import { defineFileSystemBridge } from "@ucdjs/fs-bridge";
 import { readLockfile } from "@ucdjs/lockfile";
 import { describe, expect, it } from "vitest";
 import { UCDStoreGenericError } from "../../src/errors";
-import { initLockfile } from "../../src/setup/init-lockfile";
+import { initLockfile } from "../../src/utils/lockfile";
 
 describe("initLockfile", () => {
   describe("lockfile creation", () => {

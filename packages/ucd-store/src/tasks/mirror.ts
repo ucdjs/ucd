@@ -1,16 +1,14 @@
 import type { OperationResult } from "@ucdjs-internal/shared";
 import type { StoreError } from "../errors";
-import type { InternalUCDStoreContext, SharedOperationOptions } from "../types";
 import type {
   BaseOperationReport,
   BaseVersionReport,
   FileCounts,
-  OperationMetrics,
-  ReportError,
+  InternalUCDStoreContext,
   ReportFile,
-} from "../types/reports";
+  SharedOperationOptions,
+} from "../types";
 import { prependLeadingSlash } from "@luxass/utils";
-
 import {
   createConcurrencyLimiter,
   createDebugger,
@@ -27,15 +25,15 @@ import {
   writeLockfile,
   writeSnapshot,
 } from "@ucdjs/lockfile";
+import { patheDirname, patheJoin } from "@ucdjs/path-utils";
 import { hasUCDFolderPath } from "@unicode-utils/core";
-import { dirname, join } from "pathe";
 import { extractFilterPatterns, isUCDStoreInternalContext } from "../context";
 import { UCDStoreGenericError } from "../errors";
 import {
   computeMetrics,
   computeStorageMetrics,
   createEmptySummary,
-} from "../types/reports";
+} from "../utils/reports";
 
 function normalizeApiPath(version: string, rawPath: string): {
   normalized: string;
@@ -60,8 +58,8 @@ function normalizeApiPath(version: string, rawPath: string): {
   }
 
   const normalized = path;
-  const remotePath = join(version, hasUcd ? "ucd" : "", normalized);
-  const localPath = join(version, normalized);
+  const remotePath = patheJoin(version, hasUcd ? "ucd" : "", normalized);
+  const localPath = patheJoin(version, normalized);
 
   return { normalized, remotePath, localPath };
 }
@@ -276,7 +274,7 @@ async function _mirror(
       for (const filePath of filePaths) {
         const { normalized, localPath, remotePath } = normalizeApiPath(version, filePath);
 
-        directoriesToCreate.add(dirname(localPath));
+        directoriesToCreate.add(patheDirname(localPath));
 
         debug?.(
           `Queueing file for mirroring: version=${version}, filePath=${filePath}, normalized=${normalized}, localPath=${localPath}, remotePath=${remotePath}`,

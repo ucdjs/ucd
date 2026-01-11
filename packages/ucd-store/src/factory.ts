@@ -1,6 +1,6 @@
 import type z from "zod";
 import type { UCDStore, UCDStoreOptions } from "./types";
-import { resolve } from "pathe";
+import { patheResolve } from "@ucdjs/path-utils";
 import { createUCDStore } from "./store";
 
 /**
@@ -23,7 +23,7 @@ export async function createNodeUCDStore<BridgeOptionsSchema extends z.ZodType>(
 
   // Resolve basePath to absolute path for the fs-bridge
   // The bridge handles all path resolution - store operations use relative paths
-  const resolvedBasePath = options.basePath ? resolve(options.basePath) : resolve("./");
+  const resolvedBasePath = options.basePath ? patheResolve(options.basePath) : patheResolve("./");
 
   // Remove basePath from options since it's only for fsOptions
   const { basePath: _, ...storeOptions } = options;

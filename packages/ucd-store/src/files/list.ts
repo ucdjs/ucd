@@ -10,8 +10,8 @@ import {
   wrapTry,
 } from "@ucdjs-internal/shared";
 import { isBuiltinHttpBridge } from "@ucdjs/fs-bridge";
+import { patheJoin } from "@ucdjs/path-utils";
 import { hasUCDFolderPath } from "@unicode-utils/core";
-import { join } from "pathe";
 import { isUCDStoreInternalContext } from "../context";
 import { UCDStoreApiFallbackError, UCDStoreVersionNotFoundError } from "../errors";
 
@@ -78,7 +78,7 @@ async function _listFiles(
 
     if (isBuiltinHttpBridge(this.fs) && hasUCDFolderPath(version)) {
       debug?.("Using HTTP bridge path with ucd subpath for version:", version);
-      filesPath = join(version, "ucd");
+      filesPath = patheJoin(version, "ucd");
     }
 
     debug?.("Using files path:", filesPath, "for version:", version);

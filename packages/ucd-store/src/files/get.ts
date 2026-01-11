@@ -3,8 +3,8 @@ import type { StoreError } from "../errors";
 import type { InternalUCDStoreContext, SharedOperationOptions } from "../types";
 import { createDebugger, tryOr, wrapTry } from "@ucdjs-internal/shared";
 import { isBuiltinHttpBridge } from "@ucdjs/fs-bridge";
+import { patheJoin } from "@ucdjs/path-utils";
 import { hasUCDFolderPath } from "@unicode-utils/core";
-import { join } from "pathe";
 import { isUCDStoreInternalContext } from "../context";
 import {
   UCDStoreApiFallbackError,
@@ -60,10 +60,10 @@ async function _getFile(
     }
 
     // Use relative path
-    let localPath = join(version, filePath);
+    let localPath = patheJoin(version, filePath);
     if (isBuiltinHttpBridge(this.fs) && hasUCDFolderPath(version)) {
       debug?.("Using HTTP bridge path with ucd subpath for version:", version);
-      localPath = join(version, "ucd", filePath);
+      localPath = patheJoin(version, "ucd", filePath);
     }
 
     debug?.("Checking local file existence:", localPath);
@@ -108,7 +108,7 @@ async function _getFile(
     // which is _not_ part of the store. Paths returned from the API are
     // relative to their containing folder and do not include the `ucd` segment.
     // By adding `ucd` here, we ensure consistency with the mirror operation.
-    const remotePath = join(version, hasUCDFolderPath(version) ? "ucd" : "", filePath);
+    const remotePath = patheJoin(version, hasUCDFolderPath(version) ? "ucd" : "", filePath);
     const result = await this.client.files.get(remotePath);
 
     if (result.error) {
