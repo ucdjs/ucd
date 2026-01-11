@@ -1,7 +1,7 @@
 import type { FSEntry } from "../types";
 import { joinURL } from "@luxass/utils/path";
 import { createDebugger } from "@ucdjs-internal/shared";
-import { UCDJS_API_BASE_URL } from "@ucdjs/env";
+import { UCDJS_STORE_BASE_URL } from "@ucdjs/env";
 import { FileEntrySchema } from "@ucdjs/schemas";
 import { z } from "zod";
 import { defineFileSystemBridge } from "../define";
@@ -17,7 +17,7 @@ const API_BASE_URL_SCHEMA = z.codec(z.url({
 }), z.instanceof(URL), {
   decode: (urlString) => new URL(urlString),
   encode: (url) => url.href,
-}).default(new URL("/api/v1/files", UCDJS_API_BASE_URL));
+}).default(new URL("/", UCDJS_STORE_BASE_URL));
 
 const HTTPFileSystemBridge = defineFileSystemBridge({
   meta: {
