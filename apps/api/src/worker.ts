@@ -11,6 +11,7 @@ import { TASKS_ROUTER } from "./routes/tasks/routes";
 import { V1_FILES_ROUTER } from "./routes/v1_files/router";
 import { V1_SCHEMAS_ROUTER } from "./routes/v1_schemas/router";
 import { V1_VERSIONS_ROUTER } from "./routes/v1_versions/router";
+import { UCD_STORE_ROUTER } from "./ucd-store/router";
 
 const app = new OpenAPIHono<HonoEnv>();
 
@@ -95,4 +96,22 @@ export default Sentry.withSentry((env: HonoEnv["Bindings"]) => {
     sendDefaultPii: false,
     enabled: env.ENVIRONMENT !== "testing",
   };
-}, app);
+}, {
+  fetch: (request, env, ctx) => {
+    const url = new URL(request.url);
+    const hostname = url.hostname;
+
+    // Check if this is a store subdomain
+    const isStoreSubdomain
+      = hostname === "ucd-store.ucdjs.dev" // production
+        || hostname === "preview.ucd-store.ucdjs.dev" // preview
+        || (hostname === "ucd-store.localhost"); // local testing
+
+    if (isStoreSubdomain) {
+      return UCD_STORE_ROUTER.fetch(request, env, ctx);
+    }
+
+    // Default to main API
+    return app.fetch(request, env, ctx);
+  },
+});
