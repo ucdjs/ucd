@@ -179,8 +179,28 @@ export const createMemoryMockFS = defineFileSystemBridge({
       listdir: async (path: string, recursive = false) => {
         const resolvedPath = resolve(path);
         const entries: FSEntry[] = [];
+
+        // Used for filtering state.files (resolved/sandboxed paths)
         const normalizedPath = normalizeRootPath(resolvedPath);
         const pathPrefix = normalizedPath === "" ? "" : (normalizedPath.endsWith("/") ? normalizedPath : `${normalizedPath}/`);
+
+        // Used for emitted FSEntry.path (bridge-root-relative paths)
+        const requestedPath = normalizeRootPath(path)
+          .replace(/^\/+/, "")
+          .replace(/\/+$/, "");
+
+        const prefixToRoot = (relative: string): string => {
+          if (!requestedPath) {
+            return relative;
+          }
+
+          if (!relative) {
+            return requestedPath;
+          }
+
+          return `${requestedPath}/${relative}`;
+        };
+
         const seenDirs = new Set<string>();
 
         for (const [filePath, value] of state.files.entries()) {
@@ -206,7 +226,7 @@ export const createMemoryMockFS = defineFileSystemBridge({
                   entries.push({
                     type: "directory" as const,
                     name: dirName,
-                    path: formatEntryPath(dirName, true),
+                    path: formatEntryPath(prefixToRoot(dirName), true),
                     children: [],
                   });
                 }
@@ -227,7 +247,7 @@ export const createMemoryMockFS = defineFileSystemBridge({
                   dirEntry = {
                     type: "directory" as const,
                     name: part,
-                    path: formatEntryPath(partPath, true),
+                    path: formatEntryPath(prefixToRoot(partPath), true),
                     children: [],
                   };
                   currentLevel.push(dirEntry);
@@ -248,7 +268,7 @@ export const createMemoryMockFS = defineFileSystemBridge({
               entries.push({
                 type: "file" as const,
                 name: parts[0],
-                path: formatEntryPath(relativePath, false),
+                path: formatEntryPath(prefixToRoot(relativePath), false),
               });
             } else if (parts.length > 1 && parts[0]) {
               // Directory (implicit from file path)
@@ -258,7 +278,7 @@ export const createMemoryMockFS = defineFileSystemBridge({
                 entries.push({
                   type: "directory" as const,
                   name: dirName,
-                  path: formatEntryPath(dirName, true),
+                  path: formatEntryPath(prefixToRoot(dirName), true),
                   children: [],
                 });
               }
@@ -278,7 +298,7 @@ export const createMemoryMockFS = defineFileSystemBridge({
                 currentLevel.push({
                   type: "file" as const,
                   name: part,
-                  path: formatEntryPath(partPath, false),
+                  path: formatEntryPath(prefixToRoot(partPath), false),
                 });
               } else {
                 // It's a directory - find or create it
@@ -290,7 +310,7 @@ export const createMemoryMockFS = defineFileSystemBridge({
                   dirEntry = {
                     type: "directory" as const,
                     name: part,
-                    path: formatEntryPath(partPath, true),
+                    path: formatEntryPath(prefixToRoot(partPath), true),
                     children: [],
                   };
                   currentLevel.push(dirEntry);
