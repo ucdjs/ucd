@@ -14,6 +14,14 @@ function hasFileName(files: ReportFile[] | undefined, name: string): boolean {
   return files?.some((f) => f.name === name) ?? false;
 }
 
+/**
+ * Helper to check if a file array contains a file with the given relative path.
+ */
+function hasFilePath(files: ReportFile[] | undefined, relativePath: string): boolean {
+  // filePath includes the version prefix, so we check if it ends with the relative path
+  return files?.some((f) => f.filePath.endsWith(`/${relativePath}`)) ?? false;
+}
+
 describe("analyze", () => {
   const UNICODE_DATA_CONTENT = "0041;LATIN CAPITAL LETTER A;Lu;0;L;;;;;N;;;;0061;";
   const BLOCKS_CONTENT = "# Blocks-16.0.0.txt\n0000..007F; Basic Latin";
@@ -539,8 +547,8 @@ describe("analyze", () => {
       const report = data?.versions.get("16.0.0");
       expect(report?.isComplete).toBe(false);
       expect(hasFileName(report?.files.present, "UnicodeData.txt")).toBe(true);
-      expect(hasFileName(report?.files.present, "auxiliary/GraphemeBreakProperty.txt")).toBe(true);
-      expect(hasFileName(report?.files.missing, "auxiliary/WordBreakProperty.txt")).toBe(true);
+      expect(hasFilePath(report?.files.present, "auxiliary/GraphemeBreakProperty.txt")).toBe(true);
+      expect(hasFilePath(report?.files.missing, "auxiliary/WordBreakProperty.txt")).toBe(true);
     });
 
     it("should detect orphaned files in nested directories", async () => {
@@ -575,7 +583,7 @@ describe("analyze", () => {
       expect(error).toBeNull();
       const report = data?.versions.get("16.0.0");
       expect(report?.isComplete).toBe(false);
-      expect(hasFileName(report?.files.orphaned, "auxiliary/OrphanedNestedFile.txt")).toBe(true);
+      expect(hasFilePath(report?.files.orphaned, "auxiliary/OrphanedNestedFile.txt")).toBe(true);
     });
   });
 
@@ -689,9 +697,15 @@ describe("analyze", () => {
 
       const [data, error] = await analyze(context);
 
-      // Should propagate the error
-      expect(data).toBeNull();
-      expect(error).toBeDefined();
+      // Should capture error in version report, not propagate as fatal error
+      expect(error).toBeNull();
+      expect(data).not.toBeNull();
+
+      const versionReport = data?.versions.get("16.0.0");
+      expect(versionReport).toBeDefined();
+      expect(versionReport?.errors).toHaveLength(1);
+      expect(versionReport!.errors[0]!.name).toBe("expected-files");
+      expect(versionReport!.errors[0]!.reason).toContain("500");
     });
 
     it("should handle manifest 404 errors", async () => {
@@ -716,9 +730,15 @@ describe("analyze", () => {
 
       const [data, error] = await analyze(context);
 
-      // Should propagate the error
-      expect(data).toBeNull();
-      expect(error).toBeDefined();
+      // Should capture error in version report, not propagate as fatal error
+      expect(error).toBeNull();
+      expect(data).not.toBeNull();
+
+      const versionReport = data?.versions.get("16.0.0");
+      expect(versionReport).toBeDefined();
+      expect(versionReport?.errors).toHaveLength(1);
+      expect(versionReport!.errors[0]!.name).toBe("expected-files");
+      expect(versionReport!.errors[0]!.reason).toContain("404");
     });
   });
 });
