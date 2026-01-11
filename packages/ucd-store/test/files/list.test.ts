@@ -25,8 +25,8 @@ describe("listFiles", () => {
 
       expect(error).toBeNull();
       expect(data).toEqual(expect.arrayContaining([
-        "UnicodeData.txt",
-        "ReadMe.txt",
+        "/16.0.0/UnicodeData.txt",
+        "/16.0.0/ReadMe.txt",
       ]));
     });
 
@@ -44,9 +44,9 @@ describe("listFiles", () => {
 
       expect(error).toBeNull();
       expect(data).toEqual(expect.arrayContaining([
-        "UnicodeData.txt",
-        "extracted/DerivedBidiClass.txt",
-        "extracted/DerivedAge.txt",
+        "/16.0.0/UnicodeData.txt",
+        "/16.0.0/extracted/DerivedBidiClass.txt",
+        "/16.0.0/extracted/DerivedAge.txt",
       ]));
     });
 
@@ -62,12 +62,15 @@ describe("listFiles", () => {
 
       const [data16, error16] = await listFiles(context, "16.0.0");
       expect(error16).toBeNull();
-      expect(data16).toEqual(expect.arrayContaining(["FileA.txt", "FileB.txt"]));
-      expect(data16).not.toContain("FileX.txt");
+      expect(data16).toEqual(expect.arrayContaining([
+        "/16.0.0/FileA.txt",
+        "/16.0.0/FileB.txt",
+      ]));
+      expect(data16).not.toContain("/15.0.0/FileX.txt");
 
       const [data15, error15] = await listFiles(context, "15.0.0");
       expect(error15).toBeNull();
-      expect(data15).toEqual(["FileX.txt"]);
+      expect(data15).toEqual(["/15.0.0/FileX.txt"]);
     });
 
     it("should return empty array when directory exists but is empty", async () => {
@@ -113,7 +116,7 @@ describe("listFiles", () => {
       const [data, error] = await listFiles(context, "15.1.0");
 
       expect(error).toBeNull();
-      expect(data).toContain("UnicodeData.txt");
+      expect(data).toContain("/15.1.0/UnicodeData.txt");
     });
   });
 
@@ -133,8 +136,8 @@ describe("listFiles", () => {
       const [data, error] = await listFiles(context, "16.0.0");
 
       expect(error).toBeNull();
-      expect(data).not.toContain("UnicodeData.txt");
-      expect(data).toContain("data.json");
+      expect(data).not.toContain("/16.0.0/UnicodeData.txt");
+      expect(data).toContain("/16.0.0/data.json");
     });
 
     it("should only include files matching global include filter", async () => {
@@ -152,7 +155,7 @@ describe("listFiles", () => {
       const [data, error] = await listFiles(context, "16.0.0");
 
       expect(error).toBeNull();
-      expect(data).toEqual(["ReadMe.txt"]);
+      expect(data).toEqual(["/16.0.0/ReadMe.txt"]);
     });
 
     it("should respect method-specific exclude filters in options", async () => {
@@ -171,8 +174,8 @@ describe("listFiles", () => {
       });
 
       expect(error).toBeNull();
-      expect(data).not.toContain("UnicodeData.txt");
-      expect(data).toContain("ReadMe.txt");
+      expect(data).not.toContain("/16.0.0/UnicodeData.txt");
+      expect(data).toContain("/16.0.0/ReadMe.txt");
     });
 
     it("should apply combined global and method filters", async () => {
@@ -195,7 +198,7 @@ describe("listFiles", () => {
       });
 
       expect(error).toBeNull();
-      expect(data).toEqual(["ReadMe.txt"]);
+      expect(data).toEqual(["/16.0.0/ReadMe.txt"]);
     });
   });
 
@@ -295,7 +298,7 @@ describe("listFiles", () => {
 
       expect(error).toBeNull();
       expect(apiCalled).toBe(false);
-      expect(data).toEqual(["StoreOnly.txt"]);
+      expect(data).toEqual(["/17.0.0/StoreOnly.txt"]);
     });
 
     it("should return error when API fetch fails with error status", async () => {
@@ -367,9 +370,9 @@ describe("listFiles", () => {
         responses: {
           "/api/v1/versions/{version}/file-tree": () => {
             return HttpResponse.json([
-              { type: "file", name: "UnicodeData.txt", path: "UnicodeData.txt", lastModified: null },
-              { type: "file", name: "ReadMe.txt", path: "ReadMe.txt", lastModified: null },
-              { type: "file", name: "data.json", path: "data.json", lastModified: null },
+              { type: "file", name: "UnicodeData.txt", path: "/16.0.0/UnicodeData.txt", lastModified: null },
+              { type: "file", name: "ReadMe.txt", path: "/16.0.0/ReadMe.txt", lastModified: null },
+              { type: "file", name: "data.json", path: "/16.0.0/data.json", lastModified: null },
             ]);
           },
         },
@@ -387,8 +390,8 @@ describe("listFiles", () => {
       });
 
       expect(error).toBeNull();
-      expect(data).toEqual(expect.arrayContaining(["UnicodeData.txt", "ReadMe.txt"]));
-      expect(data).not.toContain("data.json");
+      expect(data).toEqual(expect.arrayContaining(["/16.0.0/UnicodeData.txt", "/16.0.0/ReadMe.txt"]));
+      expect(data).not.toContain("/16.0.0/data.json");
     });
 
     it("should handle deeply nested file trees from API", async () => {
@@ -400,22 +403,27 @@ describe("listFiles", () => {
               {
                 type: "directory",
                 name: "level1",
-                path: "/level1",
+                path: "/16.0.0/ucd/level1/",
                 lastModified: null,
                 children: [
                   {
                     type: "directory",
                     name: "level2",
-                    path: "/level1/level2",
+                    path: "/16.0.0/ucd/level1/level2/",
                     lastModified: null,
                     children: [
-                      { type: "file", name: "deep.txt", path: "/level1/level2/deep.txt", lastModified: null },
+                      {
+                        type: "file",
+                        name: "deep.txt",
+                        path: "/16.0.0/ucd/level1/level2/deep.txt",
+                        lastModified: null,
+                      },
                     ],
                   },
-                  { type: "file", name: "mid.txt", path: "/level1/mid.txt", lastModified: null },
+                  { type: "file", name: "mid.txt", path: "/16.0.0/ucd/level1/mid.txt", lastModified: null },
                 ],
               },
-              { type: "file", name: "root.txt", path: "/root.txt", lastModified: null },
+              { type: "file", name: "root.txt", path: "/16.0.0/ucd/root.txt", lastModified: null },
             ]);
           },
         },
@@ -431,9 +439,9 @@ describe("listFiles", () => {
 
       expect(error).toBeNull();
       expect(data).toEqual(expect.arrayContaining([
-        "/root.txt",
-        "/level1/mid.txt",
-        "/level1/level2/deep.txt",
+        "/16.0.0/ucd/level1/level2/deep.txt",
+        "/16.0.0/ucd/level1/mid.txt",
+        "/16.0.0/ucd/root.txt",
       ]));
     });
   });
@@ -450,7 +458,7 @@ describe("listFiles", () => {
       const [data, error] = await listFiles(context, "16.0.0");
 
       expect(error).toBeNull();
-      expect(data).toContain("ReadMe.txt");
+      expect(data).toContain("/16.0.0/ReadMe.txt");
     });
 
     it("should work with bound context using Function.bind()", async () => {
@@ -465,7 +473,7 @@ describe("listFiles", () => {
       const [data, error] = await boundListFiles("16.0.0");
 
       expect(error).toBeNull();
-      expect(data).toContain("ReadMe.txt");
+      expect(data).toContain("/16.0.0/ReadMe.txt");
     });
   });
 });
