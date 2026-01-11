@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate, useParams } from "@tanstack/react-router";
-import { Check, ChevronsUpDown, Layers } from "lucide-react";
+import { ChevronsUpDown, Layers } from "lucide-react";
 import * as React from "react";
 import {
   DropdownMenu,
@@ -99,6 +99,7 @@ export function VersionSwitcher() {
                     handleVersionSelect(version.version);
                   }}
                   onClick={() => handleVersionSelect(version.version)}
+                  className={isCurrent ? "bg-accent text-accent-foreground" : undefined}
                 >
                   <span className="flex-1">
                     v
@@ -107,7 +108,6 @@ export function VersionSwitcher() {
                   <span className={`ml-2 text-[11px] px-2 py-0.5 rounded-full ${badge.cls}`}>
                     {badge.label}
                   </span>
-                  {isCurrent && <Check className="ml-auto size-4" />}
                 </DropdownMenuItem>
               );
             })}
