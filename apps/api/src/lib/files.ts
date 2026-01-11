@@ -1,7 +1,19 @@
+/* eslint-disable no-console */
 import type { Entry } from "apache-autoindex-parse";
+import type { Context } from "hono";
+
+import type { HonoEnv } from "../types";
 import { trimLeadingSlash, trimTrailingSlash } from "@luxass/utils";
 import { createGlobMatcher } from "@ucdjs-internal/shared";
+import {
+  UCD_STAT_CHILDREN_DIRS_HEADER,
+  UCD_STAT_CHILDREN_FILES_HEADER,
+  UCD_STAT_CHILDREN_HEADER,
+  UCD_STAT_SIZE_HEADER,
+  UCD_STAT_TYPE_HEADER,
+} from "@ucdjs/env";
 import { parse } from "apache-autoindex-parse";
+import { HTML_EXTENSIONS } from "../constants";
 
 /**
  * Parses an HTML directory listing from Unicode.org and extracts file/directory entries.
@@ -75,7 +87,6 @@ export function applyDirectoryFiltersAndSort(
 
   // Apply query filter (prefix search, case-insensitive)
   if (options.query) {
-    // eslint-disable-next-line no-console
     console.info(`[v1_files]: applying query filter: ${options.query}`);
     const queryLower = options.query.toLowerCase();
     filtered = filtered.filter((entry) => entry.name.toLowerCase().startsWith(queryLower));
@@ -83,7 +94,6 @@ export function applyDirectoryFiltersAndSort(
 
   // Apply pattern filter if provided
   if (options.pattern) {
-    // eslint-disable-next-line no-console
     console.info(`[v1_files]: applying glob pattern filter: ${options.pattern}`);
     const matcher = createGlobMatcher(options.pattern);
     filtered = filtered.filter((entry) => matcher(entry.name));
@@ -122,4 +132,102 @@ export function applyDirectoryFiltersAndSort(
   });
 
   return filtered;
+}
+
+// ============================================================================
+// File Response Handlers
+// ============================================================================
+
+export function buildDirectoryHeaders(
+  files: Entry[],
+  baseHeaders: Record<string, string>,
+): Record<string, string> {
+  return {
+    ...baseHeaders,
+    [UCD_STAT_TYPE_HEADER]: "directory",
+    [UCD_STAT_CHILDREN_HEADER]: `${files.length}`,
+    [UCD_STAT_CHILDREN_FILES_HEADER]: `${files.filter((f) => f.type === "file").length}`,
+    [UCD_STAT_CHILDREN_DIRS_HEADER]: `${files.filter((f) => f.type === "directory").length}`,
+  };
+}
+
+export function buildFileHeaders(
+  contentType: string,
+  baseHeaders: Record<string, string>,
+  response: Response,
+  actualContentLength: number,
+): Record<string, string> {
+  const headers: Record<string, string> = {
+    "Content-Type": contentType,
+    ...baseHeaders,
+    [UCD_STAT_TYPE_HEADER]: "file",
+    [UCD_STAT_SIZE_HEADER]: `${actualContentLength}`,
+    "Content-Length": `${actualContentLength}`,
+  };
+
+  const cd = response.headers.get("Content-Disposition");
+  if (cd) headers["Content-Disposition"] = cd;
+
+  return headers;
+}
+
+export interface FileResponseOptions {
+  contentType: string;
+  baseHeaders: Record<string, string>;
+  response: Response;
+  isHeadRequest: boolean;
+}
+
+export async function handleFileResponse(
+  c: any,
+  options: FileResponseOptions,
+): Promise<Response> {
+  const { contentType, baseHeaders, response, isHeadRequest } = options;
+
+  if (isHeadRequest) {
+    const blob = await response.blob();
+    const actualSize = blob.size;
+    const headers = buildFileHeaders(contentType, baseHeaders, response, actualSize);
+    console.log(`[file-handler]: HEAD request, calculated size: ${actualSize}`);
+    return c.newResponse(null, 200, headers);
+  }
+
+  const headers: Record<string, string> = {
+    "Content-Type": contentType,
+    ...baseHeaders,
+    [UCD_STAT_TYPE_HEADER]: "file",
+  };
+
+  const cd = response.headers.get("Content-Disposition");
+  if (cd) headers["Content-Disposition"] = cd;
+
+  console.log(`[file-handler]: binary file, streaming without buffering`);
+
+  return c.newResponse(response.body, 200, headers);
+}
+
+export interface DirectoryResponseOptions {
+  files: Entry[];
+  baseHeaders: Record<string, string>;
+}
+
+export function handleDirectoryResponse(
+  c: any,
+  options: DirectoryResponseOptions,
+): Response {
+  const { files, baseHeaders } = options;
+  const headers = buildDirectoryHeaders(files, baseHeaders);
+  return c.json(files, 200, headers);
+}
+
+export function determineFileExtension(leaf: string): string {
+  return leaf.includes(".") ? leaf.split(".").pop()!.toLowerCase() : "";
+}
+
+export function isHtmlFile(extName: string): boolean {
+  return HTML_EXTENSIONS.includes(`.${extName}`);
+}
+
+export function isDirectoryListing(contentType: string, extName: string): boolean {
+  return contentType.includes("text/html") && !isHtmlFile(extName);
 }
