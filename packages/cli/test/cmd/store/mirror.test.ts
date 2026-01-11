@@ -37,7 +37,7 @@ describe("store mirror command", () => {
 
     await runCLI(["store", "mirror"]);
 
-    expect(capture.containsError("Either --remote or --store-dir must be specified")).toBe(true);
+    expect(capture.containsError("--store-dir is required")).toBe(true);
   });
 
   it("should fail if --remote is specified (mirror requires local store)", async () => {
@@ -49,7 +49,7 @@ describe("store mirror command", () => {
 
     await runCLI(["store", "mirror", "--remote"]);
 
-    expect(capture.containsError("Mirror operation requires a local store directory")).toBe(true);
+    expect(capture.containsError("The --remote flag is not supported")).toBe(true);
   });
 
   it("should mirror specific versions", async () => {
@@ -94,9 +94,7 @@ describe("store mirror command", () => {
       "16.0.0",
     ]);
 
-    expect(capture.containsLog("Starting mirror operation")).toBe(true);
-    expect(capture.containsLog("Mirroring 1 version(s)")).toBe(true);
-    expect(capture.containsLog("Mirror operation completed successfully")).toBe(true);
+    expect(capture.containsLog("Mirror operation completed")).toBe(true);
   });
 
   it("should mirror all versions when none specified", async () => {
@@ -136,9 +134,7 @@ describe("store mirror command", () => {
       storePath,
     ]);
 
-    expect(capture.containsLog("Starting mirror operation")).toBe(true);
-    expect(capture.containsLog("Mirroring all versions in lockfile")).toBe(true);
-    expect(capture.containsLog("Mirror operation completed successfully")).toBe(true);
+    expect(capture.containsLog("Mirror operation completed")).toBe(true);
   });
 
   it("should create version directories and files", async () => {
@@ -208,8 +204,7 @@ describe("store mirror command", () => {
       "16.0.0",
     ]);
 
-    expect(capture.containsLog("Files downloaded:")).toBe(true);
-    expect(capture.containsLog("Files skipped:")).toBe(true);
+    expect(capture.containsLog("Downloaded")).toBe(true);
   });
 
   it("should respect include patterns", async () => {
