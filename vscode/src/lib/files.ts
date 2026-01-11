@@ -45,7 +45,7 @@ function mapEntryToTreeNode(version: string, entry: UnicodeFileTreeNodeWithoutLa
 
 export async function getFilesByVersion(store: UCDStore, version: string): Promise<TreeViewNode[]> {
   try {
-    const [data, err] = await store.getFileTree(version);
+    const [data, err] = await store.files.tree(version);
 
     if (err) {
       throw err;
