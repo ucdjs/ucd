@@ -37,7 +37,7 @@ describe("store sync command", () => {
 
     await runCLI(["store", "sync"]);
 
-    expect(capture.containsError("Either --remote or --store-dir must be specified")).toBe(true);
+    expect(capture.containsError("--store-dir is required")).toBe(true);
   });
 
   it("should fail if --remote is used (sync requires local store)", async () => {
@@ -49,7 +49,7 @@ describe("store sync command", () => {
 
     await runCLI(["store", "sync", "--remote"]);
 
-    expect(capture.containsError("Sync operation requires a local store directory")).toBe(true);
+    expect(capture.containsError("The --remote flag is not supported")).toBe(true);
   });
 
   it("should sync store for specific versions", async () => {
@@ -92,8 +92,7 @@ describe("store sync command", () => {
       "16.0.0",
     ]);
 
-    expect(capture.containsLog("Starting sync operation")).toBe(true);
-    expect(capture.containsLog("Syncing 1 version(s)")).toBe(true);
+    expect(capture.containsLog("Sync Operation")).toBe(true);
     expect(capture.containsLog("16.0.0")).toBe(true);
   });
 
@@ -137,8 +136,8 @@ describe("store sync command", () => {
       storePath,
     ]);
 
-    expect(capture.containsLog("Starting sync operation")).toBe(true);
-    expect(capture.containsLog("Syncing all versions in lockfile")).toBe(true);
+    expect(capture.containsLog("Sync Operation")).toBe(true);
+    expect(capture.containsLog("all versions in lockfile")).toBe(true);
   });
 
   it("should show success message after sync", async () => {
@@ -181,7 +180,7 @@ describe("store sync command", () => {
       "16.0.0",
     ]);
 
-    expect(capture.containsLog("Sync completed successfully")).toBe(true);
+    expect(capture.containsLog("Sync completed")).toBe(true);
   });
 
   it("should display mirror results after sync", async () => {
@@ -224,6 +223,6 @@ describe("store sync command", () => {
       "16.0.0",
     ]);
 
-    expect(capture.containsLog("Total versions in lockfile:")).toBe(true);
+    expect(capture.containsLog("Total Versions")).toBe(true);
   });
 });

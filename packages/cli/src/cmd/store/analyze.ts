@@ -2,9 +2,10 @@ import type { Prettify } from "@luxass/utils";
 import type { CLIArguments } from "../../cli-utils";
 import type { CLIStoreCmdSharedFlags } from "./_shared";
 import { UCDStoreGenericError } from "@ucdjs/ucd-store";
+import { CLIError } from "../../errors";
 import { printHelp } from "../../cli-utils";
 import { green, output, red } from "../../output";
-import { assertRemoteOrStoreDir, createStoreFromFlags, SHARED_FLAGS } from "./_shared";
+import { assertRemoteOrStoreDir, createStoreFromFlags, REMOTE_CAPABLE_FLAGS, SHARED_FLAGS } from "./_shared";
 
 export interface CLIStoreAnalyzeCmdOptions {
   flags: CLIArguments<Prettify<CLIStoreCmdSharedFlags & {
@@ -22,6 +23,7 @@ export async function runAnalyzeStore({ flags, versions }: CLIStoreAnalyzeCmdOpt
       usage: "[...versions] [...flags]",
       tables: {
         Flags: [
+          ...REMOTE_CAPABLE_FLAGS,
           ...SHARED_FLAGS,
           ["--check-orphaned", "Check for orphaned files in the store."],
           ["--json", "Output analyze information in JSON format."],
@@ -36,8 +38,6 @@ export async function runAnalyzeStore({ flags, versions }: CLIStoreAnalyzeCmdOpt
     output.log("No specific versions provided. Analyzing all versions in the store.");
   }
 
-  assertRemoteOrStoreDir(flags);
-
   const {
     storeDir,
     json,
@@ -48,6 +48,8 @@ export async function runAnalyzeStore({ flags, versions }: CLIStoreAnalyzeCmdOpt
   } = flags;
 
   try {
+    assertRemoteOrStoreDir(flags);
+
     const store = await createStoreFromFlags({
       baseUrl,
       storeDir,
@@ -105,14 +107,14 @@ export async function runAnalyzeStore({ flags, versions }: CLIStoreAnalyzeCmdOpt
       if (report.isComplete) {
         output.log(`  Status: ${green("complete")}`);
       } else {
-        output.warn(`  Status: ${red("incomplete")}`);
+        output.warning(`  Status: ${red("incomplete")}`);
       }
       output.log(`  Files: ${report.counts.success}`);
       if (report.files.missing && report.files.missing.length > 0) {
-        output.warn(`  Missing files: ${report.files.missing.length}`);
+        output.warning(`  Missing files: ${report.files.missing.length}`);
       }
       if (report.files.orphaned && report.files.orphaned.length > 0) {
-        output.warn(`  Orphaned files: ${report.files.orphaned.length}`);
+        output.warning(`  Orphaned files: ${report.files.orphaned.length}`);
       }
 
       if (report.counts.total) {
@@ -122,6 +124,11 @@ export async function runAnalyzeStore({ flags, versions }: CLIStoreAnalyzeCmdOpt
   } catch (err) {
     if (err instanceof UCDStoreGenericError) {
       output.error(red(`\n❌ Error: ${err.message}`));
+      return;
+    }
+
+    if (err instanceof CLIError) {
+      err.toPrettyMessage();
       return;
     }
 

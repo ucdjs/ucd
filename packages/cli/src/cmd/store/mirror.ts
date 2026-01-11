@@ -2,6 +2,7 @@ import type { Prettify } from "@luxass/utils";
 import type { CLIArguments } from "../../cli-utils";
 import type { CLIStoreCmdSharedFlags } from "./_shared";
 import { UCDStoreGenericError } from "@ucdjs/ucd-store";
+import { CLIError } from "../../errors";
 import { printHelp } from "../../cli-utils";
 import {
   blankLine,
@@ -20,6 +21,7 @@ import { assertLocalStore, createStoreFromFlags, LOCAL_STORE_FLAGS, SHARED_FLAGS
 export interface CLIStoreMirrorCmdOptions {
   flags: CLIArguments<Prettify<CLIStoreCmdSharedFlags & {
     concurrency?: number;
+    json?: boolean;
   }>>;
   versions: string[];
 }
@@ -35,6 +37,7 @@ export async function runMirrorStore({ flags, versions }: CLIStoreMirrorCmdOptio
           ...LOCAL_STORE_FLAGS,
           ...SHARED_FLAGS,
           ["--concurrency", "Maximum concurrent downloads (default: 5)."],
+          ["--json", "Output mirror results in JSON format."],
           ["--help (-h)", "See all available flags."],
         ],
       },
@@ -51,6 +54,7 @@ export async function runMirrorStore({ flags, versions }: CLIStoreMirrorCmdOptio
     exclude: excludePatterns,
     force,
     concurrency = 5,
+    json,
   } = flags;
 
   try {
@@ -68,16 +72,18 @@ export async function runMirrorStore({ flags, versions }: CLIStoreMirrorCmdOptio
       versionStrategy: "merge",
     });
 
-    header("Mirror Operation");
+    if (!json) {
+      header("Mirror Operation");
 
-    keyValue("Store Path", storeDir, { valueColor: cyan });
-    if (versions.length > 0) {
-      keyValue("Versions", versions.map((v) => cyan(v)).join(", "));
-    } else {
-      keyValue("Versions", "all versions in lockfile");
+      keyValue("Store Path", storeDir, { valueColor: cyan });
+      if (versions.length > 0) {
+        keyValue("Versions", versions.map((v) => cyan(v)).join(", "));
+      } else {
+        keyValue("Versions", "all versions in lockfile");
+      }
+
+      blankLine();
     }
-
-    blankLine();
 
     const [mirrorResult, mirrorError] = await store.mirror({
       versions: versions.length > 0 ? versions : undefined,
@@ -90,14 +96,64 @@ export async function runMirrorStore({ flags, versions }: CLIStoreMirrorCmdOptio
     });
 
     if (mirrorError) {
-      output.fail("Mirror operation failed", {
-        details: [mirrorError.message],
-      });
+      if (json) {
+        output.errorJson({
+          type: "MIRROR_FAILED",
+          message: "Mirror operation failed",
+          details: { reason: mirrorError.message },
+        });
+      } else {
+        output.fail("Mirror operation failed", {
+          details: [mirrorError.message],
+        });
+      }
       return;
     }
 
     if (!mirrorResult) {
-      output.fail("Mirror operation returned no result");
+      if (json) {
+        output.errorJson({
+          type: "NO_RESULT",
+          message: "Mirror operation returned no result",
+        });
+      } else {
+        output.fail("Mirror operation returned no result");
+      }
+      return;
+    }
+
+    if (json) {
+      const jsonOutput: Record<string, unknown> = {
+        success: true,
+        storeDir,
+        versions: versions.length > 0 ? versions : Array.from(mirrorResult.versions.keys()),
+      };
+
+      if (mirrorResult.summary) {
+        const { counts, duration, storage, metrics } = mirrorResult.summary;
+        jsonOutput.summary = {
+          versionsCount: mirrorResult.versions.size,
+          downloaded: counts.success,
+          skipped: counts.skipped,
+          failed: counts.failed,
+          totalSize: storage.totalSize,
+          successRate: metrics.successRate,
+          duration,
+        };
+      }
+
+      // Add per-version details
+      if (mirrorResult.versions.size > 0) {
+        jsonOutput.versionDetails = Array.from(mirrorResult.versions.entries()).map(([version, report]) => ({
+          version,
+          downloaded: report.counts.success,
+          skipped: report.counts.skipped,
+          failed: report.counts.failed,
+          errors: report.errors.map((e) => ({ filePath: e.filePath, reason: e.reason })),
+        }));
+      }
+
+      output.json(jsonOutput);
       return;
     }
 
@@ -142,7 +198,26 @@ export async function runMirrorStore({ flags, versions }: CLIStoreMirrorCmdOptio
     blankLine();
   } catch (err) {
     if (err instanceof UCDStoreGenericError) {
-      output.fail(err.message);
+      if (json) {
+        output.errorJson({
+          type: "STORE_ERROR",
+          message: err.message,
+        });
+      } else {
+        output.fail(err.message);
+      }
+      return;
+    }
+
+    if (err instanceof CLIError) {
+      if (json) {
+        output.errorJson({
+          type: "CLI_ERROR",
+          message: err.message,
+        });
+      } else {
+        err.toPrettyMessage();
+      }
       return;
     }
 
@@ -153,6 +228,13 @@ export async function runMirrorStore({ flags, versions }: CLIStoreMirrorCmdOptio
       message = err;
     }
 
-    output.fail(message, { bugReport: true });
+    if (json) {
+      output.errorJson({
+        type: "UNKNOWN_ERROR",
+        message,
+      });
+    } else {
+      output.fail(message, { bugReport: true });
+    }
   }
 }
