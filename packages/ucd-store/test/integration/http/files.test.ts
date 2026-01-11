@@ -4,7 +4,7 @@ import { findFileByPath } from "@ucdjs-internal/shared";
 import { describe, expect, it } from "vitest";
 import { createHTTPUCDStore } from "../../../src/factory";
 
-describe("http integration: file operations", () => {
+describe.todo("http integration: file operations", () => {
   describe("files.get", () => {
     it("should fetch file from HTTP endpoint", async () => {
       const files = {

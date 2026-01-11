@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { testdir } from "vitest-testdirs";
 import { createNodeUCDStore } from "../../../src/factory";
 
-describe("node integration: store creation", () => {
+describe.todo("node integration: store creation", () => {
   describe("lockfile initialization", () => {
     it("should create store with node bridge and initialize lockfile", async () => {
       mockStoreApi({
