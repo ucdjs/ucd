@@ -177,7 +177,7 @@ describe("http fs-bridge", () => {
         {
           type: "file" as const,
           name: "nested.txt",
-          path: "/nested.txt",
+          path: "/subdir/nested.txt",
           lastModified: Date.now(),
         },
       ] satisfies FileEntry[];
@@ -206,7 +206,7 @@ describe("http fs-bridge", () => {
           name: "subdir",
           path: "/subdir/",
           children: [
-            { type: "file", name: "nested.txt", path: "/nested.txt" },
+            { type: "file", name: "nested.txt", path: "/subdir/nested.txt" },
           ],
         },
       ]);
