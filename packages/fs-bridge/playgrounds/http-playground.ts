@@ -10,6 +10,7 @@
  */
 
 import process from "node:process";
+import { prependLeadingSlash } from "@luxass/utils/path";
 import { assertCapability } from "../src";
 import HTTPFileSystemBridge from "../src/bridges/http";
 
@@ -170,6 +171,27 @@ const testCases: TestCase[] = [
     async run() {
       const entries = await bridge.listdir("/16.0.0");
       if (entries.length === 0) throw new Error("Should have entries");
+    },
+  },
+  {
+    description: "Listdir ensure correct paths",
+    async run() {
+      const entries = await bridge.listdir("16.0.0/ucd", true);
+
+      // eslint-disable-next-line ts/explicit-function-return-type
+      function checkPaths(nodes: typeof entries, parentPath: string) {
+        for (const node of nodes) {
+          const expectedPath = prependLeadingSlash(`${parentPath}${node.name}${node.type === "directory" ? "/" : ""}`);
+          if (node.path !== expectedPath) {
+            throw new Error(`Incorrect path for ${node.name}: expected "${expectedPath}", got "${node.path}"`);
+          }
+          if (node.type === "directory" && node.children) {
+            checkPaths(node.children, expectedPath);
+          }
+        }
+      }
+
+      checkPaths(entries, "16.0.0/ucd/");
     },
   },
 
