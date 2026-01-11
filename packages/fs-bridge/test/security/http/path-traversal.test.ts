@@ -1,13 +1,13 @@
 import HTTPFileSystemBridge from "#internal:bridge/http";
 import { HttpResponse, mockFetch } from "#test-utils/msw";
-import { UCDJS_API_BASE_URL } from "@ucdjs/env";
+import { UCDJS_STORE_BASE_URL } from "@ucdjs/env";
 import { PathTraversalError } from "@ucdjs/path-utils";
 import { describe, expect, it } from "vitest";
 
 describe("path traversal security", () => {
   describe("http bridge - path traversal prevention", () => {
-    describe("shallow pathname (/api/v1/files)", () => {
-      const baseUrl = `${UCDJS_API_BASE_URL}/api/v1/files`;
+    describe("shallow pathname (/files)", () => {
+      const baseUrl = `${UCDJS_STORE_BASE_URL}/files`;
 
       it("should prevent directory traversal attacks that go outside baseUrl.pathname", async () => {
         const bridge = HTTPFileSystemBridge({ baseUrl });
@@ -29,7 +29,7 @@ describe("path traversal security", () => {
 
       it("should allow upward traversal that stays within baseUrl.pathname", async () => {
         mockFetch([
-          ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/file.txt`, () => {
+          ["GET", `${UCDJS_STORE_BASE_URL}/files/file.txt`, () => {
             return new HttpResponse("root content", {
               status: 200,
               headers: { "Content-Type": "text/plain" },
@@ -55,7 +55,7 @@ describe("path traversal security", () => {
 
       it("should allow traversal within nested directories", async () => {
         mockFetch([
-          ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/v15.1.0/file.txt`, () => {
+          ["GET", `${UCDJS_STORE_BASE_URL}/files/v15.1.0/file.txt`, () => {
             return new HttpResponse("v15 content", {
               status: 200,
               headers: { "Content-Type": "text/plain" },
@@ -80,8 +80,8 @@ describe("path traversal security", () => {
       });
     });
 
-    describe("deep pathname (/api/v1/files/v16.0.0)", () => {
-      const baseUrl = `${UCDJS_API_BASE_URL}/api/v1/files/v16.0.0`;
+    describe("deep pathname (/v16.0.0)", () => {
+      const baseUrl = `${UCDJS_STORE_BASE_URL}/v16.0.0`;
 
       it("should prevent directory traversal attacks that go outside baseUrl.pathname", async () => {
         const bridge = HTTPFileSystemBridge({ baseUrl });
@@ -98,7 +98,7 @@ describe("path traversal security", () => {
 
       it("should allow upward traversal that stays within baseUrl.pathname", async () => {
         mockFetch([
-          ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/v16.0.0/file.txt`, () => {
+          ["GET", `${UCDJS_STORE_BASE_URL}/v16.0.0/file.txt`, () => {
             return new HttpResponse("file content", {
               status: 200,
               headers: { "Content-Type": "text/plain" },
@@ -116,7 +116,7 @@ describe("path traversal security", () => {
       it("should prevent traversal that escapes to parent pathname segments", async () => {
         const bridge = HTTPFileSystemBridge({ baseUrl });
 
-        // Try to escape to /api/v1/files (parent of /api/v1/files/v16.0.0)
+        // Try to escape to root (parent of /v16.0.0)
         await expect(
           bridge.read("../../v15.1.0/file.txt"),
         ).rejects.toThrow(PathTraversalError);
@@ -124,7 +124,7 @@ describe("path traversal security", () => {
 
       it("should allow traversal within the deep pathname", async () => {
         mockFetch([
-          ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/v16.0.0/subdir/file.txt`, () => {
+          ["GET", `${UCDJS_STORE_BASE_URL}/v16.0.0/subdir/file.txt`, () => {
             return new HttpResponse("subdir content", {
               status: 200,
               headers: { "Content-Type": "text/plain" },

@@ -1,12 +1,12 @@
 import HTTPFileSystemBridge from "#internal:bridge/http";
-import { UCDJS_API_BASE_URL } from "@ucdjs/env";
+import { UCDJS_STORE_BASE_URL } from "@ucdjs/env";
 import { FailedToDecodePathError } from "@ucdjs/path-utils";
 import { describe, expect, it } from "vitest";
 
 describe("excessive encoding attacks", () => {
   describe("nested encoding attacks", () => {
-    describe("shallow pathname (/api/v1/files)", () => {
-      const baseUrl = `${UCDJS_API_BASE_URL}/api/v1/files`;
+    describe("shallow pathname (root)", () => {
+      const baseUrl = UCDJS_STORE_BASE_URL;
 
       it("should prevent excessive nested encoding", async () => {
         const bridge = HTTPFileSystemBridge({ baseUrl });
@@ -37,8 +37,8 @@ describe("excessive encoding attacks", () => {
       });
     });
 
-    describe("deep pathname (/api/v1/files/v16.0.0)", () => {
-      const baseUrl = `${UCDJS_API_BASE_URL}/api/v1/files/v16.0.0`;
+    describe("deep pathname (/v16.0.0)", () => {
+      const baseUrl = `${UCDJS_STORE_BASE_URL}/v16.0.0`;
 
       it("should prevent excessive nested encoding", async () => {
         const bridge = HTTPFileSystemBridge({ baseUrl });
