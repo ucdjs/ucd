@@ -10,7 +10,26 @@ export {
   createNodeUCDStore,
 } from "./factory";
 
+export type {
+  AnalysisFilesReport,
+  AnalysisReport,
+  AnalysisVersionReport,
+  AnalyzeOptions,
+} from "./reports/analyze";
+
 export { createUCDStore } from "./store";
+
+export type {
+  MirrorFilesReport,
+  MirrorOptions,
+  MirrorReport,
+  MirrorVersionReport,
+} from "./tasks/mirror";
+
+export type {
+  SyncOptions,
+  SyncResult,
+} from "./tasks/sync";
 
 export type {
   InternalUCDStoreContext,
@@ -20,4 +39,15 @@ export type {
   UCDStoreOperations,
   UCDStoreOptions,
   VersionConflictStrategy,
+} from "./types";
+
+export type {
+  BaseOperationReport,
+  BaseVersionReport,
+  FileCounts,
+  OperationMetrics,
+  OperationSummary,
+  ReportError,
+  ReportFile,
+  StorageMetrics,
 } from "./types";

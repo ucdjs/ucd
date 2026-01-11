@@ -35,8 +35,8 @@ describe("store init command", () => {
   it("should show help when --help flag is passed", async () => {
     await runCLI(["store", "init", "--help"]);
 
-    expect(capture.containsInfo("Initialize an UCD Store")).toBe(true);
-    expect(capture.containsInfo("--store-dir")).toBe(true);
+    expect(capture.containsLog("Initialize an UCD Store")).toBe(true);
+    expect(capture.containsLog("--store-dir")).toBe(true);
   });
 
   it("should initialize store with basic options", async () => {
@@ -44,6 +44,7 @@ describe("store init command", () => {
 
     mockStoreApi({
       responses: {
+        "/.well-known/ucd-config.json": true,
         "/api/v1/versions": UNICODE_VERSION_METADATA,
         "/api/v1/versions/{version}/file-tree": [{
           type: "file",
@@ -108,6 +109,7 @@ describe("store init command", () => {
     const storePath = await testdir();
     mockStoreApi({
       responses: {
+        "/.well-known/ucd-config.json": true,
         "/api/v1/versions": UNICODE_VERSION_METADATA,
         "/api/v1/versions/{version}/file-tree": [{
           type: "file",
@@ -147,6 +149,7 @@ describe("store init command", () => {
 
     mockStoreApi({
       responses: {
+        "/.well-known/ucd-config.json": true,
         "/api/v1/versions": UNICODE_VERSION_METADATA,
         "/api/v1/versions/{version}/file-tree": [{
           type: "file",
@@ -173,9 +176,9 @@ describe("store init command", () => {
       "15.1.0",
     ]);
 
-    expect(capture.containsInfo("Store initialized successfully")).toBe(true);
-    expect(capture.containsInfo("Starting mirror operation")).toBe(true);
-    expect(capture.containsInfo("Mirror operation completed successfully")).toBe(true);
+    expect(capture.containsLog("Store initialized successfully")).toBe(true);
+    expect(capture.containsLog("Starting mirror operation")).toBe(true);
+    expect(capture.containsLog("Mirror operation completed successfully")).toBe(true);
   });
 
   it("should handle prompts for versions when none provided", async () => {
@@ -191,6 +194,7 @@ describe("store init command", () => {
 
     mockStoreApi({
       responses: {
+        "/.well-known/ucd-config.json": true,
         "/api/v1/versions": UNICODE_VERSION_METADATA,
         "/api/v1/versions/{version}/file-tree": [{
           type: "file",

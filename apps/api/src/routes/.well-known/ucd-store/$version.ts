@@ -3,26 +3,13 @@ import type { UCDStoreManifest } from "@ucdjs/schemas";
 import type { HonoEnv } from "../../../types";
 import { createRoute } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
+import { UCDStoreVersionManifestSchema } from "@ucdjs/schemas";
 import { cache } from "hono/cache";
-import { z } from "zod";
 import { MAX_AGE_ONE_WEEK_SECONDS } from "../../../constants";
 import { badGateway, notFound } from "../../../lib/errors";
 import { generateReferences, OPENAPI_TAGS } from "../../../openapi";
 
 const STORE_MANIFEST_PREFIX = "manifest/";
-
-// Schema for single version manifest (just the value part of UCDStoreManifest)
-const SingleVersionManifestSchema = z
-  .object({
-    /**
-     * List of expected file paths for this version.
-     * Defaults to an empty array when not provided.
-     */
-    expectedFiles: z.array(z.string()).default([]),
-  })
-  .default({
-    expectedFiles: [],
-  });
 
 const VERSION_PARAM = {
   name: "version",
@@ -51,6 +38,11 @@ const UCD_STORE_VERSION_ROUTE = createRoute({
     - Better caching (version-specific cache invalidation)
     - Reduced server load
 
+    Each file entry includes:
+    - \`name\`: The filename only
+    - \`path\`: Path for the /api/v1/files endpoint (includes /ucd/ for versions >= 4.1.0)
+    - \`storePath\`: Path for the store subdomain (ucd-store.ucdjs.dev)
+
     > [!NOTE]
     > The monolithic endpoint \`/.well-known/ucd-store.json\` is deprecated. Use this per-version endpoint instead.
   `,
@@ -58,15 +50,27 @@ const UCD_STORE_VERSION_ROUTE = createRoute({
     200: {
       content: {
         "application/json": {
-          schema: SingleVersionManifestSchema,
+          schema: UCDStoreVersionManifestSchema,
           examples: {
             default: {
               summary: "UCD Store Manifest for version 16.0.0",
               value: {
                 expectedFiles: [
-                  "16.0.0/ucd/UnicodeData.txt",
-                  "16.0.0/ucd/PropList.txt",
-                  "16.0.0/ucd/emoji/emoji-data.txt",
+                  {
+                    name: "UnicodeData.txt",
+                    path: "/16.0.0/ucd/UnicodeData.txt",
+                    storePath: "/16.0.0/UnicodeData.txt",
+                  },
+                  {
+                    name: "PropList.txt",
+                    path: "/16.0.0/ucd/PropList.txt",
+                    storePath: "/16.0.0/PropList.txt",
+                  },
+                  {
+                    name: "emoji-data.txt",
+                    path: "/16.0.0/ucd/emoji/emoji-data.txt",
+                    storePath: "/16.0.0/emoji/emoji-data.txt",
+                  },
                 ],
               },
             },
