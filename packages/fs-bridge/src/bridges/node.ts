@@ -75,64 +75,47 @@ const NodeFileSystemBridge = defineFileSystemBridge({
       async listdir(path, recursive = false) {
         const targetPath = resolveSafePath(basePath, path);
 
-        /**
-         * Formats a relative path to match FileEntry schema requirements:
-         * - Leading slash required for all paths
-         * - Trailing slash required for directories
-         */
-        function formatEntryPath(relativePath: string, isDirectory: boolean): string {
-          const withLeadingSlash = prependLeadingSlash(relativePath);
+        function formatEntryPath(relativeToRoot: string, isDirectory: boolean): string {
+          const withLeadingSlash = prependLeadingSlash(relativeToRoot);
           return isDirectory ? appendTrailingSlash(withLeadingSlash) : withLeadingSlash;
         }
 
-        function createFSEntry(entry: Dirent, relativePath?: string): FSEntry {
-          const pathBase = relativePath ?? entry.name;
-          const formattedPath = formatEntryPath(pathBase, entry.isDirectory());
+        function createFSEntry(entry: Dirent, relativeToRoot: string): FSEntry {
+          const formattedPath = formatEntryPath(relativeToRoot, entry.isDirectory());
           return entry.isDirectory()
-            ? {
-                type: "directory",
-                name: entry.name,
-                path: formattedPath,
-                children: [],
-              }
-            : {
-                type: "file",
-                name: entry.name,
-                path: formattedPath,
-              };
+            ? { type: "directory", name: entry.name, path: formattedPath, children: [] }
+            : { type: "file", name: entry.name, path: formattedPath };
         }
 
         if (!recursive) {
           const entries = await fsp.readdir(targetPath, { withFileTypes: true });
-          return entries.map((entry) => createFSEntry(entry));
+          return entries.map((entry) => {
+            const absEntryPath = nodePath.join(targetPath, entry.name);
+            const relToBase = nodePath.relative(basePath, absEntryPath);
+            const normalized = normalizePathSeparators(relToBase);
+            return createFSEntry(entry, normalized);
+          });
         }
 
-        const allEntries = await fsp.readdir(targetPath, {
-          withFileTypes: true,
-          recursive: true,
-        });
+        const allEntries = await fsp.readdir(targetPath, { withFileTypes: true, recursive: true });
 
         const entryMap = new Map<string, FSEntry>();
         const rootEntries: FSEntry[] = [];
 
         for (const entry of allEntries) {
-          const entryPath = entry.parentPath || entry.path;
-          const relativeToTarget = nodePath.relative(targetPath, entryPath);
+          const entryDirPath = entry.parentPath || entry.path; // directory containing the entry (OS path)
+          const relativeToTargetDir = nodePath.relative(targetPath, entryDirPath);
 
-          const entryRelativePath = relativeToTarget
-            ? nodePath.join(relativeToTarget, entry.name)
-            : entry.name;
+          const absEntryPath = nodePath.join(entryDirPath, entry.name);
+          const relToBase = nodePath.relative(basePath, absEntryPath);
+          const normalized = normalizePathSeparators(relToBase);
 
-          // Normalize path separators to forward slashes for cross-platform consistency
-          const normalizedPath = normalizePathSeparators(entryRelativePath);
+          const fsEntry = createFSEntry(entry, normalized);
 
-          // Create FSEntry with properly formatted path (leading /, trailing / for dirs)
-          const fsEntry = createFSEntry(entry, normalizedPath);
+          entryMap.set(normalized, fsEntry);
 
-          // Use normalized path (without leading/trailing slashes) as map key for parent lookup
-          entryMap.set(normalizedPath, fsEntry);
-
-          if (!relativeToTarget) {
+          // Root entries are direct children of the requested directory
+          if (!relativeToTargetDir) {
             rootEntries.push(fsEntry);
           }
         }
@@ -141,9 +124,7 @@ const NodeFileSystemBridge = defineFileSystemBridge({
           const parentPath = nodePath.dirname(entryPath);
           if (parentPath && parentPath !== ".") {
             const parent = entryMap.get(parentPath);
-            if (parent?.type === "directory") {
-              parent.children!.push(entry);
-            }
+            if (parent?.type === "directory") parent.children!.push(entry);
           }
         }
 

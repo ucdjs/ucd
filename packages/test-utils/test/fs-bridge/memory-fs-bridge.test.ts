@@ -166,9 +166,9 @@ describe("memory fs bridge", () => {
       const entries = await fs.listdir("dir", false);
       expect(entries).toHaveLength(3);
       expect(entries).toEqual(expect.arrayContaining([
-        { type: "file", name: "file1.txt", path: "/file1.txt" },
-        { type: "file", name: "file2.txt", path: "/file2.txt" },
-        { type: "directory", name: "nested", path: "/nested/", children: [] },
+        { type: "file", name: "file1.txt", path: "/dir/file1.txt" },
+        { type: "file", name: "file2.txt", path: "/dir/file2.txt" },
+        { type: "directory", name: "nested", path: "/dir/nested/", children: [] },
       ]));
     });
 
