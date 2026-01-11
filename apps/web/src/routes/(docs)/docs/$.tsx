@@ -12,6 +12,7 @@ import {
   DocsTitle,
 } from "fumadocs-ui/layouts/docs/page";
 import defaultMdxComponents from "fumadocs-ui/mdx";
+import { DocsNotFound } from "@/components/layouts/not-found";
 import { baseOptions } from "@/lib/docs/docs-layout";
 import { source } from "@/lib/docs/docs-loader";
 
@@ -59,6 +60,7 @@ export const Route = createFileRoute("/(docs)/docs/$")({
     await clientLoader.preload(data.path);
     return data;
   },
+  notFoundComponent: DocsNotFoundBoundary,
 });
 
 function Page() {
@@ -74,4 +76,10 @@ function Page() {
       <Content />
     </DocsLayout>
   );
+}
+
+function DocsNotFoundBoundary() {
+  const { _splat } = Route.useParams();
+
+  return <DocsNotFound path={_splat ?? ""} />;
 }
