@@ -4,7 +4,8 @@
   "name": "ucdjs-dev",
   "main": ".output/server/index.mjs",
   "vars": {
-    "ENVIRONMENT": "local"
+    "ENVIRONMENT": "local",
+    "UCDJS_API_BASE_URL": "http://localhost:8787"
   },
   "observability": {
     "enabled": true,
@@ -31,7 +32,7 @@
       },
       "vars": {
         "ENVIRONMENT": "production",
-        "API_BASE_URL": "https://api.ucdjs.dev"
+        "UCDJS_API_BASE_URL": "https://api.ucdjs.dev"
       }
     },
     "preview": {
@@ -43,7 +44,7 @@
       },
       "vars": {
         "ENVIRONMENT": "preview",
-        "API_BASE_URL": "https://preview.api.ucdjs.dev"
+        "UCDJS_API_BASE_URL": "https://preview.api.ucdjs.dev"
       }
     }
   },
