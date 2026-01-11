@@ -85,6 +85,9 @@ catalogs:
     apache-autoindex-parse:
       specifier: 5.0.2
       version: 5.0.2
+    cac:
+      specifier: 6.7.14
+      version: 6.7.14
     defu:
       specifier: 6.1.4
       version: 6.1.4
@@ -288,6 +291,9 @@ importers:
       '@ucdjs/release-scripts':
         specifier: catalog:monorepo
         version: 0.1.0-beta.24(@effect/cluster@0.55.0(@effect/platform@0.93.6(effect@3.19.9))(@effect/rpc@0.72.2(@effect/platform@0.93.6(effect@3.19.9))(effect@3.19.9))(@effect/sql@0.48.6(@effect/experimental@0.57.11(@effect/platform@0.93.6(effect@3.19.9))(effect@3.19.9)(ioredis@5.8.2))(@effect/platform@0.93.6(effect@3.19.9))(effect@3.19.9))(@effect/workflow@0.15.1(@effect/experimental@0.57.11(@effect/platform@0.93.6(effect@3.19.9))(effect@3.19.9)(ioredis@5.8.2))(@effect/platform@0.93.6(effect@3.19.9))(@effect/rpc@0.72.2(@effect/platform@0.93.6(effect@3.19.9))(effect@3.19.9))(effect@3.19.9))(effect@3.19.9))(@effect/rpc@0.72.2(@effect/platform@0.93.6(effect@3.19.9))(effect@3.19.9))(@effect/sql@0.48.6(@effect/experimental@0.57.11(@effect/platform@0.93.6(effect@3.19.9))(effect@3.19.9)(ioredis@5.8.2))(@effect/platform@0.93.6(effect@3.19.9))(effect@3.19.9))
+      '@ucdjs/ucdjs-scripts':
+        specifier: workspace:*
+        version: link:packages/ucdjs-scripts
       '@vitest/coverage-istanbul':
         specifier: catalog:testing
         version: 4.0.16(vitest@4.0.16)
@@ -1096,6 +1102,52 @@ importers:
       vitest-testdirs:
         specifier: catalog:testing
         version: 4.3.0(vitest@4.0.16)
+
+  packages/ucdjs-scripts:
+    dependencies:
+      '@ucdjs-internal/shared':
+        specifier: workspace:*
+        version: link:../shared
+      '@ucdjs/schemas':
+        specifier: workspace:*
+        version: link:../schemas
+      '@unicode-utils/core':
+        specifier: catalog:prod
+        version: 0.12.0-beta.19
+      apache-autoindex-parse:
+        specifier: catalog:prod
+        version: 5.0.2
+      cac:
+        specifier: catalog:prod
+        version: 6.7.14
+      nanotar:
+        specifier: catalog:dev
+        version: 0.2.0
+      wrangler:
+        specifier: 4.58.0
+        version: 4.58.0
+    devDependencies:
+      '@luxass/eslint-config':
+        specifier: catalog:linting
+        version: 6.0.3(@eslint-react/eslint-plugin@2.3.12(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.25)(eslint-plugin-format@1.2.0(eslint@9.39.2(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@9.39.2(jiti@2.6.1)))(eslint-plugin-react-refresh@0.4.24(eslint@9.39.2(jiti@2.6.1)))(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)(vitest@4.0.16)
+      '@types/node':
+        specifier: catalog:types
+        version: 22.18.12
+      '@ucdjs-tooling/tsconfig':
+        specifier: workspace:*
+        version: link:../../tooling/tsconfig
+      '@ucdjs-tooling/tsdown-config':
+        specifier: workspace:*
+        version: link:../../tooling/tsdown-config
+      eslint:
+        specifier: catalog:linting
+        version: 9.39.2(jiti@2.6.1)
+      tsdown:
+        specifier: catalog:dev
+        version: 0.18.4(publint@0.3.16)(synckit@0.11.11)(typescript@5.9.3)
+      typescript:
+        specifier: catalog:dev
+        version: 5.9.3
 
   packages/utils:
     dependencies:

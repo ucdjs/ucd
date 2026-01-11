@@ -1,0 +1,63 @@
+{
+  "name": "@ucdjs/ucdjs-scripts",
+  "version": "0.0.1",
+  "type": "module",
+  "private": true,
+  "author": {
+    "name": "Lucas Nørgård",
+    "email": "lucasnrgaard@gmail.com",
+    "url": "https://luxass.dev"
+  },
+  "packageManager": "pnpm@10.27.0",
+  "license": "MIT",
+  "homepage": "https://github.com/ucdjs/ucd",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ucdjs/ucd.git",
+    "directory": "packages/ucdjs-scripts"
+  },
+  "bugs": {
+    "url": "https://github.com/ucdjs/ucd/issues"
+  },
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.mjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "bin": {
+    "ucdjs-scripts": "./dist/index.mjs"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "dev": "tsdown --watch",
+    "clean": "git clean -xdf dist node_modules",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ucdjs-internal/shared": "workspace:*",
+    "@ucdjs/schemas": "workspace:*",
+    "@unicode-utils/core": "catalog:prod",
+    "apache-autoindex-parse": "catalog:prod",
+    "cac": "catalog:prod",
+    "nanotar": "catalog:dev",
+    "wrangler": "catalog:workers"
+  },
+  "devDependencies": {
+    "@luxass/eslint-config": "catalog:linting",
+    "@types/node": "catalog:types",
+    "@ucdjs-tooling/tsconfig": "workspace:*",
+    "@ucdjs-tooling/tsdown-config": "workspace:*",
+    "eslint": "catalog:linting",
+    "tsdown": "catalog:dev",
+    "typescript": "catalog:dev"
+  }
+}
