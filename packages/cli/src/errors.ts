@@ -12,9 +12,9 @@ export class CLIError extends Error {
   }
 
   toPrettyMessage() {
-    output.fail("", {
+    output.fail(this.message, {
       bugReport: true,
-      details: this.details.length > 0 ? this.details : [this.message],
+      details: this.details,
     });
   }
 }

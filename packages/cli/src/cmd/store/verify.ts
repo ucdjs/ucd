@@ -8,7 +8,7 @@ import { getLockfilePath, readLockfile } from "@ucdjs/lockfile";
 import { UCDStoreGenericError } from "@ucdjs/ucd-store";
 import { printHelp } from "../../cli-utils";
 import { green, output, red, yellow } from "../../output";
-import { assertRemoteOrStoreDir, createStoreFromFlags, SHARED_FLAGS } from "./_shared";
+import { assertRemoteOrStoreDir, createStoreFromFlags, REMOTE_CAPABLE_FLAGS, SHARED_FLAGS } from "./_shared";
 
 const debug = createDebugger("ucdjs:cli:store:verify");
 
@@ -27,6 +27,7 @@ export async function runVerifyStore({ flags }: CLIStoreVerifyCmdOptions) {
       usage: "[...versions] [...flags]",
       tables: {
         Flags: [
+          ...REMOTE_CAPABLE_FLAGS,
           ...SHARED_FLAGS,
           ["--json", "Output verification results in JSON format."],
           ["--help (-h)", "See all available flags."],
@@ -54,24 +55,11 @@ export async function runVerifyStore({ flags }: CLIStoreVerifyCmdOptions) {
       remote,
       include: patterns,
       exclude: excludePatterns,
-      lockfileOnly: true,
+      requireExistingStore: true,
     });
 
-    // Note: lockfileOnly is used to create read-only store
-
     // Read lockfile to get versions - works with both local and remote stores
-    let lockfilePath: string;
-    if (remote) {
-      // For remote stores, lockfile path is relative to base URL
-      lockfilePath = getLockfilePath("");
-    } else {
-      if (!storeDir) {
-        output.error(red(`\n❌ Error: Store directory must be specified.`));
-        return;
-      }
-      lockfilePath = getLockfilePath(storeDir);
-    }
-
+    const lockfilePath = getLockfilePath();
     const bridge = store.fs;
     let lockfile;
     try {

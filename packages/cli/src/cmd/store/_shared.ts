@@ -40,7 +40,6 @@ export const LOCAL_STORE_FLAGS = [
 export const REMOTE_CAPABLE_FLAGS = [
   ["--store-dir", "Directory where the UCD files are stored."],
   ["--remote", "Use a Remote UCD Store (read-only)."],
-  ["--lockfile-only", "Read-only mode: only read lockfile, never update it."],
 ] as [string, string][];
 
 /**
@@ -100,7 +99,7 @@ export async function createStoreFromFlags(flags: CLIStoreCmdSharedFlags): Promi
   }
 
   if (!storeDir) {
-    throw new Error("Store directory must be specified when not using remote store.");
+    throw new StoreDirIsRequiredError();
   }
 
   return createNodeUCDStore({

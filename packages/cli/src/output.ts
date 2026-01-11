@@ -124,6 +124,22 @@ export interface Output {
    * @example output.info("Starting sync operation...")
    */
   info: (message: string) => void;
+
+  /**
+   * Output a structured error to stdout when in JSON mode, or log to stderr in text mode.
+   * Use this for commands that support --json flag.
+   *
+   * @example output.errorJson({ type: "FILE_NOT_FOUND", message: "File not found", details: { path: "/foo" } })
+   */
+  errorJson: (error: { type: string; message: string; details?: unknown }) => void;
+
+  /**
+   * Fail with a structured error in JSON mode, or log a formatted error in text mode.
+   * Then exit the process.
+   *
+   * @example output.failWithJson({ type: "INVALID_CONFIG", message: "Configuration is invalid" })
+   */
+  failWithJson: (error: { type: string; message: string; details?: unknown }) => void;
 }
 
 let jsonMode = false;
@@ -180,6 +196,29 @@ export const output: Output = {
   info: (message: string) => {
     if (jsonMode) return;
     console.log(message);
+  },
+  errorJson: (error: { type: string; message: string; details?: unknown }) => {
+    if (jsonMode) {
+      console.log(JSON.stringify({ error }, null, 2));
+    } else {
+      console.error(red(`\n❌ Error: ${error.message}`));
+      if (error.details) {
+        console.error(`  Details: ${typeof error.details === "string" ? error.details : JSON.stringify(error.details)}`);
+      }
+    }
+  },
+  failWithJson: (error: { type: string; message: string; details?: unknown }) => {
+    if (jsonMode) {
+      console.log(JSON.stringify({ error }, null, 2));
+    } else {
+      console.error(red(`\n❌ Error: ${error.message}`));
+      if (error.details) {
+        console.error(`  Details: ${typeof error.details === "string" ? error.details : JSON.stringify(error.details)}`);
+      }
+    }
+
+    // eslint-disable-next-line node/prefer-global/process
+    process.exit(1);
   },
 };
 

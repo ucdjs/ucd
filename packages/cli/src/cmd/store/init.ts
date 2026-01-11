@@ -2,6 +2,7 @@ import type { Prettify } from "@luxass/utils";
 import type { CLIArguments } from "../../cli-utils";
 import type { CLIStoreCmdSharedFlags } from "./_shared";
 import { UCDStoreGenericError } from "@ucdjs/ucd-store";
+import { CLIError } from "../../errors";
 import { printHelp } from "../../cli-utils";
 import {
   blankLine,
@@ -17,7 +18,9 @@ import {
 import { assertLocalStore, createStoreFromFlags, LOCAL_STORE_FLAGS, runVersionPrompt, SHARED_FLAGS } from "./_shared";
 
 export interface CLIStoreInitCmdOptions {
-  flags: CLIArguments<Prettify<CLIStoreCmdSharedFlags>>;
+  flags: CLIArguments<Prettify<CLIStoreCmdSharedFlags & {
+    json?: boolean;
+  }>>;
   versions: string[];
 }
 
@@ -31,6 +34,7 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
         Flags: [
           ...LOCAL_STORE_FLAGS,
           ...SHARED_FLAGS,
+          ["--json", "Output initialization results in JSON format."],
           ["--help (-h)", "See all available flags."],
         ],
       },
@@ -46,6 +50,7 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
     include: patterns,
     exclude: excludePatterns,
     force,
+    json,
   } = flags;
 
   try {
@@ -54,19 +59,28 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
       const pickedVersions = await runVersionPrompt();
 
       if (pickedVersions.length === 0) {
-        output.warning("No versions selected. Operation cancelled.");
+        if (json) {
+          output.errorJson({
+            type: "NO_VERSIONS_SELECTED",
+            message: "No versions selected",
+          });
+        } else {
+          output.warning("No versions selected. Operation cancelled.");
+        }
         return;
       }
 
       selectedVersions = pickedVersions;
     }
 
-    header("UCD Store Initialization");
+    if (!json) {
+      header("UCD Store Initialization");
 
-    keyValue("Store Path", storeDir, { valueColor: cyan });
-    keyValue("Versions", selectedVersions.map((v) => cyan(v)).join(", "));
+      keyValue("Store Path", storeDir, { valueColor: cyan });
+      keyValue("Versions", selectedVersions.map((v) => cyan(v)).join(", "));
 
-    blankLine();
+      blankLine();
+    }
 
     // Create store
     const store = await createStoreFromFlags({
@@ -79,7 +93,10 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
       force,
       requireExistingStore: false,
     });
-    output.success("Lockfile created");
+    
+    if (!json) {
+      output.success("Lockfile created");
+    }
 
     // Mirror files
     const [mirrorResult, mirrorError] = await store.mirror({
@@ -92,16 +109,50 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
     });
 
     if (mirrorError) {
-      output.fail("Mirror failed", {
-        details: [mirrorError.message, "Lockfile was created, but files were not downloaded."],
-      });
+      if (json) {
+        output.errorJson({
+          type: "MIRROR_FAILED",
+          message: "Mirror failed",
+          details: { reason: mirrorError.message, lockfileCreated: true },
+        });
+      } else {
+        output.fail("Mirror failed", {
+          details: [mirrorError.message, "Lockfile was created, but files were not downloaded."],
+        });
+      }
       return;
     }
 
     if (!mirrorResult) {
-      output.fail("Mirror returned no result", {
-        details: ["Lockfile was created, but files were not downloaded."],
-      });
+      if (json) {
+        output.errorJson({
+          type: "NO_MIRROR_RESULT",
+          message: "Mirror returned no result",
+          details: { lockfileCreated: true },
+        });
+      } else {
+        output.fail("Mirror returned no result", {
+          details: ["Lockfile was created, but files were not downloaded."],
+        });
+      }
+      return;
+    }
+
+    if (json) {
+      const jsonOutput = {
+        success: true,
+        storeDir,
+        versions: selectedVersions,
+        summary: mirrorResult.summary ? {
+          versionsCount: mirrorResult.versions.size,
+          downloaded: mirrorResult.summary.counts.success,
+          skipped: mirrorResult.summary.counts.skipped,
+          failed: mirrorResult.summary.counts.failed,
+          totalSize: mirrorResult.summary.storage.totalSize,
+          duration: mirrorResult.summary.duration,
+        } : undefined,
+      };
+      output.json(jsonOutput);
       return;
     }
 
@@ -130,7 +181,26 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
     blankLine();
   } catch (err) {
     if (err instanceof UCDStoreGenericError) {
-      output.fail(err.message);
+      if (json) {
+        output.errorJson({
+          type: "STORE_ERROR",
+          message: err.message,
+        });
+      } else {
+        output.fail(err.message);
+      }
+      return;
+    }
+
+    if (err instanceof CLIError) {
+      if (json) {
+        output.errorJson({
+          type: "CLI_ERROR",
+          message: err.message,
+        });
+      } else {
+        err.toPrettyMessage();
+      }
       return;
     }
 
@@ -141,6 +211,13 @@ export async function runInitStore({ flags, versions }: CLIStoreInitCmdOptions) 
       message = err;
     }
 
-    output.fail(message, { bugReport: true });
+    if (json) {
+      output.errorJson({
+        type: "UNKNOWN_ERROR",
+        message,
+      });
+    } else {
+      output.fail(message, { bugReport: true });
+    }
   }
 }

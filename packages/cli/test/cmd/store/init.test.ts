@@ -90,7 +90,7 @@ describe("store init command", () => {
 
     await runCLI(["store", "init"]);
 
-    expect(capture.containsError("Either --remote or --store-dir must be specified")).toBe(true);
+    expect(capture.containsError("--store-dir is required")).toBe(true);
   });
 
   it("should fail if --remote is specified (init requires local store)", async () => {
@@ -102,7 +102,7 @@ describe("store init command", () => {
 
     await runCLI(["store", "init", "--remote"]);
 
-    expect(capture.containsError("Init operation requires a local store directory")).toBe(true);
+    expect(capture.containsError("The --remote flag is not supported")).toBe(true);
   });
 
   it("should initialize with specific versions", async () => {
@@ -177,8 +177,6 @@ describe("store init command", () => {
     ]);
 
     expect(capture.containsLog("Store initialized successfully")).toBe(true);
-    expect(capture.containsLog("Starting mirror operation")).toBe(true);
-    expect(capture.containsLog("Mirror operation completed successfully")).toBe(true);
   });
 
   it("should handle prompts for versions when none provided", async () => {

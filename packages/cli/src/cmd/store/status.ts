@@ -8,7 +8,7 @@ import { getLockfilePath, readLockfile, readSnapshotOrUndefined } from "@ucdjs/l
 import { UCDStoreGenericError } from "@ucdjs/ucd-store";
 import { printHelp } from "../../cli-utils";
 import { green, output, red, yellow } from "../../output";
-import { assertRemoteOrStoreDir, createStoreFromFlags, SHARED_FLAGS } from "./_shared";
+import { assertRemoteOrStoreDir, createStoreFromFlags, REMOTE_CAPABLE_FLAGS, SHARED_FLAGS } from "./_shared";
 
 const debug = createDebugger("ucdjs:cli:store:status");
 
@@ -26,6 +26,7 @@ export async function runStatusStore({ flags }: CLIStoreStatusCmdOptions) {
       usage: "[...flags]",
       tables: {
         Flags: [
+          ...REMOTE_CAPABLE_FLAGS,
           ...SHARED_FLAGS,
           ["--json", "Output status information in JSON format."],
           ["--help (-h)", "See all available flags."],
@@ -103,7 +104,7 @@ export async function runStatusStore({ flags }: CLIStoreStatusCmdOptions) {
       baseUrl,
       storeDir,
       remote,
-      lockfileOnly: true,
+      requireExistingStore: true,
     });
 
     const lockfilePath = getLockfilePath();

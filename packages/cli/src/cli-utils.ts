@@ -46,7 +46,7 @@ export type CLIArguments<T extends Record<string, unknown>> = Prettify<RemoveInd
  * Resolves the CLI command based on the provided arguments.
  *
  * If the `version` flag is present, it returns the "version" command.
- * Otherwise, it checks if the third argument in the positional arguments (`flags._[2]`)
+ * Otherwise, it checks if the first positional argument (`flags._[0]`)
  * is a supported command. If it is, it returns that command.
  * If no supported command is found, it defaults to the "help" command.
  *
@@ -177,13 +177,12 @@ export async function runCommand(cmd: CLICommand, flags: Arguments): Promise<voi
         usage: "[command] [...flags]",
         tables: {
           "Commands": [
-            ["download", "Download Unicode data files."],
+            ["store", "Manage UCD stores (init, mirror, sync, etc.)."],
             ["codegen", "Generate TypeScript code from UCD data."],
             ["files", "List and get files from the UCD API."],
             ["lockfile", "Inspect and validate UCD store lockfiles."],
           ],
           "Global Flags": [
-            ["--force", "Force the operation to run, even if it's not needed."],
             ["--version", "Show the version number and exit."],
             ["--help", "Show this help message."],
           ],
