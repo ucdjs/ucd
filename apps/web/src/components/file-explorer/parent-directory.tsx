@@ -1,6 +1,5 @@
 import { Link } from "@tanstack/react-router";
 import { ArrowUp, FolderUp } from "lucide-react";
-
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
@@ -30,8 +29,8 @@ export function ParentDirectory({ currentPath, viewMode }: ParentDirectoryProps)
           <div className="flex items-center gap-2">
             <FolderUp className="size-4 text-muted-foreground group-hover:text-primary" />
             <Link
-              to="/explorer/files/$"
-              params={{ _splat: parentPath || "/" }}
+              to="/file-explorer/$"
+              params={{ _splat: parentPath || "" }}
               className="truncate font-medium text-sm text-muted-foreground hover:text-primary transition-colors"
             >
               ..
@@ -45,8 +44,8 @@ export function ParentDirectory({ currentPath, viewMode }: ParentDirectoryProps)
 
   return (
     <Link
-      to="/explorer/files/$"
-      params={{ _splat: parentPath || "/" }}
+      to="/file-explorer/$"
+      params={{ _splat: parentPath || "" }}
       className={cn(
         "flex items-center gap-3 px-3 py-2 rounded-md group",
         "hover:bg-muted/50 transition-colors",
