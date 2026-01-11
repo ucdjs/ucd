@@ -2,21 +2,21 @@
 
 import HTTPFileSystemBridge from "#internal:bridge/http";
 import { HttpResponse, mockFetch } from "#test-utils/msw";
-import { UCDJS_API_BASE_URL } from "@ucdjs/env";
+import { UCDJS_STORE_BASE_URL } from "@ucdjs/env";
 import { BridgeGenericError } from "@ucdjs/fs-bridge";
 import { PathTraversalError } from "@ucdjs/path-utils";
 import { describe, expect, it } from "vitest";
 
 describe("recursive listdir security", () => {
   describe("should prevent traversal via entry.path in recursive listdir", () => {
-    const baseUrl = `${UCDJS_API_BASE_URL}/api/v1/files`;
+    const baseUrl = `${UCDJS_STORE_BASE_URL}/files`;
 
     it("should prevent traversal when entry.path contains ../", async () => {
       const bridge = HTTPFileSystemBridge({ baseUrl });
 
       // Mock initial listdir response with malicious entry.path
       mockFetch([
-        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files`, () => {
+        ["GET", `${UCDJS_STORE_BASE_URL}/files`, () => {
           return new HttpResponse(JSON.stringify([
             {
               type: "directory",
@@ -46,7 +46,7 @@ describe("recursive listdir security", () => {
       // The encoded path doesn't conform to the schema (doesn't start with /, doesn't end with /)
       // This is caught by Zod validation BEFORE traversal detection - defense in depth
       mockFetch([
-        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files`, () => {
+        ["GET", `${UCDJS_STORE_BASE_URL}/files`, () => {
           return new HttpResponse(JSON.stringify([
             {
               type: "directory",
@@ -76,7 +76,7 @@ describe("recursive listdir security", () => {
 
       // Mock legitimate nested directory structure
       mockFetch([
-        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files`, () => {
+        ["GET", `${UCDJS_STORE_BASE_URL}/files`, () => {
           return new HttpResponse(JSON.stringify([
             {
               type: "directory",
@@ -89,7 +89,7 @@ describe("recursive listdir security", () => {
             headers: { "Content-Type": "application/json" },
           });
         }],
-        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/subdir`, () => {
+        ["GET", `${UCDJS_STORE_BASE_URL}/files/subdir`, () => {
           return new HttpResponse(JSON.stringify([]), {
             status: 200,
             headers: { "Content-Type": "application/json" },

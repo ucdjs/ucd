@@ -1,6 +1,6 @@
 import HTTPFileSystemBridge from "#internal:bridge/http";
 import NodeFileSystemBridge from "#internal:bridge/node";
-import { UCDJS_API_BASE_URL } from "@ucdjs/env";
+import { UCDJS_STORE_BASE_URL } from "@ucdjs/env";
 import { IllegalCharacterInPathError, PathTraversalError } from "@ucdjs/path-utils";
 import { describe, expect, it } from "vitest";
 import { testdir } from "vitest-testdirs";
@@ -169,7 +169,7 @@ describe("penetration testing - advanced attack vectors", () => {
   });
 
   describe("http bridge - advanced attacks", () => {
-    const baseUrl = `${UCDJS_API_BASE_URL}/api/v1/files`;
+    const baseUrl = `${UCDJS_STORE_BASE_URL}/files`;
 
     it("should prevent null byte injection attacks", async () => {
       const bridge = HTTPFileSystemBridge({ baseUrl });

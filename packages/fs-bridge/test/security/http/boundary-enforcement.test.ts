@@ -1,12 +1,12 @@
 import HTTPFileSystemBridge from "#internal:bridge/http";
 import { HttpResponse, mockFetch } from "#test-utils/msw";
-import { UCDJS_API_BASE_URL } from "@ucdjs/env";
+import { UCDJS_STORE_BASE_URL } from "@ucdjs/env";
 import { PathTraversalError } from "@ucdjs/path-utils";
 import { describe, expect, it } from "vitest";
 
 describe("boundary enforcement", () => {
-  describe("shallow pathname (/api/v1/files)", () => {
-    const baseUrl = `${UCDJS_API_BASE_URL}/api/v1/files`;
+  describe("shallow pathname (/files)", () => {
+    const baseUrl = `${UCDJS_STORE_BASE_URL}/files`;
 
     it("should enforce boundary for shallow pathname", async () => {
       const bridge = HTTPFileSystemBridge({ baseUrl });
@@ -23,7 +23,7 @@ describe("boundary enforcement", () => {
 
     it("should allow operations within shallow pathname", async () => {
       mockFetch([
-        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/subdir/file.txt`, () => {
+        ["GET", `${UCDJS_STORE_BASE_URL}/files/subdir/file.txt`, () => {
           return new HttpResponse("content", {
             status: 200,
             headers: { "Content-Type": "text/plain" },
@@ -52,7 +52,7 @@ describe("boundary enforcement", () => {
 
     it("should allow traversal within nested directories", async () => {
       mockFetch([
-        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/level1/file.txt`, () => {
+        ["GET", `${UCDJS_STORE_BASE_URL}/files/level1/file.txt`, () => {
           return new HttpResponse("level1 content", {
             status: 200,
             headers: { "Content-Type": "text/plain" },
@@ -68,8 +68,8 @@ describe("boundary enforcement", () => {
     });
   });
 
-  describe("deep pathname (/api/v1/files/v16.0.0)", () => {
-    const baseUrl = `${UCDJS_API_BASE_URL}/api/v1/files/v16.0.0`;
+  describe("deep pathname (/v16.0.0)", () => {
+    const baseUrl = `${UCDJS_STORE_BASE_URL}/v16.0.0`;
 
     it("should enforce boundary for deep pathname", async () => {
       const bridge = HTTPFileSystemBridge({ baseUrl });
@@ -91,7 +91,7 @@ describe("boundary enforcement", () => {
 
     it("should allow operations within deep pathname", async () => {
       mockFetch([
-        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/v16.0.0/subdir/file.txt`, () => {
+        ["GET", `${UCDJS_STORE_BASE_URL}/v16.0.0/subdir/file.txt`, () => {
           return new HttpResponse("content", {
             status: 200,
             headers: { "Content-Type": "text/plain" },
@@ -120,7 +120,7 @@ describe("boundary enforcement", () => {
 
     it("should allow traversal within nested directories of deep pathname", async () => {
       mockFetch([
-        ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/v16.0.0/level1/file.txt`, () => {
+        ["GET", `${UCDJS_STORE_BASE_URL}/v16.0.0/level1/file.txt`, () => {
           return new HttpResponse("level1 content", {
             status: 200,
             headers: { "Content-Type": "text/plain" },
@@ -138,12 +138,12 @@ describe("boundary enforcement", () => {
     it("should prevent traversal that escapes to parent pathname segments", async () => {
       const bridge = HTTPFileSystemBridge({ baseUrl });
 
-      // Try to escape to /api/v1/files (parent of /api/v1/files/v16.0.0)
+      // Try to escape to root (parent of /v16.0.0)
       await expect(
         bridge.read("../../v15.1.0/file.txt"),
       ).rejects.toThrow(PathTraversalError);
 
-      // Try to escape to /api/v1 (grandparent)
+      // Try to escape to root (grandparent)
       await expect(
         bridge.read("../../../other/path"),
       ).rejects.toThrow(PathTraversalError);
@@ -151,12 +151,12 @@ describe("boundary enforcement", () => {
   });
 
   describe("boundary edge cases", () => {
-    describe("shallow pathname (/api/v1/files)", () => {
-      const baseUrl = `${UCDJS_API_BASE_URL}/api/v1/files`;
+    describe("shallow pathname (/files)", () => {
+      const baseUrl = `${UCDJS_STORE_BASE_URL}/files`;
 
       it("should handle root reference correctly", async () => {
         mockFetch([
-          ["GET", `${UCDJS_API_BASE_URL}/api/v1/files`, () => {
+          ["GET", `${UCDJS_STORE_BASE_URL}/files`, () => {
             return new HttpResponse(JSON.stringify([]), {
               status: 200,
               headers: { "Content-Type": "application/json" },
@@ -172,7 +172,7 @@ describe("boundary enforcement", () => {
 
       it("should handle current directory reference correctly", async () => {
         mockFetch([
-          ["GET", `${UCDJS_API_BASE_URL}/api/v1/files`, () => {
+          ["GET", `${UCDJS_STORE_BASE_URL}/files`, () => {
             return new HttpResponse(JSON.stringify([]), {
               status: 200,
               headers: { "Content-Type": "application/json" },
@@ -187,12 +187,12 @@ describe("boundary enforcement", () => {
       });
     });
 
-    describe("deep pathname (/api/v1/files/v16.0.0)", () => {
-      const baseUrl = `${UCDJS_API_BASE_URL}/api/v1/files/v16.0.0`;
+    describe("deep pathname (/v16.0.0)", () => {
+      const baseUrl = `${UCDJS_STORE_BASE_URL}/v16.0.0`;
 
       it("should handle root reference correctly", async () => {
         mockFetch([
-          ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/v16.0.0`, () => {
+          ["GET", `${UCDJS_STORE_BASE_URL}/v16.0.0`, () => {
             return new HttpResponse(JSON.stringify([]), {
               status: 200,
               headers: { "Content-Type": "application/json" },
@@ -208,7 +208,7 @@ describe("boundary enforcement", () => {
 
       it("should handle current directory reference correctly", async () => {
         mockFetch([
-          ["GET", `${UCDJS_API_BASE_URL}/api/v1/files/v16.0.0`, () => {
+          ["GET", `${UCDJS_STORE_BASE_URL}/v16.0.0`, () => {
             return new HttpResponse(JSON.stringify([]), {
               status: 200,
               headers: { "Content-Type": "application/json" },

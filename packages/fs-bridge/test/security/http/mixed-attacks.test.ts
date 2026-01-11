@@ -1,12 +1,12 @@
 import HTTPFileSystemBridge from "#internal:bridge/http";
-import { UCDJS_API_BASE_URL } from "@ucdjs/env";
+import { UCDJS_STORE_BASE_URL } from "@ucdjs/env";
 import { PathTraversalError } from "@ucdjs/path-utils";
 import { describe, expect, it } from "vitest";
 
 describe("mixed attack vectors", () => {
   describe("combined traversal and encoding attacks", () => {
-    describe("shallow pathname (/api/v1/files)", () => {
-      const baseUrl = `${UCDJS_API_BASE_URL}/api/v1/files`;
+    describe("shallow pathname (/files)", () => {
+      const baseUrl = `${UCDJS_STORE_BASE_URL}/files`;
 
       it("should prevent combined encoded and plain traversal", async () => {
         const bridge = HTTPFileSystemBridge({ baseUrl });
@@ -35,8 +35,8 @@ describe("mixed attack vectors", () => {
       });
     });
 
-    describe("deep pathname (/api/v1/files/v16.0.0)", () => {
-      const baseUrl = `${UCDJS_API_BASE_URL}/api/v1/files/v16.0.0`;
+    describe("deep pathname (/v16.0.0)", () => {
+      const baseUrl = `${UCDJS_STORE_BASE_URL}/v16.0.0`;
 
       it("should prevent combined encoded and plain traversal", async () => {
         const bridge = HTTPFileSystemBridge({ baseUrl });
@@ -67,8 +67,8 @@ describe("mixed attack vectors", () => {
   });
 
   describe("complex attack scenarios", () => {
-    describe("shallow pathname (/api/v1/files)", () => {
-      const baseUrl = `${UCDJS_API_BASE_URL}/api/v1/files`;
+    describe("shallow pathname (/files)", () => {
+      const baseUrl = `${UCDJS_STORE_BASE_URL}/files`;
 
       it("should prevent deeply nested traversal attempts", async () => {
         const bridge = HTTPFileSystemBridge({ baseUrl });
@@ -93,8 +93,8 @@ describe("mixed attack vectors", () => {
       });
     });
 
-    describe("deep pathname (/api/v1/files/v16.0.0)", () => {
-      const baseUrl = `${UCDJS_API_BASE_URL}/api/v1/files/v16.0.0`;
+    describe("deep pathname (/v16.0.0)", () => {
+      const baseUrl = `${UCDJS_STORE_BASE_URL}/v16.0.0`;
 
       it("should prevent deeply nested traversal attempts", async () => {
         const bridge = HTTPFileSystemBridge({ baseUrl });
