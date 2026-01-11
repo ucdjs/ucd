@@ -111,7 +111,6 @@ export default Sentry.withSentry((env: HonoEnv["Bindings"]) => {
       return UCD_STORE_ROUTER.fetch(request, env, ctx);
     }
 
-    // Default to main API
     return app.fetch(request, env, ctx);
   },
 });
