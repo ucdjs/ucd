@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { AlertCircle } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 
 interface NotFoundLayoutProps {
@@ -78,7 +79,7 @@ export function ExplorerNotFound({ path }: { path?: string }) {
       actions={(
         <>
           <Button render={(
-            <Link to="/explorer/files/$" params={{ _splat: "" }}>
+            <Link to="/file-explorer/$" params={{ _splat: "" }}>
               Back to explorer
             </Link>
           )}

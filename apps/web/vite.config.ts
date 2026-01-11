@@ -26,7 +26,15 @@ const config = defineConfig({
       projects: ["./tsconfig.json"],
     }),
     tailwindcss(),
-    tanstackStart(),
+    tanstackStart({
+      srcDirectory: "src",
+      prerender: {
+        enabled: false, // We can't enable prerendering until Nitro fixes their preview server.
+      },
+      server: {
+        entry: "server.ts",
+      },
+    }),
     viteReact({
       babel: {
         plugins: ["babel-plugin-react-compiler"],

@@ -1,8 +1,7 @@
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, BookOpen, Grid3X3, Type } from "lucide-react";
-
-import { versionDetailsQueryOptions, versionsQueryOptions } from "@/apis/versions";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { BookOpen, Search } from "lucide-react";
+import { Suspense, useState } from "react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -11,17 +10,11 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { Skeleton } from "@/components/ui/skeleton";
+import { versionDetailsQueryOptions, versionsQueryOptions } from "@/functions/versions";
 
 export const Route = createFileRoute("/v/$version/")({
   component: VersionPage,
@@ -31,25 +24,24 @@ export const Route = createFileRoute("/v/$version/")({
   },
 });
 
-function formatNumber(num: number): string {
-  return num.toLocaleString();
-}
-
 function VersionPage() {
   const { version } = Route.useParams();
   const { data: versions } = useSuspenseQuery(versionsQueryOptions());
-  const { data: details } = useQuery(versionDetailsQueryOptions(version));
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState("");
 
   const versionData = versions.find((v) => v.version === version);
   const isLatest = versions[0]?.version === version;
 
-  // Sample characters to showcase
-  const sampleCharacters = [
-    { hex: "0041", name: "Latin Capital Letter A" },
-    { hex: "03B1", name: "Greek Small Letter Alpha" },
-    { hex: "4E2D", name: "CJK Unified Ideograph (中)" },
-    { hex: "1F600", name: "Grinning Face Emoji" },
-  ];
+  function handleSearch(e: React.FormEvent) {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate({
+        to: "/search",
+        search: { q: searchQuery.trim(), version },
+      });
+    }
+  }
 
   return (
     <>
@@ -79,162 +71,147 @@ function VersionPage() {
 
       <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
         {/* Version Header - Compact */}
-        <div className="flex flex-col gap-3 py-4">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-bold tracking-tight">
-              Unicode
-              {" "}
-              {version}
-            </h1>
-            {isLatest && (
-              <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
-                Latest
-              </span>
-            )}
+        <div className="flex flex-col gap-4 py-4">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-bold tracking-tight">
+                Unicode
+                {" "}
+                {version}
+              </h1>
+              {isLatest && (
+                <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
+                  Latest
+                </span>
+              )}
+            </div>
+            <form onSubmit={handleSearch} className="relative w-full max-w-xs">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Search characters..."
+                className="pl-9"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </form>
           </div>
           {versionData && (
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-              <span>
-                Released
-                {versionData.date}
-              </span>
-              <span className="hidden sm:inline">·</span>
-              <span className="capitalize">{versionData.type}</span>
-              {versionData.documentationUrl && (
-                <>
-                  <span className="hidden sm:inline">·</span>
-                  <a
-                    href={versionData.documentationUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary hover:underline inline-flex items-center gap-1"
-                  >
-                    <BookOpen className="size-3" />
-                    Docs
-                  </a>
-                </>
-              )}
-              <span className="hidden sm:inline">·</span>
-              <a
-                href={versionData.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary hover:underline"
-              >
-                Source
-              </a>
-            </div>
-          )}
-          {/* Version Statistics */}
-          {details && details.totalCharacters > 0 && (
-            <div className="flex flex-wrap gap-4 text-sm">
-              <div className="flex items-center gap-2 rounded-md bg-muted/50 px-3 py-1.5">
-                <span className="font-semibold">{formatNumber(details.totalCharacters)}</span>
-                <span className="text-muted-foreground">characters</span>
-                {details.newCharacters > 0 && (
-                  <span className="text-xs text-green-600 dark:text-green-400">
-                    (+
-                    {formatNumber(details.newCharacters)}
-                    {" "}
-                    new)
-                  </span>
+            <>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                <span>
+                  Released
+                  {versionData.date}
+                </span>
+                <span className="hidden sm:inline">·</span>
+                <span className="capitalize">{versionData.type}</span>
+                {versionData.documentationUrl && (
+                  <>
+                    <span className="hidden sm:inline">·</span>
+                    <a
+                      href={versionData.documentationUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline inline-flex items-center gap-1"
+                    >
+                      <BookOpen className="size-3" />
+                      Docs
+                    </a>
+                  </>
                 )}
+                <span className="hidden sm:inline">·</span>
+                <a
+                  href={versionData.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline"
+                >
+                  Source
+                </a>
               </div>
-              <div className="flex items-center gap-2 rounded-md bg-muted/50 px-3 py-1.5">
-                <span className="font-semibold">{formatNumber(details.totalBlocks)}</span>
-                <span className="text-muted-foreground">blocks</span>
-                {details.newBlocks > 0 && (
-                  <span className="text-xs text-green-600 dark:text-green-400">
-                    (+
-                    {details.newBlocks}
-                    {" "}
-                    new)
-                  </span>
-                )}
-              </div>
-              <div className="flex items-center gap-2 rounded-md bg-muted/50 px-3 py-1.5">
-                <span className="font-semibold">{formatNumber(details.totalScripts)}</span>
-                <span className="text-muted-foreground">scripts</span>
-                {details.newScripts > 0 && (
-                  <span className="text-xs text-green-600 dark:text-green-400">
-                    (+
-                    {details.newScripts}
-                    {" "}
-                    new)
-                  </span>
-                )}
-              </div>
-            </div>
+              <p className="text-sm text-muted-foreground max-w-2xl">
+                Unicode
+                {" "}
+                {version}
+                {" "}
+                introduces support for a comprehensive set of characters covering major world scripts,
+                {" "}
+                <span className="font-medium">mathematical symbols</span>
+                , emoji, and technical characters. This release
+                includes updates to the Unicode Standard across multiple writing systems and symbol categories.
+              </p>
+            </>
           )}
         </div>
 
-        {/* Navigation Cards */}
-        <section>
-          <h2 className="mb-4 text-lg font-semibold">Browse</h2>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <Card className="hover:ring-primary/50 transition-all">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Grid3X3 className="size-5" />
-                  Unicode Blocks
-                </CardTitle>
-                <CardDescription>
-                  Browse characters by block
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-muted-foreground">
-                  Explore Basic Latin, Greek, CJK, Emoji, and hundreds of other Unicode blocks.
-                </p>
-              </CardContent>
-              <CardFooter>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  render={(
-                    <Link to="/v/$version/blocks" params={{ version }}>
-                      View Blocks
-                      <ArrowRight className="ml-1 size-4" />
-                    </Link>
-                  )}
-                />
-              </CardFooter>
-            </Card>
-
-            <Card className="hover:ring-primary/50 transition-all">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Type className="size-5" />
-                  Sample Characters
-                </CardTitle>
-                <CardDescription>
-                  Quick character lookup
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {sampleCharacters.map((char) => (
-                    <Link
-                      key={char.hex}
-                      to="/v/$version/u/$hex"
-                      params={{ version, hex: char.hex }}
-                      className="inline-flex items-center gap-1 px-2 py-1 text-sm bg-muted rounded-md hover:bg-muted/80 transition-colors"
-                    >
-                      <span className="font-mono text-xs text-muted-foreground">
-                        U+
-                        {char.hex}
-                      </span>
-                      <span className="text-lg">
-                        {String.fromCodePoint(Number.parseInt(char.hex, 16))}
-                      </span>
-                    </Link>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </section>
+        {/* Version Statistics */}
+        <Suspense fallback={<VersionStatisticsSkeleton />}>
+          <VersionStatistics version={version} />
+        </Suspense>
       </div>
     </>
+  );
+}
+
+function VersionStatistics({ version }: { version: string }) {
+  const { data: details } = useQuery(versionDetailsQueryOptions(version));
+
+  if (!details || details.statistics.totalCharacters === 0) {
+    return null;
+  }
+
+  const { statistics } = details;
+
+  return (
+    <div className="flex flex-wrap items-center gap-3">
+      <StatBadge
+        label="Characters"
+        value={statistics.totalCharacters}
+        newValue={statistics.newCharacters}
+      />
+      <StatBadge
+        label="Blocks"
+        value={statistics.totalBlocks}
+        newValue={statistics.newBlocks}
+      />
+      <StatBadge
+        label="Scripts"
+        value={statistics.totalScripts}
+        newValue={statistics.newScripts}
+      />
+    </div>
+  );
+}
+
+interface StatBadgeProps {
+  label: string;
+  value: number;
+  newValue?: number;
+}
+
+function StatBadge({ label, value, newValue }: StatBadgeProps) {
+  return (
+    <div className="flex items-center gap-2 rounded-md bg-muted/50 px-3 py-1.5">
+      <span className="font-semibold">{value.toLocaleString()}</span>
+      <span className="text-muted-foreground">{label.toLowerCase()}</span>
+      {newValue != null && newValue > 0 && (
+        <span className="text-xs text-green-600 dark:text-green-400">
+          (+
+          {newValue.toLocaleString()}
+          {" "}
+          new)
+        </span>
+      )}
+    </div>
+  );
+}
+
+function VersionStatisticsSkeleton() {
+  return (
+    <div className="flex flex-wrap items-center gap-3">
+      {["stat-1", "stat-2", "stat-3"].map((key) => (
+        <Skeleton key={key} className="h-8 w-32 rounded-md" />
+      ))}
+    </div>
   );
 }
