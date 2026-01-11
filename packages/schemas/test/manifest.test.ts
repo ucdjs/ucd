@@ -8,9 +8,9 @@ describe("UCDStoreVersionManifestSchema", () => {
   it("should validate a manifest with expected files", () => {
     const validManifest = {
       expectedFiles: [
-        "UnicodeData.txt",
-        "PropList.txt",
-        "DerivedAge.txt",
+        { name: "UnicodeData.txt", path: "/16.0.0/ucd/UnicodeData.txt", storePath: "/16.0.0/UnicodeData.txt" },
+        { name: "PropList.txt", path: "/16.0.0/ucd/PropList.txt", storePath: "/16.0.0/PropList.txt" },
+        { name: "DerivedAge.txt", path: "/16.0.0/ucd/DerivedAge.txt", storePath: "/16.0.0/DerivedAge.txt" },
       ],
     };
     expect(validManifest).toMatchSchema({
@@ -18,9 +18,9 @@ describe("UCDStoreVersionManifestSchema", () => {
       success: true,
       data: {
         expectedFiles: [
-          "UnicodeData.txt",
-          "PropList.txt",
-          "DerivedAge.txt",
+          { name: "UnicodeData.txt", path: "/16.0.0/ucd/UnicodeData.txt", storePath: "/16.0.0/UnicodeData.txt" },
+          { name: "PropList.txt", path: "/16.0.0/ucd/PropList.txt", storePath: "/16.0.0/PropList.txt" },
+          { name: "DerivedAge.txt", path: "/16.0.0/ucd/DerivedAge.txt", storePath: "/16.0.0/DerivedAge.txt" },
         ],
       },
     });
@@ -42,11 +42,12 @@ describe("UCDStoreVersionManifestSchema", () => {
   it("should validate manifest with nested paths", () => {
     const manifestWithPaths = {
       expectedFiles: [
-        "UnicodeData.txt",
-        "extracted/DerivedAge.txt",
-        "extracted/emoji/emoji-data.txt",
+        { name: "UnicodeData.txt", path: "/16.0.0/ucd/UnicodeData.txt", storePath: "/16.0.0/UnicodeData.txt" },
+        { name: "extracted/DerivedAge.txt", path: "/16.0.0/ucd/extracted/DerivedAge.txt", storePath: "/16.0.0/extracted/DerivedAge.txt" },
+        { name: "extracted/emoji/emoji-data.txt", path: "/16.0.0/ucd/extracted/emoji/emoji-data.txt", storePath: "/16.0.0/extracted/emoji/emoji-data.txt" },
       ],
     };
+
     expect(manifestWithPaths).toMatchSchema({
       schema: UCDStoreVersionManifestSchema,
       success: true,
