@@ -1,8 +1,16 @@
 import type { JsonBodyType } from "msw";
-import type { MockStoreConfig, MockStoreFiles } from "./types";
-import { createDebugger, isApiError } from "@ucdjs-internal/shared";
+import type { MockStoreConfig, MockStoreFiles, MockStoreNodeWithPath } from "./types";
+import { createDebugger, findFileByPath, isApiError } from "@ucdjs-internal/shared";
+import {
+  UCD_STAT_CHILDREN_DIRS_HEADER,
+  UCD_STAT_CHILDREN_FILES_HEADER,
+  UCD_STAT_CHILDREN_HEADER,
+  UCD_STAT_SIZE_HEADER,
+  UCD_STAT_TYPE_HEADER,
+} from "@ucdjs/env";
 import { HttpResponse } from "msw";
 import { mockFetch } from "../msw";
+import { addPathsToFileNodes } from "./add-paths";
 import { defaultArabicShapingFileContent } from "./default-files/arabic-shaping";
 import { defaultBidiBracketsFileContent } from "./default-files/bidi-brackets";
 import { defaultDerivedBidClassFileContent } from "./default-files/derived-bidi-class";
@@ -10,6 +18,7 @@ import { MOCK_ROUTES } from "./handlers";
 
 import {
   extractConfiguredMetadata,
+  omitChildrenAndContent,
   parseLatency,
   wrapMockFetch,
 } from "./utils";
@@ -167,6 +176,151 @@ function toMSWPath(endpoint: string): string {
 
     return `:${p1}`;
   });
+}
+
+/**
+ * Sets up mock handlers for the store subdomain (ucd-store.ucdjs.dev).
+ *
+ * This is used for the HTTP fs-bridge which directly accesses files via the store subdomain
+ * rather than through the API. The store subdomain handles paths like /:version/:filepath
+ * without the /ucd/ prefix (it's handled internally by the subdomain).
+ *
+ * @param {object} config - Configuration for the store subdomain mock
+ * @param {string} [config.storeBaseUrl] - Base URL for the store subdomain (defaults to https://ucd-store.ucdjs.dev)
+ * @param {MockStoreFiles} config.files - The files to mock
+ */
+export function mockStoreSubdomain(config: {
+  storeBaseUrl?: string;
+  files: MockStoreFiles;
+}): void {
+  const {
+    storeBaseUrl = "https://ucd-store.ucdjs.dev",
+    files,
+  } = config;
+
+  debug?.("Setting up mock store subdomain with config:", config);
+
+  const normalizedStoreBaseUrl = storeBaseUrl.endsWith("/") ? storeBaseUrl.slice(0, -1) : storeBaseUrl;
+
+  // Set up a catch-all handler for the store subdomain
+  // This handles requests like /:version/:filepath
+  mockFetch([
+    [["GET", "HEAD"], `${normalizedStoreBaseUrl}/:wildcard*`, ({ request, params }) => {
+      const wildcard = (params.wildcard as string) || "";
+      const isHeadRequest = request.method === "HEAD";
+
+      debug?.("Store subdomain request:", { wildcard, method: request.method });
+
+      // Parse the path: version/filepath (no /ucd/ prefix - handled internally)
+      const [firstPart, ...pathParts] = wildcard.split("/");
+
+      // Check if the first part is a valid version key in files
+      const isVersionKey = firstPart && firstPart in files;
+
+      let version = "";
+      let filePath: string;
+      let versionFiles: MockStoreNodeWithPath[] = [];
+      let lookupPath: string;
+
+      if (isVersionKey || (firstPart && files["*"])) {
+        version = firstPart;
+        filePath = pathParts.join("/");
+        const versionFilesRaw = files[firstPart] || files["*"];
+
+        if (!versionFilesRaw || !Array.isArray(versionFilesRaw)) {
+          return HttpResponse.json({
+            message: "Resource not found",
+            status: 404,
+            timestamp: new Date().toISOString(),
+          }, { status: 404 });
+        }
+
+        // Build file tree with version-prefixed paths but NO "ucd" subdirectory
+        // The store subdomain handles /ucd/ internally, so paths are like /16.0.0/UnicodeData.txt
+        versionFiles = addPathsToFileNodes(versionFilesRaw, version, "");
+        lookupPath = filePath ? `/${version}/${filePath}` : `/${version}`;
+      } else {
+        filePath = wildcard;
+        const rootFilesRaw = files.root;
+
+        if (!rootFilesRaw || !Array.isArray(rootFilesRaw)) {
+          return HttpResponse.json({
+            message: "Resource not found",
+            status: 404,
+            timestamp: new Date().toISOString(),
+          }, { status: 404 });
+        }
+
+        versionFiles = addPathsToFileNodes(rootFilesRaw, "", "");
+        lookupPath = filePath ? `/${filePath}` : "/";
+      }
+
+      debug?.("Looking up path:", { lookupPath, versionFilesCount: versionFiles.length });
+
+      // If requesting just the version root, return the directory listing
+      if (version && !filePath) {
+        const stripped = omitChildrenAndContent(versionFiles);
+        return HttpResponse.json(stripped, {
+          headers: {
+            [UCD_STAT_TYPE_HEADER]: "directory",
+            [UCD_STAT_CHILDREN_HEADER]: `${stripped.length}`,
+            [UCD_STAT_CHILDREN_FILES_HEADER]: `${stripped.filter((f) => f.type === "file").length}`,
+            [UCD_STAT_CHILDREN_DIRS_HEADER]: `${stripped.filter((f) => f.type === "directory").length}`,
+          },
+        });
+      }
+
+      // Locate the requested file or directory within the tree
+      const fileNode = findFileByPath(versionFiles, lookupPath);
+
+      // If it's a directory, return its children (or empty array)
+      if (fileNode && fileNode.type === "directory") {
+        const stripped = omitChildrenAndContent(fileNode.children ?? []);
+        return HttpResponse.json(stripped, {
+          headers: {
+            [UCD_STAT_TYPE_HEADER]: "directory",
+            [UCD_STAT_CHILDREN_HEADER]: `${stripped.length}`,
+            [UCD_STAT_CHILDREN_FILES_HEADER]: `${stripped.filter((f) => f.type === "file").length}`,
+            [UCD_STAT_CHILDREN_DIRS_HEADER]: `${stripped.filter((f) => f.type === "directory").length}`,
+          },
+        });
+      }
+
+      // If it's a file with _content, return the content
+      if (fileNode && "_content" in fileNode && typeof fileNode._content === "string") {
+        const content = fileNode._content;
+        const contentLength = new TextEncoder().encode(content).length;
+        const headers: Record<string, string> = {
+          "Content-Type": "text/plain; charset=utf-8",
+          [UCD_STAT_TYPE_HEADER]: "file",
+        };
+
+        // Only include size headers for HEAD requests (buffered response)
+        if (isHeadRequest) {
+          headers["Content-Length"] = `${contentLength}`;
+          headers[UCD_STAT_SIZE_HEADER] = `${contentLength}`;
+        }
+
+        return HttpResponse.text(content, { headers });
+      }
+
+      // If file found but no _content, return the filename
+      if (fileNode) {
+        console.warn(`Mock store subdomain: File "${filePath}" found but has no _content. Returning 404.`);
+        return HttpResponse.json({
+          message: "Resource not found",
+          status: 404,
+          timestamp: new Date().toISOString(),
+        }, { status: 404 });
+      }
+
+      return HttpResponse.json({
+        message: "Resource not found",
+        status: 404,
+        timestamp: new Date().toISOString(),
+      }, { status: 404 });
+    }],
+  ]);
 }
 
 export type { MockStoreConfig };

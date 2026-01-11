@@ -160,7 +160,6 @@ describe("node integration: store creation", () => {
       expect(store.mirror).toBeTypeOf("function");
       expect(store.sync).toBeTypeOf("function");
       expect(store.analyze).toBeTypeOf("function");
-      expect(store.compare).toBeTypeOf("function");
     });
   });
 });

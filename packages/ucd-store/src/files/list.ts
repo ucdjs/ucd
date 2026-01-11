@@ -9,9 +9,6 @@ import {
   normalizeTreeForFiltering,
   wrapTry,
 } from "@ucdjs-internal/shared";
-import { isBuiltinHttpBridge } from "@ucdjs/fs-bridge";
-import { patheJoin } from "@ucdjs/path-utils";
-import { hasUCDFolderPath } from "@unicode-utils/core";
 import { isUCDStoreInternalContext } from "../context";
 import { UCDStoreApiFallbackError, UCDStoreVersionNotFoundError } from "../errors";
 
@@ -43,7 +40,11 @@ function buildPathMapping(
 
   // preserves structure
   for (let i = 0; i < normalizedPaths.length; i++) {
-    mapping.set(normalizedPaths[i], originalPaths[i]);
+    const normalizedPath = normalizedPaths[i];
+    const originalPath = originalPaths[i];
+    if (normalizedPath && originalPath) {
+      mapping.set(normalizedPath, originalPath);
+    }
   }
 
   return mapping;
@@ -72,14 +73,9 @@ async function _listFiles(
       throw new UCDStoreVersionNotFoundError(version);
     }
 
-    // Get the correct path for this bridge type
-    // HTTP bridges need to access the `ucd/` subdirectory
-    let filesPath = version;
-
-    if (isBuiltinHttpBridge(this.fs) && hasUCDFolderPath(version)) {
-      debug?.("Using HTTP bridge path with ucd subpath for version:", version);
-      filesPath = patheJoin(version, "ucd");
-    }
+    // Use simple version path - both node and HTTP bridges use the same structure
+    // The store subdomain handles /ucd/ internally
+    const filesPath = version;
 
     debug?.("Using files path:", filesPath, "for version:", version);
 

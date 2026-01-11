@@ -35,35 +35,6 @@ import {
   createEmptySummary,
 } from "../utils/reports";
 
-function normalizeApiPath(version: string, rawPath: string): {
-  normalized: string;
-  remotePath: string;
-  localPath: string;
-} {
-  // incoming paths can be with or without leading slash and with optional trailing slash
-  let path = rawPath.replace(/^\/+/, "").replace(/\/+$/, "");
-
-  // The API file-tree returns paths like "/17.0.0/ucd/Blocks.txt" or "17.0.0/ucd/Blocks.txt"
-  // We need to strip the version prefix if present
-  const versionPrefix = `${version}/`;
-  if (path.startsWith(versionPrefix)) {
-    path = path.slice(versionPrefix.length);
-  }
-
-  const hasUcd = hasUCDFolderPath(version);
-
-  // Strip ucd/ prefix if present (for versions that have it)
-  if (hasUcd && path.startsWith("ucd/")) {
-    path = path.slice(4);
-  }
-
-  const normalized = path;
-  const remotePath = patheJoin(version, hasUcd ? "ucd" : "", normalized);
-  const localPath = patheJoin(version, normalized);
-
-  return { normalized, remotePath, localPath };
-}
-
 const debug = createDebugger("ucdjs:ucd-store:mirror");
 
 export interface MirrorOptions extends SharedOperationOptions {
@@ -272,7 +243,12 @@ async function _mirror(
       const versionResult = versionedReports.get(version)!;
 
       for (const filePath of filePaths) {
-        const { normalized, localPath, remotePath } = normalizeApiPath(version, filePath);
+        // Store subdomain returns clean paths - no transformation needed
+        // filePath is already normalized by normalizeTreeForFiltering (e.g., "Blocks.txt" or "auxiliary/file.txt")
+        const normalized = filePath.replace(/^\/+/, "");
+        const localPath = patheJoin(version, normalized);
+        // For remote path, we need to add /ucd/ prefix for versions that have it
+        const remotePath = patheJoin(version, hasUCDFolderPath(version) ? "ucd" : "", normalized);
 
         directoriesToCreate.add(patheDirname(localPath));
 

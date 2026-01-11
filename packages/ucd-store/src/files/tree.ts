@@ -1,4 +1,5 @@
 import type { OperationResult } from "@ucdjs-internal/shared";
+import type { FSEntry } from "@ucdjs/fs-bridge";
 import type { UnicodeFileTreeNode } from "@ucdjs/schemas";
 import type { StoreError } from "../errors";
 import type { InternalUCDStoreContext, SharedOperationOptions } from "../types";
@@ -22,6 +23,29 @@ export interface GetFileTreeOptions extends SharedOperationOptions {
 }
 
 /**
+ * Converts FSEntry array to UnicodeFileTreeNode array by adding lastModified field.
+ */
+function fsEntryToFileTreeNode(entries: FSEntry[]): UnicodeFileTreeNode[] {
+  return entries.map((entry): UnicodeFileTreeNode => {
+    if (entry.type === "directory") {
+      return {
+        type: "directory",
+        name: entry.name,
+        path: entry.path,
+        lastModified: null,
+        children: fsEntryToFileTreeNode(entry.children),
+      };
+    }
+    return {
+      type: "file",
+      name: entry.name,
+      path: entry.path,
+      lastModified: null,
+    };
+  });
+}
+
+/**
  * Retrieves the file tree for a specific Unicode version from the local store.
  * By default, only returns the tree structure for files actually present in the store.
  * Applies global filters and optional method-specific filters to the tree.
@@ -42,7 +66,8 @@ async function _getFileTree(
       throw new UCDStoreVersionNotFoundError(version);
     }
 
-    // Use relative path
+    // Use simple version path - both node and HTTP bridges use the same structure
+    // The store subdomain handles /ucd/ internally
     const localPath = version;
 
     // Try listing from local store first
@@ -51,8 +76,9 @@ async function _getFileTree(
     if (dirExists) {
       try {
         const entries = await this.fs.listdir(localPath, true);
-        // Normalize tree paths for filtering (strip version/ucd prefix if present)
-        const normalizedEntries = normalizeTreeForFiltering(version, entries);
+        // Convert FSEntry to UnicodeFileTreeNode and normalize for filtering
+        const convertedEntries = fsEntryToFileTreeNode(entries);
+        const normalizedEntries = normalizeTreeForFiltering(version, convertedEntries);
 
         const filteredTree = filterTreeStructure(this.filter, normalizedEntries, {
           exclude: options?.filters?.exclude,

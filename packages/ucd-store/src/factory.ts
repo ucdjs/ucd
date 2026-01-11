@@ -1,5 +1,6 @@
 import type z from "zod";
 import type { UCDStore, UCDStoreOptions } from "./types";
+import { UCDJS_STORE_BASE_URL } from "@ucdjs/env";
 import { patheResolve } from "@ucdjs/path-utils";
 import { createUCDStore } from "./store";
 
@@ -40,8 +41,11 @@ export async function createNodeUCDStore<BridgeOptionsSchema extends z.ZodType>(
  *
  * This function simplifies the creation of an HTTP UCD store by:
  * - Automatically loading the HTTP file system bridge with read-only capabilities
- * - Configuring for remote data access via HTTP/HTTPS
+ * - Configuring for remote data access via the store subdomain (ucd-store.ucdjs.dev)
  * - Initializing the store with the specified options
+ *
+ * The HTTP store uses the dedicated store subdomain which provides direct access
+ * to version files without requiring the /ucd/ path prefix.
  *
  * @param {Omit<UCDStoreOptions, "fs">} options - Configuration options for the HTTP UCD store
  * @returns {Promise<UCDStore>} A fully initialized UCDStore instance with HTTP filesystem capabilities
@@ -56,8 +60,9 @@ export async function createHTTPUCDStore<BridgeOptionsSchema extends z.ZodType>(
   return createUCDStore({
     ...options,
     fs: httpFsBridge,
-    fsOptions: (ctx) => ({
-      baseUrl: new URL(ctx.endpointConfig.endpoints.files, ctx.baseUrl).toString(),
-    }),
+    fsOptions: {
+      // Use the store subdomain directly - it handles /ucd/ internally
+      baseUrl: UCDJS_STORE_BASE_URL,
+    },
   });
 }
