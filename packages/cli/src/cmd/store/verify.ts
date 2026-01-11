@@ -6,9 +6,8 @@ import { createUCDClient } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { getLockfilePath, readLockfile } from "@ucdjs/lockfile";
 import { UCDStoreGenericError } from "@ucdjs/ucd-store";
-import { green, red, yellow } from "farver/fast";
 import { printHelp } from "../../cli-utils";
-import { output } from "../../output";
+import { green, output, red, yellow } from "../../output";
 import { assertRemoteOrStoreDir, createStoreFromFlags, SHARED_FLAGS } from "./_shared";
 
 const debug = createDebugger("ucdjs:cli:store:verify");
@@ -147,8 +146,8 @@ export async function runVerifyStore({ flags }: CLIStoreVerifyCmdOptions) {
     }
 
     if (isValid) {
-      output.info(green("\n✓ Store verification passed\n"));
-      output.info(`All ${lockfileVersions.length} version(s) in lockfile are available in API.`);
+      output.log(green("\n✓ Store verification passed\n"));
+      output.log(`All ${lockfileVersions.length} version(s) in lockfile are available in API.`);
     } else {
       output.error(red("\n❌ Store verification failed\n"));
       output.error(`Found ${missingVersions.length} version(s) in lockfile that are not available in API:`);
@@ -158,11 +157,11 @@ export async function runVerifyStore({ flags }: CLIStoreVerifyCmdOptions) {
     }
 
     if (extraVersions.length > 0) {
-      output.info(yellow(`\n⚠ Note: ${extraVersions.length} version(s) available in API but not in lockfile:`));
+      output.log(yellow(`\n⚠ Note: ${extraVersions.length} version(s) available in API but not in lockfile:`));
       for (const version of extraVersions) {
-        output.info(`  + ${version}`);
+        output.log(`  + ${version}`);
       }
-      output.info("Run 'ucd store sync' to update the lockfile.");
+      output.log("Run 'ucd store sync' to update the lockfile.");
     }
   } catch (err) {
     if (err instanceof UCDStoreGenericError) {

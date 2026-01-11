@@ -7,6 +7,11 @@ import { badGateway, badRequest, unauthorized } from "../../lib/errors";
 export const TASKS_ROUTER = new Hono<HonoEnv>().basePath("/_tasks");
 
 TASKS_ROUTER.use("/*", async (c, next) => {
+  // Skip auth for local development - safe since it's only localhost:8787
+  if (c.env.ENVIRONMENT === "local") {
+    return next();
+  }
+
   const apiKey = c.req.header("X-UCDJS-Task-Key");
   const expectedKey = await c.env.UCDJS_TASK_API_KEY.get();
 
@@ -22,12 +27,6 @@ TASKS_ROUTER.use("/*", async (c, next) => {
   await next();
 });
 
-interface UCDJSMeta {
-  version: string;
-  generatedAt: string;
-  fileCount: number;
-}
-
 TASKS_ROUTER.post("/upload-manifest", async (c) => {
   const startTime = Date.now();
   const bucket = c.env.UCD_BUCKET;
@@ -35,6 +34,16 @@ TASKS_ROUTER.post("/upload-manifest", async (c) => {
   if (!bucket) {
     console.error("[tasks]: UCD_BUCKET binding not configured");
     return badGateway(c);
+  }
+
+  // Get version from query parameter
+  const version = c.req.query("version");
+  if (!version) {
+    return badRequest(c, { message: "Missing 'version' query parameter" });
+  }
+
+  if (!/^\d+\.\d+\.\d+$/.test(version)) {
+    return badRequest(c, { message: `Invalid version format: ${version}. Expected format: X.Y.Z (e.g., 16.0.0)` });
   }
 
   const contentType = c.req.header("Content-Type");
@@ -47,29 +56,7 @@ TASKS_ROUTER.post("/upload-manifest", async (c) => {
     const files = parseTar(tarData);
 
     // eslint-disable-next-line no-console
-    console.log(`[tasks]: received tar with ${files.length} files`);
-
-    // Find and parse the meta file to get the version
-    const metaFile = files.find((f) => f.name.replace(/^\.\//, "") === ".ucdjs-meta.json");
-    if (!metaFile || !metaFile.data) {
-      return badRequest(c, { message: "Missing .ucdjs-meta.json in tar archive" });
-    }
-
-    let meta: UCDJSMeta;
-    try {
-      const metaText = new TextDecoder().decode(metaFile.data);
-      meta = JSON.parse(metaText) as UCDJSMeta;
-    } catch {
-      return badRequest(c, { message: "Invalid .ucdjs-meta.json format" });
-    }
-
-    if (!meta.version) {
-      return badRequest(c, { message: "Missing version in .ucdjs-meta.json" });
-    }
-
-    const version = meta.version;
-    // eslint-disable-next-line no-console
-    console.log(`[tasks]: processing manifest for version ${version}`);
+    console.log(`[tasks]: received tar with ${files.length} files for version ${version}`);
 
     let uploadedFiles = 0;
     const uploadedFileNames: string[] = [];

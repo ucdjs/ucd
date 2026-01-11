@@ -8,9 +8,9 @@ describe("createManifestResource", () => {
 
   const mockManifest = {
     expectedFiles: [
-      "16.0.0/ucd/UnicodeData.txt",
-      "16.0.0/ucd/PropList.txt",
-      "16.0.0/ucd/emoji/emoji-data.txt",
+      { name: "UnicodeData.txt", path: "/16.0.0/ucd/UnicodeData.txt", storePath: "/16.0.0/UnicodeData.txt" },
+      { name: "PropList.txt", path: "/16.0.0/ucd/PropList.txt", storePath: "/16.0.0/PropList.txt" },
+      { name: "emoji-data.txt", path: "/16.0.0/ucd/emoji/emoji-data.txt", storePath: "/16.0.0/emoji/emoji-data.txt" },
     ],
   };
 
@@ -43,6 +43,12 @@ describe("createManifestResource", () => {
       expect(data).toHaveProperty("expectedFiles");
       expect(Array.isArray(data!.expectedFiles)).toBe(true);
       expect(data!.expectedFiles.length).toBeGreaterThan(0);
+
+      // Verify ExpectedFile structure
+      const firstFile = data!.expectedFiles[0];
+      expect(firstFile).toHaveProperty("name");
+      expect(firstFile).toHaveProperty("path");
+      expect(firstFile).toHaveProperty("storePath");
     });
 
     it.each([
@@ -51,7 +57,9 @@ describe("createManifestResource", () => {
       "17.0.0",
     ])("should handle manifest fetching for version %s", async (version) => {
       const versionManifest = {
-        expectedFiles: [`${version}/ucd/UnicodeData.txt`],
+        expectedFiles: [
+          { name: "UnicodeData.txt", path: `/${version}/ucd/UnicodeData.txt`, storePath: `/${version}/UnicodeData.txt` },
+        ],
       };
 
       mockFetch([
