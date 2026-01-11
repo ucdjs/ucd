@@ -12,8 +12,8 @@ export type {
 } from "./fs";
 export { LockfileSchema, SnapshotSchema } from "./lockfile";
 export type { Lockfile, LockfileInput, Snapshot } from "./lockfile";
-export { UCDStoreVersionManifestSchema } from "./manifest";
-export type { UCDStoreVersionManifest } from "./manifest";
+export { ExpectedFileSchema, UCDStoreVersionManifestSchema } from "./manifest";
+export type { ExpectedFile, UCDStoreVersionManifest } from "./manifest";
 export {
   UnicodeFileTreeNodeSchema,
   UnicodeFileTreeSchema,

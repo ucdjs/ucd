@@ -1,8 +1,39 @@
+import type { ExpectedFile } from "@ucdjs/schemas";
+import type { MockStoreNode } from "../types";
 import { flattenFilePaths } from "@ucdjs-internal/shared";
 import { hasUCDFolderPath } from "@unicode-utils/core";
 import { HttpResponse } from "../../msw";
 import { addPathsToFileNodes } from "../add-paths";
 import { defineMockRouteHandler } from "../define";
+
+/**
+ * Builds an array of ExpectedFile objects from mock store nodes.
+ * Each file includes name, path (for API), and storePath (for store subdomain).
+ *
+ * @param nodes - The mock store nodes representing files
+ * @param version - The Unicode version
+ * @returns Array of ExpectedFile objects
+ */
+function buildExpectedFiles(nodes: MockStoreNode[], version: string): ExpectedFile[] {
+  // Build paths with /ucd/ for API files endpoint (for versions >= 4.1.0)
+  const apiBasePath = hasUCDFolderPath(version) ? "ucd" : "";
+  const apiPathNodes = addPathsToFileNodes(nodes, version, apiBasePath);
+  const apiPaths = flattenFilePaths(apiPathNodes);
+
+  // Build paths without /ucd/ for store subdomain
+  const storePathNodes = addPathsToFileNodes(nodes, version, "");
+  const storePaths = flattenFilePaths(storePathNodes);
+
+  // Combine into structured objects
+  return apiPaths.map((apiPath, index) => {
+    const name = apiPath.split("/").pop() || "";
+    return {
+      name,
+      path: apiPath,
+      storePath: storePaths[index]!,
+    };
+  });
+}
 
 export const wellKnownConfig = defineMockRouteHandler({
   endpoint: "/.well-known/ucd-config.json",
@@ -79,14 +110,14 @@ export const wellKnownStoreVersionManifest = defineMockRouteHandler({
           // just return the files object as is.
           if (Object.keys(files).length === 1 && Object.keys(files)[0] === "*") {
             return HttpResponse.json({
-              expectedFiles: flattenFilePaths(addPathsToFileNodes(files["*"]!, version)),
+              expectedFiles: buildExpectedFiles(files["*"]!, version),
             });
           }
 
           // If there is multiple keys in files we will try and match the version
           if (version && files[version]) {
             return HttpResponse.json({
-              expectedFiles: flattenFilePaths(addPathsToFileNodes(files[version]!, version)),
+              expectedFiles: buildExpectedFiles(files[version]!, version),
             });
           }
 

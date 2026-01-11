@@ -1,4 +1,5 @@
 import type { OperationResult } from "@ucdjs-internal/shared";
+import type { ExpectedFile } from "@ucdjs/schemas";
 import type { StoreError } from "../errors";
 import type {
   BaseOperationReport,
@@ -73,16 +74,6 @@ export interface AnalysisReport extends BaseOperationReport {
 }
 
 /**
- * Helper to create a ReportFile from a file path.
- */
-function createReportFile(version: string, filePath: string): ReportFile {
-  return {
-    name: filePath,
-    filePath: `/${version}/${filePath}`,
-  };
-}
-
-/**
  * Analyzes Unicode data in the store.
  *
  * @this {InternalUCDStoreContext} - Internal store context with client, filters, FS bridge, and configuration
@@ -109,11 +100,11 @@ async function _analyze(
       const versionStartTime = Date.now();
       const errors: ReportError[] = [];
 
-      let expectedFilePaths: string[] = [];
+      let expectedFiles: ExpectedFile[] = [];
       try {
-        expectedFilePaths = await this.getExpectedFilePaths(version);
+        expectedFiles = await this.getExpectedFilePaths(version);
 
-        debug?.("Found expected files while analyzing: %O", expectedFilePaths);
+        debug?.("Found expected files while analyzing: %O", expectedFiles.map(f => f.storePath));
       } catch (err) {
         errors.push({
           name: "expected-files",
@@ -142,8 +133,12 @@ async function _analyze(
       actualFilePaths = (actualFilePaths || []).filter((filePath) => !filePath.endsWith("snapshot.json"));
       debug?.("Actual files while analyzing: %O", actualFilePaths);
 
-      const expectedFilePathsSet = new Set(expectedFilePaths);
+      // Use storePath for comparison since that matches the listFiles output format
+      const expectedStorePathsSet = new Set(expectedFiles.map(f => f.storePath));
       const actualFilePathsSet = new Set(actualFilePaths);
+
+      // Create a lookup map from storePath to ExpectedFile for report generation
+      const expectedFilesByStorePath = new Map(expectedFiles.map(f => [f.storePath, f]));
 
       const presentFiles: ReportFile[] = [];
       const orphanedFiles: ReportFile[] = [];
@@ -157,16 +152,29 @@ async function _analyze(
         fileTypes[ext] ??= 0;
         fileTypes[ext] += 1;
 
-        if (expectedFilePathsSet.has(actualFile)) {
-          presentFiles.push(createReportFile(version, actualFile));
+        if (expectedStorePathsSet.has(actualFile)) {
+          // File is expected and present
+          const expectedFile = expectedFilesByStorePath.get(actualFile);
+          presentFiles.push({
+            name: expectedFile?.name || actualFile.split("/").pop() || actualFile,
+            filePath: actualFile,
+          });
         } else {
-          orphanedFiles.push(createReportFile(version, actualFile));
+          // File is in store but not expected (orphaned)
+          orphanedFiles.push({
+            name: actualFile.split("/").pop() || actualFile,
+            filePath: actualFile,
+          });
         }
       }
 
-      for (const expectedFile of expectedFilePathsSet) {
-        if (!actualFilePathsSet.has(expectedFile)) {
-          missingFiles.push(createReportFile(version, expectedFile));
+      for (const expectedFile of expectedFiles) {
+        if (!actualFilePathsSet.has(expectedFile.storePath)) {
+          // File is expected but missing from store
+          missingFiles.push({
+            name: expectedFile.name,
+            filePath: expectedFile.storePath,
+          });
         }
       }
 
@@ -180,7 +188,7 @@ async function _analyze(
       const isComplete = orphanedFiles.length === 0 && missingFiles.length === 0 && errors.length === 0;
 
       // Build counts using the unified FileCounts structure
-      const totalFiles = expectedFilePaths.length;
+      const totalFiles = expectedFiles.length;
       const counts: FileCounts = {
         total: totalFiles,
         success: presentFiles.length,

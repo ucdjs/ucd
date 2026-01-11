@@ -1,7 +1,7 @@
 import type { OperationResult, PathFilter, PathFilterOptions } from "@ucdjs-internal/shared";
 import type { UCDClient } from "@ucdjs/client";
 import type { FileSystemBridge, FileSystemBridgeArgs, FileSystemBridgeFactory } from "@ucdjs/fs-bridge";
-import type { UCDWellKnownConfig, UnicodeFileTreeNode } from "@ucdjs/schemas";
+import type { ExpectedFile, UCDWellKnownConfig, UnicodeFileTreeNode } from "@ucdjs/schemas";
 import type z from "zod";
 import type { StoreError } from "./errors";
 import type { GetFileOptions } from "./files/get";
@@ -206,12 +206,12 @@ export interface InternalUCDStoreContext {
   };
 
   /**
-   * Retrieves the expected file paths for a specific Unicode version from the API.
+   * Retrieves the expected files for a specific Unicode version from the API.
    *
-   * @param version - The Unicode version to get expected file paths for
-   * @returns A promise that resolves to an array of file paths
+   * @param version - The Unicode version to get expected files for
+   * @returns A promise that resolves to an array of ExpectedFile objects
    */
-  getExpectedFilePaths: (version: string) => Promise<string[]>;
+  getExpectedFilePaths: (version: string) => Promise<ExpectedFile[]>;
 }
 
 export type UCDStoreContext = Readonly<Pick<InternalUCDStoreContext, "fs">> & {

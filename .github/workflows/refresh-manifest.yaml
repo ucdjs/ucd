@@ -116,14 +116,14 @@ jobs:
             tar_name="${dir_name}.tar"
             echo "Creating and uploading $tar_name..."
 
-            # Create tar with the directory contents
-            tar -cf "$tar_name" -C "$version_dir" .
+            # Create tar with only manifest.json
+            tar -cf "$tar_name" -C "$version_dir" manifest.json
 
             response=$(curl -s -w "\n%{http_code}" -X POST \
               -H "X-UCDJS-Task-Key: ${{ secrets.TASK_API_KEY }}" \
               -H "Content-Type: application/x-tar" \
               --data-binary @"$tar_name" \
-              "$BASE_URL/_tasks/upload-manifest")
+              "$BASE_URL/_tasks/upload-manifest?version=$version")
 
             status=$(echo "$response" | tail -1)
             if [ "$status" != "200" ]; then
@@ -174,18 +174,18 @@ jobs:
             echo ""
             echo "| Status | Count |"
             echo "|--------|-------|"
-            echo "| ✅ Uploaded | $uploaded |"
-            echo "| ⏭️ Skipped (no changes) | $skipped |"
-            echo "| ❌ Failed | $failed |"
+            echo "| Uploaded | $uploaded |"
+            echo "| Skipped (no changes) | $skipped |"
+            echo "| Failed | $failed |"
             echo ""
 
             if [ $uploaded -gt 0 ]; then
               echo "### Uploaded Versions"
               echo ""
               if [ "$cache_purged" = "true" ]; then
-                echo "> 🔄 Cache for versioned manifests was purged"
+                echo "> Cache for versioned manifests was purged"
               else
-                echo "> ⚠️ Cache purge failed - changes may take up to 7 days to propagate"
+                echo "> Cache purge failed - changes may take up to 7 days to propagate"
               fi
               echo ""
               for v in $uploaded_versions; do
@@ -207,7 +207,7 @@ jobs:
             fi
 
             if [ $failed -gt 0 ]; then
-              echo "### ❌ Failed Versions"
+              echo "### Failed Versions"
               echo ""
               for v in $failed_versions; do
                 echo "- \`$v\`"

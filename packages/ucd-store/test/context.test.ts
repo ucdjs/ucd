@@ -353,15 +353,15 @@ describe("createPublicContext", async () => {
 
 describe("getExpectedFilePaths", () => {
   describe("successful retrieval", () => {
-    it("should return file paths from manifest endpoint", async () => {
+    it("should return expected files from manifest endpoint", async () => {
       mockStoreApi({
         versions: ["15.0.0"],
         responses: {
           "/.well-known/ucd-store/{version}.json": {
             expectedFiles: [
-              "ReadMe.txt",
-              "UnicodeData.txt",
-              "ucd/emoji-data.txt",
+              { name: "ReadMe.txt", path: "/15.0.0/ucd/ReadMe.txt", storePath: "/15.0.0/ReadMe.txt" },
+              { name: "UnicodeData.txt", path: "/15.0.0/ucd/UnicodeData.txt", storePath: "/15.0.0/UnicodeData.txt" },
+              { name: "emoji-data.txt", path: "/15.0.0/ucd/emoji/emoji-data.txt", storePath: "/15.0.0/emoji/emoji-data.txt" },
             ],
           },
         },
@@ -374,9 +374,9 @@ describe("getExpectedFilePaths", () => {
       const result = await context.getExpectedFilePaths("15.0.0");
 
       expect(result).toEqual([
-        "ReadMe.txt",
-        "UnicodeData.txt",
-        "ucd/emoji-data.txt",
+        { name: "ReadMe.txt", path: "/15.0.0/ucd/ReadMe.txt", storePath: "/15.0.0/ReadMe.txt" },
+        { name: "UnicodeData.txt", path: "/15.0.0/ucd/UnicodeData.txt", storePath: "/15.0.0/UnicodeData.txt" },
+        { name: "emoji-data.txt", path: "/15.0.0/ucd/emoji/emoji-data.txt", storePath: "/15.0.0/emoji/emoji-data.txt" },
       ]);
     });
 
