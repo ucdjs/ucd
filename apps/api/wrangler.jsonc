@@ -58,10 +58,16 @@
       "version_metadata": {
         "binding": "CF_VERSION_METADATA"
       },
-      "route": {
-        "custom_domain": true,
-        "pattern": "api.ucdjs.dev"
-      },
+      "routes": [
+        {
+          "custom_domain": true,
+          "pattern": "api.ucdjs.dev"
+        },
+        {
+          "custom_domain": true,
+          "pattern": "ucd-store.ucdjs.dev"
+        }
+      ],
       "r2_buckets": [
         {
           "binding": "UCD_BUCKET",
@@ -99,10 +105,16 @@
       "version_metadata": {
         "binding": "CF_VERSION_METADATA"
       },
-      "route": {
-        "custom_domain": true,
-        "pattern": "preview.api.ucdjs.dev"
-      },
+      "routes": [
+        {
+          "custom_domain": true,
+          "pattern": "preview.api.ucdjs.dev"
+        },
+        {
+          "custom_domain": true,
+          "pattern": "preview.ucd-store.ucdjs.dev"
+        }
+      ],
       "r2_buckets": [
         {
           "binding": "UCD_BUCKET",
