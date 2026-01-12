@@ -44,6 +44,7 @@
   },
   "dependencies": {
     "@ucdjs-internal/shared": "workspace:*",
+    "@ucdjs/client": "workspace:*",
     "@ucdjs/schemas": "workspace:*",
     "@unicode-utils/core": "catalog:prod",
     "apache-autoindex-parse": "catalog:prod",

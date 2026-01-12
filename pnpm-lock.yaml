@@ -1108,6 +1108,9 @@ importers:
       '@ucdjs-internal/shared':
         specifier: workspace:*
         version: link:../shared
+      '@ucdjs/client':
+        specifier: workspace:*
+        version: link:../client
       '@ucdjs/schemas':
         specifier: workspace:*
         version: link:../schemas
