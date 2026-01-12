@@ -1,18 +1,5 @@
+import type { UploadOptions, UploadResult } from "../types";
 import { logger } from "./logger";
-
-export interface UploadResult {
-  success: boolean;
-  uploaded: number;
-  skipped: number;
-  errors: Array<{ version: string; reason: string }>;
-  versions: Array<{ version: string; fileCount: number }>;
-}
-
-export interface UploadOptions {
-  baseUrl: string;
-  setupKey?: string;
-  dryRun?: boolean;
-}
 
 /**
  * Uploads manifests tar to the /setup endpoint.

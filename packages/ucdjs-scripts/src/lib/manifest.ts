@@ -1,9 +1,10 @@
 import type { SafeFetchResponse } from "@ucdjs-internal/shared";
 import type { ExpectedFile, UnicodeFileTree, UnicodeVersionList } from "@ucdjs/schemas";
+import type { GeneratedManifest, GenerateManifestsOptions } from "../types";
 import { DEFAULT_EXCLUDED_EXTENSIONS } from "@ucdjs-internal/shared";
 import { createTar } from "nanotar";
-import { getClient } from "./client";
 import { logger } from "./logger";
+import { getClient } from "./utils";
 
 const EXCLUDED_EXTENSIONS = new Set(
   (DEFAULT_EXCLUDED_EXTENSIONS as readonly string[]).map((ext) => ext.toLowerCase()),
@@ -17,23 +18,6 @@ function shouldExcludeFile(filePath: string): boolean {
     }
   }
   return false;
-}
-
-export interface UnicodeVersion {
-  version: string;
-  mappedUcdVersion?: string;
-}
-
-export interface GeneratedManifest {
-  version: string;
-  manifest: { expectedFiles: ExpectedFile[] };
-  fileCount: number;
-}
-
-export interface GenerateManifestsOptions {
-  versions?: string[];
-  apiBaseUrl?: string;
-  batchSize?: number;
 }
 
 function unwrap<T>(response: SafeFetchResponse<T>): T {
