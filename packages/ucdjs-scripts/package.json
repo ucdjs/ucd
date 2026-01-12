@@ -19,6 +19,9 @@
   "bugs": {
     "url": "https://github.com/ucdjs/ucd/issues"
   },
+  "imports": {
+    "#lib/*": "./src/lib/*.ts"
+  },
   "exports": {
     ".": "./dist/index.mjs",
     "./package.json": "./package.json"

@@ -1,19 +1,13 @@
+import type { SetupDevOptions } from "../types";
 import path from "node:path";
+import { createLogger } from "#lib/logger";
+import { createManifestsTar, generateManifests } from "#lib/manifest";
 import { unstable_startWorker } from "wrangler";
-import { createLogger } from "../lib/logger.js";
-import { generateManifests } from "../lib/manifest.js";
-import { createManifestsTar } from "../lib/tar.js";
 
 const logger = createLogger("setup-dev");
 
 // Default versions to seed in local development
 const DEV_VERSIONS = ["17.0.0", "16.0.0", "15.1.0", "15.0.0", "4.1.0", "4.0.0"];
-
-export interface SetupDevOptions {
-  versions?: string;
-  batchSize?: number;
-  logLevel?: string;
-}
 
 export async function setupDev(options: SetupDevOptions): Promise<void> {
   const versions = options.versions

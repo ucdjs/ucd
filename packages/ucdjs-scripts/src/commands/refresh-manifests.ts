@@ -1,21 +1,11 @@
-import type { UploadResult } from "../lib/upload";
-import { resolveConfig } from "../lib/config";
-import { createLogger } from "../lib/logger";
-import { generateManifests } from "../lib/manifest";
-import { createManifestsTar } from "../lib/tar";
-import { uploadManifests } from "../lib/upload";
+import type { UploadResult } from "#lib/upload";
+import type { RefreshManifestsOptions } from "../types";
+import { resolveConfig } from "#lib/config";
+import { createLogger } from "#lib/logger";
+import { createManifestsTar, generateManifests } from "#lib/manifest";
+import { uploadManifests } from "#lib/upload";
 
 const logger = createLogger("refresh-manifests");
-
-export interface RefreshManifestsOptions {
-  env?: string;
-  baseUrl?: string;
-  setupKey?: string;
-  versions?: string;
-  dryRun?: boolean;
-  batchSize?: number;
-  logLevel?: string;
-}
 
 export async function refreshManifests(options: RefreshManifestsOptions): Promise<void> {
   const versions = options.versions
