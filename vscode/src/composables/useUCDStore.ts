@@ -1,5 +1,5 @@
-import type { Ref } from "reactive-vscode";
 import type { UCDStore } from "@ucdjs/ucd-store";
+import type { Ref } from "reactive-vscode";
 import { createHTTPUCDStore, createUCDStore } from "@ucdjs/ucd-store";
 import { createSingletonComposable, ref, watch } from "reactive-vscode";
 import { config } from "../config";
