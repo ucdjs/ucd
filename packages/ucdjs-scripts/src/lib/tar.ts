@@ -1,5 +1,5 @@
-import { createTar } from "nanotar";
 import type { GeneratedManifest } from "./manifest";
+import { createTar } from "nanotar";
 
 /**
  * Creates a tar archive from generated manifests.

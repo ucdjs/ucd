@@ -1,4 +1,7 @@
-type LogLevel = "debug" | "info" | "warn" | "error";
+/* eslint-disable no-console */
+import process from "node:process";
+
+export type LogLevel = "debug" | "info" | "warn" | "error";
 
 const LOG_LEVELS: Record<LogLevel, number> = {
   debug: 0,
@@ -7,49 +10,42 @@ const LOG_LEVELS: Record<LogLevel, number> = {
   error: 3,
 };
 
-let currentLevel: LogLevel = "info";
+function normalizeLevel(level?: string): LogLevel {
+  const normalized = (level ?? "info").toLowerCase() as LogLevel;
+  if (normalized in LOG_LEVELS) return normalized;
+  throw new Error("Invalid log level. Use debug|info|warn|error.");
+}
 
-export function setLogLevel(level: LogLevel): void {
-  currentLevel = level;
+let currentLevel: LogLevel = normalizeLevel(process.env.UCDJS_LOG_LEVEL ?? process.env.LOG_LEVEL ?? "info");
+
+export function setLogLevel(level: LogLevel | string): void {
+  currentLevel = normalizeLevel(level);
 }
 
 function shouldLog(level: LogLevel): boolean {
   return LOG_LEVELS[level] >= LOG_LEVELS[currentLevel];
 }
 
-function formatPrefix(level: LogLevel): string {
-  const timestamp = new Date().toISOString().slice(11, 19);
-  return `[${timestamp}] [${level.toUpperCase()}]`;
+function write(level: LogLevel, tag: string | undefined, message: string, args: unknown[]): void {
+  if (!shouldLog(level)) return;
+  const prefix = tag ? `[${tag}] ` : "";
+  const writer = console[level] ?? console.log;
+  writer(`${prefix}${message}`, ...args);
 }
 
-export function debug(message: string, ...args: unknown[]): void {
-  if (shouldLog("debug")) {
-    console.debug(formatPrefix("debug"), message, ...args);
-  }
+export function createLogger(tag?: string) {
+  return {
+    debug: (message: string, ...args: unknown[]) => write("debug", tag, message, args),
+    info: (message: string, ...args: unknown[]) => write("info", tag, message, args),
+    warn: (message: string, ...args: unknown[]) => write("warn", tag, message, args),
+    error: (message: string, ...args: unknown[]) => write("error", tag, message, args),
+    setLevel: (level: LogLevel | string) => setLogLevel(level),
+  };
 }
 
-export function info(message: string, ...args: unknown[]): void {
-  if (shouldLog("info")) {
-    console.info(formatPrefix("info"), message, ...args);
-  }
+export function applyLogLevel(loggerInstance: { setLevel: (level: LogLevel | string) => void }, level?: string) {
+  if (!level) return;
+  loggerInstance.setLevel(level);
 }
 
-export function warn(message: string, ...args: unknown[]): void {
-  if (shouldLog("warn")) {
-    console.warn(formatPrefix("warn"), message, ...args);
-  }
-}
-
-export function error(message: string, ...args: unknown[]): void {
-  if (shouldLog("error")) {
-    console.error(formatPrefix("error"), message, ...args);
-  }
-}
-
-export const logger = {
-  debug,
-  info,
-  warn,
-  error,
-  setLevel: setLogLevel,
-};
+export const logger = createLogger("ucdjs-scripts");
