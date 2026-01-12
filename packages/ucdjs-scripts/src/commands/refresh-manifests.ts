@@ -1,16 +1,14 @@
-import type { UploadResult } from "#lib/upload";
-import type { RefreshManifestsOptions } from "../types";
+import type { RefreshManifestsOptions, UploadResult } from "../types";
 import { resolveConfig } from "#lib/config";
 import { createLogger } from "#lib/logger";
 import { createManifestsTar, generateManifests } from "#lib/manifest";
 import { uploadManifests } from "#lib/upload";
+import { parseVersions } from "#lib/utils";
 
 const logger = createLogger("refresh-manifests");
 
 export async function refreshManifests(options: RefreshManifestsOptions): Promise<void> {
-  const versions = options.versions
-    ? options.versions.split(",").map((v) => v.trim())
-    : undefined;
+  const versions = parseVersions(options.versions);
   const batchSize = options.batchSize ?? 5;
   const dryRun = options.dryRun ?? false;
 

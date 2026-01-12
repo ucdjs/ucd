@@ -1,7 +1,8 @@
-import type { SetupDevOptions } from "../types";
+import type { SetupDevOptions, UploadResult } from "../types";
 import path from "node:path";
 import { createLogger } from "#lib/logger";
 import { createManifestsTar, generateManifests } from "#lib/manifest";
+import { parseVersions } from "#lib/utils";
 import { unstable_startWorker } from "wrangler";
 
 const logger = createLogger("setup-dev");
@@ -10,9 +11,7 @@ const logger = createLogger("setup-dev");
 const DEV_VERSIONS = ["17.0.0", "16.0.0", "15.1.0", "15.0.0", "4.1.0", "4.0.0"];
 
 export async function setupDev(options: SetupDevOptions): Promise<void> {
-  const versions = options.versions
-    ? options.versions.split(",").map((v) => v.trim())
-    : DEV_VERSIONS;
+  const versions = parseVersions(options.versions) ?? DEV_VERSIONS;
   const batchSize = options.batchSize ?? 5;
 
   logger.info("Starting local development setup...");
@@ -45,24 +44,7 @@ export async function setupDev(options: SetupDevOptions): Promise<void> {
 
     // Upload to local worker
     logger.info("Uploading manifests to local R2...");
-    const response = await worker.fetch("https://api.ucdjs.dev/setup", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-tar",
-      },
-      body: tar,
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Upload failed: ${response.status} ${response.statusText}\n${errorText}`);
-    }
-
-    const result = (await response.json()) as {
-      success: boolean;
-      uploaded: number;
-      versions: { version: string; fileCount: number }[];
-    };
+    const result = await uploadToWorker(worker, tar);
 
     logger.info("Upload complete!");
     logger.info(`Uploaded ${result.uploaded} manifests:`);
@@ -73,4 +55,28 @@ export async function setupDev(options: SetupDevOptions): Promise<void> {
     await worker.dispose();
     logger.info("Setup worker disposed");
   }
+}
+
+/**
+ * Upload manifests to the local wrangler worker.
+ * Uses the worker's fetch directly since we can't use a URL with the unstable worker.
+ */
+async function uploadToWorker(
+  worker: Awaited<ReturnType<typeof unstable_startWorker>>,
+  tar: Uint8Array,
+): Promise<UploadResult> {
+  const response = await worker.fetch("https://api.ucdjs.dev/setup", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-tar",
+    },
+    body: tar,
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Upload failed: ${response.status} ${response.statusText}\n${errorText}`);
+  }
+
+  return (await response.json()) as UploadResult;
 }
