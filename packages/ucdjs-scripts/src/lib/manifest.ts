@@ -1,6 +1,7 @@
 import type { SafeFetchResponse } from "@ucdjs-internal/shared";
 import type { ExpectedFile, UnicodeFileTree, UnicodeVersionList } from "@ucdjs/schemas";
 import { DEFAULT_EXCLUDED_EXTENSIONS } from "@ucdjs-internal/shared";
+import { createTar } from "nanotar";
 import { getClient } from "./client";
 import { logger } from "./logger";
 
@@ -130,4 +131,13 @@ export async function generateManifests(
   }
 
   return results;
+}
+
+export function createManifestsTar(manifests: GeneratedManifest[]): Uint8Array {
+  const tarFiles = manifests.map((m) => ({
+    name: `${m.version}/manifest.json`,
+    data: new TextEncoder().encode(JSON.stringify(m.manifest, null, 2)),
+  }));
+
+  return createTar(tarFiles);
 }

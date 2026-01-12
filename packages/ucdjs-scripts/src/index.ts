@@ -1,6 +1,7 @@
 #!/usr/bin/env node
+import type { GlobalOptions, RefreshManifestsOptions, SetupDevOptions } from "./types";
+import { applyLogLevel, logger } from "#lib/logger";
 import cac from "cac";
-import { applyLogLevel, logger } from "./lib/logger";
 
 const cli = cac("ucdjs-scripts");
 
@@ -8,11 +9,11 @@ cli
   .command("setup-dev", "Seed local API environment with manifests")
   .option("--versions <versions>", "Comma-separated list of versions to seed (default: predefined dev list)")
   .option("--batch-size <size>", "Number of versions to fetch in parallel", { default: 5 })
-  .action(async (options) => {
-    applyLogLevel(logger, options.logLevel);
+  .action(async (opts: GlobalOptions & SetupDevOptions) => {
+    applyLogLevel(logger, opts.logLevel);
 
     const { setupDev } = await import("./commands/setup-dev");
-    await setupDev(options);
+    await setupDev(opts);
   });
 
 cli
@@ -23,11 +24,11 @@ cli
   .option("--versions <versions>", "Comma-separated list of versions (default: all from API)")
   .option("--dry-run", "Validate manifests without uploading")
   .option("--batch-size <size>", "Number of versions to fetch in parallel", { default: 5 })
-  .action(async (options) => {
-    applyLogLevel(logger, options.logLevel);
+  .action(async (opts: GlobalOptions & RefreshManifestsOptions) => {
+    applyLogLevel(logger, opts.logLevel);
 
     const { refreshManifests } = await import("./commands/refresh-manifests");
-    await refreshManifests(options);
+    await refreshManifests(opts);
   });
 
 cli.help();
