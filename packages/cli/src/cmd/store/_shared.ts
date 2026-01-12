@@ -1,9 +1,17 @@
 import type { UCDStore, UCDStoreOptions } from "@ucdjs/ucd-store";
 import type { Readable, Writable } from "node:stream";
 import { isCancel, multiselect } from "@clack/prompts";
-import { createHTTPUCDStore, createNodeUCDStore } from "@ucdjs/ucd-store";
+import { createUCDClient } from "@ucdjs/client";
+import { UCDJS_API_BASE_URL } from "@ucdjs/env";
+import { createHTTPUCDStore, createNodeUCDStore, UCDStoreBaseError, validateVersions } from "@ucdjs/ucd-store";
 import { UNICODE_VERSION_METADATA } from "@unicode-utils/core";
-import { RemoteNotSupportedError, StoreConfigurationError, StoreDirIsRequiredError } from "../../errors";
+import {
+  CLIError,
+  CLIStoreError,
+  RemoteNotSupportedError,
+  StoreConfigurationError,
+  StoreDirIsRequiredError,
+} from "../../errors";
 
 export interface CLIStoreCmdSharedFlags {
   storeDir?: string;
@@ -66,11 +74,57 @@ export function assertRemoteOrStoreDir(flags: CLIStoreCmdSharedFlags): asserts f
 }
 
 /**
+ * Validates that the provided versions exist in the API.
+ * Throws a CLIError if any versions are invalid.
+ *
+ * @param versions - Versions to validate
+ * @param baseUrl - Base URL for the UCD API
+ * @throws {CLIError} If any versions are invalid
+ */
+export async function validateVersionsOrThrow(versions: string[], baseUrl?: string): Promise<void> {
+  if (!versions || versions.length === 0) {
+    return;
+  }
+
+  const client = await createUCDClient(baseUrl || UCDJS_API_BASE_URL);
+  
+  try {
+    const result = await validateVersions({ client, versions });
+    
+    if (!result.valid) {
+      throw new CLIError(
+        `Invalid Unicode version(s): ${result.invalidVersions.join(", ")}`,
+        {
+          title: "Version Validation Error",
+          details: [
+            `Available versions: ${result.availableVersions.join(", ")}`,
+          ],
+        },
+      );
+    }
+  } catch (err) {
+    if (err instanceof CLIError) {
+      throw err;
+    }
+    
+    // Wrap other errors
+    if (err instanceof Error) {
+      throw new CLIStoreError(err);
+    }
+    
+    throw err;
+  }
+}
+
+/**
  * Creates a UCD store instance based on the provided CLI flags.
+ * Validates versions before creating the store.
  *
  * @param {CLIStoreCmdSharedFlags} flags - Configuration flags for creating the store
  * @returns {Promise<UCDStore>} A promise that resolves to a UCDStore instance
- * @throws {Error} When store directory is not specified for local stores
+ * @throws {CLIStoreError} When store creation fails
+ * @throws {StoreDirIsRequiredError} When store directory is not specified for local stores
+ * @throws {CLIError} When version validation fails
  */
 export async function createStoreFromFlags(flags: CLIStoreCmdSharedFlags): Promise<UCDStore> {
   const {
@@ -84,6 +138,11 @@ export async function createStoreFromFlags(flags: CLIStoreCmdSharedFlags): Promi
     versionStrategy,
   } = flags;
 
+  // Validate versions before creating the store
+  if (flags.versions && flags.versions.length > 0) {
+    await validateVersionsOrThrow(flags.versions, baseUrl);
+  }
+
   const options = {
     baseUrl,
     globalFilters: {
@@ -94,19 +153,27 @@ export async function createStoreFromFlags(flags: CLIStoreCmdSharedFlags): Promi
     requireExistingStore,
   } satisfies Partial<UCDStoreOptions>;
 
-  if (remote) {
-    return createHTTPUCDStore(options);
-  }
+  try {
+    if (remote) {
+      return await createHTTPUCDStore(options);
+    }
 
-  if (!storeDir) {
-    throw new StoreDirIsRequiredError();
-  }
+    if (!storeDir) {
+      throw new StoreDirIsRequiredError();
+    }
 
-  return createNodeUCDStore({
-    ...options,
-    basePath: storeDir,
-    versions: flags.versions || [],
-  });
+    return await createNodeUCDStore({
+      ...options,
+      basePath: storeDir,
+      versions: flags.versions || [],
+    });
+  } catch (err) {
+    if (err instanceof UCDStoreBaseError) {
+      throw new CLIStoreError(err);
+    }
+
+    throw err;
+  }
 }
 
 export interface RunVersionPromptOptions {

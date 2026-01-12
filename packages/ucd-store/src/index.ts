@@ -1,4 +1,6 @@
 export {
+  type StoreError,
+  UCDStoreBaseError,
   UCDStoreBridgeUnsupportedOperation,
   UCDStoreFileNotFoundError,
   UCDStoreGenericError,
@@ -25,6 +27,15 @@ export type {
   MirrorReport,
   MirrorVersionReport,
 } from "./tasks/mirror";
+
+export {
+  validateVersions,
+} from "./utils/validate";
+
+export type {
+  ValidateVersionsOptions,
+  ValidateVersionsResult,
+} from "./utils/validate";
 
 export type {
   SyncOptions,
