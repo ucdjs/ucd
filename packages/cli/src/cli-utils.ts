@@ -14,7 +14,7 @@ import {
 import yargs from "yargs-parser";
 import pkg from "../package.json" with { type: "json" };
 import { CLIError } from "./errors";
-import { setJsonMode } from "./output";
+import { output, setJsonMode } from "./output";
 
 type CLICommand
   = | "help"
@@ -275,11 +275,27 @@ export async function runCLI(args: string[]): Promise<void> {
     if (err instanceof CLIError) {
       err.toPrettyMessage();
 
-      process.exit(1);
+      // Don't call process.exit during tests
+      if (process.env.NODE_ENV !== "test" && !process.env.VITEST) {
+        process.exit(1);
+      }
+      return;
     }
 
-    console.error(err);
-    process.exit(1);
+    // Pretty print any other error instead of raw console.error(err)
+    let message = "Unknown error";
+    if (err instanceof Error) {
+      message = err.message;
+    } else if (typeof err === "string") {
+      message = err;
+    }
+
+    output.fail(message, { bugReport: true });
+
+    // Don't call process.exit during tests
+    if (process.env.NODE_ENV !== "test" && !process.env.VITEST) {
+      process.exit(1);
+    }
   } finally {
     // Reset JSON mode after command completes
     setJsonMode(false);

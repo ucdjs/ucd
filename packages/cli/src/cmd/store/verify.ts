@@ -5,7 +5,6 @@ import { createDebugger } from "@ucdjs-internal/shared";
 import { createUCDClient } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { getLockfilePath, readLockfile } from "@ucdjs/lockfile";
-import { UCDStoreGenericError } from "@ucdjs/ucd-store";
 import { printHelp } from "../../cli-utils";
 import { green, output, red, yellow } from "../../output";
 import { assertRemoteOrStoreDir, createStoreFromFlags, REMOTE_CAPABLE_FLAGS, SHARED_FLAGS } from "./_shared";
@@ -46,46 +45,58 @@ export async function runVerifyStore({ flags }: CLIStoreVerifyCmdOptions) {
     json,
   } = flags;
 
+  assertRemoteOrStoreDir(flags);
+
+  const store = await createStoreFromFlags({
+    baseUrl,
+    storeDir,
+    remote,
+    include: patterns,
+    exclude: excludePatterns,
+    requireExistingStore: true,
+  });
+
+  // Read lockfile to get versions - works with both local and remote stores
+  const lockfilePath = getLockfilePath();
+  const bridge = store.fs;
+  let lockfile;
   try {
-    assertRemoteOrStoreDir(flags);
+    lockfile = await readLockfile(bridge, lockfilePath);
+  } catch (err) {
+    debug?.("Error reading lockfile:", err);
+    if (remote) {
+      output.error(red(`\n❌ Error: Could not read lockfile from remote store.`));
+      output.error("Verify operation requires a lockfile. For remote stores, the lockfile must be accessible via the API.");
+    } else {
+      output.error(red(`\n❌ Error: Lockfile not found at ${lockfilePath}`));
+      output.error("Run 'ucd store init' to create a new store.");
+    }
+    return;
+  }
 
-    const store = await createStoreFromFlags({
-      baseUrl,
-      storeDir,
-      remote,
-      include: patterns,
-      exclude: excludePatterns,
-      requireExistingStore: true,
-    });
+  const lockfileVersions = Object.keys(lockfile.versions);
 
-    // Read lockfile to get versions - works with both local and remote stores
-    const lockfilePath = getLockfilePath();
-    const bridge = store.fs;
-    let lockfile;
-    try {
-      lockfile = await readLockfile(bridge, lockfilePath);
-    } catch (err) {
-      debug?.("Error reading lockfile:", err);
-      if (remote) {
-        output.error(red(`\n❌ Error: Could not read lockfile from remote store.`));
-        output.error("Verify operation requires a lockfile. For remote stores, the lockfile must be accessible via the API.");
-      } else {
-        output.error(red(`\n❌ Error: Lockfile not found at ${lockfilePath}`));
-        output.error("Run 'ucd store init' to create a new store.");
-      }
+  // Create client to fetch available versions
+  const client = await createUCDClient(baseUrl || UCDJS_API_BASE_URL);
+
+  // Get available versions from API
+  const configResult = await client.config.get();
+  let availableVersions: string[] = [];
+
+  if (configResult.error || !configResult.data) {
+    const apiResult = await client.versions.list();
+    if (apiResult.error) {
+      output.error(red(`\n❌ Error fetching versions: ${apiResult.error.message}`));
       return;
     }
-
-    const lockfileVersions = Object.keys(lockfile.versions);
-
-    // Create client to fetch available versions
-    const client = await createUCDClient(baseUrl || UCDJS_API_BASE_URL);
-
-    // Get available versions from API
-    const configResult = await client.config.get();
-    let availableVersions: string[] = [];
-
-    if (configResult.error || !configResult.data) {
+    if (!apiResult.data) {
+      output.error(red(`\n❌ Error: No versions data returned from API.`));
+      return;
+    }
+    availableVersions = apiResult.data.map(({ version }) => version);
+  } else {
+    availableVersions = configResult.data.versions ?? [];
+    if (availableVersions.length === 0) {
       const apiResult = await client.versions.list();
       if (apiResult.error) {
         output.error(red(`\n❌ Error fetching versions: ${apiResult.error.message}`));
@@ -96,77 +107,46 @@ export async function runVerifyStore({ flags }: CLIStoreVerifyCmdOptions) {
         return;
       }
       availableVersions = apiResult.data.map(({ version }) => version);
-    } else {
-      availableVersions = configResult.data.versions ?? [];
-      if (availableVersions.length === 0) {
-        const apiResult = await client.versions.list();
-        if (apiResult.error) {
-          output.error(red(`\n❌ Error fetching versions: ${apiResult.error.message}`));
-          return;
-        }
-        if (!apiResult.data) {
-          output.error(red(`\n❌ Error: No versions data returned from API.`));
-          return;
-        }
-        availableVersions = apiResult.data.map(({ version }) => version);
-      }
     }
+  }
 
-    const availableVersionsSet = new Set(availableVersions);
-    const lockfileVersionsSet = new Set(lockfileVersions);
+  const availableVersionsSet = new Set(availableVersions);
+  const lockfileVersionsSet = new Set(lockfileVersions);
 
-    const missingVersions = lockfileVersions.filter((v) => !availableVersionsSet.has(v));
-    const extraVersions = availableVersions.filter((v) => !lockfileVersionsSet.has(v));
-    const validVersions = lockfileVersions.filter((v) => availableVersionsSet.has(v));
+  const missingVersions = lockfileVersions.filter((v) => !availableVersionsSet.has(v));
+  const extraVersions = availableVersions.filter((v) => !lockfileVersionsSet.has(v));
+  const validVersions = lockfileVersions.filter((v) => availableVersionsSet.has(v));
 
-    const isValid = missingVersions.length === 0;
+  const isValid = missingVersions.length === 0;
 
-    if (json) {
-      output.json({
-        valid: isValid,
-        lockfileVersions,
-        availableVersions,
-        missingVersions,
-        extraVersions,
-        validVersions,
-      });
-      return;
+  if (json) {
+    output.json({
+      valid: isValid,
+      lockfileVersions,
+      availableVersions,
+      missingVersions,
+      extraVersions,
+      validVersions,
+    });
+    return;
+  }
+
+  if (isValid) {
+    output.log(green("\n✓ Store verification passed\n"));
+    output.log(`All ${lockfileVersions.length} version(s) in lockfile are available in API.`);
+  } else {
+    output.error(red("\n❌ Store verification failed\n"));
+    output.error(`Found ${missingVersions.length} version(s) in lockfile that are not available in API:`);
+    for (const version of missingVersions) {
+      output.error(`  - ${version}`);
     }
+  }
 
-    if (isValid) {
-      output.log(green("\n✓ Store verification passed\n"));
-      output.log(`All ${lockfileVersions.length} version(s) in lockfile are available in API.`);
-    } else {
-      output.error(red("\n❌ Store verification failed\n"));
-      output.error(`Found ${missingVersions.length} version(s) in lockfile that are not available in API:`);
-      for (const version of missingVersions) {
-        output.error(`  - ${version}`);
-      }
+  if (extraVersions.length > 0) {
+    output.log(yellow(`\n⚠ Note: ${extraVersions.length} version(s) available in API but not in lockfile:`));
+    for (const version of extraVersions) {
+      output.log(`  + ${version}`);
     }
-
-    if (extraVersions.length > 0) {
-      output.log(yellow(`\n⚠ Note: ${extraVersions.length} version(s) available in API but not in lockfile:`));
-      for (const version of extraVersions) {
-        output.log(`  + ${version}`);
-      }
-      output.log("Run 'ucd store sync' to update the lockfile.");
-    }
-  } catch (err) {
-    if (err instanceof UCDStoreGenericError) {
-      output.error(red(`\n❌ Error: ${err.message}`));
-      return;
-    }
-
-    let message = "Unknown error";
-    if (err instanceof Error) {
-      message = err.message;
-    } else if (typeof err === "string") {
-      message = err;
-    }
-
-    output.error(red(`\n❌ Error verifying store:`));
-    output.error(`  ${message}`);
-    output.error("Please check the store configuration and try again.");
-    output.error("If you believe this is a bug, please report it at https://github.com/ucdjs/ucd/issues");
+    output.log("Run 'ucd store sync' to update the lockfile.");
   }
 }
