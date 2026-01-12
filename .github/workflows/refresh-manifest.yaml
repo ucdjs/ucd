@@ -48,17 +48,19 @@ jobs:
       - name: refresh manifests
         env:
           UCDJS_SETUP_KEY: ${{ secrets.TASK_API_KEY }}
+          ENV: ${{ matrix.env }}
         run: |
-          pnpm ucdjs-scripts refresh-manifests --env ${{ matrix.env }}
+          pnpm ucdjs-scripts refresh-manifests --env "$ENV"
 
       - name: purge cache
         env:
           BASE_URL: ${{ matrix.env == 'prod' && 'https://api.ucdjs.dev' || 'https://preview.api.ucdjs.dev' }}
           CACHE_NAME: ucdjs:well-known:ucd-store
+          KEY: ${{ secrets.TASK_API_KEY }}
         run: |
           echo "Purging cache for versioned manifests..."
           purge_response=$(curl -s -w "\n%{http_code}" -G \
-            -H "X-UCDJS-Task-Key: ${{ secrets.TASK_API_KEY }}" \
+            -H "X-UCDJS-Task-Key: \"$KEY\"" \
             --data-urlencode "cacheName=$CACHE_NAME" \
             "$BASE_URL/_tasks/purge-cache")
 

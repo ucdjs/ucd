@@ -67,6 +67,7 @@ jobs:
           # github.event.before is empty on 'opened', so fall back to base.sha
           TURBO_SCM_BASE: ${{ github.event.before || github.event.pull_request.base.sha }}
           TURBO_SCM_HEAD: ${{ github.event.pull_request.head.sha }}
+          EVENT_ACTION: ${{ github.event.action }}
         run: |
           echo "Event action: ${{ github.event.action }}"
           echo "Comparing changes between $TURBO_SCM_BASE and $TURBO_SCM_HEAD"
