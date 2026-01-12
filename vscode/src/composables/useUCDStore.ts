@@ -1,3 +1,4 @@
+import type { Ref } from "reactive-vscode";
 import type { UCDStore } from "@ucdjs/ucd-store";
 import { createHTTPUCDStore, createUCDStore } from "@ucdjs/ucd-store";
 import { createSingletonComposable, ref, watch } from "reactive-vscode";
@@ -12,28 +13,19 @@ export const useUCDStore = createSingletonComposable(() => {
     const globalFilters = config["store-filters"];
     logger.info("Creating UCD store with config:", JSON.stringify({ localDataFilesStore, globalFilters }));
 
-    let _store: UCDStore | null = null;
     if (localDataFilesStore == null || localDataFilesStore.trim() === "") {
-      _store = await createHTTPUCDStore({
+      return createHTTPUCDStore({
         globalFilters,
       });
-    } else {
-      _store = createUCDStore({
-        globalFilters,
-        fs: vscodeFSBridge({
-          basePath: localDataFilesStore,
-        }),
+    }
+
+    return createUCDStore({
+      globalFilters,
+      fs: vscodeFSBridge,
+      fsOptions: {
         basePath: localDataFilesStore,
-      });
-    }
-
-    try {
-      await _store.init();
-    } catch (error) {
-      console.error("Failed to initialize UCD store:", error);
-    }
-
-    return _store;
+      },
+    });
   };
 
   watch(
@@ -53,5 +45,5 @@ export const useUCDStore = createSingletonComposable(() => {
     { immediate: true },
   );
 
-  return store;
+  return store as Ref<UCDStore | null>;
 });
