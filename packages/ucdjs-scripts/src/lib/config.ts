@@ -1,3 +1,5 @@
+import process from "node:process";
+
 const ENV_URLS: Record<string, string> = {
   prod: "https://api.ucdjs.dev",
   production: "https://api.ucdjs.dev",

@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import cac from "cac";
+import { applyLogLevel, logger } from "./lib/logger";
 
 const cli = cac("ucdjs-scripts");
 
@@ -8,6 +9,8 @@ cli
   .option("--versions <versions>", "Comma-separated list of versions to seed (default: predefined dev list)")
   .option("--batch-size <size>", "Number of versions to fetch in parallel", { default: 5 })
   .action(async (options) => {
+    applyLogLevel(logger, options.logLevel);
+
     const { setupDev } = await import("./commands/setup-dev");
     await setupDev(options);
   });
@@ -21,6 +24,8 @@ cli
   .option("--dry-run", "Validate manifests without uploading")
   .option("--batch-size <size>", "Number of versions to fetch in parallel", { default: 5 })
   .action(async (options) => {
+    applyLogLevel(logger, options.logLevel);
+
     const { refreshManifests } = await import("./commands/refresh-manifests");
     await refreshManifests(options);
   });

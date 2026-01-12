@@ -1,8 +1,11 @@
+import type { UploadResult } from "../lib/upload";
 import { resolveConfig } from "../lib/config";
-import { logger } from "../lib/logger";
+import { createLogger } from "../lib/logger";
 import { generateManifests } from "../lib/manifest";
 import { createManifestsTar } from "../lib/tar";
-import { uploadManifests, type UploadResult } from "../lib/upload";
+import { uploadManifests } from "../lib/upload";
+
+const logger = createLogger("refresh-manifests");
 
 export interface RefreshManifestsOptions {
   env?: string;
@@ -11,6 +14,7 @@ export interface RefreshManifestsOptions {
   versions?: string;
   dryRun?: boolean;
   batchSize?: number;
+  logLevel?: string;
 }
 
 export async function refreshManifests(options: RefreshManifestsOptions): Promise<void> {
@@ -58,25 +62,32 @@ export async function refreshManifests(options: RefreshManifestsOptions): Promis
 }
 
 function printResult(result: UploadResult, dryRun: boolean): void {
-  console.log("");
-  console.log("=".repeat(50));
-  console.log(dryRun ? "DRY RUN RESULT" : "UPLOAD RESULT");
-  console.log("=".repeat(50));
-  console.log(`Success: ${result.success}`);
-  console.log(`Uploaded: ${result.uploaded}`);
-  console.log(`Skipped: ${result.skipped}`);
+  const divider = "=".repeat(50);
+  const lines = [
+    "",
+    divider,
+    dryRun ? "DRY RUN RESULT" : "UPLOAD RESULT",
+    divider,
+    `Success: ${result.success}`,
+    `Uploaded: ${result.uploaded}`,
+    `Skipped: ${result.skipped}`,
+  ];
 
   if (result.versions.length > 0) {
-    console.log("\nVersions:");
+    lines.push("", "Versions:");
     for (const v of result.versions) {
-      console.log(`  - ${v.version}: ${v.fileCount} expected files`);
+      lines.push(`  - ${v.version}: ${v.fileCount} expected files`);
     }
   }
 
   if (result.errors.length > 0) {
-    console.log("\nErrors:");
+    lines.push("", "Errors:");
     for (const e of result.errors) {
-      console.log(`  - ${e.version}: ${e.reason}`);
+      lines.push(`  - ${e.version}: ${e.reason}`);
     }
+  }
+
+  for (const line of lines) {
+    logger.info(line);
   }
 }

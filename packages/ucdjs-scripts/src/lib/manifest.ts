@@ -1,10 +1,8 @@
-import type { ExpectedFile } from "@ucdjs/schemas";
+import type { SafeFetchResponse } from "@ucdjs-internal/shared";
+import type { ExpectedFile, UnicodeFileTree, UnicodeVersionList } from "@ucdjs/schemas";
 import { DEFAULT_EXCLUDED_EXTENSIONS } from "@ucdjs-internal/shared";
-import { hasUCDFolderPath } from "@unicode-utils/core";
-import { traverse } from "apache-autoindex-parse/traverse";
+import { getClient } from "./client";
 import { logger } from "./logger";
-
-export const USER_AGENT = "ucdjs-scripts (+https://github.com/ucdjs/ucd)";
 
 const EXCLUDED_EXTENSIONS = new Set(
   (DEFAULT_EXCLUDED_EXTENSIONS as readonly string[]).map((ext) => ext.toLowerCase()),
@@ -37,58 +35,33 @@ export interface GenerateManifestsOptions {
   batchSize?: number;
 }
 
-/**
- * Fetches all available Unicode versions from the API.
- */
-export async function fetchVersions(apiBaseUrl: string): Promise<UnicodeVersion[]> {
-  const response = await fetch(`${apiBaseUrl}/api/v1/versions`, {
-    headers: { "User-Agent": USER_AGENT },
-  });
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch versions from API: ${response.status}`);
+function unwrap<T>(response: SafeFetchResponse<T>): T {
+  if (response.error || !response.data) {
+    throw response.error ?? new Error("Missing data from API response");
   }
-
-  return response.json();
+  return response.data;
 }
 
-/**
- * Fetches expected files for a specific Unicode version from unicode.org.
- */
-export async function fetchExpectedFilesForVersion(version: string): Promise<ExpectedFile[]> {
-  const hasUcdFolder = hasUCDFolderPath(version);
-  const baseUrl = `https://unicode.org/Public/${version}${hasUcdFolder ? "/ucd" : ""}`;
+function mapFileTreeToExpected(tree: UnicodeFileTree): ExpectedFile[] {
+  const collect: ExpectedFile[] = [];
 
-  const files: ExpectedFile[] = [];
-
-  await traverse(baseUrl, {
-    extraHeaders: {
-      "User-Agent": USER_AGENT,
-    },
-    onFile: (file) => {
-      const relativePath = file.path.replace(`/${version}/`, "").replace(/^\//, "");
-      if (!relativePath || shouldExcludeFile(relativePath)) {
-        return;
+  const walk = (nodes: UnicodeFileTree) => {
+    for (const node of nodes) {
+      if (node.type === "file") {
+        if (shouldExcludeFile(node.path)) continue;
+        collect.push({ name: node.name, path: node.path, storePath: node.path });
+        continue;
       }
 
-      const name = relativePath.split("/").pop() ?? relativePath;
+      // directory
+      if (node.children && node.children.length > 0) {
+        walk(node.children);
+      }
+    }
+  };
 
-      files.push({
-        name,
-        path: `/${version}${hasUcdFolder ? "/ucd" : ""}/${relativePath}`,
-        storePath: `/${version}/${relativePath}`,
-      });
-    },
-  });
-
-  return files.sort((a, b) => a.path.localeCompare(b.path));
-}
-
-/**
- * Builds a manifest from expected files.
- */
-export function buildManifest(expectedFiles: ExpectedFile[]): { expectedFiles: ExpectedFile[] } {
-  return { expectedFiles };
+  walk(tree);
+  return collect.sort((a, b) => a.path.localeCompare(b.path));
 }
 
 /**
@@ -104,16 +77,18 @@ export async function generateManifests(
     batchSize = 5,
   } = options;
 
+  const client = await getClient(apiBaseUrl);
+
   let versionsToProcess: Array<{ version: string; mappedUcdVersion?: string }>;
 
   if (inputVersions && inputVersions.length > 0) {
     versionsToProcess = inputVersions.map((v) => ({ version: v }));
   } else {
     logger.info(`Fetching versions from ${apiBaseUrl}...`);
-    const allVersions = await fetchVersions(apiBaseUrl);
+    const allVersions = unwrap<UnicodeVersionList>(await client.versions.list());
     versionsToProcess = allVersions.map((v) => ({
       version: v.version,
-      mappedUcdVersion: v.mappedUcdVersion,
+      mappedUcdVersion: v.mappedUcdVersion ?? undefined,
     }));
     logger.info(`Found ${versionsToProcess.length} versions to process`);
   }
@@ -131,13 +106,14 @@ export async function generateManifests(
         let expectedFiles = fileCache.get(ucdFolder);
         if (!expectedFiles) {
           logger.info(`Fetching files for ${v.version} from ${ucdFolder}...`);
-          expectedFiles = await fetchExpectedFilesForVersion(ucdFolder);
+          const fileTree = unwrap<UnicodeFileTree>(await client.versions.getFileTree(ucdFolder));
+          expectedFiles = mapFileTreeToExpected(fileTree);
           fileCache.set(ucdFolder, expectedFiles);
         } else {
           logger.debug(`Using cached files for ${v.version} (from ${ucdFolder})`);
         }
 
-        const manifest = buildManifest(expectedFiles);
+        const manifest = { expectedFiles };
         return {
           version: v.version,
           manifest,

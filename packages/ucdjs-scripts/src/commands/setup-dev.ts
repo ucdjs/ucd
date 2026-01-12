@@ -1,8 +1,10 @@
 import path from "node:path";
 import { unstable_startWorker } from "wrangler";
-import { logger } from "../lib/logger.js";
+import { createLogger } from "../lib/logger.js";
 import { generateManifests } from "../lib/manifest.js";
 import { createManifestsTar } from "../lib/tar.js";
+
+const logger = createLogger("setup-dev");
 
 // Default versions to seed in local development
 const DEV_VERSIONS = ["17.0.0", "16.0.0", "15.1.0", "15.0.0", "4.1.0", "4.0.0"];
@@ -10,6 +12,7 @@ const DEV_VERSIONS = ["17.0.0", "16.0.0", "15.1.0", "15.0.0", "4.1.0", "4.0.0"];
 export interface SetupDevOptions {
   versions?: string;
   batchSize?: number;
+  logLevel?: string;
 }
 
 export async function setupDev(options: SetupDevOptions): Promise<void> {
@@ -23,6 +26,7 @@ export async function setupDev(options: SetupDevOptions): Promise<void> {
 
   // Path to the API app's wrangler config and setup worker
   // Use cwd since this CLI is expected to run from the monorepo root
+  // eslint-disable-next-line node/prefer-global/process
   const apiRoot = path.resolve(process.cwd(), "apps/api");
 
   // Start the setup worker
