@@ -87,10 +87,10 @@ export async function validateVersionsOrThrow(versions: string[], baseUrl?: stri
   }
 
   const client = await createUCDClient(baseUrl || UCDJS_API_BASE_URL);
-  
+
   try {
     const result = await validateVersions({ client, versions });
-    
+
     if (!result.valid) {
       throw new CLIError(
         `Invalid Unicode version(s): ${result.invalidVersions.join(", ")}`,
@@ -106,12 +106,12 @@ export async function validateVersionsOrThrow(versions: string[], baseUrl?: stri
     if (err instanceof CLIError) {
       throw err;
     }
-    
+
     // Wrap other errors
     if (err instanceof Error) {
       throw new CLIStoreError(err);
     }
-    
+
     throw err;
   }
 }
