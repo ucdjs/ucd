@@ -7,7 +7,7 @@ import process from "node:process";
 import { runSchemagen } from "@ucdjs/schema-gen";
 import { printHelp } from "../../cli-utils";
 import { CLIError } from "../../errors";
-import { green, output } from "../../output";
+import { output } from "../../output";
 
 export interface CLICodegenFieldsCmdOptions {
   flags: CLIArguments<{
