@@ -21,7 +21,7 @@ export function EntryList({ currentPath, viewMode }: EntryListProps) {
     type: search.type,
   }));
 
-  if (data.files.length === 0) {
+  if ((data.files || []).length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
         <p className="text-muted-foreground">
@@ -35,7 +35,7 @@ export function EntryList({ currentPath, viewMode }: EntryListProps) {
 
   return (
     <>
-      {data.files.map((entry: FileEntry) => (
+      {(data.files || []).map((entry: FileEntry) => (
         <ExplorerEntry
           key={entry.path}
           entry={entry}

@@ -1,6 +1,5 @@
 import type { TreeViewNode } from "reactive-vscode";
 import type { TreeItem } from "vscode";
-import { UCDStore } from "@ucdjs/ucd-store";
 import { UNICODE_VERSION_METADATA } from "@unicode-utils/core";
 import { computed, createSingletonComposable, ref, toRaw } from "reactive-vscode";
 import { ThemeIcon, TreeItemCollapsibleState } from "vscode";
@@ -42,7 +41,7 @@ export const useUCDExplorer = createSingletonComposable(() => {
     const loadingPromise = (async () => {
       try {
         const storeValue = toRaw(store.value);
-        if (!(storeValue instanceof UCDStore)) {
+        if (!storeValue) {
           throw new TypeError("UCD Store is not initialized");
         }
 
