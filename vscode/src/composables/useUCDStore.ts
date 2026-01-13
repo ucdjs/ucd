@@ -15,11 +15,14 @@ export const useUCDStore = createSingletonComposable(() => {
 
     if (localDataFilesStore == null || localDataFilesStore.trim() === "") {
       return createHTTPUCDStore({
+        bridgeBaseUrl: config["store-url"],
+        baseUrl: config["api-base-url"],
         globalFilters,
       });
     }
 
     return createUCDStore({
+      baseUrl: config["api-base-url"],
       globalFilters,
       fs: vscodeFSBridge,
       fsOptions: {

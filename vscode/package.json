@@ -85,14 +85,19 @@
             }
           }
         },
-        "ucd.data-files-api": {
+        "ucd.api-base-url": {
           "type": "string",
-          "description": "API URL to fetch UCD data files from",
-          "default": "https://unicode-api.luxass.dev",
+          "description": "API base URL to fetch UCD data files from",
+          "default": "https://api.ucdjs.dev",
           "enum": [
-            "https://unicode-api.luxass.dev",
-            "https://preview.unicode-api.luxass.dev"
+            "https://api.ucdjs.dev",
+            "https://preview.api.ucdjs.dev"
           ]
+        },
+        "ucd.store-url": {
+          "type": "string",
+          "description": "URL of the remote UCD store (used when not using local store)",
+          "default": ""
         }
       }
     },
