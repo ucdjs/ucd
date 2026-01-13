@@ -2,7 +2,7 @@ import type { SetupDevOptions, UploadResult } from "../types";
 import path from "node:path";
 import { createLogger } from "#lib/logger";
 import { createManifestsTar, generateManifests } from "#lib/manifest";
-import { parseVersions } from "#lib/utils";
+import { getMonorepoRoot, parseVersions } from "#lib/utils";
 import { unstable_startWorker } from "wrangler";
 
 const logger = createLogger("setup-dev");
@@ -18,9 +18,9 @@ export async function setupDev(options: SetupDevOptions): Promise<void> {
   logger.info(`Seeding manifests for versions: ${versions.join(", ")}`);
 
   // Path to the API app's wrangler config and setup worker
-  // Use cwd since this CLI is expected to run from the monorepo root
-  // eslint-disable-next-line node/prefer-global/process
-  const apiRoot = path.resolve(process.cwd(), "apps/api");
+  // Use monorepo root instead of process.cwd() for reliability
+  const monorepoRoot = getMonorepoRoot();
+  const apiRoot = path.join(monorepoRoot, "apps/api");
 
   // Start the setup worker
   const worker = await unstable_startWorker({

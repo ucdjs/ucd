@@ -104,7 +104,7 @@ async function _analyze(
       try {
         expectedFiles = await this.getExpectedFilePaths(version);
 
-        debug?.("Found expected files while analyzing: %O", expectedFiles.map(f => f.storePath));
+        debug?.("Found expected files while analyzing: %O", expectedFiles.map((f) => f.storePath));
       } catch (err) {
         errors.push({
           name: "expected-files",
@@ -134,11 +134,11 @@ async function _analyze(
       debug?.("Actual files while analyzing: %O", actualFilePaths);
 
       // Use storePath for comparison since that matches the listFiles output format
-      const expectedStorePathsSet = new Set(expectedFiles.map(f => f.storePath));
+      const expectedStorePathsSet = new Set(expectedFiles.map((f) => f.storePath));
       const actualFilePathsSet = new Set(actualFilePaths);
 
       // Create a lookup map from storePath to ExpectedFile for report generation
-      const expectedFilesByStorePath = new Map(expectedFiles.map(f => [f.storePath, f]));
+      const expectedFilesByStorePath = new Map(expectedFiles.map((f) => [f.storePath, f]));
 
       const presentFiles: ReportFile[] = [];
       const orphanedFiles: ReportFile[] = [];

@@ -299,7 +299,7 @@ async function _sync(
         } else {
           // Fallback to API - use storePath which matches listFiles output format
           const apiExpectedFiles = await this.getExpectedFilePaths(version);
-          expectedFilesPaths = apiExpectedFiles.map(f => f.storePath);
+          expectedFilesPaths = apiExpectedFiles.map((f) => f.storePath);
         }
 
         // Apply filters

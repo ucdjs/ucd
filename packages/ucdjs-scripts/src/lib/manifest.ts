@@ -34,7 +34,11 @@ function mapFileTreeToExpected(tree: UnicodeFileTree): ExpectedFile[] {
     for (const node of nodes) {
       if (node.type === "file") {
         if (shouldExcludeFile(node.path)) continue;
-        collect.push({ name: node.name, path: node.path, storePath: node.path });
+        collect.push({
+          name: node.name,
+          path: node.path,
+          storePath: node.path.replace(/^(\/[^/]+)\/ucd\//, "$1/"),
+        });
         continue;
       }
 
