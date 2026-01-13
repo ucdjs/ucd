@@ -43,7 +43,7 @@ export function createLogger(tag?: string) {
   };
 }
 
-export function applyLogLevel(loggerInstance: { setLevel: (level: LogLevel | string) => void }, level?: string) {
+export function applyLogLevel(loggerInstance: ReturnType<typeof createLogger>, level?: string) {
   if (!level) return;
   loggerInstance.setLevel(level);
 }

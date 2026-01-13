@@ -5,6 +5,8 @@ import cac from "cac";
 
 const cli = cac("ucdjs-scripts");
 
+cli.option("--log-level <level>", "Set log level: debug|info|warn|error");
+
 cli
   .command("setup-dev", "Seed local API environment with manifests")
   .option("--versions <versions>", "Comma-separated list of versions to seed (default: predefined dev list)")
