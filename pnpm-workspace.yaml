@@ -64,7 +64,6 @@ catalogs:
     obug: 2.1.1
     "@luxass/msw-utils": 0.6.0
     hookable: 6.0.1
-    cac: 6.7.14
 
   dev:
     tsdown: 0.18.4
@@ -122,6 +121,7 @@ catalogs:
     class-variance-authority: 0.7.1
     "@base-ui/react": 1.0.0
     "@fontsource-variable/inter": 5.2.8
+    "@pierre/diffs": 1.0.3
 
   vscode:
     vscode-ext-gen: 1.5.1

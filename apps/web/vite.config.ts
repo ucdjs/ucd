@@ -9,6 +9,19 @@ import viteTsConfigPaths from "vite-tsconfig-paths";
 import * as MdxConfig from "./source.config";
 
 const config = defineConfig({
+  ssr: {
+    // lru_map is a CJS module that @pierre/diffs imports with named exports.
+    // We need to bundle both lru_map and @pierre/diffs so Vite handles CJS->ESM conversion.
+    noExternal: ["lru_map", "@pierre/diffs"],
+  },
+  optimizeDeps: {
+    // Ensure lru_map is pre-bundled for client-side as well
+    include: ["lru_map"],
+  },
+  define: {
+    // lru_map uses `self` in its UMD wrapper which doesn't exist in Node.js SSR context
+    self: "globalThis",
+  },
   plugins: [
     devtools(),
     mdx(MdxConfig),
@@ -19,6 +32,10 @@ const config = defineConfig({
         // in redirected configs which is what this will use.
         deployConfig: false,
         nodeCompat: true,
+      },
+      // Bundle lru_map and @pierre/diffs to handle CJS->ESM interop
+      externals: {
+        inline: ["lru_map", "@pierre/diffs"],
       },
     }),
     // this is the plugin that enables path aliases

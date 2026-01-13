@@ -13,6 +13,7 @@
   "dependencies": {
     "@base-ui/react": "catalog:web",
     "@fontsource-variable/inter": "catalog:web",
+    "@pierre/diffs": "catalog:web",
     "@tanstack/react-devtools": "catalog:web",
     "@tanstack/react-form": "catalog:web",
     "@tanstack/react-query": "catalog:web",

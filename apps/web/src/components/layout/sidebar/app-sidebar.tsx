@@ -1,6 +1,6 @@
 import type { ComponentProps } from "react";
 import { Link, useLoaderData, useMatches } from "@tanstack/react-router";
-import { BookOpen, ExternalLink, Grid3X3, Lightbulb, Search, Type } from "lucide-react";
+import { BookOpen, ExternalLink, FlaskConical, Grid3X3, Lightbulb, Search, Type } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -33,6 +33,7 @@ const VERSION_ITEMS = [
 
 const TOOLS_ITEMS = [
   { to: "/file-explorer/$", params: { _splat: "" }, icon: BookOpen, label: "File Explorer" },
+  { to: "/diffs-playground", icon: FlaskConical, label: "Diffs Playground" },
 ] as const;
 
 export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
