@@ -60,7 +60,7 @@ jobs:
         run: |
           echo "Purging cache for versioned manifests..."
           purge_response=$(curl -s -w "\n%{http_code}" -G \
-            -H "X-UCDJS-Task-Key: \"$KEY\"" \
+            -H "X-UCDJS-Task-Key: $KEY" \
             --data-urlencode "cacheName=$CACHE_NAME" \
             "$BASE_URL/_tasks/purge-cache")
 
