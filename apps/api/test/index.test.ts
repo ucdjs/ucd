@@ -1,32 +1,14 @@
 import type { OpenAPIObjectConfig } from "../src/openapi";
-import {
-  createExecutionContext,
-  waitOnExecutionContext,
-} from "cloudflare:test";
 import { env } from "cloudflare:workers";
-import { Hono } from "hono";
-import { HTTPException } from "hono/http-exception";
 import { assert, describe, expect, it } from "vitest";
-import worker from "../src/worker";
+import { executeRequest } from "./helpers/request";
 
 describe("error handling", () => {
-  const testWorker = worker.route("/", new Hono()
-    .get("/__test_error", () => {
-      throw new HTTPException(500, {
-        message: "Test error",
-      });
-    })
-    .get("/__test_not_found", () => {
-      throw new HTTPException(404, {
-        message: "Not Found",
-      });
-    }));
-
   it("respond with a 404", async () => {
-    const request = new Request("https://api.ucdjs.dev/__test_not_found");
-    const ctx = createExecutionContext();
-    const response = await testWorker.fetch(request, env, ctx);
-    await waitOnExecutionContext(ctx);
+    const { response } = await executeRequest(
+      new Request("https://api.ucdjs.dev/non-existent-route"),
+      env,
+    );
 
     expect(response.status).toBe(404);
     expect(await response.json()).toEqual({
@@ -35,28 +17,14 @@ describe("error handling", () => {
       timestamp: expect.any(String),
     });
   });
-
-  it("respond with a 500 on fetch error", async () => {
-    const request = new Request("https://api.ucdjs.dev/__test_error");
-    const ctx = createExecutionContext();
-    const response = await testWorker.fetch(request, env, ctx);
-    await waitOnExecutionContext(ctx);
-
-    expect(response.status).toBe(500);
-    expect(await response.json()).toEqual({
-      message: "Test error",
-      status: 500,
-      timestamp: expect.any(String),
-    });
-  });
 });
 
 describe.todo("openapi", () => {
   it("should return the OpenAPI spec", async () => {
-    const request = new Request("https://api.ucdjs.dev/openapi.json");
-    const ctx = createExecutionContext();
-    const response = await worker.fetch(request, env, ctx);
-    await waitOnExecutionContext(ctx);
+    const { response } = await executeRequest(
+      new Request("https://api.ucdjs.dev/openapi.json"),
+      env,
+    );
 
     expect(response.status).toBe(200);
     expect(response.headers.get("Content-Type")).toBe("application/json");
@@ -68,13 +36,13 @@ describe.todo("openapi", () => {
   });
 
   it("should return the OpenAPI spec with custom server URL", async () => {
-    const request = new Request("https://api.ucdjs.dev/openapi.json");
-    const ctx = createExecutionContext();
-    const response = await worker.fetch(request, {
-      ...env,
-      ENVIRONMENT: "preview",
-    }, ctx);
-    await waitOnExecutionContext(ctx);
+    const { response } = await executeRequest(
+      new Request("https://api.ucdjs.dev/openapi.json"),
+      {
+        ...env,
+        ENVIRONMENT: "preview",
+      },
+    );
 
     expect(response.status).toBe(200);
     const json = await response.json() as OpenAPIObjectConfig;

@@ -81,14 +81,10 @@ describe("v1_versions", () => {
       const flattenedFilePaths = flattenFilePaths(data);
 
       expect(flattenedFilePaths).toEqual([
-        // "/15.1.0/ucd/file1.txt",
-        // "/15.1.0/ucd/file2.txt",
-        // "/15.1.0/ucd/subdir/file3.txt",
-        // "/15.1.0/ucd/emoji/emoji-data.txt",
-        "file1.txt",
-        "file2.txt",
-        "subdir/file3.txt",
-        "emoji/emoji-data.txt",
+        "/15.1.0/ucd/file1.txt",
+        "/15.1.0/ucd/file2.txt",
+        "/15.1.0/ucd/subdir/file3.txt",
+        "/15.1.0/ucd/emoji/emoji-data.txt",
       ]);
     });
 
@@ -130,14 +126,10 @@ describe("v1_versions", () => {
       const flattenedFilePaths = flattenFilePaths(data);
 
       expect(flattenedFilePaths).toEqual([
-        // "/17.0.0/ucd/file1.txt",
-        // "/17.0.0/ucd/file2.txt",
-        // "/17.0.0/ucd/subdir/file3.txt",
-        // "/17.0.0/ucd/emoji/emoji-data.txt",
-        "file1.txt",
-        "file2.txt",
-        "subdir/file3.txt",
-        "emoji/emoji-data.txt",
+        "/17.0.0/ucd/file1.txt",
+        "/17.0.0/ucd/file2.txt",
+        "/17.0.0/ucd/subdir/file3.txt",
+        "/17.0.0/ucd/emoji/emoji-data.txt",
       ]);
     });
 
@@ -252,14 +244,10 @@ describe("v1_versions", () => {
       const flattenedFilePaths = flattenFilePaths(data);
 
       expect(flattenedFilePaths).toEqual([
-        // "/3.1-Update1/file1.txt",
-        // "/3.1-Update1/file2.txt",
-        // "/3.1-Update1/subdir/file3.txt",
-        // "/3.1-Update1/emoji/emoji-data.txt",
-        "file1.txt",
-        "file2.txt",
-        "subdir/file3.txt",
-        "emoji/emoji-data.txt",
+        "/3.1-Update1/file1.txt",
+        "/3.1-Update1/file2.txt",
+        "/3.1-Update1/subdir/file3.txt",
+        "/3.1-Update1/emoji/emoji-data.txt",
       ]);
     });
 
