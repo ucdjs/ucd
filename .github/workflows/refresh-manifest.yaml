@@ -8,12 +8,12 @@ on:
   workflow_dispatch:
     inputs:
       env:
-        description: 'Target environment'
+        description: "Target environment"
         required: false
         type: choice
         options:
-          - 'prod'
-          - 'preview'
+          - "prod"
+          - "preview"
 
 permissions: {}
 
@@ -24,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        env: ${{ github.event_name == 'schedule' && fromJson('["prod", "preview"]') || fromJson(format('["{0}"]', github.event.inputs.env)) }}
+        env: ${{ github.event_name == 'schedule' && fromJson('["prod", "preview"]') || (github.event.inputs.env && fromJson(format('["{0}"]', github.event.inputs.env)) || fromJson('["prod", "preview"]')) }}
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
