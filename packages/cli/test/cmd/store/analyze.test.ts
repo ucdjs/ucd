@@ -193,9 +193,10 @@ describe("store analyze command", () => {
     ]);
 
     expect(capture.hasValidJson()).toBe(true);
-    const json = capture.json<Record<string, { version: string; isComplete: boolean; counts: { present: number }; files: { missing?: string[] } }>>();
-    expect(json).toHaveProperty("16.0.0");
-    const version16 = json!["16.0.0"];
+    const json = capture.json<{ versions: Record<string, { version: string; isComplete: boolean; counts: { present: number }; files: { missing?: string[] } }> }>();
+    expect(json).toHaveProperty("versions");
+    expect(json!.versions).toHaveProperty("16.0.0");
+    const version16 = json!.versions["16.0.0"];
     expect(version16).toHaveProperty("version");
     expect(version16).toHaveProperty("isComplete");
     expect(version16).toHaveProperty("files");

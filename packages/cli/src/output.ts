@@ -65,67 +65,6 @@ export interface ListOptions {
   itemColor?: (s: string) => string;
 }
 
-export interface Output {
-  /**
-   * Log a message to stdout (or stderr in JSON mode)
-   */
-  log: (...args: unknown[]) => void;
-
-  /**
-   * Log a warning message to stderr
-   */
-  warn: (...args: unknown[]) => void;
-
-  /**
-   * Log an error message to stderr
-   */
-  error: (...args: unknown[]) => void;
-
-  /**
-   * Output JSON data to stdout. Only use this for structured JSON output.
-   * Always writes to stdout, regardless of JSON mode.
-   */
-  json: (data: unknown) => void;
-
-  /**
-   * Log a success message with green checkmark.
-   * Silent in JSON mode.
-   *
-   * @example output.success("Store initialized successfully")
-   * // Output: ✓ Store initialized successfully
-   */
-  success: (message: string) => void;
-
-  /**
-   * Log an error message with red X icon.
-   * Silent in JSON mode.
-   *
-   * @example output.fail("File not found", { details: ["Path: /foo/bar"], bugReport: true })
-   * // Output:
-   * // ❌ Error: File not found
-   * //   Path: /foo/bar
-   * //   If you believe this is a bug, please report it at https://github.com/ucdjs/ucd/issues
-   */
-  fail: (message: string, options?: FailOptions) => void;
-
-  /**
-   * Log a warning message with yellow warning icon.
-   * Silent in JSON mode.
-   *
-   * @example output.warning("No versions selected")
-   * // Output: ⚠ No versions selected
-   */
-  warning: (message: string) => void;
-
-  /**
-   * Log an informational message (neutral, no icon).
-   * Silent in JSON mode.
-   *
-   * @example output.info("Starting sync operation...")
-   */
-  info: (message: string) => void;
-}
-
 let jsonMode = false;
 
 /**
@@ -140,7 +79,7 @@ let jsonMode = false;
  * This ensures that when `--json` is used, stdout contains only valid JSON
  * that can be piped to other tools.
  */
-export const output: Output = {
+export const output = {
   log: (...args: unknown[]) => {
     if (jsonMode) {
       console.error(...args);
@@ -180,6 +119,29 @@ export const output: Output = {
   info: (message: string) => {
     if (jsonMode) return;
     console.log(message);
+  },
+  errorJson: (error: { type: string; message: string; details?: unknown }) => {
+    if (jsonMode) {
+      console.log(JSON.stringify({ error }, null, 2));
+    } else {
+      console.error(red(`\n❌ Error: ${error.message}`));
+      if (error.details) {
+        console.error(`  Details: ${typeof error.details === "string" ? error.details : JSON.stringify(error.details)}`);
+      }
+    }
+  },
+  failWithJson: (error: { type: string; message: string; details?: unknown }) => {
+    if (jsonMode) {
+      console.log(JSON.stringify({ error }, null, 2));
+    } else {
+      console.error(red(`\n❌ Error: ${error.message}`));
+      if (error.details) {
+        console.error(`  Details: ${typeof error.details === "string" ? error.details : JSON.stringify(error.details)}`);
+      }
+    }
+
+    // eslint-disable-next-line node/prefer-global/process
+    process.exit(1);
   },
 };
 

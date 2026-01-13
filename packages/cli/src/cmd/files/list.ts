@@ -37,7 +37,7 @@ function formatDirectoryListing(entries: FileEntryList): string {
   const padding = Math.min(maxNameLength + 2, 40);
 
   for (const entry of sorted) {
-    const typeIcon = entry.type === "directory" ? green("📁") : "📄";
+    const typeIcon = entry.type === "directory" ? green("▸") : "·";
     const typeLabel = entry.type === "directory" ? green("dir") : dim("file");
     const name = entry.name.padEnd(padding);
     const date = entry.lastModified ? formatDate(entry.lastModified) : dim("no date");

@@ -14,7 +14,7 @@ import {
 import yargs from "yargs-parser";
 import pkg from "../package.json" with { type: "json" };
 import { CLIError } from "./errors";
-import { setJsonMode } from "./output";
+import { output, setJsonMode } from "./output";
 
 type CLICommand
   = | "help"
@@ -46,7 +46,7 @@ export type CLIArguments<T extends Record<string, unknown>> = Prettify<RemoveInd
  * Resolves the CLI command based on the provided arguments.
  *
  * If the `version` flag is present, it returns the "version" command.
- * Otherwise, it checks if the third argument in the positional arguments (`flags._[2]`)
+ * Otherwise, it checks if the first positional argument (`flags._[0]`)
  * is a supported command. If it is, it returns that command.
  * If no supported command is found, it defaults to the "help" command.
  *
@@ -177,13 +177,12 @@ export async function runCommand(cmd: CLICommand, flags: Arguments): Promise<voi
         usage: "[command] [...flags]",
         tables: {
           "Commands": [
-            ["download", "Download Unicode data files."],
+            ["store", "Manage UCD stores (init, mirror, sync, etc.)."],
             ["codegen", "Generate TypeScript code from UCD data."],
             ["files", "List and get files from the UCD API."],
             ["lockfile", "Inspect and validate UCD store lockfiles."],
           ],
           "Global Flags": [
-            ["--force", "Force the operation to run, even if it's not needed."],
             ["--version", "Show the version number and exit."],
             ["--help", "Show this help message."],
           ],
@@ -276,11 +275,27 @@ export async function runCLI(args: string[]): Promise<void> {
     if (err instanceof CLIError) {
       err.toPrettyMessage();
 
-      process.exit(1);
+      // Don't call process.exit during tests
+      if (process.env.NODE_ENV !== "test" && !process.env.VITEST) {
+        process.exit(1);
+      }
+      return;
     }
 
-    console.error(err);
-    process.exit(1);
+    // Pretty print any other error instead of raw console.error(err)
+    let message = "Unknown error";
+    if (err instanceof Error) {
+      message = err.message;
+    } else if (typeof err === "string") {
+      message = err;
+    }
+
+    output.fail(message, { bugReport: true });
+
+    // Don't call process.exit during tests
+    if (process.env.NODE_ENV !== "test" && !process.env.VITEST) {
+      process.exit(1);
+    }
   } finally {
     // Reset JSON mode after command completes
     setJsonMode(false);
