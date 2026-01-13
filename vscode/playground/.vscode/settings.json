@@ -1,0 +1,8 @@
+{
+  "ucd.local-store-path": "",
+  "ucd.store-filters": {
+    "include": [],
+    "exclude": []
+  },
+  "ucd.data-files-api": "https://unicode-api.luxass.dev"
+}
