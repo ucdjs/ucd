@@ -6,6 +6,8 @@ import path from "node:path";
 import process from "node:process";
 import { runSchemagen } from "@ucdjs/schema-gen";
 import { printHelp } from "../../cli-utils";
+import { CLIError } from "../../errors";
+import { output } from "../../output";
 
 export interface CLICodegenFieldsCmdOptions {
   flags: CLIArguments<{
@@ -105,8 +107,7 @@ async function writeBundledFile(
     bundledCode,
     "utf-8",
   );
-  // eslint-disable-next-line no-console
-  console.log(`Generated bundled fields for Unicode ${version} in ${bundlePath}`);
+  output.success(`Generated bundled fields for Unicode ${version} in ${bundlePath}`);
 }
 
 export async function runFieldCodegen({ inputPath, flags }: CLICodegenFieldsCmdOptions) {
@@ -129,20 +130,23 @@ export async function runFieldCodegen({ inputPath, flags }: CLICodegenFieldsCmdO
 
   const openaiKey = flags.openaiKey || process.env.OPENAI_API_KEY;
   if (!openaiKey) {
-    console.error("No OpenAI API key provided. Please provide an OpenAI API key.");
-    return;
+    throw new CLIError("No OpenAI API key provided.", {
+      details: ["Please provide an OpenAI API key via --openai-key flag or OPENAI_API_KEY environment variable."],
+    });
   }
 
   if (inputPath == null) {
-    console.error("No input path provided. Please provide an input path.");
-    return;
+    throw new CLIError("No input path provided.", {
+      details: ["Please provide an input path as the first argument."],
+    });
   }
 
   const resolvedInputPath = path.resolve(inputPath);
 
   if (!existsSync(resolvedInputPath)) {
-    console.error(`invalid input path: ${inputPath}. Please provide a valid input path.`);
-    return;
+    throw new CLIError(`Invalid input path: ${inputPath}`, {
+      details: ["The specified input path does not exist. Please provide a valid input path."],
+    });
   }
 
   const shouldBundle = typeof flags.bundle === "string" || flags.bundle === true;
@@ -165,8 +169,7 @@ export async function runFieldCodegen({ inputPath, flags }: CLICodegenFieldsCmdO
   // STEP 1: Scan files without concurrency limits
   const filesWithVersion = await scanFiles(inputPath);
 
-  // eslint-disable-next-line no-console
-  console.log(`Found ${filesWithVersion.length} files to process.`);
+  output.info(`Found ${filesWithVersion.length} files to process.`);
 
   const results = await runSchemagen({
     files: filesWithVersion,
@@ -184,8 +187,7 @@ export async function runFieldCodegen({ inputPath, flags }: CLICodegenFieldsCmdO
     )));
 
     await Promise.all(writePromises);
-    // eslint-disable-next-line no-console
-    console.log(`Generated fields for ${results.length} files in ${outputDir}`);
+    output.success(`Generated fields for ${results.length} files in ${outputDir}`);
     return;
   }
 

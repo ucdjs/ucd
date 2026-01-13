@@ -1,4 +1,6 @@
 export {
+  type StoreError,
+  UCDStoreBaseError,
   UCDStoreBridgeUnsupportedOperation,
   UCDStoreFileNotFoundError,
   UCDStoreGenericError,
@@ -51,3 +53,12 @@ export type {
   ReportFile,
   StorageMetrics,
 } from "./types";
+
+export {
+  validateVersions,
+} from "./utils/validate";
+
+export type {
+  ValidateVersionsOptions,
+  ValidateVersionsResult,
+} from "./utils/validate";

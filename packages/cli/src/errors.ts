@@ -12,9 +12,8 @@ export class CLIError extends Error {
   }
 
   toPrettyMessage() {
-    output.fail("", {
-      bugReport: true,
-      details: this.details.length > 0 ? this.details : [this.message],
+    output.fail(this.message, {
+      details: this.details,
     });
   }
 }
@@ -41,5 +40,12 @@ export class StoreConfigurationError extends CLIError {
   constructor(message: string) {
     super(message, { title: "Store Error" });
     this.name = "StoreConfigurationError";
+  }
+}
+
+export class CLIStoreError extends CLIError {
+  constructor(error: Error) {
+    super(error.message, { title: "Store Error" });
+    this.name = "CLIStoreError";
   }
 }
