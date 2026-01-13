@@ -6,7 +6,12 @@
       "outputs": ["dist/**"]
     },
     "dev": {
-      "persistent": false
+      "persistent": false,
+      "dependsOn": ["dev:setup"]
+    },
+    "dev:setup": {
+      "cache": false,
+      "outputs": []
     },
     "lint": {
       "dependsOn": ["lint:openapi"]

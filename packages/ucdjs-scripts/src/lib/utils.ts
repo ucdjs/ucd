@@ -1,8 +1,25 @@
-/**
- * Parse a comma-separated list of versions into an array.
- * Returns undefined if the input is undefined or empty.
- */
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { createUCDClient } from "@ucdjs/client";
+
+/**
+ * Get the root directory of the monorepo by traversing up from the current file
+ * until we find pnpm-workspace.yaml.
+ */
+export function getMonorepoRoot(): string {
+  const __dirname = path.dirname(fileURLToPath(import.meta.url));
+  let currentDir = __dirname;
+
+  while (currentDir !== path.dirname(currentDir)) {
+    if (fs.existsSync(path.join(currentDir, "pnpm-workspace.yaml"))) {
+      return currentDir;
+    }
+    currentDir = path.dirname(currentDir);
+  }
+
+  throw new Error("Could not find monorepo root (pnpm-workspace.yaml not found)");
+}
 
 export function parseVersions(versions: string | undefined): string[] | undefined {
   if (!versions) {
