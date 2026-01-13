@@ -19,11 +19,12 @@ A Visual Studio Code extension
 
 <!-- configs -->
 
-| Key                    | Description                          | Type     | Default                            |
-| ---------------------- | ------------------------------------ | -------- | ---------------------------------- |
-| `ucd.local-store-path` | Path to local UCD data file store    | `string` | `""`                               |
-| `ucd.store-filters`    | Filters to apply on UCD Explorer     | `object` | `{}`                               |
-| `ucd.data-files-api`   | API URL to fetch UCD data files from | `string` | `"https://unicode-api.luxass.dev"` |
+| Key                    | Description                                                   | Type     | Default                   |
+| ---------------------- | ------------------------------------------------------------- | -------- | ------------------------- |
+| `ucd.local-store-path` | Path to local UCD data file store                             | `string` | `""`                      |
+| `ucd.store-filters`    | Filters to apply on UCD Explorer                              | `object` | `{}`                      |
+| `ucd.api-base-url`     | API base URL to fetch UCD data files from                     | `string` | `"https://api.ucdjs.dev"` |
+| `ucd.store-url`        | URL of the remote UCD store (used when not using local store) | `string` | `""`                      |
 
 <!-- configs -->
 
