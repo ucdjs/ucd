@@ -78,7 +78,11 @@ describe("handler: /.well-known/ucd-store/{version}.json", () => {
   describe("custom response", () => {
     it("should accept custom manifest data", async () => {
       const customManifest = {
-        expectedFiles: ["/16.0.0/ucd/custom.txt"],
+        expectedFiles: [{
+          name: "custom.txt",
+          path: "/16.0.0/ucd/custom.txt",
+          storePath: "/16.0.0/custom.txt",
+        }],
       };
 
       mockStoreApi({
