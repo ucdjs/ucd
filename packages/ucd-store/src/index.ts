@@ -19,6 +19,15 @@ export type {
   AnalyzeOptions,
 } from "./reports/analyze";
 
+export type {
+  CompareOptions,
+  ComparisonMode,
+  FileChangeInfo,
+  FileChangeType,
+  SingleModeType,
+  VersionComparison,
+} from "./reports/compare";
+
 export { createUCDStore } from "./store";
 
 export type {
