@@ -135,7 +135,7 @@ const HTTPFileSystemBridge = defineFileSystemBridge({
         for (const entry of data) {
           if (entry.type === "directory") {
             const children = await this.listdir!(
-              joinURL(path, entry.path),
+              entry.path,
               true,
             );
 

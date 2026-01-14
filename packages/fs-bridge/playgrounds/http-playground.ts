@@ -19,7 +19,7 @@ interface TestCase {
   run: () => Promise<void>;
 }
 
-const BASE_URL = process.env.FS_BRIDGE_HTTP_BASE_URL || "https://api.ucdjs.dev/api/v1/files";
+const BASE_URL = process.env.FS_BRIDGE_HTTP_BASE_URL || "https://ucd-store.ucdjs.dev";
 
 console.log("fs-bridge HTTP Playground\n");
 console.log("=".repeat(60));
@@ -176,7 +176,7 @@ const testCases: TestCase[] = [
   {
     description: "Listdir ensure correct paths",
     async run() {
-      const entries = await bridge.listdir("16.0.0/ucd", true);
+      const entries = await bridge.listdir("16.0.0", true);
 
       // eslint-disable-next-line ts/explicit-function-return-type
       function checkPaths(nodes: typeof entries, parentPath: string) {
@@ -191,7 +191,7 @@ const testCases: TestCase[] = [
         }
       }
 
-      checkPaths(entries, "16.0.0/ucd/");
+      checkPaths(entries, "16.0.0/");
     },
   },
 
@@ -243,15 +243,15 @@ const testCases: TestCase[] = [
   {
     description: "Discover and read UnicodeData.txt",
     async run() {
-      const entries = await bridge.listdir("16.0.0/ucd");
+      const entries = await bridge.listdir("16.0.0");
       const unicodeData = entries.find((e) => e.name === "UnicodeData.txt");
       if (!unicodeData) throw new Error("UnicodeData.txt not found");
       if (unicodeData.type !== "file") throw new Error("Should be a file");
 
-      const exists = await bridge.exists("16.0.0/ucd/UnicodeData.txt");
+      const exists = await bridge.exists("16.0.0/UnicodeData.txt");
       if (!exists) throw new Error("Should exist");
 
-      const content = await bridge.read("16.0.0/ucd/UnicodeData.txt");
+      const content = await bridge.read("16.0.0/UnicodeData.txt");
       if (!content.includes(";")) throw new Error("Should contain semicolons");
     },
   },

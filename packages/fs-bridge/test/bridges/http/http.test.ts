@@ -1,6 +1,7 @@
 import type { FileEntry } from "@ucdjs/schemas";
 import HTTPFileSystemBridge from "#internal:bridge/http";
 import { HttpResponse, mockFetch } from "#test-utils/msw";
+import { joinURL } from "@luxass/utils/path";
 import { flattenFilePaths } from "@ucdjs-internal/shared";
 import { UCDJS_STORE_BASE_URL } from "@ucdjs/env";
 import { describe, expect, it } from "vitest";
@@ -169,29 +170,47 @@ describe("http fs-bridge", () => {
           path: "/subdir/",
           type: "directory",
         },
-
       ]);
     });
 
     it("should list directory contents recursively", async () => {
-      const subdirData = [
-        {
-          type: "file" as const,
-          name: "nested.txt",
-          path: "/subdir/nested.txt",
-          lastModified: Date.now(),
-        },
-      ] satisfies FileEntry[];
-
       mockFetch([
-        ["GET", `${baseUrl}/dir`, () => {
-          return new HttpResponse(JSON.stringify(mockDirectoryData), {
+        ["GET", `${baseUrl}/dir`, ({ request }) => {
+          const url = new URL(request.url);
+          return new HttpResponse(JSON.stringify([
+            {
+              type: "file" as const,
+              name: "file1.txt",
+              path: joinURL(url.pathname, "file1.txt"),
+              lastModified: Date.now(),
+            },
+            {
+              type: "file" as const,
+              name: "file2.txt",
+              path: joinURL(url.pathname, "file2.txt"),
+              lastModified: Date.now(),
+            },
+            {
+              type: "directory" as const,
+              name: "subdir",
+              path: joinURL(url.pathname, "subdir/"),
+              lastModified: Date.now(),
+            },
+          ] satisfies FileEntry[]), {
             status: 200,
             headers: { "Content-Type": "application/json" },
           });
         }],
-        ["GET", `${baseUrl}/dir/subdir`, () => {
-          return new HttpResponse(JSON.stringify(subdirData), {
+        ["GET", `${baseUrl}/dir/subdir`, ({ request }) => {
+          const url = new URL(request.url);
+          return new HttpResponse(JSON.stringify([
+            {
+              type: "file" as const,
+              name: "nested.txt",
+              path: joinURL(url.pathname, "nested.txt"),
+              lastModified: Date.now(),
+            },
+          ] satisfies FileEntry[]), {
             status: 200,
             headers: { "Content-Type": "application/json" },
           });
@@ -200,14 +219,14 @@ describe("http fs-bridge", () => {
 
       const files = await bridge.listdir("dir", true);
       expect(files).toEqual([
-        { type: "file", name: "file1.txt", path: "/file1.txt" },
-        { type: "file", name: "file2.txt", path: "/file2.txt" },
+        { type: "file", name: "file1.txt", path: "/dir/file1.txt" },
+        { type: "file", name: "file2.txt", path: "/dir/file2.txt" },
         {
           type: "directory",
           name: "subdir",
-          path: "/subdir/",
+          path: "/dir/subdir/",
           children: [
-            { type: "file", name: "nested.txt", path: "/subdir/nested.txt" },
+            { type: "file", name: "nested.txt", path: "/dir/subdir/nested.txt" },
           ],
         },
       ]);
@@ -261,13 +280,13 @@ describe("http fs-bridge", () => {
             {
               type: "file" as const,
               name: "accessible.txt",
-              path: "/accessible.txt",
+              path: "/dir/accessible.txt",
               lastModified: Date.now(),
             },
             {
               type: "directory" as const,
               name: "inaccessible",
-              path: "/inaccessible/",
+              path: "/dir/inaccessible/",
               lastModified: Date.now(),
             },
           ] satisfies FileEntry[]), {
@@ -291,10 +310,10 @@ describe("http fs-bridge", () => {
 
       const files = await bridge.listdir("dir", true);
       expect(files).toEqual([
-        { type: "file", name: "accessible.txt", path: "/accessible.txt" },
-        { type: "directory", name: "inaccessible", path: "/inaccessible/", children: [] },
+        { type: "file", name: "accessible.txt", path: "/dir/accessible.txt" },
+        { type: "directory", name: "inaccessible", path: "/dir/inaccessible/", children: [] },
       ]);
-      expect(flattenFilePaths(files)).not.toContain("/inaccessible/another-file.txt");
+      expect(flattenFilePaths(files)).not.toContain("/dir/inaccessible/another-file.txt");
     });
   });
 
