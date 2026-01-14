@@ -1,10 +1,11 @@
-import type { TextEditor } from "vscode";
+import type { Disposable, TextEditor, TextEditorSelectionChangeEvent } from "vscode";
 import type { HeadingOverride, ParserOverride, Position } from "../lib/override-schema";
 import { computed, createSingletonComposable, ref } from "reactive-vscode";
 import { window } from "vscode";
 import { createParserOverride, isValidPosition, serializeOverride } from "../lib/override-schema";
 
-export type SelectionMode = "idle" | "selecting" | "confirmed";
+export type SelectionMode = "idle" | "selecting";
+export type ClickMode = "set-start" | "set-end";
 
 const headingHighlightDecoration = window.createTextEditorDecorationType({
   backgroundColor: "rgba(255, 213, 79, 0.3)",
@@ -35,11 +36,14 @@ const selectionEndDecoration = window.createTextEditorDecorationType({
 
 export const useOverrideGenerator = createSingletonComposable(() => {
   const mode = ref<SelectionMode>("idle");
+  const clickMode = ref<ClickMode>("set-start");
   const selectionStart = ref<number | null>(null);
   const selectionEnd = ref<number | null>(null);
   const fileName = ref<string | null>(null);
   const unicodeVersion = ref<string | null>(null);
   const activeEditor = ref<TextEditor | null>(null);
+
+  let selectionChangeDisposable: Disposable | null = null;
 
   const currentPosition = computed<Position | null>(() => {
     if (selectionStart.value === null || selectionEnd.value === null) {
@@ -73,6 +77,32 @@ export const useOverrideGenerator = createSingletonComposable(() => {
     return serializeOverride(currentOverride.value);
   });
 
+  function onSelectionChange(event: TextEditorSelectionChangeEvent) {
+    if (mode.value !== "selecting") return;
+    if (event.textEditor !== activeEditor.value) return;
+
+    const selection = event.selections[0];
+    if (!selection) return;
+
+    const clickedLine = selection.active.line;
+
+    if (clickMode.value === "set-start") {
+      selectionStart.value = clickedLine;
+      if (selectionEnd.value !== null && clickedLine > selectionEnd.value) {
+        selectionEnd.value = clickedLine;
+      }
+      clickMode.value = "set-end";
+    } else {
+      selectionEnd.value = clickedLine;
+      if (selectionStart.value !== null && clickedLine < selectionStart.value) {
+        selectionStart.value = clickedLine;
+      }
+      clickMode.value = "set-start";
+    }
+
+    updateDecorations();
+  }
+
   function startSelection(
     editor: TextEditor,
     file: string,
@@ -80,21 +110,19 @@ export const useOverrideGenerator = createSingletonComposable(() => {
     detectedStart: number,
     detectedEnd: number,
   ) {
+    if (selectionChangeDisposable) {
+      selectionChangeDisposable.dispose();
+    }
+
     mode.value = "selecting";
+    clickMode.value = "set-start";
     activeEditor.value = editor;
     fileName.value = file;
     unicodeVersion.value = version;
     selectionStart.value = detectedStart;
     selectionEnd.value = detectedEnd;
 
-    updateDecorations();
-  }
-
-  function updateSelection(start: number, end: number) {
-    if (mode.value !== "selecting") return;
-
-    selectionStart.value = start;
-    selectionEnd.value = end;
+    selectionChangeDisposable = window.onDidChangeTextEditorSelection(onSelectionChange);
 
     updateDecorations();
   }
@@ -122,13 +150,16 @@ export const useOverrideGenerator = createSingletonComposable(() => {
       return null;
     }
 
-    mode.value = "confirmed";
-    clearDecorations();
-
-    return currentOverride.value;
+    const result = currentOverride.value;
+    cleanup();
+    return result;
   }
 
   function cancel() {
+    cleanup();
+  }
+
+  function cleanup() {
     mode.value = "idle";
     selectionStart.value = null;
     selectionEnd.value = null;
@@ -136,6 +167,11 @@ export const useOverrideGenerator = createSingletonComposable(() => {
     unicodeVersion.value = null;
     clearDecorations();
     activeEditor.value = null;
+
+    if (selectionChangeDisposable) {
+      selectionChangeDisposable.dispose();
+      selectionChangeDisposable = null;
+    }
   }
 
   function updateDecorations() {
@@ -151,22 +187,24 @@ export const useOverrideGenerator = createSingletonComposable(() => {
     }
 
     const document = editor.document;
+    const actualStart = Math.min(start, end);
+    const actualEnd = Math.max(start, end);
 
     const highlightRanges = [];
-    for (let i = start; i <= end; i++) {
+    for (let i = actualStart; i <= actualEnd; i++) {
       if (i < document.lineCount) {
         highlightRanges.push(document.lineAt(i).range);
       }
     }
     editor.setDecorations(headingHighlightDecoration, highlightRanges);
 
-    if (start < document.lineCount) {
-      editor.setDecorations(selectionStartDecoration, [document.lineAt(start).range]);
+    if (actualStart < document.lineCount) {
+      editor.setDecorations(selectionStartDecoration, [document.lineAt(actualStart).range]);
     }
 
-    if (end < document.lineCount && end !== start) {
-      editor.setDecorations(selectionEndDecoration, [document.lineAt(end).range]);
-    } else if (end === start) {
+    if (actualEnd < document.lineCount && actualEnd !== actualStart) {
+      editor.setDecorations(selectionEndDecoration, [document.lineAt(actualEnd).range]);
+    } else if (actualEnd === actualStart) {
       editor.setDecorations(selectionEndDecoration, []);
     }
   }
@@ -182,6 +220,7 @@ export const useOverrideGenerator = createSingletonComposable(() => {
 
   return {
     mode,
+    clickMode,
     selectionStart,
     selectionEnd,
     fileName,
@@ -191,10 +230,10 @@ export const useOverrideGenerator = createSingletonComposable(() => {
     currentOverride,
     overrideJson,
     startSelection,
-    updateSelection,
     setStart,
     setEnd,
     confirm,
     cancel,
+    updateDecorations,
   };
 });

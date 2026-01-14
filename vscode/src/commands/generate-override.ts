@@ -49,10 +49,15 @@ export function useGenerateOverrideCommand() {
     if (generator.mode.value === "selecting") {
       const action = await window.showQuickPick(
         [
-          { label: "$(check) Confirm Selection", action: "confirm" },
-          { label: "$(close) Cancel", action: "cancel" },
+          {
+            label: `$(check) Confirm (lines ${generator.selectionStart.value}-${generator.selectionEnd.value})`,
+            action: "confirm",
+          },
+          { label: "$(close) Cancel Selection", action: "cancel" },
         ],
-        { placeHolder: "You are already selecting a heading range" },
+        {
+          placeHolder: "Override selection is active. Click lines in editor to adjust.",
+        },
       );
 
       if (action?.action === "confirm") {
@@ -80,125 +85,8 @@ export function useGenerateOverrideCommand() {
 
     await vscodeCommands.executeCommand("ucd:inspector.focus");
 
-    const result = await window.showQuickPick(
-      [
-        { label: `$(check) Confirm (lines ${detected.start}-${detected.end})`, action: "confirm" },
-        { label: "$(edit) Adjust Start Line", action: "adjust-start" },
-        { label: "$(edit) Adjust End Line", action: "adjust-end" },
-        { label: "$(close) Cancel", action: "cancel" },
-      ],
-      {
-        placeHolder: `Detected heading: lines ${detected.start}-${detected.end}. Confirm or adjust?`,
-      },
+    window.showInformationMessage(
+      `Selection mode active (lines ${detected.start}-${detected.end}). Click to set start, click again to set end. Run command again to confirm.`,
     );
-
-    if (!result) {
-      generator.cancel();
-      return;
-    }
-
-    if (result.action === "confirm") {
-      const override = generator.confirm();
-      if (override) {
-        const json = JSON.stringify(override, null, 2);
-        await env.clipboard.writeText(json);
-        window.showInformationMessage("Override JSON copied to clipboard!");
-      }
-    } else if (result.action === "adjust-start") {
-      const input = await window.showInputBox({
-        prompt: "Enter start line number (0-indexed)",
-        value: String(generator.selectionStart.value ?? 0),
-        validateInput: (value) => {
-          const num = Number.parseInt(value, 10);
-          if (Number.isNaN(num) || num < 0) {
-            return "Must be a non-negative integer";
-          }
-          return null;
-        },
-      });
-
-      if (input !== undefined) {
-        generator.setStart(Number.parseInt(input, 10));
-        await promptForConfirmation();
-      } else {
-        generator.cancel();
-      }
-    } else if (result.action === "adjust-end") {
-      const input = await window.showInputBox({
-        prompt: "Enter end line number (0-indexed)",
-        value: String(generator.selectionEnd.value ?? 0),
-        validateInput: (value) => {
-          const num = Number.parseInt(value, 10);
-          if (Number.isNaN(num) || num < 0) {
-            return "Must be a non-negative integer";
-          }
-          return null;
-        },
-      });
-
-      if (input !== undefined) {
-        generator.setEnd(Number.parseInt(input, 10));
-        await promptForConfirmation();
-      } else {
-        generator.cancel();
-      }
-    } else {
-      generator.cancel();
-    }
   });
-
-  async function promptForConfirmation() {
-    const start = generator.selectionStart.value;
-    const end = generator.selectionEnd.value;
-
-    const result = await window.showQuickPick(
-      [
-        { label: `$(check) Confirm (lines ${start}-${end})`, action: "confirm" },
-        { label: "$(edit) Adjust Start Line", action: "adjust-start" },
-        { label: "$(edit) Adjust End Line", action: "adjust-end" },
-        { label: "$(close) Cancel", action: "cancel" },
-      ],
-      {
-        placeHolder: `Current selection: lines ${start}-${end}. Confirm or adjust?`,
-      },
-    );
-
-    if (!result || result.action === "cancel") {
-      generator.cancel();
-      return;
-    }
-
-    if (result.action === "confirm") {
-      const override = generator.confirm();
-      if (override) {
-        const json = JSON.stringify(override, null, 2);
-        await env.clipboard.writeText(json);
-        window.showInformationMessage("Override JSON copied to clipboard!");
-      }
-    } else if (result.action === "adjust-start") {
-      const input = await window.showInputBox({
-        prompt: "Enter start line number (0-indexed)",
-        value: String(generator.selectionStart.value ?? 0),
-      });
-
-      if (input !== undefined) {
-        generator.setStart(Number.parseInt(input, 10));
-        await promptForConfirmation();
-      } else {
-        generator.cancel();
-      }
-    } else if (result.action === "adjust-end") {
-      const input = await window.showInputBox({
-        prompt: "Enter end line number (0-indexed)",
-        value: String(generator.selectionEnd.value ?? 0),
-      });
-
-      if (input !== undefined) {
-        generator.setEnd(Number.parseInt(input, 10));
-        await promptForConfirmation();
-      } else {
-        generator.cancel();
-      }
-    }
-  }
 }

@@ -32,20 +32,23 @@ function generateInspectorHtml(fileName: string, stats: UCDStats): string {
       border-bottom: 1px solid var(--vscode-panel-border);
     }
 
-    .file-name {
+    .header-line {
       font-size: 1.1em;
       font-weight: 500;
       word-break: break-all;
+      line-height: 1.6;
     }
 
-    .version-badge {
-      display: inline-block;
-      padding: 2px 6px;
-      background: var(--vscode-badge-background);
-      color: var(--vscode-badge-foreground);
-      border-radius: 3px;
-      font-size: 0.8em;
-      margin-top: 6px;
+    .file-name {
+      color: #ce9178;
+    }
+
+    .version {
+      color: #569cd6;
+    }
+
+    .date {
+      color: #b5cea8;
     }
 
     .section {
@@ -114,8 +117,9 @@ function generateInspectorHtml(fileName: string, stats: UCDStats): string {
 </head>
 <body>
   <div class="header">
-    <div class="file-name">${fileName}</div>
-    ${stats.version ? `<span class="version-badge">Unicode ${stats.version}</span>` : ""}
+    <div class="header-line">
+      <span class="file-name">${fileName}</span>${stats.version ? ` <span class="version">v${stats.version}</span>` : ""}${stats.date ? ` <span class="date">(${stats.date})</span>` : ""}
+    </div>
   </div>
 
   <section class="section">
@@ -218,7 +222,11 @@ function generateSelectionHtml(
   start: number,
   end: number,
   jsonPreview: string,
+  clickMode: string,
 ): string {
+  const nextClickAction = clickMode === "set-start" ? "Set START line" : "Set END line";
+  const nextClickColor = clickMode === "set-start" ? "rgba(76, 175, 80, 0.8)" : "rgba(244, 67, 54, 0.8)";
+
   return /* html */ `
 <!DOCTYPE html>
 <html lang="en">
@@ -309,8 +317,21 @@ function generateSelectionHtml(
       font-size: 0.85em;
       white-space: pre;
       overflow-x: auto;
-      max-height: 300px;
+      max-height: 200px;
       overflow-y: auto;
+    }
+
+    .click-hint {
+      font-size: 0.9em;
+      padding: 10px;
+      background: var(--vscode-editor-background);
+      border-radius: 4px;
+      border-left: 3px solid ${nextClickColor};
+      margin-bottom: 12px;
+    }
+
+    .click-hint strong {
+      color: ${nextClickColor};
     }
 
     .hint {
@@ -327,7 +348,11 @@ function generateSelectionHtml(
 <body>
   <div class="header">
     <div class="title">Heading Selection Mode</div>
-    <div class="subtitle">Adjust the heading range for parser override</div>
+    <div class="subtitle">Click lines in the editor to adjust range</div>
+  </div>
+
+  <div class="click-hint">
+    <strong>Next click:</strong> ${nextClickAction}
   </div>
 
   <section class="section">
@@ -364,8 +389,7 @@ function generateSelectionHtml(
   </section>
 
   <div class="hint">
-    Use the Quick Pick menu to confirm or adjust the selection.
-    The highlighted lines in the editor show the current heading range.
+    Run "Generate Parser Override" again to <strong>confirm</strong> or <strong>cancel</strong>.
   </div>
 </body>
 </html>
@@ -429,7 +453,7 @@ export const useInspectorView = createSingletonComposable(() => {
       const end = generator.selectionEnd.value ?? 0;
       const json = generator.overrideJson.value ?? "{}";
 
-      return generateSelectionHtml(file, version, start, end, json);
+      return generateSelectionHtml(file, version, start, end, json, generator.clickMode.value);
     }
 
     if (!fileName.value || !stats.value) {
@@ -448,6 +472,7 @@ export const useInspectorView = createSingletonComposable(() => {
     if (generator.mode.value === "selecting") {
       void generator.selectionStart.value;
       void generator.selectionEnd.value;
+      void generator.clickMode.value;
     }
   });
 

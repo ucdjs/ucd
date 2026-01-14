@@ -1,5 +1,6 @@
 import { defineExtension } from "reactive-vscode";
 import { registerCommands } from "./commands";
+import { useAutoDecorations } from "./composables/useAutoDecorations";
 import { useUCDClient } from "./composables/useUCDClient";
 import { useUCDContentProvider } from "./composables/useUCDContentProvider";
 import { logger } from "./logger";
@@ -14,6 +15,7 @@ const { activate, deactivate } = defineExtension(async () => {
   useUCDClient();
   registerCommands();
   useUCDContentProvider();
+  useAutoDecorations();
 
   logger.info("UCD Explorer extension activated successfully.");
 });
