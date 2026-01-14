@@ -8,23 +8,34 @@ import * as Meta from "../generated/meta";
 import { logger } from "../logger";
 
 export function useOpenInRemoteExplorerCommand() {
-  useCommand(Meta.commands.openInRemoteExplorer, async (treeView: TreeViewNode) => {
-    if (treeView == null) {
+  useCommand(Meta.commands.openInRemoteExplorer, async (treeViewOrUri: Uri | TreeViewNode) => {
+    if (treeViewOrUri == null) {
       logger.error("No entry provided to openInRemoteExplorer command.");
       return;
     }
 
-    if (typeof treeView !== "object" || !("treeItem" in treeView)) {
-      logger.error("Invalid entry provided to openOnUnicode command.");
+    // If we get a string that is a valid URI, and its using the ucd scheme, open it in the remote explorer
+    if (treeViewOrUri instanceof Uri) {
+      if (treeViewOrUri.scheme !== "ucd") {
+        logger.error("Invalid URI scheme provided to openInRemoteExplorer command.");
+        return;
+      }
+
+      executeCommand("vscode.open", Uri.parse(`${config["frontend-url"]}/file-explorer/${treeViewOrUri.path}`));
       return;
     }
 
-    if (!treeView.treeItem || !(treeView.treeItem as UCDTreeItem).__ucd) {
-      logger.error("Invalid entry provided to openEntry command.");
+    if (typeof treeViewOrUri !== "object" || !("treeItem" in treeViewOrUri)) {
+      logger.error("Invalid entry provided to openInRemoteExplorer command.");
       return;
     }
 
-    const ucdItem = (treeView.treeItem as UCDTreeItem).__ucd;
+    if (!treeViewOrUri.treeItem || !(treeViewOrUri.treeItem as UCDTreeItem).__ucd) {
+      logger.error("Invalid entry provided to openInRemoteExplorer command.");
+      return;
+    }
+
+    const ucdItem = (treeViewOrUri.treeItem as UCDTreeItem).__ucd;
     if (!ucdItem) {
       logger.error("UCD item is undefined or null.");
       return;
