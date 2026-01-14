@@ -1,4 +1,5 @@
 import { useBrowseUcdFilesCommand } from "./browse-ucd-files";
+import { useGenerateOverrideCommand } from "./generate-override";
 import { useOpenExplorerEntryCommand } from "./open-explorer-entry";
 import { useOpenInRemoteExplorerCommand } from "./open-in-remote-explorer";
 import { useOpenOnUnicodeCommand } from "./open-on-unicode";
@@ -12,4 +13,5 @@ export function registerCommands() {
   useOpenInRemoteExplorerCommand();
   useOpenOnUnicodeCommand();
   useOpenExplorerEntryCommand();
+  useGenerateOverrideCommand();
 }
