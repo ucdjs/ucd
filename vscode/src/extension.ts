@@ -4,10 +4,12 @@ import { useUCDClient } from "./composables/useUCDClient";
 import { useUCDContentProvider } from "./composables/useUCDContentProvider";
 import { logger } from "./logger";
 import { initializeUCDExplorerView } from "./views/ucd-explorer";
+import { initializeInspectorView } from "./views/ucd-inspector";
 
 const { activate, deactivate } = defineExtension(async () => {
   logger.info("Activating UCD Explorer extension...");
   initializeUCDExplorerView();
+  initializeInspectorView();
 
   useUCDClient();
   registerCommands();

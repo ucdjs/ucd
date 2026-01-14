@@ -1,15 +1,45 @@
 import type { TreeViewNode } from "reactive-vscode";
 import type { UCDTreeItem } from "../composables/useUCDExplorer";
 import { hasUCDFolderPath } from "@unicode-utils/core";
-import { executeCommand, useCommand } from "reactive-vscode";
+import { executeCommand, toRaw, useCommand } from "reactive-vscode";
 import { languages, Uri, window } from "vscode";
+import { useUCDStore } from "../composables/useUCDStore";
 import * as Meta from "../generated/meta";
+import { showFilePicker, showVersionPicker } from "../lib/pickers";
 import { logger } from "../logger";
 
+async function openUCDFile(version: string, filePath: string): Promise<void> {
+  const uri = Uri.parse(`ucd:${version}/${hasUCDFolderPath(version) ? "ucd/" : ""}${filePath}`);
+  const textEditor = await window.showTextDocument(uri);
+  // I can't figure out how to set the language of the text editor directly,
+  // so we use the languages API to set the language for the document.
+  // The only issue is that, this triggers a close event, and a open event...
+  await languages.setTextDocumentLanguage(textEditor.document, "ucd");
+}
+
 export function useOpenExplorerEntryCommand() {
-  useCommand(Meta.commands.openExplorerEntry, async (versionOrTreeView: string | TreeViewNode, filePath?: string) => {
+  const store = useUCDStore();
+
+  useCommand(Meta.commands.openExplorerEntry, async (versionOrTreeView?: string | TreeViewNode, filePath?: string) => {
     if (versionOrTreeView == null) {
-      logger.error("No entry provided to openEntry command.");
+      const storeValue = toRaw(store.value);
+      if (!storeValue) {
+        logger.error("UCD Store is not initialized.");
+        window.showErrorMessage("UCD Store is not initialized. Please check your configuration.");
+        return;
+      }
+
+      const selectedVersion = await showVersionPicker();
+      if (!selectedVersion) {
+        return;
+      }
+
+      const selectedFile = await showFilePicker(storeValue, selectedVersion);
+      if (!selectedFile) {
+        return;
+      }
+
+      await openUCDFile(selectedVersion, selectedFile);
       return;
     }
 
@@ -42,10 +72,6 @@ export function useOpenExplorerEntryCommand() {
       return;
     }
 
-    const textEditor = await window.showTextDocument(Uri.parse(`ucd:${version}/${hasUCDFolderPath(version) ? "ucd/" : ""}${filePath}`));
-    // I can't figure out how to set the language of the text editor directly,
-    // so we use the languages API to set the language for the document.
-    // The only issue is that, this triggers a close event, and a open event...
-    await languages.setTextDocumentLanguage(textEditor.document, "ucd");
+    await openUCDFile(version, filePath);
   });
 }
