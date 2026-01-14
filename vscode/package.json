@@ -191,6 +191,16 @@
           "command": "ucd.visualize-file",
           "group": "navigation",
           "when": "editorLangId == ucd"
+        },
+        {
+          "command": "ucd.open-in-remote-explorer",
+          "group": "navigation",
+          "when": "editorLangId == ucd"
+        },
+        {
+          "command": "ucd.open-on-unicode",
+          "group": "navigation",
+          "when": "editorLangId == ucd"
         }
       ]
     },
