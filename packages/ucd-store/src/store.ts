@@ -24,6 +24,7 @@ import { getFile } from "./files/get";
 import { listFiles } from "./files/list";
 import { getFileTree } from "./files/tree";
 import { analyze } from "./reports/analyze";
+import { compare } from "./reports/compare";
 import { mirror } from "./tasks/mirror";
 import { sync } from "./tasks/sync";
 import { initLockfile } from "./utils/lockfile";
@@ -237,6 +238,7 @@ export async function createUCDStore<
     mirror: mirror.bind(internalContext),
     sync: sync.bind(internalContext),
     analyze: analyze.bind(internalContext),
+    compare: compare.bind(internalContext),
   } satisfies UCDStoreOperations);
 }
 

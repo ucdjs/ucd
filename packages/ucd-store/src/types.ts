@@ -8,6 +8,7 @@ import type { GetFileOptions } from "./files/get";
 import type { ListFilesOptions } from "./files/list";
 import type { GetFileTreeOptions } from "./files/tree";
 import type { AnalysisReport, AnalyzeOptions } from "./reports/analyze";
+import type { CompareOptions, VersionComparison } from "./reports/compare";
 import type { MirrorOptions, MirrorReport } from "./tasks/mirror";
 import type { SyncOptions, SyncResult } from "./tasks/sync";
 
@@ -281,6 +282,13 @@ export interface UCDStoreOperations {
    * counts, metrics, and errors.
    */
   analyze: (options?: AnalyzeOptions) => Promise<OperationResult<AnalysisReport, StoreError>>;
+
+  /**
+   * Compares two Unicode versions and returns a detailed diff report.
+   * Identifies added, removed, and modified files between versions.
+   * Uses content hashes (with Unicode header stripped) to detect actual changes.
+   */
+  compare: (options?: CompareOptions) => Promise<OperationResult<VersionComparison, StoreError>>;
 
   /**
    * File operations namespace
