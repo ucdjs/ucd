@@ -4,7 +4,6 @@ import type { TreeViewNode } from "reactive-vscode";
 import type { UCDTreeItem } from "../composables/useUCDExplorer";
 import { hasUCDFolderPath } from "@unicode-utils/core";
 import { ThemeIcon, TreeItemCollapsibleState } from "vscode";
-import * as Meta from "../generated/meta";
 import { logger } from "../logger";
 
 function mapEntryToTreeNode(version: string, entry: UnicodeFileTreeNodeWithoutLastModified, parentPath?: string): TreeViewNode {
@@ -22,22 +21,20 @@ function mapEntryToTreeNode(version: string, entry: UnicodeFileTreeNodeWithoutLa
       label: entry.name,
       collapsibleState: isDirectory ? TreeItemCollapsibleState.Collapsed : TreeItemCollapsibleState.None,
       contextValue: isDirectory ? "ucd:explorer-folder" : "ucd:explorer-file",
-      ...(!isDirectory
-        ? {
+      ...(isDirectory
+        ? {}
+        : {
             command: {
-              command: Meta.commands.openEntry,
-              title: "Open UCD Data File",
-              arguments: [
-                version,
-                filePathForCommand,
-              ],
-              tooltip: "Open UCD data file for this version",
+              title: "Open UCD Entry",
+              command: "ucd.open-explorer-entry",
+              arguments: [version, filePathForCommand],
+              tooltip: "Open this file in UCD Viewer",
             },
-          }
-        : {}),
+          }),
       __ucd: {
         version,
         url: `https://unicode.org/Public/${version}/${hasUCDFolderPath(version) ? "ucd/" : ""}${filePathForCommand}`,
+        filePath: filePathForCommand,
       },
     } as UCDTreeItem,
     children: hasChildren ? entry.children?.map((child) => mapEntryToTreeNode(version, child, currentPath)) : [],

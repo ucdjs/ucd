@@ -6,8 +6,8 @@ import { languages, Uri, window } from "vscode";
 import * as Meta from "../generated/meta";
 import { logger } from "../logger";
 
-export function useOpenEntryCommand() {
-  useCommand(Meta.commands.openEntry, async (versionOrTreeView: string | TreeViewNode, filePath?: string) => {
+export function useOpenExplorerEntryCommand() {
+  useCommand(Meta.commands.openExplorerEntry, async (versionOrTreeView: string | TreeViewNode, filePath?: string) => {
     if (versionOrTreeView == null) {
       logger.error("No entry provided to openEntry command.");
       return;

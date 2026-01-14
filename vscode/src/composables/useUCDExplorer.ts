@@ -11,6 +11,7 @@ export interface UCDTreeItem extends TreeItem {
   __ucd?: {
     url: string;
     version: string;
+    filePath?: string;
   };
 }
 
@@ -77,7 +78,10 @@ export const useUCDExplorer = createSingletonComposable(() => {
           tooltip: `Documentation: ${metadata.documentationUrl}\nUCD URL: ${metadata.url}`,
           collapsibleState: TreeItemCollapsibleState.Collapsed,
           contextValue: "ucd:version-folder",
-          __ucd: metadata,
+          __ucd: {
+            version: metadata.version,
+            url: metadata.url,
+          },
         } as UCDTreeItem,
         children: childrenCache.value.get(version) || [],
       };

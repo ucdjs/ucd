@@ -48,10 +48,22 @@
         "icon": "$(refresh)"
       },
       {
-        "command": "ucd.open-entry",
-        "title": "Open UCD Entry",
+        "command": "ucd.open-in-remote-explorer",
+        "title": "Open on ucdjs.dev",
         "category": "UCD",
         "icon": "$(file-text)"
+      },
+      {
+        "command": "ucd.open-on-unicode",
+        "title": "Open on unicode.org",
+        "category": "UCD",
+        "icon": "$(globe)"
+      },
+      {
+        "command": "ucd.open-explorer-entry",
+        "title": "Open UCD Entry",
+        "category": "UCD",
+        "icon": "$(file-code)"
       }
     ],
     "configuration": {
@@ -88,16 +100,41 @@
         "ucd.api-base-url": {
           "type": "string",
           "description": "API base URL to fetch UCD data files from",
-          "default": "https://api.ucdjs.dev",
-          "enum": [
-            "https://api.ucdjs.dev",
-            "https://preview.api.ucdjs.dev"
-          ]
+          "anyOf": [
+            {
+              "enum": [
+                "https://api.ucdjs.dev",
+                "https://preview.api.ucdjs.dev"
+              ]
+            },
+            {
+              "type": "string",
+              "format": "url"
+            }
+          ],
+          "default": "https://api.ucdjs.dev"
         },
         "ucd.store-url": {
           "type": "string",
           "description": "URL of the remote UCD store (used when not using local store)",
           "default": ""
+        },
+        "ucd.frontend-url": {
+          "type": "string",
+          "description": "Base URL to use when opening ucd website",
+          "anyOf": [
+            {
+              "enum": [
+                "https://ucdjs.dev",
+                "https://preview.ucdjs.dev"
+              ]
+            },
+            {
+              "type": "string",
+              "format": "url"
+            }
+          ],
+          "default": "https://ucdjs.dev"
         }
       }
     },
@@ -134,7 +171,17 @@
           "group": "navigation"
         },
         {
-          "command": "ucd.open-entry",
+          "command": "ucd.open-in-remote-explorer",
+          "when": "viewItem == ucd:explorer-file || viewItem == ucd:explorer-folder || viewItem == ucd:version-folder",
+          "group": "navigation"
+        },
+        {
+          "command": "ucd.open-on-unicode",
+          "when": "viewItem == ucd:explorer-file || viewItem == ucd:explorer-folder || viewItem == ucd:version-folder",
+          "group": "navigation"
+        },
+        {
+          "command": "ucd.open-explorer-entry",
           "when": "viewItem == ucd:explorer-file || viewItem == ucd:explorer-folder || viewItem == ucd:version-folder",
           "group": "navigation"
         }
