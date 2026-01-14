@@ -14,14 +14,15 @@ function mapEntryToTreeNode(version: string, entry: UnicodeFileTreeNodeWithoutLa
   const hasChildren = ("children" in entry) && entry.children.length > 0;
   const currentPath = parentPath ? `${parentPath}/${entry.name}` : entry.name;
   const filePathForCommand = parentPath ? currentPath : entry.name;
+  const isDirectory = entry.type === "directory";
 
   return {
     treeItem: {
-      iconPath: hasChildren ? new ThemeIcon("folder") : new ThemeIcon("file"),
+      iconPath: isDirectory ? new ThemeIcon("folder") : new ThemeIcon("file"),
       label: entry.name,
-      collapsibleState: hasChildren ? TreeItemCollapsibleState.Collapsed : TreeItemCollapsibleState.None,
-      contextValue: hasChildren ? "ucd:explorer-folder" : "ucd:explorer-file",
-      ...(!hasChildren
+      collapsibleState: isDirectory ? TreeItemCollapsibleState.Collapsed : TreeItemCollapsibleState.None,
+      contextValue: isDirectory ? "ucd:explorer-folder" : "ucd:explorer-file",
+      ...(!isDirectory
         ? {
             command: {
               command: Meta.commands.openEntry,
