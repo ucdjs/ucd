@@ -36,8 +36,8 @@ A Visual Studio Code extension
 
 <!-- languages -->
 
-| Language | Extensions | Grammars | Snippets |
-| -------- | ---------- | -------- | -------- |
-| `ucd`    | .ucd       | -        | -        |
+| Language | Extensions | Grammars   | Snippets |
+| -------- | ---------- | ---------- | -------- |
+| `ucd`    | .ucd       | source.ucd | -        |
 
 <!-- languages -->

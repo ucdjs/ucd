@@ -235,7 +235,53 @@
           ".ucd"
         ]
       }
-    ]
+    ],
+    "grammars": [
+      {
+        "language": "ucd",
+        "scopeName": "source.ucd",
+        "path": "./syntaxes/ucd.tmLanguage.json"
+      }
+    ],
+    "configurationDefaults": {
+      "editor.tokenColorCustomizations": {
+        "textMateRules": [
+          {
+            "scope": "comment.line.number-sign.ucd",
+            "settings": {
+              "foreground": "#608b4e",
+              "fontStyle": "italic"
+            }
+          },
+          {
+            "scope": "constant.numeric.codepoint.ucd",
+            "settings": {
+              "foreground": "#569cd6",
+              "fontStyle": "bold"
+            }
+          },
+          {
+            "scope": "constant.numeric.range.ucd",
+            "settings": {
+              "foreground": "#c586c0",
+              "fontStyle": "bold"
+            }
+          },
+          {
+            "scope": "punctuation.separator.ucd",
+            "settings": {
+              "foreground": "#808080"
+            }
+          },
+          {
+            "scope": "string.unquoted.field.ucd",
+            "settings": {
+              "foreground": "#ce9178"
+            }
+          }
+        ]
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "pnpm run build",

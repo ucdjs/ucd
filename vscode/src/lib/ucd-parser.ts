@@ -2,6 +2,7 @@ export interface UCDStats {
   totalLines: number;
   totalEntries: number;
   version: string | null;
+  date: string | null;
   characterRanges: number;
   properties: {
     generalCategory: number;
@@ -23,6 +24,7 @@ export function getUCDStats(_content: string): UCDStats {
     totalLines: 1842,
     totalEntries: 1523,
     version: "16.0.0",
+    date: "2024-09-10",
     characterRanges: 287,
     properties: {
       generalCategory: 1523,
