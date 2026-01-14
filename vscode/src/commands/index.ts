@@ -3,12 +3,12 @@ import { useOpenExplorerEntryCommand } from "./open-explorer-entry";
 import { useOpenInRemoteExplorerCommand } from "./open-in-remote-explorer";
 import { useOpenOnUnicodeCommand } from "./open-on-unicode";
 import { useRefreshExplorerCommand } from "./refresh-explorer";
-import { useVisualizeFileCommand } from "./visualize-file";
+import { useInspectFileCommand } from "./inspect-file";
 
 export function registerCommands() {
   useBrowseUcdFilesCommand();
   useRefreshExplorerCommand();
-  useVisualizeFileCommand();
+  useInspectFileCommand();
   useOpenInRemoteExplorerCommand();
   useOpenOnUnicodeCommand();
   useOpenExplorerEntryCommand();

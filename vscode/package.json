@@ -35,8 +35,8 @@
         "category": "UCD"
       },
       {
-        "command": "ucd.visualize-file",
-        "title": "Visualize UCD File",
+        "command": "ucd.inspect-file",
+        "title": "Inspect UCD File",
         "category": "UCD",
         "icon": "$(eye)",
         "enablement": "resourceScheme == ucd"
@@ -144,6 +144,11 @@
           "id": "ucd-explorer",
           "title": "UCD Explorer",
           "icon": "$(file-code)"
+        },
+        {
+          "id": "ucd-inspector",
+          "title": "UCD Inspector",
+          "icon": "$(eye)"
         }
       ]
     },
@@ -153,6 +158,15 @@
           "id": "ucd:explorer",
           "name": "All Files",
           "icon": "$(git-pull-request)"
+        }
+      ],
+      "ucd-inspector": [
+        {
+          "type": "webview",
+          "id": "ucd:inspector",
+          "name": "Inspector",
+          "visibility": "hidden",
+          "icon": "$(eye)"
         }
       ]
     },
@@ -166,7 +180,7 @@
       ],
       "view/item/context": [
         {
-          "command": "ucd.visualize-file",
+          "command": "ucd.inspect-file",
           "when": "viewItem == ucd:explorer-file",
           "group": "navigation"
         },
@@ -188,7 +202,7 @@
       ],
       "editor/title": [
         {
-          "command": "ucd.visualize-file",
+          "command": "ucd.inspect-file",
           "group": "navigation",
           "when": "editorLangId == ucd"
         },

@@ -9,7 +9,7 @@ A Visual Studio Code extension
 | Command                       | Title                     |
 | ----------------------------- | ------------------------- |
 | `ucd.browse-ucd-files`        | UCD: Browse UCD Files     |
-| `ucd.visualize-file`          | UCD: Visualize UCD File   |
+| `ucd.inspect-file`            | UCD: Inspect UCD File     |
 | `ucd.refresh-explorer`        | UCD: Refresh UCD Explorer |
 | `ucd.open-in-remote-explorer` | UCD: Open on ucdjs.dev    |
 | `ucd.open-on-unicode`         | UCD: Open on unicode.org  |
