@@ -1,5 +1,5 @@
-import type { DecorationOptions, TextEditor, TextEditorDecorationType } from "vscode";
-import { window } from "vscode";
+import type { DecorationOptions, MarkdownString, TextEditor, TextEditorDecorationType } from "vscode";
+import { MarkdownString as VscodeMarkdownString, window } from "vscode";
 
 const decorationTypes: TextEditorDecorationType[] = [];
 
@@ -39,6 +39,163 @@ decorationTypes.push(
   nameDecorationType,
 );
 
+function createMarkdown(content: string): MarkdownString {
+  const md = new VscodeMarkdownString(content);
+  md.isTrusted = true;
+  md.supportHtml = true;
+  return md;
+}
+
+function getCodePointHover(codePoint: string): MarkdownString {
+  const cp = Number.parseInt(codePoint, 16);
+  const char = String.fromCodePoint(cp);
+  const displayChar = cp >= 0x20 && cp <= 0x7E ? char : cp >= 0x100 ? char : "(control character)";
+
+  return createMarkdown([
+    `### Unicode Code Point`,
+    ``,
+    `| Property | Value |`,
+    `|----------|-------|`,
+    `| **Hex** | U+${codePoint.toUpperCase().padStart(4, "0")} |`,
+    `| **Decimal** | ${cp} |`,
+    `| **Character** | ${displayChar} |`,
+    ``,
+    `*Click to copy code point*`,
+  ].join("\n"));
+}
+
+function getRangeHover(start: string, end: string): MarkdownString {
+  const startCp = Number.parseInt(start, 16);
+  const endCp = Number.parseInt(end, 16);
+  const count = endCp - startCp + 1;
+
+  return createMarkdown([
+    `### Unicode Range`,
+    ``,
+    `| Property | Value |`,
+    `|----------|-------|`,
+    `| **Start** | U+${start.toUpperCase().padStart(4, "0")} |`,
+    `| **End** | U+${end.toUpperCase().padStart(4, "0")} |`,
+    `| **Count** | ${count.toLocaleString()} characters |`,
+    ``,
+    `*This range defines ${count.toLocaleString()} consecutive code points*`,
+  ].join("\n"));
+}
+
+function getPropertyHover(property: string): MarkdownString {
+  const prop = property.trim();
+
+  const propertyDescriptions: Record<string, string> = {
+    L: "Letter - Left-to-Right",
+    R: "Letter - Right-to-Left",
+    T: "Transparent - Non-spacing mark",
+    D: "Dual Joining - Joins on both sides",
+    C: "Join Causing - Causes joining",
+    U: "Non Joining - Does not join",
+    Lu: "Letter, Uppercase",
+    Ll: "Letter, Lowercase",
+    Lt: "Letter, Titlecase",
+    Lm: "Letter, Modifier",
+    Lo: "Letter, Other",
+    Mn: "Mark, Nonspacing",
+    Mc: "Mark, Spacing Combining",
+    Me: "Mark, Enclosing",
+    Nd: "Number, Decimal Digit",
+    Nl: "Number, Letter",
+    No: "Number, Other",
+    Pc: "Punctuation, Connector",
+    Pd: "Punctuation, Dash",
+    Ps: "Punctuation, Open",
+    Pe: "Punctuation, Close",
+    Pi: "Punctuation, Initial quote",
+    Pf: "Punctuation, Final quote",
+    Po: "Punctuation, Other",
+    Sm: "Symbol, Math",
+    Sc: "Symbol, Currency",
+    Sk: "Symbol, Modifier",
+    So: "Symbol, Other",
+    Zs: "Separator, Space",
+    Zl: "Separator, Line",
+    Zp: "Separator, Paragraph",
+    Cc: "Other, Control",
+    Cf: "Other, Format",
+    Cs: "Other, Surrogate",
+    Co: "Other, Private Use",
+    Cn: "Other, Not Assigned",
+  };
+
+  const description = propertyDescriptions[prop] ?? "Unicode property value";
+
+  return createMarkdown([
+    `### Property Value`,
+    ``,
+    `**\`${prop}\`**`,
+    ``,
+    description,
+    ``,
+    `*This field specifies a Unicode property or category*`,
+  ].join("\n"));
+}
+
+function getNameHover(name: string): MarkdownString {
+  const trimmedName = name.trim();
+
+  return createMarkdown([
+    `### Character Name`,
+    ``,
+    `**${trimmedName}**`,
+    ``,
+    `The official Unicode character name. Names are unique and immutable once assigned.`,
+    ``,
+    `*Names follow the pattern: SCRIPT + DESCRIPTION*`,
+  ].join("\n"));
+}
+
+function getValueHover(value: string, fieldIndex: number): MarkdownString {
+  const trimmedValue = value.trim();
+
+  const fieldNames = [
+    "Code Point",
+    "Property",
+    "Name",
+    "Additional Property",
+    "Extended Property",
+    "Mapping",
+  ];
+
+  const fieldName = fieldNames[fieldIndex] ?? `Field ${fieldIndex + 1}`;
+
+  return createMarkdown([
+    `### ${fieldName}`,
+    ``,
+    `**\`${trimmedValue}\`**`,
+    ``,
+    `Additional property or mapping value for this character entry.`,
+  ].join("\n"));
+}
+
+function getCommentHover(comment: string): MarkdownString {
+  const trimmedComment = comment.replace(/^#\s*/, "").trim();
+
+  if (trimmedComment.startsWith("@")) {
+    return createMarkdown([
+      `### File Metadata`,
+      ``,
+      `\`${trimmedComment}\``,
+      ``,
+      `This is a file metadata directive specifying version or property information.`,
+    ].join("\n"));
+  }
+
+  return createMarkdown([
+    `### Comment`,
+    ``,
+    trimmedComment || "*Empty comment line*",
+    ``,
+    `*Comments provide context about the data below*`,
+  ].join("\n"));
+}
+
 export function applyMockDecorations(editor: TextEditor): void {
   const document = editor.document;
   const text = document.getText();
@@ -58,6 +215,7 @@ export function applyMockDecorations(editor: TextEditor): void {
     if (line.startsWith("#")) {
       comments.push({
         range: document.lineAt(lineIndex).range,
+        hoverMessage: getCommentHover(line),
       });
       continue;
     }
@@ -66,23 +224,25 @@ export function applyMockDecorations(editor: TextEditor): void {
       continue;
     }
 
-    const codePointMatch = line.match(/^([0-9A-F]{4,6})/i);
-    if (codePointMatch?.[1]) {
-      const startPos = document.positionAt(document.offsetAt(document.lineAt(lineIndex).range.start));
-      const endPos = startPos.translate(0, codePointMatch[1].length);
-      codePoints.push({
-        range: document.lineAt(lineIndex).range.with(startPos, endPos),
-      });
-    }
-
-    const rangeMatch = line.match(/([0-9A-F]{4,6})\.\.([0-9A-F]{4,6})/i);
-    if (rangeMatch?.[0]) {
+    const rangeMatch = line.match(/^([0-9A-F]{4,6})\.\.([0-9A-F]{4,6})/i);
+    if (rangeMatch?.[0] && rangeMatch[1] && rangeMatch[2]) {
       const rangeStart = line.indexOf(rangeMatch[0]);
       const startPos = document.lineAt(lineIndex).range.start.translate(0, rangeStart);
       const endPos = startPos.translate(0, rangeMatch[0].length);
       ranges.push({
         range: document.lineAt(lineIndex).range.with(startPos, endPos),
+        hoverMessage: getRangeHover(rangeMatch[1], rangeMatch[2]),
       });
+    } else {
+      const codePointMatch = line.match(/^([0-9A-F]{4,6})/i);
+      if (codePointMatch?.[1]) {
+        const startPos = document.positionAt(document.offsetAt(document.lineAt(lineIndex).range.start));
+        const endPos = startPos.translate(0, codePointMatch[1].length);
+        codePoints.push({
+          range: document.lineAt(lineIndex).range.with(startPos, endPos),
+          hoverMessage: getCodePointHover(codePointMatch[1]),
+        });
+      }
     }
 
     const parts = line.split(";");
@@ -99,6 +259,7 @@ export function applyMockDecorations(editor: TextEditor): void {
           const endPos = startPos.translate(0, secondPart.length);
           properties.push({
             range: document.lineAt(lineIndex).range.with(startPos, endPos),
+            hoverMessage: getPropertyHover(secondPart),
           });
         }
         currentOffset += secondPart.length + 1;
@@ -113,6 +274,7 @@ export function applyMockDecorations(editor: TextEditor): void {
           const endPos = startPos.translate(0, thirdPart.length);
           names.push({
             range: document.lineAt(lineIndex).range.with(startPos, endPos),
+            hoverMessage: getNameHover(thirdPart),
           });
         }
         currentOffset += thirdPart.length + 1;
@@ -128,6 +290,7 @@ export function applyMockDecorations(editor: TextEditor): void {
           const endPos = startPos.translate(0, part.length);
           values.push({
             range: document.lineAt(lineIndex).range.with(startPos, endPos),
+            hoverMessage: getValueHover(part, i),
           });
         }
         currentOffset += part.length + 1;
