@@ -4,5 +4,6 @@
     "exclude": []
   },
   "ucd.api-base-url": "http://localhost:8787",
-  "ucd.store-url": "http://ucd-store.localhost:8787"
+  "ucd.store-url": "http://ucd-store.localhost:8787",
+  "ucd.frontend-url": "http://localhost:3000"
 }
