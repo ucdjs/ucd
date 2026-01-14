@@ -64,6 +64,12 @@
         "title": "Open UCD Entry",
         "category": "UCD",
         "icon": "$(file-code)"
+      },
+      {
+        "command": "ucd.generate-override",
+        "title": "Generate Parser Override",
+        "category": "UCD",
+        "icon": "$(file-add)"
       }
     ],
     "configuration": {

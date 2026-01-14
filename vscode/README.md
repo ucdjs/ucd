@@ -6,14 +6,15 @@ A Visual Studio Code extension
 
 <!-- commands -->
 
-| Command                       | Title                     |
-| ----------------------------- | ------------------------- |
-| `ucd.browse-ucd-files`        | UCD: Browse UCD Files     |
-| `ucd.inspect-file`            | UCD: Inspect UCD File     |
-| `ucd.refresh-explorer`        | UCD: Refresh UCD Explorer |
-| `ucd.open-in-remote-explorer` | UCD: Open on ucdjs.dev    |
-| `ucd.open-on-unicode`         | UCD: Open on unicode.org  |
-| `ucd.open-explorer-entry`     | UCD: Open UCD Entry       |
+| Command                       | Title                         |
+| ----------------------------- | ----------------------------- |
+| `ucd.browse-ucd-files`        | UCD: Browse UCD Files         |
+| `ucd.inspect-file`            | UCD: Inspect UCD File         |
+| `ucd.refresh-explorer`        | UCD: Refresh UCD Explorer     |
+| `ucd.open-in-remote-explorer` | UCD: Open on ucdjs.dev        |
+| `ucd.open-on-unicode`         | UCD: Open on unicode.org      |
+| `ucd.open-explorer-entry`     | UCD: Open UCD Entry           |
+| `ucd.generate-override`       | UCD: Generate Parser Override |
 
 <!-- commands -->
 
