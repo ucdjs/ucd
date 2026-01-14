@@ -1,5 +1,6 @@
 import type { TextDocumentContentProvider, Uri } from "vscode";
 import { EventEmitter } from "vscode";
+import { useUCDClient } from "../composables/useUCDClient";
 import { logger } from "../logger";
 
 export class UCDContentProvider implements TextDocumentContentProvider {
@@ -8,15 +9,20 @@ export class UCDContentProvider implements TextDocumentContentProvider {
 
   async provideTextDocumentContent(uri: Uri) {
     logger.info(`Providing content for URI: ${JSON.stringify(uri)}`);
+    const client = useUCDClient();
 
-    const data = await fetch(`https://unicode-proxy.ucdjs.dev/${uri.path}`);
-    if (!data.ok) {
-      logger.error(`Failed to fetch UCD file: ${data.statusText}`);
-      return `Error fetching UCD file: ${data.statusText}`;
+    const { data, error } = await client.value!.files.get(uri.path);
+
+    if (error) {
+      logger.error(`Error fetching UCD file: ${error.message}`);
+      return `Error fetching UCD file: ${error.message}`;
     }
 
-    const text = await data.text();
+    if (typeof data !== "string") {
+      logger.error(`Unexpected data type received for UCD file: ${typeof data}`);
+      return `Error: Unexpected data type received for UCD file: ${typeof data}`;
+    }
 
-    return text;
+    return data;
   }
 }

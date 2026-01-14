@@ -218,6 +218,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.build.json"
   },
   "dependencies": {
+    "@ucdjs-internal/shared": "workspace:*",
     "@ucdjs/client": "workspace:*",
     "@ucdjs/fs-bridge": "workspace:*",
     "@ucdjs/schemas": "workspace:*",
