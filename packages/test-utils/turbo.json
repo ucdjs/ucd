@@ -9,6 +9,7 @@
         "dist/**"
       ],
       "dependsOn": [
+        "$TURBO_EXTENDS$",
         "generate:client"
       ]
     },
@@ -20,6 +21,7 @@
         ".cache/tsbuildinfo.json"
       ],
       "dependsOn": [
+        "$TURBO_EXTENDS$",
         "generate:client"
       ]
     },
@@ -28,6 +30,7 @@
         "src/.generated/api.d.ts"
       ],
       "dependsOn": [
+        "$TURBO_EXTENDS$",
         "@ucdjs/api#build:openapi"
       ]
     }

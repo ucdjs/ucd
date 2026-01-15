@@ -7,20 +7,27 @@
     },
     "dev": {
       "persistent": false,
-      "dependsOn": ["dev:setup"]
+      "dependsOn": [
+        "$TURBO_EXTENDS$",
+        "dev:setup"
+      ]
     },
     "dev:setup": {
       "cache": false,
       "outputs": []
     },
     "lint": {
-      "dependsOn": ["lint:openapi"]
+      "dependsOn": [
+        "$TURBO_EXTENDS$",
+        "lint:openapi"
+      ]
     },
     "typecheck": {
       "outputs": [".cache/tsbuildinfo.json"]
     },
     "lint:openapi": {
       "dependsOn": [
+        "$TURBO_EXTENDS$",
         "build:openapi"
       ]
     },
