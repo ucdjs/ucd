@@ -1,28 +1,17 @@
-import type { QueryClient } from "@tanstack/react-query";
 import { TanStackDevtools } from "@tanstack/react-devtools";
-import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import {
   createRootRouteWithContext,
   HeadContent,
-  Scripts,
-  useLocation,
+  Scripts
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { RootProvider } from "fumadocs-ui/provider/tanstack";
-import { AppSidebar } from "@/components/layout/sidebar/app-sidebar";
-import { AppNotFound } from "@/components/not-found";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { versionsQueryOptions } from "@/functions/versions";
 import GLOBAL_CSS_URL from "../globals.css?url";
 
-export interface AppRouterContext {
-  queryClient: QueryClient;
-  latestUnicodeVersion: string;
-  apiBaseUrl: string;
-}
+export interface AppRouterContext {}
 
 export const Route = createRootRouteWithContext<AppRouterContext>()({
-  notFoundComponent: AppNotFound,
+  // notFoundComponent: AppNotFound,
   head: () => ({
     meta: [
       {
@@ -58,44 +47,23 @@ export const Route = createRootRouteWithContext<AppRouterContext>()({
     scripts: [
       import.meta.env.DEV
         ? {
-            src: "//unpkg.com/react-scan/dist/auto.global.js",
-            crossOrigin: "anonymous",
-          }
+          src: "//unpkg.com/react-scan/dist/auto.global.js",
+          crossOrigin: "anonymous",
+        }
         : undefined,
     ],
   }),
-  loader: async ({ context }) => {
-    context.queryClient.prefetchQuery(versionsQueryOptions());
-
-    return {
-      ucdjsApiBaseUrl: context.apiBaseUrl,
-    };
-  },
   shellComponent: RootDocument,
 });
 
 function RootDocument({ children }: { children: React.ReactNode }) {
-  const location = useLocation();
-  const isDocsPage = location.pathname.startsWith("/docs");
-
   return (
     <html lang="en">
       <head>
         <HeadContent />
       </head>
       <body>
-        {isDocsPage
-          ? (
-              <RootProvider>{children}</RootProvider>
-            )
-          : (
-              <SidebarProvider>
-                <AppSidebar />
-                <SidebarInset>
-                  {children}
-                </SidebarInset>
-              </SidebarProvider>
-            )}
+        <RootProvider>{children}</RootProvider>
         <TanStackDevtools
           config={{
             position: "bottom-right",
@@ -104,10 +72,6 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             {
               name: "Tanstack Router",
               render: <TanStackRouterDevtoolsPanel />,
-            },
-            {
-              name: "Tanstack Query",
-              render: <ReactQueryDevtoolsPanel />,
             },
           ]}
         />
