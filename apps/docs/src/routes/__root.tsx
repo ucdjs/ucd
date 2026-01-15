@@ -44,14 +44,6 @@ export const Route = createRootRouteWithContext<AppRouterContext>()({
         href: GLOBAL_CSS_URL,
       },
     ],
-    scripts: [
-      import.meta.env.DEV
-        ? {
-          src: "//unpkg.com/react-scan/dist/auto.global.js",
-          crossOrigin: "anonymous",
-        }
-        : undefined,
-    ],
   }),
   shellComponent: RootDocument,
 });
