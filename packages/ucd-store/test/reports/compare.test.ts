@@ -422,13 +422,13 @@ describe("compare", () => {
         versions: ["16.0.0", "15.1.0"],
         files: {
           "16.0.0": createFileTree({
-            "auxiliary": {
+            auxiliary: {
               "GraphemeBreakProperty.txt": "content",
               "NewNestedFile.txt": "new nested content",
             },
           }),
           "15.1.0": createFileTree({
-            "auxiliary": {
+            auxiliary: {
               "GraphemeBreakProperty.txt": "content",
             },
           }),
@@ -633,9 +633,9 @@ describe("compare", () => {
         versions: ["16.0.0", "15.1.0"],
         initialFiles: {
           "16.0.0/UnicodeData.txt": "content",
-          "16.0.0/snapshot.json": '{"unicodeVersion": "16.0.0"}',
+          "16.0.0/snapshot.json": "{\"unicodeVersion\": \"16.0.0\"}",
           "15.1.0/UnicodeData.txt": "content",
-          "15.1.0/snapshot.json": '{"unicodeVersion": "15.1.0"}',
+          "15.1.0/snapshot.json": "{\"unicodeVersion\": \"15.1.0\"}",
         },
       });
 
