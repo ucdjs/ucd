@@ -2,7 +2,6 @@ import type { TreeViewNode } from "reactive-vscode";
 import type { UCDTreeItem } from "../composables/useUCDExplorer";
 import { executeCommand, useCommand } from "reactive-vscode";
 import { Uri } from "vscode";
-import { config } from "../config";
 import * as Meta from "../generated/meta";
 import { logger } from "../logger";
 
