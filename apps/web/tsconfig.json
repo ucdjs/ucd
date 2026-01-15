@@ -10,8 +10,7 @@
     /* Bundler mode */
     "moduleResolution": "bundler",
     "paths": {
-      "@/*": ["./src/*"],
-      "fumadocs-mdx:collections/*": [".source/*"]
+      "@/*": ["./src/*"]
     },
     "types": ["vite/client"],
     "allowImportingTsExtensions": true,
