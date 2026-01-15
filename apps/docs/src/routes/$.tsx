@@ -13,8 +13,8 @@ import {
 } from "fumadocs-ui/layouts/docs/page";
 import defaultMdxComponents from "fumadocs-ui/mdx";
 import { DocsNotFound } from "@/components/not-found";
-import { baseOptions } from "@/lib/docs/docs-layout";
-import { source } from "@/lib/docs/docs-loader";
+import { baseOptions } from "@/lib/docs-layout";
+import { source } from "@/lib/docs-loader";
 
 const serverLoader = createServerFn({
   method: "GET",
@@ -52,7 +52,7 @@ const clientLoader = browserCollections.docs.createClientLoader({
   },
 });
 
-export const Route = createFileRoute("/(docs)/docs/$")({
+export const Route = createFileRoute("/$")({
   component: Page,
   loader: async ({ params }) => {
     const slugs = params._splat?.split("/") ?? [];

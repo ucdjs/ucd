@@ -2,13 +2,16 @@ import tailwindcss from "@tailwindcss/vite";
 import { devtools } from "@tanstack/devtools-vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
+import mdx from "fumadocs-mdx/vite";
 import { nitro } from "nitro/vite";
 import { defineConfig } from "vite";
 import viteTsConfigPaths from "vite-tsconfig-paths";
+import * as MdxConfig from "./source.config";
 
 const config = defineConfig({
   plugins: [
     devtools(),
+    mdx(MdxConfig),
     nitro({
       preset: "cloudflare_module",
       cloudflare: {
@@ -18,20 +21,11 @@ const config = defineConfig({
         nodeCompat: true,
       },
     }),
-    // this is the plugin that enables path aliases
     viteTsConfigPaths({
       projects: ["./tsconfig.json"],
     }),
     tailwindcss(),
-    tanstackStart({
-      srcDirectory: "src",
-      prerender: {
-        enabled: false, // We can't enable prerendering until Nitro fixes their preview server.
-      },
-      server: {
-        entry: "server.ts",
-      },
-    }),
+    tanstackStart(),
     viteReact({
       babel: {
         plugins: ["babel-plugin-react-compiler"],
