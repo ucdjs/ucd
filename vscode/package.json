@@ -155,6 +155,11 @@
           "id": "ucd-inspector",
           "title": "UCD Inspector",
           "icon": "$(eye)"
+        },
+        {
+          "id": "ucd-selection",
+          "title": "UCD Selection",
+          "icon": "$(list-selection)"
         }
       ]
     },
@@ -173,6 +178,15 @@
           "name": "Inspector",
           "visibility": "hidden",
           "icon": "$(eye)"
+        }
+      ],
+      "ucd-selection": [
+        {
+          "type": "webview",
+          "id": "ucd:selection",
+          "name": "Selection",
+          "visibility": "hidden",
+          "icon": "$(list-selection)"
         }
       ]
     },
