@@ -1249,6 +1249,9 @@ importers:
       '@ucdjs/fs-bridge':
         specifier: workspace:*
         version: link:../packages/fs-bridge
+      '@ucdjs/schemas':
+        specifier: workspace:*
+        version: link:../packages/schemas
       '@ucdjs/ucd-store':
         specifier: workspace:*
         version: link:../packages/ucd-store

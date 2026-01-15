@@ -43,7 +43,7 @@
     "dev": "tsdown --watch",
     "clean": "git clean -xdf dist node_modules",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit -p tsconfig.build.json",
     "playground:node": "tsx --tsconfig=./tsconfig.json ./playgrounds/node-playground.ts",
     "playground:http": "tsx --tsconfig=./tsconfig.json ./playgrounds/http-playground.ts"
   },

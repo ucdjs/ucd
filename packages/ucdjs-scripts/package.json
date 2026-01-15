@@ -39,11 +39,11 @@
     "node": ">=22.18"
   },
   "scripts": {
-    "build": "tsdown",
+    "build": "tsdown --tsconfig=./tsconfig.build.json",
     "dev": "tsdown --watch",
     "clean": "git clean -xdf dist node_modules",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit -p tsconfig.build.json"
   },
   "dependencies": {
     "@ucdjs-internal/shared": "workspace:*",
