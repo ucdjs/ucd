@@ -12,7 +12,7 @@
   ],
   "scripts": {
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit -p tsconfig.build.json"
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "tsdown": "catalog:dev"
