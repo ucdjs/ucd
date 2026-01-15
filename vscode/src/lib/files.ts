@@ -4,7 +4,6 @@ import type { TreeViewNode } from "reactive-vscode";
 import type { UCDTreeItem } from "../composables/useUCDExplorer";
 import { hasUCDFolderPath } from "@unicode-utils/core";
 import { ThemeIcon, TreeItemCollapsibleState } from "vscode";
-import * as Meta from "../generated/meta";
 import { logger } from "../logger";
 
 function mapEntryToTreeNode(version: string, entry: UnicodeFileTreeNodeWithoutLastModified, parentPath?: string): TreeViewNode {
@@ -14,29 +13,28 @@ function mapEntryToTreeNode(version: string, entry: UnicodeFileTreeNodeWithoutLa
   const hasChildren = ("children" in entry) && entry.children.length > 0;
   const currentPath = parentPath ? `${parentPath}/${entry.name}` : entry.name;
   const filePathForCommand = parentPath ? currentPath : entry.name;
+  const isDirectory = entry.type === "directory";
 
   return {
     treeItem: {
-      iconPath: hasChildren ? new ThemeIcon("folder") : new ThemeIcon("file"),
+      iconPath: isDirectory ? new ThemeIcon("folder") : new ThemeIcon("file"),
       label: entry.name,
-      collapsibleState: hasChildren ? TreeItemCollapsibleState.Collapsed : TreeItemCollapsibleState.None,
-      contextValue: hasChildren ? "ucd:explorer-folder" : "ucd:explorer-file",
-      ...(!hasChildren
-        ? {
+      collapsibleState: isDirectory ? TreeItemCollapsibleState.Collapsed : TreeItemCollapsibleState.None,
+      contextValue: isDirectory ? "ucd:explorer-folder" : "ucd:explorer-file",
+      ...(isDirectory
+        ? {}
+        : {
             command: {
-              command: Meta.commands.openEntry,
-              title: "Open UCD Data File",
-              arguments: [
-                version,
-                filePathForCommand,
-              ],
-              tooltip: "Open UCD data file for this version",
+              title: "Open UCD Entry",
+              command: "ucd.open-explorer-entry",
+              arguments: [version, filePathForCommand],
+              tooltip: "Open this file in UCD Viewer",
             },
-          }
-        : {}),
+          }),
       __ucd: {
         version,
         url: `https://unicode.org/Public/${version}/${hasUCDFolderPath(version) ? "ucd/" : ""}${filePathForCommand}`,
+        filePath: filePathForCommand,
       },
     } as UCDTreeItem,
     children: hasChildren ? entry.children?.map((child) => mapEntryToTreeNode(version, child, currentPath)) : [],

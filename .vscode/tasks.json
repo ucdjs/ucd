@@ -15,12 +15,39 @@
           "base": "$ts-webpack-watch",
           "background": {
             "activeOnStart": true,
-            "beginsPattern": "Build start",
-            "endsPattern": "Build complete"
+            "beginsPattern": "vscode-ucd:dev:.*Build start",
+            "endsPattern": "vscode-ucd:dev:.*✔ Rebuilt in"
           }
         }
       ],
-      "group": "build"
+      "group": {
+        "kind": "build",
+        "isDefault": false
+      }
+    },
+    {
+      "label": "npm: dev:packages+vscode",
+      "type": "shell",
+      "command": "turbo",
+      "args": ["watch", "dev", "--filter", "./packages/*", "--filter", "./vscode"],
+      "isBackground": true,
+      "presentation": {
+        "reveal": "never"
+      },
+      "problemMatcher": [
+        {
+          "base": "$ts-webpack-watch",
+          "background": {
+            "activeOnStart": true,
+            "beginsPattern": "vscode-ucd:dev:.*Build start",
+            "endsPattern": "vscode-ucd:dev:.*✔ Rebuilt in"
+          }
+        }
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
     }
   ]
 }

@@ -1,0 +1,43 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Unicode Character Database",
+  "scopeName": "source.ucd",
+  "patterns": [
+    { "include": "#comment" },
+    { "include": "#entry" }
+  ],
+  "repository": {
+    "comment": {
+      "name": "comment.line.number-sign.ucd",
+      "match": "#.*$"
+    },
+    "entry": {
+      "patterns": [
+        { "include": "#range" },
+        { "include": "#codepoint" },
+        { "include": "#separator" },
+        { "include": "#field" }
+      ]
+    },
+    "range": {
+      "name": "constant.numeric.range.ucd",
+      "match": "\\b([0-9A-Fa-f]{4,6})\\.\\.([0-9A-Fa-f]{4,6})\\b",
+      "captures": {
+        "1": { "name": "constant.numeric.codepoint.ucd" },
+        "2": { "name": "constant.numeric.codepoint.ucd" }
+      }
+    },
+    "codepoint": {
+      "name": "constant.numeric.codepoint.ucd",
+      "match": "^[0-9A-Fa-f]{4,6}\\b"
+    },
+    "separator": {
+      "name": "punctuation.separator.ucd",
+      "match": ";"
+    },
+    "field": {
+      "name": "string.unquoted.field.ucd",
+      "match": "[^;#\\n]+"
+    }
+  }
+}

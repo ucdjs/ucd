@@ -35,8 +35,8 @@
         "category": "UCD"
       },
       {
-        "command": "ucd.visualize-file",
-        "title": "Visualize UCD File",
+        "command": "ucd.inspect-file",
+        "title": "Inspect UCD File",
         "category": "UCD",
         "icon": "$(eye)",
         "enablement": "resourceScheme == ucd"
@@ -48,10 +48,28 @@
         "icon": "$(refresh)"
       },
       {
-        "command": "ucd.open-entry",
-        "title": "Open UCD Entry",
+        "command": "ucd.open-in-remote-explorer",
+        "title": "Open on ucdjs.dev",
         "category": "UCD",
         "icon": "$(file-text)"
+      },
+      {
+        "command": "ucd.open-on-unicode",
+        "title": "Open on unicode.org",
+        "category": "UCD",
+        "icon": "$(globe)"
+      },
+      {
+        "command": "ucd.open-explorer-entry",
+        "title": "Open UCD Entry",
+        "category": "UCD",
+        "icon": "$(file-code)"
+      },
+      {
+        "command": "ucd.generate-override",
+        "title": "Generate Parser Override",
+        "category": "UCD",
+        "icon": "$(file-add)"
       }
     ],
     "configuration": {
@@ -85,14 +103,44 @@
             }
           }
         },
-        "ucd.data-files-api": {
+        "ucd.api-base-url": {
           "type": "string",
-          "description": "API URL to fetch UCD data files from",
-          "default": "https://unicode-api.luxass.dev",
-          "enum": [
-            "https://unicode-api.luxass.dev",
-            "https://preview.unicode-api.luxass.dev"
-          ]
+          "description": "API base URL to fetch UCD data files from",
+          "anyOf": [
+            {
+              "enum": [
+                "https://api.ucdjs.dev",
+                "https://preview.api.ucdjs.dev"
+              ]
+            },
+            {
+              "type": "string",
+              "format": "url"
+            }
+          ],
+          "default": "https://api.ucdjs.dev"
+        },
+        "ucd.store-url": {
+          "type": "string",
+          "description": "URL of the remote UCD store (used when not using local store)",
+          "default": ""
+        },
+        "ucd.frontend-url": {
+          "type": "string",
+          "description": "Base URL to use when opening ucd website",
+          "anyOf": [
+            {
+              "enum": [
+                "https://ucdjs.dev",
+                "https://preview.ucdjs.dev"
+              ]
+            },
+            {
+              "type": "string",
+              "format": "url"
+            }
+          ],
+          "default": "https://ucdjs.dev"
         }
       }
     },
@@ -102,6 +150,16 @@
           "id": "ucd-explorer",
           "title": "UCD Explorer",
           "icon": "$(file-code)"
+        },
+        {
+          "id": "ucd-inspector",
+          "title": "UCD Inspector",
+          "icon": "$(eye)"
+        },
+        {
+          "id": "ucd-selection",
+          "title": "UCD Selection",
+          "icon": "$(list-selection)"
         }
       ]
     },
@@ -111,6 +169,24 @@
           "id": "ucd:explorer",
           "name": "All Files",
           "icon": "$(git-pull-request)"
+        }
+      ],
+      "ucd-inspector": [
+        {
+          "type": "webview",
+          "id": "ucd:inspector",
+          "name": "Inspector",
+          "visibility": "hidden",
+          "icon": "$(eye)"
+        }
+      ],
+      "ucd-selection": [
+        {
+          "type": "webview",
+          "id": "ucd:selection",
+          "name": "Selection",
+          "visibility": "hidden",
+          "icon": "$(list-selection)"
         }
       ]
     },
@@ -124,19 +200,39 @@
       ],
       "view/item/context": [
         {
-          "command": "ucd.visualize-file",
+          "command": "ucd.inspect-file",
           "when": "viewItem == ucd:explorer-file",
           "group": "navigation"
         },
         {
-          "command": "ucd.open-entry",
+          "command": "ucd.open-in-remote-explorer",
+          "when": "viewItem == ucd:explorer-file || viewItem == ucd:explorer-folder || viewItem == ucd:version-folder",
+          "group": "navigation"
+        },
+        {
+          "command": "ucd.open-on-unicode",
+          "when": "viewItem == ucd:explorer-file || viewItem == ucd:explorer-folder || viewItem == ucd:version-folder",
+          "group": "navigation"
+        },
+        {
+          "command": "ucd.open-explorer-entry",
           "when": "viewItem == ucd:explorer-file || viewItem == ucd:explorer-folder || viewItem == ucd:version-folder",
           "group": "navigation"
         }
       ],
       "editor/title": [
         {
-          "command": "ucd.visualize-file",
+          "command": "ucd.inspect-file",
+          "group": "navigation",
+          "when": "editorLangId == ucd"
+        },
+        {
+          "command": "ucd.open-in-remote-explorer",
+          "group": "navigation",
+          "when": "editorLangId == ucd"
+        },
+        {
+          "command": "ucd.open-on-unicode",
           "group": "navigation",
           "when": "editorLangId == ucd"
         }
@@ -153,7 +249,53 @@
           ".ucd"
         ]
       }
-    ]
+    ],
+    "grammars": [
+      {
+        "language": "ucd",
+        "scopeName": "source.ucd",
+        "path": "./syntaxes/ucd.tmLanguage.json"
+      }
+    ],
+    "configurationDefaults": {
+      "editor.tokenColorCustomizations": {
+        "textMateRules": [
+          {
+            "scope": "comment.line.number-sign.ucd",
+            "settings": {
+              "foreground": "#608b4e",
+              "fontStyle": "italic"
+            }
+          },
+          {
+            "scope": "constant.numeric.codepoint.ucd",
+            "settings": {
+              "foreground": "#569cd6",
+              "fontStyle": "bold"
+            }
+          },
+          {
+            "scope": "constant.numeric.range.ucd",
+            "settings": {
+              "foreground": "#c586c0",
+              "fontStyle": "bold"
+            }
+          },
+          {
+            "scope": "punctuation.separator.ucd",
+            "settings": {
+              "foreground": "#808080"
+            }
+          },
+          {
+            "scope": "string.unquoted.field.ucd",
+            "settings": {
+              "foreground": "#ce9178"
+            }
+          }
+        ]
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "pnpm run build",
@@ -166,6 +308,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.build.json"
   },
   "dependencies": {
+    "@ucdjs-internal/shared": "workspace:*",
     "@ucdjs/client": "workspace:*",
     "@ucdjs/fs-bridge": "workspace:*",
     "@ucdjs/schemas": "workspace:*",

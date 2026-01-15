@@ -2,17 +2,32 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Extension",
+      "name": "Extension (Extension Only)",
       "type": "extensionHost",
       "request": "launch",
       "runtimeExecutable": "${execPath}",
       "args": [
+        "${workspaceFolder}/vscode/playground",
         "--extensionDevelopmentPath=${workspaceFolder}/vscode"
       ],
       "outFiles": [
         "${workspaceFolder}/vscode/dist/**/*.js"
       ],
       "preLaunchTask": "npm: dev:vscode"
+    },
+    {
+      "name": "Extension (Full Watch)",
+      "type": "extensionHost",
+      "request": "launch",
+      "runtimeExecutable": "${execPath}",
+      "args": [
+        "${workspaceFolder}/vscode/playground",
+        "--extensionDevelopmentPath=${workspaceFolder}/vscode"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/vscode/dist/**/*.js"
+      ],
+      "preLaunchTask": "npm: dev:packages+vscode"
     }
   ]
 }

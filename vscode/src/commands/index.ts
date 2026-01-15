@@ -1,11 +1,17 @@
 import { useBrowseUcdFilesCommand } from "./browse-ucd-files";
-import { useOpenEntryCommand } from "./open-entry";
+import { useGenerateOverrideCommand } from "./generate-override";
+import { useInspectFileCommand } from "./inspect-file";
+import { useOpenExplorerEntryCommand } from "./open-explorer-entry";
+import { useOpenInRemoteExplorerCommand } from "./open-in-remote-explorer";
+import { useOpenOnUnicodeCommand } from "./open-on-unicode";
 import { useRefreshExplorerCommand } from "./refresh-explorer";
-import { useVisualizeFileCommand } from "./visualize-file";
 
 export function registerCommands() {
   useBrowseUcdFilesCommand();
   useRefreshExplorerCommand();
-  useVisualizeFileCommand();
-  useOpenEntryCommand();
+  useInspectFileCommand();
+  useOpenInRemoteExplorerCommand();
+  useOpenOnUnicodeCommand();
+  useOpenExplorerEntryCommand();
+  useGenerateOverrideCommand();
 }
