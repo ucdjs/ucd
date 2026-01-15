@@ -1243,6 +1243,9 @@ importers:
 
   vscode:
     dependencies:
+      '@ucdjs-internal/shared':
+        specifier: workspace:*
+        version: link:../packages/shared
       '@ucdjs/client':
         specifier: workspace:*
         version: link:../packages/client
