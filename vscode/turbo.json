@@ -20,7 +20,10 @@
       "persistent": false
     },
     "typecheck": {
-      "dependsOn": ["ext:gen"],
+      "dependsOn": [
+        "$TURBO_EXTENDS$",
+        "ext:gen"
+      ],
       "outputs": [".cache/tsbuildinfo.json"]
     }
   }
