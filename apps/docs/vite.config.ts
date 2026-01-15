@@ -12,7 +12,15 @@ const config = defineConfig({
   plugins: [
     devtools(),
     mdx(MdxConfig),
-    nitro(),
+    nitro({
+      preset: "cloudflare_module",
+      cloudflare: {
+        // This is false because we can't use CF environments
+        // in redirected configs which is what this will use.
+        deployConfig: false,
+        nodeCompat: true,
+      },
+    }),
     viteTsConfigPaths({
       projects: ["./tsconfig.json"],
     }),
