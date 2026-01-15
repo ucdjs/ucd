@@ -4,6 +4,7 @@
   "tasks": {
     "build": {
       "dependsOn": [
+        "$TURBO_EXTENDS$",
         "ext:gen"
       ],
       "outputs": [
