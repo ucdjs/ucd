@@ -12,7 +12,7 @@
   "scripts": {
     "clean": "git clean -xdf node_modules dist",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit -p tsconfig.build.json"
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:linting",
