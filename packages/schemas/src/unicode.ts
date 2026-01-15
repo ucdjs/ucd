@@ -154,7 +154,8 @@ const UnicodeFileTreeFileSchema = FileEntryFileSchema.meta({
 });
 
 const UnicodeFileTreeDirectorySchema = FileEntryDirectorySchema.extend({
-  get children() {
+  // We need the type annotation to avoid typescript omitting the inferred type.
+  get children(): z.ZodArray<typeof UnicodeFileTreeNodeSchema> {
     // eslint-disable-next-line ts/no-use-before-define
     return z.array(UnicodeFileTreeNodeSchema);
   },

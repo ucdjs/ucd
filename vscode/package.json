@@ -163,11 +163,12 @@
     "package": "pnpm vsce package --no-dependencies",
     "release": "pnpm vsce publish --no-dependencies",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit -p tsconfig.build.json"
   },
   "dependencies": {
     "@ucdjs/client": "workspace:*",
     "@ucdjs/fs-bridge": "workspace:*",
+    "@ucdjs/schemas": "workspace:*",
     "@ucdjs/ucd-store": "workspace:*"
   },
   "devDependencies": {
