@@ -7,8 +7,8 @@
     "dev": "vite dev --port 3000",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "fumadocs-mdx && eslint .",
-    "typecheck": "fumadocs-mdx && tsc --noEmit"
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@base-ui/react": "catalog:web",
@@ -26,9 +26,6 @@
     "@unicode-utils/core": "catalog:prod",
     "class-variance-authority": "catalog:web",
     "clsx": "catalog:web",
-    "fumadocs-core": "catalog:docs",
-    "fumadocs-mdx": "catalog:docs",
-    "fumadocs-ui": "catalog:docs",
     "lucide-react": "catalog:web",
     "react": "catalog:web",
     "react-dom": "catalog:web",

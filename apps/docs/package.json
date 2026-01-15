@@ -1,0 +1,43 @@
+{
+  "name": "@ucdjs/docs",
+  "type": "module",
+  "private": true,
+  "packageManager": "pnpm@10.27.0",
+  "scripts": {
+    "dev": "vite dev --port 3001",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "fumadocs-mdx && eslint .",
+    "typecheck": "fumadocs-mdx && tsc --noEmit"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "catalog:web",
+    "@tanstack/react-devtools": "catalog:web",
+    "@tanstack/react-router": "catalog:web",
+    "@tanstack/react-router-devtools": "catalog:web",
+    "@tanstack/react-router-ssr-query": "catalog:web",
+    "@tanstack/react-start": "catalog:web",
+    "@tanstack/router-plugin": "catalog:web",
+    "fumadocs-core": "catalog:docs",
+    "fumadocs-mdx": "catalog:docs",
+    "fumadocs-ui": "catalog:docs",
+    "lucide-react": "catalog:web",
+    "nitro": "catalog:web",
+    "react": "catalog:web",
+    "react-dom": "catalog:web",
+    "tailwindcss": "catalog:web",
+    "vite-tsconfig-paths": "catalog:web"
+  },
+  "devDependencies": {
+    "@tanstack/devtools-vite": "catalog:web",
+    "@types/mdx": "catalog:types",
+    "@types/node": "catalog:types",
+    "@types/react": "catalog:types",
+    "@types/react-dom": "catalog:types",
+    "@vitejs/plugin-react": "catalog:web",
+    "babel-plugin-react-compiler": "catalog:web",
+    "typescript": "catalog:dev",
+    "vite": "catalog:web",
+    "wrangler": "catalog:workers"
+  }
+}

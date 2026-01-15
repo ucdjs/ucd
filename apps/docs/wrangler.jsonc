@@ -1,0 +1,63 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "compatibility_date": "2025-12-19",
+  "name": "docs-ucdjs-dev",
+  "main": ".output/server/index.mjs",
+  "vars": {
+    "ENVIRONMENT": "local",
+  },
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1,
+    "logs": {
+      "enabled": true,
+      "head_sampling_rate": 1,
+      "persist": true,
+      "invocation_logs": true
+    },
+    "traces": {
+      "enabled": false,
+    }
+  },
+  "env": {
+    "production": {
+      "name": "docs-ucdjs-dev",
+      "preview_urls": false,
+      "route": {
+        "custom_domain": true,
+        "pattern": "docs.ucdjs.dev"
+      },
+      "vars": {
+        "ENVIRONMENT": "production",
+      }
+    },
+    "preview": {
+      "name": "docs-ucdjs-dev-preview",
+      "preview_urls": false,
+      "route": {
+        "custom_domain": true,
+        "pattern": "preview.docs.ucdjs.dev"
+      },
+      "vars": {
+        "ENVIRONMENT": "preview",
+      }
+    }
+  },
+  "assets": {
+    "binding": "ASSETS",
+    "directory": ".output/public"
+  },
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "no_bundle": true,
+  "rules": [
+    {
+      "type": "ESModule",
+      "globs": [
+        "**/*.mjs",
+        "**/*.js"
+      ]
+    }
+  ]
+}
