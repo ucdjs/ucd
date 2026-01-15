@@ -83,7 +83,7 @@ export function useGenerateOverrideCommand() {
 
     generator.startSelection(editor, fileName, version, detected.start, detected.end);
 
-    await vscodeCommands.executeCommand("ucd:inspector.focus");
+    await vscodeCommands.executeCommand("ucd:selection.focus");
 
     window.showInformationMessage(
       `Selection mode active (lines ${detected.start}-${detected.end}). Click to set start, click again to set end. Run command again to confirm.`,
