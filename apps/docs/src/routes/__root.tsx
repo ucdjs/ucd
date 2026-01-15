@@ -2,12 +2,13 @@ import { TanStackDevtools } from "@tanstack/react-devtools";
 import {
   createRootRouteWithContext,
   HeadContent,
-  Scripts
+  Scripts,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { RootProvider } from "fumadocs-ui/provider/tanstack";
 import GLOBAL_CSS_URL from "../globals.css?url";
 
+// eslint-disable-next-line ts/no-empty-object-type
 export interface AppRouterContext {}
 
 export const Route = createRootRouteWithContext<AppRouterContext>()({

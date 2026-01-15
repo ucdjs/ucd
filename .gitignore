@@ -43,3 +43,5 @@ ucd-generated
 .vite-node
 **/.generated
 **/.source/*
+.output
+.tanstack

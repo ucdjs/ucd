@@ -29,6 +29,7 @@
     "vite-tsconfig-paths": "catalog:web"
   },
   "devDependencies": {
+    "@luxass/eslint-config": "catalog:linting",
     "@tanstack/devtools-vite": "catalog:web",
     "@types/mdx": "catalog:types",
     "@types/node": "catalog:types",
@@ -36,6 +37,8 @@
     "@types/react-dom": "catalog:types",
     "@vitejs/plugin-react": "catalog:web",
     "babel-plugin-react-compiler": "catalog:web",
+    "eslint": "catalog:linting",
+    "eslint-plugin-format": "catalog:linting",
     "typescript": "catalog:dev",
     "vite": "catalog:web",
     "wrangler": "catalog:workers"
