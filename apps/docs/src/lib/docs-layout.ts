@@ -10,26 +10,26 @@ export function baseOptions(): BaseLayoutProps & {
 } {
   return {
     nav: {
-      title: "UCD.js",
+      title: "UCD.js Docs",
       url: "/",
     },
     sidebar: {
       tabs: [
         {
           title: "UCD.js",
-          url: "/docs/ucdjs",
+          url: "/ucdjs",
         },
         {
           title: "Core",
-          url: "/docs/core",
+          url: "/core",
         },
         {
           title: "Schemas",
-          url: "/docs/schemas",
+          url: "/schemas",
         },
         {
           title: "Utilities",
-          url: "/docs/utilities",
+          url: "/utilities",
         },
       ],
     },

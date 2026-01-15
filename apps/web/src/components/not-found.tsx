@@ -47,23 +47,7 @@ export function AppNotFound() {
       actions={(
         <>
           <Button render={<Link to="/">Go home</Link>} />
-          <Button variant="outline" render={<Link to="/docs">View documentation</Link>} />
-        </>
-      )}
-    />
-  );
-}
-
-export function DocsNotFound({ path }: { path?: string }) {
-  return (
-    <NotFoundLayout
-      title="That documentation page does not exist"
-      description="Check the URL or browse the docs index instead."
-      hint={path ? `/docs/${path}` : undefined}
-      actions={(
-        <>
-          <Button render={<Link to="/docs">Back to docs</Link>} />
-          <Button variant="outline" render={<Link to="/">Return home</Link>} />
+          <Button variant="outline" render={<a href="https://docs.ucdjs.dev">View documentation</a>} />
         </>
       )}
     />
@@ -100,7 +84,7 @@ export function VersionNotFound({ version }: { version?: string }) {
       actions={(
         <>
           <Button render={<Link to="/">Browse versions</Link>} />
-          <Button variant="outline" render={<Link to="/docs">Read docs</Link>} />
+          <Button variant="outline" render={<a href="https://docs.ucdjs.dev">Read docs</a>} />
         </>
       )}
     />

@@ -17,14 +17,11 @@ import { Route as VIndexRouteImport } from './routes/v/index'
 import { Route as FileExplorerSplatRouteImport } from './routes/file-explorer/$'
 import { Route as VVersionRouteRouteImport } from './routes/v/$version/route'
 import { Route as VVersionIndexRouteImport } from './routes/v/$version/index'
-import { Route as docsDocsIndexRouteImport } from './routes/(docs)/docs/index'
 import { Route as VVersionNormalizationPreviewRouteImport } from './routes/v/$version/normalization-preview'
 import { Route as VVersionGraphemeVisualizerRouteImport } from './routes/v/$version/grapheme-visualizer'
 import { Route as VVersionFontGlyphViewRouteImport } from './routes/v/$version/font-glyph-view'
 import { Route as VVersionBidiLinebreakRouteImport } from './routes/v/$version/bidi-linebreak'
 import { Route as FileExplorerVSplatRouteImport } from './routes/file-explorer/v.$'
-import { Route as docsDocsSplatRouteImport } from './routes/(docs)/docs/$'
-import { Route as docsApiSearchRouteImport } from './routes/(docs)/api/search'
 import { Route as VVersionBlocksIndexRouteImport } from './routes/v/$version/blocks/index'
 import { Route as VVersionUHexRouteImport } from './routes/v/$version/u/$hex'
 import { Route as VVersionBlocksIdRouteImport } from './routes/v/$version/blocks/$id'
@@ -69,11 +66,6 @@ const VVersionIndexRoute = VVersionIndexRouteImport.update({
   path: '/',
   getParentRoute: () => VVersionRouteRoute,
 } as any)
-const docsDocsIndexRoute = docsDocsIndexRouteImport.update({
-  id: '/(docs)/docs/',
-  path: '/docs/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const VVersionNormalizationPreviewRoute =
   VVersionNormalizationPreviewRouteImport.update({
     id: '/normalization-preview',
@@ -101,16 +93,6 @@ const FileExplorerVSplatRoute = FileExplorerVSplatRouteImport.update({
   path: '/v/$',
   getParentRoute: () => FileExplorerRouteRoute,
 } as any)
-const docsDocsSplatRoute = docsDocsSplatRouteImport.update({
-  id: '/(docs)/docs/$',
-  path: '/docs/$',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const docsApiSearchRoute = docsApiSearchRouteImport.update({
-  id: '/(docs)/api/search',
-  path: '/api/search',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const VVersionBlocksIndexRoute = VVersionBlocksIndexRouteImport.update({
   id: '/blocks/',
   path: '/blocks/',
@@ -135,14 +117,11 @@ export interface FileRoutesByFullPath {
   '/v/$version': typeof VVersionRouteRouteWithChildren
   '/file-explorer/$': typeof FileExplorerSplatRoute
   '/v': typeof VIndexRoute
-  '/api/search': typeof docsApiSearchRoute
-  '/docs/$': typeof docsDocsSplatRoute
   '/file-explorer/v/$': typeof FileExplorerVSplatRoute
   '/v/$version/bidi-linebreak': typeof VVersionBidiLinebreakRoute
   '/v/$version/font-glyph-view': typeof VVersionFontGlyphViewRoute
   '/v/$version/grapheme-visualizer': typeof VVersionGraphemeVisualizerRoute
   '/v/$version/normalization-preview': typeof VVersionNormalizationPreviewRoute
-  '/docs': typeof docsDocsIndexRoute
   '/v/$version/': typeof VVersionIndexRoute
   '/v/$version/blocks/$id': typeof VVersionBlocksIdRoute
   '/v/$version/u/$hex': typeof VVersionUHexRoute
@@ -155,14 +134,11 @@ export interface FileRoutesByTo {
   '/search': typeof SearchRoute
   '/file-explorer/$': typeof FileExplorerSplatRoute
   '/v': typeof VIndexRoute
-  '/api/search': typeof docsApiSearchRoute
-  '/docs/$': typeof docsDocsSplatRoute
   '/file-explorer/v/$': typeof FileExplorerVSplatRoute
   '/v/$version/bidi-linebreak': typeof VVersionBidiLinebreakRoute
   '/v/$version/font-glyph-view': typeof VVersionFontGlyphViewRoute
   '/v/$version/grapheme-visualizer': typeof VVersionGraphemeVisualizerRoute
   '/v/$version/normalization-preview': typeof VVersionNormalizationPreviewRoute
-  '/docs': typeof docsDocsIndexRoute
   '/v/$version': typeof VVersionIndexRoute
   '/v/$version/blocks/$id': typeof VVersionBlocksIdRoute
   '/v/$version/u/$hex': typeof VVersionUHexRoute
@@ -177,14 +153,11 @@ export interface FileRoutesById {
   '/v/$version': typeof VVersionRouteRouteWithChildren
   '/file-explorer/$': typeof FileExplorerSplatRoute
   '/v/': typeof VIndexRoute
-  '/(docs)/api/search': typeof docsApiSearchRoute
-  '/(docs)/docs/$': typeof docsDocsSplatRoute
   '/file-explorer/v/$': typeof FileExplorerVSplatRoute
   '/v/$version/bidi-linebreak': typeof VVersionBidiLinebreakRoute
   '/v/$version/font-glyph-view': typeof VVersionFontGlyphViewRoute
   '/v/$version/grapheme-visualizer': typeof VVersionGraphemeVisualizerRoute
   '/v/$version/normalization-preview': typeof VVersionNormalizationPreviewRoute
-  '/(docs)/docs/': typeof docsDocsIndexRoute
   '/v/$version/': typeof VVersionIndexRoute
   '/v/$version/blocks/$id': typeof VVersionBlocksIdRoute
   '/v/$version/u/$hex': typeof VVersionUHexRoute
@@ -200,14 +173,11 @@ export interface FileRouteTypes {
     | '/v/$version'
     | '/file-explorer/$'
     | '/v'
-    | '/api/search'
-    | '/docs/$'
     | '/file-explorer/v/$'
     | '/v/$version/bidi-linebreak'
     | '/v/$version/font-glyph-view'
     | '/v/$version/grapheme-visualizer'
     | '/v/$version/normalization-preview'
-    | '/docs'
     | '/v/$version/'
     | '/v/$version/blocks/$id'
     | '/v/$version/u/$hex'
@@ -220,14 +190,11 @@ export interface FileRouteTypes {
     | '/search'
     | '/file-explorer/$'
     | '/v'
-    | '/api/search'
-    | '/docs/$'
     | '/file-explorer/v/$'
     | '/v/$version/bidi-linebreak'
     | '/v/$version/font-glyph-view'
     | '/v/$version/grapheme-visualizer'
     | '/v/$version/normalization-preview'
-    | '/docs'
     | '/v/$version'
     | '/v/$version/blocks/$id'
     | '/v/$version/u/$hex'
@@ -241,14 +208,11 @@ export interface FileRouteTypes {
     | '/v/$version'
     | '/file-explorer/$'
     | '/v/'
-    | '/(docs)/api/search'
-    | '/(docs)/docs/$'
     | '/file-explorer/v/$'
     | '/v/$version/bidi-linebreak'
     | '/v/$version/font-glyph-view'
     | '/v/$version/grapheme-visualizer'
     | '/v/$version/normalization-preview'
-    | '/(docs)/docs/'
     | '/v/$version/'
     | '/v/$version/blocks/$id'
     | '/v/$version/u/$hex'
@@ -262,9 +226,6 @@ export interface RootRouteChildren {
   SearchRoute: typeof SearchRoute
   VVersionRouteRoute: typeof VVersionRouteRouteWithChildren
   VIndexRoute: typeof VIndexRoute
-  docsApiSearchRoute: typeof docsApiSearchRoute
-  docsDocsSplatRoute: typeof docsDocsSplatRoute
-  docsDocsIndexRoute: typeof docsDocsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -325,13 +286,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VVersionIndexRouteImport
       parentRoute: typeof VVersionRouteRoute
     }
-    '/(docs)/docs/': {
-      id: '/(docs)/docs/'
-      path: '/docs'
-      fullPath: '/docs'
-      preLoaderRoute: typeof docsDocsIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/v/$version/normalization-preview': {
       id: '/v/$version/normalization-preview'
       path: '/normalization-preview'
@@ -366,20 +320,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/file-explorer/v/$'
       preLoaderRoute: typeof FileExplorerVSplatRouteImport
       parentRoute: typeof FileExplorerRouteRoute
-    }
-    '/(docs)/docs/$': {
-      id: '/(docs)/docs/$'
-      path: '/docs/$'
-      fullPath: '/docs/$'
-      preLoaderRoute: typeof docsDocsSplatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/(docs)/api/search': {
-      id: '/(docs)/api/search'
-      path: '/api/search'
-      fullPath: '/api/search'
-      preLoaderRoute: typeof docsApiSearchRouteImport
-      parentRoute: typeof rootRouteImport
     }
     '/v/$version/blocks/': {
       id: '/v/$version/blocks/'
@@ -451,9 +391,6 @@ const rootRouteChildren: RootRouteChildren = {
   SearchRoute: SearchRoute,
   VVersionRouteRoute: VVersionRouteRouteWithChildren,
   VIndexRoute: VIndexRoute,
-  docsApiSearchRoute: docsApiSearchRoute,
-  docsDocsSplatRoute: docsDocsSplatRoute,
-  docsDocsIndexRoute: docsDocsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

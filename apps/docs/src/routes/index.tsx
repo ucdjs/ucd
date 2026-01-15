@@ -1,9 +1,9 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/(docs)/docs/")({
+export const Route = createFileRoute("/")({
   beforeLoad: () => {
     throw redirect({
-      to: "/docs/$",
+      to: "/$",
       params: {
         _splat: "ucdjs",
       },
