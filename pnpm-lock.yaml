@@ -449,6 +449,9 @@ importers:
         specifier: catalog:web
         version: 6.0.4(typescript@5.9.3)(vite@7.3.1(@types/node@22.18.12)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1))
     devDependencies:
+      '@luxass/eslint-config':
+        specifier: catalog:linting
+        version: 6.0.3(@eslint-react/eslint-plugin@2.3.12(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.25)(eslint-plugin-format@1.2.0(eslint@9.39.2(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@9.39.2(jiti@2.6.1)))(eslint-plugin-react-refresh@0.4.24(eslint@9.39.2(jiti@2.6.1)))(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)(vitest@4.0.16)
       '@tanstack/devtools-vite':
         specifier: catalog:web
         version: 0.4.1(vite@7.3.1(@types/node@22.18.12)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.1))
@@ -470,6 +473,12 @@ importers:
       babel-plugin-react-compiler:
         specifier: catalog:web
         version: 1.0.0
+      eslint:
+        specifier: catalog:linting
+        version: 9.39.2(jiti@2.6.1)
+      eslint-plugin-format:
+        specifier: catalog:linting
+        version: 1.2.0(eslint@9.39.2(jiti@2.6.1))
       typescript:
         specifier: catalog:dev
         version: 5.9.3

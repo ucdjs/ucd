@@ -4,7 +4,7 @@
   "name": "docs-ucdjs-dev",
   "main": ".output/server/index.mjs",
   "vars": {
-    "ENVIRONMENT": "local",
+    "ENVIRONMENT": "local"
   },
   "observability": {
     "enabled": true,
@@ -16,7 +16,7 @@
       "invocation_logs": true
     },
     "traces": {
-      "enabled": false,
+      "enabled": false
     }
   },
   "env": {
@@ -28,7 +28,7 @@
         "pattern": "docs.ucdjs.dev"
       },
       "vars": {
-        "ENVIRONMENT": "production",
+        "ENVIRONMENT": "production"
       }
     },
     "preview": {
@@ -39,7 +39,7 @@
         "pattern": "preview.docs.ucdjs.dev"
       },
       "vars": {
-        "ENVIRONMENT": "preview",
+        "ENVIRONMENT": "preview"
       }
     }
   },
