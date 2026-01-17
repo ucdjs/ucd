@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SearchRouteImport } from './routes/search'
+import { Route as DiffsPlaygroundRouteImport } from './routes/diffs-playground'
 import { Route as CodepointInspectorRouteImport } from './routes/codepoint-inspector'
 import { Route as FileExplorerRouteRouteImport } from './routes/file-explorer/route'
 import { Route as IndexRouteImport } from './routes/index'
@@ -29,6 +30,11 @@ import { Route as VVersionBlocksIdRouteImport } from './routes/v/$version/blocks
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DiffsPlaygroundRoute = DiffsPlaygroundRouteImport.update({
+  id: '/diffs-playground',
+  path: '/diffs-playground',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CodepointInspectorRoute = CodepointInspectorRouteImport.update({
@@ -113,6 +119,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/file-explorer': typeof FileExplorerRouteRouteWithChildren
   '/codepoint-inspector': typeof CodepointInspectorRoute
+  '/diffs-playground': typeof DiffsPlaygroundRoute
   '/search': typeof SearchRoute
   '/v/$version': typeof VVersionRouteRouteWithChildren
   '/file-explorer/$': typeof FileExplorerSplatRoute
@@ -131,6 +138,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/file-explorer': typeof FileExplorerRouteRouteWithChildren
   '/codepoint-inspector': typeof CodepointInspectorRoute
+  '/diffs-playground': typeof DiffsPlaygroundRoute
   '/search': typeof SearchRoute
   '/file-explorer/$': typeof FileExplorerSplatRoute
   '/v': typeof VIndexRoute
@@ -149,6 +157,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/file-explorer': typeof FileExplorerRouteRouteWithChildren
   '/codepoint-inspector': typeof CodepointInspectorRoute
+  '/diffs-playground': typeof DiffsPlaygroundRoute
   '/search': typeof SearchRoute
   '/v/$version': typeof VVersionRouteRouteWithChildren
   '/file-explorer/$': typeof FileExplorerSplatRoute
@@ -169,6 +178,7 @@ export interface FileRouteTypes {
     | '/'
     | '/file-explorer'
     | '/codepoint-inspector'
+    | '/diffs-playground'
     | '/search'
     | '/v/$version'
     | '/file-explorer/$'
@@ -187,6 +197,7 @@ export interface FileRouteTypes {
     | '/'
     | '/file-explorer'
     | '/codepoint-inspector'
+    | '/diffs-playground'
     | '/search'
     | '/file-explorer/$'
     | '/v'
@@ -204,6 +215,7 @@ export interface FileRouteTypes {
     | '/'
     | '/file-explorer'
     | '/codepoint-inspector'
+    | '/diffs-playground'
     | '/search'
     | '/v/$version'
     | '/file-explorer/$'
@@ -223,6 +235,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   FileExplorerRouteRoute: typeof FileExplorerRouteRouteWithChildren
   CodepointInspectorRoute: typeof CodepointInspectorRoute
+  DiffsPlaygroundRoute: typeof DiffsPlaygroundRoute
   SearchRoute: typeof SearchRoute
   VVersionRouteRoute: typeof VVersionRouteRouteWithChildren
   VIndexRoute: typeof VIndexRoute
@@ -235,6 +248,13 @@ declare module '@tanstack/react-router' {
       path: '/search'
       fullPath: '/search'
       preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/diffs-playground': {
+      id: '/diffs-playground'
+      path: '/diffs-playground'
+      fullPath: '/diffs-playground'
+      preLoaderRoute: typeof DiffsPlaygroundRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/codepoint-inspector': {
@@ -388,6 +408,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   FileExplorerRouteRoute: FileExplorerRouteRouteWithChildren,
   CodepointInspectorRoute: CodepointInspectorRoute,
+  DiffsPlaygroundRoute: DiffsPlaygroundRoute,
   SearchRoute: SearchRoute,
   VVersionRouteRoute: VVersionRouteRouteWithChildren,
   VIndexRoute: VIndexRoute,
