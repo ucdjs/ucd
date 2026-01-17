@@ -34,6 +34,23 @@ function extractVersionFromContent(content: string): string {
   return "16.0.0";
 }
 
+function getSelectionSummary(generator: ReturnType<typeof useOverrideGenerator>): string {
+  const activeSection = generator.activeSection.value;
+  const definition = generator.activeSectionDefinition.value;
+
+  if (!activeSection || !definition) {
+    return "";
+  }
+
+  if (definition.mode === "range" && activeSection.range) {
+    return `${definition.label}: lines ${activeSection.range.start}-${activeSection.range.end}`;
+  } else if (definition.mode === "lines" && activeSection.lines.length > 0) {
+    return `${definition.label}: ${activeSection.lines.length} line(s)`;
+  }
+
+  return `${definition.label}: not set`;
+}
+
 export function useGenerateOverrideCommand() {
   const activeEditor = useActiveTextEditor();
   const generator = useOverrideGenerator();
@@ -47,21 +64,44 @@ export function useGenerateOverrideCommand() {
     }
 
     if (generator.mode.value === "selecting") {
-      const action = await window.showQuickPick(
-        [
-          {
-            label: `$(check) Confirm (lines ${generator.selectionStart.value}-${generator.selectionEnd.value})`,
-            action: "confirm",
-          },
-          { label: "$(close) Cancel Selection", action: "cancel" },
-        ],
+      const doneCount = generator.doneSections.value.length;
+      const totalCount = generator.sections.value.length;
+      const summary = getSelectionSummary(generator);
+
+      const items = [
         {
-          placeHolder: "Override selection is active. Click lines in editor to adjust.",
+          label: generator.activeSection.value
+            ? `$(check) Confirm ${generator.activeSectionDefinition.value?.label ?? "Section"}`
+            : `$(check) Finish (${doneCount}/${totalCount} sections)`,
+          action: "confirm" as const,
+          description: summary,
         },
-      );
+        { label: "$(close) Cancel Selection", action: "cancel" as const },
+      ];
+
+      const action = await window.showQuickPick(items, {
+        placeHolder: generator.activeSection.value
+          ? `Editing ${generator.activeSectionDefinition.value?.label}. Click lines in editor to adjust.`
+          : "All sections complete. Confirm to generate override.",
+      });
 
       if (action?.action === "confirm") {
-        const override = generator.confirm();
+        if (generator.activeSection.value) {
+          const confirmed = generator.confirmActiveSection();
+          if (!confirmed) {
+            window.showWarningMessage("Selection is not valid. Please adjust the selection.");
+            return;
+          }
+
+          if (generator.activeSection.value) {
+            window.showInformationMessage(
+              `Section confirmed. Now editing: ${generator.activeSectionDefinition.value?.label}`,
+            );
+            return;
+          }
+        }
+
+        const override = generator.confirmAll();
         if (override) {
           const json = JSON.stringify(override, null, 2);
           await env.clipboard.writeText(json);
@@ -86,7 +126,7 @@ export function useGenerateOverrideCommand() {
     await vscodeCommands.executeCommand("ucd:selection.focus");
 
     window.showInformationMessage(
-      `Selection mode active (lines ${detected.start}-${detected.end}). Click to set start, click again to set end. Run command again to confirm.`,
+      `Selection mode active. Editing: Heading (lines ${detected.start}-${detected.end}). Click to adjust. Run command again to confirm.`,
     );
   });
 }
