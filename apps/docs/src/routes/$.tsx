@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/static-components -- Fumadocs dynamically creates components per route */
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { useFumadocsLoader } from "fumadocs-core/source/client";
@@ -12,14 +11,14 @@ import {
   DocsTitle,
 } from "fumadocs-ui/layouts/docs/page";
 import defaultMdxComponents from "fumadocs-ui/mdx";
+import { Suspense } from "react";
 import { DocsNotFound } from "@/components/not-found";
 import { baseOptions } from "@/lib/docs-layout";
 import { source } from "@/lib/docs-loader";
 
 const serverLoader = createServerFn({
   method: "GET",
-})
-  .inputValidator((slugs: string[]) => slugs)
+}).inputValidator((slugs: string[]) => slugs)
   .handler(async ({ data: slugs }) => {
     const page = source.getPage(slugs);
     if (!page) throw notFound();
@@ -31,20 +30,22 @@ const serverLoader = createServerFn({
   });
 
 const clientLoader = browserCollections.docs.createClientLoader({
-  component({
-    toc,
-    frontmatter,
-    default: MDX,
-  }) {
+  component(
+    { toc, frontmatter, default: MDX },
+    props: {
+      className?: string;
+    },
+  ) {
     return (
-      <DocsPage toc={toc}>
+      <DocsPage toc={toc} {...props}>
         <DocsTitle>{frontmatter.title}</DocsTitle>
         <DocsDescription>{frontmatter.description}</DocsDescription>
         <DocsBody>
-          <MDX components={{
-            ...defaultMdxComponents,
-            ...TabsComponents,
-          }}
+          <MDX
+            components={{
+              ...defaultMdxComponents,
+              ...TabsComponents,
+            }}
           />
         </DocsBody>
       </DocsPage>
@@ -64,16 +65,15 @@ export const Route = createFileRoute("/$")({
 });
 
 function Page() {
-  const data = Route.useLoaderData();
-  const { pageTree } = useFumadocsLoader(data);
-
-  // Fumadocs dynamically creates components based on the page path
-  // This is intentional - components are created per route
-  const Content = clientLoader.getComponent(data.path);
+  const data = useFumadocsLoader(Route.useLoaderData());
 
   return (
-    <DocsLayout {...baseOptions()} tree={pageTree}>
-      <Content />
+    <DocsLayout {...baseOptions()} tree={data.pageTree}>
+      <Suspense>
+        {clientLoader.useContent(data.path, {
+          className: "",
+        })}
+      </Suspense>
     </DocsLayout>
   );
 }
