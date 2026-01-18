@@ -1,19 +1,18 @@
-# api.ucdjs.dev
+# @ucdjs/api
 
-A RESTful API for accessing Unicode Character Database (UCD) data.
-
-## 📦 Installation
-
-```sh
-git clone https://github.com/ucdjs/api.ucdjs.dev.git
-cd api.ucdjs.dev
-pnpm install
-```
+An API for accessing Unicode Character Database (UCD) data and more!
 
 ## 🚀 Usage
 
+
+If you are inside the root of the monorepo, run:
 ```sh
-pnpm run dev
+pnpm run dev:apps
+```
+
+If you only wanna start the API app, run:
+```sh
+pnpm --filter @ucdjs/api dev
 ```
 
 ## 📖 API Documentation
