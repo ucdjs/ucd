@@ -1,9 +1,9 @@
 import type { UnicodeVersion } from "@ucdjs/schemas";
+import { versionsQueryOptions } from "#functions/versions";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { ChevronDown } from "lucide-react";
 import { useState } from "react";
-import { versionsQueryOptions } from "@/functions/versions";
 import { UVersion } from "../../u-version";
 import {
   SidebarGroup,

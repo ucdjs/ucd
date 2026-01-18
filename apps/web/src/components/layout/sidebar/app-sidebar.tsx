@@ -1,6 +1,5 @@
 import type { ComponentProps } from "react";
 import { Link, useLoaderData, useMatches } from "@tanstack/react-router";
-import { BookOpen, ExternalLink, Grid3X3, Lightbulb, Search, Type } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -12,7 +11,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-} from "@/components/ui/sidebar";
+} from "@ucdjs-internal/shared-ui/components";
+import { BookOpen, ExternalLink, Grid3X3, Lightbulb, Search, Type } from "lucide-react";
 import { UcdLogo } from "../../ucd-logo";
 import { VersionSwitcher } from "../../version-switcher";
 

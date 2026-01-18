@@ -1,5 +1,19 @@
-import type { SearchQueryParams } from "@/routes/file-explorer/$";
+import type { SearchQueryParams } from "../../routes/file-explorer/$";
+import { cn } from "#lib/utils";
 import { useNavigate, useSearch } from "@tanstack/react-router";
+import {
+  Badge,
+  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  Input,
+} from "@ucdjs-internal/shared-ui/components";
 import {
   Archive,
   ArrowUpDown,
@@ -15,20 +29,6 @@ import {
   X,
 } from "lucide-react";
 import { memo, useCallback, useEffect, useRef, useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
 
 export type ViewMode = "list" | "cards";
 

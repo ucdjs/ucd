@@ -1,17 +1,17 @@
+import { VersionsCardList, VersionsCardListSkeleton } from "#components/home/versions-list";
+import { versionsQueryOptions } from "#functions/versions";
 import { createFileRoute, Link, useLoaderData } from "@tanstack/react-router";
-import { BookOpen, Code2, ExternalLink, Hash, Layers, Search } from "lucide-react";
-import { Suspense } from "react";
-import { VersionsCardList, VersionsCardListSkeleton } from "@/components/home/versions-list";
 import {
   Breadcrumb,
   BreadcrumbItem,
   BreadcrumbList,
   BreadcrumbPage,
-} from "@/components/ui/breadcrumb";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { SidebarTrigger } from "@/components/ui/sidebar";
-import { versionsQueryOptions } from "@/functions/versions";
+  Button,
+  Separator,
+  SidebarTrigger,
+} from "@ucdjs-internal/shared-ui/components";
+import { BookOpen, Code2, ExternalLink, Hash, Layers, Search } from "lucide-react";
+import { Suspense } from "react";
 
 export const Route = createFileRoute("/")({
   component: HomePage,

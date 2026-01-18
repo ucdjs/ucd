@@ -1,7 +1,7 @@
+import { versionsQueryOptions } from "#functions/versions";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { ArrowRight, Sparkles } from "lucide-react";
-import { versionsQueryOptions } from "@/functions/versions";
 
 export function VersionsCardList() {
   const { data: versions } = useSuspenseQuery(versionsQueryOptions());

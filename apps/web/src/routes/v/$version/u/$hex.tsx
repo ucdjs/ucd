@@ -1,9 +1,6 @@
+import { characterQueryOptions } from "#apis/characters";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Check, Copy } from "lucide-react";
-import * as React from "react";
-
-import { characterQueryOptions } from "@/apis/characters";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -11,16 +8,16 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { Button } from "@/components/ui/button";
-import {
+  Button,
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { SidebarTrigger } from "@/components/ui/sidebar";
+  Separator,
+  SidebarTrigger,
+} from "@ucdjs-internal/shared-ui/components";
+import { ArrowLeft, Check, Copy } from "lucide-react";
+import * as React from "react";
 
 export const Route = createFileRoute("/v/$version/u/$hex")({
   component: CharacterPage,

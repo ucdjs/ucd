@@ -1,15 +1,15 @@
-import type { ViewMode } from "@/types/file-explorer";
+import type { ViewMode } from "#types/file-explorer";
+import { EntryList } from "#components/file-explorer/entry-list";
+import { ExplorerToolbar } from "#components/file-explorer/explorer-toolbar";
+import { ParentDirectory } from "#components/file-explorer/parent-directory";
+import { ExplorerNotFound } from "#components/not-found";
+import { filesQueryOptions, getFileHeadInfo } from "#functions/files";
+import { cn } from "#lib/utils";
 import { createFileRoute, redirect, retainSearchParams, useSearch } from "@tanstack/react-router";
 import { zodValidator } from "@tanstack/zod-adapter";
+import { Skeleton } from "@ucdjs-internal/shared-ui/components";
 import { Suspense } from "react";
 import z from "zod";
-import { EntryList } from "@/components/file-explorer/entry-list";
-import { ExplorerToolbar } from "@/components/file-explorer/explorer-toolbar";
-import { ParentDirectory } from "@/components/file-explorer/parent-directory";
-import { ExplorerNotFound } from "@/components/not-found";
-import { Skeleton } from "@/components/ui/skeleton";
-import { filesQueryOptions, getFileHeadInfo } from "@/functions/files";
-import { cn } from "@/lib/utils";
 
 // eslint-disable-next-line react-refresh/only-export-components
 export const searchSchema = z.object({
