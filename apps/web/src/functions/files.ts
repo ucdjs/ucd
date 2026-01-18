@@ -1,4 +1,4 @@
-import type { SearchQueryParams, searchSchema } from "@/routes/file-explorer/$";
+import type { SearchQueryParams, searchSchema } from "../routes/file-explorer/$";
 import type { FileEntry } from "@ucdjs/schemas";
 import type z from "zod";
 import { queryOptions } from "@tanstack/react-query";

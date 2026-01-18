@@ -1,7 +1,6 @@
+import { versionDetailsQueryOptions, versionsQueryOptions } from "#functions/versions";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { BookOpen, Search } from "lucide-react";
-import { Suspense, useState } from "react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -9,12 +8,13 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
-import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Skeleton } from "@/components/ui/skeleton";
-import { versionDetailsQueryOptions, versionsQueryOptions } from "@/functions/versions";
+  Input,
+  Separator,
+  SidebarTrigger,
+  Skeleton,
+} from "@ucdjs-internal/shared-ui/components";
+import { BookOpen, Search } from "lucide-react";
+import { Suspense, useState } from "react";
 
 export const Route = createFileRoute("/v/$version/")({
   component: VersionPage,

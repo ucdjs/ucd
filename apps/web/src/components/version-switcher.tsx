@@ -1,19 +1,17 @@
+import { versionsQueryOptions } from "#functions/versions";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate, useParams } from "@tanstack/react-router";
-import { ChevronsUpDown, Layers } from "lucide-react";
-import * as React from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@/components/ui/sidebar";
-import { versionsQueryOptions } from "@/functions/versions";
+} from "@ucdjs-internal/shared-ui/components";
+import { ChevronsUpDown, Layers } from "lucide-react";
+import * as React from "react";
 
 function getBadgeLabel(date?: string | number) {
   const year = date ? Number.parseInt(String(date), 10) : undefined;
