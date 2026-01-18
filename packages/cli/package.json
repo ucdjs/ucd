@@ -22,8 +22,6 @@
     ".": "./dist/cli.mjs",
     "./package.json": "./package.json"
   },
-  "main": "./dist/cli.mjs",
-  "module": "./dist/cli.mjs",
   "types": "./dist/cli.d.mts",
   "bin": {
     "ucd": "bin/ucd.js"
