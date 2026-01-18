@@ -7,6 +7,8 @@ export type PipelineEventType =
   | "version:end"
   | "artifact:start"
   | "artifact:end"
+  | "artifact:produced"
+  | "artifact:consumed"
   | "file:matched"
   | "file:skipped"
   | "file:fallback"
@@ -14,6 +16,9 @@ export type PipelineEventType =
   | "parse:end"
   | "resolve:start"
   | "resolve:end"
+  | "cache:hit"
+  | "cache:miss"
+  | "cache:store"
   | "error";
 
 export type PipelineStartEvent = {
@@ -53,6 +58,22 @@ export type ArtifactEndEvent = {
   artifactId: string;
   version: string;
   durationMs: number;
+  timestamp: number;
+};
+
+export type ArtifactProducedEvent = {
+  type: "artifact:produced";
+  artifactId: string;
+  routeId: string;
+  version: string;
+  timestamp: number;
+};
+
+export type ArtifactConsumedEvent = {
+  type: "artifact:consumed";
+  artifactId: string;
+  routeId: string;
+  version: string;
   timestamp: number;
 };
 
@@ -108,6 +129,30 @@ export type ResolveEndEvent = {
   timestamp: number;
 };
 
+export type CacheHitEvent = {
+  type: "cache:hit";
+  routeId: string;
+  file: FileContext;
+  version: string;
+  timestamp: number;
+};
+
+export type CacheMissEvent = {
+  type: "cache:miss";
+  routeId: string;
+  file: FileContext;
+  version: string;
+  timestamp: number;
+};
+
+export type CacheStoreEvent = {
+  type: "cache:store";
+  routeId: string;
+  file: FileContext;
+  version: string;
+  timestamp: number;
+};
+
 export type PipelineErrorEvent = {
   type: "error";
   error: PipelineError;
@@ -121,6 +166,8 @@ export type PipelineEvent =
   | VersionEndEvent
   | ArtifactStartEvent
   | ArtifactEndEvent
+  | ArtifactProducedEvent
+  | ArtifactConsumedEvent
   | FileMatchedEvent
   | FileSkippedEvent
   | FileFallbackEvent
@@ -128,6 +175,9 @@ export type PipelineEvent =
   | ParseEndEvent
   | ResolveStartEvent
   | ResolveEndEvent
+  | CacheHitEvent
+  | CacheMissEvent
+  | CacheStoreEvent
   | PipelineErrorEvent;
 
 export type PipelineErrorScope = "pipeline" | "version" | "file" | "route" | "artifact";

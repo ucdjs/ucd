@@ -17,6 +17,7 @@ export interface PipelineRouteDefinition<
   parser: ParserFn;
   resolver: (ctx: ResolveContext<TArtifacts>, rows: AsyncIterable<ParsedRow>) => Promise<TOutput>;
   out?: RouteOutput;
+  cache?: boolean;
 }
 
 export function definePipelineRoute<

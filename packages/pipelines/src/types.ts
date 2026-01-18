@@ -216,33 +216,17 @@ export interface PropertyJson {
   meta?: Record<string, unknown>;
 }
 
-/**
- * Context passed to resolver functions.
- */
 export interface ResolveContext<TArtifacts extends Record<string, unknown> = Record<string, unknown>> {
-  /**
-   * The Unicode version being processed.
-   */
   version: string;
 
-  /**
-   * The file being resolved.
-   */
   file: FileContext;
 
-  /**
-   * Get a previously built artifact by ID.
-   */
-  getArtifact: <K extends keyof TArtifacts>(id: K) => TArtifacts[K] | undefined;
+  getArtifact: <K extends keyof TArtifacts>(id: K) => TArtifacts[K];
 
-  /**
-   * Normalize entries (sort, merge adjacent equal-value ranges, canonicalize hex).
-   */
+  emitArtifact: <K extends string, V>(id: K, value: V) => void;
+
   normalizeEntries: (entries: ResolvedEntry[]) => ResolvedEntry[];
 
-  /**
-   * Get the current ISO timestamp.
-   */
   now: () => string;
 }
 

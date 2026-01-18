@@ -3,6 +3,7 @@ export {
   type FallbackRouteDefinition,
   type Pipeline,
   type PipelineOptions,
+  type PipelineRunOptions,
 } from "./pipeline";
 
 export {
@@ -54,8 +55,13 @@ export type {
 } from "./types";
 
 export type {
+  ArtifactConsumedEvent,
   ArtifactEndEvent,
+  ArtifactProducedEvent,
   ArtifactStartEvent,
+  CacheHitEvent,
+  CacheMissEvent,
+  CacheStoreEvent,
   FileMatchedEvent,
   FileSkippedEvent,
   FileFallbackEvent,
@@ -83,3 +89,15 @@ export type {
   PipelineRunResult,
   PipelineSummary,
 } from "./results";
+
+export {
+  createMemoryCacheStore,
+  defaultHashFn,
+  hashArtifact,
+  serializeCacheKey,
+  type CacheEntry,
+  type CacheKey,
+  type CacheOptions,
+  type CacheStats,
+  type CacheStore,
+} from "./cache";
