@@ -39,19 +39,17 @@
     "typecheck": "tsc --noEmit -p tsconfig.build.json"
   },
   "dependencies": {
-    "@ucdjs-internal/shared": "workspace:*",
-    "picomatch": "catalog:prod",
-    "zod": "catalog:prod"
+    "@ucdjs/pipelines-core": "workspace:*",
+    "@ucdjs/pipelines-artifacts": "workspace:*",
+    "@ucdjs/pipelines-graph": "workspace:*"
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:linting",
-    "@types/picomatch": "catalog:types",
     "@ucdjs-tooling/tsconfig": "workspace:*",
     "@ucdjs-tooling/tsdown-config": "workspace:*",
     "eslint": "catalog:linting",
     "publint": "catalog:dev",
     "tsdown": "catalog:dev",
-    "tsx": "catalog:dev",
     "typescript": "catalog:dev"
   },
   "publishConfig": {
