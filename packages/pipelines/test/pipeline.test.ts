@@ -4,24 +4,30 @@ import { definePipelineArtifact } from "../src/artifact";
 import { byDir, byExt, byGlob, byName } from "../src/filters";
 import { definePipeline } from "../src/pipeline";
 import { definePipelineRoute } from "../src/route";
+import { definePipelineSource } from "../src/source";
+
+let mockSourceCounter = 0;
 
 function createMockSource(files: Record<string, Record<string, string>>) {
-  return {
-    listFiles: async (version: string): Promise<FileContext[]> => {
-      const versionFiles = files[version] ?? {};
-      return Object.keys(versionFiles).map((path) => ({
-        path,
-        name: path.split("/").pop() ?? path,
-        dir: path.includes("/") ? path.substring(0, path.lastIndexOf("/")) : "",
-        ext: path.includes(".") ? path.substring(path.lastIndexOf(".")) : "",
-        version,
-      }));
+  return definePipelineSource({
+    id: `mock-${++mockSourceCounter}`,
+    backend: {
+      listFiles: async (version: string): Promise<FileContext[]> => {
+        const versionFiles = files[version] ?? {};
+        return Object.keys(versionFiles).map((path) => ({
+          path,
+          name: path.split("/").pop() ?? path,
+          dir: path.includes("/") ? path.substring(0, path.lastIndexOf("/")) : "",
+          ext: path.includes(".") ? path.substring(path.lastIndexOf(".")) : "",
+          version,
+        }));
+      },
+      readFile: async (file: FileContext): Promise<string> => {
+        const versionFiles = files[file.version] ?? {};
+        return versionFiles[file.path] ?? "";
+      },
     },
-    readFile: async (file: FileContext): Promise<string> => {
-      const versionFiles = files[file.version] ?? {};
-      return versionFiles[file.path] ?? "";
-    },
-  };
+  });
 }
 
 function createRow(ctx: ParseContext, props: Partial<ParsedRow> & { codePoint?: string; property?: string }): ParsedRow {
@@ -52,7 +58,7 @@ describe("definePipeline", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0"],
-      source: createMockSource({}),
+      inputs: [createMockSource({})],
       routes: [route],
     });
 
@@ -90,7 +96,7 @@ describe("definePipeline", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0"],
-      source,
+      inputs: [source],
       routes: [route],
     });
 
@@ -127,7 +133,7 @@ describe("definePipeline", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0"],
-      source,
+      inputs: [source],
       routes: [route],
       onEvent: (event) => {
         events.push(event.type);
@@ -165,7 +171,7 @@ describe("definePipeline", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0"],
-      source,
+      inputs: [source],
       routes: [route],
     });
 
@@ -201,7 +207,7 @@ describe("definePipeline", () => {
         yield createRow(ctx, { codePoint: "0041", property: "A", value: "A" });
       },
       resolver: async (ctx, rows): Promise<PropertyJson[]> => {
-        const aliases = ctx.getArtifact("aliases") as Map<string, string[]> | undefined;
+        const aliases = (ctx.getArtifact as (k: string) => Map<string, string[]> | undefined)("aliases");
         const entries = [];
         for await (const row of rows) {
           const propertyAliases = aliases?.get(row.property ?? "") ?? [];
@@ -220,7 +226,7 @@ describe("definePipeline", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0"],
-      source,
+      inputs: [source],
       artifacts: [aliasArtifact],
       routes: [route],
     });
@@ -261,7 +267,7 @@ describe("definePipeline", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0"],
-      source,
+      inputs: [source],
       routes: [route],
       fallback: fallbackRoute,
     });
@@ -295,7 +301,7 @@ describe("definePipeline", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0"],
-      source,
+      inputs: [source],
       routes: [route],
       strict: false,
     });
@@ -328,7 +334,7 @@ describe("definePipeline", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0"],
-      source,
+      inputs: [source],
       routes: [route],
       strict: true,
     });
@@ -358,7 +364,7 @@ describe("definePipeline", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0"],
-      source,
+      inputs: [source],
       routes: [route],
     });
 
@@ -389,7 +395,7 @@ describe("definePipeline", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0", "15.1.0"],
-      source,
+      inputs: [source],
       routes: [route],
     });
 
@@ -424,7 +430,7 @@ describe("definePipeline", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0"],
-      source,
+      inputs: [source],
       routes: [route],
       include: byDir(""),
     });
@@ -505,7 +511,7 @@ describe("type inference", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0"],
-      source: createMockSource({}),
+      inputs: [createMockSource({})],
       routes: [route] as const,
     });
 
@@ -533,8 +539,9 @@ describe("type inference", () => {
         yield createRow(ctx, { codePoint: "0000", property: "test", value: "test" });
       },
       resolver: async (ctx, _rows): Promise<PropertyJson[]> => {
-        const aliases = ctx.getArtifact("aliases");
-        const count = ctx.getArtifact("count");
+        const getArtifact = ctx.getArtifact as (k: string) => unknown;
+        const aliases = getArtifact("aliases");
+        const count = getArtifact("count");
 
         expect(aliases).toBeUndefined();
         expect(count).toBeUndefined();
@@ -545,7 +552,7 @@ describe("type inference", () => {
 
     const _pipeline = definePipeline({
       versions: ["16.0.0"],
-      source: createMockSource({}),
+      inputs: [createMockSource({})],
       artifacts: [aliasArtifact, countArtifact],
       routes: [route],
     });

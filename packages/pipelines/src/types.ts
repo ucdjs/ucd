@@ -54,6 +54,16 @@ export interface FilterContext {
    * The row context (only defined during row-level filtering).
    */
   row?: RowContext;
+
+  /**
+   * The source context (only defined when using multiple sources).
+   */
+  source?: {
+    /**
+     * The source ID.
+     */
+    id: string;
+  };
 }
 
 /**
@@ -240,22 +250,6 @@ export type ResolverFn<
   ctx: ResolveContext<TArtifacts>,
   rows: AsyncIterable<ParsedRow>,
 ) => Promise<TOutput>;
-
-/**
- * Source adapter for providing files to the pipeline.
- * This abstraction allows different backends (ucd-store, HTTP, memory, etc.).
- */
-export interface PipelineSource {
-  /**
-   * List all files for a given version.
-   */
-  listFiles: (version: string) => Promise<FileContext[]>;
-
-  /**
-   * Read the content of a file.
-   */
-  readFile: (file: FileContext) => Promise<string>;
-}
 
 /**
  * Output configuration for a route.

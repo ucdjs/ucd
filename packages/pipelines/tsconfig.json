@@ -2,7 +2,8 @@
   "extends": "@ucdjs-tooling/tsconfig/base",
   "include": [
     "src",
-    "test"
+    "test",
+    "playgrounds"
   ],
   "exclude": ["dist"]
 }

@@ -27,7 +27,6 @@ import type {
   ParsedRow,
   ParserFn,
   PipelineFilter,
-  PipelineSource,
   PropertyJson,
   ResolvedEntry,
   ResolveContext,
@@ -202,15 +201,6 @@ describe("ResolverFn type", () => {
   });
 });
 
-describe("PipelineSource type", () => {
-  it("should have listFiles and readFile methods", () => {
-    expectTypeOf<PipelineSource>().toMatchTypeOf<{
-      listFiles: (version: string) => Promise<FileContext[]>;
-      readFile: (file: FileContext) => Promise<string>;
-    }>();
-  });
-});
-
 describe("PipelineArtifactDefinition type", () => {
   it("should have id and build function", () => {
     expectTypeOf<PipelineArtifactDefinition>().toMatchTypeOf<{
@@ -287,12 +277,11 @@ describe("PipelineRouteDefinition type", () => {
       id: string;
       filter: PipelineFilter;
       parser: ParserFn;
-      resolver: (ctx: ResolveContext, rows: AsyncIterable<ParsedRow>) => Promise<unknown>;
     }>();
   });
 
-  it("should preserve generic types", () => {
-    type Route = PipelineRouteDefinition<"my-route", { cache: number }, string[]>;
+  it("should preserve generic id type", () => {
+    type Route = PipelineRouteDefinition<"my-route">;
 
     expectTypeOf<Route["id"]>().toEqualTypeOf<"my-route">();
   });
@@ -300,14 +289,14 @@ describe("PipelineRouteDefinition type", () => {
 
 describe("InferRouteId type", () => {
   it("should extract id from route definition", () => {
-    type Route = PipelineRouteDefinition<"line-break", Record<string, unknown>, PropertyJson[]>;
+    type Route = PipelineRouteDefinition<"line-break">;
     expectTypeOf<InferRouteId<Route>>().toEqualTypeOf<"line-break">();
   });
 });
 
 describe("InferRouteOutput type", () => {
   it("should extract output type from route definition", () => {
-    type Route = PipelineRouteDefinition<"id", Record<string, unknown>, { custom: true }[]>;
+    type Route = PipelineRouteDefinition<"id", readonly [], Record<string, never>, readonly [], { custom: true }[]>;
     expectTypeOf<InferRouteOutput<Route>>().toEqualTypeOf<{ custom: true }[]>();
   });
 });
@@ -315,8 +304,8 @@ describe("InferRouteOutput type", () => {
 describe("InferRoutesOutput type", () => {
   it("should union output types from route array", () => {
     type Routes = readonly [
-      PipelineRouteDefinition<"a", Record<string, unknown>, PropertyJson[]>,
-      PipelineRouteDefinition<"b", Record<string, unknown>, PropertyJson[]>,
+      PipelineRouteDefinition<"a", readonly [], Record<string, never>, readonly [], PropertyJson[]>,
+      PipelineRouteDefinition<"b", readonly [], Record<string, never>, readonly [], PropertyJson[]>,
     ];
 
     expectTypeOf<InferRoutesOutput<Routes>>().toEqualTypeOf<PropertyJson>();

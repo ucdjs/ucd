@@ -921,6 +921,9 @@ importers:
       picomatch:
         specifier: catalog:prod
         version: 4.0.3
+      zod:
+        specifier: catalog:prod
+        version: 4.3.5
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:linting

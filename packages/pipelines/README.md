@@ -5,7 +5,7 @@ Pipeline framework for processing Unicode Character Database files.
 ## Pipeline Flow
 
 ```
-definePipeline({ versions, source, artifacts?, cacheStore?, routes })
+definePipeline({ versions, inputs, artifacts?, cacheStore?, routes })
                                       |
                                       v
                       +---------------------------+
@@ -16,7 +16,7 @@ definePipeline({ versions, source, artifacts?, cacheStore?, routes })
       +-------------------------------+-------------------------------+
       v                               v                               v
 +-----------+                 +---------------+                +-----------+
-|  SOURCE   |---- files ----->|   ARTIFACTS   |--- context --->|  ROUTES   |
+|  INPUTS   |---- files ----->|   ARTIFACTS   |--- context --->|  ROUTES   |
 +-----------+                 |  (optional)   |                +-----------+
                               +---------------+                      |
                       +----------------------------------------------+
@@ -97,110 +97,83 @@ definePipeline({ versions, source, artifacts?, cacheStore?, routes })
           |   errors, summary } |
           +---------------------+
 ```
-definePipeline({ versions, source, artifacts?, cacheStore?, routes })
-                                    │
-                                    ▼
-                        ┌────────────────────────┐
-                        │   FOR EACH VERSION   │
-                        │  (16.0.0, 15.1.0...) │
-                        └────────────────────────┘
-                                    │
-        ┌───────────────────────────┼───────────────────────────┐
-        ▼                           ▼                           ▼
-   ┌─────────┐              ┌───────────────┐            ┌─────────────┐
-   │ SOURCE  │─────────────▶│  ARTIFACTS   │────────────▶│   ROUTES   │
-   │         │  files      │  (optional)  │  context   │            │
-   └─────────┘              └───────────────┘            └─────────────┘
-                                                            │
-                                    ┌──────────────────────────┘
-                                    ▼
-                        ┌───────────────────────┐
-                        │    FOR EACH FILE    │
-                        └───────────────────────┘
-                                    │
-                                    ▼
-                        ┌───────────────────────┐
-                        │    ROUTE MATCHING   │
-                        │                     │
-                        │  byName, byDir,     │
-                        │  byGlob, and, or... │
-                        └───────────────────────┘
-                                    │
-                ┌───────────────────┼───────────────────┐
-                ▼                   ▼                   ▼
-           ┌─────────┐        ┌─────────┐        ┌──────────┐
-           │ MATCHED │        │ SKIPPED │        │ FALLBACK │
-           └─────────┘        └─────────┘        └──────────┘
-                │                                      │
-                └──────────────────┬───────────────────┘
-                                   ▼
-                        ┌───────────────────────┐
-                        │    CACHE CHECK        │
-                        │                       │
-                        │  key = route + version│
-                        │      + content hash   │
-                        │      + artifact hash  │
-                        └───────────────────────┘
-                                   │
-                    ┌──────────────┴──────────────┐
-                    ▼                             ▼
-              ┌───────────┐                ┌─────────────┐
-              │ CACHE HIT │                │ CACHE MISS  │
-              │           │                │             │
-              │  return   │                │   execute   │
-              │  cached   │                │   route     │
-              └───────────┘                └─────────────┘
-                    │                             │
-                    │                             ▼
-                    │                  ┌───────────────────────┐
-                    │                  │       PARSER          │
-                    │                  │                       │
-                    │                  │  file ──▶ ParsedRow[] │
-                    │                  └───────────────────────┘
-                    │                             │
-                    │                             ▼
-                    │                  ┌───────────────────────┐
-                    │                  │      RESOLVER         │
-                    │                  │                       │
-                    │                  │  - getArtifact(id)    │
-                    │                  │  - emitArtifact(id,v) │
-                    │                  │  - return outputs     │
-                    │                  └───────────────────────┘
-                    │                             │
-                    │                             ▼
-                    │                  ┌───────────────────────┐
-                    │                  │     CACHE STORE       │
-                    │                  └───────────────────────┘
-                    │                             │
-                    └──────────────┬──────────────┘
-                                   ▼
-                        ┌───────────────────────┐
-                        │   MERGE ARTIFACTS     │
-                        │                       │
-                        │  emitted artifacts    │
-                        │  available to next    │
-                        │  routes               │
-                        └───────────────────────┘
-                                   │
-                                   ▼
-                        ┌───────────────────────┐
-                        │       RESULT          │
-                        │                       │
-                        │  { data, graph,       │
-                        │    errors, summary }  │
-                        └───────────────────────┘
-```
 
 ## Concepts
 
 ### Source
 
-A **Source** is the data provider that tells the pipeline where to get files from. It implements two methods:
+A **Source** is the data provider that tells the pipeline where to get files from. Sources are defined using `definePipelineSource()` and passed to the pipeline via the `inputs` array.
 
-- `listFiles(version)` - Returns all available files for a Unicode version
-- `readFile(file)` - Returns the content of a specific file
+Each source has:
+- **id** - Unique identifier for the source
+- **backend** - Object implementing `listFiles(version)` and `readFile(file)`
+- **includes** - Optional filter to include only matching files
+- **excludes** - Optional filter to exclude matching files
 
-Sources abstract away the storage backend, allowing the same pipeline to work with local files, remote HTTP servers, or in-memory test fixtures.
+```ts
+import { definePipelineSource, definePipeline, byGlob } from "@ucdjs/pipelines";
+
+// Define a source with custom backend
+const mySource = definePipelineSource({
+  id: "unicode-files",
+  backend: {
+    listFiles: async (version) => {
+      // Return array of FileContext objects
+      return [{ path: "LineBreak.txt", name: "LineBreak.txt", dir: "", ext: ".txt", version }];
+    },
+    readFile: async (file) => {
+      // Return file content as string
+      return "# File content here...";
+    },
+  },
+  // Optional: filter files
+  includes: byGlob("**/*.txt"),
+  excludes: byGlob("**/Test*.txt"),
+});
+
+// Use in pipeline
+const pipeline = definePipeline({
+  versions: ["16.0.0"],
+  inputs: [mySource],
+  routes: [myRoute],
+});
+```
+
+#### Multiple Sources
+
+Pipelines support multiple sources. Files from later sources with the same path will override earlier ones:
+
+```ts
+const localSource = definePipelineSource({
+  id: "local",
+  backend: createLocalBackend({ dir: "./ucd-files" }),
+});
+
+const httpSource = definePipelineSource({
+  id: "unicode-http",
+  backend: createHttpBackend({ baseUrl: "https://unicode.org/Public" }),
+});
+
+const pipeline = definePipeline({
+  versions: ["16.0.0"],
+  inputs: [httpSource, localSource], // Local files override HTTP files
+  routes: [myRoute],
+});
+```
+
+#### Filtering by Source
+
+Use `bySource()` filter to match files from a specific source:
+
+```ts
+import { bySource, and, byName } from "@ucdjs/pipelines";
+
+const route = definePipelineRoute({
+  id: "local-only",
+  filter: and(bySource("local"), byName("CustomData.txt")),
+  // ...
+});
+```
 
 ### Artifacts
 
@@ -217,7 +190,7 @@ There are two ways to create artifacts:
 Use `definePipelineArtifact()` for artifacts that should be built **before** any routes execute. These are ideal for lookup tables that many routes need.
 
 ```ts
-import { definePipelineArtifact, definePipeline, byName } from "@ucdjs/pipelines";
+import { definePipelineArtifact, definePipeline, definePipelineSource, byName } from "@ucdjs/pipelines";
 
 // Define an artifact that builds a character names lookup table
 const namesArtifact = definePipelineArtifact({
@@ -246,10 +219,16 @@ const namesArtifact = definePipelineArtifact({
   },
 });
 
+// Define a source
+const mySource = definePipelineSource({
+  id: "my-source",
+  backend: myBackend,
+});
+
 // Use in pipeline
 const pipeline = definePipeline({
   versions: ["16.0.0"],
-  source: mySource,
+  inputs: [mySource],
   artifacts: [namesArtifact], // Built before routes
   routes: [myRoute],
 });
@@ -313,7 +292,7 @@ const lineBreakRoute = definePipelineRoute({
 // Order matters! Producer must come before consumer
 const pipeline = definePipeline({
   versions: ["16.0.0"],
-  source: mySource,
+  inputs: [mySource],
   routes: [namesRoute, lineBreakRoute], // namesRoute first!
 });
 ```
@@ -352,6 +331,7 @@ byExt(".txt")                     // Files with extension
 byGlob("**/*Test*.txt")           // Glob pattern matching
 byPath("ucd/LineBreak.txt")       // Exact path match
 byProp("Line_Break")              // Match by property in row context
+bySource("my-source")             // Files from a specific source
 
 // Combinators
 and(byExt(".txt"), byDir("ucd"))  // All conditions must match
@@ -371,13 +351,18 @@ The pipeline supports caching route outputs to avoid reprocessing unchanged file
 - Hashes of consumed artifacts
 
 ```ts
-import { createMemoryCacheStore } from "@ucdjs/pipelines";
+import { createMemoryCacheStore, definePipelineSource, definePipeline } from "@ucdjs/pipelines";
 
 const cacheStore = createMemoryCacheStore();
 
+const mySource = definePipelineSource({
+  id: "my-source",
+  backend: myBackend,
+});
+
 const pipeline = definePipeline({
   versions: ["16.0.0"],
-  source,
+  inputs: [mySource],
   cacheStore, // Enable caching
   routes: [namesRoute, lineBreakRoute],
 });
@@ -411,9 +396,28 @@ import {
   definePipeline,
   definePipelineRoute,
   definePipelineArtifact,
+  definePipelineSource,
   createMemoryCacheStore,
   byName,
 } from "@ucdjs/pipelines";
+
+// Define a source
+const mySource = definePipelineSource({
+  id: "unicode-files",
+  backend: {
+    listFiles: async (version) => {
+      // Your implementation to list files
+      return [
+        { path: "UnicodeData.txt", name: "UnicodeData.txt", dir: "", ext: ".txt", version },
+        { path: "LineBreak.txt", name: "LineBreak.txt", dir: "", ext: ".txt", version },
+      ];
+    },
+    readFile: async (file) => {
+      // Your implementation to read file content
+      return "# File content...";
+    },
+  },
+});
 
 // Pre-defined artifact for character names (built before routes)
 const namesArtifact = definePipelineArtifact({
@@ -468,7 +472,7 @@ const lineBreakRoute = definePipelineRoute({
 // Create and run pipeline
 const pipeline = definePipeline({
   versions: ["16.0.0", "15.1.0"],
-  source: mySource,
+  inputs: [mySource],
   artifacts: [namesArtifact], // Pre-defined artifacts
   cacheStore: createMemoryCacheStore(),
   routes: [lineBreakRoute],

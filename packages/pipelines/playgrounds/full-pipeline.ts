@@ -1,11 +1,13 @@
+import { z } from "zod";
 import {
+  artifact,
   byName,
   createMemoryCacheStore,
   definePipeline,
   definePipelineRoute,
+  definePipelineSource,
   type FileContext,
   type PipelineEvent,
-  type PipelineSource,
   type PropertyJson,
   type ResolvedEntry,
 } from "../src";
@@ -41,8 +43,9 @@ const MOCK_FILES: Record<string, Record<string, string>> = {
   },
 };
 
-function createMockSource(): PipelineSource {
-  return {
+const mockSource = definePipelineSource({
+  id: "mock",
+  backend: {
     async listFiles(version: string): Promise<FileContext[]> {
       const versionFiles = MOCK_FILES[version];
       if (!versionFiles) {
@@ -51,8 +54,8 @@ function createMockSource(): PipelineSource {
 
       return Object.keys(versionFiles).map((path) => {
         const parts = path.split("/");
-        const name = parts[parts.length - 1];
-        const dir = parts[0];
+        const name = parts[parts.length - 1] ?? "";
+        const dir = parts[0] ?? "";
         const ext = name.includes(".") ? `.${name.split(".").pop()}` : "";
 
         return { version, path, name, dir, ext };
@@ -72,12 +75,15 @@ function createMockSource(): PipelineSource {
 
       return content;
     },
-  };
-}
+  },
+});
 
 const unicodeDataRoute = definePipelineRoute({
   id: "unicode-data-names",
   filter: byName("UnicodeData.txt"),
+  emits: {
+    names: artifact(z.map(z.string(), z.string())),
+  },
   parser: async function* (ctx) {
     for await (const line of ctx.readLines()) {
       if (ctx.isComment(line)) continue;
@@ -113,6 +119,7 @@ const unicodeDataRoute = definePipelineRoute({
 const lineBreakRoute = definePipelineRoute({
   id: "line-break",
   filter: byName("LineBreak.txt"),
+  depends: ["artifact:unicode-data-names:names"] as const,
   parser: async function* (ctx) {
     for await (const line of ctx.readLines()) {
       if (ctx.isComment(line)) continue;
@@ -139,7 +146,7 @@ const lineBreakRoute = definePipelineRoute({
     }
   },
   resolver: async (ctx, rows) => {
-    const names = ctx.getArtifact("names") as Map<string, string>;
+    const names = ctx.getArtifact("unicode-data-names:names") as Map<string, string>;
     const entries: ResolvedEntry[] = [];
     const meta: Record<string, unknown> = {
       enrichedWithNames: true,
@@ -184,6 +191,7 @@ const lineBreakRoute = definePipelineRoute({
 const scriptsRoute = definePipelineRoute({
   id: "scripts",
   filter: byName("Scripts.txt"),
+  depends: ["artifact:unicode-data-names:names"] as const,
   parser: async function* (ctx) {
     for await (const line of ctx.readLines()) {
       if (ctx.isComment(line)) continue;
@@ -210,7 +218,7 @@ const scriptsRoute = definePipelineRoute({
     }
   },
   resolver: async (ctx, rows) => {
-    const names = ctx.getArtifact("names") as Map<string, string>;
+    const names = ctx.getArtifact("unicode-data-names:names") as Map<string, string>;
     const entries: ResolvedEntry[] = [];
     const meta: Record<string, unknown> = {
       enrichedWithNames: true,
@@ -253,14 +261,13 @@ const scriptsRoute = definePipelineRoute({
 });
 
 async function main() {
-  const source = createMockSource();
   const cacheStore = createMemoryCacheStore();
 
   const events: PipelineEvent[] = [];
 
   const pipeline = definePipeline({
     versions: ["16.0.0", "15.1.0"],
-    source,
+    inputs: [mockSource],
     cacheStore,
     routes: [unicodeDataRoute, lineBreakRoute, scriptsRoute],
     onEvent: (event) => {

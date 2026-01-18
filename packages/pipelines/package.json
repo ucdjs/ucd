@@ -40,7 +40,8 @@
   },
   "dependencies": {
     "@ucdjs-internal/shared": "workspace:*",
-    "picomatch": "catalog:prod"
+    "picomatch": "catalog:prod",
+    "zod": "catalog:prod"
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:linting",

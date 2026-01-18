@@ -5,24 +5,30 @@ import { describe, expect, expectTypeOf, it } from "vitest";
 import { byName } from "../src/filters";
 import { definePipeline } from "../src/pipeline";
 import { definePipelineRoute } from "../src/route";
+import { definePipelineSource } from "../src/source";
+
+let mockSourceCounter = 0;
 
 function createMockSource(files: Record<string, Record<string, string>>) {
-  return {
-    listFiles: async (version: string): Promise<FileContext[]> => {
-      const versionFiles = files[version] ?? {};
-      return Object.keys(versionFiles).map((path) => ({
-        path,
-        name: path.split("/").pop() ?? path,
-        dir: path.includes("/") ? path.substring(0, path.lastIndexOf("/")) : "",
-        ext: path.includes(".") ? path.substring(path.lastIndexOf(".")) : "",
-        version,
-      }));
+  return definePipelineSource({
+    id: `mock-${++mockSourceCounter}`,
+    backend: {
+      listFiles: async (version: string): Promise<FileContext[]> => {
+        const versionFiles = files[version] ?? {};
+        return Object.keys(versionFiles).map((path) => ({
+          path,
+          name: path.split("/").pop() ?? path,
+          dir: path.includes("/") ? path.substring(0, path.lastIndexOf("/")) : "",
+          ext: path.includes(".") ? path.substring(path.lastIndexOf(".")) : "",
+          version,
+        }));
+      },
+      readFile: async (file: FileContext): Promise<string> => {
+        const versionFiles = files[file.version] ?? {};
+        return versionFiles[file.path] ?? "";
+      },
     },
-    readFile: async (file: FileContext): Promise<string> => {
-      const versionFiles = files[file.version] ?? {};
-      return versionFiles[file.path] ?? "";
-    },
-  };
+  });
 }
 
 function createRow(ctx: ParseContext, props: Partial<ParsedRow>): ParsedRow {
@@ -69,11 +75,11 @@ describe("PipelineSummary", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0", "15.1.0", "15.0.0"],
-      source: createMockSource({
+      inputs: [createMockSource({
         "16.0.0": { "test.txt": "content" },
         "15.1.0": { "test.txt": "content" },
         "15.0.0": { "test.txt": "content" },
-      }),
+      })],
       routes: [route],
     });
 
@@ -97,10 +103,10 @@ describe("PipelineSummary", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0", "15.1.0"],
-      source: createMockSource({
+      inputs: [createMockSource({
         "16.0.0": { "test.txt": "a", "other.txt": "b" },
         "15.1.0": { "test.txt": "c", "another.txt": "d", "third.txt": "e" },
-      }),
+      })],
       routes: [route],
     });
 
@@ -124,13 +130,13 @@ describe("PipelineSummary", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0"],
-      source: createMockSource({
+      inputs: [createMockSource({
         "16.0.0": {
           "matched.txt": "a",
           "unmatched1.txt": "b",
           "unmatched2.txt": "c",
         },
-      }),
+      })],
       routes: [route],
     });
 
@@ -154,13 +160,13 @@ describe("PipelineSummary", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0"],
-      source: createMockSource({
+      inputs: [createMockSource({
         "16.0.0": {
           "matched.txt": "a",
           "unmatched1.txt": "b",
           "unmatched2.txt": "c",
         },
-      }),
+      })],
       routes: [route],
     });
 
@@ -193,7 +199,7 @@ describe("PipelineSummary", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0"],
-      source: createMockSource({ "16.0.0": { "test.txt": "content" } }),
+      inputs: [createMockSource({ "16.0.0": { "test.txt": "content" } })],
       routes: [route],
     });
 
@@ -217,7 +223,7 @@ describe("PipelineSummary", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0"],
-      source: createMockSource({ "16.0.0": { "test.txt": "content" } }),
+      inputs: [createMockSource({ "16.0.0": { "test.txt": "content" } })],
       routes: [route],
     });
 
@@ -275,7 +281,7 @@ describe("PipelineRunResult", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0"],
-      source: createMockSource({ "16.0.0": { "test.txt": "content" } }),
+      inputs: [createMockSource({ "16.0.0": { "test.txt": "content" } })],
       routes: [route],
     });
 
@@ -301,7 +307,7 @@ describe("PipelineRunResult", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0"],
-      source: createMockSource({ "16.0.0": { "test.txt": "content" } }),
+      inputs: [createMockSource({ "16.0.0": { "test.txt": "content" } })],
       routes: [route],
     });
 
@@ -328,7 +334,7 @@ describe("PipelineRunResult", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0"],
-      source: createMockSource({ "16.0.0": { "test.txt": "content" } }),
+      inputs: [createMockSource({ "16.0.0": { "test.txt": "content" } })],
       routes: [route],
     });
 
@@ -354,7 +360,7 @@ describe("PipelineRunResult", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0"],
-      source: createMockSource({ "16.0.0": { "test.txt": "content" } }),
+      inputs: [createMockSource({ "16.0.0": { "test.txt": "content" } })],
       routes: [route],
     });
 
@@ -377,10 +383,10 @@ describe("PipelineRunResult", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0", "15.1.0"],
-      source: createMockSource({
+      inputs: [createMockSource({
         "16.0.0": { "test.txt": "content" },
         "15.1.0": { "test.txt": "content" },
-      }),
+      })],
       routes: [route],
     });
 
@@ -406,7 +412,7 @@ describe("Result data typing", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0"],
-      source: createMockSource({ "16.0.0": { "test.txt": "content" } }),
+      inputs: [createMockSource({ "16.0.0": { "test.txt": "content" } })],
       routes: [route],
     });
 
@@ -442,9 +448,9 @@ describe("Result data typing", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0"],
-      source: createMockSource({
+      inputs: [createMockSource({
         "16.0.0": { "a.txt": "content", "b.txt": "content" },
-      }),
+      })],
       routes: [route1, route2],
     });
 

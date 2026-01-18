@@ -10,7 +10,6 @@ export function byDir(dir: FileContext["dir"]): PipelineFilter {
 }
 
 export function byExt(ext: string): PipelineFilter {
-  // Handle empty extension case (files without extension like "Makefile")
   if (ext === "") {
     return (ctx) => ctx.file.ext === "";
   }
@@ -35,6 +34,11 @@ export function byProp(pattern: string | RegExp): PipelineFilter {
     return (ctx) => ctx.row?.property === pattern;
   }
   return (ctx) => !!ctx.row?.property && pattern.test(ctx.row.property);
+}
+
+export function bySource(sourceIds: string | string[]): PipelineFilter {
+  const ids = Array.isArray(sourceIds) ? sourceIds : [sourceIds];
+  return (ctx) => ctx.source != null && ids.includes(ctx.source.id);
 }
 
 export function and(...filters: PipelineFilter[]): PipelineFilter {

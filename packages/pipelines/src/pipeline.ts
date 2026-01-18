@@ -1,18 +1,28 @@
 import type { InferArtifactsMap, PipelineArtifactDefinition } from "./artifact";
+import type { ArtifactDefinition } from "./artifact-schema";
+import { isGlobalArtifact } from "./artifact-schema";
 import type { CacheEntry, CacheKey, CacheStore } from "./cache";
 import { defaultHashFn, hashArtifact } from "./cache";
+import { buildDAG, getExecutionLayers } from "./dag";
 import type { PipelineEvent, PipelineGraph, PipelineGraphEdge, PipelineGraphNode } from "./events";
 import type { PipelineRunResult, PipelineSummary } from "./results";
-import type { InferRoutesOutput, PipelineRouteDefinition } from "./route";
+import type { InferRoutesOutput, PipelineRouteDefinition, RouteResolveContext } from "./route";
+import type { PipelineSourceDefinition, SourceBackend, SourceFileContext } from "./source";
+import { resolveMultipleSourceFiles } from "./source";
+import { applyTransforms } from "./transform";
 import type {
   FileContext,
   ParseContext,
   ParsedRow,
   PipelineFilter,
-  PipelineSource,
   ResolvedEntry,
   ResolveContext,
 } from "./types";
+
+interface SourceAdapter {
+  listFiles: (version: string) => Promise<FileContext[]>;
+  readFile: (file: FileContext) => Promise<string>;
+}
 
 export interface FallbackRouteDefinition<
   TArtifacts extends Record<string, unknown> = Record<string, unknown>,
@@ -25,10 +35,10 @@ export interface FallbackRouteDefinition<
 
 export interface PipelineOptions<
   TArtifacts extends readonly PipelineArtifactDefinition[] = readonly PipelineArtifactDefinition[],
-  TRoutes extends readonly PipelineRouteDefinition[] = readonly PipelineRouteDefinition[],
+  TRoutes extends readonly PipelineRouteDefinition<any, any, any, any, any>[] = readonly PipelineRouteDefinition<any, any, any, any, any>[],
 > {
   versions: string[];
-  source: PipelineSource;
+  inputs: PipelineSourceDefinition[];
   artifacts?: TArtifacts;
   routes: TRoutes;
   include?: PipelineFilter;
@@ -41,6 +51,7 @@ export interface PipelineOptions<
 
 export interface PipelineRunOptions {
   cache?: boolean;
+  versions?: string[];
 }
 
 export interface Pipeline<TOutput = unknown> {
@@ -48,7 +59,7 @@ export interface Pipeline<TOutput = unknown> {
 }
 
 type InferPipelineOutput<
-  TRoutes extends readonly PipelineRouteDefinition[],
+  TRoutes extends readonly PipelineRouteDefinition<any, any, any, any, any>[],
   TFallback extends FallbackRouteDefinition<any, unknown> | undefined,
 > = TFallback extends FallbackRouteDefinition<any, infer TFallbackOutput>
   ? InferRoutesOutput<TRoutes> | TFallbackOutput
@@ -56,7 +67,7 @@ type InferPipelineOutput<
 
 export function definePipeline<
   const TArtifacts extends readonly PipelineArtifactDefinition[],
-  const TRoutes extends readonly PipelineRouteDefinition[],
+  const TRoutes extends readonly PipelineRouteDefinition<any, any, any, any, any>[],
   TFallback extends FallbackRouteDefinition<InferArtifactsMap<TArtifacts>, unknown> | undefined = undefined,
 >(
   options: PipelineOptions<TArtifacts, TRoutes> & { fallback?: TFallback },
@@ -69,7 +80,7 @@ function createPipelineExecutor<TOutput>(
 ): Pipeline<TOutput> {
   const {
     versions,
-    source,
+    inputs,
     artifacts = [],
     routes,
     include,
@@ -79,6 +90,12 @@ function createPipelineExecutor<TOutput>(
     fallback,
     onEvent,
   } = options;
+
+  const dagResult = buildDAG(routes);
+  if (!dagResult.valid) {
+    throw new Error(`Pipeline DAG validation failed:\n${dagResult.errors.map((e) => `  - ${e.message}`).join("\n")}`);
+  }
+  const dag = dagResult.dag!;
 
   async function emit(event: PipelineEvent): Promise<void> {
     if (onEvent) {
@@ -109,9 +126,43 @@ function createPipelineExecutor<TOutput>(
     };
   }
 
+  function createSourceAdapter(): SourceAdapter {
+    if (inputs.length === 0) {
+      throw new Error("Pipeline requires at least one input source");
+    }
+
+    const backends = new Map<string, SourceBackend>();
+    for (const input of inputs) {
+      backends.set(input.id, input.backend);
+    }
+
+    return {
+      listFiles: async (version: string) => {
+        return resolveMultipleSourceFiles(inputs, version);
+      },
+      readFile: async (file: FileContext) => {
+        const sourceFile = file as SourceFileContext;
+        if (sourceFile.source) {
+          const backend = backends.get(sourceFile.source.id);
+          if (backend) {
+            return backend.readFile(file);
+          }
+        }
+        const firstBackend = backends.values().next().value;
+        if (firstBackend) {
+          return firstBackend.readFile(file);
+        }
+        throw new Error(`No backend found for file: ${file.path}`);
+      },
+    };
+  }
+
   async function run(runOptions: PipelineRunOptions = {}): Promise<PipelineRunResult<TOutput>> {
-    const { cache: enableCache = true } = runOptions;
+    const { cache: enableCache = true, versions: runVersions } = runOptions;
     const useCache = enableCache && cacheStore != null;
+    const versionsToRun = runVersions ?? versions;
+
+    const effectiveSource = createSourceAdapter();
 
     const startTime = performance.now();
     const graphNodes: PipelineGraphNode[] = [];
@@ -124,9 +175,9 @@ function createPipelineExecutor<TOutput>(
     let skippedFiles = 0;
     let fallbackFiles = 0;
 
-    await emit({ type: "pipeline:start", versions, timestamp: Date.now() });
+    await emit({ type: "pipeline:start", versions: versionsToRun, timestamp: Date.now() });
 
-    for (const version of versions) {
+    for (const version of versionsToRun) {
       const versionStartTime = performance.now();
       await emit({ type: "version:start", version, timestamp: Date.now() });
 
@@ -134,6 +185,7 @@ function createPipelineExecutor<TOutput>(
       graphNodes.push({ id: sourceNodeId, type: "source", version });
 
       const artifactsMap: Record<string, unknown> = {};
+      const globalArtifactsMap: Record<string, unknown> = {};
 
       for (const artifactDef of artifacts) {
         const artifactStartTime = performance.now();
@@ -152,10 +204,10 @@ function createPipelineExecutor<TOutput>(
           let rows: AsyncIterable<ParsedRow> | undefined;
 
           if (artifactDef.filter && artifactDef.parser) {
-            const files = await source.listFiles(version);
+            const files = await effectiveSource.listFiles(version);
             for (const file of files) {
               if (artifactDef.filter({ file })) {
-                const parseCtx = createParseContext(file, source);
+                const parseCtx = createParseContext(file, effectiveSource);
                 rows = artifactDef.parser(parseCtx);
                 break;
               }
@@ -189,81 +241,106 @@ function createPipelineExecutor<TOutput>(
         });
       }
 
-      const files = await source.listFiles(version);
+      const files = await effectiveSource.listFiles(version);
       totalFiles += files.length;
 
       const filesToProcess = include
         ? files.filter((file) => include({ file }))
         : files;
 
-      const processingQueue = createProcessingQueue(concurrency);
+      const executionLayers = getExecutionLayers(dag);
 
-      for (const file of filesToProcess) {
-        await processingQueue.add(async () => {
-          const fileNodeId = `file:${version}:${file.path}`;
-          graphNodes.push({ id: fileNodeId, type: "file", file });
-          graphEdges.push({ from: sourceNodeId, to: fileNodeId, type: "provides" });
+      for (const layer of executionLayers) {
+        const processingQueue = createProcessingQueue(concurrency);
+        const layerRoutes = routes.filter((r) => layer.includes(r.id));
 
-          const matchingRoute = routes.find((route) => route.filter({ file }));
-
-          if (matchingRoute) {
-            matchedFiles++;
-            const routeNodeId = `route:${version}:${matchingRoute.id}`;
-
-            if (!graphNodes.some((n) => n.id === routeNodeId)) {
-              graphNodes.push({ id: routeNodeId, type: "route", routeId: matchingRoute.id });
-            }
-
-            graphEdges.push({ from: fileNodeId, to: routeNodeId, type: "matched" });
-
-            await emit({
-              type: "file:matched",
+        for (const route of layerRoutes) {
+          const matchingFiles = filesToProcess.filter((file) => {
+            const sourceFile = file as SourceFileContext;
+            const filterCtx = {
               file,
-              routeId: matchingRoute.id,
-              timestamp: Date.now(),
-            });
+              source: sourceFile.source,
+            };
+            return route.filter(filterCtx);
+          });
 
-            try {
-              const routeCacheEnabled = useCache && matchingRoute.cache !== false;
-              let result: ProcessRouteResult | null = null;
-              let cacheHit = false;
+          for (const file of matchingFiles) {
+            await processingQueue.add(async () => {
+              const fileNodeId = `file:${version}:${file.path}`;
+              if (!graphNodes.some((n) => n.id === fileNodeId)) {
+                graphNodes.push({ id: fileNodeId, type: "file", file });
+                graphEdges.push({ from: sourceNodeId, to: fileNodeId, type: "provides" });
+              }
 
-              if (routeCacheEnabled && cacheStore) {
-                const fileContent = await source.readFile(file);
-                const inputHash = defaultHashFn(fileContent);
+              matchedFiles++;
+              const routeNodeId = `route:${version}:${route.id}`;
 
-                const partialKey: CacheKey = {
-                  routeId: matchingRoute.id,
-                  version,
-                  inputHash,
-                  artifactHashes: {},
-                };
+              if (!graphNodes.some((n) => n.id === routeNodeId)) {
+                graphNodes.push({ id: routeNodeId, type: "route", routeId: route.id });
+              }
 
-                const cachedEntry = await cacheStore.get(partialKey);
+              graphEdges.push({ from: fileNodeId, to: routeNodeId, type: "matched" });
 
-                if (cachedEntry) {
-                  const currentArtifactHashes: Record<string, string> = {};
-                  for (const id of Object.keys(cachedEntry.key.artifactHashes)) {
-                    if (id in artifactsMap) {
-                      currentArtifactHashes[id] = hashArtifact(artifactsMap[id]);
+              await emit({
+                type: "file:matched",
+                file,
+                routeId: route.id,
+                timestamp: Date.now(),
+              });
+
+              try {
+                const routeCacheEnabled = useCache && route.cache !== false;
+                let result: ProcessRouteResult | null = null;
+                let cacheHit = false;
+
+                if (routeCacheEnabled && cacheStore) {
+                  const fileContent = await effectiveSource.readFile(file);
+                  const inputHash = defaultHashFn(fileContent);
+
+                  const partialKey: CacheKey = {
+                    routeId: route.id,
+                    version,
+                    inputHash,
+                    artifactHashes: {},
+                  };
+
+                  const cachedEntry = await cacheStore.get(partialKey);
+
+                  if (cachedEntry) {
+                    const currentArtifactHashes: Record<string, string> = {};
+                    for (const id of Object.keys(cachedEntry.key.artifactHashes)) {
+                      const combinedMap = { ...artifactsMap, ...globalArtifactsMap };
+                      if (id in combinedMap) {
+                        currentArtifactHashes[id] = hashArtifact(combinedMap[id]);
+                      }
+                    }
+
+                    const artifactHashesMatch = Object.keys(cachedEntry.key.artifactHashes).every(
+                      (id) => currentArtifactHashes[id] === cachedEntry.key.artifactHashes[id],
+                    );
+
+                    if (artifactHashesMatch) {
+                      cacheHit = true;
+                      result = {
+                        outputs: cachedEntry.output,
+                        emittedArtifacts: cachedEntry.producedArtifacts,
+                        consumedArtifactIds: Object.keys(cachedEntry.key.artifactHashes),
+                      };
+
+                      await emit({
+                        type: "cache:hit",
+                        routeId: route.id,
+                        file,
+                        version,
+                        timestamp: Date.now(),
+                      });
                     }
                   }
 
-                  const artifactHashesMatch = Object.keys(cachedEntry.key.artifactHashes).every(
-                    (id) => currentArtifactHashes[id] === cachedEntry.key.artifactHashes[id],
-                  );
-
-                  if (artifactHashesMatch) {
-                    cacheHit = true;
-                    result = {
-                      outputs: cachedEntry.output,
-                      emittedArtifacts: cachedEntry.producedArtifacts,
-                      consumedArtifactIds: Object.keys(cachedEntry.key.artifactHashes),
-                    };
-
+                  if (!cacheHit) {
                     await emit({
-                      type: "cache:hit",
-                      routeId: matchingRoute.id,
+                      type: "cache:miss",
+                      routeId: route.id,
                       file,
                       version,
                       timestamp: Date.now(),
@@ -271,111 +348,59 @@ function createPipelineExecutor<TOutput>(
                   }
                 }
 
-                if (!cacheHit) {
-                  await emit({
-                    type: "cache:miss",
-                    routeId: matchingRoute.id,
+                if (!result) {
+                  result = await processRoute(
                     file,
+                    route,
+                    { ...artifactsMap, ...globalArtifactsMap },
+                    effectiveSource,
                     version,
-                    timestamp: Date.now(),
-                  });
-                }
-              }
-
-              if (!result) {
-                result = await processRoute(
-                  file,
-                  matchingRoute,
-                  artifactsMap,
-                  source,
-                  version,
-                  emit,
-                );
-
-                if (routeCacheEnabled && cacheStore) {
-                  const fileContent = await source.readFile(file);
-                  const cacheKey = await buildCacheKey(
-                    matchingRoute.id,
-                    version,
-                    file,
-                    fileContent,
-                    artifactsMap,
-                    result.consumedArtifactIds,
+                    emit,
                   );
 
-                  const cacheEntry: CacheEntry = {
-                    key: cacheKey,
-                    output: result.outputs,
-                    producedArtifacts: result.emittedArtifacts,
-                    createdAt: new Date().toISOString(),
-                  };
+                  if (routeCacheEnabled && cacheStore) {
+                    const fileContent = await effectiveSource.readFile(file);
+                    const combinedMap = { ...artifactsMap, ...globalArtifactsMap };
+                    const cacheKey = await buildCacheKey(
+                      route.id,
+                      version,
+                      file,
+                      fileContent,
+                      combinedMap,
+                      result.consumedArtifactIds,
+                    );
 
-                  await cacheStore.set(cacheEntry);
+                    const cacheEntry: CacheEntry = {
+                      key: cacheKey,
+                      output: result.outputs,
+                      producedArtifacts: result.emittedArtifacts,
+                      createdAt: new Date().toISOString(),
+                    };
 
-                  await emit({
-                    type: "cache:store",
-                    routeId: matchingRoute.id,
-                    file,
-                    version,
-                    timestamp: Date.now(),
-                  });
+                    await cacheStore.set(cacheEntry);
+
+                    await emit({
+                      type: "cache:store",
+                      routeId: route.id,
+                      file,
+                      version,
+                      timestamp: Date.now(),
+                    });
+                  }
                 }
-              }
 
-              Object.assign(artifactsMap, result.emittedArtifacts);
+                for (const [artifactName, artifactValue] of Object.entries(result.emittedArtifacts)) {
+                  const prefixedKey = `${route.id}:${artifactName}`;
+                  const artifactDef = route.emits?.[artifactName];
 
-              for (const output of result.outputs) {
-                const outputIndex = allOutputs.length;
-                allOutputs.push(output as TOutput);
+                  if (artifactDef && isGlobalArtifact(artifactDef)) {
+                    globalArtifactsMap[prefixedKey] = artifactValue;
+                  } else {
+                    artifactsMap[prefixedKey] = artifactValue;
+                  }
+                }
 
-                const outputNodeId = `output:${version}:${outputIndex}`;
-                graphNodes.push({
-                  id: outputNodeId,
-                  type: "output",
-                  outputIndex,
-                  property: (output as { property?: string }).property,
-                });
-                graphEdges.push({ from: routeNodeId, to: outputNodeId, type: "resolved" });
-              }
-            } catch (err) {
-              const pipelineError = {
-                scope: "route" as const,
-                message: err instanceof Error ? err.message : String(err),
-                error: err,
-                file,
-                routeId: matchingRoute.id,
-                version,
-              };
-              errors.push(pipelineError);
-              await emit({
-                type: "error",
-                error: pipelineError,
-                timestamp: Date.now(),
-              });
-            }
-          } else if (fallback) {
-            const shouldUseFallback = !fallback.filter || fallback.filter({ file });
-
-            if (shouldUseFallback) {
-              fallbackFiles++;
-
-              await emit({
-                type: "file:fallback",
-                file,
-                timestamp: Date.now(),
-              });
-
-              try {
-                const outputs = await processFallback(
-                  file,
-                  fallback,
-                  artifactsMap,
-                  source,
-                  version,
-                  emit,
-                );
-
-                for (const output of outputs) {
+                for (const output of result.outputs) {
                   const outputIndex = allOutputs.length;
                   allOutputs.push(output as TOutput);
 
@@ -386,14 +411,15 @@ function createPipelineExecutor<TOutput>(
                     outputIndex,
                     property: (output as { property?: string }).property,
                   });
-                  graphEdges.push({ from: fileNodeId, to: outputNodeId, type: "resolved" });
+                  graphEdges.push({ from: routeNodeId, to: outputNodeId, type: "resolved" });
                 }
               } catch (err) {
                 const pipelineError = {
-                  scope: "file" as const,
+                  scope: "route" as const,
                   message: err instanceof Error ? err.message : String(err),
                   error: err,
                   file,
+                  routeId: route.id,
                   version,
                 };
                 errors.push(pipelineError);
@@ -403,22 +429,73 @@ function createPipelineExecutor<TOutput>(
                   timestamp: Date.now(),
                 });
               }
-            } else {
-              skippedFiles++;
-              await emit({
-                type: "file:skipped",
-                file,
-                reason: "filtered",
-                timestamp: Date.now(),
-              });
-            }
-          } else {
-            skippedFiles++;
+            });
+          }
+        }
 
-            if (strict) {
+        await processingQueue.drain();
+      }
+
+      const processedFiles = new Set<string>();
+      for (const route of routes) {
+        for (const file of filesToProcess) {
+          const sourceFile = file as SourceFileContext;
+          const filterCtx = { file, source: sourceFile.source };
+          if (route.filter(filterCtx)) {
+            processedFiles.add(file.path);
+          }
+        }
+      }
+
+      for (const file of filesToProcess) {
+        if (processedFiles.has(file.path)) continue;
+
+        if (fallback) {
+          const shouldUseFallback = !fallback.filter || fallback.filter({ file });
+
+          if (shouldUseFallback) {
+            fallbackFiles++;
+
+            const fileNodeId = `file:${version}:${file.path}`;
+            if (!graphNodes.some((n) => n.id === fileNodeId)) {
+              graphNodes.push({ id: fileNodeId, type: "file", file });
+              graphEdges.push({ from: sourceNodeId, to: fileNodeId, type: "provides" });
+            }
+
+            await emit({
+              type: "file:fallback",
+              file,
+              timestamp: Date.now(),
+            });
+
+            try {
+              const outputs = await processFallback(
+                file,
+                fallback,
+                { ...artifactsMap, ...globalArtifactsMap },
+                effectiveSource,
+                version,
+                emit,
+              );
+
+              for (const output of outputs) {
+                const outputIndex = allOutputs.length;
+                allOutputs.push(output as TOutput);
+
+                const outputNodeId = `output:${version}:${outputIndex}`;
+                graphNodes.push({
+                  id: outputNodeId,
+                  type: "output",
+                  outputIndex,
+                  property: (output as { property?: string }).property,
+                });
+                graphEdges.push({ from: fileNodeId, to: outputNodeId, type: "resolved" });
+              }
+            } catch (err) {
               const pipelineError = {
                 scope: "file" as const,
-                message: `No matching route for file: ${file.path}`,
+                message: err instanceof Error ? err.message : String(err),
+                error: err,
                 file,
                 version,
               };
@@ -428,19 +505,42 @@ function createPipelineExecutor<TOutput>(
                 error: pipelineError,
                 timestamp: Date.now(),
               });
-            } else {
-              await emit({
-                type: "file:skipped",
-                file,
-                reason: "no-match",
-                timestamp: Date.now(),
-              });
             }
+          } else {
+            skippedFiles++;
+            await emit({
+              type: "file:skipped",
+              file,
+              reason: "filtered",
+              timestamp: Date.now(),
+            });
           }
-        });
-      }
+        } else {
+          skippedFiles++;
 
-      await processingQueue.drain();
+          if (strict) {
+            const pipelineError = {
+              scope: "file" as const,
+              message: `No matching route for file: ${file.path}`,
+              file,
+              version,
+            };
+            errors.push(pipelineError);
+            await emit({
+              type: "error",
+              error: pipelineError,
+              timestamp: Date.now(),
+            });
+          } else {
+            await emit({
+              type: "file:skipped",
+              file,
+              reason: "no-match",
+              timestamp: Date.now(),
+            });
+          }
+        }
+      }
 
       await emit({
         type: "version:end",
@@ -459,7 +559,7 @@ function createPipelineExecutor<TOutput>(
     });
 
     const summary: PipelineSummary = {
-      versions,
+      versions: versionsToRun,
       totalFiles,
       matchedFiles,
       skippedFiles,
@@ -484,7 +584,7 @@ function createPipelineExecutor<TOutput>(
   return { run };
 }
 
-function createParseContext(file: FileContext, source: PipelineSource): ParseContext {
+function createParseContext(file: FileContext, source: SourceAdapter): ParseContext {
   let cachedContent: string | null = null;
 
   return {
@@ -493,7 +593,7 @@ function createParseContext(file: FileContext, source: PipelineSource): ParseCon
       if (cachedContent === null) {
         cachedContent = await source.readFile(file);
       }
-      return cachedContent;
+      return cachedContent!;
     },
     readLines: async function* () {
       const content = await source.readFile(file);
@@ -506,18 +606,58 @@ function createParseContext(file: FileContext, source: PipelineSource): ParseCon
   };
 }
 
-interface ResolveContextOptions<TArtifacts extends Record<string, unknown>> {
+interface ResolveContextOptions {
   version: string;
   file: FileContext;
   routeId: string;
-  artifactsMap: TArtifacts;
+  artifactsMap: Record<string, unknown>;
   emittedArtifacts: Record<string, unknown>;
+  emitsDefinition?: Record<string, ArtifactDefinition>;
   onArtifactEmit?: (id: string, value: unknown) => void;
   onArtifactGet?: (id: string) => void;
 }
 
+function createRouteResolveContext(
+  options: ResolveContextOptions,
+): RouteResolveContext<string, Record<string, ArtifactDefinition>> {
+  const { version, file, routeId, artifactsMap, emittedArtifacts, emitsDefinition, onArtifactEmit, onArtifactGet } = options;
+
+  return {
+    version,
+    file,
+    getArtifact: <K extends string>(key: K): unknown => {
+      if (!(key in artifactsMap)) {
+        throw new Error(`Artifact "${key}" not found. Make sure a route that produces this artifact runs before route "${routeId}".`);
+      }
+      onArtifactGet?.(key);
+      return artifactsMap[key];
+    },
+    emitArtifact: <K extends string>(id: K, value: unknown): void => {
+      if (emitsDefinition) {
+        const def = emitsDefinition[id];
+        if (def) {
+          const result = def.schema.safeParse(value);
+          if (!result.success) {
+            throw new Error(`Artifact "${id}" validation failed: ${result.error.message}`);
+          }
+        }
+      }
+      emittedArtifacts[id] = value;
+      onArtifactEmit?.(id, value);
+    },
+    normalizeEntries: (entries) => {
+      return entries.sort((a, b) => {
+        const aStart = a.range?.split("..")[0] ?? a.codePoint ?? "";
+        const bStart = b.range?.split("..")[0] ?? b.codePoint ?? "";
+        return aStart.localeCompare(bStart);
+      });
+    },
+    now: () => new Date().toISOString(),
+  };
+}
+
 function createResolveContext<TArtifacts extends Record<string, unknown>>(
-  options: ResolveContextOptions<TArtifacts>,
+  options: Omit<ResolveContextOptions, "emitsDefinition">,
 ): ResolveContext<TArtifacts> {
   const { version, file, routeId, artifactsMap, emittedArtifacts, onArtifactEmit, onArtifactGet } = options;
 
@@ -529,7 +669,7 @@ function createResolveContext<TArtifacts extends Record<string, unknown>>(
         throw new Error(`Artifact "${String(id)}" not found. Make sure a route that produces this artifact runs before route "${routeId}".`);
       }
       onArtifactGet?.(String(id));
-      return artifactsMap[id];
+      return artifactsMap[id as string] as TArtifacts[K];
     },
     emitArtifact: <K extends string, V>(id: K, value: V): void => {
       emittedArtifacts[id] = value;
@@ -554,9 +694,9 @@ interface ProcessRouteResult {
 
 async function processRoute(
   file: FileContext,
-  route: PipelineRouteDefinition,
+  route: PipelineRouteDefinition<any, any, any, any, any>,
   artifactsMap: Record<string, unknown>,
-  source: PipelineSource,
+  source: SourceAdapter,
   version: string,
   emit: (event: PipelineEvent) => Promise<void>,
 ): Promise<ProcessRouteResult> {
@@ -569,10 +709,20 @@ async function processRoute(
   });
 
   const parseCtx = createParseContext(file, source);
-  const rows = route.parser(parseCtx);
+  let rows: AsyncIterable<unknown> = route.parser(parseCtx);
 
   const collectedRows: ParsedRow[] = [];
-  const filteredRows = filterRows(rows, file, route.filter, collectedRows);
+  const filteredRows = filterRows(rows as AsyncIterable<ParsedRow>, file, route.filter, collectedRows);
+
+  if (route.transforms && route.transforms.length > 0) {
+    rows = applyTransforms(
+      { version, file },
+      filteredRows,
+      route.transforms,
+    );
+  } else {
+    rows = filteredRows;
+  }
 
   await emit({
     type: "parse:end",
@@ -594,16 +744,17 @@ async function processRoute(
   const emittedArtifacts: Record<string, unknown> = {};
   const consumedArtifactIds: string[] = [];
 
-  const resolveCtx = createResolveContext({
+  const resolveCtx = createRouteResolveContext({
     version,
     file,
     routeId: route.id,
     artifactsMap,
     emittedArtifacts,
+    emitsDefinition: route.emits,
     onArtifactEmit: async (id) => {
       await emit({
         type: "artifact:produced",
-        artifactId: id,
+        artifactId: `${route.id}:${id}`,
         routeId: route.id,
         version,
         timestamp: Date.now(),
@@ -622,7 +773,8 @@ async function processRoute(
       }
     },
   });
-  const outputs = await route.resolver(resolveCtx, filteredRows);
+
+  const outputs = await route.resolver(resolveCtx, rows);
 
   const outputArray = Array.isArray(outputs) ? outputs : [outputs];
 
@@ -642,7 +794,7 @@ async function processFallback(
   file: FileContext,
   fallback: FallbackRouteDefinition,
   artifactsMap: Record<string, unknown>,
-  source: PipelineSource,
+  source: SourceAdapter,
   version: string,
   emit: (event: PipelineEvent) => Promise<void>,
 ): Promise<unknown[]> {

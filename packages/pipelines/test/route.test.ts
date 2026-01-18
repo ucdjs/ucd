@@ -9,24 +9,30 @@ import {
   type InferRoutesOutput,
   type PipelineRouteDefinition,
 } from "../src/route";
+import { definePipelineSource } from "../src/source";
+
+let mockSourceCounter = 0;
 
 function createMockSource(files: Record<string, Record<string, string>>) {
-  return {
-    listFiles: async (version: string): Promise<FileContext[]> => {
-      const versionFiles = files[version] ?? {};
-      return Object.keys(versionFiles).map((path) => ({
-        path,
-        name: path.split("/").pop() ?? path,
-        dir: path.includes("/") ? path.substring(0, path.lastIndexOf("/")) : "",
-        ext: path.includes(".") ? path.substring(path.lastIndexOf(".")) : "",
-        version,
-      }));
+  return definePipelineSource({
+    id: `mock-${++mockSourceCounter}`,
+    backend: {
+      listFiles: async (version: string): Promise<FileContext[]> => {
+        const versionFiles = files[version] ?? {};
+        return Object.keys(versionFiles).map((path) => ({
+          path,
+          name: path.split("/").pop() ?? path,
+          dir: path.includes("/") ? path.substring(0, path.lastIndexOf("/")) : "",
+          ext: path.includes(".") ? path.substring(path.lastIndexOf(".")) : "",
+          version,
+        }));
+      },
+      readFile: async (file: FileContext): Promise<string> => {
+        const versionFiles = files[file.version] ?? {};
+        return versionFiles[file.path] ?? "";
+      },
     },
-    readFile: async (file: FileContext): Promise<string> => {
-      const versionFiles = files[file.version] ?? {};
-      return versionFiles[file.path] ?? "";
-    },
-  };
+  });
 }
 
 function createRow(ctx: ParseContext, props: Partial<ParsedRow>): ParsedRow {
@@ -116,9 +122,9 @@ describe("definePipelineRoute", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0"],
-      source: createMockSource({
+      inputs: [createMockSource({
         "16.0.0": { "data.txt": "# comment\n0041;A\n0042;B\n\n0043;C" },
-      }),
+      })],
       routes: [route],
     });
 
@@ -151,7 +157,7 @@ describe("definePipelineRoute", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0"],
-      source: createMockSource({ "16.0.0": { "test.txt": "content" } }),
+      inputs: [createMockSource({ "16.0.0": { "test.txt": "content" } })],
       routes: [route],
     });
 
@@ -181,7 +187,7 @@ describe("definePipelineRoute", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0"],
-      source: createMockSource({ "16.0.0": { "test.txt": "content" } }),
+      inputs: [createMockSource({ "16.0.0": { "test.txt": "content" } })],
       routes: [route],
     });
 
@@ -208,7 +214,7 @@ describe("definePipelineRoute", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0"],
-      source: createMockSource({ "16.0.0": { "test.txt": "content" } }),
+      inputs: [createMockSource({ "16.0.0": { "test.txt": "content" } })],
       routes: [route],
     });
 
@@ -234,7 +240,7 @@ describe("definePipelineRoute", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0"],
-      source: createMockSource({ "16.0.0": { "test.txt": "content" } }),
+      inputs: [createMockSource({ "16.0.0": { "test.txt": "content" } })],
       routes: [route],
     });
 
@@ -264,13 +270,13 @@ describe("definePipelineRoute", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0"],
-      source: createMockSource({
+      inputs: [createMockSource({
         "16.0.0": {
           "target.txt": "content",
           "other.txt": "content",
           "another.txt": "content",
         },
-      }),
+      })],
       routes: [route],
     });
 
@@ -293,7 +299,7 @@ describe("definePipelineRoute", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0"],
-      source: createMockSource({ "16.0.0": { "test.txt": "content" } }),
+      inputs: [createMockSource({ "16.0.0": { "test.txt": "content" } })],
       routes: [route],
     });
 
@@ -326,7 +332,7 @@ describe("definePipelineRoute", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0"],
-      source: createMockSource({ "16.0.0": { "test.txt": "content" } }),
+      inputs: [createMockSource({ "16.0.0": { "test.txt": "content" } })],
       routes: [route],
     });
 
@@ -352,7 +358,7 @@ describe("definePipelineRoute", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0"],
-      source: createMockSource({ "16.0.0": { "test.txt": "content" } }),
+      inputs: [createMockSource({ "16.0.0": { "test.txt": "content" } })],
       routes: [route],
     });
 
@@ -376,7 +382,7 @@ describe("definePipelineRoute", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0"],
-      source: createMockSource({ "16.0.0": { "test.txt": "content" } }),
+      inputs: [createMockSource({ "16.0.0": { "test.txt": "content" } })],
       routes: [route],
     });
 

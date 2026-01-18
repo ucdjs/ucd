@@ -24,24 +24,30 @@ import { byName } from "../src/filters";
 import { definePipeline } from "../src/pipeline";
 import { definePipelineArtifact } from "../src/artifact";
 import { definePipelineRoute } from "../src/route";
+import { definePipelineSource } from "../src/source";
+
+let mockSourceCounter = 0;
 
 function createMockSource(files: Record<string, Record<string, string>>) {
-  return {
-    listFiles: async (version: string): Promise<FileContext[]> => {
-      const versionFiles = files[version] ?? {};
-      return Object.keys(versionFiles).map((path) => ({
-        path,
-        name: path.split("/").pop() ?? path,
-        dir: path.includes("/") ? path.substring(0, path.lastIndexOf("/")) : "",
-        ext: path.includes(".") ? path.substring(path.lastIndexOf(".")) : "",
-        version,
-      }));
+  return definePipelineSource({
+    id: `mock-${++mockSourceCounter}`,
+    backend: {
+      listFiles: async (version: string): Promise<FileContext[]> => {
+        const versionFiles = files[version] ?? {};
+        return Object.keys(versionFiles).map((path) => ({
+          path,
+          name: path.split("/").pop() ?? path,
+          dir: path.includes("/") ? path.substring(0, path.lastIndexOf("/")) : "",
+          ext: path.includes(".") ? path.substring(path.lastIndexOf(".")) : "",
+          version,
+        }));
+      },
+      readFile: async (file: FileContext): Promise<string> => {
+        const versionFiles = files[file.version] ?? {};
+        return versionFiles[file.path] ?? "";
+      },
     },
-    readFile: async (file: FileContext): Promise<string> => {
-      const versionFiles = files[file.version] ?? {};
-      return versionFiles[file.path] ?? "";
-    },
-  };
+  });
 }
 
 function createRow(ctx: ParseContext, props: Partial<ParsedRow>): ParsedRow {
@@ -451,7 +457,7 @@ describe("Event emission during pipeline run", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0"],
-      source: createMockSource({ "16.0.0": { "test.txt": "content" } }),
+      inputs: [createMockSource({ "16.0.0": { "test.txt": "content" } })],
       routes: [route],
       onEvent: (event) => { events.push(event); },
     });
@@ -484,10 +490,10 @@ describe("Event emission during pipeline run", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0", "15.1.0"],
-      source: createMockSource({
+      inputs: [createMockSource({
         "16.0.0": { "test.txt": "content" },
         "15.1.0": { "test.txt": "content" },
-      }),
+      })],
       routes: [route],
       onEvent: (event) => { events.push(event); },
     });
@@ -523,7 +529,7 @@ describe("Event emission during pipeline run", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0"],
-      source: createMockSource({ "16.0.0": { "test.txt": "content" } }),
+      inputs: [createMockSource({ "16.0.0": { "test.txt": "content" } })],
       artifacts: [artifact],
       routes: [route],
       onEvent: (event) => { events.push(event); },
@@ -558,12 +564,12 @@ describe("Event emission during pipeline run", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0"],
-      source: createMockSource({
+      inputs: [createMockSource({
         "16.0.0": {
           "matched.txt": "content",
           "unmatched.txt": "content",
         },
-      }),
+      })],
       routes: [route],
       onEvent: (event) => { events.push(event); },
     });
@@ -596,12 +602,12 @@ describe("Event emission during pipeline run", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0"],
-      source: createMockSource({
+      inputs: [createMockSource({
         "16.0.0": {
           "matched.txt": "content",
           "unmatched.txt": "content",
         },
-      }),
+      })],
       routes: [route],
       onEvent: (event) => { events.push(event); },
     });
@@ -634,7 +640,7 @@ describe("Event emission during pipeline run", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0"],
-      source: createMockSource({ "16.0.0": { "test.txt": "content" } }),
+      inputs: [createMockSource({ "16.0.0": { "test.txt": "content" } })],
       routes: [route],
       onEvent: (event) => { events.push(event); },
     });
@@ -668,7 +674,7 @@ describe("Event emission during pipeline run", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0"],
-      source: createMockSource({ "16.0.0": { "test.txt": "content" } }),
+      inputs: [createMockSource({ "16.0.0": { "test.txt": "content" } })],
       routes: [route],
       onEvent: (event) => { events.push(event); },
     });
@@ -701,7 +707,7 @@ describe("Graph construction", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0"],
-      source: createMockSource({ "16.0.0": { "test.txt": "content" } }),
+      inputs: [createMockSource({ "16.0.0": { "test.txt": "content" } })],
       routes: [route],
     });
 
@@ -727,7 +733,7 @@ describe("Graph construction", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0"],
-      source: createMockSource({ "16.0.0": { "test.txt": "content" } }),
+      inputs: [createMockSource({ "16.0.0": { "test.txt": "content" } })],
       routes: [route],
     });
 
@@ -753,7 +759,7 @@ describe("Graph construction", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0"],
-      source: createMockSource({ "16.0.0": { "test.txt": "content" } }),
+      inputs: [createMockSource({ "16.0.0": { "test.txt": "content" } })],
       routes: [route],
     });
 
@@ -779,7 +785,7 @@ describe("Graph construction", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0"],
-      source: createMockSource({ "16.0.0": { "test.txt": "content" } }),
+      inputs: [createMockSource({ "16.0.0": { "test.txt": "content" } })],
       routes: [route],
     });
 
@@ -804,7 +810,7 @@ describe("Graph construction", () => {
 
     const pipeline = definePipeline({
       versions: ["16.0.0"],
-      source: createMockSource({ "16.0.0": { "test.txt": "content" } }),
+      inputs: [createMockSource({ "16.0.0": { "test.txt": "content" } })],
       routes: [route],
     });
 
