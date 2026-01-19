@@ -16,8 +16,8 @@ export interface ParsedArtifactDependency {
 
 export type ParsedDependency = ParsedRouteDependency | ParsedArtifactDependency;
 
-export type ParseDependencyType<T extends string> =
-  T extends `route:${infer RouteId}`
+export type ParseDependencyType<T extends string>
+  = T extends `route:${infer RouteId}`
     ? { type: "route"; routeId: RouteId }
     : T extends `artifact:${infer RouteId}:${infer ArtifactName}`
       ? { type: "artifact"; routeId: RouteId; artifactName: ArtifactName }

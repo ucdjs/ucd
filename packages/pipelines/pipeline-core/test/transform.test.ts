@@ -1,13 +1,15 @@
+import type {
+  InferTransformInput,
+  InferTransformOutput,
+  PipelineTransformDefinition,
+  TransformContext,
+} from "../src/transform";
+import type { FileContext } from "../src/types";
 import { describe, expect, it } from "vitest";
 import {
   applyTransforms,
   definePipelineTransform,
-  type InferTransformInput,
-  type InferTransformOutput,
-  type PipelineTransformDefinition,
-  type TransformContext,
 } from "../src/transform";
-import type { FileContext } from "../src/types";
 
 function createTransformContext(): TransformContext {
   const file: FileContext = {
@@ -42,7 +44,7 @@ describe("definePipelineTransform", () => {
   it("should define a simple transform", () => {
     const transform = definePipelineTransform({
       id: "uppercase",
-      fn: async function* (_ctx, rows) {
+      async* fn(_ctx, rows) {
         for await (const row of rows) {
           yield (row as string).toUpperCase();
         }
@@ -56,7 +58,7 @@ describe("definePipelineTransform", () => {
   it("should define a transform with type parameters", () => {
     const transform = definePipelineTransform<string, number>({
       id: "string-length",
-      fn: async function* (_ctx, rows) {
+      async* fn(_ctx, rows) {
         for await (const row of rows) {
           yield row.length;
         }
@@ -69,7 +71,7 @@ describe("definePipelineTransform", () => {
   it("should preserve transform function", async () => {
     const transform = definePipelineTransform<number, number>({
       id: "double",
-      fn: async function* (_ctx, rows) {
+      async* fn(_ctx, rows) {
         for await (const row of rows) {
           yield row * 2;
         }
@@ -88,7 +90,7 @@ describe("applyTransforms", () => {
   it("should apply single transform", async () => {
     const uppercase = definePipelineTransform<string, string>({
       id: "uppercase",
-      fn: async function* (_ctx, rows) {
+      async* fn(_ctx, rows) {
         for await (const row of rows) {
           yield row.toUpperCase();
         }
@@ -105,7 +107,7 @@ describe("applyTransforms", () => {
   it("should chain multiple transforms", async () => {
     const uppercase = definePipelineTransform<string, string>({
       id: "uppercase",
-      fn: async function* (_ctx, rows) {
+      async* fn(_ctx, rows) {
         for await (const row of rows) {
           yield row.toUpperCase();
         }
@@ -114,7 +116,7 @@ describe("applyTransforms", () => {
 
     const exclaim = definePipelineTransform<string, string>({
       id: "exclaim",
-      fn: async function* (_ctx, rows) {
+      async* fn(_ctx, rows) {
         for await (const row of rows) {
           yield `${row}!`;
         }
@@ -131,7 +133,7 @@ describe("applyTransforms", () => {
   it("should handle type transformations", async () => {
     const toLength = definePipelineTransform<string, number>({
       id: "to-length",
-      fn: async function* (_ctx, rows) {
+      async* fn(_ctx, rows) {
         for await (const row of rows) {
           yield row.length;
         }
@@ -140,7 +142,7 @@ describe("applyTransforms", () => {
 
     const double = definePipelineTransform<number, number>({
       id: "double",
-      fn: async function* (_ctx, rows) {
+      async* fn(_ctx, rows) {
         for await (const row of rows) {
           yield row * 2;
         }
@@ -158,7 +160,7 @@ describe("applyTransforms", () => {
     const append = (suffix: string) =>
       definePipelineTransform<string, string>({
         id: `append-${suffix}`,
-        fn: async function* (_ctx, rows) {
+        async* fn(_ctx, rows) {
           for await (const row of rows) {
             yield `${row}${suffix}`;
           }
@@ -185,7 +187,7 @@ describe("applyTransforms", () => {
   it("should handle empty input", async () => {
     const uppercase = definePipelineTransform<string, string>({
       id: "uppercase",
-      fn: async function* (_ctx, rows) {
+      async* fn(_ctx, rows) {
         for await (const row of rows) {
           yield row.toUpperCase();
         }
@@ -205,7 +207,7 @@ describe("applyTransforms", () => {
 
     const captureContext = definePipelineTransform<string, string>({
       id: "capture",
-      fn: async function* (ctx, rows) {
+      async* fn(ctx, rows) {
         capturedVersion = ctx.version;
         capturedFileName = ctx.file.name;
         for await (const row of rows) {
@@ -234,7 +236,7 @@ describe("applyTransforms", () => {
 
     const addId = definePipelineTransform<Person, PersonWithId>({
       id: "add-id",
-      fn: async function* (_ctx, rows) {
+      async* fn(_ctx, rows) {
         let counter = 0;
         for await (const row of rows) {
           yield { ...row, id: `person-${counter++}` };
@@ -258,7 +260,7 @@ describe("applyTransforms", () => {
   it("should handle filter transformations", async () => {
     const filterEven = definePipelineTransform<number, number>({
       id: "filter-even",
-      fn: async function* (_ctx, rows) {
+      async* fn(_ctx, rows) {
         for await (const row of rows) {
           if (row % 2 === 0) {
             yield row;
@@ -277,7 +279,7 @@ describe("applyTransforms", () => {
   it("should handle aggregation transformations", async () => {
     const toArray = definePipelineTransform<number, number[]>({
       id: "to-array",
-      fn: async function* (_ctx, rows) {
+      async* fn(_ctx, rows) {
         const arr: number[] = [];
         for await (const row of rows) {
           arr.push(row);
@@ -298,7 +300,7 @@ describe("type inference", () => {
   it("should preserve transform types", async () => {
     const stringToNumber = definePipelineTransform<string, number>({
       id: "length",
-      fn: async function* (_ctx, rows) {
+      async* fn(_ctx, rows) {
         for await (const row of rows) {
           yield row.length;
         }
@@ -313,11 +315,11 @@ describe("type inference", () => {
   });
 });
 
-describe("PipelineTransformDefinition", () => {
+describe("pipelineTransformDefinition", () => {
   it("should create valid transform definition", () => {
     const def: PipelineTransformDefinition<string, number> = {
       id: "test",
-      fn: async function* (_ctx, rows) {
+      async* fn(_ctx, rows) {
         for await (const row of rows) {
           yield row.length;
         }

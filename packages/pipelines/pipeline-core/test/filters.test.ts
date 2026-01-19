@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
 import type { FileContext, FilterContext } from "../src/types";
+import { describe, expect, it } from "vitest";
 import {
   always,
   and,

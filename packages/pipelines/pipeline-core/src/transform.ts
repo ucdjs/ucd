@@ -16,11 +16,11 @@ export function definePipelineTransform<TInput, TOutput>(
   return definition;
 }
 
-export type InferTransformInput<T> =
-  T extends PipelineTransformDefinition<infer TInput, unknown> ? TInput : never;
+export type InferTransformInput<T>
+  = T extends PipelineTransformDefinition<infer TInput, unknown> ? TInput : never;
 
-export type InferTransformOutput<T> =
-  T extends PipelineTransformDefinition<unknown, infer TOutput> ? TOutput : never;
+export type InferTransformOutput<T>
+  = T extends PipelineTransformDefinition<unknown, infer TOutput> ? TOutput : never;
 
 type ChainTwo<T1, T2> = T1 extends PipelineTransformDefinition<any, infer O1>
   ? T2 extends PipelineTransformDefinition<O1, infer O2>
