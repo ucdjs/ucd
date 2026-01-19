@@ -1,3 +1,12 @@
+import type {
+  ExtractArtifactDependencies,
+  ExtractArtifactKeys,
+  ExtractRouteDependencies,
+  ParsedArtifactDependency,
+  ParsedDependency,
+  ParsedRouteDependency,
+  PipelineDependency,
+} from "../src/dependencies";
 import { describe, expect, it } from "vitest";
 import {
   createArtifactDependency,
@@ -5,13 +14,6 @@ import {
   isArtifactDependency,
   isRouteDependency,
   parseDependency,
-  type ExtractArtifactDependencies,
-  type ExtractArtifactKeys,
-  type ExtractRouteDependencies,
-  type ParsedArtifactDependency,
-  type ParsedDependency,
-  type ParsedRouteDependency,
-  type PipelineDependency,
 } from "../src/dependencies";
 
 describe("parseDependency", () => {
@@ -55,31 +57,31 @@ describe("parseDependency", () => {
 
   it("should throw error for invalid format", () => {
     expect(() => parseDependency("invalid" as PipelineDependency)).toThrow(
-      'Invalid dependency format: invalid. Expected "route:<id>" or "artifact:<routeId>:<artifactName>"',
+      "Invalid dependency format: invalid. Expected \"route:<id>\" or \"artifact:<routeId>:<artifactName>\"",
     );
   });
 
   it("should throw error for route without id", () => {
     expect(() => parseDependency("route:" as PipelineDependency)).toThrow(
-      'Invalid dependency format: route:',
+      "Invalid dependency format: route:",
     );
   });
 
   it("should throw error for artifact without name", () => {
     expect(() => parseDependency("artifact:my-route:" as PipelineDependency)).toThrow(
-      'Invalid dependency format: artifact:my-route:',
+      "Invalid dependency format: artifact:my-route:",
     );
   });
 
   it("should throw error for artifact without route id", () => {
     expect(() => parseDependency("artifact::my-artifact" as PipelineDependency)).toThrow(
-      'Invalid dependency format: artifact::my-artifact',
+      "Invalid dependency format: artifact::my-artifact",
     );
   });
 
   it("should throw error for unknown dependency type", () => {
     expect(() => parseDependency("unknown:value" as PipelineDependency)).toThrow(
-      'Invalid dependency format: unknown:value',
+      "Invalid dependency format: unknown:value",
     );
   });
 });
@@ -173,7 +175,7 @@ describe("createArtifactDependency", () => {
   });
 });
 
-describe("ParsedDependency types", () => {
+describe("parsedDependency types", () => {
   it("should handle route dependency types", () => {
     const parsed: ParsedRouteDependency = {
       type: "route",
@@ -214,7 +216,7 @@ describe("ParsedDependency types", () => {
 });
 
 describe("type inference", () => {
-  describe("ExtractRouteDependencies", () => {
+  describe("extractRouteDependencies", () => {
     it("should extract route ids from dependency array", () => {
       const deps = [
         "route:parser",
@@ -241,7 +243,7 @@ describe("type inference", () => {
     });
   });
 
-  describe("ExtractArtifactDependencies", () => {
+  describe("extractArtifactDependencies", () => {
     it("should extract artifact info from dependency array", () => {
       const deps = [
         "artifact:parser:result",
@@ -259,7 +261,7 @@ describe("type inference", () => {
     });
   });
 
-  describe("ExtractArtifactKeys", () => {
+  describe("extractArtifactKeys", () => {
     it("should extract artifact keys from dependency array", () => {
       const deps = [
         "artifact:parser:result",

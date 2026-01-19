@@ -1,14 +1,14 @@
-import type { z } from "zod";
 import type { ExtractArtifactKeys, PipelineDependency } from "./dependencies";
 import type { ChainTransforms, PipelineTransformDefinition } from "./transform";
 import type {
   FileContext,
-  ParserFn,
   ParsedRow,
+  ParserFn,
   PipelineFilter,
   PropertyJson,
   RouteOutput,
 } from "./types";
+import type { z } from "zod";
 
 export interface ArtifactDefinition<TSchema extends z.ZodType = z.ZodType> {
   _type: "artifact" | "global-artifact";
@@ -16,8 +16,8 @@ export interface ArtifactDefinition<TSchema extends z.ZodType = z.ZodType> {
   scope: "version" | "global";
 }
 
-export type InferArtifactType<T extends ArtifactDefinition> =
-  T extends ArtifactDefinition<infer TSchema> ? z.infer<TSchema> : never;
+export type InferArtifactType<T extends ArtifactDefinition>
+  = T extends ArtifactDefinition<infer TSchema> ? z.infer<TSchema> : never;
 
 export interface RouteResolveContext<
   TArtifactKeys extends string = string,
@@ -87,8 +87,8 @@ export type InferRouteOutput<T> = T extends PipelineRouteDefinition<any, any, an
   ? TOutput
   : never;
 
-export type InferRoutesOutput<T extends readonly PipelineRouteDefinition<any, any, any, any, any>[]> =
-  T[number] extends PipelineRouteDefinition<any, any, any, any, infer TOutput>
+export type InferRoutesOutput<T extends readonly PipelineRouteDefinition<any, any, any, any, any>[]>
+  = T[number] extends PipelineRouteDefinition<any, any, any, any, infer TOutput>
     ? TOutput extends unknown[] ? TOutput[number] : TOutput
     : never;
 

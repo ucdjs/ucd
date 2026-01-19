@@ -13,10 +13,10 @@ export interface FileMetadata {
 }
 
 export interface SourceBackend {
-  listFiles(version: string): Promise<FileContext[]>;
-  readFile(file: FileContext): Promise<string>;
-  readFileStream?(file: FileContext, options?: StreamOptions): AsyncIterable<Uint8Array>;
-  getMetadata?(file: FileContext): Promise<FileMetadata>;
+  listFiles: (version: string) => Promise<FileContext[]>;
+  readFile: (file: FileContext) => Promise<string>;
+  readFileStream?: (file: FileContext, options?: StreamOptions) => AsyncIterable<Uint8Array>;
+  getMetadata?: (file: FileContext) => Promise<FileMetadata>;
 }
 
 export interface PipelineSourceDefinition<TId extends string = string> {

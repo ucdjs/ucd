@@ -1,14 +1,16 @@
+import type {
+  Artifact,
+  ArtifactDefinition,
+  GlobalArtifact,
+  InferArtifactSchemaType,
+  InferEmittedArtifacts,
+} from "../src/schema";
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 import {
   artifact,
   isGlobalArtifact,
   isVersionArtifact,
-  type Artifact,
-  type ArtifactDefinition,
-  type GlobalArtifact,
-  type InferArtifactSchemaType,
-  type InferEmittedArtifacts,
 } from "../src/schema";
 
 describe("artifact", () => {
@@ -143,7 +145,7 @@ describe("isVersionArtifact", () => {
 });
 
 describe("type inference", () => {
-  describe("InferArtifactSchemaType", () => {
+  describe("inferArtifactSchemaType", () => {
     it("should infer schema type correctly", () => {
       const schema = z.object({
         id: z.string(),
@@ -152,7 +154,7 @@ describe("type inference", () => {
       const art = artifact(schema);
 
       type Inferred = InferArtifactSchemaType<typeof art>;
-      type Expected = { id: string; count: number };
+      interface Expected { id: string; count: number }
 
       const assertType: Inferred = { id: "test", count: 42 };
       const _checkType: Expected = assertType;
@@ -169,7 +171,7 @@ describe("type inference", () => {
     });
   });
 
-  describe("InferEmittedArtifacts", () => {
+  describe("inferEmittedArtifacts", () => {
     it("should infer multiple artifact types", () => {
       const emits = {
         result: artifact(z.object({ value: z.string() })),
