@@ -1,13 +1,15 @@
-import { describe, expect, it, vi } from "vitest";
+import type {
+  ArtifactBuildContext,
+  InferArtifactId,
+  InferArtifactsMap,
+  InferArtifactValue,
+  PipelineArtifactDefinition,
+} from "../src/definition";
 import type { ParseContext, ParsedRow, PipelineFilter } from "@ucdjs/pipelines-core";
+import { describe, expect, it, vi } from "vitest";
 import {
   definePipelineArtifact,
   isPipelineArtifactDefinition,
-  type ArtifactBuildContext,
-  type InferArtifactId,
-  type InferArtifactsMap,
-  type InferArtifactValue,
-  type PipelineArtifactDefinition,
 } from "../src/definition";
 
 describe("definePipelineArtifact", () => {
@@ -158,7 +160,7 @@ describe("isPipelineArtifactDefinition", () => {
     const valid: PipelineArtifactDefinition = {
       id: "test",
       filter: (ctx) => ctx.file.ext === ".txt",
-      parser: async function* () {
+      async* parser() {
         yield { sourceFile: "test.txt", kind: "point", codePoint: "0041" };
       },
       build: async () => "result",
@@ -240,7 +242,7 @@ describe("isPipelineArtifactDefinition", () => {
 });
 
 describe("type inference", () => {
-  describe("InferArtifactId", () => {
+  describe("inferArtifactId", () => {
     it("should infer artifact id", () => {
       const artifact = definePipelineArtifact({
         id: "my-artifact",
@@ -266,7 +268,7 @@ describe("type inference", () => {
     });
   });
 
-  describe("InferArtifactValue", () => {
+  describe("inferArtifactValue", () => {
     it("should infer artifact value type", () => {
       const artifact = definePipelineArtifact({
         id: "test",
@@ -292,7 +294,7 @@ describe("type inference", () => {
     });
   });
 
-  describe("InferArtifactsMap", () => {
+  describe("inferArtifactsMap", () => {
     it("should infer map of artifact ids to values", () => {
       const artifacts = [
         definePipelineArtifact({

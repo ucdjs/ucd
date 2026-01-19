@@ -1,3 +1,6 @@
+import type { CacheEntry, CacheKey, CacheStore } from "./cache";
+import type { MultiplePipelineRunResult, PipelineRunResult, PipelineSummary } from "./results";
+import type { ArtifactDefinition, PipelineArtifactDefinition } from "@ucdjs/pipelines-artifacts";
 import type {
   FileContext,
   ParseContext,
@@ -12,13 +15,10 @@ import type {
   SourceBackend,
   SourceFileContext,
 } from "@ucdjs/pipelines-core";
-import { applyTransforms, resolveMultipleSourceFiles } from "@ucdjs/pipelines-core";
-import type { ArtifactDefinition, PipelineArtifactDefinition } from "@ucdjs/pipelines-artifacts";
 import { isGlobalArtifact } from "@ucdjs/pipelines-artifacts";
+import { applyTransforms, resolveMultipleSourceFiles } from "@ucdjs/pipelines-core";
 import { buildDAG, getExecutionLayers } from "@ucdjs/pipelines-graph";
-import type { CacheEntry, CacheKey, CacheStore } from "./cache";
 import { defaultHashFn, hashArtifact } from "./cache";
-import type { MultiplePipelineRunResult, PipelineRunResult, PipelineSummary } from "./results";
 
 interface SourceAdapter {
   listFiles: (version: string) => Promise<FileContext[]>;
@@ -594,7 +594,7 @@ function createParseContext(file: FileContext, source: SourceAdapter): ParseCont
       }
       return cachedContent!;
     },
-    readLines: async function* () {
+    async* readLines() {
       const content = await source.readFile(file);
       const lines = content.split(/\r?\n/);
       for (const line of lines) {

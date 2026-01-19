@@ -1,6 +1,6 @@
 export type {
-  DAGNode,
   DAG,
+  DAGNode,
   DAGValidationError,
   DAGValidationResult,
 } from "./dag";
