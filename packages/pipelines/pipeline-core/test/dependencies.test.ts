@@ -218,13 +218,11 @@ describe("parsedDependency types", () => {
 describe("type inference", () => {
   describe("extractRouteDependencies", () => {
     it("should extract route ids from dependency array", () => {
-      const deps = [
+      type RouteIds = ExtractRouteDependencies<[
         "route:parser",
         "route:normalizer",
         "artifact:other:data",
-      ] as const;
-
-      type RouteIds = ExtractRouteDependencies<typeof deps>;
+      ]>;
 
       const id1: RouteIds = "parser";
       const id2: RouteIds = "normalizer";
@@ -234,6 +232,7 @@ describe("type inference", () => {
     });
 
     it("should extract never type for empty array", () => {
+      // eslint-disable-next-line unused-imports/no-unused-vars
       const deps = [] as const;
 
       type RouteIds = ExtractRouteDependencies<typeof deps>;
@@ -245,6 +244,7 @@ describe("type inference", () => {
 
   describe("extractArtifactDependencies", () => {
     it("should extract artifact info from dependency array", () => {
+      // eslint-disable-next-line unused-imports/no-unused-vars
       const deps = [
         "artifact:parser:result",
         "artifact:normalizer:data",
@@ -263,6 +263,7 @@ describe("type inference", () => {
 
   describe("extractArtifactKeys", () => {
     it("should extract artifact keys from dependency array", () => {
+      // eslint-disable-next-line unused-imports/no-unused-vars
       const deps = [
         "artifact:parser:result",
         "artifact:normalizer:data",

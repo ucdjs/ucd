@@ -30,7 +30,19 @@ export interface RouteResolveContext<
     key: K,
     value: InferArtifactType<TEmits[K]>,
   ) => void;
-  normalizeEntries: (entries: Array<{ range?: string; codePoint?: string; sequence?: string[]; value: string | string[] }>) => Array<{ range?: string; codePoint?: string; sequence?: string[]; value: string | string[] }>;
+  normalizeEntries: (entries: Array<
+    {
+      range?: string;
+      codePoint?: string;
+      sequence?: string[];
+      value: string | string[];
+    }
+  >) => Array<{
+    range?: string;
+    codePoint?: string;
+    sequence?: string[];
+    value: string | string[];
+  }>;
   now: () => string;
 }
 
