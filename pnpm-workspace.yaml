@@ -65,6 +65,7 @@ catalogs:
     "@luxass/msw-utils": 0.6.0
     hookable: 6.0.1
     cac: 6.7.14
+    tinyglobby: 0.2.15
 
   build:
     tsdown: 0.20.3
