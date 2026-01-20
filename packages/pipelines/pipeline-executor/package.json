@@ -39,9 +39,8 @@
     "typecheck": "tsc --noEmit -p tsconfig.build.json"
   },
   "dependencies": {
-    "@ucdjs/pipelines-core": "workspace:*",
     "@ucdjs/pipelines-artifacts": "workspace:*",
-    "@ucdjs/pipelines-graph": "workspace:*"
+    "@ucdjs/pipelines-core": "workspace:*"
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:linting",

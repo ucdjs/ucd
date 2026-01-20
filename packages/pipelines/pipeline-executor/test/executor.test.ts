@@ -1,5 +1,3 @@
-import type { CacheStore } from "../src/cache";
-import type { PipelineExecutor } from "../src/executor";
 import type {
   FileContext,
   ParseContext,
@@ -9,10 +7,12 @@ import type {
   PipelineSourceDefinition,
   SourceBackend,
 } from "@ucdjs/pipelines-core";
+import type { CacheStore } from "../src/cache";
+import type { PipelineExecutor } from "../src/executor";
+import { definePipeline, definePipelineRoute, definePipelineSource } from "@ucdjs/pipelines-core";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createMemoryCacheStore } from "../src/cache";
 import { createPipelineExecutor } from "../src/executor";
-import { definePipeline, definePipelineRoute, definePipelineSource } from "@ucdjs/pipelines-core";
 
 function createMockFile(name: string, dir: string = "ucd"): FileContext {
   return {
@@ -60,7 +60,7 @@ function createTestRoute(
     parser: mockParser,
     resolver: async (ctx, rows) => {
       const entries: Array<{ codePoint: string; value: string }> = [];
-      for await (const row of rows) {
+      for await (const row of rows as AsyncIterable<ParsedRow>) {
         entries.push({
           codePoint: row.codePoint!,
           value: row.value as string,
@@ -83,15 +83,11 @@ function createTestSource(files: FileContext[], contents: Record<string, string>
 }
 
 describe("createPipelineExecutor", () => {
-  it("should create an executor with run and runSingle methods", () => {
-    const executor = createPipelineExecutor({
-      pipelines: [],
-    });
+  it("should create an executor with run method", () => {
+    const executor = createPipelineExecutor({});
 
     expect(executor).toHaveProperty("run");
-    expect(executor).toHaveProperty("runSingle");
     expect(typeof executor.run).toBe("function");
-    expect(typeof executor.runSingle).toBe("function");
   });
 
   it("should accept pipelines and optional artifacts", () => {
@@ -103,7 +99,6 @@ describe("createPipelineExecutor", () => {
     });
 
     const executor = createPipelineExecutor({
-      pipelines: [pipeline],
       artifacts: [],
     });
 
@@ -114,7 +109,6 @@ describe("createPipelineExecutor", () => {
     const cacheStore = createMemoryCacheStore();
 
     const executor = createPipelineExecutor({
-      pipelines: [],
       cacheStore,
     });
 
@@ -125,7 +119,6 @@ describe("createPipelineExecutor", () => {
     const onEvent = vi.fn();
 
     const executor = createPipelineExecutor({
-      pipelines: [],
       onEvent,
     });
 
@@ -137,6 +130,7 @@ describe("executor.run", () => {
   let executor: PipelineExecutor;
   let files: FileContext[];
   let contents: Record<string, string>;
+  let pipeline: ReturnType<typeof definePipeline>;
 
   beforeEach(() => {
     files = [
@@ -155,20 +149,18 @@ describe("executor.run", () => {
       createTestRoute("scripts", (ctx) => ctx.file.name === "Scripts.txt"),
     ];
 
-    const pipeline = definePipeline({
+    pipeline = definePipeline({
       id: "test-pipeline",
       versions: ["16.0.0"],
       inputs: [source],
       routes,
     });
 
-    executor = createPipelineExecutor({
-      pipelines: [pipeline],
-    });
+    executor = createPipelineExecutor({});
   });
 
   it("should run all pipelines and return results", async () => {
-    const result = await executor.run();
+    const result = await executor.run([pipeline as any]);
 
     expect(result.results).toBeInstanceOf(Map);
     expect(result.results.size).toBe(1);
@@ -176,7 +168,7 @@ describe("executor.run", () => {
   });
 
   it("should return summary with pipeline counts", async () => {
-    const result = await executor.run();
+    const result = await executor.run([pipeline as any]);
 
     expect(result.summary).toEqual({
       totalPipelines: 1,
@@ -187,36 +179,37 @@ describe("executor.run", () => {
   });
 
   it("should process files matching routes", async () => {
-    const result = await executor.run();
+    const result = await executor.run([pipeline as any]);
     const pipelineResult = result.results.get("test-pipeline")!;
 
     expect(pipelineResult.data.length).toBe(2);
   });
 
-  it("should filter pipelines by id when specified", async () => {
-    const result = await executor.run({ pipelines: ["test-pipeline"] });
+  it("should run provided pipelines", async () => {
+    const result = await executor.run([pipeline as any]);
 
     expect(result.results.has("test-pipeline")).toBe(true);
   });
 
-  it("should skip pipelines not in filter list", async () => {
-    const result = await executor.run({ pipelines: ["non-existent"] });
+  it("should return empty results when no pipelines provided", async () => {
+    const result = await executor.run([]);
 
     expect(result.results.size).toBe(0);
   });
 
   it("should filter versions when specified", async () => {
-    const result = await executor.run({ versions: ["16.0.0"] });
+    const result = await executor.run([pipeline as any], { versions: ["16.0.0"] });
     const pipelineResult = result.results.get("test-pipeline")!;
 
     expect(pipelineResult.summary.versions).toEqual(["16.0.0"]);
   });
 });
 
-describe("executor.runSingle", () => {
+describe("running single pipeline via run()", () => {
   let executor: PipelineExecutor;
   let files: FileContext[];
   let contents: Record<string, string>;
+  let pipeline: ReturnType<typeof definePipeline>;
 
   beforeEach(() => {
     files = [createMockFile("LineBreak.txt")];
@@ -225,20 +218,19 @@ describe("executor.runSingle", () => {
     const source = createTestSource(files, contents);
     const route = createTestRoute("line-break", (ctx) => ctx.file.name === "LineBreak.txt");
 
-    const pipeline = definePipeline({
+    pipeline = definePipeline({
       id: "test-pipeline",
       versions: ["16.0.0"],
       inputs: [source],
       routes: [route],
     });
 
-    executor = createPipelineExecutor({
-      pipelines: [pipeline],
-    });
+    executor = createPipelineExecutor({});
   });
 
-  it("should run a single pipeline by id", async () => {
-    const result = await executor.runSingle("test-pipeline");
+  it("should run a single pipeline", async () => {
+    const multi = await executor.run([pipeline]);
+    const result = multi.results.get("test-pipeline")!;
 
     expect(result).toBeDefined();
     expect(result.data).toBeDefined();
@@ -247,23 +239,17 @@ describe("executor.runSingle", () => {
     expect(result.summary).toBeDefined();
   });
 
-  it("should throw error for unknown pipeline id", async () => {
-    await expect(executor.runSingle("unknown")).rejects.toThrow(
-      'Pipeline "unknown" not found',
-    );
-  });
-
   it("should return pipeline run result", async () => {
-    const result = await executor.runSingle("test-pipeline");
+    const multi = await executor.run([pipeline]);
+    const result = multi.results.get("test-pipeline")!;
 
     expect(result.data.length).toBeGreaterThan(0);
     expect(result.errors).toEqual([]);
   });
 
   it("should accept version filter", async () => {
-    const result = await executor.runSingle("test-pipeline", {
-      versions: ["16.0.0"],
-    });
+    const multi = await executor.run([pipeline], { versions: ["16.0.0"] });
+    const result = multi.results.get("test-pipeline")!;
 
     expect(result.summary.versions).toEqual(["16.0.0"]);
   });
@@ -271,22 +257,24 @@ describe("executor.runSingle", () => {
   it("should respect cache option", async () => {
     const cacheStore = createMemoryCacheStore();
 
-    const executor = createPipelineExecutor({
-      pipelines: [
-        definePipeline({
-          id: "cached-pipeline",
-          versions: ["16.0.0"],
-          inputs: [createTestSource(files, contents)],
-          routes: [createTestRoute("line-break", (ctx) => ctx.file.name === "LineBreak.txt")],
-        }),
-      ],
-      cacheStore,
+    const cachedPipeline = definePipeline({
+      id: "cached-pipeline",
+      versions: ["16.0.0"],
+      inputs: [createTestSource(files, contents)],
+      routes: [createTestRoute("line-break", (ctx) => ctx.file.name === "LineBreak.txt")],
     });
 
-    await executor.runSingle("cached-pipeline", { cache: true });
+    const ex = createPipelineExecutor({ cacheStore });
+
+    await ex.run([cachedPipeline], { cache: true });
     const stats = await cacheStore.stats?.();
 
     expect(stats?.entries).toBeGreaterThanOrEqual(0);
+  });
+
+  it("should return empty results for unknown pipeline", async () => {
+    const multi = await executor.run([]);
+    expect(multi.results.size).toBe(0);
   });
 });
 
@@ -304,12 +292,9 @@ describe("pipeline events", () => {
       routes: [createTestRoute("test", () => true)],
     });
 
-    const executor = createPipelineExecutor({
-      pipelines: [pipeline],
-      onEvent,
-    });
+    const executor = createPipelineExecutor({ onEvent });
 
-    await executor.runSingle("event-test");
+    await executor.run([pipeline as any]);
 
     const eventTypes = events.map((e) => e.type);
     expect(eventTypes).toContain("pipeline:start");
@@ -327,11 +312,10 @@ describe("pipeline events", () => {
     });
 
     const executor = createPipelineExecutor({
-      pipelines: [pipeline],
-      onEvent: (event) => events.push(event),
+      onEvent: (event) => { events.push(event); return undefined; },
     });
 
-    await executor.runSingle("version-events");
+    await executor.run([pipeline as any]);
 
     const eventTypes = events.map((e) => e.type);
     expect(eventTypes).toContain("version:start");
@@ -349,11 +333,10 @@ describe("pipeline events", () => {
     });
 
     const executor = createPipelineExecutor({
-      pipelines: [pipeline],
-      onEvent: (event) => events.push(event),
+      onEvent: (event) => { events.push(event); return undefined; },
     });
 
-    await executor.runSingle("parse-events");
+    await executor.run([pipeline as any]);
 
     const eventTypes = events.map((e) => e.type);
     expect(eventTypes).toContain("parse:start");
@@ -373,11 +356,10 @@ describe("pipeline events", () => {
     });
 
     const executor = createPipelineExecutor({
-      pipelines: [pipeline],
-      onEvent: (event) => events.push(event),
+      onEvent: (event) => { events.push(event); return undefined; },
     });
 
-    await executor.runSingle("file-matched");
+    await executor.run([pipeline as any]);
 
     const matchedEvents = events.filter((e) => e.type === "file:matched");
     expect(matchedEvents.length).toBeGreaterThan(0);
@@ -393,8 +375,9 @@ describe("pipeline graph", () => {
       routes: [createTestRoute("test", () => true)],
     });
 
-    const executor = createPipelineExecutor({ pipelines: [pipeline] });
-    const result = await executor.runSingle("graph-test");
+    const executor = createPipelineExecutor({});
+    const multi = await executor.run([pipeline]);
+    const result = multi.results.get("graph-test")!;
 
     const sourceNodes = result.graph.nodes.filter((n) => n.type === "source");
     expect(sourceNodes.length).toBe(1);
@@ -408,8 +391,9 @@ describe("pipeline graph", () => {
       routes: [createTestRoute("test", () => true)],
     });
 
-    const executor = createPipelineExecutor({ pipelines: [pipeline] });
-    const result = await executor.runSingle("graph-files");
+    const executor = createPipelineExecutor({});
+    const multi = await executor.run([pipeline]);
+    const result = multi.results.get("graph-files")!;
 
     const fileNodes = result.graph.nodes.filter((n) => n.type === "file");
     expect(fileNodes.length).toBe(1);
@@ -423,8 +407,9 @@ describe("pipeline graph", () => {
       routes: [createTestRoute("test", () => true)],
     });
 
-    const executor = createPipelineExecutor({ pipelines: [pipeline] });
-    const result = await executor.runSingle("graph-routes");
+    const executor = createPipelineExecutor({});
+    const multi = await executor.run([pipeline]);
+    const result = multi.results.get("graph-routes")!;
 
     const routeNodes = result.graph.nodes.filter((n) => n.type === "route");
     expect(routeNodes.length).toBe(1);
@@ -438,8 +423,9 @@ describe("pipeline graph", () => {
       routes: [createTestRoute("test", () => true)],
     });
 
-    const executor = createPipelineExecutor({ pipelines: [pipeline] });
-    const result = await executor.runSingle("graph-outputs");
+    const executor = createPipelineExecutor({});
+    const multi = await executor.run([pipeline]);
+    const result = multi.results.get("graph-outputs")!;
 
     const outputNodes = result.graph.nodes.filter((n) => n.type === "output");
     expect(outputNodes.length).toBeGreaterThan(0);
@@ -453,8 +439,9 @@ describe("pipeline graph", () => {
       routes: [createTestRoute("test", () => true)],
     });
 
-    const executor = createPipelineExecutor({ pipelines: [pipeline] });
-    const result = await executor.runSingle("graph-edges");
+    const executor = createPipelineExecutor({});
+    const multi = await executor.run([pipeline]);
+    const result = multi.results.get("graph-edges")!;
 
     expect(result.graph.edges.length).toBeGreaterThan(0);
   });
@@ -480,8 +467,9 @@ describe("pipeline summary", () => {
       routes: [createTestRoute("all", () => true)],
     });
 
-    const executor = createPipelineExecutor({ pipelines: [pipeline] });
-    const result = await executor.runSingle("summary-total");
+    const executor = createPipelineExecutor({});
+    const multi = await executor.run([pipeline]);
+    const result = multi.results.get("summary-total")!;
 
     expect(result.summary.totalFiles).toBe(3);
   });
@@ -505,8 +493,9 @@ describe("pipeline summary", () => {
       routes: [createTestRoute("match", (ctx) => ctx.file.name.startsWith("Match"))],
     });
 
-    const executor = createPipelineExecutor({ pipelines: [pipeline] });
-    const result = await executor.runSingle("summary-matched");
+    const executor = createPipelineExecutor({});
+    const multi = await executor.run([pipeline]);
+    const result = multi.results.get("summary-matched")!;
 
     expect(result.summary.matchedFiles).toBe(2);
   });
@@ -528,8 +517,9 @@ describe("pipeline summary", () => {
       routes: [createTestRoute("process", (ctx) => ctx.file.name === "Process.txt")],
     });
 
-    const executor = createPipelineExecutor({ pipelines: [pipeline] });
-    const result = await executor.runSingle("summary-skipped");
+    const executor = createPipelineExecutor({});
+    const multi = await executor.run([pipeline]);
+    const result = multi.results.get("summary-skipped")!;
 
     expect(result.summary.skippedFiles).toBe(1);
   });
@@ -542,8 +532,9 @@ describe("pipeline summary", () => {
       routes: [createTestRoute("test", () => true)],
     });
 
-    const executor = createPipelineExecutor({ pipelines: [pipeline] });
-    const result = await executor.runSingle("summary-duration");
+    const executor = createPipelineExecutor({});
+    const multi = await executor.run([pipeline]);
+    const result = multi.results.get("summary-duration")!;
 
     expect(result.summary.durationMs).toBeGreaterThanOrEqual(0);
   });
@@ -565,8 +556,9 @@ describe("pipeline summary", () => {
       routes: [createTestRoute("all", () => true)],
     });
 
-    const executor = createPipelineExecutor({ pipelines: [pipeline] });
-    const result = await executor.runSingle("summary-outputs");
+    const executor = createPipelineExecutor({});
+    const multi = await executor.run([pipeline]);
+    const result = multi.results.get("summary-outputs")!;
 
     expect(result.summary.totalOutputs).toBe(2);
   });
@@ -590,12 +582,14 @@ describe("error handling", () => {
       routes: [failingRoute],
     });
 
-    const executor = createPipelineExecutor({ pipelines: [pipeline] });
-    const result = await executor.runSingle("error-test");
+    const executor = createPipelineExecutor({});
+    const multi = await executor.run([pipeline]);
+    const result = multi.results.get("error-test")!;
 
     expect(result.errors.length).toBeGreaterThan(0);
-    expect(result.errors[0].scope).toBe("route");
-    expect(result.errors[0].message).toContain("Route failed");
+    const firstError = result.errors[0]!;
+    expect(firstError.scope).toBe("route");
+    expect(firstError.message).toContain("Route failed");
   });
 
   it("should emit error events", async () => {
@@ -618,11 +612,10 @@ describe("error handling", () => {
     });
 
     const executor = createPipelineExecutor({
-      pipelines: [pipeline],
-      onEvent: (event) => events.push(event),
+      onEvent: (event) => { events.push(event); return undefined; },
     });
 
-    await executor.runSingle("error-events");
+    await executor.run([pipeline]);
 
     const errorEvents = events.filter((e) => e.type === "error");
     expect(errorEvents.length).toBeGreaterThan(0);
@@ -636,11 +629,13 @@ describe("error handling", () => {
       routes: [],
     });
 
-    const executor = createPipelineExecutor({ pipelines: [pipeline] });
+    const executor = createPipelineExecutor({});
 
-    await expect(executor.runSingle("no-inputs")).rejects.toThrow(
-      "Pipeline requires at least one input source",
-    );
+    const multi = await executor.run([pipeline as any]);
+    const result = multi.results.get("no-inputs")!;
+    expect(result.errors.length).toBeGreaterThan(0);
+    const firstError = result.errors[0]!;
+    expect(firstError.message).toContain("Pipeline requires at least one input source");
   });
 });
 
@@ -662,12 +657,11 @@ describe("caching", () => {
     });
 
     const executor = createPipelineExecutor({
-      pipelines: [pipeline],
       cacheStore,
-      onEvent: (event) => events.push(event),
+      onEvent: (event) => { events.push(event); return undefined; },
     });
 
-    await executor.runSingle("cache-test", { cache: true });
+    await executor.run([pipeline], { cache: true });
 
     const cacheEvents = events.filter((e) =>
       e.type === "cache:hit" || e.type === "cache:miss" || e.type === "cache:store",
@@ -686,16 +680,15 @@ describe("caching", () => {
     });
 
     const executor = createPipelineExecutor({
-      pipelines: [pipeline],
       cacheStore,
-      onEvent: (event) => events.push(event),
+      onEvent: (event) => { events.push(event); return undefined; },
     });
 
-    await executor.runSingle("cache-hit-test", { cache: true });
+    await executor.run([pipeline], { cache: true });
 
     events.length = 0;
 
-    await executor.runSingle("cache-hit-test", { cache: true });
+    await executor.run([pipeline], { cache: true });
 
     const hitEvents = events.filter((e) => e.type === "cache:hit");
     expect(hitEvents.length).toBeGreaterThan(0);
@@ -712,12 +705,11 @@ describe("caching", () => {
     });
 
     const executor = createPipelineExecutor({
-      pipelines: [pipeline],
       cacheStore,
-      onEvent: (event) => events.push(event),
+      onEvent: (event) => { events.push(event); return undefined; },
     });
 
-    await executor.runSingle("cache-disabled", { cache: false });
+    await executor.run([pipeline as any], { cache: false });
 
     const cacheEvents = events.filter((e) =>
       e.type === "cache:hit" || e.type === "cache:miss" || e.type === "cache:store",
@@ -745,11 +737,9 @@ describe("multiple pipelines", () => {
       routes: [createTestRoute("route-2", () => true)],
     });
 
-    const executor = createPipelineExecutor({
-      pipelines: [pipeline1, pipeline2],
-    });
+    const executor = createPipelineExecutor({});
 
-    const result = await executor.run();
+    const result = await executor.run([pipeline1 as any, pipeline2 as any]);
 
     expect(result.results.size).toBe(2);
     expect(result.results.has("pipeline-1")).toBe(true);
@@ -783,11 +773,9 @@ describe("multiple pipelines", () => {
       ],
     });
 
-    const executor = createPipelineExecutor({
-      pipelines: [successPipeline, failPipeline],
-    });
+    const executor = createPipelineExecutor({});
 
-    const result = await executor.run();
+    const result = await executor.run([successPipeline as any, failPipeline as any]);
 
     expect(result.summary.successfulPipelines).toBe(1);
     expect(result.summary.failedPipelines).toBe(1);
@@ -813,12 +801,14 @@ describe("strict mode", () => {
       strict: true,
     });
 
-    const executor = createPipelineExecutor({ pipelines: [pipeline] });
-    const result = await executor.runSingle("strict-test");
+    const executor = createPipelineExecutor({});
+    const multi = await executor.run([pipeline]);
+    const result = multi.results.get("strict-test")!;
 
     const fileErrors = result.errors.filter((e) => e.scope === "file");
     expect(fileErrors.length).toBe(1);
-    expect(fileErrors[0].message).toContain("No matching route");
+    const firstFileError = fileErrors[0]!;
+    expect(firstFileError.message).toContain("No matching route");
   });
 
   it("should not error on unmatched files when not strict", async () => {
@@ -839,8 +829,9 @@ describe("strict mode", () => {
       strict: false,
     });
 
-    const executor = createPipelineExecutor({ pipelines: [pipeline] });
-    const result = await executor.runSingle("non-strict-test");
+    const executor = createPipelineExecutor({});
+    const multi = await executor.run([pipeline]);
+    const result = multi.results.get("non-strict-test")!;
 
     const fileErrors = result.errors.filter((e) => e.scope === "file");
     expect(fileErrors).toEqual([]);
@@ -865,7 +856,7 @@ describe("fallback route", () => {
       routes: [createTestRoute("matched", (ctx) => ctx.file.name === "Matched.txt")],
       fallback: {
         parser: mockParser,
-        resolver: async (ctx, rows) => {
+        resolver: async (ctx: any, rows: AsyncIterable<ParsedRow>) => {
           const entries: Array<{ codePoint: string; value: string }> = [];
           for await (const row of rows) {
             entries.push({ codePoint: row.codePoint!, value: row.value as string });
@@ -873,10 +864,11 @@ describe("fallback route", () => {
           return { type: "fallback", file: ctx.file.name, entries };
         },
       },
-    });
+    }) as any;
 
-    const executor = createPipelineExecutor({ pipelines: [pipeline] });
-    const result = await executor.runSingle("fallback-test");
+    const executor = createPipelineExecutor({});
+    const multi = await executor.run([pipeline]);
+    const result = multi.results.get("fallback-test")!;
 
     expect(result.summary.fallbackFiles).toBe(1);
     expect(result.data.length).toBe(2);
@@ -897,14 +889,11 @@ describe("fallback route", () => {
         parser: mockParser,
         resolver: async () => ({ fallback: true }),
       },
-    });
+    }) as any;
 
-    const executor = createPipelineExecutor({
-      pipelines: [pipeline],
-      onEvent: (event) => events.push(event),
-    });
+    const executor = createPipelineExecutor({ onEvent: (event) => { events.push(event); return undefined; } });
 
-    await executor.runSingle("fallback-event");
+    await executor.run([pipeline as any]);
 
     const fallbackEvents = events.filter((e) => e.type === "file:fallback");
     expect(fallbackEvents.length).toBe(1);
@@ -930,8 +919,9 @@ describe("include filter", () => {
       include: (ctx) => ctx.file.name.startsWith("Include"),
     });
 
-    const executor = createPipelineExecutor({ pipelines: [pipeline] });
-    const result = await executor.runSingle("include-test");
+    const executor = createPipelineExecutor({});
+    const multi = await executor.run([pipeline]);
+    const result = multi.results.get("include-test")!;
 
     expect(result.summary.matchedFiles).toBe(1);
     expect(result.data.length).toBe(1);

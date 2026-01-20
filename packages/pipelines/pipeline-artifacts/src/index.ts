@@ -1,7 +1,20 @@
 export type {
+  ArtifactBuildContext,
+  InferArtifactId,
+  InferArtifactsMap,
+  InferArtifactValue,
+  PipelineArtifactDefinition,
+} from "./definition";
+
+export {
+  definePipelineArtifact,
+  isPipelineArtifactDefinition,
+} from "./definition";
+
+export type {
   Artifact,
-  GlobalArtifact,
   ArtifactDefinition,
+  GlobalArtifact,
   InferArtifactSchemaType,
   InferEmittedArtifacts,
 } from "./schema";
@@ -11,16 +24,3 @@ export {
   isGlobalArtifact,
   isVersionArtifact,
 } from "./schema";
-
-export type {
-  ArtifactBuildContext,
-  PipelineArtifactDefinition,
-  InferArtifactId,
-  InferArtifactValue,
-  InferArtifactsMap,
-} from "./definition";
-
-export {
-  definePipelineArtifact,
-  isPipelineArtifactDefinition,
-} from "./definition";

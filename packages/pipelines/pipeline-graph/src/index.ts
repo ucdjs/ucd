@@ -1,11 +1,9 @@
 export type {
-  DAG,
-  DAGNode,
-  DAGValidationError,
-  DAGValidationResult,
-} from "./dag";
+  GraphBuilderOptions,
+} from "./builder";
 
 export {
-  buildDAG,
-  getExecutionLayers,
-} from "./dag";
+  buildRouteGraph,
+  createPipelineGraphBuilder,
+  PipelineGraphBuilder,
+} from "./builder";

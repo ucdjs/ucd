@@ -22,8 +22,6 @@
     ".": "./dist/index.mjs",
     "./package.json": "./package.json"
   },
-  "main": "./dist/index.mjs",
-  "module": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
   "files": [
     "dist"
@@ -39,7 +37,8 @@
     "typecheck": "tsc --noEmit -p tsconfig.build.json"
   },
   "dependencies": {
-    "@ucdjs/pipelines-core": "workspace:*"
+    "@ucdjs/pipelines-core": "workspace:*",
+    "tinyglobby": "catalog:prod"
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:linting",

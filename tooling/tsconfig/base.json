@@ -59,6 +59,7 @@
       "@ucdjs/pipelines-executor": ["./packages/pipelines/pipeline-executor/src/index.ts"],
       "@ucdjs/pipelines-loader": ["./packages/pipelines/pipeline-loader/src/index.ts"],
       "@ucdjs/pipelines-ui": ["./packages/pipelines/pipeline-ui/src/index.ts"],
+      "@ucdjs/pipelines-presets": ["./packages/pipelines/pipeline-presets/src/index.ts"],
 
       // Test utils
       "@ucdjs/test-utils": ["./packages/test-utils/src/index.ts"],

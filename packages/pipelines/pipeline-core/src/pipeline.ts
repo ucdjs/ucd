@@ -1,7 +1,9 @@
+import type { DAG } from "./dag";
 import type { PipelineEvent } from "./events";
 import type { InferRoutesOutput, PipelineRouteDefinition } from "./route";
 import type { InferSourceIds, PipelineSourceDefinition } from "./source";
 import type { ParseContext, ParsedRow, PipelineFilter, ResolveContext } from "./types";
+import { buildDAG } from "./dag";
 
 /**
  * Fallback route definition for files that don't match any explicit route.
@@ -166,6 +168,12 @@ export interface PipelineDefinition<
    * Event handler for pipeline events.
    */
   readonly onEvent?: (event: PipelineEvent) => void | Promise<void>;
+
+  /**
+   * Precomputed DAG (Directed Acyclic Graph) for route execution order.
+   * Built at definition time from route dependencies.
+   */
+  readonly dag: DAG;
 }
 
 /**
@@ -222,6 +230,13 @@ export function definePipeline<
 >(
   options: PipelineDefinitionOptions<TSources, TRoutes, TFallback> & { id: TId },
 ): PipelineDefinition<TId, TSources, TRoutes, TFallback> {
+  const dagResult = buildDAG(options.routes);
+
+  if (!dagResult.valid) {
+    const errorMessages = dagResult.errors.map((e) => e.message).join("\n  ");
+    throw new Error(`Pipeline "${options.id}" has invalid route dependencies:\n  ${errorMessages}`);
+  }
+
   return {
     _type: "pipeline-definition",
     id: options.id,
@@ -235,6 +250,7 @@ export function definePipeline<
     concurrency: options.concurrency ?? 4,
     fallback: options.fallback,
     onEvent: options.onEvent,
+    dag: dagResult.dag!,
   };
 }
 

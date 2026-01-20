@@ -2,7 +2,7 @@
   "extends": "@ucdjs-tooling/tsconfig/base",
   "include": [
     "src",
-    "test",
+    "test"
   ],
   "exclude": ["dist"]
 }
