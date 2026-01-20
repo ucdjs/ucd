@@ -228,7 +228,12 @@ export function definePipeline<
   const TRoutes extends readonly PipelineRouteDefinition<any, any, any, any, any>[],
   TFallback extends FallbackRouteDefinition<any, unknown> | undefined = undefined,
 >(
-  options: PipelineDefinitionOptions<TSources, TRoutes, TFallback> & { id: TId },
+  options: Omit<PipelineDefinitionOptions<readonly [...TSources], readonly [...TRoutes], TFallback>, "inputs" | "routes">
+    & {
+      id: TId;
+      inputs: readonly [...TSources];
+      routes: readonly [...TRoutes];
+    },
 ): PipelineDefinition<TId, TSources, TRoutes, TFallback> {
   const dagResult = buildDAG(options.routes);
 
@@ -243,8 +248,8 @@ export function definePipeline<
     name: options.name,
     description: options.description,
     versions: options.versions,
-    inputs: options.inputs,
-    routes: options.routes,
+    inputs: options.inputs as TSources,
+    routes: options.routes as TRoutes,
     include: options.include,
     strict: options.strict ?? false,
     concurrency: options.concurrency ?? 4,

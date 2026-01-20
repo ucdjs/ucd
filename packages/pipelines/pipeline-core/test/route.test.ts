@@ -402,6 +402,7 @@ describe("type inference", () => {
 
   describe("inferRouteDepends", () => {
     it("should infer route dependencies", () => {
+      // eslint-disable-next-line unused-imports/no-unused-vars
       const route = definePipelineRoute({
         id: "test",
         filter: () => true,
@@ -411,9 +412,7 @@ describe("type inference", () => {
       });
 
       type Depends = InferRouteDepends<typeof route>;
-      const deps: Depends = ["route:dep1", "artifact:route:artifact"];
-
-      expect(deps).toHaveLength(2);
+      expectTypeOf<Depends>().toEqualTypeOf<readonly ["route:dep1", "artifact:route:artifact"]>();
     });
   });
 
@@ -444,6 +443,7 @@ describe("type inference", () => {
 
   describe("inferRouteOutput", () => {
     it("should infer route output type", () => {
+      // eslint-disable-next-line unused-imports/no-unused-vars
       const route = definePipelineRoute({
         id: "test",
         filter: () => true,
@@ -452,9 +452,7 @@ describe("type inference", () => {
       });
 
       type Output = InferRouteOutput<typeof route>;
-      const output: Output = [];
-
-      expect(output).toEqual([]);
+      expectTypeOf<Output>().toEqualTypeOf<PropertyJson[]>();
     });
   });
 });

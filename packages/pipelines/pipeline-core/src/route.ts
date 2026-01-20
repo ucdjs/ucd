@@ -39,7 +39,7 @@ export interface PipelineRouteDefinition<
   TId extends string = string,
   TDepends extends readonly PipelineDependency[] = readonly PipelineDependency[],
   TEmits extends Record<string, ArtifactDefinition> = Record<string, ArtifactDefinition>,
-  TTransforms extends readonly PipelineTransformDefinition<any, any>[] = readonly PipelineTransformDefinition<any, any>[],
+  TTransforms extends readonly PipelineTransformDefinition<any, any>[] = readonly [],
   TOutput = PropertyJson[],
 > {
   id: TId;
