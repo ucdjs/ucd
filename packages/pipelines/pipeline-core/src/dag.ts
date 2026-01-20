@@ -1,5 +1,5 @@
-import type { PipelineRouteDefinition } from "@ucdjs/pipelines-core";
-import { isArtifactDependency, isRouteDependency, parseDependency } from "@ucdjs/pipelines-core";
+import type { PipelineRouteDefinition } from "./route";
+import { isArtifactDependency, isRouteDependency, parseDependency } from "./dependencies";
 
 export interface DAGNode {
   id: string;
@@ -14,7 +14,7 @@ export interface DAG {
 }
 
 export interface DAGValidationError {
-  type: "cycle" | "missing-route" | "missing-artifact";
+  type: "cycle" | "missing-route" | "missing-artifact" | "duplicate-route";
   message: string;
   details: {
     routeId?: string;
@@ -32,8 +32,29 @@ export interface DAGValidationResult {
 export function buildDAG(routes: readonly PipelineRouteDefinition<any, any, any, any, any>[]): DAGValidationResult {
   const errors: DAGValidationError[] = [];
   const nodes = new Map<string, DAGNode>();
-  const routeIds = new Set(routes.map((r) => r.id));
   const artifactsByRoute = new Map<string, Set<string>>();
+
+  const seenIds = new Map<string, number>();
+  for (let i = 0; i < routes.length; i++) {
+    const route = routes[i];
+    if (!route) continue;
+    const id = route.id;
+    if (seenIds.has(id)) {
+      errors.push({
+        type: "duplicate-route",
+        message: `Duplicate route ID "${id}" found at index ${seenIds.get(id)} and ${i}`,
+        details: { routeId: id },
+      });
+    } else {
+      seenIds.set(id, i);
+    }
+  }
+
+  if (errors.length > 0) {
+    return { valid: false, errors };
+  }
+
+  const routeIds = new Set(routes.map((r) => r.id));
 
   for (const route of routes) {
     const emittedArtifacts = new Set<string>();

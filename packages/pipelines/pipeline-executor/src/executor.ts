@@ -1,5 +1,3 @@
-import type { CacheEntry, CacheKey, CacheStore } from "./cache";
-import type { MultiplePipelineRunResult, PipelineRunResult, PipelineSummary } from "./results";
 import type { ArtifactDefinition, PipelineArtifactDefinition } from "@ucdjs/pipelines-artifacts";
 import type {
   FileContext,
@@ -15,9 +13,10 @@ import type {
   SourceBackend,
   SourceFileContext,
 } from "@ucdjs/pipelines-core";
+import type { CacheEntry, CacheKey, CacheStore } from "./cache";
+import type { MultiplePipelineRunResult, PipelineRunResult, PipelineSummary } from "./results";
 import { isGlobalArtifact } from "@ucdjs/pipelines-artifacts";
-import { applyTransforms, resolveMultipleSourceFiles } from "@ucdjs/pipelines-core";
-import { buildDAG, getExecutionLayers } from "@ucdjs/pipelines-graph";
+import { applyTransforms, getExecutionLayers, resolveMultipleSourceFiles } from "@ucdjs/pipelines-core";
 import { defaultHashFn, hashArtifact } from "./cache";
 
 interface SourceAdapter {
@@ -26,7 +25,6 @@ interface SourceAdapter {
 }
 
 export interface PipelineExecutorOptions {
-  pipelines: PipelineDefinition[];
   artifacts?: PipelineArtifactDefinition[];
   cacheStore?: CacheStore;
   onEvent?: (event: PipelineEvent) => void | Promise<void>;
@@ -35,23 +33,18 @@ export interface PipelineExecutorOptions {
 export interface PipelineExecutorRunOptions {
   cache?: boolean;
   versions?: string[];
-  pipelines?: string[];
 }
 
 export interface PipelineExecutor {
-  run: (options?: PipelineExecutorRunOptions) => Promise<MultiplePipelineRunResult>;
-  runSingle: (pipelineId: string, options?: Omit<PipelineExecutorRunOptions, "pipelines">) => Promise<PipelineRunResult>;
+  run: (pipelines: PipelineDefinition<any, any, any, any>[], options?: PipelineExecutorRunOptions) => Promise<MultiplePipelineRunResult>;
 }
 
 export function createPipelineExecutor(options: PipelineExecutorOptions): PipelineExecutor {
   const {
-    pipelines,
     artifacts: globalArtifacts = [],
     cacheStore,
     onEvent,
   } = options;
-
-  const pipelinesById = new Map(pipelines.map((p) => [p.id, p]));
 
   async function emit(event: PipelineEvent): Promise<void> {
     if (onEvent) {
@@ -80,11 +73,7 @@ export function createPipelineExecutor(options: PipelineExecutorOptions): Pipeli
     let skippedFiles = 0;
     let fallbackFiles = 0;
 
-    const dagResult = buildDAG(pipeline.routes);
-    if (!dagResult.valid) {
-      throw new Error(`Pipeline DAG validation failed:\n${dagResult.errors.map((e) => `  - ${e.message}`).join("\n")}`);
-    }
-    const dag = dagResult.dag!;
+    const dag = pipeline.dag;
 
     await emit({ type: "pipeline:start", versions: versionsToRun, timestamp: Date.now() });
 
@@ -487,11 +476,8 @@ export function createPipelineExecutor(options: PipelineExecutorOptions): Pipeli
     };
   }
 
-  async function run(runOptions: PipelineExecutorRunOptions = {}): Promise<MultiplePipelineRunResult> {
+  async function run(pipelinesToRun: PipelineDefinition[], runOptions: PipelineExecutorRunOptions = {}): Promise<MultiplePipelineRunResult> {
     const startTime = performance.now();
-    const pipelinesToRun = runOptions.pipelines
-      ? pipelines.filter((p) => runOptions.pipelines!.includes(p.id))
-      : pipelines;
 
     const results = new Map<string, PipelineRunResult>();
     let successfulPipelines = 0;
@@ -542,13 +528,6 @@ export function createPipelineExecutor(options: PipelineExecutorOptions): Pipeli
 
   return {
     run,
-    runSingle: (pipelineId, options) => {
-      const pipeline = pipelinesById.get(pipelineId);
-      if (!pipeline) {
-        throw new Error(`Pipeline "${pipelineId}" not found`);
-      }
-      return runSinglePipeline(pipeline, options);
-    },
   };
 }
 

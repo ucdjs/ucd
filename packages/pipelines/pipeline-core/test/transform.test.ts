@@ -1,6 +1,4 @@
 import type {
-  InferTransformInput,
-  InferTransformOutput,
   PipelineTransformDefinition,
   TransformContext,
 } from "../src/transform";

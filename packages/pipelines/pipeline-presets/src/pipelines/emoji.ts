@@ -1,4 +1,3 @@
-import type { PipelineDefinition } from "@ucdjs/pipelines-core";
 import { and, byDir, byExt, definePipeline } from "@ucdjs/pipelines-core";
 import { sequenceParser } from "../parsers/sequence";
 import { propertyJsonResolver } from "../resolvers/property-json";

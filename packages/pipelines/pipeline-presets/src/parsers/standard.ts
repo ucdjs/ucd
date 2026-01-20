@@ -11,7 +11,7 @@ function parseCodePointOrRange(field: string): { kind: ParsedRow["kind"]; start?
 
   if (trimmed.includes("..")) {
     const [start, end] = trimmed.split("..");
-    return { kind: "range", start: start.trim(), end: end.trim() };
+    return { kind: "range", start: start!.trim(), end: end!.trim() };
   }
 
   return { kind: "point", codePoint: trimmed };
@@ -43,10 +43,10 @@ export function createStandardParser(options: StandardParserOptions = {}): Parse
         continue;
       }
 
-      const codePointField = trimFields ? fields[0].trim() : fields[0];
-      const valueField = trimFields ? fields[1].trim() : fields[1];
+      const codePointField = trimFields ? fields[0]!.trim() : fields[0];
+      const valueField = trimFields ? fields[1]!.trim() : fields[1];
 
-      const { kind, start, end, codePoint } = parseCodePointOrRange(codePointField);
+      const { kind, start, end, codePoint } = parseCodePointOrRange(codePointField!);
 
       yield {
         sourceFile: ctx.file.path,

@@ -12,22 +12,22 @@ export interface GlobalArtifact<TSchema extends z.ZodType = z.ZodType> {
   scope: "global";
 }
 
-export type ArtifactDefinition<TSchema extends z.ZodType = z.ZodType> =
-  | Artifact<TSchema>
-  | GlobalArtifact<TSchema>;
+export type ArtifactDefinition<TSchema extends z.ZodType = z.ZodType>
+  = | Artifact<TSchema>
+    | GlobalArtifact<TSchema>;
 
 export function artifact<TSchema extends z.ZodType>(
-  schema: TSchema
+  schema: TSchema,
 ): Artifact<TSchema>;
 
 export function artifact<TSchema extends z.ZodType>(
   schema: TSchema,
-  scope: "version"
+  scope: "version",
 ): Artifact<TSchema>;
 
 export function artifact<TSchema extends z.ZodType>(
   schema: TSchema,
-  scope: "global"
+  scope: "global",
 ): GlobalArtifact<TSchema>;
 
 export function artifact<TSchema extends z.ZodType>(
@@ -48,8 +48,8 @@ export function artifact<TSchema extends z.ZodType>(
   };
 }
 
-export type InferArtifactSchemaType<T extends ArtifactDefinition> =
-  T extends ArtifactDefinition<infer TSchema> ? z.infer<TSchema> : never;
+export type InferArtifactSchemaType<T extends ArtifactDefinition>
+  = T extends ArtifactDefinition<infer TSchema> ? z.infer<TSchema> : never;
 
 export type InferEmittedArtifacts<TEmits extends Record<string, ArtifactDefinition>> = {
   [K in keyof TEmits]: InferArtifactSchemaType<TEmits[K]>;

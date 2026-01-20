@@ -4,11 +4,10 @@ import type {
   InferRouteEmits,
   InferRouteId,
   InferRouteOutput,
-  PipelineRouteDefinition,
   RouteResolveContext,
 } from "../src/route";
 import type { FileContext, ParsedRow, PropertyJson } from "../src/types";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, expectTypeOf, it, vi } from "vitest";
 import { z } from "zod";
 import {
   definePipelineRoute,
@@ -386,17 +385,18 @@ describe("route context methods", () => {
 describe("type inference", () => {
   describe("inferRouteId", () => {
     it("should infer route id", () => {
+      const routeId = "my-route" as const;
+      // eslint-disable-next-line unused-imports/no-unused-vars
       const route = definePipelineRoute({
-        id: "my-route",
+        id: routeId,
         filter: () => true,
         parser: mockParser,
         resolver: async () => [],
       });
 
       type RouteId = InferRouteId<typeof route>;
-      const id: RouteId = "my-route";
-
-      expect(id).toBe("my-route");
+      expectTypeOf<RouteId>().toBeString();
+      expectTypeOf<RouteId>().toEqualTypeOf<typeof routeId>();
     });
   });
 

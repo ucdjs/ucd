@@ -1,3 +1,4 @@
+import type { z } from "zod";
 import type { ExtractArtifactKeys, PipelineDependency } from "./dependencies";
 import type { ChainTransforms, PipelineTransformDefinition } from "./transform";
 import type {
@@ -6,9 +7,9 @@ import type {
   ParserFn,
   PipelineFilter,
   PropertyJson,
+  ResolvedEntry,
   RouteOutput,
 } from "./types";
-import type { z } from "zod";
 
 export interface ArtifactDefinition<TSchema extends z.ZodType = z.ZodType> {
   _type: "artifact" | "global-artifact";
@@ -30,19 +31,7 @@ export interface RouteResolveContext<
     key: K,
     value: InferArtifactType<TEmits[K]>,
   ) => void;
-  normalizeEntries: (entries: Array<
-    {
-      range?: string;
-      codePoint?: string;
-      sequence?: string[];
-      value: string | string[];
-    }
-  >) => Array<{
-    range?: string;
-    codePoint?: string;
-    sequence?: string[];
-    value: string | string[];
-  }>;
+  normalizeEntries: (entries: ResolvedEntry[]) => ResolvedEntry[];
   now: () => string;
 }
 

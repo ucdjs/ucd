@@ -1,5 +1,5 @@
 {
-  "name": "@ucdjs/pipeline-presets",
+  "name": "@ucdjs/pipelines-presets",
   "version": "0.0.1",
   "type": "module",
   "author": {
@@ -21,15 +21,13 @@
   "exports": {
     ".": "./dist/index.mjs",
     "./parsers": "./dist/parsers/index.mjs",
-    "./transforms": "./dist/transforms/index.mjs",
-    "./resolvers": "./dist/resolvers/index.mjs",
-    "./sources": "./dist/sources/index.mjs",
-    "./routes": "./dist/routes/index.mjs",
     "./pipelines": "./dist/pipelines/index.mjs",
+    "./resolvers": "./dist/resolvers/index.mjs",
+    "./routes": "./dist/routes/index.mjs",
+    "./sources": "./dist/sources/index.mjs",
+    "./transforms": "./dist/transforms/index.mjs",
     "./package.json": "./package.json"
   },
-  "main": "./dist/index.mjs",
-  "module": "./dist/index.mjs",
   "types": "./dist/index.d.mts",
   "files": [
     "dist"

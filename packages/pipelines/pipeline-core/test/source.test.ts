@@ -1,9 +1,7 @@
 import type {
   InferSourceId,
   InferSourceIds,
-  PipelineSourceDefinition,
   SourceBackend,
-  SourceFileContext,
 } from "../src/source";
 import type { FileContext } from "../src/types";
 import { describe, expect, it, vi } from "vitest";

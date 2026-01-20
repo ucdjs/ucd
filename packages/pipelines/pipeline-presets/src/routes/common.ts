@@ -1,12 +1,9 @@
-import type { PipelineRouteDefinition } from "@ucdjs/pipelines-core";
 import {
-  byDir,
   byGlob,
   byName,
   definePipelineRoute,
 
 } from "@ucdjs/pipelines-core";
-import { multiPropertyParser } from "../parsers/multi-property";
 import { standardParser } from "../parsers/standard";
 import { unicodeDataParser } from "../parsers/unicode-data";
 import { createGroupedResolver } from "../resolvers/grouped";

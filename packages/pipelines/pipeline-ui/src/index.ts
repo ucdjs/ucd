@@ -1,5 +1,4 @@
-import type { PipelineDefinition } from "@ucdjs/pipelines-core";
-import type { DAG } from "@ucdjs/pipelines-graph";
+import type { DAG, PipelineDefinition } from "@ucdjs/pipelines-core";
 
 export interface GraphVisualizationOptions {
   format?: "mermaid" | "dot" | "json";

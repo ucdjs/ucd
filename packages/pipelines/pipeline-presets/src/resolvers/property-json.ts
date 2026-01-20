@@ -1,4 +1,4 @@
-import type { ParsedRow, PropertyJson, ResolvedEntry, RouteResolveContext } from "@ucdjs/pipelines-core";
+import type { ArtifactDefinition, ParsedRow, PropertyJson, ResolvedEntry, RouteResolveContext } from "@ucdjs/pipelines-core";
 
 export interface PropertyJsonResolverOptions {
   property?: string;
@@ -36,8 +36,11 @@ function rowToResolvedEntry(row: ParsedRow): ResolvedEntry | null {
 }
 
 export function createPropertyJsonResolver(options: PropertyJsonResolverOptions = {}) {
-  return async function propertyJsonResolver(
-    ctx: RouteResolveContext,
+  return async function propertyJsonResolver<
+    TArtifactKeys extends string,
+    TEmits extends Record<string, ArtifactDefinition>,
+  >(
+    ctx: RouteResolveContext<TArtifactKeys, TEmits>,
     rows: AsyncIterable<ParsedRow>,
   ): Promise<PropertyJson[]> {
     const entries: ResolvedEntry[] = [];
