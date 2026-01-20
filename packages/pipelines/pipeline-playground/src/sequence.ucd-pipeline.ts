@@ -1,4 +1,4 @@
-import { byName, definePipeline } from "@ucdjs/pipelines-core";
+import { byName, definePipeline, definePipelineRoute } from "@ucdjs/pipelines-core";
 import { createMemorySource, sequenceParser, propertyJsonResolver } from "@ucdjs/pipelines-presets";
 
 export default definePipeline({
@@ -18,11 +18,11 @@ export default definePipeline({
     }),
   ],
   routes: [
-    {
+    definePipelineRoute({
       id: "sequence-route",
       filter: byName("Sequences.txt"),
       parser: sequenceParser,
       resolver: propertyJsonResolver,
-    },
+    }),
   ],
 });

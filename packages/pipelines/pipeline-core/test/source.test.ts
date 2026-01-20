@@ -4,7 +4,7 @@ import type {
   SourceBackend,
 } from "../src/source";
 import type { FileContext } from "../src/types";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, expectTypeOf, it, vi } from "vitest";
 import {
   definePipelineSource,
   resolveMultipleSourceFiles,
@@ -301,31 +301,27 @@ describe("resolveMultipleSourceFiles", () => {
 describe("type inference", () => {
   describe("inferSourceId", () => {
     it("should infer source id type", () => {
+      // eslint-disable-next-line unused-imports/no-unused-vars
       const source = definePipelineSource({
         id: "my-source",
         backend: createMockBackend([]),
       });
 
       type SourceId = InferSourceId<typeof source>;
-      const id: SourceId = "my-source";
-
-      expect(id).toBe("my-source");
+      expectTypeOf<SourceId>().toEqualTypeOf<"my-source">();
     });
   });
 
   describe("inferSourceIds", () => {
     it("should infer multiple source ids", () => {
+      // eslint-disable-next-line unused-imports/no-unused-vars
       const sources = [
         definePipelineSource({ id: "source1", backend: createMockBackend([]) }),
         definePipelineSource({ id: "source2", backend: createMockBackend([]) }),
       ] as const;
 
       type SourceIds = InferSourceIds<typeof sources>;
-      const id1: SourceIds = "source1";
-      const id2: SourceIds = "source2";
-
-      expect(id1).toBe("source1");
-      expect(id2).toBe("source2");
+      expectTypeOf<SourceIds>().toEqualTypeOf<"source1" | "source2">();
     });
   });
 });
