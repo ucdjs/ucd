@@ -1,6 +1,6 @@
-import type { FallbackRouteDefinition, PipelineDefinition } from "../src/pipeline";
+import type { FallbackRouteDefinition } from "../src/pipeline";
 import type { SourceBackend } from "../src/source";
-import type { FileContext, ParsedRow, PropertyJson } from "../src/types";
+import type { ParsedRow } from "../src/types";
 import { describe, expect, it, vi } from "vitest";
 import {
   definePipeline,

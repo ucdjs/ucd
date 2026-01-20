@@ -1,3 +1,4 @@
+import type { ParseContext, ParsedRow, PipelineFilter } from "@ucdjs/pipelines-core";
 import type {
   ArtifactBuildContext,
   InferArtifactId,
@@ -5,7 +6,6 @@ import type {
   InferArtifactValue,
   PipelineArtifactDefinition,
 } from "../src/definition";
-import type { ParseContext, ParsedRow, PipelineFilter } from "@ucdjs/pipelines-core";
 import { describe, expect, it, vi } from "vitest";
 import {
   definePipelineArtifact,

@@ -111,6 +111,7 @@ export type ChainTransforms<
   TTransforms extends readonly PipelineTransformDefinition<any, any>[],
 > = TTransforms extends readonly []
   ? TInput
+  // eslint-disable-next-line unused-imports/no-unused-vars
   : TTransforms extends readonly [infer T1 extends PipelineTransformDefinition<any, infer O1>]
     ? O1
     : TTransforms extends readonly [infer T1, infer T2]
