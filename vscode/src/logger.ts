@@ -1,3 +1,3 @@
-import { useLogger } from "reactive-vscode";
+import { defineLogger } from "reactive-vscode";
 
-export const logger = useLogger("UCD");
+export const logger = defineLogger("UCD");

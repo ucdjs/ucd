@@ -1,7 +1,7 @@
 import type { TreeViewNode } from "reactive-vscode";
 import type { TreeItem } from "vscode";
 import { UNICODE_VERSION_METADATA } from "@unicode-utils/core";
-import { computed, createSingletonComposable, ref, toRaw } from "reactive-vscode";
+import { computed, defineService, ref, toRaw } from "reactive-vscode";
 import { ThemeIcon, TreeItemCollapsibleState } from "vscode";
 import { getFilesByVersion } from "../lib/files";
 import { logger } from "../logger";
@@ -15,7 +15,7 @@ export interface UCDTreeItem extends TreeItem {
   };
 }
 
-export const useUCDExplorer = createSingletonComposable(() => {
+export const useUCDExplorer = defineService(() => {
   const store = useUCDStore();
 
   const childrenCache = ref<Map<string, TreeViewNode[]>>(new Map());

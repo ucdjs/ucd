@@ -1,5 +1,5 @@
 import type { UCDStats } from "../lib/ucd-parser";
-import { computed, createSingletonComposable, ref, useWebviewView } from "reactive-vscode";
+import { computed, defineService, ref, useWebviewView } from "reactive-vscode";
 import { getUCDStats } from "../lib/ucd-parser";
 
 function generateInspectorHtml(fileName: string, stats: UCDStats): string {
@@ -254,7 +254,7 @@ function generateEmptyHtml(): string {
   `.trim();
 }
 
-export const useInspectorView = createSingletonComposable(() => {
+export const useInspectorView = defineService(() => {
   const fileName = ref<string | null>(null);
   const fileContent = ref<string | null>(null);
 

@@ -1,8 +1,8 @@
 import type { TreeViewNode } from "reactive-vscode";
 import type { UCDTreeItem } from "../composables/useUCDExplorer";
 import { hasUCDFolderPath } from "@unicode-utils/core";
-import { executeCommand, useCommand } from "reactive-vscode";
-import { Uri } from "vscode";
+import { useCommand } from "reactive-vscode";
+import { commands, Uri } from "vscode";
 import { config } from "../config";
 import * as Meta from "../generated/meta";
 import { logger } from "../logger";
@@ -21,7 +21,7 @@ export function useOpenInRemoteExplorerCommand() {
         return;
       }
 
-      executeCommand("vscode.open", Uri.parse(`${config["frontend-url"]}/file-explorer/${treeViewOrUri.path}`));
+      commands.executeCommand("vscode.open", Uri.parse(`${config["frontend-url"]}/file-explorer/${treeViewOrUri.path}`));
       return;
     }
 
@@ -41,6 +41,6 @@ export function useOpenInRemoteExplorerCommand() {
       return;
     }
 
-    executeCommand("vscode.open", Uri.parse(`${config["frontend-url"]}/file-explorer/${ucdItem.version}/${hasUCDFolderPath(ucdItem.version) ? "ucd/" : ""}${ucdItem.filePath ?? ""}`));
+    commands.executeCommand("vscode.open", Uri.parse(`${config["frontend-url"]}/file-explorer/${ucdItem.version}/${hasUCDFolderPath(ucdItem.version) ? "ucd/" : ""}${ucdItem.filePath ?? ""}`));
   });
 }

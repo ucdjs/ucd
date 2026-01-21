@@ -1,7 +1,7 @@
 import type { TreeViewNode } from "reactive-vscode";
 import type { UCDTreeItem } from "../composables/useUCDExplorer";
-import { executeCommand, useCommand } from "reactive-vscode";
-import { Uri } from "vscode";
+import { useCommand } from "reactive-vscode";
+import { commands, Uri } from "vscode";
 import * as Meta from "../generated/meta";
 import { logger } from "../logger";
 
@@ -20,7 +20,7 @@ export function useOpenOnUnicodeCommand() {
       }
 
       // TODO: This would allow to traverse upwards, this should be blocked.
-      executeCommand("vscode.open", Uri.parse(`https://unicode.org/Public/${treeViewOrUri.path}`));
+      commands.executeCommand("vscode.open", Uri.parse(`https://unicode.org/Public/${treeViewOrUri.path}`));
       return;
     }
 
@@ -45,6 +45,6 @@ export function useOpenOnUnicodeCommand() {
       return;
     }
 
-    executeCommand("vscode.open", Uri.parse(ucdItem.url));
+    commands.executeCommand("vscode.open", Uri.parse(ucdItem.url));
   });
 }
