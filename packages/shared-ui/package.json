@@ -14,7 +14,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ucdjs/ucd.git",
-    "directory": "packages/shared"
+    "directory": "packages/shared-ui"
   },
   "bugs": {
     "url": "https://github.com/ucdjs/ucd/issues"
