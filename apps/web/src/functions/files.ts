@@ -41,7 +41,7 @@ export type FilesResponse
  */
 export const fetchFiles = createServerFn({ method: "GET" })
   .inputValidator((data: { path: string } & z.output<typeof searchSchema>) => data)
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data, context, signal }) => {
     const baseFilesUrl = `${context.apiBaseUrl}/api/v1/files`;
     const url = new URL(data.path, `${baseFilesUrl}/`);
 
@@ -57,15 +57,15 @@ export const fetchFiles = createServerFn({ method: "GET" })
       url.searchParams.set("type", data.type);
     }
 
-    const res = await fetch(url);
+    const headRes = await fetch(url, { method: "HEAD", signal });
 
-    if (!res.ok) {
-      throw new Error(`Failed to fetch: ${res.statusText}`);
+    if (!headRes.ok) {
+      throw new Error(`Failed to fetch: ${headRes.statusText}`);
     }
 
-    const statType = res.headers.get(UCD_STAT_TYPE_HEADER);
-    const contentType = res.headers.get("Content-Type") || "text/plain";
-    const sizeHeader = res.headers.get(UCD_STAT_SIZE_HEADER) || res.headers.get("Content-Length");
+    const statType = headRes.headers.get(UCD_STAT_TYPE_HEADER);
+    const contentType = headRes.headers.get("Content-Type") || "text/plain";
+    const sizeHeader = headRes.headers.get(UCD_STAT_SIZE_HEADER) || headRes.headers.get("Content-Length");
     const size = sizeHeader ? Number.parseInt(sizeHeader, 10) : 0;
 
     // Step 2: For large files, return metadata only (no GET request needed)
@@ -78,19 +78,41 @@ export const fetchFiles = createServerFn({ method: "GET" })
       };
     }
 
-    if (statType === "file") {
+    const res = await fetch(url, { signal });
+
+    if (!res.ok) {
+      throw new Error(`Failed to fetch: ${res.statusText}`);
+    }
+
+    const responseStatType = res.headers.get(UCD_STAT_TYPE_HEADER) ?? statType;
+    const responseContentType = res.headers.get("Content-Type") || contentType;
+    const isJson = responseContentType.includes("application/json");
+    const resolvedStatType = responseStatType
+      ?? (isJson ? "directory" : "file");
+
+    if (resolvedStatType === "file") {
       const content = await res.text();
       return {
         type: "file",
         content,
-        contentType,
+        contentType: responseContentType,
         size: size || content.length,
       };
     }
 
     // Directory listing (JSON)
-    const files = (await res.json()) as FileEntry[];
-    return { type: "directory", files };
+    if (isJson) {
+      const files = (await res.json()) as FileEntry[];
+      return { type: "directory", files };
+    }
+
+    const content = await res.text();
+    return {
+      type: "file",
+      content,
+      contentType: responseContentType,
+      size: size || content.length,
+    };
   });
 
 interface FilesQueryOptions extends Omit<SearchQueryParams, "viewMode"> {
@@ -108,14 +130,17 @@ export function filesQueryOptions(options: FilesQueryOptions = {}) {
       options.query,
       options.type,
     ],
-    queryFn: () => fetchFiles({ data: {
-      path: options.path || "",
-      pattern: options.pattern,
-      sort: options.sort,
-      order: options.order,
-      query: options.query,
-      type: options.type,
-    } }),
+    queryFn: ({ signal }) => fetchFiles({
+      data: {
+        path: options.path || "",
+        pattern: options.pattern,
+        sort: options.sort,
+        order: options.order,
+        query: options.query,
+        type: options.type,
+      },
+      signal,
+    }),
     staleTime: 1000 * 60 * 60, // 1 hour
   });
 }
@@ -124,7 +149,7 @@ export const getFileHeadInfo = createServerFn({ method: "GET" })
   .inputValidator((data: {
     path: string;
   } & Omit<SearchQueryParams, "viewMode">) => data)
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data, context, signal }) => {
     const baseFilesUrl = `${context.apiBaseUrl}/api/v1/files`;
     const url = new URL(data.path, `${baseFilesUrl}/`);
 
@@ -140,7 +165,7 @@ export const getFileHeadInfo = createServerFn({ method: "GET" })
       url.searchParams.set("type", data.type);
     }
 
-    const headRes = await fetch(url, { method: "HEAD" });
+    const headRes = await fetch(url, { method: "HEAD", signal });
 
     if (headRes.status === 404) {
       throw notFound();
