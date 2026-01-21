@@ -10,7 +10,7 @@ export interface NonRenderableFileProps {
 /**
  * File extensions that cannot be rendered as text
  */
-// eslint-disable-next-line react-refresh/only-export-components
+
 export const NON_RENDERABLE_EXTENSIONS = new Set([
   // Archives
   "zip",

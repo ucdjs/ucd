@@ -1,3 +1,4 @@
+import type { Readable } from "node:stream";
 import type {
   CustomFetch,
   FetchContext,
@@ -7,7 +8,6 @@ import type {
   ResponseType,
   SafeFetchResponse,
 } from "./types";
-import type { Readable } from "node:stream";
 import { isMSWError } from "@luxass/msw-utils/runtime-guards";
 import { safeJsonParse } from "../json";
 import { FetchError, FetchSchemaValidationError } from "./error";

@@ -1,7 +1,7 @@
-import type { UCDTreeItem } from "../composables/useUCDExplorer";
 import type { UnicodeFileTreeNodeWithoutLastModified } from "@ucdjs/schemas";
 import type { UCDStore } from "@ucdjs/ucd-store";
 import type { TreeViewNode } from "reactive-vscode";
+import type { UCDTreeItem } from "../composables/useUCDExplorer";
 import { hasUCDFolderPath } from "@unicode-utils/core";
 import { ThemeIcon, TreeItemCollapsibleState } from "vscode";
 import { logger } from "../logger";

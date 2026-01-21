@@ -1,5 +1,5 @@
-import type { FetchError, FetchSchemaValidationError } from "./error";
 import type { ZodType } from "zod";
+import type { FetchError, FetchSchemaValidationError } from "./error";
 
 export interface CustomFetch {
   <T = any, R extends ResponseType = "json">(

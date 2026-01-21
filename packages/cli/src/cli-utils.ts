@@ -1,8 +1,8 @@
+import type { Prettify, RemoveIndexSignature } from "@luxass/utils";
+import type { Arguments } from "yargs-parser";
 import type { CLICodegenCmdOptions } from "./cmd/codegen/root";
 import type { CLIFilesCmdOptions } from "./cmd/files/root";
 import type { CLIStoreCmdOptions } from "./cmd/store/root";
-import type { Prettify, RemoveIndexSignature } from "@luxass/utils";
-import type { Arguments } from "yargs-parser";
 import process from "node:process";
 import {
   bgGreen,
