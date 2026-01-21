@@ -3,6 +3,8 @@
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/inter";
 
+@source "../ui/**/*.{ts,tsx}";
+
 @custom-variant dark (&:is(.dark *));
 
 :root {
@@ -120,9 +122,11 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply font-sans bg-background text-foreground;
   }
+
   html {
     @apply font-sans;
   }
