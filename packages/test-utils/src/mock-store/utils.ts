@@ -1,5 +1,3 @@
-import type { MockFetchFn } from "@luxass/msw-utils";
-import type { HttpResponseResolver } from "msw";
 import type {
   ConfiguredResponse,
   MockFetchType,
@@ -9,6 +7,8 @@ import type {
   OnRequestCallback,
   WrapMockFetchCallbackPayload,
 } from "./types";
+import type { MockFetchFn } from "@luxass/msw-utils";
+import type { HttpResponseResolver } from "msw";
 import { createDebugger } from "@ucdjs-internal/shared";
 import { kConfiguredResponse } from "./helpers";
 

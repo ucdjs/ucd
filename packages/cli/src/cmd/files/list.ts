@@ -1,6 +1,6 @@
-import type { FileEntryList } from "@ucdjs/schemas";
 import type { CLIArguments } from "../../cli-utils";
 import type { CLIFilesCmdOptions } from "./root";
+import type { FileEntryList } from "@ucdjs/schemas";
 import { createDebugger } from "@ucdjs-internal/shared";
 import { createUCDClient } from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";

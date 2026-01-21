@@ -1,6 +1,6 @@
+import type { GeneratedManifest, GenerateManifestsOptions } from "../types";
 import type { SafeFetchResponse } from "@ucdjs-internal/shared";
 import type { ExpectedFile, UnicodeFileTree, UnicodeVersionList } from "@ucdjs/schemas";
-import type { GeneratedManifest, GenerateManifestsOptions } from "../types";
 import { DEFAULT_EXCLUDED_EXTENSIONS } from "@ucdjs-internal/shared";
 import { createTar } from "nanotar";
 import { logger } from "./logger";

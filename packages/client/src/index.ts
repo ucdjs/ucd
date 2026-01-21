@@ -1,8 +1,8 @@
-import type { UCDWellKnownConfig } from "@ucdjs/schemas";
 import type { ConfigResource } from "./resources/config";
 import type { FilesResource } from "./resources/files";
 import type { ManifestResource } from "./resources/manifest";
 import type { VersionsResource } from "./resources/versions";
+import type { UCDWellKnownConfig } from "@ucdjs/schemas";
 import { discoverEndpointsFromConfig } from "@ucdjs-internal/shared";
 import { createConfigResource } from "./resources/config";
 import { createFilesResource } from "./resources/files";

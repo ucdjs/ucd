@@ -1,5 +1,5 @@
-import type { Env, Hono } from "hono";
 import type { HonoEnv } from "../types";
+import type { Env, Hono } from "hono";
 import { customError } from "./errors";
 
 /**

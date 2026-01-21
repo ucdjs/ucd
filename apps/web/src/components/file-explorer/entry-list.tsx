@@ -1,5 +1,5 @@
-import type { FileEntry } from "@ucdjs/schemas";
 import type { ViewMode } from "@/types/file-explorer";
+import type { FileEntry } from "@ucdjs/schemas";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useSearch } from "@tanstack/react-router";
 import { filesQueryOptions } from "@/functions/files";

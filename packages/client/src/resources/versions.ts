@@ -1,6 +1,6 @@
+import type { paths } from "../.generated/api";
 import type { SafeFetchResponse } from "@ucdjs-internal/shared";
 import type { UCDWellKnownConfig } from "@ucdjs/schemas";
-import type { paths } from "../.generated/api";
 import { customFetch } from "@ucdjs-internal/shared";
 import { UnicodeFileTreeSchema, UnicodeVersionListSchema } from "@ucdjs/schemas";
 

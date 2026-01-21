@@ -5,11 +5,13 @@ Documentation site for the UCD.js project, built with Fumadocs.
 ## 🚀 Usage
 
 If you are inside the root of the monorepo, run:
+
 ```sh
 pnpm run dev:apps
 ```
 
 If you only wanna start the Docs app, run:
+
 ```sh
 pnpm --filter @ucdjs/docs dev
 ```

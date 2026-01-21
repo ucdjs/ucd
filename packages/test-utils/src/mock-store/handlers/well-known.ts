@@ -1,5 +1,5 @@
-import type { ExpectedFile } from "@ucdjs/schemas";
 import type { MockStoreNode } from "../types";
+import type { ExpectedFile } from "@ucdjs/schemas";
 import { flattenFilePaths } from "@ucdjs-internal/shared";
 import { hasUCDFolderPath } from "@unicode-utils/core";
 import { HttpResponse } from "../../msw";

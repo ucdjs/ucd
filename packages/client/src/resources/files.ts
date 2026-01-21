@@ -1,6 +1,6 @@
+import type { paths } from "../.generated/api";
 import type { SafeFetchResponse } from "@ucdjs-internal/shared";
 import type { UCDWellKnownConfig } from "@ucdjs/schemas";
-import type { paths } from "../.generated/api";
 import { customFetch, tryOr } from "@ucdjs-internal/shared";
 import { PathTraversalError, resolveSafePath } from "@ucdjs/path-utils";
 
