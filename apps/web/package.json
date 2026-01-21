@@ -3,6 +3,13 @@
   "type": "module",
   "private": true,
   "packageManager": "pnpm@10.28.0",
+  "imports": {
+    "#functions/*": "./src/functions/*.ts",
+    "#components/*": "./src/components/*.tsx",
+    "#lib/*": "./src/lib/*.ts",
+    "#types/*": "./src/types/*.ts",
+    "#apis/*": "./src/apis/*.ts"
+  },
   "scripts": {
     "dev": "vite dev --port 3000",
     "build": "vite build",
@@ -21,6 +28,7 @@
     "@tanstack/react-router-devtools": "catalog:web",
     "@tanstack/react-router-ssr-query": "catalog:web",
     "@tanstack/react-start": "catalog:web",
+    "@ucdjs-internal/shared-ui": "workspace:*",
     "@ucdjs/schemas": "workspace:*",
     "@ucdjs/ucd-store": "workspace:*",
     "@unicode-utils/core": "catalog:prod",

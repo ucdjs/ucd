@@ -1,8 +1,8 @@
-import type { ViewMode } from "@/types/file-explorer";
+import type { ViewMode } from "#types/file-explorer";
 import type { FileEntry } from "@ucdjs/schemas";
+import { filesQueryOptions } from "#functions/files";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useSearch } from "@tanstack/react-router";
-import { filesQueryOptions } from "@/functions/files";
 import { ExplorerEntry } from "./explorer-entry";
 
 export interface EntryListProps {

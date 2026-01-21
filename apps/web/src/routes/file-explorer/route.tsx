@@ -1,7 +1,4 @@
 import { createFileRoute, Link, Outlet, useMatches } from "@tanstack/react-router";
-import { ChevronRight, FolderOpen, Home } from "lucide-react";
-import { Suspense } from "react";
-import { Fragment } from "react/jsx-runtime";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -9,9 +6,12 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { Separator } from "@/components/ui/separator";
-import { SidebarTrigger } from "@/components/ui/sidebar";
+  Separator,
+  SidebarTrigger,
+} from "@ucdjs-internal/shared-ui/components";
+import { ChevronRight, FolderOpen, Home } from "lucide-react";
+import { Suspense } from "react";
+import { Fragment } from "react/jsx-runtime";
 
 export const Route = createFileRoute("/file-explorer")({
   component: FileExplorerLayout,

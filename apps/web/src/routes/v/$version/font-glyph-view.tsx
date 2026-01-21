@@ -1,7 +1,6 @@
+import { VersionHeader } from "#components/layout/version/header";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { VersionHeader } from "@/components/layout/version/header";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button, Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/components";
 
 export const Route = createFileRoute("/v/$version/font-glyph-view")({
   component: FontGlyphViewVersion,

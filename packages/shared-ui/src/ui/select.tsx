@@ -1,7 +1,7 @@
+import { cn } from "#lib/utils";
 import { Select as SelectPrimitive } from "@base-ui/react/select";
 import { Check, ChevronDown, ChevronUp } from "lucide-react";
 import * as React from "react";
-import { cn } from "@/lib/utils";
 
 const Select = SelectPrimitive.Root;
 

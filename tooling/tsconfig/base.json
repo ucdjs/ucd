@@ -15,6 +15,17 @@
       "@ucdjs/schemas": ["./packages/schemas/src/index.ts"],
       "@ucdjs/ucd-store": ["./packages/ucd-store/src/index.ts"],
 
+      // Shared UI
+      "@ucdjs-internal/shared-ui": [
+        "./packages/shared-ui/src/index.ts"
+      ],
+      "@ucdjs-internal/shared-ui/components": [
+        "./packages/shared-ui/src/components/index.ts"
+      ],
+      "@ucdjs-internal/shared-ui/styles/globals.css": [
+        "./packages/shared-ui/src/styles/globals.css"
+      ],
+
       // utility packages
       "@ucdjs-internal/shared": ["./packages/shared/src/index.ts"],
       "@ucdjs/utils": ["./packages/utils/src/index.ts"],

@@ -1,10 +1,7 @@
+import { cn } from "#lib/utils";
+import { Button, Card, CardContent, CardHeader, CardTitle, Skeleton } from "@ucdjs-internal/shared-ui/components";
 import { Check, Download, ExternalLink, FileText, Link2, Loader2 } from "lucide-react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { cn } from "@/lib/utils";
 
 export interface FileViewerProps {
   content: string;
