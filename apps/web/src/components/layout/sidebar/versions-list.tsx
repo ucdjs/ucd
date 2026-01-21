@@ -2,9 +2,6 @@ import type { UnicodeVersion } from "@ucdjs/schemas";
 import { versionsQueryOptions } from "#functions/versions";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { ChevronDown } from "lucide-react";
-import { useState } from "react";
-import { UVersion } from "../../u-version";
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -12,6 +9,9 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@ucdjs-internal/shared-ui/components";
+import { ChevronDown } from "lucide-react";
+import { useState } from "react";
+import { UVersion } from "../../u-version";
 
 const DEFAULT_VISIBLE_VERSIONS = 5;
 
