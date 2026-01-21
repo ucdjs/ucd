@@ -1,6 +1,5 @@
+import { Button } from "@ucdjs-internal/shared-ui/components";
 import { Download } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
 
 export interface LargeFileWarningProps {
   fileName: string;

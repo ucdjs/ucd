@@ -1,4 +1,7 @@
 import type { QueryClient } from "@tanstack/react-query";
+import { AppSidebar } from "#components/layout/sidebar/app-sidebar";
+import { AppNotFound } from "#components/not-found";
+import { versionsQueryOptions } from "#functions/versions";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import {
@@ -7,10 +10,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
-import { AppSidebar } from "@/components/layout/sidebar/app-sidebar";
-import { AppNotFound } from "@/components/not-found";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
-import { versionsQueryOptions } from "@/functions/versions";
+import { SidebarInset, SidebarProvider } from "@ucdjs-internal/shared-ui/components";
 import GLOBAL_CSS_URL from "../globals.css?url";
 
 export interface AppRouterContext {

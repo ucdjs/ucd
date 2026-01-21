@@ -1,7 +1,7 @@
+import { cn } from "#lib/utils";
 import { Link } from "@tanstack/react-router";
+import { Card, CardContent } from "@ucdjs-internal/shared-ui/components";
 import { ArrowUp, FolderUp } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 
 export interface ParentDirectoryProps {
   currentPath: string;
