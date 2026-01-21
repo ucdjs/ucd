@@ -11,7 +11,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "../../ui/sidebar";
+} from "@ucdjs-internal/shared-ui/components";
 
 const DEFAULT_VISIBLE_VERSIONS = 5;
 
