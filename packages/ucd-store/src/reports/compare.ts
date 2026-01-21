@@ -1,6 +1,6 @@
+import type { OperationResult } from "@ucdjs-internal/shared";
 import type { StoreError } from "../errors";
 import type { InternalUCDStoreContext, SharedOperationOptions } from "../types";
-import type { OperationResult } from "@ucdjs-internal/shared";
 import {
   createConcurrencyLimiter,
   createDebugger,

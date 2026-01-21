@@ -1,6 +1,6 @@
+import type { OperationResult } from "@ucdjs-internal/shared";
 import type { StoreError } from "../errors";
 import type { InternalUCDStoreContext, SharedOperationOptions } from "../types";
-import type { OperationResult } from "@ucdjs-internal/shared";
 import { createDebugger, tryOr, wrapTry } from "@ucdjs-internal/shared";
 import { patheJoin } from "@ucdjs/path-utils";
 import { hasUCDFolderPath } from "@unicode-utils/core";

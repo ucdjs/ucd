@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
-import type { HonoEnv } from "../../types";
 import type { OpenAPIHono } from "@hono/zod-openapi";
+import type { HonoEnv } from "../../types";
 import { createRoute, z } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
 import { isValidGlobPattern } from "@ucdjs-internal/shared";
@@ -280,7 +280,7 @@ export function registerWildcardRoute(router: OpenAPIHono<HonoEnv>) {
   router.get(
     "/:wildcard{.*}?",
     cache({
-      cacheName: (c) => "ucdjs:v1_files:files" + (c.req.method === "HEAD" ? ":head" : ":get"),
+      cacheName: (c) => `ucdjs:v1_files:files${c.req.method === "HEAD" ? ":head" : ":get"}`,
       cacheControl: `max-age=${MAX_AGE_ONE_WEEK_SECONDS}`, // 7 days
     }),
     async (c) => {

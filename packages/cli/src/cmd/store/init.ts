@@ -1,6 +1,6 @@
+import type { Prettify } from "@luxass/utils";
 import type { CLIArguments } from "../../cli-utils";
 import type { CLIStoreCmdSharedFlags } from "./_shared";
-import type { Prettify } from "@luxass/utils";
 import { tryOr } from "@ucdjs-internal/shared";
 import { printHelp } from "../../cli-utils";
 import {

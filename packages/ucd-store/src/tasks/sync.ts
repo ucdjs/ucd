@@ -1,3 +1,4 @@
+import type { OperationResult } from "@ucdjs-internal/shared";
 import type { StoreError } from "../errors";
 import type {
   BaseOperationReport,
@@ -6,7 +7,6 @@ import type {
   SharedOperationOptions,
 } from "../types";
 import type { MirrorReport } from "./mirror";
-import type { OperationResult } from "@ucdjs-internal/shared";
 import { prependLeadingSlash } from "@luxass/utils";
 import {
   createConcurrencyLimiter,

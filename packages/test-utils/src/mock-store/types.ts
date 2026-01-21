@@ -1,6 +1,3 @@
-import type { paths } from "../.generated/api";
-import type { MOCK_ROUTES } from "./handlers";
-import type { kConfiguredResponse } from "./helpers";
 import type { MockFetchFn } from "@luxass/msw-utils";
 import type { Prettify } from "@luxass/utils";
 import type { UnicodeFileTreeNode } from "@ucdjs/schemas";
@@ -10,6 +7,9 @@ import type {
   HttpResponseResolver,
   PathParams,
 } from "msw";
+import type { paths } from "../.generated/api";
+import type { MOCK_ROUTES } from "./handlers";
+import type { kConfiguredResponse } from "./helpers";
 
 interface ContentTypeToType {
   "application/json": any;

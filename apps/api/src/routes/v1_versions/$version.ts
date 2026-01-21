@@ -1,6 +1,6 @@
-import type { HonoEnv } from "../../types";
 import type { OpenAPIHono } from "@hono/zod-openapi";
 import type { UnicodeFileTree } from "@ucdjs/schemas";
+import type { HonoEnv } from "../../types";
 import { createRoute } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
 import { UnicodeFileTreeSchema, UnicodeVersionDetailsSchema } from "@ucdjs/schemas";

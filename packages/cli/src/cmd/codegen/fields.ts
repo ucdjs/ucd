@@ -1,5 +1,5 @@
-import type { CLIArguments } from "../../cli-utils";
 import type { ProcessedFile } from "@ucdjs/schema-gen";
+import type { CLIArguments } from "../../cli-utils";
 import { existsSync } from "node:fs";
 import { mkdir, readdir, stat, writeFile } from "node:fs/promises";
 import path from "node:path";

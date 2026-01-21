@@ -1,9 +1,9 @@
-import type { InternalUCDStoreContext } from "../../src/types";
 import type { PathFilterOptions } from "@ucdjs-internal/shared";
 import type { UCDClient } from "@ucdjs/client";
 import type { FileSystemBridge, FileSystemBridgeFactory } from "@ucdjs/fs-bridge";
 import type { LockfileInput } from "@ucdjs/schemas";
 import type z from "zod";
+import type { InternalUCDStoreContext } from "../../src/types";
 import { createMemoryMockFS } from "#test-utils/fs-bridges";
 import { createPathFilter, getDefaultUCDEndpointConfig } from "@ucdjs-internal/shared";
 import { createUCDClientWithConfig } from "@ucdjs/client";
