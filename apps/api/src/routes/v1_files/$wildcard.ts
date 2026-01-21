@@ -280,7 +280,7 @@ export function registerWildcardRoute(router: OpenAPIHono<HonoEnv>) {
   router.get(
     "/:wildcard{.*}?",
     cache({
-      cacheName: "ucdjs:v1_files:files",
+      cacheName: (c) => "ucdjs:v1_files:files" + (c.req.method === "HEAD" ? ":head" : ":get"),
       cacheControl: `max-age=${MAX_AGE_ONE_WEEK_SECONDS}`, // 7 days
     }),
     async (c) => {
