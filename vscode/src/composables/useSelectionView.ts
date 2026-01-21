@@ -1,4 +1,4 @@
-import { computed, createSingletonComposable, useWebviewView, watchEffect } from "reactive-vscode";
+import { computed, defineService, useWebviewView, watchEffect } from "reactive-vscode";
 import { useOverrideGenerator } from "./useOverrideGenerator";
 
 function generateSelectionHtml(
@@ -220,7 +220,7 @@ function generateEmptyHtml(): string {
   `.trim();
 }
 
-export const useSelectionView = createSingletonComposable(() => {
+export const useSelectionView = defineService(() => {
   const generator = useOverrideGenerator();
 
   const html = computed(() => {

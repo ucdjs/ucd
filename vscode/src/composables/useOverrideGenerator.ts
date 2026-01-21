@@ -1,6 +1,6 @@
 import type { Disposable, TextEditor, TextEditorSelectionChangeEvent } from "vscode";
 import type { HeadingOverride, ParserOverride, Position } from "../lib/override-schema";
-import { computed, createSingletonComposable, ref } from "reactive-vscode";
+import { computed, defineService, ref } from "reactive-vscode";
 import { window } from "vscode";
 import { createParserOverride, isValidPosition, serializeOverride } from "../lib/override-schema";
 
@@ -34,7 +34,7 @@ const selectionEndDecoration = window.createTextEditorDecorationType({
   },
 });
 
-export const useOverrideGenerator = createSingletonComposable(() => {
+export const useOverrideGenerator = defineService(() => {
   const mode = ref<SelectionMode>("idle");
   const clickMode = ref<ClickMode>("set-start");
   const selectionStart = ref<number | null>(null);

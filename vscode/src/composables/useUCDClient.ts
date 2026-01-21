@@ -1,11 +1,11 @@
 import type { UCDClient } from "@ucdjs/client";
 import { tryOr } from "@ucdjs-internal/shared";
 import { createUCDClient } from "@ucdjs/client";
-import { createSingletonComposable, ref, watch } from "reactive-vscode";
+import { defineService, ref, watch } from "reactive-vscode";
 import { config } from "../config";
 import { logger } from "../logger";
 
-export const useUCDClient = createSingletonComposable(() => {
+export const useUCDClient = defineService(() => {
   const client = ref<UCDClient | null>(null);
 
   watch(

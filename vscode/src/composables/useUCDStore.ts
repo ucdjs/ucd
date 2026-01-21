@@ -1,12 +1,12 @@
 import type { UCDStore } from "@ucdjs/ucd-store";
 import type { Ref } from "reactive-vscode";
 import { createHTTPUCDStore, createUCDStore } from "@ucdjs/ucd-store";
-import { createSingletonComposable, ref, watch } from "reactive-vscode";
+import { defineService, ref, watch } from "reactive-vscode";
 import { config } from "../config";
 import { vscodeFSBridge } from "../lib/vscode-fs-bridge";
 import { logger } from "../logger";
 
-export const useUCDStore = createSingletonComposable(() => {
+export const useUCDStore = defineService(() => {
   const store = ref<UCDStore | null>(null);
 
   const createStoreFromConfig = async (localDataFilesStore: string | null): Promise<UCDStore> => {

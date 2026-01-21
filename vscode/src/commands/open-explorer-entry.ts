@@ -1,8 +1,8 @@
 import type { TreeViewNode } from "reactive-vscode";
 import type { UCDTreeItem } from "../composables/useUCDExplorer";
 import { hasUCDFolderPath } from "@unicode-utils/core";
-import { executeCommand, toRaw, useCommand } from "reactive-vscode";
-import { languages, Uri, window } from "vscode";
+import { toRaw, useCommand } from "reactive-vscode";
+import { commands, languages, Uri, window } from "vscode";
 import { useUCDStore } from "../composables/useUCDStore";
 import * as Meta from "../generated/meta";
 import { showFilePicker, showVersionPicker } from "../lib/pickers";
@@ -62,7 +62,7 @@ export function useOpenExplorerEntryCommand() {
         return;
       }
 
-      executeCommand("vscode.open", Uri.parse(ucdItem.url));
+      commands.executeCommand("vscode.open", Uri.parse(ucdItem.url));
       return;
     }
 
