@@ -15,7 +15,7 @@ A collection of shared UI components for UCD.js projects.
 npm install @ucdjs-internal/shared-ui
 ```
 
-  ## 📄 License
+## 📄 License
 
 Published under [MIT License](./LICENSE).
 
