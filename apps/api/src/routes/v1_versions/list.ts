@@ -1,5 +1,5 @@
-import type { OpenAPIHono } from "@hono/zod-openapi";
 import type { HonoEnv } from "../../types";
+import type { OpenAPIHono } from "@hono/zod-openapi";
 import { createRoute } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
 import { UnicodeVersionListSchema } from "@ucdjs/schemas";

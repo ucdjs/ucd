@@ -1,5 +1,5 @@
-import type { Disposable, TextEditor, TextEditorSelectionChangeEvent } from "vscode";
 import type { HeadingOverride, ParserOverride, Position } from "../lib/override-schema";
+import type { Disposable, TextEditor, TextEditorSelectionChangeEvent } from "vscode";
 import { computed, defineService, ref } from "reactive-vscode";
 import { window } from "vscode";
 import { createParserOverride, isValidPosition, serializeOverride } from "../lib/override-schema";

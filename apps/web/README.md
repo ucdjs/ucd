@@ -5,11 +5,13 @@ A web application for exploring Unicode Character Database (UCD) data with a mod
 ## 🚀 Usage
 
 If you are inside the root of the monorepo, run:
+
 ```sh
 pnpm run dev:apps
 ```
 
 If you only wanna start the Web app, run:
+
 ```sh
 pnpm --filter @ucdjs/web dev
 ```

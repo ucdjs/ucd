@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
-import type { OpenAPIHono } from "@hono/zod-openapi";
 import type { HonoEnv } from "../../types";
+import type { OpenAPIHono } from "@hono/zod-openapi";
 import { createRoute, z } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
 import { isValidGlobPattern } from "@ucdjs-internal/shared";

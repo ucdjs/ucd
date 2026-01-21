@@ -1,6 +1,6 @@
+import type { HonoEnv } from "../../types";
 import type { OpenAPIHono } from "@hono/zod-openapi";
 import type { Lockfile } from "@ucdjs/schemas";
-import type { HonoEnv } from "../../types";
 import { badGateway } from "../../lib/errors";
 
 interface ManifestData {

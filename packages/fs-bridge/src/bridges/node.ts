@@ -1,5 +1,5 @@
-import type { Dirent } from "node:fs";
 import type { FSEntry } from "../types";
+import type { Dirent } from "node:fs";
 import fsp from "node:fs/promises";
 import nodePath from "node:path";
 import { appendTrailingSlash, prependLeadingSlash } from "@luxass/utils/path";

@@ -1,5 +1,5 @@
-import type { UnicodeVersion } from "@ucdjs/schemas";
 import type { HonoEnv } from "../../types";
+import type { UnicodeVersion } from "@ucdjs/schemas";
 import { wrapTry } from "@ucdjs-internal/shared";
 import {
   getCurrentDraftVersion,

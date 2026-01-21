@@ -1,4 +1,3 @@
-import type { HookableCore } from "hookable";
 import type {
   FileSystemBridgeHooks,
   FileSystemBridgeOperations,
@@ -11,6 +10,7 @@ import type {
   OptionalCapabilityKey,
   OptionalFileSystemBridgeOperations,
 } from "./types";
+import type { HookableCore } from "hookable";
 import { isMSWError } from "@luxass/msw-utils/runtime-guards";
 import { createDebugger } from "@ucdjs-internal/shared";
 import { PathUtilsBaseError } from "@ucdjs/path-utils";

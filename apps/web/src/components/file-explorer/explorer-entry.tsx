@@ -1,5 +1,5 @@
-import type { FileEntry } from "@ucdjs/schemas";
 import type { ViewMode } from "@/types/file-explorer";
+import type { FileEntry } from "@ucdjs/schemas";
 import { Link } from "@tanstack/react-router";
 import { FileIcon, FolderIcon, FolderOpen } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";

@@ -1,6 +1,6 @@
-import type { Prettify } from "@luxass/utils";
 import type { CLIArguments } from "../../cli-utils";
 import type { CLIStoreCmdSharedFlags } from "./_shared";
+import type { Prettify } from "@luxass/utils";
 import { printHelp } from "../../cli-utils";
 import { green, output, red } from "../../output";
 import { assertRemoteOrStoreDir, createStoreFromFlags, REMOTE_CAPABLE_FLAGS, SHARED_FLAGS } from "./_shared";

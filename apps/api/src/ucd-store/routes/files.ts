@@ -1,5 +1,5 @@
-import type { OpenAPIHono } from "@hono/zod-openapi";
 import type { HonoEnv } from "../../types";
+import type { OpenAPIHono } from "@hono/zod-openapi";
 import {
   DEFAULT_USER_AGENT,
 } from "@ucdjs/env";

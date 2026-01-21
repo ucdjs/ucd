@@ -1,5 +1,5 @@
-import type { JsonBodyType } from "msw";
 import type { MockStoreConfig, MockStoreFiles, MockStoreNodeWithPath } from "./types";
+import type { JsonBodyType } from "msw";
 import { createDebugger, findFileByPath, isApiError } from "@ucdjs-internal/shared";
 import {
   UCD_STAT_CHILDREN_DIRS_HEADER,
@@ -15,7 +15,6 @@ import { defaultArabicShapingFileContent } from "./default-files/arabic-shaping"
 import { defaultBidiBracketsFileContent } from "./default-files/bidi-brackets";
 import { defaultDerivedBidClassFileContent } from "./default-files/derived-bidi-class";
 import { MOCK_ROUTES } from "./handlers";
-
 import {
   extractConfiguredMetadata,
   omitChildrenAndContent,
