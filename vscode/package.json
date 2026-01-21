@@ -9,7 +9,7 @@
     "email": "lucasnrgaard@gmail.com"
   },
   "publisher": "luxass",
-  "packageManager": "pnpm@10.28.0",
+  "packageManager": "pnpm@10.28.1",
   "license": "MIT",
   "repository": {
     "type": "git",
