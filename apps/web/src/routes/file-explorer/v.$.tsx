@@ -48,10 +48,13 @@ export const Route = createFileRoute("/file-explorer/v/$")({
     if (!isTooLarge && canRender) {
       context.queryClient.prefetchQuery(filesQueryOptions({
         path: context.path,
+        statType: context.statType,
+        size: context.size,
       }));
     }
 
     return {
+      statType: context.statType,
       size: context.size,
       fileName: context.fileName,
       fileExt: context.fileExt,
@@ -66,7 +69,14 @@ export const Route = createFileRoute("/file-explorer/v/$")({
 
 function FileViewerPage() {
   const loaderData = Route.useLoaderData();
-  const { size, fileName, path, isTooLarge, canRender, fileUrl } = loaderData;
+  const {
+    size,
+    fileName,
+    path,
+    isTooLarge,
+    canRender,
+    fileUrl,
+  } = loaderData;
 
   // Check for large files first - no data fetching needed
   if (isTooLarge) {
@@ -97,6 +107,8 @@ function FileViewerPage() {
       <FileViewerContent
         path={path}
         fileName={fileName}
+        statType={loaderData.statType}
+        size={loaderData.size}
       />
     </Suspense>
   );
@@ -106,8 +118,8 @@ function FileViewerPage() {
  * Component that fetches and renders file content
  * Separated to enable Suspense boundary around data fetching
  */
-function FileViewerContent({ path, fileName }: { path: string; fileName: string }) {
-  const { data } = useSuspenseQuery(filesQueryOptions({ path }));
+function FileViewerContent({ path, fileName, statType, size }: { path: string; fileName: string; statType: string | null; size: number }) {
+  const { data } = useSuspenseQuery(filesQueryOptions({ path, statType, size }));
 
   // This route only handles files
   if (data.type === "directory" || data.type === "file-too-large") {
