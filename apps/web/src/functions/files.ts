@@ -40,7 +40,7 @@ export type FilesResponse
  * This prevents loading massive files into memory and keeps routing fast.
  */
 export const fetchFiles = createServerFn({ method: "GET" })
-  .inputValidator((data: { path: string } & z.output<typeof searchSchema>) => data)
+  .inputValidator((data: { path: string; statType?: string | null; size?: number | null } & z.output<typeof searchSchema>) => data)
   .handler(async ({ data, context, signal }) => {
     const baseFilesUrl = `${context.apiBaseUrl}/api/v1/files`;
     const url = new URL(data.path, `${baseFilesUrl}/`);
@@ -57,19 +57,25 @@ export const fetchFiles = createServerFn({ method: "GET" })
       url.searchParams.set("type", data.type);
     }
 
-    const headRes = await fetch(url, { method: "HEAD", signal });
+    let statType = data.statType ?? null;
+    let contentType = "text/plain";
+    let size = typeof data.size === "number" ? data.size : null;
 
-    if (!headRes.ok) {
-      throw new Error(`Failed to fetch: ${headRes.statusText}`);
+    if (!statType || size === null) {
+      const headRes = await fetch(url, { method: "HEAD", signal });
+
+      if (!headRes.ok) {
+        throw new Error(`Failed to fetch: ${headRes.statusText}`);
+      }
+
+      statType = headRes.headers.get(UCD_STAT_TYPE_HEADER);
+      contentType = headRes.headers.get("Content-Type") || "text/plain";
+      const sizeHeader = headRes.headers.get(UCD_STAT_SIZE_HEADER) || headRes.headers.get("Content-Length");
+      size = sizeHeader ? Number.parseInt(sizeHeader, 10) : 0;
     }
 
-    const statType = headRes.headers.get(UCD_STAT_TYPE_HEADER);
-    const contentType = headRes.headers.get("Content-Type") || "text/plain";
-    const sizeHeader = headRes.headers.get(UCD_STAT_SIZE_HEADER) || headRes.headers.get("Content-Length");
-    const size = sizeHeader ? Number.parseInt(sizeHeader, 10) : 0;
-
     // Step 2: For large files, return metadata only (no GET request needed)
-    if (statType === "file" && size > MAX_INLINE_FILE_SIZE) {
+    if (statType === "file" && size !== null && size > MAX_INLINE_FILE_SIZE) {
       return {
         type: "file-too-large",
         size,
@@ -96,7 +102,7 @@ export const fetchFiles = createServerFn({ method: "GET" })
         type: "file",
         content,
         contentType: responseContentType,
-        size: size || content.length,
+        size: size ?? content.length,
       };
     }
 
@@ -117,6 +123,8 @@ export const fetchFiles = createServerFn({ method: "GET" })
 
 interface FilesQueryOptions extends Omit<SearchQueryParams, "viewMode"> {
   path?: string;
+  statType?: string | null;
+  size?: number | null;
 }
 
 export function filesQueryOptions(options: FilesQueryOptions = {}) {
@@ -138,6 +146,8 @@ export function filesQueryOptions(options: FilesQueryOptions = {}) {
         order: options.order,
         query: options.query,
         type: options.type,
+        statType: options.statType,
+        size: options.size,
       },
       signal,
     }),
