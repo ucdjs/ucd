@@ -16,7 +16,7 @@ minimumReleaseAgeExclude:
   - "@ucdjs/*"
 
 packages:
-  - "packages/*"
+  - "packages/**"
   - "apps/*"
   - "tooling/*"
   - "vscode"
@@ -67,6 +67,7 @@ catalogs:
     "@luxass/msw-utils": 0.6.0
     hookable: 6.0.1
     cac: 6.7.14
+    tinyglobby: 0.2.15
 
   dev:
     tsdown: 0.19.0

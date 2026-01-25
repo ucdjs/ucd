@@ -1,33 +1,29 @@
 {
-  "name": "@ucdjs/cli",
-  "version": "0.3.0",
+  "name": "@ucdjs/pipelines-core",
+  "version": "0.0.1",
   "type": "module",
   "author": {
-    "name": "Lucas Nørgård",
+    "name": "Lucas Norgaard",
     "email": "lucasnrgaard@gmail.com",
     "url": "https://luxass.dev"
   },
-  "packageManager": "pnpm@10.28.1",
+  "packageManager": "pnpm@10.27.0",
   "license": "MIT",
   "homepage": "https://github.com/ucdjs/ucd",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ucdjs/ucd.git",
-    "directory": "packages/cli"
+    "directory": "packages/pipelines/pipeline-core"
   },
   "bugs": {
     "url": "https://github.com/ucdjs/ucd/issues"
   },
   "exports": {
-    ".": "./dist/cli.mjs",
+    ".": "./dist/index.mjs",
     "./package.json": "./package.json"
   },
-  "types": "./dist/cli.d.mts",
-  "bin": {
-    "ucd": "bin/ucd.js"
-  },
+  "types": "./dist/index.d.mts",
   "files": [
-    "bin",
     "dist"
   ],
   "engines": {
@@ -41,31 +37,20 @@
     "typecheck": "tsc --noEmit -p tsconfig.build.json"
   },
   "dependencies": {
-    "@clack/prompts": "catalog:prod",
-    "@luxass/utils": "catalog:prod",
     "@ucdjs-internal/shared": "workspace:*",
-    "@ucdjs/client": "workspace:*",
-    "@ucdjs/env": "workspace:*",
-    "@ucdjs/fs-bridge": "workspace:*",
-    "@ucdjs/lockfile": "workspace:*",
-    "@ucdjs/pipelines-loader": "workspace:*",
-    "@ucdjs/schema-gen": "workspace:*",
-    "@ucdjs/schemas": "workspace:*",
-    "@ucdjs/ucd-store": "workspace:*",
-    "@unicode-utils/core": "catalog:prod",
-    "farver": "catalog:prod",
-    "yargs-parser": "catalog:prod"
+    "picomatch": "catalog:prod",
+    "zod": "catalog:prod"
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:linting",
-    "@types/yargs-parser": "catalog:types",
+    "@types/picomatch": "catalog:types",
     "@ucdjs-tooling/tsconfig": "workspace:*",
     "@ucdjs-tooling/tsdown-config": "workspace:*",
     "eslint": "catalog:linting",
     "publint": "catalog:dev",
     "tsdown": "catalog:dev",
-    "typescript": "catalog:dev",
-    "vitest-testdirs": "catalog:testing"
+    "tsx": "catalog:dev",
+    "typescript": "catalog:dev"
   },
   "publishConfig": {
     "access": "public"
