@@ -1,4 +1,5 @@
 import type { UserConfig as TSDownOptions } from "tsdown";
+import defu from "defu";
 import { defineConfig } from "tsdown";
 
 export const baseConfig = {
@@ -23,9 +24,10 @@ export const baseConfig = {
 } satisfies TSDownOptions;
 
 export function createTsdownConfig(overrides: Partial<TSDownOptions> = {}) {
-  return defineConfig({
-    ...baseConfig,
-    ...overrides,
+  console.log("Creating tsdown config with overrides:", defu(baseConfig, overrides, {
     entry: overrides.entry || ["./src/index.ts"],
-  });
+  }));
+  return defineConfig(defu(baseConfig, overrides, {
+    entry: overrides.entry || ["./src/index.ts"],
+  }));
 }

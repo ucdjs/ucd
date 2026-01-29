@@ -10,7 +10,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
-import { SidebarInset, SidebarProvider } from "@ucdjs-internal/shared-ui/components";
+import { SidebarInset, SidebarProvider } from "@ucdjs-internal/shared-ui/ui/sidebar";
 import GLOBAL_CSS_URL from "../globals.css?url";
 
 export interface AppRouterContext {

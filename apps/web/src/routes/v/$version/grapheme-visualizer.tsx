@@ -1,6 +1,7 @@
 import { VersionHeader } from "#components/layout/version/header";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Button, Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/components";
+import { Button } from "@ucdjs-internal/shared-ui/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 
 export const Route = createFileRoute("/v/$version/grapheme-visualizer")({
   component: GraphemeVisualizerVersion,

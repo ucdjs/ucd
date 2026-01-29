@@ -20,7 +20,7 @@
   },
   "sideEffects": false,
   "exports": {
-    ".": "./dist/index.mjs",
+    ".": "./dist/.mjs",
     "./package.json": "./package.json"
   },
   "types": "./dist/index.d.mts",

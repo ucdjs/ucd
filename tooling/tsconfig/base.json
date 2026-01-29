@@ -22,6 +22,15 @@
       "@ucdjs-internal/shared-ui/components": [
         "./packages/shared-ui/src/components/index.ts"
       ],
+      "@ucdjs-internal/shared-ui/ui/*": [
+        "./packages/shared-ui/src/ui/*.tsx"
+      ],
+      "@ucdjs-internal/shared-ui/lib/*": [
+        "./packages/shared-ui/src/lib/*.ts"
+      ],
+      "@ucdjs-internal/shared-ui/hooks/*": [
+        "./packages/shared-ui/src/hooks/*.ts"
+      ],
       "@ucdjs-internal/shared-ui/styles/globals.css": [
         "./packages/shared-ui/src/styles/globals.css"
       ],
