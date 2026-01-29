@@ -19,7 +19,7 @@
     "url": "https://github.com/ucdjs/ucd/issues"
   },
   "exports": {
-    ".": "./dist/index.mjs",
+    ".": "./dist/.mjs",
     "./package.json": "./package.json"
   },
   "types": "./dist/index.d.mts",

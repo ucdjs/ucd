@@ -1,21 +1,11 @@
 import { characterQueryOptions } from "#apis/characters";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-  Button,
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Separator,
-  SidebarTrigger,
-} from "@ucdjs-internal/shared-ui/components";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@ucdjs-internal/shared-ui/ui/breadcrumb";
+import { Button } from "@ucdjs-internal/shared-ui/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
+import { Separator } from "@ucdjs-internal/shared-ui/ui/separator";
+import { SidebarTrigger } from "@ucdjs-internal/shared-ui/ui/sidebar";
 import { ArrowLeft, Check, Copy } from "lucide-react";
 import * as React from "react";
 

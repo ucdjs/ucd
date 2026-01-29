@@ -1,14 +1,7 @@
 import { createFileRoute, Link, Outlet, useMatches } from "@tanstack/react-router";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-  Separator,
-  SidebarTrigger,
-} from "@ucdjs-internal/shared-ui/components";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@ucdjs-internal/shared-ui/ui/breadcrumb";
+import { Separator } from "@ucdjs-internal/shared-ui/ui/separator";
+import { SidebarTrigger } from "@ucdjs-internal/shared-ui/ui/sidebar";
 import { ChevronRight, FolderOpen, Home } from "lucide-react";
 import { Suspense } from "react";
 import { Fragment } from "react/jsx-runtime";

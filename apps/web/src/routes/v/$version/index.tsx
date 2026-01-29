@@ -1,18 +1,11 @@
 import { versionDetailsQueryOptions, versionsQueryOptions } from "#functions/versions";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-  Input,
-  Separator,
-  SidebarTrigger,
-  Skeleton,
-} from "@ucdjs-internal/shared-ui/components";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@ucdjs-internal/shared-ui/ui/breadcrumb";
+import { Input } from "@ucdjs-internal/shared-ui/ui/input";
+import { Separator } from "@ucdjs-internal/shared-ui/ui/separator";
+import { SidebarTrigger } from "@ucdjs-internal/shared-ui/ui/sidebar";
+import { Skeleton } from "@ucdjs-internal/shared-ui/ui/skeleton";
 import { BookOpen, Search } from "lucide-react";
 import { Suspense, useState } from "react";
 

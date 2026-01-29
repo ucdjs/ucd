@@ -38,6 +38,14 @@ const config = defineConfig({
       },
     }),
   ],
+  optimizeDeps: {
+    // Force Vite to process shared-ui package to handle JSX in chunks
+    include: ["@ucdjs-internal/shared-ui"],
+  },
+  ssr: {
+    // Ensure shared-ui is bundled and processed by Vite instead of being external
+    noExternal: ["@ucdjs-internal/shared-ui"],
+  },
 });
 
 export default config;

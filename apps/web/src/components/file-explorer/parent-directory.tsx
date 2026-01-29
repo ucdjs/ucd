@@ -1,6 +1,6 @@
 import { cn } from "#lib/utils";
 import { Link } from "@tanstack/react-router";
-import { Card, CardContent } from "@ucdjs-internal/shared-ui/components";
+import { Card, CardContent } from "@ucdjs-internal/shared-ui/ui/card";
 import { ArrowUp, FolderUp } from "lucide-react";
 
 export interface ParentDirectoryProps {

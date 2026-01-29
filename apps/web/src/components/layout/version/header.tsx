@@ -6,7 +6,7 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@ucdjs-internal/shared-ui/components";
+} from "@ucdjs-internal/shared-ui/ui/breadcrumb";
 
 interface VersionHeaderProps {
   version: string;

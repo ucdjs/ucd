@@ -116,7 +116,7 @@ export interface FileRoutesByFullPath {
   '/search': typeof SearchRoute
   '/v/$version': typeof VVersionRouteRouteWithChildren
   '/file-explorer/$': typeof FileExplorerSplatRoute
-  '/v': typeof VIndexRoute
+  '/v/': typeof VIndexRoute
   '/file-explorer/v/$': typeof FileExplorerVSplatRoute
   '/v/$version/bidi-linebreak': typeof VVersionBidiLinebreakRoute
   '/v/$version/font-glyph-view': typeof VVersionFontGlyphViewRoute
@@ -125,7 +125,7 @@ export interface FileRoutesByFullPath {
   '/v/$version/': typeof VVersionIndexRoute
   '/v/$version/blocks/$id': typeof VVersionBlocksIdRoute
   '/v/$version/u/$hex': typeof VVersionUHexRoute
-  '/v/$version/blocks': typeof VVersionBlocksIndexRoute
+  '/v/$version/blocks/': typeof VVersionBlocksIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -172,7 +172,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/v/$version'
     | '/file-explorer/$'
-    | '/v'
+    | '/v/'
     | '/file-explorer/v/$'
     | '/v/$version/bidi-linebreak'
     | '/v/$version/font-glyph-view'
@@ -181,7 +181,7 @@ export interface FileRouteTypes {
     | '/v/$version/'
     | '/v/$version/blocks/$id'
     | '/v/$version/u/$hex'
-    | '/v/$version/blocks'
+    | '/v/$version/blocks/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -261,7 +261,7 @@ declare module '@tanstack/react-router' {
     '/v/': {
       id: '/v/'
       path: '/v'
-      fullPath: '/v'
+      fullPath: '/v/'
       preLoaderRoute: typeof VIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
@@ -324,7 +324,7 @@ declare module '@tanstack/react-router' {
     '/v/$version/blocks/': {
       id: '/v/$version/blocks/'
       path: '/blocks'
-      fullPath: '/v/$version/blocks'
+      fullPath: '/v/$version/blocks/'
       preLoaderRoute: typeof VVersionBlocksIndexRouteImport
       parentRoute: typeof VVersionRouteRoute
     }
