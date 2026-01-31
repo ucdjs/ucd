@@ -29,7 +29,7 @@ catalogs:
     "@vitest/expect": 4.1.0-beta.1
     "@vitest/ui": 4.1.0-beta.1
     vitest: 4.1.0-beta.1
-    vitest-testdirs: 4.3.0
+    vitest-testdirs: 4.4.2
     msw: 2.12.7
     # "@cloudflare/vitest-pool-workers": 0.11.1
     "@cloudflare/vitest-pool-workers": https://pkg.pr.new/@cloudflare/vitest-pool-workers@11632
