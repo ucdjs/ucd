@@ -218,7 +218,7 @@ describe("mirror", () => {
         },
       });
 
-      const { context, fs } = await createTestContext({
+      const { context } = await createTestContext({
         versions: ["16.0.0"],
       });
 
@@ -227,10 +227,6 @@ describe("mirror", () => {
           include: ["UnicodeData.txt", "Blocks.txt"],
         },
       });
-
-      const files = await fs.listdir("/", true);
-      console.error("All files in FS:", JSON.stringify(files, null, 2));
-      console.error("Mirror data:", data);
 
       expect(error).toBeNull();
       const report = data?.versions.get("16.0.0");
