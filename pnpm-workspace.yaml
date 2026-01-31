@@ -14,7 +14,7 @@ minimumReleaseAgeExclude:
   - "@ucdjs/*"
 
 packages:
-  - "packages/*"
+  - "packages/**"
   - "apps/*"
   - "tooling/*"
   - "vscode"
