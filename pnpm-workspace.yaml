@@ -69,13 +69,13 @@ catalogs:
     cac: 6.7.14
 
   dev:
-    tsdown: 0.19.0
+    tsdown: 0.20.1
     typescript: 5.9.3
-    publint: 0.3.16
+    publint: 0.3.17
     nanotar: 0.2.0
     openapi-typescript: 7.10.1
     tsx: 4.21.0
-    rolldown: 1.0.0-beta.60
+    rolldown: 1.0.0-rc.2
 
   workers:
     wrangler: 4.59.3
