@@ -1,5 +1,5 @@
 {
-  "name": "@ucdjs/pipelines-loader",
+  "name": "@ucdjs/pipelines-artifacts",
   "version": "0.0.1",
   "type": "module",
   "author": {
@@ -13,7 +13,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ucdjs/ucd.git",
-    "directory": "packages/pipelines/pipeline-loader"
+    "directory": "packages/pipelines/pipeline-artifacts"
   },
   "bugs": {
     "url": "https://github.com/ucdjs/ucd/issues"
@@ -39,7 +39,8 @@
     "typecheck": "tsc --noEmit -p tsconfig.build.json"
   },
   "dependencies": {
-    "@ucdjs/pipelines-core": "workspace:*"
+    "@ucdjs/pipelines-core": "workspace:*",
+    "zod": "catalog:prod"
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:linting",
