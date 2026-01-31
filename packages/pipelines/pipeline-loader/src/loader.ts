@@ -1,9 +1,6 @@
 import type { PipelineDefinition } from "@ucdjs/pipelines-core";
 import { isPipelineDefinition } from "@ucdjs/pipelines-core";
 
-/**
- * Result of loading pipeline definitions from a file.
- */
 export interface LoadedPipelineFile {
   /**
    * The file path that was loaded.
@@ -21,9 +18,6 @@ export interface LoadedPipelineFile {
   exportNames: string[];
 }
 
-/**
- * Result of loading multiple pipeline files.
- */
 export interface LoadPipelinesResult {
   /**
    * All pipeline definitions found across all files.
@@ -38,15 +32,14 @@ export interface LoadPipelinesResult {
   /**
    * Files that failed to load.
    */
-  errors: Array<{
-    filePath: string;
-    error: Error;
-  }>;
+  errors: Array<PipelineLoadError>;
 }
 
-/**
- * Options for loading pipelines.
- */
+export interface PipelineLoadError {
+  filePath: string;
+  error: Error;
+}
+
 export interface LoadPipelinesOptions {
   /**
    * If true, throw on first error instead of collecting errors.
@@ -58,8 +51,8 @@ export interface LoadPipelinesOptions {
 /**
  * Load a single pipeline file and extract all PipelineDefinition exports.
  *
- * @param filePath - Absolute or relative path to the file to load
- * @returns The loaded pipeline file with extracted definitions
+ * @param {string} filePath - Absolute or relative path to the file to load
+ * @returns {Promise<LoadedPipelineFile>} The loaded pipeline file with extracted definitions
  *
  * @example
  * ```ts
@@ -90,13 +83,13 @@ export async function loadPipelineFile(filePath: string): Promise<LoadedPipeline
 /**
  * Load multiple pipeline files and extract all PipelineDefinition exports.
  *
- * @param filePaths - Array of file paths to load
- * @param options - Loading options
+ * @param {string[]} filePaths - Array of file paths to load
+ * @param {LoadPipelinesOptions} options - Loading options
  * @returns Combined result with all pipelines and any errors
  *
  * @example
  * ```ts
- * const result = await loadPipelines([
+ * const result = await loadPipelinesFromPaths([
  *   "./pipelines/blocks.ts",
  *   "./pipelines/scripts.ts",
  * ]);
@@ -105,31 +98,49 @@ export async function loadPipelineFile(filePath: string): Promise<LoadedPipeline
  * console.log(result.errors); // Any files that failed to load
  * ```
  */
-export async function loadPipelines(
+export async function loadPipelinesFromPaths(
   filePaths: string[],
   options: LoadPipelinesOptions = {},
 ): Promise<LoadPipelinesResult> {
   const { throwOnError = false } = options;
 
-  const pipelines: PipelineDefinition[] = [];
-  const files: LoadedPipelineFile[] = [];
-  const errors: Array<{ filePath: string; error: Error }> = [];
-
-  for (const filePath of filePaths) {
-    try {
-      const result = await loadPipelineFile(filePath);
-      files.push(result);
-      pipelines.push(...result.pipelines);
-    } catch (err) {
-      const error = err instanceof Error ? err : new Error(String(err));
-
-      if (throwOnError) {
+  if (throwOnError) {
+    const wrapped = filePaths.map((filePath) =>
+      loadPipelineFile(filePath).catch((err) => {
+        const error = err instanceof Error ? err : new Error(String(err));
         throw new Error(`Failed to load pipeline file: ${filePath}`, { cause: error });
-      }
+      }),
+    );
 
-      errors.push({ filePath, error });
-    }
+    const results = await Promise.all(wrapped);
+    const pipelines = results.flatMap((r) => r.pipelines);
+
+    return {
+      pipelines,
+      files: results,
+      errors: [],
+    };
   }
+
+  // Collect errors instead of throwing; preserve order.
+  const settled = await Promise.allSettled(filePaths.map((fp) => loadPipelineFile(fp)));
+
+  const files: LoadedPipelineFile[] = [];
+  const errors: Array<PipelineLoadError> = [];
+
+  for (const [i, result] of settled.entries()) {
+    if (result.status === "fulfilled") {
+      files.push(result.value);
+      continue;
+    }
+
+    const error = result.reason instanceof Error
+      ? result.reason
+      : new Error(String(result.reason));
+    errors.push({ filePath: filePaths[i]!, error });
+  }
+
+  const pipelines = files.flatMap((f) => f.pipelines);
 
   return {
     pipelines,
@@ -137,24 +148,3 @@ export async function loadPipelines(
     errors,
   };
 }
-
-/**
- * Load pipelines from a directory by matching file patterns.
- * This is a convenience wrapper that combines glob matching with loading.
- *
- * Note: This function requires the caller to provide the resolved file paths.
- * Use a glob library to find files first, then pass them to loadPipelines.
- *
- * @param filePaths - Pre-resolved file paths (use a glob library to find them)
- * @param options - Loading options
- * @returns Combined result with all pipelines
- *
- * @example
- * ```ts
- * import { glob } from "glob";
- *
- * const files = await glob("./pipelines/*.ts");
- * const result = await loadPipelines(files);
- * ```
- */
-export { loadPipelines as loadPipelinesFromPaths };
