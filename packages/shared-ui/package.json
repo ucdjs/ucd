@@ -52,6 +52,7 @@
     "./ui/skeleton": "./dist/ui/skeleton.mjs",
     "./ui/textarea": "./dist/ui/textarea.mjs",
     "./ui/tooltip": "./dist/ui/tooltip.mjs",
+    "./styles/globals.css": "./src/styles/globals.css",
     "./package.json": "./package.json"
   },
   "types": "./dist/index.d.mts",

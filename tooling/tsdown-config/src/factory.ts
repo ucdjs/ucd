@@ -1,5 +1,4 @@
 import type { UserConfig as TSDownOptions } from "tsdown";
-import defu from "defu";
 import { defineConfig } from "tsdown";
 
 export const baseConfig = {
@@ -25,12 +24,14 @@ export const baseConfig = {
 } satisfies TSDownOptions;
 
 export function createTsdownConfig(overrides: Partial<TSDownOptions> = {}) {
-  const merged = defu(baseConfig, overrides) as TSDownOptions;
-
-  // Ensure `entry` arrays are unique to avoid duplicate entries like "./src/index.ts".
-  if (Array.isArray(merged.entry)) {
-    merged.entry = Array.from(new Set(merged.entry));
-  }
+  const merged = {
+    ...baseConfig,
+    ...overrides,
+    inputOptions: {
+      ...(baseConfig.inputOptions ?? {}),
+      ...(overrides.inputOptions ?? {}),
+    },
+  } as TSDownOptions;
 
   return defineConfig(merged);
 }
