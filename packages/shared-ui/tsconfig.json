@@ -1,10 +1,5 @@
 {
   "extends": "@ucdjs-tooling/tsconfig/base",
-  "compilerOptions": {
-    "jsx": "react",
-    "lib": ["es2023", "DOM"],
-    "moduleDetection": "force"
-  },
   "include": ["src", "test"],
   "exclude": ["dist"]
 }
