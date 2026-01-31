@@ -1,17 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-  Button,
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@ucdjs-internal/shared-ui/components";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@ucdjs-internal/shared-ui/ui/breadcrumb";
+import { Button } from "@ucdjs-internal/shared-ui/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 
 export const Route = createFileRoute("/codepoint-inspector")({
   component: CodepointInspectorIdea,

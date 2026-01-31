@@ -2,7 +2,7 @@ import type { ViewMode } from "#types/file-explorer";
 import type { FileEntry } from "@ucdjs/schemas";
 import { cn } from "#lib/utils";
 import { Link } from "@tanstack/react-router";
-import { Card, CardContent } from "@ucdjs-internal/shared-ui/components";
+import { Card, CardContent } from "@ucdjs-internal/shared-ui/ui/card";
 import { FileIcon, FolderIcon, FolderOpen } from "lucide-react";
 
 function formatRelativeTime(timestamp: number): string {

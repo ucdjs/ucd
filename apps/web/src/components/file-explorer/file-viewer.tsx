@@ -1,5 +1,7 @@
 import { cn } from "#lib/utils";
-import { Button, Card, CardContent, CardHeader, CardTitle, Skeleton } from "@ucdjs-internal/shared-ui/components";
+import { Button } from "@ucdjs-internal/shared-ui/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
+import { Skeleton } from "@ucdjs-internal/shared-ui/ui/skeleton";
 import { Check, Download, ExternalLink, FileText, Link2, Loader2 } from "lucide-react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 

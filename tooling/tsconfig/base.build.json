@@ -23,7 +23,7 @@
     "lib": ["dom", "dom.iterable", "ES2022"],
     "noEmit": true,
     "module": "Preserve",
-    "jsx": "preserve",
+    "jsx": "react-jsx",
 
     /** Monorepo */
     "incremental": true,

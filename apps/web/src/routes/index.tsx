@@ -1,15 +1,10 @@
 import { VersionsCardList, VersionsCardListSkeleton } from "#components/home/versions-list";
 import { versionsQueryOptions } from "#functions/versions";
 import { createFileRoute, Link, useLoaderData } from "@tanstack/react-router";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbList,
-  BreadcrumbPage,
-  Button,
-  Separator,
-  SidebarTrigger,
-} from "@ucdjs-internal/shared-ui/components";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@ucdjs-internal/shared-ui/ui/breadcrumb";
+import { Button } from "@ucdjs-internal/shared-ui/ui/button";
+import { Separator } from "@ucdjs-internal/shared-ui/ui/separator";
+import { SidebarTrigger } from "@ucdjs-internal/shared-ui/ui/sidebar";
 import { BookOpen, Code2, ExternalLink, Hash, Layers, Search } from "lucide-react";
 import { Suspense } from "react";
 
