@@ -3,6 +3,7 @@ import defu from "defu";
 import { defineConfig } from "tsdown";
 
 export const baseConfig = {
+  entry: ["./src/index.ts"],
   exports: true,
   format: ["esm"],
   clean: true,
@@ -24,10 +25,12 @@ export const baseConfig = {
 } satisfies TSDownOptions;
 
 export function createTsdownConfig(overrides: Partial<TSDownOptions> = {}) {
-  console.log("Creating tsdown config with overrides:", defu(baseConfig, overrides, {
-    entry: overrides.entry || ["./src/index.ts"],
-  }));
-  return defineConfig(defu(baseConfig, overrides, {
-    entry: overrides.entry || ["./src/index.ts"],
-  }));
+  const merged = defu(baseConfig, overrides) as TSDownOptions;
+
+  // Ensure `entry` arrays are unique to avoid duplicate entries like "./src/index.ts".
+  if (Array.isArray(merged.entry)) {
+    merged.entry = Array.from(new Set(merged.entry));
+  }
+
+  return defineConfig(merged);
 }
