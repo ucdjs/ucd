@@ -47,7 +47,8 @@
     "eslint": "catalog:linting",
     "publint": "catalog:dev",
     "tsdown": "catalog:dev",
-    "typescript": "catalog:dev"
+    "typescript": "catalog:dev",
+    "vitest-testdirs": "catalog:testing"
   },
   "publishConfig": {
     "access": "public"
