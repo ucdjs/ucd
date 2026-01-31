@@ -13,4 +13,5 @@ export default createTsdownConfig({
   noExternal: [
     /^@ucdjs\//,
   ],
+  inlineOnly: false,
 });
