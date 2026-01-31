@@ -1397,9 +1397,6 @@ importers:
 
   tooling/tsdown-config:
     dependencies:
-      defu:
-        specifier: catalog:prod
-        version: 6.1.4
       tsdown:
         specifier: catalog:dev
         version: 0.20.1(publint@0.3.17)(synckit@0.11.11)(typescript@5.9.3)

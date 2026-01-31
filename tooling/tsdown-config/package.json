@@ -15,7 +15,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "defu": "catalog:prod",
     "tsdown": "catalog:dev"
   },
   "devDependencies": {
