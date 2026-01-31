@@ -144,8 +144,8 @@ catalogs:
       specifier: 4.1.0-beta.1
       version: 4.1.0-beta.1
     vitest-testdirs:
-      specifier: 4.3.0
-      version: 4.3.0
+      specifier: 4.4.2
+      version: 4.4.2
   types:
     '@types/mdx':
       specifier: 2.0.13
@@ -369,7 +369,7 @@ importers:
     devDependencies:
       '@cloudflare/vitest-pool-workers':
         specifier: catalog:testing
-        version: https://pkg.pr.new/@cloudflare/vitest-pool-workers@11632(@vitest/runner@4.1.0-beta.1)(@vitest/snapshot@4.1.0-beta.1)(vitest@4.1.0-beta.1)
+        version: https://pkg.pr.new/@cloudflare/vitest-pool-workers@11632(@vitest/runner@4.1.0-beta.2)(@vitest/snapshot@4.1.0-beta.2)(vitest@4.1.0-beta.1)
       '@luxass/eslint-config':
         specifier: catalog:linting
         version: 7.0.0(@eslint-react/eslint-plugin@2.8.1(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.25)(eslint-plugin-format@1.3.1(eslint@9.39.2(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@9.39.2(jiti@2.6.1)))(eslint-plugin-react-refresh@0.4.26(eslint@9.39.2(jiti@2.6.1)))(eslint@9.39.2(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.1)
@@ -705,7 +705,7 @@ importers:
         version: 5.9.3
       vitest-testdirs:
         specifier: catalog:testing
-        version: 4.3.0(vitest@4.1.0-beta.1)
+        version: 4.4.2(vitest@4.1.0-beta.1)
 
   packages/client:
     dependencies:
@@ -754,7 +754,7 @@ importers:
         version: 5.9.3
       vitest-testdirs:
         specifier: catalog:testing
-        version: 4.3.0(vitest@4.1.0-beta.1)
+        version: 4.4.2(vitest@4.1.0-beta.1)
 
   packages/env:
     dependencies:
@@ -843,7 +843,7 @@ importers:
         version: 5.9.3
       vitest-testdirs:
         specifier: catalog:testing
-        version: 4.3.0(vitest@4.1.0-beta.1)
+        version: 4.4.2(vitest@4.1.0-beta.1)
 
   packages/lockfile:
     dependencies:
@@ -886,7 +886,7 @@ importers:
         version: 5.9.3
       vitest-testdirs:
         specifier: catalog:testing
-        version: 4.3.0(vitest@4.1.0-beta.1)
+        version: 4.4.2(vitest@4.1.0-beta.1)
 
   packages/path-utils:
     dependencies:
@@ -923,7 +923,7 @@ importers:
         version: 5.9.3
       vitest-testdirs:
         specifier: catalog:testing
-        version: 4.3.0(vitest@4.1.0-beta.1)
+        version: 4.4.2(vitest@4.1.0-beta.1)
 
   packages/schema-gen:
     dependencies:
@@ -972,7 +972,7 @@ importers:
         version: 5.9.3
       vitest-testdirs:
         specifier: catalog:testing
-        version: 4.3.0(vitest@4.1.0-beta.1)
+        version: 4.4.2(vitest@4.1.0-beta.1)
 
   packages/schemas:
     dependencies:
@@ -1064,7 +1064,7 @@ importers:
         version: 5.9.3
       vitest-testdirs:
         specifier: catalog:testing
-        version: 4.3.0(vitest@4.1.0-beta.1)
+        version: 4.4.2(vitest@4.1.0-beta.1)
 
   packages/shared-ui:
     dependencies:
@@ -1210,7 +1210,7 @@ importers:
         version: 5.9.3
       vitest-testdirs:
         specifier: catalog:testing
-        version: 4.3.0(vitest@4.1.0-beta.1)
+        version: 4.4.2(vitest@4.1.0-beta.1)
 
   packages/ucd-store:
     dependencies:
@@ -1274,7 +1274,7 @@ importers:
         version: 5.9.3
       vitest-testdirs:
         specifier: catalog:testing
-        version: 4.3.0(vitest@4.1.0-beta.1)
+        version: 4.4.2(vitest@4.1.0-beta.1)
 
   packages/ucdjs-scripts:
     dependencies:
@@ -1354,7 +1354,7 @@ importers:
         version: 5.9.3
       vitest-testdirs:
         specifier: catalog:testing
-        version: 4.3.0(vitest@4.1.0-beta.1)
+        version: 4.4.2(vitest@4.1.0-beta.1)
 
   tooling/eslint-plugin:
     devDependencies:
@@ -4696,17 +4696,26 @@ packages:
   '@vitest/pretty-format@4.1.0-beta.1':
     resolution: {integrity: sha512-CeI3uthjV/XKA6KBCr/B5HlCQaFdCgprdl7gBg/sUExQPary8BBhYoVWJeAPTeg9u+ppT9S4v/sYjjNjn3Qsrw==}
 
+  '@vitest/pretty-format@4.1.0-beta.2':
+    resolution: {integrity: sha512-Ms6NWhaLbJC8UaxLg+OLneAbGFoaAgTvN0RDSjso3QOwcwv6Aqy9QWXl1NT07+BRrK+EOSjgRJQNb8f1pkyLqw==}
+
   '@vitest/runner@4.0.17':
     resolution: {integrity: sha512-JmuQyf8aMWoo/LmNFppdpkfRVHJcsgzkbCA+/Bk7VfNH7RE6Ut2qxegeyx2j3ojtJtKIbIGy3h+KxGfYfk28YQ==}
 
   '@vitest/runner@4.1.0-beta.1':
     resolution: {integrity: sha512-oE0nFu+0zT6IhhAu8Z9wWCWWy63a7btZLvq4zUkrGwJ9U4sabXHWzYakBE6ZDLXpI8aDv796+0AMej2AJ7m3tw==}
 
+  '@vitest/runner@4.1.0-beta.2':
+    resolution: {integrity: sha512-5ZU0gHEVEV0414RSj57ov1AWVLtTtQzH/BEDDafv94E92frTGoOLKHRPkLRiw7efBxD+R1L3tUphBvw0R5mNJw==}
+
   '@vitest/snapshot@4.0.17':
     resolution: {integrity: sha512-npPelD7oyL+YQM2gbIYvlavlMVWUfNNGZPcu0aEUQXt7FXTuqhmgiYupPnAanhKvyP6Srs2pIbWo30K0RbDtRQ==}
 
   '@vitest/snapshot@4.1.0-beta.1':
     resolution: {integrity: sha512-wSt0PAy1QCZjzPUgpIYXBtZFTFXPw65GIQxz9mjhl0yjkAE+wnRU08+w3R3X5hrCKYVhTS3HHV8zs6Yin2K0Dw==}
+
+  '@vitest/snapshot@4.1.0-beta.2':
+    resolution: {integrity: sha512-wqepqIP9VDfD5dTDq2x3J1hW2Qd2BOlhBGrFS0Ye0pN0I3cFpX2+d10GbbRxN5NilofXaZnSo8avW/0zboDMtQ==}
 
   '@vitest/spy@4.0.17':
     resolution: {integrity: sha512-I1bQo8QaP6tZlTomQNWKJE6ym4SHf3oLS7ceNjozxxgzavRAgZDc06T7kD8gb9bXKEgcLNt00Z+kZO6KaJ62Ew==}
@@ -4729,6 +4738,9 @@ packages:
 
   '@vitest/utils@4.1.0-beta.1':
     resolution: {integrity: sha512-IUCsqDFj8E8WJq3wGRQ7MiMb2571tjTnjyrJ1oy+0HODutA2TpZGRqBA8ziLCIWTOL/e4RArE2k6eZh/jXgk9A==}
+
+  '@vitest/utils@4.1.0-beta.2':
+    resolution: {integrity: sha512-c5ZnkcNaSANcFn70YNwGNb8vXCWjFKGbIJ1tFVUf5+oBXNFfNqksTOqHDPydS2vi3IPVqYjA2n5UqKZus20qDw==}
 
   '@vscode/vsce-sign-alpine-arm64@2.0.6':
     resolution: {integrity: sha512-wKkJBsvKF+f0GfsUuGT0tSW0kZL87QggEiqNqK6/8hvqsXvpx8OsTEc3mnE1kejkh5r+qUyQ7PtF8jZYN0mo8Q==}
@@ -8484,8 +8496,8 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
-  testdirs@4.0.0:
-    resolution: {integrity: sha512-Q6e/jdJ3vFwIcCJMn1i9/0t8Jkq+ZELU8bM2buISlZfiXemAKGjyp0a43Wkc/KCRzmJcJ2VPqYxDnm+UA/Mh3g==}
+  testdirs@4.0.1:
+    resolution: {integrity: sha512-kkGJByg7ybL2N2VXuFZzrp1EirXokXnqFAu5+qm0kaCABk+QaQNmJnrQbzs6BYHhKeARDvDtmnZLRSQYKJyzRA==}
     engines: {node: '>=22'}
 
   text-table@0.2.0:
@@ -9029,8 +9041,8 @@ packages:
       vite:
         optional: true
 
-  vitest-testdirs@4.3.0:
-    resolution: {integrity: sha512-D3Q3Byn9kCM6Qjl1aV/o0tO13opOMWc/zsWJMr5lfkQJM+o0vEkTeA73IHg0feTrNCwShe/Jn+qxCo0oQLbU6A==}
+  vitest-testdirs@4.4.2:
+    resolution: {integrity: sha512-afY/m5b2mQEjbQpcMkRxxtOeogfeHsC7gl6BmI16iJkwghi+Cj3lAnmxxRO8f8LlbwFp4NjPKGGP4wMn9hhwnw==}
     engines: {node: '>=22'}
     peerDependencies:
       vitest: '>=3.0.0 <4.0.0 || >=4.0.0 <5.0.0'
@@ -9777,10 +9789,10 @@ snapshots:
     optionalDependencies:
       workerd: 1.20260128.0
 
-  '@cloudflare/vitest-pool-workers@https://pkg.pr.new/@cloudflare/vitest-pool-workers@11632(@vitest/runner@4.1.0-beta.1)(@vitest/snapshot@4.1.0-beta.1)(vitest@4.1.0-beta.1)':
+  '@cloudflare/vitest-pool-workers@https://pkg.pr.new/@cloudflare/vitest-pool-workers@11632(@vitest/runner@4.1.0-beta.2)(@vitest/snapshot@4.1.0-beta.2)(vitest@4.1.0-beta.1)':
     dependencies:
-      '@vitest/runner': 4.1.0-beta.1
-      '@vitest/snapshot': 4.1.0-beta.1
+      '@vitest/runner': 4.1.0-beta.2
+      '@vitest/snapshot': 4.1.0-beta.2
       cjs-module-lexer: 1.4.3
       esbuild: 0.27.0
       miniflare: https://pkg.pr.new/cloudflare/workers-sdk/miniflare@79a1932
@@ -12768,6 +12780,10 @@ snapshots:
     dependencies:
       tinyrainbow: 3.0.3
 
+  '@vitest/pretty-format@4.1.0-beta.2':
+    dependencies:
+      tinyrainbow: 3.0.3
+
   '@vitest/runner@4.0.17':
     dependencies:
       '@vitest/utils': 4.0.17
@@ -12777,6 +12793,11 @@ snapshots:
   '@vitest/runner@4.1.0-beta.1':
     dependencies:
       '@vitest/utils': 4.1.0-beta.1
+      pathe: 2.0.3
+
+  '@vitest/runner@4.1.0-beta.2':
+    dependencies:
+      '@vitest/utils': 4.1.0-beta.2
       pathe: 2.0.3
 
   '@vitest/snapshot@4.0.17':
@@ -12789,6 +12810,12 @@ snapshots:
   '@vitest/snapshot@4.1.0-beta.1':
     dependencies:
       '@vitest/pretty-format': 4.1.0-beta.1
+      magic-string: 0.30.21
+      pathe: 2.0.3
+
+  '@vitest/snapshot@4.1.0-beta.2':
+    dependencies:
+      '@vitest/pretty-format': 4.1.0-beta.2
       magic-string: 0.30.21
       pathe: 2.0.3
 
@@ -12829,6 +12856,11 @@ snapshots:
   '@vitest/utils@4.1.0-beta.1':
     dependencies:
       '@vitest/pretty-format': 4.1.0-beta.1
+      tinyrainbow: 3.0.3
+
+  '@vitest/utils@4.1.0-beta.2':
+    dependencies:
+      '@vitest/pretty-format': 4.1.0-beta.2
       tinyrainbow: 3.0.3
 
   '@vscode/vsce-sign-alpine-arm64@2.0.6':
@@ -17522,7 +17554,9 @@ snapshots:
       source-map-support: 0.5.21
     optional: true
 
-  testdirs@4.0.0: {}
+  testdirs@4.0.1:
+    dependencies:
+      zod: 4.3.6
 
   text-table@0.2.0: {}
 
@@ -17976,10 +18010,11 @@ snapshots:
     optionalDependencies:
       vite: 7.3.1(@types/node@22.18.12)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.2)
 
-  vitest-testdirs@4.3.0(vitest@4.1.0-beta.1):
+  vitest-testdirs@4.4.2(vitest@4.1.0-beta.1):
     dependencies:
-      testdirs: 4.0.0
+      testdirs: 4.0.1
       vitest: 4.1.0-beta.1(@opentelemetry/api@1.9.0)(@types/node@24.3.1)(@vitest/ui@4.1.0-beta.1)(jiti@2.6.1)(jsdom@27.3.0(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.12.7(@types/node@24.3.1)(typescript@5.9.3))(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.2)
+      zod: 4.3.6
 
   vitest@4.0.17(@opentelemetry/api@1.9.0)(@types/node@22.18.12)(@vitest/ui@4.0.17)(jiti@2.6.1)(jsdom@27.3.0(postcss@8.5.6))(lightningcss@1.30.2)(msw@2.12.7(@types/node@22.18.12)(typescript@5.9.3))(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.2):
     dependencies:
