@@ -8,7 +8,7 @@
     "email": "lucasnrgaard@gmail.com",
     "url": "https://luxass.dev"
   },
-  "packageManager": "pnpm@10.28.1",
+  "packageManager": "pnpm@10.28.2",
   "license": "MIT",
   "homepage": "https://github.com/ucdjs/ucd",
   "repository": {
@@ -23,7 +23,7 @@
     "#lib/*": "./src/lib/*.ts"
   },
   "exports": {
-    ".": "./dist/.mjs",
+    ".": "./dist/index.mjs",
     "./package.json": "./package.json"
   },
   "types": "./dist/index.d.mts",
