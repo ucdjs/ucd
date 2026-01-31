@@ -3,8 +3,6 @@ saveWorkspaceProtocol: false
 linkWorkspacePackages: true
 engineStrict: true
 minimumReleaseAge: 1440 # 1 day
-# Until the Vitest Cloudflare Workers pool is stable.
-strictStorePkgContentCheck: false
 
 minimumReleaseAgeExclude:
   - "@luxass/eslint-config"
@@ -37,7 +35,7 @@ catalogs:
     "@cloudflare/vitest-pool-workers": https://pkg.pr.new/@cloudflare/vitest-pool-workers@11632
 
   linting:
-    "@luxass/eslint-config": 7.0.0-beta.3
+    "@luxass/eslint-config": 7.0.0
     "@stoplight/spectral-cli": 6.15.0
     eslint: 9.39.2
     eslint-plugin-format: 1.3.1
