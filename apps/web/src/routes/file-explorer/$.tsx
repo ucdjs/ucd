@@ -7,7 +7,7 @@ import { filesQueryOptions, getFileHeadInfo } from "#functions/files";
 import { cn } from "#lib/utils";
 import { createFileRoute, redirect, retainSearchParams, useSearch } from "@tanstack/react-router";
 import { zodValidator } from "@tanstack/zod-adapter";
-import { Skeleton } from "@ucdjs-internal/shared-ui/components";
+import { Skeleton } from "@ucdjs-internal/shared-ui/ui/skeleton";
 import { Suspense } from "react";
 import z from "zod";
 

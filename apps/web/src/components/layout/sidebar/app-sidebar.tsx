@@ -11,7 +11,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-} from "@ucdjs-internal/shared-ui/components";
+} from "@ucdjs-internal/shared-ui/ui/sidebar";
 import { BookOpen, ExternalLink, Grid3X3, Lightbulb, Search, Type } from "lucide-react";
 import { UcdLogo } from "../../ucd-logo";
 import { VersionSwitcher } from "../../version-switcher";

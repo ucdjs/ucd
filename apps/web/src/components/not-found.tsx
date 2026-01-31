@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Button } from "@ucdjs-internal/shared-ui/components";
+import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import { AlertCircle } from "lucide-react";
 
 interface NotFoundLayoutProps {

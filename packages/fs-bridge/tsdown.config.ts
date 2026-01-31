@@ -13,4 +13,7 @@ export default createTsdownConfig({
   noExternal: [
     "@luxass/msw-utils",
   ],
+  inlineOnly: [
+    "@luxass/msw-utils",
+  ],
 });

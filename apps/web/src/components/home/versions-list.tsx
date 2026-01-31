@@ -47,19 +47,6 @@ export function VersionsCardList() {
               </span>
             )}
           </div>
-
-          {/* Documentation link */}
-          <div className="text-xs text-muted-foreground truncate">
-            <a
-              href={version.documentationUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={(e) => e.stopPropagation()}
-              className="hover:underline hover:text-foreground transition-colors"
-            >
-              View documentation
-            </a>
-          </div>
         </Link>
       ))}
     </div>

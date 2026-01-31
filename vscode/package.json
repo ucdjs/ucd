@@ -9,7 +9,7 @@
     "email": "lucasnrgaard@gmail.com"
   },
   "publisher": "luxass",
-  "packageManager": "pnpm@10.28.1",
+  "packageManager": "pnpm@10.28.2",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -307,21 +307,19 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit -p tsconfig.build.json"
   },
-  "dependencies": {
-    "@ucdjs-internal/shared": "workspace:*",
-    "@ucdjs/client": "workspace:*",
-    "@ucdjs/fs-bridge": "workspace:*",
-    "@ucdjs/schemas": "workspace:*",
-    "@ucdjs/ucd-store": "workspace:*"
-  },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:linting",
     "@luxass/utils": "catalog:prod",
     "@reactive-vscode/vueuse": "catalog:vscode",
     "@types/node": "catalog:types",
     "@types/vscode": "catalog:types",
+    "@ucdjs-internal/shared": "workspace:*",
     "@ucdjs-tooling/tsconfig": "workspace:*",
     "@ucdjs-tooling/tsdown-config": "workspace:*",
+    "@ucdjs/client": "workspace:*",
+    "@ucdjs/fs-bridge": "workspace:*",
+    "@ucdjs/schemas": "workspace:*",
+    "@ucdjs/ucd-store": "workspace:*",
     "@unicode-utils/core": "catalog:prod",
     "@vscode/vsce": "catalog:vscode",
     "eslint": "catalog:linting",

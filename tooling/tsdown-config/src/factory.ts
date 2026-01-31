@@ -2,6 +2,7 @@ import type { UserConfig as TSDownOptions } from "tsdown";
 import { defineConfig } from "tsdown";
 
 export const baseConfig = {
+  entry: ["./src/index.ts"],
   exports: true,
   format: ["esm"],
   clean: true,
@@ -23,9 +24,14 @@ export const baseConfig = {
 } satisfies TSDownOptions;
 
 export function createTsdownConfig(overrides: Partial<TSDownOptions> = {}) {
-  return defineConfig({
+  const merged = {
     ...baseConfig,
     ...overrides,
-    entry: overrides.entry || ["./src/index.ts"],
-  });
+    inputOptions: {
+      ...(baseConfig.inputOptions ?? {}),
+      ...(overrides.inputOptions ?? {}),
+    },
+  } as TSDownOptions;
+
+  return defineConfig(merged);
 }
