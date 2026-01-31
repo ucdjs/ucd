@@ -2,7 +2,6 @@ export { findPipelineFiles } from "./find";
 
 export {
   loadPipelineFile,
-  loadPipelines,
   loadPipelinesFromPaths,
 } from "./loader";
 
