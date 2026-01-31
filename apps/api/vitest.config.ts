@@ -1,8 +1,8 @@
-import { normalize, resolve } from "node:path";
+import { fileURLToPath, URL } from "node:url";
 import { cloudflareTest } from "@cloudflare/vitest-pool-workers";
 import { defineProject } from "vitest/config";
 
-const appRoot = new URL(".", import.meta.url).pathname;
+const configPath = fileURLToPath(new URL("./wrangler.jsonc", import.meta.url));
 
 export default defineProject({
   plugins: [
@@ -18,7 +18,7 @@ export default defineProject({
         ],
       },
       wrangler: {
-        configPath: normalize(resolve(appRoot, "wrangler.jsonc")),
+        configPath,
         environment: "testing",
       },
     }),
