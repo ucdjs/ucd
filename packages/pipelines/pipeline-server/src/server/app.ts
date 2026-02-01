@@ -1,27 +1,51 @@
 import fs from "node:fs";
 import path from "node:path";
+import process from "node:process";
 import { H3, serve, serveStatic } from "h3";
-import helloRouter from "./routes/hello";
-import pipelinesRouter from "./routes/pipelines";
+import { executeRouter } from "./routes/execute";
+import { pipelinesRouter } from "./routes/pipelines";
+import { versionsRouter } from "./routes/versions";
 
-export interface ServerOptions {
+export interface AppOptions {
+  cwd?: string;
+}
+
+export interface ServerOptions extends AppOptions {
   port?: number;
 }
 
-export function createApp(): H3 {
+declare module "h3" {
+  interface H3EventContext {
+    cwd: string;
+  }
+}
+
+export function createApp(options: AppOptions = {}): H3 {
+  const { cwd = process.cwd() } = options;
+
   const app = new H3({ debug: true });
 
-  // Mount route handlers
-  app.mount("/api/hello", helloRouter);
+  // Middleware to attach cwd to context
+  app.use("/**", (event, next) => {
+    event.context.cwd = cwd;
+    next();
+  });
+
+  app.get("/api/hello", () => ({
+    message: "Hello from H3!",
+    timestamp: Date.now(),
+  }));
   app.mount("/api/pipelines", pipelinesRouter);
+  app.mount("/api/pipelines/:id/execute", executeRouter);
+  app.mount("/api/versions", versionsRouter);
 
   return app;
 }
 
-export function startServer(options: ServerOptions = {}): void {
-  const { port = 3030 } = options;
+export async function startServer(options: ServerOptions = {}): Promise<void> {
+  const { port = 3030, cwd = process.cwd() } = options;
 
-  const app = createApp();
+  const app = createApp({ cwd });
 
   // Static file serving for client assets
   const clientDir = path.join(import.meta.dirname, "../client");

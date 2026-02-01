@@ -1161,6 +1161,9 @@ importers:
 
   packages/pipelines/pipeline-server:
     dependencies:
+      '@ucdjs-internal/shared-ui':
+        specifier: workspace:*
+        version: link:../../shared-ui
       '@ucdjs/pipelines-core':
         specifier: workspace:*
         version: link:../pipeline-core
@@ -1258,6 +1261,9 @@ importers:
 
   packages/pipelines/pipeline-ui:
     dependencies:
+      '@ucdjs-internal/shared-ui':
+        specifier: workspace:*
+        version: link:../../shared-ui
       '@ucdjs/pipelines-core':
         specifier: workspace:*
         version: link:../pipeline-core

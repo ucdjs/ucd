@@ -1,5 +1,6 @@
 import type { Prettify } from "@luxass/utils";
 import type { CLIArguments } from "../../cli-utils";
+import process from "node:process";
 import { printHelp } from "../../cli-utils";
 import { output } from "../../output";
 
@@ -30,8 +31,10 @@ export async function runPipelinesRun({ flags }: CLIPipelinesRunCmdOptions) {
   if (flags?.ui) {
     const { startServer } = await import("@ucdjs/pipelines-server");
     const port = flags?.port ?? 3030;
+    const cwd = process.cwd();
     output.info(`Starting Pipeline UI on port ${port}...`);
-    startServer({ port });
+    output.info(`Looking for pipelines in: ${cwd}`);
+    await startServer({ port, cwd });
     return;
   }
 

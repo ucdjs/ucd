@@ -47,6 +47,7 @@
     "react-dom": ">=18.0.0"
   },
   "dependencies": {
+    "@ucdjs-internal/shared-ui": "workspace:*",
     "@ucdjs/pipelines-core": "workspace:*",
     "@xyflow/react": "catalog:web",
     "clsx": "catalog:web",

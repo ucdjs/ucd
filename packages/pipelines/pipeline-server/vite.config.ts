@@ -1,5 +1,6 @@
 import type { Plugin } from "vite";
 import tailwindcss from "@tailwindcss/vite";
+import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 import { createApp } from "./src/server/app";
@@ -18,10 +19,21 @@ function h3DevServerPlugin(): Plugin {
         }
 
         try {
+          // Collect request body for POST/PUT/PATCH
+          let body: string | undefined;
+          if (req.method && ["POST", "PUT", "PATCH"].includes(req.method)) {
+            const chunks: Buffer[] = [];
+            for await (const chunk of req) {
+              chunks.push(chunk);
+            }
+            body = Buffer.concat(chunks).toString();
+          }
+
           const response = await app.fetch(
             new Request(new URL(req.url, "http://localhost"), {
               method: req.method,
               headers: req.headers as HeadersInit,
+              body,
             }),
           );
 
@@ -30,8 +42,8 @@ function h3DevServerPlugin(): Plugin {
             res.setHeader(key, value);
           });
 
-          const body = await response.text();
-          res.end(body);
+          const responseBody = await response.text();
+          res.end(responseBody);
         } catch (error) {
           next(error);
         }
@@ -41,7 +53,15 @@ function h3DevServerPlugin(): Plugin {
 }
 
 export default defineConfig({
-  plugins: [react(), tailwindcss(), h3DevServerPlugin()],
+  plugins: [
+    TanStackRouterVite({
+      routesDirectory: "./src/client/routes",
+      generatedRouteTree: "./src/client/routeTree.gen.ts",
+    }),
+    react(),
+    tailwindcss(),
+    h3DevServerPlugin(),
+  ],
   environments: {
     client: {
       build: {

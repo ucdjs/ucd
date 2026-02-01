@@ -1,12 +1,43 @@
+import { findPipelineFiles, loadPipelinesFromPaths } from "@ucdjs/pipelines-loader";
 import { H3 } from "h3";
+import { toPipelineDetails, toPipelineInfo } from "../types";
 
-const router = new H3();
+export const pipelinesRouter = new H3();
 
-router.get("/", () => ({
-  pipelines: [],
-}));
+pipelinesRouter.get("/", async (event) => {
+  const { cwd } = event.context;
 
-// router.get("/:id", (event) => { ... });
-// router.post("/:id/execute", (event) => { ... });
+  const files = await findPipelineFiles(["**/*.ucd-pipeline.ts"], cwd);
+  const result = await loadPipelinesFromPaths(files);
 
-export default router;
+  return {
+    pipelines: result.pipelines.map(toPipelineInfo),
+    cwd,
+    errors: result.errors.map((e) => ({
+      filePath: e.filePath,
+      message: e.error.message,
+    })),
+  };
+});
+
+pipelinesRouter.get("/:id", async (event) => {
+  const { cwd } = event.context;
+  const id = event.context.params?.id;
+
+  if (!id) {
+    return { error: "Pipeline ID is required" };
+  }
+
+  const files = await findPipelineFiles(cwd);
+  const result = await loadPipelinesFromPaths(files);
+
+  const pipeline = result.pipelines.find((p) => p.id === id);
+
+  if (!pipeline) {
+    return { error: `Pipeline "${id}" not found` };
+  }
+
+  return {
+    pipeline: toPipelineDetails(pipeline),
+  };
+});
