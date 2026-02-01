@@ -1,3 +1,4 @@
+export type { FindPipelineFilesOptions } from "./find";
 export { findPipelineFiles } from "./find";
 
 export {

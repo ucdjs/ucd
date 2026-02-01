@@ -17,7 +17,7 @@ executeRouter.post("/", async (event) => {
     return { error: "Pipeline ID is required" };
   }
 
-  const files = await findPipelineFiles(cwd);
+  const files = await findPipelineFiles({ cwd });
   const result = await loadPipelinesFromPaths(files);
 
   const pipeline = result.pipelines.find((p) => p.id === id);

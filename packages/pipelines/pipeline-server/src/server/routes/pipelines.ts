@@ -7,7 +7,9 @@ export const pipelinesRouter = new H3();
 pipelinesRouter.get("/", async (event) => {
   const { cwd } = event.context;
 
-  const files = await findPipelineFiles(["**/*.ucd-pipeline.ts"], cwd);
+  const files = await findPipelineFiles({
+    cwd,
+  });
   const result = await loadPipelinesFromPaths(files);
 
   return {
@@ -28,7 +30,9 @@ pipelinesRouter.get("/:id", async (event) => {
     return { error: "Pipeline ID is required" };
   }
 
-  const files = await findPipelineFiles(cwd);
+  const files = await findPipelineFiles({
+    cwd,
+  });
   const result = await loadPipelinesFromPaths(files);
 
   const pipeline = result.pipelines.find((p) => p.id === id);

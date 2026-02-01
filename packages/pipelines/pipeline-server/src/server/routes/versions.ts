@@ -6,7 +6,7 @@ export const versionsRouter = new H3();
 versionsRouter.get("/", async (event) => {
   const { cwd } = event.context;
 
-  const files = await findPipelineFiles(cwd);
+  const files = await findPipelineFiles({ cwd });
   const result = await loadPipelinesFromPaths(files);
 
   // Collect unique versions from all pipelines
