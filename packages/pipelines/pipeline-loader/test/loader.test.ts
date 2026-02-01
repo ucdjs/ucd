@@ -46,7 +46,9 @@ describe("findPipelineFiles", () => {
       },
     });
 
-    const files = await findPipelineFiles("**/*.ucd-pipeline.ts", root);
+    const files = await findPipelineFiles({
+      cwd: root,
+    });
     const expected = [
       path.join(root, "pipelines", "alpha.ucd-pipeline.ts"),
       path.join(root, "pipelines", "nested", "beta.ucd-pipeline.ts"),
@@ -68,7 +70,9 @@ describe("findPipelineFiles", () => {
     });
 
     const cwd = path.join(root, "pipelines");
-    const files = await findPipelineFiles(["**/*.ucd-pipeline.ts"], cwd);
+    const files = await findPipelineFiles({
+      cwd,
+    });
 
     expect(files).toEqual([path.join(cwd, "gamma.ucd-pipeline.ts")]);
   });

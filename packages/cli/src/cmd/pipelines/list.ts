@@ -40,7 +40,9 @@ export async function runListPipelines({ flags }: CLIPipelinesRunCmdOptions) {
   const cwd = flags?.cwd ?? process.cwd();
 
   output.info("Searching for pipeline files...");
-  const files = await findPipelineFiles(["**/*.ucd-pipeline.ts"], cwd);
+  const files = await findPipelineFiles({
+    cwd,
+  });
 
   if (files.length === 0) {
     output.info("No pipeline files found (pattern: **/*.ucd-pipeline.ts).");

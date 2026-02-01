@@ -61,7 +61,6 @@ export interface LoadPipelinesOptions {
  * ```
  */
 export async function loadPipelineFile(filePath: string): Promise<LoadedPipelineFile> {
-  console.log(`Loading pipeline file: ${filePath}`);
   const module = await import(filePath);
 
   const pipelines: PipelineDefinition[] = [];
@@ -123,7 +122,6 @@ export async function loadPipelinesFromPaths(
     };
   }
 
-  // Collect errors instead of throwing; preserve order.
   const settled = await Promise.allSettled(filePaths.map((fp) => loadPipelineFile(fp)));
 
   const files: LoadedPipelineFile[] = [];
