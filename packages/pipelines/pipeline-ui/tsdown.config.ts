@@ -4,4 +4,10 @@ export default createTsdownConfig({
   entry: [
     "./src/index.ts",
   ],
+  format: "esm",
+  inputOptions: {
+    transform: {
+      jsx: "react-jsx",
+    },
+  },
 });
