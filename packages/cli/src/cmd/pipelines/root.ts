@@ -4,6 +4,7 @@ import { printHelp } from "../../cli-utils";
 export interface CLIPipelinesCmdOptions {
   flags: CLIArguments<{
     ui: boolean;
+    port: number;
   }>;
 }
 

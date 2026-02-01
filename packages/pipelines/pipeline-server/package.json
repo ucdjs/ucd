@@ -1,0 +1,80 @@
+{
+  "name": "@ucdjs/pipelines-server",
+  "version": "0.0.1",
+  "type": "module",
+  "author": {
+    "name": "Lucas Norgaard",
+    "email": "lucasnrgaard@gmail.com",
+    "url": "https://luxass.dev"
+  },
+  "packageManager": "pnpm@10.27.0",
+  "license": "MIT",
+  "homepage": "https://github.com/ucdjs/ucd",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ucdjs/ucd.git",
+    "directory": "packages/pipelines/pipeline-server"
+  },
+  "bugs": {
+    "url": "https://github.com/ucdjs/ucd/issues"
+  },
+  "sideEffects": false,
+  "imports": {
+    "#routes/*": "./src/routes/*.ts"
+  },
+  "exports": {
+    ".": "./dist/server/app.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite dev --port 3031",
+    "clean": "git clean -xdf dist node_modules",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit -p tsconfig.build.json"
+  },
+  "dependencies": {
+    "@ucdjs/pipelines-core": "workspace:*",
+    "@ucdjs/pipelines-executor": "workspace:*",
+    "@ucdjs/pipelines-loader": "workspace:*",
+    "@ucdjs/pipelines-ui": "workspace:*",
+    "chokidar": "catalog:prod",
+    "crossws": "catalog:prod",
+    "h3": "catalog:prod",
+    "pathe": "catalog:prod"
+  },
+  "devDependencies": {
+    "@eslint-react/eslint-plugin": "catalog:linting",
+    "@luxass/eslint-config": "catalog:linting",
+    "@tailwindcss/vite": "catalog:web",
+    "@tanstack/react-router": "catalog:web",
+    "@tanstack/router-plugin": "catalog:web",
+    "@types/node": "catalog:types",
+    "@types/react": "catalog:types",
+    "@types/react-dom": "catalog:types",
+    "@ucdjs-tooling/tsconfig": "workspace:*",
+    "@ucdjs-tooling/tsdown-config": "workspace:*",
+    "@vitejs/plugin-react": "catalog:web",
+    "clsx": "catalog:web",
+    "eslint": "catalog:linting",
+    "eslint-plugin-react-hooks": "catalog:linting",
+    "eslint-plugin-react-refresh": "catalog:linting",
+    "publint": "catalog:dev",
+    "react": "catalog:web",
+    "react-dom": "catalog:web",
+    "tailwind-merge": "catalog:web",
+    "tailwindcss": "catalog:web",
+    "tsdown": "catalog:dev",
+    "typescript": "catalog:dev",
+    "vite": "catalog:web"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
