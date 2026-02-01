@@ -12,7 +12,7 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@ucdjs-internal/shared-ui/ui/sidebar";
-import { BookOpen, ExternalLink, Grid3X3, Lightbulb, Search, Type } from "lucide-react";
+import { BookOpen, ExternalLink, GitGraph, Grid3X3, Lightbulb, Search, Type } from "lucide-react";
 import { UcdLogo } from "../../ucd-logo";
 import { VersionSwitcher } from "../../version-switcher";
 
@@ -33,6 +33,7 @@ const VERSION_ITEMS = [
 
 const TOOLS_ITEMS = [
   { to: "/file-explorer/$", params: { _splat: "" }, icon: BookOpen, label: "File Explorer" },
+  { to: "/pipeline-graph", icon: GitGraph, label: "Pipeline Graph" },
 ] as const;
 
 export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {

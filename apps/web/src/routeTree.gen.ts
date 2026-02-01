@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SearchRouteImport } from './routes/search'
+import { Route as PipelineGraphRouteImport } from './routes/pipeline-graph'
 import { Route as CodepointInspectorRouteImport } from './routes/codepoint-inspector'
 import { Route as FileExplorerRouteRouteImport } from './routes/file-explorer/route'
 import { Route as IndexRouteImport } from './routes/index'
@@ -29,6 +30,11 @@ import { Route as VVersionBlocksIdRouteImport } from './routes/v/$version/blocks
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PipelineGraphRoute = PipelineGraphRouteImport.update({
+  id: '/pipeline-graph',
+  path: '/pipeline-graph',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CodepointInspectorRoute = CodepointInspectorRouteImport.update({
@@ -113,6 +119,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/file-explorer': typeof FileExplorerRouteRouteWithChildren
   '/codepoint-inspector': typeof CodepointInspectorRoute
+  '/pipeline-graph': typeof PipelineGraphRoute
   '/search': typeof SearchRoute
   '/v/$version': typeof VVersionRouteRouteWithChildren
   '/file-explorer/$': typeof FileExplorerSplatRoute
@@ -131,6 +138,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/file-explorer': typeof FileExplorerRouteRouteWithChildren
   '/codepoint-inspector': typeof CodepointInspectorRoute
+  '/pipeline-graph': typeof PipelineGraphRoute
   '/search': typeof SearchRoute
   '/file-explorer/$': typeof FileExplorerSplatRoute
   '/v': typeof VIndexRoute
@@ -149,6 +157,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/file-explorer': typeof FileExplorerRouteRouteWithChildren
   '/codepoint-inspector': typeof CodepointInspectorRoute
+  '/pipeline-graph': typeof PipelineGraphRoute
   '/search': typeof SearchRoute
   '/v/$version': typeof VVersionRouteRouteWithChildren
   '/file-explorer/$': typeof FileExplorerSplatRoute
@@ -169,6 +178,7 @@ export interface FileRouteTypes {
     | '/'
     | '/file-explorer'
     | '/codepoint-inspector'
+    | '/pipeline-graph'
     | '/search'
     | '/v/$version'
     | '/file-explorer/$'
@@ -187,6 +197,7 @@ export interface FileRouteTypes {
     | '/'
     | '/file-explorer'
     | '/codepoint-inspector'
+    | '/pipeline-graph'
     | '/search'
     | '/file-explorer/$'
     | '/v'
@@ -204,6 +215,7 @@ export interface FileRouteTypes {
     | '/'
     | '/file-explorer'
     | '/codepoint-inspector'
+    | '/pipeline-graph'
     | '/search'
     | '/v/$version'
     | '/file-explorer/$'
@@ -223,6 +235,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   FileExplorerRouteRoute: typeof FileExplorerRouteRouteWithChildren
   CodepointInspectorRoute: typeof CodepointInspectorRoute
+  PipelineGraphRoute: typeof PipelineGraphRoute
   SearchRoute: typeof SearchRoute
   VVersionRouteRoute: typeof VVersionRouteRouteWithChildren
   VIndexRoute: typeof VIndexRoute
@@ -235,6 +248,13 @@ declare module '@tanstack/react-router' {
       path: '/search'
       fullPath: '/search'
       preLoaderRoute: typeof SearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pipeline-graph': {
+      id: '/pipeline-graph'
+      path: '/pipeline-graph'
+      fullPath: '/pipeline-graph'
+      preLoaderRoute: typeof PipelineGraphRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/codepoint-inspector': {
@@ -388,6 +408,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   FileExplorerRouteRoute: FileExplorerRouteRouteWithChildren,
   CodepointInspectorRoute: CodepointInspectorRoute,
+  PipelineGraphRoute: PipelineGraphRoute,
   SearchRoute: SearchRoute,
   VVersionRouteRoute: VVersionRouteRouteWithChildren,
   VIndexRoute: VIndexRoute,

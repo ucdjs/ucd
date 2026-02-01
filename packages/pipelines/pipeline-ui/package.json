@@ -18,6 +18,12 @@
   "bugs": {
     "url": "https://github.com/ucdjs/ucd/issues"
   },
+  "sideEffects": false,
+  "imports": {
+    "#components/*": "./src/components/*.tsx",
+    "#lib/*": "./src/lib/*.ts",
+    "#hooks/*": "./src/hooks/*.ts"
+  },
   "exports": {
     ".": "./dist/index.mjs",
     "./package.json": "./package.json"
@@ -36,15 +42,30 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit -p tsconfig.build.json"
   },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
   "dependencies": {
-    "@ucdjs/pipelines-core": "workspace:*"
+    "@ucdjs/pipelines-core": "workspace:*",
+    "@xyflow/react": "catalog:web",
+    "clsx": "catalog:web",
+    "tailwind-merge": "catalog:web"
   },
   "devDependencies": {
+    "@eslint-react/eslint-plugin": "catalog:linting",
     "@luxass/eslint-config": "catalog:linting",
+    "@types/react": "catalog:types",
+    "@types/react-dom": "catalog:types",
     "@ucdjs-tooling/tsconfig": "workspace:*",
     "@ucdjs-tooling/tsdown-config": "workspace:*",
     "eslint": "catalog:linting",
+    "eslint-plugin-react-hooks": "catalog:linting",
+    "eslint-plugin-react-refresh": "catalog:linting",
     "publint": "catalog:dev",
+    "react": "catalog:web",
+    "react-dom": "catalog:web",
+    "tailwindcss": "catalog:web",
     "tsdown": "catalog:dev",
     "typescript": "catalog:dev"
   },

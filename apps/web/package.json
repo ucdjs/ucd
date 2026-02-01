@@ -26,6 +26,7 @@
     "@tanstack/react-router-ssr-query": "catalog:web",
     "@tanstack/react-start": "catalog:web",
     "@ucdjs-internal/shared-ui": "workspace:*",
+    "@ucdjs/pipelines-ui": "workspace:*",
     "@ucdjs/schemas": "workspace:*",
     "@ucdjs/ucd-store": "workspace:*",
     "@unicode-utils/core": "catalog:prod",
