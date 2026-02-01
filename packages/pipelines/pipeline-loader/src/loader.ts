@@ -61,6 +61,7 @@ export interface LoadPipelinesOptions {
  * ```
  */
 export async function loadPipelineFile(filePath: string): Promise<LoadedPipelineFile> {
+  console.log(`Loading pipeline file: ${filePath}`);
   const module = await import(filePath);
 
   const pipelines: PipelineDefinition[] = [];
