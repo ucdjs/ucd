@@ -5,7 +5,20 @@ settings:
   excludeLinksFromLockfile: false
 
 catalogs:
-  dev:
+  api:
+    '@hono/zod-openapi':
+      specifier: 1.2.0
+      version: 1.2.0
+    '@scalar/hono-api-reference':
+      specifier: 0.9.39
+      version: 0.9.39
+    '@sentry/cloudflare':
+      specifier: 10.38.0
+      version: 10.38.0
+    hono:
+      specifier: 4.11.7
+      version: 4.11.7
+  build:
     nanotar:
       specifier: 0.2.0
       version: 0.2.0
@@ -266,19 +279,6 @@ catalogs:
     vite-tsconfig-paths:
       specifier: 6.0.5
       version: 6.0.5
-  workers:
-    '@hono/zod-openapi':
-      specifier: 1.2.0
-      version: 1.2.0
-    '@scalar/hono-api-reference':
-      specifier: 0.9.39
-      version: 0.9.39
-    '@sentry/cloudflare':
-      specifier: 10.38.0
-      version: 10.38.0
-    hono:
-      specifier: 4.11.7
-      version: 4.11.7
 
 overrides:
   '@asteasolutions/zod-to-openapi': 8.4.0
@@ -316,7 +316,7 @@ importers:
         specifier: catalog:monorepo
         version: 2.8.1
       typescript:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 5.9.3
       vitest:
         specifier: catalog:testing
@@ -325,16 +325,13 @@ importers:
   apps/api:
     dependencies:
       '@hono/zod-openapi':
-        specifier: catalog:workers
+        specifier: catalog:api
         version: 1.2.0(hono@4.11.7)(zod@4.3.6)
-      '@luxass/utils':
-        specifier: catalog:prod
-        version: 2.7.2
       '@scalar/hono-api-reference':
-        specifier: catalog:workers
+        specifier: catalog:api
         version: 0.9.39(hono@4.11.7)
       '@sentry/cloudflare':
-        specifier: catalog:workers
+        specifier: catalog:api
         version: 10.38.0
       '@ucdjs-internal/shared':
         specifier: workspace:*
@@ -358,10 +355,10 @@ importers:
         specifier: catalog:prod
         version: 5.0.2
       hono:
-        specifier: catalog:workers
+        specifier: catalog:api
         version: 4.11.7
       nanotar:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.2.0
       zod:
         specifier: catalog:prod
@@ -395,10 +392,10 @@ importers:
         specifier: catalog:linting
         version: 1.3.1(eslint@9.39.2(jiti@2.6.1))
       tsx:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 4.21.0
       typescript:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 5.9.3
       vitest:
         specifier: catalog:testing
@@ -489,7 +486,7 @@ importers:
         specifier: catalog:linting
         version: 1.3.1(eslint@9.39.2(jiti@2.6.1))
       typescript:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 5.9.3
       vite:
         specifier: catalog:web
@@ -625,7 +622,7 @@ importers:
         specifier: catalog:web
         version: 4.1.18
       typescript:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 5.9.3
       vite:
         specifier: catalog:web
@@ -695,13 +692,13 @@ importers:
         specifier: catalog:linting
         version: 9.39.2(jiti@2.6.1)
       publint:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.3.17
       tsdown:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.20.1(publint@0.3.17)(synckit@0.11.11)(typescript@5.9.3)
       typescript:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 5.9.3
       vitest-testdirs:
         specifier: catalog:testing
@@ -738,19 +735,19 @@ importers:
         specifier: catalog:linting
         version: 9.39.2(jiti@2.6.1)
       openapi-typescript:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 7.10.1(typescript@5.9.3)
       publint:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.3.17
       tsdown:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.20.1(publint@0.3.17)(synckit@0.11.11)(typescript@5.9.3)
       tsx:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 4.21.0
       typescript:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 5.9.3
       vitest-testdirs:
         specifier: catalog:testing
@@ -775,13 +772,13 @@ importers:
         specifier: catalog:linting
         version: 9.39.2(jiti@2.6.1)
       publint:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.3.17
       tsdown:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.20.1(publint@0.3.17)(synckit@0.11.11)(typescript@5.9.3)
       typescript:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 5.9.3
 
   packages/fs-bridge:
@@ -830,16 +827,16 @@ importers:
         specifier: catalog:linting
         version: 9.39.2(jiti@2.6.1)
       publint:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.3.17
       tsdown:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.20.1(publint@0.3.17)(synckit@0.11.11)(typescript@5.9.3)
       tsx:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 4.21.0
       typescript:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 5.9.3
       vitest-testdirs:
         specifier: catalog:testing
@@ -876,13 +873,13 @@ importers:
         specifier: catalog:linting
         version: 9.39.2(jiti@2.6.1)
       publint:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.3.17
       tsdown:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.20.1(publint@0.3.17)(synckit@0.11.11)(typescript@5.9.3)
       typescript:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 5.9.3
       vitest-testdirs:
         specifier: catalog:testing
@@ -913,13 +910,13 @@ importers:
         specifier: catalog:linting
         version: 9.39.2(jiti@2.6.1)
       publint:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.3.17
       tsdown:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.20.1(publint@0.3.17)(synckit@0.11.11)(typescript@5.9.3)
       typescript:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 5.9.3
       vitest-testdirs:
         specifier: catalog:testing
@@ -962,13 +959,13 @@ importers:
         specifier: catalog:linting
         version: 9.39.2(jiti@2.6.1)
       publint:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.3.17
       tsdown:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.20.1(publint@0.3.17)(synckit@0.11.11)(typescript@5.9.3)
       typescript:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 5.9.3
       vitest-testdirs:
         specifier: catalog:testing
@@ -996,13 +993,13 @@ importers:
         specifier: catalog:linting
         version: 9.39.2(jiti@2.6.1)
       publint:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.3.17
       tsdown:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.20.1(publint@0.3.17)(synckit@0.11.11)(typescript@5.9.3)
       typescript:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 5.9.3
 
   packages/shared:
@@ -1051,16 +1048,16 @@ importers:
         specifier: catalog:linting
         version: 9.39.2(jiti@2.6.1)
       publint:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.3.17
       rolldown:
         specifier: 1.0.0-rc.2
         version: 1.0.0-rc.2
       tsdown:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.20.1(publint@0.3.17)(synckit@0.11.11)(typescript@5.9.3)
       typescript:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 5.9.3
       vitest-testdirs:
         specifier: catalog:testing
@@ -1133,16 +1130,13 @@ importers:
         specifier: catalog:linting
         version: 0.4.26(eslint@9.39.2(jiti@2.6.1))
       publint:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.3.17
-      tailwindcss:
-        specifier: catalog:web
-        version: 4.1.18
       tsdown:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.20.1(publint@0.3.17)(synckit@0.11.11)(typescript@5.9.3)
       typescript:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 5.9.3
 
   packages/test-utils:
@@ -1194,19 +1188,19 @@ importers:
         specifier: catalog:linting
         version: 9.39.2(jiti@2.6.1)
       openapi-typescript:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 7.10.1(typescript@5.9.3)
       publint:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.3.17
       tsdown:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.20.1(publint@0.3.17)(synckit@0.11.11)(typescript@5.9.3)
       tsx:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 4.21.0
       typescript:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 5.9.3
       vitest-testdirs:
         specifier: catalog:testing
@@ -1261,16 +1255,16 @@ importers:
         specifier: catalog:linting
         version: 9.39.2(jiti@2.6.1)
       publint:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.3.17
       tsdown:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.20.1(publint@0.3.17)(synckit@0.11.11)(typescript@5.9.3)
       tsx:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 4.21.0
       typescript:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 5.9.3
       vitest-testdirs:
         specifier: catalog:testing
@@ -1297,7 +1291,7 @@ importers:
         specifier: catalog:prod
         version: 6.7.14
       nanotar:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.2.0
       wrangler:
         specifier: 4.61.1
@@ -1319,10 +1313,10 @@ importers:
         specifier: catalog:linting
         version: 9.39.2(jiti@2.6.1)
       tsdown:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.20.1(publint@0.3.17)(synckit@0.11.11)(typescript@5.9.3)
       typescript:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 5.9.3
 
   packages/utils:
@@ -1344,13 +1338,13 @@ importers:
         specifier: catalog:linting
         version: 9.39.2(jiti@2.6.1)
       publint:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.3.17
       tsdown:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.20.1(publint@0.3.17)(synckit@0.11.11)(typescript@5.9.3)
       typescript:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 5.9.3
       vitest-testdirs:
         specifier: catalog:testing
@@ -1371,7 +1365,7 @@ importers:
         specifier: catalog:linting
         version: 9.39.2(jiti@2.6.1)
       typescript:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 5.9.3
 
   tooling/moonbeam:
@@ -1392,13 +1386,13 @@ importers:
         specifier: catalog:linting
         version: 9.39.2(jiti@2.6.1)
       typescript:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 5.9.3
 
   tooling/tsdown-config:
     dependencies:
       tsdown:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.20.1(publint@0.3.17)(synckit@0.11.11)(typescript@5.9.3)
     devDependencies:
       '@luxass/eslint-config':
@@ -1411,7 +1405,7 @@ importers:
         specifier: catalog:linting
         version: 9.39.2(jiti@2.6.1)
       typescript:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 5.9.3
 
   vscode:
@@ -1468,10 +1462,10 @@ importers:
         specifier: catalog:vscode
         version: 1.0.0-beta.2(@types/vscode@1.108.1)
       tsdown:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.20.1(publint@0.3.17)(synckit@0.11.11)(typescript@5.9.3)
       typescript:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 5.9.3
       vscode-ext-gen:
         specifier: catalog:vscode
