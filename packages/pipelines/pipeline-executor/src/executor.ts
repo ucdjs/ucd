@@ -5,6 +5,7 @@ import type {
   ParsedRow,
   PipelineDefinition,
   PipelineEvent,
+  PipelineEventInput,
   PipelineFilter,
   PipelineGraphEdge,
   PipelineGraphNode,
@@ -46,10 +47,16 @@ export function createPipelineExecutor(options: PipelineExecutorOptions): Pipeli
     onEvent,
   } = options;
 
-  async function emit(event: PipelineEvent): Promise<void> {
-    if (onEvent) {
-      await onEvent(event);
-    }
+  let eventCounter = 0;
+  function generateEventId(): string {
+    return `evt_${Date.now()}_${++eventCounter}`;
+  }
+
+  async function emit(event: PipelineEventInput): Promise<void> {
+    await onEvent?.({
+      ...event,
+      id: event.id ?? generateEventId(),
+    });
   }
 
   async function runSinglePipeline(
@@ -75,11 +82,11 @@ export function createPipelineExecutor(options: PipelineExecutorOptions): Pipeli
 
     const dag = pipeline.dag;
 
-    await emit({ type: "pipeline:start", versions: versionsToRun, timestamp: Date.now() });
+    await emit({ id: generateEventId(), type: "pipeline:start", versions: versionsToRun, timestamp: performance.now() });
 
     for (const version of versionsToRun) {
       const versionStartTime = performance.now();
-      await emit({ type: "version:start", version, timestamp: Date.now() });
+      await emit({ id: generateEventId(), type: "version:start", version, timestamp: performance.now() });
 
       const sourceNodeId = `source:${version}`;
       graphNodes.push({ id: sourceNodeId, type: "source", version });
@@ -90,10 +97,11 @@ export function createPipelineExecutor(options: PipelineExecutorOptions): Pipeli
       for (const artifactDef of globalArtifacts) {
         const artifactStartTime = performance.now();
         await emit({
+          id: generateEventId(),
           type: "artifact:start",
           artifactId: artifactDef.id,
           version,
-          timestamp: Date.now(),
+          timestamp: performance.now(),
         });
 
         const artifactNodeId = `artifact:${version}:${artifactDef.id}`;
@@ -126,18 +134,20 @@ export function createPipelineExecutor(options: PipelineExecutorOptions): Pipeli
           };
           errors.push(pipelineError);
           await emit({
+            id: generateEventId(),
             type: "error",
             error: pipelineError,
-            timestamp: Date.now(),
+            timestamp: performance.now(),
           });
         }
 
         await emit({
+          id: generateEventId(),
           type: "artifact:end",
           artifactId: artifactDef.id,
           version,
           durationMs: performance.now() - artifactStartTime,
-          timestamp: Date.now(),
+          timestamp: performance.now(),
         });
       }
 
@@ -185,7 +195,7 @@ export function createPipelineExecutor(options: PipelineExecutorOptions): Pipeli
                 type: "file:matched",
                 file,
                 routeId: route.id,
-                timestamp: Date.now(),
+                timestamp: performance.now(),
               });
 
               try {
@@ -232,7 +242,7 @@ export function createPipelineExecutor(options: PipelineExecutorOptions): Pipeli
                         routeId: route.id,
                         file,
                         version,
-                        timestamp: Date.now(),
+                        timestamp: performance.now(),
                       });
                     }
                   }
@@ -243,7 +253,7 @@ export function createPipelineExecutor(options: PipelineExecutorOptions): Pipeli
                       routeId: route.id,
                       file,
                       version,
-                      timestamp: Date.now(),
+                      timestamp: performance.now(),
                     });
                   }
                 }
@@ -283,7 +293,7 @@ export function createPipelineExecutor(options: PipelineExecutorOptions): Pipeli
                       routeId: route.id,
                       file,
                       version,
-                      timestamp: Date.now(),
+                      timestamp: performance.now(),
                     });
                   }
                 }
@@ -325,7 +335,7 @@ export function createPipelineExecutor(options: PipelineExecutorOptions): Pipeli
                 await emit({
                   type: "error",
                   error: pipelineError,
-                  timestamp: Date.now(),
+                  timestamp: performance.now(),
                 });
               }
             });
@@ -365,7 +375,7 @@ export function createPipelineExecutor(options: PipelineExecutorOptions): Pipeli
             await emit({
               type: "file:fallback",
               file,
-              timestamp: Date.now(),
+              timestamp: performance.now(),
             });
 
             try {
@@ -403,7 +413,7 @@ export function createPipelineExecutor(options: PipelineExecutorOptions): Pipeli
               await emit({
                 type: "error",
                 error: pipelineError,
-                timestamp: Date.now(),
+                timestamp: performance.now(),
               });
             }
           } else {
@@ -412,7 +422,7 @@ export function createPipelineExecutor(options: PipelineExecutorOptions): Pipeli
               type: "file:skipped",
               file,
               reason: "filtered",
-              timestamp: Date.now(),
+              timestamp: performance.now(),
             });
           }
         } else {
@@ -429,14 +439,14 @@ export function createPipelineExecutor(options: PipelineExecutorOptions): Pipeli
             await emit({
               type: "error",
               error: pipelineError,
-              timestamp: Date.now(),
+              timestamp: performance.now(),
             });
           } else {
             await emit({
               type: "file:skipped",
               file,
               reason: "no-match",
-              timestamp: Date.now(),
+              timestamp: performance.now(),
             });
           }
         }
@@ -446,7 +456,7 @@ export function createPipelineExecutor(options: PipelineExecutorOptions): Pipeli
         type: "version:end",
         version,
         durationMs: performance.now() - versionStartTime,
-        timestamp: Date.now(),
+        timestamp: performance.now(),
       });
     }
 
@@ -455,7 +465,7 @@ export function createPipelineExecutor(options: PipelineExecutorOptions): Pipeli
     await emit({
       type: "pipeline:end",
       durationMs,
-      timestamp: Date.now(),
+      timestamp: performance.now(),
     });
 
     const summary: PipelineSummary = {
@@ -646,14 +656,14 @@ async function processRoute(
   artifactsMap: Record<string, unknown>,
   source: SourceAdapter,
   version: string,
-  emit: (event: PipelineEvent) => Promise<void>,
+  emit: (event: any) => Promise<void>,
 ): Promise<ProcessRouteResult> {
   const parseStartTime = performance.now();
   await emit({
     type: "parse:start",
     file,
     routeId: route.id,
-    timestamp: Date.now(),
+    timestamp: performance.now(),
   });
 
   const parseCtx = createParseContext(file, source);
@@ -678,7 +688,7 @@ async function processRoute(
     routeId: route.id,
     rowCount: collectedRows.length,
     durationMs: performance.now() - parseStartTime,
-    timestamp: Date.now(),
+    timestamp: performance.now(),
   });
 
   const resolveStartTime = performance.now();
@@ -686,7 +696,7 @@ async function processRoute(
     type: "resolve:start",
     file,
     routeId: route.id,
-    timestamp: Date.now(),
+    timestamp: performance.now(),
   });
 
   const emittedArtifacts: Record<string, unknown> = {};
@@ -705,7 +715,7 @@ async function processRoute(
         artifactId: `${route.id}:${id}`,
         routeId: route.id,
         version,
-        timestamp: Date.now(),
+        timestamp: performance.now(),
       });
     },
     onArtifactGet: async (id) => {
@@ -716,7 +726,7 @@ async function processRoute(
           artifactId: id,
           routeId: route.id,
           version,
-          timestamp: Date.now(),
+          timestamp: performance.now(),
         });
       }
     },
@@ -732,7 +742,7 @@ async function processRoute(
     routeId: route.id,
     outputCount: outputArray.length,
     durationMs: performance.now() - resolveStartTime,
-    timestamp: Date.now(),
+    timestamp: performance.now(),
   });
 
   return { outputs: outputArray, emittedArtifacts, consumedArtifactIds };
@@ -750,14 +760,14 @@ async function processFallback(
   artifactsMap: Record<string, unknown>,
   source: SourceAdapter,
   version: string,
-  emit: (event: PipelineEvent) => Promise<void>,
+  emit: (event: any) => Promise<void>,
 ): Promise<unknown[]> {
   const parseStartTime = performance.now();
   await emit({
     type: "parse:start",
     file,
     routeId: "__fallback__",
-    timestamp: Date.now(),
+    timestamp: performance.now(),
   });
 
   const parseCtx = createParseContext(file, source);
@@ -772,7 +782,7 @@ async function processFallback(
     routeId: "__fallback__",
     rowCount: collectedRows.length,
     durationMs: performance.now() - parseStartTime,
-    timestamp: Date.now(),
+    timestamp: performance.now(),
   });
 
   const resolveStartTime = performance.now();
@@ -780,7 +790,7 @@ async function processFallback(
     type: "resolve:start",
     file,
     routeId: "__fallback__",
-    timestamp: Date.now(),
+    timestamp: performance.now(),
   });
 
   const emittedArtifacts: Record<string, unknown> = {};
@@ -816,7 +826,7 @@ async function processFallback(
     routeId: "__fallback__",
     outputCount: outputArray.length,
     durationMs: performance.now() - resolveStartTime,
-    timestamp: Date.now(),
+    timestamp: performance.now(),
   });
 
   return outputArray;
