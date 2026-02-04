@@ -47,6 +47,7 @@ export type {
   PipelineErrorEvent,
   PipelineErrorScope,
   PipelineEvent,
+  PipelineEventInput,
   PipelineEventType,
   PipelineGraph,
   PipelineGraphEdge,
