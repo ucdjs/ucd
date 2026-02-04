@@ -73,6 +73,8 @@ export interface PipelineGraphProps {
   showDetails?: boolean;
   /** Show the minimap (default: true) */
   showMinimap?: boolean;
+  /** Additional className for the container */
+  className?: string;
 }
 
 export const PipelineGraph = memo(({
@@ -81,6 +83,7 @@ export const PipelineGraph = memo(({
   showFilters = true,
   showDetails = true,
   showMinimap = true,
+  className,
 }: PipelineGraphProps) => {
   // Convert pipeline graph to React Flow format - memoized
   const { allNodes, allEdges } = useMemo(() => {
@@ -186,7 +189,7 @@ export const PipelineGraph = memo(({
   }, [onNodeSelect]);
 
   return (
-    <div style={containerStyle}>
+    <div style={containerStyle} className={className}>
       <div style={graphContainerStyle}>
         {/* Filters toolbar */}
         {showFilters && (

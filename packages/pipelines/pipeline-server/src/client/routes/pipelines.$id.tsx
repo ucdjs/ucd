@@ -1,31 +1,226 @@
-import { createFileRoute } from "@tanstack/react-router";
+import type { PipelineEvent } from "@ucdjs/pipelines-core";
+import type { ExecuteResult, PipelineDetails } from "@ucdjs/pipelines-ui";
+import type { PipelineDetailContextValue, PipelineExecutionState, PipelineTab } from "../types";
+import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
+import { cn } from "@ucdjs-internal/shared-ui/lib/utils";
+import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
+import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import {
-  ExecutionResult,
-  RouteList,
-  SourceList,
   useExecute,
   usePipeline,
   VersionSelector,
 } from "@ucdjs/pipelines-ui";
-import { memo, useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { PipelineDetailContext } from "../hooks/pipeline-detail-context";
 
-const PipelineDetailPage = memo(() => {
+const PIPELINE_TABS: readonly PipelineTab[] = [
+  { id: "overview", label: "Overview", to: "/pipelines/$id", exact: true },
+  { id: "graph", label: "Graph", to: "/pipelines/$id/graph" },
+  { id: "inspect", label: "Inspect", to: "/pipelines/$id/inspect" },
+  { id: "logs", label: "Logs", to: "/pipelines/$id/logs" },
+  { id: "code", label: "Code", to: "/pipelines/$id/code" },
+] as const;
+
+function useActiveTabId(): string {
+  const routerState = useRouterState();
+  const currentPath = routerState.location.pathname;
+
+  return useMemo(() => {
+    // Find the most specific matching tab
+    const matchingTab = [...PIPELINE_TABS]
+      .reverse()
+      .find((tab) => {
+        const pattern = tab.to.replace("$id", "[^/]+");
+        const regex = new RegExp(`^${pattern}$`);
+        return regex.test(currentPath);
+      });
+
+    return matchingTab?.id ?? PIPELINE_TABS[0]!.id;
+  }, [currentPath]);
+}
+
+interface PipelineHeaderProps {
+  pipeline: PipelineDetails;
+  selectedVersions: Set<string>;
+  executionState: PipelineExecutionState;
+  executing: boolean;
+  onExecute: () => void;
+}
+
+function PipelineHeader({
+  pipeline,
+  selectedVersions,
+  executionState,
+  executing,
+  onExecute,
+}: PipelineHeaderProps) {
+  const hasResult = executionState.result != null;
+  const wasSuccess = hasResult && executionState.result?.success;
+
+  return (
+    <header className="border-b border-border px-6 py-4">
+      <div className="flex flex-wrap items-start gap-4 justify-between">
+        <div className="min-w-60 space-y-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-lg font-medium text-foreground">
+              {pipeline.name || pipeline.id}
+            </h1>
+            <Badge variant="secondary">
+              {pipeline.versions.length}
+              {" "}
+              versions
+            </Badge>
+            <Badge variant="secondary">
+              {pipeline.routeCount}
+              {" "}
+              routes
+            </Badge>
+            <Badge variant="secondary">
+              {pipeline.sourceCount}
+              {" "}
+              sources
+            </Badge>
+          </div>
+          {pipeline.description && (
+            <p className="text-sm text-muted-foreground">
+              {pipeline.description}
+            </p>
+          )}
+        </div>
+        <div className="flex flex-wrap items-center gap-3">
+          {hasResult && (
+            <Badge variant={wasSuccess ? "default" : "destructive"}>
+              {wasSuccess ? "Last run: success" : "Last run: failed"}
+            </Badge>
+          )}
+          <Button
+            size="sm"
+            onClick={onExecute}
+            disabled={selectedVersions.size === 0 || executing}
+            aria-label={executing ? "Pipeline is running" : "Execute pipeline"}
+          >
+            {executing ? "Running..." : "Execute"}
+          </Button>
+        </div>
+      </div>
+    </header>
+  );
+}
+
+interface VersionSelectorSectionProps {
+  pipeline: PipelineDetails;
+  selectedVersions: Set<string>;
+  onToggleVersion: (version: string) => void;
+  onSelectAll: () => void;
+  onDeselectAll: () => void;
+}
+
+function VersionSelectorSection({
+  pipeline,
+  selectedVersions,
+  onToggleVersion,
+  onSelectAll,
+  onDeselectAll,
+}: VersionSelectorSectionProps) {
+  return (
+    <div className="mt-4">
+      <VersionSelector
+        versions={pipeline.versions}
+        selectedVersions={selectedVersions}
+        onToggleVersion={onToggleVersion}
+        onSelectAll={onSelectAll}
+        onDeselectAll={onDeselectAll}
+      />
+    </div>
+  );
+}
+
+interface PipelineTabsProps {
+  pipelineId: string;
+  activeTabId: string;
+}
+
+function PipelineTabs({ pipelineId, activeTabId }: PipelineTabsProps) {
+  return (
+    <nav className="mt-4 flex flex-wrap gap-2" role="tablist" aria-label="Pipeline sections">
+      {PIPELINE_TABS.map((tab) => {
+        const isActive = tab.id === activeTabId;
+
+        return (
+          <Link
+            key={tab.id}
+            to={tab.to}
+            params={{ id: pipelineId }}
+            role="tab"
+            aria-selected={isActive}
+            aria-controls={`tabpanel-${tab.id}`}
+            className={cn(
+              "px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
+              isActive
+                ? "bg-primary/10 text-primary"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted",
+            )}
+          >
+            {tab.label}
+          </Link>
+        );
+      })}
+    </nav>
+  );
+}
+
+interface LoadingStateProps {
+  message?: string;
+}
+
+function LoadingState({ message = "Loading..." }: LoadingStateProps) {
+  return (
+    <div className="flex-1 flex items-center justify-center" role="status" aria-live="polite">
+      <p className="text-sm text-muted-foreground">{message}</p>
+    </div>
+  );
+}
+
+interface ErrorStateProps {
+  error: string;
+  context?: string;
+}
+
+function ErrorState({ error, context }: ErrorStateProps) {
+  return (
+    <div className="flex-1 flex items-center justify-center" role="alert">
+      <div className="text-center">
+        <p className="text-sm text-destructive mb-2">{error}</p>
+        {context && (
+          <p className="text-xs text-muted-foreground">{context}</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export const Route = createFileRoute("/pipelines/$id")({
+  component: PipelineDetailLayout,
+});
+
+function PipelineDetailLayout() {
   const { id } = Route.useParams();
   const { pipeline, loading, error } = usePipeline(id);
-  const { execute, executing, result } = useExecute();
+  const { execute, executing, result, error: executeError, reset } = useExecute();
+  const [selectedVersions, setSelectedVersions] = useState<Set<string>>(() => new Set());
+  const [events, setEvents] = useState<PipelineEvent[]>([]);
+  const activeTabId = useActiveTabId();
 
-  // Selected versions state
-  const [selectedVersions, setSelectedVersions] = useState<Set<string>>(new Set());
-
-  // Sync selected versions when pipeline loads
+  // Reset state when pipeline changes
   useEffect(() => {
     if (pipeline) {
       setSelectedVersions(new Set(pipeline.versions));
+      setEvents([]);
+      reset();
     }
-  }, [pipeline]);
+  }, [pipeline?.id, reset]); // Only depend on pipeline ID, not the whole object
 
-  // Version toggle handler
-  const handleToggleVersion = useCallback((version: string) => {
+  const toggleVersion = useCallback((version: string) => {
     setSelectedVersions((prev) => {
       const next = new Set(prev);
       if (next.has(version)) {
@@ -37,116 +232,85 @@ const PipelineDetailPage = memo(() => {
     });
   }, []);
 
-  // Select all versions
-  const handleSelectAll = useCallback(() => {
+  const selectAllVersions = useCallback(() => {
     if (pipeline) {
       setSelectedVersions(new Set(pipeline.versions));
     }
-  }, [pipeline]);
+  }, [pipeline?.versions]);
 
-  // Deselect all versions
-  const handleDeselectAll = useCallback(() => {
+  const deselectAllVersions = useCallback(() => {
     setSelectedVersions(new Set());
   }, []);
 
-  // Execute handler
-  const handleExecute = useCallback(async () => {
+  const executePipeline = useCallback(async () => {
     if (!pipeline || selectedVersions.size === 0) return;
-    await execute(id, Array.from(selectedVersions));
+
+    try {
+      const execResult = await execute(id, Array.from(selectedVersions));
+      setEvents(execResult.events ?? []);
+    } catch (err) {
+      // Error is handled by useExecute hook
+      console.error("Pipeline execution failed:", err);
+    }
   }, [execute, id, pipeline, selectedVersions]);
 
-  // Loading state
+  const executionState = useMemo<PipelineExecutionState>(() => ({
+    result: result ?? null,
+    events,
+    executing,
+    error: executeError,
+  }), [events, executeError, executing, result]);
+
+  const contextValue = useMemo<PipelineDetailContextValue>(() => ({
+    pipeline,
+    loading,
+    error,
+    execution: executionState,
+    selectedVersions,
+    setSelectedVersions,
+    toggleVersion,
+    selectAllVersions,
+    deselectAllVersions,
+    executePipeline,
+  }), [pipeline, loading, error, executionState, selectedVersions, toggleVersion, selectAllVersions, deselectAllVersions, executePipeline]);
+
   if (loading) {
-    return (
-      <div className="flex-1 flex items-center justify-center">
-        <p className="text-sm text-zinc-500">Loading pipeline...</p>
-      </div>
-    );
+    return <LoadingState message="Loading pipeline..." />;
   }
 
-  // Error state
   if (error) {
-    return (
-      <div className="flex-1 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-sm text-red-400 mb-2">{error}</p>
-          <p className="text-xs text-zinc-500">
-            Pipeline ID:
-            {" "}
-            {id}
-          </p>
-        </div>
-      </div>
-    );
+    return <ErrorState error={error} context={`Pipeline ID: ${id}`} />;
   }
 
-  // Not found state
   if (!pipeline) {
-    return (
-      <div className="flex-1 flex items-center justify-center">
-        <p className="text-sm text-zinc-500">Pipeline not found</p>
-      </div>
-    );
+    return <ErrorState error="Pipeline not found" />;
   }
-
-  const canExecute = selectedVersions.size > 0 && !executing;
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden">
-      {/* Header */}
-      <header className="flex-shrink-0 border-b border-zinc-800 px-6 py-4">
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-lg font-medium text-zinc-100">
-              {pipeline.name || pipeline.id}
-            </h1>
-            {pipeline.description && (
-              <p className="text-sm text-zinc-500 mt-0.5">
-                {pipeline.description}
-              </p>
-            )}
-          </div>
-          <button
-            type="button"
-            onClick={handleExecute}
-            disabled={!canExecute}
-            className={`px-4 py-1.5 text-sm font-medium rounded transition-colors ${
-              canExecute
-                ? "bg-zinc-100 text-zinc-900 hover:bg-white"
-                : "bg-zinc-800 text-zinc-500 cursor-not-allowed"
-            }`}
-          >
-            {executing ? "Running..." : "Execute"}
-          </button>
-        </div>
+    <PipelineDetailContext value={contextValue}>
+      <div className="flex-1 flex flex-col overflow-hidden px-6 py-4">
+        <PipelineHeader
+          pipeline={pipeline}
+          selectedVersions={selectedVersions}
+          executionState={executionState}
+          executing={executing}
+          onExecute={executePipeline}
+        />
 
-        {/* Version selector */}
-        <div className="mt-4">
-          <VersionSelector
-            versions={pipeline.versions}
-            selectedVersions={selectedVersions}
-            onToggleVersion={handleToggleVersion}
-            onSelectAll={handleSelectAll}
-            onDeselectAll={handleDeselectAll}
-          />
-        </div>
-      </header>
+        <VersionSelectorSection
+          pipeline={pipeline}
+          selectedVersions={selectedVersions}
+          onToggleVersion={toggleVersion}
+          onSelectAll={selectAllVersions}
+          onDeselectAll={deselectAllVersions}
+        />
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-6">
-        {/* Execution result */}
-        {result && <ExecutionResult result={result} />}
+        <PipelineTabs pipelineId={id} activeTabId={activeTabId} />
 
-        {/* Routes */}
-        <RouteList routes={pipeline.routes} />
-
-        {/* Sources */}
-        <SourceList sources={pipeline.sources} />
+        <main className="flex-1 overflow-y-auto p-6">
+          <Outlet />
+        </main>
       </div>
-    </div>
+    </PipelineDetailContext>
   );
-});
-
-export const Route = createFileRoute("/pipelines/$id")({
-  component: PipelineDetailPage,
-});
+}

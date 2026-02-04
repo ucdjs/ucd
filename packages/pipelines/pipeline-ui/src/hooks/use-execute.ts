@@ -2,7 +2,9 @@ import type { ExecuteResult } from "../types";
 import { useCallback, useState } from "react";
 
 export interface UseExecuteOptions {
-  /** Base URL for the API (default: "") */
+  /**
+   * Base URL for the API (default: "")
+   */
   baseUrl?: string;
 }
 
@@ -14,9 +16,6 @@ export interface UseExecuteReturn {
   reset: () => void;
 }
 
-/**
- * Hook to execute a pipeline with selected versions
- */
 export function useExecute(options: UseExecuteOptions = {}): UseExecuteReturn {
   const { baseUrl = "" } = options;
 

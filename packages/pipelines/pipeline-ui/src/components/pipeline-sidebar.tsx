@@ -1,5 +1,6 @@
 import type { PipelineInfo, PipelinesResponse } from "../types";
 import { cn } from "#lib/utils";
+import { Input } from "@ucdjs-internal/shared-ui/ui/input";
 import { memo } from "react";
 
 export interface PipelineSidebarItemProps {
@@ -23,17 +24,17 @@ export const PipelineSidebarItem = memo(({
       type="button"
       onClick={onClick}
       className={cn(
-        "w-full text-left block px-4 py-2 text-sm transition-colors",
+        "w-full text-left block px-3.5 py-2 text-sm transition-colors rounded-md",
         isActive
-          ? "bg-zinc-800 text-zinc-100"
-          : "text-zinc-400 hover:bg-zinc-900 hover:text-zinc-200",
+          ? "bg-sidebar-accent text-sidebar-accent-foreground"
+          : "text-muted-foreground hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground",
         className,
       )}
     >
       <span className="block truncate font-medium">
         {pipeline.name || pipeline.id}
       </span>
-      <span className="block text-xs text-zinc-500 mt-0.5">
+      <span className="block text-xs text-muted-foreground mt-0.5">
         {pipeline.routeCount}
         {" "}
         routes ·
@@ -67,11 +68,11 @@ export const PipelineSidebarList = memo(({
   if (pipelines.length === 0) {
     return (
       <div className={cn("px-4 py-8 text-center", className)}>
-        <p className="text-sm text-zinc-500">No pipelines found</p>
-        <p className="text-xs text-zinc-600 mt-1">
+        <p className="text-sm text-muted-foreground">No pipelines found</p>
+        <p className="text-xs text-muted-foreground mt-1">
           Create a
           {" "}
-          <code className="text-zinc-400">*.ucd-pipeline.ts</code>
+          <code className="text-foreground/70">*.ucd-pipeline.ts</code>
           {" "}
           file
         </p>
@@ -118,8 +119,8 @@ export const PipelineSidebarErrors = memo(({
   if (count === 0) return null;
 
   return (
-    <div className={cn("border-t border-zinc-800 px-4 py-2", className)}>
-      <p className="text-xs text-red-400">
+    <div className={cn("border-t border-border px-4 py-2", className)}>
+      <p className="text-xs text-destructive">
         {count}
         {" "}
         load error
@@ -144,11 +145,11 @@ export const PipelineSidebarHeader = memo(({
   className,
 }: PipelineSidebarHeaderProps) => {
   return (
-    <div className={cn("px-4 py-3 border-b border-zinc-800", className)}>
-      <h1 className="text-sm font-semibold text-zinc-100">{title}</h1>
+    <div className={cn("px-4 py-3 border-b border-border", className)}>
+      <h1 className="text-sm font-semibold text-sidebar-foreground">{title}</h1>
       {cwd && (
         <p
-          className="text-xs text-zinc-500 mt-0.5 truncate"
+          className="text-xs text-muted-foreground mt-0.5 truncate"
           title={cwd}
         >
           {cwd}
@@ -171,6 +172,12 @@ export interface PipelineSidebarProps {
   renderItem?: (pipeline: PipelineInfo, isActive: boolean) => React.ReactNode;
   /** Sidebar title */
   title?: string;
+  /** Search value */
+  searchValue?: string;
+  /** Search change handler */
+  onSearchChange?: (value: string) => void;
+  /** Placeholder text for search input */
+  searchPlaceholder?: string;
   /** Additional className for the container */
   className?: string;
 }
@@ -185,22 +192,40 @@ export const PipelineSidebar = memo(({
   onPipelineClick,
   renderItem,
   title,
+  searchValue,
+  onSearchChange,
+  searchPlaceholder = "Search pipelines",
   className,
 }: PipelineSidebarProps) => {
   return (
-    <aside className={cn(
-      "w-64 flex-shrink-0 border-r border-zinc-800 flex flex-col bg-zinc-950",
-      className,
-    )}
+    <aside
+      className={cn(
+        "w-56 flex-shrink-0 border-r border-sidebar-border flex flex-col bg-sidebar text-sidebar-foreground",
+        className,
+      )}
     >
       {/* Header */}
       <PipelineSidebarHeader title={title} cwd={data?.cwd} />
 
+      {/* Search */}
+      {onSearchChange && (
+        <div className="px-4 py-2">
+          <Input
+            value={searchValue ?? ""}
+            onChange={(event) => onSearchChange(event.target.value)}
+            placeholder={searchPlaceholder}
+            className="h-8"
+          />
+        </div>
+      )}
+
       {/* Pipeline List */}
-      <nav className="flex-1 overflow-y-auto py-2">
+      <nav className="flex-1 overflow-y-auto py-2 px-2">
         {loading
           ? (
-              <div className="px-4 py-2 text-sm text-zinc-500">Loading...</div>
+              <div className="px-2 py-2 text-sm text-muted-foreground">
+                Loading...
+              </div>
             )
           : (
               <PipelineSidebarList

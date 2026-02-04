@@ -28,8 +28,8 @@ export const VersionTag = memo(({
       className={cn(
         "px-2.5 py-1 text-xs rounded transition-colors",
         selected
-          ? "bg-zinc-100 text-zinc-900"
-          : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700",
+          ? "bg-primary text-primary-foreground"
+          : "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         className,
       )}
     >
@@ -70,7 +70,7 @@ export const VersionSelector = memo(({
   return (
     <div className={className}>
       <div className="flex items-center justify-between mb-2">
-        <span className="text-xs text-zinc-500 uppercase tracking-wider">
+        <span className="text-xs text-muted-foreground uppercase tracking-wider">
           Versions (
           {selectedVersions.size}
           /
@@ -83,7 +83,7 @@ export const VersionSelector = memo(({
               <button
                 type="button"
                 onClick={onSelectAll}
-                className="text-zinc-400 hover:text-zinc-200"
+                className="text-muted-foreground hover:text-foreground"
               >
                 All
               </button>
@@ -92,7 +92,7 @@ export const VersionSelector = memo(({
               <button
                 type="button"
                 onClick={onDeselectAll}
-                className="text-zinc-400 hover:text-zinc-200"
+                className="text-muted-foreground hover:text-foreground"
               >
                 None
               </button>
@@ -131,14 +131,15 @@ export const RouteItem = memo(({
   className,
 }: RouteItemProps) => {
   return (
-    <div className={cn(
-      "flex items-center justify-between py-1.5 px-2 rounded hover:bg-zinc-800/50",
-      className,
-    )}
+    <div
+      className={cn(
+        "flex items-center justify-between py-1.5 px-2 rounded hover:bg-accent/30",
+        className,
+      )}
     >
-      <code className="text-xs text-zinc-300">{route.id}</code>
+      <code className="text-xs text-foreground/80">{route.id}</code>
       {route.cache && (
-        <span className="text-[10px] text-zinc-500 uppercase tracking-wider">
+        <span className="text-[10px] text-muted-foreground uppercase tracking-wider">
           cached
         </span>
       )}
@@ -160,12 +161,12 @@ export const RouteList = memo(({
 }: RouteListProps) => {
   return (
     <section className={className}>
-      <h2 className="text-xs text-zinc-500 uppercase tracking-wider mb-2">
+      <h2 className="text-xs text-muted-foreground uppercase tracking-wider mb-2">
         Routes (
         {routes.length}
         )
       </h2>
-      <div className="bg-zinc-900 rounded-lg border border-zinc-800 divide-y divide-zinc-800">
+      <div className="bg-card rounded-lg border border-border divide-y divide-border">
         {routes.map((route) => (
           <RouteItem key={route.id} route={route} />
         ))}
@@ -191,8 +192,8 @@ export const SourceItem = memo(({
   className,
 }: SourceItemProps) => {
   return (
-    <div className={cn("py-1.5 px-2 rounded hover:bg-zinc-800/50", className)}>
-      <code className="text-xs text-zinc-300">{source.id}</code>
+    <div className={cn("py-1.5 px-2 rounded hover:bg-accent/30", className)}>
+      <code className="text-xs text-foreground/80">{source.id}</code>
     </div>
   );
 });
@@ -211,12 +212,12 @@ export const SourceList = memo(({
 }: SourceListProps) => {
   return (
     <section className={className}>
-      <h2 className="text-xs text-zinc-500 uppercase tracking-wider mb-2">
+      <h2 className="text-xs text-muted-foreground uppercase tracking-wider mb-2">
         Sources (
         {sources.length}
         )
       </h2>
-      <div className="bg-zinc-900 rounded-lg border border-zinc-800 divide-y divide-zinc-800">
+      <div className="bg-card rounded-lg border border-border divide-y divide-border">
         {sources.map((source) => (
           <SourceItem key={source.id} source={source} />
         ))}

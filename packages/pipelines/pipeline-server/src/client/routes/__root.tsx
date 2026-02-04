@@ -1,4 +1,5 @@
-import type { PipelineInfo, PipelinesResponse } from "@ucdjs/pipelines-ui";
+import type { PipelineInfo } from "@ucdjs/pipelines-ui";
+import type { PipelinesContextValue } from "../types";
 import {
   createRootRoute,
   Link,
@@ -10,31 +11,15 @@ import {
   PipelineSidebarItem,
   usePipelines,
 } from "@ucdjs/pipelines-ui";
-import { createContext, use, useMemo } from "react";
-
-interface PipelinesContextValue {
-  data: PipelinesResponse | null;
-  loading: boolean;
-  error: string | null;
-  refetch: () => void;
-}
-
-const PipelinesContext = createContext<PipelinesContextValue | null>(null);
-
-export function usePipelinesContext(): PipelinesContextValue {
-  const ctx = use(PipelinesContext);
-  if (!ctx) {
-    throw new Error("usePipelinesContext must be used within PipelinesProvider");
-  }
-  return ctx;
-}
+import { useMemo, useState } from "react";
+import { PipelinesContext } from "../hooks/pipeline-context";
 
 function useCurrentPipelineId(): string | undefined {
   const matches = useMatches();
   return useMemo(() => {
     for (const match of matches) {
       const params = match.params as Record<string, string> | undefined;
-      if (params && "id" in params) {
+      if (params?.id) {
         return params.id;
       }
     }
@@ -42,18 +27,18 @@ function useCurrentPipelineId(): string | undefined {
   }, [matches]);
 }
 
-function SidebarItemWithLink({
-  pipeline,
-  isActive,
-}: {
+interface SidebarItemProps {
   pipeline: PipelineInfo;
   isActive: boolean;
-}) {
+}
+
+function SidebarItemWithLink({ pipeline, isActive }: SidebarItemProps) {
   return (
     <Link
       to="/pipelines/$id"
       params={{ id: pipeline.id }}
       className="block"
+      aria-label={`Open pipeline: ${pipeline.name || pipeline.id}`}
     >
       <PipelineSidebarItem
         pipeline={pipeline}
@@ -63,11 +48,15 @@ function SidebarItemWithLink({
   );
 }
 
+export const Route = createRootRoute({
+  component: RootLayout,
+});
+
 function RootLayout() {
-  const { data, loading, error, refetch } = usePipelines();
+  const [searchValue, setSearchValue] = useState("");
+  const { data, loading, error, refetch } = usePipelines({ search: searchValue });
   const currentPipelineId = useCurrentPipelineId();
 
-  // Memoize context value to prevent unnecessary re-renders
   const contextValue = useMemo<PipelinesContextValue>(
     () => ({
       data,
@@ -80,23 +69,21 @@ function RootLayout() {
 
   return (
     <PipelinesContext value={contextValue}>
-      <div className="flex h-screen bg-zinc-950 text-zinc-100">
+      <div className="dark flex h-screen bg-background text-foreground">
         <PipelineSidebar
           data={data}
           loading={loading}
           currentPipelineId={currentPipelineId}
+          searchValue={searchValue}
+          onSearchChange={setSearchValue}
           renderItem={(pipeline, isActive) => (
             <SidebarItemWithLink pipeline={pipeline} isActive={isActive} />
           )}
         />
-        <main className="flex-1 overflow-hidden flex flex-col">
+        <main className="flex-1 overflow-hidden flex flex-col" role="main">
           <Outlet />
         </main>
       </div>
     </PipelinesContext>
   );
 }
-
-export const Route = createRootRoute({
-  component: RootLayout,
-});
