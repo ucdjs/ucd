@@ -7,16 +7,19 @@ export default createTsdownConfig({
     "./src/hooks/*.ts",
     "./src/ui/*.tsx",
   ],
-  format: "esm",
   exports: {
     customExports(exports) {
-      exports["./styles/globals.css"] = "./src/styles/globals.css";
+      exports["./styles.css"] = "./dist/styles/globals.css";
       exports["./package.json"] = "./package.json";
 
       return exports;
     },
     packageJson: false,
   },
+  copy: [
+    { from: "src/styles/globals.css", to: "dist/styles" },
+  ],
+  format: "esm",
   inputOptions: {
     transform: {
       jsx: "react-jsx",

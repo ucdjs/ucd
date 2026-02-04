@@ -19,9 +19,6 @@
   "bugs": {
     "url": "https://github.com/ucdjs/ucd/issues"
   },
-  "sideEffects": [
-    "./src/styles/globals.css"
-  ],
   "imports": {
     "#components/*": "./src/components/*.tsx",
     "#ui/*": "./src/ui/*.tsx",
@@ -52,7 +49,7 @@
     "./ui/skeleton": "./dist/ui/skeleton.mjs",
     "./ui/textarea": "./dist/ui/textarea.mjs",
     "./ui/tooltip": "./dist/ui/tooltip.mjs",
-    "./styles/globals.css": "./src/styles/globals.css",
+    "./styles.css": "./dist/styles/globals.css",
     "./package.json": "./package.json"
   },
   "types": "./dist/index.d.mts",
