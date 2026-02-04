@@ -50,8 +50,8 @@
     "@unicode-utils/core": "catalog:prod",
     "apache-autoindex-parse": "catalog:prod",
     "cac": "catalog:prod",
-    "nanotar": "catalog:dev",
-    "wrangler": "catalog:workers"
+    "nanotar": "catalog:build",
+    "wrangler": "catalog:api"
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:linting",
@@ -59,7 +59,7 @@
     "@ucdjs-tooling/tsconfig": "workspace:*",
     "@ucdjs-tooling/tsdown-config": "workspace:*",
     "eslint": "catalog:linting",
-    "tsdown": "catalog:dev",
-    "typescript": "catalog:dev"
+    "tsdown": "catalog:build",
+    "typescript": "catalog:build"
   }
 }
