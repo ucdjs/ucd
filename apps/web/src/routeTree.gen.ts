@@ -22,6 +22,7 @@ import { Route as VVersionGraphemeVisualizerRouteImport } from './routes/v/$vers
 import { Route as VVersionFontGlyphViewRouteImport } from './routes/v/$version/font-glyph-view'
 import { Route as VVersionBidiLinebreakRouteImport } from './routes/v/$version/bidi-linebreak'
 import { Route as FileExplorerVSplatRouteImport } from './routes/file-explorer/v.$'
+import { Route as ApiFileSplatRouteImport } from './routes/api/file/$'
 import { Route as VVersionBlocksIndexRouteImport } from './routes/v/$version/blocks/index'
 import { Route as VVersionUHexRouteImport } from './routes/v/$version/u/$hex'
 import { Route as VVersionBlocksIdRouteImport } from './routes/v/$version/blocks/$id'
@@ -93,6 +94,11 @@ const FileExplorerVSplatRoute = FileExplorerVSplatRouteImport.update({
   path: '/v/$',
   getParentRoute: () => FileExplorerRouteRoute,
 } as any)
+const ApiFileSplatRoute = ApiFileSplatRouteImport.update({
+  id: '/api/file/$',
+  path: '/api/file/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const VVersionBlocksIndexRoute = VVersionBlocksIndexRouteImport.update({
   id: '/blocks/',
   path: '/blocks/',
@@ -117,6 +123,7 @@ export interface FileRoutesByFullPath {
   '/v/$version': typeof VVersionRouteRouteWithChildren
   '/file-explorer/$': typeof FileExplorerSplatRoute
   '/v/': typeof VIndexRoute
+  '/api/file/$': typeof ApiFileSplatRoute
   '/file-explorer/v/$': typeof FileExplorerVSplatRoute
   '/v/$version/bidi-linebreak': typeof VVersionBidiLinebreakRoute
   '/v/$version/font-glyph-view': typeof VVersionFontGlyphViewRoute
@@ -134,6 +141,7 @@ export interface FileRoutesByTo {
   '/search': typeof SearchRoute
   '/file-explorer/$': typeof FileExplorerSplatRoute
   '/v': typeof VIndexRoute
+  '/api/file/$': typeof ApiFileSplatRoute
   '/file-explorer/v/$': typeof FileExplorerVSplatRoute
   '/v/$version/bidi-linebreak': typeof VVersionBidiLinebreakRoute
   '/v/$version/font-glyph-view': typeof VVersionFontGlyphViewRoute
@@ -153,6 +161,7 @@ export interface FileRoutesById {
   '/v/$version': typeof VVersionRouteRouteWithChildren
   '/file-explorer/$': typeof FileExplorerSplatRoute
   '/v/': typeof VIndexRoute
+  '/api/file/$': typeof ApiFileSplatRoute
   '/file-explorer/v/$': typeof FileExplorerVSplatRoute
   '/v/$version/bidi-linebreak': typeof VVersionBidiLinebreakRoute
   '/v/$version/font-glyph-view': typeof VVersionFontGlyphViewRoute
@@ -173,6 +182,7 @@ export interface FileRouteTypes {
     | '/v/$version'
     | '/file-explorer/$'
     | '/v/'
+    | '/api/file/$'
     | '/file-explorer/v/$'
     | '/v/$version/bidi-linebreak'
     | '/v/$version/font-glyph-view'
@@ -190,6 +200,7 @@ export interface FileRouteTypes {
     | '/search'
     | '/file-explorer/$'
     | '/v'
+    | '/api/file/$'
     | '/file-explorer/v/$'
     | '/v/$version/bidi-linebreak'
     | '/v/$version/font-glyph-view'
@@ -208,6 +219,7 @@ export interface FileRouteTypes {
     | '/v/$version'
     | '/file-explorer/$'
     | '/v/'
+    | '/api/file/$'
     | '/file-explorer/v/$'
     | '/v/$version/bidi-linebreak'
     | '/v/$version/font-glyph-view'
@@ -226,6 +238,7 @@ export interface RootRouteChildren {
   SearchRoute: typeof SearchRoute
   VVersionRouteRoute: typeof VVersionRouteRouteWithChildren
   VIndexRoute: typeof VIndexRoute
+  ApiFileSplatRoute: typeof ApiFileSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -321,6 +334,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FileExplorerVSplatRouteImport
       parentRoute: typeof FileExplorerRouteRoute
     }
+    '/api/file/$': {
+      id: '/api/file/$'
+      path: '/api/file/$'
+      fullPath: '/api/file/$'
+      preLoaderRoute: typeof ApiFileSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/v/$version/blocks/': {
       id: '/v/$version/blocks/'
       path: '/blocks'
@@ -391,6 +411,7 @@ const rootRouteChildren: RootRouteChildren = {
   SearchRoute: SearchRoute,
   VVersionRouteRoute: VVersionRouteRouteWithChildren,
   VIndexRoute: VIndexRoute,
+  ApiFileSplatRoute: ApiFileSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

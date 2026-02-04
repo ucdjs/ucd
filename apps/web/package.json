@@ -8,7 +8,8 @@
     "#components/*": "./src/components/*.tsx",
     "#lib/*": "./src/lib/*.ts",
     "#types/*": "./src/types/*.ts",
-    "#apis/*": "./src/apis/*.ts"
+    "#apis/*": "./src/apis/*.ts",
+    "#server/*": "./src/server/*.ts"
   },
   "scripts": {
     "dev": "vite dev --port 3000",
@@ -38,6 +39,7 @@
     "react": "catalog:web",
     "react-dom": "catalog:web",
     "shadcn": "catalog:web",
+    "shiki": "catalog:web",
     "tailwind-merge": "catalog:web",
     "tw-animate-css": "catalog:web",
     "zod": "catalog:prod"

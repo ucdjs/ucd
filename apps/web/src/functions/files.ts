@@ -1,6 +1,8 @@
 import type { FileEntry } from "@ucdjs/schemas";
 import type z from "zod";
 import type { SearchQueryParams, searchSchema } from "../routes/file-explorer/$";
+import { getHighlightedFile } from "#server/file-highlight";
+import type { HighlightedFileResult } from "#server/file-highlight";
 import { queryOptions } from "@tanstack/react-query";
 import { notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
@@ -127,6 +129,8 @@ interface FilesQueryOptions extends Omit<SearchQueryParams, "viewMode"> {
   size?: number | null;
 }
 
+export type HighlightedFileResponse = HighlightedFileResult;
+
 export function filesQueryOptions(options: FilesQueryOptions = {}) {
   return queryOptions({
     queryKey: [
@@ -152,6 +156,36 @@ export function filesQueryOptions(options: FilesQueryOptions = {}) {
       signal,
     }),
     staleTime: 1000 * 60 * 60, // 1 hour
+  });
+}
+
+export const fetchHighlightedFile = createServerFn({ method: "GET" })
+  .inputValidator((data: { path: string; statType?: string | null; size?: number | null; contentType?: string | null }) => data)
+  .handler(async ({ data, context, signal }): Promise<HighlightedFileResponse> => {
+    return getHighlightedFile({
+      path: data.path,
+      apiBaseUrl: context.apiBaseUrl,
+      signal,
+      statType: data.statType,
+      size: data.size,
+      contentType: data.contentType,
+    });
+  });
+
+export function highlightedFileQueryOptions(path: string, options?: { statType?: string | null; size?: number | null; contentType?: string | null }) {
+  return queryOptions({
+    queryKey: ["highlighted-file", path],
+    queryFn: ({ signal }) => fetchHighlightedFile({
+      data: {
+        path,
+        statType: options?.statType,
+        size: options?.size,
+        contentType: options?.contentType,
+      },
+      signal,
+    }),
+    enabled: Boolean(path) && Boolean(options?.size != null && options.size <= 500 * 1024),
+    staleTime: 1000 * 60 * 60,
   });
 }
 

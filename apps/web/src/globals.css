@@ -1,1 +1,29 @@
 @import "@ucdjs-internal/shared-ui/styles/globals.css";
+
+.code-content pre {
+  margin: 0;
+  padding: 0;
+  background: transparent !important;
+  overflow: visible;
+}
+
+.code-content code {
+  display: block;
+  padding: 0 1rem;
+  background: transparent !important;
+}
+
+.code-content .line {
+  display: block;
+  line-height: 20px;
+  min-height: 20px;
+  max-height: 20px;
+  white-space: pre;
+  overflow: hidden;
+}
+
+.code-content .line.is-selected {
+  background: color-mix(in oklab, var(--primary) 18%, transparent);
+  margin: 0 -1rem;
+  padding: 0 1rem;
+}

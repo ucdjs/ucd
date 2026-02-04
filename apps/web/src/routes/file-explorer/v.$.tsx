@@ -2,8 +2,8 @@ import { FileViewer, FileViewerSkeleton } from "#components/file-explorer/file-v
 import { LargeFileWarning } from "#components/file-explorer/large-file-warning";
 import { NON_RENDERABLE_EXTENSIONS, NonRenderableFile } from "#components/file-explorer/non-renderable-file";
 import { ExplorerNotFound } from "#components/not-found";
-import { filesQueryOptions, getFileHeadInfo } from "#functions/files";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { filesQueryOptions, getFileHeadInfo, highlightedFileQueryOptions } from "#functions/files";
+import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { Suspense } from "react";
 
@@ -12,6 +12,8 @@ import { Suspense } from "react";
  * Files larger than this will show the large file warning
  */
 const MAX_INLINE_FILE_SIZE = 1024 * 1024;
+
+const MAX_HIGHLIGHT_FILE_SIZE = 500 * 1024;
 
 export const Route = createFileRoute("/file-explorer/v/$")({
   component: FileViewerPage,
@@ -43,14 +45,23 @@ export const Route = createFileRoute("/file-explorer/v/$")({
   loader: async ({ context }) => {
     const isTooLarge = context.size > MAX_INLINE_FILE_SIZE;
     const canRender = !NON_RENDERABLE_EXTENSIONS.has(context.fileExt);
+    const canHighlight = context.size <= MAX_HIGHLIGHT_FILE_SIZE;
 
     // Only prefetch if we'll actually render the file content
     if (!isTooLarge && canRender) {
-      context.queryClient.prefetchQuery(filesQueryOptions({
-        path: context.path,
-        statType: context.statType,
-        size: context.size,
-      }));
+      await Promise.all([
+        context.queryClient.prefetchQuery(filesQueryOptions({
+          path: context.path,
+          statType: context.statType,
+          size: context.size,
+        })),
+        canHighlight
+          ? context.queryClient.prefetchQuery(highlightedFileQueryOptions(context.path, {
+              statType: context.statType,
+              size: context.size,
+            }))
+          : Promise.resolve(),
+      ]);
     }
 
     return {
@@ -61,6 +72,7 @@ export const Route = createFileRoute("/file-explorer/v/$")({
       path: context.path,
       isTooLarge,
       canRender,
+      canHighlight,
       fileUrl: new URL(context.path, `${context.apiBaseUrl}/api/v1/files/`).toString(),
     };
   },
@@ -75,6 +87,7 @@ function FileViewerPage() {
     path,
     isTooLarge,
     canRender,
+    canHighlight,
     fileUrl,
   } = loaderData;
 
@@ -109,6 +122,7 @@ function FileViewerPage() {
         fileName={fileName}
         statType={loaderData.statType}
         size={loaderData.size}
+        canHighlight={canHighlight}
       />
     </Suspense>
   );
@@ -118,8 +132,23 @@ function FileViewerPage() {
  * Component that fetches and renders file content
  * Separated to enable Suspense boundary around data fetching
  */
-function FileViewerContent({ path, fileName, statType, size }: { path: string; fileName: string; statType: string | null; size: number }) {
+function FileViewerContent({
+  path,
+  fileName,
+  statType,
+  size,
+  canHighlight,
+}: {
+  path: string;
+  fileName: string;
+  statType: string | null;
+  size: number;
+  canHighlight: boolean;
+}) {
   const { data } = useSuspenseQuery(filesQueryOptions({ path, statType, size }));
+  const highlightedQuery = useQuery(
+    highlightedFileQueryOptions(path, { statType, size }),
+  );
 
   // This route only handles files
   if (data.type === "directory" || data.type === "file-too-large") {
@@ -132,6 +161,7 @@ function FileViewerContent({ path, fileName, statType, size }: { path: string; f
       contentType={data.contentType}
       fileName={fileName}
       filePath={path}
+      html={highlightedQuery.data?.html}
     />
   );
 }

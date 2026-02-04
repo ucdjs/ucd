@@ -11,6 +11,7 @@ export interface FileViewerProps {
   fileName: string;
   /** Path to the file (used for raw link) */
   filePath: string;
+  html?: string;
 }
 
 export interface LineSelection {
@@ -83,7 +84,7 @@ interface LineNumberProps {
   lineNum: number;
   selected: boolean;
   onClick: (lineNum: number, event: React.MouseEvent) => void;
-  onRef?: (lineNum: number, el: HTMLDivElement | null) => void;
+  onRef?: (lineNum: number, el: HTMLAnchorElement | null) => void;
 }
 
 function LineNumberComponent({ lineNum, selected, onClick, onRef }: LineNumberProps) {
@@ -91,21 +92,24 @@ function LineNumberComponent({ lineNum, selected, onClick, onRef }: LineNumberPr
     onClick(lineNum, e);
   }, [lineNum, onClick]);
 
-  const handleRef = useCallback((el: HTMLDivElement | null) => {
+  const handleRef = useCallback((el: HTMLAnchorElement | null) => {
     onRef?.(lineNum, el);
   }, [lineNum, onRef]);
 
   return (
-    <div
+    <a
       ref={handleRef}
+      href={`#L${lineNum}`}
+      id={`L${lineNum}`}
       onClick={handleClick}
       className={cn(
-        "px-3 py-0 leading-5 cursor-pointer hover:bg-primary/10",
+        "px-3 py-0 leading-5 cursor-pointer hover:bg-primary/10 block text-muted-foreground no-underline",
         selected && "bg-primary/20 text-primary font-medium",
       )}
+      tabIndex={-1}
     >
       {lineNum}
-    </div>
+    </a>
   );
 }
 
@@ -132,7 +136,7 @@ function LineContentComponent({ line, selected }: LineContentProps) {
 
 const LineContent = memo(LineContentComponent);
 
-export function FileViewer({ content, contentType, fileName, filePath }: FileViewerProps) {
+export function FileViewer({ content, contentType, fileName, filePath, html }: FileViewerProps) {
   const language = getLanguageFromContentType(contentType, fileName);
   const lines = useMemo(() => content.split("\n"), [content]);
   const lineCount = lines.length;
@@ -148,10 +152,24 @@ export function FileViewer({ content, contentType, fileName, filePath }: FileVie
     return null;
   }, [lineCount]);
 
+  useEffect(() => {
+    function handleHashChange() {
+      const parsed = parseLineHash(window.location.hash);
+      if (!parsed || parsed.start > lineCount || parsed.end > lineCount) {
+        return;
+      }
+
+      setSelection(parsed);
+    }
+
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
+  }, [lineCount]);
+
   const [selection, setSelection] = useState<LineSelection | null>(initialSelection);
   const [lastClickedLine, setLastClickedLine] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
-  const lineRefs = useRef<Map<number, HTMLDivElement>>(new Map());
+  const lineRefs = useRef<Map<number, HTMLAnchorElement>>(new Map());
 
   // Scroll to selection when it changes
   useEffect(() => {
@@ -165,13 +183,17 @@ export function FileViewer({ content, contentType, fileName, filePath }: FileVie
 
   // Update URL hash when selection changes
   useEffect(() => {
-    if (selection) {
-      const hash = generateLineHash(selection);
+    if (!selection) return;
+
+    const hash = generateLineHash(selection);
+    if (window.location.hash !== hash) {
       window.history.replaceState(null, "", hash);
     }
   }, [selection]);
 
   const handleLineClick = useCallback((lineNum: number, event: React.MouseEvent) => {
+    event.preventDefault();
+
     if (event.shiftKey && lastClickedLine !== null) {
       // Range selection with shift+click
       setSelection({
@@ -185,7 +207,7 @@ export function FileViewer({ content, contentType, fileName, filePath }: FileVie
     }
   }, [lastClickedLine]);
 
-  const handleLineRef = useCallback((lineNum: number, el: HTMLDivElement | null) => {
+  const handleLineRef = useCallback((lineNum: number, el: HTMLAnchorElement | null) => {
     if (el) {
       lineRefs.current.set(lineNum, el);
     } else {
@@ -196,6 +218,23 @@ export function FileViewer({ content, contentType, fileName, filePath }: FileVie
   // Memoize selection bounds for O(1) check in render
   const selectionStart = selection?.start ?? -1;
   const selectionEnd = selection?.end ?? -1;
+
+  useEffect(() => {
+    if (!html) return;
+
+    const highlighted = document.querySelectorAll(".code-content .line.is-selected");
+    highlighted.forEach((node) => node.classList.remove("is-selected"));
+
+    if (!selection) return;
+
+    const linesNodes = document.querySelectorAll(".code-content .line");
+    for (let index = selectionStart - 1; index < selectionEnd; index += 1) {
+      const line = linesNodes[index];
+      if (line) {
+        line.classList.add("is-selected");
+      }
+    }
+  }, [html, selection, selectionStart, selectionEnd]);
 
   const handleCopyLink = useCallback(async () => {
     if (!selection) return;
@@ -288,17 +327,27 @@ export function FileViewer({ content, contentType, fileName, filePath }: FileVie
             </div>
             {/* Content */}
             <div className="flex-1 overflow-x-auto text-sm font-mono">
-              {lines.map((line, idx) => {
-                const lineNum = idx + 1;
-                const selected = lineNum >= selectionStart && lineNum <= selectionEnd;
-                return (
-                  <LineContent
-                    key={lineNum}
-                    line={line}
-                    selected={selected}
-                  />
-                );
-              })}
+              {html
+                ? (
+                    <div
+                      className="code-content"
+                      // eslint-disable-next-line react/no-danger
+                      dangerouslySetInnerHTML={{ __html: html }}
+                    />
+                  )
+                : (
+                    lines.map((line, idx) => {
+                      const lineNum = idx + 1;
+                      const selected = lineNum >= selectionStart && lineNum <= selectionEnd;
+                      return (
+                        <LineContent
+                          key={lineNum}
+                          line={line}
+                          selected={selected}
+                        />
+                      );
+                    })
+                  )}
             </div>
           </div>
         </div>
