@@ -61,7 +61,7 @@ export interface LoadPipelinesOptions {
  * ```
  */
 export async function loadPipelineFile(filePath: string): Promise<LoadedPipelineFile> {
-  const module = await import(filePath);
+  const module = await import(/* @vite-ignore */ filePath);
 
   const pipelines: PipelineDefinition[] = [];
   const exportNames: string[] = [];
