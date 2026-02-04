@@ -6,7 +6,7 @@ import type {
   InferArtifactValue,
   PipelineArtifactDefinition,
 } from "../src/definition";
-import { describe, expect, it, vi } from "vitest";
+import { assert, describe, expect, expectTypeOf, it, vi } from "vitest";
 import {
   definePipelineArtifact,
   isPipelineArtifactDefinition,
@@ -232,70 +232,69 @@ describe("isPipelineArtifactDefinition", () => {
       build: async () => "result",
     };
 
-    if (isPipelineArtifactDefinition(unknown)) {
-      expect(unknown.id).toBe("test");
-      expect(typeof unknown.build).toBe("function");
-    } else {
-      throw new Error("Expected valid artifact definition");
-    }
+    assert(isPipelineArtifactDefinition(unknown));
+    expect(unknown.id).toBe("test");
+    expect(typeof unknown.build).toBe("function");
+    expectTypeOf(unknown).toEqualTypeOf<PipelineArtifactDefinition>();
   });
 });
 
 describe("type inference", () => {
   describe("inferArtifactId", () => {
     it("should infer artifact id", () => {
+      // eslint-disable-next-line unused-imports/no-unused-vars
       const artifact = definePipelineArtifact({
         id: "my-artifact",
         build: async () => "result",
       });
 
       type Id = InferArtifactId<typeof artifact>;
-      const id: Id = "my-artifact";
 
-      expect(id).toBe("my-artifact");
+      expectTypeOf<Id>().toEqualTypeOf<"my-artifact">();
     });
 
     it("should work with const assertion", () => {
+      // eslint-disable-next-line unused-imports/no-unused-vars
       const artifact = definePipelineArtifact({
         id: "specific-id" as const,
         build: async () => 123,
       });
 
       type Id = InferArtifactId<typeof artifact>;
-      const id: Id = "specific-id";
 
-      expect(id).toBe("specific-id");
+      expectTypeOf<Id>().toEqualTypeOf<"specific-id">();
     });
   });
 
   describe("inferArtifactValue", () => {
     it("should infer artifact value type", () => {
+      // eslint-disable-next-line unused-imports/no-unused-vars
       const artifact = definePipelineArtifact({
         id: "test",
         build: async (): Promise<{ count: number }> => ({ count: 42 }),
       });
 
       type Value = InferArtifactValue<typeof artifact>;
-      const value: Value = { count: 42 };
 
-      expect(value).toEqual({ count: 42 });
+      expectTypeOf<Value>().toEqualTypeOf<{ count: number }>();
     });
 
     it("should work with primitive return types", () => {
+      // eslint-disable-next-line unused-imports/no-unused-vars
       const stringArtifact = definePipelineArtifact({
         id: "string-artifact",
         build: async (): Promise<string> => "result",
       });
 
       type StringValue = InferArtifactValue<typeof stringArtifact>;
-      const str: StringValue = "test";
 
-      expect(str).toBe("test");
+      expectTypeOf<StringValue>().toEqualTypeOf<string>();
     });
   });
 
   describe("inferArtifactsMap", () => {
     it("should infer map of artifact ids to values", () => {
+      // eslint-disable-next-line unused-imports/no-unused-vars
       const artifacts = [
         definePipelineArtifact({
           id: "counts",
@@ -309,18 +308,14 @@ describe("type inference", () => {
 
       type ArtifactsMap = InferArtifactsMap<typeof artifacts>;
 
-      const map: ArtifactsMap = {
-        counts: 42,
-        names: ["a", "b"],
-      };
-
-      expect(map).toEqual({
-        counts: 42,
-        names: ["a", "b"],
-      });
+      expectTypeOf<ArtifactsMap>().toEqualTypeOf<{
+        counts: number;
+        names: string[];
+      }>();
     });
 
     it("should work with complex value types", () => {
+      // eslint-disable-next-line unused-imports/no-unused-vars
       const artifacts = [
         definePipelineArtifact({
           id: "data",
@@ -337,13 +332,10 @@ describe("type inference", () => {
 
       type ArtifactsMap = InferArtifactsMap<typeof artifacts>;
 
-      const map: ArtifactsMap = {
-        data: { items: ["x", "y"], total: 2 },
-        enabled: true,
-      };
-
-      expect(map.data.items).toHaveLength(2);
-      expect(map.enabled).toBe(true);
+      expectTypeOf<ArtifactsMap>().toEqualTypeOf<{
+        data: { items: string[]; total: number };
+        enabled: boolean;
+      }>();
     });
   });
 });
