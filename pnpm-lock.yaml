@@ -327,6 +327,9 @@ importers:
       '@hono/zod-openapi':
         specifier: catalog:api
         version: 1.2.0(hono@4.11.7)(zod@4.3.6)
+      '@luxass/utils':
+        specifier: catalog:prod
+        version: 2.7.2
       '@scalar/hono-api-reference':
         specifier: catalog:api
         version: 0.9.39(hono@4.11.7)
