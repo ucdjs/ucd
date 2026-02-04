@@ -77,6 +77,7 @@
     "react-dom": "catalog:web",
     "shadcn": "catalog:web",
     "tailwind-merge": "catalog:web",
+    "tailwindcss": "catalog:web",
     "tw-animate-css": "catalog:web",
     "zod": "catalog:prod"
   },
@@ -91,10 +92,9 @@
     "eslint-plugin-format": "catalog:linting",
     "eslint-plugin-react-hooks": "catalog:linting",
     "eslint-plugin-react-refresh": "catalog:linting",
-    "publint": "catalog:dev",
-    "tailwindcss": "catalog:web",
-    "tsdown": "catalog:dev",
-    "typescript": "catalog:dev"
+    "publint": "catalog:build",
+    "tsdown": "catalog:build",
+    "typescript": "catalog:build"
   },
   "publishConfig": {
     "access": "public"

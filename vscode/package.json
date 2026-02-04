@@ -325,8 +325,8 @@
     "eslint": "catalog:linting",
     "eslint-plugin-format": "catalog:linting",
     "reactive-vscode": "catalog:vscode",
-    "tsdown": "catalog:dev",
-    "typescript": "catalog:dev",
+    "tsdown": "catalog:build",
+    "typescript": "catalog:build",
     "vscode-ext-gen": "catalog:vscode",
     "zod": "catalog:prod"
   }

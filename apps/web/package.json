@@ -61,9 +61,9 @@
     "eslint-plugin-format": "catalog:linting",
     "nitro": "catalog:web",
     "tailwindcss": "catalog:web",
-    "typescript": "catalog:dev",
+    "typescript": "catalog:build",
     "vite": "catalog:web",
     "vite-tsconfig-paths": "catalog:web",
-    "wrangler": "catalog:workers"
+    "wrangler": "catalog:api"
   }
 }

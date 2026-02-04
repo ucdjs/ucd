@@ -49,9 +49,9 @@
     "@ucdjs-tooling/tsconfig": "workspace:*",
     "@ucdjs-tooling/tsdown-config": "workspace:*",
     "eslint": "catalog:linting",
-    "publint": "catalog:dev",
-    "tsdown": "catalog:dev",
-    "typescript": "catalog:dev",
+    "publint": "catalog:build",
+    "tsdown": "catalog:build",
+    "typescript": "catalog:build",
     "vitest-testdirs": "catalog:testing"
   },
   "publishConfig": {

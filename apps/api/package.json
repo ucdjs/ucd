@@ -19,10 +19,10 @@
     "clean": "git clean -xdf node_modules .wrangler dist ../../ucd-generated/api"
   },
   "dependencies": {
-    "@hono/zod-openapi": "catalog:workers",
+    "@hono/zod-openapi": "catalog:api",
     "@luxass/utils": "catalog:prod",
-    "@scalar/hono-api-reference": "catalog:workers",
-    "@sentry/cloudflare": "catalog:workers",
+    "@scalar/hono-api-reference": "catalog:api",
+    "@sentry/cloudflare": "catalog:api",
     "@ucdjs-internal/shared": "workspace:*",
     "@ucdjs/env": "workspace:*",
     "@ucdjs/path-utils": "workspace:*",
@@ -30,8 +30,8 @@
     "@ucdjs/utils": "workspace:*",
     "@unicode-utils/core": "catalog:prod",
     "apache-autoindex-parse": "catalog:prod",
-    "hono": "catalog:workers",
-    "nanotar": "catalog:dev",
+    "hono": "catalog:api",
+    "nanotar": "catalog:build",
     "zod": "catalog:prod"
   },
   "devDependencies": {
@@ -44,9 +44,9 @@
     "@ucdjs/moonbeam": "workspace:*",
     "eslint": "catalog:linting",
     "eslint-plugin-format": "catalog:linting",
-    "tsx": "catalog:dev",
-    "typescript": "catalog:dev",
+    "tsx": "catalog:build",
+    "typescript": "catalog:build",
     "vitest": "catalog:testing",
-    "wrangler": "catalog:workers"
+    "wrangler": "catalog:api"
   }
 }

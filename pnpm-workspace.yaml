@@ -66,7 +66,7 @@ catalogs:
     hookable: 6.0.1
     cac: 6.7.14
 
-  dev:
+  build:
     tsdown: 0.20.1
     typescript: 5.9.3
     publint: 0.3.17
@@ -75,7 +75,7 @@ catalogs:
     tsx: 4.21.0
     rolldown: 1.0.0-rc.2
 
-  workers:
+  api:
     wrangler: 4.61.1
     "@hono/zod-openapi": 1.2.0
     "@scalar/hono-api-reference": 0.9.39
@@ -141,8 +141,8 @@ onlyBuiltDependencies:
 
 overrides:
   "@asteasolutions/zod-to-openapi": 8.4.0
-  rolldown: catalog:dev
-  wrangler: catalog:workers
+  rolldown: catalog:build
+  wrangler: catalog:api
 
 patchedDependencies:
   "@asteasolutions/zod-to-openapi@8.4.0": patches/@asteasolutions__zod-to-openapi@8.4.0.patch

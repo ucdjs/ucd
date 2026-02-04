@@ -39,7 +39,7 @@
     "@vitest/ui": "catalog:testing",
     "eslint": "catalog:linting",
     "turbo": "catalog:monorepo",
-    "typescript": "catalog:dev",
+    "typescript": "catalog:build",
     "vitest": "catalog:testing"
   }
 }
