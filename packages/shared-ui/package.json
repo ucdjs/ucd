@@ -77,6 +77,7 @@
     "react-dom": "catalog:web",
     "shadcn": "catalog:web",
     "tailwind-merge": "catalog:web",
+    "tailwindcss": "catalog:web",
     "tw-animate-css": "catalog:web",
     "zod": "catalog:prod"
   },

@@ -1095,6 +1095,9 @@ importers:
       tailwind-merge:
         specifier: catalog:web
         version: 3.4.0
+      tailwindcss:
+        specifier: catalog:web
+        version: 4.1.18
       tw-animate-css:
         specifier: catalog:web
         version: 1.4.0
