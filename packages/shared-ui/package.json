@@ -91,10 +91,9 @@
     "eslint-plugin-format": "catalog:linting",
     "eslint-plugin-react-hooks": "catalog:linting",
     "eslint-plugin-react-refresh": "catalog:linting",
-    "publint": "catalog:dev",
-    "tailwindcss": "catalog:web",
-    "tsdown": "catalog:dev",
-    "typescript": "catalog:dev"
+    "publint": "catalog:build",
+    "tsdown": "catalog:build",
+    "typescript": "catalog:build"
   },
   "publishConfig": {
     "access": "public"
