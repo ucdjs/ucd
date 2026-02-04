@@ -1,4 +1,5 @@
-import type { PipelineDefinition } from "@ucdjs/pipelines-core";
+import type { PipelineDefinition, PipelineRouteDefinition } from "@ucdjs/pipelines-core";
+import { parseDependency } from "@ucdjs/pipelines-core";
 
 /**
  * Serializable pipeline info for the API.
@@ -19,6 +20,13 @@ export interface PipelineDetails extends PipelineInfo {
   routes: Array<{
     id: string;
     cache: boolean;
+    depends: Array<
+      | { type: "route"; routeId: string }
+      | { type: "artifact"; routeId: string; artifactName: string }
+    >;
+    emits: Array<{ id: string; scope: "version" | "global" }>;
+    outputs: Array<{ dir?: string; fileName?: string }>;
+    transforms: string[];
   }>;
   sources: Array<{
     id: string;
@@ -45,12 +53,34 @@ export function toPipelineInfo(pipeline: PipelineDefinition): PipelineInfo {
 export function toPipelineDetails(pipeline: PipelineDefinition): PipelineDetails {
   return {
     ...toPipelineInfo(pipeline),
-    routes: pipeline.routes.map((route) => ({
-      id: route.id,
-      cache: route.cache !== false,
-    })),
+    routes: pipeline.routes.map((route) => toRouteDetails(route)),
     sources: pipeline.inputs.map((source) => ({
       id: source.id,
     })),
+  };
+}
+
+function toRouteDetails(route: PipelineRouteDefinition): PipelineDetails["routes"][number] {
+  const depends = (route.depends ?? []).map((dep) => parseDependency(dep));
+  const emits = Object.entries(route.emits ?? {}).map(([id, def]) => {
+    const scope = def.scope === "global" ? "global" : "version";
+    return { id, scope } as const;
+  });
+  const outputs = route.out
+    ? [{ dir: route.out.dir, fileName: typeof route.out.fileName === "function" ? "[fn]" : route.out.fileName }]
+    : [];
+  const transformList = (route.transforms ?? []) as Array<{ id?: string }>;
+  const transforms = transformList.map((transform, index) => {
+    const id = transform.id;
+    return id ?? `transform-${index + 1}`;
+  });
+
+  return {
+    id: route.id,
+    cache: route.cache !== false,
+    depends,
+    emits,
+    outputs,
+    transforms,
   };
 }

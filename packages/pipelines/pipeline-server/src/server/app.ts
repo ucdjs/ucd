@@ -25,9 +25,15 @@ export function createApp(options: AppOptions = {}): H3 {
 
   const app = new H3({ debug: true });
 
+  let cwdPath = path.resolve(cwd);
+  // If we run in development mode, we should set the CWD to the pipeline playground.
+  if (process.env.NODE_ENV === "development" || (import.meta as any).env.DEV) {
+    cwdPath = path.join(import.meta.dirname, "../../../pipeline-playground");
+  }
+
   // Middleware to attach cwd to context
   app.use("/**", (event, next) => {
-    event.context.cwd = cwd;
+    event.context.cwd = cwdPath;
     next();
   });
 
@@ -51,7 +57,7 @@ export async function startServer(options: ServerOptions = {}): Promise<void> {
   const clientDir = path.join(import.meta.dirname, "../client");
 
   app.use((event) => {
-    const url = event.path;
+    const url = event.url.pathname;
 
     // Skip API routes
     if (url.startsWith("/api")) {
@@ -59,6 +65,7 @@ export async function startServer(options: ServerOptions = {}): Promise<void> {
     }
 
     return serveStatic(event, {
+      fallthrough: true,
       getContents: (id) => fs.promises.readFile(path.join(clientDir, id)),
       getMeta: async (id) => {
         const filePath = path.join(clientDir, id);
@@ -75,7 +82,7 @@ export async function startServer(options: ServerOptions = {}): Promise<void> {
 
   // SPA fallback - serve index.html for client-side routing
   app.use((event) => {
-    const url = event.path;
+    const url = event.url.pathname;
 
     // Skip API routes
     if (url.startsWith("/api")) {

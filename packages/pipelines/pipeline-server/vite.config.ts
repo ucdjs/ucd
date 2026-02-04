@@ -1,16 +1,35 @@
+import type { H3 } from "h3";
 import type { Plugin } from "vite";
 import tailwindcss from "@tailwindcss/vite";
-import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
+import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
-import { createApp } from "./src/server/app";
+import viteTsConfigPaths from "vite-tsconfig-paths";
+
+const appModuleId = "/src/server/app.ts";
 
 function h3DevServerPlugin(): Plugin {
-  const app = createApp();
-
   return {
     name: "h3-dev-server",
     configureServer(server) {
+      let appPromise: Promise<H3> | null = null;
+
+      const getApp = async () => {
+        if (!appPromise) {
+          appPromise = server
+            .ssrLoadModule(appModuleId)
+            .then((mod) => (mod as typeof import("./src/server/app")).createApp());
+        }
+
+        return appPromise;
+      };
+
+      server.watcher.on("change", (file) => {
+        if (file.includes("/src/server/")) {
+          appPromise = null;
+        }
+      });
+
       // Add middleware BEFORE Vite's internal middleware (no return = pre-hook)
       // This ensures /api routes are handled before Vite's SPA fallback
       server.middlewares.use(async (req, res, next) => {
@@ -19,13 +38,17 @@ function h3DevServerPlugin(): Plugin {
         }
 
         try {
+          const app = await getApp();
+
           // Collect request body for POST/PUT/PATCH
           let body: string | undefined;
           if (req.method && ["POST", "PUT", "PATCH"].includes(req.method)) {
+            // eslint-disable-next-line node/prefer-global/buffer
             const chunks: Buffer[] = [];
             for await (const chunk of req) {
               chunks.push(chunk);
             }
+            // eslint-disable-next-line node/prefer-global/buffer
             body = Buffer.concat(chunks).toString();
           }
 
@@ -53,8 +76,14 @@ function h3DevServerPlugin(): Plugin {
 }
 
 export default defineConfig({
+  clearScreen: false,
   plugins: [
-    TanStackRouterVite({
+    viteTsConfigPaths({
+      projects: ["./tsconfig.json"],
+      loose: true,
+      projectDiscovery: "lazy",
+    }),
+    tanstackRouter({
       routesDirectory: "./src/client/routes",
       generatedRouteTree: "./src/client/routeTree.gen.ts",
     }),
@@ -71,7 +100,7 @@ export default defineConfig({
     server: {
       build: {
         outDir: "dist/server",
-        ssr: true,
+        ssr: false,
         rollupOptions: {
           input: "src/server/app.ts",
         },

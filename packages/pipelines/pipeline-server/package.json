@@ -47,7 +47,9 @@
     "@ucdjs/pipelines-ui": "workspace:*",
     "chokidar": "catalog:prod",
     "crossws": "catalog:prod",
+    "esrap": "2.2.2",
     "h3": "catalog:prod",
+    "oxc-parser": "0.112.0",
     "pathe": "catalog:prod"
   },
   "devDependencies": {
@@ -73,7 +75,8 @@
     "tailwindcss": "catalog:web",
     "tsdown": "catalog:dev",
     "typescript": "catalog:dev",
-    "vite": "catalog:web"
+    "vite": "catalog:web",
+    "vite-tsconfig-paths": "catalog:web"
   },
   "publishConfig": {
     "access": "public"

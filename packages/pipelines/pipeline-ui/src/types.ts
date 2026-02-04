@@ -1,3 +1,5 @@
+import type { PipelineEvent, PipelineGraph } from "@ucdjs/pipelines-core";
+
 /**
  * Summary information about a pipeline for list views
  */
@@ -20,7 +22,17 @@ export interface PipelineDetails {
   versions: string[];
   routeCount: number;
   sourceCount: number;
-  routes: Array<{ id: string; cache: boolean }>;
+  routes: Array<{
+    id: string;
+    cache: boolean;
+    depends: Array<
+      | { type: "route"; routeId: string }
+      | { type: "artifact"; routeId: string; artifactName: string }
+    >;
+    emits: Array<{ id: string; scope: "version" | "global" }>;
+    outputs: Array<{ dir?: string; fileName?: string }>;
+    transforms: string[];
+  }>;
   sources: Array<{ id: string }>;
 }
 
@@ -56,11 +68,16 @@ export interface ExecuteResult {
   success: boolean;
   pipelineId: string;
   summary?: {
-    totalRoutes: number;
-    successfulRoutes: number;
-    failedRoutes: number;
-    totalTime: number;
+    versions: string[];
+    totalFiles: number;
+    matchedFiles: number;
+    skippedFiles: number;
+    fallbackFiles: number;
+    totalOutputs: number;
+    durationMs: number;
   };
+  graph?: PipelineGraph;
+  events?: PipelineEvent[];
   errors?: Array<{ scope: string; message: string }>;
   error?: string;
 }

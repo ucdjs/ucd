@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 export interface UsePipelinesOptions {
   /** Base URL for the API (default: "") */
   baseUrl?: string;
+  /** Optional search query */
+  search?: string;
   /** Whether to fetch on mount (default: true) */
   fetchOnMount?: boolean;
 }
@@ -19,7 +21,7 @@ export interface UsePipelinesReturn {
  * Hook to fetch and manage the list of all pipelines
  */
 export function usePipelines(options: UsePipelinesOptions = {}): UsePipelinesReturn {
-  const { baseUrl = "", fetchOnMount = true } = options;
+  const { baseUrl = "", search, fetchOnMount = true } = options;
 
   const [data, setData] = useState<PipelinesResponse | null>(null);
   const [loading, setLoading] = useState(fetchOnMount);
@@ -29,7 +31,15 @@ export function usePipelines(options: UsePipelinesOptions = {}): UsePipelinesRet
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${baseUrl}/api/pipelines`);
+      const params = new URLSearchParams();
+      if (search && search.trim()) {
+        params.set("query", search.trim());
+      }
+      const queryString = params.toString();
+      const url = queryString
+        ? `${baseUrl}/api/pipelines?${queryString}`
+        : `${baseUrl}/api/pipelines`;
+      const res = await fetch(url);
       if (!res.ok) {
         throw new Error(`HTTP ${res.status}`);
       }
@@ -40,7 +50,7 @@ export function usePipelines(options: UsePipelinesOptions = {}): UsePipelinesRet
     } finally {
       setLoading(false);
     }
-  }, [baseUrl]);
+  }, [baseUrl, search]);
 
   useEffect(() => {
     if (fetchOnMount) {

@@ -1,3 +1,4 @@
+import type { PipelineEvent } from "@ucdjs/pipelines-core";
 import { createPipelineExecutor } from "@ucdjs/pipelines-executor";
 import { findPipelineFiles, loadPipelinesFromPaths } from "@ucdjs/pipelines-loader";
 import { H3, readBody } from "h3";
@@ -30,7 +31,12 @@ executeRouter.post("/", async (event) => {
   const versions = body.versions ?? pipeline.versions;
   const cache = body.cache ?? true;
 
-  const executor = createPipelineExecutor({});
+  const events: PipelineEvent[] = [];
+  const executor = createPipelineExecutor({
+    onEvent: (event) => {
+      events.push(event);
+    },
+  });
 
   try {
     const execResult = await executor.run([pipeline], {
@@ -40,10 +46,21 @@ executeRouter.post("/", async (event) => {
 
     const pipelineResult = execResult.results.get(id);
 
+    if (pipelineResult) {
+      // eslint-disable-next-line no-console
+      console.info("Pipeline run finished:", {
+        pipelineId: id,
+        summary: pipelineResult.summary,
+        errorCount: pipelineResult.errors.length,
+      });
+    }
+
     return {
       success: true,
       pipelineId: id,
       summary: pipelineResult?.summary,
+      graph: pipelineResult?.graph,
+      events: events.slice().reverse(),
       errors: pipelineResult?.errors.map((e) => ({
         scope: e.scope,
         message: e.message,
