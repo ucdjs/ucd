@@ -5,7 +5,7 @@ import type {
   InferArtifactSchemaType,
   InferEmittedArtifacts,
 } from "../src/schema";
-import { describe, expect, it } from "vitest";
+import { assert, describe, expect, expectTypeOf, it } from "vitest";
 import { z } from "zod";
 import {
   artifact,
@@ -99,12 +99,10 @@ describe("isGlobalArtifact", () => {
     const schema = z.object({ value: z.string() });
     const art: ArtifactDefinition = artifact(schema, "global");
 
-    if (isGlobalArtifact(art)) {
-      expect(art._type).toBe("global-artifact");
-      expect(art.scope).toBe("global");
-    } else {
-      throw new Error("Expected global artifact");
-    }
+    assert(isGlobalArtifact(art));
+    expect(art._type).toBe("global-artifact");
+    expect(art.scope).toBe("global");
+    expectTypeOf(art).toEqualTypeOf<GlobalArtifact>();
   });
 });
 
@@ -135,12 +133,10 @@ describe("isVersionArtifact", () => {
     const schema = z.object({ count: z.number() });
     const art: ArtifactDefinition = artifact(schema, "version");
 
-    if (isVersionArtifact(art)) {
-      expect(art._type).toBe("artifact");
-      expect(art.scope).toBe("version");
-    } else {
-      throw new Error("Expected version artifact");
-    }
+    assert(isVersionArtifact(art));
+    expect(art._type).toBe("artifact");
+    expect(art.scope).toBe("version");
+    expectTypeOf(art).toEqualTypeOf<Artifact>();
   });
 });
 
@@ -151,28 +147,26 @@ describe("type inference", () => {
         id: z.string(),
         count: z.number(),
       });
+      // eslint-disable-next-line unused-imports/no-unused-vars
       const art = artifact(schema);
 
       type Inferred = InferArtifactSchemaType<typeof art>;
-      interface Expected { id: string; count: number }
 
-      const assertType: Inferred = { id: "test", count: 42 };
-      const _checkType: Expected = assertType;
-
-      expect(assertType).toEqual({ id: "test", count: 42 });
+      expectTypeOf<Inferred>().toEqualTypeOf<{ id: string; count: number }>();
     });
 
     it("should work with primitive types", () => {
+      // eslint-disable-next-line unused-imports/no-unused-vars
       const stringArt = artifact(z.string());
       type StringType = InferArtifactSchemaType<typeof stringArt>;
 
-      const value: StringType = "hello";
-      expect(value).toBe("hello");
+      expectTypeOf<StringType>().toEqualTypeOf<string>();
     });
   });
 
   describe("inferEmittedArtifacts", () => {
     it("should infer multiple artifact types", () => {
+      // eslint-disable-next-line unused-imports/no-unused-vars
       const emits = {
         result: artifact(z.object({ value: z.string() })),
         count: artifact(z.number()),
@@ -181,20 +175,15 @@ describe("type inference", () => {
 
       type Inferred = InferEmittedArtifacts<typeof emits>;
 
-      const artifacts: Inferred = {
-        result: { value: "test" },
-        count: 42,
-        enabled: true,
-      };
-
-      expect(artifacts).toEqual({
-        result: { value: "test" },
-        count: 42,
-        enabled: true,
-      });
+      expectTypeOf<Inferred>().toEqualTypeOf<{
+        readonly result: { value: string };
+        readonly count: number;
+        readonly enabled: boolean;
+      }>();
     });
 
     it("should work with global and version artifacts", () => {
+      // eslint-disable-next-line unused-imports/no-unused-vars
       const emits = {
         global: artifact(z.string(), "global"),
         version: artifact(z.number(), "version"),
@@ -202,18 +191,14 @@ describe("type inference", () => {
 
       type Inferred = InferEmittedArtifacts<typeof emits>;
 
-      const artifacts: Inferred = {
-        global: "test",
-        version: 123,
-      };
-
-      expect(artifacts).toEqual({
-        global: "test",
-        version: 123,
-      });
+      expectTypeOf<Inferred>().toEqualTypeOf<{
+        readonly global: string;
+        readonly version: number;
+      }>();
     });
 
     it("should work with complex nested schemas", () => {
+      // eslint-disable-next-line unused-imports/no-unused-vars
       const emits = {
         data: artifact(
           z.object({
@@ -225,14 +210,12 @@ describe("type inference", () => {
 
       type Inferred = InferEmittedArtifacts<typeof emits>;
 
-      const artifacts: Inferred = {
-        data: {
-          items: ["a", "b", "c"],
-          metadata: { key: "value" },
-        },
-      };
-
-      expect(artifacts.data.items).toHaveLength(3);
+      expectTypeOf<Inferred>().toEqualTypeOf<{
+        readonly data: {
+          items: string[];
+          metadata: Record<string, unknown>;
+        };
+      }>();
     });
   });
 });
