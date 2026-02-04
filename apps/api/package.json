@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@hono/zod-openapi": "catalog:api",
+    "@luxass/utils": "catalog:prod",
     "@scalar/hono-api-reference": "catalog:api",
     "@sentry/cloudflare": "catalog:api",
     "@ucdjs-internal/shared": "workspace:*",
