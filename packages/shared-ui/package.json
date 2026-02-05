@@ -58,8 +58,7 @@
   },
   "types": "./dist/index.d.mts",
   "files": [
-    "dist",
-    "src/styles"
+    "dist"
   ],
   "engines": {
     "node": ">=22.18"
