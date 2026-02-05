@@ -1,45 +1,10 @@
-import type {
-  PipelineTransformDefinition,
-  TransformContext,
-} from "../src/transform";
-import type { FileContext } from "../src/types";
-import { describe, expect, it } from "vitest";
-import {
-  applyTransforms,
-  definePipelineTransform,
-} from "../src/transform";
-
-function createTransformContext(): TransformContext {
-  const file: FileContext = {
-    version: "16.0.0",
-    dir: "ucd",
-    path: "ucd/LineBreak.txt",
-    name: "LineBreak.txt",
-    ext: ".txt",
-  };
-
-  return {
-    version: "16.0.0",
-    file,
-  };
-}
-
-async function* createAsyncIterable<T>(items: T[]): AsyncIterable<T> {
-  for (const item of items) {
-    yield item;
-  }
-}
-
-async function collectAsync<T>(iter: AsyncIterable<T>): Promise<T[]> {
-  const result: T[] = [];
-  for await (const item of iter) {
-    result.push(item);
-  }
-  return result;
-}
+import type { PipelineTransformDefinition } from "../src/transform";
+import { asyncFromArray, collect } from "#test-utils";
+import { describe, expect, expectTypeOf, it } from "vitest";
+import { applyTransforms, definePipelineTransform } from "../src/transform";
 
 describe("definePipelineTransform", () => {
-  it("should define a simple transform", () => {
+  it("should define a simple transform", async () => {
     const transform = definePipelineTransform({
       id: "uppercase",
       async* fn(_ctx, rows) {
@@ -51,9 +16,17 @@ describe("definePipelineTransform", () => {
 
     expect(transform.id).toBe("uppercase");
     expect(typeof transform.fn).toBe("function");
+    expectTypeOf(transform).toEqualTypeOf<PipelineTransformDefinition<unknown, string>>();
+
+    const input = ["a", "b", "c"];
+    const result = await collect(
+      transform.fn(null as any, asyncFromArray(input)),
+    );
+
+    expect(result).toEqual(["A", "B", "C"]);
   });
 
-  it("should define a transform with type parameters", () => {
+  it("should define a transform with type parameters", async () => {
     const transform = definePipelineTransform<string, number>({
       id: "string-length",
       async* fn(_ctx, rows) {
@@ -64,6 +37,14 @@ describe("definePipelineTransform", () => {
     });
 
     expect(transform.id).toBe("string-length");
+    expectTypeOf(transform).toEqualTypeOf<PipelineTransformDefinition<string, number>>();
+
+    const input = ["foo", "barbaz"];
+    const result = await collect(
+      transform.fn(null as any, asyncFromArray(input)),
+    );
+
+    expect(result).toEqual([3, 6]);
   });
 
   it("should preserve transform function", async () => {
@@ -76,9 +57,13 @@ describe("definePipelineTransform", () => {
       },
     });
 
-    const ctx = createTransformContext();
-    const input = createAsyncIterable([1, 2, 3]);
-    const result = await collectAsync(transform.fn(ctx, input));
+    expectTypeOf(transform).toEqualTypeOf<PipelineTransformDefinition<number, number>>();
+
+    const input = [1, 2, 3];
+    const result = await collect(
+      transform.fn(null as any, asyncFromArray(input)),
+    );
+    expectTypeOf(result).toEqualTypeOf<number[]>();
 
     expect(result).toEqual([2, 4, 6]);
   });
@@ -95,9 +80,12 @@ describe("applyTransforms", () => {
       },
     });
 
-    const ctx = createTransformContext();
-    const input = createAsyncIterable(["hello", "world"]);
-    const result = await collectAsync(applyTransforms(ctx, input, [uppercase]));
+    expectTypeOf(uppercase).toEqualTypeOf<PipelineTransformDefinition<string, string>>();
+
+    const ctx = {} as any;
+    const result = await collect(applyTransforms(ctx, asyncFromArray(["hello", "world"]), [uppercase]));
+
+    expectTypeOf(result).toEqualTypeOf<unknown[]>();
 
     expect(result).toEqual(["HELLO", "WORLD"]);
   });
@@ -121,9 +109,13 @@ describe("applyTransforms", () => {
       },
     });
 
-    const ctx = createTransformContext();
-    const input = createAsyncIterable(["hello", "world"]);
-    const result = await collectAsync(applyTransforms(ctx, input, [uppercase, exclaim]));
+    expectTypeOf(uppercase).toEqualTypeOf<PipelineTransformDefinition<string, string>>();
+    expectTypeOf(exclaim).toEqualTypeOf<PipelineTransformDefinition<string, string>>();
+
+    const ctx = {} as any;
+    const result = await collect(applyTransforms(ctx, asyncFromArray(["hello", "world"]), [uppercase, exclaim]));
+
+    expectTypeOf(result).toEqualTypeOf<unknown[]>();
 
     expect(result).toEqual(["HELLO!", "WORLD!"]);
   });
@@ -147,9 +139,13 @@ describe("applyTransforms", () => {
       },
     });
 
-    const ctx = createTransformContext();
-    const input = createAsyncIterable(["a", "ab", "abc"]);
-    const result = await collectAsync(applyTransforms(ctx, input, [toLength, double]));
+    expectTypeOf(toLength).toEqualTypeOf<PipelineTransformDefinition<string, number>>();
+    expectTypeOf(double).toEqualTypeOf<PipelineTransformDefinition<number, number>>();
+
+    const ctx = {} as any;
+    const result = await collect(applyTransforms(ctx, asyncFromArray(["a", "ab", "abc"]), [toLength, double]));
+
+    expectTypeOf(result).toEqualTypeOf<unknown[]>();
 
     expect(result).toEqual([2, 4, 6]);
   });
@@ -165,19 +161,28 @@ describe("applyTransforms", () => {
         },
       });
 
-    const ctx = createTransformContext();
-    const input = createAsyncIterable(["x"]);
-    const result = await collectAsync(
-      applyTransforms(ctx, input, [append("1"), append("2"), append("3")]),
+    const t1 = append("1");
+    const t2 = append("2");
+    const t3 = append("3");
+    expectTypeOf(t1).toEqualTypeOf<PipelineTransformDefinition<string, string>>();
+    expectTypeOf(t2).toEqualTypeOf<PipelineTransformDefinition<string, string>>();
+    expectTypeOf(t3).toEqualTypeOf<PipelineTransformDefinition<string, string>>();
+
+    const ctx = {} as any;
+    const result = await collect(
+      applyTransforms(ctx, asyncFromArray(["x"]), [t1, t2, t3]),
     );
+
+    expectTypeOf(result).toEqualTypeOf<unknown[]>();
 
     expect(result).toEqual(["x123"]);
   });
 
   it("should handle empty transform array", async () => {
-    const ctx = createTransformContext();
-    const input = createAsyncIterable(["a", "b", "c"]);
-    const result = await collectAsync(applyTransforms(ctx, input, []));
+    const ctx = {} as any;
+    const result = await collect(applyTransforms(ctx, asyncFromArray(["a", "b", "c"]), []));
+
+    expectTypeOf(result).toEqualTypeOf<unknown[]>();
 
     expect(result).toEqual(["a", "b", "c"]);
   });
@@ -192,9 +197,12 @@ describe("applyTransforms", () => {
       },
     });
 
-    const ctx = createTransformContext();
-    const input = createAsyncIterable<string>([]);
-    const result = await collectAsync(applyTransforms(ctx, input, [uppercase]));
+    expectTypeOf(uppercase).toEqualTypeOf<PipelineTransformDefinition<string, string>>();
+
+    const ctx = {} as any;
+    const result = await collect(applyTransforms(ctx, asyncFromArray<string>([]), [uppercase]));
+
+    expectTypeOf(result).toEqualTypeOf<unknown[]>();
 
     expect(result).toEqual([]);
   });
@@ -214,9 +222,19 @@ describe("applyTransforms", () => {
       },
     });
 
-    const ctx = createTransformContext();
-    const input = createAsyncIterable(["test"]);
-    await collectAsync(applyTransforms(ctx, input, [captureContext]));
+    expectTypeOf(captureContext).toEqualTypeOf<PipelineTransformDefinition<string, string>>();
+
+    const ctx = {
+      version: "16.0.0",
+      file: {
+        version: "16.0.0",
+        dir: "ucd",
+        path: "ucd/LineBreak.txt",
+        name: "LineBreak.txt",
+        ext: ".txt",
+      },
+    };
+    await collect(applyTransforms(ctx, asyncFromArray(["test"]), [captureContext]));
 
     expect(capturedVersion).toBe("16.0.0");
     expect(capturedFileName).toBe("LineBreak.txt");
@@ -242,12 +260,15 @@ describe("applyTransforms", () => {
       },
     });
 
-    const ctx = createTransformContext();
-    const input = createAsyncIterable<Person>([
+    expectTypeOf(addId).toEqualTypeOf<PipelineTransformDefinition<Person, PersonWithId>>();
+
+    const ctx = {} as any;
+    const result = await collect(applyTransforms(ctx, asyncFromArray<Person>([
       { name: "Alice", age: 30 },
       { name: "Bob", age: 25 },
-    ]);
-    const result = await collectAsync(applyTransforms(ctx, input, [addId]));
+    ]), [addId]));
+
+    expectTypeOf(result).toEqualTypeOf<unknown[]>();
 
     expect(result).toEqual([
       { name: "Alice", age: 30, id: "person-0" },
@@ -267,9 +288,12 @@ describe("applyTransforms", () => {
       },
     });
 
-    const ctx = createTransformContext();
-    const input = createAsyncIterable([1, 2, 3, 4, 5, 6]);
-    const result = await collectAsync(applyTransforms(ctx, input, [filterEven]));
+    expectTypeOf(filterEven).toEqualTypeOf<PipelineTransformDefinition<number, number>>();
+
+    const ctx = {} as any;
+    const result = await collect(applyTransforms(ctx, asyncFromArray([1, 2, 3, 4, 5, 6]), [filterEven]));
+
+    expectTypeOf(result).toEqualTypeOf<unknown[]>();
 
     expect(result).toEqual([2, 4, 6]);
   });
@@ -286,45 +310,13 @@ describe("applyTransforms", () => {
       },
     });
 
-    const ctx = createTransformContext();
-    const input = createAsyncIterable([1, 2, 3]);
-    const result = await collectAsync(applyTransforms(ctx, input, [toArray]));
+    expectTypeOf(toArray).toEqualTypeOf<PipelineTransformDefinition<number, number[]>>();
+
+    const ctx = {} as any;
+    const result = await collect(applyTransforms(ctx, asyncFromArray([1, 2, 3]), [toArray]));
+
+    expectTypeOf(result).toEqualTypeOf<unknown[]>();
 
     expect(result).toEqual([[1, 2, 3]]);
-  });
-});
-
-describe("type inference", () => {
-  it("should preserve transform types", async () => {
-    const stringToNumber = definePipelineTransform<string, number>({
-      id: "length",
-      async* fn(_ctx, rows) {
-        for await (const row of rows) {
-          yield row.length;
-        }
-      },
-    });
-
-    const ctx = createTransformContext();
-    const input = createAsyncIterable(["hello", "world"]);
-    const result = await collectAsync(stringToNumber.fn(ctx, input));
-
-    expect(result).toEqual([5, 5]);
-  });
-});
-
-describe("pipelineTransformDefinition", () => {
-  it("should create valid transform definition", () => {
-    const def: PipelineTransformDefinition<string, number> = {
-      id: "test",
-      async* fn(_ctx, rows) {
-        for await (const row of rows) {
-          yield row.length;
-        }
-      },
-    };
-
-    expect(def.id).toBe("test");
-    expect(typeof def.fn).toBe("function");
   });
 });

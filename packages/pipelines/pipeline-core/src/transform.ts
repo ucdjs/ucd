@@ -10,126 +10,98 @@ export interface PipelineTransformDefinition<TInput = unknown, TOutput = unknown
   fn: (ctx: TransformContext, rows: AsyncIterable<TInput>) => AsyncIterable<TOutput>;
 }
 
+/**
+ * Creates and returns a validated pipeline transform definition.
+ *
+ * This function is primarily a type-safe way to define transforms. It ensures that
+ * the transform adheres to the `PipelineTransformDefinition` interface and preserves
+ * type information for chaining.
+ *
+ * @typeParam TInput - The input type accepted by the transform.
+ * @typeParam TOutput - The output type produced by the transform.
+ * @param {PipelineTransformDefinition<TInput, TOutput>} definition - The transform definition.
+ * @returns {PipelineTransformDefinition<TInput, TOutput>} The same definition, typed correctly.
+ *
+ * @example
+ * ```ts
+ * const uppercase = definePipelineTransform({
+ *   id: 'uppercase',
+ *   fn: async function* (_ctx, rows) {
+ *     for await (const row of rows) {
+ *       yield row.toUpperCase();
+ *     }
+ *   },
+ * });
+ * ```
+ */
 export function definePipelineTransform<TInput, TOutput>(
   definition: PipelineTransformDefinition<TInput, TOutput>,
 ): PipelineTransformDefinition<TInput, TOutput> {
   return definition;
 }
 
-export type InferTransformInput<T>
-  = T extends PipelineTransformDefinition<infer TInput, unknown> ? TInput : never;
+export type InferTransformInput<T> = T extends PipelineTransformDefinition<infer TInput, unknown> ? TInput : never;
 
-export type InferTransformOutput<T>
-  = T extends PipelineTransformDefinition<unknown, infer TOutput> ? TOutput : never;
+export type InferTransformOutput<T> = T extends PipelineTransformDefinition<unknown, infer TOutput> ? TOutput : never;
 
-type ChainTwo<T1, T2> = T1 extends PipelineTransformDefinition<any, infer O1>
-  ? T2 extends PipelineTransformDefinition<O1, infer O2>
-    ? O2
-    : never
-  : never;
-
-type ChainThree<T1, T2, T3> = T1 extends PipelineTransformDefinition<any, infer O1>
-  ? T2 extends PipelineTransformDefinition<O1, infer O2>
-    ? T3 extends PipelineTransformDefinition<O2, infer O3>
-      ? O3
-      : never
-    : never
-  : never;
-
-type ChainFour<T1, T2, T3, T4> = T1 extends PipelineTransformDefinition<any, infer O1>
-  ? T2 extends PipelineTransformDefinition<O1, infer O2>
-    ? T3 extends PipelineTransformDefinition<O2, infer O3>
-      ? T4 extends PipelineTransformDefinition<O3, infer O4>
-        ? O4
-        : never
-      : never
-    : never
-  : never;
-
-type ChainFive<T1, T2, T3, T4, T5> = T1 extends PipelineTransformDefinition<any, infer O1>
-  ? T2 extends PipelineTransformDefinition<O1, infer O2>
-    ? T3 extends PipelineTransformDefinition<O2, infer O3>
-      ? T4 extends PipelineTransformDefinition<O3, infer O4>
-        ? T5 extends PipelineTransformDefinition<O4, infer O5>
-          ? O5
-          : never
-        : never
-      : never
-    : never
-  : never;
-
-type ChainSix<T1, T2, T3, T4, T5, T6> = T1 extends PipelineTransformDefinition<any, infer O1>
-  ? T2 extends PipelineTransformDefinition<O1, infer O2>
-    ? T3 extends PipelineTransformDefinition<O2, infer O3>
-      ? T4 extends PipelineTransformDefinition<O3, infer O4>
-        ? T5 extends PipelineTransformDefinition<O4, infer O5>
-          ? T6 extends PipelineTransformDefinition<O5, infer O6>
-            ? O6
-            : never
-          : never
-        : never
-      : never
-    : never
-  : never;
-
-type ChainSeven<T1, T2, T3, T4, T5, T6, T7> = T1 extends PipelineTransformDefinition<any, infer O1>
-  ? T2 extends PipelineTransformDefinition<O1, infer O2>
-    ? T3 extends PipelineTransformDefinition<O2, infer O3>
-      ? T4 extends PipelineTransformDefinition<O3, infer O4>
-        ? T5 extends PipelineTransformDefinition<O4, infer O5>
-          ? T6 extends PipelineTransformDefinition<O5, infer O6>
-            ? T7 extends PipelineTransformDefinition<O6, infer O7>
-              ? O7
-              : never
-            : never
-          : never
-        : never
-      : never
-    : never
-  : never;
-
-type ChainEight<T1, T2, T3, T4, T5, T6, T7, T8> = T1 extends PipelineTransformDefinition<any, infer O1>
-  ? T2 extends PipelineTransformDefinition<O1, infer O2>
-    ? T3 extends PipelineTransformDefinition<O2, infer O3>
-      ? T4 extends PipelineTransformDefinition<O3, infer O4>
-        ? T5 extends PipelineTransformDefinition<O4, infer O5>
-          ? T6 extends PipelineTransformDefinition<O5, infer O6>
-            ? T7 extends PipelineTransformDefinition<O6, infer O7>
-              ? T8 extends PipelineTransformDefinition<O7, infer O8>
-                ? O8
-                : never
-              : never
-            : never
-          : never
-        : never
-      : never
-    : never
-  : never;
+/**
+ * Recursively composes a sequence of transform definitions into a single output type.
+ *
+ * Given an input type and a sequence of transforms, this type infers the final output
+ * type by threading the output of each transform into the input of the next.
+ *
+ * @typeParam TInput - The initial input type.
+ * @typeParam TTransforms - A readonly tuple of transform definitions, starting with one
+ *                          that accepts `TInput`.
+ *
+ * @example
+ * ```ts
+ * type T1 = PipelineTransformDefinition<string, number>;
+ * type T2 = PipelineTransformDefinition<number, boolean>;
+ * type Result = ChainTransforms<string, [T1, T2]>; // boolean
+ * ```
+ */
+type ChainTransformsHelper<
+  TInput,
+  TTransforms extends readonly PipelineTransformDefinition<any, any>[],
+> = TTransforms extends readonly [
+  infer _First extends PipelineTransformDefinition<TInput, infer Output>,
+  ...infer Rest extends PipelineTransformDefinition<any, any>[],
+]
+  ? ChainTransformsHelper<Output, Rest>
+  : TInput;
 
 export type ChainTransforms<
   TInput,
   TTransforms extends readonly PipelineTransformDefinition<any, any>[],
-> = TTransforms extends readonly []
-  ? TInput
-  // eslint-disable-next-line unused-imports/no-unused-vars
-  : TTransforms extends readonly [infer T1 extends PipelineTransformDefinition<any, infer O1>]
-    ? O1
-    : TTransforms extends readonly [infer T1, infer T2]
-      ? ChainTwo<T1, T2>
-      : TTransforms extends readonly [infer T1, infer T2, infer T3]
-        ? ChainThree<T1, T2, T3>
-        : TTransforms extends readonly [infer T1, infer T2, infer T3, infer T4]
-          ? ChainFour<T1, T2, T3, T4>
-          : TTransforms extends readonly [infer T1, infer T2, infer T3, infer T4, infer T5]
-            ? ChainFive<T1, T2, T3, T4, T5>
-            : TTransforms extends readonly [infer T1, infer T2, infer T3, infer T4, infer T5, infer T6]
-              ? ChainSix<T1, T2, T3, T4, T5, T6>
-              : TTransforms extends readonly [infer T1, infer T2, infer T3, infer T4, infer T5, infer T6, infer T7]
-                ? ChainSeven<T1, T2, T3, T4, T5, T6, T7>
-                : TTransforms extends readonly [infer T1, infer T2, infer T3, infer T4, infer T5, infer T6, infer T7, infer T8]
-                  ? ChainEight<T1, T2, T3, T4, T5, T6, T7, T8>
-                  : unknown;
+> = ChainTransformsHelper<TInput, TTransforms>;
 
+/**
+ * Applies a sequence of transforms to an async iterable, composing them together.
+ *
+ * This function threads the output of one transform into the input of the next,
+ * creating a pipeline. All iteration is lazy—values are pulled through the pipeline
+ * only as they are consumed.
+ *
+ * @typeParam TInput - The input type of the first transform.
+ * @param {TransformContext} ctx - The context to pass to each transform.
+ * @param {AsyncIterable<TInput>} rows - The initial data source.
+ * @param {readonly PipelineTransformDefinition<any, any>[]} transforms - The transforms to apply in order.
+ * @returns {AsyncIterable<unknown>} An async iterable of the final output (typed as `unknown` since
+ *                                    the result type depends on the transform sequence).
+ *
+ * @remarks
+ * The output type can be narrowed using the `ChainTransforms` utility type if the
+ * exact sequence of transforms is known at compile time.
+ *
+ * @example
+ * ```ts
+ * const output = applyTransforms(ctx, sourceRows, [
+ *   defineTransform({ id: 'filter', fn: filterFn }),
+ *   defineTransform({ id: 'map', fn: mapFn }),
+ * ]);
+ * ```
+ */
 export async function* applyTransforms<TInput>(
   ctx: TransformContext,
   rows: AsyncIterable<TInput>,
