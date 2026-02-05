@@ -1,5 +1,6 @@
 import type { PipelineInfo } from "@ucdjs/pipelines-ui";
 import {
+  Command,
   CommandDialog,
   CommandEmpty,
   CommandGroup,
@@ -58,48 +59,50 @@ export function PipelineCommandPalette({
 
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange}>
-      <CommandInput
-        placeholder="Type a command or search..."
-        value={search}
-        onValueChange={setSearch}
-      />
-      <CommandList>
-        <CommandEmpty>No results found.</CommandEmpty>
+      <Command>
+        <CommandInput
+          placeholder="Type a command or search..."
+          value={search}
+          onValueChange={setSearch}
+        />
+        <CommandList>
+          <CommandEmpty>No results found.</CommandEmpty>
 
-        {currentPipeline && (
-          <CommandGroup heading="Current Pipeline">
-            <CommandItem onSelect={handleExecuteCurrent}>
-              <Play className="mr-2 h-4 w-4" />
-              Execute Current Pipeline
-              <CommandShortcut>⌘E</CommandShortcut>
-            </CommandItem>
-            <CommandItem onSelect={() => handleNavigate(`/pipelines/${currentPipeline.id}/code`)}>
-              <FileCode className="mr-2 h-4 w-4" />
-              View Current Pipeline Code
-            </CommandItem>
-            <CommandItem onSelect={() => handleNavigate(`/pipelines/${currentPipeline.id}/logs`)}>
-              <ScrollText className="mr-2 h-4 w-4" />
-              View Current Pipeline Logs
-            </CommandItem>
+          {currentPipeline && (
+            <CommandGroup heading="Current Pipeline">
+              <CommandItem onSelect={handleExecuteCurrent}>
+                <Play className="mr-2 h-4 w-4" />
+                Execute Current Pipeline
+                <CommandShortcut>⌘E</CommandShortcut>
+              </CommandItem>
+              <CommandItem onSelect={() => handleNavigate(`/pipelines/${currentPipeline.id}/code`)}>
+                <FileCode className="mr-2 h-4 w-4" />
+                View Current Pipeline Code
+              </CommandItem>
+              <CommandItem onSelect={() => handleNavigate(`/pipelines/${currentPipeline.id}/logs`)}>
+                <ScrollText className="mr-2 h-4 w-4" />
+                View Current Pipeline Logs
+              </CommandItem>
+            </CommandGroup>
+          )}
+
+          <CommandGroup heading="All Pipelines">
+            {pipelines.map((pipeline) => (
+              <CommandItem
+                key={pipeline.id}
+                onSelect={() => handleExecutePipeline(pipeline)}
+                value={pipeline.id}
+              >
+                <Terminal className="mr-2 h-4 w-4" />
+                {pipeline.name || pipeline.id}
+                <span className="ml-2 text-xs text-muted-foreground">
+                  {pipeline.versions.length} versions
+                </span>
+              </CommandItem>
+            ))}
           </CommandGroup>
-        )}
-
-        <CommandGroup heading="All Pipelines">
-          {pipelines.map((pipeline) => (
-            <CommandItem
-              key={pipeline.id}
-              onSelect={() => handleExecutePipeline(pipeline)}
-              value={pipeline.id}
-            >
-              <Terminal className="mr-2 h-4 w-4" />
-              {pipeline.name || pipeline.id}
-              <span className="ml-2 text-xs text-muted-foreground">
-                {pipeline.versions.length} versions
-              </span>
-            </CommandItem>
-          ))}
-        </CommandGroup>
-      </CommandList>
+        </CommandList>
+      </Command>
     </CommandDialog>
   );
 }

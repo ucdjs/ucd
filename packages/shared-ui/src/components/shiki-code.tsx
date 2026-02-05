@@ -1,5 +1,5 @@
 import type { BundledLanguage, BundledTheme } from "shiki";
-import { cache, memo, use } from "react";
+import { memo, use, useMemo } from "react";
 import { createJavaScriptRegexEngine } from "shiki";
 import { createHighlighterCore } from "shiki/core";
 
@@ -24,16 +24,14 @@ export interface ShikiCodeProps {
   className?: string;
 }
 
-const getHighlighter = cache(async () => {
-  return await createHighlighterCore({
-    themes: [import("shiki/themes/github-dark.mjs")],
-    langs: [
-      import("shiki/langs/javascript.mjs"),
-      import("shiki/langs/typescript.mjs"),
-      import("shiki/langs/json.mjs"),
-    ],
-    engine: createJavaScriptRegexEngine(),
-  });
+const highlighterPromise = createHighlighterCore({
+  themes: [import("shiki/themes/github-dark.mjs")],
+  langs: [
+    import("shiki/langs/javascript.mjs"),
+    import("shiki/langs/typescript.mjs"),
+    import("shiki/langs/json.mjs"),
+  ],
+  engine: createJavaScriptRegexEngine(),
 });
 
 /**
@@ -51,12 +49,11 @@ export const ShikiCode = memo<ShikiCodeProps>(({
   theme = "github-dark",
   className,
 }) => {
-  const highlighter = use(getHighlighter());
+  const highlighter = use(highlighterPromise);
 
-  const html = highlighter.codeToHtml(code, {
-    lang: language,
-    theme,
-  });
+  const html = useMemo(() => {
+    return highlighter.codeToHtml(code, { lang: language, theme });
+  }, [highlighter, code, language, theme]);
 
   // eslint-disable-next-line react-dom/no-dangerously-set-innerhtml
   return <div className={className} dangerouslySetInnerHTML={{ __html: html }} />;

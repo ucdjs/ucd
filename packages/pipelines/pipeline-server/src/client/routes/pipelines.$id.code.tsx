@@ -1,6 +1,7 @@
 import type { CodeResponse } from "../types";
 import { createFileRoute } from "@tanstack/react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
+import { ShikiCode } from "packages/shared-ui/dist/components/shiki-code.mjs";
 
 export const Route = createFileRoute("/pipelines/$id/code")({
   loader: async ({ params }): Promise<CodeResponse> => {
@@ -43,9 +44,7 @@ function CodeDisplay({ code, filePath }: CodeDisplayProps) {
       </CardHeader>
       <CardContent>
         <p className="text-xs text-muted-foreground mb-3 font-mono">{filePath}</p>
-        <pre className="rounded-md bg-muted/50 p-4 text-sm overflow-auto">
-          <code>{code}</code>
-        </pre>
+        <ShikiCode code={code} language="typescript" className="rounded-md bg-muted/50 p-4 text-sm overflow-auto" />
       </CardContent>
     </Card>
   );
