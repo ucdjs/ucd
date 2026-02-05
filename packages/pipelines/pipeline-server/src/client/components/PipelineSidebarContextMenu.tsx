@@ -43,7 +43,7 @@ export function PipelineSidebarContextMenu({
     <>
       <ContextMenu>
         <ContextMenuTrigger render={() => (
-          <div className="w-full">{children}</div>
+          <div className="w-full cursor-pointer">{children}</div>
         )}
         />
 
