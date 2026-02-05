@@ -36,6 +36,7 @@
     "./ui/breadcrumb": "./dist/ui/breadcrumb.mjs",
     "./ui/button": "./dist/ui/button.mjs",
     "./ui/card": "./dist/ui/card.mjs",
+    "./ui/checkbox": "./dist/ui/checkbox.mjs",
     "./ui/collapsible": "./dist/ui/collapsible.mjs",
     "./ui/combobox": "./dist/ui/combobox.mjs",
     "./ui/command": "./dist/ui/command.mjs",
