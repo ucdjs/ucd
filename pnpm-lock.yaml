@@ -1139,6 +1139,9 @@ importers:
       '@ucdjs/pipelines-presets':
         specifier: workspace:*
         version: link:../pipeline-presets
+      zod:
+        specifier: catalog:prod
+        version: 4.3.6
 
   packages/pipelines/pipeline-presets:
     dependencies:
