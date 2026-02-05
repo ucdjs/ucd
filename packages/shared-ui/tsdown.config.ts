@@ -6,6 +6,7 @@ export default createTsdownConfig({
     "./src/lib/*.ts",
     "./src/hooks/*.ts",
     "./src/ui/*.tsx",
+    "./src/components/*.tsx",
   ],
   exports: {
     customExports(exports) {

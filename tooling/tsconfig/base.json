@@ -31,6 +31,9 @@
       "@ucdjs-internal/shared-ui/hooks/*": [
         "./packages/shared-ui/src/hooks/*.ts"
       ],
+      "@ucdjs-internal/shared-ui/components/*": [
+        "./packages/shared-ui/src/components/*.tsx"
+      ],
       "@ucdjs-internal/shared-ui/styles.css": [
         "./packages/shared-ui/src/styles/globals.css"
       ],

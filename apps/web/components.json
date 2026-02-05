@@ -16,7 +16,7 @@
     "utils": "@ucdjs-internal/shared-ui/lib/utils",
     "hooks": "@ucdjs-internal/shared-ui/hooks",
     "lib": "@ucdjs-internal/shared-ui/lib",
-    "ui": "@ucdjs-internal/shared-ui/components"
+    "ui": "@ucdjs-internal/shared-ui/ui"
   },
   "menuColor": "default",
   "menuAccent": "subtle",
