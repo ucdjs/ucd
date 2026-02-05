@@ -27,6 +27,7 @@
   },
   "exports": {
     ".": "./dist/index.mjs",
+    "./components/shiki-code": "./dist/components/shiki-code.mjs",
     "./hooks/use-mobile": "./dist/hooks/use-mobile.mjs",
     "./lib/utils": "./dist/lib/utils.mjs",
     "./ui/alert-dialog": "./dist/ui/alert-dialog.mjs",
@@ -76,6 +77,7 @@
     "react": "catalog:web",
     "react-dom": "catalog:web",
     "shadcn": "catalog:web",
+    "shiki": "catalog:web",
     "tailwind-merge": "catalog:web",
     "tailwindcss": "catalog:web",
     "tw-animate-css": "catalog:web",
