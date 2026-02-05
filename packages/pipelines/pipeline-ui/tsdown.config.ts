@@ -24,5 +24,9 @@ export default createTsdownConfig({
     transform: {
       jsx: "react-jsx",
     },
+    experimental: {
+      lazyBarrel: true,
+    },
   },
+  unbundle: true,
 });

@@ -1,7 +1,7 @@
 import type { PipelineDefinition } from "@ucdjs/pipelines-core";
+import type { GitHubSource, GitLabSource, RemoteFileList } from "./remote/types";
 import { isPipelineDefinition } from "@ucdjs/pipelines-core";
 import { transform } from "oxc-transform";
-import type { GitHubSource, GitLabSource, RemoteFileList } from "./remote/types";
 import * as github from "./remote/github";
 import * as gitlab from "./remote/gitlab";
 
@@ -116,9 +116,17 @@ export async function loadPipelineFromContent(
   filename: string,
   options: LoadPipelineFromContentOptions = {},
 ): Promise<LoadedPipelineFile> {
-  const { transformFn = (code, fname) => transform(code, fname) } = options;
+  const { transformFn } = options;
 
-  const { code: jsCode } = transformFn(content, filename);
+  let jsCode: string;
+  if (transformFn) {
+    const result = await Promise.resolve(transformFn(content, filename));
+    jsCode = result.code;
+  } else {
+    const { transformSync } = await import("oxc-transform");
+    const result = transformSync(filename, content, { sourceType: "module" });
+    jsCode = result.code;
+  }
 
   const module = { exports: {} };
   const exports = module.exports;
@@ -131,6 +139,7 @@ export async function loadPipelineFromContent(
     __dirname: filename.split("/").slice(0, -1).join("/"),
   };
 
+  // eslint-disable-next-line no-new-func
   const fn = new Function(
     "module",
     "exports",

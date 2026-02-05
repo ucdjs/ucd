@@ -42,12 +42,11 @@ export function PipelineSidebarContextMenu({
   return (
     <>
       <ContextMenu>
-        <ContextMenuTrigger render={() => (
-          <div className="w-full cursor-pointer">{children}</div>
-        )}
-        />
+        <ContextMenuTrigger className="w-full">
+          {children}
+        </ContextMenuTrigger>
 
-        <ContextMenuContent className="w-56">
+        <ContextMenuContent className="w-56 dark">
           <ContextMenuItem onClick={handleExecuteAll}>
             <Play className="mr-2 h-4 w-4" />
             Execute All Versions

@@ -1,6 +1,3 @@
-/**
- * Represents the context of a file being processed in the pipeline.
- */
 export interface FileContext {
   /**
    * The Unicode version being processed (e.g., "16.0.0").

@@ -5,9 +5,6 @@ import type { InferSourceIds, PipelineSourceDefinition } from "./source";
 import type { ParseContext, ParsedRow, PipelineFilter, ResolveContext } from "./types";
 import { buildDAG } from "./dag";
 
-/**
- * Fallback route definition for files that don't match any explicit route.
- */
 export interface FallbackRouteDefinition<
   TArtifacts extends Record<string, unknown> = Record<string, unknown>,
   TOutput = unknown,
@@ -28,10 +25,6 @@ export interface FallbackRouteDefinition<
   resolver: (ctx: ResolveContext<TArtifacts>, rows: AsyncIterable<ParsedRow>) => Promise<TOutput>;
 }
 
-/**
- * Options for defining a pipeline.
- * This is a pure data structure with no execution logic.
- */
 export interface PipelineDefinitionOptions<
   TSources extends readonly PipelineSourceDefinition[] = readonly PipelineSourceDefinition[],
   TRoutes extends readonly PipelineRouteDefinition<any, any, any, any, any>[] = readonly PipelineRouteDefinition<any, any, any, any, any>[],
@@ -97,12 +90,6 @@ export interface PipelineDefinitionOptions<
   onEvent?: (event: PipelineEvent) => void | Promise<void>;
 }
 
-/**
- * A pipeline definition is a pure data structure that describes
- * how to process Unicode Character Database files.
- *
- * It does NOT contain execution logic - that is handled by the executor.
- */
 export interface PipelineDefinition<
   TId extends string = string,
   TSources extends readonly PipelineSourceDefinition[] = readonly PipelineSourceDefinition[],
@@ -176,9 +163,6 @@ export interface PipelineDefinition<
   readonly dag: DAG;
 }
 
-/**
- * Infer the output type of a pipeline definition.
- */
 export type InferPipelineOutput<
   TRoutes extends readonly PipelineRouteDefinition<any, any, any, any, any>[],
   TFallback extends FallbackRouteDefinition<any, unknown> | undefined,
@@ -186,16 +170,10 @@ export type InferPipelineOutput<
   ? InferRoutesOutput<TRoutes> | TFallbackOutput
   : InferRoutesOutput<TRoutes>;
 
-/**
- * Infer the source IDs from a pipeline definition.
- */
 export type InferPipelineSourceIds<T> = T extends PipelineDefinition<any, infer TSources, any, any>
   ? InferSourceIds<TSources>
   : never;
 
-/**
- * Infer the route IDs from a pipeline definition.
- */
 export type InferPipelineRouteIds<T> = T extends PipelineDefinition<any, any, infer TRoutes, any>
   ? TRoutes[number] extends PipelineRouteDefinition<infer TId, any, any, any, any>
     ? TId
@@ -259,9 +237,6 @@ export function definePipeline<
   };
 }
 
-/**
- * Type guard to check if a value is a pipeline definition.
- */
 export function isPipelineDefinition(value: unknown): value is PipelineDefinition {
   return (
     typeof value === "object"
@@ -271,18 +246,12 @@ export function isPipelineDefinition(value: unknown): value is PipelineDefinitio
   );
 }
 
-/**
- * Extract route IDs from a pipeline definition.
- */
 export function getPipelineRouteIds<T extends PipelineDefinition>(
   pipeline: T,
 ): string[] {
   return pipeline.routes.map((route) => route.id);
 }
 
-/**
- * Extract source IDs from a pipeline definition.
- */
 export function getPipelineSourceIds<T extends PipelineDefinition>(
   pipeline: T,
 ): string[] {

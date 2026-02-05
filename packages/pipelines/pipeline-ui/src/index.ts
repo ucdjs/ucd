@@ -1,4 +1,7 @@
-export { PipelineGraphDetails, type PipelineGraphDetailsProps } from "./components/details";
+export {
+  PipelineGraphDetails,
+  type PipelineGraphDetailsProps,
+} from "./components/graph/details.js";
 export {
   ExecutionErrors,
   type ExecutionErrorsProps,
@@ -6,10 +9,12 @@ export {
   type ExecutionResultProps,
   ExecutionSummary,
   type ExecutionSummaryProps,
-} from "./components/execution-result";
-export { PipelineGraphFilters, type PipelineGraphFiltersProps } from "./components/filters";
-export { nodeTypes } from "./components/node-types";
-
+} from "./components/detail/execution-result.js";
+export {
+  PipelineGraphFilters,
+  type PipelineGraphFiltersProps,
+} from "./components/graph/filters.js";
+export { nodeTypes } from "./components/graph/node-types.js";
 export {
   ArtifactNode,
   FileNode,
@@ -17,7 +22,7 @@ export {
   type PipelineNodeData,
   RouteNode,
   SourceNode,
-} from "./components/nodes";
+} from "./components/graph/nodes.js";
 export {
   RouteItem,
   type RouteItemProps,
@@ -33,45 +38,55 @@ export {
   type VersionSelectorProps,
   VersionTag,
   type VersionTagProps,
-} from "./components/pipeline-detail";
-
-export { PipelineGraph, type PipelineGraphProps } from "./components/pipeline-graph";
+} from "./components/detail/pipeline-detail.js";
+export {
+  PipelineGraph,
+  type PipelineGraphProps,
+} from "./components/graph/pipeline-graph.js";
 export {
   PipelineSidebar,
+  type PipelineSidebarProps,
+} from "./components/sidebar/pipeline-sidebar.js";
+export {
   PipelineSidebarErrors,
   type PipelineSidebarErrorsProps,
+} from "./components/sidebar/pipeline-sidebar-errors.js";
+export {
   PipelineSidebarHeader,
   type PipelineSidebarHeaderProps,
+} from "./components/sidebar/pipeline-sidebar-header.js";
+export {
   PipelineSidebarItem,
   type PipelineSidebarItemProps,
+} from "./components/sidebar/pipeline-sidebar-item.js";
+export {
   PipelineSidebarList,
   type PipelineSidebarListProps,
-  type PipelineSidebarProps,
-} from "./components/pipeline-sidebar";
+} from "./components/sidebar/pipeline-sidebar-list.js";
 export {
   useExecute,
   type UseExecuteOptions,
   type UseExecuteReturn,
-} from "./hooks/use-execute";
+} from "./hooks/use-execute.js";
 export {
   usePipeline,
   type UsePipelineOptions,
   type UsePipelineReturn,
-} from "./hooks/use-pipeline";
+} from "./hooks/use-pipeline.js";
 export {
   usePipelines,
   type UsePipelinesOptions,
   type UsePipelinesReturn,
-} from "./hooks/use-pipelines";
+} from "./hooks/use-pipelines.js";
 export {
   filterNodesByType,
   type PipelineFlowEdge,
   type PipelineFlowNode,
   pipelineGraphToFlow,
-} from "./lib/adapter";
-export { getNodeColor, nodeTypeColors } from "./lib/colors";
-export { applyLayout, NODE_HEIGHT, NODE_WIDTH } from "./lib/layout";
-export { cn } from "./lib/utils";
+} from "./lib/adapter.js";
+export { getNodeColor, nodeTypeColors } from "./lib/colors.js";
+export { applyLayout, NODE_HEIGHT, NODE_WIDTH } from "./lib/layout.js";
+export { cn } from "./lib/utils.js";
 export type {
   ExecuteResult,
   LoadError,
@@ -79,4 +94,4 @@ export type {
   PipelineInfo,
   PipelineResponse,
   PipelinesResponse,
-} from "./types";
+} from "./types.js";

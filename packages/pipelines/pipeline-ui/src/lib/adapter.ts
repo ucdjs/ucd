@@ -4,6 +4,7 @@ import type {
   PipelineGraphNode,
   PipelineGraphNodeType,
 } from "@ucdjs/pipelines-core";
+
 import type { Edge, Node } from "@xyflow/react";
 
 export interface PipelineFlowNode extends Node {
@@ -11,6 +12,7 @@ export interface PipelineFlowNode extends Node {
     pipelineNode: PipelineGraphNode;
     label: string;
   };
+
   type: PipelineGraphNodeType;
 }
 
@@ -20,9 +22,6 @@ export interface PipelineFlowEdge extends Edge {
   };
 }
 
-/**
- * Get a human-readable label for a pipeline graph node
- */
 function getNodeLabel(node: PipelineGraphNode): string {
   switch (node.type) {
     case "source":
@@ -40,38 +39,32 @@ function getNodeLabel(node: PipelineGraphNode): string {
   }
 }
 
-/**
- * Get edge style based on edge type
- */
 function getEdgeStyle(edgeType: PipelineGraphEdge["type"]): Pick<Edge, "animated" | "style"> {
   const baseStyle = { strokeWidth: 2 };
 
   switch (edgeType) {
     case "provides":
-      return { style: { ...baseStyle, stroke: "#6366f1" } }; // indigo
+      return { style: { ...baseStyle, stroke: "#6366f1" } };
     case "matched":
-      return { style: { ...baseStyle, stroke: "#22c55e" } }; // green
+      return { style: { ...baseStyle, stroke: "#22c55e" } };
     case "parsed":
-      return { style: { ...baseStyle, stroke: "#f59e0b" } }; // amber
+      return { style: { ...baseStyle, stroke: "#f59e0b" } };
     case "resolved":
-      return { style: { ...baseStyle, stroke: "#3b82f6" } }; // blue
+      return { style: { ...baseStyle, stroke: "#3b82f6" } };
     case "uses-artifact":
-      return { style: { ...baseStyle, stroke: "#8b5cf6" }, animated: true }; // violet, animated
+      return { style: { ...baseStyle, stroke: "#8b5cf6" }, animated: true };
     default:
       return { style: baseStyle };
   }
 }
 
-/**
- * Convert a PipelineGraph to React Flow nodes and edges
- */
 export function pipelineGraphToFlow(
   graph: PipelineGraph,
 ): { nodes: PipelineFlowNode[]; edges: PipelineFlowEdge[] } {
   const nodes: PipelineFlowNode[] = graph.nodes.map((node) => ({
     id: node.id,
     type: node.type,
-    position: { x: 0, y: 0 }, // Will be set by layout
+    position: { x: 0, y: 0 },
     data: {
       pipelineNode: node,
       label: getNodeLabel(node),
@@ -92,9 +85,6 @@ export function pipelineGraphToFlow(
   return { nodes, edges };
 }
 
-/**
- * Filter nodes by type
- */
 export function filterNodesByType(
   nodes: PipelineFlowNode[],
   edges: PipelineFlowEdge[],

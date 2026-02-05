@@ -314,3 +314,11 @@ export async function runCLI(args: string[]): Promise<void> {
     setJsonMode(false);
   }
 }
+
+export function parseRepoString(repoString: string): { owner: string; repo: string } {
+  const parts = repoString.split("/");
+  if (parts.length !== 2) {
+    throw new Error(`Invalid repository format: ${repoString}. Expected: owner/repo`);
+  }
+  return { owner: parts[0]!, repo: parts[1]! };
+}
