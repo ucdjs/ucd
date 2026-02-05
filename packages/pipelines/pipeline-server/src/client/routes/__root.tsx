@@ -5,14 +5,19 @@ import {
   Link,
   Outlet,
   useMatches,
+  useNavigate,
 } from "@tanstack/react-router";
 import {
   PipelineSidebar,
   PipelineSidebarItem,
+  useExecute,
   usePipelines,
 } from "@ucdjs/pipelines-ui";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import { PipelineCommandPalette } from "../components/PipelineCommandPalette";
+import { PipelineSidebarContextMenu } from "../components/PipelineSidebarContextMenu";
 import { PipelinesContext } from "../hooks/pipeline-context";
+import { useCommandPalette } from "../hooks/use-command-palette";
 
 function useCurrentPipelineId(): string | undefined {
   const matches = useMatches();
@@ -30,21 +35,40 @@ function useCurrentPipelineId(): string | undefined {
 interface SidebarItemProps {
   pipeline: PipelineInfo;
   isActive: boolean;
+  onExecute: (versions: string[]) => void;
 }
 
-function SidebarItemWithLink({ pipeline, isActive }: SidebarItemProps) {
+function SidebarItemWithContext({ pipeline, isActive, onExecute }: SidebarItemProps) {
+  const navigate = useNavigate();
+
+  const handleNavigate = useCallback((to: string) => {
+    navigate({ to });
+  }, [navigate]);
+
+  const handleExecute = useCallback((versions: string[]) => {
+    onExecute(versions);
+    // Navigate to the pipeline logs after execution
+    navigate({ to: "/pipelines/$id", params: { id: pipeline.id } });
+  }, [onExecute, navigate, pipeline.id]);
+
   return (
-    <Link
-      to="/pipelines/$id"
-      params={{ id: pipeline.id }}
-      className="block"
-      aria-label={`Open pipeline: ${pipeline.name || pipeline.id}`}
+    <PipelineSidebarContextMenu
+      pipeline={pipeline}
+      onExecute={handleExecute}
+      onNavigate={handleNavigate}
     >
-      <PipelineSidebarItem
-        pipeline={pipeline}
-        isActive={isActive}
-      />
-    </Link>
+      <Link
+        to="/pipelines/$id"
+        params={{ id: pipeline.id }}
+        className="block"
+        aria-label={`Open pipeline: ${pipeline.name || pipeline.id}`}
+      >
+        <PipelineSidebarItem
+          pipeline={pipeline}
+          isActive={isActive}
+        />
+      </Link>
+    </PipelineSidebarContextMenu>
   );
 }
 
@@ -56,6 +80,9 @@ function RootLayout() {
   const [searchValue, setSearchValue] = useState("");
   const { data, loading, error, refetch } = usePipelines({ search: searchValue });
   const currentPipelineId = useCurrentPipelineId();
+  const { execute } = useExecute();
+  const { open: commandPaletteOpen, setOpen: setCommandPaletteOpen } = useCommandPalette();
+  const navigate = useNavigate();
 
   const contextValue = useMemo<PipelinesContextValue>(
     () => ({
@@ -67,6 +94,22 @@ function RootLayout() {
     [data, loading, error, refetch],
   );
 
+  const handleExecute = useCallback(async (pipelineId: string, versions: string[]) => {
+    try {
+      await execute(pipelineId, versions);
+      // Navigate to the pipeline
+      navigate({ to: "/pipelines/$id", params: { id: pipelineId } });
+    } catch (err) {
+      console.error("Execution failed:", err);
+    }
+  }, [execute, navigate]);
+
+  const handleNavigate = useCallback((to: string) => {
+    navigate({ to });
+  }, [navigate]);
+
+  const pipelines = data?.pipelines ?? [];
+
   return (
     <PipelinesContext value={contextValue}>
       <div className="dark flex h-screen bg-background text-foreground">
@@ -77,13 +120,26 @@ function RootLayout() {
           searchValue={searchValue}
           onSearchChange={setSearchValue}
           renderItem={(pipeline, isActive) => (
-            <SidebarItemWithLink pipeline={pipeline} isActive={isActive} />
+            <SidebarItemWithContext
+              pipeline={pipeline}
+              isActive={isActive}
+              onExecute={(versions) => handleExecute(pipeline.id, versions)}
+            />
           )}
         />
         <main className="flex-1 overflow-hidden flex flex-col" role="main">
           <Outlet />
         </main>
       </div>
+
+      <PipelineCommandPalette
+        pipelines={pipelines}
+        currentPipelineId={currentPipelineId}
+        open={commandPaletteOpen}
+        onOpenChange={setCommandPaletteOpen}
+        onExecute={handleExecute}
+        onNavigate={handleNavigate}
+      />
     </PipelinesContext>
   );
 }
