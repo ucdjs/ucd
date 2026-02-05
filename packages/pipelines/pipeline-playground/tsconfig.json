@@ -1,0 +1,7 @@
+{
+  "extends": "@ucdjs-tooling/tsconfig/base",
+  "include": [
+    "src"
+  ],
+  "exclude": ["dist"]
+}

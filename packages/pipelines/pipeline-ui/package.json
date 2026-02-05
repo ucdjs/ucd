@@ -1,0 +1,91 @@
+{
+  "name": "@ucdjs/pipelines-ui",
+  "version": "0.0.1",
+  "type": "module",
+  "author": {
+    "name": "Lucas Norgaard",
+    "email": "lucasnrgaard@gmail.com",
+    "url": "https://luxass.dev"
+  },
+  "packageManager": "pnpm@10.27.0",
+  "license": "MIT",
+  "homepage": "https://github.com/ucdjs/ucd",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ucdjs/ucd.git",
+    "directory": "packages/pipelines/pipeline-ui"
+  },
+  "bugs": {
+    "url": "https://github.com/ucdjs/ucd/issues"
+  },
+  "sideEffects": false,
+  "imports": {
+    "#components/*": "./src/components/*.tsx",
+    "#lib/*": "./src/lib/*.ts",
+    "#hooks/*": "./src/hooks/*.ts"
+  },
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./components/details": "./dist/components/details.mjs",
+    "./components/execution-result": "./dist/components/execution-result.mjs",
+    "./components/filters": "./dist/components/filters.mjs",
+    "./components/nodes": "./dist/components/nodes.mjs",
+    "./components/pipeline-detail": "./dist/components/pipeline-detail.mjs",
+    "./components/pipeline-graph": "./dist/components/pipeline-graph.mjs",
+    "./components/pipeline-sidebar": "./dist/components/pipeline-sidebar.mjs",
+    "./hooks/use-execute": "./dist/hooks/use-execute.mjs",
+    "./hooks/use-pipeline": "./dist/hooks/use-pipeline.mjs",
+    "./hooks/use-pipelines": "./dist/hooks/use-pipelines.mjs",
+    "./lib/adapter": "./dist/lib/adapter.mjs",
+    "./lib/colors": "./dist/lib/colors.mjs",
+    "./lib/layout": "./dist/lib/layout.mjs",
+    "./lib/utils": "./dist/lib/utils.mjs",
+    "./styles.css": "./dist/styles/globals.css",
+    "./package.json": "./package.json"
+  },
+  "types": "./dist/index.d.mts",
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "build": "tsdown --tsconfig=./tsconfig.build.json",
+    "dev": "tsdown --watch",
+    "clean": "git clean -xdf dist node_modules",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit -p tsconfig.build.json"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "dependencies": {
+    "@ucdjs-internal/shared-ui": "workspace:*",
+    "@ucdjs/pipelines-core": "workspace:*",
+    "@xyflow/react": "catalog:web",
+    "clsx": "catalog:web",
+    "tailwind-merge": "catalog:web"
+  },
+  "devDependencies": {
+    "@eslint-react/eslint-plugin": "catalog:linting",
+    "@luxass/eslint-config": "catalog:linting",
+    "@types/react": "catalog:types",
+    "@types/react-dom": "catalog:types",
+    "@ucdjs-tooling/tsconfig": "workspace:*",
+    "@ucdjs-tooling/tsdown-config": "workspace:*",
+    "eslint": "catalog:linting",
+    "eslint-plugin-react-hooks": "catalog:linting",
+    "eslint-plugin-react-refresh": "catalog:linting",
+    "publint": "catalog:build",
+    "react": "catalog:web",
+    "react-dom": "catalog:web",
+    "tailwindcss": "catalog:web",
+    "tsdown": "catalog:build",
+    "typescript": "catalog:build"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
