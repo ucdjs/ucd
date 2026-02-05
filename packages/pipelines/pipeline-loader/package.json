@@ -38,6 +38,7 @@
   },
   "dependencies": {
     "@ucdjs/pipelines-core": "workspace:*",
+    "oxc-transform": "catalog:prod",
     "tinyglobby": "catalog:prod"
   },
   "devDependencies": {
