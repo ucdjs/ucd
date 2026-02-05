@@ -78,12 +78,12 @@
     "eslint": "catalog:linting",
     "eslint-plugin-react-hooks": "catalog:linting",
     "eslint-plugin-react-refresh": "catalog:linting",
-    "publint": "catalog:dev",
+    "publint": "catalog:build",
     "react": "catalog:web",
     "react-dom": "catalog:web",
     "tailwindcss": "catalog:web",
-    "tsdown": "catalog:dev",
-    "typescript": "catalog:dev"
+    "tsdown": "catalog:build",
+    "typescript": "catalog:build"
   },
   "publishConfig": {
     "access": "public"
