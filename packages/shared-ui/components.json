@@ -12,10 +12,10 @@
   },
   "iconLibrary": "lucide",
   "aliases": {
-    "components": "@ucdjs-internal/shared-ui/components",
-    "utils": "@ucdjs-internal/shared-ui/lib/utils",
-    "hooks": "@ucdjs-internal/shared-ui/hooks",
-    "lib": "@ucdjs-internal/shared-ui/lib",
-    "ui": "@ucdjs-internal/shared-ui/components"
+    "components": "#components",
+    "utils": "#lib/utils",
+    "hooks": "#hooks",
+    "lib": "#lib",
+    "ui": "#ui"
   }
 }
