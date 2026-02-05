@@ -1,14 +1,13 @@
 import type { PipelineFlowEdge, PipelineFlowNode } from "./adapter";
 
 const NODE_WIDTH = 180;
+
 const NODE_HEIGHT = 60;
+
 const HORIZONTAL_GAP = 80;
+
 const VERTICAL_GAP = 40;
 
-/**
- * Simple layered layout for DAG visualization
- * Assigns nodes to layers based on their distance from root nodes
- */
 export function applyLayout(
   nodes: PipelineFlowNode[],
   edges: PipelineFlowEdge[],
@@ -17,7 +16,6 @@ export function applyLayout(
     return nodes;
   }
 
-  // Build adjacency list for topological sorting
   const incomingEdges = new Map<string, Set<string>>();
   const outgoingEdges = new Map<string, Set<string>>();
 
@@ -29,18 +27,15 @@ export function applyLayout(
   const nodeIds = new Set(nodes.map((n) => n.id));
 
   for (const edge of edges) {
-    // Only process edges where both nodes exist
     if (nodeIds.has(edge.source) && nodeIds.has(edge.target)) {
       incomingEdges.get(edge.target)?.add(edge.source);
       outgoingEdges.get(edge.source)?.add(edge.target);
     }
   }
 
-  // Calculate layer for each node using BFS from root nodes
   const layers = new Map<string, number>();
   const rootNodes = nodes.filter((n) => incomingEdges.get(n.id)?.size === 0);
 
-  // If no root nodes, use first node as root
   const firstNode = nodes[0];
   const queue: Array<{ id: string; layer: number }> = rootNodes.length > 0
     ? rootNodes.map((n) => ({ id: n.id, layer: 0 }))
@@ -53,25 +48,21 @@ export function applyLayout(
     }
     const { id, layer } = item;
 
-    // Only update if we found a deeper layer (ensures longest path)
     if (!layers.has(id) || layers.get(id)! < layer) {
       layers.set(id, layer);
 
-      // Add all children to queue
       for (const childId of outgoingEdges.get(id) || []) {
         queue.push({ id: childId, layer: layer + 1 });
       }
     }
   }
 
-  // Handle nodes not reachable from roots (disconnected components)
   for (const node of nodes) {
     if (!layers.has(node.id)) {
       layers.set(node.id, 0);
     }
   }
 
-  // Group nodes by layer
   const layerGroups = new Map<number, PipelineFlowNode[]>();
   for (const node of nodes) {
     const layer = layers.get(node.id) ?? 0;
@@ -81,10 +72,8 @@ export function applyLayout(
     layerGroups.get(layer)!.push(node);
   }
 
-  // Sort layers
   const sortedLayers = Array.from(layerGroups.entries()).sort((a, b) => a[0] - b[0]);
 
-  // Calculate positions
   const positionedNodes = new Map<string, PipelineFlowNode>();
 
   for (const [layerIndex, layerNodes] of sortedLayers) {
@@ -107,7 +96,6 @@ export function applyLayout(
     }
   }
 
-  // Return nodes in original order
   return nodes.map((n) => positionedNodes.get(n.id) ?? n);
 }
 

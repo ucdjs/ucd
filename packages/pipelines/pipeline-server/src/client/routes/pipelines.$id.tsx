@@ -5,12 +5,13 @@ import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-r
 import { cn } from "@ucdjs-internal/shared-ui/lib/utils";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
+import { Skeleton } from "@ucdjs-internal/shared-ui/ui/skeleton";
 import {
   useExecute,
   usePipeline,
   VersionSelector,
 } from "@ucdjs/pipelines-ui";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { PipelineDetailContext } from "../hooks/pipeline-detail-context";
 
 const PIPELINE_TABS: readonly PipelineTab[] = [
@@ -26,7 +27,6 @@ function useActiveTabId(): string {
   const currentPath = routerState.location.pathname;
 
   return useMemo(() => {
-    // Find the most specific matching tab
     const matchingTab = [...PIPELINE_TABS]
       .reverse()
       .find((tab) => {
@@ -42,61 +42,71 @@ function useActiveTabId(): string {
 interface PipelineHeaderProps {
   pipeline: PipelineDetails;
   selectedVersions: Set<string>;
-  executionState: PipelineExecutionState;
   executing: boolean;
   onExecute: () => void;
+}
+
+function PipelineHeaderSkeleton() {
+  return (
+    <div className="border-b border-border px-6 py-4">
+      <div className="flex flex-wrap items-start gap-4 justify-between">
+        <div className="min-w-60 space-y-2">
+          <div className="flex flex-wrap items-center gap-2">
+            <Skeleton className="h-6 w-48" />
+            <Skeleton className="h-5 w-20" />
+            <Skeleton className="h-5 w-20" />
+            <Skeleton className="h-5 w-20" />
+          </div>
+          <Skeleton className="h-4 w-64" />
+        </div>
+        <Skeleton className="h-9 w-24" />
+      </div>
+    </div>
+  );
 }
 
 function PipelineHeader({
   pipeline,
   selectedVersions,
-  executionState,
   executing,
   onExecute,
 }: PipelineHeaderProps) {
-  const hasResult = executionState.result != null;
-  const wasSuccess = hasResult && executionState.result?.success;
-
   return (
-    <header className="border-b border-border px-6 py-4">
+    <header className="border-b border-border px-6 py-4 bg-card/50">
       <div className="flex flex-wrap items-start gap-4 justify-between">
-        <div className="min-w-60 space-y-2">
+        <div className="min-w-60 space-y-1.5">
           <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-lg font-medium text-foreground">
+            <h1 className="text-base font-semibold text-foreground tracking-tight">
               {pipeline.name || pipeline.id}
             </h1>
-            <Badge variant="secondary">
+            <Badge variant="secondary" className="text-[10px] font-medium">
               {pipeline.versions.length}
               {" "}
               versions
             </Badge>
-            <Badge variant="secondary">
+            <Badge variant="secondary" className="text-[10px] font-medium">
               {pipeline.routeCount}
               {" "}
               routes
             </Badge>
-            <Badge variant="secondary">
+            <Badge variant="secondary" className="text-[10px] font-medium">
               {pipeline.sourceCount}
               {" "}
               sources
             </Badge>
           </div>
           {pipeline.description && (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs text-muted-foreground leading-relaxed max-w-2xl">
               {pipeline.description}
             </p>
           )}
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          {hasResult && (
-            <Badge variant={wasSuccess ? "default" : "destructive"}>
-              {wasSuccess ? "Last run: success" : "Last run: failed"}
-            </Badge>
-          )}
           <Button
             size="sm"
             onClick={onExecute}
             disabled={selectedVersions.size === 0 || executing}
+            className="text-xs"
             aria-label={executing ? "Pipeline is running" : "Execute pipeline"}
           >
             {executing ? "Running..." : "Execute"}
@@ -123,7 +133,7 @@ function VersionSelectorSection({
   onDeselectAll,
 }: VersionSelectorSectionProps) {
   return (
-    <div className="mt-4">
+    <div className="px-6 py-3 border-b border-border bg-muted/30">
       <VersionSelector
         versions={pipeline.versions}
         selectedVersions={selectedVersions}
@@ -142,7 +152,11 @@ interface PipelineTabsProps {
 
 function PipelineTabs({ pipelineId, activeTabId }: PipelineTabsProps) {
   return (
-    <nav className="mt-4 flex flex-wrap gap-2" role="tablist" aria-label="Pipeline sections">
+    <nav 
+      className="px-6 pt-4 flex flex-wrap gap-1 border-b border-border" 
+      role="tablist" 
+      aria-label="Pipeline sections"
+    >
       {PIPELINE_TABS.map((tab) => {
         const isActive = tab.id === activeTabId;
 
@@ -155,10 +169,10 @@ function PipelineTabs({ pipelineId, activeTabId }: PipelineTabsProps) {
             aria-selected={isActive}
             aria-controls={`tabpanel-${tab.id}`}
             className={cn(
-              "px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
+              "px-3 py-2 rounded-t-md text-xs font-medium transition-colors border-b-2 -mb-px",
               isActive
-                ? "bg-primary/10 text-primary"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted",
+                ? "border-primary text-primary bg-primary/5"
+                : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50",
             )}
           >
             {tab.label}
@@ -189,11 +203,32 @@ interface ErrorStateProps {
 function ErrorState({ error, context }: ErrorStateProps) {
   return (
     <div className="flex-1 flex items-center justify-center" role="alert">
-      <div className="text-center">
+      <div className="text-center max-w-md mx-auto p-6">
         <p className="text-sm text-destructive mb-2">{error}</p>
         {context && (
           <p className="text-xs text-muted-foreground">{context}</p>
         )}
+      </div>
+    </div>
+  );
+}
+
+function PipelineContentSkeleton() {
+  return (
+    <div className="space-y-6 p-6">
+      <div className="grid gap-6 lg:grid-cols-[minmax(300px,1fr)_minmax(250px,0.8fr)]">
+        <div className="space-y-4">
+          <Skeleton className="h-8 w-24" />
+          {[1, 2, 3, 4, 5].map((i) => (
+            <Skeleton key={i} className="h-10 w-full" />
+          ))}
+        </div>
+        <div className="space-y-4">
+          <Skeleton className="h-8 w-24" />
+          {[1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-10 w-full" />
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -211,14 +246,13 @@ function PipelineDetailLayout() {
   const [events, setEvents] = useState<PipelineEvent[]>([]);
   const activeTabId = useActiveTabId();
 
-  // Reset state when pipeline changes
   useEffect(() => {
     if (pipeline) {
       setSelectedVersions(new Set(pipeline.versions));
       setEvents([]);
       reset();
     }
-  }, [pipeline?.id, reset]); // Only depend on pipeline ID, not the whole object
+  }, [pipeline?.id, reset]);
 
   const toggleVersion = useCallback((version: string) => {
     setSelectedVersions((prev) => {
@@ -249,7 +283,6 @@ function PipelineDetailLayout() {
       const execResult = await execute(id, Array.from(selectedVersions));
       setEvents(execResult.events ?? []);
     } catch (err) {
-      // Error is handled by useExecute hook
       console.error("Pipeline execution failed:", err);
     }
   }, [execute, id, pipeline, selectedVersions]);
@@ -275,7 +308,12 @@ function PipelineDetailLayout() {
   }), [pipeline, loading, error, executionState, selectedVersions, toggleVersion, selectAllVersions, deselectAllVersions, executePipeline]);
 
   if (loading) {
-    return <LoadingState message="Loading pipeline..." />;
+    return (
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <PipelineHeaderSkeleton />
+        <PipelineContentSkeleton />
+      </div>
+    );
   }
 
   if (error) {
@@ -288,27 +326,30 @@ function PipelineDetailLayout() {
 
   return (
     <PipelineDetailContext value={contextValue}>
-      <div className="flex-1 flex flex-col overflow-hidden px-6 py-4">
-        <PipelineHeader
-          pipeline={pipeline}
-          selectedVersions={selectedVersions}
-          executionState={executionState}
-          executing={executing}
-          onExecute={executePipeline}
-        />
+      <div className="flex-1 flex flex-col overflow-hidden bg-background">
+        <div className="px-6">
+          <PipelineHeader
+            pipeline={pipeline}
+            selectedVersions={selectedVersions}
+            executing={executing}
+            onExecute={executePipeline}
+          />
 
-        <VersionSelectorSection
-          pipeline={pipeline}
-          selectedVersions={selectedVersions}
-          onToggleVersion={toggleVersion}
-          onSelectAll={selectAllVersions}
-          onDeselectAll={deselectAllVersions}
-        />
+          <VersionSelectorSection
+            pipeline={pipeline}
+            selectedVersions={selectedVersions}
+            onToggleVersion={toggleVersion}
+            onSelectAll={selectAllVersions}
+            onDeselectAll={deselectAllVersions}
+          />
 
-        <PipelineTabs pipelineId={id} activeTabId={activeTabId} />
+          <PipelineTabs pipelineId={id} activeTabId={activeTabId} />
+        </div>
 
-        <main className="flex-1 overflow-y-auto p-6">
-          <Outlet />
+        <main className="flex-1 overflow-y-auto p-6 pt-4">
+          <Suspense fallback={<PipelineContentSkeleton />}>
+            <Outlet />
+          </Suspense>
         </main>
       </div>
     </PipelineDetailContext>

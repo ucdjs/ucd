@@ -1,13 +1,15 @@
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
+import type { PipelineSource } from "@ucdjs/pipelines-loader";
 import { H3, serve, serveStatic } from "h3";
 import { executeRouter } from "./routes/execute";
 import { pipelinesRouter } from "./routes/pipelines";
+import { sourcesRouter } from "./routes/sources";
 import { versionsRouter } from "./routes/versions";
 
 export interface AppOptions {
-  cwd?: string;
+  sources?: PipelineSource[];
 }
 
 export interface ServerOptions extends AppOptions {
@@ -16,24 +18,36 @@ export interface ServerOptions extends AppOptions {
 
 declare module "h3" {
   interface H3EventContext {
-    cwd: string;
+    sources: PipelineSource[];
   }
 }
 
 export function createApp(options: AppOptions = {}): H3 {
-  const { cwd = process.cwd() } = options;
+  const { sources = [] } = options;
 
   const app = new H3({ debug: true });
 
-  let cwdPath = path.resolve(cwd);
-  // If we run in development mode, we should set the CWD to the pipeline playground.
-  if (process.env.NODE_ENV === "development" || (import.meta as any).env.DEV) {
-    cwdPath = path.join(import.meta.dirname, "../../../pipeline-playground");
+  // Default to pipeline-playground in development
+  let resolvedSources = sources;
+  if (sources.length === 0) {
+    const cwd = process.cwd();
+    if (process.env.NODE_ENV === "development" || (import.meta as any).env.DEV) {
+      resolvedSources = [{
+        type: "local",
+        id: "local",
+        cwd: path.join(import.meta.dirname, "../../../pipeline-playground"),
+      }];
+    } else {
+      resolvedSources = [{
+        type: "local",
+        id: "local",
+        cwd,
+      }];
+    }
   }
 
-  // Middleware to attach cwd to context
   app.use("/**", (event, next) => {
-    event.context.cwd = cwdPath;
+    event.context.sources = resolvedSources;
     next();
   });
 
@@ -41,6 +55,8 @@ export function createApp(options: AppOptions = {}): H3 {
     message: "Hello from H3!",
     timestamp: Date.now(),
   }));
+
+  app.mount("/api/sources", sourcesRouter);
   app.mount("/api/pipelines", pipelinesRouter);
   app.mount("/api/pipelines/:id/execute", executeRouter);
   app.mount("/api/versions", versionsRouter);
@@ -49,17 +65,15 @@ export function createApp(options: AppOptions = {}): H3 {
 }
 
 export async function startServer(options: ServerOptions = {}): Promise<void> {
-  const { port = 3030, cwd = process.cwd() } = options;
+  const { port = 3030, sources } = options;
 
-  const app = createApp({ cwd });
+  const app = createApp({ sources });
 
-  // Static file serving for client assets
   const clientDir = path.join(import.meta.dirname, "../client");
 
   app.use((event) => {
     const url = event.url.pathname;
 
-    // Skip API routes
     if (url.startsWith("/api")) {
       return;
     }
@@ -80,11 +94,9 @@ export async function startServer(options: ServerOptions = {}): Promise<void> {
     });
   });
 
-  // SPA fallback - serve index.html for client-side routing
   app.use((event) => {
     const url = event.url.pathname;
 
-    // Skip API routes
     if (url.startsWith("/api")) {
       return;
     }
@@ -99,6 +111,5 @@ export async function startServer(options: ServerOptions = {}): Promise<void> {
 
   serve(app, { port });
 
-  // eslint-disable-next-line no-console
   console.log(`Pipeline UI running at http://localhost:${port}`);
 }

@@ -8,16 +8,19 @@ export interface ShikiCodeProps {
    * The code to highlight
    */
   code: string;
+
   /**
    * The language to use for syntax highlighting
    * @default "typescript"
    */
   language?: BundledLanguage;
+
   /**
    * The theme to use for syntax highlighting
    * @default "github-dark"
    */
   theme?: BundledTheme;
+
   /**
    * Additional CSS class names
    */
@@ -52,7 +55,13 @@ export const ShikiCode = memo<ShikiCodeProps>(({
   const highlighter = use(highlighterPromise);
 
   const html = useMemo(() => {
-    return highlighter.codeToHtml(code, { lang: language, theme });
+    return highlighter.codeToHtml(
+      code,
+      {
+        lang: language,
+        theme,
+      },
+    );
   }, [highlighter, code, language, theme]);
 
   // eslint-disable-next-line react-dom/no-dangerously-set-innerhtml

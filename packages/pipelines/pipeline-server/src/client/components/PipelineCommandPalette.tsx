@@ -96,7 +96,9 @@ export function PipelineCommandPalette({
                 <Terminal className="mr-2 h-4 w-4" />
                 {pipeline.name || pipeline.id}
                 <span className="ml-2 text-xs text-muted-foreground">
-                  {pipeline.versions.length} versions
+                  {pipeline.versions.length}
+                  {" "}
+                  versions
                 </span>
               </CommandItem>
             ))}

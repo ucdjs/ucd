@@ -51,23 +51,26 @@ function SidebarItemWithContext({ pipeline, isActive, onExecute }: SidebarItemPr
     navigate({ to: "/pipelines/$id", params: { id: pipeline.id } });
   }, [onExecute, navigate, pipeline.id]);
 
+  const handleClick = useCallback(() => {
+    navigate({ to: "/pipelines/$id", params: { id: pipeline.id } });
+  }, [navigate, pipeline.id]);
+
   return (
     <PipelineSidebarContextMenu
       pipeline={pipeline}
       onExecute={handleExecute}
       onNavigate={handleNavigate}
     >
-      <Link
-        to="/pipelines/$id"
-        params={{ id: pipeline.id }}
-        className="block"
+      <div 
+        className="block cursor-pointer" 
+        onClick={handleClick}
         aria-label={`Open pipeline: ${pipeline.name || pipeline.id}`}
       >
         <PipelineSidebarItem
           pipeline={pipeline}
           isActive={isActive}
         />
-      </Link>
+      </div>
     </PipelineSidebarContextMenu>
   );
 }

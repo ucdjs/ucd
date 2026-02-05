@@ -11,6 +11,7 @@ export interface PipelineInfo {
   versions: string[];
   routeCount: number;
   sourceCount: number;
+  sourceId: string;
 }
 
 /**
@@ -36,7 +37,7 @@ export interface PipelineDetails extends PipelineInfo {
 /**
  * Convert a PipelineDefinition to serializable PipelineInfo.
  */
-export function toPipelineInfo(pipeline: PipelineDefinition): PipelineInfo {
+export function toPipelineInfo(pipeline: PipelineDefinition, sourceId?: string): PipelineInfo {
   return {
     id: pipeline.id,
     name: pipeline.name,
@@ -44,6 +45,7 @@ export function toPipelineInfo(pipeline: PipelineDefinition): PipelineInfo {
     versions: pipeline.versions,
     routeCount: pipeline.routes.length,
     sourceCount: pipeline.inputs.length,
+    sourceId: sourceId ?? "local",
   };
 }
 

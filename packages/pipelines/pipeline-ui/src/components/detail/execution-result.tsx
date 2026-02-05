@@ -1,4 +1,4 @@
-import type { ExecuteResult } from "../types";
+import type { ExecuteResult } from "../../types";
 import { cn } from "#lib/utils";
 import { memo } from "react";
 

@@ -1,0 +1,66 @@
+import type { RemoteFileList } from "./types";
+
+const GITLAB_API_BASE = "https://gitlab.com/api/v4";
+
+export interface GitLabRepoRef {
+  owner: string;
+  repo: string;
+  ref?: string;
+  path?: string;
+}
+
+function encodeProjectPath(owner: string, repo: string): string {
+  return encodeURIComponent(`${owner}/${repo}`);
+}
+
+export async function listFiles(
+  repoRef: GitLabRepoRef,
+  options: { fetchFn?: typeof fetch } = {},
+): Promise<RemoteFileList> {
+  const { owner, repo, ref, path } = repoRef;
+  const refValue = ref ?? "HEAD";
+  const pathValue = path ?? "";
+  const { fetchFn = fetch } = options;
+
+  const projectId = encodeProjectPath(owner, repo);
+  const url = `${GITLAB_API_BASE}/projects/${projectId}/repository/tree?recursive=true&ref=${refValue}&path=${encodeURIComponent(pathValue)}&per_page=100`;
+
+  const response = await fetchFn(url);
+
+  if (!response.ok) {
+    throw new Error(`GitLab API error: ${response.status} ${response.statusText}`);
+  }
+
+  const data = await response.json() as Array<{ path: string; type: string }>;
+
+  const files = data
+    .filter((item) => item.type === "blob")
+    .map((item) => item.path);
+
+  return {
+    files,
+    truncated: false,
+  };
+}
+
+export async function fetchFile(
+  repoRef: GitLabRepoRef,
+  filePath: string,
+  options: { fetchFn?: typeof fetch } = {},
+): Promise<string> {
+  const { owner, repo, ref } = repoRef;
+  const refValue = ref ?? "HEAD";
+  const { fetchFn = fetch } = options;
+
+  const projectId = encodeProjectPath(owner, repo);
+  const encodedPath = encodeURIComponent(filePath);
+  const url = `${GITLAB_API_BASE}/projects/${projectId}/repository/files/${encodedPath}/raw?ref=${refValue}`;
+
+  const response = await fetchFn(url);
+
+  if (!response.ok) {
+    throw new Error(`GitLab API error: ${response.status} ${response.statusText}`);
+  }
+
+  return response.text();
+}
