@@ -977,13 +977,13 @@ importers:
         specifier: catalog:linting
         version: 9.39.2(jiti@2.6.1)
       publint:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.3.17
       tsdown:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.20.1(publint@0.3.17)(synckit@0.11.11)(typescript@5.9.3)
       typescript:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 5.9.3
 
   packages/pipelines/pipeline-core:
@@ -1014,16 +1014,16 @@ importers:
         specifier: catalog:linting
         version: 9.39.2(jiti@2.6.1)
       publint:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.3.17
       tsdown:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.20.1(publint@0.3.17)(synckit@0.11.11)(typescript@5.9.3)
       tsx:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 4.21.0
       typescript:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 5.9.3
 
   packages/pipelines/pipeline-executor:
@@ -1048,13 +1048,13 @@ importers:
         specifier: catalog:linting
         version: 9.39.2(jiti@2.6.1)
       publint:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.3.17
       tsdown:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.20.1(publint@0.3.17)(synckit@0.11.11)(typescript@5.9.3)
       typescript:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 5.9.3
 
   packages/pipelines/pipeline-graph:
@@ -1076,13 +1076,13 @@ importers:
         specifier: catalog:linting
         version: 9.39.2(jiti@2.6.1)
       publint:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.3.17
       tsdown:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.20.1(publint@0.3.17)(synckit@0.11.11)(typescript@5.9.3)
       typescript:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 5.9.3
 
   packages/pipelines/pipeline-loader:
@@ -1107,13 +1107,13 @@ importers:
         specifier: catalog:linting
         version: 9.39.2(jiti@2.6.1)
       publint:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.3.17
       tsdown:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.20.1(publint@0.3.17)(synckit@0.11.11)(typescript@5.9.3)
       typescript:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 5.9.3
       vitest-testdirs:
         specifier: catalog:testing
@@ -1153,13 +1153,13 @@ importers:
         specifier: catalog:linting
         version: 9.39.2(jiti@2.6.1)
       publint:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.3.17
       tsdown:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.20.1(publint@0.3.17)(synckit@0.11.11)(typescript@5.9.3)
       typescript:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 5.9.3
 
   packages/pipelines/pipeline-server:
@@ -1244,7 +1244,7 @@ importers:
         specifier: catalog:linting
         version: 0.4.26(eslint@9.39.2(jiti@2.6.1))
       publint:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.3.17
       react:
         specifier: catalog:web
@@ -1259,10 +1259,10 @@ importers:
         specifier: catalog:web
         version: 4.1.18
       tsdown:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.20.1(publint@0.3.17)(synckit@0.11.11)(typescript@5.9.3)
       typescript:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 5.9.3
       vite:
         specifier: catalog:web
@@ -1317,7 +1317,7 @@ importers:
         specifier: catalog:linting
         version: 0.4.26(eslint@9.39.2(jiti@2.6.1))
       publint:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.3.17
       react:
         specifier: catalog:web
@@ -1329,10 +1329,10 @@ importers:
         specifier: catalog:web
         version: 4.1.18
       tsdown:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 0.20.1(publint@0.3.17)(synckit@0.11.11)(typescript@5.9.3)
       typescript:
-        specifier: catalog:dev
+        specifier: catalog:build
         version: 5.9.3
 
   packages/schema-gen:
