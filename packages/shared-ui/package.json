@@ -39,6 +39,7 @@
     "./ui/collapsible": "./dist/ui/collapsible.mjs",
     "./ui/combobox": "./dist/ui/combobox.mjs",
     "./ui/command": "./dist/ui/command.mjs",
+    "./ui/context-menu": "./dist/ui/context-menu.mjs",
     "./ui/dialog": "./dist/ui/dialog.mjs",
     "./ui/dropdown-menu": "./dist/ui/dropdown-menu.mjs",
     "./ui/field": "./dist/ui/field.mjs",
