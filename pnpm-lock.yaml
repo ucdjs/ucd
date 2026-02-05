@@ -128,6 +128,9 @@ catalogs:
     defu:
       specifier: 6.1.4
       version: 6.1.4
+    esrap:
+      specifier: 2.2.2
+      version: 2.2.2
     farver:
       specifier: 0.4.2
       version: 0.4.2
@@ -143,6 +146,9 @@ catalogs:
     obug:
       specifier: 2.1.1
       version: 2.1.1
+    oxc-parser:
+      specifier: 0.112.0
+      version: 0.112.0
     pathe:
       specifier: 2.0.3
       version: 2.0.3
@@ -1198,13 +1204,16 @@ importers:
         specifier: catalog:prod
         version: 0.4.4(srvx@0.10.1)
       esrap:
-        specifier: 2.2.2
+        specifier: catalog:prod
         version: 2.2.2
       h3:
         specifier: catalog:prod
         version: 2.0.1-rc.11(crossws@0.4.4(srvx@0.10.1))
+      lucide-react:
+        specifier: catalog:web
+        version: 0.563.0(react@19.2.4)
       oxc-parser:
-        specifier: 0.112.0
+        specifier: catalog:prod
         version: 0.112.0
       pathe:
         specifier: catalog:prod

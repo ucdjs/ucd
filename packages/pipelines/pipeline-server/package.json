@@ -47,9 +47,10 @@
     "@ucdjs/pipelines-ui": "workspace:*",
     "chokidar": "catalog:prod",
     "crossws": "catalog:prod",
-    "esrap": "2.2.2",
+    "esrap": "catalog:prod",
     "h3": "catalog:prod",
-    "oxc-parser": "0.112.0",
+    "lucide-react": "catalog:web",
+    "oxc-parser": "catalog:prod",
     "pathe": "catalog:prod"
   },
   "devDependencies": {
