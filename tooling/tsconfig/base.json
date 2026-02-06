@@ -79,6 +79,9 @@
       "#test-utils/matchers": [
         "./packages/test-utils/src/matchers/types.d.ts"
       ],
+      "#test-utils/pipelines": [
+        "./packages/test-utils/src/pipelines/index.ts"
+      ],
 
       // Internal Test Utils
       "#internal/test-utils/conditions": ["./test/utils/conditions.ts"]
