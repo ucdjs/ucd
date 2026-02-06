@@ -20,17 +20,16 @@ export interface LogViewActions {
 
 export function useLogView(): LogViewState & LogViewActions {
   const [isJsonMode, setIsJsonMode] = useState(() => {
-    // Load preference from localStorage
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem("pipeline-logs-json-mode");
       return stored === "true";
     }
     return false;
   });
-  
+
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [isDetailPanelOpen, setIsDetailPanelOpen] = useState(false);
-  const [expandedInlineIds, setExpandedInlineIds] = useState<Set<string>>(new Set());
+  const [expandedInlineIds, setExpandedInlineIds] = useState<Set<string>>(() => new Set());
 
   const toggleJsonMode = useCallback(() => {
     setIsJsonMode((prev) => {
@@ -76,12 +75,10 @@ export function useLogView(): LogViewState & LogViewActions {
   }, [expandedInlineIds]);
 
   return {
-    // State
     isJsonMode,
     selectedEventId,
     isDetailPanelOpen,
     expandedInlineIds,
-    // Actions
     toggleJsonMode,
     setJsonMode,
     selectEvent,

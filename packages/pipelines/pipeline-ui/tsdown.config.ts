@@ -1,10 +1,11 @@
+import pluginBabel from "@rollup/plugin-babel";
 import { createTsdownConfig } from "@ucdjs-tooling/tsdown-config";
 
 export default createTsdownConfig({
   entry: [
     "./src/index.ts",
     "./src/lib/*.ts",
-    "./src/hooks/*.ts",
+    "./src/hooks/index.ts",
     "./src/components/*.tsx",
   ],
   exports: {
@@ -29,4 +30,15 @@ export default createTsdownConfig({
     },
   },
   unbundle: true,
+  plugins: [
+    pluginBabel({
+      babelHelpers: "bundled",
+      parserOpts: {
+        sourceType: "module",
+        plugins: ["jsx", "typescript"],
+      },
+      plugins: ["babel-plugin-react-compiler"],
+      extensions: [".js", ".jsx", ".ts", ".tsx"],
+    }),
+  ],
 });

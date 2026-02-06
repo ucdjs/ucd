@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useExecute } from "@ucdjs/pipelines-ui";
 import { PipelineGraph } from "@ucdjs/pipelines-ui";
-import { usePipelineDetailContext } from "../hooks/pipeline-detail-context";
 
 export const Route = createFileRoute("/pipelines/$id/graph")({
   component: PipelineGraphPage,
@@ -19,19 +19,23 @@ function EmptyGraphState() {
 }
 
 function PipelineGraphPage() {
-  const { execution } = usePipelineDetailContext();
+  const { result } = useExecute();
 
-  const graph = execution.result?.graph && execution.result.graph.nodes.length > 0
-    ? execution.result.graph
+  const graph = result?.graph && result.graph.nodes.length > 0
+    ? result.graph
     : null;
 
   if (!graph) {
-    return <EmptyGraphState />;
+    return (
+      <div className="p-6">
+        <EmptyGraphState />
+      </div>
+    );
   }
 
   return (
     <section
-      className="h-130 bg-card border border-border rounded-lg overflow-hidden"
+      className="h-full min-h-[500px] bg-card border border-border rounded-lg overflow-hidden m-6"
       role="tabpanel"
       id="tabpanel-graph"
       aria-labelledby="tab-graph"

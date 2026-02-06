@@ -1,8 +1,4 @@
 export {
-  PipelineGraphDetails,
-  type PipelineGraphDetailsProps,
-} from "./components/graph/details.js";
-export {
   ExecutionErrors,
   type ExecutionErrorsProps,
   ExecutionResult,
@@ -10,6 +6,22 @@ export {
   ExecutionSummary,
   type ExecutionSummaryProps,
 } from "./components/detail/execution-result.js";
+export {
+  RouteList,
+  type RouteListProps,
+} from "./components/detail/route-list";
+export {
+  SourceList,
+  type SourceListProps,
+} from "./components/detail/source-list";
+export {
+  VersionSelector,
+  type VersionSelectorProps,
+} from "./components/detail/version-selector";
+export {
+  PipelineGraphDetails,
+  type PipelineGraphDetailsProps,
+} from "./components/graph/details.js";
 export {
   PipelineGraphFilters,
   type PipelineGraphFiltersProps,
@@ -24,60 +36,27 @@ export {
   SourceNode,
 } from "./components/graph/nodes.js";
 export {
-  RouteItem,
-  type RouteItemProps,
-  RouteList,
-  type RouteListProps,
-  SourceItem,
-  type SourceItemProps,
-  SourceList,
-  type SourceListProps,
-  useVersionSelection,
-  type UseVersionSelectionReturn,
-  VersionSelector,
-  type VersionSelectorProps,
-  VersionTag,
-  type VersionTagProps,
-} from "./components/detail/pipeline-detail.js";
-export {
   PipelineGraph,
   type PipelineGraphProps,
 } from "./components/graph/pipeline-graph.js";
 export {
-  PipelineSidebar,
-  type PipelineSidebarProps,
-} from "./components/sidebar/pipeline-sidebar.js";
+  InlineJsonView,
+  type InlineJsonViewProps,
+} from "./components/logs/inline-json-view.js";
 export {
-  PipelineSidebarErrors,
-  type PipelineSidebarErrorsProps,
-} from "./components/sidebar/pipeline-sidebar-errors.js";
+  LogDetailPanel,
+  type LogDetailPanelProps,
+} from "./components/logs/log-detail-panel.js";
 export {
-  PipelineSidebarHeader,
-  type PipelineSidebarHeaderProps,
-} from "./components/sidebar/pipeline-sidebar-header.js";
+  SimpleTimeline,
+  type SimpleTimelineProps,
+} from "./components/logs/simple-timeline.js";
 export {
-  PipelineSidebarItem,
-  type PipelineSidebarItemProps,
-} from "./components/sidebar/pipeline-sidebar-item.js";
-export {
-  PipelineSidebarList,
-  type PipelineSidebarListProps,
-} from "./components/sidebar/pipeline-sidebar-list.js";
-export {
-  useExecute,
-  type UseExecuteOptions,
-  type UseExecuteReturn,
-} from "./hooks/use-execute.js";
-export {
-  usePipeline,
-  type UsePipelineOptions,
-  type UsePipelineReturn,
-} from "./hooks/use-pipeline.js";
-export {
-  usePipelines,
-  type UsePipelinesOptions,
-  type UsePipelinesReturn,
-} from "./hooks/use-pipelines.js";
+  ViewModeToggle,
+  type ViewModeToggleProps,
+} from "./components/logs/view-mode-toggle.js";
+export { PipelineSidebar } from "./components/pipeline-sidebar.js";
+export * from "./hooks";
 export {
   filterNodesByType,
   type PipelineFlowEdge,
@@ -85,6 +64,7 @@ export {
   pipelineGraphToFlow,
 } from "./lib/adapter.js";
 export { getNodeColor, nodeTypeColors } from "./lib/colors.js";
+export { formatHighPrecisionTime } from "./lib/format-time.js";
 export { applyLayout, NODE_HEIGHT, NODE_WIDTH } from "./lib/layout.js";
 export { cn } from "./lib/utils.js";
 export type {

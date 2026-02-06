@@ -1,5 +1,10 @@
-import { findPipelineFiles, findRemotePipelineFiles, loadPipelinesFromPaths, loadRemotePipelines } from "@ucdjs/pipelines-loader";
 import type { GitHubSource, GitLabSource, LocalSource } from "@ucdjs/pipelines-loader";
+import {
+  findPipelineFiles,
+  findRemotePipelineFiles,
+  loadPipelinesFromPaths,
+  loadRemotePipelines,
+} from "@ucdjs/pipelines-loader";
 import { H3 } from "h3";
 
 export const sourcesRouter = new H3();
@@ -12,18 +17,22 @@ sourcesRouter.get("/", async (event) => {
       id: source.id,
       type: source.type,
       ...(source.type === "local" ? { cwd: (source as LocalSource).cwd } : {}),
-      ...(source.type === "github" ? {
-        owner: (source as GitHubSource).owner,
-        repo: (source as GitHubSource).repo,
-        ref: (source as GitHubSource).ref,
-        path: (source as GitHubSource).path,
-      } : {}),
-      ...(source.type === "gitlab" ? {
-        owner: (source as GitLabSource).owner,
-        repo: (source as GitLabSource).repo,
-        ref: (source as GitLabSource).ref,
-        path: (source as GitLabSource).path,
-      } : {}),
+      ...(source.type === "github"
+        ? {
+            owner: (source as GitHubSource).owner,
+            repo: (source as GitHubSource).repo,
+            ref: (source as GitHubSource).ref,
+            path: (source as GitHubSource).path,
+          }
+        : {}),
+      ...(source.type === "gitlab"
+        ? {
+            owner: (source as GitLabSource).owner,
+            repo: (source as GitLabSource).repo,
+            ref: (source as GitLabSource).ref,
+            path: (source as GitLabSource).path,
+          }
+        : {}),
     })),
   };
 });

@@ -46,6 +46,11 @@ export interface PipelineDefinitionOptions<
   description?: string;
 
   /**
+   * Tags associated with this pipeline.
+   */
+  tags?: string[];
+
+  /**
    * Unicode versions this pipeline processes.
    */
   versions: string[];
@@ -161,6 +166,11 @@ export interface PipelineDefinition<
    * Built at definition time from route dependencies.
    */
   readonly dag: DAG;
+
+  /**
+   * Tags associated with this pipeline.
+   */
+  readonly tags: string[];
 }
 
 export type InferPipelineOutput<
@@ -234,6 +244,7 @@ export function definePipeline<
     fallback: options.fallback,
     onEvent: options.onEvent,
     dag: dagResult.dag!,
+    tags: options.tags ?? [],
   };
 }
 

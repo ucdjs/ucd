@@ -188,23 +188,16 @@ const BaseNode = memo(({
   );
 });
 
-// Individual node type components - memoized
-export const SourceNode = memo((props: NodeProps & { data: PipelineNodeData }) => {
-  return <BaseNode {...props} type="source" />;
-});
+// Factory function to create node type components
+function createNodeComponent(type: string) {
+  return memo((props: NodeProps & { data: PipelineNodeData }) => (
+    <BaseNode {...props} type={type} />
+  ));
+}
 
-export const FileNode = memo((props: NodeProps & { data: PipelineNodeData }) => {
-  return <BaseNode {...props} type="file" />;
-});
-
-export const RouteNode = memo((props: NodeProps & { data: PipelineNodeData }) => {
-  return <BaseNode {...props} type="route" />;
-});
-
-export const ArtifactNode = memo((props: NodeProps & { data: PipelineNodeData }) => {
-  return <BaseNode {...props} type="artifact" />;
-});
-
-export const OutputNode = memo((props: NodeProps & { data: PipelineNodeData }) => {
-  return <BaseNode {...props} type="output" />;
-});
+// Individual node type components - created via factory
+export const SourceNode = createNodeComponent("source");
+export const FileNode = createNodeComponent("file");
+export const RouteNode = createNodeComponent("route");
+export const ArtifactNode = createNodeComponent("artifact");
+export const OutputNode = createNodeComponent("output");

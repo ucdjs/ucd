@@ -1,8 +1,5 @@
 import type { PipelineEvent, PipelineGraph } from "@ucdjs/pipelines-core";
 
-/**
- * Summary information about a pipeline for list views
- */
 export interface PipelineInfo {
   id: string;
   name?: string;
@@ -13,9 +10,6 @@ export interface PipelineInfo {
   sourceId: string;
 }
 
-/**
- * Detailed pipeline information including routes and sources
- */
 export interface PipelineDetails {
   id: string;
   name?: string;
@@ -37,35 +31,23 @@ export interface PipelineDetails {
   sources: Array<{ id: string }>;
 }
 
-/**
- * Error that occurred while loading a pipeline file
- */
 export interface LoadError {
   filePath: string;
   message: string;
   sourceId?: string;
 }
 
-/**
- * Response from the pipelines list endpoint
- */
 export interface PipelinesResponse {
   pipelines: PipelineInfo[];
   cwd: string;
   errors: LoadError[];
 }
 
-/**
- * Response from the single pipeline endpoint
- */
 export interface PipelineResponse {
   pipeline?: PipelineDetails;
   error?: string;
 }
 
-/**
- * Result of pipeline execution
- */
 export interface ExecuteResult {
   success: boolean;
   pipelineId: string;

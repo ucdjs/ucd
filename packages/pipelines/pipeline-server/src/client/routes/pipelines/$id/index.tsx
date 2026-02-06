@@ -1,13 +1,31 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, useLoaderData, useParams } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 import { ExecutionResult, RouteList, SourceList } from "@ucdjs/pipelines-ui";
 import { Suspense } from "react";
-import { usePipelineDetailContext } from "../hooks/pipeline-detail-context";
+
+export const Route = createFileRoute("/pipelines/$id/")({
+  component: PipelineOverviewPage,
+});
+
+function PipelineOverviewPage() {
+  return (
+    <div role="tabpanel" id="tabpanel-overview" aria-labelledby="tab-overview" className="p-6">
+      <Suspense fallback={<PipelineOverviewSkeleton />}>
+        <div className="space-y-6">
+          <ExecutionStatusCard />
+
+          <div className="grid gap-6 lg:grid-cols-[minmax(300px,1fr)_minmax(250px,0.8fr)]">
+            <RoutesCard />
+            <SourcesCard />
+          </div>
+        </div>
+      </Suspense>
+    </div>
+  );
+}
 
 function ExecutionStatusCard() {
-  const { execution } = usePipelineDetailContext();
-
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -17,29 +35,18 @@ function ExecutionStatusCard() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {execution.result
-          ? (
-              <ExecutionResult result={execution.result} />
-            )
-          : (
-              <div className="flex items-center justify-between rounded-lg border border-dashed border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
-                <span>No runs yet. Execute the pipeline to see results.</span>
-                <Badge variant="outline">Awaiting run</Badge>
-              </div>
-            )}
+        <div className="flex items-center justify-between rounded-lg border border-dashed border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
+          <span>No runs yet. Execute the pipeline to see results.</span>
+          <Badge variant="outline">Awaiting run</Badge>
+        </div>
       </CardContent>
     </Card>
   );
 }
 
-interface RoutesCardProps {
-  pipelineId: string;
-}
-
-function RoutesCard({ pipelineId }: RoutesCardProps) {
-  const { pipeline } = usePipelineDetailContext();
-
-  if (!pipeline) return null;
+function RoutesCard() {
+  const { id } = useParams({ from: "/pipelines/$id" });
+  const { pipeline } = useLoaderData({ from: "/pipelines/$id" });
 
   return (
     <Card>
@@ -51,13 +58,12 @@ function RoutesCard({ pipelineId }: RoutesCardProps) {
       </CardHeader>
       <CardContent>
         <RouteList
-          routes={pipeline.routes.map((route) => ({
+          routes={(pipeline?.routes.map((route) => ({
             id: route.id,
             cache: route.cache,
-          }))}
+          })) || [])}
           onRouteClick={(routeId) => {
-            // Navigate to code tab
-            window.location.href = `/pipelines/${pipelineId}/code?route=${routeId}`;
+            window.location.href = `/pipelines/${id}/code?route=${routeId}`;
           }}
         />
       </CardContent>
@@ -66,9 +72,7 @@ function RoutesCard({ pipelineId }: RoutesCardProps) {
 }
 
 function SourcesCard() {
-  const { pipeline } = usePipelineDetailContext();
-
-  if (!pipeline) return null;
+  const { pipeline } = useLoaderData({ from: "/pipelines/$id" });
 
   return (
     <Card>
@@ -79,7 +83,7 @@ function SourcesCard() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <SourceList sources={pipeline.sources} />
+        <SourceList sources={pipeline?.sources || []} />
       </CardContent>
     </Card>
   );
@@ -119,34 +123,6 @@ function PipelineOverviewSkeleton() {
           </CardContent>
         </Card>
       </div>
-    </div>
-  );
-}
-
-export const Route = createFileRoute("/pipelines/$id/")({
-  component: PipelineOverviewPage,
-});
-
-function PipelineOverviewPage() {
-  const { pipeline } = usePipelineDetailContext();
-  const { id } = Route.useParams();
-
-  if (!pipeline) {
-    return null;
-  }
-
-  return (
-    <div role="tabpanel" id="tabpanel-overview" aria-labelledby="tab-overview">
-      <Suspense fallback={<PipelineOverviewSkeleton />}>
-        <div className="space-y-6">
-          <ExecutionStatusCard />
-
-          <div className="grid gap-6 lg:grid-cols-[minmax(300px,1fr)_minmax(250px,0.8fr)]">
-            <RoutesCard pipelineId={id} />
-            <SourcesCard />
-          </div>
-        </div>
-      </Suspense>
     </div>
   );
 }

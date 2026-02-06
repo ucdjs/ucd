@@ -1,13 +1,11 @@
 import type { PipelineGraphNode } from "@ucdjs/pipelines-core";
 import type { CSSProperties } from "react";
-import { memo } from "react";
 
 export interface PipelineGraphDetailsProps {
   node: PipelineGraphNode | null;
   onClose: () => void;
 }
 
-// Hoisted static styles
 const containerStyle: CSSProperties = {
   width: "280px",
   backgroundColor: "#ffffff",
@@ -72,7 +70,6 @@ const detailValueStyle: CSSProperties = {
   wordBreak: "break-all",
 };
 
-// Badge style cache
 const badgeStyleCache = new Map<string, CSSProperties>();
 
 function getBadgeStyle(type: string): CSSProperties {
@@ -101,25 +98,16 @@ function getBadgeStyle(type: string): CSSProperties {
   return cached;
 }
 
-// Memoized detail row component
-const DetailRow = memo(({ label, value }: { label: string; value: string }) => {
+function DetailRow({ label, value }: { label: string; value: string }) {
   return (
     <div style={detailRowStyle}>
       <span style={detailLabelStyle}>{label}</span>
       <span style={detailValueStyle}>{value}</span>
     </div>
   );
-});
+}
 
-// Hoisted close icon SVG - static content
-const closeIcon = (
-  <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-  </svg>
-);
-
-// Memoized node details renderer
-const NodeDetails = memo(({ node }: { node: PipelineGraphNode }) => {
+function NodeDetails({ node }: { node: PipelineGraphNode }) {
   switch (node.type) {
     case "source":
       return <DetailRow label="Version" value={node.version} />;
@@ -145,19 +133,24 @@ const NodeDetails = memo(({ node }: { node: PipelineGraphNode }) => {
         </>
       );
   }
-});
+}
 
-export const PipelineGraphDetails = memo(({
+const closeIcon = (
+  <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+  </svg>
+);
+
+export function PipelineGraphDetails({
   node,
   onClose,
-}: PipelineGraphDetailsProps) => {
+}: PipelineGraphDetailsProps) {
   if (!node) {
     return null;
   }
 
   return (
     <div style={containerStyle}>
-      {/* Header */}
       <div style={headerStyle}>
         <span style={getBadgeStyle(node.type)}>
           {node.type}
@@ -172,7 +165,6 @@ export const PipelineGraphDetails = memo(({
         </button>
       </div>
 
-      {/* Content */}
       <div style={contentStyle}>
         <div style={detailsContainerStyle}>
           <DetailRow label="Node ID" value={node.id} />
@@ -181,4 +173,4 @@ export const PipelineGraphDetails = memo(({
       </div>
     </div>
   );
-});
+}

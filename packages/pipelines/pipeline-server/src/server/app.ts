@@ -1,15 +1,19 @@
+import type { PipelineSource } from "@ucdjs/pipelines-loader";
+import type { Database } from "./db";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
-import type { PipelineSource } from "@ucdjs/pipelines-loader";
 import { H3, serve, serveStatic } from "h3";
 import { executeRouter } from "./routes/execute";
+import { executionsRouter } from "./routes/executions";
+import { logsRouter } from "./routes/logs";
 import { pipelinesRouter } from "./routes/pipelines";
 import { sourcesRouter } from "./routes/sources";
 import { versionsRouter } from "./routes/versions";
 
 export interface AppOptions {
   sources?: PipelineSource[];
+  db?: Database;
 }
 
 export interface ServerOptions extends AppOptions {
@@ -19,11 +23,16 @@ export interface ServerOptions extends AppOptions {
 declare module "h3" {
   interface H3EventContext {
     sources: PipelineSource[];
+    db: Database;
   }
 }
 
 export function createApp(options: AppOptions = {}): H3 {
-  const { sources = [] } = options;
+  const { sources = [], db } = options;
+
+  if (!db) {
+    throw new Error("Database is required. Pass db to createApp() or use startServer()");
+  }
 
   const app = new H3({ debug: true });
 
@@ -48,6 +57,7 @@ export function createApp(options: AppOptions = {}): H3 {
 
   app.use("/**", (event, next) => {
     event.context.sources = resolvedSources;
+    event.context.db = db;
     next();
   });
 
@@ -59,6 +69,8 @@ export function createApp(options: AppOptions = {}): H3 {
   app.mount("/api/sources", sourcesRouter);
   app.mount("/api/pipelines", pipelinesRouter);
   app.mount("/api/pipelines/:id/execute", executeRouter);
+  app.mount("/api/pipelines/:id/executions", executionsRouter);
+  app.mount("/api/executions/:id/logs", logsRouter);
   app.mount("/api/versions", versionsRouter);
 
   return app;
@@ -67,7 +79,22 @@ export function createApp(options: AppOptions = {}): H3 {
 export async function startServer(options: ServerOptions = {}): Promise<void> {
   const { port = 3030, sources } = options;
 
-  const app = createApp({ sources });
+  // Initialize database with auto-migration
+  // NOTE: This will CRASH the server if database initialization fails
+  // This is intentional - we don't want to run with a misconfigured database
+  const { createDatabase, runMigrations } = await import("./db");
+  const db = createDatabase();
+
+  try {
+    await runMigrations(db);
+    // eslint-disable-next-line no-console
+    console.info("Database migrations completed successfully");
+  } catch (err) {
+    console.error("Failed to run database migrations:", err);
+    throw err; // CRASH - no fallback
+  }
+
+  const app = createApp({ sources, db });
 
   const clientDir = path.join(import.meta.dirname, "../client");
 
@@ -109,7 +136,8 @@ export async function startServer(options: ServerOptions = {}): Promise<void> {
     });
   });
 
-  serve(app, { port });
+  serve(app, { port, silent: true });
 
-  console.log(`Pipeline UI running at http://localhost:${port}`);
+  // eslint-disable-next-line no-console
+  console.info(`Pipeline UI running at http://localhost:${port}`);
 }
