@@ -29,13 +29,6 @@ export interface RemoteFileList {
   truncated: boolean;
 }
 
-export interface FindRemotePipelineFilesOptions {
-  pattern?: string;
-  fetchFn?: typeof fetch;
-}
-
-export interface LoadRemotePipelinesOptions {
-  throwOnError?: boolean;
-  fetchFn?: typeof fetch;
-  transformFn?: (code: string, filename: string) => { code: string };
+export interface RemoteRequestOptions {
+  customFetch?: typeof fetch;
 }

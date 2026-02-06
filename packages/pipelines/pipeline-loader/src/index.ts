@@ -1,30 +1,15 @@
-export type { FindPipelineFilesOptions } from "./find";
-export { findPipelineFiles } from "./find";
-
 export {
+  findPipelineFiles,
   loadPipelineFile,
   loadPipelinesFromPaths,
-  loadPipelineFromContent,
+} from "./loader";
+export type { FindPipelineFilesOptions, LoadPipelinesOptions } from "./loader";
+
+export {
   findRemotePipelineFiles,
   loadRemotePipelines,
-} from "./loader";
-
+} from "./remote";
 export type {
-  LoadedPipelineFile,
-  LoadPipelinesOptions,
-  LoadPipelinesResult,
-  LoadPipelineFromContentOptions,
   FindRemotePipelineFilesOptions,
   LoadRemotePipelinesOptions,
-} from "./loader";
-
-export type {
-  GitHubSource,
-  GitLabSource,
-  LocalSource,
-  PipelineSource,
-  RemoteFileList,
-} from "./remote/types";
-
-export * as github from "./remote/github";
-export * as gitlab from "./remote/gitlab";
+} from "./remote";

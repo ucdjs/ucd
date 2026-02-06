@@ -1,6 +1,11 @@
-import type { RemoteFileList } from "./types";
+import type { RemoteFileList, RemoteRequestOptions } from "./types";
 
 const GITLAB_API_BASE = "https://gitlab.com/api/v4";
+
+interface GitLabTreeItem {
+  path: string;
+  type: string;
+}
 
 export interface GitLabRepoRef {
   owner: string;
@@ -15,23 +20,23 @@ function encodeProjectPath(owner: string, repo: string): string {
 
 export async function listFiles(
   repoRef: GitLabRepoRef,
-  options: { fetchFn?: typeof fetch } = {},
+  options: RemoteRequestOptions = {},
 ): Promise<RemoteFileList> {
   const { owner, repo, ref, path } = repoRef;
   const refValue = ref ?? "HEAD";
   const pathValue = path ?? "";
-  const { fetchFn = fetch } = options;
+  const { customFetch = fetch } = options;
 
   const projectId = encodeProjectPath(owner, repo);
   const url = `${GITLAB_API_BASE}/projects/${projectId}/repository/tree?recursive=true&ref=${refValue}&path=${encodeURIComponent(pathValue)}&per_page=100`;
 
-  const response = await fetchFn(url);
+  const response = await customFetch(url);
 
   if (!response.ok) {
     throw new Error(`GitLab API error: ${response.status} ${response.statusText}`);
   }
 
-  const data = await response.json() as Array<{ path: string; type: string }>;
+  const data = await response.json() as GitLabTreeItem[];
 
   const files = data
     .filter((item) => item.type === "blob")
@@ -46,17 +51,17 @@ export async function listFiles(
 export async function fetchFile(
   repoRef: GitLabRepoRef,
   filePath: string,
-  options: { fetchFn?: typeof fetch } = {},
+  options: RemoteRequestOptions = {},
 ): Promise<string> {
   const { owner, repo, ref } = repoRef;
   const refValue = ref ?? "HEAD";
-  const { fetchFn = fetch } = options;
+  const { customFetch = fetch } = options;
 
   const projectId = encodeProjectPath(owner, repo);
   const encodedPath = encodeURIComponent(filePath);
   const url = `${GITLAB_API_BASE}/projects/${projectId}/repository/files/${encodedPath}/raw?ref=${refValue}`;
 
-  const response = await fetchFn(url);
+  const response = await customFetch(url);
 
   if (!response.ok) {
     throw new Error(`GitLab API error: ${response.status} ${response.statusText}`);
