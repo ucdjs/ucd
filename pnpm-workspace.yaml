@@ -72,6 +72,9 @@ catalogs:
     esrap: 2.2.2
     oxc-parser: 0.112.0
     oxc-transform: 0.112.0
+    drizzle-orm: 0.45.1
+    "@libsql/client": 0.17.0
+    drizzle-kit: 0.31.8
 
   build:
     tsdown: 0.20.3
