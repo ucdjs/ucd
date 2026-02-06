@@ -40,21 +40,21 @@ export {
   type PipelineGraphProps,
 } from "./components/graph/pipeline-graph.js";
 export {
+  EventDetailPanel,
+  type EventDetailPanelProps,
+} from "./components/events/event-detail-panel.js";
+export {
   InlineJsonView,
   type InlineJsonViewProps,
-} from "./components/logs/inline-json-view.js";
-export {
-  LogDetailPanel,
-  type LogDetailPanelProps,
-} from "./components/logs/log-detail-panel.js";
+} from "./components/events/inline-json-view.js";
 export {
   SimpleTimeline,
   type SimpleTimelineProps,
-} from "./components/logs/simple-timeline.js";
+} from "./components/events/simple-timeline.js";
 export {
   ViewModeToggle,
   type ViewModeToggleProps,
-} from "./components/logs/view-mode-toggle.js";
+} from "./components/events/view-mode-toggle.js";
 export { PipelineSidebar } from "./components/pipeline-sidebar.js";
 export * from "./hooks";
 export {

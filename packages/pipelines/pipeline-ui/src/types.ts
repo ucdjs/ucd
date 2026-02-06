@@ -51,6 +51,7 @@ export interface PipelineResponse {
 export interface ExecuteResult {
   success: boolean;
   pipelineId: string;
+  executionId?: string;
   summary?: {
     versions: string[];
     totalFiles: number;

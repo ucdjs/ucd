@@ -4,10 +4,10 @@ export {
   type UseExecuteReturn,
 } from "./use-execute";
 export {
-  type LogViewActions,
-  type LogViewState,
-  useLogView,
-} from "./use-log-view";
+  type EventViewActions,
+  type EventViewState,
+  useEventView,
+} from "./use-event-view";
 export {
   usePipeline,
   type UsePipelineOptions,
@@ -22,7 +22,3 @@ export {
   type UsePipelinesOptions,
   type UsePipelinesReturn,
 } from "./use-pipelines";
-export {
-  useVersionSelection,
-  type UseVersionSelectionReturn,
-} from "./use-version-selection";

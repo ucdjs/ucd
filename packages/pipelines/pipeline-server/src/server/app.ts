@@ -4,9 +4,9 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import { H3, serve, serveStatic } from "h3";
+import { eventsRouter } from "./routes/events";
 import { executeRouter } from "./routes/execute";
 import { executionsRouter } from "./routes/executions";
-import { logsRouter } from "./routes/logs";
 import { pipelinesRouter } from "./routes/pipelines";
 import { sourcesRouter } from "./routes/sources";
 import { versionsRouter } from "./routes/versions";
@@ -70,7 +70,7 @@ export function createApp(options: AppOptions = {}): H3 {
   app.mount("/api/pipelines", pipelinesRouter);
   app.mount("/api/pipelines/:id/execute", executeRouter);
   app.mount("/api/pipelines/:id/executions", executionsRouter);
-  app.mount("/api/executions/:id/logs", logsRouter);
+  app.mount("/api/executions/:id/events", eventsRouter);
   app.mount("/api/versions", versionsRouter);
 
   return app;
