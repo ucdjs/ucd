@@ -1,8 +1,24 @@
-import type { RemoteFileList } from "./types";
+import type { RemoteFileList, RemoteRequestOptions } from "./types";
 
 const GITHUB_API_BASE = "https://api.github.com";
+const GITHUB_ACCEPT_HEADER = "application/vnd.github.v3+json";
 
-export interface GitHubRepoRef {
+interface GitHubTreeItem {
+  path: string;
+  type: string;
+}
+
+interface GitHubTreeResponse {
+  tree: GitHubTreeItem[];
+  truncated: boolean;
+}
+
+interface GitHubContentResponse {
+  content: string;
+  encoding: string;
+}
+
+interface GitHubRepoRef {
   owner: string;
   repo: string;
   ref?: string;
@@ -11,15 +27,15 @@ export interface GitHubRepoRef {
 
 export async function listFiles(
   repoRef: GitHubRepoRef,
-  options: { fetchFn?: typeof fetch } = {},
+  options: RemoteRequestOptions = {},
 ): Promise<RemoteFileList> {
   const { owner, repo, ref = "HEAD", path = "" } = repoRef;
-  const { fetchFn = fetch } = options;
+  const { customFetch = fetch } = options;
 
   const url = `${GITHUB_API_BASE}/repos/${owner}/${repo}/git/trees/${ref}?recursive=1`;
-  const response = await fetchFn(url, {
+  const response = await customFetch(url, {
     headers: {
-      Accept: "application/vnd.github.v3+json",
+      Accept: GITHUB_ACCEPT_HEADER,
     },
   });
 
@@ -27,10 +43,7 @@ export async function listFiles(
     throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
   }
 
-  const data = await response.json() as {
-    tree: Array<{ path: string; type: string }>;
-    truncated: boolean;
-  };
+  const data = await response.json() as GitHubTreeResponse;
 
   const prefix = path ? `${path}/` : "";
   const files = data.tree
@@ -46,17 +59,17 @@ export async function listFiles(
 export async function fetchFile(
   repoRef: GitHubRepoRef,
   filePath: string,
-  options: { fetchFn?: typeof fetch } = {},
+  options: RemoteRequestOptions = {},
 ): Promise<string> {
   const { owner, repo, ref = "HEAD" } = repoRef;
-  const { fetchFn = fetch } = options;
+  const { customFetch = fetch } = options;
 
   const encodedPath = encodeURIComponent(filePath);
   const url = `${GITHUB_API_BASE}/repos/${owner}/${repo}/contents/${encodedPath}?ref=${ref}`;
 
-  const response = await fetchFn(url, {
+  const response = await customFetch(url, {
     headers: {
-      Accept: "application/vnd.github.v3+json",
+      Accept: GITHUB_ACCEPT_HEADER,
     },
   });
 
@@ -64,7 +77,7 @@ export async function fetchFile(
     throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
   }
 
-  const data = await response.json() as { content: string; encoding: string };
+  const data = await response.json() as GitHubContentResponse;
 
   if (data.encoding !== "base64") {
     throw new Error(`Unexpected encoding: ${data.encoding}`);
