@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { usePipelinesContext } from "../hooks/pipeline-context";
+import { usePipelines } from "@ucdjs/pipelines-ui";
 
 export const Route = createFileRoute("/")({
   component: HomePage,
@@ -66,7 +66,7 @@ function LoadingState() {
 }
 
 function HomePage() {
-  const { data, loading } = usePipelinesContext();
+  const { data, loading } = usePipelines();
 
   if (loading) {
     return <LoadingState />;

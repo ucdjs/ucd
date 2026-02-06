@@ -1,7 +1,6 @@
 import type { PipelineDefinition } from "@ucdjs/pipelines-core";
 import type { GitHubSource, GitLabSource, RemoteFileList } from "./remote/types";
 import { isPipelineDefinition } from "@ucdjs/pipelines-core";
-import { transform } from "oxc-transform";
 import * as github from "./remote/github";
 import * as gitlab from "./remote/gitlab";
 

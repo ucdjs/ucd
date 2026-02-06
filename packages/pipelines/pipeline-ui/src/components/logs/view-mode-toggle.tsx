@@ -1,7 +1,7 @@
-import { cn } from "@ucdjs-internal/shared-ui/lib/utils";
+import { cn } from "#lib/utils";
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 
-interface ViewModeToggleProps {
+export interface ViewModeToggleProps {
   isJsonMode: boolean;
   onToggle: () => void;
 }

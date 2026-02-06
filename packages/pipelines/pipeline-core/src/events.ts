@@ -233,27 +233,23 @@ export interface PipelineGraph {
   edges: PipelineGraphEdge[];
 }
 
-/**
- * Helper type for creating events without IDs.
- * The ID will be automatically assigned by the emit function.
- */
-export type PipelineEventInput = 
-  | Omit<PipelineStartEvent, "id"> & { id?: string }
-  | Omit<PipelineEndEvent, "id"> & { id?: string }
-  | Omit<VersionStartEvent, "id"> & { id?: string }
-  | Omit<VersionEndEvent, "id"> & { id?: string }
-  | Omit<ArtifactStartEvent, "id"> & { id?: string }
-  | Omit<ArtifactEndEvent, "id"> & { id?: string }
-  | Omit<ArtifactProducedEvent, "id"> & { id?: string }
-  | Omit<ArtifactConsumedEvent, "id"> & { id?: string }
-  | Omit<FileMatchedEvent, "id"> & { id?: string }
-  | Omit<FileSkippedEvent, "id"> & { id?: string }
-  | Omit<FileFallbackEvent, "id"> & { id?: string }
-  | Omit<ParseStartEvent, "id"> & { id?: string }
-  | Omit<ParseEndEvent, "id"> & { id?: string }
-  | Omit<ResolveStartEvent, "id"> & { id?: string }
-  | Omit<ResolveEndEvent, "id"> & { id?: string }
-  | Omit<CacheHitEvent, "id"> & { id?: string }
-  | Omit<CacheMissEvent, "id"> & { id?: string }
-  | Omit<CacheStoreEvent, "id"> & { id?: string }
-  | Omit<PipelineErrorEvent, "id"> & { id?: string };
+export type PipelineEventInput
+  = | Omit<PipelineStartEvent, "id"> & { id?: string }
+    | Omit<PipelineEndEvent, "id"> & { id?: string }
+    | Omit<VersionStartEvent, "id"> & { id?: string }
+    | Omit<VersionEndEvent, "id"> & { id?: string }
+    | Omit<ArtifactStartEvent, "id"> & { id?: string }
+    | Omit<ArtifactEndEvent, "id"> & { id?: string }
+    | Omit<ArtifactProducedEvent, "id"> & { id?: string }
+    | Omit<ArtifactConsumedEvent, "id"> & { id?: string }
+    | Omit<FileMatchedEvent, "id"> & { id?: string }
+    | Omit<FileSkippedEvent, "id"> & { id?: string }
+    | Omit<FileFallbackEvent, "id"> & { id?: string }
+    | Omit<ParseStartEvent, "id"> & { id?: string }
+    | Omit<ParseEndEvent, "id"> & { id?: string }
+    | Omit<ResolveStartEvent, "id"> & { id?: string }
+    | Omit<ResolveEndEvent, "id"> & { id?: string }
+    | Omit<CacheHitEvent, "id"> & { id?: string }
+    | Omit<CacheMissEvent, "id"> & { id?: string }
+    | Omit<CacheStoreEvent, "id"> & { id?: string }
+    | Omit<PipelineErrorEvent, "id"> & { id?: string };

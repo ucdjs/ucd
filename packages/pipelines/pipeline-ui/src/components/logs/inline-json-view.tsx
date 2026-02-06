@@ -1,7 +1,6 @@
 import type { PipelineEvent } from "@ucdjs/pipelines-core";
-import { cn } from "@ucdjs-internal/shared-ui/lib/utils";
 
-interface InlineJsonViewProps {
+export interface InlineJsonViewProps {
   event: PipelineEvent;
 }
 

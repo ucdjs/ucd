@@ -10,19 +10,19 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as PipelinesIdRouteImport } from './routes/pipelines.$id'
-import { Route as PipelinesIdIndexRouteImport } from './routes/pipelines.$id.index'
-import { Route as PipelinesIdLogsRouteImport } from './routes/pipelines.$id.logs'
-import { Route as PipelinesIdInspectRouteImport } from './routes/pipelines.$id.inspect'
-import { Route as PipelinesIdGraphRouteImport } from './routes/pipelines.$id.graph'
-import { Route as PipelinesIdCodeRouteImport } from './routes/pipelines.$id.code'
+import { Route as PipelinesIdRouteRouteImport } from './routes/pipelines/$id/route'
+import { Route as PipelinesIdIndexRouteImport } from './routes/pipelines/$id/index'
+import { Route as PipelinesIdLogsRouteImport } from './routes/pipelines/$id/logs'
+import { Route as PipelinesIdInspectRouteImport } from './routes/pipelines/$id/inspect'
+import { Route as PipelinesIdGraphRouteImport } from './routes/pipelines/$id/graph'
+import { Route as PipelinesIdCodeRouteImport } from './routes/pipelines/$id/code'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PipelinesIdRoute = PipelinesIdRouteImport.update({
+const PipelinesIdRouteRoute = PipelinesIdRouteRouteImport.update({
   id: '/pipelines/$id',
   path: '/pipelines/$id',
   getParentRoute: () => rootRouteImport,
@@ -30,32 +30,32 @@ const PipelinesIdRoute = PipelinesIdRouteImport.update({
 const PipelinesIdIndexRoute = PipelinesIdIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => PipelinesIdRoute,
+  getParentRoute: () => PipelinesIdRouteRoute,
 } as any)
 const PipelinesIdLogsRoute = PipelinesIdLogsRouteImport.update({
   id: '/logs',
   path: '/logs',
-  getParentRoute: () => PipelinesIdRoute,
+  getParentRoute: () => PipelinesIdRouteRoute,
 } as any)
 const PipelinesIdInspectRoute = PipelinesIdInspectRouteImport.update({
   id: '/inspect',
   path: '/inspect',
-  getParentRoute: () => PipelinesIdRoute,
+  getParentRoute: () => PipelinesIdRouteRoute,
 } as any)
 const PipelinesIdGraphRoute = PipelinesIdGraphRouteImport.update({
   id: '/graph',
   path: '/graph',
-  getParentRoute: () => PipelinesIdRoute,
+  getParentRoute: () => PipelinesIdRouteRoute,
 } as any)
 const PipelinesIdCodeRoute = PipelinesIdCodeRouteImport.update({
   id: '/code',
   path: '/code',
-  getParentRoute: () => PipelinesIdRoute,
+  getParentRoute: () => PipelinesIdRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/pipelines/$id': typeof PipelinesIdRouteWithChildren
+  '/pipelines/$id': typeof PipelinesIdRouteRouteWithChildren
   '/pipelines/$id/code': typeof PipelinesIdCodeRoute
   '/pipelines/$id/graph': typeof PipelinesIdGraphRoute
   '/pipelines/$id/inspect': typeof PipelinesIdInspectRoute
@@ -73,7 +73,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/pipelines/$id': typeof PipelinesIdRouteWithChildren
+  '/pipelines/$id': typeof PipelinesIdRouteRouteWithChildren
   '/pipelines/$id/code': typeof PipelinesIdCodeRoute
   '/pipelines/$id/graph': typeof PipelinesIdGraphRoute
   '/pipelines/$id/inspect': typeof PipelinesIdInspectRoute
@@ -111,7 +111,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  PipelinesIdRoute: typeof PipelinesIdRouteWithChildren
+  PipelinesIdRouteRoute: typeof PipelinesIdRouteRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -127,7 +127,7 @@ declare module '@tanstack/react-router' {
       id: '/pipelines/$id'
       path: '/pipelines/$id'
       fullPath: '/pipelines/$id'
-      preLoaderRoute: typeof PipelinesIdRouteImport
+      preLoaderRoute: typeof PipelinesIdRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pipelines/$id/': {
@@ -135,40 +135,40 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/pipelines/$id/'
       preLoaderRoute: typeof PipelinesIdIndexRouteImport
-      parentRoute: typeof PipelinesIdRoute
+      parentRoute: typeof PipelinesIdRouteRoute
     }
     '/pipelines/$id/logs': {
       id: '/pipelines/$id/logs'
       path: '/logs'
       fullPath: '/pipelines/$id/logs'
       preLoaderRoute: typeof PipelinesIdLogsRouteImport
-      parentRoute: typeof PipelinesIdRoute
+      parentRoute: typeof PipelinesIdRouteRoute
     }
     '/pipelines/$id/inspect': {
       id: '/pipelines/$id/inspect'
       path: '/inspect'
       fullPath: '/pipelines/$id/inspect'
       preLoaderRoute: typeof PipelinesIdInspectRouteImport
-      parentRoute: typeof PipelinesIdRoute
+      parentRoute: typeof PipelinesIdRouteRoute
     }
     '/pipelines/$id/graph': {
       id: '/pipelines/$id/graph'
       path: '/graph'
       fullPath: '/pipelines/$id/graph'
       preLoaderRoute: typeof PipelinesIdGraphRouteImport
-      parentRoute: typeof PipelinesIdRoute
+      parentRoute: typeof PipelinesIdRouteRoute
     }
     '/pipelines/$id/code': {
       id: '/pipelines/$id/code'
       path: '/code'
       fullPath: '/pipelines/$id/code'
       preLoaderRoute: typeof PipelinesIdCodeRouteImport
-      parentRoute: typeof PipelinesIdRoute
+      parentRoute: typeof PipelinesIdRouteRoute
     }
   }
 }
 
-interface PipelinesIdRouteChildren {
+interface PipelinesIdRouteRouteChildren {
   PipelinesIdCodeRoute: typeof PipelinesIdCodeRoute
   PipelinesIdGraphRoute: typeof PipelinesIdGraphRoute
   PipelinesIdInspectRoute: typeof PipelinesIdInspectRoute
@@ -176,7 +176,7 @@ interface PipelinesIdRouteChildren {
   PipelinesIdIndexRoute: typeof PipelinesIdIndexRoute
 }
 
-const PipelinesIdRouteChildren: PipelinesIdRouteChildren = {
+const PipelinesIdRouteRouteChildren: PipelinesIdRouteRouteChildren = {
   PipelinesIdCodeRoute: PipelinesIdCodeRoute,
   PipelinesIdGraphRoute: PipelinesIdGraphRoute,
   PipelinesIdInspectRoute: PipelinesIdInspectRoute,
@@ -184,13 +184,12 @@ const PipelinesIdRouteChildren: PipelinesIdRouteChildren = {
   PipelinesIdIndexRoute: PipelinesIdIndexRoute,
 }
 
-const PipelinesIdRouteWithChildren = PipelinesIdRoute._addFileChildren(
-  PipelinesIdRouteChildren,
-)
+const PipelinesIdRouteRouteWithChildren =
+  PipelinesIdRouteRoute._addFileChildren(PipelinesIdRouteRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  PipelinesIdRoute: PipelinesIdRouteWithChildren,
+  PipelinesIdRouteRoute: PipelinesIdRouteRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

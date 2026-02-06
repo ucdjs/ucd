@@ -7,18 +7,34 @@ import { defineConfig } from "vite";
 import viteTsConfigPaths from "vite-tsconfig-paths";
 
 const appModuleId = "/src/server/app.ts";
+const dbModuleId = "/src/server/db/index.ts";
 
 function h3DevServerPlugin(): Plugin {
   return {
     name: "h3-dev-server",
-    configureServer(server) {
+    async configureServer(server) {
       let appPromise: Promise<H3> | null = null;
+      let db: import("./src/server/db").Database | null = null;
+
+      // Initialize database before starting the server
+      try {
+        const dbMod = await server.ssrLoadModule(dbModuleId);
+        const { createDatabase, runMigrations } = dbMod as typeof import("./src/server/db");
+
+        db = createDatabase();
+        await runMigrations(db);
+        console.log("[h3-dev-server] Database migrations completed successfully");
+      } catch (err) {
+        console.error("[h3-dev-server] Failed to initialize database:", err);
+        // In dev, we still continue but log the error prominently
+        // The app will fail when trying to access db.context
+      }
 
       const getApp = async () => {
         if (!appPromise) {
           appPromise = server
             .ssrLoadModule(appModuleId)
-            .then((mod) => (mod as typeof import("./src/server/app")).createApp());
+            .then((mod) => (mod as typeof import("./src/server/app")).createApp({ db: db! }));
         }
 
         return appPromise;
@@ -35,6 +51,17 @@ function h3DevServerPlugin(): Plugin {
       server.middlewares.use(async (req, res, next) => {
         if (!req.url?.startsWith("/api")) {
           return next();
+        }
+
+        // If database failed to initialize, return error
+        if (!db) {
+          res.statusCode = 500;
+          res.setHeader("content-type", "application/json");
+          res.end(JSON.stringify({
+            error: "Database not initialized",
+            message: "The database failed to initialize. Check the server console for details.",
+          }));
+          return;
         }
 
         try {

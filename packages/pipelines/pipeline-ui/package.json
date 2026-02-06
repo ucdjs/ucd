@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "type": "module",
   "author": {
-    "name": "Lucas Norgaard",
+    "name": "Lucas Nørgård",
     "email": "lucasnrgaard@gmail.com",
     "url": "https://luxass.dev"
   },
@@ -26,13 +26,12 @@
   },
   "exports": {
     ".": "./dist/index.mjs",
-    "./hooks/use-command-palette": "./dist/hooks/use-command-palette.mjs",
-    "./hooks/use-execute": "./dist/hooks/use-execute.mjs",
-    "./hooks/use-pipeline": "./dist/hooks/use-pipeline.mjs",
-    "./hooks/use-pipelines": "./dist/hooks/use-pipelines.mjs",
+    "./components/pipeline-sidebar": "./dist/components/pipeline-sidebar.mjs",
+    "./hooks": "./dist/hooks/index.mjs",
     "./lib": "./dist/lib/index.mjs",
     "./lib/adapter": "./dist/lib/adapter.mjs",
     "./lib/colors": "./dist/lib/colors.mjs",
+    "./lib/format-time": "./dist/lib/format-time.mjs",
     "./lib/layout": "./dist/lib/layout.mjs",
     "./lib/utils": "./dist/lib/utils.mjs",
     "./styles.css": "./dist/styles/globals.css",
@@ -53,8 +52,9 @@
     "typecheck": "tsc --noEmit -p tsconfig.build.json"
   },
   "peerDependencies": {
-    "react": ">=18.0.0",
-    "react-dom": ">=18.0.0"
+    "@tanstack/react-router": "catalog:web",
+    "react": ">=19.2.0",
+    "react-dom": ">=19.2.0"
   },
   "dependencies": {
     "@icons-pack/react-simple-icons": "catalog:web",
@@ -68,10 +68,13 @@
   "devDependencies": {
     "@eslint-react/eslint-plugin": "catalog:linting",
     "@luxass/eslint-config": "catalog:linting",
+    "@rollup/plugin-babel": "catalog:build",
+    "@tanstack/react-router": "catalog:web",
     "@types/react": "catalog:types",
     "@types/react-dom": "catalog:types",
     "@ucdjs-tooling/tsconfig": "workspace:*",
     "@ucdjs-tooling/tsdown-config": "workspace:*",
+    "babel-plugin-react-compiler": "catalog:build",
     "eslint": "catalog:linting",
     "eslint-plugin-react-hooks": "catalog:linting",
     "eslint-plugin-react-refresh": "catalog:linting",

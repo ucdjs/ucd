@@ -1,19 +1,15 @@
 import type { ExecuteResult } from "../../types";
 import { cn } from "#lib/utils";
-import { memo } from "react";
 
 export interface ExecutionResultProps {
   result: ExecuteResult;
   className?: string;
 }
 
-/**
- * Displays the result of a pipeline execution
- */
-export const ExecutionResult = memo(({
+export function ExecutionResult({
   result,
   className,
-}: ExecutionResultProps) => {
+}: ExecutionResultProps) {
   const isSuccess = result.success;
 
   return (
@@ -102,7 +98,7 @@ export const ExecutionResult = memo(({
       )}
     </div>
   );
-});
+}
 
 export interface ExecutionSummaryProps {
   totalFiles: number;
@@ -117,7 +113,7 @@ export interface ExecutionSummaryProps {
 /**
  * Compact execution summary (without result wrapper)
  */
-export const ExecutionSummary = memo(({
+export function ExecutionSummary({
   totalFiles,
   matchedFiles,
   skippedFiles,
@@ -125,7 +121,7 @@ export const ExecutionSummary = memo(({
   totalOutputs,
   durationMs,
   className,
-}: ExecutionSummaryProps) => {
+}: ExecutionSummaryProps) {
   return (
     <div className={cn("grid grid-cols-2 gap-4 text-xs sm:grid-cols-3 lg:grid-cols-6", className)}>
       <div>
@@ -157,7 +153,7 @@ export const ExecutionSummary = memo(({
       </div>
     </div>
   );
-});
+}
 
 export interface ExecutionErrorsProps {
   errors: Array<{ scope: string; message: string }>;
@@ -167,10 +163,10 @@ export interface ExecutionErrorsProps {
 /**
  * List of execution errors
  */
-export const ExecutionErrors = memo(({
+export function ExecutionErrors({
   errors,
   className,
-}: ExecutionErrorsProps) => {
+}: ExecutionErrorsProps) {
   if (errors.length === 0) return null;
 
   return (
@@ -188,4 +184,4 @@ export const ExecutionErrors = memo(({
       ))}
     </div>
   );
-});
+}

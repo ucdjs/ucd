@@ -1,7 +1,7 @@
-import type { CodeResponse } from "../types";
+import type { CodeResponse } from "../../../types";
 import { createFileRoute, useSearch } from "@tanstack/react-router";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 import { ShikiCode } from "@ucdjs-internal/shared-ui/components/shiki-code";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 import { useEffect, useRef } from "react";
 
 interface CodeSearchParams {
@@ -19,42 +19,17 @@ export const Route = createFileRoute("/pipelines/$id/code")({
   component: PipelineCodePage,
 });
 
-interface ErrorDisplayProps {
-  error: string;
-}
-
-function ErrorDisplay({ error }: ErrorDisplayProps) {
-  return (
-    <Card role="alert">
-      <CardHeader>
-        <CardTitle className="text-sm">Pipeline Code</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <p className="text-sm text-destructive">{error}</p>
-      </CardContent>
-    </Card>
-  );
-}
-
-interface CodeDisplayProps {
-  code: string;
-  filePath: string;
-  highlightRoute?: string;
-}
-
-function CodeDisplay({ code, filePath, highlightRoute }: CodeDisplayProps) {
+function CodeDisplay({ code, filePath, highlightRoute }: { code: string; filePath: string; highlightRoute?: string }) {
   const codeRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (highlightRoute && codeRef.current) {
-      // Find the route definition in the code and scroll to it
-      const routePattern = new RegExp(`route\\s*:\s*["\']${highlightRoute}["\']`, "i");
+      const routePattern = new RegExp(`route\\s*:\\s*["\']${highlightRoute}["\']`, "i");
       const match = code.match(routePattern);
       if (match) {
         const lines = code.substring(0, match.index).split("\n");
         const lineNumber = lines.length;
-        
-        // Scroll to approximate position (line height ~20px)
+
         const scrollContainer = codeRef.current.querySelector(".shiki") || codeRef.current;
         const lineElement = scrollContainer.querySelector(`[data-line="${lineNumber}"]`);
         if (lineElement) {
@@ -75,9 +50,9 @@ function CodeDisplay({ code, filePath, highlightRoute }: CodeDisplayProps) {
       </CardHeader>
       <CardContent>
         <div ref={codeRef} className="rounded-lg border bg-muted/30 overflow-hidden">
-          <ShikiCode 
-            code={code} 
-            language="typescript" 
+          <ShikiCode
+            code={code}
+            language="typescript"
             className="text-xs overflow-auto max-h-[60vh]"
           />
         </div>
@@ -91,9 +66,7 @@ function EmptyCodeDisplay({ pipelineId }: { pipelineId: string }) {
     <Card>
       <CardHeader className="pb-3">
         <CardTitle className="text-sm">Pipeline Code</CardTitle>
-        <CardDescription>
-          {pipelineId}
-        </CardDescription>
+        <CardDescription>{pipelineId}</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="rounded-lg border bg-muted/30 p-8 text-center">
@@ -110,33 +83,19 @@ function PipelineCodePage() {
   const search = useSearch({ from: "/pipelines/$id/code" }) as CodeSearchParams;
   const highlightRoute = search?.route;
 
-  if (data?.error) {
-    return <ErrorDisplay error={data.error} />;
-  }
-
-  if (!data?.code) {
-    return (
-      <div
-        role="tabpanel"
-        id="tabpanel-code"
-        aria-labelledby="tab-code"
-      >
-        <EmptyCodeDisplay pipelineId={id} />
-      </div>
-    );
-  }
-
   return (
-    <div
-      role="tabpanel"
-      id="tabpanel-code"
-      aria-labelledby="tab-code"
-    >
-      <CodeDisplay
-        code={data.code}
-        filePath={data.filePath ?? id}
-        highlightRoute={highlightRoute}
-      />
+    <div role="tabpanel" id="tabpanel-code" aria-labelledby="tab-code" className="p-6">
+      {data.code
+        ? (
+            <CodeDisplay
+              code={data.code}
+              filePath={data.filePath ?? id}
+              highlightRoute={highlightRoute}
+            />
+          )
+        : (
+            <EmptyCodeDisplay pipelineId={id} />
+          )}
     </div>
   );
 }

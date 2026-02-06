@@ -1,8 +1,11 @@
 import type { PipelineEvent } from "@ucdjs/pipelines-core";
+import type { LocalSource } from "@ucdjs/pipelines-loader";
+import { randomUUID } from "node:crypto";
 import { createPipelineExecutor } from "@ucdjs/pipelines-executor";
 import { findPipelineFiles, loadPipelinesFromPaths } from "@ucdjs/pipelines-loader";
-import type { LocalSource } from "@ucdjs/pipelines-loader";
+import { eq } from "drizzle-orm";
 import { H3, readBody } from "h3";
+import * as schema from "../db/schema";
 
 export const executeRouter = new H3();
 
@@ -12,7 +15,7 @@ interface ExecuteBody {
 }
 
 executeRouter.post("/", async (event) => {
-  const { sources } = event.context;
+  const { sources, db } = event.context;
   const id = event.context.params?.id;
 
   if (!id) {
@@ -41,10 +44,32 @@ executeRouter.post("/", async (event) => {
       const versions = body.versions ?? pipeline.versions;
       const cache = body.cache ?? true;
 
+      // Generate execution ID
+      const executionId = randomUUID();
+      const startedAt = new Date();
+
+      // Create execution record
+      await db.insert(schema.executions).values({
+        id: executionId,
+        pipelineId: id,
+        status: "running",
+        startedAt,
+        versions,
+      });
+
       const events: PipelineEvent[] = [];
       const executor = createPipelineExecutor({
-        onEvent: (event) => {
-          events.push(event);
+        onEvent: async (evt) => {
+          events.push(evt);
+
+          // Persist event to database
+          await db.insert(schema.events).values({
+            id: randomUUID(),
+            executionId,
+            type: evt.type,
+            timestamp: new Date(evt.timestamp),
+            data: evt,
+          });
         },
       });
 
@@ -55,31 +80,48 @@ executeRouter.post("/", async (event) => {
         });
 
         const pipelineResult = execResult.results.get(id);
+        const completedAt = new Date();
 
-        if (pipelineResult) {
-          console.info("Pipeline run finished:", {
-            pipelineId: id,
-            summary: pipelineResult.summary,
-            errorCount: pipelineResult.errors.length,
-          });
-        }
+        // Update execution with final status
+        await db.update(schema.executions)
+          .set({
+            status: "completed",
+            completedAt,
+            summary: pipelineResult?.summary ?? null,
+            graph: pipelineResult?.graph ?? null,
+          })
+          .where(eq(schema.executions.id, executionId));
 
-        return {
-          success: true,
+        // eslint-disable-next-line no-console
+        console.info("Pipeline execution completed:", {
+          executionId,
           pipelineId: id,
           summary: pipelineResult?.summary,
-          graph: pipelineResult?.graph,
-          events: events.slice().reverse(),
-          errors: pipelineResult?.errors.map((e) => ({
-            scope: e.scope,
-            message: e.message,
-          })),
+        });
+
+        // Return just success and executionId
+        return {
+          success: true,
+          executionId,
         };
       } catch (err) {
+        const completedAt = new Date();
+        const errorMessage = err instanceof Error ? err.message : String(err);
+
+        // Update execution with failure status
+        await db.update(schema.executions)
+          .set({
+            status: "failed",
+            completedAt,
+            error: errorMessage,
+          })
+          .where(eq(schema.executions.id, executionId));
+
+        // Return failure with executionId
         return {
           success: false,
-          pipelineId: id,
-          error: err instanceof Error ? err.message : String(err),
+          executionId,
+          error: errorMessage,
         };
       }
     } catch {

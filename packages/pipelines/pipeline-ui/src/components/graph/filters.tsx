@@ -7,7 +7,6 @@ interface NodeTypeConfig {
   color: string;
 }
 
-// Hoisted outside component - never changes
 const nodeTypeLabels: Record<PipelineGraphNodeType, NodeTypeConfig> = {
   source: { label: "Source", color: "#6366f1" },
   file: { label: "File", color: "#10b981" },
@@ -16,10 +15,8 @@ const nodeTypeLabels: Record<PipelineGraphNodeType, NodeTypeConfig> = {
   output: { label: "Output", color: "#0ea5e9" },
 };
 
-// Hoisted array - stable reference
 const allNodeTypes: readonly PipelineGraphNodeType[] = ["source", "file", "route", "artifact", "output"] as const;
 
-// Hoisted static styles
 const containerStyle: CSSProperties = {
   display: "flex",
   alignItems: "center",
@@ -41,7 +38,6 @@ const labelStyle: CSSProperties = {
   letterSpacing: "0.05em",
 };
 
-// Cache for button styles to avoid recreation on each render
 const buttonStyleCache = new Map<string, CSSProperties>();
 const dotStyleCache = new Map<string, CSSProperties>();
 
@@ -91,7 +87,6 @@ export interface PipelineGraphFiltersProps {
   onToggleType: (type: PipelineGraphNodeType) => void;
 }
 
-// Memoized individual filter button to prevent re-renders
 interface FilterButtonProps {
   type: PipelineGraphNodeType;
   config: NodeTypeConfig;
@@ -122,10 +117,10 @@ const FilterButton = memo(({
   );
 });
 
-export const PipelineGraphFilters = memo(({
+export function PipelineGraphFilters({
   visibleTypes,
   onToggleType,
-}: PipelineGraphFiltersProps) => {
+}: PipelineGraphFiltersProps) {
   return (
     <div style={containerStyle}>
       <span style={labelStyle}>Show:</span>
@@ -140,4 +135,4 @@ export const PipelineGraphFilters = memo(({
       ))}
     </div>
   );
-});
+}

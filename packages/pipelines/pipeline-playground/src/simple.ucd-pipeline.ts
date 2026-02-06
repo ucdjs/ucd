@@ -5,6 +5,9 @@ export default definePipeline({
   id: "playground-simple",
   name: "Playground Simple",
   versions: ["16.0.0"],
+  tags: [
+    "simple"
+  ],
   inputs: [
     createMemorySource({
       files: {

@@ -1,7 +1,14 @@
+import type { GitHubSource, GitLabSource, LocalSource } from "@ucdjs/pipelines-loader";
 import fs from "node:fs";
 import path from "node:path";
-import { findPipelineFiles, findRemotePipelineFiles, loadPipelinesFromPaths, loadRemotePipelines, github, gitlab } from "@ucdjs/pipelines-loader";
-import type { GitHubSource, GitLabSource, LocalSource } from "@ucdjs/pipelines-loader";
+import {
+  findPipelineFiles,
+  findRemotePipelineFiles,
+  github,
+  gitlab,
+  loadPipelinesFromPaths,
+  loadRemotePipelines,
+} from "@ucdjs/pipelines-loader";
 import { getQuery, H3 } from "h3";
 import { extractDefinePipelineCode } from "../code";
 import { toPipelineDetails, toPipelineInfo } from "../types";

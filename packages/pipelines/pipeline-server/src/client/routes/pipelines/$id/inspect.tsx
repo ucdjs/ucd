@@ -1,11 +1,10 @@
 import type { PipelineDetails } from "@ucdjs/pipelines-ui";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useLoaderData } from "@tanstack/react-router";
 import { cn } from "@ucdjs-internal/shared-ui/lib/utils";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 import { Input } from "@ucdjs-internal/shared-ui/ui/input";
 import { useEffect, useMemo, useState } from "react";
-import { usePipelineDetailContext } from "../hooks/pipeline-detail-context";
 
 export const Route = createFileRoute("/pipelines/$id/inspect")({
   component: PipelineInspectPage,
@@ -268,11 +267,11 @@ function EmptyDetailsCard() {
 }
 
 function PipelineInspectPage() {
-  const { pipeline } = usePipelineDetailContext();
+  const { pipeline } = useLoaderData({ from: "/pipelines/$id" }) as { pipeline: PipelineDetails };
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
 
-  const routes = pipeline?.routes ?? [];
+  const routes = pipeline.routes;
 
   const filteredRoutes = useMemo(() => {
     if (!searchQuery.trim()) return routes;
@@ -284,7 +283,6 @@ function PipelineInspectPage() {
     return filteredRoutes.find((route) => route.id === selectedRouteId) ?? filteredRoutes[0] ?? null;
   }, [filteredRoutes, selectedRouteId]);
 
-  // Reset selected route when filtered routes change
   useEffect(() => {
     if (filteredRoutes.length === 0) {
       setSelectedRouteId(null);
@@ -294,12 +292,12 @@ function PipelineInspectPage() {
   }, [filteredRoutes, selectedRouteId]);
 
   if (!pipeline) {
-    return null;
+    return <div className="p-6" />;
   }
 
   return (
     <div
-      className="grid gap-6 lg:grid-cols-[minmax(300px,0.7fr)_minmax(400px,1fr)]"
+      className="p-6 grid gap-6 lg:grid-cols-[minmax(300px,0.7fr)_minmax(400px,1fr)]"
       role="tabpanel"
       id="tabpanel-inspect"
       aria-labelledby="tab-inspect"
