@@ -20,7 +20,10 @@
   },
   "sideEffects": false,
   "imports": {
-    "#routes/*": "./src/routes/*.ts"
+    "#routes/*": "./src/client/routes/*.ts",
+    "#components/*": "./src/client/components/*.tsx",
+    "#hooks/*": "./src/client/hooks/*.ts",
+    "#lib/*": "./src/client/lib/*.ts"
   },
   "exports": {
     ".": "./dist/server/app.js",
@@ -37,9 +40,13 @@
     "dev": "vite dev --port 3031",
     "clean": "git clean -xdf dist node_modules",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit -p tsconfig.build.json"
+    "typecheck": "tsc --noEmit -p tsconfig.build.json",
+    "db:generate": "drizzle-kit generate",
+    "db:push": "drizzle-kit push",
+    "db:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
+    "@libsql/client": "catalog:prod",
     "@ucdjs-internal/shared-ui": "workspace:*",
     "@ucdjs/pipelines-core": "workspace:*",
     "@ucdjs/pipelines-executor": "workspace:*",
@@ -47,6 +54,7 @@
     "@ucdjs/pipelines-ui": "workspace:*",
     "chokidar": "catalog:prod",
     "crossws": "catalog:prod",
+    "drizzle-orm": "catalog:prod",
     "esrap": "catalog:prod",
     "h3": "catalog:prod",
     "lucide-react": "catalog:web",
@@ -66,6 +74,7 @@
     "@ucdjs-tooling/tsdown-config": "workspace:*",
     "@vitejs/plugin-react": "catalog:web",
     "clsx": "catalog:web",
+    "drizzle-kit": "catalog:prod",
     "eslint": "catalog:linting",
     "eslint-plugin-react-hooks": "catalog:linting",
     "eslint-plugin-react-refresh": "catalog:linting",
