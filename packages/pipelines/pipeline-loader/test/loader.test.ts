@@ -1,48 +1,23 @@
 import path from "node:path";
+import { createPipelineModuleSource } from "#test-utils/pipelines";
 import { describe, expect, it } from "vitest";
 import { testdir } from "vitest-testdirs";
 import { findPipelineFiles, loadPipelineFile, loadPipelinesFromPaths } from "../src";
-
-function pipelineModuleSource({ named = [], defaultId, extraExports }: {
-  named?: string[];
-  defaultId?: string;
-  extraExports?: string;
-}) {
-  const baseDefinition = (id: string) => `({
-  _type: "pipeline-definition",
-  id: "${id}",
-  versions: ["16.0.0"],
-  inputs: [],
-  routes: [],
-})`;
-
-  const namedExports = named
-    .map((name) => `export const ${name} = ${baseDefinition(name)};`)
-    .join("\n\n");
-
-  const defaultExport = defaultId
-    ? `export default ${baseDefinition(defaultId)};`
-    : "";
-
-  return [namedExports, defaultExport, extraExports ?? ""]
-    .filter(Boolean)
-    .join("\n\n");
-}
 
 describe("findPipelineFiles", () => {
   it("should find pipeline files and ignore node_modules and dist", async () => {
     const root = await testdir({
       pipelines: {
-        "alpha.ucd-pipeline.ts": pipelineModuleSource({ named: ["alpha"] }),
+        "alpha.ucd-pipeline.ts": createPipelineModuleSource({ named: ["alpha"] }),
         "nested": {
-          "beta.ucd-pipeline.ts": pipelineModuleSource({ named: ["beta"] }),
+          "beta.ucd-pipeline.ts": createPipelineModuleSource({ named: ["beta"] }),
         },
       },
       node_modules: {
-        "ignored.ucd-pipeline.ts": pipelineModuleSource({ named: ["ignored"] }),
+        "ignored.ucd-pipeline.ts": createPipelineModuleSource({ named: ["ignored"] }),
       },
       dist: {
-        "built.ucd-pipeline.ts": pipelineModuleSource({ named: ["built"] }),
+        "built.ucd-pipeline.ts": createPipelineModuleSource({ named: ["built"] }),
       },
     });
 
@@ -55,17 +30,17 @@ describe("findPipelineFiles", () => {
     ];
 
     expect(files.sort()).toEqual(expected.sort());
-    expect(files.every((file) => path.isAbsolute(file))).toBe(true);
+    expect(files.every((file: string) => path.isAbsolute(file))).toBe(true);
   });
 
   it("should support custom patterns with a cwd", async () => {
     const root = await testdir({
       pipelines: {
-        "gamma.ucd-pipeline.ts": pipelineModuleSource({ named: ["gamma"] }),
+        "gamma.ucd-pipeline.ts": createPipelineModuleSource({ named: ["gamma"] }),
         "notes.txt": "not a pipeline",
       },
       other: {
-        "delta.ucd-pipeline.ts": pipelineModuleSource({ named: ["delta"] }),
+        "delta.ucd-pipeline.ts": createPipelineModuleSource({ named: ["delta"] }),
       },
     });
 
@@ -81,7 +56,7 @@ describe("findPipelineFiles", () => {
 describe("loadPipelineFile", () => {
   it("should load pipeline definitions and export names", async () => {
     const root = await testdir({
-      "demo.ucd-pipeline.ts": pipelineModuleSource({
+      "demo.ucd-pipeline.ts": createPipelineModuleSource({
         named: ["alpha"],
         defaultId: "default-pipeline",
         extraExports: "export const config = { name: \"pipeline\" };",
@@ -114,8 +89,8 @@ describe("loadPipelineFile", () => {
 describe("loadPipelinesFromPaths", () => {
   it("should merge pipelines and file metadata", async () => {
     const root = await testdir({
-      "alpha.ucd-pipeline.ts": pipelineModuleSource({ named: ["alpha"] }),
-      "beta.ucd-pipeline.ts": pipelineModuleSource({ named: ["beta"] }),
+      "alpha.ucd-pipeline.ts": createPipelineModuleSource({ named: ["alpha"] }),
+      "beta.ucd-pipeline.ts": createPipelineModuleSource({ named: ["beta"] }),
     });
 
     const alphaPath = path.join(root, "alpha.ucd-pipeline.ts");
@@ -130,7 +105,7 @@ describe("loadPipelinesFromPaths", () => {
 
   it("should collect errors when files fail to load", async () => {
     const root = await testdir({
-      "alpha.ucd-pipeline.ts": pipelineModuleSource({ named: ["alpha"] }),
+      "alpha.ucd-pipeline.ts": createPipelineModuleSource({ named: ["alpha"] }),
     });
 
     const alphaPath = path.join(root, "alpha.ucd-pipeline.ts");
@@ -147,7 +122,7 @@ describe("loadPipelinesFromPaths", () => {
 
   it("should throw when throwOnError is enabled", async () => {
     const root = await testdir({
-      "alpha.ucd-pipeline.ts": pipelineModuleSource({ named: ["alpha"] }),
+      "alpha.ucd-pipeline.ts": createPipelineModuleSource({ named: ["alpha"] }),
     });
 
     const missingPath = path.join(root, "missing.ucd-pipeline.ts");
