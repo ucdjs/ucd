@@ -141,9 +141,9 @@ export function PipelineCommandPalette() {
                 <FileCode className="mr-2 h-4 w-4" />
                 View Current Pipeline Code
               </CommandItem>
-              <CommandItem onSelect={() => handleNavigate(`/pipelines/${currentPipeline.id}/logs`)}>
+              <CommandItem onSelect={() => handleNavigate(`/pipelines/${currentPipeline.id}/executions`)}>
                 <ScrollText className="mr-2 h-4 w-4" />
-                View Current Pipeline Logs
+                View Pipeline Executions
               </CommandItem>
             </CommandGroup>
           )}

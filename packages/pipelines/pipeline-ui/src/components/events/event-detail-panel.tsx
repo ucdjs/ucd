@@ -4,14 +4,14 @@ import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 
-export interface LogDetailPanelProps {
+export interface EventDetailPanelProps {
   event: PipelineEvent | null;
   isOpen: boolean;
   onClose: () => void;
   events: readonly PipelineEvent[];
 }
 
-export function LogDetailPanel({ event, isOpen, onClose, events }: LogDetailPanelProps) {
+export function EventDetailPanel({ event, isOpen, onClose, events }: EventDetailPanelProps) {
   if (!event || !isOpen) return null;
 
   const jsonString = JSON.stringify(event, null, 2);

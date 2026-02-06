@@ -12,10 +12,11 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PipelinesIdRouteRouteImport } from './routes/pipelines/$id/route'
 import { Route as PipelinesIdIndexRouteImport } from './routes/pipelines/$id/index'
-import { Route as PipelinesIdLogsRouteImport } from './routes/pipelines/$id/logs'
 import { Route as PipelinesIdInspectRouteImport } from './routes/pipelines/$id/inspect'
 import { Route as PipelinesIdGraphRouteImport } from './routes/pipelines/$id/graph'
 import { Route as PipelinesIdCodeRouteImport } from './routes/pipelines/$id/code'
+import { Route as PipelinesIdExecutionsIndexRouteImport } from './routes/pipelines/$id/executions/index'
+import { Route as PipelinesIdExecutionsExecutionIdRouteImport } from './routes/pipelines/$id/executions/$executionId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -30,11 +31,6 @@ const PipelinesIdRouteRoute = PipelinesIdRouteRouteImport.update({
 const PipelinesIdIndexRoute = PipelinesIdIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => PipelinesIdRouteRoute,
-} as any)
-const PipelinesIdLogsRoute = PipelinesIdLogsRouteImport.update({
-  id: '/logs',
-  path: '/logs',
   getParentRoute: () => PipelinesIdRouteRoute,
 } as any)
 const PipelinesIdInspectRoute = PipelinesIdInspectRouteImport.update({
@@ -52,6 +48,18 @@ const PipelinesIdCodeRoute = PipelinesIdCodeRouteImport.update({
   path: '/code',
   getParentRoute: () => PipelinesIdRouteRoute,
 } as any)
+const PipelinesIdExecutionsIndexRoute =
+  PipelinesIdExecutionsIndexRouteImport.update({
+    id: '/executions/',
+    path: '/executions/',
+    getParentRoute: () => PipelinesIdRouteRoute,
+  } as any)
+const PipelinesIdExecutionsExecutionIdRoute =
+  PipelinesIdExecutionsExecutionIdRouteImport.update({
+    id: '/executions/$executionId',
+    path: '/executions/$executionId',
+    getParentRoute: () => PipelinesIdRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -59,16 +67,18 @@ export interface FileRoutesByFullPath {
   '/pipelines/$id/code': typeof PipelinesIdCodeRoute
   '/pipelines/$id/graph': typeof PipelinesIdGraphRoute
   '/pipelines/$id/inspect': typeof PipelinesIdInspectRoute
-  '/pipelines/$id/logs': typeof PipelinesIdLogsRoute
   '/pipelines/$id/': typeof PipelinesIdIndexRoute
+  '/pipelines/$id/executions/$executionId': typeof PipelinesIdExecutionsExecutionIdRoute
+  '/pipelines/$id/executions/': typeof PipelinesIdExecutionsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/pipelines/$id/code': typeof PipelinesIdCodeRoute
   '/pipelines/$id/graph': typeof PipelinesIdGraphRoute
   '/pipelines/$id/inspect': typeof PipelinesIdInspectRoute
-  '/pipelines/$id/logs': typeof PipelinesIdLogsRoute
   '/pipelines/$id': typeof PipelinesIdIndexRoute
+  '/pipelines/$id/executions/$executionId': typeof PipelinesIdExecutionsExecutionIdRoute
+  '/pipelines/$id/executions': typeof PipelinesIdExecutionsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -77,8 +87,9 @@ export interface FileRoutesById {
   '/pipelines/$id/code': typeof PipelinesIdCodeRoute
   '/pipelines/$id/graph': typeof PipelinesIdGraphRoute
   '/pipelines/$id/inspect': typeof PipelinesIdInspectRoute
-  '/pipelines/$id/logs': typeof PipelinesIdLogsRoute
   '/pipelines/$id/': typeof PipelinesIdIndexRoute
+  '/pipelines/$id/executions/$executionId': typeof PipelinesIdExecutionsExecutionIdRoute
+  '/pipelines/$id/executions/': typeof PipelinesIdExecutionsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -88,16 +99,18 @@ export interface FileRouteTypes {
     | '/pipelines/$id/code'
     | '/pipelines/$id/graph'
     | '/pipelines/$id/inspect'
-    | '/pipelines/$id/logs'
     | '/pipelines/$id/'
+    | '/pipelines/$id/executions/$executionId'
+    | '/pipelines/$id/executions/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/pipelines/$id/code'
     | '/pipelines/$id/graph'
     | '/pipelines/$id/inspect'
-    | '/pipelines/$id/logs'
     | '/pipelines/$id'
+    | '/pipelines/$id/executions/$executionId'
+    | '/pipelines/$id/executions'
   id:
     | '__root__'
     | '/'
@@ -105,8 +118,9 @@ export interface FileRouteTypes {
     | '/pipelines/$id/code'
     | '/pipelines/$id/graph'
     | '/pipelines/$id/inspect'
-    | '/pipelines/$id/logs'
     | '/pipelines/$id/'
+    | '/pipelines/$id/executions/$executionId'
+    | '/pipelines/$id/executions/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -137,13 +151,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PipelinesIdIndexRouteImport
       parentRoute: typeof PipelinesIdRouteRoute
     }
-    '/pipelines/$id/logs': {
-      id: '/pipelines/$id/logs'
-      path: '/logs'
-      fullPath: '/pipelines/$id/logs'
-      preLoaderRoute: typeof PipelinesIdLogsRouteImport
-      parentRoute: typeof PipelinesIdRouteRoute
-    }
     '/pipelines/$id/inspect': {
       id: '/pipelines/$id/inspect'
       path: '/inspect'
@@ -165,6 +172,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PipelinesIdCodeRouteImport
       parentRoute: typeof PipelinesIdRouteRoute
     }
+    '/pipelines/$id/executions/': {
+      id: '/pipelines/$id/executions/'
+      path: '/executions'
+      fullPath: '/pipelines/$id/executions/'
+      preLoaderRoute: typeof PipelinesIdExecutionsIndexRouteImport
+      parentRoute: typeof PipelinesIdRouteRoute
+    }
+    '/pipelines/$id/executions/$executionId': {
+      id: '/pipelines/$id/executions/$executionId'
+      path: '/executions/$executionId'
+      fullPath: '/pipelines/$id/executions/$executionId'
+      preLoaderRoute: typeof PipelinesIdExecutionsExecutionIdRouteImport
+      parentRoute: typeof PipelinesIdRouteRoute
+    }
   }
 }
 
@@ -172,16 +193,18 @@ interface PipelinesIdRouteRouteChildren {
   PipelinesIdCodeRoute: typeof PipelinesIdCodeRoute
   PipelinesIdGraphRoute: typeof PipelinesIdGraphRoute
   PipelinesIdInspectRoute: typeof PipelinesIdInspectRoute
-  PipelinesIdLogsRoute: typeof PipelinesIdLogsRoute
   PipelinesIdIndexRoute: typeof PipelinesIdIndexRoute
+  PipelinesIdExecutionsExecutionIdRoute: typeof PipelinesIdExecutionsExecutionIdRoute
+  PipelinesIdExecutionsIndexRoute: typeof PipelinesIdExecutionsIndexRoute
 }
 
 const PipelinesIdRouteRouteChildren: PipelinesIdRouteRouteChildren = {
   PipelinesIdCodeRoute: PipelinesIdCodeRoute,
   PipelinesIdGraphRoute: PipelinesIdGraphRoute,
   PipelinesIdInspectRoute: PipelinesIdInspectRoute,
-  PipelinesIdLogsRoute: PipelinesIdLogsRoute,
   PipelinesIdIndexRoute: PipelinesIdIndexRoute,
+  PipelinesIdExecutionsExecutionIdRoute: PipelinesIdExecutionsExecutionIdRoute,
+  PipelinesIdExecutionsIndexRoute: PipelinesIdExecutionsIndexRoute,
 }
 
 const PipelinesIdRouteRouteWithChildren =

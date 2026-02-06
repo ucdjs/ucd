@@ -1,14 +1,14 @@
 import type { PipelineEvent } from "@ucdjs/pipelines-core";
 import { useCallback, useState } from "react";
 
-export interface LogViewState {
+export interface EventViewState {
   isJsonMode: boolean;
   selectedEventId: string | null;
   isDetailPanelOpen: boolean;
   expandedInlineIds: Set<string>;
 }
 
-export interface LogViewActions {
+export interface EventViewActions {
   toggleJsonMode: () => void;
   setJsonMode: (value: boolean) => void;
   selectEvent: (eventId: string | null) => void;
@@ -18,10 +18,10 @@ export interface LogViewActions {
   isInlineExpanded: (eventId: string) => boolean;
 }
 
-export function useLogView(): LogViewState & LogViewActions {
+export function useEventView(): EventViewState & EventViewActions {
   const [isJsonMode, setIsJsonMode] = useState(() => {
     if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("pipeline-logs-json-mode");
+      const stored = localStorage.getItem("pipeline-events-json-mode");
       return stored === "true";
     }
     return false;
@@ -34,14 +34,14 @@ export function useLogView(): LogViewState & LogViewActions {
   const toggleJsonMode = useCallback(() => {
     setIsJsonMode((prev) => {
       const next = !prev;
-      localStorage.setItem("pipeline-logs-json-mode", String(next));
+      localStorage.setItem("pipeline-events-json-mode", String(next));
       return next;
     });
   }, []);
 
   const setJsonMode = useCallback((value: boolean) => {
     setIsJsonMode(value);
-    localStorage.setItem("pipeline-logs-json-mode", String(value));
+    localStorage.setItem("pipeline-events-json-mode", String(value));
   }, []);
 
   const selectEvent = useCallback((eventId: string | null) => {

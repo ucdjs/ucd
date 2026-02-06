@@ -1,23 +1,47 @@
 import type { PipelineEvent } from "@ucdjs/pipelines-core";
-import { createFileRoute } from "@tanstack/react-router";
-import { cn } from "@ucdjs-internal/shared-ui/lib/utils";
+import { createFileRoute, Link, useParams } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
+import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 import {
+  EventDetailPanel,
   formatHighPrecisionTime,
   InlineJsonView,
-  LogDetailPanel,
   SimpleTimeline,
-  useExecute,
-  useLogView,
+  useEventView,
   ViewModeToggle,
 } from "@ucdjs/pipelines-ui";
+import { ArrowLeft } from "lucide-react";
 
-export const Route = createFileRoute("/pipelines/$id/logs")({
-  component: PipelineLogsPage,
-});
+interface ExecutionEvent {
+  id: string;
+  type: string;
+  timestamp: string;
+  data: PipelineEvent;
+}
 
-function LogEventRow({
+interface ExecutionEventsResponse {
+  executionId: string;
+  pipelineId: string;
+  status: "running" | "completed" | "failed";
+  events: ExecutionEvent[];
+  pagination: {
+    total: number;
+    limit: number;
+    offset: number;
+    hasMore: boolean;
+  };
+}
+
+async function fetchExecutionEvents(executionId: string): Promise<ExecutionEventsResponse> {
+  const response = await fetch(`/api/executions/${executionId}/events?limit=500`);
+  if (!response.ok) {
+    throw new Error("Failed to fetch execution events");
+  }
+  return response.json();
+}
+
+function EventRow({
   event,
   isJsonMode,
   isExpanded,
@@ -50,18 +74,16 @@ function LogEventRow({
 
   return (
     <div
-      className={cn(
-        "rounded-md border transition-all",
-        isSelected && !isJsonMode ? "border-primary bg-primary/5" : "border-border hover:border-border/80",
-      )}
+      className={`rounded-md border transition-all ${
+        isSelected && !isJsonMode ? "border-primary bg-primary/5" : "border-border hover:border-border/80"
+      }`}
     >
       <button
         type="button"
         onClick={handleClick}
-        className={cn(
-          "w-full flex flex-wrap items-center gap-2 px-3 py-2 text-sm text-left",
-          !isJsonMode && "cursor-pointer",
-        )}
+        className={`w-full flex flex-wrap items-center gap-2 px-3 py-2 text-sm text-left ${
+          !isJsonMode && "cursor-pointer"
+        }`}
       >
         <Badge variant="outline">{event.type}</Badge>
         <span className="text-muted-foreground text-xs font-mono">{timestamp}</span>
@@ -93,16 +115,28 @@ function LogEventRow({
   );
 }
 
-function EmptyLogsState() {
+function EmptyEventsState() {
   return (
     <p className="text-sm text-muted-foreground" role="status">
-      No logs yet. Execute the pipeline to see execution logs.
+      No events yet. This execution may still be running or has no recorded events.
     </p>
   );
 }
 
-function PipelineLogsPage() {
-  const { result } = useExecute();
+export const Route = createFileRoute("/pipelines/$id/executions/$executionId")({
+  component: ExecutionDetailPage,
+  loader: async ({ params }) => {
+    const executionData = await fetchExecutionEvents(params.executionId);
+    return { executionData };
+  },
+});
+
+function ExecutionDetailPage() {
+  const { id: pipelineId, executionId } = useParams({
+    from: "/pipelines/$id/executions/$executionId",
+  });
+  const { executionData } = Route.useLoaderData();
+
   const {
     isJsonMode,
     selectedEventId,
@@ -112,16 +146,55 @@ function PipelineLogsPage() {
     closeDetailPanel,
     toggleInlineExpansion,
     isInlineExpanded,
-  } = useLogView();
+  } = useEventView();
 
-  const events = result?.events ?? [];
-  const selectedEvent = events.find((e) => e.id === selectedEventId) || null;
+  const events = executionData.events.map((e: ExecutionEvent) => e.data);
+  const selectedEvent = events.find((e: PipelineEvent) => e.id === selectedEventId) || null;
 
   return (
-    <div className="p-6">
-      <Card role="tabpanel" id="tabpanel-logs" aria-labelledby="tab-logs">
+    <div className="p-6 space-y-4">
+      <div className="flex items-center gap-4">
+        <Button
+          variant="outline"
+          size="sm"
+          render={() => (
+            <Link to="/pipelines/$id/executions" params={{ id: pipelineId }}>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Executions
+            </Link>
+          )}
+        />
+        <div>
+          <h1 className="text-lg font-semibold">
+            Execution
+            {executionId.slice(0, 8)}
+            ...
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Pipeline:
+            {pipelineId}
+          </p>
+        </div>
+        <Badge
+          variant={
+            executionData.status === "completed"
+              ? "default"
+              : executionData.status === "failed"
+                ? "destructive"
+                : "secondary"
+          }
+        >
+          {executionData.status}
+        </Badge>
+      </div>
+
+      <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Execution Logs</CardTitle>
+          <CardTitle>
+            Events (
+            {executionData.pagination.total}
+            )
+          </CardTitle>
           <ViewModeToggle isJsonMode={isJsonMode} onToggle={toggleJsonMode} />
         </CardHeader>
         <CardContent className="space-y-3">
@@ -133,12 +206,12 @@ function PipelineLogsPage() {
 
           {events.length === 0
             ? (
-                <EmptyLogsState />
+                <EmptyEventsState />
               )
             : (
-                <div className="space-y-2" role="list" aria-label="Execution logs">
-                  {events.map((event) => (
-                    <LogEventRow
+                <div className="space-y-2" role="list" aria-label="Execution events">
+                  {events.map((event: PipelineEvent) => (
+                    <EventRow
                       key={event.id}
                       event={event}
                       isJsonMode={isJsonMode}
@@ -153,7 +226,7 @@ function PipelineLogsPage() {
         </CardContent>
       </Card>
 
-      <LogDetailPanel
+      <EventDetailPanel
         event={selectedEvent}
         isOpen={isDetailPanelOpen}
         onClose={closeDetailPanel}

@@ -1,15 +1,16 @@
-import { useLoaderData, useParams } from "@tanstack/react-router";
+import { Link, useLoaderData, useNavigate, useParams } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import { useExecute, usePipelineVersions } from "@ucdjs/pipelines-ui";
-import { Loader2, Play } from "lucide-react";
+import { CheckCircle, Loader2, Play } from "lucide-react";
 import { useCallback } from "react";
 
 export function PipelineHeader() {
   const { id } = useParams({ from: "/pipelines/$id" });
+  const navigate = useNavigate();
   const data = useLoaderData({ from: "/pipelines/$id" });
   const pipeline = data.pipeline;
-  const { execute, executing } = useExecute();
+  const { execute, executing, executionId } = useExecute();
   const allVersions = pipeline?.versions ?? [];
   const { selectedVersions } = usePipelineVersions(id, allVersions);
 
@@ -17,8 +18,15 @@ export function PipelineHeader() {
 
   const handleExecute = useCallback(async () => {
     if (!canExecute) return;
-    await execute(id, Array.from(selectedVersions));
-  }, [execute, id, selectedVersions, canExecute]);
+    const result = await execute(id, Array.from(selectedVersions));
+    // Navigate to execution detail after successful execution
+    if (result.success && result.executionId) {
+      navigate({
+        to: "/pipelines/$id/executions/$executionId",
+        params: { id, executionId: result.executionId },
+      });
+    }
+  }, [execute, id, selectedVersions, canExecute, navigate]);
 
   return (
     <header className="px-6 py-4">
@@ -49,25 +57,42 @@ export function PipelineHeader() {
             {pipeline?.description ?? "No description provided."}
           </p>
         </div>
-        <Button
-          size="sm"
-          disabled={!canExecute || executing || !pipeline}
-          onClick={handleExecute}
-        >
-          {executing
-            ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Running...
-                </>
-              )
-            : (
-                <>
-                  <Play className="h-4 w-4 mr-2" />
-                  Execute
-                </>
+        <div className="flex items-center gap-2">
+          {executionId && !executing && (
+            <Button
+              variant="outline"
+              size="sm"
+              render={() => (
+                <Link
+                  to="/pipelines/$id/executions/$executionId"
+                  params={{ id, executionId }}
+                >
+                  <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
+                  View Execution
+                </Link>
               )}
-        </Button>
+            />
+          )}
+          <Button
+            size="sm"
+            disabled={!canExecute || executing || !pipeline}
+            onClick={handleExecute}
+          >
+            {executing
+              ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Running...
+                  </>
+                )
+              : (
+                  <>
+                    <Play className="h-4 w-4 mr-2" />
+                    Execute
+                  </>
+                )}
+          </Button>
+        </div>
       </div>
     </header>
   );

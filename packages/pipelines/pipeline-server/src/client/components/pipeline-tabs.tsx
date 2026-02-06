@@ -5,7 +5,7 @@ const PIPELINE_TABS = [
   { id: "overview", label: "Overview", to: "" },
   { id: "graph", label: "Graph", to: "/graph" },
   { id: "inspect", label: "Inspect", to: "/inspect" },
-  { id: "logs", label: "Logs", to: "/logs" },
+  { id: "executions", label: "Executions", to: "/executions" },
   { id: "code", label: "Code", to: "/code" },
 ] as const;
 
