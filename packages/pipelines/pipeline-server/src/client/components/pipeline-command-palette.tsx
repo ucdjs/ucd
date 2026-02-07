@@ -42,13 +42,16 @@ export function PipelineCommandPalette() {
   const { data } = usePipelines();
   const { execute, executing } = useExecute();
   const navigate = useNavigate();
-  const { file, id: currentPipelineId } = useParams({ strict: false });
+  const params = useParams({ strict: false });
+  const file = typeof params.file === "string" ? params.file : undefined;
+  const currentPipelineId = typeof params.id === "string" ? params.id : undefined;
 
   const files = data?.files ?? [];
   const pipelines = files.flatMap((fileInfo) =>
     fileInfo.pipelines.map((pipeline) => ({
       ...pipeline,
       fileId: fileInfo.fileId,
+      fileLabel: fileInfo.fileLabel ?? fileInfo.filePath,
     })),
   );
   const currentPipeline = pipelines.find((p) => p.id === currentPipelineId && p.fileId === file);
@@ -171,7 +174,12 @@ export function PipelineCommandPalette() {
                 {executing
                   ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   : <Terminal className="mr-2 h-4 w-4" />}
-                {pipeline.name || pipeline.id}
+                <div className="flex flex-col gap-0.5 flex-1 min-w-0">
+                  <span className="truncate">{pipeline.name || pipeline.id}</span>
+                  <span className="text-[10px] text-muted-foreground truncate">
+                    {pipeline.fileLabel}
+                  </span>
+                </div>
                 <span className="ml-2 text-xs text-muted-foreground">
                   {pipeline.versions.length}
                   {" "}

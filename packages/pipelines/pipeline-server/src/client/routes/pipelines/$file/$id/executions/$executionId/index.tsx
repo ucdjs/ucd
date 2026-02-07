@@ -4,7 +4,6 @@ import { StatusIcon } from "#components/pipeline-overview/status-icon";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { cn } from "@ucdjs-internal/shared-ui/lib/utils";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 import { ScrollArea } from "@ucdjs-internal/shared-ui/ui/scroll-area";
 import {
   EventDetailPanel,
@@ -13,7 +12,7 @@ import {
   useEventView,
   ViewModeToggle,
 } from "@ucdjs/pipelines-ui";
-import { ArrowLeft, CheckCircle2, ChevronRight, Clock, FileCode, XCircle } from "lucide-react";
+import { ArrowLeft, ChevronRight, FileCode } from "lucide-react";
 
 interface ExecutionEvent {
   id: string;
@@ -36,8 +35,14 @@ interface ExecutionEventsResponse {
 }
 
 // eslint-disable-next-line react-refresh/only-export-components
-export async function fetchExecutionEvents(executionId: string): Promise<ExecutionEventsResponse> {
-  const response = await fetch(`/api/executions/${executionId}/events?limit=500`);
+export async function fetchExecutionEvents(
+  fileId: string,
+  pipelineId: string,
+  executionId: string,
+): Promise<ExecutionEventsResponse> {
+  const response = await fetch(
+    `/api/pipelines/${fileId}/${pipelineId}/executions/${executionId}/events?limit=500`,
+  );
   if (!response.ok) {
     throw new Error("Failed to fetch execution events");
   }
@@ -139,7 +144,7 @@ function EventItem({
 export const Route = createFileRoute("/pipelines/$file/$id/executions/$executionId/")({
   component: ExecutionDetailPage,
   loader: async ({ params }) => {
-    const executionData = await fetchExecutionEvents(params.executionId);
+    const executionData = await fetchExecutionEvents(params.file, params.id, params.executionId);
     return { executionData };
   },
 });
@@ -167,11 +172,11 @@ function ExecutionDetailPage() {
       {/* Header */}
       <div className="border-b bg-background px-6 py-4 shrink-0">
         <div className="flex items-center gap-4">
-            <Link
-              to="/pipelines/$file/$id/executions"
-              params={{ file, id: pipelineId }}
-              className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors hover:bg-muted h-8 w-8"
-            >
+          <Link
+            to="/pipelines/$file/$id/executions"
+            params={{ file, id: pipelineId }}
+            className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors hover:bg-muted h-8 w-8"
+          >
             <ArrowLeft className="h-4 w-4" />
           </Link>
 

@@ -14,6 +14,7 @@ export interface PipelineInfo {
 export interface PipelineFileInfo {
   fileId: string;
   filePath: string;
+  fileLabel?: string;
   sourceId: string;
   pipelines: PipelineInfo[];
 }
@@ -55,6 +56,7 @@ export interface PipelineResponse {
   error?: string;
   fileId?: string;
   filePath?: string;
+  fileLabel?: string;
   sourceId?: string;
 }
 

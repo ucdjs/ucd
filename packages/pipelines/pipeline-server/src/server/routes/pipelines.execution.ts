@@ -42,6 +42,7 @@ pipelinesExecutionRouter.get("/:file/:id/executions", async (event) => {
         completedAt: exec.completedAt?.toISOString() ?? null,
         versions: exec.versions,
         summary: exec.summary,
+        hasGraph: Boolean(exec.graph),
         error: exec.error,
       })),
       pagination: {
