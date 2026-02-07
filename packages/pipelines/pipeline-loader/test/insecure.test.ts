@@ -70,7 +70,7 @@ describe("loadPipelineFromContent", () => {
     mockFetch([
       [
         "GET",
-        "https://api.github.com/repos/ucdjs/demo-pipelines/contents/pipelines%2Fdep.ts?ref=main",
+        "https://api.github.com/repos/ucdjs/demo-pipelines/contents/pipelines%2Fdep.ts",
         () => HttpResponse.json({ content: depEncoded, encoding: "base64" }),
       ],
     ]);
