@@ -58,7 +58,6 @@ describe("loadPipelineFile", () => {
     const root = await testdir({
       "demo.ucd-pipeline.ts": createPipelineModuleSource({
         named: ["alpha"],
-        defaultId: "default-pipeline",
         extraExports: "export const config = { name: \"pipeline\" };",
       }),
     });
@@ -67,10 +66,9 @@ describe("loadPipelineFile", () => {
     const result = await loadPipelineFile(filePath);
 
     expect(result.filePath).toBe(filePath);
-    expect(result.exportNames).toEqual(expect.arrayContaining(["alpha", "default"]));
-    expect(result.exportNames).toHaveLength(2);
-    expect(result.pipelines.map((pipeline) => pipeline.id).sort())
-      .toEqual(["alpha", "default-pipeline"]);
+    expect(result.exportNames).toEqual(["alpha"]);
+    expect(result.exportNames).toHaveLength(1);
+    expect(result.pipelines.map((pipeline) => pipeline.id)).toEqual(["alpha"]);
   });
 
   it("should return empty arrays when no pipelines are exported", async () => {
