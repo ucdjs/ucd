@@ -11,6 +11,7 @@ export interface Execution {
     totalRoutes: number;
     cached: number;
   } | null;
+  hasGraph?: boolean;
   error: string | null;
 }
 
@@ -24,8 +25,25 @@ export interface ExecutionsResponse {
   };
 }
 
-export async function fetchExecutions(fileId: string, pipelineId: string): Promise<ExecutionsResponse> {
-  const response = await fetch(`/api/pipelines/${fileId}/${pipelineId}/executions?limit=10`);
+export interface FetchExecutionsOptions {
+  limit?: number;
+  offset?: number;
+}
+
+export async function fetchExecutions(
+  fileId: string,
+  pipelineId: string,
+  options: FetchExecutionsOptions = {},
+): Promise<ExecutionsResponse> {
+  const params = new URLSearchParams();
+  params.set("limit", String(options.limit ?? 10));
+  if (options.offset != null) {
+    params.set("offset", String(options.offset));
+  }
+
+  const response = await fetch(
+    `/api/pipelines/${fileId}/${pipelineId}/executions?${params.toString()}`,
+  );
   if (!response.ok) {
     throw new Error("Failed to fetch executions");
   }

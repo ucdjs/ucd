@@ -22,7 +22,17 @@ export const Route = createFileRoute("/pipelines/$file/$id/code")({
   component: PipelineCodePage,
 });
 
-function CodeDisplay({ code, filePath, highlightRoute }: { code: string; filePath: string; highlightRoute?: string }) {
+function CodeDisplay({
+  code,
+  filePath,
+  fileLabel,
+  highlightRoute,
+}: {
+  code: string;
+  filePath: string;
+  fileLabel?: string;
+  highlightRoute?: string;
+}) {
   const codeRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
 
@@ -57,7 +67,7 @@ function CodeDisplay({ code, filePath, highlightRoute }: { code: string; filePat
     const items: {
       start: number;
       end: number;
-      properties: { class: string[]; "data-label": string };
+      properties: { "class": string[]; "data-label": string };
       alwaysWrap?: boolean;
     }[] = [];
 
@@ -66,7 +76,7 @@ function CodeDisplay({ code, filePath, highlightRoute }: { code: string; filePat
         start: routeInfo.matchIndex,
         end: routeInfo.matchIndex + routeInfo.matchLength,
         properties: {
-          class: ["shiki-decor", "shiki-decor-route"],
+          "class": ["shiki-decor", "shiki-decor-route"],
           "data-label": routeInfo.label,
         },
         alwaysWrap: true,
@@ -111,7 +121,10 @@ function CodeDisplay({ code, filePath, highlightRoute }: { code: string; filePat
       <CardHeader className="pb-2">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <CardDescription className="text-xs">
-            <code className="text-xs break-all text-muted-foreground">{filePath}</code>
+            <div className="text-xs text-muted-foreground">
+              {fileLabel ?? filePath}
+            </div>
+            <code className="text-[11px] break-all text-muted-foreground/80">{filePath}</code>
           </CardDescription>
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant="secondary" className="text-[0.6rem]">TS</Badge>
@@ -121,9 +134,17 @@ function CodeDisplay({ code, filePath, highlightRoute }: { code: string; filePat
           </div>
         </div>
         <div className="mt-1 flex items-center gap-2 text-[0.65rem] text-muted-foreground">
-          <span>{stats.lines} lines</span>
+          <span>
+            {stats.lines}
+            {" "}
+            lines
+          </span>
           <Separator orientation="vertical" className="h-3" />
-          <span>{stats.chars} chars</span>
+          <span>
+            {stats.chars}
+            {" "}
+            chars
+          </span>
         </div>
       </CardHeader>
       <CardContent className="pt-0">
@@ -178,6 +199,7 @@ function PipelineCodePage() {
             <CodeDisplay
               code={data.code}
               filePath={data.filePath ?? file}
+              fileLabel={data.fileLabel}
               highlightRoute={highlightRoute}
             />
           )

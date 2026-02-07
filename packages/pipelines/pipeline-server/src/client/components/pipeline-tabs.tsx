@@ -1,10 +1,13 @@
+import { fetchExecutions } from "#lib/pipeline-executions";
 import { Link, useParams, useRouterState } from "@tanstack/react-router";
 import { cn } from "@ucdjs-internal/shared-ui/lib/utils";
+import { useEffect, useMemo, useState } from "react";
 
 const PIPELINE_TABS = [
   { id: "overview", label: "Overview", to: "" },
   { id: "inspect", label: "Inspect", to: "/inspect" },
   { id: "executions", label: "Executions", to: "/executions" },
+  { id: "graphs", label: "Graphs", to: "/graphs" },
   { id: "code", label: "Code", to: "/code" },
 ] as const;
 
@@ -12,13 +15,39 @@ export function PipelineTabs() {
   const { file, id } = useParams({ from: "/pipelines/$file/$id" });
   const routerState = useRouterState();
   const pathname = routerState.location.pathname;
+  const [hasGraphs, setHasGraphs] = useState(false);
+
+  useEffect(() => {
+    if (!file || !id) return;
+
+    let cancelled = false;
+    fetchExecutions(file, id, { limit: 50 })
+      .then((data) => {
+        if (cancelled) return;
+        setHasGraphs(data.executions.some((execution) => execution.hasGraph));
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setHasGraphs(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [file, id]);
+
+  const tabs = useMemo(
+    () => PIPELINE_TABS.filter((tab) => (tab.id === "graphs" ? hasGraphs : true)),
+    [hasGraphs],
+  );
 
   const getIsActive = (tabId: string) => {
     if (tabId === "overview") {
       if (!file || !id) return false;
       return pathname === `/pipelines/${file}/${id}` || pathname === `/pipelines/${file}/${id}/`;
     }
-    return pathname.includes(`/${tabId}`);
+
+    return pathname.includes(`/${tabId}`) || pathname.endsWith(`/${tabId}`) || pathname.includes("/graphs");
   };
 
   return (
@@ -27,13 +56,13 @@ export function PipelineTabs() {
       role="tablist"
       aria-label="Pipeline sections"
     >
-      {PIPELINE_TABS.map((tab) => {
+      {tabs.map((tab) => {
         const isActive = getIsActive(tab.id);
 
         return (
           <Link
             key={tab.id}
-            to={"/pipelines/$file/$id"}
+            to={`/pipelines/$file/$id${tab.to}`}
             params={{ file, id }}
             role="tab"
             aria-selected={isActive}

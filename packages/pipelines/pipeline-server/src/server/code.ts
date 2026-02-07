@@ -10,7 +10,7 @@ export function extractDefinePipelineCode(source: string, { exportName }: Export
   const { program } = parseSync("pipeline.ts", source, {
     sourceType: "module",
     lang: "ts",
-  } as any);
+  });
 
   const callExpression = findDefinePipelineExpression(program, exportName);
   if (!callExpression) {
@@ -44,20 +44,6 @@ export function extractDefinePipelineCode(source: string, { exportName }: Export
 
 function findDefinePipelineExpression(program: any, exportName: string): any | null {
   const body = program.body as any[];
-
-  if (exportName === "default") {
-    for (const node of body) {
-      if (node.type === "ExportDefaultDeclaration") {
-        if (isDefinePipelineCall(node.declaration)) {
-          return node.declaration;
-        }
-        if (node.declaration?.type === "Identifier") {
-          const expr = findVariableInitializer(body, node.declaration.name);
-          if (expr) return expr;
-        }
-      }
-    }
-  }
 
   for (const node of body) {
     if (node.type === "ExportNamedDeclaration") {

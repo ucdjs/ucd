@@ -20,9 +20,9 @@ import { useMemo, useState } from "react";
 
 export function PipelineSidebar() {
   const { data, loading } = usePipelines();
-  const params = useParams({ strict: false }) as { id?: string; file?: string };
-  const currentPipelineId = params.id;
-  const currentFileSlug = params.file;
+  const params = useParams({ strict: false });
+  const currentPipelineId = typeof params.id === "string" ? params.id : undefined;
+  const currentFileSlug = typeof params.file === "string" ? params.file : undefined;
   const [openFiles, setOpenFiles] = useState<Record<string, boolean>>({});
 
   const files = useMemo(() => {
@@ -60,7 +60,7 @@ export function PipelineSidebar() {
                   files.map((file) => {
                       const isFileActive = currentFileSlug === file.fileId;
                     const isOpen = openFiles[file.fileId] ?? isFileActive;
-                    const fileName = file.filePath.split("/").pop() ?? file.filePath;
+                    const fileName = file.fileLabel ?? file.filePath.split("/").pop() ?? file.filePath;
 
                     return (
                       <SidebarMenuItem key={file.fileId}>
