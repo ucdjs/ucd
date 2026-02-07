@@ -47,7 +47,11 @@ export function PipelineTabs() {
       return pathname === `/pipelines/${file}/${id}` || pathname === `/pipelines/${file}/${id}/`;
     }
 
-    return pathname.includes(`/${tabId}`) || pathname.endsWith(`/${tabId}`) || pathname.includes("/graphs");
+    if (tabId === "graphs") {
+      return pathname.includes("/graphs");
+    }
+
+    return pathname.includes(`/${tabId}`) || pathname.endsWith(`/${tabId}`);
   };
 
   return (
@@ -62,7 +66,7 @@ export function PipelineTabs() {
         return (
           <Link
             key={tab.id}
-            to={`/pipelines/$file/$id${tab.to}`}
+            to={tab.to === "/graphs" ? "/pipelines/$file/$id/graphs" : `/pipelines/$file/$id${tab.to}`}
             params={{ file, id }}
             role="tab"
             aria-selected={isActive}
