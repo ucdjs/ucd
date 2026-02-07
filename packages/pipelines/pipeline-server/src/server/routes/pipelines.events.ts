@@ -1,13 +1,12 @@
+import { schema } from "#server/db";
 import { asc, eq } from "drizzle-orm";
 import { getQuery, H3 } from "h3";
-import * as schema from "../db/schema";
 
-export const eventsRouter = new H3();
+export const pipelinesEventsRouter = new H3();
 
-// GET /api/executions/:id/events?limit=100&offset=0
-eventsRouter.get("/", async (event) => {
+pipelinesEventsRouter.get("/:file/:id/executions/:executionId/events", async (event) => {
   const { db } = event.context;
-  const executionId = event.context.params?.id;
+  const executionId = event.context.params?.executionId;
 
   if (!executionId) {
     return { error: "Execution ID is required" };
@@ -16,12 +15,11 @@ eventsRouter.get("/", async (event) => {
   const query = getQuery(event);
   const limit = Math.min(
     typeof query.limit === "string" ? Number.parseInt(query.limit, 10) : 100,
-    500, // Max limit of 500
+    500,
   );
   const offset = typeof query.offset === "string" ? Number.parseInt(query.offset, 10) : 0;
 
   try {
-    // Get the execution to verify it exists
     const execution = await db.query.executions.findFirst({
       where: eq(schema.executions.id, executionId),
       columns: { id: true, pipelineId: true, status: true },
@@ -31,7 +29,6 @@ eventsRouter.get("/", async (event) => {
       return { error: `Execution "${executionId}" not found` };
     }
 
-    // Get events for this execution, ordered by timestamp asc
     const events = await db.query.events.findMany({
       where: eq(schema.events.executionId, executionId),
       orderBy: asc(schema.events.timestamp),
@@ -39,7 +36,6 @@ eventsRouter.get("/", async (event) => {
       offset,
     });
 
-    // Get total count for pagination info
     const countResult = await db.query.events.findMany({
       where: eq(schema.events.executionId, executionId),
       columns: { id: true },

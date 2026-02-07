@@ -1,11 +1,16 @@
+import type { Database } from "#server/db";
 import type { PipelineSource } from "@ucdjs/pipelines-loader";
-import type { Database } from "./db";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
+import {
+  pipelinesEventsRouter,
+  pipelinesExecutionRouter,
+  pipelinesFileRouter,
+  pipelinesIndexRouter,
+  pipelinesPipelineRouter,
+} from "#server/routes";
 import { H3, serve, serveStatic } from "h3";
-import { eventsRouter } from "./routes/events";
-import { pipelinesRouter } from "./routes/pipelines";
 
 export interface AppOptions {
   sources?: PipelineSource[];
@@ -62,8 +67,11 @@ export function createApp(options: AppOptions = {}): H3 {
     timestamp: Date.now(),
   }));
 
-  app.mount("/api/pipelines", pipelinesRouter);
-  app.mount("/api/executions/:id/events", eventsRouter);
+  app.mount("/api/pipelines", pipelinesIndexRouter);
+  app.mount("/api/pipelines", pipelinesFileRouter);
+  app.mount("/api/pipelines", pipelinesPipelineRouter);
+  app.mount("/api/pipelines", pipelinesExecutionRouter);
+  app.mount("/api/pipelines", pipelinesEventsRouter);
 
   return app;
 }
