@@ -38,7 +38,7 @@ export interface PipelineDefinitionOptions<
   /**
    * Human-readable name for the pipeline.
    */
-  name?: string;
+  name: string;
 
   /**
    * Description of what this pipeline does.
@@ -114,7 +114,7 @@ export interface PipelineDefinition<
   /**
    * Human-readable name for the pipeline.
    */
-  readonly name?: string;
+  readonly name: string;
 
   /**
    * Description of what this pipeline does.

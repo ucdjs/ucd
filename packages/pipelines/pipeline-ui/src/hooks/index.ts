@@ -14,6 +14,12 @@ export {
   type UsePipelineReturn,
 } from "./use-pipeline";
 export {
+  usePipelineFile,
+  type PipelineFileResponse,
+  type UsePipelineFileOptions,
+  type UsePipelineFileReturn,
+} from "./use-pipeline-file";
+export {
   usePipelineVersions,
   type UsePipelineVersionsReturn,
 } from "./use-pipeline-versions";

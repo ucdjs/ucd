@@ -1,16 +1,19 @@
-import type { CodeResponse } from "../../../types";
+import type { CodeResponse } from "../../../../types";
 import { createFileRoute, useSearch } from "@tanstack/react-router";
 import { ShikiCode } from "@ucdjs-internal/shared-ui/components/shiki-code";
+import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
+import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
-import { useEffect, useMemo, useRef } from "react";
+import { Separator } from "@ucdjs-internal/shared-ui/ui/separator";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 interface CodeSearchParams {
   route?: string;
 }
 
-export const Route = createFileRoute("/pipelines/$id/code")({
+export const Route = createFileRoute("/pipelines/$file/$id/code")({
   loader: async ({ params }): Promise<CodeResponse> => {
-    const res = await fetch(`/api/pipelines/${params.id}/code`);
+    const res = await fetch(`/api/pipelines/${params.file}/${params.id}/code`);
     if (!res.ok) {
       throw new Error(`Failed to load code (${res.status})`);
     }
@@ -21,6 +24,7 @@ export const Route = createFileRoute("/pipelines/$id/code")({
 
 function CodeDisplay({ code, filePath, highlightRoute }: { code: string; filePath: string; highlightRoute?: string }) {
   const codeRef = useRef<HTMLDivElement>(null);
+  const [copied, setCopied] = useState(false);
 
   const routeInfo = useMemo(() => {
     if (!highlightRoute) {
@@ -57,27 +61,6 @@ function CodeDisplay({ code, filePath, highlightRoute }: { code: string; filePat
       alwaysWrap?: boolean;
     }[] = [];
 
-    const addDecorationFromMatch = (
-      pattern: RegExp,
-      label: (match: RegExpExecArray) => string,
-      className: string,
-    ) => {
-      const match = pattern.exec(code);
-      if (!match || match.index == null) {
-        return;
-      }
-
-      items.push({
-        start: match.index,
-        end: match.index + match[0].length,
-        properties: {
-          class: ["shiki-decor", className],
-          "data-label": label(match),
-        },
-        alwaysWrap: true,
-      });
-    };
-
     if (routeInfo) {
       items.push({
         start: routeInfo.matchIndex,
@@ -90,20 +73,26 @@ function CodeDisplay({ code, filePath, highlightRoute }: { code: string; filePat
       });
     }
 
-    addDecorationFromMatch(
-      /id\s*:\s*["']([^"']+)["']/i,
-      (match) => `Id: ${match[1]}`,
-      "shiki-decor-id",
-    );
-
-    addDecorationFromMatch(
-      /name\s*:\s*["']([^"']+)["']/i,
-      (match) => `Name: ${match[1]}`,
-      "shiki-decor-name",
-    );
-
     return items.length ? items : undefined;
   }, [code, routeInfo]);
+
+  const stats = useMemo(() => {
+    const lines = code.split("\n").length;
+    return {
+      lines,
+      chars: code.length,
+    };
+  }, [code]);
+
+  const handleCopy = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1500);
+    } catch {
+      setCopied(false);
+    }
+  }, [code]);
 
   useEffect(() => {
     if (!routeInfo || !codeRef.current) {
@@ -119,14 +108,35 @@ function CodeDisplay({ code, filePath, highlightRoute }: { code: string; filePat
 
   return (
     <Card>
-      <CardHeader className="pb-3">
-        <CardTitle className="text-sm">Pipeline Code</CardTitle>
-        <CardDescription>
-          <code className="text-xs">{filePath}</code>
-        </CardDescription>
+      <CardHeader className="pb-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <CardDescription className="text-xs">
+            <code className="text-xs break-all text-muted-foreground">{filePath}</code>
+          </CardDescription>
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant="secondary" className="text-[0.6rem]">TS</Badge>
+            <Button size="sm" variant="ghost" className="h-6 px-2 text-[0.7rem]" onClick={handleCopy}>
+              {copied ? "Copied" : "Copy"}
+            </Button>
+          </div>
+        </div>
+        <div className="mt-1 flex items-center gap-2 text-[0.65rem] text-muted-foreground">
+          <span>{stats.lines} lines</span>
+          <Separator orientation="vertical" className="h-3" />
+          <span>{stats.chars} chars</span>
+        </div>
       </CardHeader>
-      <CardContent>
-        <div ref={codeRef} className="rounded-lg border bg-muted/20 shadow-sm overflow-hidden">
+      <CardContent className="pt-0">
+        <span id="pipeline-code-desc" className="sr-only">
+          Pipeline source code. Use arrow keys to navigate the content.
+        </span>
+        <div
+          ref={codeRef}
+          className="rounded-md border bg-muted/5 overflow-hidden"
+          role="region"
+          aria-describedby="pipeline-code-desc"
+          aria-label="Pipeline source code"
+        >
           <ShikiCode
             code={code}
             language="typescript"
@@ -156,9 +166,9 @@ function EmptyCodeDisplay({ pipelineId }: { pipelineId: string }) {
 }
 
 function PipelineCodePage() {
-  const { id } = Route.useParams();
+  const { file, id } = Route.useParams();
   const data = Route.useLoaderData();
-  const search = useSearch({ from: "/pipelines/$id/code" }) as CodeSearchParams;
+  const search = useSearch({ from: "/pipelines/$file/$id/code" }) as CodeSearchParams;
   const highlightRoute = search?.route;
 
   return (
@@ -167,7 +177,7 @@ function PipelineCodePage() {
         ? (
             <CodeDisplay
               code={data.code}
-              filePath={data.filePath ?? id}
+              filePath={data.filePath ?? file}
               highlightRoute={highlightRoute}
             />
           )

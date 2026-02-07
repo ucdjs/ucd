@@ -17,7 +17,7 @@ interface RecentExecutionsPanelProps {
 }
 
 export function RecentExecutionsPanel({ executions }: RecentExecutionsPanelProps) {
-  const { id: pipelineId } = useParams({ from: "/pipelines/$id" });
+  const { id: pipelineId, file } = useParams({ from: "/pipelines/$file/$id" });
   const recentExecutions = executions.slice(0, 10);
 
   return (
@@ -35,8 +35,8 @@ export function RecentExecutionsPanel({ executions }: RecentExecutionsPanelProps
             </CardDescription>
           </div>
           <Link
-            to="/pipelines/$id/executions"
-            params={{ id: pipelineId }}
+            to="/pipelines/$file/$id/executions"
+            params={{ file, id: pipelineId }}
             className="text-xs text-primary hover:underline"
           >
             View all
@@ -86,8 +86,8 @@ export function RecentExecutionsPanel({ executions }: RecentExecutionsPanelProps
                       </div>
                     </div>
                     <Link
-                      to="/pipelines/$id/executions/$executionId"
-                      params={{ id: pipelineId, executionId: execution.id }}
+                      to="/pipelines/$file/$id/executions/$executionId"
+                      params={{ file, id: pipelineId, executionId: execution.id }}
                       className="text-xs text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity hover:underline shrink-0 ml-4"
                     >
                       View

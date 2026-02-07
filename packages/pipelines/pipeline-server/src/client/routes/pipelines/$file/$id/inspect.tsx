@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared
 import { Input } from "@ucdjs-internal/shared-ui/ui/input";
 import { useEffect, useMemo, useState } from "react";
 
-export const Route = createFileRoute("/pipelines/$id/inspect")({
+export const Route = createFileRoute("/pipelines/$file/$id/inspect")({
   component: PipelineInspectPage,
 });
 
@@ -267,11 +267,11 @@ function EmptyDetailsCard() {
 }
 
 function PipelineInspectPage() {
-  const { pipeline } = useLoaderData({ from: "/pipelines/$id" }) as { pipeline: PipelineDetails };
+  const { pipeline } = useLoaderData({ from: "/pipelines/$file/$id" });
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
 
-  const routes = pipeline.routes;
+  const routes = pipeline!.routes;
 
   const filteredRoutes = useMemo(() => {
     if (!searchQuery.trim()) return routes;

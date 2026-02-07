@@ -10,13 +10,31 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
 } from "@ucdjs-internal/shared-ui/ui/sidebar";
 import { usePipelines } from "@ucdjs/pipelines-ui";
-import { BookOpen, ExternalLink } from "lucide-react";
+import { BookOpen, ExternalLink, Folder, FolderOpen } from "lucide-react";
+import { useMemo, useState } from "react";
 
 export function PipelineSidebar() {
   const { data, loading } = usePipelines();
-  const { id: currentPipelineId } = useParams({ strict: false });
+  const params = useParams({ strict: false }) as { id?: string; file?: string };
+  const currentPipelineId = params.id;
+  const currentFileSlug = params.file;
+  const [openFiles, setOpenFiles] = useState<Record<string, boolean>>({});
+
+  const files = useMemo(() => {
+    return data?.files ?? [];
+  }, [data?.files]);
+
+  const toggleFile = (fileId: string) => {
+    setOpenFiles((prev) => ({
+      ...prev,
+      [fileId]: !prev[fileId],
+    }));
+  };
 
   return (
     <Sidebar>
@@ -25,14 +43,7 @@ export function PipelineSidebar() {
           <h1 className="text-sm font-semibold text-sidebar-foreground tracking-tight truncate">
             UCD Pipelines
           </h1>
-          {data?.cwd && (
-            <p
-              className="text-[10px] text-muted-foreground truncate"
-              title={data.cwd}
-            >
-              {data.cwd}
-            </p>
-          )}
+          <p className="text-[10px] text-muted-foreground truncate">Pipeline files</p>
         </div>
       </SidebarHeader>
 
@@ -46,32 +57,63 @@ export function PipelineSidebar() {
                   </div>
                 )
               : (
-                  data?.pipelines.map((pipeline) => {
-                    const isActive = currentPipelineId === pipeline.id;
+                  files.map((file) => {
+                      const isFileActive = currentFileSlug === file.fileId;
+                    const isOpen = openFiles[file.fileId] ?? isFileActive;
+                    const fileName = file.filePath.split("/").pop() ?? file.filePath;
 
                     return (
-                      <SidebarMenuItem key={pipeline.id}>
+                      <SidebarMenuItem key={file.fileId}>
                         <SidebarMenuButton
-                          isActive={isActive}
+                          isActive={isFileActive}
                           className="w-full justify-start gap-2"
+                          onClick={(event) => {
+                            event.preventDefault();
+                            toggleFile(file.fileId);
+                          }}
                           render={(
-                            <Link to="/pipelines/$id" params={{ id: pipeline.id }}>
-                              <div
-                                className={cn(
-                                  "w-2 h-2 rounded-full shrink-0",
-                                  pipeline.sourceId.startsWith("github-") && "bg-blue-500",
-                                  pipeline.sourceId.startsWith("gitlab-") && "bg-orange-500",
-                                  !pipeline.sourceId.startsWith("github-")
-                                  && !pipeline.sourceId.startsWith("gitlab-")
-                                  && "bg-emerald-500",
-                                )}
-                              />
-                              <span className="truncate flex-1">
-                                {pipeline.name || pipeline.id}
-                              </span>
+                            <Link to="/pipelines/$file" params={{ file: file.fileId }}>
+                              {isOpen ? <FolderOpen className="h-4 w-4" /> : <Folder className="h-4 w-4" />}
+                              <span className="truncate flex-1">{fileName}</span>
+                              <span className="text-[10px] text-muted-foreground">{file.pipelines.length}</span>
                             </Link>
                           )}
                         />
+                        {isOpen && (
+                          <SidebarMenuSub>
+                              {file.pipelines.map((pipeline) => {
+                                const isActive = currentPipelineId === pipeline.id && currentFileSlug === file.fileId;
+
+                              return (
+                                <SidebarMenuSubItem key={`${file.fileId}-${pipeline.id}`}>
+                                  <SidebarMenuSubButton
+                                    isActive={isActive}
+                                    render={(
+                                        <Link
+                                          to="/pipelines/$file/$id"
+                                          params={{ file: file.fileId, id: pipeline.id }}
+                                        >
+                                        <div
+                                          className={cn(
+                                            "w-2 h-2 rounded-full shrink-0",
+                                            pipeline.sourceId.startsWith("github-") && "bg-blue-500",
+                                            pipeline.sourceId.startsWith("gitlab-") && "bg-orange-500",
+                                            !pipeline.sourceId.startsWith("github-")
+                                            && !pipeline.sourceId.startsWith("gitlab-")
+                                            && "bg-emerald-500",
+                                          )}
+                                        />
+                                        <span className="truncate flex-1">
+                                          {pipeline.name || pipeline.id}
+                                        </span>
+                                      </Link>
+                                    )}
+                                  />
+                                </SidebarMenuSubItem>
+                              );
+                            })}
+                          </SidebarMenuSub>
+                        )}
                       </SidebarMenuItem>
                     );
                   })

@@ -24,8 +24,8 @@ export interface ExecutionsResponse {
   };
 }
 
-export async function fetchExecutions(pipelineId: string): Promise<ExecutionsResponse> {
-  const response = await fetch(`/api/pipelines/${pipelineId}/executions?limit=10`);
+export async function fetchExecutions(fileId: string, pipelineId: string): Promise<ExecutionsResponse> {
+  const response = await fetch(`/api/pipelines/${fileId}/${pipelineId}/executions?limit=10`);
   if (!response.ok) {
     throw new Error("Failed to fetch executions");
   }

@@ -59,7 +59,8 @@
     "h3": "catalog:prod",
     "lucide-react": "catalog:web",
     "oxc-parser": "catalog:prod",
-    "pathe": "catalog:prod"
+    "pathe": "catalog:prod",
+    "zod": "catalog:prod"
   },
   "devDependencies": {
     "@eslint-react/eslint-plugin": "catalog:linting",

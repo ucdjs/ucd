@@ -2,12 +2,20 @@ import type { PipelineEvent, PipelineGraph } from "@ucdjs/pipelines-core";
 
 export interface PipelineInfo {
   id: string;
-  name?: string;
+  name: string;
   description?: string;
+  tags?: string[];
   versions: string[];
   routeCount: number;
   sourceCount: number;
   sourceId: string;
+}
+
+export interface PipelineFileInfo {
+  fileId: string;
+  filePath: string;
+  sourceId: string;
+  pipelines: PipelineInfo[];
 }
 
 export interface PipelineDetails {
@@ -38,14 +46,16 @@ export interface LoadError {
 }
 
 export interface PipelinesResponse {
-  pipelines: PipelineInfo[];
-  cwd: string;
+  files: PipelineFileInfo[];
   errors: LoadError[];
 }
 
 export interface PipelineResponse {
   pipeline?: PipelineDetails;
   error?: string;
+  fileId?: string;
+  filePath?: string;
+  sourceId?: string;
 }
 
 export interface ExecuteResult {

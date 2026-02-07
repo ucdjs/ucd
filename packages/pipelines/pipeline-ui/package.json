@@ -33,6 +33,7 @@
     "./lib/colors": "./dist/lib/colors.mjs",
     "./lib/format-time": "./dist/lib/format-time.mjs",
     "./lib/layout": "./dist/lib/layout.mjs",
+    "./lib/pipeline-utils": "./dist/lib/pipeline-utils.mjs",
     "./lib/utils": "./dist/lib/utils.mjs",
     "./styles.css": "./dist/styles/globals.css",
     "./package.json": "./package.json"
