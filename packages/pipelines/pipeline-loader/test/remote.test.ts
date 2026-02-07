@@ -9,7 +9,7 @@ describe("findRemotePipelineFiles", () => {
     mockFetch([
       [
         "GET",
-        "https://api.github.com/repos/ucdjs/demo-pipelines/git/trees/main?recursive=1",
+        "https://api.github.com/repos/ucdjs/demo-pipelines/git/trees/main",
         () => HttpResponse.json({
           tree: [
             { path: "pipelines/alpha.ucd-pipeline.ts", type: "blob" },
@@ -39,7 +39,7 @@ describe("findRemotePipelineFiles", () => {
     mockFetch([
       [
         "GET",
-        "https://gitlab.com/api/v4/projects/ucdjs%2Fdemo-pipelines/repository/tree?recursive=true&ref=main&path=pipelines&per_page=100",
+        "https://gitlab.com/api/v4/projects/ucdjs%2Fdemo-pipelines/repository/tree",
         () => HttpResponse.json([
           { path: "pipelines/alpha.ucd-pipeline.ts", type: "blob" },
           { path: "pipelines/notes.txt", type: "blob" },
@@ -70,12 +70,12 @@ describe("loadRemotePipelines", () => {
     mockFetch([
       [
         "GET",
-        "https://api.github.com/repos/ucdjs/demo-pipelines/contents/pipelines%2Falpha.ucd-pipeline.ts?ref=main",
+        "https://api.github.com/repos/ucdjs/demo-pipelines/contents/pipelines%2Falpha.ucd-pipeline.ts",
         () => HttpResponse.json({ content: encodeBase64(alpha), encoding: "base64" }),
       ],
       [
         "GET",
-        "https://api.github.com/repos/ucdjs/demo-pipelines/contents/pipelines%2Fbeta.ucd-pipeline.ts?ref=main",
+        "https://api.github.com/repos/ucdjs/demo-pipelines/contents/pipelines%2Fbeta.ucd-pipeline.ts",
         () => HttpResponse.json({ content: encodeBase64(beta), encoding: "base64" }),
       ],
     ]);
@@ -96,12 +96,12 @@ describe("loadRemotePipelines", () => {
     mockFetch([
       [
         "GET",
-        "https://api.github.com/repos/ucdjs/demo-pipelines/contents/pipelines%2Falpha.ucd-pipeline.ts?ref=main",
+        "https://api.github.com/repos/ucdjs/demo-pipelines/contents/pipelines%2Falpha.ucd-pipeline.ts",
         () => HttpResponse.json({ content: encodeBase64(alpha), encoding: "base64" }),
       ],
       [
         "GET",
-        "https://api.github.com/repos/ucdjs/demo-pipelines/contents/pipelines%2Fbeta.ucd-pipeline.ts?ref=main",
+        "https://api.github.com/repos/ucdjs/demo-pipelines/contents/pipelines%2Fbeta.ucd-pipeline.ts",
         () => HttpResponse.text("Not found", { status: 404 }),
       ],
     ]);
@@ -121,7 +121,7 @@ describe("loadRemotePipelines", () => {
     mockFetch([
       [
         "GET",
-        "https://api.github.com/repos/ucdjs/demo-pipelines/contents/pipelines%2Fmissing.ucd-pipeline.ts?ref=main",
+        "https://api.github.com/repos/ucdjs/demo-pipelines/contents/pipelines%2Fmissing.ucd-pipeline.ts",
         () => HttpResponse.text("Not found", { status: 404 }),
       ],
     ]);
@@ -142,12 +142,12 @@ describe("loadRemotePipelines", () => {
     mockFetch([
       [
         "GET",
-        "https://gitlab.com/api/v4/projects/ucdjs%2Fdemo-pipelines/repository/files/pipelines%2Falpha.ucd-pipeline.ts/raw?ref=main",
+        "https://gitlab.com/api/v4/projects/ucdjs%2Fdemo-pipelines/repository/files/pipelines%2Falpha.ucd-pipeline.ts/raw",
         () => HttpResponse.text(alpha),
       ],
       [
         "GET",
-        "https://gitlab.com/api/v4/projects/ucdjs%2Fdemo-pipelines/repository/files/pipelines%2Fbeta.ucd-pipeline.ts/raw?ref=main",
+        "https://gitlab.com/api/v4/projects/ucdjs%2Fdemo-pipelines/repository/files/pipelines%2Fbeta.ucd-pipeline.ts/raw",
         () => HttpResponse.text(beta),
       ],
     ]);
@@ -168,12 +168,12 @@ describe("loadRemotePipelines", () => {
     mockFetch([
       [
         "GET",
-        "https://gitlab.com/api/v4/projects/ucdjs%2Fdemo-pipelines/repository/files/pipelines%2Falpha.ucd-pipeline.ts/raw?ref=main",
+        "https://gitlab.com/api/v4/projects/ucdjs%2Fdemo-pipelines/repository/files/pipelines%2Falpha.ucd-pipeline.ts/raw",
         () => HttpResponse.text(alpha),
       ],
       [
         "GET",
-        "https://gitlab.com/api/v4/projects/ucdjs%2Fdemo-pipelines/repository/files/pipelines%2Fbeta.ucd-pipeline.ts/raw?ref=main",
+        "https://gitlab.com/api/v4/projects/ucdjs%2Fdemo-pipelines/repository/files/pipelines%2Fbeta.ucd-pipeline.ts/raw",
         () => HttpResponse.text("Not found", { status: 404 }),
       ],
     ]);
@@ -193,7 +193,7 @@ describe("loadRemotePipelines", () => {
     mockFetch([
       [
         "GET",
-        "https://gitlab.com/api/v4/projects/ucdjs%2Fdemo-pipelines/repository/files/pipelines%2Fmissing.ucd-pipeline.ts/raw?ref=main",
+        "https://gitlab.com/api/v4/projects/ucdjs%2Fdemo-pipelines/repository/files/pipelines%2Fmissing.ucd-pipeline.ts/raw",
         () => HttpResponse.text("Not found", { status: 404 }),
       ],
     ]);
