@@ -180,7 +180,7 @@ function createRemotePlugin(input: BundleInput): RolldownPlugin {
 
   return {
     name: "pipeline-remote-loader",
-    resolveId: async (specifier, importer) => {
+    resolveId: async (specifier: string, importer?: string) => {
       if (!importer) {
         return input.identifier;
       }
@@ -206,7 +206,7 @@ function createRemotePlugin(input: BundleInput): RolldownPlugin {
 
       throw new Error(`Module not found: ${specifier}`);
     },
-    load: async (id) => {
+    load: async (id: string) => {
       if (id === input.identifier) {
         const code = await compileModuleSource(id, input.content);
         return code;
@@ -221,6 +221,15 @@ function createRemotePlugin(input: BundleInput): RolldownPlugin {
 }
 
 export async function bundleRemoteModule(input: BundleInput): Promise<string> {
+  // eslint-disable-next-line regexp/no-super-linear-backtracking
+  for (const match of input.content.matchAll(/\bimport\s*(?:[^"']*from\s*)?["']([^"']+)["']/g)) {
+    const specifier = match[1];
+    if (!specifier) {
+      continue;
+    }
+    assertRelativeSpecifier(specifier);
+  }
+
   const result = await build({
     input: input.identifier,
     plugins: [createRemotePlugin(input)],
