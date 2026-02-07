@@ -1,8 +1,6 @@
-import type { Client } from "@libsql/client";
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import { existsSync } from "node:fs";
-import { dirname } from "node:path";
-import { fileURLToPath } from "node:url";
+import process from "node:process";
 import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 import { migrate } from "drizzle-orm/libsql/migrator";
@@ -14,8 +12,6 @@ interface CreateDatabaseOptions {
   url?: string;
   authToken?: string;
 }
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export function createDatabase(options: CreateDatabaseOptions = {}): Database {
   const url = options.url ?? process.env.DB_URL ?? "file:./pipeline-server.db";
@@ -39,11 +35,4 @@ export async function runMigrations(db: Database): Promise<void> {
   await migrate(db, { migrationsFolder });
 }
 
-export function closeDatabase(db: Database): void {
-  // The drizzle instance wraps the client, we need to close the underlying client
-  const client = (db as unknown as { $client: Client }).$client;
-  client.close();
-}
-
-// Re-export schema for convenience
 export { schema };

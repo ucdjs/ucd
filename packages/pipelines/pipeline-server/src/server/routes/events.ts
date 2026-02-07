@@ -1,5 +1,5 @@
-import { H3, getQuery } from "h3";
 import { asc, eq } from "drizzle-orm";
+import { getQuery, H3 } from "h3";
 import * as schema from "../db/schema";
 
 export const eventsRouter = new H3();
@@ -15,10 +15,10 @@ eventsRouter.get("/", async (event) => {
 
   const query = getQuery(event);
   const limit = Math.min(
-    typeof query.limit === "string" ? parseInt(query.limit, 10) : 100,
-    500 // Max limit of 500
+    typeof query.limit === "string" ? Number.parseInt(query.limit, 10) : 100,
+    500, // Max limit of 500
   );
-  const offset = typeof query.offset === "string" ? parseInt(query.offset, 10) : 0;
+  const offset = typeof query.offset === "string" ? Number.parseInt(query.offset, 10) : 0;
 
   try {
     // Get the execution to verify it exists
