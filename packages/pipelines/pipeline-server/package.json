@@ -23,7 +23,10 @@
     "#routes/*": "./src/client/routes/*.ts",
     "#components/*": "./src/client/components/*.tsx",
     "#hooks/*": "./src/client/hooks/*.ts",
-    "#lib/*": "./src/client/lib/*.ts"
+    "#lib/*": "./src/client/lib/*.ts",
+    "#server/*": "./src/server/*.ts",
+    "#server/db": "./src/server/db/index.ts",
+    "#server/routes": "./src/server/routes/index.ts"
   },
   "exports": {
     ".": "./dist/server/app.js",
@@ -87,7 +90,9 @@
     "tsdown": "catalog:build",
     "typescript": "catalog:build",
     "vite": "catalog:web",
-    "vite-tsconfig-paths": "catalog:web"
+    "vite-tsconfig-paths": "catalog:web",
+    "vitest": "catalog:testing",
+    "vitest-testdirs": "catalog:testing"
   },
   "publishConfig": {
     "access": "public"
