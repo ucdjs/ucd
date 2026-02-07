@@ -1,4 +1,3 @@
-import type { GitHubSource, GitLabSource, LocalSource } from "@ucdjs/pipelines-loader";
 import {
   findPipelineFiles,
   findRemotePipelineFiles,
@@ -12,29 +11,30 @@ export const sourcesRouter = new H3();
 sourcesRouter.get("/", async (event) => {
   const { sources } = event.context;
 
-  return {
-    sources: sources.map((source) => ({
+  const formattedSources = sources.map((source) => {
+    const base = {
       id: source.id,
       type: source.type,
-      ...(source.type === "local" ? { cwd: (source as LocalSource).cwd } : {}),
-      ...(source.type === "github"
-        ? {
-            owner: (source as GitHubSource).owner,
-            repo: (source as GitHubSource).repo,
-            ref: (source as GitHubSource).ref,
-            path: (source as GitHubSource).path,
-          }
-        : {}),
-      ...(source.type === "gitlab"
-        ? {
-            owner: (source as GitLabSource).owner,
-            repo: (source as GitLabSource).repo,
-            ref: (source as GitLabSource).ref,
-            path: (source as GitLabSource).path,
-          }
-        : {}),
-    })),
-  };
+    };
+
+    switch (source.type) {
+      case "local":
+        return { ...base, cwd: source.cwd };
+      case "github":
+      case "gitlab":
+        return {
+          ...base,
+          owner: source.owner,
+          repo: source.repo,
+          ref: source.ref,
+          path: source.path,
+        };
+      default:
+        throw new Error(`Unknown source type: ${(source as any).type}`);
+    }
+  });
+
+  return { sources: formattedSources };
 });
 
 sourcesRouter.get("/:sourceId/pipelines", async (event) => {
@@ -52,8 +52,7 @@ sourcesRouter.get("/:sourceId/pipelines", async (event) => {
 
   try {
     if (source.type === "local") {
-      const localSource = source as LocalSource;
-      const files = await findPipelineFiles({ cwd: localSource.cwd });
+      const files = await findPipelineFiles({ cwd: source.cwd });
       const result = await loadPipelinesFromPaths(files);
 
       return {
@@ -71,9 +70,8 @@ sourcesRouter.get("/:sourceId/pipelines", async (event) => {
         })),
       };
     } else {
-      const remoteSource = source as GitHubSource | GitLabSource;
-      const fileList = await findRemotePipelineFiles(remoteSource);
-      const result = await loadRemotePipelines(remoteSource, fileList.files);
+      const fileList = await findRemotePipelineFiles(source);
+      const result = await loadRemotePipelines(source, fileList.files);
 
       return {
         pipelines: result.pipelines.map((p) => ({
