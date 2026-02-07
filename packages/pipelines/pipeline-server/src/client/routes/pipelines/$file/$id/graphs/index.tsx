@@ -15,7 +15,7 @@ import {
 export const Route = createFileRoute("/pipelines/$file/$id/graphs/")({
   component: PipelineGraphsPage,
   loader: async ({ params }) => {
-    const executions = await fetchExecutions(params.file, params.id);
+    const executions = await fetchExecutions(params.file, params.id, { limit: 50 });
     return { executions } satisfies { executions: ExecutionsResponse };
   },
 });
@@ -107,6 +107,7 @@ function PipelineGraphsPage() {
                           <Link
                             to="/pipelines/$file/$id/executions/$executionId/graph"
                             params={{ file, id, executionId: execution.id }}
+                            search={{}}
                             className="text-primary text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity hover:underline"
                           >
                             View
