@@ -3,7 +3,6 @@ import { cn } from "@ucdjs-internal/shared-ui/lib/utils";
 
 const PIPELINE_TABS = [
   { id: "overview", label: "Overview", to: "" },
-  { id: "graph", label: "Graph", to: "/graph" },
   { id: "inspect", label: "Inspect", to: "/inspect" },
   { id: "executions", label: "Executions", to: "/executions" },
   { id: "code", label: "Code", to: "/code" },
