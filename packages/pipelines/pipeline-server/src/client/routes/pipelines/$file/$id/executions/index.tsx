@@ -36,8 +36,8 @@ interface ExecutionsResponse {
   };
 }
 
-async function fetchExecutions(pipelineId: string): Promise<ExecutionsResponse> {
-  const response = await fetch(`/api/pipelines/${pipelineId}/executions?limit=50`);
+async function fetchExecutions(fileId: string, pipelineId: string): Promise<ExecutionsResponse> {
+  const response = await fetch(`/api/pipelines/${fileId}/${pipelineId}/executions?limit=50`);
   if (!response.ok) {
     throw new Error("Failed to fetch executions");
   }
@@ -110,16 +110,16 @@ function StatusBadge({ status }: { status: Execution["status"] }) {
   }
 }
 
-export const Route = createFileRoute("/pipelines/$id/executions/")({
+export const Route = createFileRoute("/pipelines/$file/$id/executions/")({
   component: ExecutionsListPage,
   loader: async ({ params }) => {
-    const executions = await fetchExecutions(params.id);
+    const executions = await fetchExecutions(params.file, params.id);
     return { executions };
   },
 });
 
 function ExecutionsListPage() {
-  const { id: pipelineId } = Route.useParams();
+  const { file, id: pipelineId } = Route.useParams();
   const { executions } = Route.useLoaderData();
   const { result: currentExecution } = useExecute();
 
@@ -214,7 +214,7 @@ function ExecutionsListPage() {
                               )}
                         </TableCell>
                         <TableCell className="text-right">
-                          {execution.summary
+                          {execution.summary && "totalRoutes" in execution.summary
                             ? (
                                 <span className="text-sm">
                                   {execution.summary.totalRoutes}
@@ -233,8 +233,8 @@ function ExecutionsListPage() {
                         </TableCell>
                         <TableCell>
                           <Link
-                            to="/pipelines/$id/executions/$executionId"
-                            params={{ id: pipelineId, executionId: execution.id }}
+                            to="/pipelines/$file/$id/executions/$executionId"
+                            params={{ file, id: pipelineId, executionId: execution.id }}
                             className="text-primary text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity hover:underline"
                           >
                             View

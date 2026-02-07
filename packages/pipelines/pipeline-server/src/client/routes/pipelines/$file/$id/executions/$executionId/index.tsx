@@ -136,7 +136,7 @@ function EventItem({
   );
 }
 
-export const Route = createFileRoute("/pipelines/$id/executions/$executionId/")({
+export const Route = createFileRoute("/pipelines/$file/$id/executions/$executionId/")({
   component: ExecutionDetailPage,
   loader: async ({ params }) => {
     const executionData = await fetchExecutionEvents(params.executionId);
@@ -145,7 +145,7 @@ export const Route = createFileRoute("/pipelines/$id/executions/$executionId/")(
 });
 
 function ExecutionDetailPage() {
-  const { id: pipelineId, executionId } = Route.useParams();
+  const { file, id: pipelineId, executionId } = Route.useParams();
   const { executionData } = Route.useLoaderData();
 
   const {
@@ -167,11 +167,11 @@ function ExecutionDetailPage() {
       {/* Header */}
       <div className="border-b bg-background px-6 py-4 shrink-0">
         <div className="flex items-center gap-4">
-          <Link
-            to="/pipelines/$id/executions"
-            params={{ id: pipelineId }}
-            className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors hover:bg-muted h-8 w-8"
-          >
+            <Link
+              to="/pipelines/$file/$id/executions"
+              params={{ file, id: pipelineId }}
+              className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors hover:bg-muted h-8 w-8"
+            >
             <ArrowLeft className="h-4 w-4" />
           </Link>
 

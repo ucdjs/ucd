@@ -4,9 +4,9 @@ import { PipelineTabs } from "#components/pipeline-tabs";
 import { createFileRoute, notFound, Outlet, useLoaderData, useParams } from "@tanstack/react-router";
 import { usePipelineVersions, VersionSelector } from "@ucdjs/pipelines-ui";
 
-export const Route = createFileRoute("/pipelines/$id")({
+export const Route = createFileRoute("/pipelines/$file/$id")({
   loader: async ({ params }) => {
-    const res = await fetch(`/api/pipelines/${params.id}`);
+    const res = await fetch(`/api/pipelines/${params.file}/${params.id}`);
 
     if (!res.ok) {
       if (res.status === 404) {
@@ -27,8 +27,8 @@ export const Route = createFileRoute("/pipelines/$id")({
 });
 
 function PipelineDetailLayout() {
-  const { id } = useParams({ from: "/pipelines/$id" });
-  const data = useLoaderData({ from: "/pipelines/$id" });
+  const { file, id } = useParams({ from: "/pipelines/$file/$id" });
+  const data = useLoaderData({ from: "/pipelines/$file/$id" });
   const pipeline = data.pipeline;
   const { selectedVersions, toggleVersion, selectAll, deselectAll } = usePipelineVersions(
     id,
@@ -59,14 +59,16 @@ function PipelineDetailLayout() {
 }
 
 function NotFoundComponent() {
-  const { id } = Route.useParams();
+  const { file, id } = Route.useParams();
 
   return (
     <div className="flex-1 flex items-center justify-center" role="alert">
       <div className="text-center max-w-md mx-auto p-6">
         <p className="text-sm text-destructive mb-2">Pipeline not found</p>
         <p className="text-xs text-muted-foreground">
-          Pipeline ID:
+          Pipeline:
+          {file}
+          /
           {id}
         </p>
       </div>

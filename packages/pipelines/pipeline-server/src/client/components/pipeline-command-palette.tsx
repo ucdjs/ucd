@@ -15,13 +15,13 @@ import { useCallback, useEffect, useState } from "react";
 
 const STORAGE_KEY_PREFIX = "ucd-versions-";
 
-function getSelectedVersionsFromStorage(pipelineId: string, allVersions: string[]): string[] {
+function getSelectedVersionsFromStorage(storageKey: string, allVersions: string[]): string[] {
   if (typeof window === "undefined") {
     return allVersions;
   }
 
   try {
-    const stored = localStorage.getItem(`${STORAGE_KEY_PREFIX}${pipelineId}`);
+    const stored = localStorage.getItem(`${STORAGE_KEY_PREFIX}${storageKey}`);
     if (stored) {
       const parsed = JSON.parse(stored) as string[];
       const validVersions = parsed.filter((v) => allVersions.includes(v));
@@ -42,10 +42,16 @@ export function PipelineCommandPalette() {
   const { data } = usePipelines();
   const { execute, executing } = useExecute();
   const navigate = useNavigate();
-  const { id: currentPipelineId } = useParams({ strict: false });
+  const { file, id: currentPipelineId } = useParams({ strict: false });
 
-  const pipelines = data?.pipelines ?? [];
-  const currentPipeline = pipelines.find((p) => p.id === currentPipelineId);
+  const files = data?.files ?? [];
+  const pipelines = files.flatMap((fileInfo) =>
+    fileInfo.pipelines.map((pipeline) => ({
+      ...pipeline,
+      fileId: fileInfo.fileId,
+    })),
+  );
+  const currentPipeline = pipelines.find((p) => p.id === currentPipelineId && p.fileId === file);
 
   // Toggle command palette with ⌘K
   useEffect(() => {
@@ -68,8 +74,11 @@ export function PipelineCommandPalette() {
       if (e.key === "e" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
         try {
-          const versionsToExecute = getSelectedVersionsFromStorage(currentPipeline.id, currentPipeline.versions);
-          await execute(currentPipeline.id, versionsToExecute);
+          const versionsToExecute = getSelectedVersionsFromStorage(
+            `${currentPipeline.fileId}:${currentPipeline.id}`,
+            currentPipeline.versions,
+          );
+          await execute(currentPipeline.fileId, currentPipeline.id, versionsToExecute);
           setOpen(false);
         } catch (err) {
           console.error("Failed to execute pipeline:", err);
@@ -90,19 +99,22 @@ export function PipelineCommandPalette() {
   const handleExecuteCurrent = useCallback(async () => {
     if (!currentPipeline || executing) return;
     try {
-      const versionsToExecute = getSelectedVersionsFromStorage(currentPipeline.id, currentPipeline.versions);
-      await execute(currentPipeline.id, versionsToExecute);
+      const versionsToExecute = getSelectedVersionsFromStorage(
+        `${currentPipeline.fileId}:${currentPipeline.id}`,
+        currentPipeline.versions,
+      );
+      await execute(currentPipeline.fileId, currentPipeline.id, versionsToExecute);
       setOpen(false);
     } catch (err) {
       console.error("Failed to execute pipeline:", err);
     }
   }, [currentPipeline, execute, executing]);
 
-  const handleExecutePipeline = useCallback(async (pipelineId: string, versions: string[]) => {
+  const handleExecutePipeline = useCallback(async (fileId: string, pipelineId: string, versions: string[]) => {
     if (executing) return;
     try {
-      const versionsToExecute = getSelectedVersionsFromStorage(pipelineId, versions);
-      await execute(pipelineId, versionsToExecute);
+      const versionsToExecute = getSelectedVersionsFromStorage(`${fileId}:${pipelineId}`, versions);
+      await execute(fileId, pipelineId, versionsToExecute);
       setOpen(false);
     } catch (err) {
       console.error("Failed to execute pipeline:", err);
@@ -137,11 +149,11 @@ export function PipelineCommandPalette() {
                 Execute Current Pipeline
                 <CommandShortcut>⌘E</CommandShortcut>
               </CommandItem>
-              <CommandItem onSelect={() => handleNavigate(`/pipelines/${currentPipeline.id}/code`)}>
+              <CommandItem onSelect={() => handleNavigate(`/pipelines/${currentPipeline.fileId}/${currentPipeline.id}/code`)}>
                 <FileCode className="mr-2 h-4 w-4" />
                 View Current Pipeline Code
               </CommandItem>
-              <CommandItem onSelect={() => handleNavigate(`/pipelines/${currentPipeline.id}/executions`)}>
+              <CommandItem onSelect={() => handleNavigate(`/pipelines/${currentPipeline.fileId}/${currentPipeline.id}/executions`)}>
                 <ScrollText className="mr-2 h-4 w-4" />
                 View Pipeline Executions
               </CommandItem>
@@ -151,9 +163,9 @@ export function PipelineCommandPalette() {
           <CommandGroup heading="All Pipelines">
             {pipelines.map((pipeline) => (
               <CommandItem
-                key={pipeline.id}
-                onSelect={() => handleExecutePipeline(pipeline.id, pipeline.versions)}
-                value={pipeline.id}
+                key={`${pipeline.fileId}-${pipeline.id}`}
+                onSelect={() => handleExecutePipeline(pipeline.fileId, pipeline.id, pipeline.versions)}
+                value={`${pipeline.fileId}-${pipeline.id}`}
                 disabled={executing}
               >
                 {executing

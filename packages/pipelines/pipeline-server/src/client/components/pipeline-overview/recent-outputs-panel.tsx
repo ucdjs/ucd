@@ -9,7 +9,7 @@ interface RecentOutputsPanelProps {
 }
 
 export function RecentOutputsPanel({ executions }: RecentOutputsPanelProps) {
-  const { id: pipelineId } = useParams({ from: "/pipelines/$id" });
+  const { file, id: pipelineId } = useParams({ from: "/pipelines/$file/$id" });
   const recentExecutions = executions.slice(0, 6);
 
   return (
@@ -23,8 +23,8 @@ export function RecentOutputsPanel({ executions }: RecentOutputsPanelProps) {
             </CardDescription>
           </div>
           <Link
-            to="/pipelines/$id/executions"
-            params={{ id: pipelineId }}
+            to="/pipelines/$file/$id/executions"
+            params={{ file, id: pipelineId }}
             className="text-xs text-primary hover:underline"
           >
             View all
@@ -67,8 +67,8 @@ export function RecentOutputsPanel({ executions }: RecentOutputsPanelProps) {
                       </div>
                     </div>
                     <Link
-                      to="/pipelines/$id/executions/$executionId"
-                      params={{ id: pipelineId, executionId: execution.id }}
+                      to="/pipelines/$file/$id/executions/$executionId"
+                      params={{ file, id: pipelineId, executionId: execution.id }}
                       className="text-xs text-primary hover:underline shrink-0 ml-4"
                     >
                       View

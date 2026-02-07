@@ -5,8 +5,6 @@ import path from "node:path";
 import process from "node:process";
 import { H3, serve, serveStatic } from "h3";
 import { eventsRouter } from "./routes/events";
-import { executeRouter } from "./routes/execute";
-import { executionsRouter } from "./routes/executions";
 import { pipelinesRouter } from "./routes/pipelines";
 import { sourcesRouter } from "./routes/sources";
 import { versionsRouter } from "./routes/versions";
@@ -68,10 +66,16 @@ export function createApp(options: AppOptions = {}): H3 {
 
   app.mount("/api/sources", sourcesRouter);
   app.mount("/api/pipelines", pipelinesRouter);
-  app.mount("/api/pipelines/:id/execute", executeRouter);
-  app.mount("/api/pipelines/:id/executions", executionsRouter);
   app.mount("/api/executions/:id/events", eventsRouter);
   app.mount("/api/versions", versionsRouter);
+
+  app.get("/api/test/:id-:id2", (event) => {
+    const { id, id2 } = event.context.params;
+
+    return {
+      message: `You requested ${id} and ${id2}`,
+    };
+  });
 
   return app;
 }

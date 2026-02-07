@@ -33,7 +33,7 @@ export function usePipelines(options: UsePipelinesOptions = {}): UsePipelinesRet
     try {
       const params = new URLSearchParams();
       if (search && search.trim()) {
-        params.set("query", search.trim());
+        params.set("search", search.trim());
       }
       const queryString = params.toString();
       const url = queryString

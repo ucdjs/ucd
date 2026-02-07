@@ -3,7 +3,7 @@ import { PipelineGraph, useExecute } from "@ucdjs/pipelines-ui";
 import { fetchExecutionEvents } from ".";
 
 export const Route = createFileRoute(
-  "/pipelines/$id/executions/$executionId/graph",
+  "/pipelines/$file/$id/executions/$executionId/graph",
 )({
   component: RouteComponent,
   loader: async ({ params }) => {
@@ -13,8 +13,8 @@ export const Route = createFileRoute(
 });
 
 function RouteComponent() {
-  const { id: pipelineId } = Route.useParams();
-  const { executions } = Route.useLoaderData();
+  Route.useParams();
+  Route.useLoaderData();
   const { result: currentExecution } = useExecute();
   return (
     <div>

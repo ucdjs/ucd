@@ -1,8 +1,8 @@
 import { always, definePipeline, definePipelineRoute } from "@ucdjs/pipelines-core";
 import { createMemorySource, standardParser, propertyJsonResolver } from "@ucdjs/pipelines-presets";
 
-export default definePipeline({
-  id: "playground-simple",
+export const simplePipeline = definePipeline({
+  id: "simple",
   name: "Playground Simple",
   versions: ["16.0.0"],
   tags: [

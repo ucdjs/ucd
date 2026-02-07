@@ -1,8 +1,16 @@
-import type { GitHubSource, GitLabSource, RemoteFileList } from "./remote/types";
-import type { LoadedPipelineFile, LoadPipelinesResult, PipelineLoadError } from "./types";
+import type { RemoteFileList } from "./remote/types";
+import type {
+  GitHubSource,
+  GitLabSource,
+  LoadedPipelineFile,
+  LoadPipelinesResult,
+  PipelineLoadError,
+} from "./types";
 import { loadPipelineFromContent } from "./insecure";
 import * as github from "./remote/github";
 import * as gitlab from "./remote/gitlab";
+
+export { github, gitlab };
 
 export interface FindRemotePipelineFilesOptions {
   pattern?: string;

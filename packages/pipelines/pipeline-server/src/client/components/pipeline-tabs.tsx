@@ -9,13 +9,14 @@ const PIPELINE_TABS = [
 ] as const;
 
 export function PipelineTabs() {
-  const { id } = useParams({ from: "/pipelines/$id" });
+  const { file, id } = useParams({ from: "/pipelines/$file/$id" });
   const routerState = useRouterState();
   const pathname = routerState.location.pathname;
 
   const getIsActive = (tabId: string) => {
     if (tabId === "overview") {
-      return pathname === `/pipelines/${id}` || pathname === `/pipelines/${id}/`;
+      if (!file || !id) return false;
+      return pathname === `/pipelines/${file}/${id}` || pathname === `/pipelines/${file}/${id}/`;
     }
     return pathname.includes(`/${tabId}`);
   };
@@ -32,10 +33,8 @@ export function PipelineTabs() {
         return (
           <Link
             key={tab.id}
-            to={`/pipelines/$id${tab.to}`}
-            params={{
-              id,
-            }}
+            to={"/pipelines/$file/$id"}
+            params={{ file, id }}
             role="tab"
             aria-selected={isActive}
             aria-controls={`tabpanel-${tab.id}`}

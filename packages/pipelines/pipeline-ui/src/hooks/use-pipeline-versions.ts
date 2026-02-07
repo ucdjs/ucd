@@ -9,17 +9,17 @@ export interface UsePipelineVersionsReturn {
   deselectAll: () => void;
 }
 
-function getStorageKey(pipelineId: string): string {
-  return `${STORAGE_KEY_PREFIX}${pipelineId}`;
+function getStorageKey(storageKey: string): string {
+  return `${STORAGE_KEY_PREFIX}${storageKey}`;
 }
 
-function loadVersionsFromStorage(pipelineId: string, allVersions: string[]): Set<string> {
+function loadVersionsFromStorage(storageKey: string, allVersions: string[]): Set<string> {
   if (typeof window === "undefined") {
     return new Set(allVersions);
   }
 
   try {
-    const stored = localStorage.getItem(getStorageKey(pipelineId));
+    const stored = localStorage.getItem(getStorageKey(storageKey));
     if (stored) {
       const parsed = JSON.parse(stored) as string[];
       // Filter to only valid versions
@@ -35,11 +35,11 @@ function loadVersionsFromStorage(pipelineId: string, allVersions: string[]): Set
   return new Set(allVersions);
 }
 
-function saveVersionsToStorage(pipelineId: string, versions: Set<string>): void {
+function saveVersionsToStorage(storageKey: string, versions: Set<string>): void {
   if (typeof window === "undefined") return;
 
   try {
-    localStorage.setItem(getStorageKey(pipelineId), JSON.stringify(Array.from(versions)));
+    localStorage.setItem(getStorageKey(storageKey), JSON.stringify(Array.from(versions)));
   } catch {
     // Ignore storage errors
   }
@@ -53,12 +53,14 @@ function sanitizeVersions(versions: Iterable<string>, allVersions: string[]): Se
 export function usePipelineVersions(
   pipelineId: string,
   allVersions: string[],
+  storageKeyOverride?: string,
 ): UsePipelineVersionsReturn {
   const [overridesByPipeline, setOverridesByPipeline] = useState<Record<string, string[]>>({});
+  const storageKey = storageKeyOverride ?? pipelineId;
 
   const baseSelection = useMemo(
-    () => loadVersionsFromStorage(pipelineId, allVersions),
-    [pipelineId, allVersions],
+    () => loadVersionsFromStorage(storageKey, allVersions),
+    [storageKey, allVersions],
   );
 
   const selectedVersions = useMemo(() => {
@@ -77,34 +79,34 @@ export function usePipelineVersions(
         next.add(version);
       }
       const sanitized = sanitizeVersions(next, allVersions);
-      saveVersionsToStorage(pipelineId, sanitized);
+      saveVersionsToStorage(storageKey, sanitized);
       return {
         ...prev,
         [pipelineId]: Array.from(sanitized),
       };
     });
-  }, [allVersions, pipelineId, selectedVersions]);
+  }, [allVersions, pipelineId, selectedVersions, storageKey]);
 
   const selectAll = useCallback(
     (versions: string[]) => {
       const sanitized = sanitizeVersions(versions, allVersions);
-      saveVersionsToStorage(pipelineId, sanitized);
+      saveVersionsToStorage(storageKey, sanitized);
       setOverridesByPipeline((prev) => ({
         ...prev,
         [pipelineId]: Array.from(sanitized),
       }));
     },
-    [allVersions, pipelineId],
+    [allVersions, pipelineId, storageKey],
   );
 
   const deselectAll = useCallback(() => {
     const sanitized = sanitizeVersions([], allVersions);
-    saveVersionsToStorage(pipelineId, sanitized);
+    saveVersionsToStorage(storageKey, sanitized);
     setOverridesByPipeline((prev) => ({
       ...prev,
       [pipelineId]: Array.from(sanitized),
     }));
-  }, [allVersions, pipelineId]);
+  }, [allVersions, pipelineId, storageKey]);
 
   return {
     selectedVersions,

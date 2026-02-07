@@ -1,7 +1,7 @@
 import { byName, definePipeline, definePipelineRoute } from "@ucdjs/pipelines-core";
 import { createMemorySource, sequenceParser, propertyJsonResolver } from "@ucdjs/pipelines-presets";
 
-export default definePipeline({
+export const sequencePipeline = definePipeline({
   id: "playground-sequence",
   name: "Playground Sequence",
   versions: ["16.0.0"],

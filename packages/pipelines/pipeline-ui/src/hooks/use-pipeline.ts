@@ -19,6 +19,7 @@ export interface UsePipelineReturn {
  * Hook to fetch and manage a single pipeline by ID
  */
 export function usePipeline(
+  fileId: string,
   pipelineId: string,
   options: UsePipelineOptions = {},
 ): UsePipelineReturn {
@@ -32,7 +33,7 @@ export function usePipeline(
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${baseUrl}/api/pipelines/${pipelineId}`);
+      const res = await fetch(`${baseUrl}/api/pipelines/${fileId}/${pipelineId}`);
       if (!res.ok) {
         throw new Error(`HTTP ${res.status}`);
       }
@@ -49,7 +50,7 @@ export function usePipeline(
     } finally {
       setLoading(false);
     }
-  }, [baseUrl, pipelineId]);
+  }, [baseUrl, fileId, pipelineId]);
 
   useEffect(() => {
     if (fetchOnMount) {

@@ -13,3 +13,13 @@ export type {
   FindRemotePipelineFilesOptions,
   LoadRemotePipelinesOptions,
 } from "./remote";
+
+export type {
+  GitHubSource,
+  GitLabSource,
+  LoadedPipelineFile,
+  LoadPipelinesResult,
+  LocalSource,
+  PipelineLoadError,
+  PipelineSource,
+} from "./types";
