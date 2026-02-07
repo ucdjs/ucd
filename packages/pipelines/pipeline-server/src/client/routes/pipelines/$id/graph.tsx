@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useExecute } from "@ucdjs/pipelines-ui";
-import { PipelineGraph } from "@ucdjs/pipelines-ui";
+import { PipelineGraph, useExecute } from "@ucdjs/pipelines-ui";
 
 export const Route = createFileRoute("/pipelines/$id/graph")({
   component: PipelineGraphPage,
@@ -35,7 +34,7 @@ function PipelineGraphPage() {
 
   return (
     <section
-      className="h-full min-h-[500px] bg-card border border-border rounded-lg overflow-hidden m-6"
+      className="h-full min-h-125 bg-card border border-border rounded-lg overflow-hidden m-6"
       role="tabpanel"
       id="tabpanel-graph"
       aria-labelledby="tab-graph"
