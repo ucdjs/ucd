@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 const STORAGE_KEY_PREFIX = "ucd-versions-";
 
@@ -7,7 +7,6 @@ export interface UsePipelineVersionsReturn {
   toggleVersion: (version: string) => void;
   selectAll: (versions: string[]) => void;
   deselectAll: () => void;
-  isLoaded: boolean;
 }
 
 function getStorageKey(pipelineId: string): string {
@@ -46,57 +45,71 @@ function saveVersionsToStorage(pipelineId: string, versions: Set<string>): void 
   }
 }
 
+function sanitizeVersions(versions: Iterable<string>, allVersions: string[]): Set<string> {
+  const valid = Array.from(versions).filter((v) => allVersions.includes(v));
+  return new Set(valid.length > 0 ? valid : allVersions);
+}
+
 export function usePipelineVersions(
   pipelineId: string,
   allVersions: string[],
 ): UsePipelineVersionsReturn {
-  const [selectedVersions, setSelectedVersions] = useState<Set<string>>(
-    () => new Set(allVersions),
+  const [overridesByPipeline, setOverridesByPipeline] = useState<Record<string, string[]>>({});
+
+  const baseSelection = useMemo(
+    () => loadVersionsFromStorage(pipelineId, allVersions),
+    [pipelineId, allVersions],
   );
-  const [isLoaded, setIsLoaded] = useState(false);
 
-  // Load from localStorage on mount and when pipeline changes
-  useEffect(() => {
-    const loaded = loadVersionsFromStorage(pipelineId, allVersions);
-    setSelectedVersions(loaded);
-    setIsLoaded(true);
-  }, [pipelineId, allVersions]);
-
-  // Persist to localStorage when versions change
-  useEffect(() => {
-    if (isLoaded) {
-      saveVersionsToStorage(pipelineId, selectedVersions);
-    }
-  }, [pipelineId, selectedVersions, isLoaded]);
+  const selectedVersions = useMemo(() => {
+    const override = overridesByPipeline[pipelineId];
+    const source = override ? new Set(override) : baseSelection;
+    return sanitizeVersions(source, allVersions);
+  }, [allVersions, baseSelection, overridesByPipeline, pipelineId]);
 
   const toggleVersion = useCallback((version: string) => {
-    setSelectedVersions((prev) => {
-      const next = new Set(prev);
+    setOverridesByPipeline((prev) => {
+      const current = prev[pipelineId] ? new Set(prev[pipelineId]) : selectedVersions;
+      const next = new Set(current);
       if (next.has(version)) {
         next.delete(version);
       } else {
         next.add(version);
       }
-      return next;
+      const sanitized = sanitizeVersions(next, allVersions);
+      saveVersionsToStorage(pipelineId, sanitized);
+      return {
+        ...prev,
+        [pipelineId]: Array.from(sanitized),
+      };
     });
-  }, []);
+  }, [allVersions, pipelineId, selectedVersions]);
 
   const selectAll = useCallback(
     (versions: string[]) => {
-      setSelectedVersions(new Set(versions));
+      const sanitized = sanitizeVersions(versions, allVersions);
+      saveVersionsToStorage(pipelineId, sanitized);
+      setOverridesByPipeline((prev) => ({
+        ...prev,
+        [pipelineId]: Array.from(sanitized),
+      }));
     },
-    [],
+    [allVersions, pipelineId],
   );
 
   const deselectAll = useCallback(() => {
-    setSelectedVersions(new Set());
-  }, []);
+    const sanitized = sanitizeVersions([], allVersions);
+    saveVersionsToStorage(pipelineId, sanitized);
+    setOverridesByPipeline((prev) => ({
+      ...prev,
+      [pipelineId]: Array.from(sanitized),
+    }));
+  }, [allVersions, pipelineId]);
 
   return {
     selectedVersions,
     toggleVersion,
     selectAll,
     deselectAll,
-    isLoaded,
   };
 }
