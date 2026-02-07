@@ -339,7 +339,11 @@ catalogs:
 overrides:
   '@asteasolutions/zod-to-openapi': 8.4.0
   rolldown: 1.0.0-rc.3
+<<<<<<< HEAD
   wrangler: 4.63.0
+=======
+  wrangler: 4.61.1
+>>>>>>> 14a170f5 (feat(pipeline-loader): enhance remote module loading)
 
 patchedDependencies:
   '@asteasolutions/zod-to-openapi@8.4.0':
@@ -501,10 +505,14 @@ importers:
       nitro:
         specifier: catalog:web
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 3.0.1-alpha.2(better-sqlite3@12.5.0)(chokidar@5.0.0)(ioredis@5.8.2)(lru-cache@11.2.4)(rolldown@1.0.0-rc.3)(rollup@4.53.3)(vite@7.3.1(@types/node@22.18.12)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.2))
 =======
         version: 3.0.1-alpha.2(@libsql/client@0.17.0)(better-sqlite3@12.5.0)(chokidar@5.0.0)(drizzle-orm@0.45.1(@libsql/client@0.17.0)(@opentelemetry/api@1.9.0)(better-sqlite3@12.5.0))(ioredis@5.8.2)(lru-cache@11.2.4)(rolldown@1.0.0-rc.2)(rollup@4.53.3)(vite@7.3.1(@types/node@22.18.12)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.2))
 >>>>>>> 4efa3d83 (chore: update dependencies in pnpm-workspace.yaml)
+=======
+        version: 3.0.1-alpha.2(@libsql/client@0.17.0)(better-sqlite3@12.5.0)(chokidar@5.0.0)(drizzle-orm@0.45.1(@libsql/client@0.17.0)(@opentelemetry/api@1.9.0)(better-sqlite3@12.5.0))(ioredis@5.8.2)(lru-cache@11.2.4)(rolldown@1.0.0-rc.3)(rollup@4.53.3)(vite@7.3.1(@types/node@22.18.12)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.2))
+>>>>>>> 14a170f5 (feat(pipeline-loader): enhance remote module loading)
       react:
         specifier: catalog:web
         version: 19.2.4
@@ -679,10 +687,14 @@ importers:
       nitro:
         specifier: catalog:web
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 3.0.1-alpha.2(better-sqlite3@12.5.0)(chokidar@5.0.0)(ioredis@5.8.2)(lru-cache@11.2.4)(rolldown@1.0.0-rc.3)(rollup@4.53.3)(vite@7.3.1(@types/node@22.18.12)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.2))
 =======
         version: 3.0.1-alpha.2(@libsql/client@0.17.0)(better-sqlite3@12.5.0)(chokidar@5.0.0)(drizzle-orm@0.45.1(@libsql/client@0.17.0)(@opentelemetry/api@1.9.0)(better-sqlite3@12.5.0))(ioredis@5.8.2)(lru-cache@11.2.4)(rolldown@1.0.0-rc.2)(rollup@4.53.3)(vite@7.3.1(@types/node@22.18.12)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.2))
 >>>>>>> 4efa3d83 (chore: update dependencies in pnpm-workspace.yaml)
+=======
+        version: 3.0.1-alpha.2(@libsql/client@0.17.0)(better-sqlite3@12.5.0)(chokidar@5.0.0)(drizzle-orm@0.45.1(@libsql/client@0.17.0)(@opentelemetry/api@1.9.0)(better-sqlite3@12.5.0))(ioredis@5.8.2)(lru-cache@11.2.4)(rolldown@1.0.0-rc.3)(rollup@4.53.3)(vite@7.3.1(@types/node@22.18.12)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.2))
+>>>>>>> 14a170f5 (feat(pipeline-loader): enhance remote module loading)
       tailwindcss:
         specifier: catalog:web
         version: 4.1.18
@@ -1134,6 +1146,9 @@ importers:
       oxc-transform:
         specifier: catalog:prod
         version: 0.112.0
+      rolldown:
+        specifier: 1.0.0-rc.3
+        version: 1.0.0-rc.3
       tinyglobby:
         specifier: catalog:prod
         version: 0.2.15
@@ -4267,10 +4282,13 @@ packages:
     cpu: [x64]
     os: [win32]
 
+<<<<<<< HEAD
   '@oxc-project/types@0.111.0':
     resolution: {integrity: sha512-bh54LJMafgRGl2cPQ/QM+tI5rWaShm/wK9KywEj/w36MhiPKXYM67H2y3q+9pr4YO7ufwg2AKdBAZkhHBD8ClA==}
 >>>>>>> 990056fb (feat(pipeline-ui): update styles and components for new design)
 
+=======
+>>>>>>> 14a170f5 (feat(pipeline-loader): enhance remote module loading)
   '@oxc-project/types@0.112.0':
     resolution: {integrity: sha512-m6RebKHIRsax2iCwVpYW2ErQwa4ywHJrE4sCK3/8JK8ZZAWOKXaRJFl/uP51gaVyyXlaS4+chU1nSCdzYf6QqQ==}
 
@@ -5104,8 +5122,16 @@ packages:
   '@rolldown/pluginutils@1.0.0-beta.40':
     resolution: {integrity: sha512-s3GeJKSQOwBlzdUrj4ISjJj5SfSh+aqn0wjOar4Bx95iV1ETI7F6S/5hLcfAxZ9kXDcyrAkxPlqmd1ZITttf+w==}
 
+<<<<<<< HEAD
   '@rolldown/pluginutils@1.0.0-rc.2':
     resolution: {integrity: sha512-izyXV/v+cHiRfozX62W9htOAvwMo4/bXKDrQ+vom1L1qRuexPock/7VZDAhnpHCLNejd3NJ6hiab+tO0D44Rgw==}
+=======
+  '@rolldown/pluginutils@1.0.0-beta.53':
+    resolution: {integrity: sha512-vENRlFU4YbrwVqNDZ7fLvy+JR1CRkyr01jhSiDpE1u6py3OMzQfztQU2jxykW3ALNxO4kSlqIDeYyD0Y9RcQeQ==}
+
+  '@rolldown/pluginutils@1.0.0-rc.3':
+    resolution: {integrity: sha512-eybk3TjzzzV97Dlj5c+XrBFW57eTNhzod66y9HrBlzJ6NsCrWCp/2kaPS3K9wJmurBC0Tdw4yPjXKZqlznim3Q==}
+>>>>>>> 14a170f5 (feat(pipeline-loader): enhance remote module loading)
 
 <<<<<<< HEAD
   '@rolldown/pluginutils@1.0.0-rc.3':
@@ -13241,9 +13267,12 @@ snapshots:
   '@oxc-parser/binding-win32-x64-msvc@0.112.0':
     optional: true
 
+<<<<<<< HEAD
   '@oxc-project/types@0.111.0': {}
 >>>>>>> 990056fb (feat(pipeline-ui): update styles and components for new design)
 
+=======
+>>>>>>> 14a170f5 (feat(pipeline-loader): enhance remote module loading)
   '@oxc-project/types@0.112.0': {}
 
   '@oxc-transform/binding-android-arm-eabi@0.110.0':
@@ -13880,7 +13909,13 @@ snapshots:
 
   '@rolldown/pluginutils@1.0.0-beta.40': {}
 
+<<<<<<< HEAD
   '@rolldown/pluginutils@1.0.0-rc.2': {}
+=======
+  '@rolldown/pluginutils@1.0.0-beta.53': {}
+
+  '@rolldown/pluginutils@1.0.0-rc.3': {}
+>>>>>>> 14a170f5 (feat(pipeline-loader): enhance remote module loading)
 
 <<<<<<< HEAD
   '@rolldown/pluginutils@1.0.0-rc.3': {}
@@ -19210,10 +19245,14 @@ snapshots:
       lodash.topath: 4.5.2
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   nitro@3.0.1-alpha.2(better-sqlite3@12.5.0)(chokidar@5.0.0)(ioredis@5.8.2)(lru-cache@11.2.4)(rolldown@1.0.0-rc.3)(rollup@4.53.3)(vite@7.3.1(@types/node@22.18.12)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.2)):
 =======
   nitro@3.0.1-alpha.2(@libsql/client@0.17.0)(better-sqlite3@12.5.0)(chokidar@5.0.0)(drizzle-orm@0.45.1(@libsql/client@0.17.0)(@opentelemetry/api@1.9.0)(better-sqlite3@12.5.0))(ioredis@5.8.2)(lru-cache@11.2.4)(rolldown@1.0.0-rc.2)(rollup@4.53.3)(vite@7.3.1(@types/node@22.18.12)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.2)):
 >>>>>>> 4efa3d83 (chore: update dependencies in pnpm-workspace.yaml)
+=======
+  nitro@3.0.1-alpha.2(@libsql/client@0.17.0)(better-sqlite3@12.5.0)(chokidar@5.0.0)(drizzle-orm@0.45.1(@libsql/client@0.17.0)(@opentelemetry/api@1.9.0)(better-sqlite3@12.5.0))(ioredis@5.8.2)(lru-cache@11.2.4)(rolldown@1.0.0-rc.3)(rollup@4.53.3)(vite@7.3.1(@types/node@22.18.12)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)(tsx@4.21.0)(yaml@2.8.2)):
+>>>>>>> 14a170f5 (feat(pipeline-loader): enhance remote module loading)
     dependencies:
       consola: 3.4.2
       crossws: 0.4.3(srvx@0.10.1)
@@ -20034,7 +20073,11 @@ snapshots:
 
   reusify@1.1.0: {}
 
+<<<<<<< HEAD
   rolldown-plugin-dts@0.22.1(rolldown@1.0.0-rc.3)(typescript@5.9.3):
+=======
+  rolldown-plugin-dts@0.21.8(rolldown@1.0.0-rc.3)(typescript@5.9.3):
+>>>>>>> 14a170f5 (feat(pipeline-loader): enhance remote module loading)
     dependencies:
       '@babel/generator': 8.0.0-rc.1
       '@babel/helper-validator-identifier': 8.0.0-rc.1
@@ -20744,7 +20787,11 @@ snapshots:
       obug: 2.1.1
       picomatch: 4.0.3
       rolldown: 1.0.0-rc.3
+<<<<<<< HEAD
       rolldown-plugin-dts: 0.22.1(rolldown@1.0.0-rc.3)(typescript@5.9.3)
+=======
+      rolldown-plugin-dts: 0.21.8(rolldown@1.0.0-rc.3)(typescript@5.9.3)
+>>>>>>> 14a170f5 (feat(pipeline-loader): enhance remote module loading)
       semver: 7.7.3
       tinyexec: 1.0.2
       tinyglobby: 0.2.15

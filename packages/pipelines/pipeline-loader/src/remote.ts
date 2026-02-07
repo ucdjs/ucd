@@ -45,6 +45,19 @@ export interface LoadRemotePipelinesOptions {
   customFetch?: typeof fetch;
 }
 
+function buildRemoteIdentifier(
+  provider: "github" | "gitlab",
+  owner: string,
+  repo: string,
+  ref: string | undefined,
+  filePath: string,
+): string {
+  const url = new URL(`${provider}://${owner}/${repo}`);
+  url.searchParams.set("ref", ref ?? "HEAD");
+  url.searchParams.set("path", filePath);
+  return url.toString();
+}
+
 export async function loadRemotePipelines(
   source: GitHubSource | GitLabSource,
   filePaths: string[],
@@ -60,7 +73,10 @@ export async function loadRemotePipelines(
       (type === "github"
         ? github.fetchFile(repoRef, filePath, { customFetch })
         : gitlab.fetchFile(repoRef, filePath, { customFetch })
-      ).then((content) => loadPipelineFromContent(content, filePath)).catch((err) => {
+      ).then((content) => loadPipelineFromContent(content, filePath, {
+        identifier: buildRemoteIdentifier(type, owner, repo, ref, filePath),
+        fetchFn: customFetch,
+      })).catch((err) => {
         const error = err instanceof Error ? err : new Error(String(err));
         throw new Error(`Failed to load pipeline file: ${filePath}`, { cause: error });
       }),
@@ -81,7 +97,10 @@ export async function loadRemotePipelines(
       const content = type === "github"
         ? await github.fetchFile(repoRef, filePath, { customFetch })
         : await gitlab.fetchFile(repoRef, filePath, { customFetch });
-      return loadPipelineFromContent(content, filePath);
+      return loadPipelineFromContent(content, filePath, {
+        identifier: buildRemoteIdentifier(type, owner, repo, ref, filePath),
+        fetchFn: customFetch,
+      });
     }),
   );
 
