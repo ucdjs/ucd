@@ -1,53 +1,43 @@
 import type { PipelineDefinition } from "@ucdjs/pipelines-core";
 import type { LoadedPipelineFile } from "./types";
+import path from "node:path";
 import { isPipelineDefinition } from "@ucdjs/pipelines-core";
-import { transform } from "oxc-transform";
+import { bundleRemoteModule, createDataUrl, identifierForLocalFile } from "./remote/bundler";
+
+export interface LoadPipelineFromContentOptions {
+  identifier?: string;
+  fetchFn?: typeof fetch;
+}
 
 export async function loadPipelineFromContent(
   content: string,
   filename: string,
+  options: LoadPipelineFromContentOptions = {},
 ): Promise<LoadedPipelineFile> {
-  const result = await transform(filename, content, { sourceType: "module" });
-  const jsCode = result.code;
+  const identifier = options.identifier ?? identifierForLocalFile(path.resolve(filename));
+  const bundle = await bundleRemoteModule({
+    content,
+    identifier,
+    fetchFn: options.fetchFn,
+  });
 
-  const module = { exports: {} };
-  const exports = module.exports;
-
-  const sandbox = {
-    module,
-    exports,
-    require,
-    __filename: filename,
-    __dirname: filename.split("/").slice(0, -1).join("/"),
-  };
-
-  // eslint-disable-next-line no-new-func
-  const fn = new Function(
-    "module",
-    "exports",
-    "require",
-    "__filename",
-    "__dirname",
-    jsCode,
-  );
-
-  fn.call(module.exports, module, module.exports, require, filename, sandbox.__dirname);
+  const dataUrl = createDataUrl(bundle);
+  const module = await import(/* vite-ignore */ dataUrl);
 
   const pipelines: PipelineDefinition[] = [];
   const exportNames: string[] = [];
 
-  const exportedModule = module.exports as Record<string, unknown>;
+  const exportedModule = module as Record<string, unknown>;
 
   for (const [name, value] of Object.entries(exportedModule)) {
+    if (name === "default") {
+      continue;
+    }
+
     if (isPipelineDefinition(value)) {
       pipelines.push(value);
       exportNames.push(name);
     }
-  }
-
-  if (isPipelineDefinition(module.exports)) {
-    pipelines.push(module.exports);
-    exportNames.push("default");
   }
 
   return {
