@@ -22,7 +22,7 @@ export async function loadPipelineFromContent(
   });
 
   const dataUrl = createDataUrl(bundle);
-  const module = await import(/* vite-ignore */ dataUrl);
+  const module = await import(/* @vite-ignore */ dataUrl);
 
   const pipelines: PipelineDefinition[] = [];
   const exportNames: string[] = [];
