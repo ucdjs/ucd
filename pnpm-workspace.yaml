@@ -76,6 +76,7 @@ catalogs:
     rolldown: 1.0.0-rc.3
     "@rollup/plugin-babel": 6.1.0
     babel-plugin-react-compiler: 1.0.0
+    vite-plugin-inspect: 11.3.3
 
   api:
     wrangler: 4.63.0
