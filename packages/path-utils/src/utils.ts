@@ -10,9 +10,7 @@ export const osPlatform: NodeJS.Platform | null = /* @__PURE__ */ (() => {
   if ("process" in globalThis
     && typeof globalThis.process === "object"
     && "platform" in globalThis.process
-    && typeof globalThis.process.platform === "string") {
-    return globalThis.process.platform;
-  }
+    && typeof globalThis.process.platform === "string") { return globalThis.process.platform; }
 
   return null;
 })();

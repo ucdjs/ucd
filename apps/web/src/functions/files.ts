@@ -4,6 +4,7 @@ import type { SearchQueryParams, searchSchema } from "../routes/file-explorer/$"
 import { queryOptions } from "@tanstack/react-query";
 import { notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/react-start/server";
 import {
   UCD_STAT_CHILDREN_DIRS_HEADER,
   UCD_STAT_CHILDREN_FILES_HEADER,
@@ -41,7 +42,9 @@ export type FilesResponse
  */
 export const fetchFiles = createServerFn({ method: "GET" })
   .inputValidator((data: { path: string; statType?: string | null; size?: number | null } & z.output<typeof searchSchema>) => data)
-  .handler(async ({ data, context, signal }) => {
+  .handler(async ({ data, context }) => {
+    const request = getRequest();
+    const signal = request.signal;
     const baseFilesUrl = `${context.apiBaseUrl}/api/v1/files`;
     const url = new URL(data.path, `${baseFilesUrl}/`);
 
@@ -159,7 +162,10 @@ export const getFileHeadInfo = createServerFn({ method: "GET" })
   .inputValidator((data: {
     path: string;
   } & Omit<SearchQueryParams, "viewMode">) => data)
-  .handler(async ({ data, context, signal }) => {
+  .handler(async ({ data, context }) => {
+    const request = getRequest();
+    const signal = request.signal;
+
     const baseFilesUrl = `${context.apiBaseUrl}/api/v1/files`;
     const url = new URL(data.path, `${baseFilesUrl}/`);
 
