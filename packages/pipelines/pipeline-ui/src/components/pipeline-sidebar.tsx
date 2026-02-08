@@ -14,9 +14,9 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@ucdjs-internal/shared-ui/ui/sidebar";
-import { usePipelines } from "@ucdjs/pipelines-ui";
 import { BookOpen, ExternalLink, Folder, FolderOpen } from "lucide-react";
 import { useMemo, useState } from "react";
+import { usePipelines } from "../hooks";
 
 export function PipelineSidebar() {
   const { data, loading } = usePipelines();
@@ -58,7 +58,7 @@ export function PipelineSidebar() {
                 )
               : (
                   files.map((file) => {
-                      const isFileActive = currentFileSlug === file.fileId;
+                    const isFileActive = currentFileSlug === file.fileId;
                     const isOpen = openFiles[file.fileId] ?? isFileActive;
                     const fileName = file.fileLabel ?? file.filePath.split("/").pop() ?? file.filePath;
 
@@ -81,18 +81,18 @@ export function PipelineSidebar() {
                         />
                         {isOpen && (
                           <SidebarMenuSub>
-                              {file.pipelines.map((pipeline) => {
-                                const isActive = currentPipelineId === pipeline.id && currentFileSlug === file.fileId;
+                            {file.pipelines.map((pipeline) => {
+                              const isActive = currentPipelineId === pipeline.id && currentFileSlug === file.fileId;
 
                               return (
                                 <SidebarMenuSubItem key={`${file.fileId}-${pipeline.id}`}>
                                   <SidebarMenuSubButton
                                     isActive={isActive}
                                     render={(
-                                        <Link
-                                          to="/pipelines/$file/$id"
-                                          params={{ file: file.fileId, id: pipeline.id }}
-                                        >
+                                      <Link
+                                        to="/pipelines/$file/$id"
+                                        params={{ file: file.fileId, id: pipeline.id }}
+                                      >
                                         <div
                                           className={cn(
                                             "w-2 h-2 rounded-full shrink-0",

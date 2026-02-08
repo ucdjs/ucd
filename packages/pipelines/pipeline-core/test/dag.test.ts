@@ -214,6 +214,7 @@ describe("getExecutionLayers", () => {
   });
 });
 
+// eslint-disable-next-line test/prefer-lowercase-title
 describe("DAGNode structure", () => {
   it("should have correct node structure", () => {
     const routes = [createRoute("test-route")];

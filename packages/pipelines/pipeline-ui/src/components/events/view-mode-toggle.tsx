@@ -15,7 +15,7 @@ export function ViewModeToggle({ isJsonMode, onToggle }: ViewModeToggleProps) {
         onClick={() => isJsonMode && onToggle()}
         className={cn(
           "h-7 text-xs",
-          !isJsonMode && "bg-background shadow-sm"
+          !isJsonMode && "bg-background shadow-sm",
         )}
       >
         Compact
@@ -26,7 +26,7 @@ export function ViewModeToggle({ isJsonMode, onToggle }: ViewModeToggleProps) {
         onClick={() => !isJsonMode && onToggle()}
         className={cn(
           "h-7 text-xs",
-          isJsonMode && "bg-background shadow-sm"
+          isJsonMode && "bg-background shadow-sm",
         )}
       >
         JSON

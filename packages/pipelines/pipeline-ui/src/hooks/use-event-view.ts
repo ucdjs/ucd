@@ -1,4 +1,3 @@
-import type { PipelineEvent } from "@ucdjs/pipelines-core";
 import { useCallback, useState } from "react";
 
 export interface EventViewState {

@@ -72,6 +72,7 @@ function PipelineGraphPage() {
           graph={fakeGraph}
           onNodeSelect={(node) => {
             if (node) {
+              // eslint-disable-next-line no-console
               console.log("Selected node:", node);
             }
           }}

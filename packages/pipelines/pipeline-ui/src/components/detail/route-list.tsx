@@ -76,7 +76,7 @@ export function RouteList({
           <div
             key={route.id}
             className={cn(
-              index !== routes.length - 1 && "border-b border-border"
+              index !== routes.length - 1 && "border-b border-border",
             )}
           >
             <RouteItem
