@@ -341,11 +341,7 @@ export function registerWildcardRoute(router: OpenAPIHono<HonoEnv>) {
           maxBraceExpansions: 8,
           maxStars: 16,
           maxQuestions: 16,
-        })) {
-          return badRequest({
-            message: "Invalid glob pattern",
-          });
-        }
+        })) { return badRequest({ message: "Invalid glob pattern" }); }
 
         const files = applyDirectoryFiltersAndSort(parsedFiles, {
           query: c.req.query("query"),
