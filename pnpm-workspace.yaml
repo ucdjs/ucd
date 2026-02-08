@@ -73,7 +73,9 @@ catalogs:
     nanotar: 0.2.0
     openapi-typescript: 7.10.1
     tsx: 4.21.0
-    rolldown: 1.0.0-rc.2
+    rolldown: 1.0.0-rc.3
+    "@rollup/plugin-babel": 6.1.0
+    babel-plugin-react-compiler: 1.0.0
 
   api:
     wrangler: 4.63.0
