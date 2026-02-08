@@ -159,6 +159,7 @@ overrides:
   "@asteasolutions/zod-to-openapi": 8.4.0
   rolldown: catalog:build
   wrangler: catalog:api
+  esbuild: 0.27.3
 
 patchedDependencies:
   "@asteasolutions/zod-to-openapi@8.4.0": patches/@asteasolutions__zod-to-openapi@8.4.0.patch
