@@ -24,37 +24,32 @@ function getStoredTheme(): ThemeMode {
   return "system";
 }
 
-function applyTheme(theme: ThemeMode): "light" | "dark" {
-  const resolved = theme === "system" ? getSystemTheme() : theme;
-  if (typeof document !== "undefined") {
-    document.documentElement.classList.toggle(DARK_CLASS, resolved === "dark");
-    document.documentElement.style.colorScheme = resolved;
-  }
-  return resolved;
+function syncTheme(resolved: "light" | "dark") {
+  if (typeof document === "undefined") return;
+  document.documentElement.classList.toggle(DARK_CLASS, resolved === "dark");
+  document.documentElement.style.colorScheme = resolved;
 }
 
 export function useTheme(): UseThemeReturn {
   const [theme, setThemeState] = useState<ThemeMode>(() => getStoredTheme());
-  const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">(() => applyTheme(theme));
+  const [systemTheme, setSystemTheme] = useState<"light" | "dark">(() => getSystemTheme());
+
+  const resolvedTheme = theme === "system" ? systemTheme : theme;
 
   useEffect(() => {
-    const resolved = applyTheme(theme);
-    setResolvedTheme(resolved);
+    if (typeof window === "undefined") return undefined;
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    const handler = () => setSystemTheme(media.matches ? "dark" : "light");
+    media.addEventListener("change", handler);
+    return () => media.removeEventListener("change", handler);
+  }, []);
+
+  useEffect(() => {
+    syncTheme(resolvedTheme);
     if (typeof window !== "undefined") {
       window.localStorage.setItem(STORAGE_KEY, theme);
     }
-  }, [theme]);
-
-  useEffect(() => {
-    if (theme !== "system" || typeof window === "undefined") return undefined;
-    const media = window.matchMedia("(prefers-color-scheme: dark)");
-    const handler = () => {
-      const resolved = applyTheme(theme);
-      setResolvedTheme(resolved);
-    };
-    media.addEventListener("change", handler);
-    return () => media.removeEventListener("change", handler);
-  }, [theme]);
+  }, [resolvedTheme, theme]);
 
   const setTheme = useCallback((nextTheme: ThemeMode) => {
     setThemeState(nextTheme);
