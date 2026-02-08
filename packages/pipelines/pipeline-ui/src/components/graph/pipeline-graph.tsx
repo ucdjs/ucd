@@ -4,13 +4,12 @@ import type {
   PipelineGraphNodeType,
   PipelineGraph as PipelineGraphType,
 } from "@ucdjs/pipelines-core";
-import type { NodeMouseHandler, OnNodesChange } from "@xyflow/react";
+import type { NodeMouseHandler } from "@xyflow/react";
 import type { CSSProperties } from "react";
 import { filterNodesByType, pipelineGraphToFlow } from "#lib/adapter";
 import { getNodeColor } from "#lib/colors";
 import { applyLayout } from "#lib/layout";
 import {
-  applyNodeChanges,
   Background,
   Controls,
   MiniMap,
@@ -93,21 +92,7 @@ export const PipelineGraph = memo(({
     return { layoutedNodes: positioned, layoutedEdges: filteredEdges };
   }, [allNodes, allEdges, visibleTypes]);
 
-  const [nodes, setNodes] = useState<PipelineFlowNode[]>([]);
-
-  const layoutKeyRef = useRef<string>("");
-
-  const currentLayoutKey = layoutedNodes.map((n) => n.id).join(",");
-  if (currentLayoutKey !== layoutKeyRef.current) {
-    layoutKeyRef.current = currentLayoutKey;
-    setNodes(layoutedNodes);
-  }
-
-  const onNodesChange: OnNodesChange<PipelineFlowNode> = useCallback((changes) => {
-    setNodes((nds) => applyNodeChanges(changes, nds));
-  }, []);
-
-  const isDraggingRef = useRef(false);
+  const nodes = layoutedNodes;
 
   const handleToggleType = useCallback((type: PipelineGraphNodeType) => {
     setVisibleTypes((prev) => {
@@ -123,21 +108,8 @@ export const PipelineGraph = memo(({
     });
   }, []);
 
-  const handleNodeDragStart = useCallback(() => {
-    isDraggingRef.current = true;
-  }, []);
-
-  const handleNodeDragStop = useCallback(() => {
-    setTimeout(() => {
-      isDraggingRef.current = false;
-    }, 0);
-  }, []);
-
   const handleNodeClick: NodeMouseHandler<PipelineFlowNode> = useCallback(
     (_event, node) => {
-      if (isDraggingRef.current) {
-        return;
-      }
       const pipelineNode = node.data?.pipelineNode ?? null;
       setSelectedNode(pipelineNode);
       onNodeSelect?.(pipelineNode);
@@ -170,10 +142,7 @@ export const PipelineGraph = memo(({
         <ReactFlow
           nodes={nodes}
           edges={layoutedEdges}
-          onNodesChange={onNodesChange}
           onNodeClick={handleNodeClick}
-          onNodeDragStart={handleNodeDragStart}
-          onNodeDragStop={handleNodeDragStop}
           onPaneClick={handlePaneClick}
           nodeTypes={nodeTypes}
           fitView
@@ -181,6 +150,8 @@ export const PipelineGraph = memo(({
           minZoom={0.1}
           maxZoom={2}
           proOptions={proOptions}
+          nodesDraggable={false}
+          nodesConnectable={false}
         >
           <Background />
           <Controls />
