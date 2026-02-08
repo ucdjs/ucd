@@ -28,7 +28,9 @@
   "exports": {
     ".": "./dist/index.mjs",
     "./components/shiki-code": "./dist/components/shiki-code.mjs",
-    "./hooks/use-mobile": "./dist/hooks/use-mobile.mjs",
+    "./components/theme-toggle": "./dist/components/theme-toggle.mjs",
+    "./hooks": "./dist/hooks/index.mjs",
+    "./lib/theme-script": "./dist/lib/theme-script.mjs",
     "./lib/utils": "./dist/lib/utils.mjs",
     "./ui/alert-dialog": "./dist/ui/alert-dialog.mjs",
     "./ui/avatar": "./dist/ui/avatar.mjs",
