@@ -27,7 +27,7 @@ export const Route = createFileRoute("/pipelines/$file/$id")({
 });
 
 function PipelineDetailLayout() {
-  const { file, id } = useParams({ from: "/pipelines/$file/$id" });
+  const { id } = useParams({ from: "/pipelines/$file/$id" });
   const data = useLoaderData({ from: "/pipelines/$file/$id" });
   const pipeline = data.pipeline;
   const { selectedVersions, toggleVersion, selectAll, deselectAll } = usePipelineVersions(

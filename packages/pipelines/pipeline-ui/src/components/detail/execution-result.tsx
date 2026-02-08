@@ -83,8 +83,8 @@ export function ExecutionResult({
       {/* Detailed errors list */}
       {result.errors && result.errors.length > 0 && (
         <div className="mt-3 space-y-1">
-          {result.errors.map((err, i) => (
-            <div key={i} className="text-xs">
+          {result.errors.map((err) => (
+            <div key={`${err.scope}-${err.message}`} className="text-xs">
               <span className="text-destructive">
                 [
                 {err.scope}
@@ -171,8 +171,8 @@ export function ExecutionErrors({
 
   return (
     <div className={cn("space-y-1", className)}>
-      {errors.map((err, i) => (
-        <div key={i} className="text-xs">
+      {errors.map((err) => (
+        <div key={`${err.scope}-${err.message}`} className="text-xs">
           <span className="text-destructive">
             [
             {err.scope}
