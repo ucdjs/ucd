@@ -10,6 +10,7 @@ export interface FullPipelineOptions {
   strict?: boolean;
 }
 
+// eslint-disable-next-line ts/explicit-function-return-type
 export function createFullPipeline(options: FullPipelineOptions) {
   const {
     id = "full-ucd",

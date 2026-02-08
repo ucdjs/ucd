@@ -10,6 +10,7 @@ export interface BasicPipelineOptions {
   strict?: boolean;
 }
 
+// eslint-disable-next-line ts/explicit-function-return-type
 export function createBasicPipeline(options: BasicPipelineOptions) {
   const {
     id = "basic-ucd",

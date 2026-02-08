@@ -40,6 +40,7 @@ export interface SortOptions {
   keyFn?: (row: ParsedRow) => number;
 }
 
+// eslint-disable-next-line ts/explicit-function-return-type
 export function createSortTransform(options: SortOptions = {}) {
   const { direction = "asc", keyFn = getRowSortKey } = options;
   const multiplier = direction === "asc" ? 1 : -1;

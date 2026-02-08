@@ -37,6 +37,7 @@ export interface DeduplicateOptions {
   keyFn?: (row: ParsedRow) => string;
 }
 
+// eslint-disable-next-line ts/explicit-function-return-type
 export function createDeduplicateTransform(options: DeduplicateOptions = {}) {
   const { strategy = "first", keyFn = getRowKey } = options;
 

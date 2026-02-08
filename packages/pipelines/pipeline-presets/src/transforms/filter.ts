@@ -7,6 +7,7 @@ export interface RowFilterOptions {
   kind?: ParsedRow["kind"] | ParsedRow["kind"][];
 }
 
+// eslint-disable-next-line ts/explicit-function-return-type
 export function createRowFilter(options: RowFilterOptions) {
   return definePipelineTransform<ParsedRow, ParsedRow>({
     id: "row-filter",
@@ -52,6 +53,7 @@ export function createRowFilter(options: RowFilterOptions) {
   });
 }
 
+// eslint-disable-next-line ts/explicit-function-return-type
 export function createFilterByPipelineFilter(filter: PipelineFilter) {
   return definePipelineTransform<ParsedRow, ParsedRow>({
     id: "filter-by-pipeline-filter",

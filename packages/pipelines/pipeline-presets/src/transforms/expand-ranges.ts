@@ -37,6 +37,7 @@ export interface ExpandRangesOptions {
   maxExpansion?: number;
 }
 
+// eslint-disable-next-line ts/explicit-function-return-type
 export function createExpandRangesTransform(options: ExpandRangesOptions = {}) {
   const { maxExpansion = 10000 } = options;
 

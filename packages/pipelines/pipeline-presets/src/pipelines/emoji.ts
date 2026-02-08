@@ -10,6 +10,7 @@ export interface EmojiPipelineOptions {
   strict?: boolean;
 }
 
+// eslint-disable-next-line ts/explicit-function-return-type
 export function createEmojiPipeline(options: EmojiPipelineOptions) {
   const {
     id = "emoji",

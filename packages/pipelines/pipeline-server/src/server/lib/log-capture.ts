@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import type { Database } from "#server/db";
 import type { ExecutionLogPayload, ExecutionLogStream } from "#server/db/schema";
 import { buildTruncationBanner, createExecutionLogState, storeExecutionLog } from "#server/lib/execution-logs";

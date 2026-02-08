@@ -91,6 +91,7 @@ describe("createPipelineExecutor", () => {
   });
 
   it("should accept pipelines and optional artifacts", () => {
+    // eslint-disable-next-line unused-imports/no-unused-vars
     const pipeline = definePipeline({
       id: "test",
       name: "Test",
@@ -315,7 +316,10 @@ describe("pipeline events", () => {
     });
 
     const executor = createPipelineExecutor({
-      onEvent: (event) => { events.push(event); return undefined; },
+      onEvent: (event) => {
+        events.push(event);
+        return undefined;
+      },
     });
 
     await executor.run([pipeline as any]);
@@ -337,7 +341,10 @@ describe("pipeline events", () => {
     });
 
     const executor = createPipelineExecutor({
-      onEvent: (event) => { events.push(event); return undefined; },
+      onEvent: (event) => {
+        events.push(event);
+        return undefined;
+      },
     });
 
     await executor.run([pipeline as any]);
@@ -361,7 +368,10 @@ describe("pipeline events", () => {
     });
 
     const executor = createPipelineExecutor({
-      onEvent: (event) => { events.push(event); return undefined; },
+      onEvent: (event) => {
+        events.push(event);
+        return undefined;
+      },
     });
 
     await executor.run([pipeline as any]);
@@ -629,7 +639,10 @@ describe("error handling", () => {
     });
 
     const executor = createPipelineExecutor({
-      onEvent: (event) => { events.push(event); return undefined; },
+      onEvent: (event) => {
+        events.push(event);
+        return undefined;
+      },
     });
 
     await executor.run([pipeline]);
@@ -677,7 +690,10 @@ describe("caching", () => {
 
     const executor = createPipelineExecutor({
       cacheStore,
-      onEvent: (event) => { events.push(event); return undefined; },
+      onEvent: (event) => {
+        events.push(event);
+        return undefined;
+      },
     });
 
     await executor.run([pipeline], { cache: true });
@@ -730,7 +746,10 @@ describe("caching", () => {
 
     const executor = createPipelineExecutor({
       cacheStore,
-      onEvent: (event) => { events.push(event); return undefined; },
+      onEvent: (event) => {
+        events.push(event);
+        return undefined;
+      },
     });
 
     await executor.run([pipeline as any], { cache: false });
@@ -925,7 +944,12 @@ describe("fallback route", () => {
       },
     }) as any;
 
-    const executor = createPipelineExecutor({ onEvent: (event) => { events.push(event); return undefined; } });
+    const executor = createPipelineExecutor({
+      onEvent: (event) => {
+        events.push(event);
+        return undefined;
+      },
+    });
 
     await executor.run([pipeline as any]);
 

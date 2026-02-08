@@ -22,6 +22,7 @@ export function createStandardParser(options: StandardParserOptions = {}): Parse
 
   return async function* standardParser(ctx: ParseContext): AsyncIterable<ParsedRow> {
     for await (const line of ctx.readLines()) {
+      // eslint-disable-next-line no-console
       console.log(`Parsing line: ${line}`);
       if (ctx.isComment(line)) {
         console.error(`Skipping comment line: ${line}`);

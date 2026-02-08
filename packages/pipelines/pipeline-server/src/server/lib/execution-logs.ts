@@ -1,5 +1,6 @@
 import type { Database } from "#server/db";
 import type { ExecutionLogPayload, ExecutionLogStream } from "#server/db/schema";
+import { Buffer } from "node:buffer";
 import { randomUUID } from "node:crypto";
 import { schema } from "#server/db";
 

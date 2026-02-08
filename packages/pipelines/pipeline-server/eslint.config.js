@@ -32,4 +32,8 @@ export default luxass({
       ],
     }],
   },
+}).append({
+  ignores: [
+    "./src/client/routeTree.gen.ts",
+  ],
 });
