@@ -93,10 +93,12 @@
   "devDependencies": {
     "@eslint-react/eslint-plugin": "catalog:linting",
     "@luxass/eslint-config": "catalog:linting",
+    "@rollup/plugin-babel": "catalog:build",
     "@types/react": "catalog:types",
     "@types/react-dom": "catalog:types",
     "@ucdjs-tooling/tsconfig": "workspace:*",
     "@ucdjs-tooling/tsdown-config": "workspace:*",
+    "babel-plugin-react-compiler": "catalog:build",
     "eslint": "catalog:linting",
     "eslint-plugin-format": "catalog:linting",
     "eslint-plugin-react-hooks": "catalog:linting",
