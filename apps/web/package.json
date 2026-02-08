@@ -18,8 +18,6 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@base-ui/react": "catalog:web",
-    "@fontsource-variable/inter": "catalog:web",
     "@tanstack/react-devtools": "catalog:web",
     "@tanstack/react-form": "catalog:web",
     "@tanstack/react-query": "catalog:web",
@@ -32,14 +30,9 @@
     "@ucdjs/schemas": "workspace:*",
     "@ucdjs/ucd-store": "workspace:*",
     "@unicode-utils/core": "catalog:prod",
-    "class-variance-authority": "catalog:web",
-    "clsx": "catalog:web",
     "lucide-react": "catalog:web",
     "react": "catalog:web",
     "react-dom": "catalog:web",
-    "shadcn": "catalog:web",
-    "tailwind-merge": "catalog:web",
-    "tw-animate-css": "catalog:web",
     "zod": "catalog:prod"
   },
   "devDependencies": {
