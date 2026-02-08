@@ -41,6 +41,20 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  --shiki-background: var(--card);
+  --shiki-foreground: var(--card-foreground);
+  --shiki-token-comment: #6b7280;
+  --shiki-token-string: #0f766e;
+  --shiki-token-string-expression: #0e7490;
+  --shiki-token-constant: #c2410c;
+  --shiki-token-keyword: #1d4ed8;
+  --shiki-token-parameter: #334155;
+  --shiki-token-function: #0369a1;
+  --shiki-token-punctuation: #94a3b8;
+  --shiki-token-link: #2563eb;
+  --shiki-token-inserted: #15803d;
+  --shiki-token-deleted: #b91c1c;
+  --shiki-token-changed: #a16207;
 }
 
 .dark {
@@ -75,6 +89,20 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+  --shiki-background: var(--card);
+  --shiki-foreground: var(--card-foreground);
+  --shiki-token-comment: #94a3b8;
+  --shiki-token-string: #2dd4bf;
+  --shiki-token-string-expression: #22d3ee;
+  --shiki-token-constant: #fb923c;
+  --shiki-token-keyword: #60a5fa;
+  --shiki-token-parameter: #cbd5e1;
+  --shiki-token-function: #38bdf8;
+  --shiki-token-punctuation: #64748b;
+  --shiki-token-link: #93c5fd;
+  --shiki-token-inserted: #4ade80;
+  --shiki-token-deleted: #f87171;
+  --shiki-token-changed: #fbbf24;
 }
 
 @theme inline {
@@ -118,6 +146,7 @@
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
 }
+
 
 @layer base {
   * {
