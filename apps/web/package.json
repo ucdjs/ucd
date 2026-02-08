@@ -56,7 +56,7 @@
     "@ucdjs-tooling/tsconfig": "workspace:*",
     "@ucdjs/env": "workspace:*",
     "@vitejs/plugin-react": "catalog:web",
-    "babel-plugin-react-compiler": "catalog:web",
+    "babel-plugin-react-compiler": "catalog:build",
     "eslint": "catalog:linting",
     "eslint-plugin-format": "catalog:linting",
     "nitro": "catalog:web",
