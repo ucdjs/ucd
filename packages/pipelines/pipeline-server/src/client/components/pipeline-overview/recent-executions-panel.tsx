@@ -8,9 +8,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@ucdjs-internal/shared-ui/ui/card";
+import { StatusIcon } from "@ucdjs/pipelines-ui";
 import { Play } from "lucide-react";
-import { StatusBadge } from "./status-badge";
-import { StatusIcon } from "./status-icon";
 
 interface RecentExecutionsPanelProps {
   executions: Execution[];
@@ -66,12 +65,9 @@ export function RecentExecutionsPanel({ executions }: RecentExecutionsPanelProps
                     <div className="flex items-center gap-3 min-w-0">
                       <StatusIcon status={execution.status} />
                       <div className="min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono text-sm font-medium truncate">
-                            {execution.id}
-                          </span>
-                          <StatusBadge status={execution.status} />
-                        </div>
+                        <span className="font-mono text-sm font-medium truncate">
+                          {execution.id}
+                        </span>
                         <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <span>{formatTimeAgo(execution.startedAt)}</span>
                           <span>•</span>
@@ -88,7 +84,7 @@ export function RecentExecutionsPanel({ executions }: RecentExecutionsPanelProps
                     <Link
                       to="/pipelines/$file/$id/executions/$executionId"
                       params={{ file, id: pipelineId, executionId: execution.id }}
-                      className="text-xs text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity hover:underline shrink-0 ml-4"
+                      className="text-xs text-primary font-medium hover:underline shrink-0 ml-4"
                     >
                       View
                     </Link>

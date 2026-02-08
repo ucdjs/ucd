@@ -1,4 +1,3 @@
-import type { Execution } from "#lib/pipeline-executions";
 import { fetchExecutions, formatDuration, formatTimeAgo } from "#lib/pipeline-executions";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
@@ -11,44 +10,8 @@ import {
   TableHeader,
   TableRow,
 } from "@ucdjs-internal/shared-ui/ui/table";
-import { useExecute } from "@ucdjs/pipelines-ui";
-import { CheckCircle2, Circle, Clock, Play, XCircle } from "lucide-react";
-
-function StatusIcon({ status }: { status: Execution["status"] }) {
-  switch (status) {
-    case "completed":
-      return <CheckCircle2 className="h-4 w-4 text-green-500" />;
-    case "failed":
-      return <XCircle className="h-4 w-4 text-red-500" />;
-    case "running":
-      return <Clock className="h-4 w-4 text-yellow-500 animate-pulse" />;
-    default:
-      return <Circle className="h-4 w-4 text-gray-400" />;
-  }
-}
-
-function StatusBadge({ status }: { status: Execution["status"] }) {
-  switch (status) {
-    case "completed":
-      return (
-        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-          Success
-        </Badge>
-      );
-    case "failed":
-      return (
-        <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
-          Failed
-        </Badge>
-      );
-    case "running":
-      return (
-        <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
-          Running
-        </Badge>
-      );
-  }
-}
+import { StatusIcon, useExecute } from "@ucdjs/pipelines-ui";
+import { Play } from "lucide-react";
 
 export const Route = createFileRoute("/pipelines/$file/$id/executions/")({
   component: ExecutionsListPage,
@@ -115,8 +78,7 @@ function ExecutionsListPage() {
                       <TableHead>When</TableHead>
                       <TableHead>Duration</TableHead>
                       <TableHead>Versions</TableHead>
-                      <TableHead className="text-right">Routes</TableHead>
-                      <TableHead className="text-right">Graph</TableHead>
+                      <TableHead>Routes</TableHead>
                       <TableHead className="w-20"></TableHead>
                     </TableRow>
                   </TableHeader>
@@ -126,7 +88,6 @@ function ExecutionsListPage() {
                         <TableCell>
                           <div className="flex items-center gap-2">
                             <StatusIcon status={execution.status} />
-                            <StatusBadge status={execution.status} />
                           </div>
                         </TableCell>
                         <TableCell>
@@ -155,7 +116,7 @@ function ExecutionsListPage() {
                                 <span className="text-muted-foreground text-sm">-</span>
                               )}
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell>
                           {execution.summary && "totalRoutes" in execution.summary
                             ? (
                                 <span className="text-sm">
@@ -173,22 +134,11 @@ function ExecutionsListPage() {
                                 <span className="text-muted-foreground text-sm">-</span>
                               )}
                         </TableCell>
-                        <TableCell className="text-right">
-                          {execution.hasGraph
-                            ? (
-                                <Badge variant="secondary" className="text-xs">
-                                  Graph
-                                </Badge>
-                              )
-                            : (
-                                <span className="text-muted-foreground text-sm">-</span>
-                              )}
-                        </TableCell>
                         <TableCell>
                           <Link
                             to="/pipelines/$file/$id/executions/$executionId"
                             params={{ file, id: pipelineId, executionId: execution.id }}
-                            className="text-primary text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity hover:underline"
+                            className="text-primary text-sm font-medium hover:underline"
                           >
                             View
                           </Link>

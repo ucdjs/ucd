@@ -93,6 +93,7 @@ describe("createPipelineExecutor", () => {
   it("should accept pipelines and optional artifacts", () => {
     const pipeline = definePipeline({
       id: "test",
+      name: "Test",
       versions: ["16.0.0"],
       inputs: [createTestSource([])],
       routes: [],
@@ -151,6 +152,7 @@ describe("executor.run", () => {
 
     pipeline = definePipeline({
       id: "test-pipeline",
+      name: "Test Pipeline",
       versions: ["16.0.0"],
       inputs: [source],
       routes,
@@ -162,25 +164,19 @@ describe("executor.run", () => {
   it("should run all pipelines and return results", async () => {
     const result = await executor.run([pipeline as any]);
 
-    expect(result.results).toBeInstanceOf(Map);
-    expect(result.results.size).toBe(1);
-    expect(result.results.has("test-pipeline")).toBe(true);
+    expect(result.length).toBe(1);
+    expect(result.some((item) => item.id === "test-pipeline")).toBe(true);
   });
 
   it("should return summary with pipeline counts", async () => {
     const result = await executor.run([pipeline as any]);
 
-    expect(result.summary).toEqual({
-      totalPipelines: 1,
-      successfulPipelines: 1,
-      failedPipelines: 0,
-      durationMs: expect.any(Number),
-    });
+    expect(result.length).toBe(1);
   });
 
   it("should process files matching routes", async () => {
     const result = await executor.run([pipeline as any]);
-    const pipelineResult = result.results.get("test-pipeline")!;
+    const pipelineResult = result.find((item) => item.id === "test-pipeline")!;
 
     expect(pipelineResult.data.length).toBe(2);
   });
@@ -188,18 +184,18 @@ describe("executor.run", () => {
   it("should run provided pipelines", async () => {
     const result = await executor.run([pipeline as any]);
 
-    expect(result.results.has("test-pipeline")).toBe(true);
+    expect(result.some((item) => item.id === "test-pipeline")).toBe(true);
   });
 
   it("should return empty results when no pipelines provided", async () => {
     const result = await executor.run([]);
 
-    expect(result.results.size).toBe(0);
+    expect(result.length).toBe(0);
   });
 
   it("should filter versions when specified", async () => {
     const result = await executor.run([pipeline as any], { versions: ["16.0.0"] });
-    const pipelineResult = result.results.get("test-pipeline")!;
+    const pipelineResult = result.find((item) => item.id === "test-pipeline")!;
 
     expect(pipelineResult.summary.versions).toEqual(["16.0.0"]);
   });
@@ -220,6 +216,7 @@ describe("running single pipeline via run()", () => {
 
     pipeline = definePipeline({
       id: "test-pipeline",
+      name: "Test Pipeline",
       versions: ["16.0.0"],
       inputs: [source],
       routes: [route],
@@ -230,7 +227,7 @@ describe("running single pipeline via run()", () => {
 
   it("should run a single pipeline", async () => {
     const multi = await executor.run([pipeline]);
-    const result = multi.results.get("test-pipeline")!;
+    const result = multi.find((item) => item.id === "test-pipeline")!;
 
     expect(result).toBeDefined();
     expect(result.data).toBeDefined();
@@ -241,7 +238,7 @@ describe("running single pipeline via run()", () => {
 
   it("should return pipeline run result", async () => {
     const multi = await executor.run([pipeline]);
-    const result = multi.results.get("test-pipeline")!;
+    const result = multi.find((item) => item.id === "test-pipeline")!;
 
     expect(result.data.length).toBeGreaterThan(0);
     expect(result.errors).toEqual([]);
@@ -249,7 +246,7 @@ describe("running single pipeline via run()", () => {
 
   it("should accept version filter", async () => {
     const multi = await executor.run([pipeline], { versions: ["16.0.0"] });
-    const result = multi.results.get("test-pipeline")!;
+    const result = multi.find((item) => item.id === "test-pipeline")!;
 
     expect(result.summary.versions).toEqual(["16.0.0"]);
   });
@@ -259,6 +256,7 @@ describe("running single pipeline via run()", () => {
 
     const cachedPipeline = definePipeline({
       id: "cached-pipeline",
+      name: "Cached Pipeline",
       versions: ["16.0.0"],
       inputs: [createTestSource(files, contents)],
       routes: [createTestRoute("line-break", (ctx) => ctx.file.name === "LineBreak.txt")],
@@ -274,7 +272,7 @@ describe("running single pipeline via run()", () => {
 
   it("should return empty results for unknown pipeline", async () => {
     const multi = await executor.run([]);
-    expect(multi.results.size).toBe(0);
+    expect(multi.length).toBe(0);
   });
 });
 
@@ -287,6 +285,7 @@ describe("pipeline events", () => {
 
     const pipeline = definePipeline({
       id: "event-test",
+      name: "Event Test",
       versions: ["16.0.0"],
       inputs: [createTestSource([createMockFile("Test.txt")], { "ucd/Test.txt": "0041;A" })],
       routes: [createTestRoute("test", () => true)],
@@ -299,6 +298,9 @@ describe("pipeline events", () => {
     const eventTypes = events.map((e) => e.type);
     expect(eventTypes).toContain("pipeline:start");
     expect(eventTypes).toContain("pipeline:end");
+    for (const event of events) {
+      expect(event.spanId).toBeTruthy();
+    }
   });
 
   it("should emit version:start and version:end events", async () => {
@@ -306,6 +308,7 @@ describe("pipeline events", () => {
 
     const pipeline = definePipeline({
       id: "version-events",
+      name: "Version Events",
       versions: ["16.0.0"],
       inputs: [createTestSource([createMockFile("Test.txt")], { "ucd/Test.txt": "0041;A" })],
       routes: [createTestRoute("test", () => true)],
@@ -327,6 +330,7 @@ describe("pipeline events", () => {
 
     const pipeline = definePipeline({
       id: "parse-events",
+      name: "Parse Events",
       versions: ["16.0.0"],
       inputs: [createTestSource([createMockFile("Test.txt")], { "ucd/Test.txt": "0041;A" })],
       routes: [createTestRoute("test", () => true)],
@@ -350,6 +354,7 @@ describe("pipeline events", () => {
 
     const pipeline = definePipeline({
       id: "file-matched",
+      name: "File Matched",
       versions: ["16.0.0"],
       inputs: [createTestSource([createMockFile("Test.txt")], { "ucd/Test.txt": "0041;A" })],
       routes: [createTestRoute("test", () => true)],
@@ -370,6 +375,7 @@ describe("pipeline graph", () => {
   it("should build graph with source nodes", async () => {
     const pipeline = definePipeline({
       id: "graph-test",
+      name: "Graph Test",
       versions: ["16.0.0"],
       inputs: [createTestSource([createMockFile("Test.txt")], { "ucd/Test.txt": "0041;A" })],
       routes: [createTestRoute("test", () => true)],
@@ -377,7 +383,7 @@ describe("pipeline graph", () => {
 
     const executor = createPipelineExecutor({});
     const multi = await executor.run([pipeline]);
-    const result = multi.results.get("graph-test")!;
+    const result = multi.find((item) => item.id === "graph-test")!;
 
     const sourceNodes = result.graph.nodes.filter((n) => n.type === "source");
     expect(sourceNodes.length).toBe(1);
@@ -386,6 +392,7 @@ describe("pipeline graph", () => {
   it("should build graph with file nodes", async () => {
     const pipeline = definePipeline({
       id: "graph-files",
+      name: "Graph Files",
       versions: ["16.0.0"],
       inputs: [createTestSource([createMockFile("Test.txt")], { "ucd/Test.txt": "0041;A" })],
       routes: [createTestRoute("test", () => true)],
@@ -393,7 +400,7 @@ describe("pipeline graph", () => {
 
     const executor = createPipelineExecutor({});
     const multi = await executor.run([pipeline]);
-    const result = multi.results.get("graph-files")!;
+    const result = multi.find((item) => item.id === "graph-files")!;
 
     const fileNodes = result.graph.nodes.filter((n) => n.type === "file");
     expect(fileNodes.length).toBe(1);
@@ -402,6 +409,7 @@ describe("pipeline graph", () => {
   it("should build graph with route nodes", async () => {
     const pipeline = definePipeline({
       id: "graph-routes",
+      name: "Graph Routes",
       versions: ["16.0.0"],
       inputs: [createTestSource([createMockFile("Test.txt")], { "ucd/Test.txt": "0041;A" })],
       routes: [createTestRoute("test", () => true)],
@@ -409,7 +417,7 @@ describe("pipeline graph", () => {
 
     const executor = createPipelineExecutor({});
     const multi = await executor.run([pipeline]);
-    const result = multi.results.get("graph-routes")!;
+    const result = multi.find((item) => item.id === "graph-routes")!;
 
     const routeNodes = result.graph.nodes.filter((n) => n.type === "route");
     expect(routeNodes.length).toBe(1);
@@ -418,6 +426,7 @@ describe("pipeline graph", () => {
   it("should build graph with output nodes", async () => {
     const pipeline = definePipeline({
       id: "graph-outputs",
+      name: "Graph Outputs",
       versions: ["16.0.0"],
       inputs: [createTestSource([createMockFile("Test.txt")], { "ucd/Test.txt": "0041;A" })],
       routes: [createTestRoute("test", () => true)],
@@ -425,7 +434,7 @@ describe("pipeline graph", () => {
 
     const executor = createPipelineExecutor({});
     const multi = await executor.run([pipeline]);
-    const result = multi.results.get("graph-outputs")!;
+    const result = multi.find((item) => item.id === "graph-outputs")!;
 
     const outputNodes = result.graph.nodes.filter((n) => n.type === "output");
     expect(outputNodes.length).toBeGreaterThan(0);
@@ -434,6 +443,7 @@ describe("pipeline graph", () => {
   it("should build graph with edges", async () => {
     const pipeline = definePipeline({
       id: "graph-edges",
+      name: "Graph Edges",
       versions: ["16.0.0"],
       inputs: [createTestSource([createMockFile("Test.txt")], { "ucd/Test.txt": "0041;A" })],
       routes: [createTestRoute("test", () => true)],
@@ -441,7 +451,7 @@ describe("pipeline graph", () => {
 
     const executor = createPipelineExecutor({});
     const multi = await executor.run([pipeline]);
-    const result = multi.results.get("graph-edges")!;
+    const result = multi.find((item) => item.id === "graph-edges")!;
 
     expect(result.graph.edges.length).toBeGreaterThan(0);
   });
@@ -462,6 +472,7 @@ describe("pipeline summary", () => {
 
     const pipeline = definePipeline({
       id: "summary-total",
+      name: "Summary Total",
       versions: ["16.0.0"],
       inputs: [createTestSource(files, contents)],
       routes: [createTestRoute("all", () => true)],
@@ -469,7 +480,7 @@ describe("pipeline summary", () => {
 
     const executor = createPipelineExecutor({});
     const multi = await executor.run([pipeline]);
-    const result = multi.results.get("summary-total")!;
+    const result = multi.find((item) => item.id === "summary-total")!;
 
     expect(result.summary.totalFiles).toBe(3);
   });
@@ -488,6 +499,7 @@ describe("pipeline summary", () => {
 
     const pipeline = definePipeline({
       id: "summary-matched",
+      name: "Summary Matched",
       versions: ["16.0.0"],
       inputs: [createTestSource(files, contents)],
       routes: [createTestRoute("match", (ctx) => ctx.file.name.startsWith("Match"))],
@@ -495,7 +507,7 @@ describe("pipeline summary", () => {
 
     const executor = createPipelineExecutor({});
     const multi = await executor.run([pipeline]);
-    const result = multi.results.get("summary-matched")!;
+    const result = multi.find((item) => item.id === "summary-matched")!;
 
     expect(result.summary.matchedFiles).toBe(2);
   });
@@ -512,6 +524,7 @@ describe("pipeline summary", () => {
 
     const pipeline = definePipeline({
       id: "summary-skipped",
+      name: "Summary Skipped",
       versions: ["16.0.0"],
       inputs: [createTestSource(files, contents)],
       routes: [createTestRoute("process", (ctx) => ctx.file.name === "Process.txt")],
@@ -519,7 +532,7 @@ describe("pipeline summary", () => {
 
     const executor = createPipelineExecutor({});
     const multi = await executor.run([pipeline]);
-    const result = multi.results.get("summary-skipped")!;
+    const result = multi.find((item) => item.id === "summary-skipped")!;
 
     expect(result.summary.skippedFiles).toBe(1);
   });
@@ -527,6 +540,7 @@ describe("pipeline summary", () => {
   it("should track duration", async () => {
     const pipeline = definePipeline({
       id: "summary-duration",
+      name: "Summary Duration",
       versions: ["16.0.0"],
       inputs: [createTestSource([createMockFile("Test.txt")], { "ucd/Test.txt": "0041;A" })],
       routes: [createTestRoute("test", () => true)],
@@ -534,7 +548,7 @@ describe("pipeline summary", () => {
 
     const executor = createPipelineExecutor({});
     const multi = await executor.run([pipeline]);
-    const result = multi.results.get("summary-duration")!;
+    const result = multi.find((item) => item.id === "summary-duration")!;
 
     expect(result.summary.durationMs).toBeGreaterThanOrEqual(0);
   });
@@ -551,6 +565,7 @@ describe("pipeline summary", () => {
 
     const pipeline = definePipeline({
       id: "summary-outputs",
+      name: "Summary Outputs",
       versions: ["16.0.0"],
       inputs: [createTestSource(files, contents)],
       routes: [createTestRoute("all", () => true)],
@@ -558,7 +573,7 @@ describe("pipeline summary", () => {
 
     const executor = createPipelineExecutor({});
     const multi = await executor.run([pipeline]);
-    const result = multi.results.get("summary-outputs")!;
+    const result = multi.find((item) => item.id === "summary-outputs")!;
 
     expect(result.summary.totalOutputs).toBe(2);
   });
@@ -577,6 +592,7 @@ describe("error handling", () => {
 
     const pipeline = definePipeline({
       id: "error-test",
+      name: "Error Test",
       versions: ["16.0.0"],
       inputs: [createTestSource([createMockFile("Test.txt")], { "ucd/Test.txt": "0041;A" })],
       routes: [failingRoute],
@@ -584,7 +600,7 @@ describe("error handling", () => {
 
     const executor = createPipelineExecutor({});
     const multi = await executor.run([pipeline]);
-    const result = multi.results.get("error-test")!;
+    const result = multi.find((item) => item.id === "error-test")!;
 
     expect(result.errors.length).toBeGreaterThan(0);
     const firstError = result.errors[0]!;
@@ -606,6 +622,7 @@ describe("error handling", () => {
 
     const pipeline = definePipeline({
       id: "error-events",
+      name: "Error Events",
       versions: ["16.0.0"],
       inputs: [createTestSource([createMockFile("Test.txt")], { "ucd/Test.txt": "0041;A" })],
       routes: [failingRoute],
@@ -624,6 +641,7 @@ describe("error handling", () => {
   it("should handle pipeline without inputs gracefully", async () => {
     const pipeline = definePipeline({
       id: "no-inputs",
+      name: "No Inputs",
       versions: ["16.0.0"],
       inputs: [],
       routes: [],
@@ -632,7 +650,7 @@ describe("error handling", () => {
     const executor = createPipelineExecutor({});
 
     const multi = await executor.run([pipeline as any]);
-    const result = multi.results.get("no-inputs")!;
+    const result = multi.find((item) => item.id === "no-inputs")!;
     expect(result.errors.length).toBeGreaterThan(0);
     const firstError = result.errors[0]!;
     expect(firstError.message).toContain("Pipeline requires at least one input source");
@@ -651,6 +669,7 @@ describe("caching", () => {
 
     const pipeline = definePipeline({
       id: "cache-test",
+      name: "Cache Test",
       versions: ["16.0.0"],
       inputs: [createTestSource([createMockFile("Test.txt")], { "ucd/Test.txt": "0041;A" })],
       routes: [createTestRoute("test", () => true)],
@@ -674,6 +693,7 @@ describe("caching", () => {
 
     const pipeline = definePipeline({
       id: "cache-hit-test",
+      name: "Cache Hit Test",
       versions: ["16.0.0"],
       inputs: [createTestSource([createMockFile("Test.txt")], { "ucd/Test.txt": "0041;A" })],
       routes: [createTestRoute("test", () => true)],
@@ -681,7 +701,10 @@ describe("caching", () => {
 
     const executor = createPipelineExecutor({
       cacheStore,
-      onEvent: (event) => { events.push(event); return undefined; },
+      onEvent: (event) => {
+        events.push(event);
+        return undefined;
+      },
     });
 
     await executor.run([pipeline], { cache: true });
@@ -699,6 +722,7 @@ describe("caching", () => {
 
     const pipeline = definePipeline({
       id: "cache-disabled",
+      name: "Cache Disabled",
       versions: ["16.0.0"],
       inputs: [createTestSource([createMockFile("Test.txt")], { "ucd/Test.txt": "0041;A" })],
       routes: [createTestRoute("test", () => true)],
@@ -725,6 +749,7 @@ describe("multiple pipelines", () => {
 
     const pipeline1 = definePipeline({
       id: "pipeline-1",
+      name: "Pipeline 1",
       versions: ["16.0.0"],
       inputs: [createTestSource(files, contents)],
       routes: [createTestRoute("route-1", () => true)],
@@ -732,6 +757,7 @@ describe("multiple pipelines", () => {
 
     const pipeline2 = definePipeline({
       id: "pipeline-2",
+      name: "Pipeline 2",
       versions: ["16.0.0"],
       inputs: [createTestSource(files, contents)],
       routes: [createTestRoute("route-2", () => true)],
@@ -741,9 +767,9 @@ describe("multiple pipelines", () => {
 
     const result = await executor.run([pipeline1 as any, pipeline2 as any]);
 
-    expect(result.results.size).toBe(2);
-    expect(result.results.has("pipeline-1")).toBe(true);
-    expect(result.results.has("pipeline-2")).toBe(true);
+    expect(result.length).toBe(2);
+    expect(result.some((item) => item.id === "pipeline-1")).toBe(true);
+    expect(result.some((item) => item.id === "pipeline-2")).toBe(true);
   });
 
   it("should track successful and failed pipelines", async () => {
@@ -752,6 +778,7 @@ describe("multiple pipelines", () => {
 
     const successPipeline = definePipeline({
       id: "success",
+      name: "Success",
       versions: ["16.0.0"],
       inputs: [createTestSource(files, contents)],
       routes: [createTestRoute("ok", () => true)],
@@ -759,6 +786,7 @@ describe("multiple pipelines", () => {
 
     const failPipeline = definePipeline({
       id: "fail",
+      name: "Fail",
       versions: ["16.0.0"],
       inputs: [createTestSource(files, contents)],
       routes: [
@@ -777,8 +805,10 @@ describe("multiple pipelines", () => {
 
     const result = await executor.run([successPipeline as any, failPipeline as any]);
 
-    expect(result.summary.successfulPipelines).toBe(1);
-    expect(result.summary.failedPipelines).toBe(1);
+    const success = result.find((item) => item.id === "success")!;
+    const failure = result.find((item) => item.id === "fail")!;
+    expect(success.status).toBe("completed");
+    expect(failure.status).toBe("failed");
   });
 });
 
@@ -795,6 +825,7 @@ describe("strict mode", () => {
 
     const pipeline = definePipeline({
       id: "strict-test",
+      name: "Strict Test",
       versions: ["16.0.0"],
       inputs: [createTestSource(files, contents)],
       routes: [createTestRoute("matched", (ctx) => ctx.file.name === "Matched.txt")],
@@ -803,7 +834,7 @@ describe("strict mode", () => {
 
     const executor = createPipelineExecutor({});
     const multi = await executor.run([pipeline]);
-    const result = multi.results.get("strict-test")!;
+    const result = multi.find((item) => item.id === "strict-test")!;
 
     const fileErrors = result.errors.filter((e) => e.scope === "file");
     expect(fileErrors.length).toBe(1);
@@ -823,6 +854,7 @@ describe("strict mode", () => {
 
     const pipeline = definePipeline({
       id: "non-strict-test",
+      name: "Non Strict Test",
       versions: ["16.0.0"],
       inputs: [createTestSource(files, contents)],
       routes: [createTestRoute("matched", (ctx) => ctx.file.name === "Matched.txt")],
@@ -831,7 +863,7 @@ describe("strict mode", () => {
 
     const executor = createPipelineExecutor({});
     const multi = await executor.run([pipeline]);
-    const result = multi.results.get("non-strict-test")!;
+    const result = multi.find((item) => item.id === "non-strict-test")!;
 
     const fileErrors = result.errors.filter((e) => e.scope === "file");
     expect(fileErrors).toEqual([]);
@@ -851,6 +883,7 @@ describe("fallback route", () => {
 
     const pipeline = definePipeline({
       id: "fallback-test",
+      name: "Fallback Test",
       versions: ["16.0.0"],
       inputs: [createTestSource(files, contents)],
       routes: [createTestRoute("matched", (ctx) => ctx.file.name === "Matched.txt")],
@@ -864,11 +897,11 @@ describe("fallback route", () => {
           return { type: "fallback", file: ctx.file.name, entries };
         },
       },
-    }) as any;
+    });
 
     const executor = createPipelineExecutor({});
     const multi = await executor.run([pipeline]);
-    const result = multi.results.get("fallback-test")!;
+    const result = multi.find((item) => item.id === "fallback-test")!;
 
     expect(result.summary.fallbackFiles).toBe(1);
     expect(result.data.length).toBe(2);
@@ -882,6 +915,7 @@ describe("fallback route", () => {
 
     const pipeline = definePipeline({
       id: "fallback-event",
+      name: "Fallback Event",
       versions: ["16.0.0"],
       inputs: [createTestSource([createMockFile("Unmatched.txt")], { "ucd/Unmatched.txt": "0041;A" })],
       routes: [],
@@ -913,6 +947,7 @@ describe("include filter", () => {
 
     const pipeline = definePipeline({
       id: "include-test",
+      name: "Include Test",
       versions: ["16.0.0"],
       inputs: [createTestSource(files, contents)],
       routes: [createTestRoute("all", () => true)],
@@ -921,7 +956,7 @@ describe("include filter", () => {
 
     const executor = createPipelineExecutor({});
     const multi = await executor.run([pipeline]);
-    const result = multi.results.get("include-test")!;
+    const result = multi.find((item) => item.id === "include-test")!;
 
     expect(result.summary.matchedFiles).toBe(1);
     expect(result.data.length).toBe(1);

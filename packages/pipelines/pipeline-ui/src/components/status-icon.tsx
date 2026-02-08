@@ -1,4 +1,4 @@
-import type { ExecutionStatus } from "#lib/pipeline-executions";
+import type { ExecutionStatus } from "@ucdjs/pipelines-executor";
 import { CheckCircle2, Clock, XCircle } from "lucide-react";
 
 export function StatusIcon({ status }: { status: ExecutionStatus }) {

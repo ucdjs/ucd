@@ -1,12 +1,12 @@
-import type { PipelineEvent } from "@ucdjs/pipelines-core";
 import type { PipelineSource } from "@ucdjs/pipelines-loader";
 import { randomUUID } from "node:crypto";
 import fs from "node:fs";
 import { extractDefinePipelineCode } from "#server/code";
 import { schema } from "#server/db";
 import { findPipelineByFileId, loadPipelineFileGroups } from "#server/lib/files";
+import { createExecutionLogCapture } from "#server/lib/log-capture";
 import { resolveLocalFilePath } from "#server/lib/resolve";
-import { createPipelineExecutor } from "@ucdjs/pipelines-executor";
+import { createPipelineExecutor, runWithPipelineExecutionContext } from "@ucdjs/pipelines-executor";
 import { github, gitlab } from "@ucdjs/pipelines-loader/remote";
 import { toPipelineDetails } from "@ucdjs/pipelines-ui";
 import { eq } from "drizzle-orm";
@@ -134,11 +134,11 @@ pipelinesPipelineRouter.post("/:file/:id/execute", async (event) => {
       versions,
     });
 
-    const events: PipelineEvent[] = [];
+    const logCapture = createExecutionLogCapture(db);
+    logCapture.start();
+
     const executor = createPipelineExecutor({
       onEvent: async (evt) => {
-        events.push(evt);
-
         await db.insert(schema.events).values({
           id: randomUUID(),
           executionId,
@@ -150,17 +150,19 @@ pipelinesPipelineRouter.post("/:file/:id/execute", async (event) => {
     });
 
     try {
-      const execResult = await executor.run([pipeline], {
-        versions,
-        cache,
+      const execResult = await runWithPipelineExecutionContext({ executionId }, async () => {
+        return executor.run([pipeline], {
+          versions,
+          cache,
+        });
       });
 
-      const pipelineResult = execResult.results.get(id);
+      const pipelineResult = execResult.find((result) => result.id === id);
       const completedAt = new Date();
 
       await db.update(schema.executions)
         .set({
-          status: "completed",
+          status: pipelineResult?.status ?? "failed",
           completedAt,
           summary: pipelineResult?.summary ?? null,
           graph: pipelineResult?.graph ?? null,
@@ -195,6 +197,8 @@ pipelinesPipelineRouter.post("/:file/:id/execute", async (event) => {
         executionId,
         error: errorMessage,
       };
+    } finally {
+      await logCapture.stop();
     }
   }
 

@@ -10,19 +10,13 @@ export interface PipelineSummary {
   durationMs: number;
 }
 
-export interface PipelineRunResult<TData = unknown> {
-  data: TData[];
+export type ExecutionStatus = "running" | "completed" | "failed";
+
+export interface PipelineExecutionResult {
+  id: string;
+  data: unknown[];
   graph: PipelineGraph;
   errors: PipelineError[];
   summary: PipelineSummary;
-}
-
-export interface MultiplePipelineRunResult<TData = unknown> {
-  results: Map<string, PipelineRunResult<TData>>;
-  summary: {
-    totalPipelines: number;
-    successfulPipelines: number;
-    failedPipelines: number;
-    durationMs: number;
-  };
+  status: ExecutionStatus;
 }

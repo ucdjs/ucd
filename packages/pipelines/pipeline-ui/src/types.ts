@@ -1,4 +1,5 @@
 import type { PipelineEvent, PipelineGraph } from "@ucdjs/pipelines-core";
+import type { ExecutionStatus } from "@ucdjs/pipelines-executor";
 
 export interface PipelineInfo {
   id: string;
@@ -77,4 +78,60 @@ export interface ExecuteResult {
   events?: PipelineEvent[];
   errors?: Array<{ scope: string; message: string }>;
   error?: string;
+}
+
+export type ExecutionLogStream = "stdout" | "stderr";
+
+export interface ExecutionLogPayload {
+  message: string;
+  stream: ExecutionLogStream;
+  args?: unknown[];
+  truncated?: boolean;
+  originalSize?: number;
+  event?: PipelineEvent;
+}
+
+export interface ExecutionLogItem {
+  id: string;
+  spanId: string | null;
+  stream: ExecutionLogStream;
+  message: string;
+  timestamp: string;
+  payload: ExecutionLogPayload | null;
+}
+
+export interface ExecutionLogsResponse {
+  executionId: string;
+  pipelineId: string;
+  status: ExecutionStatus;
+  logs: ExecutionLogItem[];
+  truncated: boolean;
+  capturedSize: number;
+  originalSize: number | null;
+  pagination: {
+    total: number;
+    limit: number;
+    offset: number;
+    hasMore: boolean;
+  };
+}
+
+export interface ExecutionEventItem {
+  id: string;
+  type: string;
+  timestamp: string;
+  data: PipelineEvent;
+}
+
+export interface ExecutionEventsResponse {
+  executionId: string;
+  pipelineId: string;
+  status: ExecutionStatus;
+  events: ExecutionEventItem[];
+  pagination: {
+    total: number;
+    limit: number;
+    offset: number;
+    hasMore: boolean;
+  };
 }

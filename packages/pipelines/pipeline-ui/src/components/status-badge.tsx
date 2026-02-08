@@ -1,4 +1,4 @@
-import type { ExecutionStatus } from "#lib/pipeline-executions";
+import type { ExecutionStatus } from "@ucdjs/pipelines-executor";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 
 export function StatusBadge({ status }: { status: ExecutionStatus }) {

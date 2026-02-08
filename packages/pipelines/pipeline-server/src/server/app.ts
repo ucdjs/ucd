@@ -9,6 +9,7 @@ import {
   pipelinesFileRouter,
   pipelinesGraphRouter,
   pipelinesIndexRouter,
+  pipelinesLogsRouter,
   pipelinesPipelineRouter,
 } from "#server/routes";
 import { H3, serve, serveStatic } from "h3";
@@ -73,6 +74,7 @@ export function createApp(options: AppOptions = {}): H3 {
   app.mount("/api/pipelines", pipelinesPipelineRouter);
   app.mount("/api/pipelines", pipelinesExecutionRouter);
   app.mount("/api/pipelines", pipelinesEventsRouter);
+  app.mount("/api/pipelines", pipelinesLogsRouter);
   app.mount("/api/pipelines", pipelinesGraphRouter);
 
   return app;

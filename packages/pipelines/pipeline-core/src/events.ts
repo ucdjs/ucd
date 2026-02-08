@@ -25,6 +25,7 @@ export interface PipelineStartEvent {
   id: string;
   type: "pipeline:start";
   versions: string[];
+  spanId: string;
   timestamp: number;
 }
 
@@ -32,6 +33,7 @@ export interface PipelineEndEvent {
   id: string;
   type: "pipeline:end";
   durationMs: number;
+  spanId: string;
   timestamp: number;
 }
 
@@ -39,6 +41,7 @@ export interface VersionStartEvent {
   id: string;
   type: "version:start";
   version: string;
+  spanId: string;
   timestamp: number;
 }
 
@@ -47,6 +50,7 @@ export interface VersionEndEvent {
   type: "version:end";
   version: string;
   durationMs: number;
+  spanId: string;
   timestamp: number;
 }
 
@@ -55,6 +59,7 @@ export interface ArtifactStartEvent {
   type: "artifact:start";
   artifactId: string;
   version: string;
+  spanId: string;
   timestamp: number;
 }
 
@@ -64,6 +69,7 @@ export interface ArtifactEndEvent {
   artifactId: string;
   version: string;
   durationMs: number;
+  spanId: string;
   timestamp: number;
 }
 
@@ -73,6 +79,7 @@ export interface ArtifactProducedEvent {
   artifactId: string;
   routeId: string;
   version: string;
+  spanId: string;
   timestamp: number;
 }
 
@@ -82,6 +89,7 @@ export interface ArtifactConsumedEvent {
   artifactId: string;
   routeId: string;
   version: string;
+  spanId: string;
   timestamp: number;
 }
 
@@ -90,6 +98,7 @@ export interface FileMatchedEvent {
   type: "file:matched";
   file: FileContext;
   routeId: string;
+  spanId: string;
   timestamp: number;
 }
 
@@ -98,6 +107,7 @@ export interface FileSkippedEvent {
   type: "file:skipped";
   file: FileContext;
   reason: "no-match" | "filtered";
+  spanId: string;
   timestamp: number;
 }
 
@@ -105,6 +115,7 @@ export interface FileFallbackEvent {
   id: string;
   type: "file:fallback";
   file: FileContext;
+  spanId: string;
   timestamp: number;
 }
 
@@ -113,6 +124,7 @@ export interface ParseStartEvent {
   type: "parse:start";
   file: FileContext;
   routeId: string;
+  spanId: string;
   timestamp: number;
 }
 
@@ -123,6 +135,7 @@ export interface ParseEndEvent {
   routeId: string;
   rowCount: number;
   durationMs: number;
+  spanId: string;
   timestamp: number;
 }
 
@@ -131,6 +144,7 @@ export interface ResolveStartEvent {
   type: "resolve:start";
   file: FileContext;
   routeId: string;
+  spanId: string;
   timestamp: number;
 }
 
@@ -141,6 +155,7 @@ export interface ResolveEndEvent {
   routeId: string;
   outputCount: number;
   durationMs: number;
+  spanId: string;
   timestamp: number;
 }
 
@@ -150,6 +165,7 @@ export interface CacheHitEvent {
   routeId: string;
   file: FileContext;
   version: string;
+  spanId: string;
   timestamp: number;
 }
 
@@ -159,6 +175,7 @@ export interface CacheMissEvent {
   routeId: string;
   file: FileContext;
   version: string;
+  spanId: string;
   timestamp: number;
 }
 
@@ -168,6 +185,7 @@ export interface CacheStoreEvent {
   routeId: string;
   file: FileContext;
   version: string;
+  spanId: string;
   timestamp: number;
 }
 
@@ -175,6 +193,7 @@ export interface PipelineErrorEvent {
   id: string;
   type: "error";
   error: PipelineError;
+  spanId: string;
   timestamp: number;
 }
 
@@ -234,22 +253,22 @@ export interface PipelineGraph {
 }
 
 export type PipelineEventInput
-  = | Omit<PipelineStartEvent, "id"> & { id?: string }
-    | Omit<PipelineEndEvent, "id"> & { id?: string }
-    | Omit<VersionStartEvent, "id"> & { id?: string }
-    | Omit<VersionEndEvent, "id"> & { id?: string }
-    | Omit<ArtifactStartEvent, "id"> & { id?: string }
-    | Omit<ArtifactEndEvent, "id"> & { id?: string }
-    | Omit<ArtifactProducedEvent, "id"> & { id?: string }
-    | Omit<ArtifactConsumedEvent, "id"> & { id?: string }
-    | Omit<FileMatchedEvent, "id"> & { id?: string }
-    | Omit<FileSkippedEvent, "id"> & { id?: string }
-    | Omit<FileFallbackEvent, "id"> & { id?: string }
-    | Omit<ParseStartEvent, "id"> & { id?: string }
-    | Omit<ParseEndEvent, "id"> & { id?: string }
-    | Omit<ResolveStartEvent, "id"> & { id?: string }
-    | Omit<ResolveEndEvent, "id"> & { id?: string }
-    | Omit<CacheHitEvent, "id"> & { id?: string }
-    | Omit<CacheMissEvent, "id"> & { id?: string }
-    | Omit<CacheStoreEvent, "id"> & { id?: string }
-    | Omit<PipelineErrorEvent, "id"> & { id?: string };
+  = | Omit<PipelineStartEvent, "id" | "spanId"> & { id?: string; spanId?: string }
+    | Omit<PipelineEndEvent, "id" | "spanId"> & { id?: string; spanId?: string }
+    | Omit<VersionStartEvent, "id" | "spanId"> & { id?: string; spanId?: string }
+    | Omit<VersionEndEvent, "id" | "spanId"> & { id?: string; spanId?: string }
+    | Omit<ArtifactStartEvent, "id" | "spanId"> & { id?: string; spanId?: string }
+    | Omit<ArtifactEndEvent, "id" | "spanId"> & { id?: string; spanId?: string }
+    | Omit<ArtifactProducedEvent, "id" | "spanId"> & { id?: string; spanId?: string }
+    | Omit<ArtifactConsumedEvent, "id" | "spanId"> & { id?: string; spanId?: string }
+    | Omit<FileMatchedEvent, "id" | "spanId"> & { id?: string; spanId?: string }
+    | Omit<FileSkippedEvent, "id" | "spanId"> & { id?: string; spanId?: string }
+    | Omit<FileFallbackEvent, "id" | "spanId"> & { id?: string; spanId?: string }
+    | Omit<ParseStartEvent, "id" | "spanId"> & { id?: string; spanId?: string }
+    | Omit<ParseEndEvent, "id" | "spanId"> & { id?: string; spanId?: string }
+    | Omit<ResolveStartEvent, "id" | "spanId"> & { id?: string; spanId?: string }
+    | Omit<ResolveEndEvent, "id" | "spanId"> & { id?: string; spanId?: string }
+    | Omit<CacheHitEvent, "id" | "spanId"> & { id?: string; spanId?: string }
+    | Omit<CacheMissEvent, "id" | "spanId"> & { id?: string; spanId?: string }
+    | Omit<CacheStoreEvent, "id" | "spanId"> & { id?: string; spanId?: string }
+    | Omit<PipelineErrorEvent, "id" | "spanId"> & { id?: string; spanId?: string };

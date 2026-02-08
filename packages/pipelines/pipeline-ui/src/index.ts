@@ -7,33 +7,9 @@ export {
   type ExecutionSummaryProps,
 } from "./components/detail/execution-result";
 export {
-  RouteList,
-  type RouteListProps,
-} from "./components/detail/route-list";
-export {
-  SourceList,
-  type SourceListProps,
-} from "./components/detail/source-list";
-export {
   VersionSelector,
   type VersionSelectorProps,
 } from "./components/detail/version-selector";
-export {
-  EventDetailPanel,
-  type EventDetailPanelProps,
-} from "./components/events/event-detail-panel";
-export {
-  InlineJsonView,
-  type InlineJsonViewProps,
-} from "./components/events/inline-json-view";
-export {
-  SimpleTimeline,
-  type SimpleTimelineProps,
-} from "./components/events/simple-timeline";
-export {
-  ViewModeToggle,
-  type ViewModeToggleProps,
-} from "./components/events/view-mode-toggle";
 export {
   PipelineGraphDetails,
   type PipelineGraphDetailsProps,
@@ -55,7 +31,25 @@ export {
   PipelineGraph,
   type PipelineGraphProps,
 } from "./components/graph/pipeline-graph";
+export {
+  ExecutionLogPayloadPanel,
+  type ExecutionLogPayloadPanelProps,
+} from "./components/logs/execution-log-payload";
+export {
+  ExecutionLogTable,
+  type ExecutionLogTableProps,
+} from "./components/logs/execution-log-table";
+export {
+  ExecutionSpanDrawer,
+  type ExecutionSpanDrawerProps,
+} from "./components/logs/execution-span-drawer";
+export {
+  ExecutionWaterfall,
+  type ExecutionWaterfallProps,
+} from "./components/logs/execution-waterfall";
 export { PipelineSidebar } from "./components/pipeline-sidebar";
+export { StatusBadge } from "./components/status-badge";
+export { StatusIcon } from "./components/status-icon";
 export * from "./hooks";
 export {
   filterNodesByType,
@@ -64,6 +58,7 @@ export {
   pipelineGraphToFlow,
 } from "./lib/adapter";
 export { getNodeColor, nodeTypeColors } from "./lib/colors";
+export { buildExecutionSpans, formatBytes, formatDuration, formatTimeLabel, formatTimestamp } from "./lib/execution-logs";
 export { formatHighPrecisionTime } from "./lib/format-time";
 export { applyLayout, NODE_HEIGHT, NODE_WIDTH } from "./lib/layout";
 export {
@@ -74,6 +69,12 @@ export {
 export { cn } from "./lib/utils";
 export type {
   ExecuteResult,
+  ExecutionEventItem,
+  ExecutionEventsResponse,
+  ExecutionLogItem,
+  ExecutionLogPayload,
+  ExecutionLogsResponse,
+  ExecutionLogStream,
   LoadError,
   PipelineDetails,
   PipelineFileInfo,
@@ -81,3 +82,4 @@ export type {
   PipelineResponse,
   PipelinesResponse,
 } from "./types";
+export type { ExecutionStatus } from "@ucdjs/pipelines-executor";

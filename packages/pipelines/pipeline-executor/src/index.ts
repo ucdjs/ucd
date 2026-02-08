@@ -21,8 +21,15 @@ export type {
 
 export { createPipelineExecutor } from "./executor";
 
+export {
+  getPipelineExecutionContext,
+  runWithPipelineExecutionContext,
+  withPipelineEvent,
+  withPipelineSpan,
+} from "./log-context";
+
 export type {
-  MultiplePipelineRunResult,
-  PipelineRunResult,
+  ExecutionStatus,
+  PipelineExecutionResult,
   PipelineSummary,
 } from "./results";

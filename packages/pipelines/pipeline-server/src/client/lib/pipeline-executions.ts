@@ -1,4 +1,6 @@
-export type ExecutionStatus = "running" | "completed" | "failed";
+import type { ExecutionStatus } from "@ucdjs/pipelines-executor";
+
+export type { ExecutionStatus };
 
 export interface Execution {
   id: string;

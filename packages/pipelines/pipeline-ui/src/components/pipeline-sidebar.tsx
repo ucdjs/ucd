@@ -1,5 +1,6 @@
 import { cn } from "#lib/utils";
 import { Link, useParams } from "@tanstack/react-router";
+import { ThemeToggle } from "@ucdjs-internal/shared-ui";
 import {
   Sidebar,
   SidebarContent,
@@ -39,11 +40,14 @@ export function PipelineSidebar() {
   return (
     <Sidebar>
       <SidebarHeader className="p-4">
-        <div className="min-w-0">
-          <h1 className="text-sm font-semibold text-sidebar-foreground tracking-tight truncate">
-            UCD Pipelines
-          </h1>
-          <p className="text-[10px] text-muted-foreground truncate">Pipeline files</p>
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="text-sm font-semibold text-sidebar-foreground tracking-tight truncate">
+              UCD Pipelines
+            </h1>
+            <p className="text-[10px] text-muted-foreground truncate">Pipeline files</p>
+          </div>
+          <ThemeToggle />
         </div>
       </SidebarHeader>
 
