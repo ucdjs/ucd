@@ -15,7 +15,7 @@ import {
   MiniMap,
   ReactFlow,
 } from "@xyflow/react";
-import { memo, useCallback, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 import { PipelineGraphDetails } from "./details";
 import { PipelineGraphFilters } from "./filters";
 import { nodeTypes } from "./node-types";
