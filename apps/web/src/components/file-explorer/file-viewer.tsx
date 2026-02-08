@@ -1,4 +1,4 @@
-import { cn } from "#lib/utils";
+import { cn } from "@ucdjs-internal/shared-ui";
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 import { Skeleton } from "@ucdjs-internal/shared-ui/ui/skeleton";
