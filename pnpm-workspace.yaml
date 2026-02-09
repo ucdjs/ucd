@@ -106,7 +106,7 @@ catalogs:
 
   types:
     "@types/picomatch": 4.0.2
-    "@types/node": 22.18.12
+    "@types/node": 22.19.9
     "@types/yargs-parser": 21.0.3
     "@types/react": 19.2.13
     "@types/react-dom": 19.2.3
@@ -157,6 +157,8 @@ overrides:
   wrangler: catalog:backend
   esbuild: 0.27.3
   semver: 7.7.4
+  solid-js: 1.9.11
+  undici-types: 6.23.0
 
 patchedDependencies:
   "@asteasolutions/zod-to-openapi@8.4.0": patches/@asteasolutions__zod-to-openapi@8.4.0.patch
