@@ -1,0 +1,41 @@
+{
+  "name": "@ucdjs/pipelines-playground",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "author": {
+    "name": "Lucas Nørgaard",
+    "email": "lucasnrgaard@gmail.com",
+    "url": "https://luxass.dev"
+  },
+  "packageManager": "pnpm@10.28.0",
+  "license": "MIT",
+  "homepage": "https://github.com/ucdjs/ucd",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ucdjs/ucd.git",
+    "directory": "packages/pipelines/pipeline-playground"
+  },
+  "bugs": {
+    "url": "https://github.com/ucdjs/ucd/issues"
+  },
+  "exports": {
+    "./package.json": "./package.json"
+  },
+  "publishConfig": {
+    "access": "restricted"
+  },
+  "files": [],
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "pipelines:list": "ucd pipelines list --cwd ."
+  },
+  "dependencies": {
+    "@ucdjs/pipelines-core": "workspace:*",
+    "@ucdjs/pipelines-presets": "workspace:*",
+    "zod": "catalog:runtime"
+  },
+  "devDependencies": {}
+}
