@@ -41,8 +41,8 @@
     "typecheck": "tsc --noEmit -p tsconfig.build.json"
   },
   "dependencies": {
-    "@clack/prompts": "catalog:prod",
-    "@luxass/utils": "catalog:prod",
+    "@clack/prompts": "catalog:runtime",
+    "@luxass/utils": "catalog:runtime",
     "@ucdjs-internal/shared": "workspace:*",
     "@ucdjs/client": "workspace:*",
     "@ucdjs/env": "workspace:*",
@@ -51,20 +51,20 @@
     "@ucdjs/schema-gen": "workspace:*",
     "@ucdjs/schemas": "workspace:*",
     "@ucdjs/ucd-store": "workspace:*",
-    "@unicode-utils/core": "catalog:prod",
-    "farver": "catalog:prod",
-    "yargs-parser": "catalog:prod"
+    "@unicode-utils/core": "catalog:runtime",
+    "farver": "catalog:runtime",
+    "yargs-parser": "catalog:runtime"
   },
   "devDependencies": {
-    "@luxass/eslint-config": "catalog:linting",
+    "@luxass/eslint-config": "catalog:lint",
     "@types/yargs-parser": "catalog:types",
     "@ucdjs-tooling/tsconfig": "workspace:*",
     "@ucdjs-tooling/tsdown-config": "workspace:*",
-    "eslint": "catalog:linting",
+    "eslint": "catalog:lint",
     "publint": "catalog:build",
     "tsdown": "catalog:build",
     "typescript": "catalog:build",
-    "vitest-testdirs": "catalog:testing"
+    "vitest-testdirs": "catalog:test"
   },
   "publishConfig": {
     "access": "public"

@@ -308,8 +308,8 @@
     "typecheck": "tsc --noEmit -p tsconfig.build.json"
   },
   "devDependencies": {
-    "@luxass/eslint-config": "catalog:linting",
-    "@luxass/utils": "catalog:prod",
+    "@luxass/eslint-config": "catalog:lint",
+    "@luxass/utils": "catalog:runtime",
     "@reactive-vscode/vueuse": "catalog:vscode",
     "@types/node": "catalog:types",
     "@types/vscode": "catalog:types",
@@ -320,14 +320,14 @@
     "@ucdjs/fs-bridge": "workspace:*",
     "@ucdjs/schemas": "workspace:*",
     "@ucdjs/ucd-store": "workspace:*",
-    "@unicode-utils/core": "catalog:prod",
+    "@unicode-utils/core": "catalog:runtime",
     "@vscode/vsce": "catalog:vscode",
-    "eslint": "catalog:linting",
-    "eslint-plugin-format": "catalog:linting",
+    "eslint": "catalog:lint",
+    "eslint-plugin-format": "catalog:lint",
     "reactive-vscode": "catalog:vscode",
     "tsdown": "catalog:build",
     "typescript": "catalog:build",
     "vscode-ext-gen": "catalog:vscode",
-    "zod": "catalog:prod"
+    "zod": "catalog:runtime"
   }
 }

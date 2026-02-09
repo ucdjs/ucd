@@ -41,18 +41,18 @@
     "@ucdjs-internal/shared": "workspace:*",
     "@ucdjs/fs-bridge": "workspace:*",
     "@ucdjs/schemas": "workspace:*",
-    "pathe": "catalog:prod"
+    "pathe": "catalog:runtime"
   },
   "devDependencies": {
-    "@luxass/eslint-config": "catalog:linting",
-    "@luxass/utils": "catalog:prod",
+    "@luxass/eslint-config": "catalog:lint",
+    "@luxass/utils": "catalog:runtime",
     "@ucdjs-tooling/tsconfig": "workspace:*",
     "@ucdjs-tooling/tsdown-config": "workspace:*",
-    "eslint": "catalog:linting",
+    "eslint": "catalog:lint",
     "publint": "catalog:build",
     "tsdown": "catalog:build",
     "typescript": "catalog:build",
-    "vitest-testdirs": "catalog:testing"
+    "vitest-testdirs": "catalog:test"
   },
   "publishConfig": {
     "access": "public"
