@@ -20,12 +20,6 @@
   },
   "exports": {
     ".": "./dist/index.mjs",
-    "./parsers": "./dist/parsers/index.mjs",
-    "./pipelines": "./dist/pipelines/index.mjs",
-    "./resolvers": "./dist/resolvers/index.mjs",
-    "./routes": "./dist/routes/index.mjs",
-    "./sources": "./dist/sources/index.mjs",
-    "./transforms": "./dist/transforms/index.mjs",
     "./package.json": "./package.json"
   },
   "types": "./dist/index.d.mts",
