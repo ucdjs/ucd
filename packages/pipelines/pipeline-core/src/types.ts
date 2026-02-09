@@ -1,0 +1,249 @@
+export interface FileContext {
+  /**
+   * The Unicode version being processed (e.g., "16.0.0").
+   */
+  version: string;
+
+  /**
+   * The directory category of the file.
+   */
+  dir: "ucd" | "extracted" | "auxiliary" | "emoji" | "unihan" | (string & {});
+
+  /**
+   * The relative path from the version root (e.g., "ucd/LineBreak.txt").
+   */
+  path: string;
+
+  /**
+   * The file name (e.g., "LineBreak.txt").
+   */
+  name: string;
+
+  /**
+   * The file extension (e.g., ".txt").
+   */
+  ext: string;
+}
+
+export interface RowContext {
+  /**
+   * The property name for multi-property files (e.g., "NFKC_Casefold").
+   */
+  property?: string;
+}
+
+export interface FilterContext {
+  /**
+   * The file context.
+   */
+  file: FileContext;
+
+  /**
+   * The row context (only defined during row-level filtering).
+   */
+  row?: RowContext;
+
+  /**
+   * The source context (only defined when using multiple sources).
+   */
+  source?: {
+    /**
+     * The source ID.
+     */
+    id: string;
+  };
+}
+
+export type PipelineFilter = (ctx: FilterContext) => boolean;
+
+export interface ParsedRow {
+  /**
+   * The source file path relative to the version root.
+   */
+  sourceFile: string;
+
+  /**
+   * The kind of entry.
+   */
+  kind: "range" | "point" | "sequence" | "alias";
+
+  /**
+   * Start of range (hex string, e.g., "0041").
+   */
+  start?: string;
+
+  /**
+   * End of range (hex string, e.g., "005A").
+   */
+  end?: string;
+
+  /**
+   * Single code point (hex string).
+   */
+  codePoint?: string;
+
+  /**
+   * Sequence of code points (hex strings).
+   */
+  sequence?: string[];
+
+  /**
+   * Property name for multi-property files.
+   */
+  property?: string;
+
+  /**
+   * The value(s) associated with this entry.
+   */
+  value?: string | string[];
+
+  /**
+   * Additional metadata (comments, line numbers, etc.).
+   */
+  meta?: Record<string, unknown>;
+}
+
+export interface ParseContext {
+  /**
+   * The file being parsed.
+   */
+  file: FileContext;
+
+  /**
+   * Read the raw content of the file.
+   */
+  readContent: () => Promise<string>;
+
+  /**
+   * Read the file line by line.
+   */
+  readLines: () => AsyncIterable<string>;
+
+  /**
+   * Check if a line is a comment.
+   */
+  isComment: (line: string) => boolean;
+}
+
+export type ParserFn = (ctx: ParseContext) => AsyncIterable<ParsedRow>;
+
+export interface ResolvedEntry {
+  /**
+   * Range in "XXXX..YYYY" format (hex, inclusive).
+   */
+  range?: `${string}..${string}`;
+
+  /**
+   * Single code point in hex.
+   */
+  codePoint?: string;
+
+  /**
+   * Sequence of code points.
+   */
+  sequence?: string[];
+
+  /**
+   * The value(s) for this entry.
+   */
+  value: string | string[];
+}
+
+export interface DefaultRange {
+  /**
+   * The range this default applies to.
+   */
+  range: `${string}..${string}`;
+
+  /**
+   * The default value.
+   */
+  value: string | string[];
+}
+
+export interface PropertyJson {
+  /**
+   * The Unicode version (e.g., "16.0.0").
+   */
+  version: string;
+
+  /**
+   * The property name (e.g., "Line_Break").
+   */
+  property: string;
+
+  /**
+   * The source file name (e.g., "LineBreak.txt").
+   */
+  file: string;
+
+  /**
+   * The resolved entries.
+   */
+  entries: ResolvedEntry[];
+
+  /**
+   * Default ranges from @missing (in encounter order).
+   */
+  defaults?: DefaultRange[];
+
+  /**
+   * Additional metadata.
+   */
+  meta?: Record<string, unknown>;
+}
+
+export interface ResolveContext<TArtifacts extends Record<string, unknown> = Record<string, unknown>> {
+  /**
+   * The Unicode version being processed.
+   */
+  version: string;
+
+  /**
+   * The file being resolved.
+   */
+  file: FileContext;
+
+  /**
+   * Get an artifact by ID.
+   */
+  getArtifact: <K extends keyof TArtifacts>(id: K) => TArtifacts[K];
+
+  /**
+   * Emit an artifact for subsequent routes.
+   */
+  emitArtifact: <K extends string, V>(id: K, value: V) => void;
+
+  /**
+   * Normalize and sort entries by code point range.
+   */
+  normalizeEntries: (entries: ResolvedEntry[]) => ResolvedEntry[];
+
+  /**
+   * Get current timestamp in ISO 8601 format.
+   */
+  now: () => string;
+}
+
+export type ResolverFn<
+  TArtifacts extends Record<string, unknown> = Record<string, unknown>,
+  TOutput = PropertyJson[],
+> = (
+  ctx: ResolveContext<TArtifacts>,
+  rows: AsyncIterable<ParsedRow>,
+) => Promise<TOutput>;
+
+/**
+ * Output configuration for a route.
+ */
+export interface RouteOutput {
+  /**
+   * Custom output directory.
+   */
+  dir?: string;
+
+  /**
+   * Custom file name generator.
+   */
+  fileName?: (pj: PropertyJson) => string;
+}
