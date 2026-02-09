@@ -77,12 +77,14 @@ export {
 } from "./filters";
 
 export type {
+  AnyPipelineDefinition,
   FallbackRouteDefinition,
   InferPipelineOutput,
   InferPipelineRouteIds,
   InferPipelineSourceIds,
   PipelineDefinition,
   PipelineDefinitionOptions,
+  PipelineDefinitionSpec,
 } from "./pipeline";
 
 export {

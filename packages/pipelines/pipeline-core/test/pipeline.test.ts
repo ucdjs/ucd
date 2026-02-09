@@ -42,6 +42,7 @@ describe("definePipeline", () => {
   it("should define a minimal pipeline", () => {
     const pipeline = definePipeline({
       id: "test-pipeline",
+      name: "Test Pipeline",
       versions: ["16.0.0"],
       inputs: [],
       routes: [],
@@ -71,6 +72,7 @@ describe("definePipeline", () => {
   it("should define a pipeline with multiple versions", () => {
     const pipeline = definePipeline({
       id: "multi-version",
+      name: "multi-version",
       versions: ["16.0.0", "15.1.0", "15.0.0"],
       inputs: [],
       routes: [],
@@ -85,6 +87,7 @@ describe("definePipeline", () => {
 
     const pipeline = definePipeline({
       id: "with-inputs",
+      name: "with-inputs",
       versions: ["16.0.0"],
       inputs: [source1, source2],
       routes: [],
@@ -101,6 +104,7 @@ describe("definePipeline", () => {
 
     const pipeline = definePipeline({
       id: "with-routes",
+      name: "with-routes",
       versions: ["16.0.0"],
       inputs: [],
       routes: [route1, route2],
@@ -116,6 +120,7 @@ describe("definePipeline", () => {
 
     const pipeline = definePipeline({
       id: "filtered",
+      name: "filtered",
       versions: ["16.0.0"],
       inputs: [],
       routes: [],
@@ -128,6 +133,7 @@ describe("definePipeline", () => {
   it("should default strict to false", () => {
     const pipeline = definePipeline({
       id: "default-strict",
+      name: "default-strict",
       versions: ["16.0.0"],
       inputs: [],
       routes: [],
@@ -139,6 +145,7 @@ describe("definePipeline", () => {
   it("should allow setting strict to true", () => {
     const pipeline = definePipeline({
       id: "strict-pipeline",
+      name: "strict-pipeline",
       versions: ["16.0.0"],
       inputs: [],
       routes: [],
@@ -151,6 +158,7 @@ describe("definePipeline", () => {
   it("should default concurrency to 4", () => {
     const pipeline = definePipeline({
       id: "default-concurrency",
+      name: "default-concurrency",
       versions: ["16.0.0"],
       inputs: [],
       routes: [],
@@ -162,6 +170,7 @@ describe("definePipeline", () => {
   it("should allow setting custom concurrency", () => {
     const pipeline = definePipeline({
       id: "custom-concurrency",
+      name: "custom-concurrency",
       versions: ["16.0.0"],
       inputs: [],
       routes: [],
@@ -179,6 +188,7 @@ describe("definePipeline", () => {
 
     const pipeline = definePipeline({
       id: "with-fallback",
+      name: "with-fallback",
       versions: ["16.0.0"],
       inputs: [],
       routes: [],
@@ -197,6 +207,7 @@ describe("definePipeline", () => {
 
     const pipeline = definePipeline({
       id: "filtered-fallback",
+      name: "filtered-fallback",
       versions: ["16.0.0"],
       inputs: [],
       routes: [],
@@ -211,6 +222,7 @@ describe("definePipeline", () => {
 
     const pipeline = definePipeline({
       id: "with-events",
+      name: "with-events",
       versions: ["16.0.0"],
       inputs: [],
       routes: [],
@@ -263,6 +275,7 @@ describe("isPipelineDefinition", () => {
   it("should return true for valid pipeline definition", () => {
     const pipeline = definePipeline({
       id: "test",
+      name: "test",
       versions: ["16.0.0"],
       inputs: [],
       routes: [],
@@ -319,6 +332,7 @@ describe("isPipelineDefinition", () => {
   it("should work as type guard", () => {
     const unknown: unknown = definePipeline({
       id: "guarded",
+      name: "guarded",
       versions: ["16.0.0"],
       inputs: [],
       routes: [],
@@ -337,6 +351,7 @@ describe("getPipelineRouteIds", () => {
   it("should return empty array for pipeline with no routes", () => {
     const pipeline = definePipeline({
       id: "no-routes",
+      name: "no-routes",
       versions: ["16.0.0"],
       inputs: [],
       routes: [],
@@ -354,6 +369,7 @@ describe("getPipelineRouteIds", () => {
 
     const pipeline = definePipeline({
       id: "with-routes",
+      name: "with-routes",
       versions: ["16.0.0"],
       inputs: [],
       routes: [route1, route2, route3],
@@ -373,6 +389,7 @@ describe("getPipelineRouteIds", () => {
 
     const pipeline = definePipeline({
       id: "ordered",
+      name: "ordered",
       versions: ["16.0.0"],
       inputs: [],
       routes,
@@ -388,6 +405,7 @@ describe("getPipelineSourceIds", () => {
   it("should return empty array for pipeline with no sources", () => {
     const pipeline = definePipeline({
       id: "no-sources",
+      name: "no-sources",
       versions: ["16.0.0"],
       inputs: [],
       routes: [],
@@ -404,6 +422,7 @@ describe("getPipelineSourceIds", () => {
 
     const pipeline = definePipeline({
       id: "with-sources",
+      name: "with-sources",
       versions: ["16.0.0"],
       inputs: [source1, source2],
       routes: [],
@@ -423,6 +442,7 @@ describe("getPipelineSourceIds", () => {
 
     const pipeline = definePipeline({
       id: "ordered",
+      name: "ordered",
       versions: ["16.0.0"],
       inputs: sources,
       routes: [],
@@ -438,6 +458,7 @@ describe("pipeline definition properties", () => {
   it("should have readonly _type property", () => {
     const pipeline = definePipeline({
       id: "readonly-test",
+      name: "readonly-test",
       versions: ["16.0.0"],
       inputs: [],
       routes: [],
@@ -455,6 +476,7 @@ describe("pipeline definition properties", () => {
 
     const pipeline = definePipeline({
       id: "multi-source",
+      name: "multi-source",
       versions: ["16.0.0"],
       inputs: sources,
       routes: [],
@@ -475,6 +497,7 @@ describe("pipeline definition properties", () => {
 
     const pipeline = definePipeline({
       id: "multi-route",
+      name: "multi-route",
       versions: ["16.0.0"],
       inputs: [],
       routes,
@@ -496,6 +519,7 @@ describe("fallback route", () => {
 
     const pipeline = definePipeline({
       id: "fallback-test",
+      name: "fallback-test",
       versions: ["16.0.0"],
       inputs: [],
       routes: [],
@@ -518,6 +542,7 @@ describe("fallback route", () => {
 
     const pipeline = definePipeline({
       id: "custom-fallback",
+      name: "custom-fallback",
       versions: ["16.0.0"],
       inputs: [],
       routes: [],
@@ -535,6 +560,7 @@ describe("type inference", () => {
 
     const pipeline = definePipeline({
       id: "typed-pipeline" as const,
+      name: "typed-pipeline",
       versions: ["16.0.0"],
       inputs: [source] as const,
       routes: [route] as const,

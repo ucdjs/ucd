@@ -25,7 +25,7 @@ export interface FallbackRouteDefinition<
   resolver: (ctx: ResolveContext<TArtifacts>, rows: AsyncIterable<ParsedRow>) => Promise<TOutput>;
 }
 
-export interface PipelineDefinitionOptions<
+export interface PipelineDefinitionSpec<
   TSources extends readonly PipelineSourceDefinition[] = readonly PipelineSourceDefinition[],
   TRoutes extends readonly PipelineRouteDefinition<any, any, any, any, any>[] = readonly PipelineRouteDefinition<any, any, any, any, any>[],
   TFallback extends FallbackRouteDefinition<any, unknown> | undefined = undefined,
@@ -95,12 +95,18 @@ export interface PipelineDefinitionOptions<
   onEvent?: (event: PipelineEvent) => void | Promise<void>;
 }
 
-export interface PipelineDefinition<
+export type PipelineDefinitionOptions<
+  TSources extends readonly PipelineSourceDefinition[] = readonly PipelineSourceDefinition[],
+  TRoutes extends readonly PipelineRouteDefinition<any, any, any, any, any>[] = readonly PipelineRouteDefinition<any, any, any, any, any>[],
+  TFallback extends FallbackRouteDefinition<any, unknown> | undefined = undefined,
+> = PipelineDefinitionSpec<TSources, TRoutes, TFallback>;
+
+export type PipelineDefinition<
   TId extends string = string,
   TSources extends readonly PipelineSourceDefinition[] = readonly PipelineSourceDefinition[],
   TRoutes extends readonly PipelineRouteDefinition<any, any, any, any, any>[] = readonly PipelineRouteDefinition<any, any, any, any, any>[],
   TFallback extends FallbackRouteDefinition<any, unknown> | undefined = undefined,
-> {
+> = Readonly<PipelineDefinitionSpec<TSources, TRoutes, TFallback>> & {
   /**
    * Marker to identify this as a pipeline definition.
    */
@@ -110,36 +116,6 @@ export interface PipelineDefinition<
    * Unique identifier for the pipeline.
    */
   readonly id: TId;
-
-  /**
-   * Human-readable name for the pipeline.
-   */
-  readonly name: string;
-
-  /**
-   * Description of what this pipeline does.
-   */
-  readonly description?: string;
-
-  /**
-   * Unicode versions this pipeline processes.
-   */
-  readonly versions: string[];
-
-  /**
-   * Input sources that provide files to the pipeline.
-   */
-  readonly inputs: TSources;
-
-  /**
-   * Routes that process matched files.
-   */
-  readonly routes: TRoutes;
-
-  /**
-   * Global filter to include/exclude files before routing.
-   */
-  readonly include?: PipelineFilter;
 
   /**
    * If true, throw error for files with no matching route (and no fallback).
@@ -152,16 +128,6 @@ export interface PipelineDefinition<
   readonly concurrency: number;
 
   /**
-   * Fallback handler for files that don't match any route.
-   */
-  readonly fallback?: TFallback;
-
-  /**
-   * Event handler for pipeline events.
-   */
-  readonly onEvent?: (event: PipelineEvent) => void | Promise<void>;
-
-  /**
    * Precomputed DAG (Directed Acyclic Graph) for route execution order.
    * Built at definition time from route dependencies.
    */
@@ -171,7 +137,9 @@ export interface PipelineDefinition<
    * Tags associated with this pipeline.
    */
   readonly tags: string[];
-}
+};
+
+export type AnyPipelineDefinition = PipelineDefinition<any, any, any, any>;
 
 export type InferPipelineOutput<
   TRoutes extends readonly PipelineRouteDefinition<any, any, any, any, any>[],
@@ -216,7 +184,7 @@ export function definePipeline<
   const TRoutes extends readonly PipelineRouteDefinition<any, any, any, any, any>[],
   TFallback extends FallbackRouteDefinition<any, unknown> | undefined = undefined,
 >(
-  options: Omit<PipelineDefinitionOptions<readonly [...TSources], readonly [...TRoutes], TFallback>, "inputs" | "routes">
+  options: Omit<PipelineDefinitionSpec<readonly [...TSources], readonly [...TRoutes], TFallback>, "inputs" | "routes">
     & {
       id: TId;
       inputs: readonly [...TSources];
