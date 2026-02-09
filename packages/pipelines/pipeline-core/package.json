@@ -38,15 +38,15 @@
   },
   "dependencies": {
     "@ucdjs-internal/shared": "workspace:*",
-    "picomatch": "catalog:prod",
-    "zod": "catalog:prod"
+    "picomatch": "catalog:runtime",
+    "zod": "catalog:runtime"
   },
   "devDependencies": {
-    "@luxass/eslint-config": "catalog:linting",
+    "@luxass/eslint-config": "catalog:lint",
     "@types/picomatch": "catalog:types",
     "@ucdjs-tooling/tsconfig": "workspace:*",
     "@ucdjs-tooling/tsdown-config": "workspace:*",
-    "eslint": "catalog:linting",
+    "eslint": "catalog:lint",
     "publint": "catalog:build",
     "tsdown": "catalog:build",
     "tsx": "catalog:build",
