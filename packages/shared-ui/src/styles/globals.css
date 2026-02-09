@@ -161,3 +161,59 @@
     @apply font-sans;
   }
 }
+
+@layer components {
+  .shiki.shiki-code,
+  .shiki-root pre {
+    @apply text-foreground rounded-md text-[12px] leading-[13px] overflow-auto border;
+    white-space: pre;
+    word-break: normal;
+    overflow-wrap: normal;
+    background: var(--card);
+    box-shadow: none;
+    position: relative;
+    padding: 0.5rem 0.75rem 0.5rem 2.25rem;
+    counter-reset: shiki-line;
+  }
+
+  .shiki.shiki-code code,
+  .shiki-root pre > code {
+    @apply font-mono;
+    white-space: inherit;
+    word-break: normal;
+    overflow-wrap: normal;
+  }
+
+  .shiki-code__line {
+    @apply block px-1 -mx-1 rounded;
+    position: relative;
+    counter-increment: shiki-line;
+  }
+
+  .shiki-code__line::before {
+    content: counter(shiki-line);
+    @apply absolute -left-8 top-0 w-6 text-right text-[0.65rem] text-muted-foreground/70;
+  }
+
+  .shiki-decor {
+    @apply relative inline-flex items-center rounded-sm;
+    padding: 0 0.1rem;
+    background: color-mix(in oklab, var(--primary) 8%, transparent);
+    border-bottom: 1px solid color-mix(in oklab, var(--primary) 30%, transparent);
+  }
+
+  .shiki-decor::after {
+    content: "";
+    display: none;
+  }
+
+  .shiki-decor-route {
+    border-bottom-color: color-mix(in oklab, var(--primary) 45%, transparent);
+  }
+
+  .shiki-decor-route::after,
+  .shiki-decor-id::after,
+  .shiki-decor-name::after {
+    content: "";
+  }
+}
