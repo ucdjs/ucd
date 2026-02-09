@@ -156,6 +156,7 @@ overrides:
   rolldown: catalog:build
   wrangler: catalog:backend
   esbuild: 0.27.3
+  semver: 7.7.4
 
 patchedDependencies:
   "@asteasolutions/zod-to-openapi@8.4.0": patches/@asteasolutions__zod-to-openapi@8.4.0.patch
