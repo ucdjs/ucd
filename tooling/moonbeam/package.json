@@ -32,7 +32,7 @@
     "lint": "eslint ."
   },
   "devDependencies": {
-    "@luxass/eslint-config": "catalog:linting",
-    "eslint": "catalog:linting"
+    "@luxass/eslint-config": "catalog:lint",
+    "eslint": "catalog:lint"
   }
 }

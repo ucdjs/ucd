@@ -18,9 +18,9 @@
     "tsdown": "catalog:build"
   },
   "devDependencies": {
-    "@luxass/eslint-config": "catalog:linting",
+    "@luxass/eslint-config": "catalog:lint",
     "@ucdjs-tooling/tsconfig": "workspace:*",
-    "eslint": "catalog:linting",
+    "eslint": "catalog:lint",
     "typescript": "catalog:build"
   }
 }

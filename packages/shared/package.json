@@ -37,27 +37,27 @@
     "typecheck": "tsc --noEmit -p tsconfig.build.json"
   },
   "dependencies": {
-    "@luxass/msw-utils": "catalog:prod",
-    "@luxass/utils": "catalog:prod",
+    "@luxass/msw-utils": "catalog:runtime",
+    "@luxass/utils": "catalog:runtime",
     "@ucdjs/env": "workspace:*",
     "@ucdjs/schemas": "workspace:*",
-    "@unicode-utils/core": "catalog:prod",
-    "defu": "catalog:prod",
-    "obug": "catalog:prod",
-    "picomatch": "catalog:prod",
-    "zod": "catalog:prod"
+    "@unicode-utils/core": "catalog:runtime",
+    "defu": "catalog:runtime",
+    "obug": "catalog:runtime",
+    "picomatch": "catalog:runtime",
+    "zod": "catalog:runtime"
   },
   "devDependencies": {
-    "@luxass/eslint-config": "catalog:linting",
+    "@luxass/eslint-config": "catalog:lint",
     "@types/picomatch": "catalog:types",
     "@ucdjs-tooling/tsconfig": "workspace:*",
     "@ucdjs-tooling/tsdown-config": "workspace:*",
-    "eslint": "catalog:linting",
+    "eslint": "catalog:lint",
     "publint": "catalog:build",
     "rolldown": "catalog:build",
     "tsdown": "catalog:build",
     "typescript": "catalog:build",
-    "vitest-testdirs": "catalog:testing"
+    "vitest-testdirs": "catalog:test"
   },
   "publishConfig": {
     "access": "public"

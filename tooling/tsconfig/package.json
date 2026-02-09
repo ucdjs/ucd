@@ -28,8 +28,8 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "@luxass/eslint-config": "catalog:linting",
-    "eslint": "catalog:linting",
+    "@luxass/eslint-config": "catalog:lint",
+    "eslint": "catalog:lint",
     "typescript": "catalog:build"
   }
 }

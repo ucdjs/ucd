@@ -33,13 +33,13 @@
   },
   "devDependencies": {
     "@types/node": "catalog:types",
-    "@ucdjs/release-scripts": "catalog:monorepo",
+    "@ucdjs/release-scripts": "catalog:build",
     "@ucdjs/ucdjs-scripts": "workspace:*",
-    "@vitest/coverage-istanbul": "catalog:testing",
-    "@vitest/ui": "catalog:testing",
-    "eslint": "catalog:linting",
-    "turbo": "catalog:monorepo",
+    "@vitest/coverage-istanbul": "catalog:test",
+    "@vitest/ui": "catalog:test",
+    "eslint": "catalog:lint",
+    "turbo": "catalog:build",
     "typescript": "catalog:build",
-    "vitest": "catalog:testing"
+    "vitest": "catalog:test"
   }
 }

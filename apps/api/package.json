@@ -19,34 +19,34 @@
     "clean": "git clean -xdf node_modules .wrangler dist ../../ucd-generated/api"
   },
   "dependencies": {
-    "@hono/zod-openapi": "catalog:api",
-    "@luxass/utils": "catalog:prod",
-    "@scalar/hono-api-reference": "catalog:api",
-    "@sentry/cloudflare": "catalog:api",
+    "@hono/zod-openapi": "catalog:backend",
+    "@luxass/utils": "catalog:runtime",
+    "@scalar/hono-api-reference": "catalog:backend",
+    "@sentry/cloudflare": "catalog:backend",
     "@ucdjs-internal/shared": "workspace:*",
     "@ucdjs/env": "workspace:*",
     "@ucdjs/path-utils": "workspace:*",
     "@ucdjs/schemas": "workspace:*",
     "@ucdjs/utils": "workspace:*",
-    "@unicode-utils/core": "catalog:prod",
-    "apache-autoindex-parse": "catalog:prod",
-    "hono": "catalog:api",
+    "@unicode-utils/core": "catalog:runtime",
+    "apache-autoindex-parse": "catalog:runtime",
+    "hono": "catalog:backend",
     "nanotar": "catalog:build",
-    "zod": "catalog:prod"
+    "zod": "catalog:runtime"
   },
   "devDependencies": {
-    "@cloudflare/vitest-pool-workers": "catalog:testing",
-    "@luxass/eslint-config": "catalog:linting",
-    "@luxass/spectral-ruleset": "catalog:linting",
-    "@stoplight/spectral-cli": "catalog:linting",
+    "@cloudflare/vitest-pool-workers": "catalog:test",
+    "@luxass/eslint-config": "catalog:lint",
+    "@luxass/spectral-ruleset": "catalog:lint",
+    "@stoplight/spectral-cli": "catalog:lint",
     "@ucdjs-tooling/eslint-plugin": "workspace:*",
     "@ucdjs-tooling/tsconfig": "workspace:*",
     "@ucdjs/moonbeam": "workspace:*",
-    "eslint": "catalog:linting",
-    "eslint-plugin-format": "catalog:linting",
+    "eslint": "catalog:lint",
+    "eslint-plugin-format": "catalog:lint",
     "tsx": "catalog:build",
     "typescript": "catalog:build",
-    "vitest": "catalog:testing",
-    "wrangler": "catalog:api"
+    "vitest": "catalog:test",
+    "wrangler": "catalog:backend"
   }
 }

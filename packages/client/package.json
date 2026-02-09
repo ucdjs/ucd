@@ -45,17 +45,17 @@
     "@ucdjs/schemas": "workspace:*"
   },
   "devDependencies": {
-    "@luxass/eslint-config": "catalog:linting",
+    "@luxass/eslint-config": "catalog:lint",
     "@types/picomatch": "catalog:types",
     "@ucdjs-tooling/tsconfig": "workspace:*",
     "@ucdjs-tooling/tsdown-config": "workspace:*",
-    "eslint": "catalog:linting",
+    "eslint": "catalog:lint",
     "openapi-typescript": "catalog:build",
     "publint": "catalog:build",
     "tsdown": "catalog:build",
     "tsx": "catalog:build",
     "typescript": "catalog:build",
-    "vitest-testdirs": "catalog:testing"
+    "vitest-testdirs": "catalog:test"
   },
   "publishConfig": {
     "access": "public"
