@@ -41,10 +41,10 @@
     "@ucdjs/pipelines-core": "workspace:*"
   },
   "devDependencies": {
-    "@luxass/eslint-config": "catalog:linting",
+    "@luxass/eslint-config": "catalog:lint",
     "@ucdjs-tooling/tsconfig": "workspace:*",
     "@ucdjs-tooling/tsdown-config": "workspace:*",
-    "eslint": "catalog:linting",
+    "eslint": "catalog:lint",
     "publint": "catalog:build",
     "tsdown": "catalog:build",
     "typescript": "catalog:build"

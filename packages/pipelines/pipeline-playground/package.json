@@ -35,7 +35,7 @@
   "dependencies": {
     "@ucdjs/pipelines-core": "workspace:*",
     "@ucdjs/pipelines-presets": "workspace:*",
-    "zod": "catalog:prod"
+    "zod": "catalog:runtime"
   },
   "devDependencies": {}
 }
