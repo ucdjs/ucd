@@ -52,6 +52,19 @@
         "./packages/fs-bridge/src/bridges/node.ts"
       ],
 
+      // pipeline packages
+      "@ucdjs/pipelines-core": ["./packages/pipelines/pipeline-core/src/index.ts"],
+      "@ucdjs/pipelines-artifacts": ["./packages/pipelines/pipeline-artifacts/src/index.ts"],
+      "@ucdjs/pipelines-graph": ["./packages/pipelines/pipeline-graph/src/index.ts"],
+      "@ucdjs/pipelines-executor": ["./packages/pipelines/pipeline-executor/src/index.ts"],
+      "@ucdjs/pipelines-loader": ["./packages/pipelines/pipeline-loader/src/index.ts"],
+      "@ucdjs/pipelines-ui": ["./packages/pipelines/pipeline-ui/src/index.ts"],
+      "@ucdjs/pipelines-ui/styles.css": [
+        "./packages/pipelines/pipeline-ui/src/styles/globals.css"
+      ],
+      "@ucdjs/pipelines-server": ["./packages/pipelines/pipeline-server/src/index.ts"],
+      "@ucdjs/pipelines-presets": ["./packages/pipelines/pipeline-presets/src/index.ts"],
+
       // Test utils
       "@ucdjs/test-utils": ["./packages/test-utils/src/index.ts"],
       // we use alias for test utils to avoid having to build it during development
@@ -65,6 +78,9 @@
       ],
       "#test-utils/matchers": [
         "./packages/test-utils/src/matchers/types.d.ts"
+      ],
+      "#test-utils/pipelines": [
+        "./packages/test-utils/src/pipelines/index.ts"
       ],
 
       // Internal Test Utils

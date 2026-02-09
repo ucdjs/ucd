@@ -48,6 +48,8 @@ async function createProjects(root: string): Promise<TestProjectConfiguration[]>
 }
 
 const packageProjects = await createProjects("packages");
+const pipelinePackageProjects = await createProjects("packages/pipelines");
+
 const appProjects = await createProjects("apps");
 
 const hiddenLogs: string[] = [];
@@ -72,7 +74,11 @@ export default defineConfig({
 
       return false;
     },
-    projects: [...packageProjects, ...appProjects],
+    projects: [
+      ...packageProjects,
+      ...pipelinePackageProjects,
+      ...appProjects
+    ]
   },
   esbuild: { target: "es2020" },
   resolve: { alias: aliases },
