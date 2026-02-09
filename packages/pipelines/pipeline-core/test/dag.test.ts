@@ -1,17 +1,12 @@
 import type { ParsedRow, PipelineRouteDefinition } from "../src";
-import { describe, expect, it } from "vitest";
-import { buildDAG, definePipelineRoute, getExecutionLayers } from "../src";
-
-function createMockParser() {
-  return async function* (): AsyncIterable<ParsedRow> {
-    yield {
-      sourceFile: "test.txt",
-      kind: "point" as const,
-      codePoint: "0041",
-      value: "test",
-    };
-  };
-}
+import { asyncFromArray } from "#test-utils";
+import { assert, describe, expect, it } from "vitest";
+import {
+  always,
+  buildDAG,
+  definePipelineRoute,
+  getExecutionLayers,
+} from "../src";
 
 function createRoute(
   id: string,
@@ -19,8 +14,15 @@ function createRoute(
 ): PipelineRouteDefinition<string, any, any, any, any> {
   return definePipelineRoute({
     id,
-    filter: () => true,
-    parser: createMockParser(),
+    filter: always(),
+    parser: () => asyncFromArray([
+      {
+        sourceFile: "test.txt",
+        kind: "point" as const,
+        codePoint: "0041",
+        value: "test",
+      },
+    ]),
     resolver: async () => [],
     depends,
   });
@@ -67,6 +69,7 @@ describe("buildDAG", () => {
 
     expect(result.valid).toBe(false);
     expect(result.errors.length).toBeGreaterThan(0);
+    assert(result.errors[0]);
     expect(result.errors[0].type).toBe("cycle");
     expect(result.errors[0].details.cycle).toBeDefined();
   });
@@ -79,6 +82,7 @@ describe("buildDAG", () => {
     const result = buildDAG(routes);
 
     expect(result.valid).toBe(false);
+    assert(result.errors[0]);
     expect(result.errors[0].type).toBe("missing-route");
     expect(result.errors[0].details.dependencyId).toBe("missing");
   });
@@ -94,6 +98,7 @@ describe("buildDAG", () => {
 
     expect(result.valid).toBe(false);
     expect(result.errors.length).toBe(1);
+    assert(result.errors[0]);
     expect(result.errors[0].type).toBe("duplicate-route");
     expect(result.errors[0].details.routeId).toBe("route-a");
     expect(result.errors[0].message).toContain("index 0 and 2");
@@ -176,6 +181,7 @@ describe("getExecutionLayers", () => {
     const layers = getExecutionLayers(result.dag!);
 
     expect(layers.length).toBe(2);
+    assert(layers[0]);
     expect(layers[0].sort()).toEqual(["route-a", "route-b"]);
     expect(layers[1]).toEqual(["route-c"]);
   });
@@ -192,6 +198,7 @@ describe("getExecutionLayers", () => {
 
     expect(layers.length).toBe(2);
     expect(layers[0]).toEqual(["route-a"]);
+    assert(layers[1]);
     expect(layers[1].sort()).toEqual(["route-b", "route-c"]);
   });
 
