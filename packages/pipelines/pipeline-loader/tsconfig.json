@@ -1,0 +1,9 @@
+{
+  "extends": "@ucdjs-tooling/tsconfig/base",
+  "include": [
+    "src",
+    "test",
+    "playgrounds"
+  ],
+  "exclude": ["dist"]
+}
