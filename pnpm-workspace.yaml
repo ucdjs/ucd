@@ -3,6 +3,7 @@ saveWorkspaceProtocol: false
 linkWorkspacePackages: true
 engineStrict: true
 minimumReleaseAge: 1440 # 1 day
+trustPolicy: "no-downgrade"
 
 minimumReleaseAgeExclude:
   - "@luxass/eslint-config"
@@ -41,6 +42,12 @@ catalogs:
     "@tanstack/router-plugin": 1.158.4
     "@tanstack/devtools-vite": 0.5.1
     vite-tsconfig-paths: 6.1.0
+    chokidar: 5.0.0
+    drizzle-kit: 0.31.8
+    esrap: 2.2.2
+    oxc-parser: 0.112.0
+    oxc-transform: 0.112.0
+    tinyglobby: 0.2.15
 
   test:
     "@vitest/coverage-istanbul": 4.1.0-beta.1
@@ -92,6 +99,10 @@ catalogs:
     hono: 4.11.9
     "@cloudflare/workers-types": 4.20260207.0
     "@sentry/cloudflare": 10.38.0
+    h3: 2.0.1-rc.11
+    crossws: 0.4.4
+    drizzle-orm: 0.45.1
+    "@libsql/client": 0.17.0
 
   types:
     "@types/picomatch": 4.0.2
@@ -144,6 +155,7 @@ overrides:
   "@asteasolutions/zod-to-openapi": 8.4.0
   rolldown: catalog:build
   wrangler: catalog:backend
+  esbuild: 0.27.3
 
 patchedDependencies:
   "@asteasolutions/zod-to-openapi@8.4.0": patches/@asteasolutions__zod-to-openapi@8.4.0.patch
