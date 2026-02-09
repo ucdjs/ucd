@@ -98,12 +98,8 @@ export type {
   ArtifactDefinition,
   InferArtifactType,
   InferEmittedArtifactsFromRoute,
-  InferRouteDepends,
-  InferRouteEmits,
-  InferRouteId,
-  InferRouteOutput,
+  InferRoute,
   InferRoutesOutput,
-  InferRouteTransforms,
   PipelineRouteDefinition,
   RouteResolveContext,
 } from "./route";

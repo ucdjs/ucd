@@ -1,9 +1,6 @@
 import type {
   ArtifactDefinition,
-  InferRouteDepends,
-  InferRouteEmits,
-  InferRouteId,
-  InferRouteOutput,
+  InferRoute,
   RouteResolveContext,
 } from "../src/route";
 import type { FileContext, ParsedRow, PropertyJson } from "../src/types";
@@ -383,7 +380,7 @@ describe("route context methods", () => {
 });
 
 describe("type inference", () => {
-  describe("inferRouteId", () => {
+  describe("inferRoute", () => {
     it("should infer route id", () => {
       const routeId = "my-route" as const;
       // eslint-disable-next-line unused-imports/no-unused-vars
@@ -394,13 +391,11 @@ describe("type inference", () => {
         resolver: async () => [],
       });
 
-      type RouteId = InferRouteId<typeof route>;
+      type RouteId = InferRoute<typeof route>["id"];
       expectTypeOf<RouteId>().toBeString();
       expectTypeOf<RouteId>().toEqualTypeOf<typeof routeId>();
     });
-  });
 
-  describe("inferRouteDepends", () => {
     it("should infer route dependencies", () => {
       // eslint-disable-next-line unused-imports/no-unused-vars
       const route = definePipelineRoute({
@@ -411,12 +406,10 @@ describe("type inference", () => {
         resolver: async () => [],
       });
 
-      type Depends = InferRouteDepends<typeof route>;
+      type Depends = InferRoute<typeof route>["depends"];
       expectTypeOf<Depends>().toEqualTypeOf<readonly ["route:dep1", "artifact:route:artifact"]>();
     });
-  });
 
-  describe("inferRouteEmits", () => {
     it("should infer route emits", () => {
       const emits = {
         data: {
@@ -434,14 +427,12 @@ describe("type inference", () => {
         resolver: async () => [],
       });
 
-      type Emits = InferRouteEmits<typeof route>;
+      type Emits = InferRoute<typeof route>["emits"];
       const routeEmits: Emits = route.emits!;
 
       expect(routeEmits.data._type).toBe("artifact");
     });
-  });
 
-  describe("inferRouteOutput", () => {
     it("should infer route output type", () => {
       // eslint-disable-next-line unused-imports/no-unused-vars
       const route = definePipelineRoute({
@@ -451,7 +442,7 @@ describe("type inference", () => {
         resolver: async (): Promise<PropertyJson[]> => [],
       });
 
-      type Output = InferRouteOutput<typeof route>;
+      type Output = InferRoute<typeof route>["output"];
       expectTypeOf<Output>().toEqualTypeOf<PropertyJson[]>();
     });
   });
