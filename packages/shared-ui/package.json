@@ -84,7 +84,6 @@
     "lucide-react": "catalog:web",
     "react": "catalog:web",
     "react-dom": "catalog:web",
-    "shadcn": "catalog:web",
     "shiki": "catalog:web",
     "tailwind-merge": "catalog:web",
     "tailwindcss": "catalog:web",
