@@ -9,5 +9,7 @@ export {
 
 export {
   buildRouteGraph,
+  find,
+  findEdges,
   toVisualTree,
 } from "./graph-utils";

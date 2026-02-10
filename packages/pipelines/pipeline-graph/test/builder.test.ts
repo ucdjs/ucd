@@ -1,13 +1,9 @@
-import type { PipelineGraphNode } from "@ucdjs/pipelines-core";
 import { describe, expect, it } from "vitest";
 import { createFile } from "../../pipeline-core/test/_test-utils";
 import { PipelineGraphBuilder } from "../src";
+import { find } from "../src/graph-utils";
 
-function findNode(nodes: PipelineGraphNode[], id: string): PipelineGraphNode | undefined {
-  return nodes.find((node) => node.id === id);
-}
-
-describe("PipelineGraphBuilder", () => {
+describe("graph builder", () => {
   it("should add nodes and dedupe by id", () => {
     const builder = new PipelineGraphBuilder();
     builder.addSourceNode("16.0.0");
@@ -21,11 +17,11 @@ describe("PipelineGraphBuilder", () => {
     const graph = builder.build();
 
     expect(graph.nodes).toHaveLength(5);
-    expect(findNode(graph.nodes, "source:16.0.0")).toBeDefined();
-    expect(findNode(graph.nodes, "file:16.0.0:ucd/LineBreak.txt")).toBeDefined();
-    expect(findNode(graph.nodes, "route:16.0.0:route-a")).toBeDefined();
-    expect(findNode(graph.nodes, "artifact:16.0.0:route-a:meta")).toBeDefined();
-    expect(findNode(graph.nodes, "output:16.0.0:0")).toBeDefined();
+    expect(find(graph, "source:16.0.0")).toBeDefined();
+    expect(find(graph, "file:16.0.0:ucd/LineBreak.txt")).toBeDefined();
+    expect(find(graph, "route:16.0.0:route-a")).toBeDefined();
+    expect(find(graph, "artifact:16.0.0:route-a:meta")).toBeDefined();
+    expect(find(graph, "output:16.0.0:0")).toBeDefined();
   });
 
   it("should dedupe edges", () => {
