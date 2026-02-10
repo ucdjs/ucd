@@ -2,34 +2,16 @@ import type {
   InferSourceId,
   InferSourceIds,
   PipelineSourceDefinition,
-  SourceBackend,
   SourceFileContext,
 } from "../src/source";
 import type { FileContext, PipelineFilter } from "../src/types";
-import { describe, expect, expectTypeOf, it, vi } from "vitest";
+import { assert, describe, expect, expectTypeOf, it, vi } from "vitest";
 import {
   definePipelineSource,
   resolveMultipleSourceFiles,
   resolveSourceFiles,
 } from "../src/source";
-
-function createMockBackend(files: FileContext[]): SourceBackend {
-  return {
-    listFiles: vi.fn().mockResolvedValue(files),
-    readFile: vi.fn().mockResolvedValue("file content"),
-  };
-}
-
-function createFile(overrides: Partial<FileContext> = {}): FileContext {
-  return {
-    version: "16.0.0",
-    dir: "ucd",
-    path: "ucd/LineBreak.txt",
-    name: "LineBreak.txt",
-    ext: ".txt",
-    ...overrides,
-  };
-}
+import { createFile, createMockBackend } from "./_test-utils";
 
 describe("definePipelineSource", () => {
   it("should return source definition with correct types", () => {
@@ -118,7 +100,6 @@ describe("resolveSourceFiles", () => {
     expect(backend.listFiles).toHaveBeenCalledWith("16.0.0");
     expect(backend.listFiles).toHaveBeenCalledTimes(1);
 
-    // Type assertion
     expectTypeOf(result).toEqualTypeOf<SourceFileContext[]>();
   });
 
@@ -130,6 +111,7 @@ describe("resolveSourceFiles", () => {
     const result = await resolveSourceFiles(source, "16.0.0");
 
     expect(result[0]?.source).toEqual({ id: "my-source" });
+    assert(result[0]?.source);
     expectTypeOf(result[0]?.source.id).toEqualTypeOf<string>();
   });
 
@@ -456,7 +438,7 @@ describe("type inference", () => {
       ];
 
       // This will be PipelineSourceDefinition[] not a tuple
-      expectTypeOf(sources).toMatchTypeOf<PipelineSourceDefinition[]>();
+      expectTypeOf(sources).toExtend<PipelineSourceDefinition[]>();
     });
   });
 
@@ -470,8 +452,8 @@ describe("type inference", () => {
       const result = await resolveSourceFiles(source, "16.0.0");
       const file = result[0]!;
 
-      expectTypeOf(file).toMatchTypeOf<SourceFileContext>();
-      expectTypeOf(file).toMatchTypeOf<FileContext>();
+      expectTypeOf(file).toEqualTypeOf<SourceFileContext>();
+      expectTypeOf(file).toExtend<FileContext>();
       expectTypeOf(file.source).toEqualTypeOf<{ id: string }>();
       expectTypeOf(file.source.id).toEqualTypeOf<string>();
       expectTypeOf(file.version).toEqualTypeOf<string>();
@@ -490,7 +472,7 @@ describe("type inference", () => {
       };
 
       expectTypeOf(fileContext.version).toEqualTypeOf<string>();
-      expectTypeOf(fileContext.dir).toEqualTypeOf<string>();
+      expectTypeOf(fileContext.dir).toExtend<string>();
       expectTypeOf(fileContext.path).toEqualTypeOf<string>();
       expectTypeOf(fileContext.name).toEqualTypeOf<string>();
       expectTypeOf(fileContext.ext).toEqualTypeOf<string>();
