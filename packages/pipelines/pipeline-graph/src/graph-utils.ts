@@ -21,16 +21,16 @@ export function buildRouteGraph(
     const routeNode = dag.nodes.get(route.id);
     if (!routeNode) continue;
 
-    builder.addRouteNode(route.id, "static");
+    const currentRouteId = builder.addRouteNode(route.id, "static");
 
     for (const depId of routeNode.dependencies) {
-      builder.addRouteNode(depId, "static");
-      builder.addEdge(`route:static:${depId}`, `route:static:${route.id}`, "provides");
+      const depNodeId = builder.addRouteNode(depId, "static");
+      builder.addEdge(depNodeId, currentRouteId, "provides");
     }
 
     for (const artifactId of routeNode.emittedArtifacts) {
-      builder.addArtifactNode(artifactId, "static");
-      builder.addEdge(`route:static:${route.id}`, `artifact:static:${artifactId}`, "resolved");
+      const artifactNodeId = builder.addArtifactNode(artifactId, "static");
+      builder.addEdge(currentRouteId, artifactNodeId, "resolved");
     }
   }
 
