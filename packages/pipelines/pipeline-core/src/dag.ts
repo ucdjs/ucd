@@ -93,31 +93,30 @@ export function buildDAG(routes: readonly PipelineRouteDefinition<any, any, any,
         node.dependencies.add(parsed.routeId);
         nodes.get(parsed.routeId)!.dependents.add(route.id);
       } else if (isArtifactDependency(dep)) {
-        const artifactParsed = parseDependency(dep);
-        if (artifactParsed.type !== "artifact") continue;
+        if (parsed.type !== "artifact") continue;
 
-        if (!routeIds.has(artifactParsed.routeId)) {
+        if (!routeIds.has(parsed.routeId)) {
           errors.push({
             type: "missing-route",
-            message: `Route "${route.id}" depends on artifact from non-existent route "${artifactParsed.routeId}"`,
-            details: { routeId: route.id, dependencyId: artifactParsed.routeId },
+            message: `Route "${route.id}" depends on artifact from non-existent route "${parsed.routeId}"`,
+            details: { routeId: route.id, dependencyId: parsed.routeId },
           });
           continue;
         }
 
-        const routeArtifacts = artifactsByRoute.get(artifactParsed.routeId);
-        const artifactKey = `${artifactParsed.routeId}:${artifactParsed.artifactName}`;
+        const routeArtifacts = artifactsByRoute.get(parsed.routeId);
+        const artifactKey = `${parsed.routeId}:${parsed.artifactName}`;
         if (!routeArtifacts?.has(artifactKey)) {
           errors.push({
             type: "missing-artifact",
-            message: `Route "${route.id}" depends on non-existent artifact "${artifactParsed.artifactName}" from route "${artifactParsed.routeId}"`,
+            message: `Route "${route.id}" depends on non-existent artifact "${parsed.artifactName}" from route "${parsed.routeId}"`,
             details: { routeId: route.id, dependencyId: artifactKey },
           });
           continue;
         }
 
-        node.dependencies.add(artifactParsed.routeId);
-        nodes.get(artifactParsed.routeId)!.dependents.add(route.id);
+        node.dependencies.add(parsed.routeId);
+        nodes.get(parsed.routeId)!.dependents.add(route.id);
       }
     }
   }
