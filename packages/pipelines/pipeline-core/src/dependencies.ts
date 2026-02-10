@@ -41,14 +41,18 @@ export type ExtractArtifactKeys<T extends readonly PipelineDependency[]> = {
 
 export function parseDependency(dep: PipelineDependency): ParsedDependency {
   if (dep.startsWith("route:")) {
-    return { type: "route", routeId: dep.slice("route:".length) };
+    const routeId = dep.slice("route:".length);
+    if (!routeId) {
+      throw new Error(`Invalid route dependency format: ${dep}. Expected "route:<id>" with non-empty id`);
+    }
+    return { type: "route", routeId };
   }
 
   if (dep.startsWith("artifact:")) {
     const rest = dep.slice("artifact:".length);
     const sepIndex = rest.indexOf(":");
     if (sepIndex <= 0 || sepIndex >= rest.length - 1) {
-      throw new Error(`Invalid artifact dependency format: ${dep}. Expected "artifact:<routeId>:<artifactName>" with non-empty parts`);
+      throw new Error(`Invalid dependency format: ${dep}. Expected "route:<id>" or "artifact:<routeId>:<artifactName>"`);
     }
 
     return {
