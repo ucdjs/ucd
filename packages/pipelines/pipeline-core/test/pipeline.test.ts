@@ -1,6 +1,4 @@
 import type { FallbackRouteDefinition } from "../src/pipeline";
-import type { SourceBackend } from "../src/source";
-import type { ParsedRow } from "../src/types";
 import { describe, expect, it, vi } from "vitest";
 import {
   definePipeline,
@@ -8,33 +6,13 @@ import {
   getPipelineSourceIds,
   isPipelineDefinition,
 } from "../src/pipeline";
-import { definePipelineRoute } from "../src/route";
 import { definePipelineSource } from "../src/source";
-
-function createMockBackend(): SourceBackend {
-  return {
-    listFiles: vi.fn().mockResolvedValue([]),
-    readFile: vi.fn().mockResolvedValue(""),
-  };
-}
+import { createMockBackend, createMockRoute, mockParser } from "./_test-utils";
 
 function createMockSource(id: string) {
   return definePipelineSource({
     id,
-    backend: createMockBackend(),
-  });
-}
-
-async function* mockParser(): AsyncIterable<ParsedRow> {
-  yield { sourceFile: "test.txt", kind: "point", codePoint: "0041", value: "A" };
-}
-
-function createMockRoute(id: string) {
-  return definePipelineRoute({
-    id,
-    filter: () => true,
-    parser: mockParser,
-    resolver: async () => [],
+    backend: createMockBackend([]),
   });
 }
 
