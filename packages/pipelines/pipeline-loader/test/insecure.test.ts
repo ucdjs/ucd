@@ -90,7 +90,7 @@ describe("loadPipelineFromContent", () => {
   });
 
   it("should reject full URL import specifiers", async () => {
-    const content = "import data from 'https://example.com/pipelines/dep.ts';\nexport const alpha = { _type: 'pipeline-definition', id: 'alpha', versions: ['16.0.0'], inputs: [], routes: [] };";
+    const content = "import data from 'https://luxass.dev/pipelines/dep.ts';\nexport const alpha = { _type: 'pipeline-definition', id: 'alpha', versions: ['16.0.0'], inputs: [], routes: [] };";
 
     await expect(
       loadPipelineFromContent(content, "pipelines/main.ucd-pipeline.ts", {
