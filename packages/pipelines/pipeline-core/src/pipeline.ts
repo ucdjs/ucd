@@ -168,6 +168,7 @@ export type InferPipelineRouteIds<T> = T extends PipelineDefinition<any, any, in
  * ```ts
  * const pipeline = definePipeline({
  *   id: "my-pipeline",
+ *   name: "My Pipeline",
  *   versions: ["16.0.0"],
  *   inputs: [mySource],
  *   routes: [myRoute],
@@ -221,7 +222,14 @@ export function isPipelineDefinition(value: unknown): value is PipelineDefinitio
     typeof value === "object"
     && value !== null
     && "_type" in value
-    && (value as { _type: unknown })._type === "pipeline-definition"
+    && typeof value._type === "string"
+    && value._type === "pipeline-definition"
+    && "id" in value
+    && typeof value.id === "string"
+    && "inputs" in value
+    && Array.isArray(value.inputs)
+    && "routes" in value
+    && Array.isArray(value.routes)
   );
 }
 

@@ -1,4 +1,4 @@
-import type { ParsedRow, PipelineRouteDefinition } from "../src";
+import type { PipelineRouteDefinition } from "../src";
 import { asyncFromArray } from "#test-utils";
 import { assert, describe, expect, it } from "vitest";
 import {
