@@ -20,6 +20,8 @@
   },
   "exports": {
     ".": "./dist/index.mjs",
+    "./insecure": "./dist/insecure.mjs",
+    "./remote": "./dist/remote.mjs",
     "./package.json": "./package.json"
   },
   "types": "./dist/index.d.mts",
