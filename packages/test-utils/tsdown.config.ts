@@ -9,6 +9,7 @@ export default createTsdownConfig({
     "fs-bridges/index": "./src/fs-bridges/index.ts",
     "matchers/vitest-setup": "./src/matchers/vitest-setup.ts",
     "matchers/types": "./src/matchers/types.d.ts",
+    "pipelines": "./src/pipelines/index.ts",
   },
   external: [
     "vitest",
