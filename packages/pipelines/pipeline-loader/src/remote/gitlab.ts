@@ -31,10 +31,9 @@ export async function listFiles(
   const projectId = encodeProjectPath(owner, repo);
   const encodedPath = encodeURIComponent(pathValue);
   const files: string[] = [];
-  let page = 1;
   let truncated = false;
 
-  while (true) {
+  async function fetchPage(page: number): Promise<void> {
     const url = `${GITLAB_API_BASE}/projects/${projectId}/repository/tree?recursive=true&ref=${refValue}&path=${encodedPath}&per_page=100&page=${page}`;
     const response = await customFetch(url);
 
@@ -51,17 +50,19 @@ export async function listFiles(
 
     const nextPage = response.headers.get("x-next-page");
     if (!nextPage) {
-      break;
+      return;
     }
 
     const nextPageNumber = Number(nextPage);
     if (!Number.isFinite(nextPageNumber) || nextPageNumber <= page) {
       truncated = true;
-      break;
+      return;
     }
 
-    page = nextPageNumber;
+    await fetchPage(nextPageNumber);
   }
+
+  await fetchPage(1);
 
   return {
     files,
