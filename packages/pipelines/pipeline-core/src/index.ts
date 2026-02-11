@@ -95,6 +95,7 @@ export {
 } from "./pipeline";
 
 export type {
+  AnyPipelineRouteDefinition,
   ArtifactDefinition,
   InferArtifactType,
   InferEmittedArtifactsFromRoute,
