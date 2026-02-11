@@ -13,12 +13,6 @@ export {
   serializeCacheKey,
 } from "./cache";
 
-export type {
-  PipelineExecutor,
-  PipelineExecutorOptions,
-  PipelineExecutorRunOptions,
-} from "./executor";
-
 export { createPipelineExecutor } from "./executor";
 
 export {
@@ -29,7 +23,13 @@ export {
 } from "./log-context";
 
 export type {
+  PipelineExecutor,
+  PipelineExecutorOptions,
+  PipelineExecutorRunOptions,
+} from "./types";
+
+export type {
   ExecutionStatus,
   PipelineExecutionResult,
   PipelineSummary,
-} from "./results";
+} from "./types";
