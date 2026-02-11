@@ -20,6 +20,8 @@
   },
   "exports": {
     ".": "./dist/index.mjs",
+    "./insecure": "./dist/insecure.mjs",
+    "./remote": "./dist/remote.mjs",
     "./package.json": "./package.json"
   },
   "types": "./dist/index.d.mts",
@@ -38,12 +40,15 @@
   },
   "dependencies": {
     "@ucdjs/pipelines-core": "workspace:*",
+    "oxc-parser": "catalog:build",
     "oxc-transform": "catalog:build",
+    "picomatch": "catalog:runtime",
     "rolldown": "catalog:build",
     "tinyglobby": "catalog:build"
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:lint",
+    "@types/picomatch": "catalog:types",
     "@ucdjs-tooling/tsconfig": "workspace:*",
     "@ucdjs-tooling/tsdown-config": "workspace:*",
     "eslint": "catalog:lint",
