@@ -1,4 +1,6 @@
-import type { PipelineError, PipelineGraph } from "@ucdjs/pipelines-core";
+import type { PipelineArtifactDefinition } from "@ucdjs/pipelines-artifacts";
+import type { AnyPipelineDefinition, PipelineError, PipelineEvent, PipelineGraph } from "@ucdjs/pipelines-core";
+import type { CacheStore } from "./cache";
 
 export interface PipelineSummary {
   versions: string[];
@@ -19,4 +21,19 @@ export interface PipelineExecutionResult {
   errors: PipelineError[];
   summary: PipelineSummary;
   status: ExecutionStatus;
+}
+
+export interface PipelineExecutorOptions {
+  artifacts?: PipelineArtifactDefinition[];
+  cacheStore?: CacheStore;
+  onEvent?: (event: PipelineEvent) => void | Promise<void>;
+}
+
+export interface PipelineExecutorRunOptions {
+  cache?: boolean;
+  versions?: string[];
+}
+
+export interface PipelineExecutor {
+  run: (pipelines: AnyPipelineDefinition[], options?: PipelineExecutorRunOptions) => Promise<PipelineExecutionResult[]>;
 }
