@@ -34,9 +34,12 @@ export function isPipelineArtifactDefinition(value: unknown): value is PipelineA
   return (
     typeof value === "object"
     && value !== null
+    && !Array.isArray(value)
     && "id" in value
     && "build" in value
-    && typeof (value as { id: unknown }).id === "string"
-    && typeof (value as { build: unknown }).build === "function"
+    && typeof value.id === "string"
+    && typeof value.build === "function"
+    && (!("filter" in value) || typeof value.filter === "function")
+    && (!("parser" in value) || typeof value.parser === "function")
   );
 }
