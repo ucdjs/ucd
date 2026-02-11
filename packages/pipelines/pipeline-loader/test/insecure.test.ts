@@ -83,6 +83,7 @@ describe("loadPipelineFromContent", () => {
 
     const result = await loadPipelineFromContent(content, "pipelines/main.ucd-pipeline.ts", {
       identifier: "github://ucdjs/demo-pipelines?ref=main&path=pipelines/main.ucd-pipeline.ts",
+      customFetch: globalThis.fetch,
     });
 
     expect(result.pipelines.map((pipeline) => pipeline.id)).toEqual(["alpha"]);
@@ -95,6 +96,7 @@ describe("loadPipelineFromContent", () => {
     await expect(
       loadPipelineFromContent(content, "pipelines/main.ucd-pipeline.ts", {
         identifier: "github://ucdjs/demo-pipelines?ref=main&path=pipelines/main.ucd-pipeline.ts",
+        customFetch: globalThis.fetch,
       }),
     ).rejects.toThrow("Unsupported import specifier");
   });
@@ -105,6 +107,7 @@ describe("loadPipelineFromContent", () => {
     await expect(
       loadPipelineFromContent(content, "pipelines/main.ucd-pipeline.ts", {
         identifier: "github://ucdjs/demo-pipelines?ref=main&path=pipelines/main.ucd-pipeline.ts",
+        customFetch: globalThis.fetch,
       }),
     ).rejects.toThrow("Unsupported import specifier");
   });

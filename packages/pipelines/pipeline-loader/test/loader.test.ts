@@ -67,7 +67,6 @@ describe("loadPipelineFile", () => {
 
     expect(result.filePath).toBe(filePath);
     expect(result.exportNames).toEqual(["alpha"]);
-    expect(result.exportNames).toHaveLength(1);
     expect(result.pipelines.map((pipeline) => pipeline.id)).toEqual(["alpha"]);
   });
 
@@ -125,13 +124,12 @@ describe("loadPipelinesFromPaths", () => {
 
     const missingPath = path.join(root, "missing.ucd-pipeline.ts");
 
-    try {
-      await loadPipelinesFromPaths([missingPath], { throwOnError: true });
-      throw new Error("Expected loadPipelinesFromPaths to throw");
-    } catch (error) {
-      expect(error).toBeInstanceOf(Error);
-      expect((error as Error).message).toContain(`Failed to load pipeline file: ${missingPath}`);
-      expect((error as Error).cause).toBeInstanceOf(Error);
-    }
+    await expect(
+      loadPipelinesFromPaths([missingPath], { throwOnError: true }),
+    ).rejects.toThrow(`Failed to load pipeline file: ${missingPath}`);
+
+    await expect(
+      loadPipelinesFromPaths([missingPath], { throwOnError: true }),
+    ).rejects.toMatchObject({ cause: expect.any(Error) });
   });
 });
