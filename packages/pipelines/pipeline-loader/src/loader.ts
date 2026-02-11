@@ -4,15 +4,15 @@ import type {
   LoadPipelinesResult,
   PipelineLoadError,
 } from "./types";
+import { pathToFileURL } from "node:url";
 import { isPipelineDefinition } from "@ucdjs/pipelines-core";
-
 import { glob } from "tinyglobby";
 
-/**
- * Load a pipeline module from disk.
- */
 export async function loadPipelineFile(filePath: string): Promise<LoadedPipelineFile> {
-  const module = await import(/* @vite-ignore */ filePath);
+  const moduleSpecifier = filePath.startsWith("file://")
+    ? filePath
+    : pathToFileURL(filePath).href;
+  const module = await import(/* @vite-ignore */ moduleSpecifier);
 
   const pipelines: PipelineDefinition[] = [];
   const exportNames: string[] = [];
@@ -35,9 +35,6 @@ export interface LoadPipelinesOptions {
   throwOnError?: boolean;
 }
 
-/**
- * Load multiple pipeline modules from disk paths.
- */
 export async function loadPipelinesFromPaths(
   filePaths: string[],
   options: LoadPipelinesOptions = {},
@@ -89,33 +86,11 @@ export async function loadPipelinesFromPaths(
 }
 
 export interface FindPipelineFilesOptions {
-  /**
-   * Glob patterns to match pipeline files.
-   * Defaults to `**\/*.ucd-pipeline.ts`
-   */
   patterns?: string | string[];
 
-  /**
-   * Current working directory to resolve patterns against.
-   * Defaults to `process.cwd()`
-   */
   cwd?: string;
 }
 
-/**
- * Find pipeline files on disk.
- *
- * By default matches files named `*.ucd-pipeline.ts` (the repository standard).
- *
- * @param {FindPipelineFilesOptions} options options for finding pipeline files
- * @returns {Promise<string[]>} Array of matched file paths
- *
- * @example
- * ```ts
- * const files = await findPipelineFiles({ cwd: "./pipelines" });
- * console.log(files); // Array of file paths
- * ```
- */
 export async function findPipelineFiles(
   options: FindPipelineFilesOptions = {},
 ): Promise<string[]> {

@@ -7,10 +7,10 @@ import type {
   PipelineLoadError,
 } from "./types";
 import picomatch from "picomatch";
+import { formatRemoteIdentifierFromParts } from "./bundler/identifiers";
 import { loadPipelineFromContent } from "./insecure";
 import * as github from "./remote/github";
 import * as gitlab from "./remote/gitlab";
-import { formatRemoteIdentifierFromParts } from "./remote/utils";
 
 export { github, gitlab };
 
@@ -19,9 +19,6 @@ export interface FindRemotePipelineFilesOptions {
   customFetch?: typeof fetch;
 }
 
-/**
- * Find remote pipeline files by glob pattern.
- */
 export async function findRemotePipelineFiles(
   source: GitHubSource | GitLabSource,
   options: FindRemotePipelineFilesOptions = {},
@@ -65,9 +62,6 @@ function buildRemoteIdentifier(
   return formatRemoteIdentifierFromParts(provider, owner, repo, ref, filePath);
 }
 
-/**
- * Load pipelines from remote file paths.
- */
 export async function loadRemotePipelines(
   source: GitHubSource | GitLabSource,
   filePaths: string[],

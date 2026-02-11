@@ -1,5 +1,5 @@
 import type { RemoteFileList, RemoteRequestOptions } from "./types";
-import { RemoteNotFoundError } from "./utils";
+import { RemoteNotFoundError } from "../bundler/errors";
 
 const GITHUB_API_BASE = "https://api.github.com";
 const GITHUB_ACCEPT_HEADER = "application/vnd.github.v3+json";
@@ -26,9 +26,6 @@ interface GitHubRepoRef {
   path?: string;
 }
 
-/**
- * List repository files from GitHub.
- */
 export async function listFiles(
   repoRef: GitHubRepoRef,
   options: RemoteRequestOptions = {},
@@ -60,9 +57,6 @@ export async function listFiles(
   };
 }
 
-/**
- * Fetch a repository file from GitHub as raw text.
- */
 export async function fetchFile(
   repoRef: GitHubRepoRef,
   filePath: string,
