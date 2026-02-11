@@ -65,7 +65,7 @@ export async function resolveSourceFiles(
 }
 
 export async function resolveMultipleSourceFiles(
-  sources: PipelineSourceDefinition[],
+  sources: PipelineSourceDefinition[] | readonly PipelineSourceDefinition[],
   version: string,
 ): Promise<SourceFileContext[]> {
   const filesByPath = new Map<string, SourceFileContext>();
