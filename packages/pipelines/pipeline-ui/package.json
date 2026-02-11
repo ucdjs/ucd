@@ -1,5 +1,5 @@
 {
-  "name": "@ucdjs/pipelines-server",
+  "name": "@ucdjs/pipelines-ui",
   "version": "0.0.1",
   "type": "module",
   "author": {
@@ -13,25 +13,35 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/ucdjs/ucd.git",
-    "directory": "packages/pipelines/pipeline-server"
+    "directory": "packages/pipelines/pipeline-ui"
   },
   "bugs": {
     "url": "https://github.com/ucdjs/ucd/issues"
   },
   "sideEffects": false,
   "imports": {
-    "#routes/*": "./src/client/routes/*.ts",
-    "#components/*": "./src/client/components/*.tsx",
-    "#hooks/*": "./src/client/hooks/*.ts",
-    "#lib/*": "./src/client/lib/*.ts",
-    "#server/*": "./src/server/*.ts",
-    "#server/db": "./src/server/db/index.ts",
-    "#server/routes": "./src/server/routes/index.ts"
+    "#components/*": "./src/components/*.tsx",
+    "#lib/*": "./src/lib/*.ts",
+    "#hooks/*": "./src/hooks/*.ts"
   },
   "exports": {
-    ".": "./dist/server/app.js",
+    ".": "./dist/index.mjs",
+    "./components/pipeline-sidebar": "./dist/components/pipeline-sidebar.mjs",
+    "./components/status-badge": "./dist/components/status-badge.mjs",
+    "./components/status-icon": "./dist/components/status-icon.mjs",
+    "./hooks": "./dist/hooks/index.mjs",
+    "./lib": "./dist/lib/index.mjs",
+    "./lib/adapter": "./dist/lib/adapter.mjs",
+    "./lib/colors": "./dist/lib/colors.mjs",
+    "./lib/execution-logs": "./dist/lib/execution-logs.mjs",
+    "./lib/format-time": "./dist/lib/format-time.mjs",
+    "./lib/layout": "./dist/lib/layout.mjs",
+    "./lib/pipeline-utils": "./dist/lib/pipeline-utils.mjs",
+    "./lib/utils": "./dist/lib/utils.mjs",
+    "./styles.css": "./dist/styles/globals.css",
     "./package.json": "./package.json"
   },
+  "types": "./dist/index.d.mts",
   "files": [
     "dist"
   ],
@@ -39,60 +49,46 @@
     "node": ">=22.18"
   },
   "scripts": {
-    "build": "vite build",
-    "dev": "vite dev --port 3031",
+    "build": "tsdown --tsconfig=./tsconfig.build.json",
+    "dev": "tsdown --watch",
     "clean": "git clean -xdf dist node_modules",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit -p tsconfig.build.json",
-    "db:generate": "drizzle-kit generate",
-    "db:push": "drizzle-kit push",
-    "db:migrate": "drizzle-kit migrate"
+    "typecheck": "tsc --noEmit -p tsconfig.build.json"
+  },
+  "peerDependencies": {
+    "@tanstack/react-router": "catalog:web",
+    "react": ">=19.2.0",
+    "react-dom": ">=19.2.0"
   },
   "dependencies": {
-    "@libsql/client": "catalog:backend",
+    "@icons-pack/react-simple-icons": "catalog:frontend",
     "@ucdjs-internal/shared-ui": "workspace:*",
     "@ucdjs/pipelines-core": "workspace:*",
     "@ucdjs/pipelines-executor": "workspace:*",
-    "@ucdjs/pipelines-loader": "workspace:*",
-    "@ucdjs/pipelines-ui": "workspace:*",
-    "chokidar": "catalog:build",
-    "crossws": "catalog:backend",
-    "drizzle-orm": "catalog:backend",
-    "esrap": "catalog:build",
-    "h3": "catalog:backend",
+    "@xyflow/react": "catalog:frontend",
+    "clsx": "catalog:frontend",
     "lucide-react": "catalog:frontend",
-    "oxc-parser": "catalog:build",
-    "pathe": "catalog:runtime",
-    "zod": "catalog:runtime"
+    "tailwind-merge": "catalog:frontend"
   },
   "devDependencies": {
     "@eslint-react/eslint-plugin": "catalog:lint",
     "@luxass/eslint-config": "catalog:lint",
-    "@tailwindcss/vite": "catalog:build",
+    "@rollup/plugin-babel": "catalog:build",
     "@tanstack/react-router": "catalog:frontend",
-    "@tanstack/router-plugin": "catalog:build",
-    "@types/node": "catalog:types",
     "@types/react": "catalog:types",
     "@types/react-dom": "catalog:types",
     "@ucdjs-tooling/tsconfig": "workspace:*",
     "@ucdjs-tooling/tsdown-config": "workspace:*",
-    "@vitejs/plugin-react": "catalog:build",
-    "clsx": "catalog:frontend",
-    "drizzle-kit": "catalog:build",
+    "babel-plugin-react-compiler": "catalog:build",
     "eslint": "catalog:lint",
     "eslint-plugin-react-hooks": "catalog:lint",
     "eslint-plugin-react-refresh": "catalog:lint",
     "publint": "catalog:build",
     "react": "catalog:frontend",
     "react-dom": "catalog:frontend",
-    "tailwind-merge": "catalog:frontend",
     "tailwindcss": "catalog:build",
     "tsdown": "catalog:build",
-    "typescript": "catalog:build",
-    "vite": "catalog:build",
-    "vite-tsconfig-paths": "catalog:build",
-    "vitest": "catalog:test",
-    "vitest-testdirs": "catalog:test"
+    "typescript": "catalog:build"
   },
   "publishConfig": {
     "access": "public"
