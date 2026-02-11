@@ -8,6 +8,9 @@ import { isPipelineDefinition } from "@ucdjs/pipelines-core";
 
 import { glob } from "tinyglobby";
 
+/**
+ * Load a pipeline module from disk.
+ */
 export async function loadPipelineFile(filePath: string): Promise<LoadedPipelineFile> {
   const module = await import(/* @vite-ignore */ filePath);
 
@@ -32,6 +35,9 @@ export interface LoadPipelinesOptions {
   throwOnError?: boolean;
 }
 
+/**
+ * Load multiple pipeline modules from disk paths.
+ */
 export async function loadPipelinesFromPaths(
   filePaths: string[],
   options: LoadPipelinesOptions = {},

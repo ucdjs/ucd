@@ -1,4 +1,5 @@
 import type { RemoteFileList, RemoteRequestOptions } from "./types";
+import { RemoteNotFoundError } from "./utils";
 
 const GITLAB_API_BASE = "https://gitlab.com/api/v4";
 
@@ -18,6 +19,9 @@ function encodeProjectPath(owner: string, repo: string): string {
   return encodeURIComponent(`${owner}/${repo}`);
 }
 
+/**
+ * List repository files from GitLab, following pagination when present.
+ */
 export async function listFiles(
   repoRef: GitLabRepoRef,
   options: RemoteRequestOptions = {},
@@ -28,26 +32,49 @@ export async function listFiles(
   const { customFetch = fetch } = options;
 
   const projectId = encodeProjectPath(owner, repo);
-  const url = `${GITLAB_API_BASE}/projects/${projectId}/repository/tree?recursive=true&ref=${refValue}&path=${encodeURIComponent(pathValue)}&per_page=100`;
+  const encodedPath = encodeURIComponent(pathValue);
+  const files: string[] = [];
+  let page = 1;
+  let truncated = false;
 
-  const response = await customFetch(url);
+  while (true) {
+    const url = `${GITLAB_API_BASE}/projects/${projectId}/repository/tree?recursive=true&ref=${refValue}&path=${encodedPath}&per_page=100&page=${page}`;
+    const response = await customFetch(url);
 
-  if (!response.ok) {
-    throw new Error(`GitLab API error: ${response.status} ${response.statusText}`);
+    if (!response.ok) {
+      throw new Error(`GitLab API error: ${response.status} ${response.statusText}`);
+    }
+
+    const data = await response.json() as GitLabTreeItem[];
+    files.push(
+      ...data
+        .filter((item) => item.type === "blob")
+        .map((item) => item.path),
+    );
+
+    const nextPage = response.headers.get("x-next-page");
+    if (!nextPage) {
+      break;
+    }
+
+    const nextPageNumber = Number(nextPage);
+    if (!Number.isFinite(nextPageNumber) || nextPageNumber <= page) {
+      truncated = true;
+      break;
+    }
+
+    page = nextPageNumber;
   }
-
-  const data = await response.json() as GitLabTreeItem[];
-
-  const files = data
-    .filter((item) => item.type === "blob")
-    .map((item) => item.path);
 
   return {
     files,
-    truncated: false,
+    truncated,
   };
 }
 
+/**
+ * Fetch a repository file from GitLab as raw text.
+ */
 export async function fetchFile(
   repoRef: GitLabRepoRef,
   filePath: string,
@@ -64,6 +91,9 @@ export async function fetchFile(
   const response = await customFetch(url);
 
   if (!response.ok) {
+    if (response.status === 404) {
+      throw new RemoteNotFoundError(`GitLab file not found: ${filePath}`);
+    }
     throw new Error(`GitLab API error: ${response.status} ${response.statusText}`);
   }
 

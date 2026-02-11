@@ -6,9 +6,11 @@ import type {
   LoadPipelinesResult,
   PipelineLoadError,
 } from "./types";
+import picomatch from "picomatch";
 import { loadPipelineFromContent } from "./insecure";
 import * as github from "./remote/github";
 import * as gitlab from "./remote/gitlab";
+import { formatRemoteIdentifierFromParts } from "./remote/utils";
 
 export { github, gitlab };
 
@@ -17,6 +19,9 @@ export interface FindRemotePipelineFilesOptions {
   customFetch?: typeof fetch;
 }
 
+/**
+ * Find remote pipeline files by glob pattern.
+ */
 export async function findRemotePipelineFiles(
   source: GitHubSource | GitLabSource,
   options: FindRemotePipelineFilesOptions = {},
@@ -33,14 +38,11 @@ export async function findRemotePipelineFiles(
     fileList = await gitlab.listFiles(repoRef, { customFetch });
   }
 
-  const matcher = new RegExp(
-    pattern
-      .replace(/\*\*/g, ".*")
-      .replace(/\*/g, "[^/]*")
-      .replace(/\?/g, "."),
-  );
+  const isMatch = picomatch(pattern, {
+    dot: true,
+  });
 
-  const matchedFiles = fileList.files.filter((file) => matcher.test(file));
+  const matchedFiles = fileList.files.filter((file) => isMatch(file));
 
   return {
     files: matchedFiles,
@@ -60,12 +62,12 @@ function buildRemoteIdentifier(
   ref: string | undefined,
   filePath: string,
 ): string {
-  const url = new URL(`${provider}://${owner}/${repo}`);
-  url.searchParams.set("ref", ref ?? "HEAD");
-  url.searchParams.set("path", filePath);
-  return url.toString();
+  return formatRemoteIdentifierFromParts(provider, owner, repo, ref, filePath);
 }
 
+/**
+ * Load pipelines from remote file paths.
+ */
 export async function loadRemotePipelines(
   source: GitHubSource | GitLabSource,
   filePaths: string[],
@@ -83,7 +85,7 @@ export async function loadRemotePipelines(
         : gitlab.fetchFile(repoRef, filePath, { customFetch })
       ).then((content) => loadPipelineFromContent(content, filePath, {
         identifier: buildRemoteIdentifier(type, owner, repo, ref, filePath),
-        fetchFn: customFetch,
+        customFetch,
       })).catch((err) => {
         const error = err instanceof Error ? err : new Error(String(err));
         throw new Error(`Failed to load pipeline file: ${filePath}`, { cause: error });
@@ -107,7 +109,7 @@ export async function loadRemotePipelines(
         : await gitlab.fetchFile(repoRef, filePath, { customFetch });
       return loadPipelineFromContent(content, filePath, {
         identifier: buildRemoteIdentifier(type, owner, repo, ref, filePath),
-        fetchFn: customFetch,
+        customFetch,
       });
     }),
   );

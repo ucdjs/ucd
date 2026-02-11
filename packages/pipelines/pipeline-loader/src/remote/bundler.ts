@@ -1,65 +1,25 @@
 import type { RolldownPlugin } from "rolldown";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
+import { parseSync } from "oxc-parser";
 import { transform } from "oxc-transform";
 import { build } from "rolldown";
 import * as github from "./github";
 import * as gitlab from "./gitlab";
+import {
+  formatRemoteIdentifier,
+  isUrlLike,
+  parseRemoteIdentifier,
+  RemoteNotFoundError,
+} from "./utils";
 
 export interface BundleInput {
   content: string;
   identifier: string;
-  fetchFn?: typeof fetch;
+  customFetch?: typeof fetch;
 }
 
 const EXTENSIONS = [".ts", ".mts", ".js", ".mjs"];
-
-function isUrlLike(value: string): boolean {
-  return /^[a-z][a-z+.-]*:/i.test(value);
-}
-
-type RemoteProvider = "github" | "gitlab";
-
-interface RemoteIdentifier {
-  provider: RemoteProvider;
-  owner: string;
-  repo: string;
-  ref: string;
-  path: string;
-}
-
-function parseRemoteIdentifier(identifier: string): RemoteIdentifier | null {
-  if (!identifier.startsWith("github://") && !identifier.startsWith("gitlab://")) {
-    return null;
-  }
-
-  const url = new URL(identifier);
-  const provider = url.protocol.replace(":", "") as RemoteProvider;
-  const owner = url.hostname;
-  const repo = url.pathname.replace(/^\/+/, "");
-
-  if (!owner || !repo) {
-    throw new Error(`Invalid remote identifier: ${identifier}`);
-  }
-
-  const ref = url.searchParams.get("ref") ?? "HEAD";
-  const filePath = url.searchParams.get("path") ?? "";
-
-  return {
-    provider,
-    owner,
-    repo,
-    ref,
-    path: filePath,
-  };
-}
-
-function formatRemoteIdentifier(remote: RemoteIdentifier): string {
-  const url = new URL(`${remote.provider}://${remote.owner}/${remote.repo}`);
-  url.searchParams.set("ref", remote.ref);
-  url.searchParams.set("path", remote.path);
-  return url.toString();
-}
 
 function assertRelativeSpecifier(specifier: string): void {
   if (isUrlLike(specifier)) {
@@ -145,7 +105,7 @@ function buildCandidateIdentifiers(
 
 async function loadRemoteSource(
   identifier: string,
-  fetchFn: typeof fetch,
+  customFetch: typeof fetch,
 ): Promise<string> {
   const remote = parseRemoteIdentifier(identifier);
   if (!remote) {
@@ -153,18 +113,33 @@ async function loadRemoteSource(
       throw new Error(`Unsupported import specifier: ${identifier}`);
     }
 
-    return readFile(identifier, "utf-8");
+    try {
+      return await readFile(identifier, "utf-8");
+    } catch (error) {
+      if (error instanceof Error && "code" in error && error.code === "ENOENT") {
+        throw new RemoteNotFoundError(`Module not found: ${identifier}`);
+      }
+      throw error;
+    }
   }
 
   const repoRef = { owner: remote.owner, repo: remote.repo, ref: remote.ref };
   if (remote.provider === "github") {
-    return github.fetchFile(repoRef, remote.path, { customFetch: fetchFn });
+    return github.fetchFile(repoRef, remote.path, { customFetch });
   }
-  return gitlab.fetchFile(repoRef, remote.path, { customFetch: fetchFn });
+  return gitlab.fetchFile(repoRef, remote.path, { customFetch });
 }
 
 async function compileModuleSource(identifier: string, source: string): Promise<string> {
-  const result = await transform(identifier, source, { sourceType: "module" });
+  let filename = identifier;
+  try {
+    const url = new URL(identifier);
+    filename = url.searchParams.get("path") ?? (url.pathname || identifier);
+  } catch {
+    filename = identifier;
+  }
+
+  const result = await transform(filename, source, { sourceType: "module" });
 
   if (result.errors && result.errors.length > 0) {
     const message = result.errors.map((error) => error.message).join("\n");
@@ -174,8 +149,68 @@ async function compileModuleSource(identifier: string, source: string): Promise<
   return result.code;
 }
 
+function getStaticImportSpecifiers(source: string, identifier?: string): string[] {
+  let parsed: ReturnType<typeof parseSync>;
+  try {
+    parsed = parseSync(identifier ?? "<inline>", source, {
+      sourceType: "module",
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`Failed to parse module ${identifier ?? "<inline>"}: ${message}`);
+  }
+
+  const specifiers = new Set<string>();
+
+  const visit = (value: unknown): void => {
+    if (!value) {
+      return;
+    }
+
+    if (Array.isArray(value)) {
+      for (const item of value) {
+        visit(item);
+      }
+      return;
+    }
+
+    if (typeof value !== "object") {
+      return;
+    }
+
+    const node = value as Record<string, unknown> & { type?: string };
+    if (node.type === "ImportDeclaration") {
+      const sourceNode = node.source as { value?: string } | undefined;
+      if (sourceNode?.value) {
+        specifiers.add(sourceNode.value);
+      }
+    } else if (node.type === "ExportAllDeclaration" || node.type === "ExportNamedDeclaration") {
+      const sourceNode = node.source as { value?: string } | undefined;
+      if (sourceNode?.value) {
+        specifiers.add(sourceNode.value);
+      }
+    } else if (node.type === "ImportExpression") {
+      const sourceNode = (node.source ?? node.argument) as { type?: string; value?: string } | undefined;
+      if (sourceNode?.type === "StringLiteral" && sourceNode.value) {
+        specifiers.add(sourceNode.value);
+      }
+    }
+
+    for (const [key, child] of Object.entries(node)) {
+      if (key === "parent") {
+        continue;
+      }
+      visit(child);
+    }
+  };
+
+  visit(parsed.program);
+
+  return Array.from(specifiers);
+}
+
 function createRemotePlugin(input: BundleInput): RolldownPlugin {
-  const fetchFn = input.fetchFn ?? fetch;
+  const customFetch = input.customFetch ?? fetch;
   const moduleCache = new Map<string, string>();
 
   return {
@@ -190,14 +225,11 @@ function createRemotePlugin(input: BundleInput): RolldownPlugin {
       const candidates = buildCandidateIdentifiers(specifier, importer);
       for (const candidate of candidates) {
         try {
-          const source = await loadRemoteSource(candidate, fetchFn);
+          const source = await loadRemoteSource(candidate, customFetch);
           moduleCache.set(candidate, source);
           return candidate;
         } catch (err) {
-          if (err instanceof Error && err.message.includes("Module not found")) {
-            continue;
-          }
-          if (err instanceof Error && err.message.includes("404")) {
+          if (err instanceof RemoteNotFoundError) {
             continue;
           }
           throw err;
@@ -212,7 +244,7 @@ function createRemotePlugin(input: BundleInput): RolldownPlugin {
         return code;
       }
 
-      const source = moduleCache.get(id) ?? await loadRemoteSource(id, fetchFn);
+      const source = moduleCache.get(id) ?? await loadRemoteSource(id, customFetch);
       const code = await compileModuleSource(id, source);
       moduleCache.set(id, source);
       return code;
@@ -220,13 +252,12 @@ function createRemotePlugin(input: BundleInput): RolldownPlugin {
   };
 }
 
+/**
+ * Bundle a module entry with remote-aware resolution.
+ */
 export async function bundleRemoteModule(input: BundleInput): Promise<string> {
-  // eslint-disable-next-line regexp/no-super-linear-backtracking
-  for (const match of input.content.matchAll(/\bimport\s*(?:[^"']*from\s*)?["']([^"']+)["']/g)) {
-    const specifier = match[1];
-    if (!specifier) {
-      continue;
-    }
+  const specifiers = getStaticImportSpecifiers(input.content, input.identifier);
+  for (const specifier of specifiers) {
     assertRelativeSpecifier(specifier);
   }
 
@@ -250,12 +281,18 @@ export async function bundleRemoteModule(input: BundleInput): Promise<string> {
   return chunk.code;
 }
 
+/**
+ * Convert bundled JavaScript to a data URL for dynamic import.
+ */
 export function createDataUrl(code: string): string {
   // eslint-disable-next-line node/prefer-global/buffer
   const encoded = Buffer.from(code, "utf-8").toString("base64");
   return `data:text/javascript;base64,${encoded}`;
 }
 
+/**
+ * Normalize a local file path into an absolute identifier.
+ */
 export function identifierForLocalFile(filePath: string): string {
   return path.resolve(filePath);
 }

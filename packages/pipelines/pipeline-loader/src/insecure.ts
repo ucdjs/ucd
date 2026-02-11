@@ -4,11 +4,17 @@ import path from "node:path";
 import { isPipelineDefinition } from "@ucdjs/pipelines-core";
 import { bundleRemoteModule, createDataUrl, identifierForLocalFile } from "./remote/bundler";
 
+/**
+ * Options for loading a pipeline module from raw source content.
+ */
 export interface LoadPipelineFromContentOptions {
   identifier?: string;
-  fetchFn?: typeof fetch;
+  customFetch?: typeof fetch;
 }
 
+/**
+ * Load pipeline definitions from module source content.
+ */
 export async function loadPipelineFromContent(
   content: string,
   filename: string,
@@ -18,7 +24,7 @@ export async function loadPipelineFromContent(
   const bundle = await bundleRemoteModule({
     content,
     identifier,
-    fetchFn: options.fetchFn,
+    customFetch: options.customFetch,
   });
 
   const dataUrl = createDataUrl(bundle);
