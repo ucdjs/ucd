@@ -1007,6 +1007,9 @@ importers:
       '@ucdjs/pipelines-core':
         specifier: workspace:*
         version: link:../pipeline-core
+      '@ucdjs/pipelines-graph':
+        specifier: workspace:*
+        version: link:../pipeline-graph
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:lint
