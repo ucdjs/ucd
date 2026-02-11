@@ -1,6 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "shadcn/tailwind.css";
+@import "./shadcn-vendored.css";
 @import "@fontsource-variable/inter";
 
 @source "../ui/**/*.{ts,js,mjs,jsx,tsx}";

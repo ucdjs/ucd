@@ -19,7 +19,14 @@ export default createTsdownConfig({
     packageJson: false,
   },
   copy: [
-    { from: "src/styles/globals.css", to: "dist/styles" },
+    {
+      from: "src/styles/globals.css",
+      to: "dist/styles",
+    },
+    {
+      from: "src/styles/shadcn-vendored.css",
+      to: "dist/styles",
+    },
   ],
   format: "esm",
   inputOptions: {
