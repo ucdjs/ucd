@@ -1,0 +1,3 @@
+@import "@ucdjs-internal/shared-ui/styles.css";
+
+@source "../components/**/*.{ts,js,mjs,jsx,tsx}";
