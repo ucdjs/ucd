@@ -2,19 +2,13 @@ import type { PipelineDefinition } from "@ucdjs/pipelines-core";
 import type { LoadedPipelineFile } from "./types";
 import path from "node:path";
 import { isPipelineDefinition } from "@ucdjs/pipelines-core";
-import { bundleRemoteModule, createDataUrl, identifierForLocalFile } from "./remote/bundler";
+import { bundleRemoteModule, createDataUrl, identifierForLocalFile } from "./bundler/bundle";
 
-/**
- * Options for loading a pipeline module from raw source content.
- */
 export interface LoadPipelineFromContentOptions {
   identifier?: string;
   customFetch?: typeof fetch;
 }
 
-/**
- * Load pipeline definitions from module source content.
- */
 export async function loadPipelineFromContent(
   content: string,
   filename: string,

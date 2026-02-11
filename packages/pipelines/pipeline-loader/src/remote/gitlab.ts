@@ -1,5 +1,5 @@
 import type { RemoteFileList, RemoteRequestOptions } from "./types";
-import { RemoteNotFoundError } from "./utils";
+import { RemoteNotFoundError } from "../bundler/errors";
 
 const GITLAB_API_BASE = "https://gitlab.com/api/v4";
 
@@ -19,9 +19,6 @@ function encodeProjectPath(owner: string, repo: string): string {
   return encodeURIComponent(`${owner}/${repo}`);
 }
 
-/**
- * List repository files from GitLab, following pagination when present.
- */
 export async function listFiles(
   repoRef: GitLabRepoRef,
   options: RemoteRequestOptions = {},
@@ -72,9 +69,6 @@ export async function listFiles(
   };
 }
 
-/**
- * Fetch a repository file from GitLab as raw text.
- */
 export async function fetchFile(
   repoRef: GitLabRepoRef,
   filePath: string,

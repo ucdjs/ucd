@@ -1,11 +1,5 @@
-/**
- * Supported remote providers for pipeline sources.
- */
 export type RemoteProvider = "github" | "gitlab";
 
-/**
- * Structured remote identifier payload.
- */
 export interface RemoteIdentifier {
   provider: RemoteProvider;
   owner: string;
@@ -14,27 +8,10 @@ export interface RemoteIdentifier {
   path: string;
 }
 
-/**
- * Indicates a remote resource was not found.
- */
-export class RemoteNotFoundError extends Error {
-  override name = "RemoteNotFoundError";
-
-  constructor(message: string) {
-    super(message);
-  }
-}
-
-/**
- * Check if a value looks like a URL scheme.
- */
 export function isUrlLike(value: string): boolean {
   return /^[a-z][a-z+.-]*:/i.test(value);
 }
 
-/**
- * Parse a github:// or gitlab:// identifier into its structured parts.
- */
 export function parseRemoteIdentifier(identifier: string): RemoteIdentifier | null {
   if (!identifier.startsWith("github://") && !identifier.startsWith("gitlab://")) {
     return null;
@@ -61,9 +38,6 @@ export function parseRemoteIdentifier(identifier: string): RemoteIdentifier | nu
   };
 }
 
-/**
- * Format a remote identifier from its structured parts.
- */
 export function formatRemoteIdentifier(remote: RemoteIdentifier): string {
   const url = new URL(`${remote.provider}://${remote.owner}/${remote.repo}`);
   url.searchParams.set("ref", remote.ref);
@@ -71,9 +45,6 @@ export function formatRemoteIdentifier(remote: RemoteIdentifier): string {
   return url.toString();
 }
 
-/**
- * Convenience helper to format a remote identifier from raw parts.
- */
 export function formatRemoteIdentifierFromParts(
   provider: RemoteProvider,
   owner: string,
