@@ -33,7 +33,7 @@ export async function loadRemoteSource(
 }
 
 export async function compileModuleSource(identifier: string, source: string): Promise<string> {
-  let filename = identifier;
+  let filename: string;
   try {
     const url = new URL(identifier);
     filename = url.searchParams.get("path") ?? (url.pathname || identifier);
