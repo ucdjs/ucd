@@ -38,7 +38,8 @@
   },
   "dependencies": {
     "@ucdjs/pipelines-artifacts": "workspace:*",
-    "@ucdjs/pipelines-core": "workspace:*"
+    "@ucdjs/pipelines-core": "workspace:*",
+    "@ucdjs/pipelines-graph": "workspace:*"
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:lint",
