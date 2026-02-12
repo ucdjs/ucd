@@ -1,4 +1,5 @@
 import type { ParseContext, ParsedRow, ParserFn } from "@ucdjs/pipelines-core";
+import { splitTwoFields } from "@ucdjs/pipelines-core";
 
 export interface SequenceParserOptions {
   delimiter?: string;
@@ -27,13 +28,12 @@ export function createSequenceParser(options: SequenceParserOptions = {}): Parse
         continue;
       }
 
-      const fields = dataLine.split(delimiter);
-      if (fields.length < 2) {
-        continue;
-      }
+      const fields = splitTwoFields(dataLine, delimiter);
+      if (!fields) continue;
 
-      const sequenceField = trimFields ? fields[0].trim() : fields[0];
-      const valueField = trimFields ? fields[1].trim() : fields[1];
+      const [rawSequence, rawValue] = fields;
+      const sequenceField = trimFields ? rawSequence.trim() : rawSequence;
+      const valueField = trimFields ? rawValue.trim() : rawValue;
 
       const codePoints = sequenceField.split(sequenceDelimiter).filter(Boolean);
 

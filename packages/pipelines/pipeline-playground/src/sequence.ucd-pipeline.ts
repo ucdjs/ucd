@@ -1,5 +1,6 @@
 import { byName, definePipeline, definePipelineRoute } from "@ucdjs/pipelines-core";
-import { createMemorySource, sequenceParser, propertyJsonResolver } from "@ucdjs/pipelines-presets";
+import { createMemorySource } from "@ucdjs/pipelines-core/sources";
+import { propertyJsonResolver, sequenceParser } from "@ucdjs/pipelines-presets";
 
 export const sequencePipeline = definePipeline({
   id: "playground-sequence",

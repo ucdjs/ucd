@@ -1,4 +1,5 @@
 import type { ParseContext, ParsedRow, ParserFn } from "@ucdjs/pipelines-core";
+import { splitMinFields } from "@ucdjs/pipelines-core";
 
 export interface UnicodeDataMeta {
   characterName: string;
@@ -34,14 +35,12 @@ export const unicodeDataParser: ParserFn = async function* (
       continue;
     }
 
-    const fields = trimmedLine.split(";");
-    if (fields.length < 14) {
-      continue;
-    }
+    const fields = splitMinFields(trimmedLine, ";", 14);
+    if (!fields) continue;
 
-    const codePoint = fields[0].trim();
-    const characterName = fields[1].trim();
-    const generalCategory = fields[2].trim();
+    const codePoint = fields[0]?.trim() ?? "";
+    const characterName = fields[1]?.trim() ?? "";
+    const generalCategory = fields[2]?.trim() ?? "";
 
     if (characterName.endsWith(", First>")) {
       rangeStart = codePoint;
@@ -59,17 +58,17 @@ export const unicodeDataParser: ParserFn = async function* (
         meta: {
           characterName: rangeName || "",
           generalCategory,
-          canonicalCombiningClass: fields[3].trim(),
-          bidiClass: fields[4].trim(),
-          decompositionMapping: fields[5].trim(),
-          numericType: fields[6].trim(),
-          numericValue: fields[7].trim(),
-          bidiMirrored: fields[9].trim(),
-          unicode1Name: fields[10].trim(),
-          isoComment: fields[11].trim(),
-          simpleUppercaseMapping: fields[12].trim(),
-          simpleLowercaseMapping: fields[13].trim(),
-          simpleTitlecaseMapping: fields[14]?.trim() || "",
+          canonicalCombiningClass: fields[3]?.trim() ?? "",
+          bidiClass: fields[4]?.trim() ?? "",
+          decompositionMapping: fields[5]?.trim() ?? "",
+          numericType: fields[6]?.trim() ?? "",
+          numericValue: fields[7]?.trim() ?? "",
+          bidiMirrored: fields[9]?.trim() ?? "",
+          unicode1Name: fields[10]?.trim() ?? "",
+          isoComment: fields[11]?.trim() ?? "",
+          simpleUppercaseMapping: fields[12]?.trim() ?? "",
+          simpleLowercaseMapping: fields[13]?.trim() ?? "",
+          simpleTitlecaseMapping: fields[14]?.trim() ?? "",
         },
       };
 
@@ -87,17 +86,17 @@ export const unicodeDataParser: ParserFn = async function* (
       meta: {
         characterName,
         generalCategory,
-        canonicalCombiningClass: fields[3].trim(),
-        bidiClass: fields[4].trim(),
-        decompositionMapping: fields[5].trim(),
-        numericType: fields[6].trim(),
-        numericValue: fields[7].trim(),
-        bidiMirrored: fields[9].trim(),
-        unicode1Name: fields[10].trim(),
-        isoComment: fields[11].trim(),
-        simpleUppercaseMapping: fields[12].trim(),
-        simpleLowercaseMapping: fields[13].trim(),
-        simpleTitlecaseMapping: fields[14]?.trim() || "",
+        canonicalCombiningClass: fields[3]?.trim() ?? "",
+        bidiClass: fields[4]?.trim() ?? "",
+        decompositionMapping: fields[5]?.trim() ?? "",
+        numericType: fields[6]?.trim() ?? "",
+        numericValue: fields[7]?.trim() ?? "",
+        bidiMirrored: fields[9]?.trim() ?? "",
+        unicode1Name: fields[10]?.trim() ?? "",
+        isoComment: fields[11]?.trim() ?? "",
+        simpleUppercaseMapping: fields[12]?.trim() ?? "",
+        simpleLowercaseMapping: fields[13]?.trim() ?? "",
+        simpleTitlecaseMapping: fields[14]?.trim() ?? "",
       },
     };
 

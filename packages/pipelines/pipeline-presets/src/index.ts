@@ -45,35 +45,7 @@ export {
 } from "./routes";
 
 export {
-  createHttpBackend,
-  createHttpSource,
-  createMemoryBackend,
-  createMemorySource,
-  createUnicodeOrgSource,
-  type HttpBackendOptions,
-  type HttpSourceOptions,
-  type MemoryBackendOptions,
-  type MemoryFile,
-  type MemorySourceOptions,
-  UNICODE_ORG_BASE_URL,
-  unicodeOrgSource,
-} from "./sources";
-
-export {
-  createDeduplicateTransform,
-  createExpandRangesTransform,
   createFilterByPipelineFilter,
-  createNormalizeTransform,
   createRowFilter,
-  createSortTransform,
-  type DeduplicateOptions,
-  deduplicateRows,
-  type DeduplicateStrategy,
-  expandRanges,
-  type ExpandRangesOptions,
-  normalizeCodePoints,
   type RowFilterOptions,
-  sortByCodePoint,
-  type SortDirection,
-  type SortOptions,
 } from "./transforms";

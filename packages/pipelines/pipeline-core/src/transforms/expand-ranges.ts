@@ -1,5 +1,6 @@
-import type { ParsedRow } from "@ucdjs/pipelines-core";
-import { definePipelineTransform } from "@ucdjs/pipelines-core";
+import type { PipelineTransformDefinition } from "../transform";
+import type { ParsedRow } from "../types";
+import { definePipelineTransform } from "../transform";
 
 function hexToNumber(hex: string): number {
   return Number.parseInt(hex, 16);
@@ -16,7 +17,6 @@ export const expandRanges = definePipelineTransform<ParsedRow, ParsedRow>({
       if (row.kind === "range" && row.start && row.end) {
         const start = hexToNumber(row.start);
         const end = hexToNumber(row.end);
-
         for (let i = start; i <= end; i++) {
           yield {
             ...row,
@@ -37,8 +37,7 @@ export interface ExpandRangesOptions {
   maxExpansion?: number;
 }
 
-// eslint-disable-next-line ts/explicit-function-return-type
-export function createExpandRangesTransform(options: ExpandRangesOptions = {}) {
+export function createExpandRangesTransform(options: ExpandRangesOptions = {}): PipelineTransformDefinition<ParsedRow, ParsedRow> {
   const { maxExpansion = 10000 } = options;
 
   return definePipelineTransform<ParsedRow, ParsedRow>({

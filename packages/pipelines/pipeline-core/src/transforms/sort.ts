@@ -1,5 +1,6 @@
-import type { ParsedRow } from "@ucdjs/pipelines-core";
-import { definePipelineTransform } from "@ucdjs/pipelines-core";
+import type { PipelineTransformDefinition } from "../transform";
+import type { ParsedRow } from "../types";
+import { definePipelineTransform } from "../transform";
 
 function hexToNumber(hex: string): number {
   return Number.parseInt(hex, 16);
@@ -13,7 +14,10 @@ function getRowSortKey(row: ParsedRow): number {
     return hexToNumber(row.start);
   }
   if (row.sequence && row.sequence.length > 0) {
-    return hexToNumber(row.sequence[0]);
+    const first = row.sequence[0];
+    if (first) {
+      return hexToNumber(first);
+    }
   }
   return 0;
 }
@@ -22,13 +26,10 @@ export const sortByCodePoint = definePipelineTransform<ParsedRow, ParsedRow>({
   id: "sort-by-code-point",
   async* fn(_ctx, rows) {
     const collected: ParsedRow[] = [];
-
     for await (const row of rows) {
       collected.push(row);
     }
-
     collected.sort((a, b) => getRowSortKey(a) - getRowSortKey(b));
-
     yield* collected;
   },
 });
@@ -40,8 +41,7 @@ export interface SortOptions {
   keyFn?: (row: ParsedRow) => number;
 }
 
-// eslint-disable-next-line ts/explicit-function-return-type
-export function createSortTransform(options: SortOptions = {}) {
+export function createSortTransform(options: SortOptions = {}): PipelineTransformDefinition<ParsedRow, ParsedRow> {
   const { direction = "asc", keyFn = getRowSortKey } = options;
   const multiplier = direction === "asc" ? 1 : -1;
 
@@ -49,13 +49,10 @@ export function createSortTransform(options: SortOptions = {}) {
     id: `sort-${direction}`,
     async* fn(_ctx, rows) {
       const collected: ParsedRow[] = [];
-
       for await (const row of rows) {
         collected.push(row);
       }
-
       collected.sort((a, b) => multiplier * (keyFn(a) - keyFn(b)));
-
       yield* collected;
     },
   });

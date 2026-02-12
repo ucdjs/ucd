@@ -1,5 +1,6 @@
-import type { ParsedRow } from "@ucdjs/pipelines-core";
-import { definePipelineTransform } from "@ucdjs/pipelines-core";
+import type { PipelineTransformDefinition } from "../transform";
+import type { ParsedRow } from "../types";
+import { definePipelineTransform } from "../transform";
 
 function getRowKey(row: ParsedRow): string {
   if (row.kind === "point" && row.codePoint) {
@@ -18,10 +19,8 @@ export const deduplicateRows = definePipelineTransform<ParsedRow, ParsedRow>({
   id: "deduplicate-rows",
   async* fn(_ctx, rows) {
     const seen = new Set<string>();
-
     for await (const row of rows) {
       const key = getRowKey(row);
-
       if (!seen.has(key)) {
         seen.add(key);
         yield row;
@@ -37,8 +36,7 @@ export interface DeduplicateOptions {
   keyFn?: (row: ParsedRow) => string;
 }
 
-// eslint-disable-next-line ts/explicit-function-return-type
-export function createDeduplicateTransform(options: DeduplicateOptions = {}) {
+export function createDeduplicateTransform(options: DeduplicateOptions = {}): PipelineTransformDefinition<ParsedRow, ParsedRow> {
   const { strategy = "first", keyFn = getRowKey } = options;
 
   if (strategy === "last") {
@@ -46,12 +44,10 @@ export function createDeduplicateTransform(options: DeduplicateOptions = {}) {
       id: "deduplicate-rows-last",
       async* fn(_ctx, rows) {
         const byKey = new Map<string, ParsedRow>();
-
         for await (const row of rows) {
           const key = keyFn(row);
           byKey.set(key, row);
         }
-
         yield* byKey.values();
       },
     });
@@ -61,10 +57,8 @@ export function createDeduplicateTransform(options: DeduplicateOptions = {}) {
     id: "deduplicate-rows-first",
     async* fn(_ctx, rows) {
       const seen = new Set<string>();
-
       for await (const row of rows) {
         const key = keyFn(row);
-
         if (!seen.has(key)) {
           seen.add(key);
           yield row;

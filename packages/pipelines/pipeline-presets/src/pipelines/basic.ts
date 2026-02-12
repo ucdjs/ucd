@@ -1,6 +1,7 @@
+import type { ParsedRow, PropertyJson, ResolveContext } from "@ucdjs/pipelines-core";
 import { byExt, definePipeline } from "@ucdjs/pipelines-core";
 import { standardParser } from "../parsers/standard";
-import { propertyJsonResolver } from "../resolvers/property-json";
+import { createPropertyJsonResolver } from "../resolvers/property-json";
 import { coreRoutes } from "../routes/common";
 
 export interface BasicPipelineOptions {
@@ -19,6 +20,8 @@ export function createBasicPipeline(options: BasicPipelineOptions) {
     strict = false,
   } = options;
 
+  const resolver = createPropertyJsonResolver();
+
   return definePipeline({
     id,
     name: "Basic UCD Pipeline",
@@ -31,7 +34,7 @@ export function createBasicPipeline(options: BasicPipelineOptions) {
     strict,
     fallback: {
       parser: standardParser,
-      resolver: propertyJsonResolver,
+      resolver: resolver as (ctx: ResolveContext, rows: AsyncIterable<ParsedRow>) => Promise<PropertyJson[]>,
     },
   });
 }
