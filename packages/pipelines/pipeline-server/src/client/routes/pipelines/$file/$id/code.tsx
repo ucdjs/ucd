@@ -84,7 +84,7 @@ function CodeDisplay({
     }
 
     return items.length ? items : undefined;
-  }, [code, routeInfo]);
+  }, [routeInfo]);
 
   const stats = useMemo(() => {
     const lines = code.split("\n").length;

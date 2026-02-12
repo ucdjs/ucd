@@ -9,19 +9,7 @@ import { zodValidator } from "@tanstack/zod-adapter";
 import { cn } from "@ucdjs-internal/shared-ui";
 import { Skeleton } from "@ucdjs-internal/shared-ui/ui/skeleton";
 import { Suspense } from "react";
-import z from "zod";
-
-// eslint-disable-next-line react-refresh/only-export-components
-export const searchSchema = z.object({
-  query: z.string().optional(),
-  viewMode: z.enum(["list", "cards"]).optional(),
-  pattern: z.string().optional(),
-  sort: z.enum(["name", "lastModified"]).optional(),
-  order: z.enum(["asc", "desc"]).optional(),
-  type: z.enum(["all", "files", "directories"]).optional(),
-});
-
-export type SearchQueryParams = z.output<typeof searchSchema>;
+import { searchSchema } from "../../lib/file-explorer";
 
 export const Route = createFileRoute("/file-explorer/$")({
   component: DirectoryExplorerPage,

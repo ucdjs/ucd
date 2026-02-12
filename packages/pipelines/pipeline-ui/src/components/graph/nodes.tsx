@@ -149,12 +149,12 @@ function getHandleStyle(border: string): CSSProperties {
   return cached;
 }
 
-// Base node component - memoized to prevent re-renders when parent updates
-const BaseNode = memo(({
+// eslint-disable-next-line react-refresh/only-export-components
+function BaseNode({
   data,
   selected = false,
   type,
-}: NodeProps & { data: PipelineNodeData; type: string }) => {
+}: NodeProps & { data: PipelineNodeData; type: string }) {
   const styles = nodeTypeStyles[type] ?? defaultStyle;
 
   return (
@@ -186,16 +186,14 @@ const BaseNode = memo(({
       />
     </div>
   );
-});
+};
 
-// Factory function to create node type components
 function createNodeComponent(type: string) {
   return memo((props: NodeProps & { data: PipelineNodeData }) => (
     <BaseNode {...props} type={type} />
   ));
 }
 
-// Individual node type components - created via factory
 export const SourceNode = createNodeComponent("source");
 export const FileNode = createNodeComponent("file");
 export const RouteNode = createNodeComponent("route");

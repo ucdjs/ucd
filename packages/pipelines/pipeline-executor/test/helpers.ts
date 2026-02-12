@@ -46,12 +46,12 @@ export async function* mockParser(ctx: ParseContext): AsyncIterable<ParsedRow> {
   }
 }
 
-export type TestOutput = {
+export interface TestOutput {
   version: string;
   file: string;
   entries: Array<{ codePoint: string; value: string }>;
   artifact?: { version: string };
-};
+}
 
 export function createTestRoute(
   id: string,
