@@ -63,7 +63,7 @@ describe("parseDependency", () => {
 
   it("should throw error for route without id", () => {
     expect(() => parseDependency("route:" as PipelineDependency)).toThrow(
-      "Invalid dependency format: route:",
+      "Invalid route dependency format: route:. Expected \"route:<id>\" with non-empty id",
     );
   });
 

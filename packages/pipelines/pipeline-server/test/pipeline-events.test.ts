@@ -7,7 +7,7 @@ describe("pipeline events", () => {
     const executionId = await createTestExecution(app);
 
     const eventsRes = await app.fetch(new Request(
-      `/api/pipelines/simple/simple/executions/${executionId}/events?limit=10&offset=0`,
+      `http://localhost/api/pipelines/simple/simple/executions/${executionId}/events?limit=10&offset=0`,
     ));
 
     expect(eventsRes.status).toBe(200);

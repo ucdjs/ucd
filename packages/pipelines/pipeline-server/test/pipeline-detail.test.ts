@@ -5,7 +5,7 @@ describe("pipeline detail", () => {
   it("returns pipeline details", async () => {
     const { app } = await createTestApp();
 
-    const res = await app.fetch(new Request("/api/pipelines/simple/simple"));
+    const res = await app.fetch(new Request("http://localhost/api/pipelines/simple/simple"));
     expect(res.status).toBe(200);
     const data = await res.json();
 

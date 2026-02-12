@@ -354,7 +354,7 @@ describe("build context", () => {
     const context: ArtifactBuildContext = { version: "16.0.0" };
     const result = await artifact.build(context);
 
-    expect(build).toHaveBeenCalledWith(context, undefined);
+    expect(build).toHaveBeenCalledWith(context);
     expect(result).toEqual({ processedVersion: "16.0.0" });
   });
 
