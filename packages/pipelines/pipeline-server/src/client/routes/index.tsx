@@ -72,7 +72,7 @@ function HomePage() {
     return <LoadingState />;
   }
 
-  const pipelineCount = data?.pipelines?.length ?? 0;
+  const pipelineCount = (data?.files || []).map((file) => file.pipelines.length).reduce((sum, count) => sum + count, 0);
 
   return (
     <div className="flex-1 flex items-center justify-center p-8">
