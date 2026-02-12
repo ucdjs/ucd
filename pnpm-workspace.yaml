@@ -103,6 +103,7 @@ catalogs:
     crossws: 0.4.4
     drizzle-orm: 0.45.1
     "@libsql/client": 0.17.0
+    miniflare: 4.20260210.0
 
   types:
     "@types/picomatch": 4.0.2
@@ -157,6 +158,7 @@ overrides:
   "@asteasolutions/zod-to-openapi": 8.4.0
   rolldown: catalog:build
   wrangler: catalog:backend
+  miniflare: catalog:backend
   esbuild: 0.27.3
   semver: 7.7.4
   solid-js: 1.9.11
