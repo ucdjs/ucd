@@ -2,11 +2,19 @@ import type { PipelinesResponse } from "../types";
 import { useCallback, useEffect, useState } from "react";
 
 export interface UsePipelinesOptions {
-  /** Base URL for the API (default: "") */
+  /**
+   * Base URL for the API (default: "")
+   */
   baseUrl?: string;
-  /** Optional search query */
+
+  /**
+   * Optional search query
+   */
   search?: string;
-  /** Whether to fetch on mount (default: true) */
+
+  /**
+   * Whether to fetch on mount (default: true)
+   */
   fetchOnMount?: boolean;
 }
 
@@ -17,9 +25,6 @@ export interface UsePipelinesReturn {
   refetch: () => void;
 }
 
-/**
- * Hook to fetch and manage the list of all pipelines
- */
 export function usePipelines(options: UsePipelinesOptions = {}): UsePipelinesReturn {
   const { baseUrl = "", search, fetchOnMount = true } = options;
 

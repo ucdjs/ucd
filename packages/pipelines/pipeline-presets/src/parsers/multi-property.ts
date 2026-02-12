@@ -11,7 +11,11 @@ function parseCodePointOrRange(field: string): { kind: ParsedRow["kind"]; start?
 
   if (trimmed.includes("..")) {
     const [start, end] = trimmed.split("..");
-    return { kind: "range", start: start.trim(), end: end.trim() };
+    return {
+      kind: "range",
+      start: start.trim(),
+      end: end.trim(),
+    };
   }
 
   return { kind: "point", codePoint: trimmed };
