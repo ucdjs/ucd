@@ -9,6 +9,7 @@ export default defineProject({
     cloudflareTest({
       miniflare: {
         cache: false,
+        compatibilityDate: "2025-12-19",
         compatibilityFlags: [
           "nodejs_compat",
           "enable_nodejs_tty_module",
