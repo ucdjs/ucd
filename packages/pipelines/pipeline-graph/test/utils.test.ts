@@ -91,12 +91,12 @@ describe("toVisualTree", () => {
 
     expect(tree).toBe(
       "├─ route:static:oranges\n"
-        + "│  └─ route:static:mandarin\n"
-        + "│     ├─ route:static:clementine\n"
-        + "│     └─ route:static:tangerine: so cheap and juicy!\n"
-        + "└─ route:static:apples\n"
-        + "   ├─ route:static:gala\n"
-        + "   └─ route:static:pink lady",
+      + "│  └─ route:static:mandarin\n"
+      + "│     ├─ route:static:clementine\n"
+      + "│     └─ route:static:tangerine: so cheap and juicy!\n"
+      + "└─ route:static:apples\n"
+      + "   ├─ route:static:gala\n"
+      + "   └─ route:static:pink lady",
     );
   });
 });

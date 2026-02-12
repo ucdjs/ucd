@@ -1,6 +1,5 @@
 import type { FileEntry } from "@ucdjs/schemas";
-import type z from "zod";
-import type { SearchQueryParams, searchSchema } from "../routes/file-explorer/$";
+import type { SearchQueryParams } from "../lib/file-explorer";
 import { queryOptions } from "@tanstack/react-query";
 import { notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
@@ -30,6 +29,12 @@ export type FilesResponse
     | { type: "file"; content: string; contentType: string; size: number }
     | { type: "file-too-large"; size: number; contentType: string; downloadUrl: string };
 
+type FileQueryParams = {
+  path: string;
+  statType?: string | null;
+  size?: number | null;
+} & SearchQueryParams;
+
 /**
  * Server function to fetch files from the UCD API
  *
@@ -41,7 +46,7 @@ export type FilesResponse
  * This prevents loading massive files into memory and keeps routing fast.
  */
 export const fetchFiles = createServerFn({ method: "GET" })
-  .inputValidator((data: { path: string; statType?: string | null; size?: number | null } & z.output<typeof searchSchema>) => data)
+  .inputValidator((data: FileQueryParams) => data)
   .handler(async ({ data, context }) => {
     const request = getRequest();
     const signal = request.signal;

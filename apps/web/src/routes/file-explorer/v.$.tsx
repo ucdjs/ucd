@@ -1,11 +1,12 @@
 import { FileViewer, FileViewerSkeleton } from "#components/file-explorer/file-viewer";
 import { LargeFileWarning } from "#components/file-explorer/large-file-warning";
-import { NON_RENDERABLE_EXTENSIONS, NonRenderableFile } from "#components/file-explorer/non-renderable-file";
+import { NonRenderableFile } from "#components/file-explorer/non-renderable-file";
 import { ExplorerNotFound } from "#components/not-found";
 import { filesQueryOptions, getFileHeadInfo } from "#functions/files";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { Suspense } from "react";
+import { NON_RENDERABLE_EXTENSIONS } from "../../lib/file-explorer";
 
 /**
  * Maximum file size to render inline (1MB)
@@ -114,10 +115,6 @@ function FileViewerPage() {
   );
 }
 
-/**
- * Component that fetches and renders file content
- * Separated to enable Suspense boundary around data fetching
- */
 function FileViewerContent({ path, fileName, statType, size }: { path: string; fileName: string; statType: string | null; size: number }) {
   const { data } = useSuspenseQuery(filesQueryOptions({ path, statType, size }));
 
