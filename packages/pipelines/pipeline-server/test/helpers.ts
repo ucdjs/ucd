@@ -1,3 +1,4 @@
+import type { H3 } from "h3";
 import { fileURLToPath } from "node:url";
 import { createApp } from "../src/server/app";
 import { createDatabase, runMigrations } from "../src/server/db";
@@ -20,8 +21,8 @@ export async function createTestApp() {
   return { app, storePath: playgroundPath };
 }
 
-export async function createTestExecution(app: { fetch: (request: Request) => Promise<Response> }) {
-  const execRes = await app.fetch(new Request("/api/pipelines/simple/simple/execute", {
+export async function createTestExecution(app: H3) {
+  const execRes = await app.fetch(new Request("http://localhost/api/pipelines/simple/simple/execute", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ versions: ["16.0.0"] }),

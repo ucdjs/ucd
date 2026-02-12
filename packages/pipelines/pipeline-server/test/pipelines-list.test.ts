@@ -5,7 +5,7 @@ describe("pipelines list", () => {
   it("lists pipelines with fileId and fileLabel", async () => {
     const { app } = await createTestApp();
 
-    const res = await app.fetch(new Request("/api/pipelines"));
+    const res = await app.fetch(new Request("http://localhost/api/pipelines"));
     expect(res.status).toBe(200);
     const data = await res.json();
 
@@ -23,7 +23,7 @@ describe("pipelines list", () => {
   it("returns pipeline file data by file id", async () => {
     const { app } = await createTestApp();
 
-    const res = await app.fetch(new Request("/api/pipelines/simple"));
+    const res = await app.fetch(new Request("http://localhost/api/pipelines/simple"));
     expect(res.status).toBe(200);
     const data = await res.json();
 
