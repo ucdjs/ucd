@@ -62,10 +62,11 @@ export function PipelineHeader() {
             <Button
               variant="outline"
               size="sm"
-              render={() => (
+              render={(props) => (
                 <Link
                   to="/pipelines/$file/$id/executions/$executionId"
                   params={{ file, id, executionId }}
+                  {...props}
                 >
                   <CheckCircle className="h-4 w-4 mr-2 text-green-500" />
                   View Execution
