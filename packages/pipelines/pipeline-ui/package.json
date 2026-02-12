@@ -56,7 +56,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.build.json"
   },
   "peerDependencies": {
-    "@tanstack/react-router": "catalog:web",
+    "@tanstack/react-router": "catalog:frontend",
     "react": ">=19.2.0",
     "react-dom": ">=19.2.0"
   },
