@@ -22,12 +22,12 @@ packages:
 
 catalogs:
   build:
-    turbo: 2.8.6
+    turbo: 2.8.7
     "@ucdjs/release-scripts": 0.1.0-beta.24
     tsdown: 0.20.3
     typescript: 5.9.3
     publint: 0.3.17
-    nanotar: 0.2.0
+    nanotar: 0.2.1
     openapi-typescript: 7.13.0
     tsx: 4.21.0
     rolldown: 1.0.0-rc.4
@@ -41,7 +41,7 @@ catalogs:
     "@cloudflare/vite-plugin": 1.24.0
     "@tanstack/router-plugin": 1.159.5
     "@tanstack/devtools-vite": 0.5.1
-    vite-tsconfig-paths: 6.1.0
+    vite-tsconfig-paths: 6.1.1
     chokidar: 5.0.0
     drizzle-kit: 0.31.9
     esrap: 2.2.3
@@ -60,7 +60,7 @@ catalogs:
     "@cloudflare/vitest-pool-workers": https://pkg.pr.new/@cloudflare/vitest-pool-workers@11632
 
   lint:
-    "@luxass/eslint-config": 7.1.0
+    "@luxass/eslint-config": 7.2.0
     "@stoplight/spectral-cli": 6.15.0
     eslint: 10.0.0
     eslint-plugin-format: 1.4.0
