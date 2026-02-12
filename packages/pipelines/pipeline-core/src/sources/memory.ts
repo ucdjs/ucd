@@ -1,10 +1,6 @@
-import type {
-  FileContext,
-  FileMetadata,
-  PipelineSourceDefinition,
-  SourceBackend,
-} from "@ucdjs/pipelines-core";
-import { definePipelineSource } from "@ucdjs/pipelines-core";
+import type { FileMetadata, PipelineSourceDefinition, SourceBackend } from "../source";
+import type { FileContext } from "../types";
+import { definePipelineSource } from "../source";
 
 export interface MemoryFile {
   path: string;
@@ -20,17 +16,14 @@ function getFileContext(version: string, file: MemoryFile): FileContext {
   const path = file.path;
   const parts = path.split("/");
   const name = parts[parts.length - 1];
+  if (!name) {
+    throw new Error(`Invalid file path: ${file.path}`);
+  }
   const extIndex = name.lastIndexOf(".");
   const ext = extIndex >= 0 ? name.slice(extIndex) : "";
   const dir = file.dir || parts[0] || "ucd";
 
-  return {
-    version,
-    dir,
-    path,
-    name,
-    ext,
-  };
+  return { version, dir, path, name, ext };
 }
 
 export function createMemoryBackend(options: MemoryBackendOptions): SourceBackend {
@@ -39,10 +32,7 @@ export function createMemoryBackend(options: MemoryBackendOptions): SourceBacken
   return {
     async listFiles(version: string): Promise<FileContext[]> {
       const versionFiles = files[version];
-      if (!versionFiles) {
-        return [];
-      }
-
+      if (!versionFiles) return [];
       return versionFiles.map((f) => getFileContext(version, f));
     },
 
@@ -51,12 +41,10 @@ export function createMemoryBackend(options: MemoryBackendOptions): SourceBacken
       if (!versionFiles) {
         throw new Error(`Version ${file.version} not found in memory backend`);
       }
-
       const memFile = versionFiles.find((f) => f.path === file.path);
       if (!memFile) {
         throw new Error(`File ${file.path} not found in version ${file.version}`);
       }
-
       return memFile.content;
     },
 
@@ -65,15 +53,11 @@ export function createMemoryBackend(options: MemoryBackendOptions): SourceBacken
       if (!versionFiles) {
         throw new Error(`Version ${file.version} not found in memory backend`);
       }
-
       const memFile = versionFiles.find((f) => f.path === file.path);
       if (!memFile) {
         throw new Error(`File ${file.path} not found in version ${file.version}`);
       }
-
-      return {
-        size: new TextEncoder().encode(memFile.content).length,
-      };
+      return { size: new TextEncoder().encode(memFile.content).length };
     },
   };
 }
@@ -83,13 +67,12 @@ export interface MemorySourceOptions {
   files: Record<string, MemoryFile[]>;
 }
 
-export function createMemorySource<const TId extends string = "memory">(
-  options: MemorySourceOptions & { id?: TId },
-): PipelineSourceDefinition<TId extends undefined ? "memory" : TId> {
-  const { id = "memory" as TId, files } = options;
-
+export function createMemorySource(options: MemorySourceOptions & { id?: undefined }): PipelineSourceDefinition<"memory">;
+export function createMemorySource<TId extends string>(options: MemorySourceOptions & { id: TId }): PipelineSourceDefinition<TId>;
+export function createMemorySource(options?: MemorySourceOptions): PipelineSourceDefinition<string> {
+  const id = options?.id ?? "memory";
   return definePipelineSource({
-    id: id as TId extends undefined ? "memory" : TId,
-    backend: createMemoryBackend({ files }),
+    id,
+    backend: createMemoryBackend({ files: options?.files ?? {} }),
   });
 }

@@ -1,6 +1,6 @@
 import type { DAG } from "./dag";
 import type { PipelineEvent } from "./events";
-import type { InferRoutesOutput, PipelineRouteDefinition } from "./route";
+import type { AnyPipelineRouteDefinition, InferRoutesOutput, PipelineRouteDefinition } from "./route";
 import type { InferSourceIds, PipelineSourceDefinition } from "./source";
 import type { ParseContext, ParsedRow, PipelineFilter, ResolveContext } from "./types";
 import { buildDAG } from "./dag";
@@ -27,7 +27,7 @@ export interface FallbackRouteDefinition<
 
 export interface PipelineDefinitionSpec<
   TSources extends readonly PipelineSourceDefinition[] = readonly PipelineSourceDefinition[],
-  TRoutes extends readonly PipelineRouteDefinition<any, any, any, any, any>[] = readonly PipelineRouteDefinition<any, any, any, any, any>[],
+  TRoutes extends readonly AnyPipelineRouteDefinition[] = readonly AnyPipelineRouteDefinition[],
   TFallback extends FallbackRouteDefinition<any, unknown> | undefined = undefined,
 > {
   /**
@@ -183,7 +183,7 @@ export function definePipeline<
   const TId extends string,
   const TSources extends readonly PipelineSourceDefinition[],
   const TRoutes extends readonly PipelineRouteDefinition<any, any, any, any, any>[],
-  TFallback extends FallbackRouteDefinition<any, unknown> | undefined = undefined,
+  const TFallback extends FallbackRouteDefinition<any, unknown> | undefined = undefined,
 >(
   options: Omit<PipelineDefinitionSpec<readonly [...TSources], readonly [...TRoutes], TFallback>, "inputs" | "routes">
     & {

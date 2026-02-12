@@ -151,3 +151,8 @@ export type {
   RouteOutput,
   RowContext,
 } from "./types";
+
+export {
+  splitMinFields,
+  splitTwoFields,
+} from "./utils";

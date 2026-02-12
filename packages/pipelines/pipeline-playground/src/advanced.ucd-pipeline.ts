@@ -1,4 +1,4 @@
-import type { ParsedRow, PropertyJson, ResolvedEntry } from "@ucdjs/pipelines-core";
+import type { FallbackRouteDefinition, ParsedRow, PropertyJson, ResolveContext, ResolvedEntry } from "@ucdjs/pipelines-core";
 import {
   always,
   and,
@@ -9,12 +9,14 @@ import {
   definePipelineRoute,
   definePipelineTransform,
 } from "@ucdjs/pipelines-core";
+import { createMemorySource } from "@ucdjs/pipelines-core/sources";
 import {
   createDeduplicateTransform,
   createExpandRangesTransform,
-  createMemorySource,
   createNormalizeTransform,
   createSortTransform,
+} from "@ucdjs/pipelines-core/transforms";
+import {
   propertyJsonResolver,
   sequenceParser,
   standardParser,
@@ -77,7 +79,7 @@ const blocksRoute = definePipelineRoute({
       entries.push({
         range: range as `${string}..${string}` | undefined,
         codePoint: row.codePoint,
-        value: row.value,
+        value: row.value ?? "",
       });
     }
 
@@ -103,7 +105,7 @@ const scriptsRoute = definePipelineRoute({
       entries.push({
         range: range as `${string}..${string}` | undefined,
         codePoint: row.codePoint,
-        value: row.value,
+        value: row.value ?? "",
       });
     }
 
@@ -150,7 +152,7 @@ const propListRoute = definePipelineRoute({
       entries.push({
         range: range as `${string}..${string}` | undefined,
         codePoint: row.codePoint,
-        value: true,
+        value: row.value ?? "",
       });
     }
 
@@ -184,7 +186,7 @@ const emojiDataRoute = definePipelineRoute({
         range: range as `${string}..${string}` | undefined,
         codePoint: row.codePoint,
         sequence: row.sequence,
-        value: row.value,
+        value: row.value ?? "",
       });
     }
 
@@ -317,20 +319,20 @@ export const playgroundAdvancedPipeline = definePipeline({
   concurrency: 8,
   fallback: {
     filter: always(),
-    parser: async function* (ctx) {
+    async* parser(ctx): AsyncIterable<ParsedRow> {
       const content = await ctx.readContent();
       yield {
         sourceFile: ctx.file.path,
-        kind: "point" as const,
+        kind: "point",
         value: `fallback: ${content.length} bytes`,
       };
     },
-    resolver: async (ctx, rows) => {
+    resolver: async (ctx: ResolveContext, rows: AsyncIterable<ParsedRow>) => {
       const entries: ResolvedEntry[] = [];
       for await (const row of rows) {
         entries.push({
           codePoint: "0000",
-          value: row.value,
+          value: row.value ?? "",
         });
       }
       return [{
@@ -344,27 +346,35 @@ export const playgroundAdvancedPipeline = definePipeline({
   onEvent: (event) => {
     switch (event.type) {
       case "pipeline:start":
+        // eslint-disable-next-line no-console
         console.log(`[Pipeline] Started: ${event.id}`);
         break;
       case "pipeline:end":
+        // eslint-disable-next-line no-console
         console.log(`[Pipeline] Completed in ${event.durationMs}ms`);
         break;
       case "version:start":
+        // eslint-disable-next-line no-console
         console.log(`[Version] Processing ${event.version}`);
         break;
       case "version:end":
+        // eslint-disable-next-line no-console
         console.log(`[Version] ${event.version} completed in ${event.durationMs}ms`);
         break;
       case "file:matched":
+        // eslint-disable-next-line no-console
         console.log(`[File] Matched ${event.file.path} -> ${event.routeId}`);
         break;
       case "file:skipped":
+        // eslint-disable-next-line no-console
         console.log(`[File] Skipped ${event.file.path}: ${event.reason}`);
         break;
       case "artifact:produced":
+        // eslint-disable-next-line no-console
         console.log(`[Artifact] Produced ${event.artifactId} from ${event.routeId}`);
         break;
       case "artifact:consumed":
+        // eslint-disable-next-line no-console
         console.log(`[Artifact] Consumed ${event.artifactId} by ${event.routeId}`);
         break;
       case "error":

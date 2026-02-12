@@ -1,12 +1,13 @@
 import { always, definePipeline, definePipelineRoute } from "@ucdjs/pipelines-core";
-import { createMemorySource, standardParser, propertyJsonResolver } from "@ucdjs/pipelines-presets";
+import { createMemorySource } from "@ucdjs/pipelines-core/sources";
+import { propertyJsonResolver, standardParser } from "@ucdjs/pipelines-presets";
 
 export const simplePipeline = definePipeline({
   id: "simple",
   name: "Playground Simple",
   versions: ["16.0.0"],
   tags: [
-    "simple"
+    "simple",
   ],
   inputs: [
     createMemorySource({
@@ -29,4 +30,3 @@ export const simplePipeline = definePipeline({
     }),
   ],
 });
-

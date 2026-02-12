@@ -1149,6 +1149,22 @@ importers:
       zod:
         specifier: catalog:runtime
         version: 4.3.6
+    devDependencies:
+      '@luxass/eslint-config':
+        specifier: catalog:lint
+        version: 7.2.0(@eslint-react/eslint-plugin@2.12.4(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.1(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.1)(jiti@2.6.1)(lightningcss@1.30.2)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(tsx@4.21.0)(yaml@2.8.2))
+      '@ucdjs-tooling/tsconfig':
+        specifier: workspace:*
+        version: link:../../../tooling/tsconfig
+      '@ucdjs-tooling/tsdown-config':
+        specifier: workspace:*
+        version: link:../../../tooling/tsdown-config
+      eslint:
+        specifier: catalog:lint
+        version: 10.0.0(jiti@2.6.1)
+      typescript:
+        specifier: catalog:build
+        version: 5.9.3
 
   packages/pipelines/pipeline-presets:
     dependencies:

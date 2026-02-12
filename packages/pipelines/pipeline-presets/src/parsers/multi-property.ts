@@ -1,4 +1,5 @@
 import type { ParseContext, ParsedRow, ParserFn } from "@ucdjs/pipelines-core";
+import { splitTwoFields } from "@ucdjs/pipelines-core";
 
 export interface MultiPropertyParserOptions {
   delimiter?: string;
@@ -8,16 +9,12 @@ export interface MultiPropertyParserOptions {
 
 function parseCodePointOrRange(field: string): { kind: ParsedRow["kind"]; start?: string; end?: string; codePoint?: string } {
   const trimmed = field.trim();
-
   if (trimmed.includes("..")) {
-    const [start, end] = trimmed.split("..");
-    return {
-      kind: "range",
-      start: start.trim(),
-      end: end.trim(),
-    };
+    const parts = trimmed.split("..");
+    if (parts.length >= 2 && parts[0] && parts[1]) {
+      return { kind: "range", start: parts[0].trim(), end: parts[1].trim() };
+    }
   }
-
   return { kind: "point", codePoint: trimmed };
 }
 
@@ -32,7 +29,7 @@ export function createMultiPropertyParser(options: MultiPropertyParserOptions = 
 
       if (trimmedLine.startsWith(`# ${propertyMarker}`)) {
         const match = trimmedLine.match(/# @(\w+)=(\w+)/);
-        if (match) {
+        if (match && match[2]) {
           currentProperty = match[2];
         }
         continue;
@@ -49,13 +46,12 @@ export function createMultiPropertyParser(options: MultiPropertyParserOptions = 
         continue;
       }
 
-      const fields = dataLine.split(delimiter);
-      if (fields.length < 2) {
-        continue;
-      }
+      const fields = splitTwoFields(dataLine, delimiter);
+      if (!fields) continue;
 
-      const codePointField = trimFields ? fields[0].trim() : fields[0];
-      const valueField = trimFields ? fields[1].trim() : fields[1];
+      const [rawCodePoint, rawValue] = fields;
+      const codePointField = trimFields ? rawCodePoint.trim() : rawCodePoint;
+      const valueField = trimFields ? rawValue.trim() : rawValue;
 
       const { kind, start, end, codePoint } = parseCodePointOrRange(codePointField);
 

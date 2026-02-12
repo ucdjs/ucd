@@ -54,6 +54,8 @@
 
       // pipeline packages
       "@ucdjs/pipelines-core": ["./packages/pipelines/pipeline-core/src/index.ts"],
+      "@ucdjs/pipelines-core/sources": ["./packages/pipelines/pipeline-core/src/sources/index.ts"],
+      "@ucdjs/pipelines-core/transforms": ["./packages/pipelines/pipeline-core/src/transforms/index.ts"],
       "@ucdjs/pipelines-artifacts": ["./packages/pipelines/pipeline-artifacts/src/index.ts"],
       "@ucdjs/pipelines-graph": ["./packages/pipelines/pipeline-graph/src/index.ts"],
       "@ucdjs/pipelines-executor": ["./packages/pipelines/pipeline-executor/src/index.ts"],

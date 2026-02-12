@@ -2,14 +2,12 @@ import {
   byGlob,
   byName,
   definePipelineRoute,
-
 } from "@ucdjs/pipelines-core";
+import { normalizeCodePoints, sortByCodePoint } from "@ucdjs/pipelines-core/transforms";
 import { standardParser } from "../parsers/standard";
 import { unicodeDataParser } from "../parsers/unicode-data";
 import { createGroupedResolver } from "../resolvers/grouped";
 import { propertyJsonResolver } from "../resolvers/property-json";
-import { normalizeCodePoints } from "../transforms/normalize";
-import { sortByCodePoint } from "../transforms/sort";
 
 export const lineBreakRoute = definePipelineRoute({
   id: "line-break",

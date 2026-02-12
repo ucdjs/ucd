@@ -30,12 +30,21 @@
     "node": ">=22.18"
   },
   "scripts": {
-    "pipelines:list": "ucd pipelines list --cwd ."
+    "pipelines:list": "ucd pipelines list --cwd .",
+    "clean": "git clean -xdf dist node_modules",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit -p tsconfig.build.json"
   },
   "dependencies": {
     "@ucdjs/pipelines-core": "workspace:*",
     "@ucdjs/pipelines-presets": "workspace:*",
     "zod": "catalog:runtime"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "@luxass/eslint-config": "catalog:lint",
+    "@ucdjs-tooling/tsconfig": "workspace:*",
+    "@ucdjs-tooling/tsdown-config": "workspace:*",
+    "eslint": "catalog:lint",
+    "typescript": "catalog:build"
+  }
 }

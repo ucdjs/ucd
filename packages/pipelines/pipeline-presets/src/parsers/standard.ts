@@ -1,4 +1,5 @@
 import type { ParseContext, ParsedRow, ParserFn } from "@ucdjs/pipelines-core";
+import { splitTwoFields } from "@ucdjs/pipelines-core";
 
 export interface StandardParserOptions {
   delimiter?: string;
@@ -6,14 +7,19 @@ export interface StandardParserOptions {
   skipEmpty?: boolean;
 }
 
-function parseCodePointOrRange(field: string): { kind: ParsedRow["kind"]; start?: string; end?: string; codePoint?: string } {
+function parseCodePointOrRange(field: string): {
+  kind: ParsedRow["kind"];
+  start?: string;
+  end?: string;
+  codePoint?: string;
+} {
   const trimmed = field.trim();
-
   if (trimmed.includes("..")) {
-    const [start, end] = trimmed.split("..");
-    return { kind: "range", start: start!.trim(), end: end!.trim() };
+    const parts = trimmed.split("..");
+    if (parts.length >= 2 && parts[0] && parts[1]) {
+      return { kind: "range", start: parts[0].trim(), end: parts[1].trim() };
+    }
   }
-
   return { kind: "point", codePoint: trimmed };
 }
 
@@ -22,10 +28,7 @@ export function createStandardParser(options: StandardParserOptions = {}): Parse
 
   return async function* standardParser(ctx: ParseContext): AsyncIterable<ParsedRow> {
     for await (const line of ctx.readLines()) {
-      // eslint-disable-next-line no-console
-      console.log(`Parsing line: ${line}`);
       if (ctx.isComment(line)) {
-        console.error(`Skipping comment line: ${line}`);
         continue;
       }
 
@@ -41,15 +44,14 @@ export function createStandardParser(options: StandardParserOptions = {}): Parse
         continue;
       }
 
-      const fields = dataLine.split(delimiter);
-      if (fields.length < 2) {
-        continue;
-      }
+      const fields = splitTwoFields(dataLine, delimiter);
+      if (!fields) continue;
 
-      const codePointField = trimFields ? fields[0]!.trim() : fields[0];
-      const valueField = trimFields ? fields[1]!.trim() : fields[1];
+      const [rawCodePoint, rawValue] = fields;
+      const codePointField = trimFields ? rawCodePoint.trim() : rawCodePoint;
+      const valueField = trimFields ? rawValue.trim() : rawValue;
 
-      const { kind, start, end, codePoint } = parseCodePointOrRange(codePointField!);
+      const { kind, start, end, codePoint } = parseCodePointOrRange(codePointField);
 
       yield {
         sourceFile: ctx.file.path,

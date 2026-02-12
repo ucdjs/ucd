@@ -20,6 +20,8 @@
   },
   "exports": {
     ".": "./dist/index.mjs",
+    "./sources": "./dist/sources/index.mjs",
+    "./transforms": "./dist/transforms/index.mjs",
     "./package.json": "./package.json"
   },
   "types": "./dist/index.d.mts",

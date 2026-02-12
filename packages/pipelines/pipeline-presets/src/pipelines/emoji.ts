@@ -1,6 +1,7 @@
+import type { ParsedRow, PropertyJson, ResolveContext } from "@ucdjs/pipelines-core";
 import { and, byDir, byExt, definePipeline } from "@ucdjs/pipelines-core";
 import { sequenceParser } from "../parsers/sequence";
-import { propertyJsonResolver } from "../resolvers/property-json";
+import { createPropertyJsonResolver } from "../resolvers/property-json";
 import { emojiRoutes } from "../routes/common";
 
 export interface EmojiPipelineOptions {
@@ -19,6 +20,8 @@ export function createEmojiPipeline(options: EmojiPipelineOptions) {
     strict = false,
   } = options;
 
+  const resolver = createPropertyJsonResolver();
+
   return definePipeline({
     id,
     name: "Emoji Pipeline",
@@ -31,7 +34,7 @@ export function createEmojiPipeline(options: EmojiPipelineOptions) {
     strict,
     fallback: {
       parser: sequenceParser,
-      resolver: propertyJsonResolver,
+      resolver: resolver as (ctx: ResolveContext, rows: AsyncIterable<ParsedRow>) => Promise<PropertyJson[]>,
     },
   });
 }
