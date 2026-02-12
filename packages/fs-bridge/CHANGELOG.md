@@ -1,324 +1,220 @@
-# @ucdjs/fs-bridge
+# @ucdjs/fs-bridge v1.0.0
+**Previous version**: `0.1.0`
+**New version**: `1.0.0`
+
+
+## ✨ Features
+- **fs-bridge**: add path validation for listdir tests (`b3df8a65`)
+- **fs-bridge**: format paths with leading and trailing slashes (`df9b301f`)
+- **fs-bridge**: add symbol support for HTTP bridge definition (`1c3664e8`)
+- **fs-bridge**: add detailed documentation for listdir method (`22ecdde9`)
+- **fs-bridge**: add node and http playground scripts (`eda5a23a`)
+- **fs-bridge**: add isBuiltinHttpBridge function and update exports (`264723a6`)
+- **test-utils**: add custom error matcher and update Vitest setup (`647a592b`)
+- add write capability assertion and enhance store commands (`a2eb3cd5`)
+- complete security tests for fs-bridge path resolution (`e35cd457`)
+- implement comprehensive HTTP bridge security tests (`c8b13e05`)
+- **fs-bridge**: add utility functions for hook payload construction and operation wrapping (`f90f3b87`)
+- **fs-bridge**: upgrade hookable (##378) (`4591756b`)
+- **fs-bridge**: add `encoding` property to hook payload for `write:before` (`c5de8fbe`)
+- **fs-bridge**: enhance hook payload types and improve type safety (`677ab0e2`)
+- **fs-bridge**: enhance `rm` operation payload and update hook signatures (`6ef1d6d2`)
+- **fs-bridge**: define supported bridge operations (`4a2df972`)
+- **fs-bridge**: integrate hooks for file system operations (`9e8dbe64`)
+- **fs-bridge**: add `hasCapability` function to guard bridge capabilities (`7df47eb7`)
+- **fs-bridge**: add FileSystemBridgeFactory type export (`8d42c7f9`)
+- **shared**: migrate utilities to @ucdjs-internal/shared (`4d7588fd`)
+- **fs-bridge**: add support for data mirroring in FileSystemBridgeMetadata (`f5df4435`)
+- **fs-bridge**: make metadata optional in FileSystemBridge interfaces (`9f202d0a`)
+- **fs-bridge**: add metadata and descriptive fields to HTTP and Node.js bridges (`7bf84348`)
+- **fs-bridge**: enhance FileSystemBridge with metadata and descriptive fields (`a35231e3`)
+- **fs-bridge**: add BridgeSetupError class for enhanced error handling (`473b7255`)
+- **fs-bridge**: integrate `resolveSafePath` into file system bridge setup (`5cadac4d`)
+- **fs-bridge**: add path resolution functions for security (`c9ff1916`)
+- **web**: update TypeScript configuration and add tsconfig dependency (`fcd13059`)
+- **ucd-store**: add UCDStoreInvalidManifestError and improve error handling (`69d3d780`)
+- **fs-bridge**: support Uint8Array (`2f554138`)
+- **fs-bridge**: implement capability assertion and error handling (`43ef6402`)
+- **fs-bridge**: enhance `resolveSafePath` to handle absolute paths within base (`c82c2f65`)
+- **fs-bridge**: enhance path resolution security and add tests for root base behavior (`e00d95c7`)
+- **fs-bridge**: enhance path validation and security measures (`a49c12f4`)
+- **ucd-store**: update UCD store schemas and handling (`8b90a374`)
+- **fs-bridge**: update import paths for fs-bridge module (`8060e4de`)
+- **fs-bridge**: add internal debug symbol and update exports (`b0d5d5d0`)
+- **ucd-store**: update internal debug symbol and enhance type safety (`df963c65`)
+- **fs-bridge**: add debug symbol to file system bridge (`6763abcd`)
+- **fs-bridge**: update import paths and module exports (`99e60ad0`)
+- **fs-bridge**: add HTTP and Node file system bridges with comprehensive tests (`5bc90ebc`)
+
+## 🐛 Bug Fixes
+- **fs-bridge**: update tests to use UCDJS_STORE_BASE_URL (`82721278`)
+- **fs-bridge**: update base URL to use UCDJS_STORE_BASE_URL in tests (`b24682e0`)
+- **fs-bridge**: update default API base URL to use UCDJS_STORE_BASE_URL (`061d7f0b`)
+- **fs-bridge**: add optional chaining to bridge methods (`67832895`)
+- **fs-bridge**: update error handling to use BridgeBaseError (`eacb0e9c`)
+- **test-utils**: improve error handling in toMatchError matcher (`a7cb1e08`)
+- **fs-bridge**: improve error handling in `handleError` function (`4ad7725c`)
+- **fs-bridge**: convert strings to errors (`e5da9589`)
+- update file paths to include &#39;extracted&#39; prefix (##371) (`2f455a5f`)
+- **fs-bridge**: make hooks call asynchronous and ensure proper error handling (`32d96256`)
+- **fs-bridge**: replace `hooxs` with `hookable` and update hook method calls (`666ac4c1`)
+- **fs-bridge**: update `entries` type in hook payload to use `FSEntry[]` (`96d73c06`)
+- **fs-bridge**: correct unsupported operation handling in defineFileSystemBridge (`722f516c`)
+- **fs-bridge**: use `structuredClone` for state in `defineFileSystemBridge` (`cb28a42e`)
+- **fs-bridge**: set default type for TOptionsSchema in defineFileSystemBridge (`a37a81c2`)
+- **fs-bridge**: improve error handling during bridge setup (`efad5a3a`)
+- **fs-bridge**: enhance error handling with PathUtilsBaseError (`87bb2163`)
+- **fs-bridge**: improve proxy method handling in defineFileSystemBridge (`93bc2610`)
+- **fs-bridge**: refine error handling and type assertions in proxy methods (`b93ae49e`)
+- **fs-bridge**: enhance error handling for promise operations (`9c054b6f`)
+- **fs-bridge**: refine constructor for BridgeBaseError and remove duplicate class definition (`1147df55`)
+- **fs-bridge**: refine type assertion for original method in proxy (`b7c733dd`)
+- **fs-bridge**: refine type assertion for original method in proxy (`13043af5`)
+- **fs-bridge**: improve error handling in proxy methods (`798c9cb4`)
+- **fs-bridge**: ensure original method context is preserved in proxy (`e0453470`)
+- **ucd-store**: improve error messaging and initialization logic (`dad79c58`)
+- **fs-bridge**: improve error handling for HEAD requests (`261cf461`)
+- **fs-bridge**: improve error handling for invalid URL encoding in path resolution (`a5ef25cf`)
+- **fs-bridge**: improve error messaging for dangerous control characters in path resolution (`98dd1c02`)
+- **fs-bridge**: enhance error handling and directory listing logic (`02be1238`)
+
+## ♻️ Refactoring
+- reorganize pnpm catalogs for better scoping (##480) (`ba721776`)
+- **fs-bridge**: add inlineOnly configuration for msw-utils (`b46ecfc6`)
+- **fs-bridge**: update base URL and adjust path handling (`a43a2146`)
+- **fs-bridge**: node - improve path handling in listdir function (`8a08c2e3`)
+- **fs-bridge**: standardize file paths in tests (`11e65a5b`)
+- **fs-bridge**: enhance debugging in HTTP bridge and add TODO for Node bridge (`73157ce2`)
+- **fs-bridge**: simplify BridgeGenericError constructor (`c69d2d5e`)
+- rename tryCatch to wrapTry (`c71e6b11`)
+- update type definitions and clean up imports across multiple files (`f7f602a2`)
+- **fs-bridge**: refactor file system bridge operations and introduce operation wrappers (`b0db2a05`)
+- rename `.on` to `.hook` (##377) (`2a444735`)
+- **fs-bridge**: update capability types to use `OptionalCapabilityKey` (`956d8301`)
+- **fs-bridge**: enhance capability handling in file system bridge (`5e5bf2f1`)
+- **fs-bridge**: improve bridge capabilities handling (`680b2ddb`)
+- **fs-bridge**: prefer for bridge capability change (`0a9500e4`)
+- **fs-bridge**: rename `metadata` to `meta` in bridge definitions (`1dd5e3f1`)
+- **fs-bridge**: update metadata structure for HTTP and Node.js bridges (`20994031`)
+- **fs-bridge**: enhance FileSystemBridge metadata structure (`083d923b`)
+- **tsdown-config**: update package references to @ucdjs-tooling/tsdown-config (`ccc002da`)
+- update tsconfig references to use @ucdjs-tooling/tsconfig (`e5c39ac8`)
+- **fs-bridge**: explicitly export error classes from errors module (`4d3088c1`)
+- **fs-bridge**: remove unused utility functions and clean up imports (`a0bb2569`)
+- **path-utils**: swap parameters for consistency (`2264cfa4`)
+- **fs-bridge**: update `zod` version to 4.1.5 (`68ff4595`)
+- **fs-bridge**: replace error message in `resolveSafePath` with `BridgePathTraversal` (`b2e9db55`)
+- **fs-bridge**: rename `path` to `accessedPath` in `BridgePathTraversal` error class (`edca2a2f`)
+- **fs-bridge**: update `baseUrl` schema and enhance path resolution (`9fc6f14a`)
+- **fs-bridge**: remove `resolveSafePath` and `isWithinBase` functions (`8f7080dd`)
+- **fs-bridge**: enhance error handling in proxy methods (`1ea29cf8`)
+- **fs-bridge**: consolidate error classes under BridgeBaseError (`7151e5b7`)
+- **fs-bridge**: add additional error classes for better error handling (`52c9ffc0`)
+- **fs-bridge**: move BridgeUnsupportedOperation to a new errors module (`65ac0554`)
+- migrate `flattenFilePaths` imports from `@ucdjs/utils` to `@ucdjs/shared` (`49318725`)
+- **fs-bridge**: add internal documentation for capability inference function (`1dfe4c89`)
+- **fs-bridge**: enhance capability assertion with custom error handling (`91d1ee9f`)
+- **fs-bridge**: remove capabilities from bridge definition (`443e582f`)
+- **ucd-store**: update FileSystemBridge integration and capabilities handling (`c2f7e5d3`)
+- **fs-bridge**: enhance FileSystemBridge capabilities and update type definitions (`be7b3939`)
+- **store**: improve file path handling and analysis logic (`3d586c5b`)
+- **fs-bridge**: streamline path resolution and safety checks (`340eb3e1`)
+
+## ✅ Tests
+- **fs-bridge**: correct path for nested file in tests (`c30b6f4b`)
+- **fs-bridge**: enhance schema validation and security tests for listdir (`af878683`)
+- **fs-bridge**: improve error messages in encoding tests (`93b5941c`)
+- **fs-bridge**: refactor and enhance tests for `defineFileSystemBridge` (`ac64ba61`)
+- **fs-bridge**: add tests for `getPayloadForHook` utility function (`c076b7b1`)
+- **fs-bridge**: refactor before hook tests for clarity and consistency (`cbb62ce9`)
+- **fs-bridge**: refactor capability tests and enhance detection logic (`edf2197d`)
+- **fs-bridge**: update unsupported operation tests to handle async errors (`c25d1f35`)
+- **fs-bridge**: make error hooks handle async operations correctly (`8ad66327`)
+- **fs-bridge**: add comprehensive tests for hook functionality (`7fc7c663`)
+- **fs-bridge**: correct meta structure in SimpleBridge definition (`1f79d6d0`)
+- **fs-bridge**: update capability handling in tests (`383efdaa`)
+- **fs-bridge**: clean up capability assertions and improve error handling (`1bb30fe8`)
+- **fs-bridge**: enhance type definitions and setup structure (`02b5c3cc`)
+- **fs-bridge**: simplify capability assertions in tests (`5bef390d`)
+- **fs-bridge**: remove unnecessary capability assertions in tests (`d33da97f`)
+- **fs-bridge**: update state handling in `defineFileSystemBridge` (`98898102`)
+- **fs-bridge**: update bridge definition to use metadata structure (`07b5ac37`)
+- **fs-bridge**: add descriptive names and descriptions to mock bridges in tests (`691bf4ec`)
+- **fs-bridge**: add type inference tests for defineFileSystemBridge (`b9ad0be9`)
+- **fs-bridge**: enhance tests for filesystem bridge operations (`d093e8f1`)
+- **fs-bridge**: update listdir test to use expect.arrayContaining (`199d80bf`)
+- **fs-bridge**: enhance path resolution tests and add absolute path handling (`468bb64b`)
+- **fs-bridge**: disable tests for critical system paths due to traversal attack checks (`e3411c12`)
+- **fs-bridge**: enhance security tests for path validation (`b58cbbab`)
+
+## 🔧 Chores
+- **workspace**: update dependencies and package manager (`1fcda2ca`)
+- reorganize package catalogs and update dependencies (`ea2df11e`)
+- update packageManager to pnpm@10.29.1 across all packages (`6bb966ab`)
+- update dependencies and package manager (`e91a1ec4`)
+- lint (`6b132401`)
+- update dependencies (`59402701`)
+- lint (`c4908b0a`)
+- update pkg (`b4039996`)
+- update dependencies (`51e6a071`)
+- update typecheck command in package.json files (`34fa0ae7`)
+- lint (`21748cc8`)
+- **fs-bridge**: update entry points in tsdown config (`dfa455fc`)
+- **fs-bridge**: update @luxass/msw-utils to version 0.6.0 (`13223d18`)
+- upgrade pnpm (`b06a7dd7`)
+- apply greptile suggestions (`e864d5b3`)
+- try fix tests (`5b05cf69`)
+- update dependencies (`4b3590b9`)
+- complete tasks in fs-bridge path resolution security verification plan (`46ea0108`)
+- **deps**: update dependencies and package manager version (`8c5f051f`)
+- **deps**: update package versions in `pnpm-workspace.yaml` (`2cca2fdf`)
+- **deps**: update package versions in `pnpm-workspace.yaml` and package.json files (`34f3cab1`)
+- **release**: 📦 version packages (`d592b87c`)
+- update pnpm (`62648fcd`)
+- **fs-bridge**: replace `hooxs` with `hookable` in package dependencies (`d003911e`)
+- fix typo (`cf592dd8`)
+- add hooxs dependency to package.json and pnpm-workspace.yaml (`5e69481e`)
+- update pnpm (`7e789f64`)
+- lint (`6c637763`)
+- fix docs (`0056a283`)
+- fix typo (`5e12d7fa`)
+- lint (`2a47d579`)
+- lint (`ea61d4f7`)
+- **tests**: update import paths for test utilities (`05725fc0`)
+- update docs (`78130b2f`)
+- fix doc (`32300642`)
+- lint (`8469508a`)
+- update dependencies (`bf3b20f8`)
+- update packageManager to pnpm@10.16.1 across all packages (`ec4ebd9d`)
+- update package versions in pnpm-workspace.yaml to remove caret (^) for consistency (`8521f03a`)
+- use node 22.18 (`2a9bfcd7`)
+- **fs-bridge**: add @ucdjs/shared as a workspace dependency (`804f7d36`)
+- remove unused test file (`02d5dec4`)
+- add path utils dependency (`cd2fd914`)
+- add missing exports (`ceeda325`)
+- format (`6eb37244`)
+- fix test (`ee074293`)
+- add `pathe` dependency (`4b421d39`)
+- format (`76cab427`)
+- migrate test-utils-internal to internal alias (`2cd82c0d`)
+- fix imports (`162de26f`)
+- update pnpm workspace and add test utils package (`80e2d592`)
+- refactor imports to use #test-utils for consistency (`280d8ea9`)
+- clean up imports in node and store modules (`8b4e6ffe`)
+- update file paths in tests and implementation (`217e3add`)
+- fix typecheck (`79eed51d`)
+- update dependencies (`c813c448`)
+- **fs-bridge**: remove internal debug symbol and references (`e83fd989`)
+- fix test (`51a64936`)
+- update build scripts to include custom TypeScript configuration (`ef9cf9a5`)
+- **eslint**: update `@luxass/eslint-config` to version 5.2.1 (`28c3338f`)
+- lint (`8a493ed9`)
+- **eslint**: refactor ESLint configuration across multiple packages (`4924a4c8`)
+- remove debug log (`dde92d63`)
+- **fs-bridge**: remove debug logging from exists method (`b2c655a1`)
+- update pkg json (`e705265a`)
+- **tsconfig**: standardize include and exclude patterns across configurations (`4ddbf590`)
+- **fs-bridge**: clarify comments for read-only methods (`50941eec`)
+- update import statements for consistency (`c2e24246`)
 
-## 0.1.0
 
-### Minor Changes
-
-- [#181](https://github.com/ucdjs/ucd/pull/181) [`6ac0005`](https://github.com/ucdjs/ucd/commit/6ac000515509945cc87119af57725beabc9b75e4) Thanks [@luxass](https://github.com/luxass)! - Reimplement the Node.js File System Bridge with enhanced path handling and safety checks.
-
-- [#189](https://github.com/ucdjs/ucd/pull/189) [`f15bb51`](https://github.com/ucdjs/ucd/commit/f15bb51c663c05e205553c59ab0a7f06a6e20e39) Thanks [@luxass](https://github.com/luxass)! - add `BridgeUnsupportedOperation` error
-
-- [#241](https://github.com/ucdjs/ucd/pull/241) [`8ed7777`](https://github.com/ucdjs/ucd/commit/8ed77771808dc56a7dc3a1f07bd22cd7b75c2119) Thanks [@luxass](https://github.com/luxass)! - Migrate fs-bridge to use the new @ucdjs/path-utils package for improved path handling and safety.
-
-  This change removes the local path utility functions and leverages the centralized path-utils package instead:
-
-  **Before:**
-
-  ```ts
-  import { resolveSafePath } from "./utils";
-  // Local BridgePathTraversal error class
-  ```
-
-  **After:**
-
-  ```ts
-  import { PathUtilsBaseError, resolveSafePath } from "@ucdjs/path-utils";
-  // Uses centralized path utilities and error handling
-  ```
-
-  **Key changes:**
-
-  - Removed local `utils.ts` file with `resolveSafePath` and `isWithinBase` functions
-  - Added `@ucdjs/path-utils` as a dependency
-  - Updated imports to use the centralized path utilities
-  - Removed `BridgePathTraversal` error class in favor of path-utils error handling
-  - Enhanced error handling to catch `PathUtilsBaseError` instances
-  - Added `BridgeSetupError` for better error handling during bridge setup
-
-- [#212](https://github.com/ucdjs/ucd/pull/212) [`80a3794`](https://github.com/ucdjs/ucd/commit/80a3794d0469d64f0522347d6f0c3b258f4fcd35) Thanks [@luxass](https://github.com/luxass)! - feat: migrate from @ucdjs/utils to @ucdjs-internal/shared
-
-  Updated internal imports to use `@ucdjs-internal/shared` instead of `@ucdjs/utils` for utilities like `safeJsonParse` and other shared patterns. This aligns with the new package structure where `@ucdjs-internal/shared` contains internal utilities and `@ucdjs/utils` focuses on public-facing utilities.
-
-- [#228](https://github.com/ucdjs/ucd/pull/228) [`942dc38`](https://github.com/ucdjs/ucd/commit/942dc380eb97e7123a5aa32e2960f6fef505465d) Thanks [@luxass](https://github.com/luxass)! - feat: add custom fs-bridge errors
-
-  Adds four new custom error classes for better error handling in the fs-bridge:
-
-  - `BridgeGenericError`: For wrapping unexpected errors with optional original error reference
-  - `BridgePathTraversal`: For path traversal security violations when accessing files outside allowed scope
-  - `BridgeFileNotFound`: For file or directory not found errors
-  - `BridgeEntryIsDir`: For cases where a file is expected but a directory is found
-
-  ```typescript
-  import { BridgeFileNotFound, BridgePathTraversal } from "@ucdjs/fs-bridge";
-
-  // Example usage in bridge implementations
-  try {
-    await fsp.readFile(path);
-  } catch (error) {
-    if (error.code === "ENOENT") {
-      throw new BridgeFileNotFound(path);
-    }
-    throw new BridgeGenericError("Unexpected file system error", error);
-  }
-  ```
-
-- [#69](https://github.com/ucdjs/ucd/pull/69) [`7c612b3`](https://github.com/ucdjs/ucd/commit/7c612b3985a09f65348fa00fb86dba3e11157eec) Thanks [@luxass](https://github.com/luxass)! - feat: add fs-bridge module with Node.js, HTTP, and default export variants
-
-  The fs-bridge is now available via three import paths:
-
-  - `@ucdjs/fs-bridge/bridges/node` (Node.js version)
-  - `@ucdjs/fs-bridge/bridges/http` (HTTP version)
-  - `@ucdjs/fs-bridge` (default version)
-
-- [#306](https://github.com/ucdjs/ucd/pull/306) [`d02d0c6`](https://github.com/ucdjs/ucd/commit/d02d0c6bdf7fc990c56e55a9e2517eba40b7e0b3) Thanks [@luxass](https://github.com/luxass)! - Add support for metadata on fs-bridges
-
-- [#341](https://github.com/ucdjs/ucd/pull/341) [`7d98e29`](https://github.com/ucdjs/ucd/commit/7d98e29af2f9f6d681f9f2ee401baddf5a2c6ef6) Thanks [@luxass](https://github.com/luxass)! - Refactored file system bridge metadata structure to simplify the API and improve consistency.
-
-  **Breaking Changes:**
-
-  - Renamed `metadata` property to `meta`
-  - Moved `name` and `description` from top-level properties into the `meta` object
-  - The `meta` property is now required instead of optional
-  - Removed `persistent` and `mirror` properties from old `metadata` object
-  - Removed support for custom metadata fields
-
-  **Before:**
-
-  ```ts
-  const MyBridge = defineFileSystemBridge({
-    name: "My Bridge",
-    description: "A file system bridge",
-    metadata: {
-      persistent: true,
-    },
-    setup: () => ({
-      /* operations */
-    }),
-  });
-  ```
-
-  **After:**
-
-  ```ts
-  const MyBridge = defineFileSystemBridge({
-    meta: {
-      name: "My Bridge",
-      description: "A file system bridge",
-    },
-    setup: () => ({
-      /* operations */
-    }),
-  });
-  ```
-
-  This change consolidates all descriptive information into the `meta` object, making the bridge definition cleaner and more predictable.
-
-- [#377](https://github.com/ucdjs/ucd/pull/377) [`2a44473`](https://github.com/ucdjs/ucd/commit/2a444735b6c09b4a5df8c79a580d00acb7511ab2) Thanks [@luxass](https://github.com/luxass)! - Renamed `on` method to `hook` for event handling in FileSystemBridge.
-
-  **Breaking Change:**
-
-  The event handling method has been renamed from `on` to `hook` for improved clarity and consistency with the underlying `hookable` library.
-
-  **Before:**
-
-  ```ts
-  import { createFileSystemBridge } from "@ucdjs/fs-bridge";
-
-  const bridge = createFileSystemBridge(/* ... */);
-
-  bridge.on("read:before", ({ path }) => {
-    console.log(`Reading file: ${path}`);
-  });
-
-  bridge.on("error", ({ method, path, error }) => {
-    console.error(`Error in ${method} at ${path}:`, error);
-  });
-  ```
-
-  **After:**
-
-  ```ts
-  import { createFileSystemBridge } from "@ucdjs/fs-bridge";
-
-  const bridge = createFileSystemBridge(/* ... */);
-
-  bridge.hook("read:before", ({ path }) => {
-    console.log(`Reading file: ${path}`);
-  });
-
-  bridge.hook("error", ({ method, path, error }) => {
-    console.error(`Error in ${method} at ${path}:`, error);
-  });
-  ```
-
-  **Migration:**
-
-  Simply replace all instances of `.on(` with `.hook(` when working with FileSystemBridge instances. The hook signatures and payloads remain unchanged.
-
-- [#351](https://github.com/ucdjs/ucd/pull/351) [`4fd46b4`](https://github.com/ucdjs/ucd/commit/4fd46b43613b23c1d120c71ae0754883eb9bf1ff) Thanks [@luxass](https://github.com/luxass)! - Add universal hooks system for file system bridge operations
-
-  File system bridges now support hooks for observing and intercepting operations:
-
-  **Hook Types:**
-
-  - `error` - Called when any operation throws an error (including unsupported operations)
-  - `{operation}:before` - Called before an operation executes (e.g., `read:before`, `write:before`)
-  - `{operation}:after` - Called after an operation succeeds (e.g., `read:after`, `write:after`)
-
-  **Supported Operations:**
-
-  - `read`, `write`, `listdir`, `exists`, `mkdir`, `rm`
-
-  **Usage Example:**
-
-  ```typescript
-  import { createNodeBridge } from "@ucdjs/fs-bridge";
-
-  const bridge = createNodeBridge({ basePath: "./data" });
-
-  // Register hooks
-  bridge.on("read:before", ({ path }) => {
-    console.log(`Reading: ${path}`);
-  });
-
-  bridge.on("read:after", ({ path, content }) => {
-    console.log(`Read ${content.length} bytes from ${path}`);
-  });
-
-  bridge.on("error", ({ method, path, error }) => {
-    console.error(`${method} failed on ${path}:`, error);
-  });
-  ```
-
-  **Exported Types:**
-
-  - `FileSystemBridgeHooks` - Main hooks interface
-
-  This enables use cases like logging, metrics, caching, testing, and auditing across all bridge implementations (Node, HTTP, Memory).
-
-- [#229](https://github.com/ucdjs/ucd/pull/229) [`4052200`](https://github.com/ucdjs/ucd/commit/40522006c24f8856ff5ec34bb6630d1e1d7f68e3) Thanks [@luxass](https://github.com/luxass)! - feat: add error handling wrapper to fs-bridge operations
-
-  Wraps all fs-bridge operation methods with automatic error handling to improve error management:
-
-  - **Preserves custom bridge errors**: Re-throws `BridgeBaseError` instances (like `BridgePathTraversal`, `BridgeFileNotFound`) directly
-  - **Wraps unexpected errors**: Converts unknown/system errors into `BridgeGenericError` with operation context
-  - **Transparent to implementations**: Bridge implementations don't need to change - error handling is applied automatically
-
-  ```typescript
-  import {
-    defineFileSystemBridge,
-    BridgeFileNotFound,
-    BridgeGenericError,
-  } from "@ucdjs/fs-bridge";
-
-  const bridgeCreator = defineFileSystemBridge({
-    setup() {
-      return {
-        async read(path) {
-          // If this throws a custom bridge error, it's re-thrown as-is
-          if (!pathExists(path)) {
-            throw new BridgeFileNotFound(path);
-          }
-
-          // If this throws an unexpected error (like network timeout),
-          // it gets wrapped in BridgeGenericError with context
-          return await fetchFile(path);
-        },
-      };
-    },
-  });
-
-  const bridge = bridgeCreator();
-
-  // Usage - all errors are now consistently handled
-  try {
-    await bridge.read("/some/path");
-  } catch (error) {
-    if (error instanceof BridgeFileNotFound) {
-      // Handle specific bridge error
-    } else if (error instanceof BridgeGenericError) {
-      // Handle wrapped unexpected error
-      console.log(error.originalError); // Access the original error
-    }
-  }
-  ```
-
-- [#189](https://github.com/ucdjs/ucd/pull/189) [`0360dc3`](https://github.com/ucdjs/ucd/commit/0360dc3ac727019d451768dd1ef6eadca572c69b) Thanks [@luxass](https://github.com/luxass)! - rewrite fs-bridge capabilities
-
-- [#175](https://github.com/ucdjs/ucd/pull/175) [`da10e4d`](https://github.com/ucdjs/ucd/commit/da10e4d133819b08c83d60d63d82d9273a1f77a3) Thanks [@luxass](https://github.com/luxass)! - feat: handle security in node filesystem bridge
-
-  This will disallow path traversal attacks and prevent access to critical system paths.
-
-- [#160](https://github.com/ucdjs/ucd/pull/160) [`5bc90eb`](https://github.com/ucdjs/ucd/commit/5bc90ebcf5e20e11f4d209983975fa732d57cc3f) Thanks [@luxass](https://github.com/luxass)! - feat!: migrate fs-bridge from utils to fs-bridge package
-
-- [#187](https://github.com/ucdjs/ucd/pull/187) [`0ab4b32`](https://github.com/ucdjs/ucd/commit/0ab4b32b726c5ebb0c1199270dddfb7ddaae8f61) Thanks [@luxass](https://github.com/luxass)! - refactor capability code
-
-- [#230](https://github.com/ucdjs/ucd/pull/230) [`3993a30`](https://github.com/ucdjs/ucd/commit/3993a304795d26070df7d69ca7b66b226372a234) Thanks [@luxass](https://github.com/luxass)! - feat: add path traversal utilities to bridge setup context
-
-  Adds shared utility functions to the bridge setup context for consistent path security:
-
-  - **`resolveSafePath(basePath, inputPath)`**: Safely resolves paths while preventing traversal attacks
-  - **`isWithinBase(resolvedPath, basePath)`**: Checks if a path is within an allowed base directory
-
-  Both utilities work for file system paths (Node bridge) and URL paths (HTTP bridge) by treating URL pathnames as base paths.
-
-  ```typescript
-  import { defineFileSystemBridge } from "@ucdjs/fs-bridge";
-
-  const bridge = defineFileSystemBridge({
-    optionsSchema: z.object({ basePath: z.string() }),
-    setup({ options, resolveSafePath }) {
-      const basePath = resolve(options.basePath);
-
-      return {
-        async read(path) {
-          // Automatically prevents path traversal - throws BridgePathTraversal if unsafe
-          const safePath = resolveSafePath(basePath, path);
-          return readFile(safePath);
-        },
-      };
-    },
-  });
-
-  // For HTTP bridges, URL pathname is used as base path:
-  const httpBridge = defineFileSystemBridge({
-    setup({ options, resolveSafePath }) {
-      const baseUrl = new URL(options.baseUrl);
-      const basePath = baseUrl.pathname; // e.g., "/api/v1/files"
-
-      return {
-        async read(path) {
-          // Prevents escaping API endpoint: "../admin" → BridgePathTraversal
-          const safePath = resolveSafePath(basePath, path);
-          const url = new URL(safePath, baseUrl.origin);
-          return fetch(url).then((r) => r.text());
-        },
-      };
-    },
-  });
-  ```
-
-### Patch Changes
-
-- [#301](https://github.com/ucdjs/ucd/pull/301) [`199021b`](https://github.com/ucdjs/ucd/commit/199021b803ffe5969f8c5e80de3153971b686b69) Thanks [@luxass](https://github.com/luxass)! - infer bridge option schema as never, if not provided
-
-- [#332](https://github.com/ucdjs/ucd/pull/332) [`ce9b5a7`](https://github.com/ucdjs/ucd/commit/ce9b5a76795292aca5c9f8b6fd7021a66a34c28d) Thanks [@luxass](https://github.com/luxass)! - export `FileSystemBridgeFactory` in @ucdjs/fs-bridge
-
-- [#341](https://github.com/ucdjs/ucd/pull/341) [`46a6e81`](https://github.com/ucdjs/ucd/commit/46a6e8110dcc1ccef3a436bb18e67d92f0424213) Thanks [@luxass](https://github.com/luxass)! - Rename `capabilities` to `optionalCapabilities` in bridge configuration
-
-- [#341](https://github.com/ucdjs/ucd/pull/341) [`39faaf5`](https://github.com/ucdjs/ucd/commit/39faaf585f3339296ef75c8a39893399ea48789f) Thanks [@luxass](https://github.com/luxass)! - Add `hasCapability` guard for checking bridge capabilities without throwing
-
-- [#343](https://github.com/ucdjs/ucd/pull/343) [`170bbd1`](https://github.com/ucdjs/ucd/commit/170bbd1a8cfe23787d73e1052108261bb5956d01) Thanks [@luxass](https://github.com/luxass)! - Separate required and optional file system operations
-
-  File system bridge operations are now split into two interfaces:
-
-  - `RequiredFileSystemBridgeOperations`: Core read-only operations (`read`, `listdir`, `exists`) that all bridges must implement
-  - `OptionalFileSystemBridgeOperations`: Write operations (`write`, `mkdir`, `rm`) that bridges can optionally support
-
-  The `optionalCapabilities` map now only tracks optional operations, as required operations are guaranteed to exist. Capability types have been updated to `RequiredCapabilityKey` and `OptionalCapabilityKey` for better type safety.
-
-- Updated dependencies [[`d031fdc`](https://github.com/ucdjs/ucd/commit/d031fdc4426120e901f7f26072c17d2de2f3bd59), [`3dfaaae`](https://github.com/ucdjs/ucd/commit/3dfaaaebfbf4f03c0d9755db3fa0601ff825fbce), [`384810a`](https://github.com/ucdjs/ucd/commit/384810a92e9f68f207b349177842149e758e5813), [`696fdd3`](https://github.com/ucdjs/ucd/commit/696fdd340a2b2faddfcd142e285294f1cc715c1a), [`7e8a4a7`](https://github.com/ucdjs/ucd/commit/7e8a4a7b0511af98b87a6004e479cdc46df570c5), [`6c564ab`](https://github.com/ucdjs/ucd/commit/6c564aba7670bd2f5d98e9720828031bb8eb0532), [`e612985`](https://github.com/ucdjs/ucd/commit/e612985209ff4e62fbfba418621a029d000b4b01), [`a028d2f`](https://github.com/ucdjs/ucd/commit/a028d2f37091a90c76c66ca8c10e43b45b999868), [`6b59312`](https://github.com/ucdjs/ucd/commit/6b5931201a9a19a1b8d70f25680e22d4ae0f0743), [`08189be`](https://github.com/ucdjs/ucd/commit/08189be0432803fe77ab19d9855b38aadaea5459), [`71d58fb`](https://github.com/ucdjs/ucd/commit/71d58fbf37f580e54a42600dcc4c71f3a63443c0), [`e52d845`](https://github.com/ucdjs/ucd/commit/e52d845b52027c625e72395a8295cbcdae5317e8), [`a9e3aae`](https://github.com/ucdjs/ucd/commit/a9e3aae0efd15e07c50b58b827857631f0553640), [`2d8f1b9`](https://github.com/ucdjs/ucd/commit/2d8f1b90f453b95c0cd4ac95aec67e028fc74e03)]:
-  - @ucdjs-internal/shared@0.1.0
-  - @ucdjs/env@0.1.0
-  - @ucdjs/path-utils@0.1.0
-  - @ucdjs/schemas@0.1.0

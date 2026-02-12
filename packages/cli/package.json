@@ -1,45 +1,6 @@
 {
   "name": "@ucdjs/cli",
-  "version": "0.3.0",
-  "type": "module",
-  "author": {
-    "name": "Lucas Nørgård",
-    "email": "lucasnrgaard@gmail.com",
-    "url": "https://luxass.dev"
-  },
-  "packageManager": "pnpm@10.29.3",
-  "license": "MIT",
-  "homepage": "https://github.com/ucdjs/ucd",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ucdjs/ucd.git",
-    "directory": "packages/cli"
-  },
-  "bugs": {
-    "url": "https://github.com/ucdjs/ucd/issues"
-  },
-  "exports": {
-    ".": "./dist/cli.mjs",
-    "./package.json": "./package.json"
-  },
-  "types": "./dist/cli.d.mts",
-  "bin": {
-    "ucd": "bin/ucd.js"
-  },
-  "files": [
-    "bin",
-    "dist"
-  ],
-  "engines": {
-    "node": ">=22.18"
-  },
-  "scripts": {
-    "build": "tsdown --tsconfig=./tsconfig.build.json",
-    "dev": "tsdown --watch",
-    "clean": "git clean -xdf dist node_modules",
-    "lint": "eslint .",
-    "typecheck": "tsc --noEmit -p tsconfig.build.json"
-  },
+  "version": "1.0.0",
   "dependencies": {
     "@clack/prompts": "catalog:runtime",
     "@luxass/utils": "catalog:runtime",
@@ -65,8 +26,5 @@
     "tsdown": "catalog:build",
     "typescript": "catalog:build",
     "vitest-testdirs": "catalog:test"
-  },
-  "publishConfig": {
-    "access": "public"
   }
 }

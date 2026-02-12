@@ -1,121 +1,126 @@
-# @ucdjs/path-utils
+# @ucdjs/path-utils v1.0.0
+**Previous version**: `0.1.0`
+**New version**: `1.0.0`
 
-## 0.1.0
 
-### Minor Changes
+## ✨ Features
+- **path-utils**: export path utility functions from pathe (`718e1e1f`)
+- **path-utils**: add debug information (`8fe4ba26`)
+- **shared**: migrate utilities to @ucdjs-internal/shared (`4d7588fd`)
+- **path-utils**: enhance path security and handling (`cf82cd37`)
+- **path-utils**: enhance Windows path handling and validation (`1d04aeb1`)
+- **path-utils**: export osPlatform for platform detection (`c94f9254`)
+- **path-utils**: add WindowsPathBehaviorNotImplementedError for unimplemented behavior (`7cb4681b`)
+- **path-utils**: add isWindowsDrivePath and stripDriveLetter functions (`a1104df4`)
+- **path-utils**: enhance path resolution with error handling and validation (`b28fc513`)
+- **path-utils**: add resolveSafePath function for path resolution and traversal prevention (`3bf4cbb5`)
+- **path-utils**: add toUNCPosix function for converting Windows UNC paths to POSIX format (`47bb83cb`)
+- **path-utils**: add getAnyUNCRoot function and reorganize imports (`b0595d86`)
+- **path-utils**: add constants for Windows path handling and enhance path conversion (`2dc9e07c`)
+- **path-utils**: add missing error exports for path utilities (`83b38b51`)
+- **path-utils**: add custom error classes for path traversal and Windows path issues (`ff098b7d`)
+- **path-utils**: add decodePathSafely function and update exports (`4070b806`)
+- **path-utils**: add custom error classes for path utilities (`044cd11d`)
+- **path-utils**: add isWithinBase function for path validation (`974d929d`)
+- **path-utils**: add isCaseSensitive utility (`11b4b5c1`)
+- **path-utils**: implement Windows path utilities (`09840fe5`)
+- **path-utils**: setup package (`f4e6cce5`)
 
-- [#238](https://github.com/ucdjs/ucd/pull/238) [`e612985`](https://github.com/ucdjs/ucd/commit/e612985209ff4e62fbfba418621a029d000b4b01) Thanks [@luxass](https://github.com/luxass)! - Add comprehensive path utilities with security-focused path resolution
+## 🐛 Bug Fixes
+- **path-utils**: normalize input path in resolveSafePath function (`49a4ccdd`)
+- **path-utils**: update CONTROL_CHARACTER_RE regex for accuracy (`6b4f43d9`)
+- **path-utils**: improve path validation and normalization (`4ee30d5a`)
+- **path-utils**: correct regex for stripping Windows drive letters (`c42629b3`)
+- **path-utils**: update logic to recognize forward-slash UNC paths (`14ff1f46`)
+- **path-utils**: update isUNCPath logic to use getAnyUNCRoot (`cbdb5457`)
+- **path-utils**: improve path boundary checks in internal_resolveWindowsPath (`abf3806d`)
+- **path-utils**: improve UNC path handling in internal_resolveWindowsPath (`bb2327cf`)
+- **path-utils**: validate normalized paths within boundary (`f4fd13de`)
+- **path-utils**: handle path decoding errors (`539d0a9d`)
+- **path-utils**: improve path resolution for case sensitivity (`03c732da`)
+- **path-utils**: resolve Windows path normalization issue (`9ff80e37`)
+- **path-utils**: simplify Windows path resolution (`42c7a398`)
+- **path-utils**: only normalize when both paths is windows drives (`92e2c495`)
+- **path-utils**: normalize base path in internal_resolveWindowsPath (`e3d5cd64`)
+- **path-utils**: simplify Windows path resolution (`05d6907b`)
+- **path-utils**: trim trailing slashes in toUnixFormat function (`9e7eff34`)
 
-  This release introduces a new path utilities package with cross-platform path handling, Windows-specific utilities, and secure path resolution functionality.
+## ♻️ Refactoring
+- reorganize pnpm catalogs for better scoping (##480) (`ba721776`)
+- **path-utils, shared-ui, shared, utils**: update exports to use explicit file paths (`c2a39fbf`)
+- **shared-ui**: reorganize component imports to ui directory (`c64c288f`)
+- update type definitions and clean up imports across multiple files (`f7f602a2`)
+- **tsdown-config**: update package references to @ucdjs-tooling/tsdown-config (`ccc002da`)
+- update tsconfig references to use @ucdjs-tooling/tsconfig (`e5c39ac8`)
+- **path-utils**: swap parameters for consistency (`2264cfa4`)
+- **path-utils**: remove unc support (`2c180272`)
 
-  ## New Functions
+## ✅ Tests
+- **path-utils**: update error type for UNC share mismatch (`3e76b312`)
+- **path-utils**: improve error messages for illegal characters in Windows paths (`907560b1`)
+- **path-utils**: enhance internal path resolution for Windows (`57a2b418`)
+- **path-utils**: add tests for getAnyUNCRoot function (`10a958aa`)
+- **path-utils**: add toUnixFormat function for Windows path conversion (`3ec2c6e8`)
+- **path-utils**: enhance path validation and add decodePathSafely function (`fc2fbc67`)
+- **path-utils**: add comprehensive tests for isWithinBase function (`892403d0`)
 
-  ### Security Functions
+## 🔧 Chores
+- **workspace**: update dependencies and package manager (`1fcda2ca`)
+- reorganize package catalogs and update dependencies (`ea2df11e`)
+- **pnpm-workspace**: update dependencies and versions (`24801bd7`)
+- update packageManager to pnpm@10.29.1 across all packages (`6bb966ab`)
+- update dependencies and package manager (`e91a1ec4`)
+- update dependencies (`59402701`)
+- update pkg (`b4039996`)
+- update dependencies (`51e6a071`)
+- update typecheck command in package.json files (`34fa0ae7`)
+- upgrade pnpm (`b06a7dd7`)
+- update dependencies (`4b3590b9`)
+- complete tasks in fs-bridge path resolution security verification plan (`46ea0108`)
+- **deps**: update dependencies and package manager version (`8c5f051f`)
+- **deps**: update package versions in `pnpm-workspace.yaml` (`2cca2fdf`)
+- **deps**: update package versions in `pnpm-workspace.yaml` and package.json files (`34f3cab1`)
+- **release**: 📦 version packages (`d592b87c`)
+- update pnpm (`62648fcd`)
+- update pnpm (`7e789f64`)
+- **tests**: update import paths for test utilities (`0ceedd9b`)
+- **tests**: update import paths for test utilities (`05725fc0`)
+- update dependencies (`bf3b20f8`)
+- update packageManager to pnpm@10.16.1 across all packages (`ec4ebd9d`)
+- update package versions in pnpm-workspace.yaml to remove caret (^) for consistency (`8521f03a`)
+- use node 22.18 (`2a9bfcd7`)
+- **path-utils**: add debugging for UNC path rejection (`86d02edf`)
+- add @ucdjs/shared as a workspace dependency (`80c1dc71`)
+- **path-utils**: add debugging for path resolution functions (`fb9e5fc0`)
+- add debug logs (`4efe78c1`)
+- revert (`94867eb8`)
+- add side effects to pkg (`a53b587f`)
+- fix windows test (`93a6be97`)
+- fix tests (`577e94cf`)
+- mark more functions as internal (`15c2789a`)
+- format (`6439bb50`)
+- format (`cfb02487`)
+- remove unused errors (`2b90173e`)
+- try make windows tests work (`e6ee3632`)
+- add debug (`b29be59b`)
+- fix debug (`72cee148`)
+- debug (`fbc7a2fe`)
+- cleanup (`18e7c22d`)
+- cleanup (`8f90307c`)
+- fix more test cases (`26777a87`)
+- debug (`42f1eb11`)
+- try fix (`dc6851b5`)
+- add more debug (`ad43dd77`)
+- try fix (`ba2ee092`)
+- lint (`bd321008`)
+- fix (`ede77704`)
+- add debug (`eadda20b`)
+- fix issue with unix (`910b3c85`)
+- lint (`be728b16`)
+- debug (`1a6246c9`)
+- export more errors (`01f65c4b`)
+- add @luxass/utils dependency (`3b15e817`)
+- format readme (`4325c3d7`)
+- update readme (`f01c8a39`)
 
-  - **`resolveSafePath(basePath, inputPath)`** - Resolves paths within secure boundaries, preventing traversal attacks
-  - **`decodePathSafely(encodedPath)`** - Safely decodes URL-encoded paths with infinite loop protection
-  - **`isWithinBase(basePath, resolvedPath)`** - Checks if a resolved path stays within a base directory
 
-  ### Platform Functions
-
-  - **`getWindowsDriveLetter(path)`** - Extracts drive letter from Windows paths
-  - **`isWindowsDrivePath(path)`** / **`isUNCPath(path)`** - Path type detection
-  - **`stripDriveLetter(path)`** - Removes drive letter from paths
-  - **`toUnixFormat(path)`** - Path format conversion
-  - **`assertNotUNCPath(path)`** - Asserts that a path is not a UNC path, throws error if it is
-
-  ### Utility Functions
-
-  - **`isCaseSensitive`** - Detects filesystem case sensitivity
-  - **`osPlatform`** - Current operating system platform
-
-  ## Security Features
-
-  - **Path traversal prevention** - Blocks `../` and encoded traversal attempts
-  - **UNC path rejection** - Rejects Windows UNC network paths for security
-  - **Multi-layer encoding protection** - Handles nested URL encoding safely
-  - **Control character filtering** - Rejects null bytes and illegal characters
-  - **Cross-platform boundary enforcement** - Consistent security across OS platforms
-
-  ## resolveSafePath Examples
-
-  ### Basic Virtual Filesystem
-
-  ```js
-  import { resolveSafePath } from "@ucdjs/path-utils";
-
-  // Create secure boundary
-  const boundary = "/home/user/app-data";
-
-  // Safe resolution within boundary
-  resolveSafePath(boundary, "config.json"); // → '/home/user/app-data/config.json'
-  resolveSafePath(boundary, "files/document.pdf"); // → '/home/user/app-data/files/document.pdf'
-  resolveSafePath(boundary, "/logs/app.log"); // → '/home/user/app-data/logs/app.log'
-
-  // Blocked traversal attempts
-  resolveSafePath(boundary, "../../../etc/passwd"); // ❌ PathTraversalError
-  resolveSafePath(boundary, "%2e%2e/secrets"); // ❌ PathTraversalError
-  ```
-
-  ### Windows Path Support
-
-  ```js
-  // Windows drive paths
-  resolveSafePath("C:\\Projects\\MyApp", "data\\users.db"); // → 'C:/Projects/MyApp/data/users.db'
-  resolveSafePath("C:\\Projects\\MyApp", "D:\\external.txt"); // ❌ WindowsDriveMismatchError
-
-  // UNC network paths are rejected for security
-  resolveSafePath("C:\\Projects\\MyApp", "\\\\server\\share\\file.txt"); // ❌ UNCPathNotSupportedError
-  toUnixFormat("\\\\server\\share\\documents"); // ❌ UNCPathNotSupportedError
-  ```
-
-  ### Encoding Attack Protection
-
-  ```js
-  // Safe decoding
-  resolveSafePath("/base", "file%20name.txt"); // → '/base/file name.txt'
-  resolveSafePath("/base", "path%2Fto%2Ffile"); // → '/base/path/to/file'
-
-  // Attack prevention
-  resolveSafePath("/base", maliciouslyEncodedInput); // ❌ FailedToDecodePathError
-  resolveSafePath("/base", "file\0.txt"); // ❌ IllegalCharacterInPathError
-  ```
-
-  This package is ideal for web servers, file upload systems, containerized applications, and any scenario requiring secure path resolution within defined boundaries.
-
-### Patch Changes
-
-- [#241](https://github.com/ucdjs/ucd/pull/241) [`2d8f1b9`](https://github.com/ucdjs/ucd/commit/2d8f1b90f453b95c0cd4ac95aec67e028fc74e03) Thanks [@luxass](https://github.com/luxass)! - Fix path resolution by using `pathe.normalize` instead of `pathe.resolve` for input path processing.
-
-  This change fixes an issue in the `resolveSafePath` function where `pathe.resolve` was incorrectly resolving relative paths against the current working directory instead of preserving them as-is for later processing.
-
-  **Before:**
-
-  ```ts
-  const absoluteInputPath = pathe.resolve(decodedPath);
-  ```
-
-  **After:**
-
-  ```ts
-  const absoluteInputPath = pathe.normalize(decodedPath);
-  ```
-
-  **Why this matters:**
-
-  - `pathe.resolve()` converts relative paths to absolute paths based on the current working directory
-  - `pathe.normalize()` only cleans up the path (removes `.` and `..` segments) without changing relative paths to absolute
-  - This ensures proper path validation logic where we need to distinguish between truly absolute input paths vs relative ones that should be resolved against the base path
-
-  **Example behavior change:**
-
-  ```ts
-  // Input: "../secret.txt" from working directory "/tmp"
-  // Before: pathe.resolve("../secret.txt") → "/secret.txt" (absolute)
-  // After:  pathe.normalize("../secret.txt") → "../secret.txt" (still relative)
-  ```
-
-  This fix ensures that relative paths are handled correctly through the proper resolution logic later in the function.
-
-- Updated dependencies [[`d031fdc`](https://github.com/ucdjs/ucd/commit/d031fdc4426120e901f7f26072c17d2de2f3bd59), [`3dfaaae`](https://github.com/ucdjs/ucd/commit/3dfaaaebfbf4f03c0d9755db3fa0601ff825fbce), [`384810a`](https://github.com/ucdjs/ucd/commit/384810a92e9f68f207b349177842149e758e5813), [`7e8a4a7`](https://github.com/ucdjs/ucd/commit/7e8a4a7b0511af98b87a6004e479cdc46df570c5), [`6c564ab`](https://github.com/ucdjs/ucd/commit/6c564aba7670bd2f5d98e9720828031bb8eb0532), [`a028d2f`](https://github.com/ucdjs/ucd/commit/a028d2f37091a90c76c66ca8c10e43b45b999868), [`6b59312`](https://github.com/ucdjs/ucd/commit/6b5931201a9a19a1b8d70f25680e22d4ae0f0743), [`08189be`](https://github.com/ucdjs/ucd/commit/08189be0432803fe77ab19d9855b38aadaea5459), [`71d58fb`](https://github.com/ucdjs/ucd/commit/71d58fbf37f580e54a42600dcc4c71f3a63443c0), [`a9e3aae`](https://github.com/ucdjs/ucd/commit/a9e3aae0efd15e07c50b58b827857631f0553640)]:
-  - @ucdjs-internal/shared@0.1.0

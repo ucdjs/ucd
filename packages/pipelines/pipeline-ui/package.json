@@ -1,65 +1,6 @@
 {
   "name": "@ucdjs/pipelines-ui",
-  "version": "0.0.1",
-  "type": "module",
-  "author": {
-    "name": "Lucas Nørgård",
-    "email": "lucasnrgaard@gmail.com",
-    "url": "https://luxass.dev"
-  },
-  "packageManager": "pnpm@10.29.3",
-  "license": "MIT",
-  "homepage": "https://github.com/ucdjs/ucd",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ucdjs/ucd.git",
-    "directory": "packages/pipelines/pipeline-ui"
-  },
-  "bugs": {
-    "url": "https://github.com/ucdjs/ucd/issues"
-  },
-  "sideEffects": false,
-  "imports": {
-    "#components/*": "./src/components/*.tsx",
-    "#lib/*": "./src/lib/*.ts",
-    "#hooks/*": "./src/hooks/*.ts"
-  },
-  "exports": {
-    ".": "./dist/index.mjs",
-    "./components/pipeline-sidebar": "./dist/components/pipeline-sidebar.mjs",
-    "./components/status-badge": "./dist/components/status-badge.mjs",
-    "./components/status-icon": "./dist/components/status-icon.mjs",
-    "./hooks": "./dist/hooks/index.mjs",
-    "./lib": "./dist/lib/index.mjs",
-    "./lib/adapter": "./dist/lib/adapter.mjs",
-    "./lib/colors": "./dist/lib/colors.mjs",
-    "./lib/execution-logs": "./dist/lib/execution-logs.mjs",
-    "./lib/format-time": "./dist/lib/format-time.mjs",
-    "./lib/layout": "./dist/lib/layout.mjs",
-    "./lib/pipeline-utils": "./dist/lib/pipeline-utils.mjs",
-    "./lib/utils": "./dist/lib/utils.mjs",
-    "./styles.css": "./dist/styles/globals.css",
-    "./package.json": "./package.json"
-  },
-  "types": "./dist/index.d.mts",
-  "files": [
-    "dist"
-  ],
-  "engines": {
-    "node": ">=22.18"
-  },
-  "scripts": {
-    "build": "tsdown --tsconfig=./tsconfig.build.json",
-    "dev": "tsdown --watch",
-    "clean": "git clean -xdf dist node_modules",
-    "lint": "eslint .",
-    "typecheck": "tsc --noEmit -p tsconfig.build.json"
-  },
-  "peerDependencies": {
-    "@tanstack/react-router": "catalog:frontend",
-    "react": ">=19.2.0",
-    "react-dom": ">=19.2.0"
-  },
+  "version": "1.0.0",
   "dependencies": {
     "@icons-pack/react-simple-icons": "catalog:frontend",
     "@ucdjs-internal/shared-ui": "workspace:*",
@@ -90,7 +31,9 @@
     "tsdown": "catalog:build",
     "typescript": "catalog:build"
   },
-  "publishConfig": {
-    "access": "public"
+  "peerDependencies": {
+    "@tanstack/react-router": "catalog:frontend",
+    "react": ">=19.2.0",
+    "react-dom": ">=19.2.0"
   }
 }

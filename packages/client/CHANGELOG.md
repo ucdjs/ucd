@@ -1,20 +1,74 @@
-# @ucdjs/client
+# @ucdjs/client v1.0.0
+**Previous version**: `0.1.0`
+**New version**: `1.0.0`
 
-## 0.1.0
 
-### Minor Changes
+## ✨ Features
+- **api**: refactor manifest generation and upload process (`9a07f326`)
+- **client**: add protection again path traversal (`12110cef`)
+- **client**: validate using zod schemas (`67669c9a`)
+- **client**: enhance UCD client with config and manifest resources (`b4d8fbad`)
+- **shared**: add `isApiError` type guard and tests (`5b578e55`)
+- **ucd-store**: enhance UCD client initialization and error handling (`224c22ed`)
+- add new ucd client (`d4ea6d9f`)
+- **client**: add discoverEndpointsFromConfig function and tests (`f196cb25`)
 
-- [#325](https://github.com/ucdjs/ucd/pull/325) [`a028d2f`](https://github.com/ucdjs/ucd/commit/a028d2f37091a90c76c66ca8c10e43b45b999868) Thanks [@luxass](https://github.com/luxass)! - Move `discoverEndpointsFromConfig` from `@ucdjs/client` to `@ucdjs-internal/shared`.
+## 🐛 Bug Fixes
+- **api**: update manifest endpoint reference in files resource (`06e54ad4`)
+- **ucd-store-v2**: update return type for `get` method and remove generic type from `getManifest` (`31ba5a66`)
 
-- [#81](https://github.com/ucdjs/ucd/pull/81) [`670ccf9`](https://github.com/ucdjs/ucd/commit/670ccf97acfd893b75180ce7158314db653c4976) Thanks [@luxass](https://github.com/luxass)! - feat: add fetch client
+## 📝 Documentation
+- restructure client documentation and enhance installation instructions (`4ffb68f9`)
 
-### Patch Changes
+## ♻️ Refactoring
+- reorganize pnpm catalogs for better scoping (##480) (`ba721776`)
+- remove deprecated ucd-store.json endpoint (`9d94bacf`)
+- **ucd-store-v2**: complete test structure refactor and enhance test coverage (`99163240`)
+- **api**: remove deprecated well-known routes and update manifest endpoint (`1fe0d558`)
+- **ucd-store-v2**: improve error handling and response processing (`248a0dc4`)
+- **test-utils**: refactor mock store handlers and remove unused types (`b6271135`)
+- **client**: streamline UCD client creation (`999ff6f1`)
+- **client**: remove export of discoverEndpointsFromConfig (`97bf29fb`)
+- **client**: update createVersionsResource to use unified endpoints configuration (`bdb1a39e`)
+- **client**: replace hardcoded paths with endpoint references (`0c65da4b`)
+- **client**: refactor createFilesResource to use unified endpoints configuration (`899dffbb`)
+- **shared,client**: move ucd-config from client to shared (`d6094c9e`)
+- **client**: remove pre-configured client instance and update tests (`0d2a30fb`)
+- rename @ucdjs/fetch to @ucdjs/client (`396f59f1`)
 
-- [#155](https://github.com/ucdjs/ucd/pull/155) [`2d3774a`](https://github.com/ucdjs/ucd/commit/2d3774afe4786e45385ba3af19f160487541a64e) Thanks [@luxass](https://github.com/luxass)! - update types to match api types
+## ✅ Tests
+- **client**: update base URL handling in version tests (`dbb50a2c`)
+- **client**: improve testing (`96d49dd3`)
+- **client**: simplify invalid version format tests for manifest resource (`da5bf1d1`)
+- **client**: update file and version resource tests to use destructured response (`30d6cba9`)
+- **client**: update client tests to reflect new client changes (`91ad723c`)
 
-- [`e98b9e8`](https://github.com/ucdjs/ucd/commit/e98b9e8a443b815ce38b6f0a94314a2bb982dd77) Thanks [@luxass](https://github.com/luxass)! - chore: remove path property of ApiError #141
+## 🔧 Chores
+- **workspace**: update dependencies and package manager (`1fcda2ca`)
+- reorganize package catalogs and update dependencies (`ea2df11e`)
+- update packageManager to pnpm@10.29.1 across all packages (`6bb966ab`)
+- update dependencies and package manager (`e91a1ec4`)
+- lint (`6b132401`)
+- update dependencies (`59402701`)
+- lint (`c4908b0a`)
+- update pkg (`b4039996`)
+- update dependencies (`51e6a071`)
+- update typecheck command in package.json files (`34fa0ae7`)
+- **turbo**: add $TURBO_EXTENDS$ dependency to tasks (`4d325efa`)
+- perfom renames for unicode file tree (`3224787c`)
+- upgrade pnpm (`b06a7dd7`)
+- apply greptile suggestions (`e864d5b3`)
+- update dependencies (`4b3590b9`)
+- **client**: add path-utils dependencies (`61c2a948`)
+- **deps**: update dependencies and package manager version (`8c5f051f`)
+- **deps**: update package versions in `pnpm-workspace.yaml` (`2cca2fdf`)
+- **deps**: update package versions in `pnpm-workspace.yaml` and package.json files (`34f3cab1`)
+- **release**: 📦 version packages (`d592b87c`)
+- update pnpm (`62648fcd`)
+- update pnpm (`7e789f64`)
+- correct package name references in configuration files (`824a6abd`)
+- update jsdoc (`783ded85`)
+- move guards file (`e5ee4084`)
+- **client**: move guards file (`9f8d532c`)
 
-- Updated dependencies [[`d031fdc`](https://github.com/ucdjs/ucd/commit/d031fdc4426120e901f7f26072c17d2de2f3bd59), [`3dfaaae`](https://github.com/ucdjs/ucd/commit/3dfaaaebfbf4f03c0d9755db3fa0601ff825fbce), [`384810a`](https://github.com/ucdjs/ucd/commit/384810a92e9f68f207b349177842149e758e5813), [`696fdd3`](https://github.com/ucdjs/ucd/commit/696fdd340a2b2faddfcd142e285294f1cc715c1a), [`7e8a4a7`](https://github.com/ucdjs/ucd/commit/7e8a4a7b0511af98b87a6004e479cdc46df570c5), [`6c564ab`](https://github.com/ucdjs/ucd/commit/6c564aba7670bd2f5d98e9720828031bb8eb0532), [`a028d2f`](https://github.com/ucdjs/ucd/commit/a028d2f37091a90c76c66ca8c10e43b45b999868), [`6b59312`](https://github.com/ucdjs/ucd/commit/6b5931201a9a19a1b8d70f25680e22d4ae0f0743), [`08189be`](https://github.com/ucdjs/ucd/commit/08189be0432803fe77ab19d9855b38aadaea5459), [`71d58fb`](https://github.com/ucdjs/ucd/commit/71d58fbf37f580e54a42600dcc4c71f3a63443c0), [`e52d845`](https://github.com/ucdjs/ucd/commit/e52d845b52027c625e72395a8295cbcdae5317e8), [`a9e3aae`](https://github.com/ucdjs/ucd/commit/a9e3aae0efd15e07c50b58b827857631f0553640)]:
-  - @ucdjs-internal/shared@0.1.0
-  - @ucdjs/env@0.1.0
-  - @ucdjs/schemas@0.1.0
+
