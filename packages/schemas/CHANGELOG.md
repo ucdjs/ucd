@@ -1,9 +1,85 @@
-# @ucdjs/schemas
+# @ucdjs/schemas v0.2.0
+**Previous version**: `0.1.0`
+**New version**: `0.2.0`
 
-## 0.1.0
 
-### Minor Changes
+## ✨ Features
+- **api**: refactor manifest generation and upload process (`9a07f326`)
+- **schemas**: add Lockfile and Snapshot schemas with tests (`09f0c156`)
+- **schemas**: export UCDStoreVersionManifest (`a66bd692`)
+- enhance lockfile schema and operations with filter support (`fda44914`)
+- **schemas**: remove schema identifiers and add comprehensive tests for lockfile management (`62d66b94`)
+- **schemas**: add lockfile and snapshot schemas with validation logic (`3622c51f`)
+- **api**: add per-version UCD store manifest endpoint and enhance config response (`ee76728d`)
+- **api**: add GET version details endpoint with detailed metadata and statistics (`145919dd`)
+- **schemas**: introduce ucdRegistry for schema metadata management (`794d3cdb`)
+- **api**: add UCD configuration endpoint and schema (`5c8eaf7f`)
+- **fetch, schemas**: add dependency on @ucdjs/schemas and update UnicodeTreeNode schema (`5bacfe2a`)
+- **schemas**: add UnicodeTreeNode and UnicodeTree schemas (`b63b94b9`)
+- **schemas**: add UnicodeVersionSchema and refactor imports (`f1e3c5af`)
+- **ucd-store**: update UCD store schemas and handling (`8b90a374`)
+- **ucd-store**: enhance UCDStore initialization and manifest loading (`598e2fec`)
+- **schemas**: add schemas package with initial implementation (`58b02b89`)
 
-- [#172](https://github.com/ucdjs/ucd/pull/172) [`e52d845`](https://github.com/ucdjs/ucd/commit/e52d845b52027c625e72395a8295cbcdae5317e8) Thanks [@luxass](https://github.com/luxass)! - feat: add initial schemas package
+## 🐛 Bug Fixes
+- **schemas**: correct typo in type annotation comment (`732b18eb`)
+- **schemas**: add type annotation for children getter (`72c6917c`)
+- try to ensure correct lockfile generation (`92188aee`)
+- **schemas**: enforce non-negative integer validation for file counts and sizes (`cfbfe937`)
+- **schemas**: update FileEntrySchema registration method (`494a3205`)
+- **fs-bridge**: enhance error handling and directory listing logic (`02be1238`)
 
-  This package provides schemas for different UCDJS components, including Api Responses, Environment Variables, and more.
+## ♻️ Refactoring
+- reorganize pnpm catalogs for better scoping (##480) (`ba721776`)
+- **schemas**: update expectedFiles structure in manifest tests (`a60a641f`)
+- **schemas**: update `FileEntrySchema` to enforce trailing slashes on directory paths (`6c381d2e`)
+- **schemas**: simplify children getter in UnicodeFileTreeDirectorySchema (`d065cebb`)
+- **schemas**: remove unused UnicodeFileTreeNodeSchema and enhance UnicodeFileTree schemas (`ed3abb79`)
+- **schemas**: rename Unicode tree schemas and add DeepOmit type (`b11e692d`)
+- **schemas**: rename schemas and improve validation tests (`1024d83d`)
+- **schemas**: update manifest file deprecation notice (`0261e077`)
+- remove deprecated ucd-store.json endpoint (`9d94bacf`)
+- rename tryCatch to wrapTry (`c71e6b11`)
+- update schema definitions to use z.int() for integer validation (`daf082f6`)
+- **api**: remove deprecated well-known routes and update manifest endpoint (`1fe0d558`)
+- **schema**: update `UCDStoreManifestSchema` to use an object for version metadata (`9daad272`)
+- **schemas**: remove ucdRegistry and update schema registration (`381b5947`)
+- **tsdown-config**: update package references to @ucdjs-tooling/tsdown-config (`ccc002da`)
+- update tsconfig references to use @ucdjs-tooling/tsconfig (`e5c39ac8`)
+- update imports to use centralized schemas (`93cb36b4`)
+
+## ✅ Tests
+- **schemas**: add comprehensive validation tests for schemas (`8adafb36`)
+
+## 🔧 Chores
+- **workspace**: update dependencies and package manager (`1fcda2ca`)
+- reorganize package catalogs and update dependencies (`ea2df11e`)
+- update packageManager to pnpm@10.29.1 across all packages (`6bb966ab`)
+- update dependencies and package manager (`e91a1ec4`)
+- update dependencies (`59402701`)
+- update pkg (`b4039996`)
+- update dependencies (`51e6a071`)
+- update typecheck command in package.json files (`34fa0ae7`)
+- lint (`04b6c888`)
+- upgrade pnpm (`b06a7dd7`)
+- update dependencies (`4b3590b9`)
+- **deps**: update dependencies and package manager version (`8c5f051f`)
+- **deps**: update package versions in `pnpm-workspace.yaml` (`2cca2fdf`)
+- **deps**: update package versions in `pnpm-workspace.yaml` and package.json files (`34f3cab1`)
+- **release**: 📦 version packages (`d592b87c`)
+- update pnpm (`62648fcd`)
+- update pnpm (`7e789f64`)
+- add id (`8c907d94`)
+- update dependencies (`bf3b20f8`)
+- update packageManager to pnpm@10.16.1 across all packages (`ec4ebd9d`)
+- update package versions in pnpm-workspace.yaml to remove caret (^) for consistency (`8521f03a`)
+- use node 22.18 (`2a9bfcd7`)
+- fix openapi docs (`08b8c4c3`)
+- update dependencies (`c813c448`)
+- update build scripts to include custom TypeScript configuration (`ef9cf9a5`)
+- **tsconfig**: standardize include and exclude patterns across configurations (`4ddbf590`)
+- update import statements for consistency (`c2e24246`)
+- **schemas**: import FileEntrySchema and update its definition (`d4e1280e`)
+- lint (`8d5c1d89`)
+
+

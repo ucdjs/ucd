@@ -1,43 +1,6 @@
 {
   "name": "@ucdjs/client",
-  "version": "0.1.0",
-  "type": "module",
-  "author": {
-    "name": "Lucas Nørgård",
-    "email": "lucasnrgaard@gmail.com",
-    "url": "https://luxass.dev"
-  },
-  "packageManager": "pnpm@10.29.3",
-  "license": "MIT",
-  "homepage": "https://github.com/ucdjs/ucd",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ucdjs/ucd.git",
-    "directory": "packages/client"
-  },
-  "bugs": {
-    "url": "https://github.com/ucdjs/ucd/issues"
-  },
-  "exports": {
-    ".": "./dist/index.mjs",
-    "./package.json": "./package.json"
-  },
-  "types": "./dist/index.d.mts",
-  "files": [
-    "dist"
-  ],
-  "engines": {
-    "node": ">=22.18"
-  },
-  "scripts": {
-    "build": "tsdown --tsconfig=./tsconfig.build.json",
-    "dev": "tsdown --watch",
-    "clean": "git clean -xdf dist node_modules",
-    "lint": "eslint .",
-    "typecheck": "tsc --noEmit -p tsconfig.build.json",
-    "generate:client": "openapi-typescript ../../ucd-generated/api/openapi.json -o ./src/.generated/api.d.ts",
-    "generate:client:local": "openapi-typescript http://localhost:8787/openapi.json -o ./src/.generated/api.d.ts"
-  },
+  "version": "0.2.0",
   "dependencies": {
     "@ucdjs-internal/shared": "workspace:*",
     "@ucdjs/env": "workspace:*",
@@ -56,8 +19,5 @@
     "tsx": "catalog:build",
     "typescript": "catalog:build",
     "vitest-testdirs": "catalog:test"
-  },
-  "publishConfig": {
-    "access": "public"
   }
 }

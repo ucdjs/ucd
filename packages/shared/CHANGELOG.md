@@ -1,155 +1,143 @@
-# @ucdjs-internal/shared
+# @ucdjs-internal/shared v1.0.0
+**Previous version**: `0.1.0`
+**New version**: `1.0.0`
 
-## 0.1.0
 
-### Minor Changes
+## 💥 Breaking Changes
+- **shared**: use native json parse (##376) (`7cbf0e32`)
 
-- [#223](https://github.com/ucdjs/ucd/pull/223) [`d031fdc`](https://github.com/ucdjs/ucd/commit/d031fdc4426120e901f7f26072c17d2de2f3bd59) Thanks [@luxass](https://github.com/luxass)! - ## New filterTreeStructure Function
+## ✨ Features
+- **shared**: add path normalization functions for filtering (`10028cec`)
+- **shared**: enhance path normalization in createPathFilter (`35499147`)
+- **shared**: enhance path normalization for API file-tree (`1dde1e18`)
+- **shared**: add file search and flattening functions (`9598878d`)
+- **shared**: enhance schema validation error handling (`c1445b7f`)
+- **shared**: add custom error handling for schema validation (`565c5bda`)
+- add file extension exclusion logic for manifest generation (`2810bfcb`)
+- **shared**: add more debug to try catch helpers (`320d297f`)
+- **shared**: add support for zod schemas in custom fetch (`75141595`)
+- **api**: add per-version UCD store manifest endpoint and enhance config response (`ee76728d`)
+- **shared**: enhance brace expansion validation in glob patterns (`73dfd94b`)
+- **shared**: enhance glob pattern validation limits and structure (`82a1c1c2`)
+- **shared**: enhance glob pattern validation for nesting and brackets (`72652993`)
+- **shared**: enhance glob pattern validation for braces (`0204ab20`)
+- **api**: add glob pattern validation and logging for search (`a2661d02`)
+- **api**: add search endpoint with glob pattern support (`901316dd`)
+- **shared**: add `isApiError` type guard and tests (`5b578e55`)
+- **shared**: integrate MSW error handling in custom fetch (`46bfa215`)
+- **shared**: add @luxass/msw-utils dependency (`38a33073`)
+- **shared**: add getDefaultUCDEndpointConfig function (`f1877b20`)
+- **shared**: export fetch types (`753cb566`)
+- **shared**: export custom fetch (`b1034af8`)
+- **shared**: add custom fetch (`d66c2282`)
+- **shared**: migrate utilities to @ucdjs-internal/shared (`4d7588fd`)
+- **filter**: enhance directory pattern handling in filters (`616cf518`)
+- **shared**: enhance createPathFilter to use Set for unique include/exclude patterns (`09070da1`)
+- **ucd-store**: improve filter application in createPathFilter (`d3a11d5b`)
+- **ucd-store**: enhance filtering options in getFileTree and getFilePaths (`c5335784`)
+- **shared**: update PathFilter API to use configuration object (`6c564aba`)
+- **shared**: implement filterTreeStructure function for hierarchical filtering (`c7b7eb5b`)
+- **shared**: add concurrency limiter function (`b18de205`)
+- **shared**: add `tryCatch` utility for error handling (`ca8e054d`)
+- add shared package (`5e59cb10`)
 
-  Added a new utility function for filtering tree structures using PathFilter:
+## 🐛 Bug Fixes
+- **shared**: correct extglob depth validation logic (`02fdb340`)
+- **shared**: improve glob pattern validation for commas (`cf001582`)
+- update file paths to include &#39;extracted&#39; prefix (##371) (`2f455a5f`)
+- replace `@luxass/unicode-utils-new` with `@luxass/unicode-utils` (`301056ad`)
+- **shared**: refactor UCD endpoint configuration handling (`f8174910`)
+- **client**: handle non-FetchError exceptions in customFetch (`845e51d4`)
+- **shared**: improve error handling for UCD endpoint config fetch (`5f4a4d54`)
+- **shared**: ensure default include pattern is set correctly (`5b377716`)
+- **shared**: update JSDoc for options parameter type (`720658a3`)
+- **shared**: add support for disabling default exclusions in path filter (`cfd513ae`)
+- improve error handling for concurrency limit (`cd175fa3`)
 
-  ```ts
-  export function filterTreeStructure(
-    pathFilter: PathFilter,
-    entries: TreeEntry[],
-    extraOptions?: Pick<PathFilterOptions, "include" | "exclude">
-  ): TreeEntry[];
-  ```
+## ♻️ Refactoring
+- reorganize pnpm catalogs for better scoping (##480) (`ba721776`)
+- **path-utils, shared-ui, shared, utils**: update exports to use explicit file paths (`c2a39fbf`)
+- **shared-ui**: reorganize component imports to ui directory (`c64c288f`)
+- **shared**: enhance file exports in index.ts (`d2cc2d2d`)
+- **utils**: remove unused type `TreeEntry` from exports (`f1e82e6c`)
+- **shared**: improve type handling in filter functions (`188d0996`)
+- remove deprecated ucd-store.json endpoint (`9d94bacf`)
+- rename tryCatch to wrapTry (`c71e6b11`)
+- rename tryCatch to wrapTry and introduce tryOr for enhanced error handling (`13646b95`)
+- **api**: remove deprecated well-known routes and update manifest endpoint (`1fe0d558`)
+- **shared**: remove extglob depth validation and improve whitespace handling (`04b78b2c`)
+- **shared**: streamline glob pattern validation logic (`35f93d30`)
+- **shared**: enhance safeFetch response structure (`7a96c23d`)
+- **shared,client**: move ucd-config from client to shared (`d6094c9e`)
+- **shared**: organise package structure (`80aaa22a`)
+- **tsdown-config**: update package references to @ucdjs-tooling/tsdown-config (`ccc002da`)
+- update tsconfig references to use @ucdjs-tooling/tsconfig (`e5c39ac8`)
+- **shared**: enhance path filtering logic and update predefined filters (`cd5dd2aa`)
+- **shared**: extract concurrency validation to a separate function (`fdd57301`)
+- migrate `flattenFilePaths` imports from `@ucdjs/utils` to `@ucdjs/shared` (`49318725`)
+- **shared, utils**: move `safeJsonParse` function to shared package (`ee893aa4`)
 
-  ### Features
+## ✅ Tests
+- **shared**: update error emission for schema validation failure (`2ac5d5d9`)
+- **shared**: fix failing test (`b8c75752`)
+- **shared**: add glob matching tests for various patterns (`4a1bd2c1`)
+- **client**: update file and version resource tests to use destructured response (`30d6cba9`)
+- **shared**: use real timers after each (##317) (`c1be803c`)
+- **shared**: move files around (`6790deba`)
+- **shared**: enhance tests for createPathFilter functionality (`c9ccd8f9`)
+- **shared**: make filter tests work with new filter (`f0dfb1ff`)
+- add FIFO task processing test for createConcurrencyLimiter (`96166fe2`)
+- add test for handling positive infinity in createConcurrencyLimiter (`1bbc1499`)
+- **shared**: add comprehensive tests for createConcurrencyLimiter (`46ff45ae`)
+- add tests for try-catch (`12cb8bc0`)
 
-  - **Recursive filtering**: Processes nested directory structures
-  - **Path construction**: Builds full paths from relative entry paths
-  - **Smart directory inclusion**: Includes directories if they contain matching files, even if the directory itself doesn't match
-  - **Structure preservation**: Maintains tree hierarchy while filtering contents
+## 🔧 Chores
+- **workspace**: update dependencies and package manager (`1fcda2ca`)
+- reorganize package catalogs and update dependencies (`ea2df11e`)
+- update packageManager to pnpm@10.29.1 across all packages (`6bb966ab`)
+- update dependencies and package manager (`e91a1ec4`)
+- lint (`6b132401`)
+- update dependencies (`59402701`)
+- lint (`c4908b0a`)
+- update pkg (`b4039996`)
+- update dependencies (`51e6a071`)
+- update typecheck command in package.json files (`34fa0ae7`)
+- lint (`e77d460e`)
+- upgrade pnpm (`b06a7dd7`)
+- update dependencies (`4b3590b9`)
+- **deps**: update dependencies and package manager version (`8c5f051f`)
+- **deps**: update package versions in `pnpm-workspace.yaml` (`2cca2fdf`)
+- update import path for `replacePlugin` in `tsdown.config.ts` (`35bfc43c`)
+- **deps**: update package versions in `pnpm-workspace.yaml` and package.json files (`34f3cab1`)
+- migrate from `debug` to `obug` in dependencies and imports (`5dfebc2b`)
+- **release**: 📦 version packages (`d592b87c`)
+- switch to @unicode-utils/* (##374) (`735ae595`)
+- update pnpm (`62648fcd`)
+- lint (`be350048`)
+- update pnpm (`7e789f64`)
+- **shared**: update @luxass/msw-utils to version 0.4.0 (`0f120101`)
+- fix comment (`c4681969`)
+- add rolldown to devDependencies in package.json and pnpm-lock.yaml (`3668e694`)
+- remove leftover debug (`1c369074`)
+- **shared**: add @ucdjs/schemas dependency (`81a51811`)
+- apply coderabbit suggestion (`f00ba266`)
+- fix typo (`434b2dd9`)
+- lint (`4ff4285b`)
+- update devDependencies to use &#39;catalog:types&#39; (`04277f87`)
+- update dependencies (`bf3b20f8`)
+- update packageManager to pnpm@10.16.1 across all packages (`ec4ebd9d`)
+- update package versions in pnpm-workspace.yaml to remove caret (^) for consistency (`8521f03a`)
+- use node 22.18 (`2a9bfcd7`)
+- fix coderabbit suggestion (`1dd625d9`)
+- fix invalid reference (`aa7d4403`)
+- fix picomatch import (`96657bd8`)
+- format (`76f12e9c`)
+- **shared**: add &#39;@ucdjs/shared&#39; as a workspace dependency (`791ff5ef`)
+- **shared**: replace console.error with debug logging in safeJsonParse (`97ba659f`)
+- add debug package and types (`eeab29bc`)
+- lint (`d7c60e1a`)
+- fix typo (`3b8204d1`)
+- export promise concurrency type (`74f50fa0`)
+- remove `p-limit` dependency across multiple packages (`a73147af`)
 
-  ### TreeEntry Type
 
-  ```ts
-  type TreeEntry =
-    | {
-        type: "file";
-        name: string;
-        path: string;
-      }
-    | {
-        type: "directory";
-        name: string;
-        path: string;
-        children: TreeEntry[];
-      };
-  ```
-
-  ### Example Usage
-
-  ```ts
-  const filter = createPathFilter({
-    include: ["**/*.ts"],
-    exclude: ["**/*.test.ts"],
-  });
-
-  const tree = [
-    {
-      type: "directory",
-      name: "src",
-      path: "src",
-      children: [
-        { type: "file", name: "index.ts", path: "index.ts" },
-        { type: "file", name: "index.test.ts", path: "index.test.ts" },
-      ],
-    },
-  ];
-
-  const filtered = filterTreeStructure(filter, tree);
-  // Result: src directory with only index.ts (test file excluded)
-  ```
-
-- [#316](https://github.com/ucdjs/ucd/pull/316) [`3dfaaae`](https://github.com/ucdjs/ucd/commit/3dfaaaebfbf4f03c0d9755db3fa0601ff825fbce) Thanks [@luxass](https://github.com/luxass)! - add new customFetch function
-
-- [#173](https://github.com/ucdjs/ucd/pull/173) [`384810a`](https://github.com/ucdjs/ucd/commit/384810a92e9f68f207b349177842149e758e5813) Thanks [@luxass](https://github.com/luxass)! - feat: introduce a new `isApiError` type guard
-
-- [#214](https://github.com/ucdjs/ucd/pull/214) [`7e8a4a7`](https://github.com/ucdjs/ucd/commit/7e8a4a7b0511af98b87a6004e479cdc46df570c5) Thanks [@luxass](https://github.com/luxass)! - feat: add tryCatch utility function
-
-  Added a new `tryCatch` function to the shared utilities for safe error handling and consistent error patterns across the monorepo.
-
-- [#223](https://github.com/ucdjs/ucd/pull/223) [`6c564ab`](https://github.com/ucdjs/ucd/commit/6c564aba7670bd2f5d98e9720828031bb8eb0532) Thanks [@luxass](https://github.com/luxass)! - ## PathFilter API Changes
-
-  Updated the PathFilter API to use a configuration object with separate `include` and `exclude` arrays instead of mixing patterns with `!` prefixes.
-
-  **Before:**
-
-  ```ts
-  const filter = createPathFilter([
-    "*.js",
-    "!*.test.js",
-    "!**/node_modules/**",
-  ]);
-  ```
-
-  **After:**
-
-  ```ts
-  const filter = createPathFilter({
-    include: ["*.js"],
-    exclude: ["*.test.js", "**/node_modules/**"],
-  });
-  ```
-
-  ### API Changes
-
-  - `createPathFilter(patterns: string[])` → `createPathFilter(config: PathFilterOptions)`
-  - `filter.extend(patterns: string[])` → `filter.extend(config: Pick<PathFilterOptions, 'include' | 'exclude'>)`
-  - `filter.patterns(): string[]` → `filter.patterns(): PathFilterOptions`
-  - `filter(path, extraPatterns: string[])` → `filter(path, extraConfig: Pick<PathFilterOptions, 'include' | 'exclude'>)`
-
-  ### Default Behavior
-
-  - If `include` is empty or not provided, includes everything using `**` pattern
-  - `exclude` patterns always override `include` patterns
-  - Default exclusions for `.zip` and `.pdf` files (can be disabled with `disableDefaultExclusions: true`)
-
-  ### Updated PRECONFIGURED_FILTERS
-
-  Preconfigured filter constants now return arrays:
-
-  **Before:**
-
-  ```ts
-  PRECONFIGURED_FILTERS.EXCLUDE_TEST_FILES; // "!**/*Test*"
-  ```
-
-  **After:**
-
-  ```ts
-  PRECONFIGURED_FILTERS.TEST_FILES; // ["**/*Test*"]
-  ```
-
-  Available filters:
-
-  - `TEST_FILES`: `["**/*Test*"]`
-  - `README_FILES`: `["**/ReadMe.txt"]`
-  - `HTML_FILES`: `["**/*.html"]`
-  - `TEST_RELATED`: `["**/*.test.*", "**/*.spec.*", "**/__tests__/**"]`
-
-- [#325](https://github.com/ucdjs/ucd/pull/325) [`a028d2f`](https://github.com/ucdjs/ucd/commit/a028d2f37091a90c76c66ca8c10e43b45b999868) Thanks [@luxass](https://github.com/luxass)! - Move `discoverEndpointsFromConfig` from `@ucdjs/client` to `@ucdjs-internal/shared`.
-
-- [#212](https://github.com/ucdjs/ucd/pull/212) [`08189be`](https://github.com/ucdjs/ucd/commit/08189be0432803fe77ab19d9855b38aadaea5459) Thanks [@luxass](https://github.com/luxass)! - feat: add new @ucdjs-internal/shared package for internal utilities
-
-  This new package contains internal utilities and patterns used across the UCD monorepo, including:
-
-  - `safeJsonParse` utility for safe JSON parsing
-  - Foundation for shared Result types and async utilities
-
-  This package is internal and may change without semver constraints. External users should use `@ucdjs/utils` for stable utilities.
-
-- [#326](https://github.com/ucdjs/ucd/pull/326) [`a9e3aae`](https://github.com/ucdjs/ucd/commit/a9e3aae0efd15e07c50b58b827857631f0553640) Thanks [@luxass](https://github.com/luxass)! - Introduce a `getDefaultUCDEndpointConfig` which uses a build time define, to inject the currently running endpoint config into the build.
-
-### Patch Changes
-
-- [#216](https://github.com/ucdjs/ucd/pull/216) [`6b59312`](https://github.com/ucdjs/ucd/commit/6b5931201a9a19a1b8d70f25680e22d4ae0f0743) Thanks [@luxass](https://github.com/luxass)! - feat: introduce own implementation of `p-limit`
-
-- [#319](https://github.com/ucdjs/ucd/pull/319) [`71d58fb`](https://github.com/ucdjs/ucd/commit/71d58fbf37f580e54a42600dcc4c71f3a63443c0) Thanks [@luxass](https://github.com/luxass)! - Expose fetch types
-
-- Updated dependencies [[`696fdd3`](https://github.com/ucdjs/ucd/commit/696fdd340a2b2faddfcd142e285294f1cc715c1a), [`e52d845`](https://github.com/ucdjs/ucd/commit/e52d845b52027c625e72395a8295cbcdae5317e8)]:
-  - @ucdjs/env@0.1.0
-  - @ucdjs/schemas@0.1.0

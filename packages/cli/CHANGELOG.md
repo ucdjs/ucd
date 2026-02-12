@@ -1,76 +1,162 @@
-# @ucdjs/cli
+# @ucdjs/cli v0.4.0
+**Previous version**: `0.3.0`
+**New version**: `0.4.0`
 
-## 0.3.0
 
-### Minor Changes
+## ✨ Features
+- **cli**: add &#39;validate&#39; subcommand for lockfile validation (`229a1e2c`)
+- **cli**: add &#39;info&#39; subcommand for lockfile details (`d930a9d1`)
+- **cli**: add hash subcommand for computing file hashes (`b24a3d0e`)
+- **cli**: add lockfile command for UCD store management (`0cd6ea05`)
+- **cli**: add CLIError class for improved error handling (`f74a2692`)
+- **cli**: update file listing to use FileEntryList type (`25443c68`)
+- **cli**: refactor output logging and formatBytes function (`0e97978a`)
+- **cli**: update output logging for file operations (`371f9665`)
+- **cli**: enhance output functions and add new utilities (`9e870450`)
+- **cli**: migrate from `@ucdjs/ucd-store-v2` to `@ucdjs/ucd-store` (`f7538ad8`)
+- **cli**: improve debug logs (`7632426c`)
+- **cli**: add info subcommand to files cmd (`33e8dcab`)
+- **cli**: use stderr for casual logs when paired with --json (`904dd049`)
+- update dependencies and enhance lockfile path handling (`7d925743`)
+- add file management commands to CLI (`40b8d0ce`)
+- add write capability assertion and enhance store commands (`a2eb3cd5`)
+- **cli**: fix analyze type errors and resolve double directory path issue (`1edd1365`)
+- **cli**: redesign store commands for ucd-store-v2 API (`a5e12a5e`)
+- **shared**: update CLIStoreCmdSharedFlags to use include/exclude patterns (`3a90b66d`)
+- **ucd-store**: add UCDStoreInvalidManifestError and improve error handling (`69d3d780`)
+- **cli**: enhance store initialization with dry-run mode and add tests (`4aee44b0`)
+- **cli**: add analyze command for UCD store (`b22886ad`)
+- **cli**: enhance CLI store command with version selection (`9caa6a34`)
+- **cli**: enhance CLI store command with version selection (`27db542d`)
+- **cli**: add &#39;dev:api&#39; script for API development (`b9c3b2ba`)
+- implement shared flags and enhance store commands with clean, repair, and status functionalities (`333a90c6`)
+- add store commands for clean, repair, status, and validate (`ed47d40a`)
+- add store command (`0ba52fac`)
+- add turbo.json configuration files for cli, schema-gen, ucd-store, and utils; update tsconfig.base.build.json and remove test:watch task from turbo.json (`48dad498`)
+- add HTML and README file exclusion options to download command (`36d1bc0e`)
+- enhance error reporting in download process and update exclusion patterns (`a5773700`)
+- enable tsdown exports (`8d890cb3`)
 
-- [#59](https://github.com/ucdjs/ucd/pull/59) [`b19dc76`](https://github.com/ucdjs/ucd/commit/b19dc76984e611be178de2037e5436cf3cc27dab) Thanks [@luxass](https://github.com/luxass)! - refactor: migrate ucd-store to use utils
+## 🐛 Bug Fixes
+- **cli**: change console method from info to log in help command test (`4b0cb662`)
+- **cli**: improve mirror command (`27990106`)
+- **cli**: handle include &amp; exclude as arrays (`ba7723f2`)
+- **cli**: update dependency from `@luxass/unicode-utils-old` to `@luxass/unicode-utils` (`b5d2405b`)
+- **cli, schema-gen**: update dependency from `@luxass/unicode-utils` to `@luxass/unicode-utils-old` (`46b62b64`)
+- **ucd-store**: improve error handling in store analysis (`c554d2ac`)
+- **cli**: print correct json output (`1807a7ce`)
+- **cli**: refactor version selection logic in runInitStore (`907a4106`)
+- **cli**: adjust argument indexing for store commands (`e7c8839d`)
+- **cli**: correct command argument indexing and improve process title (`d7446ff2`)
+- **analyze**: correct log message for analyzing versions (`8404d3bf`)
+- **cli**: handle version selection more robustly (`3fabe8a0`)
+- **cli**: handle version selection more robustly (`1aa8ea49`)
+- throw if unresolved import (`8123dda2`)
+- **cli**: remove proxyUrl from clean, init, repair, and status commands (`0499e047`)
 
-- [#71](https://github.com/ucdjs/ucd/pull/71) [`505ec62`](https://github.com/ucdjs/ucd/commit/505ec6266588299b09e1b82de0c2478514671b5c) Thanks [@luxass](https://github.com/luxass)! - Merge LocalUCDStore & RemoteUCDStore into a single UCDStore class which handles everything. Since we are using the new fs-bridge exposed from `@ucdjs/utils` we can easily do this.
+## ♻️ Refactoring
+- reorganize pnpm catalogs for better scoping (##480) (`ba721776`)
+- **cli**: streamline store status, sync, and verify commands (`9a8a375e`)
+- **cli**: improve error handling and reporting structure (`7145af3e`)
+- **ucd-store**: enhance mirroring logic and file handling (`968a73f7`)
+- **cli**: improve command output and structure (`998edb0e`)
+- **env**: rename UCD_FILE_STAT_TYPE_HEADER to UCD_STAT_TYPE_HEADER in tests (`c32b1870`)
+- **env**: rename UCD_FILE_STAT_TYPE_HEADER to UCD_STAT_TYPE_HEADER (`0e4303fc`)
+- update type definitions and clean up imports across multiple files (`f7f602a2`)
+- **tests**: simplify mock responses for API versioning (`79c16c9b`)
+- **tsdown-config**: update package references to @ucdjs-tooling/tsdown-config (`ccc002da`)
+- update tsconfig references to use @ucdjs-tooling/tsconfig (`e5c39ac8`)
+- **ucd-store**: improve error handling in analyze method (`1486a78d`)
+- **cli**: improve error handling and version selection in init command (`09eb17c7`)
+- **cli**: improve error handling and version selection in init command (`be5bd5ec`)
+- **store**: replace `createUCDStore` with specific local and remote store creation functions (`4c824601`)
+- remove download command support from CLI and related tests (`b75b7567`)
+- update imports to use utils package for PRECONFIGURED_FILTERS (`5ac735ab`)
+- update download command to use patterns for file exclusion (`97241de4`)
+- update filter patterns to use consistent naming for exclusion filters (`6b25c005`)
+- enhance runDownload to filter out draft versions and update download patterns (`52c69999`)
+- remove unused file filtering options (`73cc0133`)
+- make cli use ucd-store to download files (`717e4b71`)
 
-- [#66](https://github.com/ucdjs/ucd/pull/66) [`09fb839`](https://github.com/ucdjs/ucd/commit/09fb8396302428b395878110f9e593eacabae7b5) Thanks [@luxass](https://github.com/luxass)! - implement store command
+## ✅ Tests
+- **cli**: add tests for lockfile hash, info, and validate commands (`0b7da9de`)
+- **cli**: update console output capture from info to log (`d6a95559`)
+- **cli**: remove `info` capture from ConsoleOutputCapture (`f961e441`)
+- apply changes to make tests work in vitest v4 (`27d60cfd`)
+- **cli**: add more test files (`487f5422`)
+- **cli**: add more cli tests (`9b68b3e2`)
+- **cli**: add init tests (`ab7e8211`)
+- **cli**: add mirror tests (`044361a5`)
+- update mockFetch calls to remove redundant HEAD requests (`61b4a3f9`)
+- **cli**: add mock readable &amp; writable (`98bcc08a`)
 
-- [#35](https://github.com/ucdjs/ucd/pull/35) [`a67a5b7`](https://github.com/ucdjs/ucd/commit/a67a5b75679dc8c4ba73743e5d6ffa2c18132439) Thanks [@luxass](https://github.com/luxass)! - refactor: migrate cli to ucd-store download
+## 🔧 Chores
+- **workspace**: update dependencies and package manager (`1fcda2ca`)
+- reorganize package catalogs and update dependencies (`ea2df11e`)
+- update packageManager to pnpm@10.29.1 across all packages (`6bb966ab`)
+- update dependencies and package manager (`e91a1ec4`)
+- lint (`6b132401`)
+- update dependencies (`59402701`)
+- lint (`c4908b0a`)
+- remove main and module fields from package.json (`0b607bcc`)
+- update dependencies (`51e6a071`)
+- update typecheck command in package.json files (`34fa0ae7`)
+- lint (`41b0244d`)
+- **cli**: remove debug log for store path in lockfile info (`ffb9fb32`)
+- tmp disable test (`5334e8cb`)
+- upgrade pnpm (`b06a7dd7`)
+- fix build (`82342805`)
+- apply greptile suggestions (`e864d5b3`)
+- cleanup (`8ad8f804`)
+- update dependencies (`4b3590b9`)
+- lint (`6ea8546b`)
+- change test files a bit (`a9a2698b`)
+- lint (`f9014ae8`)
+- apply improvements (`cccc5b5a`)
+- **deps**: update dependencies and package manager version (`8c5f051f`)
+- **deps**: update package versions in `pnpm-workspace.yaml` (`2cca2fdf`)
+- **deps**: update package versions in `pnpm-workspace.yaml` and package.json files (`34f3cab1`)
+- **release**: 📦 version packages (`d592b87c`)
+- switch to @unicode-utils/* (##374) (`735ae595`)
+- update pnpm (`62648fcd`)
+- fix tests (`4e338e73`)
+- update pnpm (`7e789f64`)
+- fix rest of tests (`6a9a24fd`)
+- **tests**: update import paths for test utilities (`05725fc0`)
+- update devDependencies to use &#39;catalog:types&#39; (`04277f87`)
+- update dependencies (`bf3b20f8`)
+- update packageManager to pnpm@10.16.1 across all packages (`ec4ebd9d`)
+- update package versions in pnpm-workspace.yaml to remove caret (^) for consistency (`8521f03a`)
+- use node 22.18 (`2a9bfcd7`)
+- remove `p-limit` dependency across multiple packages (`a73147af`)
+- migrate test-utils-internal to internal alias (`2cd82c0d`)
+- fix imports (`162de26f`)
+- update pnpm workspace and add test utils package (`80e2d592`)
+- refactor imports to use #test-utils for consistency (`280d8ea9`)
+- fix (`6b31958b`)
+- fix cli test (`557b22a6`)
+- add dev script to cli (`8d50e6cd`)
+- update dependencies (`c813c448`)
+- update build scripts to include custom TypeScript configuration (`ef9cf9a5`)
+- **eslint**: refactor ESLint configuration across multiple packages (`4924a4c8`)
+- add clack prompts (`c03cc60b`)
+- add clack prompts (`9adfb0b0`)
+- **tsconfig**: standardize include and exclude patterns across configurations (`4ddbf590`)
+- refactor UCD store commands and remove unused files (`8db61c64`)
+- update node engine version across packages (##105) (`315a422d`)
+- update dependencies (`a1d2a3a7`)
+- lint (`c8c67d4b`)
+- update package versions in pnpm-workspace.yaml (`9dde454c`)
+- refactor tsdown configuration across packages (`323318de`)
+- update pnpm workspace configuration (`e0f3343e`)
+- lint (`bc9b2700`)
+- remove downloads cmd I will create a new PR which adds a new CLI for stores, that will be the new cli to use (`811b2772`)
+- migrate to use tooling packages (`5b7cf43a`)
+- fix tests (`921ea71d`)
+- fix tests (`d1df97d2`)
+- update dependencies (`f262f3fc`)
+- remove duplicate flag (`33a23e48`)
+- remove cleanup (`275e6301`)
+- disable some tests I will create an issue for tracking test coverage, which these tests fall under (`ce43550a`)
 
-### Patch Changes
 
-- [#45](https://github.com/ucdjs/ucd/pull/45) [`8dbc72d`](https://github.com/ucdjs/ucd/commit/8dbc72d3197a0eef8e876595583c4109114cbc31) Thanks [@luxass](https://github.com/luxass)! - unify filtering across stores
-
-- [#49](https://github.com/ucdjs/ucd/pull/49) [`d761237`](https://github.com/ucdjs/ucd/commit/d7612378002115098b7f35430aaadfed0913a3af) Thanks [@luxass](https://github.com/luxass)! - move filter's to utils pkg
-
-- Updated dependencies [[`2d3774a`](https://github.com/ucdjs/ucd/commit/2d3774afe4786e45385ba3af19f160487541a64e), [`d7b8d08`](https://github.com/ucdjs/ucd/commit/d7b8d088060b2ee473f325b1173cbb67f05ccb2f), [`8dbc72d`](https://github.com/ucdjs/ucd/commit/8dbc72d3197a0eef8e876595583c4109114cbc31), [`2222605`](https://github.com/ucdjs/ucd/commit/22226057f7587669e2ae15cd06011f38dd677741), [`b19dc76`](https://github.com/ucdjs/ucd/commit/b19dc76984e611be178de2037e5436cf3cc27dab), [`505ec62`](https://github.com/ucdjs/ucd/commit/505ec6266588299b09e1b82de0c2478514671b5c), [`82eb12e`](https://github.com/ucdjs/ucd/commit/82eb12e1d1944ebbe2748ec129a2d2b2fa315946), [`d4bdcfd`](https://github.com/ucdjs/ucd/commit/d4bdcfd5a5cd0fc3e2a6e2620a26f5e6f835af40), [`c013665`](https://github.com/ucdjs/ucd/commit/c013665af9188920624e516d0359293859752861), [`80a3794`](https://github.com/ucdjs/ucd/commit/80a3794d0469d64f0522347d6f0c3b258f4fcd35), [`d761237`](https://github.com/ucdjs/ucd/commit/d7612378002115098b7f35430aaadfed0913a3af), [`bea2c3c`](https://github.com/ucdjs/ucd/commit/bea2c3c672aee24080eef7b973c7f3c00acb1b6f), [`ec348bb`](https://github.com/ucdjs/ucd/commit/ec348bb9cea0285222347526cf5be5d14d9d61ea), [`1bac88a`](https://github.com/ucdjs/ucd/commit/1bac88add4796ef58f9b9b1d769ab03cdd4a61c0), [`69ee629`](https://github.com/ucdjs/ucd/commit/69ee629e77ad2f83a663cb7c6e8aa07fb9655a12), [`85c248b`](https://github.com/ucdjs/ucd/commit/85c248bc8f5304ee6ba56e2ded6d81ce3facd00e), [`6a43284`](https://github.com/ucdjs/ucd/commit/6a432841e12d6e5783822cc8fe2586ae2b5ab4e1), [`c013665`](https://github.com/ucdjs/ucd/commit/c013665af9188920624e516d0359293859752861), [`4052200`](https://github.com/ucdjs/ucd/commit/40522006c24f8856ff5ec34bb6630d1e1d7f68e3), [`f15bb51`](https://github.com/ucdjs/ucd/commit/f15bb51c663c05e205553c59ab0a7f06a6e20e39), [`a3f785f`](https://github.com/ucdjs/ucd/commit/a3f785f697a393dbef75728e9a8286359386c5f9), [`64e31f5`](https://github.com/ucdjs/ucd/commit/64e31f5491db5e192136eb66159108d4a98bff03), [`0ab4b32`](https://github.com/ucdjs/ucd/commit/0ab4b32b726c5ebb0c1199270dddfb7ddaae8f61), [`76b56b0`](https://github.com/ucdjs/ucd/commit/76b56b08f38f5da4dc441cdbc7fcb8d074ae5a55)]:
-  - @ucdjs/ucd-store@0.1.0
-  - @ucdjs/schema-gen@0.2.2
-
-## 0.2.2
-
-### Patch Changes
-
-- [#18](https://github.com/ucdjs/ucd/pull/18) [`24e8218`](https://github.com/ucdjs/ucd/commit/24e821845bf6a7b9c95b0db467b099440976c71c) Thanks [@luxass](https://github.com/luxass)! - feat: create comment files flag
-
-## 0.2.1
-
-### Patch Changes
-
-- [#16](https://github.com/ucdjs/ucd/pull/16) [`846b18a`](https://github.com/ucdjs/ucd/commit/846b18a4ddf7c97062fc8367121809cd80950ab0) Thanks [@luxass](https://github.com/luxass)! - feat: add support for excluding draft in file download
-
-## 0.2.0
-
-### Minor Changes
-
-- [#15](https://github.com/ucdjs/ucd/pull/15) [`24ce563`](https://github.com/ucdjs/ucd/commit/24ce563760b0efcf33ff9219d01868c195bb63ac) Thanks [@luxass](https://github.com/luxass)! - feat!: remove generate cmd in favor of the new download cmd
-
-- [#13](https://github.com/ucdjs/ucd/pull/13) [`4e59266`](https://github.com/ucdjs/ucd/commit/4e592668e45fec9b15de0a1395708e694a9a8500) Thanks [@luxass](https://github.com/luxass)! - feat: add new download cmd
-
-- [`381b40d`](https://github.com/ucdjs/ucd/commit/381b40d654c9c10d3c8b4f82bdeab3003b6a79d4) Thanks [@luxass](https://github.com/luxass)! - implement concurrency for codegen
-
-### Patch Changes
-
-- Updated dependencies [[`78f4673`](https://github.com/ucdjs/ucd/commit/78f4673657a210eb374a025dabe7450291712a0a)]:
-  - @ucdjs/schema-gen@0.2.1
-
-## 0.1.3
-
-### Patch Changes
-
-- Updated dependencies [[`99eccc9`](https://github.com/ucdjs/ucd/commit/99eccc9bc76904e2e2b5c2233229857235841091)]:
-  - @ucdjs/schema-gen@0.2.0
-
-## 0.1.2
-
-### Patch Changes
-
-- Updated dependencies [[`d55695d`](https://github.com/ucdjs/ucd/commit/d55695d16b6ec74953e2f2314500d70590eb5d1a)]:
-  - @ucdjs/schema-gen@0.1.0
-
-## 0.1.1
-
-### Patch Changes
-
-- [#3](https://github.com/ucdjs/ucd/pull/3) [`290e73d`](https://github.com/ucdjs/ucd/commit/290e73d29439c7102ead994f29b4d5797fb33eca) Thanks [@luxass](https://github.com/luxass)! - feat: enhance generate experience
-
-## 0.1.0
-
-### Minor Changes
-
-- [#1](https://github.com/ucdjs/ucd/pull/1) [`bb3d880`](https://github.com/ucdjs/ucd/commit/bb3d880b8f824d5a2d7a9e0e627a94a6cc456355) Thanks [@luxass](https://github.com/luxass)! - feat: add generate cmd
