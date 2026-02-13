@@ -317,8 +317,10 @@ export const playgroundAdvancedPipeline = definePipeline({
   include: byExt(".txt"),
   strict: false,
   concurrency: 8,
+  // @ts-expect-error - Will be fixed
   fallback: {
     filter: always(),
+    // @ts-expect-error - Will be fixed
     async* parser(ctx): AsyncIterable<ParsedRow> {
       const content = await ctx.readContent();
       yield {
