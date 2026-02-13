@@ -1,6 +1,5 @@
 import type { HonoEnv } from "../../types";
 import { Hono } from "hono";
-import { parseTar } from "nanotar";
 import { clearCacheEntry } from "../../lib/cache";
 import { badGateway, badRequest, unauthorized } from "../../lib/errors";
 
@@ -27,12 +26,14 @@ TASKS_ROUTER.use("/*", async (c, next) => {
   await next();
 });
 
-TASKS_ROUTER.post("/upload-manifest", async (c) => {
-  const startTime = Date.now();
-  const bucket = c.env.UCD_BUCKET;
+// Maximum TAR file size (50MB)
+const MAX_TAR_SIZE_BYTES = 50 * 1024 * 1024;
 
-  if (!bucket) {
-    console.error("[tasks]: UCD_BUCKET binding not configured");
+TASKS_ROUTER.post("/upload-manifest", async (c) => {
+  const workflow = c.env.MANIFEST_UPLOAD_WORKFLOW;
+
+  if (!workflow) {
+    console.error("[tasks]: MANIFEST_UPLOAD_WORKFLOW binding not configured");
     return badGateway(c);
   }
 
@@ -52,55 +53,79 @@ TASKS_ROUTER.post("/upload-manifest", async (c) => {
   }
 
   try {
-    const tarData = await c.req.arrayBuffer();
-    const files = parseTar(tarData);
+    const tarBuffer = await c.req.arrayBuffer();
 
-    // eslint-disable-next-line no-console
-    console.log(`[tasks]: received tar with ${files.length} files for version ${version}`);
-
-    let uploadedFiles = 0;
-    const uploadedFileNames: string[] = [];
-
-    for (const file of files) {
-      if (!file.data) {
-        continue;
-      }
-
-      const fileName = file.name.replace(/^\.\//, "");
-      if (!fileName) {
-        continue;
-      }
-
-      // Store files under manifest/<version>/ prefix
-      // e.g., "manifest.json" -> "manifest/16.0.0/manifest.json"
-      const storagePath = `manifest/${version}/${fileName}`;
-
-      await bucket.put(storagePath, file.data, {
-        httpMetadata: {
-          contentType: "application/json",
-        },
+    // Check size limit
+    if (tarBuffer.byteLength > MAX_TAR_SIZE_BYTES) {
+      return badRequest(c, {
+        message: `TAR file size (${Math.round(tarBuffer.byteLength / 1024 / 1024)}MB) exceeds maximum of 50MB`,
       });
-
-      uploadedFiles++;
-      uploadedFileNames.push(fileName);
-      // eslint-disable-next-line no-console
-      console.log(`[tasks]: uploaded ${storagePath}`);
     }
 
-    const duration = Date.now() - startTime;
+    // Convert to base64 for workflow params
+    const bytes = new Uint8Array(tarBuffer);
+    let binaryString = "";
+    for (let i = 0; i < bytes.length; i++) {
+      binaryString += String.fromCharCode(bytes[i]!);
+    }
+    const tarBase64 = btoa(binaryString);
+
+    // Trigger workflow
+    const instance = await workflow.create({
+      id: `manifest-upload-${version}-${Date.now()}`,
+      params: {
+        version,
+        tarData: tarBase64,
+        contentType,
+      },
+    });
+
     // eslint-disable-next-line no-console
-    console.log(`[tasks]: uploaded ${uploadedFiles} files for version ${version} in ${duration}ms`);
+    console.log(`[tasks]: Started manifest upload workflow ${instance.id} for version ${version}`);
+
+    // Determine base URL for status endpoint
+    const url = new URL(c.req.url);
+    const baseUrl = `${url.protocol}//${url.host}`;
 
     return c.json({
       success: true,
-      version,
-      filesUploaded: uploadedFiles,
-      files: uploadedFileNames,
-      duration,
-    }, 200);
+      workflowId: instance.id,
+      status: "queued",
+      statusUrl: `${baseUrl}/_tasks/upload-status/${instance.id}`,
+    }, 202); // 202 Accepted for async processing
   } catch (error) {
-    console.error("[tasks]: failed to process tar file:", error);
-    return badRequest(c, { message: "Failed to process tar file" });
+    console.error("[tasks]: Failed to start workflow:", error);
+    return badGateway(c);
+  }
+});
+
+TASKS_ROUTER.get("/upload-status/:workflowId", async (c) => {
+  const workflowId = c.req.param("workflowId");
+
+  if (!workflowId) {
+    return badRequest(c, { message: "Missing workflow ID" });
+  }
+
+  const workflow = c.env.MANIFEST_UPLOAD_WORKFLOW;
+
+  if (!workflow) {
+    console.error("[tasks]: MANIFEST_UPLOAD_WORKFLOW binding not configured");
+    return badGateway(c);
+  }
+
+  try {
+    const instance = await workflow.get(workflowId);
+    const status = await instance.status();
+
+    return c.json({
+      workflowId,
+      status: status.status,
+      output: status.output,
+      error: status.error,
+    });
+  } catch (error) {
+    console.error("[tasks]: Failed to get workflow status:", error);
+    return badRequest(c, { message: "Invalid workflow ID or workflow not found" });
   }
 });
 
