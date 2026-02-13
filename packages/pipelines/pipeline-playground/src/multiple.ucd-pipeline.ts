@@ -6,7 +6,7 @@ export const firstPipeline = definePipeline({
   versions: ["16.0.0"],
   inputs: [],
   routes: [],
-})
+});
 
 export const secondPipeline = definePipeline({
   id: "second-pipeline",
@@ -14,4 +14,4 @@ export const secondPipeline = definePipeline({
   versions: ["16.0.0"],
   inputs: [],
   routes: [],
-})
+});

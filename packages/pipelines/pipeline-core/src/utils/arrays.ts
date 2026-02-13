@@ -1,7 +1,7 @@
 /**
  * Split a line into exactly 2 fields.
  * Returns a tuple [first, second] or null if not enough fields.
- * 
+ *
  * After null check, TypeScript knows both elements exist and are strings.
  */
 export function splitTwoFields(
@@ -16,7 +16,7 @@ export function splitTwoFields(
 /**
  * Split a line with minimum field count check.
  * Returns the array or null if not enough fields.
- * 
+ *
  * Use when you need more than 2 fields (e.g., UnicodeData with 14 fields).
  * Access fields with nullish coalescing: `fields[0] ?? ""`
  */

@@ -1,4 +1,4 @@
-import type { FallbackRouteDefinition, ParsedRow, PropertyJson, ResolveContext, ResolvedEntry } from "@ucdjs/pipelines-core";
+import type { ParsedRow, PropertyJson, ResolveContext, ResolvedEntry } from "@ucdjs/pipelines-core";
 import {
   always,
   and,
