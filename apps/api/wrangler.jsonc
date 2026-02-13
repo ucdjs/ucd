@@ -1,7 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "ucdjs-api",
-  "main": "src/worker.ts",
+  "main": "src/index.ts",
   "compatibility_date": "2025-12-19",
   "compatibility_flags": [
     "enable_request_signal",
@@ -46,6 +46,16 @@
       "store_id": "673d2913c9314d48a64b6d9e1894ed12"
     }
   ],
+  "workflows": [
+    {
+      "name": "manifest-upload",
+      "binding": "MANIFEST_UPLOAD_WORKFLOW",
+      "class_name": "ManifestUploadWorkflow"
+    }
+  ],
+  "limits": {
+    "cpu_ms": 300000
+  },
   "placement": { "mode": "smart" },
   "env": {
     "production": {
@@ -93,6 +103,16 @@
             }
           }
         ]
+      },
+      "workflows": [
+        {
+          "name": "manifest-upload",
+          "binding": "MANIFEST_UPLOAD_WORKFLOW",
+          "class_name": "ManifestUploadWorkflow"
+        }
+      ],
+      "limits": {
+        "cpu_ms": 300000
       }
     },
     "preview": {
@@ -140,6 +160,16 @@
             }
           }
         ]
+      },
+      "workflows": [
+        {
+          "name": "manifest-upload",
+          "binding": "MANIFEST_UPLOAD_WORKFLOW",
+          "class_name": "ManifestUploadWorkflow"
+        }
+      ],
+      "limits": {
+        "cpu_ms": 300000
       }
     },
     "testing": {
@@ -180,6 +210,16 @@
             }
           }
         ]
+      },
+      "workflows": [
+        {
+          "name": "manifest-upload",
+          "binding": "MANIFEST_UPLOAD_WORKFLOW",
+          "class_name": "ManifestUploadWorkflow"
+        }
+      ],
+      "limits": {
+        "cpu_ms": 300000
       }
     }
   }
