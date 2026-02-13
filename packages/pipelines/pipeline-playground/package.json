@@ -1,8 +1,8 @@
 {
   "name": "@ucdjs/pipelines-playground",
   "version": "0.0.0",
-  "private": true,
   "type": "module",
+  "private": true,
   "author": {
     "name": "Lucas Nørgaard",
     "email": "lucasnrgaard@gmail.com",

@@ -7,6 +7,6 @@ export const mainPipeline = definePipeline({
   versions: ["16.0.0"],
   inputs: [],
   routes: [],
-})
+});
 
 export { firstPipeline, secondPipeline };
