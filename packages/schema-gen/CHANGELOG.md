@@ -1,5 +1,30 @@
 # @ucdjs/schema-gen
 
+## 0.3.0
+
+
+
+
+### &nbsp;&nbsp;&nbsp;🚀 Features
+
+- add turbo.json configuration files for cli, schema-gen, ucd-store, and utils; update tsconfig.base.build.json and remove test:watch task from turbo.json &amp;nbsp;-&amp;nbsp; by Lucas [&lt;samp&gt;(48dad498)&lt;/samp&gt;](https://github.com/ucdjs/ucd/commit/48dad4988f63c50f2c878f310112cf0fd44e6058)- enable tsdown exports &amp;nbsp;-&amp;nbsp; by Lucas [&lt;samp&gt;(8d890cb3)&lt;/samp&gt;](https://github.com/ucdjs/ucd/commit/8d890cb3bea085a3fd12e818499ea305279a738a)
+- **shared**:
+      - migrate utilities to @ucdjs-internal/shared &amp;nbsp;-&amp;nbsp; by Lucas [&lt;samp&gt;(4d7588fd)&lt;/samp&gt;](https://github.com/ucdjs/ucd/commit/4d7588fde6943006a59e89fc8338dc0078f347a9)  
+### &nbsp;&nbsp;&nbsp;🐞 Bug Fixes
+
+- throw if unresolved import &amp;nbsp;-&amp;nbsp; by Lucas [&lt;samp&gt;(8123dda2)&lt;/samp&gt;](https://github.com/ucdjs/ucd/commit/8123dda281a62ed6bd63c6d1b6975a27a6f78346)
+- **cli, schema-gen**:
+      - update dependency from `@luxass/unicode-utils` to `@luxass/unicode-utils-old` &amp;nbsp;-&amp;nbsp; by Lucas [&lt;samp&gt;(46b62b64)&lt;/samp&gt;](https://github.com/ucdjs/ucd/commit/46b62b64395f76f1306e9abeeb42b43214ef4bc2)  
+### &nbsp;&nbsp;&nbsp;Refactoring
+
+- reorganize pnpm catalogs for better scoping &amp;nbsp;-&amp;nbsp; by Lucas [&lt;samp&gt;(ba721776)&lt;/samp&gt;](https://github.com/ucdjs/ucd/commit/ba721776cf6fad9cdae2ba9617e52fca7dff1499)- update tsconfig references to use @ucdjs-tooling/tsconfig &amp;nbsp;-&amp;nbsp; by Lucas [&lt;samp&gt;(e5c39ac8)&lt;/samp&gt;](https://github.com/ucdjs/ucd/commit/e5c39ac8d2e0ad1cc4a29e4417013ed124c83801)
+- **tsdown-config**:
+      - update package references to @ucdjs-tooling/tsdown-config &amp;nbsp;-&amp;nbsp; by Lucas [&lt;samp&gt;(ccc002da)&lt;/samp&gt;](https://github.com/ucdjs/ucd/commit/ccc002dafd139e0b08e55098470f7a2a8af361ab)  - **fields**:
+      - use fileURLToPath for consistent path handling &amp;nbsp;-&amp;nbsp; by Lucas [&lt;samp&gt;(fb178d95)&lt;/samp&gt;](https://github.com/ucdjs/ucd/commit/fb178d95c6f888f0077114666ab6751ea5b741e0)  
+
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/ucdjs/ucd/compare/v0.2.2...v0.3.0)
+
 ## 0.2.2
 
 ### Patch Changes

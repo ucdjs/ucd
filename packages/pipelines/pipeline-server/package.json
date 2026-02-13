@@ -1,53 +1,6 @@
 {
   "name": "@ucdjs/pipelines-server",
-  "version": "0.0.1",
-  "type": "module",
-  "author": {
-    "name": "Lucas Nørgård",
-    "email": "lucasnrgaard@gmail.com",
-    "url": "https://luxass.dev"
-  },
-  "packageManager": "pnpm@10.29.3",
-  "license": "MIT",
-  "homepage": "https://github.com/ucdjs/ucd",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/ucdjs/ucd.git",
-    "directory": "packages/pipelines/pipeline-server"
-  },
-  "bugs": {
-    "url": "https://github.com/ucdjs/ucd/issues"
-  },
-  "sideEffects": false,
-  "imports": {
-    "#routes/*": "./src/client/routes/*.ts",
-    "#components/*": "./src/client/components/*.tsx",
-    "#hooks/*": "./src/client/hooks/*.ts",
-    "#lib/*": "./src/client/lib/*.ts",
-    "#server/*": "./src/server/*.ts",
-    "#server/db": "./src/server/db/index.ts",
-    "#server/routes": "./src/server/routes/index.ts"
-  },
-  "exports": {
-    ".": "./dist/server/app.js",
-    "./package.json": "./package.json"
-  },
-  "files": [
-    "dist"
-  ],
-  "engines": {
-    "node": ">=22.18"
-  },
-  "scripts": {
-    "build": "vite build",
-    "dev": "vite dev --port 3031",
-    "clean": "git clean -xdf dist node_modules",
-    "lint": "eslint .",
-    "typecheck": "tsc --noEmit -p tsconfig.build.json",
-    "db:generate": "drizzle-kit generate",
-    "db:push": "drizzle-kit push",
-    "db:migrate": "drizzle-kit migrate"
-  },
+  "version": "0.1.0",
   "dependencies": {
     "@libsql/client": "catalog:backend",
     "@ucdjs-internal/shared-ui": "workspace:*",
@@ -94,8 +47,5 @@
     "vite-tsconfig-paths": "catalog:build",
     "vitest": "catalog:test",
     "vitest-testdirs": "catalog:test"
-  },
-  "publishConfig": {
-    "access": "public"
   }
 }
