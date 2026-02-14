@@ -1,7 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createLazyFileRoute, Link } from "@tanstack/react-router";
 import { usePipelineFile } from "@ucdjs/pipelines-ui";
 
-export const Route = createFileRoute("/pipelines/$file/")({
+export const Route = createLazyFileRoute("/pipelines/$file/")({
   component: PipelineFilePage,
 });
 
@@ -29,7 +29,7 @@ function PipelineFilePage() {
 
   return (
     <div className="p-6 space-y-6">
-      <div className="rounded-lg border border-border bg-gradient-to-br from-muted/50 via-muted/10 to-transparent p-4">
+      <div className="rounded-lg border border-border bg-linear-to-br from-muted/50 via-muted/10 to-transparent p-4">
         <h1 className="text-lg font-semibold text-foreground">Pipeline File</h1>
         <p className="text-xs text-muted-foreground mt-1">
           {fileInfo.fileLabel ?? fileInfo.filePath}

@@ -1,7 +1,13 @@
-import { PipelineCommandPalette } from "#components/pipeline-command-palette";
 import { createRootRoute, Outlet } from "@tanstack/react-router";
 import { SidebarInset, SidebarProvider } from "@ucdjs-internal/shared-ui/ui/sidebar";
 import { PipelineSidebar } from "@ucdjs/pipelines-ui";
+import { lazy, Suspense } from "react";
+
+const PipelineCommandPalette = lazy(() =>
+  import("#components/pipeline-command-palette").then((mod) => ({
+    default: mod.PipelineCommandPalette,
+  })),
+);
 
 export const Route = createRootRoute({
   component: RootLayout,
@@ -15,7 +21,9 @@ function RootLayout() {
         <Outlet />
       </SidebarInset>
 
-      <PipelineCommandPalette />
+      <Suspense fallback={null}>
+        <PipelineCommandPalette />
+      </Suspense>
     </SidebarProvider>
   );
 }
