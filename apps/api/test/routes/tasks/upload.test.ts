@@ -5,6 +5,7 @@ import * as taskIds from "../../../src/routes/tasks/ids";
 import { executeRequest } from "../../helpers/request";
 import { expectApiError, expectJsonResponse, expectSuccess } from "../../helpers/response";
 
+const TASK_API_KEY = "b8539abb-f2e9-4f6f-86b3-36df26d752b4";
 const fixedWorkflowId = "manifest-upload-16-0-0-1234567890";
 const manifestParams = {
   version: "16.0.0",
@@ -19,7 +20,7 @@ beforeEach(() => {
   // I couldn't figure out how to setup mock secret stores.
   // So this is the best, i can currently think of.
   env.UCDJS_TASK_API_KEY = {
-    get: vi.fn().mockResolvedValue("test-api-key"),
+    get: vi.fn().mockResolvedValue(TASK_API_KEY),
   };
 
   vi.spyOn(taskIds, "makeManifestUploadId").mockReturnValue(fixedWorkflowId);
@@ -38,7 +39,6 @@ describe("tasks", () => {
         await m.mockStepResult({ name: "purge-caches" }, { ok: true });
       });
 
-      // Create a simple TAR file (just a few bytes)
       const tarData = new Uint8Array([0x1F, 0x8B]); // gzip magic bytes
 
       const { response, json } = await executeRequest(
@@ -99,7 +99,7 @@ describe("tasks", () => {
           method: "POST",
           headers: {
             "Content-Type": "application/gzip",
-            "X-UCDJS-Task-Key": "test-api-key",
+            "X-UCDJS-Task-Key": TASK_API_KEY,
           },
           body: new Uint8Array([0x1F, 0x8B]),
         }),
@@ -140,7 +140,7 @@ describe("tasks", () => {
           method: "POST",
           headers: {
             "Content-Type": "application/gzip",
-            "X-UCDJS-Task-Key": "test-api-key",
+            "X-UCDJS-Task-Key": TASK_API_KEY,
           },
           body: largeBuffer,
         }),
@@ -162,7 +162,7 @@ describe("tasks", () => {
           method: "POST",
           headers: {
             "Content-Type": "application/gzip",
-            "X-UCDJS-Task-Key": "test-api-key",
+            "X-UCDJS-Task-Key": TASK_API_KEY,
           },
           body: new Uint8Array([0x1F, 0x8B]),
         }),
@@ -182,7 +182,7 @@ describe("tasks", () => {
           method: "POST",
           headers: {
             "Content-Type": "application/gzip",
-            "X-UCDJS-Task-Key": "test-api-key",
+            "X-UCDJS-Task-Key": TASK_API_KEY,
           },
           body: new Uint8Array([0x1F, 0x8B]),
         }),
