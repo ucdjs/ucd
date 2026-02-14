@@ -20,22 +20,12 @@ interface UploadResult {
   success: boolean;
 }
 
-interface WorkflowOutput {
-  success: boolean;
-  version: string;
-  filesUploaded: number;
-  duration: number;
-  workflowId: string;
-}
-
 export class ManifestUploadWorkflow extends WorkflowEntrypoint<Env, ManifestUploadParams> {
-  async run(event: WorkflowEvent<ManifestUploadParams>, step: WorkflowStep): Promise<WorkflowOutput> {
+  async run(event: WorkflowEvent<ManifestUploadParams>, step: WorkflowStep) {
     const { version, tarData: tarDataBase64 } = event.payload;
     const startTime = Date.now();
 
-    // Step 1: Extract and validate TAR
     const files = await step.do("extract-tar", async () => {
-      // Validate size limit
       const decodedLength = (tarDataBase64.length * 3) / 4;
       if (decodedLength > MAX_TAR_SIZE_BYTES) {
         throw new Error(
@@ -84,47 +74,41 @@ export class ManifestUploadWorkflow extends WorkflowEntrypoint<Env, ManifestUplo
       return fileEntries;
     });
 
-    // Step 2: Upload files in parallel batches
-    const _uploadResults = await step.do(
-      "upload-files",
-      {
-        retries: { limit: 3, delay: 5000, backoff: "exponential" },
-        timeout: "5 minutes",
-      },
-      async () => {
-        const bucket = this.env.UCD_BUCKET;
-        const results: UploadResult[] = [];
-        const BATCH_SIZE = 10;
+    const _uploadResults = await step.do("upload-files", {
+      retries: { limit: 3, delay: 5000, backoff: "exponential" },
+      timeout: "5 minutes",
+    }, async () => {
+      const bucket = this.env.UCD_BUCKET;
+      const results: UploadResult[] = [];
+      const BATCH_SIZE = 10;
 
-        // Process in batches for parallelization
-        for (let i = 0; i < files.length; i += BATCH_SIZE) {
-          const batch = files.slice(i, i + BATCH_SIZE);
-          const batchPromises = batch.map(async (file) => {
-            const storagePath = `manifest/${version}/${file.name}`;
+      // Process in batches for parallelization
+      for (let i = 0; i < files.length; i += BATCH_SIZE) {
+        const batch = files.slice(i, i + BATCH_SIZE);
+        const batchPromises = batch.map(async (file) => {
+          const storagePath = `manifest/${version}/${file.name}`;
 
-            try {
-              await bucket.put(storagePath, file.data, {
-                httpMetadata: { contentType: "application/json" },
-              });
+          try {
+            await bucket.put(storagePath, file.data, {
+              httpMetadata: { contentType: "application/json" },
+            });
 
-              // eslint-disable-next-line no-console
-              console.log(`[manifest-upload]: Uploaded ${storagePath}`);
-              return { name: file.name, success: true };
-            } catch (error) {
-              console.error(`[manifest-upload]: Failed to upload ${storagePath}:`, error);
-              throw new Error(`Failed to upload ${file.name}: ${error instanceof Error ? error.message : String(error)}`);
-            }
-          });
+            // eslint-disable-next-line no-console
+            console.log(`[manifest-upload]: Uploaded ${storagePath}`);
+            return { name: file.name, success: true };
+          } catch (error) {
+            console.error(`[manifest-upload]: Failed to upload ${storagePath}:`, error);
+            throw new Error(`Failed to upload ${file.name}: ${error instanceof Error ? error.message : String(error)}`);
+          }
+        });
 
-          const batchResults = await Promise.all(batchPromises);
-          results.push(...batchResults);
-        }
+        const batchResults = await Promise.all(batchPromises);
+        results.push(...batchResults);
+      }
 
-        return results;
-      },
-    );
+      return results;
+    });
 
-    // Step 3: Validate completeness
     await step.do("validate-upload", async () => {
       const bucket = this.env.UCD_BUCKET;
       const checkPromises = files.map(async (file) => {
@@ -145,7 +129,6 @@ export class ManifestUploadWorkflow extends WorkflowEntrypoint<Env, ManifestUplo
       return { validated: true, fileCount: files.length };
     });
 
-    // Step 4: Purge affected caches
     await step.do("purge-caches", async () => {
       const cacheNames = ["v1_versions", "v1_files", "ucd_store"];
 
