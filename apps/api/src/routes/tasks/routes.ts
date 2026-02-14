@@ -2,6 +2,7 @@ import type { HonoEnv } from "../../types";
 import { Hono } from "hono";
 import { clearCacheEntry } from "../../lib/cache";
 import { badGateway, badRequest, unauthorized } from "../../lib/errors";
+import { makeManifestUploadId } from "./ids";
 
 export const TASKS_ROUTER = new Hono<HonoEnv>().basePath("/_tasks");
 
@@ -11,7 +12,14 @@ TASKS_ROUTER.use("/*", async (c, next) => {
     return next();
   }
 
-  const apiKey = c.req.header("X-UCDJS-Task-Key");
+  console.error(`[tasks]: Authenticating request to ${c.req.url}`);
+  const apiKey = c.req.header("X-UCDJS-Task-Key")?.trim();
+  if (!apiKey) {
+    console.error("[tasks]: Missing X-UCDJS-Task-Key header");
+    return unauthorized(c, { message: "Missing task key" });
+  }
+
+  console.error(`[tasks]: Received API key: ${apiKey}`);
   const expectedKey = await c.env.UCDJS_TASK_API_KEY.get();
 
   if (!expectedKey) {
@@ -72,7 +80,7 @@ TASKS_ROUTER.post("/upload-manifest", async (c) => {
 
     // Trigger workflow
     const instance = await workflow.create({
-      id: `manifest-upload-${version}-${Date.now()}`,
+      id: makeManifestUploadId(version),
       params: {
         version,
         tarData: tarBase64,

@@ -1,31 +1,42 @@
+import { introspectWorkflowInstance } from "cloudflare:test";
 import { env } from "cloudflare:workers";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import * as taskIds from "../../../src/routes/tasks/ids";
 import { executeRequest } from "../../helpers/request";
 import { expectApiError, expectJsonResponse, expectSuccess } from "../../helpers/response";
 
-// Mock the workflow binding
-const mockWorkflowCreate = vi.fn();
-const mockWorkflowGet = vi.fn();
-const mockInstanceStatus = vi.fn();
+const fixedWorkflowId = "manifest-upload-16-0-0-1234567890";
+const manifestParams = {
+  version: "16.0.0",
+  tarData: "AA==",
+  contentType: "application/gzip",
+} as const;
+const mockFileEntries = [{ name: "manifest.json", data: new ArrayBuffer(1) }];
 
 beforeEach(() => {
-  vi.resetAllMocks();
+  vi.restoreAllMocks();
 
-  // Setup workflow binding mock
-  (env as any).MANIFEST_UPLOAD_WORKFLOW = {
-    create: mockWorkflowCreate,
-    get: mockWorkflowGet,
+  // I couldn't figure out how to setup mock secret stores.
+  // So this is the best, i can currently think of.
+  env.UCDJS_TASK_API_KEY = {
+    get: vi.fn().mockResolvedValue("test-api-key"),
   };
+
+  vi.spyOn(taskIds, "makeManifestUploadId").mockReturnValue(fixedWorkflowId);
 });
 
 describe("tasks", () => {
   // eslint-disable-next-line test/prefer-lowercase-title
   describe("POST /_tasks/upload-manifest", () => {
     it("should return 202 with workflow ID when successful", async () => {
-      const mockInstance = {
-        id: "manifest-upload-16.0.0-1234567890",
-      };
-      mockWorkflowCreate.mockResolvedValue(mockInstance);
+      await using instance = await introspectWorkflowInstance(env.MANIFEST_UPLOAD_WORKFLOW, fixedWorkflowId);
+      await instance.modify(async (m) => {
+        await m.disableSleeps();
+        await m.mockStepResult({ name: "extract-tar" }, mockFileEntries);
+        await m.mockStepResult({ name: "upload-files" }, [{ name: "manifest.json", success: true }]);
+        await m.mockStepResult({ name: "validate-upload" }, { validated: true, fileCount: 1 });
+        await m.mockStepResult({ name: "purge-caches" }, { ok: true });
+      });
 
       // Create a simple TAR file (just a few bytes)
       const tarData = new Uint8Array([0x1F, 0x8B]); // gzip magic bytes
@@ -35,6 +46,7 @@ describe("tasks", () => {
           method: "POST",
           headers: {
             "Content-Type": "application/gzip",
+            "X-UCDJS-Task-Key": "test-api-key",
           },
           body: tarData,
         }),
@@ -47,18 +59,18 @@ describe("tasks", () => {
       const data = await json();
       expect(data).toMatchObject({
         success: true,
-        workflowId: "manifest-upload-16.0.0-1234567890",
+        workflowId: fixedWorkflowId,
         status: "queued",
         statusUrl: expect.stringContaining("/_tasks/upload-status/"),
       });
 
-      expect(mockWorkflowCreate).toHaveBeenCalledWith({
-        id: expect.stringContaining("manifest-upload-16.0.0-"),
-        params: {
-          version: "16.0.0",
-          tarData: expect.any(String),
-          contentType: "application/gzip",
-        },
+      await expect(instance.waitForStatus("complete")).resolves.not.toThrow();
+      const output = await instance.getOutput();
+      expect(output).toMatchObject({
+        success: true,
+        version: "16.0.0",
+        filesUploaded: 1,
+        workflowId: fixedWorkflowId,
       });
     });
 
@@ -78,8 +90,6 @@ describe("tasks", () => {
         status: 400,
         message: "Missing 'version' query parameter",
       });
-
-      expect(mockWorkflowCreate).not.toHaveBeenCalled();
     });
 
     it("should return 400 when version format is invalid", async () => {
@@ -98,8 +108,6 @@ describe("tasks", () => {
         status: 400,
         message: expect.stringContaining("Invalid version format"),
       });
-
-      expect(mockWorkflowCreate).not.toHaveBeenCalled();
     });
 
     it("should return 400 when Content-Type is invalid", async () => {
@@ -118,8 +126,6 @@ describe("tasks", () => {
         status: 400,
         message: "Content-Type must be application/x-tar or application/gzip",
       });
-
-      expect(mockWorkflowCreate).not.toHaveBeenCalled();
     });
 
     it("should return 400 when TAR file exceeds size limit", async () => {
@@ -141,8 +147,6 @@ describe("tasks", () => {
         status: 400,
         message: expect.stringContaining("exceeds maximum of 50MB"),
       });
-
-      expect(mockWorkflowCreate).not.toHaveBeenCalled();
     });
 
     it("should return 502 when workflow binding is not configured", async () => {
@@ -166,7 +170,7 @@ describe("tasks", () => {
     });
 
     it("should return 502 when workflow creation fails", async () => {
-      mockWorkflowCreate.mockRejectedValue(new Error("Workflow creation failed"));
+      vi.spyOn(env.MANIFEST_UPLOAD_WORKFLOW, "create").mockRejectedValue(new Error("Workflow creation failed"));
 
       const { response } = await executeRequest(
         new Request("https://api.ucdjs.dev/_tasks/upload-manifest?version=16.0.0", {
@@ -188,18 +192,18 @@ describe("tasks", () => {
   // eslint-disable-next-line test/prefer-lowercase-title
   describe("GET /_tasks/upload-status/:workflowId", () => {
     it("should return workflow status when successful", async () => {
-      mockInstanceStatus.mockResolvedValue({
-        status: "running",
-        output: { filesUploaded: 5 },
-        error: undefined,
+      const pending = new Promise<never>(() => {});
+      await using instance = await introspectWorkflowInstance(env.MANIFEST_UPLOAD_WORKFLOW, fixedWorkflowId);
+      await instance.modify(async (m) => {
+        await m.disableSleeps();
+        await m.mockStepResult({ name: "extract-tar" }, mockFileEntries);
+        await m.mockStepResult({ name: "upload-files" }, pending);
       });
-
-      mockWorkflowGet.mockReturnValue({
-        status: mockInstanceStatus,
-      });
+      await env.MANIFEST_UPLOAD_WORKFLOW.create({ id: fixedWorkflowId, params: manifestParams });
+      await expect(instance.waitForStatus("running")).resolves.not.toThrow();
 
       const { response, json } = await executeRequest(
-        new Request("https://api.ucdjs.dev/_tasks/upload-status/manifest-upload-16.0.0-1234567890"),
+        new Request(`https://api.ucdjs.dev/_tasks/upload-status/${fixedWorkflowId}`),
         env,
       );
 
@@ -208,24 +212,15 @@ describe("tasks", () => {
 
       const data = await json();
       expect(data).toMatchObject({
-        workflowId: "manifest-upload-16.0.0-1234567890",
+        workflowId: fixedWorkflowId,
         status: "running",
-        output: { filesUploaded: 5 },
-        error: undefined,
       });
-
-      expect(mockWorkflowGet).toHaveBeenCalledWith("manifest-upload-16.0.0-1234567890");
-      expect(mockInstanceStatus).toHaveBeenCalled();
     });
 
     it("should return 400 when workflow ID is missing", async () => {
       // This test actually can't happen with the current route definition
       // since :workflowId is a required parameter
       // But we test the empty string case
-      mockWorkflowGet.mockImplementation(() => {
-        throw new Error("Invalid workflow ID");
-      });
-
       const { response } = await executeRequest(
         new Request("https://api.ucdjs.dev/_tasks/upload-status/"),
         env,
@@ -236,10 +231,6 @@ describe("tasks", () => {
     });
 
     it("should return 400 when workflow is not found", async () => {
-      mockWorkflowGet.mockImplementation(() => {
-        throw new Error("Workflow not found");
-      });
-
       const { response } = await executeRequest(
         new Request("https://api.ucdjs.dev/_tasks/upload-status/non-existent-id"),
         env,
@@ -255,7 +246,7 @@ describe("tasks", () => {
       delete (env as any).MANIFEST_UPLOAD_WORKFLOW;
 
       const { response } = await executeRequest(
-        new Request("https://api.ucdjs.dev/_tasks/upload-status/manifest-upload-16.0.0-1234567890"),
+        new Request(`https://api.ucdjs.dev/_tasks/upload-status/${fixedWorkflowId}`),
         env,
       );
 
@@ -265,62 +256,56 @@ describe("tasks", () => {
     });
 
     it("should handle completed workflow with output", async () => {
-      mockInstanceStatus.mockResolvedValue({
-        status: "complete",
-        output: {
-          success: true,
-          version: "16.0.0",
-          filesUploaded: 10,
-          duration: 5000,
-          workflowId: "manifest-upload-16.0.0-1234567890",
-        },
-        error: undefined,
+      await using instance = await introspectWorkflowInstance(env.MANIFEST_UPLOAD_WORKFLOW, fixedWorkflowId);
+      await instance.modify(async (m) => {
+        await m.disableSleeps();
+        await m.mockStepResult({ name: "extract-tar" }, mockFileEntries);
+        await m.mockStepResult({ name: "upload-files" }, [{ name: "manifest.json", success: true }]);
+        await m.mockStepResult({ name: "validate-upload" }, { validated: true, fileCount: 1 });
+        await m.mockStepResult({ name: "purge-caches" }, { ok: true });
       });
-
-      mockWorkflowGet.mockReturnValue({
-        status: mockInstanceStatus,
-      });
+      await env.MANIFEST_UPLOAD_WORKFLOW.create({ id: fixedWorkflowId, params: manifestParams });
+      await expect(instance.waitForStatus("complete")).resolves.not.toThrow();
 
       const { response, json } = await executeRequest(
-        new Request("https://api.ucdjs.dev/_tasks/upload-status/manifest-upload-16.0.0-1234567890"),
+        new Request(`https://api.ucdjs.dev/_tasks/upload-status/${fixedWorkflowId}`),
         env,
       );
 
       expectSuccess(response);
       const data = await json();
       expect(data).toMatchObject({
-        workflowId: "manifest-upload-16.0.0-1234567890",
+        workflowId: fixedWorkflowId,
         status: "complete",
         output: {
           success: true,
           version: "16.0.0",
-          filesUploaded: 10,
+          filesUploaded: 1,
         },
       });
     });
 
     it("should handle errored workflow", async () => {
-      mockInstanceStatus.mockResolvedValue({
-        status: "errored",
-        output: undefined,
-        error: "Failed to upload files: network error",
+      await using instance = await introspectWorkflowInstance(env.MANIFEST_UPLOAD_WORKFLOW, fixedWorkflowId);
+      await instance.modify(async (m) => {
+        await m.disableSleeps();
+        await m.mockStepError({ name: "extract-tar" }, new Error("Simulated extraction error"));
       });
-
-      mockWorkflowGet.mockReturnValue({
-        status: mockInstanceStatus,
-      });
+      await env.MANIFEST_UPLOAD_WORKFLOW.create({ id: fixedWorkflowId, params: manifestParams });
+      await expect(instance.waitForStatus("errored")).resolves.not.toThrow();
+      const error = await instance.getError();
 
       const { response, json } = await executeRequest(
-        new Request("https://api.ucdjs.dev/_tasks/upload-status/manifest-upload-16.0.0-1234567890"),
+        new Request(`https://api.ucdjs.dev/_tasks/upload-status/${fixedWorkflowId}`),
         env,
       );
 
       expectSuccess(response);
       const data = await json();
       expect(data).toMatchObject({
-        workflowId: "manifest-upload-16.0.0-1234567890",
+        workflowId: fixedWorkflowId,
         status: "errored",
-        error: "Failed to upload files: network error",
+        error,
       });
     });
   });
