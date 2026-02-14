@@ -106,7 +106,9 @@ function h3DevServerPlugin(): Plugin {
 export default defineConfig({
   clearScreen: false,
   plugins: [
-    Inspect(),
+    Inspect({
+      build: true,
+    }),
     viteTsConfigPaths({
       projects: ["./tsconfig.json"],
       loose: true,
@@ -129,7 +131,7 @@ export default defineConfig({
     server: {
       build: {
         outDir: "dist/server",
-        ssr: false,
+        ssr: true,
         rollupOptions: {
           input: "src/server/app.ts",
         },

@@ -45,3 +45,4 @@ ucd-generated
 **/.source/*
 .output
 .tanstack
+.vite-inspect

@@ -3,6 +3,7 @@ import type { PipelineSource } from "@ucdjs/pipelines-loader";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
+import { createDatabase, runMigrations } from "#server/db";
 import {
   pipelinesEventsRouter,
   pipelinesExecutionRouter,
@@ -86,7 +87,6 @@ export async function startServer(options: ServerOptions = {}): Promise<void> {
   // Initialize database with auto-migration
   // NOTE: This will CRASH the server if database initialization fails
   // This is intentional - we don't want to run with a misconfigured database
-  const { createDatabase, runMigrations } = await import("./db");
   const db = createDatabase();
 
   try {
