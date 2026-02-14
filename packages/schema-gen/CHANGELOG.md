@@ -1,5 +1,10 @@
 # @ucdjs/schema-gen
 
+# Changelog
+
+{{releases}}
+
+
 ## 0.2.2
 
 ### Patch Changes

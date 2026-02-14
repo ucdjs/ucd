@@ -1,5 +1,10 @@
 # @ucdjs/ucd-store
 
+# Changelog
+
+{{releases}}
+
+
 ## 0.0.1
 
 ### Patch Changes

@@ -1,5 +1,10 @@
 # @ucdjs/test-utils
 
+# Changelog
+
+{{releases}}
+
+
 ## 1.0.0
 
 ### Minor Changes

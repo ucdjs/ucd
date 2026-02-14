@@ -1,5 +1,10 @@
 # @ucdjs/fs-bridge
 
+# Changelog
+
+{{releases}}
+
+
 ## 0.1.0
 
 ### Minor Changes
