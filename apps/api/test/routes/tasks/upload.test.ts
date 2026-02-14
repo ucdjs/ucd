@@ -80,6 +80,7 @@ describe("tasks", () => {
           method: "POST",
           headers: {
             "Content-Type": "application/gzip",
+            "X-UCDJS-Task-Key": "test-api-key",
           },
           body: new Uint8Array([0x1F, 0x8B]),
         }),
@@ -98,6 +99,7 @@ describe("tasks", () => {
           method: "POST",
           headers: {
             "Content-Type": "application/gzip",
+            "X-UCDJS-Task-Key": "test-api-key",
           },
           body: new Uint8Array([0x1F, 0x8B]),
         }),
@@ -116,6 +118,7 @@ describe("tasks", () => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            "X-UCDJS-Task-Key": "test-api-key",
           },
           body: new Uint8Array([0x1F, 0x8B]),
         }),
@@ -137,6 +140,7 @@ describe("tasks", () => {
           method: "POST",
           headers: {
             "Content-Type": "application/gzip",
+            "X-UCDJS-Task-Key": "test-api-key",
           },
           body: largeBuffer,
         }),
@@ -158,6 +162,7 @@ describe("tasks", () => {
           method: "POST",
           headers: {
             "Content-Type": "application/gzip",
+            "X-UCDJS-Task-Key": "test-api-key",
           },
           body: new Uint8Array([0x1F, 0x8B]),
         }),
@@ -177,6 +182,7 @@ describe("tasks", () => {
           method: "POST",
           headers: {
             "Content-Type": "application/gzip",
+            "X-UCDJS-Task-Key": "test-api-key",
           },
           body: new Uint8Array([0x1F, 0x8B]),
         }),
