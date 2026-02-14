@@ -58,7 +58,7 @@ export default defineConfig({
   test: {
     coverage: {
       provider: "istanbul",
-      include: ["**/src/**"],
+      include: ["**/src/**.{js,jsx,ts,tsx}"],
       exclude: ["tooling/*"],
     },
     environment: "node",
