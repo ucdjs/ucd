@@ -73,7 +73,9 @@ const PipelinesFileIdCodeRoute = PipelinesFileIdCodeRouteImport.update({
   id: '/code',
   path: '/code',
   getParentRoute: () => PipelinesFileIdRouteRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/pipelines/$file/$id/code.lazy').then((d) => d.Route),
+)
 const PipelinesFileIdGraphsIndexRoute =
   PipelinesFileIdGraphsIndexRouteImport.update({
     id: '/graphs/',
