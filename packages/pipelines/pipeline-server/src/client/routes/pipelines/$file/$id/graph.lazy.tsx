@@ -1,7 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createLazyFileRoute } from "@tanstack/react-router";
 import { PipelineGraph, useExecute } from "@ucdjs/pipelines-ui";
 
-export const Route = createFileRoute("/pipelines/$file/$id/graph")({
+export const Route = createLazyFileRoute("/pipelines/$file/$id/graph")({
   component: PipelineGraphPage,
 });
 

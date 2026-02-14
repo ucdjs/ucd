@@ -1,6 +1,5 @@
-import type { Execution, ExecutionsResponse } from "#lib/pipeline-executions";
-import { fetchExecutions, formatDuration, formatTimeAgo } from "#lib/pipeline-executions";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { formatDuration, formatTimeAgo } from "#lib/pipeline-executions";
+import { createLazyFileRoute, Link } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 import {
@@ -11,54 +10,82 @@ import {
   TableHeader,
   TableRow,
 } from "@ucdjs-internal/shared-ui/ui/table";
+import { StatusIcon, useExecute } from "@ucdjs/pipelines-ui";
+import { Play } from "lucide-react";
 
-export const Route = createFileRoute("/pipelines/$file/$id/graphs/")({
-  component: PipelineGraphsPage,
-  loader: async ({ params }) => {
-    const executions = await fetchExecutions(params.file, params.id, { limit: 50 });
-    return { executions } satisfies { executions: ExecutionsResponse };
-  },
+export const Route = createLazyFileRoute("/pipelines/$file/$id/executions/")({
+  component: ExecutionsListPage,
 });
 
-function PipelineGraphsPage() {
-  const { file, id } = Route.useParams();
+function ExecutionsListPage() {
+  const { file, id: pipelineId } = Route.useParams();
   const { executions } = Route.useLoaderData();
+  const { result: currentExecution } = useExecute();
 
-  const graphExecutions = executions.executions.filter((execution: Execution) => execution.hasGraph);
+  const allExecutions = currentExecution?.executionId
+    ? [
+        {
+          id: currentExecution.executionId,
+          pipelineId,
+          status: "completed" as const,
+          startedAt: new Date().toISOString(),
+          completedAt: new Date().toISOString(),
+          versions: null,
+          summary: currentExecution.summary ?? null,
+          hasGraph: Boolean(currentExecution.graph),
+          error: null,
+        },
+        ...executions.executions,
+      ]
+    : executions.executions;
 
   return (
     <div className="p-6">
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Execution Graphs</CardTitle>
-          <p className="text-sm text-muted-foreground mt-1">
-            {graphExecutions.length}
-            {" "}
-            graphs available
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-lg">Executions</CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                {allExecutions.length}
+                {" "}
+                total runs
+              </p>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
-          {graphExecutions.length === 0
+          {allExecutions.length === 0
             ? (
-                <div className="text-center py-12 text-muted-foreground">
-                  No execution graphs available yet.
+                <div className="text-center py-12">
+                  <Play className="h-12 w-12 text-muted-foreground/50 mx-auto mb-4" />
+                  <p className="text-muted-foreground">No executions yet</p>
+                  <p className="text-sm text-muted-foreground/70 mt-1">
+                    Execute the pipeline to see results here
+                  </p>
                 </div>
               )
             : (
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="w-75">Execution</TableHead>
+                      <TableHead className="w-25">Status</TableHead>
+                      <TableHead className="w-75">ID</TableHead>
                       <TableHead>When</TableHead>
                       <TableHead>Duration</TableHead>
                       <TableHead>Versions</TableHead>
-                      <TableHead className="text-right">Routes</TableHead>
+                      <TableHead>Routes</TableHead>
                       <TableHead className="w-20"></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {graphExecutions.map((execution: Execution) => (
+                    {allExecutions.map((execution) => (
                       <TableRow key={execution.id} className="group">
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <StatusIcon status={execution.status} />
+                          </div>
+                        </TableCell>
                         <TableCell>
                           <code className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded">
                             {execution.id}
@@ -74,7 +101,7 @@ function PipelineGraphsPage() {
                           {execution.versions
                             ? (
                                 <div className="flex gap-1 flex-wrap">
-                                  {execution.versions.map((v: string) => (
+                                  {execution.versions.map((v) => (
                                     <Badge key={v} variant="secondary" className="text-xs">
                                       {v}
                                     </Badge>
@@ -85,7 +112,7 @@ function PipelineGraphsPage() {
                                 <span className="text-muted-foreground text-sm">-</span>
                               )}
                         </TableCell>
-                        <TableCell className="text-right">
+                        <TableCell>
                           {execution.summary && "totalRoutes" in execution.summary
                             ? (
                                 <span className="text-sm">
@@ -105,10 +132,9 @@ function PipelineGraphsPage() {
                         </TableCell>
                         <TableCell>
                           <Link
-                            to="/pipelines/$file/$id/executions/$executionId/graph"
-                            params={{ file, id, executionId: execution.id }}
-                            search={{}}
-                            className="text-primary text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity hover:underline"
+                            to="/pipelines/$file/$id/executions/$executionId"
+                            params={{ file, id: pipelineId, executionId: execution.id }}
+                            className="text-primary text-sm font-medium hover:underline"
                           >
                             View
                           </Link>
