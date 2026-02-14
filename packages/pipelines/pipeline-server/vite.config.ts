@@ -4,6 +4,7 @@ import tailwindcss from "@tailwindcss/vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
+import Inspect from "vite-plugin-inspect";
 import viteTsConfigPaths from "vite-tsconfig-paths";
 
 const appModuleId = "/src/server/app.ts";
@@ -105,6 +106,7 @@ function h3DevServerPlugin(): Plugin {
 export default defineConfig({
   clearScreen: false,
   plugins: [
+    Inspect(),
     viteTsConfigPaths({
       projects: ["./tsconfig.json"],
       loose: true,

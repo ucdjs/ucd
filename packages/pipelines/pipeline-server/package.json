@@ -90,6 +90,7 @@
     "tsdown": "catalog:build",
     "typescript": "catalog:build",
     "vite": "catalog:build",
+    "vite-plugin-inspect": "catalog:build",
     "vite-tsconfig-paths": "catalog:build",
     "vitest": "catalog:test",
     "vitest-testdirs": "catalog:test"
