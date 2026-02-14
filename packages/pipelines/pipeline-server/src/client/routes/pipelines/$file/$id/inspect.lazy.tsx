@@ -1,12 +1,12 @@
 import type { PipelineDetails } from "@ucdjs/pipelines-ui";
-import { createFileRoute, useLoaderData } from "@tanstack/react-router";
+import { createLazyFileRoute, useLoaderData } from "@tanstack/react-router";
 import { cn } from "@ucdjs-internal/shared-ui/lib/utils";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 import { Input } from "@ucdjs-internal/shared-ui/ui/input";
 import { useEffect, useMemo, useState } from "react";
 
-export const Route = createFileRoute("/pipelines/$file/$id/inspect")({
+export const Route = createLazyFileRoute("/pipelines/$file/$id/inspect")({
   component: PipelineInspectPage,
 });
 
