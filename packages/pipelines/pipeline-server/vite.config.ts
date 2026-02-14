@@ -103,45 +103,48 @@ function h3DevServerPlugin(): Plugin {
   };
 }
 
-export default defineConfig({
-  clearScreen: false,
-  plugins: [
-    Inspect({
-      build: true,
-    }),
-    viteTsConfigPaths({
-      projects: ["./tsconfig.json"],
-      loose: true,
-      projectDiscovery: "lazy",
-    }),
-    tanstackRouter({
-      routesDirectory: "./src/client/routes",
-      generatedRouteTree: "./src/client/routeTree.gen.ts",
-    }),
-    react(),
-    tailwindcss(),
-    h3DevServerPlugin(),
-  ],
-  environments: {
-    client: {
-      build: {
-        outDir: "dist/client",
+export default defineConfig((config) => {
+  return {
+    clearScreen: false,
+    plugins: [
+      Inspect({
+        build: true,
+      }),
+      viteTsConfigPaths({
+        projects: [config.command === "build" ? "./tsconfig.build.json" : "./tsconfig.json"],
+        loose: true,
+        projectDiscovery: "lazy",
+      }),
+      tanstackRouter({
+        routesDirectory: "./src/client/routes",
+        generatedRouteTree: "./src/client/routeTree.gen.ts",
+      }),
+      react(),
+      tailwindcss(),
+      h3DevServerPlugin(),
+    ],
+    environments: {
+      client: {
+        build: {
+          outDir: "dist/client",
+          ssr: false,
+        },
       },
-    },
-    server: {
-      build: {
-        outDir: "dist/server",
-        ssr: true,
-        rollupOptions: {
-          input: "src/server/app.ts",
+      server: {
+        build: {
+          outDir: "dist/server",
+          ssr: true,
+          rolldownOptions: {
+            input: "src/server/app.ts",
+          },
         },
       },
     },
-  },
-  builder: {
-    async buildApp(builder) {
-      await builder.build(builder.environments.client);
-      await builder.build(builder.environments.server);
+    builder: {
+      async buildApp(builder) {
+        await builder.build(builder.environments.client);
+        await builder.build(builder.environments.server);
+      },
     },
-  },
+  };
 });
