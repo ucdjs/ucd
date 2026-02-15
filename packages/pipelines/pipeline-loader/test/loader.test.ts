@@ -25,8 +25,8 @@ describe("findPipelineFiles", () => {
       cwd: root,
     });
     const expected = [
-      path.join(root, "pipelines", "alpha.ucd-pipeline.ts"),
-      path.join(root, "pipelines", "nested", "beta.ucd-pipeline.ts"),
+      path.posix.join(root, "pipelines", "alpha.ucd-pipeline.ts"),
+      path.posix.join(root, "pipelines", "nested", "beta.ucd-pipeline.ts"),
     ];
 
     expect(files.sort()).toEqual(expected.sort());
@@ -49,7 +49,7 @@ describe("findPipelineFiles", () => {
       cwd,
     });
 
-    expect(files).toEqual([path.join(cwd, "gamma.ucd-pipeline.ts")]);
+    expect(files).toEqual([path.posix.join(cwd, "gamma.ucd-pipeline.ts")]);
   });
 });
 
