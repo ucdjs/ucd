@@ -1,6 +1,6 @@
 # @ucdjs/utils
 
-## [0.2.1-beta.2](https://github.com/ucdjs/ucd/compare/@ucdjs/utils@0.2.1-beta.1...@ucdjs/utils@0.2.1-beta.2) (2026-02-15)
+## [0.2.1-beta.2](https://github.com/ucdjs/ucd/compare/@ucdjs/utils@0.2.1-beta.2...@ucdjs/utils@0.2.1-beta.2) (2026-02-15)
 
 
 ### 🚀 Features
@@ -56,8 +56,6 @@
 ### 📚 Documentation
 * enhance createPathFilter documentation with detailed examples ([f0308f87](https://github.com/ucdjs/ucd/commit/f0308f87cc02bd05533b59430a7892b8a40e0f22)) (by [@luxass](https://github.com/luxass))
 * update README to enhance usage examples and clarify functionality ([82a55e1c](https://github.com/ucdjs/ucd/commit/82a55e1c4f87ced174802e0ac73ceb6364e48544)) (by [@luxass](https://github.com/luxass))
-
-
 ## [0.2.1-beta.1](https://github.com/ucdjs/ucd/compare/@ucdjs/utils@0.2.1-beta.0...@ucdjs/utils@0.2.1-beta.1) (2026-02-15)
 
 

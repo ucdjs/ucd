@@ -1,6 +1,6 @@
 # @ucdjs/test-utils
 
-## [1.0.1-beta.2](https://github.com/ucdjs/ucd/compare/@ucdjs/test-utils@1.0.1-beta.1...@ucdjs/test-utils@1.0.1-beta.2) (2026-02-15)
+## [1.0.1-beta.2](https://github.com/ucdjs/ucd/compare/@ucdjs/test-utils@1.0.1-beta.2...@ucdjs/test-utils@1.0.1-beta.2) (2026-02-15)
 
 
 ### 🚀 Features
@@ -67,8 +67,6 @@
 * cast response to HttpResponseResolver in handlers ([9d01beb5](https://github.com/ucdjs/ucd/commit/9d01beb56201f0d19484e46112285600926b9371)) (by [@luxass](https://github.com/luxass))
 * normalize base URL correctly ([ad160737](https://github.com/ucdjs/ucd/commit/ad16073723399deabbfa019836d00d4d29094ba6)) (by [@luxass](https://github.com/luxass))
 * update vitest-setup path and improve setupMockStore return type ([c9b2a1cd](https://github.com/ucdjs/ucd/commit/c9b2a1cdadecf0262fa6dc7870db9341544d59ba)) (by [@luxass](https://github.com/luxass))
-
-
 ## [1.0.1-beta.1](https://github.com/ucdjs/ucd/compare/@ucdjs/test-utils@1.0.1-beta.0...@ucdjs/test-utils@1.0.1-beta.1) (2026-02-15)
 
 

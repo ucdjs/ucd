@@ -1,6 +1,6 @@
 # @ucdjs/schemas
 
-## [0.1.1-beta.2](https://github.com/ucdjs/ucd/compare/@ucdjs/schemas@0.1.1-beta.1...@ucdjs/schemas@0.1.1-beta.2) (2026-02-15)
+## [0.1.1-beta.2](https://github.com/ucdjs/ucd/compare/@ucdjs/schemas@0.1.1-beta.2...@ucdjs/schemas@0.1.1-beta.2) (2026-02-15)
 
 
 ### 🚀 Features
@@ -28,8 +28,6 @@
 * enforce non-negative integer validation for file counts and sizes ([cfbfe937](https://github.com/ucdjs/ucd/commit/cfbfe93771cbef3098732b4a119452fbe344d484)) (by [@luxass](https://github.com/luxass))
 * update FileEntrySchema registration method ([494a3205](https://github.com/ucdjs/ucd/commit/494a32050424a471e02e79968b32d1f8e473b612)) (by [@luxass](https://github.com/luxass))
 * enhance error handling and directory listing logic ([02be1238](https://github.com/ucdjs/ucd/commit/02be1238ee1e5a63ce75d8e44385bc36c4b3a256)) (by [@luxass](https://github.com/luxass))
-
-
 ## [0.1.1-beta.1](https://github.com/ucdjs/ucd/compare/@ucdjs/schemas@0.1.1-beta.0...@ucdjs/schemas@0.1.1-beta.1) (2026-02-15)
 
 
