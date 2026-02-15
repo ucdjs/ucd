@@ -4,6 +4,15 @@ import { describe, expect, it } from "vitest";
 import { testdir } from "vitest-testdirs";
 import { findPipelineFiles, loadPipelineFile, loadPipelinesFromPaths } from "../src";
 
+/**
+ * Normalize paths to use forward slashes for cross-platform comparison.
+ * This handles the fact that tinyglobby returns forward slashes on all platforms,
+ * while testdir() and path.join() may return platform-native separators.
+ */
+function normalizePath(p: string): string {
+  return p.replace(/\\/g, "/");
+}
+
 describe("findPipelineFiles", () => {
   it("should find pipeline files and ignore node_modules and dist", async () => {
     const root = await testdir({
@@ -29,12 +38,7 @@ describe("findPipelineFiles", () => {
       path.join(root, "pipelines", "nested", "beta.ucd-pipeline.ts"),
     ];
 
-    // Normalize to forward slashes for cross-platform comparison
-    const normalizeForComparison = (p: string) => p.replace(/\\/g, "/");
-    const normalizedFiles = files.map(normalizeForComparison).sort();
-    const normalizedExpected = expected.map(normalizeForComparison).sort();
-
-    expect(normalizedFiles).toEqual(normalizedExpected);
+    expect(files.map(normalizePath).sort()).toEqual(expected.map(normalizePath).sort());
     expect(files.every((file: string) => path.isAbsolute(file))).toBe(true);
   });
 
@@ -54,12 +58,7 @@ describe("findPipelineFiles", () => {
       cwd,
     });
 
-    // Normalize to forward slashes for cross-platform comparison
-    const normalizeForComparison = (p: string) => p.replace(/\\/g, "/");
-    const normalizedFiles = files.map(normalizeForComparison);
-    const normalizedExpected = [path.join(cwd, "gamma.ucd-pipeline.ts")].map(normalizeForComparison);
-
-    expect(normalizedFiles).toEqual(normalizedExpected);
+    expect(files.map(normalizePath)).toEqual([path.join(cwd, "gamma.ucd-pipeline.ts")].map(normalizePath));
   });
 });
 
