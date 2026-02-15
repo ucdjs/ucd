@@ -3,7 +3,7 @@ import { Hono } from "hono";
 import { bodyLimit } from "hono/body-limit";
 import { clearCacheEntry } from "../../lib/cache";
 import { badGateway, badRequest, unauthorized } from "../../lib/errors";
-import { makeManifestUploadId, MAX_TAR_SIZE_BYTES } from "../../lib/tasks";
+import { buildR2Key, makeManifestUploadId, MAX_TAR_SIZE_BYTES } from "../../lib/tasks";
 
 export const TASKS_ROUTER = new Hono<HonoEnv>().basePath("/_tasks");
 
@@ -68,7 +68,7 @@ TASKS_ROUTER.post("/upload-manifest", bodyLimit({
 
   try {
     const workflowId = makeManifestUploadId(version);
-    const r2Key = `manifest-tars/${version}/${workflowId}.tar`;
+    const r2Key = buildR2Key(version, workflowId);
 
     const tarData = await c.req.arrayBuffer();
     await c.env.UCD_BUCKET.put(r2Key, tarData, {

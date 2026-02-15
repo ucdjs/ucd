@@ -13,3 +13,7 @@ export function makeManifestUploadId(version: string, now: () => number = Date.n
 export function isValidWorkflowInstanceId(id: string) {
   return id.length <= MAX_WORKFLOW_INSTANCE_ID_LENGTH && ALLOWED_WORKFLOW_INSTANCE_ID_REGEX.test(id);
 }
+
+export function buildR2Key(version: string, workflowId: string) {
+  return `manifest-tars/${version}/${workflowId}.tar`;
+}
