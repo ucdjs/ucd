@@ -1,6 +1,6 @@
 # @ucdjs/pipelines-graph
 
-## [0.0.1](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-graph@0.0.1...@ucdjs/pipelines-graph@0.0.1) (2026-02-15)
+## [0.0.2](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-graph@0.0.1...@ucdjs/pipelines-graph@0.0.2) (2026-02-15)
 
 
 ### 🚀 Features
