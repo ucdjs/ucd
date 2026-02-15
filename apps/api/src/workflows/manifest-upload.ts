@@ -1,23 +1,11 @@
 import type { WorkflowEvent, WorkflowStep } from "cloudflare:workers";
 import { WorkflowEntrypoint } from "cloudflare:workers";
-
-// Maximum TAR file size (50MB)
-const MAX_TAR_SIZE_BYTES = 50 * 1024 * 1024;
+import { MAX_TAR_SIZE_BYTES } from "../lib/tasks";
 
 interface ManifestUploadParams {
   version: string;
   tarData: string; // base64 encoded
   contentType: "application/x-tar" | "application/gzip";
-}
-
-interface FileEntry {
-  name: string;
-  data: ArrayBuffer;
-}
-
-interface UploadResult {
-  name: string;
-  success: boolean;
 }
 
 export class ManifestUploadWorkflow extends WorkflowEntrypoint<Env, ManifestUploadParams> {
@@ -47,7 +35,10 @@ export class ManifestUploadWorkflow extends WorkflowEntrypoint<Env, ManifestUplo
       const parsed = parseTar(arrayBuffer);
 
       // Filter and transform files
-      const fileEntries: FileEntry[] = [];
+      const fileEntries: {
+        name: string;
+        data: ArrayBuffer;
+      }[] = [];
       for (const file of parsed) {
         if (!file.data) continue;
 
@@ -74,18 +65,18 @@ export class ManifestUploadWorkflow extends WorkflowEntrypoint<Env, ManifestUplo
       return fileEntries;
     });
 
-    const _uploadResults = await step.do("upload-files", {
+    await step.do("upload-files", {
       retries: { limit: 3, delay: 5000, backoff: "exponential" },
       timeout: "5 minutes",
     }, async () => {
       const bucket = this.env.UCD_BUCKET;
-      const results: UploadResult[] = [];
-      const BATCH_SIZE = 10;
+      const BATCH_SIZE = 20;
 
-      // Process in batches for parallelization
+      console.error(`[manifest-upload]: Starting upload of ${files.length} files for version ${version} in batches of ${BATCH_SIZE}`);
+      // Process in parallel batches for faster uploads
       for (let i = 0; i < files.length; i += BATCH_SIZE) {
         const batch = files.slice(i, i + BATCH_SIZE);
-        const batchPromises = batch.map(async (file) => {
+        await Promise.all(batch.map(async (file) => {
           const storagePath = `manifest/${version}/${file.name}`;
 
           try {
@@ -93,20 +84,13 @@ export class ManifestUploadWorkflow extends WorkflowEntrypoint<Env, ManifestUplo
               httpMetadata: { contentType: "application/json" },
             });
 
-            // eslint-disable-next-line no-console
-            console.log(`[manifest-upload]: Uploaded ${storagePath}`);
-            return { name: file.name, success: true };
+            console.error(`[manifest-upload]: Uploaded ${storagePath}`);
           } catch (error) {
             console.error(`[manifest-upload]: Failed to upload ${storagePath}:`, error);
             throw new Error(`Failed to upload ${file.name}: ${error instanceof Error ? error.message : String(error)}`);
           }
-        });
-
-        const batchResults = await Promise.all(batchPromises);
-        results.push(...batchResults);
+        }));
       }
-
-      return results;
     });
 
     await step.do("validate-upload", async () => {

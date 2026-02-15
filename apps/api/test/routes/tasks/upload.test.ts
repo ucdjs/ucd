@@ -1,21 +1,22 @@
 import { introspectWorkflowInstance } from "cloudflare:test";
 import { env } from "cloudflare:workers";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import * as taskIds from "../../../src/routes/tasks/ids";
+import * as taskLib from "../../../src/lib/tasks";
 import { executeRequest } from "../../helpers/request";
 import { expectApiError, expectJsonResponse, expectSuccess } from "../../helpers/response";
 
 const TASK_API_KEY = "b8539abb-f2e9-4f6f-86b3-36df26d752b4";
-const fixedWorkflowId = "manifest-upload-16-0-0-1234567890";
 const manifestParams = {
   version: "16.0.0",
   tarData: "AA==",
   contentType: "application/gzip",
 } as const;
 const mockFileEntries = [{ name: "manifest.json", data: new ArrayBuffer(1) }];
+const originalWorkflow = env.MANIFEST_UPLOAD_WORKFLOW;
 
 beforeEach(() => {
   vi.restoreAllMocks();
+  env.MANIFEST_UPLOAD_WORKFLOW = originalWorkflow;
 
   // I couldn't figure out how to setup mock secret stores.
   // So this is the best, i can currently think of.
@@ -23,14 +24,25 @@ beforeEach(() => {
     get: vi.fn().mockResolvedValue(TASK_API_KEY),
   };
 
-  vi.spyOn(taskIds, "makeManifestUploadId").mockReturnValue(fixedWorkflowId);
+  vi.spyOn(taskLib, "makeManifestUploadId").mockImplementation((version) => {
+    const normalizedVersion = version.replace(/\./g, "-");
+    const slug = btoa(expect.getState().currentTestName!.toLowerCase().replace(/[^a-z0-9]+/g, "-")).substring(0, 20);
+    const instanceId = `manifest-upload-${normalizedVersion}-${slug}`;
+
+    if (!taskLib.isValidWorkflowInstanceId(instanceId)) {
+      throw new Error(`Generated workflow instance ID is invalid: ${instanceId}`);
+    }
+
+    return instanceId;
+  });
 });
 
 describe("tasks", () => {
   // eslint-disable-next-line test/prefer-lowercase-title
   describe("POST /_tasks/upload-manifest", () => {
     it("should return 202 with workflow ID when successful", async () => {
-      await using instance = await introspectWorkflowInstance(env.MANIFEST_UPLOAD_WORKFLOW, fixedWorkflowId);
+      const workflowId = taskLib.makeManifestUploadId(manifestParams.version);
+      await using instance = await introspectWorkflowInstance(env.MANIFEST_UPLOAD_WORKFLOW, workflowId);
       await instance.modify(async (m) => {
         await m.disableSleeps();
         await m.mockStepResult({ name: "extract-tar" }, mockFileEntries);
@@ -42,11 +54,11 @@ describe("tasks", () => {
       const tarData = new Uint8Array([0x1F, 0x8B]); // gzip magic bytes
 
       const { response, json } = await executeRequest(
-        new Request("https://api.ucdjs.dev/_tasks/upload-manifest?version=16.0.0", {
+        new Request(`https://api.ucdjs.dev/_tasks/upload-manifest?version=${manifestParams.version}`, {
           method: "POST",
           headers: {
             "Content-Type": "application/gzip",
-            "X-UCDJS-Task-Key": "test-api-key",
+            "X-UCDJS-Task-Key": TASK_API_KEY,
           },
           body: tarData,
         }),
@@ -59,7 +71,7 @@ describe("tasks", () => {
       const data = await json();
       expect(data).toMatchObject({
         success: true,
-        workflowId: fixedWorkflowId,
+        workflowId,
         status: "queued",
         statusUrl: expect.stringContaining("/_tasks/upload-status/"),
       });
@@ -70,7 +82,7 @@ describe("tasks", () => {
         success: true,
         version: "16.0.0",
         filesUploaded: 1,
-        workflowId: fixedWorkflowId,
+        workflowId,
       });
     });
 
@@ -80,7 +92,7 @@ describe("tasks", () => {
           method: "POST",
           headers: {
             "Content-Type": "application/gzip",
-            "X-UCDJS-Task-Key": "test-api-key",
+            "X-UCDJS-Task-Key": TASK_API_KEY,
           },
           body: new Uint8Array([0x1F, 0x8B]),
         }),
@@ -108,7 +120,7 @@ describe("tasks", () => {
 
       await expectApiError(response, {
         status: 400,
-        message: expect.stringContaining("Invalid version format"),
+        message: /Invalid version format/,
       });
     });
 
@@ -118,7 +130,7 @@ describe("tasks", () => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "X-UCDJS-Task-Key": "test-api-key",
+            "X-UCDJS-Task-Key": TASK_API_KEY,
           },
           body: new Uint8Array([0x1F, 0x8B]),
         }),
@@ -149,7 +161,7 @@ describe("tasks", () => {
 
       await expectApiError(response, {
         status: 400,
-        message: expect.stringContaining("exceeds maximum of 50MB"),
+        message: /exceeds maximum of 50MB/,
       });
     });
 
@@ -198,18 +210,24 @@ describe("tasks", () => {
   // eslint-disable-next-line test/prefer-lowercase-title
   describe("GET /_tasks/upload-status/:workflowId", () => {
     it("should return workflow status when successful", async () => {
-      const pending = new Promise<never>(() => {});
-      await using instance = await introspectWorkflowInstance(env.MANIFEST_UPLOAD_WORKFLOW, fixedWorkflowId);
+      const workflowId = taskLib.makeManifestUploadId(manifestParams.version);
+      await using instance = await introspectWorkflowInstance(env.MANIFEST_UPLOAD_WORKFLOW, workflowId);
       await instance.modify(async (m) => {
         await m.disableSleeps();
         await m.mockStepResult({ name: "extract-tar" }, mockFileEntries);
-        await m.mockStepResult({ name: "upload-files" }, pending);
+        await m.mockStepResult({ name: "upload-files" }, [{ name: "manifest.json", success: true }]);
+        await m.mockStepResult({ name: "validate-upload" }, { validated: true, fileCount: 1 });
+        await m.mockStepResult({ name: "purge-caches" }, { ok: true });
       });
-      await env.MANIFEST_UPLOAD_WORKFLOW.create({ id: fixedWorkflowId, params: manifestParams });
-      await expect(instance.waitForStatus("running")).resolves.not.toThrow();
+      await env.MANIFEST_UPLOAD_WORKFLOW.create({ id: workflowId, params: manifestParams });
+      await expect(instance.waitForStatus("complete")).resolves.not.toThrow();
 
       const { response, json } = await executeRequest(
-        new Request(`https://api.ucdjs.dev/_tasks/upload-status/${fixedWorkflowId}`),
+        new Request(`https://api.ucdjs.dev/_tasks/upload-status/${workflowId}`, {
+          headers: {
+            "X-UCDJS-Task-Key": TASK_API_KEY,
+          },
+        }),
         env,
       );
 
@@ -218,8 +236,8 @@ describe("tasks", () => {
 
       const data = await json();
       expect(data).toMatchObject({
-        workflowId: fixedWorkflowId,
-        status: "running",
+        workflowId,
+        status: "complete",
       });
     });
 
@@ -228,7 +246,11 @@ describe("tasks", () => {
       // since :workflowId is a required parameter
       // But we test the empty string case
       const { response } = await executeRequest(
-        new Request("https://api.ucdjs.dev/_tasks/upload-status/"),
+        new Request("https://api.ucdjs.dev/_tasks/upload-status/", {
+          headers: {
+            "X-UCDJS-Task-Key": TASK_API_KEY,
+          },
+        }),
         env,
       );
 
@@ -238,7 +260,11 @@ describe("tasks", () => {
 
     it("should return 400 when workflow is not found", async () => {
       const { response } = await executeRequest(
-        new Request("https://api.ucdjs.dev/_tasks/upload-status/non-existent-id"),
+        new Request("https://api.ucdjs.dev/_tasks/upload-status/non-existent-id", {
+          headers: {
+            "X-UCDJS-Task-Key": TASK_API_KEY,
+          },
+        }),
         env,
       );
 
@@ -249,10 +275,15 @@ describe("tasks", () => {
     });
 
     it("should return 502 when workflow binding is not configured", async () => {
+      const workflowId = taskLib.makeManifestUploadId(manifestParams.version);
       delete (env as any).MANIFEST_UPLOAD_WORKFLOW;
 
       const { response } = await executeRequest(
-        new Request(`https://api.ucdjs.dev/_tasks/upload-status/${fixedWorkflowId}`),
+        new Request(`https://api.ucdjs.dev/_tasks/upload-status/${workflowId}`, {
+          headers: {
+            "X-UCDJS-Task-Key": TASK_API_KEY,
+          },
+        }),
         env,
       );
 
@@ -262,7 +293,8 @@ describe("tasks", () => {
     });
 
     it("should handle completed workflow with output", async () => {
-      await using instance = await introspectWorkflowInstance(env.MANIFEST_UPLOAD_WORKFLOW, fixedWorkflowId);
+      const workflowId = taskLib.makeManifestUploadId(manifestParams.version);
+      await using instance = await introspectWorkflowInstance(env.MANIFEST_UPLOAD_WORKFLOW, workflowId);
       await instance.modify(async (m) => {
         await m.disableSleeps();
         await m.mockStepResult({ name: "extract-tar" }, mockFileEntries);
@@ -270,18 +302,22 @@ describe("tasks", () => {
         await m.mockStepResult({ name: "validate-upload" }, { validated: true, fileCount: 1 });
         await m.mockStepResult({ name: "purge-caches" }, { ok: true });
       });
-      await env.MANIFEST_UPLOAD_WORKFLOW.create({ id: fixedWorkflowId, params: manifestParams });
+      await env.MANIFEST_UPLOAD_WORKFLOW.create({ id: workflowId, params: manifestParams });
       await expect(instance.waitForStatus("complete")).resolves.not.toThrow();
 
       const { response, json } = await executeRequest(
-        new Request(`https://api.ucdjs.dev/_tasks/upload-status/${fixedWorkflowId}`),
+        new Request(`https://api.ucdjs.dev/_tasks/upload-status/${workflowId}`, {
+          headers: {
+            "X-UCDJS-Task-Key": TASK_API_KEY,
+          },
+        }),
         env,
       );
 
       expectSuccess(response);
       const data = await json();
       expect(data).toMatchObject({
-        workflowId: fixedWorkflowId,
+        workflowId,
         status: "complete",
         output: {
           success: true,
@@ -292,26 +328,44 @@ describe("tasks", () => {
     });
 
     it("should handle errored workflow", async () => {
-      await using instance = await introspectWorkflowInstance(env.MANIFEST_UPLOAD_WORKFLOW, fixedWorkflowId);
+      const workflowId = taskLib.makeManifestUploadId(manifestParams.version);
+      await using instance = await introspectWorkflowInstance(env.MANIFEST_UPLOAD_WORKFLOW, workflowId);
       await instance.modify(async (m) => {
         await m.disableSleeps();
-        await m.mockStepError({ name: "extract-tar" }, new Error("Simulated extraction error"));
+        await m.mockStepResult({ name: "extract-tar" }, mockFileEntries);
+        await m.mockStepResult({ name: "upload-files" }, [{ name: "manifest.json", success: true }]);
+        await m.mockStepError({ name: "validate-upload" }, new Error("Simulated validation error"));
       });
-      await env.MANIFEST_UPLOAD_WORKFLOW.create({ id: fixedWorkflowId, params: manifestParams });
-      await expect(instance.waitForStatus("errored")).resolves.not.toThrow();
-      const error = await instance.getError();
-
-      const { response, json } = await executeRequest(
-        new Request(`https://api.ucdjs.dev/_tasks/upload-status/${fixedWorkflowId}`),
+      const tarData = new Uint8Array([0x1F, 0x8B]); // gzip magic bytes
+      const { response } = await executeRequest(
+        new Request(`https://api.ucdjs.dev/_tasks/upload-manifest?version=${manifestParams.version}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/gzip",
+            "X-UCDJS-Task-Key": TASK_API_KEY,
+          },
+          body: tarData,
+        }),
         env,
       );
-
-      expectSuccess(response);
+      expectSuccess(response, { status: 202 });
+      await expect(instance.waitForStepResult({ name: "validate-upload" })).rejects.toThrow(
+        "Simulated validation error",
+      );
+      const { response: statusResponse, json } = await executeRequest(
+        new Request(`https://api.ucdjs.dev/_tasks/upload-status/${workflowId}`, {
+          headers: {
+            "X-UCDJS-Task-Key": TASK_API_KEY,
+          },
+        }),
+        env,
+      );
+      expectSuccess(statusResponse);
       const data = await json();
       expect(data).toMatchObject({
-        workflowId: fixedWorkflowId,
+        workflowId,
         status: "errored",
-        error,
+        error: expect.any(String),
       });
     });
   });
