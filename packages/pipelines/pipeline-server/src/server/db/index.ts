@@ -1,6 +1,7 @@
 import type { LibSQLDatabase } from "drizzle-orm/libsql";
 import { existsSync } from "node:fs";
 import process from "node:process";
+import { fileURLToPath } from "node:url";
 import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 import { migrate } from "drizzle-orm/libsql/migrator";
@@ -23,7 +24,7 @@ export function createDatabase(options: CreateDatabaseOptions = {}): Database {
 }
 
 export async function runMigrations(db: Database): Promise<void> {
-  const migrationsFolder = new URL("./migrations", import.meta.url).pathname;
+  const migrationsFolder = fileURLToPath(new URL("./migrations", import.meta.url));
 
   if (!existsSync(migrationsFolder)) {
     throw new Error(
