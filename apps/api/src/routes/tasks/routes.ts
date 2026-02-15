@@ -2,7 +2,7 @@ import type { HonoEnv } from "../../types";
 import { Hono } from "hono";
 import { clearCacheEntry } from "../../lib/cache";
 import { badGateway, badRequest, unauthorized } from "../../lib/errors";
-import { makeManifestUploadId } from "./ids";
+import { makeManifestUploadId, MAX_TAR_SIZE_BYTES } from "../../lib/tasks";
 
 export const TASKS_ROUTER = new Hono<HonoEnv>().basePath("/_tasks");
 
@@ -12,14 +12,17 @@ TASKS_ROUTER.use("/*", async (c, next) => {
     return next();
   }
 
-  console.error(`[tasks]: Authenticating request to ${c.req.url}`);
+  // eslint-disable-next-line no-console
+  console.log(`[tasks]: Authenticating request to ${c.req.url}`);
   const apiKey = c.req.header("X-UCDJS-Task-Key")?.trim();
   if (!apiKey) {
-    console.error("[tasks]: Missing X-UCDJS-Task-Key header");
+    // eslint-disable-next-line no-console
+    console.log("[tasks]: Missing X-UCDJS-Task-Key header");
     return unauthorized(c, { message: "Missing task key" });
   }
 
-  console.error(`[tasks]: Received API key: ${apiKey}`);
+  // eslint-disable-next-line no-console
+  console.log(`[tasks]: Received API key: ${apiKey}`);
   const expectedKey = await c.env.UCDJS_TASK_API_KEY.get();
 
   if (!expectedKey) {
@@ -33,9 +36,6 @@ TASKS_ROUTER.use("/*", async (c, next) => {
 
   await next();
 });
-
-// Maximum TAR file size (50MB)
-const MAX_TAR_SIZE_BYTES = 50 * 1024 * 1024;
 
 TASKS_ROUTER.post("/upload-manifest", async (c) => {
   const workflow = c.env.MANIFEST_UPLOAD_WORKFLOW;
