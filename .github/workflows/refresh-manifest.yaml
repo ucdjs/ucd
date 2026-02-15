@@ -45,6 +45,9 @@ jobs:
       - name: build ucdjs-scripts
         run: pnpm --filter @ucdjs/ucdjs-scripts build
 
+      - name: install to symlink
+        run: pnpm install --frozen-lockfile
+
       - name: refresh manifests
         env:
           UCDJS_TASK_KEY: ${{ secrets.TASK_API_KEY }}
