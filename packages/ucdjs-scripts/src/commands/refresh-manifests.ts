@@ -7,6 +7,12 @@ import { parseVersions } from "#lib/utils";
 
 const logger = createLogger("refresh-manifests");
 
+interface QueuedUpload {
+  version: string;
+  fileCount: number;
+  workflowId: string;
+}
+
 export async function refreshManifests(options: RefreshManifestsOptions): Promise<void> {
   const versions = parseVersions(options.versions);
   const batchSize = options.batchSize ?? 5;
@@ -43,49 +49,93 @@ export async function refreshManifests(options: RefreshManifestsOptions): Promis
   };
 
   if (dryRun) {
-    logger.info("Dry run mode: generated manifests only. Skipping upload to tasks endpoint.");
-    result.skipped = manifests.length;
-    result.versions = manifests.map((m) => ({
-      version: m.version,
-      fileCount: m.fileCount,
-    }));
+    applyDryRunResult(result, manifests);
   } else {
-    for (const manifest of manifests) {
-      logger.info(`Preparing manifest tar for ${manifest.version}...`);
-      const tar = createManifestTar(manifest);
-      logger.info(`Tar archive size for ${manifest.version}: ${tar.byteLength} bytes`);
-
-      try {
-        const queued = await uploadManifest(tar, manifest.version, {
-          baseUrl: config.baseUrl,
-          taskKey: config.taskKey,
-        });
-
-        logger.info(`Queued workflow ${queued.workflowId} for ${manifest.version}`);
-
-        const completed = await waitForUploadCompletion(queued.workflowId, {
-          baseUrl: config.baseUrl,
-          taskKey: config.taskKey,
-        });
-
-        logger.info(`Completed workflow ${queued.workflowId} for ${manifest.version} (${completed.status})`);
-
-        result.uploaded += 1;
-        result.versions.push({
-          version: manifest.version,
-          fileCount: manifest.fileCount,
-        });
-      } catch (error) {
-        result.success = false;
-        result.errors.push({
-          version: manifest.version,
-          reason: error instanceof Error ? error.message : String(error),
-        });
-      }
-    }
+    const queuedUploads = await queueUploads(manifests, config.baseUrl, config.taskKey, result);
+    await waitForQueuedUploads(queuedUploads, config.baseUrl, config.taskKey, result);
   }
 
   printResult(result, dryRun);
+}
+
+function applyDryRunResult(result: UploadResult, manifests: Awaited<ReturnType<typeof generateManifests>>): void {
+  logger.info("Dry run mode: generated manifests only. Skipping upload to tasks endpoint.");
+  result.skipped = manifests.length;
+  result.versions = manifests.map((m) => ({
+    version: m.version,
+    fileCount: m.fileCount,
+  }));
+}
+
+async function queueUploads(
+  manifests: Awaited<ReturnType<typeof generateManifests>>,
+  baseUrl: string,
+  taskKey: string | undefined,
+  result: UploadResult,
+): Promise<QueuedUpload[]> {
+  const queuedUploads: QueuedUpload[] = [];
+
+  logger.info("Queueing manifest upload workflows...");
+  for (const manifest of manifests) {
+    logger.info(`Preparing manifest tar for ${manifest.version}...`);
+    const tar = createManifestTar(manifest);
+    logger.info(`Tar archive size for ${manifest.version}: ${tar.byteLength} bytes`);
+
+    try {
+      const queued = await uploadManifest(tar, manifest.version, {
+        baseUrl,
+        taskKey,
+      });
+
+      logger.info(`Queued workflow ${queued.workflowId} for ${manifest.version}`);
+
+      queuedUploads.push({
+        version: manifest.version,
+        fileCount: manifest.fileCount,
+        workflowId: queued.workflowId,
+      });
+    } catch (error) {
+      pushUploadError(result, manifest.version, error);
+    }
+  }
+
+  return queuedUploads;
+}
+
+async function waitForQueuedUploads(
+  queuedUploads: QueuedUpload[],
+  baseUrl: string,
+  taskKey: string | undefined,
+  result: UploadResult,
+): Promise<void> {
+  logger.info(`Queued ${queuedUploads.length} workflows. Waiting for completion...`);
+
+  for (const queued of queuedUploads) {
+    try {
+      const completed = await waitForUploadCompletion(queued.workflowId, {
+        baseUrl,
+        taskKey,
+      });
+
+      logger.info(`Completed workflow ${queued.workflowId} for ${queued.version} (${completed.status})`);
+
+      result.uploaded += 1;
+      result.versions.push({
+        version: queued.version,
+        fileCount: queued.fileCount,
+      });
+    } catch (error) {
+      pushUploadError(result, queued.version, error);
+    }
+  }
+}
+
+function pushUploadError(result: UploadResult, version: string, error: unknown): void {
+  result.success = false;
+  result.errors.push({
+    version,
+    reason: error instanceof Error ? error.message : String(error),
+  });
 }
 
 function printResult(result: UploadResult, dryRun: boolean): void {
