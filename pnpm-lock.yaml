@@ -44,8 +44,8 @@ catalogs:
       specifier: 1.159.5
       version: 1.159.5
     '@ucdjs/release-scripts':
-      specifier: 0.1.0-beta.35
-      version: 0.1.0-beta.35
+      specifier: 0.1.0-beta.36
+      version: 0.1.0-beta.36
     '@vitejs/plugin-react':
       specifier: 5.1.4
       version: 5.1.4
@@ -348,7 +348,7 @@ importers:
         version: 22.19.9
       '@ucdjs/release-scripts':
         specifier: catalog:build
-        version: 0.1.0-beta.35
+        version: 0.1.0-beta.36
       '@ucdjs/ucdjs-scripts':
         specifier: workspace:*
         version: link:packages/ucdjs-scripts
@@ -5049,8 +5049,8 @@ packages:
     resolution: {integrity: sha512-91fp6CAAJSRtH5ja95T1FHSKa8aPW9/Zw6cta81jlZTUw/+Vq8jM/AfF/14h2b71wwR84JUTW/3Y8QPhDAawFA==}
     engines: {node: '>=20.0.0'}
 
-  '@ucdjs/release-scripts@0.1.0-beta.35':
-    resolution: {integrity: sha512-eHajkPT3muQXa3Qe1CDljhbWENClb2Q+gmtzoc4Yh/tTTBp5nEDohnBWnIywctQaazNo7a3wrSILF8hib4c3hw==}
+  '@ucdjs/release-scripts@0.1.0-beta.36':
+    resolution: {integrity: sha512-K/UV6tyTv8enQf/nBU6uMtkKWPQtzEMOH+53Bg7iEh+r/l7L1L/9Iaye6aWpxgxj4DryyOV1ll36XJKhVWKWqg==}
 
   '@ungap/structured-clone@1.3.0':
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
@@ -12642,7 +12642,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@ucdjs/release-scripts@0.1.0-beta.35':
+  '@ucdjs/release-scripts@0.1.0-beta.36':
     dependencies:
       '@luxass/utils': 2.7.3
       commit-parser: 1.3.0
