@@ -43,10 +43,11 @@ const { prepare, verify, publish } = await createReleaseScripts({
   changelog: {
     enabled: true,
     emojis: true,
+    combinePrereleaseIntoFirstStable: true
   },
   npm: {
     provenance: true,
-    access: "public"
+    access: "public",
   }
 })
 
