@@ -13,8 +13,6 @@ const originalWorkflow = env.MANIFEST_UPLOAD_WORKFLOW;
 
 const tarData = new Uint8Array([0x1F, 0x8B]); // gzip magic bytes
 
-const buildR2Key = (version: string, workflowId: string) => `manifest-tars/${version}/${workflowId}.tar`;
-
 beforeEach(() => {
   vi.restoreAllMocks();
   env.MANIFEST_UPLOAD_WORKFLOW = originalWorkflow;
@@ -226,7 +224,7 @@ describe("tasks", () => {
         id: workflowId,
         params: {
           version: manifestVersion,
-          r2Key: buildR2Key(manifestVersion, workflowId),
+          r2Key: taskLib.buildR2Key(manifestVersion, workflowId),
         },
       });
       await expect(instance.waitForStatus("complete")).resolves.not.toThrow();
@@ -316,7 +314,7 @@ describe("tasks", () => {
         id: workflowId,
         params: {
           version: manifestVersion,
-          r2Key: buildR2Key(manifestVersion, workflowId),
+          r2Key: taskLib.buildR2Key(manifestVersion, workflowId),
         },
       });
       await expect(instance.waitForStatus("complete")).resolves.not.toThrow();
@@ -360,7 +358,7 @@ describe("tasks", () => {
         id: workflowId,
         params: {
           version: manifestVersion,
-          r2Key: buildR2Key(manifestVersion, workflowId),
+          r2Key: taskLib.buildR2Key(manifestVersion, workflowId),
         },
       });
 
