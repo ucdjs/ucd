@@ -1,6 +1,6 @@
 # @ucdjs/pipelines-loader
 
-## [0.1.0](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-loader@0.0.1...@ucdjs/pipelines-loader@0.1.0) (2026-02-15)
+## [0.0.1](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-loader@0.0.1...@ucdjs/pipelines-loader@0.0.1) (2026-02-15)
 
 
 ### 🚀 Features
