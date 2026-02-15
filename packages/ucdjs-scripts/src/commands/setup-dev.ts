@@ -1,7 +1,8 @@
 import type { SetupDevOptions, UploadResult } from "../types";
 import path from "node:path";
 import { createLogger } from "#lib/logger";
-import { createManifestsTar, generateManifests } from "#lib/manifest";
+import { createManifestTar, generateManifests } from "#lib/manifest";
+import { uploadManifest, waitForUploadCompletion } from "#lib/upload";
 import { getMonorepoRoot, parseVersions } from "#lib/utils";
 import { unstable_startWorker } from "wrangler";
 
@@ -17,15 +18,15 @@ export async function setupDev(options: SetupDevOptions): Promise<void> {
   logger.info("Starting local development setup...");
   logger.info(`Seeding manifests for versions: ${versions.join(", ")}`);
 
-  // Path to the API app's wrangler config and setup worker
+  // Path to the API app's wrangler config and main worker entrypoint
   // Use monorepo root instead of process.cwd() for reliability
   const monorepoRoot = getMonorepoRoot();
   const apiRoot = path.join(monorepoRoot, "apps/api");
 
-  // Start the setup worker
+  // Start the real API worker (includes /_tasks routes)
   const worker = await unstable_startWorker({
     config: path.join(apiRoot, "./wrangler.jsonc"),
-    entrypoint: path.join(apiRoot, "./scripts/setup-dev/setup-worker.ts"),
+    entrypoint: path.join(apiRoot, "./src/index.ts"),
   });
 
   try {
@@ -37,14 +38,40 @@ export async function setupDev(options: SetupDevOptions): Promise<void> {
 
     logger.info(`Generated ${manifests.length} manifests`);
 
-    // Create tar archive
-    logger.info("Creating tar archive...");
-    const tar = createManifestsTar(manifests);
-    logger.info(`Tar archive size: ${tar.byteLength} bytes`);
+    const result: UploadResult = {
+      success: true,
+      uploaded: 0,
+      skipped: 0,
+      errors: [],
+      versions: [],
+    };
 
-    // Upload to local worker
-    logger.info("Uploading manifests to local R2...");
-    const result = await uploadToWorker(worker, tar);
+    for (const manifest of manifests) {
+      logger.info(`Creating tar archive for ${manifest.version}...`);
+      const tar = createManifestTar(manifest);
+      logger.info(`Tar archive size for ${manifest.version}: ${tar.byteLength} bytes`);
+
+      try {
+        logger.info(`Uploading ${manifest.version} to local tasks endpoint...`);
+        const queued = await uploadToWorker(tar, manifest.version);
+        logger.info(`Queued workflow ${queued.workflowId} for ${manifest.version}`);
+
+        const completed = await waitForUploadOnWorker(queued.workflowId);
+        logger.info(`Completed workflow ${queued.workflowId} for ${manifest.version} (${completed.status})`);
+
+        result.uploaded += 1;
+        result.versions.push({
+          version: manifest.version,
+          fileCount: manifest.fileCount,
+        });
+      } catch (error) {
+        result.success = false;
+        result.errors.push({
+          version: manifest.version,
+          reason: error instanceof Error ? error.message : String(error),
+        });
+      }
+    }
 
     logger.info("Upload complete!");
     logger.info(`Uploaded ${result.uploaded} manifests:`);
@@ -53,30 +80,23 @@ export async function setupDev(options: SetupDevOptions): Promise<void> {
     }
   } finally {
     await worker.dispose();
-    logger.info("Setup worker disposed");
+    logger.info("API worker disposed");
   }
 }
 
-/**
- * Upload manifests to the local wrangler worker.
- * Uses the worker's fetch directly since we can't use a URL with the unstable worker.
- */
 async function uploadToWorker(
-  worker: Awaited<ReturnType<typeof unstable_startWorker>>,
   tar: Uint8Array,
-): Promise<UploadResult> {
-  const response = await worker.fetch("https://api.ucdjs.dev/setup", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/x-tar",
-    },
-    body: tar,
+  version: string,
+) {
+  return uploadManifest(tar, version, {
+    baseUrl: "http://127.0.0.1:8787",
   });
+}
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Upload failed: ${response.status} ${response.statusText}\n${errorText}`);
-  }
-
-  return (await response.json()) as UploadResult;
+async function waitForUploadOnWorker(
+  workflowId: string,
+) {
+  return waitForUploadCompletion(workflowId, {
+    baseUrl: "http://127.0.0.1:8787",
+  });
 }

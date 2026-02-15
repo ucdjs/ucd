@@ -1,8 +1,8 @@
 import type { RefreshManifestsOptions, UploadResult } from "../types";
 import { resolveConfig } from "#lib/config";
 import { createLogger } from "#lib/logger";
-import { createManifestsTar, generateManifests } from "#lib/manifest";
-import { uploadManifests } from "#lib/upload";
+import { createManifestTar, generateManifests } from "#lib/manifest";
+import { uploadManifest, waitForUploadCompletion } from "#lib/upload";
 import { parseVersions } from "#lib/utils";
 
 const logger = createLogger("refresh-manifests");
@@ -16,7 +16,7 @@ export async function refreshManifests(options: RefreshManifestsOptions): Promis
   const config = resolveConfig({
     env: options.env,
     baseUrl: options.baseUrl,
-    setupKey: options.setupKey,
+    taskKey: options.taskKey,
   });
 
   logger.info(`Target: ${config.baseUrl}`);
@@ -34,17 +34,56 @@ export async function refreshManifests(options: RefreshManifestsOptions): Promis
 
   logger.info(`Generated ${manifests.length} manifests`);
 
-  // Create tar archive
-  logger.info("Creating tar archive...");
-  const tar = createManifestsTar(manifests);
-  logger.info(`Tar archive size: ${tar.byteLength} bytes`);
+  const result: UploadResult = {
+    success: true,
+    uploaded: 0,
+    skipped: 0,
+    errors: [],
+    versions: [],
+  };
 
-  // Upload
-  const result = await uploadManifests(tar, {
-    baseUrl: config.baseUrl,
-    setupKey: config.setupKey,
-    dryRun,
-  });
+  if (dryRun) {
+    logger.info("Dry run mode: generated manifests only. Skipping upload to tasks endpoint.");
+    result.skipped = manifests.length;
+    result.versions = manifests.map((m) => ({
+      version: m.version,
+      fileCount: m.fileCount,
+    }));
+  } else {
+    for (const manifest of manifests) {
+      logger.info(`Preparing manifest tar for ${manifest.version}...`);
+      const tar = createManifestTar(manifest);
+      logger.info(`Tar archive size for ${manifest.version}: ${tar.byteLength} bytes`);
+
+      try {
+        const queued = await uploadManifest(tar, manifest.version, {
+          baseUrl: config.baseUrl,
+          taskKey: config.taskKey,
+        });
+
+        logger.info(`Queued workflow ${queued.workflowId} for ${manifest.version}`);
+
+        const completed = await waitForUploadCompletion(queued.workflowId, {
+          baseUrl: config.baseUrl,
+          taskKey: config.taskKey,
+        });
+
+        logger.info(`Completed workflow ${queued.workflowId} for ${manifest.version} (${completed.status})`);
+
+        result.uploaded += 1;
+        result.versions.push({
+          version: manifest.version,
+          fileCount: manifest.fileCount,
+        });
+      } catch (error) {
+        result.success = false;
+        result.errors.push({
+          version: manifest.version,
+          reason: error instanceof Error ? error.message : String(error),
+        });
+      }
+    }
+  }
 
   printResult(result, dryRun);
 }

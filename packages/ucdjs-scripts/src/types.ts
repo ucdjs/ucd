@@ -1,9 +1,5 @@
 import type { ExpectedFile } from "@ucdjs/schemas";
 
-// =============================================================================
-// CLI Option Types
-// =============================================================================
-
 export interface GlobalOptions {
   logLevel?: string;
 }
@@ -11,7 +7,7 @@ export interface GlobalOptions {
 export interface RefreshManifestsOptions extends GlobalOptions {
   env?: string;
   baseUrl?: string;
-  setupKey?: string;
+  taskKey?: string;
   versions?: string;
   dryRun?: boolean;
   batchSize?: number;
@@ -21,10 +17,6 @@ export interface SetupDevOptions extends GlobalOptions {
   versions?: string;
   batchSize?: number;
 }
-
-// =============================================================================
-// Manifest Types
-// =============================================================================
 
 export interface UnicodeVersion {
   version: string;
@@ -43,10 +35,6 @@ export interface GenerateManifestsOptions {
   batchSize?: number;
 }
 
-// =============================================================================
-// Upload Types
-// =============================================================================
-
 export interface UploadResult {
   success: boolean;
   uploaded: number;
@@ -55,8 +43,27 @@ export interface UploadResult {
   versions: Array<{ version: string; fileCount: number }>;
 }
 
+export interface TaskUploadQueuedResult {
+  success: boolean;
+  workflowId: string;
+  status: string;
+  statusUrl: string;
+}
+
+export interface TaskUploadStatusResult {
+  workflowId: string;
+  status: string;
+  output?: {
+    success?: boolean;
+    version?: string;
+    filesUploaded?: number;
+    duration?: number;
+    workflowId?: string;
+  };
+  error?: string;
+}
+
 export interface UploadOptions {
   baseUrl: string;
-  setupKey?: string;
-  dryRun?: boolean;
+  taskKey?: string;
 }

@@ -47,7 +47,7 @@ jobs:
 
       - name: refresh manifests
         env:
-          UCDJS_SETUP_KEY: ${{ secrets.TASK_API_KEY }}
+          UCDJS_TASK_KEY: ${{ secrets.TASK_API_KEY }}
           ENV: ${{ matrix.env }}
         run: |
           pnpm ucdjs-scripts refresh-manifests --env "$ENV"
@@ -62,6 +62,7 @@ jobs:
           purge_response=$(curl -s -w "\n%{http_code}" -G \
             -H "X-UCDJS-Task-Key: $KEY" \
             --data-urlencode "cacheName=$CACHE_NAME" \
+            --data-urlencode "path=/.well-known/ucd-store" \
             "$BASE_URL/_tasks/purge-cache")
 
           purge_status=$(echo "$purge_response" | tail -1)
