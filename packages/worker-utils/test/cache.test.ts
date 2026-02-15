@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { clearCacheEntry } from "../../src/lib/cache";
+import { clearCacheEntry } from "../src/cache";
 
 const mockDelete = vi.fn();
 const mockOpen = vi.fn();
@@ -8,8 +8,6 @@ beforeEach(() => {
   vi.clearAllMocks();
   mockDelete.mockResolvedValue(true);
   mockOpen.mockResolvedValue({ delete: mockDelete });
-
-  // mock the global caches object
   vi.stubGlobal("caches", { open: mockOpen });
 });
 
@@ -143,7 +141,6 @@ describe("clearCacheEntry", () => {
       mockDelete.mockRejectedValue(error);
 
       const clearFn = await clearCacheEntry(cacheName);
-
       await expect(clearFn(path)).rejects.toThrow("Failed to delete from cache");
     });
 
@@ -152,8 +149,6 @@ describe("clearCacheEntry", () => {
       const invalidUrl = "not-a-valid-url";
 
       const clearFn = await clearCacheEntry(cacheName);
-
-      // The Request constructor should throw for invalid URLs
       await expect(clearFn(invalidUrl)).rejects.toThrow();
     });
   });
@@ -168,7 +163,6 @@ describe("clearCacheEntry", () => {
       await clearFn(path1);
       await clearFn(path2);
 
-      // Cache should only be opened once during clearCacheEntry creation
       expect(mockOpen).toHaveBeenCalledTimes(1);
       expect(mockDelete).toHaveBeenCalledTimes(2);
     });
@@ -183,7 +177,6 @@ describe("clearCacheEntry", () => {
       await clearFn1(path);
       await clearFn2(path);
 
-      // Each clearCacheEntry call should open the cache
       expect(mockOpen).toHaveBeenCalledTimes(2);
       expect(mockDelete).toHaveBeenCalledTimes(2);
     });

@@ -2,6 +2,7 @@ import type { HonoEnv } from "./types";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { Scalar } from "@scalar/hono-api-reference";
 import * as Sentry from "@sentry/cloudflare";
+import { isStoreSubdomainHostname } from "@ucdjs-internal/worker-utils";
 import { env } from "hono/adapter";
 import { errorHandler, notFoundHandler } from "./lib/handlers";
 import { setupCors, setupRatelimit } from "./lib/setups";
@@ -99,15 +100,7 @@ export default Sentry.withSentry((env: HonoEnv["Bindings"]) => {
 }, {
   fetch: (request, env, ctx) => {
     const url = new URL(request.url);
-    const hostname = url.hostname;
-
-    // Check if this is a store subdomain
-    const isStoreSubdomain
-      = hostname === "ucd-store.ucdjs.dev" // production
-        || hostname === "preview.ucd-store.ucdjs.dev" // preview
-        || (hostname === "ucd-store.localhost"); // local testing
-
-    if (isStoreSubdomain) {
+    if (isStoreSubdomainHostname(url.hostname)) {
       return UCD_STORE_ROUTER.fetch(request, env, ctx);
     }
 
