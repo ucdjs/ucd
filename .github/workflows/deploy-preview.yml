@@ -69,7 +69,7 @@ jobs:
           TURBO_SCM_HEAD: ${{ github.event.pull_request.head.sha }}
           EVENT_ACTION: ${{ github.event.action }}
         run: |
-          echo "Event action: ${{ github.event.action }}"
+          echo "Event action: $EVENT_ACTION"
           echo "Comparing changes between $TURBO_SCM_BASE and $TURBO_SCM_HEAD"
 
           # Get affected packages using turbo
