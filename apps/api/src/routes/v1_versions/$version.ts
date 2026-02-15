@@ -13,7 +13,7 @@ import {
 import { traverse } from "apache-autoindex-parse/traverse";
 import { cache } from "hono/cache";
 import { MAX_AGE_ONE_DAY_SECONDS, MAX_AGE_ONE_WEEK_SECONDS } from "../../constants";
-import { badGateway, badRequest, internalServerError, notFound } from "../../lib/errors";
+import { badGateway, badRequest, internalServerError, notFound } from "../../../../../packages/worker-utils/src/errors";
 import { createLogger } from "../../lib/logger";
 import { captureUpstreamError, COMPONENTS } from "../../lib/sentry";
 import { VERSION_ROUTE_PARAM } from "../../lib/shared-parameters";

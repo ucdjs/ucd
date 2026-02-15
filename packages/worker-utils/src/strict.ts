@@ -8,7 +8,7 @@ export function strictJSONResponse<
   S extends ZodType,
   D extends Parameters<Context["json"]>[0] & z.infer<S>,
   U extends ContentfulStatusCode,
->(c: C, schema: S, data: D, statusCode?: U) {
+>(c: C, schema: S, data: D, statusCode?: U): Response {
   const validatedResponse = schema.safeParse(data);
 
   if (!validatedResponse.success) {

@@ -6,7 +6,7 @@ import {
   customError,
   internalServerError,
   notFound,
-} from "../../src/lib/errors";
+} from "../src/errors";
 
 const mockDate = new Date("2023-06-15T10:30:00.000Z");
 

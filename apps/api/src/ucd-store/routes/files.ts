@@ -1,11 +1,11 @@
 import type { OpenAPIHono } from "@hono/zod-openapi";
 import type { HonoEnv } from "../../types";
+import { badGateway, badRequest, notFound } from "@ucdjs-internal/worker-utils";
 import {
   DEFAULT_USER_AGENT,
 } from "@ucdjs/env";
 import { cache } from "hono/cache";
 import { MAX_AGE_ONE_WEEK_SECONDS } from "../../constants";
-import { badGateway, badRequest, notFound } from "../../lib/errors";
 import {
   applyDirectoryFiltersAndSort,
   determineFileExtension,

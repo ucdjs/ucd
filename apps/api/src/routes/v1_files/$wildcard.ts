@@ -4,6 +4,7 @@ import type { HonoEnv } from "../../types";
 import { createRoute, z } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
 import { isValidGlobPattern } from "@ucdjs-internal/shared";
+import { badGateway, badRequest, notFound } from "@ucdjs-internal/worker-utils";
 import {
   DEFAULT_USER_AGENT,
   UCD_STAT_CHILDREN_DIRS_HEADER,
@@ -15,7 +16,6 @@ import {
 import { FileEntryListSchema } from "@ucdjs/schemas";
 import { cache } from "hono/cache";
 import { MAX_AGE_ONE_WEEK_SECONDS } from "../../constants";
-import { badGateway, badRequest, notFound } from "../../lib/errors";
 import {
   applyDirectoryFiltersAndSort,
   determineFileExtension,

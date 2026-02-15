@@ -6,7 +6,7 @@ import { dedent } from "@luxass/utils";
 import { UCDStoreVersionManifestSchema } from "@ucdjs/schemas";
 import { cache } from "hono/cache";
 import { MAX_AGE_ONE_WEEK_SECONDS } from "../../../constants";
-import { badGateway, notFound } from "../../../lib/errors";
+import { badGateway, notFound } from "../../../../../../packages/worker-utils/src/errors";
 import { generateReferences, OPENAPI_TAGS } from "../../../openapi";
 
 const STORE_MANIFEST_PREFIX = "manifest/";
