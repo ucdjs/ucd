@@ -12,3 +12,6 @@
 * refactor file-explorer components and add utility functions ([c6d188a4](https://github.com/ucdjs/ucd/commit/c6d188a404a6c8d4d51d4f9509ff42b194f1d87d)) (by [@luxass](https://github.com/luxass))
 * add execution logs and formatting utilities ([f5d257ef](https://github.com/ucdjs/ucd/commit/f5d257efb4eff5463c2bf94c13c17c614db96668)) (by [@luxass](https://github.com/luxass))
 * add initial pipeline server ([df6c8c37](https://github.com/ucdjs/ucd/commit/df6c8c37ea026a49f4e462af4a893977dfd02ed7)) (by [@luxass](https://github.com/luxass))
+
+### 🐞 Bug Fixes
+* use fileURLToPath for migrations folder ([e807e966](https://github.com/ucdjs/ucd/commit/e807e9661332e323bbf314b175959ba2390e73d1)) (by [@luxass](https://github.com/luxass))

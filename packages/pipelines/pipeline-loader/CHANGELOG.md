@@ -11,4 +11,5 @@
 * initialize pipeline packages with basic structure ([18995811](https://github.com/ucdjs/ucd/commit/18995811e25bef40443dc2db62c07aa5d0aaf985)) (by [@luxass](https://github.com/luxass))
 
 ### 🐞 Bug Fixes
+* use fileURLToPath for migrations folder ([e807e966](https://github.com/ucdjs/ucd/commit/e807e9661332e323bbf314b175959ba2390e73d1)) (by [@luxass](https://github.com/luxass))
 * update URL in test for rejecting full URL import specifiers ([362a359c](https://github.com/ucdjs/ucd/commit/362a359cb741fe32ac292023c559fc2c3f851143)) (by [@luxass](https://github.com/luxass))
