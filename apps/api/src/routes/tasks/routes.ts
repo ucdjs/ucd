@@ -22,7 +22,7 @@ TASKS_ROUTER.use("/*", async (c, next) => {
   }
 
   // eslint-disable-next-line no-console
-  console.log(`[tasks]: Received API key: ${apiKey}`);
+  console.log(`[tasks]: Received API key: ${apiKey.length === 0 ? "(empty)" : "(redacted)"} (length: ${apiKey.length})`);
   const expectedKey = await c.env.UCDJS_TASK_API_KEY.get();
 
   if (!expectedKey) {
