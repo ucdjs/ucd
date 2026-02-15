@@ -1,6 +1,6 @@
 # @ucdjs/client
 
-## [0.1.1-beta.2](https://github.com/ucdjs/ucd/compare/@ucdjs/client@0.1.1-beta.1...@ucdjs/client@0.1.1-beta.2) (2026-02-15)
+## [0.1.1-beta.2](https://github.com/ucdjs/ucd/compare/@ucdjs/client@0.1.1-beta.2...@ucdjs/client@0.1.1-beta.2) (2026-02-15)
 
 
 ### 🚀 Features
@@ -19,8 +19,6 @@
 
 ### 📚 Documentation
 * restructure client documentation and enhance installation instructions ([4ffb68f9](https://github.com/ucdjs/ucd/commit/4ffb68f9c60fc4028ab1005735fc938d4268efee)) (by [@luxass](https://github.com/luxass))
-
-
 ## [0.1.1-beta.1](https://github.com/ucdjs/ucd/compare/@ucdjs/client@0.1.1-beta.0...@ucdjs/client@0.1.1-beta.1) (2026-02-15)
 
 

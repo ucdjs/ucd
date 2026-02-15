@@ -1,6 +1,6 @@
 # @ucdjs/ucd-store
 
-## [1.0.1-beta.2](https://github.com/ucdjs/ucd/compare/@ucdjs/ucd-store@1.0.1-beta.1...@ucdjs/ucd-store@1.0.1-beta.2) (2026-02-15)
+## [1.0.1-beta.2](https://github.com/ucdjs/ucd/compare/@ucdjs/ucd-store@1.0.1-beta.2...@ucdjs/ucd-store@1.0.1-beta.2) (2026-02-15)
 
 
 ### 🚀 Features
@@ -113,8 +113,6 @@
 * use correct exports in index ([fd05e283](https://github.com/ucdjs/ucd/commit/fd05e283f45a5f15c8fbe92881a54c5716f287a8)) (by [@luxass](https://github.com/luxass))
 * exclude ucd metadata errors in tests ([932c6ff5](https://github.com/ucdjs/ucd/commit/932c6ff5a2e201dc700e25ad620728c0f6034a4a)) (by [@luxass](https://github.com/luxass))
 * use safe json parse in ucd metadata ([dff8260d](https://github.com/ucdjs/ucd/commit/dff8260df5077829a5591f2db13ae67d772ce476)) (by [@luxass](https://github.com/luxass))
-
-
 ## [1.0.1-beta.1](https://github.com/ucdjs/ucd/compare/@ucdjs/ucd-store@1.0.1-beta.0...@ucdjs/ucd-store@1.0.1-beta.1) (2026-02-15)
 
 

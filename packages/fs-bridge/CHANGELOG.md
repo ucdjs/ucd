@@ -1,6 +1,6 @@
 # @ucdjs/fs-bridge
 
-## [0.1.1-beta.2](https://github.com/ucdjs/ucd/compare/@ucdjs/fs-bridge@0.1.1-beta.1...@ucdjs/fs-bridge@0.1.1-beta.2) (2026-02-15)
+## [0.1.1-beta.2](https://github.com/ucdjs/ucd/compare/@ucdjs/fs-bridge@0.1.1-beta.2...@ucdjs/fs-bridge@0.1.1-beta.2) (2026-02-15)
 
 
 ### 🚀 Features
@@ -77,8 +77,6 @@
 * improve error handling for invalid URL encoding in path resolution ([a5ef25cf](https://github.com/ucdjs/ucd/commit/a5ef25cff9ddc98b2c7bf55c9ae324ba6668f115)) (by [@luxass](https://github.com/luxass))
 * improve error messaging for dangerous control characters in path resolution ([98dd1c02](https://github.com/ucdjs/ucd/commit/98dd1c023dd428a9ddbe3e45517d776b0ab99bdf)) (by [@luxass](https://github.com/luxass))
 * enhance error handling and directory listing logic ([02be1238](https://github.com/ucdjs/ucd/commit/02be1238ee1e5a63ce75d8e44385bc36c4b3a256)) (by [@luxass](https://github.com/luxass))
-
-
 ## [0.1.1-beta.1](https://github.com/ucdjs/ucd/compare/@ucdjs/fs-bridge@0.1.1-beta.0...@ucdjs/fs-bridge@0.1.1-beta.1) (2026-02-15)
 
 
