@@ -24,8 +24,8 @@
     "version": "0.1.1"
   },
   "@ucdjs/schema-gen": {
-    "type": "none",
-    "version": "0.2.2"
+    "type": "patch",
+    "version": "0.2.3"
   },
   "@ucdjs/schemas": {
     "type": "patch",
