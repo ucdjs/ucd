@@ -5,8 +5,8 @@ import { createRoute } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
 import { UCDStoreVersionManifestSchema } from "@ucdjs/schemas";
 import { cache } from "hono/cache";
-import { MAX_AGE_ONE_WEEK_SECONDS } from "../../../constants";
 import { badGateway, notFound } from "../../../../../../packages/worker-utils/src/errors";
+import { MAX_AGE_ONE_WEEK_SECONDS } from "../../../constants";
 import { generateReferences, OPENAPI_TAGS } from "../../../openapi";
 
 const STORE_MANIFEST_PREFIX = "manifest/";
