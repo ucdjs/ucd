@@ -1,37 +1,31 @@
 import type { WorkflowEvent, WorkflowStep } from "cloudflare:workers";
 import { WorkflowEntrypoint } from "cloudflare:workers";
+import { parseTar } from "nanotar";
 import { MAX_TAR_SIZE_BYTES } from "../lib/tasks";
 
 interface ManifestUploadParams {
   version: string;
-  tarData: string; // base64 encoded
-  contentType: "application/x-tar" | "application/gzip";
+  r2Key: string;
 }
 
 export class ManifestUploadWorkflow extends WorkflowEntrypoint<Env, ManifestUploadParams> {
   async run(event: WorkflowEvent<ManifestUploadParams>, step: WorkflowStep) {
-    const { version, tarData: tarDataBase64 } = event.payload;
+    const { version, r2Key } = event.payload;
     const startTime = Date.now();
 
     const files = await step.do("extract-tar", async () => {
-      const decodedLength = (tarDataBase64.length * 3) / 4;
-      if (decodedLength > MAX_TAR_SIZE_BYTES) {
+      const tarObject = await this.env.UCD_BUCKET.get(r2Key);
+      if (!tarObject) {
+        throw new Error(`TAR file not found for key ${r2Key}`);
+      }
+
+      if (tarObject.size > MAX_TAR_SIZE_BYTES) {
         throw new Error(
-          `TAR file size (${Math.round(decodedLength / 1024 / 1024)}MB) exceeds maximum of 50MB`,
+          `TAR file size (${Math.round(tarObject.size / 1024 / 1024)}MB) exceeds maximum of 10MB`,
         );
       }
 
-      // Decode base64 to binary
-      const binaryString = atob(tarDataBase64);
-      const bytes = new Uint8Array(binaryString.length);
-      for (let i = 0; i < binaryString.length; i++) {
-        bytes[i] = binaryString.charCodeAt(i);
-      }
-
-      // Parse tar using nanotar
-      const { parseTar } = await import("nanotar");
-      // Create a proper ArrayBuffer from Uint8Array
-      const arrayBuffer = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);
+      const arrayBuffer = await tarObject.arrayBuffer();
       const parsed = parseTar(arrayBuffer);
 
       // Filter and transform files
@@ -66,7 +60,11 @@ export class ManifestUploadWorkflow extends WorkflowEntrypoint<Env, ManifestUplo
     });
 
     await step.do("upload-files", {
-      retries: { limit: 3, delay: 5000, backoff: "exponential" },
+      retries: {
+        limit: 3,
+        delay: 5000,
+        backoff: "exponential",
+      },
       timeout: "5 minutes",
     }, async () => {
       const bucket = this.env.UCD_BUCKET;
@@ -141,6 +139,10 @@ export class ManifestUploadWorkflow extends WorkflowEntrypoint<Env, ManifestUplo
       });
 
       await Promise.all(purgePromises);
+    });
+
+    await step.do("cleanup-tar", async () => {
+      await this.env.UCD_BUCKET.delete(r2Key);
     });
 
     const duration = Date.now() - startTime;

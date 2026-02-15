@@ -1,5 +1,5 @@
-// Maximum TAR file size (50MB)
-export const MAX_TAR_SIZE_BYTES = 50 * 1024 * 1024;
+// Maximum TAR file size (10MB)
+export const MAX_TAR_SIZE_BYTES = 10 * 1024 * 1024;
 
 export const MAX_WORKFLOW_INSTANCE_ID_LENGTH = 100;
 export const ALLOWED_STRING_ID_PATTERN = "^\\w[\\w-]*$";
