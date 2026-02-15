@@ -1,6 +1,6 @@
 # @ucdjs-internal/shared
 
-## [0.1.1-beta.2](https://github.com/ucdjs/ucd/compare/@ucdjs-internal/shared@0.1.1-beta.1...@ucdjs-internal/shared@0.1.1-beta.2) (2026-02-15)
+## [0.1.1-beta.2](https://github.com/ucdjs/ucd/compare/@ucdjs-internal/shared@0.1.1-beta.2...@ucdjs-internal/shared@0.1.1-beta.2) (2026-02-15)
 
 
 ### 🚀 Features
@@ -50,8 +50,6 @@
 * update JSDoc for options parameter type ([720658a3](https://github.com/ucdjs/ucd/commit/720658a3dfcfadcd046c7a8bf9ebd337f6e4f7c4)) (by [@luxass](https://github.com/luxass))
 * add support for disabling default exclusions in path filter ([cfd513ae](https://github.com/ucdjs/ucd/commit/cfd513aec6a5aa59e7342e424e2a5a182d2d84a5)) (by [@luxass](https://github.com/luxass))
 * improve error handling for concurrency limit ([cd175fa3](https://github.com/ucdjs/ucd/commit/cd175fa3fee1e85b9221c827fed16a7e69a1b6ec)) (by [@luxass](https://github.com/luxass))
-
-
 ## [0.1.1-beta.1](https://github.com/ucdjs/ucd/compare/@ucdjs-internal/shared@0.1.1-beta.0...@ucdjs-internal/shared@0.1.1-beta.1) (2026-02-15)
 
 

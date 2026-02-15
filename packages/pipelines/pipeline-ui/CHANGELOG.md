@@ -1,6 +1,6 @@
 # @ucdjs/pipelines-ui
 
-## [0.0.1-beta.2](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-ui@0.0.1-beta.1...@ucdjs/pipelines-ui@0.0.1-beta.2) (2026-02-15)
+## [0.0.1-beta.2](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-ui@0.0.1-beta.2...@ucdjs/pipelines-ui@0.0.1-beta.2) (2026-02-15)
 
 
 ### 🚀 Features
@@ -9,8 +9,6 @@
 
 ### 🐞 Bug Fixes
 * update ThemeToggle import path ([d04127be](https://github.com/ucdjs/ucd/commit/d04127becbb003600bd14260d6ac7ed98682f578)) (by [@luxass](https://github.com/luxass))
-
-
 ## [0.0.1-beta.1](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-ui@0.0.1-beta.0...@ucdjs/pipelines-ui@0.0.1-beta.1) (2026-02-15)
 
 

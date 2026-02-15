@@ -1,6 +1,6 @@
 # @ucdjs/pipelines-loader
 
-## [0.0.1-beta.2](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-loader@0.0.1-beta.1...@ucdjs/pipelines-loader@0.0.1-beta.2) (2026-02-15)
+## [0.0.1-beta.2](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-loader@0.0.1-beta.2...@ucdjs/pipelines-loader@0.0.1-beta.2) (2026-02-15)
 
 
 ### 🚀 Features
@@ -13,8 +13,6 @@
 ### 🐞 Bug Fixes
 * use fileURLToPath for migrations folder ([e807e966](https://github.com/ucdjs/ucd/commit/e807e9661332e323bbf314b175959ba2390e73d1)) (by [@luxass](https://github.com/luxass))
 * update URL in test for rejecting full URL import specifiers ([362a359c](https://github.com/ucdjs/ucd/commit/362a359cb741fe32ac292023c559fc2c3f851143)) (by [@luxass](https://github.com/luxass))
-
-
 ## [0.0.1-beta.1](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-loader@0.0.1-beta.0...@ucdjs/pipelines-loader@0.0.1-beta.1) (2026-02-15)
 
 

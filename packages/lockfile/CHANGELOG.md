@@ -1,6 +1,6 @@
 # @ucdjs/lockfile
 
-## [0.1.1-beta.2](https://github.com/ucdjs/ucd/compare/@ucdjs/lockfile@0.1.1-beta.1...@ucdjs/lockfile@0.1.1-beta.2) (2026-02-15)
+## [0.1.1-beta.2](https://github.com/ucdjs/ucd/compare/@ucdjs/lockfile@0.1.1-beta.2...@ucdjs/lockfile@0.1.1-beta.2) (2026-02-15)
 
 
 ### 🚀 Features
@@ -18,8 +18,6 @@
 * try to ensure correct lockfile generation ([92188aee](https://github.com/ucdjs/ucd/commit/92188aee11223387769341ed7282badfe1157572)) (by [@luxass](https://github.com/luxass))
 * check mkdir capability correctly in writeSnapshot ([dcf0722f](https://github.com/ucdjs/ucd/commit/dcf0722fa03b0e534b72fd749405c954376aa636)) (by [@luxass](https://github.com/luxass))
 * update package.json to remove duplicate dependency entry for @ucdjs-internal/shared ([5bd7ea2f](https://github.com/ucdjs/ucd/commit/5bd7ea2f434ab24dad2dafc9b8175a8ca65746f1)) (by [@luxass](https://github.com/luxass))
-
-
 ## [0.1.1-beta.1](https://github.com/ucdjs/ucd/compare/@ucdjs/lockfile@0.1.1-beta.0...@ucdjs/lockfile@0.1.1-beta.1) (2026-02-15)
 
 

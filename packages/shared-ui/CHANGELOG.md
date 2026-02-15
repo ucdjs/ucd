@@ -1,6 +1,6 @@
 # @ucdjs-internal/shared-ui
 
-## [0.1.1](https://github.com/ucdjs/ucd/compare/@ucdjs-internal/shared-ui@0.1.0...@ucdjs-internal/shared-ui@0.1.1) (2026-02-15)
+## [0.1.1](https://github.com/ucdjs/ucd/compare/@ucdjs-internal/shared-ui@0.1.1...@ucdjs-internal/shared-ui@0.1.1) (2026-02-15)
 
 
 ### 🚀 Features
