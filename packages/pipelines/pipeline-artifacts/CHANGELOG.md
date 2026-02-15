@@ -1,6 +1,6 @@
 # @ucdjs/pipelines-artifacts
 
-## [0.0.2-beta.0](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-artifacts@0.0.1...@ucdjs/pipelines-artifacts@0.0.2-beta.0) (2026-02-15)
+## [0.0.1-beta.0](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-artifacts@0.0.1...@ucdjs/pipelines-artifacts@0.0.1-beta.0) (2026-02-15)
 
 
 ### 🚀 Features
