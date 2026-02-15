@@ -1,5 +1,15 @@
 # @ucdjs-internal/shared
 
+## [0.1.1-beta.4](https://github.com/ucdjs/ucd/compare/@ucdjs-internal/shared@0.1.1-beta.3...@ucdjs-internal/shared@0.1.1-beta.4) (2026-02-15)
+
+
+
+
+### Notes
+
+* No significant commits in this release.
+
+
 ## [0.1.1-beta.2](https://github.com/ucdjs/ucd/compare/@ucdjs-internal/shared@0.1.1-beta.2...@ucdjs-internal/shared@0.1.1-beta.2) (2026-02-15)
 
 
