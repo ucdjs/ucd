@@ -1,6 +1,6 @@
 {
   "name": "@ucdjs-internal/shared",
-  "version": "1.0.0",
+  "version": "0.1.1",
   "type": "module",
   "author": {
     "name": "Lucas Nørgård",
