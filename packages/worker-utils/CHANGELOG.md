@@ -1,6 +1,6 @@
 # @ucdjs-internal/worker-utils
 
-## 0.0.1 (2026-02-15)
+## 0.0.1-beta.0 (2026-02-15)
 
 
 ### 🚀 Features
