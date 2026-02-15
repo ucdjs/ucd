@@ -9,7 +9,7 @@ const ENV_URLS: Record<string, string> = {
 
 export interface ResolvedConfig {
   baseUrl: string;
-  setupKey?: string;
+  taskKey?: string;
   apiBaseUrl: string;
 }
 
@@ -30,16 +30,16 @@ export function resolveBaseUrl(env?: string, baseUrl?: string): string {
 export function resolveConfig(options: {
   env?: string;
   baseUrl?: string;
-  setupKey?: string;
+  taskKey?: string;
   apiBaseUrl?: string;
 }): ResolvedConfig {
   const baseUrl = resolveBaseUrl(options.env, options.baseUrl);
-  const setupKey = options.setupKey || process.env.UCDJS_SETUP_KEY;
+  const taskKey = options.taskKey || process.env.UCDJS_TASK_KEY || process.env.UCDJS_SETUP_KEY;
   const apiBaseUrl = options.apiBaseUrl || baseUrl;
 
   return {
     baseUrl,
-    setupKey,
+    taskKey,
     apiBaseUrl,
   };
 }

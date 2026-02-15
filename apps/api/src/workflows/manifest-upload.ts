@@ -70,7 +70,8 @@ export class ManifestUploadWorkflow extends WorkflowEntrypoint<Env, ManifestUplo
       const bucket = this.env.UCD_BUCKET;
       const BATCH_SIZE = 20;
 
-      console.error(`[manifest-upload]: Starting upload of ${files.length} files for version ${version} in batches of ${BATCH_SIZE}`);
+      // eslint-disable-next-line no-console
+      console.info(`[manifest-upload]: Starting upload of ${files.length} files for version ${version} in batches of ${BATCH_SIZE}`);
       // Process in parallel batches for faster uploads
       for (let i = 0; i < files.length; i += BATCH_SIZE) {
         const batch = files.slice(i, i + BATCH_SIZE);
@@ -82,7 +83,8 @@ export class ManifestUploadWorkflow extends WorkflowEntrypoint<Env, ManifestUplo
               httpMetadata: { contentType: "application/json" },
             });
 
-            console.error(`[manifest-upload]: Uploaded ${storagePath}`);
+            // eslint-disable-next-line no-console
+            console.info(`[manifest-upload]: Uploaded ${storagePath}`);
           } catch (error) {
             console.error(`[manifest-upload]: Failed to upload ${storagePath}:`, error);
             throw new Error(`Failed to upload ${file.name}: ${error instanceof Error ? error.message : String(error)}`);

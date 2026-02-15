@@ -53,10 +53,6 @@ function mapFileTreeToExpected(tree: UnicodeFileTree): ExpectedFile[] {
   return collect.sort((a, b) => a.path.localeCompare(b.path));
 }
 
-/**
- * Generates manifests for the specified versions.
- * Reuses cached data for versions that share UCD folders.
- */
 export async function generateManifests(
   options: GenerateManifestsOptions = {},
 ): Promise<GeneratedManifest[]> {
@@ -128,4 +124,13 @@ export function createManifestsTar(manifests: GeneratedManifest[]): Uint8Array {
   }));
 
   return createTar(tarFiles);
+}
+
+export function createManifestTar(manifest: GeneratedManifest): Uint8Array {
+  return createTar([
+    {
+      name: "manifest.json",
+      data: new TextEncoder().encode(JSON.stringify(manifest.manifest, null, 2)),
+    },
+  ]);
 }

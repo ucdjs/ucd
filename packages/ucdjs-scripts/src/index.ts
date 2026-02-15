@@ -22,7 +22,7 @@ cli
   .command("refresh-manifests", "Generate and upload manifests to remote")
   .option("--env <env>", "Target environment: prod, preview, or local")
   .option("--base-url <url>", "Override base URL for upload")
-  .option("--setup-key <key>", "Secret key for authentication (X-UCDJS-Setup-Key)")
+  .option("--task-key <key>", "Secret key for authentication (X-UCDJS-Task-Key)")
   .option("--versions <versions>", "Comma-separated list of versions (default: all from API)")
   .option("--dry-run", "Validate manifests without uploading")
   .option("--batch-size <size>", "Number of versions to fetch in parallel", { default: 5 })
