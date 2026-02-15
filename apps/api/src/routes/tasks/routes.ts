@@ -2,7 +2,7 @@ import type { HonoEnv } from "../../types";
 import { buildR2Key, clearCacheEntry, makeManifestUploadId, MAX_TAR_SIZE_BYTES } from "@ucdjs-internal/worker-utils";
 import { Hono } from "hono";
 import { bodyLimit } from "hono/body-limit";
-import { badGateway, badRequest, unauthorized } from "../../lib/errors";
+import { badGateway, badRequest, unauthorized } from "../../../../../packages/worker-utils/src/errors";
 
 export const TASKS_ROUTER = new Hono<HonoEnv>().basePath("/_tasks");
 

@@ -36,6 +36,10 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit -p tsconfig.build.json"
   },
+  "peerDependencies": {
+    "hono": "catalog:backend",
+    "zod": "catalog:runtime"
+  },
   "dependencies": {
     "@ucdjs-internal/shared": "workspace:*"
   },
@@ -44,10 +48,12 @@
     "@ucdjs-tooling/tsconfig": "workspace:*",
     "@ucdjs-tooling/tsdown-config": "workspace:*",
     "eslint": "catalog:lint",
+    "hono": "catalog:backend",
     "publint": "catalog:build",
     "tsdown": "catalog:build",
     "typescript": "catalog:build",
-    "vitest-testdirs": "catalog:test"
+    "vitest-testdirs": "catalog:test",
+    "zod": "catalog:runtime"
   },
   "publishConfig": {
     "access": "public"

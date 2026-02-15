@@ -1873,6 +1873,9 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.0.0(jiti@2.6.1)
+      hono:
+        specifier: catalog:backend
+        version: 4.11.9
       publint:
         specifier: catalog:build
         version: 0.3.17
@@ -1885,6 +1888,9 @@ importers:
       vitest-testdirs:
         specifier: catalog:test
         version: 4.4.2(vitest@4.1.0-beta.1)
+      zod:
+        specifier: catalog:runtime
+        version: 4.3.6
 
   tooling/eslint-plugin:
     devDependencies:

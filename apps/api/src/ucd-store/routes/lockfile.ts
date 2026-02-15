@@ -1,7 +1,7 @@
 import type { OpenAPIHono } from "@hono/zod-openapi";
 import type { Lockfile } from "@ucdjs/schemas";
 import type { HonoEnv } from "../../types";
-import { badGateway } from "../../lib/errors";
+import { badGateway } from "@ucdjs-internal/worker-utils";
 
 interface ManifestData {
   expectedFiles: string[];

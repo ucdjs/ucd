@@ -1,7 +1,7 @@
 import type { OpenAPIHono } from "@hono/zod-openapi";
 import type { Snapshot } from "@ucdjs/schemas";
 import type { HonoEnv } from "../../types";
-import { badGateway, notFound } from "../../lib/errors";
+import { badGateway, notFound } from "@ucdjs-internal/worker-utils";
 import { extractFilename } from "../lib/path-utils";
 
 // Placeholder hash (sha256 with 64 zeros)
