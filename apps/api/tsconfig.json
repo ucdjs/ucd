@@ -17,5 +17,5 @@
     "isolatedModules": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*", "*.ts", "test", "../../packages/worker-utils/src/strict.ts", "../../packages/worker-utils/src/errors.ts", "../../packages/worker-utils/test/errors.test.ts"]
+  "include": ["src/**/*", "*.ts", "test"]
 }
