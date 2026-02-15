@@ -43,7 +43,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: build ucdjs-scripts
-        run: pnpm --filter @ucdjs/ucdjs-scripts build
+        run: pnpm turbo run build --filter "./packages/ucdjs-scripts"
 
       - name: install to symlink
         run: pnpm install --frozen-lockfile
