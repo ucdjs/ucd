@@ -1,6 +1,6 @@
 # @ucdjs/path-utils
 
-## [0.1.1-beta.2](https://github.com/ucdjs/ucd/compare/@ucdjs/path-utils@0.1.1-beta.1...@ucdjs/path-utils@0.1.1-beta.2) (2026-02-15)
+## [0.1.1-beta.2](https://github.com/ucdjs/ucd/compare/@ucdjs/path-utils@0.1.1-beta.2...@ucdjs/path-utils@0.1.1-beta.2) (2026-02-15)
 
 
 ### 🚀 Features
@@ -44,8 +44,6 @@
 * normalize base path in internal_resolveWindowsPath ([e3d5cd64](https://github.com/ucdjs/ucd/commit/e3d5cd64084b446237b1b2cada69c301a42f65cf)) (by [@luxass](https://github.com/luxass))
 * simplify Windows path resolution ([05d6907b](https://github.com/ucdjs/ucd/commit/05d6907b05e84e3429a1f83f882923d8465aa7e0)) (by [@luxass](https://github.com/luxass))
 * trim trailing slashes in toUnixFormat function ([9e7eff34](https://github.com/ucdjs/ucd/commit/9e7eff34e5bfbb639333f9c8afa6db93a29390d9)) (by [@luxass](https://github.com/luxass))
-
-
 ## [0.1.1-beta.1](https://github.com/ucdjs/ucd/compare/@ucdjs/path-utils@0.1.1-beta.0...@ucdjs/path-utils@0.1.1-beta.1) (2026-02-15)
 
 

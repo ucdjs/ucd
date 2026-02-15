@@ -1,6 +1,6 @@
 # @ucdjs/schema-gen
 
-## [0.2.3-beta.2](https://github.com/ucdjs/ucd/compare/@ucdjs/schema-gen@0.2.3-beta.1...@ucdjs/schema-gen@0.2.3-beta.2) (2026-02-15)
+## [0.2.3-beta.2](https://github.com/ucdjs/ucd/compare/@ucdjs/schema-gen@0.2.3-beta.2...@ucdjs/schema-gen@0.2.3-beta.2) (2026-02-15)
 
 
 ### 🚀 Features
@@ -11,8 +11,6 @@
 ### 🐞 Bug Fixes
 * update dependency from `@luxass/unicode-utils` to `@luxass/unicode-utils-old` ([46b62b64](https://github.com/ucdjs/ucd/commit/46b62b64395f76f1306e9abeeb42b43214ef4bc2)) (by [@luxass](https://github.com/luxass))
 * throw if unresolved import ([8123dda2](https://github.com/ucdjs/ucd/commit/8123dda281a62ed6bd63c6d1b6975a27a6f78346)) (by [@luxass](https://github.com/luxass))
-
-
 ## [0.2.3-beta.1](https://github.com/ucdjs/ucd/compare/@ucdjs/schema-gen@0.2.3-beta.0...@ucdjs/schema-gen@0.2.3-beta.1) (2026-02-15)
 
 

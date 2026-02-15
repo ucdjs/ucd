@@ -1,6 +1,6 @@
 # @ucdjs/cli
 
-## [0.3.1-beta.2](https://github.com/ucdjs/ucd/compare/@ucdjs/cli@0.3.1-beta.1...@ucdjs/cli@0.3.1-beta.2) (2026-02-15)
+## [0.3.1-beta.2](https://github.com/ucdjs/ucd/compare/@ucdjs/cli@0.3.1-beta.2...@ucdjs/cli@0.3.1-beta.2) (2026-02-15)
 
 
 ### 🚀 Features
@@ -53,8 +53,6 @@
 * handle version selection more robustly ([1aa8ea49](https://github.com/ucdjs/ucd/commit/1aa8ea49fd0c93964d8111324c642992a91f7a0b)) (by [@luxass](https://github.com/luxass))
 * throw if unresolved import ([8123dda2](https://github.com/ucdjs/ucd/commit/8123dda281a62ed6bd63c6d1b6975a27a6f78346)) (by [@luxass](https://github.com/luxass))
 * remove proxyUrl from clean, init, repair, and status commands ([0499e047](https://github.com/ucdjs/ucd/commit/0499e0472b05928fa8aec4a99dc2cffacad511d5)) (by [@luxass](https://github.com/luxass))
-
-
 ## [0.3.1-beta.1](https://github.com/ucdjs/ucd/compare/@ucdjs/cli@0.3.1-beta.0...@ucdjs/cli@0.3.1-beta.1) (2026-02-15)
 
 
