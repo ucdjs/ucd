@@ -1,9 +1,9 @@
-export type WorkerEnvironmentName =
-  | "production"
-  | "preview"
-  | "local"
-  | "testing"
-  | (string & {});
+export type WorkerEnvironmentName
+  = | "production"
+    | "preview"
+    | "local"
+    | "testing"
+    | (string & {});
 
 export function getApiOriginForEnvironment(environment: WorkerEnvironmentName | undefined): string {
   if (environment === "production") {
