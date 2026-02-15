@@ -1,5 +1,15 @@
 # @ucdjs/env
 
+## [0.1.1-beta.5](https://github.com/ucdjs/ucd/compare/@ucdjs/env@0.1.1-beta.4...@ucdjs/env@0.1.1-beta.5) (2026-02-15)
+
+
+
+
+### Notes
+
+* No significant commits in this release.
+
+
 ## [0.1.1-beta.3](https://github.com/ucdjs/ucd/compare/@ucdjs/env@0.1.1-beta.2...@ucdjs/env@0.1.1-beta.3) (2026-02-15)
 
 
