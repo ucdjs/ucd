@@ -1,5 +1,6 @@
 import type { HonoEnv } from "../../types";
 import { Hono } from "hono";
+import { bodyLimit } from "hono/body-limit";
 import { clearCacheEntry } from "../../lib/cache";
 import { badGateway, badRequest, unauthorized } from "../../lib/errors";
 import { makeManifestUploadId, MAX_TAR_SIZE_BYTES } from "../../lib/tasks";
@@ -37,7 +38,12 @@ TASKS_ROUTER.use("/*", async (c, next) => {
   await next();
 });
 
-TASKS_ROUTER.post("/upload-manifest", async (c) => {
+TASKS_ROUTER.post("/upload-manifest", bodyLimit({
+  maxSize: MAX_TAR_SIZE_BYTES,
+  onError(c) {
+    return badRequest(c, { message: `Request body exceeds maximum size of ${Math.round(MAX_TAR_SIZE_BYTES / 1024 / 1024)}MB` });
+  },
+}), async (c) => {
   const workflow = c.env.MANIFEST_UPLOAD_WORKFLOW;
 
   if (!workflow) {
@@ -61,30 +67,21 @@ TASKS_ROUTER.post("/upload-manifest", async (c) => {
   }
 
   try {
-    const tarBuffer = await c.req.arrayBuffer();
+    const workflowId = makeManifestUploadId(version);
+    const r2Key = `manifest-tars/${version}/${workflowId}.tar`;
 
-    // Check size limit
-    if (tarBuffer.byteLength > MAX_TAR_SIZE_BYTES) {
-      return badRequest(c, {
-        message: `TAR file size (${Math.round(tarBuffer.byteLength / 1024 / 1024)}MB) exceeds maximum of 50MB`,
-      });
-    }
+    const tarData = await c.req.arrayBuffer();
+    await c.env.UCD_BUCKET.put(r2Key, tarData, {
+      httpMetadata: {
+        contentType,
+      },
+    });
 
-    // Convert to base64 for workflow params
-    const bytes = new Uint8Array(tarBuffer);
-    let binaryString = "";
-    for (let i = 0; i < bytes.length; i++) {
-      binaryString += String.fromCharCode(bytes[i]!);
-    }
-    const tarBase64 = btoa(binaryString);
-
-    // Trigger workflow
     const instance = await workflow.create({
-      id: makeManifestUploadId(version),
+      id: workflowId,
       params: {
         version,
-        tarData: tarBase64,
-        contentType,
+        r2Key,
       },
     });
 
@@ -100,9 +97,9 @@ TASKS_ROUTER.post("/upload-manifest", async (c) => {
       workflowId: instance.id,
       status: "queued",
       statusUrl: `${baseUrl}/_tasks/upload-status/${instance.id}`,
-    }, 202); // 202 Accepted for async processing
-  } catch (error) {
-    console.error("[tasks]: Failed to start workflow:", error);
+    }, 202);
+  } catch (err) {
+    console.error("[tasks]: Failed to start workflow:", err);
     return badGateway(c);
   }
 });
@@ -129,10 +126,10 @@ TASKS_ROUTER.get("/upload-status/:workflowId", async (c) => {
       workflowId,
       status: status.status,
       output: status.output,
-      error: status.error,
+      error: status.error?.message,
     });
-  } catch (error) {
-    console.error("[tasks]: Failed to get workflow status:", error);
+  } catch (err) {
+    console.error("[tasks]: Failed to get workflow status:", err);
     return badRequest(c, { message: "Invalid workflow ID or workflow not found" });
   }
 });
