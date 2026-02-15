@@ -29,7 +29,12 @@ describe("findPipelineFiles", () => {
       path.join(root, "pipelines", "nested", "beta.ucd-pipeline.ts"),
     ];
 
-    expect(files.sort()).toEqual(expected.sort());
+    // Normalize to forward slashes for cross-platform comparison
+    const normalizeForComparison = (p: string) => p.replace(/\\/g, "/");
+    const normalizedFiles = files.map(normalizeForComparison).sort();
+    const normalizedExpected = expected.map(normalizeForComparison).sort();
+
+    expect(normalizedFiles).toEqual(normalizedExpected);
     expect(files.every((file: string) => path.isAbsolute(file))).toBe(true);
   });
 
@@ -49,7 +54,12 @@ describe("findPipelineFiles", () => {
       cwd,
     });
 
-    expect(files).toEqual([path.join(cwd, "gamma.ucd-pipeline.ts")]);
+    // Normalize to forward slashes for cross-platform comparison
+    const normalizeForComparison = (p: string) => p.replace(/\\/g, "/");
+    const normalizedFiles = files.map(normalizeForComparison);
+    const normalizedExpected = [path.join(cwd, "gamma.ucd-pipeline.ts")].map(normalizeForComparison);
+
+    expect(normalizedFiles).toEqual(normalizedExpected);
   });
 });
 
