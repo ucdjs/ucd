@@ -64,17 +64,14 @@ export async function generateManifests(
 
   const client = await getClient(apiBaseUrl);
 
-  let versionsToProcess: Array<{ version: string; mappedUcdVersion?: string }>;
+  let versionsToProcess: Array<{ version: string }>;
 
   if (inputVersions && inputVersions.length > 0) {
     versionsToProcess = inputVersions.map((v) => ({ version: v }));
   } else {
     logger.info(`Fetching versions from ${apiBaseUrl}...`);
     const allVersions = unwrap<UnicodeVersionList>(await client.versions.list());
-    versionsToProcess = allVersions.map((v) => ({
-      version: v.version,
-      mappedUcdVersion: v.mappedUcdVersion ?? undefined,
-    }));
+    versionsToProcess = allVersions.map((v) => ({ version: v.version }));
     logger.info(`Found ${versionsToProcess.length} versions to process`);
   }
 
@@ -86,21 +83,21 @@ export async function generateManifests(
 
     const batchResults = await Promise.all(
       batch.map(async (v) => {
-        const ucdFolder = v.mappedUcdVersion ?? v.version;
+        const version = v.version;
 
-        let expectedFiles = fileCache.get(ucdFolder);
+        let expectedFiles = fileCache.get(version);
         if (!expectedFiles) {
-          logger.info(`Fetching files for ${v.version} from ${ucdFolder}...`);
-          const fileTree = unwrap<UnicodeFileTree>(await client.versions.getFileTree(ucdFolder));
+          logger.info(`Fetching files for ${version}...`);
+          const fileTree = unwrap<UnicodeFileTree>(await client.versions.getFileTree(version));
           expectedFiles = mapFileTreeToExpected(fileTree);
-          fileCache.set(ucdFolder, expectedFiles);
+          fileCache.set(version, expectedFiles);
         } else {
-          logger.debug(`Using cached files for ${v.version} (from ${ucdFolder})`);
+          logger.debug(`Using cached files for ${version}`);
         }
 
         const manifest = { expectedFiles };
         return {
-          version: v.version,
+          version,
           manifest,
           fileCount: expectedFiles.length,
         };
