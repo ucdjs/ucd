@@ -24,8 +24,8 @@
     "version": "0.1.1"
   },
   "@ucdjs/schema-gen": {
-    "type": "patch",
-    "version": "0.2.3"
+    "type": "none",
+    "version": "0.2.2"
   },
   "@ucdjs/schemas": {
     "type": "patch",
@@ -46,5 +46,37 @@
   "@ucdjs/utils": {
     "type": "patch",
     "version": "0.2.1"
+  },
+  "@ucdjs/pipelines-artifacts": {
+    "type": "none",
+    "version": "0.0.1"
+  },
+  "@ucdjs/pipelines-core": {
+    "type": "none",
+    "version": "0.0.1"
+  },
+  "@ucdjs/pipelines-executor": {
+    "type": "none",
+    "version": "0.0.1"
+  },
+  "@ucdjs/pipelines-graph": {
+    "type": "none",
+    "version": "0.0.1"
+  },
+  "@ucdjs/pipelines-loader": {
+    "type": "none",
+    "version": "0.0.1"
+  },
+  "@ucdjs/pipelines-presets": {
+    "type": "none",
+    "version": "0.0.1"
+  },
+  "@ucdjs/pipelines-server": {
+    "type": "none",
+    "version": "0.0.1"
+  },
+  "@ucdjs/pipelines-ui": {
+    "type": "none",
+    "version": "0.0.1"
   }
 }
