@@ -41,7 +41,8 @@
     "zod": "catalog:runtime"
   },
   "dependencies": {
-    "@ucdjs-internal/shared": "workspace:*"
+    "@ucdjs-internal/shared": "workspace:*",
+    "@ucdjs/schemas": "workspace:*"
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:lint",
