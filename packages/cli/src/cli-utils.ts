@@ -2,6 +2,8 @@ import type { Prettify, RemoveIndexSignature } from "@luxass/utils";
 import type { Arguments } from "yargs-parser";
 import type { CLICodegenCmdOptions } from "./cmd/codegen/root";
 import type { CLIFilesCmdOptions } from "./cmd/files/root";
+import type { CLILockfileCmdOptions } from "./cmd/lockfile/root";
+import type { CLIPipelinesCmdOptions } from "./cmd/pipelines/root";
 import type { CLIStoreCmdOptions } from "./cmd/store/root";
 import process from "node:process";
 import {
@@ -22,13 +24,15 @@ type CLICommand
     | "codegen"
     | "store"
     | "files"
-    | "lockfile";
+    | "lockfile"
+    | "pipelines";
 
 const SUPPORTED_COMMANDS = new Set<CLICommand>([
   "codegen",
   "store",
   "files",
   "lockfile",
+  "pipelines",
 ]);
 
 export interface GlobalCLIFlags {
@@ -181,6 +185,7 @@ export async function runCommand(cmd: CLICommand, flags: Arguments): Promise<voi
             ["codegen", "Generate TypeScript code from UCD data."],
             ["files", "List and get files from the UCD API."],
             ["lockfile", "Inspect and validate UCD store lockfiles."],
+            ["pipelines", "Run and manage UCD data processing pipelines."],
           ],
           "Global Flags": [
             ["--version", "Show the version number and exit."],
@@ -221,7 +226,15 @@ export async function runCommand(cmd: CLICommand, flags: Arguments): Promise<voi
       const { runLockfileRoot } = await import("./cmd/lockfile/root");
       const subcommand = flags._[1]?.toString() ?? "";
       await runLockfileRoot(subcommand, {
-        flags: flags as CLIFilesCmdOptions["flags"],
+        flags: flags as CLILockfileCmdOptions["flags"],
+      });
+      break;
+    }
+    case "pipelines": {
+      const { runPipelinesRoot } = await import("./cmd/pipelines/root");
+      const subcommand = flags._[1]?.toString() ?? "";
+      await runPipelinesRoot(subcommand, {
+        flags: flags as CLIPipelinesCmdOptions["flags"],
       });
       break;
     }
@@ -300,4 +313,12 @@ export async function runCLI(args: string[]): Promise<void> {
     // Reset JSON mode after command completes
     setJsonMode(false);
   }
+}
+
+export function parseRepoString(repoString: string): { owner: string; repo: string } {
+  const parts = repoString.split("/");
+  if (parts.length !== 2) {
+    throw new Error(`Invalid repository format: ${repoString}. Expected: owner/repo`);
+  }
+  return { owner: parts[0]!, repo: parts[1]! };
 }
