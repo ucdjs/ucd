@@ -24,6 +24,7 @@
     "@scalar/hono-api-reference": "catalog:backend",
     "@sentry/cloudflare": "catalog:backend",
     "@ucdjs-internal/shared": "workspace:*",
+    "@ucdjs-internal/worker-utils": "workspace:*",
     "@ucdjs/env": "workspace:*",
     "@ucdjs/path-utils": "workspace:*",
     "@ucdjs/schemas": "workspace:*",

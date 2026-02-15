@@ -1,7 +1,7 @@
 import type { WorkflowEvent, WorkflowStep } from "cloudflare:workers";
+import { getApiOriginForEnvironment, MAX_TAR_SIZE_BYTES } from "@ucdjs-internal/worker-utils";
 import { WorkflowEntrypoint } from "cloudflare:workers";
 import { parseTar } from "nanotar";
-import { MAX_TAR_SIZE_BYTES } from "../lib/tasks";
 
 interface ManifestUploadParams {
   version: string;
@@ -115,16 +115,7 @@ export class ManifestUploadWorkflow extends WorkflowEntrypoint<Env, ManifestUplo
 
     await step.do("purge-caches", async () => {
       const cacheNames = ["v1_versions", "v1_files", "ucd_store"];
-
-      // Determine API origin based on environment
-      let origin: string;
-      if (this.env.ENVIRONMENT === "production") {
-        origin = "https://api.ucdjs.dev";
-      } else if (this.env.ENVIRONMENT === "preview") {
-        origin = "https://preview.api.ucdjs.dev";
-      } else {
-        origin = "http://localhost:8787";
-      }
+      const origin = getApiOriginForEnvironment(this.env.ENVIRONMENT);
 
       const purgePromises = cacheNames.map(async (name) => {
         try {

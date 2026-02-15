@@ -388,6 +388,9 @@ importers:
       '@ucdjs-internal/shared':
         specifier: workspace:*
         version: link:../../packages/shared
+      '@ucdjs-internal/worker-utils':
+        specifier: workspace:*
+        version: link:../../packages/worker-utils
       '@ucdjs/env':
         specifier: workspace:*
         version: link:../../packages/env

@@ -1,7 +1,7 @@
+import * as taskLib from "@ucdjs-internal/worker-utils";
 import { introspectWorkflowInstance } from "cloudflare:test";
 import { env } from "cloudflare:workers";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import * as taskLib from "../../../src/lib/tasks";
 import { executeRequest } from "../../helpers/request";
 import { expectApiError, expectJsonResponse, expectSuccess } from "../../helpers/response";
 
