@@ -1,6 +1,6 @@
 import type { Env, Hono } from "hono";
 import type { HonoEnv } from "../types";
-import { customError } from "../../../../packages/worker-utils/src/errors";
+import { customError } from "@ucdjs-internal/worker-utils";
 
 /**
  * Sets up Cross-Origin Resource Sharing (CORS) middleware for a Hono application.
