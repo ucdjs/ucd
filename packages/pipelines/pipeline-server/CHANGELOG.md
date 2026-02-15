@@ -1,6 +1,6 @@
 # @ucdjs/pipelines-server
 
-## [0.1.0](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-server@0.0.1...@ucdjs/pipelines-server@0.1.0) (2026-02-14)
+## [0.1.0](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-server@0.0.1...@ucdjs/pipelines-server@0.1.0) (2026-02-15)
 
 
 ### 🚀 Features

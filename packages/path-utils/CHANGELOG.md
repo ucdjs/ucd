@@ -1,6 +1,6 @@
 # @ucdjs/path-utils
 
-## [0.2.0](https://github.com/ucdjs/ucd/compare/@ucdjs/path-utils@0.1.0...@ucdjs/path-utils@0.2.0) (2026-02-14)
+## [0.2.0](https://github.com/ucdjs/ucd/compare/@ucdjs/path-utils@0.1.0...@ucdjs/path-utils@0.2.0) (2026-02-15)
 
 
 ### 🚀 Features
