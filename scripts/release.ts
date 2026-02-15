@@ -44,6 +44,10 @@ const { prepare, verify, publish } = await createReleaseScripts({
     enabled: true,
     emojis: true,
   },
+  npm: {
+    provenance: true,
+    access: "public"
+  }
 })
 
 const command = process.argv[2] ?? ""
