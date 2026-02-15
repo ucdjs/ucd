@@ -1,5 +1,60 @@
 # @ucdjs/cli
 
+## [0.3.1-beta.1](https://github.com/ucdjs/ucd/compare/@ucdjs/cli@0.3.1-beta.0...@ucdjs/cli@0.3.1-beta.1) (2026-02-15)
+
+
+### 🚀 Features
+* add &#39;validate&#39; subcommand for lockfile validation ([229a1e2c](https://github.com/ucdjs/ucd/commit/229a1e2c3071e25b331e5935aa2462d27209af07)) (by [@luxass](https://github.com/luxass))
+* add &#39;info&#39; subcommand for lockfile details ([d930a9d1](https://github.com/ucdjs/ucd/commit/d930a9d1eac7bc16103f76ba831a62f7872854f6)) (by [@luxass](https://github.com/luxass))
+* add hash subcommand for computing file hashes ([b24a3d0e](https://github.com/ucdjs/ucd/commit/b24a3d0e43314832659d8459bda59c479fbd234e)) (by [@luxass](https://github.com/luxass))
+* add lockfile command for UCD store management ([0cd6ea05](https://github.com/ucdjs/ucd/commit/0cd6ea051f7bfd2ebd6f788fb3a4bb1364198e7c)) (by [@luxass](https://github.com/luxass))
+* add CLIError class for improved error handling ([f74a2692](https://github.com/ucdjs/ucd/commit/f74a2692cb8f6eac86f36d04470107b930fb8bdb)) (by [@luxass](https://github.com/luxass))
+* update file listing to use FileEntryList type ([25443c68](https://github.com/ucdjs/ucd/commit/25443c6866333bcf2dd87e26210a3dd66731acbe)) (by [@luxass](https://github.com/luxass))
+* refactor output logging and formatBytes function ([0e97978a](https://github.com/ucdjs/ucd/commit/0e97978a81401b10efeb9005e903be9089cc4fca)) (by [@luxass](https://github.com/luxass))
+* update output logging for file operations ([371f9665](https://github.com/ucdjs/ucd/commit/371f96659684fee3183bf67d3abfd9256aac7b8b)) (by [@luxass](https://github.com/luxass))
+* enhance output functions and add new utilities ([9e870450](https://github.com/ucdjs/ucd/commit/9e870450b3309a69aa4f4247a309aed521f2d1ce)) (by [@luxass](https://github.com/luxass))
+* migrate from `@ucdjs/ucd-store-v2` to `@ucdjs/ucd-store` ([f7538ad8](https://github.com/ucdjs/ucd/commit/f7538ad8da9de36835b0dbc14d2e0bfc711e154b)) (by [@luxass](https://github.com/luxass))
+* improve debug logs ([7632426c](https://github.com/ucdjs/ucd/commit/7632426cd3e43c4d8db5cf1b3090c08061710b07)) (by [@luxass](https://github.com/luxass))
+* add info subcommand to files cmd ([33e8dcab](https://github.com/ucdjs/ucd/commit/33e8dcabeee69978fc1fd770475f12e01e90076d)) (by [@luxass](https://github.com/luxass))
+* use stderr for casual logs when paired with --json ([904dd049](https://github.com/ucdjs/ucd/commit/904dd0497130f1450e6bc6d9e5bd8da43abfd436)) (by [@luxass](https://github.com/luxass))
+* update dependencies and enhance lockfile path handling ([7d925743](https://github.com/ucdjs/ucd/commit/7d925743b4da3627aef7d4dccc8334f3a786ae53)) (by [@luxass](https://github.com/luxass))
+* add file management commands to CLI ([40b8d0ce](https://github.com/ucdjs/ucd/commit/40b8d0ce98b4564041ece612c9f31183013740a7)) (by [@luxass](https://github.com/luxass))
+* add write capability assertion and enhance store commands ([a2eb3cd5](https://github.com/ucdjs/ucd/commit/a2eb3cd58bf73a7d5f8f553d583a2084bd816aaf)) (by [@luxass](https://github.com/luxass))
+* fix analyze type errors and resolve double directory path issue ([1edd1365](https://github.com/ucdjs/ucd/commit/1edd13650034928df9453ecd4ed9f3411c3f6de8)) (by [@luxass](https://github.com/luxass))
+* redesign store commands for ucd-store-v2 API ([a5e12a5e](https://github.com/ucdjs/ucd/commit/a5e12a5ed045d68a43dedc8e0df5f3f817ef4239)) (by [@luxass](https://github.com/luxass))
+* update CLIStoreCmdSharedFlags to use include/exclude patterns ([3a90b66d](https://github.com/ucdjs/ucd/commit/3a90b66dd211f4c4a2608837a4d550ace7a10f73)) (by [@luxass](https://github.com/luxass))
+* add UCDStoreInvalidManifestError and improve error handling ([69d3d780](https://github.com/ucdjs/ucd/commit/69d3d780cddd8df93f6a03b4f4dc5ddac5de8e37)) (by [@luxass](https://github.com/luxass))
+* enhance store initialization with dry-run mode and add tests ([4aee44b0](https://github.com/ucdjs/ucd/commit/4aee44b0cd9449df80e50bdd930ef50c64c8ebe7)) (by [@luxass](https://github.com/luxass))
+* add analyze command for UCD store ([b22886ad](https://github.com/ucdjs/ucd/commit/b22886ade9f28bc6f0a8e54f29328376a0a53eec)) (by [@luxass](https://github.com/luxass))
+* enhance CLI store command with version selection ([9caa6a34](https://github.com/ucdjs/ucd/commit/9caa6a347138f2f3ec5ec20324c4bca82685ad68)) (by [@luxass](https://github.com/luxass))
+* enhance CLI store command with version selection ([27db542d](https://github.com/ucdjs/ucd/commit/27db542d96bd9b9f4f64dcecdf0bad52ff864bf1)) (by [@luxass](https://github.com/luxass))
+* add &#39;dev:api&#39; script for API development ([b9c3b2ba](https://github.com/ucdjs/ucd/commit/b9c3b2ba3b0744409c6b31b46c4a3d0393e97154)) (by [@luxass](https://github.com/luxass))
+* implement shared flags and enhance store commands with clean, repair, and status functionalities ([333a90c6](https://github.com/ucdjs/ucd/commit/333a90c6ba18f528a8a646e1f95ecd57f8502303)) (by [@luxass](https://github.com/luxass))
+* add store commands for clean, repair, status, and validate ([ed47d40a](https://github.com/ucdjs/ucd/commit/ed47d40a7e3b7dd4413c068469abc2cc1aec6474)) (by [@luxass](https://github.com/luxass))
+* add store command ([0ba52fac](https://github.com/ucdjs/ucd/commit/0ba52fac19f587fc8428c07580424d7861fdc298)) (by [@luxass](https://github.com/luxass))
+* add turbo.json configuration files for cli, schema-gen, ucd-store, and utils; update tsconfig.base.build.json and remove test:watch task from turbo.json ([48dad498](https://github.com/ucdjs/ucd/commit/48dad4988f63c50f2c878f310112cf0fd44e6058)) (by [@luxass](https://github.com/luxass))
+* add HTML and README file exclusion options to download command ([36d1bc0e](https://github.com/ucdjs/ucd/commit/36d1bc0ee832e67f211613b0d962dc86a2b0fb3f)) (by [@luxass](https://github.com/luxass))
+* enhance error reporting in download process and update exclusion patterns ([a5773700](https://github.com/ucdjs/ucd/commit/a5773700e2ce55ff3833e284c6a8b501d9f22588)) (by [@luxass](https://github.com/luxass))
+* enable tsdown exports ([8d890cb3](https://github.com/ucdjs/ucd/commit/8d890cb3bea085a3fd12e818499ea305279a738a)) (by [@luxass](https://github.com/luxass))
+
+### 🐞 Bug Fixes
+* change console method from info to log in help command test ([4b0cb662](https://github.com/ucdjs/ucd/commit/4b0cb6623a2496afdcab1174fc959938d39d6885)) (by [@luxass](https://github.com/luxass))
+* improve mirror command ([27990106](https://github.com/ucdjs/ucd/commit/2799010628d9525988907cab4ade90b5e367fbfd)) (by [@luxass](https://github.com/luxass))
+* handle include &amp; exclude as arrays ([ba7723f2](https://github.com/ucdjs/ucd/commit/ba7723f2fe6bca0ccf79170770bd5330908f8bd0)) (by [@luxass](https://github.com/luxass))
+* update dependency from `@luxass/unicode-utils-old` to `@luxass/unicode-utils` ([b5d2405b](https://github.com/ucdjs/ucd/commit/b5d2405b9993896b207275e4b95b15f75dc872f3)) (by [@luxass](https://github.com/luxass))
+* update dependency from `@luxass/unicode-utils` to `@luxass/unicode-utils-old` ([46b62b64](https://github.com/ucdjs/ucd/commit/46b62b64395f76f1306e9abeeb42b43214ef4bc2)) (by [@luxass](https://github.com/luxass))
+* improve error handling in store analysis ([c554d2ac](https://github.com/ucdjs/ucd/commit/c554d2acedb1939b4b17b7853ac81f568af83e4e)) (by [@luxass](https://github.com/luxass))
+* print correct json output ([1807a7ce](https://github.com/ucdjs/ucd/commit/1807a7ce9a5daf696c7dcc6a67c688f7446907e5)) (by [@luxass](https://github.com/luxass))
+* refactor version selection logic in runInitStore ([907a4106](https://github.com/ucdjs/ucd/commit/907a4106033953252b577db2ea80471edcc93c4d)) (by [@luxass](https://github.com/luxass))
+* adjust argument indexing for store commands ([e7c8839d](https://github.com/ucdjs/ucd/commit/e7c8839dbd3e9b279c2e4f09a613c30291b8b4b9)) (by [@luxass](https://github.com/luxass))
+* correct command argument indexing and improve process title ([d7446ff2](https://github.com/ucdjs/ucd/commit/d7446ff2c2e4b6ec470c4b8c6b9ff5b16cb28a04)) (by [@luxass](https://github.com/luxass))
+* correct log message for analyzing versions ([8404d3bf](https://github.com/ucdjs/ucd/commit/8404d3bf46277df6e9330c88d8ec62bda076cead)) (by [@luxass](https://github.com/luxass))
+* handle version selection more robustly ([3fabe8a0](https://github.com/ucdjs/ucd/commit/3fabe8a0c7b7205c59818ff59864a2dd2525c199)) (by [@luxass](https://github.com/luxass))
+* handle version selection more robustly ([1aa8ea49](https://github.com/ucdjs/ucd/commit/1aa8ea49fd0c93964d8111324c642992a91f7a0b)) (by [@luxass](https://github.com/luxass))
+* throw if unresolved import ([8123dda2](https://github.com/ucdjs/ucd/commit/8123dda281a62ed6bd63c6d1b6975a27a6f78346)) (by [@luxass](https://github.com/luxass))
+* remove proxyUrl from clean, init, repair, and status commands ([0499e047](https://github.com/ucdjs/ucd/commit/0499e0472b05928fa8aec4a99dc2cffacad511d5)) (by [@luxass](https://github.com/luxass))
+
+
 ## [0.3.1-beta.0](https://github.com/ucdjs/ucd/compare/@ucdjs/cli@0.3.0...@ucdjs/cli@0.3.1-beta.0) (2026-02-15)
 
 

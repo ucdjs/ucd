@@ -1,5 +1,26 @@
 # @ucdjs/client
 
+## [0.1.1-beta.1](https://github.com/ucdjs/ucd/compare/@ucdjs/client@0.1.1-beta.0...@ucdjs/client@0.1.1-beta.1) (2026-02-15)
+
+
+### 🚀 Features
+* refactor manifest generation and upload process ([9a07f326](https://github.com/ucdjs/ucd/commit/9a07f326dc1f69fecc1615307f31d3f4cf5949f5)) (by [@luxass](https://github.com/luxass))
+* add protection again path traversal ([12110cef](https://github.com/ucdjs/ucd/commit/12110cef71c3a0cb0e902703fc750849d596a6fb)) (by [@luxass](https://github.com/luxass))
+* validate using zod schemas ([67669c9a](https://github.com/ucdjs/ucd/commit/67669c9a940b31ef83e07cbe6276924657f28747)) (by [@luxass](https://github.com/luxass))
+* enhance UCD client with config and manifest resources ([b4d8fbad](https://github.com/ucdjs/ucd/commit/b4d8fbadb57970eea7c0b3cb01583fa7d860f2b6)) (by [@luxass](https://github.com/luxass))
+* add `isApiError` type guard and tests ([5b578e55](https://github.com/ucdjs/ucd/commit/5b578e55b6ef15fe05b5e62bf759d6d4f5543a8d)) (by [@luxass](https://github.com/luxass))
+* enhance UCD client initialization and error handling ([224c22ed](https://github.com/ucdjs/ucd/commit/224c22ed0fa2ad6483bb72f512965b9792fc7d1d)) (by [@luxass](https://github.com/luxass))
+* add new ucd client ([d4ea6d9f](https://github.com/ucdjs/ucd/commit/d4ea6d9feb9dcd9cdb0394ab27323be980d2303c)) (by [@luxass](https://github.com/luxass))
+* add discoverEndpointsFromConfig function and tests ([f196cb25](https://github.com/ucdjs/ucd/commit/f196cb2588ca0ab8b5115e63e4f115a84b51701c)) (by [@luxass](https://github.com/luxass))
+
+### 🐞 Bug Fixes
+* update manifest endpoint reference in files resource ([06e54ad4](https://github.com/ucdjs/ucd/commit/06e54ad495be3a07e9067b2766065a65d9eb6a10)) (by [@luxass](https://github.com/luxass))
+* update return type for `get` method and remove generic type from `getManifest` ([31ba5a66](https://github.com/ucdjs/ucd/commit/31ba5a665b27877fc6d78f9d3934319b6ff5b782)) (by [@luxass](https://github.com/luxass))
+
+### 📚 Documentation
+* restructure client documentation and enhance installation instructions ([4ffb68f9](https://github.com/ucdjs/ucd/commit/4ffb68f9c60fc4028ab1005735fc938d4268efee)) (by [@luxass](https://github.com/luxass))
+
+
 ## [0.1.1-beta.0](https://github.com/ucdjs/ucd/compare/@ucdjs/client@0.1.0...@ucdjs/client@0.1.1-beta.0) (2026-02-15)
 
 
