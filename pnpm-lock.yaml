@@ -1860,6 +1860,9 @@ importers:
       '@ucdjs-internal/shared':
         specifier: workspace:*
         version: link:../shared
+      '@ucdjs/schemas':
+        specifier: workspace:*
+        version: link:../schemas
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:lint
