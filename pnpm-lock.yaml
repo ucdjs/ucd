@@ -1852,6 +1852,37 @@ importers:
         specifier: catalog:test
         version: 4.4.2(vitest@4.1.0-beta.1)
 
+  packages/worker-utils:
+    dependencies:
+      '@ucdjs-internal/shared':
+        specifier: workspace:*
+        version: link:../shared
+    devDependencies:
+      '@luxass/eslint-config':
+        specifier: catalog:lint
+        version: 7.2.0(@eslint-react/eslint-plugin@2.12.4(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.1)
+      '@ucdjs-tooling/tsconfig':
+        specifier: workspace:*
+        version: link:../../tooling/tsconfig
+      '@ucdjs-tooling/tsdown-config':
+        specifier: workspace:*
+        version: link:../../tooling/tsdown-config
+      eslint:
+        specifier: catalog:lint
+        version: 10.0.0(jiti@2.6.1)
+      publint:
+        specifier: catalog:build
+        version: 0.3.17
+      tsdown:
+        specifier: catalog:build
+        version: 0.20.3(publint@0.3.17)(synckit@0.11.12)(typescript@5.9.3)
+      typescript:
+        specifier: catalog:build
+        version: 5.9.3
+      vitest-testdirs:
+        specifier: catalog:test
+        version: 4.4.2(vitest@4.1.0-beta.1)
+
   tooling/eslint-plugin:
     devDependencies:
       '@luxass/eslint-config':
