@@ -1,86 +1,90 @@
 {
   "@ucdjs/cli": {
     "type": "patch",
-    "version": "0.3.1-beta.1"
+    "version": "0.3.1-beta.2"
   },
   "@ucdjs/client": {
     "type": "patch",
-    "version": "0.1.1-beta.1"
+    "version": "0.1.1-beta.2"
   },
   "@ucdjs/env": {
     "type": "patch",
-    "version": "0.1.1-beta.1"
+    "version": "0.1.1-beta.2"
   },
   "@ucdjs/fs-bridge": {
     "type": "patch",
-    "version": "0.1.1-beta.1"
+    "version": "0.1.1-beta.2"
   },
   "@ucdjs/lockfile": {
     "type": "patch",
-    "version": "0.1.1-beta.1"
+    "version": "0.1.1-beta.2"
   },
   "@ucdjs/path-utils": {
     "type": "patch",
-    "version": "0.1.1-beta.1"
+    "version": "0.1.1-beta.2"
   },
   "@ucdjs/pipelines-artifacts": {
     "type": "patch",
-    "version": "0.0.1-beta.1"
+    "version": "0.0.1-beta.2"
   },
   "@ucdjs/pipelines-core": {
     "type": "patch",
-    "version": "0.0.1-beta.1"
+    "version": "0.0.1-beta.2"
   },
   "@ucdjs/pipelines-executor": {
-    "type": "patch",
+    "type": "none",
     "version": "0.0.1-beta.1"
   },
   "@ucdjs/pipelines-graph": {
     "type": "patch",
-    "version": "0.0.1-beta.1"
+    "version": "0.0.1-beta.2"
   },
   "@ucdjs/pipelines-loader": {
     "type": "patch",
-    "version": "0.0.1-beta.1"
+    "version": "0.0.1-beta.2"
   },
   "@ucdjs/pipelines-presets": {
     "type": "patch",
-    "version": "0.0.1-beta.1"
+    "version": "0.0.1-beta.2"
   },
   "@ucdjs/pipelines-server": {
     "type": "patch",
-    "version": "0.0.1-beta.1"
+    "version": "0.0.1-beta.2"
   },
   "@ucdjs/pipelines-ui": {
     "type": "patch",
-    "version": "0.0.1-beta.1"
+    "version": "0.0.1-beta.2"
   },
   "@ucdjs/schema-gen": {
     "type": "patch",
-    "version": "0.2.3-beta.1"
+    "version": "0.2.3-beta.2"
   },
   "@ucdjs/schemas": {
     "type": "patch",
-    "version": "0.1.1-beta.1"
+    "version": "0.1.1-beta.2"
   },
   "@ucdjs-internal/shared": {
     "type": "patch",
-    "version": "0.1.1-beta.1"
+    "version": "0.1.1-beta.2"
   },
   "@ucdjs/test-utils": {
     "type": "patch",
-    "version": "1.0.1-beta.1"
+    "version": "1.0.1-beta.2"
   },
   "@ucdjs/ucd-store": {
     "type": "patch",
-    "version": "1.0.1-beta.1"
+    "version": "1.0.1-beta.2"
   },
   "@ucdjs/utils": {
     "type": "patch",
-    "version": "0.2.1-beta.1"
+    "version": "0.2.1-beta.2"
   },
   "@ucdjs-internal/worker-utils": {
     "type": "patch",
-    "version": "0.0.1-beta.1"
+    "version": "0.0.1-beta.2"
+  },
+  "@ucdjs-internal/shared-ui": {
+    "type": "patch",
+    "version": "0.1.1"
   }
 }
