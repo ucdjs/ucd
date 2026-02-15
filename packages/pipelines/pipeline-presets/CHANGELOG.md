@@ -1,6 +1,6 @@
 # @ucdjs/pipelines-presets
 
-## [0.0.1](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-presets@0.0.1...@ucdjs/pipelines-presets@0.0.1) (2026-02-15)
+## [0.0.2-beta.0](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-presets@0.0.1...@ucdjs/pipelines-presets@0.0.2-beta.0) (2026-02-15)
 
 
 ### 🚀 Features

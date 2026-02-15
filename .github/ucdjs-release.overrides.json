@@ -1,86 +1,86 @@
 {
   "@ucdjs/cli": {
     "type": "patch",
-    "version": "0.3.1"
+    "version": "0.3.1-beta.0"
   },
   "@ucdjs/client": {
     "type": "patch",
-    "version": "0.1.1"
+    "version": "0.1.1-beta.0"
   },
   "@ucdjs/env": {
     "type": "patch",
-    "version": "0.1.1"
+    "version": "0.1.1-beta.0"
   },
   "@ucdjs/fs-bridge": {
     "type": "patch",
-    "version": "0.1.1"
+    "version": "0.1.1-beta.0"
   },
   "@ucdjs/lockfile": {
     "type": "patch",
-    "version": "0.1.1"
+    "version": "0.1.1-beta.0"
   },
   "@ucdjs/path-utils": {
     "type": "patch",
-    "version": "0.1.1"
+    "version": "0.1.1-beta.0"
   },
   "@ucdjs/pipelines-artifacts": {
-    "type": "none",
-    "version": "0.0.1"
+    "type": "patch",
+    "version": "0.0.2-beta.0"
   },
   "@ucdjs/pipelines-core": {
-    "type": "none",
-    "version": "0.0.1"
+    "type": "patch",
+    "version": "0.0.2-beta.0"
   },
   "@ucdjs/pipelines-executor": {
-    "type": "none",
-    "version": "0.0.1"
+    "type": "patch",
+    "version": "0.0.2-beta.0"
   },
   "@ucdjs/pipelines-graph": {
-    "type": "none",
-    "version": "0.0.1"
+    "type": "patch",
+    "version": "0.0.2-beta.0"
   },
   "@ucdjs/pipelines-loader": {
-    "type": "none",
-    "version": "0.0.1"
+    "type": "patch",
+    "version": "0.0.2-beta.0"
   },
   "@ucdjs/pipelines-presets": {
-    "type": "none",
-    "version": "0.0.1"
+    "type": "patch",
+    "version": "0.0.2-beta.0"
   },
   "@ucdjs/pipelines-server": {
-    "type": "none",
-    "version": "0.0.1"
+    "type": "patch",
+    "version": "0.0.2-beta.0"
   },
   "@ucdjs/pipelines-ui": {
-    "type": "none",
-    "version": "0.0.1"
+    "type": "patch",
+    "version": "0.0.2-beta.0"
   },
   "@ucdjs/schema-gen": {
     "type": "patch",
-    "version": "0.2.3"
+    "version": "0.2.3-beta.0"
   },
   "@ucdjs/schemas": {
     "type": "patch",
-    "version": "0.1.1"
+    "version": "0.1.1-beta.0"
   },
   "@ucdjs-internal/shared": {
     "type": "patch",
-    "version": "0.1.1"
+    "version": "0.1.1-beta.0"
   },
   "@ucdjs/test-utils": {
     "type": "patch",
-    "version": "1.0.1"
+    "version": "1.0.1-beta.0"
   },
   "@ucdjs/ucd-store": {
     "type": "patch",
-    "version": "1.0.1"
+    "version": "1.0.1-beta.0"
   },
   "@ucdjs/utils": {
     "type": "patch",
-    "version": "0.2.1"
+    "version": "0.2.1-beta.0"
   },
   "@ucdjs-internal/worker-utils": {
     "type": "patch",
-    "version": "0.0.1"
+    "version": "0.0.1-beta.0"
   }
 }
