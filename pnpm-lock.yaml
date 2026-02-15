@@ -694,6 +694,12 @@ importers:
       '@ucdjs/lockfile':
         specifier: workspace:*
         version: link:../lockfile
+      '@ucdjs/pipelines-loader':
+        specifier: workspace:*
+        version: link:../pipelines/pipeline-loader
+      '@ucdjs/pipelines-server':
+        specifier: workspace:*
+        version: link:../pipelines/pipeline-server
       '@ucdjs/schema-gen':
         specifier: workspace:*
         version: link:../schema-gen
