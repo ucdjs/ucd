@@ -1,5 +1,6 @@
 import type { H3 } from "h3";
 import type { Plugin } from "vite";
+import { cp } from "node:fs/promises";
 import tailwindcss from "@tailwindcss/vite";
 import { tanstackRouter } from "@tanstack/router-plugin/vite";
 import react from "@vitejs/plugin-react";
@@ -122,6 +123,15 @@ export default defineConfig((config) => {
       react(),
       tailwindcss(),
       h3DevServerPlugin(),
+      {
+        name: "copy-migrations",
+        apply: "build",
+        enforce: "post",
+        async writeBundle() {
+          await cp("./src/server/db/migrations", "dist/server/migrations", { recursive: true });
+          console.log("[copy-migrations] Migrations copied to dist/server/migrations");
+        },
+      },
     ],
     environments: {
       client: {
