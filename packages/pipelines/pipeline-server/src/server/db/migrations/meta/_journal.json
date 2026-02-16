@@ -15,6 +15,20 @@
       "when": 1770541450080,
       "tag": "0001_wandering_wind_dancer",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1771259592145,
+      "tag": "0002_lively_maestro",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1771261678536,
+      "tag": "0003_common_scarlet_witch",
+      "breakpoints": true
     }
   ]
 }

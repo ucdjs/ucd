@@ -2,12 +2,14 @@ import type { H3 } from "h3";
 import { fileURLToPath } from "node:url";
 import { createApp } from "../src/server/app";
 import { createDatabase, runMigrations } from "../src/server/db";
+import { ensureWorkspace } from "../src/server/workspace";
 
 const playgroundPath = fileURLToPath(new URL("../../pipeline-playground/src", import.meta.url));
 
 export async function createTestApp() {
   const db = createDatabase({ url: "file::memory:" });
   await runMigrations(db);
+  await ensureWorkspace(db, "test", playgroundPath);
 
   const app = createApp({
     sources: [{
@@ -16,6 +18,7 @@ export async function createTestApp() {
       cwd: playgroundPath,
     }],
     db,
+    workspaceId: "test",
   });
 
   return { app, storePath: playgroundPath };

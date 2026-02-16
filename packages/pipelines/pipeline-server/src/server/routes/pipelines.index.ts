@@ -25,6 +25,7 @@ pipelinesIndexRouter.get("/", async (event) => {
   }
 
   return {
+    workspaceId: event.context.workspaceId,
     files: allFiles.map((file) => ({
       fileId: file.fileId,
       filePath: file.filePath,

@@ -9,7 +9,7 @@ import { resolveLocalFilePath } from "#server/lib/resolve";
 import { createPipelineExecutor, runWithPipelineExecutionContext } from "@ucdjs/pipelines-executor";
 import { github, gitlab } from "@ucdjs/pipelines-loader/remote";
 import { toPipelineDetails } from "@ucdjs/pipelines-ui";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { H3, readValidatedBody } from "h3";
 import { z } from "zod";
 
@@ -94,11 +94,12 @@ pipelinesPipelineRouter.get("/:file/:id/code", async (event) => {
 
 pipelinesPipelineRouter.post("/:file/:id/execute", async (event) => {
   const { sources, db } = event.context;
+  const workspaceId = event.context.workspaceId;
   const fileId = event.context.params?.file;
   const id = event.context.params?.id;
 
-  if (!fileId || !id) {
-    return { error: "File ID and pipeline ID are required" };
+  if (!fileId || !id || !workspaceId) {
+    return { error: "File ID, pipeline ID, and workspace ID are required" };
   }
 
   const localSources = sources.filter((s) => s.type === "local");
@@ -128,6 +129,7 @@ pipelinesPipelineRouter.post("/:file/:id/execute", async (event) => {
 
     await db.insert(schema.executions).values({
       id: executionId,
+      workspaceId,
       pipelineId: id,
       status: "running",
       startedAt,
@@ -141,6 +143,7 @@ pipelinesPipelineRouter.post("/:file/:id/execute", async (event) => {
       onEvent: async (evt) => {
         await db.insert(schema.events).values({
           id: randomUUID(),
+          workspaceId,
           executionId,
           type: evt.type,
           timestamp: new Date(evt.timestamp),
@@ -150,7 +153,7 @@ pipelinesPipelineRouter.post("/:file/:id/execute", async (event) => {
     });
 
     try {
-      const execResult = await runWithPipelineExecutionContext({ executionId }, async () => {
+      const execResult = await runWithPipelineExecutionContext({ executionId, workspaceId }, async () => {
         return executor.run([pipeline], {
           versions,
           cache,
@@ -167,7 +170,10 @@ pipelinesPipelineRouter.post("/:file/:id/execute", async (event) => {
           summary: pipelineResult?.summary ?? null,
           graph: pipelineResult?.graph ?? null,
         })
-        .where(eq(schema.executions.id, executionId));
+        .where(and(
+          eq(schema.executions.workspaceId, workspaceId),
+          eq(schema.executions.id, executionId),
+        ));
 
       // eslint-disable-next-line no-console
       console.info("Pipeline execution completed:", {
@@ -190,7 +196,10 @@ pipelinesPipelineRouter.post("/:file/:id/execute", async (event) => {
           completedAt,
           error: errorMessage,
         })
-        .where(eq(schema.executions.id, executionId));
+        .where(and(
+          eq(schema.executions.workspaceId, workspaceId),
+          eq(schema.executions.id, executionId),
+        ));
 
       return {
         success: false,
