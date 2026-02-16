@@ -45,7 +45,9 @@ export function PipelineSidebar() {
             <h1 className="text-sm font-semibold text-sidebar-foreground tracking-tight truncate">
               UCD Pipelines
             </h1>
-            <p className="text-[10px] text-muted-foreground truncate">Pipeline files</p>
+            <p className="text-[10px] text-muted-foreground truncate">
+              {data?.workspaceId ? `Workspace ${data.workspaceId.slice(0, 10)}...` : "Pipeline files"}
+            </p>
           </div>
           <ThemeToggle />
         </div>

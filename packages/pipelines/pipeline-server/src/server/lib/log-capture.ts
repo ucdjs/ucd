@@ -67,6 +67,7 @@ export function createExecutionLogCapture(db: Database): LogCaptureController {
     const message = buildMessage(args);
     const executionId = context.executionId;
     const spanId = context.spanId;
+    const workspaceId = context.workspaceId;
     const payload = buildPayload(args, message, stream, context.event);
 
     let executionState = stateByExecution.get(executionId);
@@ -82,6 +83,7 @@ export function createExecutionLogCapture(db: Database): LogCaptureController {
 
     const result = await storeExecutionLog(db, executionState.state, {
       executionId,
+      workspaceId,
       spanId,
       stream,
       message,
@@ -97,6 +99,7 @@ export function createExecutionLogCapture(db: Database): LogCaptureController {
       const bannerPayload = buildTruncationBanner(executionState.state, stream);
       await storeExecutionLog(db, executionState.state, {
         executionId,
+        workspaceId,
         spanId,
         stream,
         message: bannerPayload.message,

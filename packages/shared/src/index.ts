@@ -6,13 +6,16 @@ export {
   getUcdConfigPath,
   getXdgConfigDir,
 } from "./config-paths";
-
 export * from "./debugger";
 export { customFetch } from "./fetch/fetch";
 
 export type { FetchOptions, FetchResponse, SafeFetchResponse } from "./fetch/types";
-
-export { findFileByPath, flattenFilePaths, normalizePathForFiltering, normalizeTreeForFiltering } from "./files";
+export {
+  findFileByPath,
+  flattenFilePaths,
+  normalizePathForFiltering,
+  normalizeTreeForFiltering,
+} from "./files";
 export {
   createPathFilter,
   DEFAULT_EXCLUDED_EXTENSIONS,

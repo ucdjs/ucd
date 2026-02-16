@@ -3,6 +3,7 @@ import { AsyncLocalStorage } from "node:async_hooks";
 
 export interface PipelineExecutionContext {
   executionId: string;
+  workspaceId: string;
   spanId?: string;
   event?: PipelineEvent;
 }

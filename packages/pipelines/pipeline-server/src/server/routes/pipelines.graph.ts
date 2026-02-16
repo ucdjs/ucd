@@ -1,11 +1,12 @@
 import { schema } from "#server/db";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { H3 } from "h3";
 
 export const pipelinesGraphRouter: H3 = new H3();
 
 pipelinesGraphRouter.get("/:file/:id/executions/:executionId/graph", async (event) => {
   const { db } = event.context;
+  const workspaceId = event.context.workspaceId;
   const executionId = event.context.params?.executionId;
   const pipelineId = event.context.params?.id;
 
@@ -15,7 +16,10 @@ pipelinesGraphRouter.get("/:file/:id/executions/:executionId/graph", async (even
 
   try {
     const execution = await db.query.executions.findFirst({
-      where: eq(schema.executions.id, executionId),
+      where: and(
+        eq(schema.executions.workspaceId, workspaceId),
+        eq(schema.executions.id, executionId),
+      ),
       columns: { id: true, pipelineId: true, graph: true },
     });
 

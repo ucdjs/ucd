@@ -1,5 +1,8 @@
 import type { H3 } from "h3";
 import type { Plugin } from "vite";
+import fs from "node:fs/promises";
+import { getUcdConfigDir } from "@ucdjs-internal/shared";
+import { ensureWorkspace, resolveWorkspace } from "../src/server/workspace";
 
 const appModuleId = "/src/server/app.ts";
 const dbModuleId = "/src/server/db/index.ts";
@@ -16,8 +19,11 @@ export function h3DevServerPlugin(): Plugin {
         const dbMod = await server.ssrLoadModule(dbModuleId);
         const { createDatabase, runMigrations } = dbMod as typeof import("../src/server/db");
 
+        await fs.mkdir(getUcdConfigDir(), { recursive: true });
         db = createDatabase();
         await runMigrations(db);
+        const workspace = resolveWorkspace();
+        await ensureWorkspace(db, workspace.workspaceId, workspace.rootPath);
         // eslint-disable-next-line no-console
         console.log("[h3-dev-server] Database migrations completed successfully");
       } catch (err) {
@@ -30,7 +36,10 @@ export function h3DevServerPlugin(): Plugin {
         if (!appPromise) {
           appPromise = server
             .ssrLoadModule(appModuleId)
-            .then((mod) => (mod as typeof import("../src/server/app")).createApp({ db: db! }));
+            .then((mod) => (mod as typeof import("../src/server/app")).createApp({
+              db: db!,
+              workspaceId: resolveWorkspace().workspaceId,
+            }));
         }
 
         return appPromise;
