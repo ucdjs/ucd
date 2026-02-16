@@ -5,7 +5,6 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import { schema } from "#server/db";
-import { eq } from "drizzle-orm";
 
 export interface ResolveWorkspaceOptions {
   rootPath?: string;
@@ -42,7 +41,7 @@ export function resolveWorkspace(options: ResolveWorkspaceOptions = {}) {
     try {
       const content = fs.readFileSync(configPath, "utf-8");
       const parsed = JSON.parse(content) as WorkspaceConfigFile;
-      if (parsed?.workspaceId) {
+      if (typeof parsed?.workspaceId === "string" && parsed.workspaceId.length > 0) {
         workspaceId = parsed.workspaceId;
       }
     } catch {
@@ -58,15 +57,6 @@ export function resolveWorkspace(options: ResolveWorkspaceOptions = {}) {
 }
 
 export async function ensureWorkspace(db: Database, workspaceId: string, rootPath: string): Promise<void> {
-  const existing = await db.query.workspaces.findFirst({
-    where: eq(schema.workspaces.id, workspaceId),
-    columns: { id: true },
-  });
-
-  if (existing) {
-    return;
-  }
-
   const now = new Date();
 
   await db.insert(schema.workspaces).values({
@@ -74,5 +64,11 @@ export async function ensureWorkspace(db: Database, workspaceId: string, rootPat
     rootPath,
     createdAt: now,
     updatedAt: now,
+  }).onConflictDoUpdate({
+    target: schema.workspaces.id,
+    set: {
+      rootPath,
+      updatedAt: now,
+    },
   });
 }
