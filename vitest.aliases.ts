@@ -3,7 +3,9 @@ import { readdirSync, existsSync } from "node:fs";
 import { fileURLToPath, URL as NodeURL } from "node:url";
 
 const SCOPE_OVERRIDES: Record<string, string> = {
-  "shared": "@ucdjs-internal"
+  "shared": "@ucdjs-internal",
+  "shared-ui": "@ucdjs-internal",
+  "worker-utils": "@ucdjs-internal",
 }
 
 const pkgRoot = (pkg: string) =>
