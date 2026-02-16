@@ -1,0 +1,4 @@
+{
+  "extends": "@ucdjs-tooling/tsconfig/base.build",
+  "include": ["src/**/*"]
+}

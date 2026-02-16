@@ -4,7 +4,6 @@ import { Scalar } from "@scalar/hono-api-reference";
 import * as Sentry from "@sentry/cloudflare";
 import {
   errorHandler,
-  isStoreSubdomainHostname,
   notFoundHandler,
 } from "@ucdjs-internal/worker-utils";
 import { setupCors, setupRatelimit } from "@ucdjs-internal/worker-utils/setups";
@@ -15,7 +14,6 @@ import { TASKS_ROUTER } from "./routes/tasks/routes";
 import { V1_FILES_ROUTER } from "./routes/v1_files/router";
 import { V1_SCHEMAS_ROUTER } from "./routes/v1_schemas/router";
 import { V1_VERSIONS_ROUTER } from "./routes/v1_versions/router";
-import { UCD_STORE_ROUTER } from "./ucd-store/router";
 
 const app = new OpenAPIHono<HonoEnv>();
 
@@ -102,11 +100,6 @@ export default Sentry.withSentry((env: HonoEnv["Bindings"]) => {
   };
 }, {
   fetch: (request, env, ctx) => {
-    const url = new URL(request.url);
-    if (isStoreSubdomainHostname(url.hostname)) {
-      return UCD_STORE_ROUTER.fetch(request, env, ctx);
-    }
-
     return app.fetch(request, env, ctx);
   },
 });

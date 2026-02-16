@@ -1,0 +1,46 @@
+{
+  "name": "@ucdjs/store",
+  "type": "module",
+  "private": true,
+  "packageManager": "pnpm@10.29.3",
+  "scripts": {
+    "dev:setup": "pnpm ucdjs-scripts setup-dev",
+    "dev": "wrangler dev --port 8788 --inspector-port 9230",
+    "build": "wrangler deploy --dry-run --outdir=dist --tsconfig=./tsconfig.build.json --env=production",
+    "build:preview": "wrangler deploy --dry-run --outdir=dist --tsconfig=./tsconfig.build.json --env=preview",
+    "deploy": "wrangler deploy --tsconfig=./tsconfig.build.json",
+    "test": "pnpm vitest --run",
+    "test:watch": "pnpm vitest",
+    "lint": "eslint .",
+    "generate:types": "wrangler types ./wrangler-types.d.ts -c wrangler.jsonc -c ../api/wrangler.jsonc",
+    "typecheck": "pnpm run generate:types && tsc --noEmit",
+    "clean": "git clean -xdf node_modules .wrangler dist ../../ucd-generated/api"
+  },
+  "dependencies": {
+    "@luxass/utils": "catalog:runtime",
+    "@sentry/cloudflare": "catalog:backend",
+    "@ucdjs-internal/shared": "workspace:*",
+    "@ucdjs-internal/worker-utils": "workspace:*",
+    "@ucdjs/env": "workspace:*",
+    "@ucdjs/path-utils": "workspace:*",
+    "@ucdjs/schemas": "workspace:*",
+    "@ucdjs/utils": "workspace:*",
+    "@unicode-utils/core": "catalog:runtime",
+    "apache-autoindex-parse": "catalog:runtime",
+    "hono": "catalog:backend",
+    "nanotar": "catalog:build",
+    "zod": "catalog:runtime"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "catalog:test",
+    "@luxass/eslint-config": "catalog:lint",
+    "@ucdjs-tooling/tsconfig": "workspace:*",
+    "@ucdjs/moonbeam": "workspace:*",
+    "eslint": "catalog:lint",
+    "eslint-plugin-format": "catalog:lint",
+    "tsx": "catalog:build",
+    "typescript": "catalog:build",
+    "vitest": "catalog:test",
+    "wrangler": "catalog:backend"
+  }
+}

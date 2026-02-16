@@ -1,13 +1,13 @@
-import type { OpenAPIHono } from "@hono/zod-openapi";
 import type { Lockfile } from "@ucdjs/schemas";
-import type { HonoEnv } from "../../types";
+import type { Hono } from "hono";
+import type { HonoEnv } from "../types";
 import { badGateway } from "@ucdjs-internal/worker-utils";
 
 interface ManifestData {
   expectedFiles: string[];
 }
 
-export function registerLockfileRoute(router: OpenAPIHono<HonoEnv>) {
+export function registerLockfileRoute(router: Hono<HonoEnv>) {
   router.get("/.ucd-store.lock", async (c) => {
     const bucket = c.env.UCD_BUCKET;
 

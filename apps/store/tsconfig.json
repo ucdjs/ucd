@@ -1,0 +1,21 @@
+{
+  "extends": "@ucdjs-tooling/tsconfig/base",
+  "compilerOptions": {
+    "target": "ESNext",
+    "lib": ["ESNext"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "resolveJsonModule": true,
+    "types": [
+      "./wrangler-types.d.ts",
+      "@cloudflare/vitest-pool-workers/types"
+    ],
+    "strict": true,
+    "noEmit": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*", "*.ts", "test"]
+}
