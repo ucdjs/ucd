@@ -54,6 +54,7 @@
   },
   "dependencies": {
     "@libsql/client": "catalog:backend",
+    "@ucdjs-internal/shared": "workspace:*",
     "@ucdjs-internal/shared-ui": "workspace:*",
     "@ucdjs/pipelines-core": "workspace:*",
     "@ucdjs/pipelines-executor": "workspace:*",
