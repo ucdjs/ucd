@@ -23,6 +23,7 @@ export interface LogCaptureResult {
 
 export interface ExecutionLogOptions {
   executionId: string;
+  workspaceId: string;
   spanId?: string;
   stream: ExecutionLogStream;
   message: string;
@@ -119,6 +120,7 @@ export async function storeExecutionLog(
 
   await db.insert(schema.executionLogs).values({
     id: randomUUID(),
+    workspaceId: options.workspaceId,
     executionId: options.executionId,
     spanId: options.spanId ?? null,
     stream: options.stream,

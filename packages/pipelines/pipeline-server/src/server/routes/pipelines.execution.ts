@@ -1,11 +1,12 @@
 import { schema } from "#server/db";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { getQuery, H3 } from "h3";
 
 export const pipelinesExecutionRouter: H3 = new H3();
 
 pipelinesExecutionRouter.get("/:file/:id/executions", async (event) => {
   const { db } = event.context;
+  const workspaceId = event.context.workspaceId;
   const id = event.context.params?.id;
 
   if (!id) {
@@ -21,14 +22,20 @@ pipelinesExecutionRouter.get("/:file/:id/executions", async (event) => {
 
   try {
     const executions = await db.query.executions.findMany({
-      where: eq(schema.executions.pipelineId, id),
+      where: and(
+        eq(schema.executions.workspaceId, workspaceId),
+        eq(schema.executions.pipelineId, id),
+      ),
       orderBy: desc(schema.executions.startedAt),
       limit,
       offset,
     });
 
     const countResult = await db.query.executions.findMany({
-      where: eq(schema.executions.pipelineId, id),
+      where: and(
+        eq(schema.executions.workspaceId, workspaceId),
+        eq(schema.executions.pipelineId, id),
+      ),
       columns: { id: true },
     });
     const total = countResult.length;
