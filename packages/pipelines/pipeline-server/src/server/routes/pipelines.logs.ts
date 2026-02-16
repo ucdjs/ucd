@@ -7,6 +7,7 @@ export const pipelinesLogsRouter: H3 = new H3();
 
 pipelinesLogsRouter.get("/:file/:id/executions/:executionId/logs", async (event) => {
   const { db } = event.context;
+  const workspaceId = event.context.workspaceId;
   const executionId = event.context.params?.executionId;
 
   if (!executionId) {
@@ -23,7 +24,10 @@ pipelinesLogsRouter.get("/:file/:id/executions/:executionId/logs", async (event)
 
   try {
     const execution = await db.query.executions.findFirst({
-      where: eq(schema.executions.id, executionId),
+      where: and(
+        eq(schema.executions.workspaceId, workspaceId),
+        eq(schema.executions.id, executionId),
+      ),
       columns: { id: true, pipelineId: true, status: true },
     });
 
@@ -32,8 +36,15 @@ pipelinesLogsRouter.get("/:file/:id/executions/:executionId/logs", async (event)
     }
 
     const whereClause = spanId
-      ? and(eq(schema.executionLogs.executionId, executionId), eq(schema.executionLogs.spanId, spanId))
-      : eq(schema.executionLogs.executionId, executionId);
+      ? and(
+          eq(schema.executionLogs.workspaceId, workspaceId),
+          eq(schema.executionLogs.executionId, executionId),
+          eq(schema.executionLogs.spanId, spanId),
+        )
+      : and(
+          eq(schema.executionLogs.workspaceId, workspaceId),
+          eq(schema.executionLogs.executionId, executionId),
+        );
 
     const logs = await db.query.executionLogs.findMany({
       where: whereClause,

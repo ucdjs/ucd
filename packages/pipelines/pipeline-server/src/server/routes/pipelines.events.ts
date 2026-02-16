@@ -1,11 +1,12 @@
 import { schema } from "#server/db";
-import { asc, eq } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 import { getQuery, H3 } from "h3";
 
 export const pipelinesEventsRouter: H3 = new H3();
 
 pipelinesEventsRouter.get("/:file/:id/executions/:executionId/events", async (event) => {
   const { db } = event.context;
+  const workspaceId = event.context.workspaceId;
   const executionId = event.context.params?.executionId;
 
   if (!executionId) {
@@ -21,7 +22,10 @@ pipelinesEventsRouter.get("/:file/:id/executions/:executionId/events", async (ev
 
   try {
     const execution = await db.query.executions.findFirst({
-      where: eq(schema.executions.id, executionId),
+      where: and(
+        eq(schema.executions.workspaceId, workspaceId),
+        eq(schema.executions.id, executionId),
+      ),
       columns: { id: true, pipelineId: true, status: true },
     });
 
@@ -30,14 +34,20 @@ pipelinesEventsRouter.get("/:file/:id/executions/:executionId/events", async (ev
     }
 
     const events = await db.query.events.findMany({
-      where: eq(schema.events.executionId, executionId),
+      where: and(
+        eq(schema.events.workspaceId, workspaceId),
+        eq(schema.events.executionId, executionId),
+      ),
       orderBy: asc(schema.events.timestamp),
       limit,
       offset,
     });
 
     const countResult = await db.query.events.findMany({
-      where: eq(schema.events.executionId, executionId),
+      where: and(
+        eq(schema.events.workspaceId, workspaceId),
+        eq(schema.events.executionId, executionId),
+      ),
       columns: { id: true },
     });
     const total = countResult.length;
