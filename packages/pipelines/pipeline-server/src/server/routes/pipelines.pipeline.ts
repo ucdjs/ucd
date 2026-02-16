@@ -13,7 +13,7 @@ import { eq } from "drizzle-orm";
 import { H3, readValidatedBody } from "h3";
 import { z } from "zod";
 
-export const pipelinesPipelineRouter = new H3();
+export const pipelinesPipelineRouter: H3 = new H3();
 
 async function getPipelineFileForSource(
   source: PipelineSource,

@@ -3,7 +3,7 @@ import { schema } from "#server/db";
 import { and, asc, eq } from "drizzle-orm";
 import { getQuery, H3 } from "h3";
 
-export const pipelinesLogsRouter = new H3();
+export const pipelinesLogsRouter: H3 = new H3();
 
 pipelinesLogsRouter.get("/:file/:id/executions/:executionId/logs", async (event) => {
   const { db } = event.context;
