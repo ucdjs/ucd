@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { makeManifestUploadId, isValidWorkflowInstanceId, buildR2Key, MAX_TAR_SIZE_BYTES } from "../src/tasks";
+import {
+  buildR2Key,
+  isValidWorkflowInstanceId,
+  makeManifestUploadId,
+  MAX_TAR_SIZE_BYTES,
+} from "../src/tasks";
 
 describe("tasks module", () => {
   it("makeManifestUploadId normalizes version and uses provided clock", () => {
