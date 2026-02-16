@@ -98,8 +98,8 @@ pipelinesPipelineRouter.post("/:file/:id/execute", async (event) => {
   const fileId = event.context.params?.file;
   const id = event.context.params?.id;
 
-  if (!fileId || !id) {
-    return { error: "File ID and pipeline ID are required" };
+  if (!fileId || !id || !workspaceId) {
+    return { error: "File ID, pipeline ID, and workspace ID are required" };
   }
 
   const localSources = sources.filter((s) => s.type === "local");
