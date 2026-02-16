@@ -1,5 +1,13 @@
 # @ucdjs/pipelines-server
 
+## [0.0.1-beta.5](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-server@0.0.1-beta.4...@ucdjs/pipelines-server@0.0.1-beta.5) (2026-02-16)
+
+
+
+### 🐞 Bug Fixes
+* add TypeScript types to exports in package.json ([395eb0bc](https://github.com/ucdjs/ucd/commit/395eb0bcc5581e5889e6c8780ee7220311983d4b)) (by [@luxass](https://github.com/luxass))
+
+
 ## [0.0.1-beta.4](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-server@0.0.1-beta.3...@ucdjs/pipelines-server@0.0.1-beta.4) (2026-02-15)
 
 
