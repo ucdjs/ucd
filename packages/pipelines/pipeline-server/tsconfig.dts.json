@@ -1,6 +1,7 @@
 {
   "extends": "@ucdjs-tooling/tsconfig/base.build",
   "compilerOptions": {
+    "incremental": false,
     "tsBuildInfoFile": "./.cache/tsbuildinfo.dts.json",
     "rootDir": "./src",
     "declaration": true,
