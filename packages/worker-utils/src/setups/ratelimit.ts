@@ -1,54 +1,5 @@
 import type { Env, Hono } from "hono";
-import type { HonoEnv } from "../types";
-import { customError } from "@ucdjs-internal/worker-utils";
-
-/**
- * Sets up Cross-Origin Resource Sharing (CORS) middleware for a Hono application.
- *
- * Configures CORS headers based on the environment and allowed origins list.
- * Different origins are permitted based on the ENVIRONMENT binding:
- * - Production: Only allows official ucdjs.dev domains
- * - Local: Additionally allows localhost development servers
- * - Preview: Additionally allows preview environment domains
- *
- * @template {object} TEnv - The environment type for Hono context bindings
- * @param {Hono<TEnv>} app - The Hono application instance to configure CORS middleware for
- *
- * @example
- * ```typescript
- * import { Hono } from "hono";
- * import { setupCors } from "../../lib";
- *
- * const app = new Hono();
- * setupCors(app);
- * ```
- */
-export function setupCors(app: Hono<HonoEnv>): void {
-  app.use("*", (c, next) => {
-    const env = c.env.ENVIRONMENT || "";
-    const allowedOrigins = ["https://ucdjs.dev", "https://www.ucdjs.dev"];
-
-    if (env === "local") {
-      allowedOrigins.push("http://localhost:3000", "http://localhost:8787");
-    }
-
-    if (env === "preview") {
-      allowedOrigins.push("https://preview.api.ucdjs.dev", "https://preview.unicode-proxy.ucdjs.dev");
-    }
-
-    const origin = c.req.header("origin");
-    if (allowedOrigins.includes(origin || "")) {
-      c.res.headers.set("Access-Control-Allow-Origin", origin || "");
-      c.res.headers.set("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS, POST");
-      c.res.headers.set("Access-Control-Allow-Headers", "Content-Type");
-      c.res.headers.set("Access-Control-Allow-Credentials", "true");
-    } else {
-      c.res.headers.set("Access-Control-Allow-Origin", "");
-    }
-
-    return next();
-  });
-}
+import { customError } from "../errors";
 
 /**
  * Sets up rate limiting middleware for a Hono application.

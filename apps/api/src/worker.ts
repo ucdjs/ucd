@@ -2,10 +2,13 @@ import type { HonoEnv } from "./types";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { Scalar } from "@scalar/hono-api-reference";
 import * as Sentry from "@sentry/cloudflare";
-import { isStoreSubdomainHostname } from "@ucdjs-internal/worker-utils";
+import {
+  errorHandler,
+  isStoreSubdomainHostname,
+  notFoundHandler,
+} from "@ucdjs-internal/worker-utils";
+import { setupCors, setupRatelimit } from "@ucdjs-internal/worker-utils/setups";
 import { env } from "hono/adapter";
-import { errorHandler, notFoundHandler } from "./lib/handlers";
-import { setupCors, setupRatelimit } from "./lib/setups";
 import { buildOpenApiConfig, registerApp } from "./openapi";
 import { WELL_KNOWN_ROUTER } from "./routes/.well-known/router";
 import { TASKS_ROUTER } from "./routes/tasks/routes";
