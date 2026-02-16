@@ -10,7 +10,7 @@ import {
   InputGroup,
   InputGroupAddon,
 } from "#ui/input-group";
-import { Command as CommandPrimitive } from "cmdk";
+import { Command as CommandPrimitive } from "#vendor/cmdk";
 import { CheckIcon, SearchIcon } from "lucide-react";
 import * as React from "react";
 
