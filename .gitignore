@@ -46,3 +46,5 @@ ucd-generated
 .output
 .tanstack
 .vite-inspect
+.wrangler
+.dev.vars
