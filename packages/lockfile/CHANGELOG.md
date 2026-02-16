@@ -1,5 +1,15 @@
 # @ucdjs/lockfile
 
+## [0.1.1-beta.5](https://github.com/ucdjs/ucd/compare/@ucdjs/lockfile@0.1.1-beta.4...@ucdjs/lockfile@0.1.1-beta.5) (2026-02-16)
+
+
+
+
+### Notes
+
+* No significant commits in this release.
+
+
 ## [0.1.1-beta.4](https://github.com/ucdjs/ucd/compare/@ucdjs/lockfile@0.1.1-beta.3...@ucdjs/lockfile@0.1.1-beta.4) (2026-02-15)
 
 

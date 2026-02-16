@@ -1,5 +1,15 @@
 # @ucdjs/schema-gen
 
+## [0.2.3-beta.5](https://github.com/ucdjs/ucd/compare/@ucdjs/schema-gen@0.2.3-beta.4...@ucdjs/schema-gen@0.2.3-beta.5) (2026-02-16)
+
+
+
+
+### Notes
+
+* No significant commits in this release.
+
+
 ## [0.2.3-beta.4](https://github.com/ucdjs/ucd/compare/@ucdjs/schema-gen@0.2.3-beta.3...@ucdjs/schema-gen@0.2.3-beta.4) (2026-02-15)
 
 
