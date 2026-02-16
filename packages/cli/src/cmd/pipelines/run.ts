@@ -22,6 +22,10 @@ export interface CLIPipelinesRunCmdOptions {
     gitlab?: string;
     ref?: string;
     path?: string;
+    installDeps?: boolean;
+    allowScripts?: boolean;
+    packageManager?: "auto" | "pnpm" | "npm" | "yarn" | "bun";
+    remoteWorkdir?: string;
   }>>;
 }
 
@@ -40,6 +44,10 @@ export async function runPipelinesRun({ flags }: CLIPipelinesRunCmdOptions) {
           ["--gitlab <owner/repo>", "Load pipelines from a GitLab repository."],
           ["--ref <ref>", "Git reference (branch/tag) for remote repositories."],
           ["--path <path>", "Subdirectory path within the repository."],
+          ["--install-deps", "Install dependencies for remote pipelines (disabled by default)."],
+          ["--allow-scripts", "Allow install scripts when --install-deps is enabled."],
+          ["--package-manager <name>", "Package manager for remote installs: auto|pnpm|npm|yarn|bun."],
+          ["--remote-workdir <path>", "Directory used for remote pipeline materialization."],
           ["--help (-h)", "See all available flags."],
         ],
       },
@@ -108,6 +116,14 @@ export async function runPipelinesRun({ flags }: CLIPipelinesRunCmdOptions) {
 
   const selectors = (flags._ ?? []).slice(2).map(String).filter(Boolean);
 
+  if (flags.allowScripts && !flags.installDeps) {
+    throw new CLIError("--allow-scripts requires --install-deps.");
+  }
+
+  if (flags.packageManager && !flags.installDeps) {
+    throw new CLIError("--package-manager requires --install-deps.");
+  }
+
   output.info("Running pipelines...");
   for (const source of sources) {
     if (source.type === "local") {
@@ -126,7 +142,21 @@ export async function runPipelinesRun({ flags }: CLIPipelinesRunCmdOptions) {
     try {
       const result = source.type === "local"
         ? await loadPipelinesFromPaths(await findPipelineFiles({ cwd: source.cwd }))
-        : await loadRemotePipelines(source, (await findRemotePipelineFiles(source)).files);
+        : await loadRemotePipelines(
+            source,
+            (await findRemotePipelineFiles(source)).files,
+            {
+              materialize: {
+                enabled: true,
+                workdir: flags.remoteWorkdir,
+              },
+              install: {
+                enabled: !!flags.installDeps,
+                allowScripts: !!flags.allowScripts,
+                packageManager: flags.packageManager,
+              },
+            },
+          );
 
       allPipelines.push(...result.pipelines);
 

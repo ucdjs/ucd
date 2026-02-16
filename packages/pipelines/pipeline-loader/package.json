@@ -20,7 +20,6 @@
   },
   "exports": {
     ".": "./dist/index.mjs",
-    "./insecure": "./dist/insecure.mjs",
     "./remote": "./dist/remote.mjs",
     "./package.json": "./package.json"
   },
@@ -40,10 +39,7 @@
   },
   "dependencies": {
     "@ucdjs/pipelines-core": "workspace:*",
-    "oxc-parser": "catalog:build",
-    "oxc-transform": "catalog:build",
     "picomatch": "catalog:runtime",
-    "rolldown": "catalog:build",
     "tinyglobby": "catalog:build"
   },
   "devDependencies": {

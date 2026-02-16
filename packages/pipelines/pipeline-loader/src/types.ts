@@ -41,4 +41,16 @@ export interface LocalSource {
   cwd: string;
 }
 
+export type PackageManager = "pnpm" | "npm" | "yarn" | "bun";
+
+export interface RemoteMaterializeOptions {
+  workdir?: string;
+}
+
+export interface RemoteInstallOptions {
+  enabled?: boolean;
+  packageManager?: PackageManager | "auto";
+  allowScripts?: boolean;
+}
+
 export type PipelineSource = LocalSource | GitHubSource | GitLabSource;

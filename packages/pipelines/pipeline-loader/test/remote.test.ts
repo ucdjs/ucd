@@ -1,8 +1,11 @@
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import { encodeBase64 } from "#test-utils";
 import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { createPipelineModuleSource } from "#test-utils/pipelines";
 import { describe, expect, it } from "vitest";
-import { findRemotePipelineFiles, loadRemotePipelines } from "../src/remote";
+import { testdir } from "vitest-testdirs";
+import { downloadPipelineProject, findRemotePipelineFiles, loadRemotePipelines } from "../src/remote/index";
 
 describe("findRemotePipelineFiles", () => {
   it("should list GitHub files and apply path + pattern filtering", async () => {
@@ -70,6 +73,17 @@ describe("loadRemotePipelines", () => {
     mockFetch([
       [
         "GET",
+        "https://api.github.com/repos/ucdjs/demo-pipelines/git/trees/main",
+        () => HttpResponse.json({
+          tree: [
+            { path: "pipelines/alpha.ucd-pipeline.ts", type: "blob" },
+            { path: "pipelines/beta.ucd-pipeline.ts", type: "blob" },
+          ],
+          truncated: false,
+        }),
+      ],
+      [
+        "GET",
         "https://api.github.com/repos/ucdjs/demo-pipelines/contents/pipelines%2Falpha.ucd-pipeline.ts",
         () => HttpResponse.json({ content: encodeBase64(alpha), encoding: "base64" }),
       ],
@@ -94,6 +108,17 @@ describe("loadRemotePipelines", () => {
     const alpha = createPipelineModuleSource({ named: ["alpha"] });
 
     mockFetch([
+      [
+        "GET",
+        "https://api.github.com/repos/ucdjs/demo-pipelines/git/trees/main",
+        () => HttpResponse.json({
+          tree: [
+            { path: "pipelines/alpha.ucd-pipeline.ts", type: "blob" },
+            { path: "pipelines/beta.ucd-pipeline.ts", type: "blob" },
+          ],
+          truncated: false,
+        }),
+      ],
       [
         "GET",
         "https://api.github.com/repos/ucdjs/demo-pipelines/contents/pipelines%2Falpha.ucd-pipeline.ts",
@@ -121,6 +146,16 @@ describe("loadRemotePipelines", () => {
     mockFetch([
       [
         "GET",
+        "https://api.github.com/repos/ucdjs/demo-pipelines/git/trees/main",
+        () => HttpResponse.json({
+          tree: [
+            { path: "pipelines/missing.ucd-pipeline.ts", type: "blob" },
+          ],
+          truncated: false,
+        }),
+      ],
+      [
+        "GET",
         "https://api.github.com/repos/ucdjs/demo-pipelines/contents/pipelines%2Fmissing.ucd-pipeline.ts",
         () => HttpResponse.text("Not found", { status: 404 }),
       ],
@@ -140,6 +175,14 @@ describe("loadRemotePipelines", () => {
     const beta = createPipelineModuleSource({ named: ["beta"] });
 
     mockFetch([
+      [
+        "GET",
+        "https://gitlab.com/api/v4/projects/ucdjs%2Fdemo-pipelines/repository/tree",
+        () => HttpResponse.json([
+          { path: "pipelines/alpha.ucd-pipeline.ts", type: "blob" },
+          { path: "pipelines/beta.ucd-pipeline.ts", type: "blob" },
+        ]),
+      ],
       [
         "GET",
         "https://gitlab.com/api/v4/projects/ucdjs%2Fdemo-pipelines/repository/files/pipelines%2Falpha.ucd-pipeline.ts/raw",
@@ -168,6 +211,14 @@ describe("loadRemotePipelines", () => {
     mockFetch([
       [
         "GET",
+        "https://gitlab.com/api/v4/projects/ucdjs%2Fdemo-pipelines/repository/tree",
+        () => HttpResponse.json([
+          { path: "pipelines/alpha.ucd-pipeline.ts", type: "blob" },
+          { path: "pipelines/beta.ucd-pipeline.ts", type: "blob" },
+        ]),
+      ],
+      [
+        "GET",
         "https://gitlab.com/api/v4/projects/ucdjs%2Fdemo-pipelines/repository/files/pipelines%2Falpha.ucd-pipeline.ts/raw",
         () => HttpResponse.text(alpha),
       ],
@@ -193,6 +244,13 @@ describe("loadRemotePipelines", () => {
     mockFetch([
       [
         "GET",
+        "https://gitlab.com/api/v4/projects/ucdjs%2Fdemo-pipelines/repository/tree",
+        () => HttpResponse.json([
+          { path: "pipelines/missing.ucd-pipeline.ts", type: "blob" },
+        ]),
+      ],
+      [
+        "GET",
         "https://gitlab.com/api/v4/projects/ucdjs%2Fdemo-pipelines/repository/files/pipelines%2Fmissing.ucd-pipeline.ts/raw",
         () => HttpResponse.text("Not found", { status: 404 }),
       ],
@@ -205,5 +263,100 @@ describe("loadRemotePipelines", () => {
         { throwOnError: true },
       ),
     ).rejects.toThrow("Failed to load pipeline file: pipelines/missing.ucd-pipeline.ts");
+  });
+
+  it("should expose downloadPipelineProject for direct materialization", async () => {
+    const workdir = await testdir();
+
+    mockFetch([
+      [
+        "GET",
+        "https://api.github.com/repos/ucdjs/demo-pipelines/git/trees/main",
+        () => HttpResponse.json({
+          tree: [
+            { path: "pipelines/alpha.ucd-pipeline.ts", type: "blob" },
+          ],
+          truncated: false,
+        }),
+      ],
+      [
+        "GET",
+        "https://api.github.com/repos/ucdjs/demo-pipelines/contents/pipelines%2Falpha.ucd-pipeline.ts",
+        () => HttpResponse.json({
+          content: encodeBase64("export const alpha = 'alpha';"),
+          encoding: "base64",
+        }),
+      ],
+    ]);
+
+    const result = await downloadPipelineProject(
+      {
+        type: "github",
+        id: "demo-pipelines",
+        owner: "ucdjs",
+        repo: "demo-pipelines",
+        ref: "main",
+      },
+      { workdir },
+    );
+
+    expect(result.workdir).toBe(workdir);
+    expect(result.files).toEqual(["pipelines/alpha.ucd-pipeline.ts"]);
+    expect(existsSync(join(workdir, "pipelines", "alpha.ucd-pipeline.ts"))).toBe(true);
+  });
+
+  it("should materialize remote files to an explicit workdir", async () => {
+    const workdir = await testdir();
+
+    mockFetch([
+      [
+        "GET",
+        "https://api.github.com/repos/ucdjs/demo-pipelines/git/trees/main",
+        () => HttpResponse.json({
+          tree: [
+            { path: "pipelines/alpha.ucd-pipeline.ts", type: "blob" },
+            { path: "pipelines/shared.ts", type: "blob" },
+          ],
+          truncated: false,
+        }),
+      ],
+      [
+        "GET",
+        "https://api.github.com/repos/ucdjs/demo-pipelines/contents/pipelines%2Falpha.ucd-pipeline.ts",
+        () => HttpResponse.json({
+          content: encodeBase64(createPipelineModuleSource({ named: ["alpha"] })),
+          encoding: "base64",
+        }),
+      ],
+      [
+        "GET",
+        "https://api.github.com/repos/ucdjs/demo-pipelines/contents/pipelines%2Fshared.ts",
+        () => HttpResponse.json({
+          content: encodeBase64("export const alpha = 'alpha';"),
+          encoding: "base64",
+        }),
+      ],
+    ]);
+
+    const result = await loadRemotePipelines(
+      {
+        type: "github",
+        id: "demo-pipelines",
+        owner: "ucdjs",
+        repo: "demo-pipelines",
+        ref: "main",
+      },
+      ["pipelines/alpha.ucd-pipeline.ts"],
+      {
+        materialize: {
+          workdir,
+        },
+      },
+    );
+
+    expect(result.errors).toEqual([]);
+    expect(result.pipelines.map((p) => p.id)).toEqual(["alpha"]);
+    expect(existsSync(join(workdir, "pipelines", "alpha.ucd-pipeline.ts"))).toBe(true);
+    expect(existsSync(join(workdir, "pipelines", "shared.ts"))).toBe(true);
   });
 });

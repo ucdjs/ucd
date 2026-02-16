@@ -4,6 +4,5 @@ export default createTsdownConfig({
   entry: [
     "./src/index.ts",
     "./src/remote.ts",
-    "./src/insecure.ts",
   ],
 });

@@ -257,12 +257,16 @@ export function parseFlags(args: string[]) {
       "h",
       "dry-run",
       "json",
+      "install-deps",
+      "allow-scripts",
     ],
     string: [
       "output-dir",
       "base-url",
       "output",
       "store-dir",
+      "package-manager",
+      "remote-workdir",
     ],
     array: [
       "include",

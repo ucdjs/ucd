@@ -1,5 +1,5 @@
-import type { RemoteFileList, RemoteRequestOptions } from "./types";
-import { RemoteNotFoundError } from "../bundler/errors";
+import type { RemoteFileList, RemoteRequestOptions } from "./github";
+import { RemoteNotFoundError } from "../errors";
 
 const GITLAB_API_BASE = "https://gitlab.com/api/v4";
 

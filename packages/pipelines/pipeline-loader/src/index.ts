@@ -6,13 +6,18 @@ export {
 export type { FindPipelineFilesOptions, LoadPipelinesOptions } from "./loader";
 
 export {
+  downloadPipelineFile,
+  downloadPipelineProject,
+  downloadPipelineSource,
   findRemotePipelineFiles,
   loadRemotePipelines,
-} from "./remote";
+} from "./remote/index";
 export type {
+  DownloadPipelineProjectOptions,
+  DownloadPipelineProjectResult,
   FindRemotePipelineFilesOptions,
   LoadRemotePipelinesOptions,
-} from "./remote";
+} from "./remote/index";
 
 export type {
   GitHubSource,
