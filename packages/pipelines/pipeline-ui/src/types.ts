@@ -48,6 +48,7 @@ export interface LoadError {
 }
 
 export interface PipelinesResponse {
+  workspaceId: string;
   files: PipelineFileInfo[];
   errors: LoadError[];
 }
