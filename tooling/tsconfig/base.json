@@ -41,6 +41,10 @@
       // utility packages
       "@ucdjs-internal/shared": ["./packages/shared/src/index.ts"],
       "@ucdjs-internal/worker-utils": ["./packages/worker-utils/src/index.ts"],
+      "@ucdjs-internal/worker-utils/setups": ["./packages/worker-utils/src/setups/index.ts"],
+      "@ucdjs-internal/worker-utils/constants": ["./packages/worker-utils/src/constants.ts"],
+      "@ucdjs-internal/worker-utils/environment": ["./packages/worker-utils/src/environment.ts"],
+      "@ucdjs-internal/worker-utils/tasks": ["./packages/worker-utils/src/tasks/index.ts"],
       "@ucdjs/utils": ["./packages/utils/src/index.ts"],
       "@ucdjs/path-utils": ["./packages/path-utils/src/index.ts"],
 

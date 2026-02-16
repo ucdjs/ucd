@@ -7,8 +7,8 @@ import {
   isStoreSubdomainHostname,
   notFoundHandler,
 } from "@ucdjs-internal/worker-utils";
+import { setupCors, setupRatelimit } from "@ucdjs-internal/worker-utils/setups";
 import { env } from "hono/adapter";
-import { setupCors, setupRatelimit } from "./lib/setups";
 import { buildOpenApiConfig, registerApp } from "./openapi";
 import { WELL_KNOWN_ROUTER } from "./routes/.well-known/router";
 import { TASKS_ROUTER } from "./routes/tasks/routes";
