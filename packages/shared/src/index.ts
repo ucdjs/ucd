@@ -32,3 +32,10 @@ export * from "./guards";
 export { safeJsonParse } from "./json";
 
 export { discoverEndpointsFromConfig, getDefaultUCDEndpointConfig } from "./ucd-config";
+
+export {
+  getPipelineDbPath,
+  getUcdConfigDir,
+  getUcdConfigPath,
+  getXdgConfigDir,
+} from "./config-paths";
