@@ -13,11 +13,14 @@ import {
   pipelinesLogsRouter,
   pipelinesPipelineRouter,
 } from "#server/routes";
+import { ensureWorkspace, resolveWorkspace } from "#server/workspace";
 import { H3, serve, serveStatic } from "h3";
 
 export interface AppOptions {
   sources?: PipelineSource[];
   db?: Database;
+  workspaceId?: string;
+  workspaceRoot?: string;
 }
 
 export interface ServerOptions extends AppOptions {
@@ -28,11 +31,12 @@ declare module "h3" {
   interface H3EventContext {
     sources: PipelineSource[];
     db: Database;
+    workspaceId: string;
   }
 }
 
 export function createApp(options: AppOptions = {}): H3 {
-  const { sources = [], db } = options;
+  const { sources = [], db, workspaceId } = options;
 
   if (!db) {
     throw new Error("Database is required. Pass db to createApp() or use startServer()");
@@ -62,6 +66,7 @@ export function createApp(options: AppOptions = {}): H3 {
   app.use("/**", (event, next) => {
     event.context.sources = resolvedSources;
     event.context.db = db;
+    event.context.workspaceId = workspaceId ?? "default";
     next();
   });
 
@@ -82,7 +87,7 @@ export function createApp(options: AppOptions = {}): H3 {
 }
 
 export async function startServer(options: ServerOptions = {}): Promise<void> {
-  const { port = 3030, sources } = options;
+  const { port = 3030, sources, workspaceId, workspaceRoot } = options;
 
   // Initialize database with auto-migration
   // NOTE: This will CRASH the server if database initialization fails
@@ -98,7 +103,18 @@ export async function startServer(options: ServerOptions = {}): Promise<void> {
     throw err; // CRASH - no fallback
   }
 
-  const app = createApp({ sources, db });
+  const resolvedWorkspace = workspaceId
+    ? { workspaceId, rootPath: workspaceRoot ?? process.cwd() }
+    : resolveWorkspace({ sources, rootPath: workspaceRoot });
+
+  await ensureWorkspace(db, resolvedWorkspace.workspaceId, resolvedWorkspace.rootPath);
+
+  const app = createApp({
+    sources,
+    db,
+    workspaceId: resolvedWorkspace.workspaceId,
+    workspaceRoot: resolvedWorkspace.rootPath,
+  });
 
   const clientDir = path.join(import.meta.dirname, "../client");
 
