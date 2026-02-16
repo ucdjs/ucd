@@ -3,10 +3,9 @@ import type { UCDStoreManifest } from "@ucdjs/schemas";
 import type { HonoEnv } from "../../../types";
 import { createRoute } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
-import { badGateway, notFound } from "@ucdjs-internal/worker-utils";
+import { badGateway, MAX_AGE_ONE_WEEK_SECONDS, notFound } from "@ucdjs-internal/worker-utils";
 import { UCDStoreVersionManifestSchema } from "@ucdjs/schemas";
 import { cache } from "hono/cache";
-import { MAX_AGE_ONE_WEEK_SECONDS } from "../../../constants";
 import { generateReferences, OPENAPI_TAGS } from "../../../openapi";
 
 const STORE_MANIFEST_PREFIX = "manifest/";

@@ -1,5 +1,10 @@
 {
   "extends": "@ucdjs-tooling/tsconfig/base",
+  "compilerOptions": {
+    "types": [
+      "@cloudflare/workers-types"
+    ]
+  },
   "include": ["src", "test"],
   "exclude": ["dist"]
 }
