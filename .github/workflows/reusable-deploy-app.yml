@@ -17,7 +17,7 @@ on:
         default: false
         type: boolean
       app:
-        description: App to deploy (api, web, docs or all)
+        description: App to deploy (api, web, docs, store or all)
         required: false
         default: all
         type: string
@@ -216,6 +216,16 @@ jobs:
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           workingDirectory: ./apps/docs
+          environment: ${{ inputs.environment }}
+          accountId: ${{ secrets.CF_ACCOUNT_ID }}
+
+      - name: deploy store
+        id: deploy-store
+        if: ${{ !inputs.dry-run && matrix.app == 'store' }}
+        uses: cloudflare/wrangler-action@da0e0dfe58b7a431659754fdf3f186c529afbe65 # v3.14.1
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          workingDirectory: ./apps/store
           environment: ${{ inputs.environment }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
 
