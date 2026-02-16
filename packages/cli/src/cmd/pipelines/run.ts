@@ -1,7 +1,16 @@
 import type { Prettify } from "@luxass/utils";
+import type { GitHubSource, GitLabSource, LocalSource } from "@ucdjs/pipelines-loader";
 import type { CLIArguments } from "../../cli-utils";
 import process from "node:process";
+import { createPipelineExecutor } from "@ucdjs/pipelines-executor";
+import {
+  findPipelineFiles,
+  findRemotePipelineFiles,
+  loadPipelinesFromPaths,
+  loadRemotePipelines,
+} from "@ucdjs/pipelines-loader";
 import { parseRepoString, printHelp } from "../../cli-utils";
+import { CLIError } from "../../errors";
 import { output } from "../../output";
 
 export interface CLIPipelinesRunCmdOptions {
@@ -38,7 +47,7 @@ export async function runPipelinesRun({ flags }: CLIPipelinesRunCmdOptions) {
     return;
   }
 
-  const sources: ({ type: "local"; id: string; cwd: string } | { type: "github"; id: string; owner: string; repo: string; ref?: string; path?: string } | { type: "gitlab"; id: string; owner: string; repo: string; ref?: string; path?: string })[] = [];
+  const sources: (LocalSource | GitHubSource | GitLabSource)[] = [];
 
   if (flags?.cwd) {
     sources.push({
@@ -97,5 +106,77 @@ export async function runPipelinesRun({ flags }: CLIPipelinesRunCmdOptions) {
     return;
   }
 
+  const selectors = (flags._ ?? []).slice(2).map(String).filter(Boolean);
+
   output.info("Running pipelines...");
+  for (const source of sources) {
+    if (source.type === "local") {
+      output.info(`  [local] ${source.cwd}`);
+    } else if (source.type === "github") {
+      output.info(`  [github] ${source.owner}/${source.repo}${source.ref ? `@${source.ref}` : ""}`);
+    } else if (source.type === "gitlab") {
+      output.info(`  [gitlab] ${source.owner}/${source.repo}${source.ref ? `@${source.ref}` : ""}`);
+    }
+  }
+
+  const allPipelines: Awaited<ReturnType<typeof loadPipelinesFromPaths>>["pipelines"] = [];
+  const loadErrors: string[] = [];
+
+  for (const source of sources) {
+    try {
+      const result = source.type === "local"
+        ? await loadPipelinesFromPaths(await findPipelineFiles({ cwd: source.cwd }))
+        : await loadRemotePipelines(source, (await findRemotePipelineFiles(source)).files);
+
+      allPipelines.push(...result.pipelines);
+
+      for (const err of result.errors) {
+        loadErrors.push(`${source.id}: ${err.filePath} - ${err.error.message}`);
+      }
+    } catch (error) {
+      loadErrors.push(`${source.id}: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  if (allPipelines.length === 0) {
+    throw new CLIError("No pipelines found to run.", {
+      details: loadErrors.length > 0 ? loadErrors : undefined,
+    });
+  }
+
+  const selectedPipelines = selectors.length > 0
+    ? allPipelines.filter((pipeline) => selectors.includes(pipeline.id) || (!!pipeline.name && selectors.includes(pipeline.name)))
+    : allPipelines;
+
+  if (selectors.length > 0) {
+    const matched = new Set(selectedPipelines.flatMap((p) => [p.id, p.name].filter(Boolean) as string[]));
+    const missing = selectors.filter((selector) => !matched.has(selector));
+    if (missing.length > 0) {
+      output.warning(`Unknown pipeline selector(s): ${missing.join(", ")}`);
+    }
+  }
+
+  if (selectedPipelines.length === 0) {
+    throw new CLIError("No pipelines matched the provided selectors.");
+  }
+
+  output.info(`Executing ${selectedPipelines.length} pipeline(s)...`);
+
+  const executor = createPipelineExecutor({});
+  const results = await executor.run(selectedPipelines);
+
+  let failed = 0;
+  for (const result of results) {
+    if (result.status === "failed" || result.errors.length > 0) {
+      failed += 1;
+      output.error(`✗ ${result.id} failed (${result.errors.length} error(s))`);
+      continue;
+    }
+
+    output.success(`✓ ${result.id} completed in ${result.summary.durationMs}ms (${result.summary.totalOutputs} output(s))`);
+  }
+
+  if (failed > 0) {
+    throw new CLIError(`${failed} pipeline(s) failed.`);
+  }
 }
