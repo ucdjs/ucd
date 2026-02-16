@@ -29,7 +29,10 @@
     "#server/routes": "./src/server/routes/index.ts"
   },
   "exports": {
-    ".": "./dist/server/app.js",
+    ".": {
+      "types": "./dist/server/app.d.ts",
+      "default": "./dist/server/app.js"
+    },
     "./package.json": "./package.json"
   },
   "files": [
