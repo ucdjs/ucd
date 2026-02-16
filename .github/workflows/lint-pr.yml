@@ -49,16 +49,3 @@ jobs:
           # Configure additional validation for the subject based on a regex.
           ignoreLabels: |
             bot
-
-  add-labels:
-    name: add labels
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write
-      issues: write
-    steps:
-      - uses: actions/labeler@634933edcd8ababfe52f92936142cc22ac488b1b # v6.0.1
-        with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          sync-labels: true
