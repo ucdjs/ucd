@@ -3,7 +3,12 @@ import type { GitHubSource, GitLabSource, LocalSource } from "@ucdjs/pipelines-l
 import type { CLIArguments } from "../../cli-utils";
 import path from "node:path";
 import process from "node:process";
-import { findPipelineFiles, findRemotePipelineFiles, loadPipelinesFromPaths, loadRemotePipelines } from "@ucdjs/pipelines-loader";
+import {
+  findPipelineFiles,
+  findRemotePipelineFiles,
+  loadPipelinesFromPaths,
+  loadRemotePipelines,
+} from "@ucdjs/pipelines-loader";
 import { parseRepoString, printHelp } from "../../cli-utils";
 import {
   blankLine,
