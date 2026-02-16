@@ -30,3 +30,15 @@ export function getOriginsForEnvironment(environment: WorkerEnvironmentName | un
 
   return origins;
 }
+
+export function getStoreOriginForEnvironment(environment: WorkerEnvironmentName | undefined): string {
+  if (environment === "production") {
+    return "https://ucd-store.ucdjs.dev";
+  }
+
+  if (environment === "preview") {
+    return "https://preview.ucd-store.ucdjs.dev";
+  }
+
+  return "http://ucd-store.localhost:8787";
+}
