@@ -22,7 +22,8 @@ export const workspaces = sqliteTable("workspaces", {
 
 export const executions = sqliteTable("executions", {
   id: text("id").primaryKey(),
-  workspaceId: text("workspace_id").notNull(),
+  workspaceId: text("workspace_id").notNull()
+    .references(() => workspaces.id, { onDelete: "cascade" }),
   pipelineId: text("pipeline_id").notNull(),
   status: text("status").$type<ExecutionStatus>().notNull(),
   startedAt: integer("started_at", { mode: "timestamp" }).notNull(),
@@ -38,7 +39,8 @@ export const executions = sqliteTable("executions", {
 
 export const events = sqliteTable("events", {
   id: text("id").primaryKey(),
-  workspaceId: text("workspace_id").notNull(),
+  workspaceId: text("workspace_id").notNull()
+    .references(() => workspaces.id, { onDelete: "cascade" }),
   executionId: text("execution_id").notNull()
     .references(() => executions.id, { onDelete: "cascade" }),
   type: text("type").$type<PipelineEventType>().notNull(),
@@ -50,7 +52,8 @@ export const events = sqliteTable("events", {
 
 export const executionLogs = sqliteTable("execution_logs", {
   id: text("id").primaryKey(),
-  workspaceId: text("workspace_id").notNull(),
+  workspaceId: text("workspace_id").notNull()
+    .references(() => workspaces.id, { onDelete: "cascade" }),
   executionId: text("execution_id").notNull()
     .references(() => executions.id, { onDelete: "cascade" }),
   spanId: text("span_id"),

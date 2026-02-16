@@ -14,17 +14,18 @@ import {
   pipelinesPipelineRouter,
 } from "#server/routes";
 import { ensureWorkspace, resolveWorkspace } from "#server/workspace";
+import { getUcdConfigDir } from "@ucdjs-internal/shared";
 import { H3, serve, serveStatic } from "h3";
 
 export interface AppOptions {
   sources?: PipelineSource[];
   db?: Database;
   workspaceId?: string;
-  workspaceRoot?: string;
 }
 
 export interface ServerOptions extends AppOptions {
   port?: number;
+  workspaceRoot?: string;
 }
 
 declare module "h3" {
@@ -92,6 +93,7 @@ export async function startServer(options: ServerOptions = {}): Promise<void> {
   // Initialize database with auto-migration
   // NOTE: This will CRASH the server if database initialization fails
   // This is intentional - we don't want to run with a misconfigured database
+  fs.mkdirSync(getUcdConfigDir(), { recursive: true });
   const db = createDatabase();
 
   try {
@@ -113,7 +115,6 @@ export async function startServer(options: ServerOptions = {}): Promise<void> {
     sources,
     db,
     workspaceId: resolvedWorkspace.workspaceId,
-    workspaceRoot: resolvedWorkspace.rootPath,
   });
 
   const clientDir = path.join(import.meta.dirname, "../client");

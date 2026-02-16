@@ -1,5 +1,5 @@
 import { schema } from "#server/db";
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq, sql } from "drizzle-orm";
 import { getQuery, H3 } from "h3";
 
 export const pipelinesEventsRouter: H3 = new H3();
@@ -43,14 +43,14 @@ pipelinesEventsRouter.get("/:file/:id/executions/:executionId/events", async (ev
       offset,
     });
 
-    const countResult = await db.query.events.findMany({
-      where: and(
+    const countResult = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(schema.events)
+      .where(and(
         eq(schema.events.workspaceId, workspaceId),
         eq(schema.events.executionId, executionId),
-      ),
-      columns: { id: true },
-    });
-    const total = countResult.length;
+      ));
+    const total = Number(countResult[0]?.count ?? 0);
 
     return {
       executionId,
