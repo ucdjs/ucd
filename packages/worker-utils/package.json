@@ -22,7 +22,7 @@
     ".": "./dist/index.mjs",
     "./constants": "./dist/constants.mjs",
     "./environment": "./dist/environment.mjs",
-    "./setups": "./dist/setups/index.mjs",
+    "./setups": "./dist/setups.mjs",
     "./tasks": "./dist/tasks.mjs",
     "./package.json": "./package.json"
   },

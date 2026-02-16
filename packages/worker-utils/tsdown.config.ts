@@ -8,7 +8,7 @@ export default createTsdownConfig({
     "./src/constants.ts",
 
     // setups
-    "./src/setups/index.ts",
+    "./src/setups.ts",
   ],
   exports: true,
 });
