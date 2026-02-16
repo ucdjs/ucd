@@ -20,6 +20,10 @@
   },
   "exports": {
     ".": "./dist/index.mjs",
+    "./constants": "./dist/constants.mjs",
+    "./environment": "./dist/environment.mjs",
+    "./setups": "./dist/setups/index.mjs",
+    "./tasks": "./dist/tasks.mjs",
     "./package.json": "./package.json"
   },
   "types": "./dist/index.d.mts",
@@ -34,7 +38,8 @@
     "dev": "tsdown --watch",
     "clean": "git clean -xdf dist node_modules",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit -p tsconfig.build.json"
+    "typecheck": "tsc --noEmit -p tsconfig.build.json",
+    "generate:types": "wrangler types ./wrangler-types.d.ts"
   },
   "peerDependencies": {
     "hono": "catalog:backend",
@@ -45,6 +50,7 @@
     "@ucdjs/schemas": "workspace:*"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "catalog:backend",
     "@luxass/eslint-config": "catalog:lint",
     "@ucdjs-tooling/tsconfig": "workspace:*",
     "@ucdjs-tooling/tsdown-config": "workspace:*",
