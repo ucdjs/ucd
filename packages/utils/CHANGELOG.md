@@ -1,5 +1,15 @@
 # @ucdjs/utils
 
+## [0.2.1-beta.5](https://github.com/ucdjs/ucd/compare/@ucdjs/utils@0.2.1-beta.4...@ucdjs/utils@0.2.1-beta.5) (2026-02-16)
+
+
+
+
+### Notes
+
+* No significant commits in this release.
+
+
 ## [0.2.1-beta.4](https://github.com/ucdjs/ucd/compare/@ucdjs/utils@0.2.1-beta.3...@ucdjs/utils@0.2.1-beta.4) (2026-02-15)
 
 
