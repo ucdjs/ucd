@@ -48,6 +48,7 @@
     "@ucdjs/env": "workspace:*",
     "@ucdjs/fs-bridge": "workspace:*",
     "@ucdjs/lockfile": "workspace:*",
+    "@ucdjs/pipelines-executor": "workspace:*",
     "@ucdjs/pipelines-loader": "workspace:*",
     "@ucdjs/pipelines-server": "workspace:*",
     "@ucdjs/schema-gen": "workspace:*",

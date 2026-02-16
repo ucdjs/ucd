@@ -770,6 +770,9 @@ importers:
       '@ucdjs/lockfile':
         specifier: workspace:*
         version: link:../lockfile
+      '@ucdjs/pipelines-executor':
+        specifier: workspace:*
+        version: link:../pipelines/pipeline-executor
       '@ucdjs/pipelines-loader':
         specifier: workspace:*
         version: link:../pipelines/pipeline-loader
