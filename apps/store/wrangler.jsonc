@@ -1,7 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "ucdjs-api",
-  "main": "src/index.ts",
+  "name": "ucdjs-store",
+  "main": "src/worker.ts",
   "compatibility_date": "2025-12-19",
   "compatibility_flags": [
     "enable_request_signal",
@@ -14,7 +14,6 @@
     "enabled": true
   },
   "vars": {
-    "API_VERSION": "x.y.z",
     "ENVIRONMENT": "local"
   },
   "version_metadata": {
@@ -33,45 +32,39 @@
       }
     ]
   },
+  "services": [
+    {
+      "binding": "UCDJS_API",
+      "service": "ucdjs-api"
+    }
+  ],
   "r2_buckets": [
     {
       "binding": "UCD_BUCKET",
       "bucket_name": "ucdjs-data-local"
     }
   ],
-  "secrets_store_secrets": [
-    {
-      "binding": "UCDJS_TASK_API_KEY",
-      "secret_name": "UCDJS_TASK_API_KEY",
-      "store_id": "673d2913c9314d48a64b6d9e1894ed12"
-    }
-  ],
-  "workflows": [
-    {
-      "name": "manifest-upload",
-      "binding": "MANIFEST_UPLOAD_WORKFLOW",
-      "class_name": "ManifestUploadWorkflow"
-    }
-  ],
-  "limits": {
-    "cpu_ms": 300000
-  },
   "placement": { "mode": "smart" },
   "env": {
     "production": {
-      "name": "ucdjs-api",
+      "name": "ucdjs-store",
       "preview_urls": false,
       "vars": {
-        "API_VERSION": "x.y.z",
         "ENVIRONMENT": "production"
       },
       "version_metadata": {
         "binding": "CF_VERSION_METADATA"
       },
+      "services": [
+        {
+          "binding": "UCDJS_API",
+          "service": "ucdjs-api"
+        }
+      ],
       "routes": [
         {
           "custom_domain": true,
-          "pattern": "api.ucdjs.dev"
+          "pattern": "ucd-store.ucdjs.dev"
         }
       ],
       "r2_buckets": [
@@ -80,13 +73,6 @@
           "bucket_name": "ucdjs-data"
         }
       ],
-      "secrets_store_secrets": [
-        {
-          "binding": "UCDJS_TASK_API_KEY",
-          "secret_name": "UCDJS_TASK_API_KEY",
-          "store_id": "673d2913c9314d48a64b6d9e1894ed12"
-        }
-      ],
       "unsafe": {
         "bindings": [
           {
@@ -99,45 +85,33 @@
             }
           }
         ]
-      },
-      "workflows": [
-        {
-          "name": "manifest-upload",
-          "binding": "MANIFEST_UPLOAD_WORKFLOW",
-          "class_name": "ManifestUploadWorkflow"
-        }
-      ],
-      "limits": {
-        "cpu_ms": 300000
       }
     },
     "preview": {
-      "name": "ucdjs-api-preview",
+      "name": "ucdjs-store-preview",
       "preview_urls": false,
       "vars": {
-        "API_VERSION": "x.y.z",
         "ENVIRONMENT": "preview"
       },
       "version_metadata": {
         "binding": "CF_VERSION_METADATA"
       },
+      "services": [
+        {
+          "binding": "UCDJS_API",
+          "service": "ucdjs-api-preview"
+        }
+      ],
       "routes": [
         {
           "custom_domain": true,
-          "pattern": "preview.api.ucdjs.dev"
+          "pattern": "preview.ucd-store.ucdjs.dev"
         }
       ],
       "r2_buckets": [
         {
           "binding": "UCD_BUCKET",
           "bucket_name": "ucdjs-data-preview"
-        }
-      ],
-      "secrets_store_secrets": [
-        {
-          "binding": "UCDJS_TASK_API_KEY",
-          "secret_name": "UCDJS_TASK_API_KEY",
-          "store_id": "673d2913c9314d48a64b6d9e1894ed12"
         }
       ],
       "unsafe": {
@@ -152,36 +126,24 @@
             }
           }
         ]
-      },
-      "workflows": [
-        {
-          "name": "manifest-upload",
-          "binding": "MANIFEST_UPLOAD_WORKFLOW",
-          "class_name": "ManifestUploadWorkflow"
-        }
-      ],
-      "limits": {
-        "cpu_ms": 300000
       }
     },
     "testing": {
-      "name": "ucdjs-api-testing",
+      "name": "ucdjs-store-testing",
       "preview_urls": false,
       "build": {
         "command": "echo 'The testing environment can\\'t be built' && exit 0"
       },
       "vars": {
-        "ENVIRONMENT": "testing",
-        "API_VERSION": "x.y.z"
+        "ENVIRONMENT": "testing"
       },
       "version_metadata": {
         "binding": "CF_VERSION_METADATA"
       },
-      "secrets_store_secrets": [
+      "services": [
         {
-          "binding": "UCDJS_TASK_API_KEY",
-          "secret_name": "UCDJS_TASK_API_KEY",
-          "store_id": "673d2913c9314d48a64b6d9e1894ed12"
+          "binding": "UCDJS_API",
+          "service": "ucdjs-api-testing"
         }
       ],
       "r2_buckets": [
@@ -202,16 +164,6 @@
             }
           }
         ]
-      },
-      "workflows": [
-        {
-          "name": "manifest-upload",
-          "binding": "MANIFEST_UPLOAD_WORKFLOW",
-          "class_name": "ManifestUploadWorkflow"
-        }
-      ],
-      "limits": {
-        "cpu_ms": 300000
       }
     }
   }

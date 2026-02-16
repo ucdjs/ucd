@@ -1,12 +1,10 @@
-/* eslint-disable no-console */
 import type { OpenAPIHono } from "@hono/zod-openapi";
+import type { WildcardHandlerOptions } from "../../lib/files";
 import type { HonoEnv } from "../../types";
 import { createRoute, z } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
-import { isValidGlobPattern } from "@ucdjs-internal/shared";
-import { badGateway, badRequest, MAX_AGE_ONE_WEEK_SECONDS, notFound } from "@ucdjs-internal/worker-utils";
+import { MAX_AGE_ONE_WEEK_SECONDS } from "@ucdjs-internal/worker-utils";
 import {
-  DEFAULT_USER_AGENT,
   UCD_STAT_CHILDREN_DIRS_HEADER,
   UCD_STAT_CHILDREN_FILES_HEADER,
   UCD_STAT_CHILDREN_HEADER,
@@ -15,14 +13,7 @@ import {
 } from "@ucdjs/env";
 import { FileEntryListSchema } from "@ucdjs/schemas";
 import { cache } from "hono/cache";
-import {
-  applyDirectoryFiltersAndSort,
-  determineFileExtension,
-  handleDirectoryResponse,
-  handleFileResponse,
-  isDirectoryListing,
-  parseUnicodeDirectory,
-} from "../../lib/files";
+import { fetchUnicodeFile } from "../../lib/files";
 import { generateReferences, OPENAPI_TAGS } from "../../openapi";
 import {
   ORDER_QUERY_PARAM,
@@ -32,7 +23,6 @@ import {
   TYPE_QUERY_PARAM,
   WILDCARD_PARAM,
 } from "./openapi-params";
-import { determineContentTypeFromExtension, isInvalidPath } from "./utils";
 
 export const WILDCARD_ROUTE = createRoute({
   method: "get",
@@ -284,91 +274,17 @@ export function registerWildcardRoute(router: OpenAPIHono<HonoEnv>) {
     }),
     async (c) => {
       const path = c.req.param("wildcard")?.trim() || "";
+      const handlerOptions = {
+        query: c.req.query("query"),
+        pattern: c.req.query("pattern"),
+        type: c.req.query("type"),
+        sort: c.req.query("sort"),
+        order: c.req.query("order"),
+        isHeadRequest: c.req.method === "HEAD",
+      } satisfies WildcardHandlerOptions;
 
-      // Validate path for path traversal attacks
-      if (isInvalidPath(path)) {
-        return badRequest({
-          message: "Invalid path",
-        });
-      }
-
-      const normalizedPath = path.replace(/^\/+|\/+$/g, "");
-      const url = normalizedPath
-        ? `https://unicode.org/Public/${normalizedPath}?F=2`
-        : "https://unicode.org/Public?F=2";
-
-      console.info(`[v1_files]: fetching file at ${url}`);
-
-      const response = await fetch(url, {
-        method: "GET",
-        headers: {
-          "User-Agent": DEFAULT_USER_AGENT,
-        },
-      });
-
-      if (!response.ok) {
-        if (response.status === 404) {
-          return notFound(c, {
-            message: "Resource not found",
-          });
-        }
-
-        return badGateway(c);
-      }
-
-      let contentType = response.headers.get("content-type") || "";
-      const lastModified = response.headers.get("Last-Modified") || undefined;
-      const baseHeaders: Record<string, string> = {};
-      if (lastModified) baseHeaders["Last-Modified"] = lastModified;
-
-      const leaf = normalizedPath.split("/").pop() ?? "";
-      const extName = determineFileExtension(leaf);
-      const isDir = isDirectoryListing(contentType, extName);
-
-      console.info(`[v1_files]: fetched content type: ${contentType} for .${extName} file`);
-      if (isDir) {
-        const html = await response.text();
-        const parsedFiles = await parseUnicodeDirectory(html, normalizedPath || "/");
-
-        // Get query parameters for filtering and sorting
-        const pattern = c.req.query("pattern");
-
-        // Validate glob pattern before applying
-        if (pattern && !isValidGlobPattern(pattern, {
-          maxLength: 128,
-          maxSegments: 8,
-          maxBraceExpansions: 8,
-          maxStars: 16,
-          maxQuestions: 16,
-        })) { return badRequest({ message: "Invalid glob pattern" }); }
-
-        const files = applyDirectoryFiltersAndSort(parsedFiles, {
-          query: c.req.query("query"),
-          pattern,
-          type: c.req.query("type"),
-          sort: c.req.query("sort"),
-          order: c.req.query("order"),
-        });
-
-        return handleDirectoryResponse(c, {
-          files,
-          baseHeaders,
-        });
-      }
-
-      // Handle file response
-      console.log(`[v1_files]: pre content type check: ${contentType} for .${extName} file`);
-      contentType ||= determineContentTypeFromExtension(extName);
-      console.log(`[v1_files]: inferred content type as ${contentType} for .${extName} file`);
-
-      const isHeadRequest = c.req.method === "HEAD";
-
-      return await handleFileResponse(c, {
-        contentType,
-        baseHeaders,
-        response,
-        isHeadRequest,
-      });
+      const result = await fetchUnicodeFile(path, handlerOptions);
+      return c.newResponse(result.body, result.status, result.headers);
     },
   );
 }

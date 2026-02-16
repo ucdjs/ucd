@@ -1,6 +1,6 @@
-import type { OpenAPIHono } from "@hono/zod-openapi";
 import type { Snapshot } from "@ucdjs/schemas";
-import type { HonoEnv } from "../../types";
+import type { Hono } from "hono";
+import type { HonoEnv } from "../types";
 import { badGateway, notFound } from "@ucdjs-internal/worker-utils";
 import { extractFilename } from "../lib/path-utils";
 
@@ -11,7 +11,7 @@ interface ManifestData {
   expectedFiles: string[];
 }
 
-export function registerSnapshotRoute(router: OpenAPIHono<HonoEnv>) {
+export function registerSnapshotRoute(router: Hono<HonoEnv>) {
   router.get("/:version/snapshot.json", async (c) => {
     const version = c.req.param("version");
     const bucket = c.env.UCD_BUCKET;

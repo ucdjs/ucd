@@ -6,6 +6,11 @@
       "deployable": true
     },
     {
+      "name": "store",
+      "display_name": "Store",
+      "deployable": true
+    },
+    {
       "name": "web",
       "display_name": "Website",
       "deployable": true
