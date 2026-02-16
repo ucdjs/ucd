@@ -173,7 +173,7 @@
       }
     },
     "testing": {
-      "name": "ucdjs-api",
+      "name": "ucdjs-api-testing",
       "preview_urls": false,
       "build": {
         "command": "echo 'The testing environment can\\'t be built' && exit 0"
