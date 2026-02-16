@@ -65,7 +65,7 @@
       "@ucdjs/pipelines-ui/styles.css": [
         "./packages/pipelines/pipeline-ui/src/styles/globals.css"
       ],
-      "@ucdjs/pipelines-server": ["./packages/pipelines/pipeline-server/src/index.ts"],
+      "@ucdjs/pipelines-server": ["./packages/pipelines/pipeline-server/src/server/app.ts"],
       "@ucdjs/pipelines-presets": ["./packages/pipelines/pipeline-presets/src/index.ts"],
 
       // Test utils
