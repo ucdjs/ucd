@@ -1,6 +1,6 @@
 import type { Database } from "#server/db";
 import type { PipelineSource } from "@ucdjs/pipelines-loader";
-import fs from "node:fs";
+import fs from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 import { createDatabase, runMigrations } from "#server/db";
@@ -93,7 +93,7 @@ export async function startServer(options: ServerOptions = {}): Promise<void> {
   // Initialize database with auto-migration
   // NOTE: This will CRASH the server if database initialization fails
   // This is intentional - we don't want to run with a misconfigured database
-  fs.mkdirSync(getUcdConfigDir(), { recursive: true });
+  await fs.mkdir(getUcdConfigDir(), { recursive: true });
   const db = createDatabase();
 
   try {
@@ -128,11 +128,11 @@ export async function startServer(options: ServerOptions = {}): Promise<void> {
 
     return serveStatic(event, {
       fallthrough: true,
-      getContents: (id) => fs.promises.readFile(path.join(clientDir, id)),
+      getContents: (id) => fs.readFile(path.join(clientDir, id)),
       getMeta: async (id) => {
         const filePath = path.join(clientDir, id);
         try {
-          const stats = await fs.promises.stat(filePath);
+          const stats = await fs.stat(filePath);
           if (!stats.isFile()) return;
           return { size: stats.size, mtime: stats.mtime };
         } catch {
@@ -150,7 +150,7 @@ export async function startServer(options: ServerOptions = {}): Promise<void> {
     }
 
     const indexPath = path.join(clientDir, "index.html");
-    return fs.promises.readFile(indexPath, "utf-8").then((html) => {
+    return fs.readFile(indexPath, "utf-8").then((html) => {
       return new Response(html, {
         headers: { "content-type": "text/html" },
       });
