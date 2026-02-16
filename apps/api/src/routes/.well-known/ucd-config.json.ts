@@ -2,11 +2,10 @@ import type { OpenAPIHono } from "@hono/zod-openapi";
 import type { HonoEnv } from "../../types";
 import { createRoute } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
-import { badGateway } from "@ucdjs-internal/worker-utils";
+import { badGateway, MAX_AGE_ONE_DAY_SECONDS } from "@ucdjs-internal/worker-utils";
 import { UCDWellKnownConfigSchema } from "@ucdjs/schemas";
 import { cache } from "hono/cache";
 import {
-  MAX_AGE_ONE_DAY_SECONDS,
   V1_FILES_ROUTER_BASE_PATH,
   V1_VERSIONS_ROUTER_BASE_PATH,
   WELL_KNOWN_ROUTER_BASE_PATH,
