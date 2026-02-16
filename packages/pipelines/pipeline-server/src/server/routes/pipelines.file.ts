@@ -5,7 +5,7 @@ import {
 } from "#server/lib/files";
 import { H3 } from "h3";
 
-export const pipelinesFileRouter = new H3();
+export const pipelinesFileRouter: H3 = new H3();
 
 pipelinesFileRouter.get("/:file", async (event) => {
   const { sources } = event.context;

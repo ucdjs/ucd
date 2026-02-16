@@ -6,7 +6,7 @@ import {
 import { getValidatedQuery, H3 } from "h3";
 import { z } from "zod";
 
-export const pipelinesIndexRouter = new H3();
+export const pipelinesIndexRouter: H3 = new H3();
 
 pipelinesIndexRouter.get("/", async (event) => {
   const { sources } = event.context;

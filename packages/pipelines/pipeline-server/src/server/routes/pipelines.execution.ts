@@ -2,7 +2,7 @@ import { schema } from "#server/db";
 import { desc, eq } from "drizzle-orm";
 import { getQuery, H3 } from "h3";
 
-export const pipelinesExecutionRouter = new H3();
+export const pipelinesExecutionRouter: H3 = new H3();
 
 pipelinesExecutionRouter.get("/:file/:id/executions", async (event) => {
   const { db } = event.context;

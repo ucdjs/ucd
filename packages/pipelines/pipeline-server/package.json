@@ -39,7 +39,8 @@
     "node": ">=22.18"
   },
   "scripts": {
-    "build": "vite build",
+    "build": "vite build && pnpm build:dts",
+    "build:dts": "tsc --project tsconfig.dts.json",
     "dev": "vite dev --port 3031",
     "clean": "git clean -xdf dist node_modules",
     "lint": "eslint .",
