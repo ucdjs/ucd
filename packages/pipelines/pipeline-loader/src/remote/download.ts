@@ -1,8 +1,9 @@
 import type { GitHubSource, GitLabSource } from "../types";
-import type { RemoteFileList, RemoteRequestOptions } from "./providers/github";
+import type { RemoteFileList } from "./providers/github";
 import { mkdir, mkdtemp, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import { patheRelative, PathTraversalError, resolveSafePath } from "@ucdjs/path-utils";
 import picomatch from "picomatch";
 import { github, gitlab } from "./providers";
 
@@ -63,18 +64,12 @@ async function listAllRemoteFiles(
   return list.files;
 }
 
-export function ensureSafeRelativePath(filePath: string): string {
-  const normalized = path.posix.normalize(filePath).replace(/^\/+/, "");
-
-  if (normalized === "" || normalized === ".") {
+function ensureNonEmptyPath(filePath: string): string {
+  const trimmed = filePath.trim();
+  if (trimmed === "" || trimmed === ".") {
     throw new Error(`Invalid remote file path: ${filePath}`);
   }
-
-  if (normalized.startsWith("../") || normalized.includes("/../") || normalized === "..") {
-    throw new Error(`Refusing to materialize unsafe path: ${filePath}`);
-  }
-
-  return normalized;
+  return trimmed;
 }
 
 function providerRepoRef(source: GitHubSource | GitLabSource): { owner: string; repo: string; ref?: string } {
@@ -117,19 +112,29 @@ export async function downloadPipelineProject(
   const downloadedFiles: string[] = [];
 
   for (const filePath of unique) {
-    const safeRelativePath = ensureSafeRelativePath(filePath);
+    const trimmedPath = ensureNonEmptyPath(filePath);
 
     let content: string;
     try {
-      content = await fetchRemoteFileContent(source, safeRelativePath, customFetch);
+      content = await fetchRemoteFileContent(source, trimmedPath, customFetch);
     } catch {
       continue;
     }
 
-    const destination = path.join(workdir, safeRelativePath);
+    let destination: string;
+    try {
+      destination = resolveSafePath(workdir, trimmedPath);
+    } catch (err) {
+      if (err instanceof PathTraversalError) {
+        throw new Error(`Refusing to materialize unsafe path: ${filePath}`);
+      }
+      throw err;
+    }
+
     await mkdir(path.dirname(destination), { recursive: true });
     await writeFile(destination, content, "utf-8");
-    downloadedFiles.push(safeRelativePath);
+    const relativePath = patheRelative(workdir, destination);
+    downloadedFiles.push(relativePath);
   }
 
   return {
@@ -155,8 +160,19 @@ export async function downloadPipelineFile(
     files: [filePath],
   });
 
+  const trimmedPath = ensureNonEmptyPath(filePath);
+  let destination: string;
+  try {
+    destination = resolveSafePath(result.workdir, trimmedPath);
+  } catch (err) {
+    if (err instanceof PathTraversalError) {
+      throw new Error(`Refusing to materialize unsafe path: ${filePath}`);
+    }
+    throw err;
+  }
+
   return {
     workdir: result.workdir,
-    filePath: ensureSafeRelativePath(filePath),
+    filePath: patheRelative(result.workdir, destination),
   };
 }

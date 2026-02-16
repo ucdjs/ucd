@@ -1,7 +1,6 @@
 import type { LoadedPipelineFile, LoadPipelinesResult, PipelineLoadError } from "../types";
-import path from "node:path";
+import { PathTraversalError, resolveSafePath } from "@ucdjs/path-utils";
 import { loadPipelineFile } from "../loader";
-import { ensureSafeRelativePath } from "./download";
 
 export async function loadMaterializedPipelineFiles(options: {
   filePaths: string[];
@@ -10,7 +9,16 @@ export async function loadMaterializedPipelineFiles(options: {
 }): Promise<LoadPipelinesResult> {
   const { filePaths, workdir, throwOnError } = options;
 
-  const resolveLocalPath = (filePath: string): string => path.join(workdir, ensureSafeRelativePath(filePath));
+  const resolveLocalPath = (filePath: string): string => {
+    try {
+      return resolveSafePath(workdir, filePath);
+    } catch (err) {
+      if (err instanceof PathTraversalError) {
+        throw new Error(`Refusing to materialize unsafe path: ${filePath}`);
+      }
+      throw err;
+    }
+  };
 
   if (throwOnError) {
     const wrapped = filePaths.map((filePath) =>

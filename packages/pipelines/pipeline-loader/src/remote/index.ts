@@ -10,26 +10,24 @@ import {
   downloadPipelineFile,
   downloadPipelineProject,
   downloadPipelineSource,
-  ensureSafeRelativePath,
   findRemotePipelineFiles,
 } from "./download";
 import { installRemotePipelineDependencies } from "./install";
 import { loadMaterializedPipelineFiles } from "./materialized";
 import { github, gitlab } from "./providers";
 
-export {
-  downloadPipelineFile,
-  downloadPipelineProject,
-  downloadPipelineSource,
-  ensureSafeRelativePath,
-  findRemotePipelineFiles,
-  github,
-  gitlab,
-};
 export type {
   DownloadPipelineProjectOptions,
   DownloadPipelineProjectResult,
 } from "./download";
+export {
+  downloadPipelineFile,
+  downloadPipelineProject,
+  downloadPipelineSource,
+  findRemotePipelineFiles,
+  github,
+  gitlab,
+};
 export type { FindRemotePipelineFilesOptions };
 
 export interface LoadRemotePipelinesOptions {

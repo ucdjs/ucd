@@ -39,6 +39,7 @@
   },
   "dependencies": {
     "@ucdjs/pipelines-core": "workspace:*",
+    "@ucdjs/path-utils": "workspace:*",
     "picomatch": "catalog:runtime",
     "tinyglobby": "catalog:build"
   },
