@@ -77,7 +77,7 @@ jobs:
           echo "Affected package names:"
           echo "$PACKAGE_NAMES"
 
-          FILTERED_PACKAGE_NAMES=$(echo "$PACKAGE_NAMES" | grep -E '^@ucdjs/(api|web|docs)$' | sed 's/@ucdjs\///')
+          FILTERED_PACKAGE_NAMES=$(echo "$PACKAGE_NAMES" | grep -E '^@ucdjs/(api|web|docs|store)$' | sed 's/@ucdjs\///')
           echo "Filtered deployable package names:"
           echo "$FILTERED_PACKAGE_NAMES"
 
