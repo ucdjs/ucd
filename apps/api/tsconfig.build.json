@@ -1,4 +1,13 @@
 {
   "extends": "@ucdjs-tooling/tsconfig/base.build",
-  "include": ["src/**/*"]
+  "compilerOptions": {
+    "composite": true,
+    "lib": ["ESNext"],
+    "declaration": true,
+    "declarationMap": true,
+    "emitDeclarationOnly": true,
+    "noEmit": false,
+    "outDir": "./.ts-cache"
+  },
+  "include": ["src/**/*", "*.ts"]
 }
