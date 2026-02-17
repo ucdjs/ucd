@@ -20,7 +20,10 @@ export const { generateReferences, registerApp } = createResponseComponentBuilde
 
 export type OpenAPITag = typeof OPENAPI_TAGS[keyof typeof OPENAPI_TAGS];
 
-export function buildOpenApiConfig(version: string, servers: NonNullable<OpenAPIObjectConfig["servers"]>) {
+export function buildOpenApiConfig(
+  version: string,
+  servers: NonNullable<OpenAPIObjectConfig["servers"]>,
+): OpenAPIObjectConfig {
   return {
     openapi: "3.1.0",
     info: {

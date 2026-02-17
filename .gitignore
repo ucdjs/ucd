@@ -48,3 +48,6 @@ ucd-generated
 .vite-inspect
 .wrangler
 .dev.vars
+
+# TypeScript project references cache
+**/.ts-cache
