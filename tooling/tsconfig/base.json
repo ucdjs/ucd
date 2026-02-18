@@ -93,5 +93,7 @@
       // Internal Test Utils
       "#internal/test-utils/conditions": ["./test/utils/conditions.ts"]
     }
-  }
+  },
+  "include": ["${configDir}/**/*.ts", "${configDir}/**/*.tsx"],
+  "exclude": ["${configDir}/node_modules/", "${configDir}/dist/", "${configDir}/eslint.config.js"]
 }
