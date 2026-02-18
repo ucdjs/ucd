@@ -77,7 +77,11 @@ jobs:
           echo "Affected package names:"
           echo "$PACKAGE_NAMES"
 
-          FILTERED_PACKAGE_NAMES=$(echo "$PACKAGE_NAMES" | grep -E '^@ucdjs/(api|web|docs|store)$' | sed 's/@ucdjs\///')
+          # Get apps from pnpm workspace packages in apps/*
+          APP_NAMES=$(pnpm list -r --depth=-1 --filter './apps/*' --json | jq -r '.[].name' | sed 's/@ucdjs\///')
+          APP_PATTERN=$(echo "$APP_NAMES" | tr '\n' '|' | sed 's/|$//')
+
+          FILTERED_PACKAGE_NAMES=$(echo "$PACKAGE_NAMES" | grep -E "^@ucdjs/($APP_PATTERN)$" | sed 's/@ucdjs\///')
           echo "Filtered deployable package names:"
           echo "$FILTERED_PACKAGE_NAMES"
 
