@@ -274,20 +274,20 @@ catalogs:
       specifier: https://pkg.pr.new/@cloudflare/vitest-pool-workers@11632
       version: 0.12.6
     '@vitest/coverage-istanbul':
-      specifier: 4.1.0-beta.1
-      version: 4.1.0-beta.1
+      specifier: 4.1.0-beta.4
+      version: 4.1.0-beta.4
     '@vitest/expect':
-      specifier: 4.1.0-beta.1
-      version: 4.1.0-beta.1
+      specifier: 4.1.0-beta.4
+      version: 4.1.0-beta.4
     '@vitest/ui':
-      specifier: 4.1.0-beta.1
-      version: 4.1.0-beta.1
+      specifier: 4.1.0-beta.4
+      version: 4.1.0-beta.4
     msw:
       specifier: 2.12.10
       version: 2.12.10
     vitest:
-      specifier: 4.1.0-beta.1
-      version: 4.1.0-beta.1
+      specifier: 4.1.0-beta.4
+      version: 4.1.0-beta.4
     vitest-testdirs:
       specifier: 4.4.2
       version: 4.4.2
@@ -357,10 +357,10 @@ importers:
         version: link:packages/ucdjs-scripts
       '@vitest/coverage-istanbul':
         specifier: catalog:test
-        version: 4.1.0-beta.1(vitest@4.1.0-beta.1)
+        version: 4.1.0-beta.4(vitest@4.1.0-beta.4)
       '@vitest/ui':
         specifier: catalog:test
-        version: 4.1.0-beta.1(vitest@4.1.0-beta.1)
+        version: 4.1.0-beta.4(vitest@4.1.0-beta.4)
       eslint:
         specifier: catalog:lint
         version: 10.0.0(jiti@2.6.1)
@@ -372,7 +372,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: catalog:test
-        version: 4.1.0-beta.1(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.1)(jiti@2.6.1)(lightningcss@1.31.1)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.1.0-beta.4(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.4)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(vite@8.0.0-beta.14(@types/node@22.19.9)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))
 
   apps/api:
     dependencies:
@@ -424,10 +424,10 @@ importers:
     devDependencies:
       '@cloudflare/vitest-pool-workers':
         specifier: catalog:test
-        version: https://pkg.pr.new/@cloudflare/vitest-pool-workers@11632(@cloudflare/workers-types@4.20260218.0)(@vitest/runner@4.1.0-beta.1)(@vitest/snapshot@4.1.0-beta.1)(vitest@4.1.0-beta.1)
+        version: https://pkg.pr.new/@cloudflare/vitest-pool-workers@11632(@cloudflare/workers-types@4.20260218.0)(@vitest/runner@4.1.0-beta.4)(@vitest/snapshot@4.1.0-beta.4)(vitest@4.1.0-beta.4)
       '@luxass/eslint-config':
         specifier: catalog:lint
-        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.1)
+        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.4)
       '@luxass/spectral-ruleset':
         specifier: catalog:lint
         version: 1.1.1
@@ -457,7 +457,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: catalog:test
-        version: 4.1.0-beta.1(@opentelemetry/api@1.9.0)(@types/node@25.2.2)(@vitest/ui@4.1.0-beta.1)(jiti@2.6.1)(lightningcss@1.31.1)(msw@2.12.10(@types/node@25.2.2)(typescript@5.9.3))(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.1.0-beta.4(@opentelemetry/api@1.9.0)(@types/node@25.2.2)(@vitest/ui@4.1.0-beta.4)(msw@2.12.10(@types/node@25.2.2)(typescript@5.9.3))(vite@8.0.0-beta.14(@types/node@25.2.2)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))
       wrangler:
         specifier: 4.66.0
         version: 4.66.0(@cloudflare/workers-types@4.20260218.0)
@@ -515,7 +515,7 @@ importers:
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:lint
-        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.1(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.1)(jiti@2.6.1)(lightningcss@1.31.1)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(tsx@4.21.0)(yaml@2.8.2))
+        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.4(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.4)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(vite@8.0.0-beta.14(@types/node@22.19.9)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)))
       '@tanstack/devtools-vite':
         specifier: catalog:build
         version: 0.5.1(vite@8.0.0-beta.14(@types/node@22.19.9)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))
@@ -597,10 +597,10 @@ importers:
     devDependencies:
       '@cloudflare/vitest-pool-workers':
         specifier: catalog:test
-        version: https://pkg.pr.new/@cloudflare/vitest-pool-workers@11632(@cloudflare/workers-types@4.20260218.0)(@vitest/runner@4.1.0-beta.1)(@vitest/snapshot@4.1.0-beta.1)(vitest@4.1.0-beta.1)
+        version: https://pkg.pr.new/@cloudflare/vitest-pool-workers@11632(@cloudflare/workers-types@4.20260218.0)(@vitest/runner@4.1.0-beta.4)(@vitest/snapshot@4.1.0-beta.4)(vitest@4.1.0-beta.4)
       '@luxass/eslint-config':
         specifier: catalog:lint
-        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.1)
+        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.4)
       '@ucdjs-tooling/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/tsconfig
@@ -621,7 +621,7 @@ importers:
         version: 5.9.3
       vitest:
         specifier: catalog:test
-        version: 4.1.0-beta.1(@opentelemetry/api@1.9.0)(@types/node@25.2.2)(@vitest/ui@4.1.0-beta.1)(jiti@2.6.1)(lightningcss@1.31.1)(msw@2.12.10(@types/node@25.2.2)(typescript@5.9.3))(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.1.0-beta.4(@opentelemetry/api@1.9.0)(@types/node@25.2.2)(@vitest/ui@4.1.0-beta.4)(msw@2.12.10(@types/node@25.2.2)(typescript@5.9.3))(vite@8.0.0-beta.14(@types/node@25.2.2)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))
       wrangler:
         specifier: 4.66.0
         version: 4.66.0(@cloudflare/workers-types@4.20260218.0)
@@ -679,7 +679,7 @@ importers:
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:lint
-        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.1(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.1)(jiti@2.6.1)(lightningcss@1.31.1)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(tsx@4.21.0)(yaml@2.8.2))
+        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.4(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.4)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(vite@8.0.0-beta.14(@types/node@22.19.9)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)))
       '@tailwindcss/vite':
         specifier: catalog:build
         version: 4.2.0(vite@8.0.0-beta.14(@types/node@22.19.9)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))
@@ -800,7 +800,7 @@ importers:
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:lint
-        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.1)
+        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.4)
       '@types/yargs-parser':
         specifier: catalog:types
         version: 21.0.3
@@ -824,7 +824,7 @@ importers:
         version: 5.9.3
       vitest-testdirs:
         specifier: catalog:test
-        version: 4.4.2(vitest@4.1.0-beta.1)
+        version: 4.4.2(vitest@4.1.0-beta.4)
 
   packages/client:
     dependencies:
@@ -843,7 +843,7 @@ importers:
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:lint
-        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.1)
+        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.4)
       '@types/picomatch':
         specifier: catalog:types
         version: 4.0.2
@@ -873,7 +873,7 @@ importers:
         version: 5.9.3
       vitest-testdirs:
         specifier: catalog:test
-        version: 4.4.2(vitest@4.1.0-beta.1)
+        version: 4.4.2(vitest@4.1.0-beta.4)
 
   packages/env:
     dependencies:
@@ -883,7 +883,7 @@ importers:
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:lint
-        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.1(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.1)(jiti@2.6.1)(lightningcss@1.31.1)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(tsx@4.21.0)(yaml@2.8.2))
+        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.4(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.4)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(vite@8.0.0-beta.14(@types/node@22.19.9)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)))
       '@ucdjs-tooling/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/tsconfig
@@ -935,7 +935,7 @@ importers:
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:lint
-        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.1)
+        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.4)
       '@luxass/msw-utils':
         specifier: catalog:runtime
         version: 0.6.0(msw@2.12.10(@types/node@25.2.2)(typescript@5.9.3))
@@ -962,7 +962,7 @@ importers:
         version: 5.9.3
       vitest-testdirs:
         specifier: catalog:test
-        version: 4.4.2(vitest@4.1.0-beta.1)
+        version: 4.4.2(vitest@4.1.0-beta.4)
 
   packages/lockfile:
     dependencies:
@@ -981,7 +981,7 @@ importers:
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:lint
-        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.1)
+        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.4)
       '@luxass/utils':
         specifier: catalog:runtime
         version: 2.7.3
@@ -1005,7 +1005,7 @@ importers:
         version: 5.9.3
       vitest-testdirs:
         specifier: catalog:test
-        version: 4.4.2(vitest@4.1.0-beta.1)
+        version: 4.4.2(vitest@4.1.0-beta.4)
 
   packages/path-utils:
     dependencies:
@@ -1021,7 +1021,7 @@ importers:
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:lint
-        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.1)
+        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.4)
       '@ucdjs-tooling/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/tsconfig
@@ -1042,7 +1042,7 @@ importers:
         version: 5.9.3
       vitest-testdirs:
         specifier: catalog:test
-        version: 4.4.2(vitest@4.1.0-beta.1)
+        version: 4.4.2(vitest@4.1.0-beta.4)
 
   packages/pipelines/pipeline-artifacts:
     dependencies:
@@ -1055,7 +1055,7 @@ importers:
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:lint
-        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.1(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.1)(jiti@2.6.1)(lightningcss@1.31.1)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(tsx@4.21.0)(yaml@2.8.2))
+        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.4(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.4)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(vite@8.0.0-beta.14(@types/node@22.19.9)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)))
       '@ucdjs-tooling/tsconfig':
         specifier: workspace:*
         version: link:../../../tooling/tsconfig
@@ -1089,7 +1089,7 @@ importers:
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:lint
-        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.1(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.1)(jiti@2.6.1)(lightningcss@1.31.1)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(tsx@4.21.0)(yaml@2.8.2))
+        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.4(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.4)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(vite@8.0.0-beta.14(@types/node@22.19.9)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)))
       '@types/picomatch':
         specifier: catalog:types
         version: 4.0.2
@@ -1129,7 +1129,7 @@ importers:
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:lint
-        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.1(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.1)(jiti@2.6.1)(lightningcss@1.31.1)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(tsx@4.21.0)(yaml@2.8.2))
+        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.4(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.4)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(vite@8.0.0-beta.14(@types/node@22.19.9)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)))
       '@ucdjs-tooling/tsconfig':
         specifier: workspace:*
         version: link:../../../tooling/tsconfig
@@ -1157,7 +1157,7 @@ importers:
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:lint
-        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.1(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.1)(jiti@2.6.1)(lightningcss@1.31.1)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(tsx@4.21.0)(yaml@2.8.2))
+        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.4(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.4)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(vite@8.0.0-beta.14(@types/node@22.19.9)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)))
       '@ucdjs-tooling/tsconfig':
         specifier: workspace:*
         version: link:../../../tooling/tsconfig
@@ -1200,7 +1200,7 @@ importers:
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:lint
-        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.1)
+        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.4)
       '@types/picomatch':
         specifier: catalog:types
         version: 4.0.2
@@ -1224,7 +1224,7 @@ importers:
         version: 5.9.3
       vitest-testdirs:
         specifier: catalog:test
-        version: 4.4.2(vitest@4.1.0-beta.1)
+        version: 4.4.2(vitest@4.1.0-beta.4)
 
   packages/pipelines/pipeline-playground:
     dependencies:
@@ -1240,7 +1240,7 @@ importers:
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:lint
-        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.1(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.1)(jiti@2.6.1)(lightningcss@1.31.1)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(tsx@4.21.0)(yaml@2.8.2))
+        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.4(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.4)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(vite@8.0.0-beta.14(@types/node@22.19.9)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)))
       '@ucdjs-tooling/tsconfig':
         specifier: workspace:*
         version: link:../../../tooling/tsconfig
@@ -1265,7 +1265,7 @@ importers:
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:lint
-        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.1(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.1)(jiti@2.6.1)(lightningcss@1.31.1)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(tsx@4.21.0)(yaml@2.8.2))
+        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.4(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.4)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(vite@8.0.0-beta.14(@types/node@22.19.9)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)))
       '@ucdjs-tooling/tsconfig':
         specifier: workspace:*
         version: link:../../../tooling/tsconfig
@@ -1341,7 +1341,7 @@ importers:
         version: 2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)
       '@luxass/eslint-config':
         specifier: catalog:lint
-        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.1)
+        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.4)
       '@tailwindcss/vite':
         specifier: catalog:build
         version: 4.2.0(vite@8.0.0-beta.14(@types/node@22.19.9)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))
@@ -1416,10 +1416,10 @@ importers:
         version: 6.1.1(typescript@5.9.3)(vite@8.0.0-beta.14(@types/node@22.19.9)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))
       vitest:
         specifier: catalog:test
-        version: 4.1.0-beta.1(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.1)(jiti@2.6.1)(lightningcss@1.31.1)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(tsx@4.21.0)(yaml@2.8.2)
+        version: 4.1.0-beta.4(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.4)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(vite@8.0.0-beta.14(@types/node@22.19.9)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))
       vitest-testdirs:
         specifier: catalog:test
-        version: 4.4.2(vitest@4.1.0-beta.1)
+        version: 4.4.2(vitest@4.1.0-beta.4)
 
   packages/pipelines/pipeline-ui:
     dependencies:
@@ -1453,7 +1453,7 @@ importers:
         version: 2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)
       '@luxass/eslint-config':
         specifier: catalog:lint
-        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.1(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.1)(jiti@2.6.1)(lightningcss@1.31.1)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(tsx@4.21.0)(yaml@2.8.2))
+        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.4(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.4)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(vite@8.0.0-beta.14(@types/node@22.19.9)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)))
       '@rollup/plugin-babel':
         specifier: catalog:build
         version: 6.1.0(@babel/core@7.29.0)(@types/babel__core@7.20.5)(rollup@4.57.1)
@@ -1529,7 +1529,7 @@ importers:
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:lint
-        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.1)
+        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.4)
       '@ucdjs-tooling/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/tsconfig
@@ -1550,7 +1550,7 @@ importers:
         version: 5.9.3
       vitest-testdirs:
         specifier: catalog:test
-        version: 4.4.2(vitest@4.1.0-beta.1)
+        version: 4.4.2(vitest@4.1.0-beta.4)
 
   packages/schemas:
     dependencies:
@@ -1563,7 +1563,7 @@ importers:
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:lint
-        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.1(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.1)(jiti@2.6.1)(lightningcss@1.31.1)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(tsx@4.21.0)(yaml@2.8.2))
+        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.4(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.4)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(vite@8.0.0-beta.14(@types/node@22.19.9)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)))
       '@ucdjs-tooling/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/tsconfig
@@ -1615,7 +1615,7 @@ importers:
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:lint
-        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.1)
+        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.4)
       '@types/picomatch':
         specifier: catalog:types
         version: 4.0.2
@@ -1642,7 +1642,7 @@ importers:
         version: 5.9.3
       vitest-testdirs:
         specifier: catalog:test
-        version: 4.4.2(vitest@4.1.0-beta.1)
+        version: 4.4.2(vitest@4.1.0-beta.4)
 
   packages/shared-ui:
     dependencies:
@@ -1691,7 +1691,7 @@ importers:
         version: 2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)
       '@luxass/eslint-config':
         specifier: catalog:lint
-        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.1(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.1)(jiti@2.6.1)(lightningcss@1.31.1)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(tsx@4.21.0)(yaml@2.8.2))
+        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.4(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.4)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(vite@8.0.0-beta.14(@types/node@22.19.9)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)))
       '@rollup/plugin-babel':
         specifier: catalog:build
         version: 6.1.0(@babel/core@7.29.0)(@types/babel__core@7.20.5)(rollup@4.57.1)
@@ -1764,7 +1764,7 @@ importers:
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:lint
-        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.1)
+        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.4)
       '@ucdjs-tooling/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/tsconfig
@@ -1776,7 +1776,7 @@ importers:
         version: link:../ucd-store
       '@vitest/expect':
         specifier: catalog:test
-        version: 4.1.0-beta.1
+        version: 4.1.0-beta.4
       eslint:
         specifier: catalog:lint
         version: 10.0.0(jiti@2.6.1)
@@ -1797,7 +1797,7 @@ importers:
         version: 5.9.3
       vitest-testdirs:
         specifier: catalog:test
-        version: 4.4.2(vitest@4.1.0-beta.1)
+        version: 4.4.2(vitest@4.1.0-beta.4)
 
   packages/ucd-store:
     dependencies:
@@ -1837,7 +1837,7 @@ importers:
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:lint
-        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.1)
+        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.4)
       '@ucdjs-tooling/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/tsconfig
@@ -1861,7 +1861,7 @@ importers:
         version: 5.9.3
       vitest-testdirs:
         specifier: catalog:test
-        version: 4.4.2(vitest@4.1.0-beta.1)
+        version: 4.4.2(vitest@4.1.0-beta.4)
 
   packages/ucdjs-scripts:
     dependencies:
@@ -1892,7 +1892,7 @@ importers:
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:lint
-        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.1(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.1)(jiti@2.6.1)(lightningcss@1.31.1)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(tsx@4.21.0)(yaml@2.8.2))
+        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.4(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.4)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(vite@8.0.0-beta.14(@types/node@22.19.9)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)))
       '@types/node':
         specifier: catalog:types
         version: 22.19.9
@@ -1920,7 +1920,7 @@ importers:
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:lint
-        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.1)
+        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.4)
       '@ucdjs-tooling/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/tsconfig
@@ -1941,7 +1941,7 @@ importers:
         version: 5.9.3
       vitest-testdirs:
         specifier: catalog:test
-        version: 4.4.2(vitest@4.1.0-beta.1)
+        version: 4.4.2(vitest@4.1.0-beta.4)
 
   packages/worker-utils:
     dependencies:
@@ -1957,7 +1957,7 @@ importers:
         version: 4.20260218.0
       '@luxass/eslint-config':
         specifier: catalog:lint
-        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.1)
+        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.4)
       '@ucdjs-tooling/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/tsconfig
@@ -1981,7 +1981,7 @@ importers:
         version: 5.9.3
       vitest-testdirs:
         specifier: catalog:test
-        version: 4.4.2(vitest@4.1.0-beta.1)
+        version: 4.4.2(vitest@4.1.0-beta.4)
       zod:
         specifier: catalog:runtime
         version: 4.3.6
@@ -1990,7 +1990,7 @@ importers:
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:lint
-        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.1(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.1)(jiti@2.6.1)(lightningcss@1.31.1)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(tsx@4.21.0)(yaml@2.8.2))
+        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.4(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.4)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(vite@8.0.0-beta.14(@types/node@22.19.9)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)))
       '@typescript-eslint/utils':
         specifier: catalog:lint
         version: 8.56.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)
@@ -2008,7 +2008,7 @@ importers:
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:lint
-        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.1(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.1)(jiti@2.6.1)(lightningcss@1.31.1)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(tsx@4.21.0)(yaml@2.8.2))
+        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.4(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.4)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(vite@8.0.0-beta.14(@types/node@22.19.9)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)))
       eslint:
         specifier: catalog:lint
         version: 10.0.0(jiti@2.6.1)
@@ -2017,7 +2017,7 @@ importers:
     dependencies:
       '@luxass/eslint-config':
         specifier: catalog:lint
-        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.1(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.1)(jiti@2.6.1)(lightningcss@1.31.1)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(tsx@4.21.0)(yaml@2.8.2))
+        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.4(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.4)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(vite@8.0.0-beta.14(@types/node@22.19.9)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)))
       eslint:
         specifier: catalog:lint
         version: 10.0.0(jiti@2.6.1)
@@ -2033,7 +2033,7 @@ importers:
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:lint
-        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.1(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.1)(jiti@2.6.1)(lightningcss@1.31.1)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(tsx@4.21.0)(yaml@2.8.2))
+        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.4(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.4)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(vite@8.0.0-beta.14(@types/node@22.19.9)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)))
       '@ucdjs-tooling/tsconfig':
         specifier: workspace:*
         version: link:../tsconfig
@@ -2048,7 +2048,7 @@ importers:
     devDependencies:
       '@luxass/eslint-config':
         specifier: catalog:lint
-        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.1(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.1)(jiti@2.6.1)(lightningcss@1.31.1)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(tsx@4.21.0)(yaml@2.8.2))
+        version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.4(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.4)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(vite@8.0.0-beta.14(@types/node@22.19.9)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)))
       '@luxass/utils':
         specifier: catalog:runtime
         version: 2.7.3
@@ -5230,10 +5230,10 @@ packages:
     peerDependencies:
       vite: ^4.2.0 || ^5.0.0 || ^6.0.0 || ^7.0.0
 
-  '@vitest/coverage-istanbul@4.1.0-beta.1':
-    resolution: {integrity: sha512-oOmLCiOxBZLpNtEZ5e+CM24utTFmODQl8aCCevOsNP5MktfSIo115s4oVSgxjD4LXN9B8gmdegbZTWWEB+0GiQ==}
+  '@vitest/coverage-istanbul@4.1.0-beta.4':
+    resolution: {integrity: sha512-KeqwD100a56pKpI2XU/usS3hgdTV9fgcvpZ9jrbdXkmjoWbi792jLfY10k8IUEG+ft+QCwLtIeDlI5idDxAgdA==}
     peerDependencies:
-      vitest: 4.1.0-beta.1
+      vitest: 4.1.0-beta.4
 
   '@vitest/eslint-plugin@1.6.6':
     resolution: {integrity: sha512-bwgQxQWRtnTVzsUHK824tBmHzjV0iTx3tZaiQIYDjX3SA7TsQS8CuDVqxXrRY3FaOUMgbGavesCxI9MOfFLm7Q==}
@@ -5248,11 +5248,11 @@ packages:
       vitest:
         optional: true
 
-  '@vitest/expect@4.1.0-beta.1':
-    resolution: {integrity: sha512-LpwvdERiCpuXWE8IRLGgqMWPvcGxZVUNmVyRnvs4ZPCazbEgjkm5wlqFN7lJYfQkRamldHO+38348EefLtRY0A==}
+  '@vitest/expect@4.1.0-beta.4':
+    resolution: {integrity: sha512-50CzsTy9kVrlI7V0Ot63jPb5q069r1Xn/z489q/pWmFImEUC30oiO9gaRInkWUmgHpSZTO8E9rSdu6jFZwRHjg==}
 
-  '@vitest/mocker@4.1.0-beta.1':
-    resolution: {integrity: sha512-IiiJL8aqJrk5oNgiOsTvrzMAt71qWL1pvHKJJiaKQCMX3Lvj6w++HvNJIl3d0rm5D9sngAJYtF87EN0CTWhF8Q==}
+  '@vitest/mocker@4.1.0-beta.4':
+    resolution: {integrity: sha512-JIHUUrevhes/tP8U3TqPHo/n8lmruITvC9YdnbYyA+L0Y9zyYZ5zW/07+i/aXpmabtxIiJG7eKIv2ootcBu4Vw==}
     peerDependencies:
       msw: ^2.4.9
       vite: ^6.0.0 || ^7.0.0-0
@@ -5262,25 +5262,25 @@ packages:
       vite:
         optional: true
 
-  '@vitest/pretty-format@4.1.0-beta.1':
-    resolution: {integrity: sha512-CeI3uthjV/XKA6KBCr/B5HlCQaFdCgprdl7gBg/sUExQPary8BBhYoVWJeAPTeg9u+ppT9S4v/sYjjNjn3Qsrw==}
+  '@vitest/pretty-format@4.1.0-beta.4':
+    resolution: {integrity: sha512-rAJOtUSRzgobQtuW98WV3bSkomdILArhgSc4JQ5G6Et0eaD6DTeMpr+k7B//F/xYG7oVeuabOTx3EWu06ILCgA==}
 
-  '@vitest/runner@4.1.0-beta.1':
-    resolution: {integrity: sha512-oE0nFu+0zT6IhhAu8Z9wWCWWy63a7btZLvq4zUkrGwJ9U4sabXHWzYakBE6ZDLXpI8aDv796+0AMej2AJ7m3tw==}
+  '@vitest/runner@4.1.0-beta.4':
+    resolution: {integrity: sha512-/uhv354dTwbqiDCAk9IUCVXNBGByn40Xh8DkJ5EdzqEYN3aw5x25OmmpxpSjxlkBkoxQEUP3zg6WOUGeTYKoOw==}
 
-  '@vitest/snapshot@4.1.0-beta.1':
-    resolution: {integrity: sha512-wSt0PAy1QCZjzPUgpIYXBtZFTFXPw65GIQxz9mjhl0yjkAE+wnRU08+w3R3X5hrCKYVhTS3HHV8zs6Yin2K0Dw==}
+  '@vitest/snapshot@4.1.0-beta.4':
+    resolution: {integrity: sha512-ukET4KPzUZgCD1flrQFuhuXS9J2/c6bzMoRCCmjB12+JwwgYvxCEE6wURZXRUjwcA6jD2HCpxeKiVq/4Ojz0EQ==}
 
-  '@vitest/spy@4.1.0-beta.1':
-    resolution: {integrity: sha512-DzHg9PJuWYivWLt4O9SYF2u5/mGlfM3tgP8DdlSwMr7C+hBusejK+r0rqaCSYwBH47ePhU4jccBm4i6bE2dahg==}
+  '@vitest/spy@4.1.0-beta.4':
+    resolution: {integrity: sha512-aRsQ3vLSKbEifcMufUXAp1OCBcLEWDDmGAItaVa2WDwh08pxcpoDCCfchCDDYjftajq5Mi22ZNN9Afy9IW4ZJw==}
 
-  '@vitest/ui@4.1.0-beta.1':
-    resolution: {integrity: sha512-ZkZKwtvKqFXwGo6HjahLCKDVpOr6WxbOhZI70rbAkiyg9HS1TMFxqvRecwkpNwT4bfu8cfKZcNhjD8hOYBkBOw==}
+  '@vitest/ui@4.1.0-beta.4':
+    resolution: {integrity: sha512-ls/+b2iM34IRacIzUClZwSdpvkg+L0Zz40m/Z6lKFUUXk1hG/bYgGTj5s4bykxrbgIsFRuTXr00HwmxDWx6VlA==}
     peerDependencies:
-      vitest: 4.1.0-beta.1
+      vitest: 4.1.0-beta.4
 
-  '@vitest/utils@4.1.0-beta.1':
-    resolution: {integrity: sha512-IUCsqDFj8E8WJq3wGRQ7MiMb2571tjTnjyrJ1oy+0HODutA2TpZGRqBA8ziLCIWTOL/e4RArE2k6eZh/jXgk9A==}
+  '@vitest/utils@4.1.0-beta.4':
+    resolution: {integrity: sha512-c6oj0FpdLwmOisNpeVwhXqwe9Harehj+n9Pfz4/Iv45dSR32VHDzK2uosqT2ocCZhgzXwX4xpL8thl2Wr/wyrw==}
 
   '@vscode/vsce-sign-alpine-arm64@2.0.6':
     resolution: {integrity: sha512-wKkJBsvKF+f0GfsUuGT0tSW0kZL87QggEiqNqK6/8hvqsXvpx8OsTEc3mnE1kejkh5r+qUyQ7PtF8jZYN0mo8Q==}
@@ -6138,8 +6138,8 @@ packages:
     resolution: {integrity: sha512-Zf5H2Kxt2xjTvbJvP2ZWLEICxA6j+hAmMzIlypy4xcBg1vKVnx89Wy0GbS+kf5cwCVFFzdCFh2XSCFNULS6csw==}
     engines: {node: '>= 0.4'}
 
-  es-module-lexer@1.7.0:
-    resolution: {integrity: sha512-jEQoCwk8hyb2AZziIOLhDqpm5+2ww5uIE6lkO/6jcOCusfk6LhMHpXXfBLXTZ7Ydyt0j4VoUQv6uGNYbdW+kBA==}
+  es-module-lexer@2.0.0:
+    resolution: {integrity: sha512-5POEcUuZybH7IdmGsD8wlf0AI55wMecM9rVBTI/qEAy2c1kTOm3DjFYjrBdI2K3BaJjJYfYFeRtM0t9ssnRuxw==}
 
   es-object-atoms@1.1.1:
     resolution: {integrity: sha512-FGgH2h8zKNim9ljj7dankFPcICIK9Cp5bm+c2gQSYePhpaG5+esrLODihIorn+Pe6FGJzWhXQotPv73jTaldXA==}
@@ -9175,46 +9175,6 @@ packages:
     peerDependencies:
       vite: '*'
 
-  vite@7.3.1:
-    resolution: {integrity: sha512-w+N7Hifpc3gRjZ63vYBXA56dvvRlNWRczTdmCBBa+CotUzAPf5b7YMdMR/8CQoeYE5LX3W4wj6RYTgonm1b9DA==}
-    engines: {node: ^20.19.0 || >=22.12.0}
-    hasBin: true
-    peerDependencies:
-      '@types/node': ^20.19.0 || >=22.12.0
-      jiti: '>=1.21.0'
-      less: ^4.0.0
-      lightningcss: ^1.21.0
-      sass: ^1.70.0
-      sass-embedded: ^1.70.0
-      stylus: '>=0.54.8'
-      sugarss: ^5.0.0
-      terser: ^5.16.0
-      tsx: ^4.8.1
-      yaml: ^2.4.2
-    peerDependenciesMeta:
-      '@types/node':
-        optional: true
-      jiti:
-        optional: true
-      less:
-        optional: true
-      lightningcss:
-        optional: true
-      sass:
-        optional: true
-      sass-embedded:
-        optional: true
-      stylus:
-        optional: true
-      sugarss:
-        optional: true
-      terser:
-        optional: true
-      tsx:
-        optional: true
-      yaml:
-        optional: true
-
   vite@8.0.0-beta.14:
     resolution: {integrity: sha512-oLW66oi8tZcoxu6+1HFXb+5hLHco3OnEVu2Awmj5NqEo7vxaqybjBM0BXHcq+jAFhzkMGXJl8xcO5qDBczgKLg==}
     engines: {node: ^20.19.0 || >=22.12.0}
@@ -9272,20 +9232,21 @@ packages:
     peerDependencies:
       vitest: '>=3.0.0 <4.0.0 || >=4.0.0 <5.0.0'
 
-  vitest@4.1.0-beta.1:
-    resolution: {integrity: sha512-iJKx5pLpS9eRgHJuVCKuuphoKZNCUtSoBiqpHdgrVyqFAZNU66m90H9lSHek1WiRCeqPfgV/ugK0Bl+ZOv8K9Q==}
+  vitest@4.1.0-beta.4:
+    resolution: {integrity: sha512-MimZ9YLGPFhLGVR+WWQdSvc2vmOwH75f5SDRttg+cnlBJ0XNs6mTvrV4Oi6xIF3FOsH3LPs2f/LM1WyCGy40qA==}
     engines: {node: ^20.0.0 || ^22.0.0 || >=24.0.0}
     hasBin: true
     peerDependencies:
       '@edge-runtime/vm': '*'
       '@opentelemetry/api': ^1.9.0
       '@types/node': ^20.0.0 || ^22.0.0 || >=24.0.0
-      '@vitest/browser-playwright': 4.1.0-beta.1
-      '@vitest/browser-preview': 4.1.0-beta.1
-      '@vitest/browser-webdriverio': 4.1.0-beta.1
-      '@vitest/ui': 4.1.0-beta.1
+      '@vitest/browser-playwright': 4.1.0-beta.4
+      '@vitest/browser-preview': 4.1.0-beta.4
+      '@vitest/browser-webdriverio': 4.1.0-beta.4
+      '@vitest/ui': 4.1.0-beta.4
       happy-dom: '*'
       jsdom: '*'
+      vite: ^6.0.0 || ^7.0.0 || ^8.0.0-0
     peerDependenciesMeta:
       '@edge-runtime/vm':
         optional: true
@@ -9849,14 +9810,14 @@ snapshots:
     optionalDependencies:
       workerd: 1.20260217.0
 
-  '@cloudflare/vitest-pool-workers@https://pkg.pr.new/@cloudflare/vitest-pool-workers@11632(@cloudflare/workers-types@4.20260218.0)(@vitest/runner@4.1.0-beta.1)(@vitest/snapshot@4.1.0-beta.1)(vitest@4.1.0-beta.1)':
+  '@cloudflare/vitest-pool-workers@https://pkg.pr.new/@cloudflare/vitest-pool-workers@11632(@cloudflare/workers-types@4.20260218.0)(@vitest/runner@4.1.0-beta.4)(@vitest/snapshot@4.1.0-beta.4)(vitest@4.1.0-beta.4)':
     dependencies:
-      '@vitest/runner': 4.1.0-beta.1
-      '@vitest/snapshot': 4.1.0-beta.1
+      '@vitest/runner': 4.1.0-beta.4
+      '@vitest/snapshot': 4.1.0-beta.4
       cjs-module-lexer: 1.4.3
       esbuild: 0.27.3
       miniflare: 4.20260217.0
-      vitest: 4.1.0-beta.1(@opentelemetry/api@1.9.0)(@types/node@25.2.2)(@vitest/ui@4.1.0-beta.1)(jiti@2.6.1)(lightningcss@1.31.1)(msw@2.12.10(@types/node@25.2.2)(typescript@5.9.3))(tsx@4.21.0)(yaml@2.8.2)
+      vitest: 4.1.0-beta.4(@opentelemetry/api@1.9.0)(@types/node@25.2.2)(@vitest/ui@4.1.0-beta.4)(msw@2.12.10(@types/node@25.2.2)(typescript@5.9.3))(vite@8.0.0-beta.14(@types/node@25.2.2)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))
       wrangler: 4.66.0(@cloudflare/workers-types@4.20260218.0)
       zod: 3.25.76
     transitivePeerDependencies:
@@ -10475,7 +10436,7 @@ snapshots:
   '@libsql/win32-x64-msvc@0.5.22':
     optional: true
 
-  '@luxass/eslint-config@7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.1(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.1)(jiti@2.6.1)(lightningcss@1.31.1)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(tsx@4.21.0)(yaml@2.8.2))':
+  '@luxass/eslint-config@7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.4(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.4)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(vite@8.0.0-beta.14(@types/node@22.19.9)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)))':
     dependencies:
       '@antfu/install-pkg': 1.1.0
       '@clack/prompts': 1.0.1
@@ -10484,7 +10445,7 @@ snapshots:
       '@stylistic/eslint-plugin': 5.7.1(eslint@10.0.0(jiti@2.6.1))
       '@typescript-eslint/eslint-plugin': 8.54.0(@typescript-eslint/parser@8.54.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)
       '@typescript-eslint/parser': 8.54.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)
-      '@vitest/eslint-plugin': 1.6.6(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.1(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.1)(jiti@2.6.1)(lightningcss@1.31.1)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(tsx@4.21.0)(yaml@2.8.2))
+      '@vitest/eslint-plugin': 1.6.6(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.4(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.4)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(vite@8.0.0-beta.14(@types/node@22.19.9)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)))
       eslint: 10.0.0(jiti@2.6.1)
       eslint-config-flat-gitignore: 2.1.0(eslint@10.0.0(jiti@2.6.1))
       eslint-flat-config-utils: 3.0.1
@@ -10523,7 +10484,7 @@ snapshots:
       - typescript
       - vitest
 
-  '@luxass/eslint-config@7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.1)':
+  '@luxass/eslint-config@7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.4)':
     dependencies:
       '@antfu/install-pkg': 1.1.0
       '@clack/prompts': 1.0.1
@@ -10532,7 +10493,7 @@ snapshots:
       '@stylistic/eslint-plugin': 5.7.1(eslint@10.0.0(jiti@2.6.1))
       '@typescript-eslint/eslint-plugin': 8.54.0(@typescript-eslint/parser@8.54.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)
       '@typescript-eslint/parser': 8.54.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)
-      '@vitest/eslint-plugin': 1.6.6(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.1)
+      '@vitest/eslint-plugin': 1.6.6(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.4)
       eslint: 10.0.0(jiti@2.6.1)
       eslint-config-flat-gitignore: 2.1.0(eslint@10.0.0(jiti@2.6.1))
       eslint-flat-config-utils: 3.0.1
@@ -12834,7 +12795,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@vitest/coverage-istanbul@4.1.0-beta.1(vitest@4.1.0-beta.1)':
+  '@vitest/coverage-istanbul@4.1.0-beta.4(vitest@4.1.0-beta.4)':
     dependencies:
       '@babel/core': 7.29.0
       '@istanbuljs/schema': 0.1.3
@@ -12846,90 +12807,91 @@ snapshots:
       magicast: 0.5.2
       obug: 2.1.1
       tinyrainbow: 3.0.3
-      vitest: 4.1.0-beta.1(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.1)(jiti@2.6.1)(lightningcss@1.31.1)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(tsx@4.21.0)(yaml@2.8.2)
+      vitest: 4.1.0-beta.4(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.4)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(vite@8.0.0-beta.14(@types/node@22.19.9)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))
     transitivePeerDependencies:
       - supports-color
 
-  '@vitest/eslint-plugin@1.6.6(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.1(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.1)(jiti@2.6.1)(lightningcss@1.31.1)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(tsx@4.21.0)(yaml@2.8.2))':
+  '@vitest/eslint-plugin@1.6.6(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.4(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.4)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(vite@8.0.0-beta.14(@types/node@22.19.9)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)))':
     dependencies:
       '@typescript-eslint/scope-manager': 8.56.0
       '@typescript-eslint/utils': 8.56.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)
       eslint: 10.0.0(jiti@2.6.1)
     optionalDependencies:
       typescript: 5.9.3
-      vitest: 4.1.0-beta.1(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.1)(jiti@2.6.1)(lightningcss@1.31.1)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(tsx@4.21.0)(yaml@2.8.2)
+      vitest: 4.1.0-beta.4(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.4)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(vite@8.0.0-beta.14(@types/node@22.19.9)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))
     transitivePeerDependencies:
       - supports-color
 
-  '@vitest/eslint-plugin@1.6.6(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.1)':
+  '@vitest/eslint-plugin@1.6.6(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.4)':
     dependencies:
       '@typescript-eslint/scope-manager': 8.56.0
       '@typescript-eslint/utils': 8.56.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)
       eslint: 10.0.0(jiti@2.6.1)
     optionalDependencies:
       typescript: 5.9.3
-      vitest: 4.1.0-beta.1(@opentelemetry/api@1.9.0)(@types/node@25.2.2)(@vitest/ui@4.1.0-beta.1)(jiti@2.6.1)(lightningcss@1.31.1)(msw@2.12.10(@types/node@25.2.2)(typescript@5.9.3))(tsx@4.21.0)(yaml@2.8.2)
+      vitest: 4.1.0-beta.4(@opentelemetry/api@1.9.0)(@types/node@25.2.2)(@vitest/ui@4.1.0-beta.4)(msw@2.12.10(@types/node@25.2.2)(typescript@5.9.3))(vite@8.0.0-beta.14(@types/node@25.2.2)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))
     transitivePeerDependencies:
       - supports-color
 
-  '@vitest/expect@4.1.0-beta.1':
+  '@vitest/expect@4.1.0-beta.4':
     dependencies:
       '@standard-schema/spec': 1.1.0
       '@types/chai': 5.2.3
-      '@vitest/spy': 4.1.0-beta.1
-      '@vitest/utils': 4.1.0-beta.1
+      '@vitest/spy': 4.1.0-beta.4
+      '@vitest/utils': 4.1.0-beta.4
       chai: 6.2.2
       tinyrainbow: 3.0.3
 
-  '@vitest/mocker@4.1.0-beta.1(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(vite@7.3.1(@types/node@22.19.9)(jiti@2.6.1)(lightningcss@1.31.1)(tsx@4.21.0)(yaml@2.8.2))':
+  '@vitest/mocker@4.1.0-beta.4(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(vite@8.0.0-beta.14(@types/node@22.19.9)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))':
     dependencies:
-      '@vitest/spy': 4.1.0-beta.1
+      '@vitest/spy': 4.1.0-beta.4
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
       msw: 2.12.10(@types/node@22.19.9)(typescript@5.9.3)
-      vite: 7.3.1(@types/node@22.19.9)(jiti@2.6.1)(lightningcss@1.31.1)(tsx@4.21.0)(yaml@2.8.2)
+      vite: 8.0.0-beta.14(@types/node@22.19.9)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)
 
-  '@vitest/mocker@4.1.0-beta.1(msw@2.12.10(@types/node@25.2.2)(typescript@5.9.3))(vite@7.3.1(@types/node@22.19.9)(jiti@2.6.1)(lightningcss@1.31.1)(tsx@4.21.0)(yaml@2.8.2))':
+  '@vitest/mocker@4.1.0-beta.4(msw@2.12.10(@types/node@25.2.2)(typescript@5.9.3))(vite@8.0.0-beta.14(@types/node@25.2.2)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))':
     dependencies:
-      '@vitest/spy': 4.1.0-beta.1
+      '@vitest/spy': 4.1.0-beta.4
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
       msw: 2.12.10(@types/node@25.2.2)(typescript@5.9.3)
-      vite: 7.3.1(@types/node@22.19.9)(jiti@2.6.1)(lightningcss@1.31.1)(tsx@4.21.0)(yaml@2.8.2)
+      vite: 8.0.0-beta.14(@types/node@25.2.2)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)
 
-  '@vitest/pretty-format@4.1.0-beta.1':
+  '@vitest/pretty-format@4.1.0-beta.4':
     dependencies:
       tinyrainbow: 3.0.3
 
-  '@vitest/runner@4.1.0-beta.1':
+  '@vitest/runner@4.1.0-beta.4':
     dependencies:
-      '@vitest/utils': 4.1.0-beta.1
+      '@vitest/utils': 4.1.0-beta.4
       pathe: 2.0.3
 
-  '@vitest/snapshot@4.1.0-beta.1':
+  '@vitest/snapshot@4.1.0-beta.4':
     dependencies:
-      '@vitest/pretty-format': 4.1.0-beta.1
+      '@vitest/pretty-format': 4.1.0-beta.4
+      '@vitest/utils': 4.1.0-beta.4
       magic-string: 0.30.21
       pathe: 2.0.3
 
-  '@vitest/spy@4.1.0-beta.1': {}
+  '@vitest/spy@4.1.0-beta.4': {}
 
-  '@vitest/ui@4.1.0-beta.1(vitest@4.1.0-beta.1)':
+  '@vitest/ui@4.1.0-beta.4(vitest@4.1.0-beta.4)':
     dependencies:
-      '@vitest/utils': 4.1.0-beta.1
+      '@vitest/utils': 4.1.0-beta.4
       fflate: 0.8.2
       flatted: 3.3.3
       pathe: 2.0.3
       sirv: 3.0.2
       tinyglobby: 0.2.15
       tinyrainbow: 3.0.3
-      vitest: 4.1.0-beta.1(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.1)(jiti@2.6.1)(lightningcss@1.31.1)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(tsx@4.21.0)(yaml@2.8.2)
+      vitest: 4.1.0-beta.4(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.4)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(vite@8.0.0-beta.14(@types/node@22.19.9)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))
 
-  '@vitest/utils@4.1.0-beta.1':
+  '@vitest/utils@4.1.0-beta.4':
     dependencies:
-      '@vitest/pretty-format': 4.1.0-beta.1
+      '@vitest/pretty-format': 4.1.0-beta.4
       tinyrainbow: 3.0.3
 
   '@vscode/vsce-sign-alpine-arm64@2.0.6':
@@ -13759,7 +13721,7 @@ snapshots:
 
   es-errors@1.3.0: {}
 
-  es-module-lexer@1.7.0: {}
+  es-module-lexer@2.0.0: {}
 
   es-object-atoms@1.1.1:
     dependencies:
@@ -16751,6 +16713,7 @@ snapshots:
       '@rollup/rollup-win32-x64-gnu': 4.57.1
       '@rollup/rollup-win32-x64-msvc': 4.57.1
       fsevents: 2.3.3
+    optional: true
 
   rou3@0.7.12: {}
 
@@ -17551,38 +17514,6 @@ snapshots:
       - supports-color
       - typescript
 
-  vite@7.3.1(@types/node@22.19.9)(jiti@2.6.1)(lightningcss@1.31.1)(tsx@4.21.0)(yaml@2.8.2):
-    dependencies:
-      esbuild: 0.27.3
-      fdir: 6.5.0(picomatch@4.0.3)
-      picomatch: 4.0.3
-      postcss: 8.5.6
-      rollup: 4.57.1
-      tinyglobby: 0.2.15
-    optionalDependencies:
-      '@types/node': 22.19.9
-      fsevents: 2.3.3
-      jiti: 2.6.1
-      lightningcss: 1.31.1
-      tsx: 4.21.0
-      yaml: 2.8.2
-
-  vite@7.3.1(@types/node@25.2.2)(jiti@2.6.1)(lightningcss@1.31.1)(tsx@4.21.0)(yaml@2.8.2):
-    dependencies:
-      esbuild: 0.27.3
-      fdir: 6.5.0(picomatch@4.0.3)
-      picomatch: 4.0.3
-      postcss: 8.5.6
-      rollup: 4.57.1
-      tinyglobby: 0.2.15
-    optionalDependencies:
-      '@types/node': 25.2.2
-      fsevents: 2.3.3
-      jiti: 2.6.1
-      lightningcss: 1.31.1
-      tsx: 4.21.0
-      yaml: 2.8.2
-
   vite@8.0.0-beta.14(@types/node@22.19.9)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2):
     dependencies:
       '@oxc-project/runtime': 0.113.0
@@ -17600,26 +17531,43 @@ snapshots:
       tsx: 4.21.0
       yaml: 2.8.2
 
+  vite@8.0.0-beta.14(@types/node@25.2.2)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2):
+    dependencies:
+      '@oxc-project/runtime': 0.113.0
+      fdir: 6.5.0(picomatch@4.0.3)
+      lightningcss: 1.31.1
+      picomatch: 4.0.3
+      postcss: 8.5.6
+      rolldown: 1.0.0-rc.5
+      tinyglobby: 0.2.15
+    optionalDependencies:
+      '@types/node': 25.2.2
+      esbuild: 0.27.3
+      fsevents: 2.3.3
+      jiti: 2.6.1
+      tsx: 4.21.0
+      yaml: 2.8.2
+
   vitefu@1.1.1(vite@8.0.0-beta.14(@types/node@22.19.9)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)):
     optionalDependencies:
       vite: 8.0.0-beta.14(@types/node@22.19.9)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)
 
-  vitest-testdirs@4.4.2(vitest@4.1.0-beta.1):
+  vitest-testdirs@4.4.2(vitest@4.1.0-beta.4):
     dependencies:
       testdirs: 4.0.1
-      vitest: 4.1.0-beta.1(@opentelemetry/api@1.9.0)(@types/node@25.2.2)(@vitest/ui@4.1.0-beta.1)(jiti@2.6.1)(lightningcss@1.31.1)(msw@2.12.10(@types/node@25.2.2)(typescript@5.9.3))(tsx@4.21.0)(yaml@2.8.2)
+      vitest: 4.1.0-beta.4(@opentelemetry/api@1.9.0)(@types/node@25.2.2)(@vitest/ui@4.1.0-beta.4)(msw@2.12.10(@types/node@25.2.2)(typescript@5.9.3))(vite@8.0.0-beta.14(@types/node@25.2.2)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))
       zod: 4.3.6
 
-  vitest@4.1.0-beta.1(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.1)(jiti@2.6.1)(lightningcss@1.31.1)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(tsx@4.21.0)(yaml@2.8.2):
+  vitest@4.1.0-beta.4(@opentelemetry/api@1.9.0)(@types/node@22.19.9)(@vitest/ui@4.1.0-beta.4)(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(vite@8.0.0-beta.14(@types/node@22.19.9)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)):
     dependencies:
-      '@vitest/expect': 4.1.0-beta.1
-      '@vitest/mocker': 4.1.0-beta.1(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(vite@7.3.1(@types/node@22.19.9)(jiti@2.6.1)(lightningcss@1.31.1)(tsx@4.21.0)(yaml@2.8.2))
-      '@vitest/pretty-format': 4.1.0-beta.1
-      '@vitest/runner': 4.1.0-beta.1
-      '@vitest/snapshot': 4.1.0-beta.1
-      '@vitest/spy': 4.1.0-beta.1
-      '@vitest/utils': 4.1.0-beta.1
-      es-module-lexer: 1.7.0
+      '@vitest/expect': 4.1.0-beta.4
+      '@vitest/mocker': 4.1.0-beta.4(msw@2.12.10(@types/node@22.19.9)(typescript@5.9.3))(vite@8.0.0-beta.14(@types/node@22.19.9)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))
+      '@vitest/pretty-format': 4.1.0-beta.4
+      '@vitest/runner': 4.1.0-beta.4
+      '@vitest/snapshot': 4.1.0-beta.4
+      '@vitest/spy': 4.1.0-beta.4
+      '@vitest/utils': 4.1.0-beta.4
+      es-module-lexer: 2.0.0
       expect-type: 1.3.0
       magic-string: 0.30.21
       obug: 2.1.1
@@ -17630,35 +17578,25 @@ snapshots:
       tinyexec: 1.0.2
       tinyglobby: 0.2.15
       tinyrainbow: 3.0.3
-      vite: 7.3.1(@types/node@22.19.9)(jiti@2.6.1)(lightningcss@1.31.1)(tsx@4.21.0)(yaml@2.8.2)
+      vite: 8.0.0-beta.14(@types/node@22.19.9)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@opentelemetry/api': 1.9.0
       '@types/node': 22.19.9
-      '@vitest/ui': 4.1.0-beta.1(vitest@4.1.0-beta.1)
+      '@vitest/ui': 4.1.0-beta.4(vitest@4.1.0-beta.4)
     transitivePeerDependencies:
-      - jiti
-      - less
-      - lightningcss
       - msw
-      - sass
-      - sass-embedded
-      - stylus
-      - sugarss
-      - terser
-      - tsx
-      - yaml
 
-  vitest@4.1.0-beta.1(@opentelemetry/api@1.9.0)(@types/node@25.2.2)(@vitest/ui@4.1.0-beta.1)(jiti@2.6.1)(lightningcss@1.31.1)(msw@2.12.10(@types/node@25.2.2)(typescript@5.9.3))(tsx@4.21.0)(yaml@2.8.2):
+  vitest@4.1.0-beta.4(@opentelemetry/api@1.9.0)(@types/node@25.2.2)(@vitest/ui@4.1.0-beta.4)(msw@2.12.10(@types/node@25.2.2)(typescript@5.9.3))(vite@8.0.0-beta.14(@types/node@25.2.2)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)):
     dependencies:
-      '@vitest/expect': 4.1.0-beta.1
-      '@vitest/mocker': 4.1.0-beta.1(msw@2.12.10(@types/node@25.2.2)(typescript@5.9.3))(vite@7.3.1(@types/node@22.19.9)(jiti@2.6.1)(lightningcss@1.31.1)(tsx@4.21.0)(yaml@2.8.2))
-      '@vitest/pretty-format': 4.1.0-beta.1
-      '@vitest/runner': 4.1.0-beta.1
-      '@vitest/snapshot': 4.1.0-beta.1
-      '@vitest/spy': 4.1.0-beta.1
-      '@vitest/utils': 4.1.0-beta.1
-      es-module-lexer: 1.7.0
+      '@vitest/expect': 4.1.0-beta.4
+      '@vitest/mocker': 4.1.0-beta.4(msw@2.12.10(@types/node@25.2.2)(typescript@5.9.3))(vite@8.0.0-beta.14(@types/node@25.2.2)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))
+      '@vitest/pretty-format': 4.1.0-beta.4
+      '@vitest/runner': 4.1.0-beta.4
+      '@vitest/snapshot': 4.1.0-beta.4
+      '@vitest/spy': 4.1.0-beta.4
+      '@vitest/utils': 4.1.0-beta.4
+      es-module-lexer: 2.0.0
       expect-type: 1.3.0
       magic-string: 0.30.21
       obug: 2.1.1
@@ -17669,24 +17607,14 @@ snapshots:
       tinyexec: 1.0.2
       tinyglobby: 0.2.15
       tinyrainbow: 3.0.3
-      vite: 7.3.1(@types/node@25.2.2)(jiti@2.6.1)(lightningcss@1.31.1)(tsx@4.21.0)(yaml@2.8.2)
+      vite: 8.0.0-beta.14(@types/node@25.2.2)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)
       why-is-node-running: 2.3.0
     optionalDependencies:
       '@opentelemetry/api': 1.9.0
       '@types/node': 25.2.2
-      '@vitest/ui': 4.1.0-beta.1(vitest@4.1.0-beta.1)
+      '@vitest/ui': 4.1.0-beta.4(vitest@4.1.0-beta.4)
     transitivePeerDependencies:
-      - jiti
-      - less
-      - lightningcss
       - msw
-      - sass
-      - sass-embedded
-      - stylus
-      - sugarss
-      - terser
-      - tsx
-      - yaml
 
   vscode-ext-gen@1.5.1:
     dependencies:
