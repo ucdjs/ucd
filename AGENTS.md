@@ -195,7 +195,7 @@ Moonbeam is a critical internal ESM loader that resolves workspace packages to t
 # With tsx (recommended)
 tsx --import @ucdjs/moonbeam/register ./your-script.ts
 
-# With Node.js 22.18+
+# With Node.js 24.13+
 node --import @ucdjs/moonbeam/register ./your-script.ts
 ```
 
@@ -278,5 +278,5 @@ The API worker (apps/api) has multiple deployment environments configured in `wr
    - `@luxass/eslint-config` for linting
 
 ### Node Version
-- Requires Node.js >= 22.18
+- Requires Node.js >= 24.13
 - pnpm 10.26.1 (enforced via packageManager field)

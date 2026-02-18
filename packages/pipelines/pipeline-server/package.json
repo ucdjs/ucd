@@ -39,7 +39,7 @@
     "dist"
   ],
   "engines": {
-    "node": ">=22.18"
+    "node": ">=24.13"
   },
   "scripts": {
     "build": "vite build && pnpm build:dts",
