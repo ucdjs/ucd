@@ -1,5 +1,25 @@
 # @ucdjs/pipelines-server
 
+## [0.0.1-beta.6](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-server@0.0.1-beta.5...@ucdjs/pipelines-server@0.0.1-beta.6) (2026-02-18)
+
+
+
+### 🚀 Features
+* add workspaceId to PipelinesResponse and display in sidebar ([b1477cf1](https://github.com/ucdjs/ucd/commit/b1477cf139dae39af2e9de7688fc1eed251b24a1)) (by [@luxass](https://github.com/luxass))
+* enhance workspace support in server and routes ([362987c2](https://github.com/ucdjs/ucd/commit/362987c26d10891bbb026e761b4fb6775d97f40b)) (by [@luxass](https://github.com/luxass))
+* update workspace_id defaults in migrations ([6889177c](https://github.com/ucdjs/ucd/commit/6889177c8d3506436cd0a37abbe1e073973a9cba)) (by [@luxass](https://github.com/luxass))
+* add workspace support to database schema and routes ([0abf519a](https://github.com/ucdjs/ucd/commit/0abf519ad54b0c0af3e72a5226dc8b0b885f8eb8)) (by [@luxass](https://github.com/luxass))
+* add shared package as a workspace dependency ([587e6604](https://github.com/ucdjs/ucd/commit/587e66046f16f7aaacda4bc8c1b10432bbde6939)) (by [@luxass](https://github.com/luxass))
+* add workspaceId to execution context and logs ([c50bfb90](https://github.com/ucdjs/ucd/commit/c50bfb90af903133e8a790b2bb0fcda3e13bb603)) (by [@luxass](https://github.com/luxass))
+* add workspace management functions ([a9e9ff85](https://github.com/ucdjs/ucd/commit/a9e9ff855426fb1c1ec37025acf5a570c0b96782)) (by [@luxass](https://github.com/luxass))
+* add workspace support to app options ([3620d88e](https://github.com/ucdjs/ucd/commit/3620d88e2d95551d379c8efa6cefa0950984e208)) (by [@luxass](https://github.com/luxass))
+* update database schema and add workspace support ([6889ff27](https://github.com/ucdjs/ucd/commit/6889ff274ae0873458a248467508fb129a00e48b)) (by [@luxass](https://github.com/luxass))
+* add workspaces table and update related schemas ([7c13fd37](https://github.com/ucdjs/ucd/commit/7c13fd37a6771b26b6c2fa251f1baeffd6658cb4)) (by [@luxass](https://github.com/luxass))
+
+### 🐞 Bug Fixes
+* copy migrations folder to dist ([06dc7938](https://github.com/ucdjs/ucd/commit/06dc7938da4dfaf1d1cf22c452e496c7b14c37a0)) (by [@luxass](https://github.com/luxass))
+
+
 ## [0.0.1-beta.5](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-server@0.0.1-beta.4...@ucdjs/pipelines-server@0.0.1-beta.5) (2026-02-16)
 
 

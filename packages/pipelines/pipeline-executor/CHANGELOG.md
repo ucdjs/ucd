@@ -1,5 +1,13 @@
 # @ucdjs/pipelines-executor
 
+## [0.0.1-beta.6](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-executor@0.0.1-beta.5...@ucdjs/pipelines-executor@0.0.1-beta.6) (2026-02-18)
+
+
+
+### 🚀 Features
+* add workspaceId to execution context and logs ([c50bfb90](https://github.com/ucdjs/ucd/commit/c50bfb90af903133e8a790b2bb0fcda3e13bb603)) (by [@luxass](https://github.com/luxass))
+
+
 ## [0.0.1-beta.5](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-executor@0.0.1-beta.4...@ucdjs/pipelines-executor@0.0.1-beta.5) (2026-02-16)
 
 

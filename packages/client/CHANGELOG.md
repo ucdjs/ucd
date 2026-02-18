@@ -1,5 +1,15 @@
 # @ucdjs/client
 
+## [0.1.1-beta.6](https://github.com/ucdjs/ucd/compare/@ucdjs/client@0.1.1-beta.5...@ucdjs/client@0.1.1-beta.6) (2026-02-18)
+
+
+
+
+### Notes
+
+* No significant commits in this release.
+
+
 ## [0.1.1-beta.5](https://github.com/ucdjs/ucd/compare/@ucdjs/client@0.1.1-beta.4...@ucdjs/client@0.1.1-beta.5) (2026-02-16)
 
 

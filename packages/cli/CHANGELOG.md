@@ -1,5 +1,13 @@
 # @ucdjs/cli
 
+## [0.3.1-beta.6](https://github.com/ucdjs/ucd/compare/@ucdjs/cli@0.3.1-beta.5...@ucdjs/cli@0.3.1-beta.6) (2026-02-18)
+
+
+
+### 🚀 Features
+* implement pipeline run command ([dbe5b4a0](https://github.com/ucdjs/ucd/commit/dbe5b4a0e2be201cf53fe31ea41da4c90087a903)) (by [@luxass](https://github.com/luxass))
+
+
 ## [0.3.1-beta.5](https://github.com/ucdjs/ucd/compare/@ucdjs/cli@0.3.1-beta.4...@ucdjs/cli@0.3.1-beta.5) (2026-02-16)
 
 

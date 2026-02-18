@@ -1,5 +1,14 @@
 # @ucdjs-internal/shared
 
+## [0.1.1-beta.6](https://github.com/ucdjs/ucd/compare/@ucdjs-internal/shared@0.1.1-beta.5...@ucdjs-internal/shared@0.1.1-beta.6) (2026-02-18)
+
+
+
+### 🚀 Features
+* add workspace support to database schema and routes ([0abf519a](https://github.com/ucdjs/ucd/commit/0abf519ad54b0c0af3e72a5226dc8b0b885f8eb8)) (by [@luxass](https://github.com/luxass))
+* add config path utilities for pipeline ([f165052a](https://github.com/ucdjs/ucd/commit/f165052ad2aa7d7ec509679a452cbbcc81ed1b4d)) (by [@luxass](https://github.com/luxass))
+
+
 ## [0.1.1-beta.5](https://github.com/ucdjs/ucd/compare/@ucdjs-internal/shared@0.1.1-beta.4...@ucdjs-internal/shared@0.1.1-beta.5) (2026-02-16)
 
 
