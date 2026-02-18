@@ -41,10 +41,8 @@
     "typecheck": {
       "dependsOn": [
         "^topo",
-        "^build",
-        "^typecheck"
-      ],
-      "outputs": [".ts-cache/**"]
+        "^build"
+      ]
     },
 
     "//#test": {
