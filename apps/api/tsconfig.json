@@ -1,11 +1,3 @@
 {
-  "extends": "@ucdjs-tooling/tsconfig/base",
-  "compilerOptions": {
-    "types": [
-      "./wrangler-types.d.ts",
-      "@cloudflare/vitest-pool-workers/types"
-    ]
-  },
-  "include": ["src/**/*", "*.ts", "test"],
-  "exclude": ["dist"]
+  "extends": "@ucdjs-tooling/tsconfig/base.workers"
 }

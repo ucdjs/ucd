@@ -21,7 +21,8 @@
   },
   "files": [
     "base.build.json",
-    "base.json"
+    "base.json",
+    "base.workers.json"
   ],
   "scripts": {
     "clean": "git clean -xdf dist node_modules",

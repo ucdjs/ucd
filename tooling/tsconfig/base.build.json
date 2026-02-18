@@ -29,6 +29,6 @@
     "incremental": true,
     "tsBuildInfoFile": "${configDir}/.cache/tsbuildinfo.json"
   },
-  "include": ["*.ts"],
-  "exclude": ["node_modules"]
+  "include": ["${configDir}/**/*.ts", "${configDir}/**/*.tsx"],
+  "exclude": ["${configDir}/node_modules/", "${configDir}/dist/", "${configDir}/eslint.config.ts"]
 }
