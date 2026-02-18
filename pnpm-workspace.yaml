@@ -2,7 +2,7 @@ preferWorkspacePackages: true
 saveWorkspaceProtocol: false
 linkWorkspacePackages: true
 strictPeerDependencies: false
-engineStrict: false
+engineStrict: true
 minimumReleaseAge: 1440 # 1 day
 trustPolicy: "no-downgrade"
 
