@@ -21,6 +21,7 @@
   },
   "files": [
     "base.build.json",
+    "base.build.workers.json",
     "base.json",
     "base.workers.json"
   ],
