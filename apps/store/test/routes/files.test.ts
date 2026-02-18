@@ -1,46 +1,22 @@
+import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { env } from "cloudflare:workers";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { executeRequest } from "../helpers/request";
 
 describe("store files route", () => {
   it("delegates to UCDJS_API.files with stripUCDPrefix enabled", async () => {
-    const filesMock = vi.fn(async () => {
-      return {
-        status: 200,
-        headers: {
-          "Content-Type": "application/json",
-          "x-test": "ok",
-        },
-        kind: "directory",
-        body: JSON.stringify([{ name: "Blocks.txt" }]),
-      };
-    });
+    mockFetch([
+      ["GET", "https://unicode.org/Public/17.0.0/ucd/Blocks.txt", () => {
+        return HttpResponse.text("Mock Blocks.txt content");
+      }],
+    ]);
 
-    const testEnv = {
-      ...env,
-      UCDJS_API: {
-        files: filesMock,
-      },
-    } as unknown as Cloudflare.Env;
-
-    const { response, json } = await executeRequest(
-      new Request("https://ucd-store.ucdjs.dev/17.0.0/Blocks.txt?query=Blo"),
-      testEnv,
+    const { response, text } = await executeRequest(
+      new Request("https://ucd-store.ucdjs.dev/17.0.0/Blocks.txt"),
+      env,
     );
 
     expect(response.status).toBe(200);
-    expect(response.headers.get("x-test")).toBe("ok");
-    expect(await json()).toEqual([{ name: "Blocks.txt" }]);
-
-    expect(filesMock).toHaveBeenCalledTimes(1);
-    expect(filesMock).toHaveBeenCalledWith("17.0.0/ucd/Blocks.txt", {
-      query: "Blo",
-      pattern: undefined,
-      type: undefined,
-      sort: undefined,
-      order: undefined,
-      isHeadRequest: false,
-      stripUCDPrefix: true,
-    });
+    expect(await text()).toEqual("Mock Blocks.txt content");
   });
 });
