@@ -1,5 +1,5 @@
 diff --git a/dist/index.cjs b/dist/index.cjs
-index c8778b90d64fc659d707436b1b51bbbbf5b5feab..96bfc548123c8473a731640a9f98c58928a69330 100644
+index eb088ed49d73d681f4e9a8ae4f7c34998a65a089..ad69b67cdbc907df5c4aa6360b8ec30569b23cdc 100644
 --- a/dist/index.cjs
 +++ b/dist/index.cjs
 @@ -599,6 +599,9 @@ class OpenAPIRegistry {
@@ -13,7 +13,7 @@ index c8778b90d64fc659d707436b1b51bbbbf5b5feab..96bfc548123c8473a731640a9f98c589
      }
  }
 diff --git a/dist/index.mjs b/dist/index.mjs
-index b3b7b28db3e5c6b21aced00b44f972726f7d627d..097f92d06c3c44e89bce3ea7f3d250b2c3de531c 100644
+index 57373e21df12b7a399e4af84301483ae314d62c0..cb1d552897af478575872cc7deeb3bf46afc080c 100644
 --- a/dist/index.mjs
 +++ b/dist/index.mjs
 @@ -597,6 +597,9 @@ class OpenAPIRegistry {

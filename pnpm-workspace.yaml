@@ -1,7 +1,8 @@
 preferWorkspacePackages: true
 saveWorkspaceProtocol: false
 linkWorkspacePackages: true
-engineStrict: true
+strictPeerDependencies: false
+engineStrict: false
 minimumReleaseAge: 1440 # 1 day
 trustPolicy: "no-downgrade"
 
@@ -22,31 +23,31 @@ packages:
 
 catalogs:
   build:
-    turbo: 2.8.7
+    turbo: 2.8.10
     "@ucdjs/release-scripts": 0.1.0-beta.56
     tsdown: 0.20.3
     typescript: 5.9.3
     publint: 0.3.17
-    nanotar: 0.2.1
+    nanotar: 0.3.0
     openapi-typescript: 7.13.0
     tsx: 4.21.0
-    rolldown: 1.0.0-rc.4
+    rolldown: 1.0.0-rc.5
     "@rollup/plugin-babel": 6.1.0
     babel-plugin-react-compiler: 1.0.0
     vite-plugin-inspect: 11.3.3
-    tailwindcss: 4.1.18
-    "@tailwindcss/vite": 4.1.18
+    tailwindcss: 4.2.0
+    "@tailwindcss/vite": 4.2.0
     "@vitejs/plugin-react": 5.1.4
     vite: 8.0.0-beta.14
-    "@cloudflare/vite-plugin": 1.24.0
-    "@tanstack/router-plugin": 1.159.5
+    "@cloudflare/vite-plugin": 1.25.1
+    "@tanstack/router-plugin": 1.161.1
     "@tanstack/devtools-vite": 0.5.1
     vite-tsconfig-paths: 6.1.1
     chokidar: 5.0.0
     drizzle-kit: 0.31.9
     esrap: 2.2.3
-    oxc-parser: 0.112.0
-    oxc-transform: 0.112.0
+    oxc-parser: 0.114.0
+    oxc-transform: 0.114.0
     tinyglobby: 0.2.15
 
   test:
@@ -65,8 +66,8 @@ catalogs:
     eslint: 10.0.0
     eslint-plugin-format: 1.4.0
     "@luxass/spectral-ruleset": 1.1.1
-    "@typescript-eslint/utils": 8.55.0
-    "@eslint-react/eslint-plugin": 2.12.4
+    "@typescript-eslint/utils": 8.56.0
+    "@eslint-react/eslint-plugin": 2.13.0
     eslint-plugin-react-hooks: 7.0.1
     eslint-plugin-react-refresh: 0.5.0
 
@@ -79,13 +80,13 @@ catalogs:
     yargs-parser: 22.0.0
     defu: 6.1.4
     zod: 4.3.6
-    "@ai-sdk/openai": 3.0.26
-    ai: 6.0.79
+    "@ai-sdk/openai": 3.0.30
+    ai: 6.0.91
     knitwork: 1.3.0
     picomatch: 4.0.3
     apache-autoindex-parse: 5.0.2
     pathe: 2.0.3
-    "@clack/prompts": 1.0.0
+    "@clack/prompts": 1.0.1
     obug: 2.1.1
     "@luxass/msw-utils": 0.6.0
     hookable: 6.0.1
@@ -93,17 +94,17 @@ catalogs:
     shiki: 3.22.0
 
   backend:
-    wrangler: 4.64.0
-    "@hono/zod-openapi": 1.2.1
-    "@scalar/hono-api-reference": 0.9.40
-    hono: 4.11.9
-    "@cloudflare/workers-types": 4.20260210.0
-    "@sentry/cloudflare": 10.38.0
+    wrangler: 4.66.0
+    "@hono/zod-openapi": 1.2.2
+    "@scalar/hono-api-reference": 0.9.41
+    hono: 4.11.10
+    "@cloudflare/workers-types": 4.20260218.0
+    "@sentry/cloudflare": 10.39.0
     h3: 2.0.1-rc.14
     crossws: 0.4.4
     drizzle-orm: 0.45.1
     "@libsql/client": 0.17.0
-    miniflare: 4.20260210.0
+    miniflare: 4.20260217.0
 
   types:
     "@types/picomatch": 4.0.2
@@ -117,23 +118,23 @@ catalogs:
   frontend:
     react: 19.2.4
     react-dom: 19.2.4
-    "@tanstack/react-router": 1.159.5
-    "@tanstack/react-router-devtools": 1.159.5
-    "@tanstack/zod-adapter": 1.159.5
-    "@tanstack/react-devtools": 0.9.5
-    "@tanstack/react-form": 1.28.0
+    "@tanstack/react-router": 1.161.1
+    "@tanstack/react-router-devtools": 1.161.1
+    "@tanstack/zod-adapter": 1.161.1
+    "@tanstack/react-devtools": 0.9.6
+    "@tanstack/react-form": 1.28.3
     "@tanstack/react-query": 5.90.21
     "@tanstack/react-query-devtools": 5.91.3
-    "@tanstack/react-router-ssr-query": 1.159.5
-    "@tanstack/react-start": 1.159.5
-    lucide-react: 0.563.0
-    "@icons-pack/react-simple-icons": 13.8.0
+    "@tanstack/react-router-ssr-query": 1.161.1
+    "@tanstack/react-start": 1.161.1
+    lucide-react: 0.574.0
+    "@icons-pack/react-simple-icons": 13.11.2
     nitro: 3.0.1-alpha.2
     tw-animate-css: 1.4.0
-    tailwind-merge: 3.4.0
+    tailwind-merge: 3.4.1
     clsx: 2.1.1
     class-variance-authority: 0.7.1
-    "@base-ui/react": 1.1.0
+    "@base-ui/react": 1.2.0
     "@base-ui/utils": 0.2.5
     "@fontsource-variable/inter": 5.2.8
     "@xyflow/react": 12.10.0
@@ -146,8 +147,8 @@ catalogs:
 
   docs:
     fumadocs-mdx: 14.2.7
-    fumadocs-core: 16.5.4
-    fumadocs-ui: 16.5.4
+    fumadocs-core: 16.6.3
+    fumadocs-ui: 16.6.3
 
 onlyBuiltDependencies:
   - esbuild
@@ -155,14 +156,14 @@ onlyBuiltDependencies:
   - workerd
 
 overrides:
-  "@asteasolutions/zod-to-openapi": 8.4.0
+  "@asteasolutions/zod-to-openapi": 8.4.1
   rolldown: catalog:build
   wrangler: catalog:backend
   miniflare: catalog:backend
   esbuild: 0.27.3
   semver: 7.7.4
   solid-js: 1.9.11
-  undici-types: 6.23.0
+  undici-types: 7.22.0
 
 patchedDependencies:
-  "@asteasolutions/zod-to-openapi@8.4.0": patches/@asteasolutions__zod-to-openapi@8.4.0.patch
+  "@asteasolutions/zod-to-openapi@8.4.1": patches/@asteasolutions__zod-to-openapi@8.4.1.patch
