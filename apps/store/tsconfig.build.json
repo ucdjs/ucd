@@ -1,14 +1,6 @@
 {
-  "extends": "@ucdjs-tooling/tsconfig/base.build",
-  "compilerOptions": {
-    "lib": ["ESNext"],
-    "types": [
-      "./wrangler-types.d.ts",
-      "@cloudflare/vitest-pool-workers/types"
-    ]
-  },
+  "extends": "@ucdjs-tooling/tsconfig/base.build.workers",
   "references": [
     { "path": "../api/tsconfig.build.json" }
-  ],
-  "include": ["src/**/*", "*.ts"]
+  ]
 }
