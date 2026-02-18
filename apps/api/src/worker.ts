@@ -85,7 +85,7 @@ app.doc31("/openapi.json", (c) => {
 app.onError(errorHandler);
 app.notFound(notFoundHandler);
 
-export const getOpenAPI31Document = app.getOpenAPI31Document;
+export const getOpenAPI31Document: OpenAPIHono<HonoEnv>["getOpenAPI31Document"] = app.getOpenAPI31Document;
 
 export default Sentry.withSentry((env: HonoEnv["Bindings"]) => {
   const { id: versionId } = env.CF_VERSION_METADATA;
