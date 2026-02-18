@@ -21,7 +21,7 @@ This ESM loader ensures workspace packages resolve to their source files.
 tsx --import @ucdjs/moonbeam/register ./your-script.ts
 ```
 
-### With Node.js 22.18+
+### With Node.js 24.13+
 ```bash
 node --import @ucdjs/moonbeam/register ./your-script.ts
 ```
