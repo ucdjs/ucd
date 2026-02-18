@@ -30,5 +30,5 @@
     "tsBuildInfoFile": "${configDir}/.cache/tsbuildinfo.json"
   },
   "include": ["${configDir}/**/*.ts", "${configDir}/**/*.tsx"],
-  "exclude": ["${configDir}/node_modules/", "${configDir}/dist/", "${configDir}/eslint.config.ts"]
+  "exclude": ["${configDir}/node_modules/", "${configDir}/dist/", "${configDir}/eslint.config.js"]
 }
