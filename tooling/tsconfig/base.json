@@ -40,6 +40,7 @@
 
       // utility packages
       "@ucdjs-internal/shared": ["./packages/shared/src/index.ts"],
+      "@ucdjs-internal/shared/config": ["./packages/shared/src/config.ts"],
       "@ucdjs-internal/worker-utils": ["./packages/worker-utils/src/index.ts"],
       "@ucdjs-internal/worker-utils/setups": ["./packages/worker-utils/src/setups.ts"],
       "@ucdjs-internal/worker-utils/constants": ["./packages/worker-utils/src/constants.ts"],
@@ -93,5 +94,7 @@
       // Internal Test Utils
       "#internal/test-utils/conditions": ["./test/utils/conditions.ts"]
     }
-  }
+  },
+  "include": ["${configDir}/**/*.ts", "${configDir}/**/*.tsx"],
+  "exclude": ["${configDir}/node_modules/", "${configDir}/dist/", "${configDir}/eslint.config.js"]
 }

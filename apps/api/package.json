@@ -16,7 +16,7 @@
     "lint:openapi": "spectral lint ../../ucd-generated/api/openapi.json",
     "generate:types": "wrangler types ./wrangler-types.d.ts",
     "typecheck": "pnpm run generate:types && tsc --noEmit -p tsconfig.build.json",
-    "clean": "git clean -xdf node_modules .wrangler dist .ts-cache ../../ucd-generated/api"
+    "clean": "git clean -xdf node_modules .wrangler dist ../../ucd-generated/api"
   },
   "dependencies": {
     "@hono/zod-openapi": "catalog:backend",

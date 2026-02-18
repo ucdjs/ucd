@@ -1,7 +1,7 @@
 import type { H3 } from "h3";
 import type { Plugin } from "vite";
 import fs from "node:fs/promises";
-import { getUcdConfigDir } from "@ucdjs-internal/shared";
+import { getUcdConfigDir } from "@ucdjs-internal/shared/config";
 import { ensureWorkspace, resolveWorkspace } from "../src/server/workspace";
 
 const appModuleId = "/src/server/app.ts";

@@ -14,7 +14,7 @@
     "lint": "eslint .",
     "generate:types": "wrangler types ./wrangler-types.d.ts -c wrangler.jsonc -c ../api/wrangler.jsonc",
     "typecheck": "pnpm run generate:types && tsc --noEmit -p tsconfig.build.json",
-    "clean": "git clean -xdf node_modules .wrangler dist .ts-cache ../../ucd-generated/api"
+    "clean": "git clean -xdf node_modules .wrangler dist ../../ucd-generated/api"
   },
   "dependencies": {
     "@luxass/utils": "catalog:runtime",

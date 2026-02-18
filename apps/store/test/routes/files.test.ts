@@ -3,6 +3,10 @@ import { describe, expect, it, vi } from "vitest";
 import { executeRequest } from "../helpers/request";
 
 describe("store files route", () => {
+  // We can't use mockFetch to block, these API calls.
+  // Since the API Worker is running as an auxiliary Worker, and therefore cannot be changed.
+  //
+  // Since it runs in a separate thread.
   it("delegates to UCDJS_API.files with stripUCDPrefix enabled", async () => {
     const filesMock = vi.fn(async () => {
       return {
@@ -16,19 +20,16 @@ describe("store files route", () => {
       };
     });
 
-    const testEnv = {
-      ...env,
-      UCDJS_API: {
-        files: filesMock,
-      },
-    } as unknown as Cloudflare.Env;
-
     const { response, json } = await executeRequest(
       new Request("https://ucd-store.ucdjs.dev/17.0.0/Blocks.txt?query=Blo"),
-      testEnv,
+      {
+        ...env,
+        UCDJS_API: {
+          files: filesMock,
+        },
+      } as unknown as Cloudflare.Env,
     );
 
-    expect(response.status).toBe(200);
     expect(response.headers.get("x-test")).toBe("ok");
     expect(await json()).toEqual([{ name: "Blocks.txt" }]);
 

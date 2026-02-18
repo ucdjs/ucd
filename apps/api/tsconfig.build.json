@@ -1,13 +1,10 @@
 {
-  "extends": "@ucdjs-tooling/tsconfig/base.build",
+  "extends": "@ucdjs-tooling/tsconfig/base.build.workers",
   "compilerOptions": {
     "composite": true,
-    "lib": ["ESNext"],
     "declaration": true,
     "declarationMap": true,
     "emitDeclarationOnly": true,
-    "noEmit": false,
-    "outDir": "./.ts-cache"
-  },
-  "include": ["src/**/*", "*.ts"]
+    "noEmit": false
+  }
 }

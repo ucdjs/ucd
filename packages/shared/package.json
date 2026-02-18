@@ -20,6 +20,7 @@
   },
   "exports": {
     ".": "./dist/index.mjs",
+    "./config": "./dist/config.mjs",
     "./package.json": "./package.json"
   },
   "types": "./dist/index.d.mts",

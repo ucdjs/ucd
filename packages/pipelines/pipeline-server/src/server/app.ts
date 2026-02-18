@@ -14,7 +14,7 @@ import {
   pipelinesPipelineRouter,
 } from "#server/routes";
 import { ensureWorkspace, resolveWorkspace } from "#server/workspace";
-import { getUcdConfigDir } from "@ucdjs-internal/shared";
+import { getUcdConfigDir } from "@ucdjs-internal/shared/config";
 import { H3, serve, serveStatic } from "h3";
 
 export interface AppOptions {
