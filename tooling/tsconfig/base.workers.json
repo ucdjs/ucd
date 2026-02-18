@@ -1,6 +1,7 @@
 {
   "extends": "./base.json",
   "compilerOptions": {
+    "lib": ["ESNext"],
     "types": [
       "./wrangler-types.d.ts",
       "@cloudflare/vitest-pool-workers/types"
