@@ -40,6 +40,7 @@
 
       // utility packages
       "@ucdjs-internal/shared": ["./packages/shared/src/index.ts"],
+      "@ucdjs-internal/shared/config": ["./packages/shared/src/config.ts"],
       "@ucdjs-internal/worker-utils": ["./packages/worker-utils/src/index.ts"],
       "@ucdjs-internal/worker-utils/setups": ["./packages/worker-utils/src/setups.ts"],
       "@ucdjs-internal/worker-utils/constants": ["./packages/worker-utils/src/constants.ts"],

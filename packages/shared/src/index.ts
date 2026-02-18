@@ -1,11 +1,5 @@
 export * from "./async/promise-concurrency";
 export * from "./async/try-catch";
-export {
-  getPipelineDbPath,
-  getUcdConfigDir,
-  getUcdConfigPath,
-  getXdgConfigDir,
-} from "./config-paths";
 export * from "./debugger";
 export { customFetch } from "./fetch/fetch";
 
