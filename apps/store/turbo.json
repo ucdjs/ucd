@@ -11,7 +11,10 @@
     "lint": {
     },
     "typecheck": {
-      "outputs": [".cache/tsbuildinfo.json"]
+      "outputs": [
+        ".cache/tsbuildinfo.json",
+        "wrangler-types.d.ts"
+      ]
     }
   }
 }

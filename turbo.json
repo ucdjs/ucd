@@ -1,6 +1,8 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
   "globalDependencies": [
+    ".env",
+    ".env.*",
     "**/.env.*local"
   ],
   "globalPassThroughEnv": [
@@ -17,7 +19,6 @@
     },
     "build": {
       "dependsOn": [
-        "@ucdjs/api#build:openapi",
         "^build"
       ],
       "outputs": [

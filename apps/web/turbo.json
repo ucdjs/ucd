@@ -3,18 +3,19 @@
   "extends": ["//"],
   "tasks": {
     "build": {
-      "outputs": ["dist/**"]
+      "outputs": [
+        "dist/**",
+        ".output/**"
+      ]
     },
     "dev": {
-      "persistent": false
+      "persistent": true
+    },
+    "lint": {
+      "outputs": []
     },
     "typecheck": {
       "outputs": [".cache/tsbuildinfo.json"]
-    },
-    "generate:types": {
-      "outputs": [
-        "wrangler-types.d.ts"
-      ]
     }
   }
 }
