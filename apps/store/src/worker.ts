@@ -29,7 +29,7 @@ app.get("/", (c) => {
       snapshot: "GET /{version}/snapshot.json",
       files: "GET /{version}/{filepath}",
     },
-    documentation: "https://ucdjs.dev/docs",
+    documentation: "https://docs.ucdjs.dev",
   });
 });
 

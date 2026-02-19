@@ -16,7 +16,7 @@ UCD.js is a monorepo that provides tools and APIs for working with Unicode Chara
   > vscode/ - VS Code extension
   > ```
 
-- See [Project Architecture](apps/docs/content/docs/contribute/development/project.md) for details
+- See [Project Architecture](apps/docs/content/contribute/development/project.mdx) for details
 
 ## Setup
 
@@ -127,4 +127,4 @@ This project includes focused documentation for agents. All AI-friendly document
 
 ## Resources
 
-- [Project Architecture](apps/docs/content/docs/contribute/development/project.md)
+- [Project Architecture](apps/docs/content/contribute/development/project.mdx)

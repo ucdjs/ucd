@@ -29,7 +29,7 @@ const UCD_CONFIG_ROUTE = createRoute({
     This endpoint retrieves the UCD configuration, including available API endpoints for accessing Unicode data resources.
 
     > [!NOTE]
-    > The configuration follows the [UCD.js Well-Known Configuration](https://ucdjs.dev/docs/usage/well-known) specification.
+    > The configuration follows the [UCD.js Well-Known Configuration](https://docs.ucdjs.dev/usage/well-known) specification.
 
   `,
   responses: {
