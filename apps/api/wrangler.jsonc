@@ -155,7 +155,7 @@
       },
       "workflows": [
         {
-          "name": "manifest-upload",
+          "name": "manifest-upload-preview",
           "binding": "MANIFEST_UPLOAD_WORKFLOW",
           "class_name": "ManifestUploadWorkflow"
         }
