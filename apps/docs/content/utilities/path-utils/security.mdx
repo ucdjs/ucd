@@ -28,11 +28,11 @@ function resolveSafePath(basePath: string, inputPath: string): string
 
 ### Throws
 
-- [`PathTraversalError`](/docs/utilities/path-utils/errors#pathtraversalerror) - If the resolved path would escape the base directory
-- [`WindowsDriveMismatchError`](/docs/utilities/path-utils/errors#windowsdrivemismatcherror) - If attempting to access a different drive letter on Windows
-- [`UNCPathNotSupportedError`](/docs/utilities/path-utils/errors#uncpathnotsupportederror) - If a UNC path is provided
-- [`IllegalCharacterInPathError`](/docs/utilities/path-utils/errors#illegalcharacterinpatherror) - If the path contains null bytes or control characters
-- [`FailedToDecodePathError`](/docs/utilities/path-utils/errors#failedtodecodepatherror) - If the path cannot be safely decoded
+- [`PathTraversalError`](/utilities/path-utils/errors#pathtraversalerror) - If the resolved path would escape the base directory
+- [`WindowsDriveMismatchError`](/utilities/path-utils/errors#windowsdrivemismatcherror) - If attempting to access a different drive letter on Windows
+- [`UNCPathNotSupportedError`](/utilities/path-utils/errors#uncpathnotsupportederror) - If a UNC path is provided
+- [`IllegalCharacterInPathError`](/utilities/path-utils/errors#illegalcharacterinpatherror) - If the path contains null bytes or control characters
+- [`FailedToDecodePathError`](/utilities/path-utils/errors#failedtodecodepatherror) - If the path cannot be safely decoded
 
 ### Behavior
 
@@ -147,7 +147,7 @@ function decodePathSafely(encodedPath: string): string
 
 ### Throws
 
-- [`MaximumDecodingIterationsExceededError`](/docs/utilities/path-utils/errors#maximumdecodingiterationsexceedederror) - If decoding exceeds 10 iterations (malicious input protection)
+- [`MaximumDecodingIterationsExceededError`](/utilities/path-utils/errors#maximumdecodingiterationsexceedederror) - If decoding exceeds 10 iterations (malicious input protection)
 - `TypeError` - If the input is not a string
 
 ### Behavior

@@ -73,7 +73,7 @@ if (binaryData) {
 
 ## Documentation
 
-For comprehensive documentation, examples, and API reference, visit the [Client Documentation](https://ucdjs.dev/docs/core/client).
+For comprehensive documentation, examples, and API reference, visit the [Client Documentation](https://docs.ucdjs.dev/core/client).
 
 ## 📄 License
 
