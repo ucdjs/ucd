@@ -3,12 +3,14 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@ucdjs-internal/shared-ui/ui/dropdown-menu";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@ucdjs-internal/shared-ui/ui/sidebar";
+import { Skeleton } from "@ucdjs-internal/shared-ui/ui/skeleton";
 import { ChevronsUpDown, Layers } from "lucide-react";
 import * as React from "react";
 
-function getBadgeLabel(date?: string | number) {
+function getBadgeLabel(date?: string | number, isDraft?: boolean) {
   const year = date ? Number.parseInt(String(date), 10) : undefined;
   const age = year ? new Date().getFullYear() - year : undefined;
+  if (isDraft) return { label: "Draft", cls: "bg-yellow-100 text-yellow-700" };
   if (age === undefined) return { label: "Unknown", cls: "bg-muted text-muted-foreground" };
   if (age <= 1) return { label: "Recent", cls: "bg-green-100 text-green-700" };
   if (age <= 3) return { label: "Mature", cls: "bg-blue-100 text-blue-700" };
@@ -25,7 +27,8 @@ export function VersionSwitcher() {
     if ("version" in params && typeof params.version === "string") {
       return params.version;
     }
-    return versions[0]?.version || "";
+
+    return versions.find((v) => v.type === "stable")?.version || "";
   }, [params, versions]);
 
   const handleVersionSelect = React.useCallback((selectedVersion: string) => {
@@ -80,7 +83,7 @@ export function VersionSwitcher() {
             style={{ width: "var(--anchor-width)", maxHeight: "18rem" }}
           >
             {versions.map((version) => {
-              const badge = getBadgeLabel(version.date ?? undefined);
+              const badge = getBadgeLabel(version.date ?? undefined, version.type === "draft");
               const isCurrent = version.version === currentVersion;
               return (
                 <DropdownMenuItem
@@ -104,6 +107,23 @@ export function VersionSwitcher() {
             })}
           </DropdownMenuContent>
         </DropdownMenu>
+      </SidebarMenuItem>
+    </SidebarMenu>
+  );
+}
+
+export function VersionSwitcherSkeleton() {
+  return (
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <div className="flex items-center gap-2 rounded-lg border border-border bg-sidebar/60 px-3 py-2">
+          <Skeleton className="h-8 w-8 rounded-lg" />
+          <div className="flex flex-col gap-1 flex-1">
+            <Skeleton className="h-3 w-20" />
+            <Skeleton className="h-3 w-12" />
+          </div>
+          <Skeleton className="h-4 w-4" />
+        </div>
       </SidebarMenuItem>
     </SidebarMenu>
   );
