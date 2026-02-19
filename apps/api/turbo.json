@@ -23,7 +23,10 @@
       ]
     },
     "typecheck": {
-      "outputs": [".cache/tsbuildinfo.json"]
+      "outputs": [
+        ".cache/tsbuildinfo.json",
+        "wrangler-types.d.ts"
+      ]
     },
     "lint:openapi": {
       "dependsOn": [
@@ -34,7 +37,7 @@
     "build:openapi": {
       "cache": false,
       "outputs": [
-        "../../ucd-generated/api/openapi.json"
+        "$TURBO_ROOT$/ucd-generated/api/openapi.json"
       ]
     }
   }
