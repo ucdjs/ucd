@@ -118,16 +118,25 @@ function FileStats() {
   const { amount } = Route.useLoaderData();
 
   return (
-    <div className="text-xs text-muted-foreground">
-      {amount.directories}
-      {" "}
-      {amount.directories === 1 ? "directory" : "directories"}
-      ,
-      {" "}
-      {amount.files}
-      {" "}
-      {amount.files === 1 ? "file" : "files"}
-      {amount.total && ` (filtered from ${amount.total} total)`}
+    <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+      <span>
+        {amount.directories}
+        {" "}
+        {amount.directories === 1 ? "directory" : "directories"}
+      </span>
+      <span>•</span>
+      <span>
+        {amount.files}
+        {" "}
+        {amount.files === 1 ? "file" : "files"}
+      </span>
+      {amount.total ? (
+        <span className="rounded-full border bg-muted/40 px-2 py-0.5">
+          filtered from
+          {" "}
+          {amount.total}
+        </span>
+      ) : null}
     </div>
   );
 }

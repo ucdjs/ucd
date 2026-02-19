@@ -82,40 +82,71 @@ function FileViewerPage() {
   // Check for large files first - no data fetching needed
   if (isTooLarge) {
     return (
-      <LargeFileWarning
-        fileName={fileName}
-        size={size}
-        downloadUrl={fileUrl}
-        contentType="application/octet-stream"
-      />
+      <div className="flex flex-1 flex-col gap-6 p-4 pt-2">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">File preview</span>
+          <span className="text-sm font-medium">{fileName}</span>
+        </div>
+        <LargeFileWarning
+          fileName={fileName}
+          size={size}
+          downloadUrl={fileUrl}
+          contentType="application/octet-stream"
+        />
+      </div>
     );
   }
 
   // Check for non-renderable files - no data fetching needed
   if (!canRender) {
     return (
-      <NonRenderableFile
-        fileName={fileName}
-        contentType="application/octet-stream"
-        fileUrl={fileUrl}
-      />
+      <div className="flex flex-1 flex-col gap-6 p-4 pt-2">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">File preview</span>
+          <span className="text-sm font-medium">{fileName}</span>
+        </div>
+        <NonRenderableFile
+          fileName={fileName}
+          contentType="application/octet-stream"
+          fileUrl={fileUrl}
+        />
+      </div>
     );
   }
 
   // Wrap the actual file content fetching in Suspense
   return (
-    <Suspense fallback={<FileViewerSkeleton fileName={fileName} />}>
-      <FileViewerContent
-        path={path}
-        fileName={fileName}
-        statType={loaderData.statType}
-        size={loaderData.size}
-      />
-    </Suspense>
+    <div className="flex flex-1 flex-col gap-6 p-4 pt-2">
+      <div className="flex items-center gap-2">
+        <span className="text-sm text-muted-foreground">File preview</span>
+        <span className="text-sm font-medium">{fileName}</span>
+      </div>
+      <Suspense fallback={<FileViewerSkeleton fileName={fileName} />}>
+        <FileViewerContent
+          path={path}
+          fileName={fileName}
+          statType={loaderData.statType}
+          size={loaderData.size}
+          fileUrl={loaderData.fileUrl}
+        />
+      </Suspense>
+    </div>
   );
 }
 
-function FileViewerContent({ path, fileName, statType, size }: { path: string; fileName: string; statType: string | null; size: number }) {
+function FileViewerContent({
+  path,
+  fileName,
+  statType,
+  size,
+  fileUrl,
+}: {
+  path: string;
+  fileName: string;
+  statType: string | null;
+  size: number;
+  fileUrl: string;
+}) {
   const { data } = useSuspenseQuery(filesQueryOptions({ path, statType, size }));
 
   // This route only handles files
@@ -129,6 +160,7 @@ function FileViewerContent({ path, fileName, statType, size }: { path: string; f
       contentType={data.contentType}
       fileName={fileName}
       filePath={path}
+      fileUrl={fileUrl}
     />
   );
 }

@@ -6,13 +6,13 @@ import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 import { Separator } from "@ucdjs-internal/shared-ui/ui/separator";
 import { SidebarTrigger } from "@ucdjs-internal/shared-ui/ui/sidebar";
-import { ArrowLeft, Check, Copy } from "lucide-react";
+import { ArrowLeft, Check, Copy, SquareArrowOutUpRight } from "lucide-react";
 import * as React from "react";
 
 export const Route = createFileRoute("/v/$version/u/$hex")({
   component: CharacterPage,
   loader: ({ context, params }) => {
-    context.queryClient.ensureQueryData(characterQueryOptions(params.hex, params.version));
+    context.queryClient.prefetchQuery(characterQueryOptions(params.hex, params.version));
   },
 });
 
@@ -22,14 +22,18 @@ function CharacterPage() {
   const [copied, setCopied] = React.useState(false);
 
   const copyCharacter = async () => {
-    await navigator.clipboard.writeText(character.character);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      await navigator.clipboard.writeText(character.character);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setCopied(false);
+    }
   };
 
   return (
     <>
-      <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+      <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
         <div className="flex items-center gap-2 px-4">
           <SidebarTrigger className="-ml-1" />
           <Separator
@@ -61,43 +65,57 @@ function CharacterPage() {
         </div>
       </header>
 
-      <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
-        {/* Back button */}
-        <div>
-          <Button
-            variant="ghost"
-            size="sm"
-            render={(
-              <Link to="/v/$version" params={{ version }}>
-                <ArrowLeft className="mr-1 size-4" />
-                Back to Unicode
-                {" "}
-                {version}
-              </Link>
-            )}
-          />
-        </div>
-
-        {/* Character Display */}
-        <div className="flex flex-col items-center gap-4 py-8">
-          <div className="relative">
-            <div className="text-9xl leading-none select-all">
-              {character.character}
+      <div className="flex flex-1 flex-col gap-8 p-4 pt-2">
+        <section className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              render={(
+                <Link to="/v/$version" params={{ version }}>
+                  <ArrowLeft className="mr-1 size-4" />
+                  Back to Unicode
+                  {" "}
+                  {version}
+                </Link>
+              )}
+            />
+            <div className="text-sm text-muted-foreground">
+              Codepoint
+              {" "}
+              <span className="font-mono text-foreground">{character.codepoint}</span>
             </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
             <Button
               variant="outline"
-              size="icon"
-              className="absolute -top-2 -right-2 size-8"
+              size="sm"
               onClick={copyCharacter}
             >
-              {copied
-                ? (
-                    <Check className="size-4 text-green-500" />
-                  )
-                : (
-                    <Copy className="size-4" />
-                  )}
+              {copied ? <Check className="size-4 text-green-500" /> : <Copy className="size-4" />}
+              {copied ? "Copied" : "Copy character"}
             </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              nativeButton={false}
+              render={(
+                <Link
+                  to="/file-explorer/v/$"
+                  params={{ _splat: `${version}/ucd/UnicodeData.txt` }}
+                >
+                  <SquareArrowOutUpRight className="size-4" />
+                  Open UnicodeData.txt
+                </Link>
+              )}
+            />
+          </div>
+        </section>
+
+        {/* Character Display */}
+        <div className="flex flex-col items-center gap-4 rounded-2xl border bg-card/70 p-6">
+          <div className="text-8xl leading-none select-all">
+            {character.character}
           </div>
           <div className="text-center">
             <h1 className="text-xl font-bold font-mono">{character.codepoint}</h1>

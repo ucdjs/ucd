@@ -12,7 +12,9 @@ export const fetchAllVersions = createServerFn({ method: "GET" })
       throw new Error("Failed to fetch versions");
     }
 
-    const parseResult = UnicodeVersionListSchema.safeParse(await res.json());
+    const json = await res.json();
+
+    const parseResult = UnicodeVersionListSchema.safeParse(json);
     if (!parseResult.success) {
       throw new Error("Invalid version data received from server");
     }

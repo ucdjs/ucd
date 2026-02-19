@@ -11,6 +11,8 @@ export interface FileViewerProps {
   fileName: string;
   /** Path to the file (used for raw link) */
   filePath: string;
+  /** Absolute URL to the raw file */
+  fileUrl: string;
 }
 
 export interface LineSelection {
@@ -132,7 +134,7 @@ function LineContentComponent({ line, selected }: LineContentProps) {
 
 const LineContent = memo(LineContentComponent);
 
-export function FileViewer({ content, contentType, fileName, filePath }: FileViewerProps) {
+export function FileViewer({ content, contentType, fileName, fileUrl }: FileViewerProps) {
   const language = getLanguageFromContentType(contentType, fileName);
   const lines = useMemo(() => content.split("\n"), [content]);
   const lineCount = lines.length;
@@ -252,7 +254,7 @@ export function FileViewer({ content, contentType, fileName, filePath }: FileVie
             nativeButton={false}
             render={(
               <a
-                href={`https://api.ucdjs.dev/api/v1/files/${filePath}`}
+                href={fileUrl}
                 target="_blank"
                 rel="noopener noreferrer"
               >

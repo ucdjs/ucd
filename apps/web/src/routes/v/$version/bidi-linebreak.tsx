@@ -14,25 +14,27 @@ function BidiLinebreakVersion() {
     <div className="flex flex-1 flex-col gap-6 p-4">
       <VersionHeader version={params.version} title="BIDI & Line Break" />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            BIDI & Line Break —
-            {" "}
-            {params.version}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground mb-4">
-            Visualize bidirectional ordering and line break opportunities for sample text using Unicode
-            {" "}
-            {params.version}
-            {" "}
-            rules.
-          </p>
-          <Button nativeButton={false} render={<Link to="/v/$version" params={{ version: params.version }}>Back to version</Link>} />
-        </CardContent>
-      </Card>
+      <div className="flex flex-1 flex-col gap-6 pt-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>
+              BIDI & Line Break —
+              {" "}
+              {params.version}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground mb-4">
+              Visualize bidirectional ordering and line break opportunities for sample text using Unicode
+              {" "}
+              {params.version}
+              {" "}
+              rules.
+            </p>
+            <Button nativeButton={false} render={<Link to="/v/$version" params={{ version: params.version }}>Back to version</Link>} />
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

@@ -10,6 +10,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
+import { createThemeScript } from "@ucdjs-internal/shared-ui";
 import { SidebarInset, SidebarProvider } from "@ucdjs-internal/shared-ui/ui/sidebar";
 import GLOBAL_CSS_URL from "../globals.css?url";
 
@@ -54,6 +55,11 @@ export const Route = createRootRouteWithContext<AppRouterContext>()({
       },
     ],
     scripts: [
+      {
+        dangerouslySetInnerHTML: {
+          __html: createThemeScript(),
+        },
+      },
       import.meta.env.DEV
         ? {
             src: "//unpkg.com/react-scan/dist/auto.global.js",
@@ -74,7 +80,7 @@ export const Route = createRootRouteWithContext<AppRouterContext>()({
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
@@ -82,7 +88,12 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <SidebarProvider>
           <AppSidebar />
           <SidebarInset>
-            {children}
+            <div className="app-shell">
+              <div className="app-shell-bg" aria-hidden="true" />
+              <div className="app-shell-content">
+                {children}
+              </div>
+            </div>
           </SidebarInset>
         </SidebarProvider>
         <TanStackDevtools

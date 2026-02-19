@@ -5,7 +5,7 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@ucd
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import { Separator } from "@ucdjs-internal/shared-ui/ui/separator";
 import { SidebarTrigger } from "@ucdjs-internal/shared-ui/ui/sidebar";
-import { BookOpen, Code2, ExternalLink, Hash, Layers, Search } from "lucide-react";
+import { BookOpen, Code2, ExternalLink, Hash, Layers, Search, Terminal } from "lucide-react";
 import { Suspense } from "react";
 
 export const Route = createFileRoute("/")({
@@ -34,7 +34,7 @@ function HomePage() {
 
   return (
     <>
-      <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+      <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
         <div className="flex items-center gap-2 px-4">
           <SidebarTrigger className="-ml-1" />
           <Separator
@@ -51,9 +51,8 @@ function HomePage() {
         </div>
       </header>
 
-      <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
-        {/* Hero Section */}
-        <div className="flex flex-col gap-4 py-6">
+      <div className="flex flex-1 flex-col gap-8 p-4 pt-2">
+        <section className="flex flex-col gap-4 py-6">
           <div className="flex items-center gap-3">
             <div className="bg-primary text-primary-foreground flex size-10 items-center justify-center rounded-lg">
               <Hash className="size-5" />
@@ -65,65 +64,79 @@ function HomePage() {
               </p>
             </div>
           </div>
-          <p className="max-w-3xl text-sm text-muted-foreground leading-relaxed">
-            Explore the Unicode Character Database with a modern, developer-friendly interface.
-            Browse characters, blocks, scripts, and properties across all Unicode versions.
-            Access comprehensive Unicode data through powerful search and filtering capabilities.
+          <p className="max-w-2xl text-sm text-muted-foreground leading-relaxed">
+            Browse Unicode versions, inspect codepoints, and navigate the raw UCD files.
+            Use the search tools to jump to characters, blocks, and properties fast.
           </p>
-        </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                size="sm"
+                nativeButton={false}
+                render={(
+                  <Link to="/search">
+                    <Search className="size-4" />
+                    Search characters
+                  </Link>
+                )}
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                nativeButton={false}
+                render={(
+                  <Link to="/file-explorer">
+                    <Terminal className="size-4" />
+                    File explorer
+                  </Link>
+                )}
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                nativeButton={false}
+                render={(
+                  <a href={ucdjsApiBaseUrl ?? "https://api.ucdjs.dev"} target="_blank" rel="noopener noreferrer">
+                    <Code2 className="size-4" />
+                    API reference
+                  </a>
+                )}
+              />
+            </div>
+            <Separator
+              orientation="vertical"
+              className="hidden sm:block data-[orientation=vertical]:h-4"
+            />
+            <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+              <span className="uppercase tracking-wide">References</span>
+              <span className="hidden sm:inline">•</span>
+              <a
+                href="https://www.unicode.org/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 hover:text-foreground"
+              >
+                <BookOpen className="size-3.5" />
+                Unicode docs
+              </a>
+              <span className="hidden sm:inline">•</span>
+              <a
+                href="https://github.com/ucdjs/ucd"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 hover:text-foreground"
+              >
+                <ExternalLink className="size-3.5" />
+                GitHub repository
+              </a>
+            </div>
+          </div>
+        </section>
 
-        {/* Quick Actions */}
-        <div className="flex flex-wrap gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            nativeButton={false}
-            render={(
-              <Link to="/file-explorer">
-                <Search className="size-4" />
-                Character Search
-              </Link>
-            )}
-          />
-          <Button
-            variant="outline"
-            size="sm"
-            nativeButton={false}
-            render={(
-              <a href={ucdjsApiBaseUrl ?? "https://api.ucdjs.dev"} target="_blank" rel="noopener noreferrer">
-                <Code2 className="size-4" />
-                API Reference
-              </a>
-            )}
-          />
-          <Button
-            variant="outline"
-            size="sm"
-            nativeButton={false}
-            render={(
-              <a href="https://github.com/ucdjs/ucd" target="_blank" rel="noopener noreferrer">
-                <ExternalLink className="size-4" />
-                GitHub
-              </a>
-            )}
-          />
-          <Button
-            variant="outline"
-            size="sm"
-            nativeButton={false}
-            render={(
-              <a href="https://www.unicode.org/" target="_blank" rel="noopener noreferrer">
-                <BookOpen className="size-4" />
-                Unicode Docs
-              </a>
-            )}
-          />
-        </div>
-
-        <section>
-          <h2 className="mb-4 text-sm font-semibold flex items-center gap-2 text-muted-foreground uppercase tracking-wide">
+        <section className="space-y-4">
+          <h2 className="text-sm font-semibold flex items-center gap-2 text-muted-foreground uppercase tracking-wide">
             <Layers className="size-4" />
-            Unicode Versions
+            Unicode versions
           </h2>
           <Suspense fallback={<VersionsCardListSkeleton />}>
             <VersionsCardList />

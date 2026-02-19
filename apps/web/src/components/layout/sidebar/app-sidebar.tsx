@@ -1,5 +1,6 @@
 import type { ComponentProps } from "react";
 import { Link, useLoaderData, useMatches } from "@tanstack/react-router";
+import { ThemeToggle } from "@ucdjs-internal/shared-ui/components/theme-toggle";
 import {
   Sidebar,
   SidebarContent,
@@ -13,8 +14,9 @@ import {
   SidebarRail,
 } from "@ucdjs-internal/shared-ui/ui/sidebar";
 import { BookOpen, ExternalLink, Grid3X3, Lightbulb, Search, Type } from "lucide-react";
+import { Suspense } from "react";
 import { UcdLogo } from "../../ucd-logo";
-import { VersionSwitcher } from "../../version-switcher";
+import { VersionSwitcher, VersionSwitcherSkeleton } from "../../version-switcher";
 
 const MAIN_ITEMS = [
   { to: "/", icon: BookOpen, label: "Home" },
@@ -44,19 +46,26 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
 
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader className="p-4 group-data-[collapsible=icon]:p-2 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:items-center group-data-[collapsible=icon]:justify-center">
-        <Link
-          to="/"
-          className="flex items-center gap-3 hover:opacity-80 transition-opacity group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:justify-center"
-        >
-          <UcdLogo className="size-10 shrink-0 group-data-[collapsible=icon]:size-8" />
-          <div className="grid text-left leading-tight group-data-[collapsible=icon]:hidden">
-            <h2 className="font-semibold text-base">UCD.js</h2>
-            <span className="text-xs text-muted-foreground">Unicode Database</span>
+      <SidebarHeader className="p-4 group-data-[collapsible=icon]:p-2">
+        <div className="flex items-center justify-between gap-3 group-data-[collapsible=icon]:justify-center">
+          <Link
+            to="/"
+            className="flex items-center gap-3 hover:opacity-80 transition-opacity group-data-[collapsible=icon]:w-full group-data-[collapsible=icon]:justify-center"
+          >
+            <UcdLogo className="size-10 shrink-0 group-data-[collapsible=icon]:size-8" />
+            <div className="grid text-left leading-tight group-data-[collapsible=icon]:hidden">
+              <h2 className="font-semibold text-base">UCD.js</h2>
+              <span className="text-xs text-muted-foreground">Unicode Database</span>
+            </div>
+          </Link>
+          <div className="group-data-[collapsible=icon]:hidden">
+            <ThemeToggle />
           </div>
-        </Link>
-        <div className="mt-3 w-full">
-          <VersionSwitcher />
+        </div>
+        <div className="mt-3 w-full group-data-[collapsible=icon]:hidden">
+          <Suspense fallback={<VersionSwitcherSkeleton />}>
+            <VersionSwitcher />
+          </Suspense>
         </div>
       </SidebarHeader>
       <SidebarContent>
