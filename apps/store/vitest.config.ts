@@ -6,7 +6,7 @@ const configPath = fileURLToPath(new URL("./wrangler.jsonc", import.meta.url));
 const globalSetupPath = fileURLToPath(new URL("./test/global-setup.ts", import.meta.url));
 const apiDistPath = fileURLToPath(new URL("../api/dist", import.meta.url));
 
-const compatDate = "2025-12-19";
+const compatDate = "2026-02-18";
 
 const nodeCompatibilityFlags = [
   "nodejs_compat",

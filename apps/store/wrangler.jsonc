@@ -2,7 +2,7 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "ucdjs-store",
   "main": "src/worker.ts",
-  "compatibility_date": "2025-12-19",
+  "compatibility_date": "2026-02-18",
   "compatibility_flags": [
     "enable_request_signal",
     "nodejs_als"
