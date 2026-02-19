@@ -1,3 +1,4 @@
+import { fileURLToPath } from "node:url";
 import tailwindcss from "@tailwindcss/vite";
 import { devtools } from "@tanstack/devtools-vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
@@ -18,6 +19,7 @@ const config = defineConfig({
         deployConfig: false,
         nodeCompat: true,
       },
+      minify: false,
     }),
     // this is the plugin that enables path aliases
     viteTsConfigPaths({
@@ -27,7 +29,17 @@ const config = defineConfig({
     tanstackStart({
       srcDirectory: "src",
       prerender: {
-        enabled: false, // We can't enable prerendering until Nitro fixes their preview server.
+        enabled: false, // We can't enable prerendering until Nitro fixes their preview server soonTM.
+        filter({ path }) {
+          return !path.startsWith("/file-explorer");
+        },
+      },
+      importProtection: {
+        enabled: true,
+        behavior: {
+          dev: "mock",
+          build: "error",
+        },
       },
       server: {
         entry: "server.ts",
@@ -38,16 +50,38 @@ const config = defineConfig({
         plugins: ["babel-plugin-react-compiler"],
       },
     }),
-    Inspect(),
+    Inspect({
+      build: true,
+    }),
   ],
-  // optimizeDeps: {
-  //   // Force Vite to process shared-ui package to handle JSX in chunks
-  //   include: ["@ucdjs-internal/shared-ui"],
-  // },
-  // ssr: {
-  //   // Ensure shared-ui is bundled and processed by Vite instead of being external
-  //   noExternal: ["@ucdjs-internal/shared-ui"],
-  // },
+  build: {
+    rolldownOptions: {
+      experimental: {
+        lazyBarrel: true,
+      },
+    },
+    minify: false,
+  },
+  resolve: {
+    alias: [
+      {
+        find: /^use-sync-external-store\/shim$/,
+        replacement: fileURLToPath(new URL("./src/shims/use-sync-external-store-shim.ts", import.meta.url)),
+      },
+      {
+        find: /^use-sync-external-store\/shim\/index\.js$/,
+        replacement: fileURLToPath(new URL("./src/shims/use-sync-external-store-shim.ts", import.meta.url)),
+      },
+      {
+        find: /^use-sync-external-store\/shim\/with-selector$/,
+        replacement: fileURLToPath(new URL("./src/shims/use-sync-external-store-shim.ts", import.meta.url)),
+      },
+      {
+        find: /^use-sync-external-store\/shim\/with-selector\.js$/,
+        replacement: fileURLToPath(new URL("./src/shims/use-sync-external-store-shim.ts", import.meta.url)),
+      },
+    ],
+  },
 });
 
 export default config;
