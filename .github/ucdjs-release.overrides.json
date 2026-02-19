@@ -1,0 +1,26 @@
+{
+  "@ucdjs/cli": {
+    "type": "patch",
+    "version": "0.3.1-beta.6"
+  },
+  "@ucdjs/pipelines-executor": {
+    "type": "patch",
+    "version": "0.0.1-beta.6"
+  },
+  "@ucdjs/pipelines-server": {
+    "type": "patch",
+    "version": "0.0.1-beta.6"
+  },
+  "@ucdjs/pipelines-ui": {
+    "type": "patch",
+    "version": "0.0.1-beta.6"
+  },
+  "@ucdjs-internal/shared": {
+    "type": "patch",
+    "version": "0.1.1-beta.6"
+  },
+  "@ucdjs-internal/worker-utils": {
+    "type": "patch",
+    "version": "0.0.1-beta.6"
+  }
+}

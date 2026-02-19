@@ -1,5 +1,12 @@
 # @ucdjs/pipelines-ui
 
+## [0.0.1-beta.6](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-ui@0.0.1-beta.5...@ucdjs/pipelines-ui@0.0.1-beta.6) (2026-02-19)
+
+
+### 🚀 Features
+* add workspaceId to PipelinesResponse and display in sidebar ([b1477cf1](https://github.com/ucdjs/ucd/commit/b1477cf139dae39af2e9de7688fc1eed251b24a1)) (by [@luxass](https://github.com/luxass))
+
+
 ## [0.0.1-beta.5](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-ui@0.0.1-beta.4...@ucdjs/pipelines-ui@0.0.1-beta.5) (2026-02-16)
 
 
