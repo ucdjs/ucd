@@ -47,8 +47,8 @@ catalogs:
       specifier: 1.161.1
       version: 1.161.1
     '@ucdjs/release-scripts':
-      specifier: 0.1.0-beta.56
-      version: 0.1.0-beta.56
+      specifier: 0.1.0-beta.57
+      version: 0.1.0-beta.57
     '@vitejs/plugin-react':
       specifier: 5.1.4
       version: 5.1.4
@@ -271,8 +271,8 @@ catalogs:
       version: 4.3.6
   test:
     '@cloudflare/vitest-pool-workers':
-      specifier: https://pkg.pr.new/@cloudflare/vitest-pool-workers@11632
-      version: 0.12.6
+      specifier: https://pkg.pr.new/@cloudflare/vitest-pool-workers@ccaf85f
+      version: 0.12.13
     '@vitest/coverage-istanbul':
       specifier: 4.1.0-beta.4
       version: 4.1.0-beta.4
@@ -351,7 +351,7 @@ importers:
         version: 22.19.9
       '@ucdjs/release-scripts':
         specifier: catalog:build
-        version: 0.1.0-beta.56
+        version: 0.1.0-beta.57
       '@ucdjs/ucdjs-scripts':
         specifier: workspace:*
         version: link:packages/ucdjs-scripts
@@ -424,7 +424,7 @@ importers:
     devDependencies:
       '@cloudflare/vitest-pool-workers':
         specifier: catalog:test
-        version: https://pkg.pr.new/@cloudflare/vitest-pool-workers@11632(@cloudflare/workers-types@4.20260218.0)(@vitest/runner@4.1.0-beta.4)(@vitest/snapshot@4.1.0-beta.4)(vitest@4.1.0-beta.4)
+        version: https://pkg.pr.new/@cloudflare/vitest-pool-workers@ccaf85f(@cloudflare/workers-types@4.20260218.0)(@vitest/runner@4.1.0-beta.4)(@vitest/snapshot@4.1.0-beta.4)(vitest@4.1.0-beta.4)
       '@luxass/eslint-config':
         specifier: catalog:lint
         version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.4)
@@ -597,7 +597,7 @@ importers:
     devDependencies:
       '@cloudflare/vitest-pool-workers':
         specifier: catalog:test
-        version: https://pkg.pr.new/@cloudflare/vitest-pool-workers@11632(@cloudflare/workers-types@4.20260218.0)(@vitest/runner@4.1.0-beta.4)(@vitest/snapshot@4.1.0-beta.4)(vitest@4.1.0-beta.4)
+        version: https://pkg.pr.new/@cloudflare/vitest-pool-workers@ccaf85f(@cloudflare/workers-types@4.20260218.0)(@vitest/runner@4.1.0-beta.4)(@vitest/snapshot@4.1.0-beta.4)(vitest@4.1.0-beta.4)
       '@luxass/eslint-config':
         specifier: catalog:lint
         version: 7.2.0(@eslint-react/eslint-plugin@2.13.0(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3))(@vue/compiler-sfc@3.5.27)(eslint-plugin-format@1.4.0(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-hooks@7.0.1(eslint@10.0.0(jiti@2.6.1)))(eslint-plugin-react-refresh@0.5.0(eslint@10.0.0(jiti@2.6.1)))(eslint@10.0.0(jiti@2.6.1))(typescript@5.9.3)(vitest@4.1.0-beta.4)
@@ -2359,13 +2359,13 @@ packages:
       workerd:
         optional: true
 
-  '@cloudflare/vitest-pool-workers@https://pkg.pr.new/@cloudflare/vitest-pool-workers@11632':
-    resolution: {tarball: https://pkg.pr.new/@cloudflare/vitest-pool-workers@11632}
-    version: 0.12.6
+  '@cloudflare/vitest-pool-workers@https://pkg.pr.new/@cloudflare/vitest-pool-workers@ccaf85f':
+    resolution: {tarball: https://pkg.pr.new/@cloudflare/vitest-pool-workers@ccaf85f}
+    version: 0.12.13
     peerDependencies:
-      '@vitest/runner': 4.1.0-beta.1
-      '@vitest/snapshot': 4.1.0-beta.1
-      vitest: 4.1.0-beta.1
+      '@vitest/runner': 4.1.0-beta.4
+      '@vitest/snapshot': 4.1.0-beta.4
+      vitest: 4.1.0-beta.4
 
   '@cloudflare/workerd-darwin-64@1.20260217.0':
     resolution: {integrity: sha512-t1KRT0j4gwLntixMoNujv/UaS89Q7+MPRhkklaSup5tNhl3zBZOIlasBUSir69eXetqLZu8sypx3i7zE395XXA==}
@@ -5205,8 +5205,8 @@ packages:
     resolution: {integrity: sha512-91fp6CAAJSRtH5ja95T1FHSKa8aPW9/Zw6cta81jlZTUw/+Vq8jM/AfF/14h2b71wwR84JUTW/3Y8QPhDAawFA==}
     engines: {node: '>=20.0.0'}
 
-  '@ucdjs/release-scripts@0.1.0-beta.56':
-    resolution: {integrity: sha512-G9xbq3icUBUO8ZU0ApqQHWsV/0OlsF3e6VbZhmPacWrQv53cfwjyjvPFhrQzq2MmZ98uG3ow2yY2l7fnjD33NQ==}
+  '@ucdjs/release-scripts@0.1.0-beta.57':
+    resolution: {integrity: sha512-fby0y9MKNiZvD/T9NBVxgRUgVYwNvop1TFukpeaSM+KVCRfuQ959i5u8kbI1QTUWcIU/dMCuEZxjVCdSwx/L3Q==}
 
   '@ungap/structured-clone@1.3.0':
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
@@ -9810,7 +9810,7 @@ snapshots:
     optionalDependencies:
       workerd: 1.20260217.0
 
-  '@cloudflare/vitest-pool-workers@https://pkg.pr.new/@cloudflare/vitest-pool-workers@11632(@cloudflare/workers-types@4.20260218.0)(@vitest/runner@4.1.0-beta.4)(@vitest/snapshot@4.1.0-beta.4)(vitest@4.1.0-beta.4)':
+  '@cloudflare/vitest-pool-workers@https://pkg.pr.new/@cloudflare/vitest-pool-workers@ccaf85f(@cloudflare/workers-types@4.20260218.0)(@vitest/runner@4.1.0-beta.4)(@vitest/snapshot@4.1.0-beta.4)(vitest@4.1.0-beta.4)':
     dependencies:
       '@vitest/runner': 4.1.0-beta.4
       '@vitest/snapshot': 4.1.0-beta.4
@@ -12753,7 +12753,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@ucdjs/release-scripts@0.1.0-beta.56':
+  '@ucdjs/release-scripts@0.1.0-beta.57':
     dependencies:
       '@luxass/utils': 2.7.3
       commit-parser: 1.3.0
