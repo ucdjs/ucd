@@ -130,13 +130,15 @@ function FileStats() {
         {" "}
         {amount.files === 1 ? "file" : "files"}
       </span>
-      {amount.total ? (
-        <span className="rounded-full border bg-muted/40 px-2 py-0.5">
-          filtered from
-          {" "}
-          {amount.total}
-        </span>
-      ) : null}
+      {amount.total
+        ? (
+            <span className="rounded-full border bg-muted/40 px-2 py-0.5">
+              filtered from
+              {" "}
+              {amount.total}
+            </span>
+          )
+        : null}
     </div>
   );
 }

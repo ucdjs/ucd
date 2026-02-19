@@ -76,17 +76,19 @@ export function VersionsCardList() {
             value={query}
             onChange={(event) => setQuery(event.target.value)}
           />
-          {query ? (
-            <Button
-              variant="ghost"
-              size="icon-xs"
-              className="absolute right-1 top-1/2 -translate-y-1/2 hover:bg-destructive/10 hover:text-destructive"
-              onClick={() => setQuery("")}
-            >
-              <X className="size-3" />
-              <span className="sr-only">Clear search</span>
-            </Button>
-          ) : null}
+          {query
+            ? (
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 hover:bg-destructive/10 hover:text-destructive"
+                  onClick={() => setQuery("")}
+                >
+                  <X className="size-3" />
+                  <span className="sr-only">Clear search</span>
+                </Button>
+              )
+            : null}
         </div>
 
         <div className="flex items-center gap-1.5">
@@ -175,33 +177,37 @@ export function VersionsCardList() {
         </div>
 
         <div className="flex items-center gap-1.5 ml-auto">
-          {hasActiveFilters ? (
-            <Badge
-              variant="secondary"
-              className="gap-1 cursor-pointer hover:bg-destructive/10 hover:text-destructive transition-colors"
-              onClick={() => {
-                setQuery("");
-                setTypeFilter("all");
-                setAgeFilter("all");
-              }}
-            >
-              <span className="text-xs">
-                {[
-                  query.trim(),
-                  typeFilter !== "all" ? typeFilter : null,
-                  ageFilter !== "all" ? ageFilter : null,
-                ].filter(Boolean).length}
-                {" "}
-                filter
-                {[
-                  query.trim(),
-                  typeFilter !== "all" ? typeFilter : null,
-                  ageFilter !== "all" ? ageFilter : null,
-                ].filter(Boolean).length > 1 ? "s" : ""}
-              </span>
-              <X className="size-3" />
-            </Badge>
-          ) : null}
+          {hasActiveFilters
+            ? (
+                <Badge
+                  variant="secondary"
+                  className="gap-1 cursor-pointer hover:bg-destructive/10 hover:text-destructive transition-colors"
+                  onClick={() => {
+                    setQuery("");
+                    setTypeFilter("all");
+                    setAgeFilter("all");
+                  }}
+                >
+                  <span className="text-xs">
+                    {[
+                      query.trim(),
+                      typeFilter !== "all" ? typeFilter : null,
+                      ageFilter !== "all" ? ageFilter : null,
+                    ].filter(Boolean).length}
+                    {" "}
+                    filter
+                    {[
+                      query.trim(),
+                      typeFilter !== "all" ? typeFilter : null,
+                      ageFilter !== "all" ? ageFilter : null,
+                    ].filter(Boolean).length > 1
+                      ? "s"
+                      : ""}
+                  </span>
+                  <X className="size-3" />
+                </Badge>
+              )
+            : null}
         </div>
       </div>
 
