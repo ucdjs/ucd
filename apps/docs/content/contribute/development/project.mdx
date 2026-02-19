@@ -1,0 +1,96 @@
+---
+title: Project Architecture
+description: Overview of UCD.js architecture and repo structure
+---
+
+# Project Architecture
+
+UCD.js is a monorepo that provides tools and APIs for working with Unicode Character Database (UCD) files.
+
+## Repository Structure
+
+- `packages/` - core libraries published to npm
+- `apps/` - applications (API worker, store, web, docs)
+- `tooling/` - internal development tools (eslint-plugin, tsconfig, tsdown-config, moonbeam)
+- `vscode/` - VS Code extension
+
+## Core Systems
+
+- Storage and filesystem: @ucdjs/ucd-store, @ucdjs/fs-bridge, @ucdjs/lockfile
+- Pipelines: @ucdjs/pipelines-* (internal extraction/build path)
+- API and Store: apps/api, apps/store
+- CLI and Apps: @ucdjs/cli, apps/web, apps/docs
+- Schemas and generation: @ucdjs/schemas, @ucdjs/schema-gen
+
+## High-Level Flow
+
+UCD source files can be accessed either through the storage layer (fs-bridge + ucd-store) or directly through the API. The API does not depend on the storage layer; it can serve files and metadata by calling upstream sources. Pipelines run internally to extract data and produce artifacts/data packages. Consumers typically use the API (and data packages when available). The CLI can explore local files, call the API directly, and orchestrate local workflows.
+
+```text
+UCD source files
+  ↙           ↘
+Storage + Store    API (direct upstream)
+      ↓               ↓
+   Local access    API consumers
+      ↓
+ Pipelines (internal build path)
+      ↓
+Artifacts / Data Packages → Consumers (NPM packages)
+```
+
+<Callout title="Note">
+The flow above is intentionally high-level. Specific workflows (local store cloning, API calls from CLI, pipeline runs) are described in .agents/COMMON_PATTERNS.md.
+</Callout>
+
+
+## Storage and Filesystem
+
+The storage layer is built around @ucdjs/ucd-store and @ucdjs/fs-bridge. fs-bridge provides backends for Node.js, HTTP, and in-memory usage. ucd-store handles file access and metadata across those backends. lockfile/snapshot utilities track integrity and state for stored data.
+
+Use cases:
+- Local access and cached workflows
+- Store app access and store-aligned tooling
+- CLI operations that work against local stores
+
+## Pipelines
+
+Pipelines are an internal extraction/build path. They define how data is processed and artifacts are produced. Pipelines are split into dedicated packages for core types, loading, execution, graph ordering, and artifact handling.
+
+Key packages:
+- @ucdjs/pipelines-core
+- @ucdjs/pipelines-loader
+- @ucdjs/pipelines-executor
+- @ucdjs/pipelines-graph
+- @ucdjs/pipelines-artifacts
+- @ucdjs/pipelines-presets
+
+Most consumers do not run pipelines directly.
+
+## API and Store
+
+The API (apps/api) is a Cloudflare Worker using Hono with OpenAPI. It serves versioned routes for files, versions, and schemas, and can fetch data directly from upstream sources.
+
+The Store (apps/store) provides direct access to UCD files and metadata via the storage layer. Both are public access paths and should remain stable.
+
+## CLI and Apps
+
+@ucdjs/cli is the primary local interface. It can explore files, run pipelines, and call the API directly. apps/web and apps/store are end-user interfaces, while apps/docs is the documentation site.
+
+Example (API access via CLI):
+
+```bash
+./packages/cli/bin/ucd.js files get 17.0.0/ArabicShaping.txt
+```
+
+## Schemas and Generation
+
+@ucdjs/schemas provides Zod schemas for Unicode data files, and @ucdjs/schema-gen generates schemas from raw Unicode data. The OpenAPI spec is generated from Zod schemas and drives @ucdjs/client.
+
+## Tooling and Development Utilities
+
+Internal tooling lives under tooling/ and includes shared configs and tsdown helpers. Moonbeam (@ucdjs/moonbeam) is used when running scripts that need workspace source resolution without building packages first.
+
+## Documentation
+
+- https://docs.ucdjs.dev
+- apps/docs (source)
