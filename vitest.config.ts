@@ -80,6 +80,8 @@ export default defineConfig({
       ...appProjects
     ]
   },
-  esbuild: { target: "es2020" },
+  oxc: {
+    target: "es2022"
+  },
   resolve: { alias: aliases },
 });
