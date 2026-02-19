@@ -8,8 +8,8 @@
         "isAsync": true
       },
       {
-        "match": "apps/web/wrangler.jsonc",
-        "cmd": "pnpm --filter ./apps/web run generate:types",
+        "match": "apps/store/wrangler.jsonc",
+        "cmd": "pnpm --filter ./apps/store run generate:types",
         "isAsync": true
       },
       {
