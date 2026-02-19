@@ -8,14 +8,17 @@ const SCOPE_OVERRIDES: Record<string, string> = {
   "worker-utils": "@ucdjs-internal",
 }
 
-const pkgRoot = (pkg: string) =>
-  fileURLToPath(new NodeURL(`./packages/${pkg}`, import.meta.url));
+const pkgRoot = (root: string, pkg: string) =>
+  fileURLToPath(new NodeURL(`./${root}/${pkg}`, import.meta.url));
 
-const alias = (pkg: string) => `${pkgRoot(pkg)}/src`;
+const alias = (root: string, pkg: string) => `${pkgRoot(root, pkg)}/src`;
 
-export const aliases = readdirSync(fileURLToPath(new NodeURL("./packages", import.meta.url)))
-  .filter((dir) => existsSync(pkgRoot(dir) + "/package.json"))
-  .reduce<Record<string, string>>(
+function collectAliasesFromRoot(root: string): Record<string, string> {
+  const rootDir = fileURLToPath(new NodeURL(`./${root}`, import.meta.url));
+  const dirs = readdirSync(rootDir)
+    .filter((dir) => existsSync(pkgRoot(root, dir) + "/package.json"));
+
+  return dirs.reduce<Record<string, string>>(
     (acc, pkg) => {
       let scope = "@ucdjs";
 
@@ -23,13 +26,19 @@ export const aliases = readdirSync(fileURLToPath(new NodeURL("./packages", impor
         scope = SCOPE_OVERRIDES[pkg];
       }
 
-      acc[`${scope}/${pkg}`] = alias(pkg);
+      acc[`${scope}/${pkg}`] = alias(root, pkg);
       return acc;
-    }, {
-    "#test-utils/msw": alias("test-utils") + "/msw.ts",
-    "#test-utils/mock-store": alias("test-utils") + "/mock-store/index.ts",
-    "#test-utils/fs-bridges": alias("test-utils") + "/fs-bridges/index.ts",
-    "#test-utils/pipelines": alias("test-utils") + "/pipelines/index.ts",
-    "#test-utils": alias("test-utils") + "/index.ts",
-    "#internal/test-utils/conditions": fileURLToPath(new NodeURL("./test/utils/conditions.ts", import.meta.url)),
-  });
+    }, {}
+  );
+}
+
+export const aliases = {
+  ...collectAliasesFromRoot("packages"),
+  ...collectAliasesFromRoot("packages/pipelines"),
+  "#test-utils/msw": alias("packages", "test-utils") + "/msw.ts",
+  "#test-utils/mock-store": alias("packages", "test-utils") + "/mock-store/index.ts",
+  "#test-utils/fs-bridges": alias("packages", "test-utils") + "/fs-bridges/index.ts",
+  "#test-utils/pipelines": alias("packages", "test-utils") + "/pipelines/index.ts",
+  "#test-utils": alias("packages", "test-utils") + "/index.ts",
+  "#internal/test-utils/conditions": fileURLToPath(new NodeURL("./test/utils/conditions.ts", import.meta.url)),
+};
