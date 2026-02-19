@@ -22,7 +22,7 @@ Filesystem abstraction for Node.js, HTTP, and in-memory backends.
 
 ### Pipelines
 
-Primary extraction path for processing UCD data.
+Internal extraction/build path used to produce data packages and artifacts.
 
 ### Artifacts
 
