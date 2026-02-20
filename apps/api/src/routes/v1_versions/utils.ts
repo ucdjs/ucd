@@ -5,7 +5,11 @@ import {
   getCurrentDraftVersion,
   resolveUCDVersion,
 } from "@unicode-utils/core";
+import { getRawUnicodeAsset } from "../../lib/files";
+import { createLogger } from "../../lib/logger";
 import { captureParseError, captureUpstreamError, COMPONENTS } from "../../lib/sentry";
+
+const log = createLogger("ucd:api:v1_versions:utils");
 
 export async function getAllVersionsFromList() {
   return wrapTry(async (): Promise<UnicodeVersion[]> => {
@@ -15,6 +19,7 @@ export async function getAllVersionsFromList() {
     });
 
     setTimeout(() => {
+      log.error("Unicode versions page fetch timed out");
       controller.abort();
     }, 7000);
 
@@ -43,6 +48,11 @@ export async function getAllVersionsFromList() {
       versionPattern.test(table),
     );
 
+    log.info("Fetched and parsed Unicode versions page", {
+      htmlLength: html.length,
+      foundTable: !!tableMatch,
+    });
+
     if (!tableMatch) {
       const error = new Error("Could not find version table in Unicode versions page");
       captureParseError(error, {
@@ -61,8 +71,47 @@ export async function getAllVersionsFromList() {
       throw error;
     }
 
-    const draft = await getCurrentDraftVersion().catch(() => null);
+    const text: string = await getDraftVersionText();
+
+    const draft = await getCurrentDraftVersion({
+      text,
+      onError(error) {
+        log.error("Error fetching current draft version", { error });
+        let tmpError: Error;
+        if (!(error instanceof Error)) {
+          tmpError = new Error("Unknown error fetching current draft version", { cause: error });
+        } else {
+          tmpError = error;
+        }
+
+        captureUpstreamError(tmpError, {
+          component: COMPONENTS.V1_VERSIONS,
+          operation: "getCurrentDraftVersion",
+          upstreamService: "unicode.org",
+        });
+      },
+      onNotFound(text) {
+        log.warn("Current draft version not found", { text });
+        captureUpstreamError(new Error("Current draft version not found"), {
+          component: COMPONENTS.V1_VERSIONS,
+          operation: "getCurrentDraftVersion",
+          upstreamService: "unicode.org",
+          tags: {
+            issue_type: "draft_not_found",
+          },
+          extra: {
+            response_text: text,
+          },
+        });
+      },
+      onSuccess(version) {
+        log.info("Fetched current draft version", { version });
+      },
+    });
     const versions: UnicodeVersion[] = [];
+    log.info("Parsing Unicode versions from table", {
+      draftVersion: draft || "none",
+    });
 
     // match any row that contains a cell
     const rows = tableMatch.match(/<tr>[\s\S]*?<\/tr>/g) || [];
@@ -94,6 +143,9 @@ export async function getAllVersionsFromList() {
     }
 
     if (draft != null && !versions.some((v) => v.type === "draft")) {
+      log.info("Adding draft version to versions list", {
+        draft,
+      });
       const draftUcdVersion = resolveUCDVersion(draft);
       versions.push({
         version: draft,
@@ -115,8 +167,59 @@ export async function getAllVersionsFromList() {
       return patchB - patchA;
     });
 
+    log.info("Parsed Unicode versions", {
+      versionCount: versions.length,
+      versions: versions.map((v) => v.version).join(", "),
+    });
+
     return versions;
   });
+}
+
+async function getDraftVersionText() {
+  const { response, ok, status, url } = await getRawUnicodeAsset("draft/ReadMe.txt");
+
+  if (!ok) {
+    const error = new Error(`Failed to fetch draft ReadMe: HTTP ${status}`);
+    captureUpstreamError(error, {
+      component: COMPONENTS.V1_VERSIONS,
+      operation: "getCurrentDraftVersion",
+      upstreamService: "unicode.org",
+      tags: {
+        issue_type: "fetch_failed",
+        http_status: status.toString(),
+      },
+      extra: {
+        status,
+        url,
+      },
+    });
+
+    throw error;
+  }
+
+  let text: string;
+
+  try {
+    text = await response.text();
+  } catch (err) {
+    const tmpError = err instanceof Error ? err : new Error("Unknown error reading response body", { cause: err });
+    captureParseError(tmpError, {
+      component: COMPONENTS.V1_VERSIONS,
+      operation: "getCurrentDraftVersion",
+      tags: {
+        issue_type: "body_read_failed",
+        upstream_service: "unicode.org",
+      },
+      extra: {
+        error_message: tmpError.message,
+      },
+    });
+
+    throw tmpError;
+  }
+
+  return text;
 }
 
 export async function getVersionFromList(version: string): Promise<
