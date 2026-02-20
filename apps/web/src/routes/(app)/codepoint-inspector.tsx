@@ -1,33 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@ucdjs-internal/shared-ui/ui/breadcrumb";
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 
-export const Route = createFileRoute("/codepoint-inspector")({
+export const Route = createFileRoute("/(app)/codepoint-inspector")({
   component: CodepointInspectorIdea,
 });
 
 function CodepointInspectorIdea() {
   return (
     <div className="flex flex-1 flex-col gap-6 p-4">
-      <header className="flex items-center gap-4">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem className="hidden md:block">
-              <BreadcrumbLink render={<Link to="/">Home</Link>} />
-            </BreadcrumbItem>
-            <BreadcrumbSeparator className="hidden md:block" />
-            <BreadcrumbItem className="hidden md:block">
-              <BreadcrumbLink render={<Link to="/codepoint-inspector">Code Point Inspector</Link>} />
-            </BreadcrumbItem>
-            <BreadcrumbSeparator className="hidden md:block" />
-            <BreadcrumbItem>
-              <BreadcrumbPage>Code Point Inspector</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-      </header>
-
       <Card>
         <CardHeader>
           <CardTitle>Code Point Inspector</CardTitle>

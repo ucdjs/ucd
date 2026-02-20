@@ -82,6 +82,8 @@ export function VersionsCardList() {
 }
 
 export function VersionsCardListSkeleton() {
+  const skeletonKeys = useState(() => Array.from({ length: 6 }, (_, index) => `card-skeleton-${index}`))[0];
+
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
@@ -90,8 +92,8 @@ export function VersionsCardListSkeleton() {
         <div className="h-8 w-24 rounded-lg border bg-card/60 animate-pulse" />
       </div>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <VersionCardItemSkeleton key={`card-skeleton-${i}`} />
+        {skeletonKeys.map((key) => (
+          <VersionCardItemSkeleton key={key} />
         ))}
       </div>
     </div>

@@ -1,4 +1,3 @@
-import { VersionHeader } from "#components/layout/version/header";
 import { createLazyFileRoute, Link } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
@@ -7,7 +6,7 @@ import { Input } from "@ucdjs-internal/shared-ui/ui/input";
 import { Map, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 
-export const Route = createLazyFileRoute("/v/$version/blocks/")({
+export const Route = createLazyFileRoute("/(app)/v/$version/blocks/")({
   component: RouteComponent,
 });
 
@@ -44,9 +43,7 @@ function RouteComponent() {
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-4">
-      <VersionHeader version={version} title="Blocks" />
-
-      <div className="flex flex-1 flex-col gap-6 pt-2">
+      <div className="flex flex-1 flex-col gap-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="bg-primary/10 text-primary flex size-10 items-center justify-center rounded-lg">

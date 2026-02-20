@@ -1,9 +1,8 @@
-import { VersionHeader } from "#components/layout/version/header";
 import { createLazyFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 
-export const Route = createLazyFileRoute("/v/$version/font-glyph-view")({
+export const Route = createLazyFileRoute("/(app)/v/$version/font-glyph-view")({
   component: FontGlyphViewVersion,
 });
 
@@ -12,9 +11,7 @@ function FontGlyphViewVersion() {
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-4">
-      <VersionHeader version={params.version} title="Font & Glyph View" />
-
-      <div className="flex flex-1 flex-col gap-6 pt-2">
+      <div className="flex flex-1 flex-col gap-6">
         <Card>
           <CardHeader>
             <CardTitle>

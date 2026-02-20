@@ -37,11 +37,11 @@ export function VersionCardItem({ version, isLatest }: VersionCardItemProps) {
     <Link
       to="/v/$version"
       params={{ version: version.version }}
-      className="group relative flex flex-col gap-2 rounded-lg border bg-card p-3 transition-all hover:-translate-y-0.5 hover:border-primary/50"
+      className="group relative flex flex-col gap-2 rounded-lg border border-border/60 bg-card/60 p-4 transition-all hover:-translate-y-0.5 hover:border-primary/40"
     >
       <div className="flex items-center gap-2">
         {isLatest ? <Sparkles className="size-4 text-primary shrink-0" /> : <Code className="size-4 text-muted-foreground shrink-0" />}
-        <span className="font-semibold text-base">{version.version}</span>
+        <span className="font-semibold text-lg">{version.version}</span>
         <Badge
           variant="outline"
           className={cn(

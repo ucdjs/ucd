@@ -1,35 +1,31 @@
-import { VersionHeader } from "#components/layout/version/header";
 import { createLazyFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 
-export const Route = createLazyFileRoute("/v/$version/bidi-linebreak")({
-  component: BidiLinebreakVersion,
+export const Route = createLazyFileRoute("/(app)/v/$version/grapheme-visualizer")({
+  component: GraphemeVisualizerVersion,
 });
 
-function BidiLinebreakVersion() {
+function GraphemeVisualizerVersion() {
   const params = Route.useParams();
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-4">
-      <VersionHeader version={params.version} title="BIDI & Line Break" />
-
-      <div className="flex flex-1 flex-col gap-6 pt-2">
+      <div className="flex flex-1 flex-col gap-6">
         <Card>
           <CardHeader>
             <CardTitle>
-              BIDI & Line Break —
+              Grapheme & ZWJ Visualizer —
               {" "}
               {params.version}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground mb-4">
-              Visualize bidirectional ordering and line break opportunities for sample text using Unicode
+              Break text into grapheme clusters for Unicode
               {" "}
               {params.version}
-              {" "}
-              rules.
+              , show component parts of ZWJ sequences (emoji parts, modifiers) and describe cluster boundaries.
             </p>
             <Button nativeButton={false} render={<Link to="/v/$version" params={{ version: params.version }}>Back to version</Link>} />
           </CardContent>

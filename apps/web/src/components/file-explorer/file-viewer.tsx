@@ -151,12 +151,12 @@ export function FileViewer({ content, contentType, fileName, fileUrl }: FileView
   const [selection, setSelection] = useState<LineSelection | null>(initialSelection);
   const [lastClickedLine, setLastClickedLine] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
-  const lineRefs = useRef<Map<number, HTMLDivElement>>(new Map());
+  const lineRefsRef = useRef<Map<number, HTMLDivElement>>(new Map());
 
   // Scroll to selection when it changes
   useEffect(() => {
     if (selection) {
-      const lineElement = lineRefs.current.get(selection.start);
+      const lineElement = lineRefsRef.current.get(selection.start);
       if (lineElement) {
         lineElement.scrollIntoView({ behavior: "smooth", block: "center" });
       }
@@ -187,9 +187,9 @@ export function FileViewer({ content, contentType, fileName, fileUrl }: FileView
 
   const handleLineRef = useCallback((lineNum: number, el: HTMLDivElement | null) => {
     if (el) {
-      lineRefs.current.set(lineNum, el);
+      lineRefsRef.current.set(lineNum, el);
     } else {
-      lineRefs.current.delete(lineNum);
+      lineRefsRef.current.delete(lineNum);
     }
   }, []);
 

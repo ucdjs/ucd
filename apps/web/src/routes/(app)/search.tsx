@@ -1,17 +1,14 @@
 import { searchCharactersQueryOptions } from "#apis/search";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute, Link, retainSearchParams, useNavigate, useSearch } from "@tanstack/react-router";
+import { createFileRoute, Link, retainSearchParams } from "@tanstack/react-router";
 import { zodValidator } from "@tanstack/zod-adapter";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@ucdjs-internal/shared-ui/ui/breadcrumb";
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 import { Input } from "@ucdjs-internal/shared-ui/ui/input";
-import { Separator } from "@ucdjs-internal/shared-ui/ui/separator";
-import { SidebarTrigger } from "@ucdjs-internal/shared-ui/ui/sidebar";
 import { Skeleton } from "@ucdjs-internal/shared-ui/ui/skeleton";
 import { Search, X } from "lucide-react";
-import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useMemo, useState } from "react";
 import { z } from "zod";
 
 const searchSchema = z.object({
@@ -19,7 +16,7 @@ const searchSchema = z.object({
   version: z.string().optional(),
 });
 
-export const Route = createFileRoute("/search")({
+export const Route = createFileRoute("/(app)/search")({
   component: GlobalSearchPage,
   validateSearch: zodValidator(searchSchema),
   search: {
@@ -28,86 +25,33 @@ export const Route = createFileRoute("/search")({
 });
 
 function GlobalSearchPage() {
-  const navigate = useNavigate({ from: "/search" });
-  const search = useSearch({ from: "/search" });
-  const [query, setQuery] = useState(search.q ?? "");
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setQuery(search.q ?? "");
-  }, [search.q]);
-
+  const { q, version } = Route.useSearch();
+  const navigate = Route.useNavigate();
+  const query = q ?? "";
   const trimmedQuery = query.trim();
 
   const searchInput = useMemo(() => ({
     query: trimmedQuery,
-    version: search.version,
-  }), [trimmedQuery, search.version]);
+    version,
+  }), [trimmedQuery, version]);
 
   const handleChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
-    setQuery(value);
-
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-    }
-
-    timerRef.current = setTimeout(() => {
-      navigate({
-        search: (prev) => ({
-          ...prev,
-          q: value.trim() || undefined,
-        }),
-      });
-    }, 300);
-  }, [navigate]);
+    const nextValue = event.target.value;
+    if (nextValue === query) return;
+    const trimmed = nextValue.trim() || undefined;
+    navigate({
+      search: { q: trimmed, version },
+    });
+  }, [navigate, query, version]);
 
   const handleClear = useCallback(() => {
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-    }
-
-    setQuery("");
     navigate({
-      search: (prev) => ({
-        ...prev,
-        q: undefined,
-      }),
+      search: { q: undefined, version },
     });
-  }, [navigate]);
-
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-      }
-    };
-  }, []);
+  }, [navigate, version]);
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-4">
-      <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
-        <div className="flex items-center gap-2 px-4">
-          <SidebarTrigger className="-ml-1" />
-          <Separator
-            orientation="vertical"
-            className="mr-2 data-[orientation=vertical]:h-4"
-          />
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem className="hidden md:block">
-                <BreadcrumbLink render={<Link to="/">Home</Link>} />
-              </BreadcrumbItem>
-              <BreadcrumbSeparator className="hidden md:block" />
-              <BreadcrumbItem>
-                <BreadcrumbPage>Search</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-        </div>
-      </header>
-
       <div className="flex flex-1 flex-col gap-6 pt-2">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
@@ -116,22 +60,19 @@ function GlobalSearchPage() {
               Search Unicode names, blocks, scripts, and codepoints. Results are mocked for now.
             </p>
           </div>
-          {search.version
+          {version
             ? (
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => navigate({
-                    search: (prev) => ({
-                      ...prev,
-                      version: undefined,
-                    }),
+                    search: { q, version: undefined },
                   })}
                 >
                   <span>
                     Version
                     {" "}
-                    {search.version}
+                    {version}
                   </span>
                   <X className="size-3" />
                 </Button>
@@ -166,12 +107,12 @@ function GlobalSearchPage() {
             </div>
             <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
               <span>Tip: use "U+" or hex codepoints (e.g. U+1F600).</span>
-              {search.version
+              {version
                 ? (
                     <span>
                       Searching within Unicode
                       {" "}
-                      {search.version}
+                      {version}
                       .
                     </span>
                   )
@@ -284,10 +225,12 @@ function SearchResultsContent({ query, version }: { query: string; version?: str
 }
 
 function SearchResultsSkeleton() {
+  const skeletonKeys = useState(() => Array.from({ length: 3 }, (_, index) => `search-skeleton-${index}`))[0];
+
   return (
     <div className="space-y-3">
-      {Array.from({ length: 3 }).map((_, index) => (
-        <div key={`search-skeleton-${index}`} className="rounded-lg border bg-card/70 p-3">
+      {skeletonKeys.map((key) => (
+        <div key={key} className="rounded-lg border bg-card/70 p-3">
           <div className="flex items-center gap-3">
             <Skeleton className="h-8 w-8 rounded-md" />
             <div className="flex-1 space-y-2">

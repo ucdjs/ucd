@@ -33,39 +33,34 @@ function useSyncExternalStoreClient<TSnapshot>(
   getSnapshot: () => TSnapshot,
 ): TSnapshot {
   const value = getSnapshot();
-  const [state, forceUpdate] = React.useState({
-    inst: {
-      value,
-      getSnapshot,
-    },
-  });
-  const inst = state.inst;
+  const instRef = React.useRef({ value, getSnapshot });
+  const [, forceUpdate] = React.useReducer((count: number) => count + 1, 0);
 
   React.useLayoutEffect(() => {
-    // eslint-disable-next-line react-hooks/immutability
-    inst.value = value;
-    inst.getSnapshot = getSnapshot;
-    if (checkIfSnapshotChanged(inst)) {
-      forceUpdate({ inst });
+    const nextInst = { value, getSnapshot };
+    instRef.current = nextInst;
+    if (checkIfSnapshotChanged(nextInst)) {
+      forceUpdate();
     }
-  }, [subscribe, value, getSnapshot]);
+  }, [forceUpdate, subscribe, value, getSnapshot]);
 
   React.useEffect(() => {
+    const inst = instRef.current;
     if (checkIfSnapshotChanged(inst)) {
-      forceUpdate({ inst });
+      forceUpdate();
     }
     return subscribe(() => {
-      if (checkIfSnapshotChanged(inst)) {
-        forceUpdate({ inst });
+      if (checkIfSnapshotChanged(instRef.current)) {
+        forceUpdate();
       }
     });
-  }, [subscribe]);
+  }, [forceUpdate, subscribe]);
 
   React.useDebugValue(value);
   return value;
 }
 
-function useSyncExternalStoreServer<TSnapshot>(
+function syncExternalStoreServer<TSnapshot>(
   _subscribe: Subscribe,
   getSnapshot: () => TSnapshot,
 ): TSnapshot {
@@ -76,7 +71,7 @@ const useSyncExternalStoreShim
   = typeof window === "undefined"
     || typeof window.document === "undefined"
     || typeof window.document.createElement === "undefined"
-    ? useSyncExternalStoreServer
+    ? syncExternalStoreServer
     : useSyncExternalStoreClient;
 
 export function useSyncExternalStore<TSnapshot>(
@@ -108,8 +103,8 @@ export function useSyncExternalStoreWithSelector<TSnapshot, TSelection>(
     instRef.current = { hasValue: false, value: null as TSelection };
   }
 
-  const inst = instRef.current;
   const [getSelection, getServerSelection] = React.useMemo(() => {
+    const inst = instRef.current as { hasValue: boolean; value: TSelection };
     let hasMemo = false;
     let memoizedSnapshot: TSnapshot;
     let memoizedSelection: TSelection;
@@ -158,17 +153,18 @@ export function useSyncExternalStoreWithSelector<TSnapshot, TSelection>(
     ] as const;
   }, [getSnapshot, getServerSnapshot, selector, isEqual]);
 
-  const value = useSyncExternalStore(
+  const selectedValue = useSyncExternalStore(
     subscribe,
     getSelection,
     getServerSelection,
   );
 
   React.useEffect(() => {
+    const inst = instRef.current as { hasValue: boolean; value: TSelection };
     inst.hasValue = true;
-    inst.value = value;
-  }, [value]);
+    inst.value = selectedValue;
+  }, [selectedValue]);
 
-  React.useDebugValue(value);
-  return value;
+  React.useDebugValue(selectedValue);
+  return selectedValue;
 }

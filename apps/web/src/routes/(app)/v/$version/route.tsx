@@ -36,7 +36,7 @@ const validateVersionMiddleware = createMiddleware({
   },
 );
 
-export const Route = createFileRoute("/v/$version")({
+export const Route = createFileRoute("/(app)/v/$version")({
   component: VersionLayoutComponent,
   notFoundComponent: VersionNotFoundBoundary,
   server: {

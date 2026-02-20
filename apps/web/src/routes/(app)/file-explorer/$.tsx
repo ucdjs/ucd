@@ -9,9 +9,9 @@ import { zodValidator } from "@tanstack/zod-adapter";
 import { cn } from "@ucdjs-internal/shared-ui";
 import { Skeleton } from "@ucdjs-internal/shared-ui/ui/skeleton";
 import { Suspense } from "react";
-import { searchSchema } from "../../lib/file-explorer";
+import { searchSchema } from "../../../lib/file-explorer";
 
-export const Route = createFileRoute("/file-explorer/$")({
+export const Route = createFileRoute("/(app)/file-explorer/$")({
   component: DirectoryExplorerPage,
   validateSearch: zodValidator(searchSchema),
   search: {
@@ -78,7 +78,7 @@ export const Route = createFileRoute("/file-explorer/$")({
 function DirectoryExplorerPage() {
   const { _splat: path = "" } = Route.useParams();
   const { amount } = Route.useLoaderData();
-  const search = useSearch({ from: "/file-explorer/$" });
+  const search = useSearch({ from: "/(app)/file-explorer/$" });
 
   const viewMode = search.viewMode || "list";
 

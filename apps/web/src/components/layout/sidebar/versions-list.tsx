@@ -82,13 +82,15 @@ export function VersionsList() {
 }
 
 export function VersionsListSkeleton() {
+  const skeletonRows = useState(() => Array.from({ length: 5 }, (_, index) => `version-skeleton-${index}`))[0];
+
   return (
     <SidebarGroup className="mt-auto animate-pulse">
       <div className="h-4 bg-muted rounded w-16 mb-4" />
       <SidebarMenu>
         <div className="overflow-auto" style={{ height: "10rem" }}>
-          {Array.from({ length: 5 }).map((_, i) => (
-            <SidebarMenuItem key={i}>
+          {skeletonRows.map((key) => (
+            <SidebarMenuItem key={key}>
               <div className="flex items-center justify-between gap-2 py-2 px-2">
                 <div className="flex items-center gap-2 flex-1">
                   <div className="h-4 bg-muted rounded w-4" />
