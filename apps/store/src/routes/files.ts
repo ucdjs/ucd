@@ -16,7 +16,10 @@ export function registerFilesRoute(router: Hono<HonoEnv>) {
       const version = c.req.param("version");
       const filepath = c.req.param("filepath")?.trim() || "";
 
-      // @ts-ignore - TypeScript doesn't narrow the union type correctly here
+      if (!("files" in c.env.UCDJS_API)) {
+        return c.json({ error: "Files API not available" }, 503);
+      }
+
       const result = await c.env.UCDJS_API.files(`${version}/ucd/${filepath}`, {
         query: c.req.query("query"),
         pattern: c.req.query("pattern"),
