@@ -1,7 +1,6 @@
 import type { UnicodeVersion } from "@ucdjs/schemas";
 import { versionsQueryOptions } from "#functions/versions";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import {
@@ -15,8 +14,9 @@ import {
   DropdownMenuTrigger,
 } from "@ucdjs-internal/shared-ui/ui/dropdown-menu";
 import { Input } from "@ucdjs-internal/shared-ui/ui/input";
-import { ArrowRight, Calendar, Filter, Search, Sparkles, X } from "lucide-react";
+import { Calendar, Filter, Search, X } from "lucide-react";
 import { useMemo, useState } from "react";
+import { VersionCardItem, VersionCardItemSkeleton } from "./version-card-item";
 
 type VersionTypeFilter = "all" | "stable" | "draft" | "unsupported";
 type AgeFilter = "all" | "recent" | "legacy";
@@ -218,52 +218,16 @@ export function VersionsCardList() {
             </div>
           )
         : (
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {filteredVersions.map((version) => {
                 const isLatestStable = version.version === latestStable?.version;
 
                 return (
-                  <Link
+                  <VersionCardItem
                     key={version.version}
-                    to="/v/$version"
-                    params={{ version: version.version }}
-                    className="group flex flex-col gap-2 rounded-xl border bg-card/70 p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/30 hover:bg-accent/60"
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold text-base">{version.version}</span>
-                      <ArrowRight className="size-4 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all text-muted-foreground" />
-                    </div>
-
-                    <div className="text-xs text-muted-foreground">
-                      INSERT DESCRIPTION HERE
-                    </div>
-
-                    <div className="flex flex-wrap gap-1.5">
-                      {isLatestStable && (
-                        <Badge variant="secondary" className="text-[10px] font-medium">
-                          <Sparkles className="size-3" />
-                          Latest
-                        </Badge>
-                      )}
-                      <Badge
-                        variant="outline"
-                        className={`text-[10px] font-medium ${
-                          version.type === "stable"
-                            ? "border-emerald-500/20 text-emerald-700 dark:text-emerald-400"
-                            : version.type === "draft"
-                              ? "border-amber-500/20 text-amber-700 dark:text-amber-400"
-                              : "border-muted-foreground/20 text-muted-foreground"
-                        }`}
-                      >
-                        {version.type}
-                      </Badge>
-                      {version.date && (
-                        <Badge variant="outline" className="text-[10px] font-medium">
-                          {version.date}
-                        </Badge>
-                      )}
-                    </div>
-                  </Link>
+                    version={version}
+                    isLatest={isLatestStable}
+                  />
                 );
               })}
             </div>
@@ -280,20 +244,9 @@ export function VersionsCardListSkeleton() {
         <div className="h-8 w-24 rounded-lg border bg-card/60 animate-pulse" />
         <div className="h-8 w-24 rounded-lg border bg-card/60 animate-pulse" />
       </div>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {Array.from({ length: 6 }).map((_, i) => (
-          <div
-            // eslint-disable-next-line react/no-array-index-key
-            key={`card-skeleton-${i}`}
-            className="flex flex-col gap-2 rounded-xl border bg-card/70 p-4 animate-pulse"
-          >
-            <div className="h-5 bg-muted rounded w-20" />
-            <div className="h-4 bg-muted rounded w-28" />
-            <div className="flex gap-1.5">
-              <div className="h-5 bg-muted rounded-full w-12" />
-              <div className="h-5 bg-muted rounded-full w-16" />
-            </div>
-          </div>
+          <VersionCardItemSkeleton key={`card-skeleton-${i}`} />
         ))}
       </div>
     </div>

@@ -19,8 +19,8 @@ import { UcdLogo } from "../../ucd-logo";
 import { VersionSwitcher, VersionSwitcherSkeleton } from "../../version-switcher";
 
 const MAIN_ITEMS = [
-  { to: "/", icon: BookOpen, label: "Home" },
-  { to: "/search", icon: Search, label: "Search" },
+  { to: "/", icon: BookOpen, label: "Home", exact: true as const },
+  { to: "/search", icon: Search, label: "Search", exact: false as const },
 ] as const;
 
 const VERSION_ITEMS = [
@@ -41,8 +41,16 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
   const { ucdjsApiBaseUrl } = useLoaderData({ from: "__root__" });
 
   const matches = useMatches();
+  const currentPath = matches[matches.length - 1]?.pathname ?? "";
   const currentVersionMatch = matches.find((m) => (m.params as any)?.version !== undefined);
   const currentVersion = currentVersionMatch ? (currentVersionMatch.params as any).version : undefined;
+
+  const isMainItemActive = (to: string, exact = false) => {
+    if (exact) {
+      return currentPath === to || currentPath === `${to}/`;
+    }
+    return currentPath.startsWith(to.replace(/\/\$/, "/"));
+  };
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -71,18 +79,22 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
       <SidebarContent>
         <SidebarGroup>
           <SidebarMenu>
-            {MAIN_ITEMS.map((item) => (
-              <SidebarMenuItem key={item.label}>
-                <SidebarMenuButton
-                  render={(
-                    <Link to={item.to}>
-                      <item.icon className="size-4" />
-                      <span>{item.label}</span>
-                    </Link>
-                  )}
-                />
-              </SidebarMenuItem>
-            ))}
+            {MAIN_ITEMS.map((item) => {
+              const isActive = isMainItemActive(item.to, item.exact);
+              return (
+                <SidebarMenuItem key={item.label}>
+                  <SidebarMenuButton
+                    isActive={isActive}
+                    render={(
+                      <Link to={item.to}>
+                        <item.icon className="size-4" />
+                        <span>{item.label}</span>
+                      </Link>
+                    )}
+                  />
+                </SidebarMenuItem>
+              );
+            })}
           </SidebarMenu>
         </SidebarGroup>
 
@@ -95,21 +107,25 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
                   {currentVersion}
                 </SidebarGroupLabel>
                 <SidebarMenu>
-                  {VERSION_ITEMS.map((item) => (
-                    <SidebarMenuItem key={item.label}>
-                      <SidebarMenuButton
-                        render={(
-                          <Link
-                            to={item.to}
-                            params={{ version: currentVersion, ...("params" in item ? item.params : {}) }}
-                          >
-                            <item.icon className="size-4" />
-                            <span>{item.label}</span>
-                          </Link>
-                        )}
-                      />
-                    </SidebarMenuItem>
-                  ))}
+                  {VERSION_ITEMS.map((item) => {
+                    const isActive = isMainItemActive(item.to, false);
+                    return (
+                      <SidebarMenuItem key={item.label}>
+                        <SidebarMenuButton
+                          isActive={isActive}
+                          render={(
+                            <Link
+                              to={item.to}
+                              params={{ version: currentVersion, ...("params" in item ? item.params : {}) }}
+                            >
+                              <item.icon className="size-4" />
+                              <span>{item.label}</span>
+                            </Link>
+                          )}
+                        />
+                      </SidebarMenuItem>
+                    );
+                  })}
                 </SidebarMenu>
               </SidebarGroup>
             )
@@ -118,18 +134,22 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
         <SidebarGroup>
           <SidebarGroupLabel>Tools</SidebarGroupLabel>
           <SidebarMenu>
-            {TOOLS_ITEMS.map((item) => (
-              <SidebarMenuItem key={item.label}>
-                <SidebarMenuButton
-                  render={(
-                    <Link to={item.to} params={"params" in item ? item.params : undefined}>
-                      <item.icon className="size-4" />
-                      <span>{item.label}</span>
-                    </Link>
-                  )}
-                />
-              </SidebarMenuItem>
-            ))}
+            {TOOLS_ITEMS.map((item) => {
+              const isActive = isMainItemActive(item.to, false);
+              return (
+                <SidebarMenuItem key={item.label}>
+                  <SidebarMenuButton
+                    isActive={isActive}
+                    render={(
+                      <Link to={item.to} params={"params" in item ? item.params : undefined}>
+                        <item.icon className="size-4" />
+                        <span>{item.label}</span>
+                      </Link>
+                    )}
+                  />
+                </SidebarMenuItem>
+              );
+            })}
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>

@@ -10,11 +10,12 @@ import {
   BreadcrumbSeparator,
 } from "@ucdjs-internal/shared-ui/ui/breadcrumb";
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 import { Input } from "@ucdjs-internal/shared-ui/ui/input";
 import { Separator } from "@ucdjs-internal/shared-ui/ui/separator";
 import { SidebarTrigger } from "@ucdjs-internal/shared-ui/ui/sidebar";
 import { Skeleton } from "@ucdjs-internal/shared-ui/ui/skeleton";
-import { BookOpen, Grid3X3, Search, Type } from "lucide-react";
+import { BookOpen, FileText, Grid3X3, Search, Type } from "lucide-react";
 import { Suspense, useEffect, useState } from "react";
 
 export const Route = createFileRoute("/v/$version/")({
@@ -99,7 +100,7 @@ function VersionPageContent({ version }: { version: string }) {
                   {version}
                 </h1>
                 {isLatest && (
-                  <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
+                  <span className="text-xs bg-primary/10 text-primary dark:bg-primary/20 px-2 py-1 rounded-full">
                     Latest
                   </span>
                 )}
@@ -204,6 +205,79 @@ function VersionPageContent({ version }: { version: string }) {
         <Suspense fallback={<VersionStatisticsSkeleton />}>
           <VersionStatistics version={version} />
         </Suspense>
+        <div className="space-y-4">
+          <h2 className="text-lg font-semibold tracking-tight">Quick Links</h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Link
+              to="/v/$version/blocks"
+              params={{ version }}
+              className="group"
+            >
+              <Card className="h-full transition-colors hover:bg-accent/50 dark:hover:bg-accent/20">
+                <CardHeader className="pb-2">
+                  <div className="flex items-center gap-2">
+                    <Grid3X3 className="size-5 text-primary" />
+                    <CardTitle className="text-base">Browse Blocks</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="text-sm text-muted-foreground">
+                  Explore Unicode blocks and their character ranges
+                </CardContent>
+              </Card>
+            </Link>
+            <Link
+              to="/search"
+              search={{ version }}
+              className="group"
+            >
+              <Card className="h-full transition-colors hover:bg-accent/50 dark:hover:bg-accent/20">
+                <CardHeader className="pb-2">
+                  <div className="flex items-center gap-2">
+                    <Search className="size-5 text-primary" />
+                    <CardTitle className="text-base">Search</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="text-sm text-muted-foreground">
+                  Search characters by name, codepoint, or properties
+                </CardContent>
+              </Card>
+            </Link>
+            <Link
+              to="/v/$version/u/$hex"
+              params={{ version, hex: "0041" }}
+              className="group"
+            >
+              <Card className="h-full transition-colors hover:bg-accent/50 dark:hover:bg-accent/20">
+                <CardHeader className="pb-2">
+                  <div className="flex items-center gap-2">
+                    <Type className="size-5 text-primary" />
+                    <CardTitle className="text-base">Codepoint Inspector</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="text-sm text-muted-foreground">
+                  Inspect individual characters and their properties
+                </CardContent>
+              </Card>
+            </Link>
+            <Link
+              to="/file-explorer/$"
+              params={{ _splat: "" }}
+              className="group"
+            >
+              <Card className="h-full transition-colors hover:bg-accent/50 dark:hover:bg-accent/20">
+                <CardHeader className="pb-2">
+                  <div className="flex items-center gap-2">
+                    <FileText className="size-5 text-primary" />
+                    <CardTitle className="text-base">File Explorer</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="text-sm text-muted-foreground">
+                  Browse raw UCD database files and their structure
+                </CardContent>
+              </Card>
+            </Link>
+          </div>
+        </div>
       </div>
     </>
   );

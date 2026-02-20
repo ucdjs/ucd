@@ -1,4 +1,4 @@
-import { VersionsCardList, VersionsCardListSkeleton } from "#components/home/versions-list";
+import { VersionsCardList, VersionsCardListSkeleton } from "#components/home/versions/versions-list";
 import { versionsQueryOptions } from "#functions/versions";
 import { createFileRoute, Link, useLoaderData } from "@tanstack/react-router";
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@ucdjs-internal/shared-ui/ui/breadcrumb";
@@ -138,9 +138,9 @@ function HomePage() {
             <Layers className="size-4" />
             Unicode versions
           </h2>
-          <Suspense fallback={<VersionsCardListSkeleton />}>
-            <VersionsCardList />
-          </Suspense>
+          {/* <Suspense fallback={<VersionsCardListSkeleton />}> */}
+          <VersionsCardList />
+          {/* </Suspense> */}
         </section>
       </div>
     </>

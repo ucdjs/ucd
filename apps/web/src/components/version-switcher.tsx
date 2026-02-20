@@ -10,10 +10,10 @@ import * as React from "react";
 function getBadgeLabel(date?: string | number, isDraft?: boolean) {
   const year = date ? Number.parseInt(String(date), 10) : undefined;
   const age = year ? new Date().getFullYear() - year : undefined;
-  if (isDraft) return { label: "Draft", cls: "bg-yellow-100 text-yellow-700" };
+  if (isDraft) return { label: "Draft", cls: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400" };
   if (age === undefined) return { label: "Unknown", cls: "bg-muted text-muted-foreground" };
-  if (age <= 1) return { label: "Recent", cls: "bg-green-100 text-green-700" };
-  if (age <= 3) return { label: "Mature", cls: "bg-blue-100 text-blue-700" };
+  if (age <= 1) return { label: "Recent", cls: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" };
+  if (age <= 3) return { label: "Mature", cls: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400" };
   if (age <= 5) return { label: "Old", cls: "bg-muted text-muted-foreground" };
   return { label: "Legacy", cls: "bg-muted/60 text-muted-foreground/80" };
 }
