@@ -1,10 +1,6 @@
 import type { Context } from "hono";
 import * as Sentry from "@sentry/cloudflare";
 
-/**
- * Component identifiers for different parts of the API.
- * Used to categorize errors by which part of the system they occurred in.
- */
 export const COMPONENTS = {
   V1_VERSIONS: "v1_versions",
   V1_FILES: "v1_files",
@@ -14,41 +10,40 @@ export const COMPONENTS = {
 
 export type Component = typeof COMPONENTS[keyof typeof COMPONENTS];
 
-/**
- * Operation names mapped by component.
- * Ensures type safety when specifying operations for each component.
- */
 export interface ComponentOperations {
-  [COMPONENTS.V1_VERSIONS]: "getAllVersionsFromList" | "getVersionFromList" | "calculateStatistics" | "getVersionFileTree";
+  [COMPONENTS.V1_VERSIONS]: "getAllVersionsFromList" | "getVersionFromList" | "calculateStatistics" | "getVersionFileTree" | "getCurrentDraftVersion";
   [COMPONENTS.V1_FILES]: "getFile" | "searchFiles" | "listDirectory";
   [COMPONENTS.WELL_KNOWN]: "getUCDConfig" | "getUCDStore";
   [COMPONENTS.TASKS]: "executeTask";
 }
 
-/**
- * Type-safe operation name based on component.
- */
-export type Operation<T extends Component> = ComponentOperations[T];
-
-/**
- * Options for capturing errors with Sentry.
- */
 export interface CaptureErrorOptions<T extends Component> {
-  /** The component where the error occurred */
+  /**
+   * The component where the error occurred
+   */
   component: T;
-  /** The operation that failed */
-  operation: Operation<T>;
-  /** Optional Hono context to extract request metadata */
+
+  /**
+   * The operation that failed
+   */
+  operation: ComponentOperations[T];
+
+  /**
+   *  Optional Hono context to extract request metadata
+   */
   context?: Context;
-  /** Additional tags to add to the error */
+
+  /**
+   * Additional tags to add to the error
+   */
   tags?: Record<string, string>;
-  /** Additional metadata to include */
+
+  /**
+   *  Additional metadata to include
+   */
   extra?: Record<string, unknown>;
 }
 
-/**
- * Extracts request metadata from Hono context for error reporting.
- */
 function extractRequestContext(context?: Context): Record<string, unknown> | undefined {
   if (!context) {
     return undefined;
@@ -115,6 +110,18 @@ export function captureError<T extends Component>(
   });
 }
 
+export interface CaptureUpstreamErrorOptions<T extends Component> extends Omit<CaptureErrorOptions<T>, "tags"> {
+  /**
+   * The upstream service that failed
+   */
+  upstreamService: string;
+
+  /**
+   *  Additional tags (upstream_service is automatically added)
+   */
+  tags?: Record<string, string>;
+}
+
 /**
  * Specialized error capture for upstream service failures.
  * Automatically adds common upstream service tags and metadata.
@@ -132,13 +139,6 @@ export function captureError<T extends Component>(
  * });
  * ```
  */
-export interface CaptureUpstreamErrorOptions<T extends Component> extends Omit<CaptureErrorOptions<T>, "tags"> {
-  /** The upstream service that failed */
-  upstreamService: string;
-  /** Additional tags (upstream_service is automatically added) */
-  tags?: Record<string, string>;
-}
-
 export function captureUpstreamError<T extends Component>(
   error: Error,
   options: CaptureUpstreamErrorOptions<T>,
@@ -152,6 +152,13 @@ export function captureUpstreamError<T extends Component>(
       ...tags,
     },
   });
+}
+
+export interface CaptureValidationErrorOptions<T extends Component> extends CaptureErrorOptions<T> {
+  /**
+   *  Additional tags (issue_type: "validation" is automatically added)
+   */
+  tags?: Record<string, string>;
 }
 
 /**
@@ -171,11 +178,6 @@ export function captureUpstreamError<T extends Component>(
  * });
  * ```
  */
-export interface CaptureValidationErrorOptions<T extends Component> extends CaptureErrorOptions<T> {
-  /** Additional tags (issue_type: "validation" is automatically added) */
-  tags?: Record<string, string>;
-}
-
 export function captureValidationError<T extends Component>(
   error: Error,
   options: CaptureValidationErrorOptions<T>,
@@ -189,6 +191,13 @@ export function captureValidationError<T extends Component>(
       ...tags,
     },
   });
+}
+
+export interface CaptureParseErrorOptions<T extends Component> extends CaptureErrorOptions<T> {
+  /**
+   *  Additional tags (issue_type: "parse" is automatically added)
+   */
+  tags?: Record<string, string>;
 }
 
 /**
@@ -208,11 +217,6 @@ export function captureValidationError<T extends Component>(
  * });
  * ```
  */
-export interface CaptureParseErrorOptions<T extends Component> extends CaptureErrorOptions<T> {
-  /** Additional tags (issue_type: "parse" is automatically added) */
-  tags?: Record<string, string>;
-}
-
 export function captureParseError<T extends Component>(
   error: Error,
   options: CaptureParseErrorOptions<T>,

@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import type { Entry } from "apache-autoindex-parse";
 import type { StatusCode } from "hono/utils/http-status";
 import { trimLeadingSlash, trimTrailingSlash } from "@luxass/utils";
@@ -45,29 +44,96 @@ export async function parseUnicodeDirectory(html: string, basePath = ""): Promis
   });
 }
 
+export interface RawUnicodeAssetResult {
+  /**
+   * Whether the request was successful (status 200-299)
+   */
+  ok: boolean;
+
+  /**
+   * The HTTP status code returned by the server
+   */
+  status: StatusCode;
+
+  /**
+   * The original Fetch Response object
+   */
+  response: Response;
+
+  /**
+   * The final URL fetched
+   */
+  url: string;
+
+  /**
+   * The normalized path used for the request
+   */
+  normalizedPath: string;
+
+  /**
+   * The file extension (lowercase, no dot)
+   */
+  extension: string;
+}
+
+const PATH_TRIM_RE = /^\/+|\/+$/g;
+
+export async function getRawUnicodeAsset(path: string): Promise<RawUnicodeAssetResult> {
+  const normalizedPath = path.trim().replace(PATH_TRIM_RE, "");
+  const url = normalizedPath ? `https://unicode.org/Public/${normalizedPath}?F=2` : "https://unicode.org/Public?F=2";
+
+  const response = await fetch(url, {
+    method: "GET",
+    headers: { "User-Agent": DEFAULT_USER_AGENT },
+  });
+
+  const leaf = normalizedPath.split("/").pop() ?? "";
+  const extension = leaf.includes(".") ? leaf.split(".").pop()!.toLowerCase() : "";
+
+  return {
+    ok: response.ok,
+    status: response.status as StatusCode,
+    response,
+    url,
+    normalizedPath,
+    extension,
+  };
+}
+
+function buildStatsHeaders(files: Entry[], base: Record<string, string>): Record<string, string> {
+  return {
+    ...base,
+    "Content-Type": "application/json",
+    [UCD_STAT_TYPE_HEADER]: "directory",
+    [UCD_STAT_CHILDREN_HEADER]: `${files.length}`,
+    [UCD_STAT_CHILDREN_FILES_HEADER]: `${files.filter((f) => f.type === "file").length}`,
+    [UCD_STAT_CHILDREN_DIRS_HEADER]: `${files.filter((f) => f.type === "directory").length}`,
+  };
+}
+
 export interface DirectoryFilterOptions {
   /**
-   * A string to filter file/directory names that start with this query (case-insensitive).
+   * Search prefix for file names
    */
   query?: string;
 
   /**
-   * A glob pattern to filter file/directory names.
+   * Glob pattern for filtering
    */
   pattern?: string;
 
   /**
-   * Type of entries to include: "all" (default), "files", or "directories".
+   * Filter by "all" | "files" | "directories"
    */
   type?: string;
 
   /**
-   * Field to sort by: "name" (default) or "lastModified".
+   * Sort field: "name" | "lastModified"
    */
   sort?: string;
 
   /**
-   * Sort order: "asc" (default) or "desc".
+   * Sort direction: "asc" | "desc"
    */
   order?: string;
 }
@@ -85,296 +151,145 @@ export function applyDirectoryFiltersAndSort(
 ): Entry[] {
   let filtered = [...files];
 
-  // Apply query filter (prefix search, case-insensitive)
   if (options.query) {
-    console.info(`[v1_files]: applying query filter: ${options.query}`);
-    const queryLower = options.query.toLowerCase();
-    filtered = filtered.filter((entry) => entry.name.toLowerCase().startsWith(queryLower));
+    const q = options.query.toLowerCase();
+    filtered = filtered.filter((e) => e.name.toLowerCase().startsWith(q));
   }
 
-  // Apply pattern filter if provided
   if (options.pattern) {
-    console.info(`[v1_files]: applying glob pattern filter: ${options.pattern}`);
     const matcher = createGlobMatcher(options.pattern);
-    filtered = filtered.filter((entry) => matcher(entry.name));
+    filtered = filtered.filter((e) => matcher(e.name));
   }
 
-  // Apply type filter
-  const type = options.type || "all";
-  if (type === "files") {
-    filtered = filtered.filter((entry) => entry.type === "file");
-  } else if (type === "directories") {
-    filtered = filtered.filter((entry) => entry.type === "directory");
+  if (options.type === "files") {
+    filtered = filtered.filter((e) => e.type === "file");
+  } else if (options.type === "directories") {
+    filtered = filtered.filter((e) => e.type === "directory");
   }
 
-  // Apply sorting (directories always first, like Windows File Explorer)
-  const sort = options.sort || "name";
-  const order = options.order || "asc";
-
-  filtered = filtered.toSorted((a, b) => {
-    // Directories always come first
-    if (a.type !== b.type) {
-      return a.type === "directory" ? -1 : 1;
-    }
-
-    // Within same type, apply the requested sort
-    let comparison: number;
-
-    if (sort === "lastModified") {
-      // lastModified is always available from parseUnicodeDirectory
-      comparison = (a.lastModified ?? 0) - (b.lastModified ?? 0);
-    } else {
-      // Natural name sorting (numeric aware) so 2.0.0 < 10.0.0
-      comparison = a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: "base" });
-    }
-
-    return order === "desc" ? -comparison : comparison;
+  const isDesc = options.order === "desc";
+  return filtered.toSorted((a, b) => {
+    if (a.type !== b.type) return a.type === "directory" ? -1 : 1;
+    const res = options.sort === "lastModified"
+      ? (a.lastModified ?? 0) - (b.lastModified ?? 0)
+      : a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: "base" });
+    return isDesc ? -res : res;
   });
-
-  return filtered;
 }
 
-export function buildDirectoryHeaders(
-  files: Entry[],
-  baseHeaders: Record<string, string>,
-): Record<string, string> {
-  return {
-    ...baseHeaders,
-    [UCD_STAT_TYPE_HEADER]: "directory",
-    [UCD_STAT_CHILDREN_HEADER]: `${files.length}`,
-    [UCD_STAT_CHILDREN_FILES_HEADER]: `${files.filter((f) => f.type === "file").length}`,
-    [UCD_STAT_CHILDREN_DIRS_HEADER]: `${files.filter((f) => f.type === "directory").length}`,
-  };
-}
-
-export function buildFileHeaders(
-  contentType: string,
-  baseHeaders: Record<string, string>,
-  response: Response,
-  actualContentLength: number,
-): Record<string, string> {
-  const headers: Record<string, string> = {
-    "Content-Type": contentType,
-    ...baseHeaders,
-    [UCD_STAT_TYPE_HEADER]: "file",
-    [UCD_STAT_SIZE_HEADER]: `${actualContentLength}`,
-    "Content-Length": `${actualContentLength}`,
-  };
-
-  const cd = response.headers.get("Content-Disposition");
-  if (cd) headers["Content-Disposition"] = cd;
-
-  return headers;
-}
-
-export interface FileResponseOptions {
-  contentType: string;
-  baseHeaders: Record<string, string>;
-  response: Response;
-  isHeadRequest: boolean;
-}
-
-export async function handleFileResponse(
-  c: any,
-  options: FileResponseOptions,
-): Promise<Response> {
-  const { contentType, baseHeaders, response, isHeadRequest } = options;
-
-  if (isHeadRequest) {
-    const blob = await response.blob();
-    const actualSize = blob.size;
-    const headers = buildFileHeaders(contentType, baseHeaders, response, actualSize);
-    console.log(`[file-handler]: HEAD request, calculated size: ${actualSize}`);
-    return c.newResponse(null, 200, headers);
-  }
-
-  const headers: Record<string, string> = {
-    "Content-Type": contentType,
-    ...baseHeaders,
-    [UCD_STAT_TYPE_HEADER]: "file",
-  };
-
-  const cd = response.headers.get("Content-Disposition");
-  if (cd) headers["Content-Disposition"] = cd;
-
-  console.log(`[file-handler]: binary file, streaming without buffering`);
-
-  return c.newResponse(response.body, 200, headers);
-}
-
-export interface DirectoryResponseOptions {
-  files: Entry[];
-  baseHeaders: Record<string, string>;
-}
-
-export function handleDirectoryResponse(
-  c: any,
-  options: DirectoryResponseOptions,
-): Response {
-  const { files, baseHeaders } = options;
-  const headers = buildDirectoryHeaders(files, baseHeaders);
-  return c.json(files, 200, headers);
-}
-
-export function determineFileExtension(leaf: string): string {
-  return leaf.includes(".") ? leaf.split(".").pop()!.toLowerCase() : "";
-}
-
-export function isHtmlFile(extName: string): boolean {
-  return HTML_EXTENSIONS.includes(`.${extName}`);
-}
-
-export function isDirectoryListing(contentType: string, extName: string): boolean {
-  return contentType.includes("text/html") && !isHtmlFile(extName);
-}
-
-export interface WildcardHandlerOptions {
-  query?: string;
-  pattern?: string;
-  type?: string;
-  sort?: string;
-  order?: string;
+export interface UnicodeAssetOptions extends DirectoryFilterOptions {
+  /**
+   * Whether to strip /ucd/ from paths in the result
+   */
   stripUCDPrefix?: boolean;
+
+  /**
+   *  Whether the request is a HEAD request (affects whether body is returned)
+   */
   isHeadRequest?: boolean;
 }
 
-export interface WildcardHandlerResult {
-  status: StatusCode;
-  headers: Record<string, string>;
-  kind: "file" | "directory" | "error";
-  body: string | ArrayBuffer | ReadableStream<Uint8Array> | null;
-}
-
-function errorResult(status: StatusCode, message: string): WildcardHandlerResult {
-  return {
-    status,
-    headers: {
-      "Content-Type": "application/json",
-    },
-    kind: "error",
-    body: JSON.stringify({
-      status,
-      message,
-      timestamp: new Date().toISOString(),
-    }),
+export type UnicodeAssetResult
+  = | {
+    kind: "error";
+    status: number;
+    body: string;
+    headers: Record<string, string>;
+  }
+  | {
+    kind: "file";
+    status: number;
+    body: Uint8Array<ArrayBuffer> | ReadableStream | null;
+    headers: Record<string, string>;
+  }
+  | {
+    kind: "directory";
+    status: number;
+    body: string;
+    headers: Record<string, string>;
   };
-}
 
-export async function fetchUnicodeFile(path: string, options: WildcardHandlerOptions): Promise<WildcardHandlerResult> {
-  const rawPath = path.trim();
-
-  if (isInvalidPath(rawPath)) {
-    return errorResult(400, "Invalid path");
-  }
-
-  const normalizedPath = rawPath.replace(/^\/+|\/+$/g, "");
-  const url = normalizedPath
-    ? `https://unicode.org/Public/${normalizedPath}?F=2`
-    : "https://unicode.org/Public?F=2";
-
-  console.info(`[v1_files]: fetching file at ${url}`);
-
-  const response = await fetch(url, {
-    method: "GET",
-    headers: {
-      "User-Agent": DEFAULT_USER_AGENT,
-    },
-  });
-
-  if (!response.ok) {
-    if (response.status === 404) {
-      return errorResult(404, "Resource not found");
-    }
-
-    return errorResult(502, "Bad Gateway");
-  }
-
-  let contentType = response.headers.get("content-type") || "";
-  const lastModified = response.headers.get("Last-Modified") || undefined;
-  const baseHeaders: Record<string, string> = {};
-  if (lastModified) {
-    baseHeaders["Last-Modified"] = lastModified;
-  }
-
-  const leaf = normalizedPath.split("/").pop() ?? "";
-  const extName = determineFileExtension(leaf);
-  const isDir = isDirectoryListing(contentType, extName);
-
-  console.info(`[v1_files]: fetched content type: ${contentType} for .${extName} file`);
-
-  if (isDir) {
-    const html = await response.text();
-    let parsedFiles = await parseUnicodeDirectory(html, normalizedPath || "/");
-
-    if (options.stripUCDPrefix) {
-      parsedFiles = parsedFiles.map((file) => ({
-        ...file,
-        path: file.path.replace(/\/ucd\//g, "/"),
-      }));
-    }
-
-    const pattern = options.pattern;
-    if (pattern && !isValidGlobPattern(pattern, {
-      maxLength: 128,
-      maxSegments: 8,
-      maxBraceExpansions: 8,
-      maxStars: 16,
-      maxQuestions: 16,
-    })) {
-      return errorResult(400, "Invalid glob pattern");
-    }
-
-    const files = applyDirectoryFiltersAndSort(parsedFiles, {
-      query: options.query,
-      pattern,
-      type: options.type,
-      sort: options.sort,
-      order: options.order,
-    });
-
-    const headers = buildDirectoryHeaders(files, baseHeaders);
-
+export async function getUnicodeAsset(path: string, options: UnicodeAssetOptions): Promise<UnicodeAssetResult> {
+  if (isInvalidPath(path)) {
     return {
-      status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        ...headers,
-      },
-      kind: "directory",
-      body: JSON.stringify(files),
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+      kind: "error",
+      body: JSON.stringify({ status: 400, message: "Invalid path" }),
     };
   }
 
-  contentType ||= determineContentTypeFromExtension(extName);
+  try {
+    const asset = await getRawUnicodeAsset(path);
+    if (!asset.ok) {
+      if (asset.status === 404) {
+        return {
+          status: 404,
+          headers: { "Content-Type": "application/json" },
+          kind: "error",
+          body: JSON.stringify({ status: 404, message: "Resource not found" }),
+        };
+      }
 
-  if (options.isHeadRequest) {
-    const blob = await response.blob();
-    const actualSize = blob.size;
-    const headers = buildFileHeaders(contentType, baseHeaders, response, actualSize);
+      return {
+        status: 502,
+        headers: { "Content-Type": "application/json" },
+        kind: "error",
+        body: JSON.stringify({ status: 502, message: "Bad Gateway" }),
+      };
+    }
+
+    const { response, extension, normalizedPath } = asset;
+    const contentType = response.headers.get("content-type") || "";
+    const lastMod = response.headers.get("Last-Modified");
+    const baseHeaders: Record<string, string> = lastMod ? { "Last-Modified": lastMod } : {};
+
+    if (contentType.includes("text/html") && !HTML_EXTENSIONS.includes(`.${extension}`)) {
+      let entries = await parseUnicodeDirectory(await response.text(), normalizedPath || "/");
+
+      if (options.stripUCDPrefix) {
+        entries = entries.map((e) => ({ ...e, path: e.path.replace(/\/ucd\//g, "/") }));
+      }
+
+      if (options.pattern && !isValidGlobPattern(options.pattern, { maxLength: 128, maxSegments: 8 })) {
+        return { status: 400, headers: {}, kind: "error", body: "Invalid glob pattern" };
+      }
+
+      const filtered = applyDirectoryFiltersAndSort(entries, options);
+      return {
+        status: 200,
+        kind: "directory",
+        headers: buildStatsHeaders(filtered, baseHeaders),
+        body: JSON.stringify(filtered),
+      };
+    }
+
+    const size = response.headers.get("content-length");
+    const cd = response.headers.get("Content-Disposition");
+    const headers: Record<string, string> = {
+      ...baseHeaders,
+      "Content-Type": contentType || determineContentTypeFromExtension(extension),
+      [UCD_STAT_TYPE_HEADER]: "file",
+    };
+
+    if (size) {
+      headers[UCD_STAT_SIZE_HEADER] = size;
+      headers["Content-Length"] = size;
+    }
+    if (cd) headers["Content-Disposition"] = cd;
 
     return {
       status: 200,
       headers,
       kind: "file",
-      body: null,
+      body: options.isHeadRequest ? null : response.body,
+    };
+  } catch (err) {
+    return {
+      status: 502,
+      headers: { "Content-Type": "application/json" },
+      kind: "error",
+      body: JSON.stringify({ status: 502, message: err instanceof Error ? err.message : "Fetch error" }),
     };
   }
-
-  const headers: Record<string, string> = {
-    "Content-Type": contentType,
-    ...baseHeaders,
-    [UCD_STAT_TYPE_HEADER]: "file",
-  };
-
-  const cd = response.headers.get("Content-Disposition");
-  if (cd) {
-    headers["Content-Disposition"] = cd;
-  }
-
-  return {
-    status: 200,
-    headers,
-    kind: "file",
-    body: response.body,
-  };
 }

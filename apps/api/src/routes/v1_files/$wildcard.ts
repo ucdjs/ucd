@@ -1,5 +1,6 @@
 import type { OpenAPIHono } from "@hono/zod-openapi";
-import type { WildcardHandlerOptions } from "../../lib/files";
+import type { StatusCode } from "hono/utils/http-status";
+import type { UnicodeAssetOptions } from "../../lib/files";
 import type { HonoEnv } from "../../types";
 import { createRoute, z } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
@@ -13,7 +14,7 @@ import {
 } from "@ucdjs/env";
 import { FileEntryListSchema } from "@ucdjs/schemas";
 import { cache } from "hono/cache";
-import { fetchUnicodeFile } from "../../lib/files";
+import { getUnicodeAsset } from "../../lib/files";
 import { generateReferences, OPENAPI_TAGS } from "../../openapi";
 import {
   ORDER_QUERY_PARAM,
@@ -281,10 +282,15 @@ export function registerWildcardRoute(router: OpenAPIHono<HonoEnv>) {
         sort: c.req.query("sort"),
         order: c.req.query("order"),
         isHeadRequest: c.req.method === "HEAD",
-      } satisfies WildcardHandlerOptions;
+      } satisfies UnicodeAssetOptions;
 
-      const result = await fetchUnicodeFile(path, handlerOptions);
-      return c.newResponse(result.body, result.status, result.headers);
+      const {
+        body,
+        headers,
+        status,
+      } = await getUnicodeAsset(path, handlerOptions);
+
+      return c.newResponse(body, status as StatusCode, headers);
     },
   );
 }
