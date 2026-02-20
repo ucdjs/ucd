@@ -47,8 +47,8 @@ catalogs:
       specifier: 1.161.1
       version: 1.161.1
     '@ucdjs/release-scripts':
-      specifier: 0.1.0-beta.58
-      version: 0.1.0-beta.58
+      specifier: 0.1.0-beta.59
+      version: 0.1.0-beta.59
     '@vitejs/plugin-react':
       specifier: 5.1.4
       version: 5.1.4
@@ -228,8 +228,8 @@ catalogs:
       specifier: 2.7.3
       version: 2.7.3
     '@unicode-utils/core':
-      specifier: 0.12.0-beta.19
-      version: 0.12.0-beta.19
+      specifier: 0.12.0-beta.23
+      version: 0.12.0-beta.23
     ai:
       specifier: 6.0.91
       version: 6.0.91
@@ -351,7 +351,7 @@ importers:
         version: 22.19.9
       '@ucdjs/release-scripts':
         specifier: catalog:build
-        version: 0.1.0-beta.58
+        version: 0.1.0-beta.59
       '@ucdjs/ucdjs-scripts':
         specifier: workspace:*
         version: link:packages/ucdjs-scripts
@@ -408,7 +408,7 @@ importers:
         version: link:../../packages/utils
       '@unicode-utils/core':
         specifier: catalog:runtime
-        version: 0.12.0-beta.19
+        version: 0.12.0-beta.23
       apache-autoindex-parse:
         specifier: catalog:runtime
         version: 5.0.2
@@ -581,7 +581,7 @@ importers:
         version: link:../../packages/utils
       '@unicode-utils/core':
         specifier: catalog:runtime
-        version: 0.12.0-beta.19
+        version: 0.12.0-beta.23
       apache-autoindex-parse:
         specifier: catalog:runtime
         version: 5.0.2
@@ -663,7 +663,7 @@ importers:
         version: link:../../packages/ucd-store
       '@unicode-utils/core':
         specifier: catalog:runtime
-        version: 0.12.0-beta.19
+        version: 0.12.0-beta.23
       lucide-react:
         specifier: catalog:frontend
         version: 0.574.0(react@19.2.4)
@@ -790,7 +790,7 @@ importers:
         version: link:../ucd-store
       '@unicode-utils/core':
         specifier: catalog:runtime
-        version: 0.12.0-beta.19
+        version: 0.12.0-beta.23
       farver:
         specifier: catalog:runtime
         version: 0.4.2
@@ -1599,7 +1599,7 @@ importers:
         version: link:../schemas
       '@unicode-utils/core':
         specifier: catalog:runtime
-        version: 0.12.0-beta.19
+        version: 0.12.0-beta.23
       defu:
         specifier: catalog:runtime
         version: 6.1.4
@@ -1754,7 +1754,7 @@ importers:
         version: link:../schemas
       '@unicode-utils/core':
         specifier: catalog:runtime
-        version: 0.12.0-beta.19
+        version: 0.12.0-beta.23
       msw:
         specifier: catalog:test
         version: 2.12.10(@types/node@25.2.2)(typescript@5.9.3)
@@ -1827,7 +1827,7 @@ importers:
         version: link:../schemas
       '@unicode-utils/core':
         specifier: catalog:runtime
-        version: 0.12.0-beta.19
+        version: 0.12.0-beta.23
       defu:
         specifier: catalog:runtime
         version: 6.1.4
@@ -1876,7 +1876,7 @@ importers:
         version: link:../schemas
       '@unicode-utils/core':
         specifier: catalog:runtime
-        version: 0.12.0-beta.19
+        version: 0.12.0-beta.23
       apache-autoindex-parse:
         specifier: catalog:runtime
         version: 5.0.2
@@ -2084,7 +2084,7 @@ importers:
         version: link:../packages/ucd-store
       '@unicode-utils/core':
         specifier: catalog:runtime
-        version: 0.12.0-beta.19
+        version: 0.12.0-beta.23
       '@vscode/vsce':
         specifier: catalog:vscode
         version: 3.7.1
@@ -3109,10 +3109,6 @@ packages:
 
   '@luxass/unicode-utils@0.11.0':
     resolution: {integrity: sha512-SjXHMnldUuqYY4NcyD8peL3HJglYxSgGHzpjqkAzG6gwyvlJSnZgmoz5UcFuuxpk0aM9flY5QcWOnx/080zDfA==}
-
-  '@luxass/utils@2.7.2':
-    resolution: {integrity: sha512-l2tPbXLeXR/c5ADU3YwLqULwm5UGFSRwBtyqyClY3zu3uKG3KbHq3FntyqQhJXdVW4VNZ3p/8fsALmQ7+YN/cw==}
-    engines: {node: '>=20'}
 
   '@luxass/utils@2.7.3':
     resolution: {integrity: sha512-+1ZqFLZAmPjtBhEjotGuXSwh/tGPn2Q03L+gUY3RM0psLYpnLpec3SFNOLOoEJDtX+9+5dInuD8GFrCqWgw4Mw==}
@@ -5205,20 +5201,20 @@ packages:
     resolution: {integrity: sha512-91fp6CAAJSRtH5ja95T1FHSKa8aPW9/Zw6cta81jlZTUw/+Vq8jM/AfF/14h2b71wwR84JUTW/3Y8QPhDAawFA==}
     engines: {node: '>=20.0.0'}
 
-  '@ucdjs/release-scripts@0.1.0-beta.58':
-    resolution: {integrity: sha512-1rl0mz4Ps/QgDggw6PIE7WTkIOJ+mXrJOO2WvrKfmgehvgFfV40jo4u7nwGC9s+DN2foVm13A3DpqNPxfv5K/A==}
+  '@ucdjs/release-scripts@0.1.0-beta.59':
+    resolution: {integrity: sha512-QO7Pe7N9AGyxnt0wBzLcPYGvAmN2p+4UPr2tprx3IS9JIk0iCIqd6HD5FpQrFjGttB73eLv+FrSqyvv5oZ/eQw==}
 
   '@ungap/structured-clone@1.3.0':
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
 
-  '@unicode-utils/core@0.12.0-beta.19':
-    resolution: {integrity: sha512-ff/yj9Oa6M/NM/lfzF76UboH88soTRixsSXF6U29wZdOSUvMqNKs/DX4Bpo/W3HCqfgCSnYlK4j+9lwbvXvbMg==}
+  '@unicode-utils/core@0.12.0-beta.23':
+    resolution: {integrity: sha512-J79z/JTd0qj0eqVCOBdMZeLjLp5Bc3M08JaxEceSkKcp6XJVsJRluw010XP12UWDWWXJlrXiVgodSjfiPqiIAA==}
 
-  '@unicode-utils/metadata@0.12.0-beta.19':
-    resolution: {integrity: sha512-0H635vLW0RVhP2llsjT/nM5B+mzcKTOB4fqqHgrXeSk4aSpXwx9qOTDytds+PYW+VDejSYaPiQ32+WDqMiMHHQ==}
+  '@unicode-utils/metadata@0.12.0-beta.23':
+    resolution: {integrity: sha512-CtQh/7LoYi0gKYmazdm/X9R2Z++rnTWkRHqj4B1E5UsPWZ2JMrp/GICkrt8kQtn7lE/EV0v2vumIMcr0JtfzeQ==}
 
-  '@unicode-utils/parser@0.12.0-beta.19':
-    resolution: {integrity: sha512-u3YDS7ZWRMP16F9S7apOzvIAio1t9sjobXELFJB6fsILOOehHGL2j3X39iwkj7ViH/O/1tUne6p+0hx4WdYTSA==}
+  '@unicode-utils/parser@0.12.0-beta.23':
+    resolution: {integrity: sha512-PRgR8vIf12UEDx2VY2D65Fj9ioSbm3136cR0VBBpQ7A2ugIfRUq8zb9Rk4+id6eC43IXngVaMcpNhuwDkQnDgA==}
 
   '@vercel/oidc@3.1.0':
     resolution: {integrity: sha512-Fw28YZpRnA3cAHHDlkt7xQHiJ0fcL+NRcIqsocZQUSmbzeIKRpwttJjik5ZGanXP+vlA4SbTg+AbA3bP363l+w==}
@@ -10547,10 +10543,6 @@ snapshots:
     dependencies:
       '@luxass/utils': 2.7.3
 
-  '@luxass/utils@2.7.2':
-    dependencies:
-      p-retry: 7.1.1
-
   '@luxass/utils@2.7.3':
     dependencies:
       p-retry: 7.1.1
@@ -12758,7 +12750,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@ucdjs/release-scripts@0.1.0-beta.58':
+  '@ucdjs/release-scripts@0.1.0-beta.59':
     dependencies:
       '@luxass/utils': 2.7.3
       commit-parser: 1.3.0
@@ -12770,20 +12762,20 @@ snapshots:
 
   '@ungap/structured-clone@1.3.0': {}
 
-  '@unicode-utils/core@0.12.0-beta.19':
+  '@unicode-utils/core@0.12.0-beta.23':
     dependencies:
-      '@luxass/utils': 2.7.2
-      '@unicode-utils/metadata': 0.12.0-beta.19
-      '@unicode-utils/parser': 0.12.0-beta.19
+      '@luxass/utils': 2.7.3
+      '@unicode-utils/metadata': 0.12.0-beta.23
+      '@unicode-utils/parser': 0.12.0-beta.23
       defu: 6.1.4
 
-  '@unicode-utils/metadata@0.12.0-beta.19':
+  '@unicode-utils/metadata@0.12.0-beta.23':
     dependencies:
-      '@luxass/utils': 2.7.2
+      '@luxass/utils': 2.7.3
 
-  '@unicode-utils/parser@0.12.0-beta.19':
+  '@unicode-utils/parser@0.12.0-beta.23':
     dependencies:
-      '@luxass/utils': 2.7.2
+      '@luxass/utils': 2.7.3
       defu: 6.1.4
 
   '@vercel/oidc@3.1.0': {}

@@ -24,7 +24,7 @@ packages:
 catalogs:
   build:
     turbo: 2.8.10
-    "@ucdjs/release-scripts": 0.1.0-beta.58
+    "@ucdjs/release-scripts": 0.1.0-beta.59
     tsdown: 0.20.3
     typescript: 5.9.3
     publint: 0.3.17
@@ -74,7 +74,7 @@ catalogs:
   runtime:
     # merge these together when heading inference is implemented better
     "@luxass/unicode-utils-old": npm:@luxass/unicode-utils@0.11.0
-    "@unicode-utils/core": 0.12.0-beta.19
+    "@unicode-utils/core": 0.12.0-beta.23
     "@luxass/utils": 2.7.3
     farver: 0.4.2
     yargs-parser: 22.0.0
