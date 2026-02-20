@@ -159,7 +159,6 @@ function FileViewerContent({
       content={data.content}
       contentType={data.contentType}
       fileName={fileName}
-      filePath={path}
       fileUrl={fileUrl}
     />
   );

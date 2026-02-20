@@ -9,8 +9,6 @@ export interface FileViewerProps {
   content: string;
   contentType: string;
   fileName: string;
-  /** Path to the file (used for raw link) */
-  filePath: string;
   /** Absolute URL to the raw file */
   fileUrl: string;
 }
