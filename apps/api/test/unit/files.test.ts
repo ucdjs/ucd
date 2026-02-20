@@ -2,7 +2,7 @@ import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { UCD_STAT_SIZE_HEADER, UCD_STAT_TYPE_HEADER } from "@ucdjs/env";
 import { generateAutoIndexHtml } from "apache-autoindex-parse/test-utils";
 import { describe, expect, it } from "vitest";
-import { fetchUnicodeFile, parseUnicodeDirectory } from "../../src/lib/files";
+import { getRawUnicodeAsset, getUnicodeAsset, parseUnicodeDirectory } from "../../src/lib/files";
 
 describe("parseUnicodeDirectory", () => {
   it("should parse HTML directory listing", async () => {
@@ -58,9 +58,9 @@ describe("parseUnicodeDirectory", () => {
   });
 });
 
-describe("fetchUnicodeFile", () => {
+describe("getUnicodeAsset", () => {
   it("returns a 400 error object for invalid path", async () => {
-    const result = await fetchUnicodeFile("..%2Ftest", {});
+    const result = await getUnicodeAsset("..%2Ftest", {});
 
     expect(result.status).toBe(400);
     expect(result.kind).toBe("error");
@@ -71,14 +71,14 @@ describe("fetchUnicodeFile", () => {
     expect(payload.message).toBe("Invalid path");
   });
 
-  it("maps upstream 404 to standardized not found error object", async () => {
+  it("returns upstream 404 response as error object", async () => {
     mockFetch([
       ["GET", "https://unicode.org/Public/nonexistent/path", () => {
         return HttpResponse.text("Not Found", { status: 404 });
       }],
     ]);
 
-    const result = await fetchUnicodeFile("nonexistent/path", {});
+    const result = await getUnicodeAsset("nonexistent/path", {});
 
     expect(result.status).toBe(404);
     expect(result.kind).toBe("error");
@@ -88,14 +88,14 @@ describe("fetchUnicodeFile", () => {
     expect(payload.message).toBe("Resource not found");
   });
 
-  it("maps non-404 upstream failures to bad gateway error object", async () => {
+  it("returns upstream failures as error object", async () => {
     mockFetch([
       ["GET", "https://unicode.org/Public/error/path", () => {
         return HttpResponse.text("Internal Server Error", { status: 500 });
       }],
     ]);
 
-    const result = await fetchUnicodeFile("error/path", {});
+    const result = await getUnicodeAsset("error/path", {});
 
     expect(result.status).toBe(502);
     expect(result.kind).toBe("error");
@@ -121,7 +121,7 @@ describe("fetchUnicodeFile", () => {
       }],
     ]);
 
-    const result = await fetchUnicodeFile("17.0.0/ucd", { stripUCDPrefix: true });
+    const result = await getUnicodeAsset("17.0.0/ucd", { stripUCDPrefix: true });
 
     expect(result.status).toBe(200);
     expect(result.kind).toBe("directory");
@@ -147,7 +147,7 @@ describe("fetchUnicodeFile", () => {
       }],
     ]);
 
-    const result = await fetchUnicodeFile("sample/file.txt", { isHeadRequest: true });
+    const result = await getUnicodeAsset("sample/file.txt", { isHeadRequest: true });
 
     expect(result.status).toBe(200);
     expect(result.kind).toBe("file");
@@ -155,5 +155,29 @@ describe("fetchUnicodeFile", () => {
     expect(result.headers[UCD_STAT_TYPE_HEADER]).toBe("file");
     expect(result.headers[UCD_STAT_SIZE_HEADER]).toBe(content.length.toString());
     expect(result.headers["Content-Length"]).toBe(content.length.toString());
+  });
+});
+
+describe("getRawUnicodeAsset", () => {
+  it("fetches a unicode.org file without autoindex", async () => {
+    const content = "ReadMe content";
+
+    mockFetch([
+      ["GET", "https://unicode.org/Public/draft/ReadMe.txt", () => {
+        return HttpResponse.text(content, {
+          headers: {
+            "content-type": "text/plain; charset=utf-8",
+          },
+        });
+      }],
+    ]);
+
+    const result = await getRawUnicodeAsset("draft/ReadMe.txt");
+
+    expect(result.ok).toBe(true);
+    expect(result.status).toBe(200);
+    expect(result.url).toBe("https://unicode.org/Public/draft/ReadMe.txt?F=2");
+    const text = await result.response.text();
+    expect(text).toBe(content);
   });
 });

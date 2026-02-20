@@ -1,4 +1,5 @@
 import type { Hono } from "hono";
+import type { StatusCode } from "hono/utils/http-status";
 import type { HonoEnv } from "../types";
 import {
   MAX_AGE_ONE_WEEK_SECONDS,
@@ -30,7 +31,7 @@ export function registerFilesRoute(router: Hono<HonoEnv>) {
         stripUCDPrefix: true,
       });
 
-      return c.newResponse(result.body, result.status, result.headers);
+      return c.newResponse(result.body, result.status as StatusCode, result.headers);
     },
   );
 }
