@@ -85,7 +85,7 @@ describe("getUnicodeAsset", () => {
 
     const payload = JSON.parse(result.body as string) as { message: string; status: number };
     expect(payload.status).toBe(404);
-    expect(payload.message).toBe("Resource not found");
+    expect(payload.message).toBe("Remote fetch failed");
   });
 
   it("returns upstream failures as error object", async () => {
