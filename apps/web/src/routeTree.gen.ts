@@ -8,6 +8,8 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
+import { createFileRoute } from '@tanstack/react-router'
+
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as CodepointInspectorRouteImport } from './routes/codepoint-inspector'
@@ -17,14 +19,27 @@ import { Route as VIndexRouteImport } from './routes/v/index'
 import { Route as FileExplorerSplatRouteImport } from './routes/file-explorer/$'
 import { Route as VVersionRouteRouteImport } from './routes/v/$version/route'
 import { Route as VVersionIndexRouteImport } from './routes/v/$version/index'
-import { Route as VVersionNormalizationPreviewRouteImport } from './routes/v/$version/normalization-preview'
-import { Route as VVersionGraphemeVisualizerRouteImport } from './routes/v/$version/grapheme-visualizer'
-import { Route as VVersionFontGlyphViewRouteImport } from './routes/v/$version/font-glyph-view'
-import { Route as VVersionBidiLinebreakRouteImport } from './routes/v/$version/bidi-linebreak'
 import { Route as FileExplorerVSplatRouteImport } from './routes/file-explorer/v.$'
-import { Route as VVersionBlocksIndexRouteImport } from './routes/v/$version/blocks/index'
 import { Route as VVersionUHexRouteImport } from './routes/v/$version/u/$hex'
-import { Route as VVersionBlocksIdRouteImport } from './routes/v/$version/blocks/$id'
+
+const VVersionNormalizationPreviewLazyRouteImport = createFileRoute(
+  '/v/$version/normalization-preview',
+)()
+const VVersionGraphemeVisualizerLazyRouteImport = createFileRoute(
+  '/v/$version/grapheme-visualizer',
+)()
+const VVersionFontGlyphViewLazyRouteImport = createFileRoute(
+  '/v/$version/font-glyph-view',
+)()
+const VVersionBidiLinebreakLazyRouteImport = createFileRoute(
+  '/v/$version/bidi-linebreak',
+)()
+const VVersionBlocksIndexLazyRouteImport = createFileRoute(
+  '/v/$version/blocks/',
+)()
+const VVersionBlocksIdLazyRouteImport = createFileRoute(
+  '/v/$version/blocks/$id',
+)()
 
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
@@ -66,46 +81,62 @@ const VVersionIndexRoute = VVersionIndexRouteImport.update({
   path: '/',
   getParentRoute: () => VVersionRouteRoute,
 } as any)
-const VVersionNormalizationPreviewRoute =
-  VVersionNormalizationPreviewRouteImport.update({
+const VVersionNormalizationPreviewLazyRoute =
+  VVersionNormalizationPreviewLazyRouteImport.update({
     id: '/normalization-preview',
     path: '/normalization-preview',
     getParentRoute: () => VVersionRouteRoute,
-  } as any)
-const VVersionGraphemeVisualizerRoute =
-  VVersionGraphemeVisualizerRouteImport.update({
+  } as any).lazy(() =>
+    import('./routes/v/$version/normalization-preview.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+const VVersionGraphemeVisualizerLazyRoute =
+  VVersionGraphemeVisualizerLazyRouteImport.update({
     id: '/grapheme-visualizer',
     path: '/grapheme-visualizer',
     getParentRoute: () => VVersionRouteRoute,
-  } as any)
-const VVersionFontGlyphViewRoute = VVersionFontGlyphViewRouteImport.update({
-  id: '/font-glyph-view',
-  path: '/font-glyph-view',
-  getParentRoute: () => VVersionRouteRoute,
-} as any)
-const VVersionBidiLinebreakRoute = VVersionBidiLinebreakRouteImport.update({
-  id: '/bidi-linebreak',
-  path: '/bidi-linebreak',
-  getParentRoute: () => VVersionRouteRoute,
-} as any)
+  } as any).lazy(() =>
+    import('./routes/v/$version/grapheme-visualizer.lazy').then((d) => d.Route),
+  )
+const VVersionFontGlyphViewLazyRoute =
+  VVersionFontGlyphViewLazyRouteImport.update({
+    id: '/font-glyph-view',
+    path: '/font-glyph-view',
+    getParentRoute: () => VVersionRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/v/$version/font-glyph-view.lazy').then((d) => d.Route),
+  )
+const VVersionBidiLinebreakLazyRoute =
+  VVersionBidiLinebreakLazyRouteImport.update({
+    id: '/bidi-linebreak',
+    path: '/bidi-linebreak',
+    getParentRoute: () => VVersionRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/v/$version/bidi-linebreak.lazy').then((d) => d.Route),
+  )
 const FileExplorerVSplatRoute = FileExplorerVSplatRouteImport.update({
   id: '/v/$',
   path: '/v/$',
   getParentRoute: () => FileExplorerRouteRoute,
 } as any)
-const VVersionBlocksIndexRoute = VVersionBlocksIndexRouteImport.update({
+const VVersionBlocksIndexLazyRoute = VVersionBlocksIndexLazyRouteImport.update({
   id: '/blocks/',
   path: '/blocks/',
   getParentRoute: () => VVersionRouteRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/v/$version/blocks/index.lazy').then((d) => d.Route),
+)
+const VVersionBlocksIdLazyRoute = VVersionBlocksIdLazyRouteImport.update({
+  id: '/blocks/$id',
+  path: '/blocks/$id',
+  getParentRoute: () => VVersionRouteRoute,
+} as any).lazy(() =>
+  import('./routes/v/$version/blocks/$id.lazy').then((d) => d.Route),
+)
 const VVersionUHexRoute = VVersionUHexRouteImport.update({
   id: '/u/$hex',
   path: '/u/$hex',
-  getParentRoute: () => VVersionRouteRoute,
-} as any)
-const VVersionBlocksIdRoute = VVersionBlocksIdRouteImport.update({
-  id: '/blocks/$id',
-  path: '/blocks/$id',
   getParentRoute: () => VVersionRouteRoute,
 } as any)
 
@@ -118,14 +149,14 @@ export interface FileRoutesByFullPath {
   '/file-explorer/$': typeof FileExplorerSplatRoute
   '/v/': typeof VIndexRoute
   '/file-explorer/v/$': typeof FileExplorerVSplatRoute
-  '/v/$version/bidi-linebreak': typeof VVersionBidiLinebreakRoute
-  '/v/$version/font-glyph-view': typeof VVersionFontGlyphViewRoute
-  '/v/$version/grapheme-visualizer': typeof VVersionGraphemeVisualizerRoute
-  '/v/$version/normalization-preview': typeof VVersionNormalizationPreviewRoute
+  '/v/$version/bidi-linebreak': typeof VVersionBidiLinebreakLazyRoute
+  '/v/$version/font-glyph-view': typeof VVersionFontGlyphViewLazyRoute
+  '/v/$version/grapheme-visualizer': typeof VVersionGraphemeVisualizerLazyRoute
+  '/v/$version/normalization-preview': typeof VVersionNormalizationPreviewLazyRoute
   '/v/$version/': typeof VVersionIndexRoute
-  '/v/$version/blocks/$id': typeof VVersionBlocksIdRoute
   '/v/$version/u/$hex': typeof VVersionUHexRoute
-  '/v/$version/blocks/': typeof VVersionBlocksIndexRoute
+  '/v/$version/blocks/$id': typeof VVersionBlocksIdLazyRoute
+  '/v/$version/blocks/': typeof VVersionBlocksIndexLazyRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -135,14 +166,14 @@ export interface FileRoutesByTo {
   '/file-explorer/$': typeof FileExplorerSplatRoute
   '/v': typeof VIndexRoute
   '/file-explorer/v/$': typeof FileExplorerVSplatRoute
-  '/v/$version/bidi-linebreak': typeof VVersionBidiLinebreakRoute
-  '/v/$version/font-glyph-view': typeof VVersionFontGlyphViewRoute
-  '/v/$version/grapheme-visualizer': typeof VVersionGraphemeVisualizerRoute
-  '/v/$version/normalization-preview': typeof VVersionNormalizationPreviewRoute
+  '/v/$version/bidi-linebreak': typeof VVersionBidiLinebreakLazyRoute
+  '/v/$version/font-glyph-view': typeof VVersionFontGlyphViewLazyRoute
+  '/v/$version/grapheme-visualizer': typeof VVersionGraphemeVisualizerLazyRoute
+  '/v/$version/normalization-preview': typeof VVersionNormalizationPreviewLazyRoute
   '/v/$version': typeof VVersionIndexRoute
-  '/v/$version/blocks/$id': typeof VVersionBlocksIdRoute
   '/v/$version/u/$hex': typeof VVersionUHexRoute
-  '/v/$version/blocks': typeof VVersionBlocksIndexRoute
+  '/v/$version/blocks/$id': typeof VVersionBlocksIdLazyRoute
+  '/v/$version/blocks': typeof VVersionBlocksIndexLazyRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -154,14 +185,14 @@ export interface FileRoutesById {
   '/file-explorer/$': typeof FileExplorerSplatRoute
   '/v/': typeof VIndexRoute
   '/file-explorer/v/$': typeof FileExplorerVSplatRoute
-  '/v/$version/bidi-linebreak': typeof VVersionBidiLinebreakRoute
-  '/v/$version/font-glyph-view': typeof VVersionFontGlyphViewRoute
-  '/v/$version/grapheme-visualizer': typeof VVersionGraphemeVisualizerRoute
-  '/v/$version/normalization-preview': typeof VVersionNormalizationPreviewRoute
+  '/v/$version/bidi-linebreak': typeof VVersionBidiLinebreakLazyRoute
+  '/v/$version/font-glyph-view': typeof VVersionFontGlyphViewLazyRoute
+  '/v/$version/grapheme-visualizer': typeof VVersionGraphemeVisualizerLazyRoute
+  '/v/$version/normalization-preview': typeof VVersionNormalizationPreviewLazyRoute
   '/v/$version/': typeof VVersionIndexRoute
-  '/v/$version/blocks/$id': typeof VVersionBlocksIdRoute
   '/v/$version/u/$hex': typeof VVersionUHexRoute
-  '/v/$version/blocks/': typeof VVersionBlocksIndexRoute
+  '/v/$version/blocks/$id': typeof VVersionBlocksIdLazyRoute
+  '/v/$version/blocks/': typeof VVersionBlocksIndexLazyRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -179,8 +210,8 @@ export interface FileRouteTypes {
     | '/v/$version/grapheme-visualizer'
     | '/v/$version/normalization-preview'
     | '/v/$version/'
-    | '/v/$version/blocks/$id'
     | '/v/$version/u/$hex'
+    | '/v/$version/blocks/$id'
     | '/v/$version/blocks/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -196,8 +227,8 @@ export interface FileRouteTypes {
     | '/v/$version/grapheme-visualizer'
     | '/v/$version/normalization-preview'
     | '/v/$version'
-    | '/v/$version/blocks/$id'
     | '/v/$version/u/$hex'
+    | '/v/$version/blocks/$id'
     | '/v/$version/blocks'
   id:
     | '__root__'
@@ -214,8 +245,8 @@ export interface FileRouteTypes {
     | '/v/$version/grapheme-visualizer'
     | '/v/$version/normalization-preview'
     | '/v/$version/'
-    | '/v/$version/blocks/$id'
     | '/v/$version/u/$hex'
+    | '/v/$version/blocks/$id'
     | '/v/$version/blocks/'
   fileRoutesById: FileRoutesById
 }
@@ -290,28 +321,28 @@ declare module '@tanstack/react-router' {
       id: '/v/$version/normalization-preview'
       path: '/normalization-preview'
       fullPath: '/v/$version/normalization-preview'
-      preLoaderRoute: typeof VVersionNormalizationPreviewRouteImport
+      preLoaderRoute: typeof VVersionNormalizationPreviewLazyRouteImport
       parentRoute: typeof VVersionRouteRoute
     }
     '/v/$version/grapheme-visualizer': {
       id: '/v/$version/grapheme-visualizer'
       path: '/grapheme-visualizer'
       fullPath: '/v/$version/grapheme-visualizer'
-      preLoaderRoute: typeof VVersionGraphemeVisualizerRouteImport
+      preLoaderRoute: typeof VVersionGraphemeVisualizerLazyRouteImport
       parentRoute: typeof VVersionRouteRoute
     }
     '/v/$version/font-glyph-view': {
       id: '/v/$version/font-glyph-view'
       path: '/font-glyph-view'
       fullPath: '/v/$version/font-glyph-view'
-      preLoaderRoute: typeof VVersionFontGlyphViewRouteImport
+      preLoaderRoute: typeof VVersionFontGlyphViewLazyRouteImport
       parentRoute: typeof VVersionRouteRoute
     }
     '/v/$version/bidi-linebreak': {
       id: '/v/$version/bidi-linebreak'
       path: '/bidi-linebreak'
       fullPath: '/v/$version/bidi-linebreak'
-      preLoaderRoute: typeof VVersionBidiLinebreakRouteImport
+      preLoaderRoute: typeof VVersionBidiLinebreakLazyRouteImport
       parentRoute: typeof VVersionRouteRoute
     }
     '/file-explorer/v/$': {
@@ -325,7 +356,14 @@ declare module '@tanstack/react-router' {
       id: '/v/$version/blocks/'
       path: '/blocks'
       fullPath: '/v/$version/blocks/'
-      preLoaderRoute: typeof VVersionBlocksIndexRouteImport
+      preLoaderRoute: typeof VVersionBlocksIndexLazyRouteImport
+      parentRoute: typeof VVersionRouteRoute
+    }
+    '/v/$version/blocks/$id': {
+      id: '/v/$version/blocks/$id'
+      path: '/blocks/$id'
+      fullPath: '/v/$version/blocks/$id'
+      preLoaderRoute: typeof VVersionBlocksIdLazyRouteImport
       parentRoute: typeof VVersionRouteRoute
     }
     '/v/$version/u/$hex': {
@@ -333,13 +371,6 @@ declare module '@tanstack/react-router' {
       path: '/u/$hex'
       fullPath: '/v/$version/u/$hex'
       preLoaderRoute: typeof VVersionUHexRouteImport
-      parentRoute: typeof VVersionRouteRoute
-    }
-    '/v/$version/blocks/$id': {
-      id: '/v/$version/blocks/$id'
-      path: '/blocks/$id'
-      fullPath: '/v/$version/blocks/$id'
-      preLoaderRoute: typeof VVersionBlocksIdRouteImport
       parentRoute: typeof VVersionRouteRoute
     }
   }
@@ -359,25 +390,25 @@ const FileExplorerRouteRouteWithChildren =
   FileExplorerRouteRoute._addFileChildren(FileExplorerRouteRouteChildren)
 
 interface VVersionRouteRouteChildren {
-  VVersionBidiLinebreakRoute: typeof VVersionBidiLinebreakRoute
-  VVersionFontGlyphViewRoute: typeof VVersionFontGlyphViewRoute
-  VVersionGraphemeVisualizerRoute: typeof VVersionGraphemeVisualizerRoute
-  VVersionNormalizationPreviewRoute: typeof VVersionNormalizationPreviewRoute
+  VVersionBidiLinebreakLazyRoute: typeof VVersionBidiLinebreakLazyRoute
+  VVersionFontGlyphViewLazyRoute: typeof VVersionFontGlyphViewLazyRoute
+  VVersionGraphemeVisualizerLazyRoute: typeof VVersionGraphemeVisualizerLazyRoute
+  VVersionNormalizationPreviewLazyRoute: typeof VVersionNormalizationPreviewLazyRoute
   VVersionIndexRoute: typeof VVersionIndexRoute
-  VVersionBlocksIdRoute: typeof VVersionBlocksIdRoute
   VVersionUHexRoute: typeof VVersionUHexRoute
-  VVersionBlocksIndexRoute: typeof VVersionBlocksIndexRoute
+  VVersionBlocksIdLazyRoute: typeof VVersionBlocksIdLazyRoute
+  VVersionBlocksIndexLazyRoute: typeof VVersionBlocksIndexLazyRoute
 }
 
 const VVersionRouteRouteChildren: VVersionRouteRouteChildren = {
-  VVersionBidiLinebreakRoute: VVersionBidiLinebreakRoute,
-  VVersionFontGlyphViewRoute: VVersionFontGlyphViewRoute,
-  VVersionGraphemeVisualizerRoute: VVersionGraphemeVisualizerRoute,
-  VVersionNormalizationPreviewRoute: VVersionNormalizationPreviewRoute,
+  VVersionBidiLinebreakLazyRoute: VVersionBidiLinebreakLazyRoute,
+  VVersionFontGlyphViewLazyRoute: VVersionFontGlyphViewLazyRoute,
+  VVersionGraphemeVisualizerLazyRoute: VVersionGraphemeVisualizerLazyRoute,
+  VVersionNormalizationPreviewLazyRoute: VVersionNormalizationPreviewLazyRoute,
   VVersionIndexRoute: VVersionIndexRoute,
-  VVersionBlocksIdRoute: VVersionBlocksIdRoute,
   VVersionUHexRoute: VVersionUHexRoute,
-  VVersionBlocksIndexRoute: VVersionBlocksIndexRoute,
+  VVersionBlocksIdLazyRoute: VVersionBlocksIdLazyRoute,
+  VVersionBlocksIndexLazyRoute: VVersionBlocksIndexLazyRoute,
 }
 
 const VVersionRouteRouteWithChildren = VVersionRouteRoute._addFileChildren(

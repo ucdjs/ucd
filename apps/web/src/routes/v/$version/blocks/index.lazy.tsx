@@ -1,5 +1,5 @@
 import { VersionHeader } from "#components/layout/version/header";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createLazyFileRoute, Link } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
@@ -7,7 +7,7 @@ import { Input } from "@ucdjs-internal/shared-ui/ui/input";
 import { Map, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 
-export const Route = createFileRoute("/v/$version/blocks/")({
+export const Route = createLazyFileRoute("/v/$version/blocks/")({
   component: RouteComponent,
 });
 

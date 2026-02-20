@@ -1,35 +1,34 @@
 import { VersionHeader } from "#components/layout/version/header";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createLazyFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 
-export const Route = createFileRoute("/v/$version/bidi-linebreak")({
-  component: BidiLinebreakVersion,
+export const Route = createLazyFileRoute("/v/$version/normalization-preview")({
+  component: NormalizationPreviewVersion,
 });
 
-function BidiLinebreakVersion() {
+function NormalizationPreviewVersion() {
   const params = Route.useParams();
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-4">
-      <VersionHeader version={params.version} title="BIDI & Line Break" />
+      <VersionHeader version={params.version} title="Normalization Preview" />
 
       <div className="flex flex-1 flex-col gap-6 pt-2">
         <Card>
           <CardHeader>
             <CardTitle>
-              BIDI & Line Break —
+              Normalization Preview —
               {" "}
               {params.version}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground mb-4">
-              Visualize bidirectional ordering and line break opportunities for sample text using Unicode
+              Inspect how text normalizes under NFC/NFD/NFKC/NFKD for Unicode
               {" "}
               {params.version}
-              {" "}
-              rules.
+              . Useful for detecting equivalence changes between versions.
             </p>
             <Button nativeButton={false} render={<Link to="/v/$version" params={{ version: params.version }}>Back to version</Link>} />
           </CardContent>

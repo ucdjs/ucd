@@ -138,9 +138,9 @@ function HomePage() {
             <Layers className="size-4" />
             Unicode versions
           </h2>
-          {/* <Suspense fallback={<VersionsCardListSkeleton />}> */}
-          <VersionsCardList />
-          {/* </Suspense> */}
+          <Suspense fallback={<VersionsCardListSkeleton />}>
+            <VersionsCardList />
+          </Suspense>
         </section>
       </div>
     </>

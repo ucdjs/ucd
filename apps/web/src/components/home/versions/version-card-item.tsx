@@ -59,12 +59,10 @@ export function VersionCardItem({ version, isLatest }: VersionCardItemProps) {
         INSERT DESCRIPTION HERE
       </div>
 
-      {version.date && (
-        <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-          <Calendar className="size-3 shrink-0" />
-          <span>{version.date}</span>
-        </div>
-      )}
+      <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+        <Calendar className="size-3 shrink-0" />
+        <span>{version.date ?? "????"}</span>
+      </div>
     </Link>
   );
 }

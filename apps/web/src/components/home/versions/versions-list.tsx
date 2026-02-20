@@ -1,24 +1,11 @@
 import type { UnicodeVersion } from "@ucdjs/schemas";
+import type { VersionFilters } from "./versions-toolbar";
 import { versionsQueryOptions } from "#functions/versions";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
-import { Button } from "@ucdjs-internal/shared-ui/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@ucdjs-internal/shared-ui/ui/dropdown-menu";
-import { Input } from "@ucdjs-internal/shared-ui/ui/input";
-import { Calendar, Filter, Search, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import { VersionCardItem, VersionCardItemSkeleton } from "./version-card-item";
+import { VersionsToolbar } from "./versions-toolbar";
 
-type VersionTypeFilter = "all" | "stable" | "draft" | "unsupported";
 type AgeFilter = "all" | "recent" | "legacy";
 
 const AGE_RECENT_MAX = 3;
@@ -43,17 +30,19 @@ function matchesAgeFilter(version: UnicodeVersion, filter: AgeFilter) {
 
 export function VersionsCardList() {
   const { data: versions } = useSuspenseQuery(versionsQueryOptions());
-  const [query, setQuery] = useState("");
-  const [typeFilter, setTypeFilter] = useState<VersionTypeFilter>("all");
-  const [ageFilter, setAgeFilter] = useState<AgeFilter>("all");
+  const [filters, setFilters] = useState<VersionFilters>({
+    query: "",
+    typeFilter: "all",
+    ageFilter: "all",
+  });
 
   const latestStable = versions.find((v) => v.type === "stable");
 
   const filteredVersions = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
+    const normalizedQuery = filters.query.trim().toLowerCase();
     return versions.filter((version) => {
-      if (typeFilter !== "all" && version.type !== typeFilter) return false;
-      if (!matchesAgeFilter(version, ageFilter)) return false;
+      if (filters.typeFilter !== "all" && version.type !== filters.typeFilter) return false;
+      if (!matchesAgeFilter(version, filters.ageFilter)) return false;
       if (!normalizedQuery) return true;
       return (
         version.version.toLowerCase().includes(normalizedQuery)
@@ -61,155 +50,11 @@ export function VersionsCardList() {
         || (version.date ?? "").toLowerCase().includes(normalizedQuery)
       );
     });
-  }, [versions, query, typeFilter, ageFilter]);
-
-  const hasActiveFilters = Boolean(query.trim()) || typeFilter !== "all" || ageFilter !== "all";
+  }, [versions, filters]);
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2 flex-wrap">
-        <div className="relative flex-1 min-w-48 max-w-sm">
-          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-          <Input
-            placeholder="Search versions..."
-            className="pl-8 pr-8 h-8"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-          />
-          {query
-            ? (
-                <Button
-                  variant="ghost"
-                  size="icon-xs"
-                  className="absolute right-1 top-1/2 -translate-y-1/2 hover:bg-destructive/10 hover:text-destructive"
-                  onClick={() => setQuery("")}
-                >
-                  <X className="size-3" />
-                  <span className="sr-only">Clear search</span>
-                </Button>
-              )
-            : null}
-        </div>
-
-        <div className="flex items-center gap-1.5">
-          <DropdownMenu>
-            <DropdownMenuTrigger render={(props) => (
-              <Button
-                {...props}
-                variant={typeFilter !== "all" ? "secondary" : "outline"}
-                size="sm"
-                className="gap-1.5 h-8"
-              >
-                <Filter className="size-4" />
-                <span className="hidden sm:inline text-xs">
-                  {typeFilter === "all" ? "Type" : typeFilter}
-                </span>
-                {typeFilter !== "all" && (
-                  <span
-                    role="button"
-                    className="ml-0.5 rounded-full hover:bg-destructive/20 p-0.5"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      setTypeFilter("all");
-                    }}
-                  >
-                    <X className="size-3" />
-                  </span>
-                )}
-              </Button>
-            )}
-            >
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-44">
-              <DropdownMenuGroup>
-                <DropdownMenuLabel>Type</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuRadioGroup value={typeFilter} onValueChange={(v) => setTypeFilter(v as VersionTypeFilter)}>
-                  <DropdownMenuRadioItem value="all">All types</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="stable">Stable</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="draft">Draft</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="unsupported">Unsupported</DropdownMenuRadioItem>
-                </DropdownMenuRadioGroup>
-              </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger render={(props) => (
-              <Button
-                {...props}
-                variant={ageFilter !== "all" ? "secondary" : "outline"}
-                size="sm"
-                className="gap-1.5 h-8"
-              >
-                <Calendar className="size-4" />
-                <span className="hidden sm:inline text-xs">
-                  {ageFilter === "all" ? "Age" : ageFilter}
-                </span>
-                {ageFilter !== "all" && (
-                  <span
-                    role="button"
-                    className="ml-0.5 rounded-full hover:bg-destructive/20 p-0.5"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      setAgeFilter("all");
-                    }}
-                  >
-                    <X className="size-3" />
-                  </span>
-                )}
-              </Button>
-            )}
-            >
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-40">
-              <DropdownMenuGroup>
-                <DropdownMenuLabel>Age</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuRadioGroup value={ageFilter} onValueChange={(v) => setAgeFilter(v as AgeFilter)}>
-                  <DropdownMenuRadioItem value="all">All ages</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="recent">Recent</DropdownMenuRadioItem>
-                  <DropdownMenuRadioItem value="legacy">Legacy</DropdownMenuRadioItem>
-                </DropdownMenuRadioGroup>
-              </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-
-        <div className="flex items-center gap-1.5 ml-auto">
-          {hasActiveFilters
-            ? (
-                <Badge
-                  variant="secondary"
-                  className="gap-1 cursor-pointer hover:bg-destructive/10 hover:text-destructive transition-colors"
-                  onClick={() => {
-                    setQuery("");
-                    setTypeFilter("all");
-                    setAgeFilter("all");
-                  }}
-                >
-                  <span className="text-xs">
-                    {[
-                      query.trim(),
-                      typeFilter !== "all" ? typeFilter : null,
-                      ageFilter !== "all" ? ageFilter : null,
-                    ].filter(Boolean).length}
-                    {" "}
-                    filter
-                    {[
-                      query.trim(),
-                      typeFilter !== "all" ? typeFilter : null,
-                      ageFilter !== "all" ? ageFilter : null,
-                    ].filter(Boolean).length > 1
-                      ? "s"
-                      : ""}
-                  </span>
-                  <X className="size-3" />
-                </Badge>
-              )
-            : null}
-        </div>
-      </div>
+      <VersionsToolbar filters={filters} onFiltersChange={setFilters} />
 
       {filteredVersions.length === 0
         ? (
