@@ -229,12 +229,17 @@ catalogs:
       version: 2.7.3
     '@unicode-utils/core':
 <<<<<<< HEAD
+<<<<<<< HEAD
       specifier: 0.12.0-beta.23
       version: 0.12.0-beta.23
 =======
       specifier: 0.12.0-beta.20
       version: 0.12.0-beta.20
 >>>>>>> 5bca9ecd (chore: update packageManager to pnpm@10.30.1 across all packages)
+=======
+      specifier: 0.12.0-beta.23
+      version: 0.12.0-beta.23
+>>>>>>> f049893e (chore: update @unicode-utils/core to version 0.12.0-beta.23)
     ai:
       specifier: 6.0.91
       version: 6.0.91
@@ -414,10 +419,14 @@ importers:
       '@unicode-utils/core':
         specifier: catalog:runtime
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 0.12.0-beta.23
 =======
         version: 0.12.0-beta.20
 >>>>>>> 5bca9ecd (chore: update packageManager to pnpm@10.30.1 across all packages)
+=======
+        version: 0.12.0-beta.23
+>>>>>>> f049893e (chore: update @unicode-utils/core to version 0.12.0-beta.23)
       apache-autoindex-parse:
         specifier: catalog:runtime
         version: 5.0.2
@@ -591,10 +600,14 @@ importers:
       '@unicode-utils/core':
         specifier: catalog:runtime
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 0.12.0-beta.23
 =======
         version: 0.12.0-beta.20
 >>>>>>> 5bca9ecd (chore: update packageManager to pnpm@10.30.1 across all packages)
+=======
+        version: 0.12.0-beta.23
+>>>>>>> f049893e (chore: update @unicode-utils/core to version 0.12.0-beta.23)
       apache-autoindex-parse:
         specifier: catalog:runtime
         version: 5.0.2
@@ -677,10 +690,14 @@ importers:
       '@unicode-utils/core':
         specifier: catalog:runtime
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 0.12.0-beta.23
 =======
         version: 0.12.0-beta.20
 >>>>>>> 5bca9ecd (chore: update packageManager to pnpm@10.30.1 across all packages)
+=======
+        version: 0.12.0-beta.23
+>>>>>>> f049893e (chore: update @unicode-utils/core to version 0.12.0-beta.23)
       lucide-react:
         specifier: catalog:frontend
         version: 0.574.0(react@19.2.4)
@@ -808,10 +825,14 @@ importers:
       '@unicode-utils/core':
         specifier: catalog:runtime
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 0.12.0-beta.23
 =======
         version: 0.12.0-beta.20
 >>>>>>> 5bca9ecd (chore: update packageManager to pnpm@10.30.1 across all packages)
+=======
+        version: 0.12.0-beta.23
+>>>>>>> f049893e (chore: update @unicode-utils/core to version 0.12.0-beta.23)
       farver:
         specifier: catalog:runtime
         version: 0.4.2
@@ -1621,10 +1642,14 @@ importers:
       '@unicode-utils/core':
         specifier: catalog:runtime
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 0.12.0-beta.23
 =======
         version: 0.12.0-beta.20
 >>>>>>> 5bca9ecd (chore: update packageManager to pnpm@10.30.1 across all packages)
+=======
+        version: 0.12.0-beta.23
+>>>>>>> f049893e (chore: update @unicode-utils/core to version 0.12.0-beta.23)
       defu:
         specifier: catalog:runtime
         version: 6.1.4
@@ -1780,10 +1805,14 @@ importers:
       '@unicode-utils/core':
         specifier: catalog:runtime
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 0.12.0-beta.23
 =======
         version: 0.12.0-beta.20
 >>>>>>> 5bca9ecd (chore: update packageManager to pnpm@10.30.1 across all packages)
+=======
+        version: 0.12.0-beta.23
+>>>>>>> f049893e (chore: update @unicode-utils/core to version 0.12.0-beta.23)
       msw:
         specifier: catalog:test
         version: 2.12.10(@types/node@25.2.2)(typescript@5.9.3)
@@ -1857,10 +1886,14 @@ importers:
       '@unicode-utils/core':
         specifier: catalog:runtime
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 0.12.0-beta.23
 =======
         version: 0.12.0-beta.20
 >>>>>>> 5bca9ecd (chore: update packageManager to pnpm@10.30.1 across all packages)
+=======
+        version: 0.12.0-beta.23
+>>>>>>> f049893e (chore: update @unicode-utils/core to version 0.12.0-beta.23)
       defu:
         specifier: catalog:runtime
         version: 6.1.4
@@ -1910,10 +1943,14 @@ importers:
       '@unicode-utils/core':
         specifier: catalog:runtime
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 0.12.0-beta.23
 =======
         version: 0.12.0-beta.20
 >>>>>>> 5bca9ecd (chore: update packageManager to pnpm@10.30.1 across all packages)
+=======
+        version: 0.12.0-beta.23
+>>>>>>> f049893e (chore: update @unicode-utils/core to version 0.12.0-beta.23)
       apache-autoindex-parse:
         specifier: catalog:runtime
         version: 5.0.2
@@ -2122,10 +2159,14 @@ importers:
       '@unicode-utils/core':
         specifier: catalog:runtime
 <<<<<<< HEAD
+<<<<<<< HEAD
         version: 0.12.0-beta.23
 =======
         version: 0.12.0-beta.20
 >>>>>>> 5bca9ecd (chore: update packageManager to pnpm@10.30.1 across all packages)
+=======
+        version: 0.12.0-beta.23
+>>>>>>> f049893e (chore: update @unicode-utils/core to version 0.12.0-beta.23)
       '@vscode/vsce':
         specifier: catalog:vscode
         version: 3.7.1
@@ -5249,6 +5290,7 @@ packages:
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@unicode-utils/core@0.12.0-beta.23':
     resolution: {integrity: sha512-J79z/JTd0qj0eqVCOBdMZeLjLp5Bc3M08JaxEceSkKcp6XJVsJRluw010XP12UWDWWXJlrXiVgodSjfiPqiIAA==}
 
@@ -5260,13 +5302,22 @@ packages:
 =======
   '@unicode-utils/core@0.12.0-beta.20':
     resolution: {integrity: sha512-4P5xW45Gd3B5IgTh1LJQZi0J8MkcwODiH+Peh8kVy767//gHkDYxZy5MFQG9BvcZUpuoUSsIbD60AEA2nIQdIQ==}
+=======
+  '@unicode-utils/core@0.12.0-beta.23':
+    resolution: {integrity: sha512-J79z/JTd0qj0eqVCOBdMZeLjLp5Bc3M08JaxEceSkKcp6XJVsJRluw010XP12UWDWWXJlrXiVgodSjfiPqiIAA==}
+>>>>>>> f049893e (chore: update @unicode-utils/core to version 0.12.0-beta.23)
 
-  '@unicode-utils/metadata@0.12.0-beta.20':
-    resolution: {integrity: sha512-U4p1JBM5DGujhLZxxm2xjpa6+zGfiBMBuOuzOphVIuayqz0/7KRBz7xMlqrx2a/br5pfXYmv1JbKDNF8iODFdQ==}
+  '@unicode-utils/metadata@0.12.0-beta.23':
+    resolution: {integrity: sha512-CtQh/7LoYi0gKYmazdm/X9R2Z++rnTWkRHqj4B1E5UsPWZ2JMrp/GICkrt8kQtn7lE/EV0v2vumIMcr0JtfzeQ==}
 
+<<<<<<< HEAD
   '@unicode-utils/parser@0.12.0-beta.20':
     resolution: {integrity: sha512-+UU0+OjY12zRYbWZup9tC96tmi5ShJ+I9wOU3Oox6Dron9QtafX2s1swd6GSsRgkFENLqlfRyOvNUSRTxVavRg==}
 >>>>>>> 5bca9ecd (chore: update packageManager to pnpm@10.30.1 across all packages)
+=======
+  '@unicode-utils/parser@0.12.0-beta.23':
+    resolution: {integrity: sha512-PRgR8vIf12UEDx2VY2D65Fj9ioSbm3136cR0VBBpQ7A2ugIfRUq8zb9Rk4+id6eC43IXngVaMcpNhuwDkQnDgA==}
+>>>>>>> f049893e (chore: update @unicode-utils/core to version 0.12.0-beta.23)
 
   '@vercel/oidc@3.1.0':
     resolution: {integrity: sha512-Fw28YZpRnA3cAHHDlkt7xQHiJ0fcL+NRcIqsocZQUSmbzeIKRpwttJjik5ZGanXP+vlA4SbTg+AbA3bP363l+w==}
@@ -12815,6 +12866,7 @@ snapshots:
   '@ungap/structured-clone@1.3.0': {}
 
 <<<<<<< HEAD
+<<<<<<< HEAD
   '@unicode-utils/core@0.12.0-beta.23':
     dependencies:
       '@luxass/utils': 2.7.3
@@ -12829,18 +12881,25 @@ snapshots:
   '@unicode-utils/parser@0.12.0-beta.23':
 =======
   '@unicode-utils/core@0.12.0-beta.20':
+=======
+  '@unicode-utils/core@0.12.0-beta.23':
+>>>>>>> f049893e (chore: update @unicode-utils/core to version 0.12.0-beta.23)
     dependencies:
       '@luxass/utils': 2.7.3
-      '@unicode-utils/metadata': 0.12.0-beta.20
-      '@unicode-utils/parser': 0.12.0-beta.20
+      '@unicode-utils/metadata': 0.12.0-beta.23
+      '@unicode-utils/parser': 0.12.0-beta.23
       defu: 6.1.4
 
-  '@unicode-utils/metadata@0.12.0-beta.20':
+  '@unicode-utils/metadata@0.12.0-beta.23':
     dependencies:
       '@luxass/utils': 2.7.3
 
+<<<<<<< HEAD
   '@unicode-utils/parser@0.12.0-beta.20':
 >>>>>>> 5bca9ecd (chore: update packageManager to pnpm@10.30.1 across all packages)
+=======
+  '@unicode-utils/parser@0.12.0-beta.23':
+>>>>>>> f049893e (chore: update @unicode-utils/core to version 0.12.0-beta.23)
     dependencies:
       '@luxass/utils': 2.7.3
       defu: 6.1.4
