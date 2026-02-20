@@ -8,6 +8,7 @@ import { UnicodeFileTreeSchema, UnicodeVersionDetailsSchema } from "@ucdjs/schem
 import {
   hasUCDFolderPath,
   resolveUCDVersion,
+  UNICODE_DRAFT_VERSION,
   UNICODE_STABLE_VERSION,
   UNICODE_VERSION_METADATA,
 } from "@unicode-utils/core";
@@ -172,6 +173,7 @@ export function registerGetVersionRoute(router: OpenAPIHono<HonoEnv>) {
     if (
       !UNICODE_VERSION_METADATA.map((v) => v.version)
         .includes(version as typeof UNICODE_VERSION_METADATA[number]["version"])
+        && UNICODE_DRAFT_VERSION !== version
     ) {
       return badRequest(c, {
         message: "Invalid Unicode version",
