@@ -20,19 +20,16 @@
   "version_metadata": {
     "binding": "CF_VERSION_METADATA"
   },
-  "unsafe": {
-    "bindings": [
-      {
-        "name": "RATE_LIMITER",
-        "type": "ratelimit",
-        "namespace_id": "1001",
-        "simple": {
-          "limit": 2000,
-          "period": 60
-        }
+  "ratelimits": [
+    {
+      "name": "RATE_LIMITER",
+      "namespace_id": "1001",
+      "simple": {
+        "limit": 2000,
+        "period": 60
       }
-    ]
-  },
+    }
+  ],
   "r2_buckets": [
     {
       "binding": "UCD_BUCKET",
@@ -87,19 +84,16 @@
           "store_id": "673d2913c9314d48a64b6d9e1894ed12"
         }
       ],
-      "unsafe": {
-        "bindings": [
-          {
-            "name": "RATE_LIMITER",
-            "type": "ratelimit",
-            "namespace_id": "1001",
-            "simple": {
-              "limit": 2000,
-              "period": 60
-            }
+      "ratelimits": [
+        {
+          "name": "RATE_LIMITER",
+          "namespace_id": "1001",
+          "simple": {
+            "limit": 2000,
+            "period": 60
           }
-        ]
-      },
+        }
+      ],
       "workflows": [
         {
           "name": "manifest-upload",
@@ -140,19 +134,16 @@
           "store_id": "673d2913c9314d48a64b6d9e1894ed12"
         }
       ],
-      "unsafe": {
-        "bindings": [
-          {
-            "name": "RATE_LIMITER",
-            "type": "ratelimit",
-            "namespace_id": "1001",
-            "simple": {
-              "limit": 2000,
-              "period": 60
-            }
+      "ratelimits": [
+        {
+          "name": "RATE_LIMITER",
+          "namespace_id": "1001",
+          "simple": {
+            "limit": 2000,
+            "period": 60
           }
-        ]
-      },
+        }
+      ],
       "workflows": [
         {
           "name": "manifest-upload-preview",
@@ -190,19 +181,16 @@
           "bucket_name": "ucdjs-data-preview"
         }
       ],
-      "unsafe": {
-        "bindings": [
-          {
-            "name": "RATE_LIMITER",
-            "type": "ratelimit",
-            "namespace_id": "1001",
-            "simple": {
-              "limit": 2000,
-              "period": 60
-            }
+      "ratelimits": [
+        {
+          "name": "RATE_LIMITER",
+          "namespace_id": "1001",
+          "simple": {
+            "limit": 2000,
+            "period": 60
           }
-        ]
-      },
+        }
+      ],
       "workflows": [
         {
           "name": "manifest-upload",
