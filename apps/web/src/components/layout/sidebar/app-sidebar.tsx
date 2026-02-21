@@ -1,5 +1,5 @@
 import type { ComponentProps } from "react";
-import { ClientOnly, Link, useLoaderData, useMatches, useNavigate } from "@tanstack/react-router";
+import { ClientOnly, Link, useLoaderData, useMatch, useNavigate } from "@tanstack/react-router";
 import { ThemeToggle, ThemeToggleFallback } from "@ucdjs-internal/shared-ui/components";
 import {
   Sidebar,
@@ -13,7 +13,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-  SidebarTrigger,
 } from "@ucdjs-internal/shared-ui/ui/sidebar";
 import { BookOpen, ExternalLink, Grid3X3, Lightbulb, Type } from "lucide-react";
 import { Suspense, useState } from "react";
@@ -38,18 +37,8 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
   const { ucdjsApiBaseUrl, docsUrls } = useLoaderData({ from: "__root__" });
   const navigate = useNavigate();
   const [searchValue, setSearchValue] = useState("");
-
-  const matches = useMatches();
-  const currentPath = matches[matches.length - 1]?.pathname ?? "";
-  const currentVersionMatch = matches.find((m) => (m.params as any)?.version !== undefined);
-  const currentVersion = currentVersionMatch ? (currentVersionMatch.params as any).version : undefined;
-
-  const isMainItemActive = (to: string, exact = false) => {
-    if (exact) {
-      return currentPath === to || currentPath === `${to}/`;
-    }
-    return currentPath.startsWith(to.replace(/\/\$/, "/"));
-  };
+  const match = useMatch({ from: "/(app)/v/$version", shouldThrow: false });
+  const currentVersion = match?.params.version;
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -106,22 +95,22 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
         {currentVersion
           ? (
               <SidebarGroup>
-                <SidebarGroupLabel>
-                  Version:
-                  {" "}
-                  {currentVersion}
-                </SidebarGroupLabel>
                 <SidebarMenu>
                   {VERSION_ITEMS.map((item) => {
-                    const isActive = isMainItemActive(item.to, false);
                     return (
                       <SidebarMenuItem key={item.label}>
                         <SidebarMenuButton
-                          isActive={isActive}
                           render={(
                             <Link
                               to={item.to}
-                              params={{ version: currentVersion, ...("params" in item ? item.params : {}) }}
+                              params={{
+                                version: currentVersion,
+                                ...("params" in item ? item.params : {}),
+                              }}
+                              activeOptions={{
+                                exact: true,
+                              }}
+                              activeProps={{ className: "bg-sidebar-accent text-sidebar-accent-foreground" }}
                             >
                               <item.icon className="size-4" />
                               <span>{item.label}</span>
@@ -139,22 +128,22 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
         <SidebarGroup>
           <SidebarGroupLabel>Tools</SidebarGroupLabel>
           <SidebarMenu>
-            {TOOLS_ITEMS.map((item) => {
-              const isActive = isMainItemActive(item.to, false);
-              return (
-                <SidebarMenuItem key={item.label}>
-                  <SidebarMenuButton
-                    isActive={isActive}
-                    render={(
-                      <Link to={item.to} params={"params" in item ? item.params : undefined}>
-                        <item.icon className="size-4" />
-                        <span>{item.label}</span>
-                      </Link>
-                    )}
-                  />
-                </SidebarMenuItem>
-              );
-            })}
+            {TOOLS_ITEMS.map((item) => (
+              <SidebarMenuItem key={item.label}>
+                <SidebarMenuButton
+                  render={(
+                    <Link
+                      to={item.to}
+                      params={"params" in item ? item.params : undefined}
+                      activeProps={{ className: "bg-sidebar-accent text-sidebar-accent-foreground" }}
+                    >
+                      <item.icon className="size-4" />
+                      <span>{item.label}</span>
+                    </Link>
+                  )}
+                />
+              </SidebarMenuItem>
+            ))}
           </SidebarMenu>
         </SidebarGroup>
       </SidebarContent>
