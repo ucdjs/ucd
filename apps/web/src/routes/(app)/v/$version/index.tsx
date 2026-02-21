@@ -1,6 +1,7 @@
 import { versionDetailsQueryOptions, versionsQueryOptions } from "#functions/versions";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 import { Input } from "@ucdjs-internal/shared-ui/ui/input";
@@ -28,12 +29,17 @@ function VersionPage() {
 
 function VersionPageContent({ version }: { version: string }) {
   const { data: versions } = useSuspenseQuery(versionsQueryOptions());
+  const { data: versionDetails } = useSuspenseQuery(versionDetailsQueryOptions(version));
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
 
-  const versionData = versions.find((v) => v.version === version);
   const isLatest = versions[0]?.version === version;
+  const stats = versionDetails.statistics;
+  const hasStats = stats.totalCharacters > 0;
+  const hasNewItems = stats.newCharacters + stats.newBlocks + stats.newScripts > 0;
+  const mappedVersion = versionDetails.mappedUcdVersion ?? version;
+  const statusConfig = getStatusConfig(versionDetails.type);
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -54,123 +60,180 @@ function VersionPageContent({ version }: { version: string }) {
 
   return (
     <div className="flex flex-1 flex-col gap-8 p-4 pt-2">
-      <div className="flex flex-col gap-4 py-4">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold tracking-tight">
-                Unicode
+      <section className="rounded-2xl border bg-card/60 p-6">
+        <div className="flex flex-col gap-6">
+          <div className="flex flex-wrap items-start justify-between gap-6">
+            <div className="flex min-w-[240px] flex-1 flex-col gap-3">
+              <div className="flex flex-wrap items-center gap-3">
+                <h1 className="text-2xl font-bold tracking-tight">
+                  Unicode
+                  {" "}
+                  {version}
+                </h1>
+                <Badge className={statusConfig.className} variant="secondary">
+                  {statusConfig.label}
+                </Badge>
+                {isLatest && (
+                  <Badge className="bg-primary/10 text-primary dark:bg-primary/20" variant="secondary">
+                    Latest
+                  </Badge>
+                )}
+              </div>
+              <p className="max-w-2xl text-sm text-muted-foreground">
+                Explore the data and files for Unicode
                 {" "}
                 {version}
-              </h1>
-              {isLatest && (
-                <span className="text-xs bg-primary/10 text-primary dark:bg-primary/20 px-2 py-1 rounded-full">
-                  Latest
+                . Search characters, browse blocks, and dive into the source files for this release.
+              </p>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+                <span>
+                  Released
+                  {" "}
+                  {versionDetails.date ?? "Unknown"}
                 </span>
-              )}
+                <span className="hidden sm:inline">·</span>
+                <span>
+                  UCD mapping
+                  {" "}
+                  {mappedVersion}
+                </span>
+                {versionDetails.documentationUrl && (
+                  <>
+                    <span className="hidden sm:inline">·</span>
+                    <a
+                      href={versionDetails.documentationUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-primary hover:underline"
+                    >
+                      <BookOpen className="size-3" />
+                      Docs
+                    </a>
+                  </>
+                )}
+                <span className="hidden sm:inline">·</span>
+                <a
+                  href={versionDetails.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:underline"
+                >
+                  Source
+                </a>
+              </div>
             </div>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                size="sm"
-                nativeButton={false}
-                render={(
-                  <Link to="/search" search={{ version }}>
-                    <Search className="size-4" />
-                    Search characters
-                  </Link>
-                )}
+            <form onSubmit={handleSearch} className="relative w-full max-w-xs">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+              <Input
+                type="search"
+                placeholder="Search characters..."
+                className="pl-9"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
-              <Button
-                variant="outline"
-                size="sm"
-                nativeButton={false}
-                render={(
-                  <Link to="/v/$version/blocks" params={{ version }}>
-                    <Grid3X3 className="size-4" />
-                    Browse blocks
-                  </Link>
-                )}
-              />
-              <Button
-                variant="outline"
-                size="sm"
-                nativeButton={false}
-                render={(
-                  <Link to="/v/$version/u/$hex" params={{ version, hex: "0041" }}>
-                    <Type className="size-4" />
-                    Inspect codepoint
-                  </Link>
-                )}
-              />
-            </div>
+              {isSearching
+                ? (
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+                      opening…
+                    </span>
+                  )
+                : null}
+            </form>
           </div>
-          <form onSubmit={handleSearch} className="relative w-full max-w-xs">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search characters..."
-              className="pl-9"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            {isSearching
-              ? (
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
-                    opening…
-                  </span>
-                )
-              : null}
-          </form>
-        </div>
-        {versionData && (
-          <>
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-              <span>
-                Released
-                {" "}
-                {versionData.date}
-              </span>
-              <span className="hidden sm:inline">·</span>
-              <span className="capitalize">{versionData.type}</span>
-              {versionData.documentationUrl && (
-                <>
-                  <span className="hidden sm:inline">·</span>
-                  <a
-                    href={versionData.documentationUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary hover:underline inline-flex items-center gap-1"
-                  >
-                    <BookOpen className="size-3" />
-                    Docs
-                  </a>
-                </>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              size="sm"
+              nativeButton={false}
+              render={(
+                <Link to="/search" search={{ version }}>
+                  <Search className="size-4" />
+                  Search characters
+                </Link>
               )}
-              <span className="hidden sm:inline">·</span>
-              <a
-                href={versionData.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary hover:underline"
-              >
-                Source
-              </a>
-            </div>
-            <p className="text-sm text-muted-foreground max-w-2xl">
-              Explore the data and files for Unicode
-              {" "}
-              {version}
-              . Inspect new characters, review version metadata, and navigate the source files for this release.
-            </p>
-          </>
-        )}
-      </div>
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              nativeButton={false}
+              render={(
+                <Link to="/v/$version/blocks" params={{ version }}>
+                  <Grid3X3 className="size-4" />
+                  Browse blocks
+                </Link>
+              )}
+            />
+            <Button
+              variant="outline"
+              size="sm"
+              nativeButton={false}
+              render={(
+                <Link to="/file-explorer/$" params={{ _splat: `${version}/` }}>
+                  <FileText className="size-4" />
+                  Open file tree
+                </Link>
+              )}
+            />
+          </div>
+        </div>
+      </section>
 
-      <Suspense fallback={<VersionStatisticsSkeleton />}>
-        <VersionStatistics version={version} />
-      </Suspense>
-      <div className="space-y-4">
-        <h2 className="text-lg font-semibold tracking-tight">Quick Links</h2>
+      <section className="grid gap-4 lg:grid-cols-[2fr_3fr]">
+        <Card className="bg-card/60">
+          <CardHeader>
+            <CardTitle className="text-base">At a glance</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {hasStats
+              ? (
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    <StatCard
+                      label="Characters"
+                      value={stats.totalCharacters}
+                      delta={stats.newCharacters}
+                    />
+                    <StatCard
+                      label="Blocks"
+                      value={stats.totalBlocks}
+                      delta={stats.newBlocks}
+                    />
+                    <StatCard
+                      label="Scripts"
+                      value={stats.totalScripts}
+                      delta={stats.newScripts}
+                    />
+                  </div>
+                )
+              : (
+                  <div className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
+                    Statistics are not available for this version yet.
+                  </div>
+                )}
+          </CardContent>
+        </Card>
+        <Card className="bg-card/60">
+          <CardHeader>
+            <CardTitle className="text-base">What&apos;s new in this release</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {hasStats && hasNewItems
+              ? (
+                  <div className="grid gap-3">
+                    <NewStatRow label="New characters" value={stats.newCharacters} />
+                    <NewStatRow label="New blocks" value={stats.newBlocks} />
+                    <NewStatRow label="New scripts" value={stats.newScripts} />
+                  </div>
+                )
+              : (
+                  <div className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
+                    No new counts are recorded for this release.
+                  </div>
+                )}
+          </CardContent>
+        </Card>
+      </section>
+
+      <section className="space-y-4">
+        <h2 className="text-lg font-semibold tracking-tight">Explore this version</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Link
             to="/v/$version/blocks"
@@ -225,7 +288,7 @@ function VersionPageContent({ version }: { version: string }) {
           </Link>
           <Link
             to="/file-explorer/$"
-            params={{ _splat: "" }}
+            params={{ _splat: `${version}/` }}
             className="group"
           >
             <Card className="h-full transition-colors hover:bg-accent/50 dark:hover:bg-accent/20">
@@ -241,103 +304,192 @@ function VersionPageContent({ version }: { version: string }) {
             </Card>
           </Link>
         </div>
-      </div>
+      </section>
+
+      <section className="grid gap-4 md:grid-cols-2">
+        <Card className="bg-card/60">
+          <CardHeader>
+            <CardTitle className="text-base">Common files</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm">
+            <FileLink
+              label="UnicodeData.txt"
+              path={`${version}/ucd/UnicodeData.txt`}
+            />
+            <FileLink
+              label="Blocks.txt"
+              path={`${version}/ucd/Blocks.txt`}
+            />
+            <FileLink
+              label="Scripts.txt"
+              path={`${version}/ucd/Scripts.txt`}
+            />
+            <FileLink
+              label="DerivedCoreProperties.txt"
+              path={`${version}/ucd/DerivedCoreProperties.txt`}
+            />
+          </CardContent>
+        </Card>
+        <Card className="bg-card/60">
+          <CardHeader>
+            <CardTitle className="text-base">Resources</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3 text-sm text-muted-foreground">
+            <ResourceRow label="Documentation" href={versionDetails.documentationUrl} />
+            <ResourceRow label="Source archive" href={versionDetails.url} />
+            <ResourceRow label="API base" href={`https://api.ucdjs.dev/api/v1/versions/${version}`} />
+          </CardContent>
+        </Card>
+      </section>
     </div>
   );
 }
 
-function VersionStatistics({ version }: { version: string }) {
-  const { data: details } = useSuspenseQuery(versionDetailsQueryOptions(version));
+type VersionStatus = "stable" | "draft" | "unsupported";
 
-  if (!details || details.statistics.totalCharacters === 0) {
-    return null;
+function getStatusConfig(status: VersionStatus) {
+  switch (status) {
+    case "draft":
+      return {
+        label: "Draft",
+        className: "bg-amber-100 text-amber-800 dark:bg-amber-500/20 dark:text-amber-200",
+      };
+    case "unsupported":
+      return {
+        label: "Unsupported",
+        className: "bg-muted text-muted-foreground",
+      };
+    default:
+      return {
+        label: "Stable",
+        className: "bg-emerald-100 text-emerald-800 dark:bg-emerald-500/20 dark:text-emerald-200",
+      };
   }
-
-  const { statistics } = details;
-
-  return (
-    <div className="flex flex-wrap items-center gap-3">
-      <StatBadge
-        label="Characters"
-        value={statistics.totalCharacters}
-        newValue={statistics.newCharacters}
-      />
-      <StatBadge
-        label="Blocks"
-        value={statistics.totalBlocks}
-        newValue={statistics.newBlocks}
-      />
-      <StatBadge
-        label="Scripts"
-        value={statistics.totalScripts}
-        newValue={statistics.newScripts}
-      />
-    </div>
-  );
 }
 
-interface StatBadgeProps {
+interface StatCardProps {
   label: string;
   value: number;
-  newValue?: number;
+  delta?: number;
 }
 
-function StatBadge({ label, value, newValue }: StatBadgeProps) {
+function StatCard({ label, value, delta }: StatCardProps) {
   return (
-    <div className="flex items-center gap-2 rounded-md bg-muted/50 px-3 py-1.5">
-      <span className="font-semibold">{value.toLocaleString()}</span>
-      <span className="text-muted-foreground">{label.toLowerCase()}</span>
-      {newValue != null && newValue > 0 && (
-        <span className="text-xs text-green-600 dark:text-green-400">
-          (+
-          {newValue.toLocaleString()}
-          {" "}
-          new)
-        </span>
-      )}
+    <div className="rounded-lg border bg-background/40 p-3">
+      <div className="text-xs uppercase tracking-wide text-muted-foreground">{label}</div>
+      <div className="text-lg font-semibold">{value.toLocaleString()}</div>
+      {delta && delta > 0
+        ? (
+            <div className="text-xs text-emerald-600 dark:text-emerald-300">
+              +
+              {delta.toLocaleString()}
+              {" "}
+              new
+            </div>
+          )
+        : null}
     </div>
   );
 }
 
-function VersionStatisticsSkeleton() {
+function NewStatRow({ label, value }: { label: string; value: number }) {
   return (
-    <div className="flex flex-wrap items-center gap-3">
-      {["stat-1", "stat-2", "stat-3"].map((key) => (
-        <Skeleton key={key} className="h-8 w-32 rounded-md" />
-      ))}
+    <div className="flex items-center justify-between gap-4 rounded-lg border bg-background/40 px-3 py-2">
+      <span className="text-sm text-muted-foreground">{label}</span>
+      <span className="text-sm font-semibold">
+        {value.toLocaleString()}
+      </span>
     </div>
+  );
+}
+
+function FileLink({ label, path }: { label: string; path: string }) {
+  return (
+    <Link
+      to="/file-explorer/v/$"
+      params={{ _splat: path }}
+      className="flex items-center justify-between rounded-md border border-transparent px-2 py-1.5 text-muted-foreground transition-colors hover:border-border hover:text-foreground"
+    >
+      <span>{label}</span>
+      <FileText className="size-4" />
+    </Link>
+  );
+}
+
+function ResourceRow({ label, href }: { label: string; href?: string | null }) {
+  if (!href) {
+    return (
+      <div className="flex items-center justify-between rounded-md border border-dashed px-2 py-1.5 text-muted-foreground">
+        <span>{label}</span>
+        <span className="text-xs">Unavailable</span>
+      </div>
+    );
+  }
+
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex items-center justify-between rounded-md border border-transparent px-2 py-1.5 text-muted-foreground transition-colors hover:border-border hover:text-foreground"
+    >
+      <span>{label}</span>
+      <BookOpen className="size-4" />
+    </a>
   );
 }
 
 function VersionPageSkeleton({ version }: { version: string }) {
+  const statSkeletonKeys = ["stat-card-1", "stat-card-2", "stat-card-3"];
+  const newStatSkeletonKeys = ["new-stat-1", "new-stat-2", "new-stat-3"];
+
   return (
     <div className="flex flex-1 flex-col gap-8 p-4 pt-2">
-      <div className="flex flex-col gap-4 py-4">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold tracking-tight">
-                Unicode
-                {" "}
-                {version}
-              </h1>
-              <Skeleton className="h-5 w-14 rounded-full" />
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Skeleton className="h-7 w-36 rounded-md" />
-              <Skeleton className="h-7 w-32 rounded-md" />
-              <Skeleton className="h-7 w-36 rounded-md" />
-            </div>
+      <section className="rounded-2xl border bg-card/60 p-6">
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold tracking-tight">
+              Unicode
+              {" "}
+              {version}
+            </h1>
+            <Skeleton className="h-5 w-16 rounded-full" />
           </div>
-          <Skeleton className="h-9 w-full max-w-xs rounded-md" />
+          <Skeleton className="h-4 w-96" />
+          <div className="flex flex-wrap gap-2">
+            <Skeleton className="h-8 w-36 rounded-md" />
+            <Skeleton className="h-8 w-32 rounded-md" />
+            <Skeleton className="h-8 w-36 rounded-md" />
+          </div>
         </div>
-        <div className="space-y-2">
-          <Skeleton className="h-4 w-64" />
-          <Skeleton className="h-4 w-80" />
-        </div>
-      </div>
+      </section>
 
-      <VersionStatisticsSkeleton />
+      <section className="grid gap-4 lg:grid-cols-[2fr_3fr]">
+        <Card className="bg-card/60">
+          <CardHeader>
+            <CardTitle className="text-base">At a glance</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-3 sm:grid-cols-3">
+              {statSkeletonKeys.map((key) => (
+                <Skeleton key={key} className="h-20 w-full rounded-lg" />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="bg-card/60">
+          <CardHeader>
+            <CardTitle className="text-base">What&apos;s new in this release</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-3">
+              {newStatSkeletonKeys.map((key) => (
+                <Skeleton key={key} className="h-10 w-full rounded-lg" />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </section>
     </div>
   );
 }

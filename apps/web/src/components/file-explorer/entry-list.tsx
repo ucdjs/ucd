@@ -13,7 +13,7 @@ export interface EntryListProps {
 }
 
 export function EntryList({ currentPath, viewMode }: EntryListProps) {
-  const search = useSearch({ from: "/file-explorer/$" });
+  const search = useSearch({ from: "/(explorer)/file-explorer/$" });
   const navigate = useNavigate({ from: "/file-explorer/$" });
   const { data } = useSuspenseQuery(filesQueryOptions({
     path: currentPath,

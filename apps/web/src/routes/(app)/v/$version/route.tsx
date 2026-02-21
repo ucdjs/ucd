@@ -1,7 +1,7 @@
 import { VersionNotFound } from "#components/not-found";
 import { createFileRoute, notFound, Outlet, redirect } from "@tanstack/react-router";
 import { createMiddleware } from "@tanstack/react-start";
-import { UNICODE_STABLE_VERSION, UNICODE_VERSION_METADATA } from "@unicode-utils/core";
+import { UNICODE_DRAFT_VERSION, UNICODE_STABLE_VERSION, UNICODE_VERSION_METADATA } from "@unicode-utils/core";
 
 const validateVersionMiddleware = createMiddleware({
   type: "request",
@@ -24,9 +24,7 @@ const validateVersionMiddleware = createMiddleware({
     }
 
     // Verify requested version exists using metadata map
-    const exists = Array.isArray(UNICODE_VERSION_METADATA)
-      ? UNICODE_VERSION_METADATA.some((m) => m?.version === version)
-      : false;
+    const exists = UNICODE_VERSION_METADATA.some((m) => m?.version === version) || UNICODE_DRAFT_VERSION === version;
 
     if (!exists) {
       throw notFound();

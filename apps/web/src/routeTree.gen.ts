@@ -16,12 +16,12 @@ import { Route as appRouteRouteImport } from './routes/(app)/route'
 import { Route as homeIndexRouteImport } from './routes/(home)/index'
 import { Route as appSearchRouteImport } from './routes/(app)/search'
 import { Route as appCodepointInspectorRouteImport } from './routes/(app)/codepoint-inspector'
-import { Route as appFileExplorerRouteRouteImport } from './routes/(app)/file-explorer/route'
+import { Route as explorerFileExplorerRouteRouteImport } from './routes/(explorer)/file-explorer/route'
 import { Route as appVIndexRouteImport } from './routes/(app)/v/index'
-import { Route as appFileExplorerSplatRouteImport } from './routes/(app)/file-explorer/$'
+import { Route as explorerFileExplorerSplatRouteImport } from './routes/(explorer)/file-explorer/$'
 import { Route as appVVersionRouteRouteImport } from './routes/(app)/v/$version/route'
 import { Route as appVVersionIndexRouteImport } from './routes/(app)/v/$version/index'
-import { Route as appFileExplorerVSplatRouteImport } from './routes/(app)/file-explorer/v.$'
+import { Route as explorerFileExplorerVSplatRouteImport } from './routes/(explorer)/file-explorer/v.$'
 import { Route as appVVersionUHexRouteImport } from './routes/(app)/v/$version/u/$hex'
 
 const appVVersionNormalizationPreviewLazyRouteImport = createFileRoute(
@@ -66,21 +66,23 @@ const appCodepointInspectorRoute = appCodepointInspectorRouteImport.update({
   path: '/codepoint-inspector',
   getParentRoute: () => appRouteRoute,
 } as any)
-const appFileExplorerRouteRoute = appFileExplorerRouteRouteImport.update({
-  id: '/file-explorer',
-  path: '/file-explorer',
-  getParentRoute: () => appRouteRoute,
-} as any)
+const explorerFileExplorerRouteRoute =
+  explorerFileExplorerRouteRouteImport.update({
+    id: '/(explorer)/file-explorer',
+    path: '/file-explorer',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const appVIndexRoute = appVIndexRouteImport.update({
   id: '/v/',
   path: '/v/',
   getParentRoute: () => appRouteRoute,
 } as any)
-const appFileExplorerSplatRoute = appFileExplorerSplatRouteImport.update({
-  id: '/$',
-  path: '/$',
-  getParentRoute: () => appFileExplorerRouteRoute,
-} as any)
+const explorerFileExplorerSplatRoute =
+  explorerFileExplorerSplatRouteImport.update({
+    id: '/$',
+    path: '/$',
+    getParentRoute: () => explorerFileExplorerRouteRoute,
+  } as any)
 const appVVersionRouteRoute = appVVersionRouteRouteImport.update({
   id: '/v/$version',
   path: '/v/$version',
@@ -139,11 +141,12 @@ const appVVersionBidiLinebreakLazyRoute =
         (d) => d.Route,
       ),
     )
-const appFileExplorerVSplatRoute = appFileExplorerVSplatRouteImport.update({
-  id: '/v/$',
-  path: '/v/$',
-  getParentRoute: () => appFileExplorerRouteRoute,
-} as any)
+const explorerFileExplorerVSplatRoute =
+  explorerFileExplorerVSplatRouteImport.update({
+    id: '/v/$',
+    path: '/v/$',
+    getParentRoute: () => explorerFileExplorerRouteRoute,
+  } as any)
 const appVVersionBlocksIndexLazyRoute = appVVersionBlocksIndexLazyRouteImport
   .update({
     id: '/blocks/',
@@ -169,14 +172,14 @@ const appVVersionUHexRoute = appVVersionUHexRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/file-explorer': typeof appFileExplorerRouteRouteWithChildren
+  '/file-explorer': typeof explorerFileExplorerRouteRouteWithChildren
   '/codepoint-inspector': typeof appCodepointInspectorRoute
   '/search': typeof appSearchRoute
   '/': typeof homeIndexRoute
   '/v/$version': typeof appVVersionRouteRouteWithChildren
-  '/file-explorer/$': typeof appFileExplorerSplatRoute
+  '/file-explorer/$': typeof explorerFileExplorerSplatRoute
   '/v/': typeof appVIndexRoute
-  '/file-explorer/v/$': typeof appFileExplorerVSplatRoute
+  '/file-explorer/v/$': typeof explorerFileExplorerVSplatRoute
   '/v/$version/bidi-linebreak': typeof appVVersionBidiLinebreakLazyRoute
   '/v/$version/font-glyph-view': typeof appVVersionFontGlyphViewLazyRoute
   '/v/$version/grapheme-visualizer': typeof appVVersionGraphemeVisualizerLazyRoute
@@ -187,13 +190,13 @@ export interface FileRoutesByFullPath {
   '/v/$version/blocks/': typeof appVVersionBlocksIndexLazyRoute
 }
 export interface FileRoutesByTo {
-  '/file-explorer': typeof appFileExplorerRouteRouteWithChildren
+  '/file-explorer': typeof explorerFileExplorerRouteRouteWithChildren
   '/codepoint-inspector': typeof appCodepointInspectorRoute
   '/search': typeof appSearchRoute
   '/': typeof homeIndexRoute
-  '/file-explorer/$': typeof appFileExplorerSplatRoute
+  '/file-explorer/$': typeof explorerFileExplorerSplatRoute
   '/v': typeof appVIndexRoute
-  '/file-explorer/v/$': typeof appFileExplorerVSplatRoute
+  '/file-explorer/v/$': typeof explorerFileExplorerVSplatRoute
   '/v/$version/bidi-linebreak': typeof appVVersionBidiLinebreakLazyRoute
   '/v/$version/font-glyph-view': typeof appVVersionFontGlyphViewLazyRoute
   '/v/$version/grapheme-visualizer': typeof appVVersionGraphemeVisualizerLazyRoute
@@ -207,14 +210,14 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/(app)': typeof appRouteRouteWithChildren
   '/(home)': typeof homeRouteRouteWithChildren
-  '/(app)/file-explorer': typeof appFileExplorerRouteRouteWithChildren
+  '/(explorer)/file-explorer': typeof explorerFileExplorerRouteRouteWithChildren
   '/(app)/codepoint-inspector': typeof appCodepointInspectorRoute
   '/(app)/search': typeof appSearchRoute
   '/(home)/': typeof homeIndexRoute
   '/(app)/v/$version': typeof appVVersionRouteRouteWithChildren
-  '/(app)/file-explorer/$': typeof appFileExplorerSplatRoute
+  '/(explorer)/file-explorer/$': typeof explorerFileExplorerSplatRoute
   '/(app)/v/': typeof appVIndexRoute
-  '/(app)/file-explorer/v/$': typeof appFileExplorerVSplatRoute
+  '/(explorer)/file-explorer/v/$': typeof explorerFileExplorerVSplatRoute
   '/(app)/v/$version/bidi-linebreak': typeof appVVersionBidiLinebreakLazyRoute
   '/(app)/v/$version/font-glyph-view': typeof appVVersionFontGlyphViewLazyRoute
   '/(app)/v/$version/grapheme-visualizer': typeof appVVersionGraphemeVisualizerLazyRoute
@@ -264,14 +267,14 @@ export interface FileRouteTypes {
     | '__root__'
     | '/(app)'
     | '/(home)'
-    | '/(app)/file-explorer'
+    | '/(explorer)/file-explorer'
     | '/(app)/codepoint-inspector'
     | '/(app)/search'
     | '/(home)/'
     | '/(app)/v/$version'
-    | '/(app)/file-explorer/$'
+    | '/(explorer)/file-explorer/$'
     | '/(app)/v/'
-    | '/(app)/file-explorer/v/$'
+    | '/(explorer)/file-explorer/v/$'
     | '/(app)/v/$version/bidi-linebreak'
     | '/(app)/v/$version/font-glyph-view'
     | '/(app)/v/$version/grapheme-visualizer'
@@ -285,6 +288,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   appRouteRoute: typeof appRouteRouteWithChildren
   homeRouteRoute: typeof homeRouteRouteWithChildren
+  explorerFileExplorerRouteRoute: typeof explorerFileExplorerRouteRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -324,12 +328,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof appCodepointInspectorRouteImport
       parentRoute: typeof appRouteRoute
     }
-    '/(app)/file-explorer': {
-      id: '/(app)/file-explorer'
+    '/(explorer)/file-explorer': {
+      id: '/(explorer)/file-explorer'
       path: '/file-explorer'
       fullPath: '/file-explorer'
-      preLoaderRoute: typeof appFileExplorerRouteRouteImport
-      parentRoute: typeof appRouteRoute
+      preLoaderRoute: typeof explorerFileExplorerRouteRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/(app)/v/': {
       id: '/(app)/v/'
@@ -338,12 +342,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof appVIndexRouteImport
       parentRoute: typeof appRouteRoute
     }
-    '/(app)/file-explorer/$': {
-      id: '/(app)/file-explorer/$'
+    '/(explorer)/file-explorer/$': {
+      id: '/(explorer)/file-explorer/$'
       path: '/$'
       fullPath: '/file-explorer/$'
-      preLoaderRoute: typeof appFileExplorerSplatRouteImport
-      parentRoute: typeof appFileExplorerRouteRoute
+      preLoaderRoute: typeof explorerFileExplorerSplatRouteImport
+      parentRoute: typeof explorerFileExplorerRouteRoute
     }
     '/(app)/v/$version': {
       id: '/(app)/v/$version'
@@ -387,12 +391,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof appVVersionBidiLinebreakLazyRouteImport
       parentRoute: typeof appVVersionRouteRoute
     }
-    '/(app)/file-explorer/v/$': {
-      id: '/(app)/file-explorer/v/$'
+    '/(explorer)/file-explorer/v/$': {
+      id: '/(explorer)/file-explorer/v/$'
       path: '/v/$'
       fullPath: '/file-explorer/v/$'
-      preLoaderRoute: typeof appFileExplorerVSplatRouteImport
-      parentRoute: typeof appFileExplorerRouteRoute
+      preLoaderRoute: typeof explorerFileExplorerVSplatRouteImport
+      parentRoute: typeof explorerFileExplorerRouteRoute
     }
     '/(app)/v/$version/blocks/': {
       id: '/(app)/v/$version/blocks/'
@@ -417,19 +421,6 @@ declare module '@tanstack/react-router' {
     }
   }
 }
-
-interface appFileExplorerRouteRouteChildren {
-  appFileExplorerSplatRoute: typeof appFileExplorerSplatRoute
-  appFileExplorerVSplatRoute: typeof appFileExplorerVSplatRoute
-}
-
-const appFileExplorerRouteRouteChildren: appFileExplorerRouteRouteChildren = {
-  appFileExplorerSplatRoute: appFileExplorerSplatRoute,
-  appFileExplorerVSplatRoute: appFileExplorerVSplatRoute,
-}
-
-const appFileExplorerRouteRouteWithChildren =
-  appFileExplorerRouteRoute._addFileChildren(appFileExplorerRouteRouteChildren)
 
 interface appVVersionRouteRouteChildren {
   appVVersionBidiLinebreakLazyRoute: typeof appVVersionBidiLinebreakLazyRoute
@@ -459,7 +450,6 @@ const appVVersionRouteRouteWithChildren =
   appVVersionRouteRoute._addFileChildren(appVVersionRouteRouteChildren)
 
 interface appRouteRouteChildren {
-  appFileExplorerRouteRoute: typeof appFileExplorerRouteRouteWithChildren
   appCodepointInspectorRoute: typeof appCodepointInspectorRoute
   appSearchRoute: typeof appSearchRoute
   appVVersionRouteRoute: typeof appVVersionRouteRouteWithChildren
@@ -467,7 +457,6 @@ interface appRouteRouteChildren {
 }
 
 const appRouteRouteChildren: appRouteRouteChildren = {
-  appFileExplorerRouteRoute: appFileExplorerRouteRouteWithChildren,
   appCodepointInspectorRoute: appCodepointInspectorRoute,
   appSearchRoute: appSearchRoute,
   appVVersionRouteRoute: appVVersionRouteRouteWithChildren,
@@ -490,9 +479,26 @@ const homeRouteRouteWithChildren = homeRouteRoute._addFileChildren(
   homeRouteRouteChildren,
 )
 
+interface explorerFileExplorerRouteRouteChildren {
+  explorerFileExplorerSplatRoute: typeof explorerFileExplorerSplatRoute
+  explorerFileExplorerVSplatRoute: typeof explorerFileExplorerVSplatRoute
+}
+
+const explorerFileExplorerRouteRouteChildren: explorerFileExplorerRouteRouteChildren =
+  {
+    explorerFileExplorerSplatRoute: explorerFileExplorerSplatRoute,
+    explorerFileExplorerVSplatRoute: explorerFileExplorerVSplatRoute,
+  }
+
+const explorerFileExplorerRouteRouteWithChildren =
+  explorerFileExplorerRouteRoute._addFileChildren(
+    explorerFileExplorerRouteRouteChildren,
+  )
+
 const rootRouteChildren: RootRouteChildren = {
   appRouteRoute: appRouteRouteWithChildren,
   homeRouteRoute: homeRouteRouteWithChildren,
+  explorerFileExplorerRouteRoute: explorerFileExplorerRouteRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -15,7 +15,7 @@ export function FileExplorerHeader() {
   const lastMatch = matches[matches.length - 1];
   const path = (lastMatch?.params as { _splat?: string })?._splat || "";
   const pathSegments = path ? path.split("/").filter(Boolean) : [];
-  const isViewingFile = lastMatch?.routeId === "/(app)/file-explorer/v/$";
+  const isViewingFile = lastMatch?.routeId === "/(explorer)/file-explorer/v/$";
   const isRoot = pathSegments.length === 0 && !isViewingFile;
 
   return (

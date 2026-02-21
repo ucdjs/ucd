@@ -2,13 +2,13 @@ import { FileExplorerHeader } from "#components/file-explorer/file-explorer-head
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { Suspense } from "react";
 
-export const Route = createFileRoute("/(app)/file-explorer")({
+export const Route = createFileRoute("/(explorer)/file-explorer")({
   component: FileExplorerLayout,
 });
 
 function FileExplorerLayout() {
   return (
-    <>
+    <div className="flex min-h-svh flex-col bg-background">
       <FileExplorerHeader />
 
       <main className="flex flex-1 flex-col overflow-hidden">
@@ -18,6 +18,6 @@ function FileExplorerLayout() {
           </Suspense>
         </div>
       </main>
-    </>
+    </div>
   );
 }

@@ -14,7 +14,7 @@ import { NON_RENDERABLE_EXTENSIONS } from "../../../lib/file-explorer";
  */
 const MAX_INLINE_FILE_SIZE = 1024 * 1024;
 
-export const Route = createFileRoute("/(app)/file-explorer/v/$")({
+export const Route = createFileRoute("/(explorer)/file-explorer/v/$")({
   component: FileViewerPage,
   async beforeLoad({ params }) {
     const path = params._splat || "";
