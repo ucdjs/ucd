@@ -31,7 +31,7 @@ function syncTheme(resolved: "light" | "dark") {
 }
 
 export function useTheme(): UseThemeReturn {
-  const [theme, setThemeState] = useState<ThemeMode>(() => getStoredTheme());
+  const [theme, setTheme] = useState<ThemeMode>(() => getStoredTheme());
   const [systemTheme, setSystemTheme] = useState<"light" | "dark">(() => getSystemTheme());
 
   const resolvedTheme = theme === "system" ? systemTheme : theme;
@@ -51,17 +51,22 @@ export function useTheme(): UseThemeReturn {
     }
   }, [resolvedTheme, theme]);
 
-  const setTheme = useCallback((nextTheme: ThemeMode) => {
-    setThemeState(nextTheme);
+  const setThemeCb = useCallback((nextTheme: ThemeMode) => {
+    setTheme(nextTheme);
   }, []);
 
   const toggleTheme = useCallback(() => {
-    setThemeState((current) => {
+    setTheme((current) => {
       if (current === "light") return "dark";
       if (current === "dark") return "system";
       return "light";
     });
   }, []);
 
-  return useMemo(() => ({ theme, resolvedTheme, setTheme, toggleTheme }), [theme, resolvedTheme, setTheme, toggleTheme]);
+  return useMemo(() => ({
+    theme,
+    resolvedTheme,
+    setTheme: setThemeCb,
+    toggleTheme,
+  }), [theme, resolvedTheme, setThemeCb, toggleTheme]);
 }

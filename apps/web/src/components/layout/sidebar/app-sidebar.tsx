@@ -1,6 +1,6 @@
 import type { ComponentProps } from "react";
-import { Link, useLoaderData, useMatches, useNavigate } from "@tanstack/react-router";
-import { ThemeToggle } from "@ucdjs-internal/shared-ui/components/theme-toggle";
+import { ClientOnly, Link, useLoaderData, useMatches, useNavigate } from "@tanstack/react-router";
+import { ThemeToggle, ThemeToggleFallback } from "@ucdjs-internal/shared-ui/components/theme-toggle";
 import {
   Sidebar,
   SidebarContent,
@@ -69,7 +69,9 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
           </Link>
           <div className="ml-auto flex items-center gap-2 group-data-[collapsible=icon]:ml-0">
             <div className="group-data-[collapsible=icon]:hidden">
-              <ThemeToggle />
+              <ClientOnly fallback={<ThemeToggleFallback />}>
+                <ThemeToggle />
+              </ClientOnly>
             </div>
             <SidebarTrigger className="h-8 w-8 group-data-[collapsible=icon]:h-7 group-data-[collapsible=icon]:w-7" />
           </div>
