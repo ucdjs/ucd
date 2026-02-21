@@ -1,4 +1,4 @@
-import type { HonoEnv } from "../../types";
+import type { HonoEnv } from "#types";
 import { isValidUnicodeVersion } from "@ucdjs-internal/shared";
 import {
   badGateway,

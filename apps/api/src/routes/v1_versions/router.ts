@@ -1,4 +1,4 @@
-import type { HonoEnv } from "../../types";
+import type { HonoEnv } from "#types";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { V1_VERSIONS_ROUTER_BASE_PATH } from "../../constants";
 import { registerGetVersionRoute, registerVersionFileTreeRoute } from "./$version";

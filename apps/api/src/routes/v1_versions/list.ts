@@ -1,12 +1,12 @@
+import type { HonoEnv } from "#types";
 import type { OpenAPIHono } from "@hono/zod-openapi";
-import type { HonoEnv } from "../../types";
+import { createLogger } from "#lib/logger";
+import { captureError, captureUpstreamError, COMPONENTS } from "#lib/sentry";
 import { createRoute } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
 import { badGateway, MAX_AGE_ONE_DAY_SECONDS } from "@ucdjs-internal/worker-utils";
 import { UnicodeVersionListSchema } from "@ucdjs/schemas";
 import { cache } from "hono/cache";
-import { createLogger } from "../../lib/logger";
-import { captureError, captureUpstreamError, COMPONENTS } from "../../lib/sentry";
 import { generateReferences, OPENAPI_TAGS } from "../../openapi";
 import { getAllVersionsFromList } from "./utils";
 
