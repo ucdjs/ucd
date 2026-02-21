@@ -6,6 +6,7 @@ import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import {
   createRootRouteWithContext,
   HeadContent,
+  ScriptOnce,
   Scripts,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
@@ -60,11 +61,6 @@ export const Route = createRootRouteWithContext<AppRouterContext>()({
       },
     ],
     scripts: [
-      {
-        dangerouslySetInnerHTML: {
-          __html: createThemeScript(),
-        },
-      },
       import.meta.env.DEV
         ? {
             src: "//unpkg.com/react-scan/dist/auto.global.js",
@@ -88,6 +84,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
     <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
+        <ScriptOnce children={createThemeScript()} />
       </head>
       <body>
         {children}
