@@ -272,7 +272,8 @@ export async function getUnicodeAsset(path: string, options: UnicodeAssetOptions
       [UCD_STAT_TYPE_HEADER]: "file",
     };
 
-    if (size) {
+    if (size && options.isHeadRequest) {
+      // Only include size headers for HEAD requests, not for streamed GET responses
       headers[UCD_STAT_SIZE_HEADER] = size;
       headers["Content-Length"] = size;
     }

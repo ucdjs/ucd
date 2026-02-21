@@ -291,9 +291,22 @@ export function registerWildcardRoute(router: OpenAPIHono<HonoEnv>) {
       } = await getUnicodeAsset(path, handlerOptions);
 
       if (status !== 200) {
+        // Parse the error body to get the actual error message from getUnicodeAsset()
+        let errorMessage = `Upstream responded with status ${status}`;
+        if (typeof body === "string") {
+          try {
+            const errorBody = JSON.parse(body);
+            if (errorBody.message) {
+              errorMessage = errorBody.message;
+            }
+          } catch {
+            // If parsing fails, fall back to generic message
+          }
+        }
+
         return customError(c, {
           status,
-          message: `Upstream responded with status ${status}`,
+          message: errorMessage,
           headers,
         });
       }

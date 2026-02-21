@@ -23,7 +23,7 @@ vi.mock("@unicode-utils/core", async (importOriginal) => {
 });
 
 vi.mock("#lib/files", () => ({
-  getRawUnicodeAsset: vi.fn((path) => getRawUnicodeAsset(path)),
+  getRawUnicodeAsset: vi.fn(),
 }));
 
 beforeEach(() => {

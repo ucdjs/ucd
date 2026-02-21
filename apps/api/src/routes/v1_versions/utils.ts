@@ -71,30 +71,42 @@ export async function getAllVersionsFromList() {
       throw error;
     }
 
-    const draft = await getCurrentDraftVersion({
-      text: await getDraftVersionText(),
-      onError(error) {
-        log.error("Error fetching current draft version", { error });
-        let tmpError: Error;
-        if (!(error instanceof Error)) {
-          tmpError = new Error("Unknown error fetching current draft version", { cause: error });
-        } else {
-          tmpError = error;
-        }
+    let draft: string | null = null;
+    try {
+      draft = await getCurrentDraftVersion({
+        text: await getDraftVersionText(),
+        onError(error) {
+          log.error("Error fetching current draft version", { error });
+          let tmpError: Error;
+          if (!(error instanceof Error)) {
+            tmpError = new Error("Unknown error fetching current draft version", { cause: error });
+          } else {
+            tmpError = error;
+          }
 
-        captureUpstreamError(tmpError, {
-          component: COMPONENTS.V1_VERSIONS,
-          operation: "getCurrentDraftVersion",
-          upstreamService: "unicode.org",
-        });
-      },
-      onNotFound(text) {
-        log.debug("Current draft version not found", { text });
-      },
-      onSuccess(version) {
-        log.info("Fetched current draft version", { version });
-      },
-    });
+          captureUpstreamError(tmpError, {
+            component: COMPONENTS.V1_VERSIONS,
+            operation: "getCurrentDraftVersion",
+            upstreamService: "unicode.org",
+          });
+        },
+        onNotFound(text) {
+          log.debug("Current draft version not found", { text });
+        },
+        onSuccess(version) {
+          log.info("Fetched current draft version", { version });
+        },
+      });
+    } catch (err) {
+      // If getCurrentDraftVersion throws, log it and continue without draft
+      log.error("getCurrentDraftVersion threw an error", { error: err });
+      captureUpstreamError(err instanceof Error ? err : new Error("Unknown error", { cause: err }), {
+        component: COMPONENTS.V1_VERSIONS,
+        operation: "getCurrentDraftVersion",
+        upstreamService: "unicode.org",
+      });
+    }
+
     const versions: UnicodeVersion[] = [];
     log.info("Parsing Unicode versions from table", {
       draftVersion: draft || "none",
