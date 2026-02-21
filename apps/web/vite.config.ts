@@ -66,19 +66,19 @@ const config = defineConfig({
     alias: [
       {
         find: /^use-sync-external-store\/shim$/,
-        replacement: fileURLToPath(new URL("./src/shims/use-sync-external-store-shim.ts", import.meta.url)),
+        replacement: fileURLToPath(new URL("./shims/use-sync-external-store-shim.ts", import.meta.url)),
       },
       {
         find: /^use-sync-external-store\/shim\/index\.js$/,
-        replacement: fileURLToPath(new URL("./src/shims/use-sync-external-store-shim.ts", import.meta.url)),
+        replacement: fileURLToPath(new URL("./shims/use-sync-external-store-shim.ts", import.meta.url)),
       },
       {
         find: /^use-sync-external-store\/shim\/with-selector$/,
-        replacement: fileURLToPath(new URL("./src/shims/use-sync-external-store-shim.ts", import.meta.url)),
+        replacement: fileURLToPath(new URL("./shims/use-sync-external-store-shim.ts", import.meta.url)),
       },
       {
         find: /^use-sync-external-store\/shim\/with-selector\.js$/,
-        replacement: fileURLToPath(new URL("./src/shims/use-sync-external-store-shim.ts", import.meta.url)),
+        replacement: fileURLToPath(new URL("./shims/use-sync-external-store-shim.ts", import.meta.url)),
       },
     ],
   },
