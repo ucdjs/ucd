@@ -1,4 +1,5 @@
 import handler, { createServerEntry } from "@tanstack/react-start/server-entry";
+import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 
 interface ServerRequestContext {
   apiBaseUrl: string;
@@ -16,8 +17,7 @@ export default createServerEntry({
   async fetch(request) {
     return handler.fetch(request, {
       context: {
-        // eslint-disable-next-line node/prefer-global/process
-        apiBaseUrl: process.env.UCDJS_API_BASE_URL || "https://api.ucdjs.dev",
+        apiBaseUrl: UCDJS_API_BASE_URL,
       },
     });
   },
