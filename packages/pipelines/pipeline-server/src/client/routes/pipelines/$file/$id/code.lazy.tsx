@@ -1,5 +1,5 @@
 import { createLazyFileRoute, useSearch } from "@tanstack/react-router";
-import { ShikiCode } from "@ucdjs-internal/shared-ui/components/shiki-code";
+import { ShikiCode } from "@ucdjs-internal/shared-ui/components";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
