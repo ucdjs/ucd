@@ -8,35 +8,18 @@
       "@ucdjs/env": ["./packages/env/src/index.ts"],
       "@ucdjs/client": ["./packages/client/src/index.ts"],
       "@ucdjs/schema-gen": ["./packages/schema-gen/src/index.ts"],
-
       "@ucdjs/lockfile": ["./packages/lockfile/src/index.ts"],
       "@ucdjs/lockfile/test-utils": ["./packages/lockfile/test-utils/index.ts"],
-
       "@ucdjs/schemas": ["./packages/schemas/src/index.ts"],
       "@ucdjs/ucd-store": ["./packages/ucd-store/src/index.ts"],
 
       // Shared UI
-      "@ucdjs-internal/shared-ui": [
-        "./packages/shared-ui/src/index.ts"
-      ],
-      "@ucdjs-internal/shared-ui/components": [
-        "./packages/shared-ui/src/components/index.ts"
-      ],
-      "@ucdjs-internal/shared-ui/ui/*": [
-        "./packages/shared-ui/src/ui/*.tsx"
-      ],
-      "@ucdjs-internal/shared-ui/lib/*": [
-        "./packages/shared-ui/src/lib/*.ts"
-      ],
-      "@ucdjs-internal/shared-ui/hooks/*": [
-        "./packages/shared-ui/src/hooks/*.ts"
-      ],
-      "@ucdjs-internal/shared-ui/components/*": [
-        "./packages/shared-ui/src/components/*.tsx"
-      ],
-      "@ucdjs-internal/shared-ui/styles.css": [
-        "./packages/shared-ui/src/styles/globals.css"
-      ],
+      "@ucdjs-internal/shared-ui": ["./packages/shared-ui/src/index.ts"],
+      "@ucdjs-internal/shared-ui/components": ["./packages/shared-ui/src/components/index.ts"],
+      "@ucdjs-internal/shared-ui/ui/*": ["./packages/shared-ui/src/ui/*.tsx"],
+      "@ucdjs-internal/shared-ui/lib/*": ["./packages/shared-ui/src/lib/*.ts"],
+      "@ucdjs-internal/shared-ui/hooks": ["./packages/shared-ui/src/hooks/index.ts"],
+      "@ucdjs-internal/shared-ui/styles.css": ["./packages/shared-ui/src/styles/globals.css"],
 
       // utility packages
       "@ucdjs-internal/shared": ["./packages/shared/src/index.ts"],
@@ -51,12 +34,8 @@
 
       // fs bridge
       "@ucdjs/fs-bridge": ["./packages/fs-bridge/src/index.ts"],
-      "@ucdjs/fs-bridge/bridges/http": [
-        "./packages/fs-bridge/src/bridges/http.ts"
-      ],
-      "@ucdjs/fs-bridge/bridges/node": [
-        "./packages/fs-bridge/src/bridges/node.ts"
-      ],
+      "@ucdjs/fs-bridge/bridges/http": ["./packages/fs-bridge/src/bridges/http.ts"],
+      "@ucdjs/fs-bridge/bridges/node": ["./packages/fs-bridge/src/bridges/node.ts"],
 
       // pipeline packages
       "@ucdjs/pipelines-core": ["./packages/pipelines/pipeline-core/src/index.ts"],
@@ -67,29 +46,19 @@
       "@ucdjs/pipelines-executor": ["./packages/pipelines/pipeline-executor/src/index.ts"],
       "@ucdjs/pipelines-loader": ["./packages/pipelines/pipeline-loader/src/index.ts"],
       "@ucdjs/pipelines-ui": ["./packages/pipelines/pipeline-ui/src/index.ts"],
-      "@ucdjs/pipelines-ui/styles.css": [
-        "./packages/pipelines/pipeline-ui/src/styles/globals.css"
-      ],
+      "@ucdjs/pipelines-ui/styles.css": ["./packages/pipelines/pipeline-ui/src/styles/globals.css"],
       "@ucdjs/pipelines-server": ["./packages/pipelines/pipeline-server/src/server/app.ts"],
       "@ucdjs/pipelines-presets": ["./packages/pipelines/pipeline-presets/src/index.ts"],
 
       // Test utils
       "@ucdjs/test-utils": ["./packages/test-utils/src/index.ts"],
       // we use alias for test utils to avoid having to build it during development
-      "#test-utils/mock-store": [
-        "./packages/test-utils/src/mock-store/index.ts"
-      ],
+      "#test-utils/mock-store": ["./packages/test-utils/src/mock-store/index.ts"],
       "#test-utils/msw": ["./packages/test-utils/src/msw.ts"],
       "#test-utils": ["./packages/test-utils/src/index.ts"],
-      "#test-utils/fs-bridges": [
-        "./packages/test-utils/src/fs-bridges/index.ts"
-      ],
-      "#test-utils/matchers": [
-        "./packages/test-utils/src/matchers/types.d.ts"
-      ],
-      "#test-utils/pipelines": [
-        "./packages/test-utils/src/pipelines/index.ts"
-      ],
+      "#test-utils/fs-bridges": ["./packages/test-utils/src/fs-bridges/index.ts"],
+      "#test-utils/matchers": ["./packages/test-utils/src/matchers/types.d.ts"],
+      "#test-utils/pipelines": ["./packages/test-utils/src/pipelines/index.ts"],
 
       // Internal Test Utils
       "#internal/test-utils/conditions": ["./test/utils/conditions.ts"]
