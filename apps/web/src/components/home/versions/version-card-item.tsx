@@ -56,7 +56,15 @@ export function VersionCardItem({ version, isLatest }: VersionCardItemProps) {
       </div>
 
       <div className="text-sm text-muted-foreground line-clamp-2 min-h-[2.5em]">
-        INSERT DESCRIPTION HERE
+        Unicode
+        {" "}
+        {version.version}
+        {" "}
+        is a
+        {" "}
+        {version.type}
+        {" "}
+        release of the Unicode Standard.
       </div>
 
       <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
