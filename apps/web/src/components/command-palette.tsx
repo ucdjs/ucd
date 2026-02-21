@@ -9,9 +9,8 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-  CommandShortcut,
 } from "@ucdjs-internal/shared-ui/ui/command";
-import { FileCode, FolderOpen, Home, ScrollText } from "lucide-react";
+import { FileCode, FolderOpen, Home, ScrollText, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export function CommandPalette() {
@@ -52,12 +51,14 @@ export function CommandPalette() {
             <CommandItem onSelect={() => handleNavigate("/")}>
               <Home className="mr-2 h-4 w-4" />
               Homepage
-              <CommandShortcut>⌘H</CommandShortcut>
+            </CommandItem>
+            <CommandItem onSelect={() => handleNavigate("/search")}>
+              <Search className="mr-2 h-4 w-4" />
+              Search
             </CommandItem>
             <CommandItem onSelect={() => handleNavigate("/file-explorer")}>
               <FolderOpen className="mr-2 h-4 w-4" />
               File Explorer
-              <CommandShortcut>⌘F</CommandShortcut>
             </CommandItem>
           </CommandGroup>
 
