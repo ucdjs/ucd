@@ -1,4 +1,5 @@
 import type { HonoEnv } from "../../types";
+import { isValidUnicodeVersion } from "@ucdjs-internal/shared";
 import {
   badGateway,
   badRequest,
@@ -63,7 +64,7 @@ TASKS_ROUTER.post("/upload-manifest", bodyLimit({
     return badRequest(c, { message: "Missing 'version' query parameter" });
   }
 
-  if (!/^\d+\.\d+\.\d+$/.test(version)) {
+  if (!isValidUnicodeVersion(version)) {
     return badRequest(c, { message: `Invalid version format: ${version}. Expected format: X.Y.Z (e.g., 16.0.0)` });
   }
 
