@@ -3,7 +3,9 @@ import type { FileEntry } from "@ucdjs/schemas";
 import { filesQueryOptions } from "#functions/files";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate, useSearch } from "@tanstack/react-router";
+import { cn } from "@ucdjs-internal/shared-ui";
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
+import { Skeleton } from "@ucdjs-internal/shared-ui/ui/skeleton";
 import { FolderOpen } from "lucide-react";
 import { ExplorerEntry } from "./explorer-entry";
 
@@ -77,3 +79,50 @@ export function EntryList({ currentPath, viewMode }: EntryListProps) {
     </>
   );
 }
+
+EntryList.Skeleton = function EntryListSkeleton({
+  amount,
+  viewMode,
+}: {
+  amount: { total: number; files: number; directories: number };
+  viewMode: ViewMode;
+}) {
+  // Show skeletons for total count (files + directories)
+  const skeletonCount = amount.total || 5;
+
+  if (viewMode === "cards") {
+    return (
+      <>
+        {Array.from({ length: skeletonCount }, (_, i) => (
+          <div key={`skeleton-card-${i}`} className="rounded-lg border border-border p-3">
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-4 w-4 rounded" />
+                <Skeleton className="h-4 flex-1" />
+              </div>
+              <Skeleton className="h-3 w-20" />
+            </div>
+          </div>
+        ))}
+      </>
+    );
+  }
+
+  return (
+    <>
+      {Array.from({ length: skeletonCount }, (_, i) => (
+        <div
+          key={`skeleton-list-${i}`}
+          className={cn(
+            "flex items-center gap-3 px-3 py-2",
+            "border-b border-border/50 last:border-b-0",
+          )}
+        >
+          <Skeleton className="h-4 w-4 rounded shrink-0" />
+          <Skeleton className="h-4 flex-1" />
+          <Skeleton className="h-3 w-24" />
+        </div>
+      ))}
+    </>
+  );
+};
