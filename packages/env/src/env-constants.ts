@@ -8,6 +8,12 @@ const env = typeof process === "undefined" ? {} : process.env;
 export const UCDJS_API_BASE_URL = env.UCDJS_API_BASE_URL || "https://api.ucdjs.dev";
 
 /**
+ * Base URL for the UCDJS documentation
+ * @default "https://docs.ucdjs.dev"
+ */
+export const UCDJS_DOCS_URL = env.UCDJS_DOCS_URL || "https://docs.ucdjs.dev";
+
+/**
  * Base URL for the UCDJS Store API
  * @default "https://ucd-store.ucdjs.dev"
  */
