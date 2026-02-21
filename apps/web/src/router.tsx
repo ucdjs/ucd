@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createRouter } from "@tanstack/react-router";
 import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
+import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { UNICODE_STABLE_VERSION } from "@unicode-utils/core";
 import { z } from "zod";
 import { routeTree } from "./routeTree.gen";
@@ -36,8 +37,7 @@ export function getRouter() {
     context: {
       queryClient,
       latestUnicodeVersion: UNICODE_STABLE_VERSION,
-      // eslint-disable-next-line node/prefer-global/process
-      apiBaseUrl: process.env.UCDJS_API_BASE_URL || "https://api.ucdjs.dev",
+      apiBaseUrl: UCDJS_API_BASE_URL || "https://api.ucdjs.dev",
     },
     defaultPreload: "intent",
     Wrap: (props: { children: React.ReactNode }) => {
