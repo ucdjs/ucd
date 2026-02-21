@@ -3,6 +3,7 @@ import type { UnicodeFileTree } from "@ucdjs/schemas";
 import type { HonoEnv } from "../../types";
 import { createRoute } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
+import { isValidUnicodeVersion } from "@ucdjs-internal/shared";
 import { badGateway, badRequest, internalServerError, MAX_AGE_ONE_DAY_SECONDS, MAX_AGE_ONE_WEEK_SECONDS, notFound } from "@ucdjs-internal/worker-utils";
 import { UnicodeFileTreeSchema, UnicodeVersionDetailsSchema } from "@ucdjs/schemas";
 import {
@@ -170,11 +171,7 @@ export function registerGetVersionRoute(router: OpenAPIHono<HonoEnv>) {
       version = UNICODE_STABLE_VERSION;
     }
 
-    if (
-      !UNICODE_VERSION_METADATA.map((v) => v.version)
-        .includes(version as typeof UNICODE_VERSION_METADATA[number]["version"])
-        && UNICODE_DRAFT_VERSION !== version
-    ) {
+    if (!isValidUnicodeVersion(version)) {
       return badRequest(c, {
         message: "Invalid Unicode version",
       });
@@ -246,10 +243,7 @@ export function registerVersionFileTreeRoute(router: OpenAPIHono<HonoEnv>) {
 
       const mappedVersion = resolveUCDVersion(version);
 
-      if (
-        !UNICODE_VERSION_METADATA.map((v) => v.version)
-          .includes(version as typeof UNICODE_VERSION_METADATA[number]["version"])
-      ) {
+      if (!isValidUnicodeVersion(version)) {
         return badRequest(c, {
           message: "Invalid Unicode version",
         });
