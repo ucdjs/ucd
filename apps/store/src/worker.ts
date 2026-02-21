@@ -40,7 +40,7 @@ export default Sentry.withSentry((env: HonoEnv["Bindings"]) => {
   const { id: versionId } = env.CF_VERSION_METADATA;
 
   return {
-    dsn: "https://29f2e9a8606ffa38a83a3e66cb2a95de@o4510553981714432.ingest.de.sentry.io/4510553988399184",
+    dsn: env.SENTRY_DSN,
     release: versionId,
     // Adds request headers and IP for users, for more info visit:
     // https://docs.sentry.io/platforms/javascript/guides/cloudflare/configuration/options/#sendDefaultPii
