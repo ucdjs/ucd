@@ -5,6 +5,7 @@ import {
   MAX_AGE_ONE_WEEK_SECONDS,
 } from "@ucdjs-internal/worker-utils";
 import { cache } from "hono/cache";
+import { transformPathForUnicodeOrg } from "../lib/path-utils";
 
 export function registerFilesRoute(router: Hono<HonoEnv>) {
   router.get(
@@ -21,7 +22,7 @@ export function registerFilesRoute(router: Hono<HonoEnv>) {
         return c.json({ error: "Files API not available" }, 503);
       }
 
-      const { body, status, headers } = await c.env.UCDJS_API.files(`${version}/ucd/${filepath}`, {
+      const { body, status, headers } = await c.env.UCDJS_API.files(transformPathForUnicodeOrg(version, filepath), {
         query: c.req.query("query"),
         pattern: c.req.query("pattern"),
         type: c.req.query("type"),
