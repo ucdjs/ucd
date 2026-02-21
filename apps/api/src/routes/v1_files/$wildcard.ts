@@ -4,7 +4,7 @@ import type { UnicodeAssetOptions } from "../../lib/files";
 import type { HonoEnv } from "../../types";
 import { createRoute, z } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
-import { MAX_AGE_ONE_WEEK_SECONDS } from "@ucdjs-internal/worker-utils";
+import { customError, MAX_AGE_ONE_WEEK_SECONDS } from "@ucdjs-internal/worker-utils";
 import {
   UCD_STAT_CHILDREN_DIRS_HEADER,
   UCD_STAT_CHILDREN_FILES_HEADER,
@@ -289,6 +289,14 @@ export function registerWildcardRoute(router: OpenAPIHono<HonoEnv>) {
         headers,
         status,
       } = await getUnicodeAsset(path, handlerOptions);
+
+      if (status !== 200) {
+        return customError(c, {
+          status,
+          message: `Upstream responded with status ${status}`,
+          headers,
+        });
+      }
 
       return c.newResponse(body, status as StatusCode, headers);
     },

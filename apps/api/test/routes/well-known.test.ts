@@ -15,7 +15,7 @@ vi.mock("@unicode-utils/core", async (importOriginal) => {
 
   return {
     ...original,
-    getCurrentDraftVersion: vi.fn(() => original.getCurrentDraftVersion()),
+    getCurrentDraftVersion: vi.fn((...args) => original.getCurrentDraftVersion(...args)),
     resolveUCDVersion: vi.fn((version) => original.resolveUCDVersion(version)),
   };
 });
@@ -49,6 +49,9 @@ describe("well-known", () => {
         ["GET", "https://www.unicode.org/versions/enumeratedversions.html", () => {
           return HttpResponse.text(mockHtmlResponse);
         }],
+        ["GET", "https://unicode.org/Public/draft/ReadMe.txt", () => {
+          return HttpResponse.text("");
+        }],
       ]);
 
       const { response, json } = await executeRequest(
@@ -62,13 +65,13 @@ describe("well-known", () => {
 
       const data = await json();
 
-      const result = UCDWellKnownConfigSchema.safeParse(data);
-
-      if (!result.success) {
-        expect.fail("Response does not match UCDWellKnownConfigSchema");
-      }
-
-      expect(result.data.versions).toEqual(["16.0.0", "15.1.0"]);
+      expect(data).toMatchSchema({
+        success: true,
+        schema: UCDWellKnownConfigSchema,
+        data: {
+          versions: ["16.0.0", "15.1.0"],
+        },
+      });
     });
   });
 

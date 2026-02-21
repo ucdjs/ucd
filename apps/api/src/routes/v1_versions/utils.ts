@@ -91,18 +91,7 @@ export async function getAllVersionsFromList() {
         });
       },
       onNotFound(text) {
-        log.warn("Current draft version not found", { text });
-        captureUpstreamError(new Error("Current draft version not found"), {
-          component: COMPONENTS.V1_VERSIONS,
-          operation: "getCurrentDraftVersion",
-          upstreamService: "unicode.org",
-          tags: {
-            issue_type: "draft_not_found",
-          },
-          extra: {
-            response_text: text,
-          },
-        });
+        log.debug("Current draft version not found", { text });
       },
       onSuccess(version) {
         log.info("Fetched current draft version", { version });
