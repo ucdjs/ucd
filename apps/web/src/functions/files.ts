@@ -13,10 +13,10 @@ import {
 } from "@ucdjs/env";
 
 /**
- * Maximum file size to load completely (1MB)
+ * Maximum file size to load completely (512KB)
  * Files larger than this will return metadata only
  */
-const MAX_INLINE_FILE_SIZE = 1024 * 1024;
+const MAX_INLINE_FILE_SIZE = 512 * 1024;
 
 /**
  * Response type for file operations

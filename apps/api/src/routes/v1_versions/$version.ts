@@ -249,6 +249,7 @@ export function registerVersionFileTreeRoute(router: OpenAPIHono<HonoEnv>) {
       if (
         !UNICODE_VERSION_METADATA.map((v) => v.version)
           .includes(version as typeof UNICODE_VERSION_METADATA[number]["version"])
+          && UNICODE_DRAFT_VERSION !== version
       ) {
         return badRequest(c, {
           message: "Invalid Unicode version",

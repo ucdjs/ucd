@@ -32,6 +32,7 @@
     "lucide-react": "catalog:frontend",
     "react": "catalog:frontend",
     "react-dom": "catalog:frontend",
+    "shiki": "catalog:runtime",
     "zod": "catalog:runtime"
   },
   "devDependencies": {

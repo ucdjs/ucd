@@ -11,6 +11,7 @@ import {
   InputGroupAddon,
 } from "#ui/input-group";
 import { Command as CommandPrimitive } from "#vendor/cmdk";
+// import { Command as CommandPrimitive } from "@cmdi/base-ui";
 import { CheckIcon, SearchIcon } from "lucide-react";
 import * as React from "react";
 

@@ -10,6 +10,7 @@ export function createThemeScript(): string {
     var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
     var resolved = theme === "system" ? (prefersDark ? "dark" : "light") : theme;
     var root = document.documentElement;
+    var bg = resolved === "dark" ? "#111111" : "#ffffff";
     if (resolved === "dark") {
       root.classList.add("dark");
       root.style.colorScheme = "dark";
@@ -17,6 +18,7 @@ export function createThemeScript(): string {
       root.classList.remove("dark");
       root.style.colorScheme = "light";
     }
+    root.style.backgroundColor = bg;
   } catch (_) {}
 })();
   `.trim();

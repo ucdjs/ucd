@@ -1,16 +1,16 @@
 import { cn } from "@ucdjs-internal/shared-ui";
+import { StaticCodeBlock } from "@ucdjs-internal/shared-ui/components/FireAndForget";
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 import { Skeleton } from "@ucdjs-internal/shared-ui/ui/skeleton";
 import { Check, Download, ExternalLink, FileText, Link2, Loader2 } from "lucide-react";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 export interface FileViewerProps {
-  content: string;
-  contentType: string;
+  html: string;
   fileName: string;
-  /** Path to the file (used for raw link) */
-  filePath: string;
+  /** Absolute URL to the raw file */
+  fileUrl: string;
 }
 
 export interface LineSelection {
@@ -49,149 +49,92 @@ function generateLineHash(selection: LineSelection): string {
   return `#L${selection.start}-L${selection.end}`;
 }
 
-function getLanguageFromContentType(contentType: string, fileName: string): string {
-  const ext = fileName.split(".").pop()?.toLowerCase() || "";
-
-  // Check content type first
-  if (contentType.includes("json")) return "json";
-  if (contentType.includes("xml")) return "xml";
-  if (contentType.includes("html")) return "html";
-  if (contentType.includes("csv")) return "csv";
-
-  // Fall back to extension
-  switch (ext) {
-    case "txt":
-      return "plaintext";
-    case "json":
-      return "json";
-    case "xml":
-      return "xml";
-    case "html":
-    case "htm":
-      return "html";
-    case "csv":
-      return "csv";
-    case "md":
-      return "markdown";
-    default:
-      return "plaintext";
-  }
+function countLinesFromHtml(html: string) {
+  if (!html) return 0;
+  const matches = html.match(/class="line"/g);
+  return matches ? matches.length : 0;
 }
 
-// Memoized line number component
-interface LineNumberProps {
-  lineNum: number;
-  selected: boolean;
-  onClick: (lineNum: number, event: React.MouseEvent) => void;
-  onRef?: (lineNum: number, el: HTMLDivElement | null) => void;
-}
-
-function LineNumberComponent({ lineNum, selected, onClick, onRef }: LineNumberProps) {
-  const handleClick = useCallback((e: React.MouseEvent) => {
-    onClick(lineNum, e);
-  }, [lineNum, onClick]);
-
-  const handleRef = useCallback((el: HTMLDivElement | null) => {
-    onRef?.(lineNum, el);
-  }, [lineNum, onRef]);
-
-  return (
-    <div
-      ref={handleRef}
-      onClick={handleClick}
-      className={cn(
-        "px-3 py-0 leading-5 cursor-pointer hover:bg-primary/10",
-        selected && "bg-primary/20 text-primary font-medium",
-      )}
-    >
-      {lineNum}
-    </div>
-  );
-}
-
-const LineNumber = memo(LineNumberComponent);
-
-// Memoized line content component
-interface LineContentProps {
-  line: string;
-  selected: boolean;
-}
-
-function LineContentComponent({ line, selected }: LineContentProps) {
-  return (
-    <pre
-      className={cn(
-        "px-3 py-0 leading-5 whitespace-pre m-0",
-        selected && "bg-primary/10",
-      )}
-    >
-      {line || " "}
-    </pre>
-  );
-}
-
-const LineContent = memo(LineContentComponent);
-
-export function FileViewer({ content, contentType, fileName, filePath }: FileViewerProps) {
-  const language = getLanguageFromContentType(contentType, fileName);
-  const lines = useMemo(() => content.split("\n"), [content]);
-  const lineCount = lines.length;
+export function FileViewer({ html, fileName, fileUrl }: FileViewerProps) {
+  const lineCount = useMemo(() => countLinesFromHtml(html), [html]);
+  const contentRef = useRef<HTMLDivElement | null>(null);
+  const lineElementsRef = useRef<HTMLElement[]>([]);
+  const shouldAutoScrollRef = useRef(false);
 
   // Parse initial selection from URL hash (only on mount)
-  const initialSelection = useMemo((): LineSelection | null => {
-    if (typeof window === "undefined") return null;
-    const hash = window.location.hash;
-    const parsed = parseLineHash(hash);
-    if (parsed && parsed.start <= lineCount && parsed.end <= lineCount) {
-      return parsed;
-    }
-    return null;
-  }, [lineCount]);
-
-  const [selection, setSelection] = useState<LineSelection | null>(initialSelection);
+  const [selection, setSelection] = useState<LineSelection | null>(null);
   const [lastClickedLine, setLastClickedLine] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
-  const lineRefs = useRef<Map<number, HTMLDivElement>>(new Map());
 
-  // Scroll to selection when it changes
   useEffect(() => {
-    if (selection) {
-      const lineElement = lineRefs.current.get(selection.start);
-      if (lineElement) {
-        lineElement.scrollIntoView({ behavior: "smooth", block: "center" });
-      }
+    const container = contentRef.current;
+    if (!container) return;
+
+    const lines = Array.from(container.querySelectorAll<HTMLElement>(".line"));
+    lineElementsRef.current = lines;
+    lines.forEach((line, index) => {
+      line.dataset.line = String(index + 1);
+      line.classList.add("file-viewer-line");
+    });
+  }, [html]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const parsed = parseLineHash(window.location.hash);
+    if (parsed && parsed.start <= lineCount && parsed.end <= lineCount) {
+      shouldAutoScrollRef.current = true;
+      setSelection(parsed);
+      setLastClickedLine(parsed.start);
+    } else {
+      shouldAutoScrollRef.current = false;
+      setSelection(null);
+      setLastClickedLine(null);
     }
+  }, [html, lineCount]);
+
+  useEffect(() => {
+    const lines = lineElementsRef.current;
+    if (!lines.length) return;
+
+    const selectionStart = selection?.start ?? -1;
+    const selectionEnd = selection?.end ?? -1;
+
+    lines.forEach((line, index) => {
+      const lineNum = index + 1;
+      const isSelected = lineNum >= selectionStart && lineNum <= selectionEnd;
+      line.classList.toggle("is-selected", isSelected);
+    });
   }, [selection]);
 
-  // Update URL hash when selection changes
   useEffect(() => {
-    if (selection) {
-      const hash = generateLineHash(selection);
-      window.history.replaceState(null, "", hash);
+    if (!selection || !shouldAutoScrollRef.current) return;
+    const lineElement = lineElementsRef.current[selection.start - 1];
+    if (lineElement) {
+      lineElement.scrollIntoView({ behavior: "smooth", block: "center" });
     }
+    shouldAutoScrollRef.current = false;
   }, [selection]);
 
   const handleLineClick = useCallback((lineNum: number, event: React.MouseEvent) => {
+    let nextSelection: LineSelection;
     if (event.shiftKey && lastClickedLine !== null) {
       // Range selection with shift+click
-      setSelection({
+      nextSelection = {
         start: Math.min(lastClickedLine, lineNum),
         end: Math.max(lastClickedLine, lineNum),
-      });
+      };
     } else {
       // Single line selection
-      setSelection({ start: lineNum, end: lineNum });
+      nextSelection = { start: lineNum, end: lineNum };
       setLastClickedLine(lineNum);
     }
-  }, [lastClickedLine]);
-
-  const handleLineRef = useCallback((lineNum: number, el: HTMLDivElement | null) => {
-    if (el) {
-      lineRefs.current.set(lineNum, el);
-    } else {
-      lineRefs.current.delete(lineNum);
+    setSelection(nextSelection);
+    if (typeof window !== "undefined") {
+      const nextUrl = `${window.location.pathname}${window.location.search}${generateLineHash(nextSelection)}`;
+      window.history.replaceState(null, "", nextUrl);
     }
-  }, []);
+    shouldAutoScrollRef.current = false;
+  }, [lastClickedLine]);
 
   // Memoize selection bounds for O(1) check in render
   const selectionStart = selection?.start ?? -1;
@@ -206,34 +149,14 @@ export function FileViewer({ content, contentType, fileName, filePath }: FileVie
     setTimeout(() => setCopied(false), 2000);
   }, [selection]);
 
-  function handleDownload() {
-    const blob = new Blob([content], { type: contentType });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = fileName;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  }
-
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="flex items-center gap-2 text-base font-medium">
-          <FileText className="size-4" />
-          {fileName}
-        </CardTitle>
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground">
             {lineCount}
             {" "}
             {lineCount === 1 ? "line" : "lines"}
-            {" "}
-            •
-            {" "}
-            {language}
           </span>
           {selection && (
             <Button
@@ -252,7 +175,7 @@ export function FileViewer({ content, contentType, fileName, filePath }: FileVie
             nativeButton={false}
             render={(
               <a
-                href={`https://api.ucdjs.dev/api/v1/files/${filePath}`}
+                href={fileUrl}
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -261,44 +184,53 @@ export function FileViewer({ content, contentType, fileName, filePath }: FileVie
               </a>
             )}
           />
-          <Button variant="outline" size="sm" onClick={handleDownload}>
-            <Download className="size-4" />
-            Download
-          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            nativeButton={false}
+            render={(
+              <a href={fileUrl} download>
+                <Download className="size-4" />
+                Download
+              </a>
+            )}
+          />
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="relative rounded-lg border border-border bg-muted/30 overflow-hidden">
+      <CardContent className="px-0">
+        <div className="relative bg-muted/30 overflow-hidden">
           <div className="flex">
             {/* Line numbers */}
             <div className="shrink-0 select-none border-r border-border bg-muted/50 text-right text-xs text-muted-foreground font-mono">
-              {lines.map((_, idx) => {
+              {Array.from({ length: lineCount }).map((_, idx) => {
                 const lineNum = idx + 1;
                 const selected = lineNum >= selectionStart && lineNum <= selectionEnd;
                 return (
-                  <LineNumber
+                  <button
                     key={lineNum}
-                    lineNum={lineNum}
-                    selected={selected}
-                    onClick={handleLineClick}
-                    onRef={handleLineRef}
-                  />
+                    type="button"
+                    onClick={(event) => {
+                      event.preventDefault();
+                      handleLineClick(lineNum, event);
+                    }}
+                    className={cn(
+                      "block px-3 py-0 leading-5 cursor-pointer hover:bg-primary/10",
+                      selected && "bg-primary/20 text-primary font-medium",
+                    )}
+                  >
+                    {lineNum}
+                  </button>
                 );
               })}
             </div>
             {/* Content */}
-            <div className="flex-1 overflow-x-auto text-sm font-mono">
-              {lines.map((line, idx) => {
-                const lineNum = idx + 1;
-                const selected = lineNum >= selectionStart && lineNum <= selectionEnd;
-                return (
-                  <LineContent
-                    key={lineNum}
-                    line={line}
-                    selected={selected}
-                  />
-                );
-              })}
+            <div className="flex-1 overflow-x-auto text-sm font-mono px-3">
+              <StaticCodeBlock highlightedHtml={html}
+                // ref={contentRef}
+                // className="file-viewer-shiki"
+
+                // dangerouslySetInnerHTML={{ __html: html }}
+              />
             </div>
           </div>
         </div>

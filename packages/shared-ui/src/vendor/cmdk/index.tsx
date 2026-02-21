@@ -1,5 +1,6 @@
 // This is a fork of https://github.com/pacocoursey/cmdk/blob/main/cmdk/src/index.tsx
-/* eslint-disable react-hooks/exhaustive-deps, react-refresh/only-export-components */
+
+"use client";
 
 import { Dialog as BaseDialog } from "@base-ui/react";
 import { useId } from "@base-ui/utils/useId";
@@ -9,7 +10,6 @@ import { commandScore } from "./command-score";
 
 interface Children { children?: React.ReactNode }
 type DivProps = React.ComponentPropsWithoutRef<"div">;
-interface RefProp<T> { ref?: React.Ref<T> }
 
 type LoadingProps = Children
   & DivProps & {
@@ -147,7 +147,7 @@ interface Store {
   setState: <K extends keyof State>(key: K, value: State[K], opts?: any) => void;
   emit: () => void;
 }
-interface GroupData {
+interface Group {
   id: string;
   forceMount?: boolean;
 }
@@ -161,27 +161,13 @@ const SELECT_EVENT = `cmdk-item-select`;
 const VALUE_ATTR = `data-value`;
 const defaultFilter: CommandFilter = (value, search, keywords = []) => commandScore(value, search, keywords);
 
-const useLayoutEffect = typeof window === "undefined" ? React.useEffect : React.useLayoutEffect;
-
-const srOnlyStyles = {
-  position: "absolute",
-  width: "1px",
-  height: "1px",
-  padding: "0",
-  margin: "-1px",
-  overflow: "hidden",
-  clip: "rect(0, 0, 0, 0)",
-  whiteSpace: "nowrap",
-  borderWidth: "0",
-} as const;
-
 const CommandContext = React.createContext<Context>(undefined as any);
 const useCommand = () => React.use(CommandContext);
 const StoreContext = React.createContext<Store>(undefined as any);
 const useStore = () => React.use(StoreContext);
-const GroupContext = React.createContext<GroupData>(undefined as any);
+const GroupContext = React.createContext<Group>(undefined as any);
 
-function Command({ ref: forwardedRef, ...props }: CommandProps & RefProp<HTMLDivElement>) {
+function Command({ ref: forwardedRef, ...props }: CommandProps & { ref?: React.RefObject<HTMLDivElement | null> }) {
   const state = useLazyRef<State>(() => ({
     /** Value of the search query. */
     search: "",
@@ -205,13 +191,13 @@ function Command({ ref: forwardedRef, ...props }: CommandProps & RefProp<HTMLDiv
   const propsRef = useAsRef(props);
   const {
     label,
-    children: _children,
+    children,
     value,
-    onValueChange: _onValueChange,
-    filter: _filter,
-    shouldFilter: _shouldFilter,
-    loop: _loop,
-    disablePointerSelection: _disablePointerSelection = false,
+    onValueChange,
+    filter,
+    shouldFilter,
+    loop,
+    disablePointerSelection = false,
     vimBindings = true,
     ...etc
   } = props;
@@ -223,6 +209,19 @@ function Command({ ref: forwardedRef, ...props }: CommandProps & RefProp<HTMLDiv
   const listInnerRef = React.useRef<HTMLDivElement>(null);
 
   const schedule = useScheduleLayoutEffect();
+
+  /** Controlled mode `value` handling. */
+  useLayoutEffect(() => {
+    if (value !== undefined) {
+      const v = value.trim();
+      state.current.value = v;
+      store.emit();
+    }
+  }, [value]);
+
+  useLayoutEffect(() => {
+    schedule(6, scrollSelectedIntoView);
+  }, []);
 
   const store: Store = React.useMemo(() => {
     return {
@@ -364,19 +363,6 @@ function Command({ ref: forwardedRef, ...props }: CommandProps & RefProp<HTMLDiv
     }),
     [],
   );
-
-  /** Controlled mode `value` handling. */
-  useLayoutEffect(() => {
-    if (value !== undefined) {
-      const v = value.trim();
-      state.current.value = v;
-      store.emit();
-    }
-  }, [store, value]);
-
-  useLayoutEffect(() => {
-    schedule(6, scrollSelectedIntoView);
-  }, [schedule]);
 
   function score(value: string, keywords?: string[]) {
     const filter = propsRef.current?.filter ?? defaultFilter;
@@ -692,7 +678,7 @@ function Command({ ref: forwardedRef, ...props }: CommandProps & RefProp<HTMLDiv
  * Preferably pass a `value`, otherwise the value will be inferred from `children` or
  * the rendered item's `textContent`.
  */
-function Item({ ref: forwardedRef, ...props }: ItemProps & RefProp<HTMLDivElement>) {
+function Item({ ref: forwardedRef, ...props }: ItemProps & { ref?: React.RefObject<HTMLDivElement | null> }) {
   const id = useId();
   const ref = React.useRef<HTMLDivElement>(null);
   const groupContext = React.use(GroupContext);
@@ -704,7 +690,7 @@ function Item({ ref: forwardedRef, ...props }: ItemProps & RefProp<HTMLDivElemen
     if (!forceMount) {
       return context.item(id!, groupContext?.id ?? "");
     }
-  }, [context, forceMount, groupContext?.id, id]);
+  }, [forceMount]);
 
   const value = useValue(id!, ref, [props.value, props.children, ref], props.keywords);
 
@@ -720,21 +706,21 @@ function Item({ ref: forwardedRef, ...props }: ItemProps & RefProp<HTMLDivElemen
             : (state.filtered.items.get(id!) ?? 0) > 0,
   );
 
-  const select = React.useCallback(() => {
-    store.setState("value", value.current ?? "", true);
-  }, [store, value]);
-
-  const onSelect = React.useCallback(() => {
-    select();
-    propsRef.current.onSelect?.(value.current ?? "");
-  }, [propsRef, select, value]);
-
   React.useEffect(() => {
     const element = ref.current;
     if (!element || props.disabled) return;
     element.addEventListener(SELECT_EVENT, onSelect);
     return () => element.removeEventListener(SELECT_EVENT, onSelect);
-  }, [onSelect, props.disabled, render]);
+  }, [render, props.onSelect, props.disabled]);
+
+  function onSelect() {
+    select();
+    propsRef.current.onSelect?.(value.current ?? "");
+  }
+
+  function select() {
+    store.setState("value", value.current ?? "", true);
+  }
 
   if (!render) return null;
 
@@ -763,8 +749,8 @@ function Item({ ref: forwardedRef, ...props }: ItemProps & RefProp<HTMLDivElemen
  * Group command menu items together with a heading.
  * Grouped items are always shown together.
  */
-function Group({ ref: forwardedRef, ...props }: GroupProps & RefProp<HTMLDivElement>) {
-  const { heading, children: _children, forceMount, ...etc } = props;
+function Group({ ref: forwardedRef, ...props }: GroupProps & { ref?: React.RefObject<HTMLDivElement | null> }) {
+  const { heading, children, forceMount, ...etc } = props;
   const id = useId();
   const ref = React.useRef<HTMLDivElement>(null);
   const headingRef = React.useRef<HTMLDivElement>(null);
@@ -776,11 +762,11 @@ function Group({ ref: forwardedRef, ...props }: GroupProps & RefProp<HTMLDivElem
 
   useLayoutEffect(() => {
     return context.group(id!);
-  }, [context, id]);
+  }, []);
 
   useValue(id!, ref, [props.value, props.heading, headingRef]);
 
-  const contextValue = React.useMemo(() => ({ id: id!, forceMount }), [forceMount, id]);
+  const contextValue = React.useMemo(() => ({ id: id!, forceMount }), [forceMount]);
 
   return (
     <div
@@ -808,7 +794,7 @@ function Group({ ref: forwardedRef, ...props }: GroupProps & RefProp<HTMLDivElem
  * A visual and semantic separator between items or groups.
  * Visible when the search query is empty or `alwaysRender` is true, hidden otherwise.
  */
-function Separator({ ref: forwardedRef, ...props }: SeparatorProps & RefProp<HTMLDivElement>) {
+function Separator({ ref: forwardedRef, ...props }: SeparatorProps & { ref?: React.RefObject<HTMLDivElement | null> }) {
   const { alwaysRender, ...etc } = props;
   const ref = React.useRef<HTMLDivElement>(null);
   const render = useCmdk((state) => !state.search);
@@ -821,7 +807,7 @@ function Separator({ ref: forwardedRef, ...props }: SeparatorProps & RefProp<HTM
  * Command menu input.
  * All props are forwarded to the underyling `input` element.
  */
-function Input({ ref: forwardedRef, ...props }: InputProps & RefProp<HTMLInputElement>) {
+function Input({ ref: forwardedRef, ...props }: InputProps & { ref?: React.RefObject<HTMLInputElement | null> }) {
   const { onValueChange, ...etc } = props;
   const isControlled = props.value != null;
   const store = useStore();
@@ -833,7 +819,7 @@ function Input({ ref: forwardedRef, ...props }: InputProps & RefProp<HTMLInputEl
     if (props.value != null) {
       store.setState("search", props.value);
     }
-  }, [props.value, store]);
+  }, [props.value]);
 
   return (
     <input
@@ -867,16 +853,16 @@ function Input({ ref: forwardedRef, ...props }: InputProps & RefProp<HTMLInputEl
  * Contains `Item`, `Group`, and `Separator`.
  * Use the `--cmdk-list-height` CSS variable to animate height based on the number of results.
  */
-function List({ ref: forwardedRef, ...props }: ListProps & RefProp<HTMLDivElement>) {
-  const { children: _children, label = "Suggestions", ...etc } = props;
+function List({ ref: forwardedRef, ...props }: ListProps & { ref?: React.RefObject<HTMLDivElement | null> }) {
+  const { children, label = "Suggestions", ...etc } = props;
   const ref = React.useRef<HTMLDivElement>(null);
-  const heightRef = React.useRef<HTMLDivElement>(null);
+  const height = React.useRef<HTMLDivElement>(null);
   const selectedItemId = useCmdk((state) => state.selectedItemId);
   const context = useCommand();
 
   React.useEffect(() => {
-    if (heightRef.current && ref.current) {
-      const el = heightRef.current;
+    if (height.current && ref.current) {
+      const el = height.current;
       const wrapper = ref.current;
       let animationFrame: number | undefined;
       const observer = new ResizeObserver(() => {
@@ -890,7 +876,7 @@ function List({ ref: forwardedRef, ...props }: ListProps & RefProp<HTMLDivElemen
         if (animationFrame !== undefined) {
           cancelAnimationFrame(animationFrame);
         }
-        observer.disconnect();
+        observer.unobserve(el);
       };
     }
   }, []);
@@ -907,7 +893,7 @@ function List({ ref: forwardedRef, ...props }: ListProps & RefProp<HTMLDivElemen
       id={context.listId}
     >
       {SlottableWithNestedChildren(props, (child) => (
-        <div ref={mergeRefs([heightRef, context.listInnerRef])} cmdk-list-sizer="">
+        <div ref={mergeRefs([height, context.listInnerRef])} cmdk-list-sizer="">
           {child}
         </div>
       ))}
@@ -918,7 +904,7 @@ function List({ ref: forwardedRef, ...props }: ListProps & RefProp<HTMLDivElemen
 /**
  * Renders the command menu in a Base UI Dialog.
  */
-function Dialog({ ref: forwardedRef, ...props }: DialogProps & RefProp<HTMLDivElement>) {
+function Dialog({ ref: forwardedRef, ...props }: DialogProps & { ref?: React.RefObject<HTMLDivElement | null> }) {
   const { open, onOpenChange, overlayClassName, contentClassName, container, ...etc } = props;
   return (
     <BaseDialog.Root open={open} onOpenChange={onOpenChange}>
@@ -935,7 +921,7 @@ function Dialog({ ref: forwardedRef, ...props }: DialogProps & RefProp<HTMLDivEl
 /**
  * Automatically renders when there are no results for the search query.
  */
-function Empty({ ref: forwardedRef, ...props }: EmptyProps & RefProp<HTMLDivElement>) {
+function Empty({ ref: forwardedRef, ...props }: EmptyProps & { ref?: React.RefObject<HTMLDivElement | null> }) {
   const render = useCmdk((state) => state.filtered.count === 0);
 
   if (!render) return null;
@@ -945,8 +931,8 @@ function Empty({ ref: forwardedRef, ...props }: EmptyProps & RefProp<HTMLDivElem
 /**
  * You should conditionally render this with `progress` while loading asynchronous items.
  */
-function Loading({ ref: forwardedRef, ...props }: LoadingProps & RefProp<HTMLDivElement>) {
-  const { progress, children: _children, label = "Loading...", ...etc } = props;
+function Loading({ ref: forwardedRef, ...props }: LoadingProps & { ref?: React.RefObject<HTMLDivElement | null> }) {
+  const { progress, children, label = "Loading...", ...etc } = props;
 
   return (
     <div
@@ -976,6 +962,20 @@ const pkg = Object.assign(Command, {
   Empty,
   Loading,
 });
+
+export { useCmdk as useCommandState };
+export { pkg as Command };
+export { defaultFilter };
+
+export { Command as CommandRoot };
+export { List as CommandList };
+export { Item as CommandItem };
+export { Input as CommandInput };
+export { Group as CommandGroup };
+export { Separator as CommandSeparator };
+export { Dialog as CommandDialog };
+export { Empty as CommandEmpty };
+export { Loading as CommandLoading };
 
 /**
  *
@@ -1013,8 +1013,10 @@ function useAsRef<T>(data: T) {
   return ref;
 }
 
+const useLayoutEffect = typeof window === "undefined" ? React.useEffect : React.useLayoutEffect;
+
 function useLazyRef<T>(fn: () => T) {
-  const ref = React.useRef<T | undefined>(undefined);
+  const ref = React.useRef<T>();
 
   if (ref.current === undefined) {
     ref.current = fn();
@@ -1032,11 +1034,11 @@ function useCmdk<T = any>(selector: (state: State) => T): T {
 
 function useValue(
   id: string,
-  ref: React.RefObject<HTMLElement | null>,
-  deps: (string | React.ReactNode | React.RefObject<HTMLElement | null>)[],
+  ref: React.RefObject<HTMLElement>,
+  deps: (string | React.ReactNode | React.RefObject<HTMLElement>)[],
   aliases: string[] = [],
 ) {
-  const valueRef = React.useRef<string | undefined>(undefined);
+  const valueRef = React.useRef<string>();
   const context = useCommand();
 
   useLayoutEffect(() => {
@@ -1069,17 +1071,17 @@ function useValue(
 
 /** Imperatively run a function on the next layout effect cycle. */
 function useScheduleLayoutEffect() {
-  const [state, setState] = React.useState<object | null>(null);
-  const fnsRef = useLazyRef(() => new Map<string | number, () => void>());
+  const [s, ss] = React.useState<object>();
+  const fns = useLazyRef(() => new Map<string | number, () => void>());
 
   useLayoutEffect(() => {
-    fnsRef.current.forEach((f) => f());
-    fnsRef.current.clear();
-  }, [fnsRef, state]);
+    fns.current.forEach((f) => f());
+    fns.current = new Map();
+  }, [s]);
 
   return (id: string | number, cb: () => void) => {
-    fnsRef.current.set(id, cb);
-    setState({});
+    fns.current.set(id, cb);
+    ss({});
   };
 }
 
@@ -1095,21 +1097,10 @@ function renderChildren(children: React.ReactElement) {
 
 function SlottableWithNestedChildren(
   { asChild, children }: { asChild?: boolean; children?: React.ReactNode },
-  render: (child: React.ReactNode) => React.ReactElement,
+  render: (child: React.ReactNode) => JSX.Element,
 ) {
   if (asChild && React.isValidElement(children)) {
-    const child = children as React.ReactElement<{ children?: React.ReactNode }>;
-    const renderedChild = renderChildren(child);
-
-    if (!React.isValidElement(renderedChild)) {
-      return render(child.props.children);
-    }
-
-    return React.createElement(
-      renderedChild.type,
-      { ...(renderedChild.props as Record<string, unknown>), ref: (child as any).ref },
-      render(child.props.children),
-    );
+    return React.cloneElement(renderChildren(children), { ref: (children as any).ref }, render(children.props.children));
   }
   return render(children);
 }
@@ -1117,7 +1108,7 @@ function SlottableWithNestedChildren(
 // ESM is still a nightmare with Next.js so I'm just gonna copy the package code in
 // https://github.com/gregberge/react-merge-refs
 // Copyright (c) 2020 Greg Bergé
-function mergeRefs<T = any>(refs: Array<React.Ref<T> | undefined>): React.RefCallback<T> {
+function mergeRefs<T = any>(refs: Array<React.MutableRefObject<T> | React.LegacyRef<T>>): React.RefCallback<T> {
   return (value) => {
     refs.forEach((ref) => {
       if (typeof ref === "function") {
@@ -1129,16 +1120,14 @@ function mergeRefs<T = any>(refs: Array<React.Ref<T> | undefined>): React.RefCal
   };
 }
 
-export { useCmdk as useCommandState };
-export { pkg as Command };
-export { defaultFilter };
-
-export { Command as CommandRoot };
-export { List as CommandList };
-export { Item as CommandItem };
-export { Input as CommandInput };
-export { Group as CommandGroup };
-export { Separator as CommandSeparator };
-export { Dialog as CommandDialog };
-export { Empty as CommandEmpty };
-export { Loading as CommandLoading };
+const srOnlyStyles = {
+  position: "absolute",
+  width: "1px",
+  height: "1px",
+  padding: "0",
+  margin: "-1px",
+  overflow: "hidden",
+  clip: "rect(0, 0, 0, 0)",
+  whiteSpace: "nowrap",
+  borderWidth: "0",
+} as const;

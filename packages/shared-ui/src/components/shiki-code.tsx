@@ -2,6 +2,7 @@ import type { BundledLanguage, DecorationItem, ShikiTransformer } from "shiki";
 import { use, useMemo } from "react";
 import { createJavaScriptRegexEngine } from "shiki";
 import { createCssVariablesTheme, createHighlighterCore } from "shiki/core";
+import ucdTmLanguage from "../../../../vscode/syntaxes/ucd.tmLanguage.json";
 
 export interface ShikiCodeProps {
   /**
@@ -13,7 +14,7 @@ export interface ShikiCodeProps {
    * The language to use for syntax highlighting
    * @default "typescript"
    */
-  language?: BundledLanguage;
+  language?: BundledLanguage | "ucd";
 
   /**
    * Additional CSS class names
@@ -47,6 +48,7 @@ const highlighterPromise = createHighlighterCore({
     import("shiki/langs/javascript.mjs"),
     import("shiki/langs/typescript.mjs"),
     import("shiki/langs/json.mjs"),
+    ucdTmLanguage,
   ],
   engine: createJavaScriptRegexEngine(),
 });

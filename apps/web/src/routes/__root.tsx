@@ -1,5 +1,4 @@
 import type { QueryClient } from "@tanstack/react-query";
-import { AppSidebar } from "#components/layout/sidebar/app-sidebar";
 import { AppNotFound } from "#components/not-found";
 import { versionsQueryOptions } from "#functions/versions";
 import { TanStackDevtools } from "@tanstack/react-devtools";
@@ -7,11 +6,19 @@ import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import {
   createRootRouteWithContext,
   HeadContent,
+  ScriptOnce,
   Scripts,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
-import { SidebarInset, SidebarProvider } from "@ucdjs-internal/shared-ui/ui/sidebar";
+import { createThemeScript } from "@ucdjs-internal/shared-ui";
+import { lazy, Suspense } from "react";
 import GLOBAL_CSS_URL from "../globals.css?url";
+
+const CommandPalette = lazy(() =>
+  import("../components/command-palette").then((mod) => ({
+    default: mod.CommandPalette,
+  })),
+);
 
 export interface AppRouterContext {
   queryClient: QueryClient;
@@ -74,17 +81,13 @@ export const Route = createRootRouteWithContext<AppRouterContext>()({
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
+        <ScriptOnce children={createThemeScript()} />
       </head>
       <body>
-        <SidebarProvider>
-          <AppSidebar />
-          <SidebarInset>
-            {children}
-          </SidebarInset>
-        </SidebarProvider>
+        {children}
         <TanStackDevtools
           config={{
             position: "bottom-right",
@@ -101,6 +104,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           ]}
         />
         <Scripts />
+        <Suspense fallback={null}>
+          <CommandPalette />
+        </Suspense>
       </body>
     </html>
   );

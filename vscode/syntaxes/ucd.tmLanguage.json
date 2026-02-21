@@ -1,6 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
-  "name": "Unicode Character Database",
+  "name": "ucd",
+  "displayName": "Unicode Character Database",
   "scopeName": "source.ucd",
   "patterns": [
     { "include": "#comment" },
