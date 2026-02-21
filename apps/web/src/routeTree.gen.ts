@@ -12,9 +12,11 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as CodepointInspectorRouteImport } from './routes/codepoint-inspector'
 import { Route as FileExplorerRouteRouteImport } from './routes/file-explorer/route'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as homeRouteRouteImport } from './routes/(home)/route'
 import { Route as VIndexRouteImport } from './routes/v/index'
+import { Route as homeIndexRouteImport } from './routes/(home)/index'
 import { Route as FileExplorerSplatRouteImport } from './routes/file-explorer/$'
+import { Route as homeVersionsRouteImport } from './routes/(home)/versions'
 import { Route as VVersionRouteRouteImport } from './routes/v/$version/route'
 import { Route as VVersionIndexRouteImport } from './routes/v/$version/index'
 import { Route as VVersionNormalizationPreviewRouteImport } from './routes/v/$version/normalization-preview'
@@ -41,9 +43,8 @@ const FileExplorerRouteRoute = FileExplorerRouteRouteImport.update({
   path: '/file-explorer',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+const homeRouteRoute = homeRouteRouteImport.update({
+  id: '/(home)',
   getParentRoute: () => rootRouteImport,
 } as any)
 const VIndexRoute = VIndexRouteImport.update({
@@ -51,11 +52,23 @@ const VIndexRoute = VIndexRouteImport.update({
   path: '/v/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const homeIndexRoute = homeIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => homeRouteRoute,
+} as any)
 const FileExplorerSplatRoute = FileExplorerSplatRouteImport.update({
   id: '/$',
   path: '/$',
   getParentRoute: () => FileExplorerRouteRoute,
 } as any)
+const homeVersionsRoute = homeVersionsRouteImport
+  .update({
+    id: '/versions',
+    path: '/versions',
+    getParentRoute: () => homeRouteRoute,
+  } as any)
+  .lazy(() => import('./routes/(home)/versions.lazy').then((d) => d.Route))
 const VVersionRouteRoute = VVersionRouteRouteImport.update({
   id: '/v/$version',
   path: '/v/$version',
@@ -110,12 +123,13 @@ const VVersionBlocksIdRoute = VVersionBlocksIdRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
   '/file-explorer': typeof FileExplorerRouteRouteWithChildren
   '/codepoint-inspector': typeof CodepointInspectorRoute
   '/search': typeof SearchRoute
   '/v/$version': typeof VVersionRouteRouteWithChildren
+  '/versions': typeof homeVersionsRoute
   '/file-explorer/$': typeof FileExplorerSplatRoute
+  '/': typeof homeIndexRoute
   '/v/': typeof VIndexRoute
   '/file-explorer/v/$': typeof FileExplorerVSplatRoute
   '/v/$version/bidi-linebreak': typeof VVersionBidiLinebreakRoute
@@ -128,11 +142,12 @@ export interface FileRoutesByFullPath {
   '/v/$version/blocks/': typeof VVersionBlocksIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
   '/file-explorer': typeof FileExplorerRouteRouteWithChildren
   '/codepoint-inspector': typeof CodepointInspectorRoute
   '/search': typeof SearchRoute
+  '/versions': typeof homeVersionsRoute
   '/file-explorer/$': typeof FileExplorerSplatRoute
+  '/': typeof homeIndexRoute
   '/v': typeof VIndexRoute
   '/file-explorer/v/$': typeof FileExplorerVSplatRoute
   '/v/$version/bidi-linebreak': typeof VVersionBidiLinebreakRoute
@@ -146,12 +161,14 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
+  '/(home)': typeof homeRouteRouteWithChildren
   '/file-explorer': typeof FileExplorerRouteRouteWithChildren
   '/codepoint-inspector': typeof CodepointInspectorRoute
   '/search': typeof SearchRoute
   '/v/$version': typeof VVersionRouteRouteWithChildren
+  '/(home)/versions': typeof homeVersionsRoute
   '/file-explorer/$': typeof FileExplorerSplatRoute
+  '/(home)/': typeof homeIndexRoute
   '/v/': typeof VIndexRoute
   '/file-explorer/v/$': typeof FileExplorerVSplatRoute
   '/v/$version/bidi-linebreak': typeof VVersionBidiLinebreakRoute
@@ -166,12 +183,13 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/'
     | '/file-explorer'
     | '/codepoint-inspector'
     | '/search'
     | '/v/$version'
+    | '/versions'
     | '/file-explorer/$'
+    | '/'
     | '/v/'
     | '/file-explorer/v/$'
     | '/v/$version/bidi-linebreak'
@@ -184,11 +202,12 @@ export interface FileRouteTypes {
     | '/v/$version/blocks/'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
     | '/file-explorer'
     | '/codepoint-inspector'
     | '/search'
+    | '/versions'
     | '/file-explorer/$'
+    | '/'
     | '/v'
     | '/file-explorer/v/$'
     | '/v/$version/bidi-linebreak'
@@ -201,12 +220,14 @@ export interface FileRouteTypes {
     | '/v/$version/blocks'
   id:
     | '__root__'
-    | '/'
+    | '/(home)'
     | '/file-explorer'
     | '/codepoint-inspector'
     | '/search'
     | '/v/$version'
+    | '/(home)/versions'
     | '/file-explorer/$'
+    | '/(home)/'
     | '/v/'
     | '/file-explorer/v/$'
     | '/v/$version/bidi-linebreak'
@@ -220,7 +241,7 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  homeRouteRoute: typeof homeRouteRouteWithChildren
   FileExplorerRouteRoute: typeof FileExplorerRouteRouteWithChildren
   CodepointInspectorRoute: typeof CodepointInspectorRoute
   SearchRoute: typeof SearchRoute
@@ -251,11 +272,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FileExplorerRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+    '/(home)': {
+      id: '/(home)'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof homeRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/v/': {
@@ -265,12 +286,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/(home)/': {
+      id: '/(home)/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof homeIndexRouteImport
+      parentRoute: typeof homeRouteRoute
+    }
     '/file-explorer/$': {
       id: '/file-explorer/$'
       path: '/$'
       fullPath: '/file-explorer/$'
       preLoaderRoute: typeof FileExplorerSplatRouteImport
       parentRoute: typeof FileExplorerRouteRoute
+    }
+    '/(home)/versions': {
+      id: '/(home)/versions'
+      path: '/versions'
+      fullPath: '/versions'
+      preLoaderRoute: typeof homeVersionsRouteImport
+      parentRoute: typeof homeRouteRoute
     }
     '/v/$version': {
       id: '/v/$version'
@@ -345,6 +380,20 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface homeRouteRouteChildren {
+  homeVersionsRoute: typeof homeVersionsRoute
+  homeIndexRoute: typeof homeIndexRoute
+}
+
+const homeRouteRouteChildren: homeRouteRouteChildren = {
+  homeVersionsRoute: homeVersionsRoute,
+  homeIndexRoute: homeIndexRoute,
+}
+
+const homeRouteRouteWithChildren = homeRouteRoute._addFileChildren(
+  homeRouteRouteChildren,
+)
+
 interface FileExplorerRouteRouteChildren {
   FileExplorerSplatRoute: typeof FileExplorerSplatRoute
   FileExplorerVSplatRoute: typeof FileExplorerVSplatRoute
@@ -385,7 +434,7 @@ const VVersionRouteRouteWithChildren = VVersionRouteRoute._addFileChildren(
 )
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  homeRouteRoute: homeRouteRouteWithChildren,
   FileExplorerRouteRoute: FileExplorerRouteRouteWithChildren,
   CodepointInspectorRoute: CodepointInspectorRoute,
   SearchRoute: SearchRoute,
