@@ -3,6 +3,10 @@
   "type": "module",
   "private": true,
   "packageManager": "pnpm@10.30.1",
+  "imports": {
+    "#lib/*": "./src/lib/*.ts",
+    "#types": "./src/types.ts"
+  },
   "scripts": {
     "dev:setup": "pnpm ucdjs-scripts setup-dev",
     "dev": "wrangler dev --port 8787 --inspector-port 9229",
