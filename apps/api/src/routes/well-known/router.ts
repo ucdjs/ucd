@@ -1,4 +1,4 @@
-import type { HonoEnv } from "../../types";
+import type { HonoEnv } from "#types";
 import { OpenAPIHono } from "@hono/zod-openapi";
 import { WELL_KNOWN_ROUTER_BASE_PATH } from "../../constants";
 import { registerUcdConfigRoute } from "./ucd-config.json";

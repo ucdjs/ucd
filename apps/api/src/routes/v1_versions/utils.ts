@@ -1,13 +1,13 @@
+import type { HonoEnv } from "#types";
 import type { UnicodeVersion } from "@ucdjs/schemas";
-import type { HonoEnv } from "../../types";
+import { getRawUnicodeAsset } from "#lib/files";
+import { createLogger } from "#lib/logger";
+import { captureParseError, captureUpstreamError, COMPONENTS } from "#lib/sentry";
 import { wrapTry } from "@ucdjs-internal/shared";
 import {
   getCurrentDraftVersion,
   resolveUCDVersion,
 } from "@unicode-utils/core";
-import { getRawUnicodeAsset } from "../../lib/files";
-import { createLogger } from "../../lib/logger";
-import { captureParseError, captureUpstreamError, COMPONENTS } from "../../lib/sentry";
 
 const log = createLogger("ucd:api:v1_versions:utils");
 
@@ -71,10 +71,8 @@ export async function getAllVersionsFromList() {
       throw error;
     }
 
-    const text: string = await getDraftVersionText();
-
     const draft = await getCurrentDraftVersion({
-      text,
+      text: await getDraftVersionText(),
       onError(error) {
         log.error("Error fetching current draft version", { error });
         let tmpError: Error;

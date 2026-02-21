@@ -1,4 +1,5 @@
 import type { UnicodeVersion } from "@ucdjs/schemas";
+import { getRawUnicodeAsset } from "#lib/files";
 import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { getCurrentDraftVersion, resolveUCDVersion } from "@unicode-utils/core";
 import { env } from "cloudflare:workers";
@@ -16,10 +17,14 @@ vi.mock("@unicode-utils/core", async (importOriginal) => {
 
   return {
     ...original,
-    getCurrentDraftVersion: vi.fn(() => original.getCurrentDraftVersion()),
+    getCurrentDraftVersion: vi.fn((...args) => original.getCurrentDraftVersion(...args)),
     resolveUCDVersion: vi.fn((version) => original.resolveUCDVersion(version)),
   };
 });
+
+vi.mock("#lib/files", () => ({
+  getRawUnicodeAsset: vi.fn((path) => getRawUnicodeAsset(path)),
+}));
 
 beforeEach(() => {
   vi.resetAllMocks();
@@ -52,6 +57,14 @@ describe("v1_versions", () => {
     it("should return unicode versions with proper structure", async () => {
       vi.mocked(getCurrentDraftVersion).mockResolvedValue(null);
       vi.mocked(resolveUCDVersion).mockImplementation((version) => version);
+      vi.mocked(getRawUnicodeAsset).mockResolvedValue({
+        ok: true,
+        status: 200,
+        response: new Response("Mock draft ReadMe content"),
+        url: "https://unicode.org/Public/draft/ReadMe.txt?F=2",
+        normalizedPath: "draft/ReadMe.txt",
+        extension: "txt",
+      });
 
       mockFetch([
         ["GET", "https://www.unicode.org/versions/enumeratedversions.html", () => {
@@ -85,6 +98,14 @@ describe("v1_versions", () => {
     it("should handle draft versions correctly", async () => {
       vi.mocked(getCurrentDraftVersion).mockResolvedValue("17.0.0");
       vi.mocked(resolveUCDVersion).mockImplementation((version) => version);
+      vi.mocked(getRawUnicodeAsset).mockResolvedValue({
+        ok: true,
+        status: 200,
+        response: new Response("Mock draft ReadMe content"),
+        url: "https://unicode.org/Public/draft/ReadMe.txt?F=2",
+        normalizedPath: "draft/ReadMe.txt",
+        extension: "txt",
+      });
 
       mockFetch([
         ["GET", "https://www.unicode.org/versions/enumeratedversions.html", () => {
@@ -116,6 +137,14 @@ describe("v1_versions", () => {
         if (version === "15.1.0") return "15.1.0";
         if (version === "15.0.0") return "15.0.0-Update1"; // Different mapping
         return version;
+      });
+      vi.mocked(getRawUnicodeAsset).mockResolvedValue({
+        ok: true,
+        status: 200,
+        response: new Response("Mock draft ReadMe content"),
+        url: "https://unicode.org/Public/draft/ReadMe.txt?F=2",
+        normalizedPath: "draft/ReadMe.txt",
+        extension: "txt",
       });
 
       mockFetch([
@@ -215,6 +244,14 @@ describe("v1_versions", () => {
     it("should handle getCurrentDraftVersion throwing error", async () => {
       vi.mocked(getCurrentDraftVersion).mockRejectedValue(new Error("Draft version fetch failed"));
       vi.mocked(resolveUCDVersion).mockImplementation((version) => version);
+      vi.mocked(getRawUnicodeAsset).mockResolvedValue({
+        ok: true,
+        status: 200,
+        response: new Response("Mock draft ReadMe content"),
+        url: "https://unicode.org/Public/draft/ReadMe.txt?F=2",
+        normalizedPath: "draft/ReadMe.txt",
+        extension: "txt",
+      });
 
       mockFetch([
         ["GET", "https://www.unicode.org/versions/enumeratedversions.html", () => {
@@ -237,6 +274,14 @@ describe("v1_versions", () => {
     it("should set proper cache headers", async () => {
       vi.mocked(getCurrentDraftVersion).mockResolvedValue(null);
       vi.mocked(resolveUCDVersion).mockImplementation((version) => version);
+      vi.mocked(getRawUnicodeAsset).mockResolvedValue({
+        ok: true,
+        status: 200,
+        response: new Response("Mock draft ReadMe content"),
+        url: "https://unicode.org/Public/draft/ReadMe.txt?F=2",
+        normalizedPath: "draft/ReadMe.txt",
+        extension: "txt",
+      });
 
       mockFetch([
         ["GET", "https://www.unicode.org/versions/enumeratedversions.html", () => {
@@ -256,6 +301,14 @@ describe("v1_versions", () => {
     it("should sort versions correctly (newest first)", async () => {
       vi.mocked(getCurrentDraftVersion).mockResolvedValue(null);
       vi.mocked(resolveUCDVersion).mockImplementation((version) => version);
+      vi.mocked(getRawUnicodeAsset).mockResolvedValue({
+        ok: true,
+        status: 200,
+        response: new Response("Mock draft ReadMe content"),
+        url: "https://unicode.org/Public/draft/ReadMe.txt?F=2",
+        normalizedPath: "draft/ReadMe.txt",
+        extension: "txt",
+      });
 
       mockFetch([
         ["GET", "https://www.unicode.org/versions/enumeratedversions.html", () => {
@@ -279,6 +332,14 @@ describe("v1_versions", () => {
     it("should handle versions with mixed year formats", async () => {
       vi.mocked(getCurrentDraftVersion).mockResolvedValue(null);
       vi.mocked(resolveUCDVersion).mockImplementation((version) => version);
+      vi.mocked(getRawUnicodeAsset).mockResolvedValue({
+        ok: true,
+        status: 200,
+        response: new Response("Mock draft ReadMe content"),
+        url: "https://unicode.org/Public/draft/ReadMe.txt?F=2",
+        normalizedPath: "draft/ReadMe.txt",
+        extension: "txt",
+      });
 
       mockFetch([
         ["GET", "https://www.unicode.org/versions/enumeratedversions.html", () => {

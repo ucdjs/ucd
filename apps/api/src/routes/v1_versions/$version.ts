@@ -1,6 +1,9 @@
+import type { HonoEnv } from "#types";
 import type { OpenAPIHono } from "@hono/zod-openapi";
 import type { UnicodeFileTree } from "@ucdjs/schemas";
-import type { HonoEnv } from "../../types";
+import { createLogger } from "#lib/logger";
+import { captureUpstreamError, COMPONENTS } from "#lib/sentry";
+import { VERSION_ROUTE_PARAM } from "#lib/shared-parameters";
 import { createRoute } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
 import { isValidUnicodeVersion } from "@ucdjs-internal/shared";
@@ -9,15 +12,10 @@ import { UnicodeFileTreeSchema, UnicodeVersionDetailsSchema } from "@ucdjs/schem
 import {
   hasUCDFolderPath,
   resolveUCDVersion,
-  UNICODE_DRAFT_VERSION,
   UNICODE_STABLE_VERSION,
-  UNICODE_VERSION_METADATA,
 } from "@unicode-utils/core";
 import { traverse } from "apache-autoindex-parse/traverse";
 import { cache } from "hono/cache";
-import { createLogger } from "../../lib/logger";
-import { captureUpstreamError, COMPONENTS } from "../../lib/sentry";
-import { VERSION_ROUTE_PARAM } from "../../lib/shared-parameters";
 import { generateReferences, OPENAPI_TAGS } from "../../openapi";
 import { calculateStatistics, getVersionFromList } from "./utils";
 
