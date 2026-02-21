@@ -4,7 +4,7 @@ import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 import { Input } from "@ucdjs-internal/shared-ui/ui/input";
 
-export const Route = createFileRoute("/search")({
+export const Route = createFileRoute("/(app)/search")({
   component: GlobalSearchPage,
 });
 

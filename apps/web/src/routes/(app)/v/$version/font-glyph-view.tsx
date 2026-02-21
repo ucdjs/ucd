@@ -3,31 +3,31 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 
-export const Route = createFileRoute("/v/$version/grapheme-visualizer")({
-  component: GraphemeVisualizerVersion,
+export const Route = createFileRoute("/(app)/v/$version/font-glyph-view")({
+  component: FontGlyphViewVersion,
 });
 
-function GraphemeVisualizerVersion() {
+function FontGlyphViewVersion() {
   const params = Route.useParams();
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-4">
-      <VersionHeader version={params.version} title="Grapheme & ZWJ Visualizer" />
+      <VersionHeader version={params.version} title="Font & Glyph View" />
 
       <Card>
         <CardHeader>
           <CardTitle>
-            Grapheme & ZWJ Visualizer —
+            Font & Glyph View —
             {" "}
             {params.version}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground mb-4">
-            Break text into grapheme clusters for Unicode
+            Inspect how code points and sequences map to fonts, glyph metrics, and renderings for Unicode
             {" "}
             {params.version}
-            , show component parts of ZWJ sequences (emoji parts, modifiers) and describe cluster boundaries.
+            . Useful for diagnosing rendering mismatches.
           </p>
           <Button nativeButton={false} render={<Link to="/v/$version" params={{ version: params.version }}>Back to version</Link>} />
         </CardContent>
