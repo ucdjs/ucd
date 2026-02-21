@@ -27,8 +27,7 @@
   },
   "exports": {
     ".": "./dist/index.mjs",
-    "./components/shiki-code": "./dist/components/shiki-code.mjs",
-    "./components/theme-toggle": "./dist/components/theme-toggle.mjs",
+    "./components": "./dist/components/index.mjs",
     "./hooks": "./dist/hooks/index.mjs",
     "./lib/theme-script": "./dist/lib/theme-script.mjs",
     "./lib/utils": "./dist/lib/utils.mjs",

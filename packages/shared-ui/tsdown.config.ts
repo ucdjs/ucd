@@ -6,8 +6,8 @@ export default createTsdownConfig({
     "./src/index.ts",
     "./src/lib/*.ts",
     "./src/hooks/index.ts",
+    "./src/components/index.ts",
     "./src/ui/*.tsx",
-    "./src/components/*.tsx",
   ],
   exports: {
     customExports(exports) {
