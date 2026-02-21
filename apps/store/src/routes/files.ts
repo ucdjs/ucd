@@ -21,7 +21,7 @@ export function registerFilesRoute(router: Hono<HonoEnv>) {
         return c.json({ error: "Files API not available" }, 503);
       }
 
-      const result = await c.env.UCDJS_API.files(`${version}/ucd/${filepath}`, {
+      const { body, status, headers } = await c.env.UCDJS_API.files(`${version}/ucd/${filepath}`, {
         query: c.req.query("query"),
         pattern: c.req.query("pattern"),
         type: c.req.query("type"),
@@ -31,7 +31,7 @@ export function registerFilesRoute(router: Hono<HonoEnv>) {
         stripUCDPrefix: true,
       });
 
-      return c.newResponse(result.body, result.status as StatusCode, result.headers);
+      return c.newResponse(body, status as StatusCode, headers);
     },
   );
 }
