@@ -2,8 +2,8 @@ import { VersionCardItem } from "#components/home/versions/version-card-item";
 import { UcdLogo } from "#components/ucd-logo";
 import { versionDetailsQueryOptions, versionsQueryOptions } from "#functions/versions";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute, Link, useLoaderData } from "@tanstack/react-router";
-import { ThemeToggle } from "@ucdjs-internal/shared-ui/components/theme-toggle";
+import { ClientOnly, createFileRoute, Link, useLoaderData } from "@tanstack/react-router";
+import { ThemeToggle, ThemeToggleFallback } from "@ucdjs-internal/shared-ui/components/theme-toggle";
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import { Card, CardContent } from "@ucdjs-internal/shared-ui/ui/card";
 import {
@@ -63,7 +63,9 @@ function HomePage() {
       </div>
       <div className="relative mx-auto flex min-h-svh w-full max-w-5xl flex-col gap-16 px-6 py-16">
         <div className="flex items-center justify-end">
-          <ThemeToggle />
+          <ClientOnly fallback={<ThemeToggleFallback />}>
+            <ThemeToggle />
+          </ClientOnly>
         </div>
         <section className="flex flex-col items-center gap-8 text-center">
           <div className="flex items-center gap-4">
