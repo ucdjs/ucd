@@ -18,7 +18,7 @@ export function ThemeToggle() {
     <DropdownMenu>
       <DropdownMenuTrigger render={(props) => (
         <Button variant="ghost" size="icon" className="h-7 w-7" {...props}>
-          <Icon className="h-4 w-4" />
+          <Icon className="h-4 w-4" suppressHydrationWarning />
           <span className="sr-only">Toggle theme</span>
         </Button>
       )}
@@ -35,5 +35,13 @@ export function ThemeToggle() {
         ))}
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+}
+
+export function ThemeToggleFallback() {
+  return (
+    <Button variant="ghost" size="icon" className="h-7 w-7" disabled>
+      <span className="sr-only">Toggle theme</span>
+    </Button>
   );
 }
