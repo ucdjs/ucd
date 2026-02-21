@@ -25,16 +25,28 @@ export function transformPathForUnicodeOrg(version: string, filepath: string): s
 /**
  * Strips /ucd/ prefix from paths in responses
  * Used for directory listings and snapshot generation
+ * Handles multiple consecutive /ucd/ occurrences
  *
  * @example
+ * ```ts
  * stripUCDPrefix("/17.0.0/ucd/Blocks.txt")
  * // Returns: "/17.0.0/Blocks.txt"
  *
  * stripUCDPrefix("/17.0.0/ucd/emoji/emoji-data.txt")
  * // Returns: "/17.0.0/emoji/emoji-data.txt"
+ *
+ * stripUCDPrefix("/17.0.0/Blocks.txt")
+ * // Returns: "/17.0.0/Blocks.txt" (unchanged)
+ *
+ * stripUCDPrefix("/ucd/ucd/test.txt")
+ * // Returns: "/test.txt"
+ *
+ * stripUCDPrefix("/ucd/ucd/ucd/test.txt")
+ * // Returns: "/test.txt"
+ * ```
  */
 export function stripUCDPrefix(path: string): string {
-  return path.replace(/\/ucd\//g, "/");
+  return path.replace(/(?:\/ucd)+\//g, "/");
 }
 
 /**
