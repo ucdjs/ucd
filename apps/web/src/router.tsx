@@ -37,7 +37,7 @@ export function getRouter() {
     context: {
       queryClient,
       latestUnicodeVersion: UNICODE_STABLE_VERSION,
-      apiBaseUrl: UCDJS_API_BASE_URL || "https://api.ucdjs.dev",
+      apiBaseUrl: UCDJS_API_BASE_URL,
     },
     defaultPreload: "intent",
     Wrap: (props: { children: React.ReactNode }) => {
