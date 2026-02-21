@@ -1,7 +1,7 @@
+import { ExplorerBreadcrumbs } from "#components/file-explorer/explorer-breadcrumbs";
 import { ExplorerToolbar } from "#components/file-explorer/explorer-toolbar";
-import { FileExplorerHeader } from "#components/file-explorer/file-explorer-header";
 import { FileTree, FileTreeSkeleton } from "#components/file-explorer/file-tree";
-import { createFileRoute, Outlet, useMatch, useMatches } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useMatch } from "@tanstack/react-router";
 import { Suspense } from "react";
 
 export const Route = createFileRoute("/(explorer)/file-explorer")({
@@ -31,7 +31,7 @@ function FileExplorerLayout() {
         <section className="flex flex-1 flex-col overflow-hidden">
           <div className="border-b bg-background px-4">
             <div className="flex h-12 items-center justify-between gap-4">
-              <FileExplorerHeader />
+              <ExplorerBreadcrumbs />
               {!isFileView && <ExplorerToolbar />}
             </div>
           </div>

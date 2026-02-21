@@ -1,4 +1,3 @@
-import type { ViewMode } from "#types/file-explorer";
 import type { SearchQueryParams } from "../../lib/file-explorer";
 import { useNavigate, useSearch } from "@tanstack/react-router";
 import { cn } from "@ucdjs-internal/shared-ui";
@@ -35,7 +34,6 @@ export function ExplorerToolbar() {
   const pattern = search?.pattern;
   const sort = search?.sort || "name";
   const order = search?.order || "asc";
-  const viewMode = search?.viewMode || "list";
 
   const activeCount = [search?.query, search?.type, search?.pattern].filter(Boolean).length;
 
@@ -220,29 +218,6 @@ export function ExplorerToolbar() {
             <span className="sr-only">
               {order === "asc" ? "Sort ascending" : "Sort descending"}
             </span>
-          </Button>
-        </div>
-
-        <div className="flex items-center border border-input rounded-lg overflow-hidden">
-          <Button
-            variant={viewMode === "list" ? "secondary" : "ghost"}
-            size="icon-sm"
-            onClick={() => setSearch({ viewMode: "list" as ViewMode })}
-            className="rounded-none border-0 h-8"
-            title="List view"
-          >
-            <List className="size-4" />
-            <span className="sr-only">List view</span>
-          </Button>
-          <Button
-            variant={viewMode === "cards" ? "secondary" : "ghost"}
-            size="icon-sm"
-            onClick={() => setSearch({ viewMode: "cards" as ViewMode })}
-            className="rounded-none border-0 border-l border-input h-8"
-            title="Grid view"
-          >
-            <Grid3X3 className="size-4" />
-            <span className="sr-only">Grid view</span>
           </Button>
         </div>
       </div>

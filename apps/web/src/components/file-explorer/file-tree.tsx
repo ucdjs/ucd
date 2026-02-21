@@ -1,44 +1,25 @@
 import type { UnicodeFileTreeNode } from "@ucdjs/schemas";
 import { versionFileTreeQueryOptions, versionsQueryOptions } from "#functions/versions";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Link, useMatches, useNavigate, useParams } from "@tanstack/react-router";
-import { cn } from "@ucdjs-internal/shared-ui/lib/utils";
+import { useMatches, useNavigate, useParams } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
-import { Button } from "@ucdjs-internal/shared-ui/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@ucdjs-internal/shared-ui/ui/dropdown-menu";
 import { Input } from "@ucdjs-internal/shared-ui/ui/input";
 import { Skeleton } from "@ucdjs-internal/shared-ui/ui/skeleton";
-import {
-  ChevronDown,
-  ChevronRight,
-  FileIcon,
-  FolderIcon,
-  FolderOpen,
-  Layers,
-  Search,
-} from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { ChevronDown, ChevronRight, Search } from "lucide-react";
+import { Suspense, useEffect, useRef, useState } from "react";
+import { ExplorerTreeEntry } from "./explorer-entry";
+import { FileTreeList } from "./file-tree-list";
 
 type ExpandedState = Set<string>;
-
-interface FileTreeProps {
-  expanded: ExpandedState;
-  onToggle: (path: string) => void;
-  onExpandPaths: (paths: string[]) => void;
-}
-
-const TOP_LEVEL_LIMIT = 200;
 
 function normalizeTreePath(path: string) {
   return path.replace(/^\/+/, "");
 }
 
-function flattenNodes(nodes: UnicodeFileTreeNode[], current: UnicodeFileTreeNode[] = []) {
+function flattenNodes(
+  nodes: UnicodeFileTreeNode[],
+  current: UnicodeFileTreeNode[] = [],
+) {
   nodes.forEach((node) => {
     current.push(node);
     if (node.type === "directory" && node.children?.length) {
@@ -48,6 +29,7 @@ function flattenNodes(nodes: UnicodeFileTreeNode[], current: UnicodeFileTreeNode
   return current;
 }
 
+// Used to auto-expand the tree to the current route.
 function collectAncestorPaths(path: string, isFile: boolean) {
   if (!path) return [];
   const normalized = normalizeTreePath(path);
@@ -64,7 +46,31 @@ function collectAncestorPaths(path: string, isFile: boolean) {
   return ancestors;
 }
 
-export function FileTree({ expanded, onToggle, onExpandPaths }: FileTreeProps) {
+// Tree nodes from the API are version-relative; normalize them to version-prefixed paths.
+function prefixTreeWithVersion(nodes: UnicodeFileTreeNode[], version: string): UnicodeFileTreeNode[] {
+  return nodes.map((node) => {
+    const normalizedPath = normalizeTreePath(node.path);
+    const versionPrefix = `${version}/`;
+    const resolvedPath = normalizedPath.startsWith(versionPrefix)
+      ? normalizedPath
+      : `${versionPrefix}${normalizedPath}`;
+
+    if (node.type === "directory") {
+      return {
+        ...node,
+        path: resolvedPath,
+        children: prefixTreeWithVersion(node.children, version),
+      };
+    }
+
+    return {
+      ...node,
+      path: resolvedPath,
+    };
+  });
+}
+
+export function FileTree() {
   const params = useParams({ strict: false });
   const navigate = useNavigate({ from: "/file-explorer/$" });
   const matches = useMatches();
@@ -72,112 +78,49 @@ export function FileTree({ expanded, onToggle, onExpandPaths }: FileTreeProps) {
   const isFileView = lastMatch?.routeId === "/(explorer)/file-explorer/v/$";
   const { data: versions } = useSuspenseQuery(versionsQueryOptions());
   const pathParam = typeof params._splat === "string" ? params._splat : "";
-  const pathVersion = pathParam.split("/").filter(Boolean)[0];
-  const currentVersion = pathVersion
-    || versions.find((v) => v.type === "stable")?.version
-    || versions[0]?.version
-    || "";
   const currentPath = pathParam || "";
 
-  const { data: fileTree } = useSuspenseQuery(versionFileTreeQueryOptions(currentVersion));
+  const [expanded, setExpanded] = useState<ExpandedState>(() => new Set());
   const [query, setQuery] = useState("");
-  const [showAllTopLevel, setShowAllTopLevel] = useState(false);
+  const lastAutoExpandedPath = useRef<string | null>(null);
 
   const normalizedCurrentPath = normalizeTreePath(
     !isFileView && currentPath && !currentPath.endsWith("/")
       ? `${currentPath}/`
       : currentPath,
   );
-  const isFiltered = !!query.trim();
-  const nodes = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase();
-    const ordered = [
-      ...fileTree.filter((node) => node.type === "directory"),
-      ...fileTree.filter((node) => node.type !== "directory"),
-    ];
+  const isFiltered = query.trim().length > 0;
+  const ancestorPaths = collectAncestorPaths(normalizedCurrentPath, isFileView);
 
-    if (!normalizedQuery) {
-      return ordered;
-    }
+  const handleToggle = (path: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(path)) {
+        next.delete(path);
+      } else {
+        next.add(path);
+      }
+      return next;
+    });
+  };
 
-    const filtered = flattenNodes(ordered).filter((node) => node.name.toLowerCase().includes(normalizedQuery));
-    return [
-      ...filtered.filter((node) => node.type === "directory"),
-      ...filtered.filter((node) => node.type !== "directory"),
-    ];
-  }, [fileTree, query]);
-
-  const topLevelNodes = useMemo(() => {
-    if (isFiltered) return nodes;
-    if (showAllTopLevel) return nodes;
-    return nodes.slice(0, TOP_LEVEL_LIMIT);
-  }, [nodes, isFiltered, showAllTopLevel]);
-
-  const ancestorPaths = useMemo(
-    () => collectAncestorPaths(normalizedCurrentPath, isFileView),
-    [normalizedCurrentPath, isFileView],
-  );
-
+  // Auto-expand when the route changes so the active item is visible.
   useEffect(() => {
+    if (lastAutoExpandedPath.current === normalizedCurrentPath) return;
+    lastAutoExpandedPath.current = normalizedCurrentPath;
     if (!ancestorPaths.length) return;
     const missing = ancestorPaths.filter((path) => !expanded.has(path));
     if (!missing.length) return;
-    onExpandPaths(missing);
-  }, [ancestorPaths, expanded, onExpandPaths]);
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      missing.forEach((path) => next.add(path));
+      return next;
+    });
+  }, [ancestorPaths, expanded, normalizedCurrentPath]);
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex min-h-12 items-center gap-2 border-b px-4 py-3">
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            render={(triggerProps) => (
-              <Button
-                {...triggerProps}
-                variant="outline"
-                size="sm"
-                className="h-8 flex-1 justify-between"
-              >
-                <span className="flex items-center gap-2">
-                  <Layers className="size-4 text-muted-foreground" />
-                  <span className="text-xs font-semibold">
-                    Unicode
-                    {" "}
-                    {currentVersion}
-                  </span>
-                </span>
-                <ChevronDown className="size-4" />
-              </Button>
-            )}
-          />
-          <DropdownMenuContent align="start" className="max-h-72 overflow-auto">
-            {versions.map((version) => (
-              <DropdownMenuItem
-                key={version.version}
-                onSelect={(event) => {
-                  event.preventDefault();
-                  const nextPath = currentPath
-                    ? [version.version, ...currentPath.split("/").filter(Boolean).slice(1)].join("/")
-                    : `${version.version}/`;
-                  navigate({
-                    to: isFileView ? "/file-explorer/v/$" : "/file-explorer/$",
-                    params: { _splat: nextPath },
-                  });
-                }}
-              >
-                <span className="flex-1">
-                  v
-                  {version.version}
-                </span>
-                <Badge variant="secondary" className="text-[10px]">
-                  {version.type}
-                </Badge>
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-
-      <div className="px-4 py-2">
+      <div className="px-4 py-2 sticky top-0 bg-background z-10">
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -188,161 +131,138 @@ export function FileTree({ expanded, onToggle, onExpandPaths }: FileTreeProps) {
           />
         </div>
       </div>
-
       <div className="flex-1 overflow-auto px-2 pb-4">
-        {topLevelNodes.length === 0
-          ? (
-              <div className="rounded-md border border-dashed p-4 text-xs text-muted-foreground">
-                No matching files in this tree.
-              </div>
-            )
-          : (
-              <FileTreeList
-                nodes={topLevelNodes}
-                expanded={expanded}
-                onToggle={onToggle}
-                currentPath={normalizedCurrentPath}
-                query={query}
-                isFiltered={isFiltered}
-              />
-            )}
+        <div className="space-y-1">
+          {(query.trim()
+            ? versions.filter((version) => version.version.toLowerCase().includes(query.trim().toLowerCase()))
+            : versions
+          ).map((version) => {
+            const versionPath = `${version.version}/`;
+            const isActive = normalizedCurrentPath.startsWith(versionPath);
+            const isExpanded = expanded.has(versionPath) || isActive;
 
-        {!isFiltered && nodes.length > TOP_LEVEL_LIMIT && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="mt-2 w-full justify-center text-xs"
-            onClick={() => setShowAllTopLevel((prev) => !prev)}
-          >
-            {showAllTopLevel ? "Show fewer" : `Show ${nodes.length - TOP_LEVEL_LIMIT} more`}
-          </Button>
-        )}
+            return (
+              <div key={version.version}>
+                <ExplorerTreeEntry
+                  name={`v${version.version}`}
+                  isDirectory
+                  isExpanded={isExpanded}
+                  active={isActive}
+                  onSelect={() => navigate({
+                    to: "/file-explorer/$",
+                    params: { _splat: `${version.version}/` },
+                  })}
+                  leading={(
+                    <button
+                      type="button"
+                      className="inline-flex size-4 items-center justify-center rounded-sm text-muted-foreground hover:bg-muted"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        handleToggle(versionPath);
+                      }}
+                    >
+                      {isExpanded
+                        ? <ChevronDown className="size-3" />
+                        : <ChevronRight className="size-3" />}
+                    </button>
+                  )}
+                  trailing={(
+                    <Badge variant="secondary" className="text-[10px]">
+                      {version.type}
+                    </Badge>
+                  )}
+                />
+                {isExpanded && (
+                  <Suspense fallback={<VersionTreeSkeleton depth={1} />}>
+                    <VersionTree
+                      version={version.version}
+                      query={query}
+                      depth={1}
+                      expanded={expanded}
+                      onToggle={handleToggle}
+                      currentPath={normalizedCurrentPath}
+                      isFiltered={isFiltered}
+                    />
+                  </Suspense>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
 }
 
-function FileTreeList({
-  nodes,
-  expanded,
-  onToggle,
-  currentPath,
+function VersionTree({
+  version,
   query,
-  isFiltered,
-  depth = 0,
-}: {
-  nodes: UnicodeFileTreeNode[];
-  expanded: ExpandedState;
-  onToggle: (path: string) => void;
-  currentPath: string;
-  query: string;
-  isFiltered: boolean;
-  depth?: number;
-}) {
-  return (
-    <div className="space-y-1">
-      {nodes.map((node) => (
-        <FileTreeNode
-          key={node.path}
-          node={node}
-          expanded={expanded}
-          onToggle={onToggle}
-          currentPath={currentPath}
-          query={query}
-          isFiltered={isFiltered}
-          depth={isFiltered ? 0 : depth}
-        />
-      ))}
-    </div>
-  );
-}
-
-function FileTreeNode({
-  node,
-  expanded,
-  onToggle,
-  currentPath,
-  query,
-  isFiltered,
   depth,
+  expanded,
+  onToggle,
+  currentPath,
+  isFiltered,
 }: {
-  node: UnicodeFileTreeNode;
+  version: string;
+  query: string;
+  depth: number;
   expanded: ExpandedState;
   onToggle: (path: string) => void;
   currentPath: string;
-  query: string;
   isFiltered: boolean;
-  depth: number;
 }) {
-  const normalizedPath = normalizeTreePath(node.path);
-  const isDirectory = node.type === "directory";
-  const isExpanded = expanded.has(normalizedPath);
-  const isActive = currentPath === normalizedPath
-    || (isDirectory && currentPath.startsWith(normalizedPath));
-  const shouldShowChildren = isDirectory && !isFiltered && isExpanded;
-  const children = node.type === "directory"
+  const { data: fileTree } = useSuspenseQuery(versionFileTreeQueryOptions(version));
+  const normalizedQuery = query.trim().toLowerCase();
+
+  const normalizedNodes = prefixTreeWithVersion(fileTree, version);
+  const orderedNodes = [
+    ...normalizedNodes.filter((node) => node.type === "directory"),
+    ...normalizedNodes.filter((node) => node.type !== "directory"),
+  ];
+  const filteredNodes = isFiltered
+    ? flattenNodes(orderedNodes).filter((node) => node.name.toLowerCase().includes(normalizedQuery))
+    : orderedNodes;
+  const nodes = isFiltered
     ? [
-        ...node.children.filter((child: UnicodeFileTreeNode) => child.type === "directory"),
-        ...node.children.filter((child: UnicodeFileTreeNode) => child.type !== "directory"),
+        ...filteredNodes.filter((node) => node.type === "directory"),
+        ...filteredNodes.filter((node) => node.type !== "directory"),
       ]
-    : undefined;
+    : orderedNodes;
+  if (nodes.length === 0) {
+    return (
+      <div
+        className="rounded-md border border-dashed p-4 text-xs text-muted-foreground"
+        style={{ marginLeft: depth * 14 + 8 }}
+      >
+        No matching files in this tree.
+      </div>
+    );
+  }
 
   return (
     <div>
-      <div
-        className={cn(
-          "group flex items-center gap-2 rounded-md px-2 py-1 text-xs",
-          isActive && "bg-primary/10 text-primary",
-          !isActive && "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
-        )}
-        style={{ paddingLeft: depth * 14 + 8 }}
-      >
-        {isDirectory
-          ? (
-              <button
-                type="button"
-                className="inline-flex size-4 items-center justify-center rounded-sm hover:bg-muted"
-                onClick={() => onToggle(normalizedPath)}
-              >
-                {isExpanded
-                  ? <ChevronDown className="size-3" />
-                  : <ChevronRight className="size-3" />}
-              </button>
-            )
-          : (
-              <span className="inline-flex size-4 items-center justify-center">
-                <FileIcon className="size-3" />
-              </span>
-            )}
-        {isDirectory
-          ? (
-              isExpanded
-                ? <FolderOpen className="size-3.5" />
-                : <FolderIcon className="size-3.5" />
-            )
-          : null}
-        <Link
-          to={isDirectory ? "/file-explorer/$" : "/file-explorer/v/$"}
-          params={{ _splat: normalizedPath }}
-          className="flex-1 truncate"
-          title={node.name}
-        >
-          {node.name}
-        </Link>
-      </div>
-      {shouldShowChildren && children?.length
-        ? (
-            <FileTreeList
-              nodes={children}
-              expanded={expanded}
-              onToggle={onToggle}
-              currentPath={currentPath}
-              query={query}
-              isFiltered={isFiltered}
-              depth={depth + 1}
-            />
-          )
-        : null}
+      <FileTreeList
+        nodes={nodes}
+        depth={depth}
+        expanded={expanded}
+        onToggle={onToggle}
+        currentPath={currentPath}
+        isFiltered={isFiltered}
+      />
+    </div>
+  );
+}
+
+function VersionTreeSkeleton({ depth }: { depth: number }) {
+  const skeletonRows = ["tree-row-1", "tree-row-2", "tree-row-3"];
+  return (
+    <div className="space-y-2" style={{ marginLeft: depth * 14 + 8 }}>
+      {skeletonRows.map((row) => (
+        <div key={row} className="flex items-center gap-2">
+          <Skeleton className="h-3 w-3 rounded" />
+          <Skeleton className="h-3 w-40 rounded" />
+        </div>
+      ))}
     </div>
   );
 }

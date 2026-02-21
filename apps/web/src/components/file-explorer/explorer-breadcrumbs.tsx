@@ -1,4 +1,5 @@
-import { Link, useMatches } from "@tanstack/react-router";
+import { Link, useMatch } from "@tanstack/react-router";
+import { useClipboard } from "@ucdjs-internal/shared-ui/hooks";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -7,16 +8,20 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@ucdjs-internal/shared-ui/ui/breadcrumb";
-import { ChevronRight, FolderOpen } from "lucide-react";
-import { Fragment } from "react";
+import { Button } from "@ucdjs-internal/shared-ui/ui/button";
+import { ChevronRight, Copy, CopyCheck, CopyX, FolderOpen } from "lucide-react";
+import { Fragment, useState } from "react";
 
-export function FileExplorerHeader() {
-  const matches = useMatches();
-  const lastMatch = matches[matches.length - 1];
-  const path = (lastMatch?.params as { _splat?: string })?._splat || "";
+export function ExplorerBreadcrumbs() {
+  const match = useMatch({ from: "/(explorer)/file-explorer" });
+  const path = (match?.params as { _splat?: string })?._splat || "";
   const pathSegments = path ? path.split("/").filter(Boolean) : [];
-  const isViewingFile = lastMatch?.routeId === "/(explorer)/file-explorer/v/$";
-  const isRoot = pathSegments.length === 0 && !isViewingFile;
+  const isRoot = pathSegments.length === 0;
+  const { copy, copied, error } = useClipboard();
+
+  function copyToClipboard() {
+    copy(`/${path}`);
+  }
 
   return (
     <Breadcrumb className="flex-1 overflow-hidden">
@@ -31,7 +36,12 @@ export function FileExplorerHeader() {
               )
             : (
                 <BreadcrumbLink
-                  render={<Link to="/file-explorer/$" params={{ _splat: "" }} />}
+                  render={(
+                    <Link
+                      to="/file-explorer/$"
+                      params={{ _splat: "" }}
+                    />
+                  )}
                   className="flex items-center gap-1.5 font-semibold text-foreground hover:text-foreground"
                 >
                   <FolderOpen className="size-3.5 text-amber-500" />
@@ -40,7 +50,7 @@ export function FileExplorerHeader() {
               )}
         </BreadcrumbItem>
 
-        {pathSegments.map((segment: string, index: number) => {
+        {pathSegments.map((segment, index) => {
           const segmentPath = pathSegments.slice(0, index + 1).join("/");
           const isLast = index === pathSegments.length - 1;
 
@@ -74,6 +84,16 @@ export function FileExplorerHeader() {
             </Fragment>
           );
         })}
+
+        {!isRoot && (
+          <Button variant="ghost" onClick={copyToClipboard}>
+            {error
+              ? <CopyX className="size-3 text-red-500" />
+              : copied
+                ? <CopyCheck className="size-3 text-green-500" />
+                : <Copy className="size-3" />}
+          </Button>
+        )}
       </BreadcrumbList>
     </Breadcrumb>
   );

@@ -673,6 +673,9 @@ importers:
       react-dom:
         specifier: catalog:frontend
         version: 19.2.4(react@19.2.4)
+      shiki:
+        specifier: catalog:runtime
+        version: 3.22.0
       zod:
         specifier: catalog:runtime
         version: 4.3.6

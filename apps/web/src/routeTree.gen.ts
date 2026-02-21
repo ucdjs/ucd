@@ -23,6 +23,7 @@ import { Route as explorerFileExplorerSplatRouteImport } from './routes/(explore
 import { Route as appVVersionRouteRouteImport } from './routes/(app)/v/$version/route'
 import { Route as appVVersionIndexRouteImport } from './routes/(app)/v/$version/index'
 import { Route as explorerFileExplorerVSplatRouteImport } from './routes/(explorer)/file-explorer/v.$'
+import { Route as apiApiShikiSplatRouteImport } from './routes/(api)/api/shiki.$'
 import { Route as appVVersionUHexRouteImport } from './routes/(app)/v/$version/u/$hex'
 
 const appVVersionNormalizationPreviewLazyRouteImport = createFileRoute(
@@ -155,6 +156,11 @@ const explorerFileExplorerVSplatRoute =
     path: '/v/$',
     getParentRoute: () => explorerFileExplorerRouteRoute,
   } as any)
+const apiApiShikiSplatRoute = apiApiShikiSplatRouteImport.update({
+  id: '/(api)/api/shiki/$',
+  path: '/api/shiki/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const appVVersionBlocksIndexLazyRoute = appVVersionBlocksIndexLazyRouteImport
   .update({
     id: '/blocks/',
@@ -188,6 +194,7 @@ export interface FileRoutesByFullPath {
   '/v/$version': typeof appVVersionRouteRouteWithChildren
   '/file-explorer/$': typeof explorerFileExplorerSplatRoute
   '/v/': typeof appVIndexRoute
+  '/api/shiki/$': typeof apiApiShikiSplatRoute
   '/file-explorer/v/$': typeof explorerFileExplorerVSplatRoute
   '/v/$version/bidi-linebreak': typeof appVVersionBidiLinebreakLazyRoute
   '/v/$version/font-glyph-view': typeof appVVersionFontGlyphViewLazyRoute
@@ -206,6 +213,7 @@ export interface FileRoutesByTo {
   '/': typeof homeIndexRoute
   '/file-explorer/$': typeof explorerFileExplorerSplatRoute
   '/v': typeof appVIndexRoute
+  '/api/shiki/$': typeof apiApiShikiSplatRoute
   '/file-explorer/v/$': typeof explorerFileExplorerVSplatRoute
   '/v/$version/bidi-linebreak': typeof appVVersionBidiLinebreakLazyRoute
   '/v/$version/font-glyph-view': typeof appVVersionFontGlyphViewLazyRoute
@@ -228,6 +236,7 @@ export interface FileRoutesById {
   '/(app)/v/$version': typeof appVVersionRouteRouteWithChildren
   '/(explorer)/file-explorer/$': typeof explorerFileExplorerSplatRoute
   '/(app)/v/': typeof appVIndexRoute
+  '/(api)/api/shiki/$': typeof apiApiShikiSplatRoute
   '/(explorer)/file-explorer/v/$': typeof explorerFileExplorerVSplatRoute
   '/(app)/v/$version/bidi-linebreak': typeof appVVersionBidiLinebreakLazyRoute
   '/(app)/v/$version/font-glyph-view': typeof appVVersionFontGlyphViewLazyRoute
@@ -249,6 +258,7 @@ export interface FileRouteTypes {
     | '/v/$version'
     | '/file-explorer/$'
     | '/v/'
+    | '/api/shiki/$'
     | '/file-explorer/v/$'
     | '/v/$version/bidi-linebreak'
     | '/v/$version/font-glyph-view'
@@ -267,6 +277,7 @@ export interface FileRouteTypes {
     | '/'
     | '/file-explorer/$'
     | '/v'
+    | '/api/shiki/$'
     | '/file-explorer/v/$'
     | '/v/$version/bidi-linebreak'
     | '/v/$version/font-glyph-view'
@@ -288,6 +299,7 @@ export interface FileRouteTypes {
     | '/(app)/v/$version'
     | '/(explorer)/file-explorer/$'
     | '/(app)/v/'
+    | '/(api)/api/shiki/$'
     | '/(explorer)/file-explorer/v/$'
     | '/(app)/v/$version/bidi-linebreak'
     | '/(app)/v/$version/font-glyph-view'
@@ -303,6 +315,7 @@ export interface RootRouteChildren {
   appRouteRoute: typeof appRouteRouteWithChildren
   homeRouteRoute: typeof homeRouteRouteWithChildren
   explorerFileExplorerRouteRoute: typeof explorerFileExplorerRouteRouteWithChildren
+  apiApiShikiSplatRoute: typeof apiApiShikiSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -419,6 +432,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof explorerFileExplorerVSplatRouteImport
       parentRoute: typeof explorerFileExplorerRouteRoute
     }
+    '/(api)/api/shiki/$': {
+      id: '/(api)/api/shiki/$'
+      path: '/api/shiki/$'
+      fullPath: '/api/shiki/$'
+      preLoaderRoute: typeof apiApiShikiSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/(app)/v/$version/blocks/': {
       id: '/(app)/v/$version/blocks/'
       path: '/blocks'
@@ -522,6 +542,7 @@ const rootRouteChildren: RootRouteChildren = {
   appRouteRoute: appRouteRouteWithChildren,
   homeRouteRoute: homeRouteRouteWithChildren,
   explorerFileExplorerRouteRoute: explorerFileExplorerRouteRouteWithChildren,
+  apiApiShikiSplatRoute: apiApiShikiSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

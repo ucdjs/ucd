@@ -1,5 +1,3 @@
-import type { ViewMode } from "#types/file-explorer";
-import type { FileEntry } from "@ucdjs/schemas";
 import { filesQueryOptions } from "#functions/files";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate, useSearch } from "@tanstack/react-router";
@@ -11,10 +9,9 @@ import { ExplorerEntry } from "./explorer-entry";
 
 export interface EntryListProps {
   currentPath: string;
-  viewMode: ViewMode;
 }
 
-export function EntryList({ currentPath, viewMode }: EntryListProps) {
+export function EntryList({ currentPath }: EntryListProps) {
   const search = useSearch({ from: "/(explorer)/file-explorer/$" });
   const navigate = useNavigate({ from: "/file-explorer/$" });
   const { data } = useSuspenseQuery(filesQueryOptions({
@@ -68,11 +65,10 @@ export function EntryList({ currentPath, viewMode }: EntryListProps) {
 
   return (
     <>
-      {sortedEntries.map((entry: FileEntry) => (
+      {sortedEntries.map((entry) => (
         <ExplorerEntry
           key={entry.path}
           entry={entry}
-          viewMode={viewMode}
           currentPath={currentPath}
         />
       ))}
@@ -82,36 +78,16 @@ export function EntryList({ currentPath, viewMode }: EntryListProps) {
 
 EntryList.Skeleton = function EntryListSkeleton({
   amount,
-  viewMode,
 }: {
   amount: { total: number; files: number; directories: number };
-  viewMode: ViewMode;
 }) {
-  // Show skeletons for total count (files + directories)
-  const skeletonCount = amount.total || 5;
-
-  if (viewMode === "cards") {
-    return (
-      <>
-        {Array.from({ length: skeletonCount }, (_, i) => (
-          <div key={`skeleton-card-${i}`} className="rounded-lg border border-border p-3">
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-2">
-                <Skeleton className="h-4 w-4 rounded" />
-                <Skeleton className="h-4 flex-1" />
-              </div>
-              <Skeleton className="h-3 w-20" />
-            </div>
-          </div>
-        ))}
-      </>
-    );
-  }
+  const skeletons = Array.from({ length: amount.total || 5 });
 
   return (
     <>
-      {Array.from({ length: skeletonCount }, (_, i) => (
+      {skeletons.map((_, i) => (
         <div
+          // eslint-disable-next-line react/no-array-index-key
           key={`skeleton-list-${i}`}
           className={cn(
             "flex items-center gap-3 px-3 py-2",

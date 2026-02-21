@@ -2,17 +2,14 @@ import { FileViewer, FileViewerSkeleton } from "#components/file-explorer/file-v
 import { LargeFileWarning } from "#components/file-explorer/large-file-warning";
 import { NonRenderableFile } from "#components/file-explorer/non-renderable-file";
 import { ExplorerNotFound } from "#components/not-found";
-import { filesQueryOptions, getFileHeadInfo } from "#functions/files";
+import { getFileHeadInfo } from "#functions/files";
+import { shikiHtmlQueryOptions } from "#functions/shiki";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { resolveUCDVersion } from "@unicode-utils/core";
 import { Suspense } from "react";
 import { NON_RENDERABLE_EXTENSIONS } from "../../../lib/file-explorer";
 
-/**
- * Maximum file size to render inline (512KB)
- * Files larger than this will show the large file warning
- */
 const MAX_INLINE_FILE_SIZE = 512 * 1024;
 
 export const Route = createFileRoute("/(explorer)/file-explorer/v/$")({
@@ -64,11 +61,7 @@ export const Route = createFileRoute("/(explorer)/file-explorer/v/$")({
 
     // Only prefetch if we'll actually render the file content
     if (!isTooLarge && canRender) {
-      context.queryClient.prefetchQuery(filesQueryOptions({
-        path: context.path,
-        statType: context.statType,
-        size: context.size,
-      }));
+      context.queryClient.prefetchQuery(shikiHtmlQueryOptions(context.path));
     }
 
     return {
@@ -100,10 +93,6 @@ function FileViewerPage() {
   if (isTooLarge) {
     return (
       <div className="flex flex-1 flex-col gap-6">
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">File preview</span>
-          <span className="text-sm font-medium">{fileName}</span>
-        </div>
         <LargeFileWarning
           fileName={fileName}
           size={size}
@@ -118,10 +107,6 @@ function FileViewerPage() {
   if (!canRender) {
     return (
       <div className="flex flex-1 flex-col gap-6">
-        <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">File preview</span>
-          <span className="text-sm font-medium">{fileName}</span>
-        </div>
         <NonRenderableFile
           fileName={fileName}
           contentType="application/octet-stream"
@@ -134,16 +119,10 @@ function FileViewerPage() {
   // Wrap the actual file content fetching in Suspense
   return (
     <div className="flex flex-1 flex-col gap-6">
-      <div className="flex items-center gap-2">
-        <span className="text-sm text-muted-foreground">File preview</span>
-        <span className="text-sm font-medium">{fileName}</span>
-      </div>
       <Suspense fallback={<FileViewerSkeleton fileName={fileName} />}>
         <FileViewerContent
           path={path}
           fileName={fileName}
-          statType={loaderData.statType}
-          size={loaderData.size}
           fileUrl={loaderData.fileUrl}
         />
       </Suspense>
@@ -154,27 +133,17 @@ function FileViewerPage() {
 function FileViewerContent({
   path,
   fileName,
-  statType,
-  size,
   fileUrl,
 }: {
   path: string;
   fileName: string;
-  statType: string | null;
-  size: number;
   fileUrl: string;
 }) {
-  const { data } = useSuspenseQuery(filesQueryOptions({ path, statType, size }));
-
-  // This route only handles files
-  if (data.type === "directory" || data.type === "file-too-large") {
-    return null;
-  }
+  const { data: html } = useSuspenseQuery(shikiHtmlQueryOptions(path));
 
   return (
     <FileViewer
-      content={data.content}
-      contentType={data.contentType}
+      html={html}
       fileName={fileName}
       fileUrl={fileUrl}
     />
