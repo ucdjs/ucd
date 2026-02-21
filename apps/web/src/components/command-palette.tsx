@@ -1,3 +1,6 @@
+import { versionsQueryOptions } from "#functions/versions";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
 import {
   Command,
   CommandDialog,
@@ -8,12 +11,14 @@ import {
   CommandList,
   CommandShortcut,
 } from "@ucdjs-internal/shared-ui/ui/command";
-import { FileCode, Play, ScrollText, Terminal } from "lucide-react";
+import { FileCode, FolderOpen, Home, ScrollText } from "lucide-react";
 import { useEffect, useState } from "react";
 
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const navigate = useNavigate();
+  const { data: versions } = useSuspenseQuery(versionsQueryOptions());
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -27,6 +32,11 @@ export function CommandPalette() {
     return () => document.removeEventListener("keydown", down);
   }, []);
 
+  const handleNavigate = (path: string) => {
+    navigate({ to: path });
+    setOpen(false);
+  };
+
   return (
     <CommandDialog open={open} onOpenChange={setOpen}>
       <Command>
@@ -38,47 +48,31 @@ export function CommandPalette() {
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
 
-          <CommandGroup heading="Current Pipeline">
-            <CommandItem
-              // onSelect={handleExecuteCurrent}
-              // disabled={executing}
-            >
-              <Play className="mr-2 h-4 w-4" />
-              Execute Current Pipeline
-              <CommandShortcut>⌘E</CommandShortcut>
+          <CommandGroup heading="Navigation">
+            <CommandItem onSelect={() => handleNavigate("/")}>
+              <Home className="mr-2 h-4 w-4" />
+              Homepage
+              <CommandShortcut>⌘H</CommandShortcut>
             </CommandItem>
-            <CommandItem
-              // onSelect={() => handleNavigate(`/pipelines/${currentPipeline.fileId}/${currentPipeline.id}/code`)}
-            >
-              <FileCode className="mr-2 h-4 w-4" />
-              View Current Pipeline Code
-            </CommandItem>
-            <CommandItem
-              // onSelect={() => handleNavigate(`/pipelines/${currentPipeline.fileId}/${currentPipeline.id}/executions`)}
-            >
-              <ScrollText className="mr-2 h-4 w-4" />
-              View Pipeline Executions
+            <CommandItem onSelect={() => handleNavigate("/file-explorer")}>
+              <FolderOpen className="mr-2 h-4 w-4" />
+              File Explorer
+              <CommandShortcut>⌘F</CommandShortcut>
             </CommandItem>
           </CommandGroup>
 
-          <CommandGroup heading="All Pipelines">
-            <CommandItem
-              // key={`${pipeline.fileId}-${pipeline.id}`}
-              // onSelect={() => handleExecutePipeline(pipeline.fileId, pipeline.id, pipeline.versions)}
-              // value={`${pipeline.fileId}-${pipeline.id}`}
-              // disabled={executing}
-            >
-              <Terminal className="mr-2 h-4 w-4" />
-              <div className="flex flex-col gap-0.5 flex-1 min-w-0">
-                <span className="truncate">pipeline.name || pipeline.id</span>
-                <span className="text-[10px] text-muted-foreground truncate">
-                  pipeline.fileLabel
-                </span>
-              </div>
-              <span className="ml-2 text-xs text-muted-foreground">
-                10 versions
-              </span>
+          <CommandGroup heading="Versions">
+            <CommandItem onSelect={() => handleNavigate("/versions")}>
+              <ScrollText className="mr-2 h-4 w-4" />
+              All Versions
             </CommandItem>
+            {versions.map((version) => (
+              <CommandItem key={version.version} onSelect={() => handleNavigate(`/v/${version.version}`)}>
+                <FileCode className="mr-2 h-4 w-4" />
+                {`Version ${version.version}`}
+              </CommandItem>
+            ))}
+
           </CommandGroup>
         </CommandList>
       </Command>

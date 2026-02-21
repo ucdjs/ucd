@@ -5,19 +5,36 @@ import { ExplorerNotFound } from "#components/not-found";
 import { filesQueryOptions, getFileHeadInfo } from "#functions/files";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
+import { resolveUCDVersion } from "@unicode-utils/core";
 import { Suspense } from "react";
 import { NON_RENDERABLE_EXTENSIONS } from "../../../lib/file-explorer";
 
 /**
- * Maximum file size to render inline (1MB)
+ * Maximum file size to render inline (512KB)
  * Files larger than this will show the large file warning
  */
-const MAX_INLINE_FILE_SIZE = 1024 * 1024;
+const MAX_INLINE_FILE_SIZE = 512 * 1024;
 
 export const Route = createFileRoute("/(explorer)/file-explorer/v/$")({
   component: FileViewerPage,
   async beforeLoad({ params }) {
-    const path = params._splat || "";
+    let path = params._splat || "";
+    const hasTrailingSlash = path.endsWith("/");
+    const pathSegments = path.split("/").filter(Boolean);
+
+    if (pathSegments.length > 0) {
+      const version = pathSegments[0] ?? "";
+      const rest = pathSegments.slice(1);
+      const resolvedVersion = resolveUCDVersion(version);
+      if (resolvedVersion !== version) {
+        const nextPath = [resolvedVersion, ...rest].join("/");
+        throw redirect({
+          to: "/file-explorer/v/$",
+          params: { _splat: hasTrailingSlash ? `${nextPath}/` : nextPath },
+        });
+      }
+      path = hasTrailingSlash ? `${[resolvedVersion, ...rest].join("/")}/` : [resolvedVersion, ...rest].join("/");
+    }
 
     const { statType, size } = await getFileHeadInfo({ data: { path } });
 
@@ -29,8 +46,8 @@ export const Route = createFileRoute("/(explorer)/file-explorer/v/$")({
     }
 
     // Extract file info for early checks
-    const pathSegments = path.split("/").filter(Boolean);
-    const fileName = pathSegments[pathSegments.length - 1] || "file";
+    const filePathSegments = path.split("/").filter(Boolean);
+    const fileName = filePathSegments[filePathSegments.length - 1] || "file";
     const fileExt = fileName.split(".").pop()?.toLowerCase() || "";
 
     return {
@@ -82,7 +99,7 @@ function FileViewerPage() {
   // Check for large files first - no data fetching needed
   if (isTooLarge) {
     return (
-      <div className="flex flex-1 flex-col gap-6 p-4 pt-2">
+      <div className="flex flex-1 flex-col gap-6">
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">File preview</span>
           <span className="text-sm font-medium">{fileName}</span>
@@ -100,7 +117,7 @@ function FileViewerPage() {
   // Check for non-renderable files - no data fetching needed
   if (!canRender) {
     return (
-      <div className="flex flex-1 flex-col gap-6 p-4 pt-2">
+      <div className="flex flex-1 flex-col gap-6">
         <div className="flex items-center gap-2">
           <span className="text-sm text-muted-foreground">File preview</span>
           <span className="text-sm font-medium">{fileName}</span>
@@ -116,7 +133,7 @@ function FileViewerPage() {
 
   // Wrap the actual file content fetching in Suspense
   return (
-    <div className="flex flex-1 flex-col gap-6 p-4 pt-2">
+    <div className="flex flex-1 flex-col gap-6">
       <div className="flex items-center gap-2">
         <span className="text-sm text-muted-foreground">File preview</span>
         <span className="text-sm font-medium">{fileName}</span>

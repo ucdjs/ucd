@@ -1,6 +1,5 @@
 import type { ViewMode } from "#types/file-explorer";
 import { EntryList } from "#components/file-explorer/entry-list";
-import { ExplorerToolbar } from "#components/file-explorer/explorer-toolbar";
 import { ParentDirectory } from "#components/file-explorer/parent-directory";
 import { ExplorerNotFound } from "#components/not-found";
 import { filesQueryOptions, getFileHeadInfo } from "#functions/files";
@@ -8,6 +7,7 @@ import { createFileRoute, redirect, retainSearchParams, useSearch } from "@tanst
 import { zodValidator } from "@tanstack/zod-adapter";
 import { cn } from "@ucdjs-internal/shared-ui";
 import { Skeleton } from "@ucdjs-internal/shared-ui/ui/skeleton";
+import { resolveUCDVersion } from "@unicode-utils/core";
 import { Suspense } from "react";
 import { searchSchema } from "../../../lib/file-explorer";
 
@@ -25,7 +25,24 @@ export const Route = createFileRoute("/(explorer)/file-explorer/$")({
     ])],
   },
   async beforeLoad({ params, search }) {
-    const path = params._splat || "";
+    let path = params._splat || "";
+    const hasTrailingSlash = path.endsWith("/");
+    const pathSegments = path.split("/").filter(Boolean);
+
+    if (pathSegments.length > 0) {
+      const version = pathSegments[0] ?? "";
+      const rest = pathSegments.slice(1);
+      const resolvedVersion = resolveUCDVersion(version);
+      if (resolvedVersion !== version) {
+        const nextPath = [resolvedVersion, ...rest].join("/");
+        throw redirect({
+          to: "/file-explorer/$",
+          params: { _splat: hasTrailingSlash ? `${nextPath}/` : nextPath },
+          search,
+        });
+      }
+      path = hasTrailingSlash ? `${[resolvedVersion, ...rest].join("/")}/` : [resolvedVersion, ...rest].join("/");
+    }
     const { statType, amount } = await getFileHeadInfo({ data: {
       path,
       order: search.order,
@@ -84,8 +101,6 @@ function DirectoryExplorerPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <ExplorerToolbar />
-
       <div
         className={cn(
           viewMode === "cards"

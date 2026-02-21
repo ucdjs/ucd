@@ -58,9 +58,15 @@ export function EntryList({ currentPath, viewMode }: EntryListProps) {
     );
   }
 
+  const entries = data.files || [];
+  const sortedEntries = [
+    ...entries.filter((entry) => entry.type === "directory"),
+    ...entries.filter((entry) => entry.type !== "directory"),
+  ];
+
   return (
     <>
-      {(data.files || []).map((entry: FileEntry) => (
+      {sortedEntries.map((entry: FileEntry) => (
         <ExplorerEntry
           key={entry.path}
           entry={entry}

@@ -14,6 +14,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as homeRouteRouteImport } from './routes/(home)/route'
 import { Route as appRouteRouteImport } from './routes/(app)/route'
 import { Route as homeIndexRouteImport } from './routes/(home)/index'
+import { Route as homeVersionsRouteImport } from './routes/(home)/versions'
 import { Route as appSearchRouteImport } from './routes/(app)/search'
 import { Route as appCodepointInspectorRouteImport } from './routes/(app)/codepoint-inspector'
 import { Route as explorerFileExplorerRouteRouteImport } from './routes/(explorer)/file-explorer/route'
@@ -56,6 +57,13 @@ const homeIndexRoute = homeIndexRouteImport.update({
   path: '/',
   getParentRoute: () => homeRouteRoute,
 } as any)
+const homeVersionsRoute = homeVersionsRouteImport
+  .update({
+    id: '/versions',
+    path: '/versions',
+    getParentRoute: () => homeRouteRoute,
+  } as any)
+  .lazy(() => import('./routes/(home)/versions.lazy').then((d) => d.Route))
 const appSearchRoute = appSearchRouteImport.update({
   id: '/search',
   path: '/search',
@@ -175,6 +183,7 @@ export interface FileRoutesByFullPath {
   '/file-explorer': typeof explorerFileExplorerRouteRouteWithChildren
   '/codepoint-inspector': typeof appCodepointInspectorRoute
   '/search': typeof appSearchRoute
+  '/versions': typeof homeVersionsRoute
   '/': typeof homeIndexRoute
   '/v/$version': typeof appVVersionRouteRouteWithChildren
   '/file-explorer/$': typeof explorerFileExplorerSplatRoute
@@ -193,6 +202,7 @@ export interface FileRoutesByTo {
   '/file-explorer': typeof explorerFileExplorerRouteRouteWithChildren
   '/codepoint-inspector': typeof appCodepointInspectorRoute
   '/search': typeof appSearchRoute
+  '/versions': typeof homeVersionsRoute
   '/': typeof homeIndexRoute
   '/file-explorer/$': typeof explorerFileExplorerSplatRoute
   '/v': typeof appVIndexRoute
@@ -213,6 +223,7 @@ export interface FileRoutesById {
   '/(explorer)/file-explorer': typeof explorerFileExplorerRouteRouteWithChildren
   '/(app)/codepoint-inspector': typeof appCodepointInspectorRoute
   '/(app)/search': typeof appSearchRoute
+  '/(home)/versions': typeof homeVersionsRoute
   '/(home)/': typeof homeIndexRoute
   '/(app)/v/$version': typeof appVVersionRouteRouteWithChildren
   '/(explorer)/file-explorer/$': typeof explorerFileExplorerSplatRoute
@@ -233,6 +244,7 @@ export interface FileRouteTypes {
     | '/file-explorer'
     | '/codepoint-inspector'
     | '/search'
+    | '/versions'
     | '/'
     | '/v/$version'
     | '/file-explorer/$'
@@ -251,6 +263,7 @@ export interface FileRouteTypes {
     | '/file-explorer'
     | '/codepoint-inspector'
     | '/search'
+    | '/versions'
     | '/'
     | '/file-explorer/$'
     | '/v'
@@ -270,6 +283,7 @@ export interface FileRouteTypes {
     | '/(explorer)/file-explorer'
     | '/(app)/codepoint-inspector'
     | '/(app)/search'
+    | '/(home)/versions'
     | '/(home)/'
     | '/(app)/v/$version'
     | '/(explorer)/file-explorer/$'
@@ -312,6 +326,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof homeIndexRouteImport
+      parentRoute: typeof homeRouteRoute
+    }
+    '/(home)/versions': {
+      id: '/(home)/versions'
+      path: '/versions'
+      fullPath: '/versions'
+      preLoaderRoute: typeof homeVersionsRouteImport
       parentRoute: typeof homeRouteRoute
     }
     '/(app)/search': {
@@ -468,10 +489,12 @@ const appRouteRouteWithChildren = appRouteRoute._addFileChildren(
 )
 
 interface homeRouteRouteChildren {
+  homeVersionsRoute: typeof homeVersionsRoute
   homeIndexRoute: typeof homeIndexRoute
 }
 
 const homeRouteRouteChildren: homeRouteRouteChildren = {
+  homeVersionsRoute: homeVersionsRoute,
   homeIndexRoute: homeIndexRoute,
 }
 
