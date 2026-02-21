@@ -17,6 +17,7 @@ export interface AppRouterContext {
   queryClient: QueryClient;
   latestUnicodeVersion: string;
   apiBaseUrl: string;
+  docsUrl: string;
 }
 
 export const Route = createRootRouteWithContext<AppRouterContext>()({
@@ -67,6 +68,7 @@ export const Route = createRootRouteWithContext<AppRouterContext>()({
 
     return {
       ucdjsApiBaseUrl: context.apiBaseUrl,
+      docsUrls: context.docsUrl,
     };
   },
   shellComponent: RootDocument,
