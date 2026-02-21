@@ -1,6 +1,6 @@
 import { cn } from "#lib/utils";
 import { Link, useParams } from "@tanstack/react-router";
-import { ThemeToggle } from "@ucdjs-internal/shared-ui/components/theme-toggle";
+import { ThemeToggle } from "@ucdjs-internal/shared-ui/components";
 import {
   Sidebar,
   SidebarContent,
