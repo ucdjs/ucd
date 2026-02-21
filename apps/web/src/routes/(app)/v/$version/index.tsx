@@ -9,7 +9,7 @@ import { Skeleton } from "@ucdjs-internal/shared-ui/ui/skeleton";
 import { BookOpen, Search } from "lucide-react";
 import { Suspense, useState } from "react";
 
-export const Route = createFileRoute("/v/$version/")({
+export const Route = createFileRoute("/(app)/v/$version/")({
   component: VersionPage,
   loader: ({ context, params }) => {
     context.queryClient.ensureQueryData(versionsQueryOptions());
