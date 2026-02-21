@@ -1,7 +1,8 @@
+import type { UnicodeAssetOptions } from "#lib/files";
+import type { HonoEnv } from "#types";
 import type { OpenAPIHono } from "@hono/zod-openapi";
 import type { StatusCode } from "hono/utils/http-status";
-import type { UnicodeAssetOptions } from "../../lib/files";
-import type { HonoEnv } from "../../types";
+import { getUnicodeAsset } from "#lib/files";
 import { createRoute, z } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
 import { customError, MAX_AGE_ONE_WEEK_SECONDS } from "@ucdjs-internal/worker-utils";
@@ -14,7 +15,6 @@ import {
 } from "@ucdjs/env";
 import { FileEntryListSchema } from "@ucdjs/schemas";
 import { cache } from "hono/cache";
-import { getUnicodeAsset } from "../../lib/files";
 import { generateReferences, OPENAPI_TAGS } from "../../openapi";
 import {
   ORDER_QUERY_PARAM,
