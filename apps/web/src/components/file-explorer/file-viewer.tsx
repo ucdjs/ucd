@@ -221,10 +221,6 @@ export function FileViewer({ content, contentType, fileName, fileUrl }: FileView
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="flex items-center gap-2 text-base font-medium">
-          <FileText className="size-4" />
-          {fileName}
-        </CardTitle>
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground">
             {lineCount}
