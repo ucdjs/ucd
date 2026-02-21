@@ -9,7 +9,7 @@ import { SidebarTrigger } from "@ucdjs-internal/shared-ui/ui/sidebar";
 import { ArrowLeft, Check, Copy } from "lucide-react";
 import * as React from "react";
 
-export const Route = createFileRoute("/v/$version/u/$hex")({
+export const Route = createFileRoute("/(app)/v/$version/u/$hex")({
   component: CharacterPage,
   loader: ({ context, params }) => {
     context.queryClient.ensureQueryData(characterQueryOptions(params.hex, params.version));

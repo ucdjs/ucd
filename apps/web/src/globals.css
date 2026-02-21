@@ -1,1 +1,23 @@
 @import "@ucdjs-internal/shared-ui/styles.css";
+
+.app-shell {
+  position: relative;
+  min-height: 100%;
+}
+
+.app-shell-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(1200px 600px at 15% -20%, color-mix(in oklab, var(--primary) 10%, transparent) 0%, transparent 60%),
+    radial-gradient(800px 500px at 85% 0%, color-mix(in oklab, var(--primary) 8%, transparent) 0%, transparent 55%),
+    linear-gradient(180deg, color-mix(in oklab, var(--card) 45%, transparent) 0%, transparent 70%);
+}
+
+.app-shell-content {
+  position: relative;
+  z-index: 1;
+  min-height: 100%;
+}
