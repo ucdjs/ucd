@@ -3,7 +3,7 @@ import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbP
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 
-export const Route = createFileRoute("/codepoint-inspector")({
+export const Route = createFileRoute("/(app)/codepoint-inspector")({
   component: CodepointInspectorIdea,
 });
 

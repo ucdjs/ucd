@@ -3,31 +3,32 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 
-export const Route = createFileRoute("/v/$version/normalization-preview")({
-  component: NormalizationPreviewVersion,
+export const Route = createFileRoute("/(app)/v/$version/bidi-linebreak")({
+  component: BidiLinebreakVersion,
 });
 
-function NormalizationPreviewVersion() {
+function BidiLinebreakVersion() {
   const params = Route.useParams();
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-4">
-      <VersionHeader version={params.version} title="Normalization Preview" />
+      <VersionHeader version={params.version} title="BIDI & Line Break" />
 
       <Card>
         <CardHeader>
           <CardTitle>
-            Normalization Preview —
+            BIDI & Line Break —
             {" "}
             {params.version}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground mb-4">
-            Inspect how text normalizes under NFC/NFD/NFKC/NFKD for Unicode
+            Visualize bidirectional ordering and line break opportunities for sample text using Unicode
             {" "}
             {params.version}
-            . Useful for detecting equivalence changes between versions.
+            {" "}
+            rules.
           </p>
           <Button nativeButton={false} render={<Link to="/v/$version" params={{ version: params.version }}>Back to version</Link>} />
         </CardContent>
