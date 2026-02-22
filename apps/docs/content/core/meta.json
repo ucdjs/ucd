@@ -1,5 +1,13 @@
 {
   "title": "Core",
   "description": "Core packages for working with Unicode Character Database",
-  "root": true
+  "root": true,
+  "pages": [
+    "index",
+    "ucd-store",
+    "cli",
+    "pipelines",
+    "client",
+    "fs-bridge"
+  ]
 }

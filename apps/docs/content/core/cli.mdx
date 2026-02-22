@@ -5,36 +5,97 @@ description: Command-line interface for UCD operations
 
 # CLI
 
-Command-line interface for UCD operations with the `ucd` binary.
+The `@ucdjs/cli` package provides a command-line interface for working with the Unicode Character Database (UCD). It allows you to manage UCD stores, generate code, inspect files, and run data processing pipelines.
 
 ## Installation
 
-```bash npm
+You can install the CLI globally or use it via `npx` / `pnpm dlx`.
+
+```package-install
 npm install -g @ucdjs/cli
 ```
 
-```bash pnpm
-pnpm add -g @ucdjs/cli
-```
-
-```bash yarn
-yarn global add @ucdjs/cli
-```
-
-## Overview
-
-The `@ucdjs/cli` package provides a command-line interface for Unicode Character Database operations.
-
 ## Usage
+
+Run the CLI using the `ucd` command:
+
+```bash
+ucd [command] [...flags]
+```
+
+To see all available commands and global flags, run:
 
 ```bash
 ucd --help
-ucd char A
-ucd block "Basic Latin"
-ucd script Latin
 ```
 
-## API Reference
+## Commands
 
-Documentation for CLI commands will be added as the package stabilizes.
+The CLI is organized into several subcommands, each focusing on a specific domain of the UCD ecosystem.
 
+<Cards>
+  <Card title="store" href="#store">
+    Manage UCD stores (init, mirror, sync, analyze, etc.).
+  </Card>
+  <Card title="codegen" href="#codegen">
+    Generate TypeScript code from UCD data.
+  </Card>
+  <Card title="files" href="#files">
+    List and get files from the UCD API.
+  </Card>
+  <Card title="lockfile" href="#lockfile">
+    Inspect and validate UCD store lockfiles.
+  </Card>
+  <Card title="pipelines" href="#pipelines">
+    Run and manage UCD data processing pipelines.
+  </Card>
+</Cards>
+
+### `store`
+
+Manage local UCD stores. A store is a local cache of UCD files that can be used by other `@ucdjs` packages.
+
+- `ucd store init`: Initialize a new UCD store in the current directory.
+- `ucd store mirror`: Mirror UCD files from a remote source to the local store.
+- `ucd store sync`: Synchronize the local store with the remote source.
+- `ucd store analyze`: Analyze the contents of the local store.
+- `ucd store status`: Check the status of the local store.
+- `ucd store verify`: Verify the integrity of the local store.
+
+### `codegen`
+
+Generate TypeScript code and types from UCD data.
+
+- `ucd codegen fields`: Generate TypeScript types for UCD fields.
+
+### `files`
+
+Interact with UCD files directly.
+
+- `ucd files list`: List available files for a specific UCD version.
+- `ucd files get`: Download a specific UCD file.
+- `ucd files info`: Get metadata about a specific UCD file.
+
+### `lockfile`
+
+Inspect and validate UCD store lockfiles (`ucd.lock`).
+
+- `ucd lockfile info`: Display information about the lockfile.
+- `ucd lockfile validate`: Validate the lockfile against the store contents.
+- `ucd lockfile hash`: Calculate the hash of the lockfile.
+
+### `pipelines`
+
+Run and manage UCD data processing pipelines. Pipelines are used to transform raw UCD files into structured data or artifacts.
+
+- `ucd pipelines run`: Run a pipeline from the command line.
+- `ucd pipelines list`: List available pipelines in the current project.
+
+## Global Flags
+
+The following flags are available on all commands:
+
+- `--help`, `-h`: Show help message for the current command.
+- `--version`: Show the version number and exit.
+- `--json`: Output the result in JSON format (useful for scripting).
+- `--force`: Force the operation (e.g., overwrite existing files).
