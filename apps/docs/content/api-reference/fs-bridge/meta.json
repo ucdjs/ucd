@@ -1,0 +1,10 @@
+{
+  "title": "FS Bridge",
+  "description": "File system abstraction layer",
+  "pages": [
+    "index",
+    "hooks",
+    "bridges",
+    "specification"
+  ]
+}

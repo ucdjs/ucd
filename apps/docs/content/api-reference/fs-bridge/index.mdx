@@ -1,0 +1,64 @@
+---
+title: Overview
+description: File system abstraction layer
+---
+
+## Installation
+
+<Tabs items={['npm', 'pnpm', 'yarn']}>
+  <Tab value="npm">
+    ```bash npm
+    npm install @ucdjs/fs-bridge
+    ```
+  </Tab>
+  <Tab value="pnpm">
+    ```bash pnpm
+    pnpm add @ucdjs/fs-bridge
+    ```
+  </Tab>
+  <Tab value="yarn">
+    ```bash yarn
+    yarn add @ucdjs/fs-bridge
+    ```
+  </Tab>
+</Tabs>
+
+## Overview
+
+The `@ucdjs/fs-bridge` package provides an abstraction layer for file system operations, allowing different storage backends to be used interchangeably. This enables your code to work seamlessly across different environments—from Node.js file systems to HTTP-based remote storage.
+
+The bridge system uses a consistent API across all implementations, ensuring type safety and predictable behavior. Bridges can be read-only (like HTTP) or full-featured (like Node.js), with optional capabilities automatically detected and type-checked.
+
+## Quick Start
+
+```typescript
+import NodeFileSystemBridge from "@ucdjs/fs-bridge/bridges/node";
+
+const bridge = NodeFileSystemBridge({
+  basePath: "/path/to/directory"
+});
+
+// Read a file
+const content = await bridge.read("file.txt");
+
+// Check if a file exists
+const exists = await bridge.exists("file.txt");
+
+// List directory contents
+const entries = await bridge.listdir("subdirectory");
+```
+
+## Bridges
+
+The package includes ready-to-use bridge implementations:
+
+- **[Node.js Bridge](/api-reference/fs-bridge/bridges/node)** - Full-featured bridge for local file system access
+- **[HTTP Bridge](/api-reference/fs-bridge/bridges/http)** - Read-only bridge for accessing files over HTTP/HTTPS
+
+## Documentation
+
+- **[Specification](/api-reference/fs-bridge/specification)** - Complete FileSystemBridge interface specification
+  - **[Capabilities](/api-reference/fs-bridge/specification/capabilities)** - Understanding and working with bridge capabilities
+  - **[Errors](/api-reference/fs-bridge/specification/errors)** - Error types and error handling patterns
+- **[Hooks](/api-reference/fs-bridge/hooks)** - Monitor and debug operations with hooks
+- **[Creating Custom Bridges](/api-reference/fs-bridge/specification#filesystembridgeobject)** - Build your own bridge implementations

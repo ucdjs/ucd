@@ -1,0 +1,10 @@
+{
+  "title": "Architecture",
+  "description": "Core packages for working with Unicode Character Database",
+  "root": true,
+  "pages": [
+    "index",
+    "ucd-store",
+    "cli"
+  ]
+}

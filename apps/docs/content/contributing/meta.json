@@ -1,0 +1,9 @@
+{
+  "title": "Contributing",
+  "description": "Guides for contributing to UCD.js",
+  "root": true,
+  "pages": [
+    "index",
+    "development"
+  ]
+}

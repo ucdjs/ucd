@@ -1,0 +1,483 @@
+---
+title: Examples
+description: Comprehensive usage examples and real-world patterns
+---
+
+# Examples
+
+This page provides comprehensive examples of using `@ucdjs/path-utils` in real-world scenarios.
+
+## Basic Virtual Filesystem
+
+Creating a sandboxed file access system with a defined boundary.
+
+```ts
+import { resolveSafePath } from '@ucdjs/path-utils';
+
+// Define your application's data boundary
+const appDataPath = '/home/user/myapp';
+
+// Resolve user-provided paths safely
+function getFilePath(userPath: string): string {
+  return resolveSafePath(appDataPath, userPath);
+}
+
+// Usage
+getFilePath('config.json');
+// → '/home/user/myapp/config.json'
+
+getFilePath('/uploads/document.pdf');
+// → '/home/user/myapp/uploads/document.pdf'
+
+getFilePath('data/cache/temp.txt');
+// → '/home/user/myapp/data/cache/temp.txt'
+
+// Attempts to escape are blocked
+getFilePath('../../etc/passwd');
+// ❌ PathTraversalError
+```
+
+## Web Server Static File Serving
+
+Safely serve static files from a document root directory.
+
+```ts
+import { resolveSafePath, PathTraversalError } from '@ucdjs/path-utils';
+import { readFile } from 'fs/promises';
+
+const DOCUMENT_ROOT = '/var/www/html';
+
+async function serveStaticFile(requestPath: string): Promise<Buffer> {
+  try {
+    // Safely resolve the file path
+    const filePath = resolveSafePath(DOCUMENT_ROOT, requestPath);
+
+    // Read and serve the file
+    return await readFile(filePath);
+  } catch (error) {
+    if (error instanceof PathTraversalError) {
+      throw new Error('403 Forbidden: Access denied');
+    }
+    throw error;
+  }
+}
+
+// Safe requests
+await serveStaticFile('/assets/style.css');
+await serveStaticFile('/images/logo.png');
+await serveStaticFile('/js/app.js');
+
+// Blocked requests
+await serveStaticFile('../../etc/passwd');
+// → 403 Forbidden
+
+await serveStaticFile('%2e%2e%2f%2e%2e%2fetc%2fpasswd');
+// → 403 Forbidden (encoded traversal)
+```
+
+## File Upload Handler
+
+Handle user file uploads with path validation.
+
+```ts
+import { resolveSafePath, PathTraversalError, IllegalCharacterInPathError } from '@ucdjs/path-utils';
+import { writeFile } from 'fs/promises';
+import { mkdir } from 'fs/promises';
+
+const UPLOAD_DIR = '/var/uploads';
+
+interface UploadResult {
+  success: boolean;
+  path?: string;
+  error?: string;
+}
+
+async function handleFileUpload(
+  userId: string,
+  filename: string,
+  content: Buffer
+): Promise<UploadResult> {
+  try {
+    // Create user-specific subdirectory path
+    const userDir = `users/${userId}`;
+    const filePath = `${userDir}/${filename}`;
+
+    // Resolve safely within upload boundary
+    const safePath = resolveSafePath(UPLOAD_DIR, filePath);
+
+    // Create directory if needed
+    const dirPath = resolveSafePath(UPLOAD_DIR, userDir);
+    await mkdir(dirPath, { recursive: true });
+
+    // Write file
+    await writeFile(safePath, content);
+
+    return {
+      success: true,
+      path: safePath,
+    };
+  } catch (error) {
+    if (error instanceof PathTraversalError) {
+      return {
+        success: false,
+        error: 'Invalid file path',
+      };
+    }
+    if (error instanceof IllegalCharacterInPathError) {
+      return {
+        success: false,
+        error: 'Invalid characters in filename',
+      };
+    }
+    throw error;
+  }
+}
+
+// Safe uploads
+await handleFileUpload('user123', 'document.pdf', buffer);
+// → /var/uploads/users/user123/document.pdf
+
+await handleFileUpload('user456', 'photos/vacation.jpg', buffer);
+// → /var/uploads/users/user456/photos/vacation.jpg
+
+// Blocked uploads
+await handleFileUpload('user789', '../../../etc/passwd', buffer);
+// → { success: false, error: 'Invalid file path' }
+
+await handleFileUpload('user789', 'file\0.txt', buffer);
+// → { success: false, error: 'Invalid characters in filename' }
+```
+
+## Cross-Platform Configuration System
+
+Handle configuration files across different operating systems.
+
+```ts
+import { resolveSafePath, toUnixFormat, osPlatform } from '@ucdjs/path-utils';
+import { readFile, writeFile } from 'fs/promises';
+
+class ConfigManager {
+  private configDir: string;
+
+  constructor(configDir: string) {
+    // Normalize the config directory path
+    this.configDir = osPlatform === 'win32'
+      ? configDir
+      : toUnixFormat(configDir);
+  }
+
+  async getConfigPath(name: string): Promise<string> {
+    // Ensure config name is safe
+    return resolveSafePath(this.configDir, `${name}.json`);
+  }
+
+  async loadConfig<T = any>(name: string): Promise<T> {
+    const path = await this.getConfigPath(name);
+    const content = await readFile(path, 'utf-8');
+    return JSON.parse(content);
+  }
+
+  async saveConfig<T = any>(name: string, data: T): Promise<void> {
+    const path = await this.getConfigPath(name);
+    await writeFile(path, JSON.stringify(data, null, 2));
+  }
+}
+
+// Works on any platform
+const config = new ConfigManager('C:\\Users\\John\\AppData\\myapp');
+// or
+const config = new ConfigManager('/home/user/.config/myapp');
+
+await config.loadConfig('settings');
+await config.saveConfig('preferences', { theme: 'dark' });
+
+// Blocked
+await config.loadConfig('../../passwords');
+// ❌ PathTraversalError
+```
+
+## Plugin Sandbox System
+
+Sandbox plugin file access to specific directories.
+
+```ts
+import { resolveSafePath, PathTraversalError } from '@ucdjs/path-utils';
+import { readFile, writeFile, readdir } from 'fs/promises';
+
+class PluginSandbox {
+  private pluginDataDir: string;
+
+  constructor(pluginId: string) {
+    this.pluginDataDir = `/var/plugins/${pluginId}/data`;
+  }
+
+  async readFile(path: string): Promise<string> {
+    const safePath = resolveSafePath(this.pluginDataDir, path);
+    return readFile(safePath, 'utf-8');
+  }
+
+  async writeFile(path: string, content: string): Promise<void> {
+    const safePath = resolveSafePath(this.pluginDataDir, path);
+    await writeFile(safePath, content);
+  }
+
+  async listFiles(dir: string = '/'): Promise<string[]> {
+    const safePath = resolveSafePath(this.pluginDataDir, dir);
+    return readdir(safePath);
+  }
+}
+
+// Plugin can only access its own data directory
+const sandbox = new PluginSandbox('my-plugin');
+
+await sandbox.writeFile('/config.json', '{}');
+// → /var/plugins/my-plugin/data/config.json
+
+await sandbox.readFile('/cache/data.txt');
+// → /var/plugins/my-plugin/data/cache/data.txt
+
+await sandbox.listFiles('/');
+// → ['config.json', 'cache']
+
+// Plugin cannot escape sandbox
+await sandbox.readFile('../../other-plugin/secrets.txt');
+// ❌ PathTraversalError
+
+await sandbox.readFile('/etc/passwd');
+// ❌ PathTraversalError (treated as /var/plugins/my-plugin/data/etc/passwd)
+```
+
+## Windows-Specific Scenarios
+
+Handling Windows paths with drive letters and mixed separators.
+
+```ts
+import {
+  resolveSafePath,
+  isWindowsDrivePath,
+  getWindowsDriveLetter,
+  WindowsDriveMismatchError,
+} from '@ucdjs/path-utils';
+
+const projectRoot = 'C:\\Users\\John\\Projects\\MyApp';
+
+// Mixed separators work
+resolveSafePath(projectRoot, 'src/components\\Button.tsx');
+// → 'C:/Users/John/Projects/MyApp/src/components/Button.tsx'
+
+// Backslashes work
+resolveSafePath(projectRoot, 'data\\users\\profiles.json');
+// → 'C:/Users/John/Projects/MyApp/data/users/profiles.json'
+
+// Absolute Windows paths within boundary
+resolveSafePath(
+  projectRoot,
+  'C:\\Users\\John\\Projects\\MyApp\\config.json'
+);
+// → 'C:/Users/John/Projects/MyApp/config.json'
+
+// Different drive letter blocked
+try {
+  resolveSafePath(projectRoot, 'D:\\external\\file.txt');
+} catch (error) {
+  if (error instanceof WindowsDriveMismatchError) {
+    console.error(
+      `Cannot access drive ${error.accessedDrive}, ` +
+      `base is on drive ${error.baseDrive}`
+    );
+  }
+}
+
+// Check if path is Windows drive path
+if (isWindowsDrivePath('C:\\Users')) {
+  const drive = getWindowsDriveLetter('C:\\Users');
+  console.log(`Drive letter: ${drive}`); // 'C'
+}
+```
+
+## Encoding Attack Prevention
+
+Protect against various encoding-based attacks.
+
+```ts
+import {
+  resolveSafePath,
+  decodePathSafely,
+  PathTraversalError,
+  MaximumDecodingIterationsExceededError,
+} from '@ucdjs/path-utils';
+
+const boundary = '/var/www/uploads';
+
+// Simple URL encoding (safe)
+resolveSafePath(boundary, 'user%20files/document.pdf');
+// → '/var/www/uploads/user files/document.pdf'
+
+// Encoded path separators (safe)
+resolveSafePath(boundary, 'folder%2Ffile.txt');
+// → '/var/www/uploads/folder/file.txt'
+
+// Encoded traversal attempts (blocked)
+try {
+  resolveSafePath(boundary, '%2e%2e%2f%2e%2e%2fetc%2fpasswd');
+} catch (error) {
+  console.error('Encoded traversal blocked');
+  // ❌ PathTraversalError
+}
+
+// Double encoding (blocked)
+try {
+  resolveSafePath(boundary, '%252e%252e%252f%252e%252e');
+} catch (error) {
+  console.error('Double-encoded traversal blocked');
+  // ❌ PathTraversalError
+}
+
+// Excessive encoding (blocked)
+const malicious = '%25'.repeat(20) + '2e2e2f';
+try {
+  decodePathSafely(malicious);
+} catch (error) {
+  if (error instanceof MaximumDecodingIterationsExceededError) {
+    console.error('Too many encoding layers');
+  }
+}
+```
+
+## API Request Handler
+
+Complete example of handling API requests with path parameters.
+
+```ts
+import { resolveSafePath, PathUtilsBaseError } from '@ucdjs/path-utils';
+import { readFile } from 'fs/promises';
+
+const STORAGE_ROOT = '/var/app/storage';
+
+interface ApiResponse {
+  status: number;
+  data?: any;
+  error?: string;
+}
+
+async function handleApiRequest(
+  userId: string,
+  resourcePath: string
+): Promise<ApiResponse> {
+  try {
+    // Build user-specific path
+    const userPath = `users/${userId}`;
+    const fullPath = `${userPath}/${resourcePath}`;
+
+    // Resolve safely
+    const safePath = resolveSafePath(STORAGE_ROOT, fullPath);
+
+    // Read file (example)
+    const data = await readFile(safePath, 'utf-8');
+
+    return {
+      status: 200,
+      data: JSON.parse(data),
+    };
+  } catch (error) {
+    // Handle path-utils errors
+    if (error instanceof PathUtilsBaseError) {
+      return {
+        status: 403,
+        error: 'Forbidden: Invalid path',
+      };
+    }
+
+    // Handle file not found
+    if ((error as any).code === 'ENOENT') {
+      return {
+        status: 404,
+        error: 'Resource not found',
+      };
+    }
+
+    // Other errors
+    return {
+      status: 500,
+      error: 'Internal server error',
+    };
+  }
+}
+
+// Valid requests
+await handleApiRequest('user123', 'documents/report.json');
+// → { status: 200, data: {...} }
+
+await handleApiRequest('user456', 'photos/vacation.jpg');
+// → { status: 200, data: {...} }
+
+// Invalid requests
+await handleApiRequest('user789', '../../etc/passwd');
+// → { status: 403, error: 'Forbidden: Invalid path' }
+
+await handleApiRequest('user789', '%2e%2e%2fadmin%2fsecrets');
+// → { status: 403, error: 'Forbidden: Invalid path' }
+```
+
+## Database File Storage
+
+Manage database file storage with safe path resolution.
+
+```ts
+import { resolveSafePath } from '@ucdjs/path-utils';
+import { writeFile, readFile } from 'fs/promises';
+import { createHash } from 'crypto';
+
+const BLOB_STORAGE = '/var/db/blobs';
+
+class BlobStorage {
+  async store(userId: string, filename: string, data: Buffer): Promise<string> {
+    // Create hash-based subdirectories for better distribution
+    const hash = createHash('sha256').update(data).digest('hex');
+    const prefix = hash.substring(0, 2);
+    const subdir = hash.substring(2, 4);
+
+    // Safe path: /var/db/blobs/users/{userId}/{prefix}/{subdir}/{hash}
+    const path = resolveSafePath(
+      BLOB_STORAGE,
+      `users/${userId}/${prefix}/${subdir}/${hash}`
+    );
+
+    await writeFile(path, data);
+
+    // Return reference path
+    return `${prefix}/${subdir}/${hash}`;
+  }
+
+  async retrieve(userId: string, reference: string): Promise<Buffer> {
+    const path = resolveSafePath(
+      BLOB_STORAGE,
+      `users/${userId}/${reference}`
+    );
+
+    return readFile(path);
+  }
+}
+
+const storage = new BlobStorage();
+
+// Store blob
+const ref = await storage.store('user123', 'avatar.png', buffer);
+// → '5f/a3/5fa3...'
+
+// Retrieve blob
+const data = await storage.retrieve('user123', ref);
+
+// Cannot access other users' blobs
+await storage.retrieve('user123', '../../user456/5f/a3/5fa3...');
+// ❌ PathTraversalError
+```
+
+## Best Practices Summary
+
+- **Always Validate Input** - Use `resolveSafePath` for all user-provided paths before file operations.
+- **Define Clear Boundaries** - Establish clear base directories for different types of data (uploads, configs, cache).
+- **Handle Errors Gracefully** - Catch and handle path-utils errors appropriately, logging security events.
+- **Never Expose Details** - Don't expose actual file paths or error details to end users.
+- **Use Type Guards** - Use `instanceof` checks to handle different error types specifically.
+- **Log Security Events** - Log path traversal attempts and other security violations for monitoring.

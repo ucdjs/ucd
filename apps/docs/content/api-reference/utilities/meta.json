@@ -1,0 +1,11 @@
+{
+  "title": "Utilities",
+  "description": "Shared utilities and helper packages",
+  "pages": [
+    "index",
+    "shared",
+    "path-utils",
+    "env",
+    "utils"
+  ]
+}

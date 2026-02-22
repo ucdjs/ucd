@@ -1,0 +1,11 @@
+{
+  "title": "API Reference",
+  "description": "API Reference for UCD.js packages",
+  "root": true,
+  "pages": [
+    "client",
+    "schemas",
+    "utilities",
+    "fs-bridge"
+  ]
+}

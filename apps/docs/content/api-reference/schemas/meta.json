@@ -1,0 +1,9 @@
+{
+  "title": "Schemas & Generation",
+  "description": "Schemas and schema generation tools",
+  "pages": [
+    "index",
+    "schemas",
+    "schema-gen"
+  ]
+}
