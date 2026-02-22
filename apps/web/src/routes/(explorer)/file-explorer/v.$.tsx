@@ -6,7 +6,7 @@ import { filesQueryOptions, getFileHeadInfo } from "#functions/files";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, redirect } from "@tanstack/react-router";
 import { Suspense } from "react";
-import { NON_RENDERABLE_EXTENSIONS } from "../../lib/file-explorer";
+import { NON_RENDERABLE_EXTENSIONS } from "../../../lib/file-explorer";
 
 /**
  * Maximum file size to render inline (1MB)
@@ -14,7 +14,7 @@ import { NON_RENDERABLE_EXTENSIONS } from "../../lib/file-explorer";
  */
 const MAX_INLINE_FILE_SIZE = 1024 * 1024;
 
-export const Route = createFileRoute("/file-explorer/v/$")({
+export const Route = createFileRoute("/(explorer)/file-explorer/v/$")({
   component: FileViewerPage,
   async beforeLoad({ params }) {
     const path = params._splat || "";

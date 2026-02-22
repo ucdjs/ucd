@@ -35,7 +35,7 @@ export type ViewMode = "list" | "cards";
 // Isolated search input - only re-renders when query changes
 const SearchInput = memo(() => {
   const navigate = useNavigate({ from: "/file-explorer/$" });
-  const query = useSearch({ from: "/file-explorer/$", select: (s) => s.query });
+  const query = useSearch({ from: "/(explorer)/file-explorer/$", select: (s) => s.query });
 
   const [localValue, setLocalValue] = useState(query || "");
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -114,7 +114,7 @@ SearchInput.displayName = "SearchInput";
 // Type filter dropdown - files/directories/all
 const TypeFilter = memo(() => {
   const navigate = useNavigate({ from: "/file-explorer/$" });
-  const filterType = useSearch({ from: "/file-explorer/$", select: (s) => s.type }) || "all";
+  const filterType = useSearch({ from: "/(explorer)/file-explorer/$", select: (s) => s.type }) || "all";
   const isActive = filterType !== "all";
 
   const setType = useCallback((type: "all" | "files" | "directories" | undefined) => {
@@ -194,7 +194,7 @@ TypeFilter.displayName = "TypeFilter";
 // Pattern/extension filter dropdown
 const PatternFilter = memo(() => {
   const navigate = useNavigate({ from: "/file-explorer/$" });
-  const pattern = useSearch({ from: "/file-explorer/$", select: (s) => s.pattern });
+  const pattern = useSearch({ from: "/(explorer)/file-explorer/$", select: (s) => s.pattern });
   const isActive = !!pattern;
 
   const setPattern = useCallback((newPattern: string | undefined) => {
@@ -271,8 +271,8 @@ PatternFilter.displayName = "PatternFilter";
 // Sort dropdown with field and order combined
 const SortControl = memo(() => {
   const navigate = useNavigate({ from: "/file-explorer/$" });
-  const sort = useSearch({ from: "/file-explorer/$", select: (s) => s.sort }) || "name";
-  const order = useSearch({ from: "/file-explorer/$", select: (s) => s.order }) || "asc";
+  const sort = useSearch({ from: "/(explorer)/file-explorer/$", select: (s) => s.sort }) || "name";
+  const order = useSearch({ from: "/(explorer)/file-explorer/$", select: (s) => s.order }) || "asc";
 
   const setSort = useCallback((newSort: Required<SearchQueryParams["sort"]>) => {
     navigate({
@@ -347,7 +347,7 @@ SortControl.displayName = "SortControl";
 // View mode toggle
 const ViewModeToggle = memo(() => {
   const navigate = useNavigate({ from: "/file-explorer/$" });
-  const viewMode = useSearch({ from: "/file-explorer/$", select: (s) => s.viewMode }) || "list";
+  const viewMode = useSearch({ from: "/(explorer)/file-explorer/$", select: (s) => s.viewMode }) || "list";
 
   const setViewMode = useCallback((mode: ViewMode) => {
     navigate({
@@ -388,9 +388,9 @@ ViewModeToggle.displayName = "ViewModeToggle";
 // Active filters summary with clear all
 const ActiveFilters = memo(() => {
   const navigate = useNavigate({ from: "/file-explorer/$" });
-  const query = useSearch({ from: "/file-explorer/$", select: (s) => s.query });
-  const type = useSearch({ from: "/file-explorer/$", select: (s) => s.type });
-  const pattern = useSearch({ from: "/file-explorer/$", select: (s) => s.pattern });
+  const query = useSearch({ from: "/(explorer)/file-explorer/$", select: (s) => s.query });
+  const type = useSearch({ from: "/(explorer)/file-explorer/$", select: (s) => s.type });
+  const pattern = useSearch({ from: "/(explorer)/file-explorer/$", select: (s) => s.pattern });
 
   const activeCount = [query, type, pattern].filter(Boolean).length;
 

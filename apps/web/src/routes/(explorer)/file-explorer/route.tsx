@@ -6,7 +6,7 @@ import { ChevronRight, FolderOpen, Home } from "lucide-react";
 import { Suspense } from "react";
 import { Fragment } from "react/jsx-runtime";
 
-export const Route = createFileRoute("/file-explorer")({
+export const Route = createFileRoute("/(explorer)/file-explorer")({
   component: FileExplorerLayout,
 });
 
@@ -19,7 +19,7 @@ function FileExplorerLayout() {
   const pathSegments = path ? path.split("/").filter(Boolean) : [];
 
   // Determine if we're viewing a file (v.$.tsx route)
-  const isViewingFile = lastMatch?.routeId === "/file-explorer/v/$";
+  const isViewingFile = lastMatch?.routeId === "/(explorer)/file-explorer/v/$";
 
   // Determine if we're at the root
   const isRoot = pathSegments.length === 0 && !isViewingFile;
@@ -28,7 +28,6 @@ function FileExplorerLayout() {
     <>
       <header className="sticky top-0 z-10 flex h-14 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
         <div className="flex items-center gap-2 px-4 w-full">
-          <SidebarTrigger className="-ml-1" />
           <Separator
             orientation="vertical"
             className="mr-2 data-[orientation=vertical]:h-4"
