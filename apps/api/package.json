@@ -19,7 +19,7 @@
     "lint": "eslint .",
     "lint:openapi": "spectral lint ../../ucd-generated/api/openapi.json",
     "generate:types": "wrangler types ./wrangler-types.d.ts",
-    "typecheck": "pnpm run generate:types && tsc --noEmit -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit -p tsconfig.build.json",
     "clean": "git clean -xdf node_modules .wrangler dist ../../ucd-generated/api"
   },
   "dependencies": {

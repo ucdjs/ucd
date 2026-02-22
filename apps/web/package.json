@@ -14,7 +14,7 @@
     "build": "vite build && cp instrument.server.mjs .output/server",
     "preview": "vite preview",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit -p tsconfig.build.json"
   },
   "dependencies": {
     "@icons-pack/react-simple-icons": "catalog:frontend",
