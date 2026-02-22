@@ -1,8 +1,7 @@
-import type { ViewMode } from "#types/file-explorer";
 import type { FileEntry } from "@ucdjs/schemas";
+import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { cn } from "@ucdjs-internal/shared-ui";
-import { Card, CardContent } from "@ucdjs-internal/shared-ui/ui/card";
 import { FileIcon, FolderIcon, FolderOpen } from "lucide-react";
 
 function formatRelativeTime(timestamp: number): string {
@@ -24,13 +23,116 @@ function formatRelativeTime(timestamp: number): string {
   return "just now";
 }
 
+interface BaseEntryContentProps {
+  name: string;
+  isDirectory: boolean;
+  isExpanded?: boolean;
+  leading?: ReactNode;
+  trailing?: ReactNode;
+  meta?: string | null;
+  labelClassName?: string;
+}
+
+function BaseEntryContent({
+  name,
+  isDirectory,
+  isExpanded,
+  leading,
+  trailing,
+  meta,
+  labelClassName,
+}: BaseEntryContentProps) {
+  const icon = isDirectory
+    ? (
+        isExpanded
+          ? <FolderOpen className="size-4 text-amber-500 shrink-0" />
+          : <FolderIcon className="size-4 text-amber-500 shrink-0" />
+      )
+    : <FileIcon className="size-4 text-blue-500 shrink-0" />;
+
+  return (
+    <>
+      {leading}
+      {icon}
+      <span className={cn("flex-1 truncate", labelClassName)} title={name}>
+        {name}
+      </span>
+      {meta && (
+        <span className="text-xs text-muted-foreground shrink-0">
+          {meta}
+        </span>
+      )}
+      {trailing}
+    </>
+  );
+}
+
+export interface ExplorerTreeEntryProps {
+  name: string;
+  onSelect?: () => void;
+  isDirectory: boolean;
+  isExpanded?: boolean;
+  leading?: ReactNode;
+  trailing?: ReactNode;
+  active?: boolean;
+  indent?: number;
+  className?: string;
+}
+
+export function ExplorerTreeEntry({
+  name,
+  onSelect,
+  isDirectory,
+  isExpanded,
+  leading,
+  trailing,
+  active,
+  indent,
+  className,
+}: ExplorerTreeEntryProps) {
+  const interactiveProps = onSelect
+    ? {
+        role: "button",
+        tabIndex: 0,
+        onClick: onSelect,
+        onKeyDown: (event: React.KeyboardEvent<HTMLDivElement>) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            onSelect();
+          }
+        },
+      }
+    : undefined;
+
+  return (
+    <div
+      className={cn(
+        "group flex items-center gap-2 rounded-md pr-2 py-1 text-sm",
+        active && "bg-primary/10 text-primary",
+        !active && "text-muted-foreground hover:bg-muted/50 hover:text-foreground",
+        onSelect && "cursor-pointer",
+        className,
+      )}
+      style={indent ? { paddingLeft: indent } : undefined}
+      {...interactiveProps}
+    >
+      <BaseEntryContent
+        name={name}
+        isDirectory={isDirectory}
+        isExpanded={isExpanded}
+        leading={leading}
+        trailing={trailing}
+      />
+    </div>
+  );
+}
+
 export interface ExplorerEntryProps {
   entry: FileEntry;
-  viewMode: ViewMode;
   currentPath: string;
 }
 
-export function ExplorerEntry({ entry, viewMode, currentPath }: ExplorerEntryProps) {
+export function ExplorerEntry({ entry, currentPath }: ExplorerEntryProps) {
   const entryPath = currentPath ? `${currentPath}/${entry.name}` : entry.name;
   const lastModified = entry.lastModified
     ? formatRelativeTime(entry.lastModified)
@@ -41,37 +143,6 @@ export function ExplorerEntry({ entry, viewMode, currentPath }: ExplorerEntryPro
     ? { to: "/file-explorer/$" as const, params: { _splat: entryPath } }
     : { to: "/file-explorer/v/$" as const, params: { _splat: entryPath } };
 
-  if (viewMode === "cards") {
-    return (
-      <Card size="sm" className="hover:ring-primary/30 transition-all hover:ring-2 group">
-        <CardContent className="flex flex-col gap-2">
-          <div className="flex items-center gap-2">
-            {isDirectory
-              ? (
-                  <>
-                    <FolderIcon className="size-4 text-amber-500 group-hover:hidden" />
-                    <FolderOpen className="size-4 text-amber-500 hidden group-hover:block" />
-                  </>
-                )
-              : (
-                  <FileIcon className="size-4 text-blue-500" />
-                )}
-            <Link
-              {...linkProps}
-              className="truncate font-medium text-sm hover:text-primary transition-colors"
-              title={entry.name}
-            >
-              {entry.name}
-            </Link>
-          </div>
-          {lastModified && (
-            <p className="text-xs text-muted-foreground">{lastModified}</p>
-          )}
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <Link
       {...linkProps}
@@ -81,27 +152,12 @@ export function ExplorerEntry({ entry, viewMode, currentPath }: ExplorerEntryPro
         "border-b border-border/50 last:border-b-0",
       )}
     >
-      {isDirectory
-        ? (
-            <>
-              <FolderIcon className="size-4 text-amber-500 group-hover:hidden shrink-0" />
-              <FolderOpen className="size-4 text-amber-500 hidden group-hover:block shrink-0" />
-            </>
-          )
-        : (
-            <FileIcon className="size-4 text-blue-500 shrink-0" />
-          )}
-      <span
-        className="flex-1 truncate text-sm hover:text-primary transition-colors"
-        title={entry.name}
-      >
-        {entry.name}
-      </span>
-      {lastModified && (
-        <span className="text-xs text-muted-foreground shrink-0">
-          {lastModified}
-        </span>
-      )}
+      <BaseEntryContent
+        name={entry.name}
+        isDirectory={isDirectory}
+        meta={lastModified}
+        labelClassName="text-sm group-hover:text-primary transition-colors"
+      />
     </Link>
   );
 }

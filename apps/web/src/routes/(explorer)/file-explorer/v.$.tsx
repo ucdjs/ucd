@@ -8,11 +8,7 @@ import { createFileRoute, redirect } from "@tanstack/react-router";
 import { Suspense } from "react";
 import { NON_RENDERABLE_EXTENSIONS } from "../../../lib/file-explorer";
 
-/**
- * Maximum file size to render inline (1MB)
- * Files larger than this will show the large file warning
- */
-const MAX_INLINE_FILE_SIZE = 1024 * 1024;
+const MAX_INLINE_FILE_SIZE = 512 * 1024;
 
 export const Route = createFileRoute("/(explorer)/file-explorer/v/$")({
   component: FileViewerPage,
@@ -125,10 +121,11 @@ function FileViewerContent({ path, fileName, statType, size }: { path: string; f
 
   return (
     <FileViewer
-      content={data.content}
-      contentType={data.contentType}
+      fileUrl=""
+      html={data.content}
+      // contentType={data.contentType}
       fileName={fileName}
-      filePath={path}
+      // filePath={path}
     />
   );
 }

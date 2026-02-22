@@ -112,7 +112,6 @@ export function getFileTypeDescription(fileName: string): string {
 
 export const searchSchema = z.object({
   query: z.string().optional(),
-  viewMode: z.enum(["list", "cards"]).optional(),
   pattern: z.string().optional(),
   sort: z.enum(["name", "lastModified"]).optional(),
   order: z.enum(["asc", "desc"]).optional(),
