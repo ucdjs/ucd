@@ -1,4 +1,5 @@
 import { fileURLToPath } from "node:url";
+import { sentryTanstackStart } from "@sentry/tanstackstart-react";
 import tailwindcss from "@tailwindcss/vite";
 import { devtools } from "@tanstack/devtools-vite";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
@@ -52,6 +53,11 @@ const config = defineConfig({
     }),
     Inspect({
       build: true,
+    }),
+    sentryTanstackStart({
+      org: "ucdjs",
+      project: "web",
+      authToken: process.env.SENTRY_AUTH_TOKEN,
     }),
   ],
   build: {
