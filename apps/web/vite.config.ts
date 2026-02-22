@@ -20,7 +20,8 @@ const config = defineConfig({
         deployConfig: false,
         nodeCompat: true,
       },
-      minify: false,
+      minify: true,
+      wasm: false,
     }),
     // this is the plugin that enables path aliases
     viteTsConfigPaths({
