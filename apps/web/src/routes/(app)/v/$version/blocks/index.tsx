@@ -24,10 +24,10 @@ function BlocksPage() {
   const filteredBlocks = useMemo(() => {
     if (!searchQuery.trim()) return blocks;
     const query = searchQuery.toLowerCase();
-    return blocks.filter(block =>
-      block.name.toLowerCase().includes(query) ||
-      block.start.toLowerCase().includes(query) ||
-      block.end.toLowerCase().includes(query)
+    return blocks.filter((block) =>
+      block.name.toLowerCase().includes(query)
+      || block.start.toLowerCase().includes(query)
+      || block.end.toLowerCase().includes(query),
     );
   }, [blocks, searchQuery]);
 
@@ -47,7 +47,13 @@ function BlocksPage() {
               </BreadcrumbItem>
               <BreadcrumbSeparator className="hidden md:block" />
               <BreadcrumbItem className="hidden md:block">
-                <BreadcrumbLink render={<Link to="/v/$version" params={{ version }}>Unicode {version}</Link>} />
+                <BreadcrumbLink render={(
+                  <Link to="/v/$version" params={{ version }}>
+                    Unicode
+                    {version}
+                  </Link>
+                )}
+                />
               </BreadcrumbItem>
               <BreadcrumbSeparator className="hidden md:block" />
               <BreadcrumbItem>
@@ -80,7 +86,10 @@ function BlocksPage() {
             </div>
           </div>
           <p className="text-sm text-muted-foreground max-w-2xl">
-            Browse all Unicode blocks for version {version}. Each block represents a contiguous range of code points 
+            Browse all Unicode blocks for version
+            {" "}
+            {version}
+            . Each block represents a contiguous range of code points
             assigned to characters with similar characteristics or from related writing systems.
           </p>
         </div>
@@ -114,20 +123,24 @@ function BlocksPage() {
                       {block.name}
                     </h3>
                   </div>
-                  
+
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <span className="font-mono bg-muted px-1.5 py-0.5 rounded">
-                      U+{block.start}
+                      U+
+                      {block.start}
                     </span>
                     <span>to</span>
                     <span className="font-mono bg-muted px-1.5 py-0.5 rounded">
-                      U+{block.end}
+                      U+
+                      {block.end}
                     </span>
                   </div>
 
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-muted-foreground">
-                      {block.characterCount.toLocaleString()} characters
+                      {block.characterCount.toLocaleString()}
+                      {" "}
+                      characters
                     </span>
                     <span className="text-primary opacity-0 group-hover:opacity-100 transition-opacity">
                       View →
