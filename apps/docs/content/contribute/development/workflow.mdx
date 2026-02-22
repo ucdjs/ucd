@@ -1,0 +1,144 @@
+---
+title: Development Workflow
+description: Setup, build, testing, and common tasks for UCD.js contributors
+---
+
+# Development Workflow
+
+This guide covers the essential steps for setting up the UCD.js monorepo, building packages, running tests, and performing common development tasks.
+
+## Setup
+
+UCD.js is a monorepo managed with [pnpm](https://pnpm.io/) workspaces and [Turborepo](https://turbo.build/).
+
+### Prerequisites
+
+- **Node.js**: `>= 24.13`
+- **pnpm**: Check the `packageManager` field in `package.json` for the exact version.
+
+### Installation
+
+Clone the repository and install dependencies:
+
+```bash
+git clone https://github.com/ucdjs/ucd.git
+cd ucd
+```
+
+```bash
+pnpm install
+```
+
+## Building
+
+The monorepo separates building packages, applications, and the VS Code extension.
+
+<Tabs items={["Packages", "Apps", "VS Code", "Specific Package"]}>
+  <Tab value="Packages">
+    Build all JavaScript and TypeScript packages in the `packages/` directory:
+    ```bash
+    pnpm run build
+    ```
+  </Tab>
+  <Tab value="Apps">
+    Build all applications in the `apps/` directory (API, Store, Web, Docs):
+    ```bash
+    pnpm run build:apps
+    ```
+  </Tab>
+  <Tab value="VS Code">
+    Build the VS Code extension:
+    ```bash
+    pnpm run build:vscode
+    ```
+  </Tab>
+  <Tab value="Specific Package">
+    Build a specific package using Turborepo filtering. Always run this from the repository root.
+    ```bash
+    turbo run build --filter "@ucdjs/<package>"
+    ```
+    <Callout type="warn">
+      Do not run `pnpm run build --filter <package>` for individual packages. Always use the `turbo` filter to specify packages if needed.
+    </Callout>
+  </Tab>
+</Tabs>
+
+## Testing
+
+UCD.js uses [Vitest](https://vitest.dev/) for testing. By default, running tests will output coverage reports.
+
+<Tabs items={["All Tests", "Watch Mode", "UI Mode", "Specific Project"]}>
+  <Tab value="All Tests">
+    Run all tests across the monorepo:
+    ```bash
+    pnpm run test
+    ```
+  </Tab>
+  <Tab value="Watch Mode">
+    Run tests in watch mode during development:
+    ```bash
+    pnpm run test:watch
+    ```
+  </Tab>
+  <Tab value="UI Mode">
+    Run tests with the Vitest UI:
+    ```bash
+    pnpm run test:ui
+    ```
+  </Tab>
+  <Tab value="Specific Project">
+    Run tests for a specific project from the repository root. The project name corresponds to the folder name in `packages/` or `apps/`.
+    ```bash
+    vitest run --project=<project>
+    ```
+  </Tab>
+</Tabs>
+
+### Testing Patterns
+
+When writing tests, follow these common patterns:
+
+- **HTTP Mocking**: Use `mockFetch` from `#test-utils/msw` for HTTP/MSW-driven tests.
+- **API Mocking**: Prefer `mockStoreApi` from `#test-utils/mock-store` so tests stay consistent with the API surface.
+- **Filesystem Tests**: Use `testdir()` from `vitest-testdirs` to get a temporary directory that is cleaned up automatically.
+- **Shared Helpers**: Rely on `@ucdjs/test-utils` (via `#test-utils/*`) for helpers that need to be shared across packages.
+
+## Code Quality
+
+Ensure your code meets the project's quality standards before submitting a pull request.
+
+```bash
+# Run ESLint across the monorepo
+pnpm run lint
+
+# Run TypeScript type checking
+pnpm run typecheck
+```
+
+## Common Tasks
+
+### Modifying Code
+
+- **Packages**: Run `pnpm dev` for package watch mode and test with `vitest run --project=<project>`.
+- **Apps**: Run `pnpm dev:apps` for app development servers when needed.
+- **CLI**: Run the CLI from the repository root using the workspace sources:
+  ```bash
+  ./packages/cli/bin/ucd.js <command>
+  ```
+
+### Adding a New Feature
+
+1. Implement the feature in the appropriate package or app.
+2. Add tests for the new functionality.
+3. Update documentation when public APIs change.
+4. Run relevant linters and tests for the scope you touched.
+
+### API Changes
+
+After changing API routes or Zod schemas in `apps/api`:
+1. Run `pnpm build:openapi` in `apps/api`.
+2. Update client expectations if schemas or response formats change.
+
+<Cards>
+  <Card title="Project Architecture" href="/contribute/development/project" description="Learn about the monorepo structure and core systems." />
+</Cards>
