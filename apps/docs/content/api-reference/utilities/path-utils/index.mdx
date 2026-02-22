@@ -3,27 +3,23 @@ title: Path Utils
 description: Security-focused path utilities for cross-platform path handling
 ---
 
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
 # Path Utils
 
 Security-focused utilities for working with file paths across platforms, with built-in protection against path traversal attacks and malicious inputs.
 
 ## Installation
 
-```bash npm
-npm install @ucdjs/path-utils
-```
-
-```bash pnpm
-pnpm add @ucdjs/path-utils
-```
-
-```bash yarn
-yarn add @ucdjs/path-utils
+```package-install
+@ucdjs/path-utils
 ```
 
 ## API Reference
 
-- **[Security Functions](/api-reference/utilities/path-utils/security)** - `resolveSafePath`, `decodePathSafely`, `isWithinBase`
-- **[Platform Utilities](/api-reference/utilities/path-utils/platform)** - Windows/Unix path utilities and platform detection
-- **[Error Classes](/api-reference/utilities/path-utils/errors)** - Detailed error types and error handling
-- **[Examples](/api-reference/utilities/path-utils/examples)** - Real-world usage examples and patterns
+<Cards>
+  <Card title="Security Functions" href="/api-reference/utilities/path-utils/security" description="resolveSafePath, decodePathSafely, isWithinBase" />
+  <Card title="Platform Utilities" href="/api-reference/utilities/path-utils/platform" description="Windows/Unix path utilities and platform detection" />
+  <Card title="Error Classes" href="/api-reference/utilities/path-utils/errors" description="Detailed error types and error handling" />
+  <Card title="Examples" href="/api-reference/utilities/path-utils/examples" description="Real-world usage examples and patterns" />
+</Cards>

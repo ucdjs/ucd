@@ -1,0 +1,51 @@
+---
+title: Routes
+description: Processing files in pipelines
+---
+
+# Routes
+
+Routes define how specific files are processed. They are the heart of a pipeline, responsible for parsing raw data, transforming it, and resolving it into artifacts.
+
+## Defining a Route
+
+A route is defined using `definePipelineRoute`. It requires a `filter` to match specific files, a `parser` to extract data from those files, and a `resolver` to transform the parsed data into the final artifact.
+
+```ts
+import { definePipelineRoute, byName } from "@ucdjs/pipelines-core";
+
+const myRoute = definePipelineRoute({
+  id: "unicode-data",
+  filter: byName("UnicodeData.txt"),
+  parser: async function* (ctx) {
+    // Parse the file content into rows
+    yield { code: "0041", name: "LATIN CAPITAL LETTER A" };
+    yield { code: "0042", name: "LATIN CAPITAL LETTER B" };
+  },
+  resolver: async (ctx, rows) => {
+    // Transform rows into the final output
+    const result = [];
+    for await (const row of rows) {
+      result.push(row);
+    }
+    return result;
+  }
+});
+```
+
+### Filters
+
+Filters determine which files from the sources should be processed by this route. `@ucdjs/pipelines-core` provides utility functions like `byName`, `byExtension`, or you can write a custom filter function.
+
+```ts
+// Example: Match only the Blocks.txt file
+filter: byName("Blocks.txt")
+```
+
+### Parser
+
+The `parser` is an async generator function that yields individual records (rows) from the matched files. It receives a context object `ctx` which contains the file content and metadata.
+
+### Resolver
+
+The `resolver` takes the parsed rows and transforms them into the final output format. This is where you can apply business logic, map data to specific schemas, or aggregate information. It receives the `ctx` and the async iterable of `rows`.

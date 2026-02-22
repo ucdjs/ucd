@@ -3,34 +3,54 @@ title: Schemas
 description: Zod schemas for Unicode data files
 ---
 
+import { Callout } from 'fumadocs-ui/components/callout';
+
 # Schemas
 
 Zod schemas for Unicode data files with full type safety.
 
 ## Installation
 
-```bash npm
-npm install @ucdjs/schemas
-```
-
-```bash pnpm
-pnpm add @ucdjs/schemas
-```
-
-```bash yarn
-yarn add @ucdjs/schemas
+```package-install
+@ucdjs/schemas
 ```
 
 ## Overview
 
-The `@ucdjs/schemas` package provides Zod schemas for validating Unicode data files with full type safety.
+The `@ucdjs/schemas` package provides Zod schemas for validating Unicode data files, API responses, and internal configurations with full type safety.
 
-## Features
+## Available Schemas
 
-- Zod schemas for Unicode data files
-- Full TypeScript type inference
-- Runtime validation
+### API Schemas
+- `ApiErrorSchema`: Validates API error responses.
+- `UCDWellKnownConfigSchema`: Validates the `.well-known` configuration.
 
-## API Reference
+### File System Schemas
+- `FileEntrySchema` / `FileEntryListSchema`: Validates file entries and lists.
+- `UCDStoreManifestSchema`: Validates the store manifest.
 
-Documentation for specific schemas will be added as the package stabilizes.
+### Lockfile Schemas
+- `LockfileSchema`: Validates the `ucd.lock` file.
+- `SnapshotSchema`: Validates a lockfile snapshot.
+
+### Unicode Data Schemas
+- `UnicodeVersionSchema`: Validates a Unicode version string.
+- `UnicodeVersionListSchema`: Validates a list of Unicode versions.
+- `UnicodeFileTreeSchema`: Validates the file tree structure of a Unicode version.
+
+## Usage Example
+
+```typescript title="example.ts"
+import { UnicodeVersionSchema, LockfileSchema } from "@ucdjs/schemas";
+
+// Validate a Unicode version
+const version = UnicodeVersionSchema.parse("15.1.0");
+
+// Safely parse a lockfile
+const result = LockfileSchema.safeParse(myLockfileData);
+if (result.success) {
+  console.log("Valid lockfile for version:", result.data.version);
+} else {
+  console.error("Invalid lockfile:", result.error);
+}
+```

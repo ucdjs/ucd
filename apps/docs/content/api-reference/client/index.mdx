@@ -1,31 +1,21 @@
 ---
-title: Client
+title: Client Overview
 description: OpenAPI-based API client for the UCD API
 ---
 
-## Installation
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 
-<Tabs items={['npm', 'pnpm', 'yarn']}>
-  <Tab value="npm">
-    ```bash npm
-    npm install @ucdjs/client
-    ```
-  </Tab>
-  <Tab value="pnpm">
-    ```bash pnpm
-    pnpm add @ucdjs/client
-    ```
-  </Tab>
-  <Tab value="yarn">
-    ```bash yarn
-    yarn add @ucdjs/client
-    ```
-  </Tab>
-</Tabs>
-
-## Overview
+# Client
 
 The `@ucdjs/client` package provides a type-safe API client for interacting with the UCD.js API. It offers a clean, resource-based interface for accessing Unicode Character Database files, version information, and configuration data.
+
+## Installation
+
+```package-install
+@ucdjs/client
+```
+
+## Overview
 
 The client is built on top of the OpenAPI specification, ensuring full type safety and accurate TypeScript inference for all API responses. It uses a safe error handling pattern that never throws exceptions.
 
@@ -33,10 +23,13 @@ The client is built on top of the OpenAPI specification, ensuring full type safe
 
 Create a client instance using `createUCDClient()`:
 
-```typescript
+```typescript title="client.ts"
 import { createUCDClient } from "@ucdjs/client";
 
+// Initialize the client
 const client = await createUCDClient("https://api.ucdjs.dev");
+
+// Fetch available Unicode versions
 const { data: versions, error } = await client.versions.list();
 
 if (error) {
@@ -82,8 +75,9 @@ The client provides four resource namespaces:
       return;
     }
 
-    // Get file tree for a version
+    // Get file tree for a specific Unicode version
     const { data: fileTree } = await client.versions.getFileTree("16.0.0");
+    console.log("File tree:", fileTree);
     ```
   </Tab>
   <Tab value="config">
@@ -95,7 +89,7 @@ The client provides four resource namespaces:
       return;
     }
 
-    console.log("API Version:", config.version);
+    console.log("API Config:", config);
     ```
   </Tab>
   <Tab value="manifest">
@@ -107,7 +101,7 @@ The client provides four resource namespaces:
       return;
     }
 
-    console.log("Expected files:", manifest.expectedFiles);
+    console.log("Expected files for 16.0.0:", manifest.files);
     ```
   </Tab>
 </Tabs>

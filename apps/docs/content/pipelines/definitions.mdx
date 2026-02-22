@@ -1,0 +1,32 @@
+---
+title: Definitions
+description: Structuring pipelines with DAGs
+---
+
+# Pipeline Definitions
+
+A pipeline definition ties together sources, routes, and artifacts. It determines the order in which routes execute based on their dependencies, forming a Directed Acyclic Graph (DAG).
+
+## Defining a Pipeline
+
+Pipelines are created using the `definePipeline` function from `@ucdjs/pipelines-core`.
+
+You provide the sources that yield files, the routes that process those files, and the specific Unicode Character Database versions the pipeline targets.
+
+```ts
+import { definePipeline } from "@ucdjs/pipelines-core";
+
+const myPipeline = definePipeline({
+  id: "my-pipeline",
+  name: "My Processing Pipeline",
+  versions: ["16.0.0", "15.1.0"],
+  inputs: [mySource],
+  routes: [myRoute, anotherRoute],
+});
+```
+
+The pipeline will automatically construct the execution graph by analyzing the artifact dependencies between the routes. If `anotherRoute` requires an artifact produced by `myRoute`, the execution graph will ensure `myRoute` runs first.
+
+## Loading Pipelines
+
+The `@ucdjs/pipelines-loader` package provides utilities to dynamically load pipeline definitions from files or directories, which is particularly useful for programmatic execution or CLI tools.

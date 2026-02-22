@@ -3,28 +3,35 @@ title: Utils
 description: General utility functions
 ---
 
+import { Callout } from 'fumadocs-ui/components/callout';
+
 # Utils
 
-General utility functions for common operations.
+The `@ucdjs/utils` package provides general utility functions for the UCD.js ecosystem.
 
 ## Installation
 
-```bash npm
-npm install @ucdjs/utils
-```
-
-```bash pnpm
-pnpm add @ucdjs/utils
-```
-
-```bash yarn
-yarn add @ucdjs/utils
+```package-install
+@ucdjs/utils
 ```
 
 ## Overview
 
-The `@ucdjs/utils` package provides general utility functions used across the UCD.js ecosystem.
+This package re-exports shared utilities and provides general-purpose functions used across the monorepo.
 
-## API Reference
+## Path Filtering
 
-Documentation for specific utilities will be added as the package stabilizes.
+The package provides utilities for filtering file paths and tree structures, which is particularly useful when working with the Unicode file tree.
+
+```typescript title="filter.ts"
+import { createPathFilter, filterTreeStructure, PRECONFIGURED_FILTERS } from "@ucdjs/utils";
+
+// Create a filter for specific files
+const filter = createPathFilter({
+  include: ["*.txt"],
+  exclude: ["Unihan/*"]
+});
+
+// Use preconfigured filters
+const dataFilesFilter = PRECONFIGURED_FILTERS.dataFiles;
+```

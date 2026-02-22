@@ -3,34 +3,47 @@ title: Schema Gen
 description: AI-powered schema generation
 ---
 
+import { Callout } from 'fumadocs-ui/components/callout';
+
 # Schema Gen
 
-Uses AI (OpenAI) to generate TypeScript schemas from Unicode data files.
+AI-powered schema generation for Unicode data files.
 
 ## Installation
 
-```bash npm
-npm install @ucdjs/schema-gen
-```
-
-```bash pnpm
-pnpm add @ucdjs/schema-gen
-```
-
-```bash yarn
-yarn add @ucdjs/schema-gen
+```package-install
+@ucdjs/schema-gen
 ```
 
 ## Overview
 
-The `@ucdjs/schema-gen` package uses AI to generate TypeScript type definitions from Unicode data files.
+The `@ucdjs/schema-gen` package provides tools to automatically generate TypeScript interfaces and field definitions from raw Unicode data files using AI models.
 
-## Features
+## Usage
 
-- AI-powered schema generation
-- TypeScript type definitions
-- Automatic field type inference
+The primary function is `runSchemagen`, which processes a list of files and generates TypeScript code.
 
-## API Reference
+```typescript title="generate.ts"
+import { runSchemagen } from "@ucdjs/schema-gen";
 
-Documentation for schema generation will be added as the package stabilizes.
+const results = await runSchemagen({
+  files: [
+    {
+      filePath: "./data/UnicodeData.txt",
+      version: "15.1.0"
+    }
+  ],
+  openaiKey: process.env.OPENAI_API_KEY,
+  // Alternatively, provide a custom AI model
+  // model: myCustomModel
+});
+
+for (const result of results) {
+  console.log(`Generated code for ${result.fileName}:`);
+  console.log(result.code);
+}
+```
+
+<Callout type="info">
+  You must provide either an `openaiKey` or a custom `model` (from the AI SDK) to use the schema generator.
+</Callout>

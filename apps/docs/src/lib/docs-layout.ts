@@ -16,20 +16,24 @@ export function baseOptions(): BaseLayoutProps & {
     sidebar: {
       tabs: [
         {
-          title: "UCD.js",
-          url: "/ucdjs",
+          title: "General",
+          url: "/",
         },
         {
-          title: "Core",
-          url: "/core",
+          title: "Pipelines",
+          url: "/pipelines",
         },
         {
-          title: "Schemas",
-          url: "/schemas",
+          title: "Architecture",
+          url: "/architecture",
         },
         {
-          title: "Utilities",
-          url: "/utilities",
+          title: "API Reference",
+          url: "/api-reference",
+        },
+        {
+          title: "Contributing",
+          url: "/contributing",
         },
       ],
     },

@@ -3,27 +3,23 @@ title: Schemas & Generation
 description: Schemas and schema generation tools
 ---
 
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
 # Schemas & Generation
 
 Packages for working with Unicode data schemas and generating TypeScript types.
 
 ## Available Packages
 
-- **[Schemas](/api-reference/schemas/schemas)** - Zod schemas for Unicode data files
-- **[Schema Gen](/api-reference/schemas/schema-gen)** - AI-powered schema generation
+<Cards>
+  <Card title="Schemas" href="/api-reference/schemas/schemas" description="Zod schemas for Unicode data files." />
+  <Card title="Schema Gen" href="/api-reference/schemas/schema-gen" description="AI-powered schema generation." />
+</Cards>
 
 ## Installation
 
 Install schema packages individually:
 
-```bash npm
-npm install @ucdjs/schemas @ucdjs/schema-gen
-```
-
-```bash pnpm
-pnpm add @ucdjs/schemas @ucdjs/schema-gen
-```
-
-```bash yarn
-yarn add @ucdjs/schemas @ucdjs/schema-gen
+```package-install
+@ucdjs/schemas @ucdjs/schema-gen
 ```

@@ -3,16 +3,20 @@ title: Utilities
 description: Shared utilities and helper packages
 ---
 
+import { Cards, Card } from 'fumadocs-ui/components/card';
+
 # Utilities
 
 The UCD.js ecosystem includes several utility packages that provide common functionality across the project.
 
 ## Available Packages
 
-- **[Shared](/api-reference/utilities/shared)** - Shared utilities used across UCD.js packages
-- **[Path Utils](/api-reference/utilities/path-utils)** - Path manipulation utilities for working with file paths
-- **[Environment](/api-reference/utilities/env)** - Environment configuration and variable management
-- **[Utils](/api-reference/utilities/utils)** - General utility functions
+<Cards>
+  <Card title="Shared" href="/api-reference/utilities/shared" description="Shared utilities used across UCD.js packages." />
+  <Card title="Path Utils" href="/api-reference/utilities/path-utils" description="Path manipulation utilities for working with file paths." />
+  <Card title="Environment" href="/api-reference/utilities/env" description="Environment configuration and variable management." />
+  <Card title="Utils" href="/api-reference/utilities/utils" description="General utility functions." />
+</Cards>
 
 ## When to Use
 
@@ -22,20 +26,12 @@ These utility packages are primarily intended for:
 - **Advanced users** building custom tooling on top of UCD.js
 - **Contributors** developing new features for the ecosystem
 
-Most users working with Unicode data should start with the core packages like `@ucdjs/ucd-store` or `@ucdjs/cli`.
+Most users working with Unicode data should start with the core packages like `@ucdjs/client` or `@ucdjs/cli`.
 
 ## Installation
 
 Install utility packages individually:
 
-```bash npm
-npm install @ucdjs-internal/shared @ucdjs/path-utils @ucdjs/env @ucdjs/utils
-```
-
-```bash pnpm
-pnpm add @ucdjs-internal/shared @ucdjs/path-utils @ucdjs/env @ucdjs/utils
-```
-
-```bash yarn
-yarn add @ucdjs-internal/shared @ucdjs/path-utils @ucdjs/env @ucdjs/utils
+```package-install
+@ucdjs-internal/shared @ucdjs/path-utils @ucdjs/env @ucdjs/utils
 ```
