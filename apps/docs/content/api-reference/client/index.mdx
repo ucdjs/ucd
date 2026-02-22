@@ -1,34 +1,51 @@
 ---
-title: Client Overview
+title: Client
 description: OpenAPI-based API client for the UCD API
 ---
 
 import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+import { TypeTable } from 'fumadocs-ui/components/type-table';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
 
 # Client
 
 The `@ucdjs/client` package provides a type-safe API client for interacting with the UCD.js API. It offers a clean, resource-based interface for accessing Unicode Character Database files, version information, and configuration data.
 
-## Installation
+## Getting Started
+
+<Steps>
+<Step>
+
+### Installation
+
+Install the client using your preferred package manager.
 
 ```package-install
 @ucdjs/client
 ```
 
-## Overview
+</Step>
+<Step>
 
-The client is built on top of the OpenAPI specification, ensuring full type safety and accurate TypeScript inference for all API responses. It uses a safe error handling pattern that never throws exceptions.
+### Initialization
 
-## Getting Started
-
-Create a client instance using `createUCDClient()`:
+Create a client instance using `createUCDClient()`. The client is built on top of the OpenAPI specification, ensuring full type safety and accurate TypeScript inference.
 
 ```typescript title="client.ts"
 import { createUCDClient } from "@ucdjs/client";
 
 // Initialize the client
 const client = await createUCDClient("https://api.ucdjs.dev");
+```
 
+</Step>
+<Step>
+
+### Usage
+
+The client uses a safe error handling pattern that never throws exceptions. You always receive an object containing either `data` or `error`.
+
+```typescript title="client.ts"
 // Fetch available Unicode versions
 const { data: versions, error } = await client.versions.list();
 
@@ -39,16 +56,33 @@ if (error) {
 }
 ```
 
+</Step>
+</Steps>
+
 ## Resources
 
-The client provides four resource namespaces:
+The client provides four primary resource namespaces. You access them as properties on the instantiated `client` object.
 
-| Resource | Description |
-|----------|-------------|
-| `files` | Access Unicode data files and directory listings |
-| `versions` | Get information about available Unicode versions |
-| `config` | Access the API's well-known configuration |
-| `manifest` | Get version-specific manifests listing expected files |
+<TypeTable
+  type={{
+    files: {
+      description: 'Access Unicode data files and directory listings',
+      type: 'FilesResource',
+    },
+    versions: {
+      description: 'Get information about available Unicode versions',
+      type: 'VersionsResource',
+    },
+    config: {
+      description: "Access the API's well-known configuration",
+      type: 'ConfigResource',
+    },
+    manifest: {
+      description: 'Get version-specific manifests listing expected files',
+      type: 'ManifestResource',
+    },
+  }}
+/>
 
 ### Examples
 

@@ -1,0 +1,42 @@
+---
+title: FAQ
+description: Frequently asked questions about UCD.js
+---
+
+# Frequently Asked Questions
+
+Here are some common questions we get about UCD.js and the Unicode Character Database.
+
+## General
+
+### What is UCD.js?
+
+UCD.js is a TypeScript/JavaScript monorepo filled with packages that simplify downloading, parsing, validating, and interacting with the complex text files of the Unicode Character Database (UCD).
+
+### Which Node.js version is required?
+
+UCD.js requires Node.js `^24.13.0` or newer. We rely on modern JavaScript APIs and ECMAScript modules (ESM).
+
+### Is UCD.js meant for the frontend or backend?
+
+Both! The `@ucdjs/client` and `@ucdjs/fs-bridge` architectures are designed to be environment agnostic. You can fetch Unicode data from HTTP in the browser or read files locally in Node.js/Bun.
+
+## Data & Unicode
+
+### Does this include all Unicode characters?
+
+Yes. UCD.js schemas and pipelines process the official release files published by the Unicode Consortium. You have access to the entire standard.
+
+### How often are the schemas updated?
+
+When the Unicode Consortium releases a new version (for example, moving from Unicode 15 to 16), UCD.js generates new Zod schemas to accurately reflect the latest specifications and property types.
+
+### Can I process my own custom `.txt` files using UCD.js?
+
+Absolutely. The `@ucdjs/pipelines-*` system is incredibly robust and pluggable. You can define custom `Sources` and `Routes` to parse whatever specific format you need while leveraging the built-in graph execution.
+
+## Contributing
+
+### How can I contribute?
+
+We welcome all contributions! Whether it's adding new documentation, fixing a bug in the file parser, or improving the UI of the pipeline visualizer, check out our [Contributing](/contributing) guide to get started.

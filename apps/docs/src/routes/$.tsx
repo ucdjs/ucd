@@ -1,3 +1,4 @@
+import type { MDXComponents } from "mdx/types";
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { createServerFn } from "@tanstack/react-start";
 import { useFumadocsLoader } from "fumadocs-core/source/client";
@@ -11,6 +12,7 @@ import {
   DocsTitle,
 } from "fumadocs-ui/layouts/docs/page";
 import defaultMdxComponents from "fumadocs-ui/mdx";
+import * as icons from "lucide-react";
 import { Suspense } from "react";
 import { DocsNotFound } from "@/components/not-found";
 import { baseOptions } from "@/lib/docs-layout";
@@ -43,6 +45,7 @@ const clientLoader = browserCollections.docs.createClientLoader({
         <DocsBody>
           <MDX
             components={{
+              ...(icons as unknown as MDXComponents),
               ...defaultMdxComponents,
               ...TabsComponents,
             }}
@@ -64,11 +67,53 @@ export const Route = createFileRoute("/$")({
   notFoundComponent: DocsNotFoundBoundary,
 });
 
+function getSection(path: string | undefined) {
+  if (!path) return "general";
+  const [dir] = path.split("/", 1);
+  if (!dir) return "general";
+  return (
+    {
+      "pipelines": "pipelines",
+      "api-reference": "api-reference",
+      "architecture": "architecture",
+      "contributing": "contributing",
+    }[dir] ?? "general"
+  );
+}
+
 function Page() {
   const data = useFumadocsLoader(Route.useLoaderData());
 
   return (
-    <DocsLayout {...baseOptions()} tree={data.pageTree}>
+    <DocsLayout
+      {...baseOptions()}
+      tree={data.pageTree}
+      sidebar={{
+        tabs: {
+          transform(option, node) {
+            const meta = source.getNodeMeta(node);
+            if (!meta || !node.icon) return option;
+            const color = `var(--${getSection(meta.path)}-color, var(--color-fd-foreground))`;
+
+            return {
+              ...option,
+              icon: (
+                <div
+                  className="[&_svg]:size-full rounded-lg size-full text-(--tab-color) max-md:bg-(--tab-color)/10 max-md:border max-md:p-1.5"
+                  style={
+                    {
+                      "--tab-color": color,
+                    } as object
+                  }
+                >
+                  {node.icon}
+                </div>
+              ),
+            };
+          },
+        },
+      }}
+    >
       <Suspense>
         {clientLoader.useContent(data.path, {
           className: "",

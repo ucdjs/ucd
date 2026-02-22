@@ -2,6 +2,7 @@
   "title": "Contributing",
   "description": "Guides for contributing to UCD.js",
   "root": true,
+  "icon": "GitPullRequest",
   "pages": [
     "index",
     "development"

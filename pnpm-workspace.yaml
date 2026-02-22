@@ -166,6 +166,7 @@ overrides:
   semver: 7.7.4
   solid-js: 1.9.11
   undici-types: 7.22.0
+  vite: 8.0.0-beta.15
 
 patchedDependencies:
   "@asteasolutions/zod-to-openapi@8.4.1": patches/@asteasolutions__zod-to-openapi@8.4.1.patch

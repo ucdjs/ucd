@@ -39,6 +39,7 @@
     "babel-plugin-react-compiler": "catalog:build",
     "eslint": "catalog:lint",
     "eslint-plugin-format": "catalog:lint",
+    "pathe": "catalog:runtime",
     "typescript": "catalog:build",
     "vite": "catalog:build",
     "wrangler": "catalog:backend"

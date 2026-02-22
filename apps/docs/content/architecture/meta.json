@@ -2,6 +2,7 @@
   "title": "Architecture",
   "description": "Core packages for working with Unicode Character Database",
   "root": true,
+  "icon": "Component",
   "pages": [
     "index",
     "ucd-store"
