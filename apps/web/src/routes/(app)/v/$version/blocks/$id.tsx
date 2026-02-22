@@ -178,9 +178,9 @@ function BlockDetailPage() {
             {sampleCharacters.length > 0
               ? (
                   <div className="grid grid-cols-8 sm:grid-cols-16 gap-2">
-                    {sampleCharacters.map((char, index) => (
+                    {sampleCharacters.map((char) => (
                       <Link
-                        key={index}
+                        key={char.hex}
                         to="/v/$version/u/$hex"
                         params={{ version, hex: char.hex }}
                         className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-muted transition-colors"
