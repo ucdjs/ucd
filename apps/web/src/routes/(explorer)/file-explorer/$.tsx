@@ -1,7 +1,7 @@
 import { EntryList } from "#components/file-explorer/entry-list";
 import { ExplorerNotFound } from "#components/not-found";
 import { filesQueryOptions, getFileHeadInfo } from "#functions/files";
-import { createFileRoute, Link, redirect, retainSearchParams, useSearch } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect, retainSearchParams } from "@tanstack/react-router";
 import { zodValidator } from "@tanstack/zod-adapter";
 import { cn } from "@ucdjs-internal/shared-ui";
 import { resolveUCDVersion } from "@unicode-utils/core";

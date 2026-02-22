@@ -1,4 +1,3 @@
-import type { FileEntry } from "@ucdjs/schemas";
 import { filesQueryOptions } from "#functions/files";
 import { versionsQueryOptions } from "#functions/versions";
 import { useQuery, useSuspenseQuery } from "@tanstack/react-query";
