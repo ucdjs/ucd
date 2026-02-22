@@ -266,6 +266,9 @@ catalogs:
     shiki:
       specifier: 3.22.0
       version: 3.22.0
+    shiki-stream:
+      specifier: 0.1.4
+      version: 0.1.4
     yargs-parser:
       specifier: 22.0.0
       version: 22.0.0
@@ -421,6 +424,12 @@ importers:
       nanotar:
         specifier: catalog:build
         version: 0.3.0
+      shiki:
+        specifier: catalog:runtime
+        version: 3.22.0
+      shiki-stream:
+        specifier: catalog:runtime
+        version: 0.1.4(react@19.2.4)(solid-js@1.9.11)
       zod:
         specifier: catalog:runtime
         version: 4.3.6
@@ -8938,6 +8947,20 @@ packages:
   shell-quote@1.8.3:
     resolution: {integrity: sha512-ObmnIF4hXNg1BqhnHmgbDETF8dLPCggZWBjkQfhZpbszZnYur5DUljTcCHii5LC3J5E0yeO/1LIMyH+UvHQgyw==}
     engines: {node: '>= 0.4'}
+
+  shiki-stream@0.1.4:
+    resolution: {integrity: sha512-4pz6JGSDmVTTkPJ/ueixHkFAXY4ySCc+unvCaDZV7hqq/sdJZirRxgIXSuNSKgiFlGTgRR97sdu2R8K55sPsrw==}
+    peerDependencies:
+      react: ^19.0.0
+      solid-js: 1.9.11
+      vue: ^3.2.0
+    peerDependenciesMeta:
+      react:
+        optional: true
+      solid-js:
+        optional: true
+      vue:
+        optional: true
 
   shiki@3.22.0:
     resolution: {integrity: sha512-LBnhsoYEe0Eou4e1VgJACes+O6S6QC0w71fCSp5Oya79inkwkm15gQ1UF6VtQ8j/taMDh79hAB49WUk8ALQW3g==}
@@ -17915,6 +17938,13 @@ snapshots:
   shebang-regex@3.0.0: {}
 
   shell-quote@1.8.3: {}
+
+  shiki-stream@0.1.4(react@19.2.4)(solid-js@1.9.11):
+    dependencies:
+      '@shikijs/core': 3.22.0
+    optionalDependencies:
+      react: 19.2.4
+      solid-js: 1.9.11
 
   shiki@3.22.0:
     dependencies:

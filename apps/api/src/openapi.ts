@@ -13,6 +13,8 @@ export const OPENAPI_TAGS = {
 export const { generateReferences, registerApp } = createResponseComponentBuilder([
   400,
   404,
+  413,
+  415,
   429,
   500,
   502,

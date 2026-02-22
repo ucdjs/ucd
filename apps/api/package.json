@@ -37,6 +37,8 @@
     "apache-autoindex-parse": "catalog:runtime",
     "hono": "catalog:backend",
     "nanotar": "catalog:build",
+    "shiki": "catalog:runtime",
+    "shiki-stream": "catalog:runtime",
     "zod": "catalog:runtime"
   },
   "devDependencies": {

@@ -92,6 +92,7 @@ catalogs:
     hookable: 6.0.1
     cac: 6.7.14
     shiki: 3.22.0
+    shiki-stream: 0.1.4
 
   backend:
     wrangler: 4.66.0
