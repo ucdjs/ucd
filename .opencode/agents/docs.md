@@ -2,7 +2,7 @@
 description: Maintains and expands UCD.js docs with Fumadocs-native MDX, filling missing knowledge and keeping structure coherent
 mode: subagent
 model: github-copilot/gemini-3.1-pro-preview
-temperature: 0.2
+temperature: 0.5
 tools:
   write: true
   edit: true
