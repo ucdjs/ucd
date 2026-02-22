@@ -1,4 +1,5 @@
 import type { ComponentProps } from "react";
+import { SiGithub } from "@icons-pack/react-simple-icons";
 import { ClientOnly, Link, useLoaderData, useMatch, useNavigate } from "@tanstack/react-router";
 import { ThemeToggle, ThemeToggleFallback } from "@ucdjs-internal/shared-ui/components";
 import {
@@ -151,6 +152,16 @@ export function AppSidebar({ ...props }: ComponentProps<typeof Sidebar>) {
         <SidebarGroup>
           <SidebarGroupLabel>Documentation</SidebarGroupLabel>
           <SidebarMenu>
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                render={(
+                  <a href="https://github.com/ucdjs/ucd" target="_blank" rel="noopener noreferrer">
+                    <SiGithub className="size-4" />
+                    <span>GitHub</span>
+                  </a>
+                )}
+              />
+            </SidebarMenuItem>
             <SidebarMenuItem>
               <SidebarMenuButton
                 render={(
