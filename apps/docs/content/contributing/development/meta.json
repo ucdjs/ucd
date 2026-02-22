@@ -1,0 +1,8 @@
+{
+  "title": "Development",
+  "description": "Development guides for UCD.js",
+  "pages": [
+    "workflow",
+    "project"
+  ]
+}

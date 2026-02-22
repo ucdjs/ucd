@@ -1,0 +1,10 @@
+{
+  "title": "UCD.js",
+  "pages": [
+    "getting-started",
+    "pipelines",
+    "architecture",
+    "api-reference",
+    "contributing"
+  ]
+}

@@ -1,0 +1,32 @@
+---
+title: Architecture
+description: Core packages for working with Unicode Character Database
+---
+
+# Architecture
+
+The core packages provide essential functionality for working with Unicode Character Database files and data.
+
+## Available Packages
+
+- **[UCD Store](/architecture/ucd-store)** - Store for managing Unicode Character Database files
+- **[CLI](/architecture/cli)** - Command-line interface for UCD operations
+- **[Pipelines](/pipelines)** - Data processing pipelines for UCD files
+- **[Client](/api-reference/client)** - OpenAPI-based API client for the UCD API
+- **[FS Bridge](/api-reference/fs-bridge)** - File system abstraction layer
+
+## Installation
+
+Install core packages individually:
+
+```bash npm
+npm install @ucdjs/ucd-store @ucdjs/cli @ucdjs/pipelines-core @ucdjs/client @ucdjs/fs-bridge
+```
+
+```bash pnpm
+pnpm add @ucdjs/ucd-store @ucdjs/cli @ucdjs/pipelines-core @ucdjs/client @ucdjs/fs-bridge
+```
+
+```bash yarn
+yarn add @ucdjs/ucd-store @ucdjs/cli @ucdjs/pipelines-core @ucdjs/client @ucdjs/fs-bridge
+```

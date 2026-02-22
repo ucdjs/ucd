@@ -1,0 +1,9 @@
+{
+  "title": "Getting Started",
+  "description": "Learn how to work with and integrate UCD.js",
+  "root": true,
+  "pages": [
+    "index",
+    "installation"
+  ]
+}

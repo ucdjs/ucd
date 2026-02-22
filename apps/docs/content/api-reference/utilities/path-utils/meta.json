@@ -1,0 +1,11 @@
+{
+  "title": "Path Utils",
+  "description": "Security-focused path utilities for cross-platform path handling",
+  "pages": [
+    "index",
+    "security",
+    "platform",
+    "errors",
+    "examples"
+  ]
+}

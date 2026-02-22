@@ -1,0 +1,7 @@
+{
+  "title": "Client",
+  "description": "OpenAPI-based API client for the UCD API",
+  "pages": [
+    "index"
+  ]
+}

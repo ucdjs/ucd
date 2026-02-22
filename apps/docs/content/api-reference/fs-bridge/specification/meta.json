@@ -1,0 +1,9 @@
+{
+  "title": "Specification",
+  "description": "Complete specification for the FileSystemBridge interface",
+  "pages": [
+    "index",
+    "capabilities",
+    "errors"
+  ]
+}

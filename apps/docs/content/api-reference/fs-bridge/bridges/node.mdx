@@ -1,0 +1,192 @@
+---
+title: Node.js Bridge
+description: Full-featured file system bridge for local file system access
+---
+
+# Node.js File System Bridge
+
+The Node.js File System Bridge provides full access to the local file system using Node.js's built-in `fs` module. It supports all bridge operations including read, write, directory creation, and removal.
+
+## Import
+
+```typescript
+import NodeFileSystemBridge from "@ucdjs/fs-bridge/bridges/node";
+```
+
+## Configuration
+
+The bridge requires a `basePath` option that specifies the root directory for all operations:
+
+```typescript
+const bridge = NodeFileSystemBridge({
+  basePath: "/path/to/directory"
+});
+```
+
+**Options:**
+- `basePath` (string, required): The base directory path. All operations will be relative to this path. UNC paths are not supported.
+
+## Capabilities
+
+The Node.js bridge supports all bridge operations:
+
+| Operation | Supported | Notes |
+|-----------|-----------|-------|
+| `read` | ✅ | Reads files as UTF-8 strings |
+| `exists` | ✅ | Checks file and directory existence |
+| `listdir` | ✅ | Supports recursive directory listing |
+| `write` | ✅ | Creates parent directories automatically |
+| `mkdir` | ✅ | Creates directories recursively |
+| `rm` | ✅ | Supports recursive and force options |
+
+## Usage Examples
+
+### Reading Files
+
+```typescript
+const bridge = NodeFileSystemBridge({
+  basePath: "/home/user/documents"
+});
+
+// Read a file
+const content = await bridge.read("file.txt");
+console.log(content);
+
+// Read a file in a subdirectory
+const nestedContent = await bridge.read("subdirectory/nested.txt");
+```
+
+### Writing Files
+
+```typescript
+const bridge = NodeFileSystemBridge({
+  basePath: "/home/user/documents"
+});
+
+// Write text content
+await bridge.write("file.txt", "Hello, World!");
+
+// Write binary content
+await bridge.write("file.bin", new Uint8Array([1, 2, 3, 4]));
+
+// Write with custom encoding
+await bridge.write("file.txt", "Hello", "utf-8");
+```
+
+The bridge automatically creates parent directories if they don't exist when writing files.
+
+### Directory Operations
+
+```typescript
+const bridge = NodeFileSystemBridge({
+  basePath: "/home/user/documents"
+});
+
+// Create a directory
+await bridge.mkdir("new-directory");
+
+// Create nested directories (automatically creates parents)
+await bridge.mkdir("parent/child/grandchild");
+
+// List directory contents (non-recursive)
+const entries = await bridge.listdir("subdirectory");
+for (const entry of entries) {
+  if (entry.type === "file") {
+    console.log(`File: ${entry.name}`);
+  } else {
+    console.log(`Directory: ${entry.name}`);
+  }
+}
+
+// List directory contents recursively
+const allEntries = await bridge.listdir("subdirectory", true);
+```
+
+### Checking Existence
+
+```typescript
+const bridge = NodeFileSystemBridge({
+  basePath: "/home/user/documents"
+});
+
+// Check if a file exists
+const fileExists = await bridge.exists("file.txt");
+
+// Check if a directory exists
+const dirExists = await bridge.exists("subdirectory");
+```
+
+### Removing Files and Directories
+
+```typescript
+const bridge = NodeFileSystemBridge({
+  basePath: "/home/user/documents"
+});
+
+// Remove a file
+await bridge.rm("file.txt");
+
+// Remove a directory (non-recursive)
+await bridge.rm("empty-directory");
+
+// Remove a directory recursively
+await bridge.rm("directory-with-contents", { recursive: true });
+
+// Remove with force (ignores errors if path doesn't exist)
+await bridge.rm("maybe-exists", { recursive: true, force: true });
+```
+
+## Features
+
+### Path Safety
+
+The bridge uses `resolveSafePath` internally to prevent path traversal attacks. All paths are resolved relative to the `basePath`, ensuring that operations cannot access files outside the base directory.
+
+### Cross-Platform Path Handling
+
+The bridge normalizes path separators to forward slashes (`/`) for cross-platform consistency. On Windows, backslashes are automatically converted to forward slashes.
+
+### Automatic Directory Creation
+
+When writing files, the bridge automatically creates parent directories if they don't exist. This eliminates the need to manually create directory structures before writing files.
+
+### Recursive Directory Listing
+
+The bridge supports recursive directory listing, building a tree structure with parent-child relationships. When listing recursively, directories include their `children` array populated with nested entries.
+
+### Error Handling
+
+The bridge throws appropriate errors for common scenarios:
+- File not found errors when reading non-existent files
+- Directory errors when attempting file operations on directories
+- Path validation errors for invalid paths
+
+## Platform Considerations
+
+### Windows
+
+- UNC paths (e.g., `\\server\share`) are not supported and will throw an error during setup
+- Path separators are normalized to forward slashes
+- The bridge works with both absolute and relative paths
+
+### Unix/Linux/macOS
+
+- Standard Unix path conventions are supported
+- Path separators are normalized to forward slashes
+- The bridge respects file permissions
+
+## Best Practices
+
+1. **Use absolute paths for basePath**: While relative paths work, absolute paths are more reliable and prevent confusion.
+
+2. **Handle errors appropriately**: Always wrap bridge operations in try-catch blocks or handle errors appropriately.
+
+3. **Check existence before operations**: For optional operations, check if files/directories exist before performing operations on them.
+
+4. **Use recursive listing carefully**: Recursive directory listing can be slow for large directory trees. Consider using non-recursive listing and traversing manually if needed.
+
+5. **Leverage automatic directory creation**: Don't manually create parent directories before writing files—the bridge handles this automatically.
+
+## Hooks
+
+The bridge supports all bridge hooks for monitoring and debugging operations. See the [Hooks documentation](/api-reference/fs-bridge/hooks) for complete details and examples.

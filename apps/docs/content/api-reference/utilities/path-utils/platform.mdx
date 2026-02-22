@@ -1,0 +1,411 @@
+---
+title: Platform Utilities
+description: Cross-platform path utilities for Windows and Unix systems
+---
+
+# Platform Utilities
+
+The platform utilities in `@ucdjs/path-utils` provide functions for handling platform-specific path behaviors, particularly for Windows drive letters and path format conversions.
+
+## Windows Path Functions
+
+### getWindowsDriveLetter
+
+Extracts the Windows drive letter from a given string, if present.
+
+#### Signature
+
+```ts
+function getWindowsDriveLetter(str: string): string | null
+```
+
+#### Parameters
+
+- **`str`** (string) - The input string to check for a Windows drive letter.
+
+#### Returns
+
+- (string | null) - The uppercase drive letter (e.g., `"C"`) if found, otherwise `null`.
+
+#### Examples
+
+```ts
+import { getWindowsDriveLetter } from '@ucdjs/path-utils';
+
+// Valid drive letters
+getWindowsDriveLetter('C:');
+// → 'C'
+
+getWindowsDriveLetter('c:\\Windows');
+// → 'C'
+
+getWindowsDriveLetter('D:\\path\\to\\file');
+// → 'D'
+
+// No drive letter
+getWindowsDriveLetter('/unix/path');
+// → null
+
+getWindowsDriveLetter('relative\\path');
+// → null
+
+// Invalid patterns
+getWindowsDriveLetter('1:');
+// → null
+
+getWindowsDriveLetter('prefixC:');
+// → null (must be at start)
+```
+
+### isWindowsDrivePath
+
+Checks if the given path is a Windows drive path (e.g., `C:/`, `D:\`).
+
+#### Signature
+
+```ts
+function isWindowsDrivePath(path: string): boolean
+```
+
+#### Parameters
+
+- **`path`** (string) - The path to check.
+
+#### Returns
+
+- (boolean) - `true` if the path is a Windows drive path with a separator, `false` otherwise.
+
+#### Examples
+
+```ts
+import { isWindowsDrivePath } from '@ucdjs/path-utils';
+
+// Valid drive paths
+isWindowsDrivePath('C:/');
+// → true
+
+isWindowsDrivePath('C:\\');
+// → true
+
+isWindowsDrivePath('D:/path/to/file');
+// → true
+
+isWindowsDrivePath('d:\\folder\\');
+// → true (case-insensitive)
+
+// Without separator
+isWindowsDrivePath('C:');
+// → false
+
+isWindowsDrivePath('C:file.txt');
+// → false
+
+// Non-drive paths
+isWindowsDrivePath('/unix/path');
+// → false
+
+isWindowsDrivePath('relative/path');
+// → false
+```
+
+### stripDriveLetter
+
+Removes the Windows drive letter from a path string.
+
+#### Signature
+
+```ts
+function stripDriveLetter(path: string): string
+```
+
+#### Parameters
+
+- **`path`** (string) - The path to strip the drive letter from.
+
+#### Returns
+
+- (string) - The path without the Windows drive letter.
+
+#### Throws
+
+- [`UNCPathNotSupportedError`](/api-reference/utilities/path-utils/errors#uncpathnotsupportederror) - If the path is a UNC path
+- `TypeError` - If the path is not a string
+
+#### Examples
+
+```ts
+import { stripDriveLetter } from '@ucdjs/path-utils';
+
+// Strip drive letters
+stripDriveLetter('C:/');
+// → '/'
+
+stripDriveLetter('C:\\Windows\\System32');
+// → '\\Windows\\System32'
+
+stripDriveLetter('D:/path/to/file');
+// → '/path/to/file'
+
+// Case-insensitive
+stripDriveLetter('c:\\Users');
+// → '\\Users'
+
+// No drive letter (returned as-is)
+stripDriveLetter('/unix/path');
+// → '/unix/path'
+
+stripDriveLetter('relative/path');
+// → 'relative/path'
+
+// UNC paths are rejected
+stripDriveLetter('\\\\server\\share');
+// ❌ UNCPathNotSupportedError
+```
+
+### isUNCPath
+
+Checks if the given path is a UNC (Universal Naming Convention) path.
+
+#### Signature
+
+```ts
+function isUNCPath(path: string): boolean
+```
+
+#### Parameters
+
+- **`path`** (string) - The path to check.
+
+#### Returns
+
+- (boolean) - `true` if the path is a UNC path, `false` otherwise.
+
+#### Examples
+
+```ts
+import { isUNCPath } from '@ucdjs/path-utils';
+
+// Valid UNC paths
+isUNCPath('\\\\server\\share');
+// → true
+
+isUNCPath('\\\\server\\share\\path\\to\\file');
+// → true
+
+isUNCPath('\\\\192.168.1.1\\share');
+// → true
+
+// Not UNC paths
+isUNCPath('C:\\path\\to\\file');
+// → false
+
+isUNCPath('/unix/path');
+// → false
+
+isUNCPath('//server/share');
+// → false (forward slashes)
+
+// Device namespaces (not UNC)
+isUNCPath('\\\\.\\pipe\\mypipe');
+// → false
+
+isUNCPath('\\\\?\\C:\\path');
+// → false
+```
+
+:::info
+**UNC Path Format**: `\\server\share` - Used for Windows network paths. These are rejected by security functions for safety reasons.
+:::
+
+### assertNotUNCPath
+
+Asserts that a given path is not a UNC path. Throws an error if it is.
+
+#### Signature
+
+```ts
+function assertNotUNCPath(path: string): void
+```
+
+#### Parameters
+
+- **`path`** (string) - The path to check.
+
+#### Throws
+
+- [`UNCPathNotSupportedError`](/api-reference/utilities/path-utils/errors#uncpathnotsupportederror) - If the path is a UNC path
+
+#### Examples
+
+```ts
+import { assertNotUNCPath } from '@ucdjs/path-utils';
+
+// Safe paths (no error)
+assertNotUNCPath('C:\\Windows');
+// ✓ No error
+
+assertNotUNCPath('/usr/local/bin');
+// ✓ No error
+
+assertNotUNCPath('relative/path');
+// ✓ No error
+
+// UNC paths throw error
+assertNotUNCPath('\\\\server\\share');
+// ❌ UNCPathNotSupportedError
+
+assertNotUNCPath('\\\\192.168.1.100\\backup');
+// ❌ UNCPathNotSupportedError
+```
+
+### toUnixFormat
+
+Converts a path to Unix format by normalizing separators, stripping Windows drive letters, and ensuring a leading slash.
+
+#### Signature
+
+```ts
+function toUnixFormat(inputPath: string): string
+```
+
+#### Parameters
+
+- **`inputPath`** (string) - The input path to convert.
+
+#### Returns
+
+- (string) - The path in Unix format.
+
+#### Throws
+
+- [`UNCPathNotSupportedError`](/api-reference/utilities/path-utils/errors#uncpathnotsupportederror) - If the path is a UNC path
+- `TypeError` - If the input is not a string
+
+#### Examples
+
+```ts
+import { toUnixFormat } from '@ucdjs/path-utils';
+
+// Windows paths with backslashes
+toUnixFormat('C:\\Windows\\System32');
+// → '/Windows/System32'
+
+toUnixFormat('D:\\path\\to\\file.txt');
+// → '/path/to/file.txt'
+
+// Mixed separators
+toUnixFormat('C:\\Windows/System32\\file.txt');
+// → '/Windows/System32/file.txt'
+
+// Strip drive letters
+toUnixFormat('C:');
+// → '/'
+
+toUnixFormat('Z:\\deep\\nested\\path');
+// → '/deep/nested/path'
+
+// Unix paths (already in Unix format)
+toUnixFormat('/usr/bin/node');
+// → '/usr/bin/node'
+
+toUnixFormat('relative/path');
+// → '/relative/path'
+
+// Empty or whitespace
+toUnixFormat('');
+// → '/'
+
+toUnixFormat('   ');
+// → '/'
+
+// Path traversal sequences
+toUnixFormat('C:\\folder\\..\\other');
+// → '/other'
+
+// UNC paths are rejected
+toUnixFormat('\\\\server\\share');
+// ❌ UNCPathNotSupportedError
+```
+
+## Platform Detection
+
+### isCaseSensitive
+
+A boolean constant indicating whether the current filesystem is case-sensitive.
+
+#### Type
+
+```ts
+const isCaseSensitive: boolean
+```
+
+#### Behavior
+
+- **Linux** - `true` - Filesystems are case-sensitive
+- **Windows** - `false` - Filesystems are case-insensitive
+- **macOS** - `false` - Filesystems are typically case-insensitive
+
+#### Examples
+
+```ts
+import { isCaseSensitive } from '@ucdjs/path-utils';
+
+if (isCaseSensitive) {
+  console.log('Case-sensitive filesystem (Linux)');
+  // 'File.txt' and 'file.txt' are different files
+} else {
+  console.log('Case-insensitive filesystem (Windows/macOS)');
+  // 'File.txt' and 'file.txt' are the same file
+}
+```
+
+### osPlatform
+
+The current operating system platform, or `null` if not available.
+
+#### Type
+
+```ts
+const osPlatform: NodeJS.Platform | null
+```
+
+#### Possible Values
+
+- `'aix'`
+- `'darwin'` (macOS)
+- `'freebsd'`
+- `'linux'`
+- `'openbsd'`
+- `'sunos'`
+- `'win32'` (Windows)
+- `null` (if platform detection fails)
+
+#### Examples
+
+```ts
+import { osPlatform } from '@ucdjs/path-utils';
+
+switch (osPlatform) {
+  case 'win32':
+    console.log('Running on Windows');
+    break;
+  case 'darwin':
+    console.log('Running on macOS');
+    break;
+  case 'linux':
+    console.log('Running on Linux');
+    break;
+  default:
+    console.log('Unknown or unsupported platform');
+}
+```
+
+## Cross-Platform Patterns
+
+- **Normalize Paths** - Always work in Unix format internally
+- **Detect Windows Paths** - Use `isWindowsDrivePath` to handle Windows-specific logic
+- **Platform-Specific Code** - Use `osPlatform` for platform-specific behavior
+
+:::warning
+**UNC Paths are not supported** - For security reasons, Windows UNC network paths (`\\server\share`) are rejected by all security functions.
+:::

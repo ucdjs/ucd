@@ -1,0 +1,8 @@
+{
+  "title": "Pipelines",
+  "description": "Data processing pipelines for UCD files",
+  "root": true,
+  "pages": [
+    "index"
+  ]
+}

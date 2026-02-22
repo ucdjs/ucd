@@ -1,0 +1,191 @@
+---
+title: Errors
+description: Error types and error handling in bridges
+---
+
+# Error Handling
+
+The bridge system defines several error types to help you handle different error scenarios when working with file system bridges.
+
+## Error Hierarchy
+
+All bridge errors extend `BridgeBaseError`:
+
+```typescript
+abstract class BridgeBaseError extends Error {
+  constructor(message: string, options?: ErrorOptions);
+}
+```
+
+## Error Types
+
+### BridgeGenericError
+
+Generic error wrapper that includes the original error. Used for wrapping unexpected errors that occur during bridge operations.
+
+```typescript
+class BridgeGenericError extends BridgeBaseError {
+  public readonly originalError?: Error;
+}
+```
+
+**Example:**
+```typescript
+try {
+  await bridge.read("file.txt");
+} catch (error) {
+  if (error instanceof BridgeGenericError) {
+    console.error("Generic error:", error.message);
+    console.error("Original error:", error.originalError);
+  }
+}
+```
+
+### BridgeSetupError
+
+Thrown when bridge setup fails. This occurs during bridge initialization when the setup function encounters an error.
+
+```typescript
+class BridgeSetupError extends BridgeBaseError {
+  public readonly originalError?: Error;
+}
+```
+
+**Example:**
+```typescript
+try {
+  const bridge = MyBridge({ basePath: "/invalid/path" });
+} catch (error) {
+  if (error instanceof BridgeSetupError) {
+    console.error("Failed to setup bridge:", error.message);
+    console.error("Original error:", error.originalError);
+  }
+}
+```
+
+### BridgeUnsupportedOperation
+
+Thrown when attempting to use an optional operation that the bridge doesn't support.
+
+```typescript
+class BridgeUnsupportedOperation extends BridgeBaseError {
+  public readonly capability: OptionalCapabilityKey;
+}
+```
+
+**Example:**
+```typescript
+try {
+  await bridge.write("file.txt", "content");
+} catch (error) {
+  if (error instanceof BridgeUnsupportedOperation) {
+    console.error(`Bridge doesn't support ${error.capability} operation`);
+  }
+}
+```
+
+### BridgeFileNotFound
+
+Thrown when a file or directory is not found during an operation.
+
+```typescript
+class BridgeFileNotFound extends BridgeBaseError {
+  public readonly path: string;
+}
+```
+
+**Example:**
+```typescript
+try {
+  await bridge.read("nonexistent.txt");
+} catch (error) {
+  if (error instanceof BridgeFileNotFound) {
+    console.error(`File not found: ${error.path}`);
+  }
+}
+```
+
+### BridgeEntryIsDir
+
+Thrown when a file operation is attempted on a directory (or vice versa).
+
+```typescript
+class BridgeEntryIsDir extends BridgeBaseError {
+  public readonly path: string;
+}
+```
+
+**Example:**
+```typescript
+try {
+  await bridge.read("directory/");
+} catch (error) {
+  if (error instanceof BridgeEntryIsDir) {
+    console.error(`Expected file but found directory: ${error.path}`);
+  }
+}
+```
+
+## Error Handling Patterns
+
+### Basic Error Handling
+
+```typescript
+try {
+  const content = await bridge.read("file.txt");
+} catch (error) {
+  if (error instanceof BridgeFileNotFound) {
+    console.error("File not found:", error.path);
+  } else if (error instanceof BridgeUnsupportedOperation) {
+    console.error("Operation not supported:", error.capability);
+  } else {
+    console.error("Unexpected error:", error);
+  }
+}
+```
+
+### Checking Capabilities Before Operations
+
+Prevent `BridgeUnsupportedOperation` errors by checking capabilities first:
+
+```typescript
+import { hasCapability } from "@ucdjs/fs-bridge";
+
+if (hasCapability(bridge, "write")) {
+  try {
+    await bridge.write("file.txt", "content");
+  } catch (error) {
+    // Handle other errors (e.g., BridgeFileNotFound)
+  }
+} else {
+  console.log("Write operation not supported");
+}
+```
+
+### Error Handling with Hooks
+
+Use hooks to monitor errors across all operations:
+
+```typescript
+bridge.hook("error", (payload) => {
+  console.error(`Error in ${payload.method}:`, payload.error);
+
+  if (payload.error instanceof BridgeFileNotFound) {
+    // Handle file not found
+  } else if (payload.error instanceof BridgeUnsupportedOperation) {
+    // Handle unsupported operation
+  }
+});
+```
+
+## Best Practices
+
+- **Check capabilities first**: Use `hasCapability` or `assertCapability` before calling optional operations to avoid `BridgeUnsupportedOperation` errors.
+
+- **Handle specific errors**: Catch specific error types to provide better error messages and handling.
+
+- **Use error hooks**: Register error hooks to monitor and log errors across all bridge operations.
+
+- **Preserve error context**: When wrapping errors, include the original error in `originalError` to preserve the error chain.
+
+- **Provide helpful messages**: Error messages should clearly indicate what went wrong and how to fix it.
