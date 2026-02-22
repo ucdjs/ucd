@@ -27,7 +27,7 @@ export function setupCors<TEnv extends Env>(app: Hono<TEnv>): void {
   app.use("/*", cors({
     allowHeaders: ["Content-Type"],
     allowMethods: ["POST", "HEAD", "GET", "OPTIONS"],
-    exposeHeaders: ["Content-Length", "X-Kuma-Revision"],
+    exposeHeaders: ["Content-Length"],
     maxAge: 600,
     credentials: true,
     origin(origin, c) {
