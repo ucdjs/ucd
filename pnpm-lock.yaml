@@ -97,9 +97,6 @@ catalogs:
     typescript:
       specifier: 5.9.3
       version: 5.9.3
-    vite:
-      specifier: 8.0.0-beta.15
-      version: 8.0.0-beta.15
     vite-plugin-inspect:
       specifier: 11.3.3
       version: 11.3.3
@@ -339,6 +336,7 @@ overrides:
   semver: 7.7.4
   solid-js: 1.9.11
   undici-types: 7.22.0
+  vite: 8.0.0-beta.15
 
 patchedDependencies:
   '@asteasolutions/zod-to-openapi@8.4.1':
@@ -546,11 +544,14 @@ importers:
       eslint-plugin-format:
         specifier: catalog:lint
         version: 1.4.0(eslint@10.0.0(jiti@2.6.1))
+      pathe:
+        specifier: catalog:runtime
+        version: 2.0.3
       typescript:
         specifier: catalog:build
         version: 5.9.3
       vite:
-        specifier: catalog:build
+        specifier: 8.0.0-beta.15
         version: 8.0.0-beta.15(@types/node@22.19.9)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)
       wrangler:
         specifier: 4.66.0
@@ -747,7 +748,7 @@ importers:
         specifier: catalog:build
         version: 5.9.3
       vite:
-        specifier: catalog:build
+        specifier: 8.0.0-beta.15
         version: 8.0.0-beta.15(@types/node@22.19.9)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)
       vite-plugin-inspect:
         specifier: catalog:build
@@ -1418,7 +1419,7 @@ importers:
         specifier: catalog:build
         version: 5.9.3
       vite:
-        specifier: catalog:build
+        specifier: 8.0.0-beta.15
         version: 8.0.0-beta.15(@types/node@22.19.9)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2)
       vite-plugin-inspect:
         specifier: catalog:build
@@ -5061,7 +5062,7 @@ packages:
   '@tailwindcss/vite@4.2.0':
     resolution: {integrity: sha512-da9mFCaHpoOgtQiWtDGIikTrSpUFBtIZCG3jy/u2BGV+l/X1/pbxzmIUxNt6JWm19N3WtGi4KlJdSH/Si83WOA==}
     peerDependencies:
-      vite: ^5.2.0 || ^6 || ^7
+      vite: 8.0.0-beta.15
 
   '@tanstack/devtools-client@0.0.5':
     resolution: {integrity: sha512-hsNDE3iu4frt9cC2ppn1mNRnLKo2uc1/1hXAyY9z4UYb+o40M2clFAhiFoo4HngjfGJDV3x18KVVIq7W4Un+zA==}
@@ -5085,7 +5086,7 @@ packages:
     resolution: {integrity: sha512-5dXxMznSxx8NNpO9IbDC011sIdvTVvsoLaLAxm69dgDAX0+2OB8gdXrQp8dnzeNMvszKCgRxI2cgr/pjPgmnNw==}
     engines: {node: '>=18'}
     peerDependencies:
-      vite: ^6.0.0 || ^7.0.0
+      vite: 8.0.0-beta.15
 
   '@tanstack/devtools@0.10.7':
     resolution: {integrity: sha512-ScwnFjJTMRUd6miQax7sEhq9winalQIVhm0MTX3YfjoGjMzB/jzjzYlLOraen8hcxMHH9CifTjio8ZVdqSRBRg==}
@@ -5188,7 +5189,7 @@ packages:
     peerDependencies:
       react: '>=18.0.0 || >=19.0.0'
       react-dom: '>=18.0.0 || >=19.0.0'
-      vite: '>=7.0.0'
+      vite: 8.0.0-beta.15
 
   '@tanstack/react-store@0.8.1':
     resolution: {integrity: sha512-XItJt+rG8c5Wn/2L/bnxys85rBpm0BfMbhb4zmPVLXAKY9POrp1xd6IbU4PKoOI+jSEGc3vntPRfLGSgXfE2Ig==}
@@ -5220,7 +5221,7 @@ packages:
     peerDependencies:
       '@rsbuild/core': '>=1.0.2'
       '@tanstack/react-router': ^1.161.1
-      vite: '>=5.0.0 || >=6.0.0 || >=7.0.0'
+      vite: 8.0.0-beta.15
       vite-plugin-solid: ^2.11.10
       webpack: '>=5.92.0'
     peerDependenciesMeta:
@@ -5258,7 +5259,7 @@ packages:
     resolution: {integrity: sha512-BmrVIwtUUT7xuL2KOx1Es0x2ekhP0ga43nDSnAbQK0R9AeFFZVQwAtMinp21VuS8je77dWTie6wjLuUuUgoWng==}
     engines: {node: '>=22.12.0'}
     peerDependencies:
-      vite: '>=7.0.0'
+      vite: 8.0.0-beta.15
 
   '@tanstack/start-server-core@1.161.1':
     resolution: {integrity: sha512-C0gMPzzjGD2Tg+Iqxrx8ztk/82uwdcBxqJ3yXVFXoJ797rzM6C+i+WMt87JSlRPLLp2EPlgilSAF2RMo2UQoWA==}
@@ -5601,7 +5602,7 @@ packages:
     resolution: {integrity: sha512-VIcFLdRi/VYRU8OL/puL7QXMYafHmqOnwTZY50U1JPlCNj30PxCMx65c494b1K9be9hX83KVt0+gTEwTWLqToA==}
     engines: {node: ^20.19.0 || >=22.12.0}
     peerDependencies:
-      vite: ^4.2.0 || ^5.0.0 || ^6.0.0 || ^7.0.0
+      vite: 8.0.0-beta.15
 
   '@vitest/coverage-istanbul@4.1.0-beta.4':
     resolution: {integrity: sha512-KeqwD100a56pKpI2XU/usS3hgdTV9fgcvpZ9jrbdXkmjoWbi792jLfY10k8IUEG+ft+QCwLtIeDlI5idDxAgdA==}
@@ -5628,7 +5629,7 @@ packages:
     resolution: {integrity: sha512-JIHUUrevhes/tP8U3TqPHo/n8lmruITvC9YdnbYyA+L0Y9zyYZ5zW/07+i/aXpmabtxIiJG7eKIv2ootcBu4Vw==}
     peerDependencies:
       msw: ^2.4.9
-      vite: ^6.0.0 || ^7.0.0-0
+      vite: 8.0.0-beta.15
     peerDependenciesMeta:
       msw:
         optional: true
@@ -7114,7 +7115,7 @@ packages:
       mdast-util-mdx-jsx: '*'
       next: ^15.3.0 || ^16.0.0
       react: '*'
-      vite: 6.x.x || 7.x.x
+      vite: 8.0.0-beta.15
     peerDependenciesMeta:
       '@fumadocs/mdx-remote':
         optional: true
@@ -8248,7 +8249,7 @@ packages:
     peerDependencies:
       rolldown: 1.0.0-rc.5
       rollup: ^4
-      vite: ^7 || ^8 || >=8.0.0-0
+      vite: 8.0.0-beta.15
       xml2js: ^0.6.2
     peerDependenciesMeta:
       rolldown:
@@ -9631,19 +9632,19 @@ packages:
   vite-dev-rpc@1.1.0:
     resolution: {integrity: sha512-pKXZlgoXGoE8sEKiKJSng4hI1sQ4wi5YT24FCrwrLt6opmkjlqPPVmiPWWJn8M8byMxRGzp1CrFuqQs4M/Z39A==}
     peerDependencies:
-      vite: ^2.9.0 || ^3.0.0-0 || ^4.0.0-0 || ^5.0.0-0 || ^6.0.1 || ^7.0.0-0
+      vite: 8.0.0-beta.15
 
   vite-hot-client@2.1.0:
     resolution: {integrity: sha512-7SpgZmU7R+dDnSmvXE1mfDtnHLHQSisdySVR7lO8ceAXvM0otZeuQQ6C8LrS5d/aYyP/QZ0hI0L+dIPrm4YlFQ==}
     peerDependencies:
-      vite: ^2.6.0 || ^3.0.0 || ^4.0.0 || ^5.0.0-0 || ^6.0.0-0 || ^7.0.0-0
+      vite: 8.0.0-beta.15
 
   vite-plugin-inspect@11.3.3:
     resolution: {integrity: sha512-u2eV5La99oHoYPHE6UvbwgEqKKOQGz86wMg40CCosP6q8BkB6e5xPneZfYagK4ojPJSj5anHCrnvC20DpwVdRA==}
     engines: {node: '>=14'}
     peerDependencies:
       '@nuxt/kit': '*'
-      vite: ^6.0.0 || ^7.0.0-0
+      vite: 8.0.0-beta.15
     peerDependenciesMeta:
       '@nuxt/kit':
         optional: true
@@ -9651,7 +9652,7 @@ packages:
   vite-tsconfig-paths@6.1.1:
     resolution: {integrity: sha512-2cihq7zliibCCZ8P9cKJrQBkfgdvcFkOOc3Y02o3GWUDLgqjWsZudaoiuOwO/gzTzy17cS5F7ZPo4bsnS4DGkg==}
     peerDependencies:
-      vite: '*'
+      vite: 8.0.0-beta.15
 
   vite@8.0.0-beta.15:
     resolution: {integrity: sha512-RHX7IvsJlEfjyA1rS7MY0UsmF91etdLAamslHR5lfuO3W/BXRdXm2tRE64ztpSPZbKqB4wAAZ0AwtF6QzfKZLA==}
@@ -9699,7 +9700,7 @@ packages:
   vitefu@1.1.1:
     resolution: {integrity: sha512-B/Fegf3i8zh0yFbpzZ21amWzHmuNlLlmJT6n7bu5e+pCHUKQIfXSYokrqOBGEMMe9UG2sostKQF9mml/vYaWJQ==}
     peerDependencies:
-      vite: ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0-beta.0
+      vite: 8.0.0-beta.15
     peerDependenciesMeta:
       vite:
         optional: true
@@ -9724,7 +9725,7 @@ packages:
       '@vitest/ui': 4.1.0-beta.4
       happy-dom: '*'
       jsdom: '*'
-      vite: ^6.0.0 || ^7.0.0 || ^8.0.0-0
+      vite: 8.0.0-beta.15
     peerDependenciesMeta:
       '@edge-runtime/vm':
         optional: true

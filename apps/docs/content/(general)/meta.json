@@ -1,9 +1,13 @@
 {
-  "title": "Getting Started",
+  "title": "General",
   "description": "Learn how to work with and integrate UCD.js",
   "root": true,
+  "icon": "Building",
   "pages": [
     "index",
-    "installation"
+    "unicode-basics",
+    "features",
+    "installation",
+    "faq"
   ]
 }

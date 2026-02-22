@@ -32,6 +32,11 @@ const config = defineConfig({
       },
     }),
   ],
+  resolve: {
+    alias: {
+      "node:path": "pathe",
+    },
+  },
 });
 
 export default config;

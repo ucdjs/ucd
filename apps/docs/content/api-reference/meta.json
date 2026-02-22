@@ -2,7 +2,9 @@
   "title": "API Reference",
   "description": "API Reference for UCD.js packages",
   "root": true,
+  "icon": "Code2",
   "pages": [
+    "index",
     "client",
     "schemas",
     "utilities",

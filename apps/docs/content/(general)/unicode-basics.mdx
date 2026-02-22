@@ -1,0 +1,42 @@
+---
+title: Unicode Basics
+description: A short primer on Unicode and the UCD
+---
+
+# Unicode Basics
+
+Before diving deep into UCD.js, it's helpful to understand what Unicode and the **Unicode Character Database (UCD)** are, and why they matter.
+
+## What is Unicode?
+
+[Unicode](https://home.unicode.org/) is the universal standard for character encoding. Before Unicode, different languages and systems used different, incompatible encodings (like ASCII or Shift_JIS), which led to a mess when sharing text globally.
+
+Unicode solves this by assigning a unique, immutable number—called a **Code Point**—to every character, symbol, and emoji across all languages, past and present. For example:
+- **`U+0041`** is `LATIN CAPITAL LETTER A`
+- **`U+1F600`** is `GRINNING FACE` 😀
+
+## The Unicode Character Database (UCD)
+
+Unicode is more than just a list of characters and numbers. Characters have complex behaviors:
+- Some characters combine together (like an `e` and an accent `´` becoming `é`).
+- Some characters change shape depending on context (like Arabic or Devanagari).
+- Characters have categories (uppercase, lowercase, number, symbol).
+- Characters belong to specific scripts or blocks.
+
+All of this metadata is meticulously documented and maintained by the Unicode Consortium in a collection of data files known as the **Unicode Character Database (UCD)**.
+
+### Why is the UCD hard to use?
+
+The UCD is distributed primarily as a series of plain text (`.txt`) and XML files. These files have varying, legacy formats. For example, `UnicodeData.txt` is a semicolon-separated file where empty fields have specific default meanings based on the character's category.
+
+Parsing these files correctly, efficiently, and keeping up-to-date with new Unicode versions is a monumental task.
+
+## How UCD.js helps
+
+This is exactly where **UCD.js** comes in. Instead of writing custom, brittle parsers for `Blocks.txt` or `DerivedCoreProperties.txt`, UCD.js provides:
+
+1. **Pre-built Pipelines** to transform raw UCD files into modern JSON/TypeScript objects.
+2. **Strict Schemas** so you know exactly what properties exist on a given character.
+3. **APIs and Clients** to query these properties effortlessly in your JavaScript applications.
+
+By using UCD.js, you can focus on building your app, while we handle the complexities of the Unicode standard.

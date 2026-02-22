@@ -1,0 +1,46 @@
+---
+title: Features
+description: What makes UCD.js special?
+---
+
+# Features
+
+UCD.js is designed with modern developer experience and performance in mind. Here's what makes it the go-to solution for working with Unicode data in JavaScript.
+
+## Type Safety 🛡️
+
+The entire monorepo is built using **TypeScript**. We automatically generate Zod schemas based on the latest Unicode Character Database specifications, meaning that when you fetch a Unicode property using `@ucdjs/client`, your IDE instantly knows exactly what shapes and values to expect.
+
+- **Auto-completion** for all Unicode block names and properties.
+- **Strict runtime validation** ensuring data integrity.
+- **Self-documenting code** through explicit typings.
+
+## Modular Architecture 🧩
+
+Why pull down hundreds of megabytes of Unicode data if you only need to look up emojis? UCD.js is highly modular.
+
+You can mix and match packages to fit your needs:
+- Just need schemas? Import `@ucdjs/schemas`.
+- Want file fetching abstractions? Use `@ucdjs/fs-bridge`.
+- Processing data raw? Use `@ucdjs/pipelines`.
+
+## File System Agnostic 📁
+
+Using the `@ucdjs/fs-bridge` package, UCD.js abstract away *how* you access files. You can read UCD `.txt` or `.xml` data:
+- From the **local file system** (using `node:fs`).
+- Over **HTTP/HTTPS** directly from `unicode.org`.
+- From **in-memory** stores or virtual filesystems for testing.
+
+This means the core client works identically in Node.js, Deno, Bun, Cloudflare Workers, and even the Browser.
+
+## Built-in Pipelines ⚙️
+
+Working with the raw `UnicodeData.txt` is notoriously difficult. Our robust pipeline engine (`@ucdjs/pipelines-core`) transforms these legacy formats into structured, easily digestible JSON artifacts using a sophisticated DAG (Directed Acyclic Graph) executor.
+
+- **Parallel execution** for maximum parsing performance.
+- **Visual UI** for debugging complex data dependencies.
+- **Extensible** for creating custom transforms of the UCD data.
+
+## Command Line Interface 💻
+
+The interactive CLI (`@ucdjs/cli`) gives you powerful tooling without writing any code. You can list available data, search characters, execute data pipelines, and start a local API server right from your terminal.

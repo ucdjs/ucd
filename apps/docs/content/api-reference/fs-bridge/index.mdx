@@ -1,30 +1,39 @@
 ---
-title: Overview
+title: FS-Bridge
 description: File system abstraction layer
 ---
 
 import { Cards, Card } from 'fumadocs-ui/components/card';
 import { Callout } from 'fumadocs-ui/components/callout';
+import { Step, Steps } from 'fumadocs-ui/components/steps';
 
 # FS-Bridge
 
 The `@ucdjs/fs-bridge` package provides an abstraction layer for file system operations, allowing different storage backends to be used interchangeably. This enables your code to work seamlessly across different environments—from Node.js file systems to HTTP-based remote storage.
 
-## Installation
+<Callout type="info">
+  The `fs-bridge` is used internally by the `@ucdjs/client` and `@ucdjs/cli` to seamlessly switch between fetching UCD files locally or over the network without changing the core application logic.
+</Callout>
+
+## Getting Started
+
+<Steps>
+<Step>
+
+### Installation
+
+Install the bridge using your preferred package manager.
 
 ```package-install
 @ucdjs/fs-bridge
 ```
 
-## Overview
+</Step>
+<Step>
 
-The bridge system uses a consistent API across all implementations, ensuring type safety and predictable behavior. Bridges can be read-only (like HTTP) or full-featured (like Node.js), with optional capabilities automatically detected and type-checked.
+### Initialization
 
-<Callout type="info">
-  The `fs-bridge` is used internally by the `@ucdjs/client` and `@ucdjs/cli` to seamlessly switch between fetching UCD files locally or over the network.
-</Callout>
-
-## Quick Start
+Import the specific bridge you want to use. The Node.js bridge is full-featured and requires a `basePath`.
 
 ```typescript title="bridge.ts"
 import { createNodeFileSystemBridge } from "@ucdjs/fs-bridge/bridges/node";
@@ -32,7 +41,16 @@ import { createNodeFileSystemBridge } from "@ucdjs/fs-bridge/bridges/node";
 const bridge = createNodeFileSystemBridge({
   basePath: "/path/to/directory"
 });
+```
 
+</Step>
+<Step>
+
+### Usage
+
+The bridge exposes standard file system operations that are completely agnostic to the underlying storage mechanism.
+
+```typescript title="bridge.ts"
 // Read a file (returns a Buffer/Uint8Array or string)
 const content = await bridge.read("file.txt", "utf8");
 
@@ -42,6 +60,9 @@ const exists = await bridge.exists("file.txt");
 // List directory contents
 const entries = await bridge.listdir("subdirectory");
 ```
+
+</Step>
+</Steps>
 
 ## Available Bridges
 
