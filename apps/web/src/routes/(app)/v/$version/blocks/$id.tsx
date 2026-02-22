@@ -6,7 +6,7 @@ import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 import { Separator } from "@ucdjs-internal/shared-ui/ui/separator";
 import { SidebarTrigger } from "@ucdjs-internal/shared-ui/ui/sidebar";
-import { Grid3X3, ArrowLeft } from "lucide-react";
+import { ArrowLeft, Grid3X3 } from "lucide-react";
 
 export const Route = createFileRoute("/(app)/v/$version/blocks/$id")({
   component: BlockDetailPage,
@@ -23,7 +23,7 @@ function BlockDetailPage() {
   const sampleCharacters = [];
   const sampleSize = Math.min(16, block.characterCount);
   const step = Math.max(1, Math.floor(block.characterCount / sampleSize));
-  
+
   for (let i = 0; i < sampleSize && (block.startCodepoint + i * step) <= block.endCodepoint; i++) {
     const codepoint = block.startCodepoint + i * step;
     try {
@@ -54,7 +54,13 @@ function BlockDetailPage() {
               </BreadcrumbItem>
               <BreadcrumbSeparator className="hidden md:block" />
               <BreadcrumbItem className="hidden md:block">
-                <BreadcrumbLink render={<Link to="/v/$version" params={{ version }}>Unicode {version}</Link>} />
+                <BreadcrumbLink render={(
+                  <Link to="/v/$version" params={{ version }}>
+                    Unicode
+                    {version}
+                  </Link>
+                )}
+                />
               </BreadcrumbItem>
               <BreadcrumbSeparator className="hidden md:block" />
               <BreadcrumbItem className="hidden md:block">
@@ -96,7 +102,9 @@ function BlockDetailPage() {
                 {block.name}
               </h1>
               <p className="text-sm text-muted-foreground">
-                Unicode Block • Version {version}
+                Unicode Block • Version
+                {" "}
+                {version}
               </p>
             </div>
           </div>
@@ -125,7 +133,8 @@ function BlockDetailPage() {
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-semibold font-mono">
-                U+{block.start}
+                U+
+                {block.start}
               </p>
             </CardContent>
           </Card>
@@ -138,7 +147,8 @@ function BlockDetailPage() {
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-semibold font-mono">
-                U+{block.end}
+                U+
+                {block.end}
               </p>
             </CardContent>
           </Card>
@@ -151,7 +161,9 @@ function BlockDetailPage() {
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-semibold">
-                {((block.endCodepoint - block.startCodepoint + 1) / 1024).toFixed(1)} KB
+                {((block.endCodepoint - block.startCodepoint + 1) / 1024).toFixed(1)}
+                {" "}
+                KB
               </p>
             </CardContent>
           </Card>
@@ -163,28 +175,30 @@ function BlockDetailPage() {
             <CardTitle className="text-sm font-medium">Sample Characters</CardTitle>
           </CardHeader>
           <CardContent>
-            {sampleCharacters.length > 0 ? (
-              <div className="grid grid-cols-8 sm:grid-cols-16 gap-2">
-                {sampleCharacters.map((char, index) => (
-                  <Link
-                    key={index}
-                    to="/v/$version/u/$hex"
-                    params={{ version, hex: char.hex }}
-                    className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-muted transition-colors"
-                    title={`${char.codepoint}: Click to view details`}
-                  >
-                    <span className="text-2xl">{char.character}</span>
-                    <span className="text-xs text-muted-foreground font-mono">
-                      {char.codepoint}
-                    </span>
-                  </Link>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground text-center py-8">
-                No displayable characters in this block
-              </p>
-            )}
+            {sampleCharacters.length > 0
+              ? (
+                  <div className="grid grid-cols-8 sm:grid-cols-16 gap-2">
+                    {sampleCharacters.map((char, index) => (
+                      <Link
+                        key={index}
+                        to="/v/$version/u/$hex"
+                        params={{ version, hex: char.hex }}
+                        className="flex flex-col items-center gap-1 p-2 rounded-lg hover:bg-muted transition-colors"
+                        title={`${char.codepoint}: Click to view details`}
+                      >
+                        <span className="text-2xl">{char.character}</span>
+                        <span className="text-xs text-muted-foreground font-mono">
+                          {char.codepoint}
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+                )
+              : (
+                  <p className="text-sm text-muted-foreground text-center py-8">
+                    No displayable characters in this block
+                  </p>
+                )}
           </CardContent>
         </Card>
 
@@ -195,12 +209,26 @@ function BlockDetailPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              The <strong>{block.name}</strong> block is a Unicode block containing 
-              {block.characterCount.toLocaleString()} characters ranging from U+{block.start} to U+{block.end}.
+              The
+              {" "}
+              <strong>{block.name}</strong>
+              {" "}
+              block is a Unicode block containing
+              {block.characterCount.toLocaleString()}
+              {" "}
+              characters ranging from U+
+              {block.start}
+              {" "}
+              to U+
+              {block.end}
+              .
             </p>
             <p className="text-sm text-muted-foreground">
-              This block is part of the Unicode Standard version {version}. You can explore 
-              individual characters by clicking on the sample characters above or by browsing 
+              This block is part of the Unicode Standard version
+              {" "}
+              {version}
+              . You can explore
+              individual characters by clicking on the sample characters above or by browsing
               the full range in the file explorer.
             </p>
           </CardContent>

@@ -57,6 +57,7 @@ const config = defineConfig({
     sentryTanstackStart({
       org: "ucdjs",
       project: "web",
+      // eslint-disable-next-line node/prefer-global/process
       authToken: process.env.SENTRY_AUTH_TOKEN,
     }),
   ],
