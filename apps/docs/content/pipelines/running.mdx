@@ -1,0 +1,40 @@
+---
+title: Running Pipelines
+description: Executing pipeline configurations
+---
+
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+# Running Pipelines
+
+Pipelines can be executed either programmatically using the `@ucdjs/pipelines-core` library or via the `ucd` CLI tool, which utilizes the pipeline executor under the hood.
+
+<Tabs items={["CLI", "Programmatic"]}>
+  <Tab value="CLI">
+    The CLI provides an easy way to interact with defined pipelines in your project.
+
+    ```bash
+    # List available pipelines in your project
+    ucd pipelines list
+
+    # Run a specific pipeline by ID
+    ucd pipelines run my-pipeline
+    ```
+  </Tab>
+  <Tab value="Programmatic">
+    To run pipelines programmatically, you use `createPipelineExecutor` from `@ucdjs/pipelines-core`. This executor manages the Directed Acyclic Graph (DAG) execution, resolving dependencies, running routes in parallel where possible, and handling source resolution.
+
+    ```ts
+    import { createPipelineExecutor } from "@ucdjs/pipelines-core";
+
+    const executor = createPipelineExecutor({ 
+      pipelines: [myPipeline] 
+    });
+    
+    // Run the defined pipeline
+    const result = await executor.run();
+    ```
+  </Tab>
+</Tabs>
+
+The executor analyzes the dependencies between routes defined by their required artifacts and ensures they execute in the correct topological order. If an error occurs in a route, it halts downstream dependencies while allowing independent routes to complete if possible.

@@ -3,38 +3,43 @@ title: Shared
 description: Shared utilities across UCD.js packages
 ---
 
+import { Callout } from 'fumadocs-ui/components/callout';
+
 # Shared
 
 The `@ucdjs-internal/shared` package provides common utilities and helper functions used across the UCD.js ecosystem.
 
 ## Installation
 
-```bash npm
-npm install @ucdjs-internal/shared
-```
-
-```bash pnpm
-pnpm add @ucdjs-internal/shared
-```
-
-```bash yarn
-yarn add @ucdjs-internal/shared
+```package-install
+@ucdjs-internal/shared
 ```
 
 ## Overview
 
 This package contains shared functionality that is used by multiple UCD.js packages, helping to maintain consistency and reduce code duplication across the monorepo.
 
-## Use Cases
+<Callout type="info">
+  This package is primarily for internal use within the UCD.js ecosystem. If you're building on top of UCD.js, you typically won't need to install this package directly.
+</Callout>
 
-- Internal utility functions used by UCD.js core packages
-- Common type definitions and interfaces
-- Shared helper methods for data processing
+## Features
 
-:::note
-This package is primarily for internal use within the UCD.js ecosystem. If you're building on top of UCD.js, you typically won't need to install this package directly.
-:::
+- **Async Utilities**: Helpers for managing concurrency (`createConcurrencyLimiter`) and handling promises (`tryCatch`).
+- **Configuration**: Types and functions for loading and parsing `ucd.config.ts`.
+- **Fetch Wrappers**: Consistent HTTP fetching with error handling and retry logic.
+- **Type Guards**: Shared TypeScript type guards.
+- **JSON Utilities**: Safe JSON parsing and stringification.
 
-## API Reference
+## Example
 
-Documentation for specific utilities and functions will be added as the API stabilizes.
+```typescript title="shared-example.ts"
+import { tryCatch, createConcurrencyLimiter } from "@ucdjs-internal/shared";
+
+// Safely execute async code
+const [error, data] = await tryCatch(fetchData());
+
+// Limit concurrency for multiple tasks
+const limit = createConcurrencyLimiter(5);
+await Promise.all(tasks.map(task => limit(() => processTask(task))));
+```

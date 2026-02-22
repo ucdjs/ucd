@@ -1,0 +1,139 @@
+---
+title: CLI Overview
+description: Command-line interface for UCD operations
+---
+
+import { Cards, Card } from 'fumadocs-ui/components/card';
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Steps, Step } from 'fumadocs-ui/components/steps';
+
+# Command-Line Interface (CLI)
+
+The `@ucdjs/cli` package provides a command-line interface for working with the Unicode Character Database (UCD). It allows you to explore Unicode data, manage UCD stores, generate code, inspect files, and run data processing pipelines directly from your terminal.
+
+## Installation
+
+You can install the CLI globally or use it via `npx` / `pnpm dlx`.
+
+```package-install
+npm install -g @ucdjs/cli
+```
+
+<Callout type="info">
+  When using `npx` or `pnpm dlx`, simply prefix the commands below with your package runner (e.g., `npx @ucdjs/cli char A`).
+</Callout>
+
+## Usage
+
+Run the CLI using the `ucd` command:
+
+```bash
+ucd [command] [...flags]
+```
+
+To see all available commands and global flags, run:
+
+```bash
+ucd --help
+```
+
+## Command Categories
+
+The CLI is organized into several subcommands, each focusing on a specific domain of the UCD ecosystem.
+
+<Cards>
+  <Card title="Data Exploration" href="#exploration-commands" description="Commands like 'char', 'block', and 'script' for querying Unicode data." />
+  <Card title="Store Management" href="#store-commands" description="Manage local UCD stores (init, mirror, sync, analyze)." />
+  <Card title="Code Generation" href="#codegen-commands" description="Generate TypeScript code and types from UCD data." />
+  <Card title="Pipelines" href="#pipeline-commands" description="Run and manage UCD data processing pipelines." />
+</Cards>
+
+---
+
+## Exploration Commands
+
+These commands allow you to quickly look up Unicode information directly from the CLI.
+
+<Steps>
+<Step>
+### `char` command
+Get detailed information about a specific Unicode character.
+```bash
+ucd char A
+ucd char U+0041
+```
+</Step>
+<Step>
+### `block` command
+List characters or get information about a specific Unicode block.
+```bash
+ucd block "Basic Latin"
+```
+</Step>
+<Step>
+### `script` command
+List characters belonging to a specific Unicode script.
+```bash
+ucd script Latin
+```
+</Step>
+</Steps>
+
+---
+
+## Store Commands
+
+Manage local UCD stores. A store is a local cache of UCD files that can be used by other `@ucdjs` packages.
+
+- `ucd store init`: Initialize a new UCD store in the current directory.
+- `ucd store mirror`: Mirror UCD files from a remote source to the local store.
+- `ucd store sync`: Synchronize the local store with the remote source.
+- `ucd store analyze`: Analyze the contents of the local store.
+- `ucd store status`: Check the status of the local store.
+- `ucd store verify`: Verify the integrity of the local store.
+
+---
+
+## Codegen Commands
+
+Generate TypeScript code and types from UCD data.
+
+- `ucd codegen fields`: Generate TypeScript types for UCD fields.
+
+---
+
+## Pipeline Commands
+
+Run and manage UCD data processing pipelines. Pipelines are used to transform raw UCD files into structured data or artifacts.
+
+- `ucd pipelines run`: Run a pipeline from the command line.
+- `ucd pipelines list`: List available pipelines in the current project.
+
+---
+
+## File & Lockfile Commands
+
+Interact with UCD files directly.
+
+### `files`
+
+- `ucd files list`: List available files for a specific UCD version.
+- `ucd files get`: Download a specific UCD file.
+- `ucd files info`: Get metadata about a specific UCD file.
+
+### `lockfile`
+
+Inspect and validate UCD store lockfiles (`ucd.lock`).
+
+- `ucd lockfile info`: Display information about the lockfile.
+- `ucd lockfile validate`: Validate the lockfile against the store contents.
+- `ucd lockfile hash`: Calculate the hash of the lockfile.
+
+## Global Flags
+
+The following flags are available on all commands:
+
+- `--help`, `-h`: Show help message for the current command.
+- `--version`: Show the version number and exit.
+- `--json`: Output the result in JSON format (useful for scripting).
+- `--force`: Force the operation (e.g., overwrite existing files).

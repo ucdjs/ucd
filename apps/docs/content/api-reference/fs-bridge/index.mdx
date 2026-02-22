@@ -3,43 +3,38 @@ title: Overview
 description: File system abstraction layer
 ---
 
-## Installation
+import { Cards, Card } from 'fumadocs-ui/components/card';
+import { Callout } from 'fumadocs-ui/components/callout';
 
-<Tabs items={['npm', 'pnpm', 'yarn']}>
-  <Tab value="npm">
-    ```bash npm
-    npm install @ucdjs/fs-bridge
-    ```
-  </Tab>
-  <Tab value="pnpm">
-    ```bash pnpm
-    pnpm add @ucdjs/fs-bridge
-    ```
-  </Tab>
-  <Tab value="yarn">
-    ```bash yarn
-    yarn add @ucdjs/fs-bridge
-    ```
-  </Tab>
-</Tabs>
-
-## Overview
+# FS-Bridge
 
 The `@ucdjs/fs-bridge` package provides an abstraction layer for file system operations, allowing different storage backends to be used interchangeably. This enables your code to work seamlessly across different environments—from Node.js file systems to HTTP-based remote storage.
 
+## Installation
+
+```package-install
+@ucdjs/fs-bridge
+```
+
+## Overview
+
 The bridge system uses a consistent API across all implementations, ensuring type safety and predictable behavior. Bridges can be read-only (like HTTP) or full-featured (like Node.js), with optional capabilities automatically detected and type-checked.
+
+<Callout type="info">
+  The `fs-bridge` is used internally by the `@ucdjs/client` and `@ucdjs/cli` to seamlessly switch between fetching UCD files locally or over the network.
+</Callout>
 
 ## Quick Start
 
-```typescript
-import NodeFileSystemBridge from "@ucdjs/fs-bridge/bridges/node";
+```typescript title="bridge.ts"
+import { createNodeFileSystemBridge } from "@ucdjs/fs-bridge/bridges/node";
 
-const bridge = NodeFileSystemBridge({
+const bridge = createNodeFileSystemBridge({
   basePath: "/path/to/directory"
 });
 
-// Read a file
-const content = await bridge.read("file.txt");
+// Read a file (returns a Buffer/Uint8Array or string)
+const content = await bridge.read("file.txt", "utf8");
 
 // Check if a file exists
 const exists = await bridge.exists("file.txt");
@@ -48,12 +43,14 @@ const exists = await bridge.exists("file.txt");
 const entries = await bridge.listdir("subdirectory");
 ```
 
-## Bridges
+## Available Bridges
 
 The package includes ready-to-use bridge implementations:
 
-- **[Node.js Bridge](/api-reference/fs-bridge/bridges/node)** - Full-featured bridge for local file system access
-- **[HTTP Bridge](/api-reference/fs-bridge/bridges/http)** - Read-only bridge for accessing files over HTTP/HTTPS
+<Cards>
+  <Card title="Node.js Bridge" href="/api-reference/fs-bridge/bridges/node" description="Full-featured bridge for local file system access." />
+  <Card title="HTTP Bridge" href="/api-reference/fs-bridge/bridges/http" description="Read-only bridge for accessing files over HTTP/HTTPS." />
+</Cards>
 
 ## Documentation
 

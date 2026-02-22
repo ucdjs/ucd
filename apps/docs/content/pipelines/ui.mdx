@@ -1,0 +1,27 @@
+---
+title: UI
+description: Visualizing pipeline execution
+---
+
+# Visualizing Pipelines
+
+The `@ucdjs/pipelines-ui` package offers a web-based interface for visualizing pipeline execution, inspecting logs, and debugging route dependencies.
+
+This provides a clear visual representation of the Directed Acyclic Graph (DAG) created by the route dependencies, making it easier to understand complex data processing flows.
+
+## Starting the UI
+
+You can start the pipeline visualization UI via the CLI by appending the `--ui` flag when running a pipeline.
+
+```bash
+ucd pipelines run my-pipeline --ui
+```
+
+This command will open a local web server displaying the UI. The interface provides several views and tools:
+
+- **DAG Visualization**: A visual graph showing the dependencies and execution order of the defined routes.
+- **Execution Timings**: Information about the execution duration for each route and the entire pipeline.
+- **Artifact Inspection**: The ability to inspect the structured artifacts emitted by each completed route.
+- **Logs**: Detailed execution logs and error messages associated with individual routes.
+
+This visual feedback is invaluable when developing custom pipelines or debugging data processing errors.

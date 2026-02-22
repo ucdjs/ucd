@@ -1,0 +1,33 @@
+---
+title: Sources
+description: Pipeline inputs and data providers
+---
+
+# Sources
+
+Sources define where the raw Unicode Character Database (UCD) files come from. They provide the initial inputs to the pipeline execution.
+
+A source can be local files, HTTP URLs, in-memory data, or any other source that yields file contents.
+
+## Defining a Source
+
+You can create a custom source using `definePipelineSource` from `@ucdjs/pipelines-core`.
+
+```ts
+import { definePipelineSource } from "@ucdjs/pipelines-core";
+
+const mySource = definePipelineSource({
+  id: "local-files",
+  resolve: async (ctx) => {
+    // Return a list of files to process
+    return [
+      { path: "UnicodeData.txt", content: "..." },
+      { path: "Blocks.txt", content: "..." }
+    ];
+  }
+});
+```
+
+A source must return an array of files, each containing a `path` (the logical identifier or filename) and the `content` of the file.
+
+When a pipeline executes, all of its assigned sources are resolved first, and the resulting files are passed down to the pipeline routes for processing.

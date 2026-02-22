@@ -3,6 +3,14 @@
   "description": "Data processing pipelines for UCD files",
   "root": true,
   "pages": [
-    "index"
+    "index",
+    "---Core Concepts---",
+    "definitions",
+    "sources",
+    "routes",
+    "artifacts",
+    "---Execution---",
+    "running",
+    "ui"
   ]
 }

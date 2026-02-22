@@ -1,0 +1,71 @@
+---
+title: Installation
+description: Get started with UCD.js
+---
+
+import { Callout } from 'fumadocs-ui/components/callout';
+import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
+
+# Installation
+
+<Callout type="warn">
+  This documentation is for a pre-release version of UCD.js. The API and features may change before the stable release.
+</Callout>
+
+UCD.js is a modular project, meaning you can install only the specific packages you need. The most common packages to install are the **Client** and the **CLI**.
+
+## Package Installation
+
+Install the UCD.js packages you need using your preferred package manager. For example, to install the client and file system bridge:
+
+```package-install
+@ucdjs/client @ucdjs/fs-bridge
+```
+
+### Basic Usage
+
+Start using UCD.js in your project:
+
+```typescript title="example.ts"
+import { createClient } from '@ucdjs/client';
+
+// Initialize the client
+const client = createClient();
+
+// Fetch Unicode data (example)
+const data = await client.getCharacter('A');
+console.log(data);
+```
+
+<Callout type="info">
+  Check out the [Client API Reference](/api-reference/client) to learn more about interacting with the UCD.js client.
+</Callout>
+
+## CLI Installation
+
+The UCD.js CLI provides powerful command-line utilities for Unicode exploration and analysis.
+
+### Install the CLI globally
+
+```package-install
+-g @ucdjs/cli
+```
+
+### Explore Unicode data
+
+Use the CLI to explore Unicode characters and properties directly from your terminal:
+
+```bash title="Terminal"
+ucd char A
+ucd block "Basic Latin"
+ucd script Latin
+```
+
+### Get help
+
+Access help and documentation for CLI commands:
+
+```bash title="Terminal"
+ucd --help
+ucd char --help
+```
