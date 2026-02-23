@@ -84,6 +84,13 @@ TASKS_ROUTER.post("/upload-manifest", bodyLimit({
       },
     });
 
+    // Check if the file exists in the R2 bucket
+    const uploadedFile = await c.env.UCD_BUCKET.head(r2Key);
+    if (!uploadedFile) {
+      console.error(`[tasks]: Uploaded file is not available in R2 bucket with key ${r2Key}`);
+      return badGateway(c, { message: "File upload verification failed: File not found in R2 bucket" });
+    }
+
     const instance = await workflow.create({
       id: workflowId,
       params: {
