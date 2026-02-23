@@ -1,12 +1,6 @@
-import { readdirSync, existsSync } from "node:fs";
+import { readdirSync, existsSync, readFileSync } from "node:fs";
 // We use NodeURL to avoid issues with types when, worker tests files are open.
 import { fileURLToPath, URL as NodeURL } from "node:url";
-
-const SCOPE_OVERRIDES: Record<string, string> = {
-  "shared": "@ucdjs-internal",
-  "shared-ui": "@ucdjs-internal",
-  "worker-utils": "@ucdjs-internal",
-}
 
 const pkgRoot = (root: string, pkg: string) =>
   fileURLToPath(new NodeURL(`./${root}/${pkg}`, import.meta.url));
@@ -20,13 +14,26 @@ function collectAliasesFromRoot(root: string): Record<string, string> {
 
   return dirs.reduce<Record<string, string>>(
     (acc, pkg) => {
-      let scope = "@ucdjs";
+      const packageJsonPath = pkgRoot(root, pkg) + "/package.json";
+      let packageName: string | null = null;
 
-      if (SCOPE_OVERRIDES[pkg]) {
-        scope = SCOPE_OVERRIDES[pkg];
+      try {
+        const raw = readFileSync(packageJsonPath, "utf8");
+        const parsed = JSON.parse(raw) as { name?: unknown };
+
+        if (typeof parsed.name === "string" && parsed.name.length > 0) {
+          packageName = parsed.name;
+        }
+      } catch {
+        packageName = null;
       }
 
-      acc[`${scope}/${pkg}`] = alias(root, pkg);
+      if (packageName) {
+        acc[packageName] = alias(root, pkg);
+        return acc;
+      }
+
+      acc[`@ucdjs/${pkg}`] = alias(root, pkg);
       return acc;
     }, {}
   );
