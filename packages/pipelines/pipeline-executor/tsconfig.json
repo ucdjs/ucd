@@ -1,4 +1,3 @@
 {
   "extends": "@ucdjs-tooling/tsconfig/base"
-
 }
