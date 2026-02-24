@@ -162,3 +162,5 @@ export async function startServer(options: ServerOptions = {}): Promise<void> {
   // eslint-disable-next-line no-console
   console.info(`Pipeline UI running at http://localhost:${port}`);
 }
+
+export { createDatabase, runMigrations };
