@@ -140,6 +140,8 @@ catalogs:
     "@fontsource-variable/inter": 5.2.8
     "@xyflow/react": 12.10.0
     "@sentry/tanstackstart-react": 10.39.0
+    "@tanstack/react-hotkeys": 0.3.0
+    "@tanstack/react-hotkeys-devtools": 0.3.0
 
   vscode:
     vscode-ext-gen: 1.5.1

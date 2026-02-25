@@ -1,5 +1,6 @@
 import { VersionNotFound } from "#components/not-found";
-import { createFileRoute, notFound, Outlet, redirect } from "@tanstack/react-router";
+import { useHotkey } from "@tanstack/react-hotkeys";
+import { createFileRoute, notFound, Outlet, redirect, useNavigate } from "@tanstack/react-router";
 import { createMiddleware } from "@tanstack/react-start";
 import { UNICODE_STABLE_VERSION, UNICODE_VERSION_METADATA } from "@unicode-utils/core";
 
@@ -45,6 +46,14 @@ export const Route = createFileRoute("/(app)/v/$version")({
 });
 
 function VersionLayoutComponent() {
+  const navigate = Route.useNavigate();
+  const { version } = Route.useParams();
+
+  useHotkey("Mod+E", () => {
+    navigate({ to: "/file-explorer/$", params: {
+      _splat: `${version}`,
+    } });
+  });
   return <Outlet />;
 }
 
