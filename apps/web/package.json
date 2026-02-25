@@ -21,6 +21,8 @@
     "@sentry/tanstackstart-react": "catalog:frontend",
     "@tanstack/react-devtools": "catalog:frontend",
     "@tanstack/react-form": "catalog:frontend",
+    "@tanstack/react-hotkeys": "catalog:frontend",
+    "@tanstack/react-hotkeys-devtools": "catalog:frontend",
     "@tanstack/react-query": "catalog:frontend",
     "@tanstack/react-query-devtools": "catalog:frontend",
     "@tanstack/react-router": "catalog:frontend",

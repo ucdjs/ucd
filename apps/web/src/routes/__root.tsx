@@ -2,6 +2,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import { AppNotFound } from "#components/not-found";
 import { versionsQueryOptions } from "#functions/versions";
 import { TanStackDevtools } from "@tanstack/react-devtools";
+import { HotkeysDevtoolsPanel } from "@tanstack/react-hotkeys-devtools";
 import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import {
   createRootRouteWithContext,
@@ -95,6 +96,10 @@ function RootDocument({ children }: { children: React.ReactNode }) {
             {
               name: "Tanstack Query",
               render: <ReactQueryDevtoolsPanel />,
+            },
+            {
+              name: "Tanstack Hotkeys",
+              render: <HotkeysDevtoolsPanel />,
             },
           ]}
         />
