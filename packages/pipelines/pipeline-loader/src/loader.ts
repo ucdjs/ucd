@@ -10,15 +10,15 @@ import type {
 import path from "node:path";
 import { isPipelineDefinition } from "@ucdjs/pipelines-core";
 import { glob } from "tinyglobby";
-import { bundleModule, createDataUrl } from "./bundler/bundle";
+import { bundleModule, createDataUrl } from "./bundle";
 import { downloadGitHubRepo } from "./cache/github";
 import { downloadGitLabRepo } from "./cache/gitlab";
 
 // Simplified source types for findPipelineFiles (id is not required)
-export type FindPipelineSource =
-  | { type: "local"; cwd: string }
-  | { type: "github"; owner: string; repo: string; ref?: string; path?: string }
-  | { type: "gitlab"; owner: string; repo: string; ref?: string; path?: string };
+export type FindPipelineSource
+  = | { type: "local"; cwd: string }
+    | { type: "github"; owner: string; repo: string; ref?: string; path?: string }
+    | { type: "gitlab"; owner: string; repo: string; ref?: string; path?: string };
 
 /**
  * Parse a github:// or gitlab:// URL
@@ -77,7 +77,7 @@ export async function loadPipelineFile(filePath: string): Promise<LoadedPipeline
   }
 
   // Always bundle (handles TypeScript and relative imports)
-  const bundle = await bundleModule({ entryPath: resolvedPath });
+  const bundle = await bundleModule(resolvedPath);
   const dataUrl = createDataUrl(bundle);
   const module = await import(/* @vite-ignore */ dataUrl);
 
@@ -189,7 +189,7 @@ export async function findPipelineFiles(
 
   // Determine the directory to search
   let cwd: string;
-  
+
   if (options.source) {
     const source = options.source;
     if (source.type === "local") {

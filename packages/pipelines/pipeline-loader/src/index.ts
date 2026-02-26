@@ -1,6 +1,3 @@
-export { downloadGitHubRepo } from "./cache/github";
-export { downloadGitLabRepo } from "./cache/gitlab";
-
 export {
   findPipelineFiles,
   loadPipelineFile,
