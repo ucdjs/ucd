@@ -1,4 +1,4 @@
-import type { RemoteRequestOptions } from "../remote/types";
+import type { RemoteRequestOptions } from "../types";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { getRepositoryCacheDir } from "@ucdjs-internal/shared/config";

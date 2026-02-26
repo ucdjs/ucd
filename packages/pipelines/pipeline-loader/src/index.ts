@@ -20,4 +20,6 @@ export type {
   LocalSource,
   PipelineLoadError,
   PipelineSource,
+  RemoteFileList,
+  RemoteRequestOptions,
 } from "./types";
