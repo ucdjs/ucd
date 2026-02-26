@@ -1,68 +1,44 @@
 import type { RolldownPlugin } from "rolldown";
+import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { build } from "rolldown";
-import { RemoteNotFoundError } from "./errors";
-import { getStaticImportSpecifiers } from "./parse";
-import { assertRelativeSpecifier, buildCandidateIdentifiers } from "./resolve";
-import { compileModuleSource, loadRemoteSource } from "./source";
+import { compileModuleSource } from "./source";
 
 export interface BundleInput {
-  content: string;
-  identifier: string;
-  customFetch?: typeof fetch;
+  /** Absolute path to the entry file */
+  entryPath: string;
 }
 
-function createRemotePlugin(input: BundleInput): RolldownPlugin {
-  const customFetch = input.customFetch ?? fetch;
-  const moduleCache = new Map<string, string>();
-
+function createFilesystemPlugin(): RolldownPlugin {
   return {
-    name: "pipeline-remote-loader",
-    resolveId: async (specifier: string, importer?: string) => {
+    name: "pipeline-filesystem-loader",
+    resolveId: (specifier: string, importer?: string) => {
+      // If no importer, this is the entry point - use the specifier as-is
       if (!importer) {
-        return input.identifier;
+        return specifier;
       }
 
-      assertRelativeSpecifier(specifier);
-
-      const candidates = buildCandidateIdentifiers(specifier, importer);
-      for (const candidate of candidates) {
-        try {
-          const source = await loadRemoteSource(candidate, customFetch);
-          moduleCache.set(candidate, source);
-          return candidate;
-        } catch (err) {
-          if (err instanceof RemoteNotFoundError) {
-            continue;
-          }
-          throw err;
-        }
+      // Resolve relative imports against the importer's directory
+      if (specifier.startsWith("./") || specifier.startsWith("../")) {
+        const importerDir = path.dirname(importer);
+        return path.resolve(importerDir, specifier);
       }
 
-      throw new Error(`Module not found: ${specifier}`);
+      // External modules (like @ucdjs/pipelines-core) should be external
+      return { id: specifier, external: true };
     },
     load: async (id: string) => {
-      if (id === input.identifier) {
-        return compileModuleSource(id, input.content);
-      }
-
-      const source = moduleCache.get(id) ?? await loadRemoteSource(id, customFetch);
-      const code = await compileModuleSource(id, source);
-      moduleCache.set(id, source);
-      return code;
+      // Read the file and compile TypeScript
+      const source = await readFile(id, "utf-8");
+      return compileModuleSource(id, source);
     },
   };
 }
 
-export async function bundleRemoteModule(input: BundleInput): Promise<string> {
-  const specifiers = getStaticImportSpecifiers(input.content, input.identifier);
-  for (const specifier of specifiers) {
-    assertRelativeSpecifier(specifier);
-  }
-
+export async function bundleModule(input: BundleInput): Promise<string> {
   const result = await build({
-    input: input.identifier,
-    plugins: [createRemotePlugin(input)],
+    input: input.entryPath,
+    plugins: [createFilesystemPlugin()],
     write: false,
     output: {
       format: "esm",
@@ -74,7 +50,7 @@ export async function bundleRemoteModule(input: BundleInput): Promise<string> {
   const chunk = chunks.find((item: { type: string }) => item.type === "chunk");
 
   if (!chunk || chunk.type !== "chunk") {
-    throw new Error("Failed to bundle remote module");
+    throw new Error("Failed to bundle module");
   }
 
   return chunk.code;
@@ -84,8 +60,4 @@ export function createDataUrl(code: string): string {
   // eslint-disable-next-line node/prefer-global/buffer
   const encoded = Buffer.from(code, "utf-8").toString("base64");
   return `data:text/javascript;base64,${encoded}`;
-}
-
-export function identifierForLocalFile(filePath: string): string {
-  return path.resolve(filePath);
 }

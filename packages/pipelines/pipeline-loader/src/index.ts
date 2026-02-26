@@ -1,18 +1,16 @@
+export { downloadGitHubRepo } from "./cache/github";
+export { downloadGitLabRepo } from "./cache/gitlab";
+
 export {
   findPipelineFiles,
   loadPipelineFile,
   loadPipelinesFromPaths,
 } from "./loader";
-export type { FindPipelineFilesOptions, LoadPipelinesOptions } from "./loader";
-
-export {
-  findRemotePipelineFiles,
-  loadRemotePipelines,
-} from "./remote";
 export type {
-  FindRemotePipelineFilesOptions,
-  LoadRemotePipelinesOptions,
-} from "./remote";
+  FindPipelineFilesOptions,
+  FindPipelineSource,
+  LoadPipelinesOptions,
+} from "./loader";
 
 export type {
   GitHubSource,

@@ -1,6 +1,7 @@
 import type { PipelineSource } from "@ucdjs/pipelines-loader";
 import { randomUUID } from "node:crypto";
 import fs from "node:fs";
+import path from "node:path";
 import { extractDefinePipelineCode } from "#server/code";
 import { schema } from "#server/db";
 import { findPipelineByFileId, loadPipelineFileGroups } from "#server/lib/files";
@@ -26,9 +27,12 @@ async function getPipelineFileForSource(
   }
 
   const { owner, repo, ref } = source;
-  const content = source.type === "github"
-    ? await github.fetchFile({ owner, repo, ref }, filePath)
-    : await gitlab.fetchFile({ owner, repo, ref }, filePath);
+  const cacheDir = source.type === "github"
+    ? await github({ owner, repo, ref })
+    : await gitlab({ owner, repo, ref });
+
+  const fullPath = path.join(cacheDir, filePath);
+  const content = await fs.promises.readFile(fullPath, "utf-8");
 
   return { content, filePath };
 }
