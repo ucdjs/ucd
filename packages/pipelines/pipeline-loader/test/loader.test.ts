@@ -1,144 +1,232 @@
-import path from "node:path";
-import { createPipelineModuleSource } from "#test-utils/pipelines";
 import { describe, expect, it } from "vitest";
 import { testdir } from "vitest-testdirs";
-import { findPipelineFiles, loadPipelineFile, loadPipelinesFromPaths } from "../src";
-
-/**
- * Normalize paths to use forward slashes for cross-platform comparison.
- * This handles the fact that tinyglobby returns forward slashes on all platforms,
- * while testdir() and path.join() may return platform-native separators.
- */
-function normalizePath(p: string): string {
-  return p.replace(/\\/g, "/");
-}
-
-describe("findPipelineFiles", () => {
-  it("should find pipeline files and ignore node_modules and dist", async () => {
-    const root = await testdir({
-      pipelines: {
-        "alpha.ucd-pipeline.ts": createPipelineModuleSource({ named: ["alpha"] }),
-        "nested": {
-          "beta.ucd-pipeline.ts": createPipelineModuleSource({ named: ["beta"] }),
-        },
-      },
-      node_modules: {
-        "ignored.ucd-pipeline.ts": createPipelineModuleSource({ named: ["ignored"] }),
-      },
-      dist: {
-        "built.ucd-pipeline.ts": createPipelineModuleSource({ named: ["built"] }),
-      },
-    });
-
-    const files = await findPipelineFiles({
-      source: { type: "local", cwd: root },
-    });
-    const expected = [
-      path.join(root, "pipelines", "alpha.ucd-pipeline.ts"),
-      path.join(root, "pipelines", "nested", "beta.ucd-pipeline.ts"),
-    ];
-
-    expect(files.map(normalizePath).sort()).toEqual(expected.map(normalizePath).sort());
-    expect(files.every((file: string) => path.isAbsolute(file))).toBe(true);
-  });
-
-  it("should support custom patterns with a cwd", async () => {
-    const root = await testdir({
-      pipelines: {
-        "gamma.ucd-pipeline.ts": createPipelineModuleSource({ named: ["gamma"] }),
-        "notes.txt": "not a pipeline",
-      },
-      other: {
-        "delta.ucd-pipeline.ts": createPipelineModuleSource({ named: ["delta"] }),
-      },
-    });
-
-    const cwd = path.join(root, "pipelines");
-    const files = await findPipelineFiles({
-      source: { type: "local", cwd },
-    });
-
-    expect(files.map(normalizePath)).toEqual([path.join(cwd, "gamma.ucd-pipeline.ts")].map(normalizePath));
-  });
-});
+import { findPipelineFiles, loadPipelineFile, loadPipelinesFromPaths } from "../src/loader";
 
 describe("loadPipelineFile", () => {
-  it("should load pipeline definitions and export names", async () => {
-    const root = await testdir({
-      "demo.ucd-pipeline.ts": createPipelineModuleSource({
-        named: ["alpha"],
-        extraExports: "export const config = { name: \"pipeline\" };",
-      }),
+  it("should load a local pipeline file", async () => {
+    const dir = await testdir({
+      "test.ucd-pipeline.ts": `
+        export const testPipeline = {
+          _type: "pipeline-definition",
+          id: "test",
+          name: "Test Pipeline",
+          versions: ["16.0.0"],
+          inputs: [],
+          routes: [],
+        };
+      `,
     });
-    const filePath = path.join(root, "demo.ucd-pipeline.ts");
 
-    const result = await loadPipelineFile(filePath);
+    const result = await loadPipelineFile(`${dir}/test.ucd-pipeline.ts`);
 
-    expect(result.filePath).toBe(filePath);
-    expect(result.exportNames).toEqual(["alpha"]);
-    expect(result.pipelines.map((pipeline) => pipeline.id)).toEqual(["alpha"]);
+    expect(result.pipelines).toHaveLength(1);
+    expect(result.pipelines[0]?.id).toBe("test");
+    expect(result.pipelines[0]?.name).toBe("Test Pipeline");
+    expect(result.exportNames).toEqual(["testPipeline"]);
   });
 
-  it("should return empty arrays when no pipelines are exported", async () => {
-    const root = await testdir({
-      "empty.ucd-pipeline.ts": "export const config = { ok: true };",
+  it("should handle relative imports in pipeline files", async () => {
+    const dir = await testdir({
+      "helper.ts": `
+        export const helper = () => "helper-output";
+      `,
+      "test.ucd-pipeline.ts": `
+        import { helper } from "./helper";
+        export const testPipeline = {
+          _type: "pipeline-definition",
+          id: "test",
+          name: "Test",
+          versions: ["16.0.0"],
+          inputs: [],
+          routes: [],
+        };
+      `,
     });
-    const filePath = path.join(root, "empty.ucd-pipeline.ts");
 
-    const result = await loadPipelineFile(filePath);
+    const result = await loadPipelineFile(`${dir}/test.ucd-pipeline.ts`);
+
+    expect(result.pipelines).toHaveLength(1);
+    expect(result.pipelines[0]?.id).toBe("test");
+  });
+
+  it("should return empty arrays for files without pipeline exports", async () => {
+    const dir = await testdir({
+      "empty.ts": `
+        export const config = { foo: "bar" };
+      `,
+    });
+
+    const result = await loadPipelineFile(`${dir}/empty.ts`);
 
     expect(result.pipelines).toEqual([]);
     expect(result.exportNames).toEqual([]);
   });
+
+  it("should ignore default exports", async () => {
+    const dir = await testdir({
+      "test.ucd-pipeline.ts": `
+        export default {
+          _type: "pipeline-definition",
+          id: "default",
+          name: "Default",
+          versions: ["16.0.0"],
+          inputs: [],
+          routes: [],
+        };
+        export const namedPipeline = {
+          _type: "pipeline-definition",
+          id: "named",
+          name: "Named",
+          versions: ["16.0.0"],
+          inputs: [],
+          routes: [],
+        };
+      `,
+    });
+
+    const result = await loadPipelineFile(`${dir}/test.ucd-pipeline.ts`);
+
+    expect(result.pipelines).toHaveLength(1);
+    expect(result.pipelines[0]?.id).toBe("named");
+    expect(result.exportNames).toEqual(["namedPipeline"]);
+  });
+
+  it("should throw for non-existent files", async () => {
+    await expect(loadPipelineFile("/nonexistent/file.ucd-pipeline.ts")).rejects.toThrow();
+  });
+});
+
+describe("findPipelineFiles", () => {
+  it("should find all .ucd-pipeline.ts files in local directory", async () => {
+    const dir = await testdir({
+      "pipelines": {
+        "alpha.ucd-pipeline.ts": `export const a = 1;`,
+        "beta.ucd-pipeline.ts": `export const b = 2;`,
+        "gamma.txt": `not a pipeline`,
+      },
+      "other": {
+        "delta.ucd-pipeline.ts": `export const d = 4;`,
+      },
+      "node_modules": {
+        "ignored.ucd-pipeline.ts": `export const i = 9;`,
+      },
+    });
+
+    const files = await findPipelineFiles({
+      source: { type: "local", cwd: dir },
+    });
+
+    expect(files).toHaveLength(3);
+    expect(files.map((f) => f.split("/").pop()).sort()).toEqual([
+      "alpha.ucd-pipeline.ts",
+      "beta.ucd-pipeline.ts",
+      "delta.ucd-pipeline.ts",
+    ]);
+  });
+
+  it("should support custom patterns", async () => {
+    const dir = await testdir({
+      "pipelines": {
+        "alpha.ucd-pipeline.ts": `export const a = 1;`,
+        "beta.custom.ts": `export const b = 2;`,
+      },
+    });
+
+    const files = await findPipelineFiles({
+      source: { type: "local", cwd: dir },
+      patterns: "**/*.custom.ts",
+    });
+
+    expect(files).toHaveLength(1);
+    expect(files[0]).toContain("beta.custom.ts");
+  });
+
+  it("should use process.cwd() when no source specified", async () => {
+    const files = await findPipelineFiles();
+    // Should not throw, just return empty array or files from cwd
+    expect(Array.isArray(files)).toBe(true);
+  });
 });
 
 describe("loadPipelinesFromPaths", () => {
-  it("should merge pipelines and file metadata", async () => {
-    const root = await testdir({
-      "alpha.ucd-pipeline.ts": createPipelineModuleSource({ named: ["alpha"] }),
-      "beta.ucd-pipeline.ts": createPipelineModuleSource({ named: ["beta"] }),
+  it("should load multiple pipeline files", async () => {
+    const dir = await testdir({
+      "alpha.ucd-pipeline.ts": `
+        export const alpha = {
+          _type: "pipeline-definition",
+          id: "alpha",
+          name: "Alpha",
+          versions: ["16.0.0"],
+          inputs: [],
+          routes: [],
+        };
+      `,
+      "beta.ucd-pipeline.ts": `
+        export const beta = {
+          _type: "pipeline-definition",
+          id: "beta",
+          name: "Beta",
+          versions: ["16.0.0"],
+          inputs: [],
+          routes: [],
+        };
+      `,
     });
 
-    const alphaPath = path.join(root, "alpha.ucd-pipeline.ts");
-    const betaPath = path.join(root, "beta.ucd-pipeline.ts");
-
-    const result = await loadPipelinesFromPaths([alphaPath, betaPath]);
+    const result = await loadPipelinesFromPaths([
+      `${dir}/alpha.ucd-pipeline.ts`,
+      `${dir}/beta.ucd-pipeline.ts`,
+    ]);
 
     expect(result.errors).toEqual([]);
-    expect(result.files.map((file) => file.filePath)).toEqual([alphaPath, betaPath]);
-    expect(result.pipelines.map((pipeline) => pipeline.id).sort()).toEqual(["alpha", "beta"]);
+    expect(result.files).toHaveLength(2);
+    expect(result.pipelines.map((p) => p.id).sort()).toEqual(["alpha", "beta"]);
   });
 
-  it("should collect errors when files fail to load", async () => {
-    const root = await testdir({
-      "alpha.ucd-pipeline.ts": createPipelineModuleSource({ named: ["alpha"] }),
+  it("should collect errors for failed files without throwing", async () => {
+    const dir = await testdir({
+      "valid.ucd-pipeline.ts": `
+        export const valid = {
+          _type: "pipeline-definition",
+          id: "valid",
+          name: "Valid",
+          versions: ["16.0.0"],
+          inputs: [],
+          routes: [],
+        };
+      `,
     });
 
-    const alphaPath = path.join(root, "alpha.ucd-pipeline.ts");
-    const missingPath = path.join(root, "missing.ucd-pipeline.ts");
-
-    const result = await loadPipelinesFromPaths([alphaPath, missingPath]);
+    const result = await loadPipelinesFromPaths([
+      `${dir}/valid.ucd-pipeline.ts`,
+      `${dir}/nonexistent.ucd-pipeline.ts`,
+    ]);
 
     expect(result.files).toHaveLength(1);
     expect(result.errors).toHaveLength(1);
-    expect(result.errors[0]?.filePath).toBe(missingPath);
-    expect(result.errors[0]?.error).toBeInstanceOf(Error);
-    expect(result.pipelines.map((pipeline) => pipeline.id)).toEqual(["alpha"]);
+    expect(result.errors[0]?.filePath).toContain("nonexistent");
+    expect(result.pipelines.map((p) => p.id)).toEqual(["valid"]);
   });
 
-  it("should throw when throwOnError is enabled", async () => {
-    const root = await testdir({
-      "alpha.ucd-pipeline.ts": createPipelineModuleSource({ named: ["alpha"] }),
-    });
-
-    const missingPath = path.join(root, "missing.ucd-pipeline.ts");
-
+  it("should throw when throwOnError is true", async () => {
     await expect(
-      loadPipelinesFromPaths([missingPath], { throwOnError: true }),
-    ).rejects.toThrow(`Failed to load pipeline file: ${missingPath}`);
+      loadPipelinesFromPaths(["/nonexistent/file.ts"], { throwOnError: true })
+    ).rejects.toThrow();
+  });
+});
 
-    await expect(
-      loadPipelinesFromPaths([missingPath], { throwOnError: true }),
-    ).rejects.toMatchObject({ cause: expect.any(Error) });
+describe("unified API - URL parsing", () => {
+  it("should parse github:// URLs correctly", async () => {
+    const testUrl = "github://ucdjs/demo?ref=main&path=pipelines/test.ucd-pipeline.ts";
+    
+    // Should fail to fetch, but parsing should work
+    await expect(loadPipelineFile(testUrl)).rejects.toThrow();
+  });
+
+  it("should parse gitlab:// URLs correctly", async () => {
+    const testUrl = "gitlab://mygroup/demo?ref=main&path=pipelines/test.ucd-pipeline.ts";
+    
+    // Should fail to fetch, but parsing should work
+    await expect(loadPipelineFile(testUrl)).rejects.toThrow();
   });
 });

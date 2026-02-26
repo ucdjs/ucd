@@ -8,7 +8,7 @@ import { findPipelineByFileId, loadPipelineFileGroups } from "#server/lib/files"
 import { createExecutionLogCapture } from "#server/lib/log-capture";
 import { resolveLocalFilePath } from "#server/lib/resolve";
 import { createPipelineExecutor, runWithPipelineExecutionContext } from "@ucdjs/pipelines-executor";
-import { github, gitlab } from "@ucdjs/pipelines-loader/remote";
+import { downloadGitHubRepo, downloadGitLabRepo } from "@ucdjs/pipelines-loader/internal";
 import { toPipelineDetails } from "@ucdjs/pipelines-ui";
 import { and, eq } from "drizzle-orm";
 import { H3, readValidatedBody } from "h3";
@@ -28,8 +28,8 @@ async function getPipelineFileForSource(
 
   const { owner, repo, ref } = source;
   const cacheDir = source.type === "github"
-    ? await github({ owner, repo, ref })
-    : await gitlab({ owner, repo, ref });
+    ? await downloadGitHubRepo({ owner, repo, ref })
+    : await downloadGitLabRepo({ owner, repo, ref });
 
   const fullPath = path.join(cacheDir, filePath);
   const content = await fs.promises.readFile(fullPath, "utf-8");

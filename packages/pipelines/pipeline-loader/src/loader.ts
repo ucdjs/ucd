@@ -85,6 +85,8 @@ export async function loadPipelineFile(filePath: string): Promise<LoadedPipeline
   const exportNames: string[] = [];
 
   for (const [name, value] of Object.entries(module)) {
+    // Skip default exports - only process named exports
+    if (name === "default") continue;
     if (isPipelineDefinition(value)) {
       pipelines.push(value);
       exportNames.push(name);
