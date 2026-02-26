@@ -1,6 +1,6 @@
 import { VersionNotFound } from "#components/not-found";
 import { useHotkey } from "@tanstack/react-hotkeys";
-import { createFileRoute, notFound, Outlet, redirect, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, notFound, Outlet, redirect } from "@tanstack/react-router";
 import { createMiddleware } from "@tanstack/react-start";
 import { UNICODE_STABLE_VERSION, UNICODE_VERSION_METADATA } from "@unicode-utils/core";
 
