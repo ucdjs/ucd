@@ -1,8 +1,6 @@
-import { encodeBase64 } from "#test-utils";
-import { HttpResponse, mockFetch } from "#test-utils/msw";
-import { createPipelineModuleSource } from "#test-utils/pipelines";
 import { describe, expect, it } from "vitest";
 import { loadPipelineFromContent } from "../src/insecure";
+import { createPipelineModuleSource } from "#test-utils/pipelines";
 
 describe("loadPipelineFromContent", () => {
   it("should load pipeline definitions and export names", async () => {
@@ -61,55 +59,6 @@ describe("loadPipelineFromContent", () => {
 
     expect(result.pipelines.map((pipeline) => pipeline.id)).toEqual(["alpha"]);
     expect(result.exportNames).toEqual(["alpha"]);
-  });
-
-  it("should resolve relative imports without extensions", async () => {
-    const depSource = "export const helper = { ok: true };";
-    const depEncoded = encodeBase64(depSource);
-
-    mockFetch([
-      [
-        "GET",
-        "https://api.github.com/repos/ucdjs/demo-pipelines/contents/pipelines%2Fdep.ts",
-        () => HttpResponse.json({ content: depEncoded, encoding: "base64" }),
-      ],
-    ]);
-
-    const content = [
-      "import { helper } from './dep';",
-      "export const alpha = { _type: 'pipeline-definition', id: 'alpha', versions: ['16.0.0'], inputs: [], routes: [] };",
-      "export const meta = helper;",
-    ].join("\n");
-
-    const result = await loadPipelineFromContent(content, "pipelines/main.ucd-pipeline.ts", {
-      identifier: "github://ucdjs/demo-pipelines?ref=main&path=pipelines/main.ucd-pipeline.ts",
-      customFetch: globalThis.fetch,
-    });
-
-    expect(result.pipelines.map((pipeline) => pipeline.id)).toEqual(["alpha"]);
-    expect(result.exportNames).toEqual(["alpha"]);
-  });
-
-  it("should reject full URL import specifiers", async () => {
-    const content = "import data from 'https://luxass.dev/pipelines/dep.ts';\nexport const alpha = { _type: 'pipeline-definition', id: 'alpha', versions: ['16.0.0'], inputs: [], routes: [] };";
-
-    await expect(
-      loadPipelineFromContent(content, "pipelines/main.ucd-pipeline.ts", {
-        identifier: "github://ucdjs/demo-pipelines?ref=main&path=pipelines/main.ucd-pipeline.ts",
-        customFetch: globalThis.fetch,
-      }),
-    ).rejects.toThrow("Unsupported import specifier");
-  });
-
-  it("should reject bare import specifiers", async () => {
-    const content = "import zod from 'zod';\nexport const alpha = { _type: 'pipeline-definition', id: 'alpha', versions: ['16.0.0'], inputs: [], routes: [] };";
-
-    await expect(
-      loadPipelineFromContent(content, "pipelines/main.ucd-pipeline.ts", {
-        identifier: "github://ucdjs/demo-pipelines?ref=main&path=pipelines/main.ucd-pipeline.ts",
-        customFetch: globalThis.fetch,
-      }),
-    ).rejects.toThrow("Unsupported import specifier");
   });
 
   it("should throw on invalid source code", async () => {

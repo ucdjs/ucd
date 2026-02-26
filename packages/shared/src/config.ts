@@ -23,3 +23,22 @@ export function getUcdConfigPath(...segments: string[]): string {
 export function getPipelineDbPath(): string {
   return getUcdConfigPath("pipeline.db");
 }
+
+/**
+ * Get the base cache directory for repositories
+ */
+export function getBaseRepoCacheDir(): string {
+  return getUcdConfigPath("cache", "repos");
+}
+
+/**
+ * Get the cache directory for a specific repository (generic)
+ */
+export function getRepositoryCacheDir(
+  source: string,
+  owner: string,
+  repo: string,
+  commitSha: string,
+): string {
+  return path.join(getBaseRepoCacheDir(), source, owner, repo, commitSha);
+}

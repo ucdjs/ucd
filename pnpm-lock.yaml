@@ -1207,6 +1207,9 @@ importers:
       '@ucdjs/pipelines-core':
         specifier: workspace:*
         version: link:../pipeline-core
+      nanotar:
+        specifier: catalog:build
+        version: 0.3.0
       oxc-parser:
         specifier: catalog:build
         version: 0.114.0
