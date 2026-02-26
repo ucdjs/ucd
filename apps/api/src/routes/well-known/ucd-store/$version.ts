@@ -3,6 +3,7 @@ import type { UCDStoreManifest } from "@ucdjs/schemas";
 import type { HonoEnv } from "../../../types";
 import { createRoute } from "@hono/zod-openapi";
 import { dedent } from "@luxass/utils";
+import { isValidUnicodeVersion } from "@ucdjs-internal/shared";
 import { badGateway, MAX_AGE_ONE_WEEK_SECONDS, notFound } from "@ucdjs-internal/worker-utils";
 import { UCDStoreVersionManifestSchema } from "@ucdjs/schemas";
 import { cache } from "hono/cache";
@@ -110,8 +111,8 @@ export function registerUcdStoreVersionRoute(router: OpenAPIHono<HonoEnv>) {
       });
     }
 
-    // Validate version format
-    if (!/^\d+\.\d+\.\d+$/.test(version)) {
+    // Validate version
+    if (!isValidUnicodeVersion(version)) {
       return notFound(c, {
         message: `Invalid version format: ${version}. Expected format: X.Y.Z (e.g., 16.0.0)`,
       });
@@ -130,7 +131,13 @@ export function registerUcdStoreVersionRoute(router: OpenAPIHono<HonoEnv>) {
     try {
       const data = await object.json<UCDStoreManifest[typeof version]>();
 
-      const headers: Record<string, string> = {};
+      const headers: Record<string, string> = {
+        "Content-Type": "application/json; charset=UTF-8",
+      };
+
+      if (object.httpEtag || object.etag) {
+        headers.ETag = object.httpEtag ?? `"${object.etag}"`;
+      }
 
       if (object.uploaded) {
         headers["Last-Modified"] = object.uploaded.toUTCString();
