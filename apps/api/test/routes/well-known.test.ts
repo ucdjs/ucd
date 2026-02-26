@@ -88,6 +88,7 @@ describe("well-known", () => {
       const mockGet = vi.fn().mockResolvedValue({
         json: async () => mockManifest,
         uploaded: new Date("2024-01-01"),
+        httpEtag: "\"abc123etag\"",
       });
 
       const mockEnv = {
@@ -106,10 +107,55 @@ describe("well-known", () => {
       expectJsonResponse(response);
       expectCacheHeaders(response);
       expect(response.headers.get("Last-Modified")).toBeTruthy();
+      expect(response.headers.get("ETag")).toBe("\"abc123etag\"");
 
       const data = await json();
       expect(data).toEqual(mockManifest);
       expect(mockGet).toHaveBeenCalledWith("manifest/16.0.0/manifest.json");
+    });
+
+    it("should return matching ETag for HEAD and GET", async () => {
+      const mockManifest = {
+        expectedFiles: [
+          "16.0.0/ucd/UnicodeData.txt",
+          "16.0.0/ucd/PropList.txt",
+        ],
+      };
+
+      const mockGet = vi.fn().mockResolvedValue({
+        json: async () => mockManifest,
+        uploaded: new Date("2024-01-01"),
+        httpEtag: "\"same-etag\"",
+      });
+
+      const mockEnv = {
+        ...env,
+        UCD_BUCKET: {
+          get: mockGet,
+        } as any,
+      };
+
+      const { response: getResponse } = await executeRequest(
+        new Request("https://api.ucdjs.dev/.well-known/ucd-store/16.0.0.json"),
+        mockEnv,
+      );
+
+      const { response: headResponse, text } = await executeRequest(
+        new Request("https://api.ucdjs.dev/.well-known/ucd-store/16.0.0.json", {
+          method: "HEAD",
+        }),
+        mockEnv,
+      );
+
+      expectSuccess(getResponse);
+      expectSuccess(headResponse);
+
+      const getEtag = getResponse.headers.get("ETag");
+      const headEtag = headResponse.headers.get("ETag");
+      expect(getEtag).toBeTruthy();
+      expect(headEtag).toBe(getEtag);
+
+      expect(await text()).toBe("");
     });
 
     it("should return 404 for non-existent version", async () => {
