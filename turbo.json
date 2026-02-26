@@ -5,7 +5,6 @@
     ".env.*",
     "**/.env.*local"
   ],
-  "ui": "tui",
   "globalPassThroughEnv": [
     "NODE",
     "NODE_ENV",

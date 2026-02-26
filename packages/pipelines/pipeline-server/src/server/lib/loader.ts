@@ -2,14 +2,16 @@ import type { LoadPipelinesResult, PipelineSource } from "@ucdjs/pipelines-loade
 import path from "node:path";
 import {
   findPipelineFiles,
-  findRemotePipelineFiles,
   loadPipelinesFromPaths,
-  loadRemotePipelines,
 } from "@ucdjs/pipelines-loader";
 
 export async function getPipelines(source: PipelineSource): Promise<LoadPipelinesResult> {
+  let files: string[];
+  
   if (source.type === "local") {
-    const files = await findPipelineFiles({ cwd: source.cwd });
+    files = await findPipelineFiles({ 
+      source: { type: "local", cwd: source.cwd } 
+    });
     const result = await loadPipelinesFromPaths(files);
     const normalize = (filePath: string) =>
       path.relative(source.cwd, filePath).replace(/\\/g, "/");
@@ -27,6 +29,25 @@ export async function getPipelines(source: PipelineSource): Promise<LoadPipeline
     };
   }
 
-  const fileList = await findRemotePipelineFiles(source);
-  return loadRemotePipelines(source, fileList.files);
+  // For GitHub/GitLab sources
+  const sourceType = source.type;
+  const { owner, repo, ref = "HEAD" } = source;
+  
+  // Find files in the remote repo
+  files = await findPipelineFiles({
+    source: {
+      type: sourceType,
+      owner,
+      repo,
+      ref,
+      path: (source as any).path,
+    },
+  });
+
+  // Convert to github:// or gitlab:// URLs
+  const urls = files.map((filePath) => {
+    return `${sourceType}://${owner}/${repo}?ref=${ref}&path=${filePath}`;
+  });
+
+  return loadPipelinesFromPaths(urls);
 }

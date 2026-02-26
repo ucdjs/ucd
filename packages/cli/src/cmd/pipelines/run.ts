@@ -1,7 +1,5 @@
 import type { Prettify } from "@luxass/utils";
-import type {
-  loadPipelinesFromPaths,
-} from "@ucdjs/pipelines-loader";
+import type { loadPipelinesFromPaths, PipelineSource } from "@ucdjs/pipelines-loader";
 import type { CLIArguments } from "../../cli-utils";
 import process from "node:process";
 import { createPipelineExecutor } from "@ucdjs/pipelines-executor";
@@ -9,7 +7,6 @@ import {
   findPipelineFiles,
   loadPipelineFile,
 } from "@ucdjs/pipelines-loader";
-import { downloadGitHubRepo, downloadGitLabRepo } from "@ucdjs/pipelines-loader/cache";
 import { parseRepoString, printHelp } from "../../cli-utils";
 import { CLIError } from "../../errors";
 import { output } from "../../output";
@@ -48,53 +45,53 @@ export async function runPipelinesRun({ flags }: CLIPipelinesRunCmdOptions) {
     return;
   }
 
-  // Collect pipeline file paths/URLs to load
-  const pipelinePaths: string[] = [];
+  // Build sources for the server/UI
+  const sources: PipelineSource[] = [];
   const sourceLabels: string[] = [];
 
   if (flags?.github) {
     const { owner, repo } = parseRepoString(flags.github as string);
     const ref = (flags.ref as string) || "HEAD";
-    const subPath = (flags.path as string) || "";
+    const subPath = (flags.path as string) || undefined;
+    const sourceId = `github-${owner}-${repo}`;
 
-    // Download the repo to cache
-    const cacheDir = await downloadGitHubRepo({ owner, repo, ref });
-    sourceLabels.push(`[github] ${owner}/${repo}${ref !== "HEAD" ? `@${ref}` : ""}`);
-
-    // Find pipeline files in the cached repo
-    const files = await findPipelineFiles({
-      source: { type: "local", cwd: cacheDir },
-      patterns: subPath ? `${subPath}/**/*.ucd-pipeline.ts` : "**/*.ucd-pipeline.ts",
+    sources.push({
+      type: "github",
+      id: sourceId,
+      owner,
+      repo,
+      ref,
+      path: subPath,
     });
-
-    pipelinePaths.push(...files);
+    sourceLabels.push(`[github] ${owner}/${repo}${ref !== "HEAD" ? `@${ref}` : ""}`);
   }
 
   if (flags?.gitlab) {
     const { owner, repo } = parseRepoString(flags.gitlab as string);
     const ref = (flags.ref as string) || "HEAD";
-    const subPath = (flags.path as string) || "";
+    const subPath = (flags.path as string) || undefined;
+    const sourceId = `gitlab-${owner}-${repo}`;
 
-    // Download the repo to cache
-    const cacheDir = await downloadGitLabRepo({ owner, repo, ref });
-    sourceLabels.push(`[gitlab] ${owner}/${repo}${ref !== "HEAD" ? `@${ref}` : ""}`);
-
-    // Find pipeline files in the cached repo
-    const files = await findPipelineFiles({
-      source: { type: "local", cwd: cacheDir },
-      patterns: subPath ? `${subPath}/**/*.ucd-pipeline.ts` : "**/*.ucd-pipeline.ts",
+    sources.push({
+      type: "gitlab",
+      id: sourceId,
+      owner,
+      repo,
+      ref,
+      path: subPath,
     });
-
-    pipelinePaths.push(...files);
+    sourceLabels.push(`[gitlab] ${owner}/${repo}${ref !== "HEAD" ? `@${ref}` : ""}`);
   }
 
   // Local source (default if no remote specified)
-  if (pipelinePaths.length === 0 || flags?.cwd) {
+  if (sources.length === 0 || flags?.cwd) {
     const cwd = (flags?.cwd as string) || process.cwd();
+    sources.push({
+      type: "local",
+      id: "local",
+      cwd,
+    });
     sourceLabels.push(`[local] ${cwd}`);
-
-    const files = await findPipelineFiles({ source: { type: "local", cwd } });
-    pipelinePaths.push(...files);
   }
 
   if (flags?.ui) {
@@ -104,8 +101,8 @@ export async function runPipelinesRun({ flags }: CLIPipelinesRunCmdOptions) {
     for (const label of sourceLabels) {
       output.info(`  ${label}`);
     }
-    // TODO: Update server to work with new approach
-    await startServer({ port, pipelinePaths });
+    // Pass sources to the server - it will handle finding and loading files
+    await startServer({ port, sources });
     return;
   }
 
@@ -114,6 +111,21 @@ export async function runPipelinesRun({ flags }: CLIPipelinesRunCmdOptions) {
   output.info("Running pipelines...");
   for (const label of sourceLabels) {
     output.info(`  ${label}`);
+  }
+
+  // Find and load pipeline files from sources
+  const pipelinePaths: string[] = [];
+
+  for (const source of sources) {
+    const files = await findPipelineFiles({
+      source: source.type === "local"
+        ? { type: "local", cwd: source.cwd }
+        : { type: source.type, owner: source.owner, repo: source.repo, ref: source.ref, path: source.path },
+      patterns: source.type === "local"
+        ? "**/*.ucd-pipeline.ts"
+        : (source.path ? `${source.path}/**/*.ucd-pipeline.ts` : "**/*.ucd-pipeline.ts"),
+    });
+    pipelinePaths.push(...files);
   }
 
   // Load all pipelines
