@@ -1,6 +1,7 @@
 import type { SafeFetchResponse } from "@ucdjs-internal/shared";
 import type { ExpectedFile, UnicodeFileTree, UnicodeVersionList } from "@ucdjs/schemas";
 import type { GeneratedManifest, GenerateManifestsOptions } from "../types";
+import { createHash } from "node:crypto";
 import { DEFAULT_EXCLUDED_EXTENSIONS } from "@ucdjs-internal/shared";
 import { createTar } from "nanotar";
 import { logger } from "./logger";
@@ -130,4 +131,11 @@ export function createManifestTar(manifest: GeneratedManifest): Uint8Array {
       data: new TextEncoder().encode(JSON.stringify(manifest.manifest, null, 2)),
     },
   ]);
+}
+
+export function createManifestEtag(manifest: GeneratedManifest["manifest"]): string {
+  const manifestBody = JSON.stringify(manifest, null, 2);
+  const hash = createHash("md5").update(manifestBody).digest("hex");
+
+  return `"${hash}"`;
 }
