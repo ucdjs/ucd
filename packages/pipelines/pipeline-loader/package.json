@@ -20,6 +20,7 @@
   },
   "exports": {
     ".": "./dist/index.mjs",
+    "./internal": "./dist/internal.mjs",
     "./package.json": "./package.json"
   },
   "types": "./dist/index.d.mts",
@@ -37,17 +38,14 @@
     "typecheck": "tsc --noEmit -p tsconfig.build.json"
   },
   "dependencies": {
+    "@ucdjs-internal/shared": "workspace:*",
     "@ucdjs/pipelines-core": "workspace:*",
     "nanotar": "catalog:build",
-    "oxc-parser": "catalog:build",
-    "oxc-transform": "catalog:build",
-    "picomatch": "catalog:runtime",
     "rolldown": "catalog:build",
     "tinyglobby": "catalog:build"
   },
   "devDependencies": {
     "@luxass/eslint-config": "catalog:lint",
-    "@types/picomatch": "catalog:types",
     "@ucdjs-tooling/tsconfig": "workspace:*",
     "@ucdjs-tooling/tsdown-config": "workspace:*",
     "eslint": "catalog:lint",
