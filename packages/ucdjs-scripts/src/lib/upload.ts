@@ -1,9 +1,6 @@
 import type { TaskUploadQueuedResult, TaskUploadStatusResult, UploadOptions } from "../types";
 import { logger } from "./logger";
 
-/**
- * Upload a version-specific manifest tar to the tasks endpoint.
- */
 export async function uploadManifest(
   tar: Uint8Array,
   version: string,
@@ -90,4 +87,38 @@ export async function waitForUploadCompletion(
   }
 
   throw new Error(`Timed out waiting for workflow ${workflowId} after ${timeoutMs}ms`);
+}
+
+export async function getRemoteManifestEtag(version: string, options: UploadOptions): Promise<string | null> {
+  const url = new URL(`/.well-known/ucd-store/${version}.json`, options.baseUrl);
+
+  const headResponse = await fetch(url.toString(), {
+    method: "HEAD",
+  });
+
+  if (headResponse.ok) {
+    const headEtag = headResponse.headers.get("ETag")?.trim();
+    if (headEtag) {
+      return headEtag;
+    }
+  }
+
+  const getResponse = await fetch(url.toString(), {
+    method: "GET",
+  });
+
+  if (getResponse.ok) {
+    const getEtag = getResponse.headers.get("ETag")?.trim();
+    if (getEtag) {
+      return getEtag;
+    }
+  }
+
+  if (headResponse.status !== 404 && getResponse.status !== 404) {
+    logger.warn(
+      `Failed to fetch remote ETag for ${version} (HEAD ${headResponse.status}, GET ${getResponse.status}).`,
+    );
+  }
+
+  return null;
 }

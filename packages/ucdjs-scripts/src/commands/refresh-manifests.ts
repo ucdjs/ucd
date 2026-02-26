@@ -1,8 +1,8 @@
 import type { RefreshManifestsOptions, UploadResult } from "../types";
 import { resolveConfig } from "#lib/config";
 import { createLogger } from "#lib/logger";
-import { createManifestTar, generateManifests } from "#lib/manifest";
-import { uploadManifest, waitForUploadCompletion } from "#lib/upload";
+import { createManifestEtag, createManifestTar, generateManifests } from "#lib/manifest";
+import { getRemoteManifestEtag, uploadManifest, waitForUploadCompletion } from "#lib/upload";
 import { parseVersions } from "#lib/utils";
 
 const logger = createLogger("refresh-manifests");
@@ -11,6 +11,10 @@ interface QueuedUpload {
   version: string;
   fileCount: number;
   workflowId: string;
+}
+
+function normalizeEtag(etag: string): string {
+  return etag.trim().replace(/^W\//i, "").replace(/^"|"$/g, "");
 }
 
 export async function refreshManifests(options: RefreshManifestsOptions): Promise<void> {
@@ -77,6 +81,18 @@ async function queueUploads(
 
   logger.info("Queueing manifest upload workflows...");
   for (const manifest of manifests) {
+    const localEtag = createManifestEtag(manifest.manifest);
+    const remoteEtag = await getRemoteManifestEtag(manifest.version, {
+      baseUrl,
+      taskKey,
+    });
+
+    if (remoteEtag && normalizeEtag(remoteEtag) === normalizeEtag(localEtag)) {
+      logger.info(`Skipping ${manifest.version}: no manifest changes detected (${localEtag})`);
+      result.skipped += 1;
+      continue;
+    }
+
     logger.info(`Preparing manifest tar for ${manifest.version}...`);
     const tar = createManifestTar(manifest);
     logger.info(`Tar archive size for ${manifest.version}: ${tar.byteLength} bytes`);
