@@ -3,16 +3,11 @@ export {
   loadPipelineFile,
   loadPipelinesFromPaths,
 } from "./loader";
-export type { FindPipelineFilesOptions, LoadPipelinesOptions } from "./loader";
-
-export {
-  findRemotePipelineFiles,
-  loadRemotePipelines,
-} from "./remote";
 export type {
-  FindRemotePipelineFilesOptions,
-  LoadRemotePipelinesOptions,
-} from "./remote";
+  FindPipelineFilesOptions,
+  FindPipelineSource,
+  LoadPipelinesOptions,
+} from "./loader";
 
 export type {
   GitHubSource,
@@ -22,4 +17,6 @@ export type {
   LocalSource,
   PipelineLoadError,
   PipelineSource,
+  RemoteFileList,
+  RemoteRequestOptions,
 } from "./types";
