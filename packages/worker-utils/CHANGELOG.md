@@ -1,5 +1,12 @@
 # @ucdjs-internal/worker-utils
 
+## [0.0.1-beta.7](https://github.com/ucdjs/ucd/compare/@ucdjs-internal/worker-utils@0.0.1-beta.6...@ucdjs-internal/worker-utils@0.0.1-beta.7) (2026-02-27)
+
+
+### 🐞 Bug Fixes
+* remove &#39;X-Kuma-Revision&#39; from exposed CORS headers ([b6397c00](https://github.com/ucdjs/ucd/commit/b6397c005a6ca620ebb1a6abbd09705e7c2ddb22)) (by [@luxass](https://github.com/luxass))
+
+
 ## [0.0.1-beta.6](https://github.com/ucdjs/ucd/compare/@ucdjs-internal/worker-utils@0.0.1-beta.5...@ucdjs-internal/worker-utils@0.0.1-beta.6) (2026-02-19)
 
 

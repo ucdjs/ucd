@@ -1,5 +1,15 @@
 # @ucdjs/pipelines-loader
 
+## [0.0.1-beta.7](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-loader@0.0.1-beta.6...@ucdjs/pipelines-loader@0.0.1-beta.7) (2026-02-27)
+
+
+### 🚀 Features
+* implement bundling and internal exports ([0b8affd2](https://github.com/ucdjs/ucd/commit/0b8affd2a80b5a94bed4c6a9a8f479af2a01a072)) (by [@luxass](https://github.com/luxass))
+
+### 🐞 Bug Fixes
+* prevent path traversal in GitHub and GitLab repo downloads ([c16492f3](https://github.com/ucdjs/ucd/commit/c16492f3771e8ed2098477ebeca7b852ae8cfa9c)) (by [@luxass](https://github.com/luxass))
+
+
 ## [0.0.1-beta.6](https://github.com/ucdjs/ucd/compare/@ucdjs/pipelines-loader@0.0.1-beta.5...@ucdjs/pipelines-loader@0.0.1-beta.6) (2026-02-19)
 
 
