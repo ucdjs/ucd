@@ -1,10 +1,7 @@
 import type { PipelineDefinition } from "@ucdjs/pipelines-core";
 import type {
-  GitHubSource,
-  GitLabSource,
   LoadedPipelineFile,
   LoadPipelinesResult,
-  LocalSource,
   PipelineLoadError,
 } from "./types";
 import path from "node:path";

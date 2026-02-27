@@ -7,10 +7,10 @@ import {
 
 export async function getPipelines(source: PipelineSource): Promise<LoadPipelinesResult> {
   let files: string[];
-  
+
   if (source.type === "local") {
-    files = await findPipelineFiles({ 
-      source: { type: "local", cwd: source.cwd } 
+    files = await findPipelineFiles({
+      source: { type: "local", cwd: source.cwd },
     });
     const result = await loadPipelinesFromPaths(files);
     const normalize = (filePath: string) =>
@@ -32,7 +32,7 @@ export async function getPipelines(source: PipelineSource): Promise<LoadPipeline
   // For GitHub/GitLab sources
   const sourceType = source.type;
   const { owner, repo, ref = "HEAD" } = source;
-  
+
   // Find files in the remote repo
   files = await findPipelineFiles({
     source: {
