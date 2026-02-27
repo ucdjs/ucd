@@ -255,6 +255,18 @@
         "language": "ucd",
         "scopeName": "source.ucd",
         "path": "./syntaxes/ucd.tmLanguage.json"
+      },
+      {
+        "scopeName": "source.ucd.arabic",
+        "path": "./syntaxes/ucd.arabic.json"
+      },
+      {
+        "scopeName": "source.ucd.blocks",
+        "path": "./syntaxes/ucd.blocks.json"
+      },
+      {
+        "scopeName": "source.ucd.core",
+        "path": "./syntaxes/ucd.core.json"
       }
     ],
     "configurationDefaults": {
