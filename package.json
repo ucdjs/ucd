@@ -12,7 +12,7 @@
     "vscode"
   ],
   "scripts": {
-    "build": "turbo run build --filter \"./packages/**\" --concurrency=15",
+    "build": "turbo run build --filter \"./packages/**\"",
     "build:apps": "turbo run build --filter \"./apps/*\"",
     "build:app": "turbo run build --filter \"./apps/${APP_NAME}\"",
     "build:vscode": "turbo run build --filter ./vscode",

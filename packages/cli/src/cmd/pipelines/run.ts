@@ -1,13 +1,11 @@
 import type { Prettify } from "@luxass/utils";
-import type { GitHubSource, GitLabSource, LocalSource } from "@ucdjs/pipelines-loader";
+import type { loadPipelinesFromPaths, PipelineSource } from "@ucdjs/pipelines-loader";
 import type { CLIArguments } from "../../cli-utils";
 import process from "node:process";
 import { createPipelineExecutor } from "@ucdjs/pipelines-executor";
 import {
   findPipelineFiles,
-  findRemotePipelineFiles,
-  loadPipelinesFromPaths,
-  loadRemotePipelines,
+  loadPipelineFile,
 } from "@ucdjs/pipelines-loader";
 import { parseRepoString, printHelp } from "../../cli-utils";
 import { CLIError } from "../../errors";
@@ -47,61 +45,63 @@ export async function runPipelinesRun({ flags }: CLIPipelinesRunCmdOptions) {
     return;
   }
 
-  const sources: (LocalSource | GitHubSource | GitLabSource)[] = [];
-
-  if (flags?.cwd) {
-    sources.push({
-      type: "local",
-      id: "local",
-      cwd: flags.cwd,
-    });
-  }
+  // Build sources for the server/UI
+  const sources: PipelineSource[] = [];
+  const sourceLabels: string[] = [];
 
   if (flags?.github) {
     const { owner, repo } = parseRepoString(flags.github as string);
+    const ref = (flags.ref as string) || "HEAD";
+    const subPath = (flags.path as string) || undefined;
+    const sourceId = `github-${owner}-${repo}`;
+
     sources.push({
       type: "github",
-      id: `github-${owner}-${repo}`,
+      id: sourceId,
       owner,
       repo,
-      ref: flags.ref as string | undefined,
-      path: flags.path as string | undefined,
+      ref,
+      path: subPath,
     });
+    sourceLabels.push(`[github] ${owner}/${repo}${ref !== "HEAD" ? `@${ref}` : ""}`);
   }
 
   if (flags?.gitlab) {
     const { owner, repo } = parseRepoString(flags.gitlab as string);
+    const ref = (flags.ref as string) || "HEAD";
+    const subPath = (flags.path as string) || undefined;
+    const sourceId = `gitlab-${owner}-${repo}`;
+
     sources.push({
       type: "gitlab",
-      id: `gitlab-${owner}-${repo}`,
+      id: sourceId,
       owner,
       repo,
-      ref: flags.ref as string | undefined,
-      path: flags.path as string | undefined,
+      ref,
+      path: subPath,
     });
+    sourceLabels.push(`[gitlab] ${owner}/${repo}${ref !== "HEAD" ? `@${ref}` : ""}`);
   }
 
-  if (sources.length === 0) {
+  // Local source (default if no remote specified)
+  if (sources.length === 0 || flags?.cwd) {
+    const cwd = (flags?.cwd as string) || process.cwd();
     sources.push({
       type: "local",
       id: "local",
-      cwd: process.cwd(),
+      cwd,
     });
+    sourceLabels.push(`[local] ${cwd}`);
   }
 
   if (flags?.ui) {
     const { startServer } = await import("@ucdjs/pipelines-server");
     const port = flags?.port ?? 3030;
     output.info(`Starting Pipeline UI on port ${port}...`);
-    for (const source of sources) {
-      if (source.type === "local") {
-        output.info(`  [local] ${source.cwd}`);
-      } else if (source.type === "github") {
-        output.info(`  [github] ${source.owner}/${source.repo}${source.ref ? `@${source.ref}` : ""}`);
-      } else if (source.type === "gitlab") {
-        output.info(`  [gitlab] ${source.owner}/${source.repo}${source.ref ? `@${source.ref}` : ""}`);
-      }
+    for (const label of sourceLabels) {
+      output.info(`  ${label}`);
     }
+    // Pass sources to the server - it will handle finding and loading files
     await startServer({ port, sources });
     return;
   }
@@ -109,32 +109,35 @@ export async function runPipelinesRun({ flags }: CLIPipelinesRunCmdOptions) {
   const selectors = (flags._ ?? []).slice(2).map(String).filter(Boolean);
 
   output.info("Running pipelines...");
-  for (const source of sources) {
-    if (source.type === "local") {
-      output.info(`  [local] ${source.cwd}`);
-    } else if (source.type === "github") {
-      output.info(`  [github] ${source.owner}/${source.repo}${source.ref ? `@${source.ref}` : ""}`);
-    } else if (source.type === "gitlab") {
-      output.info(`  [gitlab] ${source.owner}/${source.repo}${source.ref ? `@${source.ref}` : ""}`);
-    }
+  for (const label of sourceLabels) {
+    output.info(`  ${label}`);
   }
 
+  // Find and load pipeline files from sources
+  const pipelinePaths: string[] = [];
+
+  for (const source of sources) {
+    const files = await findPipelineFiles({
+      source: source.type === "local"
+        ? { type: "local", cwd: source.cwd }
+        : { type: source.type, owner: source.owner, repo: source.repo, ref: source.ref, path: source.path },
+      patterns: source.type === "local"
+        ? "**/*.ucd-pipeline.ts"
+        : (source.path ? `${source.path}/**/*.ucd-pipeline.ts` : "**/*.ucd-pipeline.ts"),
+    });
+    pipelinePaths.push(...files);
+  }
+
+  // Load all pipelines
   const allPipelines: Awaited<ReturnType<typeof loadPipelinesFromPaths>>["pipelines"] = [];
   const loadErrors: string[] = [];
 
-  for (const source of sources) {
+  for (const filePath of pipelinePaths) {
     try {
-      const result = source.type === "local"
-        ? await loadPipelinesFromPaths(await findPipelineFiles({ cwd: source.cwd }))
-        : await loadRemotePipelines(source, (await findRemotePipelineFiles(source)).files);
-
+      const result = await loadPipelineFile(filePath);
       allPipelines.push(...result.pipelines);
-
-      for (const err of result.errors) {
-        loadErrors.push(`${source.id}: ${err.filePath} - ${err.error.message}`);
-      }
     } catch (error) {
-      loadErrors.push(`${source.id}: ${error instanceof Error ? error.message : String(error)}`);
+      loadErrors.push(`${filePath}: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
 
