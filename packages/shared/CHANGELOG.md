@@ -1,5 +1,13 @@
 # @ucdjs-internal/shared
 
+## [0.1.1-beta.7](https://github.com/ucdjs/ucd/compare/@ucdjs-internal/shared@0.1.1-beta.6...@ucdjs-internal/shared@0.1.1-beta.7) (2026-02-27)
+
+
+### 🚀 Features
+* validate Unicode version using shared utility ([fc95819a](https://github.com/ucdjs/ucd/commit/fc95819aa9aa3ca2eb169e2f34c8116e62e93fcc)) (by [@luxass](https://github.com/luxass))
+* add version utility functions for Unicode validation ([27addd99](https://github.com/ucdjs/ucd/commit/27addd997dec70691dc4481ca1ccce3cddd92750)) (by [@luxass](https://github.com/luxass))
+
+
 ## [0.1.1-beta.6](https://github.com/ucdjs/ucd/compare/@ucdjs-internal/shared@0.1.1-beta.5...@ucdjs-internal/shared@0.1.1-beta.6) (2026-02-19)
 
 

@@ -1,5 +1,12 @@
 # @ucdjs-internal/shared-ui
 
+## [0.1.6](https://github.com/ucdjs/ucd/compare/@ucdjs-internal/shared-ui@0.1.5...@ucdjs-internal/shared-ui@0.1.6) (2026-02-27)
+
+
+### 🚀 Features
+* add useClipboard hook for clipboard functionality ([4732f7f2](https://github.com/ucdjs/ucd/commit/4732f7f24f36ff4f86d911b46d7077a964904685)) (by [@luxass](https://github.com/luxass))
+
+
 ## [0.1.5](https://github.com/ucdjs/ucd/compare/@ucdjs-internal/shared-ui@0.1.4...@ucdjs-internal/shared-ui@0.1.5) (2026-02-19)
 
 
