@@ -99,15 +99,15 @@ describe("loadPipelineFile", () => {
 describe("findPipelineFiles", () => {
   it("should find all .ucd-pipeline.ts files in local directory", async () => {
     const dir = await testdir({
-      "pipelines": {
+      pipelines: {
         "alpha.ucd-pipeline.ts": `export const a = 1;`,
         "beta.ucd-pipeline.ts": `export const b = 2;`,
         "gamma.txt": `not a pipeline`,
       },
-      "other": {
+      other: {
         "delta.ucd-pipeline.ts": `export const d = 4;`,
       },
-      "node_modules": {
+      node_modules: {
         "ignored.ucd-pipeline.ts": `export const i = 9;`,
       },
     });
@@ -126,7 +126,7 @@ describe("findPipelineFiles", () => {
 
   it("should support custom patterns", async () => {
     const dir = await testdir({
-      "pipelines": {
+      pipelines: {
         "alpha.ucd-pipeline.ts": `export const a = 1;`,
         "beta.custom.ts": `export const b = 2;`,
       },
@@ -210,7 +210,7 @@ describe("loadPipelinesFromPaths", () => {
 
   it("should throw when throwOnError is true", async () => {
     await expect(
-      loadPipelinesFromPaths(["/nonexistent/file.ts"], { throwOnError: true })
+      loadPipelinesFromPaths(["/nonexistent/file.ts"], { throwOnError: true }),
     ).rejects.toThrow();
   });
 });
@@ -218,14 +218,14 @@ describe("loadPipelinesFromPaths", () => {
 describe("unified API - URL parsing", () => {
   it("should parse github:// URLs correctly", async () => {
     const testUrl = "github://ucdjs/demo?ref=main&path=pipelines/test.ucd-pipeline.ts";
-    
+
     // Should fail to fetch, but parsing should work
     await expect(loadPipelineFile(testUrl)).rejects.toThrow();
   });
 
   it("should parse gitlab:// URLs correctly", async () => {
     const testUrl = "gitlab://mygroup/demo?ref=main&path=pipelines/test.ucd-pipeline.ts";
-    
+
     // Should fail to fetch, but parsing should work
     await expect(loadPipelineFile(testUrl)).rejects.toThrow();
   });
