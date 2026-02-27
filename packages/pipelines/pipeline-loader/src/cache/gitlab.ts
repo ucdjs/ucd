@@ -103,9 +103,39 @@ export async function downloadGitLabRepo(
     const relativePath = file.name.slice(rootPrefix.length + 1); // +1 for the slash
     if (!relativePath) continue;
 
-    const outputPath = path.join(cacheDir, relativePath);
-    await mkdir(path.dirname(outputPath), { recursive: true });
-    await writeFile(outputPath, file.data);
+    // Normalize and validate the relative path to prevent path traversal
+    let safeRelativePath = path.normalize(relativePath);
+    // Remove any leading path separators to avoid accidental absolute paths
+    safeRelativePath = safeRelativePath.replace(/^([/\\])+/, "");
+
+    if (!safeRelativePath) {
+      // Nothing meaningful to write
+      continue;
+    }
+
+    // Disallow paths that attempt to traverse upwards
+    const upSegment = `..${path.sep}`;
+    if (
+      safeRelativePath === ".."
+      || safeRelativePath.startsWith(upSegment)
+      || safeRelativePath.includes(`${path.sep}..${path.sep}`)
+      || safeRelativePath.endsWith(`${path.sep}..`)
+    ) {
+      throw new Error(`Invalid archive entry path (path traversal detected): ${file.name}`);
+    }
+
+    const outputPath = path.join(cacheDir, safeRelativePath);
+    const resolvedCacheDir = path.resolve(cacheDir);
+    const resolvedOutputPath = path.resolve(outputPath);
+    if (
+      resolvedOutputPath !== resolvedCacheDir
+      && !resolvedOutputPath.startsWith(resolvedCacheDir + path.sep)
+    ) {
+      throw new Error(`Invalid archive entry path (outside cache dir): ${file.name}`);
+    }
+
+    await mkdir(path.dirname(resolvedOutputPath), { recursive: true });
+    await writeFile(resolvedOutputPath, file.data);
   }
 
   return cacheDir;
