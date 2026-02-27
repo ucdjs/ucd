@@ -1,5 +1,12 @@
 # @ucdjs/env
 
+## [0.1.1-beta.8](https://github.com/ucdjs/ucd/compare/@ucdjs/env@0.1.1-beta.7...@ucdjs/env@0.1.1-beta.8) (2026-02-27)
+
+
+### 🚀 Features
+* add UCDJS_DOCS_URL to environment constants ([5192869f](https://github.com/ucdjs/ucd/commit/5192869f09d48367993c9ea8a2549e23fd5dfd13)) (by [@luxass](https://github.com/luxass))
+
+
 ## [0.1.1-beta.7](https://github.com/ucdjs/ucd/compare/@ucdjs/env@0.1.1-beta.6...@ucdjs/env@0.1.1-beta.7) (2026-02-19)
 
 

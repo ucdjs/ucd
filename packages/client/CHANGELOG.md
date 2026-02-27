@@ -1,5 +1,12 @@
 # @ucdjs/client
 
+## [0.1.1-beta.7](https://github.com/ucdjs/ucd/compare/@ucdjs/client@0.1.1-beta.6...@ucdjs/client@0.1.1-beta.7) (2026-02-27)
+
+
+### 📚 Documentation
+* add comprehensive examples for path-utils ([681f2e86](https://github.com/ucdjs/ucd/commit/681f2e8648eab759b1ad42dd9111248a91d4b31d)) (by [@luxass](https://github.com/luxass))
+
+
 ## [0.1.1-beta.6](https://github.com/ucdjs/ucd/compare/@ucdjs/client@0.1.1-beta.5...@ucdjs/client@0.1.1-beta.6) (2026-02-19)
 
 
