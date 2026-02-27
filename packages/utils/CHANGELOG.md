@@ -1,5 +1,13 @@
 # @ucdjs/utils
 
+## [0.2.1-beta.7](https://github.com/ucdjs/ucd/compare/@ucdjs/utils@0.2.1-beta.6...@ucdjs/utils@0.2.1-beta.7) (2026-02-27)
+
+
+*No significant changes*
+
+##### &nbsp;&nbsp;&nbsp;&nbsp;[View changes on GitHub](https://github.com/ucdjs/ucd/compare/@ucdjs/utils@0.2.1-beta.6...@ucdjs/utils@0.2.1-beta.7)
+
+
 ## [0.2.1-beta.6](https://github.com/ucdjs/ucd/compare/@ucdjs/utils@0.2.1-beta.5...@ucdjs/utils@0.2.1-beta.6) (2026-02-19)
 
 
