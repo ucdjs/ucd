@@ -23,7 +23,7 @@ packages:
 
 catalogs:
   build:
-    turbo: 2.8.10
+    turbo: 2.8.11
     "@ucdjs/release-scripts": 0.1.0-beta.59
     tsdown: 0.20.3
     typescript: 5.9.3
@@ -31,45 +31,45 @@ catalogs:
     nanotar: 0.3.0
     openapi-typescript: 7.13.0
     tsx: 4.21.0
-    rolldown: 1.0.0-rc.5
+    rolldown: 1.0.0-rc.6
     "@rollup/plugin-babel": 6.1.0
     babel-plugin-react-compiler: 1.0.0
     vite-plugin-inspect: 11.3.3
-    tailwindcss: 4.2.0
-    "@tailwindcss/vite": 4.2.0
+    tailwindcss: 4.2.1
+    "@tailwindcss/vite": 4.2.1
     "@vitejs/plugin-react": 5.1.4
     vite: 8.0.0-beta.15
-    "@cloudflare/vite-plugin": 1.25.1
-    "@tanstack/router-plugin": 1.161.1
+    "@cloudflare/vite-plugin": 1.25.6
+    "@tanstack/router-plugin": 1.163.2
     "@tanstack/devtools-vite": 0.5.1
     vite-tsconfig-paths: 6.1.1
     chokidar: 5.0.0
     drizzle-kit: 0.31.9
     esrap: 2.2.3
-    oxc-parser: 0.114.0
-    oxc-transform: 0.114.0
+    oxc-parser: 0.115.0
+    oxc-transform: 0.115.0
     tinyglobby: 0.2.15
 
   test:
-    "@vitest/coverage-istanbul": 4.1.0-beta.4
-    "@vitest/expect": 4.1.0-beta.4
-    "@vitest/ui": 4.1.0-beta.4
-    vitest: 4.1.0-beta.4
+    "@vitest/coverage-istanbul": 4.1.0-beta.5
+    "@vitest/expect": 4.1.0-beta.5
+    "@vitest/ui": 4.1.0-beta.5
+    vitest: 4.1.0-beta.5
     vitest-testdirs: 4.4.2
     msw: 2.12.10
     # "@cloudflare/vitest-pool-workers": 0.11.1
     "@cloudflare/vitest-pool-workers": https://pkg.pr.new/@cloudflare/vitest-pool-workers@ccaf85f
 
   lint:
-    "@luxass/eslint-config": 7.2.0
+    "@luxass/eslint-config": 7.2.1
     "@stoplight/spectral-cli": 6.15.0
-    eslint: 10.0.0
-    eslint-plugin-format: 1.4.0
+    eslint: 10.0.2
+    eslint-plugin-format: 2.0.1
     "@luxass/spectral-ruleset": 1.1.1
-    "@typescript-eslint/utils": 8.56.0
+    "@typescript-eslint/utils": 8.56.1
     "@eslint-react/eslint-plugin": 2.13.0
     eslint-plugin-react-hooks: 7.0.1
-    eslint-plugin-react-refresh: 0.5.0
+    eslint-plugin-react-refresh: 0.5.2
 
   runtime:
     # merge these together when heading inference is implemented better
@@ -80,8 +80,8 @@ catalogs:
     yargs-parser: 22.0.0
     defu: 6.1.4
     zod: 4.3.6
-    "@ai-sdk/openai": 3.0.30
-    ai: 6.0.91
+    "@ai-sdk/openai": 3.0.36
+    ai: 6.0.103
     knitwork: 1.3.0
     picomatch: 4.0.3
     apache-autoindex-parse: 5.0.2
@@ -91,20 +91,20 @@ catalogs:
     "@luxass/msw-utils": 0.6.0
     hookable: 6.0.1
     cac: 6.7.14
-    shiki: 3.22.0
+    shiki: 3.23.0
 
   backend:
-    wrangler: 4.66.0
+    wrangler: 4.69.0
     "@hono/zod-openapi": 1.2.2
-    "@scalar/hono-api-reference": 0.9.41
-    hono: 4.11.10
-    "@cloudflare/workers-types": 4.20260218.0
-    "@sentry/cloudflare": 10.39.0
+    "@scalar/hono-api-reference": 0.9.46
+    hono: 4.12.3
+    "@cloudflare/workers-types": 4.20260226.1
+    "@sentry/cloudflare": 10.40.0
     h3: 2.0.1-rc.14
     crossws: 0.4.4
     drizzle-orm: 0.45.1
     "@libsql/client": 0.17.0
-    miniflare: 4.20260217.0
+    miniflare: 4.20260305.0
 
   types:
     "@types/picomatch": 4.0.2
@@ -118,41 +118,41 @@ catalogs:
   frontend:
     react: 19.2.4
     react-dom: 19.2.4
-    "@tanstack/react-router": 1.161.1
-    "@tanstack/react-router-devtools": 1.161.1
-    "@tanstack/zod-adapter": 1.161.1
+    "@tanstack/react-router": 1.163.2
+    "@tanstack/react-router-devtools": 1.163.2
+    "@tanstack/zod-adapter": 1.163.2
     "@tanstack/react-devtools": 0.9.6
     "@tanstack/react-form": 1.28.3
     "@tanstack/react-query": 5.90.21
     "@tanstack/react-query-devtools": 5.91.3
-    "@tanstack/react-router-ssr-query": 1.161.1
-    "@tanstack/react-start": 1.161.1
-    lucide-react: 0.574.0
+    "@tanstack/react-router-ssr-query": 1.163.2
+    "@tanstack/react-start": 1.163.2
+    lucide-react: 0.575.0
     "@icons-pack/react-simple-icons": 13.11.2
     nitro: 3.0.1-alpha.2
     # nitro: npm:nitro-nightly@latest
     tw-animate-css: 1.4.0
-    tailwind-merge: 3.4.1
+    tailwind-merge: 3.5.0
     clsx: 2.1.1
     class-variance-authority: 0.7.1
     "@base-ui/react": 1.2.0
     "@base-ui/utils": 0.2.5
     "@fontsource-variable/inter": 5.2.8
-    "@xyflow/react": 12.10.0
-    "@sentry/tanstackstart-react": 10.39.0
+    "@xyflow/react": 12.10.1
+    "@sentry/tanstackstart-react": 10.40.0
     "@tanstack/react-hotkeys": 0.3.0
     "@tanstack/react-hotkeys-devtools": 0.3.0
 
   vscode:
-    vscode-ext-gen: 1.5.1
+    vscode-ext-gen: 1.6.0
     reactive-vscode: 1.0.0-beta.2
     "@reactive-vscode/vueuse": 1.0.0-beta.2
     "@vscode/vsce": 3.7.1
 
   docs:
-    fumadocs-mdx: 14.2.7
-    fumadocs-core: 16.6.3
-    fumadocs-ui: 16.6.3
+    fumadocs-mdx: 14.2.8
+    fumadocs-core: 16.6.6
+    fumadocs-ui: 16.6.6
 
 onlyBuiltDependencies:
   - esbuild

@@ -2,7 +2,7 @@
   "name": "@ucdjs/api",
   "type": "module",
   "private": true,
-  "packageManager": "pnpm@10.30.1",
+  "packageManager": "pnpm@10.30.3",
   "imports": {
     "#lib/*": "./src/lib/*.ts",
     "#types": "./src/types.ts"
