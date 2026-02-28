@@ -54,6 +54,12 @@ export function createApp(options: AppOptions = {}): H3 {
         type: "local",
         id: "local",
         cwd: path.join(import.meta.dirname, "../../../pipeline-playground"),
+      }, {
+        type: "gitlab",
+        id: "gitlab-test",
+        owner: "luxass",
+        repo: "ucdjs-pipelines-gitlab",
+        ref: "main",
       }];
     } else {
       resolvedSources = [{
