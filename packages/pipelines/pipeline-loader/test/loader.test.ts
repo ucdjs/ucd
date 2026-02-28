@@ -5,7 +5,7 @@ import { findPipelineFiles, loadPipelineFile, loadPipelinesFromPaths } from "../
 describe("loadPipelineFile", () => {
   it("should load a local pipeline file", async () => {
     const dir = await testdir({
-      "test.ucd-pipeline.ts": `
+      "test.ucd-pipeline.ts": /* ts */`
         export const testPipeline = {
           _type: "pipeline-definition",
           id: "test",
@@ -27,11 +27,12 @@ describe("loadPipelineFile", () => {
 
   it("should handle relative imports in pipeline files", async () => {
     const dir = await testdir({
-      "helper.ts": `
+      "helper.ts": /* ts */`
         export const helper = () => "helper-output";
       `,
-      "test.ucd-pipeline.ts": `
+      "test.ucd-pipeline.ts": /* ts */`
         import { helper } from "./helper";
+
         export const testPipeline = {
           _type: "pipeline-definition",
           id: "test",
@@ -51,7 +52,7 @@ describe("loadPipelineFile", () => {
 
   it("should return empty arrays for files without pipeline exports", async () => {
     const dir = await testdir({
-      "empty.ts": `
+      "empty.ts": /* ts */`
         export const config = { foo: "bar" };
       `,
     });
@@ -64,7 +65,7 @@ describe("loadPipelineFile", () => {
 
   it("should ignore default exports", async () => {
     const dir = await testdir({
-      "test.ucd-pipeline.ts": `
+      "test.ucd-pipeline.ts": /* ts */`
         export default {
           _type: "pipeline-definition",
           id: "default",
@@ -73,6 +74,7 @@ describe("loadPipelineFile", () => {
           inputs: [],
           routes: [],
         };
+
         export const namedPipeline = {
           _type: "pipeline-definition",
           id: "named",
@@ -93,6 +95,14 @@ describe("loadPipelineFile", () => {
 
   it("should throw for non-existent files", async () => {
     await expect(loadPipelineFile("/nonexistent/file.ucd-pipeline.ts")).rejects.toThrow();
+  });
+
+  it("should throw for files with syntax errors", async () => {
+    const dir = await testdir({
+      "invalid.ucd-pipeline.ts": `export const a = ;`, // Syntax error
+    });
+
+    await expect(loadPipelineFile(`${dir}/invalid.ucd-pipeline.ts`)).rejects.toThrow();
   });
 });
 

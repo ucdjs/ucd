@@ -3,66 +3,43 @@ import type {
   LoadedPipelineFile,
   LoadPipelinesResult,
   PipelineLoadError,
+  PipelineSourceWithoutId,
 } from "./types";
 import path from "node:path";
 import { isPipelineDefinition } from "@ucdjs/pipelines-core";
 import { glob } from "tinyglobby";
-import { bundleModule, createDataUrl } from "./bundle";
+import { bundle } from "./bundle";
 import { downloadGitHubRepo } from "./cache/github";
 import { downloadGitLabRepo } from "./cache/gitlab";
-
-// Simplified source types for findPipelineFiles (id is not required)
-export type FindPipelineSource
-  = | { type: "local"; cwd: string }
-    | { type: "github"; owner: string; repo: string; ref?: string; path?: string }
-    | { type: "gitlab"; owner: string; repo: string; ref?: string; path?: string };
+import { parseRemoteSourceUrl } from "./utils";
 
 /**
- * Parse a github:// or gitlab:// URL
- */
-function parseRepoUrl(url: string): { type: "github" | "gitlab"; owner: string; repo: string; ref: string; filePath: string } | null {
-  if (url.startsWith("github://")) {
-    const match = url.match(/^github:\/\/([^/]+)\/([^?]+)\?ref=([^&]+)&path=(.+)$/);
-    if (match && match[1] && match[2] && match[3] && match[4]) {
-      return {
-        type: "github",
-        owner: match[1],
-        repo: match[2],
-        ref: match[3],
-        filePath: match[4],
-      };
-    }
-  }
-
-  if (url.startsWith("gitlab://")) {
-    const match = url.match(/^gitlab:\/\/([^/]+)\/([^?]+)\?ref=([^&]+)&path=(.+)$/);
-    if (match && match[1] && match[2] && match[3] && match[4]) {
-      return {
-        type: "gitlab",
-        owner: match[1],
-        repo: match[2],
-        ref: match[3],
-        filePath: match[4],
-      };
-    }
-  }
-
-  return null;
-}
-
-/**
- * Load a pipeline file from a local path or remote URL.
+ * Load a pipeline definition file.
  *
- * Supports:
- * - Local file paths
- * - github://owner/repo?ref=branch&path=file.ts
- * - gitlab://owner/repo?ref=branch&path=file.ts
+ * @param {string} fileOrRemotePath - The path to the pipeline definition file. Can be a local file path or a remote URL (GitHub/GitLab).
+ * @returns {Promise<LoadedPipelineFile>} An object containing the file path, an array of pipeline definitions exported from the file, and their export names.
+ * @throws Will throw an error if the file cannot be loaded or if the pipeline definitions are invalid.
+ *
+ * @example
+ * ```typescript
+ * // Load a local pipeline file
+ * const result = await loadPipelineFile("./pipelines/my-pipeline.ucd-pipeline.ts");
+ * console.log(result.pipelines); // Array of pipeline definitions
+ *
+ * // Load a pipeline file from a GitHub repository
+ * const result = await loadPipelineFile("github://owner/repo/path/to/pipeline.ucd-pipeline.ts");
+ * console.log(result.pipelines); // Array of pipeline definitions
+ *
+ * // Load a pipeline file from a GitLab repository
+ * const result = await loadPipelineFile("gitlab://owner/repo/path/to/pipeline.ucd-pipeline.ts");
+ * console.log(result.pipelines); // Array of pipeline definitions
+ * ```
  */
-export async function loadPipelineFile(filePath: string): Promise<LoadedPipelineFile> {
+export async function loadPipelineFile(fileOrRemotePath: string): Promise<LoadedPipelineFile> {
   let resolvedPath: string;
 
   // Check if it's a remote URL
-  const repoInfo = parseRepoUrl(filePath);
+  const repoInfo = parseRemoteSourceUrl(fileOrRemotePath);
   if (repoInfo) {
     const cacheDir = repoInfo.type === "github"
       ? await downloadGitHubRepo({ owner: repoInfo.owner, repo: repoInfo.repo, ref: repoInfo.ref })
@@ -70,12 +47,11 @@ export async function loadPipelineFile(filePath: string): Promise<LoadedPipeline
 
     resolvedPath = path.join(cacheDir, repoInfo.filePath);
   } else {
-    resolvedPath = path.resolve(filePath);
+    resolvedPath = path.resolve(fileOrRemotePath);
   }
 
-  // Always bundle (handles TypeScript and relative imports)
-  const bundle = await bundleModule(resolvedPath);
-  const dataUrl = createDataUrl(bundle);
+  // Always bundle the file to ensure we can import it with all dependencies
+  const { dataUrl } = await bundle(resolvedPath);
   const module = await import(/* @vite-ignore */ dataUrl);
 
   const pipelines: PipelineDefinition[] = [];
@@ -91,7 +67,7 @@ export async function loadPipelineFile(filePath: string): Promise<LoadedPipeline
   }
 
   return {
-    filePath,
+    filePath: fileOrRemotePath,
     pipelines,
     exportNames,
   };
@@ -152,14 +128,24 @@ export async function loadPipelinesFromPaths(
 }
 
 export interface FindPipelineFilesOptions {
+  /**
+   * Glob pattern(s) to match pipeline files. Defaults to "**\/*.ucd-pipeline.ts".
+   */
   patterns?: string | string[];
-  source?: FindPipelineSource;
+
+  /**
+   * Optional source configuration to find pipeline files in a local directory or remote repository. If not provided, defaults to searching the current working directory.
+   */
+  source?: PipelineSourceWithoutId;
 }
 
 /**
  * Find pipeline files in a local directory or remote repository.
  *
- * Examples:
+ * @param {FindPipelineFilesOptions}  [options] - Options to configure the search for pipeline files, including glob patterns and source location (local or remote).
+ * @returns {Promise<string[]>} An array of file paths that match the specified patterns and source.
+ *
+ * @example
  * ```typescript
  * // Local directory
  * findPipelineFiles({ source: { type: "local", cwd: "./pipelines" } })

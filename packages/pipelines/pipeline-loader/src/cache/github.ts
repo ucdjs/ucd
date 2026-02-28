@@ -1,4 +1,3 @@
-import type { RemoteRequestOptions } from "../types";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { getRepositoryCacheDir } from "@ucdjs-internal/shared/config";
@@ -22,13 +21,11 @@ interface GitHubCommitResponse {
  */
 export async function resolveGitHubRef(
   repoRef: GitHubRepoRef,
-  options: RemoteRequestOptions = {},
 ): Promise<string> {
   const { owner, repo, ref = "HEAD" } = repoRef;
-  const { customFetch = fetch } = options;
 
   const url = `${GITHUB_API_BASE}/repos/${owner}/${repo}/commits/${ref}`;
-  const response = await customFetch(url, {
+  const response = await fetch(url, {
     headers: {
       Accept: GITHUB_ACCEPT_HEADER,
     },
@@ -47,28 +44,26 @@ export async function resolveGitHubRef(
  */
 export async function downloadGitHubRepo(
   repoRef: GitHubRepoRef,
-  options: RemoteRequestOptions = {},
 ): Promise<string> {
   const { owner, repo } = repoRef;
-  const { customFetch = fetch } = options;
 
   // First resolve the ref to a commit SHA for immutable caching
-  const commitSha = await resolveGitHubRef(repoRef, options);
+  const commitSha = await resolveGitHubRef(repoRef);
   const cacheDir = getRepositoryCacheDir("github", owner, repo, commitSha);
 
   // Check if already cached
-  try {
-    const fs = await import("node:fs");
-    if (fs.existsSync(cacheDir)) {
-      return cacheDir;
-    }
-  } catch {
-    // Continue to download
-  }
+  // try {
+  //   const fs = await import("node:fs");
+  //   if (fs.existsSync(cacheDir)) {
+  //     return cacheDir;
+  //   }
+  // } catch {
+  //   // Continue to download
+  // }
 
   // Download the tar.gz archive
   const archiveUrl = `${GITHUB_API_BASE}/repos/${owner}/${repo}/tarball/${commitSha}`;
-  const response = await customFetch(archiveUrl, {
+  const response = await fetch(archiveUrl, {
     headers: {
       Accept: "application/vnd.github.v3+json",
     },
