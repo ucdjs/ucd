@@ -8,7 +8,12 @@ import { findPipelineByFileId, loadPipelineFileGroups } from "#server/lib/files"
 import { createExecutionLogCapture } from "#server/lib/log-capture";
 import { resolveLocalFilePath } from "#server/lib/resolve";
 import { createPipelineExecutor, runWithPipelineExecutionContext } from "@ucdjs/pipelines-executor";
-import { downloadGitHubRepo, downloadGitLabRepo } from "@ucdjs/pipelines-loader/internal";
+import {
+  downloadRemoteSourceArchive,
+  getRemoteSourceCacheStatus,
+  materializeArchiveToDir,
+  writeCacheMarker,
+} from "@ucdjs/pipelines-loader";
 import { toPipelineDetails } from "@ucdjs/pipelines-ui";
 import { and, eq } from "drizzle-orm";
 import { H3, readValidatedBody } from "h3";
@@ -26,12 +31,30 @@ async function getPipelineFileForSource(
     return { content, filePath };
   }
 
-  const { owner, repo, ref } = source;
-  const cacheDir = source.type === "github"
-    ? await downloadGitHubRepo({ owner, repo, ref })
-    : await downloadGitLabRepo({ owner, repo, ref });
+  const status = await getRemoteSourceCacheStatus({
+    source: source.type,
+    owner: source.owner,
+    repo: source.repo,
+    ref: source.ref,
+  });
 
-  const fullPath = path.join(cacheDir, filePath);
+  if (!status.cached) {
+    const archiveBuffer = await downloadRemoteSourceArchive(source.type, {
+      owner: source.owner,
+      repo: source.repo,
+      ref: source.ref ?? "HEAD",
+      commitSha: status.commitSha,
+    });
+
+    await materializeArchiveToDir({
+      archiveBuffer,
+      targetDir: status.cacheDir,
+    });
+
+    await writeCacheMarker(status);
+  }
+
+  const fullPath = path.join(status.cacheDir, filePath);
   const content = await fs.promises.readFile(fullPath, "utf-8");
 
   return { content, filePath };
