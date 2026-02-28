@@ -1,12 +1,15 @@
 import type { Prettify } from "@luxass/utils";
+import type { PipelineSource } from "@ucdjs/pipelines-loader";
 import type { CLIArguments } from "../../cli-utils";
 import path from "node:path";
 import process from "node:process";
 import {
   findPipelineFiles,
   loadPipelinesFromPaths,
+  parseRemoteSourceUrl,
 } from "@ucdjs/pipelines-loader";
-import { parseRepoString, printHelp } from "../../cli-utils";
+import { printHelp } from "../../cli-utils";
+import { CLIError } from "../../errors";
 import {
   blankLine,
   bold,
@@ -48,113 +51,146 @@ export async function runListPipelines({ flags }: CLIPipelinesListCmdOptions) {
     return;
   }
 
-  // Build the source for findPipelineFiles
-  let source: {
-    type: "local";
-    cwd: string;
-  } | {
-    type: "github";
-    owner: string;
-    repo: string;
-    ref?: string;
-    path?: string;
-  } | {
-    type: "gitlab";
-    owner: string;
-    repo: string;
-    ref?: string;
-    path?: string;
-  };
-  let label: string;
+  // Build sources for listing pipelines
+  const sources: PipelineSource[] = [];
+  const sourceLabels: string[] = [];
 
-  if (flags?.github) {
-    const { owner, repo } = parseRepoString(flags.github);
+  function addRemoteSource(
+    flagName: "github" | "gitlab",
+    flagValue: string | undefined,
+  ) {
+    if (!flagValue) return;
+    const repoInfo = parseRemoteSourceUrl(flagValue);
+    if (!repoInfo) {
+      throw new CLIError(`Invalid ${flagName} repository URL: ${flagValue}`);
+    }
+    const { type, owner, repo } = repoInfo;
     const ref = flags.ref || "HEAD";
     const subPath = flags.path || undefined;
-    source = { type: "github", owner, repo, ref, path: subPath };
-    label = `${owner}/${repo}${ref !== "HEAD" ? `@${ref}` : ""}`;
-  } else if (flags?.gitlab) {
-    const { owner, repo } = parseRepoString(flags.gitlab);
-    const ref = flags.ref || "HEAD";
-    const subPath = flags.path || undefined;
-    source = { type: "gitlab", owner, repo, ref, path: subPath };
-    label = `${owner}/${repo}${ref !== "HEAD" ? `@${ref}` : ""}`;
-  } else {
-    const cwd = flags.cwd || process.cwd();
-    source = { type: "local", cwd };
-    label = cwd;
+    const sourceId = `${type}-${owner}-${repo}`;
+
+    sources.push({ type, id: sourceId, owner, repo, ref, path: subPath });
+    sourceLabels.push(`[${type}] ${owner}/${repo}${ref !== "HEAD" ? `@${ref}` : ""}`);
   }
 
-  // Find files using the unified API (handles downloading automatically)
+  addRemoteSource("github", flags?.github);
+  addRemoteSource("gitlab", flags?.gitlab);
+
+  // Local source (default if no remote specified)
+  if (sources.length === 0 || flags?.cwd) {
+    const cwd = flags.cwd || process.cwd();
+    sources.push({
+      type: "local",
+      id: "local",
+      cwd,
+    });
+    sourceLabels.push(`[local] ${cwd}`);
+  }
+
+  // Find files from all sources
+  const allFiles: Array<{
+    source: PipelineSource;
+    sourceLabel: string;
+    files: Awaited<ReturnType<typeof findPipelineFiles>>;
+  }> = [];
+
   const pattern = flags.path
     ? `${flags.path}/**/*.ucd-pipeline.ts`
     : "**/*.ucd-pipeline.ts";
 
-  const files = await findPipelineFiles({ source, patterns: pattern });
-  const result = await loadPipelinesFromPaths(files);
+  for (let i = 0; i < sources.length; i++) {
+    const source = sources[i]!;
+    const sourceLabel = sourceLabels[i]!;
+    const findSource = source.type === "local"
+      ? { type: "local" as const, cwd: source.cwd }
+      : { type: source.type, owner: source.owner!, repo: source.repo!, ref: source.ref, path: source.path };
+    const files = await findPipelineFiles({
+      source: findSource,
+      patterns: pattern,
+    });
+    allFiles.push({ source, sourceLabel, files });
+  }
 
-  const allPipelines = result.files.map((file) => ({
-    filePath: file.filePath,
-    exportNames: file.exportNames,
-    pipelines: file.pipelines.map((p) => ({
-      name: p.name ?? p.id,
-      id: p.id,
-      description: p.description,
-      routes: p.routes.length,
-      sources: p.inputs.length,
-    })),
-  }));
+  // Load pipelines from all files
+  const allResults: Array<{
+    source: PipelineSource;
+    sourceLabel: string;
+    result: Awaited<ReturnType<typeof loadPipelinesFromPaths>>;
+  }> = [];
 
-  const totalPipelines = allPipelines.reduce((sum, f) => sum + f.pipelines.length, 0);
+  for (const { source, sourceLabel, files } of allFiles) {
+    const result = await loadPipelinesFromPaths(files);
+    allResults.push({ source, sourceLabel, result });
+  }
+
+  // Aggregate statistics
+  const totalFiles = allResults.reduce((sum, r) => sum + r.result.files.length, 0);
+  const totalPipelines = allResults.reduce(
+    (sum, r) => sum + r.result.files.reduce((s, f) => s + f.pipelines.length, 0),
+    0,
+  );
 
   header("Pipelines");
-  keyValue("Files", String(allPipelines.length));
+  keyValue("Files", String(totalFiles));
   keyValue("Pipelines", String(totalPipelines));
   blankLine();
 
-  // Show source label
-  output.info(`${cyan(source.type)} ${dim("·")} ${label}`);
-  blankLine();
+  // List pipelines by source
+  for (const { source, sourceLabel, result } of allResults) {
+    output.info(`${cyan(source.type)} ${dim("·")} ${sourceLabel}`);
+    blankLine();
 
-  // List pipelines
-  for (const f of allPipelines) {
-    if (source.type === "local") {
-      const rel = path.relative(source.cwd, f.filePath);
-      output.info(`${dim("•")} ${cyan(rel)}`);
-    } else {
-      output.info(`${dim("•")} ${cyan(f.filePath)}`);
+    const files = result.files.map((file) => ({
+      filePath: file.filePath,
+      exportNames: file.exportNames,
+      pipelines: file.pipelines.map((p) => ({
+        name: p.name ?? p.id,
+        id: p.id,
+        description: p.description,
+        routes: p.routes.length,
+        sources: p.inputs.length,
+      })),
+    }));
+
+    for (const f of files) {
+      if (source.type === "local" && "cwd" in source) {
+        const rel = path.relative(source.cwd, f.filePath);
+        output.info(`${dim("•")} ${cyan(rel)}`);
+      } else {
+        output.info(`${dim("•")} ${cyan(f.filePath)}`);
+      }
+
+      if (f.exportNames.length === 0) {
+        output.info(`  ${dim("(no pipeline exports found)")}`);
+        continue;
+      }
+
+      const items = f.pipelines.map((p, i) => {
+        const displayName = p.name ?? f.exportNames[i] ?? "default";
+        const idLabel = p.id && p.id !== displayName ? ` ${dim(`[${p.id}]`)}` : "";
+        const routesCount = p.routes ?? 0;
+        const sourcesCount = p.sources ?? 0;
+        const details = ` ${dim("·")} ${routesCount} route(s) ${dim("·")} ${sourcesCount} source(s)`;
+        const description = p.description ? ` ${dim("·")} ${p.description}` : "";
+
+        return `${bold(displayName)}${idLabel}${details}${description}`;
+      });
+
+      items.forEach((item, index) => {
+        const isLast = index === items.length - 1;
+        const prefix = isLast ? "└" : "├";
+        output.info(`  ${dim(prefix)} ${item}`);
+      });
     }
 
-    if (f.exportNames.length === 0) {
-      output.info(`  ${dim("(no pipeline exports found)")}`);
-      continue;
+    if (result.errors.length > 0) {
+      output.warn("");
+      output.warn(`Errors in ${sourceLabel}:`);
+      for (const err of result.errors) {
+        output.error(`  ${yellow("•")} ${err.filePath}: ${err.error.message}`);
+      }
     }
 
-    const items = f.pipelines.map((p, i) => {
-      const displayName = p.name ?? f.exportNames[i] ?? "default";
-      const idLabel = p.id && p.id !== displayName ? ` ${dim(`[${p.id}]`)}` : "";
-      const routesCount = p.routes ?? 0;
-      const sourcesCount = p.sources ?? 0;
-      const details = ` ${dim("·")} ${routesCount} route(s) ${dim("·")} ${sourcesCount} source(s)`;
-      const description = p.description ? ` ${dim("·")} ${p.description}` : "";
-
-      return `${bold(displayName)}${idLabel}${details}${description}`;
-    });
-
-    items.forEach((item, index) => {
-      const isLast = index === items.length - 1;
-      const prefix = isLast ? "└" : "├";
-      output.info(`  ${dim(prefix)} ${item}`);
-    });
-  }
-
-  blankLine();
-
-  if (result.errors.length > 0) {
-    header("Errors");
-    for (const err of result.errors) {
-      const sourceLabel = source.type === "local" ? "[local] " : `[${source.type}] `;
-      output.error(`  ${yellow("•")} ${sourceLabel}${err.filePath}: ${err.error.message}`);
-    }
+    blankLine();
   }
 }
