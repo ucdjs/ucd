@@ -19,6 +19,7 @@ export {
   type FindPipelineFilesOptions,
   loadPipelineFile,
   loadPipelinesFromPaths,
+  type LoadPipelinesOptions,
 } from "./loader";
 
 export type {
