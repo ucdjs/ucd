@@ -1,5 +1,5 @@
 import type { RemotePipelineSource, SourceRepositoryRefWithSourceType } from "./types";
-import { readFile, rename, writeFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { getBaseRepoCacheDir } from "@ucdjs-internal/shared/config";
 import { resolveRemoteSourceRef } from "./utils";
