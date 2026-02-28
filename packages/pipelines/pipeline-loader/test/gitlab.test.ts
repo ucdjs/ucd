@@ -1,5 +1,3 @@
-import { mkdir, writeFile } from "node:fs/promises";
-import path from "node:path";
 import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
@@ -116,21 +114,27 @@ describe("gitlab source", () => {
   });
 
   it("uses validated cache and skips archive download", async () => {
-    const tmpBaseDir = await testdir();
+    const tmpBaseDir = await testdir({
+      gitlab: {
+        ucdjs: {
+          "ucd-pipelines": {
+            "cached-sha": {
+              ".ucd-cache.json": JSON.stringify({
+                source: "gitlab",
+                owner: "ucdjs",
+                repo: "ucd-pipelines",
+                commitSha: "cached-sha",
+                createdAt: "2026-01-01T00:00:00.000Z",
+              }),
+              "pipelines": {
+                "cached.ucd-pipeline.ts": "export const a = 1;",
+              },
+            },
+          },
+        },
+      },
+    });
     getBaseRepoCacheDirMock.mockReturnValue(tmpBaseDir);
-
-    const cacheDir = path.join(tmpBaseDir, "gitlab", "ucdjs", "ucd-pipelines", "cached-sha");
-    await mkdir(path.join(cacheDir, "pipelines"), { recursive: true });
-
-    await writeFile(path.join(cacheDir, ".ucd-cache.json"), JSON.stringify({
-      source: "gitlab",
-      owner: "ucdjs",
-      repo: "ucd-pipelines",
-      commitSha: "cached-sha",
-      createdAt: new Date().toISOString(),
-    }));
-
-    await writeFile(path.join(cacheDir, "pipelines", "cached.ucd-pipeline.ts"), "export const a = 1;");
 
     mockFetch([
       ["GET", "https://gitlab.com/api/v4/projects/ucdjs%2Fucd-pipelines/repository/commits/cached-ref", () => {
