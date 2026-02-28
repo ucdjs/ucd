@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises";
 import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
@@ -17,6 +18,7 @@ vi.mock("@ucdjs-internal/shared/config", async () => {
 });
 
 const parseTarGzipMock = vi.mocked(await import("nanotar")).parseTarGzip;
+const realParseTarGzip = (await vi.importActual<typeof import("nanotar")>("nanotar")).parseTarGzip;
 const getRepositoryCacheDirMock = vi.mocked(await import("@ucdjs-internal/shared/config")).getRepositoryCacheDir;
 
 describe("gitlab source", () => {
@@ -167,5 +169,34 @@ describe("gitlab source", () => {
     expect(result.pipelines).toHaveLength(1);
     expect(result.pipelines[0]?.id).toBe("gitlab-test");
     expect(result.exportNames).toEqual(["testPipeline"]);
+  });
+
+  it("parses and extracts a real GitLab tar.gz fixture", async () => {
+    const tmpCacheDir = await testdir();
+    getRepositoryCacheDirMock.mockReturnValueOnce(tmpCacheDir);
+    parseTarGzipMock.mockImplementationOnce(realParseTarGzip);
+
+    const archiveFixture = await readFile(new URL("./fixtures/ucdjs-pipelines-gitlab-82ecdea1b36d26bd74a1e3d66da1ff026cf5a6dd-82ecdea1b36d26bd74a1e3d66da1ff026cf5a6dd.tar.gz", import.meta.url));
+
+    mockFetch([
+      ["GET", "https://gitlab.com/api/v4/projects/ucdjs%2Fucd-pipelines/repository/commits/82ecdea1b36d26bd74a1e3d66da1ff026cf5a6dd", () => {
+        return HttpResponse.json({ id: "82ecdea1b36d26bd74a1e3d66da1ff026cf5a6dd" });
+      }],
+      ["GET", "https://gitlab.com/api/v4/projects/ucdjs%2Fucd-pipelines/repository/archive.tar.gz?sha=82ecdea1b36d26bd74a1e3d66da1ff026cf5a6dd", () => {
+        return new HttpResponse(archiveFixture, { status: 200 });
+      }],
+    ]);
+
+    const cacheDir = await downloadGitLabRepo({
+      owner: "ucdjs",
+      repo: "ucd-pipelines",
+      ref: "82ecdea1b36d26bd74a1e3d66da1ff026cf5a6dd",
+    });
+
+    const files = await findPipelineFiles({
+      source: { type: "local", cwd: cacheDir },
+    });
+
+    expect(files.length).toEqual(1);
   });
 });

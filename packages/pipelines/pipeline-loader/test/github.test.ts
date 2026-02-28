@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises";
 import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
@@ -17,6 +18,7 @@ vi.mock("@ucdjs-internal/shared/config", async () => {
 });
 
 const parseTarGzipMock = vi.mocked(await import("nanotar")).parseTarGzip;
+const realParseTarGzip = (await vi.importActual<typeof import("nanotar")>("nanotar")).parseTarGzip;
 const getRepositoryCacheDirMock = vi.mocked(await import("@ucdjs-internal/shared/config")).getRepositoryCacheDir;
 
 describe("github source", () => {
@@ -167,5 +169,36 @@ describe("github source", () => {
     expect(result.pipelines).toHaveLength(1);
     expect(result.pipelines[0]?.id).toBe("github-test");
     expect(result.exportNames).toEqual(["testPipeline"]);
+  });
+
+  it("parses and extracts a real GitHub tar.gz fixture", async () => {
+    const tmpCacheDir = await testdir();
+    getRepositoryCacheDirMock.mockReturnValueOnce(tmpCacheDir);
+    parseTarGzipMock.mockImplementationOnce(realParseTarGzip);
+
+    const archiveFixture = await readFile(new URL("./fixtures/ucdjs-ucd-pipelines-a577a07.tar.gz", import.meta.url));
+
+    mockFetch([
+      ["GET", "https://api.github.com/repos/ucdjs/ucd-pipelines/commits/a577a07", () => {
+        return HttpResponse.json({ sha: "a577a07" });
+      }],
+      ["GET", "https://api.github.com/repos/ucdjs/ucd-pipelines/tarball/a577a07", () => {
+        return new HttpResponse(archiveFixture, { status: 200 });
+      }],
+    ]);
+
+    const cacheDir = await downloadGitHubRepo({
+      owner: "ucdjs",
+      repo: "ucd-pipelines",
+      ref: "a577a07",
+    });
+
+    // We only find the pipeline files.
+    // We do not care about other files in the archive for this test
+    const files = await findPipelineFiles({
+      source: { type: "local", cwd: cacheDir },
+    });
+
+    expect(files.length).toEqual(1);
   });
 });
