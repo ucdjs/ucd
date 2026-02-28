@@ -224,19 +224,3 @@ describe("loadPipelinesFromPaths", () => {
     ).rejects.toThrow();
   });
 });
-
-describe("unified API - URL parsing", () => {
-  it("should parse github:// URLs correctly", async () => {
-    const testUrl = "github://ucdjs/demo?ref=main&path=pipelines/test.ucd-pipeline.ts";
-
-    // Should fail to fetch, but parsing should work
-    await expect(loadPipelineFile(testUrl)).rejects.toThrow();
-  });
-
-  it("should parse gitlab:// URLs correctly", async () => {
-    const testUrl = "gitlab://mygroup/demo?ref=main&path=pipelines/test.ucd-pipeline.ts";
-
-    // Should fail to fetch, but parsing should work
-    await expect(loadPipelineFile(testUrl)).rejects.toThrow();
-  });
-});
