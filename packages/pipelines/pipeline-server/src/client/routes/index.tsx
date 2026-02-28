@@ -1,4 +1,3 @@
-import type { PipelinesResponse } from "@ucdjs/pipelines-ui";
 import { createFileRoute, useLoaderData } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({
