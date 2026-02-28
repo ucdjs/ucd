@@ -1,1 +1,31 @@
-{"$schema":"https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json","name":"Unicode Blocks","scopeName":"source.ucd.blocks","patterns":[{"include":"source.ucd.core"},{"comment":"Matches Hex Range: 0000..007F","match":"^([0-9A-Fa-f]{4,6})\\.\\.([0-9A-Fa-f]{4,6})","captures":{"1":{"name":"constant.numeric.hex.start.ucd"},"2":{"name":"constant.numeric.hex.end.ucd"}}},{"comment":"Matches the Block Name after the semicolon","match":"(?<=;)\\s*([\\w\\s\\-]+)$","captures":{"1":{"name":"entity.name.section.ucd"}}}]}
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Unicode Blocks",
+  "scopeName": "source.ucd.blocks",
+  "patterns": [
+    {
+      "include": "source.ucd.core"
+    },
+    {
+      "comment": "Matches Hex Range: 0000..007F",
+      "match": "^([0-9A-Fa-f]{4,6})\\.\\.([0-9A-Fa-f]{4,6})",
+      "captures": {
+        "1": {
+          "name": "constant.numeric.hex.start.ucd"
+        },
+        "2": {
+          "name": "constant.numeric.hex.end.ucd"
+        }
+      }
+    },
+    {
+      "comment": "Matches the Block Name after the semicolon",
+      "match": "(?<=;)\\s*([\\w\\s\\-]+)$",
+      "captures": {
+        "1": {
+          "name": "entity.name.section.ucd"
+        }
+      }
+    }
+  ]
+}

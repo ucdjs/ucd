@@ -1,1 +1,27 @@
-{"$schema":"https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json","name":"Unicode Core","scopeName":"source.ucd.core","patterns":[{"name":"keyword.control.directive.ucd","match":"^#\\s*(@\\w+).*","captures":{"1":{"name":"variable.language.directive.ucd"}},"comment":"Higher priority: Matches # @missing or # @property"},{"name":"comment.line.number-sign.ucd","match":"^#.*$","comment":"Lower priority: Matches standard comments"},{"name":"punctuation.separator.dictionary.ucd","match":";","comment":"The universal UCD delimiter"}]}
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Unicode Core",
+  "scopeName": "source.ucd.core",
+  "patterns": [
+    {
+      "name": "keyword.control.directive.ucd",
+      "match": "^#\\s*(@\\w+).*",
+      "captures": {
+        "1": {
+          "name": "variable.language.directive.ucd"
+        }
+      },
+      "comment": "Higher priority: Matches # @missing or # @property"
+    },
+    {
+      "name": "comment.line.number-sign.ucd",
+      "match": "^#.*$",
+      "comment": "Lower priority: Matches standard comments"
+    },
+    {
+      "name": "punctuation.separator.dictionary.ucd",
+      "match": ";",
+      "comment": "The universal UCD delimiter"
+    }
+  ]
+}

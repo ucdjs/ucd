@@ -38,13 +38,13 @@ export const Route = createRootRoute({
 function RootLayout() {
   return (
     <SidebarProvider>
-      {/* <PipelineSidebar /> */}
+      <PipelineSidebar />
       <SidebarInset className="flex flex-col min-w-0 overflow-hidden">
         <Outlet />
       </SidebarInset>
 
       <Suspense fallback={null}>
-        {/* <PipelineCommandPalette /> */}
+        <PipelineCommandPalette />
       </Suspense>
     </SidebarProvider>
   );
