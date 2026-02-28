@@ -9,9 +9,12 @@ import path from "node:path";
 import { isPipelineDefinition } from "@ucdjs/pipelines-core";
 import { glob } from "tinyglobby";
 import { bundle } from "./bundle";
-import { downloadGitHubRepo } from "./cache/github";
-import { downloadGitLabRepo } from "./cache/gitlab";
-import { parseRemoteSourceUrl } from "./utils";
+import { getRemoteSourceCacheStatus, writeCacheMarker } from "./cache";
+import {
+  downloadRemoteSourceArchive,
+  materializeArchiveToDir,
+  parseRemoteSourceUrl,
+} from "./utils";
 
 /**
  * Load a pipeline definition file.
@@ -36,18 +39,34 @@ import { parseRemoteSourceUrl } from "./utils";
  * ```
  */
 export async function loadPipelineFile(fileOrRemotePath: string): Promise<LoadedPipelineFile> {
-  let resolvedPath: string;
+  let resolvedPath = path.resolve(fileOrRemotePath);
 
-  // Check if it's a remote URL
-  const repoInfo = parseRemoteSourceUrl(fileOrRemotePath);
-  if (repoInfo) {
-    const cacheDir = repoInfo.type === "github"
-      ? await downloadGitHubRepo({ owner: repoInfo.owner, repo: repoInfo.repo, ref: repoInfo.ref })
-      : await downloadGitLabRepo({ owner: repoInfo.owner, repo: repoInfo.repo, ref: repoInfo.ref });
+  const source = parseRemoteSourceUrl(fileOrRemotePath);
+  if (source) {
+    const status = await getRemoteSourceCacheStatus({
+      source: source.type,
+      owner: source.owner,
+      repo: source.repo,
+      ref: source.ref,
+    });
 
-    resolvedPath = path.join(cacheDir, repoInfo.filePath);
-  } else {
-    resolvedPath = path.resolve(fileOrRemotePath);
+    if (!status.cached) {
+      const archiveBuffer = await downloadRemoteSourceArchive(source.type, {
+        owner: source.owner,
+        repo: source.repo,
+        ref: source.ref,
+        commitSha: status.commitSha,
+      });
+
+      await materializeArchiveToDir({
+        archiveBuffer,
+        targetDir: status.cacheDir,
+      });
+
+      await writeCacheMarker(status);
+    }
+
+    resolvedPath = path.join(status.cacheDir, source.filePath);
   }
 
   // Always bundle the file to ensure we can import it with all dependencies
@@ -179,10 +198,31 @@ export async function findPipelineFiles(
     const source = options.source;
     if (source.type === "local") {
       cwd = source.cwd;
-    } else if (source.type === "github") {
-      cwd = await downloadGitHubRepo({ owner: source.owner, repo: source.repo, ref: source.ref });
     } else {
-      cwd = await downloadGitLabRepo({ owner: source.owner, repo: source.repo, ref: source.ref });
+      const status = await getRemoteSourceCacheStatus({
+        source: source.type,
+        owner: source.owner,
+        repo: source.repo,
+        ref: source.ref,
+      });
+
+      if (!status.cached) {
+        const archiveBuffer = await downloadRemoteSourceArchive(source.type, {
+          owner: source.owner,
+          repo: source.repo,
+          ref: source.ref ?? "HEAD",
+          commitSha: status.commitSha,
+        });
+
+        await materializeArchiveToDir({
+          archiveBuffer,
+          targetDir: status.cacheDir,
+        });
+
+        await writeCacheMarker(status);
+      }
+
+      cwd = status.cacheDir;
     }
   } else {
     // Default to current working directory
