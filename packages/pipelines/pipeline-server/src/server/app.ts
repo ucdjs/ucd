@@ -50,17 +50,27 @@ export function createApp(options: AppOptions = {}): H3 {
   if (sources.length === 0) {
     const cwd = process.cwd();
     if (process.env.NODE_ENV === "development" || (import.meta as any).env.DEV) {
-      resolvedSources = [{
-        type: "local",
-        id: "local",
-        cwd: path.join(import.meta.dirname, "../../../pipeline-playground"),
-      }, {
-        type: "gitlab",
-        id: "gitlab-test",
-        owner: "luxass",
-        repo: "ucdjs-pipelines-gitlab",
-        ref: "main",
-      }];
+      resolvedSources = [
+        {
+          type: "local",
+          id: "local",
+          cwd: path.join(import.meta.dirname, "../../../pipeline-playground"),
+        },
+        {
+          type: "gitlab",
+          id: "gitlab-test",
+          owner: "luxass",
+          repo: "ucdjs-pipelines-gitlab",
+          ref: "main",
+        },
+        {
+          type: "github",
+          id: "github-test",
+          owner: "ucdjs",
+          repo: "ucd-pipelines",
+          ref: "main",
+        },
+      ];
     } else {
       resolvedSources = [{
         type: "local",
