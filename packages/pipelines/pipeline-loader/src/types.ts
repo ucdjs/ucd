@@ -42,12 +42,9 @@ export interface LocalSource {
 }
 
 export type PipelineSource = LocalSource | GitHubSource | GitLabSource;
+export type PipelineSourceWithoutId = Omit<LocalSource, "id"> | Omit<GitHubSource, "id"> | Omit<GitLabSource, "id">;
 
 export interface RemoteFileList {
   files: string[];
   truncated: boolean;
-}
-
-export interface RemoteRequestOptions {
-  customFetch?: typeof fetch;
 }

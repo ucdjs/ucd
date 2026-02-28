@@ -1,4 +1,3 @@
-import type { RemoteRequestOptions } from "../types";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { getRepositoryCacheDir } from "@ucdjs-internal/shared/config";
@@ -25,16 +24,14 @@ function encodeProjectPath(owner: string, repo: string): string {
  */
 export async function resolveGitLabRef(
   repoRef: GitLabRepoRef,
-  options: RemoteRequestOptions = {},
 ): Promise<string> {
   const { owner, repo, ref = "HEAD" } = repoRef;
-  const { customFetch = fetch } = options;
 
   const projectId = encodeProjectPath(owner, repo);
   const refValue = ref === "HEAD" ? "HEAD" : ref;
 
   const url = `${GITLAB_API_BASE}/projects/${projectId}/repository/commits/${refValue}`;
-  const response = await customFetch(url);
+  const response = await fetch(url);
 
   if (!response.ok) {
     throw new Error(`GitLab API error: ${response.status} ${response.statusText}`);
@@ -49,30 +46,30 @@ export async function resolveGitLabRef(
  */
 export async function downloadGitLabRepo(
   repoRef: GitLabRepoRef,
-  options: RemoteRequestOptions = {},
 ): Promise<string> {
   const { owner, repo } = repoRef;
-  const { customFetch = fetch } = options;
 
   // First resolve the ref to a commit SHA for immutable caching
-  const commitSha = await resolveGitLabRef(repoRef, options);
+  const commitSha = await resolveGitLabRef(repoRef);
   const cacheDir = getRepositoryCacheDir("gitlab", owner, repo, commitSha);
 
-  // Check if already cached
-  try {
-    const fs = await import("node:fs");
-    if (fs.existsSync(cacheDir)) {
-      return cacheDir;
-    }
-  } catch {
-    // Continue to download
-  }
+  // // Check if already cached
+  // try {
+  //   const fs = await import("node:fs");
+  //   if (fs.existsSync(cacheDir)) {
+  //     return cacheDir;
+  //   }
+  // } catch {
+  //   // Continue to download
+  // }
 
   // Download the tar.gz archive
   const projectId = encodeProjectPath(owner, repo);
   const archiveUrl = `${GITLAB_API_BASE}/projects/${projectId}/repository/archive.tar.gz?sha=${commitSha}`;
-
-  const response = await customFetch(archiveUrl);
+  const response = await fetch(archiveUrl, {
+    // Without this, GitLab returns a 406 Not Acceptable
+    mode: "same-origin",
+  });
 
   if (!response.ok) {
     throw new Error(`Failed to download GitLab archive: ${response.status} ${response.statusText}`);
