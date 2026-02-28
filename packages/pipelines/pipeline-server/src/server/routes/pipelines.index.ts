@@ -24,18 +24,6 @@ pipelinesIndexRouter.get("/", async (event) => {
     allErrors.push(...group.errors);
   }
 
-  console.log({
-    workspaceId: event.context.workspaceId,
-    files: allFiles.map((file) => ({
-      fileId: file.fileId,
-      filePath: file.filePath,
-      fileLabel: file.fileLabel,
-      sourceId: file.sourceId,
-      pipelines: file.pipelines,
-    })),
-    errors: allErrors,
-  });
-
   return {
     workspaceId: event.context.workspaceId,
     files: allFiles.map((file) => ({

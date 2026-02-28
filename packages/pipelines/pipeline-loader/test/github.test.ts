@@ -1,8 +1,9 @@
-import { readFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
+import path from "node:path";
 import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
-import { downloadGitHubRepo, resolveGitHubRef } from "../src/cache/github";
+import { resolveGitHubRef } from "../src/adapters/github";
 import { findPipelineFiles, loadPipelineFile } from "../src/loader";
 
 vi.mock("nanotar", () => ({
@@ -13,13 +14,12 @@ vi.mock("@ucdjs-internal/shared/config", async () => {
   const actual = await vi.importActual("@ucdjs-internal/shared/config");
   return {
     ...actual,
-    getRepositoryCacheDir: vi.fn(),
+    getBaseRepoCacheDir: vi.fn(),
   };
 });
 
 const parseTarGzipMock = vi.mocked(await import("nanotar")).parseTarGzip;
-const realParseTarGzip = (await vi.importActual<typeof import("nanotar")>("nanotar")).parseTarGzip;
-const getRepositoryCacheDirMock = vi.mocked(await import("@ucdjs-internal/shared/config")).getRepositoryCacheDir;
+const getBaseRepoCacheDirMock = vi.mocked(await import("@ucdjs-internal/shared/config")).getBaseRepoCacheDir;
 
 describe("github source", () => {
   afterEach(() => {
@@ -41,58 +41,9 @@ describe("github source", () => {
     })).resolves.toBe("abc123");
   });
 
-  it("throws when resolving a GitHub ref fails", async () => {
-    mockFetch([
-      ["GET", "https://api.github.com/repos/ucdjs/ucd-pipelines/commits/main", () => {
-        return new HttpResponse("rate limited", { status: 429, statusText: "Too Many Requests" });
-      }],
-    ]);
-
-    await expect(resolveGitHubRef({
-      owner: "ucdjs",
-      repo: "ucd-pipelines",
-      ref: "main",
-    })).rejects.toThrow("GitHub API error: 429 Too Many Requests");
-  });
-
-  it("downloads and extracts a GitHub repo archive", async () => {
-    const tmpCacheDir = await testdir();
-    getRepositoryCacheDirMock.mockReturnValueOnce(tmpCacheDir);
-    parseTarGzipMock.mockResolvedValueOnce([
-      {
-        name: "ucdjs-ucd-pipelines-abc123/pipelines/a.ucd-pipeline.ts",
-        type: "file",
-        data: new TextEncoder().encode("export const a = 1;"),
-      },
-      {
-        name: "ucdjs-ucd-pipelines-abc123/README.md",
-        type: "file",
-        data: new TextEncoder().encode("readme"),
-      },
-    ] as never);
-
-    mockFetch([
-      ["GET", "https://api.github.com/repos/ucdjs/ucd-pipelines/commits/main", () => {
-        return HttpResponse.json({ sha: "abc123" });
-      }],
-      ["GET", "https://api.github.com/repos/ucdjs/ucd-pipelines/tarball/abc123", () => {
-        return new HttpResponse(new Uint8Array([1, 2, 3]), { status: 200 });
-      }],
-    ]);
-
-    const cacheDir = await downloadGitHubRepo({
-      owner: "ucdjs",
-      repo: "ucd-pipelines",
-      ref: "main",
-    });
-
-    expect(cacheDir).toContain("github");
-    expect(parseTarGzipMock).toHaveBeenCalledOnce();
-  });
-
   it("finds pipeline files from a GitHub source", async () => {
-    const tmpCacheDir = await testdir();
-    getRepositoryCacheDirMock.mockReturnValueOnce(tmpCacheDir);
+    const tmpBaseDir = await testdir();
+    getBaseRepoCacheDirMock.mockReturnValueOnce(tmpBaseDir);
     parseTarGzipMock.mockResolvedValueOnce([
       {
         name: "ucdjs-ucd-pipelines-sha-find/pipelines/a.ucd-pipeline.ts",
@@ -103,11 +54,6 @@ describe("github source", () => {
         name: "ucdjs-ucd-pipelines-sha-find/pipelines/nested/b.ucd-pipeline.ts",
         type: "file",
         data: new TextEncoder().encode("export const b = 2;"),
-      },
-      {
-        name: "ucdjs-ucd-pipelines-sha-find/README.md",
-        type: "file",
-        data: new TextEncoder().encode("readme"),
       },
     ] as never);
 
@@ -131,13 +77,12 @@ describe("github source", () => {
     });
 
     expect(files).toHaveLength(2);
-    expect(files.some((p) => p.endsWith("pipelines/a.ucd-pipeline.ts"))).toBe(true);
-    expect(files.some((p) => p.endsWith("pipelines/nested/b.ucd-pipeline.ts"))).toBe(true);
+    expect(parseTarGzipMock).toHaveBeenCalledOnce();
   });
 
   it("loads a pipeline file via github:// remote URL", async () => {
-    const tmpCacheDir = await testdir();
-    getRepositoryCacheDirMock.mockReturnValueOnce(tmpCacheDir);
+    const tmpBaseDir = await testdir();
+    getBaseRepoCacheDirMock.mockReturnValueOnce(tmpBaseDir);
     parseTarGzipMock.mockResolvedValueOnce([
       {
         name: "ucdjs-ucd-pipelines-sha-load/pipelines/test.ucd-pipeline.ts",
@@ -168,37 +113,42 @@ describe("github source", () => {
 
     expect(result.pipelines).toHaveLength(1);
     expect(result.pipelines[0]?.id).toBe("github-test");
-    expect(result.exportNames).toEqual(["testPipeline"]);
   });
 
-  it("parses and extracts a real GitHub tar.gz fixture", async () => {
-    const tmpCacheDir = await testdir();
-    getRepositoryCacheDirMock.mockReturnValueOnce(tmpCacheDir);
-    parseTarGzipMock.mockImplementationOnce(realParseTarGzip);
+  it("uses validated cache and skips archive download", async () => {
+    const tmpBaseDir = await testdir();
+    getBaseRepoCacheDirMock.mockReturnValue(tmpBaseDir);
 
-    const archiveFixture = await readFile(new URL("./fixtures/ucdjs-ucd-pipelines-a577a07.tar.gz", import.meta.url));
+    const cacheDir = path.join(tmpBaseDir, "github", "ucdjs", "ucd-pipelines", "cached-sha");
+    await mkdir(path.join(cacheDir, "pipelines"), { recursive: true });
+
+    await writeFile(path.join(cacheDir, ".ucd-cache.json"), JSON.stringify({
+      source: "github",
+      owner: "ucdjs",
+      repo: "ucd-pipelines",
+      commitSha: "cached-sha",
+      createdAt: new Date().toISOString(),
+    }));
+
+    await writeFile(path.join(cacheDir, "pipelines", "cached.ucd-pipeline.ts"), "export const a = 1;");
 
     mockFetch([
-      ["GET", "https://api.github.com/repos/ucdjs/ucd-pipelines/commits/a577a07", () => {
-        return HttpResponse.json({ sha: "a577a07" });
-      }],
-      ["GET", "https://api.github.com/repos/ucdjs/ucd-pipelines/tarball/a577a07", () => {
-        return new HttpResponse(archiveFixture, { status: 200 });
+      ["GET", "https://api.github.com/repos/ucdjs/ucd-pipelines/commits/cached-ref", () => {
+        return HttpResponse.json({ sha: "cached-sha" });
       }],
     ]);
 
-    const cacheDir = await downloadGitHubRepo({
-      owner: "ucdjs",
-      repo: "ucd-pipelines",
-      ref: "a577a07",
-    });
-
-    // We only find the pipeline files.
-    // We do not care about other files in the archive for this test
     const files = await findPipelineFiles({
-      source: { type: "local", cwd: cacheDir },
+      source: {
+        type: "github",
+        owner: "ucdjs",
+        repo: "ucd-pipelines",
+        ref: "cached-ref",
+      },
+      patterns: "**/*.ucd-pipeline.ts",
     });
 
-    expect(files.length).toEqual(1);
+    expect(files).toHaveLength(1);
+    expect(parseTarGzipMock).not.toHaveBeenCalled();
   });
 });

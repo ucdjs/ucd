@@ -30,15 +30,3 @@ export function getPipelineDbPath(): string {
 export function getBaseRepoCacheDir(): string {
   return getUcdConfigPath("cache", "repos");
 }
-
-/**
- * Get the cache directory for a specific repository (generic)
- */
-export function getRepositoryCacheDir(
-  source: string,
-  owner: string,
-  repo: string,
-  commitSha: string,
-): string {
-  return path.join(getBaseRepoCacheDir(), source, owner, repo, commitSha);
-}
