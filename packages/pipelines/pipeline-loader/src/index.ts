@@ -1,4 +1,9 @@
 export {
+  getRemoteSourceCacheStatus,
+  writeCacheMarker,
+} from "./cache";
+
+export {
   findPipelineFiles,
   type FindPipelineFilesOptions,
   loadPipelineFile,
