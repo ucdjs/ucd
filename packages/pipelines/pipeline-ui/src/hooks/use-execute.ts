@@ -1,5 +1,6 @@
 import type { ExecuteResult } from "../types";
 import { useCallback, useState } from "react";
+import { executePipeline } from "../functions/execute-pipeline";
 
 export interface UseExecuteOptions {
   /**
@@ -15,12 +16,6 @@ export interface UseExecuteReturn {
   error: string | null;
   executionId: string | null;
   reset: () => void;
-}
-
-interface ExecuteApiResponse {
-  success: boolean;
-  executionId?: string;
-  error?: string;
 }
 
 export function useExecute(options: UseExecuteOptions = {}): UseExecuteReturn {
@@ -40,37 +35,46 @@ export function useExecute(options: UseExecuteOptions = {}): UseExecuteReturn {
 
       try {
         // Use new sources API if sourceId is provided, otherwise fall back to old pipelines API
-        const endpoint = sourceId
-          ? `${baseUrl}/api/sources/${sourceId}/${fileId}/${pipelineId}/execute`
-          : `${baseUrl}/api/pipelines/${fileId}/${pipelineId}/execute`;
-        const res = await fetch(endpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ versions }),
-        });
-        const data: ExecuteApiResponse = await res.json();
+        if (!sourceId) {
+          const res = await fetch(`${baseUrl}/api/pipelines/${fileId}/${pipelineId}/execute`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ versions }),
+          });
+          const data = await res.json();
 
-        // Handle the new API response format
-        if (data.success && data.executionId) {
-          setExecutionId(data.executionId);
-          const successResult: ExecuteResult = {
-            success: true,
-            pipelineId,
-            executionId: data.executionId,
-          };
-          setResult(successResult);
-          return successResult;
-        } else {
-          const errorResult: ExecuteResult = {
-            success: false,
-            pipelineId,
-            executionId: data.executionId,
-            error: data.error ?? "Execution failed",
-          };
-          setResult(errorResult);
-          setError(errorResult.error ?? "Execution failed");
-          return errorResult;
+          if (data.success && data.executionId) {
+            setExecutionId(data.executionId);
+            const successResult: ExecuteResult = {
+              success: true,
+              pipelineId,
+              executionId: data.executionId,
+            };
+            setResult(successResult);
+            return successResult;
+          } else {
+            const errorResult: ExecuteResult = {
+              success: false,
+              pipelineId,
+              executionId: data.executionId,
+              error: data.error ?? "Execution failed",
+            };
+            setResult(errorResult);
+            setError(errorResult.error ?? "Execution failed");
+            return errorResult;
+          }
         }
+
+        const result = await executePipeline(baseUrl, sourceId, fileId, pipelineId, versions);
+
+        if (result.success && result.executionId) {
+          setExecutionId(result.executionId);
+        } else {
+          setError(result.error ?? "Execution failed");
+        }
+
+        setResult(result);
+        return result;
       } catch (err) {
         const errorResult: ExecuteResult = {
           success: false,

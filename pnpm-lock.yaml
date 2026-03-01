@@ -1481,6 +1481,9 @@ importers:
       tailwind-merge:
         specifier: catalog:frontend
         version: 3.5.0
+      zod:
+        specifier: catalog:runtime
+        version: 4.3.6
     devDependencies:
       '@eslint-react/eslint-plugin':
         specifier: catalog:lint

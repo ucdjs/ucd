@@ -1,5 +1,6 @@
 import type { PipelineFileGroup, PipelineLoadErrorInfo } from "#server/lib/files";
 import { loadPipelineFileGroups } from "#server/lib/files";
+import type { SourceListResponse, SourceDetailResponse } from "@ucdjs/pipelines-ui/schemas";
 import { H3 } from "h3";
 
 export const sourcesIndexRouter: H3 = new H3();
@@ -10,7 +11,7 @@ sourcesIndexRouter.get("/", async (event) => {
   return sources.map((s) => ({
     id: s.id,
     type: s.type,
-  }));
+  })) satisfies SourceListResponse;
 });
 
 sourcesIndexRouter.get("/:sourceId", async (event) => {
@@ -42,5 +43,5 @@ sourcesIndexRouter.get("/:sourceId", async (event) => {
       pipelines: file.pipelines,
     })),
     errors: allErrors,
-  };
+  } satisfies SourceDetailResponse;
 });

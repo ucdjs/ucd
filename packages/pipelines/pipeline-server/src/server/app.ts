@@ -5,13 +5,6 @@ import path from "node:path";
 import process from "node:process";
 import { createDatabase, runMigrations } from "#server/db";
 import {
-  pipelinesEventsRouter,
-  pipelinesExecutionRouter,
-  pipelinesFileRouter,
-  pipelinesGraphRouter,
-  pipelinesIndexRouter,
-  pipelinesLogsRouter,
-  pipelinesPipelineRouter,
   sourcesExecutionRouter,
   sourcesFileRouter,
   sourcesIndexRouter,
@@ -116,13 +109,6 @@ export function createApp(options: AppOptions = {}): H3 {
   app.mount("/api/sources", sourcesPipelineRouter);
   app.mount("/api/sources", sourcesExecutionRouter);
   app.mount("/api/sources", sourcesRefreshRouter);
-  app.mount("/api/pipelines", pipelinesIndexRouter);
-  app.mount("/api/pipelines", pipelinesFileRouter);
-  app.mount("/api/pipelines", pipelinesPipelineRouter);
-  app.mount("/api/pipelines", pipelinesExecutionRouter);
-  app.mount("/api/pipelines", pipelinesEventsRouter);
-  app.mount("/api/pipelines", pipelinesLogsRouter);
-  app.mount("/api/pipelines", pipelinesGraphRouter);
 
   return app;
 }
