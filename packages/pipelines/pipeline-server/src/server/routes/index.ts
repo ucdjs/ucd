@@ -1,3 +1,4 @@
+export { dashboardRouter } from "./dashboard";
 export { sourcesExecutionRouter } from "./sources.execution";
 export { sourcesFileRouter } from "./sources.file";
 export { sourcesPipelineRouter } from "./sources.pipeline";

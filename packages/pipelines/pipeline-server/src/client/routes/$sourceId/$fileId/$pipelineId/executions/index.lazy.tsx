@@ -1,4 +1,4 @@
-import type { Execution } from "#lib/pipeline-executions";
+import type { Execution } from "@ucdjs/pipelines-ui/schemas";
 import { formatDuration, formatTimeAgo } from "#lib/pipeline-executions";
 import { createLazyFileRoute, Link } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
@@ -48,7 +48,9 @@ function ExecutionsListPage() {
             <div>
               <CardTitle className="text-lg">Executions</CardTitle>
               <p className="text-sm text-muted-foreground mt-1">
-                {allExecutions.length} total runs
+                {allExecutions.length}
+                {" "}
+                total runs
               </p>
             </div>
           </div>
@@ -117,7 +119,11 @@ function ExecutionsListPage() {
                                 <span className="text-sm">
                                   {execution.summary.totalRoutes}
                                   <span className="text-muted-foreground">
-                                    {" "}({execution.summary.cached} cached)
+                                    {" "}
+                                    (
+                                    {execution.summary.cached}
+                                    {" "}
+                                    cached)
                                   </span>
                                 </span>
                               )

@@ -1,7 +1,7 @@
 import type { LoadError, PipelineFileInfo } from "../types";
 import { cn } from "#lib/utils";
 import { Link } from "@tanstack/react-router";
-import { ThemeToggle } from "@ucdjs-internal/shared-ui/components";
+import { ThemeToggle, ThemeToggleFallback, UcdLogo } from "@ucdjs-internal/shared-ui/components";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import {
   Sidebar,
@@ -97,9 +97,18 @@ export function PipelineSidebar({
       <SidebarHeader className="p-4">
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center justify-between">
-            <h1 className="text-sm font-semibold text-sidebar-foreground tracking-tight">
-              Pipelines
-            </h1>
+            <Link
+              to="/"
+              className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+            >
+              <div className="rounded-lg p-1 transition-colors">
+                <UcdLogo className="size-10 shrink-0" />
+              </div>
+              <div className="grid text-left leading-tight">
+                <h2 className="font-semibold text-base">UCD.js</h2>
+                <span className="text-xs text-muted-foreground">Pipeline Server</span>
+              </div>
+            </Link>
             <ThemeToggle />
           </div>
           <div className="flex flex-wrap gap-1.5 overflow-hidden">

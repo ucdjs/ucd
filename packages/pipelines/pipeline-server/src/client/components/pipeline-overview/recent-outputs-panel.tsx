@@ -1,4 +1,4 @@
-import type { Execution } from "#lib/pipeline-executions";
+import type { Execution } from "@ucdjs/pipelines-ui/schemas";
 import { formatDuration, formatTimeAgo } from "#lib/pipeline-executions";
 import { Link, useParams } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";

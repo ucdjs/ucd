@@ -1,4 +1,3 @@
-import type { Execution } from "#lib/pipeline-executions";
 import { formatDuration, formatTimeAgo } from "#lib/pipeline-executions";
 import { createLazyFileRoute, Link } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";

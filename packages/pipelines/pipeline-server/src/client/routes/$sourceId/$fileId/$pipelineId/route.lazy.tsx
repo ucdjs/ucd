@@ -10,8 +10,7 @@ export const Route = createLazyFileRoute("/$sourceId/$fileId/$pipelineId")({
 
 function PipelineDetailLayout() {
   const { pipelineId } = Route.useParams();
-  const { pipelineData } = Route.useLoaderData();
-  const pipeline = pipelineData?.pipeline;
+  const { pipeline } = Route.useLoaderData();
   const { selectedVersions, toggleVersion, selectAll, deselectAll } = usePipelineVersions(
     pipelineId,
     pipeline?.versions || [],
@@ -48,7 +47,13 @@ function NotFoundComponent() {
       <div className="text-center max-w-md mx-auto p-6">
         <p className="text-sm text-destructive mb-2">Pipeline not found</p>
         <p className="text-xs text-muted-foreground">
-          Pipeline: {sourceId}/{fileId}/{pipelineId}
+          Pipeline:
+          {" "}
+          {sourceId}
+          /
+          {fileId}
+          /
+          {pipelineId}
         </p>
       </div>
     </div>

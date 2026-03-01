@@ -1,10 +1,16 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, notFound } from "@tanstack/react-router";
 import { sourceQueryOptions } from "@ucdjs/pipelines-ui/functions";
 
 export const Route = createFileRoute("/$sourceId")({
   loader: async ({ context, params }) => {
-    return context.queryClient.ensureQueryData(
+    const data = await context.queryClient.ensureQueryData(
       sourceQueryOptions("", params.sourceId),
     );
+
+    if (!data) {
+      throw notFound();
+    }
+
+    return data;
   },
 });

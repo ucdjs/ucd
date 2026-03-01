@@ -5,6 +5,7 @@ import path from "node:path";
 import process from "node:process";
 import { createDatabase, runMigrations } from "#server/db";
 import {
+  dashboardRouter,
   sourcesExecutionRouter,
   sourcesFileRouter,
   sourcesPipelineRouter,
@@ -102,6 +103,7 @@ export function createApp(options: AppOptions = {}): H3 {
     };
   });
 
+  app.mount("/api/dashboard", dashboardRouter);
   app.mount("/api/sources", sourcesFileRouter);
   app.mount("/api/sources", sourcesPipelineRouter);
   app.mount("/api/sources", sourcesExecutionRouter);
