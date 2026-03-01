@@ -219,3 +219,93 @@ export function codeQueryOptions(sourceId: string, fileId: string, pipelineId: s
     },
   });
 }
+
+const ExecutionEventSchema = z.object({
+  id: z.string(),
+  type: z.string(),
+  timestamp: z.string(),
+  data: z.any(),
+});
+
+const ExecutionEventsResponseSchema = z.object({
+  executionId: z.string(),
+  pipelineId: z.string(),
+  status: z.enum(["pending", "running", "completed", "failed", "cancelled"]),
+  events: z.array(ExecutionEventSchema),
+  pagination: z.object({
+    total: z.number(),
+    limit: z.number(),
+    offset: z.number(),
+    hasMore: z.boolean(),
+  }),
+});
+
+export function executionEventsQueryOptions(sourceId: string, fileId: string, pipelineId: string, executionId: string) {
+  return queryOptions({
+    queryKey: ["sources", sourceId, "files", fileId, "pipelines", pipelineId, "executions", executionId, "events"],
+    queryFn: async () => {
+      const res = await fetch(`/api/sources/${sourceId}/${fileId}/${pipelineId}/executions/${executionId}/events?limit=500`);
+      if (!res.ok) throw new Error("Failed to fetch execution events");
+      const data = await res.json();
+      return ExecutionEventsResponseSchema.parse(data);
+    },
+  });
+}
+
+const ExecutionLogItemSchema = z.object({
+  id: z.string(),
+  spanId: z.string().nullable(),
+  stream: z.enum(["stdout", "stderr"]),
+  message: z.string(),
+  timestamp: z.string(),
+  payload: z.any().nullable(),
+});
+
+const ExecutionLogsResponseSchema = z.object({
+  executionId: z.string(),
+  pipelineId: z.string(),
+  status: z.enum(["pending", "running", "completed", "failed", "cancelled"]),
+  logs: z.array(ExecutionLogItemSchema),
+  truncated: z.boolean(),
+  capturedSize: z.number(),
+  originalSize: z.number().nullable(),
+  pagination: z.object({
+    total: z.number(),
+    limit: z.number(),
+    offset: z.number(),
+    hasMore: z.boolean(),
+  }),
+});
+
+export function executionLogsQueryOptions(sourceId: string, fileId: string, pipelineId: string, executionId: string) {
+  return queryOptions({
+    queryKey: ["sources", sourceId, "files", fileId, "pipelines", pipelineId, "executions", executionId, "logs"],
+    queryFn: async () => {
+      const res = await fetch(`/api/sources/${sourceId}/${fileId}/${pipelineId}/executions/${executionId}/logs?limit=500`);
+      if (!res.ok) throw new Error("Failed to fetch execution logs");
+      const data = await res.json();
+      return ExecutionLogsResponseSchema.parse(data);
+    },
+  });
+}
+
+const PipelineGraphSchema = z.object({
+  nodes: z.array(z.any()),
+  edges: z.array(z.any()),
+});
+
+const ExecutionGraphResponseSchema = z.object({
+  graph: PipelineGraphSchema.nullable(),
+});
+
+export function executionGraphQueryOptions(sourceId: string, fileId: string, pipelineId: string, executionId: string) {
+  return queryOptions({
+    queryKey: ["sources", sourceId, "files", fileId, "pipelines", pipelineId, "executions", executionId, "graph"],
+    queryFn: async () => {
+      const res = await fetch(`/api/sources/${sourceId}/${fileId}/${pipelineId}/executions/${executionId}/graph`);
+      if (!res.ok) throw new Error("Failed to fetch execution graph");
+      const data = await res.json();
+      return ExecutionGraphResponseSchema.parse(data);
+    },
+  });
+}
