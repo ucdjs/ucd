@@ -7,7 +7,6 @@ import { createDatabase, runMigrations } from "#server/db";
 import {
   sourcesExecutionRouter,
   sourcesFileRouter,
-  sourcesIndexRouter,
   sourcesPipelineRouter,
   sourcesRefreshRouter,
   sourcesSourceRouter,
@@ -103,12 +102,11 @@ export function createApp(options: AppOptions = {}): H3 {
     };
   });
 
-  app.mount("/api/sources", sourcesIndexRouter);
-  app.mount("/api/sources", sourcesSourceRouter);
   app.mount("/api/sources", sourcesFileRouter);
   app.mount("/api/sources", sourcesPipelineRouter);
   app.mount("/api/sources", sourcesExecutionRouter);
   app.mount("/api/sources", sourcesRefreshRouter);
+  app.mount("/api/sources", sourcesSourceRouter);
 
   return app;
 }
