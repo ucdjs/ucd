@@ -5,7 +5,6 @@ import path from "node:path";
 import process from "node:process";
 import { createDatabase, runMigrations } from "#server/db";
 import {
-  configRouter,
   pipelinesEventsRouter,
   pipelinesExecutionRouter,
   pipelinesFileRouter,
@@ -23,6 +22,7 @@ import {
 import { ensureWorkspace, resolveWorkspace } from "#server/workspace";
 import { getUcdConfigDir } from "@ucdjs-internal/shared/config";
 import { H3, serve, serveStatic } from "h3";
+import { version } from "../../package.json" with { type: "json" };
 
 export interface AppOptions {
   sources?: PipelineSource[];
@@ -44,7 +44,11 @@ declare module "h3" {
 }
 
 export function createApp(options: AppOptions = {}): H3 {
-  const { sources = [], db, workspaceId } = options;
+  const {
+    sources = [],
+    db,
+    workspaceId = "default",
+  } = options;
 
   if (!db) {
     throw new Error("Database is required. Pass db to createApp() or use startServer()");
@@ -90,7 +94,7 @@ export function createApp(options: AppOptions = {}): H3 {
   app.use("/**", (event, next) => {
     event.context.sources = resolvedSources;
     event.context.db = db;
-    event.context.workspaceId = workspaceId ?? "default";
+    event.context.workspaceId = workspaceId;
     next();
   });
 
@@ -99,7 +103,13 @@ export function createApp(options: AppOptions = {}): H3 {
     timestamp: Date.now(),
   }));
 
-  app.mount("/api/config", configRouter);
+  app.get("/api/config", () => {
+    return {
+      workspaceId: options.workspaceId,
+      version,
+    };
+  });
+
   app.mount("/api/sources", sourcesIndexRouter);
   app.mount("/api/sources", sourcesSourceRouter);
   app.mount("/api/sources", sourcesFileRouter);

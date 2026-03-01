@@ -1,4 +1,3 @@
-export { configRouter } from "./config";
 export { pipelinesEventsRouter } from "./pipelines.events";
 export { pipelinesExecutionRouter } from "./pipelines.execution";
 export { pipelinesFileRouter } from "./pipelines.file";
