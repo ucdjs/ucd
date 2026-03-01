@@ -5,10 +5,10 @@ export const Route = createLazyFileRoute("/$sourceId/$fileId/")({
 });
 
 function FilePipelinesPage() {
-  const { fileData } = useLoaderData({ from: "/$sourceId/$fileId" });
+  const { file } = useLoaderData({ from: "/$sourceId/$fileId" });
   const { sourceId, fileId } = Route.useParams();
 
-  if (!fileData?.file) {
+  if (!file) {
     return (
       <div className="flex-1 flex items-center justify-center" role="alert">
         <p className="text-sm text-muted-foreground">File not found</p>
@@ -16,23 +16,21 @@ function FilePipelinesPage() {
     );
   }
 
-  const fileInfo = fileData.file;
-
   return (
     <div className="h-full flex flex-col bg-background">
       <div className="border-b border-border px-6 py-4 shrink-0">
         <h1 className="text-lg font-semibold text-foreground">Pipeline File</h1>
         <p className="text-xs text-muted-foreground mt-1">
-          {fileInfo.fileLabel ?? fileInfo.filePath}
+          {file.fileLabel ?? file.filePath}
         </p>
         <p className="text-[11px] text-muted-foreground/80 break-all mt-1">
-          {fileInfo.filePath}
+          {file.filePath}
         </p>
       </div>
 
       <div className="flex-1 overflow-auto p-6">
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {fileInfo.pipelines.map((pipeline) => (
+          {file.pipelines.map((pipeline) => (
             <Link
               key={pipeline.id}
               to="/$sourceId/$fileId/$pipelineId"

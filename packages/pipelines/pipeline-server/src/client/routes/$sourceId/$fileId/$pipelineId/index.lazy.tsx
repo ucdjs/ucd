@@ -8,17 +8,17 @@ export const Route = createLazyFileRoute("/$sourceId/$fileId/$pipelineId/")({
 });
 
 function PipelineOverviewPage() {
-  const { executions } = Route.useLoaderData();
+  const data = Route.useLoaderData();
 
   return (
     <div role="tabpanel" id="tabpanel-overview" aria-labelledby="tab-overview" className="p-6">
       <div className="grid gap-6 items-start lg:auto-rows-min lg:grid-cols-[minmax(420px,1fr)_minmax(240px,0.6fr)]">
         <div className="space-y-6">
           <QuickActionsPanel />
-          <RecentOutputsPanel executions={executions.executions} />
+          <RecentOutputsPanel executions={data.executions} />
         </div>
         <div className="lg:row-span-2 lg:self-start">
-          <RecentExecutionsPanel executions={executions.executions} />
+          <RecentExecutionsPanel executions={data.executions} />
         </div>
       </div>
     </div>

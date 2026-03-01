@@ -2,23 +2,8 @@ import type { ExecutionStatus } from "@ucdjs/pipelines-executor";
 
 export type { ExecutionStatus };
 
-export interface Execution {
-  id: string;
-  pipelineId: string;
-  status: ExecutionStatus;
-  startedAt: string;
-  completedAt: string | null;
-  versions: string[] | null;
-  summary: {
-    totalRoutes: number;
-    cached: number;
-  } | null;
-  hasGraph?: boolean;
-  error: string | null;
-}
-
 export interface ExecutionsResponse {
-  executions: Execution[];
+  executions: any[];
   pagination: {
     total: number;
     limit: number;

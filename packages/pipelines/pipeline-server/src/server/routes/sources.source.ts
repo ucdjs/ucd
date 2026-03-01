@@ -59,6 +59,7 @@ sourcesSourceRouter.get("/:sourceId", async (event) => {
 
   const source = sources.find((s) => s.id === sourceId);
   if (!source) {
+    console.log("Source not found:", sourceId);
     throw new Error("Source not found");
   }
 

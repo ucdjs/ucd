@@ -5,26 +5,18 @@ export const Route = createLazyFileRoute("/$sourceId/")({
 });
 
 function SourceFilesPage() {
-  const { sourceData } = useLoaderData({ from: "/$sourceId" });
+  const source = useLoaderData({ from: "/$sourceId" });
   const { sourceId } = Route.useParams();
-
-  if (!sourceData) {
-    return (
-      <div className="flex-1 flex items-center justify-center" role="alert">
-        <p className="text-sm text-muted-foreground">Source not found</p>
-      </div>
-    );
-  }
 
   return (
     <div className="h-full flex flex-col bg-background">
       <div className="border-b border-border px-6 py-4 shrink-0">
         <h1 className="text-lg font-semibold text-foreground">Source Files</h1>
         <p className="text-xs text-muted-foreground mt-1">
-          {sourceData.files.length}
+          {source.files.length}
           {" "}
           file
-          {sourceData.files.length !== 1 ? "s" : ""}
+          {source.files.length !== 1 ? "s" : ""}
           {" "}
           in
           {sourceId}
@@ -33,7 +25,7 @@ function SourceFilesPage() {
 
       <div className="flex-1 overflow-auto p-6">
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {sourceData.files.map((file) => (
+          {source.files.map((file) => (
             <Link
               key={file.fileId}
               to="/$sourceId/$fileId"
