@@ -1,5 +1,5 @@
-import { TrendingUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
+import { TrendingUp } from "lucide-react";
 
 interface DailyExecution {
   date: string;
@@ -75,12 +75,12 @@ export function ActivitySparkline({ data }: ActivitySparklineProps) {
                   <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.05" />
                 </linearGradient>
               </defs>
-              
+
               {/* Area fill */}
               {areaPath && (
                 <path d={areaPath} fill="url(#sparklineGradient)" />
               )}
-              
+
               {/* Line */}
               {linePath && (
                 <path
@@ -92,7 +92,7 @@ export function ActivitySparkline({ data }: ActivitySparklineProps) {
                   strokeLinejoin="round"
                 />
               )}
-              
+
               {/* Data points */}
               {points.map((p, i) => (
                 <circle
@@ -118,13 +118,16 @@ export function ActivitySparkline({ data }: ActivitySparklineProps) {
           {/* Stats footer */}
           <div className="flex items-center justify-between pt-2 border-t border-border">
             <div className="text-sm">
-              <span className="text-muted-foreground">Total:</span>{" "}
+              <span className="text-muted-foreground">Total:</span>
+              {" "}
               <span className="font-semibold">{totalExecutions}</span>
             </div>
             <div className="text-sm">
-              <span className="text-muted-foreground">Success Rate:</span>{" "}
+              <span className="text-muted-foreground">Success Rate:</span>
+              {" "}
               <span className={`font-semibold ${successRate >= 90 ? "text-green-600" : successRate >= 70 ? "text-yellow-600" : "text-red-600"}`}>
-                {successRate}%
+                {successRate}
+                %
               </span>
             </div>
           </div>

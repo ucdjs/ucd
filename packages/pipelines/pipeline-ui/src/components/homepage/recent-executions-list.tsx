@@ -1,6 +1,6 @@
-import { CheckCircle, Circle, XCircle, Clock, Loader2 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 import { cn } from "@ucdjs-internal/shared-ui/lib/utils";
+import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
+import { CheckCircle, Circle, Clock, Loader2, XCircle } from "lucide-react";
 
 export interface ExecutionInfo {
   id: string;
@@ -90,7 +90,7 @@ export function RecentExecutionsList({ executions, onExecutionClick }: RecentExe
                   className={cn(
                     "w-full flex items-center gap-3 p-3 rounded-lg",
                     "hover:bg-muted transition-colors",
-                    "text-left"
+                    "text-left",
                   )}
                 >
                   {/* Status Icon */}
@@ -109,7 +109,10 @@ export function RecentExecutionsList({ executions, onExecutionClick }: RecentExe
                       </span>
                     </div>
                     <div className="text-xs text-muted-foreground mt-0.5">
-                      {execution.sourceId} · {formatRelativeTime(execution.startedAt)}
+                      {execution.sourceId}
+                      {" "}
+                      ·
+                      {formatRelativeTime(execution.startedAt)}
                     </div>
                   </div>
                 </button>

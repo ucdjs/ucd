@@ -1,5 +1,5 @@
-import { FileCode, FolderGit, GitBranch, Play } from "lucide-react";
 import { Card, CardContent } from "@ucdjs-internal/shared-ui/ui/card";
+import { FileCode, FolderGit, GitBranch, Play } from "lucide-react";
 
 interface StatCardProps {
   title: string;
