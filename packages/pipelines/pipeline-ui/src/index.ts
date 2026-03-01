@@ -88,6 +88,7 @@ export type { ExecutionStatus } from "@ucdjs/pipelines-executor";
 export * from "./schemas";
 export * from "./functions";
 
-// Schemas and Functions (React Query agnostic)
-export * from "./schemas";
-export * from "./functions";
+// Inspect Components
+export { RouteList, type RouteListProps } from "./components/inspect/route-list";
+export { RouteDetails, type RouteDetailsProps } from "./components/inspect/route-details";
+export { EmptyRouteDetails, type EmptyRouteDetailsProps } from "./components/inspect/empty-route-details";

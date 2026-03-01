@@ -7,8 +7,8 @@ export const SourceSchema = z.object({
 });
 export type Source = z.infer<typeof SourceSchema>;
 
-export const SourceListResponseSchema = z.array(SourceSchema);
-export type SourceListResponse = z.infer<typeof SourceListResponseSchema>;
+export const SourceListSchema = z.array(SourceSchema);
+export type SourceList = z.infer<typeof SourceListSchema>;
 
 export const SourceFileSchema = z.object({
   fileId: z.string(),
@@ -27,12 +27,12 @@ export const PipelineLoadErrorSchema = z.object({
 });
 export type PipelineLoadError = z.infer<typeof PipelineLoadErrorSchema>;
 
-export const SourceDetailResponseSchema = z.object({
+export const SourceDetailSchema = z.object({
   sourceId: z.string(),
   files: z.array(SourceFileSchema),
   errors: z.array(PipelineLoadErrorSchema),
 });
-export type SourceDetailResponse = z.infer<typeof SourceDetailResponseSchema>;
+export type SourceDetail = z.infer<typeof SourceDetailSchema>;
 
 export const SourceFileResponseSchema = z.object({
   sourceId: z.string(),

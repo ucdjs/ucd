@@ -1,4 +1,5 @@
-import { SourceFileResponseSchema, type SourceFileResponse } from "../schemas/source";
+import type { SourceFileResponse } from "../schemas/source";
+import { SourceFileResponseSchema } from "../schemas/source";
 import { fetchWithParse } from "./fetch-with-parse";
 
 export async function fetchSourceFile(
