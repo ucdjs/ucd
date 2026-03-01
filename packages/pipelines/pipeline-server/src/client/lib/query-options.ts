@@ -198,3 +198,24 @@ export function executionsQueryOptions(sourceId: string, fileId: string, pipelin
     },
   });
 }
+
+const CodeResponseSchema = z.object({
+  code: z.string().optional(),
+  filePath: z.string().optional(),
+  fileLabel: z.string().optional(),
+  fileId: z.string().optional(),
+  sourceId: z.string().optional(),
+  error: z.string().optional(),
+});
+
+export function codeQueryOptions(sourceId: string, fileId: string, pipelineId: string) {
+  return queryOptions({
+    queryKey: ["sources", sourceId, "files", fileId, "pipelines", pipelineId, "code"],
+    queryFn: async () => {
+      const res = await fetch(`/api/sources/${sourceId}/${fileId}/${pipelineId}/code`);
+      if (!res.ok) throw new Error("Failed to fetch code");
+      const data = await res.json();
+      return CodeResponseSchema.parse(data);
+    },
+  });
+}
