@@ -19,7 +19,7 @@ export function PipelineHeader() {
 
   const handleExecute = useCallback(async () => {
     if (!canExecute) return;
-    const result = await execute(fileId, pipelineId, Array.from(selectedVersions));
+    const result = await execute(fileId, pipelineId, Array.from(selectedVersions), sourceId);
     // Navigate to execution detail after successful execution
     if (result.success && result.executionId) {
       navigate({

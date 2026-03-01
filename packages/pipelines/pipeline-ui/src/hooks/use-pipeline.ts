@@ -1,9 +1,13 @@
-import type { PipelineDetails, PipelineResponse } from "../types";
+import type { PipelineDetails } from "../types";
 import { useCallback, useEffect, useState } from "react";
+import { fetchPipeline as fetchPipelineBySource } from "../functions/fetch-pipeline";
+import { ApiError } from "../functions/fetch-with-parse";
 
 export interface UsePipelineOptions {
   /** Base URL for the API (default: "") */
   baseUrl?: string;
+  /** Source ID for source-based API routes */
+  sourceId: string;
   /** Whether to fetch on mount (default: true) */
   fetchOnMount?: boolean;
 }
@@ -21,9 +25,9 @@ export interface UsePipelineReturn {
 export function usePipeline(
   fileId: string,
   pipelineId: string,
-  options: UsePipelineOptions = {},
+  options: UsePipelineOptions,
 ): UsePipelineReturn {
-  const { baseUrl = "", fetchOnMount = true } = options;
+  const { baseUrl = "", sourceId, fetchOnMount = true } = options;
 
   const [pipeline, setPipeline] = useState<PipelineDetails | null>(null);
   const [loading, setLoading] = useState(fetchOnMount);
@@ -33,11 +37,7 @@ export function usePipeline(
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${baseUrl}/api/pipelines/${fileId}/${pipelineId}`);
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
-      }
-      const json: PipelineResponse = await res.json();
+      const json = await fetchPipelineBySource(baseUrl, sourceId, fileId, pipelineId);
       if (json.error) {
         setError(json.error);
         setPipeline(null);
@@ -45,12 +45,16 @@ export function usePipeline(
         setPipeline(json.pipeline ?? null);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load pipeline");
+      if (err instanceof ApiError) {
+        setError(err.response.error);
+      } else {
+        setError(err instanceof Error ? err.message : "Failed to load pipeline");
+      }
       setPipeline(null);
     } finally {
       setLoading(false);
     }
-  }, [baseUrl, fileId, pipelineId]);
+  }, [baseUrl, fileId, pipelineId, sourceId]);
 
   useEffect(() => {
     if (fetchOnMount) {

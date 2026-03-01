@@ -24,6 +24,9 @@ import { SourceSwitcher } from "./source-switcher";
 export interface SourceInfo {
   id: string;
   type: "local" | "github" | "gitlab";
+  fileCount?: number;
+  pipelineCount?: number;
+  errorCount?: number;
 }
 
 export interface PipelineSidebarProps {

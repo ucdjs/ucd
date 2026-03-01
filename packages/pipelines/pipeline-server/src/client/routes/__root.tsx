@@ -1,7 +1,6 @@
 import type { QueryClient } from "@tanstack/react-query";
 import type { LoadError } from "@ucdjs/pipelines-ui";
 import type { SourceInfo } from "@ucdjs/pipelines-ui/components/pipeline-sidebar";
-import { configQueryOptions, sourceQueryOptions, sourcesQueryOptions } from "#lib/query-options";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { useHotkey } from "@tanstack/react-hotkeys";
 import { HotkeysDevtoolsPanel } from "@tanstack/react-hotkeys-devtools";
@@ -11,6 +10,11 @@ import { createRootRouteWithContext, Outlet, useParams } from "@tanstack/react-r
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { SidebarInset, SidebarProvider } from "@ucdjs-internal/shared-ui/ui/sidebar";
 import { PipelineSidebar } from "@ucdjs/pipelines-ui";
+import {
+  configQueryOptions,
+  sourceQueryOptions,
+  sourcesQueryOptions,
+} from "@ucdjs/pipelines-ui/functions";
 import { lazy, Suspense, useState } from "react";
 import { ErrorLogPanel } from "../components/error-log-panel";
 import { KeyboardShortcutsHelp } from "../components/keyboard-shortcuts-help";
@@ -51,8 +55,8 @@ export const Route = createRootRouteWithContext<AppRouterContext>()({
   }),
   loader: async ({ context }) => {
     const [config, sources] = await Promise.all([
-      context.queryClient.ensureQueryData(configQueryOptions()),
-      context.queryClient.ensureQueryData(sourcesQueryOptions()),
+      context.queryClient.ensureQueryData(configQueryOptions("")),
+      context.queryClient.ensureQueryData(sourcesQueryOptions("")),
     ]);
 
     return { config, sources };
@@ -64,13 +68,13 @@ function RootLayout() {
   const params = useParams({ strict: false });
   const currentSourceId = params.sourceId;
 
-  const [dismissedErrors, setDismissedErrors] = useState<Set<string>>(new Set());
+  const [dismissedErrors, setDismissedErrors] = useState<Set<string>>(() => new Set());
   const [isErrorPanelOpen, setIsErrorPanelOpen] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
 
   // Only fetch files when a specific source is selected
   const filesQuery = useQuery({
-    ...sourceQueryOptions(currentSourceId || ""),
+    ...sourceQueryOptions("", currentSourceId || ""),
     enabled: !!currentSourceId,
   });
 
