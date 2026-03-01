@@ -63,14 +63,14 @@ export interface PipelineGraphProps {
   className?: string;
 }
 
-export const PipelineGraph = memo(({
+export function PipelineGraph({
   graph,
   onNodeSelect,
   showFilters = true,
   showDetails = true,
   showMinimap = true,
   className,
-}: PipelineGraphProps) => {
+}: PipelineGraphProps) {
   const { allNodes, allEdges } = useMemo(() => {
     const { nodes, edges } = pipelineGraphToFlow(graph);
     return { allNodes: nodes, allEdges: edges };
@@ -172,4 +172,4 @@ export const PipelineGraph = memo(({
       )}
     </div>
   );
-});
+}
