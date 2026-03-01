@@ -92,3 +92,16 @@ export * from "./functions";
 export { RouteList, type RouteListProps } from "./components/inspect/route-list";
 export { RouteDetails, type RouteDetailsProps } from "./components/inspect/route-details";
 export { EmptyRouteDetails, type EmptyRouteDetailsProps } from "./components/inspect/empty-route-details";
+
+// Homepage Components
+export {
+  ActivitySparkline,
+  type ActivitySparklineProps,
+  RecentExecutionsList,
+  type RecentExecutionsListProps,
+  SetupWizard,
+  SourceCards,
+  type SourceCardsProps,
+  SystemOverview,
+  type SystemOverviewProps,
+} from "./components/homepage";

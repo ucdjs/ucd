@@ -22,11 +22,16 @@ export async function fetchWithParse<T>(
   const res = await fetch(url, options);
   const data = await res.json();
 
-  // Check for error response first
-  const errorResult = ErrorResponseSchema.safeParse(data);
-  if (errorResult.success && !res.ok) {
-    throw new ApiError(errorResult.data, res.status);
+  if (!res.ok) {
+    // Parse as error response when status is not ok
+    const errorResult = ErrorResponseSchema.safeParse(data);
+    if (errorResult.success) {
+      throw new ApiError(errorResult.data, res.status);
+    }
+    // Fallback for unexpected error format
+    throw new ApiError({ error: `HTTP ${res.status}: ${res.statusText}` }, res.status);
   }
 
+  // Parse successful response with provided schema
   return schema.parse(data);
 }

@@ -1,5 +1,8 @@
 import type { PipelinesResponse } from "../types";
 import { useCallback, useEffect, useState } from "react";
+import { fetchSource } from "../functions/fetch-source";
+import { fetchSources } from "../functions/fetch-sources";
+import { ApiError } from "../functions/fetch-with-parse";
 
 export interface UsePipelinesOptions {
   /**
@@ -36,22 +39,64 @@ export function usePipelines(options: UsePipelinesOptions = {}): UsePipelinesRet
     setLoading(true);
     setError(null);
     try {
-      const params = new URLSearchParams();
-      if (search && search.trim()) {
-        params.set("search", search.trim());
-      }
-      const queryString = params.toString();
-      const url = queryString
-        ? `${baseUrl}/api/pipelines?${queryString}`
-        : `${baseUrl}/api/pipelines`;
-      const res = await fetch(url);
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
-      }
-      const json = await res.json();
-      setData(json);
+      const sources = await fetchSources(baseUrl);
+      const sourceDetails = await Promise.all(sources.map((source) => fetchSource(baseUrl, source.id)));
+
+      const query = search?.trim().toLowerCase();
+
+      const files = sourceDetails.flatMap((detail) => detail.files)
+        .map((file) => {
+          if (!query) {
+            return {
+              fileId: file.fileId,
+              filePath: file.filePath,
+              fileLabel: file.fileLabel,
+              sourceId: file.sourceId,
+              pipelines: file.pipelines,
+            };
+          }
+
+          const fileMatches = file.fileId.toLowerCase().includes(query)
+            || file.filePath.toLowerCase().includes(query)
+            || file.fileLabel.toLowerCase().includes(query);
+
+          const pipelines = fileMatches
+            ? file.pipelines
+            : file.pipelines.filter((pipeline) => {
+                const name = pipeline.name?.toLowerCase() ?? "";
+                const description = pipeline.description?.toLowerCase() ?? "";
+                return pipeline.id.toLowerCase().includes(query)
+                  || name.includes(query)
+                  || description.includes(query);
+              });
+
+          if (pipelines.length === 0) {
+            return null;
+          }
+
+          return {
+            fileId: file.fileId,
+            filePath: file.filePath,
+            fileLabel: file.fileLabel,
+            sourceId: file.sourceId,
+            pipelines,
+          };
+        })
+        .filter((file): file is NonNullable<typeof file> => file !== null);
+
+      const errors = sourceDetails.flatMap((detail) => detail.errors);
+
+      setData({
+        workspaceId: "default",
+        files,
+        errors,
+      } satisfies PipelinesResponse);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load pipelines");
+      if (err instanceof ApiError) {
+        setError(err.response.error);
+      } else {
+        setError(err instanceof Error ? err.message : "Failed to load pipelines");
+      }
     } finally {
       setLoading(false);
     }

@@ -44,6 +44,7 @@ export function PipelineCommandPalette() {
   const navigate = useNavigate();
   const params = useParams({ strict: false });
   const file = typeof params.file === "string" ? params.file : undefined;
+  const sourceId = typeof params.sourceId === "string" ? params.sourceId : undefined;
   const currentPipelineId = typeof params.id === "string" ? params.id : undefined;
 
   const files = data?.files ?? [];
@@ -81,7 +82,7 @@ export function PipelineCommandPalette() {
             `${currentPipeline.fileId}:${currentPipeline.id}`,
             currentPipeline.versions,
           );
-          await execute(currentPipeline.fileId, currentPipeline.id, versionsToExecute);
+          await execute(currentPipeline.fileId, currentPipeline.id, versionsToExecute, currentPipeline.sourceId);
           setOpen(false);
         } catch (err) {
           console.error("Failed to execute pipeline:", err);
@@ -106,18 +107,18 @@ export function PipelineCommandPalette() {
         `${currentPipeline.fileId}:${currentPipeline.id}`,
         currentPipeline.versions,
       );
-      await execute(currentPipeline.fileId, currentPipeline.id, versionsToExecute);
+      await execute(currentPipeline.fileId, currentPipeline.id, versionsToExecute, currentPipeline.sourceId);
       setOpen(false);
     } catch (err) {
       console.error("Failed to execute pipeline:", err);
     }
   }, [currentPipeline, execute, executing]);
 
-  const handleExecutePipeline = useCallback(async (fileId: string, pipelineId: string, versions: string[]) => {
+  const handleExecutePipeline = useCallback(async (sourceId: string, fileId: string, pipelineId: string, versions: string[]) => {
     if (executing) return;
     try {
       const versionsToExecute = getSelectedVersionsFromStorage(`${fileId}:${pipelineId}`, versions);
-      await execute(fileId, pipelineId, versionsToExecute);
+      await execute(fileId, pipelineId, versionsToExecute, sourceId);
       setOpen(false);
     } catch (err) {
       console.error("Failed to execute pipeline:", err);
@@ -167,7 +168,7 @@ export function PipelineCommandPalette() {
             {pipelines.map((pipeline) => (
               <CommandItem
                 key={`${pipeline.fileId}-${pipeline.id}`}
-                onSelect={() => handleExecutePipeline(pipeline.fileId, pipeline.id, pipeline.versions)}
+                onSelect={() => handleExecutePipeline(pipeline.sourceId, pipeline.fileId, pipeline.id, pipeline.versions)}
                 value={`${pipeline.fileId}-${pipeline.id}`}
                 disabled={executing}
               >

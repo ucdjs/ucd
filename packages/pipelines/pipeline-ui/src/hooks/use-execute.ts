@@ -10,7 +10,7 @@ export interface UseExecuteOptions {
 }
 
 export interface UseExecuteReturn {
-  execute: (fileId: string, pipelineId: string, versions: string[], sourceId?: string) => Promise<ExecuteResult>;
+  execute: (fileId: string, pipelineId: string, versions: string[], sourceId: string) => Promise<ExecuteResult>;
   executing: boolean;
   result: ExecuteResult | null;
   error: string | null;
@@ -27,44 +27,13 @@ export function useExecute(options: UseExecuteOptions = {}): UseExecuteReturn {
   const [executionId, setExecutionId] = useState<string | null>(null);
 
   const execute = useCallback(
-    async (fileId: string, pipelineId: string, versions: string[], sourceId?: string): Promise<ExecuteResult> => {
+    async (fileId: string, pipelineId: string, versions: string[], sourceId: string): Promise<ExecuteResult> => {
       setExecuting(true);
       setError(null);
       setResult(null);
       setExecutionId(null);
 
       try {
-        // Use new sources API if sourceId is provided, otherwise fall back to old pipelines API
-        if (!sourceId) {
-          const res = await fetch(`${baseUrl}/api/pipelines/${fileId}/${pipelineId}/execute`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ versions }),
-          });
-          const data = await res.json();
-
-          if (data.success && data.executionId) {
-            setExecutionId(data.executionId);
-            const successResult: ExecuteResult = {
-              success: true,
-              pipelineId,
-              executionId: data.executionId,
-            };
-            setResult(successResult);
-            return successResult;
-          } else {
-            const errorResult: ExecuteResult = {
-              success: false,
-              pipelineId,
-              executionId: data.executionId,
-              error: data.error ?? "Execution failed",
-            };
-            setResult(errorResult);
-            setError(errorResult.error ?? "Execution failed");
-            return errorResult;
-          }
-        }
-
         const result = await executePipeline(baseUrl, sourceId, fileId, pipelineId, versions);
 
         if (result.success && result.executionId) {

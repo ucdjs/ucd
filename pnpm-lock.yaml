@@ -1460,6 +1460,9 @@ importers:
       '@icons-pack/react-simple-icons':
         specifier: catalog:frontend
         version: 13.11.2(react@19.2.4)
+      '@tanstack/react-query':
+        specifier: catalog:frontend
+        version: 5.90.21(react@19.2.4)
       '@ucdjs-internal/shared-ui':
         specifier: workspace:*
         version: link:../../shared-ui

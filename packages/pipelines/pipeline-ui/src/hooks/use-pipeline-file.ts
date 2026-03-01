@@ -1,5 +1,7 @@
 import type { PipelineFileInfo } from "../types";
 import { useCallback, useEffect, useState } from "react";
+import { fetchSourceFile } from "../functions/fetch-source-file";
+import { ApiError } from "../functions/fetch-with-parse";
 
 export interface PipelineFileResponse {
   file?: PipelineFileInfo;
@@ -8,6 +10,7 @@ export interface PipelineFileResponse {
 
 export interface UsePipelineFileOptions {
   baseUrl?: string;
+  sourceId: string;
   fetchOnMount?: boolean;
 }
 
@@ -20,9 +23,9 @@ export interface UsePipelineFileReturn {
 
 export function usePipelineFile(
   fileId: string,
-  options: UsePipelineFileOptions = {},
+  options: UsePipelineFileOptions,
 ): UsePipelineFileReturn {
-  const { baseUrl = "", fetchOnMount = true } = options;
+  const { baseUrl = "", sourceId, fetchOnMount = true } = options;
 
   const [file, setFile] = useState<PipelineFileInfo | null>(null);
   const [loading, setLoading] = useState(fetchOnMount);
@@ -32,24 +35,19 @@ export function usePipelineFile(
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${baseUrl}/api/pipelines/${fileId}`);
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
-      }
-      const json: PipelineFileResponse = await res.json();
-      if (json.error) {
-        setError(json.error);
-        setFile(null);
-      } else {
-        setFile(json.file ?? null);
-      }
+      const json = await fetchSourceFile(baseUrl, sourceId, fileId);
+      setFile(json.file ?? null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load pipeline file");
+      if (err instanceof ApiError) {
+        setError(err.response.error);
+      } else {
+        setError(err instanceof Error ? err.message : "Failed to load pipeline file");
+      }
       setFile(null);
     } finally {
       setLoading(false);
     }
-  }, [baseUrl, fileId]);
+  }, [baseUrl, fileId, sourceId]);
 
   useEffect(() => {
     if (fetchOnMount) {
