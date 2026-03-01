@@ -11,8 +11,11 @@
 import { createFileRoute } from '@tanstack/react-router'
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SourceIdRouteRouteImport } from './routes/$sourceId/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SourceIdFileIdRouteRouteImport } from './routes/$sourceId/$fileId/route'
 import { Route as PipelinesFileIdRouteRouteImport } from './routes/pipelines/$file/$id/route'
+import { Route as SourceIdFileIdPipelineIdRouteRouteImport } from './routes/$sourceId/$fileId/$pipelineId/route'
 import { Route as PipelinesFileIdIndexRouteImport } from './routes/pipelines/$file/$id/index'
 import { Route as PipelinesFileIdGraphsRouteImport } from './routes/pipelines/$file/$id/graphs'
 import { Route as PipelinesFileIdCodeRouteImport } from './routes/pipelines/$file/$id/code'
@@ -20,8 +23,12 @@ import { Route as PipelinesFileIdExecutionsIndexRouteImport } from './routes/pip
 import { Route as PipelinesFileIdExecutionsExecutionIdIndexRouteImport } from './routes/pipelines/$file/$id/executions/$executionId/index'
 import { Route as PipelinesFileIdExecutionsExecutionIdGraphRouteImport } from './routes/pipelines/$file/$id/executions/$executionId/graph'
 
+const SourceIdIndexLazyRouteImport = createFileRoute('/$sourceId/')()
 const PipelinesFileRouteLazyRouteImport = createFileRoute('/pipelines/$file')()
 const PipelinesFileIndexLazyRouteImport = createFileRoute('/pipelines/$file/')()
+const SourceIdFileIdIndexLazyRouteImport = createFileRoute(
+  '/$sourceId/$fileId/',
+)()
 const PipelinesFileIdInspectLazyRouteImport = createFileRoute(
   '/pipelines/$file/$id/inspect',
 )()
@@ -29,17 +36,38 @@ const PipelinesFileIdGraphLazyRouteImport = createFileRoute(
   '/pipelines/$file/$id/graph',
 )()
 
+const SourceIdRouteRoute = SourceIdRouteRouteImport.update({
+  id: '/$sourceId',
+  path: '/$sourceId',
+  getParentRoute: () => rootRouteImport,
+} as any).lazy(() =>
+  import('./routes/$sourceId/route.lazy').then((d) => d.Route),
+)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SourceIdIndexLazyRoute = SourceIdIndexLazyRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => SourceIdRouteRoute,
+} as any).lazy(() =>
+  import('./routes/$sourceId/index.lazy').then((d) => d.Route),
+)
 const PipelinesFileRouteLazyRoute = PipelinesFileRouteLazyRouteImport.update({
   id: '/pipelines/$file',
   path: '/pipelines/$file',
   getParentRoute: () => rootRouteImport,
 } as any).lazy(() =>
   import('./routes/pipelines/$file/route.lazy').then((d) => d.Route),
+)
+const SourceIdFileIdRouteRoute = SourceIdFileIdRouteRouteImport.update({
+  id: '/$fileId',
+  path: '/$fileId',
+  getParentRoute: () => SourceIdRouteRoute,
+} as any).lazy(() =>
+  import('./routes/$sourceId/$fileId/route.lazy').then((d) => d.Route),
 )
 const PipelinesFileIndexLazyRoute = PipelinesFileIndexLazyRouteImport.update({
   id: '/',
@@ -48,6 +76,13 @@ const PipelinesFileIndexLazyRoute = PipelinesFileIndexLazyRouteImport.update({
 } as any).lazy(() =>
   import('./routes/pipelines/$file/index.lazy').then((d) => d.Route),
 )
+const SourceIdFileIdIndexLazyRoute = SourceIdFileIdIndexLazyRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => SourceIdFileIdRouteRoute,
+} as any).lazy(() =>
+  import('./routes/$sourceId/$fileId/index.lazy').then((d) => d.Route),
+)
 const PipelinesFileIdRouteRoute = PipelinesFileIdRouteRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -55,6 +90,16 @@ const PipelinesFileIdRouteRoute = PipelinesFileIdRouteRouteImport.update({
 } as any).lazy(() =>
   import('./routes/pipelines/$file/$id/route.lazy').then((d) => d.Route),
 )
+const SourceIdFileIdPipelineIdRouteRoute =
+  SourceIdFileIdPipelineIdRouteRouteImport.update({
+    id: '/$pipelineId',
+    path: '/$pipelineId',
+    getParentRoute: () => SourceIdFileIdRouteRoute,
+  } as any).lazy(() =>
+    import('./routes/$sourceId/$fileId/$pipelineId/route.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 const PipelinesFileIdIndexRoute = PipelinesFileIdIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -125,8 +170,13 @@ const PipelinesFileIdExecutionsExecutionIdGraphRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/$sourceId': typeof SourceIdRouteRouteWithChildren
+  '/$sourceId/$fileId': typeof SourceIdFileIdRouteRouteWithChildren
   '/pipelines/$file': typeof PipelinesFileRouteLazyRouteWithChildren
+  '/$sourceId/': typeof SourceIdIndexLazyRoute
+  '/$sourceId/$fileId/$pipelineId': typeof SourceIdFileIdPipelineIdRouteRoute
   '/pipelines/$file/$id': typeof PipelinesFileIdRouteRouteWithChildren
+  '/$sourceId/$fileId/': typeof SourceIdFileIdIndexLazyRoute
   '/pipelines/$file/': typeof PipelinesFileIndexLazyRoute
   '/pipelines/$file/$id/code': typeof PipelinesFileIdCodeRoute
   '/pipelines/$file/$id/graphs': typeof PipelinesFileIdGraphsRoute
@@ -139,6 +189,9 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/$sourceId': typeof SourceIdIndexLazyRoute
+  '/$sourceId/$fileId/$pipelineId': typeof SourceIdFileIdPipelineIdRouteRoute
+  '/$sourceId/$fileId': typeof SourceIdFileIdIndexLazyRoute
   '/pipelines/$file': typeof PipelinesFileIndexLazyRoute
   '/pipelines/$file/$id/code': typeof PipelinesFileIdCodeRoute
   '/pipelines/$file/$id/graphs': typeof PipelinesFileIdGraphsRoute
@@ -152,8 +205,13 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/$sourceId': typeof SourceIdRouteRouteWithChildren
+  '/$sourceId/$fileId': typeof SourceIdFileIdRouteRouteWithChildren
   '/pipelines/$file': typeof PipelinesFileRouteLazyRouteWithChildren
+  '/$sourceId/': typeof SourceIdIndexLazyRoute
+  '/$sourceId/$fileId/$pipelineId': typeof SourceIdFileIdPipelineIdRouteRoute
   '/pipelines/$file/$id': typeof PipelinesFileIdRouteRouteWithChildren
+  '/$sourceId/$fileId/': typeof SourceIdFileIdIndexLazyRoute
   '/pipelines/$file/': typeof PipelinesFileIndexLazyRoute
   '/pipelines/$file/$id/code': typeof PipelinesFileIdCodeRoute
   '/pipelines/$file/$id/graphs': typeof PipelinesFileIdGraphsRoute
@@ -168,8 +226,13 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/$sourceId'
+    | '/$sourceId/$fileId'
     | '/pipelines/$file'
+    | '/$sourceId/'
+    | '/$sourceId/$fileId/$pipelineId'
     | '/pipelines/$file/$id'
+    | '/$sourceId/$fileId/'
     | '/pipelines/$file/'
     | '/pipelines/$file/$id/code'
     | '/pipelines/$file/$id/graphs'
@@ -182,6 +245,9 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/$sourceId'
+    | '/$sourceId/$fileId/$pipelineId'
+    | '/$sourceId/$fileId'
     | '/pipelines/$file'
     | '/pipelines/$file/$id/code'
     | '/pipelines/$file/$id/graphs'
@@ -194,8 +260,13 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/$sourceId'
+    | '/$sourceId/$fileId'
     | '/pipelines/$file'
+    | '/$sourceId/'
+    | '/$sourceId/$fileId/$pipelineId'
     | '/pipelines/$file/$id'
+    | '/$sourceId/$fileId/'
     | '/pipelines/$file/'
     | '/pipelines/$file/$id/code'
     | '/pipelines/$file/$id/graphs'
@@ -209,17 +280,32 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  SourceIdRouteRoute: typeof SourceIdRouteRouteWithChildren
   PipelinesFileRouteLazyRoute: typeof PipelinesFileRouteLazyRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/$sourceId': {
+      id: '/$sourceId'
+      path: '/$sourceId'
+      fullPath: '/$sourceId'
+      preLoaderRoute: typeof SourceIdRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/$sourceId/': {
+      id: '/$sourceId/'
+      path: '/'
+      fullPath: '/$sourceId/'
+      preLoaderRoute: typeof SourceIdIndexLazyRouteImport
+      parentRoute: typeof SourceIdRouteRoute
     }
     '/pipelines/$file': {
       id: '/pipelines/$file'
@@ -228,6 +314,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PipelinesFileRouteLazyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/$sourceId/$fileId': {
+      id: '/$sourceId/$fileId'
+      path: '/$fileId'
+      fullPath: '/$sourceId/$fileId'
+      preLoaderRoute: typeof SourceIdFileIdRouteRouteImport
+      parentRoute: typeof SourceIdRouteRoute
+    }
     '/pipelines/$file/': {
       id: '/pipelines/$file/'
       path: '/'
@@ -235,12 +328,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PipelinesFileIndexLazyRouteImport
       parentRoute: typeof PipelinesFileRouteLazyRoute
     }
+    '/$sourceId/$fileId/': {
+      id: '/$sourceId/$fileId/'
+      path: '/'
+      fullPath: '/$sourceId/$fileId/'
+      preLoaderRoute: typeof SourceIdFileIdIndexLazyRouteImport
+      parentRoute: typeof SourceIdFileIdRouteRoute
+    }
     '/pipelines/$file/$id': {
       id: '/pipelines/$file/$id'
       path: '/$id'
       fullPath: '/pipelines/$file/$id'
       preLoaderRoute: typeof PipelinesFileIdRouteRouteImport
       parentRoute: typeof PipelinesFileRouteLazyRoute
+    }
+    '/$sourceId/$fileId/$pipelineId': {
+      id: '/$sourceId/$fileId/$pipelineId'
+      path: '/$pipelineId'
+      fullPath: '/$sourceId/$fileId/$pipelineId'
+      preLoaderRoute: typeof SourceIdFileIdPipelineIdRouteRouteImport
+      parentRoute: typeof SourceIdFileIdRouteRoute
     }
     '/pipelines/$file/$id/': {
       id: '/pipelines/$file/$id/'
@@ -301,6 +408,33 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface SourceIdFileIdRouteRouteChildren {
+  SourceIdFileIdPipelineIdRouteRoute: typeof SourceIdFileIdPipelineIdRouteRoute
+  SourceIdFileIdIndexLazyRoute: typeof SourceIdFileIdIndexLazyRoute
+}
+
+const SourceIdFileIdRouteRouteChildren: SourceIdFileIdRouteRouteChildren = {
+  SourceIdFileIdPipelineIdRouteRoute: SourceIdFileIdPipelineIdRouteRoute,
+  SourceIdFileIdIndexLazyRoute: SourceIdFileIdIndexLazyRoute,
+}
+
+const SourceIdFileIdRouteRouteWithChildren =
+  SourceIdFileIdRouteRoute._addFileChildren(SourceIdFileIdRouteRouteChildren)
+
+interface SourceIdRouteRouteChildren {
+  SourceIdFileIdRouteRoute: typeof SourceIdFileIdRouteRouteWithChildren
+  SourceIdIndexLazyRoute: typeof SourceIdIndexLazyRoute
+}
+
+const SourceIdRouteRouteChildren: SourceIdRouteRouteChildren = {
+  SourceIdFileIdRouteRoute: SourceIdFileIdRouteRouteWithChildren,
+  SourceIdIndexLazyRoute: SourceIdIndexLazyRoute,
+}
+
+const SourceIdRouteRouteWithChildren = SourceIdRouteRoute._addFileChildren(
+  SourceIdRouteRouteChildren,
+)
+
 interface PipelinesFileIdRouteRouteChildren {
   PipelinesFileIdCodeRoute: typeof PipelinesFileIdCodeRoute
   PipelinesFileIdGraphsRoute: typeof PipelinesFileIdGraphsRoute
@@ -346,6 +480,7 @@ const PipelinesFileRouteLazyRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  SourceIdRouteRoute: SourceIdRouteRouteWithChildren,
   PipelinesFileRouteLazyRoute: PipelinesFileRouteLazyRouteWithChildren,
 }
 export const routeTree = rootRouteImport
