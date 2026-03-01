@@ -2,12 +2,11 @@ import { createLazyFileRoute } from "@tanstack/react-router";
 import { PipelineGraph } from "@ucdjs/pipelines-ui";
 
 export const Route = createLazyFileRoute("/$sourceId/$fileId/$pipelineId/executions/$executionId/graph")({
-  component: RouteComponent,
+  component: PipelineExecutionGraphPage,
 });
 
-function RouteComponent() {
-  const { graphData } = Route.useLoaderData();
-  const graph = graphData.graph;
+function PipelineExecutionGraphPage() {
+  const { graph } = Route.useLoaderData();
 
   if (!graph || graph.nodes.length === 0) {
     return (

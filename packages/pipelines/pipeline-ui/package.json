@@ -30,6 +30,7 @@
     "./components/source-switcher": "./dist/components/source-switcher.mjs",
     "./components/status-badge": "./dist/components/status-badge.mjs",
     "./components/status-icon": "./dist/components/status-icon.mjs",
+    "./functions": "./dist/functions/index.mjs",
     "./hooks": "./dist/hooks/index.mjs",
     "./lib": "./dist/lib/index.mjs",
     "./lib/adapter": "./dist/lib/adapter.mjs",
@@ -39,6 +40,7 @@
     "./lib/layout": "./dist/lib/layout.mjs",
     "./lib/pipeline-utils": "./dist/lib/pipeline-utils.mjs",
     "./lib/utils": "./dist/lib/utils.mjs",
+    "./schemas": "./dist/schemas/index.mjs",
     "./styles.css": "./dist/styles/globals.css",
     "./package.json": "./package.json"
   },
@@ -69,7 +71,8 @@
     "@xyflow/react": "catalog:frontend",
     "clsx": "catalog:frontend",
     "lucide-react": "catalog:frontend",
-    "tailwind-merge": "catalog:frontend"
+    "tailwind-merge": "catalog:frontend",
+    "zod": "catalog:runtime"
   },
   "devDependencies": {
     "@eslint-react/eslint-plugin": "catalog:lint",

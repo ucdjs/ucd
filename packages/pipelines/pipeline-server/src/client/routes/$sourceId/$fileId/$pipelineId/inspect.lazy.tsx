@@ -100,9 +100,21 @@ function RouteListItem({ route, isSelected, onClick }: RouteListItemProps) {
             )}
       </div>
       <div className="mt-1 flex flex-wrap gap-2 text-xs text-muted-foreground">
-        <span>{route.depends.length} depends</span>
-        <span>{route.emits.length} emits</span>
-        <span>{route.outputs.length} outputs</span>
+        <span>
+          {route.depends.length}
+          {" "}
+          depends
+        </span>
+        <span>
+          {route.emits.length}
+          {" "}
+          emits
+        </span>
+        <span>
+          {route.outputs.length}
+          {" "}
+          outputs
+        </span>
       </div>
     </button>
   );
@@ -171,7 +183,8 @@ function EmitsSection({ emits }: EmitsSectionProps) {
             <div className="flex flex-wrap gap-2">
               {emits.map((emit) => (
                 <Badge key={emit.id} variant="secondary">
-                  {emit.id}{" "}
+                  {emit.id}
+                  {" "}
                   <span className="text-[10px] opacity-70">{emit.scope}</span>
                 </Badge>
               ))}
@@ -198,10 +211,14 @@ function OutputsSection({ outputs }: OutputsSectionProps) {
               {outputs.map((output, index) => (
                 <div key={index} className="rounded-md border border-border p-3 text-sm">
                   <div className="text-muted-foreground">
-                    dir: {output.dir ?? "default"}
+                    dir:
+                    {" "}
+                    {output.dir ?? "default"}
                   </div>
                   <div className="text-muted-foreground">
-                    file: {output.fileName ?? "default"}
+                    file:
+                    {" "}
+                    {output.fileName ?? "default"}
                   </div>
                 </div>
               ))}
@@ -250,8 +267,7 @@ function EmptyDetailsCard() {
 }
 
 function PipelineInspectPage() {
-  const { pipelineData } = useLoaderData({ from: "/$sourceId/$fileId/$pipelineId" });
-  const pipeline = pipelineData?.pipeline;
+  const { pipeline } = useLoaderData({ from: "/$sourceId/$fileId/$pipelineId" });
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
 

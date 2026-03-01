@@ -3,6 +3,7 @@ import {
   findFileGroup,
   loadPipelineFileGroups,
 } from "#server/lib/files";
+import type { SourceFileResponse } from "@ucdjs/pipelines-ui/schemas";
 import { H3 } from "h3";
 
 export const sourcesSourceRouter: H3 = new H3();
@@ -35,7 +36,7 @@ sourcesSourceRouter.get("/:sourceId/:fileId", async (event) => {
           pipelines: fileGroup.pipelines,
         },
         errors: group.errors.filter((e) => e.filePath === fileGroup.filePath),
-      };
+      } satisfies SourceFileResponse;
     }
 
     allErrors.push(...group.errors);
