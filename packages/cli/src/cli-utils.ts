@@ -233,7 +233,8 @@ export async function runCommand(cmd: CLICommand, flags: Arguments): Promise<voi
     case "pipelines": {
       const { runPipelinesRoot } = await import("./cmd/pipelines/root");
       const subcommand = flags._[1]?.toString() ?? "";
-      await runPipelinesRoot(subcommand, {
+      const args = flags._.slice(2).map(String);
+      await runPipelinesRoot(subcommand, args, {
         flags: flags as CLIPipelinesCmdOptions["flags"],
       });
       break;

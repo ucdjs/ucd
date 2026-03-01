@@ -2,6 +2,7 @@ import type { PipelineDefinition } from "@ucdjs/pipelines-core";
 
 export interface LoadedPipelineFile {
   filePath: string;
+  sourceFilePath?: string;
   pipelines: PipelineDefinition[];
   exportNames: string[];
 }

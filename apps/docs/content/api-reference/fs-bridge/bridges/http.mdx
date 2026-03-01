@@ -175,7 +175,7 @@ const bridge = HTTPFileSystemBridge({
 
 try {
   const content = await bridge.read("file.txt");
-} catch (error) {
+} catch (err) {
   if (error.message.includes("Failed to read remote file")) {
     // Handle read error
   }
@@ -183,7 +183,7 @@ try {
 
 try {
   const entries = await bridge.listdir("directory");
-} catch (error) {
+} catch (err) {
   if (error.message.includes("Server error")) {
     // Handle server error
   } else if (error.message.includes("Invalid response schema")) {

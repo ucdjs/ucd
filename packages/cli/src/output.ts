@@ -372,3 +372,9 @@ export function printCounts(counts: { downloaded?: number; skipped?: number; fai
     console.log(`${ind}Files failed:     ${failedColor(String(counts.failed))}`);
   }
 }
+
+export function clickableLink(text: string, url: string): string {
+  // Some terminals support clickable links using ANSI escape codes
+  // Format: \u001b]8;;<url>\u0007<text>\u001b]8;;\u0007
+  return `\u001B]8;;${url}\u0007${text}\u001B]8;;\u0007`;
+}

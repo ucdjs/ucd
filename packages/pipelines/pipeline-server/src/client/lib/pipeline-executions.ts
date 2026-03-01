@@ -36,6 +36,7 @@ export async function fetchExecutions(
   fileId: string,
   pipelineId: string,
   options: FetchExecutionsOptions = {},
+  sourceId?: string,
 ): Promise<ExecutionsResponse> {
   const params = new URLSearchParams();
   params.set("limit", String(options.limit ?? 10));
@@ -43,9 +44,12 @@ export async function fetchExecutions(
     params.set("offset", String(options.offset));
   }
 
-  const response = await fetch(
-    `/api/pipelines/${fileId}/${pipelineId}/executions?${params.toString()}`,
-  );
+  // Use new sources API if sourceId is provided, otherwise fall back to old pipelines API
+  const endpoint = sourceId
+    ? `/api/sources/${sourceId}/${fileId}/${pipelineId}/executions?${params.toString()}`
+    : `/api/pipelines/${fileId}/${pipelineId}/executions?${params.toString()}`;
+
+  const response = await fetch(endpoint);
   if (!response.ok) {
     throw new Error("Failed to fetch executions");
   }

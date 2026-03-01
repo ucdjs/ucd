@@ -85,9 +85,9 @@ export class ManifestUploadWorkflow extends WorkflowEntrypoint<Env, ManifestUplo
 
             // eslint-disable-next-line no-console
             console.info(`[manifest-upload]: Uploaded ${storagePath}`);
-          } catch (error) {
-            console.error(`[manifest-upload]: Failed to upload ${storagePath}:`, error);
-            throw new Error(`Failed to upload ${file.name}: ${error instanceof Error ? error.message : String(error)}`);
+          } catch (err) {
+            console.error(`[manifest-upload]: Failed to upload ${storagePath}:`, err);
+            throw new Error(`Failed to upload ${file.name}: ${err instanceof Error ? err.message : String(err)}`);
           }
         }));
       }
@@ -125,9 +125,9 @@ export class ManifestUploadWorkflow extends WorkflowEntrypoint<Env, ManifestUplo
           await cache.delete(new Request(`${origin}/api/v1/files/${version}`));
           // eslint-disable-next-line no-console
           console.log(`[manifest-upload]: Purged ${name} cache for version ${version}`);
-        } catch (error) {
+        } catch (err) {
           // Log but don't fail if cache purge fails
-          console.warn(`[manifest-upload]: Failed to purge ${name} cache:`, error);
+          console.warn(`[manifest-upload]: Failed to purge ${name} cache:`, err);
         }
       });
 

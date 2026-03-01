@@ -43,7 +43,7 @@ import { PathUtilsBaseError } from '@ucdjs/path-utils';
 
 try {
   // Path operations
-} catch (error) {
+} catch (err) {
   if (error instanceof PathUtilsBaseError) {
     // Handle any path-utils error
     console.error('Path utility error:', error.message);
@@ -74,7 +74,7 @@ import { resolveSafePath, PathTraversalError } from '@ucdjs/path-utils';
 
 try {
   resolveSafePath('/var/www/html', '../../etc/passwd');
-} catch (error) {
+} catch (err) {
   if (error instanceof PathTraversalError) {
     console.error(`Traversal attempt detected!`);
     console.error(`Base: ${error.basePath}`);
@@ -107,7 +107,7 @@ import { resolveSafePath, WindowsDriveMismatchError } from '@ucdjs/path-utils';
 
 try {
   resolveSafePath('C:\\Users\\John', 'D:\\External\\file.txt');
-} catch (error) {
+} catch (err) {
   if (error instanceof WindowsDriveMismatchError) {
     console.error(`Drive mismatch!`);
     console.error(`Base drive: ${error.baseDrive}`);
@@ -139,7 +139,7 @@ import { resolveSafePath, UNCPathNotSupportedError } from '@ucdjs/path-utils';
 
 try {
   resolveSafePath('C:\\base', '\\\\server\\share\\file.txt');
-} catch (error) {
+} catch (err) {
   if (error instanceof UNCPathNotSupportedError) {
     console.error(`UNC path rejected: ${error.path}`);
     // UNC path rejected: \\server\share\file.txt
@@ -172,7 +172,7 @@ import { resolveSafePath, IllegalCharacterInPathError } from '@ucdjs/path-utils'
 try {
   // Null byte injection attempt
   resolveSafePath('/base', 'safe.txt\0../../../etc/passwd');
-} catch (error) {
+} catch (err) {
   if (error instanceof IllegalCharacterInPathError) {
     console.error('Illegal character detected:', error.message);
     // Illegal character detected: Illegal character detected in path: '\0'
@@ -182,7 +182,7 @@ try {
 try {
   // Control character
   resolveSafePath('/base', 'file\x01.txt');
-} catch (error) {
+} catch (err) {
   if (error instanceof IllegalCharacterInPathError) {
     console.error('Control character found');
   }
@@ -208,7 +208,7 @@ const maliciousInput = '%25252525...'; // Many layers deep
 
 try {
   resolveSafePath('/base', maliciousInput);
-} catch (error) {
+} catch (err) {
   if (error instanceof FailedToDecodePathError) {
     console.error('Path decoding failed - possible attack');
   }
@@ -237,7 +237,7 @@ for (let i = 0; i < 15; i++) {
 
 try {
   decodePathSafely(malicious);
-} catch (error) {
+} catch (err) {
   if (error instanceof MaximumDecodingIterationsExceededError) {
     console.error('Too many encoding layers - rejecting input');
   }
@@ -260,7 +260,7 @@ import { WindowsPathBehaviorNotImplementedError } from '@ucdjs/path-utils';
 
 try {
   // Some unsupported Windows path scenario
-} catch (error) {
+} catch (err) {
   if (error instanceof WindowsPathBehaviorNotImplementedError) {
     console.error('Unsupported Windows path behavior');
   }
@@ -283,7 +283,7 @@ import {
 function safelyHandlePath(basePath: string, userInput: string): string {
   try {
     return resolveSafePath(basePath, userInput);
-  } catch (error) {
+  } catch (err) {
     if (error instanceof PathTraversalError) {
       throw new Error('Access denied: path outside allowed directory');
     }
@@ -309,7 +309,7 @@ import { resolveSafePath, PathUtilsBaseError } from '@ucdjs/path-utils';
 function handlePath(basePath: string, userInput: string): string | null {
   try {
     return resolveSafePath(basePath, userInput);
-  } catch (error) {
+  } catch (err) {
     if (error instanceof PathUtilsBaseError) {
       // Log security event
       console.warn('Path security violation:', error.message);
@@ -338,7 +338,7 @@ function logSecurityEvent(error: Error, userInput: string, userId?: string) {
 
 try {
   const path = resolveSafePath('/base', userInput);
-} catch (error) {
+} catch (err) {
   if (error instanceof PathTraversalError) {
     logSecurityEvent(error, userInput, currentUserId);
     // Return 403 Forbidden to client

@@ -47,7 +47,7 @@ export {
   ExecutionWaterfall,
   type ExecutionWaterfallProps,
 } from "./components/logs/execution-waterfall";
-export { PipelineSidebar } from "./components/pipeline-sidebar";
+export { PipelineSidebar, type SourceInfo } from "./components/pipeline-sidebar";
 export { StatusBadge } from "./components/status-badge";
 export { StatusIcon } from "./components/status-icon";
 export * from "./hooks";

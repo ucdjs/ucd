@@ -144,8 +144,8 @@ async function processFile(request: ProcessFileRequest): Promise<ProcessedFile |
       version,
       code,
     };
-  } catch (error) {
-    console.error(`Error processing file ${filePath}:`, error);
+  } catch (err) {
+    console.error(`Error processing file ${filePath}:`, err);
     return null;
   }
 }

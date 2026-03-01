@@ -325,7 +325,7 @@
   // Example usage in bridge implementations
   try {
     await fsp.readFile(path);
-  } catch (error) {
+  } catch (err) {
     if (error.code === "ENOENT") {
       throw new BridgeFileNotFound(path);
     }
@@ -504,7 +504,7 @@
   // Usage - all errors are now consistently handled
   try {
     await bridge.read("/some/path");
-  } catch (error) {
+  } catch (err) {
     if (error instanceof BridgeFileNotFound) {
       // Handle specific bridge error
     } else if (error instanceof BridgeGenericError) {

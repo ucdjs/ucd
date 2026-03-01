@@ -12,6 +12,7 @@ const PIPELINES_SUBCOMMANDS = [
   "run",
   "list",
   "create",
+  "cache",
 ] as const;
 export type Subcommand = (typeof PIPELINES_SUBCOMMANDS)[number];
 
@@ -19,7 +20,7 @@ function isValidSubcommand(subcommand: string): subcommand is Subcommand {
   return PIPELINES_SUBCOMMANDS.includes(subcommand as Subcommand);
 }
 
-export async function runPipelinesRoot(subcommand: string, { flags }: CLIPipelinesCmdOptions) {
+export async function runPipelinesRoot(subcommand: string, args: string[], { flags }: CLIPipelinesCmdOptions) {
   const isValidSub = isValidSubcommand(subcommand);
   const requestsHelp = flags?.help || flags?.h;
 
@@ -32,6 +33,7 @@ export async function runPipelinesRoot(subcommand: string, { flags }: CLIPipelin
           ["run", "Run a pipeline from the command line."],
           ["list", "List available pipelines."],
           ["create", "Create a new pipeline scaffold."],
+          ["cache", "Manage cached pipeline sources."],
         ],
         Flags: [
           ["--help (-h)", "See all available flags."],
@@ -52,6 +54,14 @@ export async function runPipelinesRoot(subcommand: string, { flags }: CLIPipelin
   if (subcommand === "list") {
     const { runListPipelines } = await import("./list");
     await runListPipelines({ flags });
+    return;
+  }
+
+  if (subcommand === "cache") {
+    const cacheSubcommand = args[0] ?? "";
+    const cacheArgs = args.slice(1);
+    const { runPipelinesCacheRoot } = await import("./cache/root");
+    await runPipelinesCacheRoot(cacheSubcommand, { flags });
     return;
   }
 

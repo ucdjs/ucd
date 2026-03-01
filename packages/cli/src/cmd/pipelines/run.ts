@@ -124,8 +124,8 @@ export async function runPipelinesRun({ flags }: CLIPipelinesRunCmdOptions) {
     try {
       const result = await loadPipelineFile(filePath);
       allPipelines.push(...result.pipelines);
-    } catch (error) {
-      loadErrors.push(`${filePath}: ${error instanceof Error ? error.message : String(error)}`);
+    } catch (err) {
+      loadErrors.push(`${filePath}: ${err instanceof Error ? err.message : String(err)}`);
     }
   }
 
