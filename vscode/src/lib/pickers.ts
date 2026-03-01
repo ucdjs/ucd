@@ -69,10 +69,10 @@ export async function showFilePicker(store: UCDStore, version: string): Promise<
         resolve(undefined);
       });
     });
-  } catch (error) {
+  } catch (err) {
     quickPick.hide();
     quickPick.dispose();
-    logger.error(`Failed to load files for version ${version}:`, error);
+    logger.error(`Failed to load files for version ${version}:`, err);
     window.showErrorMessage(`Failed to load files for version ${version}`);
     return undefined;
   }

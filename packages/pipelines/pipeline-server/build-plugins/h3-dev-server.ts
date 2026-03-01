@@ -11,7 +11,6 @@ export function h3DevServerPlugin(): Plugin {
   return {
     name: "h3-dev-server",
     async configureServer(server) {
-      let appPromise: Promise<H3> | null = null;
       let db: import("../src/server/db").Database | null = null;
 
       // Initialize database before starting the server
@@ -33,23 +32,13 @@ export function h3DevServerPlugin(): Plugin {
       }
 
       const getApp = async () => {
-        if (!appPromise) {
-          appPromise = server
-            .ssrLoadModule(appModuleId)
-            .then((mod) => (mod as typeof import("../src/server/app")).createApp({
-              db: db!,
-              workspaceId: resolveWorkspace().workspaceId,
-            }));
-        }
-
-        return appPromise;
+        return server
+          .ssrLoadModule(appModuleId)
+          .then((mod) => (mod as typeof import("../src/server/app")).createApp({
+            db: db!,
+            workspaceId: resolveWorkspace().workspaceId,
+          }));
       };
-
-      server.watcher.on("change", (file) => {
-        if (file.includes("/src/server/")) {
-          appPromise = null;
-        }
-      });
 
       // Add middleware BEFORE Vite's internal middleware (no return = pre-hook)
       // This ensures /api routes are handled before Vite's SPA fallback
@@ -99,8 +88,8 @@ export function h3DevServerPlugin(): Plugin {
 
           const responseBody = await response.text();
           res.end(responseBody);
-        } catch (error) {
-          next(error);
+        } catch (err) {
+          next(err);
         }
       });
     },

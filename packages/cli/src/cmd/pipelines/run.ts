@@ -6,8 +6,9 @@ import { createPipelineExecutor } from "@ucdjs/pipelines-executor";
 import {
   findPipelineFiles,
   loadPipelineFile,
+  parseRemoteSourceUrl,
 } from "@ucdjs/pipelines-loader";
-import { parseRepoString, printHelp } from "../../cli-utils";
+import { printHelp } from "../../cli-utils";
 import { CLIError } from "../../errors";
 import { output } from "../../output";
 
@@ -49,43 +50,30 @@ export async function runPipelinesRun({ flags }: CLIPipelinesRunCmdOptions) {
   const sources: PipelineSource[] = [];
   const sourceLabels: string[] = [];
 
-  if (flags?.github) {
-    const { owner, repo } = parseRepoString(flags.github as string);
-    const ref = (flags.ref as string) || "HEAD";
-    const subPath = (flags.path as string) || undefined;
-    const sourceId = `github-${owner}-${repo}`;
+  function addRemoteSource(
+    flagName: "github" | "gitlab",
+    flagValue: string | undefined,
+  ) {
+    if (!flagValue) return;
+    const repoInfo = parseRemoteSourceUrl(flagValue);
+    if (!repoInfo) {
+      throw new CLIError(`Invalid ${flagName} repository URL: ${flagValue}`);
+    }
+    const { type, owner, repo } = repoInfo;
+    const ref = flags.ref || "HEAD";
+    const subPath = flags.path || undefined;
+    const sourceId = `${type}-${owner}-${repo}`;
 
-    sources.push({
-      type: "github",
-      id: sourceId,
-      owner,
-      repo,
-      ref,
-      path: subPath,
-    });
-    sourceLabels.push(`[github] ${owner}/${repo}${ref !== "HEAD" ? `@${ref}` : ""}`);
+    sources.push({ type, id: sourceId, owner, repo, ref, path: subPath });
+    sourceLabels.push(`[${type}] ${owner}/${repo}${ref !== "HEAD" ? `@${ref}` : ""}`);
   }
 
-  if (flags?.gitlab) {
-    const { owner, repo } = parseRepoString(flags.gitlab as string);
-    const ref = (flags.ref as string) || "HEAD";
-    const subPath = (flags.path as string) || undefined;
-    const sourceId = `gitlab-${owner}-${repo}`;
-
-    sources.push({
-      type: "gitlab",
-      id: sourceId,
-      owner,
-      repo,
-      ref,
-      path: subPath,
-    });
-    sourceLabels.push(`[gitlab] ${owner}/${repo}${ref !== "HEAD" ? `@${ref}` : ""}`);
-  }
+  addRemoteSource("github", flags?.github);
+  addRemoteSource("gitlab", flags?.gitlab);
 
   // Local source (default if no remote specified)
   if (sources.length === 0 || flags?.cwd) {
-    const cwd = (flags?.cwd as string) || process.cwd();
+    const cwd = flags.cwd || process.cwd();
     sources.push({
       type: "local",
       id: "local",
@@ -136,8 +124,8 @@ export async function runPipelinesRun({ flags }: CLIPipelinesRunCmdOptions) {
     try {
       const result = await loadPipelineFile(filePath);
       allPipelines.push(...result.pipelines);
-    } catch (error) {
-      loadErrors.push(`${filePath}: ${error instanceof Error ? error.message : String(error)}`);
+    } catch (err) {
+      loadErrors.push(`${filePath}: ${err instanceof Error ? err.message : String(err)}`);
     }
   }
 

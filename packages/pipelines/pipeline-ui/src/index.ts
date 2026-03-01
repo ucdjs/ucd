@@ -47,7 +47,7 @@ export {
   ExecutionWaterfall,
   type ExecutionWaterfallProps,
 } from "./components/logs/execution-waterfall";
-export { PipelineSidebar } from "./components/pipeline-sidebar";
+export { PipelineSidebar, type SourceInfo } from "./components/pipeline-sidebar";
 export { StatusBadge } from "./components/status-badge";
 export { StatusIcon } from "./components/status-icon";
 export * from "./hooks";
@@ -83,3 +83,25 @@ export type {
   PipelinesResponse,
 } from "./types";
 export type { ExecutionStatus } from "@ucdjs/pipelines-executor";
+
+// Schemas and Functions (React Query agnostic)
+export * from "./schemas";
+export * from "./functions";
+
+// Inspect Components
+export { RouteList, type RouteListProps } from "./components/inspect/route-list";
+export { RouteDetails, type RouteDetailsProps } from "./components/inspect/route-details";
+export { EmptyRouteDetails, type EmptyRouteDetailsProps } from "./components/inspect/empty-route-details";
+
+// Homepage Components
+export {
+  ActivitySparkline,
+  type ActivitySparklineProps,
+  RecentExecutionsList,
+  type RecentExecutionsListProps,
+  SetupWizard,
+  SourceCards,
+  type SourceCardsProps,
+  SystemOverview,
+  type SystemOverviewProps,
+} from "./components/homepage";

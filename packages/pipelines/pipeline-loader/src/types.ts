@@ -2,6 +2,7 @@ import type { PipelineDefinition } from "@ucdjs/pipelines-core";
 
 export interface LoadedPipelineFile {
   filePath: string;
+  sourceFilePath?: string;
   pipelines: PipelineDefinition[];
   exportNames: string[];
 }
@@ -17,21 +18,24 @@ export interface PipelineLoadError {
   error: Error;
 }
 
-export interface GitHubSource {
-  type: "github";
-  id: string;
+export interface SourceRepositoryRef {
   owner: string;
   repo: string;
   ref?: string;
+}
+
+export type SourceRepositoryRefWithCommitSha = SourceRepositoryRef & { commitSha: string };
+export type SourceRepositoryRefWithSourceType = SourceRepositoryRef & { source: RemotePipelineSource["type"] };
+
+export interface GitHubSource extends SourceRepositoryRef {
+  type: "github";
+  id: string;
   path?: string;
 }
 
-export interface GitLabSource {
+export interface GitLabSource extends SourceRepositoryRef {
   type: "gitlab";
   id: string;
-  owner: string;
-  repo: string;
-  ref?: string;
   path?: string;
 }
 
@@ -42,12 +46,5 @@ export interface LocalSource {
 }
 
 export type PipelineSource = LocalSource | GitHubSource | GitLabSource;
-
-export interface RemoteFileList {
-  files: string[];
-  truncated: boolean;
-}
-
-export interface RemoteRequestOptions {
-  customFetch?: typeof fetch;
-}
+export type RemotePipelineSource = GitHubSource | GitLabSource;
+export type PipelineSourceWithoutId = Omit<LocalSource, "id"> | Omit<GitHubSource, "id"> | Omit<GitLabSource, "id">;

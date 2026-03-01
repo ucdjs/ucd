@@ -106,7 +106,7 @@ export default createTsdownConfig({
           const fileName = file.split("/").pop()!;
           const grammar = await loadGrammarFile(file);
 
-          await this.fs.writeFile(`./syntaxes/${fileName}`, JSON.stringify(grammar));
+          await this.fs.writeFile(`./syntaxes/${fileName}`, `${JSON.stringify(grammar, null, 2)}\n`);
         }
 
         await syncContributedGrammars();

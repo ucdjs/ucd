@@ -5,17 +5,17 @@ import path from "node:path";
 import process from "node:process";
 import { createDatabase, runMigrations } from "#server/db";
 import {
-  pipelinesEventsRouter,
-  pipelinesExecutionRouter,
-  pipelinesFileRouter,
-  pipelinesGraphRouter,
-  pipelinesIndexRouter,
-  pipelinesLogsRouter,
-  pipelinesPipelineRouter,
+  dashboardRouter,
+  sourcesExecutionRouter,
+  sourcesFileRouter,
+  sourcesPipelineRouter,
+  sourcesRefreshRouter,
+  sourcesSourceRouter,
 } from "#server/routes";
 import { ensureWorkspace, resolveWorkspace } from "#server/workspace";
 import { getUcdConfigDir } from "@ucdjs-internal/shared/config";
 import { H3, serve, serveStatic } from "h3";
+import { version } from "../../package.json" with { type: "json" };
 
 export interface AppOptions {
   sources?: PipelineSource[];
@@ -37,7 +37,11 @@ declare module "h3" {
 }
 
 export function createApp(options: AppOptions = {}): H3 {
-  const { sources = [], db, workspaceId } = options;
+  const {
+    sources = [],
+    db,
+    workspaceId = "default",
+  } = options;
 
   if (!db) {
     throw new Error("Database is required. Pass db to createApp() or use startServer()");
@@ -50,11 +54,27 @@ export function createApp(options: AppOptions = {}): H3 {
   if (sources.length === 0) {
     const cwd = process.cwd();
     if (process.env.NODE_ENV === "development" || (import.meta as any).env.DEV) {
-      resolvedSources = [{
-        type: "local",
-        id: "local",
-        cwd: path.join(import.meta.dirname, "../../../pipeline-playground"),
-      }];
+      resolvedSources = [
+        {
+          type: "local",
+          id: "local",
+          cwd: path.join(import.meta.dirname, "../../../pipeline-playground"),
+        },
+        {
+          type: "gitlab",
+          id: "gitlab-test",
+          owner: "luxass",
+          repo: "ucdjs-pipelines-gitlab",
+          ref: "main",
+        },
+        {
+          type: "github",
+          id: "github-test",
+          owner: "ucdjs",
+          repo: "ucd-pipelines",
+          ref: "main",
+        },
+      ];
     } else {
       resolvedSources = [{
         type: "local",
@@ -67,7 +87,7 @@ export function createApp(options: AppOptions = {}): H3 {
   app.use("/**", (event, next) => {
     event.context.sources = resolvedSources;
     event.context.db = db;
-    event.context.workspaceId = workspaceId ?? "default";
+    event.context.workspaceId = workspaceId;
     next();
   });
 
@@ -76,13 +96,19 @@ export function createApp(options: AppOptions = {}): H3 {
     timestamp: Date.now(),
   }));
 
-  app.mount("/api/pipelines", pipelinesIndexRouter);
-  app.mount("/api/pipelines", pipelinesFileRouter);
-  app.mount("/api/pipelines", pipelinesPipelineRouter);
-  app.mount("/api/pipelines", pipelinesExecutionRouter);
-  app.mount("/api/pipelines", pipelinesEventsRouter);
-  app.mount("/api/pipelines", pipelinesLogsRouter);
-  app.mount("/api/pipelines", pipelinesGraphRouter);
+  app.get("/api/config", () => {
+    return {
+      workspaceId: options.workspaceId,
+      version,
+    };
+  });
+
+  app.mount("/api/dashboard", dashboardRouter);
+  app.mount("/api/sources", sourcesFileRouter);
+  app.mount("/api/sources", sourcesPipelineRouter);
+  app.mount("/api/sources", sourcesExecutionRouter);
+  app.mount("/api/sources", sourcesRefreshRouter);
+  app.mount("/api/sources", sourcesSourceRouter);
 
   return app;
 }

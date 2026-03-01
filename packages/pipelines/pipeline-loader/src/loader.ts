@@ -3,80 +3,102 @@ import type {
   LoadedPipelineFile,
   LoadPipelinesResult,
   PipelineLoadError,
+  PipelineSourceWithoutId,
 } from "./types";
 import path from "node:path";
+import process from "node:process";
 import { isPipelineDefinition } from "@ucdjs/pipelines-core";
 import { glob } from "tinyglobby";
-import { bundleModule, createDataUrl } from "./bundle";
-import { downloadGitHubRepo } from "./cache/github";
-import { downloadGitLabRepo } from "./cache/gitlab";
+import { bundle } from "./bundle";
+import { getRemoteSourceCacheStatus } from "./cache";
+import { parseRemoteSourceUrl } from "./utils";
 
-// Simplified source types for findPipelineFiles (id is not required)
-export type FindPipelineSource
-  = | { type: "local"; cwd: string }
-    | { type: "github"; owner: string; repo: string; ref?: string; path?: string }
-    | { type: "gitlab"; owner: string; repo: string; ref?: string; path?: string };
+export class CacheMissError extends Error {
+  source: string;
+  owner: string;
+  repo: string;
+  ref: string;
 
-/**
- * Parse a github:// or gitlab:// URL
- */
-function parseRepoUrl(url: string): { type: "github" | "gitlab"; owner: string; repo: string; ref: string; filePath: string } | null {
-  if (url.startsWith("github://")) {
-    const match = url.match(/^github:\/\/([^/]+)\/([^?]+)\?ref=([^&]+)&path=(.+)$/);
-    if (match && match[1] && match[2] && match[3] && match[4]) {
-      return {
-        type: "github",
-        owner: match[1],
-        repo: match[2],
-        ref: match[3],
-        filePath: match[4],
-      };
-    }
+  constructor(
+    source: string,
+    owner: string,
+    repo: string,
+    ref: string,
+  ) {
+    super(
+      `Cache miss for ${source}:${owner}/${repo}@${ref}. `
+      + `Run 'ucd pipelines cache refresh --${source} ${owner}/${repo} --ref ${ref}' to sync.`,
+    );
+    this.name = "CacheMissError";
+    this.source = source;
+    this.owner = owner;
+    this.repo = repo;
+    this.ref = ref;
   }
-
-  if (url.startsWith("gitlab://")) {
-    const match = url.match(/^gitlab:\/\/([^/]+)\/([^?]+)\?ref=([^&]+)&path=(.+)$/);
-    if (match && match[1] && match[2] && match[3] && match[4]) {
-      return {
-        type: "gitlab",
-        owner: match[1],
-        repo: match[2],
-        ref: match[3],
-        filePath: match[4],
-      };
-    }
-  }
-
-  return null;
 }
 
 /**
- * Load a pipeline file from a local path or remote URL.
+ * Load a pipeline definition file.
  *
- * Supports:
- * - Local file paths
- * - github://owner/repo?ref=branch&path=file.ts
- * - gitlab://owner/repo?ref=branch&path=file.ts
+ * For remote sources (GitHub/GitLab), the source must be synced to the cache first
+ * using `ucd pipelines cache refresh` or the syncRemoteSource() function.
+ *
+ * @param {string} fileOrRemotePath - The path to the pipeline definition file. Can be a local file path or a remote URL (GitHub/GitLab).
+ * @returns {Promise<LoadedPipelineFile>} An object containing the file path, an array of pipeline definitions exported from the file, and their export names.
+ * @throws {CacheMissError} If the remote source is not in the cache.
+ * @throws Will throw an error if the file cannot be loaded or if the pipeline definitions are invalid.
+ *
+ * @example
+ * ```typescript
+ * // Load a local pipeline file
+ * const result = await loadPipelineFile("./pipelines/my-pipeline.ucd-pipeline.ts");
+ * console.log(result.pipelines); // Array of pipeline definitions
+ *
+ * // Load a pipeline file from a cached GitHub repository
+ * // (requires: ucd pipelines cache refresh --github owner/repo --ref main)
+ * const result = await loadPipelineFile("github://owner/repo?ref=main&path=pipelines/my-pipeline.ucd-pipeline.ts");
+ * console.log(result.pipelines); // Array of pipeline definitions
+ * ```
  */
-export async function loadPipelineFile(filePath: string): Promise<LoadedPipelineFile> {
-  let resolvedPath: string;
+export async function loadPipelineFile(fileOrRemotePath: string): Promise<LoadedPipelineFile> {
+  let resolvedPath = path.resolve(fileOrRemotePath);
+  let cwd = process.cwd();
+  let sourceFilePath: string | undefined;
 
-  // Check if it's a remote URL
-  const repoInfo = parseRepoUrl(filePath);
-  if (repoInfo) {
-    const cacheDir = repoInfo.type === "github"
-      ? await downloadGitHubRepo({ owner: repoInfo.owner, repo: repoInfo.repo, ref: repoInfo.ref })
-      : await downloadGitLabRepo({ owner: repoInfo.owner, repo: repoInfo.repo, ref: repoInfo.ref });
+  const source = parseRemoteSourceUrl(fileOrRemotePath);
+  if (source) {
+    // Check cache status (no API calls - just reads local cache)
+    const status = await getRemoteSourceCacheStatus({
+      source: source.type,
+      owner: source.owner,
+      repo: source.repo,
+      ref: source.ref,
+    });
 
-    resolvedPath = path.join(cacheDir, repoInfo.filePath);
-  } else {
-    resolvedPath = path.resolve(filePath);
+    if (!status.cached) {
+      throw new CacheMissError(source.type, source.owner, source.repo, source.ref);
+    }
+
+    cwd = status.cacheDir;
+    // For remote sources: resolvedPath is the absolute local path in cache
+    resolvedPath = path.join(status.cacheDir, source.filePath);
+    // sourceFilePath is the original URL
+    sourceFilePath = fileOrRemotePath;
   }
 
-  // Always bundle (handles TypeScript and relative imports)
-  const bundle = await bundleModule(resolvedPath);
-  const dataUrl = createDataUrl(bundle);
-  const module = await import(/* @vite-ignore */ dataUrl);
+  let bundleResult: { dataUrl: string };
+  try {
+    // Always bundle the file to ensure we can import it with all dependencies
+    bundleResult = await bundle({
+      entryPath: resolvedPath,
+      cwd,
+    });
+  } catch (err) {
+    const error = err instanceof Error ? err : new Error(String(err));
+    throw new Error(`Failed to bundle pipeline file: ${fileOrRemotePath}`, { cause: error });
+  }
+
+  const module = await import(/* @vite-ignore */ bundleResult.dataUrl);
 
   const pipelines: PipelineDefinition[] = [];
   const exportNames: string[] = [];
@@ -91,7 +113,8 @@ export async function loadPipelineFile(filePath: string): Promise<LoadedPipeline
   }
 
   return {
-    filePath,
+    filePath: resolvedPath,
+    sourceFilePath,
     pipelines,
     exportNames,
   };
@@ -152,24 +175,40 @@ export async function loadPipelinesFromPaths(
 }
 
 export interface FindPipelineFilesOptions {
+  /**
+   * Glob pattern(s) to match pipeline files. Defaults to "**\/*.ucd-pipeline.ts".
+   */
   patterns?: string | string[];
-  source?: FindPipelineSource;
+
+  /**
+   * Optional source configuration to find pipeline files in a local directory or remote repository.
+   * For remote repositories, the source must be synced to the cache first.
+   * If not provided, defaults to searching the current working directory.
+   */
+  source?: PipelineSourceWithoutId;
 }
 
 /**
  * Find pipeline files in a local directory or remote repository.
  *
- * Examples:
+ * For remote sources (GitHub/GitLab), the source must be synced to the cache first
+ * using `ucd pipelines cache refresh` or the syncRemoteSource() function.
+ *
+ * @param {FindPipelineFilesOptions}  [options] - Options to configure the search for pipeline files, including glob patterns and source location (local or remote).
+ * @returns {Promise<string[]>} An array of file paths that match the specified patterns and source.
+ * @throws {CacheMissError} If the remote source is not in the cache.
+ *
+ * @example
  * ```typescript
  * // Local directory
  * findPipelineFiles({ source: { type: "local", cwd: "./pipelines" } })
  *
- * // GitHub repository
+ * // GitHub repository (requires sync first)
  * findPipelineFiles({
  *   source: { type: "github", owner: "ucdjs", repo: "demo-pipelines", ref: "main" }
  * })
  *
- * // GitLab repository
+ * // GitLab repository (requires sync first)
  * findPipelineFiles({
  *   source: { type: "gitlab", owner: "mygroup", repo: "demo", ref: "main" }
  * })
@@ -193,14 +232,23 @@ export async function findPipelineFiles(
     const source = options.source;
     if (source.type === "local") {
       cwd = source.cwd;
-    } else if (source.type === "github") {
-      cwd = await downloadGitHubRepo({ owner: source.owner, repo: source.repo, ref: source.ref });
     } else {
-      cwd = await downloadGitLabRepo({ owner: source.owner, repo: source.repo, ref: source.ref });
+      // Check cache status (no API calls - just reads local cache)
+      const status = await getRemoteSourceCacheStatus({
+        source: source.type,
+        owner: source.owner,
+        repo: source.repo,
+        ref: source.ref,
+      });
+
+      if (!status.cached) {
+        throw new CacheMissError(source.type, source.owner, source.repo, source.ref ?? "HEAD");
+      }
+
+      cwd = status.cacheDir;
     }
   } else {
     // Default to current working directory
-    // eslint-disable-next-line node/prefer-global/process
     cwd = process.cwd();
   }
 

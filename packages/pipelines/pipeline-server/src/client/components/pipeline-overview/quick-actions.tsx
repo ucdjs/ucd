@@ -12,23 +12,24 @@ import { ArrowRight, FileCode, Loader2, Play, Workflow } from "lucide-react";
 import { useCallback } from "react";
 
 export function QuickActionsPanel() {
-  const { file, id } = useParams({ from: "/pipelines/$file/$id" });
-  const { pipeline } = useLoaderData({ from: "/pipelines/$file/$id" });
+  const { sourceId, fileId, pipelineId } = useParams({ from: "/$sourceId/$fileId/$pipelineId" });
+  const { pipelineData } = useLoaderData({ from: "/$sourceId/$fileId/$pipelineId" });
+  const pipeline = pipelineData?.pipeline;
   const navigate = useNavigate();
   const { execute, executing } = useExecute();
-  const { selectedVersions } = usePipelineVersions(id, pipeline?.versions || [], `${file}:${id}`);
+  const { selectedVersions } = usePipelineVersions(pipelineId, pipeline?.versions || [], `${fileId}:${pipelineId}`);
   const canExecute = selectedVersions.size > 0 && Boolean(pipeline);
 
   const handleExecute = useCallback(async () => {
     if (!canExecute) return;
-    const result = await execute(file, id, Array.from(selectedVersions));
+    const result = await execute(fileId, pipelineId, Array.from(selectedVersions), sourceId);
     if (result.success && result.executionId) {
       navigate({
-        to: "/pipelines/$file/$id/executions/$executionId",
-        params: { file, id, executionId: result.executionId },
+        to: "/$sourceId/$fileId/$pipelineId/executions/$executionId",
+        params: { sourceId, fileId, pipelineId, executionId: result.executionId },
       });
     }
-  }, [execute, file, id, selectedVersions, canExecute, navigate]);
+  }, [execute, sourceId, fileId, pipelineId, selectedVersions, canExecute, navigate]);
 
   return (
     <Card className="h-full">
@@ -55,7 +56,7 @@ export function QuickActionsPanel() {
           variant="outline"
           className="w-full justify-between"
           render={(props) => (
-            <Link to="/pipelines/$file/$id/executions" params={{ file, id }} {...props}>
+            <Link to="/$sourceId/$fileId/$pipelineId/executions" params={{ sourceId, fileId, pipelineId }} {...props}>
               <span className="flex items-center gap-2">
                 <Workflow className="h-4 w-4" />
                 View executions
@@ -69,7 +70,7 @@ export function QuickActionsPanel() {
           variant="outline"
           className="w-full justify-between"
           render={(props) => (
-            <Link to="/pipelines/$file/$id/graph" params={{ file, id }} {...props}>
+            <Link to="/$sourceId/$fileId/$pipelineId/graph" params={{ sourceId, fileId, pipelineId }} {...props}>
               <span className="flex items-center gap-2">
                 <Workflow className="h-4 w-4" />
                 Open graph
@@ -83,7 +84,7 @@ export function QuickActionsPanel() {
           variant="outline"
           className="w-full justify-between"
           render={(props) => (
-            <Link to="/pipelines/$file/$id/code" params={{ file, id }} {...props}>
+            <Link to="/$sourceId/$fileId/$pipelineId/code" params={{ sourceId, fileId, pipelineId }} {...props}>
               <span className="flex items-center gap-2">
                 <FileCode className="h-4 w-4" />
                 Open code

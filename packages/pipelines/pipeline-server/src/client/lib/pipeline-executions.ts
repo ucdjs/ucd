@@ -2,23 +2,8 @@ import type { ExecutionStatus } from "@ucdjs/pipelines-executor";
 
 export type { ExecutionStatus };
 
-export interface Execution {
-  id: string;
-  pipelineId: string;
-  status: ExecutionStatus;
-  startedAt: string;
-  completedAt: string | null;
-  versions: string[] | null;
-  summary: {
-    totalRoutes: number;
-    cached: number;
-  } | null;
-  hasGraph?: boolean;
-  error: string | null;
-}
-
 export interface ExecutionsResponse {
-  executions: Execution[];
+  executions: any[];
   pagination: {
     total: number;
     limit: number;
@@ -36,6 +21,7 @@ export async function fetchExecutions(
   fileId: string,
   pipelineId: string,
   options: FetchExecutionsOptions = {},
+  sourceId?: string,
 ): Promise<ExecutionsResponse> {
   const params = new URLSearchParams();
   params.set("limit", String(options.limit ?? 10));
@@ -43,9 +29,12 @@ export async function fetchExecutions(
     params.set("offset", String(options.offset));
   }
 
-  const response = await fetch(
-    `/api/pipelines/${fileId}/${pipelineId}/executions?${params.toString()}`,
-  );
+  // Use new sources API if sourceId is provided, otherwise fall back to old pipelines API
+  const endpoint = sourceId
+    ? `/api/sources/${sourceId}/${fileId}/${pipelineId}/executions?${params.toString()}`
+    : `/api/pipelines/${fileId}/${pipelineId}/executions?${params.toString()}`;
+
+  const response = await fetch(endpoint);
   if (!response.ok) {
     throw new Error("Failed to fetch executions");
   }

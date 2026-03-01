@@ -9,6 +9,7 @@ import type { CSSProperties } from "react";
 import { filterNodesByType, pipelineGraphToFlow } from "#lib/adapter";
 import { getNodeColor } from "#lib/colors";
 import { applyLayout } from "#lib/layout";
+import { cn } from "#lib/utils";
 import {
   Background,
   Controls,
@@ -18,8 +19,8 @@ import {
 import { memo, useCallback, useMemo, useState } from "react";
 import { PipelineGraphDetails } from "./details";
 import { PipelineGraphFilters } from "./filters";
-import { nodeTypes } from "./node-types";
 
+import { nodeTypes } from "./node-types";
 import "@xyflow/react/dist/style.css";
 
 const defaultVisibleTypes: Set<PipelineGraphNodeType> = new Set([
@@ -29,26 +30,6 @@ const defaultVisibleTypes: Set<PipelineGraphNodeType> = new Set([
   "artifact",
   "output",
 ]);
-
-const containerStyle: CSSProperties = {
-  display: "flex",
-  height: "100%",
-  width: "100%",
-};
-
-const graphContainerStyle: CSSProperties = {
-  flex: 1,
-  display: "flex",
-  flexDirection: "column",
-  position: "relative",
-};
-
-const filtersContainerStyle: CSSProperties = {
-  position: "absolute",
-  top: "12px",
-  left: "12px",
-  zIndex: 10,
-};
 
 const fitViewOptions = { padding: 0.2 } as const;
 const proOptions = { hideAttribution: true } as const;
@@ -63,14 +44,14 @@ export interface PipelineGraphProps {
   className?: string;
 }
 
-export const PipelineGraph = memo(({
+export function PipelineGraph({
   graph,
   onNodeSelect,
   showFilters = true,
   showDetails = true,
   showMinimap = true,
   className,
-}: PipelineGraphProps) => {
+}: PipelineGraphProps) {
   const { allNodes, allEdges } = useMemo(() => {
     const { nodes, edges } = pipelineGraphToFlow(graph);
     return { allNodes: nodes, allEdges: edges };
@@ -128,10 +109,10 @@ export const PipelineGraph = memo(({
   }, [onNodeSelect]);
 
   return (
-    <div style={containerStyle} className={className}>
-      <div style={graphContainerStyle}>
+    <div className={cn("flex h-full w-full bg-yellow-500", className)}>
+      <div className="flex-1 flex flex-col relative">
         {showFilters && (
-          <div style={filtersContainerStyle}>
+          <div className="absolute top-3 left-3 z-10">
             <PipelineGraphFilters
               visibleTypes={visibleTypes}
               onToggleType={handleToggleType}
@@ -172,4 +153,4 @@ export const PipelineGraph = memo(({
       )}
     </div>
   );
-});
+}

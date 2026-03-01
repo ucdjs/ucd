@@ -1,22 +1,37 @@
 export {
+  clearRemoteSourceCache,
+  getRemoteSourceCacheStatus,
+  listCachedSources,
+  type RemoteCacheStatus,
+  writeCacheMarker,
+} from "./cache";
+
+export {
+  CacheMissError,
   findPipelineFiles,
+  type FindPipelineFilesOptions,
   loadPipelineFile,
   loadPipelinesFromPaths,
-} from "./loader";
-export type {
-  FindPipelineFilesOptions,
-  FindPipelineSource,
-  LoadPipelinesOptions,
+  type LoadPipelinesOptions,
 } from "./loader";
 
 export type {
-  GitHubSource,
-  GitLabSource,
-  LoadedPipelineFile,
   LoadPipelinesResult,
-  LocalSource,
-  PipelineLoadError,
   PipelineSource,
-  RemoteFileList,
-  RemoteRequestOptions,
+  PipelineSourceWithoutId,
+  RemotePipelineSource,
 } from "./types";
+
+export {
+  checkForRemoteUpdates,
+  downloadRemoteSourceArchive,
+  extractArchiveToCacheDir,
+  materializeArchiveToDir,
+  type MaterializeArchiveToDirOptions,
+  parseRemoteSourceUrl,
+  type RemoteSourceResult,
+  resolveRemoteSourceRef,
+  syncRemoteSource,
+  type SyncResult,
+  type UpdateCheckResult,
+} from "./utils";

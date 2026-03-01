@@ -233,7 +233,8 @@ export async function runCommand(cmd: CLICommand, flags: Arguments): Promise<voi
     case "pipelines": {
       const { runPipelinesRoot } = await import("./cmd/pipelines/root");
       const subcommand = flags._[1]?.toString() ?? "";
-      await runPipelinesRoot(subcommand, {
+      const args = flags._.slice(2).map(String);
+      await runPipelinesRoot(subcommand, args, {
         flags: flags as CLIPipelinesCmdOptions["flags"],
       });
       break;
@@ -313,12 +314,4 @@ export async function runCLI(args: string[]): Promise<void> {
     // Reset JSON mode after command completes
     setJsonMode(false);
   }
-}
-
-export function parseRepoString(repoString: string): { owner: string; repo: string } {
-  const parts = repoString.split("/");
-  if (parts.length !== 2) {
-    throw new Error(`Invalid repository format: ${repoString}. Expected: owner/repo`);
-  }
-  return { owner: parts[0]!, repo: parts[1]! };
 }

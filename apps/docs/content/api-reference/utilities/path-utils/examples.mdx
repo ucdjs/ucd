@@ -54,7 +54,7 @@ async function serveStaticFile(requestPath: string): Promise<Buffer> {
 
     // Read and serve the file
     return await readFile(filePath);
-  } catch (error) {
+  } catch (err) {
     if (error instanceof PathTraversalError) {
       throw new Error('403 Forbidden: Access denied');
     }
@@ -116,7 +116,7 @@ async function handleFileUpload(
       success: true,
       path: safePath,
     };
-  } catch (error) {
+  } catch (err) {
     if (error instanceof PathTraversalError) {
       return {
         success: false,
@@ -279,7 +279,7 @@ resolveSafePath(
 // Different drive letter blocked
 try {
   resolveSafePath(projectRoot, 'D:\\external\\file.txt');
-} catch (error) {
+} catch (err) {
   if (error instanceof WindowsDriveMismatchError) {
     console.error(
       `Cannot access drive ${error.accessedDrive}, ` +
@@ -320,7 +320,7 @@ resolveSafePath(boundary, 'folder%2Ffile.txt');
 // Encoded traversal attempts (blocked)
 try {
   resolveSafePath(boundary, '%2e%2e%2f%2e%2e%2fetc%2fpasswd');
-} catch (error) {
+} catch (err) {
   console.error('Encoded traversal blocked');
   // ❌ PathTraversalError
 }
@@ -328,7 +328,7 @@ try {
 // Double encoding (blocked)
 try {
   resolveSafePath(boundary, '%252e%252e%252f%252e%252e');
-} catch (error) {
+} catch (err) {
   console.error('Double-encoded traversal blocked');
   // ❌ PathTraversalError
 }
@@ -337,7 +337,7 @@ try {
 const malicious = '%25'.repeat(20) + '2e2e2f';
 try {
   decodePathSafely(malicious);
-} catch (error) {
+} catch (err) {
   if (error instanceof MaximumDecodingIterationsExceededError) {
     console.error('Too many encoding layers');
   }
@@ -379,7 +379,7 @@ async function handleApiRequest(
       status: 200,
       data: JSON.parse(data),
     };
-  } catch (error) {
+  } catch (err) {
     // Handle path-utils errors
     if (error instanceof PathUtilsBaseError) {
       return {

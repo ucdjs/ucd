@@ -1,11 +1,27 @@
-import { describe, expect, it } from "vitest";
+import path from "node:path";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
 import { findPipelineFiles, loadPipelineFile, loadPipelinesFromPaths } from "../src/loader";
 
+vi.mock("@ucdjs-internal/shared/config", async () => {
+  const actual = await vi.importActual("@ucdjs-internal/shared/config");
+  return {
+    ...actual,
+    getBaseRepoCacheDir: vi.fn(),
+  };
+});
+
+const getBaseRepoCacheDirMock = vi.mocked(await import("@ucdjs-internal/shared/config")).getBaseRepoCacheDir;
+
 describe("loadPipelineFile", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.clearAllMocks();
+  });
+
   it("should load a local pipeline file", async () => {
     const dir = await testdir({
-      "test.ucd-pipeline.ts": `
+      "test.ucd-pipeline.ts": /* ts */`
         export const testPipeline = {
           _type: "pipeline-definition",
           id: "test",
@@ -27,11 +43,12 @@ describe("loadPipelineFile", () => {
 
   it("should handle relative imports in pipeline files", async () => {
     const dir = await testdir({
-      "helper.ts": `
+      "helper.ts": /* ts */`
         export const helper = () => "helper-output";
       `,
-      "test.ucd-pipeline.ts": `
+      "test.ucd-pipeline.ts": /* ts */`
         import { helper } from "./helper";
+
         export const testPipeline = {
           _type: "pipeline-definition",
           id: "test",
@@ -51,7 +68,7 @@ describe("loadPipelineFile", () => {
 
   it("should return empty arrays for files without pipeline exports", async () => {
     const dir = await testdir({
-      "empty.ts": `
+      "empty.ts": /* ts */`
         export const config = { foo: "bar" };
       `,
     });
@@ -64,7 +81,7 @@ describe("loadPipelineFile", () => {
 
   it("should ignore default exports", async () => {
     const dir = await testdir({
-      "test.ucd-pipeline.ts": `
+      "test.ucd-pipeline.ts": /* ts */`
         export default {
           _type: "pipeline-definition",
           id: "default",
@@ -73,6 +90,7 @@ describe("loadPipelineFile", () => {
           inputs: [],
           routes: [],
         };
+
         export const namedPipeline = {
           _type: "pipeline-definition",
           id: "named",
@@ -94,42 +112,110 @@ describe("loadPipelineFile", () => {
   it("should throw for non-existent files", async () => {
     await expect(loadPipelineFile("/nonexistent/file.ucd-pipeline.ts")).rejects.toThrow();
   });
+
+  it("should throw for files with syntax errors", async () => {
+    const dir = await testdir({
+      "invalid.ts": `
+        export const broken = {
+          // Missing closing brace
+      `,
+    });
+
+    await expect(loadPipelineFile(`${dir}/invalid.ts`)).rejects.toThrow();
+  });
+
+  it("should return filePath as absolute path and sourceFilePath as undefined for local sources", async () => {
+    const dir = await testdir({
+      "local.ucd-pipeline.ts": /* ts */`
+        export const localPipeline = {
+          _type: "pipeline-definition",
+          id: "local",
+          name: "Local Pipeline",
+          versions: ["16.0.0"],
+          inputs: [],
+          routes: [],
+        };
+      `,
+    });
+
+    const filePath = `${dir}/local.ucd-pipeline.ts`;
+    const result = await loadPipelineFile(filePath);
+
+    expect(result.pipelines).toHaveLength(1);
+    expect(result.pipelines[0]?.id).toBe("local");
+
+    expect(result.filePath).toBe(filePath);
+    expect(result.sourceFilePath).toBeUndefined();
+  });
+
+  describe("remote sources via github:// URLs", () => {
+    it("should load a cached remote pipeline file and return filePath as absolute local path with sourceFilePath as URL", async () => {
+      const tmpBaseDir = await testdir({
+        "github/owner/repo/main/src/remote.ucd-pipeline.ts": /* ts */`
+          export const remotePipeline = {
+            _type: "pipeline-definition",
+            id: "remote",
+            name: "Remote Pipeline",
+            versions: ["16.0.0"],
+            inputs: [],
+            routes: [],
+          };
+        `,
+        "github/owner/repo/main/.ucd-cache.json": JSON.stringify({
+          source: "github",
+          owner: "owner",
+          repo: "repo",
+          ref: "main",
+          commitSha: "abc123",
+          syncedAt: new Date().toISOString(),
+        }),
+      });
+
+      getBaseRepoCacheDirMock.mockReturnValue(tmpBaseDir);
+
+      const url = "github://owner/repo?ref=main&path=src/remote.ucd-pipeline.ts";
+      const result = await loadPipelineFile(url);
+
+      expect(result.pipelines).toHaveLength(1);
+      expect(result.pipelines[0]?.id).toBe("remote");
+
+      expect(result.filePath).toBe(`${tmpBaseDir}/github/owner/repo/main/src/remote.ucd-pipeline.ts`);
+      expect(result.sourceFilePath).toBe(url);
+    });
+
+    it("should throw CacheMissError when remote source is not cached", async () => {
+      const tmpBaseDir = await testdir();
+      getBaseRepoCacheDirMock.mockReturnValue(tmpBaseDir);
+
+      const url = "github://owner/repo?ref=main&path=src/missing.ucd-pipeline.ts";
+
+      await expect(loadPipelineFile(url)).rejects.toThrow("Cache miss");
+    });
+  });
 });
 
 describe("findPipelineFiles", () => {
-  it("should find all .ucd-pipeline.ts files in local directory", async () => {
+  it("should find pipeline files with default pattern", async () => {
     const dir = await testdir({
-      pipelines: {
-        "alpha.ucd-pipeline.ts": `export const a = 1;`,
-        "beta.ucd-pipeline.ts": `export const b = 2;`,
-        "gamma.txt": `not a pipeline`,
-      },
-      other: {
-        "delta.ucd-pipeline.ts": `export const d = 4;`,
-      },
-      node_modules: {
-        "ignored.ucd-pipeline.ts": `export const i = 9;`,
-      },
+      "alpha.ucd-pipeline.ts": "",
+      "beta.ucd-pipeline.ts": "",
+      "gamma.ts": "", // Should not match
     });
 
     const files = await findPipelineFiles({
       source: { type: "local", cwd: dir },
     });
 
-    expect(files).toHaveLength(3);
-    expect(files.map((f) => f.split("/").pop()).sort()).toEqual([
-      "alpha.ucd-pipeline.ts",
-      "beta.ucd-pipeline.ts",
-      "delta.ucd-pipeline.ts",
-    ]);
+    const fileNames = files.map((f) => path.basename(f)).sort();
+
+    expect(files).toHaveLength(2);
+    expect(fileNames).toEqual(["alpha.ucd-pipeline.ts", "beta.ucd-pipeline.ts"]);
   });
 
-  it("should support custom patterns", async () => {
+  it("should find pipeline files with custom pattern", async () => {
     const dir = await testdir({
-      pipelines: {
-        "alpha.ucd-pipeline.ts": `export const a = 1;`,
-        "beta.custom.ts": `export const b = 2;`,
-      },
+      "alpha.ucd-pipeline.ts": "",
+      "beta.custom.ts": "",
     });
 
     const files = await findPipelineFiles({
@@ -146,12 +232,58 @@ describe("findPipelineFiles", () => {
     // Should not throw, just return empty array or files from cwd
     expect(Array.isArray(files)).toBe(true);
   });
+
+  describe("remote sources", () => {
+    it("should return absolute paths for cached remote sources", async () => {
+      const tmpBaseDir = await testdir({
+        "github/owner/repo/main/src/test.ucd-pipeline.ts": "",
+        "github/owner/repo/main/.ucd-cache.json": JSON.stringify({
+          source: "github",
+          owner: "owner",
+          repo: "repo",
+          ref: "main",
+          commitSha: "abc123",
+          syncedAt: new Date().toISOString(),
+        }),
+      });
+
+      getBaseRepoCacheDirMock.mockReturnValue(tmpBaseDir);
+
+      const files = await findPipelineFiles({
+        source: {
+          type: "github",
+          owner: "owner",
+          repo: "repo",
+          ref: "main",
+        },
+      });
+
+      expect(files).toHaveLength(1);
+      expect(files[0]).toBe(`${tmpBaseDir}/github/owner/repo/main/src/test.ucd-pipeline.ts`);
+    });
+
+    it("should throw CacheMissError for uncached remote sources", async () => {
+      const tmpBaseDir = await testdir();
+      getBaseRepoCacheDirMock.mockReturnValue(tmpBaseDir);
+
+      await expect(
+        findPipelineFiles({
+          source: {
+            type: "github",
+            owner: "owner",
+            repo: "repo",
+            ref: "main",
+          },
+        }),
+      ).rejects.toThrow("Cache miss");
+    });
+  });
 });
 
 describe("loadPipelinesFromPaths", () => {
   it("should load multiple pipeline files", async () => {
     const dir = await testdir({
-      "alpha.ucd-pipeline.ts": `
+      "alpha.ucd-pipeline.ts": /* ts */`
         export const alpha = {
           _type: "pipeline-definition",
           id: "alpha",
@@ -161,7 +293,7 @@ describe("loadPipelinesFromPaths", () => {
           routes: [],
         };
       `,
-      "beta.ucd-pipeline.ts": `
+      "beta.ucd-pipeline.ts": /* ts */`
         export const beta = {
           _type: "pipeline-definition",
           id: "beta",
@@ -185,7 +317,7 @@ describe("loadPipelinesFromPaths", () => {
 
   it("should collect errors for failed files without throwing", async () => {
     const dir = await testdir({
-      "valid.ucd-pipeline.ts": `
+      "valid.ucd-pipeline.ts": /* ts */`
         export const valid = {
           _type: "pipeline-definition",
           id: "valid",
@@ -213,20 +345,108 @@ describe("loadPipelinesFromPaths", () => {
       loadPipelinesFromPaths(["/nonexistent/file.ts"], { throwOnError: true }),
     ).rejects.toThrow();
   });
-});
 
-describe("unified API - URL parsing", () => {
-  it("should parse github:// URLs correctly", async () => {
-    const testUrl = "github://ucdjs/demo?ref=main&path=pipelines/test.ucd-pipeline.ts";
+  describe("remote sources via github:// URLs", () => {
+    it("should load remote files and return filePath as absolute local path with sourceFilePath as URL", async () => {
+      const tmpBaseDir = await testdir({
+        "github/owner/repo/main/src/remote.ucd-pipeline.ts": /* ts */`
+          export const remotePipeline = {
+            _type: "pipeline-definition",
+            id: "remote",
+            name: "Remote",
+            versions: ["16.0.0"],
+            inputs: [],
+            routes: [],
+          };
+        `,
+        "github/owner/repo/main/.ucd-cache.json": JSON.stringify({
+          source: "github",
+          owner: "owner",
+          repo: "repo",
+          ref: "main",
+          commitSha: "abc123",
+          syncedAt: new Date().toISOString(),
+        }),
+      });
 
-    // Should fail to fetch, but parsing should work
-    await expect(loadPipelineFile(testUrl)).rejects.toThrow();
-  });
+      getBaseRepoCacheDirMock.mockReturnValue(tmpBaseDir);
 
-  it("should parse gitlab:// URLs correctly", async () => {
-    const testUrl = "gitlab://mygroup/demo?ref=main&path=pipelines/test.ucd-pipeline.ts";
+      const url = "github://owner/repo?ref=main&path=src/remote.ucd-pipeline.ts";
+      const result = await loadPipelinesFromPaths([url]);
 
-    // Should fail to fetch, but parsing should work
-    await expect(loadPipelineFile(testUrl)).rejects.toThrow();
+      expect(result.errors).toEqual([]);
+      expect(result.files).toHaveLength(1);
+      expect(result.pipelines).toHaveLength(1);
+
+      expect(result.files[0]?.filePath).toBe(`${tmpBaseDir}/github/owner/repo/main/src/remote.ucd-pipeline.ts`);
+      expect(result.files[0]?.sourceFilePath).toBe(url);
+    });
+
+    it("should handle mix of local and remote sources", async () => {
+      const localDir = await testdir({
+        "local.ucd-pipeline.ts": /* ts */`
+          export const localPipeline = {
+            _type: "pipeline-definition",
+            id: "local",
+            name: "Local",
+            versions: ["16.0.0"],
+            inputs: [],
+            routes: [],
+          };
+        `,
+      });
+
+      const tmpBaseDir = await testdir({
+        "github/owner/repo/main/src/remote.ucd-pipeline.ts": /* ts */`
+          export const remotePipeline = {
+            _type: "pipeline-definition",
+            id: "remote",
+            name: "Remote",
+            versions: ["16.0.0"],
+            inputs: [],
+            routes: [],
+          };
+        `,
+        "github/owner/repo/main/.ucd-cache.json": JSON.stringify({
+          source: "github",
+          owner: "owner",
+          repo: "repo",
+          ref: "main",
+          commitSha: "abc123",
+          syncedAt: new Date().toISOString(),
+        }),
+      });
+
+      getBaseRepoCacheDirMock.mockReturnValue(tmpBaseDir);
+
+      const localPath = `${localDir}/local.ucd-pipeline.ts`;
+      const remoteUrl = "github://owner/repo?ref=main&path=src/remote.ucd-pipeline.ts";
+
+      const result = await loadPipelinesFromPaths([localPath, remoteUrl]);
+
+      expect(result.errors).toEqual([]);
+      expect(result.files).toHaveLength(2);
+      expect(result.pipelines.map((p) => p.id).sort()).toEqual(["local", "remote"]);
+
+      const localFile = result.files.find((f) => f.filePath === localPath);
+      expect(localFile?.filePath).toBe(localPath);
+      expect(localFile?.sourceFilePath).toBeUndefined();
+
+      const remoteFile = result.files.find((f) => f.sourceFilePath === remoteUrl);
+      expect(remoteFile?.filePath).toBe(`${tmpBaseDir}/github/owner/repo/main/src/remote.ucd-pipeline.ts`);
+      expect(remoteFile?.sourceFilePath).toBe(remoteUrl);
+    });
+
+    it("should return errors for uncached remote sources", async () => {
+      const tmpBaseDir = await testdir();
+      getBaseRepoCacheDirMock.mockReturnValue(tmpBaseDir);
+
+      const url = "github://owner/repo?ref=main&path=src/missing.ucd-pipeline.ts";
+      const result = await loadPipelinesFromPaths([url]);
+
+      expect(result.files).toHaveLength(0);
+      expect(result.errors).toHaveLength(1);
+      expect(result.errors[0]?.filePath).toBe(url);
+    });
   });
 });

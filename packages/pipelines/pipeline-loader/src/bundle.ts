@@ -1,14 +1,21 @@
 import { build } from "rolldown";
 
-export async function bundleModule(entryPath: string): Promise<string> {
+export interface BundleResult {
+  code: string;
+  dataUrl: string;
+}
+
+export async function bundle(options: {
+  entryPath: string;
+  cwd: string;
+}): Promise<BundleResult> {
   const result = await build({
-    input: entryPath,
+    input: options.entryPath,
     write: false,
     output: {
       format: "esm",
     },
-    // Rolldown handles TypeScript natively!
-    // It also resolves extensionless imports like ./helper -> ./helper.ts
+    cwd: options.cwd,
   });
 
   const outputs = Array.isArray(result) ? result : [result];
@@ -19,11 +26,9 @@ export async function bundleModule(entryPath: string): Promise<string> {
     throw new Error("Failed to bundle module");
   }
 
-  return chunk.code;
-}
-
-export function createDataUrl(code: string): string {
-  // eslint-disable-next-line node/prefer-global/buffer
-  const encoded = Buffer.from(code, "utf-8").toString("base64");
-  return `data:text/javascript;base64,${encoded}`;
+  return {
+    code: chunk.code,
+    // eslint-disable-next-line node/prefer-global/buffer
+    dataUrl: `data:text/javascript;base64,${Buffer.from(chunk.code, "utf-8").toString("base64")}`,
+  };
 }

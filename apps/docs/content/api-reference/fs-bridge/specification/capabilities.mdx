@@ -84,7 +84,7 @@ if (hasCapability(bridge, "write")) {
 try {
   assertCapability(bridge, "write");
   await bridge.write("file.txt", "content");
-} catch (error) {
+} catch (err) {
   if (error instanceof BridgeUnsupportedOperation) {
     console.log(`Bridge doesn't support ${error.capability}`);
   }

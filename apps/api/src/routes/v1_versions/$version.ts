@@ -257,8 +257,8 @@ export function registerVersionFileTreeRoute(router: OpenAPIHono<HonoEnv>) {
       // But we can't use the `number | undefined` type in the API schema.
       // So we need to return lastModified as `number | null` always.
       return c.json(result as UnicodeFileTree, 200);
-    } catch (error) {
-      console.error("Error processing directory:", error);
+    } catch (err) {
+      console.error("Error processing directory:", err);
       return internalServerError(c, {
         message: "Failed to fetch file mappings",
       });
