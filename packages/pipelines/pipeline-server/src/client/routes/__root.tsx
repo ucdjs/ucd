@@ -120,6 +120,7 @@ function RootLayout() {
           onToggleErrorPanel={() => setIsErrorPanelOpen(!isErrorPanelOpen)}
           isErrorPanelOpen={isErrorPanelOpen}
           workspaceId={config.workspaceId}
+          version={config.version}
         />
         <SidebarInset className="flex flex-col min-w-0 overflow-hidden">
           <Outlet />

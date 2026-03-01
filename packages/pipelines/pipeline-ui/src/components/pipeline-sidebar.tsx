@@ -2,6 +2,7 @@ import type { LoadError, PipelineFileInfo } from "../types";
 import { cn } from "#lib/utils";
 import { Link } from "@tanstack/react-router";
 import { ThemeToggle } from "@ucdjs-internal/shared-ui/components";
+import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import {
   Sidebar,
   SidebarContent,
@@ -16,7 +17,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@ucdjs-internal/shared-ui/ui/sidebar";
-import { AlertTriangle, BookOpen, ExternalLink, Folder, FolderOpen } from "lucide-react";
+import { AlertTriangle, BookOpen, ExternalLink, Folder, FolderOpen, Hash, Tag } from "lucide-react";
 import { useMemo, useState } from "react";
 import { SourceSwitcher } from "./source-switcher";
 
@@ -27,6 +28,7 @@ export interface SourceInfo {
 
 export interface PipelineSidebarProps {
   workspaceId: string;
+  version?: string;
   files: PipelineFileInfo[];
   errors: LoadError[];
   sources: SourceInfo[];
@@ -43,6 +45,7 @@ export function PipelineSidebar({
   onToggleErrorPanel,
   isErrorPanelOpen,
   workspaceId,
+  version,
 }: PipelineSidebarProps) {
   const [expandedFiles, setExpandedFiles] = useState<Set<string>>(() => new Set());
 
@@ -89,16 +92,35 @@ export function PipelineSidebar({
   return (
     <Sidebar>
       <SidebarHeader className="p-4">
-        <div className="flex items-center justify-between gap-3">
-          <div className="min-w-0">
-            <h1 className="text-sm font-semibold text-sidebar-foreground tracking-tight truncate">
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center justify-between">
+            <h1 className="text-sm font-semibold text-sidebar-foreground tracking-tight">
               Pipelines
             </h1>
-            <p className="text-[10px] text-muted-foreground truncate">
-              {workspaceId ? `Workspace ${workspaceId.slice(0, 10)}...` : "Pipeline files"}
-            </p>
+            <ThemeToggle />
           </div>
-          <ThemeToggle />
+          <div className="flex flex-wrap gap-1.5 overflow-hidden">
+            {workspaceId && (
+              <Badge
+                variant="outline"
+                className="text-[10px] h-5 px-1.5 gap-1 font-mono bg-primary/5 border-primary/20 max-w-full"
+                title={workspaceId}
+              >
+                <Hash className="h-3 w-3 text-primary shrink-0" />
+                <span className="truncate">{workspaceId}</span>
+              </Badge>
+            )}
+            {version && (
+              <Badge
+                variant="outline"
+                className="text-[10px] h-5 px-1.5 gap-1 font-mono bg-secondary/5 border-secondary/20 max-w-full"
+                title={version}
+              >
+                <Tag className="h-3 w-3 text-secondary-foreground shrink-0" />
+                <span className="truncate">{version}</span>
+              </Badge>
+            )}
+          </div>
         </div>
       </SidebarHeader>
 

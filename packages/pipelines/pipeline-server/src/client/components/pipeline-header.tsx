@@ -1,6 +1,7 @@
 import { Link, useLoaderData, useNavigate, useParams } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
+import { SidebarTrigger } from "@ucdjs-internal/shared-ui/ui/sidebar";
 import { useExecute, usePipelineVersions } from "@ucdjs/pipelines-ui";
 import { CheckCircle, Loader2, Play } from "lucide-react";
 import { useCallback } from "react";
@@ -33,6 +34,7 @@ export function PipelineHeader() {
       <div className="flex flex-wrap items-start gap-4 justify-between">
         <div className="min-w-60 space-y-1.5">
           <div className="flex flex-wrap items-center gap-2 min-h-6">
+            <SidebarTrigger className="shrink-0" />
             <h1 className="text-base font-semibold text-foreground tracking-tight">
               {pipeline?.name || pipeline?.id || "The cake is a lie"}
             </h1>
