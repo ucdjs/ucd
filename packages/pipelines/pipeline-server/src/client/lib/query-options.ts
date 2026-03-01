@@ -159,3 +159,42 @@ export function pipelineQueryOptions(sourceId: string, fileId: string, pipelineI
     },
   });
 }
+
+const ExecutionSchema = z.object({
+  id: z.string(),
+  pipelineId: z.string(),
+  status: z.enum(["pending", "running", "completed", "failed", "cancelled"]),
+  startedAt: z.string(),
+  completedAt: z.string().nullable(),
+  versions: z.array(z.string()).nullable(),
+  summary: z.object({
+    totalRoutes: z.number().optional(),
+    cached: z.number().optional(),
+  }).nullable(),
+  hasGraph: z.boolean().optional(),
+  error: z.string().nullable(),
+});
+
+const ExecutionsResponseSchema = z.object({
+  executions: z.array(ExecutionSchema),
+  pagination: z.object({
+    total: z.number(),
+    limit: z.number(),
+    offset: z.number(),
+    hasMore: z.boolean(),
+  }),
+});
+
+export function executionsQueryOptions(sourceId: string, fileId: string, pipelineId: string, limit: number = 10) {
+  return queryOptions({
+    queryKey: ["sources", sourceId, "files", fileId, "pipelines", pipelineId, "executions", { limit }],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      params.set("limit", String(limit));
+      const res = await fetch(`/api/sources/${sourceId}/${fileId}/${pipelineId}/executions?${params.toString()}`);
+      if (!res.ok) throw new Error("Failed to fetch executions");
+      const data = await res.json();
+      return ExecutionsResponseSchema.parse(data);
+    },
+  });
+}
