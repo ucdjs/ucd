@@ -7,7 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@ucdjs-internal/shared-ui/ui/card";
-import { Database, Github, Gitlab, ArrowRight, ArrowLeft, Check, Folder } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, Database, Folder, Github, Gitlab } from "lucide-react";
 import { useState } from "react";
 
 interface SetupWizardProps {
@@ -55,7 +55,13 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
           ))}
         </div>
         <p className="text-center text-sm text-muted-foreground">
-          Step {step} of {totalSteps}
+          Step
+          {" "}
+          {step}
+          {" "}
+          of
+          {" "}
+          {totalSteps}
         </p>
       </div>
 
@@ -304,7 +310,9 @@ function VerificationStep({ onNext }: { onNext: () => void }) {
 
         <div className="bg-muted p-4 rounded-lg mt-4">
           <p className="text-sm text-muted-foreground">
-            <strong>Tip:</strong> If you don&apos;t see your sources after restarting, check the
+            <strong>Tip:</strong>
+            {" "}
+            If you don&apos;t see your sources after restarting, check the
             server logs for any configuration errors.
           </p>
         </div>

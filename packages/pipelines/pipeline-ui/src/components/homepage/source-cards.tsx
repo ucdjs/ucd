@@ -1,6 +1,6 @@
-import { FolderGit, Github, Gitlab, AlertCircle } from "lucide-react";
-import { Card, CardContent } from "@ucdjs-internal/shared-ui/ui/card";
 import { cn } from "@ucdjs-internal/shared-ui/lib/utils";
+import { Card, CardContent } from "@ucdjs-internal/shared-ui/ui/card";
+import { AlertCircle, FolderGit, Github, Gitlab } from "lucide-react";
 
 interface SourceInfo {
   id: string;
@@ -55,7 +55,7 @@ export function SourceCards({ sources, onSourceClick }: SourceCardsProps) {
                   "flex items-start gap-3 p-3 rounded-lg border text-left",
                   "transition-all duration-200",
                   "hover:border-primary hover:shadow-sm",
-                  "focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  "focus:outline-none focus:ring-2 focus:ring-primary/20",
                 )}
               >
                 {/* Icon */}
@@ -76,7 +76,12 @@ export function SourceCards({ sources, onSourceClick }: SourceCardsProps) {
                       {config.label}
                     </span>
                     <span className="text-xs text-muted-foreground">
-                      {source.fileCount ?? 0} files · {source.pipelineCount ?? 0} pipelines
+                      {source.fileCount ?? 0}
+                      {" "}
+                      files ·
+                      {source.pipelineCount ?? 0}
+                      {" "}
+                      pipelines
                     </span>
                   </div>
                 </div>
