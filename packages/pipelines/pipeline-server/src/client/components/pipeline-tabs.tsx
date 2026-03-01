@@ -12,16 +12,16 @@ const PIPELINE_TABS = [
 ] as const;
 
 export function PipelineTabs() {
-  const { file, id } = useParams({ from: "/pipelines/$file/$id" });
+  const { sourceId, fileId, pipelineId } = useParams({ from: "/$sourceId/$fileId/$pipelineId" });
   const routerState = useRouterState();
   const pathname = routerState.location.pathname;
   const [hasGraphs, setHasGraphs] = useState(false);
 
   useEffect(() => {
-    if (!file || !id) return;
+    if (!fileId || !pipelineId) return;
 
     let cancelled = false;
-    fetchExecutions(file, id, { limit: 50 })
+    fetchExecutions(fileId, pipelineId, { limit: 50 })
       .then((data) => {
         if (cancelled) return;
         setHasGraphs(data.executions.some((execution) => execution.hasGraph));
@@ -34,7 +34,7 @@ export function PipelineTabs() {
     return () => {
       cancelled = true;
     };
-  }, [file, id]);
+  }, [fileId, pipelineId]);
 
   const tabs = useMemo(
     () => PIPELINE_TABS.filter((tab) => (tab.id === "graphs" ? hasGraphs : true)),
@@ -43,8 +43,8 @@ export function PipelineTabs() {
 
   const getIsActive = (tabId: string) => {
     if (tabId === "overview") {
-      if (!file || !id) return false;
-      return pathname === `/pipelines/${file}/${id}` || pathname === `/pipelines/${file}/${id}/`;
+      if (!fileId || !pipelineId) return false;
+      return pathname === `/pipelines/${fileId}/${pipelineId}` || pathname === `/pipelines/${fileId}/${pipelineId}/`;
     }
 
     if (tabId === "graphs") {
@@ -66,8 +66,8 @@ export function PipelineTabs() {
         return (
           <Link
             key={tab.id}
-            to={tab.to === "/graphs" ? "/pipelines/$file/$id/graphs" : `/pipelines/$file/$id${tab.to}`}
-            params={{ file, id }}
+            to={tab.to === "/graphs" ? "/$sourceId/$fileId/$pipelineId/graphs" : `/$sourceId/$fileId/$pipelineId${tab.to}`}
+            params={{ sourceId, fileId, pipelineId }}
             role="tab"
             aria-selected={isActive}
             aria-controls={`tabpanel-${tab.id}`}

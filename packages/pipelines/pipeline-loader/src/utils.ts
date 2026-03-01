@@ -1,9 +1,11 @@
+import type { PipelineCacheEntry } from "./cache";
 import type { RemotePipelineSource, SourceRepositoryRef, SourceRepositoryRefWithCommitSha } from "./types";
 import { mkdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { parseTarGzip } from "nanotar";
 import { downloadGitHubArchive, resolveGitHubRef } from "./adapters/github";
 import { downloadGitLabArchive, resolveGitLabRef } from "./adapters/gitlab";
+import { getRemoteSourceCacheStatus } from "./cache";
 
 export interface RemoteSourceResult {
   type: "github" | "gitlab";
@@ -145,5 +147,135 @@ export async function materializeArchiveToDir(
   } catch (err) {
     await rm(targetDir, { recursive: true, force: true });
     throw err;
+  }
+}
+
+export interface UpdateCheckResult {
+  hasUpdate: boolean;
+  currentSha: string | null;
+  remoteSha: string;
+  error?: Error;
+}
+
+/**
+ * Check if updates are available for a remote source.
+ * This function makes an API call to resolve the ref to a commit SHA.
+ * Returns the current cached SHA and the remote SHA.
+ */
+export async function checkForRemoteUpdates(input: {
+  source: RemotePipelineSource["type"];
+  owner: string;
+  repo: string;
+  ref?: string;
+}): Promise<UpdateCheckResult> {
+  const { source, owner, repo, ref = "HEAD" } = input;
+
+  // Get current cached status (no API call)
+  const status = await getRemoteSourceCacheStatus({ source, owner, repo, ref });
+  const currentSha = status.cached ? status.commitSha : null;
+
+  try {
+    // Resolve ref to commit SHA via API
+    const remoteSha = await resolveRemoteSourceRef(source, { owner, repo, ref });
+
+    return {
+      hasUpdate: currentSha !== remoteSha,
+      currentSha,
+      remoteSha,
+    };
+  } catch (err) {
+    return {
+      hasUpdate: false,
+      currentSha,
+      remoteSha: "",
+      error: err instanceof Error ? err : new Error(String(err)),
+    };
+  }
+}
+
+export interface SyncResult {
+  success: boolean;
+  updated: boolean;
+  previousSha: string | null;
+  newSha: string;
+  cacheDir: string;
+  error?: Error;
+}
+
+/**
+ * Sync a remote source to local cache.
+ * Downloads the source if not cached or if updates are available.
+ * This function makes API calls to resolve refs and download archives.
+ */
+export async function syncRemoteSource(input: {
+  source: RemotePipelineSource["type"];
+  owner: string;
+  repo: string;
+  ref?: string;
+  force?: boolean;
+}): Promise<SyncResult> {
+  const { source, owner, repo, ref = "HEAD", force = false } = input;
+
+  // Get current cache status
+  const status = await getRemoteSourceCacheStatus({ source, owner, repo, ref });
+  const previousSha = status.cached ? status.commitSha : null;
+
+  try {
+    // Resolve ref to commit SHA
+    const commitSha = await resolveRemoteSourceRef(source, { owner, repo, ref });
+
+    // If already cached and up to date, and not forcing, return early
+    if (!force && status.cached && status.commitSha === commitSha) {
+      return {
+        success: true,
+        updated: false,
+        previousSha,
+        newSha: commitSha,
+        cacheDir: status.cacheDir,
+      };
+    }
+
+    // Download and extract the archive
+    const archiveBuffer = await downloadRemoteSourceArchive(source, {
+      owner,
+      repo,
+      ref,
+      commitSha,
+    });
+
+    // Clear old cache if exists
+    await rm(status.cacheDir, { recursive: true, force: true });
+
+    // Extract to cache directory
+    await materializeArchiveToDir({
+      archiveBuffer,
+      targetDir: status.cacheDir,
+    });
+
+    await writeFile(status.markerPath, JSON.stringify({
+      syncedAt: new Date().toISOString(),
+      source,
+      owner,
+      repo,
+      ref,
+      commitSha,
+    } satisfies PipelineCacheEntry, null, 2), "utf8");
+
+    return {
+      success: true,
+      updated: true,
+      previousSha,
+      newSha: commitSha,
+      cacheDir: status.cacheDir,
+    };
+  } catch (err) {
+    return {
+      success: false,
+      updated: false,
+      previousSha,
+      newSha: "",
+      cacheDir: status.cacheDir,
+      error: err instanceof Error ? err : new Error(String(err)),
+    };
   }
 }

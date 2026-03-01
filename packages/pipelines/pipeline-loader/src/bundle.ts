@@ -5,13 +5,17 @@ export interface BundleResult {
   dataUrl: string;
 }
 
-export async function bundle(entryPath: string): Promise<BundleResult> {
+export async function bundle(options: {
+  entryPath: string;
+  cwd: string;
+}): Promise<BundleResult> {
   const result = await build({
-    input: entryPath,
+    input: options.entryPath,
     write: false,
     output: {
       format: "esm",
     },
+    cwd: options.cwd,
   });
 
   const outputs = Array.isArray(result) ? result : [result];

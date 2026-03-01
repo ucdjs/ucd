@@ -21,7 +21,7 @@ export function ExecutionLogPayloadPanel({ log }: ExecutionLogPayloadPanelProps)
           </Badge>
         )}
       </div>
-      <pre className="text-xs font-mono whitespace-pre-wrap break-words">
+      <pre className="text-xs font-mono whitespace-pre-wrap wrap-break-word">
         <code>{jsonString}</code>
       </pre>
     </div>

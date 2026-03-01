@@ -6,27 +6,27 @@ import { CheckCircle, Loader2, Play } from "lucide-react";
 import { useCallback } from "react";
 
 export function PipelineHeader() {
-  const { file, id } = useParams({ from: "/pipelines/$file/$id" });
+  const { sourceId, fileId, pipelineId } = useParams({ from: "/$sourceId/$fileId/$pipelineId" });
   const navigate = useNavigate();
-  const data = useLoaderData({ from: "/pipelines/$file/$id" }) as { pipeline?: { versions: string[]; name?: string; id?: string; routeCount?: number; sourceCount?: number; description?: string } };
+  const data = useLoaderData({ from: "/$sourceId/$fileId/$pipelineId" });
   const pipeline = data.pipeline;
   const { execute, executing, executionId } = useExecute();
   const allVersions = pipeline?.versions ?? [];
-  const { selectedVersions } = usePipelineVersions(id, allVersions, `${file}:${id}`);
+  const { selectedVersions } = usePipelineVersions(pipelineId, allVersions, `${fileId}:${pipelineId}`);
 
   const canExecute = selectedVersions.size > 0;
 
   const handleExecute = useCallback(async () => {
     if (!canExecute) return;
-    const result = await execute(file, id, Array.from(selectedVersions));
+    const result = await execute(fileId, pipelineId, Array.from(selectedVersions));
     // Navigate to execution detail after successful execution
     if (result.success && result.executionId) {
       navigate({
-        to: "/pipelines/$file/$id/executions/$executionId",
-        params: { file, id, executionId: result.executionId },
+        to: "/$sourceId/$fileId/$pipelineId/executions/$executionId",
+        params: { sourceId, fileId, pipelineId, executionId: result.executionId },
       });
     }
-  }, [execute, file, id, selectedVersions, canExecute, navigate]);
+  }, [execute, sourceId, fileId, pipelineId, selectedVersions, canExecute, navigate]);
 
   return (
     <header className="px-6 py-4">
@@ -64,8 +64,8 @@ export function PipelineHeader() {
               size="sm"
               render={(props) => (
                 <Link
-                  to="/pipelines/$file/$id/executions/$executionId"
-                  params={{ file, id, executionId }}
+                  to="/$sourceId/$fileId/$pipelineId/executions/$executionId"
+                  params={{ sourceId, fileId, pipelineId, executionId }}
                   {...props}
                 >
                   <CheckCircle className="h-4 w-4 mr-2 text-green-500" />

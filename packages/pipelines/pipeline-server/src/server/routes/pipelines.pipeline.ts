@@ -9,10 +9,8 @@ import { createExecutionLogCapture } from "#server/lib/log-capture";
 import { resolveLocalFilePath } from "#server/lib/resolve";
 import { createPipelineExecutor, runWithPipelineExecutionContext } from "@ucdjs/pipelines-executor";
 import {
-  downloadRemoteSourceArchive,
   getRemoteSourceCacheStatus,
-  materializeArchiveToDir,
-  writeCacheMarker,
+  syncRemoteSource,
 } from "@ucdjs/pipelines-loader";
 import { toPipelineDetails } from "@ucdjs/pipelines-ui";
 import { and, eq } from "drizzle-orm";
@@ -31,6 +29,7 @@ async function getPipelineFileForSource(
     return { content, filePath };
   }
 
+  // Check cache status
   const status = await getRemoteSourceCacheStatus({
     source: source.type,
     owner: source.owner,
@@ -38,20 +37,18 @@ async function getPipelineFileForSource(
     ref: source.ref,
   });
 
+  // Auto-sync if not cached (server is allowed to download directly)
   if (!status.cached) {
-    const archiveBuffer = await downloadRemoteSourceArchive(source.type, {
+    const result = await syncRemoteSource({
+      source: source.type,
       owner: source.owner,
       repo: source.repo,
       ref: source.ref ?? "HEAD",
-      commitSha: status.commitSha,
     });
 
-    await materializeArchiveToDir({
-      archiveBuffer,
-      targetDir: status.cacheDir,
-    });
-
-    await writeCacheMarker(status);
+    if (!result.success) {
+      throw new Error(`Failed to sync source: ${result.error?.message ?? "Unknown error"}`);
+    }
   }
 
   const fullPath = path.join(status.cacheDir, filePath);
