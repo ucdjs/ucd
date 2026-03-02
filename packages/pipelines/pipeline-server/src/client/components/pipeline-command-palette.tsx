@@ -43,9 +43,9 @@ export function PipelineCommandPalette() {
   const { execute, executing } = useExecute();
   const navigate = useNavigate();
   const params = useParams({ strict: false });
-  const file = typeof params.file === "string" ? params.file : undefined;
-  const sourceId = typeof params.sourceId === "string" ? params.sourceId : undefined;
-  const currentPipelineId = typeof params.id === "string" ? params.id : undefined;
+  const file = typeof params.fileId === "string" ? params.fileId : undefined;
+  // const sourceId = typeof params.sourceId === "string" ? params.sourceId : undefined;
+  const currentPipelineId = typeof params.pipelineId === "string" ? params.pipelineId : undefined;
 
   const files = data?.files ?? [];
   const pipelines = files.flatMap((fileInfo) =>
@@ -82,7 +82,12 @@ export function PipelineCommandPalette() {
             `${currentPipeline.fileId}:${currentPipeline.id}`,
             currentPipeline.versions,
           );
-          await execute(currentPipeline.fileId, currentPipeline.id, versionsToExecute, currentPipeline.sourceId);
+          await execute({
+            fileId: currentPipeline.fileId,
+            pipelineId: currentPipeline.id,
+            versions: versionsToExecute,
+            sourceId: currentPipeline.sourceId,
+          });
           setOpen(false);
         } catch (err) {
           console.error("Failed to execute pipeline:", err);
@@ -107,7 +112,12 @@ export function PipelineCommandPalette() {
         `${currentPipeline.fileId}:${currentPipeline.id}`,
         currentPipeline.versions,
       );
-      await execute(currentPipeline.fileId, currentPipeline.id, versionsToExecute, currentPipeline.sourceId);
+      await execute({
+        fileId: currentPipeline.fileId,
+        pipelineId: currentPipeline.id,
+        versions: versionsToExecute,
+        sourceId: currentPipeline.sourceId,
+      });
       setOpen(false);
     } catch (err) {
       console.error("Failed to execute pipeline:", err);
@@ -118,7 +128,12 @@ export function PipelineCommandPalette() {
     if (executing) return;
     try {
       const versionsToExecute = getSelectedVersionsFromStorage(`${fileId}:${pipelineId}`, versions);
-      await execute(fileId, pipelineId, versionsToExecute, sourceId);
+      await execute({
+        fileId,
+        pipelineId,
+        versions: versionsToExecute,
+        sourceId,
+      });
       setOpen(false);
     } catch (err) {
       console.error("Failed to execute pipeline:", err);
