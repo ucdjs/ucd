@@ -5,9 +5,9 @@ import path from "node:path";
 import process from "node:process";
 import { createDatabase, runMigrations } from "#server/db";
 import {
-  dashboardRouter,
   sourcesExecutionRouter,
   sourcesFileRouter,
+  sourcesOverviewRouter,
   sourcesPipelineRouter,
   sourcesRefreshRouter,
   sourcesSourceRouter,
@@ -60,20 +60,20 @@ export function createApp(options: AppOptions = {}): H3 {
           id: "local",
           cwd: path.join(import.meta.dirname, "../../../pipeline-playground"),
         },
-        {
-          type: "gitlab",
-          id: "gitlab-test",
-          owner: "luxass",
-          repo: "ucdjs-pipelines-gitlab",
-          ref: "main",
-        },
-        {
-          type: "github",
-          id: "github-test",
-          owner: "ucdjs",
-          repo: "ucd-pipelines",
-          ref: "main",
-        },
+        // {
+        //   type: "gitlab",
+        //   id: "gitlab-test",
+        //   owner: "luxass",
+        //   repo: "ucdjs-pipelines-gitlab",
+        //   ref: "main",
+        // },
+        // {
+        //   type: "github",
+        //   id: "github-test",
+        //   owner: "ucdjs",
+        //   repo: "ucd-pipelines",
+        //   ref: "main",
+        // },
       ];
     } else {
       resolvedSources = [{
@@ -103,7 +103,7 @@ export function createApp(options: AppOptions = {}): H3 {
     };
   });
 
-  app.mount("/api/dashboard", dashboardRouter);
+  app.mount("/api/sources", sourcesOverviewRouter);
   app.mount("/api/sources", sourcesFileRouter);
   app.mount("/api/sources", sourcesPipelineRouter);
   app.mount("/api/sources", sourcesExecutionRouter);

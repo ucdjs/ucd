@@ -31,6 +31,22 @@ export {
   PipelineGraph,
   type PipelineGraphProps,
 } from "./components/graph/pipeline-graph";
+// Homepage Components
+export {
+  ActivitySparkline,
+  type ActivitySparklineProps,
+  RecentExecutionsList,
+  type RecentExecutionsListProps,
+  SetupWizard,
+  SourceCards,
+  type SourceCardsProps,
+  SystemOverview,
+  type SystemOverviewProps,
+} from "./components/homepage";
+export { EmptyRouteDetails, type EmptyRouteDetailsProps } from "./components/inspect/empty-route-details";
+export { RouteDetails, type RouteDetailsProps } from "./components/inspect/route-details";
+// Inspect Components
+export { RouteList, type RouteListProps } from "./components/inspect/route-list";
 export {
   ExecutionLogPayloadPanel,
   type ExecutionLogPayloadPanelProps,
@@ -50,6 +66,7 @@ export {
 export { PipelineSidebar, type SourceInfo } from "./components/pipeline-sidebar";
 export { StatusBadge } from "./components/status-badge";
 export { StatusIcon } from "./components/status-icon";
+export * from "./functions";
 export * from "./hooks";
 export {
   filterNodesByType,
@@ -60,17 +77,22 @@ export {
 export { getNodeColor, nodeTypeColors } from "./lib/colors";
 export { buildExecutionSpans, formatBytes, formatDuration, formatTimeLabel, formatTimestamp } from "./lib/execution-logs";
 export { formatHighPrecisionTime } from "./lib/format-time";
+
 export { applyLayout, NODE_HEIGHT, NODE_WIDTH } from "./lib/layout";
 export {
   toPipelineDetails,
   toPipelineInfo,
   toRouteDetails,
 } from "./lib/pipeline-utils";
+
 export { cn } from "./lib/utils";
+// Schemas and Functions (React Query agnostic)
+export * from "./schemas";
 export type {
   ExecuteResult,
   ExecutionEventItem,
   ExecutionEventsResponse,
+  ExecutionInfo,
   ExecutionLogItem,
   ExecutionLogPayload,
   ExecutionLogsResponse,
@@ -82,26 +104,5 @@ export type {
   PipelineResponse,
   PipelinesResponse,
 } from "./types";
-export type { ExecutionStatus } from "@ucdjs/pipelines-executor";
 
-// Schemas and Functions (React Query agnostic)
-export * from "./schemas";
-export * from "./functions";
-
-// Inspect Components
-export { RouteList, type RouteListProps } from "./components/inspect/route-list";
-export { RouteDetails, type RouteDetailsProps } from "./components/inspect/route-details";
-export { EmptyRouteDetails, type EmptyRouteDetailsProps } from "./components/inspect/empty-route-details";
-
-// Homepage Components
-export {
-  ActivitySparkline,
-  type ActivitySparklineProps,
-  RecentExecutionsList,
-  type RecentExecutionsListProps,
-  SetupWizard,
-  SourceCards,
-  type SourceCardsProps,
-  SystemOverview,
-  type SystemOverviewProps,
-} from "./components/homepage";
+export type { ExecutionStatus } from "@ucdjs/pipelines-executor/types";

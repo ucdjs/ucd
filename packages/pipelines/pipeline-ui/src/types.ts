@@ -1,5 +1,6 @@
 import type { PipelineEvent, PipelineGraph } from "@ucdjs/pipelines-core";
-import type { ExecutionStatus } from "@ucdjs/pipelines-executor";
+import type { ExecutionStatus } from "@ucdjs/pipelines-executor/types";
+import type { Execution } from "./schemas/execution";
 
 export interface PipelineInfo {
   id: string;
@@ -136,3 +137,9 @@ export interface ExecutionEventsResponse {
     hasMore: boolean;
   };
 }
+
+export type ExecutionInfo = Pick<Execution, "id" | "pipelineId" | "status" | "startedAt"> & {
+  pipelineName: string;
+  sourceId: string;
+  fileId: string;
+};

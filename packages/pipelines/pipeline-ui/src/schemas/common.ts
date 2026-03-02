@@ -1,4 +1,4 @@
-import { EXECUTION_STATUSES } from "@ucdjs/pipelines-executor";
+import { EXECUTION_STATUSES } from "@ucdjs/pipelines-executor/types";
 import { z } from "zod";
 
 export const ExecutionStatusSchema = z.enum(EXECUTION_STATUSES);

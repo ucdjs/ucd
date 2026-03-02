@@ -1,16 +1,8 @@
+import type { ExecutionStatus } from "@ucdjs/pipelines-executor/types";
+import type { ExecutionInfo } from "../../types";
 import { cn } from "@ucdjs-internal/shared-ui/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 import { CheckCircle, Circle, Clock, Loader2, XCircle } from "lucide-react";
-
-export interface ExecutionInfo {
-  id: string;
-  pipelineId: string;
-  pipelineName: string;
-  sourceId: string;
-  fileId: string;
-  status: "pending" | "running" | "completed" | "failed" | "cancelled";
-  startedAt: string;
-}
 
 export interface RecentExecutionsListProps {
   executions: ExecutionInfo[];
@@ -48,7 +40,7 @@ const statusConfig = {
     bgColor: "bg-gray-50",
     label: "Cancelled",
   },
-};
+} as const satisfies Record<ExecutionStatus, { icon: typeof CheckCircle; color: string; bgColor: string; label: string }>;
 
 function formatRelativeTime(dateStr: string): string {
   const date = new Date(dateStr);
@@ -74,51 +66,53 @@ export function RecentExecutionsList({ executions, onExecutionClick }: RecentExe
       </CardHeader>
       <CardContent>
         <div className="space-y-2">
-          {executions.length === 0 ? (
-            <p className="text-sm text-muted-foreground text-center py-4">
-              No recent executions
-            </p>
-          ) : (
-            executions.map((execution) => {
-              const config = statusConfig[execution.status];
-              const Icon = config.icon;
+          {executions.length === 0
+            ? (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  No recent executions
+                </p>
+              )
+            : (
+                executions.map((execution) => {
+                  const config = statusConfig[execution.status];
+                  const Icon = config.icon;
 
-              return (
-                <button
-                  key={execution.id}
-                  onClick={() => onExecutionClick?.(execution)}
-                  className={cn(
-                    "w-full flex items-center gap-3 p-3 rounded-lg",
-                    "hover:bg-muted transition-colors",
-                    "text-left",
-                  )}
-                >
-                  {/* Status Icon */}
-                  <div className={cn("w-8 h-8 rounded-full flex items-center justify-center shrink-0", config.bgColor)}>
-                    <Icon className={cn("w-4 h-4", config.color)} />
-                  </div>
+                  return (
+                    <button
+                      key={execution.id}
+                      onClick={() => onExecutionClick?.(execution)}
+                      className={cn(
+                        "w-full flex items-center gap-3 p-3 rounded-lg",
+                        "hover:bg-muted transition-colors",
+                        "text-left",
+                      )}
+                    >
+                      {/* Status Icon */}
+                      <div className={cn("w-8 h-8 rounded-full flex items-center justify-center shrink-0", config.bgColor)}>
+                        <Icon className={cn("w-4 h-4", config.color)} />
+                      </div>
 
-                  {/* Execution Info */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-foreground truncate">
-                        {execution.pipelineName}
-                      </span>
-                      <span className={cn("text-xs px-1.5 py-0.5 rounded", config.bgColor, config.color)}>
-                        {config.label}
-                      </span>
-                    </div>
-                    <div className="text-xs text-muted-foreground mt-0.5">
-                      {execution.sourceId}
-                      {" "}
-                      ·
-                      {formatRelativeTime(execution.startedAt)}
-                    </div>
-                  </div>
-                </button>
-              );
-            })
-          )}
+                      {/* Execution Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-foreground truncate">
+                            {execution.pipelineName}
+                          </span>
+                          <span className={cn("text-xs px-1.5 py-0.5 rounded", config.bgColor, config.color)}>
+                            {config.label}
+                          </span>
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-0.5">
+                          {execution.sourceId}
+                          {" "}
+                          ·
+                          {formatRelativeTime(execution.startedAt)}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })
+              )}
         </div>
       </CardContent>
     </Card>

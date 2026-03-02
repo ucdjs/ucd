@@ -44,6 +44,7 @@
       "@ucdjs/pipelines-artifacts": ["./packages/pipelines/pipeline-artifacts/src/index.ts"],
       "@ucdjs/pipelines-graph": ["./packages/pipelines/pipeline-graph/src/index.ts"],
       "@ucdjs/pipelines-executor": ["./packages/pipelines/pipeline-executor/src/index.ts"],
+      "@ucdjs/pipelines-executor/types": ["./packages/pipelines/pipeline-executor/src/types.ts"],
       "@ucdjs/pipelines-loader": ["./packages/pipelines/pipeline-loader/src/index.ts"],
       "@ucdjs/pipelines-ui": ["./packages/pipelines/pipeline-ui/src/index.ts"],
       "@ucdjs/pipelines-ui/components": ["./packages/pipelines/pipeline-ui/src/components/index.ts"],
