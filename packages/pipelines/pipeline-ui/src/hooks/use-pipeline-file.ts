@@ -1,7 +1,6 @@
 import type { PipelineFileInfo } from "../types";
-import { useCallback, useEffect, useState } from "react";
-import { fetchSourceFile } from "../functions/fetch-source-file";
-import { ApiError } from "../functions/fetch-with-parse";
+import { useQuery } from "@tanstack/react-query";
+import { sourceFileQueryOptions } from "../functions";
 
 export interface PipelineFileResponse {
   file?: PipelineFileInfo;
@@ -27,38 +26,14 @@ export function usePipelineFile(
 ): UsePipelineFileReturn {
   const { baseUrl = "", sourceId, fetchOnMount = true } = options;
 
-  const [file, setFile] = useState<PipelineFileInfo | null>(null);
-  const [loading, setLoading] = useState(fetchOnMount);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchFile = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const json = await fetchSourceFile(baseUrl, sourceId, fileId);
-      setFile(json.file ?? null);
-    } catch (err) {
-      if (err instanceof ApiError) {
-        setError(err.response.error);
-      } else {
-        setError(err instanceof Error ? err.message : "Failed to load pipeline file");
-      }
-      setFile(null);
-    } finally {
-      setLoading(false);
-    }
-  }, [baseUrl, fileId, sourceId]);
-
-  useEffect(() => {
-    if (fetchOnMount) {
-      fetchFile();
-    }
-  }, [fetchOnMount, fetchFile]);
+  const query = useQuery(sourceFileQueryOptions(baseUrl, sourceId, fileId, fetchOnMount));
 
   return {
-    file,
-    loading,
-    error,
-    refetch: fetchFile,
+    file: query.data?.file ?? null,
+    loading: query.isFetching,
+    error: query.error instanceof Error ? query.error.message : query.error ? String(query.error) : null,
+    refetch: () => {
+      void query.refetch();
+    },
   };
 }

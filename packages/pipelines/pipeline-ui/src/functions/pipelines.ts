@@ -56,10 +56,12 @@ export function pipelineQueryOptions(
   sourceId: string,
   fileId: string,
   pipelineId: string,
+  fetchOnMount: boolean = true,
 ) {
   return queryOptions({
     queryKey: ["sources", sourceId, "files", fileId, "pipelines", pipelineId],
     queryFn: () => fetchPipeline(baseUrl, sourceId, fileId, pipelineId),
+    enabled: fetchOnMount,
   });
 }
 
@@ -68,9 +70,11 @@ export function pipelineCodeQueryOptions(
   sourceId: string,
   fileId: string,
   pipelineId: string,
+  fetchOnMount: boolean = true,
 ) {
   return queryOptions({
     queryKey: ["sources", sourceId, "files", fileId, "pipelines", pipelineId, "code"],
     queryFn: () => fetchPipelineCode(baseUrl, sourceId, fileId, pipelineId),
+    enabled: fetchOnMount,
   });
 }

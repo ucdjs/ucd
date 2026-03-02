@@ -1,6 +1,6 @@
 import type { ExecutionDetailResponse, ExecutionEventsResponse, ExecutionGraphResponse, ExecutionListResponse, ExecutionLogsResponse } from "../schemas/execution";
 import type { ExecuteResult } from "../types";
-import { queryOptions } from "@tanstack/react-query";
+import { mutationOptions, queryOptions } from "@tanstack/react-query";
 import { customFetch } from "@ucdjs-internal/shared";
 import z from "zod";
 import { ExecutionDetailResponseSchema, ExecutionEventsResponseSchema, ExecutionGraphResponseSchema, ExecutionListResponseSchema, ExecutionLogsResponseSchema } from "../schemas/execution";
@@ -194,10 +194,12 @@ export function executionsQueryOptions(
   fileId: string,
   pipelineId: string,
   limit: number = 10,
+  fetchOnMount: boolean = true,
 ) {
   return queryOptions({
     queryKey: ["sources", sourceId, "files", fileId, "pipelines", pipelineId, "executions", { limit }],
     queryFn: () => fetchExecutions(baseUrl, sourceId, fileId, pipelineId, limit),
+    enabled: fetchOnMount,
   });
 }
 
@@ -207,10 +209,12 @@ export function executionQueryOptions(
   fileId: string,
   pipelineId: string,
   executionId: string,
+  fetchOnMount: boolean = true,
 ) {
   return queryOptions({
     queryKey: ["sources", sourceId, "files", fileId, "pipelines", pipelineId, "executions", executionId],
     queryFn: () => fetchExecution(baseUrl, sourceId, fileId, pipelineId, executionId),
+    enabled: fetchOnMount,
   });
 }
 
@@ -221,10 +225,12 @@ export function executionLogsQueryOptions(
   pipelineId: string,
   executionId: string,
   limit: number = 500,
+  fetchOnMount: boolean = true,
 ) {
   return queryOptions({
     queryKey: ["sources", sourceId, "files", fileId, "pipelines", pipelineId, "executions", executionId, "logs", { limit }],
     queryFn: () => fetchExecutionLogs(baseUrl, sourceId, fileId, pipelineId, executionId, limit),
+    enabled: fetchOnMount,
   });
 }
 
@@ -234,10 +240,12 @@ export function executionGraphQueryOptions(
   fileId: string,
   pipelineId: string,
   executionId: string,
+  fetchOnMount: boolean = true,
 ) {
   return queryOptions({
     queryKey: ["sources", sourceId, "files", fileId, "pipelines", pipelineId, "executions", executionId, "graph"],
     queryFn: () => fetchExecutionGraph(baseUrl, sourceId, fileId, pipelineId, executionId),
+    enabled: fetchOnMount,
   });
 }
 
@@ -248,9 +256,25 @@ export function executionEventsQueryOptions(
   pipelineId: string,
   executionId: string,
   limit: number = 500,
+  fetchOnMount: boolean = true,
 ) {
   return queryOptions({
     queryKey: ["sources", sourceId, "files", fileId, "pipelines", pipelineId, "executions", executionId, "events", { limit }],
     queryFn: () => fetchExecutionEvents(baseUrl, sourceId, fileId, pipelineId, executionId, limit),
+    enabled: fetchOnMount,
+  });
+}
+
+export interface ExecutePipelineParams {
+  sourceId: string;
+  fileId: string;
+  pipelineId: string;
+  versions: string[];
+}
+
+export function executePipelineMutationOptions(baseUrl: string) {
+  return mutationOptions({
+    mutationFn: (params: ExecutePipelineParams) =>
+      executePipeline(baseUrl, params.sourceId, params.fileId, params.pipelineId, params.versions),
   });
 }

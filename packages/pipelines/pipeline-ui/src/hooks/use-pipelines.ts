@@ -1,8 +1,8 @@
-import type { PipelinesResponse } from "../types";
-import { useCallback, useEffect, useState } from "react";
-import { fetchSource } from "../functions/fetch-source";
-import { fetchSources } from "../functions/fetch-sources";
-import { ApiError } from "../functions/fetch-with-parse";
+import type { SourceDetail, SourceList } from "../schemas/source";
+import type { PipelineFileInfo, PipelinesResponse } from "../types";
+import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
+import { fetchSource, fetchSources } from "../functions";
 
 export interface UsePipelinesOptions {
   /**
@@ -31,87 +31,77 @@ export interface UsePipelinesReturn {
 export function usePipelines(options: UsePipelinesOptions = {}): UsePipelinesReturn {
   const { baseUrl = "", search, fetchOnMount = true } = options;
 
-  const [data, setData] = useState<PipelinesResponse | null>(null);
-  const [loading, setLoading] = useState(fetchOnMount);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchPipelines = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const sources = await fetchSources(baseUrl);
-      const sourceDetails = await Promise.all(sources.map((source) => fetchSource(baseUrl, source.id)));
-
-      const query = search?.trim().toLowerCase();
-
-      const files = sourceDetails.flatMap((detail) => detail.files)
-        .map((file) => {
-          if (!query) {
-            return {
-              fileId: file.fileId,
-              filePath: file.filePath,
-              fileLabel: file.fileLabel,
-              sourceId: file.sourceId,
-              pipelines: file.pipelines,
-            };
-          }
-
-          const fileMatches = file.fileId.toLowerCase().includes(query)
-            || file.filePath.toLowerCase().includes(query)
-            || file.fileLabel.toLowerCase().includes(query);
-
-          const pipelines = fileMatches
-            ? file.pipelines
-            : file.pipelines.filter((pipeline) => {
-                const name = pipeline.name?.toLowerCase() ?? "";
-                const description = pipeline.description?.toLowerCase() ?? "";
-                return pipeline.id.toLowerCase().includes(query)
-                  || name.includes(query)
-                  || description.includes(query);
-              });
-
-          if (pipelines.length === 0) {
-            return null;
-          }
-
-          return {
-            fileId: file.fileId,
-            filePath: file.filePath,
-            fileLabel: file.fileLabel,
-            sourceId: file.sourceId,
-            pipelines,
-          };
-        })
-        .filter((file): file is NonNullable<typeof file> => file !== null);
+  const query = useQuery<PipelinesResponse>({
+    enabled: fetchOnMount,
+    queryKey: ["pipelines", { baseUrl, search: search ?? "" }],
+    queryFn: async () => {
+      const sources = await fetchSources(baseUrl) as SourceList;
+      const sourceDetails = await Promise.all(
+        sources.map((source) => fetchSource(baseUrl, source.id)),
+      ) as SourceDetail[];
 
       const errors = sourceDetails.flatMap((detail) => detail.errors);
+      const files: PipelineFileInfo[] = sourceDetails.flatMap((detail) => detail.files).map((file) => ({
+        fileId: file.fileId,
+        filePath: file.filePath,
+        fileLabel: file.fileLabel,
+        sourceId: file.sourceId,
+        pipelines: file.pipelines,
+      }));
 
-      setData({
+      return {
         workspaceId: "default",
         files,
         errors,
-      } satisfies PipelinesResponse);
-    } catch (err) {
-      if (err instanceof ApiError) {
-        setError(err.response.error);
-      } else {
-        setError(err instanceof Error ? err.message : "Failed to load pipelines");
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, [baseUrl, search]);
+      } satisfies PipelinesResponse;
+    },
+  });
 
-  useEffect(() => {
-    if (fetchOnMount) {
-      fetchPipelines();
-    }
-  }, [fetchOnMount, fetchPipelines]);
+  const data = useMemo(() => {
+    if (!query.data) return null;
+
+    const queryValue = search?.trim().toLowerCase();
+    if (!queryValue) return query.data;
+
+    const files = query.data.files
+      .map((file) => {
+        const fileMatches = file.fileId.toLowerCase().includes(queryValue)
+          || file.filePath.toLowerCase().includes(queryValue)
+          || (file.fileLabel?.toLowerCase().includes(queryValue) ?? false);
+
+        const pipelines = fileMatches
+          ? file.pipelines
+          : file.pipelines.filter((pipeline) => {
+              const name = pipeline.name?.toLowerCase() ?? "";
+              const description = pipeline.description?.toLowerCase() ?? "";
+              return pipeline.id.toLowerCase().includes(queryValue)
+                || name.includes(queryValue)
+                || description.includes(queryValue);
+            });
+
+        if (pipelines.length === 0) {
+          return null;
+        }
+
+        return {
+          ...file,
+          pipelines,
+        };
+      })
+      .filter((file): file is NonNullable<typeof file> => file !== null);
+
+    return {
+      ...query.data,
+      files,
+    };
+  }, [query.data, search]);
 
   return {
     data,
-    loading,
-    error,
-    refetch: fetchPipelines,
+    loading: query.isFetching,
+    error: query.error instanceof Error ? query.error.message : query.error ? String(query.error) : null,
+    refetch: () => {
+      void query.refetch();
+    },
   };
 }

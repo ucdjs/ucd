@@ -22,11 +22,12 @@ export async function fetchOverview(baseUrl: string): Promise<OverviewResponse> 
   return data;
 }
 
-export function overviewQueryOptions(baseUrl: string) {
+export function overviewQueryOptions(baseUrl: string, fetchOnMount: boolean = true) {
   return queryOptions({
     queryKey: ["sources", "overview"],
     queryFn: () => fetchOverview(baseUrl),
     staleTime: 60 * 1000,
     refetchInterval: 60 * 1000,
+    enabled: fetchOnMount,
   });
 }

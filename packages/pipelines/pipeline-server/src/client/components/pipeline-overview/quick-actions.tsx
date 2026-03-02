@@ -13,16 +13,20 @@ import { useCallback } from "react";
 
 export function QuickActionsPanel() {
   const { sourceId, fileId, pipelineId } = useParams({ from: "/$sourceId/$fileId/$pipelineId" });
-  const { pipelineData } = useLoaderData({ from: "/$sourceId/$fileId/$pipelineId" });
-  const pipeline = pipelineData?.pipeline;
+  const { pipeline } = useLoaderData({ from: "/$sourceId/$fileId/$pipelineId" });
   const navigate = useNavigate();
-  const { execute, executing } = useExecute();
+  const { execute, executing, result } = useExecute();
   const { selectedVersions } = usePipelineVersions(pipelineId, pipeline?.versions || [], `${fileId}:${pipelineId}`);
   const canExecute = selectedVersions.size > 0 && Boolean(pipeline);
 
   const handleExecute = useCallback(async () => {
     if (!canExecute) return;
-    const result = await execute(fileId, pipelineId, Array.from(selectedVersions), sourceId);
+    const result = await execute({
+      fileId,
+      pipelineId,
+      versions: Array.from(selectedVersions),
+      sourceId,
+    });
     if (result.success && result.executionId) {
       navigate({
         to: "/$sourceId/$fileId/$pipelineId/executions/$executionId",
@@ -55,6 +59,7 @@ export function QuickActionsPanel() {
         <Button
           variant="outline"
           className="w-full justify-between"
+          nativeButton={false}
           render={(props) => (
             <Link to="/$sourceId/$fileId/$pipelineId/executions" params={{ sourceId, fileId, pipelineId }} {...props}>
               <span className="flex items-center gap-2">
@@ -69,8 +74,18 @@ export function QuickActionsPanel() {
         <Button
           variant="outline"
           className="w-full justify-between"
+          nativeButton={false}
           render={(props) => (
-            <Link to="/$sourceId/$fileId/$pipelineId/graph" params={{ sourceId, fileId, pipelineId }} {...props}>
+            <Link
+              to="/$sourceId/$fileId/$pipelineId/executions/$executionId/graph"
+              params={{
+                sourceId,
+                fileId,
+                pipelineId,
+                executionId: result?.executionId || "latest",
+              }}
+              {...props}
+            >
               <span className="flex items-center gap-2">
                 <Workflow className="h-4 w-4" />
                 Open graph
@@ -83,6 +98,7 @@ export function QuickActionsPanel() {
         <Button
           variant="outline"
           className="w-full justify-between"
+          nativeButton={false}
           render={(props) => (
             <Link to="/$sourceId/$fileId/$pipelineId/code" params={{ sourceId, fileId, pipelineId }} {...props}>
               <span className="flex items-center gap-2">

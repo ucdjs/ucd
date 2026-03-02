@@ -1,6 +1,7 @@
+import type { ExecutePipelineParams } from "../functions/executions";
 import type { ExecuteResult } from "../types";
-import { useCallback, useState } from "react";
-import { executePipeline } from "../functions";
+import { useMutation } from "@tanstack/react-query";
+import { executePipelineMutationOptions } from "../functions";
 
 export interface UseExecuteOptions {
   /**
@@ -10,7 +11,7 @@ export interface UseExecuteOptions {
 }
 
 export interface UseExecuteReturn {
-  execute: (fileId: string, pipelineId: string, versions: string[], sourceId: string) => Promise<ExecuteResult>;
+  execute: (params: ExecutePipelineParams) => Promise<ExecuteResult>;
   executing: boolean;
   result: ExecuteResult | null;
   error: string | null;
@@ -21,57 +22,32 @@ export interface UseExecuteReturn {
 export function useExecute(options: UseExecuteOptions = {}): UseExecuteReturn {
   const { baseUrl = "" } = options;
 
-  const [executing, setExecuting] = useState(false);
-  const [result, setResult] = useState<ExecuteResult | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [executionId, setExecutionId] = useState<string | null>(null);
+  const mutation = useMutation(executePipelineMutationOptions(baseUrl));
 
-  const execute = useCallback(
-    async (fileId: string, pipelineId: string, versions: string[], sourceId: string): Promise<ExecuteResult> => {
-      setExecuting(true);
-      setError(null);
-      setResult(null);
-      setExecutionId(null);
+  const execute = (params: ExecutePipelineParams) =>
+    mutation.mutateAsync(params);
 
-      try {
-        const result = await executePipeline(baseUrl, sourceId, fileId, pipelineId, versions);
-
-        if (result.success && result.executionId) {
-          setExecutionId(result.executionId);
-        } else {
-          setError(result.error ?? "Execution failed");
-        }
-
-        setResult(result);
-        return result;
-      } catch (err) {
-        const errorResult: ExecuteResult = {
-          success: false,
-          pipelineId,
-          error: err instanceof Error ? err.message : String(err),
-        };
-        setResult(errorResult);
-        setError(errorResult.error ?? "Execution failed");
-        return errorResult;
-      } finally {
-        setExecuting(false);
+  const error = (() => {
+    if (mutation.error) {
+      if (mutation.error instanceof Error) {
+        return mutation.error.message;
       }
-    },
-    [baseUrl],
-  );
+      return String(mutation.error);
+    }
+    if (mutation.data && !mutation.data.success) {
+      return mutation.data.error ?? "Execution failed";
+    }
+    return null;
+  })();
 
-  const reset = useCallback(() => {
-    setResult(null);
-    setError(null);
-    setExecutionId(null);
-  }, []);
+  const executionId = mutation.data?.executionId ?? null;
 
   return {
     execute,
-    executing,
-    result,
+    executing: mutation.isPending,
+    result: mutation.data ?? null,
     error,
     executionId,
-    reset,
+    reset: mutation.reset,
   };
 }

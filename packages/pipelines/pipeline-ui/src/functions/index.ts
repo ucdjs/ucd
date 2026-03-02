@@ -1,6 +1,7 @@
 export { configQueryOptions, fetchConfig } from "./config";
 export {
   executePipeline,
+  executePipelineMutationOptions,
   executionEventsQueryOptions,
   executionGraphQueryOptions,
   executionLogsQueryOptions,

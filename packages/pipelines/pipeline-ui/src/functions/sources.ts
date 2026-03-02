@@ -63,23 +63,31 @@ export async function fetchSourceFile(
   return data;
 }
 
-export function sourcesQueryOptions(baseUrl: string) {
+export function sourcesQueryOptions(baseUrl: string, fetchOnMount: boolean = true) {
   return queryOptions({
     queryKey: ["sources"],
     queryFn: () => fetchSources(baseUrl),
+    enabled: fetchOnMount,
   });
 }
 
-export function sourceQueryOptions(baseUrl: string, sourceId: string) {
+export function sourceQueryOptions(baseUrl: string, sourceId: string, fetchOnMount: boolean = true) {
   return queryOptions({
     queryKey: ["sources", sourceId],
     queryFn: () => fetchSource(baseUrl, sourceId),
+    enabled: fetchOnMount,
   });
 }
 
-export function sourceFileQueryOptions(baseUrl: string, sourceId: string, fileId: string) {
+export function sourceFileQueryOptions(
+  baseUrl: string,
+  sourceId: string,
+  fileId: string,
+  fetchOnMount: boolean = true,
+) {
   return queryOptions({
     queryKey: ["sources", sourceId, "files", fileId],
     queryFn: () => fetchSourceFile(baseUrl, sourceId, fileId),
+    enabled: fetchOnMount,
   });
 }
