@@ -59,17 +59,10 @@ export async function runPipelinesRoot(subcommand: string, args: string[], { fla
 
   if (subcommand === "cache") {
     const cacheSubcommand = args[0] ?? "";
-    const cacheArgs = args.slice(1);
     const { runPipelinesCacheRoot } = await import("./cache/root");
     await runPipelinesCacheRoot(cacheSubcommand, { flags });
     return;
   }
-
-  // if (subcommand === "create") {
-  //   const { runVerifyStore } = await import("./create");
-  //   await runVerifyStore({ flags, versions });
-  //   return;
-  // }
 
   throw new Error(`Invalid subcommand: ${subcommand}`);
 }
