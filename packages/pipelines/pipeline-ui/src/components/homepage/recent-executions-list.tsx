@@ -1,12 +1,12 @@
 import type { ExecutionStatus } from "@ucdjs/pipelines-executor/types";
 import type { ExecutionInfo } from "../../types";
+import { Link } from "@tanstack/react-router";
 import { cn } from "@ucdjs-internal/shared-ui/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 import { CheckCircle, Circle, Clock, Loader2, XCircle } from "lucide-react";
 
 export interface RecentExecutionsListProps {
   executions: ExecutionInfo[];
-  onExecutionClick?: (execution: ExecutionInfo) => void;
 }
 
 const statusConfig = {
@@ -58,7 +58,7 @@ function formatRelativeTime(dateStr: string): string {
   return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
-export function RecentExecutionsList({ executions, onExecutionClick }: RecentExecutionsListProps) {
+export function RecentExecutionsList({ executions }: RecentExecutionsListProps) {
   return (
     <Card>
       <CardHeader className="pb-2">
@@ -78,21 +78,25 @@ export function RecentExecutionsList({ executions, onExecutionClick }: RecentExe
                   const Icon = config.icon;
 
                   return (
-                    <button
+                    <Link
                       key={execution.id}
-                      onClick={() => onExecutionClick?.(execution)}
+                      to="/$sourceId/$fileId/$pipelineId/executions/$executionId"
+                      params={{
+                        sourceId: execution.sourceId,
+                        fileId: execution.fileId,
+                        pipelineId: execution.pipelineId,
+                        executionId: execution.id,
+                      }}
                       className={cn(
                         "w-full flex items-center gap-3 p-3 rounded-lg",
                         "hover:bg-muted transition-colors",
                         "text-left",
                       )}
                     >
-                      {/* Status Icon */}
                       <div className={cn("w-8 h-8 rounded-full flex items-center justify-center shrink-0", config.bgColor)}>
                         <Icon className={cn("w-4 h-4", config.color)} />
                       </div>
 
-                      {/* Execution Info */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <span className="font-medium text-foreground truncate">
@@ -109,7 +113,7 @@ export function RecentExecutionsList({ executions, onExecutionClick }: RecentExe
                           {formatRelativeTime(execution.startedAt)}
                         </div>
                       </div>
-                    </button>
+                    </Link>
                   );
                 })
               )}

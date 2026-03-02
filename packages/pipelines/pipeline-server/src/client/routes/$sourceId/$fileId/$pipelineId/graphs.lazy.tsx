@@ -1,4 +1,5 @@
 import { formatDuration, formatTimeAgo } from "#lib/pipeline-executions";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { createLazyFileRoute, Link } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
@@ -10,6 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@ucdjs-internal/shared-ui/ui/table";
+import { executionsQueryOptions } from "@ucdjs/pipelines-ui";
 
 export const Route = createLazyFileRoute("/$sourceId/$fileId/$pipelineId/graphs")({
   component: PipelineGraphsPage,
@@ -17,7 +19,13 @@ export const Route = createLazyFileRoute("/$sourceId/$fileId/$pipelineId/graphs"
 
 function PipelineGraphsPage() {
   const { sourceId, fileId, pipelineId } = Route.useParams();
-  const { executions } = Route.useLoaderData();
+  const { data: executions } = useSuspenseQuery(executionsQueryOptions({
+    baseUrl: "",
+    sourceId,
+    fileId,
+    pipelineId,
+    limit: 50,
+  }));
 
   const graphExecutions = executions.executions.filter((execution) => execution.hasGraph);
 

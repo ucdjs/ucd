@@ -1,6 +1,8 @@
+import { SiGithub, SiGitlab } from "@icons-pack/react-simple-icons";
+import { Link } from "@tanstack/react-router";
 import { cn } from "@ucdjs-internal/shared-ui/lib/utils";
 import { Card, CardContent } from "@ucdjs-internal/shared-ui/ui/card";
-import { AlertCircle, FolderGit, Github, Gitlab } from "lucide-react";
+import { AlertCircle, FolderGit } from "lucide-react";
 
 interface SourceInfo {
   id: string;
@@ -12,7 +14,6 @@ interface SourceInfo {
 
 export interface SourceCardsProps {
   sources: SourceInfo[];
-  onSourceClick?: (sourceId: string) => void;
 }
 
 const sourceTypeConfig = {
@@ -23,20 +24,20 @@ const sourceTypeConfig = {
     bgColor: "bg-blue-50",
   },
   github: {
-    icon: Github,
+    icon: SiGithub,
     label: "GitHub",
     color: "text-purple-600",
     bgColor: "bg-purple-50",
   },
   gitlab: {
-    icon: Gitlab,
+    icon: SiGitlab,
     label: "GitLab",
     color: "text-orange-600",
     bgColor: "bg-orange-50",
   },
 };
 
-export function SourceCards({ sources, onSourceClick }: SourceCardsProps) {
+export function SourceCards({ sources }: SourceCardsProps) {
   return (
     <Card className="h-full">
       <CardContent className="p-4">
@@ -48,9 +49,10 @@ export function SourceCards({ sources, onSourceClick }: SourceCardsProps) {
             const hasErrors = (source.errorCount ?? 0) > 0;
 
             return (
-              <button
+              <Link
+                to="/$sourceId"
+                params={{ sourceId: source.id }}
                 key={source.id}
-                onClick={() => onSourceClick?.(source.id)}
                 className={cn(
                   "flex items-start gap-3 p-3 rounded-lg border text-left",
                   "transition-all duration-200",
@@ -58,12 +60,10 @@ export function SourceCards({ sources, onSourceClick }: SourceCardsProps) {
                   "focus:outline-none focus:ring-2 focus:ring-primary/20",
                 )}
               >
-                {/* Icon */}
                 <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center shrink-0", config.bgColor)}>
                   <Icon className={cn("w-5 h-5", config.color)} />
                 </div>
 
-                {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span className="font-medium text-foreground truncate">{source.id}</span>
@@ -85,7 +85,7 @@ export function SourceCards({ sources, onSourceClick }: SourceCardsProps) {
                     </span>
                   </div>
                 </div>
-              </button>
+              </Link>
             );
           })}
         </div>

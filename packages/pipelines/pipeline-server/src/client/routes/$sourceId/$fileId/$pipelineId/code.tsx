@@ -3,8 +3,13 @@ import { pipelineCodeQueryOptions } from "@ucdjs/pipelines-ui/functions";
 
 export const Route = createFileRoute("/$sourceId/$fileId/$pipelineId/code")({
   loader: async ({ context, params }) => {
-    return context.queryClient.ensureQueryData(
-      pipelineCodeQueryOptions("", params.sourceId, params.fileId, params.pipelineId),
+    context.queryClient.prefetchQuery(
+      pipelineCodeQueryOptions({
+        baseUrl: "",
+        sourceId: params.sourceId,
+        fileId: params.fileId,
+        pipelineId: params.pipelineId,
+      }),
     );
   },
 });

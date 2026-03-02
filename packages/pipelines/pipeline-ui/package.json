@@ -37,6 +37,7 @@
     "./lib/colors": "./dist/lib/colors.mjs",
     "./lib/execution-logs": "./dist/lib/execution-logs.mjs",
     "./lib/format-time": "./dist/lib/format-time.mjs",
+    "./lib/functions": "./dist/lib/functions.mjs",
     "./lib/layout": "./dist/lib/layout.mjs",
     "./lib/pipeline-utils": "./dist/lib/pipeline-utils.mjs",
     "./lib/utils": "./dist/lib/utils.mjs",

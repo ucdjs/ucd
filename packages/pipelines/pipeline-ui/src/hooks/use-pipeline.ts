@@ -33,7 +33,13 @@ export function usePipeline(
 ): UsePipelineReturn {
   const { baseUrl = "", sourceId, fetchOnMount = true } = options;
 
-  const query = useQuery(pipelineQueryOptions(baseUrl, sourceId, fileId, pipelineId, fetchOnMount));
+  const query = useQuery(pipelineQueryOptions({
+    baseUrl,
+    sourceId,
+    fileId,
+    pipelineId,
+    fetchOnMount,
+  }));
 
   return {
     pipeline: query.data?.pipeline ?? null,

@@ -1,14 +1,17 @@
+import type { WithBaseUrl } from "#lib/functions";
 import type { CodeResponse, PipelineResponse } from "../schemas/pipeline";
 import { queryOptions } from "@tanstack/react-query";
 import { customFetch } from "@ucdjs-internal/shared";
 import { CodeResponseSchema, PipelineResponseSchema } from "../schemas/pipeline";
 
-export async function fetchPipeline(
-  baseUrl: string,
-  sourceId: string,
-  fileId: string,
-  pipelineId: string,
-): Promise<PipelineResponse> {
+export interface FetchPipelineParams {
+  sourceId: string;
+  fileId: string;
+  pipelineId: string;
+}
+
+export async function fetchPipeline(options: WithBaseUrl<FetchPipelineParams>): Promise<PipelineResponse> {
+  const { baseUrl, sourceId, fileId, pipelineId } = options;
   const { data, error } = await customFetch.safe(
     `${baseUrl}/api/sources/${sourceId}/${fileId}/${pipelineId}`,
     {
@@ -27,12 +30,14 @@ export async function fetchPipeline(
   return data;
 }
 
-export async function fetchPipelineCode(
-  baseUrl: string,
-  sourceId: string,
-  fileId: string,
-  pipelineId: string,
-): Promise<CodeResponse> {
+export interface FetchPipelineCodeParams {
+  sourceId: string;
+  fileId: string;
+  pipelineId: string;
+}
+
+export async function fetchPipelineCode(options: WithBaseUrl<FetchPipelineCodeParams>): Promise<CodeResponse> {
+  const { baseUrl, sourceId, fileId, pipelineId } = options;
   const { data, error } = await customFetch.safe(
     `${baseUrl}/api/sources/${sourceId}/${fileId}/${pipelineId}/code`,
     {
@@ -51,30 +56,34 @@ export async function fetchPipelineCode(
   return data;
 }
 
-export function pipelineQueryOptions(
-  baseUrl: string,
-  sourceId: string,
-  fileId: string,
-  pipelineId: string,
-  fetchOnMount: boolean = true,
-) {
+export interface PipelineQueryParams {
+  sourceId: string;
+  fileId: string;
+  pipelineId: string;
+  fetchOnMount?: boolean;
+}
+
+export function pipelineQueryOptions(options: WithBaseUrl<PipelineQueryParams>) {
+  const { baseUrl, sourceId, fileId, pipelineId, fetchOnMount } = options;
   return queryOptions({
     queryKey: ["sources", sourceId, "files", fileId, "pipelines", pipelineId],
-    queryFn: () => fetchPipeline(baseUrl, sourceId, fileId, pipelineId),
+    queryFn: () => fetchPipeline({ baseUrl, sourceId, fileId, pipelineId }),
     enabled: fetchOnMount,
   });
 }
 
-export function pipelineCodeQueryOptions(
-  baseUrl: string,
-  sourceId: string,
-  fileId: string,
-  pipelineId: string,
-  fetchOnMount: boolean = true,
-) {
+export interface PipelineCodeQueryParams {
+  sourceId: string;
+  fileId: string;
+  pipelineId: string;
+  fetchOnMount?: boolean;
+}
+
+export function pipelineCodeQueryOptions(options: WithBaseUrl<PipelineCodeQueryParams>) {
+  const { baseUrl, sourceId, fileId, pipelineId, fetchOnMount } = options;
   return queryOptions({
     queryKey: ["sources", sourceId, "files", fileId, "pipelines", pipelineId, "code"],
-    queryFn: () => fetchPipelineCode(baseUrl, sourceId, fileId, pipelineId),
+    queryFn: () => fetchPipelineCode({ baseUrl, sourceId, fileId, pipelineId }),
     enabled: fetchOnMount,
   });
 }

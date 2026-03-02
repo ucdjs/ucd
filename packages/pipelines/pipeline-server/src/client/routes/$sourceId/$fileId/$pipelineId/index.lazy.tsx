@@ -1,14 +1,24 @@
 import { QuickActionsPanel } from "#components/pipeline-overview/quick-actions";
 import { RecentExecutionsPanel } from "#components/pipeline-overview/recent-executions-panel";
 import { RecentOutputsPanel } from "#components/pipeline-overview/recent-outputs-panel";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { createLazyFileRoute } from "@tanstack/react-router";
+import { executionsQueryOptions } from "@ucdjs/pipelines-ui/functions";
 
 export const Route = createLazyFileRoute("/$sourceId/$fileId/$pipelineId/")({
   component: PipelineOverviewPage,
 });
 
 function PipelineOverviewPage() {
-  const data = Route.useLoaderData();
+  const params = Route.useParams();
+  const { data } = useSuspenseQuery(executionsQueryOptions({
+    baseUrl: "",
+    sourceId: params.sourceId,
+    fileId: params.fileId,
+    pipelineId: params.pipelineId,
+    limit: 10,
+  }),
+  );
 
   return (
     <div role="tabpanel" id="tabpanel-overview" aria-labelledby="tab-overview" className="p-6">

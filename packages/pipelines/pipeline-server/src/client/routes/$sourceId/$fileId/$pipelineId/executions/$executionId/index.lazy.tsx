@@ -1,8 +1,11 @@
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { createLazyFileRoute, Link } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { ScrollArea } from "@ucdjs-internal/shared-ui/ui/scroll-area";
 import {
   buildExecutionSpans,
+  executionEventsQueryOptions,
+  executionLogsQueryOptions,
   ExecutionLogTable,
   ExecutionSpanDrawer,
   ExecutionWaterfall,
@@ -19,18 +22,31 @@ export const Route = createLazyFileRoute("/$sourceId/$fileId/$pipelineId/executi
 
 function ExecutionDetailPage() {
   const { sourceId, fileId, pipelineId, executionId } = Route.useParams();
-  const { executionData, logsData } = Route.useLoaderData();
+  const { data: executionQuery } = useSuspenseQuery(executionEventsQueryOptions({
+    baseUrl: "",
+    sourceId,
+    fileId,
+    pipelineId,
+    executionId,
+  }));
+  const { data: logsQuery } = useSuspenseQuery(executionLogsQueryOptions({
+    baseUrl: "",
+    sourceId,
+    fileId,
+    pipelineId,
+    executionId,
+  }));
   const [selectedSpanId, setSelectedSpanId] = useState<string | null>(null);
   const [activeSpan, setActiveSpan] = useState<ReturnType<typeof buildExecutionSpans>[number] | null>(null);
   const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
 
-  const events = executionData.events.map((e) => e.data);
+  const events = executionQuery.events.map((e) => e.data);
   const spans = useMemo(() => buildExecutionSpans(events), [events]);
 
   const filteredLogs = useMemo(() => {
-    if (!selectedSpanId) return logsData.logs;
-    return logsData.logs.filter((log) => log.spanId === selectedSpanId);
-  }, [logsData.logs, selectedSpanId]);
+    if (!selectedSpanId) return logsQuery.logs;
+    return logsQuery.logs.filter((log) => log.spanId === selectedSpanId);
+  }, [logsQuery.logs, selectedSpanId]);
 
   const handleSpanSelect = (spanId: string | null) => {
     setSelectedSpanId(spanId);
@@ -57,7 +73,7 @@ function ExecutionDetailPage() {
             <ArrowLeft className="h-4 w-4" />
           </Link>
 
-          <StatusIcon status={executionData.status} />
+          <StatusIcon status={executionQuery.status} />
 
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
@@ -66,10 +82,10 @@ function ExecutionDetailPage() {
                 {" "}
                 {executionId.slice(0, 8)}
               </h1>
-              <StatusBadge status={executionData.status} />
+              <StatusBadge status={executionQuery.status} />
             </div>
             <p className="text-sm text-muted-foreground">
-              {executionData.pagination.total}
+              {executionQuery.pagination.total}
               {" "}
               events · Pipeline:
               {pipelineId}
@@ -87,15 +103,15 @@ function ExecutionDetailPage() {
 
       <ScrollArea className="flex-1">
         <div className="p-6 space-y-6">
-          {logsData.truncated && (
+          {logsQuery.truncated && (
             <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
               Logs truncated. Captured
               {" "}
-              {formatBytes(logsData.capturedSize)}
+              {formatBytes(logsQuery.capturedSize)}
               {" "}
               of
               {" "}
-              {formatBytes(logsData.originalSize)}
+              {formatBytes(logsQuery.originalSize)}
               .
             </div>
           )}

@@ -3,9 +3,12 @@ import { executionsQueryOptions } from "@ucdjs/pipelines-ui/functions";
 
 export const Route = createFileRoute("/$sourceId/$fileId/$pipelineId/")({
   loader: async ({ context, params }) => {
-    const data = await context.queryClient.ensureQueryData(
-      executionsQueryOptions("", params.sourceId, params.fileId, params.pipelineId, 10),
-    );
-    return data;
+    context.queryClient.prefetchQuery(executionsQueryOptions({
+      baseUrl: "",
+      sourceId: params.sourceId,
+      fileId: params.fileId,
+      pipelineId: params.pipelineId,
+      limit: 50,
+    }));
   },
 });

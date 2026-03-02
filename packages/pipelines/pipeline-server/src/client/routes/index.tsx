@@ -56,27 +56,13 @@ function HomePage() {
         />
       </section>
 
-      {/* Middle Row: Activity + Source Cards */}
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <ActivitySparkline data={activityData} />
-        <SourceCards
-          sources={sourceData}
-          onSourceClick={(sourceId) => {
-            // Navigate to source detail
-            console.log("Navigate to:", sourceId);
-          }}
-        />
+        <SourceCards sources={sourceData} />
       </section>
 
-      {/* Bottom Row: Recent Executions */}
       <section>
-        <RecentExecutionsList
-          executions={recentExecutions}
-          onExecutionClick={(execution) => {
-            // Navigate to execution detail
-            console.log("Navigate to execution:", execution);
-          }}
-        />
+        <RecentExecutionsList executions={recentExecutions} />
       </section>
     </div>
   );

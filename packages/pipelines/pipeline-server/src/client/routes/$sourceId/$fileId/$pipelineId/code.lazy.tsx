@@ -1,9 +1,11 @@
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { createLazyFileRoute, useSearch } from "@tanstack/react-router";
 import { ShikiCode } from "@ucdjs-internal/shared-ui/components";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 import { Separator } from "@ucdjs-internal/shared-ui/ui/separator";
+import { pipelineCodeQueryOptions } from "@ucdjs/pipelines-ui/functions";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 interface CodeSearchParams {
@@ -179,19 +181,24 @@ function EmptyCodeDisplay({ pipelineId }: { pipelineId: string }) {
 }
 
 function PipelineCodePage() {
-  const { pipelineId } = Route.useParams();
-  const { codeData } = Route.useLoaderData();
+  const { pipelineId, sourceId, fileId } = Route.useParams();
+  const { data } = useSuspenseQuery(pipelineCodeQueryOptions({
+    baseUrl: "",
+    sourceId,
+    fileId,
+    pipelineId,
+  }));
   const search = useSearch({ from: "/$sourceId/$fileId/$pipelineId/code" }) as CodeSearchParams;
   const highlightRoute = search?.route;
 
   return (
     <div role="tabpanel" id="tabpanel-code" aria-labelledby="tab-code" className="p-6">
-      {codeData?.code
+      {data?.code
         ? (
             <CodeDisplay
-              code={codeData.code}
-              filePath={codeData.filePath ?? ""}
-              fileLabel={codeData.fileLabel}
+              code={data.code}
+              filePath={data.filePath ?? ""}
+              fileLabel={data.fileLabel}
               highlightRoute={highlightRoute}
             />
           )

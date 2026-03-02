@@ -27,6 +27,7 @@ export function QuickActionsPanel() {
       versions: Array.from(selectedVersions),
       sourceId,
     });
+    // reset()
     if (result.success && result.executionId) {
       navigate({
         to: "/$sourceId/$fileId/$pipelineId/executions/$executionId",
