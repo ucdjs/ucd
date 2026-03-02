@@ -1,6 +1,6 @@
 import type { ExecuteResult } from "../types";
 import { useCallback, useState } from "react";
-import { executePipeline } from "../functions/execute-pipeline";
+import { executePipeline } from "../functions";
 
 export interface UseExecuteOptions {
   /**

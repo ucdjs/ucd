@@ -1,13 +1,25 @@
 import type { OverviewResponse } from "../schemas/overview";
 import { queryOptions } from "@tanstack/react-query";
+import { customFetch } from "@ucdjs-internal/shared";
 import { OverviewResponseSchema } from "../schemas/overview";
-import { fetchWithParse } from "./fetch-with-parse";
 
 export async function fetchOverview(baseUrl: string): Promise<OverviewResponse> {
-  return fetchWithParse(
+  const { data, error } = await customFetch.safe(
     `${baseUrl}/api/sources/overview`,
-    OverviewResponseSchema,
+    {
+      schema: OverviewResponseSchema,
+    },
   );
+
+  if (error) {
+    throw new Error(`Failed to fetch overview: ${error.message}`);
+  }
+
+  if (!data) {
+    throw new Error("Failed to fetch overview: No data returned");
+  }
+
+  return data;
 }
 
 export function overviewQueryOptions(baseUrl: string) {
