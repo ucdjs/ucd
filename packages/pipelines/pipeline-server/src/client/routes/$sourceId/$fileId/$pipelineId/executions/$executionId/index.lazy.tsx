@@ -62,12 +62,17 @@ function ExecutionDetailPage() {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <h1 className="text-lg font-semibold truncate">
-                Execution {executionId.slice(0, 8)}
+                Execution
+                {" "}
+                {executionId.slice(0, 8)}
               </h1>
               <StatusBadge status={executionData.status} />
             </div>
             <p className="text-sm text-muted-foreground">
-              {executionData.pagination.total} events · Pipeline: {pipelineId}
+              {executionData.pagination.total}
+              {" "}
+              events · Pipeline:
+              {pipelineId}
             </p>
           </div>
 
@@ -84,7 +89,14 @@ function ExecutionDetailPage() {
         <div className="p-6 space-y-6">
           {logsData.truncated && (
             <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
-              Logs truncated. Captured {formatBytes(logsData.capturedSize)} of {formatBytes(logsData.originalSize)}.
+              Logs truncated. Captured
+              {" "}
+              {formatBytes(logsData.capturedSize)}
+              {" "}
+              of
+              {" "}
+              {formatBytes(logsData.originalSize)}
+              .
             </div>
           )}
 

@@ -4,7 +4,6 @@ import { getQuery, H3 } from "h3";
 
 export const sourcesExecutionRouter: H3 = new H3();
 
-// GET /api/sources/:sourceId/:fileId/:pipelineId/executions/:executionId - Execution details
 sourcesExecutionRouter.get("/:sourceId/:fileId/:pipelineId/executions/:executionId", async (event) => {
   const { db } = event.context;
   const workspaceId = event.context.workspaceId;
@@ -80,7 +79,6 @@ sourcesExecutionRouter.get("/:sourceId/:fileId/:pipelineId/executions/:execution
   }
 });
 
-// GET /api/sources/:sourceId/:fileId/:pipelineId/executions/:executionId/events - Execution events
 sourcesExecutionRouter.get("/:sourceId/:fileId/:pipelineId/executions/:executionId/events", async (event) => {
   const { db } = event.context;
   const workspaceId = event.context.workspaceId;
@@ -139,7 +137,6 @@ sourcesExecutionRouter.get("/:sourceId/:fileId/:pipelineId/executions/:execution
   }
 });
 
-// GET /api/sources/:sourceId/:fileId/:pipelineId/executions/:executionId/logs - Execution logs
 sourcesExecutionRouter.get("/:sourceId/:fileId/:pipelineId/executions/:executionId/logs", async (event) => {
   const { db } = event.context;
   const workspaceId = event.context.workspaceId;
@@ -203,7 +200,6 @@ sourcesExecutionRouter.get("/:sourceId/:fileId/:pipelineId/executions/:execution
   }
 });
 
-// GET /api/sources/:sourceId/:fileId/:pipelineId/executions/:executionId/graph - Execution graph
 sourcesExecutionRouter.get("/:sourceId/:fileId/:pipelineId/executions/:executionId/graph", async (event) => {
   const { db } = event.context;
   const workspaceId = event.context.workspaceId;

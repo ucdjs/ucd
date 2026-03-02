@@ -1,4 +1,4 @@
-import { useLoaderData, useNavigate, useParams } from "@tanstack/react-router";
+import { useNavigate, useParams } from "@tanstack/react-router";
 import {
   DropdownMenu,
   DropdownMenuContent,

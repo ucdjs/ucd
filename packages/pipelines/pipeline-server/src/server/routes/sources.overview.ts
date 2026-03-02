@@ -6,7 +6,6 @@ import { H3 } from "h3";
 
 export const sourcesOverviewRouter: H3 = new H3();
 
-// GET /api/sources/overview - Aggregated homepage data
 sourcesOverviewRouter.get("/overview", async (event) => {
   const { sources, db, workspaceId } = event.context;
 

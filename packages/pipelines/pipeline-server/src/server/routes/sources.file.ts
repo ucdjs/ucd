@@ -4,7 +4,6 @@ import { H3 } from "h3";
 
 export const sourcesFileRouter: H3 = new H3();
 
-// GET /api/sources/:sourceId/:fileId/:pipelineId - Pipeline details
 sourcesFileRouter.get("/:sourceId/:fileId/:pipelineId", async (event) => {
   const { sources } = event.context;
   const sourceId = event.context.params?.sourceId;
@@ -16,7 +15,7 @@ sourcesFileRouter.get("/:sourceId/:fileId/:pipelineId", async (event) => {
   }
 
   const groups = await loadPipelineFileGroups(sources);
-  
+
   for (const group of groups) {
     const match = findPipelineByFileId(fileId, group.fileGroups, pipelineId);
     if (match && match.fileGroup.sourceId === sourceId) {

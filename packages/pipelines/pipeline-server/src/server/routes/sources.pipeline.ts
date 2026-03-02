@@ -56,7 +56,6 @@ async function getPipelineFileForSource(
   return { content, filePath };
 }
 
-// GET /api/sources/:sourceId/:fileId/:pipelineId/code - Pipeline code
 sourcesPipelineRouter.get("/:sourceId/:fileId/:pipelineId/code", async (event) => {
   const { sources } = event.context;
   const sourceId = event.context.params?.sourceId;
@@ -92,7 +91,6 @@ sourcesPipelineRouter.get("/:sourceId/:fileId/:pipelineId/code", async (event) =
   return { error: `Pipeline "${pipelineId}" not found in file "${fileId}" of source "${sourceId}"` };
 });
 
-// POST /api/sources/:sourceId/:fileId/:pipelineId/execute - Execute pipeline
 sourcesPipelineRouter.post("/:sourceId/:fileId/:pipelineId/execute", async (event) => {
   const { sources, db } = event.context;
   const workspaceId = event.context.workspaceId;
@@ -211,7 +209,6 @@ sourcesPipelineRouter.post("/:sourceId/:fileId/:pipelineId/execute", async (even
   return { error: `Pipeline "${pipelineId}" not found in file "${fileId}" of source "${sourceId}"` };
 });
 
-// GET /api/sources/:sourceId/:fileId/:pipelineId/executions - List executions
 sourcesPipelineRouter.get("/:sourceId/:fileId/:pipelineId/executions", async (event) => {
   const { db } = event.context;
   const workspaceId = event.context.workspaceId;
@@ -275,5 +272,3 @@ sourcesPipelineRouter.get("/:sourceId/:fileId/:pipelineId/executions", async (ev
     };
   }
 });
-
-// TODO: Add graph, graphs, inspect endpoints

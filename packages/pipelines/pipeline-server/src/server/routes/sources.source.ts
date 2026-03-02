@@ -4,6 +4,7 @@ import {
   findFileGroup,
   loadPipelineFileGroups,
 } from "#server/lib/files";
+import { syncRemoteSource } from "@ucdjs/pipelines-loader";
 import { H3 } from "h3";
 
 export const sourcesSourceRouter: H3 = new H3();
@@ -15,6 +16,94 @@ sourcesSourceRouter.get("/", async (event) => {
     id: s.id,
     type: s.type,
   })) satisfies SourceList;
+});
+
+sourcesSourceRouter.get("/:sourceId", async (event) => {
+  const { sources } = event.context;
+  const sourceId = event.context.params!.sourceId!;
+
+  const source = sources.find((s) => s.id === sourceId);
+  if (!source) {
+    throw new Error("Source not found");
+  }
+
+  const groups = await loadPipelineFileGroups([source]);
+  const allFiles: PipelineFileGroup[] = [];
+  const allErrors: PipelineLoadErrorInfo[] = [];
+
+  for (const group of groups) {
+    allFiles.push(...group.fileGroups);
+    allErrors.push(...group.errors);
+  }
+
+  return {
+    sourceId,
+    files: allFiles.map((file) => ({
+      fileId: file.fileId,
+      filePath: file.filePath,
+      sourceFilePath: file.sourceFilePath,
+      fileLabel: file.fileLabel,
+      sourceId: file.sourceId,
+      pipelines: file.pipelines,
+    })),
+    errors: allErrors,
+  } satisfies SourceDetail;
+});
+
+sourcesSourceRouter.post("/:sourceId/refresh", async (event) => {
+  const { sources } = event.context;
+  const sourceId = event.context.params?.sourceId;
+
+  if (!sourceId) {
+    return { error: "Source ID is required" };
+  }
+
+  // Find the source configuration
+  const source = sources.find((s: { id: string }) => s.id === sourceId);
+  if (!source) {
+    return { error: `Source "${sourceId}" not found` };
+  }
+
+  // Only remote sources can be refreshed
+  if (source.type === "local") {
+    return { error: "Cannot refresh local sources" };
+  }
+
+  const { type, owner, repo, ref = "HEAD" } = source;
+
+  try {
+    const result = await syncRemoteSource({
+      source: type,
+      owner,
+      repo,
+      ref,
+      force: false,
+    });
+
+    if (!result.success) {
+      return {
+        error: "Failed to refresh source",
+        message: result.error?.message ?? "Unknown error",
+      };
+    }
+
+    return {
+      sourceId,
+      source: type,
+      owner,
+      repo,
+      ref,
+      updated: result.updated,
+      previousSha: result.previousSha,
+      newSha: result.newSha,
+      syncedAt: new Date().toISOString(),
+    };
+  } catch (err) {
+    return {
+      error: "Failed to refresh source",
+      message: err instanceof Error ? err.message : String(err),
+    };
+  }
 });
 
 sourcesSourceRouter.get("/:sourceId/:fileId", async (event) => {
@@ -51,37 +140,4 @@ sourcesSourceRouter.get("/:sourceId/:fileId", async (event) => {
   }
 
   return { error: `Pipeline file "${fileId}" not found in source "${sourceId}"`, errors: allErrors };
-});
-
-sourcesSourceRouter.get("/:sourceId", async (event) => {
-  const { sources } = event.context;
-  const sourceId = event.context.params!.sourceId!;
-
-  const source = sources.find((s) => s.id === sourceId);
-  if (!source) {
-    console.log("Source not found:", sourceId);
-    throw new Error("Source not found");
-  }
-
-  const groups = await loadPipelineFileGroups([source]);
-  const allFiles: PipelineFileGroup[] = [];
-  const allErrors: PipelineLoadErrorInfo[] = [];
-
-  for (const group of groups) {
-    allFiles.push(...group.fileGroups);
-    allErrors.push(...group.errors);
-  }
-
-  return {
-    sourceId,
-    files: allFiles.map((file) => ({
-      fileId: file.fileId,
-      filePath: file.filePath,
-      sourceFilePath: file.sourceFilePath,
-      fileLabel: file.fileLabel,
-      sourceId: file.sourceId,
-      pipelines: file.pipelines,
-    })),
-    errors: allErrors,
-  } satisfies SourceDetail;
 });

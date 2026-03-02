@@ -8,7 +8,6 @@ import {
   green,
   header,
   output,
-  yellow,
 } from "../../../output";
 
 export interface CLIPipelinesCacheRefreshCmdOptions {

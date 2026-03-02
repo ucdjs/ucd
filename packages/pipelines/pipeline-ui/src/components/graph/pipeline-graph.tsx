@@ -5,7 +5,6 @@ import type {
   PipelineGraph as PipelineGraphType,
 } from "@ucdjs/pipelines-core";
 import type { NodeMouseHandler } from "@xyflow/react";
-import type { CSSProperties } from "react";
 import { filterNodesByType, pipelineGraphToFlow } from "#lib/adapter";
 import { getNodeColor } from "#lib/colors";
 import { applyLayout } from "#lib/layout";
@@ -16,7 +15,7 @@ import {
   MiniMap,
   ReactFlow,
 } from "@xyflow/react";
-import { memo, useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { PipelineGraphDetails } from "./details";
 import { PipelineGraphFilters } from "./filters";
 

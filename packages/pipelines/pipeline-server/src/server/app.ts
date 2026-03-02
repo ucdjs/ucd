@@ -9,7 +9,6 @@ import {
   sourcesFileRouter,
   sourcesOverviewRouter,
   sourcesPipelineRouter,
-  sourcesRefreshRouter,
   sourcesSourceRouter,
 } from "#server/routes";
 import { ensureWorkspace, resolveWorkspace } from "#server/workspace";
@@ -103,12 +102,11 @@ export function createApp(options: AppOptions = {}): H3 {
     };
   });
 
+  app.mount("/api/sources", sourcesSourceRouter);
   app.mount("/api/sources", sourcesOverviewRouter);
   app.mount("/api/sources", sourcesFileRouter);
   app.mount("/api/sources", sourcesPipelineRouter);
   app.mount("/api/sources", sourcesExecutionRouter);
-  app.mount("/api/sources", sourcesRefreshRouter);
-  app.mount("/api/sources", sourcesSourceRouter);
 
   return app;
 }

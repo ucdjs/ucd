@@ -1,7 +1,7 @@
 import type { LoadError, PipelineFileInfo } from "../types";
 import { cn } from "#lib/utils";
 import { Link } from "@tanstack/react-router";
-import { ThemeToggle, ThemeToggleFallback, UcdLogo } from "@ucdjs-internal/shared-ui/components";
+import { ThemeToggle, UcdLogo } from "@ucdjs-internal/shared-ui/components";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import {
   Sidebar,

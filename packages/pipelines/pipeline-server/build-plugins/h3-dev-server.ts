@@ -1,4 +1,3 @@
-import type { H3 } from "h3";
 import type { Plugin } from "vite";
 import fs from "node:fs/promises";
 import { getUcdConfigDir } from "@ucdjs-internal/shared/config";

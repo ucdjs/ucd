@@ -126,9 +126,17 @@ function CodeDisplay({
           </div>
         </div>
         <div className="mt-1 flex items-center gap-2 text-[0.65rem] text-muted-foreground">
-          <span>{stats.lines} lines</span>
+          <span>
+            {stats.lines}
+            {" "}
+            lines
+          </span>
           <Separator orientation="vertical" className="h-3" />
-          <span>{stats.chars} chars</span>
+          <span>
+            {stats.chars}
+            {" "}
+            chars
+          </span>
         </div>
       </CardHeader>
       <CardContent className="pt-0">

@@ -41,15 +41,15 @@ Returns all configured sources with their metadata.
 **Response**:
 ```typescript
 Array<{
-  id: string;                    // Unique source identifier
-  name: string;                  // Display name
+  id: string; // Unique source identifier
+  name: string; // Display name
   type: "local" | "github" | "gitlab";
-  url?: string;                  // Repository URL (remote sources)
-  branch?: string;               // Git branch (remote sources)
-  path?: string;                 // Filesystem path (local sources)
-  files: File[];                 // Files in this source
-  errors?: string[];             // Load errors if any
-}>
+  url?: string; // Repository URL (remote sources)
+  branch?: string; // Git branch (remote sources)
+  path?: string; // Filesystem path (local sources)
+  files: File[]; // Files in this source
+  errors?: string[]; // Load errors if any
+}>;
 ```
 
 ---
@@ -173,13 +173,13 @@ Executes a pipeline with the provided inputs.
 **Response**:
 ```typescript
 {
-  id: string;                    // Execution ID (UUID)
-  pipelineId: string;            // Pipeline that was executed
-  fileId: string;                // File containing pipeline
-  sourceId: string;              // Source containing file
+  id: string; // Execution ID (UUID)
+  pipelineId: string; // Pipeline that was executed
+  fileId: string; // File containing pipeline
+  sourceId: string; // Source containing file
   status: "pending" | "running";
-  inputs: Record<string, any>;   // Input values provided
-  startedAt: string;             // ISO 8601 timestamp
+  inputs: Record<string, any>; // Input values provided
+  startedAt: string; // ISO 8601 timestamp
 }
 ```
 
@@ -210,17 +210,17 @@ Returns execution history for a specific pipeline.
 **Response**:
 ```typescript
 Array<{
-  id: string;                    // Execution ID
+  id: string; // Execution ID
   pipelineId: string;
   fileId: string;
   sourceId: string;
   status: "pending" | "running" | "completed" | "failed" | "cancelled";
   inputs: Record<string, any>;
   outputs?: Record<string, any>;
-  startedAt: string;             // ISO 8601
-  completedAt?: string;          // ISO 8601
+  startedAt: string; // ISO 8601
+  completedAt?: string; // ISO 8601
   error?: string;
-}>
+}>;
 ```
 
 ---
@@ -260,13 +260,13 @@ Returns lifecycle events for an execution (start, complete, step transitions, er
 **Response**:
 ```typescript
 Array<{
-  id: string;                    // Event ID
+  id: string; // Event ID
   executionId: string;
-  type: "execution.started" | "execution.completed" | "execution.failed" | 
-        "step.started" | "step.completed" | "step.failed";
-  timestamp: string;             // ISO 8601
-  data?: Record<string, any>;    // Event-specific data
-}>
+  type: "execution.started" | "execution.completed" | "execution.failed"
+    | "step.started" | "step.completed" | "step.failed";
+  timestamp: string; // ISO 8601
+  data?: Record<string, any>; // Event-specific data
+}>;
 ```
 
 ---
@@ -291,14 +291,14 @@ Returns log entries from pipeline execution.
 **Response**:
 ```typescript
 Array<{
-  id: string;                    // Log entry ID
+  id: string; // Log entry ID
   executionId: string;
-  timestamp: string;             // ISO 8601
+  timestamp: string; // ISO 8601
   level: "debug" | "info" | "warn" | "error";
   message: string;
-  span?: string;                 // Trace/span identifier
+  span?: string; // Trace/span identifier
   metadata?: Record<string, any>;
-}>
+}>;
 ```
 
 ---

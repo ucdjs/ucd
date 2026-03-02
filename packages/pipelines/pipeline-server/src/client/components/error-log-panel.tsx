@@ -26,7 +26,10 @@ export function ErrorLogPanel({ errors, isOpen, onClose, onDismiss, onClearAll }
           <div className="flex items-center gap-2">
             <AlertTriangle className="h-4 w-4 text-destructive" />
             <span className="font-medium text-sm">
-              {errors.length} Error{errors.length !== 1 ? "s" : ""}
+              {errors.length}
+              {" "}
+              Error
+              {errors.length !== 1 ? "s" : ""}
             </span>
           </div>
           <div className="flex items-center gap-1">
@@ -116,11 +119,13 @@ function ErrorItem({ error, onDismiss }: { error: LoadError; onDismiss: () => vo
             className="p-1.5 hover:bg-muted rounded transition-colors"
             title="Copy error details"
           >
-            {copied ? (
-              <span className="text-xs text-green-500">Copied!</span>
-            ) : (
-              <Copy className="h-3.5 w-3.5 text-muted-foreground" />
-            )}
+            {copied
+              ? (
+                  <span className="text-xs text-green-500">Copied!</span>
+                )
+              : (
+                  <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+                )}
           </button>
           <button
             onClick={(e) => {
@@ -132,11 +137,13 @@ function ErrorItem({ error, onDismiss }: { error: LoadError; onDismiss: () => vo
           >
             <X className="h-3.5 w-3.5 text-muted-foreground" />
           </button>
-          {isExpanded ? (
-            <ChevronUp className="h-4 w-4 text-muted-foreground" />
-          ) : (
-            <ChevronDown className="h-4 w-4 text-muted-foreground" />
-          )}
+          {isExpanded
+            ? (
+                <ChevronUp className="h-4 w-4 text-muted-foreground" />
+              )
+            : (
+                <ChevronDown className="h-4 w-4 text-muted-foreground" />
+              )}
         </div>
       </div>
 
@@ -145,8 +152,16 @@ function ErrorItem({ error, onDismiss }: { error: LoadError; onDismiss: () => vo
         <div className="px-4 pb-3 pt-0 bg-muted/30">
           <div className="pl-7">
             <div className="text-xs text-muted-foreground space-y-1">
-              <p><span className="font-medium">Source:</span> {error.sourceId || "N/A"}</p>
-              <p><span className="font-medium">File:</span> {error.filePath}</p>
+              <p>
+                <span className="font-medium">Source:</span>
+                {" "}
+                {error.sourceId || "N/A"}
+              </p>
+              <p>
+                <span className="font-medium">File:</span>
+                {" "}
+                {error.filePath}
+              </p>
               <div className="bg-muted rounded p-2 mt-2">
                 <p className="font-medium mb-1">Error Message:</p>
                 <p className="text-destructive whitespace-pre-wrap">{error.message}</p>

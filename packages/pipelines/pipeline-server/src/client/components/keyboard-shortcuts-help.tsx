@@ -1,6 +1,5 @@
 import { useHotkey } from "@tanstack/react-hotkeys";
 import { Command, CornerDownLeft, HelpCircle, Keyboard, X } from "lucide-react";
-import { useEffect, useState } from "react";
 
 interface KeyboardShortcutsHelpProps {
   isOpen: boolean;
@@ -63,7 +62,11 @@ export function KeyboardShortcutsHelp({ isOpen, onClose }: KeyboardShortcutsHelp
         <div className="border-t border-border px-4 py-3 bg-muted/30">
           <p className="text-xs text-muted-foreground flex items-center gap-1">
             <HelpCircle className="h-3 w-3" />
-            Press <kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px] font-mono">Mod+/</kbd> to show this help anytime
+            Press
+            {" "}
+            <kbd className="px-1.5 py-0.5 bg-muted rounded text-[10px] font-mono">Mod+/</kbd>
+            {" "}
+            to show this help anytime
           </p>
         </div>
       </div>
@@ -102,16 +105,20 @@ function KeyboardShortcut({ keys }: { keys: string }) {
       {parts.map((part, index) => (
         <span key={index} className="flex items-center">
           <kbd className="px-2 py-1 bg-muted border border-border rounded text-xs font-mono min-w-[24px] text-center">
-            {part === "Mod" ? (
-              <span className="flex items-center gap-0.5">
-                <Command className="h-3 w-3" />
-                <span className="text-[10px]">Ctrl</span>
-              </span>
-            ) : part === "Enter" ? (
-              <CornerDownLeft className="h-3 w-3" />
-            ) : (
-              part
-            )}
+            {part === "Mod"
+              ? (
+                  <span className="flex items-center gap-0.5">
+                    <Command className="h-3 w-3" />
+                    <span className="text-[10px]">Ctrl</span>
+                  </span>
+                )
+              : part === "Enter"
+                ? (
+                    <CornerDownLeft className="h-3 w-3" />
+                  )
+                : (
+                    part
+                  )}
           </kbd>
           {index < parts.length - 1 && (
             <span className="mx-1 text-muted-foreground">+</span>
