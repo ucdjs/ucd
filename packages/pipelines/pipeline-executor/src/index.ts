@@ -30,6 +30,8 @@ export type {
   PipelineExecutorRunOptions,
 } from "./types";
 
+export { EXECUTION_STATUSES } from "./types";
+
 export type {
   ExecutionStatus,
   PipelineExecutionResult,
