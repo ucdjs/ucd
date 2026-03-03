@@ -1,9 +1,8 @@
 import { VersionCardItem } from "#components/home/versions/version-card-item";
-import { UcdLogo } from "#components/ucd-logo";
 import { versionsQueryOptions } from "#functions/versions";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createLazyFileRoute } from "@tanstack/react-router";
-import { ThemeToggle } from "@ucdjs-internal/shared-ui/components";
+import { ThemeToggle, UcdLogo } from "@ucdjs-internal/shared-ui/components";
 import { Layers } from "lucide-react";
 import { useMemo } from "react";
 

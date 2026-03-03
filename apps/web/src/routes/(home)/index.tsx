@@ -1,9 +1,8 @@
 import { VersionCardItem } from "#components/home/versions/version-card-item";
-import { UcdLogo } from "#components/ucd-logo";
 import { versionDetailsQueryOptions, versionsQueryOptions } from "#functions/versions";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { ClientOnly, createFileRoute, Link, useLoaderData } from "@tanstack/react-router";
-import { ThemeToggle, ThemeToggleFallback } from "@ucdjs-internal/shared-ui/components";
+import { ThemeToggle, ThemeToggleFallback, UcdLogo } from "@ucdjs-internal/shared-ui/components";
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import { Card, CardContent } from "@ucdjs-internal/shared-ui/ui/card";
 import {
