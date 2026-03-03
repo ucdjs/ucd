@@ -22,8 +22,6 @@ export {
   withPipelineSpan,
 } from "./log-context";
 
-export { EXECUTION_STATUSES } from "./types";
-
 export type {
   PipelineExecutor,
   PipelineExecutorOptions,
