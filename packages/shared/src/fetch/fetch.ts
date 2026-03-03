@@ -224,11 +224,6 @@ function createCustomFetch(): CustomFetch {
         && context.response.data !== undefined
         && context.response.status < 400
       ) {
-        console.log("Validating response data with schema", {
-          data: context.response.data,
-          schema: context.options.schema,
-          contextRequest: context.request,
-        });
         const result = await context.options.schema.safeParseAsync(context.response.data);
         if (!result.success) {
           // Wrap schema failures in a dedicated error with issues attached
