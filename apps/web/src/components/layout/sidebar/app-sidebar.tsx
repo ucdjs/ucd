@@ -1,7 +1,7 @@
 import type { ComponentProps } from "react";
 import { SiGithub } from "@icons-pack/react-simple-icons";
 import { ClientOnly, Link, useLoaderData, useMatch, useNavigate } from "@tanstack/react-router";
-import { ThemeToggle, ThemeToggleFallback } from "@ucdjs-internal/shared-ui/components";
+import { ThemeToggle, ThemeToggleFallback, UcdLogo } from "@ucdjs-internal/shared-ui/components";
 import {
   Sidebar,
   SidebarContent,
@@ -17,7 +17,6 @@ import {
 } from "@ucdjs-internal/shared-ui/ui/sidebar";
 import { BookOpen, ExternalLink, Grid3X3, Lightbulb, Type } from "lucide-react";
 import { Suspense, useState } from "react";
-import { UcdLogo } from "../../ucd-logo";
 import { VersionSwitcher } from "../../version-switcher";
 
 const VERSION_ITEMS = [
