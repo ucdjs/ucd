@@ -192,7 +192,7 @@ const testCases: TestCase[] = [
     async run() {
       const entries = await bridge.listdir("subdir");
       if (entries.length !== 1) throw new Error("Should have 1 entry");
-      if (entries[0].name !== "nested.txt") throw new Error("Wrong entry name");
+      if (entries[0]!.name !== "nested.txt") throw new Error("Wrong entry name");
     },
   },
   {
@@ -288,9 +288,9 @@ for (const testCase of testCases) {
     await testCase.run();
     console.log("PASS");
     passed++;
-  } catch (error) {
+  } catch (err) {
     console.log("FAIL");
-    console.log(`     Error: ${(error as Error).message}`);
+    console.log(`     Error: ${(err as Error).message}`);
     failed++;
   }
 }

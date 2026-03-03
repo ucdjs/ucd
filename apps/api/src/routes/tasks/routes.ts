@@ -177,8 +177,8 @@ TASKS_ROUTER.get("/purge-cache", async (c) => {
       cacheName,
       purgedUrl: cacheUrl,
     }, 200);
-  } catch (error) {
-    console.error("[tasks]: failed to purge cache:", error);
+  } catch (err) {
+    console.error("[tasks]: failed to purge cache:", err);
     return badGateway(c);
   }
 });

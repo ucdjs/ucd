@@ -45,12 +45,12 @@ export function wrapTry<T, E = Error>(
       dataType: typeof result,
     });
     return onSuccess(result);
-  } catch (error) {
+  } catch (err) {
     debug?.("wrapTry: sync operation failed", {
-      errorName: error instanceof Error ? (error as Error).name : "Unknown",
-      errorMessage: error instanceof Error ? (error as Error).message : String(error),
+      errorName: err instanceof Error ? (err as Error).name : "Unknown",
+      errorMessage: err instanceof Error ? (err as Error).message : String(err),
     });
-    return onFailure<E>(error);
+    return onFailure<E>(err);
   }
 }
 

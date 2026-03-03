@@ -186,8 +186,8 @@ function createCustomFetch(): CustomFetch {
         context.request,
         context.options as RequestInit,
       );
-    } catch (error) {
-      context.error = error as Error;
+    } catch (err) {
+      context.error = err as Error;
       return await handleError(context);
     } finally {
       if (abortTimeout) {

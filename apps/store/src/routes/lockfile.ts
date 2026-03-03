@@ -59,8 +59,8 @@ export function registerLockfileRoute(router: Hono<HonoEnv>) {
         "Content-Type": "application/json",
         "Cache-Control": "public, max-age=3600", // 1 hour cache
       });
-    } catch (error) {
-      console.error("[ucd-store]: Failed to generate lockfile:", error);
+    } catch (err) {
+      console.error("[ucd-store]: Failed to generate lockfile:", err);
       return badGateway(c);
     }
   });

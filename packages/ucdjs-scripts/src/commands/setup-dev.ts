@@ -64,11 +64,11 @@ export async function setupDev(options: SetupDevOptions): Promise<void> {
           version: manifest.version,
           fileCount: manifest.fileCount,
         });
-      } catch (error) {
+      } catch (err) {
         result.success = false;
         result.errors.push({
           version: manifest.version,
-          reason: error instanceof Error ? error.message : String(error),
+          reason: err instanceof Error ? err.message : String(err),
         });
       }
     }

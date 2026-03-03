@@ -325,11 +325,11 @@
   // Example usage in bridge implementations
   try {
     await fsp.readFile(path);
-  } catch (error) {
-    if (error.code === "ENOENT") {
+  } catch (err) {
+    if (err.code === "ENOENT") {
       throw new BridgeFileNotFound(path);
     }
-    throw new BridgeGenericError("Unexpected file system error", error);
+    throw new BridgeGenericError("Unexpected file system error", err);
   }
   ```
 
@@ -504,12 +504,12 @@
   // Usage - all errors are now consistently handled
   try {
     await bridge.read("/some/path");
-  } catch (error) {
-    if (error instanceof BridgeFileNotFound) {
+  } catch (err) {
+    if (err instanceof BridgeFileNotFound) {
       // Handle specific bridge error
-    } else if (error instanceof BridgeGenericError) {
+    } else if (err instanceof BridgeGenericError) {
       // Handle wrapped unexpected error
-      console.log(error.originalError); // Access the original error
+      console.log(err.originalError); // Access the original error
     }
   }
   ```
