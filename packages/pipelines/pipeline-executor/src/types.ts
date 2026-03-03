@@ -12,7 +12,15 @@ export interface PipelineSummary {
   durationMs: number;
 }
 
-export type ExecutionStatus = "running" | "completed" | "failed";
+export const EXECUTION_STATUSES = [
+  "pending",
+  "running",
+  "completed",
+  "failed",
+  "cancelled",
+] as const;
+
+export type ExecutionStatus = (typeof EXECUTION_STATUSES)[number];
 
 export interface PipelineExecutionResult {
   id: string;
