@@ -10,7 +10,6 @@ export interface PipelineFileResponse {
 export interface UsePipelineFileOptions {
   baseUrl?: string;
   sourceId: string;
-  fetchOnMount?: boolean;
 }
 
 export interface UsePipelineFileReturn {
@@ -24,9 +23,9 @@ export function usePipelineFile(
   fileId: string,
   options: UsePipelineFileOptions,
 ): UsePipelineFileReturn {
-  const { baseUrl = "", sourceId, fetchOnMount = true } = options;
+  const { baseUrl = "", sourceId } = options;
 
-  const query = useQuery(sourceFileQueryOptions(baseUrl, sourceId, fileId, fetchOnMount));
+  const query = useQuery(sourceFileQueryOptions({ baseUrl, sourceId, fileId }));
 
   return {
     file: query.data?.file ?? null,

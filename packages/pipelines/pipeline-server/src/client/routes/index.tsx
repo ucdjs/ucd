@@ -11,7 +11,7 @@ import { overviewQueryOptions } from "@ucdjs/pipelines-ui/functions";
 
 export const Route = createFileRoute("/")({
   loader: async ({ context }) => {
-    return context.queryClient.ensureQueryData(overviewQueryOptions(""));
+    return context.queryClient.ensureQueryData(overviewQueryOptions({ baseUrl: "" }));
   },
   component: HomePage,
 });

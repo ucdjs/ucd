@@ -14,11 +14,6 @@ export interface UsePipelinesOptions {
    * Optional search query
    */
   search?: string;
-
-  /**
-   * Whether to fetch on mount (default: true)
-   */
-  fetchOnMount?: boolean;
 }
 
 export interface UsePipelinesReturn {
@@ -29,15 +24,14 @@ export interface UsePipelinesReturn {
 }
 
 export function usePipelines(options: UsePipelinesOptions = {}): UsePipelinesReturn {
-  const { baseUrl = "", search, fetchOnMount = true } = options;
+  const { baseUrl = "", search } = options;
 
   const query = useQuery<PipelinesResponse>({
-    enabled: fetchOnMount,
     queryKey: ["pipelines", { baseUrl, search: search ?? "" }],
     queryFn: async () => {
-      const sources = await fetchSources(baseUrl) as SourceList;
+      const sources = await fetchSources({ baseUrl }) as SourceList;
       const sourceDetails = await Promise.all(
-        sources.map((source) => fetchSource(baseUrl, source.id)),
+        sources.map((source) => fetchSource({ baseUrl, sourceId: source.id })),
       ) as SourceDetail[];
 
       const errors = sourceDetails.flatMap((detail) => detail.errors);

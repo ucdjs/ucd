@@ -12,14 +12,22 @@ import {
   ExecutionLogsResponseSchema,
 } from "../schemas/execution";
 
-export interface FetchExecutionsParams {
+export interface PipelineParams {
   sourceId: string;
   fileId: string;
   pipelineId: string;
   limit?: number;
 }
 
-export async function fetchExecutions(options: WithBaseUrl<FetchExecutionsParams>): Promise<ExecutionListResponse> {
+export interface ExecutionParams extends PipelineParams {
+  executionId: string;
+}
+
+export interface ExecutePipelineParams extends PipelineParams {
+  versions: string[];
+}
+
+export async function fetchExecutions(options: WithBaseUrl<PipelineParams>): Promise<ExecutionListResponse> {
   const { baseUrl, sourceId, fileId, pipelineId, limit = 10 } = options;
   const params = new URLSearchParams();
   params.set("limit", String(limit));
@@ -42,14 +50,7 @@ export async function fetchExecutions(options: WithBaseUrl<FetchExecutionsParams
   return data;
 }
 
-export interface FetchExecutionParams {
-  sourceId: string;
-  fileId: string;
-  pipelineId: string;
-  executionId: string;
-}
-
-export async function fetchExecution(options: WithBaseUrl<FetchExecutionParams>): Promise<ExecutionDetailResponse> {
+export async function fetchExecution(options: WithBaseUrl<ExecutionParams>): Promise<ExecutionDetailResponse> {
   const { baseUrl, sourceId, fileId, pipelineId, executionId } = options;
 
   const { data, error } = await customFetch.safe(
@@ -70,15 +71,7 @@ export async function fetchExecution(options: WithBaseUrl<FetchExecutionParams>)
   return data;
 }
 
-export interface FetchExecutionLogsParams {
-  sourceId: string;
-  fileId: string;
-  pipelineId: string;
-  executionId: string;
-  limit?: number;
-}
-
-export async function fetchExecutionLogs(options: WithBaseUrl<FetchExecutionLogsParams>): Promise<ExecutionLogsResponse> {
+export async function fetchExecutionLogs(options: WithBaseUrl<ExecutionParams>): Promise<ExecutionLogsResponse> {
   const { baseUrl, sourceId, fileId, pipelineId, executionId, limit = 500 } = options;
   const params = new URLSearchParams();
   params.set("limit", String(limit));
@@ -101,14 +94,7 @@ export async function fetchExecutionLogs(options: WithBaseUrl<FetchExecutionLogs
   return data;
 }
 
-export interface FetchExecutionGraphParams {
-  sourceId: string;
-  fileId: string;
-  pipelineId: string;
-  executionId: string;
-}
-
-export async function fetchExecutionGraph(options: WithBaseUrl<FetchExecutionGraphParams>): Promise<ExecutionGraphResponse> {
+export async function fetchExecutionGraph(options: WithBaseUrl<ExecutionParams>): Promise<ExecutionGraphResponse> {
   const { baseUrl, sourceId, fileId, pipelineId, executionId } = options;
   const { data, error } = await customFetch.safe(
     `${baseUrl}/api/sources/${sourceId}/${fileId}/${pipelineId}/executions/${executionId}/graph`,
@@ -133,13 +119,6 @@ export const ExecuteResponseSchema = z.object({
   executionId: z.string().optional(),
   error: z.string().optional(),
 });
-
-export interface ExecutePipelineParams {
-  sourceId: string;
-  fileId: string;
-  pipelineId: string;
-  versions: string[];
-}
 
 export async function executePipeline(options: WithBaseUrl<ExecutePipelineParams>): Promise<ExecuteResult> {
   const { baseUrl, sourceId, fileId, pipelineId, versions } = options;
@@ -177,15 +156,7 @@ export async function executePipeline(options: WithBaseUrl<ExecutePipelineParams
   };
 }
 
-export interface FetchExecutionEventsParams {
-  sourceId: string;
-  fileId: string;
-  pipelineId: string;
-  executionId: string;
-  limit?: number;
-}
-
-export async function fetchExecutionEvents(options: WithBaseUrl<FetchExecutionEventsParams>): Promise<ExecutionEventsResponse> {
+export async function fetchExecutionEvents(options: WithBaseUrl<ExecutionParams>): Promise<ExecutionEventsResponse> {
   const { baseUrl, sourceId, fileId, pipelineId, executionId, limit = 500 } = options;
   const params = new URLSearchParams();
   params.set("limit", String(limit));
@@ -208,98 +179,44 @@ export async function fetchExecutionEvents(options: WithBaseUrl<FetchExecutionEv
   return data;
 }
 
-export interface ExecutionsParams {
-  sourceId: string;
-  fileId: string;
-  pipelineId: string;
-  limit?: number;
-  fetchOnMount?: boolean;
-}
-
-export function executionsQueryOptions(options: WithBaseUrl<ExecutionsParams>) {
-  const { baseUrl, sourceId, fileId, pipelineId, limit, fetchOnMount } = options;
+export function executionsQueryOptions(options: WithBaseUrl<PipelineParams>) {
+  const { baseUrl, sourceId, fileId, pipelineId, limit } = options;
   return queryOptions({
     queryKey: ["sources", sourceId, "files", fileId, "pipelines", pipelineId, "executions", { limit }],
     queryFn: () => fetchExecutions({ baseUrl, sourceId, fileId, pipelineId, limit }),
-    enabled: fetchOnMount,
   });
 }
 
-export interface ExecutionQueryParams {
-  sourceId: string;
-  fileId: string;
-  pipelineId: string;
-  executionId: string;
-  fetchOnMount?: boolean;
-}
-
-export function executionQueryOptions(options: WithBaseUrl<ExecutionQueryParams>) {
-  const { baseUrl, sourceId, fileId, pipelineId, executionId, fetchOnMount } = options;
+export function executionQueryOptions(options: WithBaseUrl<ExecutionParams>) {
+  const { baseUrl, sourceId, fileId, pipelineId, executionId } = options;
   return queryOptions({
     queryKey: ["sources", sourceId, "files", fileId, "pipelines", pipelineId, "executions", executionId],
     queryFn: () => fetchExecution({ baseUrl, sourceId, fileId, pipelineId, executionId }),
-    enabled: fetchOnMount,
   });
 }
 
-export interface ExecutionLogsQueryParams {
-  sourceId: string;
-  fileId: string;
-  pipelineId: string;
-  executionId: string;
-  limit?: number;
-  fetchOnMount?: boolean;
-}
-
-export function executionLogsQueryOptions(options: WithBaseUrl<ExecutionLogsQueryParams>) {
-  const { baseUrl, sourceId, fileId, pipelineId, executionId, limit = 500, fetchOnMount = true } = options;
+export function executionLogsQueryOptions(options: WithBaseUrl<ExecutionParams>) {
+  const { baseUrl, sourceId, fileId, pipelineId, executionId, limit = 500 } = options;
   return queryOptions({
     queryKey: ["sources", sourceId, "files", fileId, "pipelines", pipelineId, "executions", executionId, "logs", { limit }],
     queryFn: () => fetchExecutionLogs({ baseUrl, sourceId, fileId, pipelineId, executionId, limit }),
-    enabled: fetchOnMount,
   });
 }
 
-export interface ExecutionGraphQueryParams {
-  sourceId: string;
-  fileId: string;
-  pipelineId: string;
-  executionId: string;
-  fetchOnMount?: boolean;
-}
-
-export function executionGraphQueryOptions(options: WithBaseUrl<ExecutionGraphQueryParams>) {
-  const { baseUrl, sourceId, fileId, pipelineId, executionId, fetchOnMount = true } = options;
+export function executionGraphQueryOptions(options: WithBaseUrl<ExecutionParams>) {
+  const { baseUrl, sourceId, fileId, pipelineId, executionId } = options;
   return queryOptions({
     queryKey: ["sources", sourceId, "files", fileId, "pipelines", pipelineId, "executions", executionId, "graph"],
     queryFn: () => fetchExecutionGraph({ baseUrl, sourceId, fileId, pipelineId, executionId }),
-    enabled: fetchOnMount,
   });
 }
 
-export interface ExecutionEventsQueryParams {
-  sourceId: string;
-  fileId: string;
-  pipelineId: string;
-  executionId: string;
-  limit?: number;
-  fetchOnMount?: boolean;
-}
-
-export function executionEventsQueryOptions(options: WithBaseUrl<ExecutionEventsQueryParams>) {
-  const { baseUrl, sourceId, fileId, pipelineId, executionId, limit = 500, fetchOnMount = true } = options;
+export function executionEventsQueryOptions(options: WithBaseUrl<ExecutionParams>) {
+  const { baseUrl, sourceId, fileId, pipelineId, executionId, limit = 500 } = options;
   return queryOptions({
     queryKey: ["sources", sourceId, "files", fileId, "pipelines", pipelineId, "executions", executionId, "events", { limit }],
     queryFn: () => fetchExecutionEvents({ baseUrl, sourceId, fileId, pipelineId, executionId, limit }),
-    enabled: fetchOnMount,
   });
-}
-
-export interface ExecutePipelineParams {
-  sourceId: string;
-  fileId: string;
-  pipelineId: string;
-  versions: string[];
 }
 
 export function executePipelineMutationOptions(baseUrl: string) {

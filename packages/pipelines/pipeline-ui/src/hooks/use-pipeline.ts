@@ -12,11 +12,6 @@ export interface UsePipelineOptions {
    * Source ID for source-based API routes
    */
   sourceId: string;
-
-  /**
-   * Whether to fetch on mount (default: true)
-   */
-  fetchOnMount?: boolean;
 }
 
 export interface UsePipelineReturn {
@@ -31,14 +26,13 @@ export function usePipeline(
   pipelineId: string,
   options: UsePipelineOptions,
 ): UsePipelineReturn {
-  const { baseUrl = "", sourceId, fetchOnMount = true } = options;
+  const { baseUrl = "", sourceId } = options;
 
   const query = useQuery(pipelineQueryOptions({
     baseUrl,
     sourceId,
     fileId,
     pipelineId,
-    fetchOnMount,
   }));
 
   return {

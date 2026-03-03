@@ -1,6 +1,7 @@
 import type { Plugin } from "vite";
 import fs from "node:fs/promises";
-import { getUcdConfigDir } from "@ucdjs-internal/shared/config";
+// This is fine.. We sometimes get errors, if we used the "actual" module import.
+import { getUcdConfigDir } from "../../../shared/src/config";
 import { ensureWorkspace, resolveWorkspace } from "../src/server/workspace";
 
 const appModuleId = "/src/server/app.ts";

@@ -1,3 +1,4 @@
+import type { WithBaseUrl } from "#lib/functions";
 import { queryOptions } from "@tanstack/react-query";
 import { customFetch } from "@ucdjs-internal/shared";
 import { z } from "zod";
@@ -9,7 +10,8 @@ const ConfigSchema = z.object({
 
 export type Config = z.infer<typeof ConfigSchema>;
 
-export async function fetchConfig(baseUrl: string): Promise<Config> {
+export async function fetchConfig(options: WithBaseUrl): Promise<Config> {
+  const { baseUrl } = options;
   const { data, error } = await customFetch.safe(
     `${baseUrl}/api/config`,
     {
@@ -28,10 +30,11 @@ export async function fetchConfig(baseUrl: string): Promise<Config> {
   return data;
 }
 
-export function configQueryOptions(baseUrl: string) {
+export function configQueryOptions(options: WithBaseUrl) {
+  const { baseUrl } = options;
   return queryOptions({
     queryKey: ["config"],
-    queryFn: () => fetchConfig(baseUrl),
+    queryFn: () => fetchConfig({ baseUrl }),
     staleTime: Infinity,
   });
 }

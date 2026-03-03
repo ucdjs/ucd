@@ -55,8 +55,8 @@ export const Route = createRootRouteWithContext<AppRouterContext>()({
   }),
   loader: async ({ context }) => {
     const [config, sources] = await Promise.all([
-      context.queryClient.ensureQueryData(configQueryOptions("")),
-      context.queryClient.ensureQueryData(sourcesQueryOptions("")),
+      context.queryClient.ensureQueryData(configQueryOptions({ baseUrl: "" })),
+      context.queryClient.ensureQueryData(sourcesQueryOptions({ baseUrl: "" })),
     ]);
 
     return { config, sources };
@@ -74,7 +74,7 @@ function RootLayout() {
 
   // Only fetch files when a specific source is selected
   const filesQuery = useQuery({
-    ...sourceQueryOptions("", currentSourceId || ""),
+    ...sourceQueryOptions({ baseUrl: "", sourceId: currentSourceId || "" }),
     enabled: !!currentSourceId,
   });
 

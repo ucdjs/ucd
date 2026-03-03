@@ -60,15 +60,13 @@ export interface PipelineQueryParams {
   sourceId: string;
   fileId: string;
   pipelineId: string;
-  fetchOnMount?: boolean;
 }
 
 export function pipelineQueryOptions(options: WithBaseUrl<PipelineQueryParams>) {
-  const { baseUrl, sourceId, fileId, pipelineId, fetchOnMount } = options;
+  const { baseUrl, sourceId, fileId, pipelineId } = options;
   return queryOptions({
     queryKey: ["sources", sourceId, "files", fileId, "pipelines", pipelineId],
     queryFn: () => fetchPipeline({ baseUrl, sourceId, fileId, pipelineId }),
-    enabled: fetchOnMount,
   });
 }
 
@@ -76,14 +74,12 @@ export interface PipelineCodeQueryParams {
   sourceId: string;
   fileId: string;
   pipelineId: string;
-  fetchOnMount?: boolean;
 }
 
 export function pipelineCodeQueryOptions(options: WithBaseUrl<PipelineCodeQueryParams>) {
-  const { baseUrl, sourceId, fileId, pipelineId, fetchOnMount } = options;
+  const { baseUrl, sourceId, fileId, pipelineId } = options;
   return queryOptions({
     queryKey: ["sources", sourceId, "files", fileId, "pipelines", pipelineId, "code"],
     queryFn: () => fetchPipelineCode({ baseUrl, sourceId, fileId, pipelineId }),
-    enabled: fetchOnMount,
   });
 }
