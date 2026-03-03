@@ -28,7 +28,7 @@ export interface ExecutePipelineParams extends PipelineParams {
 }
 
 export async function fetchExecutions(options: WithBaseUrl<PipelineParams>): Promise<ExecutionListResponse> {
-  const { baseUrl, sourceId, fileId, pipelineId, limit = 10 } = options;
+  const { baseUrl = "", sourceId, fileId, pipelineId, limit = 10 } = options;
   const params = new URLSearchParams();
   params.set("limit", String(limit));
 
@@ -51,7 +51,7 @@ export async function fetchExecutions(options: WithBaseUrl<PipelineParams>): Pro
 }
 
 export async function fetchExecution(options: WithBaseUrl<ExecutionParams>): Promise<ExecutionDetailResponse> {
-  const { baseUrl, sourceId, fileId, pipelineId, executionId } = options;
+  const { baseUrl = "", sourceId, fileId, pipelineId, executionId } = options;
 
   const { data, error } = await customFetch.safe(
     `${baseUrl}/api/sources/${sourceId}/${fileId}/${pipelineId}/executions/${executionId}`,
@@ -72,7 +72,7 @@ export async function fetchExecution(options: WithBaseUrl<ExecutionParams>): Pro
 }
 
 export async function fetchExecutionLogs(options: WithBaseUrl<ExecutionParams>): Promise<ExecutionLogsResponse> {
-  const { baseUrl, sourceId, fileId, pipelineId, executionId, limit = 500 } = options;
+  const { baseUrl = "", sourceId, fileId, pipelineId, executionId, limit = 500 } = options;
   const params = new URLSearchParams();
   params.set("limit", String(limit));
 
@@ -95,7 +95,7 @@ export async function fetchExecutionLogs(options: WithBaseUrl<ExecutionParams>):
 }
 
 export async function fetchExecutionGraph(options: WithBaseUrl<ExecutionParams>): Promise<ExecutionGraphResponse> {
-  const { baseUrl, sourceId, fileId, pipelineId, executionId } = options;
+  const { baseUrl = "", sourceId, fileId, pipelineId, executionId } = options;
   const { data, error } = await customFetch.safe(
     `${baseUrl}/api/sources/${sourceId}/${fileId}/${pipelineId}/executions/${executionId}/graph`,
     {
@@ -121,7 +121,7 @@ export const ExecuteResponseSchema = z.object({
 });
 
 export async function executePipeline(options: WithBaseUrl<ExecutePipelineParams>): Promise<ExecuteResult> {
-  const { baseUrl, sourceId, fileId, pipelineId, versions } = options;
+  const { baseUrl = "", sourceId, fileId, pipelineId, versions } = options;
   const { data, error } = await customFetch.safe(
     `${baseUrl}/api/sources/${sourceId}/${fileId}/${pipelineId}/execute`,
     {
@@ -157,7 +157,7 @@ export async function executePipeline(options: WithBaseUrl<ExecutePipelineParams
 }
 
 export async function fetchExecutionEvents(options: WithBaseUrl<ExecutionParams>): Promise<ExecutionEventsResponse> {
-  const { baseUrl, sourceId, fileId, pipelineId, executionId, limit = 500 } = options;
+  const { baseUrl = "", sourceId, fileId, pipelineId, executionId, limit = 500 } = options;
   const params = new URLSearchParams();
   params.set("limit", String(limit));
 
@@ -180,7 +180,7 @@ export async function fetchExecutionEvents(options: WithBaseUrl<ExecutionParams>
 }
 
 export function executionsQueryOptions(options: WithBaseUrl<PipelineParams>) {
-  const { baseUrl, sourceId, fileId, pipelineId, limit } = options;
+  const { baseUrl = "", sourceId, fileId, pipelineId, limit } = options;
   return queryOptions({
     queryKey: ["sources", sourceId, "files", fileId, "pipelines", pipelineId, "executions", { limit }],
     queryFn: () => fetchExecutions({ baseUrl, sourceId, fileId, pipelineId, limit }),
@@ -188,7 +188,7 @@ export function executionsQueryOptions(options: WithBaseUrl<PipelineParams>) {
 }
 
 export function executionQueryOptions(options: WithBaseUrl<ExecutionParams>) {
-  const { baseUrl, sourceId, fileId, pipelineId, executionId } = options;
+  const { baseUrl = "", sourceId, fileId, pipelineId, executionId } = options;
   return queryOptions({
     queryKey: ["sources", sourceId, "files", fileId, "pipelines", pipelineId, "executions", executionId],
     queryFn: () => fetchExecution({ baseUrl, sourceId, fileId, pipelineId, executionId }),
@@ -196,7 +196,7 @@ export function executionQueryOptions(options: WithBaseUrl<ExecutionParams>) {
 }
 
 export function executionLogsQueryOptions(options: WithBaseUrl<ExecutionParams>) {
-  const { baseUrl, sourceId, fileId, pipelineId, executionId, limit = 500 } = options;
+  const { baseUrl = "", sourceId, fileId, pipelineId, executionId, limit = 500 } = options;
   return queryOptions({
     queryKey: ["sources", sourceId, "files", fileId, "pipelines", pipelineId, "executions", executionId, "logs", { limit }],
     queryFn: () => fetchExecutionLogs({ baseUrl, sourceId, fileId, pipelineId, executionId, limit }),
@@ -204,7 +204,7 @@ export function executionLogsQueryOptions(options: WithBaseUrl<ExecutionParams>)
 }
 
 export function executionGraphQueryOptions(options: WithBaseUrl<ExecutionParams>) {
-  const { baseUrl, sourceId, fileId, pipelineId, executionId } = options;
+  const { baseUrl = "", sourceId, fileId, pipelineId, executionId } = options;
   return queryOptions({
     queryKey: ["sources", sourceId, "files", fileId, "pipelines", pipelineId, "executions", executionId, "graph"],
     queryFn: () => fetchExecutionGraph({ baseUrl, sourceId, fileId, pipelineId, executionId }),
@@ -212,7 +212,7 @@ export function executionGraphQueryOptions(options: WithBaseUrl<ExecutionParams>
 }
 
 export function executionEventsQueryOptions(options: WithBaseUrl<ExecutionParams>) {
-  const { baseUrl, sourceId, fileId, pipelineId, executionId, limit = 500 } = options;
+  const { baseUrl = "", sourceId, fileId, pipelineId, executionId, limit = 500 } = options;
   return queryOptions({
     queryKey: ["sources", sourceId, "files", fileId, "pipelines", pipelineId, "executions", executionId, "events", { limit }],
     queryFn: () => fetchExecutionEvents({ baseUrl, sourceId, fileId, pipelineId, executionId, limit }),

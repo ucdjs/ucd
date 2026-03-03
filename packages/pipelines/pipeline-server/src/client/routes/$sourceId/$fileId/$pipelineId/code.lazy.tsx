@@ -183,7 +183,6 @@ function EmptyCodeDisplay({ pipelineId }: { pipelineId: string }) {
 function PipelineCodePage() {
   const { pipelineId, sourceId, fileId } = Route.useParams();
   const { data } = useSuspenseQuery(pipelineCodeQueryOptions({
-    baseUrl: "",
     sourceId,
     fileId,
     pipelineId,

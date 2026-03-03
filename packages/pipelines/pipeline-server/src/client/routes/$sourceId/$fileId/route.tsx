@@ -4,7 +4,10 @@ import { sourceFileQueryOptions } from "@ucdjs/pipelines-ui/functions";
 export const Route = createFileRoute("/$sourceId/$fileId")({
   loader: async ({ context, params }) => {
     return context.queryClient.ensureQueryData(
-      sourceFileQueryOptions({ baseUrl: "", sourceId: params.sourceId, fileId: params.fileId }),
+      sourceFileQueryOptions({
+        sourceId: params.sourceId,
+        fileId: params.fileId,
+      }),
     );
   },
 });

@@ -74,7 +74,7 @@ function RootLayout() {
 
   // Only fetch files when a specific source is selected
   const filesQuery = useQuery({
-    ...sourceQueryOptions({ baseUrl: "", sourceId: currentSourceId || "" }),
+    ...sourceQueryOptions({ sourceId: currentSourceId || "" }),
     enabled: !!currentSourceId,
   });
 

@@ -5,7 +5,6 @@ export const Route = createFileRoute("/$sourceId/$fileId/$pipelineId/executions/
   loader: async ({ context, params }) => {
     await context.queryClient.prefetchQuery(
       executionsQueryOptions({
-        baseUrl: "",
         sourceId: params.sourceId,
         fileId: params.fileId,
         pipelineId: params.pipelineId,

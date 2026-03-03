@@ -13,7 +13,7 @@ export interface SourceFileParams extends SourceParams {
 }
 
 export async function fetchSources(options: WithBaseUrl): Promise<SourceList> {
-  const { baseUrl } = options;
+  const { baseUrl = "" } = options;
   const { data, error } = await customFetch.safe(`${baseUrl}/api/sources`, {
     schema: SourceListSchema,
   });
@@ -30,7 +30,7 @@ export async function fetchSources(options: WithBaseUrl): Promise<SourceList> {
 }
 
 export async function fetchSource(options: WithBaseUrl<SourceParams>): Promise<SourceDetail> {
-  const { baseUrl, sourceId } = options;
+  const { baseUrl = "", sourceId } = options;
   const { data, error } = await customFetch.safe(`${baseUrl}/api/sources/${sourceId}`, {
     schema: SourceDetailSchema,
   });
@@ -47,7 +47,7 @@ export async function fetchSource(options: WithBaseUrl<SourceParams>): Promise<S
 }
 
 export async function fetchSourceFile(options: WithBaseUrl<SourceFileParams>): Promise<SourceFileResponse> {
-  const { baseUrl, sourceId, fileId } = options;
+  const { baseUrl = "", sourceId, fileId } = options;
   const { data, error } = await customFetch.safe(
     `${baseUrl}/api/sources/${sourceId}/${fileId}`,
     {
@@ -69,7 +69,7 @@ export async function fetchSourceFile(options: WithBaseUrl<SourceFileParams>): P
 }
 
 export function sourcesQueryOptions(options: WithBaseUrl) {
-  const { baseUrl } = options;
+  const { baseUrl = "" } = options;
   return queryOptions({
     queryKey: ["sources"],
     queryFn: () => fetchSources({ baseUrl }),
@@ -77,7 +77,7 @@ export function sourcesQueryOptions(options: WithBaseUrl) {
 }
 
 export function sourceQueryOptions(options: WithBaseUrl<SourceParams>) {
-  const { baseUrl, sourceId } = options;
+  const { baseUrl = "", sourceId } = options;
   return queryOptions({
     queryKey: ["sources", sourceId],
     queryFn: () => fetchSource({ baseUrl, sourceId }),
@@ -85,7 +85,7 @@ export function sourceQueryOptions(options: WithBaseUrl<SourceParams>) {
 }
 
 export function sourceFileQueryOptions(options: WithBaseUrl<SourceFileParams>) {
-  const { baseUrl, sourceId, fileId } = options;
+  const { baseUrl = "", sourceId, fileId } = options;
   return queryOptions({
     queryKey: ["sources", sourceId, "files", fileId],
     queryFn: () => fetchSourceFile({ baseUrl, sourceId, fileId }),

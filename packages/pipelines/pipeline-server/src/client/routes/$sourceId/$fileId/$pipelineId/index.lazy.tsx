@@ -12,7 +12,6 @@ export const Route = createLazyFileRoute("/$sourceId/$fileId/$pipelineId/")({
 function PipelineOverviewPage() {
   const params = Route.useParams();
   const { data } = useSuspenseQuery(executionsQueryOptions({
-    baseUrl: "",
     sourceId: params.sourceId,
     fileId: params.fileId,
     pipelineId: params.pipelineId,

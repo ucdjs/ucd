@@ -23,14 +23,12 @@ export const Route = createLazyFileRoute("/$sourceId/$fileId/$pipelineId/executi
 function ExecutionDetailPage() {
   const { sourceId, fileId, pipelineId, executionId } = Route.useParams();
   const { data: executionQuery } = useSuspenseQuery(executionEventsQueryOptions({
-    baseUrl: "",
     sourceId,
     fileId,
     pipelineId,
     executionId,
   }));
   const { data: logsQuery } = useSuspenseQuery(executionLogsQueryOptions({
-    baseUrl: "",
     sourceId,
     fileId,
     pipelineId,

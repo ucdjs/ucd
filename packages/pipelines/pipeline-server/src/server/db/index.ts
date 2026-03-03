@@ -3,9 +3,10 @@ import { existsSync } from "node:fs";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 import { createClient } from "@libsql/client";
-import { getPipelineDbPath } from "@ucdjs-internal/shared/config";
 import { drizzle } from "drizzle-orm/libsql";
 import { migrate } from "drizzle-orm/libsql/migrator";
+// import { getPipelineDbPath } from "@ucdjs-internal/shared/config";
+import { getPipelineDbPath } from "../../../../../shared/src/config";
 import * as schema from "./schema";
 
 export type Database = LibSQLDatabase<typeof schema>;

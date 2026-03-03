@@ -5,7 +5,7 @@ import { customFetch } from "@ucdjs-internal/shared";
 import { OverviewResponseSchema } from "../schemas/overview";
 
 export async function fetchOverview(options: WithBaseUrl): Promise<OverviewResponse> {
-  const { baseUrl } = options;
+  const { baseUrl = "" } = options;
   const { data, error } = await customFetch.safe(
     `${baseUrl}/api/sources/overview`,
     {
@@ -25,7 +25,7 @@ export async function fetchOverview(options: WithBaseUrl): Promise<OverviewRespo
 }
 
 export function overviewQueryOptions(options: WithBaseUrl) {
-  const { baseUrl } = options;
+  const { baseUrl = "" } = options;
   return queryOptions({
     queryKey: ["sources", "overview"],
     queryFn: () => fetchOverview({ baseUrl }),

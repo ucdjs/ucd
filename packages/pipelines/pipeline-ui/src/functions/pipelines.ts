@@ -11,7 +11,7 @@ export interface FetchPipelineParams {
 }
 
 export async function fetchPipeline(options: WithBaseUrl<FetchPipelineParams>): Promise<PipelineResponse> {
-  const { baseUrl, sourceId, fileId, pipelineId } = options;
+  const { baseUrl = "", sourceId, fileId, pipelineId } = options;
   const { data, error } = await customFetch.safe(
     `${baseUrl}/api/sources/${sourceId}/${fileId}/${pipelineId}`,
     {
@@ -37,7 +37,7 @@ export interface FetchPipelineCodeParams {
 }
 
 export async function fetchPipelineCode(options: WithBaseUrl<FetchPipelineCodeParams>): Promise<CodeResponse> {
-  const { baseUrl, sourceId, fileId, pipelineId } = options;
+  const { baseUrl = "", sourceId, fileId, pipelineId } = options;
   const { data, error } = await customFetch.safe(
     `${baseUrl}/api/sources/${sourceId}/${fileId}/${pipelineId}/code`,
     {
@@ -63,7 +63,7 @@ export interface PipelineQueryParams {
 }
 
 export function pipelineQueryOptions(options: WithBaseUrl<PipelineQueryParams>) {
-  const { baseUrl, sourceId, fileId, pipelineId } = options;
+  const { baseUrl = "", sourceId, fileId, pipelineId } = options;
   return queryOptions({
     queryKey: ["sources", sourceId, "files", fileId, "pipelines", pipelineId],
     queryFn: () => fetchPipeline({ baseUrl, sourceId, fileId, pipelineId }),
@@ -77,7 +77,7 @@ export interface PipelineCodeQueryParams {
 }
 
 export function pipelineCodeQueryOptions(options: WithBaseUrl<PipelineCodeQueryParams>) {
-  const { baseUrl, sourceId, fileId, pipelineId } = options;
+  const { baseUrl = "", sourceId, fileId, pipelineId } = options;
   return queryOptions({
     queryKey: ["sources", sourceId, "files", fileId, "pipelines", pipelineId, "code"],
     queryFn: () => fetchPipelineCode({ baseUrl, sourceId, fileId, pipelineId }),

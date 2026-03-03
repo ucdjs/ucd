@@ -12,8 +12,9 @@ import {
   sourcesSourceRouter,
 } from "#server/routes";
 import { ensureWorkspace, resolveWorkspace } from "#server/workspace";
-import { getUcdConfigDir } from "@ucdjs-internal/shared/config";
 import { H3, serve, serveStatic } from "h3";
+// import { getUcdConfigDir } from "@ucdjs-internal/shared/config";
+import { getUcdConfigDir } from "../../../../shared/src/config";
 import { version } from "../../package.json" with { type: "json" };
 
 export interface AppOptions {

@@ -68,11 +68,7 @@ const SourceIdFileIdPipelineIdRouteRoute =
     id: '/$pipelineId',
     path: '/$pipelineId',
     getParentRoute: () => SourceIdFileIdRouteRoute,
-  } as any).lazy(() =>
-    import('./routes/$sourceId/$fileId/$pipelineId/route.lazy').then(
-      (d) => d.Route,
-    ),
-  )
+  } as any)
 const SourceIdFileIdPipelineIdIndexRoute =
   SourceIdFileIdPipelineIdIndexRouteImport.update({
     id: '/',

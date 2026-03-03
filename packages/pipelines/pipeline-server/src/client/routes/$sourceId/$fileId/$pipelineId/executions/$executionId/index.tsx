@@ -5,7 +5,6 @@ export const Route = createFileRoute("/$sourceId/$fileId/$pipelineId/executions/
   loader: async ({ context, params }) => {
     context.queryClient.prefetchQuery(
       executionEventsQueryOptions({
-        baseUrl: "",
         sourceId: params.sourceId,
         fileId: params.fileId,
         pipelineId: params.pipelineId,
@@ -14,7 +13,6 @@ export const Route = createFileRoute("/$sourceId/$fileId/$pipelineId/executions/
     );
     context.queryClient.prefetchQuery(
       executionLogsQueryOptions({
-        baseUrl: "",
         sourceId: params.sourceId,
         fileId: params.fileId,
         pipelineId: params.pipelineId,
