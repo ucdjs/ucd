@@ -991,9 +991,6 @@ importers:
       '@ucdjs-internal/shared':
         specifier: workspace:*
         version: link:../shared
-      '@ucdjs/fs-bridge':
-        specifier: workspace:*
-        version: link:../fs-bridge
       '@ucdjs/schemas':
         specifier: workspace:*
         version: link:../schemas
@@ -1013,6 +1010,9 @@ importers:
       '@ucdjs-tooling/tsdown-config':
         specifier: workspace:*
         version: link:../../tooling/tsdown-config
+      '@ucdjs/fs-bridge':
+        specifier: workspace:*
+        version: link:../fs-bridge
       eslint:
         specifier: catalog:lint
         version: 10.0.2(jiti@2.6.1)
