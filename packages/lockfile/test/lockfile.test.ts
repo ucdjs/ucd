@@ -1,7 +1,7 @@
 import { createMemoryMockFS } from "#test-utils/fs-bridges";
 import { describe, expect, it } from "vitest";
 import { LockfileInvalidError } from "../src/errors";
-import { canUseLockfile, readLockfile, readLockfileOrUndefined, validateLockfile, writeLockfile } from "../src/lockfile";
+import { canUseLockfile, parseLockfile, parseLockfileOrUndefined, readLockfile, readLockfileOrUndefined, validateLockfile, writeLockfile } from "../src/lockfile";
 
 describe("validateLockfile", () => {
   it("should validate a valid lockfile", () => {
@@ -477,5 +477,98 @@ describe("canUseLockfile", () => {
     });
 
     expect(canUseLockfile(fs)).toBe(false);
+  });
+
+  it("should return false when filesystem does not support mkdir operations", () => {
+    const fs = createMemoryMockFS({
+      initialFiles: {},
+      functions: {
+        mkdir: false,
+      },
+    });
+
+    expect(canUseLockfile(fs)).toBe(false);
+  });
+});
+
+describe("parseLockfile", () => {
+  const validLockfileData = {
+    lockfileVersion: 1,
+    createdAt: "2024-01-01T00:00:00.000Z",
+    updatedAt: "2024-01-02T00:00:00.000Z",
+    versions: {
+      "16.0.0": {
+        path: "16.0.0/snapshot.json",
+        fileCount: 100,
+        totalSize: 50000,
+        createdAt: "2024-01-01T00:00:00.000Z",
+        updatedAt: "2024-01-01T00:00:00.000Z",
+      },
+    },
+  };
+
+  it("should parse and validate a valid lockfile string", () => {
+    const lockfile = parseLockfile(JSON.stringify(validLockfileData));
+
+    expect(lockfile.lockfileVersion).toBe(1);
+    expect(lockfile.createdAt).toBeInstanceOf(Date);
+    expect(lockfile.updatedAt).toBeInstanceOf(Date);
+    expect(lockfile.versions["16.0.0"]).toBeDefined();
+    expect(lockfile.versions["16.0.0"]?.fileCount).toBe(100);
+  });
+
+  it("should throw LockfileInvalidError when content is empty", () => {
+    expect(() => parseLockfile("")).toThrow(LockfileInvalidError);
+    expect(() => parseLockfile("")).toThrow("lockfile is empty");
+  });
+
+  it("should throw LockfileInvalidError when content is not valid JSON", () => {
+    expect(() => parseLockfile("not valid json {")).toThrow(LockfileInvalidError);
+    expect(() => parseLockfile("not valid json {")).toThrow("lockfile is not valid JSON");
+  });
+
+  it("should throw LockfileInvalidError when content does not match schema", () => {
+    const invalidLockfile = { lockfileVersion: 999, versions: {} };
+
+    expect(() => parseLockfile(JSON.stringify(invalidLockfile))).toThrow(LockfileInvalidError);
+    expect(() => parseLockfile(JSON.stringify(invalidLockfile))).toThrow("lockfile does not match expected schema");
+  });
+
+  it("should correctly coerce dates from JSON strings", () => {
+    const lockfile = parseLockfile(JSON.stringify(validLockfileData));
+
+    expect(lockfile.createdAt).toBeInstanceOf(Date);
+    expect(lockfile.createdAt.toISOString()).toBe("2024-01-01T00:00:00.000Z");
+    expect(lockfile.versions["16.0.0"]?.createdAt).toBeInstanceOf(Date);
+  });
+});
+
+describe("parseLockfileOrUndefined", () => {
+  it("should parse a valid lockfile string", () => {
+    const validLockfileData = {
+      lockfileVersion: 1,
+      createdAt: "2024-01-01T00:00:00.000Z",
+      updatedAt: "2024-01-02T00:00:00.000Z",
+      versions: {},
+    };
+
+    const lockfile = parseLockfileOrUndefined(JSON.stringify(validLockfileData));
+
+    expect(lockfile).toBeDefined();
+    expect(lockfile?.lockfileVersion).toBe(1);
+  });
+
+  it("should return undefined when content is empty", () => {
+    expect(parseLockfileOrUndefined("")).toBeUndefined();
+  });
+
+  it("should return undefined when content is invalid JSON", () => {
+    expect(parseLockfileOrUndefined("not valid json")).toBeUndefined();
+  });
+
+  it("should return undefined when content does not match schema", () => {
+    const invalidLockfile = { lockfileVersion: 999, versions: {} };
+
+    expect(parseLockfileOrUndefined(JSON.stringify(invalidLockfile))).toBeUndefined();
   });
 });

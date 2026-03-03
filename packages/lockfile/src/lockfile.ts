@@ -1,8 +1,8 @@
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 import type { Lockfile, LockfileInput } from "@ucdjs/schemas";
 import { createDebugger, safeJsonParse, tryOr } from "@ucdjs-internal/shared";
-import { hasCapability } from "@ucdjs/fs-bridge";
 import { LockfileSchema } from "@ucdjs/schemas";
+import { dirname } from "pathe";
 import { LockfileInvalidError } from "./errors";
 
 const debug = createDebugger("ucdjs:lockfile");
@@ -61,13 +61,39 @@ export function validateLockfile(data: unknown): ValidateLockfileResult {
 }
 
 /**
- * Checks if the filesystem bridge supports lockfile operations (requires write capability)
+ * Checks if the filesystem bridge supports lockfile operations (requires write & mkdir capability)
  *
  * @param {FileSystemBridge} fs - The filesystem bridge to check
  * @returns {boolean} True if the bridge supports lockfile operations
  */
-export function canUseLockfile(fs: FileSystemBridge): fs is FileSystemBridge & Required<Pick<FileSystemBridge, "write">> {
-  return hasCapability(fs, "write");
+export function canUseLockfile(fs: FileSystemBridge): fs is FileSystemBridge & Required<Pick<FileSystemBridge, "write" | "mkdir">> {
+  return !!fs.optionalCapabilities.write && !!fs.optionalCapabilities.mkdir;
+}
+
+/**
+ * Internal helper: parses and validates raw JSON content against the LockfileSchema.
+ * Throws LockfileInvalidError with the given `lockfilePath` context on failure.
+ */
+function parseLockfileFromContent(content: string, lockfilePath: string): Lockfile {
+  const jsonData = safeJsonParse(content);
+  if (jsonData === null) {
+    throw new LockfileInvalidError({
+      lockfilePath,
+      message: "lockfile is not valid JSON",
+    });
+  }
+
+  const parsedLockfile = LockfileSchema.safeParse(jsonData);
+  if (!parsedLockfile.success) {
+    debug?.("Failed to parse lockfile:", parsedLockfile.error.issues);
+    throw new LockfileInvalidError({
+      lockfilePath,
+      message: "lockfile does not match expected schema",
+      details: parsedLockfile.error.issues.map((issue) => issue.message),
+    });
+  }
+
+  return parsedLockfile.data;
 }
 
 /**
@@ -102,26 +128,8 @@ export async function readLockfile(
     });
   }
 
-  const jsonData = safeJsonParse(lockfileData);
-  if (!jsonData) {
-    throw new LockfileInvalidError({
-      lockfilePath,
-      message: "lockfile is not valid JSON",
-    });
-  }
-
-  const parsedLockfile = LockfileSchema.safeParse(jsonData);
-  if (!parsedLockfile.success) {
-    debug?.("Failed to parse lockfile:", parsedLockfile.error.issues);
-    throw new LockfileInvalidError({
-      lockfilePath,
-      message: "lockfile does not match expected schema",
-      details: parsedLockfile.error.issues.map((issue) => issue.message),
-    });
-  }
-
   debug?.("Successfully read lockfile");
-  return parsedLockfile.data;
+  return parseLockfileFromContent(lockfileData, lockfilePath);
 }
 
 /**
@@ -145,6 +153,18 @@ export async function writeLockfile(
   }
 
   debug?.("Writing lockfile to:", lockfilePath);
+
+  const lockfileDir = dirname(lockfilePath);
+
+  debug?.("Writing lockfile to:", lockfilePath);
+
+  // Ensure lockfile directory exists
+  const dirExists = await fs.exists(lockfileDir);
+  if (!dirExists) {
+    debug?.("Creating lockfile directory:", lockfileDir);
+    await fs.mkdir(lockfileDir);
+  }
+
   await fs.write(lockfilePath, JSON.stringify(lockfile, null, 2));
   debug?.("Successfully wrote lockfile");
 }
@@ -164,4 +184,58 @@ export async function readLockfileOrUndefined(
     debug?.("Failed to read lockfile, returning undefined");
     return undefined;
   });
+}
+
+/**
+ * Parses and validates lockfile content from a raw string without requiring a filesystem bridge.
+ * Useful when lockfile content has been obtained from any source (HTTP, KV store, memory, etc.).
+ *
+ * @param {string} content - The raw lockfile content to parse
+ * @returns {Lockfile} The validated lockfile
+ * @throws {LockfileInvalidError} When the content is invalid or does not match the expected schema
+ *
+ * @example
+ * ```ts
+ * const response = await fetch("https://ucdjs.dev/.ucd-store.lock");
+ * const content = await response.text();
+ * const lockfile = parseLockfile(content);
+ * ```
+ */
+export function parseLockfile(content: string): Lockfile {
+  debug?.("Parsing lockfile from content");
+
+  if (!content) {
+    throw new LockfileInvalidError({
+      lockfilePath: "<content>",
+      message: "lockfile is empty",
+    });
+  }
+
+  debug?.("Successfully parsed lockfile");
+  return parseLockfileFromContent(content, "<content>");
+}
+
+/**
+ * Parses and validates lockfile content from a raw string, returning undefined if parsing fails.
+ *
+ * @param {string} content - The raw lockfile content to parse
+ * @returns {Lockfile | undefined} The validated lockfile or undefined if parsing fails
+ *
+ * @example
+ * ```ts
+ * const response = await fetch("https://ucdjs.dev/.ucd-store.lock");
+ * const content = await response.text();
+ * const lockfile = parseLockfileOrUndefined(content);
+ * if (lockfile) {
+ *   console.log("Lockfile version:", lockfile.lockfileVersion);
+ * }
+ * ```
+ */
+export function parseLockfileOrUndefined(content: string): Lockfile | undefined {
+  try {
+    return parseLockfile(content);
+  } catch {
+    debug?.("Failed to parse lockfile, returning undefined");
+    return undefined;
+  }
 }

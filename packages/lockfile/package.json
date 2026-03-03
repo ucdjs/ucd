@@ -39,7 +39,6 @@
   },
   "dependencies": {
     "@ucdjs-internal/shared": "workspace:*",
-    "@ucdjs/fs-bridge": "workspace:*",
     "@ucdjs/schemas": "workspace:*",
     "pathe": "catalog:runtime"
   },
@@ -48,6 +47,7 @@
     "@luxass/utils": "catalog:runtime",
     "@ucdjs-tooling/tsconfig": "workspace:*",
     "@ucdjs-tooling/tsdown-config": "workspace:*",
+    "@ucdjs/fs-bridge": "workspace:*",
     "eslint": "catalog:lint",
     "publint": "catalog:build",
     "tsdown": "catalog:build",
