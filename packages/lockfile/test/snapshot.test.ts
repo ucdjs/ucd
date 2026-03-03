@@ -1,7 +1,7 @@
 import { createMemoryMockFS } from "#test-utils/fs-bridges";
 import { describe, expect, it } from "vitest";
 import { LockfileBridgeUnsupportedOperation, LockfileInvalidError } from "../src/errors";
-import { readSnapshot, readSnapshotOrUndefined, writeSnapshot } from "../src/snapshot";
+import { parseSnapshot, parseSnapshotOrUndefined, readSnapshot, readSnapshotOrUndefined, writeSnapshot } from "../src/snapshot";
 
 describe("readSnapshot", () => {
   const validSnapshot = {
@@ -266,5 +266,82 @@ describe("readSnapshotOrUndefined", () => {
     const snapshot = await readSnapshotOrUndefined(fs, "16.0.0");
 
     expect(snapshot).toBeUndefined();
+  });
+});
+
+describe("parseSnapshot", () => {
+  const validSnapshot = {
+    unicodeVersion: "16.0.0",
+    files: {
+      "UnicodeData.txt": {
+        hash: "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        fileHash: "sha256:a3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        size: 1024,
+      },
+    },
+  };
+
+  it("should parse and validate a valid snapshot string", () => {
+    const snapshot = parseSnapshot(JSON.stringify(validSnapshot));
+
+    expect(snapshot.unicodeVersion).toBe("16.0.0");
+    expect(Object.keys(snapshot.files)).toHaveLength(1);
+    expect(snapshot.files["UnicodeData.txt"]?.size).toBe(1024);
+  });
+
+  it("should throw LockfileInvalidError when content is empty", () => {
+    expect(() => parseSnapshot("")).toThrow(LockfileInvalidError);
+    expect(() => parseSnapshot("")).toThrow("snapshot is empty");
+  });
+
+  it("should throw LockfileInvalidError when content is not valid JSON", () => {
+    expect(() => parseSnapshot("not valid json {")).toThrow(LockfileInvalidError);
+    expect(() => parseSnapshot("not valid json {")).toThrow("snapshot is not valid JSON");
+  });
+
+  it("should throw LockfileInvalidError when content does not match schema", () => {
+    const invalidSnapshot = {
+      unicodeVersion: "16.0.0",
+      files: {
+        "UnicodeData.txt": {
+          // Missing hash and fileHash
+          size: 1024,
+        },
+      },
+    };
+
+    expect(() => parseSnapshot(JSON.stringify(invalidSnapshot))).toThrow(LockfileInvalidError);
+    expect(() => parseSnapshot(JSON.stringify(invalidSnapshot))).toThrow("snapshot does not match expected schema");
+  });
+});
+
+describe("parseSnapshotOrUndefined", () => {
+  const validSnapshot = {
+    unicodeVersion: "16.0.0",
+    files: {},
+  };
+
+  it("should parse a valid snapshot string", () => {
+    const snapshot = parseSnapshotOrUndefined(JSON.stringify(validSnapshot));
+
+    expect(snapshot).toBeDefined();
+    expect(snapshot?.unicodeVersion).toBe("16.0.0");
+  });
+
+  it("should return undefined when content is empty", () => {
+    expect(parseSnapshotOrUndefined("")).toBeUndefined();
+  });
+
+  it("should return undefined when content is invalid JSON", () => {
+    expect(parseSnapshotOrUndefined("not valid json")).toBeUndefined();
+  });
+
+  it("should return undefined when content does not match schema", () => {
+    const invalidSnapshot = {
+      unicodeVersion: "16.0.0",
+      // Missing files field
+    };
+
+    expect(parseSnapshotOrUndefined(JSON.stringify(invalidSnapshot))).toBeUndefined();
   });
 });
