@@ -139,7 +139,7 @@ export async function readSnapshotOrUndefined(
  *
  * @example
  * ```ts
- * const response = await fetch("https://example.com/16.0.0/snapshot.json");
+ * const response = await fetch("https://ucdjs.dev/16.0.0/snapshot.json");
  * const content = await response.text();
  * const snapshot = parseSnapshot(content);
  * ```
@@ -184,7 +184,7 @@ export function parseSnapshot(content: string): Snapshot {
  *
  * @example
  * ```ts
- * const response = await fetch("https://example.com/16.0.0/snapshot.json");
+ * const response = await fetch("https://ucdjs.dev/16.0.0/snapshot.json");
  * const content = await response.text();
  * const snapshot = parseSnapshotOrUndefined(content);
  * if (snapshot) {

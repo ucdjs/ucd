@@ -176,7 +176,7 @@ export async function readLockfileOrUndefined(
  *
  * @example
  * ```ts
- * const response = await fetch("https://example.com/.ucd-store.lock");
+ * const response = await fetch("https://ucdjs.dev/.ucd-store.lock");
  * const content = await response.text();
  * const lockfile = parseLockfile(content);
  * ```
@@ -221,7 +221,7 @@ export function parseLockfile(content: string): Lockfile {
  *
  * @example
  * ```ts
- * const response = await fetch("https://example.com/.ucd-store.lock");
+ * const response = await fetch("https://ucdjs.dev/.ucd-store.lock");
  * const content = await response.text();
  * const lockfile = parseLockfileOrUndefined(content);
  * if (lockfile) {
