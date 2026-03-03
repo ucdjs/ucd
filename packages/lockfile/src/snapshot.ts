@@ -1,14 +1,39 @@
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 import type { Snapshot } from "@ucdjs/schemas";
 import { createDebugger, safeJsonParse, tryOr } from "@ucdjs-internal/shared";
-import { hasCapability } from "@ucdjs/fs-bridge";
 import { SnapshotSchema } from "@ucdjs/schemas";
 import { dirname } from "pathe";
-import { LockfileBridgeUnsupportedOperation, LockfileInvalidError } from "./errors";
+import { LockfileInvalidError } from "./errors";
 import { canUseLockfile } from "./lockfile";
 import { getSnapshotPath } from "./paths";
 
 const debug = createDebugger("ucdjs:lockfile:snapshot");
+
+/**
+ * Internal helper: parses and validates raw JSON content against the SnapshotSchema.
+ * Throws LockfileInvalidError with the given `snapshotPath` context on failure.
+ */
+function parseSnapshotFromContent(content: string, snapshotPath: string): Snapshot {
+  const jsonData = safeJsonParse(content);
+  if (jsonData === null) {
+    throw new LockfileInvalidError({
+      lockfilePath: snapshotPath,
+      message: "snapshot is not valid JSON",
+    });
+  }
+
+  const parsedSnapshot = SnapshotSchema.safeParse(jsonData);
+  if (!parsedSnapshot.success) {
+    debug?.("Failed to parse snapshot:", parsedSnapshot.error.issues);
+    throw new LockfileInvalidError({
+      lockfilePath: snapshotPath,
+      message: "snapshot does not match expected schema",
+      details: parsedSnapshot.error.issues.map((issue) => issue.message),
+    });
+  }
+
+  return parsedSnapshot.data;
+}
 
 /**
  * Reads and validates a snapshot for a specific version.
@@ -43,26 +68,8 @@ export async function readSnapshot(
     });
   }
 
-  const jsonData = safeJsonParse(snapshotData);
-  if (!jsonData) {
-    throw new LockfileInvalidError({
-      lockfilePath: snapshotPath,
-      message: "snapshot is not valid JSON",
-    });
-  }
-
-  const parsedSnapshot = SnapshotSchema.safeParse(jsonData);
-  if (!parsedSnapshot.success) {
-    debug?.("Failed to parse snapshot:", parsedSnapshot.error.issues);
-    throw new LockfileInvalidError({
-      lockfilePath: snapshotPath,
-      message: "snapshot does not match expected schema",
-      details: parsedSnapshot.error.issues.map((issue) => issue.message),
-    });
-  }
-
   debug?.("Successfully read snapshot");
-  return parsedSnapshot.data;
+  return parseSnapshotFromContent(snapshotData, snapshotPath);
 }
 
 /**
@@ -73,7 +80,6 @@ export async function readSnapshot(
  * @param {string} version - The Unicode version
  * @param {Snapshot} snapshot - The snapshot data to write
  * @returns {Promise<void>} A promise that resolves when the snapshot has been written
- * @throws {LockfileBridgeUnsupportedOperation} When directory doesn't exist and mkdir is not available
  */
 export async function writeSnapshot(
   fs: FileSystemBridge,
@@ -93,17 +99,6 @@ export async function writeSnapshot(
   // Ensure snapshot directory exists
   const dirExists = await fs.exists(snapshotDir);
   if (!dirExists) {
-    if (!hasCapability(fs, "mkdir")) {
-      const availableCapabilities = Object.keys(fs.optionalCapabilities).filter(
-        (k) => fs.optionalCapabilities[k as keyof typeof fs.optionalCapabilities],
-      );
-      throw new LockfileBridgeUnsupportedOperation(
-        "writeSnapshot",
-        ["mkdir"],
-        availableCapabilities,
-      );
-    }
-
     debug?.("Creating snapshot directory:", snapshotDir);
     await fs.mkdir(snapshotDir);
   }
@@ -127,4 +122,58 @@ export async function readSnapshotOrUndefined(
     debug?.("Failed to read snapshot, returning undefined", err);
     return undefined;
   });
+}
+
+/**
+ * Parses and validates snapshot content from a raw string without requiring a filesystem bridge.
+ * Useful when snapshot content has been obtained from any source (HTTP, KV store, memory, etc.).
+ *
+ * @param {string} content - The raw snapshot content to parse
+ * @returns {Snapshot} The validated snapshot
+ * @throws {LockfileInvalidError} When the content is invalid or does not match the expected schema
+ *
+ * @example
+ * ```ts
+ * const response = await fetch("https://ucdjs.dev/16.0.0/snapshot.json");
+ * const content = await response.text();
+ * const snapshot = parseSnapshot(content);
+ * ```
+ */
+export function parseSnapshot(content: string): Snapshot {
+  debug?.("Parsing snapshot from content");
+
+  if (!content) {
+    throw new LockfileInvalidError({
+      lockfilePath: "<content>",
+      message: "snapshot is empty",
+    });
+  }
+
+  debug?.("Successfully parsed snapshot");
+  return parseSnapshotFromContent(content, "<content>");
+}
+
+/**
+ * Parses and validates snapshot content from a raw string, returning undefined if parsing fails.
+ *
+ * @param {string} content - The raw snapshot content to parse
+ * @returns {Snapshot | undefined} The validated snapshot or undefined if parsing fails
+ *
+ * @example
+ * ```ts
+ * const response = await fetch("https://ucdjs.dev/16.0.0/snapshot.json");
+ * const content = await response.text();
+ * const snapshot = parseSnapshotOrUndefined(content);
+ * if (snapshot) {
+ *   console.log("Unicode version:", snapshot.unicodeVersion);
+ * }
+ * ```
+ */
+export function parseSnapshotOrUndefined(content: string): Snapshot | undefined {
+  try {
+    return parseSnapshot(content);
+  } catch {
+    debug?.("Failed to parse snapshot, returning undefined");
+    return undefined;
+  }
 }

@@ -35,10 +35,29 @@ await writeLockfile(fs, lockfilePath, {
 });
 ```
 
+### Parsing Lockfiles Without a Filesystem Bridge
+
+When you already have the lockfile content as a string (e.g., fetched from HTTP, read from a KV store, etc.), you can parse and validate it directly without needing a filesystem bridge:
+
+```typescript
+import { parseLockfile, parseLockfileOrUndefined } from "@ucdjs/lockfile";
+
+// Parse from a fetch response
+const response = await fetch("https://ucdjs.dev/.ucd-store.lock");
+const content = await response.text();
+const lockfile = parseLockfile(content);
+
+// Or use the non-throwing variant
+const lockfileOrUndefined = parseLockfileOrUndefined(content);
+if (lockfileOrUndefined) {
+  console.log("Lockfile version:", lockfileOrUndefined.lockfileVersion);
+}
+```
+
 ### Reading and Writing Snapshots
 
 ```typescript
-import { getSnapshotPath, readSnapshot, writeSnapshot } from "@ucdjs/lockfile";
+import { getSnapshotPath, parseSnapshot, parseSnapshotOrUndefined, readSnapshot, writeSnapshot } from "@ucdjs/lockfile";
 
 const basePath = "./store";
 const version = "16.0.0";
@@ -56,6 +75,14 @@ await writeSnapshot(fs, basePath, version, {
     },
   },
 });
+
+// Parse snapshot content directly (without a filesystem bridge)
+const response = await fetch("https://ucdjs.dev/16.0.0/snapshot.json");
+const content = await response.text();
+const parsedSnapshot = parseSnapshot(content);
+
+// Or use the non-throwing variant
+const parsedSnapshotOrUndefined = parseSnapshotOrUndefined(content);
 ```
 
 ### Computing File Hashes
@@ -75,18 +102,23 @@ const hash = await computeFileHash(content);
 - `canUseLockfile(fs: FileSystemBridge): boolean` - Check if bridge supports lockfile operations
 - `readLockfile(fs: FileSystemBridge, lockfilePath: string): Promise<Lockfile>` - Read and validate lockfile
 - `writeLockfile(fs: FileSystemBridge, lockfilePath: string, lockfile: Lockfile): Promise<void>` - Write lockfile
-- `readLockfileOrDefault(fs: FileSystemBridge, lockfilePath: string): Promise<Lockfile | undefined>` - Read lockfile or return undefined
+- `readLockfileOrUndefined(fs: FileSystemBridge, lockfilePath: string): Promise<Lockfile | undefined>` - Read lockfile or return undefined
+- `parseLockfile(content: string): Lockfile` - Parse and validate lockfile from a raw string
+- `parseLockfileOrUndefined(content: string): Lockfile | undefined` - Parse lockfile from a raw string or return undefined
+- `validateLockfile(data: unknown): ValidateLockfileResult` - Validate lockfile data without reading from filesystem
 
 ### Snapshot Operations
 
-- `readSnapshot(fs: FileSystemBridge, basePath: string, version: string): Promise<Snapshot>` - Read and validate snapshot
-- `writeSnapshot(fs: FileSystemBridge, basePath: string, version: string, snapshot: Snapshot): Promise<void>` - Write snapshot
-- `readSnapshotOrDefault(fs: FileSystemBridge, basePath: string, version: string): Promise<Snapshot | undefined>` - Read snapshot or return undefined
+- `readSnapshot(fs: FileSystemBridge, version: string): Promise<Snapshot>` - Read and validate snapshot
+- `writeSnapshot(fs: FileSystemBridge, version: string, snapshot: Snapshot): Promise<void>` - Write snapshot
+- `readSnapshotOrUndefined(fs: FileSystemBridge, version: string): Promise<Snapshot | undefined>` - Read snapshot or return undefined
+- `parseSnapshot(content: string): Snapshot` - Parse and validate snapshot from a raw string
+- `parseSnapshotOrUndefined(content: string): Snapshot | undefined` - Parse snapshot from a raw string or return undefined
 
 ### Path Utilities
 
-- `getLockfilePath(_basePath: string): string` - Get default lockfile path (`.ucd-store.lock`)
-- `getSnapshotPath(basePath: string, version: string): string` - Get snapshot path for version
+- `getLockfilePath(): string` - Get default lockfile path (`.ucd-store.lock`)
+- `getSnapshotPath(version: string): string` - Get snapshot path for version
 
 ### Hash Utilities
 

@@ -32,27 +32,3 @@ export class LockfileInvalidError extends LockfileBaseError {
     Object.setPrototypeOf(this, LockfileInvalidError.prototype);
   }
 }
-
-/**
- * Error thrown when a filesystem bridge operation is not supported
- */
-export class LockfileBridgeUnsupportedOperation extends LockfileBaseError {
-  public readonly operation: string;
-  public readonly requiredCapabilities: string[];
-  public readonly availableCapabilities: string[];
-
-  constructor(operation: string, requiredCapabilities: string[], availableCapabilities: string[]) {
-    let message = `Operation "${operation}" is not supported.`;
-
-    if (requiredCapabilities.length > 0 || availableCapabilities.length > 0) {
-      message += ` Required capabilities: ${requiredCapabilities.join(", ")}. Available capabilities: ${availableCapabilities.join(", ")}`;
-    }
-
-    super(message);
-    this.name = "LockfileBridgeUnsupportedOperation";
-    this.operation = operation;
-    this.requiredCapabilities = requiredCapabilities;
-    this.availableCapabilities = availableCapabilities;
-    Object.setPrototypeOf(this, LockfileBridgeUnsupportedOperation.prototype);
-  }
-}

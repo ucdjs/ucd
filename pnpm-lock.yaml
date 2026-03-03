@@ -991,9 +991,6 @@ importers:
       '@ucdjs-internal/shared':
         specifier: workspace:*
         version: link:../shared
-      '@ucdjs/fs-bridge':
-        specifier: workspace:*
-        version: link:../fs-bridge
       '@ucdjs/schemas':
         specifier: workspace:*
         version: link:../schemas
@@ -1013,6 +1010,9 @@ importers:
       '@ucdjs-tooling/tsdown-config':
         specifier: workspace:*
         version: link:../../tooling/tsdown-config
+      '@ucdjs/fs-bridge':
+        specifier: workspace:*
+        version: link:../fs-bridge
       eslint:
         specifier: catalog:lint
         version: 10.0.2(jiti@2.6.1)
@@ -2376,7 +2376,7 @@ packages:
         optional: true
 
   '@cloudflare/vitest-pool-workers@https://pkg.pr.new/@cloudflare/vitest-pool-workers@ccaf85f':
-    resolution: {tarball: https://pkg.pr.new/@cloudflare/vitest-pool-workers@ccaf85f}
+    resolution: {integrity: sha512-UuGHAIs9dT0CUirfTrZLQzSi45+I5nwnW1h5KjEJfW4AhIkqtAcMKoQfXbuakhd+fnRT0FCJfNHXW90z0+222w==, tarball: https://pkg.pr.new/@cloudflare/vitest-pool-workers@ccaf85f}
     version: 0.12.13
     peerDependencies:
       '@vitest/runner': 4.1.0-beta.4

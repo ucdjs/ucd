@@ -1,6 +1,5 @@
 export {
   LockfileBaseError,
-  LockfileBridgeUnsupportedOperation,
   LockfileInvalidError,
 } from "./errors";
 
@@ -12,6 +11,8 @@ export {
 
 export {
   canUseLockfile,
+  parseLockfile,
+  parseLockfileOrUndefined,
   readLockfile,
   readLockfileOrUndefined,
   validateLockfile,
@@ -26,6 +27,8 @@ export {
 } from "./paths";
 
 export {
+  parseSnapshot,
+  parseSnapshotOrUndefined,
   readSnapshot,
   readSnapshotOrUndefined,
   writeSnapshot,
