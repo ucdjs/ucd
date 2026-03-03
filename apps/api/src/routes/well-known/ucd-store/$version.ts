@@ -144,8 +144,8 @@ export function registerUcdStoreVersionRoute(router: OpenAPIHono<HonoEnv>) {
       }
 
       return c.json(data, 200, headers);
-    } catch (error) {
-      console.error(`[well-known]: failed to parse manifest for version ${version}:`, error);
+    } catch (err) {
+      console.error(`[well-known]: failed to parse manifest for version ${version}:`, err);
       return badGateway(c, {
         message: `Failed to parse manifest for version: ${version}`,
       });

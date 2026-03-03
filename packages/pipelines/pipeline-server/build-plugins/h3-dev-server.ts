@@ -99,8 +99,8 @@ export function h3DevServerPlugin(): Plugin {
 
           const responseBody = await response.text();
           res.end(responseBody);
-        } catch (error) {
-          next(error);
+        } catch (err) {
+          next(err);
         }
       });
     },

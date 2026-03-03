@@ -40,8 +40,8 @@ export const useUCDStore = defineService(() => {
 
       try {
         store.value = await createStoreFromConfig(newVal);
-      } catch (error) {
-        console.error("Failed to create UCD store:", error);
+      } catch (err) {
+        console.error("Failed to create UCD store:", err);
         store.value = null;
       }
     },

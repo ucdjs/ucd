@@ -269,9 +269,9 @@ for (const testCase of testCases) {
     await testCase.run();
     console.log("PASS");
     passed++;
-  } catch (error) {
+  } catch (err) {
     console.log("FAIL");
-    console.log(`     Error: ${(error as Error).message}`);
+    console.log(`     Error: ${(err as Error).message}`);
     failed++;
   }
 }

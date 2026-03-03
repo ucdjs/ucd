@@ -53,8 +53,8 @@ export const useUCDExplorer = defineService(() => {
 
         childrenCache.value.set(version, files);
         return files;
-      } catch (error) {
-        logger.error(`Failed to load files for version ${version}:`, error);
+      } catch (err) {
+        logger.error(`Failed to load files for version ${version}:`, err);
         return [];
       } finally {
         // clean up loading promise regardless of success/failure

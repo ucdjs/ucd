@@ -110,8 +110,8 @@ async function queueUploads(
         fileCount: manifest.fileCount,
         workflowId: queued.workflowId,
       });
-    } catch (error) {
-      pushUploadError(result, manifest.version, error);
+    } catch (err) {
+      pushUploadError(result, manifest.version, err);
     }
   }
 
@@ -140,8 +140,8 @@ async function waitForQueuedUploads(
         version: queued.version,
         fileCount: queued.fileCount,
       });
-    } catch (error) {
-      pushUploadError(result, queued.version, error);
+    } catch (err) {
+      pushUploadError(result, queued.version, err);
     }
   }
 }

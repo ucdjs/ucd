@@ -56,8 +56,8 @@ export function registerSnapshotRoute(router: Hono<HonoEnv>) {
         "Content-Type": "application/json",
         "Cache-Control": "public, max-age=86400", // 24 hours
       });
-    } catch (error) {
-      console.error(`[ucd-store]: Failed to generate snapshot for ${version}:`, error);
+    } catch (err) {
+      console.error(`[ucd-store]: Failed to generate snapshot for ${version}:`, err);
       return badGateway(c);
     }
   });

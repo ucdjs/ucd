@@ -33,10 +33,10 @@ class BridgeGenericError extends BridgeBaseError {
 ```typescript
 try {
   await bridge.read("file.txt");
-} catch (error) {
-  if (error instanceof BridgeGenericError) {
-    console.error("Generic error:", error.message);
-    console.error("Original error:", error.originalError);
+} catch (err) {
+  if (err instanceof BridgeGenericError) {
+    console.error("Generic error:", err.message);
+    console.error("Original error:", err.originalError);
   }
 }
 ```
@@ -55,10 +55,10 @@ class BridgeSetupError extends BridgeBaseError {
 ```typescript
 try {
   const bridge = MyBridge({ basePath: "/invalid/path" });
-} catch (error) {
-  if (error instanceof BridgeSetupError) {
-    console.error("Failed to setup bridge:", error.message);
-    console.error("Original error:", error.originalError);
+} catch (err) {
+  if (err instanceof BridgeSetupError) {
+    console.error("Failed to setup bridge:", err.message);
+    console.error("Original error:", err.originalError);
   }
 }
 ```
@@ -77,9 +77,9 @@ class BridgeUnsupportedOperation extends BridgeBaseError {
 ```typescript
 try {
   await bridge.write("file.txt", "content");
-} catch (error) {
-  if (error instanceof BridgeUnsupportedOperation) {
-    console.error(`Bridge doesn't support ${error.capability} operation`);
+} catch (err) {
+  if (err instanceof BridgeUnsupportedOperation) {
+    console.error(`Bridge doesn't support ${err.capability} operation`);
   }
 }
 ```
@@ -98,9 +98,9 @@ class BridgeFileNotFound extends BridgeBaseError {
 ```typescript
 try {
   await bridge.read("nonexistent.txt");
-} catch (error) {
-  if (error instanceof BridgeFileNotFound) {
-    console.error(`File not found: ${error.path}`);
+} catch (err) {
+  if (err instanceof BridgeFileNotFound) {
+    console.error(`File not found: ${err.path}`);
   }
 }
 ```
@@ -119,9 +119,9 @@ class BridgeEntryIsDir extends BridgeBaseError {
 ```typescript
 try {
   await bridge.read("directory/");
-} catch (error) {
-  if (error instanceof BridgeEntryIsDir) {
-    console.error(`Expected file but found directory: ${error.path}`);
+} catch (err) {
+  if (err instanceof BridgeEntryIsDir) {
+    console.error(`Expected file but found directory: ${err.path}`);
   }
 }
 ```
@@ -133,13 +133,13 @@ try {
 ```typescript
 try {
   const content = await bridge.read("file.txt");
-} catch (error) {
-  if (error instanceof BridgeFileNotFound) {
-    console.error("File not found:", error.path);
-  } else if (error instanceof BridgeUnsupportedOperation) {
-    console.error("Operation not supported:", error.capability);
+} catch (err) {
+  if (err instanceof BridgeFileNotFound) {
+    console.error("File not found:", err.path);
+  } else if (err instanceof BridgeUnsupportedOperation) {
+    console.error("Operation not supported:", err.capability);
   } else {
-    console.error("Unexpected error:", error);
+    console.error("Unexpected error:", err);
   }
 }
 ```
@@ -154,7 +154,7 @@ import { hasCapability } from "@ucdjs/fs-bridge";
 if (hasCapability(bridge, "write")) {
   try {
     await bridge.write("file.txt", "content");
-  } catch (error) {
+  } catch (err) {
     // Handle other errors (e.g., BridgeFileNotFound)
   }
 } else {
