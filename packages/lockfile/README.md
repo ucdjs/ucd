@@ -43,7 +43,7 @@ When you already have the lockfile content as a string (e.g., fetched from HTTP,
 import { parseLockfile, parseLockfileOrUndefined } from "@ucdjs/lockfile";
 
 // Parse from a fetch response
-const response = await fetch("https://example.com/.ucd-store.lock");
+const response = await fetch("https://ucdjs.dev/.ucd-store.lock");
 const content = await response.text();
 const lockfile = parseLockfile(content);
 
@@ -77,7 +77,7 @@ await writeSnapshot(fs, basePath, version, {
 });
 
 // Parse snapshot content directly (without a filesystem bridge)
-const response = await fetch("https://example.com/16.0.0/snapshot.json");
+const response = await fetch("https://ucdjs.dev/16.0.0/snapshot.json");
 const content = await response.text();
 const parsedSnapshot = parseSnapshot(content);
 

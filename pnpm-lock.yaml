@@ -2376,7 +2376,7 @@ packages:
         optional: true
 
   '@cloudflare/vitest-pool-workers@https://pkg.pr.new/@cloudflare/vitest-pool-workers@ccaf85f':
-    resolution: {tarball: https://pkg.pr.new/@cloudflare/vitest-pool-workers@ccaf85f}
+    resolution: {integrity: sha512-UuGHAIs9dT0CUirfTrZLQzSi45+I5nwnW1h5KjEJfW4AhIkqtAcMKoQfXbuakhd+fnRT0FCJfNHXW90z0+222w==, tarball: https://pkg.pr.new/@cloudflare/vitest-pool-workers@ccaf85f}
     version: 0.12.13
     peerDependencies:
       '@vitest/runner': 4.1.0-beta.4
