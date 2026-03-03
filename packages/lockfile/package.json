@@ -37,6 +37,14 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit -p tsconfig.build.json"
   },
+  "peerDependencies": {
+    "@ucdjs/fs-bridge": "workspace:*"
+  },
+  "peerDependenciesMeta": {
+    "@ucdjs/fs-bridge": {
+      "optional": true
+    }
+  },
   "dependencies": {
     "@ucdjs-internal/shared": "workspace:*",
     "@ucdjs/schemas": "workspace:*",
@@ -53,14 +61,6 @@
     "tsdown": "catalog:build",
     "typescript": "catalog:build",
     "vitest-testdirs": "catalog:test"
-  },
-  "peerDependencies": {
-    "@ucdjs/fs-bridge": "workspace:*"
-  },
-  "peerDependenciesMeta": {
-    "@ucdjs/fs-bridge": {
-      "optional": true
-    }
   },
   "publishConfig": {
     "access": "public"

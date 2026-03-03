@@ -1,7 +1,6 @@
 import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 import type { Snapshot } from "@ucdjs/schemas";
 import { createDebugger, safeJsonParse, tryOr } from "@ucdjs-internal/shared";
-import { hasCapability } from "@ucdjs/fs-bridge";
 import { SnapshotSchema } from "@ucdjs/schemas";
 import { dirname } from "pathe";
 import { LockfileBridgeUnsupportedOperation, LockfileInvalidError } from "./errors";
@@ -9,6 +8,32 @@ import { canUseLockfile } from "./lockfile";
 import { getSnapshotPath } from "./paths";
 
 const debug = createDebugger("ucdjs:lockfile:snapshot");
+
+/**
+ * Internal helper: parses and validates raw JSON content against the SnapshotSchema.
+ * Throws LockfileInvalidError with the given `snapshotPath` context on failure.
+ */
+function parseSnapshotFromContent(content: string, snapshotPath: string): Snapshot {
+  const jsonData = safeJsonParse(content);
+  if (jsonData === null) {
+    throw new LockfileInvalidError({
+      lockfilePath: snapshotPath,
+      message: "snapshot is not valid JSON",
+    });
+  }
+
+  const parsedSnapshot = SnapshotSchema.safeParse(jsonData);
+  if (!parsedSnapshot.success) {
+    debug?.("Failed to parse snapshot:", parsedSnapshot.error.issues);
+    throw new LockfileInvalidError({
+      lockfilePath: snapshotPath,
+      message: "snapshot does not match expected schema",
+      details: parsedSnapshot.error.issues.map((issue) => issue.message),
+    });
+  }
+
+  return parsedSnapshot.data;
+}
 
 /**
  * Reads and validates a snapshot for a specific version.
@@ -43,26 +68,8 @@ export async function readSnapshot(
     });
   }
 
-  const jsonData = safeJsonParse(snapshotData);
-  if (!jsonData) {
-    throw new LockfileInvalidError({
-      lockfilePath: snapshotPath,
-      message: "snapshot is not valid JSON",
-    });
-  }
-
-  const parsedSnapshot = SnapshotSchema.safeParse(jsonData);
-  if (!parsedSnapshot.success) {
-    debug?.("Failed to parse snapshot:", parsedSnapshot.error.issues);
-    throw new LockfileInvalidError({
-      lockfilePath: snapshotPath,
-      message: "snapshot does not match expected schema",
-      details: parsedSnapshot.error.issues.map((issue) => issue.message),
-    });
-  }
-
   debug?.("Successfully read snapshot");
-  return parsedSnapshot.data;
+  return parseSnapshotFromContent(snapshotData, snapshotPath);
 }
 
 /**
@@ -93,7 +100,7 @@ export async function writeSnapshot(
   // Ensure snapshot directory exists
   const dirExists = await fs.exists(snapshotDir);
   if (!dirExists) {
-    if (!hasCapability(fs, "mkdir")) {
+    if (!fs.optionalCapabilities.mkdir) {
       const availableCapabilities = Object.keys(fs.optionalCapabilities).filter(
         (k) => fs.optionalCapabilities[k as keyof typeof fs.optionalCapabilities],
       );
@@ -154,26 +161,8 @@ export function parseSnapshot(content: string): Snapshot {
     });
   }
 
-  const jsonData = safeJsonParse(content);
-  if (!jsonData) {
-    throw new LockfileInvalidError({
-      lockfilePath: "<content>",
-      message: "snapshot is not valid JSON",
-    });
-  }
-
-  const parsedSnapshot = SnapshotSchema.safeParse(jsonData);
-  if (!parsedSnapshot.success) {
-    debug?.("Failed to parse snapshot:", parsedSnapshot.error.issues);
-    throw new LockfileInvalidError({
-      lockfilePath: "<content>",
-      message: "snapshot does not match expected schema",
-      details: parsedSnapshot.error.issues.map((issue) => issue.message),
-    });
-  }
-
   debug?.("Successfully parsed snapshot");
-  return parsedSnapshot.data;
+  return parseSnapshotFromContent(content, "<content>");
 }
 
 /**
@@ -195,8 +184,7 @@ export function parseSnapshot(content: string): Snapshot {
 export function parseSnapshotOrUndefined(content: string): Snapshot | undefined {
   try {
     return parseSnapshot(content);
-  }
-  catch {
+  } catch {
     debug?.("Failed to parse snapshot, returning undefined");
     return undefined;
   }
