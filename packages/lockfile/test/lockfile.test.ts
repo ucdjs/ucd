@@ -478,6 +478,17 @@ describe("canUseLockfile", () => {
 
     expect(canUseLockfile(fs)).toBe(false);
   });
+
+  it("should return false when filesystem does not support mkdir operations", () => {
+    const fs = createMemoryMockFS({
+      initialFiles: {},
+      functions: {
+        mkdir: false,
+      },
+    });
+
+    expect(canUseLockfile(fs)).toBe(false);
+  });
 });
 
 describe("parseLockfile", () => {

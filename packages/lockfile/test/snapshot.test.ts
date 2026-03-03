@@ -1,6 +1,6 @@
 import { createMemoryMockFS } from "#test-utils/fs-bridges";
 import { describe, expect, it } from "vitest";
-import { LockfileBridgeUnsupportedOperation, LockfileInvalidError } from "../src/errors";
+import { LockfileInvalidError } from "../src/errors";
 import { parseSnapshot, parseSnapshotOrUndefined, readSnapshot, readSnapshotOrUndefined, writeSnapshot } from "../src/snapshot";
 
 describe("readSnapshot", () => {
@@ -198,7 +198,7 @@ describe("writeSnapshot", () => {
     await expect(writeSnapshot(fs, "16.0.0", validSnapshot)).resolves.toBeUndefined();
   });
 
-  it("should throw when mkdir is not available and directory doesn't exist", async () => {
+  it("should skip writing when mkdir is not available", async () => {
     const fs = createMemoryMockFS({
       initialFiles: {},
       functions: {
@@ -206,7 +206,8 @@ describe("writeSnapshot", () => {
       },
     });
 
-    await expect(writeSnapshot(fs, "16.0.0", validSnapshot)).rejects.toThrow(LockfileBridgeUnsupportedOperation);
+    await expect(writeSnapshot(fs, "16.0.0", validSnapshot)).resolves.toBeUndefined();
+    await expect(fs.exists("16.0.0/snapshot.json")).resolves.toBe(false);
   });
 });
 
