@@ -3,7 +3,7 @@ import type { Snapshot } from "@ucdjs/schemas";
 import { createDebugger, safeJsonParse, tryOr } from "@ucdjs-internal/shared";
 import { SnapshotSchema } from "@ucdjs/schemas";
 import { dirname } from "pathe";
-import { LockfileBridgeUnsupportedOperation, LockfileInvalidError } from "./errors";
+import { LockfileInvalidError } from "./errors";
 import { canUseLockfile } from "./lockfile";
 import { getSnapshotPath } from "./paths";
 
@@ -80,7 +80,6 @@ export async function readSnapshot(
  * @param {string} version - The Unicode version
  * @param {Snapshot} snapshot - The snapshot data to write
  * @returns {Promise<void>} A promise that resolves when the snapshot has been written
- * @throws {LockfileBridgeUnsupportedOperation} When directory doesn't exist and mkdir is not available
  */
 export async function writeSnapshot(
   fs: FileSystemBridge,
@@ -100,17 +99,6 @@ export async function writeSnapshot(
   // Ensure snapshot directory exists
   const dirExists = await fs.exists(snapshotDir);
   if (!dirExists) {
-    if (!fs.optionalCapabilities.mkdir) {
-      const availableCapabilities = Object.keys(fs.optionalCapabilities).filter(
-        (k) => fs.optionalCapabilities[k as keyof typeof fs.optionalCapabilities],
-      );
-      throw new LockfileBridgeUnsupportedOperation(
-        "writeSnapshot",
-        ["mkdir"],
-        availableCapabilities,
-      );
-    }
-
     debug?.("Creating snapshot directory:", snapshotDir);
     await fs.mkdir(snapshotDir);
   }

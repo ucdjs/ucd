@@ -1,6 +1,5 @@
 export {
   LockfileBaseError,
-  LockfileBridgeUnsupportedOperation,
   LockfileInvalidError,
 } from "./errors";
 

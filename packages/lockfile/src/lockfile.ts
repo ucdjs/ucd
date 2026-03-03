@@ -2,6 +2,7 @@ import type { FileSystemBridge } from "@ucdjs/fs-bridge";
 import type { Lockfile, LockfileInput } from "@ucdjs/schemas";
 import { createDebugger, safeJsonParse, tryOr } from "@ucdjs-internal/shared";
 import { LockfileSchema } from "@ucdjs/schemas";
+import { dirname } from "pathe";
 import { LockfileInvalidError } from "./errors";
 
 const debug = createDebugger("ucdjs:lockfile");
@@ -60,13 +61,13 @@ export function validateLockfile(data: unknown): ValidateLockfileResult {
 }
 
 /**
- * Checks if the filesystem bridge supports lockfile operations (requires write capability)
+ * Checks if the filesystem bridge supports lockfile operations (requires write & mkdir capability)
  *
  * @param {FileSystemBridge} fs - The filesystem bridge to check
  * @returns {boolean} True if the bridge supports lockfile operations
  */
-export function canUseLockfile(fs: FileSystemBridge): fs is FileSystemBridge & Required<Pick<FileSystemBridge, "write">> {
-  return !!fs.optionalCapabilities.write;
+export function canUseLockfile(fs: FileSystemBridge): fs is FileSystemBridge & Required<Pick<FileSystemBridge, "write" | "mkdir">> {
+  return !!fs.optionalCapabilities.write && !!fs.optionalCapabilities.mkdir;
 }
 
 /**
@@ -152,6 +153,18 @@ export async function writeLockfile(
   }
 
   debug?.("Writing lockfile to:", lockfilePath);
+
+  const lockfileDir = dirname(lockfilePath);
+
+  debug?.("Writing lockfile to:", lockfilePath);
+
+  // Ensure lockfile directory exists
+  const dirExists = await fs.exists(lockfileDir);
+  if (!dirExists) {
+    debug?.("Creating lockfile directory:", lockfileDir);
+    await fs.mkdir(lockfileDir);
+  }
+
   await fs.write(lockfilePath, JSON.stringify(lockfile, null, 2));
   debug?.("Successfully wrote lockfile");
 }
