@@ -165,3 +165,76 @@ export async function readLockfileOrUndefined(
     return undefined;
   });
 }
+
+/**
+ * Parses and validates lockfile content from a raw string without requiring a filesystem bridge.
+ * Useful when lockfile content has been obtained from any source (HTTP, KV store, memory, etc.).
+ *
+ * @param {string} content - The raw lockfile content to parse
+ * @returns {Lockfile} The validated lockfile
+ * @throws {LockfileInvalidError} When the content is invalid or does not match the expected schema
+ *
+ * @example
+ * ```ts
+ * const response = await fetch("https://example.com/.ucd-store.lock");
+ * const content = await response.text();
+ * const lockfile = parseLockfile(content);
+ * ```
+ */
+export function parseLockfile(content: string): Lockfile {
+  debug?.("Parsing lockfile from content");
+
+  if (!content) {
+    throw new LockfileInvalidError({
+      lockfilePath: "<content>",
+      message: "lockfile is empty",
+    });
+  }
+
+  const jsonData = safeJsonParse(content);
+  if (!jsonData) {
+    throw new LockfileInvalidError({
+      lockfilePath: "<content>",
+      message: "lockfile is not valid JSON",
+    });
+  }
+
+  const parsedLockfile = LockfileSchema.safeParse(jsonData);
+  if (!parsedLockfile.success) {
+    debug?.("Failed to parse lockfile:", parsedLockfile.error.issues);
+    throw new LockfileInvalidError({
+      lockfilePath: "<content>",
+      message: "lockfile does not match expected schema",
+      details: parsedLockfile.error.issues.map((issue) => issue.message),
+    });
+  }
+
+  debug?.("Successfully parsed lockfile");
+  return parsedLockfile.data;
+}
+
+/**
+ * Parses and validates lockfile content from a raw string, returning undefined if parsing fails.
+ *
+ * @param {string} content - The raw lockfile content to parse
+ * @returns {Lockfile | undefined} The validated lockfile or undefined if parsing fails
+ *
+ * @example
+ * ```ts
+ * const response = await fetch("https://example.com/.ucd-store.lock");
+ * const content = await response.text();
+ * const lockfile = parseLockfileOrUndefined(content);
+ * if (lockfile) {
+ *   console.log("Lockfile version:", lockfile.lockfileVersion);
+ * }
+ * ```
+ */
+export function parseLockfileOrUndefined(content: string): Lockfile | undefined {
+  try {
+    return parseLockfile(content);
+  }
+  catch {
+    debug?.("Failed to parse lockfile, returning undefined");
+    return undefined;
+  }
+}

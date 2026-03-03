@@ -128,3 +128,76 @@ export async function readSnapshotOrUndefined(
     return undefined;
   });
 }
+
+/**
+ * Parses and validates snapshot content from a raw string without requiring a filesystem bridge.
+ * Useful when snapshot content has been obtained from any source (HTTP, KV store, memory, etc.).
+ *
+ * @param {string} content - The raw snapshot content to parse
+ * @returns {Snapshot} The validated snapshot
+ * @throws {LockfileInvalidError} When the content is invalid or does not match the expected schema
+ *
+ * @example
+ * ```ts
+ * const response = await fetch("https://example.com/16.0.0/snapshot.json");
+ * const content = await response.text();
+ * const snapshot = parseSnapshot(content);
+ * ```
+ */
+export function parseSnapshot(content: string): Snapshot {
+  debug?.("Parsing snapshot from content");
+
+  if (!content) {
+    throw new LockfileInvalidError({
+      lockfilePath: "<content>",
+      message: "snapshot is empty",
+    });
+  }
+
+  const jsonData = safeJsonParse(content);
+  if (!jsonData) {
+    throw new LockfileInvalidError({
+      lockfilePath: "<content>",
+      message: "snapshot is not valid JSON",
+    });
+  }
+
+  const parsedSnapshot = SnapshotSchema.safeParse(jsonData);
+  if (!parsedSnapshot.success) {
+    debug?.("Failed to parse snapshot:", parsedSnapshot.error.issues);
+    throw new LockfileInvalidError({
+      lockfilePath: "<content>",
+      message: "snapshot does not match expected schema",
+      details: parsedSnapshot.error.issues.map((issue) => issue.message),
+    });
+  }
+
+  debug?.("Successfully parsed snapshot");
+  return parsedSnapshot.data;
+}
+
+/**
+ * Parses and validates snapshot content from a raw string, returning undefined if parsing fails.
+ *
+ * @param {string} content - The raw snapshot content to parse
+ * @returns {Snapshot | undefined} The validated snapshot or undefined if parsing fails
+ *
+ * @example
+ * ```ts
+ * const response = await fetch("https://example.com/16.0.0/snapshot.json");
+ * const content = await response.text();
+ * const snapshot = parseSnapshotOrUndefined(content);
+ * if (snapshot) {
+ *   console.log("Unicode version:", snapshot.unicodeVersion);
+ * }
+ * ```
+ */
+export function parseSnapshotOrUndefined(content: string): Snapshot | undefined {
+  try {
+    return parseSnapshot(content);
+  }
+  catch {
+    debug?.("Failed to parse snapshot, returning undefined");
+    return undefined;
+  }
+}
