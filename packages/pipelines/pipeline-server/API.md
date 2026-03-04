@@ -140,22 +140,6 @@ Returns metadata for a specific pipeline.
 
 ---
 
-#### Get Pipeline Code
-```
-GET /api/sources/:sourceId/:fileId/:pipelineId/code
-```
-
-Returns the raw source code of the pipeline definition file.
-
-**Parameters**:
-- `sourceId` (string, required): Source identifier
-- `fileId` (string, required): File identifier
-- `pipelineId` (string, required): Pipeline identifier
-
-**Response**: Text content of the pipeline definition file
-
----
-
 #### Execute Pipeline
 ```
 POST /api/sources/:sourceId/:fileId/:pipelineId/execute
@@ -431,7 +415,6 @@ Client routes mirror the API structure:
 | `/$sourceId` | `GET /api/sources/:sourceId` |
 | `/$sourceId/$fileId` | `GET /api/sources/:sourceId/:fileId` |
 | `/$sourceId/$fileId/$pipelineId` | `GET /api/sources/:sourceId/:fileId/:pipelineId` |
-| `/$sourceId/$fileId/$pipelineId/code` | `GET /api/sources/:sourceId/:fileId/:pipelineId/code` |
 | `/$sourceId/$fileId/$pipelineId/executions` | `GET /api/sources/:sourceId/:fileId/:pipelineId/executions` |
 | `/$sourceId/$fileId/$pipelineId/executions/$executionId` | `GET /api/sources/.../executions/:executionId` |
 | `/$sourceId/$fileId/$pipelineId/executions/$executionId/logs` | `GET /api/sources/.../executions/:executionId/logs` |

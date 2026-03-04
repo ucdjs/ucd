@@ -53,8 +53,8 @@ export {
 } from "./components/logs/execution-waterfall";
 // Homepage Components
 export {
-  ActivitySparkline,
-  type ActivitySparklineProps,
+  ActivityBarChart,
+  type ActivityBarChartProps,
   RecentExecutionsList,
   type RecentExecutionsListProps,
   SetupWizard,

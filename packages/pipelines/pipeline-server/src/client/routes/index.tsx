@@ -3,7 +3,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, useLoaderData } from "@tanstack/react-router";
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
-import { ActivitySparkline, RecentExecutionsList, SetupWizard, SourceCards } from "@ucdjs/pipelines-ui";
+import { ActivityBarChart, RecentExecutionsList, SetupWizard, SourceCards } from "@ucdjs/pipelines-ui";
 import { overviewQueryOptions } from "@ucdjs/pipelines-ui/functions";
 import { FolderGit2 } from "lucide-react";
 
@@ -46,10 +46,10 @@ function HomePage() {
 
   return (
     <div className="flex-1 p-6 space-y-6 overflow-y-auto">
-      <section className="rounded-2xl border border-border/60 bg-gradient-to-br from-card via-background to-muted/40 p-6">
+      <section className="rounded-2xl p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-2xl font-semibold text-foreground">Workspace Overview</h1>
+            <h1 className="text-2xl font-semibold text-foreground">Overview</h1>
           </div>
           <div className="flex flex-wrap gap-2">
             <Button
@@ -85,7 +85,7 @@ function HomePage() {
 
       <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
-          <ActivitySparkline data={overview.activity} variant="epic" />
+          <ActivityBarChart data={overview.activity} variant="epic" />
         </div>
 
         <Card className="overflow-hidden">

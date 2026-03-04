@@ -70,10 +70,8 @@
     "chokidar": "catalog:build",
     "crossws": "catalog:backend",
     "drizzle-orm": "catalog:backend",
-    "esrap": "catalog:build",
     "h3": "catalog:backend",
     "lucide-react": "catalog:frontend",
-    "oxc-parser": "catalog:build",
     "pathe": "catalog:runtime",
     "zod": "catalog:runtime"
   },

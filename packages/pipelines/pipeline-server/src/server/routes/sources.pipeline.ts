@@ -1,95 +1,13 @@
-import type { PipelineSource } from "@ucdjs/pipelines-loader";
 import { randomUUID } from "node:crypto";
-import fs from "node:fs";
-import path from "node:path";
-import { extractDefinePipelineCode } from "#server/code";
 import { schema } from "#server/db";
 import { findPipelineByFileId, loadPipelineFileGroups } from "#server/lib/files";
 import { createExecutionLogCapture } from "#server/lib/log-capture";
-import { resolveLocalFilePath } from "#server/lib/resolve";
 import { createPipelineExecutor, runWithPipelineExecutionContext } from "@ucdjs/pipelines-executor";
-import {
-  getRemoteSourceCacheStatus,
-  syncRemoteSource,
-} from "@ucdjs/pipelines-loader";
 import { and, desc, eq, sql } from "drizzle-orm";
 import { getQuery, H3, readValidatedBody } from "h3";
 import { z } from "zod";
 
 export const sourcesPipelineRouter: H3 = new H3();
-
-async function getPipelineFileForSource(
-  source: PipelineSource,
-  filePath: string,
-): Promise<{ content: string; filePath: string } | null> {
-  if (source.type === "local") {
-    const resolvedPath = resolveLocalFilePath(source.cwd, filePath);
-    const content = await fs.promises.readFile(resolvedPath, "utf-8");
-    return { content, filePath };
-  }
-
-  // Check cache status
-  const status = await getRemoteSourceCacheStatus({
-    source: source.type,
-    owner: source.owner,
-    repo: source.repo,
-    ref: source.ref,
-  });
-
-  // Auto-sync if not cached (server is allowed to download directly)
-  if (!status.cached) {
-    const result = await syncRemoteSource({
-      source: source.type,
-      owner: source.owner,
-      repo: source.repo,
-      ref: source.ref ?? "HEAD",
-    });
-
-    if (!result.success) {
-      throw new Error(`Failed to sync source: ${result.error?.message ?? "Unknown error"}`);
-    }
-  }
-
-  const fullPath = path.join(status.cacheDir, filePath);
-  const content = await fs.promises.readFile(fullPath, "utf-8");
-
-  return { content, filePath };
-}
-
-sourcesPipelineRouter.get("/:sourceId/:fileId/:pipelineId/code", async (event) => {
-  const { sources } = event.context;
-  const sourceId = event.context.params?.sourceId;
-  const fileId = event.context.params?.fileId;
-  const pipelineId = event.context.params?.pipelineId;
-
-  if (!sourceId || !fileId || !pipelineId) {
-    return { error: "Source ID, File ID, and Pipeline ID are required" };
-  }
-
-  const groups = await loadPipelineFileGroups(sources);
-
-  for (const group of groups) {
-    const match = findPipelineByFileId(fileId, group.fileGroups, pipelineId);
-    if (!match || match.fileGroup.sourceId !== sourceId) {
-      continue;
-    }
-
-    const file = await getPipelineFileForSource(group.source, match.fileGroup.filePath);
-    if (!file?.content) {
-      continue;
-    }
-
-    return {
-      code: extractDefinePipelineCode(file.content, { exportName: match.entry.exportName }),
-      filePath: file.filePath,
-      fileLabel: match.fileGroup.fileLabel,
-      fileId: match.fileGroup.fileId,
-      sourceId: match.fileGroup.sourceId,
-    };
-  }
-
-  return { error: `Pipeline "${pipelineId}" not found in file "${fileId}" of source "${sourceId}"` };
-});
 
 sourcesPipelineRouter.post("/:sourceId/:fileId/:pipelineId/execute", async (event) => {
   const { sources, db } = event.context;
