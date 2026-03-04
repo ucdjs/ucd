@@ -31,18 +31,6 @@ export {
   PipelineGraph,
   type PipelineGraphProps,
 } from "./components/graph/pipeline-graph";
-// Homepage Components
-export {
-  ActivitySparkline,
-  type ActivitySparklineProps,
-  RecentExecutionsList,
-  type RecentExecutionsListProps,
-  SetupWizard,
-  SourceCards,
-  type SourceCardsProps,
-  SystemOverview,
-  type SystemOverviewProps,
-} from "./components/homepage";
 export { EmptyRouteDetails, type EmptyRouteDetailsProps } from "./components/inspect/empty-route-details";
 export { RouteDetails, type RouteDetailsProps } from "./components/inspect/route-details";
 // Inspect Components
@@ -63,6 +51,18 @@ export {
   ExecutionWaterfall,
   type ExecutionWaterfallProps,
 } from "./components/logs/execution-waterfall";
+// Homepage Components
+export {
+  ActivitySparkline,
+  type ActivitySparklineProps,
+  RecentExecutionsList,
+  type RecentExecutionsListProps,
+  SetupWizard,
+  SourceCards,
+  type SourceCardsProps,
+  SystemOverview,
+  type SystemOverviewProps,
+} from "./components/overview";
 export { PipelineSidebar, type SourceInfo } from "./components/pipeline-sidebar";
 export { StatusBadge } from "./components/status-badge";
 export { StatusIcon } from "./components/status-icon";

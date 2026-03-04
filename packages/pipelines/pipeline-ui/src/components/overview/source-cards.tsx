@@ -14,6 +14,7 @@ interface SourceInfo {
 
 export interface SourceCardsProps {
   sources: SourceInfo[];
+  compact?: boolean;
 }
 
 const sourceTypeConfig = {
@@ -37,12 +38,12 @@ const sourceTypeConfig = {
   },
 };
 
-export function SourceCards({ sources }: SourceCardsProps) {
+export function SourceCards({ sources, compact = false }: SourceCardsProps) {
   return (
     <Card className="h-full">
-      <CardContent className="p-4">
+      <CardContent className={cn("p-4", compact && "p-3")}>
         <h3 className="text-sm font-medium text-muted-foreground mb-4">Sources</h3>
-        <div className="grid grid-cols-1 gap-3">
+        <div className={cn("grid grid-cols-1 gap-3", compact && "gap-2")}>
           {sources.map((source) => {
             const config = sourceTypeConfig[source.type];
             const Icon = config.icon;
@@ -54,14 +55,21 @@ export function SourceCards({ sources }: SourceCardsProps) {
                 params={{ sourceId: source.id }}
                 key={source.id}
                 className={cn(
-                  "flex items-start gap-3 p-3 rounded-lg border text-left",
+                  "flex items-start gap-3 rounded-lg border text-left",
                   "transition-all duration-200",
                   "hover:border-primary hover:shadow-sm",
                   "focus:outline-none focus:ring-2 focus:ring-primary/20",
+                  compact ? "p-2" : "p-3",
                 )}
               >
-                <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center shrink-0", config.bgColor)}>
-                  <Icon className={cn("w-5 h-5", config.color)} />
+                <div
+                  className={cn(
+                    "rounded-lg flex items-center justify-center shrink-0",
+                    config.bgColor,
+                    compact ? "w-9 h-9" : "w-10 h-10",
+                  )}
+                >
+                  <Icon className={cn(compact ? "w-4 h-4" : "w-5 h-5", config.color)} />
                 </div>
 
                 <div className="flex-1 min-w-0">

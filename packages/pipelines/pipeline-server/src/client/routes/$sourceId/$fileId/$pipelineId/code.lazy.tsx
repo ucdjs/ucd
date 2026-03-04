@@ -14,7 +14,36 @@ interface CodeSearchParams {
 
 export const Route = createLazyFileRoute("/$sourceId/$fileId/$pipelineId/code")({
   component: PipelineCodePage,
+  pendingComponent: PipelineCodeSkeleton,
 });
+
+function PipelineCodePage() {
+  const { pipelineId, sourceId, fileId } = Route.useParams();
+  const { data } = useSuspenseQuery(pipelineCodeQueryOptions({
+    sourceId,
+    fileId,
+    pipelineId,
+  }));
+  const search = useSearch({ from: "/$sourceId/$fileId/$pipelineId/code" }) as CodeSearchParams;
+  const highlightRoute = search?.route;
+
+  return (
+    <div role="tabpanel" id="tabpanel-code" aria-labelledby="tab-code" className="p-6">
+      {data?.code
+        ? (
+            <CodeDisplay
+              code={data.code}
+              filePath={data.filePath ?? ""}
+              fileLabel={data.fileLabel}
+              highlightRoute={highlightRoute}
+            />
+          )
+        : (
+            <EmptyCodeDisplay pipelineId={pipelineId} />
+          )}
+    </div>
+  );
+}
 
 function CodeDisplay({
   code,
@@ -180,30 +209,31 @@ function EmptyCodeDisplay({ pipelineId }: { pipelineId: string }) {
   );
 }
 
-function PipelineCodePage() {
-  const { pipelineId, sourceId, fileId } = Route.useParams();
-  const { data } = useSuspenseQuery(pipelineCodeQueryOptions({
-    sourceId,
-    fileId,
-    pipelineId,
-  }));
-  const search = useSearch({ from: "/$sourceId/$fileId/$pipelineId/code" }) as CodeSearchParams;
-  const highlightRoute = search?.route;
-
+function PipelineCodeSkeleton() {
   return (
-    <div role="tabpanel" id="tabpanel-code" aria-labelledby="tab-code" className="p-6">
-      {data?.code
-        ? (
-            <CodeDisplay
-              code={data.code}
-              filePath={data.filePath ?? ""}
-              fileLabel={data.fileLabel}
-              highlightRoute={highlightRoute}
-            />
-          )
-        : (
-            <EmptyCodeDisplay pipelineId={pipelineId} />
-          )}
+    <div className="p-6">
+      <div className="rounded-xl border bg-card">
+        <div className="p-6 pb-2 space-y-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="space-y-1">
+              <span className="block w-36 h-3 rounded bg-muted animate-pulse" />
+              <span className="block w-56 h-3 rounded bg-muted animate-pulse" />
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-8 h-5 rounded-full bg-muted animate-pulse" />
+              <span className="w-12 h-6 rounded bg-muted animate-pulse" />
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="w-14 h-3 rounded bg-muted animate-pulse" />
+            <span className="w-px h-3 bg-border" />
+            <span className="w-16 h-3 rounded bg-muted animate-pulse" />
+          </div>
+        </div>
+        <div className="px-6 pb-6">
+          <div className="rounded-md border bg-muted/5 h-[40vh] animate-pulse" />
+        </div>
+      </div>
     </div>
   );
 }

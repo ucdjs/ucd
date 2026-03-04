@@ -15,6 +15,7 @@ import { executionsQueryOptions } from "@ucdjs/pipelines-ui";
 
 export const Route = createLazyFileRoute("/$sourceId/$fileId/$pipelineId/graphs")({
   component: PipelineGraphsPage,
+  pendingComponent: PipelineGraphsSkeleton,
 });
 
 function PipelineGraphsPage() {
@@ -122,6 +123,44 @@ function PipelineGraphsPage() {
               )}
         </CardContent>
       </Card>
+    </div>
+  );
+}
+
+function PipelineGraphsSkeleton() {
+  return (
+    <div className="p-6">
+      <div className="rounded-xl border bg-card">
+        <div className="p-6">
+          <span className="block w-36 h-5 rounded bg-muted animate-pulse" />
+          <span className="block w-24 h-4 rounded bg-muted animate-pulse mt-2" />
+        </div>
+        <div className="px-6 pb-6">
+          <div className="border rounded-md">
+            <div className="flex items-center gap-4 px-4 py-3 border-b bg-muted/30">
+              <span className="w-44 h-3 rounded bg-muted animate-pulse" />
+              <span className="w-16 h-3 rounded bg-muted animate-pulse" />
+              <span className="w-16 h-3 rounded bg-muted animate-pulse" />
+              <span className="w-20 h-3 rounded bg-muted animate-pulse" />
+              <span className="w-14 h-3 rounded bg-muted animate-pulse ml-auto" />
+              <span className="w-10 h-3 rounded bg-muted animate-pulse" />
+            </div>
+            {Array.from({ length: 4 }, (_, i) => (
+              <div key={`row-${i}`} className="flex items-center gap-4 px-4 py-3 border-b last:border-b-0">
+                <span className="w-44 h-4 rounded bg-muted animate-pulse" />
+                <span className="w-16 h-3 rounded bg-muted animate-pulse" />
+                <span className="w-16 h-3 rounded bg-muted animate-pulse" />
+                <div className="flex gap-1">
+                  <span className="w-12 h-5 rounded-full bg-muted animate-pulse" />
+                  <span className="w-10 h-5 rounded-full bg-muted animate-pulse" />
+                </div>
+                <span className="w-14 h-3 rounded bg-muted animate-pulse ml-auto" />
+                <span className="w-10 h-3 rounded bg-muted animate-pulse" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,15 +1,19 @@
-import { Link, useLoaderData, useNavigate, useParams } from "@tanstack/react-router";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { Link, useNavigate, useParams } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import { SidebarTrigger } from "@ucdjs-internal/shared-ui/ui/sidebar";
 import { useExecute, usePipelineVersions } from "@ucdjs/pipelines-ui";
+import { pipelineQueryOptions } from "@ucdjs/pipelines-ui/functions";
 import { CheckCircle, Loader2, Play } from "lucide-react";
 import { useCallback } from "react";
 
 export function PipelineHeader() {
   const { sourceId, fileId, pipelineId } = useParams({ from: "/$sourceId/$fileId/$pipelineId" });
   const navigate = useNavigate();
-  const data = useLoaderData({ from: "/$sourceId/$fileId/$pipelineId" });
+  const { data } = useSuspenseQuery(
+    pipelineQueryOptions({ sourceId, fileId, pipelineId }),
+  );
   const pipeline = data.pipeline;
   const { execute, executing, executionId } = useExecute();
   const allVersions = pipeline?.versions ?? [];
@@ -19,7 +23,7 @@ export function PipelineHeader() {
 
   const handleExecute = useCallback(async () => {
     if (!canExecute) return;
-    const result = await execute(fileId, pipelineId, Array.from(selectedVersions), sourceId);
+    const result = await execute({ fileId, pipelineId, versions: Array.from(selectedVersions), sourceId });
     // Navigate to execution detail after successful execution
     if (result.success && result.executionId) {
       navigate({
@@ -100,3 +104,25 @@ export function PipelineHeader() {
     </header>
   );
 }
+
+PipelineHeader.Skeleton = function PipelineHeaderSkeleton() {
+  return (
+    <header className="px-6 py-4">
+      <div className="flex flex-wrap items-start gap-4 justify-between">
+        <div className="min-w-60 space-y-1.5">
+          <div className="flex flex-wrap items-center gap-2 min-h-6">
+            <SidebarTrigger className="shrink-0" />
+            <span className="w-36 h-5 rounded bg-muted animate-pulse" />
+            <span className="w-18 h-5 rounded-full bg-muted animate-pulse" />
+            <span className="w-14 h-5 rounded-full bg-muted animate-pulse" />
+            <span className="w-16 h-5 rounded-full bg-muted animate-pulse" />
+          </div>
+          <span className="block w-48 h-4 rounded bg-muted animate-pulse" />
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="w-24 h-8 rounded-md bg-muted animate-pulse" />
+        </div>
+      </div>
+    </header>
+  );
+};

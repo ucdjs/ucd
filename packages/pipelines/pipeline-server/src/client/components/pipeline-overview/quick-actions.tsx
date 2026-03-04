@@ -1,4 +1,5 @@
-import { Link, useLoaderData, useNavigate, useParams } from "@tanstack/react-router";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { Link, useNavigate, useParams } from "@tanstack/react-router";
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import {
   Card,
@@ -8,12 +9,16 @@ import {
   CardTitle,
 } from "@ucdjs-internal/shared-ui/ui/card";
 import { useExecute, usePipelineVersions } from "@ucdjs/pipelines-ui";
+import { pipelineQueryOptions } from "@ucdjs/pipelines-ui/functions";
 import { ArrowRight, FileCode, Loader2, Play, Workflow } from "lucide-react";
 import { useCallback } from "react";
 
 export function QuickActionsPanel() {
   const { sourceId, fileId, pipelineId } = useParams({ from: "/$sourceId/$fileId/$pipelineId" });
-  const { pipeline } = useLoaderData({ from: "/$sourceId/$fileId/$pipelineId" });
+  const { data } = useSuspenseQuery(
+    pipelineQueryOptions({ sourceId, fileId, pipelineId }),
+  );
+  const pipeline = data.pipeline;
   const navigate = useNavigate();
   const { execute, executing, result } = useExecute();
   const { selectedVersions } = usePipelineVersions(pipelineId, pipeline?.versions || [], `${fileId}:${pipelineId}`);
@@ -27,7 +32,7 @@ export function QuickActionsPanel() {
       versions: Array.from(selectedVersions),
       sourceId,
     });
-    // reset()
+
     if (result.success && result.executionId) {
       navigate({
         to: "/$sourceId/$fileId/$pipelineId/executions/$executionId",

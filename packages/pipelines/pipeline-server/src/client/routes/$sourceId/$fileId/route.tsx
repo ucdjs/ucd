@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { sourceFileQueryOptions } from "@ucdjs/pipelines-ui/functions";
 
 export const Route = createFileRoute("/$sourceId/$fileId")({
@@ -10,4 +10,9 @@ export const Route = createFileRoute("/$sourceId/$fileId")({
       }),
     );
   },
+  component: FileLayout,
 });
+
+function FileLayout() {
+  return <Outlet />;
+}
