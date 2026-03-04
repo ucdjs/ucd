@@ -29,13 +29,16 @@ export async function fetchSources(options: WithBaseUrl): Promise<SourceList> {
   return data;
 }
 
-export async function fetchSource(options: WithBaseUrl<SourceParams>): Promise<SourceDetail> {
+export async function fetchSource(options: WithBaseUrl<SourceParams>): Promise<SourceDetail | null> {
   const { baseUrl = "", sourceId } = options;
   const { data, error } = await customFetch.safe(`${baseUrl}/api/sources/${sourceId}`, {
     schema: SourceDetailSchema,
   });
 
   if (error) {
+    if (error.status === 404) {
+      return null;
+    }
     throw new Error(`Failed to fetch source with id ${sourceId}: ${error.message}`);
   }
 
@@ -46,7 +49,7 @@ export async function fetchSource(options: WithBaseUrl<SourceParams>): Promise<S
   return data;
 }
 
-export async function fetchSourceFile(options: WithBaseUrl<SourceFileParams>): Promise<SourceFileResponse> {
+export async function fetchSourceFile(options: WithBaseUrl<SourceFileParams>): Promise<SourceFileResponse | null> {
   const { baseUrl = "", sourceId, fileId } = options;
   const { data, error } = await customFetch.safe(
     `${baseUrl}/api/sources/${sourceId}/${fileId}`,
@@ -56,6 +59,9 @@ export async function fetchSourceFile(options: WithBaseUrl<SourceFileParams>): P
   );
 
   if (error) {
+    if (error.status === 404) {
+      return null;
+    }
     throw new Error(`Failed to fetch file with id ${fileId} for source with id ${sourceId}: ${error.message}`);
   }
 

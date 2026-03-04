@@ -9,7 +9,7 @@ import { FolderGit2 } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   loader: async ({ context }) => {
-    await context.queryClient.prefetchQuery(overviewQueryOptions({ baseUrl: "" }));
+    await context.queryClient.ensureQueryData(overviewQueryOptions({ baseUrl: "" }));
   },
   component: HomePage,
   pendingComponent: HomePagePending,
@@ -61,19 +61,6 @@ function HomePage() {
                   <span className="flex items-center gap-2">
                     <FolderGit2 className="h-4 w-4" />
                     Browse sources
-                  </span>
-                </Link>
-              )}
-              disabled={sourceData.length === 0}
-            />
-            <Button
-              variant="outline"
-              size="sm"
-              nativeButton={false}
-              render={(props) => (
-                <Link to="/$sourceId" params={{ sourceId: sourceData[0]?.id ?? "" }} {...props}>
-                  <span className="flex items-center gap-2">
-                    Browse pipelines
                   </span>
                 </Link>
               )}
@@ -139,8 +126,59 @@ function HomePage() {
 
 function HomePagePending() {
   return (
-    <div className="flex-1 p-6 text-sm text-muted-foreground">
-      Loading overview...
+    <div className="flex-1 p-6 space-y-6 overflow-y-auto">
+      <section className="rounded-2xl p-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <span className="w-32 h-7 rounded bg-muted animate-pulse" />
+          <span className="w-28 h-8 rounded-md bg-muted animate-pulse" />
+        </div>
+      </section>
+
+      <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 rounded-xl border bg-card p-6">
+          <span className="block w-28 h-4 rounded bg-muted animate-pulse mb-4" />
+          <div className="h-48 rounded bg-muted animate-pulse" />
+        </div>
+
+        <div className="rounded-xl border bg-card p-6">
+          <div className="flex items-center justify-between mb-4">
+            <span className="w-32 h-4 rounded bg-muted animate-pulse" />
+            <span className="w-16 h-3 rounded bg-muted animate-pulse" />
+          </div>
+          <div className="space-y-3">
+            {Array.from({ length: 4 }, (_, i) => (
+              <div key={`exec-sk-${i}`} className="flex items-center gap-3">
+                <span className="w-3 h-3 rounded-full bg-muted animate-pulse shrink-0" />
+                <div className="flex-1 space-y-1">
+                  <span className="block w-24 h-3 rounded bg-muted animate-pulse" />
+                  <span className="block w-16 h-2.5 rounded bg-muted animate-pulse" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="lg:col-span-2 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {Array.from({ length: 3 }, (_, i) => (
+            <div key={`src-sk-${i}`} className="rounded-xl border bg-card p-4 space-y-2">
+              <span className="block w-20 h-4 rounded bg-muted animate-pulse" />
+              <span className="block w-32 h-3 rounded bg-muted animate-pulse" />
+            </div>
+          ))}
+        </div>
+
+        <div className="rounded-xl border bg-card p-6 self-start">
+          <span className="block w-16 h-4 rounded bg-muted animate-pulse mb-4" />
+          <div className="grid grid-cols-2 gap-2">
+            {Array.from({ length: 4 }, (_, i) => (
+              <div key={`tot-sk-${i}`} className="rounded-xl border border-border/60 bg-muted/30 p-3 space-y-1">
+                <span className="block w-14 h-2.5 rounded bg-muted animate-pulse" />
+                <span className="block w-8 h-5 rounded bg-muted animate-pulse" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

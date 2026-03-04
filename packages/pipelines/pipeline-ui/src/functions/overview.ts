@@ -24,8 +24,8 @@ export async function fetchOverview(options: WithBaseUrl): Promise<OverviewRespo
   return data;
 }
 
-export function overviewQueryOptions(options: WithBaseUrl) {
-  const { baseUrl = "" } = options;
+export function overviewQueryOptions(options?: WithBaseUrl) {
+  const { baseUrl = "" } = options || {};
   return queryOptions({
     queryKey: ["sources", "overview"],
     queryFn: () => fetchOverview({ baseUrl }),

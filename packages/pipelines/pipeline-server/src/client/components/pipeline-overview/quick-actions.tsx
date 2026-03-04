@@ -10,7 +10,7 @@ import {
 } from "@ucdjs-internal/shared-ui/ui/card";
 import { useExecute, usePipelineVersions } from "@ucdjs/pipelines-ui";
 import { pipelineQueryOptions } from "@ucdjs/pipelines-ui/functions";
-import { ArrowRight, FileCode, Loader2, Play, Workflow } from "lucide-react";
+import { ArrowRight, Loader2, Play, Workflow } from "lucide-react";
 import { useCallback } from "react";
 
 export function QuickActionsPanel() {
@@ -18,7 +18,7 @@ export function QuickActionsPanel() {
   const { data } = useSuspenseQuery(
     pipelineQueryOptions({ sourceId, fileId, pipelineId }),
   );
-  const pipeline = data.pipeline;
+  const pipeline = data?.pipeline;
   const navigate = useNavigate();
   const { execute, executing, result } = useExecute();
   const { selectedVersions } = usePipelineVersions(pipelineId, pipeline?.versions || [], `${fileId}:${pipelineId}`);
@@ -95,21 +95,6 @@ export function QuickActionsPanel() {
               <span className="flex items-center gap-2">
                 <Workflow className="h-4 w-4" />
                 Open graph
-              </span>
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          )}
-        />
-
-        <Button
-          variant="outline"
-          className="w-full justify-between"
-          nativeButton={false}
-          render={(props) => (
-            <Link to="/$sourceId/$fileId/$pipelineId/code" params={{ sourceId, fileId, pipelineId }} {...props}>
-              <span className="flex items-center gap-2">
-                <FileCode className="h-4 w-4" />
-                Open code
               </span>
               <ArrowRight className="h-4 w-4" />
             </Link>

@@ -15,8 +15,8 @@ export function ErrorsPanel({ errors }: { errors: SourceDetail["errors"] }) {
 
   return (
     <section>
-      <div className="rounded-lg border border-red-200 bg-red-50/50 p-4">
-        <div className="flex items-center gap-2 text-red-700 mb-3">
+      <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4">
+        <div className="flex items-center gap-2 text-destructive mb-3">
           <AlertCircle className="w-4 h-4" />
           <h2 className="text-sm font-medium">
             {errors.length}
@@ -28,9 +28,9 @@ export function ErrorsPanel({ errors }: { errors: SourceDetail["errors"] }) {
         <div className="space-y-3">
           {[...grouped.entries()].map(([filePath, messages]) => (
             <div key={filePath} className="text-sm">
-              <div className="font-mono text-xs text-red-800 mb-1">{filePath}</div>
+              <div className="font-mono text-xs text-destructive mb-1">{filePath}</div>
               {messages.map((msg) => (
-                <div key={msg} className="text-red-700/80 text-xs ml-3">
+                <div key={msg} className="text-destructive/80 text-xs ml-3">
                   •
                   {" "}
                   {msg}

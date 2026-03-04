@@ -7,11 +7,11 @@ import { executionsQueryOptions } from "@ucdjs/pipelines-ui/functions";
 
 export const Route = createFileRoute("/$sourceId/$fileId/$pipelineId/")({
   loader: async ({ context, params }) => {
-    context.queryClient.prefetchQuery(executionsQueryOptions({
+    await context.queryClient.ensureQueryData(executionsQueryOptions({
       sourceId: params.sourceId,
       fileId: params.fileId,
       pipelineId: params.pipelineId,
-      limit: 50,
+      limit: 10,
     }));
   },
   component: PipelineOverviewPage,

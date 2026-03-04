@@ -12,7 +12,7 @@ import {
   sourcesSourceRouter,
 } from "#server/routes";
 import { ensureWorkspace, resolveWorkspace } from "#server/workspace";
-import { H3, serve, serveStatic } from "h3";
+import { H3, HTTPError, serve, serveStatic } from "h3";
 // import { getUcdConfigDir } from "@ucdjs-internal/shared/config";
 import { getUcdConfigDir } from "../../../../shared/src/config";
 import { version } from "../../package.json" with { type: "json" };
@@ -47,7 +47,19 @@ export function createApp(options: AppOptions = {}): H3 {
     throw new Error("Database is required. Pass db to createApp() or use startServer()");
   }
 
-  const app = new H3({ debug: true });
+  const app = new H3({
+    onError(error) {
+      const status = error.statusCode;
+      return Response.json(
+        {
+          message: error.message || error.statusText || "Internal Server Error",
+          status,
+          timestamp: new Date().toISOString(),
+        },
+        { status },
+      );
+    },
+  });
 
   // Default to pipeline-playground in development
   let resolvedSources = sources;

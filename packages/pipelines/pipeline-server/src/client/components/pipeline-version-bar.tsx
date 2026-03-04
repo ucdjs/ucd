@@ -1,5 +1,5 @@
-import { useParams } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { useParams } from "@tanstack/react-router";
 import { usePipelineVersions, VersionSelector } from "@ucdjs/pipelines-ui";
 import { pipelineQueryOptions } from "@ucdjs/pipelines-ui/functions";
 
@@ -8,10 +8,11 @@ export function PipelineVersionBar() {
   const { data } = useSuspenseQuery(
     pipelineQueryOptions({ sourceId, fileId, pipelineId }),
   );
-  const pipeline = data.pipeline;
+  const pipeline = data?.pipeline;
   const { selectedVersions, toggleVersion, selectAll, deselectAll } = usePipelineVersions(
     pipelineId,
     pipeline?.versions || [],
+    `${fileId}:${pipelineId}`,
   );
 
   return (

@@ -1,6 +1,6 @@
 import { findPipelineByFileId, loadPipelineFileGroups } from "#server/lib/files";
 import { toPipelineDetails } from "@ucdjs/pipelines-ui";
-import { H3 } from "h3";
+import { H3, HTTPError } from "h3";
 
 export const sourcesFileRouter: H3 = new H3();
 
@@ -30,5 +30,5 @@ sourcesFileRouter.get("/:sourceId/:fileId/:pipelineId", async (event) => {
     }
   }
 
-  return { error: `Pipeline "${pipelineId}" not found in file "${fileId}" of source "${sourceId}"` };
+  throw HTTPError.status(404, "Not Found", { message: `Pipeline "${pipelineId}" not found in file "${fileId}" of source "${sourceId}"` });
 });

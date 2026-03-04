@@ -5,7 +5,7 @@ import {
   loadPipelineFileGroups,
 } from "#server/lib/files";
 import { syncRemoteSource } from "@ucdjs/pipelines-loader";
-import { H3 } from "h3";
+import { H3, HTTPError } from "h3";
 
 export const sourcesSourceRouter: H3 = new H3();
 
@@ -24,7 +24,7 @@ sourcesSourceRouter.get("/:sourceId", async (event) => {
 
   const source = sources.find((s) => s.id === sourceId);
   if (!source) {
-    throw new Error("Source not found");
+    throw HTTPError.status(404, "Not Found", { message: `Source "${sourceId}" not found` });
   }
 
   const groups = await loadPipelineFileGroups([source]);
@@ -139,5 +139,5 @@ sourcesSourceRouter.get("/:sourceId/:fileId", async (event) => {
     allErrors.push(...group.errors);
   }
 
-  return { error: `Pipeline file "${fileId}" not found in source "${sourceId}"`, errors: allErrors };
+  throw HTTPError.status(404, "Not Found", { message: `Pipeline file "${fileId}" not found in source "${sourceId}"` });
 });

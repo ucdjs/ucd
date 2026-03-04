@@ -10,7 +10,7 @@ import {
   CommandShortcut,
 } from "@ucdjs-internal/shared-ui/ui/command";
 import { useExecute, usePipelines } from "@ucdjs/pipelines-ui";
-import { FileCode, Loader2, Play, ScrollText, Terminal } from "lucide-react";
+import { Loader2, Play, ScrollText, Terminal } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 const STORAGE_KEY_PREFIX = "ucd-versions-";
@@ -140,8 +140,8 @@ export function PipelineCommandPalette() {
     }
   }, [execute, executing]);
 
-  const handleNavigate = useCallback((to: string) => {
-    navigate({ to });
+  const handleNavigateTo = useCallback((to: string, params: Record<string, string>) => {
+    navigate({ to, params });
     setOpen(false);
   }, [navigate]);
 
@@ -168,11 +168,7 @@ export function PipelineCommandPalette() {
                 Execute Current Pipeline
                 <CommandShortcut>⌘E</CommandShortcut>
               </CommandItem>
-              <CommandItem onSelect={() => handleNavigate(`/pipelines/${currentPipeline.fileId}/${currentPipeline.id}/code`)}>
-                <FileCode className="mr-2 h-4 w-4" />
-                View Current Pipeline Code
-              </CommandItem>
-              <CommandItem onSelect={() => handleNavigate(`/pipelines/${currentPipeline.fileId}/${currentPipeline.id}/executions`)}>
+              <CommandItem onSelect={() => handleNavigateTo("/$sourceId/$fileId/$pipelineId/executions", { sourceId: currentPipeline.sourceId, fileId: currentPipeline.fileId, pipelineId: currentPipeline.id })}>
                 <ScrollText className="mr-2 h-4 w-4" />
                 View Pipeline Executions
               </CommandItem>

@@ -1,6 +1,14 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Link, useNavigate, useParams } from "@tanstack/react-router";
+import { Link, useLoaderData, useNavigate, useParams } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@ucdjs-internal/shared-ui/ui/breadcrumb";
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import { SidebarTrigger } from "@ucdjs-internal/shared-ui/ui/sidebar";
 import { useExecute, usePipelineVersions } from "@ucdjs/pipelines-ui";
@@ -14,7 +22,8 @@ export function PipelineHeader() {
   const { data } = useSuspenseQuery(
     pipelineQueryOptions({ sourceId, fileId, pipelineId }),
   );
-  const pipeline = data.pipeline;
+  const { file } = useLoaderData({ from: "/$sourceId/$fileId" });
+  const pipeline = data?.pipeline;
   const { execute, executing, executionId } = useExecute();
   const allVersions = pipeline?.versions ?? [];
   const { selectedVersions } = usePipelineVersions(pipelineId, allVersions, `${fileId}:${pipelineId}`);
@@ -39,9 +48,27 @@ export function PipelineHeader() {
         <div className="min-w-60 space-y-1.5">
           <div className="flex flex-wrap items-center gap-2 min-h-6">
             <SidebarTrigger className="shrink-0" />
-            <h1 className="text-base font-semibold text-foreground tracking-tight">
-              {pipeline?.name || pipeline?.id || "The cake is a lie"}
-            </h1>
+            <Breadcrumb>
+              <BreadcrumbList>
+                <BreadcrumbItem>
+                  <BreadcrumbLink render={<Link to="/$sourceId" params={{ sourceId }} />}>
+                    {sourceId}
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbLink render={<Link to="/$sourceId/$fileId" params={{ sourceId, fileId }} />}>
+                    {file.fileLabel}
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                  <BreadcrumbPage>{pipeline?.name || pipeline?.id}</BreadcrumbPage>
+                </BreadcrumbItem>
+              </BreadcrumbList>
+            </Breadcrumb>
+          </div>
+          <div className="flex flex-wrap items-center gap-1.5 pl-8">
             <Badge variant="secondary" className="text-[10px] font-medium">
               {pipeline?.versions.length ?? 0}
               {" "}
@@ -58,10 +85,6 @@ export function PipelineHeader() {
               sources
             </Badge>
           </div>
-
-          <p className="text-xs text-muted-foreground leading-relaxed max-w-2xl h-4 overflow-hidden">
-            {pipeline?.description ?? "No description provided."}
-          </p>
         </div>
         <div className="flex items-center gap-2">
           {executionId && !executing && (
@@ -112,12 +135,17 @@ PipelineHeader.Skeleton = function PipelineHeaderSkeleton() {
         <div className="min-w-60 space-y-1.5">
           <div className="flex flex-wrap items-center gap-2 min-h-6">
             <SidebarTrigger className="shrink-0" />
-            <span className="w-36 h-5 rounded bg-muted animate-pulse" />
+            <span className="w-24 h-4 rounded bg-muted animate-pulse" />
+            <span className="mx-1 text-muted-foreground/30">/</span>
+            <span className="w-20 h-4 rounded bg-muted animate-pulse" />
+            <span className="mx-1 text-muted-foreground/30">/</span>
+            <span className="w-28 h-4 rounded bg-muted animate-pulse" />
+          </div>
+          <div className="flex flex-wrap items-center gap-1.5 pl-8">
             <span className="w-18 h-5 rounded-full bg-muted animate-pulse" />
             <span className="w-14 h-5 rounded-full bg-muted animate-pulse" />
             <span className="w-16 h-5 rounded-full bg-muted animate-pulse" />
           </div>
-          <span className="block w-48 h-4 rounded bg-muted animate-pulse" />
         </div>
         <div className="flex items-center gap-2">
           <span className="w-24 h-8 rounded-md bg-muted animate-pulse" />

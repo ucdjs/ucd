@@ -14,7 +14,7 @@ function PipelineInspectPage() {
   const { data } = useSuspenseQuery(
     pipelineQueryOptions({ sourceId, fileId, pipelineId }),
   );
-  const pipeline = data.pipeline;
+  const pipeline = data?.pipeline;
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
 

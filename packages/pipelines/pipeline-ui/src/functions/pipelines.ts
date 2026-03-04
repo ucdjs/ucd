@@ -10,7 +10,7 @@ export interface FetchPipelineParams {
   pipelineId: string;
 }
 
-export async function fetchPipeline(options: WithBaseUrl<FetchPipelineParams>): Promise<PipelineResponse> {
+export async function fetchPipeline(options: WithBaseUrl<FetchPipelineParams>): Promise<PipelineResponse | null> {
   const { baseUrl = "", sourceId, fileId, pipelineId } = options;
   const { data, error } = await customFetch.safe(
     `${baseUrl}/api/sources/${sourceId}/${fileId}/${pipelineId}`,
@@ -20,6 +20,9 @@ export async function fetchPipeline(options: WithBaseUrl<FetchPipelineParams>): 
   );
 
   if (error) {
+    if (error.status === 404) {
+      return null;
+    }
     throw new Error(`Failed to fetch pipeline with id ${pipelineId}: ${error.message}`);
   }
 

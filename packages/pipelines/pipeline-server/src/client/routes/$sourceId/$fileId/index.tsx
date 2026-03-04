@@ -1,12 +1,19 @@
 import { PipelineCard } from "#components/file-home/pipeline-card";
 import { ErrorsPanel } from "#components/source-home/errors-panel";
-import { createFileRoute, useLoaderData } from "@tanstack/react-router";
+import { createFileRoute, Link, useLoaderData } from "@tanstack/react-router";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@ucdjs-internal/shared-ui/ui/breadcrumb";
 import { AlertCircle, GitBranch, Route as RouteIcon } from "lucide-react";
 import { useMemo } from "react";
 
 export const Route = createFileRoute("/$sourceId/$fileId/")({
   component: FilePipelinesPage,
-  notFoundComponent: SourceFileNotFound,
 });
 
 function FilePipelinesPage() {
@@ -21,6 +28,19 @@ function FilePipelinesPage() {
   return (
     <div className="h-full flex flex-col bg-background">
       <div className="border-b border-border px-6 py-4 shrink-0">
+        <Breadcrumb className="mb-2">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink render={<Link to="/$sourceId" params={{ sourceId }} />}>
+                {sourceId}
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>{file.fileLabel}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
         <h1 className="text-lg font-semibold text-foreground">
           {file.fileLabel}
         </h1>
@@ -43,7 +63,7 @@ function FilePipelinesPage() {
             {totalRoutes !== 1 ? "s" : ""}
           </span>
           {errors.length > 0 && (
-            <span className="inline-flex items-center gap-1 text-xs text-red-600">
+            <span className="inline-flex items-center gap-1 text-xs text-destructive">
               <AlertCircle className="w-3 h-3" />
               {errors.length}
               {" "}
@@ -70,25 +90,6 @@ function FilePipelinesPage() {
             ))}
           </div>
         </section>
-      </div>
-    </div>
-  );
-}
-
-function SourceFileNotFound() {
-  const { sourceId } = Route.useParams();
-
-  return (
-    <div className="flex-1 flex items-center justify-center" role="alert">
-      <div className="text-center">
-        <p className="text-sm text-muted-foreground">File not found</p>
-        <p className="text-sm text-muted-foreground mt-2">
-          The file with ID
-          {" "}
-          <code className="bg-muted/50 px-1 rounded">{sourceId}</code>
-          {" "}
-          could not be found.
-        </p>
       </div>
     </div>
   );
