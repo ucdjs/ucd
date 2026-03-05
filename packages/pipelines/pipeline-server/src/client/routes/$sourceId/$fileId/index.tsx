@@ -1,5 +1,4 @@
 import { PipelineCard } from "#components/file-home/pipeline-card";
-import { ErrorsPanel } from "#components/source-home/errors-panel";
 import { createFileRoute, Link, useLoaderData } from "@tanstack/react-router";
 import {
   Breadcrumb,
@@ -75,8 +74,6 @@ function FilePipelinesPage() {
       </div>
 
       <div className="flex-1 overflow-auto p-6 space-y-6">
-        {errors.length > 0 && <ErrorsPanel errors={errors} />}
-
         <section>
           <h2 className="text-sm font-medium text-muted-foreground mb-3">Pipelines</h2>
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">

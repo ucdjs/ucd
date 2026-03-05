@@ -1,4 +1,4 @@
-import type { LoadError, PipelineFileInfo } from "../types";
+import type { PipelineFileInfo } from "../types";
 import { cn } from "#lib/utils";
 import { Link } from "@tanstack/react-router";
 import { ThemeToggle, UcdLogo } from "@ucdjs-internal/shared-ui/components";
@@ -17,7 +17,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@ucdjs-internal/shared-ui/ui/sidebar";
-import { AlertTriangle, BookOpen, ExternalLink, Folder, FolderOpen, Hash, Tag } from "lucide-react";
+import { BookOpen, ExternalLink, Folder, FolderOpen, Hash, Tag } from "lucide-react";
 import { useMemo, useState } from "react";
 import { SourceSwitcher } from "./source-switcher";
 
@@ -33,20 +33,14 @@ export interface PipelineSidebarProps {
   workspaceId: string;
   version?: string;
   files: PipelineFileInfo[];
-  errors: LoadError[];
   sources: SourceInfo[];
   currentSourceId?: string;
-  onToggleErrorPanel: () => void;
-  isErrorPanelOpen: boolean;
 }
 
 export function PipelineSidebar({
   files,
-  errors,
   sources,
   currentSourceId,
-  onToggleErrorPanel,
-  isErrorPanelOpen,
   workspaceId,
   version,
 }: PipelineSidebarProps) {
@@ -73,17 +67,6 @@ export function PipelineSidebar({
     }
     return grouped;
   }, [files]);
-
-  const errorsBySource = useMemo(() => {
-    const grouped = new Map<string, LoadError[]>();
-    for (const error of errors) {
-      if (!error.sourceId) continue;
-      const existing = grouped.get(error.sourceId) || [];
-      existing.push(error);
-      grouped.set(error.sourceId, existing);
-    }
-    return grouped;
-  }, [errors]);
 
   const sourcesToShow = useMemo(() => {
     if (currentSourceId) {
@@ -143,15 +126,10 @@ export function PipelineSidebar({
       <SidebarContent>
         {sourcesToShow.map((source) => {
           const sourceFiles = filesBySource.get(source.id) || [];
-          const sourceErrors = errorsBySource.get(source.id) || [];
-          const hasErrors = sourceErrors.length > 0;
 
           return (
             <SidebarGroup key={source.id}>
-              <SidebarGroupLabel className={cn(hasErrors && "text-destructive")}>
-                {source.id}
-                {hasErrors && <AlertTriangle className="h-3 w-3 ml-1" />}
-              </SidebarGroupLabel>
+              <SidebarGroupLabel>{source.id}</SidebarGroupLabel>
               <SidebarMenu>
                 {sourceFiles.length === 0
                   ? (
@@ -164,7 +142,6 @@ export function PipelineSidebar({
                         <FileMenuItem
                           key={file.fileId}
                           file={file}
-                          errors={sourceErrors}
                           isExpanded={expandedFiles.has(file.fileId)}
                           onToggle={() => toggleFile(file.fileId)}
                         />
@@ -202,31 +179,6 @@ export function PipelineSidebar({
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarGroup>
-
-        {errors.length > 0 && (
-          <div className="px-2 py-1.5">
-            <button
-              onClick={onToggleErrorPanel}
-              className={cn(
-                "w-full flex items-center justify-between px-3 py-2 rounded-md text-xs font-medium transition-colors",
-                isErrorPanelOpen
-                  ? "bg-destructive/10 text-destructive"
-                  : "bg-destructive/5 text-destructive hover:bg-destructive/10",
-              )}
-            >
-              <span className="flex items-center gap-2">
-                <AlertTriangle className="h-3.5 w-3.5" />
-                {errors.length}
-                {" "}
-                error
-                {errors.length !== 1 ? "s" : ""}
-              </span>
-              <span className="text-[10px] opacity-70">
-                {isErrorPanelOpen ? "Hide" : "Show"}
-              </span>
-            </button>
-          </div>
-        )}
       </SidebarFooter>
     </Sidebar>
   );
@@ -234,42 +186,30 @@ export function PipelineSidebar({
 
 interface FileMenuItemProps {
   file: PipelineFileInfo;
-  errors: LoadError[];
   isExpanded: boolean;
   onToggle: () => void;
 }
 
-function FileMenuItem({ file, errors, isExpanded, onToggle }: FileMenuItemProps) {
+function FileMenuItem({ file, isExpanded, onToggle }: FileMenuItemProps) {
   const fileName = file.fileLabel ?? file.filePath.split("/").pop() ?? file.filePath;
-  const hasError = errors.some((e) => e.filePath === file.filePath);
-  const fileError = errors.find((e) => e.filePath === file.filePath);
 
   return (
     <SidebarMenuItem>
       <SidebarMenuButton
-        className={cn(
-          "w-full justify-start gap-2",
-          hasError && "opacity-50 cursor-not-allowed",
-        )}
+        className="w-full justify-start gap-2"
         onClick={(event) => {
-          if (hasError) {
-            event.preventDefault();
-            return;
-          }
           event.preventDefault();
           onToggle();
         }}
-        title={fileError?.message}
         render={(
           <Link to="/$sourceId/$fileId" params={{ sourceId: file.sourceId, fileId: file.fileId }}>
             {isExpanded ? <FolderOpen className="h-4 w-4" /> : <Folder className="h-4 w-4" />}
             <span className="truncate flex-1">{fileName}</span>
-            {hasError && <AlertTriangle className="h-3 w-3 text-destructive" />}
             <span className="text-[10px] text-muted-foreground">{file.pipelines.length}</span>
           </Link>
         )}
       />
-      {isExpanded && !hasError && (
+      {isExpanded && (
         <SidebarMenuSub>
           {file.pipelines.map((pipeline) => (
             <SidebarMenuSubItem key={`${file.fileId}-${pipeline.id}`}>

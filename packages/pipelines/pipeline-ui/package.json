@@ -26,6 +26,7 @@
   },
   "exports": {
     ".": "./dist/index.mjs",
+    "./components/errors-banner": "./dist/components/errors-banner.mjs",
     "./components/pipeline-sidebar": "./dist/components/pipeline-sidebar.mjs",
     "./components/source-switcher": "./dist/components/source-switcher.mjs",
     "./components/status-badge": "./dist/components/status-badge.mjs",

@@ -1,6 +1,5 @@
 import type { QueryClient } from "@tanstack/react-query";
-import type { LoadError } from "@ucdjs/pipelines-ui";
-import type { SourceInfo } from "@ucdjs/pipelines-ui/components/pipeline-sidebar";
+import type { SourceInfo } from "@ucdjs/pipelines-ui";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { useHotkey } from "@tanstack/react-hotkeys";
 import { HotkeysDevtoolsPanel } from "@tanstack/react-hotkeys-devtools";
@@ -16,7 +15,6 @@ import {
   sourcesQueryOptions,
 } from "@ucdjs/pipelines-ui/functions";
 import { lazy, Suspense, useState } from "react";
-import { ErrorLogPanel } from "../components/error-log-panel";
 import { KeyboardShortcutsHelp } from "../components/keyboard-shortcuts-help";
 
 const PipelineCommandPalette = lazy(() =>
@@ -68,8 +66,6 @@ function RootLayout() {
   const params = useParams({ strict: false });
   const currentSourceId = params.sourceId;
 
-  const [dismissedErrors, setDismissedErrors] = useState<Set<string>>(() => new Set());
-  const [isErrorPanelOpen, setIsErrorPanelOpen] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
 
   // Only fetch files when a specific source is selected
@@ -79,30 +75,6 @@ function RootLayout() {
   });
 
   const files = filesQuery.data?.files || [];
-  const errors = filesQuery.data?.errors || [];
-
-  // Filter out dismissed errors
-  const activeErrors = errors.filter(
-    (error: LoadError) => !dismissedErrors.has(`${error.sourceId}-${error.filePath}-${error.message}`),
-  );
-
-  const handleDismissError = (error: LoadError) => {
-    setDismissedErrors((prev) => new Set([...prev, `${error.sourceId}-${error.filePath}-${error.message}`]));
-  };
-
-  const handleClearAllErrors = () => {
-    const allErrorKeys = activeErrors.map(
-      (e: LoadError) => `${e.sourceId}-${e.filePath}-${e.message}`,
-    );
-    setDismissedErrors((prev) => new Set([...prev, ...allErrorKeys]));
-  };
-
-  // Hotkeys
-  useHotkey("Mod+E", () => {
-    if (activeErrors.length > 0) {
-      setIsErrorPanelOpen((prev) => !prev);
-    }
-  });
 
   useHotkey("Mod+/", () => {
     setIsShortcutsOpen(true);
@@ -118,11 +90,8 @@ function RootLayout() {
       <SidebarProvider>
         <PipelineSidebar
           files={files}
-          errors={activeErrors}
           sources={sourceList}
           currentSourceId={currentSourceId}
-          onToggleErrorPanel={() => setIsErrorPanelOpen(!isErrorPanelOpen)}
-          isErrorPanelOpen={isErrorPanelOpen}
           workspaceId={config.workspaceId}
           version={config.version}
         />
@@ -133,16 +102,6 @@ function RootLayout() {
         <Suspense fallback={null}>
           <PipelineCommandPalette />
         </Suspense>
-
-        {activeErrors.length > 0 && (
-          <ErrorLogPanel
-            errors={activeErrors}
-            isOpen={isErrorPanelOpen}
-            onClose={() => setIsErrorPanelOpen(false)}
-            onDismiss={handleDismissError}
-            onClearAll={handleClearAllErrors}
-          />
-        )}
 
         <KeyboardShortcutsHelp
           isOpen={isShortcutsOpen}

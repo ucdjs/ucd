@@ -1,17 +1,7 @@
 import type { PipelineEvent, PipelineGraph } from "@ucdjs/pipelines-core";
-import type { ExecutionStatus } from "@ucdjs/pipelines-executor/types";
 import type { Execution } from "./schemas/execution";
-
-export interface PipelineInfo {
-  id: string;
-  name: string;
-  description?: string;
-  tags?: string[];
-  versions: string[];
-  routeCount: number;
-  sourceCount: number;
-  sourceId: string;
-}
+import type { PipelineInfo } from "./schemas/pipeline";
+import type { PipelineLoadError } from "./schemas/source";
 
 export interface PipelineFileInfo {
   fileId: string;
@@ -42,25 +32,10 @@ export interface PipelineDetails {
   sources: Array<{ id: string }>;
 }
 
-export interface LoadError {
-  filePath: string;
-  message: string;
-  sourceId?: string;
-}
-
 export interface PipelinesResponse {
   workspaceId: string;
   files: PipelineFileInfo[];
-  errors: LoadError[];
-}
-
-export interface PipelineResponse {
-  pipeline?: PipelineDetails;
-  error?: string;
-  fileId?: string;
-  filePath?: string;
-  fileLabel?: string;
-  sourceId?: string;
+  errors: PipelineLoadError[];
 }
 
 export interface ExecuteResult {
@@ -102,40 +77,11 @@ export interface ExecutionLogItem {
   payload: ExecutionLogPayload | null;
 }
 
-export interface ExecutionLogsResponse {
-  executionId: string;
-  pipelineId: string;
-  status: ExecutionStatus;
-  logs: ExecutionLogItem[];
-  truncated: boolean;
-  capturedSize: number;
-  originalSize: number | null;
-  pagination: {
-    total: number;
-    limit: number;
-    offset: number;
-    hasMore: boolean;
-  };
-}
-
 export interface ExecutionEventItem {
   id: string;
   type: string;
   timestamp: string;
   data: PipelineEvent;
-}
-
-export interface ExecutionEventsResponse {
-  executionId: string;
-  pipelineId: string;
-  status: ExecutionStatus;
-  events: ExecutionEventItem[];
-  pagination: {
-    total: number;
-    limit: number;
-    offset: number;
-    hasMore: boolean;
-  };
 }
 
 export type ExecutionInfo = Pick<Execution, "id" | "pipelineId" | "status" | "startedAt"> & {

@@ -10,6 +10,7 @@ export {
   VersionSelector,
   type VersionSelectorProps,
 } from "./components/detail/version-selector";
+export { PipelineErrorsBanner, type PipelineErrorsBannerProps } from "./components/errors-banner";
 export {
   PipelineGraphDetails,
   type PipelineGraphDetailsProps,
@@ -33,7 +34,6 @@ export {
 } from "./components/graph/pipeline-graph";
 export { EmptyRouteDetails, type EmptyRouteDetailsProps } from "./components/inspect/empty-route-details";
 export { RouteDetails, type RouteDetailsProps } from "./components/inspect/route-details";
-// Inspect Components
 export { RouteList, type RouteListProps } from "./components/inspect/route-list";
 export {
   ExecutionLogPayloadPanel,
@@ -91,17 +91,12 @@ export * from "./schemas";
 export type {
   ExecuteResult,
   ExecutionEventItem,
-  ExecutionEventsResponse,
   ExecutionInfo,
   ExecutionLogItem,
   ExecutionLogPayload,
-  ExecutionLogsResponse,
   ExecutionLogStream,
-  LoadError,
   PipelineDetails,
   PipelineFileInfo,
-  PipelineInfo,
-  PipelineResponse,
   PipelinesResponse,
 } from "./types";
 
