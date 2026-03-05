@@ -25,7 +25,7 @@ const PipelineCommandPalette = lazy(() =>
   })),
 );
 
-export interface AppRouterContext {
+interface AppRouterContext {
   queryClient: QueryClient;
 }
 
