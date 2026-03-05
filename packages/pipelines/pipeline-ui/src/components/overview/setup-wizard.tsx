@@ -30,12 +30,6 @@ export function SetupWizard({ onComplete }: SetupWizardProps) {
     }
   };
 
-  const handleBack = () => {
-    if (step > 1) {
-      setStep(step - 1);
-    }
-  };
-
   const handleTypeSelect = (type: SourceType) => {
     setSelectedType(type);
     handleNext();

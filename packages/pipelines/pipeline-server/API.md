@@ -6,7 +6,7 @@ The Sources Domain provides a hierarchical REST API for browsing and executing p
 
 ## Base URL
 
-```
+```text
 /api/sources
 ```
 
@@ -14,7 +14,7 @@ The Sources Domain provides a hierarchical REST API for browsing and executing p
 
 The Sources API uses a hierarchical path structure that mirrors the physical organization of pipelines:
 
-```
+```text
 /api/sources/:sourceId/:fileId/:pipelineId/:executionId/:resource
 ```
 
@@ -32,7 +32,7 @@ The Sources API uses a hierarchical path structure that mirrors the physical org
 ### Source Management
 
 #### List All Sources
-```
+```text
 GET /api/sources
 ```
 
@@ -40,7 +40,7 @@ Returns all configured sources with their metadata.
 
 **Response**:
 ```typescript
-Array<{
+type Response = Array<{
   id: string; // Unique source identifier
   name: string; // Display name
   type: "local" | "github" | "gitlab";
@@ -55,7 +55,7 @@ Array<{
 ---
 
 #### Get Source Details
-```
+```text
 GET /api/sources/:sourceId
 ```
 
@@ -69,7 +69,7 @@ Returns detailed information about a specific source including all its files.
 ---
 
 #### Refresh Source Cache
-```
+```text
 POST /api/sources/:sourceId/refresh
 ```
 
@@ -87,7 +87,7 @@ Refreshes the cache for remote sources (GitHub/GitLab). Re-fetches repository co
 ### File Operations
 
 #### Get File Details
-```
+```text
 GET /api/sources/:sourceId/:fileId
 ```
 
@@ -99,12 +99,12 @@ Returns details for a specific file within a source, including all pipelines def
 
 **Response**:
 ```typescript
-{
-  id: string;                    // File identifier
-  path: string;                  // File path within source
-  name: string;                  // Display name
-  sourceId: string;              // Parent source ID
-  pipelines: Pipeline[];         // Pipelines defined in this file
+interface Response {
+  id: string; // File identifier
+  path: string; // File path within source
+  name: string; // Display name
+  sourceId: string; // Parent source ID
+  pipelines: Pipeline[]; // Pipelines defined in this file
 }
 ```
 
@@ -113,7 +113,7 @@ Returns details for a specific file within a source, including all pipelines def
 ### Pipeline Operations
 
 #### Get Pipeline Details
-```
+```text
 GET /api/sources/:sourceId/:fileId/:pipelineId
 ```
 
@@ -126,22 +126,22 @@ Returns metadata for a specific pipeline.
 
 **Response**:
 ```typescript
-{
-  id: string;                    // Pipeline identifier
-  name: string;                  // Display name
-  description?: string;          // Description
-  fileId: string;                // Parent file ID
-  sourceId: string;              // Source ID
-  inputs: InputDefinition[];     // Input parameters
-  outputs: OutputDefinition[];   // Output parameters
-  config: PipelineConfig;        // Pipeline configuration
+interface Response {
+  id: string; // Pipeline identifier
+  name: string; // Display name
+  description?: string; // Description
+  fileId: string; // Parent file ID
+  sourceId: string; // Source ID
+  inputs: InputDefinition[]; // Input parameters
+  outputs: OutputDefinition[]; // Output parameters
+  config: PipelineConfig; // Pipeline configuration
 }
 ```
 
 ---
 
 #### Execute Pipeline
-```
+```text
 POST /api/sources/:sourceId/:fileId/:pipelineId/execute
 ```
 
@@ -156,7 +156,7 @@ Executes a pipeline with the provided inputs.
 
 **Response**:
 ```typescript
-{
+interface Response {
   id: string; // Execution ID (UUID)
   pipelineId: string; // Pipeline that was executed
   fileId: string; // File containing pipeline
@@ -176,7 +176,7 @@ Executes a pipeline with the provided inputs.
 ---
 
 #### List Pipeline Executions
-```
+```text
 GET /api/sources/:sourceId/:fileId/:pipelineId/executions
 ```
 
@@ -193,7 +193,7 @@ Returns execution history for a specific pipeline.
 
 **Response**:
 ```typescript
-Array<{
+type Response = Array<{
   id: string; // Execution ID
   pipelineId: string;
   fileId: string;
@@ -212,7 +212,7 @@ Array<{
 ### Execution Details
 
 #### Get Execution
-```
+```text
 GET /api/sources/:sourceId/:fileId/:pipelineId/executions/:executionId
 ```
 
@@ -229,7 +229,7 @@ Returns full details for a specific execution.
 ---
 
 #### Get Execution Events
-```
+```text
 GET /api/sources/:sourceId/:fileId/:pipelineId/executions/:executionId/events
 ```
 
@@ -243,7 +243,7 @@ Returns lifecycle events for an execution (start, complete, step transitions, er
 
 **Response**:
 ```typescript
-Array<{
+type Response = Array<{
   id: string; // Event ID
   executionId: string;
   type: "execution.started" | "execution.completed" | "execution.failed"
@@ -256,7 +256,7 @@ Array<{
 ---
 
 #### Get Execution Logs
-```
+```text
 GET /api/sources/:sourceId/:fileId/:pipelineId/executions/:executionId/logs
 ```
 
@@ -274,7 +274,7 @@ Returns log entries from pipeline execution.
 
 **Response**:
 ```typescript
-Array<{
+type Response = Array<{
   id: string; // Log entry ID
   executionId: string;
   timestamp: string; // ISO 8601
@@ -288,7 +288,7 @@ Array<{
 ---
 
 #### Get Execution Graph
-```
+```text
 GET /api/sources/:sourceId/:fileId/:pipelineId/executions/:executionId/graph
 ```
 
@@ -367,40 +367,40 @@ Server route files are organized by resource depth:
 ### Execute and Monitor
 
 1. **Start execution**:
-   ```
+   ```text
    POST /api/sources/local/data/transform.yaml/etl-pipeline/execute
    Body: { "inputFile": "data.csv", "outputTable": "results" }
    ```
 
 2. **Poll for completion**:
-   ```
+   ```text
    GET /api/sources/local/data/transform.yaml/etl-pipeline/executions/{executionId}
    ```
 
 3. **Fetch logs**:
-   ```
+   ```text
    GET /api/sources/local/data/transform.yaml/etl-pipeline/executions/{executionId}/logs
    ```
 
 ### Browse Hierarchy
 
 1. **List sources**:
-   ```
+   ```text
    GET /api/sources
    ```
 
 2. **Get source files**:
-   ```
+   ```text
    GET /api/sources/github-myorg/pipelines
    ```
 
 3. **Get file pipelines**:
-   ```
+   ```text
    GET /api/sources/github-myorg/pipelines/data/etl.yaml
    ```
 
 4. **Get pipeline details**:
-   ```
+   ```text
    GET /api/sources/github-myorg/pipelines/data/etl.yaml/transform-pipeline
    ```
 

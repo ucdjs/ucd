@@ -67,6 +67,7 @@
   "dependencies": {
     "@icons-pack/react-simple-icons": "catalog:frontend",
     "@tanstack/react-query": "catalog:frontend",
+    "@ucdjs-internal/shared": "workspace:*",
     "@ucdjs-internal/shared-ui": "workspace:*",
     "@ucdjs/pipelines-core": "workspace:*",
     "@ucdjs/pipelines-executor": "workspace:*",

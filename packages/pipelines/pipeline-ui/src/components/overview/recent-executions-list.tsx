@@ -109,8 +109,7 @@ export function RecentExecutionsList({
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <div className={cn("flex items-center gap-2", compactMeta && "justify-between")}
-                      >
+                      <div className={cn("flex items-center gap-2", compactMeta && "justify-between")}>
                         <div className="flex items-center gap-2 min-w-0">
                           <span className="font-medium text-foreground truncate">
                             {execution.pipelineName}

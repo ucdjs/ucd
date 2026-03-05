@@ -1,7 +1,6 @@
 import type { PipelineDefinition } from "@ucdjs/pipelines-core";
-import type { PipelineSource } from "@ucdjs/pipelines-loader";
+import type { LoadedPipelineFile, PipelineSource } from "@ucdjs/pipelines-loader";
 import type { PipelineInfo } from "@ucdjs/pipelines-ui";
-import type { LoadedPipelineFile } from "packages/pipelines/pipeline-loader/src/types";
 import { toPipelineInfo } from "@ucdjs/pipelines-ui";
 import { fileIdFromPath, fileLabelFromPath } from "./ids";
 import { getPipelines } from "./loader";

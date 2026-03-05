@@ -12,9 +12,8 @@ import {
   sourcesSourceRouter,
 } from "#server/routes";
 import { ensureWorkspace, resolveWorkspace } from "#server/workspace";
-import { H3, HTTPError, serve, serveStatic } from "h3";
-// import { getUcdConfigDir } from "@ucdjs-internal/shared/config";
-import { getUcdConfigDir } from "../../../../shared/src/config";
+import { getUcdConfigDir } from "@ucdjs-internal/shared/config";
+import { H3, serve, serveStatic } from "h3";
 import { version } from "../../package.json" with { type: "json" };
 
 export interface AppOptions {
@@ -79,13 +78,13 @@ export function createApp(options: AppOptions = {}): H3 {
         //   repo: "ucdjs-pipelines-gitlab",
         //   ref: "main",
         // },
-        // {
-        //   type: "github",
-        //   id: "github-test",
-        //   owner: "ucdjs",
-        //   repo: "ucd-pipelines",
-        //   ref: "main",
-        // },
+        {
+          type: "github",
+          id: "github-test",
+          owner: "ucdjs",
+          repo: "ucd-pipelines",
+          ref: "main",
+        },
       ];
     } else {
       resolvedSources = [{

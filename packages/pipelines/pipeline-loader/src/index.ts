@@ -16,6 +16,7 @@ export {
 } from "./loader";
 
 export type {
+  LoadedPipelineFile,
   LoadPipelinesResult,
   PipelineSource,
   PipelineSourceWithoutId,
