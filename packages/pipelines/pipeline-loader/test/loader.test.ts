@@ -336,7 +336,10 @@ describe("loadPipelinesFromPaths", () => {
 
     expect(result.files).toHaveLength(1);
     expect(result.errors).toHaveLength(1);
+    expect(result.errors[0]?.scope).toBe("file");
+    expect(result.errors[0]?.code).toBe("BUNDLE_FAILED");
     expect(result.errors[0]?.filePath).toContain("nonexistent");
+    expect(result.errors[0]?.message).toBeTruthy();
     expect(result.pipelines.map((p) => p.id)).toEqual(["valid"]);
   });
 
@@ -446,7 +449,25 @@ describe("loadPipelinesFromPaths", () => {
 
       expect(result.files).toHaveLength(0);
       expect(result.errors).toHaveLength(1);
+      expect(result.errors[0]?.scope).toBe("file");
+      expect(result.errors[0]?.code).toBe("CACHE_MISS");
       expect(result.errors[0]?.filePath).toBe(url);
+    });
+
+    it("should classify syntax/bundle failures as BUNDLE_FAILED", async () => {
+      const dir = await testdir({
+        "invalid-syntax.ucd-pipeline.ts": `
+          export const broken = {
+        `,
+      });
+
+      const result = await loadPipelinesFromPaths([`${dir}/invalid-syntax.ucd-pipeline.ts`]);
+
+      expect(result.files).toHaveLength(0);
+      expect(result.errors).toHaveLength(1);
+      expect(result.errors[0]?.scope).toBe("file");
+      expect(result.errors[0]?.code).toBe("BUNDLE_FAILED");
+      expect(result.errors[0]?.filePath).toContain("invalid-syntax.ucd-pipeline.ts");
     });
   });
 });

@@ -1,5 +1,6 @@
 import { PipelineCard } from "#components/file-home/pipeline-card";
 import { createFileRoute, Link, useLoaderData } from "@tanstack/react-router";
+import { PipelineErrorsBanner } from "@ucdjs/pipelines-ui";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -16,8 +17,10 @@ export const Route = createFileRoute("/$sourceId/$fileId/")({
 });
 
 function FilePipelinesPage() {
-  const { file, errors } = useLoaderData({ from: "/$sourceId/$fileId" });
+  const { file } = useLoaderData({ from: "/$sourceId/$fileId" });
   const { sourceId, fileId } = Route.useParams();
+  const fileErrors = file.errors ?? [];
+  const allFailed = fileErrors.length > 0 && file.pipelines.length === 0;
 
   const totalRoutes = useMemo(
     () => file.pipelines.reduce((sum, p) => sum + p.routeCount, 0),
@@ -61,31 +64,48 @@ function FilePipelinesPage() {
             route
             {totalRoutes !== 1 ? "s" : ""}
           </span>
-          {errors.length > 0 && (
+          {fileErrors.length > 0 && (
             <span className="inline-flex items-center gap-1 text-xs text-destructive">
               <AlertCircle className="w-3 h-3" />
-              {errors.length}
+              {fileErrors.length}
               {" "}
               error
-              {errors.length !== 1 ? "s" : ""}
+              {fileErrors.length !== 1 ? "s" : ""}
             </span>
           )}
         </div>
       </div>
 
       <div className="flex-1 overflow-auto p-6 space-y-6">
+        <PipelineErrorsBanner
+          errors={fileErrors}
+          scope="file"
+          targetLabel={file.fileLabel}
+          allFailed={allFailed}
+        />
+
         <section>
           <h2 className="text-sm font-medium text-muted-foreground mb-3">Pipelines</h2>
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            {file.pipelines.map((pipeline) => (
-              <PipelineCard
-                key={pipeline.id}
-                pipeline={pipeline}
-                sourceId={sourceId}
-                fileId={fileId}
-              />
-            ))}
-          </div>
+          {file.pipelines.length > 0
+            ? (
+                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                  {file.pipelines.map((pipeline) => (
+                    <PipelineCard
+                      key={pipeline.id}
+                      pipeline={pipeline}
+                      sourceId={sourceId}
+                      fileId={fileId}
+                    />
+                  ))}
+                </div>
+              )
+            : (
+                <div className="rounded-lg border border-border bg-muted/30 p-4 text-sm text-muted-foreground">
+                  {allFailed
+                    ? "No pipelines are available because this file failed to load."
+                    : "No pipelines found for this file."}
+                </div>
+              )}
         </section>
       </div>
     </div>

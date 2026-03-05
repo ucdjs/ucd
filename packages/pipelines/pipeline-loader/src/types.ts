@@ -13,9 +13,26 @@ export interface LoadPipelinesResult {
   errors: PipelineLoadError[];
 }
 
+export const PIPELINE_LOAD_ERROR_CODES = [
+  "DISCOVERY_FAILED",
+  "CACHE_MISS",
+  "SYNC_FAILED",
+  "BUNDLE_FAILED",
+  "IMPORT_FAILED",
+  "INVALID_EXPORT",
+  "UNKNOWN",
+] as const;
+
+export type PipelineLoadErrorCode = (typeof PIPELINE_LOAD_ERROR_CODES)[number];
+export type PipelineLoadErrorScope = "file" | "source";
+
 export interface PipelineLoadError {
-  filePath: string;
-  error: Error;
+  code: PipelineLoadErrorCode;
+  scope: PipelineLoadErrorScope;
+  message: string;
+  filePath?: string;
+  cause?: Error;
+  meta?: Record<string, unknown>;
 }
 
 export interface SourceRepositoryRef {

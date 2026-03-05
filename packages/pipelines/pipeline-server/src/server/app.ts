@@ -4,6 +4,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 import { createDatabase, runMigrations } from "#server/db";
+import { loadSourceData, loadSourcesData } from "#server/lib/files";
 import {
   sourcesExecutionRouter,
   sourcesFileRouter,
@@ -32,6 +33,8 @@ declare module "h3" {
     sources: PipelineSource[];
     db: Database;
     workspaceId: string;
+    getSourceData: (sourceId: string) => Promise<Awaited<ReturnType<typeof loadSourceData>> | null>;
+    getAllSourcesData: () => Promise<Awaited<ReturnType<typeof loadSourcesData>>>;
   }
 }
 
@@ -96,9 +99,34 @@ export function createApp(options: AppOptions = {}): H3 {
   }
 
   app.use("/**", (event, next) => {
+    type SourceData = Awaited<ReturnType<typeof loadSourceData>>;
+    const sourceDataCache = new Map<string, Promise<SourceData | null>>();
+    let allSourcesDataPromise: Promise<SourceData[]> | null = null;
+
     event.context.sources = resolvedSources;
     event.context.db = db;
     event.context.workspaceId = workspaceId;
+
+    event.context.getSourceData = (sourceId: string): Promise<SourceData | null> => {
+      const cached = sourceDataCache.get(sourceId);
+      if (cached) {
+        return cached;
+      }
+
+      const source = resolvedSources.find((entry) => entry.id === sourceId);
+      const promise = source ? loadSourceData(source) : Promise.resolve(null);
+      sourceDataCache.set(sourceId, promise);
+      return promise;
+    };
+
+    event.context.getAllSourcesData = (): Promise<SourceData[]> => {
+      if (!allSourcesDataPromise) {
+        allSourcesDataPromise = loadSourcesData(resolvedSources);
+      }
+
+      return allSourcesDataPromise;
+    };
+
     next();
   });
 

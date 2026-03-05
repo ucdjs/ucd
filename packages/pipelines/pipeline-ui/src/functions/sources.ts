@@ -1,8 +1,12 @@
 import type { WithBaseUrl } from "#lib/functions";
-import type { SourceDetail, SourceFileResponse, SourceList } from "../schemas/source";
+import type { SourceFileResponse, SourceList, SourceSummary } from "../schemas/source";
 import { queryOptions } from "@tanstack/react-query";
 import { customFetch } from "@ucdjs-internal/shared";
-import { SourceDetailSchema, SourceFileResponseSchema, SourceListSchema } from "../schemas/source";
+import {
+  SourceFileResponseSchema,
+  SourceListSchema,
+  SourceSummarySchema,
+} from "../schemas/source";
 
 export interface SourceParams {
   sourceId: string;
@@ -29,10 +33,10 @@ export async function fetchSources(options: WithBaseUrl): Promise<SourceList> {
   return data;
 }
 
-export async function fetchSource(options: WithBaseUrl<SourceParams>): Promise<SourceDetail | null> {
+export async function fetchSource(options: WithBaseUrl<SourceParams>): Promise<SourceSummary | null> {
   const { baseUrl = "", sourceId } = options;
   const { data, error } = await customFetch.safe(`${baseUrl}/api/sources/${sourceId}`, {
-    schema: SourceDetailSchema,
+    schema: SourceSummarySchema,
   });
 
   if (error) {
@@ -77,7 +81,7 @@ export async function fetchSourceFile(options: WithBaseUrl<SourceFileParams>): P
 export function sourcesQueryOptions(options: WithBaseUrl) {
   const { baseUrl = "" } = options;
   return queryOptions({
-    queryKey: ["sources"],
+    queryKey: ["sources", { baseUrl }],
     queryFn: () => fetchSources({ baseUrl }),
   });
 }

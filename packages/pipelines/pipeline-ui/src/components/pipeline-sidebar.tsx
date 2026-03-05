@@ -1,4 +1,4 @@
-import type { PipelineFileInfo } from "../types";
+import type { SourceFileSummary } from "../schemas/source";
 import { cn } from "#lib/utils";
 import { Link } from "@tanstack/react-router";
 import { ThemeToggle, UcdLogo } from "@ucdjs-internal/shared-ui/components";
@@ -13,12 +13,9 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
 } from "@ucdjs-internal/shared-ui/ui/sidebar";
-import { BookOpen, ExternalLink, Folder, FolderOpen, Hash, Tag } from "lucide-react";
-import { useMemo, useState } from "react";
+import { BookOpen, ExternalLink, Folder, Hash, Tag } from "lucide-react";
+import { useMemo } from "react";
 import { SourceSwitcher } from "./source-switcher";
 
 export interface SourceInfo {
@@ -32,7 +29,7 @@ export interface SourceInfo {
 export interface PipelineSidebarProps {
   workspaceId: string;
   version?: string;
-  files: PipelineFileInfo[];
+  files: SourceFileSummary[];
   sources: SourceInfo[];
   currentSourceId?: string;
 }
@@ -44,22 +41,8 @@ export function PipelineSidebar({
   workspaceId,
   version,
 }: PipelineSidebarProps) {
-  const [expandedFiles, setExpandedFiles] = useState<Set<string>>(() => new Set());
-
-  const toggleFile = (fileId: string) => {
-    setExpandedFiles((prev) => {
-      const next = new Set(prev);
-      if (next.has(fileId)) {
-        next.delete(fileId);
-      } else {
-        next.add(fileId);
-      }
-      return next;
-    });
-  };
-
   const filesBySource = useMemo(() => {
-    const grouped = new Map<string, PipelineFileInfo[]>();
+    const grouped = new Map<string, SourceFileSummary[]>();
     for (const file of files) {
       const existing = grouped.get(file.sourceId) || [];
       existing.push(file);
@@ -142,8 +125,6 @@ export function PipelineSidebar({
                         <FileMenuItem
                           key={file.fileId}
                           file={file}
-                          isExpanded={expandedFiles.has(file.fileId)}
-                          onToggle={() => toggleFile(file.fileId)}
                         />
                       ))
                     )}
@@ -185,48 +166,24 @@ export function PipelineSidebar({
 }
 
 interface FileMenuItemProps {
-  file: PipelineFileInfo;
-  isExpanded: boolean;
-  onToggle: () => void;
+  file: SourceFileSummary;
 }
 
-function FileMenuItem({ file, isExpanded, onToggle }: FileMenuItemProps) {
+function FileMenuItem({ file }: FileMenuItemProps) {
   const fileName = file.fileLabel ?? file.filePath.split("/").pop() ?? file.filePath;
 
   return (
     <SidebarMenuItem>
       <SidebarMenuButton
         className="w-full justify-start gap-2"
-        onClick={(event) => {
-          event.preventDefault();
-          onToggle();
-        }}
         render={(
           <Link to="/$sourceId/$fileId" params={{ sourceId: file.sourceId, fileId: file.fileId }}>
-            {isExpanded ? <FolderOpen className="h-4 w-4" /> : <Folder className="h-4 w-4" />}
+            <Folder className="h-4 w-4" />
             <span className="truncate flex-1">{fileName}</span>
-            <span className="text-[10px] text-muted-foreground">{file.pipelines.length}</span>
+            <span className="text-[10px] text-muted-foreground">{file.pipelineCount}</span>
           </Link>
         )}
       />
-      {isExpanded && (
-        <SidebarMenuSub>
-          {file.pipelines.map((pipeline) => (
-            <SidebarMenuSubItem key={`${file.fileId}-${pipeline.id}`}>
-              <SidebarMenuSubButton
-                render={(
-                  <Link
-                    to="/$sourceId/$fileId/$pipelineId"
-                    params={{ sourceId: file.sourceId, fileId: file.fileId, pipelineId: pipeline.id }}
-                  >
-                    <span className="truncate flex-1">{pipeline.name || pipeline.id}</span>
-                  </Link>
-                )}
-              />
-            </SidebarMenuSubItem>
-          ))}
-        </SidebarMenuSub>
-      )}
     </SidebarMenuItem>
   );
 }

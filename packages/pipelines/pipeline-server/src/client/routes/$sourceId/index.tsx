@@ -13,7 +13,9 @@ function SourceFilesPage() {
   const { sourceId } = Route.useParams();
 
   const hasFiles = source.files.length > 0;
-  const allFailed = source.errors.length > 0 && !hasFiles;
+  const hasRenderableFiles = source.files.some((file) => file.pipelineCount > 0);
+  const sourceErrors = source.sourceErrors;
+  const allFailed = sourceErrors.length > 0 && !hasRenderableFiles;
 
   return (
     <div className="h-full flex flex-col bg-background">
@@ -28,7 +30,7 @@ function SourceFilesPage() {
 
       <div className="flex-1 overflow-auto p-6 space-y-6">
         <PipelineErrorsBanner
-          errors={source.errors}
+          errors={sourceErrors}
           scope="source"
           targetLabel={sourceId}
           allFailed={allFailed}

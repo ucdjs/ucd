@@ -1,6 +1,5 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
 import { getRemoteSourceCacheStatus } from "../src/cache";
@@ -21,15 +20,9 @@ describe("remote cache status", () => {
     vi.clearAllMocks();
   });
 
-  it("returns marker-missing for uncached github source", async () => {
+  it("returns uncached status for missing marker", async () => {
     const tmpBaseDir = await testdir();
     getBaseRepoCacheDirMock.mockReturnValue(tmpBaseDir);
-
-    mockFetch([
-      ["GET", "https://api.github.com/repos/ucdjs/ucd-pipelines/commits/miss-ref", () => {
-        return HttpResponse.json({ sha: "miss-sha" });
-      }],
-    ]);
 
     const status = await getRemoteSourceCacheStatus({
       source: "github",
@@ -39,28 +32,25 @@ describe("remote cache status", () => {
     });
 
     expect(status.cached).toBe(false);
-    expect(status.reason).toBe("marker-missing");
+    expect(status.commitSha).toBe("");
+    expect(status.syncedAt).toBeNull();
   });
 
-  it("returns cache-hit for valid github marker", async () => {
+  it("returns cached status for valid github marker", async () => {
     const tmpBaseDir = await testdir();
     getBaseRepoCacheDirMock.mockReturnValue(tmpBaseDir);
 
-    const cacheDir = path.join(tmpBaseDir, "github", "ucdjs", "ucd-pipelines", "hit-sha");
+    const cacheDir = path.join(tmpBaseDir, "github", "ucdjs", "ucd-pipelines", "hit-ref");
+    const syncedAt = new Date().toISOString();
     await mkdir(cacheDir, { recursive: true });
     await writeFile(path.join(cacheDir, ".ucd-cache.json"), JSON.stringify({
       source: "github",
       owner: "ucdjs",
       repo: "ucd-pipelines",
+      ref: "hit-ref",
       commitSha: "hit-sha",
-      createdAt: new Date().toISOString(),
+      syncedAt,
     }));
-
-    mockFetch([
-      ["GET", "https://api.github.com/repos/ucdjs/ucd-pipelines/commits/hit-ref", () => {
-        return HttpResponse.json({ sha: "hit-sha" });
-      }],
-    ]);
 
     const status = await getRemoteSourceCacheStatus({
       source: "github",
@@ -70,14 +60,15 @@ describe("remote cache status", () => {
     });
 
     expect(status.cached).toBe(true);
-    expect(status.reason).toBe("cache-hit");
+    expect(status.commitSha).toBe("hit-sha");
+    expect(status.syncedAt).toBe(syncedAt);
   });
 
-  it("returns marker-invalid for mismatched marker", async () => {
+  it("returns uncached status for invalid marker shape", async () => {
     const tmpBaseDir = await testdir();
     getBaseRepoCacheDirMock.mockReturnValue(tmpBaseDir);
 
-    const cacheDir = path.join(tmpBaseDir, "gitlab", "ucdjs", "ucd-pipelines", "sha-x");
+    const cacheDir = path.join(tmpBaseDir, "gitlab", "ucdjs", "ucd-pipelines", "ref-x");
     await mkdir(cacheDir, { recursive: true });
     await writeFile(path.join(cacheDir, ".ucd-cache.json"), JSON.stringify({
       source: "gitlab",
@@ -87,12 +78,6 @@ describe("remote cache status", () => {
       createdAt: new Date().toISOString(),
     }));
 
-    mockFetch([
-      ["GET", "https://gitlab.com/api/v4/projects/ucdjs%2Fucd-pipelines/repository/commits/ref-x", () => {
-        return HttpResponse.json({ id: "sha-x" });
-      }],
-    ]);
-
     const status = await getRemoteSourceCacheStatus({
       source: "gitlab",
       owner: "ucdjs",
@@ -101,28 +86,25 @@ describe("remote cache status", () => {
     });
 
     expect(status.cached).toBe(false);
-    expect(status.reason).toBe("marker-invalid");
+    expect(status.commitSha).toBe("");
+    expect(status.syncedAt).toBeNull();
   });
 
-  it("returns cache-hit for valid gitlab marker", async () => {
+  it("returns cached status for valid gitlab marker", async () => {
     const tmpBaseDir = await testdir();
     getBaseRepoCacheDirMock.mockReturnValue(tmpBaseDir);
 
-    const cacheDir = path.join(tmpBaseDir, "gitlab", "ucdjs", "ucd-pipelines", "hit-sha");
+    const cacheDir = path.join(tmpBaseDir, "gitlab", "ucdjs", "ucd-pipelines", "hit-ref");
+    const syncedAt = new Date().toISOString();
     await mkdir(cacheDir, { recursive: true });
     await writeFile(path.join(cacheDir, ".ucd-cache.json"), JSON.stringify({
       source: "gitlab",
       owner: "ucdjs",
       repo: "ucd-pipelines",
+      ref: "hit-ref",
       commitSha: "hit-sha",
-      createdAt: new Date().toISOString(),
+      syncedAt,
     }));
-
-    mockFetch([
-      ["GET", "https://gitlab.com/api/v4/projects/ucdjs%2Fucd-pipelines/repository/commits/hit-ref", () => {
-        return HttpResponse.json({ id: "hit-sha" });
-      }],
-    ]);
 
     const status = await getRemoteSourceCacheStatus({
       source: "gitlab",
@@ -132,6 +114,7 @@ describe("remote cache status", () => {
     });
 
     expect(status.cached).toBe(true);
-    expect(status.reason).toBe("cache-hit");
+    expect(status.commitSha).toBe("hit-sha");
+    expect(status.syncedAt).toBe(syncedAt);
   });
 });

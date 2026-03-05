@@ -1,52 +1,96 @@
-import type { PipelineFileGroup, PipelineLoadErrorInfo } from "#server/lib/files";
+import type { LoadedSourceData } from "#server/lib/files";
 import type { SourceDetail, SourceFileResponse, SourceList } from "@ucdjs/pipelines-ui/schemas";
 import {
-  findFileGroup,
-  loadPipelineFileGroups,
+  fileErrorsByFileId,
+  fileErrorsForPath,
+  sourceErrors,
+  unmatchedFileErrors,
 } from "#server/lib/files";
+import { fileIdFromPath, fileLabelFromPath } from "#server/lib/ids";
 import { syncRemoteSource } from "@ucdjs/pipelines-loader";
 import { H3, HTTPError } from "h3";
 
 export const sourcesSourceRouter: H3 = new H3();
 
-sourcesSourceRouter.get("/", async (event) => {
-  const { sources } = event.context;
+function buildSourceFiles(data: LoadedSourceData): SourceDetail["files"] {
+  const files = data.fileGroups.map((fileGroup) => {
+    const matchedErrors = fileErrorsForPath(data.errors, fileGroup.filePath, fileGroup.sourceFilePath);
 
-  return sources.map((s) => ({
-    id: s.id,
-    type: s.type,
-  })) satisfies SourceList;
+    return {
+      fileId: fileGroup.fileId,
+      filePath: fileGroup.filePath,
+      sourceFilePath: fileGroup.sourceFilePath,
+      fileLabel: fileGroup.fileLabel,
+      sourceId: fileGroup.sourceId,
+      pipelineCount: fileGroup.pipelines.length,
+      hasErrors: matchedErrors.length > 0,
+      errorCount: matchedErrors.length,
+      pipelines: fileGroup.pipelines.slice(0, 3),
+    };
+  });
+
+  const extras = unmatchedFileErrors(data.errors, data.fileGroups);
+  for (const error of extras) {
+    if (!error.filePath) {
+      continue;
+    }
+
+    const fileId = fileIdFromPath(error.filePath);
+    const existing = files.find((file) => file.fileId === fileId);
+    if (existing) {
+      existing.hasErrors = true;
+      existing.errorCount += 1;
+      continue;
+    }
+
+    files.push({
+      fileId,
+      filePath: error.filePath,
+      sourceFilePath: error.filePath,
+      fileLabel: fileLabelFromPath(error.filePath),
+      sourceId: data.sourceId,
+      pipelineCount: 0,
+      hasErrors: true,
+      errorCount: 1,
+      pipelines: [],
+    });
+  }
+
+  files.sort((a, b) => a.fileLabel.localeCompare(b.fileLabel));
+  return files;
+}
+
+sourcesSourceRouter.get("/", async (event) => {
+  const loaded = await event.context.getAllSourcesData();
+
+  return {
+    sources: loaded.map((entry) => {
+      const files = buildSourceFiles(entry);
+      const pipelines = entry.fileGroups.flatMap((fileGroup) => fileGroup.pipelines);
+
+      return {
+        id: entry.sourceId,
+        type: entry.source.type,
+        hasErrors: entry.errors.length > 0,
+        fileCount: files.length,
+        pipelineCount: files.reduce((sum, file) => sum + file.pipelineCount, 0),
+        pipelines,
+      };
+    }),
+  } satisfies SourceList;
 });
 
 sourcesSourceRouter.get("/:sourceId", async (event) => {
-  const { sources } = event.context;
   const sourceId = event.context.params!.sourceId!;
-
-  const source = sources.find((s) => s.id === sourceId);
-  if (!source) {
-    throw HTTPError.status(404, "Not Found", { message: `Source "${sourceId}" not found` });
-  }
-
-  const groups = await loadPipelineFileGroups([source]);
-  const allFiles: PipelineFileGroup[] = [];
-  const allErrors: PipelineLoadErrorInfo[] = [];
-
-  for (const group of groups) {
-    allFiles.push(...group.fileGroups);
-    allErrors.push(...group.errors);
+  const data = await event.context.getSourceData(sourceId);
+  if (!data) {
+    throw HTTPError.status(404, "Not Found", { message: `Source \"${sourceId}\" not found` });
   }
 
   return {
     sourceId,
-    files: allFiles.map((file) => ({
-      fileId: file.fileId,
-      filePath: file.filePath,
-      sourceFilePath: file.sourceFilePath,
-      fileLabel: file.fileLabel,
-      sourceId: file.sourceId,
-      pipelines: file.pipelines,
-    })),
-    errors: allErrors,
+    files: buildSourceFiles(data),
+    sourceErrors: sourceErrors(data.errors),
   } satisfies SourceDetail;
 });
 
@@ -58,13 +102,11 @@ sourcesSourceRouter.post("/:sourceId/refresh", async (event) => {
     return { error: "Source ID is required" };
   }
 
-  // Find the source configuration
   const source = sources.find((s: { id: string }) => s.id === sourceId);
   if (!source) {
-    return { error: `Source "${sourceId}" not found` };
+    return { error: `Source \"${sourceId}\" not found` };
   }
 
-  // Only remote sources can be refreshed
   if (source.type === "local") {
     return { error: "Cannot refresh local sources" };
   }
@@ -107,7 +149,6 @@ sourcesSourceRouter.post("/:sourceId/refresh", async (event) => {
 });
 
 sourcesSourceRouter.get("/:sourceId/:fileId", async (event) => {
-  const { sources } = event.context;
   const sourceId = event.context.params?.sourceId;
   const fileId = event.context.params?.fileId;
 
@@ -115,29 +156,53 @@ sourcesSourceRouter.get("/:sourceId/:fileId", async (event) => {
     return { error: "Source ID and File ID are required" };
   }
 
-  const allErrors: PipelineLoadErrorInfo[] = [];
-  const groups = await loadPipelineFileGroups(sources);
+  const data = await event.context.getSourceData(sourceId);
+  if (!data) {
+    throw HTTPError.status(404, "Not Found", { message: `Source \"${sourceId}\" not found` });
+  }
+  const matchedGroup = data.fileGroups.find((entry) => entry.fileId === fileId);
 
-  for (const group of groups) {
-    const fileGroup = findFileGroup(fileId, group.fileGroups);
-    if (fileGroup && fileGroup.sourceId === sourceId) {
-      return {
-        sourceId,
-        fileId,
-        file: {
-          fileId: fileGroup.fileId,
-          filePath: fileGroup.filePath,
-          sourceFilePath: fileGroup.sourceFilePath,
-          fileLabel: fileGroup.fileLabel,
-          sourceId: fileGroup.sourceId,
-          pipelines: fileGroup.pipelines,
-        },
-        errors: group.errors.filter((e) => e.filePath === fileGroup.filePath),
-      } satisfies SourceFileResponse;
-    }
-
-    allErrors.push(...group.errors);
+  if (matchedGroup) {
+    return {
+      sourceId,
+      fileId,
+      file: {
+        fileId: matchedGroup.fileId,
+        filePath: matchedGroup.filePath,
+        sourceFilePath: matchedGroup.sourceFilePath,
+        fileLabel: matchedGroup.fileLabel,
+        sourceId: matchedGroup.sourceId,
+        pipelines: matchedGroup.pipelines,
+        errors: fileErrorsForPath(data.errors, matchedGroup.filePath, matchedGroup.sourceFilePath),
+      },
+      sourceErrors: sourceErrors(data.errors),
+    } satisfies SourceFileResponse;
   }
 
-  throw HTTPError.status(404, "Not Found", { message: `Pipeline file "${fileId}" not found in source "${sourceId}"` });
+  const errorsForFileId = fileErrorsByFileId(data.errors, fileId);
+  if (errorsForFileId.length > 0) {
+    const firstErrorPath = errorsForFileId[0]?.filePath;
+    if (!firstErrorPath) {
+      throw HTTPError.status(500, "Internal Server Error", {
+        message: `Missing file path for file-scoped error in source \"${sourceId}\"`,
+      });
+    }
+
+    return {
+      sourceId,
+      fileId,
+      file: {
+        fileId,
+        filePath: firstErrorPath,
+        sourceFilePath: firstErrorPath,
+        fileLabel: fileLabelFromPath(firstErrorPath),
+        sourceId,
+        pipelines: [],
+        errors: errorsForFileId,
+      },
+      sourceErrors: sourceErrors(data.errors),
+    } satisfies SourceFileResponse;
+  }
+
+  throw HTTPError.status(404, "Not Found", { message: `Pipeline file \"${fileId}\" not found in source \"${sourceId}\"` });
 });

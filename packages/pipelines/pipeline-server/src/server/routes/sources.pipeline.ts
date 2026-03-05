@@ -1,11 +1,11 @@
 import { randomUUID } from "node:crypto";
 import { schema } from "#server/db";
-import { findPipelineByFileId, loadPipelineFileGroups } from "#server/lib/files";
 import { createExecutionLogCapture } from "#server/lib/log-capture";
 import { createPipelineExecutor, runWithPipelineExecutionContext } from "@ucdjs/pipelines-executor";
 import { and, desc, eq, sql } from "drizzle-orm";
 import { getQuery, H3, readValidatedBody } from "h3";
 import { z } from "zod";
+import { findPipelineByFileId } from "../lib/files";
 
 export const sourcesPipelineRouter: H3 = new H3();
 
@@ -32,99 +32,98 @@ sourcesPipelineRouter.post("/:sourceId/:fileId/:pipelineId/execute", async (even
     cache: z.boolean().optional(),
   }));
 
-  const groups = await loadPipelineFileGroups(localSources);
-
-  for (const group of groups) {
-    const match = findPipelineByFileId(fileId, group.fileGroups, pipelineId);
-    if (!match) {
-      continue;
-    }
-
-    const pipeline = match.entry.pipeline;
-    const versions = body.versions ?? pipeline.versions;
-    const cache = body.cache ?? true;
-
-    const executionId = randomUUID();
-    const startedAt = new Date();
-
-    await db.insert(schema.executions).values({
-      id: executionId,
-      workspaceId,
-      pipelineId,
-      status: "running",
-      startedAt,
-      versions,
-    });
-
-    const logCapture = createExecutionLogCapture(db);
-    logCapture.start();
-
-    const executor = createPipelineExecutor({
-      onEvent: async (evt) => {
-        await db.insert(schema.events).values({
-          id: randomUUID(),
-          workspaceId,
-          executionId,
-          type: evt.type,
-          timestamp: new Date(evt.timestamp),
-          data: evt,
-        });
-      },
-    });
-
-    try {
-      const execResult = await runWithPipelineExecutionContext({ executionId, workspaceId }, async () => {
-        return executor.run([pipeline], {
-          versions,
-          cache,
-        });
-      });
-
-      const pipelineResult = execResult.find((result) => result.id === pipelineId);
-      const completedAt = new Date();
-
-      await db.update(schema.executions)
-        .set({
-          status: pipelineResult?.status ?? "failed",
-          completedAt,
-          summary: pipelineResult?.summary ?? null,
-          graph: pipelineResult?.graph ?? null,
-        })
-        .where(and(
-          eq(schema.executions.workspaceId, workspaceId),
-          eq(schema.executions.id, executionId),
-        ));
-
-      return {
-        success: true,
-        executionId,
-      };
-    } catch (err) {
-      const completedAt = new Date();
-      const errorMessage = err instanceof Error ? err.message : String(err);
-
-      await db.update(schema.executions)
-        .set({
-          status: "failed",
-          completedAt,
-          error: errorMessage,
-        })
-        .where(and(
-          eq(schema.executions.workspaceId, workspaceId),
-          eq(schema.executions.id, executionId),
-        ));
-
-      return {
-        success: false,
-        executionId,
-        error: errorMessage,
-      };
-    } finally {
-      await logCapture.stop();
-    }
+  const group = await event.context.getSourceData(sourceId);
+  if (!group) {
+    return { error: `Source "${sourceId}" not found` };
   }
 
-  return { error: `Pipeline "${pipelineId}" not found in file "${fileId}" of source "${sourceId}"` };
+  const match = findPipelineByFileId(fileId, group.fileGroups, pipelineId);
+  if (!match) {
+    return { error: `Pipeline "${pipelineId}" not found in file "${fileId}" of source "${sourceId}"` };
+  }
+
+  const pipeline = match.entry.pipeline;
+  const versions = body.versions ?? pipeline.versions;
+  const cache = body.cache ?? true;
+
+  const executionId = randomUUID();
+  const startedAt = new Date();
+
+  await db.insert(schema.executions).values({
+    id: executionId,
+    workspaceId,
+    pipelineId,
+    status: "running",
+    startedAt,
+    versions,
+  });
+
+  const logCapture = createExecutionLogCapture(db);
+  logCapture.start();
+
+  const executor = createPipelineExecutor({
+    onEvent: async (evt) => {
+      await db.insert(schema.events).values({
+        id: randomUUID(),
+        workspaceId,
+        executionId,
+        type: evt.type,
+        timestamp: new Date(evt.timestamp),
+        data: evt,
+      });
+    },
+  });
+
+  try {
+    const execResult = await runWithPipelineExecutionContext({ executionId, workspaceId }, async () => {
+      return executor.run([pipeline], {
+        versions,
+        cache,
+      });
+    });
+
+    const pipelineResult = execResult.find((result) => result.id === pipelineId);
+    const completedAt = new Date();
+
+    await db.update(schema.executions)
+      .set({
+        status: pipelineResult?.status ?? "failed",
+        completedAt,
+        summary: pipelineResult?.summary ?? null,
+        graph: pipelineResult?.graph ?? null,
+      })
+      .where(and(
+        eq(schema.executions.workspaceId, workspaceId),
+        eq(schema.executions.id, executionId),
+      ));
+
+    return {
+      success: true,
+      executionId,
+    };
+  } catch (err) {
+    const completedAt = new Date();
+    const errorMessage = err instanceof Error ? err.message : String(err);
+
+    await db.update(schema.executions)
+      .set({
+        status: "failed",
+        completedAt,
+        error: errorMessage,
+      })
+      .where(and(
+        eq(schema.executions.workspaceId, workspaceId),
+        eq(schema.executions.id, executionId),
+      ));
+
+    return {
+      success: false,
+      executionId,
+      error: errorMessage,
+    };
+  } finally {
+    await logCapture.stop();
+  }
 });
 
 sourcesPipelineRouter.get("/:sourceId/:fileId/:pipelineId/executions", async (event) => {

@@ -18,10 +18,15 @@ export {
 export type {
   LoadedPipelineFile,
   LoadPipelinesResult,
+  PipelineLoadError,
+  PipelineLoadErrorCode,
+  PipelineLoadErrorScope,
   PipelineSource,
   PipelineSourceWithoutId,
   RemotePipelineSource,
 } from "./types";
+
+export { PIPELINE_LOAD_ERROR_CODES } from "./types";
 
 export {
   checkForRemoteUpdates,

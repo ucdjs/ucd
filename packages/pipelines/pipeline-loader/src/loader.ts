@@ -3,6 +3,7 @@ import type {
   LoadedPipelineFile,
   LoadPipelinesResult,
   PipelineLoadError,
+  PipelineLoadErrorCode,
   PipelineSourceWithoutId,
 } from "./types";
 import path from "node:path";
@@ -124,6 +125,24 @@ export interface LoadPipelinesOptions {
   throwOnError?: boolean;
 }
 
+function classifyPipelineLoadErrorCode(error: Error): PipelineLoadErrorCode {
+  if (error instanceof CacheMissError) {
+    return "CACHE_MISS";
+  }
+
+  const message = error.message.toLowerCase();
+
+  if (message.includes("failed to bundle pipeline file") || message.includes("failed to bundle module")) {
+    return "BUNDLE_FAILED";
+  }
+
+  if (message.includes("failed to load pipeline file")) {
+    return "IMPORT_FAILED";
+  }
+
+  return "UNKNOWN";
+}
+
 export async function loadPipelinesFromPaths(
   filePaths: string[],
   options: LoadPipelinesOptions = {},
@@ -162,7 +181,25 @@ export async function loadPipelinesFromPaths(
     const error = result.reason instanceof Error
       ? result.reason
       : new Error(String(result.reason));
-    errors.push({ filePath: filePaths[i]!, error });
+
+    const filePath = filePaths[i]!;
+    const code = classifyPipelineLoadErrorCode(error);
+
+    errors.push({
+      code,
+      scope: "file",
+      message: error.message,
+      filePath,
+      cause: error,
+      meta: code === "CACHE_MISS" && error instanceof CacheMissError
+        ? {
+            source: error.source,
+            owner: error.owner,
+            repo: error.repo,
+            ref: error.ref,
+          }
+        : undefined,
+    });
   }
 
   const pipelines = files.flatMap((f) => f.pipelines);

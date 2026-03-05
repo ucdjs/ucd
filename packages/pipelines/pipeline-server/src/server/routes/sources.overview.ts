@@ -1,8 +1,8 @@
 import type { OverviewResponse } from "@ucdjs/pipelines-ui/schemas";
 import { schema } from "#server/db";
-import { loadPipelineFileGroups } from "#server/lib/files";
 import { and, desc, eq, gte, sql } from "drizzle-orm";
 import { H3 } from "h3";
+import { fileErrors, sourceErrors } from "../lib/files";
 
 export const sourcesOverviewRouter: H3 = new H3();
 
@@ -13,12 +13,14 @@ sourcesOverviewRouter.get("/overview", async (event) => {
     return { error: "Workspace ID is required" };
   }
 
-  const groups = await loadPipelineFileGroups(sources);
+  const groups = await event.context.getAllSourcesData();
 
   const sourceStats = groups.map((group) => {
     const fileCount = group.fileGroups.length;
     const pipelineCount = group.fileGroups.reduce((sum, file) => sum + file.pipelines.length, 0);
-    const errorCount = group.errors.length;
+    const fileErrorCount = fileErrors(group.errors).length;
+    const sourceErrorCount = sourceErrors(group.errors).length;
+    const errorCount = fileErrorCount + sourceErrorCount;
 
     return {
       id: group.sourceId,

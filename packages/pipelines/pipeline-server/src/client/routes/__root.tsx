@@ -80,9 +80,9 @@ function RootLayout() {
     setIsShortcutsOpen(true);
   });
 
-  const sourceList: SourceInfo[] = sources.map((s: { id: string; type: string }) => ({
+  const sourceList: SourceInfo[] = sources.sources.map((s) => ({
     id: s.id,
-    type: s.type as "local" | "github" | "gitlab",
+    type: s.type,
   }));
 
   return (
