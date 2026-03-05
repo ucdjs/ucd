@@ -48,22 +48,22 @@ export function createApp(options: AppOptions = {}): H3 {
 
   const app = new H3({
     onError(error) {
-      const status = error.statusCode;
       return Response.json(
         {
           message: error.message || error.statusText || "Internal Server Error",
-          status,
+          status: error.status,
           timestamp: new Date().toISOString(),
         },
-        { status },
+        { status: error.status },
       );
     },
   });
 
-  // Default to pipeline-playground in development
   let resolvedSources = sources;
   if (sources.length === 0) {
     const cwd = process.cwd();
+
+    // In development we will load, the pipeline playground by default, aswell as two remote sources, for testing.
     if (process.env.NODE_ENV === "development" || (import.meta as any).env.DEV) {
       resolvedSources = [
         {
