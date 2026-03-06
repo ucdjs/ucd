@@ -45,7 +45,9 @@
     "@unicode-utils/core": "catalog:runtime",
     "defu": "catalog:runtime",
     "obug": "catalog:runtime",
+    "pathe": "catalog:runtime",
     "picomatch": "catalog:runtime",
+    "std-env": "catalog:runtime",
     "zod": "catalog:runtime"
   },
   "devDependencies": {
