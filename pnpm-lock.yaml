@@ -1625,15 +1625,9 @@ importers:
       obug:
         specifier: catalog:runtime
         version: 2.1.1
-      pathe:
-        specifier: catalog:runtime
-        version: 2.0.3
       picomatch:
         specifier: catalog:runtime
         version: 4.0.3
-      std-env:
-        specifier: catalog:runtime
-        version: 4.0.0-rc.1
       zod:
         specifier: catalog:runtime
         version: 4.3.6
@@ -1653,12 +1647,18 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.0.2(jiti@2.6.1)
+      pathe:
+        specifier: catalog:runtime
+        version: 2.0.3
       publint:
         specifier: catalog:build
         version: 0.3.17
       rolldown:
         specifier: 1.0.0-rc.6
         version: 1.0.0-rc.6
+      std-env:
+        specifier: catalog:runtime
+        version: 4.0.0-rc.1
       tsdown:
         specifier: catalog:build
         version: 0.20.3(publint@0.3.17)(synckit@0.11.12)(typescript@5.9.3)
