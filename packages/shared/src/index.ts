@@ -35,5 +35,4 @@ export * from "./guards";
 
 export { safeJsonParse } from "./json";
 
-export { discoverEndpointsFromConfig, getDefaultUCDEndpointConfig } from "./ucd-config";
 export * from "./version";

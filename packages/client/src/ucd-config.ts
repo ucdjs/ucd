@@ -1,6 +1,6 @@
 import type { UCDWellKnownConfig } from "@ucdjs/schemas";
 import { UCDWellKnownConfigSchema } from "@ucdjs/schemas";
-import { customFetch } from "./fetch/fetch";
+import { customFetch } from "@ucdjs-internal/shared";
 
 /**
  * Fetches and validates the UCD well-known configuration from a server
