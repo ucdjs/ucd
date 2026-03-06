@@ -18,6 +18,8 @@ export const PIPELINE_LOAD_ERROR_CODES = [
   "CACHE_MISS",
   "SYNC_FAILED",
   "BUNDLE_FAILED",
+  "BUNDLE_RESOLVE_FAILED",
+  "BUNDLE_TRANSFORM_FAILED",
   "IMPORT_FAILED",
   "INVALID_EXPORT",
   "UNKNOWN",
@@ -33,6 +35,11 @@ export interface PipelineLoadError {
   filePath?: string;
   cause?: Error;
   meta?: Record<string, unknown>;
+}
+
+export interface FindPipelineFilesResult {
+  files: string[];
+  errors: PipelineLoadError[];
 }
 
 export interface SourceRepositoryRef {
