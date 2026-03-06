@@ -1,1 +1,0 @@
-**Description:**\nRefactor the core loader functionality and create foundational logic for pipeline loading and caching using rolldown.\n\n**Sub-Tasks:**\n- Modularize loader utility files.\n- Implement caching logic under .config/ucd/cache.\n- Test cases for loader-specific changes.
