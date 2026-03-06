@@ -1,8 +1,8 @@
 import type { RemoteRequestOptions } from "../types";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { getRepositoryCacheDir } from "./config";
 import { parseTarGzip } from "nanotar";
+import { getRepositoryCacheDir } from "./config";
 
 const GITHUB_API_BASE = "https://api.github.com";
 const GITHUB_ACCEPT_HEADER = "application/vnd.github.v3+json";
