@@ -62,13 +62,16 @@
   },
   "dependencies": {
     "@icons-pack/react-simple-icons": "catalog:frontend",
+    "@tanstack/react-query": "catalog:frontend",
+    "@ucdjs-internal/shared": "workspace:*",
     "@ucdjs-internal/shared-ui": "workspace:*",
     "@ucdjs/pipelines-core": "workspace:*",
     "@ucdjs/pipelines-executor": "workspace:*",
     "@xyflow/react": "catalog:frontend",
     "clsx": "catalog:frontend",
     "lucide-react": "catalog:frontend",
-    "tailwind-merge": "catalog:frontend"
+    "tailwind-merge": "catalog:frontend",
+    "zod": "catalog:runtime"
   },
   "devDependencies": {
     "@eslint-react/eslint-plugin": "catalog:lint",
