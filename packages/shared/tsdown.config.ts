@@ -25,4 +25,8 @@ export default createTsdownConfig({
       "globalThis.__UCD_ENDPOINT_DEFAULT_CONFIG__": JSON.stringify(__UCD_ENDPOINT_DEFAULT_CONFIG__),
     }),
   ],
+  noExternal: [
+    "std-env",
+    "pathe",
+  ],
 });
