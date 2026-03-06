@@ -6,8 +6,9 @@ import { createPipelineExecutor } from "@ucdjs/pipelines-executor";
 import {
   findPipelineFiles,
   loadPipelineFile,
+  parseRemoteSourceUrl,
 } from "@ucdjs/pipelines-loader";
-import { parseRepoString, printHelp } from "../../cli-utils";
+import { printHelp } from "../../cli-utils";
 import { CLIError } from "../../errors";
 import { output } from "../../output";
 
@@ -50,37 +51,35 @@ export async function runPipelinesRun({ flags }: CLIPipelinesRunCmdOptions) {
   const sourceLabels: string[] = [];
 
   if (flags?.github) {
-    const { owner, repo } = parseRepoString(flags.github as string);
-    const ref = (flags.ref as string) || "HEAD";
-    const subPath = (flags.path as string) || undefined;
-    const sourceId = `github-${owner}-${repo}`;
-
+    const ref = (flags.ref as string) ?? "HEAD";
+    const urlStr = `github://${flags.github as string}?ref=${ref}${flags.path ? `&path=${flags.path as string}` : ""}`;
+    const parsed = parseRemoteSourceUrl(urlStr);
+    if (!parsed) throw new Error(`Invalid github source: ${flags.github as string}`);
     sources.push({
       type: "github",
-      id: sourceId,
-      owner,
-      repo,
-      ref,
-      path: subPath,
+      id: `github-${parsed.owner}-${parsed.repo}`,
+      owner: parsed.owner,
+      repo: parsed.repo,
+      ref: parsed.ref,
+      path: (flags.path as string) || undefined,
     });
-    sourceLabels.push(`[github] ${owner}/${repo}${ref !== "HEAD" ? `@${ref}` : ""}`);
+    sourceLabels.push(`[github] ${parsed.owner}/${parsed.repo}${ref !== "HEAD" ? `@${ref}` : ""}`);
   }
 
   if (flags?.gitlab) {
-    const { owner, repo } = parseRepoString(flags.gitlab as string);
-    const ref = (flags.ref as string) || "HEAD";
-    const subPath = (flags.path as string) || undefined;
-    const sourceId = `gitlab-${owner}-${repo}`;
-
+    const ref = (flags.ref as string) ?? "HEAD";
+    const urlStr = `gitlab://${flags.gitlab as string}?ref=${ref}${flags.path ? `&path=${flags.path as string}` : ""}`;
+    const parsed = parseRemoteSourceUrl(urlStr);
+    if (!parsed) throw new Error(`Invalid gitlab source: ${flags.gitlab as string}`);
     sources.push({
       type: "gitlab",
-      id: sourceId,
-      owner,
-      repo,
-      ref,
-      path: subPath,
+      id: `gitlab-${parsed.owner}-${parsed.repo}`,
+      owner: parsed.owner,
+      repo: parsed.repo,
+      ref: parsed.ref,
+      path: (flags.path as string) || undefined,
     });
-    sourceLabels.push(`[gitlab] ${owner}/${repo}${ref !== "HEAD" ? `@${ref}` : ""}`);
+    sourceLabels.push(`[gitlab] ${parsed.owner}/${parsed.repo}${ref !== "HEAD" ? `@${ref}` : ""}`);
   }
 
   // Local source (default if no remote specified)

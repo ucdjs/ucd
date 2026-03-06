@@ -5,8 +5,9 @@ import process from "node:process";
 import {
   findPipelineFiles,
   loadPipelinesFromPaths,
+  parseRemoteSourceUrl,
 } from "@ucdjs/pipelines-loader";
-import { parseRepoString, printHelp } from "../../cli-utils";
+import { printHelp } from "../../cli-utils";
 import {
   blankLine,
   bold,
@@ -68,17 +69,19 @@ export async function runListPipelines({ flags }: CLIPipelinesListCmdOptions) {
   let label: string;
 
   if (flags?.github) {
-    const { owner, repo } = parseRepoString(flags.github);
-    const ref = flags.ref || "HEAD";
-    const subPath = flags.path || undefined;
-    source = { type: "github", owner, repo, ref, path: subPath };
-    label = `${owner}/${repo}${ref !== "HEAD" ? `@${ref}` : ""}`;
+    const ref = flags.ref ?? "HEAD";
+    const urlStr = `github://${flags.github}?ref=${ref}${flags.path ? `&path=${flags.path}` : ""}`;
+    const parsed = parseRemoteSourceUrl(urlStr);
+    if (!parsed) throw new Error(`Invalid github source: ${flags.github}`);
+    source = { type: "github", owner: parsed.owner, repo: parsed.repo, ref: parsed.ref, path: flags.path };
+    label = `${parsed.owner}/${parsed.repo}${ref !== "HEAD" ? `@${ref}` : ""}`;
   } else if (flags?.gitlab) {
-    const { owner, repo } = parseRepoString(flags.gitlab);
-    const ref = flags.ref || "HEAD";
-    const subPath = flags.path || undefined;
-    source = { type: "gitlab", owner, repo, ref, path: subPath };
-    label = `${owner}/${repo}${ref !== "HEAD" ? `@${ref}` : ""}`;
+    const ref = flags.ref ?? "HEAD";
+    const urlStr = `gitlab://${flags.gitlab}?ref=${ref}${flags.path ? `&path=${flags.path}` : ""}`;
+    const parsed = parseRemoteSourceUrl(urlStr);
+    if (!parsed) throw new Error(`Invalid gitlab source: ${flags.gitlab}`);
+    source = { type: "gitlab", owner: parsed.owner, repo: parsed.repo, ref: parsed.ref, path: flags.path };
+    label = `${parsed.owner}/${parsed.repo}${ref !== "HEAD" ? `@${ref}` : ""}`;
   } else {
     const cwd = flags.cwd || process.cwd();
     source = { type: "local", cwd };
