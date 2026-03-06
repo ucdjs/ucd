@@ -12,6 +12,7 @@ const PIPELINES_SUBCOMMANDS = [
   "run",
   "list",
   "create",
+  "cache",
 ] as const;
 export type Subcommand = (typeof PIPELINES_SUBCOMMANDS)[number];
 
@@ -32,6 +33,7 @@ export async function runPipelinesRoot(subcommand: string, { flags }: CLIPipelin
           ["run", "Run a pipeline from the command line."],
           ["list", "List available pipelines."],
           ["create", "Create a new pipeline scaffold."],
+          ["cache", "Manage pipeline source cache (status, clear, refresh)."],
         ],
         Flags: [
           ["--help (-h)", "See all available flags."],
@@ -60,6 +62,12 @@ export async function runPipelinesRoot(subcommand: string, { flags }: CLIPipelin
   //   await runVerifyStore({ flags, versions });
   //   return;
   // }
+
+  if (subcommand === "cache") {
+    const { runPipelinesCacheRoot } = await import("./cache/index");
+    await runPipelinesCacheRoot({ flags });
+    return;
+  }
 
   throw new Error(`Invalid subcommand: ${subcommand}`);
 }

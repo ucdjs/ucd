@@ -114,9 +114,10 @@ export async function runPipelinesRun({ flags }: CLIPipelinesRunCmdOptions) {
 
   // Find and load pipeline files from sources
   const pipelinePaths: string[] = [];
+  const loadErrors: string[] = [];
 
   for (const source of sources) {
-    const files = await findPipelineFiles({
+    const { files, errors: discoveryErrors } = await findPipelineFiles({
       source: source.type === "local"
         ? { type: "local", cwd: source.cwd }
         : { type: source.type, owner: source.owner, repo: source.repo, ref: source.ref, path: source.path },
@@ -124,12 +125,14 @@ export async function runPipelinesRun({ flags }: CLIPipelinesRunCmdOptions) {
         ? "**/*.ucd-pipeline.ts"
         : (source.path ? `${source.path}/**/*.ucd-pipeline.ts` : "**/*.ucd-pipeline.ts"),
     });
+    for (const err of discoveryErrors) {
+      loadErrors.push(err.message);
+    }
     pipelinePaths.push(...files);
   }
 
   // Load all pipelines
   const allPipelines: Awaited<ReturnType<typeof loadPipelinesFromPaths>>["pipelines"] = [];
-  const loadErrors: string[] = [];
 
   for (const filePath of pipelinePaths) {
     try {

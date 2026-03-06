@@ -93,7 +93,7 @@ export async function runListPipelines({ flags }: CLIPipelinesListCmdOptions) {
     ? `${flags.path}/**/*.ucd-pipeline.ts`
     : "**/*.ucd-pipeline.ts";
 
-  const files = await findPipelineFiles({ source, patterns: pattern });
+  const { files, errors: discoveryErrors } = await findPipelineFiles({ source, patterns: pattern });
   const result = await loadPipelinesFromPaths(files);
 
   const allPipelines = result.files.map((file) => ({
@@ -153,11 +153,13 @@ export async function runListPipelines({ flags }: CLIPipelinesListCmdOptions) {
 
   blankLine();
 
-  if (result.errors.length > 0) {
+  const allErrors = [...discoveryErrors, ...result.errors];
+  if (allErrors.length > 0) {
     header("Errors");
-    for (const err of result.errors) {
+    for (const err of allErrors) {
       const sourceLabel = source.type === "local" ? "[local] " : `[${source.type}] `;
-      output.error(`  ${yellow("•")} ${sourceLabel}${err.filePath}: ${err.error.message}`);
+      const location = err.filePath ? `${err.filePath}: ` : "";
+      output.error(`  ${yellow("•")} ${sourceLabel}${location}${err.message}`);
     }
   }
 }
