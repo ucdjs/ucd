@@ -1,7 +1,7 @@
 import type { RemoteRequestOptions } from "../types";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { getRepositoryCacheDir } from "@ucdjs-internal/shared/config";
+import { getRepositoryCacheDir } from "./config";
 import { parseTarGzip } from "nanotar";
 
 const GITLAB_API_BASE = "https://gitlab.com/api/v4";

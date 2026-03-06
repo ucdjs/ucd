@@ -3,7 +3,7 @@ import { existsSync } from "node:fs";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 import { createClient } from "@libsql/client";
-import { getPipelineDbPath } from "@ucdjs-internal/shared/config";
+import { getUcdConfigPath } from "@ucdjs-internal/shared/config";
 import { drizzle } from "drizzle-orm/libsql";
 import { migrate } from "drizzle-orm/libsql/migrator";
 import * as schema from "./schema";
@@ -16,7 +16,7 @@ interface CreateDatabaseOptions {
 }
 
 export function createDatabase(options: CreateDatabaseOptions = {}): Database {
-  const defaultUrl = `file:${getPipelineDbPath()}`;
+  const defaultUrl = `file:${getUcdConfigPath("pipeline.db")}`;
   const url = options.url ?? process.env.DB_URL ?? defaultUrl;
   const authToken = options.authToken ?? process.env.DB_AUTH_TOKEN;
 
