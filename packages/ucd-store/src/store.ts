@@ -11,10 +11,12 @@ import type {
 import {
   createDebugger,
   createPathFilter,
+} from "@ucdjs-internal/shared";
+import {
+  createUCDClientWithConfig,
   discoverEndpointsFromConfig,
   getDefaultUCDEndpointConfig,
-} from "@ucdjs-internal/shared";
-import { createUCDClientWithConfig } from "@ucdjs/client";
+} from "@ucdjs/client";
 import { UCDJS_API_BASE_URL } from "@ucdjs/env";
 import { getLockfilePath, readLockfileOrUndefined } from "@ucdjs/lockfile";
 import defu from "defu";
