@@ -7,15 +7,22 @@ export {
 } from "./cache";
 
 export {
+  BundleError,
+  BundleResolveError,
+  BundleTransformError,
   CacheMissError,
+  PipelineLoaderError,
+} from "./errors";
+
+export {
   findPipelineFiles,
   type FindPipelineFilesOptions,
   loadPipelineFile,
   loadPipelinesFromPaths,
-  type LoadPipelinesOptions,
 } from "./loader";
 
 export type {
+  FindPipelineFilesResult,
   LoadedPipelineFile,
   LoadPipelinesResult,
   PipelineLoadError,

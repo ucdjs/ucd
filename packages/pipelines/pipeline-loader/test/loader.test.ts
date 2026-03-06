@@ -202,7 +202,7 @@ describe("findPipelineFiles", () => {
       "gamma.ts": "", // Should not match
     });
 
-    const files = await findPipelineFiles({
+    const { files } = await findPipelineFiles({
       source: { type: "local", cwd: dir },
     });
 
@@ -218,7 +218,7 @@ describe("findPipelineFiles", () => {
       "beta.custom.ts": "",
     });
 
-    const files = await findPipelineFiles({
+    const { files } = await findPipelineFiles({
       source: { type: "local", cwd: dir },
       patterns: "**/*.custom.ts",
     });
@@ -228,7 +228,7 @@ describe("findPipelineFiles", () => {
   });
 
   it("should use process.cwd() when no source specified", async () => {
-    const files = await findPipelineFiles();
+    const { files } = await findPipelineFiles();
     // Should not throw, just return empty array or files from cwd
     expect(Array.isArray(files)).toBe(true);
   });
@@ -249,7 +249,7 @@ describe("findPipelineFiles", () => {
 
       getUcdConfigPathMock.mockReturnValue(tmpBaseDir);
 
-      const files = await findPipelineFiles({
+      const { files } = await findPipelineFiles({
         source: {
           type: "github",
           owner: "owner",
@@ -262,20 +262,24 @@ describe("findPipelineFiles", () => {
       expect(files[0]).toBe(`${tmpBaseDir}/github/owner/repo/main/src/test.ucd-pipeline.ts`);
     });
 
-    it("should throw CacheMissError for uncached remote sources", async () => {
+    it("should return a CACHE_MISS error for uncached remote sources instead of throwing", async () => {
       const tmpBaseDir = await testdir();
       getUcdConfigPathMock.mockReturnValue(tmpBaseDir);
 
-      await expect(
-        findPipelineFiles({
-          source: {
-            type: "github",
-            owner: "owner",
-            repo: "repo",
-            ref: "main",
-          },
-        }),
-      ).rejects.toThrow("Cache miss");
+      const result = await findPipelineFiles({
+        source: {
+          type: "github",
+          owner: "owner",
+          repo: "repo",
+          ref: "main",
+        },
+      });
+
+      expect(result.files).toHaveLength(0);
+      expect(result.errors).toHaveLength(1);
+      expect(result.errors[0]?.code).toBe("CACHE_MISS");
+      expect(result.errors[0]?.scope).toBe("source");
+      expect(result.errors[0]?.message).toContain("Cache miss");
     });
   });
 });
@@ -341,12 +345,6 @@ describe("loadPipelinesFromPaths", () => {
     expect(result.errors[0]?.filePath).toContain("nonexistent");
     expect(result.errors[0]?.message).toBeTruthy();
     expect(result.pipelines.map((p) => p.id)).toEqual(["valid"]);
-  });
-
-  it("should throw when throwOnError is true", async () => {
-    await expect(
-      loadPipelinesFromPaths(["/nonexistent/file.ts"], { throwOnError: true }),
-    ).rejects.toThrow();
   });
 
   describe("remote sources via github:// URLs", () => {

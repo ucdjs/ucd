@@ -61,7 +61,7 @@ describe("github source", () => {
     });
     getUcdConfigPathMock.mockReturnValueOnce(tmpBaseDir);
 
-    const files = await findPipelineFiles({
+    const { files } = await findPipelineFiles({
       source: {
         type: "github",
         owner: "ucdjs",
@@ -137,7 +137,7 @@ describe("github source", () => {
     });
     getUcdConfigPathMock.mockReturnValue(tmpBaseDir);
 
-    const files = await findPipelineFiles({
+    const { files } = await findPipelineFiles({
       source: {
         type: "github",
         owner: "ucdjs",

@@ -1,5 +1,6 @@
 import type { PipelineDefinition } from "@ucdjs/pipelines-core";
 import type {
+  FindPipelineFilesResult,
   LoadedPipelineFile,
   LoadPipelinesResult,
   PipelineLoadError,
@@ -12,31 +13,10 @@ import { isPipelineDefinition } from "@ucdjs/pipelines-core";
 import { glob } from "tinyglobby";
 import { bundle } from "./bundle";
 import { getRemoteSourceCacheStatus } from "./cache";
+import { BundleError, BundleResolveError, BundleTransformError, CacheMissError } from "./errors";
 import { parseRemoteSourceUrl } from "./utils";
 
-export class CacheMissError extends Error {
-  source: string;
-  owner: string;
-  repo: string;
-  ref: string;
-
-  constructor(
-    source: string,
-    owner: string,
-    repo: string,
-    ref: string,
-  ) {
-    super(
-      `Cache miss for ${source}:${owner}/${repo}@${ref}. `
-      + `Run 'ucd pipelines cache refresh --${source} ${owner}/${repo} --ref ${ref}' to sync.`,
-    );
-    this.name = "CacheMissError";
-    this.source = source;
-    this.owner = owner;
-    this.repo = repo;
-    this.ref = ref;
-  }
-}
+export { CacheMissError } from "./errors";
 
 /**
  * Load a pipeline definition file.
@@ -87,17 +67,11 @@ export async function loadPipelineFile(fileOrRemotePath: string): Promise<Loaded
     sourceFilePath = fileOrRemotePath;
   }
 
-  let bundleResult: { dataUrl: string };
-  try {
-    // Always bundle the file to ensure we can import it with all dependencies
-    bundleResult = await bundle({
-      entryPath: resolvedPath,
-      cwd,
-    });
-  } catch (err) {
-    const error = err instanceof Error ? err : new Error(String(err));
-    throw new Error(`Failed to bundle pipeline file: ${fileOrRemotePath}`, { cause: error });
-  }
+  // Always bundle the file to ensure we can import it with all dependencies
+  const bundleResult = await bundle({
+    entryPath: resolvedPath,
+    cwd,
+  });
 
   const module = await import(/* @vite-ignore */ bundleResult.dataUrl);
 
@@ -118,96 +92,6 @@ export async function loadPipelineFile(fileOrRemotePath: string): Promise<Loaded
     sourceFilePath,
     pipelines,
     exportNames,
-  };
-}
-
-export interface LoadPipelinesOptions {
-  throwOnError?: boolean;
-}
-
-function classifyPipelineLoadErrorCode(error: Error): PipelineLoadErrorCode {
-  if (error instanceof CacheMissError) {
-    return "CACHE_MISS";
-  }
-
-  const message = error.message.toLowerCase();
-
-  if (message.includes("failed to bundle pipeline file") || message.includes("failed to bundle module")) {
-    return "BUNDLE_FAILED";
-  }
-
-  if (message.includes("failed to load pipeline file")) {
-    return "IMPORT_FAILED";
-  }
-
-  return "UNKNOWN";
-}
-
-export async function loadPipelinesFromPaths(
-  filePaths: string[],
-  options: LoadPipelinesOptions = {},
-): Promise<LoadPipelinesResult> {
-  const { throwOnError = false } = options;
-
-  if (throwOnError) {
-    const wrapped = filePaths.map((filePath) =>
-      loadPipelineFile(filePath).catch((err) => {
-        const error = err instanceof Error ? err : new Error(String(err));
-        throw new Error(`Failed to load pipeline file: ${filePath}`, { cause: error });
-      }),
-    );
-
-    const results = await Promise.all(wrapped);
-    const pipelines = results.flatMap((r) => r.pipelines);
-
-    return {
-      pipelines,
-      files: results,
-      errors: [],
-    };
-  }
-
-  const settled = await Promise.allSettled(filePaths.map((fp) => loadPipelineFile(fp)));
-
-  const files: LoadedPipelineFile[] = [];
-  const errors: PipelineLoadError[] = [];
-
-  for (const [i, result] of settled.entries()) {
-    if (result.status === "fulfilled") {
-      files.push(result.value);
-      continue;
-    }
-
-    const error = result.reason instanceof Error
-      ? result.reason
-      : new Error(String(result.reason));
-
-    const filePath = filePaths[i]!;
-    const code = classifyPipelineLoadErrorCode(error);
-
-    errors.push({
-      code,
-      scope: "file",
-      message: error.message,
-      filePath,
-      cause: error,
-      meta: code === "CACHE_MISS" && error instanceof CacheMissError
-        ? {
-            source: error.source,
-            owner: error.owner,
-            repo: error.repo,
-            ref: error.ref,
-          }
-        : undefined,
-    });
-  }
-
-  const pipelines = files.flatMap((f) => f.pipelines);
-
-  return {
-    pipelines,
-    files,
-    errors,
   };
 }
 
@@ -232,28 +116,22 @@ export interface FindPipelineFilesOptions {
  * using `ucd pipelines cache refresh` or the syncRemoteSource() function.
  *
  * @param {FindPipelineFilesOptions}  [options] - Options to configure the search for pipeline files, including glob patterns and source location (local or remote).
- * @returns {Promise<string[]>} An array of file paths that match the specified patterns and source.
- * @throws {CacheMissError} If the remote source is not in the cache.
+ * @returns {Promise<FindPipelineFilesResult>} An object with `files` (matched paths) and `errors` (any discovery errors, e.g. cache miss).
  *
  * @example
  * ```typescript
  * // Local directory
- * findPipelineFiles({ source: { type: "local", cwd: "./pipelines" } })
+ * const { files } = await findPipelineFiles({ source: { type: "local", cwd: "./pipelines" } })
  *
  * // GitHub repository (requires sync first)
- * findPipelineFiles({
+ * const { files, errors } = await findPipelineFiles({
  *   source: { type: "github", owner: "ucdjs", repo: "demo-pipelines", ref: "main" }
- * })
- *
- * // GitLab repository (requires sync first)
- * findPipelineFiles({
- *   source: { type: "gitlab", owner: "mygroup", repo: "demo", ref: "main" }
  * })
  * ```
  */
 export async function findPipelineFiles(
   options: FindPipelineFilesOptions = {},
-): Promise<string[]> {
+): Promise<FindPipelineFilesResult> {
   let patterns: string[] = ["**/*.ucd-pipeline.ts"];
 
   if (options.patterns) {
@@ -279,7 +157,24 @@ export async function findPipelineFiles(
       });
 
       if (!status.cached) {
-        throw new CacheMissError(source.type, source.owner, source.repo, source.ref ?? "HEAD");
+        const err = new CacheMissError(source.type, source.owner, source.repo, source.ref ?? "HEAD");
+        return {
+          files: [],
+          errors: [
+            {
+              code: "CACHE_MISS",
+              scope: "source",
+              message: err.message,
+              cause: err,
+              meta: {
+                source: source.type,
+                owner: source.owner,
+                repo: source.repo,
+                ref: source.ref ?? "HEAD",
+              },
+            },
+          ],
+        };
       }
 
       cwd = status.cacheDir;
@@ -289,10 +184,116 @@ export async function findPipelineFiles(
     cwd = process.cwd();
   }
 
-  return glob(patterns, {
+  const files = await glob(patterns, {
     cwd,
     ignore: ["node_modules/**", "**/node_modules/**", "**/dist/**", "**/build/**", "**/.git/**"],
     absolute: true,
     onlyFiles: true,
   });
+
+  return { files, errors: [] };
+}
+
+function classifyPipelineLoadErrorCode(error: Error): PipelineLoadErrorCode {
+  if (error instanceof CacheMissError) {
+    return "CACHE_MISS";
+  }
+
+  if (error instanceof BundleResolveError) {
+    return "BUNDLE_RESOLVE_FAILED";
+  }
+
+  if (error instanceof BundleTransformError) {
+    return "BUNDLE_TRANSFORM_FAILED";
+  }
+
+  if (error instanceof BundleError) {
+    return "BUNDLE_FAILED";
+  }
+
+  const message = error.message.toLowerCase();
+
+  if (message.includes("failed to bundle pipeline file") || message.includes("failed to bundle module")) {
+    return "BUNDLE_FAILED";
+  }
+
+  if (message.includes("failed to load pipeline file")) {
+    return "IMPORT_FAILED";
+  }
+
+  return "UNKNOWN";
+}
+
+function buildErrorMeta(error: Error): Record<string, unknown> | undefined {
+  if (error instanceof CacheMissError) {
+    return {
+      source: error.source,
+      owner: error.owner,
+      repo: error.repo,
+      ref: error.ref,
+    };
+  }
+
+  if (error instanceof BundleResolveError) {
+    return {
+      entryPath: error.entryPath,
+      importPath: error.importPath,
+    };
+  }
+
+  if (error instanceof BundleTransformError) {
+    return {
+      entryPath: error.entryPath,
+      ...(error.line != null ? { line: error.line } : {}),
+      ...(error.column != null ? { column: error.column } : {}),
+    };
+  }
+
+  if (error instanceof BundleError) {
+    return {
+      entryPath: error.entryPath,
+    };
+  }
+
+  return undefined;
+}
+
+export async function loadPipelinesFromPaths(
+  filePaths: string[],
+): Promise<LoadPipelinesResult> {
+  const settled = await Promise.allSettled(filePaths.map((fp) => loadPipelineFile(fp)));
+
+  const files: LoadedPipelineFile[] = [];
+  const errors: PipelineLoadError[] = [];
+
+  for (const [i, result] of settled.entries()) {
+    if (result.status === "fulfilled") {
+      files.push(result.value);
+      continue;
+    }
+
+    const error = result.reason instanceof Error
+      ? result.reason
+      : new Error(String(result.reason));
+
+    const filePath = filePaths[i]!;
+    const code = classifyPipelineLoadErrorCode(error);
+
+    errors.push({
+      code,
+      scope: "file",
+      message: error.message,
+      filePath,
+      cause: error,
+      meta: buildErrorMeta(error),
+    });
+  }
+
+  const pipelines = files.flatMap((f) => f.pipelines);
+
+  return {
+    pipelines,
+    files,
+    errors,
+  };
 }
