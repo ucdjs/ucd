@@ -8,7 +8,6 @@ const PIPELINE_TABS = [
   { id: "inspect", label: "Inspect", to: "/inspect" },
   { id: "executions", label: "Executions", to: "/executions" },
   { id: "graphs", label: "Graphs", to: "/graphs" },
-  { id: "code", label: "Code", to: "/code" },
 ] as const;
 
 export function PipelineTabs() {

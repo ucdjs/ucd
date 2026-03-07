@@ -88,11 +88,6 @@ export {
   type PipelineResponse as SourcePipelineResponse,
 } from "./functions/pipeline";
 export {
-  fetchPipelineCode,
-  pipelineCodeQueryOptions,
-  type PipelineCodeResponse,
-} from "./functions/pipeline-code";
-export {
   isExecutionActive,
   isNotFoundError,
   refetchWhileExecutionActive,

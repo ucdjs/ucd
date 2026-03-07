@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from "@ucdjs-internal/shared-ui/ui/card";
 import { useExecute, usePipelineVersions } from "@ucdjs/pipelines-ui";
-import { ArrowRight, FileCode, Loader2, Play, Workflow } from "lucide-react";
+import { ArrowRight, Loader2, Play, Workflow } from "lucide-react";
 import { useCallback } from "react";
 
 export function QuickActionsPanel() {
@@ -73,20 +73,6 @@ export function QuickActionsPanel() {
               <span className="flex items-center gap-2">
                 <Workflow className="h-4 w-4" />
                 Open graph
-              </span>
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          )}
-        />
-
-        <Button
-          variant="outline"
-          className="w-full justify-between"
-          render={(props) => (
-            <Link to="/pipelines/$file/$id/code" params={{ file, id }} {...props}>
-              <span className="flex items-center gap-2">
-                <FileCode className="h-4 w-4" />
-                Open code
               </span>
               <ArrowRight className="h-4 w-4" />
             </Link>
