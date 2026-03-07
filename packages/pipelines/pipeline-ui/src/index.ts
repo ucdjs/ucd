@@ -48,8 +48,57 @@ export {
   type ExecutionWaterfallProps,
 } from "./components/logs/execution-waterfall";
 export { PipelineSidebar } from "./components/pipeline-sidebar";
+export { SourceSwitcher as SourcePicker } from "./components/source-switcher";
 export { StatusBadge } from "./components/status-badge";
 export { StatusIcon } from "./components/status-icon";
+export {
+  executionEventsQueryOptions,
+  fetchExecutionEvents,
+} from "./functions/execution-events";
+export {
+  executionGraphQueryOptions,
+  type ExecutionGraphResponse,
+  fetchExecutionGraph,
+} from "./functions/execution-graph";
+export {
+  executionLogsQueryOptions,
+  fetchExecutionLogs,
+} from "./functions/execution-logs";
+export {
+  executionsQueryOptions,
+  type ExecutionsResponse,
+  type ExecutionSummaryItem,
+  fetchExecutions,
+  type FetchExecutionsOptions,
+} from "./functions/executions";
+export {
+  fetchSourceFile,
+  sourceFileQueryOptions,
+  type SourceFileResponse,
+} from "./functions/file";
+export {
+  fetchPipeline,
+  pipelineQueryOptions,
+  type PipelineResponse as SourcePipelineResponse,
+} from "./functions/pipeline";
+export {
+  fetchPipelineCode,
+  pipelineCodeQueryOptions,
+  type PipelineCodeResponse,
+} from "./functions/pipeline-code";
+export {
+  fetchSource,
+  type SourceFileInfo,
+  type SourceFilePipelineSummary,
+  sourceQueryOptions,
+  type SourceResponse,
+} from "./functions/source";
+export {
+  fetchSources,
+  sourcesQueryOptions,
+  type SourcesResponse,
+  type SourceSummary,
+} from "./functions/sources";
 export * from "./hooks";
 export {
   filterNodesByType,

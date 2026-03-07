@@ -28,3 +28,5 @@ export {
   type UsePipelinesOptions,
   type UsePipelinesReturn,
 } from "./use-pipelines";
+export { useSource } from "./use-source";
+export { useSources } from "./use-sources";

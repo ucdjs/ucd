@@ -27,6 +27,7 @@
   "exports": {
     ".": "./dist/index.mjs",
     "./components/pipeline-sidebar": "./dist/components/pipeline-sidebar.mjs",
+    "./components/source-switcher": "./dist/components/source-switcher.mjs",
     "./components/status-badge": "./dist/components/status-badge.mjs",
     "./components/status-icon": "./dist/components/status-icon.mjs",
     "./hooks": "./dist/hooks/index.mjs",
