@@ -16,8 +16,6 @@ import { getRemoteSourceCacheStatus } from "./cache";
 import { BundleError, BundleResolveError, BundleTransformError, CacheMissError } from "./errors";
 import { parseRemoteSourceUrl } from "./utils";
 
-export { CacheMissError } from "./errors";
-
 /**
  * Load a pipeline definition file.
  *
