@@ -13,6 +13,7 @@ import type { SourceAdapter } from "./source-adapter";
 import { isGlobalArtifact } from "@ucdjs/pipelines-artifacts";
 import { applyTransforms } from "@ucdjs/pipelines-core";
 import { withPipelineSpan } from "../log-context";
+import { createPipelineLogger } from "../logger";
 import { createParseContext } from "./source-adapter";
 
 export interface ProcessRouteResult {
@@ -46,10 +47,12 @@ export function createRouteResolveContext(
   options: ResolveContextOptions,
 ): RouteResolveContext<string, Record<string, ArtifactDefinition>> {
   const { version, file, routeId, artifactsMap, emittedArtifacts, emitsDefinition, onArtifactEmit, onArtifactGet } = options;
+  const logger = createPipelineLogger();
 
   return {
     version,
     file,
+    logger,
     getArtifact: <K extends string>(key: K): unknown => {
       if (!(key in artifactsMap)) {
         throw new Error(`Artifact "${key}" not found. Make sure a route that produces this artifact runs before route "${routeId}".`);
@@ -102,8 +105,9 @@ export async function processRoute(options: ProcessRouteOptions): Promise<Proces
   const filteredRows = filterRows(rows as AsyncIterable<ParsedRow>, file, route.filter, collectedRows);
 
   if (route.transforms && route.transforms.length > 0) {
+    const logger = createPipelineLogger();
     rows = applyTransforms(
-      { version, file },
+      { version, file, logger },
       filteredRows,
       route.transforms,
     );
@@ -251,6 +255,7 @@ export async function processFallback(options: ProcessFallbackOptions): Promise<
   const resolveCtx = {
     version,
     file,
+    logger: createPipelineLogger(),
     getArtifact: <K extends string>(id: K): unknown => {
       if (!(id in artifactsMap)) {
         throw new Error(`Artifact "${String(id)}" not found.`);
@@ -294,6 +299,8 @@ export async function* filterRows(
   filter: PipelineFilter | undefined,
   collector: ParsedRow[],
 ): AsyncIterable<ParsedRow> {
+  const logger = createPipelineLogger();
+
   for await (const row of rows) {
     collector.push(row);
 
@@ -304,6 +311,7 @@ export async function* filterRows(
 
     const shouldInclude = filter({
       file,
+      logger,
       row: { property: row.property },
     });
 

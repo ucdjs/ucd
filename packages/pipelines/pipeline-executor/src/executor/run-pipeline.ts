@@ -19,6 +19,7 @@ import type { EventEmitter } from "./events";
 import { getExecutionLayers } from "@ucdjs/pipelines-core";
 import { PipelineGraphBuilder } from "@ucdjs/pipelines-graph";
 import { withPipelineSpan } from "../log-context";
+import { createPipelineLogger } from "../logger";
 import { buildCacheKey, storeCacheEntry, tryLoadCachedResult } from "./cache-helpers";
 import { emitWithSpan } from "./events";
 import { createProcessingQueue } from "./processing-queue";
@@ -56,6 +57,7 @@ export async function runPipeline(options: RunPipelineOptions): Promise<Pipeline
   let fallbackFiles = 0;
 
   const dag = pipeline.dag;
+  const logger = createPipelineLogger();
 
   const pipelineSpanId = events.nextSpanId();
   await emitWithSpan(pipelineSpanId, () =>
@@ -111,14 +113,14 @@ export async function runPipeline(options: RunPipelineOptions): Promise<Pipeline
         if (artifactDef.filter && artifactDef.parser) {
           const files = await listVersionFiles();
           for (const file of files) {
-            if (artifactDef.filter({ file })) {
+            if (artifactDef.filter({ file, logger })) {
               rows = artifactDef.parser(createParseContext(file, source));
               break;
             }
           }
         }
 
-        const value = await artifactDef.build({ version }, rows);
+        const value = await artifactDef.build({ version, logger }, rows);
         artifactsMap[artifactDef.id] = value;
       } catch (err) {
         const pipelineError = {
@@ -153,7 +155,7 @@ export async function runPipeline(options: RunPipelineOptions): Promise<Pipeline
     totalFiles += files.length;
 
     const filesToProcess = pipeline.include
-      ? files.filter((file) => pipeline.include!({ file }))
+      ? files.filter((file) => pipeline.include!({ file, logger }))
       : files;
 
     const executionLayers = getExecutionLayers(dag);
@@ -168,6 +170,7 @@ export async function runPipeline(options: RunPipelineOptions): Promise<Pipeline
           const sourceFile = file as SourceFileContext;
           const filterCtx = {
             file,
+            logger,
             source: sourceFile.source,
           };
           return route.filter(filterCtx);
@@ -322,7 +325,7 @@ export async function runPipeline(options: RunPipelineOptions): Promise<Pipeline
       if (processedFiles.has(file.path)) continue;
 
       if (pipeline.fallback) {
-        const shouldUseFallback = !pipeline.fallback.filter || pipeline.fallback.filter({ file });
+        const shouldUseFallback = !pipeline.fallback.filter || pipeline.fallback.filter({ file, logger });
 
         if (shouldUseFallback) {
           fallbackFiles++;

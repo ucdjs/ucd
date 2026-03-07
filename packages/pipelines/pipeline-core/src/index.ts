@@ -76,6 +76,8 @@ export {
   or,
 } from "./filters";
 
+export type { PipelineLogger } from "./logger";
+
 export type {
   AnyPipelineDefinition,
   FallbackRouteDefinition,
