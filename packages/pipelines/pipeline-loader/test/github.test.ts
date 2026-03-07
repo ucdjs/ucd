@@ -2,7 +2,8 @@ import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
 import { resolveGitHubRef } from "../src/adapters/github";
-import { findPipelineFiles, loadPipelineFile } from "../src/loader";
+import { discoverPipelineFiles } from "../src/discover";
+import { materializePipelineLocator } from "../src/materialize";
 
 vi.mock("@ucdjs-internal/shared/config", async () => {
   const actual = await vi.importActual("@ucdjs-internal/shared/config");
@@ -14,7 +15,7 @@ vi.mock("@ucdjs-internal/shared/config", async () => {
 
 const getUcdConfigPathMock = vi.mocked(await import("@ucdjs-internal/shared/config")).getUcdConfigPath;
 
-describe("github source", () => {
+describe("github locator", () => {
   afterEach(() => {
     vi.restoreAllMocks();
     vi.clearAllMocks();
@@ -34,18 +35,18 @@ describe("github source", () => {
     })).resolves.toBe("abc123");
   });
 
-  it("finds pipeline files from a GitHub source", async () => {
+  it("materializes and discovers files from a cached GitHub locator", async () => {
     const tmpBaseDir = await testdir({
       github: {
         ucdjs: {
           "ucd-pipelines": {
-            "find-ref": {
+            main: {
               ".ucd-cache.json": JSON.stringify({
                 source: "github",
                 owner: "ucdjs",
                 repo: "ucd-pipelines",
-                ref: "find-ref",
-                commitSha: "sha-find",
+                ref: "main",
+                commitSha: "sha-main",
                 syncedAt: "2026-01-01T00:00:00.000Z",
               }),
               "pipelines": {
@@ -61,92 +62,28 @@ describe("github source", () => {
     });
     getUcdConfigPathMock.mockReturnValueOnce(tmpBaseDir);
 
-    const { files } = await findPipelineFiles({
-      source: {
-        type: "github",
-        owner: "ucdjs",
-        repo: "ucd-pipelines",
-        ref: "find-ref",
-      },
-      patterns: "**/*.ucd-pipeline.ts",
+    const materialized = await materializePipelineLocator({
+      kind: "remote",
+      provider: "github",
+      owner: "ucdjs",
+      repo: "ucd-pipelines",
+      ref: "main",
+      path: "pipelines",
     });
 
-    expect(files).toHaveLength(2);
-  });
+    expect(materialized.issues).toEqual([]);
+    expect(materialized.repositoryPath).toBeTruthy();
 
-  it("loads a pipeline file via github:// remote URL", async () => {
-    const tmpBaseDir = await testdir({
-      github: {
-        ucdjs: {
-          "ucd-pipelines": {
-            "load-ref": {
-              ".ucd-cache.json": JSON.stringify({
-                source: "github",
-                owner: "ucdjs",
-                repo: "ucd-pipelines",
-                ref: "load-ref",
-                commitSha: "sha-load",
-                syncedAt: "2026-01-01T00:00:00.000Z",
-              }),
-              "pipelines": {
-                "test.ucd-pipeline.ts": `
-                  export const testPipeline = {
-                    _type: "pipeline-definition",
-                    id: "github-test",
-                    name: "GitHub Test",
-                    versions: ["16.0.0"],
-                    inputs: [],
-                    routes: [],
-                  };
-                `,
-              },
-            },
-          },
-        },
-      },
-    });
-    getUcdConfigPathMock.mockReturnValueOnce(tmpBaseDir);
-
-    const result = await loadPipelineFile("github://ucdjs/ucd-pipelines?ref=load-ref&path=pipelines/test.ucd-pipeline.ts");
-
-    expect(result.pipelines).toHaveLength(1);
-    expect(result.pipelines[0]?.id).toBe("github-test");
-  });
-
-  it("uses validated cache and skips archive download", async () => {
-    const tmpBaseDir = await testdir({
-      github: {
-        ucdjs: {
-          "ucd-pipelines": {
-            "cached-ref": {
-              ".ucd-cache.json": JSON.stringify({
-                source: "github",
-                owner: "ucdjs",
-                repo: "ucd-pipelines",
-                ref: "cached-ref",
-                commitSha: "cached-sha",
-                syncedAt: "2026-01-01T00:00:00.000Z",
-              }),
-              "pipelines": {
-                "cached.ucd-pipeline.ts": "export const a = 1;",
-              },
-            },
-          },
-        },
-      },
-    });
-    getUcdConfigPathMock.mockReturnValue(tmpBaseDir);
-
-    const { files } = await findPipelineFiles({
-      source: {
-        type: "github",
-        owner: "ucdjs",
-        repo: "ucd-pipelines",
-        ref: "cached-ref",
-      },
-      patterns: "**/*.ucd-pipeline.ts",
+    const discovered = await discoverPipelineFiles({
+      repositoryPath: materialized.repositoryPath!,
+      origin: materialized.origin,
     });
 
-    expect(files).toHaveLength(1);
+    expect(discovered.issues).toEqual([]);
+    expect(discovered.files).toHaveLength(2);
+    expect(discovered.files.map((file) => file.relativePath).sort()).toEqual([
+      "a.ucd-pipeline.ts",
+      "nested/b.ucd-pipeline.ts",
+    ]);
   });
 });

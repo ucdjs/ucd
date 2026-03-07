@@ -2,7 +2,7 @@ import { HttpResponse, mockFetch } from "#test-utils/msw";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
 import { resolveGitLabRef } from "../src/adapters/gitlab";
-import { findPipelineFiles, loadPipelineFile } from "../src/loader";
+import { materializePipelineLocator } from "../src/materialize";
 
 vi.mock("@ucdjs-internal/shared/config", async () => {
   const actual = await vi.importActual("@ucdjs-internal/shared/config");
@@ -14,7 +14,7 @@ vi.mock("@ucdjs-internal/shared/config", async () => {
 
 const getUcdConfigPathMock = vi.mocked(await import("@ucdjs-internal/shared/config")).getUcdConfigPath;
 
-describe("gitlab source", () => {
+describe("gitlab locator", () => {
   afterEach(() => {
     vi.restoreAllMocks();
     vi.clearAllMocks();
@@ -34,119 +34,21 @@ describe("gitlab source", () => {
     })).resolves.toBe("abc123");
   });
 
-  it("finds pipeline files from a GitLab source", async () => {
-    const tmpBaseDir = await testdir({
-      gitlab: {
-        ucdjs: {
-          "ucd-pipelines": {
-            "find-ref": {
-              ".ucd-cache.json": JSON.stringify({
-                source: "gitlab",
-                owner: "ucdjs",
-                repo: "ucd-pipelines",
-                ref: "find-ref",
-                commitSha: "sha-find",
-                syncedAt: "2026-01-01T00:00:00.000Z",
-              }),
-              "pipelines": {
-                "a.ucd-pipeline.ts": "export const a = 1;",
-                "nested": {
-                  "b.ucd-pipeline.ts": "export const b = 2;",
-                },
-              },
-            },
-          },
-        },
-      },
-    });
+  it("returns a cache-miss issue for an uncached GitLab locator", async () => {
+    const tmpBaseDir = await testdir();
     getUcdConfigPathMock.mockReturnValueOnce(tmpBaseDir);
 
-    const { files } = await findPipelineFiles({
-      source: {
-        type: "gitlab",
-        owner: "ucdjs",
-        repo: "ucd-pipelines",
-        ref: "find-ref",
-      },
-      patterns: "**/*.ucd-pipeline.ts",
+    const materialized = await materializePipelineLocator({
+      kind: "remote",
+      provider: "gitlab",
+      owner: "ucdjs",
+      repo: "ucd-pipelines",
+      ref: "main",
     });
 
-    expect(files).toHaveLength(2);
-  });
-
-  it("loads a pipeline file via gitlab:// remote URL", async () => {
-    const tmpBaseDir = await testdir({
-      gitlab: {
-        ucdjs: {
-          "ucd-pipelines": {
-            "load-ref": {
-              ".ucd-cache.json": JSON.stringify({
-                source: "gitlab",
-                owner: "ucdjs",
-                repo: "ucd-pipelines",
-                ref: "load-ref",
-                commitSha: "sha-load",
-                syncedAt: "2026-01-01T00:00:00.000Z",
-              }),
-              "pipelines": {
-                "test.ucd-pipeline.ts": `
-                  export const testPipeline = {
-                    _type: "pipeline-definition",
-                    id: "gitlab-test",
-                    name: "GitLab Test",
-                    versions: ["16.0.0"],
-                    inputs: [],
-                    routes: [],
-                  };
-                `,
-              },
-            },
-          },
-        },
-      },
-    });
-    getUcdConfigPathMock.mockReturnValueOnce(tmpBaseDir);
-
-    const result = await loadPipelineFile("gitlab://ucdjs/ucd-pipelines?ref=load-ref&path=pipelines/test.ucd-pipeline.ts");
-
-    expect(result.pipelines).toHaveLength(1);
-    expect(result.pipelines[0]?.id).toBe("gitlab-test");
-  });
-
-  it("uses validated cache and skips archive download", async () => {
-    const tmpBaseDir = await testdir({
-      gitlab: {
-        ucdjs: {
-          "ucd-pipelines": {
-            "cached-ref": {
-              ".ucd-cache.json": JSON.stringify({
-                source: "gitlab",
-                owner: "ucdjs",
-                repo: "ucd-pipelines",
-                ref: "cached-ref",
-                commitSha: "cached-sha",
-                syncedAt: "2026-01-01T00:00:00.000Z",
-              }),
-              "pipelines": {
-                "cached.ucd-pipeline.ts": "export const a = 1;",
-              },
-            },
-          },
-        },
-      },
-    });
-    getUcdConfigPathMock.mockReturnValue(tmpBaseDir);
-
-    const { files } = await findPipelineFiles({
-      source: {
-        type: "gitlab",
-        owner: "ucdjs",
-        repo: "ucd-pipelines",
-        ref: "cached-ref",
-      },
-      patterns: "**/*.ucd-pipeline.ts",
-    });
-
-    expect(files).toHaveLength(1);
+    expect(materialized.repositoryPath).toBeUndefined();
+    expect(materialized.issues).toHaveLength(1);
+    expect(materialized.issues[0]?.code).toBe("CACHE_MISS");
+    expect(materialized.issues[0]?.scope).toBe("repository");
   });
 });

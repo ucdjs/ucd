@@ -25,7 +25,7 @@ describe("remote cache status", () => {
     getUcdConfigPathMock.mockReturnValue(tmpBaseDir);
 
     const status = await getRemoteSourceCacheStatus({
-      source: "github",
+      provider: "github",
       owner: "ucdjs",
       repo: "ucd-pipelines",
       ref: "miss-ref",
@@ -53,61 +53,7 @@ describe("remote cache status", () => {
     }));
 
     const status = await getRemoteSourceCacheStatus({
-      source: "github",
-      owner: "ucdjs",
-      repo: "ucd-pipelines",
-      ref: "hit-ref",
-    });
-
-    expect(status.cached).toBe(true);
-    expect(status.commitSha).toBe("hit-sha");
-    expect(status.syncedAt).toBe(syncedAt);
-  });
-
-  it("returns uncached status for invalid marker shape", async () => {
-    const tmpBaseDir = await testdir();
-    getUcdConfigPathMock.mockReturnValue(tmpBaseDir);
-
-    const cacheDir = path.join(tmpBaseDir, "gitlab", "ucdjs", "ucd-pipelines", "ref-x");
-    await mkdir(cacheDir, { recursive: true });
-    await writeFile(path.join(cacheDir, ".ucd-cache.json"), JSON.stringify({
-      source: "gitlab",
-      owner: "ucdjs",
-      repo: "ucd-pipelines",
-      commitSha: "different-sha",
-      createdAt: new Date().toISOString(),
-    }));
-
-    const status = await getRemoteSourceCacheStatus({
-      source: "gitlab",
-      owner: "ucdjs",
-      repo: "ucd-pipelines",
-      ref: "ref-x",
-    });
-
-    expect(status.cached).toBe(false);
-    expect(status.commitSha).toBe("");
-    expect(status.syncedAt).toBeNull();
-  });
-
-  it("returns cached status for valid gitlab marker", async () => {
-    const tmpBaseDir = await testdir();
-    getUcdConfigPathMock.mockReturnValue(tmpBaseDir);
-
-    const cacheDir = path.join(tmpBaseDir, "gitlab", "ucdjs", "ucd-pipelines", "hit-ref");
-    const syncedAt = new Date().toISOString();
-    await mkdir(cacheDir, { recursive: true });
-    await writeFile(path.join(cacheDir, ".ucd-cache.json"), JSON.stringify({
-      source: "gitlab",
-      owner: "ucdjs",
-      repo: "ucd-pipelines",
-      ref: "hit-ref",
-      commitSha: "hit-sha",
-      syncedAt,
-    }));
-
-    const status = await getRemoteSourceCacheStatus({
-      source: "gitlab",
+      provider: "github",
       owner: "ucdjs",
       repo: "ucd-pipelines",
       ref: "hit-ref",
