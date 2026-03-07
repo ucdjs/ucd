@@ -17,6 +17,7 @@ import {
 import { ensureWorkspace, resolveWorkspace } from "#server/workspace";
 import { getUcdConfigDir } from "@ucdjs-internal/shared/config";
 import { H3, serve, serveStatic } from "h3";
+import { version } from "../../package.json" with { type: "json" };
 
 export type PipelineSource = PipelineLocator & { id: string };
 
@@ -84,6 +85,11 @@ export function createApp(options: AppOptions = {}): H3 {
   app.get("/api/hello", () => ({
     message: "Hello from H3!",
     timestamp: Date.now(),
+  }));
+
+  app.get("/api/config", (event) => ({
+    workspaceId: event.context.workspaceId,
+    version,
   }));
 
   app.mount("/api/sources", sourcesIndexRouter);

@@ -1,12 +1,26 @@
 import { injectThemeScript } from "#lib/theme";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { HotkeysProvider } from "@tanstack/react-hotkeys";
 import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { createRoot } from "react-dom/client";
 import { routeTree } from "./routeTree.gen";
 import "./index.css";
 
 injectThemeScript();
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      gcTime: 15 * 60 * 1000,
+      retry(failureCount, error) {
+        if (error instanceof Error && "status" in error && error.status === 404) {
+          return false;
+        }
+
+        return failureCount < 2;
+      },
+    },
+  },
+});
 
 const router = createRouter({
   routeTree,
@@ -14,11 +28,14 @@ const router = createRouter({
     queryClient,
   },
   defaultPreload: "intent",
+  defaultPreloadStaleTime: 0,
   Wrap(props) {
     return (
-      <QueryClientProvider client={queryClient}>
-        {props.children}
-      </QueryClientProvider>
+      <HotkeysProvider>
+        <QueryClientProvider client={queryClient}>
+          {props.children}
+        </QueryClientProvider>
+      </HotkeysProvider>
     );
   },
 });

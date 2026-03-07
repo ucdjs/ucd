@@ -21,7 +21,7 @@ sourcesGraphRouter.get(
         eq(schema.executions.workspaceId, workspaceId),
         eq(schema.executions.id, executionId),
       ),
-      columns: { id: true, pipelineId: true, graph: true },
+      columns: { id: true, pipelineId: true, graph: true, status: true },
     });
 
     if (!execution) {
@@ -35,6 +35,7 @@ sourcesGraphRouter.get(
     return {
       executionId: execution.id,
       pipelineId: execution.pipelineId,
+      status: execution.status,
       graph: execution.graph ?? null,
     };
   },

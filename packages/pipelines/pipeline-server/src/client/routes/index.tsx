@@ -1,5 +1,6 @@
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { usePipelines } from "@ucdjs/pipelines-ui";
+import { sourcesQueryOptions } from "@ucdjs/pipelines-ui";
 
 export const Route = createFileRoute("/")({
   component: HomePage,
@@ -57,22 +58,9 @@ function NoPipelinesFound() {
   );
 }
 
-function LoadingState() {
-  return (
-    <div className="flex-1 flex items-center justify-center" role="status" aria-live="polite">
-      <p className="text-sm text-muted-foreground">Loading pipelines...</p>
-    </div>
-  );
-}
-
 function HomePage() {
-  const { data, loading } = usePipelines();
-
-  if (loading) {
-    return <LoadingState />;
-  }
-
-  const pipelineCount = (data?.files || []).map((file) => file.pipelines.length).reduce((sum, count) => sum + count, 0);
+  const { data } = useSuspenseQuery(sourcesQueryOptions());
+  const pipelineCount = data.reduce((sum, source) => sum + source.pipelineCount, 0);
 
   return (
     <div className="flex-1 flex items-center justify-center p-8">
