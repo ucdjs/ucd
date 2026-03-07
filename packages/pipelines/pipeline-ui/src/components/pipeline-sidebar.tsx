@@ -1,5 +1,5 @@
 import { cn } from "#lib/utils";
-import { useQuery } from "@tanstack/react-query";
+import { useQueries, useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { Link, useParams } from "@tanstack/react-router";
 import { ThemeToggle, UcdLogo } from "@ucdjs-internal/shared-ui/components";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
@@ -19,6 +19,7 @@ import {
 } from "@ucdjs-internal/shared-ui/ui/sidebar";
 import { BookOpen, ExternalLink, Folder, FolderOpen, Hash, Tag } from "lucide-react";
 import * as React from "react";
+import { sourceFileQueryOptions } from "../functions/file";
 import { sourceQueryOptions } from "../functions/source";
 import { sourcesQueryOptions } from "../functions/sources";
 import { SourceSwitcher } from "./source-switcher";
@@ -32,7 +33,7 @@ export function PipelineSidebar({
   workspaceId,
   version,
 }: PipelineSidebarProps) {
-  const { data: sourcesData, isLoading } = useQuery(sourcesQueryOptions());
+  const { data: sourcesData } = useSuspenseQuery(sourcesQueryOptions());
   const params = useParams({ strict: false });
 
   const currentSourceId = "sourceId" in params && typeof params.sourceId === "string"
@@ -51,7 +52,7 @@ export function PipelineSidebar({
     setOpenFiles((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const sources = sourcesData?.sources ?? [];
+  const sources = sourcesData ?? [];
 
   return (
     <Sidebar>
@@ -98,44 +99,36 @@ export function PipelineSidebar({
       </SidebarHeader>
 
       <div className="px-4 pb-2">
-        <SourceSwitcher sources={sources.map((s) => s.id)} />
+        <SourceSwitcher />
       </div>
 
       <SidebarContent>
-        {isLoading
+        {currentSourceId
           ? (
               <SidebarGroup>
-                <div className="px-2 py-2 text-xs text-muted-foreground">Loading...</div>
+                <SourceFileList
+                  sourceId={currentSourceId}
+                  currentFileId={currentFileId}
+                  currentPipelineId={currentPipelineId}
+                  openFiles={openFiles}
+                  toggleFile={toggleFile}
+                />
               </SidebarGroup>
             )
-          : currentSourceId
-            ? (
-                // Single source view — flat file list for the active source
-                <SidebarGroup>
+          : (
+              sources.map((source) => (
+                <SidebarGroup key={source.id}>
+                  <SidebarGroupLabel>{source.label}</SidebarGroupLabel>
                   <SourceFileList
-                    sourceId={currentSourceId}
+                    sourceId={source.id}
                     currentFileId={currentFileId}
                     currentPipelineId={currentPipelineId}
                     openFiles={openFiles}
                     toggleFile={toggleFile}
                   />
                 </SidebarGroup>
-              )
-            : (
-                // All sources view — SidebarGroup per source
-                sources.map((source) => (
-                  <SidebarGroup key={source.id}>
-                    <SidebarGroupLabel>{source.label}</SidebarGroupLabel>
-                    <SourceFileList
-                      sourceId={source.id}
-                      currentFileId={currentFileId}
-                      currentPipelineId={currentPipelineId}
-                      openFiles={openFiles}
-                      toggleFile={toggleFile}
-                    />
-                  </SidebarGroup>
-                ))
-              )}
+              ))
+            )}
       </SidebarContent>
 
       <SidebarFooter>
@@ -184,7 +177,10 @@ function SourceFileList({
   openFiles,
   toggleFile,
 }: SourceFileListProps) {
-  const { data, isLoading } = useQuery(sourceQueryOptions(sourceId));
+  const { data, isLoading } = useQuery(sourceQueryOptions({ sourceId }));
+  const fileDetails = useQueries({
+    queries: (data?.files ?? []).map((file) => sourceFileQueryOptions({ sourceId, fileId: file.id })),
+  });
 
   if (isLoading) {
     return (
@@ -194,7 +190,10 @@ function SourceFileList({
     );
   }
 
-  const files = data?.files ?? [];
+  const files = (data?.files ?? []).map((file) => ({
+    ...file,
+    pipelines: fileDetails.find((detail) => detail.data?.id === file.id)?.data?.pipelines ?? [],
+  }));
 
   return (
     <SidebarMenu>
