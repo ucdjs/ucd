@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { schema } from "#server/db";
-import { createExecutionLogCapture } from "#server/lib/log-capture";
+import { createExecutionLogStore } from "#server/lib/execution-logs";
 import { findPipelineInFile } from "#server/lib/lookup";
 import { fileInfo, sourceInfo } from "#server/lib/resolve-params";
 import { createPipelineExecutor, runWithPipelineExecutionContext } from "@ucdjs/pipelines-executor";
@@ -100,10 +100,11 @@ sourcesPipelineRouter.post(`${BASE}/execute`, async (event) => {
     versions,
   });
 
-  const logCapture = createExecutionLogCapture(db);
-  logCapture.start();
-
   const executor = createPipelineExecutor({
+    capture: {
+      console: true,
+      stdio: true,
+    },
     onEvent: async (evt) => {
       await db.insert(schema.events).values({
         id: randomUUID(),
@@ -114,6 +115,7 @@ sourcesPipelineRouter.post(`${BASE}/execute`, async (event) => {
         data: evt,
       });
     },
+    onLog: createExecutionLogStore(db),
   });
 
   try {
@@ -146,7 +148,5 @@ sourcesPipelineRouter.post(`${BASE}/execute`, async (event) => {
       ));
 
     return { success: false, executionId, error: errorMessage };
-  } finally {
-    await logCapture.stop();
   }
 });
