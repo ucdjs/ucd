@@ -1,9 +1,9 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { HotkeysDevtoolsPanel } from "@tanstack/react-hotkeys-devtools";
-import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { createRootRoute, createRootRouteWithContext, Outlet } from "@tanstack/react-router";
+import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
+import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { SidebarInset, SidebarProvider } from "@ucdjs-internal/shared-ui/ui/sidebar";
 import { configQueryOptions, PipelineSidebar, sourcesQueryOptions } from "@ucdjs/pipelines-ui";

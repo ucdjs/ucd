@@ -1,15 +1,15 @@
-import { createFileRoute, Link, notFound, Outlet, useNavigate } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
+import { createFileRoute, Link, notFound, Outlet, useNavigate } from "@tanstack/react-router";
 import { cn } from "@ucdjs-internal/shared-ui/lib/utils";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import {
-  VersionSelector,
   isNotFoundError,
   pipelineQueryOptions,
   sourceFileQueryOptions,
   useExecute,
   usePipelineVersions,
+  VersionSelector,
 } from "@ucdjs/pipelines-ui";
 import { Play } from "lucide-react";
 
