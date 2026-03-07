@@ -10,6 +10,9 @@ export interface ExecutionLogsParams {
   fileId: string;
   pipelineId: string;
   executionId: string;
+  limit?: number;
+  offset?: number;
+  spanId?: string;
 }
 
 export async function fetchExecutionLogs({
@@ -17,10 +20,19 @@ export async function fetchExecutionLogs({
   fileId,
   pipelineId,
   executionId,
+  limit,
+  offset,
+  spanId,
 }: ExecutionLogsParams): Promise<ExecutionLogsResponse> {
+  const params = new URLSearchParams();
+  if (limit != null) params.set("limit", String(limit));
+  if (offset != null) params.set("offset", String(offset));
+  if (spanId) params.set("spanId", spanId);
+  const qs = params.toString();
+
   return (
     await customFetch<ExecutionLogsResponse>(
-      `/api/sources/${sourceId}/files/${fileId}/pipelines/${pipelineId}/executions/${executionId}/logs`,
+      `/api/sources/${sourceId}/files/${fileId}/pipelines/${pipelineId}/executions/${executionId}/logs${qs ? `?${qs}` : ""}`,
     )
   ).data!;
 }
@@ -30,10 +42,15 @@ export function executionLogsQueryOptions({
   fileId,
   pipelineId,
   executionId,
+  limit,
+  offset,
+  spanId,
 }: ExecutionLogsParams) {
+  const opts = { limit, offset, spanId };
+
   return queryOptions({
-    queryKey: ["sources", sourceId, "files", fileId, "pipelines", pipelineId, "executions", executionId, "logs"],
-    queryFn: () => fetchExecutionLogs({ sourceId, fileId, pipelineId, executionId }),
+    queryKey: ["sources", sourceId, "files", fileId, "pipelines", pipelineId, "executions", executionId, "logs", opts],
+    queryFn: () => fetchExecutionLogs({ sourceId, fileId, pipelineId, executionId, limit, offset, spanId }),
     staleTime: 0,
     refetchOnWindowFocus: true,
     refetchInterval: (query) => refetchWhileExecutionActive(query),

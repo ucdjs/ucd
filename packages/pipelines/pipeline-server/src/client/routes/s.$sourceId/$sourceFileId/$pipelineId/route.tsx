@@ -1,4 +1,4 @@
-import { createFileRoute, Link, notFound, Outlet } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, Outlet, useNavigate } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { cn } from "@ucdjs-internal/shared-ui/lib/utils";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
@@ -6,7 +6,6 @@ import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import {
   VersionSelector,
   isNotFoundError,
-  pipelineCodeQueryOptions,
   pipelineQueryOptions,
   sourceFileQueryOptions,
   useExecute,
@@ -28,14 +27,6 @@ export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId")({
           pipelineId: params.pipelineId,
         })),
       ]);
-
-      void context.queryClient.prefetchQuery(
-        pipelineCodeQueryOptions({
-          sourceId: params.sourceId,
-          fileId: params.sourceFileId,
-          pipelineId: params.pipelineId,
-        }),
-      );
     } catch (error) {
       if (isNotFoundError(error)) {
         throw notFound();
@@ -49,6 +40,7 @@ export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId")({
 
 function RouteComponent() {
   const { sourceId, sourceFileId, pipelineId } = Route.useParams();
+  const navigate = useNavigate();
   const { data: file } = useSuspenseQuery(sourceFileQueryOptions({ sourceId, fileId: sourceFileId }));
   const { data } = useSuspenseQuery(pipelineQueryOptions({ sourceId, fileId: sourceFileId, pipelineId }));
   const pipeline = data.pipeline;
@@ -58,6 +50,21 @@ function RouteComponent() {
     `${sourceId}:${sourceFileId}:${pipelineId}`,
   );
   const { execute, executing, executionId } = useExecute();
+
+  async function handleExecute() {
+    const result = await execute(sourceId, sourceFileId, pipelineId, Array.from(selectedVersions));
+    if (result.success && result.executionId) {
+      navigate({
+        to: "/s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId",
+        params: {
+          sourceId,
+          sourceFileId,
+          pipelineId,
+          executionId: result.executionId,
+        },
+      });
+    }
+  }
 
   return (
     <div className="h-full flex flex-col bg-background">
@@ -93,16 +100,24 @@ function RouteComponent() {
             </div>
 
             <div className="flex items-center gap-2">
-              {executionId && (
-                <div className="text-xs text-muted-foreground">
-                  Last execution:
-                  {" "}
-                  <code>{executionId.slice(0, 8)}</code>
-                </div>
+              {executionId && !executing && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  render={(props) => (
+                    <Link
+                      to="/s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId"
+                      params={{ sourceId, sourceFileId, pipelineId, executionId }}
+                      {...props}
+                    >
+                      View Execution
+                    </Link>
+                  )}
+                />
               )}
               <Button
                 disabled={executing || selectedVersions.size === 0}
-                onClick={() => execute(sourceId, sourceFileId, pipelineId, Array.from(selectedVersions))}
+                onClick={handleExecute}
               >
                 <Play className="h-4 w-4 mr-2" />
                 {executing ? "Running..." : "Execute"}
@@ -142,6 +157,24 @@ function RouteComponent() {
             inactiveProps={{ className: cn("px-3 py-2 rounded-t-md text-xs font-medium transition-colors border-b-2 -mb-px", "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50") }}
           >
             Inspect
+          </Link>
+          <Link
+            to="/s/$sourceId/$sourceFileId/$pipelineId/executions"
+            params={{ sourceId, sourceFileId, pipelineId }}
+            className="px-3 py-2 rounded-t-md text-xs font-medium transition-colors border-b-2 -mb-px"
+            activeProps={{ className: cn("px-3 py-2 rounded-t-md text-xs font-medium transition-colors border-b-2 -mb-px", "border-primary text-primary bg-primary/5") }}
+            inactiveProps={{ className: cn("px-3 py-2 rounded-t-md text-xs font-medium transition-colors border-b-2 -mb-px", "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50") }}
+          >
+            Executions
+          </Link>
+          <Link
+            to="/s/$sourceId/$sourceFileId/$pipelineId/graphs"
+            params={{ sourceId, sourceFileId, pipelineId }}
+            className="px-3 py-2 rounded-t-md text-xs font-medium transition-colors border-b-2 -mb-px"
+            activeProps={{ className: cn("px-3 py-2 rounded-t-md text-xs font-medium transition-colors border-b-2 -mb-px", "border-primary text-primary bg-primary/5") }}
+            inactiveProps={{ className: cn("px-3 py-2 rounded-t-md text-xs font-medium transition-colors border-b-2 -mb-px", "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/50") }}
+          >
+            Graphs
           </Link>
         </nav>
       </div>
