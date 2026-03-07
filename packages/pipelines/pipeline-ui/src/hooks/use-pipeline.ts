@@ -1,5 +1,9 @@
 import type { PipelineDetails, PipelineResponse } from "../types";
-import { useCallback, useEffect, useState } from "react";
+import { pipelineQueryOptions } from "../functions/pipeline";
+import { sourceFileQueryOptions } from "../functions/file";
+import { sourcesQueryOptions } from "../functions/sources";
+import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useMemo } from "react";
 
 export interface UsePipelineOptions {
   /** Base URL for the API (default: "") */
@@ -24,44 +28,59 @@ export function usePipeline(
   options: UsePipelineOptions = {},
 ): UsePipelineReturn {
   const { baseUrl = "", fetchOnMount = true } = options;
+  void baseUrl;
 
-  const [pipeline, setPipeline] = useState<PipelineDetails | null>(null);
-  const [loading, setLoading] = useState(fetchOnMount);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+  const sources = useQuery({
+    ...sourcesQueryOptions(),
+    enabled: fetchOnMount,
+  });
+  const sourceDetails = useQueries({
+    queries: (sources.data ?? []).map((source) => ({
+      ...sourceFileQueryOptions({ sourceId: source.id, fileId }),
+      enabled: fetchOnMount,
+    })),
+  });
 
-  const fetchPipeline = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch(`${baseUrl}/api/pipelines/${fileId}/${pipelineId}`);
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}`);
+  const sourceId = useMemo(() => {
+    for (const detail of sourceDetails) {
+      const file = detail.data;
+      if (!file) {
+        continue;
       }
-      const json: PipelineResponse = await res.json();
-      if (json.error) {
-        setError(json.error);
-        setPipeline(null);
-      } else {
-        setPipeline(json.pipeline ?? null);
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load pipeline");
-      setPipeline(null);
-    } finally {
-      setLoading(false);
-    }
-  }, [baseUrl, fileId, pipelineId]);
 
-  useEffect(() => {
-    if (fetchOnMount) {
-      fetchPipeline();
+      if (file.pipelines.some((pipeline) => pipeline.id === pipelineId)) {
+        return file.sourceId;
+      }
     }
-  }, [fetchOnMount, fetchPipeline]);
+
+    return null;
+  }, [fileId, pipelineId, sourceDetails]);
+
+  const pipelineQuery = useQuery({
+    ...pipelineQueryOptions({ sourceId: sourceId ?? "", fileId, pipelineId }),
+    enabled: fetchOnMount && Boolean(sourceId),
+  });
+
+  const pipeline = pipelineQuery.data?.pipeline ?? null;
+  const loading = sources.isLoading || sourceDetails.some((detail) => detail.isLoading) || pipelineQuery.isLoading;
+  const error = sources.error?.message
+    ?? sourceDetails.find((detail) => detail.error)?.error?.message
+    ?? pipelineQuery.error?.message
+    ?? (fetchOnMount && !loading && !pipeline ? "Pipeline not found" : null);
+
+  const refetch = useCallback(() => {
+    void sources.refetch();
+    if (sourceId) {
+      void pipelineQuery.refetch();
+      void queryClient.invalidateQueries({ queryKey: ["sources", sourceId] });
+    }
+  }, [pipelineQuery, queryClient, sourceId, sources]);
 
   return {
     pipeline,
     loading,
     error,
-    refetch: fetchPipeline,
+    refetch,
   };
 }
