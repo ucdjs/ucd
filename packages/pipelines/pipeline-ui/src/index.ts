@@ -1,12 +1,4 @@
 export {
-  ExecutionErrors,
-  type ExecutionErrorsProps,
-  ExecutionResult,
-  type ExecutionResultProps,
-  ExecutionSummary,
-  type ExecutionSummaryProps,
-} from "./components/detail/execution-result";
-export {
   VersionSelector,
   type VersionSelectorProps,
 } from "./components/detail/version-selector";
@@ -31,7 +23,6 @@ export {
   PipelineGraph,
   type PipelineGraphProps,
 } from "./components/graph/pipeline-graph";
-export { RouteList } from "./components/inspect/route-list";
 export {
   ExecutionLogPayloadPanel,
   type ExecutionLogPayloadPanelProps,
@@ -49,7 +40,6 @@ export {
   type ExecutionWaterfallProps,
 } from "./components/logs/execution-waterfall";
 export { PipelineSidebar } from "./components/pipeline-sidebar";
-export { SourceSwitcher as SourcePicker } from "./components/source-switcher";
 export { StatusBadge } from "./components/status-badge";
 export { StatusIcon } from "./components/status-icon";
 export * from "./functions";
@@ -129,11 +119,7 @@ export type {
   ExecutionLogPayload,
   ExecutionLogsResponse,
   ExecutionLogStream,
-  LoadError,
   PipelineDetails,
-  PipelineFileInfo,
   PipelineInfo,
-  PipelineResponse,
-  PipelinesResponse,
 } from "./types";
 export type { ExecutionStatus } from "@ucdjs/pipelines-executor";
