@@ -6,7 +6,6 @@ export * from "./execution-logs";
 export * from "./executions";
 export * from "./file";
 export * from "./pipeline";
-export * from "./pipeline-code";
 export * from "./shared";
 export * from "./source";
 export * from "./sources";
