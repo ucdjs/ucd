@@ -40,7 +40,7 @@ export async function getPipelines(source: PipelineSource): Promise<LoadPipeline
       owner,
       repo,
       ref,
-      path: (source as any).path,
+      path: source.path,
     },
   });
 
