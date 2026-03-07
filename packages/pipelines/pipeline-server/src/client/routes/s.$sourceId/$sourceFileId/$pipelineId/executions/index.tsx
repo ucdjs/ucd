@@ -12,7 +12,37 @@ import {
 } from "@ucdjs-internal/shared-ui/ui/table";
 import { executionsQueryOptions, StatusIcon } from "@ucdjs/pipelines-ui";
 import { Play } from "lucide-react";
-import { formatDuration, formatTimeAgo } from "#lib/pipeline-executions";
+
+function formatExecutionDuration(startedAt: string, completedAt: string | null): string {
+  const start = new Date(startedAt).getTime();
+  const end = completedAt ? new Date(completedAt).getTime() : Date.now();
+  const durationMs = end - start;
+
+  if (durationMs < 1000) {
+    return `${durationMs}ms`;
+  }
+
+  if (durationMs < 60_000) {
+    return `${(durationMs / 1000).toFixed(1)}s`;
+  }
+
+  return `${Math.floor(durationMs / 60_000)}m ${Math.floor((durationMs % 60_000) / 1000)}s`;
+}
+
+function formatStartedAt(timestamp: string): string {
+  const date = new Date(timestamp);
+  const diffMs = Date.now() - date.getTime();
+  const diffSecs = Math.floor(diffMs / 1000);
+  const diffMins = Math.floor(diffSecs / 60);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffSecs < 60) return "just now";
+  if (diffMins < 60) return `${diffMins}m ago`;
+  if (diffHours < 24) return `${diffHours}h ago`;
+  if (diffDays < 7) return `${diffDays}d ago`;
+  return date.toLocaleDateString();
+}
 
 export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/executions/")({
   loader: async ({ context, params }) => {
@@ -91,10 +121,10 @@ function ExecutionsListPage() {
                           </code>
                         </TableCell>
                         <TableCell className="text-muted-foreground">
-                          {formatTimeAgo(execution.startedAt)}
+                          {formatStartedAt(execution.startedAt)}
                         </TableCell>
                         <TableCell>
-                          {formatDuration(execution.startedAt, execution.completedAt)}
+                          {formatExecutionDuration(execution.startedAt, execution.completedAt)}
                         </TableCell>
                         <TableCell>
                           {execution.versions
