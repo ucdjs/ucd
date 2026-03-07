@@ -1,8 +1,8 @@
+import type { H3Event } from "h3";
 import { randomUUID } from "node:crypto";
 import { schema } from "#server/db";
 import { createExecutionLogStore } from "#server/lib/execution-logs";
-import { findPipelineInFile } from "#server/lib/lookup";
-import { fileInfo, sourceInfo } from "#server/lib/resolve-params";
+import { resolveSourceFiles } from "#server/lib/resolve";
 import { createPipelineExecutor, runWithPipelineExecutionContext } from "@ucdjs/pipelines-executor";
 import { toPipelineDetails } from "@ucdjs/pipelines-ui";
 import { and, eq } from "drizzle-orm";
@@ -13,72 +13,57 @@ export const sourcesPipelineRouter: H3 = new H3();
 
 const BASE = "/:sourceId/files/:fileId/pipelines/:pipelineId";
 
-sourcesPipelineRouter.use(`${BASE}/**`, async (event, next) => {
-  const { resolvedFile } = event.context;
+async function resolvePipelineRoute(event: H3Event) {
+  const { sources } = event.context;
+  const sourceId = event.context.params?.sourceId;
+  const fileId = event.context.params?.fileId;
   const pipelineId = event.context.params?.pipelineId;
 
-  if (resolvedFile == null) {
-    throw HTTPError.status(404, "File not found");
+  if (!sourceId) {
+    throw HTTPError.status(400, "Source ID is required");
+  }
+
+  if (!fileId) {
+    throw HTTPError.status(400, "File ID is required");
   }
 
   if (!pipelineId) {
     throw HTTPError.status(400, "Pipeline ID is required");
   }
 
-  const entry = findPipelineInFile(resolvedFile.file.pipelines, pipelineId);
-  if (!entry) {
-    throw HTTPError.status(404, `Pipeline "${pipelineId}" not found in file "${resolvedFile.fileId}"`);
+  const source = sources.find((source) => source.id === sourceId) ?? null;
+  if (source == null) {
+    throw HTTPError.status(404, `Source "${sourceId}" not found`);
   }
 
-  event.context.resolvedPipeline = {
-    pipeline: entry.pipeline,
-    pipelineId,
-    exportName: entry.exportName,
-  };
+  const { files } = await resolveSourceFiles(source);
+  const file = files.find((file) => file.id === fileId) ?? null;
+  if (file == null) {
+    throw HTTPError.status(404, `File "${fileId}" not found in source "${source.id}"`);
+  }
 
-  return next();
-});
+  const pipeline = file.pipelines.find((pipeline) => pipeline.id === pipelineId) ?? null;
+  if (pipeline == null) {
+    throw HTTPError.status(404, `Pipeline "${pipelineId}" not found in file "${file.id}"`);
+  }
+
+  return { file, pipeline, pipelineId, source };
+}
 
 sourcesPipelineRouter.get(BASE, async (event) => {
-  const { resolvedSource, resolvedFile, resolvedPipeline } = event.context;
-
-  if (resolvedSource == null) {
-    throw HTTPError.status(404, "Source not found");
-  }
-
-  if (resolvedFile == null) {
-    throw HTTPError.status(404, "File not found");
-  }
-
-  if (resolvedPipeline == null) {
-    throw HTTPError.status(404, "Pipeline not found");
-  }
+  const { pipeline } = await resolvePipelineRoute(event);
 
   return {
-    pipeline: toPipelineDetails(resolvedPipeline.pipeline),
-    file: fileInfo(resolvedFile.file),
-    source: sourceInfo(resolvedSource),
+    pipeline: toPipelineDetails(pipeline),
   };
 });
 
 sourcesPipelineRouter.post(`${BASE}/execute`, async (event) => {
-  const { resolvedSource, resolvedPipeline } = event.context;
   const { db } = event.context;
   const workspaceId = event.context.workspaceId;
+  const { pipeline, pipelineId, source } = await resolvePipelineRoute(event);
 
-  if (resolvedSource == null) {
-    throw HTTPError.status(404, "Source not found");
-  }
-
-  if (resolvedPipeline == null) {
-    throw HTTPError.status(404, "Pipeline not found");
-  }
-
-  const source = resolvedSource;
-  const pipelineId = resolvedPipeline.pipelineId;
-  const pipeline = resolvedPipeline.pipeline;
-
-  if (source.type !== "local") {
+  if (source.kind !== "local") {
     throw HTTPError.status(400, "Pipeline execution is only allowed for local sources");
   }
 

@@ -3,8 +3,6 @@ import { queryOptions } from "@tanstack/react-query";
 
 export interface PipelineResponse {
   pipeline: PipelineDetails;
-  file: { id: string; path: string; label: string };
-  source: { id: string; type: string; label: string };
 }
 
 export async function fetchPipeline(

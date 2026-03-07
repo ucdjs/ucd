@@ -1,4 +1,5 @@
 import type { H3 } from "h3";
+import { H3 as H3App } from "h3";
 import { fileURLToPath } from "node:url";
 import { createApp } from "../src/server/app";
 import { createDatabase, runMigrations } from "../src/server/db";
@@ -13,9 +14,9 @@ export async function createTestApp() {
 
   const app = createApp({
     sources: [{
-      type: "local",
+      kind: "local",
       id: "local",
-      cwd: playgroundPath,
+      path: playgroundPath,
     }],
     db,
     workspaceId: "test",
@@ -24,8 +25,32 @@ export async function createTestApp() {
   return { app, storePath: playgroundPath };
 }
 
+export async function createTestRoutesApp(...routers: H3[]) {
+  const db = createDatabase({ url: "file::memory:" });
+  await runMigrations(db);
+  await ensureWorkspace(db, "test", playgroundPath);
+
+  const app = new H3App({ debug: true });
+  app.use("/**", (event, next) => {
+    event.context.sources = [{
+      kind: "local",
+      id: "local",
+      path: playgroundPath,
+    }];
+    event.context.db = db;
+    event.context.workspaceId = "test";
+    next();
+  });
+
+  for (const router of routers) {
+    app.mount("/api/sources", router);
+  }
+
+  return { app, storePath: playgroundPath };
+}
+
 export async function createTestExecution(app: H3) {
-  const execRes = await app.fetch(new Request("http://localhost/api/pipelines/simple/simple/execute", {
+  const execRes = await app.fetch(new Request("http://localhost/api/sources/local/files/simple/pipelines/simple/execute", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ versions: ["16.0.0"] }),
