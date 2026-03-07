@@ -41,6 +41,39 @@ resolver: async (ctx, rows) => {
 In this stage, the logger is additive and safe to use, but it is intentionally inert until
 later stages wire it to executor-owned log emission and host persistence.
 
+## Log Emission
+
+The executor can emit logs to a host-provided callback:
+
+```ts
+const executor = createPipelineExecutor({
+  onLog: (entry) => {
+    // persist, stream, or inspect logs here
+  },
+})
+```
+
+When an execution context is active, the executor can emit:
+
+- explicit `ctx.logger.*` calls from pipeline code
+- captured `console.log/info/warn/error` output
+- optional captured `process.stdout.write` / `process.stderr.write`
+
+Capture is compatibility-oriented and configured per executor:
+
+```ts
+const executor = createPipelineExecutor({
+  onLog,
+  capture: {
+    console: true,
+    stdio: true,
+  },
+})
+```
+
+Logs are emitted incrementally and are not returned from `run()`. Persistence remains the
+responsibility of the host application.
+
 ## Installation
 
 ```bash
