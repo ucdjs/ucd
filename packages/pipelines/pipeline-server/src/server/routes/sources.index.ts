@@ -1,5 +1,5 @@
 import type { PipelineLoaderIssue } from "@ucdjs/pipelines-loader";
-import { resolveSourceFiles } from "#server/lib/resolve";
+import { resolveSourceFiles, sourceLabel } from "#server/lib/resolve";
 import { H3 } from "h3";
 
 export const sourcesIndexRouter: H3 = new H3();
@@ -15,7 +15,11 @@ sourcesIndexRouter.get("/", async (event) => {
 
   return results.map((result, i) => {
     const source = sources[i]!;
-    const base = { id: source.id, type: source.kind === "remote" ? source.provider : "local" };
+    const base = {
+      id: source.id,
+      type: source.kind === "remote" ? source.provider : "local",
+      label: sourceLabel(source),
+    };
 
     if (result.status === "rejected") {
       const message = result.reason instanceof Error ? result.reason.message : String(result.reason);

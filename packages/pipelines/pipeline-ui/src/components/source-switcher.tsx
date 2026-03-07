@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import {
   DropdownMenu,
@@ -27,7 +27,7 @@ function getTypeBadge(type: "local" | "github" | "gitlab") {
 }
 
 export function SourceSwitcher() {
-  const { data } = useQuery(sourcesQueryOptions());
+  const { data } = useSuspenseQuery(sourcesQueryOptions());
   const navigate = useNavigate();
   const params = useParams({ strict: false });
 
@@ -38,7 +38,7 @@ export function SourceSwitcher() {
     return null;
   }, [params]);
 
-  const sources = data?.sources ?? [];
+  const sources = data ?? [];
 
   const currentSource = sources.find((s) => s.id === currentSourceId) ?? null;
 
