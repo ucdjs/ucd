@@ -1,17 +1,20 @@
 import type { Database } from "#server/db";
+import type { LoadedFile } from "#server/lib/lookup";
+import type { PipelineDefinition } from "@ucdjs/pipelines-core";
 import type { PipelineSource } from "@ucdjs/pipelines-loader";
 import fs from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 import { createDatabase, runMigrations } from "#server/db";
 import {
-  pipelinesEventsRouter,
-  pipelinesExecutionRouter,
-  pipelinesFileRouter,
-  pipelinesGraphRouter,
-  pipelinesIndexRouter,
-  pipelinesLogsRouter,
-  pipelinesPipelineRouter,
+  sourcesEventsRouter,
+  sourcesExecutionsRouter,
+  sourcesFileRouter,
+  sourcesGraphRouter,
+  sourcesIndexRouter,
+  sourcesLogsRouter,
+  sourcesPipelineRouter,
+  sourcesSourceRouter,
 } from "#server/routes";
 import { ensureWorkspace, resolveWorkspace } from "#server/workspace";
 import { getUcdConfigDir } from "@ucdjs-internal/shared/config";
@@ -28,11 +31,39 @@ export interface ServerOptions extends AppOptions {
   workspaceRoot?: string;
 }
 
+type ResolvedPipelineSource = PipelineSource & {
+  files: LoadedFile[];
+  errors: Array<{
+    message: string;
+    filePath?: string;
+  }>;
+};
+
+interface ResolvedPipelineFile {
+  file: LoadedFile;
+  fileId: string;
+}
+
+interface ResolvedPipelineEntry {
+  pipeline: PipelineDefinition;
+  pipelineId: string;
+  exportName: string;
+}
+
 declare module "h3" {
   interface H3EventContext {
     sources: PipelineSource[];
     db: Database;
     workspaceId: string;
+
+    // This is only available on routes, that uses the ':sourceId'.
+    resolvedSource?: ResolvedPipelineSource;
+
+    // This is only available on routes, that uses the ':fileId'.
+    resolvedFile?: ResolvedPipelineFile;
+
+    // This is only available on routes, that uses the ':pipelineId'.
+    resolvedPipeline?: ResolvedPipelineEntry;
   }
 }
 
@@ -54,6 +85,12 @@ export function createApp(options: AppOptions = {}): H3 {
         type: "local",
         id: "local",
         cwd: path.join(import.meta.dirname, "../../../pipeline-playground"),
+      }, {
+        type: "github",
+        id: "github-remote",
+        owner: "ucdjs",
+        repo: "ucd-pipelines",
+        ref: "main",
       }];
     } else {
       resolvedSources = [{
@@ -76,13 +113,14 @@ export function createApp(options: AppOptions = {}): H3 {
     timestamp: Date.now(),
   }));
 
-  app.mount("/api/pipelines", pipelinesIndexRouter);
-  app.mount("/api/pipelines", pipelinesFileRouter);
-  app.mount("/api/pipelines", pipelinesPipelineRouter);
-  app.mount("/api/pipelines", pipelinesExecutionRouter);
-  app.mount("/api/pipelines", pipelinesEventsRouter);
-  app.mount("/api/pipelines", pipelinesLogsRouter);
-  app.mount("/api/pipelines", pipelinesGraphRouter);
+  app.mount("/api/sources", sourcesIndexRouter);
+  app.mount("/api/sources", sourcesSourceRouter);
+  app.mount("/api/sources", sourcesFileRouter);
+  app.mount("/api/sources", sourcesPipelineRouter);
+  app.mount("/api/sources", sourcesExecutionsRouter);
+  app.mount("/api/sources", sourcesEventsRouter);
+  app.mount("/api/sources", sourcesLogsRouter);
+  app.mount("/api/sources", sourcesGraphRouter);
 
   return app;
 }
