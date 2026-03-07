@@ -61,11 +61,7 @@ sourcesPipelineRouter.get(BASE, async (event) => {
 sourcesPipelineRouter.post(`${BASE}/execute`, async (event) => {
   const { db } = event.context;
   const workspaceId = event.context.workspaceId;
-  const { pipeline, pipelineId, source } = await resolvePipelineRoute(event);
-
-  if (source.kind !== "local") {
-    throw HTTPError.status(400, "Pipeline execution is only allowed for local sources");
-  }
+  const { pipeline, pipelineId } = await resolvePipelineRoute(event);
 
   const body = await readValidatedBody(event, z.object({
     versions: z.array(z.string()).optional(),
