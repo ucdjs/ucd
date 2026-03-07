@@ -4,12 +4,20 @@ import type {
   RouteResolveContext,
 } from "../src/route";
 import type { FileContext, ParsedRow, PropertyJson } from "../src/types";
+import type { PipelineLogger } from "../src/logger";
 import { describe, expect, expectTypeOf, it, vi } from "vitest";
 import { z } from "zod";
 import {
   definePipelineRoute,
 } from "../src/route";
 import { definePipelineTransform } from "../src/transform";
+
+const noopLogger: PipelineLogger = {
+  debug: () => {},
+  info: () => {},
+  warn: () => {},
+  error: () => {},
+};
 
 function createFileContext(): FileContext {
   return {
@@ -30,6 +38,7 @@ function createMockResolveContext(): RouteResolveContext {
   return {
     version: "16.0.0",
     file: createFileContext(),
+    logger: noopLogger,
     getArtifact: vi.fn(),
     emitArtifact: vi.fn(),
     normalizeEntries: vi.fn((entries) => entries),

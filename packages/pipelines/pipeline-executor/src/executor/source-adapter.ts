@@ -6,6 +6,7 @@ import type {
   SourceFileContext,
 } from "@ucdjs/pipelines-core";
 import { resolveMultipleSourceFiles } from "@ucdjs/pipelines-core";
+import { createPipelineLogger } from "../logger";
 
 export interface SourceAdapter {
   listFiles: (version: string) => Promise<FileContext[]>;
@@ -45,9 +46,11 @@ export function createSourceAdapter(pipeline: PipelineDefinition): SourceAdapter
 
 export function createParseContext(file: FileContext, source: SourceAdapter): ParseContext {
   let cachedContent: string | null = null;
+  const logger = createPipelineLogger();
 
   return {
     file,
+    logger,
     readContent: async () => {
       if (cachedContent === null) {
         cachedContent = await source.readFile(file);

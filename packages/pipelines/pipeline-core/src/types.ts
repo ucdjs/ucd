@@ -1,3 +1,5 @@
+import type { PipelineLogger } from "./logger";
+
 export interface FileContext {
   /**
    * The Unicode version being processed (e.g., "16.0.0").
@@ -52,6 +54,11 @@ export interface FilterContext {
      */
     id: string;
   };
+
+  /**
+   * Execution-aware logger for pipeline code.
+   */
+  logger: PipelineLogger;
 }
 
 export type PipelineFilter = (ctx: FilterContext) => boolean;
@@ -108,6 +115,11 @@ export interface ParseContext {
    * The file being parsed.
    */
   file: FileContext;
+
+  /**
+   * Execution-aware logger for pipeline code.
+   */
+  logger: PipelineLogger;
 
   /**
    * Read the raw content of the file.
@@ -203,6 +215,11 @@ export interface ResolveContext<TArtifacts extends Record<string, unknown> = Rec
    * The file being resolved.
    */
   file: FileContext;
+
+  /**
+   * Execution-aware logger for pipeline code.
+   */
+  logger: PipelineLogger;
 
   /**
    * Get an artifact by ID.

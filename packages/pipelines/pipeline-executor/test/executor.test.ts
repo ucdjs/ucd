@@ -207,6 +207,39 @@ describe("running single pipeline via run()", () => {
     expect(stats?.entries).toBeGreaterThanOrEqual(0);
   });
 
+  it("should provide logger on execution contexts", async () => {
+    const route = definePipelineRoute({
+      id: "logger-route",
+      filter: (ctx) => {
+        expect(ctx.logger).toBeDefined();
+        expect(typeof ctx.logger.info).toBe("function");
+        return true;
+      },
+      async* parser(ctx) {
+        expect(ctx.logger).toBeDefined();
+        yield { sourceFile: ctx.file.path, kind: "point", codePoint: "0041", value: "AL" };
+      },
+      resolver: async (ctx, rows) => {
+        expect(ctx.logger).toBeDefined();
+        for await (const _row of rows) {
+          // no-op
+        }
+        return [];
+      },
+    });
+
+    const pipelineWithLogger = definePipeline({
+      id: "logger-test",
+      name: "Logger Test",
+      versions: ["16.0.0"],
+      inputs: [createTestSource([createMockFile("LineBreak.txt")], { "ucd/LineBreak.txt": "0041;AL" })],
+      routes: [route],
+    });
+
+    const result = await executor.run([pipelineWithLogger]);
+    expect(result[0]?.status).toBe("completed");
+  });
+
   it("should return empty results for unknown pipeline", async () => {
     const multi = await executor.run([]);
     expect(multi.length).toBe(0);

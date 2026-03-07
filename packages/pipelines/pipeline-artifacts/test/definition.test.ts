@@ -1,4 +1,4 @@
-import type { ParseContext, ParsedRow, PipelineFilter } from "@ucdjs/pipelines-core";
+import type { ParseContext, ParsedRow, PipelineFilter, PipelineLogger } from "@ucdjs/pipelines-core";
 import type {
   ArtifactBuildContext,
   InferArtifactId,
@@ -11,6 +11,13 @@ import {
   definePipelineArtifact,
   isPipelineArtifactDefinition,
 } from "../src/definition";
+
+const noopLogger: PipelineLogger = {
+  debug: () => {},
+  info: () => {},
+  warn: () => {},
+  error: () => {},
+};
 
 describe("definePipelineArtifact", () => {
   it("should define a minimal artifact", () => {
@@ -104,7 +111,7 @@ describe("definePipelineArtifact", () => {
       build,
     });
 
-    const context: ArtifactBuildContext = { version: "16.0.0" };
+    const context: ArtifactBuildContext = { version: "16.0.0", logger: noopLogger };
     const result = await artifact.build(context);
 
     expect(result).toEqual({
@@ -138,7 +145,7 @@ describe("definePipelineArtifact", () => {
       build,
     });
 
-    const context: ArtifactBuildContext = { version: "16.0.0" };
+    const context: ArtifactBuildContext = { version: "16.0.0", logger: noopLogger };
     const rows = mockParser();
     const result = await artifact.build(context, rows);
 
@@ -351,7 +358,7 @@ describe("build context", () => {
       build,
     });
 
-    const context: ArtifactBuildContext = { version: "16.0.0" };
+    const context: ArtifactBuildContext = { version: "16.0.0", logger: noopLogger };
     const result = await artifact.build(context);
 
     expect(build).toHaveBeenCalledWith(context);
@@ -386,7 +393,7 @@ describe("build context", () => {
       build,
     });
 
-    const context: ArtifactBuildContext = { version: "16.0.0" };
+    const context: ArtifactBuildContext = { version: "16.0.0", logger: noopLogger };
     const rows = mockParser();
     const result = await artifact.build(context, rows);
 
