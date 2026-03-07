@@ -48,7 +48,7 @@ export async function runPipelinesCacheClear({ flags }: CLIPipelinesCacheClearOp
     let cleared = 0;
     for (const entry of cached) {
       const ok = await clearRemoteSourceCache({
-        source: entry.source as "github" | "gitlab",
+        provider: entry.source as "github" | "gitlab",
         owner: entry.owner,
         repo: entry.repo,
         ref: entry.ref,
@@ -78,7 +78,7 @@ export async function runPipelinesCacheClear({ flags }: CLIPipelinesCacheClearOp
   }
 
   const cleared = await clearRemoteSourceCache({
-    source: sourceType,
+    provider: sourceType,
     owner: parsed.owner,
     repo: parsed.repo,
     ref: parsed.ref,

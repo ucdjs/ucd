@@ -3,11 +3,12 @@ import type { CLIArguments } from "../../cli-utils";
 import path from "node:path";
 import process from "node:process";
 import {
-  findPipelineFiles,
   loadPipelinesFromPaths,
-  parseRemoteSourceUrl,
+  materializePipelineLocator,
 } from "@ucdjs/pipelines-loader";
+import { discoverPipelineFiles } from "@ucdjs/pipelines-loader/discover";
 import { printHelp } from "../../cli-utils";
+import { CLIError } from "../../errors";
 import {
   blankLine,
   bold,
@@ -41,7 +42,7 @@ export async function runListPipelines({ flags }: CLIPipelinesListCmdOptions) {
           ["--github <owner/repo>", "Load pipelines from a GitHub repository."],
           ["--gitlab <owner/repo>", "Load pipelines from a GitLab repository."],
           ["--ref <ref>", "Git reference (branch/tag) for remote repositories."],
-          ["--path <path>", "Subdirectory path within the repository."],
+          ["--path <path>", "Subdirectory path within the repository or local directory."],
           ["--help (-h)", "See all available flags."],
         ],
       },
@@ -49,117 +50,127 @@ export async function runListPipelines({ flags }: CLIPipelinesListCmdOptions) {
     return;
   }
 
-  // Build the source for findPipelineFiles
-  let source: {
-    type: "local";
-    cwd: string;
+  let sourceLabel: string;
+  let sourceType: "local" | "github" | "gitlab";
+  let locator: {
+    kind: "local";
+    path: string;
   } | {
-    type: "github";
-    owner: string;
-    repo: string;
-    ref?: string;
-    path?: string;
-  } | {
-    type: "gitlab";
+    kind: "remote";
+    provider: "github" | "gitlab";
     owner: string;
     repo: string;
     ref?: string;
     path?: string;
   };
-  let label: string;
 
-  if (flags?.github) {
-    const ref = flags.ref ?? "HEAD";
-    const urlStr = `github://${flags.github}?ref=${ref}${flags.path ? `&path=${flags.path}` : ""}`;
-    const parsed = parseRemoteSourceUrl(urlStr);
-    if (!parsed) throw new Error(`Invalid github source: ${flags.github}`);
-    source = { type: "github", owner: parsed.owner, repo: parsed.repo, ref: parsed.ref, path: flags.path };
-    label = `${parsed.owner}/${parsed.repo}${ref !== "HEAD" ? `@${ref}` : ""}`;
-  } else if (flags?.gitlab) {
-    const ref = flags.ref ?? "HEAD";
-    const urlStr = `gitlab://${flags.gitlab}?ref=${ref}${flags.path ? `&path=${flags.path}` : ""}`;
-    const parsed = parseRemoteSourceUrl(urlStr);
-    if (!parsed) throw new Error(`Invalid gitlab source: ${flags.gitlab}`);
-    source = { type: "gitlab", owner: parsed.owner, repo: parsed.repo, ref: parsed.ref, path: flags.path };
-    label = `${parsed.owner}/${parsed.repo}${ref !== "HEAD" ? `@${ref}` : ""}`;
-  } else {
-    const cwd = flags.cwd || process.cwd();
-    source = { type: "local", cwd };
-    label = cwd;
-  }
+  if (flags?.github || flags?.gitlab) {
+    const provider = flags.github ? "github" : "gitlab";
+    const remote = String(flags.github ?? flags.gitlab);
+    const [owner, repo] = remote.split("/");
 
-  // Find files using the unified API (handles downloading automatically)
-  const pattern = flags.path
-    ? `${flags.path}/**/*.ucd-pipeline.ts`
-    : "**/*.ucd-pipeline.ts";
-
-  const { files, errors: discoveryErrors } = await findPipelineFiles({ source, patterns: pattern });
-  const result = await loadPipelinesFromPaths(files);
-
-  const allPipelines = result.files.map((file) => ({
-    filePath: file.filePath,
-    exportNames: file.exportNames,
-    pipelines: file.pipelines.map((p) => ({
-      name: p.name ?? p.id,
-      id: p.id,
-      description: p.description,
-      routes: p.routes.length,
-      sources: p.inputs.length,
-    })),
-  }));
-
-  const totalPipelines = allPipelines.reduce((sum, f) => sum + f.pipelines.length, 0);
-
-  header("Pipelines");
-  keyValue("Files", String(allPipelines.length));
-  keyValue("Pipelines", String(totalPipelines));
-  blankLine();
-
-  // Show source label
-  output.info(`${cyan(source.type)} ${dim("·")} ${label}`);
-  blankLine();
-
-  // List pipelines
-  for (const f of allPipelines) {
-    if (source.type === "local") {
-      const rel = path.relative(source.cwd, f.filePath);
-      output.info(`${dim("•")} ${cyan(rel)}`);
-    } else {
-      output.info(`${dim("•")} ${cyan(f.filePath)}`);
+    if (!owner || !repo) {
+      throw new CLIError(`Specify --${provider} as <owner/repo>.`);
     }
 
-    if (f.exportNames.length === 0) {
+    const ref = String(flags.ref ?? "HEAD");
+    locator = {
+      kind: "remote",
+      provider,
+      owner,
+      repo,
+      ref,
+      path: flags.path,
+    };
+    sourceType = provider;
+    sourceLabel = `${owner}/${repo}${ref !== "HEAD" ? `@${ref}` : ""}`;
+  } else {
+    const cwd = String(flags.cwd ?? process.cwd());
+    const localPath = flags.path ? path.join(cwd, flags.path) : cwd;
+    locator = {
+      kind: "local",
+      path: localPath,
+    };
+    sourceType = "local";
+    sourceLabel = localPath;
+  }
+
+  const materialized = await materializePipelineLocator(locator);
+
+  if (materialized.issues.length > 0) {
+    header("Errors");
+    for (const issue of materialized.issues) {
+      output.error(`  ${yellow("•")} ${issue.message}`);
+    }
+    blankLine();
+    return;
+  }
+
+  const discovery = materialized.filePath
+    ? {
+        files: [{
+          filePath: materialized.filePath,
+          relativePath: materialized.relativePath ?? path.basename(materialized.filePath),
+        }],
+        issues: [],
+      }
+    : await discoverPipelineFiles({
+        repositoryPath: materialized.repositoryPath!,
+        ...(materialized.origin ? { origin: materialized.origin } : {}),
+      });
+
+  const result = await loadPipelinesFromPaths(discovery.files.map((file) => file.filePath));
+  const discoveredFiles = new Map(discovery.files.map((file) => [file.filePath, file]));
+
+  const loadedFiles = result.files.map((file) => {
+    const discovered = discoveredFiles.get(file.filePath);
+    return {
+      relativePath: discovered?.relativePath ?? file.filePath,
+      exportNames: file.exportNames,
+      pipelines: file.pipelines.map((pipeline) => ({
+        name: pipeline.name ?? pipeline.id,
+        id: pipeline.id,
+        description: pipeline.description,
+        routes: pipeline.routes.length,
+        sources: pipeline.inputs.length,
+      })),
+    };
+  });
+
+  header("Pipelines");
+  keyValue("Files", String(loadedFiles.length));
+  keyValue("Pipelines", String(loadedFiles.reduce((sum, file) => sum + file.pipelines.length, 0)));
+  blankLine();
+
+  output.info(`${cyan(sourceType)} ${dim("·")} ${sourceLabel}`);
+  blankLine();
+
+  for (const file of loadedFiles) {
+    output.info(`${dim("•")} ${cyan(file.relativePath)}`);
+
+    if (file.exportNames.length === 0) {
       output.info(`  ${dim("(no pipeline exports found)")}`);
       continue;
     }
 
-    const items = f.pipelines.map((p, i) => {
-      const displayName = p.name ?? f.exportNames[i] ?? "default";
-      const idLabel = p.id && p.id !== displayName ? ` ${dim(`[${p.id}]`)}` : "";
-      const routesCount = p.routes ?? 0;
-      const sourcesCount = p.sources ?? 0;
-      const details = ` ${dim("·")} ${routesCount} route(s) ${dim("·")} ${sourcesCount} source(s)`;
-      const description = p.description ? ` ${dim("·")} ${p.description}` : "";
-
+    file.pipelines.map((pipeline, index) => {
+      const displayName = pipeline.name ?? file.exportNames[index] ?? "default";
+      const idLabel = pipeline.id !== displayName ? ` ${dim(`[${pipeline.id}]`)}` : "";
+      const details = ` ${dim("·")} ${pipeline.routes} route(s) ${dim("·")} ${pipeline.sources} source(s)`;
+      const description = pipeline.description ? ` ${dim("·")} ${pipeline.description}` : "";
       return `${bold(displayName)}${idLabel}${details}${description}`;
-    });
-
-    items.forEach((item, index) => {
-      const isLast = index === items.length - 1;
-      const prefix = isLast ? "└" : "├";
-      output.info(`  ${dim(prefix)} ${item}`);
+    }).forEach((item, index, items) => {
+      output.info(`  ${dim(index === items.length - 1 ? "└" : "├")} ${item}`);
     });
   }
 
   blankLine();
 
-  const allErrors = [...discoveryErrors, ...result.errors];
-  if (allErrors.length > 0) {
+  const issues = [...discovery.issues, ...result.issues];
+  if (issues.length > 0) {
     header("Errors");
-    for (const err of allErrors) {
-      const sourceLabel = source.type === "local" ? "[local] " : `[${source.type}] `;
-      const location = err.filePath ? `${err.filePath}: ` : "";
-      output.error(`  ${yellow("•")} ${sourceLabel}${location}${err.message}`);
+    for (const issue of issues) {
+      output.error(`  ${yellow("•")} ${issue.filePath ? `${issue.filePath}: ` : ""}${issue.message}`);
     }
   }
 }
