@@ -1,13 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { createTestApp } from "./helpers";
+import { sourcesFileRouter } from "../src/server/routes";
+import { createTestRoutesApp } from "./helpers";
 
 describe("pipeline security", () => {
-  it("blocks path traversal for local files", async () => {
-    const { app } = await createTestApp();
+  it("does not resolve unknown file ids", async () => {
+    const { app } = await createTestRoutesApp(sourcesFileRouter);
 
-    const res = await app.fetch(new Request("http://localhost/api/pipelines/..~secrets~leak/simple/code"));
-    expect(res.status).toBe(200);
-    const data = await res.json();
-    expect(data.error).toBeDefined();
+    const res = await app.fetch(new Request("http://localhost/api/sources/local/files/..~secrets~leak"));
+    expect(res.status).toBe(404);
   });
 });

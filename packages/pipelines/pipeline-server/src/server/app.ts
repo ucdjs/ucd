@@ -1,7 +1,5 @@
 import type { Database } from "#server/db";
-import type { LoadedFile } from "#server/lib/lookup";
-import type { PipelineDefinition } from "@ucdjs/pipelines-core";
-import type { PipelineSource } from "@ucdjs/pipelines-loader";
+import type { PipelineLocator } from "@ucdjs/pipelines-loader";
 import fs from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
@@ -20,6 +18,8 @@ import { ensureWorkspace, resolveWorkspace } from "#server/workspace";
 import { getUcdConfigDir } from "@ucdjs-internal/shared/config";
 import { H3, serve, serveStatic } from "h3";
 
+export type PipelineSource = PipelineLocator & { id: string };
+
 export interface AppOptions {
   sources?: PipelineSource[];
   db?: Database;
@@ -31,39 +31,11 @@ export interface ServerOptions extends AppOptions {
   workspaceRoot?: string;
 }
 
-type ResolvedPipelineSource = PipelineSource & {
-  files: LoadedFile[];
-  errors: Array<{
-    message: string;
-    filePath?: string;
-  }>;
-};
-
-interface ResolvedPipelineFile {
-  file: LoadedFile;
-  fileId: string;
-}
-
-interface ResolvedPipelineEntry {
-  pipeline: PipelineDefinition;
-  pipelineId: string;
-  exportName: string;
-}
-
 declare module "h3" {
   interface H3EventContext {
     sources: PipelineSource[];
     db: Database;
     workspaceId: string;
-
-    // This is only available on routes, that uses the ':sourceId'.
-    resolvedSource?: ResolvedPipelineSource;
-
-    // This is only available on routes, that uses the ':fileId'.
-    resolvedFile?: ResolvedPipelineFile;
-
-    // This is only available on routes, that uses the ':pipelineId'.
-    resolvedPipeline?: ResolvedPipelineEntry;
   }
 }
 
@@ -82,21 +54,22 @@ export function createApp(options: AppOptions = {}): H3 {
     const cwd = process.cwd();
     if (process.env.NODE_ENV === "development" || (import.meta as any).env.DEV) {
       resolvedSources = [{
-        type: "local",
+        kind: "local",
         id: "local",
-        cwd: path.join(import.meta.dirname, "../../../pipeline-playground"),
+        path: path.join(import.meta.dirname, "../../../pipeline-playground"),
       }, {
-        type: "github",
+        kind: "remote",
         id: "github-remote",
+        provider: "github",
         owner: "ucdjs",
         repo: "ucd-pipelines",
         ref: "main",
       }];
     } else {
       resolvedSources = [{
-        type: "local",
+        kind: "local",
         id: "local",
-        cwd,
+        path: cwd,
       }];
     }
   }
