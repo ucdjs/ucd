@@ -31,6 +31,7 @@ export {
   PipelineGraph,
   type PipelineGraphProps,
 } from "./components/graph/pipeline-graph";
+export { RouteList } from "./components/inspect/route-list";
 export {
   ExecutionLogPayloadPanel,
   type ExecutionLogPayloadPanelProps,
@@ -51,6 +52,11 @@ export { PipelineSidebar } from "./components/pipeline-sidebar";
 export { SourceSwitcher as SourcePicker } from "./components/source-switcher";
 export { StatusBadge } from "./components/status-badge";
 export { StatusIcon } from "./components/status-icon";
+export * from "./functions";
+export {
+  executePipeline,
+  executePipelineMutationOptions,
+} from "./functions/execute";
 export {
   executionEventsQueryOptions,
   fetchExecutionEvents,
@@ -87,6 +93,11 @@ export {
   type PipelineCodeResponse,
 } from "./functions/pipeline-code";
 export {
+  isExecutionActive,
+  isNotFoundError,
+  refetchWhileExecutionActive,
+} from "./functions/shared";
+export {
   fetchSource,
   type SourceFileInfo,
   type SourceFilePipelineSummary,
@@ -96,7 +107,6 @@ export {
 export {
   fetchSources,
   sourcesQueryOptions,
-  type SourcesResponse,
   type SourceSummary,
 } from "./functions/sources";
 export * from "./hooks";

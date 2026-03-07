@@ -1,5 +1,7 @@
 import type { ExecuteResult } from "../types";
-import { useCallback, useState } from "react";
+import { executePipelineMutationOptions } from "../functions/execute";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useMemo, useState } from "react";
 
 export interface UseExecuteOptions {
   /**
@@ -9,7 +11,11 @@ export interface UseExecuteOptions {
 }
 
 export interface UseExecuteReturn {
-  execute: (fileId: string, pipelineId: string, versions: string[]) => Promise<ExecuteResult>;
+  execute: (
+    ...args:
+      | [sourceId: string, fileId: string, pipelineId: string, versions: string[]]
+      | [fileId: string, pipelineId: string, versions: string[]]
+  ) => Promise<ExecuteResult>;
   executing: boolean;
   result: ExecuteResult | null;
   error: string | null;
@@ -17,56 +23,79 @@ export interface UseExecuteReturn {
   reset: () => void;
 }
 
-interface ExecuteApiResponse {
-  success: boolean;
-  executionId?: string;
-  error?: string;
+function resolveSourceIdFromCache(queryClient: ReturnType<typeof useQueryClient>, fileId: string) {
+  const sourceEntries = queryClient.getQueriesData<{ id: string; files: Array<{ id: string }> }>({
+    queryKey: ["sources"],
+  });
+
+  for (const [, data] of sourceEntries) {
+    if (!data || !("files" in data) || !Array.isArray(data.files)) {
+      continue;
+    }
+
+    const hasFile = data.files.some((file) => file.id === fileId);
+    if (hasFile) {
+      return data.id;
+    }
+  }
+
+  return null;
 }
 
 export function useExecute(options: UseExecuteOptions = {}): UseExecuteReturn {
-  const { baseUrl = "" } = options;
+  void options;
+  const queryClient = useQueryClient();
 
-  const [executing, setExecuting] = useState(false);
   const [result, setResult] = useState<ExecuteResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [executionId, setExecutionId] = useState<string | null>(null);
 
+  const mutation = useMutation(useMemo(
+    () => executePipelineMutationOptions(queryClient),
+    [queryClient],
+  ));
+
   const execute = useCallback(
-    async (fileId: string, pipelineId: string, versions: string[]): Promise<ExecuteResult> => {
-      setExecuting(true);
+    async (
+      ...args:
+        | [sourceId: string, fileId: string, pipelineId: string, versions: string[]]
+        | [fileId: string, pipelineId: string, versions: string[]]
+    ): Promise<ExecuteResult> => {
+      const [sourceId, fileId, pipelineId, versions] = args.length === 4
+        ? args
+        : [resolveSourceIdFromCache(queryClient, args[0]), args[0], args[1], args[2]];
+
       setError(null);
       setResult(null);
       setExecutionId(null);
 
-      try {
-        const res = await fetch(`${baseUrl}/api/pipelines/${fileId}/${pipelineId}/execute`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ versions }),
-        });
-        const data: ExecuteApiResponse = await res.json();
+      if (!sourceId) {
+        const resolutionError: ExecuteResult = {
+          success: false,
+          pipelineId,
+          error: "Could not resolve source for pipeline execution",
+        };
+        setResult(resolutionError);
+        setError(resolutionError.error ?? "Execution failed");
+        return resolutionError;
+      }
 
-        // Handle the new API response format
-        if (data.success && data.executionId) {
-          setExecutionId(data.executionId);
-          const successResult: ExecuteResult = {
-            success: true,
-            pipelineId,
-            executionId: data.executionId,
-          };
-          setResult(successResult);
-          return successResult;
+      try {
+        const mutationResult = await mutation.mutateAsync({
+          sourceId,
+          fileId,
+          pipelineId,
+          versions,
+        });
+
+        if (mutationResult.success && mutationResult.executionId) {
+          setExecutionId(mutationResult.executionId);
         } else {
-          const errorResult: ExecuteResult = {
-            success: false,
-            pipelineId,
-            executionId: data.executionId,
-            error: data.error ?? "Execution failed",
-          };
-          setResult(errorResult);
-          setError(errorResult.error ?? "Execution failed");
-          return errorResult;
+          setError(mutationResult.error ?? "Execution failed");
         }
+
+        setResult(mutationResult);
+        return mutationResult;
       } catch (err) {
         const errorResult: ExecuteResult = {
           success: false,
@@ -76,11 +105,9 @@ export function useExecute(options: UseExecuteOptions = {}): UseExecuteReturn {
         setResult(errorResult);
         setError(errorResult.error ?? "Execution failed");
         return errorResult;
-      } finally {
-        setExecuting(false);
       }
     },
-    [baseUrl],
+    [mutation, queryClient],
   );
 
   const reset = useCallback(() => {
@@ -91,7 +118,7 @@ export function useExecute(options: UseExecuteOptions = {}): UseExecuteReturn {
 
   return {
     execute,
-    executing,
+    executing: mutation.isPending,
     result,
     error,
     executionId,

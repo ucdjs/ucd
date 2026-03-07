@@ -1,4 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
+import { customFetch } from "@ucdjs-internal/shared";
 
 export interface PipelineCodeResponse {
   code: string;
@@ -6,21 +7,26 @@ export interface PipelineCodeResponse {
   file: { id: string; path: string; label: string };
 }
 
-export async function fetchPipelineCode(
-  sourceId: string,
-  fileId: string,
-  pipelineId: string,
-): Promise<PipelineCodeResponse> {
-  const res = await fetch(`/api/sources/${sourceId}/files/${fileId}/pipelines/${pipelineId}/code`);
-  if (!res.ok) {
-    throw new Error(`Failed to fetch pipeline code for "${pipelineId}": HTTP ${res.status}`);
-  }
-  return res.json();
+export interface PipelineCodeParams {
+  sourceId: string;
+  fileId: string;
+  pipelineId: string;
 }
 
-export function pipelineCodeQueryOptions(sourceId: string, fileId: string, pipelineId: string) {
+export async function fetchPipelineCode({
+  sourceId,
+  fileId,
+  pipelineId,
+}: PipelineCodeParams): Promise<PipelineCodeResponse> {
+  return (
+    await customFetch<PipelineCodeResponse>(`/api/sources/${sourceId}/files/${fileId}/pipelines/${pipelineId}/code`)
+  ).data!;
+}
+
+export function pipelineCodeQueryOptions({ sourceId, fileId, pipelineId }: PipelineCodeParams) {
   return queryOptions({
     queryKey: ["sources", sourceId, "files", fileId, "pipelines", pipelineId, "code"],
-    queryFn: () => fetchPipelineCode(sourceId, fileId, pipelineId),
+    queryFn: () => fetchPipelineCode({ sourceId, fileId, pipelineId }),
+    staleTime: 60_000,
   });
 }

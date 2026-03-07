@@ -1,5 +1,6 @@
 import type { PipelineInfo } from "../types";
 import { queryOptions } from "@tanstack/react-query";
+import { customFetch } from "@ucdjs-internal/shared";
 
 export interface SourceFileResponse {
   id: string;
@@ -9,17 +10,19 @@ export interface SourceFileResponse {
   pipelines: PipelineInfo[];
 }
 
-export async function fetchSourceFile(sourceId: string, fileId: string): Promise<SourceFileResponse> {
-  const res = await fetch(`/api/sources/${sourceId}/files/${fileId}`);
-  if (!res.ok) {
-    throw new Error(`Failed to fetch file "${fileId}": HTTP ${res.status}`);
-  }
-  return res.json();
+export interface SourceFileParams {
+  sourceId: string;
+  fileId: string;
 }
 
-export function sourceFileQueryOptions(sourceId: string, fileId: string) {
+export async function fetchSourceFile({ sourceId, fileId }: SourceFileParams): Promise<SourceFileResponse> {
+  return (await customFetch<SourceFileResponse>(`/api/sources/${sourceId}/files/${fileId}`)).data!;
+}
+
+export function sourceFileQueryOptions({ sourceId, fileId }: SourceFileParams) {
   return queryOptions({
     queryKey: ["sources", sourceId, "files", fileId],
-    queryFn: () => fetchSourceFile(sourceId, fileId),
+    queryFn: () => fetchSourceFile({ sourceId, fileId }),
+    staleTime: 60_000,
   });
 }

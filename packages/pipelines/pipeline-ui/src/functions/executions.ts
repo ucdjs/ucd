@@ -1,5 +1,6 @@
 import type { ExecutionStatus, PipelineSummary } from "@ucdjs/pipelines-executor";
 import { queryOptions } from "@tanstack/react-query";
+import { customFetch } from "@ucdjs-internal/shared";
 
 export interface ExecutionSummaryItem {
   id: string;
@@ -27,34 +28,42 @@ export interface FetchExecutionsOptions {
   offset?: number;
 }
 
-export async function fetchExecutions(
-  sourceId: string,
-  fileId: string,
-  pipelineId: string,
-  opts: FetchExecutionsOptions = {},
-): Promise<ExecutionsResponse> {
+export interface ExecutionsParams extends FetchExecutionsOptions {
+  sourceId: string;
+  fileId: string;
+  pipelineId: string;
+}
+
+export async function fetchExecutions({
+  sourceId,
+  fileId,
+  pipelineId,
+  limit,
+  offset,
+}: ExecutionsParams): Promise<ExecutionsResponse> {
   const params = new URLSearchParams();
-  if (opts.limit != null) params.set("limit", String(opts.limit));
-  if (opts.offset != null) params.set("offset", String(opts.offset));
+  if (limit != null) params.set("limit", String(limit));
+  if (offset != null) params.set("offset", String(offset));
 
   const qs = params.toString();
   const url = `/api/sources/${sourceId}/files/${fileId}/pipelines/${pipelineId}/executions${qs ? `?${qs}` : ""}`;
 
-  const res = await fetch(url);
-  if (!res.ok) {
-    throw new Error(`Failed to fetch executions: HTTP ${res.status}`);
-  }
-  return res.json();
+  return (await customFetch<ExecutionsResponse>(url)).data!;
 }
 
-export function executionsQueryOptions(
-  sourceId: string,
-  fileId: string,
-  pipelineId: string,
-  opts: FetchExecutionsOptions = {},
-) {
+export function executionsQueryOptions({
+  sourceId,
+  fileId,
+  pipelineId,
+  limit,
+  offset,
+}: ExecutionsParams) {
+  const opts = { limit, offset };
+
   return queryOptions({
     queryKey: ["sources", sourceId, "files", fileId, "pipelines", pipelineId, "executions", opts],
-    queryFn: () => fetchExecutions(sourceId, fileId, pipelineId, opts),
+    queryFn: () => fetchExecutions({ sourceId, fileId, pipelineId, limit, offset }),
+    staleTime: 5_000,
+    refetchOnWindowFocus: true,
   });
 }

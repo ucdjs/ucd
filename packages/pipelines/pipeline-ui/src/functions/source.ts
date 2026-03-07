@@ -1,4 +1,5 @@
 import { queryOptions } from "@tanstack/react-query";
+import { customFetch } from "@ucdjs-internal/shared";
 
 export interface SourceFilePipelineSummary {
   id: string;
@@ -11,7 +12,6 @@ export interface SourceFileInfo {
   id: string;
   path: string;
   label: string;
-  pipelines: SourceFilePipelineSummary[];
 }
 
 export interface SourceResponse {
@@ -19,20 +19,28 @@ export interface SourceResponse {
   type: "local" | "github" | "gitlab";
   label: string;
   files: SourceFileInfo[];
-  errors: Array<{ message: string; filePath?: string }>;
+  errors: Array<{
+    code: string;
+    scope: string;
+    message: string;
+    filePath?: string;
+    relativePath?: string;
+    meta?: Record<string, unknown>;
+  }>;
 }
 
-export async function fetchSource(sourceId: string): Promise<SourceResponse> {
-  const res = await fetch(`/api/sources/${sourceId}`);
-  if (!res.ok) {
-    throw new Error(`Failed to fetch source "${sourceId}": HTTP ${res.status}`);
-  }
-  return res.json();
+export interface SourceParams {
+  sourceId: string;
 }
 
-export function sourceQueryOptions(sourceId: string) {
+export async function fetchSource({ sourceId }: SourceParams): Promise<SourceResponse> {
+  return (await customFetch<SourceResponse>(`/api/sources/${sourceId}`)).data!;
+}
+
+export function sourceQueryOptions({ sourceId }: SourceParams) {
   return queryOptions({
     queryKey: ["sources", sourceId],
-    queryFn: () => fetchSource(sourceId),
+    queryFn: () => fetchSource({ sourceId }),
+    staleTime: 60_000,
   });
 }
