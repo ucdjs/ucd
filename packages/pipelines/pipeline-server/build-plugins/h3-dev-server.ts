@@ -1,5 +1,5 @@
-import type { H3 } from "h3";
 import type { Plugin } from "vite";
+import type { Database } from "../src/server/db";
 import fs from "node:fs/promises";
 import { getUcdConfigDir } from "@ucdjs-internal/shared/config";
 import { ensureWorkspace, resolveWorkspace } from "../src/server/workspace";
@@ -11,8 +11,7 @@ export function h3DevServerPlugin(): Plugin {
   return {
     name: "h3-dev-server",
     async configureServer(server) {
-      let appPromise: Promise<H3> | null = null;
-      let db: import("../src/server/db").Database | null = null;
+      let db: Database | null = null;
 
       // Initialize database before starting the server
       try {
@@ -33,23 +32,13 @@ export function h3DevServerPlugin(): Plugin {
       }
 
       const getApp = async () => {
-        if (!appPromise) {
-          appPromise = server
-            .ssrLoadModule(appModuleId)
-            .then((mod) => (mod as typeof import("../src/server/app")).createApp({
-              db: db!,
-              workspaceId: resolveWorkspace().workspaceId,
-            }));
-        }
-
-        return appPromise;
+        return server
+          .ssrLoadModule(appModuleId)
+          .then((mod) => (mod as typeof import("../src/server/app")).createApp({
+            db: db!,
+            workspaceId: resolveWorkspace().workspaceId,
+          }));
       };
-
-      server.watcher.on("change", (file) => {
-        if (file.includes("/src/server/")) {
-          appPromise = null;
-        }
-      });
 
       // Add middleware BEFORE Vite's internal middleware (no return = pre-hook)
       // This ensures /api routes are handled before Vite's SPA fallback
@@ -72,9 +61,8 @@ export function h3DevServerPlugin(): Plugin {
         try {
           const app = await getApp();
 
-          // Collect request body for POST/PUT/PATCH
           let body: string | undefined;
-          if (req.method && ["POST", "PUT", "PATCH"].includes(req.method)) {
+          if (req.method === "POST" || req.method === "PUT" || req.method === "PATCH") {
             // eslint-disable-next-line node/prefer-global/buffer
             const chunks: Buffer[] = [];
             for await (const chunk of req) {
