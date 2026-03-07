@@ -31,10 +31,37 @@ export interface PipelineExecutionResult {
   status: ExecutionStatus;
 }
 
+export type PipelineLogLevel = "debug" | "info" | "warn" | "error";
+
+export type PipelineLogStream = "stdout" | "stderr";
+
+export type PipelineLogSource = "logger" | "console" | "stdio";
+
+export interface PipelineLogEntry {
+  executionId: string;
+  workspaceId: string;
+  spanId?: string;
+  event?: PipelineEvent;
+  level: PipelineLogLevel;
+  stream: PipelineLogStream;
+  source: PipelineLogSource;
+  message: string;
+  timestamp: number;
+  args?: unknown[];
+  meta?: Record<string, unknown>;
+}
+
+export interface PipelineCaptureOptions {
+  console?: boolean;
+  stdio?: boolean;
+}
+
 export interface PipelineExecutorOptions {
   artifacts?: PipelineArtifactDefinition[];
   cacheStore?: CacheStore;
   onEvent?: (event: PipelineEvent) => void | Promise<void>;
+  onLog?: (entry: PipelineLogEntry) => void | Promise<void>;
+  capture?: PipelineCaptureOptions;
 }
 
 export interface PipelineExecutorRunOptions {
