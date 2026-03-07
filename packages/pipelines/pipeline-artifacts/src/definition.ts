@@ -1,7 +1,8 @@
-import type { ParseContext, ParsedRow, PipelineFilter } from "@ucdjs/pipelines-core";
+import type { ParseContext, ParsedRow, PipelineFilter, PipelineLogger } from "@ucdjs/pipelines-core";
 
 export interface ArtifactBuildContext {
   version: string;
+  logger: PipelineLogger;
 }
 
 export interface PipelineArtifactDefinition<

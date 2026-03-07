@@ -1,12 +1,4 @@
 export {
-  ExecutionErrors,
-  type ExecutionErrorsProps,
-  ExecutionResult,
-  type ExecutionResultProps,
-  ExecutionSummary,
-  type ExecutionSummaryProps,
-} from "./components/detail/execution-result";
-export {
   VersionSelector,
   type VersionSelectorProps,
 } from "./components/detail/version-selector";
@@ -50,6 +42,58 @@ export {
 export { PipelineSidebar } from "./components/pipeline-sidebar";
 export { StatusBadge } from "./components/status-badge";
 export { StatusIcon } from "./components/status-icon";
+export * from "./functions";
+export {
+  executePipeline,
+  executePipelineMutationOptions,
+} from "./functions/execute";
+export {
+  executionEventsQueryOptions,
+  fetchExecutionEvents,
+} from "./functions/execution-events";
+export {
+  executionGraphQueryOptions,
+  type ExecutionGraphResponse,
+  fetchExecutionGraph,
+} from "./functions/execution-graph";
+export {
+  executionLogsQueryOptions,
+  fetchExecutionLogs,
+} from "./functions/execution-logs";
+export {
+  executionsQueryOptions,
+  type ExecutionsResponse,
+  type ExecutionSummaryItem,
+  fetchExecutions,
+  type FetchExecutionsOptions,
+} from "./functions/executions";
+export {
+  fetchSourceFile,
+  sourceFileQueryOptions,
+  type SourceFileResponse,
+} from "./functions/file";
+export {
+  fetchPipeline,
+  pipelineQueryOptions,
+  type PipelineResponse as SourcePipelineResponse,
+} from "./functions/pipeline";
+export {
+  isExecutionActive,
+  isNotFoundError,
+  refetchWhileExecutionActive,
+} from "./functions/shared";
+export {
+  fetchSource,
+  type SourceFileInfo,
+  type SourceFilePipelineSummary,
+  sourceQueryOptions,
+  type SourceResponse,
+} from "./functions/source";
+export {
+  fetchSources,
+  sourcesQueryOptions,
+  type SourceSummary,
+} from "./functions/sources";
 export * from "./hooks";
 export {
   filterNodesByType,
@@ -75,11 +119,7 @@ export type {
   ExecutionLogPayload,
   ExecutionLogsResponse,
   ExecutionLogStream,
-  LoadError,
   PipelineDetails,
-  PipelineFileInfo,
   PipelineInfo,
-  PipelineResponse,
-  PipelinesResponse,
 } from "./types";
 export type { ExecutionStatus } from "@ucdjs/pipelines-executor";

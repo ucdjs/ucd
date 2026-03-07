@@ -1,14 +1,15 @@
-import type { RemotePipelineSource } from "./types";
 import { readdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { getUcdConfigPath } from "@ucdjs-internal/shared/config";
+
+type RemoteProvider = "github" | "gitlab";
 
 function getBaseRepoCacheDir(): string {
   return getUcdConfigPath("cache", "repos");
 }
 
 export interface PipelineCacheEntry {
-  source: RemotePipelineSource["type"];
+  source: RemoteProvider;
   owner: string;
   repo: string;
   ref: string;
@@ -45,7 +46,7 @@ async function readCache(markerPath: string): Promise<PipelineCacheEntry | null>
 }
 
 export interface RemoteCacheStatus {
-  source: "github" | "gitlab";
+  provider: RemoteProvider;
   owner: string;
   repo: string;
   ref: string;
@@ -57,21 +58,21 @@ export interface RemoteCacheStatus {
 }
 
 export async function getRemoteSourceCacheStatus(input: {
-  source: RemotePipelineSource["type"];
+  provider: RemoteProvider;
   owner: string;
   repo: string;
   ref?: string;
 }): Promise<RemoteCacheStatus> {
-  const { source, owner, repo, ref = "HEAD" } = input;
+  const { provider, owner, repo, ref = "HEAD" } = input;
 
   // Cache by ref, not by SHA
-  const cacheDir = path.join(getBaseRepoCacheDir(), source, owner, repo, ref);
+  const cacheDir = path.join(getBaseRepoCacheDir(), provider, owner, repo, ref);
   const markerPath = path.join(cacheDir, CACHE_FILE_NAME);
 
   const marker = await readCache(markerPath);
 
   return {
-    source,
+    provider,
     owner,
     repo,
     ref,
@@ -88,7 +89,7 @@ export async function getRemoteSourceCacheStatus(input: {
  * Call this after downloading and extracting the archive.
  */
 export async function writeCacheMarker(input: {
-  source: RemotePipelineSource["type"];
+  provider: RemoteProvider;
   owner: string;
   repo: string;
   ref: string;
@@ -97,7 +98,7 @@ export async function writeCacheMarker(input: {
   markerPath: string;
 }): Promise<void> {
   const marker: PipelineCacheEntry = {
-    source: input.source,
+    source: input.provider,
     owner: input.owner,
     repo: input.repo,
     ref: input.ref,
@@ -108,13 +109,13 @@ export async function writeCacheMarker(input: {
 }
 
 export async function clearRemoteSourceCache(input: {
-  source: RemotePipelineSource["type"];
+  provider: RemoteProvider;
   owner: string;
   repo: string;
   ref?: string;
 }): Promise<boolean> {
-  const { source, owner, repo, ref } = input;
-  const status = await getRemoteSourceCacheStatus({ source, owner, repo, ref });
+  const { provider, owner, repo, ref } = input;
+  const status = await getRemoteSourceCacheStatus({ provider, owner, repo, ref });
 
   if (!status.cached) {
     return false;

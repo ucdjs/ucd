@@ -25,13 +25,16 @@ export {
 export { EXECUTION_STATUSES } from "./types";
 
 export type {
+  ExecutionStatus,
+  PipelineCaptureOptions,
+  PipelineExecutionResult,
   PipelineExecutor,
   PipelineExecutorOptions,
   PipelineExecutorRunOptions,
-} from "./types";
-
-export type {
-  ExecutionStatus,
-  PipelineExecutionResult,
+  PipelineLogEntry,
+  PipelineLogLevel,
+  PipelineLogSource,
+  PipelineLogStream,
   PipelineSummary,
 } from "./types";
+export type { PipelineLogger } from "@ucdjs/pipelines-core";

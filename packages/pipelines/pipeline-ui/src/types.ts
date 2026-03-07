@@ -12,14 +12,6 @@ export interface PipelineInfo {
   sourceId: string;
 }
 
-export interface PipelineFileInfo {
-  fileId: string;
-  filePath: string;
-  fileLabel?: string;
-  sourceId: string;
-  pipelines: PipelineInfo[];
-}
-
 export interface PipelineDetails {
   id: string;
   name?: string;
@@ -39,27 +31,6 @@ export interface PipelineDetails {
     transforms: string[];
   }>;
   sources: Array<{ id: string }>;
-}
-
-export interface LoadError {
-  filePath: string;
-  message: string;
-  sourceId?: string;
-}
-
-export interface PipelinesResponse {
-  workspaceId: string;
-  files: PipelineFileInfo[];
-  errors: LoadError[];
-}
-
-export interface PipelineResponse {
-  pipeline?: PipelineDetails;
-  error?: string;
-  fileId?: string;
-  filePath?: string;
-  fileLabel?: string;
-  sourceId?: string;
 }
 
 export interface ExecuteResult {

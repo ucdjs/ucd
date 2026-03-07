@@ -1,8 +1,10 @@
 import type { FileContext } from "./types";
+import type { PipelineLogger } from "./logger";
 
 export interface TransformContext {
   version: string;
   file: FileContext;
+  logger: PipelineLogger;
 }
 
 type PipelineTransformFunction<TInput, TOutput> = (ctx: TransformContext, rows: AsyncIterable<TInput>) => AsyncIterable<TOutput>;

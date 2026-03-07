@@ -5,6 +5,7 @@ import { definePipeline, definePipelineRoute } from "@ucdjs/pipelines-core";
 import { beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 import { createMemoryCacheStore } from "../src/cache";
 import { createPipelineExecutor } from "../src/executor";
+import { runWithPipelineExecutionContext } from "../src/log-context";
 import {
   createMockFile,
   createTestRoute,
@@ -205,6 +206,219 @@ describe("running single pipeline via run()", () => {
     const stats = await cacheStore.stats?.();
 
     expect(stats?.entries).toBeGreaterThanOrEqual(0);
+  });
+
+  it("should provide logger on execution contexts", async () => {
+    const route = definePipelineRoute({
+      id: "logger-route",
+      filter: (ctx) => {
+        expect(ctx.logger).toBeDefined();
+        expect(typeof ctx.logger.info).toBe("function");
+        return true;
+      },
+      async* parser(ctx) {
+        expect(ctx.logger).toBeDefined();
+        yield { sourceFile: ctx.file.path, kind: "point", codePoint: "0041", value: "AL" };
+      },
+      resolver: async (ctx, rows) => {
+        expect(ctx.logger).toBeDefined();
+        for await (const _row of rows) {
+          // no-op
+        }
+        return [];
+      },
+    });
+
+    const pipelineWithLogger = definePipeline({
+      id: "logger-test",
+      name: "Logger Test",
+      versions: ["16.0.0"],
+      inputs: [createTestSource([createMockFile("LineBreak.txt")], { "ucd/LineBreak.txt": "0041;AL" })],
+      routes: [route],
+    });
+
+    const result = await executor.run([pipelineWithLogger]);
+    expect(result[0]?.status).toBe("completed");
+  });
+
+  it("should emit ctx.logger entries through onLog when execution context is active", async () => {
+    const logs: Array<{ source: string; message: string; executionId: string; spanId?: string }> = [];
+
+    const route = definePipelineRoute({
+      id: "logger-route",
+      filter: () => true,
+      parser: async function* (ctx) {
+        ctx.logger.info("parsing", { file: ctx.file.path });
+        yield { sourceFile: ctx.file.path, kind: "point", codePoint: "0041", value: "AL" };
+      },
+      resolver: async (ctx, rows) => {
+        ctx.logger.warn("resolving", { file: ctx.file.path });
+        for await (const _row of rows) {
+        }
+        return [];
+      },
+    });
+
+    const ex = createPipelineExecutor({
+      onLog: (entry) => {
+        logs.push({
+          source: entry.source,
+          message: entry.message,
+          executionId: entry.executionId,
+          spanId: entry.spanId,
+        });
+      },
+    });
+
+    const pipelineWithLogger = definePipeline({
+      id: "logger-test",
+      name: "Logger Test",
+      versions: ["16.0.0"],
+      inputs: [createTestSource([createMockFile("LineBreak.txt")], { "ucd/LineBreak.txt": "0041;AL" })],
+      routes: [route],
+    });
+
+    await runWithPipelineExecutionContext(
+      { executionId: "exec-1", workspaceId: "workspace-1" },
+      () => ex.run([pipelineWithLogger]),
+    );
+
+    expect(logs).toHaveLength(2);
+    expect(logs.map((entry) => entry.message).sort()).toEqual(["parsing", "resolving"]);
+    expect(logs.every((entry) => entry.source === "logger" && entry.executionId === "exec-1")).toBe(true);
+    expect(logs.every((entry) => typeof entry.spanId === "string")).toBe(true);
+  });
+
+  it("should capture console output through onLog when enabled", async () => {
+    const logs: Array<{ source: string; message: string; executionId: string }> = [];
+
+    const route = definePipelineRoute({
+      id: "console-route",
+      filter: () => true,
+      parser: async function* (ctx) {
+        console.log("parser-log", ctx.file.path);
+        yield { sourceFile: ctx.file.path, kind: "point", codePoint: "0041", value: "AL" };
+      },
+      resolver: async (_ctx, rows) => {
+        for await (const _row of rows) {
+        }
+        console.warn("resolver-log");
+        return [];
+      },
+    });
+
+    const ex = createPipelineExecutor({
+      capture: { console: true },
+      onLog: (entry) => {
+        logs.push({
+          source: entry.source,
+          message: entry.message,
+          executionId: entry.executionId,
+        });
+      },
+    });
+
+    const pipelineWithConsole = definePipeline({
+      id: "console-test",
+      name: "Console Test",
+      versions: ["16.0.0"],
+      inputs: [createTestSource([createMockFile("LineBreak.txt")], { "ucd/LineBreak.txt": "0041;AL" })],
+      routes: [route],
+    });
+
+    await runWithPipelineExecutionContext(
+      { executionId: "exec-2", workspaceId: "workspace-1" },
+      () => ex.run([pipelineWithConsole]),
+    );
+
+    expect(logs).toEqual([
+      expect.objectContaining({ source: "console", message: expect.stringContaining("parser-log"), executionId: "exec-2" }),
+      expect.objectContaining({ source: "console", message: "resolver-log", executionId: "exec-2" }),
+    ]);
+  });
+
+  it("should capture stdio output through onLog when enabled", async () => {
+    const logs: Array<{ source: string; stream: string; message: string }> = [];
+
+    const route = definePipelineRoute({
+      id: "stdio-route",
+      filter: () => true,
+      parser: async function* (ctx) {
+        process.stdout.write(`stdout:${ctx.file.name}`);
+        yield { sourceFile: ctx.file.path, kind: "point", codePoint: "0041", value: "AL" };
+      },
+      resolver: async (_ctx, rows) => {
+        for await (const _row of rows) {
+        }
+        process.stderr.write("stderr:test");
+        return [];
+      },
+    });
+
+    const ex = createPipelineExecutor({
+      capture: { stdio: true },
+      onLog: (entry) => {
+        logs.push({
+          source: entry.source,
+          stream: entry.stream,
+          message: entry.message,
+        });
+      },
+    });
+
+    const pipelineWithStdio = definePipeline({
+      id: "stdio-test",
+      name: "Stdio Test",
+      versions: ["16.0.0"],
+      inputs: [createTestSource([createMockFile("LineBreak.txt")], { "ucd/LineBreak.txt": "0041;AL" })],
+      routes: [route],
+    });
+
+    await runWithPipelineExecutionContext(
+      { executionId: "exec-3", workspaceId: "workspace-1" },
+      () => ex.run([pipelineWithStdio]),
+    );
+
+    expect(logs).toEqual([
+      { source: "stdio", stream: "stdout", message: "stdout:LineBreak.txt" },
+      { source: "stdio", stream: "stderr", message: "stderr:test" },
+    ]);
+  });
+
+  it("should ignore emitted logs when no execution context is active", async () => {
+    const onLog = vi.fn();
+
+    const route = definePipelineRoute({
+      id: "no-context-route",
+      filter: () => true,
+      parser: async function* (ctx) {
+        ctx.logger.info("logger-message");
+        console.log("console-message");
+        yield { sourceFile: ctx.file.path, kind: "point", codePoint: "0041", value: "AL" };
+      },
+      resolver: async (_ctx, rows) => {
+        for await (const _row of rows) {
+        }
+        return [];
+      },
+    });
+
+    const ex = createPipelineExecutor({
+      capture: { console: true },
+      onLog,
+    });
+
+    const pipelineWithoutContext = definePipeline({
+      id: "no-context-test",
+      name: "No Context Test",
+      versions: ["16.0.0"],
+      inputs: [createTestSource([createMockFile("LineBreak.txt")], { "ucd/LineBreak.txt": "0041;AL" })],
+      routes: [route],
+    });
+
+    await ex.run([pipelineWithoutContext]);
+
+    expect(onLog).not.toHaveBeenCalled();
   });
 
   it("should return empty results for unknown pipeline", async () => {
