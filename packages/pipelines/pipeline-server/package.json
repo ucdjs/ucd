@@ -88,6 +88,7 @@
     "@types/react-dom": "catalog:types",
     "@ucdjs-tooling/tsconfig": "workspace:*",
     "@ucdjs-tooling/tsdown-config": "workspace:*",
+    "@ucdjs/moonbeam": "workspace:*",
     "@vitejs/plugin-react": "catalog:build",
     "clsx": "catalog:frontend",
     "drizzle-kit": "catalog:build",
