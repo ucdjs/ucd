@@ -9,9 +9,9 @@ import {
   TableHeader,
   TableRow,
 } from "@ucdjs-internal/shared-ui/ui/table";
-import { StatusIcon } from "@ucdjs/pipelines-ui/components";
-import { executionsQueryOptions } from "@ucdjs/pipelines-ui/functions";
-import { formatExecutionDuration, formatStartedAt } from "@ucdjs/pipelines-ui/lib";
+import { StatusIcon } from "#components";
+import { executionsQueryOptions } from "#functions";
+import { formatExecutionDuration, formatStartedAt } from "#lib";
 import { Play } from "lucide-react";
 
 export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/executions/")({

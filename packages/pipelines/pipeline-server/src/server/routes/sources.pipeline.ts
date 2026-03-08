@@ -1,4 +1,5 @@
-import type { ExecutePipelineResponse, SourcePipelineResponse } from "@ucdjs/pipelines-ui/functions";
+import type { ExecutePipelineResponse } from "#shared/schemas/execution";
+import type { PipelineResponse as SourcePipelineResponse } from "#shared/schemas/pipeline";
 import type { H3Event } from "h3";
 import { randomUUID } from "node:crypto";
 import { schema } from "#server/db";
@@ -6,7 +7,7 @@ import { createExecutionLogStore } from "#server/lib/execution-logs";
 import { resolveSourceFiles } from "#server/lib/resolve";
 import { createPipelineExecutor } from "@ucdjs/pipelines-executor";
 import { createNodeExecutionRuntime } from "@ucdjs/pipelines-executor/node";
-import { toPipelineDetails } from "@ucdjs/pipelines-ui/lib";
+import { toPipelineDetails } from "#shared/lib/pipeline-utils";
 import { and, eq } from "drizzle-orm";
 import { H3, HTTPError, readValidatedBody } from "h3";
 import { z } from "zod";

@@ -7,13 +7,13 @@ import {
   ExecutionWaterfall,
   StatusBadge,
   StatusIcon,
-} from "@ucdjs/pipelines-ui/components";
+} from "#components";
 import {
   executionEventsQueryOptions,
   executionLogsQueryOptions,
   isNotFoundError,
-} from "@ucdjs/pipelines-ui/functions";
-import { buildExecutionSpans, formatBytes } from "@ucdjs/pipelines-ui/lib";
+} from "#functions";
+import { buildExecutionSpans, formatBytes } from "#lib";
 import { ArrowLeft, Filter, GitBranch } from "lucide-react";
 import { useMemo, useState } from "react";
 

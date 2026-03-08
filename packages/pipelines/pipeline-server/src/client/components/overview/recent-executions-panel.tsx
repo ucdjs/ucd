@@ -1,8 +1,8 @@
-import type { ExecutionSummaryItem } from "@ucdjs/pipelines-ui/functions";
+import type { ExecutionSummaryItem } from "#functions";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
-import { StatusIcon } from "@ucdjs/pipelines-ui/components";
-import { formatExecutionDuration, formatStartedAt } from "@ucdjs/pipelines-ui/lib";
+import { StatusIcon } from "#components";
+import { formatExecutionDuration, formatStartedAt } from "#lib";
 
 interface RecentExecutionsPanelProps {
   executions: ExecutionSummaryItem[];

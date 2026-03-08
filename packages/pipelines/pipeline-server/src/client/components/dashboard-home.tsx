@@ -1,4 +1,4 @@
-import type { OverviewResponse, SourceSummary } from "@ucdjs/pipelines-ui/functions";
+import type { OverviewResponse, SourceSummary } from "#functions";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { ExecutionActivityChart } from "./overview/activity-chart";
 import { RecentExecutionsPanel } from "./overview/recent-executions-panel";

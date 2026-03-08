@@ -1,4 +1,4 @@
-import type { OverviewResponse } from "@ucdjs/pipelines-ui/functions";
+import type { OverviewResponse } from "#shared/schemas/overview";
 import { schema } from "#server/db";
 import { EXECUTION_STATUSES } from "@ucdjs/pipelines-executor";
 import { and, desc, eq, gte } from "drizzle-orm";

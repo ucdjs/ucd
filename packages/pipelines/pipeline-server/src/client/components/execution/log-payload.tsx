@@ -1,4 +1,4 @@
-import type { ExecutionLogItem } from "../../types";
+import type { ExecutionLogItem } from "#shared/types";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 
 export interface ExecutionLogPayloadPanelProps {

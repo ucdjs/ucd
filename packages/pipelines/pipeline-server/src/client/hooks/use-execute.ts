@@ -1,4 +1,4 @@
-import type { ExecuteResult } from "../types";
+import type { ExecuteResult } from "#shared/types";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo, useState } from "react";
 import { executePipelineMutationOptions } from "../functions/execution";

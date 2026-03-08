@@ -1,13 +1,13 @@
 import { PipelineHeader } from "#components/pipeline-header";
 import { PipelineTabs } from "#components/pipeline-tabs";
 import { createFileRoute, notFound, Outlet } from "@tanstack/react-router";
-import { VersionSelector } from "@ucdjs/pipelines-ui/components";
+import { VersionSelector } from "#components";
 import {
   isNotFoundError,
   pipelineQueryOptions,
   sourceFileQueryOptions,
-} from "@ucdjs/pipelines-ui/functions";
-import { usePipelineVersions } from "@ucdjs/pipelines-ui/hooks";
+} from "#functions";
+import { usePipelineVersions } from "#hooks";
 
 export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId")({
   loader: async ({ context, params }) => {

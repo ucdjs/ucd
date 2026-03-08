@@ -1,4 +1,4 @@
-import type { ExecutionLogItem } from "../../types";
+import type { ExecutionLogItem } from "#shared/types";
 import { formatTimestamp } from "#lib/execution-logs";
 import { cn } from "#lib/utils";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@ucdjs-internal/shared-ui/ui/table";
