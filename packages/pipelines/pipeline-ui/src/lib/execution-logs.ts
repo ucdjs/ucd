@@ -1,7 +1,9 @@
+import type {
+  PipelineEvent,
+  PipelineEventPhase,
+} from "@ucdjs/pipelines-core";
 import {
   getPipelineEventPhase,
-  type PipelineEvent,
-  type PipelineEventPhase,
 } from "@ucdjs/pipelines-core";
 
 export interface ExecutionSpan {

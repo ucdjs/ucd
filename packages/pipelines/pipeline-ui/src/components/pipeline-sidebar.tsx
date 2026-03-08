@@ -1,4 +1,3 @@
-import { cn } from "#lib/utils";
 import { useQueries, useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { Link, useParams } from "@tanstack/react-router";
 import { ThemeToggle, UcdLogo } from "@ucdjs-internal/shared-ui/components";
