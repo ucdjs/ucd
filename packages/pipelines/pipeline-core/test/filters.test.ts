@@ -1,3 +1,4 @@
+import type { PipelineLogger } from "../src/logger";
 import type { FileContext, FilterContext } from "../src/types";
 import { describe, expect, it } from "vitest";
 import {
@@ -14,7 +15,6 @@ import {
   not,
   or,
 } from "../src/filters";
-import type { PipelineLogger } from "../src/logger";
 
 const noopLogger: PipelineLogger = {
   debug: () => {},

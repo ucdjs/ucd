@@ -6,8 +6,8 @@ import type {
   PipelineExecutorRunOptions,
 } from "./types";
 import { createEventEmitter } from "./executor/events";
-import { runWithPipelineLogHandler, startLogCapture } from "./logger";
 import { runPipeline } from "./executor/run-pipeline";
+import { runWithPipelineLogHandler, startLogCapture } from "./logger";
 
 export function createPipelineExecutor(options: PipelineExecutorOptions): PipelineExecutor {
   const {

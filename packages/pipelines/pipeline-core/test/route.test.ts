@@ -1,10 +1,10 @@
+import type { PipelineLogger } from "../src/logger";
 import type {
   ArtifactDefinition,
   InferRoute,
   RouteResolveContext,
 } from "../src/route";
 import type { FileContext, ParsedRow, PropertyJson } from "../src/types";
-import type { PipelineLogger } from "../src/logger";
 import { describe, expect, expectTypeOf, it, vi } from "vitest";
 import { z } from "zod";
 import {
