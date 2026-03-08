@@ -26,19 +26,19 @@ export {
 export {
   ExecutionLogPayloadPanel,
   type ExecutionLogPayloadPanelProps,
-} from "./components/logs/execution-log-payload";
+} from "./components/execution/log-payload";
 export {
   ExecutionLogTable,
   type ExecutionLogTableProps,
-} from "./components/logs/execution-log-table";
+} from "./components/execution/log-table";
 export {
   ExecutionSpanDrawer,
   type ExecutionSpanDrawerProps,
-} from "./components/logs/execution-span-drawer";
+} from "./components/execution/span-drawer";
 export {
   ExecutionWaterfall,
   type ExecutionWaterfallProps,
-} from "./components/logs/execution-waterfall";
+} from "./components/execution/waterfall";
 export { QuickActionsCard } from "./components/overview/quick-actions-card";
 export { RecentExecutionsCard } from "./components/overview/recent-executions-card";
 export { PipelineSidebar } from "./components/pipeline-sidebar";
