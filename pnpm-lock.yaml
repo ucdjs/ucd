@@ -1403,6 +1403,9 @@ importers:
       '@ucdjs-tooling/tsdown-config':
         specifier: workspace:*
         version: link:../../../tooling/tsdown-config
+      '@ucdjs/moonbeam':
+        specifier: workspace:*
+        version: link:../../../tooling/moonbeam
       '@vitejs/plugin-react':
         specifier: catalog:build
         version: 5.1.4(vite@8.0.0-beta.15(@types/node@22.19.9)(esbuild@0.27.3)(jiti@2.6.1)(tsx@4.21.0)(yaml@2.8.2))
