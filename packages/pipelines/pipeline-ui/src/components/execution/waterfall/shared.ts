@@ -1,7 +1,7 @@
+import type { PipelineEventPhase } from "@ucdjs/pipelines-core";
 import { formatDuration } from "#lib/execution-logs";
 import {
   PIPELINE_EVENT_PHASES,
-  type PipelineEventPhase,
 } from "@ucdjs/pipelines-core";
 
 export const phaseOptions = PIPELINE_EVENT_PHASES;
