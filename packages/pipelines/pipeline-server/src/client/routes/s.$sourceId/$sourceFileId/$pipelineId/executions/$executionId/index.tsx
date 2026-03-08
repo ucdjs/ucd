@@ -160,20 +160,45 @@ function ExecutionDetailPage() {
             </div>
           )}
 
-          <ExecutionWaterfall
-            spans={spans}
-            selectedSpanId={selectedSpanId}
-            onSelect={handleSpanSelect}
-            onSpanClick={handleSpanClick}
-          />
+          <section className="space-y-3">
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <h2 className="text-sm font-semibold">Timeline</h2>
+                <p className="text-sm text-muted-foreground">
+                  Scan the execution phases, then drill into one span to filter the logs.
+                </p>
+              </div>
+              {selectedSpanId && (
+                <div className="inline-flex items-center gap-1 rounded-md border bg-muted px-2.5 py-1 text-xs text-muted-foreground">
+                  <Filter className="h-3 w-3" />
+                  Logs filtered to the selected span
+                </div>
+              )}
+            </div>
 
-          <div className="space-y-4">
+            <ExecutionWaterfall
+              spans={spans}
+              selectedSpanId={selectedSpanId}
+              onSelect={handleSpanSelect}
+              onSpanClick={handleSpanClick}
+            />
+          </section>
+
+          <section className="space-y-3">
+            <div>
+              <h2 className="text-sm font-semibold">Logs</h2>
+              <p className="text-sm text-muted-foreground">
+                {selectedSpanId
+                  ? "Showing logs for the selected span."
+                  : "Showing all captured logs for this execution."}
+              </p>
+            </div>
             <ExecutionLogTable
               logs={filteredLogs}
               expandedLogId={expandedLogId}
               onToggle={handleLogToggle}
             />
-          </div>
+          </section>
         </div>
       </ScrollArea>
 

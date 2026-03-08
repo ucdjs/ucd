@@ -3,7 +3,7 @@ import { formatTimestamp } from "#lib/execution-logs";
 import { cn } from "#lib/utils";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@ucdjs-internal/shared-ui/ui/table";
 import { Fragment } from "react";
-import { ExecutionLogPayloadPanel } from "./execution-log-payload";
+import { ExecutionLogPayloadPanel } from "./log-payload";
 
 export interface ExecutionLogTableProps {
   logs: ExecutionLogItem[];
