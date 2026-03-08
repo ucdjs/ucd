@@ -1,23 +1,44 @@
-import { useQueries, useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute, Link } from "@tanstack/react-router";
+/* eslint-disable react-refresh/only-export-components */
+
+import type { SourceFileCardData } from "#components/source-file-card";
+import { SourceFileCard } from "#components/source-file-card";
+import { createFileRoute } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 import { sourceFileQueryOptions, sourceQueryOptions } from "@ucdjs/pipelines-ui/functions";
 
+type SourceFileCardViewModel = SourceFileCardData;
+
 export const Route = createFileRoute("/s/$sourceId/")({
+  loader: async ({ context, params }) => {
+    const source = await context.queryClient.ensureQueryData(
+      sourceQueryOptions({ sourceId: params.sourceId }),
+    );
+
+    const fileDetails = await Promise.all(
+      source.files.map((file) =>
+        context.queryClient.ensureQueryData(sourceFileQueryOptions({
+          sourceId: params.sourceId,
+          fileId: file.id,
+        }))),
+    );
+
+    const files: SourceFileCardViewModel[] = source.files.map((file) => ({
+      ...file,
+      pipelines: fileDetails.find((detail) => detail.id === file.id)?.pipelines ?? [],
+    }));
+
+    return {
+      source,
+      files,
+    };
+  },
   component: RouteComponent,
 });
 
 function RouteComponent() {
   const { sourceId } = Route.useParams();
-  const { data } = useSuspenseQuery(sourceQueryOptions({ sourceId }));
-  const fileQueries = useQueries({
-    queries: data.files.map((file) => sourceFileQueryOptions({ sourceId, fileId: file.id })),
-  });
-  const files = data.files.map((file) => ({
-    ...file,
-    pipelines: fileQueries.find((query) => query.data?.id === file.id)?.data?.pipelines ?? [],
-  }));
+  const { source, files } = Route.useLoaderData();
 
   return (
     <div className="p-6 space-y-6">
@@ -25,8 +46,8 @@ function RouteComponent() {
         <CardHeader>
           <div className="flex items-center justify-between gap-3">
             <div>
-              <CardTitle>{data.label}</CardTitle>
-              <CardDescription>{data.type}</CardDescription>
+              <CardTitle>{source.label}</CardTitle>
+              <CardDescription>{source.type}</CardDescription>
             </div>
             <Badge variant="secondary">
               {files.length}
@@ -35,39 +56,21 @@ function RouteComponent() {
             </Badge>
           </div>
         </CardHeader>
-        {data.errors.length > 0 && (
+        {source.errors.length > 0 && (
           <CardContent className="pt-0">
             <div className="rounded-md border border-destructive/20 bg-destructive/5 p-3 text-sm text-destructive">
-              {data.errors.length}
+              {source.errors.length}
               {" "}
               source issue
-              {data.errors.length === 1 ? "" : "s"}
+              {source.errors.length === 1 ? "" : "s"}
             </div>
           </CardContent>
         )}
       </Card>
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+      <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
         {files.map((file) => (
-          <Link
-            key={file.id}
-            to="/s/$sourceId/$sourceFileId"
-            params={{ sourceId, sourceFileId: file.id }}
-            className="rounded-lg border border-border bg-card p-4 transition hover:-translate-y-0.5 hover:border-primary/40"
-          >
-            <div className="space-y-2">
-              <div>
-                <div className="font-medium">{file.label}</div>
-                <div className="text-xs text-muted-foreground break-all">{file.path}</div>
-              </div>
-              <div className="text-xs text-muted-foreground">
-                {file.pipelines.length}
-                {" "}
-                pipeline
-                {file.pipelines.length === 1 ? "" : "s"}
-              </div>
-            </div>
-          </Link>
+          <SourceFileCard key={file.id} sourceId={sourceId} file={file} />
         ))}
       </section>
     </div>
