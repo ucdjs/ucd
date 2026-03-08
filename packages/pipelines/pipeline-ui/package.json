@@ -35,6 +35,7 @@
     "./lib/adapter": "./dist/lib/adapter.mjs",
     "./lib/colors": "./dist/lib/colors.mjs",
     "./lib/execution-logs": "./dist/lib/execution-logs.mjs",
+    "./lib/execution-time": "./dist/lib/execution-time.mjs",
     "./lib/format-time": "./dist/lib/format-time.mjs",
     "./lib/layout": "./dist/lib/layout.mjs",
     "./lib/pipeline-utils": "./dist/lib/pipeline-utils.mjs",

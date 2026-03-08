@@ -1,4 +1,3 @@
-import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, notFound, Outlet, useNavigate } from "@tanstack/react-router";
 import { cn } from "@ucdjs-internal/shared-ui/lib/utils";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
@@ -12,11 +11,12 @@ import {
   VersionSelector,
 } from "@ucdjs/pipelines-ui";
 import { Play } from "lucide-react";
+import { useCallback } from "react";
 
 export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId")({
   loader: async ({ context, params }) => {
     try {
-      await Promise.all([
+      const [file, pipelineResponse] = await Promise.all([
         context.queryClient.ensureQueryData(sourceFileQueryOptions({
           sourceId: params.sourceId,
           fileId: params.sourceFileId,
@@ -27,6 +27,11 @@ export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId")({
           pipelineId: params.pipelineId,
         })),
       ]);
+
+      return {
+        file,
+        pipelineResponse,
+      };
     } catch (error) {
       if (isNotFoundError(error)) {
         throw notFound();
@@ -41,9 +46,8 @@ export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId")({
 function RouteComponent() {
   const { sourceId, sourceFileId, pipelineId } = Route.useParams();
   const navigate = useNavigate();
-  const { data: file } = useSuspenseQuery(sourceFileQueryOptions({ sourceId, fileId: sourceFileId }));
-  const { data } = useSuspenseQuery(pipelineQueryOptions({ sourceId, fileId: sourceFileId, pipelineId }));
-  const pipeline = data.pipeline;
+  const { file, pipelineResponse } = Route.useLoaderData();
+  const pipeline = pipelineResponse.pipeline;
   const { selectedVersions, toggleVersion, selectAll, deselectAll } = usePipelineVersions(
     pipelineId,
     pipeline.versions,
@@ -51,7 +55,7 @@ function RouteComponent() {
   );
   const { execute, executing, executionId } = useExecute();
 
-  async function handleExecute() {
+  const handleExecute = useCallback(async () => {
     const result = await execute(sourceId, sourceFileId, pipelineId, Array.from(selectedVersions));
     if (result.success && result.executionId) {
       navigate({
@@ -64,7 +68,7 @@ function RouteComponent() {
         },
       });
     }
-  }
+  }, [execute, navigate, pipelineId, selectedVersions, sourceFileId, sourceId]);
 
   return (
     <div className="h-full flex flex-col bg-background">

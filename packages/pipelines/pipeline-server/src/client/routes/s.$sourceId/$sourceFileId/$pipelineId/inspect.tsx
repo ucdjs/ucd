@@ -1,19 +1,18 @@
-import { useSuspenseQuery } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, getRouteApi } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 import { Input } from "@ucdjs-internal/shared-ui/ui/input";
-import { pipelineQueryOptions } from "@ucdjs/pipelines-ui";
 import { useMemo, useState } from "react";
+
+const ParentRoute = getRouteApi("/s/$sourceId/$sourceFileId/$pipelineId");
 
 export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/inspect")({
   component: RouteComponent,
 });
 
 function RouteComponent() {
-  const { sourceId, sourceFileId, pipelineId } = Route.useParams();
-  const { data } = useSuspenseQuery(pipelineQueryOptions({ sourceId, fileId: sourceFileId, pipelineId }));
-  const pipeline = data.pipeline;
+  const { pipelineResponse } = ParentRoute.useLoaderData();
+  const pipeline = pipelineResponse.pipeline;
   const [search, setSearch] = useState("");
   const [selectedRouteId, setSelectedRouteId] = useState(pipeline.routes[0]?.id ?? null);
 
