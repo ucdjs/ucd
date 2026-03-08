@@ -3,9 +3,9 @@ import { formatDuration } from "#lib/execution-logs";
 import { cn } from "#lib/utils";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import {
+  getPhaseAccentClass,
   getPhaseBarStyle,
   getPhaseColor,
-  getPhaseAccentClass,
   getTimelineGridRange,
   getTimelineTickColumn,
   timelineColumns,
