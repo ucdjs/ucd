@@ -1,3 +1,4 @@
+import { formatExecutionDuration, formatStartedAt } from "#lib/format";
 import { executionsQueryOptions } from "#queries/execution";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
@@ -10,7 +11,6 @@ import {
   TableHeader,
   TableRow,
 } from "@ucdjs-internal/shared-ui/ui/table";
-import { formatExecutionDuration, formatStartedAt } from "#lib/format";
 
 export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/graphs")({
   loader: async ({ context, params }) => {
