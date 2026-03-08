@@ -1,7 +1,8 @@
+import { sourcesIndexRouter } from "#server/routes";
 import { describe, expect, it } from "vitest";
-import { sourcesIndexRouter } from "../../src/server/routes";
 import { createTestRoutesApp } from "./helpers";
 
+// eslint-disable-next-line test/prefer-lowercase-title
 describe("GET /api/sources", () => {
   it("lists sources with labels, counts, and serialized issues", async () => {
     const { app } = await createTestRoutesApp([sourcesIndexRouter], {

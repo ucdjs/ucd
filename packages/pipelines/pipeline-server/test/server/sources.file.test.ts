@@ -1,7 +1,8 @@
+import { sourcesFileRouter } from "#server/routes";
 import { describe, expect, it } from "vitest";
-import { sourcesFileRouter } from "../../src/server/routes";
 import { createTestRoutesApp } from "./helpers";
 
+// eslint-disable-next-line test/prefer-lowercase-title
 describe("GET /api/sources/:sourceId/files/:fileId", () => {
   it("returns file details and pipelines", async () => {
     const { app } = await createTestRoutesApp([sourcesFileRouter]);

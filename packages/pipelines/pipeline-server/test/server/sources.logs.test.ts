@@ -1,7 +1,8 @@
+import { sourcesLogsRouter } from "#server/routes";
 import { describe, expect, it } from "vitest";
-import { sourcesLogsRouter } from "../../src/server/routes";
 import { createTestRoutesApp, seedExecution, seedExecutionLog } from "./helpers";
 
+// eslint-disable-next-line test/prefer-lowercase-title
 describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executions/:executionId/logs", () => {
   it("returns paginated logs and supports span filtering", async () => {
     const { app, db } = await createTestRoutesApp([sourcesLogsRouter]);

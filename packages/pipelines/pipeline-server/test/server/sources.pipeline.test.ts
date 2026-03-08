@@ -1,6 +1,6 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { sourcesPipelineRouter } from "#server/routes";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { testdir } from "vitest-testdirs";
-import { sourcesPipelineRouter } from "../../src/server/routes";
 import { createTestRoutesApp } from "./helpers";
 
 vi.mock("@ucdjs-internal/shared/config", async () => {
@@ -13,6 +13,7 @@ vi.mock("@ucdjs-internal/shared/config", async () => {
 
 const getUcdConfigPathMock = vi.mocked(await import("@ucdjs-internal/shared/config")).getUcdConfigPath;
 
+// eslint-disable-next-line test/prefer-lowercase-title
 describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId", () => {
   beforeEach(() => {
     getUcdConfigPathMock.mockReset();
@@ -43,6 +44,7 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId", () =>
   });
 });
 
+// eslint-disable-next-line test/prefer-lowercase-title
 describe("POST /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/execute", () => {
   beforeEach(() => {
     getUcdConfigPathMock.mockReset();
@@ -80,7 +82,7 @@ describe("POST /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/execut
                 commitSha: "abc123",
                 syncedAt: new Date().toISOString(),
               }),
-              src: {
+              "src": {
                 "simple.ucd-pipeline.ts": /* ts */`
                   export const simplePipeline = {
                     _type: "pipeline-definition",
