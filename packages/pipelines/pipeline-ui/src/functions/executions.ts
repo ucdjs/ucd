@@ -1,27 +1,9 @@
-import type { ExecutionStatus, PipelineSummary } from "@ucdjs/pipelines-executor";
 import { queryOptions } from "@tanstack/react-query";
 import { customFetch } from "@ucdjs-internal/shared";
+import { ExecutionsResponseSchema } from "../schemas/executions";
+import type { ExecutionSummaryItem, ExecutionsResponse } from "../schemas/executions";
 
-export interface ExecutionSummaryItem {
-  id: string;
-  status: ExecutionStatus;
-  startedAt: string;
-  completedAt: string | null;
-  versions: string[] | null;
-  summary: PipelineSummary | null;
-  hasGraph: boolean;
-  error: string | null;
-}
-
-export interface ExecutionsResponse {
-  executions: ExecutionSummaryItem[];
-  pagination: {
-    total: number;
-    limit: number;
-    offset: number;
-    hasMore: boolean;
-  };
-}
+export type { ExecutionSummaryItem, ExecutionsResponse };
 
 export interface FetchExecutionsOptions {
   limit?: number;
@@ -48,7 +30,9 @@ export async function fetchExecutions({
   const qs = params.toString();
   const url = `/api/sources/${sourceId}/files/${fileId}/pipelines/${pipelineId}/executions${qs ? `?${qs}` : ""}`;
 
-  return (await customFetch<ExecutionsResponse>(url)).data!;
+  return (await customFetch<ExecutionsResponse>(url, {
+    schema: ExecutionsResponseSchema,
+  })).data!;
 }
 
 export function executionsQueryOptions({

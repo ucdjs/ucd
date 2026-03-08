@@ -1,6 +1,6 @@
-import type { ExecutionLogsResponse } from "../types";
 import { queryOptions } from "@tanstack/react-query";
 import { customFetch } from "@ucdjs-internal/shared";
+import { ExecutionLogsResponseSchema, type ExecutionLogsResponse } from "../schemas/execution-logs";
 import { refetchWhileExecutionActive } from "./shared";
 
 export type { ExecutionLogsResponse };
@@ -33,6 +33,9 @@ export async function fetchExecutionLogs({
   return (
     await customFetch<ExecutionLogsResponse>(
       `/api/sources/${sourceId}/files/${fileId}/pipelines/${pipelineId}/executions/${executionId}/logs${qs ? `?${qs}` : ""}`,
+      {
+        schema: ExecutionLogsResponseSchema,
+      },
     )
   ).data!;
 }

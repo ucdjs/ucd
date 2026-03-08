@@ -1,6 +1,10 @@
-import type { ExecutionEventItem, ExecutionEventsResponse } from "../types";
 import { queryOptions } from "@tanstack/react-query";
 import { customFetch } from "@ucdjs-internal/shared";
+import {
+  ExecutionEventsResponseSchema,
+  type ExecutionEventItem,
+  type ExecutionEventsResponse,
+} from "../schemas/execution-events";
 import { refetchWhileExecutionActive } from "./shared";
 
 export type { ExecutionEventItem, ExecutionEventsResponse };
@@ -30,6 +34,9 @@ export async function fetchExecutionEvents({
   return (
     await customFetch<ExecutionEventsResponse>(
       `/api/sources/${sourceId}/files/${fileId}/pipelines/${pipelineId}/executions/${executionId}/events${qs ? `?${qs}` : ""}`,
+      {
+        schema: ExecutionEventsResponseSchema,
+      },
     )
   ).data!;
 }
