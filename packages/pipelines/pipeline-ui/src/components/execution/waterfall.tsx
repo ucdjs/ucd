@@ -32,8 +32,6 @@ export function ExecutionWaterfall({ spans, selectedSpanId, onSelect, onSpanClic
     [filteredSpans],
   );
   const ticks = buildTicks(duration, 5);
-  const selectedSpan = spans.find((span) => span.spanId === selectedSpanId) ?? null;
-
   function handleTogglePhase(phase: string) {
     setActivePhases((current) => {
       const next = new Set(current);
@@ -49,10 +47,6 @@ export function ExecutionWaterfall({ spans, selectedSpanId, onSelect, onSpanClic
   return (
     <div className="space-y-3">
       <ExecutionWaterfallHeader
-        totalSpans={spans.length}
-        visibleSpans={filteredSpans.length}
-        durationMs={duration}
-        selectedLabel={selectedSpan?.label ?? null}
         selectedSpanId={selectedSpanId}
         onClear={() => onSelect(null)}
       />

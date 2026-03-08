@@ -11,10 +11,10 @@ export function ExecutionWaterfallAxis({
 }: ExecutionWaterfallAxisProps) {
   return (
     <div
-      className="grid gap-0 border-b border-border/60 px-3 py-2 text-xs text-muted-foreground"
+      className="grid gap-0 border-b border-border/40 px-3 py-2 text-xs text-muted-foreground"
       style={{ gridTemplateColumns: "15rem minmax(0, 1fr)" }}
     >
-      <div className="flex items-center border-r border-border/50 pr-4 font-medium uppercase tracking-wide">
+      <div className="flex items-center border-r border-border/35 pr-4 font-medium uppercase tracking-wide">
         <span>Name</span>
       </div>
       <div
@@ -26,10 +26,10 @@ export function ExecutionWaterfallAxis({
           return (
             <div
               key={tick}
-              className="flex h-full items-center border-l border-border/50 text-xs"
+              className="flex h-full items-center border-l border-border/35 text-xs"
               style={{ gridColumnStart: column, gridRowStart: 1 }}
             >
-              <div className="bg-background px-1">
+              <div className="bg-background/95 px-1">
                 {formatTickLabel(tick)}
               </div>
             </div>

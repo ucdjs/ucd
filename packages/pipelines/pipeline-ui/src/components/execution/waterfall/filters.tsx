@@ -25,15 +25,15 @@ export function ExecutionWaterfallFilters({
             type="button"
             onClick={() => onTogglePhase(phase)}
             className={cn(
-              "inline-flex items-center gap-2 rounded-full border px-2 py-1 text-xs uppercase tracking-wide transition-colors",
+              "inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs transition-colors",
               isActive
-                ? cn("shadow-sm", getPhaseAccentClass(phase))
-                : "border-border/40 bg-muted/30 text-muted-foreground/70",
+                ? getPhaseAccentClass(phase)
+                : "border-border/40 bg-transparent text-muted-foreground/70",
             )}
           >
             <span className={cn("h-2 w-2 rounded-full", getPhaseColor(phase))} />
-            {phaseLabels[phase]}
-            <span className="rounded-full bg-background/80 px-1.5 py-0.5 text-xs normal-case tracking-normal text-muted-foreground">
+            <span className="font-medium">{phaseLabels[phase]}</span>
+            <span className="text-muted-foreground/80">
               {visibleCount}
             </span>
           </button>

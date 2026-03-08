@@ -95,52 +95,6 @@ export function getPhaseBarStyle(phase: string): { background: string } {
   }
 }
 
-export function getPhaseTrackStyle(phase: string): { backgroundColor: string } {
-  switch (phase) {
-    case "Pipeline":
-      return { backgroundColor: "rgb(14 165 233 / 0.16)" };
-    case "Version":
-      return { backgroundColor: "rgb(16 185 129 / 0.16)" };
-    case "Parse":
-      return { backgroundColor: "rgb(245 158 11 / 0.16)" };
-    case "Resolve":
-      return { backgroundColor: "rgb(139 92 246 / 0.16)" };
-    case "Artifact":
-      return { backgroundColor: "rgb(244 63 94 / 0.16)" };
-    case "File":
-      return { backgroundColor: "rgb(6 182 212 / 0.16)" };
-    case "Cache":
-      return { backgroundColor: "rgb(132 204 22 / 0.16)" };
-    case "Error":
-      return { backgroundColor: "rgb(220 38 38 / 0.18)" };
-    default:
-      return { backgroundColor: "rgb(100 116 139 / 0.16)" };
-  }
-}
-
-export function getPhaseTextClass(phase: string): string {
-  switch (phase) {
-    case "Pipeline":
-      return "text-sky-400";
-    case "Version":
-      return "text-emerald-400";
-    case "Parse":
-      return "text-amber-400";
-    case "Resolve":
-      return "text-violet-400";
-    case "Artifact":
-      return "text-rose-400";
-    case "File":
-      return "text-cyan-400";
-    case "Cache":
-      return "text-lime-400";
-    case "Error":
-      return "text-red-400";
-    default:
-      return "text-slate-400";
-  }
-}
-
 export function formatTickLabel(valueMs: number): string {
   if (valueMs <= 0) return "0ms";
   if (valueMs < 1) return "<1ms";
