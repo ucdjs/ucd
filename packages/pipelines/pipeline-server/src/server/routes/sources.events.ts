@@ -1,4 +1,4 @@
-import type { ExecutionEventsResponse } from "@ucdjs/pipelines-ui";
+import type { ExecutionEventsResponse } from "@ucdjs/pipelines-ui/functions";
 import { schema } from "#server/db";
 import { and, asc, eq, sql } from "drizzle-orm";
 import { getQuery, H3, HTTPError } from "h3";

@@ -1,5 +1,5 @@
 import { createFileRoute, notFound, Outlet } from "@tanstack/react-router";
-import { isNotFoundError, sourceFileQueryOptions, sourceQueryOptions } from "@ucdjs/pipelines-ui";
+import { isNotFoundError, sourceFileQueryOptions, sourceQueryOptions } from "@ucdjs/pipelines-ui/functions";
 
 export const Route = createFileRoute("/s/$sourceId/$sourceFileId")({
   loader: async ({ context, params }) => {

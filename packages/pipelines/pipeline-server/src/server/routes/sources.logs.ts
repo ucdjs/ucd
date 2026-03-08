@@ -1,4 +1,4 @@
-import type { ExecutionLogsResponse } from "@ucdjs/pipelines-ui";
+import type { ExecutionLogsResponse } from "@ucdjs/pipelines-ui/functions";
 import { Buffer } from "node:buffer";
 import { schema } from "#server/db";
 import { and, asc, eq } from "drizzle-orm";

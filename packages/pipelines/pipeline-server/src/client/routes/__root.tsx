@@ -6,7 +6,8 @@ import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { SidebarInset, SidebarProvider } from "@ucdjs-internal/shared-ui/ui/sidebar";
-import { configQueryOptions, PipelineSidebar, sourcesQueryOptions } from "@ucdjs/pipelines-ui";
+import { PipelineSidebar } from "@ucdjs/pipelines-ui/components";
+import { configQueryOptions, sourcesQueryOptions } from "@ucdjs/pipelines-ui/functions";
 import { lazy, Suspense } from "react";
 
 const PipelineCommandPalette = lazy(() =>

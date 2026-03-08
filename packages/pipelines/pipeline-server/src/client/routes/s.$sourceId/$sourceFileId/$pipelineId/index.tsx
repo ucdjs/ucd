@@ -1,11 +1,8 @@
 import { createFileRoute, getRouteApi } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
-import {
-  executionsQueryOptions,
-  QuickActionsCard,
-  RecentExecutionsCard,
-} from "@ucdjs/pipelines-ui";
+import { QuickActionsCard, RecentExecutionsCard } from "@ucdjs/pipelines-ui/components";
+import { executionsQueryOptions } from "@ucdjs/pipelines-ui/functions";
 
 const ParentRoute = getRouteApi("/s/$sourceId/$sourceFileId/$pipelineId");
 

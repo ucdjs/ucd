@@ -1,10 +1,7 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, notFound } from "@tanstack/react-router";
-import {
-  executionGraphQueryOptions,
-  isNotFoundError,
-  PipelineGraph,
-} from "@ucdjs/pipelines-ui";
+import { PipelineGraph } from "@ucdjs/pipelines-ui/components";
+import { executionGraphQueryOptions, isNotFoundError } from "@ucdjs/pipelines-ui/functions";
 
 export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId/graph")({
   loader: async ({ context, params }) => {

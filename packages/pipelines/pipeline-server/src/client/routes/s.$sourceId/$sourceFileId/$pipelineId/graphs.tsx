@@ -9,7 +9,8 @@ import {
   TableHeader,
   TableRow,
 } from "@ucdjs-internal/shared-ui/ui/table";
-import { executionsQueryOptions, formatExecutionDuration, formatStartedAt } from "@ucdjs/pipelines-ui";
+import { executionsQueryOptions } from "@ucdjs/pipelines-ui/functions";
+import { formatExecutionDuration, formatStartedAt } from "@ucdjs/pipelines-ui/lib";
 
 export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/graphs")({
   loader: async ({ context, params }) => {

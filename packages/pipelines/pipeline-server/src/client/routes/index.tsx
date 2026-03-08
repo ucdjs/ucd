@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { sourcesQueryOptions } from "@ucdjs/pipelines-ui";
+import { sourcesQueryOptions } from "@ucdjs/pipelines-ui/functions";
 
 export const Route = createFileRoute("/")({
   component: HomePage,

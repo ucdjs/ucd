@@ -2,17 +2,18 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ScrollArea } from "@ucdjs-internal/shared-ui/ui/scroll-area";
 import {
-  buildExecutionSpans,
-  executionEventsQueryOptions,
-  executionLogsQueryOptions,
   ExecutionLogTable,
   ExecutionSpanDrawer,
   ExecutionWaterfall,
-  formatBytes,
-  isNotFoundError,
   StatusBadge,
   StatusIcon,
-} from "@ucdjs/pipelines-ui";
+} from "@ucdjs/pipelines-ui/components";
+import {
+  executionEventsQueryOptions,
+  executionLogsQueryOptions,
+  isNotFoundError,
+} from "@ucdjs/pipelines-ui/functions";
+import { buildExecutionSpans, formatBytes } from "@ucdjs/pipelines-ui/lib";
 import { ArrowLeft, Filter, GitBranch } from "lucide-react";
 import { useMemo, useState } from "react";
 
