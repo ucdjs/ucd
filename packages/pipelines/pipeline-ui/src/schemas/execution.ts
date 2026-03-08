@@ -1,5 +1,5 @@
 import type { PipelineEvent, PipelineGraph } from "@ucdjs/pipelines-core";
-import { EXECUTION_STATUSES } from "@ucdjs/pipelines-executor";
+import { EXECUTION_STATUSES } from "@ucdjs/pipelines-executor/types";
 import z from "zod";
 
 const ExecutionStatusSchema = z.enum(EXECUTION_STATUSES);
