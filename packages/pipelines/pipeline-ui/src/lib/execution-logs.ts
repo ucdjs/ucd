@@ -1,4 +1,8 @@
-import type { PipelineEvent } from "@ucdjs/pipelines-core";
+import {
+  getPipelineEventPhase,
+  type PipelineEvent,
+  type PipelineEventPhase,
+} from "@ucdjs/pipelines-core";
 
 export interface ExecutionSpan {
   spanId: string;
@@ -6,7 +10,7 @@ export interface ExecutionSpan {
   start: number;
   end: number;
   durationMs: number;
-  phase: string;
+  phase: PipelineEventPhase;
   isError?: boolean;
 }
 
@@ -57,17 +61,6 @@ function buildSpanLabel(event: PipelineEvent): string {
   return event.type;
 }
 
-function buildSpanPhase(type: string): string {
-  if (type.startsWith("pipeline:")) return "Pipeline";
-  if (type.startsWith("version:")) return "Version";
-  if (type.startsWith("parse:")) return "Parse";
-  if (type.startsWith("resolve:")) return "Resolve";
-  if (type.startsWith("artifact:")) return "Artifact";
-  if (type.startsWith("file:")) return "File";
-  if (type.startsWith("cache:")) return "Cache";
-  return "Other";
-}
-
 export function buildExecutionSpans(events: PipelineEvent[]): ExecutionSpan[] {
   const startMap = new Map<string, PipelineEvent>();
   const spans: ExecutionSpan[] = [];
@@ -93,7 +86,7 @@ export function buildExecutionSpans(events: PipelineEvent[]): ExecutionSpan[] {
         start: startEvent.timestamp,
         end: event.timestamp,
         durationMs,
-        phase: buildSpanPhase(startEvent.type),
+        phase: getPipelineEventPhase(startEvent.type),
       });
       startMap.delete(event.spanId);
     }
@@ -105,7 +98,7 @@ export function buildExecutionSpans(events: PipelineEvent[]): ExecutionSpan[] {
         start: event.timestamp,
         end: event.timestamp + 1,
         durationMs: 0,
-        phase: "Error",
+        phase: getPipelineEventPhase(event.type),
         isError: true,
       });
     }

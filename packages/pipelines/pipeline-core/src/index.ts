@@ -47,6 +47,7 @@ export type {
   PipelineErrorEvent,
   PipelineErrorScope,
   PipelineEvent,
+  PipelineEventPhase,
   PipelineEventInput,
   PipelineEventType,
   PipelineGraph,
@@ -59,6 +60,11 @@ export type {
   ResolveStartEvent,
   VersionEndEvent,
   VersionStartEvent,
+} from "./events";
+
+export {
+  getPipelineEventPhase,
+  PIPELINE_EVENT_PHASES,
 } from "./events";
 
 export {

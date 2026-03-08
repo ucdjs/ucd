@@ -1,19 +1,14 @@
 import { formatDuration } from "#lib/execution-logs";
+import {
+  PIPELINE_EVENT_PHASES,
+  type PipelineEventPhase,
+} from "@ucdjs/pipelines-core";
 
-export const phaseOptions = [
-  "Pipeline",
-  "Version",
-  "Parse",
-  "Resolve",
-  "Artifact",
-  "File",
-  "Cache",
-  "Error",
-] as const;
+export const phaseOptions = PIPELINE_EVENT_PHASES;
 
 export const timelineColumns = 100;
 
-export type PhaseOption = typeof phaseOptions[number];
+export type PhaseOption = PipelineEventPhase;
 
 export const phaseLabels: Record<PhaseOption, string> = {
   Pipeline: "Pipeline",
@@ -24,9 +19,10 @@ export const phaseLabels: Record<PhaseOption, string> = {
   File: "File",
   Cache: "Cache",
   Error: "Error",
+  Other: "Other",
 };
 
-export function getPhaseColor(phase: string): string {
+export function getPhaseColor(phase: PipelineEventPhase): string {
   switch (phase) {
     case "Pipeline":
       return "bg-sky-400/70";
@@ -44,12 +40,14 @@ export function getPhaseColor(phase: string): string {
       return "bg-lime-400/70";
     case "Error":
       return "bg-red-500/80";
+    case "Other":
+      return "bg-slate-400/70";
     default:
       return "bg-slate-400/70";
   }
 }
 
-export function getPhaseAccentClass(phase: string): string {
+export function getPhaseAccentClass(phase: PipelineEventPhase): string {
   switch (phase) {
     case "Pipeline":
       return "border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-300";
@@ -67,12 +65,14 @@ export function getPhaseAccentClass(phase: string): string {
       return "border-lime-500/30 bg-lime-500/10 text-lime-700 dark:text-lime-300";
     case "Error":
       return "border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-300";
+    case "Other":
+      return "border-slate-500/30 bg-slate-500/10 text-slate-700 dark:text-slate-300";
     default:
       return "border-slate-500/30 bg-slate-500/10 text-slate-700 dark:text-slate-300";
   }
 }
 
-export function getPhaseBarStyle(phase: string): { background: string } {
+export function getPhaseBarStyle(phase: PipelineEventPhase): { background: string } {
   switch (phase) {
     case "Pipeline":
       return { background: "linear-gradient(90deg, #38bdf8 0%, #0ea5e9 100%)" };
@@ -90,6 +90,8 @@ export function getPhaseBarStyle(phase: string): { background: string } {
       return { background: "linear-gradient(90deg, #a3e635 0%, #84cc16 100%)" };
     case "Error":
       return { background: "linear-gradient(90deg, #ef4444 0%, #dc2626 100%)" };
+    case "Other":
+      return { background: "linear-gradient(90deg, #94a3b8 0%, #64748b 100%)" };
     default:
       return { background: "linear-gradient(90deg, #94a3b8 0%, #64748b 100%)" };
   }
