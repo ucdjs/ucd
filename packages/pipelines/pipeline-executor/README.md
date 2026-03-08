@@ -18,7 +18,7 @@ It is responsible for:
 - running pipeline routes in dependency order
 - handling concurrency and cache usage
 - emitting execution events
-- carrying execution context across async work
+- integrating with optional runtime-specific execution context adapters
 - building the runtime context objects passed into pipeline code
 
 It does not persist execution state by itself. Hosts such as `pipeline-server` decide how
@@ -53,21 +53,26 @@ const executor = createPipelineExecutor({
 })
 ```
 
-When an execution context is active, the executor can emit:
+When a runtime provides execution context, the executor can emit:
 
 - explicit `ctx.logger.*` calls from pipeline code
 - captured `console.log/info/warn/error` output
 - optional captured `process.stdout.write` / `process.stderr.write`
 
-Capture is compatibility-oriented and configured per executor:
+Node-specific output interception is configured through the `./node` runtime adapter:
 
 ```ts
+import { createPipelineExecutor } from "@ucdjs/pipelines-executor"
+import { createNodeExecutionRuntime } from "@ucdjs/pipelines-executor/node"
+
 const executor = createPipelineExecutor({
+  runtime: createNodeExecutionRuntime({
+    outputCapture: {
+      console: true,
+      stdio: true,
+    },
+  }),
   onLog,
-  capture: {
-    console: true,
-    stdio: true,
-  },
 })
 ```
 

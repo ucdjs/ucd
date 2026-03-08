@@ -4,7 +4,8 @@ import { randomUUID } from "node:crypto";
 import { schema } from "#server/db";
 import { createExecutionLogStore } from "#server/lib/execution-logs";
 import { resolveSourceFiles } from "#server/lib/resolve";
-import { createPipelineExecutor, runWithPipelineExecutionContext } from "@ucdjs/pipelines-executor";
+import { createPipelineExecutor } from "@ucdjs/pipelines-executor";
+import { createNodeExecutionRuntime } from "@ucdjs/pipelines-executor/node";
 import { toPipelineDetails } from "@ucdjs/pipelines-ui/lib";
 import { and, eq } from "drizzle-orm";
 import { H3, HTTPError, readValidatedBody } from "h3";
@@ -82,11 +83,15 @@ sourcesPipelineRouter.post(`${BASE}/execute`, async (event) => {
     versions,
   });
 
-  const executor = createPipelineExecutor({
-    capture: {
+  const runtime = createNodeExecutionRuntime({
+    outputCapture: {
       console: true,
       stdio: true,
     },
+  });
+
+  const executor = createPipelineExecutor({
+    runtime,
     onEvent: async (evt) => {
       await db.insert(schema.events).values({
         id: randomUUID(),
@@ -101,7 +106,7 @@ sourcesPipelineRouter.post(`${BASE}/execute`, async (event) => {
   });
 
   try {
-    const execResult = await runWithPipelineExecutionContext({ executionId, workspaceId }, () =>
+    const execResult = await runtime.runWithExecutionContext({ executionId, workspaceId }, () =>
       executor.run([pipeline], { versions, cache }));
 
     const pipelineResult = execResult.find((r) => r.id === pipelineId);

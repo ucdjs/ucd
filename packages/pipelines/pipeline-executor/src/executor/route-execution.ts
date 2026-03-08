@@ -9,10 +9,10 @@ import type {
   ResolvedEntry,
   RouteResolveContext,
 } from "@ucdjs/pipelines-core";
+import type { PipelineExecutionRuntime } from "../runtime";
 import type { SourceAdapter } from "./source-adapter";
 import { isGlobalArtifact } from "@ucdjs/pipelines-artifacts";
 import { applyTransforms } from "@ucdjs/pipelines-core";
-import { withPipelineSpan } from "../log-context";
 import { createPipelineLogger } from "../logger";
 import { createParseContext } from "./source-adapter";
 
@@ -26,6 +26,7 @@ export interface ProcessRouteOptions {
   file: FileContext;
   route: PipelineRouteDefinition<any, any, any, any, any>;
   artifactsMap: Record<string, unknown>;
+  runtime: PipelineExecutionRuntime;
   source: SourceAdapter;
   version: string;
   emit: (event: PipelineEventInput) => Promise<void>;
@@ -36,6 +37,7 @@ interface ResolveContextOptions {
   version: string;
   file: FileContext;
   routeId: string;
+  runtime: PipelineExecutionRuntime;
   artifactsMap: Record<string, unknown>;
   emittedArtifacts: Record<string, unknown>;
   emitsDefinition?: Record<string, ArtifactDefinition>;
@@ -46,8 +48,8 @@ interface ResolveContextOptions {
 export function createRouteResolveContext(
   options: ResolveContextOptions,
 ): RouteResolveContext<string, Record<string, ArtifactDefinition>> {
-  const { version, file, routeId, artifactsMap, emittedArtifacts, emitsDefinition, onArtifactEmit, onArtifactGet } = options;
-  const logger = createPipelineLogger();
+  const { version, file, routeId, runtime, artifactsMap, emittedArtifacts, emitsDefinition, onArtifactEmit, onArtifactGet } = options;
+  const logger = createPipelineLogger(runtime);
 
   return {
     version,
@@ -85,10 +87,10 @@ export function createRouteResolveContext(
 }
 
 export async function processRoute(options: ProcessRouteOptions): Promise<ProcessRouteResult> {
-  const { file, route, artifactsMap, source, version, emit, spanId } = options;
+  const { file, route, artifactsMap, runtime, source, version, emit, spanId } = options;
   const parseStartTime = performance.now();
   const parseSpanId = spanId();
-  await withPipelineSpan(parseSpanId, async () => {
+  await runtime.withSpan(parseSpanId, async () => {
     await emit({
       type: "parse:start",
       file,
@@ -98,14 +100,14 @@ export async function processRoute(options: ProcessRouteOptions): Promise<Proces
     });
   });
 
-  const parseCtx = createParseContext(file, source);
+  const parseCtx = createParseContext(file, source, runtime);
   let rows: AsyncIterable<unknown> = route.parser(parseCtx);
 
   const collectedRows: ParsedRow[] = [];
-  const filteredRows = filterRows(rows as AsyncIterable<ParsedRow>, file, route.filter, collectedRows);
+  const filteredRows = filterRows(rows as AsyncIterable<ParsedRow>, file, route.filter, runtime, collectedRows);
 
   if (route.transforms && route.transforms.length > 0) {
-    const logger = createPipelineLogger();
+    const logger = createPipelineLogger(runtime);
     rows = applyTransforms(
       { version, file, logger },
       filteredRows,
@@ -115,7 +117,7 @@ export async function processRoute(options: ProcessRouteOptions): Promise<Proces
     rows = filteredRows;
   }
 
-  await withPipelineSpan(parseSpanId, async () => {
+  await runtime.withSpan(parseSpanId, async () => {
     await emit({
       type: "parse:end",
       file,
@@ -129,7 +131,7 @@ export async function processRoute(options: ProcessRouteOptions): Promise<Proces
 
   const resolveStartTime = performance.now();
   const resolveSpanId = spanId();
-  await withPipelineSpan(resolveSpanId, async () => {
+  await runtime.withSpan(resolveSpanId, async () => {
     await emit({
       type: "resolve:start",
       file,
@@ -146,11 +148,12 @@ export async function processRoute(options: ProcessRouteOptions): Promise<Proces
     version,
     file,
     routeId: route.id,
+    runtime,
     artifactsMap,
     emittedArtifacts,
     emitsDefinition: route.emits,
     onArtifactEmit: async (id) => {
-      await withPipelineSpan(resolveSpanId, async () => {
+      await runtime.withSpan(resolveSpanId, async () => {
         await emit({
           type: "artifact:produced",
           artifactId: `${route.id}:${id}`,
@@ -164,7 +167,7 @@ export async function processRoute(options: ProcessRouteOptions): Promise<Proces
     onArtifactGet: async (id) => {
       if (!consumedArtifactIds.includes(id)) {
         consumedArtifactIds.push(id);
-        await withPipelineSpan(resolveSpanId, async () => {
+        await runtime.withSpan(resolveSpanId, async () => {
           await emit({
             type: "artifact:consumed",
             artifactId: id,
@@ -181,7 +184,7 @@ export async function processRoute(options: ProcessRouteOptions): Promise<Proces
   const outputs = await route.resolver(resolveCtx, rows as AsyncIterable<ParsedRow>);
   const outputArray = Array.isArray(outputs) ? outputs : [outputs];
 
-  await withPipelineSpan(resolveSpanId, async () => {
+  await runtime.withSpan(resolveSpanId, async () => {
     await emit({
       type: "resolve:end",
       file,
@@ -200,6 +203,7 @@ export interface ProcessFallbackOptions {
   file: FileContext;
   fallback: FallbackRouteDefinition;
   artifactsMap: Record<string, unknown>;
+  runtime: PipelineExecutionRuntime;
   source: SourceAdapter;
   version: string;
   emit: (event: PipelineEventInput) => Promise<void>;
@@ -207,10 +211,10 @@ export interface ProcessFallbackOptions {
 }
 
 export async function processFallback(options: ProcessFallbackOptions): Promise<unknown[]> {
-  const { file, fallback, artifactsMap, source, version, emit, spanId } = options;
+  const { file, fallback, artifactsMap, runtime, source, version, emit, spanId } = options;
   const parseStartTime = performance.now();
   const parseSpanId = spanId();
-  await withPipelineSpan(parseSpanId, async () => {
+  await runtime.withSpan(parseSpanId, async () => {
     await emit({
       type: "parse:start",
       file,
@@ -220,13 +224,13 @@ export async function processFallback(options: ProcessFallbackOptions): Promise<
     });
   });
 
-  const parseCtx = createParseContext(file, source);
+  const parseCtx = createParseContext(file, source, runtime);
   const rows = fallback.parser(parseCtx);
 
   const collectedRows: ParsedRow[] = [];
-  const filteredRows = filterRows(rows, file, fallback.filter, collectedRows);
+  const filteredRows = filterRows(rows, file, fallback.filter, runtime, collectedRows);
 
-  await withPipelineSpan(parseSpanId, async () => {
+  await runtime.withSpan(parseSpanId, async () => {
     await emit({
       type: "parse:end",
       file,
@@ -240,7 +244,7 @@ export async function processFallback(options: ProcessFallbackOptions): Promise<
 
   const resolveStartTime = performance.now();
   const resolveSpanId = spanId();
-  await withPipelineSpan(resolveSpanId, async () => {
+  await runtime.withSpan(resolveSpanId, async () => {
     await emit({
       type: "resolve:start",
       file,
@@ -255,7 +259,7 @@ export async function processFallback(options: ProcessFallbackOptions): Promise<
   const resolveCtx = {
     version,
     file,
-    logger: createPipelineLogger(),
+    logger: createPipelineLogger(runtime),
     getArtifact: <K extends string>(id: K): unknown => {
       if (!(id in artifactsMap)) {
         throw new Error(`Artifact "${String(id)}" not found.`);
@@ -278,7 +282,7 @@ export async function processFallback(options: ProcessFallbackOptions): Promise<
   const outputs = await fallback.resolver(resolveCtx, filteredRows);
   const outputArray = Array.isArray(outputs) ? outputs : [outputs];
 
-  await withPipelineSpan(resolveSpanId, async () => {
+  await runtime.withSpan(resolveSpanId, async () => {
     await emit({
       type: "resolve:end",
       file,
@@ -297,9 +301,10 @@ export async function* filterRows(
   rows: AsyncIterable<ParsedRow>,
   file: FileContext,
   filter: PipelineFilter | undefined,
+  runtime: PipelineExecutionRuntime,
   collector: ParsedRow[],
 ): AsyncIterable<ParsedRow> {
-  const logger = createPipelineLogger();
+  const logger = createPipelineLogger(runtime);
 
   for await (const row of rows) {
     collector.push(row);

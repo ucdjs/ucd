@@ -15,10 +15,10 @@ import type {
   PipelineExecutorRunOptions,
   PipelineSummary,
 } from "../types";
+import type { PipelineExecutionRuntime } from "../runtime";
 import type { EventEmitter } from "./events";
 import { getExecutionLayers } from "@ucdjs/pipelines-core";
 import { PipelineGraphBuilder } from "@ucdjs/pipelines-graph";
-import { withPipelineSpan } from "../log-context";
 import { createPipelineLogger } from "../logger";
 import { buildCacheKey, storeCacheEntry, tryLoadCachedResult } from "./cache-helpers";
 import { emitWithSpan } from "./events";
@@ -36,10 +36,11 @@ export interface RunPipelineOptions {
   cacheStore?: CacheStore;
   artifacts: PipelineArtifactDefinition[];
   events: EventEmitter;
+  runtime: PipelineExecutionRuntime;
 }
 
 export async function runPipeline(options: RunPipelineOptions): Promise<PipelineExecutionResult> {
-  const { pipeline, runOptions = {}, cacheStore, artifacts: globalArtifacts, events } = options;
+  const { pipeline, runOptions = {}, cacheStore, artifacts: globalArtifacts, events, runtime } = options;
   const { cache: enableCache = true, versions: runVersions } = runOptions;
   const useCache = enableCache && cacheStore != null;
   const versionsToRun = runVersions ?? pipeline.versions;
@@ -57,10 +58,10 @@ export async function runPipeline(options: RunPipelineOptions): Promise<Pipeline
   let fallbackFiles = 0;
 
   const dag = pipeline.dag;
-  const logger = createPipelineLogger();
+  const logger = createPipelineLogger(runtime);
 
   const pipelineSpanId = events.nextSpanId();
-  await emitWithSpan(pipelineSpanId, () =>
+  await emitWithSpan(runtime, pipelineSpanId, () =>
     events.emit({
       type: "pipeline:start",
       versions: versionsToRun,
@@ -71,7 +72,7 @@ export async function runPipeline(options: RunPipelineOptions): Promise<Pipeline
   for (const version of versionsToRun) {
     const versionStartTime = performance.now();
     const versionSpanId = events.nextSpanId();
-    await emitWithSpan(versionSpanId, () =>
+    await emitWithSpan(runtime, versionSpanId, () =>
       events.emit({
         type: "version:start",
         version,
@@ -95,7 +96,7 @@ export async function runPipeline(options: RunPipelineOptions): Promise<Pipeline
     for (const artifactDef of globalArtifacts) {
       const artifactStartTime = performance.now();
       const artifactSpanId = events.nextSpanId();
-      await emitWithSpan(artifactSpanId, () =>
+      await emitWithSpan(runtime, artifactSpanId, () =>
         events.emit({
           type: "artifact:start",
           artifactId: artifactDef.id,
@@ -114,7 +115,7 @@ export async function runPipeline(options: RunPipelineOptions): Promise<Pipeline
           const files = await listVersionFiles();
           for (const file of files) {
             if (artifactDef.filter({ file, logger })) {
-              rows = artifactDef.parser(createParseContext(file, source));
+              rows = artifactDef.parser(createParseContext(file, source, runtime));
               break;
             }
           }
@@ -131,7 +132,7 @@ export async function runPipeline(options: RunPipelineOptions): Promise<Pipeline
           version,
         };
         errors.push(pipelineError);
-        await emitWithSpan(artifactSpanId, () =>
+        await emitWithSpan(runtime, artifactSpanId, () =>
           events.emit({
             type: "error",
             error: pipelineError,
@@ -140,7 +141,7 @@ export async function runPipeline(options: RunPipelineOptions): Promise<Pipeline
           }));
       }
 
-      await emitWithSpan(artifactSpanId, () =>
+      await emitWithSpan(runtime, artifactSpanId, () =>
         events.emit({
           type: "artifact:end",
           artifactId: artifactDef.id,
@@ -188,7 +189,7 @@ export async function runPipeline(options: RunPipelineOptions): Promise<Pipeline
             graph.addEdge(fileNodeId, routeNodeId, "matched");
 
             const fileSpanId = events.nextSpanId();
-            await emitWithSpan(fileSpanId, () =>
+            await emitWithSpan(runtime, fileSpanId, () =>
               events.emit({
                 type: "file:matched",
                 file,
@@ -197,7 +198,7 @@ export async function runPipeline(options: RunPipelineOptions): Promise<Pipeline
                 timestamp: performance.now(),
               }));
 
-            await withPipelineSpan(fileSpanId, async () => {
+            await runtime.withSpan(fileSpanId, async () => {
               try {
                 const routeCacheEnabled = useCache && route.cache !== false;
                 let result = null as Awaited<ReturnType<typeof processRoute>> | null;
@@ -242,6 +243,7 @@ export async function runPipeline(options: RunPipelineOptions): Promise<Pipeline
                     file,
                     route,
                     artifactsMap: combinedArtifacts,
+                    runtime,
                     source,
                     version,
                     emit: (event: PipelineEventInput) => events.emit({ ...event, spanId: fileSpanId }),
@@ -334,7 +336,7 @@ export async function runPipeline(options: RunPipelineOptions): Promise<Pipeline
           graph.addEdge(sourceNodeId, fileNodeId, "provides");
 
           const fallbackSpanId = events.nextSpanId();
-          await emitWithSpan(fallbackSpanId, () =>
+          await emitWithSpan(runtime, fallbackSpanId, () =>
             events.emit({
               type: "file:fallback",
               file,
@@ -343,10 +345,11 @@ export async function runPipeline(options: RunPipelineOptions): Promise<Pipeline
             }));
 
           try {
-            const fallbackOutputs = await withPipelineSpan(fallbackSpanId, () => processFallback({
+            const fallbackOutputs = await runtime.withSpan(fallbackSpanId, () => processFallback({
               file,
               fallback: pipeline.fallback!,
               artifactsMap: { ...artifactsMap, ...globalArtifactsMap },
+              runtime,
               source,
               version,
               emit: (event: PipelineEventInput) => events.emit({ ...event, spanId: fallbackSpanId }),
@@ -373,7 +376,7 @@ export async function runPipeline(options: RunPipelineOptions): Promise<Pipeline
               version,
             };
             errors.push(pipelineError);
-            await emitWithSpan(fallbackSpanId, () =>
+            await emitWithSpan(runtime, fallbackSpanId, () =>
               events.emit({
                 type: "error",
                 error: pipelineError,
@@ -383,7 +386,7 @@ export async function runPipeline(options: RunPipelineOptions): Promise<Pipeline
           }
         } else {
           skippedFiles++;
-          await emitWithSpan(versionSpanId, () =>
+          await emitWithSpan(runtime, versionSpanId, () =>
             events.emit({
               type: "file:skipped",
               file,
@@ -403,7 +406,7 @@ export async function runPipeline(options: RunPipelineOptions): Promise<Pipeline
             version,
           };
           errors.push(pipelineError);
-          await emitWithSpan(versionSpanId, () =>
+          await emitWithSpan(runtime, versionSpanId, () =>
             events.emit({
               type: "error",
               error: pipelineError,
@@ -411,7 +414,7 @@ export async function runPipeline(options: RunPipelineOptions): Promise<Pipeline
               timestamp: performance.now(),
             }));
         } else {
-          await emitWithSpan(versionSpanId, () =>
+          await emitWithSpan(runtime, versionSpanId, () =>
             events.emit({
               type: "file:skipped",
               file,
@@ -423,7 +426,7 @@ export async function runPipeline(options: RunPipelineOptions): Promise<Pipeline
       }
     }
 
-    await emitWithSpan(versionSpanId, () =>
+    await emitWithSpan(runtime, versionSpanId, () =>
       events.emit({
         type: "version:end",
         version,
@@ -434,7 +437,7 @@ export async function runPipeline(options: RunPipelineOptions): Promise<Pipeline
   }
 
   const durationMs = performance.now() - startTime;
-  await emitWithSpan(pipelineSpanId, () =>
+  await emitWithSpan(runtime, pipelineSpanId, () =>
     events.emit({
       type: "pipeline:end",
       durationMs,
