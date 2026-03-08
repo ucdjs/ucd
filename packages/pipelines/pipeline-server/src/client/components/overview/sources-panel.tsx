@@ -1,4 +1,4 @@
-import type { SourceSummary } from "#functions";
+import type { SourceSummary } from "#queries/sources";
 import { Link } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";

@@ -1,3 +1,6 @@
+import { sourceFileQueryOptions } from "#queries/file";
+import { sourceQueryOptions } from "#queries/source";
+import { sourcesQueryOptions } from "#queries/sources";
 import { useQueries, useQuery, useSuspenseQuery } from "@tanstack/react-query";
 import { Link, useParams } from "@tanstack/react-router";
 import { ThemeToggle, UcdLogo } from "@ucdjs-internal/shared-ui/components";
@@ -18,9 +21,6 @@ import {
 } from "@ucdjs-internal/shared-ui/ui/sidebar";
 import { BookOpen, ExternalLink, Folder, FolderOpen, Hash, Tag } from "lucide-react";
 import * as React from "react";
-import { sourceFileQueryOptions } from "../functions/file";
-import { sourceQueryOptions } from "../functions/source";
-import { sourcesQueryOptions } from "../functions/sources";
 import { SourceSwitcher } from "./source-switcher";
 
 export interface PipelineSidebarProps {

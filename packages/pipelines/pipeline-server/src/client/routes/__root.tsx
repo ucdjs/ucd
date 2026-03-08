@@ -1,4 +1,7 @@
 import type { QueryClient } from "@tanstack/react-query";
+import { PipelineSidebar } from "#components/pipeline-sidebar";
+import { configQueryOptions } from "#queries/config";
+import { sourcesQueryOptions } from "#queries/sources";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { HotkeysDevtoolsPanel } from "@tanstack/react-hotkeys-devtools";
 import { useSuspenseQuery } from "@tanstack/react-query";
@@ -6,8 +9,6 @@ import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import { createRootRouteWithContext, Outlet } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { SidebarInset, SidebarProvider } from "@ucdjs-internal/shared-ui/ui/sidebar";
-import { PipelineSidebar } from "#components";
-import { configQueryOptions, sourcesQueryOptions } from "#functions";
 import { lazy, Suspense } from "react";
 
 const PipelineCommandPalette = lazy(() =>

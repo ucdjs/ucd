@@ -1,8 +1,9 @@
+import { sourceFileQueryOptions } from "#queries/file";
+import { sourceQueryOptions } from "#queries/source";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
-import { sourceFileQueryOptions, sourceQueryOptions } from "#functions";
 
 export const Route = createFileRoute("/s/$sourceId/$sourceFileId/")({
   component: RouteComponent,

@@ -1,4 +1,3 @@
-import type { QueryClient } from "@tanstack/react-query";
 import type {
   ExecutePipelineResponse,
   ExecutionEventsResponse,
@@ -8,8 +7,7 @@ import type {
   ExecutionSummaryItem,
 } from "#shared/schemas/execution";
 import type { ExecuteResult } from "#shared/types";
-import { mutationOptions, queryOptions } from "@tanstack/react-query";
-import { customFetch } from "@ucdjs-internal/shared";
+import type { QueryClient } from "@tanstack/react-query";
 import {
   ExecutePipelineResponseSchema,
   ExecutionEventsResponseSchema,
@@ -17,7 +15,9 @@ import {
   ExecutionLogsResponseSchema,
   ExecutionsResponseSchema,
 } from "#shared/schemas/execution";
-import { refetchWhileExecutionActive } from "./shared";
+import { mutationOptions, queryOptions } from "@tanstack/react-query";
+import { customFetch } from "@ucdjs-internal/shared";
+import { refetchWhileExecutionActive } from "./utils";
 
 export type {
   ExecutePipelineResponse,

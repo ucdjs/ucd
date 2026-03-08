@@ -1,3 +1,4 @@
+import { sourcesQueryOptions } from "#queries/sources";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import {
@@ -14,7 +15,6 @@ import {
 import { Skeleton } from "@ucdjs-internal/shared-ui/ui/skeleton";
 import { ChevronsUpDown, GitBranch } from "lucide-react";
 import * as React from "react";
-import { sourcesQueryOptions } from "../functions/sources";
 
 function getTypeBadge(type: "local" | "github" | "gitlab") {
   if (type === "github") {

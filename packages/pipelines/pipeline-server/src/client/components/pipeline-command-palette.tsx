@@ -1,5 +1,9 @@
-import { useQueries, useSuspenseQuery } from "@tanstack/react-query";
+import { useExecute } from "#hooks/use-execute";
+import { sourceFileQueryOptions } from "#queries/file";
+import { sourceQueryOptions } from "#queries/source";
+import { sourcesQueryOptions } from "#queries/sources";
 import { useHotkey } from "@tanstack/react-hotkeys";
+import { useQueries, useSuspenseQuery } from "@tanstack/react-query";
 import { useNavigate, useParams } from "@tanstack/react-router";
 import {
   Command,
@@ -11,8 +15,6 @@ import {
   CommandList,
   CommandShortcut,
 } from "@ucdjs-internal/shared-ui/ui/command";
-import { sourceFileQueryOptions, sourceQueryOptions, sourcesQueryOptions } from "#functions";
-import { useExecute } from "#hooks";
 import { FileCode, Loader2, Play, Search, Terminal } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
@@ -58,10 +60,11 @@ export function PipelineCommandPalette() {
   });
   const { execute, executing } = useExecute();
   const navigate = useNavigate();
-  const params = useParams({ strict: false });
-  const currentSourceId = typeof params.sourceId === "string" ? params.sourceId : undefined;
-  const currentFileId = typeof params.sourceFileId === "string" ? params.sourceFileId : undefined;
-  const currentPipelineId = typeof params.pipelineId === "string" ? params.pipelineId : undefined;
+  const {
+    pipelineId: currentPipelineId,
+    sourceFileId: currentFileId,
+    sourceId: currentSourceId,
+  } = useParams({ strict: false });
 
   const pipelines = useMemo(() => {
     return fileQueries.flatMap((query) => {
@@ -89,20 +92,6 @@ export function PipelineCommandPalette() {
     pipeline.sourceId === currentSourceId
     && pipeline.fileId === currentFileId
     && pipeline.id === currentPipelineId,
-  );
-
-  useHotkey("Mod+K", (event) => {
-    event.preventDefault();
-    setOpen((value) => !value);
-  });
-
-  useHotkey(
-    "Mod+E",
-    (event) => {
-      event.preventDefault();
-      void handleExecuteCurrent();
-    },
-    { enabled: open && Boolean(currentPipeline) && !executing },
   );
 
   useEffect(() => {
@@ -140,6 +129,20 @@ export function PipelineCommandPalette() {
     navigate({ to });
     setOpen(false);
   }, [navigate]);
+
+  useHotkey("Mod+K", (event) => {
+    event.preventDefault();
+    setOpen((value) => !value);
+  });
+
+  useHotkey(
+    "Mod+E",
+    (event) => {
+      event.preventDefault();
+      void handleExecuteCurrent();
+    },
+    { enabled: open && Boolean(currentPipeline) && !executing },
+  );
 
   return (
     <CommandDialog open={open} onOpenChange={setOpen}>

@@ -1,8 +1,8 @@
+import { useExecute } from "#hooks/use-execute";
 import { Link, useNavigate, useParams } from "@tanstack/react-router";
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 import { ArrowRight, Boxes, History, Loader2, Play, Route as RouteIcon } from "lucide-react";
-import { useExecute } from "../../hooks/use-execute";
 
 interface QuickActionsCardProps {
   versions: string[];

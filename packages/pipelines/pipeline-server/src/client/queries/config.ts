@@ -1,6 +1,6 @@
+import { ConfigSchema } from "#shared/schemas/config";
 import { queryOptions } from "@tanstack/react-query";
 import { customFetch } from "@ucdjs-internal/shared";
-import { ConfigSchema } from "#shared/schemas/config";
 
 export async function fetchConfig({
   baseUrl,
