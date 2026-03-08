@@ -1,5 +1,5 @@
-import type { FileContext } from "./types";
 import type { PipelineLogger } from "./logger";
+import type { FileContext } from "./types";
 
 export interface TransformContext {
   version: string;
