@@ -1,5 +1,5 @@
-import { PipelineLoaderIssueSchema, SourceTypeSchema } from "./shared";
 import z from "zod";
+import { PipelineLoaderIssueSchema, SourceTypeSchema } from "./shared";
 
 export const SourceFileInfoSchema = z.object({
   id: z.string(),
