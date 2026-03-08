@@ -165,9 +165,6 @@ function ExecutionDetailPage() {
             <div className="flex flex-wrap items-end justify-between gap-3">
               <div>
                 <h2 className="text-sm font-semibold">Timeline</h2>
-                <p className="text-sm text-muted-foreground">
-                  Scan the execution phases, then drill into one span to filter the logs.
-                </p>
               </div>
               {selectedSpanId && (
                 <div className="inline-flex items-center gap-1 rounded-md border bg-muted px-2.5 py-1 text-xs text-muted-foreground">
