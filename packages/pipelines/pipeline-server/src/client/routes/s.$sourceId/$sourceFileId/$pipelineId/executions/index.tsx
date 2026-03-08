@@ -1,3 +1,6 @@
+import { StatusIcon } from "#components/execution/execution-status";
+import { formatExecutionDuration, formatStartedAt } from "../../../../../components/execution/execution-utils";
+import { executionsQueryOptions } from "#queries/execution";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
@@ -9,9 +12,6 @@ import {
   TableHeader,
   TableRow,
 } from "@ucdjs-internal/shared-ui/ui/table";
-import { StatusIcon } from "#components";
-import { executionsQueryOptions } from "#functions";
-import { formatExecutionDuration, formatStartedAt } from "#lib";
 import { Play } from "lucide-react";
 
 export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/executions/")({
@@ -77,64 +77,64 @@ function ExecutionsListPage() {
 
                       return (
                         <TableRow key={execution.id} className="group">
-                        <TableCell>
-                          <div className="flex items-center gap-2">
-                            <StatusIcon status={execution.status} />
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <code className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded">
-                            {execution.id}
-                          </code>
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {formatStartedAt(execution.startedAt)}
-                        </TableCell>
-                        <TableCell>
-                          {formatExecutionDuration(execution.startedAt, execution.completedAt)}
-                        </TableCell>
-                        <TableCell>
-                          {execution.versions
-                            ? (
-                                <div className="flex gap-1 flex-wrap">
-                                  {execution.versions.map((version) => (
-                                    <Badge key={version} variant="secondary" className="text-xs">
-                                      {version}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              )
-                            : (
-                                <span className="text-muted-foreground text-sm">-</span>
-                              )}
-                        </TableCell>
-                        <TableCell>
-                          {routeSummary?.totalRoutes != null
-                            ? (
-                                <span className="text-sm">
-                                  {routeSummary.totalRoutes}
-                                  <span className="text-muted-foreground">
-                                    {" "}
-                                    (
-                                    {routeSummary.cached ?? 0}
-                                    {" "}
-                                    cached)
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <StatusIcon status={execution.status} />
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <code className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded">
+                              {execution.id}
+                            </code>
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">
+                            {formatStartedAt(execution.startedAt)}
+                          </TableCell>
+                          <TableCell>
+                            {formatExecutionDuration(execution.startedAt, execution.completedAt)}
+                          </TableCell>
+                          <TableCell>
+                            {execution.versions
+                              ? (
+                                  <div className="flex gap-1 flex-wrap">
+                                    {execution.versions.map((version) => (
+                                      <Badge key={version} variant="secondary" className="text-xs">
+                                        {version}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                )
+                              : (
+                                  <span className="text-muted-foreground text-sm">-</span>
+                                )}
+                          </TableCell>
+                          <TableCell>
+                            {routeSummary?.totalRoutes != null
+                              ? (
+                                  <span className="text-sm">
+                                    {routeSummary.totalRoutes}
+                                    <span className="text-muted-foreground">
+                                      {" "}
+                                      (
+                                      {routeSummary.cached ?? 0}
+                                      {" "}
+                                      cached)
+                                    </span>
                                   </span>
-                                </span>
-                              )
-                            : (
-                                <span className="text-muted-foreground text-sm">-</span>
-                              )}
-                        </TableCell>
-                        <TableCell>
-                          <Link
-                            to="/s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId"
-                            params={{ sourceId, sourceFileId, pipelineId, executionId: execution.id }}
-                            className="text-primary text-sm font-medium hover:underline"
-                          >
-                            View
-                          </Link>
-                        </TableCell>
+                                )
+                              : (
+                                  <span className="text-muted-foreground text-sm">-</span>
+                                )}
+                          </TableCell>
+                          <TableCell>
+                            <Link
+                              to="/s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId"
+                              params={{ sourceId, sourceFileId, pipelineId, executionId: execution.id }}
+                              className="text-primary text-sm font-medium hover:underline"
+                            >
+                              View
+                            </Link>
+                          </TableCell>
                         </TableRow>
                       );
                     })}

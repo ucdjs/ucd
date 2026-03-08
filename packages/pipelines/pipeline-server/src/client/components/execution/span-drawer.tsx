@@ -1,8 +1,7 @@
-import type { ExecutionSpan } from "#lib/execution-logs";
-import { formatDuration } from "#lib/execution-logs";
-import { cn } from "#lib/utils";
+import type { ExecutionSpan } from "./execution-utils";
+import { cn } from "@ucdjs-internal/shared-ui";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@ucdjs-internal/shared-ui/ui/sheet";
-import { getPhaseColor } from "./waterfall/shared";
+import { formatDuration, getPhaseColor } from "./execution-utils";
 
 export interface ExecutionSpanDrawerProps {
   span: ExecutionSpan | null;

@@ -1,9 +1,9 @@
 import type { ExecutionLogItem } from "#shared/types";
-import { formatTimestamp } from "#lib/execution-logs";
-import { cn } from "#lib/utils";
+import { cn } from "@ucdjs-internal/shared-ui";
+import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@ucdjs-internal/shared-ui/ui/table";
 import { Fragment } from "react";
-import { ExecutionLogPayloadPanel } from "./log-payload";
+import { formatTimestamp } from "./execution-utils";
 
 export interface ExecutionLogTableProps {
   logs: ExecutionLogItem[];
@@ -13,6 +13,29 @@ export interface ExecutionLogTableProps {
 
 function getStreamAccent(stream: ExecutionLogItem["stream"]): string {
   return stream === "stderr" ? "bg-red-500" : "bg-sky-500";
+}
+
+function ExecutionLogPayloadPanel({ log }: { log: ExecutionLogItem | null }) {
+  if (!log) return null;
+
+  const payload = log.payload ?? { message: log.message, stream: log.stream };
+  const jsonString = JSON.stringify(payload, null, 2);
+
+  return (
+    <div className="border border-border rounded-lg bg-background p-4">
+      <div className="flex items-center justify-between mb-3">
+        <div className="text-sm font-medium">Payload</div>
+        {payload.event && (
+          <Badge variant="outline" className="text-xs">
+            {payload.event.type}
+          </Badge>
+        )}
+      </div>
+      <pre className="text-xs font-mono whitespace-pre-wrap break-words">
+        <code>{jsonString}</code>
+      </pre>
+    </div>
+  );
 }
 
 export function ExecutionLogTable({ logs, expandedLogId, onToggle }: ExecutionLogTableProps) {
