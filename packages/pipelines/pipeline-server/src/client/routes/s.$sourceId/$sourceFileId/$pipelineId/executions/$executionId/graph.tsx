@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, notFound } from "@tanstack/react-router";
-import { PipelineGraph } from "@ucdjs/pipelines-ui/components";
+import { PipelineGraph, StatusBadge } from "@ucdjs/pipelines-ui/components";
 import { executionGraphQueryOptions, isNotFoundError } from "@ucdjs/pipelines-ui/functions";
 
 export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId/graph")({
@@ -35,9 +35,18 @@ function ExecutionGraphPage() {
 
   if (!graph || graph.nodes.length === 0) {
     return (
-      <div className="p-6">
+      <div className="flex h-full flex-col p-4 sm:p-6">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h1 className="text-lg font-semibold">Execution graph</h1>
+            <p className="text-sm text-muted-foreground">
+              Inspect the recorded graph for this execution.
+            </p>
+          </div>
+          <StatusBadge status={data.status} />
+        </div>
         <section
-          className="border border-dashed border-border rounded-lg p-6 text-sm text-muted-foreground"
+          className="flex flex-1 items-center justify-center rounded-xl border border-dashed border-border bg-card/40 p-6 text-sm text-muted-foreground"
           role="status"
           aria-live="polite"
         >
@@ -48,19 +57,37 @@ function ExecutionGraphPage() {
   }
 
   return (
-    <section
-      className="h-full min-h-125 bg-card border border-border rounded-lg overflow-hidden m-6"
-      role="tabpanel"
-      id="tabpanel-execution-graph"
-      aria-labelledby="tab-graphs"
-    >
-      <PipelineGraph
-        graph={graph}
-        showFilters
-        showDetails
-        showMinimap
-        className="bg-card"
-      />
-    </section>
+    <div className="flex h-full min-h-0 flex-col p-4 sm:p-6">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="text-lg font-semibold">Execution graph</h1>
+          <p className="text-sm text-muted-foreground">
+            Execution
+            {" "}
+            <code className="font-mono text-xs">{executionId}</code>
+            {" "}
+            for pipeline
+            {" "}
+            <code className="font-mono text-xs">{pipelineId}</code>
+          </p>
+        </div>
+        <StatusBadge status={data.status} />
+      </div>
+
+      <section
+        className="min-h-0 flex-1 overflow-hidden rounded-2xl border border-border bg-card/40"
+        role="tabpanel"
+        id="tabpanel-execution-graph"
+        aria-labelledby="tab-graphs"
+      >
+        <PipelineGraph
+          graph={graph}
+          showFilters
+          showDetails
+          showMinimap
+          className="h-full"
+        />
+      </section>
+    </div>
   );
 }

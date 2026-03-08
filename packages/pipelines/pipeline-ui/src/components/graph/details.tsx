@@ -1,108 +1,19 @@
 import type { PipelineGraphNode } from "@ucdjs/pipelines-core";
-import type { CSSProperties } from "react";
+import { cn } from "#lib/utils";
+import { X } from "lucide-react";
 
 export interface PipelineGraphDetailsProps {
   node: PipelineGraphNode | null;
   onClose: () => void;
 }
 
-const containerStyle: CSSProperties = {
-  width: "280px",
-  backgroundColor: "#ffffff",
-  borderLeft: "1px solid #e5e7eb",
-  display: "flex",
-  flexDirection: "column",
-  height: "100%",
-  boxShadow: "-2px 0 8px rgba(0,0,0,0.05)",
-  fontFamily: "system-ui, -apple-system, sans-serif",
-};
-
-const headerStyle: CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "space-between",
-  padding: "12px",
-  borderBottom: "1px solid #e5e7eb",
-};
-
-const closeButtonStyle: CSSProperties = {
-  padding: "4px",
-  color: "#9ca3af",
-  background: "none",
-  border: "none",
-  borderRadius: "4px",
-  cursor: "pointer",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-};
-
-const contentStyle: CSSProperties = {
-  flex: 1,
-  padding: "12px",
-  overflowY: "auto",
-};
-
-const detailsContainerStyle: CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  gap: "12px",
-};
-
-const detailRowStyle: CSSProperties = {
-  display: "flex",
-  flexDirection: "column",
-  gap: "2px",
-};
-
-const detailLabelStyle: CSSProperties = {
-  fontSize: "11px",
-  fontWeight: 500,
-  color: "#6b7280",
-  textTransform: "uppercase",
-  letterSpacing: "0.025em",
-};
-
-const detailValueStyle: CSSProperties = {
-  fontSize: "13px",
-  color: "#111827",
-  fontFamily: "ui-monospace, monospace",
-  wordBreak: "break-all",
-};
-
-const badgeStyleCache = new Map<string, CSSProperties>();
-
-function getBadgeStyle(type: string): CSSProperties {
-  let cached = badgeStyleCache.get(type);
-  if (!cached) {
-    const colors: Record<string, { bg: string; color: string }> = {
-      source: { bg: "#eef2ff", color: "#4f46e5" },
-      file: { bg: "#ecfdf5", color: "#059669" },
-      route: { bg: "#fffbeb", color: "#d97706" },
-      artifact: { bg: "#f5f3ff", color: "#7c3aed" },
-      output: { bg: "#f0f9ff", color: "#0284c7" },
-    };
-    const c = colors[type] ?? { bg: "#f3f4f6", color: "#6b7280" };
-    cached = {
-      padding: "2px 8px",
-      fontSize: "11px",
-      fontWeight: 600,
-      borderRadius: "4px",
-      textTransform: "uppercase",
-      letterSpacing: "0.025em",
-      backgroundColor: c.bg,
-      color: c.color,
-    };
-    badgeStyleCache.set(type, cached);
-  }
-  return cached;
-}
-
 function DetailRow({ label, value }: { label: string; value: string }) {
   return (
-    <div style={detailRowStyle}>
-      <span style={detailLabelStyle}>{label}</span>
-      <span style={detailValueStyle}>{value}</span>
+    <div className="flex flex-col gap-1 rounded-lg border border-border/60 bg-background/70 p-3">
+      <span className="text-[11px] font-medium uppercase tracking-[0.04em] text-muted-foreground">
+        {label}
+      </span>
+      <span className="break-all font-mono text-sm text-foreground">{value}</span>
     </div>
   );
 }
@@ -135,11 +46,22 @@ function NodeDetails({ node }: { node: PipelineGraphNode }) {
   }
 }
 
-const closeIcon = (
-  <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-  </svg>
-);
+function getBadgeClassName(type: string) {
+  switch (type) {
+    case "source":
+      return "bg-indigo-500/12 text-indigo-600 dark:text-indigo-300";
+    case "file":
+      return "bg-emerald-500/12 text-emerald-600 dark:text-emerald-300";
+    case "route":
+      return "bg-amber-500/12 text-amber-700 dark:text-amber-300";
+    case "artifact":
+      return "bg-violet-500/12 text-violet-600 dark:text-violet-300";
+    case "output":
+      return "bg-sky-500/12 text-sky-600 dark:text-sky-300";
+    default:
+      return "bg-muted text-muted-foreground";
+  }
+}
 
 export function PipelineGraphDetails({
   node,
@@ -150,23 +72,23 @@ export function PipelineGraphDetails({
   }
 
   return (
-    <div style={containerStyle}>
-      <div style={headerStyle}>
-        <span style={getBadgeStyle(node.type)}>
+    <div className="flex h-full w-80 shrink-0 flex-col border-l border-border bg-card/95 shadow-2xl backdrop-blur-sm">
+      <div className="flex items-center justify-between border-b border-border px-4 py-3">
+        <span className={cn("rounded-md px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.05em]", getBadgeClassName(node.type))}>
           {node.type}
         </span>
         <button
           type="button"
           onClick={onClose}
-          style={closeButtonStyle}
+          className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
           aria-label="Close details"
         >
-          {closeIcon}
+          <X className="h-4 w-4" />
         </button>
       </div>
 
-      <div style={contentStyle}>
-        <div style={detailsContainerStyle}>
+      <div className="flex-1 overflow-y-auto p-4">
+        <div className="space-y-3">
           <DetailRow label="Node ID" value={node.id} />
           <NodeDetails node={node} />
         </div>

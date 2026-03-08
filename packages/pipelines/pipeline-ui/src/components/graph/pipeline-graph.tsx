@@ -5,16 +5,11 @@ import type {
   PipelineGraph as PipelineGraphType,
 } from "@ucdjs/pipelines-core";
 import type { NodeMouseHandler } from "@xyflow/react";
-import type { CSSProperties } from "react";
 import { filterNodesByType, pipelineGraphToFlow } from "#lib/adapter";
 import { getNodeColor } from "#lib/colors";
 import { applyLayout } from "#lib/layout";
-import {
-  Background,
-  Controls,
-  MiniMap,
-  ReactFlow,
-} from "@xyflow/react";
+import { cn } from "#lib/utils";
+import { Background, Controls, MiniMap, ReactFlow } from "@xyflow/react";
 import { memo, useCallback, useMemo, useState } from "react";
 import { PipelineGraphDetails } from "./details";
 import { PipelineGraphFilters } from "./filters";
@@ -29,26 +24,6 @@ const defaultVisibleTypes: Set<PipelineGraphNodeType> = new Set([
   "artifact",
   "output",
 ]);
-
-const containerStyle: CSSProperties = {
-  display: "flex",
-  height: "100%",
-  width: "100%",
-};
-
-const graphContainerStyle: CSSProperties = {
-  flex: 1,
-  display: "flex",
-  flexDirection: "column",
-  position: "relative",
-};
-
-const filtersContainerStyle: CSSProperties = {
-  position: "absolute",
-  top: "12px",
-  left: "12px",
-  zIndex: 10,
-};
 
 const fitViewOptions = { padding: 0.2 } as const;
 const proOptions = { hideAttribution: true } as const;
@@ -128,10 +103,10 @@ export const PipelineGraph = memo(({
   }, [onNodeSelect]);
 
   return (
-    <div style={containerStyle} className={className}>
-      <div style={graphContainerStyle}>
+    <div className={cn("pipeline-graph flex h-full w-full overflow-hidden", className)}>
+      <div className="relative flex min-w-0 flex-1 flex-col">
         {showFilters && (
-          <div style={filtersContainerStyle}>
+          <div className="absolute left-3 top-3 z-10">
             <PipelineGraphFilters
               visibleTypes={visibleTypes}
               onToggleType={handleToggleType}
@@ -152,6 +127,7 @@ export const PipelineGraph = memo(({
           proOptions={proOptions}
           nodesDraggable={false}
           nodesConnectable={false}
+          className="bg-transparent"
         >
           <Background />
           <Controls />
