@@ -3,6 +3,22 @@ export {
   type VersionSelectorProps,
 } from "./detail/version-selector";
 export {
+  ExecutionLogPayloadPanel,
+  type ExecutionLogPayloadPanelProps,
+} from "./execution/log-payload";
+export {
+  ExecutionLogTable,
+  type ExecutionLogTableProps,
+} from "./execution/log-table";
+export {
+  ExecutionSpanDrawer,
+  type ExecutionSpanDrawerProps,
+} from "./execution/span-drawer";
+export {
+  ExecutionWaterfall,
+  type ExecutionWaterfallProps,
+} from "./execution/waterfall";
+export {
   PipelineGraphDetails,
   type PipelineGraphDetailsProps,
 } from "./graph/details";
@@ -23,22 +39,6 @@ export {
   PipelineGraph,
   type PipelineGraphProps,
 } from "./graph/pipeline-graph";
-export {
-  ExecutionLogPayloadPanel,
-  type ExecutionLogPayloadPanelProps,
-} from "./execution/log-payload";
-export {
-  ExecutionLogTable,
-  type ExecutionLogTableProps,
-} from "./execution/log-table";
-export {
-  ExecutionSpanDrawer,
-  type ExecutionSpanDrawerProps,
-} from "./execution/span-drawer";
-export {
-  ExecutionWaterfall,
-  type ExecutionWaterfallProps,
-} from "./execution/waterfall";
 export { QuickActionsCard } from "./overview/quick-actions-card";
 export { RecentExecutionsCard } from "./overview/recent-executions-card";
 export {
