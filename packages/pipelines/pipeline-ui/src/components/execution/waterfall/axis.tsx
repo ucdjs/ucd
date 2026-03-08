@@ -1,4 +1,4 @@
-import { formatTickLabel } from "./shared";
+import { formatTickLabel, getTimelineTickColumn, timelineColumns } from "./shared";
 
 export interface ExecutionWaterfallAxisProps {
   durationMs: number;
@@ -10,18 +10,26 @@ export function ExecutionWaterfallAxis({
   ticks,
 }: ExecutionWaterfallAxisProps) {
   return (
-    <div className="grid gap-2 pt-1 text-[11px] text-muted-foreground md:grid-cols-[minmax(0,20rem)_minmax(0,1fr)]">
-      <div className="flex items-center justify-between rounded-lg border border-transparent px-3 uppercase tracking-wide">
-        <span>Span</span>
-        <span>Duration</span>
+    <div
+      className="grid gap-0 border-b border-border/60 px-3 py-2 text-xs text-muted-foreground"
+      style={{ gridTemplateColumns: "15rem minmax(0, 1fr)" }}
+    >
+      <div className="flex items-center border-r border-border/50 pr-4 font-medium uppercase tracking-wide">
+        <span>Name</span>
       </div>
-      <div className="relative hidden h-5 min-w-0 md:block">
+      <div
+        className="grid h-6 min-w-0 pl-4"
+        style={{ gridTemplateColumns: `repeat(${timelineColumns}, minmax(0, 1fr))` }}
+      >
         {ticks.map((tick) => {
-          const left = (tick / durationMs) * 100;
+          const column = getTimelineTickColumn(tick, durationMs);
           return (
-            <div key={tick} className="absolute inset-y-0" style={{ left: `${left}%` }}>
-              <div className="h-full w-px bg-border/60" />
-              <div className="absolute -top-1 -translate-x-1/2 bg-background px-1 text-[10px]">
+            <div
+              key={tick}
+              className="flex h-full items-center border-l border-border/50 text-xs"
+              style={{ gridColumnStart: column, gridRowStart: 1 }}
+            >
+              <div className="bg-background px-1">
                 {formatTickLabel(tick)}
               </div>
             </div>

@@ -47,7 +47,7 @@ export function ExecutionWaterfall({ spans, selectedSpanId, onSelect, onSpanClic
   }
 
   return (
-    <div className="rounded-xl border border-border bg-card/50">
+    <div className="space-y-3">
       <ExecutionWaterfallHeader
         totalSpans={spans.length}
         visibleSpans={filteredSpans.length}
@@ -57,45 +57,43 @@ export function ExecutionWaterfall({ spans, selectedSpanId, onSelect, onSpanClic
         onClear={() => onSelect(null)}
       />
 
-      <div className="space-y-4 p-3">
-        <div
-          className={cn(
-            "rounded-xl border border-dashed border-border p-5 text-sm text-muted-foreground",
-            hasSpans && "hidden",
-          )}
-        >
-          No spans recorded for this execution.
-        </div>
+      <div
+        className={cn(
+          "rounded-xl border border-dashed border-border p-5 text-sm text-muted-foreground",
+          hasSpans && "hidden",
+        )}
+      >
+        No spans recorded for this execution.
+      </div>
 
-        <div className={cn(!hasSpans && "hidden")}>
-          <ExecutionWaterfallFilters
-            spans={spans}
-            activePhases={activePhases}
-            onTogglePhase={handleTogglePhase}
-          />
+      <div className={cn("space-y-3", !hasSpans && "hidden")}>
+        <ExecutionWaterfallFilters
+          spans={spans}
+          activePhases={activePhases}
+          onTogglePhase={handleTogglePhase}
+        />
 
-          <ExecutionWaterfallAxis durationMs={duration} ticks={ticks} />
+        <ExecutionWaterfallAxis durationMs={duration} ticks={ticks} />
 
-          <div className="space-y-1">
-            {sortedSpans.map((span, index) => {
-              const spanKey = `${span.spanId}-${span.start}-${span.end}-${span.phase}-${index}`;
+        <div>
+          {sortedSpans.map((span, index) => {
+            const spanKey = `${span.spanId}-${span.start}-${span.end}-${span.phase}-${index}`;
 
-              return (
-                <ExecutionWaterfallRow
-                  key={spanKey}
-                  span={span}
-                  selected={selectedSpanId === span.spanId}
-                  start={start}
-                  durationMs={duration}
-                  ticks={ticks}
-                  onSelect={(nextSpan) => {
-                    onSelect(nextSpan.spanId);
-                    onSpanClick?.(nextSpan);
-                  }}
-                />
-              );
-            })}
-          </div>
+            return (
+              <ExecutionWaterfallRow
+                key={spanKey}
+                span={span}
+                selected={selectedSpanId === span.spanId}
+                start={start}
+                durationMs={duration}
+                ticks={ticks}
+                onSelect={(nextSpan) => {
+                  onSelect(nextSpan.spanId);
+                  onSpanClick?.(nextSpan);
+                }}
+              />
+            );
+          })}
         </div>
       </div>
     </div>

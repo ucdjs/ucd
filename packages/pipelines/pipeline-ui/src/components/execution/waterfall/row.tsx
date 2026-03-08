@@ -1,7 +1,16 @@
 import type { ExecutionSpan } from "#lib/execution-logs";
 import { formatDuration } from "#lib/execution-logs";
 import { cn } from "#lib/utils";
-import { getPhaseColor } from "./shared";
+import {
+  getPhaseBarStyle,
+  getPhaseAccentClass,
+  getPhaseColor,
+  getPhaseTextClass,
+  getTimelineGridRange,
+  getTimelineTickColumn,
+  getPhaseTrackStyle,
+  timelineColumns,
+} from "./shared";
 
 export interface ExecutionWaterfallRowProps {
   span: ExecutionSpan;
@@ -20,63 +29,89 @@ export function ExecutionWaterfallRow({
   ticks,
   onSelect,
 }: ExecutionWaterfallRowProps) {
-  const left = Math.min(((span.start - start) / durationMs) * 100, 100);
-  const width = Math.max(((span.end - span.start) / durationMs) * 100, 1.5);
-  const clampedWidth = Math.min(width, 100 - left);
   const phaseColor = span.isError ? "bg-red-500/80" : getPhaseColor(span.phase);
+  const phaseBadgeClass = span.isError
+    ? "border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-300"
+    : getPhaseAccentClass(span.phase);
+  const phaseBarStyle = span.isError
+    ? { background: "linear-gradient(90deg, #ef4444 0%, #dc2626 100%)" }
+    : getPhaseBarStyle(span.phase);
+  const phaseTrackStyle = span.isError
+    ? { backgroundColor: "rgb(220 38 38 / 0.18)" }
+    : getPhaseTrackStyle(span.phase);
+  const { startColumn, endColumn } = getTimelineGridRange(
+    span.start - start,
+    span.end - start,
+    durationMs,
+  );
 
   return (
     <div
       className={cn(
-        "grid gap-2 rounded-xl border border-border/70 bg-background/70 p-2 md:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] md:items-center",
-        selected && "border-primary/60 bg-primary/5",
+        "grid gap-0 border-b border-border/35 px-3 py-1.5",
+        selected && "bg-primary/4",
       )}
+      style={{ gridTemplateColumns: "15rem minmax(0, 1fr)" }}
     >
-      <div className="min-w-0 px-1">
-        <div className="flex items-center gap-2">
+      <div className="min-w-0 border-r border-border/50 pr-4">
+        <div className="flex min-w-0 items-center gap-1.5">
           <span className={cn("h-2 w-2 shrink-0 rounded-full", phaseColor)} />
           <span className="truncate text-sm font-medium" title={span.label}>
             {span.label}
           </span>
         </div>
-        <div className="mt-1 flex flex-wrap items-center gap-2 text-[11px] text-muted-foreground">
-          <span>{span.phase}</span>
-          <span>•</span>
-          <span>{formatDuration(span.durationMs)}</span>
+        <div className="mt-0.5 flex items-center gap-1.5 pl-3.5 text-xs text-muted-foreground">
+          <span className={cn("rounded-full border px-1.5 py-0.5 font-medium uppercase leading-none", phaseBadgeClass)}>
+            {span.phase}
+          </span>
+          <span className={cn("font-medium", getPhaseTextClass(span.phase))}>
+            {formatDuration(span.durationMs)}
+          </span>
           {span.isError && (
-            <>
-              <span>•</span>
-              <span className="text-red-600 dark:text-red-400">Error</span>
-            </>
+            <span className="text-red-600 dark:text-red-400">Error</span>
           )}
         </div>
       </div>
-      <div className="relative h-9 min-w-0 overflow-hidden rounded-lg border border-border/60 bg-muted/40">
+      <div
+        className="grid h-6 min-w-0 overflow-hidden pl-4"
+        style={{
+          gridTemplateColumns: `repeat(${timelineColumns}, minmax(0, 1fr))`,
+          backgroundImage: "repeating-linear-gradient(to right, transparent, transparent calc(20% - 1px), rgb(255 255 255 / 0.08) calc(20% - 1px), rgb(255 255 255 / 0.08) 20%)",
+        }}
+      >
         {ticks.map((tick) => {
-          const tickLeft = (tick / durationMs) * 100;
+          const column = getTimelineTickColumn(tick, durationMs);
           return (
             <span
               key={`${span.spanId}-${tick}`}
-              className="absolute top-0 bottom-0 w-px bg-border/40"
-              style={{ left: `${tickLeft}%` }}
+              className="h-full border-l border-border/45"
+              style={{ gridColumnStart: column, gridRowStart: 1 }}
             />
           );
         })}
+        <span
+          className="my-1 rounded-[2px]"
+          style={{
+            gridColumn: `${startColumn} / ${endColumn}`,
+            gridRowStart: 1,
+            ...phaseTrackStyle,
+          }}
+        />
         <button
           type="button"
           onClick={() => onSelect(span)}
           className={cn(
-            "absolute top-1/2 h-5 -translate-y-1/2 rounded-md px-1.5 text-[10px] font-semibold text-white/90 shadow-sm transition-all",
-            phaseColor,
+            "my-1 h-4 rounded-[2px] px-1.5 text-xs font-semibold text-white shadow-sm transition-all",
             selected && "ring-2 ring-primary ring-offset-1 ring-offset-background",
           )}
           style={{
-            left: `${Math.min(left, 98)}%`,
-            width: `${clampedWidth}%`,
+            gridColumn: `${startColumn} / ${endColumn}`,
+            gridRowStart: 1,
+            ...phaseBarStyle,
           }}
           title={`${span.label} · ${formatDuration(span.durationMs)}`}
         >
-          {formatDuration(span.durationMs)}
+          <span className="block truncate text-left">{formatDuration(span.durationMs)}</span>
         </button>
       </div>
     </div>
