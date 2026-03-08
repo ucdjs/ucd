@@ -6,10 +6,9 @@ import {
   isNotFoundError,
   pipelineQueryOptions,
   sourceFileQueryOptions,
-  useExecute,
-  usePipelineVersions,
-  VersionSelector,
-} from "@ucdjs/pipelines-ui";
+} from "@ucdjs/pipelines-ui/functions";
+import { VersionSelector } from "@ucdjs/pipelines-ui/components";
+import { useExecute, usePipelineVersions } from "@ucdjs/pipelines-ui/hooks";
 import { Play } from "lucide-react";
 import { useCallback } from "react";
 

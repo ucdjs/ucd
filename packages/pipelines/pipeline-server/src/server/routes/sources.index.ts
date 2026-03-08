@@ -1,4 +1,4 @@
-import type { SourceSummary, SourceType } from "@ucdjs/pipelines-ui";
+import type { SourceSummary, SourceType } from "@ucdjs/pipelines-ui/functions";
 import { resolveSourceFiles, sourceLabel } from "#server/lib/resolve";
 import { H3 } from "h3";
 

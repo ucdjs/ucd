@@ -4,9 +4,10 @@ import { createTsdownConfig } from "@ucdjs-tooling/tsdown-config";
 export default createTsdownConfig({
   entry: [
     "./src/index.ts",
-    "./src/lib/*.ts",
+    "./src/components/index.ts",
+    "./src/functions/index.ts",
     "./src/hooks/index.ts",
-    "./src/components/*.tsx",
+    "./src/lib/index.ts",
   ],
   exports: {
     customExports(exports) {
