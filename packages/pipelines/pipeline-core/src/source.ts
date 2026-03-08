@@ -32,6 +32,10 @@ export interface SourceFileContext extends FileContext {
   };
 }
 
+export interface ResolveSourceContext {
+  logger: import("./logger").PipelineLogger;
+}
+
 export function definePipelineSource<const TId extends string>(
   definition: PipelineSourceDefinition<TId>,
 ): PipelineSourceDefinition<TId> {
@@ -41,11 +45,12 @@ export function definePipelineSource<const TId extends string>(
 export async function resolveSourceFiles(
   source: PipelineSourceDefinition,
   version: string,
+  { logger }: ResolveSourceContext,
 ): Promise<SourceFileContext[]> {
   const allFiles = await source.backend.listFiles(version);
 
   const filteredFiles = allFiles.filter((file) => {
-    const ctx = { file };
+    const ctx = { file, logger };
 
     if (source.includes && !source.includes(ctx)) {
       return false;
@@ -67,11 +72,12 @@ export async function resolveSourceFiles(
 export async function resolveMultipleSourceFiles(
   sources: PipelineSourceDefinition[] | readonly PipelineSourceDefinition[],
   version: string,
+  context: ResolveSourceContext,
 ): Promise<SourceFileContext[]> {
   const filesByPath = new Map<string, SourceFileContext>();
 
   for (const source of sources) {
-    const files = await resolveSourceFiles(source, version);
+    const files = await resolveSourceFiles(source, version, context);
     for (const file of files) {
       filesByPath.set(file.path, file);
     }
