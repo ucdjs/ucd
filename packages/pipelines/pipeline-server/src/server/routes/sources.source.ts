@@ -1,4 +1,5 @@
-import { resolveSourceFiles } from "#server/lib/resolve";
+import { resolveSourceFiles, sourceLabel } from "#server/lib/resolve";
+import type { SourceResponse } from "@ucdjs/pipelines-ui";
 import { H3, HTTPError } from "h3";
 
 export const sourcesSourceRouter: H3 = new H3();
@@ -20,11 +21,12 @@ sourcesSourceRouter.get("/:sourceId", async (event) => {
   return {
     id: source.id,
     type: source.kind === "remote" ? source.provider : "local",
+    label: sourceLabel(source),
     files: files.map((file) => ({
       id: file.id,
       path: file.relativePath,
       label: file.label,
     })),
     errors: issues.map(({ cause: _cause, ...issue }) => issue),
-  };
+  } satisfies SourceResponse;
 });

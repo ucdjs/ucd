@@ -4,7 +4,7 @@ import { schema } from "#server/db";
 import { createExecutionLogStore } from "#server/lib/execution-logs";
 import { resolveSourceFiles } from "#server/lib/resolve";
 import { createPipelineExecutor, runWithPipelineExecutionContext } from "@ucdjs/pipelines-executor";
-import { toPipelineDetails } from "@ucdjs/pipelines-ui";
+import { toPipelineDetails, type ExecutePipelineResponse, type SourcePipelineResponse } from "@ucdjs/pipelines-ui";
 import { and, eq } from "drizzle-orm";
 import { H3, HTTPError, readValidatedBody } from "h3";
 import { z } from "zod";
@@ -55,7 +55,7 @@ sourcesPipelineRouter.get(BASE, async (event) => {
 
   return {
     pipeline: toPipelineDetails(pipeline),
-  };
+  } satisfies SourcePipelineResponse;
 });
 
 sourcesPipelineRouter.post(`${BASE}/execute`, async (event) => {
@@ -117,7 +117,7 @@ sourcesPipelineRouter.post(`${BASE}/execute`, async (event) => {
         eq(schema.executions.id, executionId),
       ));
 
-    return { success: true, executionId };
+    return { success: true, executionId } satisfies ExecutePipelineResponse;
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : String(err);
 
@@ -128,6 +128,6 @@ sourcesPipelineRouter.post(`${BASE}/execute`, async (event) => {
         eq(schema.executions.id, executionId),
       ));
 
-    return { success: false, executionId, error: errorMessage };
+    return { success: false, executionId, error: errorMessage } satisfies ExecutePipelineResponse;
   }
 });

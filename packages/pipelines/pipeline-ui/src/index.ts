@@ -48,6 +48,7 @@ export * from "./functions";
 export {
   executePipeline,
   executePipelineMutationOptions,
+  type ExecutePipelineResponse,
 } from "./functions/execute";
 export {
   executionEventsQueryOptions,
@@ -125,4 +126,5 @@ export type {
   PipelineDetails,
   PipelineInfo,
 } from "./types";
+export type { SourceType } from "./schemas/shared";
 export type { ExecutionStatus } from "@ucdjs/pipelines-executor";

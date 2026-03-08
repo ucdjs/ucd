@@ -92,7 +92,7 @@ export interface ExecutionEventItem {
   id: string;
   type: string;
   timestamp: string;
-  data: PipelineEvent;
+  data: PipelineEvent | null;
 }
 
 export interface ExecutionEventsResponse {

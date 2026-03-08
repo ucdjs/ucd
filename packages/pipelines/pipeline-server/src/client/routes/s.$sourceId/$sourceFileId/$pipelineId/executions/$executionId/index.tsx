@@ -67,7 +67,9 @@ function ExecutionDetailPage() {
   const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
   const [activeSpan, setActiveSpan] = useState<ReturnType<typeof buildExecutionSpans>[number] | null>(null);
 
-  const events = executionData.events.map((event) => event.data);
+  const events = executionData.events
+    .map((event) => event.data)
+    .filter((event) => event != null);
   const spans = useMemo(() => buildExecutionSpans(events), [events]);
 
   const filteredLogs = useMemo(() => {

@@ -25,3 +25,6 @@ export const PaginationSchema = z.object({
   offset: z.number(),
   hasMore: z.boolean(),
 });
+
+export type SourceType = z.infer<typeof SourceTypeSchema>;
+export type ExecutionStatus = z.infer<typeof ExecutionStatusSchema>;

@@ -1,8 +1,11 @@
-import type { ExecuteResult } from "../types";
 import type { QueryClient } from "@tanstack/react-query";
+import type { ExecutePipelineResponse } from "../schemas/execute";
+import type { ExecuteResult } from "../types";
 import { mutationOptions } from "@tanstack/react-query";
 import { customFetch } from "@ucdjs-internal/shared";
-import { ExecutePipelineResponseSchema, type ExecutePipelineResponse } from "../schemas/execute";
+import { ExecutePipelineResponseSchema } from "../schemas/execute";
+
+export type { ExecutePipelineResponse };
 
 interface ExecutePipelineRequest {
   sourceId: string;
