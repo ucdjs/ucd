@@ -1,8 +1,8 @@
 import type { ExecutionSummaryItem } from "#shared/schemas/execution";
 import { StatusIcon } from "#components/execution/execution-status";
-import { formatExecutionDuration, formatStartedAt } from "../execution/execution-utils";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
+import { formatExecutionDuration, formatStartedAt } from "../execution/execution-utils";
 
 interface RecentExecutionsPanelProps {
   executions: ExecutionSummaryItem[];

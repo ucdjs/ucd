@@ -2,7 +2,6 @@ import {
   StatusBadge,
   StatusIcon,
 } from "#components/execution/execution-status";
-import { buildExecutionSpans, formatBytes } from "../../../../../../components/execution/execution-utils";
 import { ExecutionLogTable } from "#components/execution/log-table";
 import { ExecutionSpanDrawer } from "#components/execution/span-drawer";
 import { ExecutionWaterfall } from "#components/execution/waterfall";
@@ -13,6 +12,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ScrollArea } from "@ucdjs-internal/shared-ui/ui/scroll-area";
 import { ArrowLeft, Filter, GitBranch } from "lucide-react";
 import { useMemo, useState } from "react";
+import { buildExecutionSpans, formatBytes } from "../../../../../../components/execution/execution-utils";
 
 export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId/")({
   loader: async ({ context, params }) => {
