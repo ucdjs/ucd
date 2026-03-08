@@ -67,59 +67,59 @@ function PipelineGraphsPage() {
 
                       return (
                         <TableRow key={execution.id} className="group">
-                        <TableCell>
-                          <code className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded">
-                            {execution.id}
-                          </code>
-                        </TableCell>
-                        <TableCell className="text-muted-foreground">
-                          {formatStartedAt(execution.startedAt)}
-                        </TableCell>
-                        <TableCell>
-                          {formatExecutionDuration(execution.startedAt, execution.completedAt)}
-                        </TableCell>
-                        <TableCell>
-                          {execution.versions
-                            ? (
-                                <div className="flex gap-1 flex-wrap">
-                                  {execution.versions.map((version) => (
-                                    <Badge key={version} variant="secondary" className="text-xs">
-                                      {version}
-                                    </Badge>
-                                  ))}
-                                </div>
-                              )
-                            : (
-                                <span className="text-muted-foreground text-sm">-</span>
-                              )}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {routeSummary?.totalRoutes != null
-                            ? (
-                                <span className="text-sm">
-                                  {routeSummary.totalRoutes}
-                                  <span className="text-muted-foreground">
-                                    {" "}
-                                    (
-                                    {routeSummary.cached ?? 0}
-                                    {" "}
-                                    cached)
+                          <TableCell>
+                            <code className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded">
+                              {execution.id}
+                            </code>
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">
+                            {formatStartedAt(execution.startedAt)}
+                          </TableCell>
+                          <TableCell>
+                            {formatExecutionDuration(execution.startedAt, execution.completedAt)}
+                          </TableCell>
+                          <TableCell>
+                            {execution.versions
+                              ? (
+                                  <div className="flex gap-1 flex-wrap">
+                                    {execution.versions.map((version) => (
+                                      <Badge key={version} variant="secondary" className="text-xs">
+                                        {version}
+                                      </Badge>
+                                    ))}
+                                  </div>
+                                )
+                              : (
+                                  <span className="text-muted-foreground text-sm">-</span>
+                                )}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {routeSummary?.totalRoutes != null
+                              ? (
+                                  <span className="text-sm">
+                                    {routeSummary.totalRoutes}
+                                    <span className="text-muted-foreground">
+                                      {" "}
+                                      (
+                                      {routeSummary.cached ?? 0}
+                                      {" "}
+                                      cached)
+                                    </span>
                                   </span>
-                                </span>
-                              )
-                            : (
-                                <span className="text-muted-foreground text-sm">-</span>
-                              )}
-                        </TableCell>
-                        <TableCell>
-                          <Link
-                            to="/s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId/graph"
-                            params={{ sourceId, sourceFileId, pipelineId, executionId: execution.id }}
-                            className="text-primary text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity hover:underline"
-                          >
-                            View
-                          </Link>
-                        </TableCell>
+                                )
+                              : (
+                                  <span className="text-muted-foreground text-sm">-</span>
+                                )}
+                          </TableCell>
+                          <TableCell>
+                            <Link
+                              to="/s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId/graph"
+                              params={{ sourceId, sourceFileId, pipelineId, executionId: execution.id }}
+                              className="text-primary text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity hover:underline"
+                            >
+                              View
+                            </Link>
+                          </TableCell>
                         </TableRow>
                       );
                     })}

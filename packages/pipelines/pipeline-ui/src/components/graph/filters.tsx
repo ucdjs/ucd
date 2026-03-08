@@ -1,5 +1,5 @@
 import type { PipelineGraphNodeType } from "@ucdjs/pipelines-core";
-import type { CSSProperties } from "react";
+import { cn } from "#lib/utils";
 import { memo, useCallback } from "react";
 
 interface NodeTypeConfig {
@@ -16,71 +16,6 @@ const nodeTypeLabels: Record<PipelineGraphNodeType, NodeTypeConfig> = {
 };
 
 const allNodeTypes: readonly PipelineGraphNodeType[] = ["source", "file", "route", "artifact", "output"] as const;
-
-const containerStyle: CSSProperties = {
-  display: "flex",
-  alignItems: "center",
-  gap: "6px",
-  padding: "8px 12px",
-  backgroundColor: "#ffffff",
-  borderRadius: "10px",
-  boxShadow: "0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06)",
-  fontFamily: "system-ui, -apple-system, sans-serif",
-  border: "1px solid #e5e7eb",
-};
-
-const labelStyle: CSSProperties = {
-  fontSize: "11px",
-  fontWeight: 500,
-  color: "#6b7280",
-  marginRight: "4px",
-  textTransform: "uppercase",
-  letterSpacing: "0.05em",
-};
-
-const buttonStyleCache = new Map<string, CSSProperties>();
-const dotStyleCache = new Map<string, CSSProperties>();
-
-function getButtonStyle(color: string, isVisible: boolean): CSSProperties {
-  const key = `${color}-${isVisible}`;
-  let cached = buttonStyleCache.get(key);
-  if (!cached) {
-    cached = {
-      display: "flex",
-      alignItems: "center",
-      gap: "6px",
-      padding: "4px 10px",
-      fontSize: "12px",
-      fontWeight: 500,
-      borderRadius: "6px",
-      border: "none",
-      cursor: "pointer",
-      transition: "all 0.15s ease",
-      backgroundColor: isVisible ? `${color}15` : "#f3f4f6",
-      color: isVisible ? color : "#9ca3af",
-      opacity: isVisible ? 1 : 0.6,
-    };
-    buttonStyleCache.set(key, cached);
-  }
-  return cached;
-}
-
-function getDotStyle(color: string, isVisible: boolean): CSSProperties {
-  const key = `${color}-${isVisible}`;
-  let cached = dotStyleCache.get(key);
-  if (!cached) {
-    cached = {
-      width: "8px",
-      height: "8px",
-      borderRadius: "50%",
-      backgroundColor: color,
-      opacity: isVisible ? 1 : 0.3,
-      transition: "opacity 0.15s ease",
-    };
-    dotStyleCache.set(key, cached);
-  }
-  return cached;
-}
 
 export interface PipelineGraphFiltersProps {
   visibleTypes: Set<PipelineGraphNodeType>;
@@ -108,10 +43,18 @@ const FilterButton = memo(({
     <button
       type="button"
       onClick={handleClick}
-      style={getButtonStyle(config.color, isVisible)}
+      className={cn(
+        "inline-flex items-center gap-2 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors",
+        isVisible
+          ? "border-border bg-card text-foreground shadow-sm"
+          : "border-border/50 bg-muted/40 text-muted-foreground",
+      )}
       title={isVisible ? `Hide ${config.label} nodes` : `Show ${config.label} nodes`}
     >
-      <span style={getDotStyle(config.color, isVisible)} />
+      <span
+        className={cn("h-2 w-2 rounded-full transition-opacity", !isVisible && "opacity-35")}
+        style={{ backgroundColor: config.color }}
+      />
       {config.label}
     </button>
   );
@@ -122,8 +65,10 @@ export function PipelineGraphFilters({
   onToggleType,
 }: PipelineGraphFiltersProps) {
   return (
-    <div style={containerStyle}>
-      <span style={labelStyle}>Show:</span>
+    <div className="flex flex-wrap items-center gap-2 rounded-xl border border-border/70 bg-card/95 p-3 shadow-lg backdrop-blur-sm">
+      <span className="mr-1 text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground">
+        Show
+      </span>
       {allNodeTypes.map((type) => (
         <FilterButton
           key={type}
