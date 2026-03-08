@@ -2,34 +2,12 @@ import type { ExecutionSpan } from "#lib/execution-logs";
 import { formatDuration } from "#lib/execution-logs";
 import { cn } from "#lib/utils";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@ucdjs-internal/shared-ui/ui/sheet";
+import { getPhaseColor } from "./waterfall/shared";
 
 export interface ExecutionSpanDrawerProps {
   span: ExecutionSpan | null;
   baseTime: number;
   onClose: () => void;
-}
-
-function getPhaseColor(phase: string): string {
-  switch (phase) {
-    case "Pipeline":
-      return "bg-sky-400/70";
-    case "Version":
-      return "bg-emerald-400/70";
-    case "Parse":
-      return "bg-amber-400/70";
-    case "Resolve":
-      return "bg-violet-400/70";
-    case "Artifact":
-      return "bg-rose-400/70";
-    case "File":
-      return "bg-cyan-400/70";
-    case "Cache":
-      return "bg-lime-400/70";
-    case "Error":
-      return "bg-red-500/80";
-    default:
-      return "bg-slate-400/70";
-  }
 }
 
 export function ExecutionSpanDrawer({ span, baseTime, onClose }: ExecutionSpanDrawerProps) {
@@ -38,8 +16,13 @@ export function ExecutionSpanDrawer({ span, baseTime, onClose }: ExecutionSpanDr
   const offsetEnd = span ? Math.max(0, span.end - baseTime) : 0;
 
   return (
-    <Sheet open={open} onOpenChange={(nextOpen) => { if (!nextOpen) onClose(); }}>
-      <SheetContent side="right" className="w-[380px]">
+    <Sheet
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) onClose();
+      }}
+    >
+      <SheetContent side="right" className="w-95">
         <SheetHeader>
           <SheetTitle>Span Details</SheetTitle>
         </SheetHeader>
