@@ -5,6 +5,7 @@ import path from "node:path";
 import process from "node:process";
 import { createDatabase, runMigrations } from "#server/db";
 import {
+  overviewRouter,
   sourcesEventsRouter,
   sourcesExecutionsRouter,
   sourcesFileRouter,
@@ -92,6 +93,7 @@ export function createApp(options: AppOptions = {}): H3 {
     version,
   }));
 
+  app.mount("/api/overview", overviewRouter);
   app.mount("/api/sources", sourcesIndexRouter);
   app.mount("/api/sources", sourcesSourceRouter);
   app.mount("/api/sources", sourcesFileRouter);
