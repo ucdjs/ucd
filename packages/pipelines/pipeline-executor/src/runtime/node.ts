@@ -41,6 +41,7 @@ class NodeExecutionRuntime implements PipelineExecutionRuntime {
     warn: console.warn,
     error: console.error,
   };
+
   static readonly #originalStdio = {
     // eslint-disable-next-line node/prefer-global/process
     stdoutWrite: process.stdout.write.bind(process.stdout) as NodeWriteFn,

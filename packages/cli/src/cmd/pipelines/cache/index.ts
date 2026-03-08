@@ -55,6 +55,5 @@ export async function runPipelinesCacheRoot({ flags }: CLIPipelinesCacheCmdOptio
   if (subcommand === "refresh") {
     const { runPipelinesCacheRefresh } = await import("./refresh");
     await runPipelinesCacheRefresh({ flags });
-    return;
   }
 }

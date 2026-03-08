@@ -3,10 +3,10 @@ import type { PipelineExecutionResult, PipelineExecutor } from "../src";
 import type { PipelineSummary } from "../src/types";
 import { definePipeline, definePipelineRoute } from "@ucdjs/pipelines-core";
 import { beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
-import { createMemoryCacheStore } from "../src/cache";
 import { EXECUTION_STATUSES } from "../src";
+import { createMemoryCacheStore } from "../src/cache";
 import { createPipelineExecutor } from "../src/executor";
-import { createNodeExecutionRuntime } from "../src/node";
+import { createNodeExecutionRuntime } from "../src/runtime/node";
 import {
   createMockFile,
   createTestRoute,
@@ -259,13 +259,14 @@ describe("running single pipeline via run()", () => {
     const route = definePipelineRoute({
       id: "logger-route",
       filter: () => true,
-      parser: async function* (ctx) {
+      async* parser(ctx) {
         ctx.logger.info("parsing", { file: ctx.file.path });
         yield { sourceFile: ctx.file.path, kind: "point", codePoint: "0041", value: "AL" };
       },
       resolver: async (ctx, rows) => {
         ctx.logger.warn("resolving", { file: ctx.file.path });
         for await (const _row of rows) {
+          /* empty */
         }
         return [];
       },
@@ -311,12 +312,14 @@ describe("running single pipeline via run()", () => {
     const route = definePipelineRoute({
       id: "console-route",
       filter: () => true,
-      parser: async function* (ctx) {
+      async* parser(ctx) {
+        // eslint-disable-next-line no-console
         console.log("parser-log", ctx.file.path);
         yield { sourceFile: ctx.file.path, kind: "point", codePoint: "0041", value: "AL" };
       },
       resolver: async (_ctx, rows) => {
         for await (const _row of rows) {
+          // empty
         }
         console.warn("resolver-log");
         return [];
@@ -362,12 +365,13 @@ describe("running single pipeline via run()", () => {
     const route = definePipelineRoute({
       id: "stdio-route",
       filter: () => true,
-      parser: async function* (ctx) {
+      async* parser(ctx) {
         process.stdout.write(`stdout:${ctx.file.name}`);
         yield { sourceFile: ctx.file.path, kind: "point", codePoint: "0041", value: "AL" };
       },
       resolver: async (_ctx, rows) => {
         for await (const _row of rows) {
+          // empty
         }
         process.stderr.write("stderr:test");
         return [];
@@ -413,13 +417,15 @@ describe("running single pipeline via run()", () => {
     const route = definePipelineRoute({
       id: "no-context-route",
       filter: () => true,
-      parser: async function* (ctx) {
+      async* parser(ctx) {
         ctx.logger.info("logger-message");
+        // eslint-disable-next-line no-console
         console.log("console-message");
         yield { sourceFile: ctx.file.path, kind: "point", codePoint: "0041", value: "AL" };
       },
       resolver: async (_ctx, rows) => {
         for await (const _row of rows) {
+          // empty
         }
         return [];
       },

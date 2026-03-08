@@ -1,12 +1,12 @@
 import type { CLIArguments } from "../../../cli-utils";
-import { printHelp } from "../../../cli-utils";
 import {
   clearRemoteSourceCache,
   listCachedSources,
   parseRemoteSourceUrl,
 } from "@ucdjs/pipelines-loader";
-import { blankLine, output } from "../../../output";
+import { printHelp } from "../../../cli-utils";
 import { CLIError } from "../../../errors";
+import { blankLine, output } from "../../../output";
 
 export interface CLIPipelinesCacheClearOptions {
   flags: CLIArguments<{

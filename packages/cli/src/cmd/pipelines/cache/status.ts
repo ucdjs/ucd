@@ -1,10 +1,10 @@
 import type { CLIArguments } from "../../../cli-utils";
-import { printHelp } from "../../../cli-utils";
 import {
   getRemoteSourceCacheStatus,
   listCachedSources,
   parseRemoteSourceUrl,
 } from "@ucdjs/pipelines-loader";
+import { printHelp } from "../../../cli-utils";
 import {
   blankLine,
   bold,
