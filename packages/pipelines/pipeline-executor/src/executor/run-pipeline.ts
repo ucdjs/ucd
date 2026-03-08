@@ -45,7 +45,6 @@ export async function runPipeline(options: RunPipelineOptions): Promise<Pipeline
   const useCache = enableCache && cacheStore != null;
   const versionsToRun = runVersions ?? pipeline.versions;
 
-  const source = createSourceAdapter(pipeline);
   const graph = new PipelineGraphBuilder();
 
   const startTime = performance.now();
@@ -59,6 +58,7 @@ export async function runPipeline(options: RunPipelineOptions): Promise<Pipeline
 
   const dag = pipeline.dag;
   const logger = createPipelineLogger(runtime);
+  const source = createSourceAdapter(pipeline, logger);
 
   const pipelineSpanId = events.nextSpanId();
   await emitWithSpan(runtime, pipelineSpanId, () =>

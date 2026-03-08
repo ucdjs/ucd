@@ -2,6 +2,7 @@ import type {
   FileContext,
   ParseContext,
   PipelineDefinition,
+  PipelineLogger,
   SourceBackend,
   SourceFileContext,
 } from "@ucdjs/pipelines-core";
@@ -14,7 +15,7 @@ export interface SourceAdapter {
   readFile: (file: FileContext) => Promise<string>;
 }
 
-export function createSourceAdapter(pipeline: PipelineDefinition): SourceAdapter {
+export function createSourceAdapter(pipeline: PipelineDefinition, logger: PipelineLogger): SourceAdapter {
   if (pipeline.inputs.length === 0) {
     throw new Error("Pipeline requires at least one input source");
   }
@@ -25,7 +26,7 @@ export function createSourceAdapter(pipeline: PipelineDefinition): SourceAdapter
   }
 
   return {
-    listFiles: async (version) => resolveMultipleSourceFiles(pipeline.inputs, version),
+    listFiles: async (version) => resolveMultipleSourceFiles(pipeline.inputs, version, { logger }),
     readFile: async (file) => {
       const sourceFile = file as SourceFileContext;
       if ("source" in sourceFile && sourceFile.source) {

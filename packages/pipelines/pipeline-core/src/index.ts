@@ -120,6 +120,7 @@ export type {
   InferSourceId,
   InferSourceIds,
   PipelineSourceDefinition,
+  ResolveSourceContext,
   SourceBackend,
   SourceFileContext,
   StreamOptions,
