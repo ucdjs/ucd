@@ -39,6 +39,8 @@ export {
   ExecutionWaterfall,
   type ExecutionWaterfallProps,
 } from "./components/logs/execution-waterfall";
+export { QuickActionsCard } from "./components/overview/quick-actions-card";
+export { RecentExecutionsCard } from "./components/overview/recent-executions-card";
 export { PipelineSidebar } from "./components/pipeline-sidebar";
 export { StatusBadge } from "./components/status-badge";
 export { StatusIcon } from "./components/status-icon";
@@ -103,6 +105,7 @@ export {
 } from "./lib/adapter";
 export { getNodeColor, nodeTypeColors } from "./lib/colors";
 export { buildExecutionSpans, formatBytes, formatDuration, formatTimeLabel, formatTimestamp } from "./lib/execution-logs";
+export { formatExecutionDuration, formatStartedAt } from "./lib/execution-time";
 export { formatHighPrecisionTime } from "./lib/format-time";
 export { applyLayout, NODE_HEIGHT, NODE_WIDTH } from "./lib/layout";
 export {
