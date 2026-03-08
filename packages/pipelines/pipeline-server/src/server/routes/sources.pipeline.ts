@@ -1,10 +1,11 @@
+import type { ExecutePipelineResponse, SourcePipelineResponse } from "@ucdjs/pipelines-ui";
 import type { H3Event } from "h3";
 import { randomUUID } from "node:crypto";
 import { schema } from "#server/db";
 import { createExecutionLogStore } from "#server/lib/execution-logs";
 import { resolveSourceFiles } from "#server/lib/resolve";
 import { createPipelineExecutor, runWithPipelineExecutionContext } from "@ucdjs/pipelines-executor";
-import { toPipelineDetails, type ExecutePipelineResponse, type SourcePipelineResponse } from "@ucdjs/pipelines-ui";
+import { toPipelineDetails } from "@ucdjs/pipelines-ui";
 import { and, eq } from "drizzle-orm";
 import { H3, HTTPError, readValidatedBody } from "h3";
 import { z } from "zod";
