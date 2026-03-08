@@ -1,8 +1,8 @@
 import type { CLIArguments } from "../../../cli-utils";
-import { printHelp } from "../../../cli-utils";
 import { ensureRemoteLocator, parseRemoteSourceUrl } from "@ucdjs/pipelines-loader";
-import { blankLine, dim, green, output, yellow } from "../../../output";
+import { printHelp } from "../../../cli-utils";
 import { CLIError } from "../../../errors";
+import { blankLine, dim, green, output, yellow } from "../../../output";
 
 export interface CLIPipelinesCacheRefreshOptions {
   flags: CLIArguments<{

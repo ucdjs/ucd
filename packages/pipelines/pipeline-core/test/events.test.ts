@@ -21,7 +21,7 @@ describe("getPipelineEventPhase", () => {
   });
 });
 
-describe("PIPELINE_EVENT_PHASES", () => {
+describe("pIPELINE_EVENT_PHASES", () => {
   it("keeps the canonical execution phase order", () => {
     expect(PIPELINE_EVENT_PHASES).toEqual([
       "Pipeline",

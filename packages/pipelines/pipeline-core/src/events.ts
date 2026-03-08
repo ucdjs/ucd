@@ -1,6 +1,5 @@
 import type { FileContext } from "./types";
 
-
 export type PipelineEventType
   = | "pipeline:start"
     | "pipeline:end"

@@ -33,9 +33,9 @@ Those contexts now include `logger`, which is the preferred API for pipeline-aut
 
 ```ts
 resolver: async (ctx, rows) => {
-  ctx.logger.info("Resolving rows", { file: ctx.file.path })
-  return []
-}
+  ctx.logger.info("Resolving rows", { file: ctx.file.path });
+  return [];
+};
 ```
 
 In this stage, the logger is additive and safe to use, but it is intentionally inert until
@@ -50,7 +50,7 @@ const executor = createPipelineExecutor({
   onLog: (entry) => {
     // persist, stream, or inspect logs here
   },
-})
+});
 ```
 
 When a runtime provides execution context, the executor can emit:
@@ -62,8 +62,8 @@ When a runtime provides execution context, the executor can emit:
 Node-specific output interception is configured through the `./node` runtime adapter:
 
 ```ts
-import { createPipelineExecutor } from "@ucdjs/pipelines-executor"
-import { createNodeExecutionRuntime } from "@ucdjs/pipelines-executor/node"
+import { createPipelineExecutor } from "@ucdjs/pipelines-executor";
+import { createNodeExecutionRuntime } from "@ucdjs/pipelines-executor/node";
 
 const executor = createPipelineExecutor({
   runtime: createNodeExecutionRuntime({
@@ -73,7 +73,7 @@ const executor = createPipelineExecutor({
     },
   }),
   onLog,
-})
+});
 ```
 
 Logs are emitted incrementally and are not returned from `run()`. Persistence remains the
