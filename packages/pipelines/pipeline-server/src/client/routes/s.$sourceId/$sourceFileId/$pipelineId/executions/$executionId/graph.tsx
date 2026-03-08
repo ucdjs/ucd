@@ -1,7 +1,9 @@
+import { StatusBadge } from "#components/execution/execution-status";
+import { PipelineGraph } from "#components/graph/pipeline-graph";
+import { executionGraphQueryOptions } from "#queries/execution";
+import { isNotFoundError } from "#queries/utils";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, notFound } from "@tanstack/react-router";
-import { PipelineGraph, StatusBadge } from "#components";
-import { executionGraphQueryOptions, isNotFoundError } from "#functions";
 
 export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/executions/$executionId/graph")({
   loader: async ({ context, params }) => {

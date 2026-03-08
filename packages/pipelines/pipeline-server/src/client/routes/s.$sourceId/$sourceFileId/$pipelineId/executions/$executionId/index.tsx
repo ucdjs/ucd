@@ -1,19 +1,16 @@
+import {
+  StatusBadge,
+  StatusIcon,
+} from "#components/execution/execution-status";
+import { buildExecutionSpans, formatBytes } from "../../../../../../components/execution/execution-utils";
+import { ExecutionLogTable } from "#components/execution/log-table";
+import { ExecutionSpanDrawer } from "#components/execution/span-drawer";
+import { ExecutionWaterfall } from "#components/execution/waterfall";
+import { executionEventsQueryOptions, executionLogsQueryOptions } from "#queries/execution";
+import { isNotFoundError } from "#queries/utils";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ScrollArea } from "@ucdjs-internal/shared-ui/ui/scroll-area";
-import {
-  ExecutionLogTable,
-  ExecutionSpanDrawer,
-  ExecutionWaterfall,
-  StatusBadge,
-  StatusIcon,
-} from "#components";
-import {
-  executionEventsQueryOptions,
-  executionLogsQueryOptions,
-  isNotFoundError,
-} from "#functions";
-import { buildExecutionSpans, formatBytes } from "#lib";
 import { ArrowLeft, Filter, GitBranch } from "lucide-react";
 import { useMemo, useState } from "react";
 
