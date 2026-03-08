@@ -1,7 +1,7 @@
+import type { SourceSummary } from "../schemas/source";
 import { queryOptions } from "@tanstack/react-query";
 import { customFetch } from "@ucdjs-internal/shared";
 import { SourcesResponseSchema } from "../schemas/source";
-import type { SourceSummary } from "../schemas/source";
 
 export type { SourceSummary };
 
