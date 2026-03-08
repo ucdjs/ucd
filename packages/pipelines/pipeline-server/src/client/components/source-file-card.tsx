@@ -1,4 +1,5 @@
-import type { SourceFileResponse, SourceResponse } from "#functions";
+import type { SourceFileResponse } from "#shared/schemas/file";
+import type { SourceResponse } from "#shared/schemas/source";
 import { Link } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Card, CardContent } from "@ucdjs-internal/shared-ui/ui/card";
