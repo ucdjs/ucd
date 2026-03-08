@@ -1,5 +1,5 @@
 import { resolveSourceFiles } from "#server/lib/resolve";
-import { toPipelineInfo } from "@ucdjs/pipelines-ui";
+import { toPipelineInfo, type SourceFileResponse } from "@ucdjs/pipelines-ui";
 import { H3, HTTPError } from "h3";
 
 export const sourcesFileRouter: H3 = new H3();
@@ -35,5 +35,5 @@ sourcesFileRouter.get("/:sourceId/files/:fileId", async (event) => {
     label: file.label,
     sourceId: source.id,
     pipelines: file.pipelines.map((pipeline) => toPipelineInfo(pipeline)),
-  };
+  } satisfies SourceFileResponse;
 });

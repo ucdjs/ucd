@@ -1,4 +1,5 @@
 import { schema } from "#server/db";
+import type { ExecutionsResponse } from "@ucdjs/pipelines-ui";
 import { and, desc, eq, sql } from "drizzle-orm";
 import { getQuery, H3 } from "h3";
 
@@ -45,5 +46,5 @@ sourcesExecutionsRouter.get("/:sourceId/files/:fileId/pipelines/:pipelineId/exec
       error: exec.error ?? null,
     })),
     pagination: { total, limit, offset, hasMore: offset + limit < total },
-  };
+  } satisfies ExecutionsResponse;
 });

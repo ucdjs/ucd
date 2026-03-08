@@ -1,5 +1,6 @@
 import { Buffer } from "node:buffer";
 import { schema } from "#server/db";
+import type { ExecutionLogsResponse } from "@ucdjs/pipelines-ui";
 import { and, asc, eq } from "drizzle-orm";
 import { getQuery, H3, HTTPError } from "h3";
 
@@ -80,6 +81,6 @@ sourcesLogsRouter.get(
       capturedSize,
       originalSize: originalSize > 0 ? originalSize : null,
       pagination: { total, limit, offset, hasMore: offset + limit < total },
-    };
+    } satisfies ExecutionLogsResponse;
   },
 );

@@ -1,10 +1,8 @@
-import type { PipelineLoaderIssue } from "@ucdjs/pipelines-loader";
 import { resolveSourceFiles, sourceLabel } from "#server/lib/resolve";
+import type { SourceSummary, SourceType } from "@ucdjs/pipelines-ui";
 import { H3 } from "h3";
 
 export const sourcesIndexRouter: H3 = new H3();
-
-type SerializablePipelineLoaderIssue = Omit<PipelineLoaderIssue, "cause">;
 
 sourcesIndexRouter.get("/", async (event) => {
   const { sources } = event.context;
@@ -17,7 +15,7 @@ sourcesIndexRouter.get("/", async (event) => {
     const source = sources[i]!;
     const base = {
       id: source.id,
-      type: source.kind === "remote" ? source.provider : "local",
+      type: (source.kind === "remote" ? source.provider : "local") as SourceType,
       label: sourceLabel(source),
     };
 
@@ -42,11 +40,5 @@ sourcesIndexRouter.get("/", async (event) => {
       pipelineCount: files.reduce((sum, f) => sum + f.pipelines.length, 0),
       errors: issues.map(({ cause: _cause, ...issue }) => issue),
     };
-  }) satisfies {
-    id: string;
-    type: string;
-    fileCount: number;
-    pipelineCount: number;
-    errors?: SerializablePipelineLoaderIssue[];
-  }[];
+  }) satisfies SourceSummary[];
 });

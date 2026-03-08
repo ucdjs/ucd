@@ -1,4 +1,5 @@
 import { schema } from "#server/db";
+import type { ExecutionEventsResponse } from "@ucdjs/pipelines-ui";
 import { and, asc, eq, sql } from "drizzle-orm";
 import { getQuery, H3, HTTPError } from "h3";
 
@@ -56,6 +57,6 @@ sourcesEventsRouter.get(
         data: evt.data,
       })),
       pagination: { total, limit, offset, hasMore: offset + limit < total },
-    };
+    } satisfies ExecutionEventsResponse;
   },
 );

@@ -1,4 +1,5 @@
 import { schema } from "#server/db";
+import type { ExecutionGraphResponse } from "@ucdjs/pipelines-ui";
 import { and, eq } from "drizzle-orm";
 import { H3, HTTPError } from "h3";
 
@@ -37,6 +38,6 @@ sourcesGraphRouter.get(
       pipelineId: execution.pipelineId,
       status: execution.status,
       graph: execution.graph ?? null,
-    };
+    } satisfies ExecutionGraphResponse;
   },
 );

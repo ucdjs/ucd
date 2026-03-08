@@ -1,12 +1,12 @@
 import type { PipelineEvent } from "@ucdjs/pipelines-core";
-import { ExecutionStatusSchema, PaginationSchema } from "./shared";
 import z from "zod";
+import { ExecutionStatusSchema, PaginationSchema } from "./shared";
 
 export const ExecutionEventItemSchema = z.object({
   id: z.string(),
   type: z.string(),
   timestamp: z.string(),
-  data: z.custom<PipelineEvent>(() => true),
+  data: z.custom<PipelineEvent>(() => true).nullable(),
 });
 
 export const ExecutionEventsResponseSchema = z.object({
