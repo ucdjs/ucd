@@ -8,7 +8,7 @@ describe("discoverPipelineFiles", () => {
     const dir = await testdir({
       pipelines: {
         "alpha.ucd-pipeline.ts": "",
-        nested: {
+        "nested": {
           "beta.ucd-pipeline.ts": "",
         },
       },
