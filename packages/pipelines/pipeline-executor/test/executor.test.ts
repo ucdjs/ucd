@@ -4,8 +4,9 @@ import type { PipelineSummary } from "../src/types";
 import { definePipeline, definePipelineRoute } from "@ucdjs/pipelines-core";
 import { beforeEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 import { createMemoryCacheStore } from "../src/cache";
+import { EXECUTION_STATUSES } from "../src";
 import { createPipelineExecutor } from "../src/executor";
-import { runWithPipelineExecutionContext } from "../src/log-context";
+import { createNodeExecutionRuntime } from "../src/node";
 import {
   createMockFile,
   createTestRoute,
@@ -14,6 +15,16 @@ import {
 } from "./helpers";
 
 describe("createPipelineExecutor", () => {
+  it("should export portable execution statuses from root", () => {
+    expect(EXECUTION_STATUSES).toEqual([
+      "pending",
+      "running",
+      "completed",
+      "failed",
+      "cancelled",
+    ]);
+  });
+
   it("should create an executor with run method", () => {
     const executor = createPipelineExecutor({});
 
@@ -243,6 +254,7 @@ describe("running single pipeline via run()", () => {
 
   it("should emit ctx.logger entries through onLog when execution context is active", async () => {
     const logs: Array<{ source: string; message: string; executionId: string; spanId?: string }> = [];
+    const runtime = createNodeExecutionRuntime();
 
     const route = definePipelineRoute({
       id: "logger-route",
@@ -260,6 +272,7 @@ describe("running single pipeline via run()", () => {
     });
 
     const ex = createPipelineExecutor({
+      runtime,
       onLog: (entry) => {
         logs.push({
           source: entry.source,
@@ -278,7 +291,7 @@ describe("running single pipeline via run()", () => {
       routes: [route],
     });
 
-    await runWithPipelineExecutionContext(
+    await runtime.runWithExecutionContext(
       { executionId: "exec-1", workspaceId: "workspace-1" },
       () => ex.run([pipelineWithLogger]),
     );
@@ -291,6 +304,9 @@ describe("running single pipeline via run()", () => {
 
   it("should capture console output through onLog when enabled", async () => {
     const logs: Array<{ source: string; message: string; executionId: string }> = [];
+    const runtime = createNodeExecutionRuntime({
+      outputCapture: { console: true },
+    });
 
     const route = definePipelineRoute({
       id: "console-route",
@@ -308,7 +324,7 @@ describe("running single pipeline via run()", () => {
     });
 
     const ex = createPipelineExecutor({
-      capture: { console: true },
+      runtime,
       onLog: (entry) => {
         logs.push({
           source: entry.source,
@@ -326,7 +342,7 @@ describe("running single pipeline via run()", () => {
       routes: [route],
     });
 
-    await runWithPipelineExecutionContext(
+    await runtime.runWithExecutionContext(
       { executionId: "exec-2", workspaceId: "workspace-1" },
       () => ex.run([pipelineWithConsole]),
     );
@@ -339,6 +355,9 @@ describe("running single pipeline via run()", () => {
 
   it("should capture stdio output through onLog when enabled", async () => {
     const logs: Array<{ source: string; stream: string; message: string }> = [];
+    const runtime = createNodeExecutionRuntime({
+      outputCapture: { stdio: true },
+    });
 
     const route = definePipelineRoute({
       id: "stdio-route",
@@ -356,7 +375,7 @@ describe("running single pipeline via run()", () => {
     });
 
     const ex = createPipelineExecutor({
-      capture: { stdio: true },
+      runtime,
       onLog: (entry) => {
         logs.push({
           source: entry.source,
@@ -374,7 +393,7 @@ describe("running single pipeline via run()", () => {
       routes: [route],
     });
 
-    await runWithPipelineExecutionContext(
+    await runtime.runWithExecutionContext(
       { executionId: "exec-3", workspaceId: "workspace-1" },
       () => ex.run([pipelineWithStdio]),
     );
@@ -387,6 +406,9 @@ describe("running single pipeline via run()", () => {
 
   it("should ignore emitted logs when no execution context is active", async () => {
     const onLog = vi.fn();
+    const runtime = createNodeExecutionRuntime({
+      outputCapture: { console: true },
+    });
 
     const route = definePipelineRoute({
       id: "no-context-route",
@@ -404,7 +426,7 @@ describe("running single pipeline via run()", () => {
     });
 
     const ex = createPipelineExecutor({
-      capture: { console: true },
+      runtime,
       onLog,
     });
 

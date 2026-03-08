@@ -1,6 +1,7 @@
 import type { PipelineArtifactDefinition } from "@ucdjs/pipelines-artifacts";
 import type { AnyPipelineDefinition, PipelineError, PipelineEvent, PipelineGraph } from "@ucdjs/pipelines-core";
 import type { CacheStore } from "./cache";
+import type { PipelineExecutionRuntime } from "./runtime";
 
 export interface PipelineSummary {
   versions: string[];
@@ -51,17 +52,12 @@ export interface PipelineLogEntry {
   meta?: Record<string, unknown>;
 }
 
-export interface PipelineCaptureOptions {
-  console?: boolean;
-  stdio?: boolean;
-}
-
 export interface PipelineExecutorOptions {
   artifacts?: PipelineArtifactDefinition[];
   cacheStore?: CacheStore;
   onEvent?: (event: PipelineEvent) => void | Promise<void>;
   onLog?: (entry: PipelineLogEntry) => void | Promise<void>;
-  capture?: PipelineCaptureOptions;
+  runtime?: PipelineExecutionRuntime;
 }
 
 export interface PipelineExecutorRunOptions {

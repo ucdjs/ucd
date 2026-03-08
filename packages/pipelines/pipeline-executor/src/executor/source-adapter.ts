@@ -5,6 +5,7 @@ import type {
   SourceBackend,
   SourceFileContext,
 } from "@ucdjs/pipelines-core";
+import type { PipelineExecutionRuntime } from "../runtime";
 import { resolveMultipleSourceFiles } from "@ucdjs/pipelines-core";
 import { createPipelineLogger } from "../logger";
 
@@ -44,9 +45,13 @@ export function createSourceAdapter(pipeline: PipelineDefinition): SourceAdapter
   };
 }
 
-export function createParseContext(file: FileContext, source: SourceAdapter): ParseContext {
+export function createParseContext(
+  file: FileContext,
+  source: SourceAdapter,
+  runtime: PipelineExecutionRuntime,
+): ParseContext {
   let cachedContent: string | null = null;
-  const logger = createPipelineLogger();
+  const logger = createPipelineLogger(runtime);
 
   return {
     file,

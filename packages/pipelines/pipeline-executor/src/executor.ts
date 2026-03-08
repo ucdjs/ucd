@@ -7,22 +7,22 @@ import type {
 } from "./types";
 import { createEventEmitter } from "./executor/events";
 import { runPipeline } from "./executor/run-pipeline";
-import { runWithPipelineLogHandler, startLogCapture } from "./logger";
+import { createNoopExecutionRuntime } from "./runtime";
 
 export function createPipelineExecutor(options: PipelineExecutorOptions): PipelineExecutor {
   const {
     artifacts: globalArtifacts = [],
     cacheStore,
-    capture,
     onEvent,
     onLog,
+    runtime = createNoopExecutionRuntime(),
   } = options;
 
-  const events = createEventEmitter({ onEvent });
+  const events = createEventEmitter({ onEvent, runtime });
 
   const run = async (pipelinesToRun: AnyPipelineDefinition[], runOptions: PipelineExecutorRunOptions = {}): Promise<PipelineExecutionResult[]> => {
-    return runWithPipelineLogHandler(onLog, async () => {
-      const stopCapture = startLogCapture(capture);
+    return runtime.runWithLogHandler(onLog, async () => {
+      const stopCapture = runtime.startOutputCapture?.() ?? (() => {});
       const results: PipelineExecutionResult[] = [];
 
       try {
@@ -34,6 +34,7 @@ export function createPipelineExecutor(options: PipelineExecutorOptions): Pipeli
               cacheStore,
               artifacts: globalArtifacts,
               events,
+              runtime,
             }));
           } catch (err) {
             results.push({
