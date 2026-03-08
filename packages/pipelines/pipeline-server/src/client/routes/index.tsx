@@ -1,9 +1,13 @@
-/* eslint-disable react-refresh/only-export-components */
-
-import { DashboardHome } from "#components/dashboard-home";
+import { ExecutionActivityChart } from "#components/overview/activity-chart";
+import { RecentExecutionsPanel } from "#components/overview/recent-executions-panel";
+import { SourcesPanel } from "#components/overview/sources-panel";
+import { StatusOverviewPanel } from "#components/overview/status-overview-panel";
+import { configQueryOptions } from "#queries/config";
+import { overviewQueryOptions } from "#queries/overview";
+import { sourcesQueryOptions } from "#queries/sources";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { configQueryOptions, overviewQueryOptions, sourcesQueryOptions } from "#functions";
+import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 
 export const Route = createFileRoute("/")({
   loader: async ({ context }) => {
@@ -18,13 +22,54 @@ function HomePage() {
   const { overview } = Route.useLoaderData();
   const { data: sources } = useSuspenseQuery(sourcesQueryOptions());
   const { data: config } = useSuspenseQuery(configQueryOptions({ baseUrl: "" }));
+  const sourceCount = sources.length;
+  const pipelineCount = sources.reduce((sum, source) => sum + source.pipelineCount, 0);
+  const fileCount = sources.reduce((sum, source) => sum + source.fileCount, 0);
 
   return (
-    <DashboardHome
-      dashboard={overview}
-      sources={sources}
-      workspaceId={config.data?.workspaceId}
-      version={config.data?.version}
-    />
+    <div className="flex-1 overflow-auto bg-background">
+      <div className="grid w-full gap-4 p-6">
+        <div className="flex flex-col gap-3 border-b border-border/60 pb-4 lg:flex-row lg:items-end lg:justify-between">
+          <div className="space-y-1">
+            <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+              {config.data?.workspaceId && <Badge variant="secondary">{config.data.workspaceId}</Badge>}
+              {config.data?.version && <Badge variant="outline">{config.data.version}</Badge>}
+              <span>Last 7 days</span>
+            </div>
+            <h1 className="text-2xl font-semibold tracking-tight">Pipeline dashboard</h1>
+          </div>
+          <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+            <Badge variant="outline">
+              {sourceCount}
+              {" "}
+              sources
+            </Badge>
+            <Badge variant="outline">
+              {fileCount}
+              {" "}
+              files
+            </Badge>
+            <Badge variant="outline">
+              {pipelineCount}
+              {" "}
+              pipelines
+            </Badge>
+          </div>
+        </div>
+
+        <div className="grid gap-4 xl:grid-cols-12">
+          <ExecutionActivityChart
+            activity={overview.activity}
+            summaryStates={overview.summary.states}
+          />
+          <StatusOverviewPanel
+            summaryStates={overview.summary.states}
+            total={overview.summary.total}
+          />
+          <RecentExecutionsPanel executions={overview.recentExecutions} />
+          <SourcesPanel sources={sources} />
+        </div>
+      </div>
+    </div>
   );
 }
