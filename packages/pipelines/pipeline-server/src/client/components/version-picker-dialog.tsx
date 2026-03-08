@@ -1,4 +1,4 @@
-import type { PipelineInfo } from "@ucdjs/pipelines-ui/functions";
+import type { PipelineInfo } from "#functions";
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
 import { Checkbox } from "@ucdjs-internal/shared-ui/ui/checkbox";
 import {

@@ -2,8 +2,8 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
-import { pipelineQueryOptions, sourceFileQueryOptions } from "@ucdjs/pipelines-ui/functions";
-import { useExecute } from "@ucdjs/pipelines-ui/hooks";
+import { pipelineQueryOptions, sourceFileQueryOptions } from "#functions";
+import { useExecute } from "#hooks";
 import { Play } from "lucide-react";
 import { useCallback } from "react";
 

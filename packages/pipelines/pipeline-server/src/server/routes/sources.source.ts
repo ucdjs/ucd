@@ -1,4 +1,4 @@
-import type { SourceResponse } from "@ucdjs/pipelines-ui/functions";
+import type { SourceResponse } from "#shared/schemas/source";
 import { resolveSourceFiles, sourceLabel } from "#server/lib/resolve";
 import { H3, HTTPError } from "h3";
 

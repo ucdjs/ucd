@@ -6,8 +6,8 @@ import type {
   ExecutionLogsResponse,
   ExecutionsResponse,
   ExecutionSummaryItem,
-} from "../schemas/execution";
-import type { ExecuteResult } from "../types";
+} from "#shared/schemas/execution";
+import type { ExecuteResult } from "#shared/types";
 import { mutationOptions, queryOptions } from "@tanstack/react-query";
 import { customFetch } from "@ucdjs-internal/shared";
 import {
@@ -16,7 +16,7 @@ import {
   ExecutionGraphResponseSchema,
   ExecutionLogsResponseSchema,
   ExecutionsResponseSchema,
-} from "../schemas/execution";
+} from "#shared/schemas/execution";
 import { refetchWhileExecutionActive } from "./shared";
 
 export type {

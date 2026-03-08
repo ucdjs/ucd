@@ -1,7 +1,7 @@
-import type { PipelineDetails, PipelineInfo, PipelineResponse } from "../schemas/pipeline";
+import type { PipelineDetails, PipelineInfo, PipelineResponse } from "#shared/schemas/pipeline";
 import { queryOptions } from "@tanstack/react-query";
 import { customFetch } from "@ucdjs-internal/shared";
-import { PipelineResponseSchema } from "../schemas/pipeline";
+import { PipelineResponseSchema } from "#shared/schemas/pipeline";
 
 export type { PipelineDetails, PipelineInfo, PipelineResponse };
 export type SourcePipelineResponse = PipelineResponse;

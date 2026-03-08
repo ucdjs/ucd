@@ -1,4 +1,4 @@
-import type { OverviewActivityDay } from "@ucdjs/pipelines-ui/functions";
+import type { OverviewActivityDay } from "#functions";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 import { EXECUTION_STATUSES } from "@ucdjs/pipelines-executor";
 import { PlayCircle } from "lucide-react";

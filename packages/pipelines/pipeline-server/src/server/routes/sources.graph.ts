@@ -1,4 +1,4 @@
-import type { ExecutionGraphResponse } from "@ucdjs/pipelines-ui/functions";
+import type { ExecutionGraphResponse } from "#shared/schemas/execution";
 import { schema } from "#server/db";
 import { and, eq } from "drizzle-orm";
 import { H3, HTTPError } from "h3";

@@ -1,4 +1,4 @@
-import type { SourceFileResponse, SourceResponse } from "@ucdjs/pipelines-ui/functions";
+import type { SourceFileResponse, SourceResponse } from "#functions";
 import { Link } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Card, CardContent } from "@ucdjs-internal/shared-ui/ui/card";

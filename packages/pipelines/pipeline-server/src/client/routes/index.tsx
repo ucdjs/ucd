@@ -3,7 +3,7 @@
 import { DashboardHome } from "#components/dashboard-home";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { configQueryOptions, overviewQueryOptions, sourcesQueryOptions } from "@ucdjs/pipelines-ui/functions";
+import { configQueryOptions, overviewQueryOptions, sourcesQueryOptions } from "#functions";
 
 export const Route = createFileRoute("/")({
   loader: async ({ context }) => {

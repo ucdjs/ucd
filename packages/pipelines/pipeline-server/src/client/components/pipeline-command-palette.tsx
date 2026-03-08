@@ -11,8 +11,8 @@ import {
   CommandList,
   CommandShortcut,
 } from "@ucdjs-internal/shared-ui/ui/command";
-import { sourceFileQueryOptions, sourceQueryOptions, sourcesQueryOptions } from "@ucdjs/pipelines-ui/functions";
-import { useExecute } from "@ucdjs/pipelines-ui/hooks";
+import { sourceFileQueryOptions, sourceQueryOptions, sourcesQueryOptions } from "#functions";
+import { useExecute } from "#hooks";
 import { FileCode, Loader2, Play, Search, Terminal } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
