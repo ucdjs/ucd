@@ -10,7 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@ucdjs-internal/shared-ui/ui/table";
-import { formatExecutionDuration, formatStartedAt } from "../../../../components/execution/execution-utils";
+import { formatExecutionDuration, formatStartedAt } from "#lib/format";
 
 export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/graphs")({
   loader: async ({ context, params }) => {

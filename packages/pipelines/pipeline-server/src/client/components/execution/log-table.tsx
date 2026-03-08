@@ -1,9 +1,9 @@
 import type { ExecutionLogItem } from "#shared/types";
+import { formatTimestamp } from "#lib/format";
 import { cn } from "@ucdjs-internal/shared-ui";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@ucdjs-internal/shared-ui/ui/table";
 import { Fragment } from "react";
-import { formatTimestamp } from "./execution-utils";
 
 export interface ExecutionLogTableProps {
   logs: ExecutionLogItem[];

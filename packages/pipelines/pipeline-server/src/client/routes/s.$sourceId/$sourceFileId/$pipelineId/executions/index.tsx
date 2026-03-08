@@ -1,4 +1,5 @@
 import { StatusIcon } from "#components/execution/execution-status";
+import { formatExecutionDuration, formatStartedAt } from "#lib/format";
 import { executionsQueryOptions } from "#queries/execution";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
@@ -12,7 +13,6 @@ import {
   TableRow,
 } from "@ucdjs-internal/shared-ui/ui/table";
 import { Play } from "lucide-react";
-import { formatExecutionDuration, formatStartedAt } from "../../../../../components/execution/execution-utils";
 
 export const Route = createFileRoute("/s/$sourceId/$sourceFileId/$pipelineId/executions/")({
   loader: async ({ context, params }) => {
