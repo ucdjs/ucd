@@ -1,6 +1,14 @@
 import type { PipelineEvent, PipelineGraph } from "@ucdjs/pipelines-core";
+import { EXECUTION_STATUSES } from "@ucdjs/pipelines-executor";
 import z from "zod";
-import { ExecutionStatusSchema, PaginationSchema } from "./shared";
+
+const ExecutionStatusSchema = z.enum(EXECUTION_STATUSES);
+const PaginationSchema = z.object({
+  total: z.number(),
+  limit: z.number(),
+  offset: z.number(),
+  hasMore: z.boolean(),
+});
 
 export const ExecutePipelineResponseSchema = z.object({
   success: z.boolean(),
