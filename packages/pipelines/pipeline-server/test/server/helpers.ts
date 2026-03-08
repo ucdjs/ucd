@@ -1,11 +1,12 @@
+import type { PipelineSource } from "#server/app";
+import type { Database } from "#server/db";
 import type { H3 } from "h3";
-import type { PipelineSource } from "../../src/server/app";
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
+import { createApp } from "#server/app";
+import { createDatabase, runMigrations, schema } from "#server/db";
+import { ensureWorkspace } from "#server/workspace";
 import { H3 as H3App } from "h3";
-import { createApp } from "../../src/server/app";
-import { createDatabase, runMigrations, schema, type Database } from "../../src/server/db";
-import { ensureWorkspace } from "../../src/server/workspace";
 
 const playgroundPath = fileURLToPath(new URL("../../../pipeline-playground/src", import.meta.url));
 const defaultSources: PipelineSource[] = [{

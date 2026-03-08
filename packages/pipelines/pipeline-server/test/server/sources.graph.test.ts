@@ -1,7 +1,8 @@
+import { sourcesGraphRouter } from "#server/routes";
 import { describe, expect, it } from "vitest";
-import { sourcesGraphRouter } from "../../src/server/routes";
 import { createTestRoutesApp, seedExecution } from "./helpers";
 
+// eslint-disable-next-line test/prefer-lowercase-title
 describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executions/:executionId/graph", () => {
   it("returns graph data and status", async () => {
     const { app, db } = await createTestRoutesApp([sourcesGraphRouter]);

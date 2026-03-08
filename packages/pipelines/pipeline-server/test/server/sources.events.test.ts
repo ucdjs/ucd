@@ -1,5 +1,5 @@
+import { sourcesEventsRouter } from "#server/routes";
 import { describe, expect, it } from "vitest";
-import { sourcesEventsRouter } from "../../src/server/routes";
 import { createTestRoutesApp, seedExecution, seedExecutionEvent } from "./helpers";
 
 // eslint-disable-next-line test/prefer-lowercase-title

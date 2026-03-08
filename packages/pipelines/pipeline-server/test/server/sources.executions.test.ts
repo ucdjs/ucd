@@ -1,7 +1,8 @@
+import { sourcesExecutionsRouter } from "#server/routes";
 import { describe, expect, it } from "vitest";
-import { sourcesExecutionsRouter } from "../../src/server/routes";
 import { createTestRoutesApp, seedExecution } from "./helpers";
 
+// eslint-disable-next-line test/prefer-lowercase-title
 describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executions", () => {
   it("returns an empty list when no executions exist", async () => {
     const { app } = await createTestRoutesApp([sourcesExecutionsRouter]);
