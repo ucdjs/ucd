@@ -49,27 +49,19 @@ export {
   executePipeline,
   executePipelineMutationOptions,
   type ExecutePipelineResponse,
-} from "./functions/execute";
-export {
   executionEventsQueryOptions,
   fetchExecutionEvents,
-} from "./functions/execution-events";
-export {
   executionGraphQueryOptions,
   type ExecutionGraphResponse,
   fetchExecutionGraph,
-} from "./functions/execution-graph";
-export {
   executionLogsQueryOptions,
   fetchExecutionLogs,
-} from "./functions/execution-logs";
-export {
   executionsQueryOptions,
   type ExecutionsResponse,
   type ExecutionSummaryItem,
   fetchExecutions,
   type FetchExecutionsOptions,
-} from "./functions/executions";
+} from "./functions/execution";
 export {
   fetchSourceFile,
   sourceFileQueryOptions,

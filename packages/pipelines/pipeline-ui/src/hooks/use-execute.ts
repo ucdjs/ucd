@@ -1,5 +1,5 @@
 import type { ExecuteResult } from "../types";
-import { executePipelineMutationOptions } from "../functions/execute";
+import { executePipelineMutationOptions } from "../functions/execution";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useMemo, useState } from "react";
 
