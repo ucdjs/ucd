@@ -1,5 +1,5 @@
-import { resolveSourceFiles, sourceLabel } from "#server/lib/resolve";
 import type { SourceResponse } from "@ucdjs/pipelines-ui";
+import { resolveSourceFiles, sourceLabel } from "#server/lib/resolve";
 import { H3, HTTPError } from "h3";
 
 export const sourcesSourceRouter: H3 = new H3();
