@@ -1,13 +1,8 @@
-/* eslint-disable react-refresh/only-export-components */
-
-import type { SourceFileCardData } from "#components/source-file-card";
 import { SourceFileCard } from "#components/source-file-card";
 import { createFileRoute } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 import { sourceFileQueryOptions, sourceQueryOptions } from "@ucdjs/pipelines-ui/functions";
-
-type SourceFileCardViewModel = SourceFileCardData;
 
 export const Route = createFileRoute("/s/$sourceId/")({
   loader: async ({ context, params }) => {
@@ -23,7 +18,7 @@ export const Route = createFileRoute("/s/$sourceId/")({
         }))),
     );
 
-    const files: SourceFileCardViewModel[] = source.files.map((file) => ({
+    const files = source.files.map((file) => ({
       ...file,
       pipelines: fileDetails.find((detail) => detail.id === file.id)?.pipelines ?? [],
     }));
