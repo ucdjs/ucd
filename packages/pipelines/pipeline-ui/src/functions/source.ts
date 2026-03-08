@@ -1,5 +1,9 @@
 import { queryOptions } from "@tanstack/react-query";
 import { customFetch } from "@ucdjs-internal/shared";
+import { SourceResponseSchema } from "../schemas/source";
+import type { SourceFileInfo, SourceResponse } from "../schemas/source";
+
+export type { SourceFileInfo, SourceResponse };
 
 export interface SourceFilePipelineSummary {
   id: string;
@@ -8,33 +12,14 @@ export interface SourceFilePipelineSummary {
   versions: string[];
 }
 
-export interface SourceFileInfo {
-  id: string;
-  path: string;
-  label: string;
-}
-
-export interface SourceResponse {
-  id: string;
-  type: "local" | "github" | "gitlab";
-  label: string;
-  files: SourceFileInfo[];
-  errors: Array<{
-    code: string;
-    scope: string;
-    message: string;
-    filePath?: string;
-    relativePath?: string;
-    meta?: Record<string, unknown>;
-  }>;
-}
-
 export interface SourceParams {
   sourceId: string;
 }
 
 export async function fetchSource({ sourceId }: SourceParams): Promise<SourceResponse> {
-  return (await customFetch<SourceResponse>(`/api/sources/${sourceId}`)).data!;
+  return (await customFetch<SourceResponse>(`/api/sources/${sourceId}`, {
+    schema: SourceResponseSchema,
+  })).data!;
 }
 
 export function sourceQueryOptions({ sourceId }: SourceParams) {

@@ -2,6 +2,7 @@ import type { ExecuteResult } from "../types";
 import type { QueryClient } from "@tanstack/react-query";
 import { mutationOptions } from "@tanstack/react-query";
 import { customFetch } from "@ucdjs-internal/shared";
+import { ExecutePipelineResponseSchema, type ExecutePipelineResponse } from "../schemas/execute";
 
 interface ExecutePipelineRequest {
   sourceId: string;
@@ -9,12 +10,6 @@ interface ExecutePipelineRequest {
   pipelineId: string;
   versions: string[];
   cache?: boolean;
-}
-
-interface ExecutePipelineResponse {
-  success: boolean;
-  executionId?: string;
-  error?: string;
 }
 
 export async function executePipeline({
@@ -30,6 +25,7 @@ export async function executePipeline({
       {
         method: "POST",
         body: { versions, cache },
+        schema: ExecutePipelineResponseSchema,
       },
     )
   ).data!;

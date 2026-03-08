@@ -1,15 +1,9 @@
-import type { PipelineGraph } from "@ucdjs/pipelines-core";
-import type { ExecutionStatus } from "@ucdjs/pipelines-executor";
 import { queryOptions } from "@tanstack/react-query";
 import { customFetch } from "@ucdjs-internal/shared";
+import { ExecutionGraphResponseSchema, type ExecutionGraphResponse } from "../schemas/execution-graph";
 import { refetchWhileExecutionActive } from "./shared";
 
-export interface ExecutionGraphResponse {
-  executionId: string;
-  pipelineId: string;
-  status: ExecutionStatus;
-  graph: PipelineGraph | null;
-}
+export type { ExecutionGraphResponse };
 
 export interface ExecutionGraphParams {
   sourceId: string;
@@ -27,6 +21,9 @@ export async function fetchExecutionGraph({
   return (
     await customFetch<ExecutionGraphResponse>(
       `/api/sources/${sourceId}/files/${fileId}/pipelines/${pipelineId}/executions/${executionId}/graph`,
+      {
+        schema: ExecutionGraphResponseSchema,
+      },
     )
   ).data!;
 }

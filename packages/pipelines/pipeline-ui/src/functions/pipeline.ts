@@ -1,10 +1,9 @@
-import type { PipelineDetails } from "../types";
 import { queryOptions } from "@tanstack/react-query";
 import { customFetch } from "@ucdjs-internal/shared";
+import { PipelineResponseSchema } from "../schemas/pipeline";
+import type { PipelineResponse } from "../schemas/pipeline";
 
-export interface PipelineResponse {
-  pipeline: PipelineDetails;
-}
+export type { PipelineResponse };
 
 export interface PipelineParams {
   sourceId: string;
@@ -18,7 +17,9 @@ export async function fetchPipeline({
   pipelineId,
 }: PipelineParams): Promise<PipelineResponse> {
   return (
-    await customFetch<PipelineResponse>(`/api/sources/${sourceId}/files/${fileId}/pipelines/${pipelineId}`)
+    await customFetch<PipelineResponse>(`/api/sources/${sourceId}/files/${fileId}/pipelines/${pipelineId}`, {
+      schema: PipelineResponseSchema,
+    })
   ).data!;
 }
 
