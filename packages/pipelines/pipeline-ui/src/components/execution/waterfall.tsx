@@ -1,7 +1,7 @@
 import type { ExecutionSpan } from "#lib/execution-logs";
-import { cn } from "#lib/utils";
 import type { PipelineEventPhase } from "@ucdjs/pipelines-core";
-import { useEffect, useMemo, useState } from "react";
+import { cn } from "#lib/utils";
+import { useMemo, useState } from "react";
 import { ExecutionWaterfallAxis } from "./waterfall/axis";
 import { ExecutionWaterfallRow } from "./waterfall/row";
 import { buildTicks, phaseOptions } from "./waterfall/shared";
@@ -17,32 +17,23 @@ export interface ExecutionWaterfallProps {
 export function ExecutionWaterfall({ spans, selectedSpanId, onSelect, onSpanClick }: ExecutionWaterfallProps) {
   const hasSpans = spans.length > 0;
   const availablePhases = useMemo(
-    () => phaseOptions.filter(phase => spans.some(span => span.phase === phase)),
+    () => phaseOptions.filter((phase) => spans.some((span) => span.phase === phase)),
     [spans],
   );
   const [activePhases, setActivePhases] = useState<Set<PipelineEventPhase>>(
-    () => new Set(availablePhases),
+    () => new Set(phaseOptions),
   );
+  const visibleActivePhases = useMemo(() => {
+    const next = new Set(availablePhases.filter((phase) => activePhases.has(phase)));
+    return next.size === 0 ? new Set(availablePhases) : next;
+  }, [activePhases, availablePhases]);
   const start = hasSpans ? Math.min(...spans.map((s) => s.start)) : 0;
   const end = hasSpans ? Math.max(...spans.map((s) => s.end)) : 0;
   const duration = Math.max(end - start, 1);
 
-  useEffect(() => {
-    setActivePhases((current) => {
-      const next = new Set<PipelineEventPhase>();
-      for (const phase of availablePhases) {
-        if (current.has(phase)) {
-          next.add(phase);
-        }
-      }
-
-      return next.size === 0 ? new Set(availablePhases) : next;
-    });
-  }, [availablePhases]);
-
   const filteredSpans = useMemo(
-    () => spans.filter((span) => activePhases.has(span.phase)),
-    [activePhases, spans],
+    () => spans.filter((span) => visibleActivePhases.has(span.phase)),
+    [spans, visibleActivePhases],
   );
   const sortedSpans = useMemo(
     () => [...filteredSpans].sort((a, b) => a.start - b.start),
@@ -75,7 +66,7 @@ export function ExecutionWaterfall({ spans, selectedSpanId, onSelect, onSpanClic
       <div className={cn("space-y-3", !hasSpans && "hidden")}>
         <ExecutionWaterfallToolbar
           spans={spans}
-          activePhases={activePhases}
+          activePhases={visibleActivePhases}
           onTogglePhase={handleTogglePhase}
           selectedSpanId={selectedSpanId}
           onClear={() => onSelect(null)}

@@ -1,8 +1,8 @@
 import type { ExecutionSummaryItem } from "../../functions/execution";
-import { formatExecutionDuration, formatStartedAt } from "../../lib/execution-time";
 import { Link, useParams } from "@tanstack/react-router";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 import { Play } from "lucide-react";
+import { formatExecutionDuration, formatStartedAt } from "../../lib/execution-time";
 import { StatusIcon } from "../status-icon";
 
 interface RecentExecutionsCardProps {
