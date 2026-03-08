@@ -2,35 +2,17 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { Link, useNavigate, useParams } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
 import { Button } from "@ucdjs-internal/shared-ui/ui/button";
+import { pipelineQueryOptions, sourceFileQueryOptions } from "@ucdjs/pipelines-ui/functions";
+import { useExecute } from "@ucdjs/pipelines-ui/hooks";
 import { Play } from "lucide-react";
 import { useCallback } from "react";
-import { sourceFileQueryOptions } from "../functions/file";
-import { pipelineQueryOptions } from "../functions/pipeline";
-import { useExecute } from "../hooks/use-execute";
 
 export interface PipelineHeaderProps {
   selectedVersions: Set<string>;
 }
 
-function usePipelineRouteParams() {
-  const params = useParams({ strict: false });
-  const sourceId = "sourceId" in params && typeof params.sourceId === "string" ? params.sourceId : null;
-  const sourceFileId = "sourceFileId" in params && typeof params.sourceFileId === "string" ? params.sourceFileId : null;
-  const pipelineId = "pipelineId" in params && typeof params.pipelineId === "string" ? params.pipelineId : null;
-
-  if (!sourceId || !sourceFileId || !pipelineId) {
-    throw new Error("PipelineHeader must be used within a pipeline route.");
-  }
-
-  return {
-    sourceId,
-    sourceFileId,
-    pipelineId,
-  };
-}
-
 export function PipelineHeader({ selectedVersions }: PipelineHeaderProps) {
-  const { sourceId, sourceFileId, pipelineId } = usePipelineRouteParams();
+  const { sourceId, sourceFileId, pipelineId } = useParams({ from: "/s/$sourceId/$sourceFileId/$pipelineId" });
   const navigate = useNavigate();
   const { data: file } = useSuspenseQuery(sourceFileQueryOptions({
     sourceId,

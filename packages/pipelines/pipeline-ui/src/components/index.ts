@@ -42,14 +42,9 @@ export {
 export { QuickActionsCard } from "./overview/quick-actions-card";
 export { RecentExecutionsCard } from "./overview/recent-executions-card";
 export {
-  PipelineHeader,
-  type PipelineHeaderProps,
-} from "./pipeline-header";
-export {
   PipelineSidebar,
   type PipelineSidebarProps,
 } from "./pipeline-sidebar";
-export { PipelineTabs } from "./pipeline-tabs";
 export { SourceSwitcher } from "./source-switcher";
 export { StatusBadge } from "./status-badge";
 export { StatusIcon } from "./status-icon";
