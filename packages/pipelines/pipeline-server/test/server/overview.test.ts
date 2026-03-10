@@ -22,6 +22,8 @@ async function seedExecution(
   await db.insert(schema.executions).values({
     id: executionId,
     workspaceId: "test",
+    sourceId: "local",
+    fileId: "simple",
     pipelineId: options.pipelineId ?? "simple",
     status: options.status ?? "completed",
     startedAt: options.startedAt ?? new Date("2026-01-01T00:00:00.000Z"),
@@ -49,7 +51,11 @@ describe("GET /api/overview", () => {
 
     const app = new H3App({ debug: true });
     app.use("/**", (event, next) => {
-      event.context.sources = [];
+      event.context.sources = [{
+        kind: "local",
+        id: "local",
+        path: playgroundPath,
+      }];
       event.context.db = db;
       event.context.workspaceId = "test";
       next();
@@ -105,7 +111,12 @@ describe("GET /api/overview", () => {
       { date: "2026-03-08", pending: 0, running: 1, completed: 1, failed: 0, cancelled: 0 },
     ]);
     expect(data.recentExecutions).toHaveLength(4);
-    expect(data.recentExecutions[0].status).toBe("running");
+    expect(data.recentExecutions[0]).toEqual(expect.objectContaining({
+      status: "running",
+      sourceId: "local",
+      fileId: "simple",
+      pipelineId: "simple",
+    }));
 
     vi.useRealTimers();
   });

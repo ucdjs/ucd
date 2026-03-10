@@ -71,15 +71,20 @@ overviewRouter.get("/", async (event) => {
       total: windowExecutions.length,
       ...summaryStates,
     },
-    recentExecutions: recentExecutions.map((exec) => ({
-      id: exec.id,
-      status: exec.status,
-      startedAt: exec.startedAt.toISOString(),
-      completedAt: exec.completedAt?.toISOString() ?? null,
-      versions: exec.versions,
-      summary: exec.summary ?? null,
-      hasGraph: Boolean(exec.graph),
-      error: exec.error ?? null,
-    })),
+    recentExecutions: recentExecutions.map((exec) => {
+      return {
+        id: exec.id,
+        sourceId: exec.sourceId ?? null,
+        fileId: exec.fileId ?? null,
+        pipelineId: exec.pipelineId,
+        status: exec.status,
+        startedAt: exec.startedAt.toISOString(),
+        completedAt: exec.completedAt?.toISOString() ?? null,
+        versions: exec.versions,
+        summary: exec.summary ?? null,
+        hasGraph: Boolean(exec.graph),
+        error: exec.error ?? null,
+      };
+    }),
   } satisfies OverviewResponse;
 });

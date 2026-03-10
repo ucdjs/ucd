@@ -37,6 +37,9 @@ sourcesExecutionsRouter.get("/:sourceId/files/:fileId/pipelines/:pipelineId/exec
   return {
     executions: executions.map((exec) => ({
       id: exec.id,
+      sourceId: exec.sourceId ?? null,
+      fileId: exec.fileId ?? null,
+      pipelineId: exec.pipelineId,
       status: exec.status,
       startedAt: exec.startedAt.toISOString(),
       completedAt: exec.completedAt?.toISOString() ?? null,

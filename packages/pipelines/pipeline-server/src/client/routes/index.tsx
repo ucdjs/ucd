@@ -1,5 +1,5 @@
+import { ExecutionTable } from "#components/execution/execution-table";
 import { ExecutionActivityChart } from "#components/overview/activity-chart";
-import { RecentExecutionsPanel } from "#components/overview/recent-executions-panel";
 import { SourcesPanel } from "#components/overview/sources-panel";
 import { StatusOverviewPanel } from "#components/overview/status-overview-panel";
 import { configQueryOptions } from "#queries/config";
@@ -8,6 +8,7 @@ import { sourcesQueryOptions } from "#queries/sources";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { Badge } from "@ucdjs-internal/shared-ui/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 
 export const Route = createFileRoute("/")({
   loader: async ({ context }) => {
@@ -66,7 +67,18 @@ function HomePage() {
             summaryStates={overview.summary}
             total={overview.summary.total}
           />
-          <RecentExecutionsPanel executions={overview.recentExecutions} />
+          <Card className="xl:col-span-8">
+            <CardHeader className="border-b border-border/60 pb-3">
+              <CardTitle className="text-base">Recent executions</CardTitle>
+              <CardDescription>Latest activity across the workspace.</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-0">
+              <ExecutionTable
+                executions={overview.recentExecutions}
+                emptyTitle="No executions recorded yet."
+              />
+            </CardContent>
+          </Card>
           <SourcesPanel sources={sources} />
         </div>
       </div>
