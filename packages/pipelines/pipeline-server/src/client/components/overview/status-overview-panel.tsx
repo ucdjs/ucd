@@ -1,8 +1,9 @@
+import type { OverviewExecutionSummary } from "#queries/overview";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 import { getStateCount, overviewStates } from "./shared";
 
 interface StatusOverviewPanelProps {
-  summaryStates: Record<string, number>;
+  summaryStates: OverviewExecutionSummary;
   total: number;
 }
 

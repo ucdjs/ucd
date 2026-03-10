@@ -60,10 +60,10 @@ function HomePage() {
         <div className="grid gap-4 xl:grid-cols-12">
           <ExecutionActivityChart
             activity={overview.activity}
-            summaryStates={overview.summary.states}
+            summaryStates={overview.summary}
           />
           <StatusOverviewPanel
-            summaryStates={overview.summary.states}
+            summaryStates={overview.summary}
             total={overview.summary.total}
           />
           <RecentExecutionsPanel executions={overview.recentExecutions} />

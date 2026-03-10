@@ -75,6 +75,12 @@ describe("GET /api/overview", () => {
       startedAt: new Date("2026-03-08T11:00:00.000Z"),
       completedAt: null,
     });
+    await seedExecution(db, {
+      pipelineId: "simple",
+      status: "completed",
+      startedAt: new Date("2026-02-20T11:00:00.000Z"),
+      completedAt: new Date("2026-02-20T11:00:04.000Z"),
+    });
 
     const res = await app.fetch(new Request("http://localhost/api/overview"));
 
@@ -83,24 +89,22 @@ describe("GET /api/overview", () => {
     const data = await res.json();
     expect(data.summary).toEqual({
       total: 3,
-      states: {
-        pending: 0,
-        running: 1,
-        completed: 1,
-        failed: 1,
-        cancelled: 0,
-      },
+      pending: 0,
+      running: 1,
+      completed: 1,
+      failed: 1,
+      cancelled: 0,
     });
     expect(data.activity).toEqual([
-      { date: "2026-03-02", states: { pending: 0, running: 0, completed: 0, failed: 0, cancelled: 0 } },
-      { date: "2026-03-03", states: { pending: 0, running: 0, completed: 0, failed: 0, cancelled: 0 } },
-      { date: "2026-03-04", states: { pending: 0, running: 0, completed: 0, failed: 0, cancelled: 0 } },
-      { date: "2026-03-05", states: { pending: 0, running: 0, completed: 0, failed: 1, cancelled: 0 } },
-      { date: "2026-03-06", states: { pending: 0, running: 0, completed: 0, failed: 0, cancelled: 0 } },
-      { date: "2026-03-07", states: { pending: 0, running: 0, completed: 0, failed: 0, cancelled: 0 } },
-      { date: "2026-03-08", states: { pending: 0, running: 1, completed: 1, failed: 0, cancelled: 0 } },
+      { date: "2026-03-02", pending: 0, running: 0, completed: 0, failed: 0, cancelled: 0 },
+      { date: "2026-03-03", pending: 0, running: 0, completed: 0, failed: 0, cancelled: 0 },
+      { date: "2026-03-04", pending: 0, running: 0, completed: 0, failed: 0, cancelled: 0 },
+      { date: "2026-03-05", pending: 0, running: 0, completed: 0, failed: 1, cancelled: 0 },
+      { date: "2026-03-06", pending: 0, running: 0, completed: 0, failed: 0, cancelled: 0 },
+      { date: "2026-03-07", pending: 0, running: 0, completed: 0, failed: 0, cancelled: 0 },
+      { date: "2026-03-08", pending: 0, running: 1, completed: 1, failed: 0, cancelled: 0 },
     ]);
-    expect(data.recentExecutions).toHaveLength(3);
+    expect(data.recentExecutions).toHaveLength(4);
     expect(data.recentExecutions[0].status).toBe("running");
 
     vi.useRealTimers();
