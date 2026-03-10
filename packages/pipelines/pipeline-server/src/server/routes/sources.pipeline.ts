@@ -64,7 +64,7 @@ sourcesPipelineRouter.get(BASE, async (event) => {
 sourcesPipelineRouter.post(`${BASE}/execute`, async (event) => {
   const { db } = event.context;
   const workspaceId = event.context.workspaceId;
-  const { pipeline, pipelineId } = await resolvePipelineRoute(event);
+  const { file, pipeline, pipelineId, source } = await resolvePipelineRoute(event);
 
   const body = await readValidatedBody(event, z.object({
     versions: z.array(z.string()).optional(),
@@ -78,6 +78,8 @@ sourcesPipelineRouter.post(`${BASE}/execute`, async (event) => {
   await db.insert(schema.executions).values({
     id: executionId,
     workspaceId,
+    sourceId: source.id,
+    fileId: file.id,
     pipelineId,
     status: "running",
     startedAt: new Date(),

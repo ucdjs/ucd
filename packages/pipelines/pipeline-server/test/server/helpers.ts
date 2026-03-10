@@ -3,7 +3,6 @@ import type { Database } from "#server/db";
 import type { H3 } from "h3";
 import { randomUUID } from "node:crypto";
 import { fileURLToPath } from "node:url";
-import { createApp } from "#server/app";
 import { createDatabase, runMigrations, schema } from "#server/db";
 import { ensureWorkspace } from "#server/workspace";
 import { H3 as H3App } from "h3";
@@ -16,6 +15,7 @@ const defaultSources: PipelineSource[] = [{
 }];
 
 export async function createTestApp(options: { sources?: PipelineSource[] } = {}) {
+  const { createApp } = await import("#server/app");
   const db = createDatabase({ url: "file::memory:" });
   await runMigrations(db);
   await ensureWorkspace(db, "test", playgroundPath);
@@ -66,6 +66,8 @@ export async function createTestExecution(app: H3) {
 
 interface SeedExecutionOptions {
   workspaceId?: string;
+  sourceId?: string | null;
+  fileId?: string | null;
   pipelineId?: string;
   status?: "running" | "completed" | "failed";
   startedAt?: Date;
@@ -82,6 +84,8 @@ export async function seedExecution(db: Database, options: SeedExecutionOptions 
   await db.insert(schema.executions).values({
     id: executionId,
     workspaceId: options.workspaceId ?? "test",
+    sourceId: options.sourceId ?? "local",
+    fileId: options.fileId ?? "simple",
     pipelineId: options.pipelineId ?? "simple",
     status: options.status ?? "completed",
     startedAt: options.startedAt ?? new Date("2026-01-01T00:00:00.000Z"),

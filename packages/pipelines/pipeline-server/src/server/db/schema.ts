@@ -27,6 +27,8 @@ export const executions = sqliteTable("executions", {
   id: text("id").primaryKey(),
   workspaceId: text("workspace_id").notNull()
     .references(() => workspaces.id, { onDelete: "cascade" }),
+  sourceId: text("source_id"),
+  fileId: text("file_id"),
   pipelineId: text("pipeline_id").notNull(),
   status: text("status").$type<ExecutionStatus>().notNull(),
   startedAt: integer("started_at", { mode: "timestamp" }).notNull(),

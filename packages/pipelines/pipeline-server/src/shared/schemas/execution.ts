@@ -28,6 +28,9 @@ export const PipelineSummarySchema = z.object({
 
 export const ExecutionSummaryItemSchema = z.object({
   id: z.string(),
+  sourceId: z.string().nullable(),
+  fileId: z.string().nullable(),
+  pipelineId: z.string(),
   status: ExecutionStatusSchema,
   startedAt: z.string(),
   completedAt: z.string().nullable(),

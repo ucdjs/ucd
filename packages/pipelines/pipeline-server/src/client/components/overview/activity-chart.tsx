@@ -1,4 +1,4 @@
-import type { OverviewActivityDay } from "#queries/overview";
+import type { OverviewActivityDay, OverviewExecutionSummary } from "#queries/overview";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@ucdjs-internal/shared-ui/ui/card";
 import { EXECUTION_STATUSES } from "@ucdjs/pipelines-executor";
 import { PlayCircle } from "lucide-react";
@@ -7,7 +7,7 @@ import { formatDayLabel, getStateCount, overviewStates } from "./shared";
 
 interface ExecutionActivityChartProps {
   activity: OverviewActivityDay[];
-  summaryStates: Record<string, number>;
+  summaryStates: OverviewExecutionSummary;
 }
 
 export function ExecutionActivityChart({

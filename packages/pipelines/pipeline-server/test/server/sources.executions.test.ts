@@ -1,4 +1,4 @@
-import { sourcesExecutionsRouter } from "#server/routes";
+import { sourcesExecutionsRouter } from "#server/routes/sources.executions";
 import { describe, expect, it } from "vitest";
 import { createTestRoutesApp, seedExecution } from "./helpers";
 
@@ -45,6 +45,11 @@ describe("GET /api/sources/:sourceId/files/:fileId/pipelines/:pipelineId/executi
 
     const data = await res.json();
     expect(data.executions.map((execution: { id: string }) => execution.id)).toEqual([newerId, olderId]);
+    expect(data.executions[0]).toEqual(expect.objectContaining({
+      sourceId: "local",
+      fileId: "simple",
+      pipelineId: "simple",
+    }));
     expect(data.pagination).toEqual({
       total: 2,
       limit: 10,
