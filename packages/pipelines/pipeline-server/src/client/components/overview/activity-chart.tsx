@@ -16,7 +16,7 @@ export function ExecutionActivityChart({
 }: ExecutionActivityChartProps) {
   const availableStates = overviewStates.filter((state) => {
     const knownStatus = state.statuses.some((status) => EXECUTION_STATUSES.includes(status));
-    const hasActivity = activity.some((day) => getStateCount(day.states, state) > 0);
+    const hasActivity = activity.some((day) => getStateCount(day, state) > 0);
     const hasSummary = getStateCount(summaryStates, state) > 0;
 
     return (knownStatus && hasActivity) || hasSummary;
@@ -33,13 +33,12 @@ export function ExecutionActivityChart({
   const activityWithTotals = useMemo(() => {
     return activity.map((day) => ({
       ...day,
-      total: visibleStates.reduce((sum, state) => sum + getStateCount(day.states, state), 0),
+      total: visibleStates.reduce((sum, state) => sum + getStateCount(day, state), 0),
     }));
   }, [activity, visibleStates]);
 
   const maxTotal = Math.max(1, ...activityWithTotals.map((day) => day.total));
   const hasActivity = activityWithTotals.some((day) => day.total > 0);
-
   function toggleState(key: string) {
     setVisibleStateKeys((current) => {
       const next = new Set(current);
@@ -72,8 +71,8 @@ export function ExecutionActivityChart({
                   type="button"
                   onClick={() => toggleState(state.key)}
                   className={isActive
-                    ? "inline-flex items-center gap-2 rounded-md border border-border bg-muted/40 px-2.5 py-1 text-xs font-medium text-foreground"
-                    : "inline-flex items-center gap-2 rounded-md border border-border/50 bg-transparent px-2.5 py-1 text-xs font-medium text-muted-foreground"}
+                    ? "inline-flex items-center gap-2 rounded-full border border-border bg-muted/60 px-3 py-1.5 text-xs font-medium text-foreground shadow-sm transition-colors"
+                    : "inline-flex items-center gap-2 rounded-full border border-border/50 bg-background/70 px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-border hover:text-foreground"}
                 >
                   <span className={`h-2 w-2 rounded-full ${state.markerClassName}`} />
                   <span>{state.label}</span>
@@ -99,16 +98,19 @@ export function ExecutionActivityChart({
                     <div className="text-center text-xs font-medium tabular-nums text-muted-foreground">
                       {day.total}
                     </div>
-                    <div className="flex h-32 items-end justify-center border border-border/60 bg-muted/10 p-1.5">
-                      <div className="flex h-full w-full max-w-16 flex-col justify-end overflow-hidden bg-background">
+                    <div className="flex h-36 items-end justify-center p-1">
+                      <div
+                        className="flex h-full w-full max-w-14 flex-col justify-end overflow-hidden rounded-t-md bg-muted/20"
+                        title={`${day.total} visible executions`}
+                      >
                         {visibleStates.map((state) => {
-                          const value = getStateCount(day.states, state);
+                          const value = getStateCount(day, state);
                           if (value <= 0) return null;
 
                           return (
                             <div
                               key={`${day.date}-${state.key}`}
-                              className={state.segmentClassName}
+                              className={`${state.segmentClassName} transition-opacity hover:opacity-90`}
                               style={{ height: `${(value / maxTotal) * 100}%` }}
                               title={`${state.label}: ${value}`}
                             />
@@ -116,7 +118,7 @@ export function ExecutionActivityChart({
                         })}
                       </div>
                     </div>
-                    <div className="text-center text-xs text-muted-foreground">
+                    <div className="text-center text-[11px] font-medium uppercase tracking-[0.14em] text-muted-foreground/80">
                       {formatDayLabel(day.date)}
                     </div>
                   </div>

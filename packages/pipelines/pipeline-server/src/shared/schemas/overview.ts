@@ -1,14 +1,20 @@
 import z from "zod";
 import { ExecutionSummaryItemSchema } from "./execution";
 
-export const OverviewActivityDaySchema = z.object({
-  date: z.string(),
-  states: z.record(z.string(), z.number()),
+const OverviewStateCountsSchema = z.object({
+  pending: z.number(),
+  running: z.number(),
+  completed: z.number(),
+  failed: z.number(),
+  cancelled: z.number(),
 });
 
-export const OverviewExecutionSummarySchema = z.object({
+export const OverviewActivityDaySchema = OverviewStateCountsSchema.extend({
+  date: z.string(),
+});
+
+export const OverviewExecutionSummarySchema = OverviewStateCountsSchema.extend({
   total: z.number(),
-  states: z.record(z.string(), z.number()),
 });
 
 export const OverviewResponseSchema = z.object({

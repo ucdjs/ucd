@@ -1,3 +1,4 @@
+import type { OverviewActivityDay, OverviewExecutionSummary } from "#queries/overview";
 import type { ExecutionStatus } from "@ucdjs/pipelines-executor";
 import { AlertTriangle, CheckCircle2, PlayCircle, XCircle } from "lucide-react";
 
@@ -52,8 +53,8 @@ export function formatDayLabel(value: string) {
 }
 
 export function getStateCount(
-  states: Record<string, number>,
+  stateCounts: OverviewActivityDay | OverviewExecutionSummary,
   definition: OverviewStateDefinition,
 ) {
-  return definition.statuses.reduce((sum, status) => sum + (states[status] ?? 0), 0);
+  return definition.statuses.reduce((sum, status) => sum + stateCounts[status], 0);
 }
